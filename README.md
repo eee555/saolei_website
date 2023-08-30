@@ -1,6 +1,7 @@
 # saolei_website
 
 新扫雷网，雏形
+Vue3+Ts+Element-ui+Django+Mysql
 
 已完成：注册登录、上传录像、录像查询（排序、分页）、修改头像姓名个性签名。
 
