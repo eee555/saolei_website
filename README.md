@@ -10,6 +10,7 @@ Vue3+Ts+Element-ui+Django+Mysql
 项目安装流程：
 
 后端：
+1. cd saolei_website\back_end\saolei
 1. pip install -r requirements.txt
 1. 安装mysql，创建名为saolei的数据库
 1. python manage.py makemigrations
@@ -17,6 +18,7 @@ Vue3+Ts+Element-ui+Django+Mysql
 1. py -3 manage.py runserver
 
 前端：
+1. saolei_website\front_end
 1. npm install
 1. npm run serve
 
