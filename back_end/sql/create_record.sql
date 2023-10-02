@@ -1,0 +1,15 @@
+UPDATE msuser_userms SET b_time_std = 25.256 WHERE id = 1;
+UPDATE msuser_userms SET i_time_std = 25.256 WHERE id = 1;
+UPDATE msuser_userms SET e_bvs_std = 25.256 WHERE id = 1;
+UPDATE msuser_userms SET b_bvs_std = 25.256 WHERE id = 1;
+UPDATE msuser_userms SET i_bvs_std = 25.256 WHERE id = 1;
+UPDATE msuser_userms SET e_stnb_std = 25.256 WHERE id = 1;
+UPDATE msuser_userms SET b_stnb_std = 25.256 WHERE id = 1;
+UPDATE msuser_userms SET i_stnb_std = 25.256 WHERE id = 1;
+UPDATE msuser_userms SET e_ioe_std = 25.256 WHERE id = 1;
+UPDATE msuser_userms SET b_ioe_std = 25.256 WHERE id = 1;
+UPDATE msuser_userms SET i_ioe_std = 25.256 WHERE id = 1;
+UPDATE msuser_userms SET e_ioe_std = 25.256 WHERE id = 1;
+UPDATE msuser_userms SET b_path_std = 25.256 WHERE id = 1;
+UPDATE msuser_userms SET i_ioe_std = 25.256 WHERE id = 1;
+UPDATE msuser_userms SET e_ioe_std = 25.256 WHERE id = 1;

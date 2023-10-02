@@ -49,7 +49,7 @@
 </template>
   
 <script lang="ts" setup>
-// 注册、登录的弹框及右上方按钮
+// 上传录像的页面
 import { onMounted, ref, Ref, defineEmits } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
