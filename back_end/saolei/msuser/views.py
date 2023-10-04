@@ -31,15 +31,18 @@ class DecimalEncoder(json.JSONEncoder):
 def get_info(request):
     if request.method == 'GET':
         # print(request.GET)
-        user_id = request.GET["id"]
+        user_id = request.user.id
         user = UserProfile.objects.get(id=user_id)
         ms_user = UserMS.objects.get(id=user_id)
         # print(user_id)
         # print(urllib.parse.unquote(user.avatar.url))
 
-        image_data = open(urllib.parse.unquote(
-            user.avatar.url)[1:], "rb").read()
-        image_data = base64.b64encode(image_data).decode()
+        if user.avatar:
+            image_data = open(urllib.parse.unquote(
+                user.avatar.url)[1:], "rb").read()
+            image_data = base64.b64encode(image_data).decode()
+        else:
+            image_data = None
         response = {"realname": user.realname,
                     "avatar": image_data,
                     "signature": user.signature,

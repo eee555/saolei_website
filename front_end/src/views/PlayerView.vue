@@ -67,35 +67,35 @@
                         <el-table-column label="time" align="center">
                             <template #default="scope">
                                 <el-link href="https://element-plus.org" target="_blank" v-if="scope.row.time">{{
-                                    scope.row.time }}</el-link>
+                                    scope.row.time.toFixed(3) }}</el-link>
                                 <span v-else> {{ "999.999" }} </span>
                             </template>
                         </el-table-column>
                         <el-table-column label="3BV/s" align="center">
                             <template #default="scope">
                                 <el-link href="https://element-plus.org" target="_blank" v-if="scope.row.bvs">{{
-                                    scope.row.bvs }}</el-link>
+                                    scope.row.bvs.toFixed(3) }}</el-link>
                                 <span v-else> {{ "0.000" }} </span>
                             </template>
                         </el-table-column>
                         <el-table-column label="STNB" align="center">
                             <template #default="scope">
                                 <el-link href="https://element-plus.org" target="_blank" v-if="scope.row.stnb">{{
-                                    scope.row.stnb }}</el-link>
+                                    scope.row.stnb.toFixed(3) }}</el-link>
                                 <span v-else> {{ "0.000" }} </span>
                             </template>
                         </el-table-column>
                         <el-table-column label="IOE" align="center">
                             <template #default="scope">
                                 <el-link href="https://element-plus.org" target="_blank" v-if="scope.row.ioe">{{
-                                    scope.row.ioe }}</el-link>
+                                    scope.row.ioe.toFixed(3) }}</el-link>
                                 <span v-else> {{ "0.000" }} </span>
                             </template>
                         </el-table-column>
                         <el-table-column label="path" align="center">
                             <template #default="scope">
                                 <el-link href="https://element-plus.org" target="_blank" v-if="scope.row.path">{{
-                                    scope.row.path }}</el-link>
+                                    scope.row.path.toFixed(3) }}</el-link>
                                 <span v-else> {{ "99999.9" }} </span>
                             </template>
                         </el-table-column>
@@ -157,7 +157,9 @@ onMounted(() => {
         realname_edit.value = data.realname;
         signature_edit.value = data.signature;
         // console.log(imageUrl);
-        imageUrl.value = "data:image/;base64," + data.avatar;
+        if (data.avatar) {
+            imageUrl.value = "data:image/;base64," + data.avatar;
+        }
         // console.log(imageUrl);
         records.value.push(trans_record(JSON.parse(data.std_record)));
         records.value.push(trans_record(JSON.parse(data.nf_record)));
