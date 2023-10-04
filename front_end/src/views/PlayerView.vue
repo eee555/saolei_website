@@ -53,7 +53,7 @@
                     </div>
                     <div style="font-size: 30px;margin-top: 10px;margin-bottom: 8px;">{{ username }}</div>
                     <div style="font-size: 20px;margin-bottom: 8px;">{{ realname }}</div>
-                    <div><strong>个性签名：</strong>{{ signature }}</div>
+                    <div style="overflow: auto ;"><strong>个性签名：</strong>{{ signature }}</div>
 
                     <el-button type="primary" :plain="true" :size="'large'" @click="is_editing = true;"
                         style="font-size: 18px;margin-top: 18px;width: 160px;">修改个人资料</el-button>

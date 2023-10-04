@@ -40,3 +40,4 @@ declare module '@vue/runtime-core' {
 }
 
 // cloc-1.94.exe .\新扫雷网 -exclude-dir=node_modules
+// "ms-toollib": "file:../../ms_toollib/wasm/pkg",

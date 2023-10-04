@@ -1,45 +1,48 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-router" target="_blank" rel="noopener">router</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-vuex" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-typescript" target="_blank" rel="noopener">typescript</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
-  </div>
+  <!-- <div class="hello">
+    <button @click="get_board">无猜埋雷</button>
+    <p>{{ board }}</p>
+    <button @click="cal_3BV">计算3BV</button>
+    <p>经过计算，上图的3BV等于{{ bbbv }}</p>
+  </div> -->
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+// import { defineComponent, ref, reactive, toRef } from "vue";
 
-export default defineComponent({
-  name: 'HelloWorld',
-  props: {
-    msg: String,
-  },
-});
+// export default defineComponent({
+//   name: "ms_toollib demo of vue3 with ts",
+//   setup() {
+//     let board = reactive([[0]]);
+//     let bbbv = ref(0);
+//     const get_board = async () => {
+//       while(board.length > 0) {
+//         board.pop();
+//       }
+//       const ms = await import("ms-toollib");
+//       const rows = 16;
+//       const columns = 30;
+//       let b = JSON.parse(ms.laymine_solvable(rows, columns, 99, 0, 0, 10000))[0];
+//       for(let i = 0; i < rows; i++) {
+//         board.push([])
+//         for(let j = 0; j < columns; j++) {
+//           board[i].push(b[i][j])
+//         }
+//       }
+//     };
+//     const cal_3BV = async () => {
+//       const ms = await import("ms-toollib");
+//       bbbv.value = ms.cal3BV(JSON.stringify(board))
+//     };
+
+//     return {
+//       board,
+//       get_board,
+//       bbbv,
+//       cal_3BV
+//     };
+//   },
+// });
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

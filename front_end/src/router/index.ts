@@ -25,7 +25,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/guide',
     name: 'guide',
-    component: () => import('../views/AboutView.vue')
+    component: () => import('../views/GuideView.vue')
   },
   {
     path: '/player',

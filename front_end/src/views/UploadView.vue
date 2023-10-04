@@ -1,7 +1,7 @@
 <template>
     <el-upload ref="upload" class="upload-demo" drag action="#" :limit="1" :http-request="handleVideoUpload"
         :on-exceed="handleExceed" :on-change="handleChange" :auto-upload="false" :show-file-list="false"
-        style="background-color: white;">
+        style="background-color: white;" accept=".avf,.evf">
         <!-- <template #trigger>
       <el-button type="primary">选择录像</el-button>
     </template> -->
@@ -24,18 +24,18 @@
         <div style="display: inline-block;vertical-align:middle;width: 360px;text-align:left;">
             <el-row :gutter="5">
                 <el-col :span="12">
-                    <div class="grid-content ep-bg-purple">难度：中级</div>
+                    <div class="grid-content ep-bg-purple">难度：{{ video_msg_level }}</div>
                 </el-col>
                 <el-col :span="12">
-                    <div class="grid-content ep-bg-purple">时间：23.256s</div>
+                    <div class="grid-content ep-bg-purple">时间：{{ video_msg_time }}s</div>
                 </el-col>
             </el-row>
             <el-row :gutter="5">
                 <el-col :span="12">
-                    <div class="grid-content ep-bg-purple">3BV：125</div>
+                    <div class="grid-content ep-bg-purple">3BV：{{ video_msg_bbbv }}</div>
                 </el-col>
                 <el-col :span="12">
-                    <div class="grid-content ep-bg-purple">3BV/s：2.257</div>
+                    <div class="grid-content ep-bg-purple">3BV/s：{{ video_msg_bvs }}</div>
                 </el-col>
             </el-row>
         </div>
@@ -57,13 +57,19 @@ import { genFileId, ElMessage } from 'element-plus'
 import type { UploadInstance, UploadProps, UploadRawFile, UploadFile, UploadFiles, UploadRequestOptions } from 'element-plus'
 // import img_arbiter from '@/assets/img/img_arbiter.png'
 
+const video_msg_level = ref("")
+const video_msg_time = ref("")
+const video_msg_bbbv = ref("")
+const video_msg_bvs = ref("")
+
 const upload = ref<UploadInstance>()
 const hint_text = ref<string>("*仅限一个文件，且文件大小不能超过5M")
 
 const handleChange: UploadProps['onChange'] = (uploadFile: UploadFile, uploadFiles: UploadFiles) => {
     // console.log(uploadFile);
-    if (uploadFile.raw?.type !== 'image/jpeg') {
-        ElMessage.error('录像必须为.avf或.evf格式!')
+    if (uploadFile.raw?.type == 'image/jpeg') {
+        // el-upload在限制，进不来
+        ElMessage.error('不能上传图片!')
         return false
     } else if (uploadFile.size as number / 1024 / 1024 > 5) {
         ElMessage.error('录像大小不能超过5MB!')
@@ -71,7 +77,22 @@ const handleChange: UploadProps['onChange'] = (uploadFile: UploadFile, uploadFil
     }
     upload_video_visibile.value = true;
     hint_text.value = uploadFile.name;
+    modify_video_msg(uploadFile);
     return true
+}
+
+const modify_video_msg = async (uploadFile: UploadFile) => {
+    const ms = await import("ms-toollib");
+    let video_file = await uploadFile.raw!.arrayBuffer();
+    let video_file_u8 = new Uint8Array(video_file);
+    let aa = ms.AvfVideo.new(video_file_u8, uploadFile.name);
+    aa.parse_video();
+    aa.analyse();
+    aa.current_time = 1e8;  //时间设置到最后（超出就是最后）
+    video_msg_level.value = ["初级", "中级", "高级"][aa.get_level - 3];
+    video_msg_time.value = aa.get_rtime.toFixed(3);
+    video_msg_bbbv.value = aa.get_bbbv + "";
+    video_msg_bvs.value = aa.get_bbbv_s.toFixed(3);
 }
 
 const handleExceed: UploadProps['onExceed'] = (files) => {
@@ -101,50 +122,76 @@ const submitUpload = () => {
     upload.value!.submit()
 }
 
+
 const handleVideoUpload = async (options: UploadRequestOptions) => {
-    for (let i = 0;i<1;i++){
+    const ms = await import("ms-toollib");
+    // console.log(options.file);
+    let video_file = options.file;
+    let video_file_u8 = new Uint8Array(await video_file.arrayBuffer());
+    let aa = ms.AvfVideo.new(video_file_u8, video_file.name);
+    aa.parse_video();
+    aa.analyse();
+    aa.current_time = 1e8;  //时间设置到最后（超出就是最后）
+    if (aa.get_level > 5) {
+        ElMessage.error('不能上传自定义的录像!')
+        return
+    }
+    if (video_file.name.slice(-3) != "avf" && video_file.name.slice(-3) != "evf") {
+        ElMessage.error('录像必须为.avf或.evf格式!')
+        return
+    }
+    if (video_file.name.length >= 100) {
+        ElMessage.error('录像文件名太长!')
+        return
+    }
+    if (!aa.get_is_completed) {
+        ElMessage.error('没有扫开的录像!')
+        return
+    }
+
+    const decoder = new TextDecoder();
+    // for (let i = 0;i<1;i++){
+
+    console.log(aa.get_level);
+
     let params = new FormData();
     params.append('file', options.file);
-    params.append("software", ["e", "a"][Math.floor(Math.random() * 2)]);
-    params.append("level", ["e", "i", "b"][Math.floor(Math.random() * 3)]);
-    params.append("mode", "00");
-    // params.append("mode", ["00", "01", "04", "05", "06", "07", "08", "09", "10", "11", "12"][Math.floor(Math.random() * 11)]);
-    params.append("rtime", "523.145");
-    params.append("bv", Math.ceil(Math.random() * 250).toString());
-    params.append("bvs", (Math.random() * 12).toString());
-
-    params.append("designator", "zhangsan");
-    params.append("left", "111");
-    params.append("right", "22");
-    params.append("double", "33");
-    params.append("cl", "235");
-    params.append("left_s", "3.145");
-    params.append("right_s", "2.055");
-    params.append("double_s", "3.042");
-    params.append("cl_s", "10.124");
-    params.append("path", (Math.random() * 8000).toString());
-    params.append("flag", "80");
-    params.append("flag_s", "5.244");
-    params.append("stnb", (Math.random() * 1200).toString());
-    params.append("rqp", "5.244");
-    params.append("ioe", (Math.random()).toString());
-    params.append("thrp", "1.253");
-    params.append("corr", "0.753");
-    params.append("ce", "235");
-    params.append("ce_s", "1.532");
-    params.append("op", Math.ceil(Math.random() * 20).toString());
-    params.append("isl", Math.ceil(Math.random() * 20).toString());
-    params.append("cell0", Math.ceil(Math.random() * 120).toString());
-    params.append("cell1", Math.ceil(Math.random() * 200).toString());
-    params.append("cell2", Math.ceil(Math.random() * 150).toString());
-    params.append("cell3", Math.ceil(Math.random() * 100).toString());
-    params.append("cell4", Math.ceil(Math.random() * 80).toString());
-    params.append("cell5", Math.ceil(Math.random() * 50).toString());
-    params.append("cell6", Math.ceil(Math.random() * 30).toString());
-    params.append("cell7", Math.ceil(Math.random() * 20).toString());
-    params.append("cell8", Math.ceil(Math.random() * 10).toString());
-
-
+    params.append("software", ["e", "a"][video_file.name.slice(-3) == "avf" ? 1 : 0]);
+    params.append("level", ["b", "i", "e"][aa.get_level - 3]);
+    params.append("mode", String(aa.get_mode).padStart(2, '0'));
+    params.append("rtime", aa.get_rtime.toFixed(3));
+    params.append("bv", aa.get_bbbv + "");
+    params.append("bvs", aa.get_bbbv_s + "");
+    params.append("designator", decoder.decode(aa.get_player_designator));
+    params.append("left", aa.get_left + "");
+    params.append("right", aa.get_right + "");
+    params.append("double", aa.get_double + "");
+    params.append("cl", aa.get_cl + "");
+    params.append("left_s", aa.get_left_s + "");
+    params.append("right_s", aa.get_right_s + "");
+    params.append("double_s", aa.get_double_s + "");
+    params.append("cl_s", aa.get_cl_s + "");
+    params.append("path", aa.get_path + "");
+    params.append("flag", aa.get_flag + "");
+    params.append("flag_s", aa.get_flag_s + "");
+    params.append("stnb", aa.get_stnb + "");
+    params.append("rqp", aa.get_rqp + "");
+    params.append("ioe", aa.get_ioe + "");
+    params.append("thrp", aa.get_thrp + "");
+    params.append("corr", aa.get_corr + "");
+    params.append("ce", aa.get_ce + "");
+    params.append("ce_s", aa.get_ce_s + "");
+    params.append("op", aa.get_op + "");
+    params.append("isl", aa.get_isl + "");
+    params.append("cell0", aa.get_cell0 + "");
+    params.append("cell1", aa.get_cell1 + "");
+    params.append("cell2", aa.get_cell2 + "");
+    params.append("cell3", aa.get_cell3 + "");
+    params.append("cell4", aa.get_cell4 + "");
+    params.append("cell5", aa.get_cell5 + "");
+    params.append("cell6", aa.get_cell6 + "");
+    params.append("cell7", aa.get_cell7 + "");
+    params.append("cell8", aa.get_cell8 + "");
 
     proxy.$axios.post('/video/upload/',
         params,
@@ -159,7 +206,7 @@ const handleVideoUpload = async (options: UploadRequestOptions) => {
             ElMessage.error("上传失败！小型网站，请勿攻击！")
         }
     })
-}
+    // }
 }
 
 
