@@ -9,6 +9,8 @@ Vue3+Ts+Element-ui+Django+Mysql
 
 项目安装流程：
 
+首先将项目克隆到本地，例如E://saolei_website下
+
 后端：
 1. cd saolei_website\back_end\saolei
 1. pip install -r requirements.txt
@@ -19,7 +21,8 @@ Vue3+Ts+Element-ui+Django+Mysql
 1. python manage.py runserver
 
 前端：
-1. saolei_website\front_end
+1. 从[https://github.com/hgraceb/flop-player/releases](https://github.com/hgraceb/flop-player/releases)下载flop播放器，并解压到saolei_website\front_end\public\flop下，使得saolei_website\front_end\public\flop\index.html能够被找到
+1. cd saolei_website\front_end
 1. npm install
 1. npm run serve
 

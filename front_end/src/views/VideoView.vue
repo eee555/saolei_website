@@ -48,8 +48,7 @@
                 to_fixed_n(video[index_tags[index_tag_selected].key],
                     index_tags[index_tag_selected].to_fixed) }}</span>
             <span class="operation">
-                <el-button :size="'small'" plain icon="View" @click="">预览</el-button>
-                <el-button :size="'small'" plain icon="Download" @click="">下载</el-button>
+                <PreviewDownload :id="video.id"></PreviewDownload>
             </span>
         </div>
     </div>
@@ -66,6 +65,7 @@
 // 全网录像的检索器，根据三个维度排序
 import { onMounted, ref, Ref, defineEmits, reactive } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
+import PreviewDownload from '@/components/PreviewDownload.vue';
 const { proxy } = useCurrentInstance();
 
 const level_tag_selected = ref("EXPERT");
@@ -84,6 +84,7 @@ const state = reactive({
 // const test  = reactive({v: 5});
 const videoData = reactive<Video[]>([]);
 interface Video {
+    id: number;
     upload_time?: string;
     player?: number;
     bv?: number;
@@ -187,7 +188,7 @@ function to_fixed_n(input: string | number | undefined, to_fixed: number): strin
 
 const mod_style = () => {
     // 调整列宽样式
-    console.log(index_visible.value);
+    // console.log(index_visible.value);
 
     index_visible.value = !["upload_time", "bbbv", "bbbv_s", "rtime"].
         includes(index_tag_selected.value);
@@ -214,7 +215,7 @@ const get_video_rank = (page: number) => {
             videoData.splice(0, videoData.length);
             videoData.push(...data.videos);
             state.Total = data.total_page;
-            console.log(videoData);
+            // console.log(videoData);
             // console.log(315);
             
             // console.log(index_tag_selected);

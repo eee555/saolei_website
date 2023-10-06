@@ -64,39 +64,84 @@
                     <h4 style="margin-bottom: 0px;margin-top: 20px;">{{ table_title[idx] }}模式记录：</h4>
                     <el-table :data="d" style="width: 100%" :header-cell-style="{ 'text-align': 'center' }">
                         <el-table-column type="index" :index="indexMethod" width="100" align="center" />
+
                         <el-table-column label="time" align="center">
                             <template #default="scope">
-                                <el-link href="https://element-plus.org" target="_blank" v-if="scope.row.time">{{
-                                    scope.row.time.toFixed(3) }}</el-link>
-                                <span v-else> {{ "999.999" }} </span>
+                                <el-popover placement="bottom" :width="165" :disabled="!scope.row.time_id"
+                                    popper-style="background-color:rgba(250,250,250,0.38);" hide-after="0">
+                                    <div>
+                                        <PreviewDownload :id="scope.row.time_id"></PreviewDownload>
+                                    </div>
+                                    <template #reference>
+                                        <el-link href="" target="_blank" v-if="scope.row.time_id">{{
+                                            scope.row.time.toFixed(3) }}</el-link>
+                                        <span v-else> {{ "999.999" }} </span>
+                                    </template>
+                                </el-popover>
                             </template>
                         </el-table-column>
+
                         <el-table-column label="3BV/s" align="center">
                             <template #default="scope">
-                                <el-link href="https://element-plus.org" target="_blank" v-if="scope.row.bvs">{{
-                                    scope.row.bvs.toFixed(3) }}</el-link>
-                                <span v-else> {{ "0.000" }} </span>
+                                <el-popover placement="bottom" :width="165" :disabled="!scope.row.bvs_id"
+                                    popper-style="background-color:rgba(250,250,250,0.38);" hide-after="0">
+                                    <div>
+                                        <PreviewDownload :id="scope.row.bvs_id"></PreviewDownload>
+                                    </div>
+                                    <template #reference>
+                                        <el-link href="" target="_blank" v-if="scope.row.bvs_id">{{
+                                            scope.row.bvs.toFixed(3) }}</el-link>
+                                        <span v-else> {{ "0.000" }} </span>
+                                    </template>
+                                </el-popover>
                             </template>
                         </el-table-column>
+
                         <el-table-column label="STNB" align="center">
                             <template #default="scope">
-                                <el-link href="https://element-plus.org" target="_blank" v-if="scope.row.stnb">{{
-                                    scope.row.stnb.toFixed(3) }}</el-link>
-                                <span v-else> {{ "0.000" }} </span>
+                                <el-popover placement="bottom" :width="165" :disabled="!scope.row.stnb_id"
+                                    popper-style="background-color:rgba(250,250,250,0.38);" hide-after="0">
+                                    <div>
+                                        <PreviewDownload :id="scope.row.stnb_id"></PreviewDownload>
+                                    </div>
+                                    <template #reference>
+                                        <el-link href="" target="_blank" v-if="scope.row.stnb_id">{{
+                                            scope.row.stnb.toFixed(3) }}</el-link>
+                                        <span v-else> {{ "0.000" }} </span>
+                                    </template>
+                                </el-popover>
                             </template>
                         </el-table-column>
+
                         <el-table-column label="IOE" align="center">
                             <template #default="scope">
-                                <el-link href="https://element-plus.org" target="_blank" v-if="scope.row.ioe">{{
-                                    scope.row.ioe.toFixed(3) }}</el-link>
-                                <span v-else> {{ "0.000" }} </span>
+                                <el-popover placement="bottom" :width="165" :disabled="!scope.row.ioe_id"
+                                    popper-style="background-color:rgba(250,250,250,0.38);" hide-after="0">
+                                    <div>
+                                        <PreviewDownload :id="scope.row.ioe_id"></PreviewDownload>
+                                    </div>
+                                    <template #reference>
+                                        <el-link href="" target="_blank" v-if="scope.row.ioe_id">{{
+                                            scope.row.ioe.toFixed(3) }}</el-link>
+                                        <span v-else> {{ "0.000" }} </span>
+                                    </template>
+                                </el-popover>
                             </template>
                         </el-table-column>
+
                         <el-table-column label="path" align="center">
                             <template #default="scope">
-                                <el-link href="https://element-plus.org" target="_blank" v-if="scope.row.path">{{
-                                    scope.row.path.toFixed(3) }}</el-link>
-                                <span v-else> {{ "99999.9" }} </span>
+                                <el-popover placement="bottom" :width="165" :disabled="!scope.row.path_id"
+                                    popper-style="background-color:rgba(250,250,250,0.38);" hide-after="0">
+                                    <div>
+                                        <PreviewDownload :id="scope.row.path_id"></PreviewDownload>
+                                    </div>
+                                    <template #reference>
+                                        <el-link href="" target="_blank" v-if="scope.row.path_id">{{
+                                            scope.row.path.toFixed(3) }}</el-link>
+                                        <span v-else> {{ "0.000" }} </span>
+                                    </template>
+                                </el-popover>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -110,6 +155,7 @@
 // 注册、登录的弹框及右上方按钮
 import { onMounted, ref, Ref, defineEmits } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
+import PreviewDownload from '@/components/PreviewDownload.vue';
 const { proxy } = useCurrentInstance();
 import { genFileId, ElMessage } from 'element-plus'
 import type { UploadInstance, UploadProps, UploadRawFile, UploadFile, UploadFiles, UploadRequestOptions } from 'element-plus'
@@ -273,9 +319,6 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
     }
     return true
 }
-
-
-
 
 
 

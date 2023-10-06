@@ -2,13 +2,14 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .forms import UploadVideoForm
 from .models import VideoModel, ExpandVideoModel
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, FileResponse
 # from asgiref.sync import sync_to_async
 import json
 from utils import ComplexEncoder
 from django.core.paginator import Paginator
 from msuser.models import UserMS
 from django.db.models import Q
+import os
 
 # Create your views here.
 
@@ -59,12 +60,52 @@ def video_upload(request):
     else:
         return HttpResponse("别瞎玩")
 
+# 根据id向后台请求软件类型（适配flop播放器用）
+def get_software(request):
+    if request.method != 'GET':
+        return HttpResponse("别瞎玩")
+    try:
+        video = VideoModel.objects.get(id=request.GET["id"])
+        # print({"status": 100, "msg": video.software})
+        return JsonResponse({"status": 100, "msg": video.software})
+    except Exception:
+        return JsonResponse({"status": 104, "msg": "file not exist!"})
+
+# 给预览用的接口，区别是结尾是文件后缀
+# 坑：如果做成必须登录才能下载，由于Django的某种特性，会重定向资源，
+# 然而flop播放器不能处理此状态码，因此会请求到空文件，导致解码失败
+def video_preview(request):
+    if request.method != 'GET':
+        return HttpResponse("别瞎玩")
+    try:
+        video = VideoModel.objects.get(id=int(request.GET["id"][:-4]))
+        response =FileResponse(open(video.file.path, 'rb'))
+        response['Content-Type']='application/octet-stream'
+        response['Content-Disposition']=f'attachment;filename="{video.file.name.split("/")[2]}"'
+        return response
+    except Exception:
+        return JsonResponse({"status": 104, "msg": "file not exist!"})
+
+# 给下载用的接口，区别是结尾没有文件后缀
+# @login_required(login_url='/')
+def video_download(request):
+    if request.method != 'GET':
+        return HttpResponse("别瞎玩")
+    try:
+        video = VideoModel.objects.get(id=request.GET["id"])
+        response =FileResponse(open(video.file.path, 'rb'))
+        response['Content-Type']='application/octet-stream'
+        response['Content-Disposition']=f'attachment;filename="{video.file.name.split("/")[2]}"'
+        return response
+    except Exception:
+        return JsonResponse({"status": 104, "msg": "file not exist!"})
+        
+
 
 # 录像查询（无需登录）
 def video_query(request):
     if request.method == 'GET':
         data = request.GET
-        # print(data)
         index = data["index"]
         if index[0] == '-':
             order_index = "-video__" + index[1:]
@@ -73,32 +114,32 @@ def video_query(request):
             order_index = values_index = "video__" + index
 
         if data["mode"] != "00":
-            if index in {"upload_time", "bv", "bvs", "-upload_time", "-bv", "-bvs"}:
+            if index in {"id", "upload_time", "bv", "bvs", "-upload_time", "-bv", "-bvs"}:
                 videos = VideoModel.objects.filter(level=data["level"], mode=data["mode"])\
                     .order_by(index, "rtime").\
-                    values("upload_time", "player", "bv", "bvs", "rtime")
+                    values("id", "upload_time", "player", "bv", "bvs", "rtime")
             elif index == "rtime" or index == "-rtime":
                 videos = VideoModel.objects.filter(level=data["level"], mode=data["mode"])\
                     .order_by(index).\
-                    values("upload_time", "player", "bv", "bvs", "rtime")
+                    values("id", "upload_time", "player", "bv", "bvs", "rtime")
             else:
                 videos = VideoModel.objects.filter(level=data["level"], mode=data["mode"])\
                     .order_by(order_index, "rtime").\
-                    values("upload_time", "player", "bv",
+                    values("id", "upload_time", "player", "bv",
                         "bvs", "rtime", values_index)
         else:
-            if index in {"upload_time", "bv", "bvs", "-upload_time", "-bv", "-bvs"}:
+            if index in {"id", "upload_time", "bv", "bvs", "-upload_time", "-bv", "-bvs"}:
                 videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(level=data["level"])\
                     .order_by(index, "rtime").\
-                    values("upload_time", "player", "bv", "bvs", "rtime")
+                    values("id", "upload_time", "player", "bv", "bvs", "rtime")
             elif index == "rtime" or index == "-rtime":
                 videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(level=data["level"])\
                     .order_by(index).\
-                    values("upload_time", "player", "bv", "bvs", "rtime")
+                    values("id", "upload_time", "player", "bv", "bvs", "rtime")
             else:
                 videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(level=data["level"])\
                     .order_by(order_index, "rtime").\
-                    values("upload_time", "player", "bv",
+                    values("id", "upload_time", "player", "bv",
                         "bvs", "rtime", values_index)
 
 

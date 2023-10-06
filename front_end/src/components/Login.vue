@@ -276,6 +276,10 @@ input:invalid {
     outline: 2px solid rgb(167, 11, 11);
     border-radius: 3px;
 }
+.el-dialog .el-dialog__body {
+	flex: 1;
+	overflow: auto;
+}
 </style>
 
 
