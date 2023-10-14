@@ -32,7 +32,7 @@ if __name__ == "__main__":
 # python manage.py makemigrations polls
 
 # python manage.py createsuperuser
-# 18201，2234208506@qq.com，6s51!f%^ds#65=f6
+# 1，wangjianing@88.com，123456
 # pip install  django-simple-captcha
 
 

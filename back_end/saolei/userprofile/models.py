@@ -10,7 +10,7 @@ from .fields import RestrictedImageField
 
 class UserProfile(AbstractUser):
     userms = models.OneToOneField(
-        UserMS, on_delete=models.CASCADE, related_name='+')
+        UserMS, on_delete=models.CASCADE, related_name='+', null=True)
     realname = models.CharField(
         max_length=10, unique=False, blank=True, default='无名氏', null=False)
     # 头像

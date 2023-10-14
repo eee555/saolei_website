@@ -13,4 +13,6 @@ urlpatterns = [
     
     # path('captcha/captcha', views.captcha, name='captcha'),
     # path('edit/<int:id>/', views.profile_edit, name='edit'),
+
+    path('set_staff/',views.set_staff),
 ]

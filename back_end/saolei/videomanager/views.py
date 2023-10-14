@@ -10,6 +10,9 @@ from django.core.paginator import Paginator
 from msuser.models import UserMS
 from django.db.models import Q
 import os
+# from django.core.cache import cache
+from django_redis import get_redis_connection
+cache = get_redis_connection("saolei_website")
 
 # Create your views here.
 
@@ -164,7 +167,7 @@ def video_query(request):
 def update_personal_record(request, data, video):
     user_id = request.user.id
     # user = UserProfile.objects.get(id=user_id)
-    ms_user = UserMS.objects.get(id=user_id)
+    ms_user = UserMS.objects.get(id=request.user.userms_id)
     # print(data["flag"])
     # print(type(data["rtime"]))
     if data["mode"] == "00":

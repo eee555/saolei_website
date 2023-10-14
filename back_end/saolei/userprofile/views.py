@@ -9,7 +9,7 @@ from django.views.generic import View
 # 引入验证登录的装饰器
 from django.contrib.auth.decorators import login_required
 from django.views.generic.edit import CreateView
-from .models import EmailVerifyRecord
+from .models import EmailVerifyRecord,UserProfile
 from django.core.mail import send_mail
 from utils import send_register_email
 # from django.utils.decorators import method_decorator
@@ -107,6 +107,7 @@ def user_register(request):
                 new_user.is_active = True # 自动激活
                 user_ms = UserMS.objects.create()
                 new_user.userms = user_ms
+                user_ms.save()
                 new_user.save()
                 # 保存好数据后立即登录
                 login(request, new_user)
@@ -133,53 +134,23 @@ def user_register(request):
     else:
         return HttpResponse("别瞎玩")
 
-# @login_required(login_url='/userprofile/login/')
-# def user_delete(request, id):
-#     user = User.objects.get(id=id)
-#     # 验证登录用户、待删除用户是否相同
-#     if request.user == user:
-#         # 退出登录，删除数据并返回博客列表
-#         logout(request)
-#         user.delete()
-#         return redirect("article:article_list")
-#     else:
-#         return HttpResponse("你没有删除操作的权限。")
+# 站长任命解除管理员
+# http://127.0.0.1:8000/userprofile/set_staff/?id=1&is_staff=True
+def set_staff(request):
+    if request.user.is_superuser and request.method == 'GET':
+        user = UserProfile.objects.get(id=request.GET["id"])
+        user.is_staff = request.GET["is_staff"]
+        if request.GET["is_staff"] == "True":
+            user.save()
+            return HttpResponse(f"设置\"{user.realname}\"为管理员成功！")
+        elif request.GET["is_staff"] == "False":
+            user.save()
+            return HttpResponse(f"解除\"{user.realname}\"的管理员权限！")
+        else:
+            return HttpResponse("失败！is_staff为\"True或\"False")
+    else:
+        return HttpResponse("别瞎玩")
 
-
-# def refresh_captcha(request):
-#     to_json_response = dict()
-#     to_json_response['status'] = 1  # ajax的状态
-#     to_json_response['new_cptch_key'] = CaptchaStore.generate_key()
-#     to_json_response['new_cptch_image'] = captcha_image_url(
-#         to_json_response['new_cptch_key'])
-#     return HttpResponse(json.dumps(to_json_response), content_type='application/json')
-
-
-# class AjaxCaptchaForm(CreateView):
-#     template_name = ''
-#     form_class = UserRegisterCaptchaForm
-
-#     def form_invalid(self, form):
-#         if self.request.is_ajax():
-#             to_json_response = dict()
-#             to_json_response['status'] = 0
-#             to_json_response['form_errors'] = form.errors
-
-#             to_json_response['new_cptch_key'] = CaptchaStore.generate_key()
-#             to_json_response['new_cptch_image'] = captcha_image_url(to_json_response['new_cptch_key'])
-
-#             return HttpResponse(json.dumps(to_json_response), content_type='application/json')
-
-#     def form_valid(self, form):
-#         form.save()
-#         if self.request.is_ajax():
-#             to_json_response = dict()
-#             to_json_response['status'] = 1
-
-#             to_json_response['new_cptch_key'] = CaptchaStore.generate_key()
-#             to_json_response['new_cptch_image'] = captcha_image_url(to_json_response['new_cptch_key'])
-
-#             return HttpResponse(json.dumps(to_json_response), content_type='application/json')
 
 
 # 创建验证码
@@ -193,14 +164,10 @@ def captcha(request):
     return captcha
 
 # 刷新验证码
-
-
 def refresh_captcha(request):
     return HttpResponse(json.dumps(captcha(request)), content_type='application/json')
 
 # 验证验证码，若通过，发送email
-
-
 def get_email_captcha(request):
     if request.method == 'POST':
         # print(666)

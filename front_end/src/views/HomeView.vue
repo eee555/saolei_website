@@ -2,11 +2,15 @@
   <div>
     <el-container>
       <el-main style="background-color: white;padding: 1%;">
-        <el-tabs type="border-card">
+        <el-tabs type="border-card" style=" min-height: 300px;">
           <el-tab-pane label="雷界快讯">
+2023年2月26日 11:45 周炎亮 将高级标准模式时间记录刷新为 91.52 ↑3.60</el-tab-pane>
+        </el-tabs>
+        <el-tabs type="border-card" style="margin-top: 2%; min-height: 300px;">
+          <el-tab-pane label="最新录像">
 2023年2月26日 11:45	【业余】 周炎亮 将高级时间记录刷新为 91.52 ↑3.60</el-tab-pane>
-          <el-tab-pane label="业余">业余</el-tab-pane>
-          <el-tab-pane label="职业">职业</el-tab-pane>
+          <el-tab-pane label="审核队列">
+2023年2月26日 11:45	【业余】 周炎亮 将高级时间记录刷新为 91.52 ↑3.60</el-tab-pane>
         </el-tabs>
       </el-main>
       <el-aside width="30%" style="background-color: white;padding: 1%;">
