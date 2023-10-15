@@ -152,7 +152,7 @@ const handleVideoUpload = async (options: UploadRequestOptions) => {
     const decoder = new TextDecoder();
     // for (let i = 0;i<1;i++){
 
-    console.log(aa.get_level);
+    // console.log(aa.get_level);
 
     let params = new FormData();
     params.append('file', options.file);

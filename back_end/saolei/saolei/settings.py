@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Django settings for saolei project.
 
@@ -199,6 +200,16 @@ AUTH_USER_MODEL='userprofile.UserProfile'
 
 CACHES = {
     "saolei_website": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "SOCKET_CONNECT_TIMEOUT": 5,  # 连接redis超时时间，单位为秒
+            "SOCKET_TIMEOUT": 5,  # redis读写操作超时时间，单位为秒
+            # "CONNECTION_POOL_KWARGS": {"decode_responses": True,"encoding": "utf-8"},
+        }
+    },
+    "default": {
         "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": "redis://127.0.0.1:6379/1",
         "OPTIONS": {

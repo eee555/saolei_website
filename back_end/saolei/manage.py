@@ -1,3 +1,4 @@
+# coding=utf-8
 #!/usr/bin/env python
 """Django's command-line utility for administrative tasks."""
 import os
@@ -34,6 +35,8 @@ if __name__ == "__main__":
 # python manage.py createsuperuser
 # 1，wangjianing@88.com，123456
 # pip install  django-simple-captcha
+
+
 
 
 

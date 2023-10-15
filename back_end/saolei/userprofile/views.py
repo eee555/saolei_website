@@ -34,10 +34,9 @@ def user_login(request):
         # print(request.user)
 
         response = {'status': 100, 'msg': None}
-
         if request.user.is_authenticated:
             # login(request, request.user)
-            response['msg'] = response['msg'] = {"id": request.user.id, "name": request.user.username}
+            response['msg'] = response['msg'] = {"id": request.user.id, "name": request.user.username, "is_banned": request.user.is_banned}
             return JsonResponse(response)
         # if user_id:=request.session.get("_auth_user_id"):
         #     if user:=User.objects.get(id=user_id):
@@ -48,7 +47,6 @@ def user_login(request):
 
         user_login_form = UserLoginForm(data=request.POST)
         if user_login_form.is_valid():
-            # print(666)
             # .cleaned_data 清洗出合法数据
             data = user_login_form.cleaned_data
             # 检验账号、密码是否正确匹配数据库中的某个用户
@@ -62,7 +60,7 @@ def user_login(request):
                 login(request, user)
                 # response = http.JsonResponse({"code":0,"errmsg":"注册成功"})
                 # response.set_cookie("username",user.username,max_age=3600*24*14)
-                response['msg'] = {"id": user.id, "name": user.username}
+                response['msg'] = {"id": user.id, "name": user.username, "is_banned": user.is_banned}
                 return JsonResponse(response)
             else:
                 response['status'] = 105
@@ -141,17 +139,38 @@ def set_staff(request):
         user = UserProfile.objects.get(id=request.GET["id"])
         user.is_staff = request.GET["is_staff"]
         if request.GET["is_staff"] == "True":
+            user.is_staff = True
             user.save()
             return HttpResponse(f"设置\"{user.realname}\"为管理员成功！")
         elif request.GET["is_staff"] == "False":
+            user.is_staff = False
             user.save()
             return HttpResponse(f"解除\"{user.realname}\"的管理员权限！")
         else:
-            return HttpResponse("失败！is_staff为\"True或\"False")
+            return HttpResponse("失败！is_staff需要为\"True或\"False")
     else:
         return HttpResponse("别瞎玩")
 
-
+# 管理员封禁用户
+# http://127.0.0.1:8000/userprofile/set_banned/?id=1&is_banned=True
+def set_banned(request):
+    if request.user.is_staff and request.method == 'GET':
+        user = UserProfile.objects.get(id=request.GET["id"])
+        user.is_banned = request.GET["is_banned"]
+        if user.is_staff:
+            return HttpResponse("没有封禁管理员的权限！")
+        if request.GET["is_banned"] == "True":
+            user.is_banned = True
+            user.save()
+            return HttpResponse(f"封禁用户\"{user.realname}\"成功！")
+        elif request.GET["is_banned"] == "False":
+            user.is_banned = False
+            user.save()
+            return HttpResponse(f"解封用户\"{user.realname}\"成功！")
+        else:
+            return HttpResponse("失败！is_banned需要为\"True或\"False")
+    else:
+        return HttpResponse("别瞎玩")
 
 # 创建验证码
 def captcha(request):

@@ -19,7 +19,7 @@ class UserProfile(AbstractUser):
     # 签名
     signature = models.TextField(max_length=188, blank=True, null=True)  # 签名
     country = models.CharField(max_length=3, blank=True, null=True)
-
+    is_banned = models.BooleanField(default=False, blank=False)
     # 邮箱验证
 
 

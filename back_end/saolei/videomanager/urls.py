@@ -8,6 +8,8 @@ urlpatterns = [
     path('preview/', views.video_preview, name='preview'),
     path('get_software/', views.get_software, name='get_software'),
     path('query/', views.video_query, name='query'),
+    path('review_queue/', views.review_queue, name='review_queue'),
+    path('approve/', views.approve, name='approve'),
     # path('download/', views.video_download, name='download'),
     
 ]

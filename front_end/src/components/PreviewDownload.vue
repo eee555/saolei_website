@@ -9,7 +9,7 @@
 	<el-button :size="'small'" plain icon="Download" @click="download(id)">下载</el-button>
 </template>
 
-<script setup lang="ts" name="ValidCode">
+<script setup lang="ts" name="PreviewDownload">
 // 两个按钮，预览或下载
 import { defineProps } from 'vue';
 import { onMounted, watch, ref, toRefs } from "vue";

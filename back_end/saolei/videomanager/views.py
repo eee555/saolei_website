@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .forms import UploadVideoForm
@@ -20,6 +21,8 @@ cache = get_redis_connection("saolei_website")
 @login_required(login_url='/')
 def video_upload(request):
     if request.method == 'POST':
+        if request.user.is_banned:
+            return JsonResponse({"status": 101, "msg": "forbidden!"})
         # print(request.user)
         # print(request.FILES)
         # print(request.POST)
@@ -48,11 +51,26 @@ def video_upload(request):
                                                       cell6=data["cell6"], cell7=data["cell7"],
                                                       cell8=data["cell8"])
             # 会检查是否为盲扫，自动修改模式
-            VideoModel.objects.create(player=request.user, file=data["file"], video=e_video,
+            video = VideoModel.objects.create(player=request.user, file=data["file"], video=e_video,
                                       software=data["software"], level=data["level"],
                                       mode=data["mode"] if data["mode"]!="00" else ("12" if data["flag"]==0 else "00"), 
                                       rtime=data["rtime"],
                                       bv=data["bv"], bvs=data["bvs"])
+            
+            # cache.hget("review_queue", "filed")
+
+            # 往审查队列里添加录像
+            cache.hset("review_queue", video.id, json.dumps({"time": video.upload_time,
+                                                             "player": video.player.realname,
+                                                             "level": video.level,
+                                                             "mode": video.mode,
+                                                             "rtime": video.rtime,
+                                                             "bv": video.bv,
+                                                             "bvs": video.bvs}, cls=ComplexEncoder))
+            
+            # review_video_ids = cache.hgetall("review_queue")
+            # print(review_video_ids)
+
             update_personal_record(request, data, e_video)
             return JsonResponse({"status": 100, "msg": None})
         else:
@@ -165,7 +183,7 @@ def video_query(request):
 
 
 def update_personal_record(request, data, video):
-    user_id = request.user.id
+    # user_id = request.user.id
     # user = UserProfile.objects.get(id=user_id)
     ms_user = UserMS.objects.get(id=request.user.userms_id)
     # print(data["flag"])
@@ -376,6 +394,67 @@ def update_personal_record(request, data, video):
     # 改完记录，存回数据库
     ms_user.save()
 
+# 获取审查队列里的录像
+# http://127.0.0.1:8000/video/review_queue
+def review_queue(request):
+    if request.method == 'GET':
+        review_video_ids = cache.hgetall("review_queue")
+        for key in list(review_video_ids.keys()):
+            review_video_ids.update({str(key, encoding="utf-8"): review_video_ids.pop(key)})
+        return JsonResponse(review_video_ids, encoder=ComplexEncoder)
+    else:
+        return HttpResponse("别瞎玩")
 
+# 管理员审核通过队列里的录像，未审核或冻结状态的录像可以审核通过
+# 返回"True","False"（已经是通过的状态）,"Null"（不存在该录像）
+# http://127.0.0.1:8000/video/approve?ids=[18,19,999]
+def approve(request):
+    if request.user.is_staff and request.method == 'GET':
+        ids = json.loads(request.GET["ids"])
+        res = []
+        for i in range(len(ids)):
+            if not isinstance(ids[i], int):
+                return HttpResponse("审核录像的id应为正整数。")
+            video_i = VideoModel.objects.filter(id=ids[i])
+            if not video_i:
+                res.append("Null")
+            else:
+                if video_i[0].state == "c":
+                    res.append("False")
+                else:
+                    video_i[0].state = "c"
+                    res.append("True")
+                    video_i[0].save()
+                    cache.hset("newest_queue", ids[i], cache.hget("review_queue", ids[i]))
+                cache.hdel("review_queue", ids[i])
+        return JsonResponse(json.dumps(res), safe=False)
+    else:
+        return HttpResponse("别瞎玩")
+
+# 管理员冻结队列里的录像，未审核或审核通过的录像可以冻结
+# 冻结的录像七到14天后删除，用一个定时任务
+# http://127.0.0.1:8000/video/freeze?ids=[18,19]
+def freeze(request):
+    if request.user.is_staff and request.method == 'GET':
+        ids = json.loads(request.GET["ids"])
+        res = []
+        for i in range(len(ids)):
+            if not isinstance(ids[i], int):
+                return HttpResponse("冻结录像的id应为正整数。")
+            video_i = VideoModel.objects.filter(id=ids[i])
+            if not video_i:
+                res.append("Null")
+            else:
+                if video_i[0].state == "b":
+                    res.append("False")
+                else:
+                    video_i[0].state = "b"
+                    res.append("True")
+                    video_i[0].save()
+                cache.hdel("review_queue", ids[i])
+                cache.hdel("newest_queue", ids[i])
+        return JsonResponse(json.dumps(res), safe=False)
+    else:
+        return HttpResponse("别瞎玩")
 
 

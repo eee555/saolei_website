@@ -159,6 +159,9 @@ const login = () => {
             // console.log(response.data.msg.name);
             
             user_name_show.value = response.data.msg.name;
+            if(response.data.msg.is_banned){
+                user_name_show.value += "（您已被封禁，详情请询问管理员！）"
+            }
             login_status.value = LoginStatus.IsLogin;
             emit('login'); // 向父组件发送消息
             register_visibile.value = false;
