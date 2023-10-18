@@ -8,12 +8,9 @@
         </el-tabs>
         <el-tabs type="border-card" style="margin-top: 2%; min-height: 300px;">
           <el-tab-pane label="最新录像">
-            2023年2月26日 11:45 【业余】 周炎亮 将高级时间记录刷新为 91.52 ↑3.60</el-tab-pane>
+            <VideoList :videos="newest_queue" :reverse="true"></VideoList>
+          </el-tab-pane>
           <el-tab-pane label="审核队列">
-            <!-- <div v-for="(video, key) in review_queue" style="margin-top: 10px;">
-              <span>{{ (video as any).time }}</span>
-              <span>{{ (video as any).player }}</span>
-            </div> -->
             <VideoList :videos="review_queue"></VideoList>
           </el-tab-pane>
         </el-tabs>
@@ -37,6 +34,7 @@ import VideoList from '@/components/VideoList.vue';
 const { proxy } = useCurrentInstance();
 
 const review_queue = ref<any[]>([]);
+const newest_queue = ref<any[]>([]);
 
 onMounted(() => {
   proxy.$axios.get('/video/review_queue/',
@@ -50,9 +48,20 @@ onMounted(() => {
       response.data[key]["key"] = Number.parseInt(key);
       review_queue.value.push(response.data[key]);
     }
-    // console.log(review_queue_array);
+  })
+  proxy.$axios.get('/video/newest_queue/',
+    {
+      params: {}
+    }
+  ).then(function (response) {
+    // let review_queue_array = [];
+    // console.log(response.data);
     
-    // review_queue.value = review_queue_array;
+    for (let key in response.data) {
+      response.data[key] = JSON.parse(response.data[key] as string);
+      response.data[key]["key"] = Number.parseInt(key);
+      newest_queue.value.push(response.data[key]);
+    }
   })
 })
 </script>

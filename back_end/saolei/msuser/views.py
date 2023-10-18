@@ -1,5 +1,4 @@
-from django.shortcuts import render
-from django.shortcuts import render
+# from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .forms import UserUpdateForm
 # from .models import VideoModel, ExpandVideoModel
@@ -7,12 +6,14 @@ from django.http import HttpResponse, JsonResponse
 # from asgiref.sync import sync_to_async
 import json
 from utils import ComplexEncoder
-from django.core.paginator import Paginator
+# from django.core.paginator import Paginator
 from msuser.models import UserMS
 from userprofile.models import UserProfile
 import base64
 import decimal
 import urllib.parse
+from django_redis import get_redis_connection
+cache = get_redis_connection("saolei_website")
 
 # 根据id获取用户的基本资料、扫雷记录
 # 无需登录就可获取
@@ -26,14 +27,12 @@ class DecimalEncoder(json.JSONEncoder):
 
 
 # 获取我的地盘里的头像、姓名、个性签名、记录
-
-
 def get_info(request):
     if request.method == 'GET':
         # print(request.GET)
         user_id = request.user.id
         user = UserProfile.objects.get(id=user_id)
-        ms_user = UserMS.objects.get(id=user_id)
+        ms_user = UserMS.objects.get(id=request.user.userms_id)
         # print(user_id)
         # print(urllib.parse.unquote(user.avatar.url))
 
@@ -96,8 +95,6 @@ def get_info(request):
         return HttpResponse("别瞎玩")
 
 # 上传我的地盘里的头像、姓名、个性签名
-
-
 @login_required(login_url='/')
 def update(request):
     if request.method == 'POST':
@@ -121,3 +118,29 @@ def update(request):
             return JsonResponse({"status": 101, "msg": ErrorDict})
     else:
         return HttpResponse("别瞎玩")
+
+def player_rank(request):
+    if request.method == 'GET':
+        # print(request.GET)
+        data=request.GET
+        num_player = cache.llen(data["ids"])
+        start_idx = 20 * int(data["page"])
+        if start_idx >= num_player:
+            start_idx = num_player // 20 * 20
+        if num_player % 20 == 0 and num_player > 0:
+            start_idx -= 20
+        desc_flag = True if data["reverse"] == "true" else False
+        res = cache.sort(data["ids"], by=data["sort_by"], get=json.loads(data["indexes"]), desc=desc_flag, start=start_idx, num=20)
+        # print(res)
+        # print(cache.get("player_time_std_ids"))
+        # print(cache.hget("player_time_std_3", "b"))
+        response = {
+            "total_page": num_player // 20 + 1,
+            "players": res
+            }
+        return JsonResponse(response, safe=False, encoder=ComplexEncoder)
+    else:
+        return HttpResponse("别瞎玩")
+
+
+

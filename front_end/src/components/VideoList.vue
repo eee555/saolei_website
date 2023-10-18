@@ -27,6 +27,10 @@ const data = defineProps({
     videos: {
         type: Array,
         default: []
+    },
+    reverse: {
+        type: Boolean,
+        default: false
     }
 })
 
@@ -61,9 +65,12 @@ const videos_trans = computed(() => {
         } else if (v.mode == "11") {
             v.mode = "递归";
         } else if (v.mode == "12") {
-            v.mode = "标准盲扫";
+            v.mode = "标准NF";
         }
     })
+    if(data.reverse){
+        data.videos.reverse();
+    }
     return data.videos;
 })
 

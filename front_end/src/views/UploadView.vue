@@ -203,7 +203,8 @@ const handleVideoUpload = async (options: UploadRequestOptions) => {
             hint_text.value = "*仅限一个文件，且文件大小不能超过5M"
         } else if (response.data.status >= 101) {
             // 正常使用不会到这里
-            ElMessage.error("上传失败！小型网站，请勿攻击！")
+            ElMessage.error("上传失败！小型网站，请勿攻击！");
+            upload.value!.clearFiles();
         }
     })
     // }
