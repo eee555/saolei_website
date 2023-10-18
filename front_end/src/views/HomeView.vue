@@ -3,11 +3,11 @@
     <el-container>
       <el-main style="background-color: white;padding: 1%;">
         <el-tabs type="border-card" style=" min-height: 300px;">
-          <el-tab-pane label="雷界快讯">
+          <el-tab-pane label="雷界快讯" style="max-height: 300px; overflow: auto;">
             2023年2月26日 11:45 周炎亮 将高级标准模式时间记录刷新为 91.52 ↑3.60</el-tab-pane>
         </el-tabs>
         <el-tabs type="border-card" style="margin-top: 2%; min-height: 300px;">
-          <el-tab-pane label="最新录像">
+          <el-tab-pane label="最新录像" style="max-height: 800px; overflow: auto;">
             <VideoList :videos="newest_queue" :reverse="true"></VideoList>
           </el-tab-pane>
           <el-tab-pane label="审核队列">

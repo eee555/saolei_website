@@ -140,29 +140,29 @@ def video_query(request):
             if index in {"id", "upload_time", "bv", "bvs", "-upload_time", "-bv", "-bvs"}:
                 videos = VideoModel.objects.filter(level=data["level"], mode=data["mode"])\
                     .order_by(index, "rtime").\
-                    values("id", "upload_time", "player", "bv", "bvs", "rtime")
+                    values("id", "upload_time", "player__realname", "bv", "bvs", "rtime")
             elif index == "rtime" or index == "-rtime":
                 videos = VideoModel.objects.filter(level=data["level"], mode=data["mode"])\
                     .order_by(index).\
-                    values("id", "upload_time", "player", "bv", "bvs", "rtime")
+                    values("id", "upload_time", "player__realname", "bv", "bvs", "rtime")
             else:
                 videos = VideoModel.objects.filter(level=data["level"], mode=data["mode"])\
                     .order_by(order_index, "rtime").\
-                    values("id", "upload_time", "player", "bv",
+                    values("id", "upload_time", "player__realname", "bv",
                         "bvs", "rtime", values_index)
         else:
             if index in {"id", "upload_time", "bv", "bvs", "-upload_time", "-bv", "-bvs"}:
                 videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(level=data["level"])\
                     .order_by(index, "rtime").\
-                    values("id", "upload_time", "player", "bv", "bvs", "rtime")
+                    values("id", "upload_time", "player__realname", "bv", "bvs", "rtime")
             elif index == "rtime" or index == "-rtime":
                 videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(level=data["level"])\
                     .order_by(index).\
-                    values("id", "upload_time", "player", "bv", "bvs", "rtime")
+                    values("id", "upload_time", "player__realname", "bv", "bvs", "rtime")
             else:
                 videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(level=data["level"])\
                     .order_by(order_index, "rtime").\
-                    values("id", "upload_time", "player", "bv",
+                    values("id", "upload_time", "player__realname", "bv",
                         "bvs", "rtime", values_index)
 
 
@@ -191,6 +191,8 @@ def update_personal_record(video_i, e_video):
     # print(e_video.flag)
     # print(type(video_i.rtime))
 
+    if video_i.mode == "12":
+        video_i.mode = "00"
     if video_i.mode == "00":
         if video_i.level == "b":
             if video_i.rtime < ms_user.b_time_std:
@@ -1134,7 +1136,7 @@ def review_queue(request):
 def newest_queue(request):
     if request.method == 'GET':
         newest_queue_ids = cache.hgetall("newest_queue")
-        print(newest_queue_ids)
+        # print(newest_queue_ids)
         for key in list(newest_queue_ids.keys()):
             newest_queue_ids.update({str(key, encoding="utf-8"): newest_queue_ids.pop(key)})
         return JsonResponse(newest_queue_ids, encoder=ComplexEncoder)

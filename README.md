@@ -1,8 +1,8 @@
 # saolei_website
+# 新扫雷网
 
-新扫雷网，雏形
-前端：Vue3 + Ts + Element-ui + wasm-bindgen
-后端：Django + Mysql + redis
+前端：Vue3 + Ts + Element-ui + wasm-bindgen  
+后端：Django + Mysql + redis  
 
 已完成：注册登录、上传录像、录像查询（排序、分页）、修改头像姓名个性签名、查询排行榜、权限系统、审核队列、最新录像。
 

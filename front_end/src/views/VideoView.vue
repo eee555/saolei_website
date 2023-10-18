@@ -32,8 +32,8 @@
             <span v-if="'upload_time' in video" class="utime">{{ video.upload_time }}</span>
             <span v-else class="utime">{{ video.video__upload_time }}</span>
 
-            <span v-if="'player' in video" class="name">{{ video.player }}</span>
-            <span v-else class="name">{{ video.video__player }}</span>
+            <span v-if="'player__realname' in video" class="name">{{ video.player__realname }}</span>
+            <span v-else class="name">{{ video.video__player__realname }}</span>
 
             <span v-if="'bv' in video" class="bbbv">{{ video.bv }}</span>
             <span v-else class="bbbv">{{ video.video__bv }}</span>
@@ -86,12 +86,12 @@ const videoData = reactive<Video[]>([]);
 interface Video {
     id: number;
     upload_time?: string;
-    player?: number;
+    player__realname?: string;
     bv?: number;
     bvs?: number;
     rtime?: number;
     video__upload_time?: string;
-    video__player?: number;
+    video__player__realname?: string;
     video__bv?: number;
     video__bvs?: number;
     video__rtime?: number;

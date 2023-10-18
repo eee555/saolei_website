@@ -1,7 +1,7 @@
 <template>
     <div class="common-layout">
         <el-container>
-            <el-aside width="30%">
+            <el-aside v-show="!loading_aside" width="30%">
                 <div v-if="is_editing">
                     <el-upload ref="upload" class="avatar-uploader" action="#" :limit="1" :show-file-list="false"
                         :auto-upload="false" :on-exceed="handleExceed" :on-change="handleChange"
@@ -59,7 +59,9 @@
                         style="font-size: 18px;margin-top: 18px;width: 160px;">修改个人资料</el-button>
                 </div>
             </el-aside>
+
             <el-main>
+                <el-skeleton v-show="loading" :rows="8" />
                 <div v-for="(d, idx) in records">
                     <h4 style="margin-bottom: 0px;margin-top: 20px;">{{ table_title[idx] }}模式记录：</h4>
                     <el-table :data="d" style="width: 100%" :header-cell-style="{ 'text-align': 'center' }">
@@ -165,6 +167,8 @@ const imageUrl = ref(require('@/assets/person.png'))
 const avatar_changed = ref(false);
 import { Record, RecordBIE } from "@/utils/common/structInterface";
 
+const loading = ref(true)
+
 //编辑前的
 const username = ref("");
 const realname = ref("");
@@ -189,7 +193,7 @@ onMounted(() => {
     const player = proxy.$store.state.player;
     // username.value = player.name;
 
-    // 把左侧的头像、姓名、个性签名请求过来
+    // 把左侧的头像、姓名、个性签名、记录请求过来
     proxy.$axios.get('/msuser/info/',
         {
             params: {
@@ -211,9 +215,9 @@ onMounted(() => {
         records.value.push(trans_record(JSON.parse(data.nf_record)));
         records.value.push(trans_record(JSON.parse(data.ng_record)));
         records.value.push(trans_record(JSON.parse(data.dg_record)));
-        console.log(records.value[0]);
-        console.log(666);
-
+        // console.log(records.value[0]);
+        // console.log(666);
+        loading.value = false;
 
     })
 
