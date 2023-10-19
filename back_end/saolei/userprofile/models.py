@@ -4,10 +4,11 @@ from django.contrib.auth.models import AbstractUser
 from django.core import validators
 from msuser.models import UserMS
 from .fields import RestrictedImageField
+from django_cleanup import cleanup
 
 # 自定义用户
 
-
+@cleanup.select
 class UserProfile(AbstractUser):
     userms = models.OneToOneField(
         UserMS, on_delete=models.CASCADE, related_name='+', null=True)
@@ -15,7 +16,7 @@ class UserProfile(AbstractUser):
         max_length=10, unique=False, blank=True, default='无名氏', null=False)
     # 头像
     avatar = RestrictedImageField(upload_to='assets/avatar/%Y%m%d/', max_length=100,
-                                  max_upload_size=1024*1024, blank=True, null=True)
+                                  max_upload_size=1024*300, blank=True, null=True)
     # 签名
     signature = models.TextField(max_length=188, blank=True, null=True)  # 签名
     country = models.CharField(max_length=3, blank=True, null=True)

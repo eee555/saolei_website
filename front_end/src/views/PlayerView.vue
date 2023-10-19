@@ -1,7 +1,7 @@
 <template>
     <div class="common-layout">
         <el-container>
-            <el-aside v-show="!loading_aside" width="30%">
+            <el-aside width="30%">
                 <div v-if="is_editing">
                     <el-upload ref="upload" class="avatar-uploader" action="#" :limit="1" :show-file-list="false"
                         :auto-upload="false" :on-exceed="handleExceed" :on-change="handleChange"
@@ -61,7 +61,7 @@
             </el-aside>
 
             <el-main>
-                <el-skeleton v-show="loading" :rows="8" />
+                <el-skeleton animated v-show="loading" :rows="8" />
                 <div v-for="(d, idx) in records">
                     <h4 style="margin-bottom: 0px;margin-top: 20px;">{{ table_title[idx] }}模式记录：</h4>
                     <el-table :data="d" style="width: 100%" :header-cell-style="{ 'text-align': 'center' }">
@@ -70,7 +70,7 @@
                         <el-table-column label="time" align="center">
                             <template #default="scope">
                                 <el-popover placement="bottom" :width="165" :disabled="!scope.row.time_id"
-                                    popper-style="background-color:rgba(250,250,250,0.38);" hide-after="0">
+                                    popper-style="background-color:rgba(250,250,250,0.38);" :hide-after="0">
                                     <div>
                                         <PreviewDownload :id="scope.row.time_id"></PreviewDownload>
                                     </div>
@@ -86,7 +86,7 @@
                         <el-table-column label="3BV/s" align="center">
                             <template #default="scope">
                                 <el-popover placement="bottom" :width="165" :disabled="!scope.row.bvs_id"
-                                    popper-style="background-color:rgba(250,250,250,0.38);" hide-after="0">
+                                    popper-style="background-color:rgba(250,250,250,0.38);" :hide-after="0">
                                     <div>
                                         <PreviewDownload :id="scope.row.bvs_id"></PreviewDownload>
                                     </div>
@@ -102,7 +102,7 @@
                         <el-table-column label="STNB" align="center">
                             <template #default="scope">
                                 <el-popover placement="bottom" :width="165" :disabled="!scope.row.stnb_id"
-                                    popper-style="background-color:rgba(250,250,250,0.38);" hide-after="0">
+                                    popper-style="background-color:rgba(250,250,250,0.38);" :hide-after="0">
                                     <div>
                                         <PreviewDownload :id="scope.row.stnb_id"></PreviewDownload>
                                     </div>
@@ -118,7 +118,7 @@
                         <el-table-column label="IOE" align="center">
                             <template #default="scope">
                                 <el-popover placement="bottom" :width="165" :disabled="!scope.row.ioe_id"
-                                    popper-style="background-color:rgba(250,250,250,0.38);" hide-after="0">
+                                    popper-style="background-color:rgba(250,250,250,0.38);" :hide-after="0">
                                     <div>
                                         <PreviewDownload :id="scope.row.ioe_id"></PreviewDownload>
                                     </div>
@@ -134,7 +134,7 @@
                         <el-table-column label="path" align="center">
                             <template #default="scope">
                                 <el-popover placement="bottom" :width="165" :disabled="!scope.row.path_id"
-                                    popper-style="background-color:rgba(250,250,250,0.38);" hide-after="0">
+                                    popper-style="background-color:rgba(250,250,250,0.38);" :hide-after="0">
                                     <div>
                                         <PreviewDownload :id="scope.row.path_id"></PreviewDownload>
                                     </div>
@@ -166,6 +166,7 @@ import { Plus } from '@element-plus/icons-vue'
 const imageUrl = ref(require('@/assets/person.png'))
 const avatar_changed = ref(false);
 import { Record, RecordBIE } from "@/utils/common/structInterface";
+import { compress, compressAccurately } from 'image-conversion';
 
 const loading = ref(true)
 
@@ -282,17 +283,20 @@ const handleAvatarUpload = async (options: UploadRequestOptions) => {
         params,
     ).then(function (response) {
         if (response.data.status == 100) {
-            console.log(options.file);
             ElMessage.success("信息更新成功！")
             username.value = realname_edit.value;
             signature.value = signature_edit.value;
             imageUrl.value = URL.createObjectURL(options.file);
         } else if (response.data.status >= 101) {
-            ElMessage.error(response.data.msg)
+            // 适配后端的两种error
+            if (response.data.msg.avatar) {
+                ElMessage.error(response.data.msg.avatar[0]);
+            } else {
+                ElMessage.error(response.data.msg);
+            }
+
         }
     })
-
-
 }
 
 const handleChange: UploadProps['onChange'] = (uploadFile: UploadFile, uploadFiles: UploadFiles) => {
@@ -301,7 +305,6 @@ const handleChange: UploadProps['onChange'] = (uploadFile: UploadFile, uploadFil
     }
     imageUrl.value = uploadFile.url;
     avatar_changed.value = true;
-
 }
 
 const handleExceed: UploadProps['onExceed'] = (files) => {
@@ -312,16 +315,19 @@ const handleExceed: UploadProps['onExceed'] = (files) => {
 }
 
 const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
-    // console.log(rawFile);
-
-    if (rawFile.type !== 'image/jpeg') {
-        ElMessage.error('头像必须为JPG格式!')
+    if (rawFile.type !== 'image/jpeg' && rawFile.type !== 'image/png') {
+        ElMessage.error('头像必须为JPG或PNG格式!')
         return false
-    } else if (rawFile.size / 1024 / 512 * 0) {
-        ElMessage.error('头像大小不能超过512kB!')
+    } else if (rawFile.size / 1024 / 1024 / 50 > 1.0) {
+        ElMessage.error('头像大小不能超过50MB!')
         return false
     }
-    return true
+    return new Promise((resolve, reject) => {
+        compressAccurately(rawFile, 256).then(res => {
+            res = new File([res], rawFile.name, { type: res.type, lastModified: Date.now() })
+            resolve(res)
+        })
+    })
 }
 
 

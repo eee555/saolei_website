@@ -2,4 +2,5 @@ Django>=4.0.0
 django-simple=captcha>=0.5.18
 pymysql>=1.1.0
 django-cors-headers>=4.0.0
-django-redis
+django-redis=5.4.0
+django-cleanup=8.0.0

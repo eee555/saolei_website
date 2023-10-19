@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'userprofile',
     'videomanager',
     'msuser',
+    'django_cleanup.apps.CleanupConfig', # 必须放在最后(文档所言)
 ]
 
 MIDDLEWARE = [
