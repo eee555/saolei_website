@@ -14,20 +14,53 @@
         <div style="border-bottom: 1px solid #555;padding-bottom: 10px;">
             <span class="rank">排名</span>
             <span class="name">姓名</span>
-            <span class="beginner">初级</span>
-            <span class="intermediate">中级</span>
-            <span class="expert">高级</span>
-            <span class="sum">总计</span>
+            <span class="beginner" @click="setSortDirect('b')">初级{{
+                level_selected === "b" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
+            <span class="intermediate" @click="setSortDirect('i')">中级{{
+                level_selected === "i" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
+            <span class="expert" @click="setSortDirect('e')">高级{{
+                level_selected === "e" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
+            <span class="sum_title" @click="setSortDirect('sum')">总计{{
+                level_selected === "sum" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
         </div>
         <div v-for="(player, key) in playerData" style="margin-top: 10px;">
+
             <span class="rank">{{ key - 19 + (state.CurrentPage) * 20 }}</span>
             <span class="name">{{ player.name }}</span>
-            <span class="beginner">{{ to_fixed_n(player.beginner, 3) }}</span>
-            <span class="intermediate">{{ to_fixed_n(player.intermediate, 3) }}</span>
-            <span class="expert">{{ to_fixed_n(player.expert, 3) }}</span>
+            <!-- <span class="beginner">{{ to_fixed_n(player.beginner, 3) }}</span> -->
+            <el-popover placement="bottom" :width="165" popper-style="background-color:rgba(250,250,250,0.38);"
+                :hide-after="0">
+                <div>
+                    <PreviewDownload :id="player.beginner_id"></PreviewDownload>
+                </div>
+                <template #reference>
+                    <span href="" target="_blank" class="beginner">{{ to_fixed_n(player.beginner, 3) }}
+                    </span>
+                </template>
+            </el-popover>
+            <el-popover placement="bottom" :width="165" popper-style="background-color:rgba(250,250,250,0.38);"
+                :hide-after="0">
+                <div>
+                    <PreviewDownload :id="player.intermediate_id"></PreviewDownload>
+                </div>
+                <template #reference>
+                    <span href="" target="_blank" class="intermediate">{{ to_fixed_n(player.intermediate, 3) }}
+                    </span>
+                </template>
+            </el-popover>
+            <el-popover placement="bottom" :width="165" popper-style="background-color:rgba(250,250,250,0.38);"
+                :hide-after="0">
+                <div>
+                    <PreviewDownload :id="player.expert_id"></PreviewDownload>
+                </div>
+                <template #reference>
+                    <span href="" target="_blank" class="expert">{{ to_fixed_n(player.expert, 3) }}
+                    </span>
+                </template>
+            </el-popover>
             <span class="sum">{{ to_fixed_n(player.sum, 3) }}</span>
 
-            
+
         </div>
     </div>
 
@@ -63,10 +96,14 @@ const state = reactive({
 // const test  = reactive({v: 5});
 const playerData = reactive<Player[]>([]);
 interface Player {
+    name_id: number;
     name: string;
     beginner: string;
+    beginner_id: number;
     intermediate: string;
+    intermediate_id: number;
     expert: string;
+    expert_id: number;
     sum: string;
 }
 
@@ -145,28 +182,33 @@ const get_player_rank = (page: number) => {
                 ids: `${piv}ids`,
                 sort_by: `${piv}*->${level_selected.value}`,
                 reverse: iv.reverse,
-                indexes: `["#","${piv}*->name","${piv}*->b","${piv}*->i","${piv}*->e","${piv}*->sum"]`,
+                indexes: `["#","${piv}*->name","${piv}*->b","${piv}*->b_id","${piv}*->i",
+                "${piv}*->i_id","${piv}*->e","${piv}*->e_id","${piv}*->sum"]`,
                 page: page,
             }
         }
     ).then(function (response) {
-        // console.log(response.data);
+        console.log(response.data);
         const data = response.data;
         state.Total = data.total_page;
-        
+
         const players = data.players;
         playerData.splice(0, playerData.length)
-        for(let i = 0; i < players.length / 6; i++){
+        for (let i = 0; i < players.length / 9; i++) {
             playerData.push({
-                name: players[i * 6 + 1],
-                beginner: players[i * 6 + 2],
-                intermediate: players[i * 6 + 3],
-                expert: players[i * 6 + 4],
-                sum: players[i * 6 + 5],
+                name_id: +players[i * 9],
+                name: players[i * 9 + 1],
+                beginner: players[i * 9 + 2],
+                beginner_id: +players[i * 9 + 3],
+                intermediate: players[i * 9 + 4],
+                intermediate_id: +players[i * 9 + 5],
+                expert: players[i * 9 + 6],
+                expert_id: +players[i * 9 + 7],
+                sum: players[i * 9 + 8],
             })
         }
         // console.log(playerData);
-        
+
     })
 }
 
@@ -174,6 +216,7 @@ const currentChange = (val: number) => {
     state.CurrentPage = Math.ceil(val);
     get_player_rank(state.CurrentPage);
 }
+// 上一页
 const prevClick = () => {
     state.CurrentPage = state.CurrentPage - 1;
     if (state.CurrentPage < 1) {
@@ -181,6 +224,7 @@ const prevClick = () => {
     }
     get_player_rank(state.CurrentPage);
 }
+// 下一页
 const nextClick = () => {
     state.CurrentPage = state.CurrentPage + 1;
     if (state.CurrentPage > state.Total) {
@@ -189,7 +233,15 @@ const nextClick = () => {
     get_player_rank(state.CurrentPage);
 }
 
-
+// 点难度标签右侧排序方向箭头的回调
+const setSortDirect = (level_tag: string) => {
+    if (level_tag === level_selected.value) {
+        index_tags[index_tag_selected.value].reverse = !index_tags[index_tag_selected.value].reverse;
+    } else {
+        level_selected.value = level_tag;
+    }
+    get_player_rank(state.CurrentPage);
+}
 
 </script>
 
@@ -212,10 +264,18 @@ const nextClick = () => {
     text-align: center;
 }
 
+.beginner:hover {
+    color: rgb(64, 158, 255);
+}
+
 .intermediate {
     width: 16%;
     display: inline-block;
     text-align: center;
+}
+
+.intermediate:hover {
+    color: rgb(64, 158, 255);
 }
 
 .expert {
@@ -224,16 +284,29 @@ const nextClick = () => {
     text-align: center;
 }
 
+.expert:hover {
+    color: rgb(64, 158, 255);
+}
+
 .sum {
     width: 16%;
     display: inline-block;
     text-align: center;
 }
 
+.sum_title {
+    width: 16%;
+    display: inline-block;
+    text-align: center;
+}
+
+.sum_title:hover {
+    color: rgb(64, 158, 255);
+}
+
 .el-pagination {
     justify-content: center;
 }
-
 </style>
 
 
