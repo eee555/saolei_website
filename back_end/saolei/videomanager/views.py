@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .forms import UploadVideoForm
@@ -12,13 +13,22 @@ from django.core.paginator import Paginator
 from msuser.models import UserMS
 from django.db.models import Q
 import os
+import time
+from datetime import datetime
 # from django.core.cache import cache
 from django_redis import get_redis_connection
 cache = get_redis_connection("saolei_website")
 # .flushall()
+from apscheduler.schedulers.blocking import BlockingScheduler
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
+from django.core.management.base import BaseCommand
+from django_apscheduler.models import DjangoJobExecution
+from django_apscheduler import util
+from django_apscheduler.jobstores import DjangoJobStore, register_job, register_events
 
-# Create your views here.
 
+logger = logging.getLogger(__name__)
 
 @login_required(login_url='/')
 def video_upload(request):
@@ -1136,12 +1146,13 @@ def review_queue(request):
 def newest_queue(request):
     if request.method == 'GET':
         newest_queue_ids = cache.hgetall("newest_queue")
-        # print(newest_queue_ids)
         for key in list(newest_queue_ids.keys()):
             newest_queue_ids.update({str(key, encoding="utf-8"): newest_queue_ids.pop(key)})
         return JsonResponse(newest_queue_ids, encoder=ComplexEncoder)
     else:
         return HttpResponse("别瞎玩")
+    
+    
 
 # 管理员审核通过队列里的录像，未审核或冻结状态的录像可以审核通过
 # 返回"True","False"（已经是通过的状态）,"Null"（不存在该录像）
@@ -1167,6 +1178,7 @@ def approve(request):
                     cache.hset("newest_queue", ids[i], cache.hget("review_queue", ids[i]))
                     update_personal_record(video_i[0], e_video[0])
                 cache.hdel("review_queue", ids[i])
+        logger.info(f'{request.user.id} approve {json.dumps(ids)} response {json.dumps(res)}')
         return JsonResponse(json.dumps(res), safe=False)
     else:
         return HttpResponse("别瞎玩")
@@ -1193,8 +1205,39 @@ def freeze(request):
                     video_i[0].save()
                 cache.hdel("review_queue", ids[i])
                 cache.hdel("newest_queue", ids[i])
+        logger.info(f'{request.user.id} freeze {json.dumps(ids)} response {json.dumps(res)}')
         return JsonResponse(json.dumps(res), safe=False)
     else:
         return HttpResponse("别瞎玩")
+
+
+scheduler = BackgroundScheduler(timezone='Asia/Shanghai')
+scheduler.add_jobstore(DjangoJobStore(), "default")
+
+def delete_newest_queue(name):
+    # 定时清除最新录像，直至剩下最近7天的或剩下不到100条
+    if cache.hlen("newest_queue") <= 100:
+        return
+    newest_queue_ids = cache.hgetall("newest_queue")
+    for key in newest_queue_ids.keys():
+        a = json.loads(newest_queue_ids[key]['time'])
+        d = datetime.strptime(a, "%Y-%m-%d %H:%M:%S")
+        if (datetime.now() - d).days > 7:
+            cache.hdel("newest_queue", key)
+
+def delete_freezed_video(name):
+    # 定时清除7天以前冻结的录像
+    
+    ...
+            
+
+# scheduler.add_job(job1, "interval", seconds=10, args=['22'], id="job2", replace_existing=True)
+scheduler.add_job(delete_newest_queue, 'cron', hour='3', minute='11,23', args=['666'], id='delete_newest_queue', replace_existing=True)
+scheduler.add_job(delete_freezed_video, 'cron', hour='4', minute='1,5', args=['666'], id='delete_freezed_video', replace_existing=True)
+# 监控任务
+register_events(scheduler) # 这个event 这个会有已经被废弃的用法删除线，我不知道这个删除了 ，还会不会好用
+# 调度器开始运行
+scheduler.start()
+
 
 

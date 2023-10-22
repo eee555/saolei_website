@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, JsonResponse
@@ -138,6 +140,7 @@ def set_staff(request):
     if request.user.is_superuser and request.method == 'GET':
         user = UserProfile.objects.get(id=request.GET["id"])
         user.is_staff = request.GET["is_staff"]
+        logger.info(f'{request.user.id} set_staff {request.GET["id"]} {request.GET["is_staff"]}')
         if request.GET["is_staff"] == "True":
             user.is_staff = True
             user.save()
@@ -157,6 +160,7 @@ def set_banned(request):
     if request.user.is_staff and request.method == 'GET':
         user = UserProfile.objects.get(id=request.GET["id"])
         user.is_banned = request.GET["is_banned"]
+        logger.info(f'{request.user.id} set_banned {request.GET["id"]} {request.GET["is_banned"]}')
         if user.is_staff:
             return HttpResponse("没有封禁管理员的权限！")
         if request.GET["is_banned"] == "True":
