@@ -5,15 +5,40 @@ from django.core import validators
 from msuser.models import UserMS
 from .fields import RestrictedImageField
 from django_cleanup import cleanup
+from django.utils.translation import gettext_lazy as _
+from django.contrib.auth.validators import UnicodeUsernameValidator
+username_validator = UnicodeUsernameValidator()
 
 # 自定义用户
-
+# 头像修改后，自动删除服务器上原来的图片
 @cleanup.select
 class UserProfile(AbstractUser):
     userms = models.OneToOneField(
         UserMS, on_delete=models.CASCADE, related_name='+', null=True)
+    
+    username = models.CharField(
+        _("username"),
+        max_length=20,
+        unique=True,
+        help_text=_(
+            "Required. 20 characters or fewer. Letters, digits and @/./+/-/_ only."
+        ),
+        validators=[username_validator],
+        error_messages={
+            'max_length': _('用户名的长度不超过20，支持各国语言！'),
+            "unique": _("该用户名已存在！"),
+        },
+    )
+    first_name = models.CharField(_("first name"), max_length=10, blank=True)
+    last_name = models.CharField(_("last name"), max_length=10, blank=True)
+    email = models.EmailField(_("email address"), 
+                              unique=True,
+                              error_messages={
+                                  "unique": _("该邮箱已被注册！"),
+                                  },)
+
     realname = models.CharField(
-        max_length=10, unique=False, blank=True, default='无名氏', null=False)
+        max_length=10, unique=False, blank=True, default='请修改为实名', null=False)
     # 头像
     avatar = RestrictedImageField(upload_to='assets/avatar/%Y%m%d/', max_length=100,
                                   max_upload_size=1024*300, blank=True, null=True)

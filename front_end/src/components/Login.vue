@@ -179,6 +179,22 @@ const login = () => {
 
 // window.localStorage.setItem('user_token', "00000000000000000000000000000000")
 const register = () => {
+    if (!user_name_reg.value){
+        hint_message.value = "请输入用户名！";
+        return
+    }
+    if (!user_email_reg.value){
+        hint_message.value = "请输入邮箱！";
+        return
+    }
+    if (!user_password_reg.value){
+        hint_message.value = "请输入密码！";
+        return
+    }
+    if (user_password_reg.value != user_password2_reg.value){
+        hint_message.value = "两次输入的密码不一致！";
+        return
+    }
     var user_params = new URLSearchParams()
     user_params.append('username', user_name_reg.value)
     user_params.append('password', user_password_reg.value)
@@ -231,7 +247,7 @@ const logout = () => {
 
         }
     }).catch(function (error) {
-        console.log("eee:" + error);
+        // console.log("eee:" + error);
     });
 }
 
@@ -253,12 +269,12 @@ const get_email_captcha = () => {
         if (response.data.status == 100) {
             hint_message.value = ""
             window.localStorage.setItem("usertoken", response.data.hashkey)
-            console.log(response.data.hashkey);
-            console.log("注册成功");
+            // console.log(response.data.hashkey);
+            // console.log("注册成功");
         } else if (response.data.status > 100) {
             hint_message.value = "*" + response.data.msg;
-            console.log("注册失败");
-            console.log(response.data);
+            // console.log("注册失败");
+            // console.log(response.data);
         }
     }).catch(function (error) {
         console.log("eee:" + error);

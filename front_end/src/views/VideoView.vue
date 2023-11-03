@@ -215,7 +215,7 @@ const get_video_rank = (page: number) => {
             videoData.splice(0, videoData.length);
             videoData.push(...data.videos);
             state.Total = data.total_page;
-            console.log(videoData);
+            // console.log(videoData);
             // console.log(315);
             
             // console.log(index_tag_selected);

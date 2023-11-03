@@ -5,6 +5,7 @@ module.exports = {
 
     devServer: {
         open: true,
+        host: process.env.Host || "localhost",
         proxy: {
             '/userprofile': {
                 target: 'http://127.0.0.1:8000/',//要代理的本地api地址，也可以换成线上测试地址

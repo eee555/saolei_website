@@ -93,6 +93,8 @@ def user_register(request):
         # print(request.POST)
         # print(user_register_form.cleaned_data.get('username'))
         if user_register_form.is_valid():
+            if UserProfile.objects.filter(username=request.GET["id"]):
+                ...
             emailHashkey = request.POST.get("usertoken", None)
             email_captcha = request.POST.get("email_captcha", None)
             get_email_captcha = EmailVerifyRecord.objects.filter(
@@ -121,8 +123,10 @@ def user_register(request):
                 return JsonResponse({'status': 102, 'msg': "邮箱验证码不正确！"})
         else:
             # print(user_register_form.cleaned_data)
-            # print(user_register_form.errors)
-            return JsonResponse({'status': 101, 'msg': "显示红色的表单有错误！"})
+            # print(user_register_form.errors.as_json())
+            
+            return JsonResponse({'status': 101, 'msg': user_register_form.errors.\
+                                 as_text().split("*")[-1]})
     else:
         return HttpResponse("别瞎玩")
 
@@ -194,7 +198,7 @@ def get_email_captcha(request):
                 return JsonResponse(response)
             else:
                 response['status'] = 103
-                response['msg'] = "验证码正确，但发送邮件失败"
+                response['msg'] = "发送邮件失败"
                 return JsonResponse(response)
         else:
             response['status'] = 104
