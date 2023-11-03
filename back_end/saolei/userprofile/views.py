@@ -87,12 +87,11 @@ def user_logout(request):
 
 # @method_decorator(ensure_csrf_cookie)
 def user_register(request):
-    # print(request)
+    # print(request.POST)
     if request.method == 'POST':
         user_register_form = UserRegisterForm(data=request.POST)
         # print(request.POST)
         # print(user_register_form.cleaned_data.get('username'))
-        response = {'status': 100, 'msg': None}
         if user_register_form.is_valid():
             emailHashkey = request.POST.get("usertoken", None)
             email_captcha = request.POST.get("email_captcha", None)
@@ -116,21 +115,14 @@ def user_register(request):
                 # Jresponse = JsonResponse(response)
                 # Jresponse.set_cookie('login','1', max_age=30*24*3600)
                 # # print(Jresponse.cookies)
-                return JsonResponse(response)
+                return JsonResponse({'status': 100, 'msg': None})
                 # return HttpResponse(json.dumps(response), content_type='application/json')
             else:
-                response['status'] = 102
-                response['msg'] = "邮箱验证码不正确！"
-                # print(333)
-                return JsonResponse(response)
+                return JsonResponse({'status': 102, 'msg': "邮箱验证码不正确！"})
         else:
             # print(user_register_form.cleaned_data)
             # print(user_register_form.errors)
-            response['status'] = 101
-            response['msg'] = "显示红色的表单有错误！"
-            # print(999)
-            return JsonResponse(response)
-        
+            return JsonResponse({'status': 101, 'msg': "显示红色的表单有错误！"})
     else:
         return HttpResponse("别瞎玩")
 
@@ -178,7 +170,6 @@ def set_banned(request):
 
 # 创建验证码
 def captcha(request):
-    print(666)
     hashkey = CaptchaStore.generate_key()  # 验证码答案
     print(f"?captcha-image={hashkey}")
     # image_url = captcha_image_url(hashkey)  # 验证码地址
@@ -193,13 +184,10 @@ def refresh_captcha(request):
 # 验证验证码，若通过，发送email
 def get_email_captcha(request):
     if request.method == 'POST':
-        # print(666)
-        print(request.POST)
         capt = request.POST.get("captcha", None)  # 用户提交的验证码
         key = request.POST.get("hashkey", None)  # 验证码hash
         response = {'status': 100, 'msg': None, "hashkey": None}
         if judge_captcha(capt, key):
-            print(777)
             hashkey = send_register_email(request.POST.get("email", None))
             if hashkey:
                 response['hashkey'] = hashkey

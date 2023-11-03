@@ -29,6 +29,7 @@ class DecimalEncoder(json.JSONEncoder):
 # 获取我的地盘里的头像、姓名、个性签名、记录
 def get_info(request):
     if request.method == 'GET':
+        # 此处要重点防攻击
         # print(request.GET)
         user_id = request.user.id
         user = UserProfile.objects.get(id=user_id)
@@ -42,7 +43,8 @@ def get_info(request):
             image_data = base64.b64encode(image_data).decode()
         else:
             image_data = None
-        response = {"realname": user.realname,
+        response = {"id": user_id,
+                    "realname": user.realname,
                     "avatar": image_data,
                     "signature": user.signature,
                     "std_record": json.dumps({"time": [ms_user.b_time_std, ms_user.i_time_std, ms_user.e_time_std],

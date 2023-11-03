@@ -45,7 +45,7 @@
             <span v-else class="rtime">{{ to_fixed_n(video.video__rtime, 3) }}</span>
 
             <span v-show="index_visible" class="index">{{
-                to_fixed_n(video[index_tags[index_tag_selected].key],
+                to_fixed_n(video["video__" + index_tags[index_tag_selected].key],
                     index_tags[index_tag_selected].to_fixed) }}</span>
             <span class="operation">
                 <PreviewDownload :id="video.id"></PreviewDownload>
@@ -215,7 +215,7 @@ const get_video_rank = (page: number) => {
             videoData.splice(0, videoData.length);
             videoData.push(...data.videos);
             state.Total = data.total_page;
-            // console.log(videoData);
+            console.log(videoData);
             // console.log(315);
             
             // console.log(index_tag_selected);

@@ -12,19 +12,19 @@ from utils import ComplexEncoder
 from django.core.paginator import Paginator
 from msuser.models import UserMS
 from django.db.models import Q
-import os
-import time
+# import os
+# import time
 from datetime import datetime
 # from django.core.cache import cache
 from django_redis import get_redis_connection
 cache = get_redis_connection("saolei_website")
 # .flushall()
-from apscheduler.schedulers.blocking import BlockingScheduler
+# from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.cron import CronTrigger
-from django.core.management.base import BaseCommand
-from django_apscheduler.models import DjangoJobExecution
-from django_apscheduler import util
+# from apscheduler.triggers.cron import CronTrigger
+# from django.core.management.base import BaseCommand
+# from django_apscheduler.models import DjangoJobExecution
+# from django_apscheduler import util
 from django_apscheduler.jobstores import DjangoJobStore, register_job, register_events
 
 
@@ -110,6 +110,7 @@ def get_software(request):
 def video_preview(request):
     if request.method != 'GET':
         return HttpResponse("别瞎玩")
+    # 这里性能可能有问题
     try:
         video = VideoModel.objects.get(id=int(request.GET["id"][:-4]))
         response =FileResponse(open(video.file.path, 'rb'))
@@ -124,6 +125,7 @@ def video_preview(request):
 def video_download(request):
     if request.method != 'GET':
         return HttpResponse("别瞎玩")
+    # 这里性能可能有问题
     try:
         video = VideoModel.objects.get(id=request.GET["id"])
         response =FileResponse(open(video.file.path, 'rb'))
@@ -1190,10 +1192,10 @@ def freeze(request):
     if request.user.is_staff and request.method == 'GET':
         ids = json.loads(request.GET["ids"])
         res = []
-        for i in range(len(ids)):
-            if not isinstance(ids[i], int):
+        for _id in ids:
+            if not isinstance(_id, int) or _id < 1:
                 return HttpResponse("冻结录像的id应为正整数。")
-            video_i = VideoModel.objects.filter(id=ids[i])
+            video_i = VideoModel.objects.filter(id=_id)
             if not video_i:
                 res.append("Null")
             else:
@@ -1203,8 +1205,8 @@ def freeze(request):
                     video_i[0].state = "b"
                     res.append("True")
                     video_i[0].save()
-                cache.hdel("review_queue", ids[i])
-                cache.hdel("newest_queue", ids[i])
+                cache.hdel("review_queue", _id)
+                cache.hdel("newest_queue", _id)
         logger.info(f'{request.user.id} freeze {json.dumps(ids)} response {json.dumps(res)}')
         return JsonResponse(json.dumps(res), safe=False)
     else:

@@ -51,7 +51,10 @@
                     <div :key="'cover'" class="avatar-uploader">
                         <el-image style="width: 200px; height: 200px;border-radius: 12px;" :src="imageUrl" :fit="'cover'" />
                     </div>
-                    <div style="font-size: 30px;margin-top: 10px;margin-bottom: 8px;">{{ username }}</div>
+                    <div style="font-size: 30px;margin-top: 10px;margin-bottom: 8px;">
+                        {{ username }}
+                        <span style="font-size: 18px; color: #555;">id: {{ userid }}</span>
+                    </div>
                     <div style="font-size: 20px;margin-bottom: 8px;">{{ realname }}</div>
                     <div style="overflow: auto ;"><strong>个性签名：</strong>{{ signature }}</div>
 
@@ -171,6 +174,7 @@ import { compress, compressAccurately } from 'image-conversion';
 const loading = ref(true)
 
 //编辑前的
+const userid = ref("");
 const username = ref("");
 const realname = ref("");
 const signature = ref("");
@@ -203,6 +207,7 @@ onMounted(() => {
         }
     ).then(function (response) {
         const data = response.data;
+        userid.value = data.id;
         username.value = data.realname;
         signature.value = data.signature;
         realname_edit.value = data.realname;

@@ -15,7 +15,7 @@
 后端：
 1. cd saolei_website\back_end\saolei
 1. pip install -r requirements.txt
-1. 安装mysql，根据saolei_website\back_end\saolei\saolei\setting.py中的配置，创建名为saolei的数据库，用户名root，密码123456
+1. 安装mysql，根据saolei_website\back_end\saolei\saolei\setting.py中的配置，（默认）创建名为saolei的数据库，用户名root，密码123456
 1. 把所有migrations文件夹（例如msuser\migrations等）下的诸如"0001_initial.py"的开头是数字的.py文件删除
 1. python manage.py makemigrations
 1. python manage.py migrate
