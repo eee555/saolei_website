@@ -12,39 +12,49 @@ class UserLoginForm(forms.Form):
     username = forms.CharField()
     password = forms.CharField()
 
-
+# 注册表单
 class UserRegisterForm(forms.ModelForm):
-    # 复写 User 的密码
-    username = forms.CharField(max_length=20)
-    password = forms.CharField(max_length=20)
-    email = forms.EmailField(max_length=30)
-    # usertoken = forms.CharField(max_length=32, min_length=32)
-    usertoken = forms.CharField(max_length=2000, min_length=2)
-    date_joined = forms.CharField(required=False)
-    # password2 = forms.CharField()
+    username = forms.CharField(max_length=20, required=True)
+    password = forms.CharField(max_length=20, min_length=6, required=True)
+    email = forms.EmailField(max_length=100, required=True)
 
     class Meta:
-        model = User
-        fields = ('username', 'email', "password", "groups", "user_permissions",
-                  "is_staff", "is_active", "last_login", "date_joined")
         # 自定义错误消息
         error_messages = {
             'username': {
                 'max_length': '最多不能超过20个字符！',
+                'required': '用户名是必填项！',
             },
-            'usertoken': {
+            'email': {
+                'max_length': '最多不能超过100个字符！',
+                'required': '邮箱是必填项！',
+                'invalid': '邮箱格式错误！',
+            },
+            'password': {
                 'max_length': '最多不能超过20个字符！',
-                'min_length': '最少不能少于20个字符！'
+                'min_length': '最少不能少于6个字符！'
             },
         }
-        
-        # 对两次输入的密码是否一致进行检查
-    # def clean_password2(self):
-    #     data = self.cleaned_data
-    #     if data.get('password') == data.get('password2'):
-    #         return data.get('password')
-    #     else:
-    #         raise forms.ValidationError("密码输入不一致,请重试。")
+
+# 找回密码表单
+class UserRetrieveForm(forms.ModelForm):
+    password = forms.CharField(max_length=20, min_length=6, required=True)
+    email = forms.EmailField(max_length=100, required=True)
+
+    class Meta:
+        # 自定义错误消息
+        error_messages = {
+            'email': {
+                'max_length': '最多不能超过100个字符！',
+                'required': '邮箱是必填项！',
+                'invalid': '邮箱格式错误！',
+            },
+            'password': {
+                'max_length': '最多不能超过20个字符！',
+                'min_length': '最少不能少于6个字符！'
+            },
+        }
+
 
 class UserRegisterCaptchaForm(forms.ModelForm):
     # 注册时验证码的表单

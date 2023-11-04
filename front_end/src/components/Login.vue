@@ -17,7 +17,8 @@
             退出
         </el-button>
     </div>
-    <el-dialog v-model="login_visibile" title="欢迎登录" width="30%" draggable>
+    <el-dialog v-model="login_visibile" title="欢迎登录" width="30%" draggable
+        @close='() => { if (login_status !== LoginStatus.IsLogin) { login_status = LoginStatus.NotLogin; } }'>
         <el-form size="default">
             <el-form-item>
                 <el-input v-model="user_name" placeholder="用户名" prefix-icon="User" maxlength="20"></el-input>
@@ -42,9 +43,12 @@
             <el-form-item>
                 <el-button type="primary" @click="login()">登录</el-button>
             </el-form-item>
+            <div @click="login_visibile = false; retrieve_visibile = true; login_status = LoginStatus.IsRetrieve;"
+                style="cursor: pointer;color: blue;">（找回密码）</div>
         </el-form>
     </el-dialog>
-    <el-dialog v-model="register_visibile" title="用户注册" width="30%" draggable>
+    <el-dialog v-model="register_visibile" title="用户注册" width="30%" draggable
+        @close='() => { if (login_status !== LoginStatus.IsLogin) { login_status = LoginStatus.NotLogin; } }'>
         <el-form size="default">
             <el-form-item>
                 <el-input v-model="user_name_reg" placeholder="请输入用户昵称" prefix-icon="User" maxlength="20"
@@ -83,6 +87,42 @@
             </el-form-item>
         </el-form>
     </el-dialog>
+    <el-dialog v-model="retrieve_visibile" title="找回密码" width="30%" draggable
+        @close='() => { if (login_status !== LoginStatus.IsLogin) { login_status = LoginStatus.NotLogin; } }'>
+        <el-form size="default">
+            <el-form-item>
+                <el-input v-model="user_email_reg" placeholder="请输入邮箱" prefix-icon="Message" type="email"></el-input>
+            </el-form-item>
+            <el-form-item>
+                <div style="display: flex">
+                    <el-input v-model="valid_code_reg" placeholder="验证码" prefix-icon="Key" class="code"
+                        maxlength="4"></el-input>
+                    &nbsp;
+                    <ValidCode2 :identifyCode="identifyCodeReg" ref="refValidCode2" />
+                    &nbsp;
+                    <el-button link type="primary" @click="get_email_captcha()">获取验证码</el-button>
+                </div>
+            </el-form-item>
+            <el-form-item>
+                <el-input v-model="user_email_valid_code_reg" placeholder="请输入邮箱验证码" prefix-icon="Key"
+                    maxlength="6"></el-input>
+            </el-form-item>
+            <el-form-item>
+                <el-input v-model="user_password_reg" placeholder="请输入新的6-20位密码" show-password prefix-icon="Lock"
+                    minlength="6" maxlength="20"></el-input>
+            </el-form-item>
+            <el-form-item>
+                <el-input v-model="user_password2_reg" placeholder="请输入确认密码" show-password prefix-icon="Lock" minlength="6"
+                    maxlength="20"></el-input>
+            </el-form-item>
+            <el-form-item>
+                <div style="color: red;">{{ hint_message }}</div>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" @click="retrieve()">确认修改密码</el-button>
+            </el-form-item>
+        </el-form>
+    </el-dialog>
 </template>
   
 <script lang="ts" setup>
@@ -93,6 +133,7 @@ const { proxy } = useCurrentInstance();
 import { LoginStatus } from "@/utils/common/structInterface"
 import ValidCode from "@/components/ValidCode.vue";
 import ValidCode2 from "@/components/ValidCode2.vue";
+import { genFileId, ElMessage } from 'element-plus'
 // import { v4 as uuidv4 } from 'uuid';
 // import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 // axios.defaults.headers['Content-Type'] = 'application/x-www-form-urlencoded';
@@ -114,6 +155,7 @@ const user_name_show = ref("") // 登录后右上方显示的用户名
 const login_status = ref(LoginStatus.NotLogin)
 const login_visibile = ref(false)
 const register_visibile = ref(false)
+const retrieve_visibile = ref(false)
 
 const remember_me = ref(false)
 
@@ -137,7 +179,7 @@ const hint_message = ref("")
 const emit = defineEmits(['login', 'logout'])
 
 onMounted(() => {
-    console.log(document.cookie);
+    // console.log(document.cookie);
     login();
     window.onunload = function () {
         // 关闭网页时，删cookie。由于跨域问题，开发时，如开前后端各开一个服务器，
@@ -180,7 +222,6 @@ const login = () => {
             }
             login_status.value = LoginStatus.IsLogin;
             emit('login'); // 向父组件发送消息
-            register_visibile.value = false;
             login_visibile.value = false;
             proxy.$store.commit('updateUser', response.data.msg);// 当前登录用户
             proxy.$store.commit('updatePlayer', response.data.msg);// 看我的地盘看谁的
@@ -196,6 +237,40 @@ const login = () => {
 
         }
     })
+}
+
+const retrieve = () => {
+    if (!user_email_reg.value) {
+        hint_message.value = "请输入邮箱！";
+        return
+    }
+    if (!user_password_reg.value) {
+        hint_message.value = "请输入密码！";
+        return
+    }
+    if (user_password_reg.value != user_password2_reg.value) {
+        hint_message.value = "两次输入的密码不一致！";
+        return
+    }
+    var user_params = new URLSearchParams()
+    user_params.append('username', user_name_reg.value)
+    user_params.append('password', user_password_reg.value)
+    user_params.append('email', user_email_reg.value)
+    user_params.append('usertoken', window.localStorage.getItem("usertoken") as string)
+    user_params.append('email_captcha', user_email_valid_code_reg.value)
+    proxy.$axios.post('/userprofile/retrieve/',
+        user_params,
+    ).then(function (response) {
+        if (response.data.status == 100) {
+            hint_message.value = ""
+            user_name_show.value = user_name_reg.value;
+            login_status.value = LoginStatus.IsLogin;
+            emit('login'); // 向父组件发送消息
+            retrieve_visibile.value = false;
+        } else if (response.data.status >= 101) {
+            hint_message.value = response.data.msg;
+        }
+    }).catch(function (error) { });
 }
 
 const register = () => {
@@ -236,16 +311,14 @@ const register = () => {
             login_status.value = LoginStatus.IsLogin;
             emit('login'); // 向父组件发送消息
             register_visibile.value = false;
-            console.log(response);
+            // console.log(response);
         } else if (response.data.status >= 101) {
             hint_message.value = response.data.msg;
             // console.log("注册失败");
             // console.log("*" + response.data);
 
         }
-    }).catch(function (error) {
-        console.log("eee:" + error);
-    });
+    }).catch(function (error) { });
 }
 
 const logout = () => {
@@ -253,17 +326,19 @@ const logout = () => {
         {},
     ).then(function (response) {
         if (response.data.status == 100) {
-            hint_message.value = ""
+            // hint_message.value = ""
             user_name_show.value = "";
             login_status.value = LoginStatus.NotLogin;
             emit('logout'); // 向父组件发送消息
             register_visibile.value = false;
             login_visibile.value = false;
-            console.log(response);
+            retrieve_visibile.value = false;
+            // console.log(response);
         } else if (response.data.status >= 101) {
-            hint_message.value = response.data.msg;
+            // hint_message.value = response.data.msg;
+            ElMessage.error('退出失败!')
             // console.log("退出失败");
-            // console.log("*" + response.data);
+            console.log("*" + response.data);
 
         }
     }).catch(function (error) {

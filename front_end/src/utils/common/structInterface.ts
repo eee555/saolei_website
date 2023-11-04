@@ -9,10 +9,16 @@ export interface dbAcceptParma {
     user: boolean
 }
 export enum LoginStatus {
+    // 登录成功了
     IsLogin,
+    // 未登录状态
     NotLogin,
+    // 正在弹窗上登录
     Login,
-    Register
+    // 正在弹窗上注册
+    Register,
+    // 正在弹窗上找回密码
+    IsRetrieve
 }
 
 export interface RecordBIE {

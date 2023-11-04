@@ -3,7 +3,7 @@ logger = logging.getLogger(__name__)
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, JsonResponse
-from .forms import UserLoginForm, UserRegisterForm, UserRegisterCaptchaForm
+from .forms import UserLoginForm, UserRegisterForm, UserRegisterCaptchaForm, UserRetrieveForm
 from captcha.models import CaptchaStore
 from captcha.helpers import captcha_image_url
 import json
@@ -90,6 +90,34 @@ def user_logout(request):
     logout(request)
     return JsonResponse({'status': 100, 'msg': None})
 
+# 用户找回密码
+def user_retrieve(request):
+    if request.method == 'POST':
+        user_retrieve_form = UserRetrieveForm(data=request.POST)
+        if user_retrieve_form.is_valid():
+            emailHashkey = request.POST.get("usertoken", None)
+            email_captcha = request.POST.get("email_captcha", None)
+            get_email_captcha = EmailVerifyRecord.objects.filter(
+                hashkey=emailHashkey).first()
+            if get_email_captcha and email_captcha and get_email_captcha.code == email_captcha:
+                user = UserProfile.objects.filter(email=user_retrieve_form.cleaned_data['email'])
+                if not user:
+                    return JsonResponse({'status': 109, 'msg': "该邮箱尚未注册，请先注册！"})
+                # 设置密码(哈希)
+                user.set_password(
+                    user_retrieve_form.cleaned_data['password'])
+                user.save()
+                # 保存好数据后立即登录
+                login(request, user)
+                return JsonResponse({'status': 100, 'msg': None})
+            else:
+                return JsonResponse({'status': 102, 'msg': "邮箱验证码不正确！"})
+        else:
+            return JsonResponse({'status': 101, 'msg': user_retrieve_form.errors.\
+                                 as_text().split("*")[-1]})
+    else:
+        return HttpResponse("别瞎玩")
+
 # @method_decorator(ensure_csrf_cookie)
 def user_register(request):
     # print(request.POST)
@@ -98,8 +126,6 @@ def user_register(request):
         # print(request.POST)
         # print(user_register_form.cleaned_data.get('username'))
         if user_register_form.is_valid():
-            if UserProfile.objects.filter(username=request.GET["id"]):
-                ...
             emailHashkey = request.POST.get("usertoken", None)
             email_captcha = request.POST.get("email_captcha", None)
             get_email_captcha = EmailVerifyRecord.objects.filter(
