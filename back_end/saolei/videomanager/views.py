@@ -27,7 +27,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 # from django_apscheduler import util
 from django_apscheduler.jobstores import DjangoJobStore, register_job, register_events
 
-
+logging.getLogger('apscheduler.scheduler').setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 @login_required(login_url='/')
@@ -1237,7 +1237,7 @@ def delete_freezed_video(name):
 scheduler.add_job(delete_newest_queue, 'cron', hour='3', minute='11,23', args=['666'], id='delete_newest_queue', replace_existing=True)
 scheduler.add_job(delete_freezed_video, 'cron', hour='4', minute='1,5', args=['666'], id='delete_freezed_video', replace_existing=True)
 # 监控任务
-register_events(scheduler) # 这个event 这个会有已经被废弃的用法删除线，我不知道这个删除了 ，还会不会好用
+register_events(scheduler)
 # 调度器开始运行
 scheduler.start()
 

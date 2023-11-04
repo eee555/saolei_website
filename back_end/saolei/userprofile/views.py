@@ -35,6 +35,7 @@ def user_login(request):
         # print(request.session.get("_auth_user_hash"))
         # print(request.user)
 
+        # 用cookie登录
         response = {'status': 100, 'msg': None}
         if request.user.is_authenticated:
             # login(request, request.user)
@@ -47,6 +48,7 @@ def user_login(request):
         #         response['msg'] = user.username
         #         return JsonResponse(response)
 
+        # 用账号、密码登录
         user_login_form = UserLoginForm(data=request.POST)
         if user_login_form.is_valid():
             # .cleaned_data 清洗出合法数据
@@ -63,6 +65,9 @@ def user_login(request):
                 # response = http.JsonResponse({"code":0,"errmsg":"注册成功"})
                 # response.set_cookie("username",user.username,max_age=3600*24*14)
                 response['msg'] = {"id": user.id, "name": user.username, "is_banned": user.is_banned}
+                if data['user_id'] != str(user.id):
+                    # 检测到小号
+                    logger.info(f'{data["user_id"][:50]} is diffrent from {str(user.id)}.')
                 return JsonResponse(response)
             else:
                 response['status'] = 105

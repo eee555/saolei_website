@@ -34,13 +34,13 @@
                 </div>
             </el-form-item>
             <el-form-item>
-                <el-checkbox label="记住我" class="rememberMe"></el-checkbox>
+                <el-checkbox label="记住我" class="rememberMe" v-model="remember_me"></el-checkbox>
             </el-form-item>
             <el-form-item>
                 <div style="color: red;">{{ hint_message }}</div>
             </el-form-item>
             <el-form-item>
-                <el-button type="primary"  @click="login()">登录</el-button>
+                <el-button type="primary" @click="login()">登录</el-button>
             </el-form-item>
         </el-form>
     </el-dialog>
@@ -115,6 +115,8 @@ const login_status = ref(LoginStatus.NotLogin)
 const login_visibile = ref(false)
 const register_visibile = ref(false)
 
+const remember_me = ref(false)
+
 const user_name = ref("")
 const user_password = ref("")
 const valid_code = ref("")
@@ -135,63 +137,81 @@ const hint_message = ref("")
 const emit = defineEmits(['login', 'logout'])
 
 onMounted(() => {
-    // console.log(666);
+    console.log(document.cookie);
     login();
+    window.onunload = function () {
+        // 关闭网页时，删cookie。由于跨域问题，开发时，如开前后端各开一个服务器，
+        // 体现不出效果，即：取消“记住我”，依然可以免密登录。部署以后，预期“记住我”的功能正常
+        if (!remember_me.value) {
+            let date = new Date()
+            date.setDate(date.getDate() - 1)
+            document.cookie = "session_id=;expires=" + date
+        }
+    };
 })
+
 
 const login = () => {
     // 先用cookie尝试登录，可能登不上
     // 再用用户名密码
     var params = new URLSearchParams()
+    const _id = localStorage.getItem("user_id");
+    params.append('user_id', _id ? _id : "");
     params.append('username', user_name.value)
     params.append('password', user_password.value)
     proxy.$axios.post('/userprofile/login/',
         params,
     ).then(function (response) {
         // console.log(response.data);
-        // console.log(response.status);
-        // console.log(response.statusText);
+        // console.log(document.cookie.match("csrftoken"));
+        // console.log(document.cookie);
+        // console.log(user_name.value);
+        // console.log(user_password.value);
         // console.log(response.headers);
         // console.log(response.config);
         if (response.data.status == 100) {
             hint_message.value = ""
             // console.log(response.data.msg);
             // console.log(response.data.msg.name);
-            
+
             user_name_show.value = response.data.msg.name;
-            if(response.data.msg.is_banned){
+            if (response.data.msg.is_banned) {
                 user_name_show.value += "（您已被封禁，详情请询问管理员！）"
             }
             login_status.value = LoginStatus.IsLogin;
             emit('login'); // 向父组件发送消息
             register_visibile.value = false;
             login_visibile.value = false;
-            proxy.$store.commit('updateUser',response.data.msg);// 当前登录用户
-            proxy.$store.commit('updatePlayer',response.data.msg);// 看我的地盘看谁的
+            proxy.$store.commit('updateUser', response.data.msg);// 当前登录用户
+            proxy.$store.commit('updatePlayer', response.data.msg);// 看我的地盘看谁的
+            if (!user_name.value) {
+                // 如果本次是自动登录成功的，下次依然自动登录
+                remember_me.value = true;
+            }
+            localStorage.setItem("user_id", response.data.id + "");
         } else if (response.data.status >= 101) {
             // hint_message.value = response.data.msg;
-            console.log("登录失败");
+            // console.log("登录失败");
             // console.log("*" + response.data);
 
         }
     })
 }
 
-// window.localStorage.setItem('user_token', "00000000000000000000000000000000")
 const register = () => {
-    if (!user_name_reg.value){
+    if (!user_name_reg.value) {
         hint_message.value = "请输入用户名！";
         return
     }
-    if (!user_email_reg.value){
+    if (!user_email_reg.value) {
         hint_message.value = "请输入邮箱！";
         return
     }
-    if (!user_password_reg.value){
+    if (!user_password_reg.value) {
         hint_message.value = "请输入密码！";
         return
     }
-    if (user_password_reg.value != user_password2_reg.value){
+    if (user_password_reg.value != user_password2_reg.value) {
         hint_message.value = "两次输入的密码不一致！";
         return
     }
@@ -295,9 +315,10 @@ input:invalid {
     outline: 2px solid rgb(167, 11, 11);
     border-radius: 3px;
 }
+
 .el-dialog .el-dialog__body {
-	flex: 1;
-	overflow: auto;
+    flex: 1;
+    overflow: auto;
 }
 </style>
 
