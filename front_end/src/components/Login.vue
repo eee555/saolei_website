@@ -9,11 +9,11 @@
             欢迎您，{{ user_name_show }}！
         </div>
         <span>|</span>
-        <el-button plain style="border: 0;" v-show="login_status != LoginStatus.IsLogin"
+        <el-button plain style="border: 0;margin: 0;" v-show="login_status != LoginStatus.IsLogin"
             @click="login_status = LoginStatus.Register; register_visibile = true; login_visibile = false">
             注册
         </el-button>
-        <el-button plain style="border: 0;" v-show="login_status == LoginStatus.IsLogin" @click="logout()">
+        <el-button plain style="border: 0;margin: 0;" v-show="login_status == LoginStatus.IsLogin" @click="logout()">
             退出
         </el-button>
     </div>
@@ -150,45 +150,52 @@ let refValidCode2 = ref<any>(null)
 //     Register
 // }
 
-const user_name_show = ref("") // 登录后右上方显示的用户名
+const user_name_show = ref(""); // 登录后右上方显示的用户名
 
-const login_status = ref(LoginStatus.NotLogin)
-const login_visibile = ref(false)
-const register_visibile = ref(false)
-const retrieve_visibile = ref(false)
+const login_status = ref(LoginStatus.NotLogin);
+const login_visibile = ref(false);
+const register_visibile = ref(false);
+const retrieve_visibile = ref(false);
 
-const remember_me = ref(false)
+const remember_me = ref(false);
 
-const user_name = ref("")
-const user_password = ref("")
-const valid_code = ref("")
+const user_name = ref("");
+const user_password = ref("");
+const valid_code = ref("");
 
 const identifyCodeLog = ref("");
 const identifyCodeReg = ref("");
 // const identifyCodes = ref("1234567890acdefjhijkmnprstuvwxyz");
 
-const user_name_reg = ref("")
-const user_email_reg = ref("")
-const valid_code_reg = ref("")
-const user_email_valid_code_reg = ref("")
-const user_password_reg = ref("")
-const user_password2_reg = ref("")
+const user_name_reg = ref("");
+const user_email_reg = ref("");
+const valid_code_reg = ref("");
+const user_email_valid_code_reg = ref("");
+const user_password_reg = ref("");
+const user_password2_reg = ref("");
 
-const hint_message = ref("")
+const hint_message = ref("");
 
-const emit = defineEmits(['login', 'logout'])
+const emit = defineEmits(['login', 'logout']);
 
 onMounted(() => {
     // console.log(document.cookie);
     login();
-    window.onunload = function () {
+    window.onbeforeunload = function (e) {
         // 关闭网页时，删cookie。由于跨域问题，开发时，如开前后端各开一个服务器，
         // 体现不出效果，即：取消“记住我”，依然可以免密登录。部署以后，预期“记住我”的功能正常
         if (!remember_me.value) {
-            let date = new Date()
-            date.setDate(date.getDate() - 1)
-            document.cookie = "session_id=;expires=" + date
+            let date = new Date();
+            date.setDate(date.getDate() - 1);
+            document.cookie = "session_id=;expires=" + date;
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'http://127.0.0.1:8000/userprofile/logout/', false);
+            xhr.send(null);
+            // 防止密码爆破，用户界面展示所有个人录像，进入其他人个人主页
+
         }
+        return null;
+
     };
 })
 
@@ -225,10 +232,10 @@ const login = () => {
             login_visibile.value = false;
             proxy.$store.commit('updateUser', response.data.msg);// 当前登录用户
             proxy.$store.commit('updatePlayer', response.data.msg);// 看我的地盘看谁的
-            if (!user_name.value) {
-                // 如果本次是自动登录成功的，下次依然自动登录
-                remember_me.value = true;
-            }
+            // if (!user_name.value) {
+            //     // 如果本次是自动登录成功的，下次依然自动登录
+            //     remember_me.value = true;
+            // }
             localStorage.setItem("user_id", response.data.id + "");
         } else if (response.data.status >= 101) {
             // hint_message.value = response.data.msg;
@@ -321,7 +328,7 @@ const register = () => {
     }).catch(function (error) { });
 }
 
-const logout = () => {
+const logout = async () => {
     proxy.$axios.post('/userprofile/logout/',
         {},
     ).then(function (response) {

@@ -65,7 +65,7 @@ def user_login(request):
                 # response = http.JsonResponse({"code":0,"errmsg":"注册成功"})
                 # response.set_cookie("username",user.username,max_age=3600*24*14)
                 response['msg'] = {"id": user.id, "name": user.username, "is_banned": user.is_banned}
-                if data['user_id'] != str(user.id):
+                if 'user_id' in data and data['user_id'] != str(user.id):
                     # 检测到小号
                     logger.info(f'{data["user_id"][:50]} is diffrent from {str(user.id)}.')
                 return JsonResponse(response)
