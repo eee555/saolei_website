@@ -1,21 +1,17 @@
 FROM python:3.10
 
-LABEL maintainer="wangjn@88.com"
-
-#设置环境变量
 ENV PYTHONUNBUFFERED 1
 
-#设置pip源为国内源
-COPY pip.conf /root/.pip/pip.conf
+RUN mkdir -p /code
+COPY ./requirements.txt /code
 
-#在容器内/var/www/html/下创建mysite1文件夹
-RUN mkdir -p /var/www/html/saolei
+WORKDIR /code
 
-#设置容器内工作目录
-WORKDIR /var/www/html/saolei
+RUN sed -i "s/archive.ubuntu./mirrors.aliyun./g" /etc/apt/sources.list
+RUN sed -i "s/deb.debian.org/mirrors.aliyun.com/g" /etc/apt/sources.list
 
-#将当前目录文件加入到容器工作目录中(.表示当前宿主机目录)
-ADD . /var/www/html/saolei
+RUN apt-get clean && apt-get -y update && \
+    apt-get -y install libsasl2-dev python-dev libldap2-dev libssl-dev libsnmp-dev
+RUN pip3 install --index-url https://mirrors.aliyun.com/pypi/simple/ --no-cache-dir -r requirements.txt
 
-#利用pip安装依赖
-RUN pip install -r requirements.txt
+COPY ./* /code/

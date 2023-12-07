@@ -95,7 +95,8 @@ DATABASES = {
         "NAME": "saolei",
         "USER": "root",
         "PASSWORD": "123456",
-        "HOST": "127.0.0.1",
+        # "HOST": "127.0.0.1",
+        'HOST': 'mysql',   # docker-compose 中的服务名称
         "PORT": "3306",
     }
 }
