@@ -16,9 +16,10 @@
 1. cd saolei_website\back_end\saolei
 1. pip install -r requirements.txt
 1. 安装mysql，根据saolei_website\back_end\saolei\saolei\setting.py中的配置，（默认）创建名为saolei的数据库，用户名root，密码123456
-1. python manage.py makemigrations
-1. python manage.py migrate
-1. python manage.py runserver
+1. 建立一个文件夹saolei_website\back_end\saolei\logs（用来存放日志）
+1. python3 manage.py makemigrations
+1. python3 manage.py migrate
+1. python3 manage.py runserver
 
 前端：
 1. 从[https://github.com/hgraceb/flop-player/releases](https://github.com/hgraceb/flop-player/releases)下载flop播放器，并解压到saolei_website\front_end\public\flop下，使得saolei_website\front_end\public\flop\index.html能够被找到

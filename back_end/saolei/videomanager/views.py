@@ -1239,7 +1239,9 @@ scheduler.add_job(delete_freezed_video, 'cron', hour='4', minute='1,5', args=['6
 # 监控任务
 register_events(scheduler)
 # 调度器开始运行
-scheduler.start()
-
+try:
+    scheduler.start()
+except:
+    print("定时任务启动失败！")
 
 
