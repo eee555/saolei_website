@@ -25,10 +25,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-3_(yjnup(rsxz&pd@stz25*meq10bn3m3$lt!n_1+s723#k=ay"
 
 # SECURITY WARNING: don't run with debug turned on in production!
+# DEBUG = False
+# ALLOWED_HOSTS = ["*"]
 DEBUG = True
-
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
@@ -79,7 +79,7 @@ TEMPLATES = [
 ]
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "dist/static/"),
+    os.path.join(BASE_DIR, "dist/static/"), # ????dist?都一样
 ]
 
 WSGI_APPLICATION = "saolei.wsgi.application"
@@ -136,7 +136,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = "static/"
+# STATIC_URL = "static/"
+STATIC_URL = "/static/"
+# STATIC_URL = "/"
+STATIC_ROOT = os.path.join(BASE_DIR, '/root/saolei/static')
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, '/root/saolei/media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -176,10 +181,10 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_HEADERS = ('*')
 CSRF_TRUSTED_ORIGINS = ['http://localhost:8080']
-SESSION_COOKIE_SAMESITE = 'None'
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SAMESITE = 'None'
-CSRF_COOKIE_SECURE = True 
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SECURE = False  # https时候改成True
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SECURE = False     # https时候改成True
 
 # 发送邮箱验证码
 EMAIL_HOST = "smtp.88.com"     # 服务器

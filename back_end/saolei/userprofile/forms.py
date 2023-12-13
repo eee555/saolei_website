@@ -19,6 +19,8 @@ class UserRegisterForm(forms.ModelForm):
     email = forms.EmailField(max_length=100, required=True)
 
     class Meta:
+        model = User
+        fields = ("username", "password", "email")
         # 自定义错误消息
         error_messages = {
             'username': {

@@ -11,6 +11,7 @@ import { onMounted, watch, ref,toRefs } from "vue";
 // import {getCurrentInstance} from 'vue';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const {proxy} = useCurrentInstance();
+import { AXIOS_BASE_URL } from '../config';
 // axios.defaults.headers['Content-Type'] = 'application/x-www-form-urlencoded';
 
 
@@ -23,7 +24,7 @@ const refreshPic = () => {
 		.then(function (response) {
 			hashkey.value = response.data.hashkey;
 			// console.log(hashkey.value);
-			captchaUrl.value = `http://127.0.0.1:8000/userprofile/captcha/image/` + hashkey.value;
+			captchaUrl.value = AXIOS_BASE_URL + `/userprofile/captcha/image/` + hashkey.value;
 			// console.log(captchaUrl.value);
 		})
 		.catch(function (error) {

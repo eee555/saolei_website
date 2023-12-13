@@ -134,6 +134,7 @@ import { LoginStatus } from "@/utils/common/structInterface"
 import ValidCode from "@/components/ValidCode.vue";
 import ValidCode2 from "@/components/ValidCode2.vue";
 import { genFileId, ElMessage } from 'element-plus'
+import { AXIOS_BASE_URL } from '../config';
 // import { v4 as uuidv4 } from 'uuid';
 // import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 // axios.defaults.headers['Content-Type'] = 'application/x-www-form-urlencoded';
@@ -157,7 +158,7 @@ const login_visibile = ref(false);
 const register_visibile = ref(false);
 const retrieve_visibile = ref(false);
 
-const remember_me = ref(false);
+const remember_me = ref(true);
 
 const user_name = ref("");
 const user_password = ref("");
@@ -189,7 +190,7 @@ onMounted(() => {
             date.setDate(date.getDate() - 1);
             document.cookie = "session_id=;expires=" + date;
             var xhr = new XMLHttpRequest();
-            xhr.open('POST', 'http://127.0.0.1:8000/userprofile/logout/', false);
+            xhr.open('POST', AXIOS_BASE_URL + '/userprofile/logout/', false);
             xhr.send(null);
             // 防止密码爆破，用户界面展示所有个人录像，进入其他人个人主页
 

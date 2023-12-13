@@ -164,7 +164,8 @@ front_end/public/flop
 
 *.docx
 *.doc
-*.py
+*.conf
+
 
 
 

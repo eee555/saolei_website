@@ -18,6 +18,7 @@ import { getCurrentInstance } from 'vue';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
 import { genFileId, ElMessage } from 'element-plus'
+import { AXIOS_BASE_URL } from '../config';
 
 
 const preview_visible = ref(false);
@@ -41,7 +42,7 @@ const preview = (id: Number | undefined) => {
 			}
 		}
 	).then(function (response) {
-		let uri = "http://127.0.0.1:8000/video/preview/?id=" + id;
+		let uri = AXIOS_BASE_URL + "/video/preview/?id=" + id;
 		if (response.data.msg == "a") {
 			uri += ".avf";
 		} else if (response.data.msg == "e") {
@@ -84,7 +85,7 @@ const download = (id: Number | undefined) => {
 	}
 	const down = document.createElement('a');
 	down.style.display = 'none';
-	down.href = "http://127.0.0.1:8000/video/download/?id=" + id;
+	down.href = AXIOS_BASE_URL + "/video/download/?id=" + id;
 	document.body.appendChild(down);
 	down.click();
 	URL.revokeObjectURL(down.href);

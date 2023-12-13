@@ -1,7 +1,9 @@
 import axios from 'axios'
+import { AXIOS_BASE_URL } from './config';
+
 axios.defaults.headers['Content-Type'] = 'application/x-www-form-urlencoded';
 const $axios = axios.create({
-    baseURL: "http://127.0.0.1:8000",
+    baseURL: AXIOS_BASE_URL,
     timeout: 2000,
     withCredentials: true   // 必须指定这个参数，否则axios才能携带参数
 })
