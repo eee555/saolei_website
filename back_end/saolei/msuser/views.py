@@ -14,6 +14,8 @@ import decimal
 import urllib.parse
 from django_redis import get_redis_connection
 cache = get_redis_connection("saolei_website")
+from django.conf import settings
+import os
 
 # 根据id获取用户的基本资料、扫雷记录
 # 无需登录就可获取
@@ -26,20 +28,19 @@ class DecimalEncoder(json.JSONEncoder):
         super(DecimalEncoder, self).default(o)
 
 
-# 获取我的地盘里的头像、姓名、个性签名、记录
+# 获取我的地盘里的头像、姓名、个性签名
 def get_info(request):
     if request.method == 'GET':
         # 此处要重点防攻击
-        # print(request.GET)
-        user_id = request.user.id
+        # user_id = request.user.id
+        user_id = request.GET["id"]
         user = UserProfile.objects.get(id=user_id)
-        ms_user = UserMS.objects.get(id=request.user.userms_id)
-        # print(user_id)
-        # print(urllib.parse.unquote(user.avatar.url))
-
+        # ms_user = UserMS.objects.get(id=request.user.userms_id)
+        # ms_user = user.userms
+        
         if user.avatar:
-            image_data = open(urllib.parse.unquote(
-                user.avatar.url)[1:], "rb").read()
+            avatar_path = os.path.join(settings.MEDIA_ROOT, urllib.parse.unquote(user.avatar.url)[7:])
+            image_data = open(avatar_path, "rb").read()
             image_data = base64.b64encode(image_data).decode()
         else:
             image_data = None
@@ -47,6 +48,22 @@ def get_info(request):
                     "realname": user.realname,
                     "avatar": image_data,
                     "signature": user.signature,
+                    }
+        return JsonResponse(response)
+    else:
+        return HttpResponse("别瞎玩")
+
+
+# 获取我的地盘里的姓名、全部纪录
+def get_records(request):
+    if request.method == 'GET':
+        # 此处要重点防攻击
+        user_id = request.GET["id"]
+        user = UserProfile.objects.get(id=user_id)
+        ms_user = user.userms
+
+        response = {"id": user_id,
+                    "realname": user.realname,
                     "std_record": json.dumps({"time": [ms_user.b_time_std, ms_user.i_time_std, ms_user.e_time_std],
                                              "bvs": [ms_user.b_bvs_std, ms_user.i_bvs_std, ms_user.e_bvs_std],
                                               "stnb": [ms_user.b_stnb_std, ms_user.i_stnb_std, ms_user.e_stnb_std],
@@ -88,13 +105,41 @@ def get_info(request):
                                              "ioe_id": [ms_user.b_ioe_id_dg, ms_user.i_ioe_id_dg, ms_user.e_ioe_id_dg],
                                              "path_id": [ms_user.b_path_id_dg, ms_user.i_path_id_dg, ms_user.e_path_id_dg]}, cls=DecimalEncoder),
                     }
-        # print(response["avatar"])
-        # print(response["realname"])
-        # print(JsonResponse(response))
-
+        
         return JsonResponse(response)
     else:
         return HttpResponse("别瞎玩")
+    
+
+# 鼠标移到人名上时，展现头像、姓名、id、记录
+def get_info_abstract(request):
+    if request.method == 'GET':
+        # 此处要防攻击
+        user_id = request.GET["id"]
+        user = UserProfile.objects.get(id=user_id)
+        ms_user = user.userms
+        if user.avatar:
+            avatar_path = os.path.join(settings.MEDIA_ROOT, urllib.parse.unquote(user.avatar.url)[7:])
+            image_data = open(avatar_path, "rb").read()
+            image_data = base64.b64encode(image_data).decode()
+        else:
+            image_data = None
+
+        response = {
+            "id": user_id,
+            "realname": user.realname,
+            "avatar": image_data,
+            "record_abstract": json.dumps({"time": [ms_user.b_time_std, ms_user.i_time_std, ms_user.e_time_std],
+                                            "bvs": [ms_user.b_bvs_std, ms_user.i_bvs_std, ms_user.e_bvs_std],
+                                            "time_id": [ms_user.b_time_id_std, ms_user.i_time_id_std, ms_user.e_time_id_std],
+                                            "bvs_id": [ms_user.b_bvs_id_std, ms_user.i_bvs_id_std, ms_user.e_bvs_id_std]}, 
+                                            cls=DecimalEncoder),
+            }
+        
+        return JsonResponse(response)
+    else:
+        return HttpResponse("别瞎玩")
+    
 
 # 上传我的地盘里的头像、姓名、个性签名
 @login_required(login_url='/')
@@ -112,7 +157,10 @@ def update(request):
                 user.avatar = data["avatar"]
             try:
                 user.save()
-                return JsonResponse({"status": 100, "msg": None})
+                return JsonResponse({"status": 100, "msg": {
+                    "id": user.id, "username": user.username,
+                     "realname": data["realname"], "is_banned": user.is_banned}
+                     })
             except Exception as e:
                 return JsonResponse({"status": 107, "msg": "不支持此种字符"})
         else:
@@ -124,8 +172,10 @@ def update(request):
 def player_rank(request):
     if request.method == 'GET':
         # print(request.GET)
+        # print(cache.zcard("player_time_std_ids"))
         data=request.GET
-        num_player = cache.llen(data["ids"])
+        # num_player = cache.llen(data["ids"])
+        num_player = cache.zcard(data["ids"])
         start_idx = 20 * int(data["page"])
         if start_idx >= num_player:
             start_idx = num_player // 20 * 20

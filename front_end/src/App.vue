@@ -1,8 +1,19 @@
 <template>
   <div class="common-layout">
     <el-container>
-      <el-header class="header_all" style="margin-bottom: 0px">
-        <Login @login="user_login" @logout="user_logout"></Login>
+      <el-main class="header_all" style="padding-top: 0;">
+        <!-- <el-header class="header_all" style="margin-bottom: 0px"> -->
+        <div class="logo-container">
+          <div  @click="goback_home()" class="logo" style="float:inline-start;">
+            <el-image style="width: 72px; height: 72px;" :src="logo_1" :fit="'cover'" />
+            <el-image style="width: 162px; height: 74px;" :src="logo_2" :fit="'cover'" />
+          </div>
+          <div style="float: inline-end; ">
+            <Menu @login="user_login" @logout="user_logout" style="margin-bottom: 10px;"></Menu>
+          </div>
+
+        </div>
+        <div style="clear:both;"></div>
         <nav>
           <router-link to="/" class="header">首页</router-link>
           <router-link to="/ranking" class="header">排行榜</router-link>
@@ -11,13 +22,13 @@
           <router-link to="/guide" class="header">教程</router-link>
           <router-link to="/player" class="header2" v-show="player_visibile">我的地盘</router-link>
           <router-link to="/upload" class="header2">上传录像</router-link>
-          
+
         </nav>
-      </el-header>
+        <!-- </el-header> -->
 
 
-      <el-main>
-        <div class="content">
+        <!-- <el-main> -->
+        <div class="content" style="padding-top: 16px;">
           <router-view />
         </div>
       </el-main>
@@ -32,10 +43,15 @@
 
 <script setup lang='ts'>
 import { ref, reactive, onMounted } from 'vue'
-import Login from "./components/Login.vue";
+import Menu from "./components/Menu.vue";
 import { LoginStatus } from "@/utils/common/structInterface"
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
+const logo_1 = ref(require('@/assets/logo.png'))
+const logo_2 = ref(require('@/assets/logo2.png'))
+
+import { useRouter } from 'vue-router'
+const router = useRouter()
 
 const player_visibile = ref(false)
 const tab_width = ref("16%")
@@ -60,12 +76,23 @@ const user_logout = () => {
   proxy.$router.push("/");
 }
 
-
+const goback_home = () => {
+  router.push("/")
+}
 
 
 </script>
 
 <style scope lang='less'>
+.logo-container {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: flex-end;
+}
+.logo:hover{
+  cursor: pointer;
+}
+
 .header {
   background-color: #ececec;
   float: left;
@@ -113,8 +140,8 @@ a {
 
 .content {
   clear: both;
-  margin-left: 6%;
-  margin-right: 6%;
+  margin-left: 3%;
+  margin-right: 3%;
   // background-color: #ddd;
 }
 </style>

@@ -7,7 +7,7 @@ select * from `userprofile_userprofile`
 #select * from `userprofile_userprofile`
 #select * from `videomanager_expandvideomodel`
 #select * from `msuser_userms`
-#UPDATE userprofile_userprofile SET is_superuser = 1 WHERE id = 3
+#UPDATE userprofile_userprofile SET is_superuser = 1 WHERE id = 2-- 
 
 
 

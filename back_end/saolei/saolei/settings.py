@@ -79,7 +79,7 @@ TEMPLATES = [
 ]
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "dist/static/"), # ????dist?都一样
+    os.path.join(BASE_DIR, "dist/"), # ????dist?都一样
 ]
 
 WSGI_APPLICATION = "saolei.wsgi.application"
@@ -181,10 +181,17 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_HEADERS = ('*')
 CSRF_TRUSTED_ORIGINS = ['http://localhost:8080']
-SESSION_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_SECURE = False  # https时候改成True
-CSRF_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_SECURE = False     # https时候改成True
+
+# 开发时
+SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE = True  # https时候改成True
+CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE = True     # https时候改成True
+# 部署时
+# SESSION_COOKIE_SAMESITE = 'Lax'
+# SESSION_COOKIE_SECURE = False  # https时候改成True
+# CSRF_COOKIE_SAMESITE = 'Lax'
+# CSRF_COOKIE_SECURE = False     # https时候改成True
 
 # 发送邮箱验证码
 EMAIL_HOST = "smtp.88.com"     # 服务器

@@ -1,21 +1,22 @@
 <template>
-    <div style="text-align: right;">
-
-        <el-button plain style="border: 0;" v-show="login_status != LoginStatus.IsLogin"
+    <div>
+        <span class="click-word" v-show="login_status != LoginStatus.IsLogin"
             @click="login_status = LoginStatus.Login; login_visibile = true; register_visibile = false">
             登录
-        </el-button>
+        </span>
         <div style="display:inline-block" v-show="login_status == LoginStatus.IsLogin">
             欢迎您，{{ user_name_show }}！
         </div>
-        <span>|</span>
-        <el-button plain style="border: 0;margin: 0;" v-show="login_status != LoginStatus.IsLogin"
+        <span style="width:12px; display:inline-block">
+        </span>|<span style="width:12px; display:inline-block">
+        </span>
+        <span class="click-word" v-show="login_status != LoginStatus.IsLogin"
             @click="login_status = LoginStatus.Register; register_visibile = true; login_visibile = false">
             注册
-        </el-button>
-        <el-button plain style="border: 0;margin: 0;" v-show="login_status == LoginStatus.IsLogin" @click="logout()">
+        </span>
+        <span class="click-word" v-show="login_status == LoginStatus.IsLogin" @click="logout()">
             退出
-        </el-button>
+        </span>
     </div>
     <el-dialog v-model="login_visibile" title="欢迎登录" width="30%" draggable
         @close='() => { if (login_status !== LoginStatus.IsLogin) { login_status = LoginStatus.NotLogin; } }'>
@@ -135,11 +136,7 @@ import ValidCode from "@/components/ValidCode.vue";
 import ValidCode2 from "@/components/ValidCode2.vue";
 import { genFileId, ElMessage } from 'element-plus'
 import { AXIOS_BASE_URL } from '../config';
-// import { v4 as uuidv4 } from 'uuid';
-// import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
-// axios.defaults.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-// import type { AxiosRequestConfig, AxiosResponse,AxiosError  } from 'axios'
-// console.log(uuidv4());
+
 
 let refValidCode = ref<any>(null)
 let refValidCode2 = ref<any>(null)
@@ -182,22 +179,22 @@ const emit = defineEmits(['login', 'logout']);
 onMounted(() => {
     // console.log(document.cookie);
     login();
-    window.onbeforeunload = function (e) {
-        // 关闭网页时，删cookie。由于跨域问题，开发时，如开前后端各开一个服务器，
-        // 体现不出效果，即：取消“记住我”，依然可以免密登录。部署以后，预期“记住我”的功能正常
-        if (!remember_me.value) {
-            let date = new Date();
-            date.setDate(date.getDate() - 1);
-            document.cookie = "session_id=;expires=" + date;
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', AXIOS_BASE_URL + '/userprofile/logout/', false);
-            xhr.send(null);
-            // 防止密码爆破，用户界面展示所有个人录像，进入其他人个人主页
+    // window.onbeforeunload = function (e) {
+    //     // 关闭网页时，删cookie。由于跨域问题，开发时，如开前后端各开一个服务器，
+    //     // 体现不出效果，即：取消“记住我”，依然可以免密登录。部署以后，预期“记住我”的功能正常
+    //     if (!remember_me.value) {
+    //         let date = new Date();
+    //         date.setDate(date.getDate() - 1);
+    //         document.cookie = "session_id=;expires=" + date;
+    //         var xhr = new XMLHttpRequest();
+    //         xhr.open('POST', AXIOS_BASE_URL + '/userprofile/logout/', false);
+    //         xhr.send(null);
+    //         // 防止密码爆破，用户界面展示所有个人录像，进入其他人个人主页
 
-        }
-        return null;
+    //     }
+    //     return null;
 
-    };
+    // };
 })
 
 
@@ -224,15 +221,17 @@ const login = () => {
             // console.log(response.data.msg);
             // console.log(response.data.msg.name);
 
-            user_name_show.value = response.data.msg.name;
+            user_name_show.value = response.data.msg.username;
+
+            proxy.$store.commit('updateUser', response.data.msg);// 当前登录用户
+            proxy.$store.commit('updatePlayer', response.data.msg);// 看我的地盘看谁的
             if (response.data.msg.is_banned) {
                 user_name_show.value += "（您已被封禁，详情请询问管理员！）"
             }
             login_status.value = LoginStatus.IsLogin;
             emit('login'); // 向父组件发送消息
             login_visibile.value = false;
-            proxy.$store.commit('updateUser', response.data.msg);// 当前登录用户
-            proxy.$store.commit('updatePlayer', response.data.msg);// 看我的地盘看谁的
+            // console.log(response.data.msg);
             // if (!user_name.value) {
             //     // 如果本次是自动登录成功的，下次依然自动登录
             //     remember_me.value = true;
@@ -317,6 +316,8 @@ const register = () => {
             hint_message.value = ""
             user_name_show.value = user_name_reg.value;
             login_status.value = LoginStatus.IsLogin;
+            proxy.$store.commit('updateUser', response.data.msg);// 当前登录用户
+            proxy.$store.commit('updatePlayer', response.data.msg);// 看我的地盘看谁的
             emit('login'); // 向父组件发送消息
             register_visibile.value = false;
             // console.log(response);
@@ -394,7 +395,7 @@ defineExpose({
 
 
 <style>
-input:invalid {
+/* input:invalid {
     outline: 2px solid rgb(167, 11, 11);
     border-radius: 3px;
 }
@@ -402,7 +403,7 @@ input:invalid {
 .el-dialog .el-dialog__body {
     flex: 1;
     overflow: auto;
-}
+} */
 </style>
 
 

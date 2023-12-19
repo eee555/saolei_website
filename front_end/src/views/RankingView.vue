@@ -26,7 +26,8 @@
         <div v-for="(player, key) in playerData" style="margin-top: 10px;">
 
             <span class="rank">{{ key - 19 + (state.CurrentPage) * 20 }}</span>
-            <span class="name">{{ player.name }}</span>
+            <!-- <span class="name">{{ player.name }}</span> -->
+            <PlayerName class="name" :user_id="player.name_id" :user_name="player.name"></PlayerName>
             <!-- <span class="beginner">{{ to_fixed_n(player.beginner, 3) }}</span> -->
             <el-popover placement="bottom" :width="165" popper-style="background-color:rgba(250,250,250,0.38);"
                 :hide-after="0">
@@ -77,6 +78,9 @@
 import { onMounted, ref, Ref, defineEmits, reactive } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import PreviewDownload from '@/components/PreviewDownload.vue';
+import PlayerName from '@/components/PlayerName.vue';
+import {defineAsyncComponent} from 'vue'
+// const AsyncPlayerName = defineAsyncComponent(() => import('@/components/PlayerName.vue'))
 const { proxy } = useCurrentInstance();
 
 // const level_tag_selected = ref("EXPERT");
@@ -182,13 +186,12 @@ const get_player_rank = (page: number) => {
                 ids: `${piv}ids`,
                 sort_by: `${piv}*->${level_selected.value}`,
                 reverse: iv.reverse,
-                indexes: `["#","${piv}*->name","${piv}*->b","${piv}*->b_id","${piv}*->i",
-                "${piv}*->i_id","${piv}*->e","${piv}*->e_id","${piv}*->sum"]`,
+                indexes: `["#","${piv}*->name","${piv}*->b","${piv}*->b_id","${piv}*->i","${piv}*->i_id","${piv}*->e","${piv}*->e_id","${piv}*->sum"]`,
                 page: page,
             }
         }
     ).then(function (response) {
-        console.log(response.data);
+        // console.log(response.data);
         const data = response.data;
         state.Total = data.total_page;
 
@@ -252,7 +255,7 @@ const setSortDirect = (level_tag: string) => {
     display: inline-block;
 }
 
-.name {
+/deep/ .name {
     width: 26%;
     display: inline-block;
     text-align: center;
@@ -266,6 +269,7 @@ const setSortDirect = (level_tag: string) => {
 
 .beginner:hover {
     color: rgb(64, 158, 255);
+    cursor: pointer;
 }
 
 .intermediate {
@@ -276,6 +280,7 @@ const setSortDirect = (level_tag: string) => {
 
 .intermediate:hover {
     color: rgb(64, 158, 255);
+    cursor: pointer;
 }
 
 .expert {
@@ -286,6 +291,7 @@ const setSortDirect = (level_tag: string) => {
 
 .expert:hover {
     color: rgb(64, 158, 255);
+    cursor: pointer;
 }
 
 .sum {
@@ -302,6 +308,7 @@ const setSortDirect = (level_tag: string) => {
 
 .sum_title:hover {
     color: rgb(64, 158, 255);
+    cursor: pointer;
 }
 
 .el-pagination {

@@ -39,7 +39,9 @@ def user_login(request):
         response = {'status': 100, 'msg': None}
         if request.user.is_authenticated:
             # login(request, request.user)
-            response['msg'] = response['msg'] = {"id": request.user.id, "name": request.user.username, "is_banned": request.user.is_banned}
+            response['msg'] = response['msg'] = {
+                "id": request.user.id, "username": request.user.username,
+                  "realname": request.user.realname, "is_banned": request.user.is_banned}
             return JsonResponse(response)
         # if user_id:=request.session.get("_auth_user_id"):
         #     if user:=User.objects.get(id=user_id):
@@ -64,7 +66,9 @@ def user_login(request):
                 login(request, user)
                 # response = http.JsonResponse({"code":0,"errmsg":"注册成功"})
                 # response.set_cookie("username",user.username,max_age=3600*24*14)
-                response['msg'] = {"id": user.id, "name": user.username, "is_banned": user.is_banned}
+                response['msg'] = {
+                    "id": user.id, "username": user.username, 
+                    "realname": user.realname, "is_banned": user.is_banned}
                 if 'user_id' in data and data['user_id'] != str(user.id):
                     # 检测到小号
                     logger.info(f'{data["user_id"][:50]} is diffrent from {str(user.id)}.')
@@ -143,12 +147,10 @@ def user_register(request):
                 new_user.save()
                 # 保存好数据后立即登录
                 login(request, new_user)
-                # request.session['login'] = '1'
-                # # print(request.session)
-                # Jresponse = JsonResponse(response)
-                # Jresponse.set_cookie('login','1', max_age=30*24*3600)
-                # # print(Jresponse.cookies)
-                return JsonResponse({'status': 100, 'msg': None})
+                return JsonResponse({'status': 100, 'msg': {
+                    "id": new_user.id, "username": new_user.username,
+                    "realname": new_user.realname, "is_banned": False}
+                    })
                 # return HttpResponse(json.dumps(response), content_type='application/json')
             else:
                 return JsonResponse({'status': 102, 'msg': "邮箱验证码不正确！"})

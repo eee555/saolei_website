@@ -5,8 +5,8 @@
 				src="/flop/index.html" ref="video_iframe"></iframe>
 		</el-dialog>
 	</Teleport>
-	<el-button :size="'small'" plain icon="View" @click="preview(id)">预览</el-button>
-	<el-button :size="'small'" plain icon="Download" @click="download(id)">下载</el-button>
+	<el-button :size="'small'" plain icon="View" @click="preview($event, id)">预览</el-button>
+	<el-button :size="'small'" plain icon="Download" @click="download($event, id)">下载</el-button>
 </template>
 
 <script setup lang="ts" name="PreviewDownload">
@@ -30,7 +30,10 @@ const { id } = defineProps({
 	}
 })
 
-const preview = (id: Number | undefined) => {
+
+const preview = (event : MouseEvent, id: Number | undefined) => {
+	console.log(id);
+	
 	if (!id) {
 		return
 	}
@@ -79,7 +82,7 @@ const preview = (id: Number | undefined) => {
 
 }
 
-const download = (id: Number | undefined) => {
+const download = (event : MouseEvent, id: Number | undefined) => {
 	if (!id) {
 		return
 	}

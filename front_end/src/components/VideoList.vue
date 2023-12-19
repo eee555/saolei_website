@@ -74,7 +74,7 @@ const videos_trans = computed(() => {
     return data.videos;
 })
 
-console.log(videos_trans);
+// console.log(videos_trans);
 
 
 </script>

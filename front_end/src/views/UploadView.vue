@@ -1,5 +1,5 @@
 <template>
-    <el-upload ref="upload" class="upload-demo" drag action="#" :limit="1" :http-request="handleVideoUpload"
+    <el-upload :disabled="!allow_upload" ref="upload" class="upload-demo" drag action="#" :limit="1" :http-request="handleVideoUpload"
         :on-exceed="handleExceed" :on-change="handleChange" :auto-upload="false" :show-file-list="false"
         style="background-color: white;" accept=".avf,.evf">
         <!-- <template #trigger>
@@ -63,7 +63,21 @@ const video_msg_bbbv = ref("")
 const video_msg_bvs = ref("")
 
 const upload = ref<UploadInstance>()
+const allow_upload = ref(true)
 const hint_text = ref<string>("*仅限一个文件，且文件大小不能超过5M")
+
+onMounted(() => {
+    const player = proxy.$store.state.user;
+    if (player.realname == "请修改为实名") { 
+        allow_upload.value = false;
+        ElMessage.error('上传录像前，请先修改为实名!');
+    }
+    if (!player.realname) { 
+        allow_upload.value = false;
+        ElMessage.error('请先登录!');
+    }
+
+})
 
 const handleChange: UploadProps['onChange'] = (uploadFile: UploadFile, uploadFiles: UploadFiles) => {
     // console.log(uploadFile);

@@ -18,7 +18,7 @@ from datetime import datetime
 # from django.core.cache import cache
 from django_redis import get_redis_connection
 cache = get_redis_connection("saolei_website")
-# .flushall()
+# get_redis_connection("saolei_website").flushall()
 # from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.schedulers.background import BackgroundScheduler
 # from apscheduler.triggers.cron import CronTrigger
@@ -138,6 +138,7 @@ def video_download(request):
 
 
 # 录像查询（无需登录）
+# 按任何基础指标+难度+模式，排序，分页
 def video_query(request):
     if request.method == 'GET':
         data = request.GET
@@ -152,32 +153,30 @@ def video_query(request):
             if index in {"id", "upload_time", "bv", "bvs", "-upload_time", "-bv", "-bvs"}:
                 videos = VideoModel.objects.filter(level=data["level"], mode=data["mode"])\
                     .order_by(index, "rtime").\
-                    values("id", "upload_time", "player__realname", "bv", "bvs", "rtime")
+                    values("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "rtime")
             elif index == "rtime" or index == "-rtime":
                 videos = VideoModel.objects.filter(level=data["level"], mode=data["mode"])\
                     .order_by(index).\
-                    values("id", "upload_time", "player__realname", "bv", "bvs", "rtime")
+                    values("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "rtime")
             else:
                 videos = VideoModel.objects.filter(level=data["level"], mode=data["mode"])\
                     .order_by(order_index, "rtime").\
-                    values("id", "upload_time", "player__realname", "bv",
+                    values("id", "upload_time", "player__realname", "player__id", "bv",
                         "bvs", "rtime", values_index)
         else:
             if index in {"id", "upload_time", "bv", "bvs", "-upload_time", "-bv", "-bvs"}:
                 videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(level=data["level"])\
                     .order_by(index, "rtime").\
-                    values("id", "upload_time", "player__realname", "bv", "bvs", "rtime")
+                    values("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "rtime")
             elif index == "rtime" or index == "-rtime":
                 videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(level=data["level"])\
                     .order_by(index).\
-                    values("id", "upload_time", "player__realname", "bv", "bvs", "rtime")
+                    values("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "rtime")
             else:
                 videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(level=data["level"])\
                     .order_by(order_index, "rtime").\
-                    values("id", "upload_time", "player__realname", "bv",
+                    values("id", "upload_time", "player__realname", "player__id", "bv",
                         "bvs", "rtime", values_index)
-
-
 
         paginator = Paginator(videos, 20)  # 每页20条数据
         page_number = data["page"]
@@ -194,6 +193,36 @@ def video_query(request):
         return HttpResponse("别瞎玩")
     else:
         return HttpResponse("别瞎玩")
+
+
+# 按id查询这个用户的所有录像
+def video_query_by_id(request):
+    if request.method == 'GET':
+        id_ = request.GET["id"]
+        
+        user = UserProfile.objects.get(id=id_)
+        videos = VideoModel.objects.filter(player=user).values('id', 'upload_time', "level", "mode", "rtime", "bv", "bvs")
+        # print(list(videos))
+
+        return JsonResponse(json.dumps({"videos": list(videos)}, cls=ComplexEncoder), safe=False)
+    else:
+        return HttpResponse("别瞎玩")
+
+
+# {
+#     "1": "{\"time\": \"2023-12-16 14:52:40\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"b\", \"mode\": \"00\", \"rtime\": \"4.770\", \"bv\": 23, \"bvs\": 4.821802935010482}",
+#     "3": "{\"time\": \"2023-12-16 14:52:52\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"i\", \"mode\": \"00\", \"rtime\": \"20.390\", \"bv\": 71, \"bvs\": 3.4330554193231975}",
+#     "4": "{\"time\": \"2023-12-16 15:17:58\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"b\", \"mode\": \"12\", \"rtime\": \"1.530\", \"bv\": 4, \"bvs\": 2.6143790849673203}",
+#     "8": "{\"time\": \"2023-12-16 15:26:22\", \"player\": \"www333\", \"level\": \"e\", \"mode\": \"00\", \"rtime\": \"51.940\", \"bv\": 149, \"bvs\": 2.849441663457836}",
+#     "9": "{\"time\": \"2023-12-16 15:26:26\", \"player\": \"www333\", \"level\": \"b\", \"mode\": \"00\", \"rtime\": \"3.250\", \"bv\": 18, \"bvs\": 5.538461538461538}",
+#     "10": "{\"time\": \"2023-12-16 15:26:30\", \"player\": \"www333\", \"level\": \"i\", \"mode\": \"00\", \"rtime\": \"20.110\", \"bv\": 69, \"bvs\": 3.431128791645947}",
+#     "7": "{\"time\": \"2023-12-16 15:24:07\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"i\", \"mode\": \"00\", \"rtime\": \"15.280\", \"bv\": 31, \"bvs\": 2.0287958115183247}",
+#     "6": "{\"time\": \"2023-12-16 15:24:02\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"e\", \"mode\": \"00\", \"rtime\": \"59.450\", \"bv\": 193, \"bvs\": 3.2127838519764507}",
+#     "2": "{\"time\": \"2023-12-16 14:52:48\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"e\", \"mode\": \"00\", \"rtime\": \"61.710\", \"bv\": 193, \"bvs\": 3.0789175174201913}",
+#     "5": "{\"time\": \"2023-12-16 15:23:59\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"b\", \"mode\": \"12\", \"rtime\": \"1.580\", \"bv\": 6, \"bvs\": 3.7974683544303796}"
+# }
+
+
 
 # 参数: 用户、拓展录像数据
 def update_personal_record(video_i, e_video):
@@ -219,9 +248,11 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", float(ms_user.i_time_id_std))
                     cache.hset(key, "e", float(ms_user.e_time_std))
                     cache.hset(key, "e_id", float(ms_user.e_time_id_std))
-                    cache.hset(key, "sum", float(ms_user.b_time_std + ms_user.i_time_std + ms_user.e_time_std))
-                    if not cache.lindex('player_time_std_ids', ms_user.id):
-                        cache.lpush('player_time_std_ids', ms_user.id)
+                    s = float(ms_user.b_time_std + ms_user.i_time_std + ms_user.e_time_std)
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_time_std_ids", {ms_user.id: s}) 
+                    # if not cache.lindex('player_time_std_ids', ms_user.id):
+                    #     cache.lpush('player_time_std_ids', ms_user.id)
             if video_i.bvs > ms_user.b_bvs_std:
                 ms_user.b_bvs_std = video_i.bvs
                 ms_user.b_bvs_id_std = e_video.id
@@ -234,9 +265,11 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_bvs_id_std)
                     cache.hset(key, "e", ms_user.e_bvs_std)
                     cache.hset(key, "e_id", ms_user.e_bvs_id_std)
-                    cache.hset(key, "sum", ms_user.b_bvs_std + ms_user.i_bvs_std + ms_user.e_bvs_std)
-                    if not cache.lindex('player_bvs_std_ids', ms_user.id):
-                        cache.lpush('player_bvs_std_ids', ms_user.id)
+                    s = ms_user.b_bvs_std + ms_user.i_bvs_std + ms_user.e_bvs_std
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_bvs_std_ids", {ms_user.id: s})
+                    # if not cache.lindex('player_bvs_std_ids', ms_user.id):
+                    #     cache.lpush('player_bvs_std_ids', ms_user.id)
             if e_video.stnb > ms_user.b_stnb_std:
                 ms_user.b_stnb_std = e_video.stnb
                 ms_user.b_stnb_id_std = e_video.id
@@ -249,9 +282,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_stnb_id_std)
                     cache.hset(key, "e", ms_user.e_stnb_std)
                     cache.hset(key, "e_id", ms_user.e_stnb_id_std)
-                    cache.hset(key, "sum", ms_user.b_stnb_std + ms_user.i_stnb_std + ms_user.e_stnb_std)
-                    if not cache.lindex('player_stnb_std_ids', ms_user.id):
-                        cache.lpush('player_stnb_std_ids', ms_user.id)
+                    s = ms_user.b_stnb_std + ms_user.i_stnb_std + ms_user.e_stnb_std
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_stnb_std_ids", {ms_user.id: s})
+                    # cache.hset(key, "sum", ms_user.b_stnb_std + ms_user.i_stnb_std + ms_user.e_stnb_std)
+                    # if not cache.lindex('player_stnb_std_ids', ms_user.id):
+                    #     cache.lpush('player_stnb_std_ids', ms_user.id)
             if e_video.ioe > ms_user.b_ioe_std:
                 ms_user.b_ioe_std = e_video.ioe
                 ms_user.b_ioe_id_std = e_video.id
@@ -264,9 +300,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_ioe_id_std)
                     cache.hset(key, "e", ms_user.e_ioe_std)
                     cache.hset(key, "e_id", ms_user.e_ioe_id_std)
-                    cache.hset(key, "sum", ms_user.b_ioe_std + ms_user.i_ioe_std + ms_user.e_ioe_std)
-                    if not cache.lindex('player_ioe_std_ids', ms_user.id):
-                        cache.lpush('player_ioe_std_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_ioe_std + ms_user.i_ioe_std + ms_user.e_ioe_std)
+                    # if not cache.lindex('player_ioe_std_ids', ms_user.id):
+                    #     cache.lpush('player_ioe_std_ids', ms_user.id)
+                    s = ms_user.b_ioe_std + ms_user.i_ioe_std + ms_user.e_ioe_std
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_ioe_std_ids", {ms_user.id: s})
             if e_video.path < ms_user.b_path_std:
                 ms_user.b_path_std = e_video.path
                 ms_user.b_path_id_std = e_video.id
@@ -279,9 +318,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_path_id_std)
                     cache.hset(key, "e", ms_user.e_path_std)
                     cache.hset(key, "e_id", ms_user.e_path_id_std)
-                    cache.hset(key, "sum", ms_user.b_path_std + ms_user.i_path_std + ms_user.e_path_std)
-                    if not cache.lindex('player_path_std_ids', ms_user.id):
-                        cache.lpush('player_path_std_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_path_std + ms_user.i_path_std + ms_user.e_path_std)
+                    # if not cache.lindex('player_path_std_ids', ms_user.id):
+                    #     cache.lpush('player_path_std_ids', ms_user.id)
+                    s = ms_user.b_path_std + ms_user.i_path_std + ms_user.e_path_std
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_path_std_ids", {ms_user.id: s})
         if video_i.level == "i":
             if video_i.rtime < ms_user.i_time_std:
                 ms_user.i_time_std = video_i.rtime
@@ -295,9 +337,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", float(ms_user.i_time_id_std))
                     cache.hset(key, "e", float(ms_user.e_time_std))
                     cache.hset(key, "e_id", float(ms_user.e_time_id_std))
-                    cache.hset(key, "sum", float(ms_user.b_time_std + ms_user.i_time_std + ms_user.e_time_std))
-                    if not cache.lindex('player_time_std_ids', ms_user.id):
-                        cache.lpush('player_time_std_ids', ms_user.id)
+                    # cache.hset(key, "sum", float(ms_user.b_time_std + ms_user.i_time_std + ms_user.e_time_std))
+                    # if not cache.lindex('player_time_std_ids', ms_user.id):
+                    #     cache.lpush('player_time_std_ids', ms_user.id)
+                    s = float(ms_user.b_time_std + ms_user.i_time_std + ms_user.e_time_std)
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_time_std_ids", {ms_user.id: s})
             if video_i.bvs > ms_user.i_bvs_std:
                 ms_user.i_bvs_std = video_i.bvs
                 ms_user.i_bvs_id_std = e_video.id
@@ -310,9 +355,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_bvs_id_std)
                     cache.hset(key, "e", ms_user.e_bvs_std)
                     cache.hset(key, "e_id", ms_user.e_bvs_id_std)
-                    cache.hset(key, "sum", ms_user.b_bvs_std + ms_user.i_bvs_std + ms_user.e_bvs_std)
-                    if not cache.lindex('player_bvs_std_ids', ms_user.id):
-                        cache.lpush('player_bvs_std_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_bvs_std + ms_user.i_bvs_std + ms_user.e_bvs_std)
+                    # if not cache.lindex('player_bvs_std_ids', ms_user.id):
+                    #     cache.lpush('player_bvs_std_ids', ms_user.id)
+                    s = ms_user.b_bvs_std + ms_user.i_bvs_std + ms_user.e_bvs_std
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_bvs_std_ids", {ms_user.id: s})
             if e_video.stnb > ms_user.i_stnb_std:
                 ms_user.i_stnb_std = e_video.stnb
                 ms_user.i_stnb_id_std = e_video.id
@@ -325,9 +373,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_stnb_id_std)
                     cache.hset(key, "e", ms_user.e_stnb_std)
                     cache.hset(key, "e_id", ms_user.e_stnb_id_std)
-                    cache.hset(key, "sum", ms_user.b_stnb_std + ms_user.i_stnb_std + ms_user.e_stnb_std)
-                    if not cache.lindex('player_stnb_std_ids', ms_user.id):
-                        cache.lpush('player_stnb_std_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_stnb_std + ms_user.i_stnb_std + ms_user.e_stnb_std)
+                    # if not cache.lindex('player_stnb_std_ids', ms_user.id):
+                    #     cache.lpush('player_stnb_std_ids', ms_user.id)
+                    s = ms_user.b_stnb_std + ms_user.i_stnb_std + ms_user.e_stnb_std
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_stnb_std_ids", {ms_user.id: s})
             if e_video.ioe > ms_user.i_ioe_std:
                 ms_user.i_ioe_std = e_video.ioe
                 ms_user.i_ioe_id_std = e_video.id
@@ -340,9 +391,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_ioe_id_std)
                     cache.hset(key, "e", ms_user.e_ioe_std)
                     cache.hset(key, "e_id", ms_user.e_ioe_id_std)
-                    cache.hset(key, "sum", ms_user.b_ioe_std + ms_user.i_ioe_std + ms_user.e_ioe_std)
-                    if not cache.lindex('player_ioe_std_ids', ms_user.id):
-                        cache.lpush('player_ioe_std_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_ioe_std + ms_user.i_ioe_std + ms_user.e_ioe_std)
+                    # if not cache.lindex('player_ioe_std_ids', ms_user.id):
+                    #     cache.lpush('player_ioe_std_ids', ms_user.id)
+                    s = ms_user.b_ioe_std + ms_user.i_ioe_std + ms_user.e_ioe_std
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_ioe_std_ids", {ms_user.id: s})
             if e_video.path < ms_user.i_path_std:
                 ms_user.i_path_std = e_video.path
                 ms_user.i_path_id_std = e_video.id
@@ -355,9 +409,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_path_id_std)
                     cache.hset(key, "e", ms_user.e_path_std)
                     cache.hset(key, "e_id", ms_user.e_path_id_std)
-                    cache.hset(key, "sum", ms_user.b_path_std + ms_user.i_path_std + ms_user.e_path_std)
-                    if not cache.lindex('player_path_std_ids', ms_user.id):
-                        cache.lpush('player_path_std_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_path_std + ms_user.i_path_std + ms_user.e_path_std)
+                    # if not cache.lindex('player_path_std_ids', ms_user.id):
+                    #     cache.lpush('player_path_std_ids', ms_user.id)
+                    s = ms_user.b_path_std + ms_user.i_path_std + ms_user.e_path_std
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_path_std_ids", {ms_user.id: s})
         if video_i.level == "e":
             if video_i.rtime < ms_user.e_time_std:
                 ms_user.e_time_std = video_i.rtime
@@ -371,9 +428,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", float(ms_user.i_time_id_std))
                     cache.hset(key, "e", float(ms_user.e_time_std))
                     cache.hset(key, "e_id", float(ms_user.e_time_id_std))
-                    cache.hset(key, "sum", float(ms_user.b_time_std + ms_user.i_time_std + ms_user.e_time_std))
-                    if not cache.lindex('player_time_std_ids', ms_user.id):
-                        cache.lpush('player_time_std_ids', ms_user.id)
+                    # cache.hset(key, "sum", float(ms_user.b_time_std + ms_user.i_time_std + ms_user.e_time_std))
+                    # if not cache.lindex('player_time_std_ids', ms_user.id):
+                    #     cache.lpush('player_time_std_ids', ms_user.id)
+                    s = float(ms_user.b_time_std + ms_user.i_time_std + ms_user.e_time_std)
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_time_std_ids", {ms_user.id: s})
             if video_i.bvs > ms_user.e_bvs_std:
                 ms_user.e_bvs_std = video_i.bvs
                 ms_user.e_bvs_id_std = e_video.id
@@ -386,9 +446,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_bvs_id_std)
                     cache.hset(key, "e", ms_user.e_bvs_std)
                     cache.hset(key, "e_id", ms_user.e_bvs_id_std)
-                    cache.hset(key, "sum", ms_user.b_bvs_std + ms_user.i_bvs_std + ms_user.e_bvs_std)
-                    if not cache.lindex('player_bvs_std_ids', ms_user.id):
-                        cache.lpush('player_bvs_std_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_bvs_std + ms_user.i_bvs_std + ms_user.e_bvs_std)
+                    # if not cache.lindex('player_bvs_std_ids', ms_user.id):
+                    #     cache.lpush('player_bvs_std_ids', ms_user.id)
+                    s = ms_user.b_bvs_std + ms_user.i_bvs_std + ms_user.e_bvs_std
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_bvs_std_ids", {ms_user.id: s})
             if e_video.stnb > ms_user.e_stnb_std:
                 ms_user.e_stnb_std = e_video.stnb
                 ms_user.e_stnb_id_std = e_video.id
@@ -401,9 +464,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_stnb_id_std)
                     cache.hset(key, "e", ms_user.e_stnb_std)
                     cache.hset(key, "e_id", ms_user.e_stnb_id_std)
-                    cache.hset(key, "sum", ms_user.b_stnb_std + ms_user.i_stnb_std + ms_user.e_stnb_std)
-                    if not cache.lindex('player_stnb_std_ids', ms_user.id):
-                        cache.lpush('player_stnb_std_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_stnb_std + ms_user.i_stnb_std + ms_user.e_stnb_std)
+                    # if not cache.lindex('player_stnb_std_ids', ms_user.id):
+                    #     cache.lpush('player_stnb_std_ids', ms_user.id)
+                    s = ms_user.b_stnb_std + ms_user.i_stnb_std + ms_user.e_stnb_std
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_stnb_std_ids", {ms_user.id: s})
             if e_video.ioe > ms_user.e_ioe_std:
                 ms_user.e_ioe_std = e_video.ioe
                 ms_user.e_ioe_id_std = e_video.id
@@ -416,9 +482,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_ioe_id_std)
                     cache.hset(key, "e", ms_user.e_ioe_std)
                     cache.hset(key, "e_id", ms_user.e_ioe_id_std)
-                    cache.hset(key, "sum", ms_user.b_ioe_std + ms_user.i_ioe_std + ms_user.e_ioe_std)
-                    if not cache.lindex('player_ioe_std_ids', ms_user.id):
-                        cache.lpush('player_ioe_std_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_ioe_std + ms_user.i_ioe_std + ms_user.e_ioe_std)
+                    # if not cache.lindex('player_ioe_std_ids', ms_user.id):
+                    #     cache.lpush('player_ioe_std_ids', ms_user.id)
+                    s = ms_user.b_ioe_std + ms_user.i_ioe_std + ms_user.e_ioe_std
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_ioe_std_ids", {ms_user.id: s})
             if e_video.path < ms_user.e_path_std:
                 ms_user.e_path_std = e_video.path
                 ms_user.e_path_id_std = e_video.id
@@ -431,9 +500,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_path_id_std)
                     cache.hset(key, "e", ms_user.e_path_std)
                     cache.hset(key, "e_id", ms_user.e_path_id_std)
-                    cache.hset(key, "sum", ms_user.b_path_std + ms_user.i_path_std + ms_user.e_path_std)
-                    if not cache.lindex('player_path_std_ids', ms_user.id):
-                        cache.lpush('player_path_std_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_path_std + ms_user.i_path_std + ms_user.e_path_std)
+                    # if not cache.lindex('player_path_std_ids', ms_user.id):
+                    #     cache.lpush('player_path_std_ids', ms_user.id)
+                    s = ms_user.b_path_std + ms_user.i_path_std + ms_user.e_path_std
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_path_std_ids", {ms_user.id: s})
 
     if video_i.mode == "00":
         if e_video.flag == 0:
@@ -453,9 +525,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", float(ms_user.i_time_id_nf))
                     cache.hset(key, "e", float(ms_user.e_time_nf))
                     cache.hset(key, "e_id", float(ms_user.e_time_id_nf))
-                    cache.hset(key, "sum", float(ms_user.b_time_nf + ms_user.i_time_nf + ms_user.e_time_nf))
-                    if not cache.lindex('player_time_nf_ids', ms_user.id):
-                        cache.lpush('player_time_nf_ids', ms_user.id)
+                    # cache.hset(key, "sum", float(ms_user.b_time_nf + ms_user.i_time_nf + ms_user.e_time_nf))
+                    # if not cache.lindex('player_time_nf_ids', ms_user.id):
+                    #     cache.lpush('player_time_nf_ids', ms_user.id)
+                    s = float(ms_user.b_time_nf + ms_user.i_time_nf + ms_user.e_time_nf)
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_time_nf_ids", {ms_user.id: s})
             if video_i.bvs > ms_user.b_bvs_nf:
                 ms_user.b_bvs_nf = video_i.bvs
                 ms_user.b_bvs_id_nf = e_video.id
@@ -468,9 +543,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_bvs_id_nf)
                     cache.hset(key, "e", ms_user.e_bvs_nf)
                     cache.hset(key, "e_id", ms_user.e_bvs_id_nf)
-                    cache.hset(key, "sum", ms_user.b_bvs_nf + ms_user.i_bvs_nf + ms_user.e_bvs_nf)
-                    if not cache.lindex('player_bvs_nf_ids', ms_user.id):
-                        cache.lpush('player_bvs_nf_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_bvs_nf + ms_user.i_bvs_nf + ms_user.e_bvs_nf)
+                    # if not cache.lindex('player_bvs_nf_ids', ms_user.id):
+                    #     cache.lpush('player_bvs_nf_ids', ms_user.id)
+                    s = ms_user.b_bvs_nf + ms_user.i_bvs_nf + ms_user.e_bvs_nf
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_bvs_nf_ids", {ms_user.id: s})
             if e_video.stnb > ms_user.b_stnb_nf:
                 ms_user.b_stnb_nf = e_video.stnb
                 ms_user.b_stnb_id_nf = e_video.id
@@ -483,9 +561,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_stnb_id_nf)
                     cache.hset(key, "e", ms_user.e_stnb_nf)
                     cache.hset(key, "e_id", ms_user.e_stnb_id_nf)
-                    cache.hset(key, "sum", ms_user.b_stnb_nf + ms_user.i_stnb_nf + ms_user.e_stnb_nf)
-                    if not cache.lindex('player_stnb_nf_ids', ms_user.id):
-                        cache.lpush('player_stnb_nf_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_stnb_nf + ms_user.i_stnb_nf + ms_user.e_stnb_nf)
+                    # if not cache.lindex('player_stnb_nf_ids', ms_user.id):
+                    #     cache.lpush('player_stnb_nf_ids', ms_user.id)
+                    s = ms_user.b_stnb_nf + ms_user.i_stnb_nf + ms_user.e_stnb_nf
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_stnb_nf_ids", {ms_user.id: s})
             if e_video.ioe > ms_user.b_ioe_nf:
                 ms_user.b_ioe_nf = e_video.ioe
                 ms_user.b_ioe_id_nf = e_video.id
@@ -498,9 +579,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_ioe_id_nf)
                     cache.hset(key, "e", ms_user.e_ioe_nf)
                     cache.hset(key, "e_id", ms_user.e_ioe_id_nf)
-                    cache.hset(key, "sum", ms_user.b_ioe_nf + ms_user.i_ioe_nf + ms_user.e_ioe_nf)
-                    if not cache.lindex('player_ioe_nf_ids', ms_user.id):
-                        cache.lpush('player_ioe_nf_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_ioe_nf + ms_user.i_ioe_nf + ms_user.e_ioe_nf)
+                    # if not cache.lindex('player_ioe_nf_ids', ms_user.id):
+                    #     cache.lpush('player_ioe_nf_ids', ms_user.id)
+                    s = ms_user.b_ioe_nf + ms_user.i_ioe_nf + ms_user.e_ioe_nf
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_ioe_nf_ids", {ms_user.id: s})
             if e_video.path < ms_user.b_path_nf:
                 ms_user.b_path_nf = e_video.path
                 ms_user.b_path_id_nf = e_video.id
@@ -513,9 +597,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_path_id_nf)
                     cache.hset(key, "e", ms_user.e_path_nf)
                     cache.hset(key, "e_id", ms_user.e_path_id_nf)
-                    cache.hset(key, "sum", ms_user.b_path_nf + ms_user.i_path_nf + ms_user.e_path_nf)
-                    if not cache.lindex('player_path_nf_ids', ms_user.id):
-                        cache.lpush('player_path_nf_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_path_nf + ms_user.i_path_nf + ms_user.e_path_nf)
+                    # if not cache.lindex('player_path_nf_ids', ms_user.id):
+                    #     cache.lpush('player_path_nf_ids', ms_user.id)
+                    s = ms_user.b_path_nf + ms_user.i_path_nf + ms_user.e_path_nf
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_path_nf_ids", {ms_user.id: s})
         if video_i.level == "i":
             if video_i.rtime < ms_user.i_time_nf:
                 ms_user.i_time_nf = video_i.rtime
@@ -529,9 +616,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", float(ms_user.i_time_id_nf))
                     cache.hset(key, "e", float(ms_user.e_time_nf))
                     cache.hset(key, "e_id", float(ms_user.e_time_id_nf))
-                    cache.hset(key, "sum", float(ms_user.b_time_nf + ms_user.i_time_nf + ms_user.e_time_nf))
-                    if not cache.lindex('player_time_nf_ids', ms_user.id):
-                        cache.lpush('player_time_nf_ids', ms_user.id)
+                    # cache.hset(key, "sum", float(ms_user.b_time_nf + ms_user.i_time_nf + ms_user.e_time_nf))
+                    # if not cache.lindex('player_time_nf_ids', ms_user.id):
+                    #     cache.lpush('player_time_nf_ids', ms_user.id)
+                    s = float(ms_user.b_time_nf + ms_user.i_time_nf + ms_user.e_time_nf)
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_time_nf_ids", {ms_user.id: s})
             if video_i.bvs > ms_user.i_bvs_nf:
                 ms_user.i_bvs_nf = video_i.bvs
                 ms_user.i_bvs_id_nf = e_video.id
@@ -544,9 +634,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_bvs_id_nf)
                     cache.hset(key, "e", ms_user.e_bvs_nf)
                     cache.hset(key, "e_id", ms_user.e_bvs_id_nf)
-                    cache.hset(key, "sum", ms_user.b_bvs_nf + ms_user.i_bvs_nf + ms_user.e_bvs_nf)
-                    if not cache.lindex('player_bvs_nf_ids', ms_user.id):
-                        cache.lpush('player_bvs_nf_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_bvs_nf + ms_user.i_bvs_nf + ms_user.e_bvs_nf)
+                    # if not cache.lindex('player_bvs_nf_ids', ms_user.id):
+                    #     cache.lpush('player_bvs_nf_ids', ms_user.id)
+                    s = ms_user.b_bvs_nf + ms_user.i_bvs_nf + ms_user.e_bvs_nf
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_bvs_nf_ids", {ms_user.id: s})
             if e_video.stnb > ms_user.i_stnb_nf:
                 ms_user.i_stnb_nf = e_video.stnb
                 ms_user.i_stnb_id_nf = e_video.id
@@ -559,9 +652,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_stnb_id_nf)
                     cache.hset(key, "e", ms_user.e_stnb_nf)
                     cache.hset(key, "e_id", ms_user.e_stnb_id_nf)
-                    cache.hset(key, "sum", ms_user.b_stnb_nf + ms_user.i_stnb_nf + ms_user.e_stnb_nf)
-                    if not cache.lindex('player_stnb_nf_ids', ms_user.id):
-                        cache.lpush('player_stnb_nf_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_stnb_nf + ms_user.i_stnb_nf + ms_user.e_stnb_nf)
+                    # if not cache.lindex('player_stnb_nf_ids', ms_user.id):
+                    #     cache.lpush('player_stnb_nf_ids', ms_user.id)
+                    s = ms_user.b_stnb_nf + ms_user.i_stnb_nf + ms_user.e_stnb_nf
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_stnb_nf_ids", {ms_user.id: s})
             if e_video.ioe > ms_user.i_ioe_nf:
                 ms_user.i_ioe_nf = e_video.ioe
                 ms_user.i_ioe_id_nf = e_video.id
@@ -574,9 +670,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_ioe_id_nf)
                     cache.hset(key, "e", ms_user.e_ioe_nf)
                     cache.hset(key, "e_id", ms_user.e_ioe_id_nf)
-                    cache.hset(key, "sum", ms_user.b_ioe_nf + ms_user.i_ioe_nf + ms_user.e_ioe_nf)
-                    if not cache.lindex('player_ioe_nf_ids', ms_user.id):
-                        cache.lpush('player_ioe_nf_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_ioe_nf + ms_user.i_ioe_nf + ms_user.e_ioe_nf)
+                    # if not cache.lindex('player_ioe_nf_ids', ms_user.id):
+                    #     cache.lpush('player_ioe_nf_ids', ms_user.id)
+                    s = ms_user.b_ioe_nf + ms_user.i_ioe_nf + ms_user.e_ioe_nf
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_ioe_nf_ids", {ms_user.id: s})
             if e_video.path < ms_user.i_path_nf:
                 ms_user.i_path_nf = e_video.path
                 ms_user.i_path_id_nf = e_video.id
@@ -589,9 +688,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_path_id_nf)
                     cache.hset(key, "e", ms_user.e_path_nf)
                     cache.hset(key, "e_id", ms_user.e_path_id_nf)
-                    cache.hset(key, "sum", ms_user.b_path_nf + ms_user.i_path_nf + ms_user.e_path_nf)
-                    if not cache.lindex('player_path_nf_ids', ms_user.id):
-                        cache.lpush('player_path_nf_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_path_nf + ms_user.i_path_nf + ms_user.e_path_nf)
+                    # if not cache.lindex('player_path_nf_ids', ms_user.id):
+                    #     cache.lpush('player_path_nf_ids', ms_user.id)
+                    s = ms_user.b_path_nf + ms_user.i_path_nf + ms_user.e_path_nf
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_path_nf_ids", {ms_user.id: s})
         if video_i.level == "e":
             if video_i.rtime < ms_user.e_time_nf:
                 ms_user.e_time_nf = video_i.rtime
@@ -605,9 +707,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", float(ms_user.i_time_id_nf))
                     cache.hset(key, "e", float(ms_user.e_time_nf))
                     cache.hset(key, "e_id", float(ms_user.e_time_id_nf))
-                    cache.hset(key, "sum", float(ms_user.b_time_nf + ms_user.i_time_nf + ms_user.e_time_nf))
-                    if not cache.lindex('player_time_nf_ids', ms_user.id):
-                        cache.lpush('player_time_nf_ids', ms_user.id)
+                    # cache.hset(key, "sum", float(ms_user.b_time_nf + ms_user.i_time_nf + ms_user.e_time_nf))
+                    # if not cache.lindex('player_time_nf_ids', ms_user.id):
+                    #     cache.lpush('player_time_nf_ids', ms_user.id)
+                    s = float(ms_user.b_time_nf + ms_user.i_time_nf + ms_user.e_time_nf)
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_time_nf_ids", {ms_user.id: s})
             if video_i.bvs > ms_user.e_bvs_nf:
                 ms_user.e_bvs_nf = video_i.bvs
                 ms_user.e_bvs_id_nf = e_video.id
@@ -620,9 +725,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_bvs_id_nf)
                     cache.hset(key, "e", ms_user.e_bvs_nf)
                     cache.hset(key, "e_id", ms_user.e_bvs_id_nf)
-                    cache.hset(key, "sum", ms_user.b_bvs_nf + ms_user.i_bvs_nf + ms_user.e_bvs_nf)
-                    if not cache.lindex('player_bvs_nf_ids', ms_user.id):
-                        cache.lpush('player_bvs_nf_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_bvs_nf + ms_user.i_bvs_nf + ms_user.e_bvs_nf)
+                    # if not cache.lindex('player_bvs_nf_ids', ms_user.id):
+                    #     cache.lpush('player_bvs_nf_ids', ms_user.id)
+                    s = ms_user.b_bvs_nf + ms_user.i_bvs_nf + ms_user.e_bvs_nf
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_bvs_nf_ids", {ms_user.id: s})
             if e_video.stnb > ms_user.e_stnb_nf:
                 ms_user.e_stnb_nf = e_video.stnb
                 ms_user.e_stnb_id_nf = e_video.id
@@ -635,9 +743,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_stnb_id_nf)
                     cache.hset(key, "e", ms_user.e_stnb_nf)
                     cache.hset(key, "e_id", ms_user.e_stnb_id_nf)
-                    cache.hset(key, "sum", ms_user.b_stnb_nf + ms_user.i_stnb_nf + ms_user.e_stnb_nf)
-                    if not cache.lindex('player_stnb_nf_ids', ms_user.id):
-                        cache.lpush('player_stnb_nf_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_stnb_nf + ms_user.i_stnb_nf + ms_user.e_stnb_nf)
+                    # if not cache.lindex('player_stnb_nf_ids', ms_user.id):
+                    #     cache.lpush('player_stnb_nf_ids', ms_user.id)
+                    s = ms_user.b_stnb_nf + ms_user.i_stnb_nf + ms_user.e_stnb_nf
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_stnb_nf_ids", {ms_user.id: s})
             if e_video.ioe > ms_user.e_ioe_nf:
                 ms_user.e_ioe_nf = e_video.ioe
                 ms_user.e_ioe_id_nf = e_video.id
@@ -650,9 +761,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_ioe_id_nf)
                     cache.hset(key, "e", ms_user.e_ioe_nf)
                     cache.hset(key, "e_id", ms_user.e_ioe_id_nf)
-                    cache.hset(key, "sum", ms_user.b_ioe_nf + ms_user.i_ioe_nf + ms_user.e_ioe_nf)
-                    if not cache.lindex('player_ioe_nf_ids', ms_user.id):
-                        cache.lpush('player_ioe_nf_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_ioe_nf + ms_user.i_ioe_nf + ms_user.e_ioe_nf)
+                    # if not cache.lindex('player_ioe_nf_ids', ms_user.id):
+                    #     cache.lpush('player_ioe_nf_ids', ms_user.id)
+                    s = ms_user.b_ioe_nf + ms_user.i_ioe_nf + ms_user.e_ioe_nf
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_ioe_nf_ids", {ms_user.id: s})
             if e_video.path < ms_user.e_path_nf:
                 ms_user.e_path_nf = e_video.path
                 ms_user.e_path_id_nf = e_video.id
@@ -665,9 +779,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_path_id_nf)
                     cache.hset(key, "e", ms_user.e_path_nf)
                     cache.hset(key, "e_id", ms_user.e_path_id_nf)
-                    cache.hset(key, "sum", ms_user.b_path_nf + ms_user.i_path_nf + ms_user.e_path_nf)
-                    if not cache.lindex('player_path_nf_ids', ms_user.id):
-                        cache.lpush('player_path_nf_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_path_nf + ms_user.i_path_nf + ms_user.e_path_nf)
+                    # if not cache.lindex('player_path_nf_ids', ms_user.id):
+                    #     cache.lpush('player_path_nf_ids', ms_user.id)
+                    s = ms_user.b_path_nf + ms_user.i_path_nf + ms_user.e_path_nf
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_path_nf_ids", {ms_user.id: s})
 
     if video_i.mode == "05":
         if video_i.level == "b":
@@ -683,9 +800,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", float(ms_user.i_time_id_ng))
                     cache.hset(key, "e", float(ms_user.e_time_ng))
                     cache.hset(key, "e_id", float(ms_user.e_time_id_ng))
-                    cache.hset(key, "sum", float(ms_user.b_time_ng + ms_user.i_time_ng + ms_user.e_time_ng))
-                    if not cache.lindex('player_time_ng_ids', ms_user.id):
-                        cache.lpush('player_time_ng_ids', ms_user.id)
+                    # cache.hset(key, "sum", float(ms_user.b_time_ng + ms_user.i_time_ng + ms_user.e_time_ng))
+                    # if not cache.lindex('player_time_ng_ids', ms_user.id):
+                    #     cache.lpush('player_time_ng_ids', ms_user.id)
+                    s = float(ms_user.b_time_ng + ms_user.i_time_ng + ms_user.e_time_ng)
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_time_ng_ids", {ms_user.id: s})
             if video_i.bvs > ms_user.b_bvs_ng:
                 ms_user.b_bvs_ng = video_i.bvs
                 ms_user.b_bvs_id_ng = e_video.id
@@ -698,9 +818,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_bvs_id_ng)
                     cache.hset(key, "e", ms_user.e_bvs_ng)
                     cache.hset(key, "e_id", ms_user.e_bvs_id_ng)
-                    cache.hset(key, "sum", ms_user.b_bvs_ng + ms_user.i_bvs_ng + ms_user.e_bvs_ng)
-                    if not cache.lindex('player_bvs_ng_ids', ms_user.id):
-                        cache.lpush('player_bvs_ng_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_bvs_ng + ms_user.i_bvs_ng + ms_user.e_bvs_ng)
+                    # if not cache.lindex('player_bvs_ng_ids', ms_user.id):
+                    #     cache.lpush('player_bvs_ng_ids', ms_user.id)
+                    s = ms_user.b_bvs_ng + ms_user.i_bvs_ng + ms_user.e_bvs_ng
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_bvs_ng_ids", {ms_user.id: s})
             if e_video.stnb > ms_user.b_stnb_ng:
                 ms_user.b_stnb_ng = e_video.stnb
                 ms_user.b_stnb_id_ng = e_video.id
@@ -713,9 +836,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_stnb_id_ng)
                     cache.hset(key, "e", ms_user.e_stnb_ng)
                     cache.hset(key, "e_id", ms_user.e_stnb_id_ng)
-                    cache.hset(key, "sum", ms_user.b_stnb_ng + ms_user.i_stnb_ng + ms_user.e_stnb_ng)
-                    if not cache.lindex('player_stnb_ng_ids', ms_user.id):
-                        cache.lpush('player_stnb_ng_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_stnb_ng + ms_user.i_stnb_ng + ms_user.e_stnb_ng)
+                    # if not cache.lindex('player_stnb_ng_ids', ms_user.id):
+                    #     cache.lpush('player_stnb_ng_ids', ms_user.id)
+                    s = ms_user.b_stnb_ng + ms_user.i_stnb_ng + ms_user.e_stnb_ng
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_stnb_ng_ids", {ms_user.id: s})
             if e_video.ioe > ms_user.b_ioe_ng:
                 ms_user.b_ioe_ng = e_video.ioe
                 ms_user.b_ioe_id_ng = e_video.id
@@ -728,9 +854,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_ioe_id_ng)
                     cache.hset(key, "e", ms_user.e_ioe_ng)
                     cache.hset(key, "e_id", ms_user.e_ioe_id_ng)
-                    cache.hset(key, "sum", ms_user.b_ioe_ng + ms_user.i_ioe_ng + ms_user.e_ioe_ng)
-                    if not cache.lindex('player_ioe_ng_ids', ms_user.id):
-                        cache.lpush('player_ioe_ng_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_ioe_ng + ms_user.i_ioe_ng + ms_user.e_ioe_ng)
+                    # if not cache.lindex('player_ioe_ng_ids', ms_user.id):
+                    #     cache.lpush('player_ioe_ng_ids', ms_user.id)
+                    s = ms_user.b_ioe_ng + ms_user.i_ioe_ng + ms_user.e_ioe_ng
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_ioe_ng_ids", {ms_user.id: s})
             if e_video.path < ms_user.b_path_ng:
                 ms_user.b_path_ng = e_video.path
                 ms_user.b_path_id_ng = e_video.id
@@ -743,9 +872,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_path_id_ng)
                     cache.hset(key, "e", ms_user.e_path_ng)
                     cache.hset(key, "e_id", ms_user.e_path_id_ng)
-                    cache.hset(key, "sum", ms_user.b_path_ng + ms_user.i_path_ng + ms_user.e_path_ng)
-                    if not cache.lindex('player_path_ng_ids', ms_user.id):
-                        cache.lpush('player_path_ng_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_path_ng + ms_user.i_path_ng + ms_user.e_path_ng)
+                    # if not cache.lindex('player_path_ng_ids', ms_user.id):
+                    #     cache.lpush('player_path_ng_ids', ms_user.id)
+                    s = ms_user.b_path_ng + ms_user.i_path_ng + ms_user.e_path_ng
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_path_ng_ids", {ms_user.id: s})
         if video_i.level == "i":
             if video_i.rtime < ms_user.i_time_ng:
                 ms_user.i_time_ng = video_i.rtime
@@ -759,9 +891,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", float(ms_user.i_time_id_ng))
                     cache.hset(key, "e", float(ms_user.e_time_ng))
                     cache.hset(key, "e_id", float(ms_user.e_time_id_ng))
-                    cache.hset(key, "sum", float(ms_user.b_time_ng + ms_user.i_time_ng + ms_user.e_time_ng))
-                    if not cache.lindex('player_time_ng_ids', ms_user.id):
-                        cache.lpush('player_time_ng_ids', ms_user.id)
+                    # cache.hset(key, "sum", float(ms_user.b_time_ng + ms_user.i_time_ng + ms_user.e_time_ng))
+                    # if not cache.lindex('player_time_ng_ids', ms_user.id):
+                    #     cache.lpush('player_time_ng_ids', ms_user.id)
+                    s = float(ms_user.b_time_ng + ms_user.i_time_ng + ms_user.e_time_ng)
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_time_ng_ids", {ms_user.id: s})
             if video_i.bvs > ms_user.i_bvs_ng:
                 ms_user.i_bvs_ng = video_i.bvs
                 ms_user.i_bvs_id_ng = e_video.id
@@ -774,9 +909,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_bvs_id_ng)
                     cache.hset(key, "e", ms_user.e_bvs_ng)
                     cache.hset(key, "e_id", ms_user.e_bvs_id_ng)
-                    cache.hset(key, "sum", ms_user.b_bvs_ng + ms_user.i_bvs_ng + ms_user.e_bvs_ng)
-                    if not cache.lindex('player_bvs_ng_ids', ms_user.id):
-                        cache.lpush('player_bvs_ng_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_bvs_ng + ms_user.i_bvs_ng + ms_user.e_bvs_ng)
+                    # if not cache.lindex('player_bvs_ng_ids', ms_user.id):
+                    #     cache.lpush('player_bvs_ng_ids', ms_user.id)
+                    s = ms_user.b_bvs_ng + ms_user.i_bvs_ng + ms_user.e_bvs_ng
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_bvs_ng_ids", {ms_user.id: s})
             if e_video.stnb > ms_user.i_stnb_ng:
                 ms_user.i_stnb_ng = e_video.stnb
                 ms_user.i_stnb_id_ng = e_video.id
@@ -789,9 +927,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_stnb_id_ng)
                     cache.hset(key, "e", ms_user.e_stnb_ng)
                     cache.hset(key, "e_id", ms_user.e_stnb_id_ng)
-                    cache.hset(key, "sum", ms_user.b_stnb_ng + ms_user.i_stnb_ng + ms_user.e_stnb_ng)
-                    if not cache.lindex('player_stnb_ng_ids', ms_user.id):
-                        cache.lpush('player_stnb_ng_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_stnb_ng + ms_user.i_stnb_ng + ms_user.e_stnb_ng)
+                    # if not cache.lindex('player_stnb_ng_ids', ms_user.id):
+                    #     cache.lpush('player_stnb_ng_ids', ms_user.id)
+                    s = ms_user.b_stnb_ng + ms_user.i_stnb_ng + ms_user.e_stnb_ng
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_stnb_ng_ids", {ms_user.id: s})
             if e_video.ioe > ms_user.i_ioe_ng:
                 ms_user.i_ioe_ng = e_video.ioe
                 ms_user.i_ioe_id_ng = e_video.id
@@ -804,9 +945,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_ioe_id_ng)
                     cache.hset(key, "e", ms_user.e_ioe_ng)
                     cache.hset(key, "e_id", ms_user.e_ioe_id_ng)
-                    cache.hset(key, "sum", ms_user.b_ioe_ng + ms_user.i_ioe_ng + ms_user.e_ioe_ng)
-                    if not cache.lindex('player_ioe_ng_ids', ms_user.id):
-                        cache.lpush('player_ioe_ng_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_ioe_ng + ms_user.i_ioe_ng + ms_user.e_ioe_ng)
+                    # if not cache.lindex('player_ioe_ng_ids', ms_user.id):
+                    #     cache.lpush('player_ioe_ng_ids', ms_user.id)
+                    s = ms_user.b_ioe_ng + ms_user.i_ioe_ng + ms_user.e_ioe_ng
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_ioe_ng_ids", {ms_user.id: s})
             if e_video.path < ms_user.i_path_ng:
                 ms_user.i_path_ng = e_video.path
                 ms_user.i_path_id_ng = e_video.id
@@ -819,9 +963,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_path_id_ng)
                     cache.hset(key, "e", ms_user.e_path_ng)
                     cache.hset(key, "e_id", ms_user.e_path_id_ng)
-                    cache.hset(key, "sum", ms_user.b_path_ng + ms_user.i_path_ng + ms_user.e_path_ng)
-                    if not cache.lindex('player_path_ng_ids', ms_user.id):
-                        cache.lpush('player_path_ng_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_path_ng + ms_user.i_path_ng + ms_user.e_path_ng)
+                    # if not cache.lindex('player_path_ng_ids', ms_user.id):
+                    #     cache.lpush('player_path_ng_ids', ms_user.id)
+                    s = ms_user.b_path_ng + ms_user.i_path_ng + ms_user.e_path_ng
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_path_ng_ids", {ms_user.id: s})
         if video_i.level == "e":
             if video_i.rtime < ms_user.e_time_ng:
                 ms_user.e_time_ng = video_i.rtime
@@ -835,9 +982,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", float(ms_user.i_time_id_ng))
                     cache.hset(key, "e", float(ms_user.e_time_ng))
                     cache.hset(key, "e_id", float(ms_user.e_time_id_ng))
-                    cache.hset(key, "sum", float(ms_user.b_time_ng + ms_user.i_time_ng + ms_user.e_time_ng))
-                    if not cache.lindex('player_time_ng_ids', ms_user.id):
-                        cache.lpush('player_time_ng_ids', ms_user.id)
+                    # cache.hset(key, "sum", float(ms_user.b_time_ng + ms_user.i_time_ng + ms_user.e_time_ng))
+                    # if not cache.lindex('player_time_ng_ids', ms_user.id):
+                    #     cache.lpush('player_time_ng_ids', ms_user.id)
+                    s = float(ms_user.b_time_ng + ms_user.i_time_ng + ms_user.e_time_ng)
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_time_ng_ids", {ms_user.id: s})
             if video_i.bvs > ms_user.e_bvs_ng:
                 ms_user.e_bvs_ng = video_i.bvs
                 ms_user.e_bvs_id_ng = e_video.id
@@ -850,9 +1000,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_bvs_id_ng)
                     cache.hset(key, "e", ms_user.e_bvs_ng)
                     cache.hset(key, "e_id", ms_user.e_bvs_id_ng)
-                    cache.hset(key, "sum", ms_user.b_bvs_ng + ms_user.i_bvs_ng + ms_user.e_bvs_ng)
-                    if not cache.lindex('player_bvs_ng_ids', ms_user.id):
-                        cache.lpush('player_bvs_ng_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_bvs_ng + ms_user.i_bvs_ng + ms_user.e_bvs_ng)
+                    # if not cache.lindex('player_bvs_ng_ids', ms_user.id):
+                    #     cache.lpush('player_bvs_ng_ids', ms_user.id)
+                    s = ms_user.b_bvs_ng + ms_user.i_bvs_ng + ms_user.e_bvs_ng
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_bvs_ng_ids", {ms_user.id: s})
             if e_video.stnb > ms_user.e_stnb_ng:
                 ms_user.e_stnb_ng = e_video.stnb
                 ms_user.e_stnb_id_ng = e_video.id
@@ -865,9 +1018,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_stnb_id_ng)
                     cache.hset(key, "e", ms_user.e_stnb_ng)
                     cache.hset(key, "e_id", ms_user.e_stnb_id_ng)
-                    cache.hset(key, "sum", ms_user.b_stnb_ng + ms_user.i_stnb_ng + ms_user.e_stnb_ng)
-                    if not cache.lindex('player_stnb_ng_ids', ms_user.id):
-                        cache.lpush('player_stnb_ng_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_stnb_ng + ms_user.i_stnb_ng + ms_user.e_stnb_ng)
+                    # if not cache.lindex('player_stnb_ng_ids', ms_user.id):
+                    #     cache.lpush('player_stnb_ng_ids', ms_user.id)
+                    s = ms_user.b_stnb_ng + ms_user.i_stnb_ng + ms_user.e_stnb_ng
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_stnb_ng_ids", {ms_user.id: s})
             if e_video.ioe > ms_user.e_ioe_ng:
                 ms_user.e_ioe_ng = e_video.ioe
                 ms_user.e_ioe_id_ng = e_video.id
@@ -880,9 +1036,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_ioe_id_ng)
                     cache.hset(key, "e", ms_user.e_ioe_ng)
                     cache.hset(key, "e_id", ms_user.e_ioe_id_ng)
-                    cache.hset(key, "sum", ms_user.b_ioe_ng + ms_user.i_ioe_ng + ms_user.e_ioe_ng)
-                    if not cache.lindex('player_ioe_ng_ids', ms_user.id):
-                        cache.lpush('player_ioe_ng_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_ioe_ng + ms_user.i_ioe_ng + ms_user.e_ioe_ng)
+                    # if not cache.lindex('player_ioe_ng_ids', ms_user.id):
+                    #     cache.lpush('player_ioe_ng_ids', ms_user.id)
+                    s = ms_user.b_ioe_ng + ms_user.i_ioe_ng + ms_user.e_ioe_ng
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_ioe_ng_ids", {ms_user.id: s})
             if e_video.path < ms_user.e_path_ng:
                 ms_user.e_path_ng = e_video.path
                 ms_user.e_path_id_ng = e_video.id
@@ -895,9 +1054,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_path_id_ng)
                     cache.hset(key, "e", ms_user.e_path_ng)
                     cache.hset(key, "e_id", ms_user.e_path_id_ng)
-                    cache.hset(key, "sum", ms_user.b_path_ng + ms_user.i_path_ng + ms_user.e_path_ng)
-                    if not cache.lindex('player_path_ng_ids', ms_user.id):
-                        cache.lpush('player_path_ng_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_path_ng + ms_user.i_path_ng + ms_user.e_path_ng)
+                    # if not cache.lindex('player_path_ng_ids', ms_user.id):
+                    #     cache.lpush('player_path_ng_ids', ms_user.id)
+                    s = ms_user.b_path_ng + ms_user.i_path_ng + ms_user.e_path_ng
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_path_ng_ids", {ms_user.id: s})
 
     if video_i.mode == "11":
         if video_i.level == "b":
@@ -913,9 +1075,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", float(ms_user.i_time_id_dg))
                     cache.hset(key, "e", float(ms_user.e_time_dg))
                     cache.hset(key, "e_id", float(ms_user.e_time_id_dg))
-                    cache.hset(key, "sum", float(ms_user.b_time_dg + ms_user.i_time_dg + ms_user.e_time_dg))
-                    if not cache.lindex('player_time_dg_ids', ms_user.id):
-                        cache.lpush('player_time_dg_ids', ms_user.id)
+                    # cache.hset(key, "sum", float(ms_user.b_time_dg + ms_user.i_time_dg + ms_user.e_time_dg))
+                    # if not cache.lindex('player_time_dg_ids', ms_user.id):
+                    #     cache.lpush('player_time_dg_ids', ms_user.id)
+                    s = float(ms_user.b_time_dg + ms_user.i_time_dg + ms_user.e_time_dg)
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_time_dg_ids", {ms_user.id: s})
             if video_i.bvs > ms_user.b_bvs_dg:
                 ms_user.b_bvs_dg = video_i.bvs
                 ms_user.b_bvs_id_dg = e_video.id
@@ -928,9 +1093,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_bvs_id_dg)
                     cache.hset(key, "e", ms_user.e_bvs_dg)
                     cache.hset(key, "e_id", ms_user.e_bvs_id_dg)
-                    cache.hset(key, "sum", ms_user.b_bvs_dg + ms_user.i_bvs_dg + ms_user.e_bvs_dg)
-                    if not cache.lindex('player_bvs_dg_ids', ms_user.id):
-                        cache.lpush('player_bvs_dg_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_bvs_dg + ms_user.i_bvs_dg + ms_user.e_bvs_dg)
+                    # if not cache.lindex('player_bvs_dg_ids', ms_user.id):
+                    #     cache.lpush('player_bvs_dg_ids', ms_user.id)
+                    s = ms_user.b_bvs_dg + ms_user.i_bvs_dg + ms_user.e_bvs_dg
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_bvs_dg_ids", {ms_user.id: s})
             if e_video.stnb > ms_user.b_stnb_dg:
                 ms_user.b_stnb_dg = e_video.stnb
                 ms_user.b_stnb_id_dg = e_video.id
@@ -943,9 +1111,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_stnb_id_dg)
                     cache.hset(key, "e", ms_user.e_stnb_dg)
                     cache.hset(key, "e_id", ms_user.e_stnb_id_dg)
-                    cache.hset(key, "sum", ms_user.b_stnb_dg + ms_user.i_stnb_dg + ms_user.e_stnb_dg)
-                    if not cache.lindex('player_stnb_dg_ids', ms_user.id):
-                        cache.lpush('player_stnb_dg_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_stnb_dg + ms_user.i_stnb_dg + ms_user.e_stnb_dg)
+                    # if not cache.lindex('player_stnb_dg_ids', ms_user.id):
+                    #     cache.lpush('player_stnb_dg_ids', ms_user.id)
+                    s = ms_user.b_stnb_dg + ms_user.i_stnb_dg + ms_user.e_stnb_dg
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_stnb_dg_ids", {ms_user.id: s})
             if e_video.ioe > ms_user.b_ioe_dg:
                 ms_user.b_ioe_dg = e_video.ioe
                 ms_user.b_ioe_id_dg = e_video.id
@@ -958,9 +1129,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_ioe_id_dg)
                     cache.hset(key, "e", ms_user.e_ioe_dg)
                     cache.hset(key, "e_id", ms_user.e_ioe_id_dg)
-                    cache.hset(key, "sum", ms_user.b_ioe_dg + ms_user.i_ioe_dg + ms_user.e_ioe_dg)
-                    if not cache.lindex('player_ioe_dg_ids', ms_user.id):
-                        cache.lpush('player_ioe_dg_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_ioe_dg + ms_user.i_ioe_dg + ms_user.e_ioe_dg)
+                    # if not cache.lindex('player_ioe_dg_ids', ms_user.id):
+                    #     cache.lpush('player_ioe_dg_ids', ms_user.id)
+                    s = ms_user.b_ioe_dg + ms_user.i_ioe_dg + ms_user.e_ioe_dg
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_ioe_dg_ids", {ms_user.id: s})
             if e_video.path < ms_user.b_path_dg:
                 ms_user.b_path_dg = e_video.path
                 ms_user.b_path_id_dg = e_video.id
@@ -973,9 +1147,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_path_id_dg)
                     cache.hset(key, "e", ms_user.e_path_dg)
                     cache.hset(key, "e_id", ms_user.e_path_id_dg)
-                    cache.hset(key, "sum", ms_user.b_path_dg + ms_user.i_path_dg + ms_user.e_path_dg)
-                    if not cache.lindex('player_path_dg_ids', ms_user.id):
-                        cache.lpush('player_path_dg_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_path_dg + ms_user.i_path_dg + ms_user.e_path_dg)
+                    # if not cache.lindex('player_path_dg_ids', ms_user.id):
+                    #     cache.lpush('player_path_dg_ids', ms_user.id)
+                    s = ms_user.b_path_dg + ms_user.i_path_dg + ms_user.e_path_dg
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_path_dg_ids", {ms_user.id: s})
         if video_i.level == "i":
             if video_i.rtime < ms_user.i_time_dg:
                 ms_user.i_time_dg = video_i.rtime
@@ -989,9 +1166,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", float(ms_user.i_time_id_dg))
                     cache.hset(key, "e", float(ms_user.e_time_dg))
                     cache.hset(key, "e_id", float(ms_user.e_time_id_dg))
-                    cache.hset(key, "sum", float(ms_user.b_time_dg + ms_user.i_time_dg + ms_user.e_time_dg))
-                    if not cache.lindex('player_time_dg_ids', ms_user.id):
-                        cache.lpush('player_time_dg_ids', ms_user.id)
+                    # cache.hset(key, "sum", float(ms_user.b_time_dg + ms_user.i_time_dg + ms_user.e_time_dg))
+                    # if not cache.lindex('player_time_dg_ids', ms_user.id):
+                    #     cache.lpush('player_time_dg_ids', ms_user.id)
+                    s = float(ms_user.b_time_dg + ms_user.i_time_dg + ms_user.e_time_dg)
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_time_dg_ids", {ms_user.id: s})
             if video_i.bvs > ms_user.i_bvs_dg:
                 ms_user.i_bvs_dg = video_i.bvs
                 ms_user.i_bvs_id_dg = e_video.id
@@ -1004,9 +1184,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_bvs_id_dg)
                     cache.hset(key, "e", ms_user.e_bvs_dg)
                     cache.hset(key, "e_id", ms_user.e_bvs_id_dg)
-                    cache.hset(key, "sum", ms_user.b_bvs_dg + ms_user.i_bvs_dg + ms_user.e_bvs_dg)
-                    if not cache.lindex('player_bvs_dg_ids', ms_user.id):
-                        cache.lpush('player_bvs_dg_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_bvs_dg + ms_user.i_bvs_dg + ms_user.e_bvs_dg)
+                    # if not cache.lindex('player_bvs_dg_ids', ms_user.id):
+                    #     cache.lpush('player_bvs_dg_ids', ms_user.id)
+                    s = ms_user.b_bvs_dg + ms_user.i_bvs_dg + ms_user.e_bvs_dg
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_bvs_dg_ids", {ms_user.id: s})
             if e_video.stnb > ms_user.i_stnb_dg:
                 ms_user.i_stnb_dg = e_video.stnb
                 ms_user.i_stnb_id_dg = e_video.id
@@ -1019,9 +1202,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_stnb_id_dg)
                     cache.hset(key, "e", ms_user.e_stnb_dg)
                     cache.hset(key, "e_id", ms_user.e_stnb_id_dg)
-                    cache.hset(key, "sum", ms_user.b_stnb_dg + ms_user.i_stnb_dg + ms_user.e_stnb_dg)
-                    if not cache.lindex('player_stnb_dg_ids', ms_user.id):
-                        cache.lpush('player_stnb_dg_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_stnb_dg + ms_user.i_stnb_dg + ms_user.e_stnb_dg)
+                    # if not cache.lindex('player_stnb_dg_ids', ms_user.id):
+                    #     cache.lpush('player_stnb_dg_ids', ms_user.id)
+                    s = ms_user.b_stnb_dg + ms_user.i_stnb_dg + ms_user.e_stnb_dg
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_stnb_dg_ids", {ms_user.id: s})
             if e_video.ioe > ms_user.i_ioe_dg:
                 ms_user.i_ioe_dg = e_video.ioe
                 ms_user.i_ioe_id_dg = e_video.id
@@ -1034,9 +1220,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_ioe_id_dg)
                     cache.hset(key, "e", ms_user.e_ioe_dg)
                     cache.hset(key, "e_id", ms_user.e_ioe_id_dg)
-                    cache.hset(key, "sum", ms_user.b_ioe_dg + ms_user.i_ioe_dg + ms_user.e_ioe_dg)
-                    if not cache.lindex('player_ioe_dg_ids', ms_user.id):
-                        cache.lpush('player_ioe_dg_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_ioe_dg + ms_user.i_ioe_dg + ms_user.e_ioe_dg)
+                    # if not cache.lindex('player_ioe_dg_ids', ms_user.id):
+                    #     cache.lpush('player_ioe_dg_ids', ms_user.id)
+                    s = ms_user.b_ioe_dg + ms_user.i_ioe_dg + ms_user.e_ioe_dg
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_ioe_dg_ids", {ms_user.id: s})
             if e_video.path < ms_user.i_path_dg:
                 ms_user.i_path_dg = e_video.path
                 ms_user.i_path_id_dg = e_video.id
@@ -1049,9 +1238,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_path_id_dg)
                     cache.hset(key, "e", ms_user.e_path_dg)
                     cache.hset(key, "e_id", ms_user.e_path_id_dg)
-                    cache.hset(key, "sum", ms_user.b_path_dg + ms_user.i_path_dg + ms_user.e_path_dg)
-                    if not cache.lindex('player_path_dg_ids', ms_user.id):
-                        cache.lpush('player_path_dg_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_path_dg + ms_user.i_path_dg + ms_user.e_path_dg)
+                    # if not cache.lindex('player_path_dg_ids', ms_user.id):
+                    #     cache.lpush('player_path_dg_ids', ms_user.id)
+                    s = ms_user.b_path_dg + ms_user.i_path_dg + ms_user.e_path_dg
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_path_dg_ids", {ms_user.id: s})
         if video_i.level == "e":
             if video_i.rtime < ms_user.e_time_dg:
                 ms_user.e_time_dg = video_i.rtime
@@ -1065,9 +1257,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", float(ms_user.i_time_id_dg))
                     cache.hset(key, "e", float(ms_user.e_time_dg))
                     cache.hset(key, "e_id", float(ms_user.e_time_id_dg))
-                    cache.hset(key, "sum", float(ms_user.b_time_dg + ms_user.i_time_dg + ms_user.e_time_dg))
-                    if not cache.lindex('player_time_dg_ids', ms_user.id):
-                        cache.lpush('player_time_dg_ids', ms_user.id)
+                    # cache.hset(key, "sum", float(ms_user.b_time_dg + ms_user.i_time_dg + ms_user.e_time_dg))
+                    # if not cache.lindex('player_time_dg_ids', ms_user.id):
+                    #     cache.lpush('player_time_dg_ids', ms_user.id)
+                    s = float(ms_user.b_time_dg + ms_user.i_time_dg + ms_user.e_time_dg)
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_time_dg_ids", {ms_user.id: s})
             if video_i.bvs > ms_user.e_bvs_dg:
                 ms_user.e_bvs_dg = video_i.bvs
                 ms_user.e_bvs_id_dg = e_video.id
@@ -1080,9 +1275,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_bvs_id_dg)
                     cache.hset(key, "e", ms_user.e_bvs_dg)
                     cache.hset(key, "e_id", ms_user.e_bvs_id_dg)
-                    cache.hset(key, "sum", ms_user.b_bvs_dg + ms_user.i_bvs_dg + ms_user.e_bvs_dg)
-                    if not cache.lindex('player_bvs_dg_ids', ms_user.id):
-                        cache.lpush('player_bvs_dg_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_bvs_dg + ms_user.i_bvs_dg + ms_user.e_bvs_dg)
+                    # if not cache.lindex('player_bvs_dg_ids', ms_user.id):
+                    #     cache.lpush('player_bvs_dg_ids', ms_user.id)
+                    s = ms_user.b_bvs_dg + ms_user.i_bvs_dg + ms_user.e_bvs_dg
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_bvs_dg_ids", {ms_user.id: s})
             if e_video.stnb > ms_user.e_stnb_dg:
                 ms_user.e_stnb_dg = e_video.stnb
                 ms_user.e_stnb_id_dg = e_video.id
@@ -1095,9 +1293,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_stnb_id_dg)
                     cache.hset(key, "e", ms_user.e_stnb_dg)
                     cache.hset(key, "e_id", ms_user.e_stnb_id_dg)
-                    cache.hset(key, "sum", ms_user.b_stnb_dg + ms_user.i_stnb_dg + ms_user.e_stnb_dg)
-                    if not cache.lindex('player_stnb_dg_ids', ms_user.id):
-                        cache.lpush('player_stnb_dg_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_stnb_dg + ms_user.i_stnb_dg + ms_user.e_stnb_dg)
+                    # if not cache.lindex('player_stnb_dg_ids', ms_user.id):
+                    #     cache.lpush('player_stnb_dg_ids', ms_user.id)
+                    s = ms_user.b_stnb_dg + ms_user.i_stnb_dg + ms_user.e_stnb_dg
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_stnb_dg_ids", {ms_user.id: s})
             if e_video.ioe > ms_user.e_ioe_dg:
                 ms_user.e_ioe_dg = e_video.ioe
                 ms_user.e_ioe_id_dg = e_video.id
@@ -1110,9 +1311,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_ioe_id_dg)
                     cache.hset(key, "e", ms_user.e_ioe_dg)
                     cache.hset(key, "e_id", ms_user.e_ioe_id_dg)
-                    cache.hset(key, "sum", ms_user.b_ioe_dg + ms_user.i_ioe_dg + ms_user.e_ioe_dg)
-                    if not cache.lindex('player_ioe_dg_ids', ms_user.id):
-                        cache.lpush('player_ioe_dg_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_ioe_dg + ms_user.i_ioe_dg + ms_user.e_ioe_dg)
+                    # if not cache.lindex('player_ioe_dg_ids', ms_user.id):
+                    #     cache.lpush('player_ioe_dg_ids', ms_user.id)
+                    s = ms_user.b_ioe_dg + ms_user.i_ioe_dg + ms_user.e_ioe_dg
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_ioe_dg_ids", {ms_user.id: s})
             if e_video.path < ms_user.e_path_dg:
                 ms_user.e_path_dg = e_video.path
                 ms_user.e_path_id_dg = e_video.id
@@ -1125,9 +1329,12 @@ def update_personal_record(video_i, e_video):
                     cache.hset(key, "i_id", ms_user.i_path_id_dg)
                     cache.hset(key, "e", ms_user.e_path_dg)
                     cache.hset(key, "e_id", ms_user.e_path_id_dg)
-                    cache.hset(key, "sum", ms_user.b_path_dg + ms_user.i_path_dg + ms_user.e_path_dg)
-                    if not cache.lindex('player_path_dg_ids', ms_user.id):
-                        cache.lpush('player_path_dg_ids', ms_user.id)
+                    # cache.hset(key, "sum", ms_user.b_path_dg + ms_user.i_path_dg + ms_user.e_path_dg)
+                    # if not cache.lindex('player_path_dg_ids', ms_user.id):
+                    #     cache.lpush('player_path_dg_ids', ms_user.id)
+                    s = ms_user.b_path_dg + ms_user.i_path_dg + ms_user.e_path_dg
+                    cache.hset(key, "sum", s)
+                    cache.zadd("player_path_dg_ids", {ms_user.id: s})
     # 改完记录，存回数据库
     ms_user.save()
 
