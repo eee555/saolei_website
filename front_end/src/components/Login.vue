@@ -1,7 +1,7 @@
 <template>
     <div>
         <span class="click-word" v-show="login_status != LoginStatus.IsLogin"
-            @click="login_status = LoginStatus.Login; login_visibile = true; register_visibile = false">
+            @click="init_refvalues(); login_status = LoginStatus.Login; login_visibile = true; register_visibile = false">
             登录
         </span>
         <div style="display:inline-block" v-show="login_status == LoginStatus.IsLogin">
@@ -11,10 +11,10 @@
         </span>|<span style="width:12px; display:inline-block">
         </span>
         <span class="click-word" v-show="login_status != LoginStatus.IsLogin"
-            @click="login_status = LoginStatus.Register; register_visibile = true; login_visibile = false">
+            @click="init_refvalues(); login_status = LoginStatus.Register; register_visibile = true; login_visibile = false">
             注册
         </span>
-        <span class="click-word" v-show="login_status == LoginStatus.IsLogin" @click="logout()">
+        <span class="click-word" v-show="login_status == LoginStatus.IsLogin" @click="logout();">
             退出
         </span>
     </div>
@@ -42,7 +42,7 @@
                 <div style="color: red;">{{ hint_message }}</div>
             </el-form-item>
             <el-form-item>
-                <el-button type="primary" @click="login()">登录</el-button>
+                <el-button type="primary" @click="login();">登录</el-button>
             </el-form-item>
             <div @click="login_visibile = false; retrieve_visibile = true; login_status = LoginStatus.IsRetrieve;"
                 style="cursor: pointer;color: blue;">（找回密码）</div>
@@ -80,6 +80,10 @@
                 <el-input v-model="user_password2_reg" placeholder="请输入确认密码" show-password prefix-icon="Lock" minlength="6"
                     maxlength="20"></el-input>
             </el-form-item>
+            <el-checkbox v-model="checkout_user_agreement" name="checkoutSecret">已阅读并同意
+                <a :href="AXIOS_BASE_URL + '/agreement.html'">新扫雷网用户协议</a>
+            </el-checkbox>
+
             <el-form-item>
                 <div style="color: red;">{{ hint_message }}</div>
             </el-form-item>
@@ -172,9 +176,31 @@ const user_email_valid_code_reg = ref("");
 const user_password_reg = ref("");
 const user_password2_reg = ref("");
 
+// 报错信息，在界面上显示
 const hint_message = ref("");
 
+// 是否同意用户协议
+const checkout_user_agreement = ref(false);
+
 const emit = defineEmits(['login', 'logout']);
+
+// 初始化，打开就删数据
+const init_refvalues = () => {
+    user_password.value = "";
+    valid_code.value = "";
+    user_name_reg.value = "";
+    user_email_reg.value = "";
+    valid_code_reg.value = "";
+    user_email_valid_code_reg.value = "";
+    user_password_reg.value = "";
+    user_password2_reg.value = "";
+    identifyCodeLog.value = "";
+    identifyCodeReg.value = "";
+    hint_message.value = "";
+    user_name.value = "";
+    checkout_user_agreement.value = false;
+    remember_me.value = true;
+}
 
 onMounted(() => {
     // console.log(document.cookie);
@@ -281,6 +307,10 @@ const retrieve = () => {
 }
 
 const register = () => {
+    if (!checkout_user_agreement.value) {
+        hint_message.value = "请同意用户协议！";
+        return
+    }
     if (!user_name_reg.value) {
         hint_message.value = "请输入用户名！";
         return
@@ -373,6 +403,7 @@ const get_email_captcha = () => {
         if (response.data.status == 100) {
             hint_message.value = ""
             window.localStorage.setItem("usertoken", response.data.hashkey)
+            ElMessage.success('获取验证码成功，请至邮箱查看!')
             // console.log(response.data.hashkey);
             // console.log("注册成功");
         } else if (response.data.status > 100) {
