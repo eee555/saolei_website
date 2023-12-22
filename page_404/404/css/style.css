@@ -1,0 +1,135 @@
+.all-container {
+    display: flex;
+    justify-content: center;
+}
+
+.container1 {
+    text-align: left;
+}
+.container2 {
+    text-align: center;
+}
+
+canvas {
+    margin-bottom: 12px;
+}
+
+
+
+#go-back-home {
+    appearance: button;
+    background-color: #1899D6;
+    border: solid transparent;
+    border-radius: 16px;
+    border-width: 0 0 4px;
+    box-sizing: border-box;
+    color: #FFFFFF;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: .8px;
+    line-height: 20px;
+    margin: 0;
+    outline: none;
+    overflow: visible;
+    padding: 13px 19px;
+    text-align: center;
+    text-transform: uppercase;
+    touch-action: manipulation;
+    transform: translateZ(0);
+    transition: filter .2s;
+    user-select: none;
+    -webkit-user-select: none;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+#go-back-home:after {
+    background-clip: padding-box;
+    background-color: #1CB0F6;
+    border: solid transparent;
+    border-radius: 16px;
+    border-width: 0 0 4px;
+    bottom: -4px;
+    content: "";
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: -1;
+}
+
+#go-back-home:main,
+#go-back-home:focus {
+    user-select: auto;
+}
+
+#go-back-home:hover:not(:disabled) {
+    filter: brightness(1.1);
+}
+
+#go-back-home:disabled {
+    cursor: auto;
+}
+
+#go-back-home:active:after {
+    border-width: 0 0 0px;
+}
+
+#go-back-home:active {
+    padding-bottom: 10px;
+}
+
+
+
+
+
+#replay {
+    width: 7em;
+    position: relative;
+    height: 2.8em;
+    border: 3px ridge #149CEA;
+    outline: none;
+    background-color: transparent;
+    color: rgb(0, 0, 0);
+    transition: 1s;
+    border-radius: 0.3em;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+#replay::after {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: 3%;
+    width: 95%;
+    height: 40%;
+    background-color: #ffffff;
+    transition: 0.5s;
+    transform-origin: center;
+}
+
+#replay::before {
+    content: "";
+    transform-origin: center;
+    position: absolute;
+    top: 80%;
+    left: 3%;
+    width: 95%;
+    height: 40%;
+    background-color: #ffffff;
+    transition: 0.5s;
+}
+
+#replay:hover::before,
+button:hover::after {
+    transform: scale(0)
+}
+
+#replay:hover {
+    box-shadow: inset 0px 0px 25px #1479EA;
+}

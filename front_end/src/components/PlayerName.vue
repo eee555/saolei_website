@@ -1,6 +1,7 @@
 <template>
     <el-popover placement="bottom" width="298px" popper-class="max-h-300px overflow-auto" @show="pop_show" @hide="pop_hide"
         :visible="is_pop_show" popper-style="background-color:rgba(250,250,250);" :show-after="200" :hide-after="200">
+        <Wait v-show="is_loading"></Wait>
         <div>
             <div style="width: 80px;float: left;line-height: 200%;">
                 <el-image style="width: 72px; height: 72px;margin-top: 10px;border-radius: 8px;" :src="image_url"
@@ -102,6 +103,7 @@ import { genFileId, ElMessage } from 'element-plus'
 import { AXIOS_BASE_URL } from '../config';
 const image_url = ref(require('@/assets/person.png'))
 import PreviewDownload from '@/components/PreviewDownload.vue';
+import Wait from '@/components/Wait.vue';
 import { useRouter } from 'vue-router'
 const router = useRouter()
 
@@ -130,7 +132,11 @@ const e_bvs = ref("");
 const e_t_id = ref("");
 const e_bvs_id = ref("");
 
+// 点一下出现，再点一下关闭
 const is_pop_show = ref(false);
+// 控制加载时的小圈圈
+const is_loading = ref(true);
+
 
 const pop_show = () => {
     image_url.value = require('@/assets/person.png');
@@ -169,7 +175,9 @@ const pop_show = () => {
         i_bvs_id.value = records.bvs_id[1]
         e_bvs_id.value = records.bvs_id[2]
 
-
+        is_loading.value = false;
+    }).catch(() => {
+        // is_loading.value = false;
     })
 
 
@@ -208,7 +216,7 @@ function to_fixed_n(input: string | number | undefined, to_fixed: number): strin
 }
 
 const visit_me = (user_id: Number) => {
-    proxy.$store.commit('updatePlayer', {"id": id.value});
+    proxy.$store.commit('updatePlayer', { "id": id.value });
     router.push("player")
 }
 
@@ -219,5 +227,4 @@ const visit_me = (user_id: Number) => {
     color: rgb(64, 158, 255);
     cursor: pointer;
 }
-
 </style>
