@@ -6,14 +6,14 @@
 部署：Nginx + uwsgi  
 
 ## 最新进展
-:white_check_mark: 开发核心功能
-:white_check_mark: 租赁服务器
-:white_check_mark: 初步部署
-:white_check_mark: 租赁域名
-:black_square_button: 备案
-:black_square_button: 删档内测
-:black_square_button: 删档公测
-:black_square_button: 上线
+:white_check_mark: 开发核心功能  
+:white_check_mark: 租赁服务器  
+:white_check_mark: 初步部署  
+:white_check_mark: 租赁域名  
+:black_square_button: 备案  
+:black_square_button: 删档内测  
+:black_square_button: 删档公测  
+:black_square_button: 上线  
 
 
 ## 项目安装流程：
