@@ -1,6 +1,6 @@
 <template>
     <div>
-        <span class="click-word" v-show="login_status != LoginStatus.IsLogin"
+        <span class="text-button" v-show="login_status != LoginStatus.IsLogin"
             @click="init_refvalues(); login_status = LoginStatus.Login; login_visibile = true; register_visibile = false">
             登录
         </span>
@@ -10,11 +10,11 @@
         <span style="width:12px; display:inline-block">
         </span>|<span style="width:12px; display:inline-block">
         </span>
-        <span class="click-word" v-show="login_status != LoginStatus.IsLogin"
+        <span class="text-button" v-show="login_status != LoginStatus.IsLogin"
             @click="init_refvalues(); login_status = LoginStatus.Register; register_visibile = true; login_visibile = false">
             注册
         </span>
-        <span class="click-word" v-show="login_status == LoginStatus.IsLogin" @click="logout();">
+        <span class="text-button" v-show="login_status == LoginStatus.IsLogin" @click="logout();">
             退出
         </span>
     </div>

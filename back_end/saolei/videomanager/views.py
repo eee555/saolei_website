@@ -125,15 +125,22 @@ def video_preview(request):
 def video_download(request):
     if request.method != 'GET':
         return HttpResponse("别瞎玩")
-    # 这里性能可能有问题
     try:
         video = VideoModel.objects.get(id=request.GET["id"])
         response =FileResponse(open(video.file.path, 'rb'))
         response['Content-Type']='application/octet-stream'
         response['Content-Disposition']=f'attachment;filename="{video.file.name.split("/")[2]}"'
         return response
-    except Exception:
-        return JsonResponse({"status": 104, "msg": "file not exist!"})
+    except VideoModel.DoesNotExist:
+        return JsonResponse({"status": 104, "msg": "录像不存在！"})
+    # try:
+    #     video = VideoModel.objects.get(id=request.GET["id"])
+    #     response =FileResponse(open(video.file.path, 'rb'))
+    #     response['Content-Type']='application/octet-stream'
+    #     response['Content-Disposition']=f'attachment;filename="{video.file.name.split("/")[2]}"'
+    #     return response
+    # except Exception:
+    #     return JsonResponse({"status": 104, "msg": "file not exist!"})
         
 
 
@@ -178,6 +185,7 @@ def video_query(request):
                     values("id", "upload_time", "player__realname", "player__id", "bv",
                         "bvs", "rtime", values_index)
 
+        print(videos)
         paginator = Paginator(videos, 20)  # 每页20条数据
         page_number = data["page"]
         page_videos = paginator.get_page(page_number)

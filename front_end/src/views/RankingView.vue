@@ -11,17 +11,21 @@
     </el-row>
 
     <div style="width: 80%;font-size:20px;margin: auto;margin-top: 10px;">
-        <div style="border-bottom: 1px solid #555;padding-bottom: 10px;">
+        <div style="border-bottom: 1px solid #555555;padding-bottom: 10px;">
             <span class="rank">排名</span>
             <span class="name">姓名</span>
-            <span class="beginner" @click="setSortDirect('b')">初级{{
-                level_selected === "b" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
-            <span class="intermediate" @click="setSortDirect('i')">中级{{
-                level_selected === "i" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
-            <span class="expert" @click="setSortDirect('e')">高级{{
-                level_selected === "e" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
-            <span class="sum_title" @click="setSortDirect('sum')">总计{{
-                level_selected === "sum" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
+            <span class="beginner" :style="{ color: (level_selected === 'b' ? 'rgb(64, 158, 255)' : '') }"
+                @click="setSortDirect('b')">初级{{
+                    level_selected === "b" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
+            <span class="intermediate" :style="{ color: (level_selected === 'i' ? 'rgb(64, 158, 255)' : '') }"
+                @click="setSortDirect('i')">中级{{
+                    level_selected === "i" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
+            <span class="expert" :style="{ color: (level_selected === 'e' ? 'rgb(64, 158, 255)' : '') }"
+                @click="setSortDirect('e')">高级{{
+                    level_selected === "e" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
+            <span class="sum_title" :style="{ color: (level_selected === 'sum' ? 'rgb(64, 158, 255)' : '') }"
+                @click="setSortDirect('sum')">总计{{
+                    level_selected === "sum" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
         </div>
         <div v-for="(player, key) in playerData" style="margin-top: 10px;">
 
@@ -79,7 +83,7 @@ import { onMounted, ref, Ref, defineEmits, reactive } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import PreviewDownload from '@/components/PreviewDownload.vue';
 import PlayerName from '@/components/PlayerName.vue';
-import {defineAsyncComponent} from 'vue'
+import { defineAsyncComponent } from 'vue'
 // const AsyncPlayerName = defineAsyncComponent(() => import('@/components/PlayerName.vue'))
 const { proxy } = useCurrentInstance();
 

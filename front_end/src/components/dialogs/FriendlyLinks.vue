@@ -1,18 +1,20 @@
 <template>
-    <div style="float: right;">
-        <div style="display: inline-flex;">
-            <Login @login="user_login" @logout="user_logout"></Login>
-        </div>
-        <span style="width:12px; display:inline-block">
-        </span>|<span style="width:12px; display:inline-block"></span>
-        <span class="text-button">软件下载</span>
-        <span style="width:12px; display:inline-block">
-        </span>|<span style="width:12px; display:inline-block"></span>
-        <FriendlyLink></FriendlyLink>
-        <span style="width:12px; display:inline-block">
-        </span>|<span style="width:12px; display:inline-block"></span>
-        <span class="text-button">团队</span>
-    </div>
+    <span class="text-button" @click="centerDialogVisible = true;">友链</span>
+    <el-dialog v-model="centerDialogVisible" title="友链" width="50%" align-center draggable>
+        <ul>
+            <li><a href="https://github.com/eee555/saolei_website">本站主页</a></li>
+            <li><a href="http://www.saolei.wang/">扫雷网</a></li>
+            <li><a href="https://minesweepergame.com/world-rankings.php">The Authoritative Minesweeper（国际扫雷网）</a></li>
+        </ul>
+
+        <template #footer>
+            <span class="dialog-footer">
+                <el-button type="primary" @click="centerDialogVisible = false">
+                    确定
+                </el-button>
+            </span>
+        </template>
+    </el-dialog>
 </template>
   
 <script lang="ts" setup>
@@ -21,11 +23,8 @@ import { onMounted, ref, Ref, defineEmits } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
 import { LoginStatus } from "@/utils/common/structInterface"
-import FriendlyLink from "@/components/dialogs/FriendlyLinks.vue";
-import ValidCode2 from "@/components/ValidCode2.vue";
 import { genFileId, ElMessage } from 'element-plus'
-import { AXIOS_BASE_URL } from '../config';
-import Login from "./Login.vue";
+
 
 
 let refValidCode = ref<any>(null)
@@ -38,7 +37,7 @@ let refValidCode2 = ref<any>(null)
 //     Register
 // }
 
-const user_name_show = ref(""); // 登录后右上方显示的用户名
+const centerDialogVisible = ref(false);
 
 const login_status = ref(LoginStatus.NotLogin);
 const login_visibile = ref(false);

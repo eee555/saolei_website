@@ -18,12 +18,29 @@
     <div style="width: 80%;font-size:20px;margin: auto;margin-top: 10px;">
         <div style="border-bottom: 1px solid #555;padding-bottom: 10px;">
             <div class="rank">排名</div>
-            <span class="utime">上传时间</span>
+            <span class="utime" :class="{ hoverable: index_tag_selected === 'upload_time' }"
+                :style="{ color: (index_tag_selected === 'upload_time' ? 'rgb(64, 158, 255)' : '') }"
+                @click="reverseSortDirect('upload_time')">上传时间{{
+                    index_tag_selected === 'upload_time' ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
             <span class="name">姓名</span>
-            <span class="bbbv">3BV</span>
-            <span class="bbbvs">3BV/s</span>
-            <span class="rtime">成绩</span>
-            <span v-show="index_visible" class="index">{{ index_tag_selected }}</span>
+            <span class="bbbv" :class="{ hoverable: index_tag_selected === 'bbbv' }"
+                :style="{ color: (index_tag_selected === 'bbbv' ? 'rgb(64, 158, 255)' : '') }"
+                @click="reverseSortDirect('bbbv')">3BV{{
+                    index_tag_selected === 'bbbv' ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
+            <span class="bbbvs" :class="{ hoverable: index_tag_selected === 'bbbv_s' }"
+                :style="{ color: (index_tag_selected === 'bbbv_s' ? 'rgb(64, 158, 255)' : '') }"
+                @click="reverseSortDirect('bbbv_s')">3BV/s{{
+                    index_tag_selected === 'bbbv_s' ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
+            <span class="rtime" :class="{ hoverable: index_tag_selected === 'rtime' }"
+                :style="{ color: (index_tag_selected === 'rtime' ? 'rgb(64, 158, 255)' : '') }"
+                @click="reverseSortDirect('rtime')">成绩{{
+                    index_tag_selected === 'rtime' ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
+            <span v-show="index_visible" class="index"
+                :style="{ color: (index_tag_selected != 'upload_time' && index_tag_selected != 'bbbv' && index_tag_selected != 'bbbv_s' && index_tag_selected != 'rtime' ? 'rgb(64, 158, 255)' : '') }"
+                @click="reverseSortDirect(index_tag_selected)">{{
+                    index_tag_selected }}{{
+        index_tag_selected != 'upload_time' && index_tag_selected != 'bbbv' && index_tag_selected != 'bbbv_s' &&
+        index_tag_selected != 'rtime' ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
             <span class="operation">操作</span>
         </div>
         <div v-for="(video, key) in videoData" style="margin-top: 10px;">
@@ -32,8 +49,11 @@
             <span v-if="'upload_time' in video" class="utime">{{ video.upload_time }}</span>
             <span v-else class="utime">{{ video.video__upload_time }}</span>
 
-            <span v-if="'player__realname' in video" class="name">{{ video.player__realname }}</span>
-            <span v-else class="name">{{ video.video__player__realname }}</span>
+            <PlayerName class="name"
+                :user_id="'player__id' in video ? +(video.player__id as Number) : +(video.video__player__id as Number)"
+                :user_name="'player__realname' in video ? video.player__realname : video.video__player__realname"></PlayerName>
+            <!-- <span v-if="'player__realname' in video" class="name">{{ video.player__realname }}</span>
+            <span v-else class="name">{{ video.video__player__realname }}</span> -->
 
             <span v-if="'bv' in video" class="bbbv">{{ video.bv }}</span>
             <span v-else class="bbbv">{{ video.video__bv }}</span>
@@ -66,6 +86,7 @@
 import { onMounted, ref, Ref, defineEmits, reactive } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import PreviewDownload from '@/components/PreviewDownload.vue';
+import PlayerName from '@/components/PlayerName.vue';
 const { proxy } = useCurrentInstance();
 
 const level_tag_selected = ref("EXPERT");
@@ -194,6 +215,7 @@ const mod_style = () => {
         includes(index_tag_selected.value);
 }
 
+// 根据配置，刷新当前页面的录像表
 const get_video_rank = (page: number) => {
     state.CurrentPage = page
     let index = index_tags[index_tag_selected.value].key;
@@ -217,7 +239,7 @@ const get_video_rank = (page: number) => {
             state.Total = data.total_page;
             // console.log(videoData);
             // console.log(315);
-            
+
             // console.log(index_tag_selected);
 
 
@@ -246,7 +268,13 @@ const nextClick = () => {
     get_video_rank(state.CurrentPage);
 }
 
-
+// 点标签，改排序方向
+const reverseSortDirect = (index_tag_selected_i: string) => {
+    if (index_tag_selected.value === index_tag_selected_i) {
+        index_tags[index_tag_selected_i].reverse = !index_tags[index_tag_selected_i].reverse;
+    } else { }
+    get_video_rank(state.CurrentPage);
+}
 
 </script>
 
@@ -255,6 +283,7 @@ const nextClick = () => {
 .rank {
     width: 5%;
     display: inline-block;
+    text-align: center;
 }
 
 .utime {
@@ -263,7 +292,7 @@ const nextClick = () => {
     text-align: center;
 }
 
-.name {
+/deep/ .name {
     width: 16%;
     display: inline-block;
     text-align: center;
@@ -290,12 +319,19 @@ const nextClick = () => {
 .index {
     width: 10%;
     display: inline-block;
+    text-align: center;
+    cursor: pointer;
 }
 
 .operation {
     width: 20%;
     display: inline-block;
     text-align: center;
+}
+
+.hoverable:hover {
+    color: rgb(64, 158, 255);
+    cursor: pointer;
 }
 
 .el-pagination {
