@@ -4,7 +4,7 @@
       <el-main class="header_all" style="padding-top: 0;">
         <!-- <el-header class="header_all" style="margin-bottom: 0px"> -->
         <div class="logo-container">
-          <div  @click="goback_home()" class="logo" style="float:inline-start;">
+          <div @click="goback_home()" class="logo" style="float:inline-start;">
             <el-image style="width: 72px; height: 72px;" :src="logo_1" :fit="'cover'" />
             <el-image style="width: 162px; height: 74px;" :src="logo_2" :fit="'cover'" />
           </div>
@@ -35,7 +35,11 @@
 
 
       <el-footer style="margin: auto;">
-        Copyright @ 2008　扫雷网 Saolei.wang　版权所有　陕ICP备19026089号-1
+        Copyright @ 2023　<a href="fff666.top">扫雷网 fff666.top</a>　版权所有　<a
+          href="https://beian.miit.gov.cn/">苏ICP备2023056839号-1</a>
+        <span style="width:12px; display:inline-block"></span>
+        <a href="https://beian.mps.gov.cn/#/query/webSearch?code=32020602001691" rel="noreferrer"
+          target="_blank">苏公网安备32020602001691</a>
       </el-footer>
     </el-container>
   </div>
@@ -89,7 +93,8 @@ const goback_home = () => {
   grid-template-columns: auto 1fr;
   align-items: flex-end;
 }
-.logo:hover{
+
+.logo:hover {
   cursor: pointer;
 }
 

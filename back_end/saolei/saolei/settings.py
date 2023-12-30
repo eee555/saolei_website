@@ -25,10 +25,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-3_(yjnup(rsxz&pd@stz25*meq10bn3m3$lt!n_1+s723#k=ay"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = False
+DEBUG = False
 # ALLOWED_HOSTS = ["*"]
-DEBUG = True
+# DEBUG = True
 ALLOWED_HOSTS = ["*"]
+
+# 自定义404、500错误页面
+# handler404 = 'fault_page.views.page_not_found'
+# handler500 = 'fault_page.views.server_error'
 
 # Application definition
 
@@ -64,7 +68,7 @@ ROOT_URLCONF = "saolei.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        'DIRS': [os.path.join(BASE_DIR, 'dist')],
+        'DIRS': [BASE_DIR / 'dist', BASE_DIR / 'templates'],
 
         "APP_DIRS": True,
         "OPTIONS": {

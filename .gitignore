@@ -164,9 +164,9 @@ front_end/public/flop
 
 *.docx
 *.doc
-*.conf
-*.zip
+**/*.zip
 *.rar
+
 
 
 
