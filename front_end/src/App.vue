@@ -35,7 +35,7 @@
 
 
       <el-footer style="margin: auto;">
-        Copyright @ 2023　<a href="fff666.top">扫雷网 fff666.top</a>　版权所有　<a
+        Copyright @ 2023　<a href="http://fff666.top">扫雷网 fff666.top</a>　版权所有　<a
           href="https://beian.miit.gov.cn/">苏ICP备2023056839号-1</a>
         <span style="width:12px; display:inline-block"></span>
         <a href="https://beian.mps.gov.cn/#/query/webSearch?code=32020602001691" rel="noreferrer"
