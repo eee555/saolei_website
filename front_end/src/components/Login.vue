@@ -32,7 +32,7 @@
                 <div style="display: flex;">
                     <el-input v-model="valid_code" placeholder="验证码" prefix-icon="Key" class="code"></el-input>
                     &nbsp;
-                    <ValidCode :identifyCode="identifyCodeLog" ref="refValidCode" />
+                    <ValidCode ref="refValidCode" :identifyCode="identifyCodeLog" />
                 </div>
             </el-form-item>
             <el-form-item>
@@ -52,29 +52,32 @@
         @close='() => { if (login_status !== LoginStatus.IsLogin) { login_status = LoginStatus.NotLogin; } }'>
         <el-form size="default">
             <el-form-item>
-                <el-input v-model="user_name_reg" placeholder="请输入用户昵称" prefix-icon="User" maxlength="20"
-                    show-word-limit></el-input>
+                <el-input v-model.trim="user_name_reg" placeholder="请输入用户昵称（唯一、登录凭证、无法修改）" prefix-icon="User" maxlength="20"
+                    show-word-limit id="register_user_name_form"></el-input>
             </el-form-item>
             <el-form-item>
-                <el-input v-model="user_email_reg" placeholder="请输入邮箱" prefix-icon="Message" type="email"></el-input>
+                <el-input v-model="user_email_reg" placeholder="请输入邮箱（唯一）" prefix-icon="Message" type="email"
+                    id="register_email_form"></el-input>
             </el-form-item>
             <el-form-item>
                 <div style="display: flex">
-                    <el-input v-model="valid_code_reg" placeholder="验证码" prefix-icon="Key" class="code"
+                    <el-input v-model.trim="valid_code_reg" placeholder="验证码" prefix-icon="Key" class="code"
                         maxlength="4"></el-input>
                     &nbsp;
-                    <ValidCode2 :identifyCode="identifyCodeReg" ref="refValidCode2" />
+                    <!-- <ValidCode2 :identifyCode="identifyCodeReg" ref="refValidCode2" /> -->
+                    <ValidCode :identifyCode="identifyCodeReg" ref="refValidCode2" />
                     &nbsp;
-                    <el-button link type="primary" @click="get_email_captcha()">获取验证码</el-button>
+                    <el-button link type="primary" @click="get_email_captcha()"
+                        :disabled="valid_code_reg.length < 4">获取验证码</el-button>
                 </div>
             </el-form-item>
             <el-form-item>
-                <el-input v-model="user_email_valid_code_reg" placeholder="请输入邮箱验证码" prefix-icon="Key"
-                    maxlength="6"></el-input>
+                <el-input v-model.trim="user_email_valid_code_reg" placeholder="请输入邮箱验证码" prefix-icon="Key" maxlength="6"
+                    :disabled="valid_code_reg.length < 4" id="register_email_valid_code_form"></el-input>
             </el-form-item>
             <el-form-item>
                 <el-input v-model="user_password_reg" placeholder="请输入6-20位密码" show-password prefix-icon="Lock"
-                    minlength="6" maxlength="20"></el-input>
+                    minlength="6" maxlength="20" id="register_user_password_form"></el-input>
             </el-form-item>
             <el-form-item>
                 <el-input v-model="user_password2_reg" placeholder="请输入确认密码" show-password prefix-icon="Lock" minlength="6"
@@ -103,7 +106,8 @@
                     <el-input v-model="valid_code_reg" placeholder="验证码" prefix-icon="Key" class="code"
                         maxlength="4"></el-input>
                     &nbsp;
-                    <ValidCode2 :identifyCode="identifyCodeReg" ref="refValidCode2" />
+                    <!-- <ValidCode2 :identifyCode="identifyCodeReg" ref="refValidCode2" /> -->
+                    <ValidCode :identifyCode="identifyCodeReg" ref="refValidCode2" />
                     &nbsp;
                     <el-button link type="primary" @click="get_email_captcha()">获取验证码</el-button>
                 </div>
@@ -131,16 +135,16 @@
 </template>
   
 <script lang="ts" setup>
-// 注册、登录的弹框及右上方按钮
+// 注册、登录、找回密码的弹框及右上方按钮
 import { onMounted, ref, Ref, defineEmits } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
 import { LoginStatus } from "@/utils/common/structInterface"
 import ValidCode from "@/components/ValidCode.vue";
-import ValidCode2 from "@/components/ValidCode2.vue";
+// import ValidCode2 from "@/components/ValidCode2.vue";
 import { genFileId, ElMessage } from 'element-plus'
-import { AXIOS_BASE_URL } from '../config';
 
+const AXIOS_BASE_URL = process.env.VUE_APP_BASE_API;
 
 let refValidCode = ref<any>(null)
 let refValidCode2 = ref<any>(null)
@@ -155,6 +159,7 @@ let refValidCode2 = ref<any>(null)
 const user_name_show = ref(""); // 登录后右上方显示的用户名
 
 const login_status = ref(LoginStatus.NotLogin);
+// 登录对话框是否出现
 const login_visibile = ref(false);
 const register_visibile = ref(false);
 const retrieve_visibile = ref(false);
@@ -171,7 +176,9 @@ const identifyCodeReg = ref("");
 
 const user_name_reg = ref("");
 const user_email_reg = ref("");
+// 图形验证码
 const valid_code_reg = ref("");
+// 邮箱验证码
 const user_email_valid_code_reg = ref("");
 const user_password_reg = ref("");
 const user_password2_reg = ref("");
@@ -307,10 +314,6 @@ const retrieve = () => {
 }
 
 const register = () => {
-    if (!checkout_user_agreement.value) {
-        hint_message.value = "请同意用户协议！";
-        return
-    }
     if (!user_name_reg.value) {
         hint_message.value = "请输入用户名！";
         return
@@ -319,12 +322,41 @@ const register = () => {
         hint_message.value = "请输入邮箱！";
         return
     }
+    if (user_email_valid_code_reg.value.length != 6) {
+        hint_message.value = "请输入6位邮箱验证码！";
+        return
+    }
     if (!user_password_reg.value) {
         hint_message.value = "请输入密码！";
         return
     }
     if (user_password_reg.value != user_password2_reg.value) {
         hint_message.value = "两次输入的密码不一致！";
+        return
+    }
+    if (!checkout_user_agreement.value) {
+        hint_message.value = "请同意用户协议！";
+        return
+    }
+    const email_form = document.getElementById('register_email_form') as HTMLInputElement;
+    if (!email_form.checkValidity()) {
+        hint_message.value = "邮箱格式不正确！";
+        return
+    }
+    const user_name_form = document.getElementById('register_user_name_form') as HTMLInputElement;
+    if (!user_name_form.checkValidity()) {
+        // 不可能进来
+        hint_message.value = "用户名格式不正确！长度不超过20位。";
+        return
+    }
+    const email_valid_code_form = document.getElementById('register_email_valid_code_form') as HTMLInputElement;
+    if (!email_valid_code_form.checkValidity()) {
+        hint_message.value = "邮箱验证码格式不正确！请点击邮箱验证码并打开邮箱查收。";
+        return
+    }
+    const user_password_form = document.getElementById('register_user_password_form') as HTMLInputElement;
+    if (!user_password_form.checkValidity()) {
+        hint_message.value = "密码格式不正确！长度应该为6-20位。";
         return
     }
     var user_params = new URLSearchParams()
@@ -355,7 +387,6 @@ const register = () => {
             hint_message.value = response.data.msg;
             // console.log("注册失败");
             // console.log("*" + response.data);
-
         }
     }).catch(function (error) { });
 }
@@ -387,6 +418,10 @@ const logout = async () => {
 
 
 const get_email_captcha = () => {
+    if (!user_email_reg.value) {
+        hint_message.value = "请输入邮箱！";
+        return
+    }
     var params = new URLSearchParams()
     params.append('captcha', valid_code_reg.value)
     params.append('hashkey', refValidCode2.value.hashkey)
@@ -408,7 +443,9 @@ const get_email_captcha = () => {
             // console.log("注册成功");
         } else if (response.data.status > 100) {
             hint_message.value = "*" + response.data.msg;
-            // console.log("注册失败");
+            console.log(refValidCode2);
+            console.log(refValidCode2.value);
+            refValidCode2.value!.refreshPic();
             // console.log(response.data);
         }
     }).catch(function (error) {

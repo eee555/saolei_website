@@ -1,11 +1,15 @@
 <template>
-    <span class="text-button" @click="centerDialogVisible = true;">友链</span>
-    <el-dialog v-model="centerDialogVisible" title="友链" width="50%" align-center draggable>
-        <ul>
-            <li><a href="https://github.com/eee555/saolei_website">本站主页</a></li>
-            <li><a href="http://www.saolei.wang/">扫雷网</a></li>
-            <li><a href="https://minesweepergame.com/world-rankings.php">The Authoritative Minesweeper（国际扫雷网）</a></li>
-        </ul>
+    <span class="text-button" @click="centerDialogVisible = true;">致谢</span>
+    <el-dialog v-model="centerDialogVisible" title="致谢" width="50%" align-center draggable>
+        <h2>开发</h2>
+        <span>wjn</span>
+        <h2>测试</h2>
+        <span>pty、lc、zxt、zwb、yht</span>
+        <h2>产品</h2>
+        <span>yht</span>
+        <h2>赞助</h2>
+        <span>pty</span>
+
 
         <template #footer>
             <span class="dialog-footer">

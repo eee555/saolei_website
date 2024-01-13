@@ -46,8 +46,8 @@
         <div v-for="(video, key) in videoData" style="margin-top: 10px;">
             <div class="rank">{{ key - 19 + (state.CurrentPage) * 20 }}</div>
 
-            <span v-if="'upload_time' in video" class="utime">{{ video.upload_time }}</span>
-            <span v-else class="utime">{{ video.video__upload_time }}</span>
+            <span v-if="'upload_time' in video" class="utime">{{ utc_to_local_format(video.upload_time) }}</span>
+            <span v-else class="utime">{{ utc_to_local_format(video.video__upload_time) }}</span>
 
             <PlayerName class="name"
                 :user_id="'player__id' in video ? +(video.player__id as Number) : +(video.video__player__id as Number)"
@@ -88,6 +88,8 @@ import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import PreviewDownload from '@/components/PreviewDownload.vue';
 import PlayerName from '@/components/PlayerName.vue';
 const { proxy } = useCurrentInstance();
+import {utc_to_local_format} from "@/utils/system/tools";
+
 
 const level_tag_selected = ref("EXPERT");
 const mode_tag_selected = ref("STD");

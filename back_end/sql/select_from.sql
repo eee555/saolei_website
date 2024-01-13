@@ -1,7 +1,7 @@
 #select * from `saolei`.`userprofile_emailverifyrecord`
-select * from `userprofile_userprofile`
+#userprofile_emailverifyrecordselect * from `userprofile_userprofile`
 #select * from `videomanager_videomodel`
-#select * from `django_admin_log`
+select * from `captcha_captchastore`
 #DELETE FROM `videomanager_expandvideomodel` where id Between 0 and 999
 #DELETE FROM `django_session` where expire_date Between '2021-09-21 10:26:34.415908' and '2023-09-21 10:26:34.415908'
 #select * from `userprofile_userprofile`

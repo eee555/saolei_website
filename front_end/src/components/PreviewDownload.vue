@@ -14,11 +14,10 @@
 import { defineProps } from 'vue';
 import { onMounted, watch, ref, toRefs } from "vue";
 // import axios from 'axios';
-import { getCurrentInstance } from 'vue';
+// import { getCurrentInstance } from 'vue';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
-import { genFileId, ElMessage } from 'element-plus'
-import { AXIOS_BASE_URL } from '../config';
+// import { genFileId, ElMessage } from 'element-plus'
 
 
 const preview_visible = ref(false);
@@ -45,7 +44,7 @@ const preview = (event : MouseEvent, id: Number | undefined) => {
 			}
 		}
 	).then(function (response) {
-		let uri = AXIOS_BASE_URL + "/video/preview/?id=" + id;
+		let uri = process.env.VUE_APP_BASE_API + "/video/preview/?id=" + id;
 		if (response.data.msg == "a") {
 			uri += ".avf";
 		} else if (response.data.msg == "e") {
@@ -88,7 +87,7 @@ const download = (event : MouseEvent, id: Number | undefined) => {
 	}
 	const down = document.createElement('a');
 	down.style.display = 'none';
-	down.href = AXIOS_BASE_URL + "/video/download/?id=" + id;
+	down.href = process.env.VUE_APP_BASE_API + "/video/download/?id=" + id;
 	document.body.appendChild(down);
 	down.click();
 	URL.revokeObjectURL(down.href);

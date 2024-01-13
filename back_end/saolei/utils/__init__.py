@@ -1,7 +1,6 @@
 from userprofile.models import EmailVerifyRecord
 from django.core.mail import send_mail
 import random
-import string
 import uuid
 from datetime import date, datetime
 import json
@@ -33,8 +32,8 @@ def send_register_email(email):
  
 # 验证码保存之后，我们就要把带有验证码的链接发送到注册时的邮箱！
     # if send_type == 'register':
-    email_title = '扫雷网邮箱注册验证码'
-    email_body = f'您的邮箱验证码为{code}'
+    email_title = '新扫雷网邮箱注册验证码'
+    email_body = f'欢迎您注册新扫雷网，您的邮箱验证码为{code}'
     send_status = send_mail(email_title, email_body, 'wangjianing@88.com', [email])
     if send_status:
         return hashkey

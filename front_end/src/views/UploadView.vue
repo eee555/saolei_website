@@ -166,10 +166,11 @@ const handleVideoUpload = async (options: UploadRequestOptions) => {
     const decoder = new TextDecoder();
     // for (let i = 0;i<1;i++){
 
-    // console.log(aa.get_level);
+    // console.log(aa.is_valid());
 
     let params = new FormData();
     params.append('file', options.file);
+    params.append('review_code', aa.is_valid() + "");
     params.append("software", ["e", "a"][video_file.name.slice(-3) == "avf" ? 1 : 0]);
     params.append("level", ["b", "i", "e"][aa.get_level - 3]);
     params.append("mode", String(aa.get_mode).padStart(2, '0'));

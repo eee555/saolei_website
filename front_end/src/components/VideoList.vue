@@ -15,13 +15,11 @@
 </template>
   
 <script setup lang="ts">
-// 复制、生成二维码的按钮，显示结果的文本框
+// 录像列表的组件
 
 import { ref, watch, computed } from 'vue'
 import PreviewDownload from '@/components/PreviewDownload.vue';
-
-
-
+import {utc_to_local_format} from "@/utils/system/tools";
 
 const data = defineProps({
     videos: {
@@ -36,6 +34,7 @@ const data = defineProps({
 
 const videos_trans = computed(() => {
     data.videos.forEach((v: any) => {
+        v.time = utc_to_local_format(v.time);
         if (v.level == "b") {
             v.level = "初级";
         } else if (v.level == "i") {

@@ -7,6 +7,7 @@ class UploadVideoForm(forms.Form):
     file = forms.FileField(
         max_length=100, allow_empty_file=False, required=True)
     # upload_time = forms.DateTimeField(auto_now_add=True, verbose_name="上传时间")
+    review_code = forms.IntegerField(max_value=255, min_value=0, required=True)
     software = forms.CharField(max_length=1, required=True)
     level = forms.CharField(max_length=1, required=True)
     mode = forms.CharField(max_length=2, required=True)

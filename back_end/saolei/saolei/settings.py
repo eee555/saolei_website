@@ -25,9 +25,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-3_(yjnup(rsxz&pd@stz25*meq10bn3m3$lt!n_1+s723#k=ay"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+# DEBUG = False
 # ALLOWED_HOSTS = ["*"]
-# DEBUG = True
+DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
 # 自定义404、500错误页面

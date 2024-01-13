@@ -1,18 +1,18 @@
 import logging
 logger = logging.getLogger(__name__)
-from django.shortcuts import render, redirect
+# from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, JsonResponse
-from .forms import UserLoginForm, UserRegisterForm, UserRegisterCaptchaForm, UserRetrieveForm
+from .forms import UserLoginForm, UserRegisterForm, UserRetrieveForm, EmailForm
 from captcha.models import CaptchaStore
-from captcha.helpers import captcha_image_url
+# from captcha.helpers import captcha_image_url
 import json
-from django.views.generic import View
+# from django.views.generic import View
 # 引入验证登录的装饰器
-from django.contrib.auth.decorators import login_required
-from django.views.generic.edit import CreateView
+# from django.contrib.auth.decorators import login_required
+# from django.views.generic.edit import CreateView
 from .models import EmailVerifyRecord,UserProfile
-from django.core.mail import send_mail
+# from django.core.mail import send_mail
 from utils import send_register_email
 # from django.utils.decorators import method_decorator
 # from django.views.decorators.csrf import ensure_csrf_cookie
@@ -129,7 +129,9 @@ def user_register(request):
         user_register_form = UserRegisterForm(data=request.POST)
         # print(request.POST)
         # print(user_register_form.cleaned_data.get('username'))
+        # print(user_register_form.cleaned_data)
         if user_register_form.is_valid():
+            # print(222)
             emailHashkey = request.POST.get("usertoken", None)
             email_captcha = request.POST.get("email_captcha", None)
             get_email_captcha = EmailVerifyRecord.objects.filter(
@@ -155,11 +157,13 @@ def user_register(request):
             else:
                 return JsonResponse({'status': 102, 'msg': "邮箱验证码不正确！"})
         else:
-            # print(user_register_form.cleaned_data)
+            if "email" not in user_register_form.cleaned_data:
+                # 可能发生前端验证正确，而后端验证不正确（后端更严格），此时clean会直接删除email字段
+                return JsonResponse({'status': 105, 'msg': "邮箱格式不正确！"})
             # print(user_register_form.errors.as_json())
-            
-            return JsonResponse({'status': 101, 'msg': user_register_form.errors.\
-                                 as_text().split("*")[-1]})
+            else:
+                return JsonResponse({'status': 101, 'msg': user_register_form.errors.\
+                                    as_text().split("*")[-1]})
     else:
         return HttpResponse("别瞎玩")
 
@@ -221,22 +225,28 @@ def refresh_captcha(request):
 # 验证验证码，若通过，发送email
 def get_email_captcha(request):
     if request.method == 'POST':
-        capt = request.POST.get("captcha", None)  # 用户提交的验证码
-        key = request.POST.get("hashkey", None)  # 验证码hash
-        response = {'status': 100, 'msg': None, "hashkey": None}
-        if judge_captcha(capt, key):
-            hashkey = send_register_email(request.POST.get("email", None))
-            if hashkey:
-                response['hashkey'] = hashkey
-                return JsonResponse(response)
+        email_form = EmailForm(data=request.POST)
+        if email_form.is_valid():
+            capt = request.POST.get("captcha", None)  # 用户提交的验证码
+            key = request.POST.get("hashkey", None)  # 验证码hash
+            response = {'status': 100, 'msg': None, "hashkey": None}
+            if judge_captcha(capt, key):
+                hashkey = send_register_email(request.POST.get("email", None))
+                if hashkey:
+                    response['hashkey'] = hashkey
+                    return JsonResponse(response)
+                else:
+                    response['status'] = 103
+                    response['msg'] = "发送邮件失败"
+                    return JsonResponse(response)
             else:
-                response['status'] = 103
-                response['msg'] = "发送邮件失败"
+                response['status'] = 104
+                response['msg'] = "验证码错误"
                 return JsonResponse(response)
         else:
-            response['status'] = 104
-            response['msg'] = "验证码错误"
-            return JsonResponse(response)
+            # print(email_form)
+            return JsonResponse({'status': 110, 'msg': email_form.errors.\
+                                 as_text().split("*")[-1]})
     else:
         return HttpResponse("只能post。。。")
 
@@ -249,6 +259,7 @@ def judge_captcha(captchaStr, captchaHashkey):
             hashkey=captchaHashkey).first()
         if get_captcha and get_captcha.response == captchaStr.lower():
             return True
+    CaptchaStore.objects.filter(hashkey=captchaHashkey).delete()
     return False
 
 

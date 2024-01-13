@@ -45,7 +45,7 @@ def video_upload(request):
         if video_form.is_valid():
             data = video_form.cleaned_data
             # 表中添加数据
-            # print(data)
+            # print(data['review_code'])
             e_video = ExpandVideoModel.objects.create(designator=data["designator"],
                                                       left=data["left"], right=data["right"],
                                                       double=data["double"], cl=data["cl"],
@@ -64,22 +64,33 @@ def video_upload(request):
                                                       cell8=data["cell8"])
             # 会检查是否为盲扫，自动修改模式
             video = VideoModel.objects.create(player=request.user, file=data["file"], video=e_video,
-                                      software=data["software"], level=data["level"],
+                                      state=["c", "b", "a", "a"][data['review_code']], software=data["software"], level=data["level"],
                                       mode=data["mode"] if data["mode"]!="00" else ("12" if data["flag"]==0 else "00"), 
                                       rtime=data["rtime"],
                                       bv=data["bv"], bvs=data["bvs"])
             
             # cache.hget("review_queue", "filed")
 
-            # 往审查队列里添加录像
-            cache.hset("review_queue", video.id, json.dumps({"time": video.upload_time,
-                                                             "player": video.player.realname,
-                                                             "level": video.level,
-                                                             "mode": video.mode,
-                                                             "rtime": video.rtime,
-                                                             "bv": video.bv,
-                                                             "bvs": video.bvs}, cls=ComplexEncoder))
-            
+            if data['review_code'] >= 2:
+                # 往审查队列里添加录像
+                cache.hset("review_queue", video.id, json.dumps({"time": video.upload_time,
+                                                                "player": video.player.realname,
+                                                                "level": video.level,
+                                                                "mode": video.mode,
+                                                                "rtime": video.rtime,
+                                                                "bv": video.bv,
+                                                                "bvs": video.bvs}, cls=ComplexEncoder))
+            else:
+                # 如果录像自动通过了审核，更新最新录像和纪录
+                cache.hset("newest_queue", video.id, json.dumps({"time": video.upload_time,
+                                                                "player": video.player.realname,
+                                                                "level": video.level,
+                                                                "mode": video.mode,
+                                                                "rtime": video.rtime,
+                                                                "bv": video.bv,
+                                                                "bvs": video.bvs}, cls=ComplexEncoder))
+                update_personal_record(video, e_video)
+
             # review_video_ids = cache.hgetall("review_queue")
             # print(review_video_ids)
 

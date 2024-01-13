@@ -1,21 +1,30 @@
-/*
- * @Author: yifeng
- * @Date: 2022-09-17 16:44:14
- * @LastEditors: yifeng
- * @LastEditTime: 2022-10-07 16:52:48
- * @Description: 
- */
+
 // import useLogStore from '@/store/system-log'
 import { ElMessage } from 'element-plus'
 // import Log from '../common/log.print'
 
+/**
+ * @description 把时间戳从UTC转为当地时间
+ * @param {String} t 需要转换的时间戳
+ */
+export function utc_to_local_format(t = "2024-01-10 14:03:09") {
+  const utc_time = new Date(t + "Z"); // 后台传过来的都是0时区的时间戳
+  return utc_time.toLocaleString('default', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  }).replace(/\//g, "-");
+}
 
 /**
  * @description 安全地解析 json 字符串
  * @param {String} jsonString 需要解析的 json 字符串
  * @param {String} defaultValue 默认值
  */
-export function parse (jsonString = '{}', defaultValue = {}) {
+export function parse(jsonString = '{}', defaultValue = {}) {
   let result = defaultValue
   try {
     result = JSON.parse(jsonString)
@@ -31,7 +40,7 @@ export function parse (jsonString = '{}', defaultValue = {}) {
  * @param {String} msg 状态信息
  * @param {Number} code 状态码
  */
-export function response (data = {}, msg = '', code = 0) {
+export function response(data = {}, msg = '', code = 0) {
   return [
     200,
     { code, msg, data }
@@ -43,7 +52,7 @@ export function response (data = {}, msg = '', code = 0) {
  * @param {Any} data 返回值
  * @param {String} msg 状态信息
  */
-export function responseSuccess (data = {}, msg = '成功') {
+export function responseSuccess(data = {}, msg = '成功') {
   return response(data, msg)
 }
 
@@ -53,7 +62,7 @@ export function responseSuccess (data = {}, msg = '成功') {
  * @param {String} msg 状态信息
  * @param {Number} code 状态码
  */
-export function responseError (data = {}, msg = '请求失败', code = 500) {
+export function responseError(data = {}, msg = '请求失败', code = 500) {
   return response(data, msg, code)
 }
 
@@ -61,7 +70,7 @@ export function responseError (data = {}, msg = '请求失败', code = 500) {
  * @description 记录和显示错误
  * @param {Error} error 错误对象
  */
-export function errorLog (error: Error) {
+export function errorLog(error: Error) {
   // 添加到日志
   // const logStore = useLogStore()
   // logStore.push( {
@@ -87,7 +96,7 @@ export function errorLog (error: Error) {
  * @description 创建一个错误
  * @param {String} msg 错误信息
  */
-export function errorCreate (msg: string | undefined) {
+export function errorCreate(msg: string | undefined) {
   const error = new Error(msg)
   errorLog(error)
   throw error
@@ -97,7 +106,7 @@ export function errorCreate (msg: string | undefined) {
  * @description 数据404消息提示
  * @param {String} msg 错误信息
  */
-export function dataNotFound (msg: string | undefined) {
+export function dataNotFound(msg: string | undefined) {
   // 显示提示
   ElMessage.info({
     message: msg,
@@ -109,8 +118,8 @@ export function dataNotFound (msg: string | undefined) {
  * @description 数据请求成功
  * @param {String} msg 成功信息
  */
-export function successMsg (msg: string | undefined) {
-    ElMessage.success({
+export function successMsg(msg: string | undefined) {
+  ElMessage.success({
     message: msg,
     duration: 5 * 1000
   })

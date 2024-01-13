@@ -34,6 +34,8 @@ class UserProfile(AbstractUser):
     email = models.EmailField(_("email address"), 
                               unique=True,
                               error_messages={
+                                  "blank": _("必须填写邮箱！"),
+                                  "invalid": _("邮箱格式不正确！"),
                                   "unique": _("该邮箱已被注册！"),
                                   },)
 

@@ -11,7 +11,7 @@
         <FriendlyLink></FriendlyLink>
         <span style="width:12px; display:inline-block">
         </span>|<span style="width:12px; display:inline-block"></span>
-        <span class="text-button">团队</span>
+        <Thanks></Thanks>
     </div>
 </template>
   
@@ -22,47 +22,14 @@ import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
 import { LoginStatus } from "@/utils/common/structInterface"
 import FriendlyLink from "@/components/dialogs/FriendlyLinks.vue";
-import ValidCode2 from "@/components/ValidCode2.vue";
+import Thanks from "@/components/dialogs/Thanks.vue";
 import { genFileId, ElMessage } from 'element-plus'
 import { AXIOS_BASE_URL } from '../config';
 import Login from "./Login.vue";
 
 
-let refValidCode = ref<any>(null)
-let refValidCode2 = ref<any>(null)
-
-// enum LoginStatus {
-//     IsLogin,
-//     NotLogin,
-//     Login,
-//     Register
-// }
-
-const user_name_show = ref(""); // 登录后右上方显示的用户名
-
 const login_status = ref(LoginStatus.NotLogin);
-const login_visibile = ref(false);
-const register_visibile = ref(false);
-const retrieve_visibile = ref(false);
 
-const remember_me = ref(true);
-
-const user_name = ref("");
-const user_password = ref("");
-const valid_code = ref("");
-
-const identifyCodeLog = ref("");
-const identifyCodeReg = ref("");
-// const identifyCodes = ref("1234567890acdefjhijkmnprstuvwxyz");
-
-const user_name_reg = ref("");
-const user_email_reg = ref("");
-const valid_code_reg = ref("");
-const user_email_valid_code_reg = ref("");
-const user_password_reg = ref("");
-const user_password2_reg = ref("");
-
-const hint_message = ref("");
 
 const emit = defineEmits(['login', 'logout']);
 
