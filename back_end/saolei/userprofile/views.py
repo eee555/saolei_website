@@ -212,7 +212,7 @@ def set_banned(request):
 # 创建验证码
 def captcha(request):
     hashkey = CaptchaStore.generate_key()  # 验证码答案
-    print(f"?captcha-image={hashkey}")
+    # print(f"?captcha-image={hashkey}")
     # image_url = captcha_image_url(hashkey)  # 验证码地址
     # http://127.0.0.1:8000/userprofile/captcha/image/846d863374767ce04f8949882b05b3b21c697765
     captcha = {'hashkey': hashkey}

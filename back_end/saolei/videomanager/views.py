@@ -97,7 +97,7 @@ def video_upload(request):
             # update_personal_record(request, data, e_video)
             return JsonResponse({"status": 100, "msg": None})
         else:
-            print(video_form.errors)
+            # print(video_form.errors)
             return JsonResponse({"status": 666, "msg": "小型网站，请勿攻击！"})
     elif request.method == 'GET':
         return HttpResponse("别瞎玩")
@@ -196,7 +196,7 @@ def video_query(request):
                     values("id", "upload_time", "player__realname", "player__id", "bv",
                         "bvs", "rtime", values_index)
 
-        print(videos)
+        # print(videos)
         paginator = Paginator(videos, 20)  # 每页20条数据
         page_number = data["page"]
         page_videos = paginator.get_page(page_number)
