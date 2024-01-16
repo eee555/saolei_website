@@ -7,6 +7,7 @@ from .fields import RestrictedImageField
 from django_cleanup import cleanup
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.utils import timezone
 username_validator = UnicodeUsernameValidator()
 
 # 自定义用户
@@ -47,7 +48,21 @@ class UserProfile(AbstractUser):
     # 签名
     signature = models.TextField(max_length=188, blank=True, null=True)  # 签名
     country = models.CharField(max_length=3, blank=True, null=True)
+    # 封禁用户，禁止上传录像、头像、签名
     is_banned = models.BooleanField(default=False, blank=False)
+    # 剩余修改真实姓名的次数
+    left_realname_n = models.PositiveSmallIntegerField(null=False, default=1)
+    # 剩余修改头像次数
+    left_avatar_n = models.PositiveSmallIntegerField(null=False, default=2)
+    # 最近修改头像时间
+    last_change_avatar = models.DateTimeField(default=timezone.now)
+    # 剩余修改签名次数
+    left_signature_n = models.PositiveSmallIntegerField(null=False, default=2)
+    # 最近修改签名时间
+    last_change_signature = models.DateTimeField(default=timezone.now)
+    # 人气
+    popularity = models.BigIntegerField(null=False, default=0)
+
 
 
 # 邮箱验证

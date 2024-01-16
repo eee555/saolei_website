@@ -22,7 +22,7 @@
                         </el-col>
                         <el-col :span="19" style="margin-top: 16px;">
                             <div>
-                                <el-input v-model="realname_edit" placeholder="请输入真实姓名" minlength="2"
+                                <el-input v-model.trim="realname_edit" placeholder="请输入真实姓名" minlength="2"
                                     maxlength="10"></el-input>
                             </div>
                         </el-col>
@@ -35,7 +35,7 @@
                         </el-col>
                         <el-col :span="19" style="margin-top: 16px;">
                             <div>
-                                <el-input v-model="signature_edit" placeholder="请输入个性签名" minlength="0"
+                                <el-input v-model.trim="signature_edit" placeholder="请输入个性签名" minlength="0"
                                     maxlength="188"></el-input>
                             </div>
                         </el-col>
@@ -58,7 +58,8 @@
                     <div style="font-size: 20px;margin-bottom: 8px;">{{ realname }}</div>
                     <div style="overflow: auto ;"><strong>个性签名：</strong>{{ signature }}</div>
 
-                    <el-button type="primary" :plain="true" :size="'large'" @click="is_editing = true;"
+                    <el-button v-show="show_edit_button" type="primary" :plain="true" :size="'large'"
+                        @click="is_editing = true;"
                         style="font-size: 18px;margin-top: 18px;width: 160px;">修改个人资料</el-button>
                 </div>
             </el-aside>
@@ -72,7 +73,7 @@
                         <PlayerVideosView></PlayerVideosView>
                     </el-tab-pane>
                 </el-tabs>
-                
+
             </el-main>
         </el-container>
     </div>
@@ -80,7 +81,7 @@
   
 <script lang="ts" setup>
 // 注册、登录的弹框及右上方按钮
-import { onMounted, ref, Ref, defineEmits,defineAsyncComponent  } from 'vue'
+import { onMounted, ref, Ref, defineEmits, defineAsyncComponent, computed } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 // import PreviewDownload from '@/components/PreviewDownload.vue';
 import PlayerRecordView from '@/views/PlayerRecordView.vue';
@@ -115,11 +116,11 @@ const is_editing = ref(false);
 
 // 标签默认切在第一页
 const activeName = ref('first')
+const player = proxy.$store.state.player;
+const user = proxy.$store.state.user;
+const show_edit_button = player.id == user.id;
 
 onMounted(() => {
-    const player = proxy.$store.state.player;
-    // username.value = player.name;
-
     // 把左侧的头像、姓名、个性签名、记录请求过来
     proxy.$axios.get('/msuser/info/',
         {
@@ -130,7 +131,9 @@ onMounted(() => {
     ).then(function (response) {
         const data = response.data;
         userid.value = data.id;
-        username.value = data.realname;
+        realname.value = data.realname;
+        username.value = data.username;
+
         signature.value = data.signature;
         realname_edit.value = data.realname;
         signature_edit.value = data.signature;
@@ -154,15 +157,34 @@ const upload_info = () => {
         upload.value!.submit();
     } else {
         let params = new FormData()
-        params.append('realname', realname_edit.value)
-        params.append('signature', signature_edit.value)
+        if (realname_edit.value != realname.value) {
+            params.append('realname', realname_edit.value)
+        }
+        if (signature_edit.value != signature.value) {
+            params.append('signature', signature_edit.value)
+        }
         proxy.$axios.post('/msuser/update/',
             params,
         ).then(function (response) {
             if (response.data.status == 100) {
-                ElMessage.success("信息更新成功！")
-                username.value = realname_edit.value;
-                signature.value = signature_edit.value;
+                if (realname_edit.value != realname.value) {
+                    if (!response.data.msg.realname_flag) {
+                        ElMessage.warning("姓名剩余修改次数不足！")
+                        realname_edit.value = realname.value;
+                    } else {
+                        ElMessage.success(`姓名修改成功！剩余修改次数${response.data.msg.left_realname_n}`)
+                        realname.value = realname_edit.value;
+                    }
+                }
+                if (signature_edit.value != signature.value) {
+                    if (!response.data.msg.signature_flag) {
+                        ElMessage.warning("个性签名剩余修改次数不足！")
+                        signature_edit.value = signature.value;
+                    } else {
+                        ElMessage.success(`个性签名修改成功！剩余修改次数${response.data.msg.left_signature_n}`)
+                        signature.value = signature_edit.value;
+                    }
+                }
                 proxy.$store.commit('updateUser', response.data.msg);// 当前登录用户
                 proxy.$store.commit('updatePlayer', response.data.msg);// 看我的地盘看谁的
 
@@ -187,10 +209,30 @@ const handleAvatarUpload = async (options: UploadRequestOptions) => {
         params,
     ).then(function (response) {
         if (response.data.status == 100) {
-            ElMessage.success("信息更新成功！")
-            username.value = realname_edit.value;
-            signature.value = signature_edit.value;
-            imageUrl.value = URL.createObjectURL(options.file);
+            if (realname_edit.value != realname.value) {
+                if (!response.data.msg.realname_flag) {
+                    ElMessage.warning("姓名剩余修改次数不足！")
+                    realname_edit.value = realname.value;
+                } else {
+                    ElMessage.success(`姓名修改成功！剩余修改次数${response.data.msg.left_realname_n}`)
+                    realname.value = realname_edit.value;
+                }
+            }
+            if (signature_edit.value != signature.value) {
+                if (!response.data.msg.signature_flag) {
+                    ElMessage.warning("个性签名剩余修改次数不足！")
+                    signature_edit.value = signature.value;
+                } else {
+                    ElMessage.success(`个性签名修改成功！剩余修改次数${response.data.msg.left_signature_n}`)
+                    signature.value = signature_edit.value;
+                }
+            }
+            if (!response.data.msg.avatar_flag) {
+                ElMessage.warning("头像剩余修改次数不足！")
+            } else {
+                ElMessage.success(`头像修改成功！剩余修改次数${response.data.msg.left_avatar_n}`)
+                imageUrl.value = URL.createObjectURL(options.file);
+            }
         } else if (response.data.status >= 101) {
             // 适配后端的两种error
             if (response.data.msg.avatar) {

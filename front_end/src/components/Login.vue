@@ -399,6 +399,8 @@ const logout = async () => {
             // hint_message.value = ""
             user_name_show.value = "";
             login_status.value = LoginStatus.NotLogin;
+            const player = proxy.$store.state.user;
+            player.realname = "";
             emit('logout'); // 向父组件发送消息
             register_visibile.value = false;
             login_visibile.value = false;

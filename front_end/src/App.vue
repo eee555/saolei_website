@@ -43,6 +43,18 @@
       </el-footer>
     </el-container>
   </div>
+
+  <el-dialog v-model="notice_visible" title="站长通知" width="30%" :before-close="handle_notice_close">
+    <span>{{ notice }}</span>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-checkbox v-model="never_show_notice">不再显示此对话框</el-checkbox>
+        <el-button type="primary" @click="handle_notice_close();">
+          确认
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup lang='ts'>
@@ -58,15 +70,29 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 
 const player_visibile = ref(false)
+const notice_visible = ref(false)
+const never_show_notice = ref(false)
 const tab_width = ref("16%")
 
 // let refLogin = ref<any>(null)
 
-// onMounted(() => {
-//   console.log(666);
-//   console.log(refLogin.value.login_status);
-//   console.log(LoginStatus.IsLogin);
-// })
+const notice = ref(`
+1、本站正在进行的是第二轮删档内测，但是链接请勿传到群外（出于网络安全、网站安全方面考虑）。
+2、相关意见和建议请先检查群内公告文档里的待办、已有issue，若没有同类问题，再在此处[https://gitee.com/ee55/saolei_website/issues]发表。
+`)
+
+onMounted(() => {
+  const notice_hash = localStorage.getItem("notice") as String;
+  if (hash_code(notice.value) + "" != notice_hash) {
+    notice_visible.value = true;
+  }
+
+  console.log(`
+  元扫雷网(fff666.top)开发团队，期待您的加入: 2234208506@qq.com
+  `);
+
+
+})
 
 
 const user_login = () => {
@@ -83,6 +109,27 @@ const user_logout = () => {
 const goback_home = () => {
   router.push("/")
 }
+
+// 站长通知关闭的回调
+const handle_notice_close = () => {
+  if (never_show_notice.value) {
+    localStorage.setItem("notice", hash_code(notice.value) + "");
+  }
+  notice_visible.value = false;
+}
+
+const hash_code = function (t: string) {
+  var hash = 0, i, chr;
+  if (t.length === 0) return hash;
+  for (i = 0; i < t.length; i++) {
+    chr = t.charCodeAt(i);
+    hash = ((hash << 5) - hash) + chr;
+    hash |= 0; // 32bit integer
+  }
+  return hash;
+};
+
+
 
 
 </script>

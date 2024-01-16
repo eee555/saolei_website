@@ -1,5 +1,24 @@
-# saolei_website
-# 新扫雷网
+# <a href="https://github.com/eee555/saolei_website" class="button">元扫雷网（Meta Saolei Website）</a>
+<style>  
+  .button {  
+    display: inline-block;  
+    padding: 5px 8px;  
+    background-color: white;
+    color: rgb(0, 0, 0);
+    text-decoration: none;
+    border-radius: 4px;
+  }  
+  .button:hover {
+    text-decoration: none;
+    background-color: rgb(0, 188, 56);
+    color: white;
+  } 
+</style>  
+
+[![saolei_website](https://img.shields.io/badge/saolei_website-v1.7-brightgreen.svg)](https://github.com/eee555/Solvable-Minesweeper)
+[![stars](https://img.shields.io/github/stars/eee555/saolei_website)](https://github.com/eee555/saolei_website/stargazers)
+[![forks](https://img.shields.io/github/forks/eee555/saolei_website)](https://github.com/eee555/saolei_website/forks)
+
 
 前端：Vue3 + Ts + Element-ui + wasm-bindgen  
 后端：Django + Mysql + redis  
@@ -34,6 +53,11 @@
 1. cd saolei_website\front_end
 1. npm install
 1. npm run serve
+
+## 链接
+
+
+
 
 ## 赞助
 感谢您考虑支持我们的开源项目，赞助时请备注您的称呼。您的赞助将有助于项目的持续发展和改进，使我们能够继续提高软件的质量（owner许诺向所有contributor按合理的比例分配赞助得到的收入）。  

@@ -16,6 +16,9 @@ from django_redis import get_redis_connection
 cache = get_redis_connection("saolei_website")
 from django.conf import settings
 import os
+from django.utils import timezone
+from datetime import datetime, timedelta
+
 
 # 根据id获取用户的基本资料、扫雷记录
 # 无需登录就可获取
@@ -45,6 +48,7 @@ def get_info(request):
         else:
             image_data = None
         response = {"id": user_id,
+                    "username": user.username,
                     "realname": user.realname,
                     "avatar": image_data,
                     "signature": user.signature,
@@ -141,7 +145,8 @@ def get_info_abstract(request):
         return HttpResponse("别瞎玩")
     
 
-# 上传我的地盘里的头像、姓名、个性签名
+# 上传或更新我的地盘里的头像、姓名、个性签名
+# 应该写到用户的app里，而不是玩家
 @login_required(login_url='/')
 def update(request):
     if request.method == 'POST':
@@ -151,28 +156,80 @@ def update(request):
             data = user_update_form.cleaned_data
             # print(data)
             user = request.user
-            user.realname = data["realname"]
-            user.signature = data["signature"]
+            if user.is_banned:
+                return JsonResponse({"status": 110, "msg": "用户已被封禁"})
+            realname_flag = False
+            signature_flag = False
+            avatar_flag = False
+            if data["realname"]:
+                if user.left_realname_n > 0:
+                    user.realname = data["realname"]
+                    user.left_realname_n -= 1
+                    realname_flag = True
+                    update_cache_realname(user.id, data["realname"])
+            if data["signature"]:
+                # 个性签名的修改次数每年增加一次
+                delta_t = timezone.now() - user.last_change_signature
+                n_add = delta_t.days // 365
+                user.left_signature_n += n_add
+                user.last_change_signature + timezone.timedelta(days=n_add * 365)
+                if user.left_signature_n > 0:
+                    user.signature = data["signature"]
+                    user.left_signature_n -= 1
+                    signature_flag = True
             if data["avatar"]:
-                user.avatar = data["avatar"]
+                # 头像的修改次数每年增加一次
+                delta_t = timezone.now() - user.last_change_avatar
+                n_add = delta_t.days // 365
+                user.left_avatar_n += n_add
+                user.last_change_avatar + timezone.timedelta(days=n_add * 365)
+                if user.left_avatar_n > 0:
+                    user.avatar = data["avatar"]
+                    user.left_avatar_n -= 1
+                    avatar_flag = True
             try:
                 user.save()
-                return JsonResponse({"status": 100, "msg": {
-                    "id": user.id, "username": user.username,
-                     "realname": data["realname"], "is_banned": user.is_banned}
-                     })
+                msg_dict = {
+                    "id": user.id, "username": user.username, "realname": user.realname,
+                     "realname_flag": realname_flag, "signature_flag": signature_flag,
+                     "avatar_flag": avatar_flag, "left_realname_n": user.left_realname_n,
+                     "left_signature_n": user.left_signature_n, "left_avatar_n": user.left_avatar_n,
+                     "is_banned": user.is_banned}
+                return JsonResponse({"status": 100, "msg": msg_dict})
             except Exception as e:
-                return JsonResponse({"status": 107, "msg": "不支持此种字符"})
+                return JsonResponse({"status": 107, "msg": "未知错误。可能原因：不支持此种字符"})
         else:
             ErrorDict = user_update_form.errors
             return JsonResponse({"status": 101, "msg": ErrorDict})
     else:
         return HttpResponse("别瞎玩")
 
+
+# 用户修改自己的名字后，同步修改redis缓存里的真实姓名，使得排行榜数据同步修改
+# 开销较大，然而用户改名只有1次机会
+def update_cache_realname(user_id, user_realname):
+    for index in ["time", "bvs", "path", "ioe", "stnb"]:
+        for mode in ["std", "nf", "ng", "dg"]:
+            key = f"player_{index}_{mode}_{user_id}"
+            if cache.exists(key):
+                cache.hset(key, "name", user_realname)
+
+
+# 从redis获取用户排行榜
 def player_rank(request):
     if request.method == 'GET':
         # print(request.GET)
         # print(cache.zcard("player_time_std_ids"))
+        # print(cache.keys('*'))
+        # [b'player_stnb_std_ids', b'player_path_std_2', b'player_time_std_1', b'player_bvs_std_2',
+        #   b'player_bvs_std_1', b'newest_queue', b'player_path_std_ids', b'player_ioe_std_2',
+        #     b'player_stnb_std_2', b'player_time_std_2', b'player_bvs_std_ids', b'player_ioe_std_ids',
+        #       b'player_stnb_std_1', b'player_path_std_1', b'review_queue', b'player_ioe_std_1', 
+        #       b':1:django.contrib.sessions.cachef7wlcpvziwulv829ah1r66afrc1xaae0', b'player_time_std_ids']
+        # print(cache.zrange('player_time_std_ids', 0, -1))
+        # print(cache.zrange('player_time_std_1', 0, -1))
+        # print(cache.zrange('player_time_std_2', 0, -1))
+        # print(cache.zrange('player_path_std_2', 0, -1))
         data=request.GET
         # num_player = cache.llen(data["ids"])
         num_player = cache.zcard(data["ids"])

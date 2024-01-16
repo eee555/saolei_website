@@ -17,9 +17,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import TemplateView
-from django.urls import re_path
-from django.contrib.staticfiles.views import serve
-from django.shortcuts import render
+# from django.urls import re_path
+# from django.contrib.staticfiles.views import serve
+# from django.shortcuts import render
 
 # from App import views
 
