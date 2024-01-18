@@ -5,6 +5,8 @@ import uuid
 from datetime import date, datetime
 import json
 from decimal import Decimal
+from django.http import HttpResponse, JsonResponse, FileResponse
+from django.shortcuts import render, redirect
 
 def generate_code(code_len):
     """
@@ -72,7 +74,21 @@ class ComplexEncoder(json.JSONEncoder):
         else:
             return json.JSONEncoder.default(self, obj)
         
-
+def ratelimited(request, exception):
+    if "/video/download/" in request.path:
+        return redirect(request.META.get('HTTP_REFERER', '/'))
+    if "/login/" in request.path:
+        return JsonResponse({"status": 120, "msg": "请稍后再试！"})
+    if "/register/" in request.path:
+        return JsonResponse({"status": 120, "msg": "请稍后再试！"})
+    if "/retrieve/" in request.path:
+        return JsonResponse({"status": 120, "msg": "请稍后再试！"})
+    if "/get_email_captcha/" in request.path:
+        return JsonResponse({"status": 120, "msg": "请稍后再试！"})
+    if "/captcha/" in request.path:
+        return JsonResponse({"status": 120, "msg": "请稍后再试！"})
+    if "/refresh_captcha/" in request.path:
+        return JsonResponse({"status": 120, "msg": "请稍后再试！"})
 
 
 

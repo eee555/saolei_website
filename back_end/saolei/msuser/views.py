@@ -172,7 +172,7 @@ def update(request):
                 delta_t = timezone.now() - user.last_change_signature
                 n_add = delta_t.days // 365
                 user.left_signature_n += n_add
-                user.last_change_signature + timezone.timedelta(days=n_add * 365)
+                user.last_change_signature += timezone.timedelta(days=n_add * 365)
                 if user.left_signature_n > 0:
                     user.signature = data["signature"]
                     user.left_signature_n -= 1
@@ -182,7 +182,7 @@ def update(request):
                 delta_t = timezone.now() - user.last_change_avatar
                 n_add = delta_t.days // 365
                 user.left_avatar_n += n_add
-                user.last_change_avatar + timezone.timedelta(days=n_add * 365)
+                user.last_change_avatar += timezone.timedelta(days=n_add * 365)
                 if user.left_avatar_n > 0:
                     user.avatar = data["avatar"]
                     user.left_avatar_n -= 1

@@ -18,6 +18,7 @@ from utils import send_register_email
 # from django.views.decorators.csrf import ensure_csrf_cookie
 from django.contrib.auth import get_user_model
 from msuser.models import UserMS
+from django_ratelimit.decorators import ratelimit
 
 User = get_user_model()
 
@@ -25,6 +26,7 @@ User = get_user_model()
 # Create your views here.
 
 
+@ratelimit(key='ip', rate='6/h')
 def user_login(request):
     if request.method == 'POST':
         # print(request.session.get("login"))
@@ -95,6 +97,7 @@ def user_logout(request):
     return JsonResponse({'status': 100, 'msg': None})
 
 # 用户找回密码
+@ratelimit(key='ip', rate='6/h')
 def user_retrieve(request):
     if request.method == 'POST':
         user_retrieve_form = UserRetrieveForm(data=request.POST)
@@ -123,6 +126,7 @@ def user_retrieve(request):
         return HttpResponse("别瞎玩")
 
 # @method_decorator(ensure_csrf_cookie)
+@ratelimit(key='ip', rate='6/h')
 def user_register(request):
     # print(request.POST)
     if request.method == 'POST':
@@ -210,6 +214,7 @@ def set_banned(request):
         return HttpResponse("别瞎玩")
 
 # 创建验证码
+@ratelimit(key='ip', rate='60/h')
 def captcha(request):
     hashkey = CaptchaStore.generate_key()  # 验证码答案
     # print(f"?captcha-image={hashkey}")
@@ -219,10 +224,14 @@ def captcha(request):
     return captcha
 
 # 刷新验证码
+@ratelimit(key='ip', rate='60/h')
 def refresh_captcha(request):
-    return HttpResponse(json.dumps(captcha(request)), content_type='application/json')
+    c = captcha(request)
+    c.update({'status': 100})
+    return HttpResponse(json.dumps(c), content_type='application/json')
 
 # 验证验证码，若通过，发送email
+@ratelimit(key='ip', rate='12/h')
 def get_email_captcha(request):
     if request.method == 'POST':
         email_form = EmailForm(data=request.POST)

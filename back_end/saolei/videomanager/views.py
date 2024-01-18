@@ -25,12 +25,16 @@ from apscheduler.schedulers.background import BackgroundScheduler
 # from django.core.management.base import BaseCommand
 # from django_apscheduler.models import DjangoJobExecution
 # from django_apscheduler import util
+from django.shortcuts import render, redirect
 from django_apscheduler.jobstores import DjangoJobStore, register_job, register_events
+# https://django-ratelimit.readthedocs.io/en/stable/rates.html
+from django_ratelimit.decorators import ratelimit
 
 logging.getLogger('apscheduler.scheduler').setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 @login_required(login_url='/')
+@ratelimit(key='ip', rate='1/5s')
 def video_upload(request):
     if request.method == 'POST':
         if request.user.is_banned:
@@ -118,6 +122,7 @@ def get_software(request):
 # 给预览用的接口，区别是结尾是文件后缀
 # 坑：如果做成必须登录才能下载，由于Django的某种特性，会重定向资源，
 # 然而flop播放器不能处理此状态码，因此会请求到空文件，导致解码失败
+@ratelimit(key='ip', rate='10/m')
 def video_preview(request):
     if request.method != 'GET':
         return HttpResponse("别瞎玩")
@@ -133,6 +138,7 @@ def video_preview(request):
 
 # 给下载用的接口，区别是结尾没有文件后缀
 # @login_required(login_url='/')
+@ratelimit(key='ip', rate='10/m')
 def video_download(request):
     if request.method != 'GET':
         return HttpResponse("别瞎玩")
@@ -157,6 +163,7 @@ def video_download(request):
 
 # 录像查询（无需登录）
 # 按任何基础指标+难度+模式，排序，分页
+@ratelimit(key='ip', rate='10/m')
 def video_query(request):
     if request.method == 'GET':
         data = request.GET

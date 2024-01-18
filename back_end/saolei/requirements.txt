@@ -6,3 +6,4 @@ django-redis==5.4.0
 django-cleanup==8.0.0
 django-apscheduler==0.6.2
 redis==5.0.1
+django-ratelimit==4.1.0

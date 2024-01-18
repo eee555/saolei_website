@@ -1,19 +1,5 @@
-# <a href="https://github.com/eee555/saolei_website" class="button">元扫雷网（Meta Saolei Website）</a>
-<style>  
-  .button {  
-    display: inline-block;  
-    padding: 5px 8px;  
-    background-color: white;
-    color: rgb(0, 0, 0);
-    text-decoration: none;
-    border-radius: 4px;
-  }  
-  .button:hover {
-    text-decoration: none;
-    background-color: rgb(0, 188, 56);
-    color: white;
-  } 
-</style>  
+# <a href="https://github.com/eee555/saolei_website" >元扫雷网（Meta Saolei Website）</a>
+
 
 [![saolei_website](https://img.shields.io/badge/saolei_website-v1.7-brightgreen.svg)](https://github.com/eee555/Solvable-Minesweeper)
 [![stars](https://img.shields.io/github/stars/eee555/saolei_website)](https://github.com/eee555/saolei_website/stargazers)
