@@ -116,7 +116,10 @@ const is_editing = ref(false);
 
 // 标签默认切在第一页
 const activeName = ref('first')
-const player = proxy.$store.state.player;
+// const player = proxy.$store.state.player;
+const player = JSON.parse(localStorage.getItem("player") as string);
+// console.log(player);
+
 const user = proxy.$store.state.user;
 const show_edit_button = player.id == user.id;
 
@@ -186,7 +189,8 @@ const upload_info = () => {
                     }
                 }
                 proxy.$store.commit('updateUser', response.data.msg);// 当前登录用户
-                proxy.$store.commit('updatePlayer', response.data.msg);// 看我的地盘看谁的
+                // proxy.$store.commit('updatePlayer', response.data.msg);// 看我的地盘看谁的
+                localStorage.setItem("player", JSON.stringify(response.data.msg));
 
             } else if (response.data.status >= 101) {
                 ElMessage.error(response.data.msg)

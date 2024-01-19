@@ -164,7 +164,7 @@ const login_visibile = ref(false);
 const register_visibile = ref(false);
 const retrieve_visibile = ref(false);
 
-const remember_me = ref(true);
+const remember_me = ref(false);
 
 const user_name = ref("");
 const user_password = ref("");
@@ -206,28 +206,28 @@ const init_refvalues = () => {
     hint_message.value = "";
     user_name.value = "";
     checkout_user_agreement.value = false;
-    remember_me.value = true;
+    remember_me.value = false;
 }
 
 onMounted(() => {
     // console.log(document.cookie);
     login();
-    // window.onbeforeunload = function (e) {
-    //     // 关闭网页时，删cookie。由于跨域问题，开发时，如开前后端各开一个服务器，
-    //     // 体现不出效果，即：取消“记住我”，依然可以免密登录。部署以后，预期“记住我”的功能正常
-    //     if (!remember_me.value) {
-    //         let date = new Date();
-    //         date.setDate(date.getDate() - 1);
-    //         document.cookie = "session_id=;expires=" + date;
-    //         var xhr = new XMLHttpRequest();
-    //         xhr.open('POST', AXIOS_BASE_URL + '/userprofile/logout/', false);
-    //         xhr.send(null);
-    //         // 防止密码爆破，用户界面展示所有个人录像，进入其他人个人主页
+    window.onbeforeunload = function (e) {
+        // 关闭网页时，删cookie。由于跨域问题，开发时，如开前后端各开一个服务器，
+        // 体现不出效果，即：取消“记住我”，依然可以免密登录。部署以后，预期“记住我”的功能正常
+        if (!remember_me.value) {
+            let date = new Date();
+            date.setDate(date.getDate() - 1);
+            document.cookie = "session_id=;expires=" + date;
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', AXIOS_BASE_URL + '/userprofile/logout/', false);
+            xhr.send(null);
+            // 防止密码爆破，用户界面展示所有个人录像，进入其他人个人主页
 
-    //     }
-    //     return null;
+        }
+        return null;
 
-    // };
+    };
 })
 
 
@@ -242,7 +242,7 @@ const login = () => {
     proxy.$axios.post('/userprofile/login/',
         params,
     ).then(function (response) {
-        // console.log(response.data);
+        console.log(response.data);
         // console.log(document.cookie.match("csrftoken"));
         // console.log(document.cookie);
         // console.log(user_name.value);
@@ -251,13 +251,17 @@ const login = () => {
         // console.log(response.config);
         if (response.data.status == 100) {
             hint_message.value = ""
-            // console.log(response.data.msg);
+            // console.log(response.data);
             // console.log(response.data.msg.name);
 
             user_name_show.value = response.data.msg.username;
 
             proxy.$store.commit('updateUser', response.data.msg);// 当前登录用户
-            proxy.$store.commit('updatePlayer', response.data.msg);// 看我的地盘看谁的
+            if (localStorage.getItem("player") === null) {
+                // 解决刷新后改成用户自己
+                localStorage.setItem("player", JSON.stringify(response.data.msg));
+            }
+            // proxy.$store.commit('updatePlayer', response.data.msg);// 看我的地盘看谁的
             if (response.data.msg.is_banned) {
                 user_name_show.value += "（您已被封禁，详情请询问管理员！）"
             }
@@ -271,7 +275,7 @@ const login = () => {
             // }
             localStorage.setItem("user_id", response.data.id + "");
         } else if (response.data.status >= 101) {
-            // hint_message.value = response.data.msg;
+            hint_message.value = response.data.msg;
             // console.log("登录失败");
             // console.log("*" + response.data);
 
@@ -379,7 +383,8 @@ const register = () => {
             user_name_show.value = user_name_reg.value;
             login_status.value = LoginStatus.IsLogin;
             proxy.$store.commit('updateUser', response.data.msg);// 当前登录用户
-            proxy.$store.commit('updatePlayer', response.data.msg);// 看我的地盘看谁的
+            // proxy.$store.commit('updatePlayer', response.data.msg);// 看我的地盘看谁的
+            localStorage.setItem("player", JSON.stringify(response.data.msg));
             emit('login'); // 向父组件发送消息
             register_visibile.value = false;
             // console.log(response);

@@ -79,6 +79,7 @@ def video_upload(request):
                 # 往审查队列里添加录像
                 cache.hset("review_queue", video.id, json.dumps({"time": video.upload_time,
                                                                 "player": video.player.realname,
+                                                                "player_id": video.player.id,
                                                                 "level": video.level,
                                                                 "mode": video.mode,
                                                                 "rtime": video.rtime,
@@ -88,6 +89,7 @@ def video_upload(request):
                 # 如果录像自动通过了审核，更新最新录像和纪录
                 cache.hset("newest_queue", video.id, json.dumps({"time": video.upload_time,
                                                                 "player": video.player.realname,
+                                                                "player_id": video.player.id,
                                                                 "level": video.level,
                                                                 "mode": video.mode,
                                                                 "rtime": video.rtime,

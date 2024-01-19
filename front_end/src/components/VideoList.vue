@@ -1,7 +1,12 @@
 <template>
     <el-table :data="videos_trans" :show-header="false" style="width: 100%; color: black;font-size: 16px;">
         <el-table-column prop="time" min-width="200" />
-        <el-table-column prop="player" min-width="80" />
+        <el-table-column v-if="need_player_name" min-width="80">
+            <template #default="player">
+                <PlayerName class="name" :user_id="+player.row.player_id" :user_name="player.row.player"></PlayerName>
+            </template>
+        </el-table-column>
+        <el-table-column v-else prop="player" min-width="80" />
         <el-table-column prop="level" min-width="80" />
         <el-table-column prop="mode" min-width="80" />
         <el-table-column prop="rtime" min-width="90" />
@@ -20,15 +25,22 @@
 import { ref, watch, computed } from 'vue'
 import PreviewDownload from '@/components/PreviewDownload.vue';
 import {utc_to_local_format} from "@/utils/system/tools";
+import PlayerName from '@/components/PlayerName.vue';
 
 const data = defineProps({
     videos: {
         type: Array,
         default: []
     },
+    // 反序
     reverse: {
         type: Boolean,
         default: false
+    },
+    // 需要用可以点开摘要的用户组件
+    need_player_name: {
+        type: Boolean,
+        default: true
     }
 })
 

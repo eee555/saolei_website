@@ -1,6 +1,6 @@
 <template>
     <el-popover placement="bottom" width="298px" popper-class="max-h-300px overflow-auto" @show="pop_show" @hide="pop_hide"
-        :visible="is_pop_show" popper-style="background-color:rgba(250,250,250);" :show-after="200" :hide-after="200">
+        trigger="click" popper-style="background-color:rgba(250,250,250);" :show-after="0" :hide-after="0">
         <Wait v-show="is_loading"></Wait>
         <div>
             <div style="width: 80px;float: left;line-height: 200%;">
@@ -85,7 +85,7 @@
 
         </div>
         <template #reference>
-            <span href="" @click="is_pop_show = !is_pop_show" target="_blank" class="name">{{ data.user_name }}
+            <span href="" target="_blank" class="name">{{ data.user_name }}
             </span>
         </template>
     </el-popover>
@@ -100,7 +100,6 @@ import { getCurrentInstance } from 'vue';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
 import { genFileId, ElMessage } from 'element-plus'
-import { AXIOS_BASE_URL } from '../config';
 const image_url = ref(require('@/assets/person.png'))
 import PreviewDownload from '@/components/PreviewDownload.vue';
 import Wait from '@/components/Wait.vue';
@@ -132,8 +131,6 @@ const e_bvs = ref("");
 const e_t_id = ref("");
 const e_bvs_id = ref("");
 
-// 点一下出现，再点一下关闭
-const is_pop_show = ref(false);
 // 控制加载时的小圈圈
 const is_loading = ref(true);
 
@@ -151,15 +148,15 @@ const pop_show = () => {
         }
     ).then(function (response) {
 
-        const data = response.data;
+        const response_data = response.data;
         // console.log(data);
 
-        id.value = data.id;
-        realname.value = data.realname;
-        if (data.avatar) {
-            image_url.value = "data:image/;base64," + data.avatar;
+        id.value = data.user_id + "";
+        realname.value = response_data.realname;
+        if (response_data.avatar) {
+            image_url.value = "data:image/;base64," + response_data.avatar;
         }
-        const records = JSON.parse(data.record_abstract)
+        const records = JSON.parse(response_data.record_abstract)
         // console.log(records);
 
         b_t.value = records.time[0]
@@ -183,6 +180,8 @@ const pop_show = () => {
 
 }
 
+
+// 用户记录小弹窗关闭后，删除其中的数据
 const pop_hide = () => {
     image_url.value = require('@/assets/person.png');
     realname.value = "";
@@ -216,7 +215,8 @@ function to_fixed_n(input: string | number | undefined, to_fixed: number): strin
 }
 
 const visit_me = (user_id: Number) => {
-    proxy.$store.commit('updatePlayer', { "id": id.value });
+    // proxy.$store.commit('updatePlayer', { "id": id.value, "realname":realname.value });
+    localStorage.setItem("player", JSON.stringify({ "id": id.value, "realname":realname.value }));
     router.push("player")
 }
 

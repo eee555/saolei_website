@@ -1,4 +1,4 @@
-# from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from .forms import UserUpdateForm
 # from .models import VideoModel, ExpandVideoModel
@@ -19,7 +19,6 @@ import os
 from django.utils import timezone
 from datetime import datetime, timedelta
 
-
 # 根据id获取用户的基本资料、扫雷记录
 # 无需登录就可获取
 
@@ -34,6 +33,8 @@ class DecimalEncoder(json.JSONEncoder):
 # 获取我的地盘里的头像、姓名、个性签名
 def get_info(request):
     if request.method == 'GET':
+        if not request.GET.get('id', ''):
+            return JsonResponse({'status': 101, 'msg': "访问谁？"})
         # 此处要重点防攻击
         # user_id = request.user.id
         user_id = request.GET["id"]
@@ -62,6 +63,8 @@ def get_info(request):
 def get_records(request):
     if request.method == 'GET':
         # 此处要重点防攻击
+        if not request.GET.get('id', ''):
+            return JsonResponse({'status': 101, 'msg': "访问谁？"})
         user_id = request.GET["id"]
         user = UserProfile.objects.get(id=user_id)
         ms_user = user.userms

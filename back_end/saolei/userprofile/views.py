@@ -26,7 +26,8 @@ User = get_user_model()
 # Create your views here.
 
 
-@ratelimit(key='ip', rate='6/h')
+@ratelimit(key='ip', rate='60/h')
+# 此处要分成两个，密码容易碰撞，hash难碰撞
 def user_login(request):
     if request.method == 'POST':
         # print(request.session.get("login"))
@@ -128,14 +129,13 @@ def user_retrieve(request):
 # @method_decorator(ensure_csrf_cookie)
 @ratelimit(key='ip', rate='6/h')
 def user_register(request):
-    # print(request.POST)
+    print(request.POST)
     if request.method == 'POST':
         user_register_form = UserRegisterForm(data=request.POST)
         # print(request.POST)
         # print(user_register_form.cleaned_data.get('username'))
         # print(user_register_form.cleaned_data)
         if user_register_form.is_valid():
-            # print(222)
             emailHashkey = request.POST.get("usertoken", None)
             email_captcha = request.POST.get("email_captcha", None)
             get_email_captcha = EmailVerifyRecord.objects.filter(
@@ -166,6 +166,7 @@ def user_register(request):
                 return JsonResponse({'status': 105, 'msg': "邮箱格式不正确！"})
             # print(user_register_form.errors.as_json())
             else:
+                # print(user_register_form.errors)
                 return JsonResponse({'status': 101, 'msg': user_register_form.errors.\
                                     as_text().split("*")[-1]})
     else:

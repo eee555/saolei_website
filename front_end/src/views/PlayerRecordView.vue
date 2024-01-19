@@ -127,7 +127,8 @@ const indexMethod = (index: number) => {
 }
 
 onMounted(() => {
-    const player = proxy.$store.state.player;
+    // const player = proxy.$store.state.player;
+    const player = JSON.parse(localStorage.getItem("player") as string);
     // username.value = player.name;
 
     // 把左侧的头像、姓名、个性签名、记录请求过来
