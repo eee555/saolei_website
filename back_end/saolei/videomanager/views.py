@@ -1469,8 +1469,10 @@ def delete_freezed_video(name):
             
 
 # scheduler.add_job(job1, "interval", seconds=10, args=['22'], id="job2", replace_existing=True)
-scheduler.add_job(delete_newest_queue, 'cron', hour='3', minute='11,23', args=['666'], id='delete_newest_queue', replace_existing=True)
-scheduler.add_job(delete_freezed_video, 'cron', hour='4', minute='1,5', args=['666'], id='delete_freezed_video', replace_existing=True)
+scheduler.add_job(delete_newest_queue, 'cron', hour='3', minute='11', second = '23',
+                   args=['666'], id='delete_newest_queue', replace_existing=True)
+scheduler.add_job(delete_freezed_video, 'cron', hour='4', minute='1', second = '5', 
+                  args=['666'], id='delete_freezed_video', replace_existing=True)
 # 监控任务
 register_events(scheduler)
 # 调度器开始运行

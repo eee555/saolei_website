@@ -13,12 +13,16 @@ import json
 # from django.views.generic.edit import CreateView
 from .models import EmailVerifyRecord,UserProfile
 # from django.core.mail import send_mail
-from utils import send_register_email
+from utils import send_email
 # from django.utils.decorators import method_decorator
 # from django.views.decorators.csrf import ensure_csrf_cookie
 from django.contrib.auth import get_user_model
 from msuser.models import UserMS
 from django_ratelimit.decorators import ratelimit
+from django.utils import timezone
+from apscheduler.schedulers.background import BackgroundScheduler
+from django_apscheduler.jobstores import DjangoJobStore, register_job, register_events
+
 
 User = get_user_model()
 
@@ -97,6 +101,7 @@ def user_logout(request):
     logout(request)
     return JsonResponse({'status': 100, 'msg': None})
 
+
 # 用户找回密码
 @ratelimit(key='ip', rate='6/h')
 def user_retrieve(request):
@@ -108,16 +113,22 @@ def user_retrieve(request):
             get_email_captcha = EmailVerifyRecord.objects.filter(
                 hashkey=emailHashkey).first()
             if get_email_captcha and email_captcha and get_email_captcha.code == email_captcha:
-                user = UserProfile.objects.filter(email=user_retrieve_form.cleaned_data['email'])
-                if not user:
-                    return JsonResponse({'status': 109, 'msg': "该邮箱尚未注册，请先注册！"})
-                # 设置密码(哈希)
-                user.set_password(
-                    user_retrieve_form.cleaned_data['password'])
-                user.save()
-                # 保存好数据后立即登录
-                login(request, user)
-                return JsonResponse({'status': 100, 'msg': None})
+                if (timezone.now() - get_email_captcha.send_time).seconds <= 3600:
+                    user = UserProfile.objects.filter(email=user_retrieve_form.cleaned_data['email'])
+                    if not user:
+                        return JsonResponse({'status': 109, 'msg': "该邮箱尚未注册，请先注册！"})
+                    # 设置密码(哈希)
+                    user.set_password(
+                        user_retrieve_form.cleaned_data['password'])
+                    user.save()
+                    # 保存好数据后立即登录
+                    login(request, user)
+                    EmailVerifyRecord.objects.filter(hashkey=emailHashkey).delete()
+                    return JsonResponse({'status': 100, 'msg': None})
+                else:
+                    # 顺手把过期的验证码删了
+                    EmailVerifyRecord.objects.filter(hashkey=emailHashkey).delete()
+                    return JsonResponse({'status': 150, 'msg': "邮箱验证码已过期！" })
             else:
                 return JsonResponse({'status': 102, 'msg': "邮箱验证码不正确！"})
         else:
@@ -126,10 +137,12 @@ def user_retrieve(request):
     else:
         return HttpResponse("别瞎玩")
 
+
+# 用户注册
 # @method_decorator(ensure_csrf_cookie)
 @ratelimit(key='ip', rate='6/h')
 def user_register(request):
-    print(request.POST)
+    # print(request.POST)
     if request.method == 'POST':
         user_register_form = UserRegisterForm(data=request.POST)
         # print(request.POST)
@@ -138,26 +151,31 @@ def user_register(request):
         if user_register_form.is_valid():
             emailHashkey = request.POST.get("usertoken", None)
             email_captcha = request.POST.get("email_captcha", None)
-            get_email_captcha = EmailVerifyRecord.objects.filter(
-                hashkey=emailHashkey).first()
+            get_email_captcha = EmailVerifyRecord.objects.filter(hashkey=emailHashkey).first()
+            # get_email_captcha = EmailVerifyRecord.objects.filter(hashkey="5f0db744-180b-4d9f-af5a-2986f4a78769").first()
             if get_email_captcha and email_captcha and get_email_captcha.code == email_captcha:
-                new_user = user_register_form.save(commit=False)
-                # print(new_user)
-                # 设置密码(哈希)
-                new_user.set_password(
-                    user_register_form.cleaned_data['password'])
-                new_user.is_active = True # 自动激活
-                user_ms = UserMS.objects.create()
-                new_user.userms = user_ms
-                user_ms.save()
-                new_user.save()
-                # 保存好数据后立即登录
-                login(request, new_user)
-                return JsonResponse({'status': 100, 'msg': {
-                    "id": new_user.id, "username": new_user.username,
-                    "realname": new_user.realname, "is_banned": False}
-                    })
-                # return HttpResponse(json.dumps(response), content_type='application/json')
+                if (timezone.now() - get_email_captcha.send_time).seconds <= 3600:
+                    new_user = user_register_form.save(commit=False)
+                    # 设置密码(哈希)
+                    new_user.set_password(
+                        user_register_form.cleaned_data['password'])
+                    new_user.is_active = True # 自动激活
+                    user_ms = UserMS.objects.create()
+                    new_user.userms = user_ms
+                    user_ms.save()
+                    new_user.save()
+                    # 保存好数据后立即登录
+                    login(request, new_user)
+                    # 顺手把过期的验证码删了
+                    EmailVerifyRecord.objects.filter(hashkey=emailHashkey).delete()
+                    return JsonResponse({'status': 100, 'msg': {
+                        "id": new_user.id, "username": new_user.username,
+                        "realname": new_user.realname, "is_banned": False}
+                        })
+                else:
+                    # 顺手把过期的验证码删了
+                    EmailVerifyRecord.objects.filter(hashkey=emailHashkey).delete()
+                    return JsonResponse({'status': 150, 'msg': "邮箱验证码已过期！" })
             else:
                 return JsonResponse({'status': 102, 'msg': "邮箱验证码不正确！"})
         else:
@@ -171,6 +189,7 @@ def user_register(request):
                                     as_text().split("*")[-1]})
     else:
         return HttpResponse("别瞎玩")
+
 
 # 站长任命解除管理员
 # http://127.0.0.1:8000/userprofile/set_staff/?id=1&is_staff=True
@@ -232,7 +251,7 @@ def refresh_captcha(request):
     return HttpResponse(json.dumps(c), content_type='application/json')
 
 # 验证验证码，若通过，发送email
-@ratelimit(key='ip', rate='12/h')
+@ratelimit(key='ip', rate='20/h')
 def get_email_captcha(request):
     if request.method == 'POST':
         email_form = EmailForm(data=request.POST)
@@ -241,7 +260,7 @@ def get_email_captcha(request):
             key = request.POST.get("hashkey", None)  # 验证码hash
             response = {'status': 100, 'msg': None, "hashkey": None}
             if judge_captcha(capt, key):
-                hashkey = send_register_email(request.POST.get("email", None))
+                hashkey = send_email(request.POST.get("email", None), request.POST.get("type", None))
                 if hashkey:
                     response['hashkey'] = hashkey
                     return JsonResponse(response)
@@ -268,23 +287,38 @@ def judge_captcha(captchaStr, captchaHashkey):
         get_captcha = CaptchaStore.objects.filter(
             hashkey=captchaHashkey).first()
         if get_captcha and get_captcha.response == captchaStr.lower():
-            return True
+            # 图形验证码15分钟有效
+            if (timezone.now() - get_captcha.expiration).seconds <= 900:
+                CaptchaStore.objects.filter(hashkey=captchaHashkey).delete()
+                return True
     CaptchaStore.objects.filter(hashkey=captchaHashkey).delete()
     return False
 
 
-# class IndexView(View):
-#     def get(self, request):
-#         hashkey = CaptchaStore.generate_key()  # 验证码答案
-#         image_url = captcha_image_url(hashkey)  # 验证码地址
-#         print(hashkey,image_url)
-#         captcha = {'hashkey': hashkey, 'image_url': image_url}
-#         return render(request, "login.html", locals())
+scheduler = BackgroundScheduler(timezone='Asia/Shanghai')
+scheduler.add_jobstore(DjangoJobStore(), "default")
 
-#     def post(self, request):
-#         capt = request.POST.get("captcha", None)  # 用户提交的验证码
-#         key = request.POST.get("hashkey", None)  # 验证码答案
-#         if jarge_captcha(capt, key):
-#             return HttpResponse("验证码正确")
-#         else:
-#             return HttpResponse("验证码错误")
+def delete_overdue_emailverifyrecord(name):
+    # 定时清除过期邮箱验证码（1小时过期）
+    start = timezone.now() - timezone.timedelta(seconds=3600)
+    EmailVerifyRecord.objects.filter(send_time__lt=start).delete()
+
+def delete_overdue_captcha(name):
+    # 定时清除过期图形验证码（15分钟过期）
+    start = timezone.now() - timezone.timedelta(seconds=900)
+    CaptchaStore.objects.filter(expiration__lt=start).delete()
+            
+
+# scheduler.add_job(job1, "interval", seconds=10, args=['22'], id="job2", replace_existing=True)
+scheduler.add_job(delete_overdue_emailverifyrecord, 'cron', hour='5', minute='10',
+                   second = '02', args=['666'], id='delete_overdue_emailverifyrecord', replace_existing=True)
+scheduler.add_job(delete_overdue_captcha, 'cron', hour='5', minute='34', second = '07', 
+                  args=['666'], id='delete_overdue_captcha', replace_existing=True)
+# 监控任务
+register_events(scheduler)
+# 调度器开始运行
+try:
+    scheduler.start()
+except:
+    print("定时任务启动失败！")
+

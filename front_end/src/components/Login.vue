@@ -67,7 +67,7 @@
                     <!-- <ValidCode2 :identifyCode="identifyCodeReg" ref="refValidCode2" /> -->
                     <ValidCode :identifyCode="identifyCodeReg" ref="refValidCode2" />
                     &nbsp;
-                    <el-button link type="primary" @click="get_email_captcha()"
+                    <el-button link type="primary" @click="get_email_captcha('register')"
                         :disabled="valid_code_reg.length < 4">获取验证码</el-button>
                 </div>
             </el-form-item>
@@ -109,7 +109,7 @@
                     <!-- <ValidCode2 :identifyCode="identifyCodeReg" ref="refValidCode2" /> -->
                     <ValidCode :identifyCode="identifyCodeReg" ref="refValidCode2" />
                     &nbsp;
-                    <el-button link type="primary" @click="get_email_captcha()">获取验证码</el-button>
+                    <el-button link type="primary" @click="get_email_captcha('retrieve')">获取验证码</el-button>
                 </div>
             </el-form-item>
             <el-form-item>
@@ -242,7 +242,7 @@ const login = () => {
     proxy.$axios.post('/userprofile/login/',
         params,
     ).then(function (response) {
-        console.log(response.data);
+        // console.log(response.data);
         // console.log(document.cookie.match("csrftoken"));
         // console.log(document.cookie);
         // console.log(user_name.value);
@@ -424,7 +424,7 @@ const logout = async () => {
 }
 
 
-const get_email_captcha = () => {
+const get_email_captcha = (type: string) => {
     if (!user_email_reg.value) {
         hint_message.value = "请输入邮箱！";
         return
@@ -433,6 +433,7 @@ const get_email_captcha = () => {
     params.append('captcha', valid_code_reg.value)
     params.append('hashkey', refValidCode2.value.hashkey)
     params.append('email', user_email_reg.value)
+    params.append('type', type)
     // console.log(params);
     proxy.$axios.post('/userprofile/get_email_captcha/',
         params,

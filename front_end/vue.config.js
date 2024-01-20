@@ -20,5 +20,6 @@ module.exports = {
             asyncWebAssembly: true,
             syncWebAssembly: true,
         },
-    }
+    },
+    productionSourceMap: false,
 }

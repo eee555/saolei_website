@@ -22,7 +22,8 @@ def generate_code(code_len):
     return code
 
 
-def send_register_email(email):
+# 发送邮件，根据send_type不同发送不同的邮件内容
+def send_email(email, send_type='register'):
     email_record = EmailVerifyRecord()
     code = generate_code(6)
     email_record.code = code
@@ -33,9 +34,14 @@ def send_register_email(email):
     email_record.save()
  
 # 验证码保存之后，我们就要把带有验证码的链接发送到注册时的邮箱！
-    # if send_type == 'register':
-    email_title = '新扫雷网邮箱注册验证码'
-    email_body = f'欢迎您注册新扫雷网，您的邮箱验证码为{code}'
+    if send_type == 'register':
+        email_title = '元扫雷网邮箱注册验证码'
+        email_body = f'欢迎您注册元扫雷网，您的邮箱验证码为：{code}（一小时内有效）。'
+    elif send_type == 'retrieve':
+        email_title = '元扫雷网找回密码验证码'
+        email_body = f'您正在找回密码。您的邮箱验证码为：{code}（一小时内有效）。请勿与任何人分享此代码，我们的管理员永远不会向您索要此代码。'
+    else:
+        return None
     send_status = send_mail(email_title, email_body, 'wangjianing@88.com', [email])
     if send_status:
         return hashkey

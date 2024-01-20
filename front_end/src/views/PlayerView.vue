@@ -120,6 +120,9 @@ const activeName = ref('first')
 const player = JSON.parse(localStorage.getItem("player") as string);
 // console.log(player);
 
+// 上传可能失败，备份旧的头像
+let imageUrlOld: any;
+
 const user = proxy.$store.state.user;
 const show_edit_button = player.id == user.id;
 
@@ -143,6 +146,7 @@ onMounted(() => {
         // console.log(imageUrl);
         if (data.avatar) {
             imageUrl.value = "data:image/;base64," + data.avatar;
+            imageUrlOld = "data:image/;base64," + data.avatar;
         }
         // console.log(imageUrl);
         loading.value = false;
@@ -177,6 +181,7 @@ const upload_info = () => {
                     } else {
                         ElMessage.success(`姓名修改成功！剩余修改次数${response.data.msg.left_realname_n}`)
                         realname.value = realname_edit.value;
+                        proxy.$store.commit('updateUserRealname', realname.value);
                     }
                 }
                 if (signature_edit.value != signature.value) {
@@ -220,6 +225,8 @@ const handleAvatarUpload = async (options: UploadRequestOptions) => {
                 } else {
                     ElMessage.success(`姓名修改成功！剩余修改次数${response.data.msg.left_realname_n}`)
                     realname.value = realname_edit.value;
+                    //改名字
+                    proxy.$store.commit('updateUserRealname', realname.value);
                 }
             }
             if (signature_edit.value != signature.value) {
@@ -233,6 +240,7 @@ const handleAvatarUpload = async (options: UploadRequestOptions) => {
             }
             if (!response.data.msg.avatar_flag) {
                 ElMessage.warning("头像剩余修改次数不足！")
+                imageUrl.value = imageUrlOld;
             } else {
                 ElMessage.success(`头像修改成功！剩余修改次数${response.data.msg.left_avatar_n}`)
                 imageUrl.value = URL.createObjectURL(options.file);

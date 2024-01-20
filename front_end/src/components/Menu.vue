@@ -24,7 +24,7 @@ import { LoginStatus } from "@/utils/common/structInterface"
 import FriendlyLink from "@/components/dialogs/FriendlyLinks.vue";
 import Thanks from "@/components/dialogs/Thanks.vue";
 import { genFileId, ElMessage } from 'element-plus'
-import { AXIOS_BASE_URL } from '../config';
+// import { AXIOS_BASE_URL } from '../config';
 import Login from "./Login.vue";
 
 

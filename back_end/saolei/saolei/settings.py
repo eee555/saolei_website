@@ -240,6 +240,8 @@ CACHES = {
         }
     }
 }
+# 会话存储方式二选一
+# SESSION_ENGINE = "django.contrib.sessions.backends.db"
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "saolei_website"
 

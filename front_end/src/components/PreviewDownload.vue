@@ -5,7 +5,7 @@
 				src="/flop/index.html" ref="video_iframe"></iframe>
 		</el-dialog>
 	</Teleport>
-	<el-button :size="'small'" plain icon="View" @click="preview($event, id)">预览</el-button>
+	<el-button :size="'small'" plain icon="View" @click="preview($event, id);">预览</el-button>
 	<el-button :size="'small'" plain icon="Download" @click="download($event, id)">下载</el-button>
 </template>
 
@@ -30,12 +30,38 @@ const { id } = defineProps({
 })
 
 
+// // 1. 用户点击播放录像 0
+// const id = 0
+
+// // 2. 在重新创建弹窗前清空播放器对象
+// window.flop = null
+
+// // 3. 新建弹窗和 iframe
+
+// // 4. 获取实际录像播放地址
+// getUrl(id, (url) => {
+//   // 5. 在回调中根据播放器状态决定如何播放录像
+//   if (window.flop) {
+//     window.flop.playVideo(url)
+//   } else {
+//     window.flop = {
+//       onload: function () {
+//         window.flop.playVideo(url)
+//       }
+//     }
+//   }
+// })
+
+// function getUrl (id: number, onSuccess: (url: string) => void) {
+//   // 录像播放地址
+//   onSuccess(`https://example.com/${id}.avf`)
+// }
+
 const preview = (event : MouseEvent, id: Number | undefined) => {
-	console.log(id);
-	
 	if (!id) {
 		return
 	}
+	(window as any).flop = null;
 	preview_visible.value = true;
 	proxy.$axios.get('/video/get_software/',
 		{
@@ -45,6 +71,7 @@ const preview = (event : MouseEvent, id: Number | undefined) => {
 		}
 	).then(function (response) {
 		let uri = process.env.VUE_APP_BASE_API + "/video/preview/?id=" + id;
+		// console.log(uri);
 		if (response.data.msg == "a") {
 			uri += ".avf";
 		} else if (response.data.msg == "e") {
@@ -77,9 +104,8 @@ const preview = (event : MouseEvent, id: Number | undefined) => {
 			console.log(res);
 		}
 	)
-
-
 }
+
 
 const download = (event : MouseEvent, id: Number | undefined) => {
 	if (!id) {
