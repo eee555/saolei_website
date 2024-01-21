@@ -53,7 +53,7 @@ class UserRegisterForm(forms.ModelForm):
 
 
 # 找回密码表单
-class UserRetrieveForm(forms.ModelForm):
+class UserRetrieveForm(forms.Form):
     password = forms.CharField(max_length=20, min_length=6, required=True)
     email = forms.EmailField(max_length=100, required=True)
 

@@ -109,12 +109,13 @@
                     <!-- <ValidCode2 :identifyCode="identifyCodeReg" ref="refValidCode2" /> -->
                     <ValidCode :identifyCode="identifyCodeReg" ref="refValidCode2" />
                     &nbsp;
-                    <el-button link type="primary" @click="get_email_captcha('retrieve')">获取验证码</el-button>
+                    <el-button link type="primary" @click="get_email_captcha('retrieve')"
+                    :disabled="valid_code_reg.length < 4">获取验证码</el-button>
                 </div>
             </el-form-item>
             <el-form-item>
                 <el-input v-model="user_email_valid_code_reg" placeholder="请输入邮箱验证码" prefix-icon="Key"
-                    maxlength="6"></el-input>
+                :disabled="valid_code_reg.length < 4" maxlength="6"></el-input>
             </el-form-item>
             <el-form-item>
                 <el-input v-model="user_password_reg" placeholder="请输入新的6-20位密码" show-password prefix-icon="Lock"
@@ -188,6 +189,8 @@ const hint_message = ref("");
 
 // 是否同意用户协议
 const checkout_user_agreement = ref(false);
+
+let email_key = "";
 
 const emit = defineEmits(['login', 'logout']);
 
@@ -297,20 +300,21 @@ const retrieve = () => {
         return
     }
     var user_params = new URLSearchParams()
-    user_params.append('username', user_name_reg.value)
-    user_params.append('password', user_password_reg.value)
-    user_params.append('email', user_email_reg.value)
-    user_params.append('usertoken', window.localStorage.getItem("usertoken") as string)
-    user_params.append('email_captcha', user_email_valid_code_reg.value)
+    // user_params.append('username', user_name_reg.value)
+    user_params.append('password', user_password_reg.value);
+    user_params.append('email', user_email_reg.value);
+    user_params.append('email_key', email_key);
+    user_params.append('email_captcha', user_email_valid_code_reg.value);
     proxy.$axios.post('/userprofile/retrieve/',
         user_params,
     ).then(function (response) {
         if (response.data.status == 100) {
-            hint_message.value = ""
-            user_name_show.value = user_name_reg.value;
+            hint_message.value = "";
+            user_name_show.value = response.data.msg;
             login_status.value = LoginStatus.IsLogin;
             emit('login'); // 向父组件发送消息
             retrieve_visibile.value = false;
+            ElMessage.success('修改密码成功!')
         } else if (response.data.status >= 101) {
             hint_message.value = response.data.msg;
         }
@@ -364,20 +368,15 @@ const register = () => {
         return
     }
     var user_params = new URLSearchParams()
-    user_params.append('username', user_name_reg.value)
-    user_params.append('password', user_password_reg.value)
-    user_params.append('email', user_email_reg.value)
-    user_params.append('usertoken', window.localStorage.getItem("usertoken") as string)
-    user_params.append('email_captcha', user_email_valid_code_reg.value)
-    // user_params.append('usertoken', window.localStorage.getItem("user_token") as string)
+    user_params.append('username', user_name_reg.value);
+    user_params.append('password', user_password_reg.value);
+    user_params.append('email', user_email_reg.value);
+    user_params.append('email_key', email_key);
+    user_params.append('email_captcha', user_email_valid_code_reg.value);
     proxy.$axios.post('/userprofile/register/',
         user_params,
     ).then(function (response) {
         // console.log(response.data);
-        // console.log(response.status);
-        // console.log(response.statusText);
-        // console.log(response.headers);
-        // console.log(response.config);
         if (response.data.status == 100) {
             hint_message.value = ""
             user_name_show.value = user_name_reg.value;
@@ -445,14 +444,14 @@ const get_email_captcha = (type: string) => {
         // console.log(response.config);
         if (response.data.status == 100) {
             hint_message.value = ""
-            window.localStorage.setItem("usertoken", response.data.hashkey)
+            email_key = response.data.hashkey;
             ElMessage.success('获取验证码成功，请至邮箱查看!')
             // console.log(response.data.hashkey);
             // console.log("注册成功");
         } else if (response.data.status > 100) {
             hint_message.value = "*" + response.data.msg;
-            console.log(refValidCode2);
-            console.log(refValidCode2.value);
+            // console.log(refValidCode2);
+            // console.log(refValidCode2.value);
             refValidCode2.value!.refreshPic();
             // console.log(response.data);
         }
