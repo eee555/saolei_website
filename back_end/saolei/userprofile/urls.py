@@ -11,6 +11,8 @@ urlpatterns = [
     path('captcha/', include('captcha.urls')),
     path('refresh_captcha/',views.refresh_captcha),
     path('get_email_captcha/',views.get_email_captcha),
+    path('modify_realname/',views.modify_realname_n),
+    path('modify/',views.modify_n),
     
     # path('captcha/captcha', views.captcha, name='captcha'),
     # path('edit/<int:id>/', views.profile_edit, name='edit'),

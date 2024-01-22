@@ -5,7 +5,7 @@
         </div>
         <span style="width:12px; display:inline-block">
         </span>|<span style="width:12px; display:inline-block"></span>
-        <span class="text-button">软件下载</span>
+        <Downloads></Downloads>
         <span style="width:12px; display:inline-block">
         </span>|<span style="width:12px; display:inline-block"></span>
         <FriendlyLink></FriendlyLink>
@@ -22,6 +22,7 @@ import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
 import { LoginStatus } from "@/utils/common/structInterface"
 import FriendlyLink from "@/components/dialogs/FriendlyLinks.vue";
+import Downloads from "@/components/dialogs/Downloads.vue";
 import Thanks from "@/components/dialogs/Thanks.vue";
 import { genFileId, ElMessage } from 'element-plus'
 // import { AXIOS_BASE_URL } from '../config';

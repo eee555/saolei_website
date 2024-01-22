@@ -103,7 +103,7 @@ class VideoModel(models.Model):
         upload_to="assets/videos", max_length=100, max_upload_size=5242880,)
     video = models.OneToOneField(ExpandVideoModel, on_delete=models.CASCADE, related_name="+")
     # file = models.FileField(upload_to="/assets/videos")
-    # 上传时间
+    # 上传时间，兼最近状态变化时间、更新时间（冻结后会刷新）
     upload_time = models.DateTimeField(auto_now_add=True, verbose_name="上传时间")
     # 审核状态
     state = models.CharField(

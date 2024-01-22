@@ -188,7 +188,7 @@ def user_register(request):
         return HttpResponse("别瞎玩")
 
 
-# 站长任命解除管理员
+# 【站长】任命解除管理员
 # http://127.0.0.1:8000/userprofile/set_staff/?id=1&is_staff=True
 def set_staff(request):
     if request.user.is_superuser and request.method == 'GET':
@@ -208,7 +208,7 @@ def set_staff(request):
     else:
         return HttpResponse("别瞎玩")
 
-# 管理员封禁用户
+# 【管理员】封禁用户
 # http://127.0.0.1:8000/userprofile/set_banned/?id=1&is_banned=True
 def set_banned(request):
     if request.user.is_staff and request.method == 'GET':
@@ -290,6 +290,32 @@ def judge_captcha(captchaStr, captchaHashkey):
                 return True
     CaptchaStore.objects.filter(hashkey=captchaHashkey).delete()
     return False
+
+
+# 【管理员】给用户增加1次修改姓名的机会
+# http://127.0.0.1:8000/userprofile/modify_realname?id=1
+def modify_realname_n(request):
+    if request.user.is_staff and request.method == 'GET':
+        user = UserProfile.objects.get(id=request.GET["id"])
+        user.left_realname_n += 1
+        logger.info(f'{request.user.id} add left_realname_n for {request.GET["id"]} ({user.left_realname_n})')
+        return HttpResponse(f"为用户\"{user.realname}\"（id: {user.id}）增加一次修改姓名的次数成功！")
+    else:
+        return HttpResponse("别瞎玩")
+
+
+# 【站长】给用户增加x、y、z次（对应）修改姓名、头像和签名的机会
+# http://127.0.0.1:8000/userprofile/modify?id=1&x=0&y=1&z=200
+def modify_n(request):
+    if request.user.is_superuser and request.method == 'GET':
+        user = UserProfile.objects.get(id=request.GET["id"])
+        user.left_realname_n += request.GET["x"]
+        user.left_avatar_n += request.GET["y"]
+        user.left_signature_n += request.GET["z"]
+        logger.info(f'{request.user.id}(superuser) modify_n for {request.GET["id"]} ({user.left_realname_n}, {user.left_avatar_n}, {user.left_signature_n})')
+        return HttpResponse(f"为用户\"{user.realname}\"（id: {user.id}）增加修改姓名、头像、签名的次数成功！目前剩余（{user.left_realname_n}, {user.left_avatar_n}, {user.left_signature_n}）")
+    else:
+        return HttpResponse("别瞎玩")
 
 
 scheduler = BackgroundScheduler(timezone='Asia/Shanghai')

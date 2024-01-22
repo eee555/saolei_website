@@ -1,8 +1,6 @@
 module.exports = {
     publicPath: './',
     assetsDir: 'static',
-
-
     devServer: {
         open: true,
         host: process.env.Host || "localhost",
@@ -22,4 +20,14 @@ module.exports = {
         },
     },
     productionSourceMap: false,
+    chainWebpack: config => {
+        config
+            .plugin('html')
+            .tap(args => {
+                args[0].title = "元扫雷网";
+                return args
+            })
+    }
+
+
 }

@@ -89,6 +89,7 @@ import PreviewDownload from '@/components/PreviewDownload.vue';
 import PlayerName from '@/components/PlayerName.vue';
 const { proxy } = useCurrentInstance();
 import {utc_to_local_format} from "@/utils/system/tools";
+import { genFileId, ElMessage } from 'element-plus'
 
 
 const level_tag_selected = ref("EXPERT");
@@ -240,14 +241,11 @@ const get_video_rank = (page: number) => {
             videoData.push(...data.videos);
             state.Total = data.total_page;
             // console.log(videoData);
-            // console.log(315);
-
             // console.log(index_tag_selected);
-
-
-        } else {
-            // console.log("000");
-        }
+        } else {}
+    }).catch(() => {
+        // 触发限流
+        ElMessage.error("请稍后再试");
     })
 }
 
