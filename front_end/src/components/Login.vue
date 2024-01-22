@@ -84,7 +84,7 @@
                     maxlength="20"></el-input>
             </el-form-item>
             <el-checkbox v-model="checkout_user_agreement" name="checkoutSecret">已阅读并同意
-                <a :href="AXIOS_BASE_URL + '/agreement.html'">新扫雷网用户协议</a>
+                <a target="_blank" :href="AXIOS_BASE_URL + '/agreement.html'">新扫雷网用户协议</a>
             </el-checkbox>
 
             <el-form-item>
