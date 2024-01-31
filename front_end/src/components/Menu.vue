@@ -17,7 +17,7 @@
   
 <script lang="ts" setup>
 // 注册、登录的弹框及右上方按钮
-import { onMounted, ref, Ref, defineEmits } from 'vue'
+import { onMounted, ref, Ref } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
 import { LoginStatus } from "@/utils/common/structInterface"

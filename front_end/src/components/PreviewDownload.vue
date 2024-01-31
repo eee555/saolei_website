@@ -12,7 +12,6 @@
 
 <script setup lang="ts" name="PreviewDownload">
 // 两个按钮，预览或下载
-import { defineProps } from 'vue';
 import { onMounted, watch, ref, toRefs } from "vue";
 // import axios from 'axios';
 // import { getCurrentInstance } from 'vue';

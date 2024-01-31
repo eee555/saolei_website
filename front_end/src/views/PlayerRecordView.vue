@@ -92,7 +92,7 @@
   
 <script lang="ts" setup>
 // 个人主页的个人纪录部分
-import { onMounted, ref, Ref, defineEmits } from 'vue'
+import { onMounted, ref, Ref } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import PreviewDownload from '@/components/PreviewDownload.vue';
 const { proxy } = useCurrentInstance();

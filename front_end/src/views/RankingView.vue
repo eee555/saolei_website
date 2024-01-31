@@ -79,7 +79,7 @@
   
 <script lang="ts" setup>
 // 全网录像的检索器，根据三个维度排序
-import { onMounted, ref, Ref, defineEmits, reactive } from 'vue'
+import { onMounted, ref, Ref, reactive } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import PreviewDownload from '@/components/PreviewDownload.vue';
 import PlayerName from '@/components/PlayerName.vue';
@@ -259,7 +259,7 @@ const setSortDirect = (level_tag: string) => {
     display: inline-block;
 }
 
-/deep/ .name {
+:deep(.name)  {
     width: 26%;
     display: inline-block;
     text-align: center;

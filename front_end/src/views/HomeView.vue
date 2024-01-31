@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang='ts'>
-import { onMounted, ref, Ref, defineEmits } from 'vue'
+import { onMounted, ref, Ref } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import PreviewDownload from '@/components/PreviewDownload.vue';
 import VideoList from '@/components/VideoList.vue';

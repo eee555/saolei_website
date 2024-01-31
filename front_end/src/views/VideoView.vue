@@ -83,7 +83,7 @@
   
 <script lang="ts" setup>
 // 全网录像的检索器，根据三个维度排序
-import { onMounted, ref, Ref, defineEmits, reactive } from 'vue'
+import { onMounted, ref, Ref, reactive } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import PreviewDownload from '@/components/PreviewDownload.vue';
 import PlayerName from '@/components/PlayerName.vue';
@@ -292,7 +292,7 @@ const reverseSortDirect = (index_tag_selected_i: string) => {
     text-align: center;
 }
 
-/deep/ .name {
+:deep(.name) {
     width: 16%;
     display: inline-block;
     text-align: center;

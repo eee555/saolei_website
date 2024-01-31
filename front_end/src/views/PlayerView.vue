@@ -81,7 +81,7 @@
   
 <script lang="ts" setup>
 // 注册、登录的弹框及右上方按钮
-import { onMounted, ref, Ref, defineEmits, defineAsyncComponent, computed } from 'vue'
+import { onMounted, ref, Ref, defineAsyncComponent, computed } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 // import PreviewDownload from '@/components/PreviewDownload.vue';
 import PlayerRecordView from '@/views/PlayerRecordView.vue';

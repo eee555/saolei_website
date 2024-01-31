@@ -93,7 +93,7 @@
 
 <script setup lang="ts" name="PlayerName">
 // 用户的名字，鼠标移上去以后弹出气泡框，可以访问他的主页
-import { defineProps, type CSSProperties } from 'vue';
+import { type CSSProperties } from 'vue';
 import { onMounted, watch, ref, toRefs } from "vue";
 // import axios from 'axios';
 import { getCurrentInstance } from 'vue';

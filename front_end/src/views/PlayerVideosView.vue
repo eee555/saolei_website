@@ -7,7 +7,7 @@
   
 <script lang="ts" setup>
 // 个人主页的个人所有录像部分
-import { onMounted, ref, Ref, defineEmits } from 'vue'
+import { onMounted, ref, Ref } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
 // import { genFileId, ElMessage } from 'element-plus'
