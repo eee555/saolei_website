@@ -1,7 +1,7 @@
 <template>
 	<Teleport to=".common-layout">
-		<el-dialog v-model="preview_visible" style="background-color: rgba(240, 240, 240, 0.8);" draggable align-center 
-		destroy-on-close :modal="false" :lock-scroll="false">
+		<el-dialog v-model="preview_visible" style="background-color: rgba(240, 240, 240, 0.8);" draggable align-center
+			destroy-on-close :modal="false" :lock-scroll="false">
 			<iframe class="flop-player-iframe flop-player-display-none" style="width: 100%; height: 500px; border: 0px"
 				src="/flop/index.html" ref="video_iframe"></iframe>
 		</el-dialog>
@@ -16,6 +16,8 @@ import { onMounted, watch, ref, toRefs } from "vue";
 // import axios from 'axios';
 // import { getCurrentInstance } from 'vue';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
+import Window from "@/utils/types/window";
+
 const { proxy } = useCurrentInstance();
 // import { genFileId, ElMessage } from 'element-plus'
 
@@ -57,11 +59,12 @@ const { id } = defineProps({
 //   onSuccess(`https://example.com/${id}.avf`)
 // }
 
-const preview = (event : MouseEvent, id: Number | undefined) => {
+const preview = (event: MouseEvent, id: Number | undefined) => {
 	if (!id) {
 		return
 	}
-	(window as any).flop = null;
+	// (window as any).flop = null;
+	window.flop = null;
 	preview_visible.value = true;
 	proxy.$axios.get('/video/get_software/',
 		{
@@ -77,37 +80,51 @@ const preview = (event : MouseEvent, id: Number | undefined) => {
 		} else if (response.data.msg == "e") {
 			uri += ".evf";
 		}
-		// 等待 Flop Player 初始化完成
-		(window as any).flop = {
+		// console.log("333", window.flop);
+		// console.log("777", window.flop.playVideo);
+
+
+		// (window as any).flop.playVideo(uri);
+		window.flop = {
 			onload: () => {
-				// 具体参数说明参见：https://github.com/hgraceb/flop-player#flopplayvideouri-options
-				(window as any).flop.playVideo(uri, {
-					share: {
-						uri: uri,
-						pathname: "/flop-player/player",
-						anonymous: false,
-						background: "rgba(100, 100, 100, 0.05)",
-						title: "Flop Player Share",
-						favicon: "https://avatars.githubusercontent.com/u/38378650?s=32", // 胡帝的头像
-					},
-					anonymous: false,
-					background: "rgba(0, 0, 0, 0)",
-					listener: function () {
-						preview_visible.value = false;
-					},
-				});
+				playVideo(uri);
 			},
-		};
+		}
+		// window.flop = null;
+		// playVideo(uri);
+
+		// 等待 Flop Player 初始化完成
+		// (window as any).flop = {
+		// 	onload: () => {
+		// 		// 具体参数说明参见：https://github.com/hgraceb/flop-player#flopplayvideouri-options
+		// 		(window as any).flop.playVideo(uri, {
+		// 			share: {
+		// 				uri: uri,
+		// 				pathname: "/flop-player/player",
+		// 				anonymous: false,
+		// 				background: "rgba(100, 100, 100, 0.05)",
+		// 				title: "Flop Player Share",
+		// 				favicon: "https://avatars.githubusercontent.com/u/38378650?s=32", // 胡帝的头像
+		// 			},
+		// 			anonymous: false,
+		// 			background: "rgba(0, 0, 0, 0)",
+		// 			listener: function () {
+		// 				preview_visible.value = false;
+		// 			},
+		// 		});
+		// 	},
+		// };
 
 	}).catch(
 		(res) => {
-			console.log(res);
+			// console.log("报错");
+			// console.log(res);
 		}
 	)
 }
 
 
-const download = (event : MouseEvent, id: Number | undefined) => {
+const download = (event: MouseEvent, id: Number | undefined) => {
 	if (!id) {
 		return
 	}
@@ -120,19 +137,60 @@ const download = (event : MouseEvent, id: Number | undefined) => {
 	document.body.removeChild(down);
 }
 
-declare interface Window {
-	flop: any
-}
+// declare interface Window {
+// 	flop: any
+// }
 
+const playVideo = function (uri: string) {
+	// console.log(uri);
+
+	// console.log(window.flop);
+	// console.log(window.flop.playVideo);
+
+	window.flop.playVideo(uri, {
+		share: {
+			uri: uri,
+			pathname: "/flop-player/player",
+			anonymous: false,
+			background: "rgba(100, 100, 100, 0.05)",
+			title: "Flop Player Share",
+			favicon: "https://avatars.githubusercontent.com/u/38378650?s=32", // 胡帝的头像
+		},
+		anonymous: false,
+		background: "rgba(0, 0, 0, 0)",
+		listener: function () {
+			preview_visible.value = false;
+			window.flop = null;
+		},
+	});
+}
 
 onMounted(() => {
 
-
+	// (window as any).flop = {
+	// 	onload: ()=>{},
+	// onload: () => {
+	// 具体参数说明参见：https://github.com/hgraceb/flop-player#flopplayvideouri-options
+	// (window as any).flop.playVideo(uri, {
+	// 	share: {
+	// 		uri: uri,
+	// 		pathname: "/flop-player/player",
+	// 		anonymous: false,
+	// 		background: "rgba(100, 100, 100, 0.05)",
+	// 		title: "Flop Player Share",
+	// 		favicon: "https://avatars.githubusercontent.com/u/38378650?s=32", // 胡帝的头像
+	// 	},
+	// 	anonymous: false,
+	// 	background: "rgba(0, 0, 0, 0)",
+	// 	listener: function () {
+	// 		preview_visible.value = false;
+	// 	},
+	// });
+	// },
+	// };
 });
 
 
 </script>
  
-<style>
-
-</style>
+<style></style>

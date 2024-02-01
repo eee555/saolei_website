@@ -80,7 +80,7 @@
 </template>
   
 <script lang="ts" setup>
-// 注册、登录的弹框及右上方按钮
+// 我的地盘页面
 import { onMounted, ref, Ref, defineAsyncComponent, computed } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 // import PreviewDownload from '@/components/PreviewDownload.vue';
@@ -182,6 +182,11 @@ const upload_info = () => {
                         ElMessage.success(`姓名修改成功！剩余修改次数${response.data.msg.left_realname_n}`)
                         realname.value = realname_edit.value;
                         proxy.$store.commit('updateUserRealname', realname.value);
+                        if (player.id == user.id){
+                        // 访问用户自己的地盘
+                        // 解决改名后，个人录像列表里名字不能立即改过来
+                        localStorage.setItem("player", JSON.stringify({ "id": player.id, "realname":realname.value }));
+                    }
                     }
                 }
                 if (signature_edit.value != signature.value) {
@@ -227,6 +232,11 @@ const handleAvatarUpload = async (options: UploadRequestOptions) => {
                     realname.value = realname_edit.value;
                     //改名字
                     proxy.$store.commit('updateUserRealname', realname.value);
+                    if (player.id == user.id){
+                        // 访问用户自己的地盘
+                        // 解决改名后，个人录像列表里名字不能立即改过来
+                        localStorage.setItem("player", JSON.stringify({ "id": player.id, "realname":realname.value }));
+                    }
                 }
             }
             if (signature_edit.value != signature.value) {

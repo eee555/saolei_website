@@ -125,7 +125,7 @@ def get_software(request):
 # 给预览用的接口，区别是结尾是文件后缀
 # 坑：如果做成必须登录才能下载，由于Django的某种特性，会重定向资源，
 # 然而flop播放器不能处理此状态码，因此会请求到空文件，导致解码失败
-@ratelimit(key='ip', rate='10/m')
+@ratelimit(key='ip', rate='20/m')
 def video_preview(request):
     if request.method != 'GET':
         return HttpResponse("别瞎玩")
@@ -141,7 +141,7 @@ def video_preview(request):
 
 # 给下载用的接口，区别是结尾没有文件后缀
 # @login_required(login_url='/')
-@ratelimit(key='ip', rate='10/m')
+@ratelimit(key='ip', rate='20/m')
 def video_download(request):
     if request.method != 'GET':
         return HttpResponse("别瞎玩")
