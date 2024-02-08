@@ -161,6 +161,7 @@ cython_debug/
 
 back_end/saolei/assets/
 front_end/public/flop
+front_end/public/flopold
 
 *.docx
 *.doc

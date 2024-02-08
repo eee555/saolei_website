@@ -1,7 +1,7 @@
 <template>
-    <el-upload :disabled="!allow_upload" ref="upload" class="upload-demo" drag action="#" :limit="1" :http-request="handleVideoUpload"
-        :on-exceed="handleExceed" :on-change="handleChange" :auto-upload="false" :show-file-list="false"
-        style="background-color: white;" accept=".avf,.evf">
+    <el-upload :disabled="!allow_upload" ref="upload" class="upload-demo" drag action="#" :limit="1"
+        :http-request="handleVideoUpload" :on-exceed="handleExceed" :on-change="handleChange" :auto-upload="false"
+        :show-file-list="false" style="background-color: white;" accept=".avf,.evf">
         <!-- <template #trigger>
       <el-button type="primary">选择录像</el-button>
     </template> -->
@@ -68,11 +68,11 @@ const hint_text = ref<string>("*仅限一个文件，且文件大小不能超过
 
 onMounted(() => {
     const player = proxy.$store.state.user;
-    if (player.realname == "请修改为实名") { 
+    if (player.realname == "请修改为实名") {
         allow_upload.value = false;
         ElMessage.error('上传录像前，请先修改为实名!');
     }
-    if (!player.realname) { 
+    if (!player.realname) {
         allow_upload.value = false;
         ElMessage.error('请先登录!');
     }
@@ -99,7 +99,15 @@ const modify_video_msg = async (uploadFile: UploadFile) => {
     const ms = await import("ms-toollib");
     let video_file = await uploadFile.raw!.arrayBuffer();
     let video_file_u8 = new Uint8Array(video_file);
-    let aa = ms.AvfVideo.new(video_file_u8, uploadFile.name);
+    let aa;
+    if (uploadFile.name.slice(-3) == "avf") {
+        aa = ms.AvfVideo.new(video_file_u8, uploadFile.name);
+    } else if (uploadFile.name.slice(-3) == "evf") {
+        aa = ms.EvfVideo.new(video_file_u8, uploadFile.name);
+    } else {
+        ElMessage.error('录像文件的后缀不正确!')
+        return
+    }
     aa.parse_video();
     aa.analyse();
     aa.current_time = 1e8;  //时间设置到最后（超出就是最后）
@@ -142,7 +150,16 @@ const handleVideoUpload = async (options: UploadRequestOptions) => {
     // console.log(options.file);
     let video_file = options.file;
     let video_file_u8 = new Uint8Array(await video_file.arrayBuffer());
-    let aa = ms.AvfVideo.new(video_file_u8, video_file.name);
+    // let aa = ms.AvfVideo.new(video_file_u8, video_file.name);
+    let aa;
+    if (video_file.name.slice(-3) == "avf") {
+        aa = ms.AvfVideo.new(video_file_u8, video_file.name);
+    } else if (video_file.name.slice(-3) == "evf") {
+        aa = ms.EvfVideo.new(video_file_u8, video_file.name);
+    } else {
+        ElMessage.error('录像文件的后缀不正确!')
+        return
+    }
     aa.parse_video();
     aa.analyse();
     aa.current_time = 1e8;  //时间设置到最后（超出就是最后）

@@ -80,16 +80,25 @@ const preview = (event: MouseEvent, id: Number | undefined) => {
 		} else if (response.data.msg == "e") {
 			uri += ".evf";
 		}
-		// console.log("333", window.flop);
-		// console.log("777", window.flop.playVideo);
 
 
 		// (window as any).flop.playVideo(uri);
-		window.flop = {
-			onload: () => {
-				playVideo(uri);
-			},
+		if (window.flop) {
+			// console.log("985", 'playVideo' in window.flop);
+			// console.log("523", window.flop.hasOwnProperty('playVideo'));
+			playVideo(uri);
+		} else {
+			window.flop = {
+				onload: async function () {
+					// console.log("444", window.flop);
+					// console.log("111", window.flop.playVideo);
+					playVideo(uri);
+				},
+			}
 		}
+
+		// console.log("333", window.flop);
+		// console.log("777", window.flop.playVideo);
 		// window.flop = null;
 		// playVideo(uri);
 
@@ -144,9 +153,8 @@ const download = (event: MouseEvent, id: Number | undefined) => {
 const playVideo = function (uri: string) {
 	// console.log(uri);
 
-	// console.log(window.flop);
-	// console.log(window.flop.playVideo);
-
+	// console.log("747", window.flop);
+	// console.log("585", window.flop.playVideo);
 	window.flop.playVideo(uri, {
 		share: {
 			uri: uri,
