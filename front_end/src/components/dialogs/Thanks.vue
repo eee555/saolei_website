@@ -1,6 +1,6 @@
 <template>
-    <span class="text-button" @click="centerDialogVisible = true;">致谢</span>
-    <el-dialog v-model="centerDialogVisible" title="致谢" width="50%" align-center draggable :lock-scroll="false">
+    <span class="text-button" @click="centerDialogVisible = true;">团队</span>
+    <el-dialog v-model="centerDialogVisible" title="团队" width="50%" align-center draggable :lock-scroll="false">
         <h2>站长</h2>
         <span>eee555</span>
         <h2>开发</h2>

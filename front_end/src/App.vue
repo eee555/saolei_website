@@ -1,8 +1,7 @@
 <template>
   <div class="common-layout">
     <el-container>
-      <el-main class="header_all" style="padding-top: 0;">
-        <!-- <el-header class="header_all" style="margin-bottom: 0px"> -->
+      <el-main class="header_all" style="padding-top: 0;overflow: hidden;">
         <div class="logo-container">
           <div @click="goback_home()" class="logo" style="float:inline-start;">
             <el-image style="width: 72px; height: 72px;" :src="logo_1" :fit="'cover'" />
@@ -195,6 +194,5 @@ a {
   clear: both;
   margin-left: 3%;
   margin-right: 3%;
-  // background-color: #ddd;
 }
 </style>

@@ -3,12 +3,25 @@ from django.db import models
 
 # 扫雷用户
 class UserMS(models.Model):
-    # user = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='profile')
-    # realname = models.CharField(max_length=10, unique=False, blank=True, default='无名氏', null=False)
-    # # 头像
-    # avatar = models.ImageField(upload_to='avatar/%Y%m%d/', blank=True, null=True)
-    # # 签名
-    # bio = models.TextField(max_length=188, blank=True, null=True)
+    # 总录像数限制默认100，计划管理员可以修改。高水平玩家也可以增多。
+    # sub100是200；sub60是500；sub50是600；sub40是800；sub30是1000；vip是1000。
+    video_num_limit = models.IntegerField(null=False, default=100)
+    # 录像总数
+    video_num_total = models.IntegerField(null=False, default=0)
+    # 初级录像数
+    video_num_beg = models.IntegerField(null=False, default=0)
+    # 中级录像数
+    video_num_int = models.IntegerField(null=False, default=0)
+    # 高级录像数
+    video_num_exp = models.IntegerField(null=False, default=0)
+    # 标准录像数
+    video_num_std = models.IntegerField(null=False, default=0)
+    # 盲扫录像数
+    video_num_nf = models.IntegerField(null=False, default=0)
+    # 竞速无猜录像数
+    video_num_ng = models.IntegerField(null=False, default=0)
+    # 递归录像数
+    video_num_dg = models.IntegerField(null=False, default=0)
 
     # 标准、盲扫、竞速无猜、递归的记录
     b_time_std = models.DecimalField(max_digits=6, decimal_places=3, default=999.999)

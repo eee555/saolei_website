@@ -35,13 +35,12 @@ logging.getLogger('apscheduler.scheduler').setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 @login_required(login_url='/')
-@ratelimit(key='ip', rate='1/5s')
 def video_upload(request):
     if request.method == 'POST':
         if request.user.is_banned:
             return JsonResponse({"status": 101, "msg": "forbidden!"})
         # print(request.user)
-        # print(request.FILES)
+        print(request.FILES)
         # print(request.POST)
         # response = {'status': 100, 'msg': None}
         # request.POST['file'] = request.FILES

@@ -3,10 +3,10 @@ import { createStore } from 'vuex'
 export default createStore({
   state: {
     user: {
-      id: Number,
-      username: String,
-      realname: String,
-      is_banned: Boolean
+      id: 0,
+      username: "",
+      realname: "",
+      is_banned: false
     },   // 真正的用户
     // player: [], // 访问我的地盘（放弃。放到localstorage）
   },

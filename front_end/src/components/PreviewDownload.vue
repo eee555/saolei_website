@@ -16,7 +16,6 @@ import { onMounted, watch, ref, toRefs } from "vue";
 // import axios from 'axios';
 // import { getCurrentInstance } from 'vue';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
-import Window from "@/utils/types/window";
 
 const { proxy } = useCurrentInstance();
 // import { genFileId, ElMessage } from 'element-plus'

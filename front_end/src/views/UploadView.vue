@@ -1,73 +1,69 @@
 <template>
-    <el-upload :disabled="!allow_upload" ref="upload" class="upload-demo" drag action="#" :limit="1"
-        :http-request="handleVideoUpload" :on-exceed="handleExceed" :on-change="handleChange" :auto-upload="false"
-        :show-file-list="false" style="background-color: white;" accept=".avf,.evf">
+    <el-upload v-model:file-list="fileList" :disabled="!allow_upload" ref="upload" drag action="#" :limit="99"
+        :multiple="true" :http-request="handleVideoUpload" :on-exceed="handleExceed" :on-change="handleChange"
+        :auto-upload="false" :show-file-list="false" style="background-color: white;" accept=".avf,.evf">
         <!-- <template #trigger>
       <el-button type="primary">选择录像</el-button>
     </template> -->
 
         <el-icon class="el-icon--upload"><upload-filled /></el-icon>
         <div class="el-upload__text" style="font-size: 18px;">
-            将录像拉到此处或 <em>点击此处上传</em>
+            将录像拉到此处或 <em>点击此处选择</em>
         </div>
 
         <template #tip>
-            <div class="el-upload__tip text-red" style="background-color: white;font-size: 20px;text-align: center;">
 
-                {{ hint_text }}
+            <div class="el-upload__tip text-red" style="background-color: white;text-align: center;">
+                <el-button @click="submitUpload()" size="large" type="primary" v-show="video_msgs.length > 0"
+                    style="display: block;margin: 16px auto;font-size: 18px;width: 220px;">一键上传（{{ video_msgs.length
+                    }}个）</el-button>
+                <el-button @click="cancel_all()" size="small" type="info" v-show="video_msgs.length > 0"
+                    style="display: block;margin: 16px auto;width: 120px;" plain>全部清空</el-button>
+                <span style="font-size: 14px;">*单个文件大小不能超过5M</span>
             </div>
         </template>
     </el-upload>
-    <div v-show="upload_video_visibile" class="upload_video">
-        <img src="../assets/img/img_arbiter.png"
-            style="height: 54px;width: 54px;vertical-align:middle;margin-right: 36px;" />
-        <div style="display: inline-block;vertical-align:middle;width: 360px;text-align:left;">
-            <el-row :gutter="5">
-                <el-col :span="12">
-                    <div class="grid-content ep-bg-purple">难度：{{ video_msg_level }}</div>
-                </el-col>
-                <el-col :span="12">
-                    <div class="grid-content ep-bg-purple">时间：{{ video_msg_time }}s</div>
-                </el-col>
-            </el-row>
-            <el-row :gutter="5">
-                <el-col :span="12">
-                    <div class="grid-content ep-bg-purple">3BV：{{ video_msg_bbbv }}</div>
-                </el-col>
-                <el-col :span="12">
-                    <div class="grid-content ep-bg-purple">3BV/s：{{ video_msg_bvs }}</div>
-                </el-col>
-            </el-row>
-        </div>
-        <div style="display: inline-block;vertical-align:middle;">
-            <el-button class="ml-3" type="success" @click="submitUpload"
-                style="height: 60px;width: 112px;font-size: 28px;background-color: #00A2E8;border: 0;border-radius: 8px;">
-                上传
-            </el-button>
-        </div>
+    <div style="width:496px; margin: 0 auto;">
+        <transition-group name="card_fade">
+            <UploadVideoCard v-for="(video_msg, index) in video_msgs" @cancel_this="cancel_video_id" :video_msg="video_msg"
+                :key="video_msg.filename">
+            </UploadVideoCard>
+        </transition-group>
     </div>
 </template>
   
 <script lang="ts" setup>
 // 上传录像的页面
-import { onMounted, ref, Ref } from 'vue'
+import { onMounted, ref, Ref, reactive, computed } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
 import { genFileId, ElMessage } from 'element-plus'
-import type { UploadInstance, UploadProps, UploadRawFile, UploadFile, UploadFiles, UploadRequestOptions } from 'element-plus'
+import type { UploadInstance, UploadProps, UploadUserFile, UploadRawFile, UploadFile, UploadFiles, UploadRequestOptions } from 'element-plus'
 // import img_arbiter from '@/assets/img/img_arbiter.png'
+import UploadVideoCard from '@/components/UploadVideoCard.vue';
+import store from '../store'
 
-const video_msg_level = ref("")
-const video_msg_time = ref("")
-const video_msg_bbbv = ref("")
-const video_msg_bvs = ref("")
+const video_msgs = ref<{
+    uid: number,
+    id: number,
+    filename: string,
+    level: string,
+    time: string,
+    bbbv: string,
+    bvs: string,
+}[]>([])
 
-const upload = ref<UploadInstance>()
+const fileList = ref<UploadUserFile[]>([])
+
+const upload = ref<UploadInstance>();
+const uploaded_file_num = ref<number>(0);
 const allow_upload = ref(true)
-const hint_text = ref<string>("*仅限一个文件，且文件大小不能超过5M")
+
+// 延时系数
+let k = 0;
 
 onMounted(() => {
-    const player = proxy.$store.state.user;
+    const player = store.state.user;
     if (player.realname == "请修改为实名") {
         allow_upload.value = false;
         ElMessage.error('上传录像前，请先修改为实名!');
@@ -79,25 +75,37 @@ onMounted(() => {
 
 })
 
-const handleChange: UploadProps['onChange'] = (uploadFile: UploadFile, uploadFiles: UploadFiles) => {
-    // console.log(uploadFile);
-    if (uploadFile.raw?.type == 'image/jpeg') {
-        // el-upload在限制，进不来
-        ElMessage.error('不能上传图片!')
-        return false
-    } else if (uploadFile.size as number / 1024 / 1024 > 5) {
-        ElMessage.error('录像大小不能超过5MB!')
-        return false
+// 录像列表变动的回调，上传多个文件时，有几个文件就会进来几次。
+const handleChange: UploadProps['onChange'] = async (uploadFile: UploadFile, uploadFiles: UploadFiles) => {
+
+    if (allow_upload.value) {
+        if (uploadFile.raw?.type == 'image/jpeg') {
+            // el-upload在限制，进不来。除非用户选全部文件。
+            ElMessage.error('不能上传图片!')
+
+        } else if (uploadFile.size as number / 1024 / 1024 > 5) {
+            ElMessage.error('录像大小不能超过5MB!')
+
+        }
+        // upload_video_visibile.value = true;
+        await push_video_msg(uploadFile);
+        // 修改id。最后一个协程才是真正起作用的。
+        for (let i = 0; i < video_msgs.value.length; i++) {
+            video_msgs.value[i].id = i;
+        }
     }
-    upload_video_visibile.value = true;
-    hint_text.value = uploadFile.name;
-    modify_video_msg(uploadFile);
-    return true
+
 }
 
-const modify_video_msg = async (uploadFile: UploadFile) => {
+// 新增一条等待上传的录像信息的记录
+const push_video_msg = async (uploadFile: UploadFile | UploadRawFile) => {
     const ms = await import("ms-toollib");
-    let video_file = await uploadFile.raw!.arrayBuffer();
+    let video_file;
+    if ("raw" in uploadFile) {
+        video_file = await uploadFile.raw!.arrayBuffer();
+    } else {
+        video_file = await (uploadFile as UploadRawFile).arrayBuffer();
+    }
     let video_file_u8 = new Uint8Array(video_file);
     let aa;
     if (uploadFile.name.slice(-3) == "avf") {
@@ -111,43 +119,83 @@ const modify_video_msg = async (uploadFile: UploadFile) => {
     aa.parse_video();
     aa.analyse();
     aa.current_time = 1e8;  //时间设置到最后（超出就是最后）
-    video_msg_level.value = ["初级", "中级", "高级"][aa.get_level - 3];
-    video_msg_time.value = aa.get_rtime.toFixed(3);
-    video_msg_bbbv.value = aa.get_bbbv + "";
-    video_msg_bvs.value = aa.get_bbbv_s.toFixed(3);
+    video_msgs.value.push({
+        uid: uploadFile.uid,
+        id: 0,
+        filename: uploadFile.name,
+        level: ["初级", "中级", "高级"][aa.get_level - 3],
+        time: aa.get_rtime.toFixed(3),
+        bbbv: aa.get_bbbv + "",
+        bvs: aa.get_bbbv_s.toFixed(3),
+    })
 }
 
-const handleExceed: UploadProps['onExceed'] = (files) => {
-    upload.value!.clearFiles()
-    const file = files[0] as UploadRawFile
-    file.uid = genFileId()
-    upload.value!.handleStart(file)
+const handleExceed: UploadProps['onExceed'] = async (files) => {
+    ElMessage.error('单次最多上传99个录像！')
+    const left_num = 99 - video_msgs.value.length;
+    files.splice(left_num);
+
+    for (let file of files) {
+        const f = file as UploadRawFile;
+        f.uid = genFileId();
+        allow_upload.value = false; // 暂时屏蔽onChange回调
+        upload.value!.handleStart(f);
+        allow_upload.value = true;
+        await push_video_msg(f);
+        // 修改id。最后一个协程才是真正起作用的。
+        for (let i = 0; i < video_msgs.value.length; i++) {
+            video_msgs.value[i].id = i;
+        }
+    }
+
 }
 
-// // 限制录像格式和大小
-// const beforeUpload: UploadProps['beforeUpload'] = (rawFile) => {
-//     console.log(666);
+// 点录像信息卡片右侧叉的回调
+const cancel_video_id = (id: number) => {
+    delete_from_file_list(video_msgs.value[id].uid);
+    video_msgs.value.splice(id, 1);
+    for (let i = 0; i < video_msgs.value.length; i++) {
+        video_msgs.value[i].id = i;
+    }
+}
 
-//   if (rawFile.type !== 'image/jpeg') {
-//     console.log(777);
-//     ElMessage.error('Video must be AVF or EVF format!')
-//     return false
-//   } else if (rawFile.size / 1024 / 1024 > 5) {
-//     ElMessage.error('Video size can not exceed 5MB!')
-//     return false
-//   }
-//   return true
-// }
+// 清空待上传列表
+const cancel_all = () => {
+    upload.value!.clearFiles();
+    while (video_msgs.value.length > 0) {
+        video_msgs.value.pop();
+    }
+    uploaded_file_num.value = 0;
+    k = 0;
+}
 
+// 用uid做匹配，在fileList中删除对应的待上传录像。不能简单地按照id来删。两个array里顺序不同。
+const delete_from_file_list = (uid: number) => {
+    fileList.value = fileList.value.filter((x) => x.uid != uid);
+}
+
+// 点上传按钮的回调
 const submitUpload = () => {
-    // console.log(document.cookie);
+    // 先锁死，不让进变化回调
+    allow_upload.value = false;
     upload.value!.submit()
 }
 
+// 均匀延时，降低并发。
+function getDelay() {
+    return new Promise(resolve => {
+        const delay = k * 200;
+        k++;
+        setTimeout(() => {
+            resolve(delay);
+        }, delay);
+    });
+}
 
+// 上传几个录像就进来几次
 const handleVideoUpload = async (options: UploadRequestOptions) => {
+    await getDelay();
     const ms = await import("ms-toollib");
-    // console.log(options.file);
     let video_file = options.file;
     let video_file_u8 = new Uint8Array(await video_file.arrayBuffer());
     // let aa = ms.AvfVideo.new(video_file_u8, video_file.name);
@@ -181,9 +229,6 @@ const handleVideoUpload = async (options: UploadRequestOptions) => {
     }
 
     const decoder = new TextDecoder();
-    // for (let i = 0;i<1;i++){
-
-    // console.log(aa.is_valid());
 
     let params = new FormData();
     params.append('file', options.file);
@@ -229,26 +274,35 @@ const handleVideoUpload = async (options: UploadRequestOptions) => {
         params,
     ).then(function (response) {
         if (response.data.status == 100) {
-            upload.value!.clearFiles()
-            upload_video_visibile.value = false;
-            ElMessage.success("上传成功！")
-            hint_text.value = "*仅限一个文件，且文件大小不能超过5M"
+            // upload.value!.clearFiles()
+            // upload_video_visibile.value = false;
+            ElMessage.success(`上传成功！剩余（${video_msgs.value.length - uploaded_file_num.value - 1}）`)
+            // hint_text.value = "*仅限一个文件，且文件大小不能超过5M"
+            uploaded_file_num.value += 1;
+
+            if (uploaded_file_num.value == video_msgs.value.length) {
+                cancel_all();
+                allow_upload.value = true;
+            }
         } else if (response.data.status >= 101) {
             // 正常使用不会到这里
             ElMessage.error("上传失败！小型网站，请勿攻击！");
-            upload.value!.clearFiles();
+            uploaded_file_num.value += 1;
+            if (uploaded_file_num.value == video_msgs.value.length) {
+                cancel_all();
+                allow_upload.value = true;
+            }
+        }
+    }).catch(() => {
+        ElMessage.error("上传失败！服务器无响应！");
+        uploaded_file_num.value += 1;
+        if (uploaded_file_num.value == video_msgs.value.length) {
+            cancel_all();
+            allow_upload.value = true;
         }
     })
-    // }
+
 }
-
-
-
-
-const upload_video_visibile = ref(false)
-// const register_visibile = ref(false)
-
-
 
 
 
@@ -281,14 +335,21 @@ const upload_video_visibile = ref(false)
     margin-bottom: 0;
 }
 
-/* .el-col {
-    border-radius: 4px;
+.card_fade-move,
+.card_fade-enter-active,
+.card_fade-leave-active {
+    transition: all 0.5s ease;
 }
 
-.grid-content {
-    border-radius: 4px;
-    min-height: 36px;
-} */
+.card_fade-enter-from,
+.card_fade-leave-to {
+    opacity: 0;
+    transform: translateX(200px);
+}
+
+.card_fade-leave-active {
+    position: absolute;
+}
 </style>
 
 
