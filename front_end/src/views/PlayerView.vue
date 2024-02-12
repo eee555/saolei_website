@@ -59,9 +59,26 @@
                     <div style="overflow: auto ;"><strong>个性签名：</strong>{{ signature }}</div>
 
                     <el-button v-show="show_edit_button" type="primary" :plain="true" :size="'large'"
-                        @click="is_editing = true;"
+                        @click="is_editing = true;visible=true;"
                         style="font-size: 18px;margin-top: 18px;width: 160px;">修改个人资料</el-button>
                 </div>
+
+                <el-dialog v-model="visible" title="请注意" width="50%" align-center draggable :lock-scroll="false">
+                    <ul>
+                        <li>本站实行实名制，改名前无法上传录像。改名机会有且仅有一次，请慎重填写！如果改名或填错，请联系管理员获取额外的改名次数！
+                        </li>
+                        <li>头像、个性签名的修改次数注册起初仅有2次，之后每年系统赠送一次。
+                        </li>
+                    </ul>
+
+                    <template #footer>
+                        <span class="dialog-footer">
+                            <el-button type="primary" @click="visible = false">
+                                确定
+                            </el-button>
+                        </span>
+                    </template>
+                </el-dialog>
             </el-aside>
 
             <el-main>
@@ -113,6 +130,8 @@ const signature_edit = ref("");
 
 // 是否在编辑的标识
 const is_editing = ref(false);
+// 弹窗的可见性
+const visible = ref(false);
 
 // 标签默认切在第一页
 const activeName = ref('first')
@@ -182,11 +201,11 @@ const upload_info = () => {
                         ElMessage.success(`姓名修改成功！剩余修改次数${response.data.msg.left_realname_n}`)
                         realname.value = realname_edit.value;
                         proxy.$store.commit('updateUserRealname', realname.value);
-                        if (player.id == user.id){
-                        // 访问用户自己的地盘
-                        // 解决改名后，个人录像列表里名字不能立即改过来
-                        localStorage.setItem("player", JSON.stringify({ "id": player.id, "realname":realname.value }));
-                    }
+                        if (player.id == user.id) {
+                            // 访问用户自己的地盘
+                            // 解决改名后，个人录像列表里名字不能立即改过来
+                            localStorage.setItem("player", JSON.stringify({ "id": player.id, "realname": realname.value }));
+                        }
                     }
                 }
                 if (signature_edit.value != signature.value) {
@@ -232,10 +251,10 @@ const handleAvatarUpload = async (options: UploadRequestOptions) => {
                     realname.value = realname_edit.value;
                     //改名字
                     proxy.$store.commit('updateUserRealname', realname.value);
-                    if (player.id == user.id){
+                    if (player.id == user.id) {
                         // 访问用户自己的地盘
                         // 解决改名后，个人录像列表里名字不能立即改过来
-                        localStorage.setItem("player", JSON.stringify({ "id": player.id, "realname":realname.value }));
+                        localStorage.setItem("player", JSON.stringify({ "id": player.id, "realname": realname.value }));
                     }
                 }
             }
