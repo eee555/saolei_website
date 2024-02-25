@@ -28,6 +28,11 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('../views/GuideView.vue')
   },
   {
+    path: '/player/:id',
+    name: 'player_id',
+    component: () => import('../views/PlayerView.vue')
+  },
+  {
     path: '/player',
     name: 'player',
     component: () => import('../views/PlayerView.vue')

@@ -57,9 +57,10 @@
                     </div>
                     <div style="font-size: 20px;margin-bottom: 8px;">{{ realname }}</div>
                     <div style="overflow: auto ;"><strong>个性签名：</strong>{{ signature }}</div>
+                    <div style="overflow: auto ;">人气：{{ popularity }}</div>
 
                     <el-button v-show="show_edit_button" type="primary" :plain="true" :size="'large'"
-                        @click="is_editing = true;visible=true;"
+                        @click="is_editing = true; visible = true;"
                         style="font-size: 18px;margin-top: 18px;width: 160px;">修改个人资料</el-button>
                 </div>
 
@@ -68,6 +69,8 @@
                         <li>本站实行实名制，改名前无法上传录像。改名机会有且仅有一次，请慎重填写！如果改名或填错，请联系管理员获取额外的改名次数！
                         </li>
                         <li>头像、个性签名的修改次数注册起初仅有2次，之后每年系统赠送一次。
+                        </li>
+                        <li>严禁上传各类违规内容！如有发现，视情节严重采取封号等措施，且发生异常情况，依然消耗修改次数。
                         </li>
                     </ul>
 
@@ -123,6 +126,7 @@ const userid = ref("");
 const username = ref("");
 const realname = ref("");
 const signature = ref("");
+const popularity = ref("");
 
 //编辑状态时的
 const realname_edit = ref("");
@@ -136,17 +140,29 @@ const visible = ref(false);
 // 标签默认切在第一页
 const activeName = ref('first')
 // const player = proxy.$store.state.player;
-const player = JSON.parse(localStorage.getItem("player") as string);
+const player = {
+    id: -1,
+};
 // console.log(player);
 
 // 上传可能失败，备份旧的头像
 let imageUrlOld: any;
 
 const user = proxy.$store.state.user;
-const show_edit_button = player.id == user.id;
+let show_edit_button: boolean;
 
 onMounted(() => {
     // 把左侧的头像、姓名、个性签名、记录请求过来
+
+    let player_id = +proxy.$route.params.id;
+    if (Number.isInteger(player_id) && player_id >= 1) {
+        player.id = player_id;
+        localStorage.setItem("player", JSON.stringify({ "id": player_id }));
+    } else {
+        player.id = JSON.parse(localStorage.getItem("player") as string).id as number;
+    }
+    show_edit_button = player.id == user.id;
+
     proxy.$axios.get('/msuser/info/',
         {
             params: {
@@ -160,6 +176,7 @@ onMounted(() => {
         username.value = data.username;
 
         signature.value = data.signature;
+        popularity.value = data.popularity;
         realname_edit.value = data.realname;
         signature_edit.value = data.signature;
         // console.log(imageUrl);
@@ -176,114 +193,104 @@ onMounted(() => {
     // std_record
 })
 
-// 修改确认按钮的回调，改过图片就走unload的回调上传，否则就按钮本身回调上传
+
+// 向后台发送请求修改姓名
+const post_update_realname = (r: string) => {
+    let params = new FormData()
+    params.append('realname', r)
+    proxy.$axios.post('/msuser/update_realname/',
+        params,
+    ).then(function (response) {
+        if (response.data.status == 100) {
+            ElMessage.success(`姓名修改成功！剩余修改次数${response.data.msg.n}`)
+            realname.value = realname_edit.value;
+            proxy.$store.commit('updateUserRealname', realname.value);
+            if (player.id == user.id) {
+                // 访问用户自己的地盘
+                // 解决改名后，个人录像列表里名字不能立即改过来
+                // localStorage.setItem("player", JSON.stringify({ "id": player.id, "realname": realname.value }));
+                localStorage.setItem("player", JSON.stringify({ "id": player.id }));
+            }
+
+            // proxy.$store.commit('updateUser', response.data.msg);// 当前登录用户
+            // proxy.$store.commit('updatePlayer', response.data.msg);// 看我的地盘看谁的
+            // localStorage.setItem("player", JSON.stringify(response.data.msg));
+
+        } else if (response.data.status >= 101) {
+            console.log(response.data);
+            realname_edit.value = realname.value;
+            ElMessage.error(response.data.msg)
+        }
+    }).catch(() => {
+        ElMessage.error("无法连接到服务器！")
+    })
+}
+
+// 向后台发送请求修改头像
+const post_update_avatar = (a: File) => {
+    let params = new FormData()
+    params.append('avatar', a)
+    proxy.$axios.post('/msuser/update_avatar/',
+        params,
+    ).then(function (response) {
+        if (response.data.status == 100) {
+            ElMessage.success(`头像修改成功！剩余修改次数${response.data.msg.n}`)
+            imageUrl.value = URL.createObjectURL(a);
+        } else if (response.data.status >= 101) {
+            ElMessage.error(response.data.msg)
+            imageUrl.value = imageUrlOld;
+        }
+    }).catch(() => {
+        ElMessage.error("无法连接到服务器！")
+    })
+}
+
+// 向后台发送请求修改签名
+const post_update_signature = (s: string) => {
+    let params = new FormData()
+    params.append('signature', s)
+    proxy.$axios.post('/msuser/update_signature/',
+        params,
+    ).then(function (response) {
+        // console.log(response.data);
+
+        if (response.data.status == 100) {
+            ElMessage.success(`个性签名修改成功！剩余修改次数${response.data.msg.n}`)
+            signature.value = signature_edit.value;
+        } else if (response.data.status >= 101) {
+            ElMessage.error(response.data.msg)
+            signature_edit.value = signature.value;
+        }
+    }).catch(() => {
+        ElMessage.error("无法连接到服务器！")
+    })
+}
+
+// 修改确认按钮的回调，改过头像就走unload的回调上传，否则就按钮本身回调上传
 const upload_info = () => {
     is_editing.value = false;
     if (avatar_changed.value) {
         upload.value!.submit();
     } else {
-        let params = new FormData()
+        // 没改头像，只改了姓名或个性签名，或什么也没改
         if (realname_edit.value != realname.value) {
-            params.append('realname', realname_edit.value)
+            post_update_realname(realname_edit.value);
         }
         if (signature_edit.value != signature.value) {
-            params.append('signature', signature_edit.value)
+            post_update_signature(signature_edit.value);
         }
-        proxy.$axios.post('/msuser/update/',
-            params,
-        ).then(function (response) {
-            if (response.data.status == 100) {
-                if (realname_edit.value != realname.value) {
-                    if (!response.data.msg.realname_flag) {
-                        ElMessage.warning("姓名剩余修改次数不足！")
-                        realname_edit.value = realname.value;
-                    } else {
-                        ElMessage.success(`姓名修改成功！剩余修改次数${response.data.msg.left_realname_n}`)
-                        realname.value = realname_edit.value;
-                        proxy.$store.commit('updateUserRealname', realname.value);
-                        if (player.id == user.id) {
-                            // 访问用户自己的地盘
-                            // 解决改名后，个人录像列表里名字不能立即改过来
-                            localStorage.setItem("player", JSON.stringify({ "id": player.id, "realname": realname.value }));
-                        }
-                    }
-                }
-                if (signature_edit.value != signature.value) {
-                    if (!response.data.msg.signature_flag) {
-                        ElMessage.warning("个性签名剩余修改次数不足！")
-                        signature_edit.value = signature.value;
-                    } else {
-                        ElMessage.success(`个性签名修改成功！剩余修改次数${response.data.msg.left_signature_n}`)
-                        signature.value = signature_edit.value;
-                    }
-                }
-                proxy.$store.commit('updateUser', response.data.msg);// 当前登录用户
-                // proxy.$store.commit('updatePlayer', response.data.msg);// 看我的地盘看谁的
-                localStorage.setItem("player", JSON.stringify(response.data.msg));
-
-            } else if (response.data.status >= 101) {
-                ElMessage.error(response.data.msg)
-            }
-        })
-
     }
-
-
-
 }
 
-// 把头像、姓名、个性签名传上去
+// 把头像、姓名、个性签名传上去。至少头像改过了。
 const handleAvatarUpload = async (options: UploadRequestOptions) => {
-    let params = new FormData()
-    params.append('avatar', options.file);
-    params.append('realname', realname_edit.value)
-    params.append('signature', signature_edit.value)
-    proxy.$axios.post('/msuser/update/',
-        params,
-    ).then(function (response) {
-        if (response.data.status == 100) {
-            if (realname_edit.value != realname.value) {
-                if (!response.data.msg.realname_flag) {
-                    ElMessage.warning("姓名剩余修改次数不足！")
-                    realname_edit.value = realname.value;
-                } else {
-                    ElMessage.success(`姓名修改成功！剩余修改次数${response.data.msg.left_realname_n}`)
-                    realname.value = realname_edit.value;
-                    //改名字
-                    proxy.$store.commit('updateUserRealname', realname.value);
-                    if (player.id == user.id) {
-                        // 访问用户自己的地盘
-                        // 解决改名后，个人录像列表里名字不能立即改过来
-                        localStorage.setItem("player", JSON.stringify({ "id": player.id, "realname": realname.value }));
-                    }
-                }
-            }
-            if (signature_edit.value != signature.value) {
-                if (!response.data.msg.signature_flag) {
-                    ElMessage.warning("个性签名剩余修改次数不足！")
-                    signature_edit.value = signature.value;
-                } else {
-                    ElMessage.success(`个性签名修改成功！剩余修改次数${response.data.msg.left_signature_n}`)
-                    signature.value = signature_edit.value;
-                }
-            }
-            if (!response.data.msg.avatar_flag) {
-                ElMessage.warning("头像剩余修改次数不足！")
-                imageUrl.value = imageUrlOld;
-            } else {
-                ElMessage.success(`头像修改成功！剩余修改次数${response.data.msg.left_avatar_n}`)
-                imageUrl.value = URL.createObjectURL(options.file);
-            }
-        } else if (response.data.status >= 101) {
-            // 适配后端的两种error
-            if (response.data.msg.avatar) {
-                ElMessage.error(response.data.msg.avatar[0]);
-            } else {
-                ElMessage.error(response.data.msg);
-            }
-
-        }
-    })
+    if (realname_edit.value != realname.value) {
+        post_update_realname(realname_edit.value);
+    }
+    if (signature_edit.value != signature.value) {
+        post_update_signature(signature_edit.value);
+    }
+    post_update_avatar(options.file);
 }
 
 const handleChange: UploadProps['onChange'] = (uploadFile: UploadFile, uploadFiles: UploadFiles) => {

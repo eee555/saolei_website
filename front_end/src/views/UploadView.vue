@@ -192,6 +192,16 @@ function getDelay() {
     });
 }
 
+
+function cancel_all_or_not () {
+    uploaded_file_num.value += 1;
+    if (uploaded_file_num.value == video_msgs.value.length) {
+        cancel_all();
+        allow_upload.value = true;
+    }
+}
+
+
 // 上传几个录像就进来几次
 const handleVideoUpload = async (options: UploadRequestOptions) => {
     await getDelay();
@@ -212,19 +222,30 @@ const handleVideoUpload = async (options: UploadRequestOptions) => {
     aa.analyse();
     aa.current_time = 1e8;  //时间设置到最后（超出就是最后）
     if (aa.get_level > 5) {
-        ElMessage.error('不能上传自定义的录像!')
+        ElMessage.error('不能上传自定义的录像!');
+        cancel_all_or_not();
         return
     }
     if (video_file.name.slice(-3) != "avf" && video_file.name.slice(-3) != "evf") {
-        ElMessage.error('录像必须为.avf或.evf格式!')
+        ElMessage.error('录像必须为.avf或.evf格式!');
+        cancel_all_or_not();
         return
     }
     if (video_file.name.length >= 100) {
-        ElMessage.error('录像文件名太长!')
+        ElMessage.error('录像文件名太长!');
+        cancel_all_or_not();
         return
     }
     if (!aa.get_is_completed) {
-        ElMessage.error('没有扫开的录像!')
+        ElMessage.error('没有扫开的录像!');
+        cancel_all_or_not();
+        return
+    }
+    // console.log(aa.is_valid());
+    
+    if (aa.is_valid() == 1) {
+        ElMessage.error('非法的录像!');
+        cancel_all_or_not();
         return
     }
 
@@ -287,19 +308,11 @@ const handleVideoUpload = async (options: UploadRequestOptions) => {
         } else if (response.data.status >= 101) {
             // 正常使用不会到这里
             ElMessage.error("上传失败！小型网站，请勿攻击！");
-            uploaded_file_num.value += 1;
-            if (uploaded_file_num.value == video_msgs.value.length) {
-                cancel_all();
-                allow_upload.value = true;
-            }
+            cancel_all_or_not();
         }
     }).catch(() => {
         ElMessage.error("上传失败！服务器无响应！");
-        uploaded_file_num.value += 1;
-        if (uploaded_file_num.value == video_msgs.value.length) {
-            cancel_all();
-            allow_upload.value = true;
-        }
+        cancel_all_or_not();
     })
 
 }

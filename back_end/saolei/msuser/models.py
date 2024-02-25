@@ -4,7 +4,7 @@ from django.db import models
 # 扫雷用户
 class UserMS(models.Model):
     # 总录像数限制默认100，计划管理员可以修改。高水平玩家也可以增多。
-    # sub100是200；sub60是500；sub50是600；sub40是800；sub30是1000；vip是1000。
+    # 高级标准sub100是200；sub60是500；sub50是600；sub40是800；sub30是1000；vip是1000。
     video_num_limit = models.IntegerField(null=False, default=100)
     # 录像总数
     video_num_total = models.IntegerField(null=False, default=0)

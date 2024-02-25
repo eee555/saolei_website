@@ -216,7 +216,8 @@ function to_fixed_n(input: string | number | undefined, to_fixed: number): strin
 
 const visit_me = (user_id: Number) => {
     // proxy.$store.commit('updatePlayer', { "id": id.value, "realname":realname.value });
-    localStorage.setItem("player", JSON.stringify({ "id": id.value, "realname":realname.value }));
+    // localStorage.setItem("player", JSON.stringify({ "id": id.value, "realname":realname.value }));
+    localStorage.setItem("player", JSON.stringify({ "id": id.value }));
     router.push("player")
 }
 

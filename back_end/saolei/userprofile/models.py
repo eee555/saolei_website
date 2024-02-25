@@ -50,18 +50,20 @@ class UserProfile(AbstractUser):
     country = models.CharField(max_length=3, blank=True, null=True)
     # 封禁用户，禁止上传录像、头像、签名
     is_banned = models.BooleanField(default=False, blank=False)
-    # 剩余修改真实姓名的次数
+    # 剩余修改真实姓名的次数，0~32767
     left_realname_n = models.PositiveSmallIntegerField(null=False, default=1)
-    # 剩余修改头像次数
+    # 剩余修改头像次数，0~32767
     left_avatar_n = models.PositiveSmallIntegerField(null=False, default=2)
     # 最近修改头像时间
     last_change_avatar = models.DateTimeField(default=timezone.now)
-    # 剩余修改签名次数
+    # 剩余修改签名次数，0~32767
     left_signature_n = models.PositiveSmallIntegerField(null=False, default=2)
     # 最近修改签名时间
     last_change_signature = models.DateTimeField(default=timezone.now)
     # 人气
     popularity = models.BigIntegerField(null=False, default=0)
+    # vip，0为非vip，理论0~32767。类似于权限
+    vip = models.PositiveSmallIntegerField(null=False, default=0)
 
 
 

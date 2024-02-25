@@ -167,6 +167,7 @@ front_end/public/flopold
 *.doc
 **/*.zip
 *.rar
+**/secrets.json
 
 
 

@@ -9,6 +9,7 @@
 前端：Vue3 + Ts + Element-ui + wasm-bindgen  
 后端：Django + Mysql + redis  
 部署：Nginx + uwsgi  
+安全：百度大脑  
 
 ## 最新进展
 :white_check_mark: 开发核心功能  

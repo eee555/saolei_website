@@ -1,6 +1,6 @@
 <template>
 	<Teleport to=".common-layout">
-		<el-dialog v-model="preview_visible" style="background-color: rgba(240, 240, 240, 0.8);" draggable align-center
+		<el-dialog v-model="preview_visible" style="background-color: rgba(240, 240, 240, 0.48); backdrop-filter: blur(1px);" draggable align-center
 			destroy-on-close :modal="false" :lock-scroll="false">
 			<iframe class="flop-player-iframe flop-player-display-none" style="width: 100%; height: 500px; border: 0px"
 				src="/flop/index.html" ref="video_iframe"></iframe>
@@ -62,8 +62,7 @@ const preview = (event: MouseEvent, id: Number | undefined) => {
 	if (!id) {
 		return
 	}
-	// (window as any).flop = null;
-	window.flop = null;
+	(window as any).flop = null;
 	preview_visible.value = true;
 	proxy.$axios.get('/video/get_software/',
 		{
@@ -82,12 +81,12 @@ const preview = (event: MouseEvent, id: Number | undefined) => {
 
 
 		// (window as any).flop.playVideo(uri);
-		if (window.flop) {
+		if ((window as any).flop) {
 			// console.log("985", 'playVideo' in window.flop);
 			// console.log("523", window.flop.hasOwnProperty('playVideo'));
 			playVideo(uri);
 		} else {
-			window.flop = {
+			(window as any).flop = {
 				onload: async function () {
 					// console.log("444", window.flop);
 					// console.log("111", window.flop.playVideo);
@@ -154,7 +153,7 @@ const playVideo = function (uri: string) {
 
 	// console.log("747", window.flop);
 	// console.log("585", window.flop.playVideo);
-	window.flop.playVideo(uri, {
+	(window as any).flop.playVideo(uri, {
 		share: {
 			uri: uri,
 			pathname: "/flop-player/player",
@@ -167,7 +166,7 @@ const playVideo = function (uri: string) {
 		background: "rgba(0, 0, 0, 0)",
 		listener: function () {
 			preview_visible.value = false;
-			window.flop = null;
+			(window as any).flop = null;
 		},
 	});
 }

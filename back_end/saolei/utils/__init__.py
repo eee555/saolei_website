@@ -1,12 +1,11 @@
 from userprofile.models import EmailVerifyRecord
 from django.core.mail import send_mail
-import random
-import uuid
+import uuid, base64, random, json
 from datetime import date, datetime
-import json
 from decimal import Decimal
 from django.http import HttpResponse, JsonResponse, FileResponse
 from django.shortcuts import render, redirect
+import requests
 
 def generate_code(code_len):
     """
@@ -79,7 +78,75 @@ class ComplexEncoder(json.JSONEncoder):
             return str(obj, encoding="utf-8")
         else:
             return json.JSONEncoder.default(self, obj)
-        
+
+
+
+"""
+使用 AK，SK 生成鉴权签名（Access Token）。不能调用太多次。
+:return: access_token，或是None(如果错误)
+"""
+def get_access_token() -> str:
+    API_KEY = input("请输入client_id：")
+    SECRET_KEY = input("请输入client_secret：")
+    url = "https://aip.baidubce.com/oauth/2.0/token"
+    params = {"grant_type": "client_credentials", "client_id": API_KEY, "client_secret": SECRET_KEY}
+    token = str(requests.post(url, params=params).json().get("access_token"))
+    if token == "None":
+        print("**********************************************\n\n**  警告！内容审核的鉴权签名获取失败！！！  **\n\n**********************************************")
+    return token
+
+try:
+    with open("secrets.json",'r') as f:
+        # 开发走这里，不能频繁请求这个接口
+        ACCESS_TOKEN = json.load(f)["token"]
+except FileNotFoundError:
+    # 生产走这里
+    ACCESS_TOKEN = get_access_token()
+except json.JSONDecodeError as e:
+    # print(f"JSON解析错误: {e}")
+    ...
+except Exception as e:
+    # print(f"发生其他错误: {e}")
+    ...
+
+
+# 百度大脑鉴别文本合规性
+def veriry_text(text: str, user_id: int, user_ip: str) -> bool:
+    if not text:
+        return True
+    url = "https://aip.baidubce.com/rest/2.0/solution/v1/text_censor/v2/user_defined?access_token=" + ACCESS_TOKEN
+    payload={
+        "text": text,
+        "user_id": user_id,
+        "user_ip": user_ip
+    }
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json'
+    }
+    response = requests.request("POST", url, headers=headers, data=payload)
+    return response.json().get("conclusion") == "合规"
+
+# 百度大脑鉴别图片合规性
+# 百度api对图片的尺寸、大小都有要求，后期再测试、适配
+def veriry_image(image_binary, user_id: int, user_ip: str) -> bool:
+    if not image_binary:
+        return True
+    image_base64 = base64.b64encode(image_binary).decode()
+    url = "https://aip.baidubce.com/rest/2.0/solution/v1/img_censor/v2/user_defined?access_token=" + ACCESS_TOKEN
+    payload={
+        "image": image_base64,
+        "user_id": user_id,
+        "user_ip": user_ip
+    }
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json'
+    }
+    response = requests.request("POST", url, headers=headers, data=payload)
+    return response.json().get("conclusion") == "合规"
+
+
 def ratelimited(request, exception):
     if "/video/download/" in request.path:
         return redirect(request.META.get('HTTP_REFERER', '/'))

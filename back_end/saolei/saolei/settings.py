@@ -14,6 +14,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 
+develop_mode = True
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -108,6 +110,7 @@ DATABASES = {
     }
 }
 
+DEFAULT_CHARSET = 'utf-8'
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -189,16 +192,18 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_HEADERS = ('*')
 CSRF_TRUSTED_ORIGINS = ['http://localhost:8080']
 
-# 开发时
-SESSION_COOKIE_SAMESITE = 'None'
-SESSION_COOKIE_SECURE = True  # https时候改成True
-CSRF_COOKIE_SAMESITE = 'None'
-CSRF_COOKIE_SECURE = True     # https时候改成True
-# 部署时
-# SESSION_COOKIE_SAMESITE = 'Lax'
-# SESSION_COOKIE_SECURE = False  # https时候改成True
-# CSRF_COOKIE_SAMESITE = 'Lax'
-# CSRF_COOKIE_SECURE = False     # https时候改成True
+if develop_mode:
+    # 开发时
+    SESSION_COOKIE_SAMESITE = 'None'
+    SESSION_COOKIE_SECURE = True  # https时候改成True
+    CSRF_COOKIE_SAMESITE = 'None'
+    CSRF_COOKIE_SECURE = True     # https时候改成True
+else:
+    # 部署时
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    SESSION_COOKIE_SECURE = True  # https时候改成True
+    CSRF_COOKIE_SAMESITE = 'Lax'
+    CSRF_COOKIE_SECURE = True     # https时候改成True
 
 # 发送邮箱验证码
 EMAIL_HOST = "smtp.88.com"     # 服务器
@@ -211,8 +216,9 @@ EMAIL_HOST_PASSWORD = "TdS2ZPt2izAkY25b"   # 密码 (注意：这里的密码指
 SESSION_COOKIE_NAME = "session_id"        # Session的cookie保存在浏览器上时的key
 SESSION_COOKIE_PATH = "/"                # Session的cookie保存的路径(默认)
 SESSION_COOKIE_DOMAIN = None             # Session的cookie保存的域名(默认)
-# SESSION_COOKIE_SECURE = False            # 是否Https传输cookie
-SESSION_COOKIE_HTTPONLY = True           # 是否Session的cookie只支持http传输(默认)
+if not develop_mode:
+    SESSION_COOKIE_SECURE = True            # 是否Https传输cookie
+SESSION_COOKIE_HTTPONLY = develop_mode           # 是否Session的cookie只支持http传输(默认)
 SESSION_COOKIE_AGE = 1209600*2           # Session的cookie失效日期(默认2周)
 SESSION_SAVE_EVERY_REQUEST = False       # 是否设置关闭浏览器使得Session过期
 SESSION_COOKIE_AT_BROWSER_CLOSE = False  # 是否每次请求都保存Session，默认修改之后才能保存

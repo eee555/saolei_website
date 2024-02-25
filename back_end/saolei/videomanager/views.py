@@ -38,10 +38,10 @@ logger = logging.getLogger(__name__)
 def video_upload(request):
     if request.method == 'POST':
         if request.user.is_banned:
-            return JsonResponse({"status": 101, "msg": "forbidden!"})
-        # print(request.user)
-        print(request.FILES)
-        # print(request.POST)
+            return JsonResponse({"status": 101, "msg": "用户被封禁!"})
+        if request.user.userms.video_num_total >= request.user.userms.video_num_limit:
+            return JsonResponse({"status": 188, "msg": "用户录像仓库已满!"})
+            
         # response = {'status': 100, 'msg': None}
         # request.POST['file'] = request.FILES
         video_form = UploadVideoForm(data=request.POST, files=request.FILES)
@@ -96,6 +96,8 @@ def video_upload(request):
                                                                 "bv": video.bv,
                                                                 "bvs": video.bvs}, cls=ComplexEncoder))
                 update_personal_record(video, e_video)
+                update_video_num(request.user.userms, video)
+                
 
             # review_video_ids = cache.hgetall("review_queue")
             # print(review_video_ids)
@@ -250,6 +252,39 @@ def video_query_by_id(request):
 #     "5": "{\"time\": \"2023-12-16 15:23:59\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"b\", \"mode\": \"12\", \"rtime\": \"1.580\", \"bv\": 6, \"bvs\": 3.7974683544303796}"
 # }
 
+
+# 上传的录像进入数据库后，更新用户的录像数目
+def update_video_num(userms, video):
+    if video.mode == '00':
+        userms.video_num_std += 1
+    elif video.mode == '12':
+        userms.video_num_nf += 1
+    elif video.mode == '05':
+        userms.video_num_ng += 1
+    elif video.mode == '11':
+        userms.video_num_dg += 1
+
+    if video.level == "b":
+        userms.video_num_beg += 1
+    elif video.level == 'i':
+        userms.video_num_int += 1
+    elif video.level == 'e':
+        userms.video_num_exp += 1
+
+    # 给高玩自动扩容
+    if video.mode == "00" and video.level == 'e':
+        if video.rtime < 100 and userms.video_num_limit < 200:
+            userms.video_num_limit = 200
+        if video.rtime < 60 and userms.video_num_limit < 500:
+            userms.video_num_limit = 500
+        if video.rtime < 50 and userms.video_num_limit < 600:
+            userms.video_num_limit = 600
+        if video.rtime < 40 and userms.video_num_limit < 800:
+            userms.video_num_limit = 800
+        if video.rtime < 30 and userms.video_num_limit < 1000:
+            userms.video_num_limit = 1000
+    
+    userms.save()
 
 
 # 参数: 用户、拓展录像数据
@@ -1415,6 +1450,7 @@ def approve(request):
                     video_i[0].save()
                     cache.hset("newest_queue", ids[i], cache.hget("review_queue", ids[i]))
                     update_personal_record(video_i[0], e_video[0])
+                    update_video_num(request.user.userms, video_i[0])
                 cache.hdel("review_queue", ids[i])
         logger.info(f'{request.user.id} approve {json.dumps(ids)} response {json.dumps(res)}')
         return JsonResponse(json.dumps(res), safe=False)
