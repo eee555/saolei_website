@@ -112,7 +112,7 @@ except Exception as e:
 
 # 百度大脑鉴别文本合规性
 def veriry_text(text: str, user_id: int, user_ip: str) -> bool:
-    if not text:
+    if len(text) < 2:
         return True
     url = "https://aip.baidubce.com/rest/2.0/solution/v1/text_censor/v2/user_defined?access_token=" + ACCESS_TOKEN
     payload={

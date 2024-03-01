@@ -76,9 +76,8 @@ const tab_width = ref("16%")
 // let refLogin = ref<any>(null)
 
 const notice = ref(`
-1、本站正在进行的是第二轮删档内测，但是链接请勿传到群外（出于网络安全、网站安全方面考虑）。
+1、即日起开始删档公测。
 2、相关意见和建议请先检查群内公告文档里的待办、已有issue，若没有同类问题，再在此处[https://gitee.com/ee55/saolei_website/issues]发表。
-3、招募管理员，负责少量审核、解冻录像、封禁违规用户、为填错名字的用户增加修改名字的次数。
 `)
 
 onMounted(() => {

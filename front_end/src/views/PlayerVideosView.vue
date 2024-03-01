@@ -38,7 +38,7 @@ onMounted(() => {
             videos[key].player_id = player.id;
             videos_queue.value.push(videos[key]);
         }
-        console.log(videos_queue.value);
+        // console.log(videos_queue.value);
         loading.value = false;
         
     })

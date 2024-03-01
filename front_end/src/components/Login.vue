@@ -242,16 +242,11 @@ const login = () => {
     params.append('user_id', _id ? _id : "");
     params.append('username', user_name.value)
     params.append('password', user_password.value)
+    params.append('captcha', valid_code.value)
+    params.append('hashkey', refValidCode.value.hashkey)
     proxy.$axios.post('/userprofile/login/',
         params,
     ).then(function (response) {
-        // console.log(response.data);
-        // console.log(document.cookie.match("csrftoken"));
-        // console.log(document.cookie);
-        // console.log(user_name.value);
-        // console.log(user_password.value);
-        // console.log(response.headers);
-        // console.log(response.config);
         if (response.data.status == 100) {
             hint_message.value = ""
             // console.log(response.data);
@@ -413,8 +408,6 @@ const logout = async () => {
         } else if (response.data.status >= 101) {
             // hint_message.value = response.data.msg;
             ElMessage.error('退出失败!')
-            // console.log("退出失败");
-            console.log("*" + response.data);
 
         }
     }).catch(function (error) {

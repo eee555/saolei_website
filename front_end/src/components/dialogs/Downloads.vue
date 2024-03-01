@@ -2,7 +2,7 @@
     <span class="text-button" @click="centerDialogVisible = true;">软件下载</span>
     <el-dialog v-model="centerDialogVisible" title="软件下载" width="50%" align-center draggable :lock-scroll="false">
         <ul>
-            <li><a style="color: blue;" target="_blank" href="https://eee555.lanzn.com/iCNsT1a7qiqj">元扫雷3.1.6</a>
+            <li><a style="color: blue;" target="_blank" href="https://eee555.lanzn.com/iQ4C11p34mqh">元扫雷3.1.7</a>
                 （元扫雷网官方扫雷软件，包含八种模式的无猜扫雷、第三代录像播放器、自带光学识别求解器。）
             </li>
             <li><a style="color: blue;" href="http://www.saolei.wang/Download/Arbiter_0.52.3.zip">Arbiter 0.52.3</a>

@@ -29,7 +29,7 @@ SECRET_KEY = "django-insecure-3_(yjnup(rsxz&pd@stz25*meq10bn3m3$lt!n_1+s723#k=ay
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = False
 # ALLOWED_HOSTS = ["*"]
-DEBUG = True
+DEBUG = develop_mode
 ALLOWED_HOSTS = ["*"]
 
 # 自定义404、500错误页面
@@ -216,9 +216,8 @@ EMAIL_HOST_PASSWORD = "TdS2ZPt2izAkY25b"   # 密码 (注意：这里的密码指
 SESSION_COOKIE_NAME = "session_id"        # Session的cookie保存在浏览器上时的key
 SESSION_COOKIE_PATH = "/"                # Session的cookie保存的路径(默认)
 SESSION_COOKIE_DOMAIN = None             # Session的cookie保存的域名(默认)
-if not develop_mode:
-    SESSION_COOKIE_SECURE = True            # 是否Https传输cookie
-SESSION_COOKIE_HTTPONLY = develop_mode           # 是否Session的cookie只支持http传输(默认)
+SESSION_COOKIE_SECURE = False            # 是否Https传输cookie
+SESSION_COOKIE_HTTPONLY = True           # 是否Session的cookie只支持http传输(默认)
 SESSION_COOKIE_AGE = 1209600*2           # Session的cookie失效日期(默认2周)
 SESSION_SAVE_EVERY_REQUEST = False       # 是否设置关闭浏览器使得Session过期
 SESSION_COOKIE_AT_BROWSER_CLOSE = False  # 是否每次请求都保存Session，默认修改之后才能保存

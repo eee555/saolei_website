@@ -95,7 +95,7 @@ def video_upload(request):
                                                                 "rtime": video.rtime,
                                                                 "bv": video.bv,
                                                                 "bvs": video.bvs}, cls=ComplexEncoder))
-                update_personal_record(video, e_video)
+                update_personal_record(video)
                 update_video_num(request.user.userms, video)
                 
 
@@ -254,7 +254,7 @@ def video_query_by_id(request):
 
 
 # 上传的录像进入数据库后，更新用户的录像数目
-def update_video_num(userms, video):
+def update_video_num(userms: UserMS, video: VideoModel):
     if video.mode == '00':
         userms.video_num_std += 1
     elif video.mode == '12':
@@ -288,12 +288,10 @@ def update_video_num(userms, video):
 
 
 # 参数: 用户、拓展录像数据
-def update_personal_record(video_i, e_video):
-    # user = UserProfile.objects.get(id=user_id)
-    user = UserProfile.objects.get(id=video_i.player_id)
-    ms_user = UserMS.objects.get(id=user.userms_id)
-    # print(e_video.flag)
-    # print(type(video_i.rtime))
+def update_personal_record(video_i: VideoModel):
+    e_video = video_i.video
+    user = video_i.player
+    ms_user = user.userms
 
     if video_i.mode == "12":
         video_i.mode = "00"

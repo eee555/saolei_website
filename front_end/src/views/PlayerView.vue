@@ -57,7 +57,7 @@
                     </div>
                     <div style="font-size: 20px;margin-bottom: 8px;">{{ realname }}</div>
                     <div style="overflow: auto ;"><strong>个性签名：</strong>{{ signature }}</div>
-                    <div style="overflow: auto ;">人气：{{ popularity }}</div>
+                    <!-- <div style="overflow: auto ;">人气：{{ popularity }}</div> -->
 
                     <el-button v-show="show_edit_button" type="primary" :plain="true" :size="'large'"
                         @click="is_editing = true; visible = true;"
@@ -66,11 +66,11 @@
 
                 <el-dialog v-model="visible" title="请注意" width="50%" align-center draggable :lock-scroll="false">
                     <ul>
-                        <li>本站实行实名制，改名前无法上传录像。改名机会有且仅有一次，请慎重填写！如果改名或填错，请联系管理员获取额外的改名次数！
+                        <li>本站实行实名制，改名前无法上传录像。改名机会有且仅有一次，请慎重填写！如果改名或填错，请联系管理员解释原因，并增加改名次数。
                         </li>
-                        <li>头像、个性签名的修改次数注册起初仅有2次，之后每年系统赠送一次。
+                        <li>免费用户的头像、个性签名的修改次数注册后仅有2次，之后每年系统赠送一次。
                         </li>
-                        <li>严禁上传各类违规内容！如有发现，视情节严重采取封号等措施，且发生异常情况，依然消耗修改次数。
+                        <li>严禁上传各类违规内容！如有发现，视情节严重采取封号等措施。
                         </li>
                     </ul>
 
@@ -284,9 +284,15 @@ const upload_info = () => {
 
 // 把头像、姓名、个性签名传上去。至少头像改过了。
 const handleAvatarUpload = async (options: UploadRequestOptions) => {
+    
+    // console.log("****" + realname_edit.value);
+    // console.log("----" + realname.value);
     if (realname_edit.value != realname.value) {
         post_update_realname(realname_edit.value);
     }
+    // console.log("34554" + signature_edit.value);
+    // console.log("5654" + signature.value);
+    
     if (signature_edit.value != signature.value) {
         post_update_signature(signature_edit.value);
     }

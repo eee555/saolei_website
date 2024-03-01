@@ -24,7 +24,7 @@ const refreshPic = () => {
 		.then(function (response) {
 			if (response.data.status == 100) {
 				hashkey.value = response.data.hashkey;
-				captchaUrl.value = process.env.VUE_APP_BASE_API + `/userprofile/captcha/image/` + hashkey.value;
+				captchaUrl.value = process.env.VUE_APP_BASE_API + `/userprofile/captcha/image/` + hashkey.value + "/";
 			} else if (response.data.status >= 101) {
 				ElMessage.error(response.data.msg);
 			}

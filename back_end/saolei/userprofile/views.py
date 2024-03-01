@@ -55,30 +55,34 @@ def user_login(request):
         # 用账号、密码登录
         user_login_form = UserLoginForm(data=request.POST)
         if user_login_form.is_valid():
-            # .cleaned_data 清洗出合法数据
             data = user_login_form.cleaned_data
-            # 检验账号、密码是否正确匹配数据库中的某个用户
-            # 如果均匹配则返回这个 user 对象
-            user = authenticate(
-                username=data['username'], password=data['password'])
-            # print(data)
-            # print(user)
-            if user:
-                # 将用户数据保存在 session 中，即实现了登录动作
-                login(request, user)
-                # response = http.JsonResponse({"code":0,"errmsg":"注册成功"})
-                # response.set_cookie("username",user.username,max_age=3600*24*14)
-                response['msg'] = {
-                    "id": user.id, "username": user.username, 
-                    "realname": user.realname, "is_banned": user.is_banned}
-                if 'user_id' in data and data['user_id'] != str(user.id):
-                    # 检测到小号
-                    logger.info(f'{data["user_id"][:50]} is diffrent from {str(user.id)}.')
-                return JsonResponse(response)
+
+            capt = data["captcha"]   # 用户提交的验证码
+            key = data["hashkey"]    # 验证码hash
+            response = {'status': 100, 'msg': None}
+            if judge_captcha(capt, key):
+                # 检验账号、密码是否正确匹配数据库中的某个用户
+                # 如果均匹配则返回这个 user 对象
+                user = authenticate(
+                    username=data['username'], password=data['password'])
+                if user:
+                    # 将用户数据保存在 session 中，即实现了登录动作
+                    login(request, user)
+                    response['msg'] = {
+                        "id": user.id, "username": user.username, 
+                        "realname": user.realname, "is_banned": user.is_banned}
+                    if 'user_id' in data and data['user_id'] != str(user.id):
+                        # 检测到小号
+                        logger.info(f'{data["user_id"][:50]} is diffrent from {str(user.id)}.')
+                    return JsonResponse(response)
+                else:
+                    return JsonResponse({'status': 105, 'msg': "账号或密码输入有误。请重新输入~"})
+            
             else:
-                response['status'] = 105
-                response['msg'] = "账号或密码输入有误。请重新输入~"
-                return JsonResponse(response)
+                return JsonResponse({'status': 104, 'msg': "验证码错误！"})
+            
+
+        
         else:
             response['status'] = 106
             response['msg'] = "账号或密码输入不合法"

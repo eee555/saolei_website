@@ -49,10 +49,11 @@ class UserUpdateAvatarForm(forms.ModelForm):
         else:
             self.user.left_avatar_n -= 1
         try:
-            if not veriry_image(avatar.read(), self.request.user.id, self.request.get_host()):
-                raise forms.ValidationError("头像违规！", code='invalid_avatar')
+            is_valid = veriry_image(avatar.read(), self.request.user.id, self.request.get_host())
         except:
             raise forms.ValidationError("网站已欠费，该功能暂停使用！", code='no_money')
+        if not is_valid:
+            raise forms.ValidationError("头像违规！", code='invalid_avatar')
         return avatar
     class Meta:
         model = User
@@ -81,10 +82,11 @@ class UserUpdateSignatureForm(forms.ModelForm):
         else:
             self.user.left_signature_n -= 1
         try:
-            if not veriry_text(signature, self.request.user.id, self.request.get_host()):
-                raise forms.ValidationError("个性签名违规！", code='invalid_signature')
+            is_valid = veriry_text(signature, self.request.user.id, self.request.get_host())
         except:
             raise forms.ValidationError("网站已欠费，该功能暂停使用！", code='no_money')
+        if not is_valid:
+            raise forms.ValidationError("个性签名违规！", code='invalid_signature')
         return signature
     class Meta:
         model = User
