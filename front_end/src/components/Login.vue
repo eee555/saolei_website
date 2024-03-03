@@ -30,7 +30,7 @@
             </el-form-item>
             <el-form-item>
                 <div style="display: flex;">
-                    <el-input v-model="valid_code" placeholder="验证码" prefix-icon="Key" class="code"></el-input>
+                    <el-input v-model.trim="valid_code" placeholder="验证码" prefix-icon="Key" class="code"></el-input>
                     &nbsp;
                     <ValidCode ref="refValidCode" :identifyCode="identifyCodeLog" />
                 </div>
@@ -42,7 +42,8 @@
                 <div style="color: red;">{{ hint_message }}</div>
             </el-form-item>
             <el-form-item>
-                <el-button type="primary" @click="login();">登录</el-button>
+                <el-button :disabled="(user_name && user_password && valid_code).length == 0"
+                 type="primary" @click="login();">登录</el-button>
             </el-form-item>
             <div @click="login_visibile = false; retrieve_visibile = true; login_status = LoginStatus.IsRetrieve;"
                 style="cursor: pointer;color: blue;">（找回密码）</div>
@@ -52,8 +53,8 @@
         @close='() => { if (login_status !== LoginStatus.IsLogin) { login_status = LoginStatus.NotLogin; } }'>
         <el-form size="default">
             <el-form-item>
-                <el-input v-model.trim="user_name_reg" placeholder="请输入用户昵称（唯一、登录凭证、无法修改）" prefix-icon="User" maxlength="20"
-                    show-word-limit id="register_user_name_form"></el-input>
+                <el-input v-model.trim="user_name_reg" placeholder="请输入用户昵称（唯一、登录凭证、无法修改）" prefix-icon="User"
+                    maxlength="20" show-word-limit id="register_user_name_form"></el-input>
             </el-form-item>
             <el-form-item>
                 <el-input v-model="user_email_reg" placeholder="请输入邮箱（唯一）" prefix-icon="Message" type="email"
@@ -72,16 +73,16 @@
                 </div>
             </el-form-item>
             <el-form-item>
-                <el-input v-model.trim="user_email_valid_code_reg" placeholder="请输入邮箱验证码" prefix-icon="Key" maxlength="6"
-                    :disabled="valid_code_reg.length < 4" id="register_email_valid_code_form"></el-input>
+                <el-input v-model.trim="user_email_valid_code_reg" placeholder="请输入邮箱验证码" prefix-icon="Key"
+                    maxlength="6" :disabled="valid_code_reg.length < 4" id="register_email_valid_code_form"></el-input>
             </el-form-item>
             <el-form-item>
                 <el-input v-model="user_password_reg" placeholder="请输入6-20位密码" show-password prefix-icon="Lock"
                     minlength="6" maxlength="20" id="register_user_password_form"></el-input>
             </el-form-item>
             <el-form-item>
-                <el-input v-model="user_password2_reg" placeholder="请输入确认密码" show-password prefix-icon="Lock" minlength="6"
-                    maxlength="20"></el-input>
+                <el-input v-model="user_password2_reg" placeholder="请输入确认密码" show-password prefix-icon="Lock"
+                    minlength="6" maxlength="20"></el-input>
             </el-form-item>
             <el-checkbox v-model="checkout_user_agreement" name="checkoutSecret">已阅读并同意
                 <a target="_blank" :href="AXIOS_BASE_URL + '/agreement.html'">新扫雷网用户协议</a>
@@ -91,7 +92,8 @@
                 <div style="color: red;">{{ hint_message }}</div>
             </el-form-item>
             <el-form-item>
-                <el-button type="primary" @click="register()">注册</el-button>
+                <el-button :disabled="(user_email_valid_code_reg && user_password_reg && user_password2_reg).length == 0"
+                    type="primary" @click="register()">注册</el-button>
             </el-form-item>
         </el-form>
     </el-dialog>
@@ -110,31 +112,32 @@
                     <ValidCode :identifyCode="identifyCodeReg" ref="refValidCode2" />
                     &nbsp;
                     <el-button link type="primary" @click="get_email_captcha('retrieve')"
-                    :disabled="valid_code_reg.length < 4">获取验证码</el-button>
+                        :disabled="valid_code_reg.length < 4">获取验证码</el-button>
                 </div>
             </el-form-item>
             <el-form-item>
                 <el-input v-model="user_email_valid_code_reg" placeholder="请输入邮箱验证码" prefix-icon="Key"
-                :disabled="valid_code_reg.length < 4" maxlength="6"></el-input>
+                    :disabled="valid_code_reg.length < 4" maxlength="6"></el-input>
             </el-form-item>
             <el-form-item>
                 <el-input v-model="user_password_reg" placeholder="请输入新的6-20位密码" show-password prefix-icon="Lock"
                     minlength="6" maxlength="20"></el-input>
             </el-form-item>
             <el-form-item>
-                <el-input v-model="user_password2_reg" placeholder="请输入确认密码" show-password prefix-icon="Lock" minlength="6"
-                    maxlength="20"></el-input>
+                <el-input v-model="user_password2_reg" placeholder="请输入确认密码" show-password prefix-icon="Lock"
+                    minlength="6" maxlength="20"></el-input>
             </el-form-item>
             <el-form-item>
                 <div style="color: red;">{{ hint_message }}</div>
             </el-form-item>
             <el-form-item>
-                <el-button type="primary" @click="retrieve()">确认修改密码</el-button>
+                <el-button :disabled="(user_email_valid_code_reg && user_password_reg && user_password2_reg).length == 0"
+                 type="primary" @click="retrieve()">确认修改密码</el-button>
             </el-form-item>
         </el-form>
     </el-dialog>
 </template>
-  
+
 <script lang="ts" setup>
 // 注册、登录、找回密码的弹框及右上方按钮
 import { onMounted, ref, Ref } from 'vue'
@@ -242,8 +245,14 @@ const login = () => {
     params.append('user_id', _id ? _id : "");
     params.append('username', user_name.value)
     params.append('password', user_password.value)
-    params.append('captcha', valid_code.value)
-    params.append('hashkey', refValidCode.value.hashkey)
+    if (valid_code.value) {
+        params.append('captcha', valid_code.value)
+        params.append('hashkey', refValidCode.value.hashkey)
+    } else {
+        params.append('captcha', "")
+        params.append('hashkey', "")
+    }
+
     proxy.$axios.post('/userprofile/login/',
         params,
     ).then(function (response) {
@@ -473,12 +482,3 @@ defineExpose({
     overflow: auto;
 } */
 </style>
-
-
-
-
-
-
-
-
-

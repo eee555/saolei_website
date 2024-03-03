@@ -7,6 +7,7 @@ from .forms import UserLoginForm, UserRegisterForm, UserRetrieveForm, EmailForm
 from captcha.models import CaptchaStore
 # from captcha.helpers import captcha_image_url
 import json
+import os
 # from django.views.generic import View
 # 引入验证登录的装饰器
 # from django.contrib.auth.decorators import login_required
@@ -80,13 +81,11 @@ def user_login(request):
             
             else:
                 return JsonResponse({'status': 104, 'msg': "验证码错误！"})
-            
 
-        
         else:
-            response['status'] = 106
-            response['msg'] = "账号或密码输入不合法"
-            return JsonResponse(response)
+
+            return JsonResponse({'status': 106, 'msg': "表单错误！"})
+        
     elif request.method == 'GET':
         return HttpResponse("别瞎玩")
         # user_login_form = UserLoginForm()
@@ -212,25 +211,46 @@ def set_staff(request):
     else:
         return HttpResponse("别瞎玩")
 
-# 【管理员】封禁用户
+# 【管理员】封禁用户。封禁后，用户可以登录，但不能上传录像、不能改任何个人信息
 # http://127.0.0.1:8000/userprofile/set_banned/?id=1&is_banned=True
 def set_banned(request):
     if request.user.is_staff and request.method == 'GET':
         user = UserProfile.objects.get(id=request.GET["id"])
-        user.is_banned = request.GET["is_banned"]
-        logger.info(f'{request.user.id} set_banned {request.GET["id"]} {request.GET["is_banned"]}')
         if user.is_staff:
             return HttpResponse("没有封禁管理员的权限！")
+        # user.is_banned = request.GET["is_banned"]
+        logger.info(f'{request.user.id} set_banned {request.GET["id"]} {request.GET["is_banned"]}')
         if request.GET["is_banned"] == "True":
             user.is_banned = True
             user.save()
-            return HttpResponse(f"封禁用户\"{user.realname}\"成功！")
+            return HttpResponse(f'封禁用户"{user.realname}"成功！')
         elif request.GET["is_banned"] == "False":
             user.is_banned = False
             user.save()
-            return HttpResponse(f"解封用户\"{user.realname}\"成功！")
+            return HttpResponse(f'解封用户"{user.realname}"成功！')
         else:
-            return HttpResponse("失败！is_banned需要为\"True或\"False")
+            return HttpResponse('失败！is_banned需要为"True"或"False"')
+    else:
+        return HttpResponse("别瞎玩")
+
+
+# 【管理员】删除用户的个人信息，从服务器磁盘上完全删除，但不影响是否封禁
+# http://127.0.0.1:8000/userprofile/del_user_info/?id=1
+def del_user_info(request):
+    if request.user.is_staff and request.method == 'GET':
+        user = UserProfile.objects.get(id=request.GET["id"])
+
+        logger.info(f'{request.user.id} del_user_info {request.GET["id"]}')
+        if user.is_staff:
+            return HttpResponse("没有删除管理员信息的权限！")
+
+        user.realname = ""
+        user.signature = ""
+        if user.avatar:
+            if os.path.isfile(user.avatar.path):
+                os.remove(user.avatar.path)
+        user.avatar = None
+
     else:
         return HttpResponse("别瞎玩")
 

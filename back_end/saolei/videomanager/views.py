@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .forms import UploadVideoForm
 from .models import VideoModel, ExpandVideoModel
+from .view_utils import update_personal_record, update_personal_record_stock
 from userprofile.models import UserProfile
 from django.http import HttpResponse, JsonResponse, FileResponse
 # from asgiref.sync import sync_to_async
@@ -96,7 +97,7 @@ def video_upload(request):
                                                                 "bv": video.bv,
                                                                 "bvs": video.bvs}, cls=ComplexEncoder))
                 update_personal_record(video)
-                update_video_num(request.user.userms, video)
+                update_video_num(video)
                 
 
             # review_video_ids = cache.hgetall("review_queue")
@@ -254,1150 +255,43 @@ def video_query_by_id(request):
 
 
 # 上传的录像进入数据库后，更新用户的录像数目
-def update_video_num(userms: UserMS, video: VideoModel):
+def update_video_num(video: VideoModel, add = True):
+    userms = video.player.userms
+    # add = True：新增录像；add = False：删除录像
     if video.mode == '00':
-        userms.video_num_std += 1
+        userms.video_num_std += 1 if add else -1
     elif video.mode == '12':
-        userms.video_num_nf += 1
+        userms.video_num_nf += 1 if add else -1
     elif video.mode == '05':
-        userms.video_num_ng += 1
+        userms.video_num_ng += 1 if add else -1
     elif video.mode == '11':
-        userms.video_num_dg += 1
+        userms.video_num_dg += 1 if add else -1
 
     if video.level == "b":
-        userms.video_num_beg += 1
+        userms.video_num_beg += 1 if add else -1
     elif video.level == 'i':
-        userms.video_num_int += 1
+        userms.video_num_int += 1 if add else -1
     elif video.level == 'e':
-        userms.video_num_exp += 1
+        userms.video_num_exp += 1 if add else -1
 
-    # 给高玩自动扩容
-    if video.mode == "00" and video.level == 'e':
-        if video.rtime < 100 and userms.video_num_limit < 200:
-            userms.video_num_limit = 200
-        if video.rtime < 60 and userms.video_num_limit < 500:
-            userms.video_num_limit = 500
-        if video.rtime < 50 and userms.video_num_limit < 600:
-            userms.video_num_limit = 600
-        if video.rtime < 40 and userms.video_num_limit < 800:
-            userms.video_num_limit = 800
-        if video.rtime < 30 and userms.video_num_limit < 1000:
-            userms.video_num_limit = 1000
+    if add:
+        # 给高玩自动扩容
+        if video.mode == "00" and video.level == 'e':
+            if video.rtime < 100 and userms.video_num_limit < 200:
+                userms.video_num_limit = 200
+            if video.rtime < 60 and userms.video_num_limit < 500:
+                userms.video_num_limit = 500
+            if video.rtime < 50 and userms.video_num_limit < 600:
+                userms.video_num_limit = 600
+            if video.rtime < 40 and userms.video_num_limit < 800:
+                userms.video_num_limit = 800
+            if video.rtime < 30 and userms.video_num_limit < 1000:
+                userms.video_num_limit = 1000
     
-    userms.save()
+    userms.save(update_fields=["video_num_limit", "video_num_total", "video_num_beg", "video_num_int", 
+                               "video_num_exp", "video_num_std", "video_num_nf", "video_num_ng", 
+                               "video_num_dg"])
 
-
-# 参数: 用户、拓展录像数据
-def update_personal_record(video_i: VideoModel):
-    e_video = video_i.video
-    user = video_i.player
-    ms_user = user.userms
-
-    if video_i.mode == "12":
-        video_i.mode = "00"
-    if video_i.mode == "00":
-        if video_i.level == "b":
-            if video_i.rtime < ms_user.b_time_std:
-                ms_user.b_time_std = video_i.rtime
-                ms_user.b_time_id_std = e_video.id
-                if ms_user.b_time_std < 999.998 and ms_user.i_time_std < 999.998 and ms_user.e_time_std < 999.998:
-                    key = f"player_time_std_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", float(ms_user.b_time_std))
-                    cache.hset(key, "b_id", float(ms_user.b_time_id_std))
-                    cache.hset(key, "i", float(ms_user.i_time_std))
-                    cache.hset(key, "i_id", float(ms_user.i_time_id_std))
-                    cache.hset(key, "e", float(ms_user.e_time_std))
-                    cache.hset(key, "e_id", float(ms_user.e_time_id_std))
-                    s = float(ms_user.b_time_std + ms_user.i_time_std + ms_user.e_time_std)
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_time_std_ids", {ms_user.id: s}) 
-                    # if not cache.lindex('player_time_std_ids', ms_user.id):
-                    #     cache.lpush('player_time_std_ids', ms_user.id)
-            if video_i.bvs > ms_user.b_bvs_std:
-                ms_user.b_bvs_std = video_i.bvs
-                ms_user.b_bvs_id_std = e_video.id
-                if ms_user.b_bvs_std > 0.001 and ms_user.i_bvs_std > 0.001 and ms_user.e_bvs_std > 0.001:
-                    key = f"player_bvs_std_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_bvs_std)
-                    cache.hset(key, "b_id", ms_user.b_bvs_id_std)
-                    cache.hset(key, "i", ms_user.i_bvs_std)
-                    cache.hset(key, "i_id", ms_user.i_bvs_id_std)
-                    cache.hset(key, "e", ms_user.e_bvs_std)
-                    cache.hset(key, "e_id", ms_user.e_bvs_id_std)
-                    s = ms_user.b_bvs_std + ms_user.i_bvs_std + ms_user.e_bvs_std
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_bvs_std_ids", {ms_user.id: s})
-                    # if not cache.lindex('player_bvs_std_ids', ms_user.id):
-                    #     cache.lpush('player_bvs_std_ids', ms_user.id)
-            if e_video.stnb > ms_user.b_stnb_std:
-                ms_user.b_stnb_std = e_video.stnb
-                ms_user.b_stnb_id_std = e_video.id
-                if ms_user.b_stnb_std > 0.001 and ms_user.i_stnb_std > 0.001 and ms_user.e_stnb_std > 0.001:
-                    key = f"player_stnb_std_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_stnb_std)
-                    cache.hset(key, "b_id", ms_user.b_stnb_id_std)
-                    cache.hset(key, "i", ms_user.i_stnb_std)
-                    cache.hset(key, "i_id", ms_user.i_stnb_id_std)
-                    cache.hset(key, "e", ms_user.e_stnb_std)
-                    cache.hset(key, "e_id", ms_user.e_stnb_id_std)
-                    s = ms_user.b_stnb_std + ms_user.i_stnb_std + ms_user.e_stnb_std
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_stnb_std_ids", {ms_user.id: s})
-                    # cache.hset(key, "sum", ms_user.b_stnb_std + ms_user.i_stnb_std + ms_user.e_stnb_std)
-                    # if not cache.lindex('player_stnb_std_ids', ms_user.id):
-                    #     cache.lpush('player_stnb_std_ids', ms_user.id)
-            if e_video.ioe > ms_user.b_ioe_std:
-                ms_user.b_ioe_std = e_video.ioe
-                ms_user.b_ioe_id_std = e_video.id
-                if ms_user.b_ioe_std > 0.001 and ms_user.i_ioe_std > 0.001 and ms_user.e_ioe_std > 0.001:
-                    key = f"player_ioe_std_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_ioe_std)
-                    cache.hset(key, "b_id", ms_user.b_ioe_id_std)
-                    cache.hset(key, "i", ms_user.i_ioe_std)
-                    cache.hset(key, "i_id", ms_user.i_ioe_id_std)
-                    cache.hset(key, "e", ms_user.e_ioe_std)
-                    cache.hset(key, "e_id", ms_user.e_ioe_id_std)
-                    # cache.hset(key, "sum", ms_user.b_ioe_std + ms_user.i_ioe_std + ms_user.e_ioe_std)
-                    # if not cache.lindex('player_ioe_std_ids', ms_user.id):
-                    #     cache.lpush('player_ioe_std_ids', ms_user.id)
-                    s = ms_user.b_ioe_std + ms_user.i_ioe_std + ms_user.e_ioe_std
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_ioe_std_ids", {ms_user.id: s})
-            if e_video.path < ms_user.b_path_std:
-                ms_user.b_path_std = e_video.path
-                ms_user.b_path_id_std = e_video.id
-                if ms_user.b_path_std < 99999.8 and ms_user.i_path_std < 99999.8 and ms_user.e_path_std < 99999.8:
-                    key = f"player_path_std_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_path_std)
-                    cache.hset(key, "b_id", ms_user.b_path_id_std)
-                    cache.hset(key, "i", ms_user.i_path_std)
-                    cache.hset(key, "i_id", ms_user.i_path_id_std)
-                    cache.hset(key, "e", ms_user.e_path_std)
-                    cache.hset(key, "e_id", ms_user.e_path_id_std)
-                    # cache.hset(key, "sum", ms_user.b_path_std + ms_user.i_path_std + ms_user.e_path_std)
-                    # if not cache.lindex('player_path_std_ids', ms_user.id):
-                    #     cache.lpush('player_path_std_ids', ms_user.id)
-                    s = ms_user.b_path_std + ms_user.i_path_std + ms_user.e_path_std
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_path_std_ids", {ms_user.id: s})
-        if video_i.level == "i":
-            if video_i.rtime < ms_user.i_time_std:
-                ms_user.i_time_std = video_i.rtime
-                ms_user.i_time_id_std = e_video.id
-                if ms_user.b_time_std < 999.998 and ms_user.i_time_std < 999.998 and ms_user.e_time_std < 999.998:
-                    key = f"player_time_std_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", float(ms_user.b_time_std))
-                    cache.hset(key, "b_id", float(ms_user.b_time_id_std))
-                    cache.hset(key, "i", float(ms_user.i_time_std))
-                    cache.hset(key, "i_id", float(ms_user.i_time_id_std))
-                    cache.hset(key, "e", float(ms_user.e_time_std))
-                    cache.hset(key, "e_id", float(ms_user.e_time_id_std))
-                    # cache.hset(key, "sum", float(ms_user.b_time_std + ms_user.i_time_std + ms_user.e_time_std))
-                    # if not cache.lindex('player_time_std_ids', ms_user.id):
-                    #     cache.lpush('player_time_std_ids', ms_user.id)
-                    s = float(ms_user.b_time_std + ms_user.i_time_std + ms_user.e_time_std)
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_time_std_ids", {ms_user.id: s})
-            if video_i.bvs > ms_user.i_bvs_std:
-                ms_user.i_bvs_std = video_i.bvs
-                ms_user.i_bvs_id_std = e_video.id
-                if ms_user.b_bvs_std > 0.001 and ms_user.i_bvs_std > 0.001 and ms_user.e_bvs_std > 0.001:
-                    key = f"player_bvs_std_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_bvs_std)
-                    cache.hset(key, "b_id", ms_user.b_bvs_id_std)
-                    cache.hset(key, "i", ms_user.i_bvs_std)
-                    cache.hset(key, "i_id", ms_user.i_bvs_id_std)
-                    cache.hset(key, "e", ms_user.e_bvs_std)
-                    cache.hset(key, "e_id", ms_user.e_bvs_id_std)
-                    # cache.hset(key, "sum", ms_user.b_bvs_std + ms_user.i_bvs_std + ms_user.e_bvs_std)
-                    # if not cache.lindex('player_bvs_std_ids', ms_user.id):
-                    #     cache.lpush('player_bvs_std_ids', ms_user.id)
-                    s = ms_user.b_bvs_std + ms_user.i_bvs_std + ms_user.e_bvs_std
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_bvs_std_ids", {ms_user.id: s})
-            if e_video.stnb > ms_user.i_stnb_std:
-                ms_user.i_stnb_std = e_video.stnb
-                ms_user.i_stnb_id_std = e_video.id
-                if ms_user.b_stnb_std > 0.001 and ms_user.i_stnb_std > 0.001 and ms_user.e_stnb_std > 0.001:
-                    key = f"player_stnb_std_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_stnb_std)
-                    cache.hset(key, "b_id", ms_user.b_stnb_id_std)
-                    cache.hset(key, "i", ms_user.i_stnb_std)
-                    cache.hset(key, "i_id", ms_user.i_stnb_id_std)
-                    cache.hset(key, "e", ms_user.e_stnb_std)
-                    cache.hset(key, "e_id", ms_user.e_stnb_id_std)
-                    # cache.hset(key, "sum", ms_user.b_stnb_std + ms_user.i_stnb_std + ms_user.e_stnb_std)
-                    # if not cache.lindex('player_stnb_std_ids', ms_user.id):
-                    #     cache.lpush('player_stnb_std_ids', ms_user.id)
-                    s = ms_user.b_stnb_std + ms_user.i_stnb_std + ms_user.e_stnb_std
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_stnb_std_ids", {ms_user.id: s})
-            if e_video.ioe > ms_user.i_ioe_std:
-                ms_user.i_ioe_std = e_video.ioe
-                ms_user.i_ioe_id_std = e_video.id
-                if ms_user.b_ioe_std > 0.001 and ms_user.i_ioe_std > 0.001 and ms_user.e_ioe_std > 0.001:
-                    key = f"player_ioe_std_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_ioe_std)
-                    cache.hset(key, "b_id", ms_user.b_ioe_id_std)
-                    cache.hset(key, "i", ms_user.i_ioe_std)
-                    cache.hset(key, "i_id", ms_user.i_ioe_id_std)
-                    cache.hset(key, "e", ms_user.e_ioe_std)
-                    cache.hset(key, "e_id", ms_user.e_ioe_id_std)
-                    # cache.hset(key, "sum", ms_user.b_ioe_std + ms_user.i_ioe_std + ms_user.e_ioe_std)
-                    # if not cache.lindex('player_ioe_std_ids', ms_user.id):
-                    #     cache.lpush('player_ioe_std_ids', ms_user.id)
-                    s = ms_user.b_ioe_std + ms_user.i_ioe_std + ms_user.e_ioe_std
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_ioe_std_ids", {ms_user.id: s})
-            if e_video.path < ms_user.i_path_std:
-                ms_user.i_path_std = e_video.path
-                ms_user.i_path_id_std = e_video.id
-                if ms_user.b_path_std < 99999.8 and ms_user.i_path_std < 99999.8 and ms_user.e_path_std < 99999.8:
-                    key = f"player_path_std_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_path_std)
-                    cache.hset(key, "b_id", ms_user.b_path_id_std)
-                    cache.hset(key, "i", ms_user.i_path_std)
-                    cache.hset(key, "i_id", ms_user.i_path_id_std)
-                    cache.hset(key, "e", ms_user.e_path_std)
-                    cache.hset(key, "e_id", ms_user.e_path_id_std)
-                    # cache.hset(key, "sum", ms_user.b_path_std + ms_user.i_path_std + ms_user.e_path_std)
-                    # if not cache.lindex('player_path_std_ids', ms_user.id):
-                    #     cache.lpush('player_path_std_ids', ms_user.id)
-                    s = ms_user.b_path_std + ms_user.i_path_std + ms_user.e_path_std
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_path_std_ids", {ms_user.id: s})
-        if video_i.level == "e":
-            if video_i.rtime < ms_user.e_time_std:
-                ms_user.e_time_std = video_i.rtime
-                ms_user.e_time_id_std = e_video.id
-                if ms_user.b_time_std < 999.998 and ms_user.i_time_std < 999.998 and ms_user.e_time_std < 999.998:
-                    key = f"player_time_std_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", float(ms_user.b_time_std))
-                    cache.hset(key, "b_id", float(ms_user.b_time_id_std))
-                    cache.hset(key, "i", float(ms_user.i_time_std))
-                    cache.hset(key, "i_id", float(ms_user.i_time_id_std))
-                    cache.hset(key, "e", float(ms_user.e_time_std))
-                    cache.hset(key, "e_id", float(ms_user.e_time_id_std))
-                    # cache.hset(key, "sum", float(ms_user.b_time_std + ms_user.i_time_std + ms_user.e_time_std))
-                    # if not cache.lindex('player_time_std_ids', ms_user.id):
-                    #     cache.lpush('player_time_std_ids', ms_user.id)
-                    s = float(ms_user.b_time_std + ms_user.i_time_std + ms_user.e_time_std)
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_time_std_ids", {ms_user.id: s})
-            if video_i.bvs > ms_user.e_bvs_std:
-                ms_user.e_bvs_std = video_i.bvs
-                ms_user.e_bvs_id_std = e_video.id
-                if ms_user.b_bvs_std > 0.001 and ms_user.i_bvs_std > 0.001 and ms_user.e_bvs_std > 0.001:
-                    key = f"player_bvs_std_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_bvs_std)
-                    cache.hset(key, "b_id", ms_user.b_bvs_id_std)
-                    cache.hset(key, "i", ms_user.i_bvs_std)
-                    cache.hset(key, "i_id", ms_user.i_bvs_id_std)
-                    cache.hset(key, "e", ms_user.e_bvs_std)
-                    cache.hset(key, "e_id", ms_user.e_bvs_id_std)
-                    # cache.hset(key, "sum", ms_user.b_bvs_std + ms_user.i_bvs_std + ms_user.e_bvs_std)
-                    # if not cache.lindex('player_bvs_std_ids', ms_user.id):
-                    #     cache.lpush('player_bvs_std_ids', ms_user.id)
-                    s = ms_user.b_bvs_std + ms_user.i_bvs_std + ms_user.e_bvs_std
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_bvs_std_ids", {ms_user.id: s})
-            if e_video.stnb > ms_user.e_stnb_std:
-                ms_user.e_stnb_std = e_video.stnb
-                ms_user.e_stnb_id_std = e_video.id
-                if ms_user.b_stnb_std > 0.001 and ms_user.i_stnb_std > 0.001 and ms_user.e_stnb_std > 0.001:
-                    key = f"player_stnb_std_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_stnb_std)
-                    cache.hset(key, "b_id", ms_user.b_stnb_id_std)
-                    cache.hset(key, "i", ms_user.i_stnb_std)
-                    cache.hset(key, "i_id", ms_user.i_stnb_id_std)
-                    cache.hset(key, "e", ms_user.e_stnb_std)
-                    cache.hset(key, "e_id", ms_user.e_stnb_id_std)
-                    # cache.hset(key, "sum", ms_user.b_stnb_std + ms_user.i_stnb_std + ms_user.e_stnb_std)
-                    # if not cache.lindex('player_stnb_std_ids', ms_user.id):
-                    #     cache.lpush('player_stnb_std_ids', ms_user.id)
-                    s = ms_user.b_stnb_std + ms_user.i_stnb_std + ms_user.e_stnb_std
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_stnb_std_ids", {ms_user.id: s})
-            if e_video.ioe > ms_user.e_ioe_std:
-                ms_user.e_ioe_std = e_video.ioe
-                ms_user.e_ioe_id_std = e_video.id
-                if ms_user.b_ioe_std > 0.001 and ms_user.i_ioe_std > 0.001 and ms_user.e_ioe_std > 0.001:
-                    key = f"player_ioe_std_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_ioe_std)
-                    cache.hset(key, "b_id", ms_user.b_ioe_id_std)
-                    cache.hset(key, "i", ms_user.i_ioe_std)
-                    cache.hset(key, "i_id", ms_user.i_ioe_id_std)
-                    cache.hset(key, "e", ms_user.e_ioe_std)
-                    cache.hset(key, "e_id", ms_user.e_ioe_id_std)
-                    # cache.hset(key, "sum", ms_user.b_ioe_std + ms_user.i_ioe_std + ms_user.e_ioe_std)
-                    # if not cache.lindex('player_ioe_std_ids', ms_user.id):
-                    #     cache.lpush('player_ioe_std_ids', ms_user.id)
-                    s = ms_user.b_ioe_std + ms_user.i_ioe_std + ms_user.e_ioe_std
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_ioe_std_ids", {ms_user.id: s})
-            if e_video.path < ms_user.e_path_std:
-                ms_user.e_path_std = e_video.path
-                ms_user.e_path_id_std = e_video.id
-                if ms_user.b_path_std < 99999.8 and ms_user.i_path_std < 99999.8 and ms_user.e_path_std < 99999.8:
-                    key = f"player_path_std_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_path_std)
-                    cache.hset(key, "b_id", ms_user.b_path_id_std)
-                    cache.hset(key, "i", ms_user.i_path_std)
-                    cache.hset(key, "i_id", ms_user.i_path_id_std)
-                    cache.hset(key, "e", ms_user.e_path_std)
-                    cache.hset(key, "e_id", ms_user.e_path_id_std)
-                    # cache.hset(key, "sum", ms_user.b_path_std + ms_user.i_path_std + ms_user.e_path_std)
-                    # if not cache.lindex('player_path_std_ids', ms_user.id):
-                    #     cache.lpush('player_path_std_ids', ms_user.id)
-                    s = ms_user.b_path_std + ms_user.i_path_std + ms_user.e_path_std
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_path_std_ids", {ms_user.id: s})
-
-    if video_i.mode == "00":
-        if e_video.flag == 0:
-            video_i.mode = "12"
-
-    if video_i.mode == "12":
-        if video_i.level == "b":
-            if video_i.rtime < ms_user.b_time_nf:
-                ms_user.b_time_nf = video_i.rtime
-                ms_user.b_time_id_nf = e_video.id
-                if ms_user.b_time_nf < 999.998 and ms_user.i_time_nf < 999.998 and ms_user.e_time_nf < 999.998:
-                    key = f"player_time_nf_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", float(ms_user.b_time_nf))
-                    cache.hset(key, "b_id", float(ms_user.b_time_id_nf))
-                    cache.hset(key, "i", float(ms_user.i_time_nf))
-                    cache.hset(key, "i_id", float(ms_user.i_time_id_nf))
-                    cache.hset(key, "e", float(ms_user.e_time_nf))
-                    cache.hset(key, "e_id", float(ms_user.e_time_id_nf))
-                    # cache.hset(key, "sum", float(ms_user.b_time_nf + ms_user.i_time_nf + ms_user.e_time_nf))
-                    # if not cache.lindex('player_time_nf_ids', ms_user.id):
-                    #     cache.lpush('player_time_nf_ids', ms_user.id)
-                    s = float(ms_user.b_time_nf + ms_user.i_time_nf + ms_user.e_time_nf)
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_time_nf_ids", {ms_user.id: s})
-            if video_i.bvs > ms_user.b_bvs_nf:
-                ms_user.b_bvs_nf = video_i.bvs
-                ms_user.b_bvs_id_nf = e_video.id
-                if ms_user.b_bvs_nf > 0.001 and ms_user.i_bvs_nf > 0.001 and ms_user.e_bvs_nf > 0.001:
-                    key = f"player_bvs_nf_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_bvs_nf)
-                    cache.hset(key, "b_id", ms_user.b_bvs_id_nf)
-                    cache.hset(key, "i", ms_user.i_bvs_nf)
-                    cache.hset(key, "i_id", ms_user.i_bvs_id_nf)
-                    cache.hset(key, "e", ms_user.e_bvs_nf)
-                    cache.hset(key, "e_id", ms_user.e_bvs_id_nf)
-                    # cache.hset(key, "sum", ms_user.b_bvs_nf + ms_user.i_bvs_nf + ms_user.e_bvs_nf)
-                    # if not cache.lindex('player_bvs_nf_ids', ms_user.id):
-                    #     cache.lpush('player_bvs_nf_ids', ms_user.id)
-                    s = ms_user.b_bvs_nf + ms_user.i_bvs_nf + ms_user.e_bvs_nf
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_bvs_nf_ids", {ms_user.id: s})
-            if e_video.stnb > ms_user.b_stnb_nf:
-                ms_user.b_stnb_nf = e_video.stnb
-                ms_user.b_stnb_id_nf = e_video.id
-                if ms_user.b_stnb_nf > 0.001 and ms_user.i_stnb_nf > 0.001 and ms_user.e_stnb_nf > 0.001:
-                    key = f"player_stnb_nf_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_stnb_nf)
-                    cache.hset(key, "b_id", ms_user.b_stnb_id_nf)
-                    cache.hset(key, "i", ms_user.i_stnb_nf)
-                    cache.hset(key, "i_id", ms_user.i_stnb_id_nf)
-                    cache.hset(key, "e", ms_user.e_stnb_nf)
-                    cache.hset(key, "e_id", ms_user.e_stnb_id_nf)
-                    # cache.hset(key, "sum", ms_user.b_stnb_nf + ms_user.i_stnb_nf + ms_user.e_stnb_nf)
-                    # if not cache.lindex('player_stnb_nf_ids', ms_user.id):
-                    #     cache.lpush('player_stnb_nf_ids', ms_user.id)
-                    s = ms_user.b_stnb_nf + ms_user.i_stnb_nf + ms_user.e_stnb_nf
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_stnb_nf_ids", {ms_user.id: s})
-            if e_video.ioe > ms_user.b_ioe_nf:
-                ms_user.b_ioe_nf = e_video.ioe
-                ms_user.b_ioe_id_nf = e_video.id
-                if ms_user.b_ioe_nf > 0.001 and ms_user.i_ioe_nf > 0.001 and ms_user.e_ioe_nf > 0.001:
-                    key = f"player_ioe_nf_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_ioe_nf)
-                    cache.hset(key, "b_id", ms_user.b_ioe_id_nf)
-                    cache.hset(key, "i", ms_user.i_ioe_nf)
-                    cache.hset(key, "i_id", ms_user.i_ioe_id_nf)
-                    cache.hset(key, "e", ms_user.e_ioe_nf)
-                    cache.hset(key, "e_id", ms_user.e_ioe_id_nf)
-                    # cache.hset(key, "sum", ms_user.b_ioe_nf + ms_user.i_ioe_nf + ms_user.e_ioe_nf)
-                    # if not cache.lindex('player_ioe_nf_ids', ms_user.id):
-                    #     cache.lpush('player_ioe_nf_ids', ms_user.id)
-                    s = ms_user.b_ioe_nf + ms_user.i_ioe_nf + ms_user.e_ioe_nf
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_ioe_nf_ids", {ms_user.id: s})
-            if e_video.path < ms_user.b_path_nf:
-                ms_user.b_path_nf = e_video.path
-                ms_user.b_path_id_nf = e_video.id
-                if ms_user.b_path_nf < 99999.8 and ms_user.i_path_nf < 99999.8 and ms_user.e_path_nf < 99999.8:
-                    key = f"player_path_nf_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_path_nf)
-                    cache.hset(key, "b_id", ms_user.b_path_id_nf)
-                    cache.hset(key, "i", ms_user.i_path_nf)
-                    cache.hset(key, "i_id", ms_user.i_path_id_nf)
-                    cache.hset(key, "e", ms_user.e_path_nf)
-                    cache.hset(key, "e_id", ms_user.e_path_id_nf)
-                    # cache.hset(key, "sum", ms_user.b_path_nf + ms_user.i_path_nf + ms_user.e_path_nf)
-                    # if not cache.lindex('player_path_nf_ids', ms_user.id):
-                    #     cache.lpush('player_path_nf_ids', ms_user.id)
-                    s = ms_user.b_path_nf + ms_user.i_path_nf + ms_user.e_path_nf
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_path_nf_ids", {ms_user.id: s})
-        if video_i.level == "i":
-            if video_i.rtime < ms_user.i_time_nf:
-                ms_user.i_time_nf = video_i.rtime
-                ms_user.i_time_id_nf = e_video.id
-                if ms_user.b_time_nf < 999.998 and ms_user.i_time_nf < 999.998 and ms_user.e_time_nf < 999.998:
-                    key = f"player_time_nf_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", float(ms_user.b_time_nf))
-                    cache.hset(key, "b_id", float(ms_user.b_time_id_nf))
-                    cache.hset(key, "i", float(ms_user.i_time_nf))
-                    cache.hset(key, "i_id", float(ms_user.i_time_id_nf))
-                    cache.hset(key, "e", float(ms_user.e_time_nf))
-                    cache.hset(key, "e_id", float(ms_user.e_time_id_nf))
-                    # cache.hset(key, "sum", float(ms_user.b_time_nf + ms_user.i_time_nf + ms_user.e_time_nf))
-                    # if not cache.lindex('player_time_nf_ids', ms_user.id):
-                    #     cache.lpush('player_time_nf_ids', ms_user.id)
-                    s = float(ms_user.b_time_nf + ms_user.i_time_nf + ms_user.e_time_nf)
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_time_nf_ids", {ms_user.id: s})
-            if video_i.bvs > ms_user.i_bvs_nf:
-                ms_user.i_bvs_nf = video_i.bvs
-                ms_user.i_bvs_id_nf = e_video.id
-                if ms_user.b_bvs_nf > 0.001 and ms_user.i_bvs_nf > 0.001 and ms_user.e_bvs_nf > 0.001:
-                    key = f"player_bvs_nf_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_bvs_nf)
-                    cache.hset(key, "b_id", ms_user.b_bvs_id_nf)
-                    cache.hset(key, "i", ms_user.i_bvs_nf)
-                    cache.hset(key, "i_id", ms_user.i_bvs_id_nf)
-                    cache.hset(key, "e", ms_user.e_bvs_nf)
-                    cache.hset(key, "e_id", ms_user.e_bvs_id_nf)
-                    # cache.hset(key, "sum", ms_user.b_bvs_nf + ms_user.i_bvs_nf + ms_user.e_bvs_nf)
-                    # if not cache.lindex('player_bvs_nf_ids', ms_user.id):
-                    #     cache.lpush('player_bvs_nf_ids', ms_user.id)
-                    s = ms_user.b_bvs_nf + ms_user.i_bvs_nf + ms_user.e_bvs_nf
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_bvs_nf_ids", {ms_user.id: s})
-            if e_video.stnb > ms_user.i_stnb_nf:
-                ms_user.i_stnb_nf = e_video.stnb
-                ms_user.i_stnb_id_nf = e_video.id
-                if ms_user.b_stnb_nf > 0.001 and ms_user.i_stnb_nf > 0.001 and ms_user.e_stnb_nf > 0.001:
-                    key = f"player_stnb_nf_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_stnb_nf)
-                    cache.hset(key, "b_id", ms_user.b_stnb_id_nf)
-                    cache.hset(key, "i", ms_user.i_stnb_nf)
-                    cache.hset(key, "i_id", ms_user.i_stnb_id_nf)
-                    cache.hset(key, "e", ms_user.e_stnb_nf)
-                    cache.hset(key, "e_id", ms_user.e_stnb_id_nf)
-                    # cache.hset(key, "sum", ms_user.b_stnb_nf + ms_user.i_stnb_nf + ms_user.e_stnb_nf)
-                    # if not cache.lindex('player_stnb_nf_ids', ms_user.id):
-                    #     cache.lpush('player_stnb_nf_ids', ms_user.id)
-                    s = ms_user.b_stnb_nf + ms_user.i_stnb_nf + ms_user.e_stnb_nf
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_stnb_nf_ids", {ms_user.id: s})
-            if e_video.ioe > ms_user.i_ioe_nf:
-                ms_user.i_ioe_nf = e_video.ioe
-                ms_user.i_ioe_id_nf = e_video.id
-                if ms_user.b_ioe_nf > 0.001 and ms_user.i_ioe_nf > 0.001 and ms_user.e_ioe_nf > 0.001:
-                    key = f"player_ioe_nf_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_ioe_nf)
-                    cache.hset(key, "b_id", ms_user.b_ioe_id_nf)
-                    cache.hset(key, "i", ms_user.i_ioe_nf)
-                    cache.hset(key, "i_id", ms_user.i_ioe_id_nf)
-                    cache.hset(key, "e", ms_user.e_ioe_nf)
-                    cache.hset(key, "e_id", ms_user.e_ioe_id_nf)
-                    # cache.hset(key, "sum", ms_user.b_ioe_nf + ms_user.i_ioe_nf + ms_user.e_ioe_nf)
-                    # if not cache.lindex('player_ioe_nf_ids', ms_user.id):
-                    #     cache.lpush('player_ioe_nf_ids', ms_user.id)
-                    s = ms_user.b_ioe_nf + ms_user.i_ioe_nf + ms_user.e_ioe_nf
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_ioe_nf_ids", {ms_user.id: s})
-            if e_video.path < ms_user.i_path_nf:
-                ms_user.i_path_nf = e_video.path
-                ms_user.i_path_id_nf = e_video.id
-                if ms_user.b_path_nf < 99999.8 and ms_user.i_path_nf < 99999.8 and ms_user.e_path_nf < 99999.8:
-                    key = f"player_path_nf_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_path_nf)
-                    cache.hset(key, "b_id", ms_user.b_path_id_nf)
-                    cache.hset(key, "i", ms_user.i_path_nf)
-                    cache.hset(key, "i_id", ms_user.i_path_id_nf)
-                    cache.hset(key, "e", ms_user.e_path_nf)
-                    cache.hset(key, "e_id", ms_user.e_path_id_nf)
-                    # cache.hset(key, "sum", ms_user.b_path_nf + ms_user.i_path_nf + ms_user.e_path_nf)
-                    # if not cache.lindex('player_path_nf_ids', ms_user.id):
-                    #     cache.lpush('player_path_nf_ids', ms_user.id)
-                    s = ms_user.b_path_nf + ms_user.i_path_nf + ms_user.e_path_nf
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_path_nf_ids", {ms_user.id: s})
-        if video_i.level == "e":
-            if video_i.rtime < ms_user.e_time_nf:
-                ms_user.e_time_nf = video_i.rtime
-                ms_user.e_time_id_nf = e_video.id
-                if ms_user.b_time_nf < 999.998 and ms_user.i_time_nf < 999.998 and ms_user.e_time_nf < 999.998:
-                    key = f"player_time_nf_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", float(ms_user.b_time_nf))
-                    cache.hset(key, "b_id", float(ms_user.b_time_id_nf))
-                    cache.hset(key, "i", float(ms_user.i_time_nf))
-                    cache.hset(key, "i_id", float(ms_user.i_time_id_nf))
-                    cache.hset(key, "e", float(ms_user.e_time_nf))
-                    cache.hset(key, "e_id", float(ms_user.e_time_id_nf))
-                    # cache.hset(key, "sum", float(ms_user.b_time_nf + ms_user.i_time_nf + ms_user.e_time_nf))
-                    # if not cache.lindex('player_time_nf_ids', ms_user.id):
-                    #     cache.lpush('player_time_nf_ids', ms_user.id)
-                    s = float(ms_user.b_time_nf + ms_user.i_time_nf + ms_user.e_time_nf)
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_time_nf_ids", {ms_user.id: s})
-            if video_i.bvs > ms_user.e_bvs_nf:
-                ms_user.e_bvs_nf = video_i.bvs
-                ms_user.e_bvs_id_nf = e_video.id
-                if ms_user.b_bvs_nf > 0.001 and ms_user.i_bvs_nf > 0.001 and ms_user.e_bvs_nf > 0.001:
-                    key = f"player_bvs_nf_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_bvs_nf)
-                    cache.hset(key, "b_id", ms_user.b_bvs_id_nf)
-                    cache.hset(key, "i", ms_user.i_bvs_nf)
-                    cache.hset(key, "i_id", ms_user.i_bvs_id_nf)
-                    cache.hset(key, "e", ms_user.e_bvs_nf)
-                    cache.hset(key, "e_id", ms_user.e_bvs_id_nf)
-                    # cache.hset(key, "sum", ms_user.b_bvs_nf + ms_user.i_bvs_nf + ms_user.e_bvs_nf)
-                    # if not cache.lindex('player_bvs_nf_ids', ms_user.id):
-                    #     cache.lpush('player_bvs_nf_ids', ms_user.id)
-                    s = ms_user.b_bvs_nf + ms_user.i_bvs_nf + ms_user.e_bvs_nf
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_bvs_nf_ids", {ms_user.id: s})
-            if e_video.stnb > ms_user.e_stnb_nf:
-                ms_user.e_stnb_nf = e_video.stnb
-                ms_user.e_stnb_id_nf = e_video.id
-                if ms_user.b_stnb_nf > 0.001 and ms_user.i_stnb_nf > 0.001 and ms_user.e_stnb_nf > 0.001:
-                    key = f"player_stnb_nf_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_stnb_nf)
-                    cache.hset(key, "b_id", ms_user.b_stnb_id_nf)
-                    cache.hset(key, "i", ms_user.i_stnb_nf)
-                    cache.hset(key, "i_id", ms_user.i_stnb_id_nf)
-                    cache.hset(key, "e", ms_user.e_stnb_nf)
-                    cache.hset(key, "e_id", ms_user.e_stnb_id_nf)
-                    # cache.hset(key, "sum", ms_user.b_stnb_nf + ms_user.i_stnb_nf + ms_user.e_stnb_nf)
-                    # if not cache.lindex('player_stnb_nf_ids', ms_user.id):
-                    #     cache.lpush('player_stnb_nf_ids', ms_user.id)
-                    s = ms_user.b_stnb_nf + ms_user.i_stnb_nf + ms_user.e_stnb_nf
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_stnb_nf_ids", {ms_user.id: s})
-            if e_video.ioe > ms_user.e_ioe_nf:
-                ms_user.e_ioe_nf = e_video.ioe
-                ms_user.e_ioe_id_nf = e_video.id
-                if ms_user.b_ioe_nf > 0.001 and ms_user.i_ioe_nf > 0.001 and ms_user.e_ioe_nf > 0.001:
-                    key = f"player_ioe_nf_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_ioe_nf)
-                    cache.hset(key, "b_id", ms_user.b_ioe_id_nf)
-                    cache.hset(key, "i", ms_user.i_ioe_nf)
-                    cache.hset(key, "i_id", ms_user.i_ioe_id_nf)
-                    cache.hset(key, "e", ms_user.e_ioe_nf)
-                    cache.hset(key, "e_id", ms_user.e_ioe_id_nf)
-                    # cache.hset(key, "sum", ms_user.b_ioe_nf + ms_user.i_ioe_nf + ms_user.e_ioe_nf)
-                    # if not cache.lindex('player_ioe_nf_ids', ms_user.id):
-                    #     cache.lpush('player_ioe_nf_ids', ms_user.id)
-                    s = ms_user.b_ioe_nf + ms_user.i_ioe_nf + ms_user.e_ioe_nf
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_ioe_nf_ids", {ms_user.id: s})
-            if e_video.path < ms_user.e_path_nf:
-                ms_user.e_path_nf = e_video.path
-                ms_user.e_path_id_nf = e_video.id
-                if ms_user.b_path_nf < 99999.8 and ms_user.i_path_nf < 99999.8 and ms_user.e_path_nf < 99999.8:
-                    key = f"player_path_nf_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_path_nf)
-                    cache.hset(key, "b_id", ms_user.b_path_id_nf)
-                    cache.hset(key, "i", ms_user.i_path_nf)
-                    cache.hset(key, "i_id", ms_user.i_path_id_nf)
-                    cache.hset(key, "e", ms_user.e_path_nf)
-                    cache.hset(key, "e_id", ms_user.e_path_id_nf)
-                    # cache.hset(key, "sum", ms_user.b_path_nf + ms_user.i_path_nf + ms_user.e_path_nf)
-                    # if not cache.lindex('player_path_nf_ids', ms_user.id):
-                    #     cache.lpush('player_path_nf_ids', ms_user.id)
-                    s = ms_user.b_path_nf + ms_user.i_path_nf + ms_user.e_path_nf
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_path_nf_ids", {ms_user.id: s})
-
-    if video_i.mode == "05":
-        if video_i.level == "b":
-            if video_i.rtime < ms_user.b_time_ng:
-                ms_user.b_time_ng = video_i.rtime
-                ms_user.b_time_id_ng = e_video.id
-                if ms_user.b_time_ng < 999.998 and ms_user.i_time_ng < 999.998 and ms_user.e_time_ng < 999.998:
-                    key = f"player_time_ng_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", float(ms_user.b_time_ng))
-                    cache.hset(key, "b_id", float(ms_user.b_time_id_ng))
-                    cache.hset(key, "i", float(ms_user.i_time_ng))
-                    cache.hset(key, "i_id", float(ms_user.i_time_id_ng))
-                    cache.hset(key, "e", float(ms_user.e_time_ng))
-                    cache.hset(key, "e_id", float(ms_user.e_time_id_ng))
-                    # cache.hset(key, "sum", float(ms_user.b_time_ng + ms_user.i_time_ng + ms_user.e_time_ng))
-                    # if not cache.lindex('player_time_ng_ids', ms_user.id):
-                    #     cache.lpush('player_time_ng_ids', ms_user.id)
-                    s = float(ms_user.b_time_ng + ms_user.i_time_ng + ms_user.e_time_ng)
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_time_ng_ids", {ms_user.id: s})
-            if video_i.bvs > ms_user.b_bvs_ng:
-                ms_user.b_bvs_ng = video_i.bvs
-                ms_user.b_bvs_id_ng = e_video.id
-                if ms_user.b_bvs_ng > 0.001 and ms_user.i_bvs_ng > 0.001 and ms_user.e_bvs_ng > 0.001:
-                    key = f"player_bvs_ng_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_bvs_ng)
-                    cache.hset(key, "b_id", ms_user.b_bvs_id_ng)
-                    cache.hset(key, "i", ms_user.i_bvs_ng)
-                    cache.hset(key, "i_id", ms_user.i_bvs_id_ng)
-                    cache.hset(key, "e", ms_user.e_bvs_ng)
-                    cache.hset(key, "e_id", ms_user.e_bvs_id_ng)
-                    # cache.hset(key, "sum", ms_user.b_bvs_ng + ms_user.i_bvs_ng + ms_user.e_bvs_ng)
-                    # if not cache.lindex('player_bvs_ng_ids', ms_user.id):
-                    #     cache.lpush('player_bvs_ng_ids', ms_user.id)
-                    s = ms_user.b_bvs_ng + ms_user.i_bvs_ng + ms_user.e_bvs_ng
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_bvs_ng_ids", {ms_user.id: s})
-            if e_video.stnb > ms_user.b_stnb_ng:
-                ms_user.b_stnb_ng = e_video.stnb
-                ms_user.b_stnb_id_ng = e_video.id
-                if ms_user.b_stnb_ng > 0.001 and ms_user.i_stnb_ng > 0.001 and ms_user.e_stnb_ng > 0.001:
-                    key = f"player_stnb_ng_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_stnb_ng)
-                    cache.hset(key, "b_id", ms_user.b_stnb_id_ng)
-                    cache.hset(key, "i", ms_user.i_stnb_ng)
-                    cache.hset(key, "i_id", ms_user.i_stnb_id_ng)
-                    cache.hset(key, "e", ms_user.e_stnb_ng)
-                    cache.hset(key, "e_id", ms_user.e_stnb_id_ng)
-                    # cache.hset(key, "sum", ms_user.b_stnb_ng + ms_user.i_stnb_ng + ms_user.e_stnb_ng)
-                    # if not cache.lindex('player_stnb_ng_ids', ms_user.id):
-                    #     cache.lpush('player_stnb_ng_ids', ms_user.id)
-                    s = ms_user.b_stnb_ng + ms_user.i_stnb_ng + ms_user.e_stnb_ng
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_stnb_ng_ids", {ms_user.id: s})
-            if e_video.ioe > ms_user.b_ioe_ng:
-                ms_user.b_ioe_ng = e_video.ioe
-                ms_user.b_ioe_id_ng = e_video.id
-                if ms_user.b_ioe_ng > 0.001 and ms_user.i_ioe_ng > 0.001 and ms_user.e_ioe_ng > 0.001:
-                    key = f"player_ioe_ng_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_ioe_ng)
-                    cache.hset(key, "b_id", ms_user.b_ioe_id_ng)
-                    cache.hset(key, "i", ms_user.i_ioe_ng)
-                    cache.hset(key, "i_id", ms_user.i_ioe_id_ng)
-                    cache.hset(key, "e", ms_user.e_ioe_ng)
-                    cache.hset(key, "e_id", ms_user.e_ioe_id_ng)
-                    # cache.hset(key, "sum", ms_user.b_ioe_ng + ms_user.i_ioe_ng + ms_user.e_ioe_ng)
-                    # if not cache.lindex('player_ioe_ng_ids', ms_user.id):
-                    #     cache.lpush('player_ioe_ng_ids', ms_user.id)
-                    s = ms_user.b_ioe_ng + ms_user.i_ioe_ng + ms_user.e_ioe_ng
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_ioe_ng_ids", {ms_user.id: s})
-            if e_video.path < ms_user.b_path_ng:
-                ms_user.b_path_ng = e_video.path
-                ms_user.b_path_id_ng = e_video.id
-                if ms_user.b_path_ng < 99999.8 and ms_user.i_path_ng < 99999.8 and ms_user.e_path_ng < 99999.8:
-                    key = f"player_path_ng_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_path_ng)
-                    cache.hset(key, "b_id", ms_user.b_path_id_ng)
-                    cache.hset(key, "i", ms_user.i_path_ng)
-                    cache.hset(key, "i_id", ms_user.i_path_id_ng)
-                    cache.hset(key, "e", ms_user.e_path_ng)
-                    cache.hset(key, "e_id", ms_user.e_path_id_ng)
-                    # cache.hset(key, "sum", ms_user.b_path_ng + ms_user.i_path_ng + ms_user.e_path_ng)
-                    # if not cache.lindex('player_path_ng_ids', ms_user.id):
-                    #     cache.lpush('player_path_ng_ids', ms_user.id)
-                    s = ms_user.b_path_ng + ms_user.i_path_ng + ms_user.e_path_ng
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_path_ng_ids", {ms_user.id: s})
-        if video_i.level == "i":
-            if video_i.rtime < ms_user.i_time_ng:
-                ms_user.i_time_ng = video_i.rtime
-                ms_user.i_time_id_ng = e_video.id
-                if ms_user.b_time_ng < 999.998 and ms_user.i_time_ng < 999.998 and ms_user.e_time_ng < 999.998:
-                    key = f"player_time_ng_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", float(ms_user.b_time_ng))
-                    cache.hset(key, "b_id", float(ms_user.b_time_id_ng))
-                    cache.hset(key, "i", float(ms_user.i_time_ng))
-                    cache.hset(key, "i_id", float(ms_user.i_time_id_ng))
-                    cache.hset(key, "e", float(ms_user.e_time_ng))
-                    cache.hset(key, "e_id", float(ms_user.e_time_id_ng))
-                    # cache.hset(key, "sum", float(ms_user.b_time_ng + ms_user.i_time_ng + ms_user.e_time_ng))
-                    # if not cache.lindex('player_time_ng_ids', ms_user.id):
-                    #     cache.lpush('player_time_ng_ids', ms_user.id)
-                    s = float(ms_user.b_time_ng + ms_user.i_time_ng + ms_user.e_time_ng)
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_time_ng_ids", {ms_user.id: s})
-            if video_i.bvs > ms_user.i_bvs_ng:
-                ms_user.i_bvs_ng = video_i.bvs
-                ms_user.i_bvs_id_ng = e_video.id
-                if ms_user.b_bvs_ng > 0.001 and ms_user.i_bvs_ng > 0.001 and ms_user.e_bvs_ng > 0.001:
-                    key = f"player_bvs_ng_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_bvs_ng)
-                    cache.hset(key, "b_id", ms_user.b_bvs_id_ng)
-                    cache.hset(key, "i", ms_user.i_bvs_ng)
-                    cache.hset(key, "i_id", ms_user.i_bvs_id_ng)
-                    cache.hset(key, "e", ms_user.e_bvs_ng)
-                    cache.hset(key, "e_id", ms_user.e_bvs_id_ng)
-                    # cache.hset(key, "sum", ms_user.b_bvs_ng + ms_user.i_bvs_ng + ms_user.e_bvs_ng)
-                    # if not cache.lindex('player_bvs_ng_ids', ms_user.id):
-                    #     cache.lpush('player_bvs_ng_ids', ms_user.id)
-                    s = ms_user.b_bvs_ng + ms_user.i_bvs_ng + ms_user.e_bvs_ng
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_bvs_ng_ids", {ms_user.id: s})
-            if e_video.stnb > ms_user.i_stnb_ng:
-                ms_user.i_stnb_ng = e_video.stnb
-                ms_user.i_stnb_id_ng = e_video.id
-                if ms_user.b_stnb_ng > 0.001 and ms_user.i_stnb_ng > 0.001 and ms_user.e_stnb_ng > 0.001:
-                    key = f"player_stnb_ng_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_stnb_ng)
-                    cache.hset(key, "b_id", ms_user.b_stnb_id_ng)
-                    cache.hset(key, "i", ms_user.i_stnb_ng)
-                    cache.hset(key, "i_id", ms_user.i_stnb_id_ng)
-                    cache.hset(key, "e", ms_user.e_stnb_ng)
-                    cache.hset(key, "e_id", ms_user.e_stnb_id_ng)
-                    # cache.hset(key, "sum", ms_user.b_stnb_ng + ms_user.i_stnb_ng + ms_user.e_stnb_ng)
-                    # if not cache.lindex('player_stnb_ng_ids', ms_user.id):
-                    #     cache.lpush('player_stnb_ng_ids', ms_user.id)
-                    s = ms_user.b_stnb_ng + ms_user.i_stnb_ng + ms_user.e_stnb_ng
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_stnb_ng_ids", {ms_user.id: s})
-            if e_video.ioe > ms_user.i_ioe_ng:
-                ms_user.i_ioe_ng = e_video.ioe
-                ms_user.i_ioe_id_ng = e_video.id
-                if ms_user.b_ioe_ng > 0.001 and ms_user.i_ioe_ng > 0.001 and ms_user.e_ioe_ng > 0.001:
-                    key = f"player_ioe_ng_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_ioe_ng)
-                    cache.hset(key, "b_id", ms_user.b_ioe_id_ng)
-                    cache.hset(key, "i", ms_user.i_ioe_ng)
-                    cache.hset(key, "i_id", ms_user.i_ioe_id_ng)
-                    cache.hset(key, "e", ms_user.e_ioe_ng)
-                    cache.hset(key, "e_id", ms_user.e_ioe_id_ng)
-                    # cache.hset(key, "sum", ms_user.b_ioe_ng + ms_user.i_ioe_ng + ms_user.e_ioe_ng)
-                    # if not cache.lindex('player_ioe_ng_ids', ms_user.id):
-                    #     cache.lpush('player_ioe_ng_ids', ms_user.id)
-                    s = ms_user.b_ioe_ng + ms_user.i_ioe_ng + ms_user.e_ioe_ng
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_ioe_ng_ids", {ms_user.id: s})
-            if e_video.path < ms_user.i_path_ng:
-                ms_user.i_path_ng = e_video.path
-                ms_user.i_path_id_ng = e_video.id
-                if ms_user.b_path_ng < 99999.8 and ms_user.i_path_ng < 99999.8 and ms_user.e_path_ng < 99999.8:
-                    key = f"player_path_ng_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_path_ng)
-                    cache.hset(key, "b_id", ms_user.b_path_id_ng)
-                    cache.hset(key, "i", ms_user.i_path_ng)
-                    cache.hset(key, "i_id", ms_user.i_path_id_ng)
-                    cache.hset(key, "e", ms_user.e_path_ng)
-                    cache.hset(key, "e_id", ms_user.e_path_id_ng)
-                    # cache.hset(key, "sum", ms_user.b_path_ng + ms_user.i_path_ng + ms_user.e_path_ng)
-                    # if not cache.lindex('player_path_ng_ids', ms_user.id):
-                    #     cache.lpush('player_path_ng_ids', ms_user.id)
-                    s = ms_user.b_path_ng + ms_user.i_path_ng + ms_user.e_path_ng
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_path_ng_ids", {ms_user.id: s})
-        if video_i.level == "e":
-            if video_i.rtime < ms_user.e_time_ng:
-                ms_user.e_time_ng = video_i.rtime
-                ms_user.e_time_id_ng = e_video.id
-                if ms_user.b_time_ng < 999.998 and ms_user.i_time_ng < 999.998 and ms_user.e_time_ng < 999.998:
-                    key = f"player_time_ng_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", float(ms_user.b_time_ng))
-                    cache.hset(key, "b_id", float(ms_user.b_time_id_ng))
-                    cache.hset(key, "i", float(ms_user.i_time_ng))
-                    cache.hset(key, "i_id", float(ms_user.i_time_id_ng))
-                    cache.hset(key, "e", float(ms_user.e_time_ng))
-                    cache.hset(key, "e_id", float(ms_user.e_time_id_ng))
-                    # cache.hset(key, "sum", float(ms_user.b_time_ng + ms_user.i_time_ng + ms_user.e_time_ng))
-                    # if not cache.lindex('player_time_ng_ids', ms_user.id):
-                    #     cache.lpush('player_time_ng_ids', ms_user.id)
-                    s = float(ms_user.b_time_ng + ms_user.i_time_ng + ms_user.e_time_ng)
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_time_ng_ids", {ms_user.id: s})
-            if video_i.bvs > ms_user.e_bvs_ng:
-                ms_user.e_bvs_ng = video_i.bvs
-                ms_user.e_bvs_id_ng = e_video.id
-                if ms_user.b_bvs_ng > 0.001 and ms_user.i_bvs_ng > 0.001 and ms_user.e_bvs_ng > 0.001:
-                    key = f"player_bvs_ng_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_bvs_ng)
-                    cache.hset(key, "b_id", ms_user.b_bvs_id_ng)
-                    cache.hset(key, "i", ms_user.i_bvs_ng)
-                    cache.hset(key, "i_id", ms_user.i_bvs_id_ng)
-                    cache.hset(key, "e", ms_user.e_bvs_ng)
-                    cache.hset(key, "e_id", ms_user.e_bvs_id_ng)
-                    # cache.hset(key, "sum", ms_user.b_bvs_ng + ms_user.i_bvs_ng + ms_user.e_bvs_ng)
-                    # if not cache.lindex('player_bvs_ng_ids', ms_user.id):
-                    #     cache.lpush('player_bvs_ng_ids', ms_user.id)
-                    s = ms_user.b_bvs_ng + ms_user.i_bvs_ng + ms_user.e_bvs_ng
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_bvs_ng_ids", {ms_user.id: s})
-            if e_video.stnb > ms_user.e_stnb_ng:
-                ms_user.e_stnb_ng = e_video.stnb
-                ms_user.e_stnb_id_ng = e_video.id
-                if ms_user.b_stnb_ng > 0.001 and ms_user.i_stnb_ng > 0.001 and ms_user.e_stnb_ng > 0.001:
-                    key = f"player_stnb_ng_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_stnb_ng)
-                    cache.hset(key, "b_id", ms_user.b_stnb_id_ng)
-                    cache.hset(key, "i", ms_user.i_stnb_ng)
-                    cache.hset(key, "i_id", ms_user.i_stnb_id_ng)
-                    cache.hset(key, "e", ms_user.e_stnb_ng)
-                    cache.hset(key, "e_id", ms_user.e_stnb_id_ng)
-                    # cache.hset(key, "sum", ms_user.b_stnb_ng + ms_user.i_stnb_ng + ms_user.e_stnb_ng)
-                    # if not cache.lindex('player_stnb_ng_ids', ms_user.id):
-                    #     cache.lpush('player_stnb_ng_ids', ms_user.id)
-                    s = ms_user.b_stnb_ng + ms_user.i_stnb_ng + ms_user.e_stnb_ng
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_stnb_ng_ids", {ms_user.id: s})
-            if e_video.ioe > ms_user.e_ioe_ng:
-                ms_user.e_ioe_ng = e_video.ioe
-                ms_user.e_ioe_id_ng = e_video.id
-                if ms_user.b_ioe_ng > 0.001 and ms_user.i_ioe_ng > 0.001 and ms_user.e_ioe_ng > 0.001:
-                    key = f"player_ioe_ng_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_ioe_ng)
-                    cache.hset(key, "b_id", ms_user.b_ioe_id_ng)
-                    cache.hset(key, "i", ms_user.i_ioe_ng)
-                    cache.hset(key, "i_id", ms_user.i_ioe_id_ng)
-                    cache.hset(key, "e", ms_user.e_ioe_ng)
-                    cache.hset(key, "e_id", ms_user.e_ioe_id_ng)
-                    # cache.hset(key, "sum", ms_user.b_ioe_ng + ms_user.i_ioe_ng + ms_user.e_ioe_ng)
-                    # if not cache.lindex('player_ioe_ng_ids', ms_user.id):
-                    #     cache.lpush('player_ioe_ng_ids', ms_user.id)
-                    s = ms_user.b_ioe_ng + ms_user.i_ioe_ng + ms_user.e_ioe_ng
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_ioe_ng_ids", {ms_user.id: s})
-            if e_video.path < ms_user.e_path_ng:
-                ms_user.e_path_ng = e_video.path
-                ms_user.e_path_id_ng = e_video.id
-                if ms_user.b_path_ng < 99999.8 and ms_user.i_path_ng < 99999.8 and ms_user.e_path_ng < 99999.8:
-                    key = f"player_path_ng_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_path_ng)
-                    cache.hset(key, "b_id", ms_user.b_path_id_ng)
-                    cache.hset(key, "i", ms_user.i_path_ng)
-                    cache.hset(key, "i_id", ms_user.i_path_id_ng)
-                    cache.hset(key, "e", ms_user.e_path_ng)
-                    cache.hset(key, "e_id", ms_user.e_path_id_ng)
-                    # cache.hset(key, "sum", ms_user.b_path_ng + ms_user.i_path_ng + ms_user.e_path_ng)
-                    # if not cache.lindex('player_path_ng_ids', ms_user.id):
-                    #     cache.lpush('player_path_ng_ids', ms_user.id)
-                    s = ms_user.b_path_ng + ms_user.i_path_ng + ms_user.e_path_ng
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_path_ng_ids", {ms_user.id: s})
-
-    if video_i.mode == "11":
-        if video_i.level == "b":
-            if video_i.rtime < ms_user.b_time_dg:
-                ms_user.b_time_dg = video_i.rtime
-                ms_user.b_time_id_dg = e_video.id
-                if ms_user.b_time_dg < 999.998 and ms_user.i_time_dg < 999.998 and ms_user.e_time_dg < 999.998:
-                    key = f"player_time_dg_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", float(ms_user.b_time_dg))
-                    cache.hset(key, "b_id", float(ms_user.b_time_id_dg))
-                    cache.hset(key, "i", float(ms_user.i_time_dg))
-                    cache.hset(key, "i_id", float(ms_user.i_time_id_dg))
-                    cache.hset(key, "e", float(ms_user.e_time_dg))
-                    cache.hset(key, "e_id", float(ms_user.e_time_id_dg))
-                    # cache.hset(key, "sum", float(ms_user.b_time_dg + ms_user.i_time_dg + ms_user.e_time_dg))
-                    # if not cache.lindex('player_time_dg_ids', ms_user.id):
-                    #     cache.lpush('player_time_dg_ids', ms_user.id)
-                    s = float(ms_user.b_time_dg + ms_user.i_time_dg + ms_user.e_time_dg)
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_time_dg_ids", {ms_user.id: s})
-            if video_i.bvs > ms_user.b_bvs_dg:
-                ms_user.b_bvs_dg = video_i.bvs
-                ms_user.b_bvs_id_dg = e_video.id
-                if ms_user.b_bvs_dg > 0.001 and ms_user.i_bvs_dg > 0.001 and ms_user.e_bvs_dg > 0.001:
-                    key = f"player_bvs_dg_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_bvs_dg)
-                    cache.hset(key, "b_id", ms_user.b_bvs_id_dg)
-                    cache.hset(key, "i", ms_user.i_bvs_dg)
-                    cache.hset(key, "i_id", ms_user.i_bvs_id_dg)
-                    cache.hset(key, "e", ms_user.e_bvs_dg)
-                    cache.hset(key, "e_id", ms_user.e_bvs_id_dg)
-                    # cache.hset(key, "sum", ms_user.b_bvs_dg + ms_user.i_bvs_dg + ms_user.e_bvs_dg)
-                    # if not cache.lindex('player_bvs_dg_ids', ms_user.id):
-                    #     cache.lpush('player_bvs_dg_ids', ms_user.id)
-                    s = ms_user.b_bvs_dg + ms_user.i_bvs_dg + ms_user.e_bvs_dg
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_bvs_dg_ids", {ms_user.id: s})
-            if e_video.stnb > ms_user.b_stnb_dg:
-                ms_user.b_stnb_dg = e_video.stnb
-                ms_user.b_stnb_id_dg = e_video.id
-                if ms_user.b_stnb_dg > 0.001 and ms_user.i_stnb_dg > 0.001 and ms_user.e_stnb_dg > 0.001:
-                    key = f"player_stnb_dg_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_stnb_dg)
-                    cache.hset(key, "b_id", ms_user.b_stnb_id_dg)
-                    cache.hset(key, "i", ms_user.i_stnb_dg)
-                    cache.hset(key, "i_id", ms_user.i_stnb_id_dg)
-                    cache.hset(key, "e", ms_user.e_stnb_dg)
-                    cache.hset(key, "e_id", ms_user.e_stnb_id_dg)
-                    # cache.hset(key, "sum", ms_user.b_stnb_dg + ms_user.i_stnb_dg + ms_user.e_stnb_dg)
-                    # if not cache.lindex('player_stnb_dg_ids', ms_user.id):
-                    #     cache.lpush('player_stnb_dg_ids', ms_user.id)
-                    s = ms_user.b_stnb_dg + ms_user.i_stnb_dg + ms_user.e_stnb_dg
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_stnb_dg_ids", {ms_user.id: s})
-            if e_video.ioe > ms_user.b_ioe_dg:
-                ms_user.b_ioe_dg = e_video.ioe
-                ms_user.b_ioe_id_dg = e_video.id
-                if ms_user.b_ioe_dg > 0.001 and ms_user.i_ioe_dg > 0.001 and ms_user.e_ioe_dg > 0.001:
-                    key = f"player_ioe_dg_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_ioe_dg)
-                    cache.hset(key, "b_id", ms_user.b_ioe_id_dg)
-                    cache.hset(key, "i", ms_user.i_ioe_dg)
-                    cache.hset(key, "i_id", ms_user.i_ioe_id_dg)
-                    cache.hset(key, "e", ms_user.e_ioe_dg)
-                    cache.hset(key, "e_id", ms_user.e_ioe_id_dg)
-                    # cache.hset(key, "sum", ms_user.b_ioe_dg + ms_user.i_ioe_dg + ms_user.e_ioe_dg)
-                    # if not cache.lindex('player_ioe_dg_ids', ms_user.id):
-                    #     cache.lpush('player_ioe_dg_ids', ms_user.id)
-                    s = ms_user.b_ioe_dg + ms_user.i_ioe_dg + ms_user.e_ioe_dg
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_ioe_dg_ids", {ms_user.id: s})
-            if e_video.path < ms_user.b_path_dg:
-                ms_user.b_path_dg = e_video.path
-                ms_user.b_path_id_dg = e_video.id
-                if ms_user.b_path_dg < 99999.8 and ms_user.i_path_dg < 99999.8 and ms_user.e_path_dg < 99999.8:
-                    key = f"player_path_dg_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_path_dg)
-                    cache.hset(key, "b_id", ms_user.b_path_id_dg)
-                    cache.hset(key, "i", ms_user.i_path_dg)
-                    cache.hset(key, "i_id", ms_user.i_path_id_dg)
-                    cache.hset(key, "e", ms_user.e_path_dg)
-                    cache.hset(key, "e_id", ms_user.e_path_id_dg)
-                    # cache.hset(key, "sum", ms_user.b_path_dg + ms_user.i_path_dg + ms_user.e_path_dg)
-                    # if not cache.lindex('player_path_dg_ids', ms_user.id):
-                    #     cache.lpush('player_path_dg_ids', ms_user.id)
-                    s = ms_user.b_path_dg + ms_user.i_path_dg + ms_user.e_path_dg
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_path_dg_ids", {ms_user.id: s})
-        if video_i.level == "i":
-            if video_i.rtime < ms_user.i_time_dg:
-                ms_user.i_time_dg = video_i.rtime
-                ms_user.i_time_id_dg = e_video.id
-                if ms_user.b_time_dg < 999.998 and ms_user.i_time_dg < 999.998 and ms_user.e_time_dg < 999.998:
-                    key = f"player_time_dg_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", float(ms_user.b_time_dg))
-                    cache.hset(key, "b_id", float(ms_user.b_time_id_dg))
-                    cache.hset(key, "i", float(ms_user.i_time_dg))
-                    cache.hset(key, "i_id", float(ms_user.i_time_id_dg))
-                    cache.hset(key, "e", float(ms_user.e_time_dg))
-                    cache.hset(key, "e_id", float(ms_user.e_time_id_dg))
-                    # cache.hset(key, "sum", float(ms_user.b_time_dg + ms_user.i_time_dg + ms_user.e_time_dg))
-                    # if not cache.lindex('player_time_dg_ids', ms_user.id):
-                    #     cache.lpush('player_time_dg_ids', ms_user.id)
-                    s = float(ms_user.b_time_dg + ms_user.i_time_dg + ms_user.e_time_dg)
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_time_dg_ids", {ms_user.id: s})
-            if video_i.bvs > ms_user.i_bvs_dg:
-                ms_user.i_bvs_dg = video_i.bvs
-                ms_user.i_bvs_id_dg = e_video.id
-                if ms_user.b_bvs_dg > 0.001 and ms_user.i_bvs_dg > 0.001 and ms_user.e_bvs_dg > 0.001:
-                    key = f"player_bvs_dg_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_bvs_dg)
-                    cache.hset(key, "b_id", ms_user.b_bvs_id_dg)
-                    cache.hset(key, "i", ms_user.i_bvs_dg)
-                    cache.hset(key, "i_id", ms_user.i_bvs_id_dg)
-                    cache.hset(key, "e", ms_user.e_bvs_dg)
-                    cache.hset(key, "e_id", ms_user.e_bvs_id_dg)
-                    # cache.hset(key, "sum", ms_user.b_bvs_dg + ms_user.i_bvs_dg + ms_user.e_bvs_dg)
-                    # if not cache.lindex('player_bvs_dg_ids', ms_user.id):
-                    #     cache.lpush('player_bvs_dg_ids', ms_user.id)
-                    s = ms_user.b_bvs_dg + ms_user.i_bvs_dg + ms_user.e_bvs_dg
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_bvs_dg_ids", {ms_user.id: s})
-            if e_video.stnb > ms_user.i_stnb_dg:
-                ms_user.i_stnb_dg = e_video.stnb
-                ms_user.i_stnb_id_dg = e_video.id
-                if ms_user.b_stnb_dg > 0.001 and ms_user.i_stnb_dg > 0.001 and ms_user.e_stnb_dg > 0.001:
-                    key = f"player_stnb_dg_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_stnb_dg)
-                    cache.hset(key, "b_id", ms_user.b_stnb_id_dg)
-                    cache.hset(key, "i", ms_user.i_stnb_dg)
-                    cache.hset(key, "i_id", ms_user.i_stnb_id_dg)
-                    cache.hset(key, "e", ms_user.e_stnb_dg)
-                    cache.hset(key, "e_id", ms_user.e_stnb_id_dg)
-                    # cache.hset(key, "sum", ms_user.b_stnb_dg + ms_user.i_stnb_dg + ms_user.e_stnb_dg)
-                    # if not cache.lindex('player_stnb_dg_ids', ms_user.id):
-                    #     cache.lpush('player_stnb_dg_ids', ms_user.id)
-                    s = ms_user.b_stnb_dg + ms_user.i_stnb_dg + ms_user.e_stnb_dg
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_stnb_dg_ids", {ms_user.id: s})
-            if e_video.ioe > ms_user.i_ioe_dg:
-                ms_user.i_ioe_dg = e_video.ioe
-                ms_user.i_ioe_id_dg = e_video.id
-                if ms_user.b_ioe_dg > 0.001 and ms_user.i_ioe_dg > 0.001 and ms_user.e_ioe_dg > 0.001:
-                    key = f"player_ioe_dg_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_ioe_dg)
-                    cache.hset(key, "b_id", ms_user.b_ioe_id_dg)
-                    cache.hset(key, "i", ms_user.i_ioe_dg)
-                    cache.hset(key, "i_id", ms_user.i_ioe_id_dg)
-                    cache.hset(key, "e", ms_user.e_ioe_dg)
-                    cache.hset(key, "e_id", ms_user.e_ioe_id_dg)
-                    # cache.hset(key, "sum", ms_user.b_ioe_dg + ms_user.i_ioe_dg + ms_user.e_ioe_dg)
-                    # if not cache.lindex('player_ioe_dg_ids', ms_user.id):
-                    #     cache.lpush('player_ioe_dg_ids', ms_user.id)
-                    s = ms_user.b_ioe_dg + ms_user.i_ioe_dg + ms_user.e_ioe_dg
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_ioe_dg_ids", {ms_user.id: s})
-            if e_video.path < ms_user.i_path_dg:
-                ms_user.i_path_dg = e_video.path
-                ms_user.i_path_id_dg = e_video.id
-                if ms_user.b_path_dg < 99999.8 and ms_user.i_path_dg < 99999.8 and ms_user.e_path_dg < 99999.8:
-                    key = f"player_path_dg_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_path_dg)
-                    cache.hset(key, "b_id", ms_user.b_path_id_dg)
-                    cache.hset(key, "i", ms_user.i_path_dg)
-                    cache.hset(key, "i_id", ms_user.i_path_id_dg)
-                    cache.hset(key, "e", ms_user.e_path_dg)
-                    cache.hset(key, "e_id", ms_user.e_path_id_dg)
-                    # cache.hset(key, "sum", ms_user.b_path_dg + ms_user.i_path_dg + ms_user.e_path_dg)
-                    # if not cache.lindex('player_path_dg_ids', ms_user.id):
-                    #     cache.lpush('player_path_dg_ids', ms_user.id)
-                    s = ms_user.b_path_dg + ms_user.i_path_dg + ms_user.e_path_dg
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_path_dg_ids", {ms_user.id: s})
-        if video_i.level == "e":
-            if video_i.rtime < ms_user.e_time_dg:
-                ms_user.e_time_dg = video_i.rtime
-                ms_user.e_time_id_dg = e_video.id
-                if ms_user.b_time_dg < 999.998 and ms_user.i_time_dg < 999.998 and ms_user.e_time_dg < 999.998:
-                    key = f"player_time_dg_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", float(ms_user.b_time_dg))
-                    cache.hset(key, "b_id", float(ms_user.b_time_id_dg))
-                    cache.hset(key, "i", float(ms_user.i_time_dg))
-                    cache.hset(key, "i_id", float(ms_user.i_time_id_dg))
-                    cache.hset(key, "e", float(ms_user.e_time_dg))
-                    cache.hset(key, "e_id", float(ms_user.e_time_id_dg))
-                    # cache.hset(key, "sum", float(ms_user.b_time_dg + ms_user.i_time_dg + ms_user.e_time_dg))
-                    # if not cache.lindex('player_time_dg_ids', ms_user.id):
-                    #     cache.lpush('player_time_dg_ids', ms_user.id)
-                    s = float(ms_user.b_time_dg + ms_user.i_time_dg + ms_user.e_time_dg)
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_time_dg_ids", {ms_user.id: s})
-            if video_i.bvs > ms_user.e_bvs_dg:
-                ms_user.e_bvs_dg = video_i.bvs
-                ms_user.e_bvs_id_dg = e_video.id
-                if ms_user.b_bvs_dg > 0.001 and ms_user.i_bvs_dg > 0.001 and ms_user.e_bvs_dg > 0.001:
-                    key = f"player_bvs_dg_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_bvs_dg)
-                    cache.hset(key, "b_id", ms_user.b_bvs_id_dg)
-                    cache.hset(key, "i", ms_user.i_bvs_dg)
-                    cache.hset(key, "i_id", ms_user.i_bvs_id_dg)
-                    cache.hset(key, "e", ms_user.e_bvs_dg)
-                    cache.hset(key, "e_id", ms_user.e_bvs_id_dg)
-                    # cache.hset(key, "sum", ms_user.b_bvs_dg + ms_user.i_bvs_dg + ms_user.e_bvs_dg)
-                    # if not cache.lindex('player_bvs_dg_ids', ms_user.id):
-                    #     cache.lpush('player_bvs_dg_ids', ms_user.id)
-                    s = ms_user.b_bvs_dg + ms_user.i_bvs_dg + ms_user.e_bvs_dg
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_bvs_dg_ids", {ms_user.id: s})
-            if e_video.stnb > ms_user.e_stnb_dg:
-                ms_user.e_stnb_dg = e_video.stnb
-                ms_user.e_stnb_id_dg = e_video.id
-                if ms_user.b_stnb_dg > 0.001 and ms_user.i_stnb_dg > 0.001 and ms_user.e_stnb_dg > 0.001:
-                    key = f"player_stnb_dg_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_stnb_dg)
-                    cache.hset(key, "b_id", ms_user.b_stnb_id_dg)
-                    cache.hset(key, "i", ms_user.i_stnb_dg)
-                    cache.hset(key, "i_id", ms_user.i_stnb_id_dg)
-                    cache.hset(key, "e", ms_user.e_stnb_dg)
-                    cache.hset(key, "e_id", ms_user.e_stnb_id_dg)
-                    # cache.hset(key, "sum", ms_user.b_stnb_dg + ms_user.i_stnb_dg + ms_user.e_stnb_dg)
-                    # if not cache.lindex('player_stnb_dg_ids', ms_user.id):
-                    #     cache.lpush('player_stnb_dg_ids', ms_user.id)
-                    s = ms_user.b_stnb_dg + ms_user.i_stnb_dg + ms_user.e_stnb_dg
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_stnb_dg_ids", {ms_user.id: s})
-            if e_video.ioe > ms_user.e_ioe_dg:
-                ms_user.e_ioe_dg = e_video.ioe
-                ms_user.e_ioe_id_dg = e_video.id
-                if ms_user.b_ioe_dg > 0.001 and ms_user.i_ioe_dg > 0.001 and ms_user.e_ioe_dg > 0.001:
-                    key = f"player_ioe_dg_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_ioe_dg)
-                    cache.hset(key, "b_id", ms_user.b_ioe_id_dg)
-                    cache.hset(key, "i", ms_user.i_ioe_dg)
-                    cache.hset(key, "i_id", ms_user.i_ioe_id_dg)
-                    cache.hset(key, "e", ms_user.e_ioe_dg)
-                    cache.hset(key, "e_id", ms_user.e_ioe_id_dg)
-                    # cache.hset(key, "sum", ms_user.b_ioe_dg + ms_user.i_ioe_dg + ms_user.e_ioe_dg)
-                    # if not cache.lindex('player_ioe_dg_ids', ms_user.id):
-                    #     cache.lpush('player_ioe_dg_ids', ms_user.id)
-                    s = ms_user.b_ioe_dg + ms_user.i_ioe_dg + ms_user.e_ioe_dg
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_ioe_dg_ids", {ms_user.id: s})
-            if e_video.path < ms_user.e_path_dg:
-                ms_user.e_path_dg = e_video.path
-                ms_user.e_path_id_dg = e_video.id
-                if ms_user.b_path_dg < 99999.8 and ms_user.i_path_dg < 99999.8 and ms_user.e_path_dg < 99999.8:
-                    key = f"player_path_dg_{ms_user.id}"
-                    cache.hset(key, "name", user.realname)
-                    cache.hset(key, "b", ms_user.b_path_dg)
-                    cache.hset(key, "b_id", ms_user.b_path_id_dg)
-                    cache.hset(key, "i", ms_user.i_path_dg)
-                    cache.hset(key, "i_id", ms_user.i_path_id_dg)
-                    cache.hset(key, "e", ms_user.e_path_dg)
-                    cache.hset(key, "e_id", ms_user.e_path_id_dg)
-                    # cache.hset(key, "sum", ms_user.b_path_dg + ms_user.i_path_dg + ms_user.e_path_dg)
-                    # if not cache.lindex('player_path_dg_ids', ms_user.id):
-                    #     cache.lpush('player_path_dg_ids', ms_user.id)
-                    s = ms_user.b_path_dg + ms_user.i_path_dg + ms_user.e_path_dg
-                    cache.hset(key, "sum", s)
-                    cache.zadd("player_path_dg_ids", {ms_user.id: s})
-    # 改完记录，存回数据库
-    ms_user.save()
 
 
 # 获取审查队列里的录像
@@ -1422,46 +316,74 @@ def newest_queue(request):
     else:
         return HttpResponse("别瞎玩")
     
+# 获取全网被冻结的录像
+# http://127.0.0.1:8000/video/freeze_queue
+def freeze_queue(request):
+    if request.method == 'GET':
+        freeze_queue_ids = cache.hgetall("freeze_queue")
+        for key in list(freeze_queue_ids.keys()):
+            freeze_queue_ids.update({str(key, encoding="utf-8"): freeze_queue_ids.pop(key)})
+        return JsonResponse(freeze_queue_ids, encoder=ComplexEncoder)
+    else:
+        return HttpResponse("别瞎玩")
     
 
-# 管理员审核通过队列里的录像，未审核或冻结状态的录像可以审核通过
+# 【管理员】审核通过队列里的录像，未审核或冻结状态的录像可以审核通过
 # 返回"True","False"（已经是通过的状态）,"Null"（不存在该录像）
 # http://127.0.0.1:8000/video/approve?ids=[18,19,999]
 def approve(request):
     if request.user.is_staff and request.method == 'GET':
         ids = json.loads(request.GET["ids"])
+        logger.info(f'{request.user.id} approve ids {ids}')
         res = []
-        for i in range(len(ids)):
-            if not isinstance(ids[i], int):
+        for _id in range(len(ids)):
+            if not isinstance(_id, int):
                 return HttpResponse("审核录像的id应为正整数。")
-            video_i = VideoModel.objects.filter(id=ids[i])
+            video_i = VideoModel.objects.filter(id=_id)
             if not video_i:
                 res.append("Null")
             else:
-                e_video = ExpandVideoModel.objects.filter(id=ids[i])
-                if video_i[0].state == "c":
+                video_i = video_i[0]
+                e_video = video_i.video
+                if video_i.state == "c":
                     res.append("False")
                 else:
-                    video_i[0].state = "c"
-                    video_i[0].upload_time = timezone.now()
+                    video_i.state = "c"
+                    video_i.upload_time = timezone.now()
                     res.append("True")
-                    video_i[0].save()
-                    cache.hset("newest_queue", ids[i], cache.hget("review_queue", ids[i]))
-                    update_personal_record(video_i[0], e_video[0])
-                    update_video_num(request.user.userms, video_i[0])
-                cache.hdel("review_queue", ids[i])
+                    video_i.save()
+                    cache.hset("newest_queue", _id, cache.hget("review_queue", _id))
+                    update_personal_record(video_i, e_video)
+                    update_video_num(video_i)
+                cache.hdel("review_queue", _id)
         logger.info(f'{request.user.id} approve {json.dumps(ids)} response {json.dumps(res)}')
         return JsonResponse(json.dumps(res), safe=False)
     else:
         return HttpResponse("别瞎玩")
 
-# 管理员冻结队列里的录像，未审核或审核通过的录像可以冻结
+# 【管理员】冻结队列里的录像，未审核或审核通过的录像可以冻结
+# 两种用法，冻结指定的录像id，或冻结某用户的所有录像
 # 冻结的录像七到14天后删除，用一个定时任务
-# http://127.0.0.1:8000/video/freeze?ids=[18,19]
+# http://127.0.0.1:8000/video/freeze?ids=[18,19,20,21,102,273]
+# http://127.0.0.1:8000/video/freeze?ids=12
+# http://127.0.0.1:8000/video/freeze?uesr_id=20
 def freeze(request):
     if request.user.is_staff and request.method == 'GET':
-        ids = json.loads(request.GET["ids"])
-        res = []
+        if _ids := request.GET["ids"]:
+            logger.info(f'{request.user.id} freeze ids {_ids}')
+            ids = json.loads(_ids)
+            if isinstance(ids, int):
+                ids = [ids]
+        else: 
+            _user_id = int(request.GET["uesr_id"])
+            logger.info(f'{request.user.id} freeze uesr_id {_user_id}')
+            user = UserProfile.objects.get(id=_user_id)
+            videos = VideoModel.objects.filter(player=user)
+            ids = []
+            for v in videos:
+                ids.append(v.id)
+                
+        res = [] 
         for _id in ids:
             if not isinstance(_id, int) or _id < 1:
                 return HttpResponse("冻结录像的id应为正整数。")
@@ -1469,13 +391,25 @@ def freeze(request):
             if not video_i:
                 res.append("Null")
             else:
+                video_i = video_i[0]
                 if video_i[0].state == "b":
                     res.append("False")
                 else:
-                    video_i[0].state = "b"
-                    video_i[0].upload_time = timezone.now()
+                    # 冻结成功
+                    video_i.state = "b"
+                    video_i.upload_time = timezone.now()
                     res.append("True")
-                    video_i[0].save()
+                    video_i.save()
+                    cache.hset("freeze_queue", _id, json.dumps({"time": video_i.upload_time,
+                                                                "player": video_i.player.realname,
+                                                                "player_id": video_i.player.id,
+                                                                "level": video_i.level,
+                                                                "mode": video_i.mode,
+                                                                "rtime": video_i.rtime,
+                                                                "bv": video_i.bv,
+                                                                "bvs": video_i.bvs}, cls=ComplexEncoder))
+                    update_personal_record_stock(video_i)
+                    update_video_num(video_i, add=False)
                 cache.hdel("review_queue", _id)
                 cache.hdel("newest_queue", _id)
         logger.info(f'{request.user.id} freeze {json.dumps(ids)} response {json.dumps(res)}')

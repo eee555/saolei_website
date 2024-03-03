@@ -7,10 +7,10 @@
             2023年2月26日 11:45 周炎亮 将高级标准模式时间记录刷新为 91.52 ↑3.60</el-tab-pane>
         </el-tabs>
         <el-tabs type="border-card" style="margin-top: 2%; min-height: 300px;">
-          <el-tab-pane label="最新录像" style="max-height: 800px; overflow: auto;">
+          <el-tab-pane label="最新录像" style="max-height: 800px; overflow: auto;" :lazy="true">
             <VideoList :videos="newest_queue" :reverse="true"></VideoList>
           </el-tab-pane>
-          <el-tab-pane label="审核队列">
+          <el-tab-pane label="审核队列" :lazy="true">
             <VideoList :videos="review_queue"></VideoList>
           </el-tab-pane>
         </el-tabs>

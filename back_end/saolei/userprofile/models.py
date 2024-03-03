@@ -1,3 +1,4 @@
+import os
 from django.db import models
 # from django.contrib.auth.models import User
 from django.contrib.auth.models import AbstractUser
@@ -64,6 +65,15 @@ class UserProfile(AbstractUser):
     popularity = models.BigIntegerField(null=False, default=0)
     # vip，0为非vip，理论0~32767。类似于权限
     vip = models.PositiveSmallIntegerField(null=False, default=0)
+    def delete(self, *args, **kwargs):
+        # 删除关联的文件
+        if self.avatar:
+            # 使用os库删除文件
+            if os.path.isfile(self.avatar.path):
+                os.remove(self.avatar.path)
+        
+        # 调用父类的delete方法删除数据库记录
+        super(UserProfile, self).delete(*args, **kwargs)
 
 
 

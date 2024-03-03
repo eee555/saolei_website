@@ -8,8 +8,10 @@ from captcha.fields import CaptchaField
 
 # 登录表单，继承了 forms.Form 类
 class UserLoginForm(forms.Form):
-    username = forms.CharField()
-    password = forms.CharField()
+    username = forms.CharField(min_length=1, max_length=20)
+    password = forms.CharField(min_length=1, max_length=20)
+    captcha = forms.CharField(min_length=1, max_length=6)
+    hashkey = forms.CharField(min_length=8, max_length=512)
 
 
 # 获取邮箱验证码时的表单，检查邮箱格式用

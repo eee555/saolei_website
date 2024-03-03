@@ -19,7 +19,8 @@
           <router-link to="/video" class="header">录像</router-link>
           <router-link to="/world" class="header">统计</router-link>
           <router-link to="/guide" class="header">教程</router-link>
-          <router-link to="/player" class="header2" v-show="player_visibile">我的地盘</router-link>
+          <router-link :to="'/player/' + proxy.$store.state.user.id" class="header2"
+            v-show="player_visibile">我的地盘</router-link>
           <router-link to="/upload" class="header2">上传录像</router-link>
 
         </nav>
@@ -43,7 +44,8 @@
     </el-container>
   </div>
 
-  <el-dialog draggable :lock-scroll="false" v-model="notice_visible" title="站长通知" width="30%" :before-close="handle_notice_close">
+  <el-dialog draggable :lock-scroll="false" v-model="notice_visible" title="站长通知" width="30%"
+    :before-close="handle_notice_close">
     <span>{{ notice }}</span>
     <template #footer>
       <span class="dialog-footer">
@@ -79,6 +81,7 @@ const notice = ref(`
 1、即日起开始删档公测。
 2、相关意见和建议请先检查群内公告文档里的待办、已有issue，若没有同类问题，再在此处[https://gitee.com/ee55/saolei_website/issues]发表。
 `)
+
 
 onMounted(() => {
   const notice_hash = localStorage.getItem("notice") as String;
@@ -133,7 +136,12 @@ const hash_code = function (t: string) {
 
 </script>
 
+
 <style scope lang='less'>
+body {
+  overflow-y: scroll;
+}
+
 .logo-container {
   display: grid;
   grid-template-columns: auto 1fr;
