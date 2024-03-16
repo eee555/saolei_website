@@ -197,6 +197,8 @@ def update_realname(request):
 @login_required(login_url='/')
 def update_avatar(request):
     if request.method == 'POST':
+        if request.user.userms.e_time_std >= 200:
+            return JsonResponse({"status": 177, "msg": "只允许标准高级sub200的玩家修改头像和个性签名！"})
         user_update_form = UserUpdateAvatarForm(
             data=request.POST, files=request.FILES, request=request)
         if user_update_form.is_valid():
@@ -221,6 +223,8 @@ def update_avatar(request):
 @login_required(login_url='/')
 def update_signature(request):
     if request.method == 'POST':
+        if request.user.userms.e_time_std >= 200:
+            return JsonResponse({"status": 177, "msg": "只允许标准高级sub200的玩家修改头像和个性签名！"})
         user_update_form = UserUpdateSignatureForm(
             data=request.POST, request=request)
         if user_update_form.is_valid():
