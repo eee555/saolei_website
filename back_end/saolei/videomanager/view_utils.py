@@ -1336,9 +1336,9 @@ def del_user_record_redis(user: UserProfile):
 
 
 # 存量式更新用户的记录。删录像后用，恢复用户的记录。
-def update_personal_record_stock(video: VideoModel):
+def update_personal_record_stock(user: UserProfile):
     # e_video: ExpandVideoModel = video.video
-    user: UserProfile = video.player
+    # user: UserProfile = video.player
     # ms_user: UserMS = user.userms
     del_user_record_sql(user)
     del_user_record_redis(user)

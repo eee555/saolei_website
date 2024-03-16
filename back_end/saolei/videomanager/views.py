@@ -31,6 +31,7 @@ from django_apscheduler.jobstores import DjangoJobStore, register_job, register_
 # https://django-ratelimit.readthedocs.io/en/stable/rates.html
 from django_ratelimit.decorators import ratelimit
 from django.utils import timezone
+import ms_toollib as ms
 
 logging.getLogger('apscheduler.scheduler').setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
@@ -49,8 +50,11 @@ def video_upload(request):
         # print(video_form)
         if video_form.is_valid():
             data = video_form.cleaned_data
+            if data["designator"] not in json.loads(request.user.userms.designators):
+                # 如果标识是首次使用的，需要得到管理员的审核
+                data['review_code'] = 2
+
             # 表中添加数据
-            # print(data['review_code'])
             e_video = ExpandVideoModel.objects.create(designator=data["designator"],
                                                       left=data["left"], right=data["right"],
                                                       double=data["double"], cl=data["cl"],
@@ -334,11 +338,12 @@ def freeze_queue(request):
 def approve(request):
     if request.user.is_staff and request.method == 'GET':
         ids = json.loads(request.GET["ids"])
-        logger.info(f'{request.user.id} approve ids {ids}')
+        # logger.info(f'{request.user.id} approve ids {ids}')
         res = []
-        for _id in range(len(ids)):
+        for _id in ids:
             if not isinstance(_id, int):
                 return HttpResponse("审核录像的id应为正整数。")
+            print(_id)
             video_i = VideoModel.objects.filter(id=_id)
             if not video_i:
                 res.append("Null")
@@ -346,17 +351,25 @@ def approve(request):
                 video_i = video_i[0]
                 e_video = video_i.video
                 if video_i.state == "c":
+                    # 已经通过审核了
                     res.append("False")
                 else:
+                    # 录像通过审核
+                    ms_player = video_i.player.userms
+                    if e_video.designator not in ms_player.designators:
+                        json_detr = json.loads(ms_player.designators)
+                        json_detr.append(e_video.designator)
+                        ms_player.designators = json.dumps(json_detr)
+                        ms_player.save(update_fields=["designators"])
                     video_i.state = "c"
                     video_i.upload_time = timezone.now()
                     res.append("True")
                     video_i.save()
                     cache.hset("newest_queue", _id, cache.hget("review_queue", _id))
-                    update_personal_record(video_i, e_video)
+                    update_personal_record(video_i)
                     update_video_num(video_i)
                 cache.hdel("review_queue", _id)
-        logger.info(f'{request.user.id} approve {json.dumps(ids)} response {json.dumps(res)}')
+        # logger.info(f'{request.user.id} approve {json.dumps(ids)} response {json.dumps(res)}')
         return JsonResponse(json.dumps(res), safe=False)
     else:
         return HttpResponse("别瞎玩")
@@ -408,10 +421,13 @@ def freeze(request):
                                                                 "rtime": video_i.rtime,
                                                                 "bv": video_i.bv,
                                                                 "bvs": video_i.bvs}, cls=ComplexEncoder))
-                    update_personal_record_stock(video_i)
+                    if request.GET["ids"]:
+                        update_personal_record_stock(video_i.player)
                     update_video_num(video_i, add=False)
                 cache.hdel("review_queue", _id)
                 cache.hdel("newest_queue", _id)
+        if request.GET["uesr_id"]:
+            update_personal_record_stock(user)
         logger.info(f'{request.user.id} freeze {json.dumps(ids)} response {json.dumps(res)}')
         return JsonResponse(json.dumps(res), safe=False)
     else:

@@ -216,7 +216,7 @@ def set_staff(request):
 def set_banned(request):
     if request.user.is_staff and request.method == 'GET':
         user = UserProfile.objects.get(id=request.GET["id"])
-        if user.is_staff:
+        if user.is_staff and not request.user.is_superuser:
             return HttpResponse("没有封禁管理员的权限！")
         # user.is_banned = request.GET["is_banned"]
         logger.info(f'{request.user.id} set_banned {request.GET["id"]} {request.GET["is_banned"]}')
@@ -241,7 +241,7 @@ def del_user_info(request):
         user = UserProfile.objects.get(id=request.GET["id"])
 
         logger.info(f'{request.user.id} del_user_info {request.GET["id"]}')
-        if user.is_staff:
+        if user.is_staff and not request.user.is_superuser:
             return HttpResponse("没有删除管理员信息的权限！")
 
         user.realname = ""
