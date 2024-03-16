@@ -23,7 +23,14 @@ class UserUpdateRealnameForm(forms.ModelForm):
             raise forms.ValidationError("姓名剩余修改次数不足！", code='no_times')
         else:
             self.user.left_realname_n -= 1
+        try:
+            is_valid = veriry_text(realname, self.request.user.id, self.request.get_host())
+        except:
+            raise forms.ValidationError("网站已欠费，该功能暂停使用！", code='no_money')
+        if not is_valid:
+            raise forms.ValidationError("姓名违规！", code='invalid_realname')
         return realname
+    
     class Meta:
         model = User
         fields = ("realname",)

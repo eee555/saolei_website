@@ -179,7 +179,7 @@ def update_realname(request):
                 return JsonResponse({"status": 110, "msg": "用户已被封禁"})
             user.realname = realname
             try:
-                user.save(update_fields=["realname"])
+                user.save(update_fields=["realname", "left_realname_n"])
                 update_cache_realname(user.id, realname)
                 return JsonResponse({"status": 100, "msg": {"n": user.left_realname_n}})
             except Exception as e:
@@ -205,7 +205,7 @@ def update_avatar(request):
             if user.is_banned:
                 return JsonResponse({"status": 110, "msg": "用户已被封禁"})
             user.avatar = data["avatar"]
-            user.save(update_fields=["avatar"])
+            user.save(update_fields=["avatar", "left_avatar_n"])
             return JsonResponse({"status": 100, "msg": {"n": user.left_avatar_n}})
             
         else:
@@ -232,7 +232,7 @@ def update_signature(request):
                 # 个性签名的修改次数每年增加一次
                 user.signature = signature
             try:
-                user.save(update_fields=["signature"])
+                user.save(update_fields=["signature", "left_signature_n"])
                 return JsonResponse({"status": 100, "msg": {"n": user.left_signature_n}})
             except Exception as e:
                 return JsonResponse({"status": 107, "msg": "未知错误。可能原因：不支持此种字符"})
