@@ -1,7 +1,7 @@
 <template>
   <div class="common-layout">
     <el-container>
-      <el-main class="header_all" style="padding-top: 0;overflow: hidden;">
+      <div class="header_all" style="padding-top: 0;overflow: hidden;">
         <div class="logo-container">
           <div @click="goback_home()" class="logo" style="float:inline-start;">
             <el-image style="width: 72px; height: 72px;" :src="logo_1" :fit="'cover'" />
@@ -19,9 +19,9 @@
           <router-link to="/video" class="header">录像</router-link>
           <router-link to="/world" class="header">统计</router-link>
           <router-link to="/guide" class="header">教程</router-link>
-          <router-link :to="'/player/' + proxy.$store.state.user.id" class="header2"
-            v-show="player_visibile">我的地盘</router-link>
-          <router-link to="/upload" class="header2">上传录像</router-link>
+          <router-link to="/" class="header">积分榜</router-link>
+          <router-link :to="'/player/' + proxy.$store.state.user.id" class="header">我的地盘</router-link>
+          <router-link to="/upload" class="header">上传录像</router-link>
 
         </nav>
         <!-- </el-header> -->
@@ -31,7 +31,7 @@
         <div class="content" style="padding-top: 16px;">
           <router-view />
         </div>
-      </el-main>
+      </div>
 
 
       <el-footer style="margin: auto;">
@@ -70,7 +70,7 @@ const logo_2 = ref(require('@/assets/logo2.png'))
 import { useRouter } from 'vue-router'
 const router = useRouter()
 
-const player_visibile = ref(false)
+// const player_visibile = ref(false)
 const notice_visible = ref(false)
 const never_show_notice = ref(false)
 const tab_width = ref("16%")
@@ -98,13 +98,13 @@ onMounted(() => {
 
 
 const user_login = () => {
-  player_visibile.value = true;
-  tab_width.value = "14%";
+  // player_visibile.value = true;
+  // tab_width.value = "14vw";
 }
 
 const user_logout = () => {
-  player_visibile.value = false;
-  tab_width.value = "16%";
+  // player_visibile.value = false;
+  // tab_width.value = "16vw";
   proxy.$router.push("/");
 }
 
@@ -154,10 +154,11 @@ body {
 
 .header {
   background-color: #ececec;
-  float: left;
-  width: v-bind("tab_width");
-  height: 36px;
-  display: block;
+  // float: left;
+  width: 10vw;
+  box-sizing: border-box;
+  height: 44px;
+  display: inline-block;
   text-align: center;
   padding-top: 8px;
   font-size: 20px;
@@ -166,19 +167,7 @@ body {
 
 }
 
-.header2 {
-  background-color: #ececec;
-  float: left;
-  width: v-bind("tab_width");
-  height: 36px;
-  display: block;
-  text-align: center;
-  padding-top: 8px;
-  font-size: 20px;
-  border-left: 1px #fff solid;
-  border-right: 1px #fff solid;
 
-}
 
 /*设置点击前的样式 */
 a {
@@ -193,13 +182,13 @@ a {
 }
 
 .header_all {
-  margin-left: 5%;
-  margin-right: 5%;
+  margin: auto;
+  width: 80vw;
 }
 
-.content {
-  clear: both;
-  margin-left: 3%;
-  margin-right: 3%;
-}
+// .content {
+//   clear: both;
+//   margin-left: 3%;
+//   margin-right: 3%;
+// }
 </style>

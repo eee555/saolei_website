@@ -174,16 +174,20 @@ def update_realname(request):
             data=request.POST, request=request)
         if user_update_realname_form.is_valid():
             realname = user_update_realname_form.cleaned_data["realname"]
-            user = request.user
+            user: UserProfile = request.user
             if user.is_banned:
                 return JsonResponse({"status": 110, "msg": "用户已被封禁"})
             user.realname = realname
             try:
                 user.save(update_fields=["realname", "left_realname_n"])
-                update_cache_realname(user.id, realname)
-                return JsonResponse({"status": 100, "msg": {"n": user.left_realname_n}})
             except Exception as e:
                 return JsonResponse({"status": 107, "msg": "未知错误。可能原因：不支持此种字符"})
+            update_cache_realname(user.id, realname)
+            designators = json.loads(user.userms.designators)
+            designators.append(realname)
+            user.userms.designators = json.dumps(designators)
+            user.userms.save(update_fields=["designators"])
+            return JsonResponse({"status": 100, "msg": {"n": user.left_realname_n}})
         else:
             ErrorDict = json.loads(user_update_realname_form.errors.as_json())
             Error = ErrorDict[next(iter(ErrorDict))][0]['message']

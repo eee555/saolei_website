@@ -1,6 +1,7 @@
 <template>
   <div class="home">
     <!-- <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/> -->
+    <h1>征稿！要求：.md格式</h1>
     <h1>新手综合</h1>
     <ul>
       <li><a href="http://saolei.wang/BBS/Title.asp?Id=21006">新手向教学：综合实力提升——龚浩然</a></li>
