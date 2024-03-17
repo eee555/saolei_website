@@ -50,7 +50,7 @@ def video_upload(request):
         # print(video_form)
         if video_form.is_valid():
             data = video_form.cleaned_data
-            if data["designator"] not in json.loads(request.user.userms.designators):
+            if data["designator"] not in request.user.userms.designators:
                 # 如果标识是首次使用的，需要得到管理员的审核
                 data['review_code'] = 2
 
@@ -357,9 +357,8 @@ def approve(request):
                     # 录像通过审核
                     ms_player = video_i.player.userms
                     if e_video.designator not in ms_player.designators:
-                        json_detr = json.loads(ms_player.designators)
-                        json_detr.append(e_video.designator)
-                        ms_player.designators = json.dumps(json_detr)
+                        # 给用户增加新的标识
+                        ms_player.designators.append(e_video.designator)
                         ms_player.save(update_fields=["designators"])
                     video_i.state = "c"
                     video_i.upload_time = timezone.now()

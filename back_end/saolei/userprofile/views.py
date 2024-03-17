@@ -112,7 +112,8 @@ def user_retrieve(request):
                 hashkey=emailHashkey).first()
             # print(emailHashkey)
             # print(email_captcha)
-            if get_email_captcha and email_captcha and get_email_captcha.code == email_captcha:
+            if get_email_captcha and email_captcha and get_email_captcha.code == email_captcha and\
+                  get_email_captcha.email == request.POST.get("email", None):
                 if (timezone.now() - get_email_captcha.send_time).seconds <= 3600:
                     user = UserProfile.objects.filter(email=user_retrieve_form.cleaned_data['email']).first()
                     if not user:
@@ -153,7 +154,8 @@ def user_register(request):
             email_captcha = request.POST.get("email_captcha", None)
             get_email_captcha = EmailVerifyRecord.objects.filter(hashkey=emailHashkey).first()
             # get_email_captcha = EmailVerifyRecord.objects.filter(hashkey="5f0db744-180b-4d9f-af5a-2986f4a78769").first()
-            if get_email_captcha and email_captcha and get_email_captcha.code == email_captcha:
+            if get_email_captcha and email_captcha and get_email_captcha.code == email_captcha and\
+                  get_email_captcha.email == request.POST.get("email", None):
                 if (timezone.now() - get_email_captcha.send_time).seconds <= 3600:
                     new_user = user_register_form.save(commit=False)
                     # 设置密码(哈希)
@@ -179,9 +181,12 @@ def user_register(request):
             else:
                 return JsonResponse({'status': 102, 'msg': "邮箱验证码不正确！"})
         else:
-            if "email" not in user_register_form.cleaned_data:
+            if "email" not in user_register_form.cleaned_data or "username" not in user_register_form.cleaned_data:
                 # 可能发生前端验证正确，而后端验证不正确（后端更严格），此时clean会直接删除email字段
-                return JsonResponse({'status': 105, 'msg': "邮箱格式不正确！"})
+                # 重复的邮箱、用户名也会被删掉
+                errors_dict = json.loads(user_register_form.errors.as_json())
+                errors = list(errors_dict.values())[0]
+                return JsonResponse({'status': 105, 'msg': errors[0]["message"]})
             # print(user_register_form.errors.as_json())
             else:
                 # print(user_register_form.errors)

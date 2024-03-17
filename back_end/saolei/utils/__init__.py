@@ -29,6 +29,7 @@ def send_email(email, send_type='register'):
     # email_record.email = email
     hashkey = uuid.uuid4()
     email_record.hashkey = hashkey
+    email_record.email = email
     # email_record.send_type = send_type
     email_record.save()
  

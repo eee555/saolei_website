@@ -34,11 +34,15 @@ class UserProfile(AbstractUser):
     first_name = models.CharField(_("first name"), max_length=10, blank=True)
     last_name = models.CharField(_("last name"), max_length=10, blank=True)
     email = models.EmailField(_("email address"), 
+                              max_length=100,
                               unique=True,
+                              blank=False, 
+                              null=False, 
                               error_messages={
                                   "blank": _("必须填写邮箱！"),
                                   "invalid": _("邮箱格式不正确！"),
                                   "unique": _("该邮箱已被注册！"),
+                                  "max_length": _("邮箱的长度不能超过100！"),
                                   },)
 
     realname = models.CharField(
@@ -81,7 +85,7 @@ class UserProfile(AbstractUser):
 class EmailVerifyRecord(models.Model):
     # 验证码
     code = models.CharField(max_length=8, verbose_name="验证码")
-    # email = models.EmailField(max_length=50, verbose_name="邮箱")
+    email = models.EmailField(max_length=100, verbose_name="邮箱")
     # 包含注册验证和找回验证
     # send_type = models.CharField(verbose_name="验证码类型", max_length=10,
     #                              choices=(("register", "注册"), ("forget", "找回密码")))
