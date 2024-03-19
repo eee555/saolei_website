@@ -78,8 +78,8 @@ const tab_width = ref("16%")
 // let refLogin = ref<any>(null)
 
 const notice = ref(`
-1、即日起开始删档公测。
-2、相关意见和建议请先检查群内公告文档里的待办、已有issue，若没有同类问题，再在此处[https://gitee.com/ee55/saolei_website/issues]发表。
+1、即日起开始删档公测，公测与开发同步进行。公测结束后，在正式上线之前会删除所有数据。
+2、相关意见、问题和建议请移步至此处[https://gitee.com/ee55/saolei_website/issues]发表。
 `)
 
 

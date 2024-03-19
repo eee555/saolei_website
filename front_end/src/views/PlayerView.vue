@@ -7,8 +7,8 @@
                         :auto-upload="false" :on-exceed="handleExceed" :on-change="handleChange"
                         :before-upload="beforeAvatarUpload" :http-request="handleAvatarUpload"
                         style="width: 200px; height: 200px;border-radius: 12px;">
-                        <el-image style="width: 200px; height: 200px;border-radius: 12px;" v-if="imageUrl" :src="imageUrl"
-                            :fit="'cover'" />
+                        <el-image style="width: 200px; height: 200px;border-radius: 12px;" v-if="imageUrl"
+                            :src="imageUrl" :fit="'cover'" />
                         <el-icon v-else class="avatar-uploader-icon">
                             <Plus />
                         </el-icon>
@@ -49,7 +49,8 @@
 
                 <div v-else>
                     <div :key="'cover'" class="avatar-uploader">
-                        <el-image style="width: 200px; height: 200px;border-radius: 12px;" :src="imageUrl" :fit="'cover'" />
+                        <el-image style="width: 200px; height: 200px;border-radius: 12px;" :src="imageUrl"
+                            :fit="'cover'" />
                     </div>
                     <div style="font-size: 30px;margin-top: 10px;margin-bottom: 8px;">
                         {{ username }}
@@ -66,14 +67,10 @@
 
                 <el-dialog v-model="visible" title="请注意" width="50%" align-center draggable :lock-scroll="false">
                     <ul>
-                        <li>本站实行实名制，改名前无法上传录像。改名机会有且仅有一次，请慎重填写！如果改名或填错，请联系管理员解释原因，并增加改名次数。
-                        </li>
-                        <li>经费紧张，只允许标准高级sub200的玩家修改个性签名和头像！
-                        </li>
-                        <li>免费用户的头像、个性签名的修改次数注册后仅有2次，之后每年系统赠送一次。
-                        </li>
-                        <li>严禁上传各类违规内容！如有发现，视情节严重采取封号等措施。
-                        </li>
+                        <li>本站实行实名制，改名前无法上传录像。改名机会有且仅有一次，请慎重填写！如果姓名填错，请联系管理员。</li>
+                        <li>填写真实姓名后您将获得一个和真实姓名对应的默认标识。与默认标识不同的标识需要通过人工审核。</li>
+                        <li>标准高级sub200之后才能修改个性签名和头像。用户的头像、个性签名的初始修改次数为2次，之后每年获得一次。</li>
+                        <li>个人资料需遵守国家法律法规。</li>
                     </ul>
 
                     <template #footer>
@@ -100,7 +97,7 @@
         </el-container>
     </div>
 </template>
-  
+
 <script lang="ts" setup>
 // 我的地盘页面
 import { onMounted, ref, Ref, defineAsyncComponent, computed } from 'vue'
@@ -286,7 +283,7 @@ const upload_info = () => {
 
 // 把头像、姓名、个性签名传上去。至少头像改过了。
 const handleAvatarUpload = async (options: UploadRequestOptions) => {
-    
+
     // console.log("****" + realname_edit.value);
     // console.log("----" + realname.value);
     if (realname_edit.value != realname.value) {
@@ -294,7 +291,7 @@ const handleAvatarUpload = async (options: UploadRequestOptions) => {
     }
     // console.log("34554" + signature_edit.value);
     // console.log("5654" + signature.value);
-    
+
     if (signature_edit.value != signature.value) {
         post_update_signature(signature_edit.value);
     }
@@ -357,12 +354,3 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
 
 }
 </style>
-
-
-
-
-
-
-
-
-

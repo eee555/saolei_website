@@ -154,4 +154,4 @@ class UserMS(models.Model):
     e_path_id_dg = models.BigIntegerField(null=True)
 
     def __str__(self):
-        return 'user {}'.format(self.user.username)
+        return 'designators: {}'.format(self.designators)
