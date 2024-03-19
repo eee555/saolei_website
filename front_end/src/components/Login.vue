@@ -69,7 +69,7 @@
                     <ValidCode :identifyCode="identifyCodeReg" ref="refValidCode2" />
                     &nbsp;
                     <el-button link type="primary" @click="get_email_captcha('register')"
-                        :disabled="valid_code_reg.length < 4">获取验证码</el-button>
+                        :disabled="valid_code_reg.length < 4">获取邮箱验证码</el-button>
                 </div>
             </el-form-item>
             <el-form-item>
