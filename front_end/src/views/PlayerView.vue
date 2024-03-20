@@ -91,6 +91,7 @@
                     <el-tab-pane label="全部录像" name="second" :lazy="true">
                         <PlayerVideosView></PlayerVideosView>
                     </el-tab-pane>
+
                 </el-tabs>
 
             </el-main>
