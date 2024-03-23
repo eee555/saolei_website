@@ -8,7 +8,7 @@ from .view_utils import update_personal_record, update_personal_record_stock
 from userprofile.models import UserProfile
 from django.http import HttpResponse, JsonResponse, FileResponse
 # from asgiref.sync import sync_to_async
-import json
+import json, urllib
 from utils import ComplexEncoder
 from django.core.paginator import Paginator
 from msuser.models import UserMS
@@ -32,6 +32,7 @@ from django_apscheduler.jobstores import DjangoJobStore, register_job, register_
 from django_ratelimit.decorators import ratelimit
 from django.utils import timezone
 import ms_toollib as ms
+from django.utils.encoding import escape_uri_path
 
 logging.getLogger('apscheduler.scheduler').setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
@@ -140,7 +141,12 @@ def video_preview(request):
         video = VideoModel.objects.get(id=int(request.GET["id"][:-4]))
         response =FileResponse(open(video.file.path, 'rb'))
         response['Content-Type']='application/octet-stream'
-        response['Content-Disposition']=f'attachment;filename="{video.file.name.split("/")[2]}"'
+        # response['Content-Disposition']=f'attachment;filename="{video.file.name.split("/")[2]}"'
+        file_name = video.file.name.split("/")[2]
+        file_name_uri = urllib.parse.quote(file_name)
+        response['Content-Disposition'] = f'attachment; filename="{file_name_uri}"'
+        response['Access-Control-Expose-Headers']='Content-Disposition'
+        
         return response
     except Exception:
         return JsonResponse({"status": 104, "msg": "file not exist!"})
@@ -320,6 +326,17 @@ def newest_queue(request):
     else:
         return HttpResponse("别瞎玩")
     
+
+# 获取谁破纪录的消息
+# http://127.0.0.1:8000/video/news_queue
+def news_queue(request):
+    if request.method == 'GET':
+        news_queue = cache.lrange("news_queue", 0, -1)
+        return JsonResponse(news_queue, encoder=ComplexEncoder, safe=False)
+    else:
+        return HttpResponse("别瞎玩")
+    
+    
 # 获取全网被冻结的录像
 # http://127.0.0.1:8000/video/freeze_queue
 def freeze_queue(request):
@@ -343,7 +360,6 @@ def approve(request):
         for _id in ids:
             if not isinstance(_id, int):
                 return HttpResponse("审核录像的id应为正整数。")
-            print(_id)
             video_i = VideoModel.objects.filter(id=_id)
             if not video_i:
                 res.append("Null")

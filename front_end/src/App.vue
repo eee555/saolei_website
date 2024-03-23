@@ -137,7 +137,7 @@ const hash_code = function (t: string) {
 </script>
 
 
-<style scope lang='less'>
+<style lang='less'>
 body {
   overflow-y: scroll;
 }
@@ -191,4 +191,10 @@ a {
 //   margin-left: 3%;
 //   margin-right: 3%;
 // }
+
+.clickable:hover {
+    color: rgb(26, 127, 228);
+    cursor: pointer;
+}
+
 </style>

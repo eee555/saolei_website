@@ -11,6 +11,7 @@ urlpatterns = [
     path('query_by_id/', views.video_query_by_id, name='query_by_id'),
     path('review_queue/', views.review_queue, name='review_queue'),
     path('newest_queue/', views.newest_queue, name='newest_queue'),
+    path('news_queue/', views.news_queue, name='news_queue'),
     path('approve/', views.approve, name='approve'),
     path('freeze/', views.freeze, name='freeze'),
     # path('download/', views.video_download, name='download'),

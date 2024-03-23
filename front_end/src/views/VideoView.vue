@@ -1,4 +1,12 @@
 <template>
+    <Teleport to=".common-layout">
+        <el-dialog v-model="preview_visible"
+            style="background-color: rgba(240, 240, 240, 0.48); backdrop-filter: blur(1px);" draggable align-center
+            destroy-on-close :modal="false" :lock-scroll="false">
+            <iframe class="flop-player-iframe flop-player-display-none" style="width: 100%; height: 500px; border: 0px"
+                src="/flop/index.html" ref="video_iframe"></iframe>
+        </el-dialog>
+    </Teleport>
     <el-row class="mb-4" style="margin-bottom: 10px;">
         <el-button v-for="(tag, key) in level_tags" type="warning" :plain="!(level_tag_selected == key)" :size="'small'"
             @click="level_tag_selected = key as string; get_video_rank(1);">{{ tag.name }}</el-button>
@@ -21,29 +29,30 @@
             <span class="utime" :class="{ hoverable: index_tag_selected === 'upload_time' }"
                 :style="{ color: (index_tag_selected === 'upload_time' ? 'rgb(64, 158, 255)' : '') }"
                 @click="reverseSortDirect('upload_time')">上传时间{{
-                    index_tag_selected === 'upload_time' ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
+            index_tag_selected === 'upload_time' ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : ""
+        }}</span>
             <span class="name">姓名</span>
-            <span class="bbbv" :class="{ hoverable: index_tag_selected === 'bbbv' }"
+            <span class="bbbv_bbbvs_rtime" :class="{ hoverable: index_tag_selected === 'bbbv' }"
                 :style="{ color: (index_tag_selected === 'bbbv' ? 'rgb(64, 158, 255)' : '') }"
                 @click="reverseSortDirect('bbbv')">3BV{{
-                    index_tag_selected === 'bbbv' ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
-            <span class="bbbvs" :class="{ hoverable: index_tag_selected === 'bbbv_s' }"
+            index_tag_selected === 'bbbv' ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
+            <span class="bbbv_bbbvs_rtime" :class="{ hoverable: index_tag_selected === 'bbbv_s' }"
                 :style="{ color: (index_tag_selected === 'bbbv_s' ? 'rgb(64, 158, 255)' : '') }"
                 @click="reverseSortDirect('bbbv_s')">3BV/s{{
-                    index_tag_selected === 'bbbv_s' ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
-            <span class="rtime" :class="{ hoverable: index_tag_selected === 'rtime' }"
+            index_tag_selected === 'bbbv_s' ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
+            <span class="bbbv_bbbvs_rtime" :class="{ hoverable: index_tag_selected === 'rtime' }"
                 :style="{ color: (index_tag_selected === 'rtime' ? 'rgb(64, 158, 255)' : '') }"
                 @click="reverseSortDirect('rtime')">成绩{{
-                    index_tag_selected === 'rtime' ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
+            index_tag_selected === 'rtime' ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
             <span v-show="index_visible" class="index"
                 :style="{ color: (index_tag_selected != 'upload_time' && index_tag_selected != 'bbbv' && index_tag_selected != 'bbbv_s' && index_tag_selected != 'rtime' ? 'rgb(64, 158, 255)' : '') }"
                 @click="reverseSortDirect(index_tag_selected)">{{
-                    index_tag_selected }}{{
-        index_tag_selected != 'upload_time' && index_tag_selected != 'bbbv' && index_tag_selected != 'bbbv_s' &&
-        index_tag_selected != 'rtime' ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
-            <span class="operation">操作</span>
+            index_tag_selected }}{{
+            index_tag_selected != 'upload_time' && index_tag_selected != 'bbbv' && index_tag_selected != 'bbbv_s' &&
+                index_tag_selected != 'rtime' ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
+            <!-- <span class="operation">操作</span> -->
         </div>
-        <div v-for="(video, key) in videoData" style="margin-top: 10px;">
+        <div v-for="(video, key) in videoData" class="row" @click="preview(video.id)">
             <div class="rank">{{ key - 19 + (state.CurrentPage) * 20 }}</div>
 
             <span v-if="'upload_time' in video" class="utime">{{ utc_to_local_format(video.upload_time) }}</span>
@@ -51,25 +60,26 @@
 
             <PlayerName class="name"
                 :user_id="'player__id' in video ? +(video.player__id as Number) : +(video.video__player__id as Number)"
-                :user_name="'player__realname' in video ? video.player__realname : video.video__player__realname"></PlayerName>
+                :user_name="'player__realname' in video ? video.player__realname : video.video__player__realname">
+            </PlayerName>
             <!-- <span v-if="'player__realname' in video" class="name">{{ video.player__realname }}</span>
             <span v-else class="name">{{ video.video__player__realname }}</span> -->
 
-            <span v-if="'bv' in video" class="bbbv">{{ video.bv }}</span>
-            <span v-else class="bbbv">{{ video.video__bv }}</span>
+            <span v-if="'bv' in video" class="bbbv_bbbvs_rtime">{{ video.bv }}</span>
+            <span v-else class="bbbv_bbbvs_rtime">{{ video.video__bv }}</span>
 
-            <span v-if="'bvs' in video" class="bbbvs">{{ to_fixed_n(video.bvs, 3) }}</span>
-            <span v-else class="bbbvs">{{ to_fixed_n(video.video__bvs, 3) }}</span>
+            <span v-if="'bvs' in video" class="bbbv_bbbvs_rtime">{{ to_fixed_n(video.bvs, 3) }}</span>
+            <span v-else class="bbbv_bbbvs_rtime">{{ to_fixed_n(video.video__bvs, 3) }}</span>
 
-            <span v-if="'rtime' in video" class="rtime">{{ to_fixed_n(video.rtime, 3) }}</span>
-            <span v-else class="rtime">{{ to_fixed_n(video.video__rtime, 3) }}</span>
+            <span v-if="'rtime' in video" class="bbbv_bbbvs_rtime">{{ to_fixed_n(video.rtime, 3) }}</span>
+            <span v-else class="bbbv_bbbvs_rtime">{{ to_fixed_n(video.video__rtime, 3) }}</span>
 
             <span v-show="index_visible" class="index">{{
-                to_fixed_n(video["video__" + index_tags[index_tag_selected].key],
-                    index_tags[index_tag_selected].to_fixed) }}</span>
-            <span class="operation">
+            to_fixed_n(video["video__" + index_tags[index_tag_selected].key],
+                index_tags[index_tag_selected].to_fixed) }}</span>
+            <!-- <span class="operation">
                 <PreviewDownload :id="video.id"></PreviewDownload>
-            </span>
+            </span> -->
         </div>
     </div>
 
@@ -80,7 +90,7 @@
         </el-pagination>
     </div>
 </template>
-  
+
 <script lang="ts" setup>
 // 全网录像的检索器，根据三个维度排序
 import { onMounted, ref, Ref, reactive } from 'vue'
@@ -88,8 +98,10 @@ import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import PreviewDownload from '@/components/PreviewDownload.vue';
 import PlayerName from '@/components/PlayerName.vue';
 const { proxy } = useCurrentInstance();
-import {utc_to_local_format} from "@/utils/system/tools";
+import { utc_to_local_format } from "@/utils/system/tools";
 import { genFileId, ElMessage } from 'element-plus'
+
+const preview_visible = ref(false);
 
 
 const level_tag_selected = ref("EXPERT");
@@ -242,7 +254,7 @@ const get_video_rank = (page: number) => {
             state.Total = data.total_page;
             // console.log(videoData);
             // console.log(index_tag_selected);
-        } else {}
+        } else { }
     }).catch(() => {
         // 触发限流
         ElMessage.error("请稍后再试");
@@ -276,6 +288,65 @@ const reverseSortDirect = (index_tag_selected_i: string) => {
     get_video_rank(state.CurrentPage);
 }
 
+const preview = (id: number | undefined) => {
+    if (!id) {
+        return
+    }
+    (window as any).flop = null;
+    preview_visible.value = true;
+    proxy.$axios.get('/video/get_software/',
+        {
+            params: {
+                id,
+            }
+        }
+    ).then(function (response) {
+        let uri = process.env.VUE_APP_BASE_API + "/video/preview/?id=" + id;
+        // console.log(uri);
+        if (response.data.msg == "a") {
+            uri += ".avf";
+        } else if (response.data.msg == "e") {
+            uri += ".evf";
+        }
+
+        if ((window as any).flop) {
+            playVideo(uri);
+        } else {
+            (window as any).flop = {
+                onload: async function () {
+                    playVideo(uri);
+                },
+            }
+        }
+    }).catch(
+        (res) => {
+            // console.log("报错");
+            // console.log(res);
+        }
+    )
+}
+
+
+const playVideo = function (uri: string) {
+    (window as any).flop.playVideo(uri, {
+        share: {
+            uri: uri,
+            pathname: "/flop-player/player",
+            anonymous: false,
+            background: "rgba(100, 100, 100, 0.05)",
+            title: "Flop Player Share",
+            favicon: "https://avatars.githubusercontent.com/u/38378650?s=32", // 胡帝的头像
+        },
+        anonymous: false,
+        background: "rgba(0, 0, 0, 0)",
+        listener: function () {
+            preview_visible.value = false;
+            (window as any).flop = null;
+        },
+    });
+}
+
+
 </script>
 
 
@@ -287,7 +358,8 @@ const reverseSortDirect = (index_tag_selected_i: string) => {
 }
 
 .utime {
-    width: 20%;
+    width: 25%;
+    min-width: 200px;
     display: inline-block;
     text-align: center;
 }
@@ -298,52 +370,37 @@ const reverseSortDirect = (index_tag_selected_i: string) => {
     text-align: center;
 }
 
-.bbbv {
-    width: 8%;
-    display: inline-block;
-    text-align: center;
-}
-
-.bbbvs {
-    width: 10%;
-    display: inline-block;
-    text-align: center;
-}
-
-.rtime {
-    width: 10%;
+.bbbv_bbbvs_rtime {
+    width: 13%;
+    min-width: 100px;
     display: inline-block;
     text-align: center;
 }
 
 .index {
-    width: 10%;
+    width: 13%;
+    min-width: 100px;
     display: inline-block;
     text-align: center;
-    cursor: pointer;
+    // cursor: pointer;
 }
 
-.operation {
-    width: 20%;
-    display: inline-block;
-    text-align: center;
-}
 
 .hoverable:hover {
-    color: rgb(64, 158, 255);
+    // color: rgb(64, 158, 255);
     cursor: pointer;
 }
 
 .el-pagination {
     justify-content: center;
 }
+
+.row {
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+.row:hover {
+    background-color: #eee;
+}
 </style>
-
-
-
-
-
-
-
-
-

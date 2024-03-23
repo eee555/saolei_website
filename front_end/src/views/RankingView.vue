@@ -14,18 +14,18 @@
         <div style="border-bottom: 1px solid #555555;padding-bottom: 10px;">
             <span class="rank">排名</span>
             <span class="name">姓名</span>
-            <span class="beginner" :style="{ color: (level_selected === 'b' ? 'rgb(64, 158, 255)' : '') }"
+            <span class="number_wid" :style="{ color: (level_selected === 'b' ? 'rgb(64, 158, 255)' : '') }"
                 @click="setSortDirect('b')">初级{{
-                    level_selected === "b" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
-            <span class="intermediate" :style="{ color: (level_selected === 'i' ? 'rgb(64, 158, 255)' : '') }"
+            level_selected === "b" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
+            <span class="number_wid" :style="{ color: (level_selected === 'i' ? 'rgb(64, 158, 255)' : '') }"
                 @click="setSortDirect('i')">中级{{
-                    level_selected === "i" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
-            <span class="expert" :style="{ color: (level_selected === 'e' ? 'rgb(64, 158, 255)' : '') }"
+            level_selected === "i" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
+            <span class="number_wid" :style="{ color: (level_selected === 'e' ? 'rgb(64, 158, 255)' : '') }"
                 @click="setSortDirect('e')">高级{{
-                    level_selected === "e" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
+            level_selected === "e" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
             <span class="sum_title" :style="{ color: (level_selected === 'sum' ? 'rgb(64, 158, 255)' : '') }"
                 @click="setSortDirect('sum')">总计{{
-                    level_selected === "sum" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
+            level_selected === "sum" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
         </div>
         <div v-for="(player, key) in playerData" style="margin-top: 10px;">
 
@@ -33,36 +33,19 @@
             <!-- <span class="name">{{ player.name }}</span> -->
             <PlayerName class="name" :user_id="player.name_id" :user_name="player.name"></PlayerName>
             <!-- <span class="beginner">{{ to_fixed_n(player.beginner, 3) }}</span> -->
-            <el-popover placement="bottom" :width="165" popper-style="background-color:rgba(250,250,250,0.38);"
-                :hide-after="0">
-                <div>
-                    <PreviewDownload :id="player.beginner_id"></PreviewDownload>
-                </div>
-                <template #reference>
-                    <span href="" target="_blank" class="beginner">{{ to_fixed_n(player.beginner, 3) }}
-                    </span>
-                </template>
-            </el-popover>
-            <el-popover placement="bottom" :width="165" popper-style="background-color:rgba(250,250,250,0.38);"
-                :hide-after="0">
-                <div>
-                    <PreviewDownload :id="player.intermediate_id"></PreviewDownload>
-                </div>
-                <template #reference>
-                    <span href="" target="_blank" class="intermediate">{{ to_fixed_n(player.intermediate, 3) }}
-                    </span>
-                </template>
-            </el-popover>
-            <el-popover placement="bottom" :width="165" popper-style="background-color:rgba(250,250,250,0.38);"
-                :hide-after="0">
-                <div>
-                    <PreviewDownload :id="player.expert_id"></PreviewDownload>
-                </div>
-                <template #reference>
-                    <span href="" target="_blank" class="expert">{{ to_fixed_n(player.expert, 3) }}
-                    </span>
-                </template>
-            </el-popover>
+            <span class="number_wid">
+                <PreviewNumber :id="player.beginner_id" :text="to_fixed_n(player.beginner, 3)">
+                </PreviewNumber>
+            </span>
+            <span class="number_wid">
+                <PreviewNumber :id="player.intermediate_id" :text="to_fixed_n(player.intermediate, 3)">
+                </PreviewNumber>
+            </span>
+            <span class="number_wid">
+                <PreviewNumber :id="player.expert_id" :text="to_fixed_n(player.expert, 3)">
+                </PreviewNumber>
+            </span>
+            
             <span class="sum">{{ to_fixed_n(player.sum, 3) }}</span>
 
 
@@ -76,12 +59,13 @@
         </el-pagination>
     </div>
 </template>
-  
+
 <script lang="ts" setup>
 // 全网录像的检索器，根据三个维度排序
 import { onMounted, ref, Ref, reactive } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
-import PreviewDownload from '@/components/PreviewDownload.vue';
+import { to_fixed_n } from "@/utils";
+import PreviewNumber from '@/components/PreviewNumber.vue';
 import PlayerName from '@/components/PlayerName.vue';
 import { defineAsyncComponent } from 'vue'
 // const AsyncPlayerName = defineAsyncComponent(() => import('@/components/PlayerName.vue'))
@@ -157,19 +141,8 @@ onMounted(() => {
     get_player_rank(1);
 })
 
-function to_fixed_n(input: string | number | undefined, to_fixed: number): string | number | undefined {
-    // 返回保留to_fixed位小数的字符串，四舍六入五取双
-    if (input === undefined) {
-        return input;
-    }
-    if (to_fixed <= 0) {
-        return input;
-    }
-    if (typeof (input) == "string") {
-        return parseFloat(input).toFixed(to_fixed);
-    }
-    return (input as number).toFixed(to_fixed);
-}
+
+
 
 const mod_style = () => {
     // 调整列宽样式
@@ -259,53 +232,35 @@ const setSortDirect = (level_tag: string) => {
     display: inline-block;
 }
 
-:deep(.name)  {
-    width: 26%;
+:deep(.name) {
+    width: 24%;
+    min-width: 150px;
     display: inline-block;
     text-align: center;
 }
 
-.beginner {
+.number_wid {
     width: 16%;
+    min-width: 100px;
     display: inline-block;
     text-align: center;
 }
 
-.beginner:hover {
-    color: rgb(64, 158, 255);
-    cursor: pointer;
-}
-
-.intermediate {
-    width: 16%;
-    display: inline-block;
-    text-align: center;
-}
-
-.intermediate:hover {
-    color: rgb(64, 158, 255);
-    cursor: pointer;
-}
-
-.expert {
-    width: 16%;
-    display: inline-block;
-    text-align: center;
-}
-
-.expert:hover {
+.number_wid:hover {
     color: rgb(64, 158, 255);
     cursor: pointer;
 }
 
 .sum {
     width: 16%;
+    min-width: 100px;
     display: inline-block;
     text-align: center;
 }
 
 .sum_title {
     width: 16%;
+    min-width: 100px;
     display: inline-block;
     text-align: center;
 }
@@ -319,12 +274,3 @@ const setSortDirect = (level_tag: string) => {
     justify-content: center;
 }
 </style>
-
-
-
-
-
-
-
-
-

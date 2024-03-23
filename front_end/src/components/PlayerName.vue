@@ -1,94 +1,44 @@
 <template>
-    <el-popover placement="bottom" width="298px" popper-class="max-h-300px overflow-auto" @show="pop_show" @hide="pop_hide"
-        trigger="click" popper-style="background-color:rgba(250,250,250);" :show-after="0" :hide-after="0">
-        <Wait v-show="is_loading"></Wait>
-        <div>
-            <div style="width: 80px;float: left;line-height: 200%;">
-                <el-image style="width: 72px; height: 72px;margin-top: 10px;border-radius: 8px;" :src="image_url"
-                    :fit="'cover'" />
-                <el-button style="width: 72px;height: 24px;" @click="visit_me(+id);">我的空间</el-button>
-            </div>
-            <div style="width: 188px;float: right;text-align: center;line-height: 180%;">
-                <div><strong>{{ realname }}</strong> (id: {{ id }})</div>
-                <div>初级纪录：
-                    <el-popover placement="bottom" :width="165" popper-style="background-color:rgba(250,250,250,0.38);"
-                        :hide-after="0">
-                        <div>
-                            <PreviewDownload :id="+b_t_id"></PreviewDownload>
-                        </div>
-                        <template #reference>
-                            <span href="" target="_blank">{{ to_fixed_n(b_t, 3) }}
-                            </span>
-                        </template>
-                    </el-popover> |
-                    <el-popover placement="bottom" :width="165" popper-style="background-color:rgba(250,250,250,0.38);"
-                        :hide-after="0">
-                        <div>
-                            <PreviewDownload :id="+b_bvs_id"></PreviewDownload>
-                        </div>
-                        <template #reference>
-                            <span href="" target="_blank">{{ to_fixed_n(b_bvs, 3) }}
-                            </span>
-                        </template>
-                    </el-popover>
+    <span @click.stop>
+        <el-popover placement="bottom" width="298px" popper-class="max-h-300px overflow-auto" @show="pop_show"
+            @hide="pop_hide" trigger="click" popper-style="background-color:rgba(250,250,250);" :show-after="0"
+            :hide-after="0">
+            <Wait v-show="is_loading"></Wait>
+            <div>
+                <div style="width: 80px;float: left;line-height: 200%;">
+                    <el-image style="width: 72px; height: 72px;margin-top: 10px;border-radius: 8px;" :src="image_url"
+                        :fit="'cover'" />
+                    <el-button style="width: 72px;height: 24px;" @click="visit_me(+id);">我的空间</el-button>
                 </div>
-                <div>中级纪录：
-                    <el-popover placement="bottom" :width="165" popper-style="background-color:rgba(250,250,250,0.38);"
-                        :hide-after="0">
-                        <div>
-                            <PreviewDownload :id="+i_t_id"></PreviewDownload>
-                        </div>
-                        <template #reference>
-                            <span href="" target="_blank">{{ to_fixed_n(i_t, 3) }}
-                            </span>
-                        </template>
-                    </el-popover> |
-                    <el-popover placement="bottom" :width="165" popper-style="background-color:rgba(250,250,250,0.38);"
-                        :hide-after="0">
-                        <div>
-                            <PreviewDownload :id="+i_bvs_id"></PreviewDownload>
-                        </div>
-                        <template #reference>
-                            <span href="" target="_blank">{{ to_fixed_n(i_bvs, 3) }}
-                            </span>
-                        </template>
-                    </el-popover>
+                <div style="width: 188px;float: right;text-align: center;line-height: 180%;">
+                    <div><strong>{{ realname }}</strong> (id: {{ id }})</div>
+                    <div>初级纪录：<PreviewNumber :id="+b_t_id" :text="to_fixed_n(b_t, 3)">
+                        </PreviewNumber> | <PreviewNumber :id="+b_bvs_id" :text="to_fixed_n(b_bvs, 3)">
+                        </PreviewNumber>
+                    </div>
+                    <div>中级纪录：<PreviewNumber :id="+i_t_id" :text="to_fixed_n(i_t, 3)">
+                        </PreviewNumber> | <PreviewNumber :id="+i_bvs_id" :text="to_fixed_n(i_bvs, 3)">
+                        </PreviewNumber>
+                    </div>
+                    <div>高级纪录：<PreviewNumber :id="+e_t_id" :text="to_fixed_n(e_t, 3)">
+                        </PreviewNumber> | <PreviewNumber :id="+e_bvs_id" :text="to_fixed_n(e_bvs, 3)">
+                        </PreviewNumber>
+                    </div>
+                    <div>总计纪录：
+                        <span style="color: #BF9000;font-weight: bold;">{{ to_fixed_n(b_t + i_t + e_t, 3) }}</span>
+                        |
+                        <span style="color: #BF9000;font-weight: bold;">{{ to_fixed_n(b_bvs + i_bvs + e_bvs, 3)
+                            }}</span>
+                    </div>
                 </div>
-                <div>高级纪录：
-                    <el-popover placement="bottom" :width="165" popper-style="background-color:rgba(250,250,250,0.38);"
-                        :hide-after="0">
-                        <div>
-                            <PreviewDownload :id="+e_t_id"></PreviewDownload>
-                        </div>
-                        <template #reference>
-                            <span href="" target="_blank">{{ to_fixed_n(e_t, 3) }}
-                            </span>
-                        </template>
-                    </el-popover> |
-                    <el-popover placement="bottom" :width="165" popper-style="background-color:rgba(250,250,250,0.38);"
-                        :hide-after="0">
-                        <div>
-                            <PreviewDownload :id="+e_bvs_id"></PreviewDownload>
-                        </div>
-                        <template #reference>
-                            <span href="" target="_blank">{{ to_fixed_n(e_bvs, 3) }}
-                            </span>
-                        </template>
-                    </el-popover>
-                </div>
-                <div>总计纪录：
-                    <span style="color: #BF9000;font-weight: bold;">{{ to_fixed_n(b_t + i_t + e_t, 3) }}</span>
-                    |
-                    <span style="color: #BF9000;font-weight: bold;">{{ to_fixed_n(b_bvs + i_bvs + e_bvs, 3) }}</span>
-                </div>
-            </div>
 
-        </div>
-        <template #reference>
-            <span href="" target="_blank" class="name">{{ data.user_name }}
-            </span>
-        </template>
-    </el-popover>
+            </div>
+            <template #reference>
+                <span href="" target="_blank" class="clickable">{{ data.user_name }}
+                </span>
+            </template>
+        </el-popover>
+    </span>
 </template>
 
 <script setup lang="ts" name="PlayerName">
@@ -101,7 +51,8 @@ import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
 import { genFileId, ElMessage } from 'element-plus'
 const image_url = ref(require('@/assets/person.png'))
-import PreviewDownload from '@/components/PreviewDownload.vue';
+// import PreviewDownload from '@/components/PreviewDownload.vue';
+import PreviewNumber from '@/components/PreviewNumber.vue';
 import Wait from '@/components/Wait.vue';
 import { useRouter } from 'vue-router'
 const router = useRouter()
@@ -222,10 +173,5 @@ const visit_me = (user_id: Number) => {
 }
 
 </script>
- 
-<style lang="less" scoped>
-.name:hover {
-    color: rgb(64, 158, 255);
-    cursor: pointer;
-}
-</style>
+
+<style lang="less"></style>

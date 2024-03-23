@@ -8,102 +8,54 @@
 
                 <el-table-column label="time" align="center">
                     <template #default="scope">
-                        <el-popover placement="bottom" :width="165" :disabled="!scope.row.time_id"
-                            popper-style="background-color:rgba(250,250,250,0.38);" :hide-after="0">
-                            <div>
-                                <PreviewDownload :id="scope.row.time_id"></PreviewDownload>
-                            </div>
-                            <template #reference>
-                                <el-link href="" target="_blank" v-if="scope.row.time_id">{{
-                                    scope.row.time.toFixed(3) }}</el-link>
-                                <span v-else> {{ "999.999" }} </span>
-                            </template>
-                        </el-popover>
+                        <PreviewNumber :id="scope.row.time_id" :text="scope.row.time.toFixed(3)">
+                        </PreviewNumber>
                     </template>
                 </el-table-column>
 
                 <el-table-column label="3BV/s" align="center">
                     <template #default="scope">
-                        <el-popover placement="bottom" :width="165" :disabled="!scope.row.bvs_id"
-                            popper-style="background-color:rgba(250,250,250,0.38);" :hide-after="0">
-                            <div>
-                                <PreviewDownload :id="scope.row.bvs_id"></PreviewDownload>
-                            </div>
-                            <template #reference>
-                                <el-link href="" target="_blank" v-if="scope.row.bvs_id">{{
-                                    scope.row.bvs.toFixed(3) }}</el-link>
-                                <span v-else> {{ "0.000" }} </span>
-                            </template>
-                        </el-popover>
+                        <PreviewNumber :id="scope.row.bvs_id" :text="scope.row.bvs.toFixed(3)">
+                        </PreviewNumber>
                     </template>
                 </el-table-column>
 
                 <el-table-column label="STNB" align="center">
                     <template #default="scope">
-                        <el-popover placement="bottom" :width="165" :disabled="!scope.row.stnb_id"
-                            popper-style="background-color:rgba(250,250,250,0.38);" :hide-after="0">
-                            <div>
-                                <PreviewDownload :id="scope.row.stnb_id"></PreviewDownload>
-                            </div>
-                            <template #reference>
-                                <el-link href="" target="_blank" v-if="scope.row.stnb_id">{{
-                                    scope.row.stnb.toFixed(3) }}</el-link>
-                                <span v-else> {{ "0.000" }} </span>
-                            </template>
-                        </el-popover>
+                        <PreviewNumber :id="scope.row.stnb_id" :text="scope.row.stnb.toFixed(3)">
+                        </PreviewNumber>
                     </template>
                 </el-table-column>
 
                 <el-table-column label="IOE" align="center">
                     <template #default="scope">
-                        <el-popover placement="bottom" :width="165" :disabled="!scope.row.ioe_id"
-                            popper-style="background-color:rgba(250,250,250,0.38);" :hide-after="0">
-                            <div>
-                                <PreviewDownload :id="scope.row.ioe_id"></PreviewDownload>
-                            </div>
-                            <template #reference>
-                                <el-link href="" target="_blank" v-if="scope.row.ioe_id">{{
-                                    scope.row.ioe.toFixed(3) }}</el-link>
-                                <span v-else> {{ "0.000" }} </span>
-                            </template>
-                        </el-popover>
+                        <PreviewNumber :id="scope.row.ioe_id" :text="scope.row.ioe.toFixed(3)">
+                        </PreviewNumber>
                     </template>
                 </el-table-column>
 
                 <el-table-column label="path" align="center">
                     <template #default="scope">
-                        <el-popover placement="bottom" :width="165" :disabled="!scope.row.path_id"
-                            popper-style="background-color:rgba(250,250,250,0.38);" :hide-after="0">
-                            <div>
-                                <PreviewDownload :id="scope.row.path_id"></PreviewDownload>
-                            </div>
-                            <template #reference>
-                                <el-link href="" target="_blank" v-if="scope.row.path_id">{{
-                                    scope.row.path.toFixed(3) }}</el-link>
-                                <span v-else> {{ "0.000" }} </span>
-                            </template>
-                        </el-popover>
+                        <PreviewNumber :id="scope.row.path_id" :text="scope.row.path.toFixed(3)">
+                        </PreviewNumber>
                     </template>
                 </el-table-column>
             </el-table>
         </div>
     </el-card>
 </template>
-  
+
 <script lang="ts" setup>
 // 个人主页的个人纪录部分
 import { onMounted, ref, Ref } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
-import PreviewDownload from '@/components/PreviewDownload.vue';
+import PreviewNumber from '@/components/PreviewNumber.vue';
 const { proxy } = useCurrentInstance();
-import { genFileId, ElMessage } from 'element-plus'
-import type { UploadInstance, UploadProps, UploadRawFile, UploadFile, UploadFiles, UploadRequestOptions } from 'element-plus'
+import type { UploadInstance } from 'element-plus'
 const upload = ref<UploadInstance>()
-import { Plus } from '@element-plus/icons-vue'
 // const imageUrl = ref(require('@/assets/person.png'))
 const avatar_changed = ref(false);
 import { Record, RecordBIE } from "@/utils/common/structInterface";
-import { compress, compressAccurately } from 'image-conversion';
 
 const loading = ref(true)
 
@@ -145,7 +97,7 @@ onMounted(() => {
         // signature.value = data.signature;
         // realname_edit.value = data.realname;
         // signature_edit.value = data.signature;
-        
+
         // if (data.avatar) {
         //     imageUrl.value = "data:image/;base64," + data.avatar;
         // }
@@ -202,12 +154,3 @@ function trans_record(r: RecordBIE): Record[] {
 
 }
 </style>
-
-
-
-
-
-
-
-
-
