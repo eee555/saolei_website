@@ -32,7 +32,7 @@ class DecimalEncoder(json.JSONEncoder):
         super(DecimalEncoder, self).default(o)
 
 
-# 获取我的地盘里的头像、姓名、个性签名
+# 获取我的地盘里的头像、姓名、个性签名、过审标识
 @ratelimit(key='ip', rate='60/h')
 def get_info(request):
     if request.method == 'GET': 

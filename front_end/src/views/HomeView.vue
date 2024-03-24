@@ -5,7 +5,7 @@
                 <el-tabs type="border-card" style=" min-height: 300px;">
                     <el-tab-pane label="雷界快讯" style="max-height: 300px; overflow: auto;">
                         <div v-for="news in news_queue">
-                            {{ news.time }}<PlayerName class="name" :user_id="+news.player_id" :user_name="news.player">
+                            {{ utc_to_local_format(news.time) }}<PlayerName class="name" :user_id="+news.player_id" :user_name="news.player">
                             </PlayerName>将{{ trans_mode(news.mode) }}模式{{ trans_level(news.level)
                             }}{{ trans_index(news.index) }}记录刷新为
                             <PreviewNumber :id="news.video_id" :text="to_fixed_n(news.value, 3)"></PreviewNumber>
@@ -15,11 +15,11 @@
                         <!-- 2023年2月26日 11:45 周炎亮 将高级标准模式时间记录刷新为 91.52 ↑3.60-->
                     </el-tab-pane>
                 </el-tabs>
-                <el-tabs type="border-card" style="margin-top: 2%; min-height: 300px;">
-                    <el-tab-pane label="最新录像" style="max-height: 800px; overflow: auto;" :lazy="true">
+                <el-tabs type="border-card" style="margin-top: 2%;">
+                    <el-tab-pane label="最新录像" class="bottom_tabs" :lazy="true">
                         <VideoList :videos="newest_queue" :reverse="true"></VideoList>
                     </el-tab-pane>
-                    <el-tab-pane label="审核队列" :lazy="true">
+                    <el-tab-pane label="审核队列" class="bottom_tabs" :lazy="true">
                         <VideoList :videos="review_queue"></VideoList>
                     </el-tab-pane>
                 </el-tabs>
@@ -43,6 +43,7 @@ import VideoList from '@/components/VideoList.vue';
 import PlayerName from '@/components/PlayerName.vue';
 import { to_fixed_n } from "@/utils";
 const { proxy } = useCurrentInstance();
+import { utc_to_local_format } from "@/utils/system/tools";
 
 const review_queue = ref<any[]>([]);
 const newest_queue = ref<any[]>([]);
@@ -124,4 +125,11 @@ const trans_index = (i: string) => {
 
 </script>
 
-<style scope lang='less'></style>
+<style scope lang='less'>
+.bottom_tabs{
+    height: 500px;
+    overflow: auto;
+
+}
+
+</style>

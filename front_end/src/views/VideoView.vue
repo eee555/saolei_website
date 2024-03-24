@@ -52,34 +52,36 @@
                 index_tag_selected != 'rtime' ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
             <!-- <span class="operation">操作</span> -->
         </div>
-        <div v-for="(video, key) in videoData" class="row" @click="preview(video.id)">
-            <div class="rank">{{ key - 19 + (state.CurrentPage) * 20 }}</div>
+        <div style="height: 770px;">
+            <div v-for="(video, key) in videoData" class="row" @click="preview(video.id)">
+                <div class="rank">{{ key - 19 + (state.CurrentPage) * 20 }}</div>
 
-            <span v-if="'upload_time' in video" class="utime">{{ utc_to_local_format(video.upload_time) }}</span>
-            <span v-else class="utime">{{ utc_to_local_format(video.video__upload_time) }}</span>
+                <span v-if="'upload_time' in video" class="utime">{{ utc_to_local_format(video.upload_time) }}</span>
+                <span v-else class="utime">{{ utc_to_local_format(video.video__upload_time) }}</span>
 
-            <PlayerName class="name"
-                :user_id="'player__id' in video ? +(video.player__id as Number) : +(video.video__player__id as Number)"
-                :user_name="'player__realname' in video ? video.player__realname : video.video__player__realname">
-            </PlayerName>
-            <!-- <span v-if="'player__realname' in video" class="name">{{ video.player__realname }}</span>
+                <PlayerName class="name"
+                    :user_id="'player__id' in video ? +(video.player__id as Number) : +(video.video__player__id as Number)"
+                    :user_name="'player__realname' in video ? video.player__realname : video.video__player__realname">
+                </PlayerName>
+                <!-- <span v-if="'player__realname' in video" class="name">{{ video.player__realname }}</span>
             <span v-else class="name">{{ video.video__player__realname }}</span> -->
 
-            <span v-if="'bv' in video" class="bbbv_bbbvs_rtime">{{ video.bv }}</span>
-            <span v-else class="bbbv_bbbvs_rtime">{{ video.video__bv }}</span>
+                <span v-if="'bv' in video" class="bbbv_bbbvs_rtime">{{ video.bv }}</span>
+                <span v-else class="bbbv_bbbvs_rtime">{{ video.video__bv }}</span>
 
-            <span v-if="'bvs' in video" class="bbbv_bbbvs_rtime">{{ to_fixed_n(video.bvs, 3) }}</span>
-            <span v-else class="bbbv_bbbvs_rtime">{{ to_fixed_n(video.video__bvs, 3) }}</span>
+                <span v-if="'bvs' in video" class="bbbv_bbbvs_rtime">{{ to_fixed_n(video.bvs, 3) }}</span>
+                <span v-else class="bbbv_bbbvs_rtime">{{ to_fixed_n(video.video__bvs, 3) }}</span>
 
-            <span v-if="'rtime' in video" class="bbbv_bbbvs_rtime">{{ to_fixed_n(video.rtime, 3) }}</span>
-            <span v-else class="bbbv_bbbvs_rtime">{{ to_fixed_n(video.video__rtime, 3) }}</span>
+                <span v-if="'rtime' in video" class="bbbv_bbbvs_rtime">{{ to_fixed_n(video.rtime, 3) }}</span>
+                <span v-else class="bbbv_bbbvs_rtime">{{ to_fixed_n(video.video__rtime, 3) }}</span>
 
-            <span v-show="index_visible" class="index">{{
+                <span v-show="index_visible" class="index">{{
             to_fixed_n(video["video__" + index_tags[index_tag_selected].key],
                 index_tags[index_tag_selected].to_fixed) }}</span>
-            <!-- <span class="operation">
+                <!-- <span class="operation">
                 <PreviewDownload :id="video.id"></PreviewDownload>
             </span> -->
+            </div>
         </div>
     </div>
 
