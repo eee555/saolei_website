@@ -9,7 +9,7 @@
                             </PlayerName>将{{ trans_mode(news.mode) }}模式{{ trans_level(news.level)
                             }}{{ trans_index(news.index) }}记录刷新为
                             <PreviewNumber :id="news.video_id" :text="to_fixed_n(news.value, 3)"></PreviewNumber>
-                            {{ news.delta > 0 ? "↑" : "↓" }}{{ news.delta }}
+                            {{ news.delta == "新" ? "" : news.delta > 0 ? "↑" : "↓" }}{{ news.delta }}
 
                         </div>
                         <!-- 2023年2月26日 11:45 周炎亮 将高级标准模式时间记录刷新为 91.52 ↑3.60-->
