@@ -66,7 +66,10 @@ def update_news_queue(user: UserProfile, ms_user: UserMS, video: VideoModel, ind
     _video = video if index == "time" or index == "bvs" else video.video
     value = f"{getattr(_video, _index):.3f}"
     delta_number = getattr(_video, _index) - getattr(ms_user, f"{video.level}_{index}_{mode}")
-    delta = f"{delta_number:.3f}"
+    if getattr(ms_user, f"{video.level}_{index}_id_{mode}"):
+        delta = f"{delta_number:.3f}"
+    else:
+        delta = "新"
     cache.lpush("news_queue", json.dumps({"time": video.upload_time,
                                           "player": user.realname,
                                           "player_id": video.player.id,
