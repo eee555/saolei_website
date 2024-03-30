@@ -8,7 +8,7 @@ class MaxSizes:
     lastname = 10
     signature = 188
     username = 20
-    videofile = 5242800 # 录像文件
+    videofile = 5*1024*1024 # 录像文件
 
 # 默认修改个人资料的次数
 class DefaultChances:
