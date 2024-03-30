@@ -5,7 +5,7 @@ from django.core.signals import request_finished
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from userprofile.models import UserProfile
-
+from utils.settings import *
 
 
 class ExpandVideoModel(models.Model):
@@ -100,7 +100,7 @@ class VideoModel(models.Model):
     player = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     # 服务器端文件相对路径
     file = RestrictedFileField(
-        upload_to="assets/videos", max_length=100, max_upload_size=5242880,)
+        upload_to="assets/videos", max_length=100, max_upload_size=MaxSizes.videofile,)
     video = models.OneToOneField(ExpandVideoModel, on_delete=models.CASCADE, related_name="+")
     # file = models.FileField(upload_to="/assets/videos")
     # 上传时间，兼最近状态变化时间、更新时间（冻结后会刷新）
