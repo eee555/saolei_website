@@ -5,7 +5,7 @@ from django.core.signals import request_finished
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from userprofile.models import UserProfile
-from utils.settings import *
+from config.global_settings import *
 
 
 class ExpandVideoModel(models.Model):
@@ -109,17 +109,17 @@ class VideoModel(models.Model):
     state = models.CharField(
         max_length=1, choices=State.choices, default=State.PLAIN)
     # 软件: "a"->avf; "e"->evf
-    software = models.CharField(max_length=1)
+    software = models.CharField(max_length=MaxSizes.software)
     # 难度
-    level = models.CharField(max_length=1, choices=Level.choices)
+    level = models.CharField(max_length=MaxSizes.gamelevel, choices=Level.choices)
     # 游戏模式，evf标准
     # https://github.com/eee555/ms_toollib/tree/main/base#readme
     mode = models.CharField(
-        max_length=2, choices=Mode.choices, default=Mode.STD)
+        max_length=MaxSizes.gamemode, choices=Mode.choices, default=Mode.STD)
     # # 无猜
     # nf = models.BooleanField()
     # 0.000-999.999
-    rtime = models.DecimalField(max_digits=6, decimal_places=3)
+    rtime = models.DecimalField(max_digits=MaxSizes.gametime, decimal_places=3)
     # 0-32767
     bv = models.PositiveSmallIntegerField()
     bvs = models.FloatField()

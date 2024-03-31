@@ -2,14 +2,15 @@ from django import forms
 # from .models import Profile
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
+from config.global_settings import *
 
 User = get_user_model()
 from captcha.fields import CaptchaField
 
 # 登录表单，继承了 forms.Form 类
 class UserLoginForm(forms.Form):
-    username = forms.CharField(min_length=1, max_length=20)
-    password = forms.CharField(min_length=1, max_length=20)
+    username = forms.CharField(min_length=1, max_length=MaxSizes.username)
+    password = forms.CharField(min_length=1, max_length=MaxSizes.password)
     captcha = forms.CharField(min_length=1, max_length=6)
     hashkey = forms.CharField(min_length=8, max_length=512)
 
@@ -56,8 +57,8 @@ class UserRegisterForm(forms.ModelForm):
 
 # 找回密码表单
 class UserRetrieveForm(forms.Form):
-    password = forms.CharField(max_length=20, min_length=6, required=True)
-    email = forms.EmailField(max_length=100, required=True)
+    password = forms.CharField(max_length=MaxSizes.password, min_length=MinSizes.password, required=True)
+    email = forms.EmailField(max_length=MaxSizes.email, required=True)
 
     class Meta:
         # 自定义错误消息

@@ -9,7 +9,7 @@ from django_cleanup import cleanup
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.utils import timezone
-from utils.settings import *
+from config.global_settings import *
 username_validator = UnicodeUsernameValidator()
 
 # 自定义用户
