@@ -2,43 +2,30 @@ from django import forms
 # from .models import Profile
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
+from config.global_settings import *
+from config.messages import *
 
 User = get_user_model()
 from captcha.fields import CaptchaField
 
 # 登录表单，继承了 forms.Form 类
 class UserLoginForm(forms.Form):
-    username = forms.CharField(min_length=1, max_length=20)
-    password = forms.CharField(min_length=1, max_length=20)
+    username = forms.CharField(min_length=1, max_length=MaxSizes.username)
+    password = forms.CharField(min_length=1, max_length=MaxSizes.password)
     captcha = forms.CharField(min_length=1, max_length=6)
     hashkey = forms.CharField(min_length=8, max_length=512)
 
 
 # 获取邮箱验证码时的表单，检查邮箱格式用
 class EmailForm(forms.Form):
-    email = forms.EmailField(max_length=100, required=True,error_messages = {
-            'max_length': '最多不能超过100个字符！',
-            'required': '邮箱是必填项！',
-            'invalid': '邮箱格式错误！',
-        })
+    email = forms.EmailField(max_length=MaxSizes.email, required=True,error_messages = FormErrors.email)
 
 
 # 注册表单
 class UserRegisterForm(forms.ModelForm):
-    username = forms.CharField(min_length=1, max_length=20, required=True,error_messages = {
-        'max_length': '最多不能超过20个字符！',
-        'required': '用户名是必填项！',
-        'invalid': "非法用户名！"
-        })
-    password = forms.CharField(max_length=20, min_length=6, required=True, error_messages={
-        'max_length': '最多不能超过20个字符！',
-        'min_length': '最少不能少于6个字符！'
-        })
-    email = forms.EmailField(min_length=4, max_length=100, required=True, error_messages={
-        'max_length': '最多不能超过100个字符！',
-        'required': '邮箱是必填项！',
-        'invalid': '邮箱格式错误！',
-        })
+    username = forms.CharField(min_length=1, max_length=MaxSizes.username, required=True,error_messages = FormErrors.username)
+    password = forms.CharField(max_length=MaxSizes.password, min_length=MinSizes.password, required=True, error_messages=FormErrors.password)
+    email = forms.EmailField(min_length=4, max_length=MaxSizes.email, required=True, error_messages=FormErrors.email)
     def clean_username(self):
         # 删去前后空格，长度不能少于1
         username = self.cleaned_data.get('username')
@@ -56,21 +43,14 @@ class UserRegisterForm(forms.ModelForm):
 
 # 找回密码表单
 class UserRetrieveForm(forms.Form):
-    password = forms.CharField(max_length=20, min_length=6, required=True)
-    email = forms.EmailField(max_length=100, required=True)
+    password = forms.CharField(max_length=MaxSizes.password, min_length=MinSizes.password, required=True)
+    email = forms.EmailField(max_length=MaxSizes.email, required=True)
 
     class Meta:
         # 自定义错误消息
         error_messages = {
-            'email': {
-                'max_length': '最多不能超过100个字符！',
-                'required': '邮箱是必填项！',
-                'invalid': '邮箱格式错误！',
-            },
-            'password': {
-                'max_length': '最多不能超过20个字符！',
-                'min_length': '最少不能少于6个字符！'
-            },
+            'email': FormErrors.email,
+            'password': FormErrors.password
         }
 
 

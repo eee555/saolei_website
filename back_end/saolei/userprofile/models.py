@@ -9,6 +9,7 @@ from django_cleanup import cleanup
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.utils import timezone
+from config.global_settings import *
 username_validator = UnicodeUsernameValidator()
 
 # 自定义用户
@@ -20,21 +21,21 @@ class UserProfile(AbstractUser):
     
     username = models.CharField(
         _("username"),
-        max_length=20,
+        max_length=MaxSizes.username,
         unique=True,
         help_text=_(
-            "Required. 20 characters or fewer. Letters, digits and @/./+/-/_ only."
+            f"Required. {MaxSizes.username} characters or fewer. Letters, digits and @/./+/-/_ only."
         ),
         validators=[username_validator],
         error_messages={
-            'max_length': _('用户名的长度不超过20，支持各国语言！'),
+            'max_length': _(f'用户名的长度不超过{MaxSizes.username}，支持各国语言！'),
             "unique": _("该用户名已存在！"),
         },
     )
-    first_name = models.CharField(_("first name"), max_length=10, blank=True)
-    last_name = models.CharField(_("last name"), max_length=10, blank=True)
+    first_name = models.CharField(_("first name"), max_length=MaxSizes.firstname, blank=True)
+    last_name = models.CharField(_("last name"), max_length=MaxSizes.lastname, blank=True)
     email = models.EmailField(_("email address"), 
-                              max_length=100,
+                              max_length=MaxSizes.email,
                               unique=True,
                               blank=False, 
                               null=False, 
@@ -42,27 +43,27 @@ class UserProfile(AbstractUser):
                                   "blank": _("必须填写邮箱！"),
                                   "invalid": _("邮箱格式不正确！"),
                                   "unique": _("该邮箱已被注册！"),
-                                  "max_length": _("邮箱的长度不能超过100！"),
+                                  "max_length": _(f"邮箱的长度不能超过{MaxSizes.email}！"),
                                   },)
 
     realname = models.CharField(
         max_length=10, unique=False, blank=True, default='请修改为实名', null=False)
     # 头像
     avatar = RestrictedImageField(upload_to='assets/avatar/%Y%m%d/', max_length=100,
-                                  max_upload_size=1024*300, blank=True, null=True)
+                                  max_upload_size=MaxSizes.avatar, blank=True, null=True)
     # 签名
-    signature = models.TextField(max_length=188, blank=True, null=True)  # 签名
-    country = models.CharField(max_length=3, blank=True, null=True)
+    signature = models.TextField(max_length=MaxSizes.signature, blank=True, null=True)  # 签名
+    country = models.CharField(max_length=MaxSizes.country, blank=True, null=True)
     # 封禁用户，禁止上传录像、头像、签名
     is_banned = models.BooleanField(default=False, blank=False)
     # 剩余修改真实姓名的次数，0~32767
-    left_realname_n = models.PositiveSmallIntegerField(null=False, default=1)
+    left_realname_n = models.PositiveSmallIntegerField(null=False, default=DefaultChances.name)
     # 剩余修改头像次数，0~32767
-    left_avatar_n = models.PositiveSmallIntegerField(null=False, default=2)
+    left_avatar_n = models.PositiveSmallIntegerField(null=False, default=DefaultChances.avatar)
     # 最近修改头像时间
     last_change_avatar = models.DateTimeField(default=timezone.now)
     # 剩余修改签名次数，0~32767
-    left_signature_n = models.PositiveSmallIntegerField(null=False, default=2)
+    left_signature_n = models.PositiveSmallIntegerField(null=False, default=DefaultChances.signature)
     # 最近修改签名时间
     last_change_signature = models.DateTimeField(default=timezone.now)
     # 人气
@@ -84,8 +85,8 @@ class UserProfile(AbstractUser):
 # 邮箱验证
 class EmailVerifyRecord(models.Model):
     # 验证码
-    code = models.CharField(max_length=8, verbose_name="验证码")
-    email = models.EmailField(max_length=100, verbose_name="邮箱")
+    code = models.CharField(max_length=MaxSizes.emailcaptcha, verbose_name="验证码")
+    email = models.EmailField(max_length=MaxSizes.email, verbose_name="邮箱")
     # 包含注册验证和找回验证
     # send_type = models.CharField(verbose_name="验证码类型", max_length=10,
     #                              choices=(("register", "注册"), ("forget", "找回密码")))
