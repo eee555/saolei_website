@@ -5,20 +5,20 @@ def get_default_designators():
     return []
 
 def RTimeField():
-    models.DecimalField(max_digits=6, decimal_places=3, default=999.999)
+    return models.DecimalField(max_digits=6, decimal_places=3, default=999.999)
 def BBBVsField():
-    models.FloatField(default=0.0)
+    return models.FloatField(default=0.0)
 def STNBField():
-    models.FloatField(default=0.0)
+    return models.FloatField(default=0.0)
 def IOEField():
-    models.FloatField(default=0.0)
+    return models.FloatField(default=0.0)
 def PathField():
-    models.FloatField(default=99999.9)
+    return models.FloatField(default=99999.9)
 
 def VideoIDField():
-    models.BigIntegerField(null=True)
+    return models.BigIntegerField(null=True)
 def VideoCountField():
-    models.IntegerField(null=False, default=0)
+    return models.IntegerField(null=False, default=0)
 
 # 扫雷用户
 class UserMS(models.Model):
