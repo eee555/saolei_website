@@ -6,7 +6,7 @@ from msuser.models import UserMS
 import json
 from utils import ComplexEncoder
 from config.global_settings import *
-from config.cmp import *
+from utils.cmp import isbetter
 
 record_update_fields=["b_time_std", "b_time_id_std", "i_time_std", "i_time_id_std", 
                       "e_time_std", "e_time_id_std", "b_bvs_std", "b_bvs_id_std", 
