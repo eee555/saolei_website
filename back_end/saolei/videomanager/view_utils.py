@@ -47,14 +47,11 @@ def update_3_level_cache_record(realname: str, index: str, mode: str, ms_user: U
     _float = float if index == "time" else lambda x: x
     key = f"player_{index}_{mode}_{ms_user.id}"
     cache.hset(key, "name", realname)
-    cache.hset(key, "b", _float(getattr(ms_user, f"b_{index}_{mode}")))
-    cache.hset(key, "b_id", getattr(ms_user, f"b_{index}_id_{mode}"))
-    cache.hset(key, "i", _float(getattr(ms_user, f"i_{index}_{mode}")))
-    cache.hset(key, "i_id", getattr(ms_user, f"i_{index}_id_{mode}"))
-    cache.hset(key, "e", _float(getattr(ms_user, f"e_{index}_{mode}")))
-    cache.hset(key, "e_id", getattr(ms_user, f"e_{index}_id_{mode}"))
-    s = _float(getattr(ms_user, f"b_{index}_{mode}") + getattr(ms_user, f"i_{index}_{mode}") +\
-                getattr(ms_user, f"e_{index}_{mode}"))
+    for level in GameLevels:
+        cache.hset(key, level, _float(ms_user.getrecord(level, index, mode)))
+        cache.hset(key, f"{level}_id", _float(ms_user.getrecordID(level, index, mode)))
+    s = _float(ms_user.getrecord("b", index, mode) + ms_user.getrecord("i", index, mode) +\
+                ms_user.getrecord("e", index, mode))
     cache.hset(key, "sum", s)
     cache.zadd(f"player_{index}_{mode}_ids", {ms_user.id: s}) 
 
