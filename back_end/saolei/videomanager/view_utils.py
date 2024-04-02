@@ -66,8 +66,8 @@ def update_news_queue(user: UserProfile, ms_user: UserMS, video: VideoModel, ind
     _index = "rtime" if index == "time" else index
     _video = video if index == "time" or index == "bvs" else video.video
     value = f"{getattr(_video, _index):.3f}"
-    delta_number = getattr(_video, _index) - getattr(ms_user, f"{video.level}_{index}_{mode}")
-    if getattr(ms_user, f"{video.level}_{index}_id_{mode}"):
+    delta_number = getattr(_video, _index) - ms_user.getrecord(video.level, index, mode)
+    if ms_user.getrecordID(video.level, index, mode):
         delta = f"{delta_number:.3f}"
     else:
         delta = "新"
@@ -88,7 +88,7 @@ def update_news_queue(user: UserProfile, ms_user: UserMS, video: VideoModel, ind
 # 检查用户是否可以加入排行，并更新排行榜
 def checkRanking(userprof: UserProfile, user: UserMS, mode, statname):
     for level in GameLevels:
-        if not isbetter(statname, getattr(user, level+statname+mode), DefaultRankingScores[statname]):
+        if not isbetter(statname, user.getrecord(level, statname, mode), DefaultRankingScores[statname]):
             return
     update_3_level_cache_record(userprof, statname, mode, user)
 
@@ -96,11 +96,10 @@ def checkRanking(userprof: UserProfile, user: UserMS, mode, statname):
 def checkPB(video: VideoModel, user: UserMS, userprof: UserProfile, mode):
     for statname in RankingGameStats:
         stat = getattr(video, statname)
-        attrname = video.level + statname + mode
-        if isbetter(statname, stat, getattr(user, attrname)):
+        if isbetter(statname, stat, user.getrecord(video.level, statname, mode)):
             update_news_queue(userprof, user, video, stat, mode)
-            setattr(user, attrname, stat)
-            setattr(user, video.level+statname+"id"+mode, video.video.id)
+            user.setrecord(user, video.level, statname, mode, stat)
+            user.setrecordID(user, video.level, statname, mode, video.video.id)
             checkRanking(userprof, user, mode, statname)
 
 def update_personal_record(video: VideoModel):
