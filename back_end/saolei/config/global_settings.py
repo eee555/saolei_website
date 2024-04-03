@@ -28,4 +28,5 @@ class DefaultChances:
 GameLevels = ["b", "i", "e"]
 GameModes = ["std", "nf", "ng", "dg"]
 RankingGameStats = ["time", "bvs", "stnb", "ioe", "path"]
-DefaultRankingScores = {"time": 999.998, "bvs": 0.001, "stnb": 0.001, "ioe": 0.001, "path": 99999.9}
+DefaultRankingScores = {"time": 1000.0, "bvs": 0.0, "stnb": 0.0, "ioe": 0.0, "path": 100000.0}
+VideoModeToName = {"00": "std", "12": "std"}
