@@ -140,53 +140,10 @@ def del_user_record_sql(user: UserProfile):
 def del_user_record_redis(user: UserProfile):
     ms_user: UserMS = user.userms
     _id = ms_user.id
-    cache.delete(f"player_time_std_{_id}")
-    cache.delete(f"player_bvs_std_{_id}")
-    cache.delete(f"player_stnb_std_{_id}")
-    cache.delete(f"player_ioe_std_{_id}")
-    cache.delete(f"player_path_std_{_id}")
-
-    cache.delete(f"player_time_nf_{_id}")
-    cache.delete(f"player_bvs_nf_{_id}")
-    cache.delete(f"player_stnb_nf_{_id}")
-    cache.delete(f"player_ioe_nf_{_id}")
-    cache.delete(f"player_path_nf_{_id}")
-    
-    cache.delete(f"player_time_ng_{_id}")
-    cache.delete(f"player_bvs_ng_{_id}")
-    cache.delete(f"player_stnb_ng_{_id}")
-    cache.delete(f"player_ioe_ng_{_id}")
-    cache.delete(f"player_path_ng_{_id}")
-    
-    cache.delete(f"player_time_dg_{_id}")
-    cache.delete(f"player_bvs_dg_{_id}")
-    cache.delete(f"player_stnb_dg_{_id}")
-    cache.delete(f"player_ioe_dg_{_id}")
-    cache.delete(f"player_path_dg_{_id}")
-
-    cache.zrem("player_time_std_ids", _id)
-    cache.zrem("player_bvs_std_ids", _id)
-    cache.zrem("player_stnb_std_ids", _id)
-    cache.zrem("player_ioe_std_ids", _id)
-    cache.zrem("player_path_std_ids", _id)
-
-    cache.zrem("player_time_nf_ids", _id)
-    cache.zrem("player_bvs_nf_ids", _id)
-    cache.zrem("player_stnb_nf_ids", _id)
-    cache.zrem("player_ioe_nf_ids", _id)
-    cache.zrem("player_path_nf_ids", _id)
-
-    cache.zrem("player_time_ng_ids", _id)
-    cache.zrem("player_bvs_ng_ids", _id)
-    cache.zrem("player_stnb_ng_ids", _id)
-    cache.zrem("player_ioe_ng_ids", _id)
-    cache.zrem("player_path_ng_ids", _id)
-    
-    cache.zrem("player_time_dg_ids", _id)
-    cache.zrem("player_bvs_dg_ids", _id)
-    cache.zrem("player_stnb_dg_ids", _id)
-    cache.zrem("player_ioe_dg_ids", _id)
-    cache.zrem("player_path_dg_ids", _id)
+    for mode in GameModes:
+        for stat in RankingGameStats:
+            cache.delete(f"player_{stat}_{mode}_{_id}")
+            cache.zrem(f"player_{stat}_{mode}_ids", _id)
 
 
 # 存量式更新用户的记录。删录像后用，恢复用户的记录。
