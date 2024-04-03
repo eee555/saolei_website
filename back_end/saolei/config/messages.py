@@ -1,4 +1,4 @@
-from global_settings import *
+from .global_settings import *
 
 class GeneralErrors:
     def stringsize(number,hilo,item=""):

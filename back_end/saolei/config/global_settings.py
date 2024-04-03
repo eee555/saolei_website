@@ -23,3 +23,9 @@ class DefaultChances:
     name = 1 # 名字
     avatar = 2 # 头像
     signature = 2 # 签名
+
+# 级别
+GameLevels = ["b", "i", "e"]
+GameModes = ["std", "nf", "ng", "dg"]
+RankingGameStats = ["time", "bvs", "stnb", "ioe", "path"]
+DefaultRankingScores = {"time": 999.998, "bvs": 0.001, "stnb": 0.001, "ioe": 0.001, "path": 99999.9}

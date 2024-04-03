@@ -165,3 +165,11 @@ class UserMS(models.Model):
 
     def __str__(self):
         return 'designators: {}'.format(self.designators)
+    def getrecord(self, level, stat, mode):
+        return getattr(self, f"{level}_{stat}_{mode}")
+    def getrecordID(self, level, stat, mode):
+        return getattr(self, f"{level}_{stat}_id_{mode}")
+    def setrecord(self, level, stat, mode, score):
+        setattr(self, f"{level}_{stat}_{mode}", score)
+    def setrecordID(self, level, stat, mode, id):
+        setattr(self, f"{level}_{stat}_id_{mode}", id)
