@@ -124,6 +124,18 @@ class VideoModel(models.Model):
     bv = models.PositiveSmallIntegerField()
     bvs = models.FloatField()
 
+    # 暂时的解决方案
+    def __getattr__(self, name):
+        if name == "time":
+            return self.rtime
+        elif name == "stnb":
+            return self.video.stnb
+        elif name == "ioe":
+            return self.video.ioe
+        elif name == "path":
+            return self.video.path
+        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+    
     def __str__(self):
         return f'level: {self.level}, time: {self.rtime}, 3BV: {self.bv}'
     # def delete(self): # 将删除操作换成更改标记

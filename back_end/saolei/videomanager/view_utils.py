@@ -60,10 +60,10 @@ def update_3_level_cache_record(realname: str, index: str, mode: str, ms_user: U
 def update_news_queue(user: UserProfile, ms_user: UserMS, video: VideoModel, index: str, mode: str):
     if float(ms_user.e_time_std) >= 60 and (index != "time" or video.level != "e"):
         return
-    _index = "rtime" if index == "time" else index
     _video = video if index == "time" or index == "bvs" else video.video
-    value = f"{getattr(_video, _index):.3f}"
-    delta_number = getattr(_video, _index) - ms_user.getrecord(video.level, index, mode)
+    # print(f"{type(index)} {index}") # 调试用
+    value = f"{getattr(_video, index):.3f}"
+    delta_number = getattr(_video, index) - ms_user.getrecord(video.level, index, mode)
     if ms_user.getrecordID(video.level, index, mode):
         delta = f"{delta_number:.3f}"
     else:
@@ -87,16 +87,16 @@ def checkRanking(userprof: UserProfile, user: UserMS, mode, statname):
     for level in GameLevels:
         if not isbetter(statname, user.getrecord(level, statname, mode), DefaultRankingScores[statname]):
             return
-    update_3_level_cache_record(userprof, statname, mode, user)
+    update_3_level_cache_record(userprof.realname, statname, mode, user)
 
 # 检查某录像是否打破个人纪录
 def checkPB(video: VideoModel, user: UserMS, userprof: UserProfile, mode):
     for statname in RankingGameStats:
         stat = getattr(video, statname)
         if isbetter(statname, stat, user.getrecord(video.level, statname, mode)):
-            update_news_queue(userprof, user, video, stat, mode)
-            user.setrecord(user, video.level, statname, mode, stat)
-            user.setrecordID(user, video.level, statname, mode, video.video.id)
+            update_news_queue(userprof, user, video, statname, mode)
+            user.setrecord(video.level, statname, mode, stat)
+            user.setrecordID(video.level, statname, mode, video.video.id)
             checkRanking(userprof, user, mode, statname)
 
 def update_personal_record(video: VideoModel):
