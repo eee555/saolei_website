@@ -1,6 +1,8 @@
 from django.db import models
 # from userprofile.models import UserProfile
 
+from config.global_settings import *
+
 def get_default_designators():
     return []
 
@@ -173,3 +175,8 @@ class UserMS(models.Model):
         setattr(self, f"{level}_{stat}_{mode}", score)
     def setrecordID(self, level, stat, mode, id):
         setattr(self, f"{level}_{stat}_id_{mode}", id)
+    
+    def getrecords_level(self, stat, mode):
+        return [self.getrecord(level, stat, mode) for level in GameLevels]
+    def getrecordIDs_level(self, stat, mode):
+        return [self.getrecordID(level, stat, mode) for level in GameLevels]
