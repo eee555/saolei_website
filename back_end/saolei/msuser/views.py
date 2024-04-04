@@ -94,7 +94,7 @@ def get_records(request):
             for stat in RankingGameStats:
                 value[stat] = ms_user.getrecords_level(stat, mode)
                 value[f"{stat}_id"] = ms_user.getrecordIDs_level(stat, mode)
-            response[f"{mode}_record"] = value 
+            response[f"{mode}_record"] = json.dumps(value) 
         return JsonResponse(response)
     else:
         return HttpResponse("别瞎玩")
