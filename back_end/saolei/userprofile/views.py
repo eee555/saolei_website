@@ -23,7 +23,7 @@ from django_ratelimit.decorators import ratelimit
 from django.utils import timezone
 from apscheduler.schedulers.background import BackgroundScheduler
 from django_apscheduler.jobstores import DjangoJobStore, register_job, register_events
-
+from saolei.settings import EMAIL_SKIP
 
 User = get_user_model()
 
@@ -154,9 +154,9 @@ def user_register(request):
             email_captcha = request.POST.get("email_captcha", None)
             get_email_captcha = EmailVerifyRecord.objects.filter(hashkey=emailHashkey).first()
             # get_email_captcha = EmailVerifyRecord.objects.filter(hashkey="5f0db744-180b-4d9f-af5a-2986f4a78769").first()
-            if get_email_captcha and email_captcha and get_email_captcha.code == email_captcha and\
-                  get_email_captcha.email == request.POST.get("email", None):
-                if (timezone.now() - get_email_captcha.send_time).seconds <= 3600:
+            if EMAIL_SKIP or (get_email_captcha and email_captcha and get_email_captcha.code == email_captcha and\
+                  get_email_captcha.email == request.POST.get("email", None)):
+                if EMAIL_SKIP or (timezone.now() - get_email_captcha.send_time).seconds <= 3600:
                     new_user = user_register_form.save(commit=False)
                     # 设置密码(哈希)
                     new_user.set_password(
