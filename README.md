@@ -41,6 +41,9 @@
 1. npm install
 1. npm run serve
 
+特殊的调试参数：
+1. saolei_website\backend\saolei\saolei\settings.py中的`EMAIL_SKIP`用于跳过注册等过程中的邮箱验证
+
 ## 链接
 
 
