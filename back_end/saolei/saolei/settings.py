@@ -219,6 +219,13 @@ if EMAIL_SKIP: # 以防万一忘了改EMAIL_SKIP
     user_input = input("Do you want to continue? (y/n): ")
     if user_input.lower() != 'y':
         raise SystemExit("Program terminated.")
+    
+BAIDU_VERIFY_SKIP = False
+if BAIDU_VERIFY_SKIP: # 以防万一忘了改BAIDU_VERIFY_SKIP
+    print("已跳过网络审查步骤！")
+    user_input = input("Do you want to continue? (y/n): ")
+    if user_input.lower() != 'y':
+        raise SystemExit("Program terminated.")
 
 SESSION_COOKIE_NAME = "session_id"        # Session的cookie保存在浏览器上时的key
 SESSION_COOKIE_PATH = "/"                # Session的cookie保存的路径(默认)
