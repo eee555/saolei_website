@@ -119,7 +119,7 @@ class VideoModel(models.Model):
     # # 无猜
     # nf = models.BooleanField()
     # 0.000-999.999
-    rtimei = models.PositiveIntegerField()
+    milliseconds = models.PositiveIntegerField() # 整数形式存储的毫秒数。i后缀表示整数
     # 0-32767
     bv = models.PositiveSmallIntegerField()
     bvs = models.FloatField()
@@ -127,7 +127,7 @@ class VideoModel(models.Model):
     # 暂时的解决方案
     def __getattr__(self, name):
         if name in ["rtime", "time"]:
-            return self.rtimei/1000
+            return self.milliseconds/1000 # 毫秒数转化为秒数
         elif name == "stnb":
             return self.video.stnb
         elif name == "ioe":
@@ -138,7 +138,7 @@ class VideoModel(models.Model):
     
     def __setattr__(self, name, value):
         if name in ["rtime", "time"]:
-            self.rtimei = round(value*1000)
+            self.milliseconds = round(value*1000) # 秒数转化为毫秒数
         else:
             super().__setattr__(name, value)
     
