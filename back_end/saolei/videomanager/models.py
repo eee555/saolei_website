@@ -119,15 +119,15 @@ class VideoModel(models.Model):
     # # 无猜
     # nf = models.BooleanField()
     # 0.000-999.999
-    rtime = models.DecimalField(max_digits=MaxSizes.gametime, decimal_places=3)
+    rtimei = models.PositiveIntegerField()
     # 0-32767
     bv = models.PositiveSmallIntegerField()
     bvs = models.FloatField()
 
     # 暂时的解决方案
     def __getattr__(self, name):
-        if name == "time":
-            return self.rtime
+        if name in ["rtime", "time"]:
+            return self.rtimei/1000
         elif name == "stnb":
             return self.video.stnb
         elif name == "ioe":
@@ -135,6 +135,12 @@ class VideoModel(models.Model):
         elif name == "path":
             return self.video.path
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+    
+    def __setattr__(self, name, value):
+        if name in ["rtime", "time"]:
+            self.rtimei = round(value*1000)
+        else:
+            super().__setattr__(name, value)
     
     def __str__(self):
         return f'level: {self.level}, time: {self.rtime}, 3BV: {self.bv}'
