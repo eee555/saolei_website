@@ -73,7 +73,7 @@ const { proxy } = useCurrentInstance();
 
 // const level_tag_selected = ref("EXPERT");
 const mode_tag_selected = ref("STD");
-const index_tag_selected = ref("rtime");
+const index_tag_selected = ref("timems");
 const level_selected = ref("sum"); // bie&sum
 
 const index_visible = ref(true);
@@ -125,7 +125,7 @@ const mode_tags: Tags = {
 
 // reverse: true从小到大
 const index_tags: TagsReverse = {
-    "rtime": { name: "成绩", key: "time", reverse: false, to_fixed: 3 },
+    "timems": { name: "成绩", key: "time", reverse: false, to_fixed: 3 },
     "bbbv_s": { name: "3BV/s", key: "bvs", reverse: true, to_fixed: 3 },
     "path": { name: "path", key: "path", reverse: false, to_fixed: 2 },
     "stnb": { name: "STNB", key: "stnb", reverse: true, to_fixed: 2 },
@@ -148,7 +148,7 @@ const mod_style = () => {
     // 调整列宽样式
     // console.log(index_visible.value);
 
-    index_visible.value = !["upload_time", "bbbv", "bbbv_s", "rtime"].
+    index_visible.value = !["upload_time", "bbbv", "bbbv_s", "timems"].
         includes(index_tag_selected.value);
 }
 

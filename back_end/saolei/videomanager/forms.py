@@ -11,7 +11,7 @@ class UploadVideoForm(forms.Form):
     software = forms.CharField(max_length=1, required=True)
     level = forms.CharField(max_length=1, required=True)
     mode = forms.CharField(max_length=2, required=True)
-    rtime = forms.DecimalField(max_digits=6, decimal_places=3, required=True)
+    timems = forms.IntegerField(required=True)
     bv = forms.IntegerField(max_value=32767, min_value=1, required=True)
     bvs = forms.FloatField(min_value=0.0, required=True)
 

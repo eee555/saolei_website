@@ -120,16 +120,14 @@ class VideoModel(models.Model):
     # # 无猜
     # nf = models.BooleanField()
     # 0.000-999.999
-    milliseconds = models.PositiveIntegerField(default=999999) # 整数形式存储的毫秒数。i后缀表示整数
+    timems = models.PositiveIntegerField(default=999999) # 整数形式存储的毫秒数。i后缀表示整数
     # 0-32767
     bv = models.PositiveSmallIntegerField()
     bvs = models.FloatField()
 
     # 暂时的解决方案
     def __getattr__(self, name):
-        if name == "time":
-            return self.rtime
-        elif name == "stnb":
+        if name == "stnb":
             return self.video.stnb
         elif name == "ioe":
             return self.video.ioe
@@ -137,18 +135,8 @@ class VideoModel(models.Model):
             return self.video.path
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
     
-    @property
-    def rtime(self): # 向后兼容，毫秒数转化为秒数
-        return Decimal(f"{self.milliseconds//1000}.{self.milliseconds%1000}")
-    
-    def __setattr__(self, name, value):
-        if name in ["rtime", "time"]:
-            self.milliseconds = round(value*1000) # 秒数转化为毫秒数
-        else:
-            super().__setattr__(name, value)
-    
     def __str__(self):
-        return f'level: {self.level}, time: {self.rtime}, 3BV: {self.bv}'
+        return f'level: {self.level}, timems: {self.timems}, 3BV: {self.bv}'
     # def delete(self): # 将删除操作换成更改标记
     #     self.is_delete = True
     #     self.save()

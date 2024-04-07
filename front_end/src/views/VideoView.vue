@@ -40,16 +40,16 @@
                 :style="{ color: (index_tag_selected === 'bbbv_s' ? 'rgb(64, 158, 255)' : '') }"
                 @click="reverseSortDirect('bbbv_s')">3BV/s{{
             index_tag_selected === 'bbbv_s' ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
-            <span class="bbbv_bbbvs_rtime" :class="{ hoverable: index_tag_selected === 'rtime' }"
-                :style="{ color: (index_tag_selected === 'rtime' ? 'rgb(64, 158, 255)' : '') }"
-                @click="reverseSortDirect('rtime')">成绩{{
-            index_tag_selected === 'rtime' ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
+            <span class="bbbv_bbbvs_rtime" :class="{ hoverable: index_tag_selected === 'timems' }"
+                :style="{ color: (index_tag_selected === 'timems' ? 'rgb(64, 158, 255)' : '') }"
+                @click="reverseSortDirect('timems')">成绩{{
+            index_tag_selected === 'timems' ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
             <span v-show="index_visible" class="index"
-                :style="{ color: (index_tag_selected != 'upload_time' && index_tag_selected != 'bbbv' && index_tag_selected != 'bbbv_s' && index_tag_selected != 'rtime' ? 'rgb(64, 158, 255)' : '') }"
+                :style="{ color: (index_tag_selected != 'upload_time' && index_tag_selected != 'bbbv' && index_tag_selected != 'bbbv_s' && index_tag_selected != 'timems' ? 'rgb(64, 158, 255)' : '') }"
                 @click="reverseSortDirect(index_tag_selected)">{{
             index_tag_selected }}{{
             index_tag_selected != 'upload_time' && index_tag_selected != 'bbbv' && index_tag_selected != 'bbbv_s' &&
-                index_tag_selected != 'rtime' ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
+                index_tag_selected != 'timems' ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
             <!-- <span class="operation">操作</span> -->
         </div>
         <div style="height: 770px;">
@@ -72,8 +72,8 @@
                 <span v-if="'bvs' in video" class="bbbv_bbbvs_rtime">{{ to_fixed_n(video.bvs, 3) }}</span>
                 <span v-else class="bbbv_bbbvs_rtime">{{ to_fixed_n(video.video__bvs, 3) }}</span>
 
-                <span v-if="'rtime' in video" class="bbbv_bbbvs_rtime">{{ to_fixed_n(video.rtime, 3) }}</span>
-                <span v-else class="bbbv_bbbvs_rtime">{{ to_fixed_n(video.video__rtime, 3) }}</span>
+                <span v-if="'timems' in video" class="bbbv_bbbvs_rtime">{{ video.timems }}</span>
+                <span v-else class="bbbv_bbbvs_rtime">{{ video.video__timems }}</span>
 
                 <span v-show="index_visible" class="index">{{
             to_fixed_n(video["video__" + index_tags[index_tag_selected].key],
@@ -108,7 +108,7 @@ const preview_visible = ref(false);
 
 const level_tag_selected = ref("EXPERT");
 const mode_tag_selected = ref("STD");
-const index_tag_selected = ref("rtime");
+const index_tag_selected = ref("timems");
 
 const index_visible = ref(true);
 
@@ -127,12 +127,12 @@ interface Video {
     player__realname?: string;
     bv?: number;
     bvs?: number;
-    rtime?: number;
+    timems?: number;
     video__upload_time?: string;
     video__player__realname?: string;
     video__bv?: number;
     video__bvs?: number;
-    video__rtime?: number;
+    video__timems?: number;
     index?: number;
     [index: string]: string | number | undefined;
 }
@@ -177,7 +177,7 @@ const mode_tags: Tags = {
 // reverse: true从小到大
 const index_tags: TagsReverse = {
     "upload_time": { name: "上传时间", key: "upload_time", reverse: true, to_fixed: -1 },
-    "rtime": { name: "成绩", key: "rtime", reverse: false, to_fixed: 3 },
+    "timems": { name: "成绩", key: "timems", reverse: false, to_fixed: 3 },
     "bbbv": { name: "3BV", key: "bv", reverse: false, to_fixed: 0 },
     "bbbv_s": { name: "3BV/s", key: "bvs", reverse: true, to_fixed: 3 },
     "left_s": { name: "left/s", key: "left_s", reverse: true, to_fixed: 3 },
@@ -228,7 +228,7 @@ const mod_style = () => {
     // 调整列宽样式
     // console.log(index_visible.value);
 
-    index_visible.value = !["upload_time", "bbbv", "bbbv_s", "rtime"].
+    index_visible.value = !["upload_time", "bbbv", "bbbv_s", "timems"].
         includes(index_tag_selected.value);
 }
 

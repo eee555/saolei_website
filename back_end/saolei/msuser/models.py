@@ -6,8 +6,8 @@ from config.global_settings import *
 def get_default_designators():
     return []
 
-def RTimeField():
-    return models.DecimalField(max_digits=6, decimal_places=3, default=999.999)
+def RTimeField(): # 以毫秒计数
+    return models.IntegerField(default=999999)
 def BBBVsField():
     return models.FloatField(default=0.0)
 def STNBField():
@@ -41,12 +41,12 @@ class UserMS(models.Model):
     video_num_dg    = VideoCountField() # 递归
 
     # 标准、盲扫、无猜、递归的记录
-    b_time_std = RTimeField()
-    b_time_id_std = VideoIDField()
-    i_time_std = RTimeField()
-    i_time_id_std = VideoIDField()
-    e_time_std = RTimeField()
-    e_time_id_std = VideoIDField()
+    b_timems_std = RTimeField()
+    b_timems_id_std = VideoIDField()
+    i_timems_std = RTimeField()
+    i_timems_id_std = VideoIDField()
+    e_timems_std = RTimeField()
+    e_timems_id_std = VideoIDField()
     b_bvs_std = BBBVsField()
     b_bvs_id_std = VideoIDField()
     i_bvs_std = BBBVsField()
@@ -72,12 +72,12 @@ class UserMS(models.Model):
     e_path_std = PathField()
     e_path_id_std = VideoIDField()
 
-    b_time_nf = RTimeField()
-    b_time_id_nf = VideoIDField()
-    i_time_nf = RTimeField()
-    i_time_id_nf = VideoIDField()
-    e_time_nf = RTimeField()
-    e_time_id_nf = VideoIDField()
+    b_timems_nf = RTimeField()
+    b_timems_id_nf = VideoIDField()
+    i_timems_nf = RTimeField()
+    i_timems_id_nf = VideoIDField()
+    e_timems_nf = RTimeField()
+    e_timems_id_nf = VideoIDField()
     b_bvs_nf = BBBVsField()
     b_bvs_id_nf = VideoIDField()
     i_bvs_nf = BBBVsField()
@@ -103,12 +103,12 @@ class UserMS(models.Model):
     e_path_nf = PathField()
     e_path_id_nf = VideoIDField()
 
-    b_time_ng = RTimeField()
-    b_time_id_ng = VideoIDField()
-    i_time_ng = RTimeField()
-    i_time_id_ng = VideoIDField()
-    e_time_ng = RTimeField()
-    e_time_id_ng = VideoIDField()
+    b_timems_ng = RTimeField()
+    b_timems_id_ng = VideoIDField()
+    i_timems_ng = RTimeField()
+    i_timems_id_ng = VideoIDField()
+    e_timems_ng = RTimeField()
+    e_timems_id_ng = VideoIDField()
     b_bvs_ng = BBBVsField()
     b_bvs_id_ng = VideoIDField()
     i_bvs_ng = BBBVsField()
@@ -134,12 +134,12 @@ class UserMS(models.Model):
     e_path_ng = PathField()
     e_path_id_ng = VideoIDField()
 
-    b_time_dg = RTimeField()
-    b_time_id_dg = VideoIDField()
-    i_time_dg = RTimeField()
-    i_time_id_dg = VideoIDField()
-    e_time_dg = RTimeField()
-    e_time_id_dg = VideoIDField()
+    b_timems_dg = RTimeField()
+    b_timems_id_dg = VideoIDField()
+    i_timems_dg = RTimeField()
+    i_timems_id_dg = VideoIDField()
+    e_timems_dg = RTimeField()
+    e_timems_id_dg = VideoIDField()
     b_bvs_dg = BBBVsField()
     b_bvs_id_dg = VideoIDField()
     i_bvs_dg = BBBVsField()

@@ -118,9 +118,9 @@ def get_info_abstract(request):
             "id": user_id,
             "realname": user.realname,
             "avatar": image_data,
-            "record_abstract": json.dumps({"time": ms_user.getrecords_level("time", "std"),
+            "record_abstract": json.dumps({"timems": ms_user.getrecords_level("timems", "std"),
                                             "bvs": ms_user.getrecords_level("bvs", "std"),
-                                            "time_id": ms_user.getrecordIDs_level("time", "std"),
+                                            "timems_id": ms_user.getrecordIDs_level("timems", "std"),
                                             "bvs_id": ms_user.getrecordIDs_level("bvs", "std")}, 
                                             cls=DecimalEncoder),
             }
@@ -166,7 +166,7 @@ def update_realname(request):
 @login_required(login_url='/')
 def update_avatar(request):
     if request.method == 'POST':
-        if request.user.userms.e_time_std >= 200:
+        if request.user.userms.e_timems_std >= 200:
             return JsonResponse({"status": 177, "msg": "只允许标准高级sub200的玩家修改头像和个性签名！"})
         user_update_form = UserUpdateAvatarForm(
             data=request.POST, files=request.FILES, request=request)
@@ -192,7 +192,7 @@ def update_avatar(request):
 @login_required(login_url='/')
 def update_signature(request):
     if request.method == 'POST':
-        if request.user.userms.e_time_std >= 200:
+        if request.user.userms.e_timems_std >= 200:
             return JsonResponse({"status": 177, "msg": "只允许标准高级sub200的玩家修改头像和个性签名！"})
         user_update_form = UserUpdateSignatureForm(
             data=request.POST, request=request)
@@ -221,8 +221,8 @@ def update_signature(request):
 # 用户修改自己的名字后，同步修改redis缓存里的真实姓名，使得排行榜数据同步修改
 # 开销较大，然而用户改名只有1次机会
 def update_cache_realname(user_id, user_realname):
-    for index in ["time", "bvs", "path", "ioe", "stnb"]:
-        for mode in ["std", "nf", "ng", "dg"]:
+    for index in RankingGameStats:
+        for mode in GameModes:
             key = f"player_{index}_{mode}_{user_id}"
             if cache.exists(key):
                 cache.hset(key, "name", user_realname)
@@ -246,16 +246,16 @@ def update_cache_realname(user_id, user_realname):
 def player_rank(request):
     if request.method == 'GET':
         # print(request.GET)
-        # print(cache.zcard("player_time_std_ids"))
+        # print(cache.zcard("player_timems_std_ids"))
         # print(cache.keys('*'))
-        # [b'player_stnb_std_ids', b'player_path_std_2', b'player_time_std_1', b'player_bvs_std_2',
+        # [b'player_stnb_std_ids', b'player_path_std_2', b'player_timems_std_1', b'player_bvs_std_2',
         #   b'player_bvs_std_1', b'newest_queue', b'player_path_std_ids', b'player_ioe_std_2',
-        #     b'player_stnb_std_2', b'player_time_std_2', b'player_bvs_std_ids', b'player_ioe_std_ids',
+        #     b'player_stnb_std_2', b'player_timems_std_2', b'player_bvs_std_ids', b'player_ioe_std_ids',
         #       b'player_stnb_std_1', b'player_path_std_1', b'review_queue', b'player_ioe_std_1', 
-        #       b':1:django.contrib.sessions.cachef7wlcpvziwulv829ah1r66afrc1xaae0', b'player_time_std_ids']
-        # print(cache.zrange('player_time_std_ids', 0, -1))
-        # print(cache.zrange('player_time_std_1', 0, -1))
-        # print(cache.zrange('player_time_std_2', 0, -1))
+        #       b':1:django.contrib.sessions.cachef7wlcpvziwulv829ah1r66afrc1xaae0', b'player_timems_std_ids']
+        # print(cache.zrange('player_timems_std_ids', 0, -1))
+        # print(cache.zrange('player_timems_std_1', 0, -1))
+        # print(cache.zrange('player_timems_std_2', 0, -1))
         # print(cache.zrange('player_path_std_2', 0, -1))
         data=request.GET
         # num_player = cache.llen(data["ids"])
@@ -268,8 +268,8 @@ def player_rank(request):
         desc_flag = True if data["reverse"] == "true" else False
         res = cache.sort(data["ids"], by=data["sort_by"], get=json.loads(data["indexes"]), desc=desc_flag, start=start_idx, num=20)
         # print(res)
-        # print(cache.get("player_time_std_ids"))
-        # print(cache.hget("player_time_std_3", "b"))
+        # print(cache.get("player_timems_std_ids"))
+        # print(cache.hget("player_timems_std_3", "b"))
         response = {
             "total_page": num_player // 20 + 1,
             "players": res
