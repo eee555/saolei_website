@@ -7,6 +7,7 @@ import json
 from utils import ComplexEncoder
 from config.global_settings import *
 from utils.cmp import isbetter
+from django.db.models import F, ExpressionWrapper, DecimalField
 
 record_update_fields=["b_time_std", "b_time_id_std", "i_time_std", "i_time_id_std", 
                       "e_time_std", "e_time_id_std", "b_bvs_std", "b_bvs_id_std", 
@@ -157,5 +158,7 @@ def update_personal_record_stock(user: UserProfile):
     for v in videos:
         update_personal_record(v)
 
-
+# 为了避免修改前端做的暂时的处理，将"milliseconds"打包成"rtime"
+def wrap_values(object, *args):
+    return object.annotate(rtime=ExpressionWrapper(F('milliseconds') / 1000, output_field=DecimalField(max_digits=6, decimal_places=3))).values(*args)
 

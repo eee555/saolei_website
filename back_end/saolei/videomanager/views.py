@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .forms import UploadVideoForm
 from .models import VideoModel, ExpandVideoModel
-from .view_utils import update_personal_record, update_personal_record_stock
+from .view_utils import update_personal_record, update_personal_record_stock, wrap_values
 from userprofile.models import UserProfile
 from django.http import HttpResponse, JsonResponse, FileResponse
 # from asgiref.sync import sync_to_async
@@ -191,32 +191,32 @@ def video_query(request):
 
         if data["mode"] != "00":
             if index in {"id", "upload_time", "bv", "bvs", "-upload_time", "-bv", "-bvs"}:
-                videos = VideoModel.objects.filter(level=data["level"], mode=data["mode"])\
-                    .order_by(index, "rtime").\
-                    values("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "rtime")
+                videos = wrap_values(VideoModel.objects.filter(level=data["level"], mode=data["mode"])\
+                    .order_by(index, "rtime"),\
+                    "id", "upload_time", "player__realname", "player__id", "bv", "bvs", "rtime")
             elif index == "rtime" or index == "-rtime":
-                videos = VideoModel.objects.filter(level=data["level"], mode=data["mode"])\
-                    .order_by(index).\
-                    values("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "rtime")
+                videos = wrap_values(VideoModel.objects.filter(level=data["level"], mode=data["mode"])\
+                    .order_by(index),\
+                    "id", "upload_time", "player__realname", "player__id", "bv", "bvs", "rtime")
             else:
-                videos = VideoModel.objects.filter(level=data["level"], mode=data["mode"])\
-                    .order_by(order_index, "rtime").\
-                    values("id", "upload_time", "player__realname", "player__id", "bv",
+                videos = wrap_values(VideoModel.objects.filter(level=data["level"], mode=data["mode"])\
+                    .order_by(order_index, "rtime"),\
+                    "id", "upload_time", "player__realname", "player__id", "bv",
                         "bvs", "rtime", values_index)
         else:
             if index in {"id", "upload_time", "bv", "bvs", "-upload_time", "-bv", "-bvs"}:
-                videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(level=data["level"])\
-                    .order_by(index, "rtime").\
-                    values("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "rtime")
+                videos = wrap_values(VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(level=data["level"])\
+                    .order_by(index, "rtime"),\
+                    "id", "upload_time", "player__realname", "player__id", "bv", "bvs", "rtime")
             elif index == "rtime" or index == "-rtime":
-                videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(level=data["level"])\
-                    .order_by(index).\
-                    values("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "rtime")
+                videos = wrap_values(VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(level=data["level"])\
+                    .order_by(index.replace("rtime", "milliseconds")),\
+                    "id", "upload_time", "player__realname", "player__id", "bv", "bvs", "rtime")
+                # annotate是为了避免修改前端做的暂时的处理
             else:
-                videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(level=data["level"])\
-                    .order_by(order_index, "rtime").\
-                    values("id", "upload_time", "player__realname", "player__id", "bv",
-                        "bvs", "rtime", values_index)
+                videos = wrap_values(VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(level=data["level"])\
+                    .order_by(order_index, "rtime"),\
+                    "id", "upload_time", "player__realname", "player__id", "bv", "bvs", "rtime", values_index)
 
         # print(videos)
         paginator = Paginator(videos, 20)  # 每页20条数据
@@ -242,7 +242,8 @@ def video_query_by_id(request):
         id_ = request.GET["id"]
         
         user = UserProfile.objects.get(id=id_)
-        videos = VideoModel.objects.filter(player=user).values('id', 'upload_time', "level", "mode", "rtime", "bv", "bvs")
+        videos = wrap_values(VideoModel.objects.filter(player=user), 'id', 'upload_time', "level", "mode", "rtime", "bv", "bvs")
+        # annotate是为了避免修改前端做的暂时的处理
         # print(list(videos))
 
         return JsonResponse(json.dumps({"videos": list(videos)}, cls=ComplexEncoder), safe=False)
