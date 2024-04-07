@@ -6,6 +6,7 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 from userprofile.models import UserProfile
 from config.global_settings import *
+from decimal import Decimal
 
 
 class ExpandVideoModel(models.Model):
@@ -119,15 +120,15 @@ class VideoModel(models.Model):
     # # 无猜
     # nf = models.BooleanField()
     # 0.000-999.999
-    milliseconds = models.PositiveIntegerField() # 整数形式存储的毫秒数。i后缀表示整数
+    milliseconds = models.PositiveIntegerField(default=999999) # 整数形式存储的毫秒数。i后缀表示整数
     # 0-32767
     bv = models.PositiveSmallIntegerField()
     bvs = models.FloatField()
 
     # 暂时的解决方案
     def __getattr__(self, name):
-        if name in ["rtime", "time"]:
-            return self.milliseconds/1000 # 毫秒数转化为秒数
+        if name == "time":
+            return self.rtime
         elif name == "stnb":
             return self.video.stnb
         elif name == "ioe":
@@ -135,6 +136,10 @@ class VideoModel(models.Model):
         elif name == "path":
             return self.video.path
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+    
+    @property
+    def rtime(self): # 向后兼容，毫秒数转化为秒数
+        return Decimal(f"{self.milliseconds//1000}.{self.milliseconds%1000}")
     
     def __setattr__(self, name, value):
         if name in ["rtime", "time"]:

@@ -50,7 +50,8 @@ def update_3_level_cache_record(realname: str, index: str, mode: str, ms_user: U
     cache.hset(key, "name", realname)
     for level in GameLevels:
         cache.hset(key, level, _float(ms_user.getrecord(level, index, mode)))
-        cache.hset(key, f"{level}_id", _float(ms_user.getrecordID(level, index, mode)))
+        recordid = ms_user.getrecordID(level, index, mode)
+        cache.hset(key, f"{level}_id", "None" if recordid is None else recordid)
     s = _float(ms_user.getrecord("b", index, mode) + ms_user.getrecord("i", index, mode) +\
                 ms_user.getrecord("e", index, mode))
     cache.hset(key, "sum", s)
