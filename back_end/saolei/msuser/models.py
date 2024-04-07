@@ -7,7 +7,7 @@ def get_default_designators():
     return []
 
 def RTimeField(): # 以毫秒计数
-    return models.IntegerField(default=999999)
+    return models.PositiveIntegerField(default=999999)
 def BBBVsField():
     return models.FloatField(default=0.0)
 def STNBField():
