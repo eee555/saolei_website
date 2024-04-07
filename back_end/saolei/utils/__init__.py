@@ -6,6 +6,7 @@ from decimal import Decimal
 from django.http import HttpResponse, JsonResponse, FileResponse
 from django.shortcuts import render, redirect
 import requests
+from saolei.settings import BAIDU_VERIFY_SKIP
 
 def generate_code(code_len):
     """
@@ -127,6 +128,8 @@ def get_ACCESS_TOKEN() -> str:
 
 # 百度大脑鉴别文本合规性
 def veriry_text(text: str, user_id: int, user_ip: str) -> bool:
+    if BAIDU_VERIFY_SKIP:
+        return True
     if len(text) < 2:
         return True
     url = "https://aip.baidubce.com/rest/2.0/solution/v1/text_censor/v2/user_defined?access_token=" + get_ACCESS_TOKEN()
