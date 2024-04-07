@@ -212,7 +212,6 @@ def video_query(request):
                 videos = wrap_values(VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(level=data["level"])\
                     .order_by(index.replace("rtime", "milliseconds")),\
                     "id", "upload_time", "player__realname", "player__id", "bv", "bvs", "rtime")
-                # annotate是为了避免修改前端做的暂时的处理
             else:
                 videos = wrap_values(VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(level=data["level"])\
                     .order_by(order_index, "rtime"),\
@@ -243,7 +242,6 @@ def video_query_by_id(request):
         
         user = UserProfile.objects.get(id=id_)
         videos = wrap_values(VideoModel.objects.filter(player=user), 'id', 'upload_time', "level", "mode", "rtime", "bv", "bvs")
-        # annotate是为了避免修改前端做的暂时的处理
         # print(list(videos))
 
         return JsonResponse(json.dumps({"videos": list(videos)}, cls=ComplexEncoder), safe=False)
