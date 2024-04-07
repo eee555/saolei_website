@@ -48,7 +48,7 @@ const video_msgs = ref<{
     id: number,
     filename: string,
     level: string,
-    time: string,
+    timems: string,
     bbbv: string,
     bvs: string,
 }[]>([])
@@ -124,7 +124,7 @@ const push_video_msg = async (uploadFile: UploadFile | UploadRawFile) => {
         id: 0,
         filename: uploadFile.name,
         level: ["初级", "中级", "高级"][aa.get_level - 3],
-        timems: aa.get_rtime_ms,
+        timems: aa.get_rtime_ms + "",
         bbbv: aa.get_bbbv + "",
         bvs: aa.get_bbbv_s.toFixed(3),
     })

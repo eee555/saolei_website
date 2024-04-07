@@ -125,7 +125,7 @@ const mode_tags: Tags = {
 
 // reverse: true从小到大
 const index_tags: TagsReverse = {
-    "timems": { name: "成绩", key: "time", reverse: false, to_fixed: 3 },
+    "timems": { name: "成绩", key: "timems", reverse: false, to_fixed: 3 },
     "bbbv_s": { name: "3BV/s", key: "bvs", reverse: true, to_fixed: 3 },
     "path": { name: "path", key: "path", reverse: false, to_fixed: 2 },
     "stnb": { name: "STNB", key: "stnb", reverse: true, to_fixed: 2 },

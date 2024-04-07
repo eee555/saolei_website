@@ -9,7 +9,7 @@
     </Teleport>
     <el-table :data="videos_trans" :show-header="false" @row-click="preview"
         style="width: 100%; color: black;font-size: 16px;">
-        <el-table-column prop="time" min-width="200" />
+        <el-table-column prop="timems" min-width="200" />
         <el-table-column v-if="need_player_name" min-width="80">
             <template #default="player">
                 <PlayerName class="name" :user_id="+player.row.player_id" :user_name="player.row.player"></PlayerName>

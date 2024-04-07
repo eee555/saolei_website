@@ -47,14 +47,14 @@ onMounted(() => {
 // 把记录数据转一下嵌套的结构，做数据格式的适配
 function trans_record(r: RecordBIE): Record[] {
     const record: Record[] = [];
-    for (let i = 0; i < r.time.length; i++) {
+    for (let i = 0; i < r.timems.length; i++) {
         record.push({
-            time: r.time[i],
+            timems: r.timems[i],
             bvs: r.bvs[i],
             stnb: r.stnb[i],
             ioe: r.ioe[i],
             path: r.path[i],
-            time_id: r.time_id[i],
+            timems_id: r.timems_id[i],
             bvs_id: r.bvs_id[i],
             stnb_id: r.stnb_id[i],
             ioe_id: r.ioe_id[i],

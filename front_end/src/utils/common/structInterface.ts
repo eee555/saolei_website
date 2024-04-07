@@ -22,12 +22,12 @@ export enum LoginStatus {
 }
 
 export interface RecordBIE {
-    time: number[],
+    timems: number[],
     bvs: number[],
     stnb: number[],
     ioe: number[],
     path: number[],
-    time_id: number[],
+    timems_id: number[],
     bvs_id: number[],
     stnb_id: number[],
     ioe_id: number[],
@@ -35,12 +35,12 @@ export interface RecordBIE {
 }
 
 export interface Record {
-    time: number,
+    timems: number,
     bvs: number,
     stnb: number,
     ioe: number,
     path: number,
-    time_id: number,
+    timems_id: number,
     bvs_id: number,
     stnb_id: number,
     ioe_id: number,
