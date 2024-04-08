@@ -110,12 +110,12 @@ const pop_show = () => {
         const records = JSON.parse(response_data.record_abstract)
         // console.log(records);
 
-        b_t.value = records.time[0]
-        i_t.value = records.time[1]
-        e_t.value = records.time[2]
-        b_t_id.value = records.time_id[0]
-        i_t_id.value = records.time_id[1]
-        e_t_id.value = records.time_id[2]
+        b_t.value = records.timems[0]
+        i_t.value = records.timems[1]
+        e_t.value = records.timems[2]
+        b_t_id.value = records.timemsid[0]
+        i_t_id.value = records.timems_id[1]
+        e_t_id.value = records.timems_id[2]
         b_bvs.value = records.bvs[0]
         i_bvs.value = records.bvs[1]
         e_bvs.value = records.bvs[2]

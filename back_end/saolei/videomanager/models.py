@@ -6,6 +6,7 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 from userprofile.models import UserProfile
 from config.global_settings import *
+from decimal import Decimal
 
 
 class ExpandVideoModel(models.Model):
@@ -119,16 +120,14 @@ class VideoModel(models.Model):
     # # 无猜
     # nf = models.BooleanField()
     # 0.000-999.999
-    rtime = models.DecimalField(max_digits=MaxSizes.gametime, decimal_places=3)
+    timems = models.PositiveIntegerField(default=999999) # 整数形式存储的毫秒数。i后缀表示整数
     # 0-32767
     bv = models.PositiveSmallIntegerField()
     bvs = models.FloatField()
 
     # 暂时的解决方案
     def __getattr__(self, name):
-        if name == "time":
-            return self.rtime
-        elif name == "stnb":
+        if name == "stnb":
             return self.video.stnb
         elif name == "ioe":
             return self.video.ioe
@@ -137,7 +136,7 @@ class VideoModel(models.Model):
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
     
     def __str__(self):
-        return f'level: {self.level}, time: {self.rtime}, 3BV: {self.bv}'
+        return f'level: {self.level}, timems: {self.timems}, 3BV: {self.bv}'
     # def delete(self): # 将删除操作换成更改标记
     #     self.is_delete = True
     #     self.save()

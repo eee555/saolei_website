@@ -7,50 +7,24 @@ import json
 from utils import ComplexEncoder
 from config.global_settings import *
 from utils.cmp import isbetter
+from django.db.models import F, ExpressionWrapper, DecimalField
 
-record_update_fields=["b_time_std", "b_time_id_std", "i_time_std", "i_time_id_std", 
-                      "e_time_std", "e_time_id_std", "b_bvs_std", "b_bvs_id_std", 
-                      "i_bvs_std", "i_bvs_id_std", "e_bvs_std", "e_bvs_id_std", 
-                      "b_stnb_std", "b_stnb_id_std", "i_stnb_std", "i_stnb_id_std", 
-                      "e_stnb_std", "e_stnb_id_std", "b_ioe_std", "b_ioe_id_std", 
-                      "i_ioe_std", "i_ioe_id_std", "e_ioe_std", "e_ioe_id_std", 
-                      "b_path_std", "b_path_id_std", "i_path_std", "i_path_id_std",
-                      "e_path_std", "e_path_id_std",
-                      "b_time_nf", "b_time_id_nf", "i_time_nf", "i_time_id_nf", 
-                      "e_time_nf", "e_time_id_nf", "b_bvs_nf", "b_bvs_id_nf", 
-                      "i_bvs_nf", "i_bvs_id_nf", "e_bvs_nf", "e_bvs_id_nf", 
-                      "b_stnb_nf", "b_stnb_id_nf", "i_stnb_nf", "i_stnb_id_nf", 
-                      "e_stnb_nf", "e_stnb_id_nf", "b_ioe_nf", "b_ioe_id_nf", 
-                      "i_ioe_nf", "i_ioe_id_nf", "e_ioe_nf", "e_ioe_id_nf", 
-                      "b_path_nf", "b_path_id_nf", "i_path_nf", "i_path_id_nf",
-                      "e_path_nf", "e_path_id_nf",
-                      "b_time_ng", "b_time_id_ng", "i_time_ng", "i_time_id_ng", 
-                      "e_time_ng", "e_time_id_ng", "b_bvs_ng", "b_bvs_id_ng", 
-                      "i_bvs_ng", "i_bvs_id_ng", "e_bvs_ng", "e_bvs_id_ng", 
-                      "b_stnb_ng", "b_stnb_id_ng", "i_stnb_ng", "i_stnb_id_ng", 
-                      "e_stnb_ng", "e_stnb_id_ng", "b_ioe_ng", "b_ioe_id_ng", 
-                      "i_ioe_ng", "i_ioe_id_ng", "e_ioe_ng", "e_ioe_id_ng", 
-                      "b_path_ng", "b_path_id_ng", "i_path_ng", "i_path_id_ng",
-                      "e_path_ng", "e_path_id_ng",
-                      "b_time_dg", "b_time_id_dg", "i_time_dg", "i_time_id_dg", 
-                      "e_time_dg", "e_time_id_dg", "b_bvs_dg", "b_bvs_id_dg", 
-                      "i_bvs_dg", "i_bvs_id_dg", "e_bvs_dg", "e_bvs_id_dg", 
-                      "b_stnb_dg", "b_stnb_id_dg", "i_stnb_dg", "i_stnb_id_dg", 
-                      "e_stnb_dg", "e_stnb_id_dg", "b_ioe_dg", "b_ioe_id_dg", 
-                      "i_ioe_dg", "i_ioe_id_dg", "e_ioe_dg", "e_ioe_id_dg", 
-                      "b_path_dg", "b_path_id_dg", "i_path_dg", "i_path_id_dg",
-                      "e_path_dg", "e_path_id_dg"]
-
+record_update_fields = []
+for mode in GameModes:
+    for stat in RankingGameStats:
+        for level in GameLevels:
+            record_update_fields.append(f"{level}_{stat}_{mode}")
+            record_update_fields.append(f"{level}_{stat}_id_{mode}")
 
 # 确定用户破某个纪录后，且对应模式、指标的三个级别全部有录像后，更新redis中的数据
 def update_3_level_cache_record(realname: str, index: str, mode: str, ms_user: UserMS):
-    _float = float if index == "time" else lambda x: x
     key = f"player_{index}_{mode}_{ms_user.id}"
     cache.hset(key, "name", realname)
     for level in GameLevels:
-        cache.hset(key, level, _float(ms_user.getrecord(level, index, mode)))
-        cache.hset(key, f"{level}_id", _float(ms_user.getrecordID(level, index, mode)))
-    s = _float(ms_user.getrecord("b", index, mode) + ms_user.getrecord("i", index, mode) +\
+        cache.hset(key, level, ms_user.getrecord(level, index, mode))
+        recordid = ms_user.getrecordID(level, index, mode)
+        cache.hset(key, f"{level}_id", "None" if recordid is None else recordid)
+    s = float(ms_user.getrecord("b", index, mode) + ms_user.getrecord("i", index, mode) +\
                 ms_user.getrecord("e", index, mode))
     cache.hset(key, "sum", s)
     cache.zadd(f"player_{index}_{mode}_ids", {ms_user.id: s}) 
@@ -58,9 +32,9 @@ def update_3_level_cache_record(realname: str, index: str, mode: str, ms_user: U
 
 # 确定用户破某个纪录后，更新redis破纪录的记录，显示在首页用
 def update_news_queue(user: UserProfile, ms_user: UserMS, video: VideoModel, index: str, mode: str):
-    if float(ms_user.e_time_std) >= 60 and (index != "time" or video.level != "e"):
+    if ms_user.e_timems_std >= 60000 and (index != "timems" or video.level != "e"):
         return
-    _video = video if index == "time" or index == "bvs" else video.video
+    _video = video if index == "timems" or index == "bvs" else video.video
     # print(f"{type(index)} {index}") # 调试用
     value = f"{getattr(_video, index):.3f}"
     delta_number = getattr(_video, index) - ms_user.getrecord(video.level, index, mode)
@@ -156,6 +130,4 @@ def update_personal_record_stock(user: UserProfile):
     videos = VideoModel.objects.filter(player=user)
     for v in videos:
         update_personal_record(v)
-
-
 

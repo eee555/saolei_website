@@ -76,7 +76,7 @@ def video_upload(request):
             video = VideoModel.objects.create(player=request.user, file=data["file"], video=e_video,
                                       state=["c", "b", "a", "a"][data['review_code']], software=data["software"], level=data["level"],
                                       mode=data["mode"] if data["mode"]!="00" else ("12" if data["flag"]==0 else "00"), 
-                                      rtime=data["rtime"],
+                                      timems=data["timems"],
                                       bv=data["bv"], bvs=data["bvs"])
             
             # cache.hget("review_queue", "filed")
@@ -88,7 +88,7 @@ def video_upload(request):
                                                                 "player_id": video.player.id,
                                                                 "level": video.level,
                                                                 "mode": video.mode,
-                                                                "rtime": video.rtime,
+                                                                "timems": video.timems,
                                                                 "bv": video.bv,
                                                                 "bvs": video.bvs}, cls=ComplexEncoder))
             else:
@@ -98,7 +98,7 @@ def video_upload(request):
                                                                 "player_id": video.player.id,
                                                                 "level": video.level,
                                                                 "mode": video.mode,
-                                                                "rtime": video.rtime,
+                                                                "timems": video.timems,
                                                                 "bv": video.bv,
                                                                 "bvs": video.bvs}, cls=ComplexEncoder))
                 update_personal_record(video)
@@ -192,31 +192,30 @@ def video_query(request):
         if data["mode"] != "00":
             if index in {"id", "upload_time", "bv", "bvs", "-upload_time", "-bv", "-bvs"}:
                 videos = VideoModel.objects.filter(level=data["level"], mode=data["mode"])\
-                    .order_by(index, "rtime").\
-                    values("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "rtime")
-            elif index == "rtime" or index == "-rtime":
+                    .order_by(index, "timems")\
+                    .values("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "timems")
+            elif index == "timems" or index == "-timems":
                 videos = VideoModel.objects.filter(level=data["level"], mode=data["mode"])\
-                    .order_by(index).\
-                    values("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "rtime")
+                    .order_by(index)\
+                    .values("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "timems")
             else:
                 videos = VideoModel.objects.filter(level=data["level"], mode=data["mode"])\
-                    .order_by(order_index, "rtime").\
-                    values("id", "upload_time", "player__realname", "player__id", "bv",
-                        "bvs", "rtime", values_index)
+                    .order_by(order_index, "timems")\
+                    .values("id", "upload_time", "player__realname", "player__id", "bv",
+                        "bvs", "timems", values_index)
         else:
             if index in {"id", "upload_time", "bv", "bvs", "-upload_time", "-bv", "-bvs"}:
                 videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(level=data["level"])\
-                    .order_by(index, "rtime").\
-                    values("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "rtime")
-            elif index == "rtime" or index == "-rtime":
+                    .order_by(index, "timems")\
+                    .values("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "timems")
+            elif index == "timems" or index == "-timems":
                 videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(level=data["level"])\
-                    .order_by(index).\
-                    values("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "rtime")
+                    .order_by(index)\
+                    .values("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "timems")
             else:
                 videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(level=data["level"])\
-                    .order_by(order_index, "rtime").\
-                    values("id", "upload_time", "player__realname", "player__id", "bv",
-                        "bvs", "rtime", values_index)
+                    .order_by(order_index, "timems")\
+                    .values("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "timems", values_index)
 
         # print(videos)
         paginator = Paginator(videos, 20)  # 每页20条数据
@@ -242,7 +241,7 @@ def video_query_by_id(request):
         id_ = request.GET["id"]
         
         user = UserProfile.objects.get(id=id_)
-        videos = VideoModel.objects.filter(player=user).values('id', 'upload_time', "level", "mode", "rtime", "bv", "bvs")
+        videos = VideoModel.objects.filter(player=user).values('id', 'upload_time', "level", "mode", "timems", "bv", "bvs")
         # print(list(videos))
 
         return JsonResponse(json.dumps({"videos": list(videos)}, cls=ComplexEncoder), safe=False)
@@ -251,16 +250,16 @@ def video_query_by_id(request):
 
 
 # {
-#     "1": "{\"time\": \"2023-12-16 14:52:40\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"b\", \"mode\": \"00\", \"rtime\": \"4.770\", \"bv\": 23, \"bvs\": 4.821802935010482}",
-#     "3": "{\"time\": \"2023-12-16 14:52:52\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"i\", \"mode\": \"00\", \"rtime\": \"20.390\", \"bv\": 71, \"bvs\": 3.4330554193231975}",
-#     "4": "{\"time\": \"2023-12-16 15:17:58\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"b\", \"mode\": \"12\", \"rtime\": \"1.530\", \"bv\": 4, \"bvs\": 2.6143790849673203}",
-#     "8": "{\"time\": \"2023-12-16 15:26:22\", \"player\": \"www333\", \"level\": \"e\", \"mode\": \"00\", \"rtime\": \"51.940\", \"bv\": 149, \"bvs\": 2.849441663457836}",
-#     "9": "{\"time\": \"2023-12-16 15:26:26\", \"player\": \"www333\", \"level\": \"b\", \"mode\": \"00\", \"rtime\": \"3.250\", \"bv\": 18, \"bvs\": 5.538461538461538}",
-#     "10": "{\"time\": \"2023-12-16 15:26:30\", \"player\": \"www333\", \"level\": \"i\", \"mode\": \"00\", \"rtime\": \"20.110\", \"bv\": 69, \"bvs\": 3.431128791645947}",
-#     "7": "{\"time\": \"2023-12-16 15:24:07\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"i\", \"mode\": \"00\", \"rtime\": \"15.280\", \"bv\": 31, \"bvs\": 2.0287958115183247}",
-#     "6": "{\"time\": \"2023-12-16 15:24:02\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"e\", \"mode\": \"00\", \"rtime\": \"59.450\", \"bv\": 193, \"bvs\": 3.2127838519764507}",
-#     "2": "{\"time\": \"2023-12-16 14:52:48\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"e\", \"mode\": \"00\", \"rtime\": \"61.710\", \"bv\": 193, \"bvs\": 3.0789175174201913}",
-#     "5": "{\"time\": \"2023-12-16 15:23:59\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"b\", \"mode\": \"12\", \"rtime\": \"1.580\", \"bv\": 6, \"bvs\": 3.7974683544303796}"
+#     "1": "{\"time\": \"2023-12-16 14:52:40\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"b\", \"mode\": \"00\", \"timems\": \"4770\", \"bv\": 23, \"bvs\": 4.821802935010482}",
+#     "3": "{\"time\": \"2023-12-16 14:52:52\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"i\", \"mode\": \"00\", \"timems\": \"20390\", \"bv\": 71, \"bvs\": 3.4330554193231975}",
+#     "4": "{\"time\": \"2023-12-16 15:17:58\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"b\", \"mode\": \"12\", \"timems\": \"1530\", \"bv\": 4, \"bvs\": 2.6143790849673203}",
+#     "8": "{\"time\": \"2023-12-16 15:26:22\", \"player\": \"www333\", \"level\": \"e\", \"mode\": \"00\", \"timems\": \"51940\", \"bv\": 149, \"bvs\": 2.849441663457836}",
+#     "9": "{\"time\": \"2023-12-16 15:26:26\", \"player\": \"www333\", \"level\": \"b\", \"mode\": \"00\", \"timems\": \"3250\", \"bv\": 18, \"bvs\": 5.538461538461538}",
+#     "10": "{\"time\": \"2023-12-16 15:26:30\", \"player\": \"www333\", \"level\": \"i\", \"mode\": \"00\", \"timems\": \"20110\", \"bv\": 69, \"bvs\": 3.431128791645947}",
+#     "7": "{\"time\": \"2023-12-16 15:24:07\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"i\", \"mode\": \"00\", \"timems\": \"15280\", \"bv\": 31, \"bvs\": 2.0287958115183247}",
+#     "6": "{\"time\": \"2023-12-16 15:24:02\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"e\", \"mode\": \"00\", \"timems\": \"59450\", \"bv\": 193, \"bvs\": 3.2127838519764507}",
+#     "2": "{\"time\": \"2023-12-16 14:52:48\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"e\", \"mode\": \"00\", \"timems\": \"61710\", \"bv\": 193, \"bvs\": 3.0789175174201913}",
+#     "5": "{\"time\": \"2023-12-16 15:23:59\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"b\", \"mode\": \"12\", \"timems\": \"1580\", \"bv\": 6, \"bvs\": 3.7974683544303796}"
 # }
 
 
@@ -287,15 +286,15 @@ def update_video_num(video: VideoModel, add = True):
     if add:
         # 给高玩自动扩容
         if video.mode == "00" and video.level == 'e':
-            if video.rtime < 100 and userms.video_num_limit < 200:
+            if video.timems < 100000 and userms.video_num_limit < 200:
                 userms.video_num_limit = 200
-            if video.rtime < 60 and userms.video_num_limit < 500:
+            if video.timems < 60000 and userms.video_num_limit < 500:
                 userms.video_num_limit = 500
-            if video.rtime < 50 and userms.video_num_limit < 600:
+            if video.timems < 50000 and userms.video_num_limit < 600:
                 userms.video_num_limit = 600
-            if video.rtime < 40 and userms.video_num_limit < 800:
+            if video.timems < 40000 and userms.video_num_limit < 800:
                 userms.video_num_limit = 800
-            if video.rtime < 30 and userms.video_num_limit < 1000:
+            if video.timems < 30000 and userms.video_num_limit < 1000:
                 userms.video_num_limit = 1000
     
     userms.save(update_fields=["video_num_limit", "video_num_total", "video_num_beg", "video_num_int", 
@@ -433,7 +432,7 @@ def freeze(request):
                                                                 "player_id": video_i.player.id,
                                                                 "level": video_i.level,
                                                                 "mode": video_i.mode,
-                                                                "rtime": video_i.rtime,
+                                                                "timems": video_i.timems,
                                                                 "bv": video_i.bv,
                                                                 "bvs": video_i.bvs}, cls=ComplexEncoder))
                     if request.GET["ids"]:

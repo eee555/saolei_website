@@ -48,7 +48,7 @@ const video_msgs = ref<{
     id: number,
     filename: string,
     level: string,
-    time: string,
+    timems: string,
     bbbv: string,
     bvs: string,
 }[]>([])
@@ -124,7 +124,7 @@ const push_video_msg = async (uploadFile: UploadFile | UploadRawFile) => {
         id: 0,
         filename: uploadFile.name,
         level: ["初级", "中级", "高级"][aa.get_level - 3],
-        time: aa.get_rtime.toFixed(3),
+        timems: aa.get_rtime_ms + "",
         bbbv: aa.get_bbbv + "",
         bvs: aa.get_bbbv_s.toFixed(3),
     })
@@ -257,7 +257,7 @@ const handleVideoUpload = async (options: UploadRequestOptions) => {
     params.append("software", ["e", "a"][video_file.name.slice(-3) == "avf" ? 1 : 0]);
     params.append("level", ["b", "i", "e"][aa.get_level - 3]);
     params.append("mode", String(aa.get_mode).padStart(2, '0'));
-    params.append("rtime", aa.get_rtime.toFixed(3));
+    params.append("timems", aa.get_rtime_ms + "");
     params.append("bv", aa.get_bbbv + "");
     params.append("bvs", aa.get_bbbv_s + "");
     params.append("designator", decoder.decode(aa.get_player_designator));

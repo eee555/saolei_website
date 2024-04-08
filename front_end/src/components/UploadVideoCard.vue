@@ -16,7 +16,7 @@
                         <div class="grid-content ep-bg-purple">难度：{{ video_msg.level }}</div>
                     </el-col>
                     <el-col :span="13">
-                        <div class="grid-content ep-bg-purple">时间：{{ video_msg.time }}s</div>
+                        <div class="grid-content ep-bg-purple">时间：{{ video_msg.timems }}s</div>
                     </el-col>
                 </el-row>
                 <el-row :gutter="5">
@@ -57,7 +57,7 @@ const { video_msg } = defineProps({
             // 文件名，后缀提示录像的类型，按类型显示图标
             filename: string,
             level: string;
-            time: string;
+            timems: string;
             bbbv: string;
             bvs: string;
         },
@@ -65,7 +65,7 @@ const { video_msg } = defineProps({
             id: 0,
             filename: "",
             level: "",
-            time: "",
+            timems: "",
             bbbv: "",
             bvs: "",
         }

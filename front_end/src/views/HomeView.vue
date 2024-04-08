@@ -108,7 +108,7 @@ const trans_mode = (m: string) => {
 }
 
 const trans_index = (i: string) => {
-    if (i == "time") {
+    if (i == "timems") {
         return "时间"
     } else if (i == "bvs") {
         return "盲扫3BV/s"

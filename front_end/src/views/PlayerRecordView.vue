@@ -6,9 +6,9 @@
             <el-table :data="d" style="width: 100%" :header-cell-style="{ 'text-align': 'center' }">
                 <el-table-column type="index" :index="indexMethod" width="100" align="center" />
 
-                <el-table-column label="time" align="center">
+                <el-table-column label="timems" align="center">
                     <template #default="scope">
-                        <PreviewNumber :id="scope.row.time_id" :text="scope.row.time.toFixed(3)">
+                        <PreviewNumber :id="scope.row.timems_id" :text="scope.row.timems">
                         </PreviewNumber>
                     </template>
                 </el-table-column>
@@ -119,14 +119,14 @@ onMounted(() => {
 // 把记录数据转一下嵌套的结构，做数据格式的适配
 function trans_record(r: RecordBIE): Record[] {
     const record: Record[] = [];
-    for (let i = 0; i < r.time.length; i++) {
+    for (let i = 0; i < r.timems.length; i++) {
         record.push({
-            time: r.time[i],
+            timems: r.timems[i],
             bvs: r.bvs[i],
             stnb: r.stnb[i],
             ioe: r.ioe[i],
             path: r.path[i],
-            time_id: r.time_id[i],
+            timems_id: r.timems_id[i],
             bvs_id: r.bvs_id[i],
             stnb_id: r.stnb_id[i],
             ioe_id: r.ioe_id[i],
