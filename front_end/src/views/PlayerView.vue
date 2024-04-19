@@ -59,7 +59,7 @@
                     <div style="font-size: 20px;margin-bottom: 8px;">{{ realname }}</div>
                     <div style="overflow: auto ;"><strong>个性签名：</strong>{{ signature }}</div>
                     <!-- <div style="overflow: auto ;">人气：{{ popularity }}</div> -->
-
+                    <div style="overflow: auto ;"><strong>我的标识：</strong>{{ designators }}</div>
                     <el-button v-show="show_edit_button" type="primary" :plain="true" :size="'large'"
                         @click="is_editing = true; visible = true;"
                         style="font-size: 18px;margin-top: 18px;width: 160px;">修改个人资料</el-button>
@@ -127,6 +127,7 @@ const username = ref("");
 const realname = ref("");
 const signature = ref("");
 const popularity = ref("");
+const designators = ref(""); // 通过审核的标识
 
 //编辑状态时的
 const realname_edit = ref("");
@@ -179,6 +180,7 @@ onMounted(() => {
         popularity.value = data.popularity;
         realname_edit.value = data.realname;
         signature_edit.value = data.signature;
+        designators.value = data.designators.join(", ");
         // console.log(imageUrl);
         if (data.avatar) {
             imageUrl.value = "data:image/;base64," + data.avatar;
