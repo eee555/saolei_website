@@ -25,16 +25,16 @@
     </el-upload>
     <div style="width:496px; margin: 0 auto;">
         <transition-group name="card_fade">
-            <UploadVideoCard v-for="(video_msg, index) in video_msgs" @cancel_this="cancel_video_id" :video_msg="video_msg"
-                :key="video_msg.filename">
+            <UploadVideoCard v-for="(video_msg, index) in video_msgs" @cancel_this="cancel_video_id"
+                :video_msg="video_msg" :key="video_msg.filename">
             </UploadVideoCard>
         </transition-group>
     </div>
 </template>
-  
+
 <script lang="ts" setup>
 // 上传录像的页面
-import { onMounted, ref, Ref, reactive, computed } from 'vue'
+import { onMounted, ref } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
 import { genFileId, ElMessage } from 'element-plus'
@@ -193,7 +193,7 @@ function getDelay() {
 }
 
 
-function cancel_all_or_not () {
+function cancel_all_or_not() {
     uploaded_file_num.value += 1;
     if (uploaded_file_num.value == video_msgs.value.length) {
         cancel_all();
@@ -242,7 +242,7 @@ const handleVideoUpload = async (options: UploadRequestOptions) => {
         return
     }
     // console.log(aa.is_valid());
-    
+
     if (aa.is_valid() == 1) {
         ElMessage.error('非法的录像!');
         cancel_all_or_not();
@@ -364,12 +364,3 @@ const handleVideoUpload = async (options: UploadRequestOptions) => {
     position: absolute;
 }
 </style>
-
-
-
-
-
-
-
-
-

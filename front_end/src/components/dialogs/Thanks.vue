@@ -4,7 +4,7 @@
         <h2>站长</h2>
         <span>eee555</span>
         <h2>开发</h2>
-        <span>eee555</span>
+        <span>eee555, putianyi889</span>
         <h2>赞助</h2>
         <span>putianyi889</span>
         <h2>策划</h2>

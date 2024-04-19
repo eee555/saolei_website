@@ -18,7 +18,7 @@
             退出
         </span>
     </div>
-    <el-dialog v-model="login_visibile" title="欢迎登录" width="30%" draggable
+    <el-dialog v-model="login_visibile" title="欢迎登录" width="30%" align-center draggable :lock-scroll="false"
         @close='() => { if (login_status !== LoginStatus.IsLogin) { login_status = LoginStatus.NotLogin; } }'>
         <el-form size="default">
             <el-form-item>
@@ -42,14 +42,14 @@
                 <div style="color: red;">{{ hint_message }}</div>
             </el-form-item>
             <el-form-item>
-                <el-button :disabled="(user_name && user_password && valid_code).length == 0"
-                 type="primary" @click="login();">登录</el-button>
+                <el-button :disabled="(user_name && user_password && valid_code).length == 0" type="primary"
+                    @click="login();">登录</el-button>
             </el-form-item>
             <div @click="login_visibile = false; retrieve_visibile = true; login_status = LoginStatus.IsRetrieve;"
                 style="cursor: pointer;color: blue;">（找回密码）</div>
         </el-form>
     </el-dialog>
-    <el-dialog v-model="register_visibile" title="用户注册" width="30%" draggable
+    <el-dialog v-model="register_visibile" title="用户注册" width="30%" align-center draggable :lock-scroll="false"
         @close='() => { if (login_status !== LoginStatus.IsLogin) { login_status = LoginStatus.NotLogin; } }'>
         <el-form size="default">
             <el-form-item>
@@ -92,12 +92,13 @@
                 <div style="color: red;">{{ hint_message }}</div>
             </el-form-item>
             <el-form-item>
-                <el-button :disabled="(user_email_valid_code_reg && user_password_reg && user_password2_reg).length == 0"
+                <el-button
+                    :disabled="(user_email_valid_code_reg && user_password_reg && user_password2_reg).length == 0"
                     type="primary" @click="register()">注册</el-button>
             </el-form-item>
         </el-form>
     </el-dialog>
-    <el-dialog v-model="retrieve_visibile" title="找回密码" width="30%" draggable
+    <el-dialog v-model="retrieve_visibile" title="找回密码" width="30%" align-center draggable :lock-scroll="false"
         @close='() => { if (login_status !== LoginStatus.IsLogin) { login_status = LoginStatus.NotLogin; } }'>
         <el-form size="default">
             <el-form-item>
@@ -131,8 +132,9 @@
                 <div style="color: red;">{{ hint_message }}</div>
             </el-form-item>
             <el-form-item>
-                <el-button :disabled="(user_email_valid_code_reg && user_password_reg && user_password2_reg).length == 0"
-                 type="primary" @click="retrieve()">确认修改密码</el-button>
+                <el-button
+                    :disabled="(user_email_valid_code_reg && user_password_reg && user_password2_reg).length == 0"
+                    type="primary" @click="retrieve()">确认修改密码</el-button>
             </el-form-item>
         </el-form>
     </el-dialog>

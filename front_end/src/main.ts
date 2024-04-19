@@ -7,18 +7,17 @@ import store from './store'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import $axios from './http'
-import axios, {AxiosInstance, AxiosRequestConfig, AxiosResponse} from 'axios';
-
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
 // 全局挂载axios
 
 const app = createApp(App)
 
-app.config.globalProperties.$axios = $axios
+app.config.globalProperties.$axios = $axios;
 
 
 for (const name in ELIcons) {
-    app.component(name, (ELIcons as any)[name]);
+  app.component(name, (ELIcons as any)[name]);
 }
 
 app.use(ElementPlus)
