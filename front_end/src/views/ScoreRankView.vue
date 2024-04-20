@@ -7,7 +7,7 @@
 
 <script setup lang='ts'>
 // 参考：https://www.wst.tv/rankings?
-// 现役排名：世界排名（累计衰减）、赛季排名（一年）、
+// 现役排名：世界排名（累计衰减）、赛季排名（一年）、最新比赛排名
 import { onMounted, ref, Ref } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import PreviewNumber from '@/components/PreviewNumber.vue';

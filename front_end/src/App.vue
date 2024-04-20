@@ -19,10 +19,10 @@
             <div class="header">统计</div>
         </el-menu-item>
         <el-menu-item index="5" @click="router.push('/guide')">
-            <div class="header">教程</div>
+            <div class="header">新闻</div>
         </el-menu-item>
         <el-menu-item index="6" @click="router.push('/score')">
-            <div class="header">积分榜</div>
+            <div class="header">积分</div>
         </el-menu-item>
         <el-menu-item index="7" @click="router.push('/player/' + proxy.$store.state.user.id)">
             <div class="header">我的地盘</div>

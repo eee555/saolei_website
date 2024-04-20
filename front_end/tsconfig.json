@@ -13,6 +13,7 @@
     "useDefineForClassFields": true,
     "sourceMap": true,
     "baseUrl": ".",
+    "downlevelIteration": true,
     "types": [
       "webpack-env"
     ],

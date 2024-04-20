@@ -29,7 +29,8 @@
         </div>
         <div v-for="(player, key) in playerData" style="margin-top: 10px;">
 
-            <span class="rank">{{ key - 19 + (state.CurrentPage) * 20 }}</span>
+            <span class="rank">{{ state.CurrentPage > 1 ? key - 19 + (state.CurrentPage) * 20 :
+            [..."🥇🥈🥉🏅🏅🏅🏅🏅🏅🏅", 11, 12, 13, 14, 15, 16, 17, 18, 19, 20][key] }}</span>
             <!-- <span class="name">{{ player.name }}</span> -->
             <PlayerName class="name" :user_id="player.name_id" :user_name="player.name"></PlayerName>
             <!-- <span class="beginner">{{ to_fixed_n(player.beginner, 3) }}</span> -->
@@ -45,7 +46,7 @@
                 <PreviewNumber :id="player.expert_id" :text="to_fixed_n(player.expert, 3)">
                 </PreviewNumber>
             </span>
-            
+
             <span class="sum">{{ to_fixed_n(player.sum, 3) }}</span>
 
 
@@ -64,7 +65,7 @@
 // 全网录像的检索器，根据三个维度排序
 import { onMounted, ref, Ref, reactive } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
-import { to_fixed_n } from "@/utils";
+import { to_fixed_n, ms_to_s } from "@/utils";
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import PlayerName from '@/components/PlayerName.vue';
 import { defineAsyncComponent } from 'vue'
@@ -178,13 +179,13 @@ const get_player_rank = (page: number) => {
             playerData.push({
                 name_id: +players[i * 9],
                 name: players[i * 9 + 1],
-                beginner: players[i * 9 + 2],
+                beginner: index_tag_selected.value == "timems" ? ms_to_s(players[i * 9 + 2]) : players[i * 9 + 2],
                 beginner_id: +players[i * 9 + 3],
-                intermediate: players[i * 9 + 4],
+                intermediate: index_tag_selected.value == "timems" ? ms_to_s(players[i * 9 + 4]) : players[i * 9 + 4],
                 intermediate_id: +players[i * 9 + 5],
-                expert: players[i * 9 + 6],
+                expert: index_tag_selected.value == "timems" ? ms_to_s(players[i * 9 + 6]) : players[i * 9 + 6],
                 expert_id: +players[i * 9 + 7],
-                sum: players[i * 9 + 8],
+                sum: index_tag_selected.value == "timems" ? ms_to_s(players[i * 9 + 8]) : players[i * 9 + 8],
             })
         }
         // console.log(playerData);

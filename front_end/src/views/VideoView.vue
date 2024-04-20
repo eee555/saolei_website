@@ -54,7 +54,8 @@
         </div>
         <div style="height: 770px;">
             <div v-for="(video, key) in videoData" class="row" @click="preview(video.id)">
-                <div class="rank">{{ key - 19 + (state.CurrentPage) * 20 }}</div>
+                <div class="rank">{{ state.CurrentPage > 1 ? key - 19 + (state.CurrentPage) * 20 :
+            [..."🥇🥈🥉🏅🏅🏅🏅🏅🏅🏅", 11, 12, 13, 14, 15, 16, 17, 18, 19, 20][key] }}</div>
 
                 <span v-if="'upload_time' in video" class="utime">{{ utc_to_local_format(video.upload_time) }}</span>
                 <span v-else class="utime">{{ utc_to_local_format(video.video__upload_time) }}</span>
@@ -72,8 +73,8 @@
                 <span v-if="'bvs' in video" class="bbbv_bbbvs_rtime">{{ to_fixed_n(video.bvs, 3) }}</span>
                 <span v-else class="bbbv_bbbvs_rtime">{{ to_fixed_n(video.video__bvs, 3) }}</span>
 
-                <span v-if="'timems' in video" class="bbbv_bbbvs_rtime">{{ video.timems }}</span>
-                <span v-else class="bbbv_bbbvs_rtime">{{ video.video__timems }}</span>
+                <span v-if="'timems' in video" class="bbbv_bbbvs_rtime">{{ ms_to_s(video.timems!) }}</span>
+                <span v-else class="bbbv_bbbvs_rtime">{{ ms_to_s(video.video__timems!) }}</span>
 
                 <span v-show="index_visible" class="index">{{
             to_fixed_n(video["video__" + index_tags[index_tag_selected].key],
@@ -101,6 +102,7 @@ import PreviewDownload from '@/components/PreviewDownload.vue';
 import PlayerName from '@/components/PlayerName.vue';
 const { proxy } = useCurrentInstance();
 import { utc_to_local_format } from "@/utils/system/tools";
+import { ms_to_s } from "@/utils";
 import { genFileId, ElMessage } from 'element-plus'
 
 const preview_visible = ref(false);
@@ -121,6 +123,7 @@ const state = reactive({
 
 // const test  = reactive({v: 5});
 const videoData = reactive<Video[]>([]);
+// 带下划线与不带的至少存在一个
 interface Video {
     id: number;
     upload_time?: string;

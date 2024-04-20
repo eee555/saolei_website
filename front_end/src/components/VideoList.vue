@@ -59,7 +59,7 @@ const data = defineProps({
 
 const videos_trans = computed(() => {
     data.videos.forEach((v: any) => {
-        console.log(v);
+        // console.log(v);
         
         v.time = utc_to_local_format(v.time);
         if (v.level == "b") {
