@@ -259,7 +259,7 @@ const get_video_rank = (page: number) => {
         } else { }
     }).catch(() => {
         // 触发限流
-        ElMessage.error("请稍后再试");
+        ElMessage.error({ message: '请稍后再试', offset: 68 });
     })
 }
 

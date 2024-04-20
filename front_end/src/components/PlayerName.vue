@@ -43,9 +43,7 @@
 
 <script setup lang="ts" name="PlayerName">
 // 用户的名字，鼠标移上去以后弹出气泡框，可以访问他的主页
-import { type CSSProperties } from 'vue';
 import { onMounted, watch, ref, toRefs } from "vue";
-// import axios from 'axios';
 import { getCurrentInstance } from 'vue';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
@@ -55,6 +53,7 @@ const image_url = ref(require('@/assets/person.png'))
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import Wait from '@/components/Wait.vue';
 import { useRouter } from 'vue-router'
+import { ms_to_s } from "@/utils"
 const router = useRouter()
 
 
@@ -100,20 +99,19 @@ const pop_show = () => {
     ).then(function (response) {
 
         const response_data = response.data;
-        // console.log(data);
-
         id.value = data.user_id + "";
         realname.value = response_data.realname;
         if (response_data.avatar) {
             image_url.value = "data:image/;base64," + response_data.avatar;
         }
+        
         const records = JSON.parse(response_data.record_abstract)
-        // console.log(records);
 
-        b_t.value = records.timems[0]
-        i_t.value = records.timems[1]
-        e_t.value = records.timems[2]
-        b_t_id.value = records.timemsid[0]
+        b_t.value = ms_to_s(records.timems[0])
+        i_t.value = ms_to_s(records.timems[1])
+        e_t.value = ms_to_s(records.timems[2])
+        
+        b_t_id.value = records.timems_id[0]
         i_t_id.value = records.timems_id[1]
         e_t_id.value = records.timems_id[2]
         b_bvs.value = records.bvs[0]

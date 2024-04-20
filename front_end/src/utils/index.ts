@@ -11,3 +11,14 @@ export function to_fixed_n(input: string | number | undefined, to_fixed: number)
     }
     return (input as number).toFixed(to_fixed);
 }
+
+// 毫秒的整数到字符串秒的小数
+export function ms_to_s(ms: number): string {
+    return `${Math.floor(ms / 1000)}.${(ms % 1000 + "").padStart(3, '0')}`;
+}
+
+
+
+
+
+

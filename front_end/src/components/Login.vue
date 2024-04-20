@@ -320,7 +320,7 @@ const retrieve = () => {
             login_status.value = LoginStatus.IsLogin;
             emit('login'); // 向父组件发送消息
             retrieve_visibile.value = false;
-            ElMessage.success('修改密码成功!')
+            ElMessage.success({ message: '修改密码成功！', offset: 68 });
         } else if (response.data.status >= 101) {
             hint_message.value = response.data.msg;
         }
@@ -418,8 +418,7 @@ const logout = async () => {
             // console.log(response);
         } else if (response.data.status >= 101) {
             // hint_message.value = response.data.msg;
-            ElMessage.error('退出失败!')
-
+            ElMessage.error({ message: '退出失败！', offset: 68 });
         }
     }).catch(function (error) {
         // console.log("eee:" + error);
@@ -448,19 +447,14 @@ const get_email_captcha = (type: string) => {
         // console.log(response.config);
         if (response.data.status == 100) {
             hint_message.value = ""
-            email_key = response.data.hashkey;
-            ElMessage.success('获取验证码成功，请至邮箱查看!')
-            // console.log(response.data.hashkey);
-            // console.log("注册成功");
+            email_key = response.data.hashkey;        
+            ElMessage.success({ message: '获取验证码成功，请至邮箱查看！', offset: 68 });
         } else if (response.data.status > 100) {
             hint_message.value = "*" + response.data.msg;
-            // console.log(refValidCode2);
-            // console.log(refValidCode2.value);
             refValidCode2.value!.refreshPic();
-            // console.log(response.data);
         }
     }).catch(function (error) {
-        console.log("eee:" + error);
+        // console.log("eee:" + error);
     });
 }
 

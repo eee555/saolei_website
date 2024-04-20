@@ -6,9 +6,9 @@
             <el-table :data="d" style="width: 100%" :header-cell-style="{ 'text-align': 'center' }">
                 <el-table-column type="index" :index="indexMethod" width="100" align="center" />
 
-                <el-table-column label="timems" align="center">
+                <el-table-column label="time" align="center">
                     <template #default="scope">
-                        <PreviewNumber :id="scope.row.timems_id" :text="scope.row.timems">
+                        <PreviewNumber :id="scope.row.timems_id" :text="ms_to_s(scope.row.timems)">
                         </PreviewNumber>
                     </template>
                 </el-table-column>
@@ -56,6 +56,7 @@ const upload = ref<UploadInstance>()
 // const imageUrl = ref(require('@/assets/person.png'))
 const avatar_changed = ref(false);
 import { Record, RecordBIE } from "@/utils/common/structInterface";
+import { ms_to_s } from "@/utils"
 
 const loading = ref(true)
 

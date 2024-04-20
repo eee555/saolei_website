@@ -191,8 +191,4 @@ a {
 }
 
 
-/* 全局的message都向下偏移的像素 */
-.el-message {
-    top: 68px !important;
-}
 </style>
