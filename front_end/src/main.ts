@@ -8,6 +8,7 @@ import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import $axios from './http'
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import 'flag-icon-css/css/flag-icons.css'
 
 // 全局挂载axios
 

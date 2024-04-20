@@ -36,8 +36,11 @@ def update_news_queue(user: UserProfile, ms_user: UserMS, video: VideoModel, ind
         return
     _video = video if index == "timems" or index == "bvs" else video.video
     # print(f"{type(index)} {index}") # 调试用
-    value = f"{getattr(_video, index):.3f}"
+    value = f"{getattr(_video, index)/1000:.3f}" if index == "timems" else f"{getattr(_video, index):.3f}"
     delta_number = getattr(_video, index) - ms_user.getrecord(video.level, index, mode)
+    if index == "timems":
+        delta_number /= 1000
+    # 看有没有存纪录录像的id，间接判断有没有纪录
     if ms_user.getrecordID(video.level, index, mode):
         delta = f"{delta_number:.3f}"
     else:

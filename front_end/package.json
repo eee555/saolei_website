@@ -13,6 +13,7 @@
     "@types/node": "^20.5.1",
     "axios": "^0.21.1",
     "element-plus": "^2.2.32",
+    "flag-icon-css": "^4.1.7",
     "image-conversion": "^2.1.1",
     "js-cookie": "^2.2.1",
     "ms-toollib": "1.4.6-alpha",

@@ -1,6 +1,7 @@
 <template>
     <!-- message的z索引为2015 -->
-    <el-menu style=" position: fixed; width: 100%; height: 60px; top: 0; z-index: 2010;user-select: none;" mode="horizontal">
+    <el-menu style=" position: fixed; width: 100%; height: 60px; top: 0; z-index: 2010;user-select: none;"
+        mode="horizontal">
         <el-menu-item index="1">
             <div @click="goback_home()" class="logo"
                 style="display: inline-flex;justify-content: center;align-items: center;">
@@ -8,28 +9,29 @@
                 <el-image style="width: 131px; height: 60px;display: inline-flex;" :src="logo_2" :fit="'cover'" />
             </div>
         </el-menu-item>
-        <el-menu-item index="2">
-            <router-link to="/ranking" class="header">排行榜</router-link>
+        <el-menu-item index="2" @click="router.push('/ranking')">
+            <div class="header">排行榜</div>
         </el-menu-item>
-        <el-menu-item index="3">
-            <router-link to="/video" class="header">录像</router-link>
+        <el-menu-item index="3" @click="router.push('/video')">
+            <div class="header">录像</div>
         </el-menu-item>
-        <el-menu-item index="4">
-            <router-link to="/world" class="header">统计</router-link>
+        <el-menu-item index="4" @click="router.push('/world')">
+            <div class="header">统计</div>
         </el-menu-item>
-        <el-menu-item index="5">
-            <router-link to="/guide" class="header">教程</router-link>
+        <el-menu-item index="5" @click="router.push('/guide')">
+            <div class="header">教程</div>
         </el-menu-item>
-        <el-menu-item index="6" disabled>
+        <el-menu-item index="6" @click="router.push('/score')">
             <div class="header">积分榜</div>
         </el-menu-item>
-        <el-menu-item index="7">
-            <router-link :to="'/player/' + proxy.$store.state.user.id" class="header">我的地盘</router-link>
+        <el-menu-item index="7" @click="router.push('/player/' + proxy.$store.state.user.id)">
+            <div class="header">我的地盘</div>
         </el-menu-item>
-        <el-menu-item index="8">
-            <router-link to="/upload" class="header">上传录像</router-link>
+        <el-menu-item index="8" @click="router.push('/upload')">
+            <div class="header">上传录像</div>
         </el-menu-item>
-        <div style="margin-left: auto;margin-right: 16px;display: inline-flex;justify-content: center;align-items: center;">
+        <div
+            style="margin-left: auto;margin-right: 16px;display: inline-flex;justify-content: center;align-items: center;">
             <Menu @login="user_login" @logout="user_logout" style=""></Menu>
         </div>
     </el-menu>
@@ -182,13 +184,11 @@ a {
 }
 
 .content {
-    margin-top: 72px;
+    margin-top: 60px;
 }
 
 .clickable:hover {
     color: rgb(26, 127, 228);
     cursor: pointer;
 }
-
-
 </style>

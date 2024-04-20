@@ -1,68 +1,56 @@
 <template>
-    <div class="common-layout">
+    <div>
         <el-container>
-            <el-aside width="30%">
+            <el-aside width="200px">
                 <div v-if="is_editing">
                     <el-upload ref="upload" class="avatar-uploader" action="#" :limit="1" :show-file-list="false"
                         :auto-upload="false" :on-exceed="handleExceed" :on-change="handleChange"
                         :before-upload="beforeAvatarUpload" :http-request="handleAvatarUpload"
-                        style="width: 200px; height: 200px;border-radius: 12px;">
-                        <el-image style="width: 200px; height: 200px;border-radius: 12px;" v-if="imageUrl"
+                        style="width: 200px; height: 200px;border-radius: 20px;">
+                        <el-image style="width: 200px; height: 200px;border-radius: 20px;" v-if="imageUrl"
                             :src="imageUrl" :fit="'cover'" />
                         <el-icon v-else class="avatar-uploader-icon">
                             <Plus />
                         </el-icon>
                     </el-upload>
                     <div style="font-size: 14px;color: #AAA;text-align: center;">*点击图片修改头像</div>
-                    <el-row :gutter="0">
-                        <el-col :span="5" style="margin-top: 16px;">
-                            <div>
-                                <strong>姓名：</strong>
-                            </div>
-                        </el-col>
-                        <el-col :span="19" style="margin-top: 16px;">
-                            <div>
-                                <el-input v-model.trim="realname_edit" placeholder="请输入真实姓名" minlength="2"
-                                    maxlength="10"></el-input>
-                            </div>
-                        </el-col>
-                    </el-row>
-                    <el-row :gutter="0">
-                        <el-col :span="5" style="margin-top: 16px;">
-                            <div>
-                                <strong>个性签名：</strong>
-                            </div>
-                        </el-col>
-                        <el-col :span="19" style="margin-top: 16px;">
-                            <div>
-                                <el-input v-model.trim="signature_edit" placeholder="请输入个性签名" minlength="0"
-                                    maxlength="188"></el-input>
-                            </div>
-                        </el-col>
-                    </el-row>
-                    <el-button type="success" :plain="false" :size="'large'" @click="upload_info"
-                        style="font-size: 18px;margin-top: 18px;width: 120px;">确认</el-button>
-                    <el-button type="success" :plain="true" :size="'large'" @click="is_editing = false;"
-                        style="font-size: 18px;margin-top: 18px;width: 80px;">取消</el-button>
+                    <div style="margin-top: 12px;margin-bottom: 4px;">
+                        姓名：
+                    </div>
+                    <div>
+                        <el-input v-model.trim="realname_edit" placeholder="请输入真实姓名" minlength="2"
+                            maxlength="10"></el-input>
+                    </div>
+                    <div style="margin-top: 12px;margin-bottom: 4px;">
+                        个人简介：
+                    </div>
+                    <div>
+                        <el-input v-model.trim="signature_edit" placeholder="请输入个人简介" minlength="0" maxlength="188"
+                            type="textarea" :rows="8"></el-input>
+                    </div>
+
+                    <button class="edit_button_ok" @click="upload_info">确认</button>
+                    <button class="edit_button_cancel" @click="is_editing = false;">取消</button>
 
                 </div>
 
                 <div v-else>
                     <div :key="'cover'" class="avatar-uploader">
-                        <el-image style="width: 200px; height: 200px;border-radius: 12px;" :src="imageUrl"
+                        <el-image style="width: 200px; height: 200px;border-radius: 20px;" :src="imageUrl"
                             :fit="'cover'" />
                     </div>
-                    <div style="font-size: 30px;margin-top: 10px;margin-bottom: 8px;">
+                    <div style="font-size: 30px;margin-top: 10px;">
                         {{ username }}
                         <span style="font-size: 18px; color: #555;">id: {{ userid }}</span>
                     </div>
-                    <div style="font-size: 20px;margin-bottom: 8px;">{{ realname }}</div>
-                    <div style="overflow: auto ;"><strong>个性签名：</strong>{{ signature }}</div>
+                    <div style="font-size: 16px;margin-bottom: 12px;color: #555;"><span
+                            class="flag-icon flag-icon-cn"></span>
+                        {{ realname }}</div>
+                    <div style="overflow: auto ;font-size: 16px;margin-bottom: 12px;">{{ signature }}</div>
+                    <button class="edit_button" v-show="show_edit_button"
+                        @click="is_editing = true; visible = true;">修改简介</button>
                     <!-- <div style="overflow: auto ;">人气：{{ popularity }}</div> -->
                     <div style="overflow: auto ;"><strong>我的标识：</strong>{{ designators }}</div>
-                    <el-button v-show="show_edit_button" type="primary" :plain="true" :size="'large'"
-                        @click="is_editing = true; visible = true;"
-                        style="font-size: 18px;margin-top: 18px;width: 160px;">修改个人资料</el-button>
                 </div>
 
                 <el-dialog v-model="visible" title="请注意" width="50%" align-center draggable :lock-scroll="false">
@@ -338,15 +326,6 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
 
 
 
-
-
-
-
-
-
-
-
-
 </script>
 
 
@@ -356,5 +335,54 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
     text-align: center;
     margin-top: 30px;
 
+}
+
+.edit_button {
+    font-size: 14px;
+    margin-top: 2px;
+    width: 200px;
+    height: 31px;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    margin-bottom: 12px;
+}
+
+.edit_button:hover {
+    background-color: rgb(233, 233, 233);
+    /* 鼠标悬停时改变背景颜色为浅灰色 */
+}
+
+
+.edit_button_ok {
+    font-size: 14px;
+    margin-top: 12px;
+    width: 48px;
+    height: 31px;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    margin-right: 3px;
+    background-color: #1F883D;
+    color: #fff;
+}
+
+.edit_button_ok:hover {
+    background-color: #238f42;
+    /* 鼠标悬停时改变背景颜色为浅灰色 */
+}
+
+.edit_button_cancel {
+    font-size: 14px;
+    margin-top: 12px;
+    width: 48px;
+    height: 31px;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    /* margin-right: 3px; */
+    /* background-color:#1F883D; */
+}
+
+.edit_button_cancel:hover {
+    background-color: rgb(233, 233, 233);
+    /* 鼠标悬停时改变背景颜色为浅灰色 */
 }
 </style>

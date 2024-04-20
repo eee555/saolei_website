@@ -31,7 +31,7 @@ User = get_user_model()
 # Create your views here.
 
 
-@ratelimit(key='ip', rate='60000/h')
+@ratelimit(key='ip', rate='60/h')
 # 此处要分成两个，密码容易碰撞，hash难碰撞
 def user_login(request):
     if request.method == 'POST':

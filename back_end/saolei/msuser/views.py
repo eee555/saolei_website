@@ -193,7 +193,7 @@ def update_avatar(request):
 @login_required(login_url='/')
 def update_signature(request):
     if request.method == 'POST':
-        if request.user.userms.e_timems_std >= 200:
+        if request.user.userms.e_timems_std >= 200000:
             return JsonResponse({"status": 177, "msg": "只允许标准高级sub200的玩家修改头像和个性签名！"})
         user_update_form = UserUpdateSignatureForm(
             data=request.POST, request=request)
