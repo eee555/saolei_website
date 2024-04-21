@@ -1,0 +1,8 @@
+- `config`：一些全局配置
+  - `global_settings`：全局常量
+  - `messages`：常用报错信息
+- `msuser`：用户的扫雷数据库
+- `saolei`：根
+- `userprofile`：用户的账号信息库
+- `utils`：和数据库无关的功能函数
+- `videomanager`：录像数据库

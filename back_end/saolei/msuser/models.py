@@ -7,15 +7,15 @@ def get_default_designators():
     return []
 
 def RTimeField(): # 以毫秒计数
-    return models.PositiveIntegerField(default=999999)
+    return models.PositiveIntegerField(default=DefaultRankingScores["timems"])
 def BBBVsField():
-    return models.FloatField(default=0.0)
+    return models.FloatField(default=DefaultRankingScores["bvs"])
 def STNBField():
-    return models.FloatField(default=0.0)
+    return models.FloatField(default=DefaultRankingScores["stnb"])
 def IOEField():
-    return models.FloatField(default=0.0)
+    return models.FloatField(default=DefaultRankingScores["ioe"])
 def PathField():
-    return models.FloatField(default=99999.9)
+    return models.FloatField(default=DefaultRankingScores["path"])
 
 def VideoIDField():
     return models.BigIntegerField(null=True)

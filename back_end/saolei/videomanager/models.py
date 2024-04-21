@@ -120,7 +120,7 @@ class VideoModel(models.Model):
     # # 无猜
     # nf = models.BooleanField()
     # 0.000-999.999
-    timems = models.PositiveIntegerField(default=999999) # 整数形式存储的毫秒数。i后缀表示整数
+    timems = models.PositiveIntegerField(default=DefaultRankingScores["timems"]) # 整数形式存储的毫秒数。i后缀表示整数
     # 0-32767
     bv = models.PositiveSmallIntegerField()
     bvs = models.FloatField()
