@@ -5,6 +5,7 @@
 [![stars](https://img.shields.io/github/stars/eee555/saolei_website)](https://github.com/eee555/saolei_website/stargazers)
 [![forks](https://img.shields.io/github/forks/eee555/saolei_website)](https://github.com/eee555/saolei_website/forks)
 
+[English](Readme_en.md)
 
 前端：Vue3 + Ts + Element-ui + wasm-bindgen  
 后端：Django + Mysql + redis  
