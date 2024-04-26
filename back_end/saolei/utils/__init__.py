@@ -127,7 +127,7 @@ def get_ACCESS_TOKEN() -> str:
 
 
 # 百度大脑鉴别文本合规性
-def veriry_text(text: str, user_id: int, user_ip: str) -> bool:
+def verify_text(text: str, user_id: int, user_ip: str) -> bool:
     if BAIDU_VERIFY_SKIP:
         return True
     if len(text) < 2:
@@ -152,7 +152,7 @@ def veriry_text(text: str, user_id: int, user_ip: str) -> bool:
 
 # 百度大脑鉴别图片合规性
 # 百度api对图片的尺寸、大小都有要求，后期再测试、适配
-def veriry_image(image_binary, user_id: int, user_ip: str) -> bool:
+def verify_image(image_binary, user_id: int, user_ip: str) -> bool:
     if not image_binary:
         return True
     image_base64 = base64.b64encode(image_binary).decode()

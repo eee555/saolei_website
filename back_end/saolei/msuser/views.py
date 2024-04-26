@@ -18,7 +18,7 @@ from django.conf import settings
 import os
 from django.utils import timezone
 from datetime import datetime, timedelta
-from utils import veriry_text
+from utils import verify_text
 from django_ratelimit.decorators import ratelimit
 
 from config.global_settings import *

@@ -5,7 +5,7 @@ User = get_user_model()
 # 引入 User 模型
 # from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
-from utils import veriry_text, veriry_image
+from utils import verify_text, verify_image
 from django.utils import timezone
 
 
@@ -24,7 +24,7 @@ class UserUpdateRealnameForm(forms.ModelForm):
         else:
             self.user.left_realname_n -= 1
         try:
-            is_valid = veriry_text(realname, self.request.user.id, self.request.get_host())
+            is_valid = verify_text(realname, self.request.user.id, self.request.get_host())
         except:
             raise forms.ValidationError("网站已欠费，该功能暂停使用！", code='no_money')
         if not is_valid:
@@ -56,7 +56,7 @@ class UserUpdateAvatarForm(forms.ModelForm):
         else:
             self.user.left_avatar_n -= 1
         try:
-            is_valid = veriry_image(avatar.read(), self.request.user.id, self.request.get_host())
+            is_valid = verify_image(avatar.read(), self.request.user.id, self.request.get_host())
         except:
             raise forms.ValidationError("网站已欠费，该功能暂停使用！", code='no_money')
         if not is_valid:
@@ -89,7 +89,7 @@ class UserUpdateSignatureForm(forms.ModelForm):
         else:
             self.user.left_signature_n -= 1
         try:
-            is_valid = veriry_text(signature, self.request.user.id, self.request.get_host())
+            is_valid = verify_text(signature, self.request.user.id, self.request.get_host())
         except:
             raise forms.ValidationError("网站已欠费，该功能暂停使用！", code='no_money')
         if not is_valid:
