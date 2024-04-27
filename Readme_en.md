@@ -15,7 +15,7 @@ Censorship：百度大脑
 :white_check_mark: Develop core functionalities  
 :white_check_mark: Rent server  
 :white_check_mark: Deploy for the first time  
-:white_check_mark: Rent a domain name
+:white_check_mark: Rent a domain name  
 :white_check_mark: Registration  
 :black_square_button: Alpha testing  
 :black_square_button: Beta testing  
