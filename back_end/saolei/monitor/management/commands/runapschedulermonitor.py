@@ -9,6 +9,9 @@ from django_apscheduler.jobstores import DjangoJobStore
 from django_apscheduler.models import DjangoJobExecution
 from django_apscheduler import util
 
+from django_redis import get_redis_connection
+cache = get_redis_connection("saolei_website")
+
 import psutil
 
 logger = logging.getLogger(__name__)
@@ -17,15 +20,32 @@ logger = logging.getLogger(__name__)
 # https://pypi.org/project/django-apscheduler/
 
 
-# 10秒执行一次。定时计算刷新监视状态量。服务器io
+# 5秒执行一次。定时计算刷新监视状态量。服务器io
 def refresh_state_always():
     net_io = psutil.net_io_counters()
-    settings.GLOBAL_VARIABLES['net_io_sent_speed'] = (net_io.bytes_sent - settings.GLOBAL_VARIABLES['net_io_sent_old']) / 10
-    settings.GLOBAL_VARIABLES['net_io_recv_speed'] = (net_io.bytes_recv - settings.GLOBAL_VARIABLES['net_io_recv_old']) / 10
-    settings.GLOBAL_VARIABLES['net_io_sent_old'] = net_io.bytes_sent
-    settings.GLOBAL_VARIABLES['net_io_recv_old'] = net_io.bytes_recv
-    # print(settings.GLOBAL_VARIABLES['net_io_sent_speed'])
-    # print(settings.GLOBAL_VARIABLES['net_io_recv_speed'])
+    net_io_sent_old = cache.get("io_s_old") if cache.exists("io_s_old") else "0.0"
+    net_io_recv_old = cache.get("io_r_old") if cache.exists("io_r_old") else "0.0"
+    cache.set("io_s_old", str(net_io.bytes_sent))
+    cache.set("io_r_old", str(net_io.bytes_recv))
+    io_s_spd = (net_io.bytes_sent - float(net_io_sent_old)) / 5
+    io_r_spd = (net_io.bytes_recv - float(net_io_recv_old)) / 5
+    # print(io_s_spd)
+    # print(io_r_spd)
+    # cache.set("io_s_spd", str((net_io.bytes_sent - float(net_io_sent_old)) / 5))
+    # cache.set("io_r_spd", str((net_io.bytes_recv - float(net_io_recv_old)) / 5))
+    cache.rpush("io_s_spds", str(io_s_spd))
+    cache.rpush("io_r_spds", str(io_r_spd))
+    if cache.llen("io_s_spds") > 120:
+        cache.lpop("io_s_spds")
+    if cache.llen("io_r_spds") > 120:
+        cache.lpop("io_r_spds")
+
+    cpu = psutil.cpu_percent()
+    # cache.set("cpu", str(cpu))
+    cache.rpush("cpus", str(cpu))
+    if cache.llen("cpus") > 120:
+        cache.lpop("cpus")
+
 
 
 # The `close_old_connections` decorator ensures that database connections, that have become
@@ -53,7 +73,7 @@ class Command(BaseCommand):
 
         scheduler.add_job(
             refresh_state_always,
-            trigger=CronTrigger(second="*/10"),  # Every 10 seconds
+            trigger=CronTrigger(second="*/5"),  # Every 5 seconds
             id="refresh_state_always",  # The `id` assigned to each job MUST be unique
             max_instances=1,
             replace_existing=True,

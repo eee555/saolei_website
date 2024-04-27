@@ -346,15 +346,5 @@ TEMPLATE_DIRS = (
 os.path.join(SETTINGS_PATH, 'templates'),
 )
 
-# 一下定义全局变量
-GLOBAL_VARIABLES = {
-    # 上传字节数的上一个状态量
-    'net_io_sent_old': 0.0,
-    # 接受字节数的上一个状态量
-    "net_io_recv_old": 0.0,
-    # 过去十秒内平均网速，上传，字节/每秒
-    'net_io_sent_speed': 0.0,
-    # 过去十秒内平均网速，接受，字节/每秒
-    "net_io_recv_speed": 0.0,
-}
+
 
