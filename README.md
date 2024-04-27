@@ -18,7 +18,7 @@
 :white_check_mark: 初步部署  
 :white_check_mark: 租赁域名  
 :white_check_mark: 备案  
-:black_square_button: 删档内测  
+:white_check_mark: 删档内测  
 :black_square_button: 删档公测  
 :black_square_button: 上线  
 
@@ -35,6 +35,7 @@
 1. python manage.py makemigrations
 1. python manage.py migrate
 1. python manage.py runserver
+1. （假如要启动定时任务，不做相关功能时可以不启动）python manage.py runapschedulermonitor
 
 前端：
 1. 从[https://github.com/eee555/flop-player/releases/download/v1.1/dist.zip](https://github.com/eee555/flop-player/releases/download/v1.1/dist.zip)下载新版flop播放器，并解压到saolei_website\front_end\public\flop下（将文件夹的名称dist修改为flop），使得saolei_website\front_end\public\flop\index.html能够被找到

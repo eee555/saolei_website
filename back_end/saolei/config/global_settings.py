@@ -1,3 +1,6 @@
+# 全局设置，约定不可变
+# 全局可变量写在settings.py的GLOBAL_VARIABLES
+
 # 数据大小限制
 class MinSizes:
     password = 6

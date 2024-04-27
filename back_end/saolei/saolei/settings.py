@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
-import os
+import os, json
 import warnings
 
 develop_mode = True
@@ -24,8 +24,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-3_(yjnup(rsxz&pd@stz25*meq10bn3m3$lt!n_1+s723#k=ay"
+# 与加密的盐有关！
+try:
+    with open("secrets.json",'r') as f:
+        SECRET_KEY = json.load(f)["django_secret_key"]
+except KeyError:
+    SECRET_KEY = "django-insecure-3_(yjnup(rsxz&pd@stz25*meq10bn3m3$lt!n_1+s723#k=ay"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = False
@@ -52,6 +56,9 @@ INSTALLED_APPS = [
     'userprofile',
     'videomanager',
     'msuser',
+    'article',
+    "ranking",
+    "monitor",
     'django_cleanup.apps.CleanupConfig', # 必须放在最后(文档所言)
 ]
 
@@ -108,6 +115,7 @@ DATABASES = {
         "HOST": "127.0.0.1",
         #'HOST': 'mysql',   # docker-compose 中的服务名称
         "PORT": "3306",
+        'CONN_MAX_AGE':None
     }
 }
 
@@ -338,6 +346,15 @@ TEMPLATE_DIRS = (
 os.path.join(SETTINGS_PATH, 'templates'),
 )
 
-
-
+# 一下定义全局变量
+GLOBAL_VARIABLES = {
+    # 上传字节数的上一个状态量
+    'net_io_sent_old': 0.0,
+    # 接受字节数的上一个状态量
+    "net_io_recv_old": 0.0,
+    # 过去十秒内平均网速，上传，字节/每秒
+    'net_io_sent_speed': 0.0,
+    # 过去十秒内平均网速，接受，字节/每秒
+    "net_io_recv_speed": 0.0,
+}
 

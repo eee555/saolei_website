@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 import logging
-from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .forms import UploadVideoForm
 from .models import VideoModel, ExpandVideoModel
 from .view_utils import update_personal_record, update_personal_record_stock
 from userprofile.models import UserProfile
 from django.http import HttpResponse, JsonResponse, FileResponse
-# from asgiref.sync import sync_to_async
 import json, urllib
 from utils import ComplexEncoder
 from django.core.paginator import Paginator
@@ -19,15 +17,7 @@ from datetime import datetime
 # from django.core.cache import cache
 from django_redis import get_redis_connection
 cache = get_redis_connection("saolei_website")
-# get_redis_connection("saolei_website").flushall()
-# from apscheduler.schedulers.blocking import BlockingScheduler
-from apscheduler.schedulers.background import BackgroundScheduler
-# from apscheduler.triggers.cron import CronTrigger
-# from django.core.management.base import BaseCommand
-# from django_apscheduler.models import DjangoJobExecution
-# from django_apscheduler import util
 from django.shortcuts import render, redirect
-from django_apscheduler.jobstores import DjangoJobStore, register_job, register_events
 # https://django-ratelimit.readthedocs.io/en/stable/rates.html
 from django_ratelimit.decorators import ratelimit
 from django.utils import timezone
@@ -448,40 +438,6 @@ def freeze(request):
         return HttpResponse("别瞎玩")
 
 
-scheduler = BackgroundScheduler(timezone='Asia/Shanghai')
-scheduler.add_jobstore(DjangoJobStore(), "default")
 
-
-# 定时清除最新录像，直至剩下最近7天的或剩下不到100条
-# 可能有时区问题
-def delete_newest_queue(name):
-    if cache.hlen("newest_queue") <= 100:
-        return
-    newest_queue_ids = cache.hgetall("newest_queue")
-    for key in newest_queue_ids.keys():
-        a = json.loads(newest_queue_ids[key]['time'])
-        d = datetime.strptime(a, "%Y-%m-%d %H:%M:%S")
-        if (timezone.now() - d).days > 7:
-            cache.hdel("newest_queue", key)
-
-
-# 定时清除7天以前冻结的录像
-def delete_freezed_video(name):
-    ddl = timezone.now() - timezone.timedelta(days=7)
-    VideoModel.objects.filter(upload_time__lt=ddl, state="b").delete()
-
-
-# scheduler.add_job(job1, "interval", seconds=10, args=['22'], id="job2", replace_existing=True)
-scheduler.add_job(delete_newest_queue, 'cron', hour='3', minute='11', second = '23',
-                   args=['666'], id='delete_newest_queue', replace_existing=True)
-scheduler.add_job(delete_freezed_video, 'cron', hour='4', minute='1', second = '5', 
-                  args=['666'], id='delete_freezed_video', replace_existing=True)
-# 监控任务
-register_events(scheduler)
-# 调度器开始运行
-try:
-    scheduler.start()
-except:
-    print("定时任务启动失败！")
 
 

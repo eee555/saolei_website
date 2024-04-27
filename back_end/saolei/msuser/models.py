@@ -1,5 +1,4 @@
 from django.db import models
-# from userprofile.models import UserProfile
 
 from config.global_settings import *
 
@@ -22,7 +21,9 @@ def VideoIDField():
 def VideoCountField():
     return models.IntegerField(null=False, default=0)
 
-# 扫雷用户
+
+# 扫雷用户的标识、记录、录像计数
+# 此处目前太大，拆成多个模型或app比较好
 class UserMS(models.Model):
     # 用户的标识。管理员审核通过后可以自由使用该标识。
     designators = models.JSONField(default=get_default_designators)

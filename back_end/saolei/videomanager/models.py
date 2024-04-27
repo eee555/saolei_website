@@ -97,7 +97,7 @@ class VideoModel(models.Model):
         INTERMEDIATE = "i", ('中级')
         EXPERT = "e", ('高级')
         CUSTOM = "c", ('自定义')
-    # 用户名，非标识
+    # 用户
     player = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     # 服务器端文件相对路径
     file = RestrictedFileField(

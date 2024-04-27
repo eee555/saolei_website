@@ -21,9 +21,7 @@ from django.contrib.auth import get_user_model
 from msuser.models import UserMS
 from django_ratelimit.decorators import ratelimit
 from django.utils import timezone
-from apscheduler.schedulers.background import BackgroundScheduler
-from django_apscheduler.jobstores import DjangoJobStore, register_job, register_events
-from saolei.settings import EMAIL_SKIP
+from django.conf import settings
 
 User = get_user_model()
 
@@ -154,9 +152,9 @@ def user_register(request):
             email_captcha = request.POST.get("email_captcha", None)
             get_email_captcha = EmailVerifyRecord.objects.filter(hashkey=emailHashkey).first()
             # get_email_captcha = EmailVerifyRecord.objects.filter(hashkey="5f0db744-180b-4d9f-af5a-2986f4a78769").first()
-            if EMAIL_SKIP or (get_email_captcha and email_captcha and get_email_captcha.code == email_captcha and\
+            if settings.EMAIL_SKIP or (get_email_captcha and email_captcha and get_email_captcha.code == email_captcha and\
                   get_email_captcha.email == request.POST.get("email", None)):
-                if EMAIL_SKIP or (timezone.now() - get_email_captcha.send_time).seconds <= 3600:
+                if settings.EMAIL_SKIP or (timezone.now() - get_email_captcha.send_time).seconds <= 3600:
                     new_user = user_register_form.save(commit=False)
                     # 设置密码(哈希)
                     new_user.set_password(
@@ -345,32 +343,4 @@ def modify_n(request):
         return HttpResponse(f"为用户\"{user.realname}\"（id: {user.id}）增加修改姓名、头像、签名的次数成功！目前剩余（{user.left_realname_n}, {user.left_avatar_n}, {user.left_signature_n}）")
     else:
         return HttpResponse("别瞎玩")
-
-
-scheduler = BackgroundScheduler(timezone='Asia/Shanghai')
-scheduler.add_jobstore(DjangoJobStore(), "default")
-
-def delete_overdue_emailverifyrecord(name):
-    # 定时清除过期邮箱验证码（1小时过期）
-    start = timezone.now() - timezone.timedelta(seconds=3600)
-    EmailVerifyRecord.objects.filter(send_time__lt=start).delete()
-
-def delete_overdue_captcha(name):
-    # 定时清除过期图形验证码（15分钟过期）
-    # start = timezone.now() - timezone.timedelta(seconds=900)
-    CaptchaStore.objects.filter(expiration__lt=timezone.now()).delete()
-            
-
-# scheduler.add_job(job1, "interval", seconds=10, args=['22'], id="job2", replace_existing=True)
-scheduler.add_job(delete_overdue_emailverifyrecord, 'cron', hour='5', minute='10',
-                   second = '02', args=['666'], id='delete_overdue_emailverifyrecord', replace_existing=True)
-scheduler.add_job(delete_overdue_captcha, 'cron', hour='5', minute='34', second = '07', 
-                  args=['666'], id='delete_overdue_captcha', replace_existing=True)
-# 监控任务
-register_events(scheduler)
-# 调度器开始运行
-try:
-    scheduler.start()
-except:
-    print("定时任务启动失败！")
 

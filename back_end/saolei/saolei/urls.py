@@ -29,6 +29,8 @@ urlpatterns = [
     path('userprofile/', include('userprofile.urls', namespace='userprofile')),
     path("admin/", admin.site.urls),
     path('msuser/', include('msuser.urls')),
+    path('monitor/', include('monitor.urls')),
+    path('article/', include('article.urls')),
     path(r'', TemplateView.as_view(template_name="index.html")),
 ]
 

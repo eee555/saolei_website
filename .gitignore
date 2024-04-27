@@ -168,10 +168,4 @@ front_end/public/flopold
 **/*.zip
 *.rar
 **/secrets.json
-
-
-
-
-
-
-
+front_end/src/assets/article
