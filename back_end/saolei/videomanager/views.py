@@ -393,7 +393,7 @@ def approve(request):
 # 冻结的录像七到14天后删除，用一个定时任务
 # http://127.0.0.1:8000/video/freeze?ids=[18,19,20,21,102,273]
 # http://127.0.0.1:8000/video/freeze?ids=12
-# http://127.0.0.1:8000/video/freeze?uesr_id=20
+# http://127.0.0.1:8000/video/freeze?user_id=20
 def freeze(request):
     if request.user.is_staff and request.method == 'GET':
         if _ids := request.GET["ids"]:
@@ -402,8 +402,8 @@ def freeze(request):
             if isinstance(ids, int):
                 ids = [ids]
         else: 
-            _user_id = int(request.GET["uesr_id"])
-            logger.info(f'{request.user.id} freeze uesr_id {_user_id}')
+            _user_id = int(request.GET["user_id"])
+            logger.info(f'{request.user.id} freeze user_id {_user_id}')
             user = UserProfile.objects.get(id=_user_id)
             videos = VideoModel.objects.filter(player=user)
             ids = []
@@ -440,7 +440,7 @@ def freeze(request):
                     update_video_num(video_i, add=False)
                 cache.hdel("review_queue", _id)
                 cache.hdel("newest_queue", _id)
-        if request.GET["uesr_id"]:
+        if request.GET["user_id"]:
             update_personal_record_stock(user)
         logger.info(f'{request.user.id} freeze {json.dumps(ids)} response {json.dumps(res)}')
         return JsonResponse(json.dumps(res), safe=False)
