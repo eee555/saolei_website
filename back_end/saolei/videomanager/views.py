@@ -163,8 +163,6 @@ def video_download(request):
     #     return response
     # except Exception:
     #     return JsonResponse({"status": 104, "msg": "file not exist!"})
-        
-
 
 # 录像查询（无需登录）
 # 按任何基础指标+难度+模式，排序，分页
@@ -172,6 +170,7 @@ def video_download(request):
 def video_query(request):
     if request.method == 'GET':
         data = request.GET
+        # videos = VideoModel.objects.filter(*data["filter"]).order_by(*data["order_by"]).values(*data["values"])
         index = data["index"]
         if index[0] == '-':
             order_index = "-video__" + index[1:]
@@ -180,32 +179,29 @@ def video_query(request):
             order_index = values_index = "video__" + index
 
         if data["mode"] != "00":
+            filter = {"level": data["level"], "mode": data["mode"]}
             if index in {"id", "upload_time", "bv", "bvs", "-upload_time", "-bv", "-bvs"}:
-                videos = VideoModel.objects.filter(level=data["level"], mode=data["mode"])\
-                    .order_by(index, "timems")\
-                    .values("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "timems")
+                orderby = (index, "timems")
+                values = ("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "timems")
             elif index == "timems" or index == "-timems":
-                videos = VideoModel.objects.filter(level=data["level"], mode=data["mode"])\
-                    .order_by(index)\
-                    .values("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "timems")
+                orderby = (index,)
+                values = ("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "timems")
             else:
-                videos = VideoModel.objects.filter(level=data["level"], mode=data["mode"])\
-                    .order_by(order_index, "timems")\
-                    .values("id", "upload_time", "player__realname", "player__id", "bv",
-                        "bvs", "timems", values_index)
+                orderby = (order_index, "timems")
+                values = ("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "timems", values_index)
+            videos = VideoModel.objects.filter(**filter).order_by(*orderby).values(*values)
         else:
+            filter = {"level": data["level"]}
             if index in {"id", "upload_time", "bv", "bvs", "-upload_time", "-bv", "-bvs"}:
-                videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(level=data["level"])\
-                    .order_by(index, "timems")\
-                    .values("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "timems")
+                orderby = (index, "timems")
+                values = ("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "timems")
             elif index == "timems" or index == "-timems":
-                videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(level=data["level"])\
-                    .order_by(index)\
-                    .values("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "timems")
+                orderby = (index,)
+                values = ("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "timems")
             else:
-                videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(level=data["level"])\
-                    .order_by(order_index, "timems")\
-                    .values("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "timems", values_index)
+                orderby = (order_index, "timems")
+                values = ("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "timems", values_index)
+            videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(**filter).order_by(*orderby).values(*values)
 
         # print(videos)
         paginator = Paginator(videos, 20)  # 每页20条数据
