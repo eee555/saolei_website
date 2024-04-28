@@ -24,7 +24,7 @@ from django.utils import timezone
 # import ms_toollib as ms
 from django.utils.encoding import escape_uri_path
 
-from saolei.settings import DESIGNATOR_SKIP
+from config.flags import DESIGNATOR_SKIP
 
 logging.getLogger('apscheduler.scheduler').setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)

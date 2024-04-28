@@ -6,7 +6,7 @@ from decimal import Decimal
 from django.http import HttpResponse, JsonResponse, FileResponse
 from django.shortcuts import render, redirect
 import requests
-from saolei.settings import BAIDU_VERIFY_SKIP
+from config.flags import BAIDU_VERIFY_SKIP
 
 def generate_code(code_len):
     """
