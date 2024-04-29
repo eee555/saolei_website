@@ -16,6 +16,14 @@ for mode in GameModes:
             record_update_fields.append(f"{level}_{stat}_{mode}")
             record_update_fields.append(f"{level}_{stat}_id_{mode}")
 
+def fieldname_translate(name: str):
+    if name in [field.name for field in VideoModel._meta.get_fields()]:
+        return name
+    elif name in [field.name for field in ExpandVideoModel._meta.get_fields()]:
+        return "video__" + name
+    else:
+        return name
+
 # 确定用户破某个纪录后，且对应模式、指标的三个级别全部有录像后，更新redis中的数据
 def update_3_level_cache_record(realname: str, index: str, mode: str, ms_user: UserMS):
     key = f"player_{index}_{mode}_{ms_user.id}"
