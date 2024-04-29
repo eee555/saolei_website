@@ -237,7 +237,7 @@ const handleCurrentChange = (val: number) => {
 }
 
 const offsetIndex = (index: number) => {
-    return state.CurrentPage > 1 ? index - 19 + (state.CurrentPage) * 20 :
+    return state.CurrentPage > 1 ? index + 1 + (state.CurrentPage - 1) * state.PageSize :
         [..."🥇🥈🥉🏅🏅🏅🏅🏅🏅🏅", 11, 12, 13, 14, 15, 16, 17, 18, 19, 20][index];
 }
 
