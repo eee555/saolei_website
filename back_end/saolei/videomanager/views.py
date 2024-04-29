@@ -173,9 +173,9 @@ def video_download(request):
 def video_query(request):
     if request.method == 'GET':
         data = request.GET
-        # videos = VideoModel.objects.filter(*data["filter"]).order_by(*data["order_by"]).values(*data["values"])
+
         values = [fieldname_translate(s) for s in data.getlist("v[]")]
-        print(data["r"])
+
         if data["r"] == "true":
             ob = "-" + data["o"]
         else:
@@ -184,12 +184,7 @@ def video_query(request):
             orderby = (ob, "timems")
         else:
             orderby = (ob,)
-        #if index[0] == '-':
-        #    order_index = "-video__" + index[1:]
-        #    values_index = "video__" + index[1:]
-        #else:
-        #    order_index = values_index = "video__" + index
-        print(orderby)
+            
         if data["mode"] != "00":
             filter = {"level": data["level"], "mode": data["mode"]}
             videos = VideoModel.objects.filter(**filter).order_by(*orderby).values(*values)
