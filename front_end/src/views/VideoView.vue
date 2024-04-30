@@ -244,8 +244,8 @@ const handleCurrentChange = (val: number) => {
 }
 
 const offsetIndex = (index: number) => {
-    return state.CurrentPage > 1 ? index + 1 + (state.CurrentPage - 1) * state.PageSize :
-        [..."🥇🥈🥉🏅🏅🏅🏅🏅🏅🏅", 11, 12, 13, 14, 15, 16, 17, 18, 19, 20][index];
+    return (state.CurrentPage > 1 || index > 9) ? index + 1 + (state.CurrentPage - 1) * state.PageSize :
+        [..."🥇🥈🥉🏅🏅🏅🏅🏅🏅🏅"][index];
 }
 
 // 根据配置，刷新当前页面的录像表
