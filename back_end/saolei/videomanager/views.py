@@ -3,7 +3,7 @@ import logging
 from django.contrib.auth.decorators import login_required
 from .forms import UploadVideoForm
 from .models import VideoModel, ExpandVideoModel
-from .view_utils import update_personal_record, update_personal_record_stock, fieldname_translate
+from .view_utils import update_personal_record, update_personal_record_stock, video_all_fields
 from userprofile.models import UserProfile
 from django.http import HttpResponse, JsonResponse, FileResponse
 import json, urllib
@@ -174,8 +174,7 @@ def video_query(request):
     if request.method == 'GET':
         data = request.GET
 
-        values = [fieldname_translate(s) for s in data.getlist("v[]")]
-        values.append("id")
+        values = video_all_fields
 
         if data["r"] == "true":
             ob = "-" + data["o"]
