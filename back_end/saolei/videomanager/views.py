@@ -3,7 +3,7 @@ import logging
 from django.contrib.auth.decorators import login_required
 from .forms import UploadVideoForm
 from .models import VideoModel, ExpandVideoModel
-from .view_utils import update_personal_record, update_personal_record_stock
+from .view_utils import update_personal_record, update_personal_record_stock, fieldname_translate
 from userprofile.models import UserProfile
 from django.http import HttpResponse, JsonResponse, FileResponse
 import json, urllib
@@ -168,49 +168,37 @@ def video_download(request):
 
 # 录像查询（无需登录）
 # 按任何基础指标+难度+模式，排序，分页
+# 每项的定义参见 front_end/src/views/VideoView.vue 的 request_videos 函数
 @ratelimit(key='ip', rate='20/m')
 def video_query(request):
     if request.method == 'GET':
         data = request.GET
-        # videos = VideoModel.objects.filter(*data["filter"]).order_by(*data["order_by"]).values(*data["values"])
-        index = data["index"]
-        if index[0] == '-':
-            order_index = "-video__" + index[1:]
-            values_index = "video__" + index[1:]
-        else:
-            order_index = values_index = "video__" + index
 
+        values = [fieldname_translate(s) for s in data.getlist("v[]")]
+        values.append("id")
+
+        if data["r"] == "true":
+            ob = "-" + data["o"]
+        else:
+            ob = data["o"]
+        if data["o"] != "timems":
+            orderby = (ob, "timems")
+        else:
+            orderby = (ob,)
+            
         if data["mode"] != "00":
             filter = {"level": data["level"], "mode": data["mode"]}
-            if index in {"id", "upload_time", "bv", "bvs", "-upload_time", "-bv", "-bvs"}:
-                orderby = (index, "timems")
-                values = ("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "timems")
-            elif index == "timems" or index == "-timems":
-                orderby = (index,)
-                values = ("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "timems")
-            else:
-                orderby = (order_index, "timems")
-                values = ("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "timems", values_index)
             videos = VideoModel.objects.filter(**filter).order_by(*orderby).values(*values)
         else:
             filter = {"level": data["level"]}
-            if index in {"id", "upload_time", "bv", "bvs", "-upload_time", "-bv", "-bvs"}:
-                orderby = (index, "timems")
-                values = ("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "timems")
-            elif index == "timems" or index == "-timems":
-                orderby = (index,)
-                values = ("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "timems")
-            else:
-                orderby = (order_index, "timems")
-                values = ("id", "upload_time", "player__realname", "player__id", "bv", "bvs", "timems", values_index)
             videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(**filter).order_by(*orderby).values(*values)
 
         # print(videos)
-        paginator = Paginator(videos, 20)  # 每页20条数据
+        paginator = Paginator(videos, data["ps"])
         page_number = data["page"]
         page_videos = paginator.get_page(page_number)
         response = {
-            "total_page": paginator.num_pages,
+            "count": len(videos),
             "videos": list(page_videos)
             }
         # t=json.dumps(response, cls=ComplexEncoder)

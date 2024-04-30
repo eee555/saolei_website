@@ -9,87 +9,45 @@
     </Teleport>
     <el-row class="mb-4" style="margin-bottom: 10px;">
         <el-button v-for="(tag, key) in level_tags" type="warning" :plain="!(level_tag_selected == key)" :size="'small'"
-            @click="level_tag_selected = key as string; get_video_rank(1);">{{ tag.name }}</el-button>
+            @click="level_tag_selected = key as string;">{{ tag.name }}</el-button>
     </el-row>
 
     <el-row class="mb-4" style="margin-bottom: 10px;">
         <el-button v-for="(tag, key) in mode_tags" type="success" :plain="!(mode_tag_selected == key)" :size="'small'"
-            @click="mode_tag_selected = key as string; get_video_rank(1);">{{ tag.name }}</el-button>
+            @click="mode_tag_selected = key as string;">{{ tag.name }}</el-button>
     </el-row>
 
     <el-row class="mb-4" style="margin-bottom: 10px;">
-        <el-button v-for="(tag, key) in index_tags" type="primary" :plain="!(index_tag_selected == key)" :size="'small'"
-            @click="index_tag_selected = key as string; mod_style(); get_video_rank(1);">{{ tag.name
+        <el-button v-for="(value, key) in index_tags" type="primary" :plain="!value.selected" :size="'small'"
+            @click="index_select(key, value)">{{ value.name
             }}</el-button>
     </el-row>
 
+    <el-row class="mb-4" style="margin-bottom: 10px;">
+        <el-button size="small" @click="request_videos">刷新</el-button>
+    </el-row>
+
     <div style="width: 80%;font-size:20px;margin: auto;margin-top: 10px;">
-        <div style="border-bottom: 1px solid #555;padding-bottom: 10px;">
-            <div class="rank">排名</div>
-            <span class="utime" :class="{ hoverable: index_tag_selected === 'upload_time' }"
-                :style="{ color: (index_tag_selected === 'upload_time' ? 'rgb(64, 158, 255)' : '') }"
-                @click="reverseSortDirect('upload_time')">上传时间{{
-            index_tag_selected === 'upload_time' ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : ""
-        }}</span>
-            <span class="name">姓名</span>
-            <span class="bbbv_bbbvs_rtime" :class="{ hoverable: index_tag_selected === 'bbbv' }"
-                :style="{ color: (index_tag_selected === 'bbbv' ? 'rgb(64, 158, 255)' : '') }"
-                @click="reverseSortDirect('bbbv')">3BV{{
-            index_tag_selected === 'bbbv' ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
-            <span class="bbbv_bbbvs_rtime" :class="{ hoverable: index_tag_selected === 'bbbv_s' }"
-                :style="{ color: (index_tag_selected === 'bbbv_s' ? 'rgb(64, 158, 255)' : '') }"
-                @click="reverseSortDirect('bbbv_s')">3BV/s{{
-            index_tag_selected === 'bbbv_s' ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
-            <span class="bbbv_bbbvs_rtime" :class="{ hoverable: index_tag_selected === 'timems' }"
-                :style="{ color: (index_tag_selected === 'timems' ? 'rgb(64, 158, 255)' : '') }"
-                @click="reverseSortDirect('timems')">成绩{{
-            index_tag_selected === 'timems' ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
-            <span v-show="index_visible" class="index"
-                :style="{ color: (index_tag_selected != 'upload_time' && index_tag_selected != 'bbbv' && index_tag_selected != 'bbbv_s' && index_tag_selected != 'timems' ? 'rgb(64, 158, 255)' : '') }"
-                @click="reverseSortDirect(index_tag_selected)">{{
-            index_tag_selected }}{{
-            index_tag_selected != 'upload_time' && index_tag_selected != 'bbbv' && index_tag_selected != 'bbbv_s' &&
-                index_tag_selected != 'timems' ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
-            <!-- <span class="operation">操作</span> -->
-        </div>
-        <div style="height: 770px;">
-            <div v-for="(video, key) in videoData" class="row" @click="preview(video.id)">
-                <div class="rank">{{ state.CurrentPage > 1 ? key - 19 + (state.CurrentPage) * 20 :
-            [..."🥇🥈🥉🏅🏅🏅🏅🏅🏅🏅", 11, 12, 13, 14, 15, 16, 17, 18, 19, 20][key] }}</div>
-
-                <span v-if="'upload_time' in video" class="utime">{{ utc_to_local_format(video.upload_time) }}</span>
-                <span v-else class="utime">{{ utc_to_local_format(video.video__upload_time) }}</span>
-
-                <PlayerName class="name"
-                    :user_id="'player__id' in video ? +(video.player__id as Number) : +(video.video__player__id as Number)"
-                    :user_name="'player__realname' in video ? video.player__realname : video.video__player__realname">
-                </PlayerName>
-                <!-- <span v-if="'player__realname' in video" class="name">{{ video.player__realname }}</span>
-            <span v-else class="name">{{ video.video__player__realname }}</span> -->
-
-                <span v-if="'bv' in video" class="bbbv_bbbvs_rtime">{{ video.bv }}</span>
-                <span v-else class="bbbv_bbbvs_rtime">{{ video.video__bv }}</span>
-
-                <span v-if="'bvs' in video" class="bbbv_bbbvs_rtime">{{ to_fixed_n(video.bvs, 3) }}</span>
-                <span v-else class="bbbv_bbbvs_rtime">{{ to_fixed_n(video.video__bvs, 3) }}</span>
-
-                <span v-if="'timems' in video" class="bbbv_bbbvs_rtime">{{ ms_to_s(video.timems!) }}</span>
-                <span v-else class="bbbv_bbbvs_rtime">{{ ms_to_s(video.video__timems!) }}</span>
-
-                <span v-show="index_visible" class="index">{{
-            to_fixed_n(video["video__" + index_tags[index_tag_selected].key],
-                index_tags[index_tag_selected].to_fixed) }}</span>
-                <!-- <span class="operation">
-                <PreviewDownload :id="video.id"></PreviewDownload>
-            </span> -->
-            </div>
-        </div>
+        <el-table :data="videoList" @sort-change="handleSortChange" @row-click="preview">
+            <el-table-column type="index" :index="offsetIndex" fixed></el-table-column>
+            <el-table-column v-for="key in selected_index()" 
+                :prop="index_tags[key].key" 
+                :label="index_tags[key].name"
+                :formatter="columnFormatter(key)"
+                sortable="custom">
+            </el-table-column>
+        </el-table>
     </div>
 
     <div style="margin-top: 16px;">
-        <el-pagination v-model:current-page="state.CurrentPage" @current-change="currentChange" @prev-click="prevClick"
-            :next-click="nextClick" :page-size="20" layout="prev, pager, next, jumper" :page-count="state.Total"
-            prev-text="上一页" next-text="下一页">
+        <el-pagination
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            :current-page="state.CurrentPage"
+            :page-sizes="[10, 20, 50, 100]"
+            :page-size="state.PageSize"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="state.VideoCount">
         </el-pagination>
     </div>
 </template>
@@ -117,27 +75,17 @@ const index_visible = ref(true);
 const state = reactive({
     tableLoading: false,
     CurrentPage: 1,
-    // PageSize: 20,
-    Total: 3,
+    PageSize: 10,
+    VideoCount: 0,
+    Total: 3
 });
 
 // const test  = reactive({v: 5});
 const videoData = reactive<Video[]>([]);
+const videoList = reactive<Video[]>([]);
 // 带下划线与不带的至少存在一个
 interface Video {
-    id: number;
-    upload_time?: string;
-    player__realname?: string;
-    bv?: number;
-    bvs?: number;
-    timems?: number;
-    video__upload_time?: string;
-    video__player__realname?: string;
-    video__bv?: number;
-    video__bvs?: number;
-    video__timems?: number;
-    index?: number;
-    [index: string]: string | number | undefined;
+    [key: string]: string | number; // Assuming all values are strings, change as needed
 }
 
 interface NameKey {
@@ -151,6 +99,7 @@ interface NameKeyReverse {
     key: string;
     reverse: boolean;
     to_fixed: number;
+    selected: boolean;
 }
 interface TagsReverse {
     [index: string]: NameKeyReverse;
@@ -178,30 +127,61 @@ const mode_tags: Tags = {
 
 
 // reverse: true从小到大
-const index_tags: TagsReverse = {
-    "upload_time": { name: "上传时间", key: "upload_time", reverse: true, to_fixed: -1 },
-    "timems": { name: "成绩", key: "timems", reverse: false, to_fixed: 3 },
-    "bbbv": { name: "3BV", key: "bv", reverse: false, to_fixed: 0 },
-    "bbbv_s": { name: "3BV/s", key: "bvs", reverse: true, to_fixed: 3 },
-    "left_s": { name: "left/s", key: "left_s", reverse: true, to_fixed: 3 },
-    "right_s": { name: "right/s", key: "right_s", reverse: true, to_fixed: 3 },
-    "double_s": { name: "double/s", key: "double_s", reverse: true, to_fixed: 3 },
-    "cl_s": { name: "cl/s", key: "cl_s", reverse: true, to_fixed: 3 },
-    "path": { name: "path", key: "path", reverse: false, to_fixed: 2 },
-    "stnb": { name: "STNB", key: "stnb", reverse: true, to_fixed: 2 },
-    "ioe": { name: "IOE", key: "ioe", reverse: true, to_fixed: 3 },
-    "thrp": { name: "ThrP", key: "thrp", reverse: true, to_fixed: 3 },
-    "ce_s": { name: "ce/s", key: "ce_s", reverse: true, to_fixed: 3 },
-    "op": { name: "空", key: "op", reverse: false, to_fixed: 0 },
-    "is": { name: "岛", key: "isl", reverse: false, to_fixed: 0 },
-    "cell1": { name: "1", key: "cell1", reverse: false, to_fixed: 0 },
-    "cell2": { name: "2", key: "cell2", reverse: false, to_fixed: 0 },
-    "cell3": { name: "3", key: "cell3", reverse: false, to_fixed: 0 },
-    "cell4": { name: "4", key: "cell4", reverse: false, to_fixed: 0 },
-    "cell5": { name: "5", key: "cell5", reverse: false, to_fixed: 0 },
-    "cell6": { name: "6", key: "cell6", reverse: false, to_fixed: 0 },
-    "cell7": { name: "7", key: "cell7", reverse: false, to_fixed: 0 },
-    "cell8": { name: "8", key: "cell8", reverse: false, to_fixed: 0 }
+const index_tags: TagsReverse = reactive({
+    "upload_time": { name: "上传时间", key: "upload_time", reverse: true, to_fixed: -1, selected: true },
+    "name": { name: "姓名", key: "player__realname", reverse: false, to_fixed: 0, selected: true},
+    "timems": { name: "成绩", key: "timems", reverse: false, to_fixed: 3, selected: true },
+    "bbbv": { name: "3BV", key: "bv", reverse: false, to_fixed: 0, selected: true },
+    "bbbv_s": { name: "3BV/s", key: "bvs", reverse: true, to_fixed: 3, selected: true },
+    "left_s": { name: "left/s", key: "video__left_s", reverse: true, to_fixed: 3, selected: false },
+    "right_s": { name: "right/s", key: "video__right_s", reverse: true, to_fixed: 3, selected: false },
+    "double_s": { name: "double/s", key: "video__double_s", reverse: true, to_fixed: 3, selected: false },
+    "cl_s": { name: "cl/s", key: "video__cl_s", reverse: true, to_fixed: 3, selected: false },
+    "path": { name: "path", key: "video__path", reverse: false, to_fixed: 2, selected: false },
+    "stnb": { name: "STNB", key: "video__stnb", reverse: true, to_fixed: 2, selected: true },
+    "ioe": { name: "IOE", key: "video__ioe", reverse: true, to_fixed: 3, selected: false },
+    "thrp": { name: "ThrP", key: "video__thrp", reverse: true, to_fixed: 3, selected: false },
+    "ce_s": { name: "ce/s", key: "video__ce_s", reverse: true, to_fixed: 3, selected: false },
+    "op": { name: "空", key: "video__op", reverse: false, to_fixed: 0, selected: false },
+    "is": { name: "岛", key: "video__isl", reverse: false, to_fixed: 0, selected: false },
+    "cell1": { name: "1", key: "video__cell1", reverse: false, to_fixed: 0, selected: false },
+    "cell2": { name: "2", key: "video__cell2", reverse: false, to_fixed: 0, selected: false },
+    "cell3": { name: "3", key: "video__cell3", reverse: false, to_fixed: 0, selected: false },
+    "cell4": { name: "4", key: "video__cell4", reverse: false, to_fixed: 0, selected: false },
+    "cell5": { name: "5", key: "video__cell5", reverse: false, to_fixed: 0, selected: false },
+    "cell6": { name: "6", key: "video__cell6", reverse: false, to_fixed: 0, selected: false },
+    "cell7": { name: "7", key: "video__cell7", reverse: false, to_fixed: 0, selected: false },
+    "cell8": { name: "8", key: "video__cell8", reverse: false, to_fixed: 0, selected: false }
+})
+
+const selected_index = () => {
+    var list = [];
+    for (var key of Object.keys(index_tags)) {
+        if (index_tags[key].selected) {
+            list.push(key);
+        }
+    }
+    return list;
+}
+
+const columnFormatter = (key: string) => {
+    if (key == "upload_time") {
+        return (row: any, column: any, cellValue: string | undefined) => {
+            return utc_to_local_format(cellValue);
+        }
+    } else if (key == "timems") {
+        return (row: any, column: any, cellValue: number) => {
+            return ms_to_s(cellValue);
+        }
+    } else if (key == "name") {
+        return (row: any, column: any, cellValue: string) => {
+            return cellValue;
+        }
+    } else {
+        return (row: any, column: any, cellValue: string | number | undefined) => {
+            return to_fixed_n(cellValue, index_tags[key].to_fixed);
+        }
+    }
 }
 
 onMounted(() => {
@@ -210,7 +190,6 @@ onMounted(() => {
 
 
     mod_style();
-    get_video_rank(1);
 })
 
 function to_fixed_n(input: string | number | undefined, to_fixed: number): string | number | undefined {
@@ -235,65 +214,64 @@ const mod_style = () => {
         includes(index_tag_selected.value);
 }
 
-// 根据配置，刷新当前页面的录像表
-const get_video_rank = (page: number) => {
-    state.CurrentPage = page
-    let index = index_tags[index_tag_selected.value].key;
-    if (index_tags[index_tag_selected.value].reverse) {
-        index = "-" + index; // 适配django
+const handleSortChange = (sort: any) => {
+    console.log(sort.prop, sort.order);
+    for (var key of Object.keys(index_tags)) { // 很丑陋，but it works
+        if (index_tags[key].key == sort.prop) {
+            index_tag_selected.value = key;
+            index_tags[key].reverse = sort.order == "descending";
+            break;
+        }
     }
+    request_videos();
+}
+
+const handleSizeChange = (val: number) => {
+    state.PageSize = val;
+    request_videos();
+}
+
+const handleCurrentChange = (val: number) => {
+    state.CurrentPage = val;
+    request_videos();
+}
+
+const offsetIndex = (index: number) => {
+    return state.CurrentPage > 1 ? index + 1 + (state.CurrentPage - 1) * state.PageSize :
+        [..."🥇🥈🥉🏅🏅🏅🏅🏅🏅🏅", 11, 12, 13, 14, 15, 16, 17, 18, 19, 20][index];
+}
+
+// 根据配置，刷新当前页面的录像表
+const request_videos = () => {
     proxy.$axios.get('/video/query/',
         {
             params: {
                 level: level_tags[level_tag_selected.value].key,
                 mode: mode_tags[mode_tag_selected.value].key,
-                index: index,
-                page: page,
+                v: ["player__realname"].concat(selected_index().map(function(x) {return index_tags[x].key})), // list of fields
+                o: index_tags[index_tag_selected.value].key, // order by
+                r: index_tags[index_tag_selected.value].reverse, // reverse order
+                ps: state.PageSize, // page size
+                page: state.CurrentPage,
             }
         }
     ).then(function (response) {
         const data = JSON.parse(response.data);
-        if ((data.videos).length >= 0) {
-            videoData.splice(0, videoData.length);
-            videoData.push(...data.videos);
-            state.Total = data.total_page;
-            // console.log(videoData);
-            // console.log(index_tag_selected);
-        } else { }
+        videoList.splice(0, videoList.length);
+        videoList.push(...data.videos);
+        state.VideoCount = data.count;
     }).catch(() => {
         // 触发限流
         ElMessage.error({ message: '请稍后再试', offset: 68 });
     })
 }
 
-const currentChange = (val: number) => {
-    state.CurrentPage = Math.ceil(val);
-    get_video_rank(state.CurrentPage);
-}
-const prevClick = () => {
-    state.CurrentPage = state.CurrentPage - 1;
-    if (state.CurrentPage < 1) {
-        state.CurrentPage = 1;
-    }
-    get_video_rank(state.CurrentPage);
-}
-const nextClick = () => {
-    state.CurrentPage = state.CurrentPage + 1;
-    if (state.CurrentPage > state.Total) {
-        state.CurrentPage = state.Total;
-    }
-    get_video_rank(state.CurrentPage);
+const index_select = (key: string | number, value: NameKeyReverse) => {
+    index_tags[key].selected = !value.selected;
 }
 
-// 点标签，改排序方向
-const reverseSortDirect = (index_tag_selected_i: string) => {
-    if (index_tag_selected.value === index_tag_selected_i) {
-        index_tags[index_tag_selected_i].reverse = !index_tags[index_tag_selected_i].reverse;
-    } else { }
-    get_video_rank(state.CurrentPage);
-}
-
-const preview = (id: number | undefined) => {
+const preview = (row: any) => {
+    var id = row.id
     if (!id) {
         return
     }
@@ -407,5 +385,10 @@ const playVideo = function (uri: string) {
 
 .row:hover {
     background-color: #eee;
+}
+
+.inline-div {
+    display: inline-block;
+    margin: 0;
 }
 </style>
