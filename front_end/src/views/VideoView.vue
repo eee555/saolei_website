@@ -9,22 +9,18 @@
     </Teleport>
     <el-row class="mb-4" style="margin-bottom: 10px;">
         <el-button v-for="(tag, key) in level_tags" type="warning" :plain="!(level_tag_selected == key)" :size="'small'"
-            @click="level_tag_selected = key as string;">{{ tag.name }}</el-button>
+            @click="level_tag_selected = key as string; request_videos();">{{ tag.name }}</el-button>
     </el-row>
 
     <el-row class="mb-4" style="margin-bottom: 10px;">
         <el-button v-for="(tag, key) in mode_tags" type="success" :plain="!(mode_tag_selected == key)" :size="'small'"
-            @click="mode_tag_selected = key as string;">{{ tag.name }}</el-button>
+            @click="mode_tag_selected = key as string; request_videos();">{{ tag.name }}</el-button>
     </el-row>
 
     <el-row class="mb-4" style="margin-bottom: 10px;">
         <el-button v-for="(value, key) in index_tags" type="primary" :plain="!value.selected" :size="'small'"
             @click="index_select(key, value)">{{ value.name
             }}</el-button>
-    </el-row>
-
-    <el-row class="mb-4" style="margin-bottom: 10px;">
-        <el-button size="small" @click="request_videos">刷新</el-button>
     </el-row>
 
     <div style="width: 80%;font-size:20px;margin: auto;margin-top: 10px;">
@@ -34,7 +30,8 @@
                 :prop="index_tags[key].key" 
                 :label="index_tags[key].name"
                 :formatter="columnFormatter(key)"
-                sortable="custom">
+                sortable="custom"
+                :sort-orders="index_tags[key].reverse ? (['descending', 'ascending']) : (['ascending', 'descending'])">
             </el-table-column>
         </el-table>
     </div>
@@ -77,6 +74,7 @@ const state = reactive({
     CurrentPage: 1,
     PageSize: 10,
     VideoCount: 0,
+    ReverseOrder: false,
     Total: 3
 });
 
@@ -187,9 +185,8 @@ const columnFormatter = (key: string) => {
 onMounted(() => {
     document.getElementsByClassName("el-pagination__goto")[0].childNodes[0].nodeValue = "转到";
     // 把分页器的go to改成中文。
-
-
     mod_style();
+    request_videos();
 })
 
 function to_fixed_n(input: string | number | undefined, to_fixed: number): string | number | undefined {
@@ -214,15 +211,25 @@ const mod_style = () => {
         includes(index_tag_selected.value);
 }
 
+const prevColumn = ref<any>(null); //上一个排序列
 const handleSortChange = (sort: any) => {
-    console.log(sort.prop, sort.order);
-    for (var key of Object.keys(index_tags)) { // 很丑陋，but it works
+    console.log(sort);
+    for (var key of Object.keys(index_tags)) { // 找到对应的key。很丑陋，but it works
         if (index_tags[key].key == sort.prop) {
-            index_tag_selected.value = key;
-            index_tags[key].reverse = sort.order == "descending";
+            if (key != index_tag_selected.value) { // 改变了排序列，清除之前列的排序
+                if (prevColumn.value != null) {
+                    prevColumn.value.order = null;
+                }
+                index_tag_selected.value = key;
+            }
+            if (sort.order == null) { // 不允许通过点击箭头的方式将排序变成 null
+                sort.column.order = state.ReverseOrder ? "descending" : "ascending";
+            }
+            state.ReverseOrder = sort.column.order == "descending"
             break;
         }
     }
+    prevColumn.value = sort.column;
     request_videos();
 }
 
@@ -248,9 +255,8 @@ const request_videos = () => {
             params: {
                 level: level_tags[level_tag_selected.value].key,
                 mode: mode_tags[mode_tag_selected.value].key,
-                v: ["player__realname"].concat(selected_index().map(function(x) {return index_tags[x].key})), // list of fields
                 o: index_tags[index_tag_selected.value].key, // order by
-                r: index_tags[index_tag_selected.value].reverse, // reverse order
+                r: state.ReverseOrder, // reverse order
                 ps: state.PageSize, // page size
                 page: state.CurrentPage,
             }
