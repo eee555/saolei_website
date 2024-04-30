@@ -29,12 +29,15 @@
 
     <div style="width: 80%;font-size:20px;margin: auto;margin-top: 10px;">
         <el-table :data="videoList" @sort-change="handleSortChange">
-            <el-table-column type="index" :index="offsetIndex"></el-table-column>
+            <el-table-column type="index" :index="offsetIndex" fixed></el-table-column>
             <el-table-column v-for="key in selected_index()" 
                 :prop="index_tags[key].key" 
                 :label="index_tags[key].name"
                 :formatter="columnFormatter(key)"
                 sortable="custom">
+            </el-table-column>
+            <el-table-column prop="id" v-slot="scope">
+                <el-button @click="preview(scope.row.id)"><i class="el-icon-video-play"></i></el-button>
             </el-table-column>
         </el-table>
     </div>

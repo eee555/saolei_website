@@ -175,6 +175,7 @@ def video_query(request):
         data = request.GET
 
         values = [fieldname_translate(s) for s in data.getlist("v[]")]
+        values.append("id")
 
         if data["r"] == "true":
             ob = "-" + data["o"]
