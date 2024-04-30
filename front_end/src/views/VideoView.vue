@@ -24,7 +24,7 @@
     </el-row>
 
     <div style="width: 80%;font-size:20px;margin: auto;margin-top: 10px;">
-        <el-table :data="videoList" @sort-change="handleSortChange" @row-click="preview" ref="mainTable">
+        <el-table :data="videoList" @sort-change="handleSortChange" @row-click="preview">
             <el-table-column type="index" :index="offsetIndex" fixed></el-table-column>
             <el-table-column v-for="key in selected_index()" 
                 :prop="index_tags[key].key" 
