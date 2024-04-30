@@ -34,10 +34,10 @@
 
 <script lang="ts" setup>
 // 上传录像的页面
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
-import { genFileId, ElMessage } from 'element-plus'
+import { genFileId, ElMessage, MessageHandler } from 'element-plus'
 import type { UploadInstance, UploadProps, UploadUserFile, UploadRawFile, UploadFile, UploadFiles, UploadRequestOptions } from 'element-plus'
 // import img_arbiter from '@/assets/img/img_arbiter.png'
 import UploadVideoCard from '@/components/UploadVideoCard.vue';
@@ -62,17 +62,24 @@ const allow_upload = ref(true)
 // 延时系数
 let k = 0;
 
+// 切标签时msg关不掉
+const elmsg_handles: MessageHandler[] = [];
+
 onMounted(() => {
     const player = store.state.user;
     if (player.realname == "请修改为实名") {
         allow_upload.value = false;
-        ElMessage.error({ message: '上传录像前，请先修改为实名!', offset: 68 });
+        elmsg_handles.push(ElMessage.error({ message: '上传录像前，请先修改为实名!', offset: 68 }));
     }
     if (!player.realname) {
         allow_upload.value = false;
-        ElMessage.error({ message: '请先登录!', offset: 68 });
+        elmsg_handles.push(ElMessage.error({ message: '请先登录!', offset: 68 }));
     }
 
+})
+
+onUnmounted(() => {
+    elmsg_handles.forEach((h) => { h.close() });
 })
 
 // 录像列表变动的回调，上传多个文件时，有几个文件就会进来几次。
@@ -81,10 +88,10 @@ const handleChange: UploadProps['onChange'] = async (uploadFile: UploadFile, upl
     if (allow_upload.value) {
         if (uploadFile.raw?.type == 'image/jpeg') {
             // el-upload在限制，进不来。除非用户选全部文件。
-            ElMessage.error({ message: '不能上传图片!', offset: 68 });
+            elmsg_handles.push(ElMessage.error({ message: '不能上传图片!', offset: 68 }));
 
         } else if (uploadFile.size as number / 1024 / 1024 > 5) {
-            ElMessage.error({ message: '录像大小不能超过5MB!', offset: 68 });
+            elmsg_handles.push(ElMessage.error({ message: '录像大小不能超过5MB!', offset: 68 }));
 
         }
         // upload_video_visibile.value = true;
@@ -113,7 +120,7 @@ const push_video_msg = async (uploadFile: UploadFile | UploadRawFile) => {
     } else if (uploadFile.name.slice(-3) == "evf") {
         aa = ms.EvfVideo.new(video_file_u8, uploadFile.name);
     } else {
-        ElMessage.error({ message: '录像文件的后缀不正确!', offset: 68 });
+        elmsg_handles.push(ElMessage.error({ message: '录像文件的后缀不正确!', offset: 68 }));
         return
     }
     aa.parse_video();
@@ -131,7 +138,7 @@ const push_video_msg = async (uploadFile: UploadFile | UploadRawFile) => {
 }
 
 const handleExceed: UploadProps['onExceed'] = async (files) => {
-    ElMessage.error({ message: '单次最多上传99个录像！', offset: 68 });
+    elmsg_handles.push(ElMessage.error({ message: '单次最多上传99个录像！', offset: 68 }));
     const left_num = 99 - video_msgs.value.length;
     files.splice(left_num);
 
@@ -215,37 +222,37 @@ const handleVideoUpload = async (options: UploadRequestOptions) => {
     } else if (video_file.name.slice(-3) == "evf") {
         aa = ms.EvfVideo.new(video_file_u8, video_file.name);
     } else {
-        ElMessage.error({ message: '录像文件的后缀不正确！', offset: 68 });
+        elmsg_handles.push(ElMessage.error({ message: '录像文件的后缀不正确！', offset: 68 }));
         return
     }
     aa.parse_video();
     aa.analyse();
     aa.current_time = 1e8;  //时间设置到最后（超出就是最后）
     if (aa.get_level > 5) {
-        ElMessage.error({ message: '不能上传自定义的录像！', offset: 68 });
+        elmsg_handles.push(ElMessage.error({ message: '不能上传自定义的录像！', offset: 68 }));
         cancel_all_or_not();
         return
     }
     if (video_file.name.slice(-3) != "avf" && video_file.name.slice(-3) != "evf") {
-        ElMessage.error({ message: '录像必须为.avf或.evf格式！', offset: 68 });
+        elmsg_handles.push(ElMessage.error({ message: '录像必须为.avf或.evf格式！', offset: 68 }));
         cancel_all_or_not();
         return
     }
     if (video_file.name.length >= 100) {
-        ElMessage.error({ message: '录像文件名太长！', offset: 68 });
+        elmsg_handles.push(ElMessage.error({ message: '录像文件名太长！', offset: 68 }));
 
         cancel_all_or_not();
         return
     }
     if (!aa.get_is_completed) {
-        ElMessage.error({ message: '没有扫开的录像！', offset: 68 });
+        elmsg_handles.push(ElMessage.error({ message: '没有扫开的录像！', offset: 68 }));
         cancel_all_or_not();
         return
     }
     // console.log(aa.is_valid());
 
     if (aa.is_valid() == 1) {
-        ElMessage.error({ message: '非法的录像！', offset: 68 });
+        elmsg_handles.push(ElMessage.error({ message: '非法的录像！', offset: 68 }));
         cancel_all_or_not();
         return
     }
@@ -298,10 +305,10 @@ const handleVideoUpload = async (options: UploadRequestOptions) => {
         if (response.data.status == 100) {
             // upload.value!.clearFiles()
             // upload_video_visibile.value = false;
-            ElMessage.success({
+            elmsg_handles.push(ElMessage.success({
                 message: `上传成功！剩余（${video_msgs.value.length - uploaded_file_num.value - 1}）`,
                 offset: 68
-            });
+            }));
 
             // hint_text.value = "*仅限一个文件，且文件大小不能超过5M"
             uploaded_file_num.value += 1;
@@ -312,11 +319,11 @@ const handleVideoUpload = async (options: UploadRequestOptions) => {
             }
         } else if (response.data.status >= 101) {
             // 正常使用不会到这里
-            ElMessage.error({ message: '上传失败！小型网站，请勿攻击！', offset: 68 });
+            // elmsg_handles.push(ElMessage.error({ message: '上传失败！小型网站，请勿攻击！', offset: 68 }));
             cancel_all_or_not();
         }
     }).catch(() => {
-        ElMessage.error({ message: '上传失败！服务器无响应！', offset: 68 });
+        elmsg_handles.push(ElMessage.error({ message: '上传失败！服务器无响应！', offset: 68 }));
         cancel_all_or_not();
     })
 }
