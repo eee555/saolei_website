@@ -12,6 +12,7 @@
     "@types/lowdb": "^1.0.11",
     "@types/node": "^20.5.1",
     "axios": "^0.21.1",
+    "echarts": "^5.5.0",
     "element-plus": "^2.2.32",
     "flag-icon-css": "^4.1.7",
     "image-conversion": "^2.1.1",
@@ -19,6 +20,7 @@
     "ms-toollib": "1.4.6-alpha",
     "uuid": "^9.0.0",
     "vue": "^3.2.13",
+    "vue-echarts": "^6.7.1",
     "vue-router": "^4.0.3",
     "vuex": "^4.1.0"
   },

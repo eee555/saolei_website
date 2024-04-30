@@ -51,12 +51,16 @@ def get_dir_size(path):
     return total
 
 # 服务器总容量、录像占用大小
-@throttled(interval=500)
+@throttled(interval=188)
 def get_capacity(request):
-    disk_total = psutil.disk_usage(".")
+    # 服务器总容量情况
+    disk = psutil.disk_usage(".")
+    # 录像占用容量情况
     video_size = get_dir_size(os.path.join(settings.BASE_DIR, 'assets/videos'))
-    return JsonResponse({"t_t": disk_total.total, "t_u": disk_total.used, "t_p": disk_total.percent,
-                         "v": video_size})
+    # 内存占用情况
+    virtual = psutil.virtual_memory()
+    return JsonResponse({"d_t": disk.total, "d_u": disk.used, "v": video_size,
+                         "v_t": virtual.total, "v_u": virtual.used})
 
 
 

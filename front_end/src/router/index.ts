@@ -20,7 +20,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/world',
     name: 'world',
-    component: () => import('../views/AboutView.vue')
+    component: () => import('../views/WorldView.vue')
   },
   {
     path: '/guide',
