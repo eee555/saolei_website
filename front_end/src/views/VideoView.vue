@@ -24,14 +24,21 @@
     </el-row>
 
     <div style="width: 80%;font-size:20px;margin: auto;margin-top: 10px;">
-        <el-table :data="videoList" @sort-change="handleSortChange" @row-click="preview">
+        <el-table :data="videoList" @sort-change="handleSortChange" @row-click="preview" border table-layout="auto">
             <el-table-column type="index" :index="offsetIndex" fixed></el-table-column>
+            <el-table-column label="姓名" v-slot="scope" width="auto">
+                <nobr><PlayerName class="name"
+                    :user_id="scope.row.player__id"
+                    :user_name="scope.row.player__realname">
+                </PlayerName></nobr>
+            </el-table-column>
             <el-table-column v-for="key in selected_index()" 
                 :prop="index_tags[key].key" 
                 :label="index_tags[key].name"
-                :formatter="columnFormatter(key)"
                 sortable="custom"
-                :sort-orders="index_tags[key].reverse ? (['descending', 'ascending']) : (['ascending', 'descending'])">
+                :sort-orders="index_tags[key].reverse ? (['descending', 'ascending']) : (['ascending', 'descending'])"
+                v-slot="scope">
+                <nobr>{{ columnFormatter(key, scope.row[index_tags[key].key]) }}</nobr>
             </el-table-column>
         </el-table>
     </div>
@@ -61,7 +68,6 @@ import { ms_to_s } from "@/utils";
 import { genFileId, ElMessage } from 'element-plus'
 
 const preview_visible = ref(false);
-
 
 const level_tag_selected = ref("EXPERT");
 const mode_tag_selected = ref("STD");
@@ -127,7 +133,7 @@ const mode_tags: Tags = {
 // reverse: true从小到大
 const index_tags: TagsReverse = reactive({
     "upload_time": { name: "上传时间", key: "upload_time", reverse: true, to_fixed: -1, selected: true },
-    "name": { name: "姓名", key: "player__realname", reverse: false, to_fixed: 0, selected: true},
+    // "name": { name: "姓名", key: "player__realname", reverse: false, to_fixed: 0, selected: true},
     "timems": { name: "成绩", key: "timems", reverse: false, to_fixed: 3, selected: true },
     "bbbv": { name: "3BV", key: "bv", reverse: false, to_fixed: 0, selected: true },
     "bbbv_s": { name: "3BV/s", key: "bvs", reverse: true, to_fixed: 3, selected: true },
@@ -162,23 +168,15 @@ const selected_index = () => {
     return list;
 }
 
-const columnFormatter = (key: string) => {
+const columnFormatter = (key: string, value: any) => {
     if (key == "upload_time") {
-        return (row: any, column: any, cellValue: string | undefined) => {
-            return utc_to_local_format(cellValue);
-        }
+        return utc_to_local_format(value);
     } else if (key == "timems") {
-        return (row: any, column: any, cellValue: number) => {
-            return ms_to_s(cellValue);
-        }
+        return ms_to_s(value);
     } else if (key == "name") {
-        return (row: any, column: any, cellValue: string) => {
-            return cellValue;
-        }
+        return value;
     } else {
-        return (row: any, column: any, cellValue: string | number | undefined) => {
-            return to_fixed_n(cellValue, index_tags[key].to_fixed);
-        }
+        return to_fixed_n(value, index_tags[key].to_fixed);
     }
 }
 
