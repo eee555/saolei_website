@@ -17,4 +17,6 @@ DROP TABLE IF EXISTS userprofile_userprofile_groups;
 DROP TABLE IF EXISTS userprofile_userprofile_user_permissions;
 DROP TABLE IF EXISTS videomanager_videomodel;
 DROP TABLE IF EXISTS videomanager_expandvideomodel;
+DROP TABLE IF EXISTS ranking_match;
+DROP TABLE IF EXISTS ranking_usermsscorerank;
 SET FOREIGN_KEY_CHECKS=1;
