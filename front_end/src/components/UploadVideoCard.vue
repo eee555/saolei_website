@@ -16,7 +16,7 @@
                         <div class="grid-content ep-bg-purple">难度：{{ video_msg.level }}</div>
                     </el-col>
                     <el-col :span="13">
-                        <div class="grid-content ep-bg-purple">时间：{{ video_msg.timems }}s</div>
+                        <div class="grid-content ep-bg-purple">时间：{{ ms_to_s(video_msg.timems) }}s</div>
                     </el-col>
                 </el-row>
                 <el-row :gutter="5">
@@ -41,6 +41,7 @@
 // 上传录像的页面，等待上传的录像的卡片
 import { onMounted, ref, Ref } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
+import { ms_to_s } from '@/utils';
 const { proxy } = useCurrentInstance();
 import type { UploadInstance, UploadProps, UploadRawFile, UploadFile, UploadFiles, UploadRequestOptions } from 'element-plus'
 // import img_arbiter from '@/assets/img/img_arbiter.png'
