@@ -19,7 +19,7 @@
                     }}个）</el-button>
                 <el-button @click="cancel_all()" size="small" type="info" v-show="video_msgs.length > 0"
                     style="display: block;margin: 16px auto;width: 120px;" plain>全部清空</el-button>
-                <span style="font-size: 14px;">*单个文件大小不能超过5M</span>
+                <span style="font-size: 14px;">*单个文件大小不能超过5M，文件数量不能超过99</span>
             </div>
         </template>
     </el-upload>
