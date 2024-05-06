@@ -15,7 +15,8 @@ from pathlib import Path
 import os, json
 import warnings
 
-develop_mode = True
+# https://docs.djangoproject.com/en/5.0/ref/settings/#std-setting-DEBUG
+DEBUG = True
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -34,7 +35,6 @@ except:
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = False
 # ALLOWED_HOSTS = ["*"]
-DEBUG = develop_mode
 ALLOWED_HOSTS = ["*"]
 
 # 自定义404、500错误页面
@@ -63,11 +63,11 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',   # 允许跨域请求
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     # "django.middleware.csrf.CsrfViewMiddleware",
-    'corsheaders.middleware.CorsMiddleware',   # 允许跨域请求
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -96,7 +96,8 @@ TEMPLATES = [
 ]
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "dist/"), # ????dist?都一样
+    os.path.join(BASE_DIR, "dist/"),
+    BASE_DIR / "assets" / 'article',
 ]
 
 WSGI_APPLICATION = "saolei.wsgi.application"
@@ -201,7 +202,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_HEADERS = ('*')
 CSRF_TRUSTED_ORIGINS = ['http://localhost:8080']
 
-if develop_mode:
+if DEBUG:
     # 开发时
     SESSION_COOKIE_SAMESITE = 'None'
     SESSION_COOKIE_SECURE = True  # https时候改成True
@@ -236,7 +237,7 @@ AUTH_USER_MODEL='userprofile.UserProfile'
 CACHES = {
     "saolei_website": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",
+        "LOCATION": "redis://127.0.0.1:6379",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "SOCKET_CONNECT_TIMEOUT": 5,  # 连接redis超时时间，单位为秒

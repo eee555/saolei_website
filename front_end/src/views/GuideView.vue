@@ -1,42 +1,153 @@
 <template>
-  <div class="home">
-    <!-- <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/> -->
-    <h1>征稿！要求：.md格式</h1>
-    <h1>新手综合</h1>
-    <ul>
-      <li><a href="http://saolei.wang/BBS/Title.asp?Id=21006">新手向教学：综合实力提升——龚浩然</a></li>
-    </ul>
-    <h1>游戏理解</h1>
-    <ul>
-      <li><a href="http://saolei.wang/BBS/Title.asp?Id=12992">郭嘉谈NF——郭蔚嘉</a></li>
-      <li><a href="http://saolei.wang/BBS/Title.asp?Id=14967">浅谈NF破空——张少武</a></li>
-      <li><a href="https://zhuanlan.zhihu.com/p/27439584">初步认识减法公式及其衍生的最简单定式——MsPVZ.ZSW</a></li>
-      <li><a href="http://saolei.wang/BBS/Title.asp?Id=20660">竞速实战常用定式——濮天羿</a></li>
-      <li><a href="http://saolei.wang/BBS/Title.asp?Id=18971">经典角部2x2猜雷及其边部变式——郭蔚嘉</a></li>
-      <li><a href="http://saolei.wang/BBS/Title.asp?Id=14160">拐角判雷方法——林艺海</a></li>
-    </ul>
-    <h1>游戏数据</h1>
-    <ul>
-      <li><a href="http://saolei.wang/BBS/Title.asp?Id=6946">3BV与ZiNi浅析——周科</a></li>
-      <li><a href="http://saolei.wang/BBS/Title.asp?Id=21249">梁山分系统介绍——龚浩然</a></li>
-      <li><a href="https://www.bilibili.com/opus/880405709451165779">JSD大表实用指南——Arya-Noone</a></li>
-    </ul>
-    <h1>软件硬件</h1>
-    <ul>
-      <li><a href="http://saolei.wang/BBS/Title.asp?Id=283">将分辨率调成640x480的方法——张砷镓</a></li>
-      <li><a href="http://saolei.wang/BBS/Title.asp?Id=11145">Arbiter语法教程——肖旭升</a></li>
-    </ul>
-  </div>
+    <el-row class="tac">
+        <el-col :span="4">
+            <h5 class="mb-2">目录</h5>
+            <!-- <el-menu default-active="2" class="el-menu-vertical-demo">
+                <el-sub-menu index="1">
+                    <template #title>
+                        <el-icon>
+                            <location />
+                        </el-icon>
+                        <span>Navigator One</span>
+                    </template>
+                    <el-menu-item-group title="Group One">
+                        <el-menu-item index="1-1">item one</el-menu-item>
+                        <el-menu-item index="1-2">item two</el-menu-item>
+                    </el-menu-item-group>
+                    <el-menu-item-group title="Group Two">
+                        <el-menu-item index="1-3">item three</el-menu-item>
+                    </el-menu-item-group>
+                    <el-sub-menu index="1-4">
+                        <template #title>item four</template>
+                        <el-menu-item index="1-4-1">item one</el-menu-item>
+                    </el-sub-menu>
+                </el-sub-menu>
+                <el-menu-item index="2">
+                    <el-icon><icon-menu /></el-icon>
+                    <span>Navigator Two</span>
+                </el-menu-item>
+                <el-menu-item index="3" disabled>
+                    <el-icon>
+                        <document />
+                    </el-icon>
+                    <span>Navigator Three</span>
+                </el-menu-item>
+                <el-menu-item index="4">
+                    <el-icon>
+                        <setting />
+                    </el-icon>
+                    <span>Navigator Four</span>
+                </el-menu-item>
+            </el-menu> -->
+        </el-col>
+
+
+        <el-col :span="20">
+            <div style="padding-top: 20px;padding-left: 60px;" v-html="article_html" />
+        </el-col>
+    </el-row>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
-// import HelloWorld from '@/components/HelloWorld.vue'; // @ is an alias to /src
+<script lang="ts" setup>
+import { onMounted, ref, computed } from 'vue';
+import useCurrentInstance from "@/utils/common/useCurrentInstance";
+const { proxy } = useCurrentInstance();
 
-export default defineComponent({
-  name: 'Home',
-  // components: {
-  //   HelloWorld,
-  // },
-});
+
+// https://mdit-plugins.github.io/zh/
+import MarkdownIt from 'markdown-it';
+// 缩写悬停弹气泡
+import { abbr } from "@mdit/plugin-abbr";
+// 对齐方式
+import { align } from "@mdit/plugin-align";
+// 代码高亮
+import markdownItHighlight from 'markdown-it-highlightjs';
+// 数学公式
+import mathjax3 from "markdown-it-mathjax3";
+// 图片懒加载
+import { imgLazyload } from "@mdit/plugin-img-lazyload";
+
+const markdown = new MarkdownIt({
+    html: true, // 允许HTML语法
+    typographer: true, // 启用Typographer插件，可以更好地处理中文字符和标点符号
+    linkify: true // 自动将文本中的URL转换为链接
+}).use(abbr).use(align).use(markdownItHighlight).use(mathjax3).use(imgLazyload);
+
+const js = `
+\`\`\` py
+import re
+print(777)
+\`\`\`
+
+- [x] dfgfdgd
+- [ ] rgthrthrth
+- [x] dfgfdgd
+- [ ] rgthrthrth
+- [x] dfgfdgd
+- [ ] rgthrthrth
+
+Here is a footnote reference,[^1] and another.[^longnote]
+
+[^1]: Here is the footnote.
+
+[^longnote]: Here's one with multiple blocks.
+
+
+上标：$a^4$
+
+$\\sqrt{3x-1}+(1+x)^2$
+
+$$
+\\left|\\begin{matrix}
+    a & b & c \\\\
+    d & e & f \\\\
+    g & h & i
+   \\end{matrix} \\right|
+ $$
+
+ # markdown-it rulezz!
+ 
+ \$\{toc\}
+ 
+ ![Image](http://www.saolei.wang/Models/Images/Common/Logo.gif)
+
+
+ 就回国参加
+
+`
+// console.log(js);
+
+const content = ref<string>("");
+
+const article_html = computed(() => {
+    return markdown.render(content.value);
+})
+
+
+onMounted(() => {
+    proxy.$axios.get('/article/articles/'
+    ).then(function (response) {
+        console.log(response.data[1]);
+        const cover = response.data[1];
+
+        if (cover.slice(-3) == ".md") {
+            proxy.$axios.get('/static/' + cover
+            ).then(function (response) {
+                content.value = response.data;
+                console.log(content.value);
+
+            })
+        } else {
+            proxy.$axios.get('/static/' + cover + "/a.md"
+            ).then(function (response) {
+                content.value = response.data;
+                console.log(content.value);
+
+            })
+        }
+    })
+
+})
+
 </script>
+<style></style>

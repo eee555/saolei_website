@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+logger = logging.getLogger(__name__)
 from django.contrib.auth.decorators import login_required
 from .forms import UploadVideoForm
 from .models import VideoModel, ExpandVideoModel
@@ -23,11 +24,8 @@ from django_ratelimit.decorators import ratelimit
 from django.utils import timezone
 # import ms_toollib as ms
 from django.utils.encoding import escape_uri_path
-
 from config.flags import DESIGNATOR_SKIP
 
-logging.getLogger('apscheduler.scheduler').setLevel(logging.WARNING)
-logger = logging.getLogger(__name__)
 
 @login_required(login_url='/')
 def video_upload(request):

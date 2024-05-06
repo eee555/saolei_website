@@ -20,7 +20,6 @@ from django.views.generic import TemplateView
 # from django.urls import re_path
 # from django.contrib.staticfiles.views import serve
 # from django.shortcuts import render
-
 # from App import views
 
 

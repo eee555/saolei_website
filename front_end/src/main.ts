@@ -8,9 +8,10 @@ import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import $axios from './http'
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import 'flag-icon-css/css/flag-icons.css'
-
 // 全局挂载axios
+
+import 'highlight.js/styles/stackoverflow-light.css'
+
 
 const app = createApp(App)
 
@@ -21,9 +22,9 @@ for (const name in ELIcons) {
   app.component(name, (ELIcons as any)[name]);
 }
 
-app.use(ElementPlus)
-app.use(store).use(router)
-app.mount('#app')
+app.use(ElementPlus);
+app.use(store).use(router);
+app.mount('#app');
 
 const win: any = window
 if (process.env.NODE_ENV === 'development') {
