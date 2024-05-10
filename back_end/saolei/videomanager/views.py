@@ -41,7 +41,10 @@ def video_upload(request):
         # print(video_form)
         if video_form.is_valid():
             data = video_form.cleaned_data
-            if not DESIGNATOR_SKIP and data["designator"] not in request.user.userms.designators:
+            if DESIGNATOR_SKIP and data["designator"] not in request.user.userms.designators:
+                request.user.userms.designators.append(data["designator"])
+                request.user.userms.save(update_fields=["designators"])
+            if data["designator"] not in request.user.userms.designators:
                 # 如果标识是首次使用的，需要得到管理员的审核
                 data['review_code'] = 2
 
