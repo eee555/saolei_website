@@ -56,7 +56,10 @@ def get_capacity(request):
     # 服务器总容量情况
     disk = psutil.disk_usage(".")
     # 录像占用容量情况
-    video_size = get_dir_size(os.path.join(settings.BASE_DIR, 'assets/videos'))
+    if settings.DEBUG:
+        video_size = get_dir_size(os.path.join(settings.BASE_DIR, 'assets/videos'))
+    else:
+        video_size = get_dir_size(os.path.join(settings.MEDIA_ROOT, 'videos'))
     # 内存占用情况
     virtual = psutil.virtual_memory()
     return JsonResponse({"d_t": disk.total, "d_u": disk.used, "v": video_size,

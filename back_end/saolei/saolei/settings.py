@@ -95,9 +95,9 @@ TEMPLATES = [
     },
 ]
 
+# python3 manage.py collectstatic会将些位置下的文件自动放到服务器上的STATIC_ROOT位置
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "dist/"),
-    BASE_DIR / "assets" / 'article',
 ]
 
 WSGI_APPLICATION = "saolei.wsgi.application"
@@ -159,9 +159,11 @@ USE_TZ = True
 # STATIC_URL = "static/"
 STATIC_URL = "/static/"
 # STATIC_URL = "/"
-STATIC_ROOT = os.path.join(BASE_DIR, '/root/saolei/static')
+# 服务器上的位置
+STATIC_ROOT = '/root/saolei/static'
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, '/root/saolei/media')
+# 服务器上的位置
+MEDIA_ROOT = '/root/saolei/media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

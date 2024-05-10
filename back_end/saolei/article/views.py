@@ -27,14 +27,17 @@ from django.core.cache import caches
 # 序号必填，从小到大
 # 支持二级分类，二级由玩家自定义，管理员同意，例如："[60.公告]明天下雨.md"、"[3.技术.效率]破纪录像喝水.md"
 def update_list(request):
-    # if (request.user.is_staff or request.user.is_superuser) and request.method == 'GET':
-    if 1:
+    if (request.user.is_staff or request.user.is_superuser) and request.method == 'GET':
+    # if 1:
         article_dir = settings.BASE_DIR / "assets" / 'article'
         articles: List[str] = os.listdir(article_dir)
         # 先清空已有
         while cache.llen("articles") > 0:
             cache.rpop("articles")
         for article in articles:
+            # 从gitee上直接clone下来的
+            # if article in ["LICENSE", ".git"]:
+            #     continue 
             if os.path.isdir(article_dir / article):
                 if os.path.isfile(article_dir / article / "a.md"):
                     cache.lpush("articles", article)
