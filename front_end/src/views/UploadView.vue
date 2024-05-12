@@ -2,9 +2,6 @@
     <el-upload v-model:file-list="fileList" :disabled="!allow_upload" ref="upload" drag action="#" :limit="99"
         :multiple="true" :on-exceed="handleExceed" :on-change="handleChange" :auto-upload="false"
         :show-file-list="false" style="background-color: white;" accept=".avf,.evf">
-        <!-- <template #trigger>
-            <el-button type="primary">选择录像</el-button>
-        </template> -->
 
         <el-icon class="el-icon--upload"><upload-filled /></el-icon>
         <div class="el-upload__text" style="font-size: 18px;">
@@ -60,13 +57,6 @@
             </template>
         </el-table-column>
     </el-table>
-    <!-- <div style="width:496px; margin: 0 auto;">
-        <transition-group name="card_fade">
-            <UploadVideoCard v-for="(video_msg, index) in video_msgs" @cancel_this="cancel_video_id"
-                :video_msg="video_msg" :key="video_msg.filename">
-            </UploadVideoCard>
-        </transition-group>
-    </div> -->
 </template>
 
 <script lang="ts" setup>
