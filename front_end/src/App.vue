@@ -27,9 +27,6 @@
         <el-menu-item index="7" @click="router.push('/player/' + proxy.$store.state.user.id)">
             <div class="header">我的地盘</div>
         </el-menu-item>
-        <el-menu-item index="8" @click="router.push('/upload')">
-            <div class="header">上传录像</div>
-        </el-menu-item>
         <div
             style="margin-left: auto;margin-right: 16px;display: inline-flex;justify-content: center;align-items: center;">
             <Menu @login="user_login" @logout="user_logout" style=""></Menu>

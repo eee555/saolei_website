@@ -48,6 +48,11 @@ def video_upload(request):
                 # 如果标识是首次使用的，需要得到管理员的审核
                 data['review_code'] = 2
 
+            # 查重
+            collisions = list(VideoModel.objects.filter(timems=data["timems"], bv=data["bv"]).filter(video__cl=data["cl"], video__op=data["op"], video__isl=data["isl"], video__designator=data["designator"]))
+            if collisions:
+                return JsonResponse({"status": 200, "msg": "录像已存在"})
+            
             # 表中添加数据
             e_video = ExpandVideoModel.objects.create(designator=data["designator"],
                                                       left=data["left"], right=data["right"],
