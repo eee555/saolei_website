@@ -1,10 +1,10 @@
 <template>
     <el-upload v-model:file-list="fileList" :disabled="!allow_upload" ref="upload" drag action="#" :limit="99"
-        :multiple="true" :http-request="handleVideoUpload" :on-exceed="handleExceed" :on-change="handleChange"
-        :auto-upload="false" :show-file-list="false" style="background-color: white;" accept=".avf,.evf">
+        :multiple="true" :on-exceed="handleExceed" :on-change="handleChange" :auto-upload="false"
+        :show-file-list="false" style="background-color: white;" accept=".avf,.evf">
         <!-- <template #trigger>
-      <el-button type="primary">选择录像</el-button>
-    </template> -->
+            <el-button type="primary">选择录像</el-button>
+        </template> -->
 
         <el-icon class="el-icon--upload"><upload-filled /></el-icon>
         <div class="el-upload__text" style="font-size: 18px;">
@@ -23,13 +23,50 @@
             </div>
         </template>
     </el-upload>
-    <div style="width:496px; margin: 0 auto;">
+    <el-table :data="video_msgs" table-layout="auto">
+        <el-table-column type="expand">
+            <template #default="props">
+                <el-descriptions>
+                    <el-descriptions-item label="文件名">{{ props.row.filename }}</el-descriptions-item>
+                    <el-descriptions-item v-if="props.row.videostat != null" label="标识">{{
+                        props.row.videostat.designator }}</el-descriptions-item>
+                    <el-descriptions-item v-if="props.row.videostat != null" v-for="key in extfields" :label="key">{{
+                        props.row.extstat[key] }}</el-descriptions-item>
+                </el-descriptions>
+            </template>
+        </el-table-column>
+        <el-table-column prop="videostat.level" label="级别" sortable></el-table-column>
+        <el-table-column prop="videostat.timems" label="时间" sortable></el-table-column>
+        <el-table-column prop="videostat.bbbv" label="3BV" sortable></el-table-column>
+        <el-table-column prop="videostat.bvs" label="3BV/s" sortable></el-table-column>
+        <el-table-column label="状态" sortable sort-by="status">
+            <template #default="props">
+                {{ errmsg[props.row.status] }}
+            </template>
+        </el-table-column>
+        <el-table-column label="操作">
+            <template #default="props">
+                <nobr>
+                    <el-button :disabled="props.row.status != 'designator' && props.row.status != 'pass'"
+                        @click="forceUpload(props.$index)"
+                        :type="props.row.status == 'pass' ? 'success' : props.row.status == 'designator' ? 'warning' : 'plain'"
+                        circle><el-icon>
+                            <Upload />
+                        </el-icon></el-button>
+                    <el-button @click="removeUpload(props.$index)" type="danger" circle><el-icon>
+                            <Delete />
+                        </el-icon></el-button>
+                </nobr>
+            </template>
+        </el-table-column>
+    </el-table>
+    <!-- <div style="width:496px; margin: 0 auto;">
         <transition-group name="card_fade">
             <UploadVideoCard v-for="(video_msg, index) in video_msgs" @cancel_this="cancel_video_id"
                 :video_msg="video_msg" :key="video_msg.filename">
             </UploadVideoCard>
         </transition-group>
-    </div>
+    </div> -->
 </template>
 
 <script lang="ts" setup>
@@ -43,15 +80,87 @@ import type { UploadInstance, UploadProps, UploadUserFile, UploadRawFile, Upload
 import UploadVideoCard from '@/components/UploadVideoCard.vue';
 import store from '../store'
 
-const video_msgs = ref<{
+const data = defineProps({
+    designators: { type: Array, default: () => [] }
+})
+
+const extfields = ['left', 'right', 'double', 'cl', 'left_s', 'right_s', 'double_s', 'cl_s', 'path', 'flag', 'flag_s', 'stnb', 'rqp', 'ioe', 'thrp', 'corr', 'ce', 'ce_s', 'op', 'isl', 'cell0', 'cell1', 'cell2', 'cell3', 'cell4', 'cell5', 'cell6', 'cell7', 'cell8']
+
+// 状态列相关
+const errmsg = {
+    pass: "通过",
+    custom: "暂不支持自定义级别",
+    fileext: "无法识别的文件类型",
+    filename: "文件名超过了100字节",
+    filesize: "文件大小超过了5MB",
+    designator: "标识不匹配",
+    collision: "录像已存在",
+    error: "不通过",
+    process: "上传中",
+    upload: "上传失败",
+}
+// 筛选相关。还没做好
+// const msgfilter = []
+// for (var key in errmsg) {
+//     msgfilter.push({text: errmsg[key], value: key});
+// }
+// const filterMsg = (value: string, row: GeneralFile) => {
+//     return row.status == value;
+// }
+
+interface ExtendedVideoStat {
+    left: number,
+    right: number,
+    double: number,
+    cl: number,
+    left_s: number,
+    right_s: number,
+    double_s: number,
+    cl_s: number,
+    path: number,
+    flag: number,
+    flag_s: number,
+    stnb: number,
+    rqp: number,
+    ioe: number,
+    thrp: number,
+    corr: number,
+    ce: number,
+    ce_s: number,
+    op: number,
+    isl: number,
+    cell0: number,
+    cell1: number,
+    cell2: number,
+    cell3: number,
+    cell4: number,
+    cell5: number,
+    cell6: number,
+    cell7: number,
+    cell8: number,
+}
+
+interface VideoStat {
+    level: string,
+    mode: string,
+    timems: number,
+    bbbv: number,
+    bvs: number,
+    designator: string,
+    review_code: number,
+}
+
+interface GeneralFile {
     uid: number,
     id: number,
     filename: string,
-    level: string,
-    timems: string,
-    bbbv: string,
-    bvs: string,
-}[]>([])
+    file: File,
+    status: string,
+    videostat: VideoStat | null,
+    extstat: ExtendedVideoStat | null,
+}
+
+const video_msgs = ref<GeneralFile[]>([])
 
 const fileList = ref<UploadUserFile[]>([])
 
@@ -75,7 +184,6 @@ onMounted(() => {
         allow_upload.value = false;
         elmsg_handles.push(ElMessage.error({ message: '请先登录!', offset: 68 }));
     }
-
 })
 
 onUnmounted(() => {
@@ -107,33 +215,63 @@ const handleChange: UploadProps['onChange'] = async (uploadFile: UploadFile, upl
 // 新增一条等待上传的录像信息的记录
 const push_video_msg = async (uploadFile: UploadFile | UploadRawFile) => {
     const ms = await import("ms-toollib");
+    let uid = uploadFile.uid;
+    let id = 0;
+    let status = "pass";
     let video_file;
+    let video_stat;
+    let ext_stat;
     if ("raw" in uploadFile) {
-        video_file = await uploadFile.raw!.arrayBuffer();
+        video_file = uploadFile.raw as UploadRawFile;
     } else {
-        video_file = await (uploadFile as UploadRawFile).arrayBuffer();
+        video_file = uploadFile as UploadRawFile;
     }
-    let video_file_u8 = new Uint8Array(video_file);
+    let video_file_u8 = new Uint8Array(await video_file.arrayBuffer());
     let aa;
     if (uploadFile.name.slice(-3) == "avf") {
         aa = ms.AvfVideo.new(video_file_u8, uploadFile.name);
     } else if (uploadFile.name.slice(-3) == "evf") {
         aa = ms.EvfVideo.new(video_file_u8, uploadFile.name);
     } else {
-        elmsg_handles.push(ElMessage.error({ message: '录像文件的后缀不正确!', offset: 68 }));
-        return
+        aa = null
+        status = "fileext";
     }
-    aa.parse_video();
-    aa.analyse();
-    aa.current_time = 1e8;  //时间设置到最后（超出就是最后）
+    const decoder = new TextDecoder();
+    if (aa != null) {
+        aa.parse_video();
+        aa.analyse();
+        aa.current_time = 1e8; //时间设置到最后（超出就是最后）
+        video_stat = {
+            level: ["b", "i", "e", "c"][aa.get_level - 3],
+            mode: String(aa.get_mode).padStart(2, '0'),
+            timems: aa.get_rtime_ms,
+            bbbv: aa.get_bbbv,
+            bvs: aa.get_bbbv_s,
+            designator: decoder.decode(aa.get_player_designator),
+            review_code: aa.is_valid(),
+        }
+        ext_stat = get_ext_stat(aa)
+        if (video_stat.level == "c") {
+            status = "custom";
+        } else if (uploadFile.name.length >= 100) {
+            status = "filename";
+        } else if (!data.designators.includes(video_stat.designator)) {
+            status = "designator";
+        }
+
+    } else {
+        video_stat = null;
+        ext_stat = null;
+    }
+
     video_msgs.value.push({
         uid: uploadFile.uid,
         id: 0,
         filename: uploadFile.name,
-        level: ["初级", "中级", "高级"][aa.get_level - 3],
-        timems: aa.get_rtime_ms + "",
-        bbbv: aa.get_bbbv + "",
-        bvs: aa.get_bbbv_s.toFixed(3),
+        file: video_file,
+        status: status,
+        videostat: video_stat,
+        extstat: ext_stat,
     })
 }
 
@@ -157,15 +295,6 @@ const handleExceed: UploadProps['onExceed'] = async (files) => {
 
 }
 
-// 点录像信息卡片右侧叉的回调
-const cancel_video_id = (id: number) => {
-    delete_from_file_list(video_msgs.value[id].uid);
-    video_msgs.value.splice(id, 1);
-    for (let i = 0; i < video_msgs.value.length; i++) {
-        video_msgs.value[i].id = i;
-    }
-}
-
 // 清空待上传列表
 const cancel_all = () => {
     upload.value!.clearFiles();
@@ -176,16 +305,69 @@ const cancel_all = () => {
     k = 0;
 }
 
-// 用uid做匹配，在fileList中删除对应的待上传录像。不能简单地按照id来删。两个array里顺序不同。
-const delete_from_file_list = (uid: number) => {
-    fileList.value = fileList.value.filter((x) => x.uid != uid);
-}
-
-// 点上传按钮的回调
-const submitUpload = () => {
+// 点上传按钮的回调，自动上传录像
+const submitUpload = async () => {
     // 先锁死，不让进变化回调
     allow_upload.value = false;
-    upload.value!.submit()
+    let i = 0;
+    let count = 0; // 防止无限循环bug
+    while (count < 100) {
+        if (i >= video_msgs.value.length) break;
+        if (video_msgs.value[i].status === "pass") {
+            await forceUpload(i);
+            count++;
+            continue;
+        }
+        i++;
+    }
+    allow_upload.value = true;
+}
+
+// 上传问题不大的录像
+const forceUpload = async (i: number) => {
+    let video = video_msgs.value[i];
+    if (video.status != "pass" && video.status != "designator") {
+        return;
+    }
+    video_msgs.value[i].status = "process";
+    await getDelay();
+    if (video.videostat == null || video.extstat == null) {
+        video_msgs.value[i].status = "upload";
+        return;
+    }
+    let params = new FormData();
+    params.append('file', video.file);
+    params.append('review_code', video.videostat.review_code.toString());
+    params.append("software", ["e", "a"][video.filename.slice(-3) == "avf" ? 1 : 0]);
+    params.append("level", video.videostat.level);
+    params.append("mode", video.videostat.mode);
+    params.append("timems", video.videostat.timems.toString());
+    params.append("bv", video.videostat.bbbv.toString());
+    params.append("bvs", video.videostat.bvs.toString());
+    params.append("designator", video.videostat.designator);
+    for (let prop of extfields) {
+        params.append(prop, video.extstat[prop].toString());
+    }
+    await proxy.$axios.post('/video/upload/',
+        params,
+    ).then(function (response) {
+        if (response.data.status == 100) {
+            uploaded_file_num.value += 1;
+            removeUpload(i);
+        } else if (response.data.status == 200) {
+            video_msgs.value[i].status = "collision";
+        } else {
+            // 正常使用不会到这里
+            video_msgs.value[i].status = "upload";
+        }
+    }).catch(() => {
+        video_msgs.value[i].status = "upload";
+    })
+}
+
+//删除录像
+const removeUpload = (i: number) => {
+    video_msgs.value.splice(i, 1);
 }
 
 // 均匀延时，降低并发。
@@ -199,136 +381,39 @@ function getDelay() {
     });
 }
 
-
-function cancel_all_or_not() {
-    uploaded_file_num.value += 1;
-    if (uploaded_file_num.value == video_msgs.value.length) {
-        cancel_all();
-        allow_upload.value = true;
+const get_ext_stat = (aa: any) => {
+    return {
+        left: aa.get_left,
+        right: aa.get_right,
+        double: aa.get_double,
+        cl: aa.get_cl,
+        left_s: aa.get_left_s,
+        right_s: aa.get_right_s,
+        double_s: aa.get_double_s,
+        cl_s: aa.get_cl_s,
+        path: aa.get_path,
+        flag: aa.get_flag,
+        flag_s: aa.get_flag_s,
+        stnb: aa.get_stnb,
+        rqp: aa.get_rqp,
+        ioe: aa.get_ioe,
+        thrp: aa.get_thrp,
+        corr: aa.get_corr,
+        ce: aa.get_ce,
+        ce_s: aa.get_ce_s,
+        op: aa.get_op,
+        isl: aa.get_isl,
+        cell0: aa.get_cell0,
+        cell1: aa.get_cell1,
+        cell2: aa.get_cell2,
+        cell3: aa.get_cell3,
+        cell4: aa.get_cell4,
+        cell5: aa.get_cell5,
+        cell6: aa.get_cell6,
+        cell7: aa.get_cell7,
+        cell8: aa.get_cell8,
     }
 }
-
-
-// 上传几个录像就进来几次
-const handleVideoUpload = async (options: UploadRequestOptions) => {
-    await getDelay();
-    const ms = await import("ms-toollib");
-    let video_file = options.file;
-    let video_file_u8 = new Uint8Array(await video_file.arrayBuffer());
-    // let aa = ms.AvfVideo.new(video_file_u8, video_file.name);
-    let aa;
-    if (video_file.name.slice(-3) == "avf") {
-        aa = ms.AvfVideo.new(video_file_u8, video_file.name);
-    } else if (video_file.name.slice(-3) == "evf") {
-        aa = ms.EvfVideo.new(video_file_u8, video_file.name);
-    } else {
-        elmsg_handles.push(ElMessage.error({ message: '录像文件的后缀不正确！', offset: 68 }));
-        return
-    }
-    aa.parse_video();
-    aa.analyse();
-    aa.current_time = 1e8;  //时间设置到最后（超出就是最后）
-    if (aa.get_level > 5) {
-        elmsg_handles.push(ElMessage.error({ message: '不能上传自定义的录像！', offset: 68 }));
-        cancel_all_or_not();
-        return
-    }
-    if (video_file.name.slice(-3) != "avf" && video_file.name.slice(-3) != "evf") {
-        elmsg_handles.push(ElMessage.error({ message: '录像必须为.avf或.evf格式！', offset: 68 }));
-        cancel_all_or_not();
-        return
-    }
-    if (video_file.name.length >= 100) {
-        elmsg_handles.push(ElMessage.error({ message: '录像文件名太长！', offset: 68 }));
-
-        cancel_all_or_not();
-        return
-    }
-    if (!aa.get_is_completed) {
-        elmsg_handles.push(ElMessage.error({ message: '没有扫开的录像！', offset: 68 }));
-        cancel_all_or_not();
-        return
-    }
-    // console.log(aa.is_valid());
-
-    if (aa.is_valid() == 1) {
-        elmsg_handles.push(ElMessage.error({ message: '非法的录像！', offset: 68 }));
-        cancel_all_or_not();
-        return
-    }
-
-    const decoder = new TextDecoder();
-
-    let params = new FormData();
-    params.append('file', options.file);
-    params.append('review_code', aa.is_valid() + "");
-    params.append("software", ["e", "a"][video_file.name.slice(-3) == "avf" ? 1 : 0]);
-    params.append("level", ["b", "i", "e"][aa.get_level - 3]);
-    params.append("mode", String(aa.get_mode).padStart(2, '0'));
-    params.append("timems", aa.get_rtime_ms + "");
-    params.append("bv", aa.get_bbbv + "");
-    params.append("bvs", aa.get_bbbv_s + "");
-    params.append("designator", decoder.decode(aa.get_player_designator));
-    params.append("left", aa.get_left + "");
-    params.append("right", aa.get_right + "");
-    params.append("double", aa.get_double + "");
-    params.append("cl", aa.get_cl + "");
-    params.append("left_s", aa.get_left_s + "");
-    params.append("right_s", aa.get_right_s + "");
-    params.append("double_s", aa.get_double_s + "");
-    params.append("cl_s", aa.get_cl_s + "");
-    params.append("path", aa.get_path + "");
-    params.append("flag", aa.get_flag + "");
-    params.append("flag_s", aa.get_flag_s + "");
-    params.append("stnb", aa.get_stnb + "");
-    params.append("rqp", aa.get_rqp + "");
-    params.append("ioe", aa.get_ioe + "");
-    params.append("thrp", aa.get_thrp + "");
-    params.append("corr", aa.get_corr + "");
-    params.append("ce", aa.get_ce + "");
-    params.append("ce_s", aa.get_ce_s + "");
-    params.append("op", aa.get_op + "");
-    params.append("isl", aa.get_isl + "");
-    params.append("cell0", aa.get_cell0 + "");
-    params.append("cell1", aa.get_cell1 + "");
-    params.append("cell2", aa.get_cell2 + "");
-    params.append("cell3", aa.get_cell3 + "");
-    params.append("cell4", aa.get_cell4 + "");
-    params.append("cell5", aa.get_cell5 + "");
-    params.append("cell6", aa.get_cell6 + "");
-    params.append("cell7", aa.get_cell7 + "");
-    params.append("cell8", aa.get_cell8 + "");
-
-    proxy.$axios.post('/video/upload/',
-        params,
-    ).then(function (response) {
-        if (response.data.status == 100) {
-            // upload.value!.clearFiles()
-            // upload_video_visibile.value = false;
-            elmsg_handles.push(ElMessage.success({
-                message: `上传成功！剩余（${video_msgs.value.length - uploaded_file_num.value - 1}）`,
-                offset: 68
-            }));
-
-            // hint_text.value = "*仅限一个文件，且文件大小不能超过5M"
-            uploaded_file_num.value += 1;
-
-            if (uploaded_file_num.value == video_msgs.value.length) {
-                cancel_all();
-                allow_upload.value = true;
-            }
-        } else if (response.data.status >= 101) {
-            // 正常使用不会到这里
-            // elmsg_handles.push(ElMessage.error({ message: '上传失败！小型网站，请勿攻击！', offset: 68 }));
-            cancel_all_or_not();
-        }
-    }).catch(() => {
-        elmsg_handles.push(ElMessage.error({ message: '上传失败！服务器无响应！', offset: 68 }));
-        cancel_all_or_not();
-    })
-}
-
-
 
 </script>
 
