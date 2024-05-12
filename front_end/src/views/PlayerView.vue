@@ -79,7 +79,9 @@
                     <el-tab-pane label="全部录像" name="second" :lazy="true">
                         <PlayerVideosView></PlayerVideosView>
                     </el-tab-pane>
-
+                    <el-tab-pane v-if="store.state.user.id + '' == userid" label="上传录像" name="third" :lazy="true">
+                        <UploadView :designators="designators"></UploadView>
+                    </el-tab-pane>
                 </el-tabs>
 
             </el-main>
@@ -94,6 +96,7 @@ import useCurrentInstance from "@/utils/common/useCurrentInstance";
 // import PreviewDownload from '@/components/PreviewDownload.vue';
 import PlayerRecordView from '@/views/PlayerRecordView.vue';
 import PlayerVideosView from '@/views/PlayerVideosView.vue';
+import UploadView from './UploadView.vue';
 // const AsyncPlayerVideosView = defineAsyncComponent(() => import('@/views/PlayerVideosView.vue'));
 
 
@@ -106,6 +109,7 @@ const imageUrl = ref(require('@/assets/person.png'))
 const avatar_changed = ref(false);
 import { Record, RecordBIE } from "@/utils/common/structInterface";
 import { compress, compressAccurately } from 'image-conversion';
+import store from '@/store';
 
 const loading = ref(true)
 
