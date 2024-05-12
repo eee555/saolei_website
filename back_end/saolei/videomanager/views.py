@@ -73,27 +73,20 @@ def video_upload(request):
                                       bv=data["bv"], bvs=data["bvs"])
             
             # cache.hget("review_queue", "filed")
-
+            temp = json.dumps({"time": video.upload_time,
+                                "player": video.player.realname,
+                                "player_id": video.player.id,
+                                "level": video.level,
+                                "mode": video.mode,
+                                "timems": video.timems,
+                                "bv": video.bv,
+                                "bvs": video.bvs}, cls=ComplexEncoder)
             if data['review_code'] >= 2:
                 # 往审查队列里添加录像
-                cache.hset("review_queue", video.id, json.dumps({"time": video.upload_time,
-                                                                "player": video.player.realname,
-                                                                "player_id": video.player.id,
-                                                                "level": video.level,
-                                                                "mode": video.mode,
-                                                                "timems": video.timems,
-                                                                "bv": video.bv,
-                                                                "bvs": video.bvs}, cls=ComplexEncoder))
+                cache.hset("review_queue", video.id, temp)
             else:
                 # 如果录像自动通过了审核，更新最新录像和纪录
-                cache.hset("newest_queue", video.id, json.dumps({"time": video.upload_time,
-                                                                "player": video.player.realname,
-                                                                "player_id": video.player.id,
-                                                                "level": video.level,
-                                                                "mode": video.mode,
-                                                                "timems": video.timems,
-                                                                "bv": video.bv,
-                                                                "bvs": video.bvs}, cls=ComplexEncoder))
+                cache.hset("newest_queue", video.id, temp)
                 update_personal_record(video)
                 update_video_num(video)
                 
