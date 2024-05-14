@@ -1,30 +1,30 @@
 <template>
     <!-- message的z索引为2015 -->
     <el-menu style=" position: fixed; width: 100%; height: 60px; top: 0; z-index: 2010;user-select: none;"
-        mode="horizontal">
-        <el-menu-item index="1">
-            <div @click="goback_home()" class="logo"
+        mode="horizontal" :router="true" :default-active="menu_index">
+        <el-menu-item index="/">
+            <div @click="goback_home();" class="logo"
                 style="display: inline-flex;justify-content: center;align-items: center;">
                 <el-image style="width: 52px; height: 52px;display: inline-flex;" :src="logo_1" :fit="'cover'" />
                 <el-image style="width: 131px; height: 60px;display: inline-flex;" :src="logo_2" :fit="'cover'" />
             </div>
         </el-menu-item>
-        <el-menu-item index="2" @click="router.push('/ranking')">
+        <el-menu-item index="/ranking">
             <div class="header">排行榜</div>
         </el-menu-item>
-        <el-menu-item index="3" @click="router.push('/video')">
+        <el-menu-item index="/video">
             <div class="header">录像</div>
         </el-menu-item>
-        <el-menu-item index="4" @click="router.push('/world')">
+        <el-menu-item index="/world">
             <div class="header">统计</div>
         </el-menu-item>
-        <el-menu-item index="5" @click="router.push('/guide')">
+        <el-menu-item index="/guide">
             <div class="header">教程</div>
         </el-menu-item>
-        <el-menu-item index="6" @click="router.push('/score')">
+        <el-menu-item index="/score">
             <div class="header">积分</div>
         </el-menu-item>
-        <el-menu-item index="7" @click="router.push('/player/' + proxy.$store.state.user.id)">
+        <el-menu-item :index="player_url" :disabled="proxy.$store.state.user.id == 0">
             <div class="header">我的地盘</div>
         </el-menu-item>
         <div
@@ -68,9 +68,9 @@
 </template>
 
 <script setup lang='ts'>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import Menu from "./components/Menu.vue";
-import { LoginStatus } from "@/utils/common/structInterface"
+// import { LoginStatus } from "@/utils/common/structInterface"
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
 const logo_1 = ref(require('@/assets/logo.png'))
@@ -82,9 +82,9 @@ const router = useRouter()
 // const player_visibile = ref(false)
 const notice_visible = ref(false)
 const never_show_notice = ref(false)
-const tab_width = ref("16%")
 
-// let refLogin = ref<any>(null)
+// 主要是切换后的高亮
+const menu_index = ref()
 
 const notice = ref(`
 1、即日起开始删档公测，公测与开发同步进行。公测结束后，在正式上线之前会删除所有数据。
@@ -98,13 +98,18 @@ onMounted(() => {
         notice_visible.value = true;
     }
 
+
     console.log(`
   元扫雷网(fff666.top)开发团队，期待您的加入: 2234208506@qq.com
   `);
+    router.isReady().then(() => { menu_index.value = router.currentRoute.value.fullPath; })
 
 
 })
 
+const player_url = computed(() => {
+    return '/player/' + proxy.$store.state.user.id;
+})
 
 const user_login = () => {
     // player_visibile.value = true;
@@ -112,8 +117,13 @@ const user_login = () => {
 }
 
 const user_logout = () => {
-    // player_visibile.value = false;
-    // tab_width.value = "16vw";
+    proxy.$store.commit('updateUser', {
+        id: 0,
+        username: '',
+        realname: '',
+        is_banned: false
+    });
+    menu_index.value = "/";
     proxy.$router.push("/");
 }
 

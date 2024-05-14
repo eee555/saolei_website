@@ -266,10 +266,10 @@ const login = () => {
             user_name_show.value = response.data.msg.username;
 
             proxy.$store.commit('updateUser', response.data.msg);// 当前登录用户
-            if (localStorage.getItem("player") === null) {
-                // 解决刷新后改成用户自己
-                localStorage.setItem("player", JSON.stringify(response.data.msg));
-            }
+            // if (localStorage.getItem("player") === null) {
+            //     // 解决刷新后改成用户自己
+            //     localStorage.setItem("player", JSON.stringify(response.data.msg));
+            // }
             // proxy.$store.commit('updatePlayer', response.data.msg);// 看我的地盘看谁的
             if (response.data.msg.is_banned) {
                 user_name_show.value += "（您已被封禁，详情请询问管理员！）"
@@ -318,6 +318,7 @@ const retrieve = () => {
             hint_message.value = "";
             user_name_show.value = response.data.msg;
             login_status.value = LoginStatus.IsLogin;
+            proxy.$store.commit('updateUser', response.data.msg);// 当前登录用户
             emit('login'); // 向父组件发送消息
             retrieve_visibile.value = false;
             ElMessage.success({ message: '修改密码成功！', offset: 68 });

@@ -13,7 +13,7 @@ git clone https://gitee.com/ee55/saolei_website_article.git
 cp -r saolei_website_article/* ./
 rm -r .git
 rm LICENSE
-rm -r /saolei_website_article
+rm -r saolei_website_article
 cd ..
 cd ..
 

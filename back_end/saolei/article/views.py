@@ -29,7 +29,10 @@ from django.core.cache import caches
 def update_list(request):
     if (request.user.is_staff or request.user.is_superuser) and request.method == 'GET':
     # if 1:
-        article_dir = settings.BASE_DIR / "assets" / 'article'
+        if settings.DEBUG:
+            article_dir = settings.BASE_DIR / "assets" / 'article'
+        else:
+            article_dir = os.path.join(settings.MEDIA_ROOT, 'assets/article')
         articles: List[str] = os.listdir(article_dir)
         # 先清空已有
         while cache.llen("articles") > 0:

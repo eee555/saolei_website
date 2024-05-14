@@ -279,14 +279,9 @@ const upload_info = () => {
 
 // 把头像、姓名、个性签名传上去。至少头像改过了。
 const handleAvatarUpload = async (options: UploadRequestOptions) => {
-
-    // console.log("****" + realname_edit.value);
-    // console.log("----" + realname.value);
     if (realname_edit.value != realname.value) {
         post_update_realname(realname_edit.value);
     }
-    // console.log("34554" + signature_edit.value);
-    // console.log("5654" + signature.value);
 
     if (signature_edit.value != signature.value) {
         post_update_signature(signature_edit.value);
@@ -318,17 +313,13 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
         return false
     }
     return new Promise((resolve, reject) => {
+        // 此处会报错net::ERR_FILE_NOT_FOUND，但头像依然能更新成功
         compressAccurately(rawFile, 256).then(res => {
             res = new File([res], rawFile.name, { type: res.type, lastModified: Date.now() })
             resolve(res)
         })
     })
 }
-
-
-
-
-
 
 </script>
 
