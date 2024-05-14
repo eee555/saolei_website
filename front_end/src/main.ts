@@ -4,6 +4,7 @@ import * as ELIcons from '@element-plus/icons-vue';
 import App from './App.vue'
 import router from './router'
 import store from './store'
+import i18n from '@/i18n'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import $axios from './http'
@@ -23,7 +24,7 @@ for (const name in ELIcons) {
 }
 
 app.use(ElementPlus);
-app.use(store).use(router);
+app.use(store).use(router).use(i18n);
 app.mount('#app');
 
 const win: any = window
