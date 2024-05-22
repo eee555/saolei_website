@@ -18,74 +18,74 @@
             退出
         </span>
     </div>
-    <el-dialog v-model="login_visibile" title="欢迎登录" width="30%" align-center draggable :lock-scroll="false"
-        @close='() => { if (store.login_status !== LoginStatus.IsLogin) { store.login_status = LoginStatus.NotLogin; } }'>
+    <el-dialog v-model="login_visibile" :title="$t('login.title')" width="30%" align-center draggable :lock-scroll="false"
+        @close='() => { if (login_status !== LoginStatus.IsLogin) { login_status = LoginStatus.NotLogin; } }'>
         <el-form size="default">
             <el-form-item>
-                <el-input v-model="user_name" placeholder="用户名" prefix-icon="User" maxlength="20"></el-input>
+                <el-input v-model="user_name" :placeholder="$t('login.username')" prefix-icon="User" maxlength="20"></el-input>
             </el-form-item>
             <el-form-item>
-                <el-input v-model="user_password" placeholder="密码" maxlength="20" show-password
+                <el-input v-model="user_password" :placeholder="$t('login.password')" maxlength="20" show-password
                     prefix-icon="Lock"></el-input>
             </el-form-item>
             <el-form-item>
                 <div style="display: flex;">
-                    <el-input v-model.trim="valid_code" placeholder="验证码" prefix-icon="Key" class="code"></el-input>
+                    <el-input v-model.trim="valid_code" :placeholder="$t('login.captcha')" prefix-icon="Key" class="code"></el-input>
                     &nbsp;
                     <ValidCode ref="refValidCode" :identifyCode="identifyCodeLog" />
                 </div>
             </el-form-item>
             <el-form-item>
-                <el-checkbox label="记住我" class="rememberMe" v-model="remember_me"></el-checkbox>
+                <el-checkbox :label="$t('login.keepMeLoggedIn')" class="rememberMe" v-model="remember_me"></el-checkbox>
             </el-form-item>
             <el-form-item>
                 <div style="color: red;">{{ hint_message }}</div>
             </el-form-item>
             <el-form-item>
                 <el-button :disabled="(user_name && user_password && valid_code).length == 0" type="primary"
-                    @click="login();">登录</el-button>
+                    @click="login();">{{ $t('login.confirm') }}</el-button>
             </el-form-item>
             <div @click="login_visibile = false; retrieve_visibile = true; store.login_status = LoginStatus.IsRetrieve;"
-                style="cursor: pointer;color: blue;">（找回密码）</div>
+                style="cursor: pointer;color: blue;">{{ $t('login.forgetPassword') }}</div>
         </el-form>
     </el-dialog>
-    <el-dialog v-model="register_visibile" title="用户注册" width="30%" align-center draggable :lock-scroll="false"
+    <el-dialog v-model="register_visibile" :title="$t('register.title')" width="30%" align-center draggable :lock-scroll="false"
         @close='() => { if (store.login_status !== LoginStatus.IsLogin) { store.login_status = LoginStatus.NotLogin; } }'>
         <el-form size="default">
             <el-form-item>
-                <el-input v-model.trim="user_name_reg" placeholder="请输入用户昵称（唯一、登录凭证、无法修改）" prefix-icon="User"
+                <el-input v-model.trim="user_name_reg" :placeholder="$t('register.username')" prefix-icon="User"
                     maxlength="20" show-word-limit id="register_user_name_form"></el-input>
             </el-form-item>
             <el-form-item>
-                <el-input v-model="user_email_reg" placeholder="请输入邮箱（唯一）" prefix-icon="Message" type="email"
+                <el-input v-model="user_email_reg" :placeholder="$t('register.email')" prefix-icon="Message" type="email"
                     id="register_email_form"></el-input>
             </el-form-item>
             <el-form-item>
                 <div style="display: flex">
-                    <el-input v-model.trim="valid_code_reg" placeholder="验证码" prefix-icon="Key" class="code"
+                    <el-input v-model.trim="valid_code_reg" :placeholder="$t('register.captcha')" prefix-icon="Key" class="code"
                         maxlength="4"></el-input>
                     &nbsp;
                     <!-- <ValidCode2 :identifyCode="identifyCodeReg" ref="refValidCode2" /> -->
                     <ValidCode :identifyCode="identifyCodeReg" ref="refValidCode2" />
                     &nbsp;
                     <el-button link type="primary" @click="get_email_captcha('register')"
-                        :disabled="valid_code_reg.length < 4">获取邮箱验证码</el-button>
+                        :disabled="valid_code_reg.length < 4">{{ $t('register.getEmailCode') }}</el-button>
                 </div>
             </el-form-item>
             <el-form-item>
-                <el-input v-model.trim="user_email_valid_code_reg" placeholder="请输入邮箱验证码" prefix-icon="Key"
+                <el-input v-model.trim="user_email_valid_code_reg" :placeholder="$t('register.emailCode')" prefix-icon="Key"
                     maxlength="6" :disabled="valid_code_reg.length < 4" id="register_email_valid_code_form"></el-input>
             </el-form-item>
             <el-form-item>
-                <el-input v-model="user_password_reg" placeholder="请输入6-20位密码" show-password prefix-icon="Lock"
+                <el-input v-model="user_password_reg" :placeholder="$t('register.password')" show-password prefix-icon="Lock"
                     minlength="6" maxlength="20" id="register_user_password_form"></el-input>
             </el-form-item>
             <el-form-item>
-                <el-input v-model="user_password2_reg" placeholder="请输入确认密码" show-password prefix-icon="Lock"
+                <el-input v-model="user_password2_reg" :placeholder="$t('register.confirmPassword')" show-password prefix-icon="Lock"
                     minlength="6" maxlength="20"></el-input>
             </el-form-item>
-            <el-checkbox v-model="checkout_user_agreement" name="checkoutSecret">已阅读并同意
-                <a target="_blank" :href="AXIOS_BASE_URL + '/agreement.html'">新扫雷网用户协议</a>
+            <el-checkbox v-model="checkout_user_agreement" name="checkoutSecret">{{ $t('register.agreeTo') }}
+                <a target="_blank" :href="AXIOS_BASE_URL + '/agreement.html'">{{ $t('register.termsAndConditions') }}</a>
             </el-checkbox>
 
             <el-form-item>
@@ -94,7 +94,7 @@
             <el-form-item>
                 <el-button
                     :disabled="(user_email_valid_code_reg && user_password_reg && user_password2_reg).length == 0"
-                    type="primary" @click="register()">注册</el-button>
+                    type="primary" @click="register()">{{ $t('register.confirm') }}</el-button>
             </el-form-item>
         </el-form>
     </el-dialog>
@@ -150,6 +150,9 @@ import ValidCode from "@/components/ValidCode.vue";
 import { genFileId, ElMessage } from 'element-plus'
 import { useUserStore } from '../store'
 const store = useUserStore()
+import { useI18n } from 'vue-i18n';
+
+const t = useI18n();
 
 const AXIOS_BASE_URL = process.env.VUE_APP_BASE_API;
 
