@@ -26,6 +26,7 @@
         <el-menu-item :index="player_url" :disabled="store.user.id == 0" @click="store.player = store.user;">
             <div class="header">我的地盘</div>
         </el-menu-item>
+        <LanguagePicker/>
         <div
             style="margin-left: auto;margin-right: 16px;display: inline-flex;justify-content: center;align-items: center;">
             <Menu @login="user_login" @logout="user_logout"></Menu>
@@ -69,6 +70,7 @@
 <script setup lang='ts'>
 import { ref, reactive, onMounted, computed } from 'vue'
 import Menu from "./components/Menu.vue";
+import LanguagePicker from './components/LanguagePicker.vue';
 // import { LoginStatus } from "@/utils/common/structInterface"
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import { useUserStore } from './store'
