@@ -43,9 +43,6 @@ import { onMounted, ref, Ref } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import { ms_to_s } from '@/utils';
 const { proxy } = useCurrentInstance();
-import type { UploadInstance, UploadProps, UploadRawFile, UploadFile, UploadFiles, UploadRequestOptions } from 'element-plus'
-// import img_arbiter from '@/assets/img/img_arbiter.png'
-
 const emit = defineEmits(['cancel_this', 'logout']);
 
 
@@ -74,7 +71,7 @@ const { video_msg } = defineProps({
 })
 
 onMounted(() => {
-    const player = proxy.$store.state.user;
+    // const player = proxy.$store.state.user;
 
 
 })

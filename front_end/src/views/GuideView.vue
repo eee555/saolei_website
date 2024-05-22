@@ -2,7 +2,7 @@
     <el-row class="tac">
         <el-col :span="4">
             <h5 class="mb-2">目录</h5>
-            <!-- <el-menu default-active="2" class="el-menu-vertical-demo">
+            <el-menu default-active="2" class="el-menu-vertical-demo">
                 <el-sub-menu index="1">
                     <template #title>
                         <el-icon>
@@ -38,7 +38,7 @@
                     </el-icon>
                     <span>Navigator Four</span>
                 </el-menu-item>
-            </el-menu> -->
+            </el-menu>
         </el-col>
 
 
@@ -128,10 +128,11 @@ onMounted(() => {
     proxy.$axios.get('/article/articles/'
     ).then(function (response) {
         console.log(response.data[1]);
+        const articles = response.data;
         const cover = response.data[1];
 
         if (cover.slice(-3) == ".md") {
-            proxy.$axios.get('/static/' + cover
+            proxy.$axios.get('/static/article/' + cover
             ).then(function (response) {
                 content.value = response.data;
                 console.log(content.value);

@@ -25,6 +25,7 @@ from django.utils import timezone
 # import ms_toollib as ms
 from django.utils.encoding import escape_uri_path
 from config.flags import DESIGNATOR_SKIP
+from django.conf import settings
 
 
 @login_required(login_url='/')
@@ -130,7 +131,10 @@ def video_preview(request):
     # 这里性能可能有问题
     try:
         video = VideoModel.objects.get(id=int(request.GET["id"][:-4]))
-        response =FileResponse(open(video.file.path, 'rb'))
+        # video.file.name是相对路径(含upload_to)，video.file.path是绝对路径
+        print(settings.MEDIA_ROOT / "assets" / video.file.name)
+        file_path = settings.MEDIA_ROOT / "assets" / video.file.name
+        response =FileResponse(open(file_path, 'rb'))
         response['Content-Type']='application/octet-stream'
         # response['Content-Disposition']=f'attachment;filename="{video.file.name.split("/")[2]}"'
         file_name = video.file.name.split("/")[2]

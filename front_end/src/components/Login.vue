@@ -1,25 +1,25 @@
 <template>
     <div>
-        <span class="text-button" v-show="login_status != LoginStatus.IsLogin"
-            @click="init_refvalues(); login_status = LoginStatus.Login; login_visibile = true; register_visibile = false">
+        <span class="text-button" v-show="store.login_status != LoginStatus.IsLogin"
+            @click="init_refvalues(); store.login_status = LoginStatus.Login; login_visibile = true; register_visibile = false">
             登录
         </span>
-        <div style="display:inline-block" v-show="login_status == LoginStatus.IsLogin">
+        <div style="display:inline-block" v-show="store.login_status == LoginStatus.IsLogin">
             欢迎您，{{ user_name_show }}！
         </div>
         <span style="width:12px; display:inline-block">
         </span>|<span style="width:12px; display:inline-block">
         </span>
-        <span class="text-button" v-show="login_status != LoginStatus.IsLogin"
-            @click="init_refvalues(); login_status = LoginStatus.Register; register_visibile = true; login_visibile = false">
+        <span class="text-button" v-show="store.login_status != LoginStatus.IsLogin"
+            @click="init_refvalues(); store.login_status = LoginStatus.Register; register_visibile = true; login_visibile = false">
             注册
         </span>
-        <span class="text-button" v-show="login_status == LoginStatus.IsLogin" @click="logout();">
+        <span class="text-button" v-show="store.login_status == LoginStatus.IsLogin" @click="logout();">
             退出
         </span>
     </div>
     <el-dialog v-model="login_visibile" title="欢迎登录" width="30%" align-center draggable :lock-scroll="false"
-        @close='() => { if (login_status !== LoginStatus.IsLogin) { login_status = LoginStatus.NotLogin; } }'>
+        @close='() => { if (store.login_status !== LoginStatus.IsLogin) { store.login_status = LoginStatus.NotLogin; } }'>
         <el-form size="default">
             <el-form-item>
                 <el-input v-model="user_name" placeholder="用户名" prefix-icon="User" maxlength="20"></el-input>
@@ -45,12 +45,12 @@
                 <el-button :disabled="(user_name && user_password && valid_code).length == 0" type="primary"
                     @click="login();">登录</el-button>
             </el-form-item>
-            <div @click="login_visibile = false; retrieve_visibile = true; login_status = LoginStatus.IsRetrieve;"
+            <div @click="login_visibile = false; retrieve_visibile = true; store.login_status = LoginStatus.IsRetrieve;"
                 style="cursor: pointer;color: blue;">（找回密码）</div>
         </el-form>
     </el-dialog>
     <el-dialog v-model="register_visibile" title="用户注册" width="30%" align-center draggable :lock-scroll="false"
-        @close='() => { if (login_status !== LoginStatus.IsLogin) { login_status = LoginStatus.NotLogin; } }'>
+        @close='() => { if (store.login_status !== LoginStatus.IsLogin) { store.login_status = LoginStatus.NotLogin; } }'>
         <el-form size="default">
             <el-form-item>
                 <el-input v-model.trim="user_name_reg" placeholder="请输入用户昵称（唯一、登录凭证、无法修改）" prefix-icon="User"
@@ -99,7 +99,7 @@
         </el-form>
     </el-dialog>
     <el-dialog v-model="retrieve_visibile" title="找回密码" width="30%" align-center draggable :lock-scroll="false"
-        @close='() => { if (login_status !== LoginStatus.IsLogin) { login_status = LoginStatus.NotLogin; } }'>
+        @close='() => { if (store.login_status !== LoginStatus.IsLogin) { store.login_status = LoginStatus.NotLogin; } }'>
         <el-form size="default">
             <el-form-item>
                 <el-input v-model="user_email_reg" placeholder="请输入邮箱" prefix-icon="Message" type="email"></el-input>
@@ -142,29 +142,24 @@
 
 <script lang="ts" setup>
 // 注册、登录、找回密码的弹框及右上方按钮
-import { onMounted, ref, Ref } from 'vue'
+import { onMounted, ref, Ref, onBeforeMount, onUnmounted } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
 import { LoginStatus } from "@/utils/common/structInterface"
 import ValidCode from "@/components/ValidCode.vue";
-// import ValidCode2 from "@/components/ValidCode2.vue";
 import { genFileId, ElMessage } from 'element-plus'
+import { useUserStore } from '../store'
+const store = useUserStore()
 
 const AXIOS_BASE_URL = process.env.VUE_APP_BASE_API;
 
 let refValidCode = ref<any>(null)
 let refValidCode2 = ref<any>(null)
 
-// enum LoginStatus {
-//     IsLogin,
-//     NotLogin,
-//     Login,
-//     Register
-// }
 
 const user_name_show = ref(""); // 登录后右上方显示的用户名
 
-const login_status = ref(LoginStatus.NotLogin);
+// const login_status = ref(LoginStatus.NotLogin);
 // 登录对话框是否出现
 const login_visibile = ref(false);
 const register_visibile = ref(false);
@@ -218,8 +213,10 @@ const init_refvalues = () => {
 }
 
 onMounted(() => {
-    // console.log(document.cookie);
-    login();
+    if (store.login_status == LoginStatus.Undefined) {
+        login();
+    }
+
     window.onbeforeunload = function (e) {
         // 关闭网页时，删cookie。由于跨域问题，开发时，如开前后端各开一个服务器，
         // 体现不出效果，即：取消“记住我”，依然可以免密登录。部署以后，预期“记住我”的功能正常
@@ -239,7 +236,7 @@ onMounted(() => {
 })
 
 
-const login = () => {
+const login = async () => {
     // 先用cookie尝试登录，可能登不上
     // 再用用户名密码
     var params = new URLSearchParams()
@@ -255,26 +252,22 @@ const login = () => {
         params.append('hashkey', "")
     }
 
-    proxy.$axios.post('/userprofile/login/',
+    await proxy.$axios.post('/userprofile/login/',
         params,
     ).then(function (response) {
         if (response.data.status == 100) {
             hint_message.value = ""
-            // console.log(response.data);
-            // console.log(response.data.msg.name);
 
             user_name_show.value = response.data.msg.username;
 
-            proxy.$store.commit('updateUser', response.data.msg);// 当前登录用户
-            // if (localStorage.getItem("player") === null) {
-            //     // 解决刷新后改成用户自己
-            //     localStorage.setItem("player", JSON.stringify(response.data.msg));
-            // }
-            // proxy.$store.commit('updatePlayer', response.data.msg);// 看我的地盘看谁的
+            store.user = response.data.msg;
+            store.player = response.data.msg;
             if (response.data.msg.is_banned) {
                 user_name_show.value += "（您已被封禁，详情请询问管理员！）"
             }
-            login_status.value = LoginStatus.IsLogin;
+            store.login_status = LoginStatus.IsLogin;
+            // mutations.updateLoginStatus(LoginStatus.IsLogin);
+            // login_status.value = LoginStatus.IsLogin;
             emit('login'); // 向父组件发送消息
             login_visibile.value = false;
             // console.log(response.data.msg);
@@ -287,8 +280,10 @@ const login = () => {
             hint_message.value = response.data.msg;
             // console.log("登录失败");
             // console.log("*" + response.data);
-
+            store.login_status = LoginStatus.NotLogin;
         }
+    }).catch(() => {
+        store.login_status = LoginStatus.NotLogin;
     })
 }
 
@@ -317,8 +312,11 @@ const retrieve = () => {
         if (response.data.status == 100) {
             hint_message.value = "";
             user_name_show.value = response.data.msg;
-            login_status.value = LoginStatus.IsLogin;
-            proxy.$store.commit('updateUser', response.data.msg);// 当前登录用户
+            // mutations.updateLoginStatus(LoginStatus.IsLogin);
+            store.login_status = LoginStatus.IsLogin;
+            // login_status.value = LoginStatus.IsLogin;
+            store.user = response.data.msg;
+            store.player = response.data.msg;
             emit('login'); // 向父组件发送消息
             retrieve_visibile.value = false;
             ElMessage.success({ message: '修改密码成功！', offset: 68 });
@@ -387,10 +385,11 @@ const register = () => {
         if (response.data.status == 100) {
             hint_message.value = ""
             user_name_show.value = user_name_reg.value;
-            login_status.value = LoginStatus.IsLogin;
-            proxy.$store.commit('updateUser', response.data.msg);// 当前登录用户
-            // proxy.$store.commit('updatePlayer', response.data.msg);// 看我的地盘看谁的
-            localStorage.setItem("player", JSON.stringify(response.data.msg));
+            // login_status.value = LoginStatus.IsLogin;
+            // mutations.updateLoginStatus(LoginStatus.IsLogin);
+            store.login_status = LoginStatus.IsLogin;
+            store.user = response.data.msg;
+            store.player = response.data.msg;
             emit('login'); // 向父组件发送消息
             register_visibile.value = false;
             // console.log(response);
@@ -409,16 +408,30 @@ const logout = async () => {
         if (response.data.status == 100) {
             // hint_message.value = ""
             user_name_show.value = "";
-            login_status.value = LoginStatus.NotLogin;
-            const player = proxy.$store.state.user;
-            player.realname = "";
+            // login_status.value = LoginStatus.NotLogin;
+            // mutations.updateLoginStatus(LoginStatus.NotLogin);
+            store.login_status = LoginStatus.NotLogin;
+            // const player = store.user;
+            store.user = {
+                id: 0,
+                username: "",
+                realname: "",
+                is_banned: false,
+                country: ""
+            };
+            store.player = {
+                id: 0,
+                username: "",
+                realname: "",
+                is_banned: false,
+                country: ""
+            };
             emit('logout'); // 向父组件发送消息
             register_visibile.value = false;
             login_visibile.value = false;
             retrieve_visibile.value = false;
-            // console.log(response);
+            ElMessage.success({ message: '退出成果！', offset: 68 });
         } else if (response.data.status >= 101) {
-            // hint_message.value = response.data.msg;
             ElMessage.error({ message: '退出失败！', offset: 68 });
         }
     }).catch(function (error) {
@@ -448,7 +461,7 @@ const get_email_captcha = (type: string) => {
         // console.log(response.config);
         if (response.data.status == 100) {
             hint_message.value = ""
-            email_key = response.data.hashkey;        
+            email_key = response.data.hashkey;
             ElMessage.success({ message: '获取验证码成功，请至邮箱查看！', offset: 68 });
         } else if (response.data.status > 100) {
             hint_message.value = "*" + response.data.msg;
@@ -460,9 +473,9 @@ const get_email_captcha = (type: string) => {
 }
 
 
-defineExpose({
-    login_status,
-});
+// defineExpose({
+//     login_status,
+// });
 
 
 </script>

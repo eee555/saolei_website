@@ -50,6 +50,7 @@
 import { onMounted, ref, Ref } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import PreviewNumber from '@/components/PreviewNumber.vue';
+import { genFileId, ElMessage } from 'element-plus'
 const { proxy } = useCurrentInstance();
 import type { UploadInstance } from 'element-plus'
 const upload = ref<UploadInstance>()
@@ -57,6 +58,8 @@ const upload = ref<UploadInstance>()
 const avatar_changed = ref(false);
 import { Record, RecordBIE } from "@/utils/common/structInterface";
 import { ms_to_s } from "@/utils"
+import { useUserStore } from '../store'
+const store = useUserStore()
 
 const loading = ref(true)
 
@@ -81,35 +84,44 @@ const indexMethod = (index: number) => {
 
 onMounted(() => {
     // const player = proxy.$store.state.player;
-    const player = JSON.parse(localStorage.getItem("player") as string);
+
+    // const player = JSON.parse(localStorage.getItem("player") as string);
     // username.value = player.name;
 
     // 把左侧的头像、姓名、个性签名、记录请求过来
     proxy.$axios.get('/msuser/records/',
         {
             params: {
-                id: player.id,
+                id: store.player.id,
             }
         }
     ).then(function (response) {
         const data = response.data;
-        userid.value = data.id;
-        username.value = data.realname;
-        // signature.value = data.signature;
-        // realname_edit.value = data.realname;
-        // signature_edit.value = data.signature;
+        if (data.status > 100) {
+            loading.value = false;
+            ElMessage.error({ message: '不知哪里出现了问题', offset: 68 });
+        } else {
+            console.log(data);
 
-        // if (data.avatar) {
-        //     imageUrl.value = "data:image/;base64," + data.avatar;
-        // }
-        // console.log(imageUrl);
-        records.value.push(trans_record(JSON.parse(data.std_record)));
-        records.value.push(trans_record(JSON.parse(data.nf_record)));
-        records.value.push(trans_record(JSON.parse(data.ng_record)));
-        records.value.push(trans_record(JSON.parse(data.dg_record)));
-        // console.log(records.value[0]);
-        // console.log(666);
-        loading.value = false;
+            userid.value = data.id;
+            username.value = data.realname;
+            // signature.value = data.signature;
+            // realname_edit.value = data.realname;
+            // signature_edit.value = data.signature;
+
+            // if (data.avatar) {
+            //     imageUrl.value = "data:image/;base64," + data.avatar;
+            // }
+            // console.log(imageUrl);
+            records.value.push(trans_record(JSON.parse(data.std_record)));
+            records.value.push(trans_record(JSON.parse(data.nf_record)));
+            records.value.push(trans_record(JSON.parse(data.ng_record)));
+            records.value.push(trans_record(JSON.parse(data.dg_record)));
+            // console.log(records.value[0]);
+            // console.log(666);
+            loading.value = false;
+        }
+
 
     })
 

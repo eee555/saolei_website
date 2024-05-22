@@ -24,15 +24,16 @@ from django.core.cache import caches
 # 教程：扫雷教程、其他游戏教程（数织、数独等）
 # 技术：开发进展、数学等
 # 其他：分不类了的
-# 序号必填，从小到大
+# 序号必填（默认999），从小到大
 # 支持二级分类，二级由玩家自定义，管理员同意，例如："[60.公告]明天下雨.md"、"[3.技术.效率]破纪录像喝水.md"
+# 默认其他
 def update_list(request):
     if (request.user.is_staff or request.user.is_superuser) and request.method == 'GET':
     # if 1:
         if settings.DEBUG:
             article_dir = settings.BASE_DIR / "assets" / 'article'
         else:
-            article_dir = os.path.join(settings.MEDIA_ROOT, 'assets/article')
+            article_dir = os.path.join(settings.STATIC_ROOT, 'article')
         articles: List[str] = os.listdir(article_dir)
         # 先清空已有
         while cache.llen("articles") > 0:
@@ -41,12 +42,12 @@ def update_list(request):
             # 从gitee上直接clone下来的
             # if article in ["LICENSE", ".git"]:
             #     continue 
-            if os.path.isdir(article_dir / article):
-                if os.path.isfile(article_dir / article / "a.md"):
+            if os.path.isdir(os.path.join(article_dir, article)):
+                if os.path.isfile(os.path.join(article_dir, article, "a.md")):
                     cache.lpush("articles", article)
                 else:
                     ... # 删除或往日志中记录，但问题不大
-            else:
+            elif article[-3:] == '.md':
                 cache.lpush("articles", article)
         return HttpResponse("..")
     else:

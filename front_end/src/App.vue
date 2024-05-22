@@ -1,10 +1,9 @@
 <template>
     <!-- message的z索引为2015 -->
-    <el-menu style=" position: fixed; width: 100%; height: 60px; top: 0; z-index: 2010;user-select: none;"
+    <el-menu style="position: fixed; width: 100%; height: 60px; top: 0; z-index: 2010;user-select: none;"
         mode="horizontal" :router="true" :default-active="menu_index">
         <el-menu-item index="/">
-            <div @click="goback_home();" class="logo"
-                style="display: inline-flex;justify-content: center;align-items: center;">
+            <div class="logo" style="display: inline-flex;justify-content: center;align-items: center;">
                 <el-image style="width: 52px; height: 52px;display: inline-flex;" :src="logo_1" :fit="'cover'" />
                 <el-image style="width: 131px; height: 60px;display: inline-flex;" :src="logo_2" :fit="'cover'" />
             </div>
@@ -24,12 +23,12 @@
         <el-menu-item index="/score">
             <div class="header">积分</div>
         </el-menu-item>
-        <el-menu-item :index="player_url" :disabled="proxy.$store.state.user.id == 0">
+        <el-menu-item :index="player_url" :disabled="store.user.id == 0" @click="store.player = store.user;">
             <div class="header">我的地盘</div>
         </el-menu-item>
         <div
             style="margin-left: auto;margin-right: 16px;display: inline-flex;justify-content: center;align-items: center;">
-            <Menu @login="user_login" @logout="user_logout" style=""></Menu>
+            <Menu @login="user_login" @logout="user_logout"></Menu>
         </div>
     </el-menu>
 
@@ -72,6 +71,9 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import Menu from "./components/Menu.vue";
 // import { LoginStatus } from "@/utils/common/structInterface"
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
+import { useUserStore } from './store'
+const store = useUserStore()
+
 const { proxy } = useCurrentInstance();
 const logo_1 = ref(require('@/assets/logo.png'))
 const logo_2 = ref(require('@/assets/logo2.png'))
@@ -108,7 +110,7 @@ onMounted(() => {
 })
 
 const player_url = computed(() => {
-    return '/player/' + proxy.$store.state.user.id;
+    return '/player/' + store.user.id;
 })
 
 const user_login = () => {
@@ -117,19 +119,17 @@ const user_login = () => {
 }
 
 const user_logout = () => {
-    proxy.$store.commit('updateUser', {
-        id: 0,
-        username: '',
-        realname: '',
-        is_banned: false
-    });
-    menu_index.value = "/";
-    proxy.$router.push("/");
+    // console.log(router.currentRoute.value.fullPath);
+    // 如果切在我的地盘，就切到主页
+    if (router.currentRoute.value.fullPath.slice(0, 7) == '/player') {
+        menu_index.value = "/";
+        proxy.$router.push("/");
+    }
 }
 
-const goback_home = () => {
-    router.push("/")
-}
+// const goback_home = () => {
+//     router.push("/")
+// }
 
 // 站长通知关闭的回调
 const handle_notice_close = () => {

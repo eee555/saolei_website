@@ -79,7 +79,7 @@
                     <el-tab-pane label="全部录像" name="second" :lazy="true">
                         <PlayerVideosView></PlayerVideosView>
                     </el-tab-pane>
-                    <el-tab-pane v-if="store.state.user.id + '' == userid" label="上传录像" name="third" :lazy="true">
+                    <el-tab-pane v-if="store.user.id + '' == userid" label="上传录像" name="third" :lazy="true">
                         <UploadView :designators="designators"></UploadView>
                     </el-tab-pane>
                 </el-tabs>
@@ -109,7 +109,9 @@ const imageUrl = ref(require('@/assets/person.png'))
 const avatar_changed = ref(false);
 import { Record, RecordBIE } from "@/utils/common/structInterface";
 import { compress, compressAccurately } from 'image-conversion';
-import store from '@/store';
+// import store from '@/store';
+import { useUserStore } from '../store'
+const store = useUserStore()
 
 const loading = ref(true)
 
@@ -132,7 +134,6 @@ const visible = ref(false);
 
 // 标签默认切在第一页
 const activeName = ref('first')
-// const player = proxy.$store.state.player;
 const player = {
     id: -1,
 };
@@ -141,7 +142,7 @@ const player = {
 // 上传可能失败，备份旧的头像
 let imageUrlOld: any;
 
-const user = proxy.$store.state.user;
+// const user = store.user;
 let show_edit_button: boolean;
 
 onMounted(() => {
@@ -154,7 +155,7 @@ onMounted(() => {
     } else {
         player.id = JSON.parse(localStorage.getItem("player") as string).id as number;
     }
-    show_edit_button = player.id == user.id;
+    show_edit_button = player.id == store.user.id;
 
     proxy.$axios.get('/msuser/info/',
         {
@@ -199,17 +200,13 @@ const post_update_realname = (r: string) => {
             ElMessage.success({ message: `姓名修改成功！剩余修改次数${response.data.msg.n}`, offset: 68 });
 
             realname.value = realname_edit.value;
-            proxy.$store.commit('updateUserRealname', realname.value);
-            if (player.id == user.id) {
+            store.user.realname = realname.value;
+            if (player.id == store.user.id) {
                 // 访问用户自己的地盘
                 // 解决改名后，个人录像列表里名字不能立即改过来
                 // localStorage.setItem("player", JSON.stringify({ "id": player.id, "realname": realname.value }));
                 localStorage.setItem("player", JSON.stringify({ "id": player.id }));
             }
-
-            // proxy.$store.commit('updateUser', response.data.msg);// 当前登录用户
-            // proxy.$store.commit('updatePlayer', response.data.msg);// 看我的地盘看谁的
-            // localStorage.setItem("player", JSON.stringify(response.data.msg));
 
         } else if (response.data.status >= 101) {
             console.log(response.data);

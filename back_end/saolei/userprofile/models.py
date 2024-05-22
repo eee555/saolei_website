@@ -49,7 +49,7 @@ class UserProfile(AbstractUser):
     realname = models.CharField(
         max_length=10, unique=False, blank=True, default='请修改为实名', null=False)
     # 头像
-    avatar = RestrictedImageField(upload_to='assets/avatar/%Y%m%d/', max_length=100,
+    avatar = RestrictedImageField(upload_to='avatar/%Y%m%d/', max_length=100,
                                   max_upload_size=MaxSizes.avatar, blank=True, null=True)
     # 签名
     signature = models.TextField(max_length=MaxSizes.signature, blank=True, null=True)  # 签名

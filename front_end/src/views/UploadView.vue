@@ -68,7 +68,9 @@ import { genFileId, ElMessage, MessageHandler } from 'element-plus'
 import type { UploadInstance, UploadProps, UploadUserFile, UploadRawFile, UploadFile, UploadFiles, UploadRequestOptions } from 'element-plus'
 // import img_arbiter from '@/assets/img/img_arbiter.png'
 import UploadVideoCard from '@/components/UploadVideoCard.vue';
-import store from '../store'
+import { useUserStore } from '../store'
+const store = useUserStore()
+import { LoginStatus } from "@/utils/common/structInterface"
 
 const data = defineProps({
     designators: { type: Array, default: () => [] }
@@ -165,12 +167,11 @@ let k = 0;
 const elmsg_handles: MessageHandler[] = [];
 
 onMounted(() => {
-    const player = store.state.user;
-    if (player.realname == "请修改为实名") {
+    if (store.user.realname == "请修改为实名") {
         allow_upload.value = false;
         elmsg_handles.push(ElMessage.error({ message: '上传录像前，请先修改为实名!', offset: 68 }));
     }
-    if (!player.realname) {
+    if (store.login_status != LoginStatus.IsLogin) {
         allow_upload.value = false;
         elmsg_handles.push(ElMessage.error({ message: '请先登录!', offset: 68 }));
     }
