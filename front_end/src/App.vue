@@ -81,7 +81,7 @@ const logo_2 = ref(require('@/assets/logo2.png'))
 import { useRouter } from 'vue-router'
 const router = useRouter()
 
-// const player_visibile = ref(false)
+// const player_visible = ref(false)
 const notice_visible = ref(false)
 const never_show_notice = ref(false)
 
@@ -114,7 +114,7 @@ const player_url = computed(() => {
 })
 
 const user_login = () => {
-    // player_visibile.value = true;
+    // player_visible.value = true;
     // tab_width.value = "14vw";
 }
 
