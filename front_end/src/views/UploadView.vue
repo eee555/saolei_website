@@ -193,7 +193,7 @@ const handleChange: UploadProps['onChange'] = async (uploadFile: UploadFile, upl
             elmsg_handles.push(ElMessage.error({ message: '录像大小不能超过5MB!', offset: 68 }));
 
         }
-        // upload_video_visibile.value = true;
+        // upload_video_visible.value = true;
         await push_video_msg(uploadFile);
         // 修改id。最后一个协程才是真正起作用的。
         for (let i = 0; i < video_msgs.value.length; i++) {

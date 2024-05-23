@@ -45,7 +45,7 @@
                 <el-button :disabled="(user_name && user_password && valid_code).length == 0" type="primary"
                     @click="login();">登录</el-button>
             </el-form-item>
-            <div @click="login_visibile = false; retrieve_visibile = true; store.login_status = LoginStatus.IsRetrieve;"
+            <div @click="login_visible = false; retrieve_visible = true; store.login_status = LoginStatus.IsRetrieve;"
                 style="cursor: pointer;color: blue;">（找回密码）</div>
         </el-form>
     </el-dialog>
@@ -161,9 +161,9 @@ const user_name_show = ref(""); // 登录后右上方显示的用户名
 
 // const login_status = ref(LoginStatus.NotLogin);
 // 登录对话框是否出现
-const login_visibile = ref(false);
-const register_visibile = ref(false);
-const retrieve_visibile = ref(false);
+const login_visible = ref(false);
+const register_visible = ref(false);
+const retrieve_visible = ref(false);
 
 const remember_me = ref(false);
 
@@ -269,7 +269,7 @@ const login = async () => {
             // mutations.updateLoginStatus(LoginStatus.IsLogin);
             // login_status.value = LoginStatus.IsLogin;
             emit('login'); // 向父组件发送消息
-            login_visibile.value = false;
+            login_visible.value = false;
             // console.log(response.data.msg);
             // if (!user_name.value) {
             //     // 如果本次是自动登录成功的，下次依然自动登录
@@ -318,7 +318,7 @@ const retrieve = () => {
             store.user = response.data.msg;
             store.player = response.data.msg;
             emit('login'); // 向父组件发送消息
-            retrieve_visibile.value = false;
+            retrieve_visible.value = false;
             ElMessage.success({ message: '修改密码成功！', offset: 68 });
         } else if (response.data.status >= 101) {
             hint_message.value = response.data.msg;
@@ -391,7 +391,7 @@ const register = () => {
             store.user = response.data.msg;
             store.player = response.data.msg;
             emit('login'); // 向父组件发送消息
-            register_visibile.value = false;
+            register_visible.value = false;
             // console.log(response);
         } else if (response.data.status >= 101) {
             hint_message.value = response.data.msg;
@@ -427,10 +427,10 @@ const logout = async () => {
                 country: ""
             };
             emit('logout'); // 向父组件发送消息
-            register_visibile.value = false;
-            login_visibile.value = false;
-            retrieve_visibile.value = false;
             ElMessage.success({ message: '退出成果！', offset: 68 });
+            register_visible.value = false;
+            login_visible.value = false;
+            retrieve_visible.value = false;
         } else if (response.data.status >= 101) {
             ElMessage.error({ message: '退出失败！', offset: 68 });
         }
