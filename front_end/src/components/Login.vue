@@ -98,34 +98,34 @@
             </el-form-item>
         </el-form>
     </el-dialog>
-    <el-dialog v-model="retrieve_visibile" title="找回密码" width="30%" align-center draggable :lock-scroll="false"
+    <el-dialog v-model="retrieve_visibile" :title="$t('forgetPassword.title')" width="30%" align-center draggable :lock-scroll="false"
         @close='() => { if (store.login_status !== LoginStatus.IsLogin) { store.login_status = LoginStatus.NotLogin; } }'>
         <el-form size="default">
             <el-form-item>
-                <el-input v-model="user_email_reg" placeholder="请输入邮箱" prefix-icon="Message" type="email"></el-input>
+                <el-input v-model="user_email_reg" :placeholder="$t('forgetPassword.email')" prefix-icon="Message" type="email"></el-input>
             </el-form-item>
             <el-form-item>
                 <div style="display: flex">
-                    <el-input v-model="valid_code_reg" placeholder="验证码" prefix-icon="Key" class="code"
+                    <el-input v-model="valid_code_reg" :placeholder="$t('forgetPassword.captcha')" prefix-icon="Key" class="code"
                         maxlength="4"></el-input>
                     &nbsp;
                     <!-- <ValidCode2 :identifyCode="identifyCodeReg" ref="refValidCode2" /> -->
                     <ValidCode :identifyCode="identifyCodeReg" ref="refValidCode2" />
                     &nbsp;
                     <el-button link type="primary" @click="get_email_captcha('retrieve')"
-                        :disabled="valid_code_reg.length < 4">获取验证码</el-button>
+                        :disabled="valid_code_reg.length < 4">{{ $t('forgetPassword.getEmailCode') }}</el-button>
                 </div>
             </el-form-item>
             <el-form-item>
-                <el-input v-model="user_email_valid_code_reg" placeholder="请输入邮箱验证码" prefix-icon="Key"
+                <el-input v-model="user_email_valid_code_reg" :placeholder="$t('forgetPassword.emailCode')" prefix-icon="Key"
                     :disabled="valid_code_reg.length < 4" maxlength="6"></el-input>
             </el-form-item>
             <el-form-item>
-                <el-input v-model="user_password_reg" placeholder="请输入新的6-20位密码" show-password prefix-icon="Lock"
+                <el-input v-model="user_password_reg" :placeholder="$t('forgetPassword.password')" show-password prefix-icon="Lock"
                     minlength="6" maxlength="20"></el-input>
             </el-form-item>
             <el-form-item>
-                <el-input v-model="user_password2_reg" placeholder="请输入确认密码" show-password prefix-icon="Lock"
+                <el-input v-model="user_password2_reg" :placeholder="$t('forgetPassword.confirmPassword')" show-password prefix-icon="Lock"
                     minlength="6" maxlength="20"></el-input>
             </el-form-item>
             <el-form-item>
@@ -134,7 +134,7 @@
             <el-form-item>
                 <el-button
                     :disabled="(user_email_valid_code_reg && user_password_reg && user_password2_reg).length == 0"
-                    type="primary" @click="retrieve()">确认修改密码</el-button>
+                    type="primary" @click="retrieve()">{{ $t('forgetPassword.confirm') }}</el-button>
             </el-form-item>
         </el-form>
     </el-dialog>

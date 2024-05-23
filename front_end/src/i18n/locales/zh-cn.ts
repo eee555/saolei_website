@@ -37,6 +37,16 @@ export const zhCn: LocaleConfig = {
         termsAndConditions: '元扫雷网用户协议',
         confirm: '注册'
     },
+    forgetPassword: {
+        title: '找回密码',
+        email: '请输入邮箱',
+        captcha: '验证码',
+        getEmailCode: '获取邮箱验证码',
+        emailCode: '请输入邮箱验证码',
+        password: '请输入新的6-20位密码',
+        confirmPassword: '请输入确认密码',
+        confirm: '确认修改密码'
+    },
     example: {
         placeholder: '占位符: {0}',
     },

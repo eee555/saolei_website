@@ -43,6 +43,16 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
         termsAndConditions: string,
         confirm: string
     },
+    forgetPassword: {
+        title: string,
+        email: string,
+        captcha: string,
+        getEmailCode: string,
+        emailCode: string,
+        password: string,
+        confirmPassword: string,
+        confirm: string
+    }
     example: {
         // 占位符配置示例 TODO 删除占位符配置示例
         placeholder: string

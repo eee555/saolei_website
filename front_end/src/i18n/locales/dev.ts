@@ -37,6 +37,16 @@ export const dev: LocaleConfig = {
         termsAndConditions: 'register.termsAndConditions',
         confirm: 'register.confirm'
     },
+    forgetPassword: {
+        title: 'forgetPassword.title',
+        email: 'forgetPassword.email',
+        captcha: 'forgetPassword.captcha',
+        getEmailCode: 'forgetPassword.getEmailCode',
+        emailCode: 'forgetPassword.emailCode',
+        password: 'forgetPassword.password',
+        confirmPassword: 'forgetPassword.confirmPassword',
+        confirm: 'forgetPassword.confirm'
+    },
     example: {
         placeholder: 'example.placeholder: {0}',
     },
