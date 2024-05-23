@@ -20,4 +20,6 @@ conn.close()
 
 
 # python manage.py flush
+# redis-cli -h localhost -p 6379 flushall
+
 

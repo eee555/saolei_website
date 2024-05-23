@@ -2,42 +2,83 @@
     <el-row class="tac">
         <el-col :span="4">
             <h5 class="mb-2">目录</h5>
-            <el-menu default-active="2" class="el-menu-vertical-demo">
+            <el-menu class="el-menu-vertical">
                 <el-sub-menu index="1">
                     <template #title>
-                        <el-icon>
-                            <location />
-                        </el-icon>
-                        <span>Navigator One</span>
+                        <el-icon><Document /></el-icon>
+                        <span>公告</span>
                     </template>
-                    <el-menu-item-group title="Group One">
-                        <el-menu-item index="1-1">item one</el-menu-item>
-                        <el-menu-item index="1-2">item two</el-menu-item>
-                    </el-menu-item-group>
-                    <el-menu-item-group title="Group Two">
-                        <el-menu-item index="1-3">item three</el-menu-item>
-                    </el-menu-item-group>
-                    <el-sub-menu index="1-4">
-                        <template #title>item four</template>
-                        <el-menu-item index="1-4-1">item one</el-menu-item>
-                    </el-sub-menu>
+                    <template v-for="(item, idx) in notice_list">
+                        <el-menu-item v-if="item.name[0] == '['" :index="`1-${idx + 1}`">
+                            {{ item.files[0].match(/(?<=\]).*/)![0].replace(/\.md$/, '') }}
+                        </el-menu-item>
+                        <el-sub-menu v-else :index="`1-${idx + 1}`">
+                            <template #title>{{ item.name }}</template>
+                            <template v-for="(i, idy) in item.files">
+                                <el-menu-item :index="`1-${idx + 1}-${idy + 1}`">
+                                    {{ i.match(/(?<=\]).*/)![0].replace(/\.md$/, '') }}
+                                </el-menu-item>
+                            </template>
+                        </el-sub-menu>
+                    </template>
                 </el-sub-menu>
-                <el-menu-item index="2">
-                    <el-icon><icon-menu /></el-icon>
-                    <span>Navigator Two</span>
-                </el-menu-item>
-                <el-menu-item index="3" disabled>
-                    <el-icon>
-                        <document />
-                    </el-icon>
-                    <span>Navigator Three</span>
-                </el-menu-item>
-                <el-menu-item index="4">
-                    <el-icon>
-                        <setting />
-                    </el-icon>
-                    <span>Navigator Four</span>
-                </el-menu-item>
+                <el-sub-menu index="2">
+                    <template #title>
+                        <el-icon><Guide /></el-icon>
+                        <span>教程</span>
+                    </template>
+                    <template v-for="(item, idx) in guide_list">
+                        <el-menu-item v-if="item.name[0] == '['" :index="`2-${idx + 1}`">
+                            {{ item.files[0].match(/(?<=\]).*/)![0].replace(/\.md$/, '') }}
+                        </el-menu-item>
+                        <el-sub-menu v-else :index="`2-${idx + 1}`">
+                            <template #title>{{ item.name }}</template>
+                            <template v-for="(i, idy) in item.files">
+                                <el-menu-item :index="`2-${idx + 1}-${idy + 1}`">
+                                    {{ i.match(/(?<=\]).*/)![0].replace(/\.md$/, '') }}
+                                </el-menu-item>
+                            </template>
+                        </el-sub-menu>
+                    </template>
+                </el-sub-menu>
+                <el-sub-menu index="3">
+                    <template #title>
+                        <el-icon><Cpu /></el-icon>
+                        <span>技术</span>
+                    </template>
+                    <template v-for="(item, idx) in tech_list">
+                        <el-menu-item v-if="item.name[0] == '['" :index="`3-${idx + 1}`">
+                            {{ item.files[0].match(/(?<=\]).*/)![0].replace(/\.md$/, '') }}
+                        </el-menu-item>
+                        <el-sub-menu v-else :index="`3-${idx + 1}`">
+                            <template #title>{{ item.name }}</template>
+                            <template v-for="(i, idy) in item.files">
+                                <el-menu-item :index="`3-${idx + 1}-${idy + 1}`">
+                                    {{ i.match(/(?<=\]).*/)![0].replace(/\.md$/, '') }}
+                                </el-menu-item>
+                            </template>
+                        </el-sub-menu>
+                    </template>
+                </el-sub-menu>
+                <el-sub-menu index="4">
+                    <template #title>
+                        <el-icon><Grid /></el-icon>
+                        <span>其他</span>
+                    </template>
+                    <template v-for="(item, idx) in other_list">
+                        <el-menu-item v-if="item.name[0] == '['" :index="`4-${idx + 1}`">
+                            {{ item.files[0].match(/(?<=\]).*/)![0].replace(/\.md$/, '') }}
+                        </el-menu-item>
+                        <el-sub-menu v-else :index="`4-${idx + 1}`">
+                            <template #title>{{ item.name }}</template>
+                            <template v-for="(i, idy) in item.files">
+                                <el-menu-item :index="`4-${idx + 1}-${idy + 1}`">
+                                    {{ i.match(/(?<=\]).*/)![0].replace(/\.md$/, '') }}
+                                </el-menu-item>
+                            </template>
+                        </el-sub-menu>
+                    </template>
+                </el-sub-menu>
             </el-menu>
         </el-col>
 
@@ -123,27 +164,117 @@ const article_html = computed(() => {
     return markdown.render(content.value);
 })
 
+// 子类别
+type child_list = {
+    // 子类别的排序依据
+    index: number,
+    name: string,
+    // 子类别的文件名列表
+    files: string[]
+}
+const notice_list = ref<child_list[]>([])
+const guide_list = ref<child_list[]>([])
+const tech_list = ref<child_list[]>([])
+const other_list = ref<child_list[]>([])
+
 
 onMounted(() => {
     proxy.$axios.get('/article/articles/'
     ).then(function (response) {
-        console.log(response.data[1]);
-        const articles = response.data;
-        const cover = response.data[1];
+        const articles: string[] = response.data;
+        for (const article of articles) {
+            // 后端保证文章标题必须是此种格式，例如："[60.公告]明天下雨.md"
+            const labels = article.match(/(?<=\[).*(?=\])/)![0].split(".");
+            const index_i = /^[0-9]+$/.test(labels[0]) ? +labels[0] : 999;
+            const child_name_i = ["公告", "教程", "技术", "其他"].includes(labels.at(-1)!) ? article : labels.at(-1)!;
+            if (labels.includes("公告")) {
+                const child_name_idx = notice_list.value.findIndex((v) => {
+                    return v.name == child_name_i
+                })
+                if (child_name_idx >= 0) {
+                    notice_list.value[child_name_idx].files.push(article);
+                    notice_list.value[child_name_idx].index =
+                        Math.min(notice_list.value[child_name_idx].index, index_i);
+                } else {
+                    notice_list.value.push({
+                        index: index_i,
+                        name: child_name_i,
+                        files: [article],
+                    })
+                }
+            } else if (labels.includes("教程")) {
+                const child_name_idx = guide_list.value.findIndex((v) => {
+                    return v.name == child_name_i
+                })
+                if (child_name_idx >= 0) {
+                    guide_list.value[child_name_idx].files.push(article);
+                    guide_list.value[child_name_idx].index =
+                        Math.min(guide_list.value[child_name_idx].index, index_i);
+                } else {
+                    guide_list.value.push({
+                        index: index_i,
+                        name: child_name_i,
+                        files: [article],
+                    })
+                }
+            } else if (labels.includes("技术")) {
+                const child_name_idx = tech_list.value.findIndex((v) => {
+                    return v.name == child_name_i
+                })
+
+                if (child_name_idx >= 0) {
+                    tech_list.value[child_name_idx].files.push(article);
+                    tech_list.value[child_name_idx].index =
+                        Math.min(tech_list.value[child_name_idx].index, index_i);
+                } else {
+                    tech_list.value.push({
+                        index: index_i,
+                        name: child_name_i,
+                        files: [article],
+                    })
+                }
+            } else if (labels.includes("其他")) {
+                const child_name_idx = other_list.value.findIndex((v) => {
+                    return v.name == child_name_i
+                })
+                if (child_name_idx >= 0) {
+                    other_list.value[child_name_idx].files.push(article);
+                    other_list.value[child_name_idx].index =
+                        Math.min(other_list.value[child_name_idx].index, index_i);
+                } else {
+                    other_list.value.push({
+                        index: index_i,
+                        name: child_name_i,
+                        files: [article],
+                    })
+                }
+            }
+        }
+        // 数组push、pop、shift、unshift、splice、sort、reverse都是响应式的
+        notice_list.value.sort((a, b) => { return a.index - b.index });
+        guide_list.value.sort((a, b) => { return a.index - b.index });
+        tech_list.value.sort((a, b) => { return a.index - b.index });
+        other_list.value.sort((a, b) => { return a.index - b.index });
+        // console.log(notice_list.value);
+        // console.log(guide_list.value);
+        // console.log(tech_list.value);
+        // console.log(other_list.value);
+
+
+
+
+        const cover = response.data[0];
+
 
         if (cover.slice(-3) == ".md") {
-            proxy.$axios.get('/static/article/' + cover
+            proxy.$axios.get('/media/article/' + cover
             ).then(function (response) {
                 content.value = response.data;
-                console.log(content.value);
-
             })
         } else {
-            proxy.$axios.get('/static/' + cover + "/a.md"
+            proxy.$axios.get('/media/' + cover + "/a.md"
             ).then(function (response) {
                 content.value = response.data;
-                console.log(content.value);
-
             })
         }
     })

@@ -32,6 +32,7 @@
 1. pip install -r requirements.txt
 1. 安装mysql，根据saolei_website\back_end\saolei\saolei\setting.py中的配置，（默认）创建名为saolei的数据库，用户名root，密码123456
 1. 建立一个文件夹saolei_website\back_end\saolei\logs（用来存放日志）
+1. （可选，假如需要看文章）在saolei_website\back_end\saolei\assets下执行`git clone https://gitee.com/ee55/saolei_website_article.git`，并将文件夹名由saolei_website_article改为article
 1. python manage.py makemigrations
 1. python manage.py migrate
 1. python manage.py runserver
