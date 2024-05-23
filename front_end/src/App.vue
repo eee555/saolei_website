@@ -9,22 +9,22 @@
             </div>
         </el-menu-item>
         <el-menu-item index="/ranking">
-            <div class="header">排行榜</div>
+            <div class="header">{{ $t('menu.ranking') }}</div>
         </el-menu-item>
         <el-menu-item index="/video">
-            <div class="header">录像</div>
+            <div class="header">{{ $t('menu.video') }}</div>
         </el-menu-item>
         <el-menu-item index="/world">
-            <div class="header">统计</div>
+            <div class="header">{{ $t('menu.world') }}</div>
         </el-menu-item>
         <el-menu-item index="/guide">
-            <div class="header">教程</div>
+            <div class="header">{{ $t('menu.guide') }}</div>
         </el-menu-item>
         <el-menu-item index="/score">
-            <div class="header">积分</div>
+            <div class="header">{{ $t('menu.score') }}</div>
         </el-menu-item>
         <el-menu-item :index="player_url" :disabled="store.user.id == 0" @click="store.player = store.user;">
-            <div class="header">我的地盘</div>
+            <div class="header">{{ $t('menu.profile') }}</div>
         </el-menu-item>
         <LanguagePicker/>
         <div
@@ -75,6 +75,9 @@ import LanguagePicker from './components/LanguagePicker.vue';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import { useUserStore } from './store'
 const store = useUserStore()
+
+import { useI18n } from 'vue-i18n';
+const t = useI18n();
 
 const { proxy } = useCurrentInstance();
 const logo_1 = ref(require('@/assets/logo.png'))

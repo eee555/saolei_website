@@ -14,11 +14,17 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
     },
     menu: {
         ranking: string,
-        statistics: string,
-        profile: string,
         video: string,
+        world: string,
+        guide: string,
+        score: string,
+        profile: string,
+        welcome: string,
         login: string,
-        register: string
+        register: string,
+        downloads: string,
+        links: string,
+        team: string
     },
     login: {
         title: string,

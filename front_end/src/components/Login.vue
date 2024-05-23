@@ -150,8 +150,8 @@ import ValidCode from "@/components/ValidCode.vue";
 import { genFileId, ElMessage } from 'element-plus'
 import { useUserStore } from '../store'
 const store = useUserStore()
-import { useI18n } from 'vue-i18n';
 
+import { useI18n } from 'vue-i18n';
 const t = useI18n();
 
 const AXIOS_BASE_URL = process.env.VUE_APP_BASE_API;

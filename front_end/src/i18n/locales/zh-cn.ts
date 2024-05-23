@@ -7,12 +7,18 @@ export const zhCn: LocaleConfig = {
         time: '用时'
     },
     menu: {
-        ranking: '排行',
-        statistics: '统计',
+        ranking: '排行榜',
+        video: '录像',
+        world: '统计',
+        guide: '教程',
+        score: '积分',
         profile: '我的',
-        video: '录像库',
+        welcome: '欢迎您，{0}！',
         login: '登录',
-        register: '注册'
+        register: '注册',
+        downloads: '软件下载',
+        links: '友链',
+        team: '团队'
     },
     login: {
         title: '欢迎登录',

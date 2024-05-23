@@ -8,11 +8,17 @@ export const dev: LocaleConfig = {
     },
     menu: {
         ranking: 'menu.ranking',
-        statistics: 'menu.statistics',
-        profile: 'menu.profile',
         video: 'menu.video',
+        world: 'menu.world',
+        guide: 'menu.guide',
+        score: 'menu.score',
+        profile: 'menu.profile',
+        welcome: 'menu.welcome{"{"}0{"}"}',
         login: 'menu.login',
-        register: 'menu.register'
+        register: 'menu.register',
+        downloads: 'menu.downloads',
+        links: 'menu.links',
+        team: 'menu.team'
     },
     login: {
         title: 'login.title',
