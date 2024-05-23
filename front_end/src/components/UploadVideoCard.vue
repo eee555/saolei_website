@@ -78,7 +78,7 @@ onMounted(() => {
 
 
 
-// const upload_video_visibile = ref(false)
+// const upload_video_visible = ref(false)
 
 
 

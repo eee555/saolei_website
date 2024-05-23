@@ -132,8 +132,8 @@ def video_preview(request):
     try:
         video = VideoModel.objects.get(id=int(request.GET["id"][:-4]))
         # video.file.name是相对路径(含upload_to)，video.file.path是绝对路径
-        print(settings.MEDIA_ROOT / "assets" / video.file.name)
-        file_path = settings.MEDIA_ROOT / "assets" / video.file.name
+        # print(settings.MEDIA_ROOT / "assets" / video.file.name)
+        file_path = settings.MEDIA_ROOT / video.file.name
         response =FileResponse(open(file_path, 'rb'))
         response['Content-Type']='application/octet-stream'
         # response['Content-Disposition']=f'attachment;filename="{video.file.name.split("/")[2]}"'
