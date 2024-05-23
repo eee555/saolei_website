@@ -1,7 +1,7 @@
 <template>
     <div>
         <span class="text-button" v-show="store.login_status != LoginStatus.IsLogin"
-            @click="init_refvalues(); store.login_status = LoginStatus.Login; login_visibile = true; register_visibile = false">
+            @click="init_refvalues(); store.login_status = LoginStatus.Login; login_visible = true; register_visible = false">
             登录
         </span>
         <div style="display:inline-block" v-show="store.login_status == LoginStatus.IsLogin">
@@ -11,14 +11,14 @@
         </span>|<span style="width:12px; display:inline-block">
         </span>
         <span class="text-button" v-show="store.login_status != LoginStatus.IsLogin"
-            @click="init_refvalues(); store.login_status = LoginStatus.Register; register_visibile = true; login_visibile = false">
+            @click="init_refvalues(); store.login_status = LoginStatus.Register; register_visible = true; login_visible = false">
             注册
         </span>
         <span class="text-button" v-show="store.login_status == LoginStatus.IsLogin" @click="logout();">
             退出
         </span>
     </div>
-    <el-dialog v-model="login_visibile" title="欢迎登录" width="30%" align-center draggable :lock-scroll="false"
+    <el-dialog v-model="login_visible" title="欢迎登录" width="30%" align-center draggable :lock-scroll="false"
         @close='() => { if (store.login_status !== LoginStatus.IsLogin) { store.login_status = LoginStatus.NotLogin; } }'>
         <el-form size="default">
             <el-form-item>
@@ -49,7 +49,7 @@
                 style="cursor: pointer;color: blue;">（找回密码）</div>
         </el-form>
     </el-dialog>
-    <el-dialog v-model="register_visibile" title="用户注册" width="30%" align-center draggable :lock-scroll="false"
+    <el-dialog v-model="register_visible" title="用户注册" width="30%" align-center draggable :lock-scroll="false"
         @close='() => { if (store.login_status !== LoginStatus.IsLogin) { store.login_status = LoginStatus.NotLogin; } }'>
         <el-form size="default">
             <el-form-item>
@@ -98,7 +98,7 @@
             </el-form-item>
         </el-form>
     </el-dialog>
-    <el-dialog v-model="retrieve_visibile" title="找回密码" width="30%" align-center draggable :lock-scroll="false"
+    <el-dialog v-model="retrieve_visible" title="找回密码" width="30%" align-center draggable :lock-scroll="false"
         @close='() => { if (store.login_status !== LoginStatus.IsLogin) { store.login_status = LoginStatus.NotLogin; } }'>
         <el-form size="default">
             <el-form-item>
