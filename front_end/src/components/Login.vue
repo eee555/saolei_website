@@ -2,20 +2,20 @@
     <div>
         <span class="text-button" v-show="store.login_status != LoginStatus.IsLogin"
             @click="init_refvalues(); store.login_status = LoginStatus.Login; login_visible = true; register_visible = false">
-            登录
+            {{ $t('menu.login') }}
         </span>
         <div style="display:inline-block" v-show="store.login_status == LoginStatus.IsLogin">
-            欢迎您，{{ user_name_show }}！
+            {{ $t('menu.welcome', [user_name_show]) }}
         </div>
         <span style="width:12px; display:inline-block">
         </span>|<span style="width:12px; display:inline-block">
         </span>
         <span class="text-button" v-show="store.login_status != LoginStatus.IsLogin"
             @click="init_refvalues(); store.login_status = LoginStatus.Register; register_visible = true; login_visible = false">
-            注册
+            {{ $t('menu.register') }}
         </span>
         <span class="text-button" v-show="store.login_status == LoginStatus.IsLogin" @click="logout();">
-            退出
+            {{ $t('menu.logout') }}
         </span>
     </div>
     <el-dialog v-model="login_visible" :title="$t('login.title')" width="30%" align-center draggable :lock-scroll="false"
@@ -49,7 +49,7 @@
                 style="cursor: pointer;color: blue;">{{ $t('login.forgetPassword') }}</div>
         </el-form>
     </el-dialog>
-    <el-dialog v-model="register_visible" title="用户注册" width="30%" align-center draggable :lock-scroll="false"
+    <el-dialog v-model="register_visible" :title="$t('register.title')" width="30%" align-center draggable :lock-scroll="false"
         @close='() => { if (store.login_status !== LoginStatus.IsLogin) { store.login_status = LoginStatus.NotLogin; } }'>
         <el-form size="default">
             <el-form-item>

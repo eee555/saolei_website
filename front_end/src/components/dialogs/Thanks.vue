@@ -1,5 +1,5 @@
 <template>
-    <span class="text-button" @click="centerDialogVisible = true;">团队</span>
+    <span class="text-button" @click="centerDialogVisible = true;">{{ $t('menu.team') }}</span>
     <el-dialog v-model="centerDialogVisible" title="团队" width="50%" align-center draggable :lock-scroll="false">
         <h2>站长</h2>
         <span>eee555</span>
@@ -35,6 +35,8 @@
 // 注册、登录的弹框及右上方按钮
 import { onMounted, ref, Ref } from 'vue'
 
+import { useI18n } from 'vue-i18n';
+const t = useI18n();
 
 const centerDialogVisible = ref(false);
 

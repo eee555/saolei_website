@@ -28,7 +28,6 @@ import { genFileId, ElMessage } from 'element-plus'
 // import { AXIOS_BASE_URL } from '../config';
 import Login from "./Login.vue";
 
-
 const login_status = ref(LoginStatus.NotLogin);
 
 

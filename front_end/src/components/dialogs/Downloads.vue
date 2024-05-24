@@ -1,5 +1,5 @@
 <template>
-    <span class="text-button" @click="centerDialogVisible = true;">软件下载</span>
+    <span class="text-button" @click="centerDialogVisible = true;">{{ $t('menu.downloads') }}</span>
     <el-dialog v-model="centerDialogVisible" title="软件下载" width="50%" align-center draggable :lock-scroll="false">
         <ul>
             <li><a style="color: blue;" target="_blank" href="https://eee555.lanzn.com/iQ4C11p34mqh">元扫雷3.1.7</a>
@@ -25,6 +25,8 @@
 // 注册、登录的弹框及右上方按钮
 import { onMounted, ref, Ref } from 'vue'
 
+import { useI18n } from 'vue-i18n';
+const t = useI18n();
 
 const centerDialogVisible = ref(false);
 

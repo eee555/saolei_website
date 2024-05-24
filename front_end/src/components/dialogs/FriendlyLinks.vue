@@ -1,5 +1,5 @@
 <template>
-    <span class="text-button" @click="centerDialogVisible = true;">友链</span>
+    <span class="text-button" @click="centerDialogVisible = true;">{{ $t('menu.links') }}</span>
     <el-dialog v-model="centerDialogVisible" title="友链" width="50%" align-center draggable :lock-scroll="false">
         <ul>
             <li><a target="_blank" href="https://gitee.com/ee55/saolei_website/issues">本站码云主页</a>
@@ -30,6 +30,8 @@
 // 注册、登录的弹框及右上方按钮
 import { onMounted, ref, Ref } from 'vue'
 
+import { useI18n } from 'vue-i18n';
+const t = useI18n();
 
 const centerDialogVisible = ref(false);
 
