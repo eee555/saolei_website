@@ -2,81 +2,81 @@
     <el-row class="tac">
         <el-col :span="4">
             <h5 class="mb-2">目录</h5>
-            <el-menu class="el-menu-vertical">
+            <el-menu @select="show_content" class="el-menu-vertical">
                 <el-sub-menu index="1">
                     <template #title>
-                        <el-icon><Document /></el-icon>
+                        <el-icon>
+                            <Document />
+                        </el-icon>
                         <span>公告</span>
                     </template>
                     <template v-for="(item, idx) in notice_list">
                         <el-menu-item v-if="item.name[0] == '['" :index="`1-${idx + 1}`">
-                            {{ item.files[0].match(/(?<=\]).*/)![0].replace(/\.md$/, '') }}
-                        </el-menu-item>
-                        <el-sub-menu v-else :index="`1-${idx + 1}`">
-                            <template #title>{{ item.name }}</template>
-                            <template v-for="(i, idy) in item.files">
-                                <el-menu-item :index="`1-${idx + 1}-${idy + 1}`">
-                                    {{ i.match(/(?<=\]).*/)![0].replace(/\.md$/, '') }}
-                                </el-menu-item>
-                            </template>
-                        </el-sub-menu>
+                            {{ item.files[0].match(/(?<=\]).*/)![0].replace(/\.md$/, '') }} </el-menu-item>
+                                <el-sub-menu v-else :index="`1-${idx + 1}`">
+                                    <template #title>{{ item.name }}</template>
+                                    <template v-for="(i, idy) in item.files">
+                                        <el-menu-item :index="`1-${idx + 1}-${idy + 1}`">
+                                            {{ i.match(/(?<=\]).*/)![0].replace(/\.md$/, '') }} </el-menu-item>
+                                    </template>
+                                </el-sub-menu>
                     </template>
                 </el-sub-menu>
                 <el-sub-menu index="2">
                     <template #title>
-                        <el-icon><Guide /></el-icon>
+                        <el-icon>
+                            <Guide />
+                        </el-icon>
                         <span>教程</span>
                     </template>
                     <template v-for="(item, idx) in guide_list">
                         <el-menu-item v-if="item.name[0] == '['" :index="`2-${idx + 1}`">
-                            {{ item.files[0].match(/(?<=\]).*/)![0].replace(/\.md$/, '') }}
-                        </el-menu-item>
-                        <el-sub-menu v-else :index="`2-${idx + 1}`">
-                            <template #title>{{ item.name }}</template>
-                            <template v-for="(i, idy) in item.files">
-                                <el-menu-item :index="`2-${idx + 1}-${idy + 1}`">
-                                    {{ i.match(/(?<=\]).*/)![0].replace(/\.md$/, '') }}
-                                </el-menu-item>
-                            </template>
-                        </el-sub-menu>
+                            {{ item.files[0].match(/(?<=\]).*/)![0].replace(/\.md$/, '') }} </el-menu-item>
+                                <el-sub-menu v-else :index="`2-${idx + 1}`">
+                                    <template #title>{{ item.name }}</template>
+                                    <template v-for="(i, idy) in item.files">
+                                        <el-menu-item :index="`2-${idx + 1}-${idy + 1}`">
+                                            {{ i.match(/(?<=\]).*/)![0].replace(/\.md$/, '') }} </el-menu-item>
+                                    </template>
+                                </el-sub-menu>
                     </template>
                 </el-sub-menu>
                 <el-sub-menu index="3">
                     <template #title>
-                        <el-icon><Cpu /></el-icon>
+                        <el-icon>
+                            <Cpu />
+                        </el-icon>
                         <span>技术</span>
                     </template>
                     <template v-for="(item, idx) in tech_list">
                         <el-menu-item v-if="item.name[0] == '['" :index="`3-${idx + 1}`">
-                            {{ item.files[0].match(/(?<=\]).*/)![0].replace(/\.md$/, '') }}
-                        </el-menu-item>
-                        <el-sub-menu v-else :index="`3-${idx + 1}`">
-                            <template #title>{{ item.name }}</template>
-                            <template v-for="(i, idy) in item.files">
-                                <el-menu-item :index="`3-${idx + 1}-${idy + 1}`">
-                                    {{ i.match(/(?<=\]).*/)![0].replace(/\.md$/, '') }}
-                                </el-menu-item>
-                            </template>
-                        </el-sub-menu>
+                            {{ item.files[0].match(/(?<=\]).*/)![0].replace(/\.md$/, '') }} </el-menu-item>
+                                <el-sub-menu v-else :index="`3-${idx + 1}`">
+                                    <template #title>{{ item.name }}</template>
+                                    <template v-for="(i, idy) in item.files">
+                                        <el-menu-item :index="`3-${idx + 1}-${idy + 1}`">
+                                            {{ i.match(/(?<=\]).*/)![0].replace(/\.md$/, '') }} </el-menu-item>
+                                    </template>
+                                </el-sub-menu>
                     </template>
                 </el-sub-menu>
                 <el-sub-menu index="4">
                     <template #title>
-                        <el-icon><Grid /></el-icon>
+                        <el-icon>
+                            <Grid />
+                        </el-icon>
                         <span>其他</span>
                     </template>
                     <template v-for="(item, idx) in other_list">
                         <el-menu-item v-if="item.name[0] == '['" :index="`4-${idx + 1}`">
-                            {{ item.files[0].match(/(?<=\]).*/)![0].replace(/\.md$/, '') }}
-                        </el-menu-item>
-                        <el-sub-menu v-else :index="`4-${idx + 1}`">
-                            <template #title>{{ item.name }}</template>
-                            <template v-for="(i, idy) in item.files">
-                                <el-menu-item :index="`4-${idx + 1}-${idy + 1}`">
-                                    {{ i.match(/(?<=\]).*/)![0].replace(/\.md$/, '') }}
-                                </el-menu-item>
-                            </template>
-                        </el-sub-menu>
+                            {{ item.files[0].match(/(?<=\]).*/)![0].replace(/\.md$/, '') }} </el-menu-item>
+                                <el-sub-menu v-else :index="`4-${idx + 1}`">
+                                    <template #title>{{ item.name }}</template>
+                                    <template v-for="(i, idy) in item.files">
+                                        <el-menu-item :index="`4-${idx + 1}-${idy + 1}`">
+                                            {{ i.match(/(?<=\]).*/)![0].replace(/\.md$/, '') }} </el-menu-item>
+                                    </template>
+                                </el-sub-menu>
                     </template>
                 </el-sub-menu>
             </el-menu>
@@ -263,23 +263,63 @@ onMounted(() => {
 
 
 
-        const cover = response.data[0];
+        const cover = notice_list.value[0].files[0];
 
-
-        if (cover.slice(-3) == ".md") {
-            proxy.$axios.get('/media/article/' + cover
-            ).then(function (response) {
-                content.value = response.data;
-            })
-        } else {
-            proxy.$axios.get('/media/' + cover + "/a.md"
-            ).then(function (response) {
-                content.value = response.data;
-            })
-        }
+        show_article(cover);
     })
 
 })
+
+
+// 按文章名显示文章
+const show_article = (name: string) => {
+    if (name.slice(-3) == ".md") {
+        proxy.$axios.get('/media/article/' + name
+        ).then(function (response) {
+            content.value = response.data;
+        })
+    } else {
+        proxy.$axios.get('/media/article/' + name + "/a.md"
+        ).then(function (response) {
+            // 全局替换图片url
+            // 举例：'任意文字![说明](url.jpg "标题")任意文字' 
+            // -> '任意文字![说明](http://127.0.0.1/media/article/url.jpg "标题")任意文字'
+            content.value = (response.data as string).replaceAll(/(?<=(\!\[[^(\])]*\]\())([^(\s|\))]*)/g,
+                process.env.VUE_APP_BASE_API + '/media/article/' + name + '/$2');
+        })
+    }
+}
+
+// 按菜单的索引显示文章，点击菜单的回调
+const show_content = (key: string, keyPath: string[]) => {
+    const keys = key.split("-");
+    if (keys[0] == "1") {
+        if (keys.length == 2) {
+            show_article(notice_list.value[+keys[1] - 1].files[0]);
+        } else if (keys.length == 3) {
+            show_article(notice_list.value[+keys[1] - 1].files[+keys[2] - 1]);
+        }
+    } else if (keys[0] == "2") {
+        if (keys.length == 2) {
+            show_article(guide_list.value[+keys[1] - 1].files[0]);
+        } else if (keys.length == 3) {
+            show_article(guide_list.value[+keys[1] - 1].files[+keys[2] - 1]);
+        }
+    } else if (keys[0] == "3") {
+        if (keys.length == 2) {
+            show_article(tech_list.value[+keys[1] - 1].files[0]);
+        } else if (keys.length == 3) {
+            show_article(tech_list.value[+keys[1] - 1].files[+keys[2] - 1]);
+        }
+    } else if (keys[0] == "4") {
+        if (keys.length == 2) {
+            show_article(other_list.value[+keys[1] - 1].files[0]);
+        } else if (keys.length == 3) {
+            show_article(other_list.value[+keys[1] - 1].files[+keys[2] - 1]);
+        }
+    }
+}
+
 
 </script>
 <style></style>

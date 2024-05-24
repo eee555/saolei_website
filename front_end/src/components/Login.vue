@@ -215,7 +215,17 @@ const init_refvalues = () => {
 onMounted(() => {
     if (store.login_status == LoginStatus.Undefined) {
         login();
+    } else if (store.login_status == LoginStatus.IsLogin) {
+        // 解决改变窗口宽度，使得账号信息在显示和省略之间切换时，用户名不能显示的问题
+        hint_message.value = ""
+        user_name_show.value = store.user.username;
+        if (store.user.is_banned) {
+            user_name_show.value += "（您已被封禁，详情请询问管理员！）"
+        }
+        emit('login'); // 向父组件发送消息
+        login_visible.value = false;
     }
+
 
     window.onbeforeunload = function (e) {
         // 关闭网页时，删cookie。由于跨域问题，开发时，如开前后端各开一个服务器，
@@ -275,7 +285,7 @@ const login = async () => {
             //     // 如果本次是自动登录成功的，下次依然自动登录
             //     remember_me.value = true;
             // }
-            localStorage.setItem("user_id", response.data.id + "");
+            // localStorage.setItem("user_id", response.data.id + "");
         } else if (response.data.status >= 101) {
             hint_message.value = response.data.msg;
             // console.log("登录失败");

@@ -31,12 +31,13 @@
 1. cd saolei_website\back_end\saolei
 1. pip install -r requirements.txt
 1. 安装mysql，根据saolei_website\back_end\saolei\saolei\setting.py中的配置，（默认）创建名为saolei的数据库，用户名root，密码123456
-1. 建立一个文件夹saolei_website\back_end\saolei\logs（用来存放日志）
+1. 新建一个文件夹saolei_website\back_end\saolei\logs（用来存放日志）
+1. 新建一个文件夹saolei_website\back_end\saolei\assets（存放录像、头像、文章）
 1. （可选，假如需要看文章）在saolei_website\back_end\saolei\assets下执行`git clone https://gitee.com/ee55/saolei_website_article.git`，并将文件夹名由saolei_website_article改为article
 1. python manage.py makemigrations
 1. python manage.py migrate
 1. python manage.py runserver
-1. （假如要启动定时任务，不做相关功能时可以不启动）python manage.py runapschedulermonitor
+1. （可选，假如要启动定时任务，不做相关功能时可以不启动）python manage.py runapschedulermonitor
 
 前端：
 1. 从[https://github.com/eee555/flop-player/releases/download/v1.1/dist.zip](https://github.com/eee555/flop-player/releases/download/v1.1/dist.zip)下载新版flop播放器，并解压到saolei_website\front_end\public\flop下（将文件夹的名称dist修改为flop），使得saolei_website\front_end\public\flop\index.html能够被找到
