@@ -6,6 +6,25 @@ export const zhCn: LocaleConfig = {
     common: {
         time: '用时'
     },
+    forgetPassword: {
+        title: '找回密码',
+        email: '请输入邮箱',
+        captcha: '验证码',
+        getEmailCode: '获取邮箱验证码',
+        emailCode: '请输入邮箱验证码',
+        password: '请输入新的6-20位密码',
+        confirmPassword: '请输入确认密码',
+        confirm: '确认修改密码'
+    },
+    login: {
+        title: '欢迎登录',
+        username: '用户名',
+        password: '密码',
+        captcha: '验证码',
+        forgetPassword: '（找回密码）',
+        keepMeLoggedIn: '记住我',
+        confirm: '登录'
+    },
     menu: {
         ranking: '排行榜',
         video: '录像',
@@ -21,14 +40,16 @@ export const zhCn: LocaleConfig = {
         links: '友链',
         team: '团队'
     },
-    login: {
-        title: '欢迎登录',
-        username: '用户名',
-        password: '密码',
-        captcha: '验证码',
-        forgetPassword: '（找回密码）',
-        keepMeLoggedIn: '记住我',
-        confirm: '登录'
+    profile: {
+        changeAvatar: '*点击图片修改头像',
+        realname: '姓名：',
+        realnameInput: '请输入真实姓名',
+        signature: '个人简介',
+        signatureInput: '请输入个人简介',
+        change: '修改简介',
+        confirmChange: '确认',
+        cancelChange: '取消',
+        designator: '我的标识：',
     },
     register: {
         title: '用户注册',
@@ -42,16 +63,6 @@ export const zhCn: LocaleConfig = {
         agreeTo: '已阅读并同意',
         termsAndConditions: '元扫雷网用户协议',
         confirm: '注册'
-    },
-    forgetPassword: {
-        title: '找回密码',
-        email: '请输入邮箱',
-        captcha: '验证码',
-        getEmailCode: '获取邮箱验证码',
-        emailCode: '请输入邮箱验证码',
-        password: '请输入新的6-20位密码',
-        confirmPassword: '请输入确认密码',
-        confirm: '确认修改密码'
     },
     example: {
         placeholder: '占位符: {0}',

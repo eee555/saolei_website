@@ -13,24 +13,24 @@
                             <Plus />
                         </el-icon>
                     </el-upload>
-                    <div style="font-size: 14px;color: #AAA;text-align: center;">*点击图片修改头像</div>
+                    <div style="font-size: 14px;color: #AAA;text-align: center;">{{ $t('profile.changeAvatar') }}</div>
                     <div style="margin-top: 12px;margin-bottom: 4px;">
-                        姓名：
+                        {{ $t('profile.realname') }}
                     </div>
                     <div>
-                        <el-input v-model.trim="realname_edit" placeholder="请输入真实姓名" minlength="2"
+                        <el-input v-model.trim="realname_edit" :placeholder="$t('profile.realnameInput')" minlength="2"
                             maxlength="10"></el-input>
                     </div>
                     <div style="margin-top: 12px;margin-bottom: 4px;">
-                        个人简介：
+                        {{ $t('profile.signature') }}
                     </div>
                     <div>
-                        <el-input v-model.trim="signature_edit" placeholder="请输入个人简介" minlength="0" maxlength="188"
+                        <el-input v-model.trim="signature_edit" :placeholder="$t('profile.signatureInput')" minlength="0" maxlength="188"
                             type="textarea" :rows="8"></el-input>
                     </div>
 
-                    <button class="edit_button_ok" @click="upload_info">确认</button>
-                    <button class="edit_button_cancel" @click="is_editing = false;">取消</button>
+                    <button class="edit_button_ok" @click="upload_info">{{ $t('profile.confirmChange') }}</button>
+                    <button class="edit_button_cancel" @click="is_editing = false;">{{ $t('profile.cancelChange') }}</button>
 
                 </div>
 
@@ -48,9 +48,9 @@
                         {{ realname }}</div>
                     <div style="overflow: auto ;font-size: 16px;margin-bottom: 12px;">{{ signature }}</div>
                     <button class="edit_button" v-show="show_edit_button"
-                        @click="is_editing = true; visible = true;">修改简介</button>
+                        @click="is_editing = true; visible = true;">{{ $t('profile.change') }}</button>
                     <!-- <div style="overflow: auto ;">人气：{{ popularity }}</div> -->
-                    <div style="overflow: auto ;"><strong>我的标识：</strong>{{ designators.join(", ") }}</div>
+                    <div style="overflow: auto ;"><strong>{{ $t('profile.designator') }}</strong>{{ designators.join(", ") }}</div>
                 </div>
 
                 <el-dialog v-model="visible" title="请注意" width="50%" align-center draggable :lock-scroll="false">
@@ -112,6 +112,9 @@ import { compress, compressAccurately } from 'image-conversion';
 // import store from '@/store';
 import { useUserStore } from '../store'
 const store = useUserStore()
+
+import { useI18n } from 'vue-i18n';
+const t = useI18n();
 
 const loading = ref(true)
 

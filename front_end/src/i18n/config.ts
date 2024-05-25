@@ -12,6 +12,25 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
     common: {
         time: string
     },
+    forgetPassword: {
+        title: string,
+        email: string,
+        captcha: string,
+        getEmailCode: string,
+        emailCode: string,
+        password: string,
+        confirmPassword: string,
+        confirm: string
+    },
+    login: {
+        title: string,
+        username: string,
+        password: string,
+        captcha: string,
+        forgetPassword: string,
+        keepMeLoggedIn: string,
+        confirm: string
+    },
     menu: {
         ranking: string,
         video: string,
@@ -27,14 +46,16 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
         links: string,
         team: string
     },
-    login: {
-        title: string,
-        username: string,
-        password: string,
-        captcha: string,
-        forgetPassword: string,
-        keepMeLoggedIn: string,
-        confirm: string
+    profile: {
+        changeAvatar: string,
+        realname: string,
+        realnameInput: string,
+        signature: string,
+        signatureInput: string,
+        change: string,
+        confirmChange: string,
+        cancelChange: string,
+        designator: string
     },
     register: {
         title: string,
@@ -49,16 +70,6 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
         termsAndConditions: string,
         confirm: string
     },
-    forgetPassword: {
-        title: string,
-        email: string,
-        captcha: string,
-        getEmailCode: string,
-        emailCode: string,
-        password: string,
-        confirmPassword: string,
-        confirm: string
-    }
     example: {
         // 占位符配置示例 TODO 删除占位符配置示例
         placeholder: string

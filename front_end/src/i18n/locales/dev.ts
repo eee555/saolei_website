@@ -6,6 +6,25 @@ export const dev: LocaleConfig = {
     common: {
         time: 'common.time'
     },
+    forgetPassword: {
+        title: 'forgetPassword.title',
+        email: 'forgetPassword.email',
+        captcha: 'forgetPassword.captcha',
+        getEmailCode: 'forgetPassword.getEmailCode',
+        emailCode: 'forgetPassword.emailCode',
+        password: 'forgetPassword.password',
+        confirmPassword: 'forgetPassword.confirmPassword',
+        confirm: 'forgetPassword.confirm'
+    },
+    login: {
+        title: 'login.title',
+        username: 'login.username',
+        password: 'login.password',
+        captcha: 'login.captcha',
+        forgetPassword: 'login.forgetPassword',
+        keepMeLoggedIn: 'login.keepMeLoggedIn',
+        confirm: 'login.confirm'
+    },
     menu: {
         ranking: 'menu.ranking',
         video: 'menu.video',
@@ -21,14 +40,16 @@ export const dev: LocaleConfig = {
         links: 'menu.links',
         team: 'menu.team'
     },
-    login: {
-        title: 'login.title',
-        username: 'login.username',
-        password: 'login.password',
-        captcha: 'login.captcha',
-        forgetPassword: 'login.forgetPassword',
-        keepMeLoggedIn: 'login.keepMeLoggedIn',
-        confirm: 'login.confirm'
+    profile: {
+        changeAvatar: 'profile.changeAvatar',
+        realname: 'profile.realname',
+        realnameInput: 'profile.realnameInput',
+        signature: 'profile.signature',
+        signatureInput: 'profile.signatureInput',
+        change: 'profile.change',
+        confirmChange: 'profile.confirmChange',
+        cancelChange: 'profile.cancelChange',
+        designator: 'profile.designator'
     },
     register: {
         title: 'register.title',
@@ -42,16 +63,6 @@ export const dev: LocaleConfig = {
         agreeTo: 'register.agreeTo',
         termsAndConditions: 'register.termsAndConditions',
         confirm: 'register.confirm'
-    },
-    forgetPassword: {
-        title: 'forgetPassword.title',
-        email: 'forgetPassword.email',
-        captcha: 'forgetPassword.captcha',
-        getEmailCode: 'forgetPassword.getEmailCode',
-        emailCode: 'forgetPassword.emailCode',
-        password: 'forgetPassword.password',
-        confirmPassword: 'forgetPassword.confirmPassword',
-        confirm: 'forgetPassword.confirm'
     },
     example: {
         placeholder: 'example.placeholder: {0}',
