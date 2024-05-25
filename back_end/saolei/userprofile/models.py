@@ -79,7 +79,11 @@ class UserProfile(AbstractUser):
         
         # 调用父类的delete方法删除数据库记录
         super(UserProfile, self).delete(*args, **kwargs)
-
+    class Meta:
+        indexes = [
+            models.Index(fields=['country'], name='country_idx'),
+            models.Index(fields=['vip'], name='vip_idx'),
+        ]
 
 
 # 邮箱验证

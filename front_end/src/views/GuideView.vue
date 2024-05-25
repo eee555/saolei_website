@@ -115,10 +115,18 @@ const markdown = new MarkdownIt({
 }).use(abbr).use(align).use(markdownItHighlight).use(mathjax3).use(imgLazyload);
 
 const js = `
-\`\`\` py
-import re
-print(777)
-\`\`\`
+2. 气泡：  
+
+*[3BV]: Bechtel's Board Benchmark Value，可进一步简称BV。3BV指仅使用左键解开当前局面，所需要的理论最少左击次数。
+*[STNB]: 计算公式初级为47.299/（Time^1.7/Solved 3BV）；中级为153.73/（Time^1.7/Solved 3BV）；高级为435.001/（Time^1.7/Solved 3BV），越大越好。
+3BV 和 STNB 都是常用的术语，鼠标悬停在上面可以看到它们的解释。
+
+3. 引用：  
+> 这是单行引用
+
+> 这是块状引用  
+这是第二行  
+这是第三行
 
 - [x] dfgfdgd
 - [ ] rgthrthrth
@@ -148,12 +156,6 @@ $$
 
  # markdown-it rulezz!
  
- \$\{toc\}
- 
- ![Image](http://www.saolei.wang/Models/Images/Common/Logo.gif)
-
-
- 就回国参加
 
 `
 // console.log(js);
@@ -179,6 +181,7 @@ const other_list = ref<child_list[]>([])
 
 
 onMounted(() => {
+    // content.value = js;return
     proxy.$axios.get('/article/articles/'
     ).then(function (response) {
         const articles: string[] = response.data;
@@ -322,4 +325,31 @@ const show_content = (key: string, keyPath: string[]) => {
 
 
 </script>
-<style></style>
+<style lang="css" scoped>
+/* 引用块的样式 */
+:deep(blockquote) {
+    display: block;
+    padding-left: 16px;
+    padding-right: 16px;
+    margin: 0 0 24px;
+    border-left: 6px solid #79B6DF;
+    background-color: hsl(220, 21%, 95%);
+    overflow: auto;
+    word-break: normal;
+    border-radius: 5px;
+}
+a{
+    cursor: pointer;
+}
+:deep(a):hover{
+    color: #449cd6;
+}
+
+/* 代码块的样式 */
+:deep(code) {
+    border-radius: 5px;
+    border: #bbb 1px solid;
+    background-color: #efefef;
+    overflow: auto;
+}
+</style>

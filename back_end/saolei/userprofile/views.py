@@ -1,30 +1,19 @@
 import logging
 logger = logging.getLogger(__name__)
-# from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, JsonResponse
 from .forms import UserLoginForm, UserRegisterForm, UserRetrieveForm, EmailForm
 from captcha.models import CaptchaStore
-# from captcha.helpers import captcha_image_url
 import json
 import os
-# from django.views.generic import View
-# 引入验证登录的装饰器
-# from django.contrib.auth.decorators import login_required
-# from django.views.generic.edit import CreateView
 from .models import EmailVerifyRecord,UserProfile
-# from django.core.mail import send_mail
 from utils import send_email
-# from django.utils.decorators import method_decorator
-# from django.views.decorators.csrf import ensure_csrf_cookie
 from django.contrib.auth import get_user_model
 from msuser.models import UserMS
 from django_ratelimit.decorators import ratelimit
 from django.utils import timezone
 from django.conf import settings
 from config.flags import EMAIL_SKIP
-
-User = get_user_model()
 
 
 # Create your views here.
@@ -211,7 +200,7 @@ def set_staff(request):
             user.save()
             return HttpResponse(f"解除\"{user.realname}\"的管理员权限！")
         else:
-            return HttpResponse("失败！is_staff需要为\"True或\"False")
+            return HttpResponse("失败！is_staff需要为\"True\"或\"False\"（首字母大写）")
     else:
         return HttpResponse("别瞎玩")
 

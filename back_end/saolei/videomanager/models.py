@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.db import models
 from .fields import RestrictedFileField
-from django.core.signals import request_finished
-from django.dispatch import receiver
-from django.db.models.signals import post_save
 from userprofile.models import UserProfile
 from config.global_settings import *
-from decimal import Decimal
 
 
 class ExpandVideoModel(models.Model):
@@ -137,6 +133,16 @@ class VideoModel(models.Model):
     
     def __str__(self):
         return f'level: {self.level}, timems: {self.timems}, 3BV: {self.bv}'
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=['level'], name='level_idx'),
+            models.Index(fields=['mode'], name='mode_idx'),
+            models.Index(fields=['bv'], name='bv_idx'),
+            models.Index(fields=['bvs'], name='bvs_idx'),
+            models.Index(fields=['timems'], name='timems_idx'),
+            models.Index(fields=['state'], name='state_idx'),
+        ]
     # def delete(self): # 将删除操作换成更改标记
     #     self.is_delete = True
     #     self.save()
