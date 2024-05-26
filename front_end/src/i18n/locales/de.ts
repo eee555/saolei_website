@@ -27,7 +27,7 @@ export const dev: LocaleConfig = {
         confirm: 'Login'
     },
     menu: {
-        ranking: Ranking',
+        ranking: 'Ranking',
         video: 'Video',
         world: 'Welt',
         guide: 'Hilfe',
