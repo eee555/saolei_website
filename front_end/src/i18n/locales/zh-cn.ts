@@ -4,6 +4,17 @@ export const zhCn: LocaleConfig = {
     local: 'zh-cn',
     name: '简体中文',
     common: {
+        level: {
+            b: '初级',
+            i: '中级',
+            e: '高级',
+        },
+        mode: {
+            standard: '标准',
+            noFlag: '盲扫',
+            noGuess: '无猜',
+            recursive: '递归'
+        },
         time: '用时'
     },
     forgetPassword: {
@@ -50,6 +61,12 @@ export const zhCn: LocaleConfig = {
         confirmChange: '确认',
         cancelChange: '取消',
         designator: '我的标识：',
+        records: {
+            title: '个人纪录',
+            modeRecord: '模式纪录'
+        },
+        videos: '全部录像',
+        upload: '上传录像'
     },
     register: {
         title: '用户注册',

@@ -4,6 +4,17 @@ export const dev: LocaleConfig = {
     local: 'dev',
     name: 'name',
     common: {
+        level: {
+            b: 'common.level.b',
+            i: 'common.level.i',
+            e: 'common.level.e',
+        },
+        mode: {
+            standard: 'common.mode.standard',
+            noFlag: 'common.mode.noFlag',
+            noGuess: 'common.mode.noGuess',
+            recursive: 'common.mode.recursive'
+        },
         time: 'common.time'
     },
     forgetPassword: {
@@ -49,7 +60,13 @@ export const dev: LocaleConfig = {
         change: 'profile.change',
         confirmChange: 'profile.confirmChange',
         cancelChange: 'profile.cancelChange',
-        designator: 'profile.designator'
+        designator: 'profile.designator',
+        records: {
+            title: 'profile.records.title',
+            modeRecord: 'profile.records.modeRecord'
+        },
+        videos: 'profile.videos',
+        upload: 'profile.upload'
     },
     register: {
         title: 'register.title',

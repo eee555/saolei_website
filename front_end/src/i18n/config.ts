@@ -10,6 +10,17 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
     // 嵌套配置示例 TODO 删除嵌套配置示例
     name: string,
     common: {
+        level: {
+            b: string,
+            i: string,
+            e: string,
+        },
+        mode: {
+            standard: string,
+            noFlag: string,
+            noGuess: string,
+            recursive: string
+        }
         time: string
     },
     forgetPassword: {
@@ -55,7 +66,13 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
         change: string,
         confirmChange: string,
         cancelChange: string,
-        designator: string
+        designator: string,
+        records: {
+            title: string,
+            modeRecord: string
+        }
+        videos: string,
+        upload: string
     },
     register: {
         title: string,

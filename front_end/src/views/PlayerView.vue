@@ -73,7 +73,7 @@
 
             <el-main>
                 <el-tabs v-model="activeName" style="max-height: 1024px; overflow: auto;">
-                    <el-tab-pane label="个人纪录" name="first" :lazy="true">
+                    <el-tab-pane :label="$t('profile.records.title')" name="first" :lazy="true">
                         <PlayerRecordView></PlayerRecordView>
                     </el-tab-pane>
                     <el-tab-pane label="全部录像" name="second" :lazy="true">

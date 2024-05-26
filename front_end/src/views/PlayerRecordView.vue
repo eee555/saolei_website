@@ -61,6 +61,9 @@ import { ms_to_s } from "@/utils"
 import { useUserStore } from '../store'
 const store = useUserStore()
 
+import { useI18n } from 'vue-i18n';
+const t = useI18n();
+
 const loading = ref(true)
 
 //编辑前的
@@ -76,10 +79,10 @@ const username = ref("");
 
 // 个人纪录表格
 const records = ref<Record[][]>([]);
-const table_title = ["标准", "盲扫", "无猜", "递归"];
+const table_title = [t.t('common.mode.standard'), t.t('common.mode.noFlag'), t.t('common.mode.noGuess'), t.t('common.mode.recursive')];
 
 const indexMethod = (index: number) => {
-    return ["", "初级", "中级", "高级"][index + 1]
+    return ["", t.t('common.level.b'), t.t('common.level.i'), t.t('common.level.e')][index + 1]
 }
 
 onMounted(() => {
