@@ -1,6 +1,6 @@
-import { LocaleConfig } from '@/i18n/config'
+//import { LocaleConfig } from '@/i18n/config'
 
-export const dev: LocaleConfig = {
+export const dev = {
     local: 'dev',
     name: 'name',
     common: {
@@ -80,8 +80,5 @@ export const dev: LocaleConfig = {
         agreeTo: 'register.agreeTo',
         termsAndConditions: 'register.termsAndConditions',
         confirm: 'register.confirm'
-    },
-    example: {
-        placeholder: 'example.placeholder: {0}',
     },
 }

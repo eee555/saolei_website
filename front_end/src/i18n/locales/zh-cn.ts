@@ -1,6 +1,6 @@
-import { LocaleConfig } from '@/i18n/config'
+//import { LocaleConfig } from '@/i18n/config'
 
-export const zhCn: LocaleConfig = {
+export const zhCn = {
     local: 'zh-cn',
     name: '简体中文',
     common: {
@@ -80,8 +80,5 @@ export const zhCn: LocaleConfig = {
         agreeTo: '已阅读并同意',
         termsAndConditions: '元扫雷网用户协议',
         confirm: '注册'
-    },
-    example: {
-        placeholder: '占位符: {0}',
     },
 }

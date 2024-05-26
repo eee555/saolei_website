@@ -1,12 +1,9 @@
 
 import { LocaleConfig } from '@/i18n/config'
 
-export const dev: LocaleConfig = {
-    local: 'dev',
+export const de = {
+    local: 'de',
     name: 'name',
-    common: {
-        time: 'common.time'
-    },
     forgetPassword: {
         title: 'Titel',
         email: 'E-Mail',
@@ -44,13 +41,8 @@ export const dev: LocaleConfig = {
     profile: {
         changeAvatar: 'Profilbild ändern',
         realname: 'Name',
-        realnameInput: 'profile.realnameInput',
-        signature: 'profile.signature',
-        signatureInput: 'profile.signatureInput',
-        change: 'profile.change',
         confirmChange: 'Änderungen bestätigen',
         cancelChange: 'abbrechen',
-        designator: 'profile.designator'
     },
     register: {
         title: 'Titel',
@@ -64,8 +56,5 @@ export const dev: LocaleConfig = {
         agreeTo: 'Zustimmen',
         termsAndConditions: 'Nutzungsbedingungen',
         confirm: 'bestätigen'
-    },
-    example: {
-        placeholder: 'example.placeholder: {0}',
     },
 }
