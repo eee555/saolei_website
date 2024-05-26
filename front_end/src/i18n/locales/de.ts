@@ -33,7 +33,7 @@ export const dev: LocaleConfig = {
         guide: 'Hilfe',
         score: 'Ergebnisse',
         profile: 'Profil',
-        welcome: `Willkommen{'{'}0{'}'}`,
+        welcome: `Willkommen{0}`,
         login: 'Login',
         logout: 'Abmeldem',
         register: 'Registrieren',
