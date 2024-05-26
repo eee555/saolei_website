@@ -2,7 +2,7 @@
     <el-card class="box-card" body-style="padding-top:0px;padding-left:20px;padding-right:12px;">
         <el-skeleton animated style="margin-top: 20px;" v-show="loading" :rows="8" />
         <div v-for="(d, idx) in records">
-            <h4 style="margin-bottom: 0px;margin-top: 20px;">{{ table_title[idx] }}模式记录：</h4>
+            <h4 style="margin-bottom: 0px;margin-top: 20px;">{{ $t(table_title[idx]) }}{{ $t('profile.records.modeRecord') }}</h4>
             <el-table :data="d" style="width: 100%" :header-cell-style="{ 'text-align': 'center' }">
                 <el-table-column type="index" :index="indexMethod" width="100" align="center" />
 
@@ -79,7 +79,7 @@ const username = ref("");
 
 // 个人纪录表格
 const records = ref<Record[][]>([]);
-const table_title = [t.t('common.mode.standard'), t.t('common.mode.noFlag'), t.t('common.mode.noGuess'), t.t('common.mode.recursive')];
+const table_title = ['common.mode.standard', 'common.mode.noFlag', 'common.mode.noGuess', 'common.mode.recursive'];
 
 const indexMethod = (index: number) => {
     return ["", t.t('common.level.b'), t.t('common.level.i'), t.t('common.level.e')][index + 1]

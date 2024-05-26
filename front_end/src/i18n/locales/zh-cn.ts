@@ -63,7 +63,7 @@ export const zhCn: LocaleConfig = {
         designator: '我的标识：',
         records: {
             title: '个人纪录',
-            modeRecord: '模式纪录'
+            modeRecord: '模式纪录：'
         },
         videos: '全部录像',
         upload: '上传录像'

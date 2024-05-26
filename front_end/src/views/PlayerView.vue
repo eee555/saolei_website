@@ -351,7 +351,6 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
 .edit_button_ok {
     font-size: 14px;
     margin-top: 12px;
-    width: 48px;
     height: 31px;
     border: 1px solid #d0d7de;
     border-radius: 6px;
@@ -368,7 +367,6 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
 .edit_button_cancel {
     font-size: 14px;
     margin-top: 12px;
-    width: 48px;
     height: 31px;
     border: 1px solid #d0d7de;
     border-radius: 6px;
