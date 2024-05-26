@@ -9,4 +9,6 @@ module.exports = {
     syncWebAssembly: true,
     topLevelAwait: true,
   },
+
+  
 };

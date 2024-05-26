@@ -12,12 +12,12 @@
                     </template>
                     <template v-for="(item, idx) in notice_list">
                         <el-menu-item v-if="item.name[0] == '['" :index="`1-${idx + 1}`">
-                            {{ item.files[0].match(/(?<=\]).*/)![0].replace(/\.md$/, '') }} </el-menu-item>
+                            {{ item.files[0].match("(?<=\]).*")![0].replace(/\.md$/, '') }} </el-menu-item>
                                 <el-sub-menu v-else :index="`1-${idx + 1}`">
                                     <template #title>{{ item.name }}</template>
                                     <template v-for="(i, idy) in item.files">
                                         <el-menu-item :index="`1-${idx + 1}-${idy + 1}`">
-                                            {{ i.match(/(?<=\]).*/)![0].replace(/\.md$/, '') }} </el-menu-item>
+                                            {{ i.match("(?<=\]).*")![0].replace(/\.md$/, '') }} </el-menu-item>
                                     </template>
                                 </el-sub-menu>
                     </template>
@@ -31,12 +31,12 @@
                     </template>
                     <template v-for="(item, idx) in guide_list">
                         <el-menu-item v-if="item.name[0] == '['" :index="`2-${idx + 1}`">
-                            {{ item.files[0].match(/(?<=\]).*/)![0].replace(/\.md$/, '') }} </el-menu-item>
+                            {{ item.files[0].match("(?<=\]).*")![0].replace(/\.md$/, '') }} </el-menu-item>
                                 <el-sub-menu v-else :index="`2-${idx + 1}`">
                                     <template #title>{{ item.name }}</template>
                                     <template v-for="(i, idy) in item.files">
                                         <el-menu-item :index="`2-${idx + 1}-${idy + 1}`">
-                                            {{ i.match(/(?<=\]).*/)![0].replace(/\.md$/, '') }} </el-menu-item>
+                                            {{ i.match("(?<=\]).*")![0].replace(/\.md$/, '') }} </el-menu-item>
                                     </template>
                                 </el-sub-menu>
                     </template>
@@ -50,12 +50,12 @@
                     </template>
                     <template v-for="(item, idx) in tech_list">
                         <el-menu-item v-if="item.name[0] == '['" :index="`3-${idx + 1}`">
-                            {{ item.files[0].match(/(?<=\]).*/)![0].replace(/\.md$/, '') }} </el-menu-item>
+                            {{ item.files[0].match("(?<=\]).*")![0].replace(/\.md$/, '') }} </el-menu-item>
                                 <el-sub-menu v-else :index="`3-${idx + 1}`">
                                     <template #title>{{ item.name }}</template>
                                     <template v-for="(i, idy) in item.files">
                                         <el-menu-item :index="`3-${idx + 1}-${idy + 1}`">
-                                            {{ i.match(/(?<=\]).*/)![0].replace(/\.md$/, '') }} </el-menu-item>
+                                            {{ i.match("(?<=\]).*")![0].replace(/\.md$/, '') }} </el-menu-item>
                                     </template>
                                 </el-sub-menu>
                     </template>
@@ -69,12 +69,12 @@
                     </template>
                     <template v-for="(item, idx) in other_list">
                         <el-menu-item v-if="item.name[0] == '['" :index="`4-${idx + 1}`">
-                            {{ item.files[0].match(/(?<=\]).*/)![0].replace(/\.md$/, '') }} </el-menu-item>
+                            {{ item.files[0].match("(?<=\]).*")![0].replace(/\.md$/, '') }} </el-menu-item>
                                 <el-sub-menu v-else :index="`4-${idx + 1}`">
                                     <template #title>{{ item.name }}</template>
                                     <template v-for="(i, idy) in item.files">
                                         <el-menu-item :index="`4-${idx + 1}-${idy + 1}`">
-                                            {{ i.match(/(?<=\]).*/)![0].replace(/\.md$/, '') }} </el-menu-item>
+                                            {{ i.match("(?<=\]).*")![0].replace(/\.md$/, '') }} </el-menu-item>
                                     </template>
                                 </el-sub-menu>
                     </template>
@@ -97,6 +97,9 @@ const { proxy } = useCurrentInstance();
 
 // https://mdit-plugins.github.io/zh/
 import MarkdownIt from 'markdown-it';
+import type { RuleInline } from "markdown-it/lib/parser_inline.mjs";
+import type { RuleBlock } from "markdown-it/lib/parser_block.mjs";
+
 // 缩写悬停弹气泡
 import { abbr } from "@mdit/plugin-abbr";
 // 对齐方式
@@ -108,13 +111,146 @@ import mathjax3 from "markdown-it-mathjax3";
 // 图片懒加载
 import { imgLazyload } from "@mdit/plugin-img-lazyload";
 
+import { cells } from "@/utils/common/cellSVGData";
+
 const markdown = new MarkdownIt({
     html: true, // 允许HTML语法
     typographer: true, // 启用Typographer插件，可以更好地处理中文字符和标点符号
     linkify: true // 自动将文本中的URL转换为链接
 }).use(abbr).use(align).use(markdownItHighlight).use(mathjax3).use(imgLazyload);
 
+
+
+
+// 匹配
+// [[[
+//     0000
+//     1111
+// ]]]
+// 之类的块状摆局面
+const parse_ms_board: RuleBlock = (state, startLine: number, endLine: number, silent: boolean) => {
+    // 如果silent为true，则只检查而不进行实际替换  
+    if (silent) return false;
+    // 获取文本块的开始和结束位置
+    let token, pos, max;
+    let start = state.bMarks[startLine] + state.tShift[startLine];
+    let end = state.eMarks[startLine];
+    pos = start;
+    max = state.eMarks[endLine];
+
+    // 检查第一行是否以"[[["开始
+    if (state.src.slice(start, start + 3) !== "[[[") return false;
+    pos += 3;
+    while(!/[0123456789+*ax!]/.test(state.src.charAt(pos))){
+        pos++;
+    }
+    // 初始化一个token来存储处理后的内容
+    state.push('parse_board_open', 'div', 1);
+    token = state.push('parse_board_open', 'board', 1);
+    while (true) {
+        if (pos > max) {
+            return false;
+        }
+        if (state.src.slice(pos, pos + 3) == "]]]") {
+            break;
+        }
+        let tag_key = state.src.charAt(pos);
+        state.push(
+            'cell_token',
+            tag_key,
+            0
+        );
+        pos++;
+    }
+    
+    // 添加段落结束token  
+    state.push('parse_board_close', 'board', -1);
+    state.push('parse_board_close', 'div', -1);
+
+    // 跳过已处理的行，这些内容会被隐藏
+    let k = 1;
+    while(state.eMarks[startLine + k] < pos + 4){
+        k++;
+    }
+    state.line = startLine + k;
+    
+    return true;
+
+}
+markdown.block.ruler.before("code", "parse_board", parse_ms_board);
+
+
+// 匹配[[0]]之类的行内摆雷
+const parse_ms_cell: RuleInline = (state, silent) => {
+    const max = state.posMax;
+    const start = state.pos;
+    if (
+        state.src.charAt(start) !== "[" ||
+        state.src.charAt(start + 1) !== "[" ||
+        state.src.charAt(start + 3) !== "]" ||
+        state.src.charAt(start + 4) !== "]" ||
+        silent ||
+        start + 4 > max
+    )
+        return false;
+    const tag_key = state.src.charAt(start + 2);
+    if (!(tag_key in cells)) {
+        return false;
+    }
+    state.push(
+        'cell_token',
+        tag_key,
+        0
+    );
+    state.pos += 5;
+    return true;
+};
+markdown.inline.ruler.push("parse_ms_cell", parse_ms_cell);
+markdown.renderer.rules['cell_token'] = function (tokens, idx, options, env, renderer) {
+    let tag = tokens[idx].tag;
+    if (tag == "\n"){
+        return "<br>";
+    }else if(/[0123456789+*ax!]/.test(tag)){
+        return cells[tokens[idx].tag];
+    } else{
+        return "";
+    }
+};
+
+
 const js = `
+[[0]][[1]][[2]][[3]][[4]][[5]][[6]][[7]][[8]][[*]][[+]][[!]][[a]][[x]]  
+
+
+[[[
+a111aaa111aa
+a111aaa111aa
+a111aaa111aa
+a111aaa111aa
+a111aaa111aa
+a111aaa111aa
+]]]
+
+- 居中的摆雷
+::: center
+[[[
+    a111aa
+    aa2560  
+    a!!!xa  
+]]]
+:::
+
+
+    import numpy as np
+    print(666)
+
+\`\`\`
+print(666)
+\`\`\`
+
+H\~2\~O
+
+
 2. 气泡：  
 
 *[3BV]: Bechtel's Board Benchmark Value，可进一步简称BV。3BV指仅使用左键解开当前局面，所需要的理论最少左击次数。
@@ -181,7 +317,7 @@ const other_list = ref<child_list[]>([])
 
 
 onMounted(() => {
-    // content.value = js;return
+    // content.value = js; return
     proxy.$axios.get('/article/articles/'
     ).then(function (response) {
         const articles: string[] = response.data;
@@ -338,10 +474,12 @@ const show_content = (key: string, keyPath: string[]) => {
     word-break: normal;
     border-radius: 5px;
 }
-a{
+
+a {
     cursor: pointer;
 }
-:deep(a):hover{
+
+:deep(a):hover {
     color: #449cd6;
 }
 
@@ -352,4 +490,69 @@ a{
     background-color: #efefef;
     overflow: auto;
 }
+
+:deep(table) {
+    width: 100%;
+    border-collapse: collapse;
+    /* 合并相邻边框 */
+    border-top: 2px solid #cbcbcb;
+    /* 顶部边框 */
+    border-bottom: 2px solid #cbcbcb;
+    /* 底部边框 */
+}
+
+/* 表头样式 */
+:deep(thead) {
+    background-color: #f5f5f5;
+    /* 浅灰色背景 */
+}
+
+:deep(th, td) {
+    padding: 8px;
+    /* 单元格内边距 */
+    text-align: center;
+    /* 文本左对齐 */
+    border-bottom: 1px solid #cbcbcb;
+    /* 底部边框 */
+}
+
+:deep(td) {
+    text-align: center;
+    /* 文本左对齐 */
+    padding: 5px;
+}
+
+/* 第一个表头单元格样式（项目列） */
+:deep(th:first-child) {
+    font-weight: bold;
+    /* 加粗 */
+    width: 30%;
+    /* 宽度为 30% */
+}
+
+/* 表格行悬停效果 */
+:deep(tr:hover) {
+    background-color: #f5f5f5;
+    /* 鼠标悬停时背景色 */
+}
+
+/* 雷的缩放倍数，原来是160像素 */
+:deep(.ms_cell) {
+    zoom: 0.16;
+    padding: 0;
+}
+
+:deep(board) {
+    
+}
+
+:deep(board br) {
+    vertical-align: middle;
+}
+:deep(board svg) {
+    vertical-align: middle;
+}
+
+       
+
 </style>

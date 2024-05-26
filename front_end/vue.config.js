@@ -27,7 +27,6 @@ module.exports = {
                 args[0].title = "元扫雷网";
                 return args
             })
-    }
-
-
+    },
+    
 }
