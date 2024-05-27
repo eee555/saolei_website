@@ -21,7 +21,14 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
             noGuess: string,
             recursive: string
         }
-        time: string
+        prop: {
+            action: string,
+            designator: string,
+            fileName: string,
+            level: string,
+            status: string,
+            time: string,
+        }
     },
     forgetPassword: {
         title: string,
@@ -72,7 +79,25 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
             modeRecord: string
         }
         videos: string,
-        upload: string
+        upload: {
+            title: string,
+            dragOrClick: string,
+            uploadAll: string,
+            cancelAll: string,
+            constraintNote: string,
+            error: {
+                collision: string,
+                custom: string,
+                designator: string,
+                fail: string,
+                fileext: string,
+                filename: string,
+                filesize: string,
+                pass: string,
+                process: string,
+                upload: string,
+            }
+        }
     },
     register: {
         title: string,
@@ -87,8 +112,4 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
         termsAndConditions: string,
         confirm: string
     },
-    example: {
-        // 占位符配置示例 TODO 删除占位符配置示例
-        placeholder: string
-    }
 }

@@ -4,19 +4,17 @@
         :show-file-list="false" style="background-color: white;" accept=".avf,.evf">
 
         <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-        <div class="el-upload__text" style="font-size: 18px;">
-            将录像拉到此处或 <em>点击此处选择</em>
+        <div class="el-upload__text" style="font-size: 18px;" v-html="$t('profile.upload.dragOrClick')">
         </div>
 
         <template #tip>
 
             <div class="el-upload__tip text-red" style="background-color: white;text-align: center;">
                 <el-button @click="submitUpload()" size="large" type="primary" v-show="video_msgs.length > 0"
-                    style="display: block;margin: 16px auto;font-size: 18px;width: 220px;">一键上传（{{ video_msgs.length
-                    }}个）</el-button>
+                    style="display: block;margin: 16px auto;font-size: 18px;width: 220px;">{{ $t('profile.upload.uploadAll', [video_msgs.length]) }}</el-button>
                 <el-button @click="cancel_all()" size="small" type="info" v-show="video_msgs.length > 0"
-                    style="display: block;margin: 16px auto;width: 120px;" plain>全部清空</el-button>
-                <span style="font-size: 14px;">*单个文件大小不能超过5M，文件数量不能超过99</span>
+                    style="display: block;margin: 16px auto;width: 120px;" plain>{{ $t('profile.upload.cancelAll') }}</el-button>
+                <span style="font-size: 14px;">{{ $t('profile.upload.constraintNote') }}</span>
             </div>
         </template>
     </el-upload>
@@ -24,24 +22,28 @@
         <el-table-column type="expand">
             <template #default="props">
                 <el-descriptions>
-                    <el-descriptions-item label="文件名">{{ props.row.filename }}</el-descriptions-item>
-                    <el-descriptions-item v-if="props.row.videostat != null" label="标识">{{
+                    <el-descriptions-item :label="$t('common.prop.fileName')">{{ props.row.filename }}</el-descriptions-item>
+                    <el-descriptions-item v-if="props.row.videostat != null" :label="$t('common.prop.designator')">{{
                         props.row.videostat.designator }}</el-descriptions-item>
                     <el-descriptions-item v-if="props.row.videostat != null" v-for="key in extfields" :label="key">{{
                         props.row.extstat[key] }}</el-descriptions-item>
                 </el-descriptions>
             </template>
         </el-table-column>
-        <el-table-column prop="videostat.level" label="级别" sortable></el-table-column>
-        <el-table-column prop="videostat.timems" label="时间" sortable></el-table-column>
-        <el-table-column prop="videostat.bbbv" label="3BV" sortable></el-table-column>
-        <el-table-column prop="videostat.bvs" label="3BV/s" sortable></el-table-column>
-        <el-table-column label="状态" sortable sort-by="status">
+        <el-table-column prop="videostat.level" :label="$t('common.prop.level')" sortable>
             <template #default="props">
-                {{ errmsg[props.row.status] }}
+                {{ $t('common.level.' + props.row.videostat.level) }}
             </template>
         </el-table-column>
-        <el-table-column label="操作">
+        <el-table-column prop="videostat.timems" :label="$t('common.prop.time')" sortable></el-table-column>
+        <el-table-column prop="videostat.bbbv" label="3BV" sortable></el-table-column>
+        <el-table-column prop="videostat.bvs" label="3BV/s" sortable></el-table-column>
+        <el-table-column :label="$t('common.prop.status')" sortable sort-by="status">
+            <template #default="props">
+                {{ $t('profile.upload.error.' + props.row.status) }}
+            </template>
+        </el-table-column>
+        <el-table-column :label="$t('common.prop.action')">
             <template #default="props">
                 <nobr>
                     <el-button :disabled="props.row.status != 'designator' && props.row.status != 'pass'"
@@ -72,33 +74,14 @@ import { useUserStore } from '../store'
 const store = useUserStore()
 import { LoginStatus } from "@/utils/common/structInterface"
 
+import { useI18n } from 'vue-i18n';
+const t = useI18n();
+
 const data = defineProps({
     designators: { type: Array, default: () => [] }
 })
 
 const extfields = ['left', 'right', 'double', 'cl', 'left_s', 'right_s', 'double_s', 'cl_s', 'path', 'flag', 'flag_s', 'stnb', 'rqp', 'ioe', 'thrp', 'corr', 'ce', 'ce_s', 'op', 'isl', 'cell0', 'cell1', 'cell2', 'cell3', 'cell4', 'cell5', 'cell6', 'cell7', 'cell8']
-
-// 状态列相关
-const errmsg = {
-    pass: "通过",
-    custom: "暂不支持自定义级别",
-    fileext: "无法识别的文件类型",
-    filename: "文件名超过了100字节",
-    filesize: "文件大小超过了5MB",
-    designator: "标识不匹配",
-    collision: "录像已存在",
-    error: "不通过",
-    process: "上传中",
-    upload: "上传失败",
-}
-// 筛选相关。还没做好
-// const msgfilter = []
-// for (var key in errmsg) {
-//     msgfilter.push({text: errmsg[key], value: key});
-// }
-// const filterMsg = (value: string, row: GeneralFile) => {
-//     return row.status == value;
-// }
 
 interface ExtendedVideoStat {
     left: number,

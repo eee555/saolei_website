@@ -79,7 +79,7 @@
                     <el-tab-pane label="全部录像" name="second" :lazy="true">
                         <PlayerVideosView></PlayerVideosView>
                     </el-tab-pane>
-                    <el-tab-pane v-if="store.user.id + '' == userid" label="上传录像" name="third" :lazy="true">
+                    <el-tab-pane v-if="store.user.id + '' == userid" :label="$t('profile.upload.title')" name="third" :lazy="true">
                         <UploadView :designators="designators"></UploadView>
                     </el-tab-pane>
                 </el-tabs>

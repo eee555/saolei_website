@@ -1,6 +1,6 @@
-//import { LocaleConfig } from '@/i18n/config'
+import { LocaleConfig } from '@/i18n/config'
 
-export const dev = {
+export const dev: LocaleConfig = {
     local: 'dev',
     name: 'name',
     common: {
@@ -15,7 +15,14 @@ export const dev = {
             noGuess: 'common.mode.noGuess',
             recursive: 'common.mode.recursive'
         },
-        time: 'common.time'
+        prop: {
+            action: 'common.prop.action',
+            designator: 'common.prop.designator',
+            fileName: 'common.prop.fileName',
+            level: 'common.prop.level',
+            status: 'common.prop.status',
+            time: 'common.prop.time',
+        }
     },
     forgetPassword: {
         title: 'forgetPassword.title',
@@ -66,7 +73,25 @@ export const dev = {
             modeRecord: 'profile.records.modeRecord'
         },
         videos: 'profile.videos',
-        upload: 'profile.upload'
+        upload: {
+            title: 'profile.upload.title',
+            dragOrClick: 'profile.upload.dragOrClick',
+            uploadAll: 'profile.upload.uploadAll',
+            cancelAll: 'profile.upload.cancelAll',
+            constraintNote: 'profile.upload.constraintNote',
+            error: {
+                collision: 'profile.upload.error.collision',
+                custom: 'profile.upload.error.custom',
+                designator: 'profile.upload.error.designator',
+                fail: 'profile.upload.error.fail',
+                fileext: 'profile.upload.error.fileext',
+                filename: 'profile.upload.error.filename',
+                filesize: 'profile.upload.error.filesize',
+                pass: 'profile.upload.error.pass',
+                process: 'profile.upload.error.process',
+                upload: 'profile.upload.error.upload',
+            }
+        }
     },
     register: {
         title: 'register.title',

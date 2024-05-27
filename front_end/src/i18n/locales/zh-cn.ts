@@ -1,6 +1,6 @@
-//import { LocaleConfig } from '@/i18n/config'
+import { LocaleConfig } from '@/i18n/config'
 
-export const zhCn = {
+export const zhCn: LocaleConfig = {
     local: 'zh-cn',
     name: '简体中文',
     common: {
@@ -15,7 +15,14 @@ export const zhCn = {
             noGuess: '无猜',
             recursive: '递归'
         },
-        time: '用时'
+        prop: {
+            action: '操作',
+            designator: '标识',
+            fileName: '文件名',
+            level: '级别',
+            status: '状态',
+            time: '用时',
+        }
     },
     forgetPassword: {
         title: '找回密码',
@@ -66,7 +73,25 @@ export const zhCn = {
             modeRecord: '模式纪录：'
         },
         videos: '全部录像',
-        upload: '上传录像'
+        upload: {
+            title: '上传录像',
+            dragOrClick: `将录像拉到此处或 <em>点击此处选择</em>`,
+            uploadAll: '一键上传（{0}个）',
+            cancelAll: '全部清空',
+            constraintNote: '*单个文件大小不能超过5M，文件数量不能超过99',
+            error: {
+                collision: '录像已存在',
+                custom: '暂不支持自定义级别',
+                designator: '标识不匹配',
+                fail: '不通过',
+                fileext: '无法识别的文件类型',
+                filename: '文件名超过了100字节',
+                filesize: '文件大小超过了5MB',
+                pass: '通过',
+                process: '上传中',
+                upload: '上传失败',
+            }
+        }
     },
     register: {
         title: '用户注册',
