@@ -9,7 +9,7 @@
     </Teleport>
     <el-row class="mb-4" style="margin-bottom: 10px;">
         <el-button v-for="(tag, key) in level_tags" type="warning" :plain="!(level_tag_selected == key)" :size="'small'"
-            @click="level_tag_selected = key as string; request_videos();">{{ tag.name }}</el-button>
+            @click="level_tag_selected = key as string; request_videos();">{{ $t('common.level.' + tag.key) }}</el-button>
     </el-row>
 
     <el-row class="mb-4" style="margin-bottom: 10px;">
@@ -19,7 +19,7 @@
 
     <el-row class="mb-4" style="margin-bottom: 10px;">
         <el-button v-for="(value, key) in index_tags" type="primary" :plain="!value.selected" :size="'small'"
-            @click="index_select(key, value)">{{ value.name
+            @click="index_select(key, value)">{{ $t('common.prop.'+key)
             }}</el-button>
     </el-row>
 
@@ -34,7 +34,7 @@
             </el-table-column>
             <el-table-column v-for="key in selected_index()" 
                 :prop="index_tags[key].key" 
-                :label="index_tags[key].name"
+                :label="$t('common.prop.'+key)"
                 sortable="custom"
                 :sort-orders="index_tags[key].reverse ? (['descending', 'ascending']) : (['ascending', 'descending'])"
                 v-slot="scope">
@@ -66,6 +66,9 @@ const { proxy } = useCurrentInstance();
 import { utc_to_local_format } from "@/utils/system/tools";
 import { ms_to_s } from "@/utils";
 import { genFileId, ElMessage } from 'element-plus'
+
+import { useI18n } from 'vue-i18n';
+const t = useI18n();
 
 const preview_visible = ref(false);
 
@@ -99,7 +102,6 @@ interface Tags {
     [index: string]: NameKey;
 }
 interface NameKeyReverse {
-    name: string;
     key: string;
     reverse: boolean;
     to_fixed: number;
@@ -134,28 +136,28 @@ const mode_tags: Tags = {
 const index_tags: TagsReverse = reactive({
     "upload_time": { name: "上传时间", key: "upload_time", reverse: true, to_fixed: -1, selected: true },
     // "name": { name: "姓名", key: "player__realname", reverse: false, to_fixed: 0, selected: true},
-    "timems": { name: "成绩", key: "timems", reverse: false, to_fixed: 3, selected: true },
-    "bbbv": { name: "3BV", key: "bv", reverse: false, to_fixed: 0, selected: true },
-    "bbbv_s": { name: "3BV/s", key: "bvs", reverse: true, to_fixed: 3, selected: true },
-    "left_s": { name: "left/s", key: "video__left_s", reverse: true, to_fixed: 3, selected: false },
-    "right_s": { name: "right/s", key: "video__right_s", reverse: true, to_fixed: 3, selected: false },
-    "double_s": { name: "double/s", key: "video__double_s", reverse: true, to_fixed: 3, selected: false },
-    "cl_s": { name: "cl/s", key: "video__cl_s", reverse: true, to_fixed: 3, selected: false },
-    "path": { name: "path", key: "video__path", reverse: false, to_fixed: 2, selected: false },
-    "stnb": { name: "STNB", key: "video__stnb", reverse: true, to_fixed: 2, selected: true },
-    "ioe": { name: "IOE", key: "video__ioe", reverse: true, to_fixed: 3, selected: false },
-    "thrp": { name: "ThrP", key: "video__thrp", reverse: true, to_fixed: 3, selected: false },
-    "ce_s": { name: "ce/s", key: "video__ce_s", reverse: true, to_fixed: 3, selected: false },
-    "op": { name: "空", key: "video__op", reverse: false, to_fixed: 0, selected: false },
-    "is": { name: "岛", key: "video__isl", reverse: false, to_fixed: 0, selected: false },
-    "cell1": { name: "1", key: "video__cell1", reverse: false, to_fixed: 0, selected: false },
-    "cell2": { name: "2", key: "video__cell2", reverse: false, to_fixed: 0, selected: false },
-    "cell3": { name: "3", key: "video__cell3", reverse: false, to_fixed: 0, selected: false },
-    "cell4": { name: "4", key: "video__cell4", reverse: false, to_fixed: 0, selected: false },
-    "cell5": { name: "5", key: "video__cell5", reverse: false, to_fixed: 0, selected: false },
-    "cell6": { name: "6", key: "video__cell6", reverse: false, to_fixed: 0, selected: false },
-    "cell7": { name: "7", key: "video__cell7", reverse: false, to_fixed: 0, selected: false },
-    "cell8": { name: "8", key: "video__cell8", reverse: false, to_fixed: 0, selected: false }
+    "timems": { key: "timems", reverse: false, to_fixed: 3, selected: true },
+    "bbbv": { key: "bv", reverse: false, to_fixed: 0, selected: true },
+    "bbbv_s": { key: "bvs", reverse: true, to_fixed: 3, selected: true },
+    "left_s": { key: "video__left_s", reverse: true, to_fixed: 3, selected: false },
+    "right_s": { key: "video__right_s", reverse: true, to_fixed: 3, selected: false },
+    "double_s": { key: "video__double_s", reverse: true, to_fixed: 3, selected: false },
+    "cl_s": { key: "video__cl_s", reverse: true, to_fixed: 3, selected: false },
+    "path": { key: "video__path", reverse: false, to_fixed: 2, selected: false },
+    "stnb": { key: "video__stnb", reverse: true, to_fixed: 2, selected: true },
+    "ioe": { key: "video__ioe", reverse: true, to_fixed: 3, selected: false },
+    "thrp": { key: "video__thrp", reverse: true, to_fixed: 3, selected: false },
+    "ce_s": { key: "video__ce_s", reverse: true, to_fixed: 3, selected: false },
+    "op": { key: "video__op", reverse: false, to_fixed: 0, selected: false },
+    "is": { key: "video__isl", reverse: false, to_fixed: 0, selected: false },
+    "cell1": { key: "video__cell1", reverse: false, to_fixed: 0, selected: false },
+    "cell2": { key: "video__cell2", reverse: false, to_fixed: 0, selected: false },
+    "cell3": { key: "video__cell3", reverse: false, to_fixed: 0, selected: false },
+    "cell4": { key: "video__cell4", reverse: false, to_fixed: 0, selected: false },
+    "cell5": { key: "video__cell5", reverse: false, to_fixed: 0, selected: false },
+    "cell6": { key: "video__cell6", reverse: false, to_fixed: 0, selected: false },
+    "cell7": { key: "video__cell7", reverse: false, to_fixed: 0, selected: false },
+    "cell8": { key: "video__cell8", reverse: false, to_fixed: 0, selected: false }
 })
 
 const selected_index = () => {

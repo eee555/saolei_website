@@ -76,7 +76,7 @@
                     <el-tab-pane :label="$t('profile.records.title')" name="first" :lazy="true">
                         <PlayerRecordView></PlayerRecordView>
                     </el-tab-pane>
-                    <el-tab-pane label="全部录像" name="second" :lazy="true">
+                    <el-tab-pane :label="$t('profile.videos')" name="second" :lazy="true">
                         <PlayerVideosView></PlayerVideosView>
                     </el-tab-pane>
                     <el-tab-pane v-if="store.user.id + '' == userid" :label="$t('profile.upload.title')" name="third" :lazy="true">

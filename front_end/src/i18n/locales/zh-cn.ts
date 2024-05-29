@@ -1,6 +1,6 @@
 import { LocaleConfig } from '@/i18n/config'
 
-export const zhCn: LocaleConfig = {
+export const zhCn = {
     local: 'zh-cn',
     name: '简体中文',
     common: {
@@ -22,6 +22,10 @@ export const zhCn: LocaleConfig = {
             level: '级别',
             status: '状态',
             time: '用时',
+            timems: '用时',
+            upload_time: '上传时间',
+            is: '岛',
+            op: '空',
         }
     },
     forgetPassword: {
