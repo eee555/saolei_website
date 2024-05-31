@@ -19,13 +19,14 @@ export const zhCn = {
             action: '操作',
             designator: '标识',
             fileName: '文件名',
+            is: '岛',
             level: '级别',
+            op: '空',
+            realName: '姓名',
             status: '状态',
             time: '用时',
             timems: '用时',
             upload_time: '上传时间',
-            is: '岛',
-            op: '空',
         }
     },
     forgetPassword: {
