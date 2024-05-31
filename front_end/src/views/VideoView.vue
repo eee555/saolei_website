@@ -26,7 +26,7 @@
     <div style="width: 80%;font-size:20px;margin: auto;margin-top: 10px;">
         <el-table :data="videoList" @sort-change="handleSortChange" @row-click="preview" border table-layout="auto">
             <el-table-column type="index" :index="offsetIndex" fixed></el-table-column>
-            <el-table-column label="姓名" v-slot="scope" width="auto">
+            <el-table-column :label="$t('common.prop.realName')" v-slot="scope" width="auto">
                 <nobr><PlayerName class="name"
                     :user_id="scope.row.player__id"
                     :user_name="scope.row.player__realname">
@@ -134,7 +134,7 @@ const mode_tags: Tags = {
 
 // reverse: true从小到大
 const index_tags: TagsReverse = reactive({
-    "upload_time": { name: "上传时间", key: "upload_time", reverse: true, to_fixed: -1, selected: true },
+    "upload_time": { key: "upload_time", reverse: true, to_fixed: -1, selected: true },
     // "name": { name: "姓名", key: "player__realname", reverse: false, to_fixed: 0, selected: true},
     "timems": { key: "timems", reverse: false, to_fixed: 3, selected: true },
     "bbbv": { key: "bv", reverse: false, to_fixed: 0, selected: true },
