@@ -1,16 +1,18 @@
 import { createI18n } from 'vue-i18n'
-import { en } from '@/i18n/locales/en'
+import { dev } from '@/i18n/locales/dev'
 import { zhCn } from '@/i18n/locales/zh-cn'
-import { zhTw } from '@/i18n/locales/zh-tw'
+import { de } from '@/i18n/locales/de'
+import { en } from './locales/en'
 import { LocaleConfig } from '@/i18n/config'
 
 /**
  * 获取所有语言
  */
-function getMessages (): Record<string, LocaleConfig> {
-    const messages: Record<string, LocaleConfig> = {}
+function getMessages (): Record<string, any> {
+    const messages: Record<string, any> = {}
+    messages[dev.local] = dev
     messages[zhCn.local] = zhCn
-    messages[zhTw.local] = zhTw
+    messages[de.local] = de
     messages[en.local] = en
     return messages
 }
@@ -24,16 +26,14 @@ function getDefaultLocale () {
         if (/^zh(.?CN)?$/i.test(language)) {
             // 简体中文，包括 zh 和 zh-CN
             return zhCn.local
-        } else if (/^zh\b/i.test(language)) {
-            // 除简体中文外的所有中文默认使用繁体中文
-            return zhTw.local
-        } else if (/^en\b/i.test(language)) {
-            // 英语
+        } else if (language == de.local) {
+            return de.local
+        } else if (language == en.local) {
             return en.local
         }
     }
     // 默认使用简体中文
-    return zhCn.local
+    return dev.local
 }
 
 /**
@@ -41,7 +41,7 @@ function getDefaultLocale () {
  */
 export default createI18n({
     legacy: false,
-    fallbackLocale: zhCn.local,
+    fallbackLocale: dev.local,
     locale: getDefaultLocale(),
     messages: getMessages(),
 })
