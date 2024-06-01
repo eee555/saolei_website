@@ -17,4 +17,9 @@ export function ms_to_s(ms: number): string {
     return `${Math.floor(ms / 1000)}.${(ms % 1000 + "").padStart(3, '0')}`;
 }
 
-
+import { ComponentCustomProperties } from "vue";
+export function approve(proxy: ComponentCustomProperties & Record<string, any>, id: number) {
+    proxy.$axios.get('video/approve?ids=['+id+']').then(function (response) {
+        console.log(response.data)
+    }).catch()
+}
