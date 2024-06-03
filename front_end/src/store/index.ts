@@ -10,6 +10,7 @@ export const useUserStore = defineStore('user', {
         username: "",
         realname: "",
         is_banned: false,
+        is_staff: true,
         country: ""
       },   // 真正的用户
       // 访问谁的地盘不再具有记忆性。即点“我的地盘”，将永远是“我”的地盘

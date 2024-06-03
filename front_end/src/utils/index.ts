@@ -18,8 +18,28 @@ export function ms_to_s(ms: number): string {
 }
 
 import { ComponentCustomProperties } from "vue";
-export function approve(proxy: ComponentCustomProperties & Record<string, any>, id: number) {
-    proxy.$axios.get('video/approve?ids=['+id+']').then(function (response) {
-        console.log(response.data)
+export async function approve(proxy: ComponentCustomProperties & Record<string, any>, id: number) {
+    var status;
+    await proxy.$axios.get('video/approve?ids=[' + id + ']').then(function (response) {
+        const data = response.data;
+        if (data.length != 1) {
+            console.log(data)
+            throw new Error('Unexpected error')
+        }
+        status = data[0]
     }).catch()
+    return status
+}
+
+export async function freeze(proxy: ComponentCustomProperties & Record<string, any>, id: number) {
+    var status;
+    await proxy.$axios.get('video/freeze?ids=[' + id + ']').then(function (response) {
+        const data = response.data;
+        if (data.length != 1) {
+            console.log(data)
+            throw new Error('Unexpected error')
+        }
+        status = data[0]
+    }).catch()
+    return status
 }
