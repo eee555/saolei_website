@@ -17,7 +17,7 @@ Censorship：百度大脑
 :white_check_mark: Deploy for the first time  
 :white_check_mark: Rent a domain name  
 :white_check_mark: Registration  
-:black_square_button: Alpha testing  
+:white_check_mark: Alpha testing  
 :black_square_button: Beta testing  
 :black_square_button: Release  
 
@@ -27,13 +27,16 @@ Censorship：百度大脑
 This project can be developed on Windows and deployed on Linux. First, clone the project locally, say `E://saolei_website`.
 
 Back end:
-1. `cd saolei_website\back_end\saolei`
+1. `cd back_end\saolei`
 1. `pip install -r requirements.txt`
-1. Install MySQL. According to configurations in `saolei_website\back_end\saolei\saolei\setting.py`, create a database named `saolei`, with username `root` and password `123456`
-1. Create folder `saolei_website\back_end\saolei\logs`
+1. Install MySQL. According to configurations in `back_end\saolei\saolei\setting.py`, create a database named `saolei`, with username `root` and password `123456`
+1. Create folder `back_end\saolei\logs`
+1. Create folder `back_end\saolei\assets` for storage
+1. To test articles, `git clone https://gitee.com/ee55/saolei_website_article.git` in `back_end\saolei\assets` and rename the folder `saolei_website_article` to `article`.
 1. `python manage.py makemigrations`
 1. `python manage.py migrate`
 1. `python manage.py runserver`
+1. To test monitoring features, run `python manage.py runapschedulermonitor` in a separate thread.
 
 Front end:
 1. Download the latest flop player from [https://github.com/eee555/flop-player/releases/download/v1.1/dist.zip](https://github.com/eee555/flop-player/releases/download/v1.1/dist.zip) and unzip it to `saolei_website\front_end\public\flop` (rename the folder name `dist` to `flop`), such that `saolei_website\front_end\public\flop\index.html` is accessible.
@@ -41,8 +44,7 @@ Front end:
 1. `npm install`
 1. `npm run serve`
 
-Special debugging parameters: 
-1. `EMAIL_SKIP` from `saolei_website\backend\saolei\saolei\settings.py` can skip email captcha at user registration.
+Special debugging parameters are located in `backend\saolei\config\flags.py`
 
 ## Sponsor
 TODO
