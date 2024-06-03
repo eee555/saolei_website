@@ -7,7 +7,7 @@
                 src="/flop/index.html" ref="video_iframe"></iframe>
         </el-dialog>
     </Teleport>
-    <el-table :data="videos_trans" :show-header="false" @row-click="preview"
+    <el-table :data="videos_trans" :show-header="false" @row-click="preview" table-layout="auto"
         style="width: 100%; color: black;font-size: 16px;">
         <el-table-column prop="time" min-width="200" />
         <el-table-column v-if="need_player_name" min-width="80">
@@ -20,6 +20,13 @@
         <el-table-column prop="mode" min-width="80" />
         <el-table-column prop="rtime" min-width="90" />
         <el-table-column prop="bv" min-width="60" />
+        <el-table-column style="white-space: nowrap;">
+            <template #default="scope">
+                <el-button v-if="review_mode" type="success" circle :icon="Check" @click="handleApprove(scope.row)" />
+                <el-button v-if="store.user.is_staff" type="danger" circle :icon="Close"
+                    @click="handleFreeze(scope.row)" />
+            </template>
+        </el-table-column>
         <!-- <el-table-column min-width="200">
             <template #default="scope">
                 <PreviewDownload :id="scope.row.key"></PreviewDownload>
@@ -37,7 +44,13 @@ import PlayerName from '@/components/PlayerName.vue';
 const preview_visible = ref(false);
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import { getRowIdentity } from 'element-plus/es/components/table/src/util';
-import { ms_to_s } from '@/utils';
+import { Check, Close } from '@element-plus/icons-vue';
+import { ElNotification } from 'element-plus';
+
+import { useUserStore } from '@/store';
+const store = useUserStore()
+
+import { ms_to_s, approve, freeze } from '@/utils';
 const { proxy } = useCurrentInstance();
 
 const data = defineProps({
@@ -54,13 +67,19 @@ const data = defineProps({
     need_player_name: {
         type: Boolean,
         default: true
+    },
+    review_mode: {
+        type: Boolean,
+        default: false
     }
 })
+
+const emit = defineEmits(['update'])
 
 const videos_trans = computed(() => {
     data.videos.forEach((v: any) => {
         // console.log(v);
-        
+
         v.time = utc_to_local_format(v.time);
         if (v.level == "b") {
             v.level = "初级";
@@ -69,7 +88,7 @@ const videos_trans = computed(() => {
         } else if (v.level == "e") {
             v.level = "高级";
         }
-        v.rtime =  ms_to_s(v.timems)+ "s";
+        v.rtime = ms_to_s(v.timems) + "s";
         if (v.mode == "00") {
             v.mode = "标准";
         } else if (v.mode == "01") {
@@ -161,6 +180,53 @@ const playVideo = function (uri: string) {
     });
 }
 
+const handleApprove = async function (row: any) {
+    let status = await approve(proxy, row.key);
+    if (status == 'True') {
+        ElNotification({
+            title: '审核成功',
+            message: '录像已通过审核',
+            type: 'success',
+        })
+    } else if (status == 'False') {
+        ElNotification({
+            title: '审核失败',
+            message: '录像已通过审核',
+            type: 'warning',
+        })
+    } else {
+        ElNotification({
+            title: '审核失败',
+            message: '发生未知错误: status=' + status,
+            type: 'error',
+        })
+    }
+    emit('update')
+}
+
+const handleFreeze = async function (row: any) {
+    let status = await freeze(proxy, row.key);
+    if (status == 'True') {
+        ElNotification({
+            title: '审核成功',
+            message: '录像已通过审核',
+            type: 'success',
+        })
+    } else if (status == 'False') {
+        ElNotification({
+            title: '审核失败',
+            message: '录像已通过审核',
+            type: 'warning',
+        })
+    } else {
+        ElNotification({
+            title: '审核失败',
+            message: '发生未知错误: status=' + status,
+            type: 'error',
+        })
+    }
+    emit('update')
+}
 
 </script>
 <style></style>

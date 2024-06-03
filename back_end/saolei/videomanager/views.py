@@ -179,6 +179,7 @@ def video_query(request):
 
         values = video_all_fields
 
+        # 排序
         if data["r"] == "true":
             ob = "-" + data["o"]
         else:
@@ -362,7 +363,7 @@ def approve(request):
                     update_video_num(video_i)
                 cache.hdel("review_queue", _id)
         # logger.info(f'{request.user.id} approve {json.dumps(ids)} response {json.dumps(res)}')
-        return JsonResponse(json.dumps(res), safe=False)
+        return JsonResponse(res, safe=False)
     else:
         return HttpResponse("别瞎玩")
 

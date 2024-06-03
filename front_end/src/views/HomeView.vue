@@ -20,7 +20,7 @@
                         <VideoList :videos="newest_queue" :reverse="true"></VideoList>
                     </el-tab-pane>
                     <el-tab-pane label="审核队列" class="bottom_tabs" :lazy="true">
-                        <VideoList :videos="review_queue"></VideoList>
+                        <VideoList :videos="review_queue" :review_mode="store.user.is_staff" @update="update_review_queue" v-loading="review_queue_updating"></VideoList>
                     </el-tab-pane>
                 </el-tabs>
             </el-main>
@@ -45,22 +45,17 @@ import { to_fixed_n } from "@/utils";
 const { proxy } = useCurrentInstance();
 import { utc_to_local_format } from "@/utils/system/tools";
 
+import { useUserStore } from '../store'
+const store = useUserStore()
+
 const review_queue = ref<any[]>([]);
 const newest_queue = ref<any[]>([]);
 const news_queue = ref<any[]>([]);
 
+const review_queue_updating = ref(false);
+
 onMounted(() => {
-    proxy.$axios.get('/video/review_queue/',
-        {
-            params: {}
-        }
-    ).then(function (response) {
-        for (let key in response.data) {
-            response.data[key] = JSON.parse(response.data[key] as string);
-            response.data[key]["key"] = Number.parseInt(key);
-            review_queue.value.push(response.data[key]);
-        }
-    })
+    update_review_queue()
     proxy.$axios.get('/video/newest_queue/',
         {
             params: {}
@@ -121,6 +116,23 @@ const trans_index = (i: string) => {
     } else {
         return "自定义"
     }
+}
+
+const update_review_queue = async () => {
+    review_queue_updating.value = true
+    await proxy.$axios.get('/video/review_queue/',
+        {
+            params: {}
+        }
+    ).then(function (response) {
+        review_queue.value.splice(0,review_queue.value.length)
+        for (let key in response.data) {
+            response.data[key] = JSON.parse(response.data[key] as string);
+            response.data[key]["key"] = Number.parseInt(key);
+            review_queue.value.push(response.data[key]);
+        }
+    })
+    review_queue_updating.value = false
 }
 
 </script>

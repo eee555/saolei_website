@@ -32,7 +32,7 @@ def user_login(request):
             # login(request, request.user)
             response['msg'] = response['msg'] = {
                 "id": request.user.id, "username": request.user.username,
-                  "realname": request.user.realname, "is_banned": request.user.is_banned}
+                  "realname": request.user.realname, "is_banned": request.user.is_banned, "is_staff": request.user.is_staff}
             return JsonResponse(response)
         # if user_id:=request.session.get("_auth_user_id"):
         #     if user:=User.objects.get(id=user_id):
@@ -59,7 +59,7 @@ def user_login(request):
                     login(request, user)
                     response['msg'] = {
                         "id": user.id, "username": user.username, 
-                        "realname": user.realname, "is_banned": user.is_banned}
+                        "realname": user.realname, "is_banned": user.is_banned, "is_staff": user.is_staff}
                     if 'user_id' in data and data['user_id'] != str(user.id):
                         # 检测到小号
                         logger.info(f'{data["user_id"][:50]} is diffrent from {str(user.id)}.')

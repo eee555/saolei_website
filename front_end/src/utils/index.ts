@@ -17,4 +17,29 @@ export function ms_to_s(ms: number): string {
     return `${Math.floor(ms / 1000)}.${(ms % 1000 + "").padStart(3, '0')}`;
 }
 
+import { ComponentCustomProperties } from "vue";
+export async function approve(proxy: ComponentCustomProperties & Record<string, any>, id: number) {
+    var status;
+    await proxy.$axios.get('video/approve?ids=[' + id + ']').then(function (response) {
+        const data = response.data;
+        if (data.length != 1) {
+            console.log(data)
+            throw new Error('Unexpected error')
+        }
+        status = data[0]
+    }).catch()
+    return status
+}
 
+export async function freeze(proxy: ComponentCustomProperties & Record<string, any>, id: number) {
+    var status;
+    await proxy.$axios.get('video/freeze?ids=[' + id + ']').then(function (response) {
+        const data = response.data;
+        if (data.length != 1) {
+            console.log(data)
+            throw new Error('Unexpected error')
+        }
+        status = data[0]
+    }).catch()
+    return status
+}
