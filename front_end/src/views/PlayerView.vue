@@ -98,7 +98,7 @@ import PlayerRecordView from '@/views/PlayerRecordView.vue';
 import PlayerVideosView from '@/views/PlayerVideosView.vue';
 import UploadView from './UploadView.vue';
 // const AsyncPlayerVideosView = defineAsyncComponent(() => import('@/views/PlayerVideosView.vue'));
-
+import "../../node_modules/flag-icon-css/css/flag-icons.min.css";
 
 const { proxy } = useCurrentInstance();
 import { genFileId, ElMessage } from 'element-plus'

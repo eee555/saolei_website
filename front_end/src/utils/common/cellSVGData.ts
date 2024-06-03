@@ -106,7 +106,7 @@ const falsemine = `<svg class="ms_cell" width="160" height="160" xmlns="http://w
 	<polygon points="155,30 135,30 15,150 35,150" fill="#ff0000" />
 </svg>`;
 
-// 摆雷语法，原则上致敬扫雷网，兼顾已有的svg资源、修改部分不合理的设计
+// 摆雷语法，原则上致敬tikz-minesweeper，兼顾已有的svg资源、修改部分不合理的设计
 export const cells: { [key: string]: string } = {
     "1": cell1,
     "2": cell2,
@@ -117,11 +117,11 @@ export const cells: { [key: string]: string } = {
     "7": cell7,
     "8": cell8,
     "0": celldown,
-    "!": cellflag, // 旗
-    "*": cellmine, // 白雷
-    "a": cellup,
-    "+": blast, // 红雷
-    "x": falsemine, // 叉雷
+    "f": cellflag, // 旗
+    "m": cellmine, // 白雷
+    "a": cellup, //未打开
+    "n": blast, // 红雷
+    "e": falsemine, // 叉雷
 }
 
 

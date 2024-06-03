@@ -116,7 +116,6 @@ import { cells } from "@/utils/common/cellSVGData";
 const markdown = new MarkdownIt({
     html: true, // 允许HTML语法
     typographer: true, // 启用Typographer插件，可以更好地处理中文字符和标点符号
-    linkify: true // 自动将文本中的URL转换为链接
 }).use(abbr).use(align).use(markdownItHighlight).use(mathjax3).use(imgLazyload);
 
 
@@ -134,14 +133,16 @@ const parse_ms_board: RuleBlock = (state, startLine: number, endLine: number, si
     // 获取文本块的开始和结束位置
     let token, pos, max;
     let start = state.bMarks[startLine] + state.tShift[startLine];
-    let end = state.eMarks[startLine];
     pos = start;
     max = state.eMarks[endLine];
+    // let end = endLine == startLine ? max : state.bMarks[startLine+1] + state.tShift[startLine+1]-1;
+    let end = state.eMarks[startLine];
 
     // 检查第一行是否以"[[["开始
     if (state.src.slice(start, start + 3) !== "[[[") return false;
-    pos += 3;
-    while(!/[0123456789+*ax!]/.test(state.src.charAt(pos))){
+    pos +=3;
+
+    while(!/[0123456789aefmn]/.test(state.src.charAt(pos))){
         pos++;
     }
     // 初始化一个token来存储处理后的内容
@@ -210,7 +211,7 @@ markdown.renderer.rules['cell_token'] = function (tokens, idx, options, env, ren
     let tag = tokens[idx].tag;
     if (tag == "\n"){
         return "<br>";
-    }else if(/[0123456789+*ax!]/.test(tag)){
+    }else if(/[0123456789aefmn]/.test(tag)){
         return cells[tokens[idx].tag];
     } else{
         return "";
@@ -542,8 +543,8 @@ a {
     padding: 0;
 }
 
-:deep(board) {
-    
+:deep(a) {
+    color: blue;
 }
 
 :deep(board br) {

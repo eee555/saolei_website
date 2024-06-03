@@ -398,7 +398,7 @@ def freeze(request):
                 res.append("Null")
             else:
                 video_i = video_i[0]
-                if video_i[0].state == "b":
+                if video_i.state == "b":
                     res.append("False")
                 else:
                     # 冻结成功
