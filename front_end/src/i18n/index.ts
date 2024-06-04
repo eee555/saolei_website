@@ -42,6 +42,8 @@ function getDefaultLocale () {
 export default createI18n({
     legacy: false,
     fallbackLocale: dev.local,
+    fallbackWarn: false,
+    missingWarn: false,
     locale: getDefaultLocale(),
     messages: getMessages(),
 })
