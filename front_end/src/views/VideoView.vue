@@ -9,7 +9,8 @@
     </Teleport>
     <el-row class="mb-4" style="margin-bottom: 10px;">
         <el-button v-for="(tag, key) in level_tags" type="warning" :plain="!(level_tag_selected == key)" :size="'small'"
-            @click="level_tag_selected = key as string; request_videos();">{{ $t('common.level.' + tag.key) }}</el-button>
+            @click="level_tag_selected = key as string; request_videos();">{{ $t('common.level.' + tag.key)
+            }}</el-button>
     </el-row>
 
     <el-row class="mb-4" style="margin-bottom: 10px;">
@@ -19,39 +20,31 @@
 
     <el-row class="mb-4" style="margin-bottom: 10px;">
         <el-button v-for="(value, key) in index_tags" type="primary" :plain="!value.selected" :size="'small'"
-            @click="index_select(key, value)">{{ $t('common.prop.'+key)
+            @click="index_select(key, value)">{{ $t('common.prop.' + key)
             }}</el-button>
     </el-row>
 
-    <div style="width: 80%;font-size:20px;margin: auto;margin-top: 10px;">
+    <div style="font-size:20px;margin: auto;margin-top: 10px;">
         <el-table :data="videoList" @sort-change="handleSortChange" @row-click="preview" border table-layout="auto">
             <el-table-column type="index" :index="offsetIndex" fixed></el-table-column>
             <el-table-column :label="$t('common.prop.realName')" v-slot="scope" width="auto">
-                <nobr><PlayerName class="name"
-                    :user_id="scope.row.player__id"
-                    :user_name="scope.row.player__realname">
-                </PlayerName></nobr>
+                <span class="nobr">
+                    <PlayerName class="name" :user_id="scope.row.player__id" :user_name="scope.row.player__realname" />
+                </span>
             </el-table-column>
-            <el-table-column v-for="key in selected_index()" 
-                :prop="index_tags[key].key" 
-                :label="$t('common.prop.'+key)"
-                sortable="custom"
+            <el-table-column v-for="key in selected_index()" :prop="index_tags[key].key"
+                :label="$t('common.prop.' + key)" sortable="custom"
                 :sort-orders="index_tags[key].reverse ? (['descending', 'ascending']) : (['ascending', 'descending'])"
                 v-slot="scope">
-                <nobr>{{ columnFormatter(key, scope.row[index_tags[key].key]) }}</nobr>
+                <span class="nobr">{{ columnFormatter(key, scope.row[index_tags[key].key]) }}</span>
             </el-table-column>
         </el-table>
     </div>
 
     <div style="margin-top: 16px;">
-        <el-pagination
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-            :current-page="state.CurrentPage"
-            :page-sizes="[10, 20, 50, 100]"
-            :page-size="state.PageSize"
-            layout="total, sizes, prev, pager, next, jumper"
-            :total="state.VideoCount">
+        <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
+            :current-page="state.CurrentPage" :page-sizes="[10, 20, 50, 100]" :page-size="state.PageSize"
+            layout="total, sizes, prev, pager, next, jumper" :total="state.VideoCount">
         </el-pagination>
     </div>
 </template>
@@ -213,7 +206,6 @@ const mod_style = () => {
 
 const prevColumn = ref<any>(null); //上一个排序列
 const handleSortChange = (sort: any) => {
-    console.log(sort);
     for (var key of Object.keys(index_tags)) { // 找到对应的key。很丑陋，but it works
         if (index_tags[key].key == sort.prop) {
             if (key != index_tag_selected.value) { // 改变了排序列，清除之前列的排序
@@ -396,5 +388,10 @@ const playVideo = function (uri: string) {
 .inline-div {
     display: inline-block;
     margin: 0;
+}
+
+.nobr {
+    white-space: nowrap;
+    hyphens: none;
 }
 </style>
