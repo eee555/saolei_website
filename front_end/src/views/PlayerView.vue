@@ -200,7 +200,7 @@ const post_update_realname = (r: string) => {
         params,
     ).then(function (response) {
         if (response.data.status == 100) {
-            ElMessage.success({ message: `姓名修改成功！剩余修改次数${response.data.msg.n}`, offset: 68 });
+            ElMessage.success({ message: t.t('profile.msg.realnameChange', [response.data.msg.n]), offset: 68 });
 
             realname.value = realname_edit.value;
             store.user.realname = realname.value;
@@ -217,7 +217,7 @@ const post_update_realname = (r: string) => {
             ElMessage.error({ message: response.data.msg, offset: 68 });
         }
     }).catch(() => {
-        ElMessage.error({ message: "无法连接到服务器！", offset: 68 });
+        ElMessage.error({ message: t.t('common.msg.connectionFail'), offset: 68 });
     })
 }
 
@@ -229,14 +229,14 @@ const post_update_avatar = (a: File) => {
         params,
     ).then(function (response) {
         if (response.data.status == 100) {
-            ElMessage.success({ message: `头像修改成功！剩余修改次数${response.data.msg.n}`, offset: 68 });
+            ElMessage.success({ message: t.t('profile.msg.avatarChange', [response.data.msg.n]), offset: 68 });
             imageUrl.value = URL.createObjectURL(a);
         } else if (response.data.status >= 101) {
             ElMessage.error({ message: response.data.msg, offset: 68 });
             imageUrl.value = imageUrlOld;
         }
     }).catch(() => {
-        ElMessage.error({ message: "无法连接到服务器！", offset: 68 });
+        ElMessage.error({ message: t.t('common.msg.connectionFail'), offset: 68 });
     })
 }
 
@@ -250,14 +250,14 @@ const post_update_signature = (s: string) => {
         // console.log(response.data);
 
         if (response.data.status == 100) {
-            ElMessage.success({ message: `个性签名修改成功！剩余修改次数${response.data.msg.n}`, offset: 68 });
+            ElMessage.success({ message: t.t('profile.msg.signatureChange', [response.data.msg.n]), offset: 68 });
             signature.value = signature_edit.value;
         } else if (response.data.status >= 101) {
             ElMessage.error({ message: response.data.msg, offset: 68 });
             signature_edit.value = signature.value;
         }
     }).catch(() => {
-        ElMessage.error({ message: "无法连接到服务器！", offset: 68 });
+        ElMessage.error({ message: t.t('common.msg.connectionFail'), offset: 68 });
     })
 }
 
@@ -306,10 +306,10 @@ const handleExceed: UploadProps['onExceed'] = (files) => {
 
 const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
     if (rawFile.type !== 'image/jpeg' && rawFile.type !== 'image/png') {
-        ElMessage.error({ message: '头像必须为JPG或PNG格式!', offset: 68 });
+        ElMessage.error({ message: t.t('profile.msg.avatarFormat'), offset: 68 });
         return false
     } else if (rawFile.size / 1024 / 1024 / 50 > 1.0) {
-        ElMessage.error({ message: '头像大小不能超过50MB!', offset: 68 });
+        ElMessage.error({ message: t.t('profile.msg.avatarFilesize'), offset: 68 });
         return false
     }
     return new Promise((resolve, reject) => {

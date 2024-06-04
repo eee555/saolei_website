@@ -27,6 +27,9 @@ export const zhCn = {
             time: '用时',
             timems: '用时',
             upload_time: '上传时间',
+        },
+        msg: {
+            connectionFail: '无法连接到服务器！'
         }
     },
     forgetPassword: {
@@ -73,6 +76,13 @@ export const zhCn = {
         confirmChange: '确认',
         cancelChange: '取消',
         designator: '我的标识：',
+        msg: {
+            avatarChange: '头像修改成功！剩余{0}次',
+            avatarFormat: '头像必须为JPG或PNG格式！',
+            avatarFilesize: '头像大小不能超过50MB！',
+            realnameChange: '姓名修改成功！剩余{0}次',
+            signatureChange: '个性签名修改成功！剩余{0}次',
+        },
         records: {
             title: '个人纪录',
             modeRecord: '模式纪录：'
