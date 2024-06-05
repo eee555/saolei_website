@@ -53,48 +53,6 @@ onMounted(() => {
     })
 })
 
-const trans_level = (l: string) => {
-    if (l == "b") {
-        return "初级"
-    } else if (l == "i") {
-        return "中级"
-    } else if (l == "e") {
-        return "高级"
-    } else {
-        return "自定义"
-    }
-}
-
-const trans_mode = (m: string) => {
-    if (m == "std") {
-        return "标准"
-    } else if (m == "nf") {
-        return "盲扫"
-    } else if (m == "ng") {
-        return "无猜"
-    } else if (m == "dg") {
-        return "递归"
-    } else {
-        return "自定义"
-    }
-}
-
-const trans_index = (i: string) => {
-    if (i == "timems") {
-        return "时间"
-    } else if (i == "bvs") {
-        return "盲扫3BV/s"
-    } else if (i == "path") {
-        return "Path"
-    } else if (i == "stnb") {
-        return "STNB"
-    } else if (i == "ioe") {
-        return "IOE"
-    } else {
-        return "自定义"
-    }
-}
-
 </script>
 
 <style scope lang='less'>
