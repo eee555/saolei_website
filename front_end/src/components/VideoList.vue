@@ -9,17 +9,17 @@
     </Teleport>
     <el-table :data="videos_trans" :show-header="false" @row-click="preview" table-layout="auto"
         style="width: 100%; color: black;font-size: 16px;">
-        <el-table-column prop="time" min-width="200" />
+        <el-table-column prop="time" min-width="200" :formatter="simple_formatter(utc_to_local_format)"/>
         <el-table-column v-if="need_player_name" min-width="80">
             <template #default="player">
                 <PlayerName class="name" :user_id="+player.row.player_id" :user_name="player.row.player"></PlayerName>
             </template>
         </el-table-column>
         <el-table-column v-else prop="player" min-width="80" />
-        <el-table-column prop="level" min-width="80" />
-        <el-table-column prop="mode" min-width="80" />
-        <el-table-column prop="rtime" min-width="90" />
-        <el-table-column prop="bv" min-width="60" />
+        <el-table-column prop="level" :formatter="simple_formatter((l: string) => $t('common.level.'+l))"/>
+        <el-table-column prop="mode"/>
+        <el-table-column prop="timems" :formatter="simple_formatter((timems: number) => (ms_to_s(timems) + 's'))"/>
+        <el-table-column prop="bv" />
         <el-table-column style="white-space: nowrap;">
             <template #default="scope">
                 <el-button v-if="review_mode" type="success" circle :icon="Check" @click="handleApprove(scope.row)" />
@@ -50,7 +50,7 @@ import { ElNotification } from 'element-plus';
 import { useUserStore } from '@/store';
 const store = useUserStore()
 
-import { ms_to_s, approve, freeze } from '@/utils';
+import { ms_to_s, approve, freeze, simple_formatter } from '@/utils';
 const { proxy } = useCurrentInstance();
 
 const data = defineProps({
@@ -79,16 +79,6 @@ const emit = defineEmits(['update'])
 const videos_trans = computed(() => {
     data.videos.forEach((v: any) => {
         // console.log(v);
-
-        v.time = utc_to_local_format(v.time);
-        if (v.level == "b") {
-            v.level = "初级";
-        } else if (v.level == "i") {
-            v.level = "中级";
-        } else if (v.level == "e") {
-            v.level = "高级";
-        }
-        v.rtime = ms_to_s(v.timems) + "s";
         if (v.mode == "00") {
             v.mode = "标准";
         } else if (v.mode == "01") {

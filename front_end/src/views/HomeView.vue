@@ -6,8 +6,8 @@
                     <el-tab-pane label="雷界快讯" style="max-height: 300px; overflow: auto;">
                         <div v-for="news in news_queue">
                             {{ utc_to_local_format(news.time) }}<PlayerName class="name" :user_id="+news.player_id" :user_name="news.player">
-                            </PlayerName>将{{ trans_mode(news.mode) }}模式{{ trans_level(news.level)
-                            }}{{ trans_index(news.index) }}记录刷新为
+                            </PlayerName>将{{ $t('common.mode.'+news.mode) }}模式{{ $t('common.level.'+news.level)
+                            }}{{ $t('common.prop.'+news.index) }}记录刷新为
                             <PreviewNumber :id="news.video_id" :text="to_fixed_n(news.value, 3)"></PreviewNumber>
                             {{ news.delta == "新" ? "" : news.delta > 0 ? "↑" : "↓" }}{{ news.delta }}
 
@@ -48,6 +48,9 @@ import { utc_to_local_format } from "@/utils/system/tools";
 import { useUserStore } from '../store'
 const store = useUserStore()
 
+import { useI18n } from 'vue-i18n';
+const t = useI18n();
+
 const review_queue = ref<any[]>([]);
 const newest_queue = ref<any[]>([]);
 const news_queue = ref<any[]>([]);
@@ -75,48 +78,6 @@ onMounted(() => {
         news_queue.value = response.data.map((v: string) => { return JSON.parse(v) })
     })
 })
-
-const trans_level = (l: string) => {
-    if (l == "b") {
-        return "初级"
-    } else if (l == "i") {
-        return "中级"
-    } else if (l == "e") {
-        return "高级"
-    } else {
-        return "自定义"
-    }
-}
-
-const trans_mode = (m: string) => {
-    if (m == "std") {
-        return "标准"
-    } else if (m == "nf") {
-        return "盲扫"
-    } else if (m == "ng") {
-        return "无猜"
-    } else if (m == "dg") {
-        return "递归"
-    } else {
-        return "自定义"
-    }
-}
-
-const trans_index = (i: string) => {
-    if (i == "timems") {
-        return "时间"
-    } else if (i == "bvs") {
-        return "盲扫3BV/s"
-    } else if (i == "path") {
-        return "Path"
-    } else if (i == "stnb") {
-        return "STNB"
-    } else if (i == "ioe") {
-        return "IOE"
-    } else {
-        return "自定义"
-    }
-}
 
 const update_review_queue = async () => {
     review_queue_updating.value = true
