@@ -29,18 +29,32 @@ export const zhCn = {
             upload_time: '上传时间',
         },
         msg: {
-            connectionFail: '无法连接到服务器！'
+            agreeTAC: '请同意用户协议！',
+            confirmPasswordFail: '两次输入的密码不一致！',
+            connectionFail: '无法连接到服务器！',
+            emailCodeSent: '获取验证码成功，请至邮箱查看！',
+            emptyEmail: '请输入邮箱！',
+            emptyEmailCode: '请输入6位邮箱验证码！',
+            emptyPassword: '请输入密码！',
+            emptyUsername: '请输入用户名！',
+            invalidEmail: '邮箱格式不正确！',
+            invalidEmailCode: '邮箱验证码格式不正确！请点击邮箱验证码并打开邮箱查收。',
+            invalidPassword: '密码格式不正确！长度应该为6-20位。',
+            invalidUsername: '用户名格式不正确！长度不超过20位。',
+            logoutFail: '退出失败！',
+            logoutSuccess: '退出成功！',
         }
     },
     forgetPassword: {
         title: '找回密码',
-        email: '请输入邮箱',
         captcha: '验证码',
-        getEmailCode: '获取邮箱验证码',
-        emailCode: '请输入邮箱验证码',
-        password: '请输入新的6-20位密码',
+        confirm: '确认修改密码',
         confirmPassword: '请输入确认密码',
-        confirm: '确认修改密码'
+        email: '请输入邮箱',
+        emailCode: '请输入邮箱验证码',
+        getEmailCode: '获取邮箱验证码',
+        password: '请输入新的6-20位密码',
+        success: '修改密码成功！',
     },
     login: {
         title: '欢迎登录',
@@ -119,6 +133,6 @@ export const zhCn = {
         confirmPassword: '请输入确认密码',
         agreeTo: '已阅读并同意',
         termsAndConditions: '元扫雷网用户协议',
-        confirm: '注册'
+        confirm: '注册',
     },
 }
