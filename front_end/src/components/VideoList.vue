@@ -198,19 +198,19 @@ const handleFreeze = async function (row: any) {
     let status = await freeze(proxy, row.key);
     if (status == 'True') {
         ElNotification({
-            title: '审核成功',
-            message: '录像已通过审核',
+            title: '冻结成功',
+            message: '录像已冻结',
             type: 'success',
         })
     } else if (status == 'False') {
         ElNotification({
-            title: '审核失败',
-            message: '录像已通过审核',
+            title: '冻结失败',
+            message: '录像已冻结',
             type: 'warning',
         })
     } else {
         ElNotification({
-            title: '审核失败',
+            title: '冻结失败',
             message: '发生未知错误: status=' + status,
             type: 'error',
         })
