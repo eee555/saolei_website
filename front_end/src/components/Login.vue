@@ -129,7 +129,7 @@
                     minlength="6" maxlength="20"></el-input>
             </el-form-item>
             <el-form-item>
-                <div style="color: red;">{{ hint_message }}</div>
+                <div style="color: red;">{{ $t(hint_message) }}</div>
             </el-form-item>
             <el-form-item>
                 <el-button
@@ -302,15 +302,15 @@ const login = async () => {
 
 const retrieve = () => {
     if (!user_email_reg.value) {
-        hint_message.value = "请输入邮箱！";
+        hint_message.value = "common.msg.emptyEmail";
         return
     }
     if (!user_password_reg.value) {
-        hint_message.value = "请输入密码！";
+        hint_message.value = "common.msg.emptyPassword";
         return
     }
     if (user_password_reg.value != user_password2_reg.value) {
-        hint_message.value = "两次输入的密码不一致！";
+        hint_message.value = "common.msg.confirmPasswordFail";
         return
     }
     var user_params = new URLSearchParams()
@@ -332,7 +332,7 @@ const retrieve = () => {
             store.player = response.data.msg;
             emit('login'); // 向父组件发送消息
             retrieve_visible.value = false;
-            ElMessage.success({ message: '修改密码成功！', offset: 68 });
+            ElMessage.success({ message: t.t('common.msg.forgetPassword.success'), offset: 68 });
         } else if (response.data.status >= 101) {
             hint_message.value = response.data.msg;
         }
@@ -341,48 +341,48 @@ const retrieve = () => {
 
 const register = () => {
     if (!user_name_reg.value) {
-        hint_message.value = "请输入用户名！";
+        hint_message.value = "common.msg.emptyUsername";
         return
     }
     if (!user_email_reg.value) {
-        hint_message.value = "请输入邮箱！";
+        hint_message.value = "common.msg.emptyEmail";
         return
     }
     if (user_email_valid_code_reg.value.length != 6) {
-        hint_message.value = "请输入6位邮箱验证码！";
+        hint_message.value = "common.msg.emptyEmailCode";
         return
     }
     if (!user_password_reg.value) {
-        hint_message.value = "请输入密码！";
+        hint_message.value = "common.msg.emptyPassword";
         return
     }
     if (user_password_reg.value != user_password2_reg.value) {
-        hint_message.value = "两次输入的密码不一致！";
+        hint_message.value = "common.msg.confirmPasswordFail";
         return
     }
     if (!checkout_user_agreement.value) {
-        hint_message.value = "请同意用户协议！";
+        hint_message.value = "common.msg.agreeTAC";
         return
     }
     const email_form = document.getElementById('register_email_form') as HTMLInputElement;
     if (!email_form.checkValidity()) {
-        hint_message.value = "邮箱格式不正确！";
+        hint_message.value = "common.msg.invalidEmail";
         return
     }
     const user_name_form = document.getElementById('register_user_name_form') as HTMLInputElement;
     if (!user_name_form.checkValidity()) {
         // 不可能进来
-        hint_message.value = "用户名格式不正确！长度不超过20位。";
+        hint_message.value = "common.msg.invalidUsername";
         return
     }
     const email_valid_code_form = document.getElementById('register_email_valid_code_form') as HTMLInputElement;
     if (!email_valid_code_form.checkValidity()) {
-        hint_message.value = "邮箱验证码格式不正确！请点击邮箱验证码并打开邮箱查收。";
+        hint_message.value = "common.msg.invalidEmailCode";
         return
     }
     const user_password_form = document.getElementById('register_user_password_form') as HTMLInputElement;
     if (!user_password_form.checkValidity()) {
-        hint_message.value = "密码格式不正确！长度应该为6-20位。";
+        hint_message.value = "common.msg.invalidPassword";
         return
     }
     var user_params = new URLSearchParams()
@@ -440,12 +440,12 @@ const logout = async () => {
                 country: ""
             };
             emit('logout'); // 向父组件发送消息
-            ElMessage.success({ message: '退出成果！', offset: 68 });
+            ElMessage.success({ message: t.t('common.msg.logoutSuccess'), offset: 68 });
             register_visible.value = false;
             login_visible.value = false;
             retrieve_visible.value = false;
         } else if (response.data.status >= 101) {
-            ElMessage.error({ message: '退出失败！', offset: 68 });
+            ElMessage.error({ message: t.t('common.msg.logoutFail'), offset: 68 });
         }
     }).catch(function (error) {
         // console.log("eee:" + error);
@@ -455,7 +455,7 @@ const logout = async () => {
 
 const get_email_captcha = (type: string) => {
     if (!user_email_reg.value) {
-        hint_message.value = "请输入邮箱！";
+        hint_message.value = "common.msg.emptyEmail";
         return
     }
     var params = new URLSearchParams()
@@ -475,7 +475,7 @@ const get_email_captcha = (type: string) => {
         if (response.data.status == 100) {
             hint_message.value = ""
             email_key = response.data.hashkey;
-            ElMessage.success({ message: '获取验证码成功，请至邮箱查看！', offset: 68 });
+            ElMessage.success({ message: t.t('common.msg.emailCodeSent'), offset: 68 });
         } else if (response.data.status > 100) {
             hint_message.value = "*" + response.data.msg;
             refValidCode2.value!.refreshPic();
