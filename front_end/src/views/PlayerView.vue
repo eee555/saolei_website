@@ -105,7 +105,8 @@ import { genFileId, ElMessage } from 'element-plus'
 import type { UploadInstance, UploadProps, UploadRawFile, UploadFile, UploadFiles, UploadRequestOptions } from 'element-plus'
 const upload = ref<UploadInstance>()
 import { Plus } from '@element-plus/icons-vue'
-const imageUrl = ref(require('@/assets/person.png'))
+import imageUrlDefault from '@/assets/person.png'
+const imageUrl = ref(imageUrlDefault)
 const avatar_changed = ref(false);
 import { Record, RecordBIE } from "@/utils/common/structInterface";
 import { compress, compressAccurately } from 'image-conversion';

@@ -80,8 +80,8 @@ import { useI18n } from 'vue-i18n';
 const t = useI18n();
 
 const { proxy } = useCurrentInstance();
-const logo_1 = ref(require('@/assets/logo.png'))
-const logo_2 = ref(require('@/assets/logo2.png'))
+import logo_1 from '@/assets/logo.png';
+import logo_2 from '@/assets/logo2.png';
 
 import { useRouter } from 'vue-router'
 const router = useRouter()

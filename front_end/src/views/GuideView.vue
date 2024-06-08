@@ -425,7 +425,7 @@ const show_article = (name: string) => {
             // 举例：'任意文字![说明](url.jpg "标题")任意文字' 
             // -> '任意文字![说明](http://127.0.0.1/media/article/url.jpg "标题")任意文字'
             content.value = (response.data as string).replaceAll(/(?<=(\!\[[^(\])]*\]\())([^(\s|\))]*)/g,
-                process.env.VUE_APP_BASE_API + '/media/article/' + name + '/$2');
+                import.meta.env.VITE_BASE_API + '/media/article/' + name + '/$2');
         })
     }
 }

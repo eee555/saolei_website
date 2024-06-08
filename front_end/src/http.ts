@@ -2,7 +2,7 @@ import axios from 'axios'
 // import { AXIOS_BASE_URL } from './config';
 
 axios.defaults.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-axios.defaults.baseURL = process.env.VUE_APP_BASE_API;
+axios.defaults.baseURL = import.meta.env.VITE_BASE_API;
 const $axios = axios.create({
     timeout: 2000,
     withCredentials: true   // 必须指定这个参数，否则axios才能携带参数

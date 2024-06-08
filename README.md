@@ -43,7 +43,7 @@
 1. 从[https://github.com/eee555/flop-player/releases/download/v1.1/dist.zip](https://github.com/eee555/flop-player/releases/download/v1.1/dist.zip)下载新版flop播放器，并解压到saolei_website\front_end\public\flop下（将文件夹的名称dist修改为flop），使得saolei_website\front_end\public\flop\index.html能够被找到
 1. cd saolei_website\front_end
 1. npm install
-1. npm run serve
+1. npm run dev
 
 特殊的调试参数：位于`backend\saolei\config\flags.py`
 
