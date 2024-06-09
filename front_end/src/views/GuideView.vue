@@ -414,18 +414,18 @@ onMounted(() => {
 // 按文章名显示文章
 const show_article = (name: string) => {
     if (name.slice(-3) == ".md") {
-        proxy.$axios.get('/media/article/' + name
+        proxy.$axios.get('/static/article/' + name
         ).then(function (response) {
             content.value = response.data;
         })
     } else {
-        proxy.$axios.get('/media/article/' + name + "/a.md"
+        proxy.$axios.get('/static/article/' + name + "/a.md"
         ).then(function (response) {
             // 全局替换图片url
             // 举例：'任意文字![说明](url.jpg "标题")任意文字' 
-            // -> '任意文字![说明](http://127.0.0.1/media/article/url.jpg "标题")任意文字'
+            // -> '任意文字![说明](http://127.0.0.1/static/article/url.jpg "标题")任意文字'
             content.value = (response.data as string).replaceAll(/(?<=(\!\[[^(\])]*\]\())([^(\s|\))]*)/g,
-                import.meta.env.VITE_BASE_API + '/media/article/' + name + '/$2');
+                import.meta.env.VITE_BASE_API + '/static/article/' + name + '/$2');
         })
     }
 }

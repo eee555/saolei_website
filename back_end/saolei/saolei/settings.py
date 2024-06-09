@@ -159,6 +159,7 @@ STATIC_URL = "/static/"
 # STATIC_URL = "/"
 # 服务器上的位置，存放网页文件、播放器文件、文章
 STATIC_ROOT = '/root/saolei/static'
+
 MEDIA_URL = '/media/'
 # 服务器上的位置，存放录像、头像
 if DEBUG:
