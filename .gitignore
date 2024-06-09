@@ -169,3 +169,5 @@ front_end/public/flopold
 *.rar
 **/secrets.json
 front_end/src/assets/article
+front_end/package-lock.json
+front_end/yarn.lock
