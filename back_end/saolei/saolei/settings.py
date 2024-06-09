@@ -158,17 +158,18 @@ USE_TZ = True
 STATIC_URL = "/static/"
 # STATIC_URL = "/"
 # 服务器上的位置，存放网页文件、播放器文件、文章
-STATIC_ROOT = '/root/saolei/static'
+STATIC_ROOT = Path('/root/saolei/static')
 
 MEDIA_URL = '/media/'
-# 服务器上的位置，存放录像、头像
 if DEBUG:
+    # 本地存放录像、头像的位置
     # 本地调试时，录像和头像会放到saolei_website\back_end\saolei\assets下
     # 例如saolei_website\back_end\saolei\assets\videos\20200504\ms.avf
     # saolei_website\back_end\saolei\assets\avatar\20200504\pic.jpg
     MEDIA_ROOT = BASE_DIR / "assets"
 else:
-    MEDIA_ROOT = '/root/saolei/media'
+    # 服务器上存放录像、头像的位置
+    MEDIA_ROOT = Path('/root/saolei/media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
