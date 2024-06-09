@@ -6,6 +6,7 @@ export const dev = {
         prop: {
             bbbv: 'BV',
             bbbv_s: 'BVs',
+            bvs: 'BVs',
             cell0: '0',
             cell1: '1',
             cell2: '2',
