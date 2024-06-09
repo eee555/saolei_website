@@ -10,10 +10,10 @@ export const zhCn = {
             e: '高级',
         },
         mode: {
-            standard: '标准',
-            noFlag: '盲扫',
-            noGuess: '无猜',
-            recursive: '递归'
+            std: '标准',
+            nf: '盲扫',
+            ng: '无猜',
+            dg: '递归'
         },
         prop: {
             action: '操作',

@@ -79,7 +79,7 @@ const username = ref("");
 
 // 个人纪录表格
 const records = ref<Record[][]>([]);
-const table_title = ['common.mode.standard', 'common.mode.noFlag', 'common.mode.noGuess', 'common.mode.recursive'];
+const table_title = ['common.mode.std', 'common.mode.nf', 'common.mode.ng', 'common.mode.dg'];
 
 const indexMethod = (index: number) => {
     return ["", t.t('common.level.b'), t.t('common.level.i'), t.t('common.level.e')][index + 1]
