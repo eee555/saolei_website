@@ -81,7 +81,7 @@ export function errorLog(error: Error) {
   //   }
   // })
   // 打印到控制台
-  if (process.env.NODE_ENV === 'development') {
+  if (import.meta.env.NODE_ENV === 'development') {
     // Log.danger('>>>>>> Error >>>>>>')
     console.log(error)
   }

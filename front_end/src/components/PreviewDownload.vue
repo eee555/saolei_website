@@ -73,7 +73,7 @@ const preview = (event: MouseEvent, id: Number | undefined) => {
             }
         }
     ).then(function (response) {
-        let uri = process.env.VUE_APP_BASE_API + "/video/preview/?id=" + id;
+        let uri = import.meta.env.VITE_BASE_API + "/video/preview/?id=" + id;
         // console.log(uri);
         if (response.data.msg == "a") {
             uri += ".avf";
@@ -139,7 +139,7 @@ const download = (event: MouseEvent, id: Number | undefined) => {
     }
     const down = document.createElement('a');
     down.style.display = 'none';
-    down.href = process.env.VUE_APP_BASE_API + "/video/download/?id=" + id;
+    down.href = import.meta.env.VITE_BASE_API + "/video/download/?id=" + id;
     document.body.appendChild(down);
     down.click();
     URL.revokeObjectURL(down.href);

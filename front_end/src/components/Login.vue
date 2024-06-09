@@ -154,7 +154,7 @@ const store = useUserStore()
 import { useI18n } from 'vue-i18n';
 const t = useI18n();
 
-const AXIOS_BASE_URL = process.env.VUE_APP_BASE_API;
+const AXIOS_BASE_URL = import.meta.env.VITE_BASE_API;
 
 let refValidCode = ref<any>(null)
 let refValidCode2 = ref<any>(null)

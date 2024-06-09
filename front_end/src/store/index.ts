@@ -1,4 +1,3 @@
-// import { createStore } from 'vuex'
 import { LoginStatus } from "@/utils/common/structInterface"
 import { defineStore } from 'pinia'
 

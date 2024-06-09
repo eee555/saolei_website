@@ -48,7 +48,8 @@ import { getCurrentInstance } from 'vue';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
 import { genFileId, ElMessage } from 'element-plus'
-const image_url = ref(require('@/assets/person.png'))
+import image_url_default from '@/assets/person.png';
+const image_url = ref(image_url_default);
 // import PreviewDownload from '@/components/PreviewDownload.vue';
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import Wait from '@/components/Wait.vue';
@@ -86,7 +87,7 @@ const is_loading = ref(true);
 
 
 const pop_show = () => {
-    image_url.value = require('@/assets/person.png');
+    image_url.value = image_url_default;
     realname.value = "";
     id.value = "";
 
@@ -132,7 +133,7 @@ const pop_show = () => {
 
 // 用户记录小弹窗关闭后，删除其中的数据
 const pop_hide = () => {
-    image_url.value = require('@/assets/person.png');
+    image_url.value = image_url_default;
     realname.value = "";
     id.value = "";
     i_t.value = "";

@@ -125,7 +125,7 @@ const preview = (row: any, column: any, event: Event) => {
             }
         }
     ).then(function (response) {
-        let uri = process.env.VUE_APP_BASE_API + "/video/preview/?id=" + row.key;
+        let uri = import.meta.env.VITE_BASE_API + "/video/preview/?id=" + row.key;
         // console.log(uri);
         if (response.data.msg == "a") {
             uri += ".avf";
