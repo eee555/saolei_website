@@ -213,7 +213,6 @@ const post_update_realname = (r: string) => {
             }
 
         } else if (response.data.status >= 101) {
-            console.log(response.data);
             realname_edit.value = realname.value;
             ElMessage.error({ message: response.data.msg, offset: 68 });
         }
