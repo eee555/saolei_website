@@ -347,7 +347,7 @@ const removeUpload = (i: number) => {
 // 均匀延时，降低并发。
 function getDelay() {
     return new Promise(resolve => {
-        const delay = k * 200;
+        const delay = 200;
         k++;
         setTimeout(() => {
             resolve(delay);
