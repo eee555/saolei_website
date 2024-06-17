@@ -5,6 +5,7 @@ import App from './App.vue'
 import router from './router'
 // import store from './store'
 import { createPinia } from 'pinia'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import i18n from '@/i18n'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
@@ -17,6 +18,7 @@ import 'highlight.js/styles/stackoverflow-light.css'
 
 const app = createApp(App)
 const pinia = createPinia()
+pinia.use(piniaPluginPersistedstate)
 
 app.config.globalProperties.$axios = $axios;
 

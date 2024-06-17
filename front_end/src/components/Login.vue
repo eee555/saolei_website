@@ -1,24 +1,16 @@
 <template>
-    <div>
-        <span class="text-button" v-show="store.login_status != LoginStatus.IsLogin"
-            @click="init_refvalues(); store.login_status = LoginStatus.Login; login_visible = true; register_visible = false">
-            {{ $t('menu.login') }}
-        </span>
-        <div style="display:inline-block" v-show="store.login_status == LoginStatus.IsLogin">
-            {{ $t('menu.welcome', [user_name_show]) }}
-        </div>
-        <span style="width:12px; display:inline-block">
-        </span>|<span style="width:12px; display:inline-block">
-        </span>
-        <span class="text-button" v-show="store.login_status != LoginStatus.IsLogin"
-            @click="init_refvalues(); store.login_status = LoginStatus.Register; register_visible = true; login_visible = false">
-            {{ $t('menu.register') }}
-        </span>
-        <span class="text-button" v-show="store.login_status == LoginStatus.IsLogin" @click="logout();">
-            {{ $t('menu.logout') }}
-        </span>
-    </div>
     <el-dialog v-model="login_visible" :title="$t('login.title')" width="30%" align-center draggable :lock-scroll="false"
+    <el-button v-if="store.login_status != LoginStatus.IsLogin"
+        @click.stop="init_refvalues(); store.login_status = LoginStatus.Login; login_visible = true; register_visible = false">
+        {{ $t('menu.login') }}
+    </el-button>
+    <el-button v-if="store.login_status != LoginStatus.IsLogin"
+        @click.stop="init_refvalues(); store.login_status = LoginStatus.Register; register_visible = true; login_visible = false">
+        {{ $t('menu.register') }}
+    </el-button>
+    <el-button v-if="store.login_status == LoginStatus.IsLogin" @click.stop="logout();">
+        {{ $t('menu.logout') }}
+    </el-button>
         @close='() => { if (store.login_status !== LoginStatus.IsLogin) { store.login_status = LoginStatus.NotLogin; } }'>
         <el-form size="default">
             <el-form-item>

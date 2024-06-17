@@ -21,19 +21,7 @@ function getMessages (): Record<string, any> {
  * 获取默认语言
  */
 function getDefaultLocale () {
-    const languages = navigator.languages || [navigator.language]
-    for (const language of languages) {
-        if (/^zh(.?CN)?$/i.test(language)) {
-            // 简体中文，包括 zh 和 zh-CN
-            return zhCn.local
-        } else if (language == de.local) {
-            return de.local
-        } else if (language == en.local) {
-            return en.local
-        }
-    }
-    // 默认使用简体中文
-    return dev.local
+    return "dev"
 }
 
 /**
