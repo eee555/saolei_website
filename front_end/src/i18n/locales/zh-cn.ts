@@ -4,6 +4,7 @@ export const zhCn = {
     local: 'zh-cn',
     name: '简体中文',
     common: {
+        hide: '隐藏',
         level: {
             b: '初级',
             i: '中级',
@@ -14,19 +15,6 @@ export const zhCn = {
             nf: '盲扫',
             ng: '无猜',
             dg: '递归'
-        },
-        prop: {
-            action: '操作',
-            designator: '标识',
-            fileName: '文件名',
-            is: '岛',
-            level: '级别',
-            op: '空',
-            realName: '姓名',
-            status: '状态',
-            time: '用时',
-            timems: '用时',
-            upload_time: '上传时间',
         },
         msg: {
             agreeTAC: '请同意用户协议！',
@@ -43,7 +31,23 @@ export const zhCn = {
             invalidUsername: '用户名格式不正确！长度不超过20位。',
             logoutFail: '退出失败！',
             logoutSuccess: '退出成功！',
-        }
+        },
+        prop: {
+            action: '操作',
+            designator: '标识',
+            fileName: '文件名',
+            is: '岛',
+            level: '级别',
+            op: '空',
+            realName: '姓名',
+            sex: '性别',
+            status: '状态',
+            time: '用时',
+            timems: '用时',
+            upload_time: '上传时间',
+        },
+        show: '显示',
+        toDo: '敬请期待',
     },
     forgetPassword: {
         title: '找回密码',
@@ -76,6 +80,7 @@ export const zhCn = {
         login: '登录',
         logout: '退出',
         register: '注册',
+        setting: '设置',
         downloads: '软件下载',
         links: '友链',
         team: '团队'
