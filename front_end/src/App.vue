@@ -3,9 +3,11 @@
     <el-menu style="position: fixed; width: 100%; z-index: 2010; user-select: none" mode="horizontal" :router="true"
         :default-active="menu_index" :ellipsis="false" menu-trigger="click">
         <el-menu-item index="/">
-            <div class="logo" style=" display: inline-flex; justify-content: center; align-items: center">
-                <el-image style="width: 52px; height: 52px; padding-top: 4px; padding-bottom: 4px; display: inline-flex" :src="logo_1" :fit="'cover'" />
-                <el-image v-if="!local.menu_icon" style="width: 131px; height: 60px; display: inline-flex" :src="logo_2" :fit="'cover'" />
+            <div class="logo" style="display: inline-flex; justify-content: center; align-items: center">
+                <el-image style="width: 52px; height: 52px; padding-top: 4px; padding-bottom: 4px; display: inline-flex"
+                    :src="logo_1" :fit="'cover'" />
+                <el-image v-if="!local.menu_icon" style="width: 131px; height: 60px; display: inline-flex" :src="logo_2"
+                    :fit="'cover'" />
             </div>
         </el-menu-item>
         <el-menu-item v-for="item in menu_items" :index="'/' + item.index"
