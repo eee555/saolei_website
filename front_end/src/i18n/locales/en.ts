@@ -32,7 +32,9 @@ export const en = {
         },
         prop: {
             action: 'Action',
+            is: 'Island',
             level: 'Level',
+            op: 'Opening',
             realName: 'Real Name',
             sex: 'Sex',
             status: 'Status',
