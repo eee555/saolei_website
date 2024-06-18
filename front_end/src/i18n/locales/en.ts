@@ -2,18 +2,46 @@ export const en = {
     local: 'en',
     name: 'English',
     common: {
+        hide: 'Hide',
         level: {
             b: 'Beginner',
             i: 'Intermediate',
             e: 'Expert',
         },
         mode: {
-            standard: 'Standard',
-            noFlag: 'No Flag',
-            noGuess: 'No Guessing',
-            recursive: 'Recursive Chord'
+            std: 'Standard',
+            nf: 'No Flag',
+            ng: 'No Guessing',
+            dg: 'Recursive Chord'
         },
-        time: 'Time'
+        msg: {
+            agreeTAC: 'Please agree to Terms and Conditions!',
+            confirmPasswordFail: 'Passwords do not match!',
+            connectionFail: 'Connection Fails!',
+            emailCodeSent: 'The email code has been sent. Please check your inbox!',
+            emptyEmail: 'Please enter your email!',
+            emptyEmailCode: 'Please enter 6-char email code!',
+            emptyPassword: 'Please enter your password!',
+            emptyUsername: 'Please enter your username!',
+            invalidEmail: 'Invalid email!',
+            invalidEmailCode: 'Email code is invalid! Please re-sent your email code.',
+            invalidPassword: 'The length of password should be from 6 to 20!。',
+            invalidUsername: 'The length of username cannot exceed 20!',
+            logoutFail: 'Failed to log out!',
+            logoutSuccess: 'Log out success!',
+        },
+        prop: {
+            action: 'Action',
+            level: 'Level',
+            realName: 'Real Name',
+            sex: 'Sex',
+            status: 'Status',
+            time: 'Time',
+            timems: 'Time',
+            upload_time: 'Upload time',
+        },
+        show: 'Show',
+        toDo: 'TODO',
     },
     forgetPassword: {
         title: 'Reset password',
@@ -61,9 +89,27 @@ export const en = {
         designator: 'My designators: ',
         records: {
             title: 'Personal Records',
-            modeRecord: '-mode record: '
+            modeRecord: ' mode record: '
         },
         videos: 'All videos',
-        upload: 'Upload videos'
+        upload: {
+            title: 'Video Upload',
+            dragOrClick: `Drag files here or <em>click here to select</em>`,
+            uploadAll: 'Upload All ({0})',
+            cancelAll: 'Clear All',
+            constraintNote: '*File size maximum is 5MB. File count maximum is 99.',
+            error: {
+                collision: 'Video already exist',
+                custom: 'Custom level is currently not supported',
+                designator: 'Designator mismatch',
+                fail: 'Fail',
+                fileext: 'Invalid file extension',
+                filename: 'File name exceeds 100 bytes',
+                filesize: 'File size exceeds 5MB',
+                pass: 'Pass',
+                process: 'Uploading',
+                upload: 'Upload fail',
+            }
+        }
     },
 }
