@@ -21,10 +21,10 @@ const local = useLocalStore();
 import logo_lang from "@/assets/language.svg";
 
 const options = [
-    { lang: "dev", text: "dev" },
     { lang: "zh-cn", text: "简体中文" },
-    { lang: "de", text: "name" },
     { lang: "en", text: "English" },
+    { lang: "de", text: "name" },
+    { lang: "dev", text: "dev" },
 ];
 
 onBeforeMount(() => {
