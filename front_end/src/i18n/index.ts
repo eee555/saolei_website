@@ -3,7 +3,6 @@ import { dev } from '@/i18n/locales/dev'
 import { zhCn } from '@/i18n/locales/zh-cn'
 import { de } from '@/i18n/locales/de'
 import { en } from './locales/en'
-import { LocaleConfig } from '@/i18n/config'
 
 /**
  * 获取所有语言
