@@ -11,11 +11,11 @@
         {{ $t('menu.logout') }}
     </el-button>
     <el-dialog v-model="login_visible" :title="$t('login.title')" width="30%" align-center draggable
-        :lock-scroll="false"
-        @close='() => { if (store.login_status !== LoginStatus.IsLogin) { store.login_status = LoginStatus.NotLogin; } }'>
+        :lock-scroll="false" @close='closeLogin'>
         <el-form size="default">
             <el-form-item>
-                <el-input v-model="user_name" :placeholder="$t('login.username')" prefix-icon="User" maxlength="20"></el-input>
+                <el-input v-model="user_name" :placeholder="$t('login.username')" prefix-icon="User"
+                    maxlength="20"></el-input>
             </el-form-item>
             <el-form-item>
                 <el-input v-model="user_password" :placeholder="$t('login.password')" maxlength="20" show-password
@@ -23,7 +23,8 @@
             </el-form-item>
             <el-form-item>
                 <div style="display: flex;">
-                    <el-input v-model.trim="valid_code" :placeholder="$t('login.captcha')" prefix-icon="Key" class="code"></el-input>
+                    <el-input v-model.trim="valid_code" :placeholder="$t('login.captcha')" prefix-icon="Key"
+                        class="code"></el-input>
                     &nbsp;
                     <ValidCode ref="refValidCode" :identifyCode="identifyCodeLog" />
                 </div>
@@ -42,21 +43,21 @@
                 style="cursor: pointer;color: blue;">{{ $t('login.forgetPassword') }}</div>
         </el-form>
     </el-dialog>
-    <el-dialog v-model="register_visible" :title="$t('register.title')" width="30%" align-center draggable :lock-scroll="false"
-        @close='() => { if (store.login_status !== LoginStatus.IsLogin) { store.login_status = LoginStatus.NotLogin; } }'>
+    <el-dialog v-model="register_visible" :title="$t('register.title')" width="30%" align-center draggable
+        :lock-scroll="false" @close='closeLogin'>
         <el-form size="default">
             <el-form-item>
                 <el-input v-model.trim="user_name_reg" :placeholder="$t('register.username')" prefix-icon="User"
                     maxlength="20" show-word-limit id="register_user_name_form"></el-input>
             </el-form-item>
             <el-form-item>
-                <el-input v-model="user_email_reg" :placeholder="$t('register.email')" prefix-icon="Message" type="email"
-                    id="register_email_form"></el-input>
+                <el-input v-model="user_email_reg" :placeholder="$t('register.email')" prefix-icon="Message"
+                    type="email" id="register_email_form"></el-input>
             </el-form-item>
             <el-form-item>
                 <div style="display: flex">
-                    <el-input v-model.trim="valid_code_reg" :placeholder="$t('register.captcha')" prefix-icon="Key" class="code"
-                        maxlength="4"></el-input>
+                    <el-input v-model.trim="valid_code_reg" :placeholder="$t('register.captcha')" prefix-icon="Key"
+                        class="code" maxlength="4"></el-input>
                     &nbsp;
                     <!-- <ValidCode2 :identifyCode="identifyCodeReg" ref="refValidCode2" /> -->
                     <ValidCode :identifyCode="identifyCodeReg" ref="refValidCode2" />
@@ -66,19 +67,21 @@
                 </div>
             </el-form-item>
             <el-form-item>
-                <el-input v-model.trim="user_email_valid_code_reg" :placeholder="$t('register.emailCode')" prefix-icon="Key"
-                    maxlength="6" :disabled="valid_code_reg.length < 4" id="register_email_valid_code_form"></el-input>
+                <el-input v-model.trim="user_email_valid_code_reg" :placeholder="$t('register.emailCode')"
+                    prefix-icon="Key" maxlength="6" :disabled="valid_code_reg.length < 4"
+                    id="register_email_valid_code_form"></el-input>
             </el-form-item>
             <el-form-item>
-                <el-input v-model="user_password_reg" :placeholder="$t('register.password')" show-password prefix-icon="Lock"
-                    minlength="6" maxlength="20" id="register_user_password_form"></el-input>
+                <el-input v-model="user_password_reg" :placeholder="$t('register.password')" show-password
+                    prefix-icon="Lock" minlength="6" maxlength="20" id="register_user_password_form"></el-input>
             </el-form-item>
             <el-form-item>
-                <el-input v-model="user_password2_reg" :placeholder="$t('register.confirmPassword')" show-password prefix-icon="Lock"
-                    minlength="6" maxlength="20"></el-input>
+                <el-input v-model="user_password2_reg" :placeholder="$t('register.confirmPassword')" show-password
+                    prefix-icon="Lock" minlength="6" maxlength="20"></el-input>
             </el-form-item>
             <el-checkbox v-model="checkout_user_agreement" name="checkoutSecret">{{ $t('register.agreeTo') }}
-                <a target="_blank" :href="AXIOS_BASE_URL + '/agreement.html'">{{ $t('register.termsAndConditions') }}</a>
+                <a target="_blank" :href="AXIOS_BASE_URL + '/agreement.html'">{{ $t('register.termsAndConditions')
+                    }}</a>
             </el-checkbox>
 
             <el-form-item>
@@ -91,16 +94,17 @@
             </el-form-item>
         </el-form>
     </el-dialog>
-    <el-dialog v-model="retrieve_visible" :title="$t('forgetPassword.title')" width="30%" align-center draggable :lock-scroll="false"
-        @close='() => { if (store.login_status !== LoginStatus.IsLogin) { store.login_status = LoginStatus.NotLogin; } }'>
+    <el-dialog v-model="retrieve_visible" :title="$t('forgetPassword.title')" width="30%" align-center draggable
+        :lock-scroll="false" @close='closeLogin'>
         <el-form size="default">
             <el-form-item>
-                <el-input v-model="user_email_reg" :placeholder="$t('forgetPassword.email')" prefix-icon="Message" type="email"></el-input>
+                <el-input v-model="user_email_reg" :placeholder="$t('forgetPassword.email')" prefix-icon="Message"
+                    type="email"></el-input>
             </el-form-item>
             <el-form-item>
                 <div style="display: flex">
-                    <el-input v-model="valid_code_reg" :placeholder="$t('forgetPassword.captcha')" prefix-icon="Key" class="code"
-                        maxlength="4"></el-input>
+                    <el-input v-model="valid_code_reg" :placeholder="$t('forgetPassword.captcha')" prefix-icon="Key"
+                        class="code" maxlength="4"></el-input>
                     &nbsp;
                     <!-- <ValidCode2 :identifyCode="identifyCodeReg" ref="refValidCode2" /> -->
                     <ValidCode :identifyCode="identifyCodeReg" ref="refValidCode2" />
@@ -110,16 +114,16 @@
                 </div>
             </el-form-item>
             <el-form-item>
-                <el-input v-model="user_email_valid_code_reg" :placeholder="$t('forgetPassword.emailCode')" prefix-icon="Key"
-                    :disabled="valid_code_reg.length < 4" maxlength="6"></el-input>
+                <el-input v-model="user_email_valid_code_reg" :placeholder="$t('forgetPassword.emailCode')"
+                    prefix-icon="Key" :disabled="valid_code_reg.length < 4" maxlength="6"></el-input>
             </el-form-item>
             <el-form-item>
-                <el-input v-model="user_password_reg" :placeholder="$t('forgetPassword.password')" show-password prefix-icon="Lock"
-                    minlength="6" maxlength="20"></el-input>
+                <el-input v-model="user_password_reg" :placeholder="$t('forgetPassword.password')" show-password
+                    prefix-icon="Lock" minlength="6" maxlength="20"></el-input>
             </el-form-item>
             <el-form-item>
-                <el-input v-model="user_password2_reg" :placeholder="$t('forgetPassword.confirmPassword')" show-password prefix-icon="Lock"
-                    minlength="6" maxlength="20"></el-input>
+                <el-input v-model="user_password2_reg" :placeholder="$t('forgetPassword.confirmPassword')" show-password
+                    prefix-icon="Lock" minlength="6" maxlength="20"></el-input>
             </el-form-item>
             <el-form-item>
                 <div style="color: red;">{{ $t(hint_message) }}</div>
@@ -241,6 +245,11 @@ onMounted(() => {
     };
 })
 
+const closeLogin = () => {
+    if (store.login_status !== LoginStatus.IsLogin) {
+        store.login_status = LoginStatus.NotLogin;
+    }
+}
 
 const login = async () => {
     // 先用cookie尝试登录，可能登不上
