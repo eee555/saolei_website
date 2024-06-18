@@ -9,13 +9,13 @@
             </div>
         </el-menu-item>
         <el-menu-item v-for="item in menu_items" :index="'/' + item.index"
-            style="font-size: 18px; padding-left: 8px; padding-right: 8px">
+            style="font-size: 18px; padding-left: 8px; padding-right: 5px">
             <el-tooltip v-if="local.menu_icon" :content="$t(item.content)">
                 <el-icon style="margin-top: 21px; margin-bottom: 21px">
                     <component :is="item.icon" style="width: 60px; height: 60px" />
                 </el-icon>
             </el-tooltip>
-            <span v-else>
+            <span v-else style="padding-right: 5px">
                 <el-icon>
                     <component :is="item.icon" style="width: 60px; height: 60px" />
                 </el-icon>{{ $t(item.content) }}
@@ -23,13 +23,13 @@
         </el-menu-item>
         <div style="flex-grow: 1" />
         <el-menu-item :index="player_url" v-if="store.user.id != 0" @click="store.player = store.user"
-            style="font-size: 18px; padding-left: 8px; padding-right: 8px">
+            style="font-size: 18px; padding-left: 8px; padding-right: 5px">
             <el-tooltip v-if="local.menu_icon" :content="store.user.username">
-                <el-icon>
+                <el-icon style="margin-top: 21px; margin-bottom: 21px">
                     <User style="width: 60px; height: 60px" />
                 </el-icon>
             </el-tooltip>
-            <span v-else="local.menu_icon">
+            <span v-else style="padding-right: 5px">
                 <el-icon>
                     <User style="width: 60px; height: 60px" />
                 </el-icon>{{ store.user.username }}
@@ -42,7 +42,7 @@
                 </el-icon>
             </el-tooltip>
         </el-menu-item>
-        <div style="font-size: 18px; padding-left: 8px; padding-right: 8px; padding-top: 14px; margin-bottom: 14px">
+        <div style="font-size: 18px; padding-left: 8px; padding-right: 8px">
             <LanguagePicker v-show="local.language_show" />
         </div>
         <div class="header">
