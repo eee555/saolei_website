@@ -1,5 +1,4 @@
 <template>
-    <el-dialog v-model="login_visible" :title="$t('login.title')" width="30%" align-center draggable :lock-scroll="false"
     <el-button v-if="store.login_status != LoginStatus.IsLogin"
         @click.stop="init_refvalues(); store.login_status = LoginStatus.Login; login_visible = true; register_visible = false">
         {{ $t('menu.login') }}
@@ -11,6 +10,8 @@
     <el-button v-if="store.login_status == LoginStatus.IsLogin" @click.stop="logout();">
         {{ $t('menu.logout') }}
     </el-button>
+    <el-dialog v-model="login_visible" :title="$t('login.title')" width="30%" align-center draggable
+        :lock-scroll="false"
         @close='() => { if (store.login_status !== LoginStatus.IsLogin) { store.login_status = LoginStatus.NotLogin; } }'>
         <el-form size="default">
             <el-form-item>
