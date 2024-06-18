@@ -1,7 +1,7 @@
 <template>
     <!-- message的z索引为2015 -->
     <el-menu style="position: fixed; width: 100%; z-index: 2010; user-select: none" mode="horizontal" :router="true"
-        :default-active="menu_index" :ellipsis="true" menu-trigger="click">
+        :default-active="menu_index" :ellipsis="false" menu-trigger="click">
         <el-menu-item index="/">
             <div class="logo" style=" display: inline-flex; justify-content: center; align-items: center">
                 <el-image style="width: 52px; height: 52px; padding-top: 4px; padding-bottom: 4px; display: inline-flex" :src="logo_1" :fit="'cover'" />
