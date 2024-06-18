@@ -1,10 +1,8 @@
 <template>
-    <el-button v-if="store.login_status != LoginStatus.IsLogin"
-        @click.stop="init_refvalues(); store.login_status = LoginStatus.Login; login_visible = true; register_visible = false">
+    <el-button v-if="store.login_status != LoginStatus.IsLogin" @click.stop="openLogin">
         {{ $t('menu.login') }}
     </el-button>
-    <el-button v-if="store.login_status != LoginStatus.IsLogin"
-        @click.stop="init_refvalues(); store.login_status = LoginStatus.Register; register_visible = true; login_visible = false">
+    <el-button v-if="store.login_status != LoginStatus.IsLogin" @click.stop="openRegister">
         {{ $t('menu.register') }}
     </el-button>
     <el-button v-if="store.login_status == LoginStatus.IsLogin" @click.stop="logout();">
@@ -244,6 +242,20 @@ onMounted(() => {
 
     };
 })
+
+const openLogin = () => {
+    init_refvalues();
+    store.login_status = LoginStatus.Login;
+    login_visible.value = true;
+    register_visible.value = false;
+}
+
+const openRegister = () => {
+    init_refvalues();
+    store.login_status = LoginStatus.Register;
+    register_visible.value = true;
+    login_visible.value = false;
+}
 
 const closeLogin = () => {
     if (store.login_status !== LoginStatus.IsLogin) {
