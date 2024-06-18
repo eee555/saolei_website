@@ -30,10 +30,5 @@ import { useI18n } from 'vue-i18n';
 const store = useUserStore()
 const local = useLocalStore()
 const t = useI18n()
-</script>
 
-<style>
-.title {
-    font-size: var(--el-font-size-extra-large)
-}
-</style>
+</script>
