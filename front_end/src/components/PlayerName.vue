@@ -1,9 +1,9 @@
 <template>
     <span @click.stop>
-        <el-popover placement="bottom" width="298px" popper-class="max-h-300px overflow-auto" @show="pop_show"
-            @hide="pop_hide" trigger="click" popper-style="background-color:rgba(250,250,250);" :show-after="0"
+        <el-popover v-if="render" placement="bottom" width="298px" popper-class="max-h-300px overflow-auto" @show="pop_show"
+            @hide="pop_hide" trigger="hover" popper-style="background-color:rgba(250,250,250);" :show-after="0"
             :hide-after="0">
-            <Wait v-show="is_loading"></Wait>
+            <Wait v-if="is_loading"></Wait>
             <div>
                 <div style="width: 80px;float: left;line-height: 200%;">
                     <el-image style="width: 72px; height: 72px;margin-top: 10px;border-radius: 8px;" :src="image_url"
@@ -38,6 +38,8 @@
                 </span>
             </template>
         </el-popover>
+        <span v-else href="" target="_blank" class="clickable" @click="render = true;">{{ data.user_name }}
+        </span>
     </span>
 </template>
 
@@ -84,7 +86,7 @@ const e_bvs_id = ref("");
 
 // 控制加载时的小圈圈
 const is_loading = ref(true);
-
+const render = ref(false);
 
 const pop_show = () => {
     image_url.value = image_url_default;
@@ -126,8 +128,6 @@ const pop_show = () => {
     }).catch(() => {
         // is_loading.value = false;
     })
-
-
 }
 
 
