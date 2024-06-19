@@ -33,6 +33,8 @@ export const useLocalStore = defineStore('local', {
     state: () => ({
         language: "zh-cn",
         language_show: true,
+        menu_font_size: 18,
+        menu_height: 60,
         menu_icon: false,
     }),
     persist: true,
