@@ -1,59 +1,49 @@
 <template>
     <!-- message的z索引为2015 -->
-    <el-menu style="position: fixed; width: 100%; z-index: 2010; user-select: none" mode="horizontal" :router="true"
-        :default-active="menu_index" :ellipsis="false" menu-trigger="click">
-        <el-menu-item index="/">
-            <div class="logo" style="display: inline-flex; justify-content: center; align-items: center">
-                <el-image style="width: 52px; height: 52px; padding-top: 4px; padding-bottom: 4px; display: inline-flex"
-                    :src="logo_1" :fit="'cover'" />
-                <el-image v-if="!local.menu_icon" style="width: 131px; height: 60px; display: inline-flex" :src="logo_2"
-                    :fit="'cover'" />
-            </div>
+    <el-menu class="menu" mode="horizontal" :router="true" :default-active="menu_index" :ellipsis="false"
+        menu-trigger="click">
+        <el-menu-item index="/" class="logo">
+            <el-image class="logo1" :src="logo_1" :fit="'cover'" />
+            <el-image v-if="!local.menu_icon" class="logo2" :src="logo_2" :fit="'cover'" />
         </el-menu-item>
-        <el-menu-item v-for="item in menu_items" :index="'/' + item.index"
-            style="font-size: 18px; padding-left: 8px; padding-right: 5px">
+        <el-menu-item v-for="item in menu_items" :index="'/' + item.index" class="menuitem">
             <el-tooltip v-if="local.menu_icon" :content="$t(item.content)">
-                <el-icon style="margin-top: 21px; margin-bottom: 21px">
-                    <component :is="item.icon" style="width: 60px; height: 60px" />
+                <el-icon class="menumargin">
+                    <component :is="item.icon" class="menuicon" />
                 </el-icon>
             </el-tooltip>
             <span v-else style="padding-right: 5px">
                 <el-icon>
-                    <component :is="item.icon" style="width: 60px; height: 60px" />
+                    <component :is="item.icon" class="menuicon" />
                 </el-icon>{{ $t(item.content) }}
             </span>
         </el-menu-item>
         <div style="flex-grow: 1" />
-        <el-menu-item :index="player_url" v-if="store.user.id != 0" @click="store.player = store.user"
-            style="font-size: 18px; padding-left: 8px; padding-right: 5px">
+        <el-menu-item :index="player_url" v-if="store.user.id != 0" @click="store.player = store.user" class="menuitem">
             <el-tooltip v-if="local.menu_icon" :content="store.user.username">
-                <el-icon style="margin-top: 21px; margin-bottom: 21px">
-                    <User style="width: 60px; height: 60px" />
+                <el-icon class="menumargin">
+                    <User class="menuicon" />
                 </el-icon>
             </el-tooltip>
             <span v-else style="padding-right: 5px">
                 <el-icon>
-                    <User style="width: 60px; height: 60px" />
+                    <User class="menuicon" />
                 </el-icon>{{ store.user.username }}
             </span>
         </el-menu-item>
-        <el-menu-item index="/settings" style="font-size: 18px; padding-left: 8px; padding-right: 8px">
+        <el-menu-item index="/settings" style="padding-left: 8px; padding-right: 5px">
             <el-tooltip :content="$t('menu.setting')">
-                <el-icon style="margin-top: 20px; margin-bottom: 20px">
-                    <Setting style="width: 60px; height: 60px" />
+                <el-icon>
+                    <Setting class="menuicon" />
                 </el-icon>
             </el-tooltip>
         </el-menu-item>
-        <div style="font-size: 18px; padding-left: 8px; padding-right: 8px">
-            <LanguagePicker v-show="local.language_show" />
-        </div>
-        <div class="header">
-            <Login @login="user_login" @logout="user_logout"></Login>
-        </div>
+        <LanguagePicker v-show="local.language_show" style="padding-left: 8px; padding-right: 8px;" />
+        <Login @login="user_login" @logout="user_logout"></Login>
     </el-menu>
     <div class="common-layout">
         <el-container>
-            <div class="header_all" style="padding-top: 0; overflow: hidden">
+            <div class="header_all" style="padding-top: 0; overflow: auto">
                 <div class="content" style="padding-top: 16px">
                     <router-view />
                 </div>
@@ -83,8 +73,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from "vue";
-import Menu from "./components/Menu.vue";
+import { ref, onMounted, computed } from "vue";
 import LanguagePicker from "./components/LanguagePicker.vue";
 import Login from "./components/Login.vue";
 // import { LoginStatus } from "@/utils/common/structInterface"
@@ -183,12 +172,36 @@ const hash_code = function (t: string) {
 
 <style lang="less">
 body {
-    overflow-y: scroll;
+    overflow: auto;
     margin: 0;
 }
 
-.logo:hover {
+</style>
+
+<style lang="less" scoped>
+
+.logo {
     cursor: pointer;
+    display: inline-flex; 
+    justify-content: center; 
+    align-items: center;
+    padding: 0px;
+    padding-left: v-bind("local.menu_height / 8 + 'px'");
+    padding-right: v-bind("local.menu_height / 8 + 'px'");
+}
+
+.logo1 {
+    width: v-bind("local.menu_height - 8 + 'px'");
+    height: v-bind("local.menu_height - 8 + 'px'");
+    padding-top: 4px;
+    padding-bottom: 4px;
+    display: inline-flex;
+}
+
+.logo2 {
+    width: v-bind("local.menu_height * 2.17 + 'px'");
+    height: v-bind("local.menu_height + 'px'");
+    display: inline-flex;
 }
 
 .header {
@@ -197,7 +210,31 @@ body {
     padding-top: 21px;
 }
 
+.menu {
+    height: v-bind("local.menu_height + 'px'");
+    position: fixed;
+    width: 100%;
+    z-index: 2010;
+    user-select: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
 
+.menuicon {
+    width: 60px;
+    height: 60px;
+}
+
+.menuitem {
+    font-size: v-bind("local.menu_font_size + 'px'");
+    padding-left: 8px;
+    padding-right: 5px;
+}
+
+.menumargin {
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
 
 /*设置点击前的样式 */
 a {
@@ -217,7 +254,7 @@ a {
 }
 
 .content {
-    margin-top: 60px;
+    margin-top: v-bind("local.menu_height + 'px'");
 }
 
 .clickable:hover {
