@@ -1,6 +1,6 @@
 <template>
     <el-dropdown @command="changeLanguage" trigger="click">
-        <el-image :src="logo_lang" style="width: 24px; height: 24px; margin-top: 18px; cursor: pointer"></el-image>
+        <el-image :src="logo_lang" class="icon"></el-image>
         <template #dropdown>
             <el-dropdown-item v-for="item in options" :command="item.lang">
                 {{ item.text }}
@@ -36,3 +36,11 @@ const changeLanguage = (value: any) => {
     local.language = value;
 };
 </script>
+
+<style lang="less" scoped>
+.icon {
+    margin-top: v-bind("local.menu_height / 4 + 'px'");
+    margin-bottom: v-bind("local.menu_height / 4 + 'px'");
+    cursor: pointer;
+}
+</style>
