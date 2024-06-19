@@ -11,7 +11,7 @@
         size="small">
         {{ $t('menu.logout') }}
     </el-button>
-    <el-dialog v-model="login_visible" :title="$t('login.title')" width="30%" align-center draggable
+    <el-dialog v-model="login_visible" :title="$t('login.title')" width="400px" align-center draggable
         :lock-scroll="false" @close='closeLogin'>
         <el-form size="default">
             <el-form-item>
@@ -44,7 +44,7 @@
                 style="cursor: pointer;color: blue;">{{ $t('login.forgetPassword') }}</div>
         </el-form>
     </el-dialog>
-    <el-dialog v-model="register_visible" :title="$t('register.title')" width="30%" align-center draggable
+    <el-dialog v-model="register_visible" :title="$t('register.title')" width="400px" align-center draggable
         :lock-scroll="false" @close='closeLogin'>
         <el-form size="default">
             <el-form-item>
@@ -95,7 +95,7 @@
             </el-form-item>
         </el-form>
     </el-dialog>
-    <el-dialog v-model="retrieve_visible" :title="$t('forgetPassword.title')" width="30%" align-center draggable
+    <el-dialog v-model="retrieve_visible" :title="$t('forgetPassword.title')" width="400px" align-center draggable
         :lock-scroll="false" @close='closeLogin'>
         <el-form size="default">
             <el-form-item>
