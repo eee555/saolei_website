@@ -448,6 +448,7 @@ const logout = async () => {
                 username: "",
                 realname: "",
                 is_banned: false,
+                is_staff: false,
                 country: ""
             };
             store.player = {
