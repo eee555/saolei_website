@@ -1,14 +1,17 @@
 <template>
-    <el-button v-if="store.login_status != LoginStatus.IsLogin" @click.stop="openLogin">
+    <el-button v-if="store.login_status != LoginStatus.IsLogin" @click.stop="openLogin" class="fakemenuitem" text
+        size="small">
         {{ $t('menu.login') }}
     </el-button>
-    <el-button v-if="store.login_status != LoginStatus.IsLogin" @click.stop="openRegister">
+    <el-button v-if="store.login_status != LoginStatus.IsLogin" @click.stop="openRegister" style="margin-left: 0px;"
+        class="fakemenuitem" text size="small">
         {{ $t('menu.register') }}
     </el-button>
-    <el-button v-if="store.login_status == LoginStatus.IsLogin" @click.stop="logout();">
+    <el-button v-if="store.login_status == LoginStatus.IsLogin" @click.stop="logout();" class="fakemenuitem" text
+        size="small">
         {{ $t('menu.logout') }}
     </el-button>
-    <el-dialog v-model="login_visible" :title="$t('login.title')" width="30%" align-center draggable
+    <el-dialog v-model="login_visible" :title="$t('login.title')" width="400px" align-center draggable
         :lock-scroll="false" @close='closeLogin'>
         <el-form size="default">
             <el-form-item>
@@ -41,7 +44,7 @@
                 style="cursor: pointer;color: blue;">{{ $t('login.forgetPassword') }}</div>
         </el-form>
     </el-dialog>
-    <el-dialog v-model="register_visible" :title="$t('register.title')" width="30%" align-center draggable
+    <el-dialog v-model="register_visible" :title="$t('register.title')" width="400px" align-center draggable
         :lock-scroll="false" @close='closeLogin'>
         <el-form size="default">
             <el-form-item>
@@ -92,7 +95,7 @@
             </el-form-item>
         </el-form>
     </el-dialog>
-    <el-dialog v-model="retrieve_visible" :title="$t('forgetPassword.title')" width="30%" align-center draggable
+    <el-dialog v-model="retrieve_visible" :title="$t('forgetPassword.title')" width="400px" align-center draggable
         :lock-scroll="false" @close='closeLogin'>
         <el-form size="default">
             <el-form-item>
@@ -143,8 +146,9 @@ const { proxy } = useCurrentInstance();
 import { LoginStatus } from "@/utils/common/structInterface"
 import ValidCode from "@/components/ValidCode.vue";
 import { genFileId, ElMessage } from 'element-plus'
-import { useUserStore } from '../store'
+import { useLocalStore, useUserStore } from '../store'
 const store = useUserStore()
+const local = useLocalStore()
 
 import { useI18n } from 'vue-i18n';
 const t = useI18n();
@@ -444,6 +448,7 @@ const logout = async () => {
                 username: "",
                 realname: "",
                 is_banned: false,
+                is_staff: false,
                 country: ""
             };
             store.player = {
@@ -508,14 +513,9 @@ const get_email_captcha = (type: string) => {
 </script>
 
 
-<style>
-/* input:invalid {
-    outline: 2px solid rgb(167, 11, 11);
-    border-radius: 3px;
+<style lang="less" scoped>
+.fakemenuitem {
+    height: v-bind("local.menu_height + 'px'");
+    font-size: v-bind("local.menu_font_size + 'px'"); // Somehow doesn't work
 }
-
-.el-dialog .el-dialog__body {
-    flex: 1;
-    overflow: auto;
-} */
 </style>
