@@ -52,6 +52,11 @@ const routes: Array<RouteRecordRaw> = [
     name: 'upload',
     component: () => import('../views/UploadView.vue')
   },
+  {
+    path: '/staff',
+    name: 'staff',
+    component: () => import('../views/StaffView.vue')
+  },
 ]
 
 const router = createRouter({

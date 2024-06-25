@@ -214,7 +214,7 @@ body {
     height: v-bind("local.menu_height + 'px'");
     position: fixed;
     width: 100%;
-    z-index: 2010;
+    z-index: 1010; //message的z索引为2015
     user-select: none;
     overflow-x: auto;
     overflow-y: hidden;

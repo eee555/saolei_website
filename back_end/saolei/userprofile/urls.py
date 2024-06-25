@@ -16,6 +16,8 @@ urlpatterns = [
     path('get_email_captcha/',views.get_email_captcha),
     path('modify_realname/',views.modify_realname_n),
     path('modify/',views.modify_n),
+    path('get/',views.get_userProfile),
+    path('set/',views.set_userProfile),
     
     # path('captcha/captcha', views.captcha, name='captcha'),
     # path('edit/<int:id>/', views.profile_edit, name='edit'),

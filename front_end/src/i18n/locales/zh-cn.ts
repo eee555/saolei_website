@@ -4,6 +4,9 @@ export const zhCn = {
     local: 'zh-cn',
     name: '简体中文',
     common: {
+        action: {
+            setUserProfile: '修改用户',
+        },
         hide: '隐藏',
         level: {
             b: '初级',
@@ -17,7 +20,10 @@ export const zhCn = {
             dg: '递归'
         },
         msg: {
+            actionFail: '{0}失败！',
+            actionSuccess: '{0}成功',
             agreeTAC: '请同意用户协议！',
+            backendError: '后端发生错误',
             confirmPasswordFail: '两次输入的密码不一致！',
             connectionFail: '无法连接到服务器！',
             emailCodeSent: '获取验证码成功，请至邮箱查看！',
@@ -31,6 +37,9 @@ export const zhCn = {
             invalidUsername: '用户名格式不正确！长度不超过20位。',
             logoutFail: '退出失败！',
             logoutSuccess: '退出成功！',
+            permissionDenied: '权限不足',
+            unknownError: '发生未知错误',
+            unrecognisedRequest: '无法识别的请求',
         },
         prop: {
             action: '操作',

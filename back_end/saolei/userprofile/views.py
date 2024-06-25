@@ -14,7 +14,7 @@ from django_ratelimit.decorators import ratelimit
 from django.utils import timezone
 from django.conf import settings
 from config.flags import EMAIL_SKIP
-
+from utils.response import *
 
 # Create your views here.
 
@@ -334,3 +334,34 @@ def modify_n(request):
     else:
         return HttpResponse("别瞎玩")
 
+get_userProfile_fields = ["id", "userms__designators", "userms__video_num_limit", "username", "first_name", "last_name", "email", "realname", "signature", "country", "is_banned"]
+
+def get_userProfile(request):
+    if request.user.is_staff and request.method == 'GET':
+        response = UserProfile.objects.filter(id=request.GET["id"]).values(*get_userProfile_fields)[0]
+        return JsonResponse(response)
+    else:
+        return HttpResponse("别瞎玩")
+    
+set_userProfile_fields = ["id", "userms__designators", "userms__video_num_limit", "username", "first_name", "last_name", "email", "realname", "signature", "country", "is_banned"]
+def set_userProfile(request):
+    try:
+        if request.method == 'GET':
+            if not request.user.is_staff:
+                return PermissionDeniedResponse() # 非管理员不能使用该api
+            userid = request.GET.get("id")
+            user = UserProfile.objects.get(id=userid)
+            if user.is_staff and user != request.user:
+                return PermissionDeniedResponse() # 不能修改除自己以外管理员的信息
+            field = request.GET.get("field")
+            if field not in set_userProfile_fields:
+                return PermissionDeniedResponse() # 只能修改特定的域
+            value = request.GET.get("value")
+            logger.info(f'{request.user.id}(staff) changes {userid}.{field} from {getattr(user, field)} to {value}')
+            setattr(user, field, value)
+            user.save()
+            return SuccessResponse()
+        else:
+            return UnrecognisedRequestResponse()
+    except:
+        return BackendErrorResponse()
