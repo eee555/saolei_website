@@ -33,6 +33,11 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('../views/ScoreRankView.vue')
   },
   {
+    path: '/settings',
+    name: 'settings',
+    component: () => import('../views/SettingView.vue')
+  },
+  {
     path: '/player/:id',
     name: 'player_id',
     component: () => import('../views/PlayerView.vue')

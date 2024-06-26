@@ -22,9 +22,9 @@
         <el-table-column prop="bv" />
         <el-table-column style="white-space: nowrap;">
             <template #default="scope">
-                <el-button v-if="review_mode" type="success" circle :icon="Check" @click="handleApprove(scope.row)" />
+                <el-button v-if="review_mode" type="success" circle :icon="Check" @click.stop="handleApprove(scope.row)" />
                 <el-button v-if="store.user.is_staff" type="danger" circle :icon="Close"
-                    @click="handleFreeze(scope.row)" />
+                    @click.stop="handleFreeze(scope.row)" />
             </template>
         </el-table-column>
         <!-- <el-table-column min-width="200">
@@ -71,7 +71,7 @@ const data = defineProps({
     review_mode: {
         type: Boolean,
         default: false
-    }
+    },
 })
 
 const emit = defineEmits(['update'])

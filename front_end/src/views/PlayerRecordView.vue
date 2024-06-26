@@ -104,8 +104,6 @@ onMounted(() => {
             loading.value = false;
             ElMessage.error({ message: '不知哪里出现了问题', offset: 68 });
         } else {
-            console.log(data);
-
             userid.value = data.id;
             username.value = data.realname;
             // signature.value = data.signature;
