@@ -28,8 +28,13 @@ def delete_newest_queue():
     if cache.hlen("newest_queue") <= 100:
         return
     newest_queue_ids = cache.hgetall("newest_queue")
+    # newest_queue_ids的示例：
+    # {b'1': b'{"time": "2024-05-22 17:31:06", "player": "\\u5b9e\\u540d", "player_id": 1,
+    #  "level": "b", "mode": "00", "timems": 4770, "bv": 23, "bvs": 4.821802935010482}', 
+    # b'4': b'{"time": "2024-05-22 17:31:09", "player": "\\u5b9e\\u540d", "player_id": 1, 
+    # "level": "e", "mode": "00", "timems": 74710, "bv": 227, "bvs": 3.0384152054611167}'}
     for key in newest_queue_ids.keys():
-        a = json.loads(newest_queue_ids[key]['time'])
+        a = json.loads(newest_queue_ids[key])['time']
         d = datetime.strptime(a, "%Y-%m-%d %H:%M:%S")
         if (timezone.now() - d).days > 7:
             cache.hdel("newest_queue", key)
@@ -72,6 +77,7 @@ class Command(BaseCommand):
                 day_of_week="*", hour="01", minute="08"
                 ),
             id="delete_newest_queue",
+            misfire_grace_time=30,
             max_instances=1,
             replace_existing=True,
             )
@@ -84,6 +90,7 @@ class Command(BaseCommand):
                 day_of_week="*", hour="01", minute="13"
                 ),
             id="delete_freezed_video",
+            misfire_grace_time=30,
             max_instances=1,
             replace_existing=True,
             )
@@ -96,10 +103,10 @@ class Command(BaseCommand):
             trigger=CronTrigger(
                 day_of_week="mon", hour="00", minute="03"
                 ),  # Midnight on Monday, before start of the next work week.
-                id="delete_old_job_executions",
-                max_instances=1,
-                replace_existing=True,
-                )
+            id="delete_old_job_executions",
+            max_instances=1,
+            replace_existing=True,
+            )
         logger.info(
             "Added weekly job: 'delete_old_job_executions'."
             )

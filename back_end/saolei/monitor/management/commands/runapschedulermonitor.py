@@ -75,6 +75,7 @@ class Command(BaseCommand):
             refresh_state_always,
             trigger=CronTrigger(second="*/5"),  # Every 5 seconds
             id="refresh_state_always",  # The `id` assigned to each job MUST be unique
+            misfire_grace_time=3,
             max_instances=1,
             replace_existing=True,
             )
@@ -85,10 +86,11 @@ class Command(BaseCommand):
             trigger=CronTrigger(
                 day_of_week="mon", hour="00", minute="03"
                 ),  # Midnight on Monday, before start of the next work week.
-                id="delete_old_job_executions",
-                max_instances=1,
-                replace_existing=True,
-                )
+            id="delete_old_job_executions",
+            misfire_grace_time=30,
+            max_instances=1,
+            replace_existing=True,
+            )
         logger.info(
             "Added weekly job: 'delete_old_job_executions'."
             )
