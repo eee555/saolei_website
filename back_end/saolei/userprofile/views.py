@@ -308,6 +308,8 @@ def set_userProfile(request):
             field = request.POST.get("field")
             if field not in set_userProfile_fields:
                 return PermissionDeniedResponse() # 只能修改特定的域
+            if field == "is_banned" and user.is_superuser:
+                return PermissionDeniedResponse() # 站长不可被封禁
             value = request.POST.get("value")
             logger.info(f'{request.user.id}(staff) changes {userid}.{field} from {getattr(user, field)} to {value}')
             setattr(user, field, value)
