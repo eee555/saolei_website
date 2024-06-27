@@ -32,7 +32,7 @@ const { proxy } = useCurrentInstance();
 const userid = ref(0);
 const userfield = ref("");
 const uservalue = ref("");
-const descriptionitems = ["username", "first_name", "last_name", "email", "realname", "country", "is_banned"]
+const descriptionitems = ["username", "first_name", "last_name", "email", "realname", "country", "is_banned", "left_realname_n", "left_avatar_n", "left_signature_n"]
 
 interface UserProfile {
     userms__designators: Array<String>;
@@ -45,6 +45,9 @@ interface UserProfile {
     signature: String;
     country: String;
     is_banned: Boolean;
+    left_realname_n: Number;
+    left_avatar_n: Number;
+    left_signature_n: Number;
 }
 
 const userprofile = ref<UserProfile>({
@@ -58,6 +61,9 @@ const userprofile = ref<UserProfile>({
     signature: "",
     country: "",
     is_banned: false,
+    left_realname_n: 0,
+    left_avatar_n: 0,
+    left_signature_n: 0,
 });
 
 const getUser = () => {

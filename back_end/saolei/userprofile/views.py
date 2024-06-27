@@ -334,7 +334,7 @@ def modify_n(request):
     else:
         return HttpResponse("别瞎玩")
 
-get_userProfile_fields = ["id", "userms__designators", "userms__video_num_limit", "username", "first_name", "last_name", "email", "realname", "signature", "country", "is_banned"]
+get_userProfile_fields = ["id", "userms__designators", "userms__video_num_limit", "username", "first_name", "last_name", "email", "realname", "signature", "country", "left_realname_n", "left_avatar_n", "left_signature_n", "is_banned"]
 
 def get_userProfile(request):
     if request.user.is_staff and request.method == 'GET':
@@ -343,7 +343,7 @@ def get_userProfile(request):
     else:
         return HttpResponse("别瞎玩")
     
-set_userProfile_fields = ["id", "userms__designators", "userms__video_num_limit", "username", "first_name", "last_name", "email", "realname", "signature", "country", "is_banned"]
+set_userProfile_fields = ["id", "userms__designators", "userms__video_num_limit", "username", "first_name", "last_name", "email", "realname", "signature", "country", "left_realname_n", "left_avatar_n", "left_signature_n", "is_banned"]
 def set_userProfile(request):
     try:
         if request.method == 'POST':
