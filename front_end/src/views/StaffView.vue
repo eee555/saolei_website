@@ -71,13 +71,14 @@ const getUser = () => {
         function (response: any) {
             userprofile.value = response.data;
         }
-    )
+    ).catch(error => {
+        generalNotification(t, error.response.status, t.t('common.action.getUserProfile'))
+    })
 }
 
 const setUser = (id: number, field: string, value: string) => {
     proxy.$axios.post('userprofile/set/', {id: id, field: field, value: value}).then(
         function (response: any) {
-            console.log(response)
             generalNotification(t, response.status, t.t('common.action.setUserProfile'));
             getUser();
         }
