@@ -7,8 +7,8 @@ const notificationTitle = ['', '', 'common.msg.actionSuccess', '', 'common.msg.a
 const notificationMessage: { [code: number]: string} = {
     200: 'common.response.OK',
     400: 'common.response.BadRequest',
-    403: 'common.msg.Forbidden',
-    500: 'common.msg.InternalServerError',
+    403: 'common.response.Forbidden',
+    500: 'common.response.InternalServerError',
 };
 
 export function generalNotification(t: any, status: number, action: string) {
