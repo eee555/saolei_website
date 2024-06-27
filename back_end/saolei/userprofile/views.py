@@ -1,7 +1,7 @@
 import logging
 logger = logging.getLogger(__name__)
 from django.contrib.auth import authenticate, login, logout
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest, HttpResponseForbidden
 from .forms import UserLoginForm, UserRegisterForm, UserRetrieveForm, EmailForm
 from captcha.models import CaptchaStore
 import json
@@ -289,33 +289,32 @@ def judge_captcha(captchaStr, captchaHashkey):
 get_userProfile_fields = ["id", "userms__designators", "userms__video_num_limit", "username", "first_name", "last_name", "email", "realname", "signature", "country", "left_realname_n", "left_avatar_n", "left_signature_n", "is_banned"]
 
 def get_userProfile(request):
-    if request.user.is_staff and request.method == 'GET':
+    if request.method != 'GET':
+        return HttpResponseBadRequest()
+    if request.user.is_staff:
         response = UserProfile.objects.filter(id=request.GET["id"]).values(*get_userProfile_fields)[0]
         return JsonResponse(response)
     else:
-        return HttpResponse("别瞎玩")
+        return HttpResponseForbidden()
     
 set_userProfile_fields = ["id", "userms__designators", "userms__video_num_limit", "username", "first_name", "last_name", "email", "realname", "signature", "country", "left_realname_n", "left_avatar_n", "left_signature_n", "is_banned"]
 def set_userProfile(request):
-    try:
-        if request.method == 'POST':
-            if not request.user.is_staff:
-                return PermissionDeniedResponse() # 非管理员不能使用该api
-            userid = request.POST.get("id")
-            user = UserProfile.objects.get(id=userid)
-            if user.is_staff and user != request.user:
-                return PermissionDeniedResponse() # 不能修改除自己以外管理员的信息
-            field = request.POST.get("field")
-            if field not in set_userProfile_fields:
-                return PermissionDeniedResponse() # 只能修改特定的域
-            if field == "is_banned" and user.is_superuser:
-                return PermissionDeniedResponse() # 站长不可被封禁
-            value = request.POST.get("value")
-            logger.info(f'{request.user.id}(staff) changes {userid}.{field} from {getattr(user, field)} to {value}')
-            setattr(user, field, value)
-            user.save()
-            return SuccessResponse()
-        else:
-            return UnrecognisedRequestResponse()
-    except:
-        return BackendErrorResponse()
+    if request.method == 'POST':
+        if not request.user.is_staff:
+            return HttpResponseForbidden() # 非管理员不能使用该api
+        userid = request.POST.get("id")
+        user = UserProfile.objects.get(id=userid)
+        if user.is_staff and user != request.user:
+            return HttpResponseForbidden() # 不能修改除自己以外管理员的信息
+        field = request.POST.get("field")
+        if field not in set_userProfile_fields:
+            return HttpResponseForbidden() # 只能修改特定的域
+        if field == "is_banned" and user.is_superuser:
+            return HttpResponseForbidden() # 站长不可被封禁
+        value = request.POST.get("value")
+        logger.info(f'{request.user.id}(staff) changes {userid}.{field} from {getattr(user, field)} to {value}')
+        setattr(user, field, value)
+        user.save()
+        return HttpResponse()
+    else:
+        return HttpResponseBadRequest()

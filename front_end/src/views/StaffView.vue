@@ -77,7 +77,8 @@ const getUser = () => {
 const setUser = (id: number, field: string, value: string) => {
     proxy.$axios.post('userprofile/set/', {id: id, field: field, value: value}).then(
         function (response: any) {
-            generalNotification(t, response.data.status, t.t('common.action.setUserProfile'));
+            console.log(response)
+            generalNotification(t, response.status, t.t('common.action.setUserProfile'));
             getUser();
         }
     )
