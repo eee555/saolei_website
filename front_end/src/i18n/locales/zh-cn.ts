@@ -5,6 +5,7 @@ export const zhCn = {
     name: '简体中文',
     common: {
         action: {
+            getUserProfile: '查询用户',
             setUserProfile: '修改用户',
         },
         hide: '隐藏',
@@ -56,6 +57,7 @@ export const zhCn = {
             BadRequest: '无法识别的请求',
             Forbidden: '权限不足',
             InternalServerError: '后端发生错误',
+            NotFound: '找不到数据',
         },
         show: '显示',
         toDo: '敬请期待',

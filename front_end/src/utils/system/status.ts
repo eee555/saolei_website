@@ -8,6 +8,7 @@ const notificationMessage: { [code: number]: string} = {
     200: 'common.response.OK',
     400: 'common.response.BadRequest',
     403: 'common.response.Forbidden',
+    404: 'common.response.NotFound',
     500: 'common.response.InternalServerError',
 };
 

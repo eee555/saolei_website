@@ -5,7 +5,9 @@
         <el-button @click="getUser">查询</el-button>
     </div>
     <div>
-        域<el-input v-model="userfield"></el-input>
+        域<el-select v-model="userfield">
+            <el-option v-for="field in descriptionitems" :value="field"></el-option>
+        </el-select>
     </div>
     <div>
         值<el-input v-model="uservalue"></el-input>
