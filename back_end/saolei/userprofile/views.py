@@ -204,29 +204,6 @@ def set_staff(request):
     else:
         return HttpResponse("别瞎玩")
 
-# 【管理员】封禁用户。封禁后，用户可以登录，但不能上传录像、不能改任何个人信息
-# http://127.0.0.1:8000/userprofile/set_banned/?id=1&is_banned=True
-def set_banned(request):
-    if request.user.is_staff and request.method == 'GET':
-        user = UserProfile.objects.get(id=request.GET["id"])
-        if user.is_staff and not request.user.is_superuser:
-            return HttpResponse("没有封禁管理员的权限！")
-        # user.is_banned = request.GET["is_banned"]
-        logger.info(f'{request.user.id} set_banned {request.GET["id"]} {request.GET["is_banned"]}')
-        if request.GET["is_banned"] == "True":
-            user.is_banned = True
-            user.save()
-            return HttpResponse(f'封禁用户"{user.realname}"成功！')
-        elif request.GET["is_banned"] == "False":
-            user.is_banned = False
-            user.save()
-            return HttpResponse(f'解封用户"{user.realname}"成功！')
-        else:
-            return HttpResponse('失败！is_banned需要为"True"或"False"')
-    else:
-        return HttpResponse("别瞎玩")
-
-
 # 【管理员】删除用户的个人信息，从服务器磁盘上完全删除，但不影响是否封禁
 # http://127.0.0.1:8000/userprofile/del_user_info/?id=1
 def del_user_info(request):
@@ -308,31 +285,6 @@ def judge_captcha(captchaStr, captchaHashkey):
     CaptchaStore.objects.filter(hashkey=captchaHashkey).delete()
     return False
 
-
-# 【管理员】给用户增加1次修改姓名的机会
-# http://127.0.0.1:8000/userprofile/modify_realname?id=1
-def modify_realname_n(request):
-    if request.user.is_staff and request.method == 'GET':
-        user = UserProfile.objects.get(id=request.GET["id"])
-        user.left_realname_n += 1
-        logger.info(f'{request.user.id} add left_realname_n for {request.GET["id"]} ({user.left_realname_n})')
-        return HttpResponse(f"为用户\"{user.realname}\"（id: {user.id}）增加一次修改姓名的次数成功！")
-    else:
-        return HttpResponse("别瞎玩")
-
-
-# 【站长】给用户增加x、y、z次（对应）修改姓名、头像和签名的机会
-# http://127.0.0.1:8000/userprofile/modify?id=1&x=0&y=1&z=200
-def modify_n(request):
-    if request.user.is_superuser and request.method == 'GET':
-        user = UserProfile.objects.get(id=request.GET["id"])
-        user.left_realname_n += request.GET["x"]
-        user.left_avatar_n += request.GET["y"]
-        user.left_signature_n += request.GET["z"]
-        logger.info(f'{request.user.id}(superuser) modify_n for {request.GET["id"]} ({user.left_realname_n}, {user.left_avatar_n}, {user.left_signature_n})')
-        return HttpResponse(f"为用户\"{user.realname}\"（id: {user.id}）增加修改姓名、头像、签名的次数成功！目前剩余（{user.left_realname_n}, {user.left_avatar_n}, {user.left_signature_n}）")
-    else:
-        return HttpResponse("别瞎玩")
 
 get_userProfile_fields = ["id", "userms__designators", "userms__video_num_limit", "username", "first_name", "last_name", "email", "realname", "signature", "country", "left_realname_n", "left_avatar_n", "left_signature_n", "is_banned"]
 
