@@ -2,9 +2,9 @@ from django.http import JsonResponse
 
 def StatusResponse(status, msg=""):
     if msg == "":
-        JsonResponse({'status': status})
+        return JsonResponse({'status': status})
     else:
-        JsonResponse({'status': status, 'message': msg})
+        return JsonResponse({'status': status, 'message': msg})
 
 ### List of Statuses ###
 
@@ -18,16 +18,16 @@ def StatusResponse(status, msg=""):
 # 203 - Unrecognised Request
 
 def SuccessResponse(msg=""):
-    StatusResponse(100, msg)
+    return StatusResponse(100, msg)
 
 def ErrorResponse(msg=""):
-    StatusResponse(200, msg)
+    return StatusResponse(200, msg)
 
 def PermissionDeniedResponse(msg=""):
-    StatusResponse(201, msg)
+    return StatusResponse(201, msg)
 
 def BackendErrorResponse(msg=""):
-    StatusResponse(202, msg)
+    return StatusResponse(202, msg)
 
 def UnrecognisedRequestResponse(msg=""):
-    StatusResponse(203, msg)
+    return StatusResponse(203, msg)

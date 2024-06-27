@@ -11,7 +11,7 @@
         值<el-input v-model="uservalue"></el-input>
     </div>
     <div>
-        <el-button @click="updateUser(userid, userfield, uservalue)">修改</el-button>
+        <el-button @click="setUser(userid, userfield, uservalue)">修改</el-button>
     </div>
     <el-descriptions title="UserProfile">
         <el-descriptions-item v-for="item in descriptionitems" :label="item">{{ userprofile[item] }}</el-descriptions-item>
@@ -68,10 +68,10 @@ const getUser = () => {
     )
 }
 
-const updateUser = (id: number, field: string, value: string) => {
-    proxy.$axios.get('userprofile/set', {params: {id: id, field: field, value: value}}).then(
+const setUser = (id: number, field: string, value: string) => {
+    proxy.$axios.post('userprofile/set/', {id: id, field: field, value: value}).then(
         function (response: any) {
-            generalNotification(response.data.status, t.t('common.action.setUserProfile'));
+            generalNotification(t, response.data.status, t.t('common.action.setUserProfile'));
             getUser();
         }
     )

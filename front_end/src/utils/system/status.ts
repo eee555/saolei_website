@@ -1,8 +1,6 @@
 import { useLocalStore } from "@/store";
 import { ElNotification } from "element-plus"
-import { useI18n } from 'vue-i18n';
 const local = useLocalStore();
-const t = useI18n();
 
 const notificationType = ['', 'success', 'error'];
 const notificationTitle = ['', 'common.msg.actionSuccess', 'common.msg.actionFail'];
@@ -14,7 +12,7 @@ const notificationMessage: { [code: number]: string} = {
     203: 'common.msg.unrecognisedRequest',
 };
 
-export function generalNotification(status: number, action: string) {
+export function generalNotification(t: any, status: number, action: string) {
     let type = Math.floor(status / 100);
     ElNotification({
         title: t.t(notificationTitle[type], [action]),

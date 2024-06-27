@@ -346,17 +346,17 @@ def get_userProfile(request):
 set_userProfile_fields = ["id", "userms__designators", "userms__video_num_limit", "username", "first_name", "last_name", "email", "realname", "signature", "country", "is_banned"]
 def set_userProfile(request):
     try:
-        if request.method == 'GET':
+        if request.method == 'POST':
             if not request.user.is_staff:
                 return PermissionDeniedResponse() # 非管理员不能使用该api
-            userid = request.GET.get("id")
+            userid = request.POST.get("id")
             user = UserProfile.objects.get(id=userid)
             if user.is_staff and user != request.user:
                 return PermissionDeniedResponse() # 不能修改除自己以外管理员的信息
-            field = request.GET.get("field")
+            field = request.POST.get("field")
             if field not in set_userProfile_fields:
                 return PermissionDeniedResponse() # 只能修改特定的域
-            value = request.GET.get("value")
+            value = request.POST.get("value")
             logger.info(f'{request.user.id}(staff) changes {userid}.{field} from {getattr(user, field)} to {value}')
             setattr(user, field, value)
             user.save()
