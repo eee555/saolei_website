@@ -1,7 +1,7 @@
 import logging
 logger = logging.getLogger(__name__)
 from django.contrib.auth import authenticate, login, logout
-from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest, HttpResponseForbidden
+from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound
 from .forms import UserLoginForm, UserRegisterForm, UserRetrieveForm, EmailForm
 from captcha.models import CaptchaStore
 import json
@@ -14,7 +14,6 @@ from django_ratelimit.decorators import ratelimit
 from django.utils import timezone
 from django.conf import settings
 from config.flags import EMAIL_SKIP
-from utils.response import *
 
 # Create your views here.
 
@@ -292,8 +291,10 @@ def get_userProfile(request):
     if request.method != 'GET':
         return HttpResponseBadRequest()
     if request.user.is_staff:
-        response = UserProfile.objects.filter(id=request.GET["id"]).values(*get_userProfile_fields)[0]
-        return JsonResponse(response)
+        list = UserProfile.objects.filter(id=request.GET["id"]).values(*get_userProfile_fields)
+        if len(list) == 0:
+            return HttpResponseNotFound()
+        return JsonResponse(list[0])
     else:
         return HttpResponseForbidden()
     
