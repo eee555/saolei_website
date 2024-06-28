@@ -4,6 +4,10 @@ export const zhCn = {
     local: 'zh-cn',
     name: '简体中文',
     common: {
+        action: {
+            getUserProfile: '查询用户',
+            setUserProfile: '修改用户',
+        },
         hide: '隐藏',
         level: {
             b: '初级',
@@ -17,6 +21,8 @@ export const zhCn = {
             dg: '递归'
         },
         msg: {
+            actionFail: '{0}失败！',
+            actionSuccess: '{0}成功',
             agreeTAC: '请同意用户协议！',
             confirmPasswordFail: '两次输入的密码不一致！',
             connectionFail: '无法连接到服务器！',
@@ -45,6 +51,13 @@ export const zhCn = {
             time: '用时',
             timems: '用时',
             upload_time: '上传时间',
+        },
+        response: {
+            OK: '',
+            BadRequest: '无法识别的请求',
+            Forbidden: '权限不足',
+            InternalServerError: '后端发生错误',
+            NotFound: '找不到数据',
         },
         show: '显示',
         toDo: '敬请期待',

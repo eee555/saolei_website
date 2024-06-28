@@ -19,7 +19,7 @@
     "@types/node": "^20.5.1",
     "axios": "^1.7.2",
     "echarts": "^5.5.0",
-    "element-plus": "^2.2.32",
+    "element-plus": "^2.7.0",
     "flag-icon-css": "^4.1.7",
     "highlight.js": "^11.9.0",
     "image-conversion": "^2.1.1",
