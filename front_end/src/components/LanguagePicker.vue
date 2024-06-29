@@ -24,6 +24,7 @@ const options = [
     { lang: "zh-cn", text: "简体中文" },
     { lang: "en", text: "English" },
     { lang: "de", text: "name" },
+    { lang: "pl", text: "polski"},
     { lang: "dev", text: "dev" },
 ];
 

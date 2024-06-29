@@ -3,6 +3,7 @@ import { dev } from '@/i18n/locales/dev'
 import { zhCn } from '@/i18n/locales/zh-cn'
 import { de } from '@/i18n/locales/de'
 import { en } from './locales/en'
+import { pl } from './locales/pl'
 
 /**
  * 获取所有语言
@@ -13,6 +14,7 @@ function getMessages (): Record<string, any> {
     messages[zhCn.local] = zhCn
     messages[de.local] = de
     messages[en.local] = en
+    messages[pl.local] = pl
     return messages
 }
 
