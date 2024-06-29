@@ -3,8 +3,8 @@
         <el-dialog v-model="preview_visible"
             style="background-color: rgba(240, 240, 240, 0.48); backdrop-filter: blur(1px);" draggable align-center
             destroy-on-close :modal="false" :lock-scroll="false">
-            <iframe v-if="preview_visible" class="flop-player-iframe flop-player-display-none" style="width: 100%; height: 500px; border: 0px"
-                src="/flop/index.html" ref="video_iframe"></iframe>
+            <iframe v-if="preview_visible" class="flop-player-iframe flop-player-display-none"
+                style="width: 100%; height: 500px; border: 0px" src="/flop/index.html" ref="video_iframe"></iframe>
         </el-dialog>
     </Teleport>
     <span v-if="data.id" @click="preview(data.id);" class="clickable">{{ data.text }}</span>
@@ -15,8 +15,11 @@
 // 某个数字或字符串，点击后预览
 import { onMounted, watch, ref, toRefs } from "vue";
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
+import { generalNotification } from "@/utils/system/status";
+import { useI18n } from "vue-i18n";
 const { proxy } = useCurrentInstance();
 const preview_visible = ref(false);
+const t = useI18n();
 
 const data = defineProps({
     id: {
@@ -59,13 +62,9 @@ const preview = (id: Number | undefined) => {
                 },
             }
         }
-
-    }).catch(
-        (res) => {
-            // console.log("报错");
-            // console.log(res);
-        }
-    )
+    }).catch((error: any) => {
+        generalNotification(t, error.response.status, t.t('common.action.getSoftware'))
+    })
 }
 
 const playVideo = function (uri: string) {
@@ -87,13 +86,7 @@ const playVideo = function (uri: string) {
     });
 }
 
-onMounted(() => {
-
-});
-
 
 </script>
 
-<style>
-
-</style>
+<style></style>

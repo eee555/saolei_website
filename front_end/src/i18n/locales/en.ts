@@ -75,6 +75,7 @@ export const en = {
         login: 'Login',
         logout: 'Logout',
         register: 'Register',
+        setting: 'Settings',
         downloads: 'Downloads',
         links: 'Links',
         team: 'Team'
@@ -99,7 +100,7 @@ export const en = {
             dragOrClick: `Drag files here or <em>click here to select</em>`,
             uploadAll: 'Upload All ({0})',
             cancelAll: 'Clear All',
-            constraintNote: '*File size maximum is 5MB. File count maximum is 99.',
+            constraintNote: '*File size maximum is 5MB.',
             error: {
                 collision: 'Video already exist',
                 custom: 'Custom level is currently not supported',
@@ -113,5 +114,15 @@ export const en = {
                 upload: 'Upload fail',
             }
         }
+    },
+    setting: {
+        appearance: 'Appearance',
+        darkMode: 'Dark Mode',
+        languageSwitch: 'Language Switch',
+        menuFontSize: 'Menu Font Size',
+        menuHeight: 'Menu Height',
+        menuLayout: 'Menu Layout',
+        menuLayoutAbstract: 'Abstract',
+        menuLayoutDefault: 'Default',
     },
 }

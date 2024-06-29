@@ -14,6 +14,7 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 // 全局挂载axios
 
 import 'highlight.js/styles/stackoverflow-light.css'
+import 'element-plus/theme-chalk/dark/css-vars.css'
 
 
 const app = createApp(App)

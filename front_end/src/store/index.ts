@@ -31,6 +31,7 @@ export const useUserStore = defineStore('user', {
 
 export const useLocalStore = defineStore('local', {
     state: () => ({
+        darkmode: false,
         language: "zh-cn",
         language_show: true,
         menu_font_size: 18,

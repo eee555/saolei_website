@@ -9,6 +9,8 @@ const notificationMessage: { [code: number]: string} = {
     400: 'common.response.BadRequest',
     403: 'common.response.Forbidden',
     404: 'common.response.NotFound',
+    413: 'common.response.PayloadTooLarge',
+    415: 'common.response.UnsupportedMediaType',
     500: 'common.response.InternalServerError',
 };
 

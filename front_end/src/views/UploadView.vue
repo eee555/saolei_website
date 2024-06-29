@@ -1,19 +1,20 @@
 <template>
-    <el-upload v-model:file-list="fileList" :disabled="!allow_upload" ref="upload" drag action="#" :limit="99"
-        :multiple="true" :on-exceed="handleExceed" :on-change="handleChange" :auto-upload="false"
-        :show-file-list="false" style="background-color: white;" accept=".avf,.evf">
+    <el-upload v-model:file-list="fileList" :disabled="store.user.realname == '匿名'" ref="upload" drag action="#"
+        :multiple="true" :on-change="handleChange" :auto-upload="false" :show-file-list="false" accept=".avf,.evf">
 
         <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-        <div class="el-upload__text" style="font-size: 18px;" v-html="$t('profile.upload.dragOrClick')">
+        <div class="el-upload__text" style="font-size: 18px;"
+            v-html="store.user.realname == '匿名' ? $t('common.msg.realNameRequired') : $t('profile.upload.dragOrClick')">
         </div>
 
         <template #tip>
-
-            <div class="el-upload__tip text-red" style="background-color: white;text-align: center;">
+            <div style="text-align: center;">
                 <el-button @click="submitUpload()" size="large" type="primary" v-show="video_msgs.length > 0"
-                    style="display: block;margin: 16px auto;font-size: 18px;width: 220px;">{{ $t('profile.upload.uploadAll', [video_msgs.length]) }}</el-button>
+                    style="display: block;margin: 16px auto;font-size: 18px;width: 220px;">{{
+                        $t('profile.upload.uploadAll', [video_msgs.length]) }}</el-button>
                 <el-button @click="cancel_all()" size="small" type="info" v-show="video_msgs.length > 0"
-                    style="display: block;margin: 16px auto;width: 120px;" plain>{{ $t('profile.upload.cancelAll') }}</el-button>
+                    style="display: block;margin: 16px auto;width: 120px;">{{ $t('profile.upload.cancelAll')
+                    }}</el-button>
                 <span style="font-size: 14px;">{{ $t('profile.upload.constraintNote') }}</span>
             </div>
         </template>
@@ -22,7 +23,8 @@
         <el-table-column type="expand">
             <template #default="props">
                 <el-descriptions>
-                    <el-descriptions-item :label="$t('common.prop.fileName')">{{ props.row.filename }}</el-descriptions-item>
+                    <el-descriptions-item :label="$t('common.prop.fileName')">{{ props.row.filename
+                        }}</el-descriptions-item>
                     <el-descriptions-item v-if="props.row.videostat != null" :label="$t('common.prop.designator')">{{
                         props.row.videostat.designator }}</el-descriptions-item>
                     <el-descriptions-item v-if="props.row.videostat != null" v-for="key in extfields" :label="key">{{
@@ -43,19 +45,17 @@
                 {{ $t('profile.upload.error.' + props.row.status) }}
             </template>
         </el-table-column>
-        <el-table-column :label="$t('common.prop.action')">
+        <el-table-column :label="$t('common.prop.action')" :width="130">
             <template #default="props">
-                <nobr>
-                    <el-button :disabled="props.row.status != 'designator' && props.row.status != 'pass'"
-                        @click="forceUpload(props.$index)"
-                        :type="props.row.status == 'pass' ? 'success' : props.row.status == 'designator' ? 'warning' : 'plain'"
-                        circle><el-icon>
-                            <Upload />
-                        </el-icon></el-button>
-                    <el-button @click="removeUpload(props.$index)" type="danger" circle><el-icon>
-                            <Delete />
-                        </el-icon></el-button>
-                </nobr>
+                <el-button :disabled="props.row.status != 'designator' && props.row.status != 'pass'"
+                    @click="forceUpload(props.$index)"
+                    :type="props.row.status == 'pass' ? 'success' : props.row.status == 'designator' ? 'warning' : 'info'"
+                    circle><el-icon>
+                        <Upload />
+                    </el-icon></el-button>
+                <el-button @click="removeUpload(props.$index)" type="danger" circle><el-icon>
+                        <Delete />
+                    </el-icon></el-button>
             </template>
         </el-table-column>
     </el-table>
@@ -63,16 +63,13 @@
 
 <script lang="ts" setup>
 // 上传录像的页面
-import { onMounted, onUnmounted, ref } from 'vue'
+import { ref } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
-import { genFileId, ElMessage, MessageHandler } from 'element-plus'
 import type { UploadInstance, UploadProps, UploadUserFile, UploadRawFile, UploadFile, UploadFiles, UploadRequestOptions } from 'element-plus'
 // import img_arbiter from '@/assets/img/img_arbiter.png'
-import UploadVideoCard from '@/components/UploadVideoCard.vue';
 import { useUserStore } from '../store'
 const store = useUserStore()
-import { LoginStatus } from "@/utils/common/structInterface"
 
 import { useI18n } from 'vue-i18n';
 const t = useI18n();
@@ -146,36 +143,10 @@ const allow_upload = ref(true)
 // 延时系数
 let k = 0;
 
-// 切标签时msg关不掉
-const elmsg_handles: MessageHandler[] = [];
-
-onMounted(() => {
-    if (store.user.realname == "请修改为实名") {
-        allow_upload.value = false;
-        elmsg_handles.push(ElMessage.error({ message: '上传录像前，请先修改为实名!', offset: 68 }));
-    }
-    if (store.login_status != LoginStatus.IsLogin) {
-        allow_upload.value = false;
-        elmsg_handles.push(ElMessage.error({ message: '请先登录!', offset: 68 }));
-    }
-})
-
-onUnmounted(() => {
-    elmsg_handles.forEach((h) => { h.close() });
-})
-
 // 录像列表变动的回调，上传多个文件时，有几个文件就会进来几次。
 const handleChange: UploadProps['onChange'] = async (uploadFile: UploadFile, uploadFiles: UploadFiles) => {
 
     if (allow_upload.value) {
-        if (uploadFile.raw?.type == 'image/jpeg') {
-            // el-upload在限制，进不来。除非用户选全部文件。
-            elmsg_handles.push(ElMessage.error({ message: '不能上传图片!', offset: 68 }));
-
-        } else if (uploadFile.size as number / 1024 / 1024 > 5) {
-            elmsg_handles.push(ElMessage.error({ message: '录像大小不能超过5MB!', offset: 68 }));
-
-        }
         // upload_video_visible.value = true;
         await push_video_msg(uploadFile);
         // 修改id。最后一个协程才是真正起作用的。
@@ -249,26 +220,6 @@ const push_video_msg = async (uploadFile: UploadFile | UploadRawFile) => {
     })
 }
 
-const handleExceed: UploadProps['onExceed'] = async (files) => {
-    elmsg_handles.push(ElMessage.error({ message: '单次最多上传99个录像！', offset: 68 }));
-    const left_num = 99 - video_msgs.value.length;
-    files.splice(left_num);
-
-    for (let file of files) {
-        const f = file as UploadRawFile;
-        f.uid = genFileId();
-        allow_upload.value = false; // 暂时屏蔽onChange回调
-        upload.value!.handleStart(f);
-        allow_upload.value = true;
-        await push_video_msg(f);
-        // 修改id。最后一个协程才是真正起作用的。
-        for (let i = 0; i < video_msgs.value.length; i++) {
-            video_msgs.value[i].id = i;
-        }
-    }
-
-}
-
 // 清空待上传列表
 const cancel_all = () => {
     upload.value!.clearFiles();
@@ -284,8 +235,8 @@ const submitUpload = async () => {
     // 先锁死，不让进变化回调
     allow_upload.value = false;
     let i = 0;
-    let count = 0; // 防止无限循环bug
-    while (count < 100) {
+    let count = 0; // 最多上传99个
+    while (count < 99) {
         if (i >= video_msgs.value.length) break;
         if (video_msgs.value[i].status === "pass") {
             await forceUpload(i);
@@ -325,17 +276,19 @@ const forceUpload = async (i: number) => {
     await proxy.$axios.post('/video/upload/',
         params,
     ).then(function (response) {
-        if (response.data.status == 100) {
+        if (response.status == 200) {
             uploaded_file_num.value += 1;
             removeUpload(i);
-        } else if (response.data.status == 200) {
-            video_msgs.value[i].status = "collision";
         } else {
             // 正常使用不会到这里
             video_msgs.value[i].status = "upload";
         }
-    }).catch(() => {
-        video_msgs.value[i].status = "upload";
+    }).catch((error: any) => {
+        if (error.response.status == 409) {
+            video_msgs.value[i].status = "collision";
+        } else {
+            video_msgs.value[i].status = "upload";
+        }
     })
 }
 

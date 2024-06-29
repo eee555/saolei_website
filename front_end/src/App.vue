@@ -92,6 +92,10 @@ import logo_2 from "@/assets/logo2.png";
 import { useRouter } from "vue-router";
 const router = useRouter();
 
+import { useDark, useToggle } from '@vueuse/core';
+const isDark = useDark()
+useToggle(isDark)
+
 // const player_visible = ref(false)
 const notice_visible = ref(false);
 const never_show_notice = ref(false);
