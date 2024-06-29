@@ -1,10 +1,10 @@
 <template>
-    <el-upload v-model:file-list="fileList" :disabled="!allow_upload" ref="upload" drag action="#" :limit="99"
-        :multiple="true" :on-exceed="handleExceed" :on-change="handleChange" :auto-upload="false"
-        :show-file-list="false" style="background-color: white;" accept=".avf,.evf">
+    <el-upload v-model:file-list="fileList" :disabled="store.user.realname == '匿名'" ref="upload" drag action="#"
+        :multiple="true" :on-change="handleChange" :auto-upload="false" :show-file-list="false" accept=".avf,.evf">
 
         <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-        <div class="el-upload__text" style="font-size: 18px;" v-html="$t('profile.upload.dragOrClick')">
+        <div class="el-upload__text" style="font-size: 18px;"
+            v-html="store.user.realname == '匿名' ? $t('common.msg.realNameRequired') : $t('profile.upload.dragOrClick')">
         </div>
 
         <template #tip>
@@ -249,26 +249,6 @@ const push_video_msg = async (uploadFile: UploadFile | UploadRawFile) => {
     })
 }
 
-const handleExceed: UploadProps['onExceed'] = async (files) => {
-    elmsg_handles.push(ElMessage.error({ message: '单次最多上传99个录像！', offset: 68 }));
-    const left_num = 99 - video_msgs.value.length;
-    files.splice(left_num);
-
-    for (let file of files) {
-        const f = file as UploadRawFile;
-        f.uid = genFileId();
-        allow_upload.value = false; // 暂时屏蔽onChange回调
-        upload.value!.handleStart(f);
-        allow_upload.value = true;
-        await push_video_msg(f);
-        // 修改id。最后一个协程才是真正起作用的。
-        for (let i = 0; i < video_msgs.value.length; i++) {
-            video_msgs.value[i].id = i;
-        }
-    }
-
-}
-
 // 清空待上传列表
 const cancel_all = () => {
     upload.value!.clearFiles();
@@ -284,8 +264,8 @@ const submitUpload = async () => {
     // 先锁死，不让进变化回调
     allow_upload.value = false;
     let i = 0;
-    let count = 0; // 防止无限循环bug
-    while (count < 100) {
+    let count = 0; // 最多上传99个
+    while (count < 99) {
         if (i >= video_msgs.value.length) break;
         if (video_msgs.value[i].status === "pass") {
             await forceUpload(i);

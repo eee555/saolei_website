@@ -47,7 +47,7 @@ class UserProfile(AbstractUser):
                                   },)
 
     realname = models.CharField(
-        max_length=10, unique=False, blank=True, default='请修改为实名', null=False)
+        max_length=10, unique=False, blank=True, default='匿名', null=False)
     # 头像
     avatar = RestrictedImageField(upload_to='avatar/%Y%m%d/', max_length=100,
                                   max_upload_size=MaxSizes.avatar, blank=True, null=True)
