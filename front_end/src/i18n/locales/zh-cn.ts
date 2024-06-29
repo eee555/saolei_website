@@ -7,6 +7,7 @@ export const zhCn = {
         action: {
             getUserProfile: '查询用户',
             setUserProfile: '修改用户',
+            uploadFile: '上传文件',
         },
         hide: '隐藏',
         level: {
@@ -31,12 +32,14 @@ export const zhCn = {
             emptyEmailCode: '请输入6位邮箱验证码！',
             emptyPassword: '请输入密码！',
             emptyUsername: '请输入用户名！',
+            fileTooLarge: '文件大小不能超过{0}',
             invalidEmail: '邮箱格式不正确！',
             invalidEmailCode: '邮箱验证码格式不正确！请点击邮箱验证码并打开邮箱查收。',
             invalidPassword: '密码格式不正确！长度应该为6-20位。',
             invalidUsername: '用户名格式不正确！长度不超过20位。',
             logoutFail: '退出失败！',
             logoutSuccess: '退出成功！',
+            realNameRequired: '请修改为实名',
         },
         prop: {
             action: '操作',
@@ -58,6 +61,8 @@ export const zhCn = {
             Forbidden: '权限不足',
             InternalServerError: '后端发生错误',
             NotFound: '找不到数据',
+            PayloadTooLarge: '文件过大',
+            UnsupportedMediaType: '不支持的文件类型',
         },
         show: '显示',
         toDo: '敬请期待',
@@ -125,7 +130,7 @@ export const zhCn = {
             dragOrClick: `将录像拉到此处或 <em>点击此处选择</em>`,
             uploadAll: '一键上传（{0}个）',
             cancelAll: '全部清空',
-            constraintNote: '*单个文件大小不能超过5M，文件数量不能超过99',
+            constraintNote: '*单个文件大小不能超过5MB',
             error: {
                 collision: '录像已存在',
                 custom: '暂不支持自定义级别',
@@ -152,5 +157,15 @@ export const zhCn = {
         agreeTo: '已阅读并同意',
         termsAndConditions: '元扫雷网用户协议',
         confirm: '注册',
+    },
+    setting: {
+        appearance: '外观设置',
+        darkMode: '深色模式',
+        languageSwitch: '语言切换',
+        menuFontSize: '菜单字号',
+        menuHeight: '菜单高度',
+        menuLayout: '菜单排版',
+        menuLayoutAbstract: '抽象',
+        menuLayoutDefault: '默认',
     },
 }
