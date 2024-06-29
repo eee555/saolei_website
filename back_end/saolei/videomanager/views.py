@@ -6,7 +6,7 @@ from .forms import UploadVideoForm
 from .models import VideoModel, ExpandVideoModel
 from .view_utils import update_personal_record, update_personal_record_stock, video_all_fields
 from userprofile.models import UserProfile
-from django.http import HttpResponse, JsonResponse, FileResponse
+from django.http import HttpResponse, JsonResponse, FileResponse, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseNotFound
 import json, urllib
 from utils import ComplexEncoder
 from django.core.paginator import Paginator
@@ -108,7 +108,7 @@ def video_upload(request):
     elif request.method == 'GET':
         return HttpResponse("别瞎玩")
     else:
-        return HttpResponse("别瞎玩")
+        return HttpResponseNotAllowed()
 
 # 根据id向后台请求软件类型（适配flop播放器用）
 def get_software(request):
@@ -127,7 +127,7 @@ def get_software(request):
 @ratelimit(key='ip', rate='20/m')
 def video_preview(request):
     if request.method != 'GET':
-        return HttpResponse("别瞎玩")
+        return HttpResponseNotAllowed()
     # 这里性能可能有问题
     try:
         video = VideoModel.objects.get(id=int(request.GET["id"][:-4]))
@@ -151,7 +151,7 @@ def video_preview(request):
 @ratelimit(key='ip', rate='20/m')
 def video_download(request):
     if request.method != 'GET':
-        return HttpResponse("别瞎玩")
+        return HttpResponseNotAllowed()
     try:
         video = VideoModel.objects.get(id=request.GET["id"])
         response =FileResponse(open(video.file.path, 'rb'))
@@ -211,7 +211,7 @@ def video_query(request):
     elif request.method == 'POST':
         return HttpResponse("别瞎玩")
     else:
-        return HttpResponse("别瞎玩")
+        return HttpResponseNotAllowed()
 
 
 # 按id查询这个用户的所有录像
@@ -225,22 +225,7 @@ def video_query_by_id(request):
 
         return JsonResponse(json.dumps({"videos": list(videos)}, cls=ComplexEncoder), safe=False)
     else:
-        return HttpResponse("别瞎玩")
-
-
-# {
-#     "1": "{\"time\": \"2023-12-16 14:52:40\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"b\", \"mode\": \"00\", \"timems\": \"4770\", \"bv\": 23, \"bvs\": 4.821802935010482}",
-#     "3": "{\"time\": \"2023-12-16 14:52:52\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"i\", \"mode\": \"00\", \"timems\": \"20390\", \"bv\": 71, \"bvs\": 3.4330554193231975}",
-#     "4": "{\"time\": \"2023-12-16 15:17:58\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"b\", \"mode\": \"12\", \"timems\": \"1530\", \"bv\": 4, \"bvs\": 2.6143790849673203}",
-#     "8": "{\"time\": \"2023-12-16 15:26:22\", \"player\": \"www333\", \"level\": \"e\", \"mode\": \"00\", \"timems\": \"51940\", \"bv\": 149, \"bvs\": 2.849441663457836}",
-#     "9": "{\"time\": \"2023-12-16 15:26:26\", \"player\": \"www333\", \"level\": \"b\", \"mode\": \"00\", \"timems\": \"3250\", \"bv\": 18, \"bvs\": 5.538461538461538}",
-#     "10": "{\"time\": \"2023-12-16 15:26:30\", \"player\": \"www333\", \"level\": \"i\", \"mode\": \"00\", \"timems\": \"20110\", \"bv\": 69, \"bvs\": 3.431128791645947}",
-#     "7": "{\"time\": \"2023-12-16 15:24:07\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"i\", \"mode\": \"00\", \"timems\": \"15280\", \"bv\": 31, \"bvs\": 2.0287958115183247}",
-#     "6": "{\"time\": \"2023-12-16 15:24:02\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"e\", \"mode\": \"00\", \"timems\": \"59450\", \"bv\": 193, \"bvs\": 3.2127838519764507}",
-#     "2": "{\"time\": \"2023-12-16 14:52:48\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"e\", \"mode\": \"00\", \"timems\": \"61710\", \"bv\": 193, \"bvs\": 3.0789175174201913}",
-#     "5": "{\"time\": \"2023-12-16 15:23:59\", \"player\": \"\\u5b9e\\u540d\", \"level\": \"b\", \"mode\": \"12\", \"timems\": \"1580\", \"bv\": 6, \"bvs\": 3.7974683544303796}"
-# }
-
+        return HttpResponseNotAllowed()
 
 # 上传的录像进入数据库后，更新用户的录像数目
 def update_video_num(video: VideoModel, add = True):
@@ -291,7 +276,7 @@ def review_queue(request):
             review_video_ids.update({str(key, encoding="utf-8"): review_video_ids.pop(key)})
         return JsonResponse(review_video_ids, encoder=ComplexEncoder)
     else:
-        return HttpResponse("别瞎玩")
+        return HttpResponseNotAllowed()
 
 # 获取最新录像
 # http://127.0.0.1:8000/video/newest_queue
@@ -302,7 +287,7 @@ def newest_queue(request):
             newest_queue_ids.update({str(key, encoding="utf-8"): newest_queue_ids.pop(key)})
         return JsonResponse(newest_queue_ids, encoder=ComplexEncoder)
     else:
-        return HttpResponse("别瞎玩")
+        return HttpResponseNotAllowed()
     
 
 # 获取谁破纪录的消息
@@ -312,7 +297,7 @@ def news_queue(request):
         news_queue = cache.lrange("news_queue", 0, -1)
         return JsonResponse(news_queue, encoder=ComplexEncoder, safe=False)
     else:
-        return HttpResponse("别瞎玩")
+        return HttpResponseNotAllowed()
     
     
 # 获取全网被冻结的录像
@@ -324,7 +309,7 @@ def freeze_queue(request):
             freeze_queue_ids.update({str(key, encoding="utf-8"): freeze_queue_ids.pop(key)})
         return JsonResponse(freeze_queue_ids, encoder=ComplexEncoder)
     else:
-        return HttpResponse("别瞎玩")
+        return HttpResponseNotAllowed()
     
 
 # 【管理员】审核通过队列里的录像，未审核或冻结状态的录像可以审核通过
@@ -365,7 +350,7 @@ def approve(request):
         # logger.info(f'{request.user.id} approve {json.dumps(ids)} response {json.dumps(res)}')
         return JsonResponse(res, safe=False)
     else:
-        return HttpResponse("别瞎玩")
+        return HttpResponseNotAllowed()
 
 # 【管理员】冻结队列里的录像，未审核或审核通过的录像可以冻结
 # 两种用法，冻结指定的录像id，或冻结某用户的所有录像
@@ -424,7 +409,7 @@ def freeze(request):
         logger.info(f'{request.user.id} freeze {json.dumps(ids)} response {json.dumps(res)}')
         return JsonResponse(json.dumps(res), safe=False)
     else:
-        return HttpResponse("别瞎玩")
+        return HttpResponseNotAllowed()
 
 
 
