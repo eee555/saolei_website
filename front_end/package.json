@@ -17,6 +17,8 @@
     "@types/js-cookie": "^3.0.3",
     "@types/lowdb": "^1.0.11",
     "@types/node": "^20.5.1",
+    "@vueuse/components": "^10.11.0",
+    "@vueuse/core": "^10.11.0",
     "axios": "^1.7.2",
     "echarts": "^5.5.0",
     "element-plus": "^2.7.0",
