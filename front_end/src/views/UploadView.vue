@@ -45,7 +45,7 @@
                 {{ $t('profile.upload.error.' + props.row.status) }}
             </template>
         </el-table-column>
-        <el-table-column :label="$t('common.prop.action')">
+        <el-table-column :label="$t('common.prop.action')" :width="130">
             <template #default="props">
                 <el-button :disabled="props.row.status != 'designator' && props.row.status != 'pass'"
                     @click="forceUpload(props.$index)"
