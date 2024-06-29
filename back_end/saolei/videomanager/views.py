@@ -32,9 +32,9 @@ from django.conf import settings
 def video_upload(request):
     if request.method == 'POST':
         if request.user.is_banned:
-            return JsonResponse({"status": 101, "msg": "用户被封禁!"})
+            return HttpResponseForbidden() # 用户被封禁
         if request.user.userms.video_num_total >= request.user.userms.video_num_limit:
-            return JsonResponse({"status": 188, "msg": "用户录像仓库已满!"})
+            return HttpResponse(status = 402) # 录像仓库已满
             
         # response = {'status': 100, 'msg': None}
         # request.POST['file'] = request.FILES
@@ -52,7 +52,7 @@ def video_upload(request):
             # 查重
             collisions = list(VideoModel.objects.filter(timems=data["timems"], bv=data["bv"]).filter(video__cl=data["cl"], video__op=data["op"], video__isl=data["isl"], video__designator=data["designator"]))
             if collisions:
-                return JsonResponse({"status": 200, "msg": "录像已存在"})
+                return HttpResponse(status = 409)
             
             # 表中添加数据
             e_video = ExpandVideoModel.objects.create(designator=data["designator"],
@@ -101,7 +101,7 @@ def video_upload(request):
             # print(review_video_ids)
 
             # update_personal_record(request, data, e_video)
-            return JsonResponse({"status": 100, "msg": None})
+            return HttpResponse()
         else:
             # print(video_form.errors)
             return HttpResponseBadRequest()

@@ -274,17 +274,19 @@ const forceUpload = async (i: number) => {
     await proxy.$axios.post('/video/upload/',
         params,
     ).then(function (response) {
-        if (response.data.status == 100) {
+        if (response.status == 200) {
             uploaded_file_num.value += 1;
             removeUpload(i);
-        } else if (response.data.status == 200) {
-            video_msgs.value[i].status = "collision";
         } else {
             // 正常使用不会到这里
             video_msgs.value[i].status = "upload";
         }
-    }).catch(() => {
-        video_msgs.value[i].status = "upload";
+    }).catch((error: any) => {
+        if (error.response.status == 409) {
+            video_msgs.value[i].status = "collision";
+        } else {
+            video_msgs.value[i].status = "upload";
+        }
     })
 }
 
