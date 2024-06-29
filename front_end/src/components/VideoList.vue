@@ -51,7 +51,11 @@ import { useUserStore } from '@/store';
 const store = useUserStore()
 
 import { ms_to_s, approve, freeze, simple_formatter } from '@/utils';
+import { generalNotification } from '@/utils/system/status';
+import { useI18n } from 'vue-i18n';
 const { proxy } = useCurrentInstance();
+
+const t = useI18n();
 
 const data = defineProps({
     videos: {
@@ -142,12 +146,9 @@ const preview = (row: any, column: any, event: Event) => {
                 },
             }
         }
-    }).catch(
-        (res) => {
-            // console.log("报错");
-            // console.log(res);
-        }
-    )
+    }).catch((error: any) => {
+        generalNotification(t, error.response.status, t.t('common.action.getSoftware'));
+    })
 }
 
 

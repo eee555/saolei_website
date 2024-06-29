@@ -9,6 +9,7 @@ export const zhCn = {
             getUserProfile: '查询用户',
             setUserProfile: '修改用户',
             uploadFile: '上传文件',
+            videoQuery: '查询录像',
         },
         hide: '隐藏',
         level: {

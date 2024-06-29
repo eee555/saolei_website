@@ -150,15 +150,7 @@ def video_download(request):
         response['Content-Disposition']=f'attachment;filename="{video.file.name.split("/")[2]}"'
         return response
     except VideoModel.DoesNotExist:
-        return JsonResponse({"status": 104, "msg": "录像不存在！"})
-    # try:
-    #     video = VideoModel.objects.get(id=request.GET["id"])
-    #     response =FileResponse(open(video.file.path, 'rb'))
-    #     response['Content-Type']='application/octet-stream'
-    #     response['Content-Disposition']=f'attachment;filename="{video.file.name.split("/")[2]}"'
-    #     return response
-    # except Exception:
-    #     return JsonResponse({"status": 104, "msg": "file not exist!"})
+        return HttpResponseNotFound()
 
 # 录像查询（无需登录）
 # 按任何基础指标+难度+模式，排序，分页
@@ -310,7 +302,7 @@ def approve(request):
         res = []
         for _id in ids:
             if not isinstance(_id, int):
-                return HttpResponse("审核录像的id应为正整数。")
+                return HttpResponseNotFound() # id应为正整数
             video_i = VideoModel.objects.filter(id=_id)
             if not video_i:
                 res.append("Null")
@@ -365,7 +357,7 @@ def freeze(request):
         res = [] 
         for _id in ids:
             if not isinstance(_id, int) or _id < 1:
-                return HttpResponse("冻结录像的id应为正整数。")
+                return HttpResponseNotFound() # id应为正整数
             video_i = VideoModel.objects.filter(id=_id)
             if not video_i:
                 res.append("Null")
