@@ -124,22 +124,18 @@ def video_preview(request):
     if request.method != 'GET':
         return HttpResponseNotAllowed()
     # 这里性能可能有问题
-    try:
-        video = VideoModel.objects.get(id=int(request.GET["id"][:-4]))
-        # video.file.name是相对路径(含upload_to)，video.file.path是绝对路径
-        # print(settings.MEDIA_ROOT / "assets" / video.file.name)
-        file_path = settings.MEDIA_ROOT / video.file.name
-        response =FileResponse(open(file_path, 'rb'))
-        response['Content-Type']='application/octet-stream'
-        # response['Content-Disposition']=f'attachment;filename="{video.file.name.split("/")[2]}"'
-        file_name = video.file.name.split("/")[2]
-        file_name_uri = urllib.parse.quote(file_name)
-        response['Content-Disposition'] = f'attachment; filename="{file_name_uri}"'
-        response['Access-Control-Expose-Headers']='Content-Disposition'
-        
-        return response
-    except Exception:
-        return JsonResponse({"status": 104, "msg": "file not exist!"})
+    video = VideoModel.objects.get(id=int(request.GET["id"][:-4]))
+    # video.file.name是相对路径(含upload_to)，video.file.path是绝对路径
+    # print(settings.MEDIA_ROOT / "assets" / video.file.name)
+    file_path = settings.MEDIA_ROOT / video.file.name
+    response =FileResponse(open(file_path, 'rb'))
+    response['Content-Type']='application/octet-stream'
+    # response['Content-Disposition']=f'attachment;filename="{video.file.name.split("/")[2]}"'
+    file_name = video.file.name.split("/")[2]
+    file_name_uri = urllib.parse.quote(file_name)
+    response['Content-Disposition'] = f'attachment; filename="{file_name_uri}"'
+    response['Access-Control-Expose-Headers']='Content-Disposition'
+    return response
 
 # 给下载用的接口，区别是结尾没有文件后缀
 # @login_required(login_url='/')
