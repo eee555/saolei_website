@@ -45,17 +45,15 @@
         </el-table-column>
         <el-table-column :label="$t('common.prop.action')">
             <template #default="props">
-                <nobr>
-                    <el-button :disabled="props.row.status != 'designator' && props.row.status != 'pass'"
-                        @click="forceUpload(props.$index)"
-                        :type="props.row.status == 'pass' ? 'success' : props.row.status == 'designator' ? 'warning' : 'plain'"
-                        circle><el-icon>
-                            <Upload />
-                        </el-icon></el-button>
-                    <el-button @click="removeUpload(props.$index)" type="danger" circle><el-icon>
-                            <Delete />
-                        </el-icon></el-button>
-                </nobr>
+                <el-button :disabled="props.row.status != 'designator' && props.row.status != 'pass'"
+                    @click="forceUpload(props.$index)"
+                    :type="props.row.status == 'pass' ? 'success' : props.row.status == 'designator' ? 'warning' : 'info'"
+                    circle><el-icon>
+                        <Upload />
+                    </el-icon></el-button>
+                <el-button @click="removeUpload(props.$index)" type="danger" circle><el-icon>
+                        <Delete />
+                    </el-icon></el-button>
             </template>
         </el-table-column>
     </el-table>
