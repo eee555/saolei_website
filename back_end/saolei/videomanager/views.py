@@ -111,13 +111,10 @@ def video_upload(request):
 # 根据id向后台请求软件类型（适配flop播放器用）
 def get_software(request):
     if request.method != 'GET':
-        return HttpResponse("别瞎玩")
-    try:
-        video = VideoModel.objects.get(id=request.GET["id"])
-        # print({"status": 100, "msg": video.software})
-        return JsonResponse({"status": 100, "msg": video.software})
-    except Exception:
-        return JsonResponse({"status": 104, "msg": "file not exist!"})
+        return HttpResponseNotAllowed()
+    video = VideoModel.objects.get(id=request.GET["id"])
+    # print({"status": 100, "msg": video.software})
+    return JsonResponse({"msg": video.software})
 
 # 给预览用的接口，区别是结尾是文件后缀
 # 坑：如果做成必须登录才能下载，由于Django的某种特性，会重定向资源，

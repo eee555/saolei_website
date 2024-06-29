@@ -5,6 +5,7 @@ export const zhCn = {
     name: '简体中文',
     common: {
         action: {
+            getSoftware: '获取录像信息',
             getUserProfile: '查询用户',
             setUserProfile: '修改用户',
             uploadFile: '上传文件',

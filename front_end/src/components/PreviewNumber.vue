@@ -15,8 +15,11 @@
 // 某个数字或字符串，点击后预览
 import { onMounted, watch, ref, toRefs } from "vue";
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
+import { generalNotification } from "@/utils/system/status";
+import { useI18n } from "vue-i18n";
 const { proxy } = useCurrentInstance();
 const preview_visible = ref(false);
+const t = useI18n();
 
 const data = defineProps({
     id: {
@@ -60,12 +63,9 @@ const preview = (id: Number | undefined) => {
             }
         }
 
-    }).catch(
-        (res) => {
-            // console.log("报错");
-            // console.log(res);
-        }
-    )
+    }).catch((error: any) => {
+        generalNotification(t, error.response.status, t.t('common.action.getSoftware'))
+    })
 }
 
 const playVideo = function (uri: string) {
@@ -86,10 +86,6 @@ const playVideo = function (uri: string) {
         },
     });
 }
-
-onMounted(() => {
-
-});
 
 
 </script>
