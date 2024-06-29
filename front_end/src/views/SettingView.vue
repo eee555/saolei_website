@@ -1,5 +1,9 @@
 <template>
     <el-descriptions :title="t.t('setting.appearance')" :column="3">
+        <el-descriptions-item :label="t.t('setting.darkMode')">
+            <UseDark v-slot="{ isDark, toggleDark }">
+                <el-checkbox @click="toggleDark()" :model-value="isDark" />
+            </UseDark>
         </el-descriptions-item>
         <el-descriptions-item :label="t.t('setting.languageSwitch')"><el-switch v-model="local.language_show"
                 :active-text="$t('common.show')" :inactive-text="$t('common.hide')"></el-switch></el-descriptions-item>
@@ -44,5 +48,7 @@ import { useI18n } from 'vue-i18n';
 const store = useUserStore()
 const local = useLocalStore()
 const t = useI18n()
+
+import { UseDark } from '@vueuse/components';
 
 </script>
