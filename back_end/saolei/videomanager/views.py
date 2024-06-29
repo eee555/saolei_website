@@ -104,9 +104,7 @@ def video_upload(request):
             return JsonResponse({"status": 100, "msg": None})
         else:
             # print(video_form.errors)
-            return JsonResponse({"status": 666, "msg": "小型网站，请勿攻击！"})
-    elif request.method == 'GET':
-        return HttpResponse("别瞎玩")
+            return HttpResponseBadRequest()
     else:
         return HttpResponseNotAllowed()
 
@@ -207,9 +205,6 @@ def video_query(request):
         # t=json.dumps(response, cls=ComplexEncoder)
         # print(t)
         return JsonResponse(json.dumps(response, cls=ComplexEncoder), safe=False)
-
-    elif request.method == 'POST':
-        return HttpResponse("别瞎玩")
     else:
         return HttpResponseNotAllowed()
 
