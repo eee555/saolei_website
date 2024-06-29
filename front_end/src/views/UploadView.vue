@@ -63,16 +63,13 @@
 
 <script lang="ts" setup>
 // 上传录像的页面
-import { onMounted, onUnmounted, ref } from 'vue'
+import { ref } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
-import { genFileId, ElMessage, MessageHandler } from 'element-plus'
 import type { UploadInstance, UploadProps, UploadUserFile, UploadRawFile, UploadFile, UploadFiles, UploadRequestOptions } from 'element-plus'
 // import img_arbiter from '@/assets/img/img_arbiter.png'
-import UploadVideoCard from '@/components/UploadVideoCard.vue';
 import { useUserStore } from '../store'
 const store = useUserStore()
-import { LoginStatus } from "@/utils/common/structInterface"
 
 import { useI18n } from 'vue-i18n';
 const t = useI18n();
@@ -146,36 +143,10 @@ const allow_upload = ref(true)
 // 延时系数
 let k = 0;
 
-// 切标签时msg关不掉
-const elmsg_handles: MessageHandler[] = [];
-
-onMounted(() => {
-    if (store.user.realname == "请修改为实名") {
-        allow_upload.value = false;
-        elmsg_handles.push(ElMessage.error({ message: '上传录像前，请先修改为实名!', offset: 68 }));
-    }
-    if (store.login_status != LoginStatus.IsLogin) {
-        allow_upload.value = false;
-        elmsg_handles.push(ElMessage.error({ message: '请先登录!', offset: 68 }));
-    }
-})
-
-onUnmounted(() => {
-    elmsg_handles.forEach((h) => { h.close() });
-})
-
 // 录像列表变动的回调，上传多个文件时，有几个文件就会进来几次。
 const handleChange: UploadProps['onChange'] = async (uploadFile: UploadFile, uploadFiles: UploadFiles) => {
 
     if (allow_upload.value) {
-        if (uploadFile.raw?.type == 'image/jpeg') {
-            // el-upload在限制，进不来。除非用户选全部文件。
-            elmsg_handles.push(ElMessage.error({ message: '不能上传图片!', offset: 68 }));
-
-        } else if (uploadFile.size as number / 1024 / 1024 > 5) {
-            elmsg_handles.push(ElMessage.error({ message: '录像大小不能超过5MB!', offset: 68 }));
-
-        }
         // upload_video_visible.value = true;
         await push_video_msg(uploadFile);
         // 修改id。最后一个协程才是真正起作用的。
