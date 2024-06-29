@@ -13,11 +13,11 @@
         <el-descriptions-item :label="t.t('setting.menuFontSize')"><el-input-number v-model="local.menu_font_size"
                 size="small" :min="10" /></el-descriptions-item>
         <el-descriptions-item label="通知关闭"><el-tooltip>
-            <template #content>
-                通知自动关闭的时间，单位毫秒。<br/>值为0则不会自动关闭。
-            </template>
-            <el-input-number v-model="local.notification_duration" size="small" :min="0" :step="1000"/>
-        </el-tooltip></el-descriptions-item>
+                <template #content>
+                    通知自动关闭的时间，单位毫秒。<br />值为0则不会自动关闭。
+                </template>
+                <el-input-number v-model="local.notification_duration" size="small" :min="0" :step="1000" />
+            </el-tooltip></el-descriptions-item>
     </el-descriptions>
     <el-descriptions v-if="store.login_status == LoginStatus.IsLogin" title="个人信息" :column="3">
         <el-descriptions-item label="用户id">{{ store.user.id }}</el-descriptions-item>
