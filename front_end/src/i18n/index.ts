@@ -31,6 +31,7 @@ export default createI18n({
     fallbackLocale: dev.local,
     fallbackWarn: false,
     missingWarn: false,
+    warnHtmlMessage: false,
     locale: getDefaultLocale(),
     messages: getMessages(),
 })
