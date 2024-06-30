@@ -10,25 +10,70 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
     // 嵌套配置示例 TODO 删除嵌套配置示例
     name: string,
     common: {
+        action: {
+            getSoftware: string,
+            getUserProfile: string,
+            setUserProfile: string,
+            uploadFile: string,
+            videoQuery: string,
+        },
+        hide: string,
         level: {
             b: string,
             i: string,
             e: string,
         },
         mode: {
-            standard: string,
-            noFlag: string,
-            noGuess: string,
-            recursive: string
+            std: string,
+            nf: string,
+            ng: string,
+            dg: string,
         }
+        msg: {
+            actionFail: string,
+            actionSuccess: string,
+            agreeTAC: string,
+            confirmPasswordFail: string,
+            connectionFail: string,
+            emailCodeSent: string,
+            emptyEmail: string,
+            emptyEmailCode: string,
+            emptyPassword: string,
+            emptyUsername: string,
+            fileTooLarge: string,
+            invalidEmail: string,
+            invalidEmailCode: string,
+            invalidPassword: string,
+            invalidUsername: string,
+            logoutFail: string,
+            logoutSuccess: string,
+            realNameRequired: string,
+        },
         prop: {
             action: string,
             designator: string,
             fileName: string,
+            is: string,
+            op: string,
             level: string,
+            realName: string,
+            sex: string,
             status: string,
             time: string,
+            timems: string,
+            upload_time: string,
         }
+        response: {
+            OK: '',
+            BadRequest: string,
+            Forbidden: string,
+            InternalServerError: string,
+            NotFound: string,
+            PayloadTooLarge: string,
+            UnsupportedMediaType: string,
+        },
+        show: string,
+        toDo: string,
     },
     forgetPassword: {
         title: string,
@@ -38,7 +83,8 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
         emailCode: string,
         password: string,
         confirmPassword: string,
-        confirm: string
+        confirm: string,
+        success: string,
     },
     login: {
         title: string,
@@ -60,6 +106,7 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
         login: string,
         logout: string,
         register: string,
+        setting: string,
         downloads: string,
         links: string,
         team: string
@@ -74,6 +121,13 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
         confirmChange: string,
         cancelChange: string,
         designator: string,
+        msg: {
+            avatarChange: string,
+            avatarFormat: string,
+            avatarFilesize: string,
+            realnameChange: string,
+            signatureChange: string,
+        },
         records: {
             title: string,
             modeRecord: string
@@ -110,6 +164,16 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
         confirmPassword: string,
         agreeTo: string,
         termsAndConditions: string,
-        confirm: string
+        confirm: string,
+    },
+    setting: {
+        appearance: string,
+        darkMode: string,
+        languageSwitch: string,
+        menuFontSize: string,
+        menuHeight: string,
+        menuLayout: string,
+        menuLayoutAbstract: string,
+        menuLayoutDefault: string,
     },
 }

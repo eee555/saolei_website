@@ -2,6 +2,13 @@ export const en = {
     local: 'en',
     name: 'English',
     common: {
+        action: {
+            getSoftware: 'fetch video data',
+            getUserProfile: 'fetch user data',
+            setUserProfile: 'modify user data',
+            uploadFile: 'upload file',
+            videoQuery: 'fetch video data',
+        },
         hide: 'Hide',
         level: {
             b: 'Beginner',
@@ -15,6 +22,8 @@ export const en = {
             dg: 'Recursive Chord'
         },
         msg: {
+            actionFail: 'Failed to {0}',
+            actionSuccess: 'Succeed to {0}',
             agreeTAC: 'Please agree to Terms and Conditions!',
             confirmPasswordFail: 'Passwords do not match!',
             connectionFail: 'Connection Fails!',
@@ -23,12 +32,14 @@ export const en = {
             emptyEmailCode: 'Please enter 6-char email code!',
             emptyPassword: 'Please enter your password!',
             emptyUsername: 'Please enter your username!',
+            fileTooLarge: 'Maximum file size is {0}',
             invalidEmail: 'Invalid email!',
             invalidEmailCode: 'Email code is invalid! Please re-sent your email code.',
             invalidPassword: 'The length of password should be from 6 to 20!。',
             invalidUsername: 'The length of username cannot exceed 20!',
             logoutFail: 'Failed to log out!',
             logoutSuccess: 'Log out success!',
+            realNameRequired: 'Real name required',
         },
         prop: {
             action: 'Action',
@@ -41,6 +52,15 @@ export const en = {
             time: 'Time',
             timems: 'Time',
             upload_time: 'Upload time',
+        },
+        response: {
+            OK: '',
+            BadRequest: 'Unrecognised request',
+            Forbidden: 'Permission denied',
+            InternalServerError: 'Internal server error',
+            NotFound: 'Data not found',
+            PayloadTooLarge: 'Payload too large',
+            UnsupportedMediaType: 'Unsupported file type',
         },
         show: 'Show',
         toDo: 'TODO',
@@ -114,6 +134,19 @@ export const en = {
                 upload: 'Upload fail',
             }
         }
+    },
+    register: {
+        title: 'Register',
+        username: 'username',
+        email: 'email',
+        captcha: 'captcha',
+        getEmailCode: 'Send email code',
+        emailCode: 'email code',
+        password: 'password',
+        confirmPassword: 'confirm password',
+        agreeTo: 'Agree to ',
+        termsAndConditions: 'Terms & Conditions',
+        confirm: 'Register',
     },
     setting: {
         appearance: 'Appearance',
