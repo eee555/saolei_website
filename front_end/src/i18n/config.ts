@@ -70,6 +70,7 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
             InternalServerError: string,
             NotFound: string,
             PayloadTooLarge: string,
+            TooManyRequests: string,
             UnsupportedMediaType: string,
         },
         show: string,

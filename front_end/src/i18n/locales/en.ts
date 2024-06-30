@@ -64,6 +64,7 @@ export const en = {
             InternalServerError: 'Internal server error',
             NotFound: 'Data not found',
             PayloadTooLarge: 'Payload too large',
+            TooManyRequests: 'Too many requests',
             UnsupportedMediaType: 'Unsupported file type',
         },
         show: 'Show',

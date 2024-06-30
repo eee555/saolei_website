@@ -11,6 +11,7 @@ const notificationMessage: { [code: number]: string} = {
     404: 'common.response.NotFound',
     413: 'common.response.PayloadTooLarge',
     415: 'common.response.UnsupportedMediaType',
+    429: 'common.response.TooManyRequests',
     500: 'common.response.InternalServerError',
 };
 
