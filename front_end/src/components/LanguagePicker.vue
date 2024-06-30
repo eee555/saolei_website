@@ -24,6 +24,7 @@ const options = [
     { lang: "zh-cn", text: "简体中文" },
     { lang: "en", text: "English" },
     { lang: "de", text: "name" },
+    { lang: "pl", text: "polski"},
     { lang: "dev", text: "dev" },
 ];
 
@@ -39,8 +40,9 @@ const changeLanguage = (value: any) => {
 
 <style lang="less" scoped>
 .icon {
-    margin-top: v-bind("local.menu_height / 4 + 'px'");
-    margin-bottom: v-bind("local.menu_height / 4 + 'px'");
+    margin-top: v-bind("(local.menu_height - local.menu_font_size) / 2 + 'px'");
+    min-width: v-bind("local.menu_font_size + 'px'");
+    height: v-bind("local.menu_font_size + 'px'");
     cursor: pointer;
 }
 </style>

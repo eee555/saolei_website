@@ -1,7 +1,16 @@
+import { LocaleConfig } from '@/i18n/config'
+
 export const en = {
     local: 'en',
     name: 'English',
     common: {
+        action: {
+            getSoftware: 'fetch video data',
+            getUserProfile: 'fetch user data',
+            setUserProfile: 'modify user data',
+            uploadFile: 'upload file',
+            videoQuery: 'fetch video data',
+        },
         hide: 'Hide',
         level: {
             b: 'Beginner',
@@ -15,6 +24,8 @@ export const en = {
             dg: 'Recursive Chord'
         },
         msg: {
+            actionFail: 'Failed to {0}',
+            actionSuccess: 'Succeed to {0}',
             agreeTAC: 'Please agree to Terms and Conditions!',
             confirmPasswordFail: 'Passwords do not match!',
             connectionFail: 'Connection Fails!',
@@ -23,15 +34,19 @@ export const en = {
             emptyEmailCode: 'Please enter 6-char email code!',
             emptyPassword: 'Please enter your password!',
             emptyUsername: 'Please enter your username!',
+            fileTooLarge: 'Maximum file size is {0}',
             invalidEmail: 'Invalid email!',
             invalidEmailCode: 'Email code is invalid! Please re-sent your email code.',
             invalidPassword: 'The length of password should be from 6 to 20!。',
             invalidUsername: 'The length of username cannot exceed 20!',
             logoutFail: 'Failed to log out!',
             logoutSuccess: 'Log out success!',
+            realNameRequired: 'Real name required',
         },
         prop: {
             action: 'Action',
+            designator: 'Designator',
+            fileName: 'File name',
             is: 'Island',
             level: 'Level',
             op: 'Opening',
@@ -42,18 +57,29 @@ export const en = {
             timems: 'Time',
             upload_time: 'Upload time',
         },
+        response: {
+            OK: '',
+            BadRequest: 'Unrecognised request',
+            Forbidden: 'Permission denied',
+            InternalServerError: 'Internal server error',
+            NotFound: 'Data not found',
+            PayloadTooLarge: 'Payload too large',
+            TooManyRequests: 'Too many requests',
+            UnsupportedMediaType: 'Unsupported file type',
+        },
         show: 'Show',
         toDo: 'TODO',
     },
     forgetPassword: {
         title: 'Reset password',
-        email: 'email',
         captcha: 'captcha',
-        getEmailCode: 'Send one-time password',
-        emailCode: 'one-time password',
-        password: 'new password',
+        confirm: 'Reset',
         confirmPassword: 'confirm password',
-        confirm: 'Reset'
+        email: 'email',
+        emailCode: 'one-time password',
+        getEmailCode: 'Send one-time password',
+        password: 'new password',
+        success: 'Password reset complete!'
     },
     login: {
         title: 'Login',
@@ -90,6 +116,13 @@ export const en = {
         confirmChange: 'Confirm',
         cancelChange: 'Cancel',
         designator: 'My designators: ',
+        msg: {
+            avatarChange: 'Avatar change complete! {0} times left',
+            avatarFormat: 'Avatar file has to be in JPG or PNG format!',
+            avatarFilesize: 'Maximum file size is 50MB!',
+            realnameChange: 'Real name change complete! {0} times left',
+            signatureChange: 'Signature change complete! {0} times left',
+        },
         records: {
             title: 'Personal Records',
             modeRecord: ' mode record: '
@@ -114,6 +147,19 @@ export const en = {
                 upload: 'Upload fail',
             }
         }
+    },
+    register: {
+        title: 'Register',
+        username: 'username',
+        email: 'email',
+        captcha: 'captcha',
+        getEmailCode: 'Send email code',
+        emailCode: 'email code',
+        password: 'password',
+        confirmPassword: 'confirm password',
+        agreeTo: 'Agree to ',
+        termsAndConditions: 'Terms & Conditions',
+        confirm: 'Register',
     },
     setting: {
         appearance: 'Appearance',

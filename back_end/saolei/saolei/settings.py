@@ -74,7 +74,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "saolei.urls"
 
-RATELIMIT_VIEW = "utils.ratelimited"
+RATELIMIT_VIEW = "utils.response.ratelimited_error"
 
 TEMPLATES = [
     {

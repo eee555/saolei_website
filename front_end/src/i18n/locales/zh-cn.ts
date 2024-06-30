@@ -64,6 +64,7 @@ export const zhCn = {
             InternalServerError: '后端发生错误',
             NotFound: '找不到数据',
             PayloadTooLarge: '文件过大',
+            TooManyRequests: '请求过于频繁',
             UnsupportedMediaType: '不支持的文件类型',
         },
         show: '显示',
