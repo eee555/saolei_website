@@ -40,8 +40,9 @@ const changeLanguage = (value: any) => {
 
 <style lang="less" scoped>
 .icon {
-    margin-top: v-bind("local.menu_height / 4 + 'px'");
-    margin-bottom: v-bind("local.menu_height / 4 + 'px'");
+    margin-top: v-bind("(local.menu_height - local.menu_font_size) / 2 + 'px'");
+    min-width: v-bind("local.menu_font_size + 'px'");
+    height: v-bind("local.menu_font_size + 'px'");
     cursor: pointer;
 }
 </style>
