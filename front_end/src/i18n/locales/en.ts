@@ -1,3 +1,5 @@
+import { LocaleConfig } from '@/i18n/config'
+
 export const en = {
     local: 'en',
     name: 'English',
@@ -43,6 +45,8 @@ export const en = {
         },
         prop: {
             action: 'Action',
+            designator: 'Designator',
+            fileName: 'File name',
             is: 'Island',
             level: 'Level',
             op: 'Opening',
@@ -67,13 +71,14 @@ export const en = {
     },
     forgetPassword: {
         title: 'Reset password',
-        email: 'email',
         captcha: 'captcha',
-        getEmailCode: 'Send one-time password',
-        emailCode: 'one-time password',
-        password: 'new password',
+        confirm: 'Reset',
         confirmPassword: 'confirm password',
-        confirm: 'Reset'
+        email: 'email',
+        emailCode: 'one-time password',
+        getEmailCode: 'Send one-time password',
+        password: 'new password',
+        success: 'Password reset complete!'
     },
     login: {
         title: 'Login',
@@ -110,6 +115,13 @@ export const en = {
         confirmChange: 'Confirm',
         cancelChange: 'Cancel',
         designator: 'My designators: ',
+        msg: {
+            avatarChange: 'Avatar change complete! {0} times left',
+            avatarFormat: 'Avatar file has to be in JPG or PNG format!',
+            avatarFilesize: 'Maximum file size is 50MB!',
+            realnameChange: 'Real name change complete! {0} times left',
+            signatureChange: 'Signature change complete! {0} times left',
+        },
         records: {
             title: 'Personal Records',
             modeRecord: ' mode record: '
