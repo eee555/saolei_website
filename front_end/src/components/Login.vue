@@ -158,9 +158,6 @@ const AXIOS_BASE_URL = import.meta.env.VITE_BASE_API;
 let refValidCode = ref<any>(null)
 let refValidCode2 = ref<any>(null)
 
-
-const user_name_show = ref(""); // 登录后右上方显示的用户名
-
 // const login_status = ref(LoginStatus.NotLogin);
 // 登录对话框是否出现
 const login_visible = ref(false);
@@ -220,10 +217,6 @@ onMounted(() => {
     } else if (store.login_status == LoginStatus.IsLogin) {
         // 解决改变窗口宽度，使得账号信息在显示和省略之间切换时，用户名不能显示的问题
         hint_message.value = ""
-        user_name_show.value = store.user.username;
-        if (store.user.is_banned) {
-            user_name_show.value += "（您已被封禁，详情请询问管理员！）"
-        }
         emit('login'); // 向父组件发送消息
         login_visible.value = false;
     }
@@ -289,13 +282,8 @@ const login = async () => {
         if (response.data.status == 100) {
             hint_message.value = ""
 
-            user_name_show.value = response.data.msg.username;
-
             store.user = response.data.msg;
             store.player = response.data.msg;
-            if (response.data.msg.is_banned) {
-                user_name_show.value += "（您已被封禁，详情请询问管理员！）"
-            }
             store.login_status = LoginStatus.IsLogin;
             // mutations.updateLoginStatus(LoginStatus.IsLogin);
             // login_status.value = LoginStatus.IsLogin;
@@ -342,7 +330,6 @@ const retrieve = () => {
     ).then(function (response) {
         if (response.data.status == 100) {
             hint_message.value = "";
-            user_name_show.value = response.data.msg;
             // mutations.updateLoginStatus(LoginStatus.IsLogin);
             store.login_status = LoginStatus.IsLogin;
             // login_status.value = LoginStatus.IsLogin;
@@ -415,7 +402,6 @@ const register = () => {
         // console.log(response.data);
         if (response.data.status == 100) {
             hint_message.value = ""
-            user_name_show.value = user_name_reg.value;
             // login_status.value = LoginStatus.IsLogin;
             // mutations.updateLoginStatus(LoginStatus.IsLogin);
             store.login_status = LoginStatus.IsLogin;
@@ -438,7 +424,6 @@ const logout = async () => {
     ).then(function (response) {
         if (response.data.status == 100) {
             // hint_message.value = ""
-            user_name_show.value = "";
             // login_status.value = LoginStatus.NotLogin;
             // mutations.updateLoginStatus(LoginStatus.NotLogin);
             store.login_status = LoginStatus.NotLogin;
