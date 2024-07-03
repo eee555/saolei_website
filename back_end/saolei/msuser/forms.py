@@ -7,11 +7,12 @@ User = get_user_model()
 from django.contrib.auth import get_user_model
 from utils import verify_text, verify_image
 from django.utils import timezone
+from config.global_settings import *
 
 
 # 更新我的地盘里的姓名
 class UserUpdateRealnameForm(forms.ModelForm):
-    realname = forms.CharField(max_length=10,  required=True)
+    realname = forms.CharField(max_length=MaxSizes.username,  required=True)
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
         self.user = self.request.user

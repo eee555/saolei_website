@@ -89,4 +89,9 @@ const playVideo = function (uri: string) {
 
 </script>
 
-<style></style>
+<style lang="less" scoped>
+.clickable:hover {
+    color: rgb(26, 127, 228);
+    cursor: pointer;
+}
+</style>

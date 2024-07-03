@@ -24,7 +24,7 @@
             }}</el-button>
     </el-row>
 
-    <div style="font-size:20px;margin: auto;margin-top: 10px;">
+    <div style="font-size:20px;margin: auto;margin-top: 10px;min-height: 50vh;">
         <el-table :data="videoList" @sort-change="handleSortChange" @row-click="preview" border table-layout="auto">
             <el-table-column type="index" :index="offsetIndex" fixed></el-table-column>
             <el-table-column :label="$t('common.prop.realName')" v-slot="scope" width="auto">

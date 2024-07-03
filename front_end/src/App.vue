@@ -60,7 +60,7 @@
 
     <el-dialog draggable :lock-scroll="false" v-model="notice_visible" title="站长通知" width="30%"
         :before-close="handle_notice_close">
-        <span>{{ notice }}</span>
+        <span style="white-space: pre-wrap; ">{{ notice }}</span>
         <template #footer>
             <span class="dialog-footer">
                 <el-checkbox v-model="never_show_notice">不再显示此对话框</el-checkbox>
@@ -112,8 +112,15 @@ const menu_items = [
 ];
 
 const notice = ref(`
-1、即日起开始删档公测，公测与开发同步进行。公测结束后，在正式上线之前会删除所有数据。
-2、相关意见、问题和建议请移步至此处[https://gitee.com/ee55/saolei_website/issues]发表。
+0、公测已接近尾声。公测结束后，在正式上线之前会删除所有数据。
+1、因为以下内容很重要，请在分享元扫雷网链接时务必分享本通知。
+2、未来会实现从其他网站导入成绩的功能，所以无需重复上传在其他网站上已有的成绩。
+3、一些个人信息功能（如姓名）还存在问题，所以个人信息暂时可以乱填，将来修复完毕后我们会给用户增加一次修改机会。
+4、因为服务器配置是最丐的，日活增加后可能变卡。如果受不了的话请提供服务器/赞助加钱升级服务器。
+5、标识审核暂时遵循严格匹配，产生不匹配警告后用户仍可点击黄色上传按钮使录像进入人工审核，通过后该标识就会进入用户的标识列表。出于审核效率考量，我们建议用户一次只上传一个标识不匹配录像，待标识通过之后再继续上传。
+6、请忽略用户协议。
+7、第一次加载时需要缓存资源，会很卡，尤其是教程页。第二次就快了。
+8、相关意见、问题和建议请移步至此处[https://gitee.com/ee55/saolei_website/issues]发表。
 `);
 
 onMounted(() => {
@@ -261,8 +268,5 @@ a {
     margin-top: v-bind("local.menu_height + 'px'");
 }
 
-.clickable:hover {
-    color: rgb(26, 127, 228);
-    cursor: pointer;
-}
+
 </style>

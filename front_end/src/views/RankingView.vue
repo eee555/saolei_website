@@ -10,7 +10,7 @@
             }}</el-button>
     </el-row>
 
-    <div style="width: 80%;font-size:20px;margin: auto;margin-top: 10px;">
+    <div style="width: 80%;font-size:20px;margin: auto;margin-top: 10px;user-select: none;min-height: 58vh;">
         <div style="border-bottom: 1px solid #555555;padding-bottom: 10px;">
             <span class="rank">排名</span>
             <span class="name">姓名</span>
@@ -62,7 +62,7 @@
 </template>
 
 <script lang="ts" setup>
-// 全网录像的检索器，根据三个维度排序
+// 玩家排行榜
 import { onMounted, ref, Ref, reactive } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import { to_fixed_n, ms_to_s } from "@/utils";

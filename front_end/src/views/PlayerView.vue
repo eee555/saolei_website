@@ -18,19 +18,20 @@
                         {{ $t('profile.realname') }}
                     </div>
                     <div>
-                        <el-input v-model.trim="realname_edit" :placeholder="$t('profile.realnameInput')" minlength="2"
-                            maxlength="10"></el-input>
+                        <el-input v-model="realname_edit" :placeholder="$t('profile.realnameInput')" minlength="2"
+                            maxlength="100"></el-input>
                     </div>
                     <div style="margin-top: 12px;margin-bottom: 4px;">
                         {{ $t('profile.signature') }}
                     </div>
                     <div>
-                        <el-input v-model.trim="signature_edit" :placeholder="$t('profile.signatureInput')" minlength="0" maxlength="188"
-                            type="textarea" :rows="8"></el-input>
+                        <el-input v-model="signature_edit" :placeholder="$t('profile.signatureInput')" minlength="0"
+                            maxlength="188" type="textarea" :rows="8"></el-input>
                     </div>
 
                     <button class="edit_button_ok" @click="upload_info">{{ $t('profile.confirmChange') }}</button>
-                    <button class="edit_button_cancel" @click="is_editing = false;">{{ $t('profile.cancelChange') }}</button>
+                    <button class="edit_button_cancel" @click="is_editing = false;">{{ $t('profile.cancelChange')
+                        }}</button>
 
                 </div>
 
@@ -46,11 +47,13 @@
                     <div style="font-size: 16px;margin-bottom: 12px;color: #555;"><span
                             class="flag-icon flag-icon-cn"></span>
                         {{ realname }}</div>
-                    <div style="overflow: auto ;font-size: 16px;margin-bottom: 12px;">{{ signature }}</div>
-                    <button class="edit_button" v-show="show_edit_button"
-                        @click="is_editing = true; visible = true;">{{ $t('profile.change') }}</button>
+                    <div style="overflow: auto ;font-size: 16px;margin-bottom: 12px;text-align: justify;">
+                        {{ signature }}</div>
+                    <button class="edit_button" v-show="show_edit_button" @click="is_editing = true; visible = true;">{{
+                    $t('profile.change') }}</button>
                     <!-- <div style="overflow: auto ;">人气：{{ popularity }}</div> -->
-                    <div style="overflow: auto ;"><strong>{{ $t('profile.designator') }}</strong>{{ designators.join(", ") }}</div>
+                    <div style="overflow: auto ;text-align: justify;"><strong>{{ $t('profile.designator') }}</strong>{{
+                    designators.join(", ") }}</div>
                 </div>
 
                 <el-dialog v-model="visible" title="请注意" width="50%" align-center draggable :lock-scroll="false">
@@ -79,7 +82,8 @@
                     <el-tab-pane :label="$t('profile.videos')" name="second" :lazy="true">
                         <PlayerVideosView></PlayerVideosView>
                     </el-tab-pane>
-                    <el-tab-pane v-if="store.user.id + '' == userid" :label="$t('profile.upload.title')" name="third" :lazy="true">
+                    <el-tab-pane v-if="store.user.id + '' == userid" :label="$t('profile.upload.title')" name="third"
+                        :lazy="true">
                         <UploadView :designators="designators"></UploadView>
                     </el-tab-pane>
                 </el-tabs>
