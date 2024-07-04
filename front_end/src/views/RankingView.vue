@@ -10,7 +10,7 @@
             }}</el-button>
     </el-row>
 
-    <div style="width: 80%;font-size:20px;margin: auto;margin-top: 10px;user-select: none;min-height: 58vh;">
+    <div style="width: 80%;font-size:20px;margin: auto;margin-top: 10px;user-select: none;">
         <div style="border-bottom: 1px solid #555555;padding-bottom: 10px;">
             <span class="rank">排名</span>
             <span class="name">姓名</span>

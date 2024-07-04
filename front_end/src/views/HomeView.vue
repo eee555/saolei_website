@@ -25,11 +25,37 @@
                 </el-tabs>
             </el-main>
             <el-aside width="30%" style="background-color: white;padding: 1%;">
-                <el-tabs type="border-card">
+                <el-tabs type="border-card" style="min-height: 300px;">
                     <el-tab-pane label="每日一星">每日一星</el-tab-pane>
                     <el-tab-pane label="站长统计">站长统计</el-tab-pane>
                     <el-tab-pane label="如何评选？">如何评选？</el-tab-pane>
                 </el-tabs>
+                <div style="padding-top: 5%;user-select: none;">
+                    <div class="aside-tip-title">
+                        <el-icon><Download/></el-icon>下载中心
+                    </div>
+                    <div style="font-size: 14px;color: #888;padding: 2% 5%;">
+                        <Downloads></Downloads>
+                        <span style="width:12px; display:inline-block"></span>
+                        <FriendlyLink></FriendlyLink>
+                    </div>
+
+                    <div class="aside-tip-title">
+                        <el-icon><QuestionFilled/></el-icon>帮助中心
+                    </div>
+                    <div style="font-size: 14px;color: #888;padding: 2% 5%;">
+                        <Groups></Groups>
+                    </div>
+
+                    <div class="aside-tip-title">
+                        <el-icon ><InfoFilled/></el-icon>关于我们
+                    </div>
+                    <div style="font-size: 14px;color: #888;padding: 2% 5%;">
+                        <Thanks></Thanks>
+                        <span style="width:12px; display:inline-block"></span>
+                        赞助
+                    </div>
+                </div>
             </el-aside>
         </el-container>
     </div>
@@ -44,6 +70,12 @@ import PlayerName from '@/components/PlayerName.vue';
 import { to_fixed_n } from "@/utils";
 const { proxy } = useCurrentInstance();
 import { utc_to_local_format } from "@/utils/system/tools";
+
+import FriendlyLink from "@/components/dialogs/FriendlyLinks.vue";
+import Downloads from "@/components/dialogs/Downloads.vue";
+import Thanks from "@/components/dialogs/Thanks.vue";
+import Groups from "@/components/dialogs/Groups.vue";
+
 
 import { useUserStore } from '../store'
 const store = useUserStore()
@@ -98,11 +130,27 @@ const update_review_queue = async () => {
 
 </script>
 
-<style scope lang='less'>
+<style lang='less'>
 .bottom_tabs{
     height: 500px;
     overflow: auto;
 
 }
+
+.aside-tip-title{
+    font-size: 14px;
+    color: #555;
+    display:flex;
+    align-items: center;
+    margin-top: 5%;
+}
+
+.text-button:hover{
+    cursor: pointer;
+}
+
+
+
+
 
 </style>

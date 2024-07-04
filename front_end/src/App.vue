@@ -44,7 +44,7 @@
     <div class="common-layout">
         <el-container>
             <div class="header_all" style="padding-top: 0; overflow: auto">
-                <div class="content" style="padding-top: 16px">
+                <div class="content" style="padding-top: 16px;min-height: 80vh;">
                     <router-view />
                 </div>
             </div>
