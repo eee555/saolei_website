@@ -56,6 +56,8 @@ import Wait from '@/components/Wait.vue';
 import { useRouter } from 'vue-router'
 import { ms_to_s } from "@/utils"
 const router = useRouter()
+import { useUserStore } from '../store'
+const store = useUserStore()
 
 
 const data = defineProps({
@@ -167,8 +169,9 @@ function to_fixed_n(input: string | number | undefined, to_fixed: number): strin
 const visit_me = (user_id: Number) => {
     // proxy.$store.commit('updatePlayer', { "id": id.value, "realname":realname.value });
     // localStorage.setItem("player", JSON.stringify({ "id": id.value, "realname":realname.value }));
-    localStorage.setItem("player", JSON.stringify({ "id": id.value }));
-    router.push("player")
+    // localStorage.setItem("player", JSON.stringify({ "id": id.value }));
+    store.player.id = +id.value;
+    router.push(`player\/${store.player.id}`)
 }
 
 </script>

@@ -65,7 +65,9 @@ def get_info(request):
                     "avatar": image_data,
                     "signature": user.signature,
                     "popularity": user.popularity,
-                    "designators": user.userms.designators
+                    "designators": user.userms.designators,
+                    "is_banned": user.is_banned,
+                    "country": user.country
                     }
         return JsonResponse(response)
     else:

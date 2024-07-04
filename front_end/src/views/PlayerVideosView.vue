@@ -14,6 +14,8 @@ const { proxy } = useCurrentInstance();
 import { Record, RecordBIE } from "@/utils/common/structInterface";
 import VideoList from '@/components/VideoList.vue';
 // import { fa } from 'element-plus/es/locale';
+import { useUserStore } from '../store'
+const store = useUserStore()
 
 const loading = ref(true)
 
@@ -22,7 +24,8 @@ const videos_queue = ref<any[]>([]);
 
 onMounted(() => {
     // const player = proxy.$store.state.player;
-    const player = JSON.parse(localStorage.getItem("player") as string);
+    // const player = JSON.parse(localStorage.getItem("player") as string);
+    const player = store.player;
     proxy.$axios.get('/video/query_by_id/',
         {
             params: {id: player.id}

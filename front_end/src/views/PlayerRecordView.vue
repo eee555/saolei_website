@@ -47,7 +47,7 @@
 
 <script lang="ts" setup>
 // 个人主页的个人纪录部分
-import { onMounted, ref, Ref } from 'vue'
+import { onMounted, ref, Ref, nextTick } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import { genFileId, ElMessage } from 'element-plus'
@@ -85,12 +85,13 @@ const indexMethod = (index: number) => {
     return ["", t.t('common.level.b'), t.t('common.level.i'), t.t('common.level.e')][index + 1]
 }
 
-onMounted(() => {
+// 此处和父组件配合，等一下从store里获取用户的id
+nextTick(() => {
     // const player = proxy.$store.state.player;
 
     // const player = JSON.parse(localStorage.getItem("player") as string);
     // username.value = player.name;
-
+    
     // 把左侧的头像、姓名、个性签名、记录请求过来
     proxy.$axios.get('/msuser/records/',
         {

@@ -157,11 +157,17 @@ onMounted(() => {
     // 把左侧的头像、姓名、个性签名、记录请求过来
 
     let player_id = +proxy.$route.params.id;
+    
+    // http://localhost:8080/#/player/1
+    // 首先看url里有没有带参，如果有，就访问这个用户；其次看store里有没有用户id。
+
     if (Number.isInteger(player_id) && player_id >= 1) {
         player.id = player_id;
-        localStorage.setItem("player", JSON.stringify({ "id": player_id }));
+        store.player.id = player_id;
+        // localStorage.setItem("player", JSON.stringify({ "id": player_id }));
     } else {
-        player.id = JSON.parse(localStorage.getItem("player") as string).id as number;
+        // player.id = JSON.parse(localStorage.getItem("player") as string).id as number;
+        player.id = store.player.id;
     }
     show_edit_button = player.id == store.user.id;
 
@@ -173,6 +179,12 @@ onMounted(() => {
         }
     ).then(function (response) {
         const data = response.data;
+        store.player.realname = data.realname;
+        store.player.username = data.username;
+        store.player.is_banned = data.is_banned;
+        store.player.country = data.country;
+        
+
         userid.value = data.id;
         realname.value = data.realname;
         username.value = data.username;
