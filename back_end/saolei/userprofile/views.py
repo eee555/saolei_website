@@ -2,7 +2,7 @@ import logging
 logger = logging.getLogger(__name__)
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, HttpResponseNotAllowed
-from utils.response import HttpResponseCaptchaMismatch, HttpResponseTooManyRequests, HttpResponsePasswordMismatch, HttpResponseUnauthorized
+from utils.response import HttpResponseTooManyRequests, HttpResponseUnauthorized, PasswordMismatchException, CaptchaMismatchException, SuccessResponse
 from .forms import UserLoginForm, UserRegisterForm, UserRetrieveForm, EmailForm
 from captcha.models import CaptchaStore
 import json
@@ -32,12 +32,9 @@ def user_login_cookie(request):
 @ratelimit(key='ip', rate='60/h')
 # 此处要分成两个，密码容易碰撞，hash难碰撞
 def user_login(request):
-                  "realname": request.user.realname, "is_banned": request.user.is_banned, "is_staff": request.user.is_staff}
-        #         login(request, user)
     if request.method != 'POST':
         return HttpResponseNotAllowed()
 
-                    # 将用户数据保存在 session 中，即实现了登录动作
     user_login_form = UserLoginForm(data=request.POST)
     print(request.POST)
     if user_login_form.is_valid():
@@ -46,7 +43,7 @@ def user_login(request):
         capt = data["captcha"]   # 用户提交的验证码
         key = data["hashkey"]    # 验证码hash
         if not judge_captcha(capt, key):
-            return HttpResponseCaptchaMismatch() # 验证码错误
+            return CaptchaMismatchException() # 验证码错误
         # 检验账号、密码是否正确匹配数据库中的某个用户
         # 如果均匹配则返回这个 user 对象
         user = authenticate(
@@ -60,9 +57,9 @@ def user_login(request):
             if 'user_id' in data and data['user_id'] != str(user.id):
                 # 检测到小号
                 logger.info(f'{data["user_id"][:50]} is diffrent from {str(user.id)}.')
-            return JsonResponse(response)
+            return SuccessResponse(response)
         else:
-            return HttpResponsePasswordMismatch()
+            return PasswordMismatchException()
     else:
         return HttpResponseBadRequest()
 
@@ -269,6 +266,9 @@ def judge_captcha(captchaStr, captchaHashkey):
     CaptchaStore.objects.filter(hashkey=captchaHashkey).delete()
     return False
 
+def account_link(request):
+    if request.method == 'POST':
+        print(request)
 
 get_userProfile_fields = ["id", "userms__designators", "userms__video_num_limit", "username", "first_name", "last_name", "email", "realname", "signature", "country", "left_realname_n", "left_avatar_n", "left_signature_n", "is_banned"]
 

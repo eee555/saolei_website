@@ -152,10 +152,16 @@ const local = useLocalStore()
 
 import { useI18n } from 'vue-i18n';
 import { generalNotification } from '@/utils/system/status';
-import { notificationMessage } from '@/utils/common/HttpResponse';
+import { httpResponseMessage } from '@/utils/common/HttpResponse';
 const t = useI18n();
 
 const AXIOS_BASE_URL = import.meta.env.VITE_BASE_API;
+
+const hintMessageDict: { [code: number]: string} = {
+    100: '',
+    201: 'common.msg.passwordMismatch',
+    202: 'common.msg.captchaMismatch',
+};
 
 let refValidCode = ref<any>(null)
 let refValidCode2 = ref<any>(null)
@@ -296,10 +302,10 @@ const login = async () => {
     await proxy.$axios.post('/userprofile/login/',
         params,
     ).then(function (response) {
-        hint_message.value = notificationMessage[response.status];
-        if (response.status == 200) {
-            store.user = response.data;
-            store.player = response.data;
+        hint_message.value = hintMessageDict[response.data.status];
+        if (hint_message.value == '') {
+            store.user = response.data.data;
+            store.player = response.data.data;
             store.login_status = LoginStatus.IsLogin;
             // mutations.updateLoginStatus(LoginStatus.IsLogin);
             // login_status.value = LoginStatus.IsLogin;
@@ -317,7 +323,7 @@ const login = async () => {
             store.login_status = LoginStatus.NotLogin;
         }
     }).catch((error: any) => {
-        hint_message.value = notificationMessage[error.response.status];
+        hint_message.value = httpResponseMessage[error.response.status];
         store.login_status = LoginStatus.NotLogin;
     })
 }

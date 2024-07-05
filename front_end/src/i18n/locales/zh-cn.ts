@@ -28,6 +28,7 @@ export const zhCn = {
             actionFail: '{0}失败！',
             actionSuccess: '{0}成功',
             agreeTAC: '请同意用户协议！',
+            captchaMismatch: '验证码不正确',
             confirmPasswordFail: '两次输入的密码不一致！',
             connectionFail: '无法连接到服务器！',
             emailCodeSent: '获取验证码成功，请至邮箱查看！',
@@ -42,6 +43,7 @@ export const zhCn = {
             invalidUsername: '用户名格式不正确！长度不超过20位。',
             logoutFail: '退出失败！',
             logoutSuccess: '退出成功！',
+            passwordMismatch: '用户名或密码不正确',
             realNameRequired: '请修改为实名',
         },
         prop: {
@@ -61,11 +63,9 @@ export const zhCn = {
         response: {
             OK: '',
             BadRequest: '无法识别的请求',
-            CaptchaMismatch: '验证码不正确',
             Forbidden: '权限不足',
             InternalServerError: '后端发生错误',
             NotFound: '找不到数据',
-            PasswordMismatch: '用户名或密码不正确',
             PayloadTooLarge: '文件过大',
             TooManyRequests: '请求过于频繁',
             UnsupportedMediaType: '不支持的文件类型',
