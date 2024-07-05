@@ -9,6 +9,4 @@ export const httpResponseMessage: { [code: number]: string} = {
     415: 'common.response.UnsupportedMediaType',
     429: 'common.response.TooManyRequests',
     500: 'common.response.InternalServerError',
-    701: 'common.response.PasswordMismatch',
-    702: 'common.response.CaptchaMismatch',
 };
