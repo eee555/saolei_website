@@ -45,9 +45,9 @@ class UserProfile(AbstractUser):
                                   "unique": _("该邮箱已被注册！"),
                                   "max_length": _(f"邮箱的长度不能超过{MaxSizes.email}！"),
                                   },)
-
+    # 考虑了中英文、俄罗斯用户名字，长度需要达到100（虽然还不够）
     realname = models.CharField(
-        max_length=10, unique=False, blank=True, default='匿名', null=False)
+        max_length=MaxSizes.username, unique=False, blank=True, default='匿名', null=False)
     # 头像
     avatar = RestrictedImageField(upload_to='avatar/%Y%m%d/', max_length=100,
                                   max_upload_size=MaxSizes.avatar, blank=True, null=True)

@@ -281,7 +281,7 @@ const login_cookie = async () => {
 // 用户名密码登录
 const login = async () => {
     var params = new URLSearchParams()
-    const _id = localStorage.getItem("user_id");
+    const _id = localStorage.getItem("history_user_id");
     params.append('user_id', _id ? _id : "");
     params.append('username', user_name.value)
     params.append('password', user_password.value)
@@ -310,7 +310,7 @@ const login = async () => {
             //     // 如果本次是自动登录成功的，下次依然自动登录
             //     remember_me.value = true;
             // }
-            // localStorage.setItem("user_id", response.data.id + "");
+            localStorage.setItem("user_id", response.data.id + "");
         } else {
             // console.log("登录失败");
             // console.log("*" + response.data);

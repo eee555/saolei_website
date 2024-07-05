@@ -6,19 +6,19 @@ class MinSizes:
     password = 6
 
 class MaxSizes:
-    avatar = 1024*300 # 头像图片
+    avatar = 1024*300 # 头像图片，大小限制在300k以内。
     country = 2 # Alpha-2 code from ISO3166
     email = 100
     emailcaptcha = 6 # 邮箱验证码
-    firstname = 10
+    firstname = 50
     gamelevel = 1 # 级别（初中高）
     gamemode = 2 # 模式（无猜）
     gametime = 6 # 时间（毫秒）
-    lastname = 10
+    lastname = 50
     password = 20 # 密码
-    signature = 188
+    signature = 500 # 个性签名的长度，考虑了一些比较啰嗦的语言。
     software = 1
-    username = 20 # 用户名
+    username = 100 # 用户名，考虑了一些名字特别长的文化。
     videofile = 5*1024*1024 # 录像文件
 
 # 默认修改个人资料的次数

@@ -8,7 +8,7 @@
         </el-dialog>
     </Teleport>
     <el-table :data="videos_trans" :show-header="false" @row-click="preview" table-layout="auto"
-        style="width: 100%; color: black;font-size: 16px;">
+        style="width: 100%; color: black;font-size: 16px;user-select: none;">
         <el-table-column prop="time" min-width="200" :formatter="simple_formatter(utc_to_local_format)"/>
         <el-table-column v-if="need_player_name" min-width="80">
             <template #default="player">
@@ -81,8 +81,8 @@ const data = defineProps({
 const emit = defineEmits(['update'])
 
 const videos_trans = computed(() => {
-    data.videos.forEach((v: any) => {
-        // console.log(v);
+    const d = data.videos.slice();
+    d.forEach((v: any) => {
         if (v.mode == "00") {
             v.mode = "标准";
         } else if (v.mode == "01") {
@@ -107,16 +107,18 @@ const videos_trans = computed(() => {
             v.mode = "标准NF";
         }
     })
+    
     if (data.reverse) {
-        data.videos.reverse();
+        d.reverse();
     }
-    return data.videos;
+    return d;
 })
 
 // console.log(videos_trans);
 
 
 const preview = (row: any, column: any, event: Event) => {
+
     if (!row.key) {
         return
     }

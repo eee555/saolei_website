@@ -1,24 +1,24 @@
 <template>
     <span class="text-button" @click="centerDialogVisible = true;">{{ $t('menu.team') }}</span>
     <el-dialog v-model="centerDialogVisible" title="团队" width="50%" align-center draggable :lock-scroll="false">
-        <h2>站长</h2>
-        <span>eee555</span>
-        <h2>开发</h2>
-        <span>eee555, putianyi889</span>
-        <h2>赞助</h2>
-        <span>putianyi889</span>
-        <h2>策划</h2>
-        <span>eee555, putianyi889, Pulsar</span>
-        <h2>美工</h2>
-        <span>eee555</span>
-        <h2>测试</h2>
-        <span>eee555, putianyi889, Pulsar, lc4337、冰糖雪梨、生命★是┗ 〓┛是☆什么、Arya</span>
-        <h2>管理员</h2>
-        <span>无</span>
-        <h2>技术顾问</h2>
-        <span>hgraceb</span>
-        <h2>安全顾问</h2>
-        <span>T0nyX1ang</span>
+        <strong>站长</strong>
+        <div>eee555</div>
+        <strong>开发</strong>
+        <div>eee555、putianyi889</div>
+        <strong>赞助</strong>
+        <div>putianyi889</div>
+        <strong>策划</strong>
+        <div>eee555、putianyi889、Pulsar</div>
+        <strong>美工</strong>
+        <div>eee555</div>
+        <strong>测试</strong>
+        <div>eee555、putianyi889、Pulsar、lc4337、冰糖雪梨、生命★是┗ 〓┛是☆什么、Arya</div>
+        <strong>管理员</strong>
+        <div>少年、GodnuX、auk ;-;</div>
+        <strong>技术顾问</strong>
+        <div>hgraceb</div>
+        <strong>安全顾问</strong>
+        <div>T0nyX1ang</div>
 
 
         <template #footer>

@@ -107,7 +107,8 @@ export const zhCn = {
         setting: '设置',
         downloads: '软件下载',
         links: '友链',
-        team: '团队'
+        team: '团队',
+        groups: '官方QQ群'
     },
     profile: {
         changeAvatar: '*点击图片修改头像',
