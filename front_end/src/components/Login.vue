@@ -34,7 +34,7 @@
                 <el-checkbox :label="$t('login.keepMeLoggedIn')" class="rememberMe" v-model="remember_me"></el-checkbox>
             </el-form-item>
             <el-form-item>
-                <div style="color: red;">{{ hint_message }}</div>
+                <div style="color: red;">{{ $t(hint_message) }}</div>
             </el-form-item>
             <el-form-item>
                 <el-button :disabled="(user_name && user_password && valid_code).length == 0" type="primary"
@@ -86,7 +86,7 @@
             </el-checkbox>
 
             <el-form-item>
-                <div style="color: red;">{{ hint_message }}</div>
+                <div style="color: red;">{{ $t(hint_message) }}</div>
             </el-form-item>
             <el-form-item>
                 <el-button
@@ -151,6 +151,8 @@ const store = useUserStore()
 const local = useLocalStore()
 
 import { useI18n } from 'vue-i18n';
+import { generalNotification } from '@/utils/system/status';
+import { notificationMessage } from '@/utils/common/HttpResponse';
 const t = useI18n();
 
 const AXIOS_BASE_URL = import.meta.env.VITE_BASE_API;
@@ -213,7 +215,7 @@ const init_refvalues = () => {
 
 onMounted(() => {
     if (store.login_status == LoginStatus.Undefined) {
-        login();
+        login_cookie();
     } else if (store.login_status == LoginStatus.IsLogin) {
         // 解决改变窗口宽度，使得账号信息在显示和省略之间切换时，用户名不能显示的问题
         hint_message.value = ""
@@ -260,9 +262,24 @@ const closeLogin = () => {
     }
 }
 
+// 用cookie尝试登录，可能登不上
+const login_cookie = async () => {
+    await proxy.$axios.post('/userprofile/login_cookie/'
+    ).then(function (response) {
+        hint_message.value = ""
+
+        store.user = response.data;
+        store.player = response.data;
+        store.login_status = LoginStatus.IsLogin;
+        emit('login'); // 向父组件发送消息
+        login_visible.value = false;
+    }).catch(() => {
+        store.login_status = LoginStatus.NotLogin;
+    })
+}
+
+// 用户名密码登录
 const login = async () => {
-    // 先用cookie尝试登录，可能登不上
-    // 再用用户名密码
     var params = new URLSearchParams()
     const _id = localStorage.getItem("user_id");
     params.append('user_id', _id ? _id : "");
@@ -279,11 +296,10 @@ const login = async () => {
     await proxy.$axios.post('/userprofile/login/',
         params,
     ).then(function (response) {
-        if (response.data.status == 100) {
-            hint_message.value = ""
-
-            store.user = response.data.msg;
-            store.player = response.data.msg;
+        hint_message.value = notificationMessage[response.status];
+        if (response.status == 200) {
+            store.user = response.data;
+            store.player = response.data;
             store.login_status = LoginStatus.IsLogin;
             // mutations.updateLoginStatus(LoginStatus.IsLogin);
             // login_status.value = LoginStatus.IsLogin;
@@ -295,13 +311,13 @@ const login = async () => {
             //     remember_me.value = true;
             // }
             // localStorage.setItem("user_id", response.data.id + "");
-        } else if (response.data.status >= 101) {
-            hint_message.value = response.data.msg;
+        } else {
             // console.log("登录失败");
             // console.log("*" + response.data);
             store.login_status = LoginStatus.NotLogin;
         }
-    }).catch(() => {
+    }).catch((error: any) => {
+        hint_message.value = notificationMessage[error.response.status];
         store.login_status = LoginStatus.NotLogin;
     })
 }
@@ -419,40 +435,35 @@ const register = () => {
 }
 
 const logout = async () => {
-    proxy.$axios.post('/userprofile/logout/',
-        {},
+    proxy.$axios.post('/userprofile/logout/'
     ).then(function (response) {
-        if (response.data.status == 100) {
-            // hint_message.value = ""
-            // login_status.value = LoginStatus.NotLogin;
-            // mutations.updateLoginStatus(LoginStatus.NotLogin);
-            store.login_status = LoginStatus.NotLogin;
-            // const player = store.user;
-            store.user = {
-                id: 0,
-                username: "",
-                realname: "",
-                is_banned: false,
-                is_staff: false,
-                country: ""
-            };
-            store.player = {
-                id: 0,
-                username: "",
-                realname: "",
-                is_banned: false,
-                country: ""
-            };
-            emit('logout'); // 向父组件发送消息
-            ElMessage.success({ message: t.t('common.msg.logoutSuccess'), offset: 68 });
-            register_visible.value = false;
-            login_visible.value = false;
-            retrieve_visible.value = false;
-        } else if (response.data.status >= 101) {
-            ElMessage.error({ message: t.t('common.msg.logoutFail'), offset: 68 });
-        }
+        // hint_message.value = ""
+        // login_status.value = LoginStatus.NotLogin;
+        // mutations.updateLoginStatus(LoginStatus.NotLogin);
+        store.login_status = LoginStatus.NotLogin;
+        // const player = store.user;
+        store.user = {
+            id: 0,
+            username: "",
+            realname: "",
+            is_banned: false,
+            is_staff: false,
+            country: ""
+        };
+        store.player = {
+            id: 0,
+            username: "",
+            realname: "",
+            is_banned: false,
+            country: ""
+        };
+        emit('logout'); // 向父组件发送消息
+        generalNotification(t, response.status, t.t('common.action.logout'))
+        register_visible.value = false;
+        login_visible.value = false;
+        retrieve_visible.value = false;
     }).catch(function (error) {
-        // console.log("eee:" + error);
+        generalNotification(t, error.response.status, t.t('common.action.logout'))
     });
 }
 

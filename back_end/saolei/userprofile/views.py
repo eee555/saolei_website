@@ -1,7 +1,8 @@
 import logging
 logger = logging.getLogger(__name__)
 from django.contrib.auth import authenticate, login, logout
-from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound
+from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, HttpResponseNotAllowed
+from utils.response import HttpResponseCaptchaMismatch, HttpResponseTooManyRequests, HttpResponsePasswordMismatch, HttpResponseUnauthorized
 from .forms import UserLoginForm, UserRegisterForm, UserRetrieveForm, EmailForm
 from captcha.models import CaptchaStore
 import json
@@ -17,74 +18,58 @@ from config.flags import EMAIL_SKIP
 
 # Create your views here.
 
+# 用cookie登录
+@ratelimit(key='ip', rate='60/h')
+def user_login_cookie(request):
+    if request.method != 'POST':
+        return HttpResponseNotAllowed()
+    if request.user.is_authenticated:
+        return JsonResponse({"id": request.user.id, "username": request.user.username, "realname": request.user.realname, "is_banned": request.user.is_banned, "is_staff": request.user.is_staff})
+    else:
+        return HttpResponseUnauthorized()
 
+# 用账号、密码登录
 @ratelimit(key='ip', rate='60/h')
 # 此处要分成两个，密码容易碰撞，hash难碰撞
 def user_login(request):
-    if request.method == 'POST':
-        # print(request.session.get("login"))
-        # print(request.user)
-
-        # 用cookie登录
-        response = {'status': 100, 'msg': None}
-        if request.user.is_authenticated:
-            # login(request, request.user)
-            response['msg'] = response['msg'] = {
-                "id": request.user.id, "username": request.user.username,
                   "realname": request.user.realname, "is_banned": request.user.is_banned, "is_staff": request.user.is_staff}
-            return JsonResponse(response)
-        # if user_id:=request.session.get("_auth_user_id"):
-        #     if user:=User.objects.get(id=user_id):
         #         login(request, user)
-        #         print(user)
-        #         response['msg'] = user.username
-        #         return JsonResponse(response)
+    if request.method != 'POST':
+        return HttpResponseNotAllowed()
 
-        # 用账号、密码登录
-        user_login_form = UserLoginForm(data=request.POST)
-        if user_login_form.is_valid():
-            data = user_login_form.cleaned_data
-
-            capt = data["captcha"]   # 用户提交的验证码
-            key = data["hashkey"]    # 验证码hash
-            response = {'status': 100, 'msg': None}
-            if judge_captcha(capt, key):
-                # 检验账号、密码是否正确匹配数据库中的某个用户
-                # 如果均匹配则返回这个 user 对象
-                user = authenticate(
-                    username=data['username'], password=data['password'])
-                if user:
                     # 将用户数据保存在 session 中，即实现了登录动作
-                    login(request, user)
-                    response['msg'] = {
-                        "id": user.id, "username": user.username, 
-                        "realname": user.realname, "is_banned": user.is_banned, "is_staff": user.is_staff}
-                    if 'user_id' in data and data['user_id'] != str(user.id):
-                        # 检测到小号
-                        logger.info(f'{data["user_id"][:50]} is diffrent from {str(user.id)}.')
-                    return JsonResponse(response)
-                else:
-                    return JsonResponse({'status': 105, 'msg': "账号或密码输入有误。请重新输入~"})
-            
-            else:
-                return JsonResponse({'status': 104, 'msg': "验证码错误！"})
+    user_login_form = UserLoginForm(data=request.POST)
+    print(request.POST)
+    if user_login_form.is_valid():
+        data = user_login_form.cleaned_data
 
+        capt = data["captcha"]   # 用户提交的验证码
+        key = data["hashkey"]    # 验证码hash
+        if not judge_captcha(capt, key):
+            return HttpResponseCaptchaMismatch() # 验证码错误
+        # 检验账号、密码是否正确匹配数据库中的某个用户
+        # 如果均匹配则返回这个 user 对象
+        user = authenticate(
+            username=data['username'], password=data['password'])
+        if user:
+            # 将用户数据保存在 session 中，即实现了登录动作
+            login(request, user)
+            response = {
+                "id": user.id, "username": user.username, 
+                "realname": user.realname, "is_banned": user.is_banned, "is_staff": user.is_staff}
+            if 'user_id' in data and data['user_id'] != str(user.id):
+                # 检测到小号
+                logger.info(f'{data["user_id"][:50]} is diffrent from {str(user.id)}.')
+            return JsonResponse(response)
         else:
-
-            return JsonResponse({'status': 106, 'msg': "表单错误！"})
-        
-    elif request.method == 'GET':
-        return HttpResponse("别瞎玩")
-        # user_login_form = UserLoginForm()
-        # context = {'form': user_login_form}
-        # return render(request, 'userprofile/login.html', context)
+            return HttpResponsePasswordMismatch()
     else:
-        return HttpResponse("别瞎玩")
+        return HttpResponseBadRequest()
 
 
 def user_logout(request):
     logout(request)
-    return JsonResponse({'status': 100, 'msg': None})
+    return HttpResponse()
 
 
 # 用户找回密码

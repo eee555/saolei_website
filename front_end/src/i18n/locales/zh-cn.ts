@@ -7,6 +7,7 @@ export const zhCn = {
         action: {
             getSoftware: '获取录像信息',
             getUserProfile: '查询用户',
+            logout: '退出登录',
             setUserProfile: '修改用户',
             uploadFile: '上传文件',
             videoQuery: '查询录像',
@@ -60,9 +61,11 @@ export const zhCn = {
         response: {
             OK: '',
             BadRequest: '无法识别的请求',
+            CaptchaMismatch: '验证码不正确',
             Forbidden: '权限不足',
             InternalServerError: '后端发生错误',
             NotFound: '找不到数据',
+            PasswordMismatch: '用户名或密码不正确',
             PayloadTooLarge: '文件过大',
             TooManyRequests: '请求过于频繁',
             UnsupportedMediaType: '不支持的文件类型',
