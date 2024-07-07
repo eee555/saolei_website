@@ -258,6 +258,7 @@ def review_queue(request):
     else:
         return HttpResponseNotAllowed()
 
+
 # 获取最新录像
 # http://127.0.0.1:8000/video/newest_queue
 def newest_queue(request):

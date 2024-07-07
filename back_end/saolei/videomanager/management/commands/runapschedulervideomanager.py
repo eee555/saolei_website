@@ -36,7 +36,7 @@ def delete_newest_queue():
     for key in newest_queue_ids.keys():
         a = json.loads(newest_queue_ids[key])['time']
         d = datetime.strptime(a, "%Y-%m-%d %H:%M:%S")
-        if (timezone.now() - d).days > 7:
+        if (timezone.now().replace(tzinfo=None) - d).days > 7:
             cache.hdel("newest_queue", key)
 
 
