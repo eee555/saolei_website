@@ -49,11 +49,13 @@
                 </div>
             </div>
             <el-footer style="margin: auto">
-                Copyright @ 2023　<a href="http://fff666.top">元扫雷网 fff666.top</a>　版权所有　<a
-                    href="https://beian.miit.gov.cn/">苏ICP备2023056839号-1</a>
+                <el-text style="vertical-align: middle">Copyright @ 2023　</el-text>
+                <el-link href="http://fff666.top">元扫雷网 fff666.top</el-link>
+                <el-text style="vertical-align: middle">　版权所有　</el-text>
+                <el-link href="https://beian.miit.gov.cn/">苏ICP备2023056839号-1</el-link>
                 <span style="width: 12px; display: inline-block"></span>
-                <a href="https://beian.mps.gov.cn/#/query/webSearch?code=32020602001691" rel="noreferrer"
-                    target="_blank">苏公网安备32020602001691</a>
+                <el-link href="https://beian.mps.gov.cn/#/query/webSearch?code=32020602001691" rel="noreferrer"
+                    target="_blank">苏公网安备32020602001691</el-link>
             </el-footer>
         </el-container>
     </div>
@@ -245,18 +247,6 @@ body {
 .menumargin {
     margin-top: 0px;
     margin-bottom: 0px;
-}
-
-/*设置点击前的样式 */
-a {
-    text-decoration: none;
-    color: #000;
-}
-
-/*设置点击后的样式 */
-.router-link-active {
-    text-decoration: none;
-    color: #000;
 }
 
 .header_all {

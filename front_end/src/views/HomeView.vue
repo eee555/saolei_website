@@ -1,7 +1,7 @@
 <template>
     <div>
         <el-container>
-            <el-main style="background-color: white;padding: 1%;">
+            <el-main style="padding: 1%;">
                 <el-tabs type="border-card" style=" min-height: 300px;">
                     <el-tab-pane label="雷界快讯" style="max-height: 300px; overflow: auto;user-select: none;">
                         <div v-for="news in news_queue">
@@ -24,7 +24,7 @@
                     </el-tab-pane>
                 </el-tabs>
             </el-main>
-            <el-aside width="30%" style="background-color: white;padding: 1%;">
+            <el-aside width="30%" style="padding: 1%;">
                 <el-tabs type="border-card" style="min-height: 300px;">
                     <el-tab-pane label="每日一星">每日一星</el-tab-pane>
                     <el-tab-pane label="站长统计">站长统计</el-tab-pane>
@@ -34,7 +34,7 @@
                     <div class="aside-tip-title">
                         <el-icon><Download/></el-icon>下载中心
                     </div>
-                    <div style="font-size: 14px;color: #888;padding: 2% 5%;">
+                    <div style="font-size: 14px;padding: 2% 5%;">
                         <Downloads></Downloads>
                         <span style="width:12px; display:inline-block"></span>
                         <FriendlyLink></FriendlyLink>
@@ -43,14 +43,14 @@
                     <div class="aside-tip-title">
                         <el-icon><QuestionFilled/></el-icon>帮助中心
                     </div>
-                    <div style="font-size: 14px;color: #888;padding: 2% 5%;">
+                    <div style="font-size: 14px;padding: 2% 5%;">
                         <Groups></Groups>
                     </div>
 
                     <div class="aside-tip-title">
                         <el-icon ><InfoFilled/></el-icon>关于我们
                     </div>
-                    <div style="font-size: 14px;color: #888;padding: 2% 5%;">
+                    <div style="font-size: 14px;padding: 2% 5%;">
                         <Thanks></Thanks>
                         <span style="width:12px; display:inline-block"></span>
                         赞助
@@ -139,7 +139,6 @@ const update_review_queue = async () => {
 
 .aside-tip-title{
     font-size: 14px;
-    color: #555;
     display:flex;
     align-items: center;
     margin-top: 5%;

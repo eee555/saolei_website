@@ -1,14 +1,14 @@
 <template>
     <Teleport to=".common-layout">
         <el-dialog v-model="preview_visible"
-            style="background-color: rgba(240, 240, 240, 0.48); backdrop-filter: blur(1px);" draggable align-center
+            style="backdrop-filter: blur(1px);" draggable align-center
             destroy-on-close :modal="false" :lock-scroll="false">
             <iframe class="flop-player-iframe flop-player-display-none" style="width: 100%; height: 500px; border: 0px"
                 src="/flop/index.html" ref="video_iframe"></iframe>
         </el-dialog>
     </Teleport>
     <el-table :data="videos_trans" :show-header="false" @row-click="preview" table-layout="auto"
-        style="width: 100%; color: black;font-size: 16px;user-select: none;">
+        style="width: 100%;font-size: 16px;user-select: none;">
         <el-table-column prop="time" min-width="200" :formatter="simple_formatter(utc_to_local_format)"/>
         <el-table-column v-if="need_player_name" min-width="80">
             <template #default="player">

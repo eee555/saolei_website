@@ -163,7 +163,12 @@ export const en = {
     },
     setting: {
         appearance: 'Appearance',
-        darkMode: 'Dark Mode',
+        colorscheme: {
+            auto: 'auto',
+            dark: 'dark',
+            light: 'light',
+            title: 'Color scheme',
+        },
         languageSwitch: 'Language Switch',
         menuFontSize: 'Menu Font Size',
         menuHeight: 'Menu Height',

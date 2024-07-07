@@ -164,7 +164,12 @@ export const zhCn = {
     },
     setting: {
         appearance: '外观设置',
-        darkMode: '深色模式',
+        colorscheme: {
+            auto: '自动',
+            dark: '深色',
+            light: '浅色',
+            title: '颜色主题',
+        },
         languageSwitch: '语言切换',
         menuFontSize: '菜单字号',
         menuHeight: '菜单高度',

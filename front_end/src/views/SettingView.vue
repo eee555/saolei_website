@@ -1,9 +1,7 @@
 <template>
     <el-descriptions :title="t.t('setting.appearance')" :column="3">
-        <el-descriptions-item :label="t.t('setting.darkMode')">
-            <UseDark v-slot="{ isDark, toggleDark }">
-                <el-checkbox @click="toggleDark()" :model-value="isDark" />
-            </UseDark>
+        <el-descriptions-item :label="t.t('setting.colorscheme.title')" style="vertical-align: middle;">
+            <DarkMode />
         </el-descriptions-item>
         <el-descriptions-item :label="t.t('setting.languageSwitch')"><el-switch v-model="local.language_show"
                 :active-text="$t('common.show')" :inactive-text="$t('common.hide')"></el-switch></el-descriptions-item>
@@ -50,5 +48,6 @@ const local = useLocalStore()
 const t = useI18n()
 
 import { UseDark } from '@vueuse/components';
+import DarkMode from '@/components/DarkMode.vue'
 
 </script>
