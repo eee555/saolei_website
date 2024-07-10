@@ -64,6 +64,7 @@
 <script lang="ts" setup>
 // 上传录像的页面
 import { ref } from 'vue'
+import { GeneralFile } from '@/utils/common/structInterface';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
 import type { UploadInstance, UploadProps, UploadUserFile, UploadRawFile, UploadFile, UploadFiles, UploadRequestOptions } from 'element-plus'
@@ -79,58 +80,6 @@ const data = defineProps({
 })
 
 const extfields = ['left', 'right', 'double', 'cl', 'left_s', 'right_s', 'double_s', 'cl_s', 'path', 'flag', 'flag_s', 'stnb', 'rqp', 'ioe', 'thrp', 'corr', 'ce', 'ce_s', 'op', 'isl', 'cell0', 'cell1', 'cell2', 'cell3', 'cell4', 'cell5', 'cell6', 'cell7', 'cell8']
-
-interface ExtendedVideoStat {
-    left: number,
-    right: number,
-    double: number,
-    cl: number,
-    left_s: number,
-    right_s: number,
-    double_s: number,
-    cl_s: number,
-    path: number,
-    flag: number,
-    flag_s: number,
-    stnb: number,
-    rqp: number,
-    ioe: number,
-    thrp: number,
-    corr: number,
-    ce: number,
-    ce_s: number,
-    op: number,
-    isl: number,
-    cell0: number,
-    cell1: number,
-    cell2: number,
-    cell3: number,
-    cell4: number,
-    cell5: number,
-    cell6: number,
-    cell7: number,
-    cell8: number,
-}
-
-interface VideoStat {
-    level: string,
-    mode: string,
-    timems: number,
-    bbbv: number,
-    bvs: number,
-    designator: string,
-    review_code: number,
-}
-
-interface GeneralFile {
-    uid: number,
-    id: number,
-    filename: string,
-    file: File,
-    status: string,
-    videostat: VideoStat | null,
-    extstat: ExtendedVideoStat | null,
-}
 
 const video_msgs = ref<GeneralFile[]>([])
 
