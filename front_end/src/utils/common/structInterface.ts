@@ -49,5 +49,70 @@ export interface Record {
     path_id: number,
 }
 
+export interface UserProfile {
+    userms__designators: Array<String>;
+    userms__video_num_limit: Number;
+    username: String;
+    first_name: String;
+    last_name: String;
+    email: String;
+    realname: String;
+    signature: String;
+    country: String;
+    is_banned: Boolean;
+    left_realname_n: Number;
+    left_avatar_n: Number;
+    left_signature_n: Number;
+}
 
+interface ExtendedVideoStat {
+    left: number,
+    right: number,
+    double: number,
+    cl: number,
+    left_s: number,
+    right_s: number,
+    double_s: number,
+    cl_s: number,
+    path: number,
+    flag: number,
+    flag_s: number,
+    stnb: number,
+    rqp: number,
+    ioe: number,
+    thrp: number,
+    corr: number,
+    ce: number,
+    ce_s: number,
+    op: number,
+    isl: number,
+    cell0: number,
+    cell1: number,
+    cell2: number,
+    cell3: number,
+    cell4: number,
+    cell5: number,
+    cell6: number,
+    cell7: number,
+    cell8: number,
+}
 
+interface VideoStat {
+    level: string,
+    mode: string,
+    timems: number,
+    bbbv: number,
+    bvs: number,
+    designator: string,
+    review_code: number,
+}
+
+export interface GeneralFile {
+    uid: number,
+    id: number,
+    filename: string,
+    file: File,
+    status: string,
+    videostat: VideoStat | null,
+    extstat: ExtendedVideoStat | null,
+}

@@ -24,6 +24,7 @@
 
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { generalNotification } from '@/utils/system/status';
+import { UserProfile } from '@/utils/common/structInterface';
 import { ref } from 'vue';
 
 import { useI18n } from 'vue-i18n';
@@ -35,22 +36,6 @@ const userid = ref(0);
 const userfield = ref("");
 const uservalue = ref("");
 const descriptionitems = ["username", "first_name", "last_name", "email", "realname", "country", "is_banned", "left_realname_n", "left_avatar_n", "left_signature_n"]
-
-interface UserProfile {
-    userms__designators: Array<String>;
-    userms__video_num_limit: Number;
-    username: String;
-    first_name: String;
-    last_name: String;
-    email: String;
-    realname: String;
-    signature: String;
-    country: String;
-    is_banned: Boolean;
-    left_realname_n: Number;
-    left_avatar_n: Number;
-    left_signature_n: Number;
-}
 
 const userprofile = ref<UserProfile>({
     userms__designators: [],

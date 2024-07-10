@@ -40,29 +40,7 @@ const t = useI18n();
 
 const centerDialogVisible = ref(false);
 
-
-
-onMounted(() => {
-
-
-})
-
-
-
-
-
-
-
 </script>
 
 
 <style></style>
-
-
-
-
-
-
-
-
-

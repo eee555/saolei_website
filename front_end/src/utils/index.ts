@@ -22,7 +22,6 @@ export function simple_formatter(f: Function): Function{
 }
 
 import { ComponentCustomProperties } from "vue";
-import { generalNotification } from "./system/status";
 export async function approve(proxy: ComponentCustomProperties & Record<string, any>, id: number) {
     var status;
     await proxy.$axios.get('video/approve?ids=[' + id + ']').then(function (response) {
