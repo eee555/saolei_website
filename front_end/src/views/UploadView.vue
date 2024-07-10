@@ -346,23 +346,6 @@ const get_ext_stat = (aa: any) => {
 
 
 <style>
-/* input:invalid {
-    outline: 2px solid rgb(167, 11, 11);
-    border-radius: 3px;
-} */
-
-.upload_video {
-    font-size: 20px;
-    border-radius: 8px;
-    border: 1px dashed rgb(120, 120, 120);
-    width: 61%;
-    margin: auto;
-    margin-top: 10px;
-    padding: 12px;
-    background-color: rgb(244, 244, 244);
-    text-align: center;
-}
-
 .el-row {
     margin-bottom: 0px;
 }
