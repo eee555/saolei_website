@@ -47,6 +47,6 @@ const store = useUserStore()
 const local = useLocalStore()
 const t = useI18n()
 
-import DarkMode from '@/components/DarkMode.vue'
+import DarkMode from '@/components/widgets/DarkMode.vue'
 
 </script>

@@ -70,7 +70,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
-import LanguagePicker from "./components/LanguagePicker.vue";
+import LanguagePicker from "./components/widgets/LanguagePicker.vue";
 import Login from "./components/Login.vue";
 import Footer from "./components/Footer.vue";
 // import { LoginStatus } from "@/utils/common/structInterface"
