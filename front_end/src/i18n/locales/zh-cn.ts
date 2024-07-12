@@ -177,4 +177,17 @@ export const zhCn = {
         menuLayoutAbstract: '抽象',
         menuLayoutDefault: '默认',
     },
+    team: {
+        title: '团队',
+        owner: '站长',
+        moderator: '管理员',
+        software: '开发',
+        localization: '本地化',
+        zhCn: '简体中文',
+        en: '英语',
+        de: '德语',
+        pl: '波兰语',
+        designer: '外观设计',
+        acknowledgement: '致谢',
+    },
 }

@@ -176,4 +176,17 @@ export const en = {
         menuLayoutAbstract: 'Abstract',
         menuLayoutDefault: 'Default',
     },
+    team: {
+        title: 'Team',
+        owner: 'Owner',
+        moderator: 'Moderators',
+        software: 'Developers',
+        localization: 'Localization',
+        zhCn: 'Simplified Chinese',
+        en: 'English',
+        de: 'German',
+        pl: 'Polish',
+        designer: 'UI designers',
+        acknowledgement: 'Acknowledgement',
+    },
 }
