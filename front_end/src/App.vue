@@ -1,58 +1,58 @@
 <template>
-    <!-- message的z索引为2015 -->
-    <el-menu class="menu" mode="horizontal" :router="true" :default-active="menu_index" :ellipsis="false"
-        menu-trigger="click">
-        <el-menu-item index="/" class="logo">
-            <el-image class="logo1" :src="logo_1" :fit="'cover'" />
-            <el-image v-if="!local.menu_icon" class="logo2" :src="logo_2" :fit="'cover'" />
-        </el-menu-item>
-        <el-menu-item v-for="item in menu_items" :index="'/' + item.index" class="menuitem">
-            <el-tooltip v-if="local.menu_icon" :content="$t(item.content)">
-                <el-icon class="menumargin">
-                    <component :is="item.icon" class="menuicon" />
-                </el-icon>
-            </el-tooltip>
-            <span v-else style="padding-right: 5px">
-                <el-icon>
-                    <component :is="item.icon" class="menuicon" />
-                </el-icon>{{ $t(item.content) }}
-            </span>
-        </el-menu-item>
-        <div style="flex-grow: 1" />
-        <el-menu-item :index="player_url" v-if="store.user.id != 0" @click="store.player = store.user" class="menuitem">
-            <el-tooltip v-if="local.menu_icon" :content="store.user.username">
-                <el-icon class="menumargin">
-                    <User class="menuicon" />
-                </el-icon>
-            </el-tooltip>
-            <span v-else style="padding-right: 5px">
-                <el-icon>
-                    <User class="menuicon" />
-                </el-icon>{{ store.user.username }}
-            </span>
-        </el-menu-item>
-        <el-menu-item index="/settings" style="padding-left: 8px; padding-right: 5px">
-            <el-tooltip :content="$t('menu.setting')">
-                <el-icon>
-                    <Setting class="menuicon" />
-                </el-icon>
-            </el-tooltip>
-        </el-menu-item>
-        <LanguagePicker v-show="local.language_show" style="padding-left: 8px; padding-right: 8px;" />
-        <Login @login="user_login" @logout="user_logout"></Login>
-    </el-menu>
-    <div class="common-layout">
-        <el-container>
-            <div class="header_all" style="padding-top: 0; overflow: auto">
-                <div class="content" style="padding-top: 16px;min-height: 80vh;">
-                    <router-view />
-                </div>
-            </div>
-            <el-footer style="margin: auto">
+    <el-container style="height: 100%">
+        <el-header>
+            <el-scrollbar :height="100"> <!-- 给一个足够的高度就可以不显示纵向滚动条 -->
+                <el-menu mode="horizontal" :router="true" :default-active="menu_index" :ellipsis="false"
+                    menu-trigger="click">
+                    <el-menu-item index="/" class="logo">
+                        <el-image class="logo1" :src="logo_1" :fit="'cover'" />
+                        <el-image v-if="!local.menu_icon" class="logo2" :src="logo_2" :fit="'cover'" />
+                    </el-menu-item>
+                    <el-menu-item v-for="item in menu_items" :index="'/' + item.index" class="menuitem">
+                        <el-tooltip v-if="local.menu_icon" :content="$t(item.content)">
+                            <el-icon class="menumargin">
+                                <component :is="item.icon" class="menuicon" />
+                            </el-icon>
+                        </el-tooltip>
+                        <span v-else style="padding-right: 5px">
+                            <el-icon>
+                                <component :is="item.icon" class="menuicon" />
+                            </el-icon>{{ $t(item.content) }}
+                        </span>
+                    </el-menu-item>
+                    <div style="flex-grow: 1" />
+                    <el-menu-item :index="player_url" v-if="store.user.id != 0" @click="store.player = store.user">
+                        <el-tooltip v-if="local.menu_icon" :content="store.user.username">
+                            <el-icon class="menumargin">
+                                <User class="menuicon" />
+                            </el-icon>
+                        </el-tooltip>
+                        <span v-else style="padding-right: 5px">
+                            <el-icon>
+                                <User class="menuicon" />
+                            </el-icon>{{ store.user.username }}
+                        </span>
+                    </el-menu-item>
+                    <el-menu-item index="/settings" style="padding-left: 8px; padding-right: 5px">
+                        <el-tooltip :content="$t('menu.setting')">
+                            <el-icon>
+                                <Setting class="menuicon" />
+                            </el-icon>
+                        </el-tooltip>
+                    </el-menu-item>
+                    <LanguagePicker v-show="local.language_show" style="padding-left: 8px; padding-right: 8px;" />
+                    <Login @login="user_login" @logout="user_logout"></Login>
+                </el-menu>
+            </el-scrollbar>
+        </el-header>
+
+        <el-container class="mainheight">
+            <el-main class="common-layout">
+                <router-view />
                 <Footer />
-            </el-footer>
+            </el-main>
         </el-container>
-    </div>
+    </el-container>
 
     <el-dialog draggable :lock-scroll="false" v-model="notice_visible" title="站长通知" width="30%"
         :before-close="handle_notice_close">
@@ -73,7 +73,6 @@ import { ref, onMounted, computed } from "vue";
 import LanguagePicker from "./components/widgets/LanguagePicker.vue";
 import Login from "./components/Login.vue";
 import Footer from "./components/Footer.vue";
-// import { LoginStatus } from "@/utils/common/structInterface"
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import { useLocalStore, useUserStore } from "./store";
 const store = useUserStore();
@@ -180,18 +179,24 @@ const hash_code = function (t: string) {
 
 <style lang="less">
 body {
-    overflow: auto;
     margin: 0;
 }
-
 </style>
 
 <style lang="less" scoped>
+.el-header {
+    --el-header-height: v-bind("local.menu_height + 'px'");
+    padding: 0px;
+}
+
+.el-menu {
+    height: v-bind("local.menu_height + 'px'");
+}
 
 .logo {
     cursor: pointer;
-    display: inline-flex; 
-    justify-content: center; 
+    display: inline-flex;
+    justify-content: center;
     align-items: center;
     padding: 0px;
     padding-left: v-bind("local.menu_height / 8 + 'px'");
@@ -212,28 +217,12 @@ body {
     display: inline-flex;
 }
 
-.header {
-    font-size: 18px;
-    margin: 0px;
-    padding-top: 21px;
-}
-
-.menu {
-    height: v-bind("local.menu_height + 'px'");
-    position: fixed;
-    width: 100%;
-    z-index: 1010; //message的z索引为2015
-    user-select: none;
-    overflow-x: auto;
-    overflow-y: hidden;
-}
-
 .menuicon {
     width: 60px;
     height: 60px;
 }
 
-.menuitem {
+.el-menu-item {
     font-size: v-bind("local.menu_font_size + 'px'");
     padding-left: 8px;
     padding-right: 5px;
@@ -244,14 +233,7 @@ body {
     margin-bottom: 0px;
 }
 
-.header_all {
-    margin: auto;
-    width: 80vw;
+.mainheight {
+    height: calc(100svh - v-bind("local.menu_height + 'px'"))
 }
-
-.content {
-    margin-top: v-bind("local.menu_height + 'px'");
-}
-
-
 </style>
