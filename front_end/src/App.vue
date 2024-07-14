@@ -133,7 +133,6 @@ onMounted(() => {
     router.isReady().then(() => {
         menu_index.value = router.currentRoute.value.fullPath;
     });
-    console.log(store.user)
 });
 
 const player_url = computed(() => {
