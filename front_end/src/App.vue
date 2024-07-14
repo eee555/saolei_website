@@ -1,5 +1,5 @@
 <template>
-    <el-container style="height: 100%; padding-left: 0px">
+    <el-container style="height: 100%">
         <el-header>
             <el-scrollbar :height="100"> <!-- 给一个足够的高度就可以不显示纵向滚动条 -->
                 <el-menu mode="horizontal" :router="true" :default-active="menu_index" :ellipsis="false"
@@ -73,7 +73,6 @@ import { ref, onMounted, computed } from "vue";
 import LanguagePicker from "./components/widgets/LanguagePicker.vue";
 import Login from "./components/Login.vue";
 import Footer from "./components/Footer.vue";
-// import { LoginStatus } from "@/utils/common/structInterface"
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import { useLocalStore, useUserStore } from "./store";
 const store = useUserStore();
@@ -180,7 +179,6 @@ const hash_code = function (t: string) {
 
 <style lang="less">
 body {
-    overflow: auto;
     margin: 0;
 }
 </style>
