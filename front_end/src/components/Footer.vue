@@ -1,5 +1,4 @@
 <template>
-    <el-row>
     <el-divider/>
     <el-footer>
         <el-text style="vertical-align: middle">Copyright @ 2023　</el-text>
@@ -9,6 +8,5 @@
         <span style="width: 12px; display: inline-block"></span>
         <el-link href="https://beian.mps.gov.cn/#/query/webSearch?code=32020602001691" rel="noreferrer"
             target="_blank">苏公网安备32020602001691</el-link>
-    </el-row>
     </el-footer>
 </template>
