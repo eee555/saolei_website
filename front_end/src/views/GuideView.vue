@@ -110,13 +110,16 @@ import markdownItHighlight from 'markdown-it-highlightjs';
 import mathjax3 from "markdown-it-mathjax3";
 // 图片懒加载
 import { imgLazyload } from "@mdit/plugin-img-lazyload";
+// 允许调整图片尺寸
+import { imgSize } from "@mdit/plugin-img-size";
 
+// 局面数字的svg数据，原始尺寸都是160*160
 import { cells } from "@/utils/common/cellSVGData";
 
 const markdown = new MarkdownIt({
     html: true, // 允许HTML语法
     typographer: true, // 启用Typographer插件，可以更好地处理中文字符和标点符号
-}).use(abbr).use(align).use(markdownItHighlight).use(mathjax3).use(imgLazyload);
+}).use(abbr).use(align).use(markdownItHighlight).use(mathjax3).use(imgLazyload).use(imgSize);
 
 
 
