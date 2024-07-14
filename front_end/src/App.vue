@@ -2,7 +2,7 @@
     <!-- message的z索引为2015 -->
     <el-container style="height: 100%; padding-left: 0px">
         <el-header>
-            <el-scrollbar :height="100">
+            <el-scrollbar :height="100"> <!-- 给一个足够的高度就可以不显示纵向滚动条 -->
                 <el-menu mode="horizontal" :router="true" :default-active="menu_index" :ellipsis="false"
                     menu-trigger="click">
                     <el-menu-item index="/" class="logo">
