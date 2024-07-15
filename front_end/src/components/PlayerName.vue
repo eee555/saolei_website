@@ -1,16 +1,15 @@
 <template>
     <span @click.stop>
-        <el-popover v-if="render" v-model="visible" placement="bottom" width="298px" popper-class="max-h-300px overflow-auto" @show="pop_show"
-            @hide="pop_hide" popper-style="z-index:888;" 
+        <el-popover v-if="render" :visible="visible" placement="bottom" width="298px"
+            popper-class="max-h-300px overflow-auto" @show="pop_show" @hide="pop_hide" popper-style="z-index:888;"
             :show-after="0" :hide-after="0">
-            <Wait v-show="is_loading"></Wait>
             <div>
                 <div style="width: 80px;float: left;line-height: 200%;">
                     <el-image style="width: 72px; height: 72px;margin-top: 10px;border-radius: 8px;" :src="image_url"
                         :fit="'cover'" />
                     <el-button style="width: 72px;height: 24px;" @click="visit_me(+id);">我的空间</el-button>
                 </div>
-                <div style="width: 188px;float: right;text-align: center;line-height: 180%;">
+                <div style="width: 188px;float: right;text-align: center;line-height: 180%;" v-loading="is_loading">
                     <div><strong>{{ realname }}</strong> (id: {{ id }})</div>
                     <div>初级纪录：<PreviewNumber :id="+b_t_id" :text="to_fixed_n(b_t, 3)">
                         </PreviewNumber> | <PreviewNumber :id="+b_bvs_id" :text="to_fixed_n(b_bvs, 3)">
@@ -37,8 +36,9 @@
                 <span href="" target="_blank" class="clickable" @click="visible = !visible">{{ data.user_name }}
                 </span>
             </template>
-        </el-popover> 
-        <span v-else href="" target="_blank" class="clickable" @click="render = true; visible = true">{{ data.user_name }}
+        </el-popover>
+        <span v-else href="" target="_blank" class="clickable" @click="render = true; visible = true">{{ data.user_name
+            }}
         </span>
     </span>
 </template>
@@ -54,7 +54,6 @@ import image_url_default from '@/assets/person.png';
 const image_url = ref(image_url_default);
 // import PreviewDownload from '@/components/PreviewDownload.vue';
 import PreviewNumber from '@/components/PreviewNumber.vue';
-import Wait from '@/components/Wait.vue';
 import { useRouter } from 'vue-router'
 import { ms_to_s } from "@/utils"
 const router = useRouter()
@@ -93,12 +92,14 @@ const e_bvs_id = ref("");
 const is_loading = ref(true);
 
 
-const pop_show = () => {
+const pop_show = async () => {
+    is_loading.value = true;
+
     image_url.value = image_url_default;
     realname.value = "";
     id.value = "";
 
-    proxy.$axios.get('/msuser/info_abstract/',
+    await proxy.$axios.get('/msuser/info_abstract/',
         {
             params: {
                 id: data.user_id,
@@ -112,13 +113,13 @@ const pop_show = () => {
         if (response_data.avatar) {
             image_url.value = "data:image/;base64," + response_data.avatar;
         }
-        
+
         const records = JSON.parse(response_data.record_abstract)
 
         b_t.value = ms_to_s(records.timems[0])
         i_t.value = ms_to_s(records.timems[1])
         e_t.value = ms_to_s(records.timems[2])
-        
+
         b_t_id.value = records.timems_id[0]
         i_t_id.value = records.timems_id[1]
         e_t_id.value = records.timems_id[2]
@@ -155,6 +156,7 @@ const pop_hide = () => {
     b_bvs_id.value = "";
     i_bvs_id.value = "";
     e_bvs_id.value = "";
+    is_loading.value = true;
 }
 
 function to_fixed_n(input: string | number | undefined, to_fixed: number): string | number | undefined {
