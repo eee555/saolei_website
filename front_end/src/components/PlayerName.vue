@@ -1,7 +1,7 @@
 <template>
     <span @click.stop>
-        <el-popover placement="bottom" width="298px" popper-class="max-h-300px overflow-auto" @show="pop_show"
-            @hide="pop_hide" trigger="click" popper-style="background-color:rgba(250,250,250);z-index:888;" 
+        <el-popover v-if="render" v-model="visible" placement="bottom" width="298px" popper-class="max-h-300px overflow-auto" @show="pop_show"
+            @hide="pop_hide" popper-style="z-index:888;" 
             :show-after="0" :hide-after="0">
             <Wait v-show="is_loading"></Wait>
             <div>
@@ -34,10 +34,12 @@
 
             </div>
             <template #reference>
-                <span href="" target="_blank" class="clickable">{{ data.user_name }}
+                <span href="" target="_blank" class="clickable" @click="visible = !visible">{{ data.user_name }}
                 </span>
             </template>
-        </el-popover>
+        </el-popover> 
+        <span v-else href="" target="_blank" class="clickable" @click="render = true; visible = true">{{ data.user_name }}
+        </span>
     </span>
 </template>
 
@@ -68,6 +70,9 @@ const data = defineProps({
         type: String,
     },
 })
+
+const render = ref<Boolean>(false);
+const visible = ref<Boolean>(false);
 
 const realname = ref("");
 const id = ref("");
