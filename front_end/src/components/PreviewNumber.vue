@@ -1,9 +1,9 @@
 <template>
     <Teleport to=".common-layout">
-        <el-dialog v-model="preview_visible"
-            style="background-color: rgba(240, 240, 240, 0.48); backdrop-filter: blur(1px);" draggable align-center
+        <el-dialog v-if="preview_visible" v-model="preview_visible"
+            style="backdrop-filter: blur(1px);" draggable align-center
             destroy-on-close :modal="false" :lock-scroll="false">
-            <iframe v-if="preview_visible" class="flop-player-iframe flop-player-display-none"
+            <iframe class="flop-player-iframe flop-player-display-none"
                 style="width: 100%; height: 500px; border: 0px" src="/flop/index.html" ref="video_iframe"></iframe>
         </el-dialog>
     </Teleport>
