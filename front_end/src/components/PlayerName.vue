@@ -1,8 +1,7 @@
 <template>
     <span @click.stop>
         <el-popover v-if="render" :visible="visible" placement="bottom" width="298px"
-            popper-class="max-h-300px overflow-auto" @show="pop_show" @hide="pop_hide" popper-style="z-index:888;"
-            :show-after="0" :hide-after="0">
+            popper-class="max-h-300px overflow-auto" @show="pop_show" @hide="pop_hide" popper-style="z-index:888;">
             <div>
                 <div style="width: 80px;float: left;line-height: 200%;">
                     <el-image style="width: 72px; height: 72px;margin-top: 10px;border-radius: 8px;" :src="image_url"
@@ -33,29 +32,24 @@
 
             </div>
             <template #reference>
-                <span href="" target="_blank" class="clickable" @click="visible = !visible">{{ data.user_name }}
-                </span>
+                <el-link :underline="false" @click="visible = !visible">{{ data.user_name }}</el-link>
             </template>
         </el-popover>
-        <span v-else href="" target="_blank" class="clickable" @click="render = true; visible = true">{{ data.user_name
-            }}
-        </span>
+        <el-link v-else :underline="false" @click="render = true; visible = true">{{ data.user_name }}</el-link>
     </span>
 </template>
 
 <script setup lang="ts" name="PlayerName">
 // 用户的名字，鼠标移上去以后弹出气泡框，可以访问他的主页
-import { onMounted, watch, ref, toRefs } from "vue";
-import { getCurrentInstance } from 'vue';
+import { ref } from "vue";
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
-import { genFileId, ElMessage } from 'element-plus'
 import image_url_default from '@/assets/person.png';
 const image_url = ref(image_url_default);
 // import PreviewDownload from '@/components/PreviewDownload.vue';
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import { useRouter } from 'vue-router'
-import { ms_to_s } from "@/utils"
+import { ms_to_s, to_fixed_n } from "@/utils"
 const router = useRouter()
 import { useUserStore } from '../store'
 const store = useUserStore()
@@ -72,6 +66,7 @@ const data = defineProps({
 
 const render = ref<Boolean>(false);
 const visible = ref<Boolean>(false);
+const is_loading = ref(true);
 
 const realname = ref("");
 const id = ref("");
@@ -87,10 +82,6 @@ const e_t = ref("");
 const e_bvs = ref("");
 const e_t_id = ref("");
 const e_bvs_id = ref("");
-
-// 控制加载时的小圈圈
-const is_loading = ref(true);
-
 
 const pop_show = async () => {
     is_loading.value = true;
@@ -138,7 +129,6 @@ const pop_show = async () => {
 
 }
 
-
 // 用户记录小弹窗关闭后，删除其中的数据
 const pop_hide = () => {
     image_url.value = image_url_default;
@@ -159,20 +149,6 @@ const pop_hide = () => {
     is_loading.value = true;
 }
 
-function to_fixed_n(input: string | number | undefined, to_fixed: number): string | number | undefined {
-    // 返回保留to_fixed位小数的字符串，四舍六入五取双
-    if (input === undefined) {
-        return input;
-    }
-    if (to_fixed <= 0) {
-        return input;
-    }
-    if (typeof (input) == "string") {
-        return parseFloat(input).toFixed(to_fixed);
-    }
-    return (input as number).toFixed(to_fixed);
-}
-
 const visit_me = (user_id: Number) => {
     // proxy.$store.commit('updatePlayer', { "id": id.value, "realname":realname.value });
     // localStorage.setItem("player", JSON.stringify({ "id": id.value, "realname":realname.value }));
@@ -183,9 +159,4 @@ const visit_me = (user_id: Number) => {
 
 </script>
 
-<style lang="less" scoped>
-.clickable:hover {
-    color: rgb(26, 127, 228);
-    cursor: pointer;
-}
-</style>
+<style lang="less" scoped></style>
