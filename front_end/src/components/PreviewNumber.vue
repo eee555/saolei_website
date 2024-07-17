@@ -1,19 +1,18 @@
 <template>
     <Teleport to=".common-layout">
-        <el-dialog v-if="preview_visible" v-model="preview_visible"
-            style="backdrop-filter: blur(1px);" draggable align-center
-            destroy-on-close :modal="false" :lock-scroll="false">
-            <iframe class="flop-player-iframe flop-player-display-none"
-                style="width: 100%; height: 500px; border: 0px" src="/flop/index.html" ref="video_iframe"></iframe>
+        <el-dialog v-if="preview_visible" v-model="preview_visible" style="backdrop-filter: blur(1px);" draggable
+            align-center destroy-on-close :modal="false" :lock-scroll="false">
+            <iframe class="flop-player-iframe flop-player-display-none" style="width: 100%; height: 500px; border: 0px"
+                src="/flop/index.html" ref="video_iframe"></iframe>
         </el-dialog>
     </Teleport>
-    <span v-if="data.id" @click="preview(data.id);" class="clickable">{{ data.text }}</span>
+    <el-link v-if="data.id" :underline="false" @click="preview(data.id);" class="clickable">{{ data.text }}</el-link>
     <span v-else>--</span>
 </template>
 
 <script setup lang="ts" name="PreviewNumber">
 // 某个数字或字符串，点击后预览
-import { onMounted, watch, ref, toRefs } from "vue";
+import { ref } from "vue";
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import { generalNotification } from "@/utils/system/status";
 import { useI18n } from "vue-i18n";
@@ -29,7 +28,6 @@ const data = defineProps({
         type: [String, Number],
     },
 })
-
 
 
 const preview = (id: Number | undefined) => {
@@ -89,9 +87,4 @@ const playVideo = function (uri: string) {
 
 </script>
 
-<style lang="less" scoped>
-.clickable:hover {
-    color: rgb(26, 127, 228);
-    cursor: pointer;
-}
-</style>
+<style lang="less" scoped></style>

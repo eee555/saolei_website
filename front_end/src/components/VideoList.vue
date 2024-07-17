@@ -38,12 +38,11 @@
 <script setup lang="ts">
 // 录像列表的组件
 
-import { ref, watch, computed } from 'vue'
+import { ref, computed } from 'vue'
 import { utc_to_local_format } from "@/utils/system/tools";
 import PlayerName from '@/components/PlayerName.vue';
 const preview_visible = ref(false);
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
-import { getRowIdentity } from 'element-plus/es/components/table/src/util';
 import { Check, Close } from '@element-plus/icons-vue';
 import { ElNotification } from 'element-plus';
 
