@@ -1,29 +1,20 @@
 <template>
-    <Teleport to=".common-layout">
-        <el-dialog v-model="preview_visible"
-            style="background-color: rgba(240, 240, 240, 0.48); backdrop-filter: blur(1px);" draggable align-center
-            destroy-on-close :modal="false" :lock-scroll="false">
-            <iframe class="flop-player-iframe flop-player-display-none" style="width: 100%; height: 500px; border: 0px"
-                src="/flop/index.html" ref="video_iframe"></iframe>
-        </el-dialog>
-    </Teleport>
-    <el-button :size="'small'" plain icon="View" @click="preview($event, id);">预览</el-button>
+    <el-button :size="'small'" plain icon="View" @click="preview(id);">预览</el-button>
     <el-button :size="'small'" plain icon="Download" @click="download($event, id)">下载</el-button>
 </template>
 
 <script setup lang="ts" name="PreviewDownload">
 // 拟弃用
 // 两个按钮，预览或下载
-import { onMounted, watch, ref, toRefs } from "vue";
+import { onMounted, ref } from "vue";
 // import axios from 'axios';
 // import { getCurrentInstance } from 'vue';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
+import { preview } from "@/utils/common/PlayerDialog";
 
 const { proxy } = useCurrentInstance();
 // import { genFileId, ElMessage } from 'element-plus'
 
-
-const preview_visible = ref(false);
 // const hashkey = ref("");
 
 const { id } = defineProps({
@@ -60,78 +51,6 @@ const { id } = defineProps({
 //   onSuccess(`https://example.com/${id}.avf`)
 // }
 
-const preview = (event: MouseEvent, id: Number | undefined) => {
-    if (!id) {
-        return
-    }
-    (window as any).flop = null;
-    preview_visible.value = true;
-    proxy.$axios.get('/video/get_software/',
-        {
-            params: {
-                id,
-            }
-        }
-    ).then(function (response) {
-        let uri = import.meta.env.VITE_BASE_API + "/video/preview/?id=" + id;
-        // console.log(uri);
-        if (response.data.msg == "a") {
-            uri += ".avf";
-        } else if (response.data.msg == "e") {
-            uri += ".evf";
-        }
-
-
-        // (window as any).flop.playVideo(uri);
-        if ((window as any).flop) {
-            // console.log("985", 'playVideo' in window.flop);
-            // console.log("523", window.flop.hasOwnProperty('playVideo'));
-            playVideo(uri);
-        } else {
-            (window as any).flop = {
-                onload: async function () {
-                    // console.log("444", window.flop);
-                    // console.log("111", window.flop.playVideo);
-                    playVideo(uri);
-                },
-            }
-        }
-
-        // console.log("333", window.flop);
-        // console.log("777", window.flop.playVideo);
-        // window.flop = null;
-        // playVideo(uri);
-
-        // 等待 Flop Player 初始化完成
-        // (window as any).flop = {
-        // 	onload: () => {
-        // 		// 具体参数说明参见：https://github.com/hgraceb/flop-player#flopplayvideouri-options
-        // 		(window as any).flop.playVideo(uri, {
-        // 			share: {
-        // 				uri: uri,
-        // 				pathname: "/flop-player/player",
-        // 				anonymous: false,
-        // 				background: "rgba(100, 100, 100, 0.05)",
-        // 				title: "Flop Player Share",
-        // 				favicon: "https://avatars.githubusercontent.com/u/38378650?s=32", // 胡帝的头像
-        // 			},
-        // 			anonymous: false,
-        // 			background: "rgba(0, 0, 0, 0)",
-        // 			listener: function () {
-        // 				preview_visible.value = false;
-        // 			},
-        // 		});
-        // 	},
-        // };
-
-    }).catch(
-        (res) => {
-            // console.log("报错");
-            // console.log(res);
-        }
-    )
-}
-
 
 const download = (event: MouseEvent, id: Number | undefined) => {
     if (!id) {
@@ -149,29 +68,6 @@ const download = (event: MouseEvent, id: Number | undefined) => {
 // declare interface Window {
 // 	flop: any
 // }
-
-const playVideo = function (uri: string) {
-    // console.log(uri);
-
-    // console.log("747", window.flop);
-    // console.log("585", window.flop.playVideo);
-    (window as any).flop.playVideo(uri, {
-        share: {
-            uri: uri,
-            pathname: "/flop-player/player",
-            anonymous: false,
-            background: "rgba(100, 100, 100, 0.05)",
-            title: "Flop Player Share",
-            favicon: "https://avatars.githubusercontent.com/u/38378650?s=32", // 胡帝的头像
-        },
-        anonymous: false,
-        background: "rgba(0, 0, 0, 0)",
-        listener: function () {
-            preview_visible.value = false;
-            (window as any).flop = null;
-        },
-    });
-}
 
 onMounted(() => {
 

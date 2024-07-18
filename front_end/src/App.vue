@@ -48,6 +48,7 @@
 
         <el-container class="mainheight">
             <el-main class="common-layout">
+                <PlayerDialog />
                 <router-view />
                 <Footer />
             </el-main>
@@ -73,6 +74,7 @@ import { ref, onMounted, computed } from "vue";
 import LanguagePicker from "./components/widgets/LanguagePicker.vue";
 import Login from "./components/Login.vue";
 import Footer from "./components/Footer.vue";
+import PlayerDialog from "./components/PlayerDialog.vue";
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import { useLocalStore, useUserStore } from "./store";
 const store = useUserStore();

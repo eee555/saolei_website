@@ -1,12 +1,4 @@
 <template>
-    <Teleport to=".common-layout">
-        <el-dialog v-model="preview_visible"
-            style="background-color: rgba(240, 240, 240, 0.48); backdrop-filter: blur(1px);" draggable align-center
-            destroy-on-close :modal="false" :lock-scroll="false">
-            <iframe class="flop-player-iframe flop-player-display-none" style="width: 100%; height: 500px; border: 0px"
-                src="/flop/index.html" ref="video_iframe"></iframe>
-        </el-dialog>
-    </Teleport>
     <el-row class="mb-4" style="margin-bottom: 10px;">
         <el-button v-for="(tag, key) in level_tags" type="warning" :plain="!(level_tag_selected == key)" :size="'small'"
             @click="level_tag_selected = key as string; request_videos();">{{ $t('common.level.' + tag.key)
@@ -25,7 +17,7 @@
     </el-row>
 
     <div style="font-size:20px;margin: auto;margin-top: 10px;">
-        <el-table :data="videoList" @sort-change="handleSortChange" @row-click="preview" border table-layout="auto">
+        <el-table :data="videoList" @sort-change="handleSortChange" @row-click="(row: any) => preview(row.id)" border table-layout="auto">
             <el-table-column type="index" :index="offsetIndex" fixed></el-table-column>
             <el-table-column :label="$t('common.prop.realName')" v-slot="scope" width="auto">
                 <span class="nobr">
@@ -51,19 +43,18 @@
 
 <script lang="ts" setup>
 // 全网录像的检索器，根据三个维度排序
-import { onMounted, ref, Ref, reactive } from 'vue'
+import { onMounted, ref, reactive } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import PreviewDownload from '@/components/PreviewDownload.vue';
 import PlayerName from '@/components/PlayerName.vue';
 const { proxy } = useCurrentInstance();
 import { utc_to_local_format } from "@/utils/system/tools";
 import { ms_to_s } from "@/utils";
-import { genFileId, ElMessage } from 'element-plus'
+import { preview } from '@/utils/common/PlayerDialog';
 
 import { useI18n } from 'vue-i18n';
+import { generalNotification } from '@/utils/system/status';
 const t = useI18n();
-
-const preview_visible = ref(false);
 
 const level_tag_selected = ref("EXPERT");
 const mode_tag_selected = ref("STD");
@@ -258,75 +249,14 @@ const request_videos = () => {
         videoList.splice(0, videoList.length);
         videoList.push(...data.videos);
         state.VideoCount = data.count;
-    }).catch(() => {
-        // 触发限流
-        ElMessage.error({ message: '请稍后再试', offset: 68 });
+    }).catch((error: any) => {
+        generalNotification(t, error.response.status, t.t('common.action.videoQuery'))
     })
 }
 
 const index_select = (key: string | number, value: NameKeyReverse) => {
     index_tags[key].selected = !value.selected;
 }
-
-const preview = (row: any) => {
-    var id = row.id
-    if (!id) {
-        return
-    }
-    (window as any).flop = null;
-    preview_visible.value = true;
-    proxy.$axios.get('/video/get_software/',
-        {
-            params: {
-                id,
-            }
-        }
-    ).then(function (response) {
-        let uri = import.meta.env.VITE_BASE_API + "/video/preview/?id=" + id;
-        // console.log(uri);
-        if (response.data.msg == "a") {
-            uri += ".avf";
-        } else if (response.data.msg == "e") {
-            uri += ".evf";
-        }
-
-        if ((window as any).flop) {
-            playVideo(uri);
-        } else {
-            (window as any).flop = {
-                onload: async function () {
-                    playVideo(uri);
-                },
-            }
-        }
-    }).catch(
-        (res) => {
-            // console.log("报错");
-            // console.log(res);
-        }
-    )
-}
-
-
-const playVideo = function (uri: string) {
-    (window as any).flop.playVideo(uri, {
-        share: {
-            uri: uri,
-            pathname: "/flop-player/player",
-            anonymous: false,
-            background: "rgba(100, 100, 100, 0.05)",
-            title: "Flop Player Share",
-            favicon: "https://avatars.githubusercontent.com/u/38378650?s=32", // 胡帝的头像
-        },
-        anonymous: false,
-        background: "rgba(0, 0, 0, 0)",
-        listener: function () {
-            preview_visible.value = false;
-            (window as any).flop = null;
-        },
-    });
-}
-
 
 </script>
 
