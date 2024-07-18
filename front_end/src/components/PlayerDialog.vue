@@ -28,7 +28,6 @@ const preview = (id: Number | undefined) => {
         return
     }
     (window as any).flop = null;
-    playerstore.visible = true;
     proxy.$axios.get('/video/get_software/',
         {
             params: {

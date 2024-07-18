@@ -45,7 +45,6 @@
 // 全网录像的检索器，根据三个维度排序
 import { onMounted, ref, reactive } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
-import PreviewDownload from '@/components/PreviewDownload.vue';
 import PlayerName from '@/components/PlayerName.vue';
 const { proxy } = useCurrentInstance();
 import { utc_to_local_format } from "@/utils/system/tools";
