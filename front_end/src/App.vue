@@ -8,37 +8,15 @@
                         <el-image class="logo1" :src="logo_1" :fit="'cover'" />
                         <el-image v-if="!local.menu_icon" class="logo2" :src="logo_2" :fit="'cover'" />
                     </el-menu-item>
-                    <el-menu-item v-for="item in menu_items" :index="'/' + item.index" class="menuitem">
-                        <el-tooltip v-if="local.menu_icon" :content="$t(item.content)">
-                            <el-icon class="menumargin">
-                                <component :is="item.icon" class="menuicon" />
-                            </el-icon>
-                        </el-tooltip>
-                        <span v-else style="padding-right: 5px">
-                            <el-icon>
-                                <component :is="item.icon" class="menuicon" />
-                            </el-icon>{{ $t(item.content) }}
-                        </span>
+                    <el-menu-item v-for="item in menu_items" :index="'/' + item.index">
+                        <IconMenuItem :text="$t(item.content)" :icon="item.icon" />
                     </el-menu-item>
                     <div style="flex-grow: 1" />
                     <el-menu-item :index="player_url" v-if="store.user.id != 0" @click="store.player = store.user">
-                        <el-tooltip v-if="local.menu_icon" :content="store.user.username">
-                            <el-icon class="menumargin">
-                                <User class="menuicon" />
-                            </el-icon>
-                        </el-tooltip>
-                        <span v-else style="padding-right: 5px">
-                            <el-icon>
-                                <User class="menuicon" />
-                            </el-icon>{{ store.user.username }}
-                        </span>
+                        <IconMenuItem :text="store.user.username" icon="User" />
                     </el-menu-item>
                     <el-menu-item index="/settings" style="padding-left: 8px; padding-right: 5px">
-                        <el-tooltip :content="$t('menu.setting')">
-                            <el-icon>
-                                <Setting class="menuicon" />
-                            </el-icon>
-                        </el-tooltip>
+                        <IconMenuItem :text="$t('menu.setting')" icon="Setting" />
                     </el-menu-item>
                     <LanguagePicker v-show="local.language_show" style="padding-left: 8px; padding-right: 8px;" />
                     <Login @login="user_login" @logout="user_logout"></Login>
@@ -72,6 +50,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import LanguagePicker from "./components/widgets/LanguagePicker.vue";
+import IconMenuItem from "./components/widgets/IconMenuItem.vue";
 import Login from "./components/Login.vue";
 import Footer from "./components/Footer.vue";
 import PlayerDialog from "./components/PlayerDialog.vue";
@@ -219,20 +198,10 @@ body {
     display: inline-flex;
 }
 
-.menuicon {
-    width: 60px;
-    height: 60px;
-}
-
 .el-menu-item {
     font-size: v-bind("local.menu_font_size + 'px'");
     padding-left: 8px;
     padding-right: 5px;
-}
-
-.menumargin {
-    margin-top: 0px;
-    margin-bottom: 0px;
 }
 
 .mainheight {
