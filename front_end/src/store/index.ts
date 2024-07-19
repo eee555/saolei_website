@@ -39,7 +39,7 @@ export const useVideoPlayerStore = defineStore('videoplayer', {
 export const useLocalStore = defineStore('local', {
     state: () => ({
         darkmode: false,
-        language: "zh-cn",
+        language: (navigator.language).toLocaleLowerCase(),
         language_show: true,
         menu_font_size: 18,
         menu_height: 60,
