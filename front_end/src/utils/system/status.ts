@@ -1,6 +1,5 @@
 import { useLocalStore } from "@/store";
 import { ElNotification } from "element-plus"
-const local = useLocalStore();
 
 const notificationType = ['', '', 'success', '', 'error', 'error'];
 const notificationTitle = ['', '', 'common.msg.actionSuccess', '', 'common.msg.actionFail', 'common.msg.actionFail'];
@@ -21,6 +20,6 @@ export function generalNotification(t: any, status: number, action: string) {
         title: t.t(notificationTitle[type], [action]),
         message: t.t(notificationMessage[status]),
         type: notificationType[type],
-        duration: local.notification_duration,
+        duration: localStorage.getItem('local').notification_duration,
     })
 }

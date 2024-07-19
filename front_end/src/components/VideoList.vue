@@ -1,13 +1,5 @@
 <template>
-    <Teleport to=".common-layout">
-        <el-dialog v-model="preview_visible"
-            style="backdrop-filter: blur(1px);" draggable align-center
-            destroy-on-close :modal="false" :lock-scroll="false">
-            <iframe class="flop-player-iframe flop-player-display-none" style="width: 100%; height: 500px; border: 0px"
-                src="/flop/index.html" ref="video_iframe"></iframe>
-        </el-dialog>
-    </Teleport>
-    <el-table :data="videos_trans" :show-header="false" @row-click="preview" table-layout="auto"
+    <el-table :data="videos_trans" :show-header="false" @row-click="(row: any) => preview(row.key)" table-layout="auto"
         style="width: 100%;font-size: 16px;user-select: none;">
         <el-table-column prop="time" min-width="200" :formatter="simple_formatter(utc_to_local_format)"/>
         <el-table-column v-if="need_player_name" min-width="80">
@@ -41,16 +33,15 @@
 import { ref, computed } from 'vue'
 import { utc_to_local_format } from "@/utils/system/tools";
 import PlayerName from '@/components/PlayerName.vue';
-const preview_visible = ref(false);
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import { Check, Close } from '@element-plus/icons-vue';
 import { ElNotification } from 'element-plus';
+import { preview } from '@/utils/common/PlayerDialog';
 
 import { useUserStore } from '@/store';
 const store = useUserStore()
 
 import { ms_to_s, approve, freeze, simple_formatter } from '@/utils';
-import { generalNotification } from '@/utils/system/status';
 import { useI18n } from 'vue-i18n';
 const { proxy } = useCurrentInstance();
 
@@ -114,63 +105,6 @@ const videos_trans = computed(() => {
 })
 
 // console.log(videos_trans);
-
-
-const preview = (row: any, column: any, event: Event) => {
-
-    if (!row.key) {
-        return
-    }
-    (window as any).flop = null;
-    preview_visible.value = true;
-    proxy.$axios.get('/video/get_software/',
-        {
-            params: {
-                id: row.key,
-            }
-        }
-    ).then(function (response) {
-        let uri = import.meta.env.VITE_BASE_API + "/video/preview/?id=" + row.key;
-        // console.log(uri);
-        if (response.data.msg == "a") {
-            uri += ".avf";
-        } else if (response.data.msg == "e") {
-            uri += ".evf";
-        }
-
-        if ((window as any).flop) {
-            playVideo(uri);
-        } else {
-            (window as any).flop = {
-                onload: async function () {
-                    playVideo(uri);
-                },
-            }
-        }
-    }).catch((error: any) => {
-        generalNotification(t, error.response.status, t.t('common.action.getSoftware'));
-    })
-}
-
-
-const playVideo = function (uri: string) {
-    (window as any).flop.playVideo(uri, {
-        share: {
-            uri: uri,
-            pathname: "/flop-player/player",
-            anonymous: false,
-            background: "rgba(100, 100, 100, 0.05)",
-            title: "Flop Player Share",
-            favicon: "https://avatars.githubusercontent.com/u/38378650?s=32", // 胡帝的头像
-        },
-        anonymous: false,
-        background: "rgba(0, 0, 0, 0)",
-        listener: function () {
-            preview_visible.value = false;
-            (window as any).flop = null;
-        },
-    });
-}
 
 const handleApprove = async function (row: any) {
     let status = await approve(proxy, row.key);

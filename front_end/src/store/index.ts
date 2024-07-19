@@ -29,6 +29,13 @@ export const useUserStore = defineStore('user', {
     ),
 })
 
+export const usePlayerStore = defineStore('player', {
+    state: () => ({
+        visible: false,
+        id: 0,
+    }),
+})
+
 export const useLocalStore = defineStore('local', {
     state: () => ({
         darkmode: false,
