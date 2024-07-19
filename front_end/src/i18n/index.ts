@@ -22,7 +22,7 @@ function getMessages (): Record<string, any> {
  * 获取默认语言
  */
 function getDefaultLocale () {
-    return "dev"
+    return "en"
 }
 
 /**
@@ -30,7 +30,12 @@ function getDefaultLocale () {
  */
 export default createI18n({
     legacy: false,
-    fallbackLocale: dev.local,
+    fallbackLocale: {
+        'zh-cn': ['dev'],
+        'en': ['dev'],
+        'de': ['en'],
+        'pl': ['en'],
+    },
     fallbackWarn: false,
     missingWarn: false,
     warnHtmlMessage: false,
