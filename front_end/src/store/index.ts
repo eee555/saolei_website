@@ -29,7 +29,7 @@ export const useUserStore = defineStore('user', {
     ),
 })
 
-export const usePlayerStore = defineStore('player', {
+export const useVideoPlayerStore = defineStore('videoplayer', {
     state: () => ({
         visible: false,
         id: 0,
