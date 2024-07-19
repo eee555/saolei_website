@@ -1,11 +1,11 @@
-import { usePlayerStore } from "@/store";
+import { useVideoPlayerStore } from "@/store";
 
-const playerstore = usePlayerStore();
+const videoplayerstore = useVideoPlayerStore();
 
 export const preview = (id: number | undefined) => {
     if (!id) {
         return;
     }
-    playerstore.id = id;
-    playerstore.visible = true;
+    videoplayerstore.id = id;
+    videoplayerstore.visible = true;
 }

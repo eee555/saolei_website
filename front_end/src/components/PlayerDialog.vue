@@ -1,5 +1,5 @@
 <template>
-    <el-dialog v-model="playerstore.visible" style="backdrop-filter: blur(1px);" draggable align-center destroy-on-close
+    <el-dialog v-model="videoplayerstore.visible" style="backdrop-filter: blur(1px);" draggable align-center destroy-on-close
         :modal="false" :lock-scroll="false">
         <iframe class="flop-player-iframe flop-player-display-none" style="width: 100%; height: 500px; border: 0px"
             src="/flop/index.html" ref="video_iframe"></iframe>
@@ -8,18 +8,18 @@
 
 <script setup lang="ts">
 
-import { usePlayerStore } from '@/store';
+import { useVideoPlayerStore } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { watch } from 'vue';
 import { generalNotification } from '@/utils/system/status';
 import { useI18n } from 'vue-i18n';
 const { proxy } = useCurrentInstance();
-const playerstore = usePlayerStore();
+const videoplayerstore = useVideoPlayerStore();
 const t = useI18n();
 
-watch(playerstore, (newPlayerStore: any, oldPlayerStore: any) => {
-    if (newPlayerStore.visible) {
-        preview(newPlayerStore.id)
+watch(videoplayerstore, () => {
+    if (videoplayerstore.visible) {
+        preview(videoplayerstore.id)
     }
 })
 
@@ -70,7 +70,7 @@ const playVideo = function (url: string) {
         anonymous: false,
         background: "rgba(0, 0, 0, 0)",
         listener: function () {
-            playerstore.visible = false;
+            videoplayerstore.visible = false;
             (window as any).flop = null;
         },
     });
