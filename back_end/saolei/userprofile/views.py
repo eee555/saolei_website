@@ -298,7 +298,7 @@ def get_userProfile(request):
     else:
         return HttpResponseForbidden()
     
-set_userProfile_fields = ["id", "userms__designators", "userms__video_num_limit", "username", "first_name", "last_name", "email", "realname", "signature", "country", "left_realname_n", "left_avatar_n", "left_signature_n", "is_banned"]
+set_userProfile_fields = ["userms__designators", "userms__video_num_limit", "username", "first_name", "last_name", "email", "realname", "signature", "country", "left_realname_n", "left_avatar_n", "left_signature_n", "is_banned"]
 def set_userProfile(request):
     if request.method == 'POST':
         if not request.user.is_staff:
