@@ -7,7 +7,9 @@ export const en = {
         action: {
             getSoftware: 'fetch video data',
             getUserProfile: 'fetch user data',
+            getVideoModel: 'fetch video data',
             setUserProfile: 'modify user data',
+            setVideoModel: 'modify video data',
             uploadFile: 'upload file',
             videoQuery: 'fetch video data',
         },

@@ -7,7 +7,9 @@ export const zhCn = {
         action: {
             getSoftware: '获取录像信息',
             getUserProfile: '查询用户',
+            getVideoModel: '查询录像',
             setUserProfile: '修改用户',
+            setVideoModel: '修改录像',
             uploadFile: '上传文件',
             videoQuery: '查询录像',
         },

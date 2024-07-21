@@ -313,7 +313,7 @@ def set_userProfile(request):
         if field == "is_banned" and user.is_superuser:
             return HttpResponseForbidden() # 站长不可被封禁
         value = request.POST.get("value")
-        logger.info(f'{request.user.id}(staff) changes {userid}.{field} from {getattr(user, field)} to {value}')
+        logger.info(f'{request.user.id}(staff) changes user{userid}.{field} from {getattr(user, field)} to {value}')
         setattr(user, field, value)
         user.save()
         return HttpResponse()
