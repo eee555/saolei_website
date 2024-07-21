@@ -108,6 +108,9 @@ export const en = {
         links: 'Links',
         team: 'Team'
     },
+    news: {
+        breakRecordTo: ' breaks their {mode} {level} {stat} record with ',
+    },
     profile: {
         changeAvatar: 'Click the image to change avatar',
         realname: 'Name: ',

@@ -109,6 +109,9 @@ export const zhCn = {
         team: '团队',
         groups: '官方QQ群'
     },
+    news: {
+        breakRecordTo: '将{mode}{level}{stat}纪录刷新为',
+    },
     profile: {
         changeAvatar: '*点击图片修改头像',
         realname: '姓名：',
