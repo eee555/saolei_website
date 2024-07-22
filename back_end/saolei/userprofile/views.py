@@ -291,10 +291,10 @@ def get_userProfile(request):
     if request.method != 'GET':
         return HttpResponseBadRequest()
     if request.user.is_staff:
-        list = UserProfile.objects.filter(id=request.GET["id"]).values(*get_userProfile_fields)
-        if len(list) == 0:
+        userlist = UserProfile.objects.filter(id=request.GET["id"]).values(*get_userProfile_fields)
+        if not userlist:
             return HttpResponseNotFound()
-        return JsonResponse(list[0])
+        return JsonResponse(userlist[0])
     else:
         return HttpResponseForbidden()
     

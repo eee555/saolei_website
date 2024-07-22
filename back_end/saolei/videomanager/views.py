@@ -401,10 +401,10 @@ def get_videoModel(request):
     if request.method != 'GET':
         return HttpResponseBadRequest()
     if request.user.is_staff:
-        list = VideoModel.objects.filter(id=request.GET["id"]).values(*get_videoModel_fields)
-        if len(list) == 0:
+        videolist = VideoModel.objects.filter(id=request.GET["id"]).values(*get_videoModel_fields)
+        if not videolist:
             return HttpResponseNotFound()
-        return JsonResponse(list[0])
+        return JsonResponse(videolist[0])
     else:
         return HttpResponseForbidden()
     
