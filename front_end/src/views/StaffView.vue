@@ -42,6 +42,7 @@
 </template>
 
 <script lang="ts" setup>
+// 管理员操作接口，通过'/staff'访问
 
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { generalNotification } from '@/utils/system/status';
@@ -56,7 +57,7 @@ const { proxy } = useCurrentInstance();
 const userid = ref(0);
 const userfield = ref("");
 const uservalue = ref("");
-const userfieldlist = ["username", "first_name", "last_name", "email", "realname", "country", "is_banned", "left_realname_n", "left_avatar_n", "left_signature_n", "userms__video_num_limit"]
+const userfieldlist = ["username", "first_name", "last_name", "email", "realname", "country", "is_banned", "left_realname_n", "left_avatar_n", "left_signature_n", "userms__video_num_limit"]; // 可以修改的域列表
 const userprofile = ref({});
 
 const getUser = () => {
@@ -81,7 +82,7 @@ const setUser = (id: number, field: string, value: string) => {
 const videoid = ref(0);
 const videofield = ref("");
 const videovalue = ref("");
-const videofieldlist = ["player", "upload_time", "state"]
+const videofieldlist = ["player", "upload_time", "state"]; // 可以修改的域列表
 const videomodel = ref({});
 
 const getVideo = () => {

@@ -393,7 +393,8 @@ def freeze(request):
     else:
         return HttpResponseNotAllowed()
 
-get_videoModel_fields = ["player", "player__realname", "upload_time", "state", "software", "level", "mode", "timems", "bv", "bvs"]
+# 管理员使用的操作接口，调用方式见前端的StaffView.vue
+get_videoModel_fields = ["player", "player__realname", "upload_time", "state", "software", "level", "mode", "timems", "bv", "bvs"] # 可获取的域列表
 for name in [field.name for field in ExpandVideoModel._meta.get_fields()]:
     get_videoModel_fields.append("video__" + name)
 
@@ -408,7 +409,7 @@ def get_videoModel(request):
     else:
         return HttpResponseForbidden()
     
-set_videoModel_fields = ["player", "upload_time", "state"]
+set_videoModel_fields = ["player", "upload_time", "state"] # 可修改的域列表
 def set_videoModel(request):
     if request.method == 'POST':
         if not request.user.is_staff:

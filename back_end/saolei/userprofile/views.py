@@ -284,9 +284,8 @@ def judge_captcha(captchaStr, captchaHashkey):
     CaptchaStore.objects.filter(hashkey=captchaHashkey).delete()
     return False
 
-
-get_userProfile_fields = ["id", "userms__designators", "userms__video_num_limit", "username", "first_name", "last_name", "email", "realname", "signature", "country", "left_realname_n", "left_avatar_n", "left_signature_n", "is_banned"]
-
+# 管理员使用的操作接口，调用方式见前端的StaffView.vue
+get_userProfile_fields = ["id", "userms__designators", "userms__video_num_limit", "username", "first_name", "last_name", "email", "realname", "signature", "country", "left_realname_n", "left_avatar_n", "left_signature_n", "is_banned"] # 可获取的域列表
 def get_userProfile(request):
     if request.method != 'GET':
         return HttpResponseBadRequest()
@@ -297,8 +296,9 @@ def get_userProfile(request):
         return JsonResponse(userlist[0])
     else:
         return HttpResponseForbidden()
-    
-set_userProfile_fields = ["userms__designators", "userms__video_num_limit", "username", "first_name", "last_name", "email", "realname", "signature", "country", "left_realname_n", "left_avatar_n", "left_signature_n", "is_banned"]
+
+# 管理员使用的操作接口，调用方式见前端的StaffView.vue
+set_userProfile_fields = ["userms__designators", "userms__video_num_limit", "username", "first_name", "last_name", "email", "realname", "signature", "country", "left_realname_n", "left_avatar_n", "left_signature_n", "is_banned"] # 可修改的域列表
 def set_userProfile(request):
     if request.method == 'POST':
         if not request.user.is_staff:
