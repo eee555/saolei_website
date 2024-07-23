@@ -49,22 +49,6 @@ export interface Record {
     path_id: number,
 }
 
-export interface UserProfile {
-    userms__designators: Array<String>;
-    userms__video_num_limit: Number;
-    username: String;
-    first_name: String;
-    last_name: String;
-    email: String;
-    realname: String;
-    signature: String;
-    country: String;
-    is_banned: Boolean;
-    left_realname_n: Number;
-    left_avatar_n: Number;
-    left_signature_n: Number;
-}
-
 interface ExtendedVideoStat {
     left: number,
     right: number,

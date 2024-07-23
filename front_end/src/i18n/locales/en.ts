@@ -7,7 +7,9 @@ export const en = {
         action: {
             getSoftware: 'fetch video data',
             getUserProfile: 'fetch user data',
+            getVideoModel: 'fetch video data',
             setUserProfile: 'modify user data',
+            setVideoModel: 'modify video data',
             uploadFile: 'upload file',
             videoQuery: 'fetch video data',
         },
@@ -105,6 +107,9 @@ export const en = {
         downloads: 'Downloads',
         links: 'Links',
         team: 'Team'
+    },
+    news: {
+        breakRecordTo: ' breaks their {mode} {level} {stat} record with ',
     },
     profile: {
         changeAvatar: 'Click the image to change avatar',

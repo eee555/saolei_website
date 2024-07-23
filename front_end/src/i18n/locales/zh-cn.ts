@@ -7,7 +7,9 @@ export const zhCn = {
         action: {
             getSoftware: '获取录像信息',
             getUserProfile: '查询用户',
+            getVideoModel: '查询录像',
             setUserProfile: '修改用户',
+            setVideoModel: '修改录像',
             uploadFile: '上传文件',
             videoQuery: '查询录像',
         },
@@ -106,6 +108,9 @@ export const zhCn = {
         links: '友链',
         team: '团队',
         groups: '官方QQ群'
+    },
+    news: {
+        breakRecordTo: '将{mode}{level}{stat}纪录刷新为',
     },
     profile: {
         changeAvatar: '*点击图片修改头像',

@@ -155,6 +155,7 @@ def video_download(request):
 # 录像查询（无需登录）
 # 按任何基础指标+难度+模式，排序，分页
 # 每项的定义参见 front_end/src/views/VideoView.vue 的 request_videos 函数
+
 @ratelimit(key='ip', rate='20/m')
 def video_query(request):
     if request.method == 'GET':
@@ -392,7 +393,42 @@ def freeze(request):
     else:
         return HttpResponseNotAllowed()
 
+# 管理员使用的操作接口，调用方式见前端的StaffView.vue
+get_videoModel_fields = ["player", "player__realname", "upload_time", "state", "software", "level", "mode", "timems", "bv", "bvs"] # 可获取的域列表
+for name in [field.name for field in ExpandVideoModel._meta.get_fields()]:
+    get_videoModel_fields.append("video__" + name)
 
+def get_videoModel(request):
+    if request.method != 'GET':
+        return HttpResponseBadRequest()
+    if request.user.is_staff:
+        videolist = VideoModel.objects.filter(id=request.GET["id"]).values(*get_videoModel_fields)
+        if not videolist:
+            return HttpResponseNotFound()
+        return JsonResponse(videolist[0])
+    else:
+        return HttpResponseForbidden()
+    
+set_videoModel_fields = ["player", "upload_time", "state"] # 可修改的域列表
+def set_videoModel(request):
+    if request.method == 'POST':
+        if not request.user.is_staff:
+            return HttpResponseForbidden() # 非管理员不能使用该api
+        videoid = request.POST.get("id")
+        video = VideoModel.objects.get(id=videoid)
+        user = video.player
+        if user.is_staff and user != request.user:
+            return HttpResponseForbidden() # 不能修改除自己以外管理员的信息
+        field = request.POST.get("field")
+        if field not in set_videoModel_fields:
+            return HttpResponseForbidden() # 只能修改特定的域
+        value = request.POST.get("value")
+        logger.info(f'{request.user.id}(staff) changes video{videoid}.{field} from {getattr(video, field)} to {value}')
+        setattr(video, field, value)
+        video.save()
+        return HttpResponse()
+    else:
+        return HttpResponseBadRequest()
 
 
 

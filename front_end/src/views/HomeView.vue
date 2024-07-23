@@ -5,12 +5,17 @@
                 <el-tabs type="border-card" style=" min-height: 300px;">
                     <el-tab-pane label="雷界快讯" style="max-height: 300px; overflow: auto;user-select: none;">
                         <div v-for="news in news_queue">
-                            {{ utc_to_local_format(news.time) }}<PlayerName class="name" :user_id="+news.player_id" :user_name="news.player">
-                            </PlayerName>将{{ $t('common.mode.'+news.mode) }}模式{{ $t('common.level.'+news.level)
-                            }}{{ $t('common.prop.'+news.index) }}记录刷新为
-                            <PreviewNumber :id="news.video_id" :text="to_fixed_n(news.value, 3)"></PreviewNumber>
-                            {{ news.delta == "新" ? "" : news.delta > 0 ? "↑" : "↓" }}{{ news.delta }}
-
+                            <el-text style="margin-right: 5px">
+                                {{ utc_to_local_format(news.time) }}
+                            </el-text>
+                            <PlayerName class="name" style="vertical-align: top;" :user_id="+news.player_id" :user_name="news.player" />
+                            <el-text style="vertical-align: middle;">
+                                {{ $t('news.breakRecordTo', {mode: $t('common.mode.'+news.mode), level: $t('common.level.'+news.level), stat: $t('common.prop.'+news.index)}) }}
+                            </el-text>
+                            <PreviewNumber :id="news.video_id" :text="to_fixed_n(news.value, 3)" />
+                            <el-text style="margin-left: 5px; vertical-align: middle;">
+                                {{ news.delta == "新" ? "" : news.delta > 0 ? "↑" : "↓" }}{{ news.delta }}
+                            </el-text>
                         </div>
                         <!-- 2023年2月26日 11:45 周炎亮 将高级标准模式时间记录刷新为 91.52 ↑3.60-->
                     </el-tab-pane>
