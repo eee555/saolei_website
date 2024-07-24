@@ -47,3 +47,30 @@ export async function freeze(proxy: ComponentCustomProperties & Record<string, a
     }).catch()
     return status
 }
+
+// Credit: ChatGPT
+export function deepCopy<T>(obj: T): T {
+    if (obj === null || typeof obj !== 'object') {
+        return obj;
+    }
+
+    if (obj instanceof Array) {
+        const copy: any[] = [];
+        for (let i = 0; i < obj.length; i++) {
+            copy[i] = deepCopy(obj[i]);
+        }
+        return copy as unknown as T;
+    }
+
+    if (obj instanceof Object) {
+        const copy: { [key: string]: any } = {};
+        for (const key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                copy[key] = deepCopy(obj[key]);
+            }
+        }
+        return copy as T;
+    }
+
+    throw new Error('Unable to copy object! Its type isn\'t supported.');
+}

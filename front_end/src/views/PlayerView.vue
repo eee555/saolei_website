@@ -77,7 +77,7 @@
             <el-main>
                 <el-tabs v-model="activeName" style="max-height: 1024px; overflow: auto;">
                     <el-tab-pane :label="$t('profile.records.title')" name="first" :lazy="true">
-                        <PlayerRecordView></PlayerRecordView>
+                        <PlayerRecordView :key="store.player.id"></PlayerRecordView>
                     </el-tab-pane>
                     <el-tab-pane :label="$t('profile.videos')" name="second" :lazy="true">
                         <PlayerVideosView></PlayerVideosView>
@@ -95,9 +95,8 @@
 
 <script lang="ts" setup>
 // 我的地盘页面
-import { onMounted, ref, Ref, defineAsyncComponent, computed } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
-// import PreviewDownload from '@/components/PreviewDownload.vue';
 import PlayerRecordView from '@/views/PlayerRecordView.vue';
 import PlayerVideosView from '@/views/PlayerVideosView.vue';
 import UploadView from './UploadView.vue';
@@ -112,14 +111,15 @@ import { Plus } from '@element-plus/icons-vue'
 import imageUrlDefault from '@/assets/person.png'
 const imageUrl = ref(imageUrlDefault)
 const avatar_changed = ref(false);
-import { Record, RecordBIE } from "@/utils/common/structInterface";
-import { compress, compressAccurately } from 'image-conversion';
-// import store from '@/store';
+import { Record } from "@/utils/common/structInterface";
+import { compressAccurately } from 'image-conversion';
 import { useUserStore } from '../store'
 const store = useUserStore()
 
 import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
 const t = useI18n();
+const route = useRoute()
 
 const loading = ref(true)
 
@@ -145,7 +145,6 @@ const activeName = ref('first')
 const player = {
     id: -1,
 };
-// console.log(player);
 
 // 上传可能失败，备份旧的头像
 let imageUrlOld: any;
@@ -153,11 +152,8 @@ let imageUrlOld: any;
 // const user = store.user;
 let show_edit_button: boolean;
 
-onMounted(() => {
-    // 把左侧的头像、姓名、个性签名、记录请求过来
-
+function refresh() {
     let player_id = +proxy.$route.params.id;
-    
     // http://localhost:8080/#/player/1
     // 首先看url里有没有带参，如果有，就访问这个用户；其次看store里有没有用户id。
 
@@ -203,10 +199,10 @@ onMounted(() => {
         loading.value = false;
 
     })
+}
 
-    // 再把个人纪录请求过来
-    // std_record
-})
+onMounted(refresh)
+watch(route, refresh) // 解决切换url不刷新的问题
 
 
 // 向后台发送请求修改姓名

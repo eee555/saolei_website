@@ -151,6 +151,7 @@ const store = useUserStore()
 const local = useLocalStore()
 
 import { useI18n } from 'vue-i18n';
+import { deepCopy } from '@/utils';
 const t = useI18n();
 
 const AXIOS_BASE_URL = import.meta.env.VITE_BASE_API;
@@ -291,8 +292,8 @@ const login = async () => {
 
             user_name_show.value = response.data.msg.username;
 
-            store.user = response.data.msg;
-            store.player = response.data.msg;
+            store.user = deepCopy(response.data.msg); // 直接赋值会导致user和player共用一个字典！！
+            store.player = deepCopy(response.data.msg);
             if (response.data.msg.is_banned) {
                 user_name_show.value += "（您已被封禁，详情请询问管理员！）"
             }
@@ -306,7 +307,7 @@ const login = async () => {
             //     // 如果本次是自动登录成功的，下次依然自动登录
             //     remember_me.value = true;
             // }
-            localStorage.setItem("history_user_id", response.data.id + "");
+            localStorage.setItem("history_user_id", response.data.msg.id + "");
         } else if (response.data.status >= 101) {
             hint_message.value = response.data.msg;
             // console.log("登录失败");
@@ -342,12 +343,11 @@ const retrieve = () => {
     ).then(function (response) {
         if (response.data.status == 100) {
             hint_message.value = "";
-            user_name_show.value = response.data.msg;
             // mutations.updateLoginStatus(LoginStatus.IsLogin);
             store.login_status = LoginStatus.IsLogin;
             // login_status.value = LoginStatus.IsLogin;
-            store.user = response.data.msg;
-            store.player = response.data.msg;
+            store.user = deepCopy(response.data.msg);
+            store.player = deepCopy(response.data.msg);
             emit('login'); // 向父组件发送消息
             retrieve_visible.value = false;
             ElMessage.success({ message: t.t('common.msg.forgetPassword.success'), offset: 68 });
@@ -419,8 +419,8 @@ const register = () => {
             // login_status.value = LoginStatus.IsLogin;
             // mutations.updateLoginStatus(LoginStatus.IsLogin);
             store.login_status = LoginStatus.IsLogin;
-            store.user = response.data.msg;
-            store.player = response.data.msg;
+            store.user = deepCopy(response.data.msg);
+            store.player = deepCopy(response.data.msg);
             emit('login'); // 向父组件发送消息
             register_visible.value = false;
             // console.log(response);
