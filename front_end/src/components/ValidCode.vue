@@ -1,5 +1,5 @@
 <template>
-	<div class="canvas-box" :style="{ height: '32px' }">
+	<div v-loading="loading" class="canvas-box" :style="{ height: '32px' }">
 		<!-- <canvas id="id-canvas2" class="id-canvas2" :width="contentWidth" :height="contentHeight"></canvas> -->
 		<img :src="captchaUrl" alt="" @click="refreshPic()">
 	</div>
@@ -17,9 +17,10 @@ import {  ElMessage } from 'element-plus'
 
 const captchaUrl = ref("")
 const hashkey = ref("")
-
+const loading = ref(true)
 
 const refreshPic = () => {
+	loading.value = true;
 	proxy.$axios.get('/userprofile/refresh_captcha/')
 		.then(function (response) {
 			if (response.data.status == 100) {
@@ -28,6 +29,7 @@ const refreshPic = () => {
 			} else if (response.data.status >= 101) {
 				ElMessage.error({ message: response.data.msg, offset: 68 });
 			}
+			loading.value = false;
 		})
 		.catch(function (error) {
 			console.log(error);

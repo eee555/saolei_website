@@ -12,7 +12,7 @@
                         <IconMenuItem :text="$t(item.content)" :icon="item.icon" />
                     </el-menu-item>
                     <div style="flex-grow: 1" />
-                    <el-menu-item :index="player_url" v-if="store.user.id != 0" @click="store.player = store.user">
+                    <el-menu-item :index="player_url" v-if="store.user.id != 0">
                         <IconMenuItem :text="store.user.username" icon="User" />
                     </el-menu-item>
                     <el-menu-item index="/settings" style="padding-left: 8px; padding-right: 5px">
