@@ -80,7 +80,7 @@
                         <PlayerRecordView :key="store.player.id"></PlayerRecordView>
                     </el-tab-pane>
                     <el-tab-pane :label="$t('profile.videos')" name="second" :lazy="true">
-                        <PlayerVideosView></PlayerVideosView>
+                        <PlayerVideosView :key="store.player.id"></PlayerVideosView>
                     </el-tab-pane>
                     <el-tab-pane v-if="store.user.id + '' == userid" :label="$t('profile.upload.title')" name="third"
                         :lazy="true">
