@@ -294,6 +294,8 @@ def freeze_queue(request):
     else:
         return HttpResponseNotAllowed()
     
+# 审核通过单个录像
+# check_designator 为 true 则检查是否要修改玩家标识列表，并在修改后扫描所有待审录像的标识
 def approve_single(videoid, check_designator=True):
     video = VideoModel.objects.filter(id=videoid)
     if not video:
@@ -315,6 +317,7 @@ def approve_single(videoid, check_designator=True):
         approve_designator(video.player.id, designator)
     return True
 
+# 审核通过所有特定用户特定标识的录像
 def approve_designator(userid, designator):
     user_designator_list = cache.hgetall("review_queue")
     for key in user_designator_list:
@@ -329,11 +332,11 @@ def approve_designator(userid, designator):
 def approve(request):
     if request.user.is_staff and request.method == 'GET':
         ids = json.loads(request.GET["ids"])
-        # logger.info(f'{request.user.id} approve ids {ids}')
+        # logger.info(f'{request.user.id} approve ids {ids}') # logger暂时有bug
         res = []
         for _id in ids:
             res.append(approve_single(_id))
-        # logger.info(f'{request.user.id} approve {json.dumps(ids)} response {json.dumps(res)}')
+        # logger.info(f'{request.user.id} approve {json.dumps(ids)} response {json.dumps(res)}') # logger暂时有bug
         return JsonResponse(res, safe=False)
     else:
         return HttpResponseNotAllowed()
@@ -347,7 +350,7 @@ def approve(request):
 def freeze(request):
     if request.user.is_staff and request.method == 'GET':
         if _ids := request.GET["ids"]:
-            # logger.info(f'{request.user.id} freeze ids {_ids}')
+            # logger.info(f'{request.user.id} freeze ids {_ids}') # logger暂时有bug
             ids = json.loads(_ids)
             if isinstance(ids, int):
                 ids = [ids]
@@ -390,7 +393,7 @@ def freeze(request):
                     update_video_num(video_i, add=False)
                 cache.hdel("review_queue", _id)
                 cache.hdel("newest_queue", _id)
-        # logger.info(f'{request.user.id} freeze {json.dumps(ids)} response {json.dumps(res)}')
+        # logger.info(f'{request.user.id} freeze {json.dumps(ids)} response {json.dumps(res)}') # logger暂时有bug
         return JsonResponse(res, safe=False)
     else:
         return HttpResponseNotAllowed()
