@@ -391,7 +391,7 @@ def freeze(request):
                 cache.hdel("review_queue", _id)
                 cache.hdel("newest_queue", _id)
         logger.info(f'{request.user.id} freeze {json.dumps(ids)} response {json.dumps(res)}')
-        return JsonResponse(json.dumps(res), safe=False)
+        return JsonResponse(res, safe=False)
     else:
         return HttpResponseNotAllowed()
 
