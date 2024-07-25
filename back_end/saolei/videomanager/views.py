@@ -390,8 +390,6 @@ def freeze(request):
                     update_video_num(video_i, add=False)
                 cache.hdel("review_queue", _id)
                 cache.hdel("newest_queue", _id)
-        if request.GET["user_id"]:
-            update_personal_record_stock(user)
         logger.info(f'{request.user.id} freeze {json.dumps(ids)} response {json.dumps(res)}')
         return JsonResponse(json.dumps(res), safe=False)
     else:
