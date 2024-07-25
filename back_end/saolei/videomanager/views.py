@@ -347,7 +347,7 @@ def approve(request):
 def freeze(request):
     if request.user.is_staff and request.method == 'GET':
         if _ids := request.GET["ids"]:
-            logger.info(f'{request.user.id} freeze ids {_ids}')
+            # logger.info(f'{request.user.id} freeze ids {_ids}')
             ids = json.loads(_ids)
             if isinstance(ids, int):
                 ids = [ids]
@@ -390,7 +390,7 @@ def freeze(request):
                     update_video_num(video_i, add=False)
                 cache.hdel("review_queue", _id)
                 cache.hdel("newest_queue", _id)
-        logger.info(f'{request.user.id} freeze {json.dumps(ids)} response {json.dumps(res)}')
+        # logger.info(f'{request.user.id} freeze {json.dumps(ids)} response {json.dumps(res)}')
         return JsonResponse(res, safe=False)
     else:
         return HttpResponseNotAllowed()
