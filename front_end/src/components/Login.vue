@@ -335,7 +335,6 @@ const retrieve = () => {
             store.login_status = LoginStatus.IsLogin;
             // login_status.value = LoginStatus.IsLogin;
             store.user = deepCopy(response.data.msg);
-            store.player = deepCopy(response.data.msg);
             emit('login'); // 向父组件发送消息
             retrieve_visible.value = false;
             ElMessage.success({ message: t.t('common.msg.forgetPassword.success'), offset: 68 });
@@ -407,7 +406,6 @@ const register = () => {
             // mutations.updateLoginStatus(LoginStatus.IsLogin);
             store.login_status = LoginStatus.IsLogin;
             store.user = deepCopy(response.data.msg);
-            store.player = deepCopy(response.data.msg);
             emit('login'); // 向父组件发送消息
             register_visible.value = false;
             // console.log(response);
@@ -435,13 +433,6 @@ const logout = async () => {
                 realname: "",
                 is_banned: false,
                 is_staff: false,
-                country: ""
-            };
-            store.player = {
-                id: 0,
-                username: "",
-                realname: "",
-                is_banned: false,
                 country: ""
             };
             emit('logout'); // 向父组件发送消息

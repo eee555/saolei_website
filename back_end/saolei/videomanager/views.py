@@ -86,7 +86,8 @@ def video_upload(request):
                                 "mode": video.mode,
                                 "timems": video.timems,
                                 "bv": video.bv,
-                                "bvs": video.bvs}, cls=ComplexEncoder)
+                                "bvs": video.bvs,
+                                "designator": e_video.designator}, cls=ComplexEncoder)
             if data['review_code'] >= 2:
                 # 往审查队列里添加录像
                 cache.hset("review_queue", video.id, temp)
@@ -293,6 +294,37 @@ def freeze_queue(request):
     else:
         return HttpResponseNotAllowed()
     
+# 审核通过单个录像
+# check_designator 为 true 则检查是否要修改玩家标识列表，并在修改后扫描所有待审录像的标识
+def approve_single(videoid, check_designator=True):
+    video = VideoModel.objects.filter(id=videoid)
+    if not video:
+        return None
+    video = video[0]
+    if video.state == "c":
+        return False
+    userms = video.player.userms
+    video.state = "c"
+    video.save()
+    cache.hset("newest_queue", videoid, cache.hget("review_queue", videoid))
+    update_personal_record(video)
+    update_video_num(video)
+    cache.hdel("review_queue", videoid)
+    designator = video.video.designator
+    if check_designator and designator not in userms.designators:
+        userms.designators.append(designator)
+        userms.save(update_fields=["designators"])
+        approve_designator(video.player.id, designator)
+    return True
+
+# 审核通过所有特定用户特定标识的录像
+def approve_designator(userid, designator):
+    user_designator_list = cache.hgetall("review_queue")
+    for key in user_designator_list:
+        value = json.loads(user_designator_list[key])
+        if value["player_id"] == userid and value["designator"] == designator:
+            approve_single(key, False)
+
 
 # 【管理员】审核通过队列里的录像，未审核或冻结状态的录像可以审核通过
 # 返回"True","False"（已经是通过的状态）,"Null"（不存在该录像）
@@ -300,36 +332,11 @@ def freeze_queue(request):
 def approve(request):
     if request.user.is_staff and request.method == 'GET':
         ids = json.loads(request.GET["ids"])
-        # logger.info(f'{request.user.id} approve ids {ids}')
+        # logger.info(f'{request.user.id} approve ids {ids}') # logger暂时有bug
         res = []
         for _id in ids:
-            if not isinstance(_id, int):
-                return HttpResponseNotFound() # id应为正整数
-            video_i = VideoModel.objects.filter(id=_id)
-            if not video_i:
-                res.append("Null")
-            else:
-                video_i = video_i[0]
-                e_video = video_i.video
-                if video_i.state == "c":
-                    # 已经通过审核了
-                    res.append("False")
-                else:
-                    # 录像通过审核
-                    ms_player = video_i.player.userms
-                    if e_video.designator not in ms_player.designators:
-                        # 给用户增加新的标识
-                        ms_player.designators.append(e_video.designator)
-                        ms_player.save(update_fields=["designators"])
-                    video_i.state = "c"
-                    video_i.upload_time = timezone.now()
-                    res.append("True")
-                    video_i.save()
-                    cache.hset("newest_queue", _id, cache.hget("review_queue", _id))
-                    update_personal_record(video_i)
-                    update_video_num(video_i)
-                cache.hdel("review_queue", _id)
-        # logger.info(f'{request.user.id} approve {json.dumps(ids)} response {json.dumps(res)}')
+            res.append(approve_single(_id))
+        # logger.info(f'{request.user.id} approve {json.dumps(ids)} response {json.dumps(res)}') # logger暂时有bug
         return JsonResponse(res, safe=False)
     else:
         return HttpResponseNotAllowed()
@@ -343,7 +350,7 @@ def approve(request):
 def freeze(request):
     if request.user.is_staff and request.method == 'GET':
         if _ids := request.GET["ids"]:
-            logger.info(f'{request.user.id} freeze ids {_ids}')
+            # logger.info(f'{request.user.id} freeze ids {_ids}') # logger暂时有bug
             ids = json.loads(_ids)
             if isinstance(ids, int):
                 ids = [ids]
@@ -386,10 +393,8 @@ def freeze(request):
                     update_video_num(video_i, add=False)
                 cache.hdel("review_queue", _id)
                 cache.hdel("newest_queue", _id)
-        if request.GET["user_id"]:
-            update_personal_record_stock(user)
-        logger.info(f'{request.user.id} freeze {json.dumps(ids)} response {json.dumps(res)}')
-        return JsonResponse(json.dumps(res), safe=False)
+        # logger.info(f'{request.user.id} freeze {json.dumps(ids)} response {json.dumps(res)}') # logger暂时有bug
+        return JsonResponse(res, safe=False)
     else:
         return HttpResponseNotAllowed()
 
