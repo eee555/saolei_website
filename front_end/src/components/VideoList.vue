@@ -108,13 +108,13 @@ const videos_trans = computed(() => {
 
 const handleApprove = async function (row: any) {
     let status = await approve(proxy, row.key);
-    if (status == 'True') {
+    if (status == true) {
         ElNotification({
             title: '审核成功',
             message: '录像已通过审核',
             type: 'success',
         })
-    } else if (status == 'False') {
+    } else if (status == false) {
         ElNotification({
             title: '审核失败',
             message: '录像已通过审核',
