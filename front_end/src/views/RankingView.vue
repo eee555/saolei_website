@@ -118,7 +118,7 @@ const mode_tags: Tags = {
     "STD": { key: "std" },
     "NF": { key: "nf" },
     "JSW": { key: "ng" },
-    "BZD": { key: "dg" }
+    //"BZD": { key: "dg" }
 }
 
 
