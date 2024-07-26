@@ -83,9 +83,9 @@ const menu_index = ref();
 const menu_items = [
     { index: "ranking", icon: "Trophy", content: "menu.ranking" },
     { index: "video", icon: "VideoCameraFilled", content: "menu.video" },
-    { index: "world", icon: "Odometer", content: "menu.world" },
+    //{ index: "world", icon: "Odometer", content: "menu.world" },
     { index: "guide", icon: "Document", content: "menu.guide" },
-    { index: "score", icon: "Histogram", content: "menu.score" },
+    //{ index: "score", icon: "Histogram", content: "menu.score" },
 ];
 
 const notice = ref(`

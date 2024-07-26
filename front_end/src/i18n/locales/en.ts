@@ -18,6 +18,7 @@ export const en = {
             b: 'Beginner',
             i: 'Intermediate',
             e: 'Expert',
+            sum: 'Sum',
         },
         mode: {
             std: 'Standard',
@@ -70,7 +71,17 @@ export const en = {
             UnsupportedMediaType: 'Unsupported file type',
         },
         show: 'Show',
+        software: {
+            metasweeper: 'MetaSweeper',
+        },
         toDo: 'TODO',
+    },
+    footer: {
+        contact: 'Contact',
+        donate: 'Donate',
+        team: 'Team',
+        links: 'LInks',
+        about: 'About',
     },
     forgetPassword: {
         title: 'Reset password',
@@ -82,6 +93,11 @@ export const en = {
         getEmailCode: 'Send one-time password',
         password: 'new password',
         success: 'Password reset complete!'
+    },
+    home: {
+        news: 'News',
+        latestScore: 'Latest',
+        reviewQueue: 'Pending',
     },
     login: {
         title: 'Login',
@@ -104,9 +120,6 @@ export const en = {
         logout: 'Logout',
         register: 'Register',
         setting: 'Settings',
-        downloads: 'Downloads',
-        links: 'Links',
-        team: 'Team'
     },
     news: {
         breakRecordTo: ' breaks their {mode} {level} {stat} record with ',

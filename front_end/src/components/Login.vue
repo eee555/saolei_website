@@ -80,7 +80,7 @@
                 <el-input v-model="user_password2_reg" :placeholder="$t('register.confirmPassword')" show-password
                     prefix-icon="Lock" minlength="6" maxlength="20"></el-input>
             </el-form-item>
-            <el-checkbox v-model="checkout_user_agreement" name="checkoutSecret">{{ $t('register.agreeTo') }}
+            <el-checkbox v-if="false" v-model="checkout_user_agreement" name="checkoutSecret">{{ $t('register.agreeTo') }}
                 <a target="_blank" :href="AXIOS_BASE_URL + '/agreement.html'">{{ $t('register.termsAndConditions')
                     }}</a>
             </el-checkbox>
@@ -188,7 +188,7 @@ const user_password2_reg = ref("");
 const hint_message = ref("");
 
 // 是否同意用户协议
-const checkout_user_agreement = ref(false);
+const checkout_user_agreement = ref(true);
 
 let email_key = "";
 
