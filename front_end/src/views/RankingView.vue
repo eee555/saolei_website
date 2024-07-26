@@ -1,30 +1,30 @@
 <template>
     <el-row class="mb-4" style="margin-bottom: 10px;">
         <el-button v-for="(tag, key) in mode_tags" type="success" :plain="!(mode_tag_selected == key)" :size="'small'"
-            @click="mode_tag_selected = key as string; get_player_rank(1);">{{ tag.name }}</el-button>
+            @click="mode_tag_selected = key as string; get_player_rank(1);">{{ $t('common.mode.' + tag.key) }}</el-button>
     </el-row>
 
     <el-row class="mb-4" style="margin-bottom: 10px;">
         <el-button v-for="(tag, key) in index_tags" type="primary" :plain="!(index_tag_selected == key)" :size="'small'"
-            @click="index_tag_selected = key as string; mod_style(); get_player_rank(1);">{{ tag.name
+            @click="index_tag_selected = key as string; mod_style(); get_player_rank(1);">{{ $t('common.prop.' + tag.key)
             }}</el-button>
     </el-row>
 
     <div style="width: 80%;font-size:20px;margin: auto;margin-top: 10px;user-select: none;">
         <div style="border-bottom: 1px solid #555555;padding-bottom: 10px;">
-            <span class="rank">排名</span>
-            <span class="name">姓名</span>
+            <span class="rank"></span>
+            <span class="name">{{ $t('common.prop.realName') }}</span>
             <span class="number_wid" :style="{ color: (level_selected === 'b' ? 'rgb(64, 158, 255)' : '') }"
-                @click="setSortDirect('b')">初级{{
+                @click="setSortDirect('b')">{{ $t('common.level.b') }}{{
             level_selected === "b" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
             <span class="number_wid" :style="{ color: (level_selected === 'i' ? 'rgb(64, 158, 255)' : '') }"
-                @click="setSortDirect('i')">中级{{
+                @click="setSortDirect('i')">{{ $t('common.level.i') }}{{
             level_selected === "i" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
             <span class="number_wid" :style="{ color: (level_selected === 'e' ? 'rgb(64, 158, 255)' : '') }"
-                @click="setSortDirect('e')">高级{{
+                @click="setSortDirect('e')">{{ $t('common.level.e') }}{{
             level_selected === "e" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
             <span class="sum_title" :style="{ color: (level_selected === 'sum' ? 'rgb(64, 158, 255)' : '') }"
-                @click="setSortDirect('sum')">总计{{
+                @click="setSortDirect('sum')">{{ $t('common.level.sum') }}{{
             level_selected === "sum" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
         </div>
         <div v-for="(player, key) in playerData" style="margin-top: 10px;">
@@ -117,20 +117,20 @@ interface TagsReverse {
 }
 
 const mode_tags: Tags = {
-    "STD": { name: "标准", key: "std" },
-    "NF": { name: "盲扫", key: "nf" },
-    "JSW": { name: "竞速无猜", key: "ng" },
-    "BZD": { name: "递归", key: "dg" }
+    "STD": { key: "std" },
+    "NF": { key: "nf" },
+    "JSW": { key: "ng" },
+    "BZD": { key: "dg" }
 }
 
 
 // reverse: true从小到大
 const index_tags: TagsReverse = {
-    "timems": { name: "成绩", key: "timems", reverse: false, to_fixed: 3 },
-    "bbbv_s": { name: "3BV/s", key: "bvs", reverse: true, to_fixed: 3 },
-    "path": { name: "path", key: "path", reverse: false, to_fixed: 2 },
-    "stnb": { name: "STNB", key: "stnb", reverse: true, to_fixed: 2 },
-    "ioe": { name: "IOE", key: "ioe", reverse: true, to_fixed: 3 },
+    "timems": { key: "timems", reverse: false, to_fixed: 3 },
+    "bbbv_s": { key: "bvs", reverse: true, to_fixed: 3 },
+    "path": { key: "path", reverse: false, to_fixed: 2 },
+    "stnb": { key: "stnb", reverse: true, to_fixed: 2 },
+    "ioe": { key: "ioe", reverse: true, to_fixed: 3 },
 }
 
 onMounted(() => {

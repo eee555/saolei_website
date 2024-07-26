@@ -9,7 +9,7 @@
         </el-table-column>
         <el-table-column v-else prop="player" min-width="80" />
         <el-table-column prop="level" :formatter="simple_formatter((l: string) => $t('common.level.'+l))"/>
-        <el-table-column prop="mode"/>
+        <el-table-column prop="mode" :formatter="simple_formatter((mode: string) => $t('common.mode.'+mode))"/>
         <el-table-column prop="timems" :formatter="simple_formatter((timems: number) => (ms_to_s(timems) + 's'))"/>
         <el-table-column prop="bv" />
         <el-table-column style="white-space: nowrap;">
@@ -74,13 +74,13 @@ const videos_trans = computed(() => {
     const d = data.videos.slice();
     d.forEach((v: any) => {
         if (v.mode == "00") {
-            v.mode = "标准";
+            v.mode = "std";
         } else if (v.mode == "01") {
             v.mode = "UPK";
         } else if (v.mode == "04") {
             v.mode = "Win7";
         } else if (v.mode == "05") {
-            v.mode = "竞速无猜";
+            v.mode = "ng";
         } else if (v.mode == "06") {
             v.mode = "强无猜";
         } else if (v.mode == "07") {
@@ -92,9 +92,9 @@ const videos_trans = computed(() => {
         } else if (v.mode == "10") {
             v.mode = "弱可猜";
         } else if (v.mode == "11") {
-            v.mode = "递归";
+            v.mode = "dg";
         } else if (v.mode == "12") {
-            v.mode = "标准NF";
+            v.mode = "nf";
         }
     })
     
