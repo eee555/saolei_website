@@ -29,8 +29,8 @@
                     </el-tab-pane>
                 </el-tabs>
             </el-main>
-            <el-aside width="30%" style="padding: 1%;">
-                <el-tabs type="border-card" style="min-height: 300px;">
+            <el-aside v-if="false" width="30%" style="padding: 1%;">
+                <el-tabs v-if="false" type="border-card" style="min-height: 300px;">
                     <el-tab-pane label="每日一星">每日一星</el-tab-pane>
                     <el-tab-pane label="站长统计">站长统计</el-tab-pane>
                     <el-tab-pane label="如何评选？">如何评选？</el-tab-pane>
