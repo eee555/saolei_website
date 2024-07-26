@@ -68,7 +68,6 @@ import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import { to_fixed_n, ms_to_s } from "@/utils";
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import PlayerName from '@/components/PlayerName.vue';
-import { defineAsyncComponent } from 'vue'
 // const AsyncPlayerName = defineAsyncComponent(() => import('@/components/PlayerName.vue'))
 const { proxy } = useCurrentInstance();
 

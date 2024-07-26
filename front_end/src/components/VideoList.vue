@@ -1,7 +1,7 @@
 <template>
     <el-table :data="videos_trans" :show-header="false" @row-click="(row: any) => preview(row.key)" table-layout="auto"
         style="width: 100%;font-size: 16px;user-select: none;">
-        <el-table-column prop="time" min-width="200" :formatter="simple_formatter(utc_to_local_format)"/>
+        <el-table-column prop="time" min-width="180" :formatter="simple_formatter(utc_to_local_format)"/>
         <el-table-column v-if="need_player_name" min-width="80">
             <template #default="player">
                 <PlayerName class="name" :user_id="+player.row.player_id" :user_name="player.row.player"></PlayerName>
