@@ -70,6 +70,8 @@ const t = useI18n();
 
 const centerDialogVisible = ref(false);
 
+// 记得加钟言
+// 积分系统完成后需要加jsd
 const acknowledgements = [
     { text: 'T0nyX1ang' },
     { text: 'Pulsar' },
