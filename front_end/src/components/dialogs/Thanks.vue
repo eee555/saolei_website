@@ -1,5 +1,5 @@
 <template>
-    <span class="text-button" @click="centerDialogVisible = true;">{{ $t('menu.team') }}</span>
+    <el-link @click="centerDialogVisible = true;">{{ $t('footer.team') }}</el-link>
     <el-dialog v-model="centerDialogVisible" :title="$t('team.title')" width="700px" align-center draggable
         :lock-scroll="false">
         <div style="padding-bottom: 5px"><strong>{{ $t('team.owner') }}</strong></div>
