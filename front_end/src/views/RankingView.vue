@@ -107,7 +107,6 @@ interface Tags {
     [index: string]: NameKey;
 }
 interface NameKeyReverse {
-    name: string;
     key: string;
     reverse: boolean;
     to_fixed: number;
