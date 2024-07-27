@@ -18,6 +18,7 @@ export const zhCn = {
             b: '初级',
             i: '中级',
             e: '高级',
+            sum: '总计',
         },
         mode: {
             std: '标准',
@@ -70,7 +71,17 @@ export const zhCn = {
             UnsupportedMediaType: '不支持的文件类型',
         },
         show: '显示',
+        software: {
+            metasweeper: '元扫雷',
+        },
         toDo: '敬请期待',
+    },
+    footer: {
+        contact: '联系我们',
+        donate: '捐赠',
+        team: '团队',
+        links: '友链',
+        about: '关于我们',
     },
     forgetPassword: {
         title: '找回密码',
@@ -82,6 +93,11 @@ export const zhCn = {
         getEmailCode: '获取邮箱验证码',
         password: '请输入新的6-20位密码',
         success: '修改密码成功！',
+    },
+    home: {
+        news: '新闻',
+        latestScore: '最新录像',
+        reviewQueue: '审核队列',
     },
     login: {
         title: '欢迎登录',
@@ -104,10 +120,6 @@ export const zhCn = {
         logout: '退出',
         register: '注册',
         setting: '设置',
-        downloads: '软件下载',
-        links: '友链',
-        team: '团队',
-        groups: '官方QQ群'
     },
     news: {
         breakRecordTo: '将{mode}{level}{stat}纪录刷新为',

@@ -1,5 +1,5 @@
 <template>
-    <span class="text-button" @click="centerDialogVisible = true;">{{ $t('menu.team') }}</span>
+    <el-link @click="centerDialogVisible = true;">{{ $t('footer.team') }}</el-link>
     <el-dialog v-model="centerDialogVisible" :title="$t('team.title')" width="700px" align-center draggable
         :lock-scroll="false">
         <div style="padding-bottom: 5px"><strong>{{ $t('team.owner') }}</strong></div>
@@ -70,6 +70,8 @@ const t = useI18n();
 
 const centerDialogVisible = ref(false);
 
+// 记得加钟言
+// 积分系统完成后需要加jsd
 const acknowledgements = [
     { text: 'T0nyX1ang' },
     { text: 'Pulsar' },

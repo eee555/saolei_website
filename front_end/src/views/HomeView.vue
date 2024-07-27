@@ -3,7 +3,7 @@
         <el-container>
             <el-main style="padding: 1%;">
                 <el-tabs type="border-card" style=" min-height: 300px;">
-                    <el-tab-pane label="雷界快讯" style="max-height: 300px; overflow: auto;user-select: none;">
+                    <el-tab-pane :label="$t('home.news')" style="max-height: 300px; overflow: auto;user-select: none;">
                         <div v-for="news in news_queue">
                             <el-text style="margin-right: 5px">
                                 {{ utc_to_local_format(news.time) }}
@@ -21,16 +21,16 @@
                     </el-tab-pane>
                 </el-tabs>
                 <el-tabs type="border-card" style="margin-top: 2%;">
-                    <el-tab-pane label="最新录像" class="bottom_tabs" :lazy="true">
+                    <el-tab-pane :label="$t('home.latestScore')" class="bottom_tabs" :lazy="true">
                         <VideoList :videos="newest_queue" :reverse="true"></VideoList>
                     </el-tab-pane>
-                    <el-tab-pane label="审核队列" class="bottom_tabs" :lazy="true">
+                    <el-tab-pane :label="$t('home.reviewQueue')" class="bottom_tabs" :lazy="true">
                         <VideoList :videos="review_queue" :review_mode="store.user.is_staff" @update="update_review_queue" v-loading="review_queue_updating"></VideoList>
                     </el-tab-pane>
                 </el-tabs>
             </el-main>
-            <el-aside width="30%" style="padding: 1%;">
-                <el-tabs type="border-card" style="min-height: 300px;">
+            <el-aside v-if="false" width="30%" style="padding: 1%;">
+                <el-tabs v-if="false" type="border-card" style="min-height: 300px;">
                     <el-tab-pane label="每日一星">每日一星</el-tab-pane>
                     <el-tab-pane label="站长统计">站长统计</el-tab-pane>
                     <el-tab-pane label="如何评选？">如何评选？</el-tab-pane>

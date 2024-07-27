@@ -20,6 +20,6 @@ export function generalNotification(t: any, status: number, action: string) {
         title: t.t(notificationTitle[type], [action]),
         message: t.t(notificationMessage[status]),
         type: notificationType[type],
-        duration: localStorage.getItem('local').notification_duration,
+        duration: JSON.parse(localStorage.getItem('local')).notification_duration,
     })
 }

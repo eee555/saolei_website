@@ -1,7 +1,7 @@
 <template>
     <el-table :data="videos_trans" :show-header="false" @row-click="(row: any) => preview(row.key)" table-layout="auto"
         style="width: 100%;font-size: 16px;user-select: none;">
-        <el-table-column prop="time" min-width="200" :formatter="simple_formatter(utc_to_local_format)"/>
+        <el-table-column prop="time" min-width="180" :formatter="simple_formatter(utc_to_local_format)"/>
         <el-table-column v-if="need_player_name" min-width="80">
             <template #default="player">
                 <PlayerName class="name" :user_id="+player.row.player_id" :user_name="player.row.player"></PlayerName>
@@ -9,7 +9,7 @@
         </el-table-column>
         <el-table-column v-else prop="player" min-width="80" />
         <el-table-column prop="level" :formatter="simple_formatter((l: string) => $t('common.level.'+l))"/>
-        <el-table-column prop="mode"/>
+        <el-table-column prop="mode" :formatter="simple_formatter((mode: string) => $t('common.mode.'+mode))"/>
         <el-table-column prop="timems" :formatter="simple_formatter((timems: number) => (ms_to_s(timems) + 's'))"/>
         <el-table-column prop="bv" />
         <el-table-column style="white-space: nowrap;">
@@ -74,13 +74,13 @@ const videos_trans = computed(() => {
     const d = data.videos.slice();
     d.forEach((v: any) => {
         if (v.mode == "00") {
-            v.mode = "标准";
+            v.mode = "std";
         } else if (v.mode == "01") {
             v.mode = "UPK";
         } else if (v.mode == "04") {
             v.mode = "Win7";
         } else if (v.mode == "05") {
-            v.mode = "竞速无猜";
+            v.mode = "ng";
         } else if (v.mode == "06") {
             v.mode = "强无猜";
         } else if (v.mode == "07") {
@@ -92,9 +92,9 @@ const videos_trans = computed(() => {
         } else if (v.mode == "10") {
             v.mode = "弱可猜";
         } else if (v.mode == "11") {
-            v.mode = "递归";
+            v.mode = "dg";
         } else if (v.mode == "12") {
-            v.mode = "标准NF";
+            v.mode = "nf";
         }
     })
     
@@ -108,13 +108,13 @@ const videos_trans = computed(() => {
 
 const handleApprove = async function (row: any) {
     let status = await approve(proxy, row.key);
-    if (status == 'True') {
+    if (status == true) {
         ElNotification({
             title: '审核成功',
             message: '录像已通过审核',
             type: 'success',
         })
-    } else if (status == 'False') {
+    } else if (status == false) {
         ElNotification({
             title: '审核失败',
             message: '录像已通过审核',

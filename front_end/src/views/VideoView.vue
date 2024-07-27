@@ -103,15 +103,15 @@ const level_tags: Tags = {
 const mode_tags: Tags = {
     "STD": { name: "标准", key: "00" },
     "NF": { name: "盲扫", key: "12" },
-    "UPK": { name: "UPK", key: "01" },
+    //"UPK": { name: "UPK", key: "01" },
     "WQI": { name: "Win7", key: "04" },
     "JSW": { name: "竞速无猜", key: "05" },
     "QWC": { name: "强无猜", key: "06" },
     "RWC": { name: "弱无猜", key: "07" },
-    "ZWC": { name: "准无猜", key: "08" },
-    "QKC": { name: "强可猜", key: "09" },
-    "RKC": { name: "弱可猜", key: "10" },
-    "BZD": { name: "递归", key: "11" }
+    //"ZWC": { name: "准无猜", key: "08" },
+    //"QKC": { name: "强可猜", key: "09" },
+    //"RKC": { name: "弱可猜", key: "10" },
+    //"BZD": { name: "递归", key: "11" }
 }
 
 

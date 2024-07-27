@@ -12,7 +12,7 @@
                         <IconMenuItem :text="$t(item.content)" :icon="item.icon" />
                     </el-menu-item>
                     <div style="flex-grow: 1" />
-                    <el-menu-item :index="player_url" v-if="store.user.id != 0" @click="store.player = store.user">
+                    <el-menu-item :index="player_url" v-if="store.user.id != 0">
                         <IconMenuItem :text="store.user.username" icon="User" />
                     </el-menu-item>
                     <el-menu-item index="/settings" style="padding-left: 8px; padding-right: 5px">
@@ -83,9 +83,9 @@ const menu_index = ref();
 const menu_items = [
     { index: "ranking", icon: "Trophy", content: "menu.ranking" },
     { index: "video", icon: "VideoCameraFilled", content: "menu.video" },
-    { index: "world", icon: "Odometer", content: "menu.world" },
+    //{ index: "world", icon: "Odometer", content: "menu.world" },
     { index: "guide", icon: "Document", content: "menu.guide" },
-    { index: "score", icon: "Histogram", content: "menu.score" },
+    //{ index: "score", icon: "Histogram", content: "menu.score" },
 ];
 
 const notice = ref(`

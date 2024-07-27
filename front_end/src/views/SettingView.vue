@@ -21,7 +21,7 @@
                 <el-input-number v-model="local.notification_duration" size="small" :min="0" :step="1000" />
             </el-tooltip></el-descriptions-item>
     </el-descriptions>
-    <el-descriptions v-if="store.login_status == LoginStatus.IsLogin" title="个人信息" :column="3">
+    <el-descriptions v-if="false && store.login_status == LoginStatus.IsLogin" title="个人信息" :column="3">
         <el-descriptions-item label="用户id">{{ store.user.id }}</el-descriptions-item>
         <el-descriptions-item label="用户名">{{ store.user.username }}</el-descriptions-item>
         <el-descriptions-item :label="$t('common.prop.realName')">{{ store.user.realname }}</el-descriptions-item>
@@ -31,7 +31,7 @@
         <el-descriptions-item label="属地">{{ $t('common.toDo') }}</el-descriptions-item>
         <el-descriptions-item label="出生年份">{{ $t('common.toDo') }}</el-descriptions-item>
     </el-descriptions>
-    <el-descriptions v-if="store.login_status == LoginStatus.IsLogin" title="账号关联">
+    <el-descriptions v-if="false && store.login_status == LoginStatus.IsLogin" title="账号关联">
         <el-table>
 
         </el-table>
