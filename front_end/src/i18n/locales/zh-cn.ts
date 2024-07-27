@@ -94,6 +94,12 @@ export const zhCn = {
         password: '请输入新的6-20位密码',
         success: '修改密码成功！',
     },
+    guide: {
+        announcement: '公告',
+        other: '其他',
+        skill: '技术',
+        tutorial: '教程',
+    },
     home: {
         news: '新闻',
         latestScore: '最新录像',

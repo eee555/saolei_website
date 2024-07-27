@@ -107,7 +107,7 @@ onMounted(() => {
     }
 
     console.log(`
-  元扫雷网(fff666.top)开发团队，期待您的加入: 2234208506@qq.com
+  开源扫雷网(fff666.top)开发团队，期待您的加入: 2234208506@qq.com
   `);
     router.isReady().then(() => {
         menu_index.value = router.currentRoute.value.fullPath;
@@ -193,7 +193,7 @@ body {
 }
 
 .logo2 {
-    width: v-bind("local.menu_height * 2.17 + 'px'");
+    width: v-bind("local.menu_height * 2.5 + 'px'");
     height: v-bind("local.menu_height + 'px'");
     display: inline-flex;
 }

@@ -94,6 +94,12 @@ export const en = {
         password: 'new password',
         success: 'Password reset complete!'
     },
+    guide: {
+        announcement: 'Announcements',
+        other: 'Others',
+        skill: 'Skills',
+        tutorial: 'Tutorials',
+    },
     home: {
         news: 'News',
         latestScore: 'Latest',
