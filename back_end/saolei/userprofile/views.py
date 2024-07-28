@@ -1,5 +1,5 @@
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('userprofile')
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound
 from .forms import UserLoginForm, UserRegisterForm, UserRetrieveForm, EmailForm
@@ -32,6 +32,7 @@ def user_login(request):
             response['msg'] = response['msg'] = {
                 "id": request.user.id, "username": request.user.username,
                   "realname": request.user.realname, "is_banned": request.user.is_banned, "is_staff": request.user.is_staff}
+            logger.info(f'用户 {request.user.username}#{request.user.id} 自动登录')
             return JsonResponse(response)
         # if user_id:=request.session.get("_auth_user_id"):
         #     if user:=User.objects.get(id=user_id):
@@ -47,12 +48,13 @@ def user_login(request):
 
             capt = data["captcha"]   # 用户提交的验证码
             key = data["hashkey"]    # 验证码hash
+            username = data["username"]
             response = {'status': 100, 'msg': None}
             if judge_captcha(capt, key):
                 # 检验账号、密码是否正确匹配数据库中的某个用户
                 # 如果均匹配则返回这个 user 对象
                 user = authenticate(
-                    username=data['username'], password=data['password'])
+                    username=username, password=data['password'])
                 if user:
                     # 将用户数据保存在 session 中，即实现了登录动作
                     login(request, user)
@@ -62,11 +64,14 @@ def user_login(request):
                     if 'user_id' in data and data['user_id'] != str(user.id):
                         # 检测到小号
                         logger.info(f'{data["user_id"][:50]} is diffrent from {str(user.id)}.')
+                    logger.info(f'用户 {user.username}#{user.id} 账密登录')
                     return JsonResponse(response)
                 else:
+                    logger.info(f'用户 {username} 账密错误')
                     return JsonResponse({'status': 105, 'msg': "账号或密码输入有误。请重新输入~"})
             
             else:
+                logger.info(f'用户 {username} 验证码错误')
                 return JsonResponse({'status': 104, 'msg': "验证码错误！"})
 
         else:
@@ -111,6 +116,7 @@ def user_retrieve(request):
                     user.save()
                     # 保存好数据后立即登录
                     login(request, user)
+                    logger.info(f'用户 {user.username}#{user.id} 邮箱找回密码')
                     EmailVerifyRecord.objects.filter(hashkey=emailHashkey).delete()
                     return JsonResponse({'status': 100, 'msg': user.realname})
                 else:
@@ -155,6 +161,7 @@ def user_register(request):
                     new_user.save()
                     # 保存好数据后立即登录
                     login(request, new_user)
+                    logger.info(f'用户 {new_user.username}#{new_user.id} 注册')
                     # 顺手把过期的验证码删了
                     EmailVerifyRecord.objects.filter(hashkey=emailHashkey).delete()
                     return JsonResponse({'status': 100, 'msg': {
@@ -193,10 +200,12 @@ def set_staff(request):
         if request.GET["is_staff"] == "True":
             user.is_staff = True
             user.save()
+            logger.info(f'用户 {user.username}#{user.id} 成为管理员')
             return HttpResponse(f"设置\"{user.realname}\"为管理员成功！")
         elif request.GET["is_staff"] == "False":
             user.is_staff = False
             user.save()
+            logger.info(f'用户 {user.username}#{user.id} 卸任管理员')
             return HttpResponse(f"解除\"{user.realname}\"的管理员权限！")
         else:
             return HttpResponse("失败！is_staff需要为\"True\"或\"False\"（首字母大写）")
@@ -208,11 +217,9 @@ def set_staff(request):
 def del_user_info(request):
     if request.user.is_staff and request.method == 'GET':
         user = UserProfile.objects.get(id=request.GET["id"])
-
-        logger.info(f'{request.user.id} del_user_info {request.GET["id"]}')
         if user.is_staff and not request.user.is_superuser:
             return HttpResponse("没有删除管理员信息的权限！")
-
+        logger.info(f'管理员 {request.user.username}#{request.user.id} 删除用户 {user.username}#{user.id}')
         user.realname = ""
         user.signature = ""
         if user.avatar:
@@ -313,7 +320,7 @@ def set_userProfile(request):
         if field == "is_banned" and user.is_superuser:
             return HttpResponseForbidden() # 站长不可被封禁
         value = request.POST.get("value")
-        logger.info(f'{request.user.id}(staff) changes user{userid}.{field} from {getattr(user, field)} to {value}')
+        logger.info(f'管理员 {request.user.username}#{request.user.id} 修改用户 {user.username}#{user.id} 域 {field} 从 {getattr(user, field)} 到 {value}')
         setattr(user, field, value)
         user.save()
         return HttpResponse()

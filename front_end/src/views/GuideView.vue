@@ -1,14 +1,13 @@
 <template>
     <el-row class="tac">
-        <el-col :span="4">
-            <h5 class="mb-2">目录</h5>
-            <el-menu @select="show_content" class="el-menu-vertical">
+        <el-aside width="auto" @mouseover="isCollapse=false" @mouseleave="isCollapse=true">
+            <el-menu @select="show_content" class="el-menu-vertical" :collapse="isCollapse">
                 <el-sub-menu index="1">
                     <template #title>
                         <el-icon>
                             <Document />
                         </el-icon>
-                        <span>公告</span>
+                        <span>{{ $t('guide.announcement') }}</span>
                     </template>
                     <template v-for="(item, idx) in notice_list">
                         <el-menu-item v-if="item.name[0] == '['" :index="`1-${idx + 1}`">
@@ -27,7 +26,7 @@
                         <el-icon>
                             <Guide />
                         </el-icon>
-                        <span>教程</span>
+                        <span>{{ $t('guide.tutorial') }}</span>
                     </template>
                     <template v-for="(item, idx) in guide_list">
                         <el-menu-item v-if="item.name[0] == '['" :index="`2-${idx + 1}`">
@@ -46,7 +45,7 @@
                         <el-icon>
                             <Cpu />
                         </el-icon>
-                        <span>技术</span>
+                        <span>{{ $t('guide.skill') }}</span>
                     </template>
                     <template v-for="(item, idx) in tech_list">
                         <el-menu-item v-if="item.name[0] == '['" :index="`3-${idx + 1}`">
@@ -65,7 +64,7 @@
                         <el-icon>
                             <Grid />
                         </el-icon>
-                        <span>其他</span>
+                        <span>{{ $t('guide.other') }}</span>
                     </template>
                     <template v-for="(item, idx) in other_list">
                         <el-menu-item v-if="item.name[0] == '['" :index="`4-${idx + 1}`">
@@ -80,12 +79,12 @@
                     </template>
                 </el-sub-menu>
             </el-menu>
-        </el-col>
+        </el-aside>
 
 
-        <el-col :span="20">
+        <el-main>
             <div style="padding-top: 20px;padding-left: 60px;" v-html="article_html" />
-        </el-col>
+        </el-main>
     </el-row>
 </template>
 
@@ -115,6 +114,10 @@ import { imgSize } from "@mdit/plugin-img-size";
 
 // 局面数字的svg数据，原始尺寸都是160*160
 import { cells } from "@/utils/common/cellSVGData";
+import { useI18n } from 'vue-i18n';
+const t = useI18n();
+
+const isCollapse = ref(false);
 
 const markdown = new MarkdownIt({
     html: true, // 允许HTML语法
