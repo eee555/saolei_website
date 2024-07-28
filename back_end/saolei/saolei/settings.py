@@ -284,6 +284,10 @@ LOGGING = {
             'format': '{levelname} {message}',
             'style': '{',
         },
+        'history': {
+            'format': '%(asctime)s %(name)s %(module)s:%(funcName)s %(levelname)s- %(message)s',
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        },
         "default": {
             "format": '%(asctime)s %(name)s  %(pathname)s:%(lineno)d %(module)s:%(funcName)s '
                       '%(levelname)s- %(message)s',
@@ -321,15 +325,34 @@ LOGGING = {
             'class': 'logging.FileHandler',
             'filename': os.path.join(BASE_DIR, 'logs/root.log'),
             'formatter': 'default'
-        }
+        },
+        'userprofile': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/userprofile.log'),
+            'formatter': 'history',
+            'encoding': 'utf-8',
+        },
+        'videomanager': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/videomanager.log'),
+            'formatter': 'history',
+            'encoding': 'utf-8',
+        },
     },
     'loggers': {
         # 应用中自定义日志记录器
         'videomanager': {
-            'level': 'DEBUG',
-            'handlers': ['console', 'file'],
-            'propagate': True,
-        }
+            'level': 'INFO',
+            'handlers': ['videomanager'],
+            'propagate': False,
+        },
+        'userprofile': {
+            'level': 'INFO',
+            'handlers': ['userprofile'],
+            'propagate': False,
+        },
     },
     'root': {
         "level": "DEBUG",
