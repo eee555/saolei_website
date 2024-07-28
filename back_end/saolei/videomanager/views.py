@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('videomanager')
 from django.contrib.auth.decorators import login_required
 from .forms import UploadVideoForm
 from .models import VideoModel, ExpandVideoModel
@@ -90,9 +90,11 @@ def video_upload(request):
                                 "designator": e_video.designator}, cls=ComplexEncoder)
             if data['review_code'] >= 2:
                 # 往审查队列里添加录像
+                logger.info(f'用户 {request.user.username}#{request.user.id} 录像#{video.id} 机审失败')
                 cache.hset("review_queue", video.id, temp)
             else:
                 # 如果录像自动通过了审核，更新最新录像和纪录
+                logger.info(f'用户 {request.user.username}#{request.user.id} 录像#{video.id} 机审成功')
                 cache.hset("newest_queue", video.id, temp)
                 update_personal_record(video)
                 update_video_num(video)
@@ -314,6 +316,7 @@ def approve_single(videoid, check_designator=True):
     if check_designator and designator not in userms.designators:
         userms.designators.append(designator)
         userms.save(update_fields=["designators"])
+        logger.info(f'用户 {video.player.username}#{video.player.id} 新标识 "{designator}"')
         approve_designator(video.player.id, designator)
     return True
 
@@ -323,6 +326,7 @@ def approve_designator(userid, designator):
     for key in user_designator_list:
         value = json.loads(user_designator_list[key])
         if value["player_id"] == userid and value["designator"] == designator:
+            logger.info(f'用户 #{userid} 录像#{key} 机审成功')
             approve_single(key, False)
 
 
@@ -332,11 +336,10 @@ def approve_designator(userid, designator):
 def approve(request):
     if request.user.is_staff and request.method == 'GET':
         ids = json.loads(request.GET["ids"])
-        # logger.info(f'{request.user.id} approve ids {ids}') # logger暂时有bug
         res = []
         for _id in ids:
+            logger.info(f'管理员 {request.user.username}#{request.user.id} 过审录像#{_id}')
             res.append(approve_single(_id))
-        # logger.info(f'{request.user.id} approve {json.dumps(ids)} response {json.dumps(res)}') # logger暂时有bug
         return JsonResponse(res, safe=False)
     else:
         return HttpResponseNotAllowed()
@@ -391,9 +394,9 @@ def freeze(request):
                     if request.GET["ids"]:
                         update_personal_record_stock(video_i.player)
                     update_video_num(video_i, add=False)
+                    logger.info(f'管理员 {request.user.username}#{request.user.id} 冻结录像#{_id}')
                 cache.hdel("review_queue", _id)
                 cache.hdel("newest_queue", _id)
-        # logger.info(f'{request.user.id} freeze {json.dumps(ids)} response {json.dumps(res)}') # logger暂时有bug
         return JsonResponse(res, safe=False)
     else:
         return HttpResponseNotAllowed()
@@ -428,7 +431,7 @@ def set_videoModel(request):
         if field not in set_videoModel_fields:
             return HttpResponseForbidden() # 只能修改特定的域
         value = request.POST.get("value")
-        logger.info(f'{request.user.id}(staff) changes video{videoid}.{field} from {getattr(video, field)} to {value}')
+        logger.info(f'管理员 {request.user.username}#{request.user.id} 修改录像#{videoid} 域 {field} 从 {getattr(video, field)} 到 {value}')
         setattr(video, field, value)
         video.save()
         return HttpResponse()
