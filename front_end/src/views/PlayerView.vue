@@ -44,8 +44,8 @@
                         {{ username }}
                         <span style="font-size: 18px; color: #555;">id: {{ userid }}</span>
                     </div>
-                    <div style="font-size: 16px;margin-bottom: 12px;color: #555;"><span
-                            class="flag-icon flag-icon-cn"></span>
+                    <div style="font-size: 16px;margin-bottom: 12px;color: #555;">
+                        <!-- <span class="flag-icon flag-icon-cn"/> -->
                         {{ realname }}</div>
                     <div style="overflow: auto ;font-size: 16px;margin-bottom: 12px;text-align: justify;">
                         {{ signature }}</div>
