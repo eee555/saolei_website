@@ -155,7 +155,6 @@ def update_realname(request):
                 return JsonResponse({"status": 107, "msg": "未知错误。可能原因：不支持此种字符"})
             update_cache_realname(user.id, realname)
             # designators = json.loads(user.userms.designators)
-            user.userms.designators.append(realname)
             # user.userms.designators = json.dumps(designators)
             user.userms.save(update_fields=["designators"])
             return JsonResponse({"status": 100, "msg": {"n": user.left_realname_n}})
