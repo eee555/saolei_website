@@ -156,8 +156,8 @@ const t = useI18n();
 
 const AXIOS_BASE_URL = import.meta.env.VITE_BASE_API;
 
-let refValidCode = ref<any>(null)
-let refValidCode2 = ref<any>(null)
+let refValidCode = ref<typeof ValidCode | null>(null)
+let refValidCode2 = ref<typeof ValidCode | null>(null)
 
 // const login_status = ref(LoginStatus.NotLogin);
 // 登录对话框是否出现
@@ -165,7 +165,7 @@ const login_visible = ref(false);
 const register_visible = ref(false);
 const retrieve_visible = ref(false);
 
-const remember_me = ref(false);
+const remember_me = ref(true);
 
 const user_name = ref("");
 const user_password = ref("");
@@ -209,7 +209,7 @@ const init_refvalues = () => {
     hint_message.value = "";
     user_name.value = "";
     checkout_user_agreement.value = false;
-    remember_me.value = false;
+    remember_me.value = true;
 }
 
 onMounted(() => {
@@ -224,20 +224,12 @@ onMounted(() => {
 
 
     window.onbeforeunload = function (e) {
-        // 关闭网页时，删cookie。由于跨域问题，开发时，如开前后端各开一个服务器，
-        // 体现不出效果，即：取消“记住我”，依然可以免密登录。部署以后，预期“记住我”的功能正常
+        // 关闭网页时，假如没选记住我，就退出
+        // 对于游客，此处不会发logout
         if (!remember_me.value) {
-            let date = new Date();
-            date.setDate(date.getDate() - 1);
-            document.cookie = "session_id=;expires=" + date;
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', AXIOS_BASE_URL + '/userprofile/logout/', false);
-            xhr.send(null);
-            // 防止密码爆破，用户界面展示所有个人录像，进入其他人个人主页
-
+            logout();
         }
         return null;
-
     };
 })
 
@@ -246,6 +238,7 @@ const openLogin = () => {
     store.login_status = LoginStatus.Login;
     login_visible.value = true;
     register_visible.value = false;
+    remember_me.value = false;
 }
 
 const openRegister = () => {
@@ -271,7 +264,7 @@ const login = async () => {
     params.append('password', user_password.value)
     if (valid_code.value) {
         params.append('captcha', valid_code.value)
-        params.append('hashkey', refValidCode.value.hashkey)
+        params.append('hashkey', refValidCode.value?.hashkey)
     } else {
         params.append('captcha', "")
         params.append('hashkey', "")
@@ -456,7 +449,7 @@ const get_email_captcha = (type: string) => {
     }
     var params = new URLSearchParams()
     params.append('captcha', valid_code_reg.value)
-    params.append('hashkey', refValidCode2.value.hashkey)
+    params.append('hashkey', refValidCode2.value?.hashkey)
     params.append('email', user_email_reg.value)
     params.append('type', type)
     // console.log(params);
