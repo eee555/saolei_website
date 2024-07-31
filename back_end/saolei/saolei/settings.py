@@ -284,8 +284,8 @@ LOGGING = {
             'format': '{levelname} {message}',
             'style': '{',
         },
-        'history': {
-            'format': '%(asctime)s %(name)s %(module)s:%(funcName)s %(levelname)s- %(message)s',
+        'modulehistory': {
+            'format': '%(asctime)s %(funcName)s %(levelname)s- %(message)s',
             "datefmt": "%Y-%m-%d %H:%M:%S",
         },
         "default": {
@@ -328,17 +328,21 @@ LOGGING = {
         },
         'userprofile': {
             'level': 'INFO',
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(BASE_DIR, 'logs/userprofile.log'),
-            'formatter': 'history',
+            'formatter': 'modulehistory',
             'encoding': 'utf-8',
+            'maxBytes': 5242880, # 5M
+            'backupCount': 20,
         },
         'videomanager': {
             'level': 'INFO',
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(BASE_DIR, 'logs/videomanager.log'),
-            'formatter': 'history',
+            'formatter': 'modulehistory',
             'encoding': 'utf-8',
+            'maxBytes': 5242880, # 5M
+            'backupCount': 20,
         },
     },
     'loggers': {
