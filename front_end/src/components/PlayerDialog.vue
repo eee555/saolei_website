@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-
+// 播放录像的窗口
 import { useVideoPlayerStore } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { watch } from 'vue';

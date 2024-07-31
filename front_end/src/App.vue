@@ -207,4 +207,12 @@ body {
 .mainheight {
     height: calc(100svh - v-bind("local.menu_height + 'px'"))
 }
+
+@media (min-width: 1024px) {  
+  .common-layout {  
+    padding: 1.5em max(20vw, 200px);
+    /* 这里设置只在大屏幕（电脑端）上生效的样式 */  
+  }  
+}
+
 </style>
