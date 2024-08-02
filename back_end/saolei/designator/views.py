@@ -24,3 +24,18 @@ def add_designator(request):
     # TODO: 扫描标识未通过的录像
     # TODO: 更新user.userms.designators
     return HttpResponse()
+
+# 请求删除自己的标识
+def del_designator(request):
+    # TODO
+    return HttpResponse()
+
+# 管理员添加标识
+def staff_add_designator(request):
+    # TODO
+    return HttpResponse()
+
+# 管理员删除标识
+def staff_del_designator(request):
+    # TODO
+    return HttpResponse()
