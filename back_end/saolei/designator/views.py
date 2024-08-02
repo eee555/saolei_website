@@ -22,4 +22,5 @@ def add_designator(request):
     Designator.objects.create(designator=designator, userms=user.userms) # 新标识
     # TODO: 日志
     # TODO: 扫描标识未通过的录像
+    # TODO: 更新user.userms.designators
     return HttpResponse()
