@@ -138,3 +138,25 @@ def update_personal_record_stock(user: UserProfile):
     for v in videos:
         update_personal_record(v)
 
+def freeze_single(video: VideoModel, state = VideoModel.State.FROZEN, update_ranking = True):
+    """冻结单个录像
+
+    state -- 目标状态
+    update_ranking -- 冻结后是否刷新排行。如果需要冻结一位用户的很多录像则应当设为False
+    """
+    video.state = state
+    video.save()
+    cache.hdel("review_queue", video.id)
+    if state == VideoModel.State.FROZEN:
+        cache.hset("freeze_queue", video.id, json.dumps({"time": video.upload_time,
+                                                        "player": video.player.realname,
+                                                        "player_id": video.player.id,
+                                                        "level": video.level,
+                                                        "mode": video.mode,
+                                                        "timems": video.timems,
+                                                        "bv": video.bv,
+                                                        "bvs": video.bvs}, cls=ComplexEncoder))
+        cache.hdel("newest_queue", video.id)
+    if update_ranking:
+        update_personal_record_stock(video.player)
+    
