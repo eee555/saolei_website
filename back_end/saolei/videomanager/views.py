@@ -313,55 +313,30 @@ def approve(request):
 # http://127.0.0.1:8000/video/freeze?ids=12
 # http://127.0.0.1:8000/video/freeze?user_id=20
 def freeze(request):
-    if request.user.is_staff and request.method == 'GET':
-        if _ids := request.GET["ids"]:
-            # logger.info(f'{request.user.id} freeze ids {_ids}') # logger暂时有bug
-            ids = json.loads(_ids)
-            if isinstance(ids, int):
-                ids = [ids]
-        else: 
-            _user_id = int(request.GET["user_id"])
-            logger.info(f'{request.user.id} freeze user_id {_user_id}')
-            user = UserProfile.objects.get(id=_user_id)
-            videos = VideoModel.objects.filter(player=user)
-            ids = []
-            for v in videos:
-                ids.append(v.id)
-                
+    if request.method != 'GET':
+        return HttpResponseNotAllowed()
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+    
+    if ids := request.GET.get("ids"):
         res = [] 
-        for _id in ids:
-            if not isinstance(_id, int) or _id < 1:
-                return HttpResponseNotFound() # id应为正整数
-            video_i = VideoModel.objects.filter(id=_id)
-            if not video_i:
+        for id in ids:
+            v = VideoModel.objects.filter(id=_id).first()
+            if not v:
                 res.append("Null")
             else:
-                video_i = video_i[0]
-                if video_i.state == "b":
-                    res.append("False")
-                else:
-                    # 冻结成功
-                    video_i.state = "b"
-                    video_i.upload_time = timezone.now()
-                    res.append("True")
-                    video_i.save()
-                    cache.hset("freeze_queue", _id, json.dumps({"time": video_i.upload_time,
-                                                                "player": video_i.player.realname,
-                                                                "player_id": video_i.player.id,
-                                                                "level": video_i.level,
-                                                                "mode": video_i.mode,
-                                                                "timems": video_i.timems,
-                                                                "bv": video_i.bv,
-                                                                "bvs": video_i.bvs}, cls=ComplexEncoder))
-                    if request.GET["ids"]:
-                        update_personal_record_stock(video_i.player)
-                    update_video_num(video_i, add=False)
-                    logger.info(f'管理员 {request.user.username}#{request.user.id} 冻结录像#{_id}')
-                cache.hdel("review_queue", _id)
-                cache.hdel("newest_queue", _id)
-        return JsonResponse(res, safe=False)
-    else:
-        return HttpResponseNotAllowed()
+                res.append(freeze_single(v, update_ranking=True))
+                logger.info(f'管理员 {request.user.username}#{request.user.id} 冻结录像#{id}')
+        return JsonResponse(res)
+    elif user_id := request.GET.get("user_id"): 
+        user = UserProfile.objects.filter(id=user_id).first()
+        if not user:
+            return HttpResponseNotFound()
+        videos = VideoModel.objects.filter(player=user)
+        for v in videos:
+            freeze_single(v, update_ranking=False)
+        update_personal_record_stock(user)
+        return HttpResponse()
 
 # 管理员使用的操作接口，调用方式见前端的StaffView.vue
 get_videoModel_fields = ["player", "player__realname", "upload_time", "state", "software", "level", "mode", "timems", "bv", "bvs"] # 可获取的域列表

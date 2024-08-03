@@ -182,6 +182,8 @@ def freeze_single(video: VideoModel, state = VideoModel.State.FROZEN, update_ran
     state -- 目标状态
     update_ranking -- 冻结后是否刷新排行。如果需要冻结一位用户的很多录像则应当设为False
     """
+    if video.state == state:
+        return False
     video.state = state
     video.save()
     cache.hdel("review_queue", video.id)
@@ -194,7 +196,9 @@ def freeze_single(video: VideoModel, state = VideoModel.State.FROZEN, update_ran
                                                         "timems": video.timems,
                                                         "bv": video.bv,
                                                         "bvs": video.bvs}, cls=ComplexEncoder))
+        update_video_num(video, add=False)
         cache.hdel("newest_queue", video.id)
     if update_ranking:
         update_personal_record_stock(video.player)
+    return True
     
