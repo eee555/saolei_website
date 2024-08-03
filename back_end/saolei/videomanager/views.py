@@ -321,7 +321,7 @@ def freeze(request):
     if ids := request.GET.get("ids"):
         res = [] 
         for id in ids:
-            v = VideoModel.objects.filter(id=_id).first()
+            v = VideoModel.objects.filter(id=id).first()
             if not v:
                 res.append("Null")
             else:
