@@ -55,23 +55,6 @@
                     <div style="overflow: auto ;text-align: justify;"><strong>{{ $t('profile.designator') }}</strong>{{
                     designators.join(", ") }}</div>
                 </div>
-
-                <el-dialog v-model="visible" title="请注意" width="50%" align-center draggable :lock-scroll="false">
-                    <ul>
-                        <li>本站实行实名制，改名前无法上传录像。改名机会有且仅有一次，请慎重填写！如果姓名填错，请联系管理员。</li>
-                        <li>填写真实姓名后您将获得一个和真实姓名对应的默认标识。与默认标识不同的标识需要通过人工审核。</li>
-                        <li>标准高级sub200之后才能修改个性签名和头像。用户的头像、个性签名的初始修改次数为2次，之后每年获得一次。</li>
-                        <li>个人资料需遵守国家法律法规。</li>
-                    </ul>
-
-                    <template #footer>
-                        <span class="dialog-footer">
-                            <el-button type="primary" @click="visible = false">
-                                确定
-                            </el-button>
-                        </span>
-                    </template>
-                </el-dialog>
             </el-aside>
 
             <el-main>
