@@ -138,6 +138,44 @@ def update_personal_record_stock(user: UserProfile):
     for v in videos:
         update_personal_record(v)
 
+# 上传的录像进入数据库后，更新用户的录像数目
+def update_video_num(video: VideoModel, add = True):
+    userms = video.player.userms
+    # add = True：新增录像；add = False：删除录像
+    if video.mode == '00':
+        userms.video_num_std += 1 if add else -1
+    elif video.mode == '12':
+        userms.video_num_nf += 1 if add else -1
+    elif video.mode == '05':
+        userms.video_num_ng += 1 if add else -1
+    elif video.mode == '11':
+        userms.video_num_dg += 1 if add else -1
+
+    if video.level == "b":
+        userms.video_num_beg += 1 if add else -1
+    elif video.level == 'i':
+        userms.video_num_int += 1 if add else -1
+    elif video.level == 'e':
+        userms.video_num_exp += 1 if add else -1
+
+    if add:
+        # 给高玩自动扩容
+        if video.mode == "00" and video.level == 'e':
+            if video.timems < 100000 and userms.video_num_limit < 200:
+                userms.video_num_limit = 200
+            if video.timems < 60000 and userms.video_num_limit < 500:
+                userms.video_num_limit = 500
+            if video.timems < 50000 and userms.video_num_limit < 600:
+                userms.video_num_limit = 600
+            if video.timems < 40000 and userms.video_num_limit < 800:
+                userms.video_num_limit = 800
+            if video.timems < 30000 and userms.video_num_limit < 1000:
+                userms.video_num_limit = 1000
+    
+    userms.save(update_fields=["video_num_limit", "video_num_total", "video_num_beg", "video_num_int", 
+                               "video_num_exp", "video_num_std", "video_num_nf", "video_num_ng", 
+                               "video_num_dg"])
+
 def freeze_single(video: VideoModel, state = VideoModel.State.FROZEN, update_ranking = True):
     """冻结单个录像
 
