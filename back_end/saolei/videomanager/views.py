@@ -4,7 +4,7 @@ logger = logging.getLogger('videomanager')
 from django.contrib.auth.decorators import login_required
 from .forms import UploadVideoForm
 from .models import VideoModel, ExpandVideoModel
-from .view_utils import update_personal_record, update_personal_record_stock, video_all_fields
+from .view_utils import update_personal_record, update_personal_record_stock, video_all_fields, update_video_num, freeze_single
 from userprofile.models import UserProfile
 from django.http import HttpResponse, JsonResponse, FileResponse, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseNotFound
 import json, urllib
@@ -211,44 +211,6 @@ def video_query_by_id(request):
     else:
         return HttpResponseNotAllowed()
 
-# 上传的录像进入数据库后，更新用户的录像数目
-def update_video_num(video: VideoModel, add = True):
-    userms = video.player.userms
-    # add = True：新增录像；add = False：删除录像
-    if video.mode == '00':
-        userms.video_num_std += 1 if add else -1
-    elif video.mode == '12':
-        userms.video_num_nf += 1 if add else -1
-    elif video.mode == '05':
-        userms.video_num_ng += 1 if add else -1
-    elif video.mode == '11':
-        userms.video_num_dg += 1 if add else -1
-
-    if video.level == "b":
-        userms.video_num_beg += 1 if add else -1
-    elif video.level == 'i':
-        userms.video_num_int += 1 if add else -1
-    elif video.level == 'e':
-        userms.video_num_exp += 1 if add else -1
-
-    if add:
-        # 给高玩自动扩容
-        if video.mode == "00" and video.level == 'e':
-            if video.timems < 100000 and userms.video_num_limit < 200:
-                userms.video_num_limit = 200
-            if video.timems < 60000 and userms.video_num_limit < 500:
-                userms.video_num_limit = 500
-            if video.timems < 50000 and userms.video_num_limit < 600:
-                userms.video_num_limit = 600
-            if video.timems < 40000 and userms.video_num_limit < 800:
-                userms.video_num_limit = 800
-            if video.timems < 30000 and userms.video_num_limit < 1000:
-                userms.video_num_limit = 1000
-    
-    userms.save(update_fields=["video_num_limit", "video_num_total", "video_num_beg", "video_num_int", 
-                               "video_num_exp", "video_num_std", "video_num_nf", "video_num_ng", 
-                               "video_num_dg"])
-
 
 
 # 获取审查队列里的录像
@@ -351,55 +313,32 @@ def approve(request):
 # http://127.0.0.1:8000/video/freeze?ids=12
 # http://127.0.0.1:8000/video/freeze?user_id=20
 def freeze(request):
-    if request.user.is_staff and request.method == 'GET':
-        if _ids := request.GET["ids"]:
-            # logger.info(f'{request.user.id} freeze ids {_ids}') # logger暂时有bug
-            ids = json.loads(_ids)
-            if isinstance(ids, int):
-                ids = [ids]
-        else: 
-            _user_id = int(request.GET["user_id"])
-            logger.info(f'{request.user.id} freeze user_id {_user_id}')
-            user = UserProfile.objects.get(id=_user_id)
-            videos = VideoModel.objects.filter(player=user)
-            ids = []
-            for v in videos:
-                ids.append(v.id)
-                
+    if request.method != 'GET':
+        return HttpResponseNotAllowed()
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+    
+    if ids := request.GET.get("ids"):
         res = [] 
-        for _id in ids:
-            if not isinstance(_id, int) or _id < 1:
-                return HttpResponseNotFound() # id应为正整数
-            video_i = VideoModel.objects.filter(id=_id)
-            if not video_i:
+        for id in ids:
+            v = VideoModel.objects.filter(id=id).first()
+            if not v:
                 res.append("Null")
             else:
-                video_i = video_i[0]
-                if video_i.state == "b":
-                    res.append("False")
-                else:
-                    # 冻结成功
-                    video_i.state = "b"
-                    video_i.upload_time = timezone.now()
-                    res.append("True")
-                    video_i.save()
-                    cache.hset("freeze_queue", _id, json.dumps({"time": video_i.upload_time,
-                                                                "player": video_i.player.realname,
-                                                                "player_id": video_i.player.id,
-                                                                "level": video_i.level,
-                                                                "mode": video_i.mode,
-                                                                "timems": video_i.timems,
-                                                                "bv": video_i.bv,
-                                                                "bvs": video_i.bvs}, cls=ComplexEncoder))
-                    if request.GET["ids"]:
-                        update_personal_record_stock(video_i.player)
-                    update_video_num(video_i, add=False)
-                    logger.info(f'管理员 {request.user.username}#{request.user.id} 冻结录像#{_id}')
-                cache.hdel("review_queue", _id)
-                cache.hdel("newest_queue", _id)
-        return JsonResponse(res, safe=False)
+                res.append(freeze_single(v, update_ranking=True))
+                logger.info(f'管理员 {request.user.username}#{request.user.id} 冻结录像#{id}')
+        return JsonResponse(res)
+    elif user_id := request.GET.get("user_id"): 
+        user = UserProfile.objects.filter(id=user_id).first()
+        if not user:
+            return HttpResponseNotFound()
+        videos = VideoModel.objects.filter(player=user)
+        for v in videos:
+            freeze_single(v, update_ranking=False)
+        update_personal_record_stock(user)
+        return HttpResponse()
     else:
-        return HttpResponseNotAllowed()
+        return HttpResponseBadRequest()
 
 # 管理员使用的操作接口，调用方式见前端的StaffView.vue
 get_videoModel_fields = ["player", "player__realname", "upload_time", "state", "software", "level", "mode", "timems", "bv", "bvs"] # 可获取的域列表
