@@ -11,7 +11,7 @@
             <div style="text-align: center;">
                 <el-button @click="submitUpload()" size="large" type="primary" v-show="video_msgs.length > 0"
                     style="display: block;margin: 16px auto;font-size: 18px;width: 220px;">{{
-                        $t('profile.upload.uploadAll', [video_msgs.length]) }}</el-button>
+        $t('profile.upload.uploadAll', [video_msgs.length]) }}</el-button>
                 <el-button @click="cancel_all()" size="small" type="info" v-show="video_msgs.length > 0"
                     style="display: block;margin: 16px auto;width: 120px;">{{ $t('profile.upload.cancelAll')
                     }}</el-button>
@@ -26,9 +26,9 @@
                     <el-descriptions-item :label="$t('common.prop.fileName')">{{ props.row.filename
                         }}</el-descriptions-item>
                     <el-descriptions-item v-if="props.row.videostat != null" :label="$t('common.prop.designator')">{{
-                        props.row.videostat.designator }}</el-descriptions-item>
+        props.row.videostat.designator }}</el-descriptions-item>
                     <el-descriptions-item v-if="props.row.videostat != null" v-for="key in extfields" :label="key">{{
-                        props.row.extstat[key] }}</el-descriptions-item>
+        props.row.extstat[key] }}</el-descriptions-item>
                 </el-descriptions>
             </template>
         </el-table-column>
@@ -79,7 +79,9 @@ const data = defineProps({
     designators: { type: Array, default: () => [] }
 })
 
-const extfields = ['left', 'right', 'double', 'cl', 'left_s', 'right_s', 'double_s', 'cl_s', 'path', 'flag', 'flag_s', 'stnb', 'rqp', 'ioe', 'thrp', 'corr', 'ce', 'ce_s', 'op', 'isl', 'cell0', 'cell1', 'cell2', 'cell3', 'cell4', 'cell5', 'cell6', 'cell7', 'cell8']
+const extfields = ['left', 'right', 'double', 'cl', 'left_s', 'right_s', 'double_s',
+    'cl_s', 'path', 'flag', 'flag_s', 'stnb', 'rqp', 'ioe', 'thrp', 'corr', 'ce', 'ce_s',
+    'op', 'isl', 'cell0', 'cell1', 'cell2', 'cell3', 'cell4', 'cell5', 'cell6', 'cell7', 'cell8'] as const;
 
 const video_msgs = ref<GeneralFile[]>([])
 

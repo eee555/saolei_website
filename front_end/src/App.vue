@@ -33,12 +33,12 @@
         </el-container>
     </el-container>
 
-    <el-dialog draggable :lock-scroll="false" v-model="notice_visible" title="站长通知" width="30%"
-        :before-close="handle_notice_close">
-        <span style="white-space: pre-wrap; ">{{ notice }}</span>
+    <el-dialog draggable :lock-scroll="false" v-model="notice_visible" title="站长通知"
+        :before-close="handle_notice_close" style="white-space: pre-wrap;" width="min(max(50%, 400px), 90vw)">
+        <span>{{ notice }}</span>
         <template #footer>
             <span class="dialog-footer">
-                <el-checkbox v-model="never_show_notice">不再显示此对话框</el-checkbox>
+                <el-checkbox v-model="never_show_notice">不再显示此对话框&nbsp;&nbsp;&nbsp;</el-checkbox>
                 <el-button type="primary" @click="handle_notice_close()">
                     确认
                 </el-button>
@@ -89,15 +89,11 @@ const menu_items = [
 ];
 
 const notice = ref(`
-0、公测已接近尾声。公测结束后，在正式上线之前会删除所有数据。
-1、因为以下内容很重要，请在分享元扫雷网链接时务必分享本通知。
-2、未来会实现从其他网站导入成绩的功能，所以无需重复上传在其他网站上已有的成绩。
-3、一些个人信息功能（如姓名）还存在问题，所以个人信息暂时可以乱填，将来修复完毕后我们会给用户增加一次修改机会。
-4、因为服务器配置是最丐的，日活增加后可能变卡。如果受不了的话请提供服务器/赞助加钱升级服务器。
-5、标识审核暂时遵循严格匹配，产生不匹配警告后用户仍可点击黄色上传按钮使录像进入人工审核，通过后该标识就会进入用户的标识列表。出于审核效率考量，我们建议用户一次只上传一个标识不匹配录像，待标识通过之后再继续上传。
-6、请忽略用户协议。
-7、第一次加载时需要缓存资源，会很卡，尤其是教程页。第二次就快了。
-8、相关意见、问题和建议请移步至此处[https://gitee.com/ee55/saolei_website/issues]发表。
+0、即日起，网站正式上线！！！
+1、开源扫雷网是社区共建的扫雷排名网站。在这里，你可以上传扫雷录像参与全球排名；也希望有开发能力的雷友可以发挥专业能力，为网站贡献代码、增加功能。
+2、软件下载链接在页面最下方。
+3、网站运营完全依赖赞助，希望有能力的雷友给与力所能及的帮助和支持，我们不胜感激。
+4、相关意见、问题和建议请移步至此处https://gitee.com/ee55/saolei_website/issues发表。
 `);
 
 onMounted(() => {
@@ -207,4 +203,12 @@ body {
 .mainheight {
     height: calc(100svh - v-bind("local.menu_height + 'px'"))
 }
+
+@media (min-width: 1024px) {  
+  .common-layout {  
+    padding: 1.5em max(20vw, 200px);
+    /* 这里设置只在大屏幕（电脑端）上生效的样式 */  
+  }  
+}
+
 </style>

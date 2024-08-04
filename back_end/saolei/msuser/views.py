@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger('userprofile')
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from .forms import UserUpdateRealnameForm, UserUpdateAvatarForm, UserUpdateSignatureForm
@@ -145,6 +147,7 @@ def update_realname(request):
             user: UserProfile = request.user
             if user.is_banned:
                 return JsonResponse({"status": 110, "msg": "用户已被封禁"})
+            logger.info(f'用户 {user.username}#{user.id} 修改实名 从 "{user.realname}" 到 "{realname}"')
             user.realname = realname
             try:
                 user.save(update_fields=["realname", "left_realname_n"])
@@ -152,7 +155,6 @@ def update_realname(request):
                 return JsonResponse({"status": 107, "msg": "未知错误。可能原因：不支持此种字符"})
             update_cache_realname(user.id, realname)
             # designators = json.loads(user.userms.designators)
-            user.userms.designators.append(realname)
             # user.userms.designators = json.dumps(designators)
             user.userms.save(update_fields=["designators"])
             return JsonResponse({"status": 100, "msg": {"n": user.left_realname_n}})
@@ -180,6 +182,7 @@ def update_avatar(request):
                 return JsonResponse({"status": 110, "msg": "用户已被封禁"})
             user.avatar = data["avatar"]
             user.save(update_fields=["avatar", "left_avatar_n"])
+            logger.info(f'用户 {user.username}#{user.id} 修改头像')
             return JsonResponse({"status": 100, "msg": {"n": user.left_avatar_n}})
             
         else:

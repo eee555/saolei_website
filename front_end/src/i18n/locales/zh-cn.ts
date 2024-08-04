@@ -72,7 +72,12 @@ export const zhCn = {
         },
         show: '显示',
         software: {
+            resource_download: '资源下载',
+            software_download: '软件下载',
+            download_link: '下载链接',
             metasweeper: '元扫雷',
+            metasweeper_int: '（元扫雷网官方扫雷软件，包含八种模式的无猜扫雷、第三代录像播放器、自带光学识别求解器。）', // introduction
+            arbiter_int: '（同时受到国际网、中国扫雷网、元扫雷网认可的老牌扫雷软件，只有标准模式。）',
         },
         toDo: '敬请期待',
     },

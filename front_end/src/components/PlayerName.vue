@@ -32,16 +32,16 @@
 
             </div>
             <template #reference>
-                <el-link :underline="false" @click="visible = !visible">{{ data.user_name }}</el-link>
+                <el-link :underline="false" @click="visible = !visible;">{{ data.user_name }}</el-link>
             </template>
         </el-popover>
-        <el-link v-else :underline="false" @click="render = true; visible = true">{{ data.user_name }}</el-link>
+        <el-link v-else :underline="false" @click="render = true; visible = true;">{{ data.user_name }}</el-link>
     </span>
 </template>
 
 <script setup lang="ts" name="PlayerName">
 // 用户的名字，鼠标移上去以后弹出气泡框，可以访问他的主页
-import { ref } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
 import image_url_default from '@/assets/person.png';
@@ -64,9 +64,10 @@ const data = defineProps({
     },
 })
 
-const render = ref<Boolean>(false);
+const render = ref<Boolean>(false); // 控制只渲染一次
 const visible = ref<Boolean>(false);
 const is_loading = ref(true);
+const popoverRef = ref<any>(null);
 
 const realname = ref("");
 const id = ref("");
@@ -84,6 +85,7 @@ const e_t_id = ref("");
 const e_bvs_id = ref("");
 
 const pop_show = async () => {
+    document.addEventListener('mousedown', handleOutsideClick);
     is_loading.value = true;
 
     image_url.value = image_url_default;
@@ -127,10 +129,12 @@ const pop_show = async () => {
     })
 
 
+
 }
 
 // 用户记录小弹窗关闭后，删除其中的数据
 const pop_hide = () => {
+    document.removeEventListener('mousedown', handleOutsideClick);
     image_url.value = image_url_default;
     realname.value = "";
     id.value = "";
@@ -156,6 +160,16 @@ const visit_me = (user_id: Number) => {
     store.player.id = +id.value;
     router.push(`player\/${store.player.id}`)
 }
+
+// 实现点旁边时候关闭气泡
+const handleOutsideClick = (event: any) => {
+    const componentElement = document.querySelector('.el-popover');
+    if (!componentElement?.contains(event.target)) {
+        visible.value = false;
+    }
+}
+
+
 
 </script>
 

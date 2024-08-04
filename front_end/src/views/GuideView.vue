@@ -1,6 +1,6 @@
 <template>
     <el-row class="tac">
-        <el-aside width="auto" @mouseover="isCollapse=false" @mouseleave="isCollapse=true">
+        <el-col :span="5">
             <el-menu @select="show_content" class="el-menu-vertical" :collapse="isCollapse">
                 <el-sub-menu index="1">
                     <template #title>
@@ -79,12 +79,13 @@
                     </template>
                 </el-sub-menu>
             </el-menu>
-        </el-aside>
+        </el-col>
 
 
-        <el-main>
-            <div style="padding-top: 20px;padding-left: 60px;" v-html="article_html" />
-        </el-main>
+        <el-col :span="19">
+            <div style="padding-top: 0px;padding-left: 36px;" v-html="article_html" />
+        </el-col>
+
     </el-row>
 </template>
 
@@ -146,9 +147,9 @@ const parse_ms_board: RuleBlock = (state, startLine: number, endLine: number, si
 
     // 检查第一行是否以"[[["开始
     if (state.src.slice(start, start + 3) !== "[[[") return false;
-    pos +=3;
+    pos += 3;
 
-    while(!/[0123456789aefmn]/.test(state.src.charAt(pos))){
+    while (!/[0123456789aefmn]/.test(state.src.charAt(pos))) {
         pos++;
     }
     // 初始化一个token来存储处理后的内容
@@ -169,18 +170,18 @@ const parse_ms_board: RuleBlock = (state, startLine: number, endLine: number, si
         );
         pos++;
     }
-    
+
     // 添加段落结束token  
     state.push('parse_board_close', 'board', -1);
     state.push('parse_board_close', 'div', -1);
 
     // 跳过已处理的行，这些内容会被隐藏
     let k = 1;
-    while(state.eMarks[startLine + k] < pos + 4){
+    while (state.eMarks[startLine + k] < pos + 4) {
         k++;
     }
     state.line = startLine + k;
-    
+
     return true;
 
 }
@@ -215,11 +216,11 @@ const parse_ms_cell: RuleInline = (state, silent) => {
 markdown.inline.ruler.push("parse_ms_cell", parse_ms_cell);
 markdown.renderer.rules['cell_token'] = function (tokens, idx, options, env, renderer) {
     let tag = tokens[idx].tag;
-    if (tag == "\n"){
+    if (tag == "\n") {
         return "<br>";
-    }else if(/[0123456789aefmn]/.test(tag)){
+    } else if (/[0123456789aefmn]/.test(tag)) {
         return cells[tokens[idx].tag];
-    } else{
+    } else {
         return "";
     }
 };
@@ -430,8 +431,8 @@ const show_article = (name: string) => {
             // 全局替换图片url
             // 举例：'任意文字![说明](url.jpg "标题")任意文字' 
             // -> '任意文字![说明](http://127.0.0.1/article/url.jpg "标题")任意文字'
-            content.value = (response.data as string).replaceAll(/(?<=(\!\[[^(\])]*\]\())([^(\s|\))]*)/g,
-                import.meta.env.VITE_BASE_API + '/article/' + name + '/$2');
+            content.value = (response.data as string).replaceAll(/(?<=(\!\[[^(\])]*\]\())(?!https?:\/\/)([^(\s|\))]*)/g,
+                import.meta.env.VITE_BASE_API + import.meta.env.VITE_ARTICLE_PIC_PATH + name + '/$2');
         })
     }
 }
@@ -496,6 +497,7 @@ a {
     border: #bbb 1px solid;
     background-color: #efefef;
     overflow: auto;
+    padding: 2px 4px;
 }
 
 :deep(table) {
@@ -556,10 +558,8 @@ a {
 :deep(board br) {
     vertical-align: middle;
 }
+
 :deep(board svg) {
     vertical-align: middle;
 }
-
-       
-
 </style>
