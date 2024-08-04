@@ -24,7 +24,7 @@ from django_ratelimit.decorators import ratelimit
 from django.utils import timezone
 # import ms_toollib as ms
 from django.utils.encoding import escape_uri_path
-from config.flags import DESIGNATOR_SKIP
+from config.flags import IDENTIFIER_SKIP
 from django.conf import settings
 
 
@@ -42,20 +42,20 @@ def video_upload(request):
         # print(video_form)
         if video_form.is_valid():
             data = video_form.cleaned_data
-            if DESIGNATOR_SKIP and data["designator"] not in request.user.userms.designators:
-                request.user.userms.designators.append(data["designator"])
-                request.user.userms.save(update_fields=["designators"])
-            if data["designator"] not in request.user.userms.designators:
+            if IDENTIFIER_SKIP and data["identifier"] not in request.user.userms.identifiers:
+                request.user.userms.identifiers.append(data["identifier"])
+                request.user.userms.save(update_fields=["identifiers"])
+            if data["identifier"] not in request.user.userms.identifiers:
                 # 如果标识是首次使用的，需要得到管理员的审核
                 data['review_code'] = 2
 
             # 查重
-            collisions = list(VideoModel.objects.filter(timems=data["timems"], bv=data["bv"]).filter(video__cl=data["cl"], video__op=data["op"], video__isl=data["isl"], video__designator=data["designator"]))
+            collisions = list(VideoModel.objects.filter(timems=data["timems"], bv=data["bv"]).filter(video__cl=data["cl"], video__op=data["op"], video__isl=data["isl"], video__identifier=data["identifier"]))
             if collisions:
                 return HttpResponse(status = 409)
             
             # 表中添加数据
-            e_video = ExpandVideoModel.objects.create(designator=data["designator"],
+            e_video = ExpandVideoModel.objects.create(identifier=data["identifier"],
                                                       left=data["left"], right=data["right"],
                                                       double=data["double"], cl=data["cl"],
                                                       left_s=data["left_s"], right_s=data["right_s"],
@@ -87,7 +87,7 @@ def video_upload(request):
                                 "timems": video.timems,
                                 "bv": video.bv,
                                 "bvs": video.bvs,
-                                "designator": e_video.designator}, cls=ComplexEncoder)
+                                "identifier": e_video.identifier}, cls=ComplexEncoder)
             if data['review_code'] >= 2:
                 # 往审查队列里添加录像
                 logger.info(f'用户 {request.user.username}#{request.user.id} 录像#{video.id} 机审失败')
@@ -297,8 +297,8 @@ def freeze_queue(request):
         return HttpResponseNotAllowed()
     
 # 审核通过单个录像
-# check_designator 为 true 则检查是否要修改玩家标识列表，并在修改后扫描所有待审录像的标识
-def approve_single(videoid, check_designator=True):
+# check_identifier 为 true 则检查是否要修改玩家标识列表，并在修改后扫描所有待审录像的标识
+def approve_single(videoid, check_identifier=True):
     video = VideoModel.objects.filter(id=videoid)
     if not video:
         return None
@@ -312,20 +312,20 @@ def approve_single(videoid, check_designator=True):
     update_personal_record(video)
     update_video_num(video)
     cache.hdel("review_queue", videoid)
-    designator = video.video.designator
-    if check_designator and designator not in userms.designators:
-        userms.designators.append(designator)
-        userms.save(update_fields=["designators"])
-        logger.info(f'用户 {video.player.username}#{video.player.id} 新标识 "{designator}"')
-        approve_designator(video.player.id, designator)
+    identifier = video.video.identifier
+    if check_identifier and identifier not in userms.identifiers:
+        userms.identifiers.append(identifier)
+        userms.save(update_fields=["identifiers"])
+        logger.info(f'用户 {video.player.username}#{video.player.id} 新标识 "{identifier}"')
+        approve_identifier(video.player.id, identifier)
     return True
 
 # 审核通过所有特定用户特定标识的录像
-def approve_designator(userid, designator):
-    user_designator_list = cache.hgetall("review_queue")
-    for key in user_designator_list:
-        value = json.loads(user_designator_list[key])
-        if value["player_id"] == userid and value["designator"] == designator:
+def approve_identifier(userid, identifier):
+    user_identifier_list = cache.hgetall("review_queue")
+    for key in user_identifier_list:
+        value = json.loads(user_identifier_list[key])
+        if value["player_id"] == userid and value["identifier"] == identifier:
             logger.info(f'用户 #{userid} 录像#{key} 机审成功')
             approve_single(key, False)
 

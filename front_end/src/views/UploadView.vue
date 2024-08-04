@@ -25,8 +25,8 @@
                 <el-descriptions>
                     <el-descriptions-item :label="$t('common.prop.fileName')">{{ props.row.filename
                         }}</el-descriptions-item>
-                    <el-descriptions-item v-if="props.row.videostat != null" :label="$t('common.prop.designator')">{{
-        props.row.videostat.designator }}</el-descriptions-item>
+                    <el-descriptions-item v-if="props.row.videostat != null" :label="$t('common.prop.identifier')">{{
+        props.row.videostat.identifier }}</el-descriptions-item>
                     <el-descriptions-item v-if="props.row.videostat != null" v-for="key in extfields" :label="key">{{
         props.row.extstat[key] }}</el-descriptions-item>
                 </el-descriptions>
@@ -47,9 +47,9 @@
         </el-table-column>
         <el-table-column :label="$t('common.prop.action')" :width="130">
             <template #default="props">
-                <el-button :disabled="props.row.status != 'designator' && props.row.status != 'pass'"
+                <el-button :disabled="props.row.status != 'identifier' && props.row.status != 'pass'"
                     @click="forceUpload(props.$index)"
-                    :type="props.row.status == 'pass' ? 'success' : props.row.status == 'designator' ? 'warning' : 'info'"
+                    :type="props.row.status == 'pass' ? 'success' : props.row.status == 'identifier' ? 'warning' : 'info'"
                     circle><el-icon>
                         <Upload />
                     </el-icon></el-button>
@@ -76,7 +76,7 @@ import { useI18n } from 'vue-i18n';
 const t = useI18n();
 
 const data = defineProps({
-    designators: { type: Array, default: () => [] }
+    identifiers: { type: Array, default: () => [] }
 })
 
 const extfields = ['left', 'right', 'double', 'cl', 'left_s', 'right_s', 'double_s',
@@ -143,7 +143,7 @@ const push_video_msg = async (uploadFile: UploadFile | UploadRawFile) => {
             timems: aa.get_rtime_ms,
             bbbv: aa.get_bbbv,
             bvs: aa.get_bbbv_s,
-            designator: decoder.decode(aa.get_player_designator),
+            identifier: decoder.decode(aa.get_player_identifier),
             review_code: aa.is_valid(),
         }
         ext_stat = get_ext_stat(aa)
@@ -151,8 +151,8 @@ const push_video_msg = async (uploadFile: UploadFile | UploadRawFile) => {
             status = "custom";
         } else if (uploadFile.name.length >= 100) {
             status = "filename";
-        } else if (!data.designators.includes(video_stat.designator)) {
-            status = "designator";
+        } else if (!data.identifiers.includes(video_stat.identifier)) {
+            status = "identifier";
         }
 
     } else {
@@ -202,7 +202,7 @@ const submitUpload = async () => {
 // 上传问题不大的录像
 const forceUpload = async (i: number) => {
     let video = video_msgs.value[i];
-    if (video.status != "pass" && video.status != "designator") {
+    if (video.status != "pass" && video.status != "identifier") {
         return;
     }
     video_msgs.value[i].status = "process";
@@ -220,7 +220,7 @@ const forceUpload = async (i: number) => {
     params.append("timems", video.videostat.timems.toString());
     params.append("bv", video.videostat.bbbv.toString());
     params.append("bvs", video.videostat.bvs.toString());
-    params.append("designator", video.videostat.designator);
+    params.append("identifier", video.videostat.identifier);
     for (let prop of extfields) {
         params.append(prop, video.extstat[prop].toString());
     }

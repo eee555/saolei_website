@@ -58,7 +58,7 @@ export const pl = {
         change: 'zmień profil',
         confirmChange: 'potwierdź',
         cancelChange: 'anuluj',
-        designator: 'moje oznaczenie: ',
+        identifier: 'moje oznaczenie: ',
         records: {
             title: 'moje rekordy',
             modeRecord: '-rekord trybu: '

@@ -48,7 +48,7 @@ export const zhCn = {
         },
         prop: {
             action: '操作',
-            designator: '标识',
+            identifier: '标识',
             fileName: '文件名',
             is: '岛',
             level: '级别',
@@ -144,7 +144,7 @@ export const zhCn = {
         change: '修改简介',
         confirmChange: '确认',
         cancelChange: '取消',
-        designator: '我的标识：',
+        identifier: '我的标识：',
         msg: {
             avatarChange: '头像修改成功！剩余{0}次',
             avatarFormat: '头像必须为JPG或PNG格式！',
@@ -166,7 +166,7 @@ export const zhCn = {
             error: {
                 collision: '录像已存在',
                 custom: '暂不支持自定义级别',
-                designator: '标识不匹配',
+                identifier: '标识不匹配',
                 fail: '不通过',
                 fileext: '无法识别的文件类型',
                 filename: '文件名超过了100字节',

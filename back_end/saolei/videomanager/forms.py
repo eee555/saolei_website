@@ -15,7 +15,7 @@ class UploadVideoForm(forms.Form):
     bv = forms.IntegerField(max_value=32767, min_value=1, required=True)
     bvs = forms.FloatField(min_value=0.0, required=True)
 
-    designator = forms.CharField(max_length=80, required=True)
+    identifier = forms.CharField(max_length=80, required=True)
     left = forms.IntegerField(max_value=32767, min_value=0, required=True)
     right = forms.IntegerField(max_value=32767, min_value=0, required=True)
     double = forms.IntegerField(max_value=32767, min_value=0, required=True)

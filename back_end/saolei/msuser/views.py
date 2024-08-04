@@ -67,7 +67,7 @@ def get_info(request):
                     "avatar": image_data,
                     "signature": user.signature,
                     "popularity": user.popularity,
-                    "designators": user.userms.designators,
+                    "identifiers": user.userms.identifiers,
                     "is_banned": user.is_banned,
                     "country": user.country
                     }
@@ -154,9 +154,9 @@ def update_realname(request):
             except Exception as e:
                 return JsonResponse({"status": 107, "msg": "未知错误。可能原因：不支持此种字符"})
             update_cache_realname(user.id, realname)
-            # designators = json.loads(user.userms.designators)
-            # user.userms.designators = json.dumps(designators)
-            user.userms.save(update_fields=["designators"])
+            # identifiers = json.loads(user.userms.identifiers)
+            # user.userms.identifiers = json.dumps(identifiers)
+            user.userms.save(update_fields=["identifiers"])
             return JsonResponse({"status": 100, "msg": {"n": user.left_realname_n}})
         else:
             ErrorDict = json.loads(user_update_realname_form.errors.as_json())

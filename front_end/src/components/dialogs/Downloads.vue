@@ -12,7 +12,7 @@
                     {{$t('common.software.metasweeper')}} v3.1.9</a> {{$t('common.software.download_link')}} 2<br>
                 {{$t('common.software.metasweeper_int')}}
             </li>
-            <li><a style="color: blue;" target="_blank" href="http://fff666.top/download/Arbiter_0.52.3.zip">Arbiter v0.52.3</a><br>
+            <li><a style="color: blue;" target="_blank" href="https://fff666.top/download/Arbiter_0.52.3.zip">Arbiter v0.52.3</a><br>
                 {{$t('common.software.arbiter_int')}}
             </li>
 
