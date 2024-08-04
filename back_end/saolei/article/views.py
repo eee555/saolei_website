@@ -62,10 +62,8 @@ def article_list(request):
     else:
         return HttpResponse("别瞎玩")
 
-# 开发时处理静态资源的请求，生产时不应该用
-# def getFiles(request):
-#     if request.method == "GET":
-#         return HttpResponse(open('static/imgs/test.png', 'rb'), content_type='images/png')
+# http://127.0.0.1:8000/article/update_list
+
 
 
 

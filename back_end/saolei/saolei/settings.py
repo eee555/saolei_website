@@ -154,11 +154,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-# STATIC_URL = "static/"
 STATIC_URL = "/static/"
 # STATIC_URL = "/"
 # 服务器上的位置，存放网页文件、播放器文件、文章
 STATIC_ROOT = Path('/root/saolei/static')
+
 
 MEDIA_URL = '/media/'
 if DEBUG:
@@ -205,10 +205,11 @@ CAPTCHA_CHALLENGE_FUNCT = 'captcha.helpers.random_char_challenge'
 # CAPTCHA_CHALLENGE_FUNCT = 'captcha.helpers.math_challenge'
 
 
-CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_HEADERS = ('*')
-CSRF_TRUSTED_ORIGINS = ['http://localhost:8080']
+if DEBUG:
+    CORS_ALLOW_CREDENTIALS = True
+    CORS_ALLOW_ALL_ORIGINS = True
+    CORS_ALLOW_HEADERS = ('*')
+    CSRF_TRUSTED_ORIGINS = ['http://localhost:8080']
 
 if DEBUG:
     # 开发时
