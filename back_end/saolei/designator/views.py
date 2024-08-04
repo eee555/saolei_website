@@ -1,7 +1,8 @@
 from msuser.models import UserMS
 from models import Designator
 from userprofile.models import UserProfile
-from django.http import HttpResponseNotAllowed, HttpResponseForbidden, HttpResponseBadRequest, JsonResponse, HttpResponse
+from django.http import HttpResponseNotAllowed, HttpResponseForbidden, HttpResponseBadRequest, JsonResponse, HttpResponse, HttpResponseNotFound
+from .utils import add_designator_aftermath
 
 # 请求修改自己的标识
 def add_designator(request):
@@ -21,13 +22,26 @@ def add_designator(request):
         return JsonResponse(collision_user.id) # 返回标识冲突的用户
     Designator.objects.create(designator=designator, userms=user.userms) # 新标识
     # TODO: 日志
-    # TODO: 扫描标识未通过的录像
+    add_designator_aftermath(user, designator)
     # TODO: 更新user.userms.designators
     return HttpResponse()
 
 # 请求删除自己的标识
 def del_designator(request):
-    # TODO
+    if request.method != 'POST':
+        return HttpResponseNotAllowed()
+    user = UserProfile.objects.filter(id=request.user.id).first()
+    if user == None:
+        return HttpResponseForbidden()
+    designator = request.POST.get('designator', None)
+    if designator == None:
+        return HttpResponseBadRequest()
+    object = Designator.objects.filter(designator=designator).first()
+    if not object:
+        return HttpResponseNotFound()
+    object.delete()
+    # TODO: 日志
+    # TODO: 更新user.userms.designators
     return HttpResponse()
 
 # 管理员添加标识
