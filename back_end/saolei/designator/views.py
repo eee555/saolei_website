@@ -23,7 +23,8 @@ def add_designator(request):
     Designator.objects.create(designator=designator, userms=user.userms) # 新标识
     # TODO: 日志
     add_designator_aftermath(user, designator)
-    # TODO: 更新user.userms.designators
+    user.userms.designators.append(designator)
+    user.userms.save()
     return HttpResponse()
 
 # 请求删除自己的标识
@@ -41,7 +42,8 @@ def del_designator(request):
         return HttpResponseNotFound()
     object.delete()
     # TODO: 日志
-    # TODO: 更新user.userms.designators
+    user.userms.designators.remove(designator)
+    user.userms.save()
     return HttpResponse()
 
 # 管理员添加标识
