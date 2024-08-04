@@ -1,5 +1,5 @@
 from msuser.models import UserMS
-from models import Designator
+from .models import Designator
 from userprofile.models import UserProfile
 from django.http import HttpResponseNotAllowed, HttpResponseForbidden, HttpResponseBadRequest, JsonResponse, HttpResponse, HttpResponseNotFound
 from .utils import add_designator_aftermath
@@ -11,7 +11,7 @@ def add_designator(request):
     user = UserProfile.objects.filter(id=request.user.id).first()
     if user == None:
         return HttpResponseForbidden()
-    designator = request.POST.get('designator', None)
+    designator = request.POST.get('designator')
     if designator == None:
         return HttpResponseBadRequest()
     collision = Designator.objects.filter(designator=designator).first()
