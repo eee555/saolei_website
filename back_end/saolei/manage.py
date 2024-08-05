@@ -30,7 +30,7 @@ if __name__ == "__main__":
 # pip install pymysql
 # 修改__init__.py，  import pymysql    pymysql.install_as_MySQLdb()
 # python manage.py migrate
-# python manage.py makemigrations polls
+# python manage.py makemigrations
 
 # python manage.py createsuperuser
 # 1，wangjianing@88.com，123456

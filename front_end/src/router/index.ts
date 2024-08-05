@@ -28,6 +28,11 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('../views/GuideView.vue')
   },
   {
+    path: '/guide/:name/:paragraph',
+    name: 'guide',
+    component: () => import('../views/GuideView.vue')
+  },
+  {
     path: '/score',
     name: 'score',
     component: () => import('../views/ScoreRankView.vue')

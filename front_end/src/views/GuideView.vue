@@ -112,6 +112,9 @@ import mathjax3 from "markdown-it-mathjax3";
 import { imgLazyload } from "@mdit/plugin-img-lazyload";
 // 允许调整图片尺寸
 import { imgSize } from "@mdit/plugin-img-size";
+// 锚点
+import anchor from 'markdown-it-anchor'
+
 
 // 局面数字的svg数据，原始尺寸都是160*160
 import { cells } from "@/utils/common/cellSVGData";
@@ -120,10 +123,34 @@ const t = useI18n();
 
 const isCollapse = ref(false);
 
+const currentHash = window.location.hash.split('#')[1] || '';
+
 const markdown = new MarkdownIt({
     html: true, // 允许HTML语法
     typographer: true, // 启用Typographer插件，可以更好地处理中文字符和标点符号
-}).use(abbr).use(align).use(markdownItHighlight).use(mathjax3).use(imgLazyload).use(imgSize);
+}).use(abbr).use(align).use(markdownItHighlight)
+    .use(mathjax3).use(imgLazyload).use(imgSize).use(anchor, {
+        // 锚点插件。用于用了hash mode，标准的锚点用不了
+        // 生成特定的url，再慢慢解析
+        permalink: true,
+        permalinkBefore: false,
+        permalinkSymbol: '🔗',
+        renderPermalink: (slug: any, opts: any, state: any, idx: any) => {
+            const linkOpenToken = new state.Token('link_open', 'a', 1);
+            
+            
+            linkOpenToken.attrs = [
+                ['class', opts.permalinkClass],
+                ['href', `#${currentHash}/${article_name.value}/${slug}`],
+            ];
+
+            const linkCloseToken = new state.Token('link_close', 'a', -1);
+            const textToken = new state.Token('html_inline', '', 0);
+            textToken.content = opts.permalinkSymbol;
+
+            state.tokens[idx + 1].children.push(linkOpenToken, textToken, linkCloseToken);
+        }
+    });
 
 
 
@@ -309,6 +336,8 @@ const content = ref<string>("");
 const article_html = computed(() => {
     return markdown.render(content.value);
 })
+const article_name = ref<string>("");
+
 
 // 子类别
 type child_list = {
@@ -433,6 +462,7 @@ const show_article = (name: string) => {
             // -> '任意文字![说明](http://127.0.0.1/article/url.jpg "标题")任意文字'
             content.value = (response.data as string).replaceAll(/(?<=(\!\[[^(\])]*\]\())(?!https?:\/\/)([^(\s|\))]*)/g,
                 import.meta.env.VITE_BASE_API + import.meta.env.VITE_ARTICLE_PIC_PATH + name + '/$2');
+            article_name.value = name;
         })
     }
 }
