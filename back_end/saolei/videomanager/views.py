@@ -26,6 +26,7 @@ from django.utils import timezone
 from django.utils.encoding import escape_uri_path
 from django.conf import settings
 
+from django.views.decorators.http import require_GET, require_POST
 
 @login_required(login_url='/')
 def video_upload(request):
@@ -96,9 +97,8 @@ def video_upload(request):
         return HttpResponseNotAllowed()
 
 # 根据id向后台请求软件类型（适配flop播放器用）
+@require_GET
 def get_software(request):
-    if request.method != 'GET':
-        return HttpResponseNotAllowed()
     video = VideoModel.objects.get(id=request.GET["id"])
     # print({"status": 100, "msg": video.software})
     return JsonResponse({"msg": video.software})
@@ -107,9 +107,8 @@ def get_software(request):
 # 坑：如果做成必须登录才能下载，由于Django的某种特性，会重定向资源，
 # 然而flop播放器不能处理此状态码，因此会请求到空文件，导致解码失败
 @ratelimit(key='ip', rate='20/m')
+@require_GET
 def video_preview(request):
-    if request.method != 'GET':
-        return HttpResponseNotAllowed()
     # 这里性能可能有问题
     video = VideoModel.objects.get(id=int(request.GET["id"][:-4]))
     # video.file.name是相对路径(含upload_to)，video.file.path是绝对路径
@@ -127,9 +126,8 @@ def video_preview(request):
 # 给下载用的接口，区别是结尾没有文件后缀
 # @login_required(login_url='/')
 @ratelimit(key='ip', rate='20/m')
+@require_GET
 def video_download(request):
-    if request.method != 'GET':
-        return HttpResponseNotAllowed()
     try:
         video = VideoModel.objects.get(id=request.GET["id"])
         response =FileResponse(open(video.file.path, 'rb'))
@@ -144,103 +142,91 @@ def video_download(request):
 # 每项的定义参见 front_end/src/views/VideoView.vue 的 request_videos 函数
 
 @ratelimit(key='ip', rate='20/m')
+@require_GET
 def video_query(request):
-    if request.method == 'GET':
-        data = request.GET
+    data = request.GET
 
-        values = video_all_fields
+    values = video_all_fields
 
-        # 排序
-        if data["r"] == "true":
-            ob = "-" + data["o"]
-        else:
-            ob = data["o"]
-        if data["o"] != "timems":
-            orderby = (ob, "timems")
-        else:
-            orderby = (ob,)
-            
-        if data["mode"] != "00":
-            filter = {"level": data["level"], "mode": data["mode"]}
-            videos = VideoModel.objects.filter(**filter).order_by(*orderby).values(*values)
-        else:
-            filter = {"level": data["level"]}
-            videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(**filter).order_by(*orderby).values(*values)
-
-        # print(videos)
-        paginator = Paginator(videos, data["ps"])
-        page_number = data["page"]
-        page_videos = paginator.get_page(page_number)
-        response = {
-            "count": len(videos),
-            "videos": list(page_videos)
-            }
-        # t=json.dumps(response, cls=ComplexEncoder)
-        # print(t)
-        return JsonResponse(json.dumps(response, cls=ComplexEncoder), safe=False)
+    # 排序
+    if data["r"] == "true":
+        ob = "-" + data["o"]
     else:
-        return HttpResponseNotAllowed()
+        ob = data["o"]
+    if data["o"] != "timems":
+        orderby = (ob, "timems")
+    else:
+        orderby = (ob,)
+            
+    if data["mode"] != "00":
+        filter = {"level": data["level"], "mode": data["mode"]}
+        videos = VideoModel.objects.filter(**filter).order_by(*orderby).values(*values)
+    else:
+        filter = {"level": data["level"]}
+        videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(**filter).order_by(*orderby).values(*values)
+
+    # print(videos)
+    paginator = Paginator(videos, data["ps"])
+    page_number = data["page"]
+    page_videos = paginator.get_page(page_number)
+    response = {
+        "count": len(videos),
+        "videos": list(page_videos)
+    }
+    # t=json.dumps(response, cls=ComplexEncoder)
+    # print(t)
+    return JsonResponse(json.dumps(response, cls=ComplexEncoder), safe=False)
 
 
 # 按id查询这个用户的所有录像
+@require_GET
 def video_query_by_id(request):
-    if request.method == 'GET':
-        id_ = request.GET["id"]
+    id_ = request.GET["id"]
         
-        user = UserProfile.objects.get(id=id_)
-        videos = VideoModel.objects.filter(player=user).values('id', 'upload_time', "level", "mode", "timems", "bv", "bvs")
-        # print(list(videos))
+    user = UserProfile.objects.get(id=id_)
+    videos = VideoModel.objects.filter(player=user).values('id', 'upload_time', "level", "mode", "timems", "bv", "bvs")
+    # print(list(videos))
 
-        return JsonResponse(json.dumps({"videos": list(videos)}, cls=ComplexEncoder), safe=False)
-    else:
-        return HttpResponseNotAllowed()
+    return JsonResponse(json.dumps({"videos": list(videos)}, cls=ComplexEncoder), safe=False)
 
 
 
 # 获取审查队列里的录像
 # http://127.0.0.1:8000/video/review_queue
+@require_GET
 def review_queue(request):
-    if request.method == 'GET':
-        review_video_ids = cache.hgetall("review_queue")
-        for key in list(review_video_ids.keys()):
-            review_video_ids.update({str(key, encoding="utf-8"): review_video_ids.pop(key)})
-        return JsonResponse(review_video_ids, encoder=ComplexEncoder)
-    else:
-        return HttpResponseNotAllowed()
+    review_video_ids = cache.hgetall("review_queue")
+    for key in list(review_video_ids.keys()):
+        review_video_ids.update({str(key, encoding="utf-8"): review_video_ids.pop(key)})
+    return JsonResponse(review_video_ids, encoder=ComplexEncoder)
 
 
 # 获取最新录像
 # http://127.0.0.1:8000/video/newest_queue
+@require_GET
 def newest_queue(request):
-    if request.method == 'GET':
-        newest_queue_ids = cache.hgetall("newest_queue")
-        for key in list(newest_queue_ids.keys()):
-            newest_queue_ids.update({str(key, encoding="utf-8"): newest_queue_ids.pop(key)})
-        return JsonResponse(newest_queue_ids, encoder=ComplexEncoder)
-    else:
-        return HttpResponseNotAllowed()
+    newest_queue_ids = cache.hgetall("newest_queue")
+    for key in list(newest_queue_ids.keys()):
+        newest_queue_ids.update({str(key, encoding="utf-8"): newest_queue_ids.pop(key)})
+    return JsonResponse(newest_queue_ids, encoder=ComplexEncoder)
     
 
 # 获取谁破纪录的消息
 # http://127.0.0.1:8000/video/news_queue
+@require_GET
 def news_queue(request):
-    if request.method == 'GET':
-        news_queue = cache.lrange("news_queue", 0, -1)
-        return JsonResponse(news_queue, encoder=ComplexEncoder, safe=False)
-    else:
-        return HttpResponseNotAllowed()
+    news_queue = cache.lrange("news_queue", 0, -1)
+    return JsonResponse(news_queue, encoder=ComplexEncoder, safe=False)
     
     
 # 获取全网被冻结的录像
 # http://127.0.0.1:8000/video/freeze_queue
+@require_GET
 def freeze_queue(request):
-    if request.method == 'GET':
-        freeze_queue_ids = cache.hgetall("freeze_queue")
-        for key in list(freeze_queue_ids.keys()):
-            freeze_queue_ids.update({str(key, encoding="utf-8"): freeze_queue_ids.pop(key)})
-        return JsonResponse(freeze_queue_ids, encoder=ComplexEncoder)
-    else:
-        return HttpResponseNotAllowed()
+    freeze_queue_ids = cache.hgetall("freeze_queue")
+    for key in list(freeze_queue_ids.keys()):
+        freeze_queue_ids.update({str(key, encoding="utf-8"): freeze_queue_ids.pop(key)})
+    return JsonResponse(freeze_queue_ids, encoder=ComplexEncoder)
     
 # 审核通过单个录像
 # check_designator 为 true 则检查是否要修改玩家标识列表，并在修改后扫描所有待审录像的标识
@@ -279,8 +265,9 @@ def approve_designator(userid, designator):
 # 【管理员】审核通过队列里的录像，未审核或冻结状态的录像可以审核通过
 # 返回"True","False"（已经是通过的状态）,"Null"（不存在该录像）
 # http://127.0.0.1:8000/video/approve?ids=[18,19,999]
+@require_GET
 def approve(request):
-    if request.user.is_staff and request.method == 'GET':
+    if request.user.is_staff:
         ids = json.loads(request.GET["ids"])
         res = []
         for _id in ids:
@@ -296,9 +283,8 @@ def approve(request):
 # http://127.0.0.1:8000/video/freeze?ids=[18,19,20,21,102,273]
 # http://127.0.0.1:8000/video/freeze?ids=12
 # http://127.0.0.1:8000/video/freeze?user_id=20
+@require_GET
 def freeze(request):
-    if request.method != 'GET':
-        return HttpResponseNotAllowed()
     if not request.user.is_staff:
         return HttpResponseForbidden()
     
@@ -329,9 +315,8 @@ get_videoModel_fields = ["player", "player__realname", "upload_time", "state", "
 for name in [field.name for field in ExpandVideoModel._meta.get_fields()]:
     get_videoModel_fields.append("video__" + name)
 
+@require_GET
 def get_videoModel(request):
-    if request.method != 'GET':
-        return HttpResponseBadRequest()
     if request.user.is_staff:
         videolist = VideoModel.objects.filter(id=request.GET["id"]).values(*get_videoModel_fields)
         if not videolist:
@@ -341,25 +326,23 @@ def get_videoModel(request):
         return HttpResponseForbidden()
     
 set_videoModel_fields = ["player", "upload_time", "state"] # 可修改的域列表
+@require_POST
 def set_videoModel(request):
-    if request.method == 'POST':
-        if not request.user.is_staff:
-            return HttpResponseForbidden() # 非管理员不能使用该api
-        videoid = request.POST.get("id")
-        video = VideoModel.objects.get(id=videoid)
-        user = video.player
-        if user.is_staff and user != request.user:
-            return HttpResponseForbidden() # 不能修改除自己以外管理员的信息
-        field = request.POST.get("field")
-        if field not in set_videoModel_fields:
-            return HttpResponseForbidden() # 只能修改特定的域
-        value = request.POST.get("value")
-        logger.info(f'管理员 {request.user.username}#{request.user.id} 修改录像#{videoid} 域 {field} 从 {getattr(video, field)} 到 {value}')
-        setattr(video, field, value)
-        video.save()
-        return HttpResponse()
-    else:
-        return HttpResponseBadRequest()
+    if not request.user.is_staff:
+        return HttpResponseForbidden() # 非管理员不能使用该api
+    videoid = request.POST.get("id")
+    video = VideoModel.objects.get(id=videoid)
+    user = video.player
+    if user.is_staff and user != request.user:
+        return HttpResponseForbidden() # 不能修改除自己以外管理员的信息
+    field = request.POST.get("field")
+    if field not in set_videoModel_fields:
+        return HttpResponseForbidden() # 只能修改特定的域
+    value = request.POST.get("value")
+    logger.info(f'管理员 {request.user.username}#{request.user.id} 修改录像#{videoid} 域 {field} 从 {getattr(video, field)} 到 {value}')
+    setattr(video, field, value)
+    video.save()
+    return HttpResponse()
 
 
 
