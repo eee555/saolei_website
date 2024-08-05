@@ -171,3 +171,4 @@ front_end/public/flopold
 front_end/src/assets/article
 front_end/package-lock.json
 front_end/yarn.lock
+/back_end/saolei/designator/migrations

@@ -7,13 +7,15 @@ from videomanager.view_utils import freeze_single, update_personal_record_stock
 def add_designator_aftermath(user: UserProfile, designator: str):
     video_list = VideoModel.objects.filter(player=user, video__designator=designator)
     for video in video_list:
-        approve_single(video, False)
+        if video.state == VideoModel.State.DESIGNATOR:
+            approve_single(video, False)
     return len(video_list)
 
 # 删除标识后扫描所有该标识的录像，返回操作的录像数量
 def del_designator_aftermath(user: UserProfile, designator: str):
     video_list = VideoModel.objects.filter(player=user, video__designator=designator)
     for video in video_list:
-        freeze_single(video, state=VideoModel.State.DESIGNATOR, update_ranking=False)
+        if video.state == VideoModel.State.OFFICIAL:
+            freeze_single(video, state=VideoModel.State.DESIGNATOR, update_ranking=False)
     update_personal_record_stock(user)
     return len(video_list)
