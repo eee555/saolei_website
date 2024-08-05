@@ -8,7 +8,6 @@ def add_designator_aftermath(user: UserProfile, designator: str):
     video_list = VideoModel.objects.filter(player=user, video__designator=designator)
     for video in video_list:
         if video.state == VideoModel.State.DESIGNATOR:
-            approve_single(video, False)
             update_state(video, VideoModel.State.OFFICIAL)
     return len(video_list)
 
@@ -17,7 +16,6 @@ def del_designator_aftermath(user: UserProfile, designator: str):
     video_list = VideoModel.objects.filter(player=user, video__designator=designator)
     for video in video_list:
         if video.state == VideoModel.State.OFFICIAL:
-            freeze_single(video, state=VideoModel.State.DESIGNATOR, update_ranking=False)
             update_state(video, VideoModel.State.DESIGNATOR, update_ranking=False)
     update_personal_record_stock(user)
     return len(video_list)
