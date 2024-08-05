@@ -4,7 +4,7 @@ logger = logging.getLogger('videomanager')
 from django.contrib.auth.decorators import login_required
 from .forms import UploadVideoForm
 from .models import VideoModel, ExpandVideoModel
-from .view_utils import update_personal_record, update_personal_record_stock, video_all_fields, update_video_num, freeze_single
+from .view_utils import update_personal_record, update_personal_record_stock, video_all_fields, update_video_num, update_state
 from userprofile.models import UserProfile
 from django.http import HttpResponse, JsonResponse, FileResponse, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseNotFound
 import json, urllib
@@ -73,37 +73,25 @@ def video_upload(request):
                                                       cell8=data["cell8"])
             # 会检查是否为盲扫，自动修改模式
             video = VideoModel.objects.create(player=request.user, file=data["file"], video=e_video,
-                                      state=["c", "b", "a", "a"][data['review_code']], software=data["software"], level=data["level"],
+                                      state=["c", "b", "d", "a"][data['review_code']], software=data["software"], level=data["level"],
                                       mode=data["mode"] if data["mode"]!="00" else ("12" if data["flag"]==0 else "00"), 
                                       timems=data["timems"],
                                       bv=data["bv"], bvs=data["bvs"])
-            
-            # cache.hget("review_queue", "filed")
-            temp = json.dumps({"time": video.upload_time,
-                                "player": video.player.realname,
-                                "player_id": video.player.id,
-                                "level": video.level,
-                                "mode": video.mode,
-                                "timems": video.timems,
-                                "bv": video.bv,
-                                "bvs": video.bvs,
-                                "designator": e_video.designator}, cls=ComplexEncoder)
-            if data['review_code'] >= 2:
+
+            if data['review_code'] >= 3:
                 # 往审查队列里添加录像
                 logger.info(f'用户 {request.user.username}#{request.user.id} 录像#{video.id} 机审失败')
-                cache.hset("review_queue", video.id, temp)
+                video.push_redis("review_queue")
+            elif data['review_code'] == 2:
+                logger.info(f'用户 {request.user.username}#{request.user.id} 录像#{video.id} 标识不匹配')
+                video.push_redis("newest_queue")
+                update_video_num(video)
             else:
                 # 如果录像自动通过了审核，更新最新录像和纪录
                 logger.info(f'用户 {request.user.username}#{request.user.id} 录像#{video.id} 机审成功')
-                cache.hset("newest_queue", video.id, temp)
+                video.push_redis("newest_queue")
                 update_personal_record(video)
                 update_video_num(video)
-                
-
-            # review_video_ids = cache.hgetall("review_queue")
-            # print(review_video_ids)
-
-            # update_personal_record(request, data, e_video)
             return HttpResponse()
         else:
             # print(video_form.errors)
@@ -325,7 +313,7 @@ def freeze(request):
             if not v:
                 res.append("Null")
             else:
-                res.append(freeze_single(v, update_ranking=True))
+                update_state(v, VideoModel.State.FROZEN)
                 logger.info(f'管理员 {request.user.username}#{request.user.id} 冻结录像#{id}')
         return JsonResponse(res)
     elif user_id := request.GET.get("user_id"): 
@@ -334,7 +322,7 @@ def freeze(request):
             return HttpResponseNotFound()
         videos = VideoModel.objects.filter(player=user)
         for v in videos:
-            freeze_single(v, update_ranking=False)
+            update_state(v, VideoModel.State.FROZEN, update_ranking=False)
         update_personal_record_stock(user)
         return HttpResponse()
     else:
