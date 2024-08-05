@@ -184,17 +184,13 @@ def video_query(request):
             filter = {"level": data["level"]}
             videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(**filter).order_by(*orderby).values(*values)
 
-        print(videos)
         paginator = Paginator(videos, data["ps"])
         page_number = data["page"]
-        print(99)
         page_videos = paginator.get_page(page_number)
-        print(578)
         response = {
             "count": len(videos),
             "videos": list(page_videos)
             }
-        print(456)
         # t=json.dumps(response, cls=ComplexEncoder)
         # print(t)
         return JsonResponse(json.dumps(response, cls=ComplexEncoder), safe=False)

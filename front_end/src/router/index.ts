@@ -28,8 +28,13 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('../views/GuideView.vue')
   },
   {
+    path: '/guide/:name',
+    name: 'guide_name',
+    component: () => import('../views/GuideView.vue')
+  },
+  {
     path: '/guide/:name/:paragraph',
-    name: 'guide',
+    name: 'guide_name_paragraph',
     component: () => import('../views/GuideView.vue')
   },
   {
