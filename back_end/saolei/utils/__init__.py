@@ -127,7 +127,7 @@ def get_ACCESS_TOKEN() -> str:
 
 
 # 百度大脑鉴别文本合规性
-def verify_text(text: str, user_id: int, user_ip: str) -> bool:
+def verify_text(text: str, user_id: int = 0, user_ip: str = '192.168.0.1') -> bool:
     if BAIDU_VERIFY_SKIP:
         return True
     if len(text) < 2:
