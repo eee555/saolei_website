@@ -20,6 +20,14 @@ video_all_fields = ["id", "upload_time", "player__id", "player__realname", "time
 for name in [field.name for field in ExpandVideoModel._meta.get_fields()]:
     video_all_fields.append("video__" + name)
 
+# 状态到redis表名的映射
+state2redis = {
+    VideoModel.State.PLAIN: 'review_queue',
+    VideoModel.State.FROZEN: 'freeze_queue',
+    VideoModel.State.DESIGNATOR: 'newest_queue',
+    VideoModel.State.OFFICIAL: 'newest_queue',
+}
+
 # 确定用户破某个纪录后，且对应模式、指标的三个级别全部有录像后，更新redis中的数据
 def update_3_level_cache_record(realname: str, index: str, mode: str, ms_user: UserMS):
     key = f"player_{index}_{mode}_{ms_user.id}"
@@ -176,29 +184,16 @@ def update_video_num(video: VideoModel, add = True):
                                "video_num_exp", "video_num_std", "video_num_nf", "video_num_ng", 
                                "video_num_dg"])
 
-def freeze_single(video: VideoModel, state = VideoModel.State.FROZEN, update_ranking = True):
-    """冻结单个录像
-
-    state -- 目标状态
-    update_ranking -- 冻结后是否刷新排行。如果需要冻结一位用户的很多录像则应当设为False
-    """
-    if video.state == state:
-        return False
+def update_state(video: VideoModel, state: VideoModel.State, update_ranking = True):
+    prevstate = video.state
+    if prevstate == state:
+        return
+    video.pop_redis(state2redis[prevstate])
     video.state = state
+    video.push_redis(state2redis[state])
     video.save()
-    cache.hdel("review_queue", video.id)
-    if state == VideoModel.State.FROZEN:
-        cache.hset("freeze_queue", video.id, json.dumps({"time": video.upload_time,
-                                                        "player": video.player.realname,
-                                                        "player_id": video.player.id,
-                                                        "level": video.level,
-                                                        "mode": video.mode,
-                                                        "timems": video.timems,
-                                                        "bv": video.bv,
-                                                        "bvs": video.bvs}, cls=ComplexEncoder))
-        update_video_num(video, add=False)
-        cache.hdel("newest_queue", video.id)
-    if update_ranking:
-        update_personal_record_stock(video.player)
-    return True
+    if state == VideoModel.State.OFFICIAL:
+        update_personal_record(video)
+    elif update_ranking and prevstate == VideoModel.State.OFFICIAL:
+        update_personal_record_stock(video)
     
