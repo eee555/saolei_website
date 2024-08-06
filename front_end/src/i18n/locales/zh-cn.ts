@@ -5,6 +5,7 @@ export const zhCn = {
     name: '简体中文',
     common: {
         action: {
+            addDesignator: '添加标识',
             getSoftware: '获取录像信息',
             getUserProfile: '查询用户',
             getVideoModel: '查询录像',
@@ -32,6 +33,7 @@ export const zhCn = {
             agreeTAC: '请同意用户协议！',
             confirmPasswordFail: '两次输入的密码不一致！',
             connectionFail: '无法连接到服务器！',
+            contactDeveloper: '请联系开发者',
             emailCodeSent: '获取验证码成功，请至邮箱查看！',
             emptyEmail: '请输入邮箱！',
             emptyEmailCode: '请输入6位邮箱验证码！',
@@ -45,6 +47,7 @@ export const zhCn = {
             logoutFail: '退出失败！',
             logoutSuccess: '退出成功！',
             realNameRequired: '请修改为实名',
+            unknownError: '发生未知错误',
         },
         prop: {
             action: '操作',
@@ -166,11 +169,13 @@ export const zhCn = {
             error: {
                 collision: '录像已存在',
                 custom: '暂不支持自定义级别',
-                designator: '标识不匹配',
+                designator: '新标识',
                 fail: '不通过',
                 fileext: '无法识别的文件类型',
                 filename: '文件名超过了100字节',
                 filesize: '文件大小超过了5MB',
+                mode: '暂不支持此模式',
+                needApprove: '需要人工审核',
                 pass: '通过',
                 process: '上传中',
                 upload: '上传失败',
