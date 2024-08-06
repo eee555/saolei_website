@@ -13,7 +13,7 @@ urlpatterns = [
     path('newest_queue/', views.newest_queue, name='newest_queue'),
     path('news_queue/', views.news_queue, name='news_queue'),
     # path('approve/', views.approve, name='approve'),
-    path('freeze/', views.freeze, name='freeze'),
+    # path('freeze/', views.freeze, name='freeze'),
     path('get/',views.get_videoModel),
     path('set/',views.set_videoModel),
     # path('download/', views.video_download, name='download'),
