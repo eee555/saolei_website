@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger('videomanager')
 from .models import VideoModel, ExpandVideoModel
 from django_redis import get_redis_connection
 cache = get_redis_connection("saolei_website")
@@ -197,3 +199,64 @@ def update_state(video: VideoModel, state: VideoModel.State, update_ranking = Tr
     elif update_ranking and prevstate == VideoModel.State.OFFICIAL:
         update_personal_record_stock(video)
     
+def new_video(data, user):
+    e_video = ExpandVideoModel.objects.create(
+        designator=data["designator"],
+        left=data["left"], 
+        right=data["right"],
+        double=data["double"], 
+        cl=data["cl"],
+        left_s=data["left_s"], 
+        right_s=data["right_s"],
+        double_s=data["double_s"], 
+        cl_s=data["cl_s"],
+        path=data["path"], 
+        flag=data["flag"],
+        flag_s=data["flag_s"], 
+        stnb=data["stnb"],
+        rqp=data["rqp"], 
+        ioe=data["ioe"],
+        thrp=data["thrp"], 
+        corr=data["corr"],
+        ce=data["ce"], 
+        ce_s=data["ce_s"],
+        op=data["op"], 
+        isl=data["isl"],
+        cell0=data["cell0"], 
+        cell1=data["cell1"],
+        cell2=data["cell2"], 
+        cell3=data["cell3"],
+        cell4=data["cell4"], 
+        cell5=data["cell5"],
+        cell6=data["cell6"], 
+        cell7=data["cell7"],
+        cell8=data["cell8"])
+    video = VideoModel.objects.create(
+        player=user, 
+        file=data["file"], 
+        video=e_video,
+        state=["c", "b", "d", "a"][data['review_code']], 
+        software=data["software"], 
+        level=data["level"],
+        mode=data["mode"] if data["mode"]!="00" else ("12" if data["flag"]==0 else "00"), 
+        timems=data["timems"],
+        bv=data["bv"], 
+        bvs=data["bvs"])
+    
+    # 参考ms_toollib.is_valid的返回值
+    if data['review_code'] == 3: # 不确定
+        logger.info(f'用户 {user.username}#{user.id} 录像#{video.id} 机审失败')
+        video.push_redis("review_queue")
+        update_video_num(video)
+    elif data['review_code'] == 2:
+        logger.info(f'用户 {user.username}#{user.id} 录像#{video.id} 标识不匹配')
+        video.push_redis("newest_queue")
+        update_video_num(video)
+    elif data['review_code'] == 1:
+        logger.info(f'用户 {user.username}#{user.id} 录像#{video.id} 不合法')
+        video.push_redis("freeze_queue")
+    elif data['review_code'] == 0: # 合法 
+        logger.info(f'用户 {user.username}#{user.id} 录像#{video.id} 机审成功')
+        video.push_redis("newest_queue")
+        update_personal_record(video)
+        update_video_num(video)
