@@ -12,13 +12,6 @@
         <el-table-column prop="mode" :formatter="simple_formatter((mode: string) => $t('common.mode.'+mode))"/>
         <el-table-column prop="timems" :formatter="simple_formatter((timems: number) => (ms_to_s(timems) + 's'))"/>
         <el-table-column prop="bv" />
-        <el-table-column style="white-space: nowrap;">
-            <template #default="scope">
-                <el-button v-if="review_mode" type="success" circle :icon="Check" @click.stop="handleApprove(scope.row)" />
-                <el-button v-if="store.user.is_staff" type="danger" circle :icon="Close"
-                    @click.stop="handleFreeze(scope.row)" />
-            </template>
-        </el-table-column>
         <!-- <el-table-column min-width="200">
             <template #default="scope">
                 <PreviewDownload :id="scope.row.key"></PreviewDownload>
