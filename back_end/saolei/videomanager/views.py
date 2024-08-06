@@ -75,26 +75,12 @@ def video_upload(request):
                                       timems=data["timems"],
                                       bv=data["bv"], bvs=data["bvs"])
 
-            if data['review_code'] >= 3:
-                # 往审查队列里添加录像
-                logger.info(f'用户 {request.user.username}#{request.user.id} 录像#{video.id} 机审失败')
-                video.push_redis("review_queue")
-            elif data['review_code'] == 2:
-                logger.info(f'用户 {request.user.username}#{request.user.id} 录像#{video.id} 标识不匹配')
-                video.push_redis("newest_queue")
-                update_video_num(video)
-            else:
-                # 如果录像自动通过了审核，更新最新录像和纪录
-                logger.info(f'用户 {request.user.username}#{request.user.id} 录像#{video.id} 机审成功')
-                video.push_redis("newest_queue")
-                update_personal_record(video)
-                update_video_num(video)
-            return HttpResponse()
-        else:
-            # print(video_form.errors)
-            return HttpResponseBadRequest()
-    else:
-        return HttpResponseNotAllowed()
+    # 查重
+    collisions = list(VideoModel.objects.filter(timems=data["timems"], bv=data["bv"]).filter(video__cl=data["cl"], video__op=data["op"], video__isl=data["isl"], video__designator=data["designator"]))
+    if collisions:
+        return JsonResponse({'type': 'error', 'object': 'videomodel', 'category': 'conflict'})  
+    new_video(data, request.user) # 表中添加数据
+    return JsonResponse({'type': 'success', 'object': 'videomodel', 'category': 'upload'})
 
 # 根据id向后台请求软件类型（适配flop播放器用）
 @require_GET
