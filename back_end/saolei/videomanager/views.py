@@ -4,7 +4,7 @@ logger = logging.getLogger('videomanager')
 from django.contrib.auth.decorators import login_required
 from .forms import UploadVideoForm
 from .models import VideoModel, ExpandVideoModel
-from .view_utils import update_personal_record, update_personal_record_stock, video_all_fields, update_video_num, update_state
+from .view_utils import update_personal_record, update_personal_record_stock, video_all_fields, update_video_num, update_state, new_video
 from userprofile.models import UserProfile
 from django.http import HttpResponse, JsonResponse, FileResponse, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseNotFound
 import json, urllib
@@ -23,78 +23,37 @@ from django.shortcuts import render, redirect
 from django_ratelimit.decorators import ratelimit
 from django.utils import timezone
 # import ms_toollib as ms
-from django.utils.encoding import escape_uri_path
 from django.conf import settings
-
+from designator.utils import verify_designator
 from django.views.decorators.http import require_GET, require_POST
 
 @login_required(login_url='/')
+@require_POST
 def video_upload(request):
-    if request.method == 'POST':
-        if request.user.is_banned:
-            return HttpResponseForbidden() # 用户被封禁
-        if request.user.userms.video_num_total >= request.user.userms.video_num_limit:
-            return HttpResponse(status = 402) # 录像仓库已满
+    if request.user.is_banned:
+        return HttpResponseForbidden() # 用户被封禁
+    if request.user.userms.video_num_total >= request.user.userms.video_num_limit:
+        return HttpResponse(status = 402) # 录像仓库已满
             
-        # response = {'status': 100, 'msg': None}
-        # request.POST['file'] = request.FILES
-        video_form = UploadVideoForm(data=request.POST, files=request.FILES)
-        # print(video_form)
-        if video_form.is_valid():
-            data = video_form.cleaned_data
-            if data["designator"] not in request.user.userms.designators:
-                # 如果标识是首次使用的，需要得到管理员的审核
-                data['review_code'] = 2
+    # response = {'status': 100, 'msg': None}
+    # request.POST['file'] = request.FILES
+    video_form = UploadVideoForm(data=request.POST, files=request.FILES)
+    # print(video_form)
+    if not video_form.is_valid():
+        return HttpResponseBadRequest()
+    data = video_form.cleaned_data
+    designator = data["designator"]
+    if not verify_designator(designator): # 标识不过审
+        return JsonResponse({'type': 'error', 'object': 'designator', 'category': 'censorship'})
+    if data['review_code'] == 0 and designator not in request.user.userms.designators:
+        data['review_code'] = 2 # 标识不匹配
 
-            # 查重
-            collisions = list(VideoModel.objects.filter(timems=data["timems"], bv=data["bv"]).filter(video__cl=data["cl"], video__op=data["op"], video__isl=data["isl"], video__designator=data["designator"]))
-            if collisions:
-                return HttpResponse(status = 409)
-            
-            # 表中添加数据
-            e_video = ExpandVideoModel.objects.create(designator=data["designator"],
-                                                      left=data["left"], right=data["right"],
-                                                      double=data["double"], cl=data["cl"],
-                                                      left_s=data["left_s"], right_s=data["right_s"],
-                                                      double_s=data["double_s"], cl_s=data["cl_s"],
-                                                      path=data["path"], flag=data["flag"],
-                                                      flag_s=data["flag_s"], stnb=data["stnb"],
-                                                      rqp=data["rqp"], ioe=data["ioe"],
-                                                      thrp=data["thrp"], corr=data["corr"],
-                                                      ce=data["ce"], ce_s=data["ce_s"],
-                                                      op=data["op"], isl=data["isl"],
-                                                      cell0=data["cell0"], cell1=data["cell1"],
-                                                      cell2=data["cell2"], cell3=data["cell3"],
-                                                      cell4=data["cell4"], cell5=data["cell5"],
-                                                      cell6=data["cell6"], cell7=data["cell7"],
-                                                      cell8=data["cell8"])
-            # 会检查是否为盲扫，自动修改模式
-            video = VideoModel.objects.create(player=request.user, file=data["file"], video=e_video,
-                                      state=["c", "b", "d", "a"][data['review_code']], software=data["software"], level=data["level"],
-                                      mode=data["mode"] if data["mode"]!="00" else ("12" if data["flag"]==0 else "00"), 
-                                      timems=data["timems"],
-                                      bv=data["bv"], bvs=data["bvs"])
-
-            if data['review_code'] >= 3:
-                # 往审查队列里添加录像
-                logger.info(f'用户 {request.user.username}#{request.user.id} 录像#{video.id} 机审失败')
-                video.push_redis("review_queue")
-            elif data['review_code'] == 2:
-                logger.info(f'用户 {request.user.username}#{request.user.id} 录像#{video.id} 标识不匹配')
-                video.push_redis("newest_queue")
-                update_video_num(video)
-            else:
-                # 如果录像自动通过了审核，更新最新录像和纪录
-                logger.info(f'用户 {request.user.username}#{request.user.id} 录像#{video.id} 机审成功')
-                video.push_redis("newest_queue")
-                update_personal_record(video)
-                update_video_num(video)
-            return HttpResponse()
-        else:
-            # print(video_form.errors)
-            return HttpResponseBadRequest()
-    else:
-        return HttpResponseNotAllowed()
+    # 查重
+    collisions = list(VideoModel.objects.filter(timems=data["timems"], bv=data["bv"]).filter(video__cl=data["cl"], video__op=data["op"], video__isl=data["isl"], video__designator=data["designator"]))
+    if collisions:
+        return JsonResponse({'type': 'error', 'object': 'videomodel', 'category': 'conflict'})  
+    new_video(data, request.user) # 表中添加数据
+    return JsonResponse({'type': 'success', 'object': 'videomodel', 'category': 'upload'})
 
 # 根据id向后台请求软件类型（适配flop播放器用）
 @require_GET
