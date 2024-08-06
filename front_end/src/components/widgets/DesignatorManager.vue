@@ -43,8 +43,8 @@ function delDesignator(designator: string) {
     ).then(function (response) {
         designators.value = removeItem(designators.value, designator);
         ElNotification({
-            title: '删除标识成功',
-            message: '已处理' + response.data.value + '个录像',
+            title: t.t('designatorManager.delDesignatorSuccess'),
+            message: t.t('designatorManager.processedNVideos', [response.data.value]),
             type: 'success'
         })
     }).catch(error => {
@@ -62,19 +62,19 @@ function addDesignator(designator: string) {
         if (response.data.type === 'success') {
             designators.value.push(new_designator.value);
             ElNotification({
-                title: '添加标识成功',
-                message: '已处理' + response.data.value + '个录像',
+                title: t.t('designatorManager.addDesignatorSuccess'),
+                message: t.t('designatorManager.processedNVideos', [response.data.value]),
                 type: 'success'
             })
         } else if (response.data.category === 'notFound') {
             ElNotification({
-                title: '你没有该标识的录像',
+                title: t.t('designatorManager.notFound'),
                 type: 'error',
             })
         } else if (response.data.category === 'conflict') {
             ElNotification({
-                title: '标识冲突',
-                message: '用户#' + response.data.value + '已拥有该标识',
+                title: t.t('designatorManager.conflict'),
+                message: t.t('designatorManager.ownedBy', [response.data.value]),
                 type: 'error',
             })
         } else {
