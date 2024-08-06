@@ -13,11 +13,15 @@ import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { onMounted, ref } from 'vue';
 import { removeItem } from '@/utils/system/tools';
 import { Plus } from '@element-plus/icons-vue';
+import { ElNotification } from 'element-plus';
+import { unknownErrorNotification } from '@/utils/system/status';
+import { useI18n } from 'vue-i18n';
 
 const { proxy } = useCurrentInstance();
 const store = useUserStore();
 const designators = ref<String[]>([]);
 const new_designator = ref("")
+const t = useI18n();
 
 onMounted(() => {
     proxy.$axios.get('msuser/designators/',
@@ -48,7 +52,22 @@ function addDesignator(designator: string) {
             designator: designator,
         }
     ).then(function (response) {
-        designators.value.push(new_designator.value);
+        if (response.data.type === 'success') {
+            designators.value.push(new_designator.value);
+        } else if (response.data.category === 'notFound') {
+            ElNotification({
+                title: '你没有该标识的录像',
+                type: 'error',
+            })
+        } else if (response.data.category === 'conflict') {
+            ElNotification({
+                title: '标识冲突',
+                message: '用户#' + response.data.value + '已拥有该标识',
+                type: 'error',
+            })
+        } else {
+            unknownErrorNotification(t)
+        }
         new_designator.value = "";
     })
 }

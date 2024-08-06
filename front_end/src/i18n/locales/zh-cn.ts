@@ -32,6 +32,7 @@ export const zhCn = {
             agreeTAC: '请同意用户协议！',
             confirmPasswordFail: '两次输入的密码不一致！',
             connectionFail: '无法连接到服务器！',
+            contactDeveloper: '请联系开发者',
             emailCodeSent: '获取验证码成功，请至邮箱查看！',
             emptyEmail: '请输入邮箱！',
             emptyEmailCode: '请输入6位邮箱验证码！',
@@ -45,6 +46,7 @@ export const zhCn = {
             logoutFail: '退出失败！',
             logoutSuccess: '退出成功！',
             realNameRequired: '请修改为实名',
+            unknownError: '发生未知错误',
         },
         prop: {
             action: '操作',

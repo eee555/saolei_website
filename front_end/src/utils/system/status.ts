@@ -23,3 +23,12 @@ export function generalNotification(t: any, status: number, action: string) {
         duration: JSON.parse(localStorage.getItem('local')).notification_duration,
     })
 }
+
+export function unknownErrorNotification(t: any) {
+    ElNotification({
+        title: t.t('common.msg.unknownError'),
+        message: t.t('common.msg.contactDeveloper'),
+        type: 'error',
+        duration: JSON.parse(localStorage.getItem('local')).notification_duration,
+    })
+}
