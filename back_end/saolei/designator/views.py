@@ -5,7 +5,7 @@ from django.http import HttpResponseNotAllowed, HttpResponseForbidden, HttpRespo
 from django.views.decorators.http import require_GET, require_POST
 from utils.response import HttpResponseConflict
 from videomanager.models import VideoModel
-from videomanager.view_utils import update_state
+from videomanager.view_utils import update_state, update_personal_record_stock
 
 # 请求修改自己的标识
 @require_POST
@@ -33,29 +33,37 @@ def add_designator(request):
             update_state(video, VideoModel.State.OFFICIAL)
     designator.userms = user.userms
     designator.save()
-    user.userms.designators.append(designator)
+    user.userms.designators.append(designator_text)
     user.userms.save()
     # TODO: 日志
     return JsonResponse({'type': 'success', 'object': 'designator', 'category': 'add', 'value': len(video_list)})
 
 # 请求删除自己的标识
+@require_POST
 def del_designator(request):
-    if request.method != 'POST':
-        return HttpResponseNotAllowed()
     user = UserProfile.objects.filter(id=request.user.id).first()
     if user == None:
         return HttpResponseForbidden()
-    designator = request.POST.get('designator', None)
-    if designator == None:
+    designator_text = request.POST.get('designator', None)
+    if designator_text == None:
         return HttpResponseBadRequest()
-    object = Designator.objects.filter(designator=designator).first()
-    if not object:
+    designator = Designator.objects.filter(designator=designator_text).first()
+    if not designator:
         return HttpResponseNotFound()
-    object.delete()
-    # TODO: 日志
-    user.userms.designators.remove(designator)
+    if designator.userms.parent.id != user.id:
+        return HttpResponseForbidden()
+    designator.msuser = None
+    designator.save()
+    user.userms.designators.remove(designator_text)
     user.userms.save()
-    return HttpResponse()
+    # TODO: 日志
+    video_list = VideoModel.objects.filter(player=user, video__designator=designator_text)
+    for video in video_list:
+        if video.state == VideoModel.State.OFFICIAL:
+            update_state(video, VideoModel.State.DESIGNATOR, update_ranking=False)
+    if video_list:
+        update_personal_record_stock(user)
+    return JsonResponse({'type': 'success', 'object': 'designator', 'category': 'add', 'value': len(video_list)})
 
 # 管理员添加标识
 def staff_add_designator(request):
