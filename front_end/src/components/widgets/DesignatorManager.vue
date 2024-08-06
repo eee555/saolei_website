@@ -14,12 +14,12 @@ import { onMounted, ref } from 'vue';
 import { removeItem } from '@/utils/system/tools';
 import { Plus } from '@element-plus/icons-vue';
 import { ElNotification } from 'element-plus';
-import { unknownErrorNotification } from '@/utils/system/status';
+import { generalNotification, unknownErrorNotification } from '@/utils/system/status';
 import { useI18n } from 'vue-i18n';
 
 const { proxy } = useCurrentInstance();
 const store = useUserStore();
-const designators = ref<String[]>([]);
+const designators = ref<string[]>([]);
 const new_designator = ref("")
 const t = useI18n();
 
@@ -38,10 +38,17 @@ onMounted(() => {
 function delDesignator(designator: string) {
     proxy.$axios.post('designator/del/',
         {
-                designator: designator
+            designator: designator
         }
     ).then(function (response) {
         designators.value = removeItem(designators.value, designator);
+        ElNotification({
+            title: '删除标识成功',
+            message: '已处理' + response.data.value + '个录像',
+            type: 'success'
+        })
+    }).catch(error => {
+        generalNotification(t, error.response.status, t.t('common.action.addDesignator'))
     })
 }
 
@@ -54,6 +61,11 @@ function addDesignator(designator: string) {
     ).then(function (response) {
         if (response.data.type === 'success') {
             designators.value.push(new_designator.value);
+            ElNotification({
+                title: '添加标识成功',
+                message: '已处理' + response.data.value + '个录像',
+                type: 'success'
+            })
         } else if (response.data.category === 'notFound') {
             ElNotification({
                 title: '你没有该标识的录像',
@@ -69,6 +81,8 @@ function addDesignator(designator: string) {
             unknownErrorNotification(t)
         }
         new_designator.value = "";
+    }).catch(error => {
+        generalNotification(t, error.response.status, t.t('common.action.addDesignator'))
     })
 }
 
