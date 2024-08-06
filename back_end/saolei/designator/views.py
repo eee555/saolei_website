@@ -25,7 +25,7 @@ def add_designator(request):
         if designator_user.id == user.id:
             return HttpResponseConflict() # 本人已有该标识
         return JsonResponse({'type': 'error', 'object': 'designator', 'category': 'conflict', 'value': designator_user.id}) # 返回标识冲突的用户
-    video_list = VideoModel.objects.filter(player=user, video__designator=designator)
+    video_list = VideoModel.objects.filter(player=user, video__designator=designator_text)
     if not video_list:
         return JsonResponse({'type': 'error', 'object': 'designator', 'category': 'notFound'})
     for video in video_list:
