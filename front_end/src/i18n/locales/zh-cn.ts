@@ -5,7 +5,7 @@ export const zhCn = {
     name: '简体中文',
     common: {
         action: {
-            addDesignator: '添加标识',
+            addIdentifier: '添加标识',
             getSoftware: '获取录像信息',
             getUserProfile: '查询用户',
             getVideoModel: '查询录像',
@@ -84,10 +84,10 @@ export const zhCn = {
         },
         toDo: '敬请期待',
     },
-    designatorManager: {
-        addDesignatorSuccess: '添加标识成功',
+    identifiersManager: {
+        addIdentifierSuccess: '添加标识成功',
         conflict: '标识冲突',
-        delDesignatorSuccess: '删除标识成功',
+        delIdentifierSuccess: '删除标识成功',
         processedNVideos: '已处理{0}个录像',
         ownedBy: '用户#{0}已拥有该标识',
         notFound: '你没有该标识的录像',

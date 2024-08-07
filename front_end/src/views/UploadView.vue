@@ -192,7 +192,7 @@ const submitUpload = async () => {
     let count = 0; // 最多上传99个
     while (count < 99) {
         if (i >= video_msgs.value.length) break;
-        if (["pass", "designator"].includes(video_msgs.value[i].status)) {
+        if (["pass", "identifier"].includes(video_msgs.value[i].status)) {
             await forceUpload(i);
             count++;
             continue;
@@ -235,7 +235,7 @@ const forceUpload = async (i: number) => {
             removeUpload(i);
         } else if (response.data.type === 'error' && response.data.object === 'videomodel') {
             video_msgs.value[i].status = "collision"
-        } else if (response.data.type === 'error' && response.data.object === 'designator') {
+        } else if (response.data.type === 'error' && response.data.object === 'identifier') {
             video_msgs.value[i].status = "censorship"
         } else {
             // 正常使用不会到这里

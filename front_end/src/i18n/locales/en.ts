@@ -76,13 +76,13 @@ export const en = {
         },
         toDo: 'TODO',
     },
-    designatorManager: {
-        addDesignatorSuccess: 'Designator Added',
-        conflict: 'Designator Conflict',
-        delDesignatorSuccess: 'Designator Deleted',
+    identifiersManager: {
+        addIdentifierSuccess: 'Identifier Added',
+        conflict: 'Identifier Conflict',
+        delIdentifierSuccess: 'Identifier Deleted',
         processedNVideos: '{0} videos have been processed',
-        ownedBy: 'The designator is owned by user#{0}',
-        notFound: 'You do not have any video of the designator',
+        ownedBy: 'The identifier is owned by user#{0}',
+        notFound: 'You do not have any video of the identifier',
     },
     footer: {
         contact: 'Contact',
