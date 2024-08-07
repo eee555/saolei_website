@@ -143,7 +143,7 @@ const push_video_msg = async (uploadFile: UploadFile | UploadRawFile) => {
             timems: aa.get_rtime_ms,
             bbbv: aa.get_bbbv,
             bvs: aa.get_bbbv_s,
-            identifier: decoder.decode(aa.get_player_identifier),
+            identifier: decoder.decode(aa.get_player_designator), // 以后应改为get_player_identifier
             review_code: aa.is_valid(),
         }
         ext_stat = get_ext_stat(aa)
@@ -151,12 +151,13 @@ const push_video_msg = async (uploadFile: UploadFile | UploadRawFile) => {
             status = "custom";
         } else if (uploadFile.name.length >= 100) {
             status = "filename";
-        } else if (!data.designators.includes(video_stat.identifier)) {
+        } else if (!data.identifiers.includes(video_stat.identifier)) {
             status = "identifier";
         } else if (video_stat.review_code == 1) {
             status = "fail"
         } else if (video_stat.review_code == 3) {
             status = "needApprove"
+        }
     } else {
         video_stat = null;
         ext_stat = null;
