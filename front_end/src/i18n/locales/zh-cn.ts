@@ -177,7 +177,7 @@ export const zhCn = {
             error: {
                 collision: '录像已存在',
                 custom: '暂不支持自定义级别',
-                identifier: '标识不匹配',
+                identifier: '新标识',
                 fail: '不通过',
                 fileext: '无法识别的文件类型',
                 filename: '文件名超过了100字节',

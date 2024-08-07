@@ -169,7 +169,7 @@ export const en = {
             error: {
                 collision: 'Video already exist',
                 custom: 'Custom level is currently not supported',
-                identifier: 'Identifier mismatch',
+                identifier: 'New identifier',
                 fail: 'Fail',
                 fileext: 'Invalid file extension',
                 filename: 'File name exceeds 100 bytes',
