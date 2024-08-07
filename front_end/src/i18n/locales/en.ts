@@ -76,7 +76,7 @@ export const en = {
         },
         toDo: 'TODO',
     },
-    identifiersManager: {
+    identifierManager: {
         addIdentifierSuccess: 'Identifier Added',
         conflict: 'Identifier Conflict',
         delIdentifierSuccess: 'Identifier Deleted',

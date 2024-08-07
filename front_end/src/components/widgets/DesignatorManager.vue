@@ -43,8 +43,8 @@ function delIdentifier(identifier: string) {
     ).then(function (response) {
         identifiers.value = removeItem(identifiers.value, identifier);
         ElNotification({
-            title: t.t('identifiersManager.delIdentifierSuccess'),
-            message: t.t('identifiersManager.processedNVideos', [response.data.value]),
+            title: t.t('identifierManager.delIdentifierSuccess'),
+            message: t.t('identifierManager.processedNVideos', [response.data.value]),
             type: 'success'
         })
     }).catch(error => {
@@ -62,19 +62,19 @@ function addIdentifier(identifier: string) {
         if (response.data.type === 'success') {
             identifiers.value.push(new_identifiers.value);
             ElNotification({
-                title: t.t('identifiersManager.addIdentifierSuccess'),
-                message: t.t('identifiersManager.processedNVideos', [response.data.value]),
+                title: t.t('identifierManager.addIdentifierSuccess'),
+                message: t.t('identifierManager.processedNVideos', [response.data.value]),
                 type: 'success'
             })
         } else if (response.data.category === 'notFound') {
             ElNotification({
-                title: t.t('identifiersManager.notFound'),
+                title: t.t('identifierManager.notFound'),
                 type: 'error',
             })
         } else if (response.data.category === 'conflict') {
             ElNotification({
-                title: t.t('identifiersManager.conflict'),
-                message: t.t('identifiersManager.ownedBy', [response.data.value]),
+                title: t.t('identifierManager.conflict'),
+                message: t.t('identifierManager.ownedBy', [response.data.value]),
                 type: 'error',
             })
         } else {

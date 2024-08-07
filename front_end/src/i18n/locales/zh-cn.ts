@@ -84,7 +84,7 @@ export const zhCn = {
         },
         toDo: '敬请期待',
     },
-    identifiersManager: {
+    identifierManager: {
         addIdentifierSuccess: '添加标识成功',
         conflict: '标识冲突',
         delIdentifierSuccess: '删除标识成功',
