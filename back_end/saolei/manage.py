@@ -38,7 +38,7 @@ if __name__ == "__main__":
 # pip install  django-simple-captcha
 # python manage.py makemigrations --empty msuser
 # ALTER TABLE videomanager_expandvideomodel CHANGE identifier identifier varchar(255);
-# ALTER TABLE msuser_userms CHANGE designators identifiers json;
+# ALTER TABLE msuser_userms CHANGE identifiers identifiers json;
 
 
 

@@ -24,7 +24,7 @@ from django_ratelimit.decorators import ratelimit
 from django.utils import timezone
 # import ms_toollib as ms
 from django.conf import settings
-from identifier.utils import verify_designator
+from identifier.utils import verify_identifier
 from django.views.decorators.http import require_GET, require_POST
 
 @login_required(login_url='/')
@@ -43,13 +43,13 @@ def video_upload(request):
         return HttpResponseBadRequest()
     data = video_form.cleaned_data
     identifier = data["identifier"]
-    if not verify_designator(identifier): # 标识不过审
+    if not verify_identifier(identifier): # 标识不过审
         return JsonResponse({'type': 'error', 'object': 'identifier', 'category': 'censorship'})
-    if data['review_code'] == 0 and identifier not in request.user.userms.designators:
+    if data['review_code'] == 0 and identifier not in request.user.userms.identifiers:
         data['review_code'] = 2 # 标识不匹配
 
     # 查重
-    collisions = list(VideoModel.objects.filter(timems=data["timems"], bv=data["bv"]).filter(video__cl=data["cl"], video__op=data["op"], video__isl=data["isl"], video__designator=data["identifier"]))
+    collisions = list(VideoModel.objects.filter(timems=data["timems"], bv=data["bv"]).filter(video__cl=data["cl"], video__op=data["op"], video__isl=data["isl"], video__identifier=data["identifier"]))
     if collisions:
         return JsonResponse({'type': 'error', 'object': 'videomodel', 'category': 'conflict'})  
     new_video(data, request.user) # 表中添加数据

@@ -7,9 +7,9 @@ from .models import Identifier
 
 # 审查标识
 # 若未记录该标识则创建条目
-def verify_designator(identifier: str):
+def verify_identifier(identifier: str):
     collision = Identifier.objects.filter(identifier=identifier).first()
     if collision:
         return collision.safe
-    new_designator = Identifier.objects.create(identifier=identifier, safe=verify_text(identifier))
-    return new_designator.safe
+    new_identifier = Identifier.objects.create(identifier=identifier, safe=verify_text(identifier))
+    return new_identifier.safe
