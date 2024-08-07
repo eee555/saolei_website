@@ -5,6 +5,7 @@ export const en = {
     name: 'English',
     common: {
         action: {
+            addIdentifier: 'add identifier',
             getSoftware: 'fetch video data',
             getUserProfile: 'fetch user data',
             getVideoModel: 'fetch video data',
@@ -32,6 +33,7 @@ export const en = {
             agreeTAC: 'Please agree to Terms and Conditions!',
             confirmPasswordFail: 'Passwords do not match!',
             connectionFail: 'Connection Fails!',
+            contactDeveloper: 'Please contact the developers.',
             emailCodeSent: 'The email code has been sent. Please check your inbox!',
             emptyEmail: 'Please enter your email!',
             emptyEmailCode: 'Please enter 6-char email code!',
@@ -45,6 +47,7 @@ export const en = {
             logoutFail: 'Failed to log out!',
             logoutSuccess: 'Log out success!',
             realNameRequired: 'Real name required',
+            unknownError: 'An unknown error has occurred.',
         },
         prop: {
             action: 'Action',
@@ -72,17 +75,14 @@ export const en = {
         },
         show: 'Show',
         software: {
+            resource_download: 'Downloads',
+            software_download: 'Software',
+            download_link: 'Resource',
             metasweeper: 'MetaSweeper',
+            metasweeper_int: '',
+            arbiter_int: '',
         },
         toDo: 'TODO',
-    },
-    identifierManager: {
-        addIdentifierSuccess: 'Identifier Added',
-        conflict: 'Identifier Conflict',
-        delIdentifierSuccess: 'Identifier Deleted',
-        processedNVideos: '{0} videos have been processed',
-        ownedBy: 'The identifier is owned by user#{0}',
-        notFound: 'You do not have any video of the identifier',
     },
     footer: {
         contact: 'Contact',
@@ -112,6 +112,15 @@ export const en = {
         news: 'News',
         latestScore: 'Latest',
         reviewQueue: 'Pending',
+    },
+    identifierManager: {
+        title: 'Minesweeper Identifiers',
+        addIdentifierSuccess: 'Identifier Added',
+        conflict: 'Identifier Conflict',
+        delIdentifierSuccess: 'Identifier Deleted',
+        processedNVideos: '{0} videos have been processed',
+        ownedBy: 'The identifier is owned by user#{0}',
+        notFound: 'You do not have any video of the identifier',
     },
     login: {
         title: 'Login',
@@ -174,6 +183,8 @@ export const en = {
                 fileext: 'Invalid file extension',
                 filename: 'File name exceeds 100 bytes',
                 filesize: 'File size exceeds 5MB',
+                mode: 'Unsupported game mode',
+                needApprove: 'Need manual approval',
                 pass: 'Pass',
                 process: 'Uploading',
                 upload: 'Upload fail',

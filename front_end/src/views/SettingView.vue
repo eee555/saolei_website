@@ -31,7 +31,7 @@
         <el-descriptions-item label="属地">{{ $t('common.toDo') }}</el-descriptions-item>
         <el-descriptions-item label="出生年份">{{ $t('common.toDo') }}</el-descriptions-item>
     </el-descriptions>
-    <el-descriptions v-if="store.login_status == LoginStatus.IsLogin" title="扫雷标识"></el-descriptions>
+    <el-descriptions v-if="store.login_status == LoginStatus.IsLogin" :title="$t('identifierManager.title')"></el-descriptions>
     <IdentifierManager v-if="store.login_status == LoginStatus.IsLogin"/>
     <el-descriptions v-if="false && store.login_status == LoginStatus.IsLogin" title="账号关联">
         <el-table>
