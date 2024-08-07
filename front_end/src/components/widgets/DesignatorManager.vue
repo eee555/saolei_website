@@ -1,8 +1,8 @@
 <template>
     <div class="flex gap-2">
-    <el-tag v-for="designator of designators" closable @close="delDesignator(designator)">{{ designator }}</el-tag>
-    <el-input size="small" style="width: 200px" v-model="new_designator"></el-input>
-    <el-link :underline="false" @click="addDesignator(new_designator)"><el-icon><Plus/></el-icon></el-link>
+    <el-tag v-for="identifier of identifiers" closable @close="delIdentifier(identifier)">{{ identifier }}</el-tag>
+    <el-input size="small" style="width: 200px" v-model="new_identifiers"></el-input>
+    <el-link :underline="false" @click="addIdentifier(new_identifiers)"><el-icon><Plus/></el-icon></el-link>
 </div>
 </template>
 
@@ -19,70 +19,70 @@ import { useI18n } from 'vue-i18n';
 
 const { proxy } = useCurrentInstance();
 const store = useUserStore();
-const designators = ref<string[]>([]);
-const new_designator = ref("")
+const identifiers = ref<string[]>([]);
+const new_identifiers = ref("")
 const t = useI18n();
 
 onMounted(() => {
-    proxy.$axios.get('msuser/designators/',
+    proxy.$axios.get('msuser/identifiers/',
         {
             params: {
                 id: store.user.id
             }
         }
     ).then(function (response) {
-        designators.value = response.data;
+        identifiers.value = response.data;
     })
 })
 
-function delDesignator(designator: string) {
-    proxy.$axios.post('designator/del/',
+function delIdentifier(identifier: string) {
+    proxy.$axios.post('identifier/del/',
         {
-            designator: designator
+            identifier: identifier
         }
     ).then(function (response) {
-        designators.value = removeItem(designators.value, designator);
+        identifiers.value = removeItem(identifiers.value, identifier);
         ElNotification({
-            title: t.t('designatorManager.delDesignatorSuccess'),
-            message: t.t('designatorManager.processedNVideos', [response.data.value]),
+            title: t.t('identifierManager.delIdentifierSuccess'),
+            message: t.t('identifierManager.processedNVideos', [response.data.value]),
             type: 'success'
         })
     }).catch(error => {
-        generalNotification(t, error.response.status, t.t('common.action.addDesignator'))
+        generalNotification(t, error.response.status, t.t('common.action.addIdentifier'))
     })
 }
 
-function addDesignator(designator: string) {
-    console.log(designator)
-    proxy.$axios.post('designator/add/',
+function addIdentifier(identifier: string) {
+    console.log(identifier)
+    proxy.$axios.post('identifier/add/',
         {
-            designator: designator,
+            identifier: identifier,
         }
     ).then(function (response) {
         if (response.data.type === 'success') {
-            designators.value.push(new_designator.value);
+            identifiers.value.push(new_identifiers.value);
             ElNotification({
-                title: t.t('designatorManager.addDesignatorSuccess'),
-                message: t.t('designatorManager.processedNVideos', [response.data.value]),
+                title: t.t('identifierManager.addIdentifierSuccess'),
+                message: t.t('identifierManager.processedNVideos', [response.data.value]),
                 type: 'success'
             })
         } else if (response.data.category === 'notFound') {
             ElNotification({
-                title: t.t('designatorManager.notFound'),
+                title: t.t('identifierManager.notFound'),
                 type: 'error',
             })
         } else if (response.data.category === 'conflict') {
             ElNotification({
-                title: t.t('designatorManager.conflict'),
-                message: t.t('designatorManager.ownedBy', [response.data.value]),
+                title: t.t('identifierManager.conflict'),
+                message: t.t('identifierManager.ownedBy', [response.data.value]),
                 type: 'error',
             })
         } else {
             unknownErrorNotification(t)
         }
-        new_designator.value = "";
+        new_identifiers.value = "";
     }).catch(error => {
-        generalNotification(t, error.response.status, t.t('common.action.addDesignator'))
+        generalNotification(t, error.response.status, t.t('common.action.addIdentifier'))
     })
 }
 
