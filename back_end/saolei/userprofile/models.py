@@ -17,7 +17,7 @@ username_validator = UnicodeUsernameValidator()
 @cleanup.select
 class UserProfile(AbstractUser):
     userms = models.OneToOneField(
-        UserMS, on_delete=models.CASCADE, related_name='+', null=True)
+        UserMS, on_delete=models.CASCADE, related_name='parent', null=True)
     
     username = models.CharField(
         _("username"),

@@ -76,6 +76,14 @@ export const en = {
         },
         toDo: 'TODO',
     },
+    designatorManager: {
+        addDesignatorSuccess: 'Designator Added',
+        conflict: 'Designator Conflict',
+        delDesignatorSuccess: 'Designator Deleted',
+        processedNVideos: '{0} videos have been processed',
+        ownedBy: 'The designator is owned by user#{0}',
+        notFound: 'You do not have any video of the designator',
+    },
     footer: {
         contact: 'Contact',
         donate: 'Donate',

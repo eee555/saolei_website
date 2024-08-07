@@ -19,6 +19,15 @@ export function utc_to_local_format(t = "2024-01-10 14:03:09") {
   }).replace(/\//g, "-");
 }
 
+// credit: https://stackoverflow.com/a/5767357/12144822
+export function removeItem<T>(arr: Array<T>, value: T): Array<T> { 
+  const index = arr.indexOf(value);
+  if (index > -1) {
+    arr.splice(index, 1);
+  }
+  return arr;
+}
+
 /**
  * @description 安全地解析 json 字符串
  * @param {String} jsonString 需要解析的 json 字符串

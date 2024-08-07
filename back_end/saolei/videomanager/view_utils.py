@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger('videomanager')
 from .models import VideoModel, ExpandVideoModel
 from django_redis import get_redis_connection
 cache = get_redis_connection("saolei_website")
@@ -19,6 +21,14 @@ for mode in GameModes:
 video_all_fields = ["id", "upload_time", "player__id", "player__realname", "timems", "bv", "bvs"]
 for name in [field.name for field in ExpandVideoModel._meta.get_fields()]:
     video_all_fields.append("video__" + name)
+
+# 状态到redis表名的映射
+state2redis = {
+    VideoModel.State.PLAIN: 'review_queue',
+    VideoModel.State.FROZEN: 'freeze_queue',
+    VideoModel.State.DESIGNATOR: 'newest_queue',
+    VideoModel.State.OFFICIAL: 'newest_queue',
+}
 
 # 确定用户破某个纪录后，且对应模式、指标的三个级别全部有录像后，更新redis中的数据
 def update_3_level_cache_record(realname: str, index: str, mode: str, ms_user: UserMS):
@@ -81,6 +91,8 @@ def checkPB(video: VideoModel, user: UserMS, userprof: UserProfile, mode):
             checkRanking(userprof, user, mode, statname)
 
 def update_personal_record(video: VideoModel):
+    if video.state != VideoModel.State.OFFICIAL:
+        return
     e_video = video.video
     user = video.player
     ms_user = user.userms
@@ -138,3 +150,115 @@ def update_personal_record_stock(user: UserProfile):
     for v in videos:
         update_personal_record(v)
 
+# 上传的录像进入数据库后，更新用户的录像数目
+def update_video_num(video: VideoModel, add = True):
+    userms = video.player.userms
+    # add = True：新增录像；add = False：删除录像
+    if video.mode == '00':
+        userms.video_num_std += 1 if add else -1
+    elif video.mode == '12':
+        userms.video_num_nf += 1 if add else -1
+    elif video.mode == '05':
+        userms.video_num_ng += 1 if add else -1
+    elif video.mode == '11':
+        userms.video_num_dg += 1 if add else -1
+
+    if video.level == "b":
+        userms.video_num_beg += 1 if add else -1
+    elif video.level == 'i':
+        userms.video_num_int += 1 if add else -1
+    elif video.level == 'e':
+        userms.video_num_exp += 1 if add else -1
+
+    if add:
+        # 给高玩自动扩容
+        if video.mode == "00" and video.level == 'e':
+            if video.timems < 100000 and userms.video_num_limit < 200:
+                userms.video_num_limit = 200
+            if video.timems < 60000 and userms.video_num_limit < 500:
+                userms.video_num_limit = 500
+            if video.timems < 50000 and userms.video_num_limit < 600:
+                userms.video_num_limit = 600
+            if video.timems < 40000 and userms.video_num_limit < 800:
+                userms.video_num_limit = 800
+            if video.timems < 30000 and userms.video_num_limit < 1000:
+                userms.video_num_limit = 1000
+    
+    userms.save(update_fields=["video_num_limit", "video_num_total", "video_num_beg", "video_num_int", 
+                               "video_num_exp", "video_num_std", "video_num_nf", "video_num_ng", 
+                               "video_num_dg"])
+
+def update_state(video: VideoModel, state: VideoModel.State, update_ranking = True):
+    prevstate = video.state
+    if prevstate == state:
+        return
+    video.pop_redis(state2redis[prevstate])
+    video.state = state
+    video.push_redis(state2redis[state])
+    video.save()
+    if state == VideoModel.State.OFFICIAL:
+        update_personal_record(video)
+    elif update_ranking and prevstate == VideoModel.State.OFFICIAL:
+        update_personal_record_stock(video)
+    
+def new_video(data, user):
+    e_video = ExpandVideoModel.objects.create(
+        designator=data["designator"],
+        left=data["left"], 
+        right=data["right"],
+        double=data["double"], 
+        cl=data["cl"],
+        left_s=data["left_s"], 
+        right_s=data["right_s"],
+        double_s=data["double_s"], 
+        cl_s=data["cl_s"],
+        path=data["path"], 
+        flag=data["flag"],
+        flag_s=data["flag_s"], 
+        stnb=data["stnb"],
+        rqp=data["rqp"], 
+        ioe=data["ioe"],
+        thrp=data["thrp"], 
+        corr=data["corr"],
+        ce=data["ce"], 
+        ce_s=data["ce_s"],
+        op=data["op"], 
+        isl=data["isl"],
+        cell0=data["cell0"], 
+        cell1=data["cell1"],
+        cell2=data["cell2"], 
+        cell3=data["cell3"],
+        cell4=data["cell4"], 
+        cell5=data["cell5"],
+        cell6=data["cell6"], 
+        cell7=data["cell7"],
+        cell8=data["cell8"])
+    video = VideoModel.objects.create(
+        player=user, 
+        file=data["file"], 
+        video=e_video,
+        state=["c", "b", "d", "a"][data['review_code']], 
+        software=data["software"], 
+        level=data["level"],
+        mode=data["mode"] if data["mode"]!="00" else ("12" if data["flag"]==0 else "00"), 
+        timems=data["timems"],
+        bv=data["bv"], 
+        bvs=data["bvs"])
+    
+    # 参考ms_toollib.is_valid的返回值
+    if data['review_code'] == 3: # 不确定
+        logger.info(f'用户 {user.username}#{user.id} 录像#{video.id} 机审失败')
+        video.push_redis("review_queue")
+        update_video_num(video)
+    elif data['review_code'] == 2:
+        logger.info(f'用户 {user.username}#{user.id} 录像#{video.id} 标识不匹配')
+        video.push_redis("newest_queue")
+        update_video_num(video)
+    elif data['review_code'] == 1:
+        logger.info(f'用户 {user.username}#{user.id} 录像#{video.id} 不合法')
+        video.push_redis("freeze_queue")
+    elif data['review_code'] == 0: # 合法 
+        logger.info(f'用户 {user.username}#{user.id} 录像#{video.id} 机审成功')
+        video.push_redis("newest_queue")
+        update_personal_record(video)
+        update_video_num(video)

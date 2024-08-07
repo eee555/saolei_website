@@ -47,9 +47,9 @@
         </el-table-column>
         <el-table-column :label="$t('common.prop.action')" :width="130">
             <template #default="props">
-                <el-button :disabled="props.row.status != 'identifier' && props.row.status != 'pass'"
+                <el-button :disabled="!(['pass', 'identifier', 'needApprove'].includes(props.row.status))"
                     @click="forceUpload(props.$index)"
-                    :type="props.row.status == 'pass' ? 'success' : props.row.status == 'identifier' ? 'warning' : 'info'"
+                    :type="['pass', 'identifier'].includes(props.row.status) ? 'success' : props.row.status == 'needApprove' ? 'warning' : 'info'"
                     circle><el-icon>
                         <Upload />
                     </el-icon></el-button>
@@ -151,10 +151,12 @@ const push_video_msg = async (uploadFile: UploadFile | UploadRawFile) => {
             status = "custom";
         } else if (uploadFile.name.length >= 100) {
             status = "filename";
-        } else if (!data.identifiers.includes(video_stat.identifier)) {
+        } else if (!data.designators.includes(video_stat.identifier)) {
             status = "identifier";
-        }
-
+        } else if (video_stat.review_code == 1) {
+            status = "fail"
+        } else if (video_stat.review_code == 3) {
+            status = "needApprove"
     } else {
         video_stat = null;
         ext_stat = null;
@@ -189,7 +191,7 @@ const submitUpload = async () => {
     let count = 0; // 最多上传99个
     while (count < 99) {
         if (i >= video_msgs.value.length) break;
-        if (video_msgs.value[i].status === "pass") {
+        if (["pass", "designator"].includes(video_msgs.value[i].status)) {
             await forceUpload(i);
             count++;
             continue;
@@ -227,19 +229,19 @@ const forceUpload = async (i: number) => {
     await proxy.$axios.post('/video/upload/',
         params,
     ).then(function (response) {
-        if (response.status == 200) {
+        if (response.data.type === 'success') {
             uploaded_file_num.value += 1;
             removeUpload(i);
+        } else if (response.data.type === 'error' && response.data.object === 'videomodel') {
+            video_msgs.value[i].status = "collision"
+        } else if (response.data.type === 'error' && response.data.object === 'designator') {
+            video_msgs.value[i].status = "censorship"
         } else {
             // 正常使用不会到这里
             video_msgs.value[i].status = "upload";
         }
     }).catch((error: any) => {
-        if (error.response.status == 409) {
-            video_msgs.value[i].status = "collision";
-        } else {
-            video_msgs.value[i].status = "upload";
-        }
+        video_msgs.value[i].status = "upload";
     })
 }
 
