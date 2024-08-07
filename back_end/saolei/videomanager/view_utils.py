@@ -26,7 +26,7 @@ for name in [field.name for field in ExpandVideoModel._meta.get_fields()]:
 state2redis = {
     VideoModel.State.PLAIN: 'review_queue',
     VideoModel.State.FROZEN: 'freeze_queue',
-    VideoModel.State.DESIGNATOR: 'newest_queue',
+    VideoModel.State.IDENTIFIER: 'newest_queue',
     VideoModel.State.OFFICIAL: 'newest_queue',
 }
 
@@ -203,7 +203,7 @@ def update_state(video: VideoModel, state: VideoModel.State, update_ranking = Tr
     
 def new_video(data, user):
     e_video = ExpandVideoModel.objects.create(
-        designator=data["designator"],
+        identifier=data["identifier"],
         left=data["left"], 
         right=data["right"],
         double=data["double"], 

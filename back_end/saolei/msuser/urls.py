@@ -10,5 +10,5 @@ urlpatterns = [
     path('update_avatar/', views.update_avatar, name='update_avatar'),
     path('update_signature/', views.update_signature, name='update_signature'),
     path('player_rank/', views.player_rank, name='player_rank'),
-    path('designators/', views.get_designators, name='designators'),
+    path('identifiers/', views.get_identifiers, name='identifiers'),
 ]

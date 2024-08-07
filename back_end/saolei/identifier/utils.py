@@ -3,13 +3,13 @@ from videomanager.models import VideoModel
 from videomanager.view_utils import update_personal_record_stock, update_state
 from utils import verify_text
 
-from .models import Designator
+from .models import Identifier
 
 # 审查标识
 # 若未记录该标识则创建条目
-def verify_designator(designator: str):
-    collision = Designator.objects.filter(designator=designator).first()
+def verify_identifier(identifier: str):
+    collision = Identifier.objects.filter(identifier=identifier).first()
     if collision:
         return collision.safe
-    new_designator = Designator.objects.create(designator=designator, safe=verify_text(designator))
-    return new_designator.safe
+    new_identifier = Identifier.objects.create(identifier=identifier, safe=verify_text(identifier))
+    return new_identifier.safe

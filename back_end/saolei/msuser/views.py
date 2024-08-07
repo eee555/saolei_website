@@ -134,7 +134,7 @@ def get_info_abstract(request):
     else:
         return HttpResponse("别瞎玩")
 
-def get_designators(request):
+def get_identifiers(request):
     if request.method != 'GET':
         return HttpResponseNotAllowed()
     id = request.GET.get('id')
@@ -143,7 +143,7 @@ def get_designators(request):
     user = UserProfile.objects.filter(id=id).first()
     if not user:
         return HttpResponseNotFound()
-    return JsonResponse(user.userms.designators, safe=False)
+    return JsonResponse(user.userms.identifiers, safe=False)
 
 # 上传或更新我的地盘里的头像、姓名、个性签名
 # 应该写到用户的app里，而不是玩家
