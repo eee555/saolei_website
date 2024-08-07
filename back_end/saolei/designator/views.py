@@ -52,7 +52,7 @@ def del_designator(request):
         return HttpResponseNotFound()
     if designator.userms.parent.id != user.id:
         return HttpResponseForbidden()
-    designator.msuser = None
+    designator.userms = None
     designator.save()
     user.userms.designators.remove(designator_text)
     user.userms.save()
