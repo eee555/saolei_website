@@ -31,9 +31,7 @@
         <el-descriptions-item label="属地">{{ $t('common.toDo') }}</el-descriptions-item>
         <el-descriptions-item label="出生年份">{{ $t('common.toDo') }}</el-descriptions-item>
     </el-descriptions>
-    <el-descriptions v-if="store.login_status == LoginStatus.IsLogin" title="扫雷标识">
-        <DesignatorManager />
-    </el-descriptions>
+    <el-descriptions v-if="store.login_status == LoginStatus.IsLogin" title="扫雷标识"></el-descriptions>
     <DesignatorManager />
     <el-descriptions v-if="false && store.login_status == LoginStatus.IsLogin" title="账号关联">
         <el-table>
@@ -52,5 +50,6 @@ const local = useLocalStore()
 const t = useI18n()
 
 import DarkMode from '@/components/widgets/DarkMode.vue'
+import DesignatorManager from '@/components/widgets/DesignatorManager.vue';
 
 </script>
