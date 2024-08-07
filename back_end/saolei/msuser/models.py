@@ -2,7 +2,7 @@ from django.db import models
 
 from config.global_settings import *
 
-def get_default_designators():
+def get_default_identifiers():
     return []
 
 def RTimeField(): # 以毫秒计数
@@ -26,7 +26,7 @@ def VideoCountField():
 # 此处目前太大，拆成多个模型或app比较好
 class UserMS(models.Model):
     # 用户的标识。管理员审核通过后可以自由使用该标识。
-    designators = models.JSONField(default=get_default_designators)
+    identifiers = models.JSONField(default=get_default_identifiers)
     # 总录像数限制默认100，计划管理员可以修改。高水平玩家也可以增多。
     # 高级标准sub100是200；sub60是500；sub50是600；sub40是800；sub30是1000；vip是1000。
     video_num_limit = models.IntegerField(null=False, default=100)
@@ -167,7 +167,7 @@ class UserMS(models.Model):
     e_path_id_dg = VideoIDField()
 
     def __str__(self):
-        return 'designators: {}'.format(self.designators)
+        return 'identifiers: {}'.format(self.identifiers)
     def getrecord(self, level, stat, mode):
         return getattr(self, f"{level}_{stat}_{mode}")
     def getrecordID(self, level, stat, mode):

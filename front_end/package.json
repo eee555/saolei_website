@@ -27,6 +27,7 @@
     "image-conversion": "^2.1.1",
     "js-cookie": "^2.2.1",
     "markdown-it": "^14.1.0",
+    "markdown-it-anchor": "^9.0.1",
     "markdown-it-highlightjs": "^4.0.1",
     "markdown-it-mathjax3": "^4.3.2",
     "ms-toollib": "1.4.7",

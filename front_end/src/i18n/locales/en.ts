@@ -48,7 +48,7 @@ export const en = {
         },
         prop: {
             action: 'Action',
-            designator: 'Designator',
+            identifier: 'Identifier',
             fileName: 'File name',
             is: 'Island',
             level: 'Level',
@@ -147,7 +147,7 @@ export const en = {
         change: 'Edit profile',
         confirmChange: 'Confirm',
         cancelChange: 'Cancel',
-        designator: 'My designators: ',
+        identifier: 'My identifiers: ',
         msg: {
             avatarChange: 'Avatar change complete! {0} times left',
             avatarFormat: 'Avatar file has to be in JPG or PNG format!',
@@ -169,7 +169,7 @@ export const en = {
             error: {
                 collision: 'Video already exist',
                 custom: 'Custom level is currently not supported',
-                designator: 'Designator mismatch',
+                identifier: 'Identifier mismatch',
                 fail: 'Fail',
                 fileext: 'Invalid file extension',
                 filename: 'File name exceeds 100 bytes',

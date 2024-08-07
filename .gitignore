@@ -172,3 +172,7 @@ front_end/src/assets/article
 front_end/package-lock.json
 front_end/yarn.lock
 /back_end/saolei/designator/migrations
+/back_end/saolei/userprofile/migrations
+/back_end/saolei/videomanager/migrations
+/back_end/saolei/msuser/migrations
+

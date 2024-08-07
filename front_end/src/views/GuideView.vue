@@ -1,6 +1,6 @@
 <template>
     <el-row class="tac">
-        <el-aside width="auto" @mouseover="isCollapse=false" @mouseleave="isCollapse=true">
+        <el-col :span="5">
             <el-menu @select="show_content" class="el-menu-vertical" :collapse="isCollapse">
                 <el-sub-menu index="1">
                     <template #title>
@@ -79,20 +79,22 @@
                     </template>
                 </el-sub-menu>
             </el-menu>
-        </el-aside>
+        </el-col>
 
 
-        <el-main>
-            <div style="padding-top: 20px;padding-left: 60px;" v-html="article_html" />
-        </el-main>
+        <el-col :span="19">
+            <div style="padding-top: 0px;padding-left: 36px;" v-html="article_html" />
+        </el-col>
+
     </el-row>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, ref, computed, nextTick } from 'vue';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
-
+import { useRouter } from 'vue-router'
+const router = useRouter()
 
 // https://mdit-plugins.github.io/zh/
 import MarkdownIt from 'markdown-it';
@@ -111,6 +113,9 @@ import mathjax3 from "markdown-it-mathjax3";
 import { imgLazyload } from "@mdit/plugin-img-lazyload";
 // 允许调整图片尺寸
 import { imgSize } from "@mdit/plugin-img-size";
+// 锚点
+import anchor from 'markdown-it-anchor'
+
 
 // 局面数字的svg数据，原始尺寸都是160*160
 import { cells } from "@/utils/common/cellSVGData";
@@ -119,10 +124,36 @@ const t = useI18n();
 
 const isCollapse = ref(false);
 
+// http://localhost:8080/#/guide -> guide
+const currentHash = (window.location.hash.split('#')[1] || '').split('/')[1] || '';
+
+
 const markdown = new MarkdownIt({
     html: true, // 允许HTML语法
     typographer: true, // 启用Typographer插件，可以更好地处理中文字符和标点符号
-}).use(abbr).use(align).use(markdownItHighlight).use(mathjax3).use(imgLazyload).use(imgSize);
+}).use(abbr).use(align).use(markdownItHighlight)
+    .use(mathjax3).use(imgLazyload).use(imgSize).use(anchor, {
+        // 锚点插件。用于用了hash mode，标准的锚点用不了
+        // 生成特定的url，再慢慢解析
+
+        permalink: true,
+        permalinkBefore: false,
+        permalinkSymbol: '🔗',
+        renderPermalink: (slug: any, opts: any, state: any, idx: any) => {
+            const linkOpenToken = new state.Token('link_open', 'a', 1);
+
+            linkOpenToken.attrs = [
+                ['class', opts.permalinkClass],
+                ['href', `#${currentHash}/${article_name.value}/${slug}`],
+            ];
+
+            const linkCloseToken = new state.Token('link_close', 'a', -1);
+            const textToken = new state.Token('html_inline', '', 0);
+            textToken.content = opts.permalinkSymbol;
+
+            state.tokens[idx + 1].children.push(linkOpenToken, textToken, linkCloseToken);
+        }
+    });
 
 
 
@@ -146,9 +177,9 @@ const parse_ms_board: RuleBlock = (state, startLine: number, endLine: number, si
 
     // 检查第一行是否以"[[["开始
     if (state.src.slice(start, start + 3) !== "[[[") return false;
-    pos +=3;
+    pos += 3;
 
-    while(!/[0123456789aefmn]/.test(state.src.charAt(pos))){
+    while (!/[0123456789aefmn]/.test(state.src.charAt(pos))) {
         pos++;
     }
     // 初始化一个token来存储处理后的内容
@@ -169,18 +200,18 @@ const parse_ms_board: RuleBlock = (state, startLine: number, endLine: number, si
         );
         pos++;
     }
-    
+
     // 添加段落结束token  
     state.push('parse_board_close', 'board', -1);
     state.push('parse_board_close', 'div', -1);
 
     // 跳过已处理的行，这些内容会被隐藏
     let k = 1;
-    while(state.eMarks[startLine + k] < pos + 4){
+    while (state.eMarks[startLine + k] < pos + 4) {
         k++;
     }
     state.line = startLine + k;
-    
+
     return true;
 
 }
@@ -215,11 +246,11 @@ const parse_ms_cell: RuleInline = (state, silent) => {
 markdown.inline.ruler.push("parse_ms_cell", parse_ms_cell);
 markdown.renderer.rules['cell_token'] = function (tokens, idx, options, env, renderer) {
     let tag = tokens[idx].tag;
-    if (tag == "\n"){
+    if (tag == "\n") {
         return "<br>";
-    }else if(/[0123456789aefmn]/.test(tag)){
+    } else if (/[0123456789aefmn]/.test(tag)) {
         return cells[tokens[idx].tag];
-    } else{
+    } else {
         return "";
     }
 };
@@ -308,6 +339,8 @@ const content = ref<string>("");
 const article_html = computed(() => {
     return markdown.render(content.value);
 })
+const article_name = ref<string>("");
+
 
 // 子类别
 type child_list = {
@@ -326,7 +359,7 @@ const other_list = ref<child_list[]>([])
 onMounted(() => {
     // content.value = js; return
     proxy.$axios.get('/article/articles/'
-    ).then(function (response) {
+    ).then(async function (response) {
         const articles: string[] = response.data;
         for (const article of articles) {
             // 后端保证文章标题必须是此种格式，例如："[60.公告]明天下雨.md"
@@ -406,32 +439,54 @@ onMounted(() => {
         // console.log(tech_list.value);
         // console.log(other_list.value);
 
+        let param_name = proxy.$route.params.name as string;
+        let param_paragraph = proxy.$route.params.paragraph as string;
+        // console.log(param_name);
+        // console.log(param_paragraph);
 
+        if (param_name) {
+            show_article(param_name).then(() => {
+                if (param_paragraph) {
+                    const element = document.getElementById(encodeURI(param_paragraph))!;
+                    element.scrollIntoView({
+                        behavior: "smooth",  // 平滑过渡
+                        block: "start"  // 上边框与视窗顶部平齐。默认值
+                    });
+                    // show_article会替换url，此处进一步替换
+                    router.replace(`/${currentHash}/${param_name}/${param_paragraph}`)
+                }
+            });
+        } else {
+            const cover = notice_list.value[0].files[0];
+            show_article(cover);
+        }
 
-
-        const cover = notice_list.value[0].files[0];
-
-        show_article(cover);
     })
 
 })
 
 
 // 按文章名显示文章
-const show_article = (name: string) => {
+// 例如：[80.教程.软件]元扫雷使用教程
+// 例如：[81.教程]元扫雷使用教程.md
+const show_article = async (name: string) => {
+
     if (name.slice(-3) == ".md") {
-        proxy.$axios.get('/static/article/' + name
+        await proxy.$axios.get('/static/article/' + name
         ).then(function (response) {
             content.value = response.data;
+            router.replace(`/${currentHash}/${name}`)
         })
     } else {
-        proxy.$axios.get('/static/article/' + name + "/a.md"
+        await proxy.$axios.get('/static/article/' + name + "/a.md"
         ).then(function (response) {
             // 全局替换图片url
             // 举例：'任意文字![说明](url.jpg "标题")任意文字' 
             // -> '任意文字![说明](http://127.0.0.1/article/url.jpg "标题")任意文字'
-            content.value = (response.data as string).replaceAll(/(?<=(\!\[[^(\])]*\]\())([^(\s|\))]*)/g,
-                import.meta.env.VITE_BASE_API + '/article/' + name + '/$2');
+            content.value = (response.data as string).replaceAll(/(?<=(\!\[[^(\])]*\]\())(?!https?:\/\/)([^(\s|\))]*)/g,
+                import.meta.env.VITE_BASE_API + import.meta.env.VITE_ARTICLE_PIC_PATH + name + '/$2');
+            article_name.value = name;
+            router.replace(`/${currentHash}/${name}`)
         })
     }
 }
@@ -496,6 +551,7 @@ a {
     border: #bbb 1px solid;
     background-color: #efefef;
     overflow: auto;
+    padding: 2px 4px;
 }
 
 :deep(table) {
@@ -556,10 +612,8 @@ a {
 :deep(board br) {
     vertical-align: middle;
 }
+
 :deep(board svg) {
     vertical-align: middle;
 }
-
-       
-
 </style>

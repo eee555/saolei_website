@@ -55,6 +55,7 @@ def video_upload(request):
     new_video(data, request.user) # 表中添加数据
     return JsonResponse({'type': 'success', 'object': 'videomodel', 'category': 'upload'})
 
+
 # 根据id向后台请求软件类型（适配flop播放器用）
 @require_GET
 def get_software(request):
@@ -188,8 +189,8 @@ def freeze_queue(request):
     return JsonResponse(freeze_queue_ids, encoder=ComplexEncoder)
     
 # 审核通过单个录像
-# check_designator 为 true 则检查是否要修改玩家标识列表，并在修改后扫描所有待审录像的标识
-def approve_single(videoid, check_designator=True):
+# check_identifier 为 true 则检查是否要修改玩家标识列表，并在修改后扫描所有待审录像的标识
+def approve_single(videoid, check_identifier=True):
     video = VideoModel.objects.filter(id=videoid)
     if not video:
         return None
@@ -203,20 +204,20 @@ def approve_single(videoid, check_designator=True):
     update_personal_record(video)
     update_video_num(video)
     cache.hdel("review_queue", videoid)
-    designator = video.video.designator
-    if check_designator and designator not in userms.designators:
-        userms.designators.append(designator)
-        userms.save(update_fields=["designators"])
-        logger.info(f'用户 {video.player.username}#{video.player.id} 新标识 "{designator}"')
-        approve_designator(video.player.id, designator)
+    identifier = video.video.identifier
+    if check_identifier and identifier not in userms.identifiers:
+        userms.identifiers.append(identifier)
+        userms.save(update_fields=["identifiers"])
+        logger.info(f'用户 {video.player.username}#{video.player.id} 新标识 "{identifier}"')
+        approve_identifier(video.player.id, identifier)
     return True
 
 # 审核通过所有特定用户特定标识的录像
-def approve_designator(userid, designator):
-    user_designator_list = cache.hgetall("review_queue")
-    for key in user_designator_list:
-        value = json.loads(user_designator_list[key])
-        if value["player_id"] == userid and value["designator"] == designator:
+def approve_identifier(userid, identifier):
+    user_identifier_list = cache.hgetall("review_queue")
+    for key in user_identifier_list:
+        value = json.loads(user_identifier_list[key])
+        if value["player_id"] == userid and value["identifier"] == identifier:
             logger.info(f'用户 #{userid} 录像#{key} 机审成功')
             approve_single(key, False)
 

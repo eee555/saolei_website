@@ -51,7 +51,7 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
         },
         prop: {
             action: string,
-            designator: string,
+            identifier: string,
             fileName: string,
             is: string,
             op: string,
@@ -121,7 +121,7 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
         change: string,
         confirmChange: string,
         cancelChange: string,
-        designator: string,
+        identifier: string,
         msg: {
             avatarChange: string,
             avatarFormat: string,
@@ -143,7 +143,7 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
             error: {
                 collision: string,
                 custom: string,
-                designator: string,
+                identifier: string,
                 fail: string,
                 fileext: string,
                 filename: string,

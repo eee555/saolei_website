@@ -10,7 +10,7 @@ from utils import ComplexEncoder
 
 class ExpandVideoModel(models.Model):
     # video = models.OneToOneField(VideoModel, on_delete=models.CASCADE)
-    designator = models.CharField(max_length=80)
+    identifier = models.CharField(max_length=80)
     # 0-32767
     left = models.PositiveSmallIntegerField()
     right = models.PositiveSmallIntegerField()

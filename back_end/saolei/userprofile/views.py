@@ -32,14 +32,8 @@ def user_login(request):
             response['msg'] = response['msg'] = {
                 "id": request.user.id, "username": request.user.username,
                   "realname": request.user.realname, "is_banned": request.user.is_banned, "is_staff": request.user.is_staff}
-            logger.info(f'用户 {request.user.username}#{request.user.id} 自动登录')
+            # logger.info(f'用户 {request.user.username}#{request.user.id} 自动登录')
             return JsonResponse(response)
-        # if user_id:=request.session.get("_auth_user_id"):
-        #     if user:=User.objects.get(id=user_id):
-        #         login(request, user)
-        #         print(user)
-        #         response['msg'] = user.username
-        #         return JsonResponse(response)
 
         # 用账号、密码登录
         user_login_form = UserLoginForm(data=request.POST)
@@ -63,8 +57,8 @@ def user_login(request):
                         "realname": user.realname, "is_banned": user.is_banned, "is_staff": user.is_staff}
                     if 'user_id' in data and data['user_id'] != str(user.id):
                         # 检测到小号
-                        logger.info(f'{data["user_id"][:50]} is diffrent from {str(user.id)}.')
-                    logger.info(f'用户 {user.username}#{user.id} 账密登录')
+                        logger.warning(f'{data["user_id"][:50]} is diffrent from {str(user.id)}.')
+                    # logger.info(f'用户 {user.username}#{user.id} 账密登录')
                     return JsonResponse(response)
                 else:
                     logger.info(f'用户 {username} 账密错误')
@@ -213,6 +207,7 @@ def set_staff(request):
         return HttpResponse("别瞎玩")
 
 # 【管理员】删除用户的个人信息，从服务器磁盘上完全删除，但不影响是否封禁
+# 站长可以删除管理员信息（如果站长也是管理员）。
 # http://127.0.0.1:8000/userprofile/del_user_info/?id=1
 def del_user_info(request):
     if request.user.is_staff and request.method == 'GET':
@@ -292,7 +287,7 @@ def judge_captcha(captchaStr, captchaHashkey):
     return False
 
 # 管理员使用的操作接口，调用方式见前端的StaffView.vue
-get_userProfile_fields = ["id", "userms__designators", "userms__video_num_limit", "username", "first_name", "last_name", "email", "realname", "signature", "country", "left_realname_n", "left_avatar_n", "left_signature_n", "is_banned"] # 可获取的域列表
+get_userProfile_fields = ["id", "userms__identifiers", "userms__video_num_limit", "username", "first_name", "last_name", "email", "realname", "signature", "country", "left_realname_n", "left_avatar_n", "left_signature_n", "is_banned"] # 可获取的域列表
 def get_userProfile(request):
     if request.method != 'GET':
         return HttpResponseBadRequest()
@@ -305,7 +300,7 @@ def get_userProfile(request):
         return HttpResponseForbidden()
 
 # 管理员使用的操作接口，调用方式见前端的StaffView.vue
-set_userProfile_fields = ["userms__designators", "userms__video_num_limit", "username", "first_name", "last_name", "email", "realname", "signature", "country", "left_realname_n", "left_avatar_n", "left_signature_n", "is_banned"] # 可修改的域列表
+set_userProfile_fields = ["userms__identifiers", "userms__video_num_limit", "username", "first_name", "last_name", "email", "realname", "signature", "country", "left_realname_n", "left_avatar_n", "left_signature_n", "is_banned"] # 可修改的域列表
 def set_userProfile(request):
     if request.method == 'POST':
         if not request.user.is_staff:
@@ -320,7 +315,7 @@ def set_userProfile(request):
         if field == "is_banned" and user.is_superuser:
             return HttpResponseForbidden() # 站长不可被封禁
         value = request.POST.get("value")
-        logger.info(f'管理员 {request.user.username}#{request.user.id} 修改用户 {user.username}#{user.id} 域 {field} 从 {getattr(user, field)} 到 {value}')
+        logger.warning(f'管理员 {request.user.username}#{request.user.id} 修改用户 {user.username}#{user.id} 域 {field} 从 {getattr(user, field)} 到 {value}')
         setattr(user, field, value)
         user.save()
         return HttpResponse()

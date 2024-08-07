@@ -51,7 +51,7 @@ export const zhCn = {
         },
         prop: {
             action: '操作',
-            designator: '标识',
+            identifier: '标识',
             fileName: '文件名',
             is: '岛',
             level: '级别',
@@ -79,8 +79,8 @@ export const zhCn = {
             software_download: '软件下载',
             download_link: '下载链接',
             metasweeper: '元扫雷',
-            metasweeper_int: '（元扫雷网官方扫雷软件，包含八种模式的无猜扫雷、第三代录像播放器、自带光学识别求解器。）', // introduction
-            arbiter_int: '（同时受到国际网、中国扫雷网、元扫雷网认可的老牌扫雷软件，只有标准模式。）',
+            metasweeper_int: '（开源扫雷网官方扫雷软件，包含八种模式的无猜扫雷、第三代录像播放器、自带光学识别求解器。）', // introduction
+            arbiter_int: '（同时受到国际网、中国扫雷网、开源扫雷网认可的老牌扫雷软件，只有标准模式。）',
         },
         toDo: '敬请期待',
     },
@@ -155,7 +155,7 @@ export const zhCn = {
         change: '修改简介',
         confirmChange: '确认',
         cancelChange: '取消',
-        designator: '我的标识：',
+        identifier: '我的标识：',
         msg: {
             avatarChange: '头像修改成功！剩余{0}次',
             avatarFormat: '头像必须为JPG或PNG格式！',
@@ -177,7 +177,7 @@ export const zhCn = {
             error: {
                 collision: '录像已存在',
                 custom: '暂不支持自定义级别',
-                designator: '新标识',
+                identifier: '标识不匹配',
                 fail: '不通过',
                 fileext: '无法识别的文件类型',
                 filename: '文件名超过了100字节',
@@ -200,7 +200,7 @@ export const zhCn = {
         password: '请输入6-20位密码',
         confirmPassword: '请输入确认密码',
         agreeTo: '已阅读并同意',
-        termsAndConditions: '元扫雷网用户协议',
+        termsAndConditions: '开源扫雷网用户协议',
         confirm: '注册',
     },
     setting: {
