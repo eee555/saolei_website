@@ -90,7 +90,7 @@ class VideoModel(models.Model):
         PLAIN = "a", ('已上传但未审核')
         FROZEN = "b", ('审核未通过，被冻结')
         OFFICIAL = "c", ('已通过审核')
-        DESIGNATOR = "d", ('标识不匹配')
+        IDENTIFIER = "d", ('标识不匹配')
 
     class Level(models.TextChoices):
         BEGINNER = "b", ('初级')
@@ -159,7 +159,7 @@ class VideoModel(models.Model):
             "timems": self.timems,
             "bv": self.bv,
             "bvs": self.bvs,
-            "designator": self.video.designator}, cls=ComplexEncoder))
+            "identifier": self.video.identifier}, cls=ComplexEncoder))
         
     def pop_redis(self, name: str):
         cache.hdel(name, self.id)

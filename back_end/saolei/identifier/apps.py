@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class DesignatorConfig(AppConfig):
+class IdentifierConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "designator"
+    name = "identifier"
