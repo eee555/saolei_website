@@ -84,14 +84,6 @@ export const zhCn = {
         },
         toDo: '敬请期待',
     },
-    identifierManager: {
-        addIdentifierSuccess: '添加标识成功',
-        conflict: '标识冲突',
-        delIdentifierSuccess: '删除标识成功',
-        processedNVideos: '已处理{0}个录像',
-        ownedBy: '用户#{0}已拥有该标识',
-        notFound: '你没有该标识的录像',
-    },
     footer: {
         contact: '联系我们',
         donate: '捐赠',
@@ -120,6 +112,15 @@ export const zhCn = {
         news: '新闻',
         latestScore: '最新录像',
         reviewQueue: '审核队列',
+    },
+    identifierManager: {
+        title: '扫雷标识',
+        addIdentifierSuccess: '添加标识成功',
+        conflict: '标识冲突',
+        delIdentifierSuccess: '删除标识成功',
+        processedNVideos: '已处理{0}个录像',
+        ownedBy: '用户#{0}已拥有该标识',
+        notFound: '你没有该标识的录像',
     },
     login: {
         title: '欢迎登录',
