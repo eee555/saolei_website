@@ -32,7 +32,7 @@
         <el-descriptions-item label="出生年份">{{ $t('common.toDo') }}</el-descriptions-item>
     </el-descriptions>
     <el-descriptions v-if="store.login_status == LoginStatus.IsLogin" title="扫雷标识"></el-descriptions>
-    <DesignatorManager />
+    <DesignatorManager v-if="store.login_status == LoginStatus.IsLogin"/>
     <el-descriptions v-if="false && store.login_status == LoginStatus.IsLogin" title="账号关联">
         <el-table>
 
