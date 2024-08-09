@@ -1,6 +1,5 @@
-from userprofile.models import UserProfile
-from videomanager.models import VideoModel
-from videomanager.view_utils import update_personal_record_stock, update_state
+import logging
+logger = logging.getLogger('videomanager')
 from utils import verify_text
 
 from .models import Identifier
@@ -12,4 +11,5 @@ def verify_identifier(identifier: str):
     if collision:
         return collision.safe
     new_identifier = Identifier.objects.create(identifier=identifier, safe=verify_text(identifier))
+    logger.info(f'新标识 "{identifier}" 审查 {new_identifier.safe}')
     return new_identifier.safe

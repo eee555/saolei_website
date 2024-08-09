@@ -196,6 +196,7 @@ def update_state(video: VideoModel, state: VideoModel.State, update_ranking = Tr
     video.state = state
     video.push_redis(state2redis[state])
     video.save()
+    logger.info(f'录像#{video.id} 状态 从 {prevstate} 到 {state}')
     if state == VideoModel.State.OFFICIAL:
         update_personal_record(video)
     elif update_ranking and prevstate == VideoModel.State.OFFICIAL:
