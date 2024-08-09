@@ -1,24 +1,34 @@
 <template>
-    <el-table :data="videos_trans" :show-header="false" @row-click="(row: any) => preview(row.key)" table-layout="auto"
-        style="width: 100%;font-size: 16px;user-select: none;">
-        <el-table-column prop="time" min-width="180" :formatter="simple_formatter(utc_to_local_format)"/>
+    <el-table :data="videos_trans" :show-header="showHeader" @row-click="(row: any) => preview(row.key)"
+        table-layout="auto" style="width: 100%;font-size: 16px;user-select: none;">
+        <el-table-column prop="state" width="40"
+            :filters="[{ text: $t('common.state.c'), value: 'c' }, { text: $t('common.state.d'), value: 'd' }]"
+            :filter-method="defaultFilterMethod">
+            <template #default="scope">
+                <el-icon v-if="scope.row.state == 'd'">
+                    <Warning />
+                </el-icon>
+                <el-icon v-else-if="scope.row.state == 'c'">
+                    <CircleCheck />
+                </el-icon>
+                <el-icon v-else>
+                    <QuestionFilled />
+                </el-icon>
+            </template>
+        </el-table-column>
+        <el-table-column :prop="upload_time" min-width="180" :formatter="simple_formatter(utc_to_local_format)"
+            sortable />
         <el-table-column v-if="need_player_name" min-width="80">
             <template #default="player">
                 <PlayerName class="name" :user_id="+player.row.player_id" :user_name="player.row.player"></PlayerName>
             </template>
         </el-table-column>
-        <el-table-column v-else prop="player" min-width="80" />
-        <el-table-column prop="level" :formatter="simple_formatter((l: string) => $t('common.level.'+l))"/>
-        <el-table-column prop="mode" :formatter="simple_formatter((mode: string) => $t('common.mode.'+mode))"/>
-        <el-table-column prop="timems" :formatter="simple_formatter((timems: number) => (ms_to_s(timems) + 's'))"/>
-        <el-table-column prop="bv" />
-        <el-table-column style="white-space: nowrap;">
-            <template #default="scope">
-                <el-button v-if="review_mode" type="success" circle :icon="Check" @click.stop="handleApprove(scope.row)" />
-                <el-button v-if="store.user.is_staff" type="danger" circle :icon="Close"
-                    @click.stop="handleFreeze(scope.row)" />
-            </template>
-        </el-table-column>
+        <el-table-column prop="level" :formatter="simple_formatter((l: string) => $t('common.level.' + l))"
+            :filters="[{ text: $t('common.level.b'), value: 'b' }, { text: $t('common.level.i'), value: 'i' }, { text: $t('common.level.e'), value: 'e' }]"
+            :filter-method="defaultFilterMethod" :filter-multiple="false" />
+        <el-table-column prop="mode" :formatter="simple_formatter((mode: string) => $t('common.mode.' + mode))" :filters="[{ text: $t('common.mode.std'), value: 'std' }, { text: $t('common.mode.nf'), value: 'nf' }, { text: $t('common.mode.ng'), value: 'ng' }, { text: $t('common.mode.dg'), value: 'dg' }]" :filter-method="defaultFilterMethod" :filter-multiple="false" />
+        <el-table-column prop="timems" :formatter="simple_formatter((timems: number) => (ms_to_s(timems) + 's'))" sortable/>
+        <el-table-column prop="bv" sortable/>
         <!-- <el-table-column min-width="200">
             <template #default="scope">
                 <PreviewDownload :id="scope.row.key"></PreviewDownload>
@@ -30,20 +40,14 @@
 <script setup lang="ts">
 // 录像列表的组件
 
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { utc_to_local_format } from "@/utils/system/tools";
 import PlayerName from '@/components/PlayerName.vue';
-import useCurrentInstance from "@/utils/common/useCurrentInstance";
-import { Check, Close } from '@element-plus/icons-vue';
-import { ElNotification } from 'element-plus';
+import { Warning, CircleCheck, QuestionFilled } from '@element-plus/icons-vue';
 import { preview } from '@/utils/common/PlayerDialog';
 
-import { useUserStore } from '@/store';
-const store = useUserStore()
-
-import { ms_to_s, approve, freeze, simple_formatter } from '@/utils';
+import { ms_to_s, simple_formatter, defaultFilterMethod } from '@/utils';
 import { useI18n } from 'vue-i18n';
-const { proxy } = useCurrentInstance();
 
 const t = useI18n();
 
@@ -65,6 +69,14 @@ const data = defineProps({
     review_mode: {
         type: Boolean,
         default: false
+    },
+    upload_time: {
+        type: String,
+        default: 'upload_time',
+    },
+    showHeader: {
+        type: Boolean,
+        default: true,
     },
 })
 
@@ -97,62 +109,12 @@ const videos_trans = computed(() => {
             v.mode = "nf";
         }
     })
-    
+
     if (data.reverse) {
         d.reverse();
     }
     return d;
 })
-
-// console.log(videos_trans);
-
-const handleApprove = async function (row: any) {
-    let status = await approve(proxy, row.key);
-    if (status == true) {
-        ElNotification({
-            title: '审核成功',
-            message: '录像已通过审核',
-            type: 'success',
-        })
-    } else if (status == false) {
-        ElNotification({
-            title: '审核失败',
-            message: '录像已通过审核',
-            type: 'warning',
-        })
-    } else {
-        ElNotification({
-            title: '审核失败',
-            message: '发生未知错误: status=' + status,
-            type: 'error',
-        })
-    }
-    emit('update')
-}
-
-const handleFreeze = async function (row: any) {
-    let status = await freeze(proxy, row.key);
-    if (status == 'True') {
-        ElNotification({
-            title: '冻结成功',
-            message: '录像已冻结',
-            type: 'success',
-        })
-    } else if (status == 'False') {
-        ElNotification({
-            title: '冻结失败',
-            message: '录像已冻结',
-            type: 'warning',
-        })
-    } else {
-        ElNotification({
-            title: '冻结失败',
-            message: '发生未知错误: status=' + status,
-            type: 'error',
-        })
-    }
-    emit('update')
-}
 
 </script>
 <style></style>

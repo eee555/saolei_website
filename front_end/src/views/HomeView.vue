@@ -22,7 +22,7 @@
                 </el-tabs>
                 <el-tabs type="border-card" style="margin-top: 2%;">
                     <el-tab-pane :label="$t('home.latestScore')" class="bottom_tabs" :lazy="true">
-                        <VideoList :videos="newest_queue" :reverse="true"></VideoList>
+                        <VideoList :videos="newest_queue" :reverse="true" upload_time="time" :show-header="false"></VideoList>
                     </el-tab-pane>
                     <el-tab-pane :label="$t('home.reviewQueue')" class="bottom_tabs" :lazy="true">
                         <VideoList :videos="review_queue" :review_mode="store.user.is_staff" @update="update_review_queue" v-loading="review_queue_updating"></VideoList>

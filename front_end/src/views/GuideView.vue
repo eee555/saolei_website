@@ -90,10 +90,11 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, ref, computed, nextTick } from 'vue';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
-
+import { useRouter } from 'vue-router'
+const router = useRouter()
 
 // https://mdit-plugins.github.io/zh/
 import MarkdownIt from 'markdown-it';
@@ -112,6 +113,9 @@ import mathjax3 from "markdown-it-mathjax3";
 import { imgLazyload } from "@mdit/plugin-img-lazyload";
 // 允许调整图片尺寸
 import { imgSize } from "@mdit/plugin-img-size";
+// 锚点
+import anchor from 'markdown-it-anchor'
+
 
 // 局面数字的svg数据，原始尺寸都是160*160
 import { cells } from "@/utils/common/cellSVGData";
@@ -120,10 +124,36 @@ const t = useI18n();
 
 const isCollapse = ref(false);
 
+// http://localhost:8080/#/guide -> guide
+const currentHash = (window.location.hash.split('#')[1] || '').split('/')[1] || '';
+
+
 const markdown = new MarkdownIt({
     html: true, // 允许HTML语法
     typographer: true, // 启用Typographer插件，可以更好地处理中文字符和标点符号
-}).use(abbr).use(align).use(markdownItHighlight).use(mathjax3).use(imgLazyload).use(imgSize);
+}).use(abbr).use(align).use(markdownItHighlight)
+    .use(mathjax3).use(imgLazyload).use(imgSize).use(anchor, {
+        // 锚点插件。用于用了hash mode，标准的锚点用不了
+        // 生成特定的url，再慢慢解析
+
+        permalink: true,
+        permalinkBefore: false,
+        permalinkSymbol: '🔗',
+        renderPermalink: (slug: any, opts: any, state: any, idx: any) => {
+            const linkOpenToken = new state.Token('link_open', 'a', 1);
+
+            linkOpenToken.attrs = [
+                ['class', opts.permalinkClass],
+                ['href', `#${currentHash}/${article_name.value}/${slug}`],
+            ];
+
+            const linkCloseToken = new state.Token('link_close', 'a', -1);
+            const textToken = new state.Token('html_inline', '', 0);
+            textToken.content = opts.permalinkSymbol;
+
+            state.tokens[idx + 1].children.push(linkOpenToken, textToken, linkCloseToken);
+        }
+    });
 
 
 
@@ -309,6 +339,8 @@ const content = ref<string>("");
 const article_html = computed(() => {
     return markdown.render(content.value);
 })
+const article_name = ref<string>("");
+
 
 // 子类别
 type child_list = {
@@ -327,7 +359,7 @@ const other_list = ref<child_list[]>([])
 onMounted(() => {
     // content.value = js; return
     proxy.$axios.get('/article/articles/'
-    ).then(function (response) {
+    ).then(async function (response) {
         const articles: string[] = response.data;
         for (const article of articles) {
             // 后端保证文章标题必须是此种格式，例如："[60.公告]明天下雨.md"
@@ -407,32 +439,54 @@ onMounted(() => {
         // console.log(tech_list.value);
         // console.log(other_list.value);
 
+        let param_name = proxy.$route.params.name as string;
+        let param_paragraph = proxy.$route.params.paragraph as string;
+        // console.log(param_name);
+        // console.log(param_paragraph);
 
+        if (param_name) {
+            show_article(param_name).then(() => {
+                if (param_paragraph) {
+                    const element = document.getElementById(encodeURI(param_paragraph))!;
+                    element.scrollIntoView({
+                        behavior: "smooth",  // 平滑过渡
+                        block: "start"  // 上边框与视窗顶部平齐。默认值
+                    });
+                    // show_article会替换url，此处进一步替换
+                    router.replace(`/${currentHash}/${param_name}/${param_paragraph}`)
+                }
+            });
+        } else {
+            const cover = notice_list.value[0].files[0];
+            show_article(cover);
+        }
 
-
-        const cover = notice_list.value[0].files[0];
-
-        show_article(cover);
     })
 
 })
 
 
 // 按文章名显示文章
-const show_article = (name: string) => {
+// 例如：[80.教程.软件]元扫雷使用教程
+// 例如：[81.教程]元扫雷使用教程.md
+const show_article = async (name: string) => {
+
     if (name.slice(-3) == ".md") {
-        proxy.$axios.get('/static/article/' + name
+        await proxy.$axios.get('/static/article/' + name
         ).then(function (response) {
             content.value = response.data;
+            router.replace(`/${currentHash}/${name}`)
         })
     } else {
-        proxy.$axios.get('/static/article/' + name + "/a.md"
+        await proxy.$axios.get('/static/article/' + name + "/a.md"
         ).then(function (response) {
             // 全局替换图片url
             // 举例：'任意文字![说明](url.jpg "标题")任意文字' 
             // -> '任意文字![说明](http://127.0.0.1/article/url.jpg "标题")任意文字'
             content.value = (response.data as string).replaceAll(/(?<=(\!\[[^(\])]*\]\())(?!https?:\/\/)([^(\s|\))]*)/g,
                 import.meta.env.VITE_BASE_API + import.meta.env.VITE_ARTICLE_PIC_PATH + name + '/$2');
+            article_name.value = name;
+            router.replace(`/${currentHash}/${name}`)
         })
     }
 }

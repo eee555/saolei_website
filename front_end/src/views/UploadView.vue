@@ -25,8 +25,8 @@
                 <el-descriptions>
                     <el-descriptions-item :label="$t('common.prop.fileName')">{{ props.row.filename
                         }}</el-descriptions-item>
-                    <el-descriptions-item v-if="props.row.videostat != null" :label="$t('common.prop.designator')">{{
-        props.row.videostat.designator }}</el-descriptions-item>
+                    <el-descriptions-item v-if="props.row.videostat != null" :label="$t('common.prop.identifier')">{{
+        props.row.videostat.identifier }}</el-descriptions-item>
                     <el-descriptions-item v-if="props.row.videostat != null" v-for="key in extfields" :label="key">{{
         props.row.extstat[key] }}</el-descriptions-item>
                 </el-descriptions>
@@ -47,9 +47,9 @@
         </el-table-column>
         <el-table-column :label="$t('common.prop.action')" :width="130">
             <template #default="props">
-                <el-button :disabled="props.row.status != 'designator' && props.row.status != 'pass'"
+                <el-button :disabled="!(['pass', 'identifier', 'needApprove'].includes(props.row.status))"
                     @click="forceUpload(props.$index)"
-                    :type="props.row.status == 'pass' ? 'success' : props.row.status == 'designator' ? 'warning' : 'info'"
+                    :type="['pass', 'identifier'].includes(props.row.status) ? 'success' : props.row.status == 'needApprove' ? 'warning' : 'info'"
                     circle><el-icon>
                         <Upload />
                     </el-icon></el-button>
@@ -76,7 +76,7 @@ import { useI18n } from 'vue-i18n';
 const t = useI18n();
 
 const data = defineProps({
-    designators: { type: Array, default: () => [] }
+    identifiers: { type: Array, default: () => [] }
 })
 
 const extfields = ['left', 'right', 'double', 'cl', 'left_s', 'right_s', 'double_s',
@@ -143,7 +143,7 @@ const push_video_msg = async (uploadFile: UploadFile | UploadRawFile) => {
             timems: aa.get_rtime_ms,
             bbbv: aa.get_bbbv,
             bvs: aa.get_bbbv_s,
-            designator: decoder.decode(aa.get_player_designator),
+            identifier: decoder.decode(aa.get_player_designator), // 以后应改为get_player_identifier
             review_code: aa.is_valid(),
         }
         ext_stat = get_ext_stat(aa)
@@ -151,10 +151,13 @@ const push_video_msg = async (uploadFile: UploadFile | UploadRawFile) => {
             status = "custom";
         } else if (uploadFile.name.length >= 100) {
             status = "filename";
-        } else if (!data.designators.includes(video_stat.designator)) {
-            status = "designator";
+        } else if (!data.identifiers.includes(video_stat.identifier)) {
+            status = "identifier";
+        } else if (video_stat.review_code == 1) {
+            status = "fail"
+        } else if (video_stat.review_code == 3) {
+            status = "needApprove"
         }
-
     } else {
         video_stat = null;
         ext_stat = null;
@@ -189,7 +192,7 @@ const submitUpload = async () => {
     let count = 0; // 最多上传99个
     while (count < 99) {
         if (i >= video_msgs.value.length) break;
-        if (video_msgs.value[i].status === "pass") {
+        if (["pass", "identifier"].includes(video_msgs.value[i].status)) {
             await forceUpload(i);
             count++;
             continue;
@@ -202,7 +205,7 @@ const submitUpload = async () => {
 // 上传问题不大的录像
 const forceUpload = async (i: number) => {
     let video = video_msgs.value[i];
-    if (video.status != "pass" && video.status != "designator") {
+    if (video.status != "pass" && video.status != "identifier") {
         return;
     }
     video_msgs.value[i].status = "process";
@@ -220,26 +223,26 @@ const forceUpload = async (i: number) => {
     params.append("timems", video.videostat.timems.toString());
     params.append("bv", video.videostat.bbbv.toString());
     params.append("bvs", video.videostat.bvs.toString());
-    params.append("designator", video.videostat.designator);
+    params.append("identifier", video.videostat.identifier);
     for (let prop of extfields) {
         params.append(prop, video.extstat[prop].toString());
     }
     await proxy.$axios.post('/video/upload/',
         params,
     ).then(function (response) {
-        if (response.status == 200) {
+        if (response.data.type === 'success') {
             uploaded_file_num.value += 1;
             removeUpload(i);
+        } else if (response.data.type === 'error' && response.data.object === 'videomodel') {
+            video_msgs.value[i].status = "collision"
+        } else if (response.data.type === 'error' && response.data.object === 'identifier') {
+            video_msgs.value[i].status = "censorship"
         } else {
             // 正常使用不会到这里
             video_msgs.value[i].status = "upload";
         }
     }).catch((error: any) => {
-        if (error.response.status == 409) {
-            video_msgs.value[i].status = "collision";
-        } else {
-            video_msgs.value[i].status = "upload";
-        }
+        video_msgs.value[i].status = "upload";
     })
 }
 

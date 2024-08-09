@@ -46,7 +46,7 @@ declare module '@vue/runtime-core' {
   }
 }
 
-// cloc-1.94.exe .\元扫雷网 -exclude-dir=node_modules
+// cloc-1.94.exe .\开源扫雷网 -exclude-dir=node_modules
 // "ms-toollib": "file:../../ms_toollib/wasm/pkg",
 
 // git remote set-url origin https://gitee.com/ee55/saolei_website.git

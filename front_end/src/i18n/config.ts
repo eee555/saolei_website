@@ -11,9 +11,12 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
     name: string,
     common: {
         action: {
+            addIdentifier: string,
             getSoftware: string,
             getUserProfile: string,
+            getVideoModel: string,
             setUserProfile: string,
+            setVideoModel: string,
             uploadFile: string,
             videoQuery: string,
         },
@@ -22,6 +25,7 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
             b: string,
             i: string,
             e: string,
+            sum: string,
         },
         mode: {
             std: string,
@@ -35,6 +39,7 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
             agreeTAC: string,
             confirmPasswordFail: string,
             connectionFail: string,
+            contactDeveloper: string,
             emailCodeSent: string,
             emptyEmail: string,
             emptyEmailCode: string,
@@ -48,10 +53,11 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
             logoutFail: string,
             logoutSuccess: string,
             realNameRequired: string,
+            unknownError: string,
         },
         prop: {
             action: string,
-            designator: string,
+            identifier: string,
             fileName: string,
             is: string,
             op: string,
@@ -74,6 +80,14 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
             UnsupportedMediaType: string,
         },
         show: string,
+        software: {
+            resource_download: string,
+            software_download: string,
+            download_link: string,
+            metasweeper: string,
+            metasweeper_int: string, // introduction
+            arbiter_int: string,
+        },
         toDo: string,
     },
     forgetPassword: {
@@ -108,9 +122,6 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
         logout: string,
         register: string,
         setting: string,
-        downloads: string,
-        links: string,
-        team: string
     },
     profile: {
         changeAvatar: string,
@@ -121,7 +132,7 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
         change: string,
         confirmChange: string,
         cancelChange: string,
-        designator: string,
+        identifier: string,
         msg: {
             avatarChange: string,
             avatarFormat: string,
@@ -143,11 +154,13 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
             error: {
                 collision: string,
                 custom: string,
-                designator: string,
+                identifier: string,
                 fail: string,
                 fileext: string,
                 filename: string,
                 filesize: string,
+                mode: string,
+                needApprove: string,
                 pass: string,
                 process: string,
                 upload: string,
@@ -169,12 +182,30 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
     },
     setting: {
         appearance: string,
-        darkMode: string,
+        colorscheme: {
+            auto: string,
+            dark: string,
+            light: string,
+            title: string,
+        },
         languageSwitch: string,
         menuFontSize: string,
         menuHeight: string,
         menuLayout: string,
         menuLayoutAbstract: string,
         menuLayoutDefault: string,
+    },
+    team: {
+        title: string,
+        owner: string,
+        moderator: string,
+        software: string,
+        localization: string,
+        zhCn: string,
+        en: string,
+        de: string,
+        pl: string,
+        designer: string,
+        acknowledgement: string,
     },
 }

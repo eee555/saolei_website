@@ -3,11 +3,14 @@ from django.db import models
 from .fields import RestrictedFileField
 from userprofile.models import UserProfile
 from config.global_settings import *
-
+from django_redis import get_redis_connection
+cache = get_redis_connection("saolei_website")
+import json
+from utils import ComplexEncoder
 
 class ExpandVideoModel(models.Model):
     # video = models.OneToOneField(VideoModel, on_delete=models.CASCADE)
-    designator = models.CharField(max_length=80)
+    identifier = models.CharField(max_length=80)
     # 0-32767
     left = models.PositiveSmallIntegerField()
     right = models.PositiveSmallIntegerField()
@@ -87,6 +90,7 @@ class VideoModel(models.Model):
         PLAIN = "a", ('已上传但未审核')
         FROZEN = "b", ('审核未通过，被冻结')
         OFFICIAL = "c", ('已通过审核')
+        IDENTIFIER = "d", ('标识不匹配')
 
     class Level(models.TextChoices):
         BEGINNER = "b", ('初级')
@@ -143,7 +147,20 @@ class VideoModel(models.Model):
             models.Index(fields=['timems'], name='timems_idx'),
             models.Index(fields=['state'], name='state_idx'),
         ]
-    # def delete(self): # 将删除操作换成更改标记
-    #     self.is_delete = True
-    #     self.save()
+
+    def push_redis(self, name: str):
+        cache.hset(name, self.id, json.dumps({
+            "state": self.state,
+            "time": self.upload_time,
+            "player": self.player.realname,
+            "player_id": self.player.id,
+            "level": self.level,
+            "mode": self.mode,
+            "timems": self.timems,
+            "bv": self.bv,
+            "bvs": self.bvs,
+            "identifier": self.video.identifier}, cls=ComplexEncoder))
+        
+    def pop_redis(self, name: str):
+        cache.hdel(name, self.id)
 

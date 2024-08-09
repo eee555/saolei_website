@@ -5,6 +5,7 @@ export const zhCn = {
     name: '简体中文',
     common: {
         action: {
+            addIdentifier: '添加标识',
             getSoftware: '获取录像信息',
             getUserProfile: '查询用户',
             getVideoModel: '查询录像',
@@ -32,6 +33,7 @@ export const zhCn = {
             agreeTAC: '请同意用户协议！',
             confirmPasswordFail: '两次输入的密码不一致！',
             connectionFail: '无法连接到服务器！',
+            contactDeveloper: '请联系开发者',
             emailCodeSent: '获取验证码成功，请至邮箱查看！',
             emptyEmail: '请输入邮箱！',
             emptyEmailCode: '请输入6位邮箱验证码！',
@@ -45,10 +47,11 @@ export const zhCn = {
             logoutFail: '退出失败！',
             logoutSuccess: '退出成功！',
             realNameRequired: '请修改为实名',
+            unknownError: '发生未知错误',
         },
         prop: {
             action: '操作',
-            designator: '标识',
+            identifier: '标识',
             fileName: '文件名',
             is: '岛',
             level: '级别',
@@ -76,8 +79,14 @@ export const zhCn = {
             software_download: '软件下载',
             download_link: '下载链接',
             metasweeper: '元扫雷',
-            metasweeper_int: '（元扫雷网官方扫雷软件，包含八种模式的无猜扫雷、第三代录像播放器、自带光学识别求解器。）', // introduction
-            arbiter_int: '（同时受到国际网、中国扫雷网、元扫雷网认可的老牌扫雷软件，只有标准模式。）',
+            metasweeper_int: '（开源扫雷网官方扫雷软件，包含八种模式的无猜扫雷、第三代录像播放器、自带光学识别求解器。）', // introduction
+            arbiter_int: '（同时受到国际网、中国扫雷网、开源扫雷网认可的老牌扫雷软件，只有标准模式。）',
+        },
+        state: {
+            a: '审核中',
+            b: '已冻结',
+            c: '有效',
+            d: '标识不匹配',
         },
         toDo: '敬请期待',
     },
@@ -109,6 +118,15 @@ export const zhCn = {
         news: '新闻',
         latestScore: '最新录像',
         reviewQueue: '审核队列',
+    },
+    identifierManager: {
+        title: '扫雷标识',
+        addIdentifierSuccess: '添加标识成功',
+        conflict: '标识冲突',
+        delIdentifierSuccess: '删除标识成功',
+        processedNVideos: '已处理{0}个录像',
+        ownedBy: '用户#{0}已拥有该标识',
+        notFound: '你没有该标识的录像',
     },
     login: {
         title: '欢迎登录',
@@ -144,7 +162,7 @@ export const zhCn = {
         change: '修改简介',
         confirmChange: '确认',
         cancelChange: '取消',
-        designator: '我的标识：',
+        identifier: '我的标识：',
         msg: {
             avatarChange: '头像修改成功！剩余{0}次',
             avatarFormat: '头像必须为JPG或PNG格式！',
@@ -166,11 +184,13 @@ export const zhCn = {
             error: {
                 collision: '录像已存在',
                 custom: '暂不支持自定义级别',
-                designator: '标识不匹配',
+                identifier: '新标识',
                 fail: '不通过',
                 fileext: '无法识别的文件类型',
                 filename: '文件名超过了100字节',
                 filesize: '文件大小超过了5MB',
+                mode: '暂不支持此模式',
+                needApprove: '需要人工审核',
                 pass: '通过',
                 process: '上传中',
                 upload: '上传失败',
@@ -187,7 +207,7 @@ export const zhCn = {
         password: '请输入6-20位密码',
         confirmPassword: '请输入确认密码',
         agreeTo: '已阅读并同意',
-        termsAndConditions: '元扫雷网用户协议',
+        termsAndConditions: '开源扫雷网用户协议',
         confirm: '注册',
     },
     setting: {

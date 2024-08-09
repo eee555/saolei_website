@@ -52,8 +52,8 @@
                     <button class="edit_button" v-show="show_edit_button" @click="is_editing = true; visible = true;">{{
                     $t('profile.change') }}</button>
                     <!-- <div style="overflow: auto ;">人气：{{ popularity }}</div> -->
-                    <div style="overflow: auto ;text-align: justify;"><strong>{{ $t('profile.designator') }}</strong>{{
-                    designators.join(", ") }}</div>
+                    <div style="overflow: auto ;text-align: justify;"><strong>{{ $t('profile.identifier') }}</strong>{{
+                    identifiers.join(", ") }}</div>
                 </div>
             </el-aside>
 
@@ -67,7 +67,7 @@
                     </el-tab-pane>
                     <el-tab-pane v-if="store.user.id + '' == userid" :label="$t('profile.upload.title')" name="third"
                         :lazy="true">
-                        <UploadView :designators="designators"></UploadView>
+                        <UploadView :identifiers="identifiers"></UploadView>
                     </el-tab-pane>
                 </el-tabs>
 
@@ -112,7 +112,7 @@ const username = ref("");
 const realname = ref("");
 const signature = ref("");
 const popularity = ref("");
-const designators = ref<String[]>([]); // 通过审核的标识
+const identifiers = ref<String[]>([]); // 通过审核的标识
 
 //编辑状态时的
 const realname_edit = ref("");
@@ -172,7 +172,7 @@ function refresh() {
         popularity.value = data.popularity;
         realname_edit.value = data.realname;
         signature_edit.value = data.signature;
-        designators.value.push(...data.designators);
+        identifiers.value.push(...data.identifiers);
         // console.log(imageUrl);
         if (data.avatar) {
             imageUrl.value = "data:image/;base64," + data.avatar;

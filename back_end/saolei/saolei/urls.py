@@ -32,6 +32,7 @@ urlpatterns = [
     path('msuser/', include('msuser.urls')),
     path('monitor/', include('monitor.urls')),
     path('article/', include('article.urls')),
+    path('identifier/', include('identifier.urls')),
     path(r'', TemplateView.as_view(template_name="index.html")),
 ]
 

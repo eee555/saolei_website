@@ -1,4 +1,3 @@
-import { useLocalStore } from "@/store";
 import { ElNotification } from "element-plus"
 
 const notificationType = ['', '', 'success', '', 'error', 'error'];
@@ -20,6 +19,15 @@ export function generalNotification(t: any, status: number, action: string) {
         title: t.t(notificationTitle[type], [action]),
         message: t.t(notificationMessage[status]),
         type: notificationType[type],
+        duration: JSON.parse(localStorage.getItem('local')).notification_duration,
+    })
+}
+
+export function unknownErrorNotification(t: any) {
+    ElNotification({
+        title: t.t('common.msg.unknownError'),
+        message: t.t('common.msg.contactDeveloper'),
+        type: 'error',
         duration: JSON.parse(localStorage.getItem('local')).notification_duration,
     })
 }

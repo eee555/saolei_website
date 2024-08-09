@@ -25,17 +25,20 @@ if __name__ == "__main__":
 
 # django-admin startproject saolei
 # python manage.py migrate
-# python manage.py runserver 8080
-# python manage.py startapp polls
+# python manage.py runserver            # 开发时启动服务，且不需要调试文章，不推荐；部署时启动服务。
+# python manage.py runserver --nostatic # 开发时启动服务，且需要调试文章
+# python manage.py startapp identifier  # 开新app
 # pip install pymysql
 # 修改__init__.py，  import pymysql    pymysql.install_as_MySQLdb()
 # python manage.py migrate
-# python manage.py makemigrations polls
+# python manage.py makemigrations
 
 # python manage.py createsuperuser
 # 1，wangjianing@88.com，123456
 # pip install  django-simple-captcha
-
+# python manage.py makemigrations --empty msuser
+# ALTER TABLE videomanager_expandvideomodel CHANGE identifier identifier varchar(255);
+# ALTER TABLE msuser_userms CHANGE identifiers identifiers json;
 
 
 

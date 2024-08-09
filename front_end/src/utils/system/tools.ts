@@ -7,8 +7,8 @@ import { ElMessage } from 'element-plus'
  * @description 把时间戳从UTC转为当地时间
  * @param {String} t 需要转换的时间戳
  */
-export function utc_to_local_format(t = "2024-01-10 14:03:09") {
-  const utc_time = new Date(t + "Z"); // 后台传过来的都是0时区的时间戳
+export function utc_to_local_format(t = "2024-01-10T14:03:09Z") {
+  const utc_time = new Date(t);
   return utc_time.toLocaleString('default', {
     year: 'numeric',
     month: '2-digit',
@@ -17,6 +17,15 @@ export function utc_to_local_format(t = "2024-01-10 14:03:09") {
     minute: "2-digit",
     second: "2-digit"
   }).replace(/\//g, "-");
+}
+
+// credit: https://stackoverflow.com/a/5767357/12144822
+export function removeItem<T>(arr: Array<T>, value: T): Array<T> { 
+  const index = arr.indexOf(value);
+  if (index > -1) {
+    arr.splice(index, 1);
+  }
+  return arr;
 }
 
 /**
