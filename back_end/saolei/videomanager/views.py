@@ -35,8 +35,6 @@ def video_upload(request):
     if request.user.userms.video_num_total >= request.user.userms.video_num_limit:
         return HttpResponse(status = 402) # 录像仓库已满
             
-    # response = {'status': 100, 'msg': None}
-    # request.POST['file'] = request.FILES
     video_form = UploadVideoForm(data=request.POST, files=request.FILES)
     # print(video_form)
     if not video_form.is_valid():

@@ -1,8 +1,9 @@
-from msuser.models import UserMS
+import logging
+logger = logging.getLogger('userprofile')
 from .models import Identifier
 from userprofile.models import UserProfile
-from django.http import HttpResponseNotAllowed, HttpResponseForbidden, HttpResponseBadRequest, JsonResponse, HttpResponse, HttpResponseNotFound
-from django.views.decorators.http import require_GET, require_POST
+from django.http import HttpResponseForbidden, HttpResponseBadRequest, JsonResponse, HttpResponse, HttpResponseNotFound
+from django.views.decorators.http import require_POST
 from utils.response import HttpResponseConflict
 from videomanager.models import VideoModel
 from videomanager.view_utils import update_state, update_personal_record_stock
@@ -35,7 +36,7 @@ def add_identifier(request):
     identifier.save()
     user.userms.identifiers.append(identifier_text)
     user.userms.save()
-    # TODO: 日志
+    logger.info(f'用户 {user.username}#{user.id} 绑定标识 "{identifier_text}"')
     return JsonResponse({'type': 'success', 'object': 'identifier', 'category': 'add', 'value': len(video_list)})
 
 # 请求删除自己的标识
@@ -56,7 +57,7 @@ def del_identifier(request):
     identifier.save()
     user.userms.identifiers.remove(identifier_text)
     user.userms.save()
-    # TODO: 日志
+    logger.info(f'用户 {user.username}#{user.id} 解绑标识 "{identifier_text}"')
     video_list = VideoModel.objects.filter(player=user, video__identifier=identifier_text)
     for video in video_list:
         if video.state == VideoModel.State.OFFICIAL:
