@@ -7,13 +7,12 @@
                 <el-icon v-else-if="scope.row.state == 'c'"><CircleCheck/></el-icon>
             </template>
         </el-table-column>
-        <el-table-column prop="time" min-width="180" :formatter="simple_formatter(utc_to_local_format)"/>
+        <el-table-column :prop="upload_time" min-width="180" :formatter="simple_formatter(utc_to_local_format)"/>
         <el-table-column v-if="need_player_name" min-width="80">
             <template #default="player">
                 <PlayerName class="name" :user_id="+player.row.player_id" :user_name="player.row.player"></PlayerName>
             </template>
         </el-table-column>
-        <el-table-column v-else prop="player" min-width="80" />
         <el-table-column prop="level" :formatter="simple_formatter((l: string) => $t('common.level.'+l))"/>
         <el-table-column prop="mode" :formatter="simple_formatter((mode: string) => $t('common.mode.'+mode))"/>
         <el-table-column prop="timems" :formatter="simple_formatter((timems: number) => (ms_to_s(timems) + 's'))"/>
@@ -59,6 +58,10 @@ const data = defineProps({
         type: Boolean,
         default: false
     },
+    upload_time: {
+        type: String,
+        default: 'upload_time',
+    }
 })
 
 const emit = defineEmits(['update'])

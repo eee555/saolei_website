@@ -11,7 +11,7 @@ import { onMounted, ref, Ref } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
 // import { genFileId, ElMessage } from 'element-plus'
-import { Record, RecordBIE } from "@/utils/common/structInterface";
+import { Record } from "@/utils/common/structInterface";
 import VideoList from '@/components/VideoList.vue';
 // import { fa } from 'element-plus/es/locale';
 import { useUserStore } from '../store'
@@ -31,43 +31,16 @@ onMounted(() => {
             params: {id: player.id}
         }
     ).then(function (response) {
-        let videos = JSON.parse(response.data as string).videos;
-        // console.log(videos);
-        
+        let videos = response.data;
+        console.log(videos)
         for (let key in videos) {
             videos[key].key = videos[key].id;
-            videos[key].time = videos[key].upload_time;
-            videos[key].player = player.realname;
-            videos[key].player_id = player.id;
             videos_queue.value.push(videos[key]);
         }
-        // console.log(videos_queue.value);
         loading.value = false;
         
     })
 })
-
-// 把记录数据转一下嵌套的结构，做数据格式的适配
-function trans_record(r: RecordBIE): Record[] {
-    const record: Record[] = [];
-    for (let i = 0; i < r.timems.length; i++) {
-        record.push({
-            timems: r.timems[i],
-            bvs: r.bvs[i],
-            stnb: r.stnb[i],
-            ioe: r.ioe[i],
-            path: r.path[i],
-            timems_id: r.timems_id[i],
-            bvs_id: r.bvs_id[i],
-            stnb_id: r.stnb_id[i],
-            ioe_id: r.ioe_id[i],
-            path_id: r.path_id[i],
-        })
-    }
-    return record;
-}
-
-
 
 </script>
 

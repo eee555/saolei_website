@@ -141,13 +141,16 @@ def video_query(request):
 # 按id查询这个用户的所有录像
 @require_GET
 def video_query_by_id(request):
-    id_ = request.GET["id"]
-        
-    user = UserProfile.objects.get(id=id_)
-    videos = VideoModel.objects.filter(player=user).values('id', 'upload_time', "level", "mode", "timems", "bv", "bvs")
+    id = request.GET.get("id")
+    if not id:
+        return HttpResponseBadRequest()
+    user = UserProfile.objects.filter(id=id).first()
+    if not user:
+        return HttpResponseNotFound()
+    videos = VideoModel.objects.filter(player=user).values('id', 'upload_time', "level", "mode", "timems", "bv", "bvs", "state", "video__identifier")
     # print(list(videos))
 
-    return JsonResponse(json.dumps({"videos": list(videos)}, cls=ComplexEncoder), safe=False)
+    return JsonResponse(list(videos), safe=False)
 
 
 
