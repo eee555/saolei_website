@@ -4,7 +4,7 @@
         <VideoList :videos="videos_queue" :need_player_name="false"></VideoList>
     </el-card>
 </template>
-  
+
 <script lang="ts" setup>
 // 个人主页的个人所有录像部分
 import { onMounted, ref, Ref } from 'vue'
@@ -28,7 +28,7 @@ onMounted(() => {
     const player = store.player;
     proxy.$axios.get('/video/query_by_id/',
         {
-            params: {id: player.id}
+            params: { id: player.id }
         }
     ).then(function (response) {
         let videos = response.data;
@@ -38,7 +38,7 @@ onMounted(() => {
             videos_queue.value.push(videos[key]);
         }
         loading.value = false;
-        
+
     })
 })
 
@@ -53,12 +53,3 @@ onMounted(() => {
 
 }
 </style>
-
-
-
-
-
-
-
-
-

@@ -3,19 +3,23 @@
         style="width: 100%;font-size: 16px;user-select: none;">
         <el-table-column prop="state" width="40">
             <template #default="scope">
-                <el-icon v-if="scope.row.state == 'd'"><Warning/></el-icon>
-                <el-icon v-else-if="scope.row.state == 'c'"><CircleCheck/></el-icon>
+                <el-icon v-if="scope.row.state == 'd'">
+                    <Warning />
+                </el-icon>
+                <el-icon v-else-if="scope.row.state == 'c'">
+                    <CircleCheck />
+                </el-icon>
             </template>
         </el-table-column>
-        <el-table-column :prop="upload_time" min-width="180" :formatter="simple_formatter(utc_to_local_format)"/>
+        <el-table-column :prop="upload_time" min-width="180" :formatter="simple_formatter(utc_to_local_format)" />
         <el-table-column v-if="need_player_name" min-width="80">
             <template #default="player">
                 <PlayerName class="name" :user_id="+player.row.player_id" :user_name="player.row.player"></PlayerName>
             </template>
         </el-table-column>
-        <el-table-column prop="level" :formatter="simple_formatter((l: string) => $t('common.level.'+l))"/>
-        <el-table-column prop="mode" :formatter="simple_formatter((mode: string) => $t('common.mode.'+mode))"/>
-        <el-table-column prop="timems" :formatter="simple_formatter((timems: number) => (ms_to_s(timems) + 's'))"/>
+        <el-table-column prop="level" :formatter="simple_formatter((l: string) => $t('common.level.' + l))" />
+        <el-table-column prop="mode" :formatter="simple_formatter((mode: string) => $t('common.mode.' + mode))" />
+        <el-table-column prop="timems" :formatter="simple_formatter((timems: number) => (ms_to_s(timems) + 's'))" />
         <el-table-column prop="bv" />
         <!-- <el-table-column min-width="200">
             <template #default="scope">
@@ -93,7 +97,7 @@ const videos_trans = computed(() => {
             v.mode = "nf";
         }
     })
-    
+
     if (data.reverse) {
         d.reverse();
     }
