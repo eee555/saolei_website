@@ -1,7 +1,7 @@
 <template>
     <el-card class="box-card" body-style="" style="max-height: 800px; overflow: auto;">
         <el-skeleton animated v-show="loading" :rows="8" />
-        <VideoList :videos="videos_queue" :need_player_name="false"></VideoList>
+        <VideoList :videos="videos_queue" :need_player_name="false" reverse></VideoList>
     </el-card>
 </template>
 
@@ -32,7 +32,6 @@ onMounted(() => {
         }
     ).then(function (response) {
         let videos = response.data;
-        console.log(videos)
         for (let key in videos) {
             videos[key].key = videos[key].id;
             videos_queue.value.push(videos[key]);
