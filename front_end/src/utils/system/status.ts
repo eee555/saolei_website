@@ -1,4 +1,3 @@
-import { useLocalStore } from "@/store";
 import { ElNotification } from "element-plus"
 
 const notificationType = ['', '', 'success', '', 'error', 'error'];

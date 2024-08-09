@@ -3,20 +3,26 @@
         style="width: 100%;font-size: 16px;user-select: none;">
         <el-table-column prop="state" width="40">
             <template #default="scope">
-                <el-icon v-if="scope.row.state == 'd'"><Warning/></el-icon>
-                <el-icon v-else-if="scope.row.state == 'c'"><CircleCheck/></el-icon>
+                <el-icon v-if="scope.row.state == 'd'">
+                    <Warning />
+                </el-icon>
+                <el-icon v-else-if="scope.row.state == 'c'">
+                    <CircleCheck />
+                </el-icon>
+                <el-icon v-else>
+                    <QuestionFilled />
+                </el-icon>
             </template>
         </el-table-column>
-        <el-table-column prop="time" min-width="180" :formatter="simple_formatter(utc_to_local_format)"/>
+        <el-table-column :prop="upload_time" min-width="180" :formatter="simple_formatter(utc_to_local_format)" />
         <el-table-column v-if="need_player_name" min-width="80">
             <template #default="player">
                 <PlayerName class="name" :user_id="+player.row.player_id" :user_name="player.row.player"></PlayerName>
             </template>
         </el-table-column>
-        <el-table-column v-else prop="player" min-width="80" />
-        <el-table-column prop="level" :formatter="simple_formatter((l: string) => $t('common.level.'+l))"/>
-        <el-table-column prop="mode" :formatter="simple_formatter((mode: string) => $t('common.mode.'+mode))"/>
-        <el-table-column prop="timems" :formatter="simple_formatter((timems: number) => (ms_to_s(timems) + 's'))"/>
+        <el-table-column prop="level" :formatter="simple_formatter((l: string) => $t('common.level.' + l))" />
+        <el-table-column prop="mode" :formatter="simple_formatter((mode: string) => $t('common.mode.' + mode))" />
+        <el-table-column prop="timems" :formatter="simple_formatter((timems: number) => (ms_to_s(timems) + 's'))" />
         <el-table-column prop="bv" />
         <!-- <el-table-column min-width="200">
             <template #default="scope">
@@ -32,7 +38,7 @@
 import { computed } from 'vue'
 import { utc_to_local_format } from "@/utils/system/tools";
 import PlayerName from '@/components/PlayerName.vue';
-import { Warning, CircleCheck } from '@element-plus/icons-vue';
+import { Warning, CircleCheck, QuestionFilled } from '@element-plus/icons-vue';
 import { preview } from '@/utils/common/PlayerDialog';
 
 import { ms_to_s, simple_formatter } from '@/utils';
@@ -59,6 +65,10 @@ const data = defineProps({
         type: Boolean,
         default: false
     },
+    upload_time: {
+        type: String,
+        default: 'upload_time',
+    }
 })
 
 const emit = defineEmits(['update'])
@@ -90,14 +100,12 @@ const videos_trans = computed(() => {
             v.mode = "nf";
         }
     })
-    
+
     if (data.reverse) {
         d.reverse();
     }
     return d;
 })
-
-// console.log(videos_trans);
 
 </script>
 <style></style>
