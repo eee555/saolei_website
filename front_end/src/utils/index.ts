@@ -74,3 +74,7 @@ export function deepCopy<T>(obj: T): T {
 
     throw new Error('Unable to copy object! Its type isn\'t supported.');
 }
+
+export function defaultFilterMethod(value: any, row: any, column: any) {
+    return row[column.property] === value
+}

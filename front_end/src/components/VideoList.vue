@@ -1,7 +1,9 @@
 <template>
-    <el-table :data="videos_trans" :show-header="false" @row-click="(row: any) => preview(row.key)" table-layout="auto"
-        style="width: 100%;font-size: 16px;user-select: none;">
-        <el-table-column prop="state" width="40">
+    <el-table :data="videos_trans" :show-header="showHeader" @row-click="(row: any) => preview(row.key)"
+        table-layout="auto" style="width: 100%;font-size: 16px;user-select: none;">
+        <el-table-column prop="state" width="40"
+            :filters="[{ text: $t('common.state.c'), value: 'c' }, { text: $t('common.state.d'), value: 'd' }]"
+            :filter-method="defaultFilterMethod">
             <template #default="scope">
                 <el-icon v-if="scope.row.state == 'd'">
                     <Warning />
@@ -14,16 +16,19 @@
                 </el-icon>
             </template>
         </el-table-column>
-        <el-table-column :prop="upload_time" min-width="180" :formatter="simple_formatter(utc_to_local_format)" />
+        <el-table-column :prop="upload_time" min-width="180" :formatter="simple_formatter(utc_to_local_format)"
+            sortable />
         <el-table-column v-if="need_player_name" min-width="80">
             <template #default="player">
                 <PlayerName class="name" :user_id="+player.row.player_id" :user_name="player.row.player"></PlayerName>
             </template>
         </el-table-column>
-        <el-table-column prop="level" :formatter="simple_formatter((l: string) => $t('common.level.' + l))" />
-        <el-table-column prop="mode" :formatter="simple_formatter((mode: string) => $t('common.mode.' + mode))" />
-        <el-table-column prop="timems" :formatter="simple_formatter((timems: number) => (ms_to_s(timems) + 's'))" />
-        <el-table-column prop="bv" />
+        <el-table-column prop="level" :formatter="simple_formatter((l: string) => $t('common.level.' + l))"
+            :filters="[{ text: $t('common.level.b'), value: 'b' }, { text: $t('common.level.i'), value: 'i' }, { text: $t('common.level.e'), value: 'e' }]"
+            :filter-method="defaultFilterMethod" :filter-multiple="false" />
+        <el-table-column prop="mode" :formatter="simple_formatter((mode: string) => $t('common.mode.' + mode))" :filters="[{ text: $t('common.mode.std'), value: 'std' }, { text: $t('common.mode.nf'), value: 'nf' }, { text: $t('common.mode.ng'), value: 'ng' }, { text: $t('common.mode.dg'), value: 'dg' }]" :filter-method="defaultFilterMethod" :filter-multiple="false" />
+        <el-table-column prop="timems" :formatter="simple_formatter((timems: number) => (ms_to_s(timems) + 's'))" sortable/>
+        <el-table-column prop="bv" sortable/>
         <!-- <el-table-column min-width="200">
             <template #default="scope">
                 <PreviewDownload :id="scope.row.key"></PreviewDownload>
@@ -41,7 +46,7 @@ import PlayerName from '@/components/PlayerName.vue';
 import { Warning, CircleCheck, QuestionFilled } from '@element-plus/icons-vue';
 import { preview } from '@/utils/common/PlayerDialog';
 
-import { ms_to_s, simple_formatter } from '@/utils';
+import { ms_to_s, simple_formatter, defaultFilterMethod } from '@/utils';
 import { useI18n } from 'vue-i18n';
 
 const t = useI18n();
@@ -68,7 +73,11 @@ const data = defineProps({
     upload_time: {
         type: String,
         default: 'upload_time',
-    }
+    },
+    showHeader: {
+        type: Boolean,
+        default: true,
+    },
 })
 
 const emit = defineEmits(['update'])
