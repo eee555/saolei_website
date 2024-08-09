@@ -9,6 +9,9 @@
                 <el-icon v-else-if="scope.row.state == 'c'">
                     <CircleCheck />
                 </el-icon>
+                <el-icon v-else>
+                    <QuestionFilled />
+                </el-icon>
             </template>
         </el-table-column>
         <el-table-column :prop="upload_time" min-width="180" :formatter="simple_formatter(utc_to_local_format)" />
@@ -35,7 +38,7 @@
 import { computed } from 'vue'
 import { utc_to_local_format } from "@/utils/system/tools";
 import PlayerName from '@/components/PlayerName.vue';
-import { Warning, CircleCheck } from '@element-plus/icons-vue';
+import { Warning, CircleCheck, QuestionFilled } from '@element-plus/icons-vue';
 import { preview } from '@/utils/common/PlayerDialog';
 
 import { ms_to_s, simple_formatter } from '@/utils';
@@ -103,8 +106,6 @@ const videos_trans = computed(() => {
     }
     return d;
 })
-
-// console.log(videos_trans);
 
 </script>
 <style></style>
