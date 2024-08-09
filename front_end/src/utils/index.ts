@@ -17,7 +17,7 @@ export function ms_to_s(ms: number): string {
     return `${Math.floor(ms / 1000)}.${(ms % 1000 + "").padStart(3, '0')}`;
 }
 
-export function simple_formatter(f: Function): Function{
+export function simple_formatter(f: Function): Function {
     return (row: any, col: any, value: any, index: any) => f(value)
 }
 
