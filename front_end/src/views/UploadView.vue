@@ -150,13 +150,17 @@ const push_video_msg = async (uploadFile: UploadFile | UploadRawFile) => {
         if (video_stat.level == "c") {
             status = "custom";
         } else if (uploadFile.name.length >= 100) {
+            // 录像名太长
             status = "filename";
-        } else if (!data.identifiers.includes(video_stat.identifier)) {
-            status = "identifier";
         } else if (video_stat.review_code == 1) {
+            // 非法录像
             status = "fail"
         } else if (video_stat.review_code == 3) {
+            // 可疑录像
             status = "needApprove"
+        } else if (!data.identifiers.includes(video_stat.identifier)) {
+            // 无标识
+            status = "identifier";
         }
     } else {
         video_stat = null;
