@@ -36,6 +36,7 @@
 1. 新建一个文件夹saolei_website\back_end\saolei\assets（存放录像、头像、文章）
 1. （可选，假如需要看文章）在saolei_website\back_end\saolei\assets下执行`git clone https://gitee.com/ee55/saolei_website_article.git`，并将文件夹名由saolei_website_article改为article
 1. python manage.py makemigrations
+1. python manage.py migrate userprofile
 1. python manage.py migrate
 1. python manage.py runserver --nostatic
 1. （可选，假如要启动定时任务，不做相关功能时可以不启动）python manage.py runapschedulermonitor
