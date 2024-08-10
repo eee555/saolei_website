@@ -1,27 +1,17 @@
 # <a href="https://github.com/eee555/saolei_website" >开源扫雷网（OPEN MINESWEEPER WEBSITE）</a>
 
-
 [![saolei_website](https://img.shields.io/badge/saolei_website-v1.7-brightgreen.svg)](https://github.com/eee555/Solvable-Minesweeper)
 [![stars](https://img.shields.io/github/stars/eee555/saolei_website)](https://github.com/eee555/saolei_website/stargazers)
 [![forks](https://img.shields.io/github/forks/eee555/saolei_website)](https://github.com/eee555/saolei_website/forks)
 
 [English](Readme_en.md)
 
-前端：Vue3 + Ts + Element-ui + wasm-bindgen  
+项目已正式上线！
+
+前端：Vue3 + Ts + Element-ui + wasm  
 后端：Django + Mysql + redis  
-部署：Nginx + uwsgi  
+部署：Nginx + uwsgi + acme.sh  
 安全：百度大脑  
-
-## 最新进展
-:white_check_mark: 开发核心功能  
-:white_check_mark: 租赁服务器  
-:white_check_mark: 初步部署  
-:white_check_mark: 租赁域名  
-:white_check_mark: 备案  
-:white_check_mark: 删档内测  
-:black_square_button: 删档公测  
-:black_square_button: 上线  
-
 
 ## 项目安装流程：
 
