@@ -19,4 +19,5 @@ DROP TABLE IF EXISTS videomanager_videomodel;
 DROP TABLE IF EXISTS videomanager_expandvideomodel;
 DROP TABLE IF EXISTS ranking_match;
 DROP TABLE IF EXISTS ranking_usermsscorerank;
+DROP TABLE IF EXISTS identifier_identifier;
 SET FOREIGN_KEY_CHECKS=1;
