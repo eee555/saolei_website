@@ -165,12 +165,13 @@ class VideoData(BasePostData):
         super().__init__(userID, scheduleFunc)
 
     @overload
-    def getData(self, level=Level) -> list[Info]:
+    def getData(self, level: Level, lastTime: datetime) -> list[Info]:
         """
         获取视频信息
 
         Args:
             level (_type_, optional): 等级. Defaults to Level.
+            lastTime (datetime, optional): 上次获取的时间. Defaults to datetime.min.
 
         Returns:
             list[Info]: 视频信息列表
@@ -179,7 +180,8 @@ class VideoData(BasePostData):
 
     def getData(self, *args, **kwargs) -> any:
         formatUrl = FormatUrl(self.userID)
-        if isinstance(args[0], Level):
+        if isinstance(args[0], Level) and isinstance(args[1], datetime):
+            lastTime = args[1]
             flag = True
             page = 1
             url = formatUrl.get(mode=Mode.Video, level=args[0])
@@ -214,11 +216,15 @@ class VideoData(BasePostData):
                             videoUrl = videoUrl[0]
                             match = re.search(r"Id=(\d+)", videoUrl)
                             videoID = match.group(1)
-                            info = self.Info()
                             dataTime = videoInfo.xpath(
                                 './td[1]/text()')[0].strip()
-                            info.dateTime = datetime.strptime(
-                                dataTime, '%Y年%m月%d日 %H:%M').strftime('%Y-%m-%d %H:%M:%S')
+                            thisTime = datetime.strptime(
+                                dataTime, '%Y年%m月%d日 %H:%M')
+                            if thisTime < lastTime:
+                                continue
+                            info = self.Info()
+                            info.dateTime = thisTime.strftime(
+                                '%Y-%m-%d %H:%M:%S')
                             info.bv = float(videoInfo.xpath(
                                 f'./td[3]/span[@id="BV_{i}"]/text()')[0])
                             info.bvs = float(videoInfo.xpath(
@@ -252,5 +258,5 @@ if __name__ == '__main__':
         print(error)
     data = VideoData(userID=21720, scheduleFunc=scheduleFunc)
     data.registerError(errorFunc=errorFunc)
-    BegData = data.getData(Level.Beg)
+    BegData = data.getData(Level.Beg, datetime.min)
     print(len(BegData))
