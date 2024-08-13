@@ -26,6 +26,9 @@
                 <div>
                     <GitHubUser username="hgraceb" />
                 </div>
+                <div>
+                    <GitHubUser username="ljzloser" />
+                </div>
             </el-col>
             <el-col :span="8">
                 <div style="padding-bottom: 5px"><strong>{{ $t('team.localization') }}</strong></div>
