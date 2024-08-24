@@ -5,7 +5,7 @@
     <el-text v-else-if="state == 'c'" type="success">
         <CircleCheck />
     </el-text>
-    <el-icon v-else type="error">
+    <el-icon v-else type="danger">
         <QuestionFilled />
     </el-icon>
 </template>

@@ -145,7 +145,7 @@ def video_query_by_id(request):
     user = UserProfile.objects.filter(id=id).first()
     if not user:
         return HttpResponseNotFound()
-    videos = VideoModel.objects.filter(player=user).values('id', 'upload_time', "level", "mode", "timems", "bv", "bvs", "state", "video__identifier")
+    videos = VideoModel.objects.filter(player=user).values('id', 'upload_time', "level", "mode", "timems", "bv", "bvs", "state", "video__identifier", "software")
     # print(list(videos))
 
     return JsonResponse(list(videos), safe=False)
