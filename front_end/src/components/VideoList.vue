@@ -15,6 +15,11 @@
                 <PlayerName class="name" :user_id="+player.row.player_id" :user_name="player.row.player"></PlayerName>
             </template>
         </el-table-column>
+        <el-table-column width="20">
+            <template #default="scope">
+                <SoftwareIcon :software="scope.row.software"/>
+            </template>
+        </el-table-column>
         <el-table-column prop="level" :formatter="simple_formatter((l: string) => $t('common.level.' + l))"
             :filters="[{ text: $t('common.level.b'), value: 'b' }, { text: $t('common.level.i'), value: 'i' }, { text: $t('common.level.e'), value: 'e' }]"
             :filter-method="defaultFilterMethod" :filter-multiple="false" />
@@ -36,6 +41,7 @@ import { computed } from 'vue'
 import { utc_to_local_format } from "@/utils/system/tools";
 import PlayerName from '@/components/PlayerName.vue';
 import VideoStateIcon from '@/components/widgets/VideoStateIcon.vue';
+import SoftwareIcon from '@/components/widgets/SoftwareIcon.vue';
 import { preview } from '@/utils/common/PlayerDialog';
 
 import { ms_to_s, simple_formatter, defaultFilterMethod } from '@/utils';
