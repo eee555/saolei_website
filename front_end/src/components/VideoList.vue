@@ -5,15 +5,7 @@
             :filters="[{ text: $t('common.state.c'), value: 'c' }, { text: $t('common.state.d'), value: 'd' }]"
             :filter-method="defaultFilterMethod">
             <template #default="scope">
-                <el-icon v-if="scope.row.state == 'd'">
-                    <Warning />
-                </el-icon>
-                <el-icon v-else-if="scope.row.state == 'c'">
-                    <CircleCheck />
-                </el-icon>
-                <el-icon v-else>
-                    <QuestionFilled />
-                </el-icon>
+                <VideoStateIcon :state="scope.row.state" />
             </template>
         </el-table-column>
         <el-table-column :prop="upload_time" min-width="180" :formatter="simple_formatter(utc_to_local_format)"
@@ -21,6 +13,11 @@
         <el-table-column v-if="need_player_name" min-width="80">
             <template #default="player">
                 <PlayerName class="name" :user_id="+player.row.player_id" :user_name="player.row.player"></PlayerName>
+            </template>
+        </el-table-column>
+        <el-table-column width="20">
+            <template #default="scope">
+                <SoftwareIcon :software="scope.row.software"/>
             </template>
         </el-table-column>
         <el-table-column prop="level" :formatter="simple_formatter((l: string) => $t('common.level.' + l))"
@@ -43,7 +40,8 @@
 import { computed } from 'vue'
 import { utc_to_local_format } from "@/utils/system/tools";
 import PlayerName from '@/components/PlayerName.vue';
-import { Warning, CircleCheck, QuestionFilled } from '@element-plus/icons-vue';
+import VideoStateIcon from '@/components/widgets/VideoStateIcon.vue';
+import SoftwareIcon from '@/components/widgets/SoftwareIcon.vue';
 import { preview } from '@/utils/common/PlayerDialog';
 
 import { ms_to_s, simple_formatter, defaultFilterMethod } from '@/utils';

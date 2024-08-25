@@ -151,6 +151,7 @@ class VideoModel(models.Model):
     def push_redis(self, name: str):
         cache.hset(name, self.id, json.dumps({
             "state": self.state,
+            "software": self.software,
             "time": self.upload_time,
             "player": self.player.realname,
             "player_id": self.player.id,
