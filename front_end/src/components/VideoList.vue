@@ -92,7 +92,7 @@ const videos_trans = computed(() => {
         } else if (v.mode == "05") {
             v.mode = "ng";
         } else if (v.mode == "06") {
-            v.mode = "强无猜";
+            v.mode = "sng";
         } else if (v.mode == "07") {
             v.mode = "弱无猜";
         } else if (v.mode == "08") {

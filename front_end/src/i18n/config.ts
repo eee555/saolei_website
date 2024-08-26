@@ -32,6 +32,7 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
             nf: string,
             ng: string,
             dg: string,
+            sng: string,
         }
         msg: {
             actionFail: string,
