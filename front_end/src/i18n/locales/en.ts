@@ -25,7 +25,8 @@ export const en = {
             std: 'Standard',
             nf: 'No Flag',
             ng: 'No Guessing',
-            dg: 'Recursive Chord'
+            dg: 'Recursive Chord',
+            sng: 'Strict No Guessing',
         },
         msg: {
             actionFail: 'Failed to {0}',

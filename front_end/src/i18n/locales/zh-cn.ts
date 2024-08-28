@@ -25,7 +25,8 @@ export const zhCn = {
             std: '标准',
             nf: '盲扫',
             ng: '无猜',
-            dg: '递归'
+            dg: '递归',
+            sng: '强无猜',
         },
         msg: {
             actionFail: '{0}失败！',
