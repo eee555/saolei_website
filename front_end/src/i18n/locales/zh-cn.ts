@@ -225,6 +225,10 @@ export const zhCn = {
         menuLayout: '菜单排版',
         menuLayoutAbstract: '抽象',
         menuLayoutDefault: '默认',
+        newUserGuide: '新手引导',
+        newUserGuideTooltip: '鼠标在各种地方悬停时获取帮助。',
+        notificationDuration: '通知时长',
+        notificationDurationTooltip: '显示的时间，单位毫秒。<br />值为0则不会自动关闭。',
     },
     team: {
         title: '团队',
