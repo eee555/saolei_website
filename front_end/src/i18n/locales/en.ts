@@ -83,6 +83,12 @@ export const en = {
             metasweeper_int: '',
             arbiter_int: '',
         },
+        state: {
+            a: 'Pending',
+            b: 'Frozen',
+            c: 'Valid',
+            d: 'Identifier Mismatch',
+        },
         toDo: 'TODO',
     },
     footer: {
@@ -219,6 +225,10 @@ export const en = {
         menuLayout: 'Menu Layout',
         menuLayoutAbstract: 'Abstract',
         menuLayoutDefault: 'Default',
+        newUserGuide: 'Get Help',
+        newUserGuideTooltip: 'Get help by hovering over components',
+        notificationDuration: 'Notification Duration',
+        notificationDurationTooltip: 'Duration before close. <br />It will not automatically close if set 0.',
     },
     team: {
         title: 'Team',

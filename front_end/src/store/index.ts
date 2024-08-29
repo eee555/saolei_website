@@ -45,6 +45,7 @@ export const useLocalStore = defineStore('local', {
         menu_height: 60,
         menu_icon: false,
         notification_duration: 4500,
+        tooltip_show: true,
     }),
     persist: true,
 })
