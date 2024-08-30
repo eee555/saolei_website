@@ -47,7 +47,7 @@ def video_upload(request):
         data['review_code'] = 2 # 标识不匹配
 
     # 查重
-    collisions = list(VideoModel.objects.filter(timems=data["timems"], bv=data["bv"]).filter(video__cl=data["cl"], video__op=data["op"], video__isl=data["isl"], video__identifier=data["identifier"]))
+    collisions = list(VideoModel.objects.filter(timems=data["timems"], bv=data["bv"]).filter(video__path=data["path"]).filter(video__cl=data["cl"], video__op=data["op"], video__isl=data["isl"], video__identifier=data["identifier"]))
     if collisions:
         return JsonResponse({'type': 'error', 'object': 'videomodel', 'category': 'conflict'})  
     new_video(data, request.user) # 表中添加数据
