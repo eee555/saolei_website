@@ -25,7 +25,8 @@ export const zhCn = {
             std: '标准',
             nf: '盲扫',
             ng: '无猜',
-            dg: '递归'
+            dg: '递归',
+            sng: '强无猜',
         },
         msg: {
             actionFail: '{0}失败！',
@@ -79,7 +80,8 @@ export const zhCn = {
             software_download: '软件下载',
             download_link: '下载链接',
             metasweeper: '元扫雷',
-            metasweeper_int: '（开源扫雷网官方扫雷软件，包含八种模式的无猜扫雷、第三代录像播放器、自带光学识别求解器。）', // introduction
+            metasweeper_int: '（开源扫雷网官方扫雷软件，开源扫雷网支持其标准、竞速（标准）无猜模式。）', // introduction
+            metasweeper_int2: '（开源扫雷网官方扫雷软件，开源扫雷网支持其标准、标准无猜、强无猜、弱可猜模式。）', // introduction
             arbiter_int: '（同时受到国际网、中国扫雷网、开源扫雷网认可的老牌扫雷软件，只有标准模式。）',
         },
         state: {
@@ -224,6 +226,10 @@ export const zhCn = {
         menuLayout: '菜单排版',
         menuLayoutAbstract: '抽象',
         menuLayoutDefault: '默认',
+        newUserGuide: '新手引导',
+        newUserGuideTooltip: '鼠标在各种地方悬停时获取帮助。',
+        notificationDuration: '通知时长',
+        notificationDurationTooltip: '显示的时间，单位毫秒。<br />值为0则不会自动关闭。',
     },
     team: {
         title: '团队',

@@ -25,7 +25,8 @@ export const en = {
             std: 'Standard',
             nf: 'No Flag',
             ng: 'No Guessing',
-            dg: 'Recursive Chord'
+            dg: 'Recursive Chord',
+            sng: 'Strict No Guessing',
         },
         msg: {
             actionFail: 'Failed to {0}',
@@ -81,6 +82,12 @@ export const en = {
             metasweeper: 'MetaSweeper',
             metasweeper_int: '',
             arbiter_int: '',
+        },
+        state: {
+            a: 'Pending',
+            b: 'Frozen',
+            c: 'Valid',
+            d: 'Identifier Mismatch',
         },
         toDo: 'TODO',
     },
@@ -218,6 +225,10 @@ export const en = {
         menuLayout: 'Menu Layout',
         menuLayoutAbstract: 'Abstract',
         menuLayoutDefault: 'Default',
+        newUserGuide: 'Get Help',
+        newUserGuideTooltip: 'Get help by hovering over components',
+        notificationDuration: 'Notification Duration',
+        notificationDurationTooltip: 'Duration before close. <br />It will not automatically close if set 0.',
     },
     team: {
         title: 'Team',

@@ -47,7 +47,7 @@ def update_list(request):
                     cache.lpush("articles", article)
                 else:
                     ... # 删除或往日志中记录，但问题不大
-            elif article[-3:] == '.md':
+            elif article[-3:] == '.md' and article[0] == "[":
                 cache.lpush("articles", article)
         return HttpResponse("..")
     else:
