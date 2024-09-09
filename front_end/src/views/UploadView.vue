@@ -143,7 +143,7 @@ const push_video_msg = async (uploadFile: UploadFile | UploadRawFile) => {
             timems: aa.get_rtime_ms,
             bbbv: aa.get_bbbv,
             bvs: aa.get_bbbv_s,
-            identifier: decoder.decode(aa.get_player_designator), // 以后应改为get_player_identifier
+            identifier: decoder.decode(aa.get_player_identifier), // 以后应改为get_player_identifier
             review_code: aa.is_valid(),
         }
         ext_stat = get_ext_stat(aa)
