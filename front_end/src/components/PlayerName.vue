@@ -41,7 +41,7 @@
 
 <script setup lang="ts" name="PlayerName">
 // 用户的名字，鼠标移上去以后弹出气泡框，可以访问他的主页
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref } from "vue";
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
 import image_url_default from '@/assets/person.png';
@@ -67,7 +67,6 @@ const data = defineProps({
 const render = ref<Boolean>(false); // 控制只渲染一次
 const visible = ref<Boolean>(false);
 const is_loading = ref(true);
-const popoverRef = ref<any>(null);
 
 const realname = ref("");
 const id = ref("");
