@@ -197,6 +197,9 @@ const submitUpload = async () => {
     while (count < 99) {
         if (i >= video_msgs.value.length) break;
         if (["pass", "identifier"].includes(video_msgs.value[i].status)) {
+            if (video_msgs.value[i].status == "identifier") {
+                store.new_identifier = true;
+            }
             await forceUpload(i);
             count++;
             continue;

@@ -66,6 +66,7 @@ function addIdentifier(identifier: string) {
                 message: t.t('identifierManager.processedNVideos', [response.data.value]),
                 type: 'success'
             })
+            store.new_identifier = false;
         } else if (response.data.category === 'notFound') {
             ElNotification({
                 title: t.t('identifierManager.notFound'),
