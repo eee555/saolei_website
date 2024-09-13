@@ -96,17 +96,7 @@ const review_queue_updating = ref(false);
 
 onMounted(() => {
     update_review_queue()
-    proxy.$axios.get('/video/newest_queue/',
-        {
-            params: {}
-        }
-    ).then(function (response) {
-        for (let key in response.data) {
-            response.data[key] = JSON.parse(response.data[key] as string);
-            response.data[key]["key"] = Number.parseInt(key);
-            newest_queue.value.push(response.data[key]);
-        }
-    })
+    update_newest_queue()
     proxy.$axios.get('/video/news_queue/',
         {
             params: {}
@@ -131,6 +121,23 @@ const update_review_queue = async () => {
         }
     })
     review_queue_updating.value = false
+}
+
+const update_newest_queue = async () => {
+    proxy.$axios.get('/video/newest_queue/',
+        {
+            params: {}
+        }
+    ).then(function (response) {
+        for (let key in response.data) {
+            response.data[key] = JSON.parse(response.data[key] as string);
+            response.data[key]["key"] = Number.parseInt(key);
+            newest_queue.value.push(response.data[key]);
+            if (response.data[key].state == 'd' && response.data[key].player_id == store.user.id) {
+                store.new_identifier = true;
+            }
+        }
+    })
 }
 
 </script>

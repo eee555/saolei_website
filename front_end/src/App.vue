@@ -16,7 +16,9 @@
                         <IconMenuItem :text="store.user.username" icon="User" />
                     </el-menu-item>
                     <el-menu-item index="/settings" style="padding-left: 8px; padding-right: 5px">
-                        <IconMenuItem :text="$t('menu.setting')" icon="Setting" />
+                        <el-badge is-dot :hidden="!store.new_identifier" :offset="[0,15]">
+                            <IconMenuItem :text="$t('menu.setting')" icon="Setting" />
+                        </el-badge>
                     </el-menu-item>
                     <LanguagePicker v-show="local.language_show" style="padding-left: 8px; padding-right: 8px;" />
                     <Login @login="user_login" @logout="user_logout"></Login>

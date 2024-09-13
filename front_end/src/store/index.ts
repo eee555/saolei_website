@@ -23,8 +23,8 @@ export const useUserStore = defineStore('user', {
             is_banned: false,
             country: ""
         },
-        // 登录状态，全局维护
-        login_status: LoginStatus.Undefined,
+        login_status: LoginStatus.Undefined, // 登录状态，全局维护
+        new_identifier: false, // 是否有新标识录像
     }
     ),
 })
