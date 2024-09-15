@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "serve": "vite preview"
+    "serve": "vite preview",
+    "build:fff666": "vite build --mode fff666",
+    "build:openms": "vite build --mode openms"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.1.0",
@@ -30,7 +31,7 @@
     "markdown-it-anchor": "^9.0.1",
     "markdown-it-highlightjs": "^4.0.1",
     "markdown-it-mathjax3": "^4.3.2",
-    "ms-toollib": "^1.4.9",
+    "ms-toollib": "^1.4.10",
     "pinia": "^2.1.7",
     "pinia-plugin-persistedstate": "^3.2.1",
     "uuid": "^9.0.0",

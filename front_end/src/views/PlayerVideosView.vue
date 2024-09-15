@@ -35,9 +35,11 @@ onMounted(() => {
         for (let key in videos) {
             videos[key].key = videos[key].id;
             videos_queue.value.push(videos[key]);
+            if (videos[key].state == 'd' && player.id == store.user.id) {
+                store.new_identifier = true;
+            }
         }
         loading.value = false;
-
     })
 })
 

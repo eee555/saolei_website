@@ -226,8 +226,7 @@ const handleCurrentChange = (val: number) => {
 }
 
 const offsetIndex = (index: number) => {
-    return (state.CurrentPage > 1 || index > 9) ? index + 1 + (state.CurrentPage - 1) * state.PageSize :
-        [..."🥇🥈🥉🏅🏅🏅🏅🏅🏅🏅"][index];
+    return index + 1 + (state.CurrentPage - 1) * state.PageSize;
 }
 
 // 根据配置，刷新当前页面的录像表

@@ -28,6 +28,7 @@
                 </div>
                 <div><el-link href="https://minesweeper.online" target="_blank">Minesweeper.Online</el-link></div>
                 <div><el-link href="http://tapsss.com" target="_blank">扫雷联萌 League of Minesweeper</el-link></div>
+                <div><el-link href="https://scoreganizer.net" target="_blank">Scoreganizer</el-link></div>
             </el-col>
         </el-row>
         <div style="text-align: center">
