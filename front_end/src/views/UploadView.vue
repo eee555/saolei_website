@@ -11,7 +11,7 @@
             <div style="text-align: center;">
                 <el-button @click="submitUpload()" size="large" type="primary" v-show="video_msgs.length > 0"
                     style="display: block;margin: 16px auto;font-size: 18px;width: 220px;">{{
-        $t('profile.upload.uploadAll', [video_msgs.length]) }}</el-button>
+                        $t('profile.upload.uploadAll', [video_msgs.length]) }}</el-button>
                 <el-button @click="cancel_all()" size="small" type="info" v-show="video_msgs.length > 0"
                     style="display: block;margin: 16px auto;width: 120px;">{{ $t('profile.upload.cancelAll')
                     }}</el-button>
@@ -26,9 +26,9 @@
                     <el-descriptions-item :label="$t('common.prop.fileName')">{{ props.row.filename
                         }}</el-descriptions-item>
                     <el-descriptions-item v-if="props.row.videostat != null" :label="$t('common.prop.identifier')">{{
-        props.row.videostat.identifier }}</el-descriptions-item>
+                        props.row.videostat.identifier }}</el-descriptions-item>
                     <el-descriptions-item v-if="props.row.videostat != null" v-for="key in extfields" :label="key">{{
-        props.row.extstat[key] }}</el-descriptions-item>
+                        props.row.extstat[key] }}</el-descriptions-item>
                 </el-descriptions>
             </template>
         </el-table-column>
@@ -39,7 +39,9 @@
         </el-table-column>
         <el-table-column prop="videostat.timems" :label="$t('common.prop.time')" sortable></el-table-column>
         <el-table-column prop="videostat.bbbv" label="3BV" sortable></el-table-column>
-        <el-table-column prop="videostat.bvs" label="3BV/s" sortable></el-table-column>
+        <el-table-column prop="videostat.bvs" label="3BV/s"
+            :formatter="(row: any, column: any, cellValue: any, index: number) => { return to_fixed_n(cellValue, 3) }"
+            sortable></el-table-column>
         <el-table-column :label="$t('common.prop.status')" sortable sort-by="status">
             <template #default="props">
                 {{ $t('profile.upload.error.' + props.row.status) }}
@@ -71,6 +73,7 @@ import type { UploadInstance, UploadProps, UploadUserFile, UploadRawFile, Upload
 // import img_arbiter from '@/assets/img/img_arbiter.png'
 import { useUserStore } from '../store'
 const store = useUserStore()
+import { ms_to_s, to_fixed_n } from "@/utils"
 
 import { useI18n } from 'vue-i18n';
 const t = useI18n();
