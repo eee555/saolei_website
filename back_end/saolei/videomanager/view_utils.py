@@ -18,7 +18,7 @@ for mode in GameModes:
             record_update_fields.append(f"{level}_{stat}_{mode}")
             record_update_fields.append(f"{level}_{stat}_id_{mode}")
 
-video_all_fields = ["id", "upload_time", "player__id", "player__realname", "timems", "bv", "bvs"]
+video_all_fields = ["id", "upload_time", "player__id", "player__realname", "timems", "bv", "bvs", "state"]
 for name in [field.name for field in ExpandVideoModel._meta.get_fields()]:
     video_all_fields.append("video__" + name)
 

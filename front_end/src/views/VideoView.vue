@@ -6,24 +6,27 @@
     </el-row>
 
     <el-row class="mb-4" style="margin-bottom: 10px;">
-        <el-button v-for="(tag, key) in mode_tags" type="success" :plain="!(mode_tag_selected == key)" :size="'small'"
+        <el-button v-for="(tag, key) in mode_tags" type="success" :plain="!(mode_tag_selected == key)" size="small"
             @click="mode_tag_selected = key as string; request_videos();">{{ tag.name }}</el-button>
     </el-row>
 
     <el-row class="mb-4" style="margin-bottom: 10px;">
-        <el-button v-for="(value, key) in index_tags" type="primary" :plain="!value.selected" :size="'small'"
+        <el-button v-for="(value, key) in index_tags" type="primary" :plain="!value.selected" size="small"
             @click="index_select(key, value)">{{ $t('common.prop.' + key)
             }}</el-button>
     </el-row>
 
+    <el-descriptions title="筛选条件">
+        <el-descriptions-item label="审核状态">
+            <VideoStateFilter v-model="videostates" @change="request_videos" />
+        </el-descriptions-item>
+    </el-descriptions>
     <div style="font-size:20px;margin: auto;margin-top: 10px;">
-        <el-table :data="videoList" @sort-change="handleSortChange" @row-click="(row: any) => preview(row.id)" border table-layout="auto">
+        <el-table :data="videoList" @sort-change="handleSortChange" @row-click="(row: any) => preview(row.id)" border
+            table-layout="auto">
+            <VideoViewState />
             <el-table-column type="index" :index="offsetIndex" fixed></el-table-column>
-            <el-table-column :label="$t('common.prop.realName')" v-slot="scope" width="auto">
-                <span class="nobr">
-                    <PlayerName class="name" :user_id="scope.row.player__id" :user_name="scope.row.player__realname" />
-                </span>
-            </el-table-column>
+            <VideoViewRealname />
             <el-table-column v-for="key in selected_index()" :prop="index_tags[key].key"
                 :label="$t('common.prop.' + key)" sortable="custom"
                 :sort-orders="index_tags[key].reverse ? (['descending', 'ascending']) : (['ascending', 'descending'])"
@@ -45,7 +48,13 @@
 // 全网录像的检索器，根据三个维度排序
 import { onMounted, ref, reactive } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
-import PlayerName from '@/components/PlayerName.vue';
+
+import VideoStateFilter from '@/components/Filters/VideoStateFilter.vue';
+const videostates = ref(['a', 'b', 'c', 'd'])
+
+import VideoViewRealname from '@/components/tableColumns/VideoViewRealname.vue';
+import VideoViewState from '@/components/tableColumns/VideoViewState.vue';
+
 const { proxy } = useCurrentInstance();
 import { utc_to_local_format } from "@/utils/system/tools";
 import { ms_to_s } from "@/utils";
@@ -231,16 +240,19 @@ const offsetIndex = (index: number) => {
 
 // 根据配置，刷新当前页面的录像表
 const request_videos = () => {
+    let params: { [key: string]: any } = {};
+    params["level"] = level_tags[level_tag_selected.value].key;
+    params["mode"] = mode_tags[mode_tag_selected.value].key;
+    params["o"] = index_tags[index_tag_selected.value].key;
+    params["r"] = state.ReverseOrder;
+    params["ps"] = state.PageSize;
+    params["page"] = state.CurrentPage;
+    if (videostates.value.length != 4) {
+        params['s'] = videostates.value;
+    }
     proxy.$axios.get('/video/query/',
         {
-            params: {
-                level: level_tags[level_tag_selected.value].key,
-                mode: mode_tags[mode_tag_selected.value].key,
-                o: index_tags[index_tag_selected.value].key, // order by
-                r: state.ReverseOrder, // reverse order
-                ps: state.PageSize, // page size
-                page: state.CurrentPage,
-            }
+            params: params,
         }
     ).then(function (response) {
         const data = JSON.parse(response.data);
