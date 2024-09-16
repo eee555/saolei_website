@@ -16,8 +16,8 @@
             }}</el-button>
     </el-row>
 
-    <el-descriptions title="筛选条件">
-        <el-descriptions-item label="审核状态">
+    <el-descriptions :title="$t('common.filter')">
+        <el-descriptions-item :label="$t('common.prop.state')">
             <VideoStateFilter v-model="videostates" @change="request_videos" />
         </el-descriptions-item>
     </el-descriptions>

@@ -14,6 +14,7 @@ export const zhCn = {
             uploadFile: '上传文件',
             videoQuery: '查询录像',
         },
+        filter: '筛选',
         hide: '隐藏',
         level: {
             b: '初级',
@@ -59,6 +60,7 @@ export const zhCn = {
             op: '空',
             realName: '姓名',
             sex: '性别',
+            state: '状态', // 录像属性
             status: '状态',
             time: '用时',
             timems: '用时',
