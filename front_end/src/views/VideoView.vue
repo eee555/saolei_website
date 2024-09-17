@@ -18,7 +18,7 @@
 
     <el-descriptions :title="$t('common.filter')">
         <el-descriptions-item :label="$t('common.prop.state')">
-            <VideoStateFilter v-model="videostates" @change="request_videos" />
+            <VideoStateFilter v-model="videofilter.filter_state" @change="request_videos" />
         </el-descriptions-item>
     </el-descriptions>
     <div style="font-size:20px;margin: auto;margin-top: 10px;">
@@ -38,7 +38,7 @@
 
     <div style="margin-top: 16px;">
         <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
-            :current-page="state.CurrentPage" :page-sizes="[10, 20, 50, 100]" :page-size="state.PageSize"
+            :current-page="state.CurrentPage" :page-sizes="[20, 50, 100]" :page-size="videofilter.pagesize"
             layout="total, sizes, prev, pager, next, jumper" :total="state.VideoCount">
         </el-pagination>
     </div>
@@ -50,7 +50,6 @@ import { onMounted, ref, reactive } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 
 import VideoStateFilter from '@/components/Filters/VideoStateFilter.vue';
-const videostates = ref(['a', 'b', 'c', 'd'])
 
 import VideoViewRealname from '@/components/tableColumns/VideoViewRealname.vue';
 import VideoViewState from '@/components/tableColumns/VideoViewState.vue';
@@ -63,6 +62,9 @@ import { preview } from '@/utils/common/PlayerDialog';
 import { useI18n } from 'vue-i18n';
 import { generalNotification } from '@/utils/system/status';
 const t = useI18n();
+
+import { useVideoFilter } from '@/store';
+const videofilter = useVideoFilter();
 
 const level_tag_selected = ref("EXPERT");
 const mode_tag_selected = ref("STD");
@@ -225,7 +227,7 @@ const handleSortChange = (sort: any) => {
 }
 
 const handleSizeChange = (val: number) => {
-    state.PageSize = val;
+    videofilter.pagesize = val;
     request_videos();
 }
 
@@ -235,7 +237,7 @@ const handleCurrentChange = (val: number) => {
 }
 
 const offsetIndex = (index: number) => {
-    return index + 1 + (state.CurrentPage - 1) * state.PageSize;
+    return index + 1 + (state.CurrentPage - 1) * videofilter.pagesize;
 }
 
 // 根据配置，刷新当前页面的录像表
@@ -245,10 +247,10 @@ const request_videos = () => {
     params["mode"] = mode_tags[mode_tag_selected.value].key;
     params["o"] = index_tags[index_tag_selected.value].key;
     params["r"] = state.ReverseOrder;
-    params["ps"] = state.PageSize;
+    params["ps"] = videofilter.pagesize;
     params["page"] = state.CurrentPage;
-    if (videostates.value.length != 4) {
-        params['s'] = videostates.value;
+    if (![0,4].includes(videofilter.filter_state.length)) {
+        params['s'] = videofilter.filter_state;
     }
     proxy.$axios.get('/video/query/',
         {

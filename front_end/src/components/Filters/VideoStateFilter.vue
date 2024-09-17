@@ -9,7 +9,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 
-const checkboxGroup = defineModel({default: ['a', 'b', 'c', 'd']});
+const checkboxGroup = defineModel();
 
 const statelist = [
     {state: 'c'},
