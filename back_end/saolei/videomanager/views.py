@@ -99,7 +99,7 @@ def video_download(request):
 # 按任何基础指标+难度+模式，排序，分页
 # 每项的定义参见 front_end/src/views/VideoView.vue 的 request_videos 函数
 
-@ratelimit(key='ip', rate='20/m')
+@ratelimit(key='ip', rate='60/m')
 @require_GET
 def video_query(request):
     data = request.GET
@@ -122,6 +122,10 @@ def video_query(request):
     else:
         filter = {"level": data["level"]}
         videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(**filter).order_by(*orderby).values(*values)
+    
+    states = data.getlist("s[]")
+    if states:
+        videos = videos.filter(state__in=states)
 
     # print(videos)
     paginator = Paginator(videos, data["ps"])

@@ -14,6 +14,7 @@ export const en = {
             uploadFile: 'upload file',
             videoQuery: 'fetch video data',
         },
+        filter: 'Filter',
         hide: 'Hide',
         level: {
             b: 'Beginner',
@@ -59,6 +60,7 @@ export const en = {
             op: 'Opening',
             realName: 'Real Name',
             sex: 'Sex',
+            state: 'State', // video attribute
             status: 'Status',
             time: 'Time',
             timems: 'Time',
