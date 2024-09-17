@@ -52,7 +52,7 @@ export const useLocalStore = defineStore('local', {
 
 export const useVideoFilter = defineStore('videofilter', {
     state: () => ({
-        pagesize: 20,
+        pagesize: 100,
         level: 'e',
         filter_state: ['a','b','c','d'],
     }),
