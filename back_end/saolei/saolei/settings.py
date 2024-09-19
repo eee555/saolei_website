@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'article',
     "ranking",
     'identifier',
+    'accountlink',
     "monitor",
     'django_cleanup.apps.CleanupConfig', # 必须放在最后(文档所言)
 ]
