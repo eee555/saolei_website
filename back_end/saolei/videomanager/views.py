@@ -118,14 +118,18 @@ def video_query(request):
             
     if data["mode"] != "00":
         filter = {"level": data["level"], "mode": data["mode"]}
-        videos = VideoModel.objects.filter(**filter).order_by(*orderby).values(*values)
+        videos = VideoModel.objects.filter(**filter)
     else:
         filter = {"level": data["level"]}
-        videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(**filter).order_by(*orderby).values(*values)
+        videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(**filter)
     
+    videos = videos.filter(bv__range=(data["bmin"],data["bmax"]))
+
     states = data.getlist("s[]")
     if states:
         videos = videos.filter(state__in=states)
+
+    videos = videos.order_by(*orderby).values(*values)
 
     # print(videos)
     paginator = Paginator(videos, data["ps"])

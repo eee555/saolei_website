@@ -20,6 +20,9 @@
         <el-descriptions-item :label="$t('common.prop.state')">
             <VideoStateFilter v-model="videofilter.filter_state" @change="request_videos" />
         </el-descriptions-item>
+        <el-descriptions-item :label="$t('common.prop.bbbv')">
+            <BBBVFilter @change="request_videos" :level="level_tags[level_tag_selected].key"/>
+        </el-descriptions-item>
     </el-descriptions>
     <div style="font-size:20px;margin: auto;margin-top: 10px;">
         <el-table :data="videoList" @sort-change="handleSortChange" @row-click="(row: any) => preview(row.id)" border
@@ -50,6 +53,7 @@ import { onMounted, ref, reactive } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 
 import VideoStateFilter from '@/components/Filters/VideoStateFilter.vue';
+import BBBVFilter from '@/components/Filters/BBBVFilter.vue';
 
 import VideoViewRealname from '@/components/tableColumns/VideoViewRealname.vue';
 import VideoViewState from '@/components/tableColumns/VideoViewState.vue';
@@ -75,7 +79,6 @@ const index_visible = ref(true);
 const state = reactive({
     tableLoading: false,
     CurrentPage: 1,
-    PageSize: 10,
     VideoCount: 0,
     ReverseOrder: false,
     Total: 3
@@ -105,11 +108,19 @@ interface TagsReverse {
     [index: string]: NameKeyReverse;
 }
 
-const level_tags: Tags = {
-    "BEGINNER": { name: "初级", key: "b" },
-    "INTERMEDIATE": { name: "中级", key: "i" },
-    "EXPERT": { name: "高级", key: "e" }
-};
+interface LevelTag {
+    [index: string]: {
+        key: string,
+        min: number,
+        max: number,
+    }
+}
+
+const level_tags: LevelTag = reactive({
+    "BEGINNER": { key: "b", min: 1, max: 54 },
+    "INTERMEDIATE": { key: "i", min: 30, max: 216 },
+    "EXPERT": { key: "e", min: 100, max: 381 },
+});
 
 const mode_tags: Tags = {
     "STD": { name: "标准", key: "00" },
@@ -249,6 +260,8 @@ const request_videos = () => {
     params["r"] = state.ReverseOrder;
     params["ps"] = videofilter.pagesize;
     params["page"] = state.CurrentPage;
+    params["bmin"] = videofilter.bbbv_range[level_tags[level_tag_selected.value].key][0];
+    params["bmax"] = videofilter.bbbv_range[level_tags[level_tag_selected.value].key][1];
     if (![0,4].includes(videofilter.filter_state.length)) {
         params['s'] = videofilter.filter_state;
     }
