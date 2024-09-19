@@ -4,8 +4,8 @@ from userprofile.models import UserProfile
 
 # 用于验证的队列
 class AccountLinkQueue(models.Model):
-    platform = models.CharField(max_length=1)
-    identifier = models.BigIntegerField()
+    platform = models.CharField(max_length=1, null=False)
+    identifier = models.CharField(max_length=50, null=False)
     userprofile = models.ForeignKey(UserProfile)
     verified = models.BooleanField(default=False)
 
