@@ -5,11 +5,11 @@
         </div>
         <div>
             <el-input-number size="small" :step-strictly="true" v-model="range[0]" :min="props.min" :max="range[1]"
-                :value-on-clear="props.min">
+                :value-on-clear="props.min" @change="$emit('change', range)">
             </el-input-number>
             {{ text }}
             <el-input-number size="small" :step-strictly="true" v-model="range[1]" :min="range[0]" :max="props.max"
-                :value-on-clear="props.max">
+                :value-on-clear="props.max" @change="$emit('change', range)">
             </el-input-number>
         </div>
     </div>
