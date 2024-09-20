@@ -276,7 +276,7 @@ def player_rank(request):
         data=request.GET
         # num_player = cache.llen(data["ids"])
         num_player = cache.zcard(data["ids"])
-        start_idx = 20 * int(data["page"])
+        start_idx = 20 * (int(data["page"]) - 1)
         if start_idx >= num_player:
             start_idx = num_player // 20 * 20
         if num_player % 20 == 0 and num_player > 0:
