@@ -2,6 +2,7 @@
 rm -rf ../../font_end
 rm -rf /root/saolei/static
 python3 manage.py collectstatic --noinput
+rm -rf ./dist
 python3 manage.py makemigrations
 python3 manage.py migrate
 python3 manage.py runapschedulermonitor
