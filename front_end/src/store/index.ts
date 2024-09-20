@@ -49,3 +49,17 @@ export const useLocalStore = defineStore('local', {
     }),
     persist: true,
 })
+
+export const useVideoFilter = defineStore('videofilter', {
+    state: () => ({
+        pagesize: 100,
+        level: 'e',
+        filter_state: ['a','b','c','d'],
+        bbbv_range: {
+            'b': [2,54],
+            'i': [30,216],
+            'e': [100,381],
+        }
+    }),
+    persist: true
+})
