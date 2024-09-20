@@ -33,6 +33,7 @@ urlpatterns = [
     path('monitor/', include('monitor.urls')),
     path('article/', include('article.urls')),
     path('identifier/', include('identifier.urls')),
+    path('accountlink/', include('accountlink.urls')),
     path(r'', TemplateView.as_view(template_name="index.html")),
 ]
 

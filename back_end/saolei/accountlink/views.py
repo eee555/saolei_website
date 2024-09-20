@@ -23,12 +23,10 @@ def add_link(request):
 @require_GET
 def get_link(request):
     userid = request.POST.get("id")
-    user = UserProfile.objects.get(id=userid)
-    platform = request.POST.get("platform")
-    if platform in private_platforms and not request.user.is_staff and request.user != user:
-        return HttpResponseForbidden() # 非管理员不能查其他人的私人账号
-    accountlink = AccountLinkQueue.objects.filter(platform=platform, userprofile=user).first()
-    if not accountlink:
-        return HttpResponseNotFound()
-    return JsonResponse(accountlink)
+    user = UserProfile.objects.filter(id=userid).first()
+    accountlink = AccountLinkQueue.objects.filter(userprofile=user)
+    print(accountlink)
+    if not request.user.is_staff and request.user != user:
+        accountlink = accountlink.exclude(platform__in=private_platforms).values("platform","identifier","verified") # 非管理员不能查其他人的私人账号
+    return JsonResponse(list(accountlink), safe=False)
 
