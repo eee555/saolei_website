@@ -24,6 +24,14 @@
             <el-form-item label="ID">
                 <el-input v-model="form.identifier" maxlength="128" />
             </el-form-item>
+            <el-form-item v-if="form.platform == 'c'">
+                <el-text>
+                    <b>如何找到ID</b><br />
+                    登录<el-link href="http://saolei.wang" target="_blank" style="vertical-align: bottom;"
+                        :underline="false">扫雷网</el-link>，进入“我的地盘”，ID位置如下图所示。<br />
+                    <img src="../assets/IdGuideSaolei.png" width="100%" />
+                </el-text>
+            </el-form-item>
             <el-form-item>
                 <el-button type="primary" :disabled="!formValid" @click.prevent="addLink(); formvisible=false;">确认</el-button>
                 <el-button @click.prevent="formvisible=false">取消</el-button>
