@@ -27,3 +27,9 @@ class AccountLinkQueue(models.Model):
 # X - X
 # Y - YouTube
 # Z - Zhihu
+
+# 扫雷网账号信息
+class AccountSaolei(models.Model):
+    id = models.IntegerField(primary_key=True)
+    update_time = models.DateTimeField(auto_now_add=True)
+    # 和utils.update_saolei_account同步更新attribute表
