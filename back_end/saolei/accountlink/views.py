@@ -45,3 +45,46 @@ def get_link(request):
         accountlink = accountlink.exclude(platform__in=private_platforms) # 非管理员不能查其他人的私人账号
     return JsonResponse(list(accountlink), safe=False)
 
+@require_POST
+@staff_member_required
+def verify_link(request):
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+    userid = request.GET.get("id")
+    user = UserProfile.objects.filter(id=userid).first()
+    platform = request.POST.get('platform')
+    if platform == None:
+        return HttpResponseBadRequest()
+    identifier = request.POST.get('identifier')
+    if identifier == None:
+        return HttpResponseBadRequest()
+    collision = AccountLinkQueue.objects.filter(platform=platform,identifier=identifier,verified=True).first()
+    if collision: # 该平台该ID已被绑定
+        if collision.userprofile == user:
+            return HttpResponse()
+        else:
+            return HttpResponseConflict()
+    accountlink = AccountLinkQueue.objects.filter(platform=platform,identifier=identifier).first()
+    if not accountlink:
+        return HttpResponseNotFound()
+    accountlink.verified = True
+    accountlink.save()
+    return HttpResponse()
+
+@require_POST
+def unverify_link(request):
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+    userid = request.GET.get("id")
+    user = UserProfile.objects.filter(id=userid).first()
+    if not user:
+        return HttpResponseNotFound()
+    platform = request.POST.get('platform')
+    identifier = request.POST.get('identifier')
+    accountlink = AccountLinkQueue.objects.filter(userprofile=user,platform=platform,identifier=identifier).first()
+    if not accountlink:
+        return HttpResponseNotFound()
+    accountlink.verified = False
+    accountlink.save()
+    return HttpResponse()
+    

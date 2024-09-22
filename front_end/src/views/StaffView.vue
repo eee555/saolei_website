@@ -39,6 +39,8 @@
     <el-descriptions title="VideoModel">
         <el-descriptions-item v-for="(value, field) in videomodel" :label="field">{{ value }}</el-descriptions-item>
     </el-descriptions>
+    <el-divider />
+    <StaffAccountLink />
 </template>
 
 <script lang="ts" setup>
@@ -50,6 +52,7 @@ import { ref } from 'vue';
 
 import { useI18n } from 'vue-i18n';
 import { preview } from '@/utils/common/PlayerDialog';
+import StaffAccountLink from '@/components/staff/StaffAccountLink.vue';
 const t = useI18n();
 
 const { proxy } = useCurrentInstance();

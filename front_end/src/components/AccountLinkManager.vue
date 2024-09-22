@@ -46,6 +46,7 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { useUserStore } from '@/store';
 import { Action, ElMessageBox } from 'element-plus';
+import { platformlist } from '@/utils/common/accountLinkPlatforms'
 
 interface AccountLink {
     platform: string;
@@ -61,9 +62,6 @@ const form = reactive({
     platform: '',
     identifier: '',
 })
-const platformlist = [
-    { key: 'c', name: '扫雷网', },
-]
 
 const refresh = () => {
     proxy.$axios.get('accountlink/get/',
