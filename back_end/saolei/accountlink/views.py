@@ -46,7 +46,6 @@ def get_link(request):
     return JsonResponse(list(accountlink), safe=False)
 
 @require_POST
-@staff_member_required
 def verify_link(request):
     if not request.user.is_staff:
         return HttpResponseForbidden()
