@@ -30,6 +30,24 @@ class AccountLinkQueue(models.Model):
 
 # 扫雷网账号信息
 class AccountSaolei(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.PositiveIntegerField(primary_key=True)
     update_time = models.DateTimeField(auto_now_add=True)
-    # 和utils.update_saolei_account同步更新attribute表
+
+    name = models.CharField(max_length=10) # 姓名，10应该够了吧
+    total_views = models.PositiveIntegerField(default=0) # 综合人气
+
+    beg_count = models.PositiveSmallIntegerField(default=0) # 初级录像数量
+    int_count = models.PositiveSmallIntegerField(default=0) # 中级录像数量
+    exp_count = models.PositiveSmallIntegerField(default=0) # 高级录像数量
+
+    # time纪录，单位毫秒
+    b_t_ms = models.PositiveIntegerField(null=True)
+    i_t_ms = models.PositiveIntegerField(null=True)
+    e_t_ms = models.PositiveIntegerField(null=True)
+    s_t_ms = models.PositiveIntegerField(null=True)
+
+    # bvs纪录，单位0.01。大概不会有人bvs超过300吧？大概吧？
+    b_b_cent = models.PositiveSmallIntegerField(null=True)
+    i_b_cent = models.PositiveSmallIntegerField(null=True)
+    e_b_cent = models.PositiveSmallIntegerField(null=True)
+    s_b_cent = models.PositiveSmallIntegerField(null=True)
