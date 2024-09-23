@@ -1,15 +1,37 @@
 <template>
     <el-table :data="accountlinks">
-        <el-table-column prop="platform" label="平台" />
-        <el-table-column prop="identifier" label="ID" />
-        <el-table-column prop="verified" label="状态" />
-        <el-table-column label="操作">
+        <el-table-column label="平台">
             <template #default="scope">
-                <el-link :underline="false" @click.prevent="deleteRow(scope.$index)">删除</el-link>
+                <PlatformIcon :platform="scope.row.platform"/>
+            </template>
+        </el-table-column>
+        <el-table-column label="ID">
+            <template #default="scope">
+                <el-link v-if="scope.row.platform == 'a'" :href="'https://minesweepergame.com/profile.php?pid=' + scope.row.identifier" target="_blank">{{ scope.row.identifier }}</el-link>
+                <el-link v-else-if="scope.row.platform == 'c'" :href="'http://saolei.wang/Player/Index.asp?Id=' + scope.row.identifier" target="_blank">{{ scope.row.identifier }}</el-link>
+                <el-link v-else-if="scope.row.platform == 'w'" :href="'https://minesweeper.online/player/' + scope.row.identifier" target="_blank">{{ scope.row.identifier }}</el-link>
+                <el-text v-else>{{ scope.row.identifier }}</el-text>
+            </template>
+        </el-table-column>
+        <el-table-column v-if="store.player.id==store.user.id" label="状态">
+            <template #default="scope">
+                <el-tooltip v-if="scope.row.verified" content="已验证">
+                    <el-text type="success"><el-icon><CircleCheck/></el-icon></el-text>
+                </el-tooltip>
+                <el-tooltip v-else content="未验证，请联系管理员">
+                    <el-text><el-icon><Clock/></el-icon></el-text>
+                </el-tooltip>
+            </template>
+        </el-table-column>
+        <el-table-column v-if="store.player.id==store.user.id" label="操作">
+            <template #default="scope">
+                <el-link :underline="false" @click.prevent="deleteRow(scope.$index)"><el-icon>
+                        <Delete />
+                    </el-icon></el-link>
             </template>
         </el-table-column>
     </el-table>
-    <el-button style="width:100%" @click="formvisible = true">
+    <el-button v-if="store.player.id==store.user.id" style="width:100%" @click="formvisible = true">
         <el-icon>
             <Plus />
         </el-icon>
@@ -33,8 +55,9 @@
                 </el-text>
             </el-form-item>
             <el-form-item>
-                <el-button type="primary" :disabled="!formValid" @click.prevent="addLink(); formvisible=false;">确认</el-button>
-                <el-button @click.prevent="formvisible=false">取消</el-button>
+                <el-button type="primary" :disabled="!formValid"
+                    @click.prevent="addLink(); formvisible = false;">确认</el-button>
+                <el-button @click.prevent="formvisible = false">取消</el-button>
             </el-form-item>
         </el-form>
     </el-dialog>
@@ -47,6 +70,7 @@ import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { useUserStore } from '@/store';
 import { Action, ElMessageBox } from 'element-plus';
 import { platformlist } from '@/utils/common/accountLinkPlatforms'
+import PlatformIcon from './widgets/PlatformIcon.vue';
 
 interface AccountLink {
     platform: string;
@@ -99,10 +123,10 @@ const addLink = () => {
 
 const deleteRow = (index: number) => {
     ElMessageBox.confirm(accountlinks.value[index], '确认删除以下账号关联吗？').then(() => {
-        proxy.$axios.post('accountlink/delete/', {platform: accountlinks.value[index].platform}).then(function (response) {
+        proxy.$axios.post('accountlink/delete/', { platform: accountlinks.value[index].platform }).then(function (response) {
             refresh()
         })
-    }).catch(() => {})
+    }).catch(() => { })
 }
 
 </script>

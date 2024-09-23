@@ -34,9 +34,6 @@
     <el-divider />
     <el-descriptions v-if="store.login_status == LoginStatus.IsLogin" :title="$t('identifierManager.title')"></el-descriptions>
     <IdentifierManager v-if="store.login_status == LoginStatus.IsLogin"/>
-    <el-divider />
-    <el-descriptions v-if="store.login_status == LoginStatus.IsLogin" title="账号关联"></el-descriptions>
-    <AccountLinkManager v-if="store.login_status == LoginStatus.IsLogin"/>
 </template>
 
 <script lang="ts" setup name="UserSettings">
