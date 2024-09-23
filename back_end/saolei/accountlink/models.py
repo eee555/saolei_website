@@ -51,3 +51,20 @@ class AccountSaolei(models.Model):
     i_b_cent = models.PositiveSmallIntegerField(null=True)
     e_b_cent = models.PositiveSmallIntegerField(null=True)
     s_b_cent = models.PositiveSmallIntegerField(null=True)
+
+class AccountMinesweeperGames(models.Model):
+    id = models.PositiveIntegerField(primary_key=True)
+    update_time = models.DateTimeField(auto_now_add=True)
+
+class AccountWorldOfMinesweeper(models.Model):
+    id = models.PositiveIntegerField(primary_key=True)
+    update_time = models.DateTimeField(auto_now_add=True)
+
+    # name = models.CharField()
+    # local_name = models.CharField()
+    # country = models.CharField()
+    # state = models.CharField()
+    # joined = models.DateField()
+    # mouse_brand = models.CharField()
+    # mouse_type = models.CharField()
+    # mouse_model = models.CharField() 用户自己随便填的，需要审查
