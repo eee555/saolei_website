@@ -40,9 +40,10 @@ def delete_link(request):
 def get_link(request):
     userid = request.GET.get("id")
     user = UserProfile.objects.filter(id=userid).first()
-    accountlink = AccountLinkQueue.objects.filter(userprofile=user).values("platform","identifier","verified")
-    if not request.user.is_staff and request.user != user:
-        accountlink = accountlink.exclude(platform__in=private_platforms) # 非管理员不能查其他人的私人账号
+    if request.user.is_staff or userid == request.user.id: # 管理员或用户本人可以获得全部数据
+        accountlink = AccountLinkQueue.objects.filter(userprofile=user).values("platform","identifier","verified")
+    else: # 其他人不能获得未绑定账号与私人账号数据
+        accountlink = AccountLinkQueue.objects.filter(userprofile=user,verified=True).exclude(platform__in=private_platforms).values("platform","identifier")
     return JsonResponse(list(accountlink), safe=False)
 
 @require_POST
