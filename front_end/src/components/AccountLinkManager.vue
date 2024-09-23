@@ -91,7 +91,7 @@ const refresh = () => {
     proxy.$axios.get('accountlink/get/',
         {
             params: {
-                id: store.user.id
+                id: store.player.id
             }
         }
     ).then(function (response) {
