@@ -40,7 +40,7 @@
         <el-form :model="form">
             <el-form-item label="平台">
                 <el-select v-model="form.platform">
-                    <el-option v-for="item in platformlist" :value="item.key" :label="item.name" />
+                    <el-option v-for="item in platformlist" :value="item.key" :label="item.name" :disabled="userHasPlatform(item.key)"/>
                 </el-select>
             </el-form-item>
             <el-form-item label="ID">
@@ -127,6 +127,13 @@ const deleteRow = (index: number) => {
             refresh()
         })
     }).catch(() => { })
+}
+
+const userHasPlatform = (platform: string) => {
+    for (let item of accountlinks.value) {
+        if (item.platform == platform) return true;
+    }
+    return false;
 }
 
 </script>
