@@ -14,6 +14,10 @@ export const zhCn = {
             uploadFile: '上传文件',
             videoQuery: '查询录像',
         },
+        button: {
+            cancel: '取消',
+            confirm: '确认',
+        },
         filter: '筛选',
         hide: '隐藏',
         level: {
@@ -93,6 +97,16 @@ export const zhCn = {
             d: '标识不匹配',
         },
         toDo: '敬请期待',
+    },
+    accountlink: {
+        addLink: '添加关联账号',
+        deleteLinkMessage: '确认删除以下账号关联吗？',
+        guideSaolei1: '登录',
+        guideSaolei2: '，进入“我的地盘”，ID位置如下图所示。',
+        guideTitle: '如何找到ID',
+        platform: '平台',
+        unverified: '未验证，请联系管理员',
+        verified: '已验证',
     },
     footer: {
         contact: '联系我们',

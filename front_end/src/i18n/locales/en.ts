@@ -14,6 +14,10 @@ export const en = {
             uploadFile: 'upload file',
             videoQuery: 'fetch video data',
         },
+        button: {
+            cancel: 'Cancel',
+            confirm: 'Confirm',
+        },
         filter: 'Filter',
         hide: 'Hide',
         level: {
@@ -92,6 +96,16 @@ export const en = {
             d: 'Identifier Mismatch',
         },
         toDo: 'TODO',
+    },
+    accountlink: {
+        addLink: 'Link New Account',
+        deleteLinkMessage: 'Are you sure to unlink this account?',
+        guideSaolei1: 'Log into ',
+        guideSaolei2: ' and enter "我的地盘". The positions of the ID are shown below.',
+        guideTitle: 'How to locate the ID',
+        platform: 'Platform',
+        unverified: 'Pending. Please contact the moderator.',
+        verified: 'Verified',
     },
     footer: {
         contact: 'Contact',
