@@ -2,7 +2,7 @@
     <el-text v-if="platform=='a'">
         Authoritative Minesweeper
     </el-text>
-    <el-link v-else-if="platform=='c'" href="http://saolei.wang/" target="_blank">
+    <el-link v-else-if="platform=='c'" href="http://saolei.wang/" target="_blank" style="vertical-align: bottom;">
         扫雷网
     </el-link>
     <el-text v-else-if="platform=='g'">
