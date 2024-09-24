@@ -29,8 +29,7 @@
         </div>
         <div v-for="(player, key) in playerData" style="margin-top: 10px;">
 
-            <span class="rank">{{ state.CurrentPage > 1 ? key - 19 + (state.CurrentPage) * 20 :
-            [..."🥇🥈🥉🏅🏅🏅🏅🏅🏅🏅", 11, 12, 13, 14, 15, 16, 17, 18, 19, 20][key] }}</span>
+            <span class="rank">{{ key - 19 + (state.CurrentPage) * 20 }}</span>
             <!-- <span class="name">{{ player.name }}</span> -->
             <PlayerName class="name" :user_id="player.name_id" :user_name="player.name"></PlayerName>
             <!-- <span class="beginner">{{ to_fixed_n(player.beginner, 3) }}</span> -->
@@ -63,7 +62,7 @@
 
 <script lang="ts" setup>
 // 玩家排行榜
-import { onMounted, ref, Ref, reactive } from 'vue'
+import { onMounted, ref, reactive } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import { to_fixed_n, ms_to_s } from "@/utils";
 import PreviewNumber from '@/components/PreviewNumber.vue';

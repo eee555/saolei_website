@@ -98,7 +98,6 @@ import { Plus } from '@element-plus/icons-vue'
 import imageUrlDefault from '@/assets/person.png'
 const imageUrl = ref(imageUrlDefault)
 const avatar_changed = ref(false);
-import { Record } from "@/utils/common/structInterface";
 import { compressAccurately } from 'image-conversion';
 import { useUserStore } from '../store'
 const store = useUserStore()
@@ -176,6 +175,7 @@ function refresh() {
         popularity.value = data.popularity;
         realname_edit.value = data.realname;
         signature_edit.value = data.signature;
+        identifiers.value.length = 0;
         identifiers.value.push(...data.identifiers);
         // console.log(imageUrl);
         if (data.avatar) {

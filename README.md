@@ -28,13 +28,18 @@
 1. python manage.py migrate userprofile
 1. python manage.py migrate
 1. python manage.py runserver --nostatic
-1. （可选，假如要启动定时任务，不做相关功能时可以不启动）python manage.py runapschedulermonitor
+1. （可选，假如要启动定时任务，不做相关功能时可以不启动）
+   ```
+   python manage.py runapschedulermonitor
+   python manage.py runapscheduleruserprofile
+   python manage.py runapschedulervideomanager
+   ```
 
 前端：
 1. 从[https://github.com/eee555/flop-player/releases/download/v1.1/dist.zip](https://github.com/eee555/flop-player/releases/download/v1.1/dist.zip)下载新版flop播放器，并解压到saolei_website\front_end\public\flop下（将文件夹的名称dist修改为flop），使得saolei_website\front_end\public\flop\index.html能够被找到
-1. cd saolei_website\front_end
-1. 如果使用npm，则npm install；如果知道什么是yarn且使用yarn，则yarn
-1. 如果使用npm，则npm run dev；如果知道什么是yarn且使用yarn，则yarn dev
+2. cd saolei_website\front_end
+3. 如果使用npm，则npm install；如果知道什么是yarn且使用yarn，则yarn
+4. 如果使用npm，则npm run dev；如果知道什么是yarn且使用yarn，则yarn dev
 
 特殊的调试参数：位于`backend\saolei\config\flags.py`
 

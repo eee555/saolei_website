@@ -6,24 +6,30 @@
     </el-row>
 
     <el-row class="mb-4" style="margin-bottom: 10px;">
-        <el-button v-for="(tag, key) in mode_tags" type="success" :plain="!(mode_tag_selected == key)" :size="'small'"
+        <el-button v-for="(tag, key) in mode_tags" type="success" :plain="!(mode_tag_selected == key)" size="small"
             @click="mode_tag_selected = key as string; request_videos();">{{ tag.name }}</el-button>
     </el-row>
 
     <el-row class="mb-4" style="margin-bottom: 10px;">
-        <el-button v-for="(value, key) in index_tags" type="primary" :plain="!value.selected" :size="'small'"
+        <el-button v-for="(value, key) in index_tags" type="primary" :plain="!value.selected" size="small"
             @click="index_select(key, value)">{{ $t('common.prop.' + key)
             }}</el-button>
     </el-row>
 
+    <el-descriptions :title="$t('common.filter')">
+        <el-descriptions-item :label="$t('common.prop.state')">
+            <VideoStateFilter v-model="videofilter.filter_state" @change="request_videos" />
+        </el-descriptions-item>
+        <el-descriptions-item :label="$t('common.prop.bbbv')">
+            <BBBVFilter @change="request_videos" :level="level_tags[level_tag_selected].key"/>
+        </el-descriptions-item>
+    </el-descriptions>
     <div style="font-size:20px;margin: auto;margin-top: 10px;">
-        <el-table :data="videoList" @sort-change="handleSortChange" @row-click="(row: any) => preview(row.id)" border table-layout="auto">
+        <el-table :data="videoList" @sort-change="handleSortChange" @row-click="(row: any) => preview(row.id)" border
+            table-layout="auto">
+            <VideoViewState />
             <el-table-column type="index" :index="offsetIndex" fixed></el-table-column>
-            <el-table-column :label="$t('common.prop.realName')" v-slot="scope" width="auto">
-                <span class="nobr">
-                    <PlayerName class="name" :user_id="scope.row.player__id" :user_name="scope.row.player__realname" />
-                </span>
-            </el-table-column>
+            <VideoViewRealname />
             <el-table-column v-for="key in selected_index()" :prop="index_tags[key].key"
                 :label="$t('common.prop.' + key)" sortable="custom"
                 :sort-orders="index_tags[key].reverse ? (['descending', 'ascending']) : (['ascending', 'descending'])"
@@ -35,7 +41,7 @@
 
     <div style="margin-top: 16px;">
         <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
-            :current-page="state.CurrentPage" :page-sizes="[10, 20, 50, 100]" :page-size="state.PageSize"
+            :current-page="state.CurrentPage" :page-sizes="[20, 50, 100]" :page-size="videofilter.pagesize"
             layout="total, sizes, prev, pager, next, jumper" :total="state.VideoCount">
         </el-pagination>
     </div>
@@ -45,7 +51,13 @@
 // 全网录像的检索器，根据三个维度排序
 import { onMounted, ref, reactive } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
-import PlayerName from '@/components/PlayerName.vue';
+
+import VideoStateFilter from '@/components/Filters/VideoStateFilter.vue';
+import BBBVFilter from '@/components/Filters/BBBVFilter.vue';
+
+import VideoViewRealname from '@/components/tableColumns/VideoViewRealname.vue';
+import VideoViewState from '@/components/tableColumns/VideoViewState.vue';
+
 const { proxy } = useCurrentInstance();
 import { utc_to_local_format } from "@/utils/system/tools";
 import { ms_to_s } from "@/utils";
@@ -54,6 +66,9 @@ import { preview } from '@/utils/common/PlayerDialog';
 import { useI18n } from 'vue-i18n';
 import { generalNotification } from '@/utils/system/status';
 const t = useI18n();
+
+import { useVideoFilter } from '@/store';
+const videofilter = useVideoFilter();
 
 const level_tag_selected = ref("EXPERT");
 const mode_tag_selected = ref("STD");
@@ -64,7 +79,6 @@ const index_visible = ref(true);
 const state = reactive({
     tableLoading: false,
     CurrentPage: 1,
-    PageSize: 10,
     VideoCount: 0,
     ReverseOrder: false,
     Total: 3
@@ -94,11 +108,19 @@ interface TagsReverse {
     [index: string]: NameKeyReverse;
 }
 
-const level_tags: Tags = {
-    "BEGINNER": { name: "初级", key: "b" },
-    "INTERMEDIATE": { name: "中级", key: "i" },
-    "EXPERT": { name: "高级", key: "e" }
-};
+interface LevelTag {
+    [index: string]: {
+        key: string,
+        min: number,
+        max: number,
+    }
+}
+
+const level_tags: LevelTag = reactive({
+    "BEGINNER": { key: "b", min: 1, max: 54 },
+    "INTERMEDIATE": { key: "i", min: 30, max: 216 },
+    "EXPERT": { key: "e", min: 100, max: 381 },
+});
 
 const mode_tags: Tags = {
     "STD": { name: "标准", key: "00" },
@@ -216,7 +238,7 @@ const handleSortChange = (sort: any) => {
 }
 
 const handleSizeChange = (val: number) => {
-    state.PageSize = val;
+    videofilter.pagesize = val;
     request_videos();
 }
 
@@ -226,22 +248,26 @@ const handleCurrentChange = (val: number) => {
 }
 
 const offsetIndex = (index: number) => {
-    return (state.CurrentPage > 1 || index > 9) ? index + 1 + (state.CurrentPage - 1) * state.PageSize :
-        [..."🥇🥈🥉🏅🏅🏅🏅🏅🏅🏅"][index];
+    return index + 1 + (state.CurrentPage - 1) * videofilter.pagesize;
 }
 
 // 根据配置，刷新当前页面的录像表
 const request_videos = () => {
+    let params: { [key: string]: any } = {};
+    params["level"] = level_tags[level_tag_selected.value].key;
+    params["mode"] = mode_tags[mode_tag_selected.value].key;
+    params["o"] = index_tags[index_tag_selected.value].key;
+    params["r"] = state.ReverseOrder;
+    params["ps"] = videofilter.pagesize;
+    params["page"] = state.CurrentPage;
+    params["bmin"] = videofilter.bbbv_range[level_tags[level_tag_selected.value].key][0];
+    params["bmax"] = videofilter.bbbv_range[level_tags[level_tag_selected.value].key][1];
+    if (![0,4].includes(videofilter.filter_state.length)) {
+        params['s'] = videofilter.filter_state;
+    }
     proxy.$axios.get('/video/query/',
         {
-            params: {
-                level: level_tags[level_tag_selected.value].key,
-                mode: mode_tags[mode_tag_selected.value].key,
-                o: index_tags[index_tag_selected.value].key, // order by
-                r: state.ReverseOrder, // reverse order
-                ps: state.PageSize, // page size
-                page: state.CurrentPage,
-            }
+            params: params,
         }
     ).then(function (response) {
         const data = JSON.parse(response.data);

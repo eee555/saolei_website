@@ -23,8 +23,8 @@ export const useUserStore = defineStore('user', {
             is_banned: false,
             country: ""
         },
-        // 登录状态，全局维护
-        login_status: LoginStatus.Undefined,
+        login_status: LoginStatus.Undefined, // 登录状态，全局维护
+        new_identifier: false, // 是否有新标识录像
     }
     ),
 })
@@ -45,6 +45,21 @@ export const useLocalStore = defineStore('local', {
         menu_height: 60,
         menu_icon: false,
         notification_duration: 4500,
+        tooltip_show: true,
     }),
     persist: true,
+})
+
+export const useVideoFilter = defineStore('videofilter', {
+    state: () => ({
+        pagesize: 100,
+        level: 'e',
+        filter_state: ['a','b','c','d'],
+        bbbv_range: {
+            'b': [2,54],
+            'i': [30,216],
+            'e': [100,381],
+        }
+    }),
+    persist: true
 })

@@ -10,20 +10,20 @@
                 </div>
                 <div style="width: 188px;float: right;text-align: center;line-height: 180%;" v-loading="is_loading">
                     <div><strong>{{ realname }}</strong> (id: {{ id }})</div>
-                    <div>初级纪录：<PreviewNumber :id="+b_t_id" :text="to_fixed_n(b_t, 3)">
+                    <div>初级纪录：<PreviewNumber :id="+b_t_id" :text="ms_to_s(b_t)">
                         </PreviewNumber> | <PreviewNumber :id="+b_bvs_id" :text="to_fixed_n(b_bvs, 3)">
                         </PreviewNumber>
                     </div>
-                    <div>中级纪录：<PreviewNumber :id="+i_t_id" :text="to_fixed_n(i_t, 3)">
+                    <div>中级纪录：<PreviewNumber :id="+i_t_id" :text="ms_to_s(i_t)">
                         </PreviewNumber> | <PreviewNumber :id="+i_bvs_id" :text="to_fixed_n(i_bvs, 3)">
                         </PreviewNumber>
                     </div>
-                    <div>高级纪录：<PreviewNumber :id="+e_t_id" :text="to_fixed_n(e_t, 3)">
+                    <div>高级纪录：<PreviewNumber :id="+e_t_id" :text="ms_to_s(e_t)">
                         </PreviewNumber> | <PreviewNumber :id="+e_bvs_id" :text="to_fixed_n(e_bvs, 3)">
                         </PreviewNumber>
                     </div>
                     <div>总计纪录：
-                        <span style="color: #BF9000;font-weight: bold;">{{ to_fixed_n(b_t + i_t + e_t, 3) }}</span>
+                        <span style="color: #BF9000;font-weight: bold;">{{ ms_to_s(b_t + i_t + e_t) }}</span>
                         |
                         <span style="color: #BF9000;font-weight: bold;">{{ to_fixed_n(b_bvs + i_bvs + e_bvs, 3)
                             }}</span>
@@ -41,7 +41,7 @@
 
 <script setup lang="ts" name="PlayerName">
 // 用户的名字，鼠标移上去以后弹出气泡框，可以访问他的主页
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref } from "vue";
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
 import image_url_default from '@/assets/person.png';
@@ -67,19 +67,18 @@ const data = defineProps({
 const render = ref<Boolean>(false); // 控制只渲染一次
 const visible = ref<Boolean>(false);
 const is_loading = ref(true);
-const popoverRef = ref<any>(null);
 
 const realname = ref("");
 const id = ref("");
-const b_t = ref("");
+const b_t = ref(999999);
 const b_bvs = ref("");
 const b_t_id = ref("");
 const b_bvs_id = ref("");
-const i_t = ref("");
+const i_t = ref(999999);
 const i_bvs = ref("");
 const i_t_id = ref("");
 const i_bvs_id = ref("");
-const e_t = ref("");
+const e_t = ref(999999);
 const e_bvs = ref("");
 const e_t_id = ref("");
 const e_bvs_id = ref("");
@@ -109,9 +108,9 @@ const pop_show = async () => {
 
         const records = JSON.parse(response_data.record_abstract)
 
-        b_t.value = ms_to_s(records.timems[0])
-        i_t.value = ms_to_s(records.timems[1])
-        e_t.value = ms_to_s(records.timems[2])
+        b_t.value = records.timems[0]
+        i_t.value = records.timems[1]
+        e_t.value = records.timems[2]
 
         b_t_id.value = records.timems_id[0]
         i_t_id.value = records.timems_id[1]

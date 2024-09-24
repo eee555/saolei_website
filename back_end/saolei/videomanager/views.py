@@ -47,7 +47,7 @@ def video_upload(request):
         data['review_code'] = 2 # 标识不匹配
 
     # 查重
-    collisions = list(VideoModel.objects.filter(timems=data["timems"], bv=data["bv"]).filter(video__cl=data["cl"], video__op=data["op"], video__isl=data["isl"], video__identifier=data["identifier"]))
+    collisions = list(VideoModel.objects.filter(timems=data["timems"], bv=data["bv"]).filter(video__path=data["path"]).filter(video__cl=data["cl"], video__op=data["op"], video__isl=data["isl"], video__identifier=data["identifier"]))
     if collisions:
         return JsonResponse({'type': 'error', 'object': 'videomodel', 'category': 'conflict'})  
     new_video(data, request.user) # 表中添加数据
@@ -99,7 +99,7 @@ def video_download(request):
 # 按任何基础指标+难度+模式，排序，分页
 # 每项的定义参见 front_end/src/views/VideoView.vue 的 request_videos 函数
 
-@ratelimit(key='ip', rate='20/m')
+@ratelimit(key='ip', rate='60/m')
 @require_GET
 def video_query(request):
     data = request.GET
@@ -118,10 +118,18 @@ def video_query(request):
             
     if data["mode"] != "00":
         filter = {"level": data["level"], "mode": data["mode"]}
-        videos = VideoModel.objects.filter(**filter).order_by(*orderby).values(*values)
+        videos = VideoModel.objects.filter(**filter)
     else:
         filter = {"level": data["level"]}
-        videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(**filter).order_by(*orderby).values(*values)
+        videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(**filter)
+    
+    videos = videos.filter(bv__range=(data["bmin"],data["bmax"]))
+
+    states = data.getlist("s[]")
+    if states:
+        videos = videos.filter(state__in=states)
+
+    videos = videos.order_by(*orderby).values(*values)
 
     # print(videos)
     paginator = Paginator(videos, data["ps"])

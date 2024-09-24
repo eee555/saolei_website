@@ -11,6 +11,7 @@ export default defineConfig(({ mode }) => {
   // 真**坑爹。vite的依赖open，10.0.1修复了这个问题。但目前vite还未更新其版本
   process.env.SYSTEMROOT = process.env.SystemRoot || "C://Windows"
 
+
   return {
     plugins: [
       vue(),
@@ -26,6 +27,7 @@ export default defineConfig(({ mode }) => {
       open: true,
       port: 8080,
       host: process.env.Host || "localhost",
-    }
+    },
+    // base: baseURL,
   }
 })

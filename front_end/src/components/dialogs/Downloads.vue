@@ -7,13 +7,22 @@
         draggable :lock-scroll="false">
         <ul>
             <li><a style="color: blue;" target="_blank" href="https://fff666.top/download/Metaminesweeper-v3.1.9.zip">
-                {{$t('common.software.metasweeper')}} v3.1.9</a> {{$t('common.software.download_link')}} 1<br>
-                <a style="color: blue;" target="_blank" href="https://github.com/eee555/Solvable-Minesweeper/releases/download/3.1.9/Metaminesweeper-v3.1.9.zip">
-                    {{$t('common.software.metasweeper')}} v3.1.9</a> {{$t('common.software.download_link')}} 2<br>
-                {{$t('common.software.metasweeper_int')}}
+                    {{ $t('common.software.metasweeper') }} v3.1.9</a> {{ $t('common.software.download_link') }} 1<br>
+                <a style="color: blue;" target="_blank"
+                    href="https://github.com/eee555/Solvable-Minesweeper/releases/download/3.1.9/Metaminesweeper-v3.1.9.zip">
+                    {{ $t('common.software.metasweeper') }} v3.1.9</a> {{ $t('common.software.download_link') }} 2<br>
+                {{ $t('common.software.metasweeper_int') }}
             </li>
-            <li><a style="color: blue;" target="_blank" href="https://fff666.top/download/Arbiter_0.52.3.zip">Arbiter v0.52.3</a><br>
-                {{$t('common.software.arbiter_int')}}
+            <li><a style="color: blue;" target="_blank" href="https://fff666.top/download/Metaminesweeper-v3.1.11.zip">
+                    {{ $t('common.software.metasweeper') }} v3.1.11</a> {{ $t('common.software.download_link') }} 1<br>
+                <a style="color: blue;" target="_blank"
+                    href="https://github.com/eee555/Solvable-Minesweeper/releases/download/3.1.11/Metaminesweeper-v3.1.11.zip">
+                    {{ $t('common.software.metasweeper') }} v3.1.11</a> {{ $t('common.software.download_link') }} 2<br>
+                {{ $t('common.software.metasweeper_int2') }}
+            </li>
+            <li><a style="color: blue;" target="_blank" href="https://fff666.top/download/Arbiter_0.52.3.zip">Arbiter
+                    v0.52.3</a><br>
+                {{ $t('common.software.arbiter_int') }}
             </li>
 
         </ul>
