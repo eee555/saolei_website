@@ -7,10 +7,7 @@
         </el-table-column>
         <el-table-column label="ID">
             <template #default="scope">
-                <el-link v-if="scope.row.platform == 'a'" :href="'https://minesweepergame.com/profile.php?pid=' + scope.row.identifier" target="_blank">{{ scope.row.identifier }}</el-link>
-                <el-link v-else-if="scope.row.platform == 'c'" :href="'http://saolei.wang/Player/Index.asp?Id=' + scope.row.identifier" target="_blank">{{ scope.row.identifier }}</el-link>
-                <el-link v-else-if="scope.row.platform == 'w'" :href="'https://minesweeper.online/player/' + scope.row.identifier" target="_blank">{{ scope.row.identifier }}</el-link>
-                <el-text v-else>{{ scope.row.identifier }}</el-text>
+                <el-link :href="platformlist[scope.row.platform].profile(scope.row.identifier)" target="_blank">{{ scope.row.identifier }}</el-link>
             </template>
         </el-table-column>
         <el-table-column v-if="store.player.id==store.user.id" :label="$t('common.prop.status')">
@@ -40,7 +37,7 @@
         <el-form :model="form">
             <el-form-item :label="$t('accountlink.platform')">
                 <el-select v-model="form.platform">
-                    <el-option v-for="item in platformlist" :value="item.key" :label="item.name" :disabled="userHasPlatform(item.key)"/>
+                    <el-option v-for="(item, key) of platformlist" :value="key" :label="item.name" :disabled="userHasPlatform(key)"/>
                 </el-select>
             </el-form-item>
             <el-form-item label="ID">
@@ -67,13 +64,13 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { useUserStore } from '@/store';
-import { Action, ElMessageBox } from 'element-plus';
-import { platformlist } from '@/utils/common/accountLinkPlatforms'
+import { ElMessageBox } from 'element-plus';
+import { Platform, platformlist } from '@/utils/common/accountLinkPlatforms'
 import PlatformIcon from './widgets/PlatformIcon.vue';
 import { useI18n } from 'vue-i18n';
 
 interface AccountLink {
-    platform: string;
+    platform: Platform;
     identifier: string;
     verified: boolean;
 }
