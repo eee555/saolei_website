@@ -1,4 +1,5 @@
 from .models import AccountLinkQueue
+from .utils import update_account, delete_account
 from userprofile.models import UserProfile
 from django.http import HttpResponseForbidden, HttpResponseBadRequest, JsonResponse, HttpResponse, HttpResponseNotFound
 from utils.response import HttpResponseConflict
@@ -50,8 +51,10 @@ def get_link(request):
 def verify_link(request):
     if not request.user.is_staff:
         return HttpResponseForbidden()
-    userid = request.GET.get("id")
+    userid = request.POST.get("id")
     user = UserProfile.objects.filter(id=userid).first()
+    if user == None:
+        return HttpResponseNotFound()
     platform = request.POST.get('platform')
     if platform == None:
         return HttpResponseBadRequest()
@@ -67,6 +70,7 @@ def verify_link(request):
     accountlink = AccountLinkQueue.objects.filter(platform=platform,identifier=identifier).first()
     if not accountlink:
         return HttpResponseNotFound()
+    update_account(platform, identifier, user)
     accountlink.verified = True
     accountlink.save()
     return HttpResponse()
@@ -84,6 +88,7 @@ def unverify_link(request):
     accountlink = AccountLinkQueue.objects.filter(userprofile=user,platform=platform,identifier=identifier).first()
     if not accountlink:
         return HttpResponseNotFound()
+    delete_account(user, platform)
     accountlink.verified = False
     accountlink.save()
     return HttpResponse()
