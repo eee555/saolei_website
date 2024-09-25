@@ -33,7 +33,7 @@
             </template>
         </el-table-column>
     </el-table>
-    <el-button v-if="store.player.id == store.user.id" style="width:100%" @click="formvisible = true">
+    <el-button v-if="store.player.id == store.user.id" style="width:100%" @click="formvisible = true" size="small">
         <el-icon>
             <Plus />
         </el-icon>
@@ -50,13 +50,8 @@
             <el-form-item label="ID">
                 <el-input v-model="form.identifier" maxlength="128" />
             </el-form-item>
-            <el-form-item v-if="form.platform == 'c'">
-                <el-text>
-                    <b>{{ $t('accountlink.guideTitle') }}</b><br />
-                    {{ $t('accountlink.guideSaolei1') }}
-                    <PlatformIcon platform="c" />{{ $t('accountlink.guideSaolei2') }}<br />
-                    <img src="../assets/IdGuideSaolei.png" width="100%" />
-                </el-text>
+            <el-form-item v-if="local.tooltip_show">
+                <AccountLinkGuide :platform="form.platform"/>
             </el-form-item>
             <el-form-item>
                 <el-button type="primary" :disabled="!formValid" @click.prevent="addLink(); formvisible = false;">{{
@@ -71,10 +66,11 @@
 
 import { computed, onMounted, reactive, ref } from 'vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { useUserStore } from '@/store';
+import { useLocalStore, useUserStore } from '@/store';
 import { ElMessageBox } from 'element-plus';
 import { Platform, platformlist } from '@/utils/common/accountLinkPlatforms'
 import PlatformIcon from './widgets/PlatformIcon.vue';
+import AccountLinkGuide from './dialogs/AccountLinkGuide.vue'
 import { useI18n } from 'vue-i18n';
 
 interface AccountLink {
@@ -86,6 +82,7 @@ interface AccountLink {
 const { proxy } = useCurrentInstance();
 const t = useI18n();
 const store = useUserStore();
+const local = useLocalStore();
 const accountlinks = ref<AccountLink[]>([]);
 const formvisible = ref(false);
 const form = reactive({

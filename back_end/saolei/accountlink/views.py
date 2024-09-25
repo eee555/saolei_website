@@ -33,6 +33,8 @@ def delete_link(request):
         return HttpResponseBadRequest()
     accountlink = AccountLinkQueue.objects.filter(platform=platform, userprofile=user).first()
     if accountlink:
+        if accountlink.verified:
+            delete_account(user, platform)
         accountlink.delete()
         return HttpResponse()
     return HttpResponseNotFound()
