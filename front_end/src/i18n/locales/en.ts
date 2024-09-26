@@ -117,7 +117,7 @@ export const en = {
         contact: 'Contact',
         donate: 'Donate',
         team: 'Team',
-        links: 'LInks',
+        links: 'Links',
         about: 'About',
     },
     forgetPassword: {
