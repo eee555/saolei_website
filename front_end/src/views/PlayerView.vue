@@ -59,7 +59,7 @@
 
             <el-main>
                 <el-tabs v-model="activeName" style="max-height: 1024px; overflow: auto;">
-                    <el-tab-pane label="个人信息" name="profile" :lazy="true">
+                    <el-tab-pane :label="$t('profile.profile.title')" name="profile" :lazy="true">
                         <PlayerProfileView :key="store.player.id"></PlayerProfileView>
                     </el-tab-pane>
                     <el-tab-pane :label="$t('profile.records.title')" name="record" :lazy="true">

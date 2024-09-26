@@ -1,4 +1,5 @@
 <template>
+    <el-text tag="b" size="large">{{ $t('accountlink.title') }}</el-text>
     <AccountLinkManager />
 </template>
 

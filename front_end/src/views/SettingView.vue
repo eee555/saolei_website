@@ -39,7 +39,6 @@
         <el-descriptions-item label="出生年份">{{ $t('common.toDo') }}</el-descriptions-item>
     </el-descriptions>
     <el-divider />
-    <el-descriptions v-if="store.login_status == LoginStatus.IsLogin" :title="$t('identifierManager.title')"></el-descriptions>
     <el-badge is-dot :hidden="!store.new_identifier">
         <el-descriptions v-if="store.login_status == LoginStatus.IsLogin" :title="$t('identifierManager.title')"></el-descriptions>
     </el-badge>

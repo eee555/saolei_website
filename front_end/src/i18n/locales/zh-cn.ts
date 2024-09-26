@@ -99,6 +99,7 @@ export const zhCn = {
         toDo: '敬请期待',
     },
     accountlink: {
+        title: '账号关联',
         addLink: '添加关联账号',
         deleteLinkMessage: '确认删除以下账号关联吗？',
         guideMsgames1: '在',
@@ -192,6 +193,9 @@ export const zhCn = {
             avatarFilesize: '头像大小不能超过50MB！',
             realnameChange: '姓名修改成功！剩余{0}次',
             signatureChange: '个性签名修改成功！剩余{0}次',
+        },
+        profile: {
+            title: '个人信息',
         },
         records: {
             title: '个人纪录',
