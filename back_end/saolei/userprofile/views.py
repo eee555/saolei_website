@@ -12,6 +12,7 @@ from django.contrib.auth import get_user_model
 from msuser.models import UserMS
 from django_ratelimit.decorators import ratelimit
 from django.views.decorators.http import require_GET, require_POST
+from .decorators import staff_required
 from django.utils import timezone
 from django.conf import settings
 from config.flags import EMAIL_SKIP
@@ -85,8 +86,6 @@ def user_retrieve(request):
         email_captcha = request.POST.get("email_captcha", None)
         get_email_captcha = EmailVerifyRecord.objects.filter(
             hashkey=emailHashkey).first()
-        # print(emailHashkey)
-        # print(email_captcha)
         if get_email_captcha and email_captcha and get_email_captcha.code == email_captcha and\
             get_email_captcha.email == request.POST.get("email", None):
             if (timezone.now() - get_email_captcha.send_time).seconds <= 3600:
@@ -166,44 +165,40 @@ def user_register(request):
 # http://127.0.0.1:8000/userprofile/set_staff/?id=1&is_staff=True
 @require_GET
 def set_staff(request):
-    if request.user.is_superuser:
-        user = UserProfile.objects.get(id=request.GET["id"])
-        user.is_staff = request.GET["is_staff"]
-        logger.info(f'{request.user.id} set_staff {request.GET["id"]} {request.GET["is_staff"]}')
-        if request.GET["is_staff"] == "True":
-            user.is_staff = True
-            user.save()
-            logger.info(f'用户 {user.username}#{user.id} 成为管理员')
-            return HttpResponse(f"设置\"{user.realname}\"为管理员成功！")
-        elif request.GET["is_staff"] == "False":
-            user.is_staff = False
-            user.save()
-            logger.info(f'用户 {user.username}#{user.id} 卸任管理员')
-            return HttpResponse(f"解除\"{user.realname}\"的管理员权限！")
-        else:
-            return HttpResponse("失败！is_staff需要为\"True\"或\"False\"（首字母大写）")
+    if not request.user.is_superuser:
+        return HttpResponseForbidden()
+    user = UserProfile.objects.get(id=request.GET["id"])
+    user.is_staff = request.GET["is_staff"]
+    logger.info(f'{request.user.id} set_staff {request.GET["id"]} {request.GET["is_staff"]}')
+    if request.GET["is_staff"] == "True":
+        user.is_staff = True
+        user.save()
+        logger.info(f'用户 {user.username}#{user.id} 成为管理员')
+        return HttpResponse(f"设置\"{user.realname}\"为管理员成功！")
+    elif request.GET["is_staff"] == "False":
+        user.is_staff = False
+        user.save()
+        logger.info(f'用户 {user.username}#{user.id} 卸任管理员')
+        return HttpResponse(f"解除\"{user.realname}\"的管理员权限！")
     else:
-        return HttpResponse("别瞎玩")
+        return HttpResponse("失败！is_staff需要为\"True\"或\"False\"（首字母大写）")
 
 # 【管理员】删除用户的个人信息，从服务器磁盘上完全删除，但不影响是否封禁
 # 站长可以删除管理员信息（如果站长也是管理员）。
 # http://127.0.0.1:8000/userprofile/del_user_info/?id=1
 @require_GET
+@staff_required
 def del_user_info(request):
-    if request.user.is_staff:
-        user = UserProfile.objects.get(id=request.GET["id"])
-        if user.is_staff and not request.user.is_superuser:
-            return HttpResponse("没有删除管理员信息的权限！")
-        logger.info(f'管理员 {request.user.username}#{request.user.id} 删除用户 {user.username}#{user.id}')
-        user.realname = ""
-        user.signature = ""
-        if user.avatar:
-            if os.path.isfile(user.avatar.path):
-                os.remove(user.avatar.path)
-        user.avatar = None
-
-    else:
-        return HttpResponse("别瞎玩")
+    user = UserProfile.objects.get(id=request.GET["id"])
+    if user.is_staff and not request.user.is_superuser:
+        return HttpResponse("没有删除管理员信息的权限！")
+    logger.info(f'管理员 {request.user.username}#{request.user.id} 删除用户 {user.username}#{user.id}')
+    user.realname = ""
+    user.signature = ""
+    if user.avatar:
+        if os.path.isfile(user.avatar.path):
+            os.remove(user.avatar.path)
+    user.avatar = None
 
 # 创建验证码
 @ratelimit(key='ip', rate='60/h')
@@ -249,8 +244,6 @@ def get_email_captcha(request):
                             as_text().split("*")[-1]})
 
 # 验证验证码
-
-
 def judge_captcha(captchaStr, captchaHashkey):
     if captchaStr and captchaHashkey:
         get_captcha = CaptchaStore.objects.filter(
@@ -266,21 +259,18 @@ def judge_captcha(captchaStr, captchaHashkey):
 # 管理员使用的操作接口，调用方式见前端的StaffView.vue
 get_userProfile_fields = ["id", "userms__identifiers", "userms__video_num_limit", "username", "first_name", "last_name", "email", "realname", "signature", "country", "left_realname_n", "left_avatar_n", "left_signature_n", "is_banned"] # 可获取的域列表
 @require_GET
+@staff_required
 def get_userProfile(request):
-    if request.user.is_staff:
-        userlist = UserProfile.objects.filter(id=request.GET["id"]).values(*get_userProfile_fields)
-        if not userlist:
-            return HttpResponseNotFound()
-        return JsonResponse(userlist[0])
-    else:
-        return HttpResponseForbidden()
+    userlist = UserProfile.objects.filter(id=request.GET["id"]).values(*get_userProfile_fields)
+    if not userlist:
+        return HttpResponseNotFound()
+    return JsonResponse(userlist[0])
 
 # 管理员使用的操作接口，调用方式见前端的StaffView.vue
 set_userProfile_fields = ["userms__identifiers", "userms__video_num_limit", "username", "first_name", "last_name", "email", "realname", "signature", "country", "left_realname_n", "left_avatar_n", "left_signature_n", "is_banned"] # 可修改的域列表
 @require_POST
+@staff_required
 def set_userProfile(request):
-    if not request.user.is_staff:
-        return HttpResponseForbidden() # 非管理员不能使用该api
     userid = request.POST.get("id")
     user = UserProfile.objects.get(id=userid)
     if user.is_staff and user != request.user:

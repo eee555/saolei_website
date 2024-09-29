@@ -4,15 +4,17 @@ from userprofile.models import UserProfile
 from django.http import HttpResponseForbidden, HttpResponseBadRequest, JsonResponse, HttpResponse, HttpResponseNotFound
 from utils.response import HttpResponseConflict
 from django.views.decorators.http import require_GET, require_POST
+from django_ratelimit.decorators import ratelimit
+from userprofile.decorators import login_required_error, staff_required
 
 private_platforms = [""] # 私人账号平台
 
 # 为自己绑定账号，需要指定平台和ID
+@ratelimit(key='user', rate='10/d')
 @require_POST
+@login_required_error
 def add_link(request):
     user = UserProfile.objects.filter(id=request.user.id).first()
-    if user == None:
-        return HttpResponseForbidden()
     platform = request.POST.get('platform')
     if platform == None:
         return HttpResponseBadRequest()
@@ -24,10 +26,9 @@ def add_link(request):
 
 # 解绑自己的账号，只需要指定平台
 @require_POST
+@login_required_error
 def delete_link(request):
     user = UserProfile.objects.filter(id=request.user.id).first()
-    if user == None:
-        return HttpResponseForbidden()
     platform = request.POST.get('platform')
     if platform == None:
         return HttpResponseBadRequest()
@@ -50,9 +51,8 @@ def get_link(request):
     return JsonResponse(list(accountlink), safe=False)
 
 @require_POST
+@staff_required
 def verify_link(request):
-    if not request.user.is_staff:
-        return HttpResponseForbidden()
     userid = request.POST.get("id")
     user = UserProfile.objects.filter(id=userid).first()
     if user == None:
@@ -78,9 +78,8 @@ def verify_link(request):
     return HttpResponse()
 
 @require_POST
+@staff_required
 def unverify_link(request):
-    if not request.user.is_staff:
-        return HttpResponseForbidden()
     userid = request.GET.get("id")
     user = UserProfile.objects.filter(id=userid).first()
     if not user:

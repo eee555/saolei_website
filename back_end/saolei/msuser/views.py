@@ -41,14 +41,12 @@ class DecimalEncoder(json.JSONEncoder):
 @ratelimit(key='ip', rate='60/h')
 @require_GET
 def get_info(request):
-    if not request.GET.get('id', ''):
-        return JsonResponse({'status': 101, 'msg': "访问谁？"})
-    # 此处要重点防攻击
-    user_id = request.GET["id"]
-    try:
-        user = UserProfile.objects.get(id=user_id)
-    except:
-        return JsonResponse({'status': 184, 'msg': "不存在该用户！"})
+    user_id = request.GET.get('id')
+    if not user_id:
+        return HttpResponseBadRequest()
+    user = UserProfile.objects.filter(id=user_id).first()
+    if not user:
+        return HttpResponseNotFound()
 
     user.popularity += 1
     user.save(update_fields=["popularity"])
@@ -76,15 +74,12 @@ def get_info(request):
 @ratelimit(key='ip', rate='60/h')
 @require_GET
 def get_records(request):
-    # 此处要重点防攻击
-    if not request.GET.get('id', ''):
-        return JsonResponse({'status': 101, 'msg': "访问谁？"})
-    user_id = request.GET["id"]
-    try:
-        user = UserProfile.objects.get(id=user_id)
-    except:
-        return JsonResponse({'status': 184, 'msg': "不存在该用户！"})
-        
+    user_id = request.GET.get('id')
+    if not user_id:
+        return HttpResponseBadRequest()
+    user = UserProfile.objects.filter(id=user_id).first()
+    if not user:
+        return HttpResponseNotFound()
     ms_user = user.userms
 
     response = {"id": user_id, "realname": user.realname}
@@ -101,9 +96,14 @@ def get_records(request):
 @require_GET
 def get_info_abstract(request):
     # 此处要防攻击
-    user_id = request.GET["id"]
-    user = UserProfile.objects.get(id=user_id)
+    user_id = request.GET.get('id')
+    if not user_id:
+        return HttpResponseBadRequest()
+    user = UserProfile.objects.filter(id=user_id).first()
+    if not user:
+        return HttpResponseNotFound()
     ms_user = user.userms
+    
     if user.avatar:
         avatar_path = os.path.join(settings.MEDIA_ROOT, urllib.parse.unquote(user.avatar.url)[7:])
         image_data = open(avatar_path, "rb").read()

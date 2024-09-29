@@ -26,17 +26,16 @@ from django.utils import timezone
 from django.conf import settings
 from identifier.utils import verify_identifier
 from django.views.decorators.http import require_GET, require_POST
+from userprofile.decorators import banned_blocked, staff_required
 
 @login_required(login_url='/')
 @require_POST
+@banned_blocked
 def video_upload(request):
-    if request.user.is_banned:
-        return HttpResponseForbidden() # 用户被封禁
     if request.user.userms.video_num_total >= request.user.userms.video_num_limit:
         return HttpResponse(status = 402) # 录像仓库已满
             
     video_form = UploadVideoForm(data=request.POST, files=request.FILES)
-    # print(video_form)
     if not video_form.is_valid():
         return HttpResponseBadRequest()
     data = video_form.cleaned_data
@@ -58,7 +57,6 @@ def video_upload(request):
 @require_GET
 def get_software(request):
     video = VideoModel.objects.get(id=request.GET["id"])
-    # print({"status": 100, "msg": video.software})
     return JsonResponse({"msg": video.software})
 
 # 给预览用的接口，区别是结尾是文件后缀
@@ -235,16 +233,14 @@ def approve_identifier(userid, identifier):
 # 返回"True","False"（已经是通过的状态）,"Null"（不存在该录像）
 # http://127.0.0.1:8000/video/approve?ids=[18,19,999]
 @require_GET
+@staff_required
 def approve(request):
-    if request.user.is_staff:
-        ids = json.loads(request.GET["ids"])
-        res = []
-        for _id in ids:
-            logger.info(f'管理员 {request.user.username}#{request.user.id} 过审录像#{_id}')
-            res.append(approve_single(_id))
-        return JsonResponse(res, safe=False)
-    else:
-        return HttpResponseNotAllowed()
+    ids = json.loads(request.GET["ids"])
+    res = []
+    for _id in ids:
+        logger.info(f'管理员 {request.user.username}#{request.user.id} 过审录像#{_id}')
+        res.append(approve_single(_id))
+    return JsonResponse(res, safe=False)
 
 # 【管理员】冻结队列里的录像，未审核或审核通过的录像可以冻结
 # 两种用法，冻结指定的录像id，或冻结某用户的所有录像
@@ -253,10 +249,8 @@ def approve(request):
 # http://127.0.0.1:8000/video/freeze?ids=12
 # http://127.0.0.1:8000/video/freeze?user_id=20
 @require_GET
+@staff_required
 def freeze(request):
-    if not request.user.is_staff:
-        return HttpResponseForbidden()
-    
     if ids := request.GET.get("ids"):
         res = [] 
         for id in ids:
@@ -285,20 +279,17 @@ for name in [field.name for field in ExpandVideoModel._meta.get_fields()]:
     get_videoModel_fields.append("video__" + name)
 
 @require_GET
+@staff_required
 def get_videoModel(request):
-    if request.user.is_staff:
-        videolist = VideoModel.objects.filter(id=request.GET["id"]).values(*get_videoModel_fields)
-        if not videolist:
-            return HttpResponseNotFound()
-        return JsonResponse(videolist[0])
-    else:
-        return HttpResponseForbidden()
+    videolist = VideoModel.objects.filter(id=request.GET["id"]).values(*get_videoModel_fields)
+    if not videolist:
+        return HttpResponseNotFound()
+    return JsonResponse(videolist[0])
     
 set_videoModel_fields = ["player", "upload_time", "state"] # 可修改的域列表
 @require_POST
+@staff_required
 def set_videoModel(request):
-    if not request.user.is_staff:
-        return HttpResponseForbidden() # 非管理员不能使用该api
     videoid = request.POST.get("id")
     video = VideoModel.objects.get(id=videoid)
     user = video.player
