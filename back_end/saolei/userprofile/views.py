@@ -1,75 +1,65 @@
 import logging
 logger = logging.getLogger('userprofile')
 from django.contrib.auth import authenticate, login, logout
-from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound
+from django.http import HttpResponse, JsonResponse, HttpResponseForbidden, HttpResponseNotFound
 from .forms import UserLoginForm, UserRegisterForm, UserRetrieveForm, EmailForm
 from captcha.models import CaptchaStore
 import json
 import os
 from .models import EmailVerifyRecord,UserProfile
 from utils import send_email
-from django.contrib.auth import get_user_model
 from msuser.models import UserMS
 from django_ratelimit.decorators import ratelimit
 from django.views.decorators.http import require_GET, require_POST
 from .decorators import staff_required
 from django.utils import timezone
-from django.conf import settings
 from config.flags import EMAIL_SKIP
+from .utils import judge_captcha, judge_email_verification
 
 # Create your views here.
 
 
 @ratelimit(key='ip', rate='60/h')
 @require_POST
+# 用账号、密码登录
 # 此处要分成两个，密码容易碰撞，hash难碰撞
 def user_login(request):
-    # 用cookie登录
-    response = {'status': 100, 'msg': None}
-    if request.user.is_authenticated:
-        # login(request, request.user)
-        response['msg'] = response['msg'] = {
-            "id": request.user.id, "username": request.user.username,
-                "realname": request.user.realname, "is_banned": request.user.is_banned, "is_staff": request.user.is_staff}
-        # logger.info(f'用户 {request.user.username}#{request.user.id} 自动登录')
-        return JsonResponse(response)
-
-    # 用账号、密码登录
     user_login_form = UserLoginForm(data=request.POST)
-    if user_login_form.is_valid():
-        data = user_login_form.cleaned_data
-
-        capt = data["captcha"]   # 用户提交的验证码
-        key = data["hashkey"]    # 验证码hash
-        username = data["username"]
-        response = {'status': 100, 'msg': None}
-        if judge_captcha(capt, key):
-            # 检验账号、密码是否正确匹配数据库中的某个用户
-            # 如果均匹配则返回这个 user 对象
-            user = authenticate(
-                username=username, password=data['password'])
-            if user:
-                # 将用户数据保存在 session 中，即实现了登录动作
-                login(request, user)
-                response['msg'] = {
-                    "id": user.id, "username": user.username, 
-                    "realname": user.realname, "is_banned": user.is_banned, "is_staff": user.is_staff}
-                if 'user_id' in data and data['user_id'] != str(user.id):
-                    # 检测到小号
-                    logger.warning(f'{data["user_id"][:50]} is diffrent from {str(user.id)}.')
-                # logger.info(f'用户 {user.username}#{user.id} 账密登录')
-                return JsonResponse(response)
-            else:
-                logger.info(f'用户 {username} 账密错误')
-                return JsonResponse({'status': 105, 'msg': "账号或密码输入有误。请重新输入~"})
-            
-        else:
-            logger.info(f'用户 {username} 验证码错误')
-            return JsonResponse({'status': 104, 'msg': "验证码错误！"})
-
-    else:
+    if not user_login_form.is_valid():
         return JsonResponse({'status': 106, 'msg': "表单错误！"})
+    data = user_login_form.cleaned_data
 
+    capt = data["captcha"]   # 用户提交的验证码
+    key = data["hashkey"]    # 验证码hash
+    username = data["username"]
+    response = {'status': 100, 'msg': None}
+    if not judge_captcha(capt, key):
+        logger.info(f'用户 {username} 验证码错误')
+        return JsonResponse({'status': 104, 'msg': "验证码错误！"})
+    # 检验账号、密码是否正确匹配数据库中的某个用户
+    # 如果均匹配则返回这个 user 对象
+    user = authenticate(
+        username=username, password=data['password'])
+    if not user:
+        logger.info(f'用户 {username} 账密错误')
+        return JsonResponse({'status': 105, 'msg': "账号或密码输入有误。请重新输入~"})
+    # 将用户数据保存在 session 中，即实现了登录动作
+    login(request, user)
+    response['msg'] = {
+        "id": user.id, "username": user.username, 
+        "realname": user.realname, "is_banned": user.is_banned, "is_staff": user.is_staff}
+    if 'user_id' in data and data['user_id'] != str(user.id):
+        # 检测到小号
+        logger.warning(f'{data["user_id"][:50]} is diffrent from {str(user.id)}.')
+    return JsonResponse(response)
+        
+
+@require_GET
+# 用cookie登录
+def user_login_auto(request):
+    if request.user.is_authenticated:
+        return JsonResponse({'id': request.user.id, 'username': request.user.username, 'realname': request.user.realname, 'is_banned': request.user.is_banned, 'is_staff': request.user.is_staff})
+    return HttpResponse()
 
 def user_logout(request):
     logout(request)
@@ -81,35 +71,27 @@ def user_logout(request):
 @require_POST
 def user_retrieve(request):
     user_retrieve_form = UserRetrieveForm(data=request.POST)
-    if user_retrieve_form.is_valid():
-        emailHashkey = request.POST.get("email_key", None)
-        email_captcha = request.POST.get("email_captcha", None)
-        get_email_captcha = EmailVerifyRecord.objects.filter(
-            hashkey=emailHashkey).first()
-        if get_email_captcha and email_captcha and get_email_captcha.code == email_captcha and\
-            get_email_captcha.email == request.POST.get("email", None):
-            if (timezone.now() - get_email_captcha.send_time).seconds <= 3600:
-                user = UserProfile.objects.filter(email=user_retrieve_form.cleaned_data['email']).first()
-                if not user:
-                    return JsonResponse({'status': 109, 'msg': "该邮箱尚未注册，请先注册！"})
-                # 设置密码(哈希)
-                user.set_password(
-                    user_retrieve_form.cleaned_data['password'])
-                user.save()
-                # 保存好数据后立即登录
-                login(request, user)
-                logger.info(f'用户 {user.username}#{user.id} 邮箱找回密码')
-                EmailVerifyRecord.objects.filter(hashkey=emailHashkey).delete()
-                return JsonResponse({'status': 100, 'msg': user.realname})
-            else:
-                # 顺手把过期的验证码删了
-                EmailVerifyRecord.objects.filter(hashkey=emailHashkey).delete()
-                return JsonResponse({'status': 150, 'msg': "邮箱验证码已过期！" })
-        else:
-            return JsonResponse({'status': 102, 'msg': "邮箱验证码不正确！"})
-    else:
+    if not user_retrieve_form.is_valid():
         return JsonResponse({'status': 101, 'msg': user_retrieve_form.errors.\
                             as_text().split("*")[-1]})
+    emailHashkey = request.POST.get("email_key")
+    email_captcha = request.POST.get("email_captcha")
+    email = request.POST.get("email")
+    if judge_email_verification(email, email_captcha, emailHashkey):
+        user = UserProfile.objects.filter(email=user_retrieve_form.cleaned_data['email']).first()
+        if not user:
+            return JsonResponse({'status': 109, 'msg': "该邮箱尚未注册，请先注册！"})
+        # 设置密码(哈希)
+        user.set_password(
+            user_retrieve_form.cleaned_data['password'])
+        user.save()
+        # 保存好数据后立即登录
+        login(request, user)
+        logger.info(f'用户 {user.username}#{user.id} 邮箱找回密码')
+        EmailVerifyRecord.objects.filter(hashkey=emailHashkey).delete()
+        return JsonResponse({'status': 100, 'msg': user.realname})
+    else:
+        return JsonResponse({'status': 102, 'msg': "邮箱验证码不正确或已过期！"})
 
 
 # 用户注册
@@ -119,36 +101,30 @@ def user_retrieve(request):
 def user_register(request):
     user_register_form = UserRegisterForm(data=request.POST)
     if user_register_form.is_valid():
-        emailHashkey = request.POST.get("email_key", None)
-        email_captcha = request.POST.get("email_captcha", None)
-        get_email_captcha = EmailVerifyRecord.objects.filter(hashkey=emailHashkey).first()
-        if EMAIL_SKIP or (get_email_captcha and email_captcha and get_email_captcha.code == email_captcha and\
-            get_email_captcha.email == request.POST.get("email", None)):
-            if EMAIL_SKIP or (timezone.now() - get_email_captcha.send_time).seconds <= 3600:
-                new_user = user_register_form.save(commit=False)
-                # 设置密码(哈希)
-                new_user.set_password(
-                    user_register_form.cleaned_data['password'])
-                new_user.is_active = True # 自动激活
-                user_ms = UserMS.objects.create()
-                new_user.userms = user_ms
-                user_ms.save()
-                new_user.save()
-                # 保存好数据后立即登录
-                login(request, new_user)
-                logger.info(f'用户 {new_user.username}#{new_user.id} 注册')
-                # 顺手把过期的验证码删了
-                EmailVerifyRecord.objects.filter(hashkey=emailHashkey).delete()
-                return JsonResponse({'status': 100, 'msg': {
-                    "id": new_user.id, "username": new_user.username,
-                    "realname": new_user.realname, "is_banned": False}
-                    })
-            else:
-                # 顺手把过期的验证码删了
-                EmailVerifyRecord.objects.filter(hashkey=emailHashkey).delete()
-                return JsonResponse({'status': 150, 'msg': "邮箱验证码已过期！" })
+        emailHashkey = request.POST.get("email_key")
+        email_captcha = request.POST.get("email_captcha")
+        email = request.POST.get("email")
+        if EMAIL_SKIP or judge_email_verification(email, email_captcha, emailHashkey):
+            new_user = user_register_form.save(commit=False)
+            # 设置密码(哈希)
+            new_user.set_password(
+                user_register_form.cleaned_data['password'])
+            new_user.is_active = True # 自动激活
+            user_ms = UserMS.objects.create()
+            new_user.userms = user_ms
+            user_ms.save()
+            new_user.save()
+            # 保存好数据后立即登录
+            login(request, new_user)
+            logger.info(f'用户 {new_user.username}#{new_user.id} 注册')
+            # 顺手把过期的验证码删了
+            EmailVerifyRecord.objects.filter(hashkey=emailHashkey).delete()
+            return JsonResponse({'status': 100, 'msg': {
+                "id": new_user.id, "username": new_user.username,
+                "realname": new_user.realname, "is_banned": False}
+                })
         else:
-            return JsonResponse({'status': 102, 'msg': "邮箱验证码不正确！"})
+            return JsonResponse({'status': 102, 'msg': "邮箱验证码不正确或已过期！"})
     else:
         if "email" not in user_register_form.cleaned_data or "username" not in user_register_form.cleaned_data:
             # 可能发生前端验证正确，而后端验证不正确（后端更严格），此时clean会直接删除email字段
@@ -242,19 +218,6 @@ def get_email_captcha(request):
     else:
         return JsonResponse({'status': 110, 'msg': email_form.errors.\
                             as_text().split("*")[-1]})
-
-# 验证验证码
-def judge_captcha(captchaStr, captchaHashkey):
-    if captchaStr and captchaHashkey:
-        get_captcha = CaptchaStore.objects.filter(
-            hashkey=captchaHashkey).first()
-        if get_captcha and get_captcha.response == captchaStr.lower():
-            # 图形验证码15分钟有效，get_captcha.expiration是过期时间
-            if (get_captcha.expiration - timezone.now()).seconds >= 0:
-                CaptchaStore.objects.filter(hashkey=captchaHashkey).delete()
-                return True
-    CaptchaStore.objects.filter(hashkey=captchaHashkey).delete()
-    return False
 
 # 管理员使用的操作接口，调用方式见前端的StaffView.vue
 get_userProfile_fields = ["id", "userms__identifiers", "userms__video_num_limit", "username", "first_name", "last_name", "email", "realname", "signature", "country", "left_realname_n", "left_avatar_n", "left_signature_n", "is_banned"] # 可获取的域列表

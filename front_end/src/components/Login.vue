@@ -214,7 +214,7 @@ const init_refvalues = () => {
 
 onMounted(() => {
     if (store.login_status == LoginStatus.Undefined) {
-        login();
+        login_auto();
     } else if (store.login_status == LoginStatus.IsLogin) {
         // 解决改变窗口宽度，使得账号信息在显示和省略之间切换时，用户名不能显示的问题
         hint_message.value = ""
@@ -254,21 +254,30 @@ const closeLogin = () => {
     }
 }
 
+const login_auto = async () => {
+    proxy.$axios.get('/userprofile/loginauto/').then(function (response) {
+        if (response.data.id) {
+            store.user = deepCopy(response.data); // 直接赋值会导致user和player共用一个字典！！
+            store.player = deepCopy(response.data);
+            store.login_status = LoginStatus.IsLogin;
+        }
+        else {
+            store.login_status = LoginStatus.NotLogin;
+        }
+    })
+}
+
 const login = async () => {
-    // 先用cookie尝试登录，可能登不上
-    // 再用用户名密码
+    // 用户名密码登录
     var params = new URLSearchParams()
     const _id = localStorage.getItem("history_user_id");
-    params.append('user_id', _id ? _id : "");
+    if (_id) {
+        params.append('user_id', _id);
+    }
     params.append('username', user_name.value)
     params.append('password', user_password.value)
-    if (valid_code.value) {
-        params.append('captcha', valid_code.value)
-        params.append('hashkey', refValidCode.value?.hashkey)
-    } else {
-        params.append('captcha', "")
-        params.append('hashkey', "")
-    }
+    params.append('captcha', valid_code.value)
+    params.append('hashkey', refValidCode.value?.hashkey)
 
     await proxy.$axios.post('/userprofile/login/',
         params,
