@@ -22,19 +22,9 @@ from config.flags import EMAIL_SKIP
 
 @ratelimit(key='ip', rate='60/h')
 @require_POST
+# 用账号、密码登录
 # 此处要分成两个，密码容易碰撞，hash难碰撞
 def user_login(request):
-    # 用cookie登录
-    response = {'status': 100, 'msg': None}
-    if request.user.is_authenticated:
-        # login(request, request.user)
-        response['msg'] = response['msg'] = {
-            "id": request.user.id, "username": request.user.username,
-                "realname": request.user.realname, "is_banned": request.user.is_banned, "is_staff": request.user.is_staff}
-        # logger.info(f'用户 {request.user.username}#{request.user.id} 自动登录')
-        return JsonResponse(response)
-
-    # 用账号、密码登录
     user_login_form = UserLoginForm(data=request.POST)
     if user_login_form.is_valid():
         data = user_login_form.cleaned_data
@@ -70,6 +60,12 @@ def user_login(request):
     else:
         return JsonResponse({'status': 106, 'msg': "表单错误！"})
 
+@require_GET
+# 用cookie登录
+def user_login_auto(request):
+    if request.user.is_authenticated:
+        return JsonResponse({'id': request.user.id, 'username': request.user.username, 'realname': request.user.realname, 'is_banned': request.user.is_banned, 'is_staff': request.user.is_staff})
+    return HttpResponse()
 
 def user_logout(request):
     logout(request)

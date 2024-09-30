@@ -3,7 +3,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from config.global_settings import *
-from config.messages import *
+from config.messages import FormErrors
 
 User = get_user_model()
 from captcha.fields import CaptchaField
