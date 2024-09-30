@@ -14,7 +14,7 @@ from django.views.decorators.http import require_GET, require_POST
 from .decorators import staff_required
 from django.utils import timezone
 from config.flags import EMAIL_SKIP
-from .utils import judge_captcha
+from .utils import judge_captcha, judge_email_verification
 
 # Create your views here.
 
@@ -74,31 +74,24 @@ def user_retrieve(request):
     if not user_retrieve_form.is_valid():
         return JsonResponse({'status': 101, 'msg': user_retrieve_form.errors.\
                             as_text().split("*")[-1]})
-    emailHashkey = request.POST.get("email_key", None)
-    email_captcha = request.POST.get("email_captcha", None)
-    get_email_captcha = EmailVerifyRecord.objects.filter(
-        hashkey=emailHashkey).first()
-    if get_email_captcha and email_captcha and get_email_captcha.code == email_captcha and\
-        get_email_captcha.email == request.POST.get("email", None):
-        if (timezone.now() - get_email_captcha.send_time).seconds <= 3600:
-            user = UserProfile.objects.filter(email=user_retrieve_form.cleaned_data['email']).first()
-            if not user:
-                return JsonResponse({'status': 109, 'msg': "该邮箱尚未注册，请先注册！"})
-            # 设置密码(哈希)
-            user.set_password(
-                user_retrieve_form.cleaned_data['password'])
-            user.save()
-            # 保存好数据后立即登录
-            login(request, user)
-            logger.info(f'用户 {user.username}#{user.id} 邮箱找回密码')
-            EmailVerifyRecord.objects.filter(hashkey=emailHashkey).delete()
-            return JsonResponse({'status': 100, 'msg': user.realname})
-        else:
-            # 顺手把过期的验证码删了
-            EmailVerifyRecord.objects.filter(hashkey=emailHashkey).delete()
-            return JsonResponse({'status': 150, 'msg': "邮箱验证码已过期！" })
+    emailHashkey = request.POST.get("email_key")
+    email_captcha = request.POST.get("email_captcha")
+    email = request.POST.get("email")
+    if judge_email_verification(email, email_captcha, emailHashkey):
+        user = UserProfile.objects.filter(email=user_retrieve_form.cleaned_data['email']).first()
+        if not user:
+            return JsonResponse({'status': 109, 'msg': "该邮箱尚未注册，请先注册！"})
+        # 设置密码(哈希)
+        user.set_password(
+            user_retrieve_form.cleaned_data['password'])
+        user.save()
+        # 保存好数据后立即登录
+        login(request, user)
+        logger.info(f'用户 {user.username}#{user.id} 邮箱找回密码')
+        EmailVerifyRecord.objects.filter(hashkey=emailHashkey).delete()
+        return JsonResponse({'status': 100, 'msg': user.realname})
     else:
-        return JsonResponse({'status': 102, 'msg': "邮箱验证码不正确！"})
+        return JsonResponse({'status': 102, 'msg': "邮箱验证码不正确或已过期！"})
 
 
 # 用户注册
@@ -108,36 +101,30 @@ def user_retrieve(request):
 def user_register(request):
     user_register_form = UserRegisterForm(data=request.POST)
     if user_register_form.is_valid():
-        emailHashkey = request.POST.get("email_key", None)
-        email_captcha = request.POST.get("email_captcha", None)
-        get_email_captcha = EmailVerifyRecord.objects.filter(hashkey=emailHashkey).first()
-        if EMAIL_SKIP or (get_email_captcha and email_captcha and get_email_captcha.code == email_captcha and\
-            get_email_captcha.email == request.POST.get("email", None)):
-            if EMAIL_SKIP or (timezone.now() - get_email_captcha.send_time).seconds <= 3600:
-                new_user = user_register_form.save(commit=False)
-                # 设置密码(哈希)
-                new_user.set_password(
-                    user_register_form.cleaned_data['password'])
-                new_user.is_active = True # 自动激活
-                user_ms = UserMS.objects.create()
-                new_user.userms = user_ms
-                user_ms.save()
-                new_user.save()
-                # 保存好数据后立即登录
-                login(request, new_user)
-                logger.info(f'用户 {new_user.username}#{new_user.id} 注册')
-                # 顺手把过期的验证码删了
-                EmailVerifyRecord.objects.filter(hashkey=emailHashkey).delete()
-                return JsonResponse({'status': 100, 'msg': {
-                    "id": new_user.id, "username": new_user.username,
-                    "realname": new_user.realname, "is_banned": False}
-                    })
-            else:
-                # 顺手把过期的验证码删了
-                EmailVerifyRecord.objects.filter(hashkey=emailHashkey).delete()
-                return JsonResponse({'status': 150, 'msg': "邮箱验证码已过期！" })
+        emailHashkey = request.POST.get("email_key")
+        email_captcha = request.POST.get("email_captcha")
+        email = request.POST.get("email")
+        if EMAIL_SKIP or judge_email_verification(email, email_captcha, emailHashkey):
+            new_user = user_register_form.save(commit=False)
+            # 设置密码(哈希)
+            new_user.set_password(
+                user_register_form.cleaned_data['password'])
+            new_user.is_active = True # 自动激活
+            user_ms = UserMS.objects.create()
+            new_user.userms = user_ms
+            user_ms.save()
+            new_user.save()
+            # 保存好数据后立即登录
+            login(request, new_user)
+            logger.info(f'用户 {new_user.username}#{new_user.id} 注册')
+            # 顺手把过期的验证码删了
+            EmailVerifyRecord.objects.filter(hashkey=emailHashkey).delete()
+            return JsonResponse({'status': 100, 'msg': {
+                "id": new_user.id, "username": new_user.username,
+                "realname": new_user.realname, "is_banned": False}
+                })
         else:
-            return JsonResponse({'status': 102, 'msg': "邮箱验证码不正确！"})
+            return JsonResponse({'status': 102, 'msg': "邮箱验证码不正确或已过期！"})
     else:
         if "email" not in user_register_form.cleaned_data or "username" not in user_register_form.cleaned_data:
             # 可能发生前端验证正确，而后端验证不正确（后端更严格），此时clean会直接删除email字段
