@@ -1,21 +1,20 @@
 import logging
 logger = logging.getLogger('userprofile')
 from django.contrib.auth import authenticate, login, logout
-from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound
+from django.http import HttpResponse, JsonResponse, HttpResponseForbidden, HttpResponseNotFound
 from .forms import UserLoginForm, UserRegisterForm, UserRetrieveForm, EmailForm
 from captcha.models import CaptchaStore
 import json
 import os
 from .models import EmailVerifyRecord,UserProfile
 from utils import send_email
-from django.contrib.auth import get_user_model
 from msuser.models import UserMS
 from django_ratelimit.decorators import ratelimit
 from django.views.decorators.http import require_GET, require_POST
 from .decorators import staff_required
 from django.utils import timezone
-from django.conf import settings
 from config.flags import EMAIL_SKIP
+from .utils import judge_captcha
 
 # Create your views here.
 
@@ -232,19 +231,6 @@ def get_email_captcha(request):
     else:
         return JsonResponse({'status': 110, 'msg': email_form.errors.\
                             as_text().split("*")[-1]})
-
-# 验证验证码
-def judge_captcha(captchaStr, captchaHashkey):
-    if captchaStr and captchaHashkey:
-        get_captcha = CaptchaStore.objects.filter(
-            hashkey=captchaHashkey).first()
-        if get_captcha and get_captcha.response == captchaStr.lower():
-            # 图形验证码15分钟有效，get_captcha.expiration是过期时间
-            if (get_captcha.expiration - timezone.now()).seconds >= 0:
-                CaptchaStore.objects.filter(hashkey=captchaHashkey).delete()
-                return True
-    CaptchaStore.objects.filter(hashkey=captchaHashkey).delete()
-    return False
 
 # 管理员使用的操作接口，调用方式见前端的StaffView.vue
 get_userProfile_fields = ["id", "userms__identifiers", "userms__video_num_limit", "username", "first_name", "last_name", "email", "realname", "signature", "country", "left_realname_n", "left_avatar_n", "left_signature_n", "is_banned"] # 可获取的域列表
