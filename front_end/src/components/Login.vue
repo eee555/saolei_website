@@ -268,9 +268,12 @@ const login_auto = async () => {
 }
 
 const login = async () => {
-    // 先用cookie尝试登录，可能登不上
-    // 再用用户名密码
+    // 用户名密码登录
     var params = new URLSearchParams()
+    const _id = localStorage.getItem("history_user_id");
+    if (_id) {
+        params.append('user_id', _id);
+    }
     params.append('username', user_name.value)
     params.append('password', user_password.value)
     params.append('captcha', valid_code.value)
