@@ -14,6 +14,10 @@ export const zhCn = {
             uploadFile: '上传文件',
             videoQuery: '查询录像',
         },
+        button: {
+            cancel: '取消',
+            confirm: '确认',
+        },
         filter: '筛选',
         hide: '隐藏',
         level: {
@@ -94,6 +98,22 @@ export const zhCn = {
         },
         toDo: '敬请期待',
     },
+    accountlink: {
+        title: '账号关联',
+        addLink: '添加关联账号',
+        deleteLinkMessage: '确认删除以下账号关联吗？',
+        guideMsgames1: '在',
+        guideMsgames2: '排行榜找到你的位置：',
+        guideMsgames3: '在上图点击名字右边的链接，进入如下的个人主页，网址结尾的数字就是ID。',
+        guideSaolei1: '登录',
+        guideSaolei2: '，进入“我的地盘”，ID位置如下图所示。',
+        guideTitle: '如何找到ID',
+        guideWom1: '在',
+        guideWom2: '进入你的个人主页，网址结尾的数字就是你的ID。',
+        platform: '平台',
+        unverified: '未验证，请联系管理员',
+        verified: '已验证',
+    },
     footer: {
         contact: '联系我们',
         donate: '捐赠',
@@ -173,6 +193,9 @@ export const zhCn = {
             avatarFilesize: '头像大小不能超过50MB！',
             realnameChange: '姓名修改成功！剩余{0}次',
             signatureChange: '个性签名修改成功！剩余{0}次',
+        },
+        profile: {
+            title: '个人信息',
         },
         records: {
             title: '个人纪录',

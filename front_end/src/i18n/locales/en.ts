@@ -14,6 +14,10 @@ export const en = {
             uploadFile: 'upload file',
             videoQuery: 'fetch video data',
         },
+        button: {
+            cancel: 'Cancel',
+            confirm: 'Confirm',
+        },
         filter: 'Filter',
         hide: 'Hide',
         level: {
@@ -93,11 +97,27 @@ export const en = {
         },
         toDo: 'TODO',
     },
+    accountlink: {
+        title: 'Account Links',
+        addLink: 'Link New Account',
+        deleteLinkMessage: 'Are you sure to unlink this account?',
+        guideMsgames1: 'Find yourself on the ',
+        guideMsgames2: ' ranking:',
+        guideMsgames3: 'Click the link next to your name (see image above) to get to your profile (see image below). The number at the end of the url is your ID.',
+        guideSaolei1: 'Go to your profile page on ',
+        guideSaolei2: '. The positions of the ID are shown below.',
+        guideTitle: 'How to locate the ID',
+        guideWom1: 'Go to your profile page on ',
+        guideWom2: '. The number at the end of the url is your ID.',
+        platform: 'Platform',
+        unverified: 'Pending. Please contact the moderator.',
+        verified: 'Verified',
+    },
     footer: {
         contact: 'Contact',
         donate: 'Donate',
         team: 'Team',
-        links: 'LInks',
+        links: 'Links',
         about: 'About',
     },
     forgetPassword: {
@@ -172,6 +192,9 @@ export const en = {
             avatarFilesize: 'Maximum file size is 50MB!',
             realnameChange: 'Real name change complete! {0} times left',
             signatureChange: 'Signature change complete! {0} times left',
+        },
+        profile: {
+            title: 'Profile',
         },
         records: {
             title: 'Personal Records',

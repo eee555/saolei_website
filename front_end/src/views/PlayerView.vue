@@ -59,13 +59,16 @@
 
             <el-main>
                 <el-tabs v-model="activeName" style="max-height: 1024px; overflow: auto;">
-                    <el-tab-pane :label="$t('profile.records.title')" name="first" :lazy="true">
+                    <el-tab-pane :label="$t('profile.profile.title')" name="profile" :lazy="true">
+                        <PlayerProfileView :key="store.player.id"></PlayerProfileView>
+                    </el-tab-pane>
+                    <el-tab-pane :label="$t('profile.records.title')" name="record" :lazy="true">
                         <PlayerRecordView :key="store.player.id"></PlayerRecordView>
                     </el-tab-pane>
-                    <el-tab-pane :label="$t('profile.videos')" name="second" :lazy="true">
+                    <el-tab-pane :label="$t('profile.videos')" name="video" :lazy="true">
                         <PlayerVideosView :key="store.player.id"></PlayerVideosView>
                     </el-tab-pane>
-                    <el-tab-pane v-if="store.user.id + '' == userid" :label="$t('profile.upload.title')" name="third"
+                    <el-tab-pane v-if="store.user.id + '' == userid" :label="$t('profile.upload.title')" name="upload"
                         :lazy="true">
                         <UploadView :identifiers="identifiers"></UploadView>
                     </el-tab-pane>
@@ -82,6 +85,7 @@ import { onMounted, ref, watch } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import PlayerRecordView from '@/views/PlayerRecordView.vue';
 import PlayerVideosView from '@/views/PlayerVideosView.vue';
+import PlayerProfileView from './PlayerProfileView.vue';
 import UploadView from './UploadView.vue';
 // const AsyncPlayerVideosView = defineAsyncComponent(() => import('@/views/PlayerVideosView.vue'));
 import "../../node_modules/flag-icon-css/css/flag-icons.min.css";
@@ -123,7 +127,7 @@ const is_editing = ref(false);
 const visible = ref(false);
 
 // 标签默认切在第一页
-const activeName = ref('first')
+const activeName = ref('profile')
 const player = {
     id: -1,
 };

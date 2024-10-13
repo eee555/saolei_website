@@ -38,15 +38,11 @@
         <el-descriptions-item label="属地">{{ $t('common.toDo') }}</el-descriptions-item>
         <el-descriptions-item label="出生年份">{{ $t('common.toDo') }}</el-descriptions-item>
     </el-descriptions>
+    <el-divider />
     <el-badge is-dot :hidden="!store.new_identifier">
         <el-descriptions v-if="store.login_status == LoginStatus.IsLogin" :title="$t('identifierManager.title')"></el-descriptions>
     </el-badge>
     <IdentifierManager v-if="store.login_status == LoginStatus.IsLogin"/>
-    <el-descriptions v-if="false && store.login_status == LoginStatus.IsLogin" title="账号关联">
-        <el-table>
-
-        </el-table>
-    </el-descriptions>
 </template>
 
 <script lang="ts" setup name="UserSettings">
@@ -60,5 +56,6 @@ const t = useI18n()
 
 import DarkMode from '@/components/widgets/DarkMode.vue'
 import IdentifierManager from '@/components/widgets/IdentifierManager.vue';
+import AccountLinkManager from '@/components/AccountLinkManager.vue';
 
 </script>

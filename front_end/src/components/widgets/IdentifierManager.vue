@@ -53,7 +53,6 @@ function delIdentifier(identifier: string) {
 }
 
 function addIdentifier(identifier: string) {
-    console.log(identifier)
     proxy.$axios.post('identifier/add/',
         {
             identifier: identifier,
