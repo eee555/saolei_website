@@ -6,7 +6,7 @@ from decimal import Decimal
 from django.http import HttpResponse, JsonResponse, FileResponse
 from django.shortcuts import render, redirect
 import requests
-from config.flags import BAIDU_VERIFY_SKIP
+from config.flags import BAIDU_VERIFY_SKIP, EMAIL_SKIP
 
 def generate_code(code_len):
     """
@@ -34,7 +34,9 @@ def send_email(email, send_type='register'):
     # email_record.send_type = send_type
     email_record.save()
  
-# 验证码保存之后，我们就要把带有验证码的链接发送到注册时的邮箱！
+    # 验证码保存之后，我们就要把带有验证码的链接发送到注册时的邮箱！
+    if EMAIL_SKIP:
+        return code, hashkey
     if send_type == 'register':
         email_title = '元扫雷网邮箱注册验证码'
         email_body = f'欢迎您注册元扫雷网，您的邮箱验证码为：{code}（一小时内有效）。'
@@ -45,7 +47,7 @@ def send_email(email, send_type='register'):
         return None
     send_status = send_mail(email_title, email_body, 'wangjianing@88.com', [email])
     if send_status:
-        return hashkey
+        return code, hashkey
     else:
         return None
 

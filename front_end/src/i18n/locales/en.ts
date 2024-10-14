@@ -153,9 +153,9 @@ export const en = {
     },
     login: {
         title: 'Login',
-        username: 'username',
-        password: 'password',
-        captcha: 'captcha',
+        username: 'Username',
+        password: 'Password',
+        captcha: 'Captcha',
         forgetPassword: 'Forget password?',
         keepMeLoggedIn: 'Keep me logged in',
         confirm: 'Log in'

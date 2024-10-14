@@ -132,6 +132,10 @@ export const zhCn = {
         password: '请输入新的6-20位密码',
         success: '修改密码成功！',
     },
+    form: {
+        email: '邮箱',
+        username: '用户名',
+    },
     guide: {
         announcement: '公告',
         other: '其他',
@@ -155,11 +159,12 @@ export const zhCn = {
     login: {
         title: '欢迎登录',
         username: '用户名',
+        usernameRequired: '请输入用户名！',
         password: '密码',
         captcha: '验证码',
         forgetPassword: '（找回密码）',
         keepMeLoggedIn: '记住我',
-        confirm: '登录'
+        confirm: '登录',
     },
     menu: {
         ranking: '排行榜',
@@ -226,13 +231,13 @@ export const zhCn = {
     },
     register: {
         title: '用户注册',
-        username: '请输入用户昵称（唯一、登录凭证、无法修改）',
-        email: '请输入邮箱（唯一）',
+        username: '用户名',
+        email: '邮箱',
         captcha: '验证码',
         getEmailCode: '获取邮箱验证码',
-        emailCode: '请输入邮箱验证码',
-        password: '请输入6-20位密码',
-        confirmPassword: '请输入确认密码',
+        emailCode: '邮箱验证码',
+        password: '密码',
+        confirmPassword: '确认密码',
         agreeTo: '已阅读并同意',
         termsAndConditions: '开源扫雷网用户协议',
         confirm: '注册',
@@ -269,4 +274,22 @@ export const zhCn = {
         designer: '外观设计',
         acknowledgement: '致谢',
     },
+    validator: {
+        captchaFail: '验证码不正确，请重新输入',
+        captchaRefresh: '请重新输入',
+        captchaRequired: '请输入图形验证码',
+        confirmPasswordMismatch: '密码和确认密码不一致',
+        connectionFail: '无法连接到服务器，请重试',
+        emailCodeRequired: '请输入邮箱验证码',
+        emailCollision: '邮箱已存在',
+        emailInvalid: '邮箱格式错误',
+        emailNoCollision: '邮箱未注册',
+        emailRequired: '请输入邮箱',
+        illegalCharacter: '非法字符',
+        passwordMinimum: '密码至少6位',
+        unknownError: '发生未知错误，请联系开发者。{0}',
+        usernameCollision: '用户名已存在',
+        usernameInvalid: '用户名必须包含至少一个可见字符',
+        usernameRequired: '请输入用户名',
+    }
 }

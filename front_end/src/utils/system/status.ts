@@ -15,11 +15,14 @@ const notificationMessage: { [code: number]: string} = {
 
 export function generalNotification(t: any, status: number, action: string) {
     let type = Math.floor(status / 100);
+    let local = localStorage.getItem('local')
+    let duration = 4500
+    if (local !== null) duration = JSON.parse(local).notification_duration
     ElNotification({
         title: t.t(notificationTitle[type], [action]),
         message: t.t(notificationMessage[status]),
         type: notificationType[type],
-        duration: JSON.parse(localStorage.getItem('local')).notification_duration,
+        duration: duration,
     })
 }
 
