@@ -1,8 +1,14 @@
+import re
 from .models import AccountSaolei, AccountMinesweeperGames, AccountWorldOfMinesweeper, Platform
 from datetime import datetime
 from userprofile.models import UserProfile
 import requests
 from lxml import etree
+
+
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36'
+}
 
 def update_account(platform: Platform, id, user: UserProfile | None):
     if platform == Platform.SAOLEI:
@@ -35,13 +41,12 @@ def update_saolei_account(id, user: UserProfile | None):
     VideoHtmlStr = None
     try:
         url = f'http://saolei.wang/Player/Info.asp?Id={id}'
-        response = requests.get(url=url, timeout=5)
+        response = requests.get(url=url, timeout=5,headers=headers)
         response.encoding = 'GB2312'
         InfoHtmlStr = response.text
 
-        
         url = f'http://saolei.wang/Video/Satus.asp?Id={id}'
-        response = requests.get(url=url, timeout=5)
+        response = requests.get(url=url, timeout=5,headers=headers)
         response.encoding = 'GB2312'
         VideoHtmlStr = response.text
 
@@ -113,7 +118,7 @@ def update_msgames_account(id, user: UserProfile | None):
     htmlStr = None
     try:
         url = f'https://minesweepergame.com/profile.php?pid={id}'
-        response = requests.get(url=url)
+        response = requests.get(url=url, timeout=5, headers=headers)
         htmlStr = response.text
     except requests.exceptions.Timeout as e:
         # 请求超时
@@ -138,12 +143,117 @@ def update_msgames_account(id, user: UserProfile | None):
 def update_wom_account(id, user: UserProfile | None):
     print(user)
     account = AccountWorldOfMinesweeper.objects.filter(id=id).first()
-    url = f'https://minesweeper.online/cn/player/{id}'
+    url = f'https://minesweeper.online/player/{id}'
     if not account:
         account = AccountWorldOfMinesweeper.objects.create(id=id, parent=user)
     elif user:
         account.parent=user
     account.update_time = datetime.now()
+    htmlStr = None
+    try:
+        response = requests.get(url=url, timeout=5, headers=headers)
+        htmlStr = response.text
+    except requests.exceptions.Timeout as e:
+        # 请求超时
+        pass
+    except requests.exceptions.RequestException as e:
+        # 其他错误
+        pass
+    if not htmlStr:
+        # 没有爬取到信息
+        return
+    tree = etree.HTML(htmlStr)
+    tree = tree.xpath('/html/body/div[3]/div[2]/div/div[1]/div[2]/div/div[4]/div/div[1]')[0]
+    def formatXpath(text):
+        return f'//strong[text()="{text}"]/../following-sibling::div/span/text()'
+    def formatImgXpath(text,img,last):
+        return f'//strong[text()="{text}"]/../following-sibling::div//img[@class="{img}"]{last}'
+    def formatIXpath(text,i,last):
+        return f'//strong[text()="{text}"]/../following-sibling::div//i[@class="{i}"]{last}'
+    def stringToInt(values) -> int:
+        return int(str(values[0]).replace(" ", "").replace("%", "")) if values else None
+    def stringToFloat(values) -> float:
+        return float(str(values[0]).replace(" ", "").replace("%", "")) if values else None
+    values = tree.xpath(formatXpath("Trophies:"))
+    account.trophy = int(values[0]) if values else None
+    
+    values = tree.xpath(formatImgXpath("Experience:","exp-icon icon-right", "/../text()"))
+    account.experience = stringToInt(values)
+    
+    values = tree.xpath(formatImgXpath("Experience:","hp-icon icon-right", "/../../text()"))
+    account.honour = stringToInt(values)
+    
+    values = tree.xpath(formatImgXpath("Resources:","coin-icon icon-right", "/../../text()"))
+    account.minecoin = stringToInt(values)
+    
+    values = tree.xpath(formatImgXpath("Resources:","gem gem0 icon-right", "/../span/text()"))
+    account.gem = stringToInt(values)
+    
+    values = tree.xpath(formatImgXpath("Resources:","arena-coin-icon icon-right", "/../span/text()"))
+    account.coin = stringToInt(values)
+
+    values = tree.xpath(formatIXpath("Resources:","fa fa-ticket ticket-right ticket0", "/../span/text()"))
+    account.arena_ticket = stringToInt(values)
+    
+    values = tree.xpath(formatImgXpath("Resources:","parts-icon ", "/preceding-sibling::text()"))
+    account.part = stringToInt(values)
+    
+    values = tree.xpath('//div[6]/div[2]/table/tbody/tr/td[11]/span/span/span/span/text()')
+    account.equipment = ''.join(values) if values else None
+    
+    values = tree.xpath(formatImgXpath("Arena points:","arena-icon ","/../text()"))
+    account.arena_point = stringToInt(values)
+    
+    values = tree.xpath(formatImgXpath("Max difficulty:","diff-icon ","/../a/text()"))
+    account.max_difficulty = stringToInt(values)
+    
+    values = tree.xpath(formatIXpath("Wins:","fa fa-flag wins-icon ","/../text()"))
+    account.win = stringToInt(values)
+    values = tree.xpath('//strong[text()="Last season:"]/../following-sibling::div//text()')
+    if not values:
+        values = tree.xpath('//strong[contains(text(),"Season")]/../..//text()')
+    account.last_season = re.search(r'S(\d+)', ' '.join(values)).group(1) if values else None
+    def formatSpanXpath(text,index):
+        return f'//span[text()="{text}"]/../following-sibling::div[{index}]//text()'
+    values = tree.xpath(formatSpanXpath("Beginner",1))
+    account.b_t_ms = stringToFloat(values)
+    
+    values = tree.xpath(formatSpanXpath("Intermediate",1))
+    account.i_t_ms = stringToFloat(values)
+    
+    values = tree.xpath(formatSpanXpath("Expert",1))
+    account.e_t_ms = stringToFloat(values)
+    
+    account.s_t_ms = account.b_t_ms + account.i_t_ms + account.e_t_ms
+    
+    values = tree.xpath(formatIXpath("Efficiency:","fa fa-dot-circle-o eff-icon level1","/../text()"))
+    account.b_ioe = stringToFloat(values) / 100
+    
+    values = tree.xpath(formatIXpath("Efficiency:","fa fa-dot-circle-o eff-icon level2","/../text()"))
+    account.i_ioe = stringToFloat(values) / 100
+    
+    values = tree.xpath(formatIXpath("Efficiency:","fa fa-dot-circle-o eff-icon level3","/../text()"))
+    account.e_ioe = stringToFloat(values) / 100
+    
+    account.s_ioe = account.b_ioe + account.i_ioe + account.e_ioe
+    
+    values = tree.xpath(formatIXpath("Mastery:","glyphicon glyphicon-flash mastery-icon mastery1","/../text()"))
+    account.b_mastery = stringToInt(values)
+    
+    values = tree.xpath(formatIXpath("Mastery:","glyphicon glyphicon-flash mastery-icon mastery2","/../text()"))
+    account.i_mastery = stringToInt(values)
+    
+    values = tree.xpath(formatIXpath("Mastery:","glyphicon glyphicon-flash mastery-icon mastery3","/../text()"))
+    account.e_mastery = stringToInt(values)
+    
+    values = tree.xpath(formatIXpath("Win streak:","fa fa-crosshairs ws-icon ws1","/../text()"))
+    account.b_winstreak = stringToInt(values)
+    
+    values = tree.xpath(formatIXpath("Win streak:","fa fa-crosshairs ws-icon ws2","/../text()"))
+    account.i_winstreak = stringToInt(values)
+    
+    values = tree.xpath(formatIXpath("Win streak:","fa fa-crosshairs ws-icon ws3","/../text()"))
+    account.e_winstreak = stringToInt(values)
     # 给account的各attribute赋值
     account.save()
     
