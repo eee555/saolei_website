@@ -103,7 +103,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
                 }
             }
         }).catch(function (error) {
-            
+
         })
     })
 }

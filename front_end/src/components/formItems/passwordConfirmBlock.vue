@@ -26,8 +26,8 @@ const confirmPassword = ref('');
 const passwordFormRef = ref<typeof ElFormItem>();
 const confirmPasswordFormRef = ref<typeof ElFormItem>();
 
-const validateState = computed(()=>{return confirmPasswordFormRef.value!.validateState});
-defineExpose({validateState})
+const validateState = computed(() => { return confirmPasswordFormRef.value!.validateState });
+defineExpose({ validateState })
 
 const passwordHandler = (value: string) => {
     if (value.length == 0) validateError(passwordFormRef, t.t('msg.passwordRequired'))

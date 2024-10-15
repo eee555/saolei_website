@@ -1,17 +1,17 @@
 <template>
-    <el-button v-if="store.login_status != LoginStatus.IsLogin" @click.stop="login_visible=true" class="fakemenuitem" text
-        size="small">
+    <el-button v-if="store.login_status != LoginStatus.IsLogin" @click.stop="login_visible = true" class="fakemenuitem"
+        text size="small">
         {{ $t('menu.login') }}
     </el-button>
-    <el-button v-if="store.login_status != LoginStatus.IsLogin" @click.stop="register_visible=true" style="margin-left: 0px;"
-        class="fakemenuitem" text size="small">
+    <el-button v-if="store.login_status != LoginStatus.IsLogin" @click.stop="register_visible = true"
+        style="margin-left: 0px;" class="fakemenuitem" text size="small">
         {{ $t('menu.register') }}
     </el-button>
     <el-button v-if="store.login_status == LoginStatus.IsLogin" @click.stop="logout();" class="fakemenuitem" text
         size="small">
         {{ $t('menu.logout') }}
     </el-button>
-    <LoginDialog v-model="login_visible" @login="login" @forget-password="login_visible=false;retrieve_visible=true;" />
+    <LoginDialog v-model="login_visible" @login="login" @forget-password="login_visible = false; retrieve_visible = true;" />
     <RegisterDialog v-model="register_visible" @login="login" />
     <RetrieveDialog v-model="retrieve_visible" @login="login" />
 </template>

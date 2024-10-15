@@ -1,11 +1,12 @@
 <template>
     <el-dialog v-model="visible" :title="$t('login.retrieveTitle')" width="400px" align-center draggable
-    :lock-scroll="false" @close='resetForm(ruleFormRef)'>
+        :lock-scroll="false" @close='resetForm(ruleFormRef)'>
         <el-form :model="retrieveForm" ref="ruleFormRef" status-icon>
             <!-- 邮箱 -->
             <email-form-item v-model="retrieveForm.email" ref="emailFormRef" check-collision="false"></email-form-item>
             <!-- 邮箱验证码 -->
-            <email-code-block v-model="retrieveForm.emailCode" :email="retrieveForm.email" type="register" :email-state="email_state" ref="emailCodeFormRef"/>
+            <email-code-block v-model="retrieveForm.emailCode" :email="retrieveForm.email" type="register"
+                :email-state="email_state" ref="emailCodeFormRef" />
             <!-- 密码 -->
             <password-confirm-block v-model="retrieveForm.password" ref="passwordFormRef" />
             <!-- 确认 -->
