@@ -1,27 +1,25 @@
-
-import { LocaleConfig } from '@/i18n/config'
-
-export const de = {
+export default {
     local: 'de',
     name: 'name',
-    forgetPassword: {
-        title: 'Titel',
-        email: 'E-Mail',
+    form: {
         captcha: 'Captcha',
-        getEmailCode: 'E-Mail Code anfordern',
+        confirmPassword: 'Passwort bestätigen',
+        email: 'E-Mail',
         emailCode: 'E-Mail Code',
         password: 'Passwort',
-        confirmPassword: 'Passwort bestätigen',
-        confirm: 'bestätigen'
+        username: 'Benutzername',
     },
     login: {
-        title: 'Titel',
-        username: 'Benutzername',
-        password: 'Passwort',
-        captcha: 'Captcha',
+        agreeTAC1: 'Zustimmen',
+        agreeTAC2: 'Nutzungsbedingungen',
         forgetPassword: 'Passwort vergessen?',
         keepMeLoggedIn: 'eingeloggt bleiben',
-        confirm: 'Login'
+        loginConfirm: 'Login',
+        loginTitle: 'Titel',
+        registerConfirm: 'bestätigen',
+        registerTitle: 'Titel',
+        retrieveConfirm: 'bestätigen',
+        retrieveTitle: 'Titel',
     },
     menu: {
         ranking: 'Ranking',
@@ -43,18 +41,5 @@ export const de = {
         realname: 'Name',
         confirmChange: 'Änderungen bestätigen',
         cancelChange: 'abbrechen',
-    },
-    register: {
-        title: 'Titel',
-        username: 'Benutzername',
-        email: 'E-mail',
-        captcha: 'Captcha',
-        getEmailCode: 'E-mail Code erhalten',
-        emailCode: 'E-Mail Code',
-        password: 'Passwort',
-        confirmPassword: 'Passwort',
-        agreeTo: 'Zustimmen',
-        termsAndConditions: 'Nutzungsbedingungen',
-        confirm: 'bestätigen'
     },
 }

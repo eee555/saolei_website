@@ -1,6 +1,4 @@
-import { LocaleConfig } from '@/i18n/config'
-
-export const en = {
+export default {
     local: 'en',
     name: 'English',
     common: {
@@ -17,6 +15,7 @@ export const en = {
         button: {
             cancel: 'Cancel',
             confirm: 'Confirm',
+            send: 'Send',
         },
         filter: 'Filter',
         hide: 'Hide',
@@ -37,19 +36,9 @@ export const en = {
             actionFail: 'Failed to {0}',
             actionSuccess: 'Succeed to {0}',
             agreeTAC: 'Please agree to Terms and Conditions!',
-            confirmPasswordFail: 'Passwords do not match!',
             connectionFail: 'Connection Fails!',
             contactDeveloper: 'Please contact the developers.',
-            emailCodeSent: 'The email code has been sent. Please check your inbox!',
-            emptyEmail: 'Please enter your email!',
-            emptyEmailCode: 'Please enter 6-char email code!',
-            emptyPassword: 'Please enter your password!',
-            emptyUsername: 'Please enter your username!',
             fileTooLarge: 'Maximum file size is {0}',
-            invalidEmail: 'Invalid email!',
-            invalidEmailCode: 'Email code is invalid! Please re-sent your email code.',
-            invalidPassword: 'The length of password should be from 6 to 20!。',
-            invalidUsername: 'The length of username cannot exceed 20!',
             logoutFail: 'Failed to log out!',
             logoutSuccess: 'Log out success!',
             realNameRequired: 'Real name required',
@@ -120,16 +109,13 @@ export const en = {
         links: 'Links',
         about: 'About',
     },
-    forgetPassword: {
-        title: 'Reset password',
+    form: {
         captcha: 'captcha',
-        confirm: 'Reset',
         confirmPassword: 'confirm password',
         email: 'email',
-        emailCode: 'one-time password',
-        getEmailCode: 'Send one-time password',
-        password: 'new password',
-        success: 'Password reset complete!'
+        emailCode: 'Email code',
+        password: 'Password',
+        username: 'Username',
     },
     guide: {
         announcement: 'Announcements',
@@ -152,13 +138,10 @@ export const en = {
         notFound: 'You do not have any video of the identifier',
     },
     login: {
-        title: 'Login',
-        username: 'Username',
-        password: 'Password',
-        captcha: 'Captcha',
+        loginTitle: 'Login',
         forgetPassword: 'Forget password?',
         keepMeLoggedIn: 'Keep me logged in',
-        confirm: 'Log in'
+        loginConfirm: 'Log in'
     },
     menu: {
         ranking: 'Ranking',
@@ -222,19 +205,6 @@ export const en = {
                 upload: 'Upload fail',
             }
         }
-    },
-    register: {
-        title: 'Register',
-        username: 'username',
-        email: 'email',
-        captcha: 'captcha',
-        getEmailCode: 'Send email code',
-        emailCode: 'email code',
-        password: 'password',
-        confirmPassword: 'confirm password',
-        agreeTo: 'Agree to ',
-        termsAndConditions: 'Terms & Conditions',
-        confirm: 'Register',
     },
     setting: {
         appearance: 'Appearance',

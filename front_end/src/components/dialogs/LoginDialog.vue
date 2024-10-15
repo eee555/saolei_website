@@ -1,17 +1,17 @@
 <template>
-    <el-dialog v-model="visible" :title="$t('login.title')" width="400px" align-center draggable :lock-scroll="false"
+    <el-dialog v-model="visible" :title="$t('login.loginTitle')" width="400px" align-center draggable :lock-scroll="false"
         @close="resetForm(ruleFormRef); emit('close')">
         <el-form :rules="rules" :model="loginForm" ref="ruleFormRef">
             <!-- 用户名 -->
-            <el-form-item prop="username" :label="$t('login.username')"> 
+            <el-form-item prop="username" :label="$t('form.username')"> 
                 <el-input v-model="loginForm.username" prefix-icon="User" maxlength="20" show-word-limit></el-input>
             </el-form-item>
             <!-- 密码 -->
-            <el-form-item prop="password" :label="$t('login.password')" :error="passwordError"> 
+            <el-form-item prop="password" :label="$t('form.password')" :error="passwordError"> 
                 <el-input v-model="loginForm.password" maxlength="20" show-password prefix-icon="Lock"></el-input>
             </el-form-item>
             <!-- 验证码 -->
-            <el-form-item prop="captcha" :label="$t('login.captcha')" :error="captchaError">
+            <el-form-item prop="captcha" :label="$t('form.captcha')" :error="captchaError">
                 <div style="display: flex;">
                     <el-input v-model.trim="loginForm.captcha" prefix-icon="Key" class="code" maxlength="4"></el-input>
                     &nbsp;
@@ -29,7 +29,7 @@
             </el-form-item>
             <!-- 确认 -->
             <el-form-item>
-                <el-button type="primary" @click="submitForm(ruleFormRef)">{{ $t('login.confirm') }}</el-button>
+                <el-button type="primary" @click="submitForm(ruleFormRef)">{{ $t('login.loginConfirm') }}</el-button>
             </el-form-item>
         </el-form>
     </el-dialog>
@@ -97,10 +97,10 @@ const submitForm = async (formEl: FormInstance | undefined) => {
                     emit('login', data.user, remember_me.value)
                 } else if (data.type == 'error') {
                     if (data.category == 'captcha') {
-                        captchaError.value = 'invalid captcha';
+                        captchaError.value = t.t('msg.captchaFail');
                         if (refValidCode.value !== undefined) refValidCode.value.refreshPic();
                     } else if (data.category == 'password') {
-                        passwordError.value = 'invalid username or password';
+                        passwordError.value = t.t('msg.usernamePasswordInvalid');
                     }
                 }
             })

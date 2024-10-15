@@ -1,5 +1,5 @@
 <template>
-    <el-form-item prop="email" :label="$t('forgetPassword.email')" ref="emailFormRef">
+    <el-form-item prop="email" :label="$t('form.email')" ref="emailFormRef">
         <el-input v-model="email" prefix-icon="Message" type="email" @input="emailInputHandler"
             @change="emailChangeHandler"></el-input>
     </el-form-item>
@@ -31,21 +31,21 @@ const validateState = computed(()=>{return emailFormRef.value!.validateState});
 defineExpose({validateState})
 
 const emailInputHandler = (value: string) => {
-    if (value.length == 0) validateError(emailFormRef, t.t('validator.emailRequired'));
+    if (value.length == 0) validateError(emailFormRef, t.t('msg.emailRequired'));
     else emailFormRef.value!.clearValidate();
 }
 
 const emailChangeHandler = (value: string) => {
-    if (value.length == 0) validateError(emailFormRef, t.t('validator.emailRequired'));
-    else if (!isEmail(value)) validateError(emailFormRef, t.t('validator.emailInvalid'));
+    if (value.length == 0) validateError(emailFormRef, t.t('msg.emailRequired'));
+    else if (!isEmail(value)) validateError(emailFormRef, t.t('msg.emailInvalid'));
     else if (prop.checkCollision!==''){
         proxy.$axios.get('userprofile/checkcollision/', { params: { email: value } }).then(function (response) {
-            if (response.data === 'True' && prop.checkCollision==='true') validateError(emailFormRef, t.t('validator.emailCollision'));
-            else if (response.data === 'False' && prop.checkCollision==='false') validateError(emailFormRef, t.t('validator.emailNoCollision'));
+            if (response.data === 'True' && prop.checkCollision==='true') validateError(emailFormRef, t.t('msg.emailCollision'));
+            else if (response.data === 'False' && prop.checkCollision==='false') validateError(emailFormRef, t.t('msg.emailNoCollision'));
             else validateSuccess(emailFormRef);
         }).catch(function (error) {
-            if (error.code === "ERR_NETWORK") validateError(emailFormRef, t.t('validator.connectionFail'));
-            else validateError(emailFormRef, t.t('validator.unknownError', [error]));
+            if (error.code === "ERR_NETWORK") validateError(emailFormRef, t.t('msg.connectionFail'));
+            else validateError(emailFormRef, t.t('msg.unknownError', [error]));
         })
     }
 }

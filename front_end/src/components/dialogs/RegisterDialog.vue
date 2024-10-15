@@ -1,9 +1,9 @@
 <template>
-    <el-dialog v-model="visible" :title="$t('register.title')" width="400px" align-center draggable :lock-scroll="false"
+    <el-dialog v-model="visible" :title="$t('login.registerTitle')" width="400px" align-center draggable :lock-scroll="false"
         @close='resetForm(ruleFormRef)'>
         <el-form :model="registerForm" ref="ruleFormRef" status-icon>
             <!-- 用户名 -->
-            <el-form-item prop="username" :label="$t('register.username')" ref="usernameFormRef">
+            <el-form-item prop="username" :label="$t('form.username')" ref="usernameFormRef">
                 <el-input v-model="registerForm.username" prefix-icon="User" maxlength="20" show-word-limit
                     @input="usernameInputHandler" @change="usernameChangeHandler"></el-input>
             </el-form-item>
@@ -17,16 +17,16 @@
             <!-- 同意协议 -->
             <el-form-item prop="agreeTAC">
                 <el-checkbox v-if="true" v-model="agree_TAC" name="checkoutSecret">{{
-                    $t('register.agreeTo')
+                    $t('login.agreeTAC1')
                 }}
-                    <a target="_blank" :href="AXIOS_BASE_URL + '/agreement.html'">{{ $t('register.termsAndConditions')
+                    <a target="_blank" :href="AXIOS_BASE_URL + '/agreement.html'">{{ $t('login.agreeTAC2')
                         }}</a>
                 </el-checkbox>
             </el-form-item>
             <!-- 确认 -->
             <el-form-item>
                 <el-button type="primary" @click="submitForm(ruleFormRef)" :disabled="confirm_disabled">{{
-                    $t('register.confirm') }}</el-button>
+                    $t('login.registerConfirm') }}</el-button>
             </el-form-item>
         </el-form>
     </el-dialog>
@@ -90,22 +90,22 @@ const confirm_disabled = computed(() => {
 })
 
 const usernameInputHandler = (value: string) => {
-    if (value.length == 0) validateError(usernameFormRef, t.t('validator.usernameRequired'));
-    else if (containsControl.test(value)) validateError(usernameFormRef, t.t('validator.illegalCharacter'));
+    if (value.length == 0) validateError(usernameFormRef, t.t('msg.usernameRequired'));
+    else if (containsControl.test(value)) validateError(usernameFormRef, t.t('msg.illegalCharacter'));
     else usernameFormRef.value!.clearValidate();
 }
 
 const usernameChangeHandler = (value: string) => {
-    if (value.length == 0) validateError(usernameFormRef, t.t('validator.usernameRequired'));
-    else if (containsControl.test(value)) validateError(usernameFormRef, t.t('validator.illegalCharacter'));
-    else if (outOfCharacter.replace(value).length == 0) validateError(usernameFormRef, t.t('validator.usernameInvalid'));
+    if (value.length == 0) validateError(usernameFormRef, t.t('msg.usernameRequired'));
+    else if (containsControl.test(value)) validateError(usernameFormRef, t.t('msg.illegalCharacter'));
+    else if (outOfCharacter.replace(value).length == 0) validateError(usernameFormRef, t.t('msg.usernameInvalid'));
     else {
         proxy.$axios.get('userprofile/checkcollision/', { params: { username: value } }).then(function (response) {
             if (response.data === 'False') validateSuccess(usernameFormRef)
-            else validateError(usernameFormRef, t.t('validator.usernameCollision'));
+            else validateError(usernameFormRef, t.t('msg.usernameCollision'));
         }).catch(function (error) {
-            if (error.code === "ERR_NETWORK") validateError(usernameFormRef, t.t('validator.connectionFail'));
-            else validateError(usernameFormRef, t.t('validator.unknownError', [error]));
+            if (error.code === "ERR_NETWORK") validateError(usernameFormRef, t.t('msg.connectionFail'));
+            else validateError(usernameFormRef, t.t('msg.unknownError', [error]));
         })
     }
 }
@@ -124,7 +124,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
         if (data.type === 'success') {
             emit('login', data.user)
             ElNotification({
-                title: '注册成功！',
+                title: t.t('msg.registerSuccess'),
                 type: 'success',
                 duration: local.notification_duration,
             })

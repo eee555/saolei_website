@@ -4,7 +4,7 @@
 -->
 <template>
     <!-- 图形验证码 -->
-    <el-form-item :disabled="!email_success" :label="$t('register.captcha')" ref="captchaFormRef">
+    <el-form-item :disabled="!email_success" :label="$t('form.imageCaptcha')" ref="captchaFormRef">
         <div style="display: flex">
             <el-input v-model.trim="captcha" prefix-icon="Key" class="code" maxlength="6"
                 @input="captchaHandler"></el-input>
@@ -13,16 +13,16 @@
         </div>
     </el-form-item>
     <!-- 邮箱验证码 -->
-    <el-form-item prop="emailCode" :label="$t('register.emailCode')" ref="emailCodeFormRef">
+    <el-form-item prop="emailCode" :label="$t('form.emailCode')" ref="emailCodeFormRef">
         <div style="display: flex">
         <el-input v-model.trim="emailCode" prefix-icon="Key" maxlength="6"
-            :disabled="!email_success" @change="emailCodeHandler" :placeholder="send_email_code_button"></el-input>
+            :disabled="!email_success" @input="emailCodeHandler" :placeholder="$t(email_code_placeholder)"></el-input>
         &nbsp;
         <el-button @click="getEmailCaptcha(type)" :disabled="send_email_code_button_disabled || counting">
             <vue-countdown v-if="counting" :time="60000" @end="counting = false;" v-slot="{ totalSeconds }">
                 ({{ totalSeconds }})
             </vue-countdown>
-            <span v-else>发送</span>
+            <span v-else>{{ $t('common.button.send') }}</span>
         </el-button>
         </div>
     </el-form-item>
@@ -73,17 +73,17 @@ const validateState = computed(() => { return emailCodeFormRef.value!.validateSt
 
 // 由外部验证后，若不正确则传入修改验证状态
 const errorCode = () => {
-    validateError(emailCodeFormRef,'邮箱验证码过期或不正确')
+    validateError(emailCodeFormRef,t.t('msg.emailCodeInvalid'))
 }
 
 defineExpose({ validateState, hashkey, errorCode })
 
-const send_email_code_button = computed(() => {
-    if (prop.emailState !== 'success') return '请输入邮箱';
-    else if (captchaFormRef.value?.validateState !== 'success') return '请输入图形验证码';
-    else if (email_handling.value) return '请稍候';
-    else if (email_success.value) return '请查看邮箱';
-    else return '发送邮箱验证码';
+const email_code_placeholder = computed(() => {
+    if (prop.emailState !== 'success') return t.t('msg.emailRequired');
+    else if (captchaFormRef.value?.validateState !== 'success') return t.t('msg.captchaRequired');
+    else if (email_handling.value) return t.t('msg.pleaseWait');
+    else if (email_success.value) return t.t('msg.pleaseSeeEmail');
+    else return '';
 })
 const send_email_code_button_disabled = computed(() => {
     if (prop.emailState !== 'success') return true;
@@ -93,12 +93,12 @@ const send_email_code_button_disabled = computed(() => {
 })
 
 const captchaHandler = (value: string) => {
-    if (value.length == 0) validateError(captchaFormRef, t.t('validator.captchaRequired'));
+    if (value.length == 0) validateError(captchaFormRef, t.t('msg.captchaRequired'));
     else validateSuccess(captchaFormRef);
 }
 
 const emailCodeHandler = (value: string) => {
-    if (value.length == 0) validateError(emailCodeFormRef, t.t('validator.emailCodeRequired'));
+    if (value.length == 0) validateError(emailCodeFormRef, t.t('msg.emailCodeRequired'));
     else validateSuccess(emailCodeFormRef);
 }
 
@@ -106,7 +106,7 @@ const getEmailCaptcha = (type: string) => {
     if (prop.emailState !== 'success') return;
     if (email_success.value) {
         refreshCaptcha();
-        validateError(captchaFormRef, t.t('validator.captchaRefresh'));
+        validateError(captchaFormRef, t.t('msg.captchaRefresh'));
         email_success.value=false;
         return;
     }
@@ -124,20 +124,20 @@ const getEmailCaptcha = (type: string) => {
             hashkey.value = data.hashkey;
             email_success.value = true;
             ElNotification({
-                title: '邮件发送成功！',
-                message: '请至邮箱查看',
+                title: t.t('msg.emailSendSuccessTitle'),
+                message: t.t('msg.emailSendSuccessMsg'),
                 type: 'warning',
                 duration: local.notification_duration,
             })
         } else if (data.type == 'error') {
             refreshCaptcha();
             if (data.object == 'captcha') {
-                validateError(captchaFormRef, t.t('validator.captchaFail'));
+                validateError(captchaFormRef, t.t('msg.captchaFail'));
             } else if (data.object == 'email') {
-                validateError(captchaFormRef, t.t('validator.captchaRefresh'));
+                validateError(captchaFormRef, t.t('msg.captchaRefresh'));
                 ElNotification({
-                    title: '邮件发送失败！',
-                    message: '请重新输入图形验证码并尝试。如果该情况反复发生，请联系开发者。',
+                    title: t.t('msg.emailSendFailTitle'),
+                    message: t.t('msg.emailSendFailMsg'),
                     type: 'error',
                     duration: local.notification_duration,
                 })

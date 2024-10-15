@@ -1,7 +1,7 @@
 <template>
-    <el-dialog v-model="visible" :title="$t('forgetPassword.title')" width="400px" align-center draggable
+    <el-dialog v-model="visible" :title="$t('login.retrieveTitle')" width="400px" align-center draggable
     :lock-scroll="false" @close='resetForm(ruleFormRef)'>
-        <el-form>
+        <el-form :model="retrieveForm" ref="ruleFormRef" status-icon>
             <!-- 邮箱 -->
             <email-form-item v-model="retrieveForm.email" ref="emailFormRef" check-collision="false"></email-form-item>
             <!-- 邮箱验证码 -->
@@ -11,24 +11,28 @@
             <!-- 确认 -->
             <el-form-item>
                 <el-button type="primary" @click="submitForm(ruleFormRef)" :disabled="confirm_disabled">{{
-                    $t('register.confirm') }}</el-button>
+                    $t('login.retrieveConfirm') }}</el-button>
             </el-form-item>
         </el-form>
     </el-dialog>
 </template>
 
 <script setup lang="ts">
-import { ElFormItem, FormInstance } from 'element-plus';
+import { ElFormItem, ElNotification, FormInstance } from 'element-plus';
 import { computed, reactive, ref } from 'vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import emailFormItem from '../formItems/emailFormItem.vue';
 import emailCodeBlock from '../formItems/emailCodeBlock.vue';
 import passwordConfirmBlock from '../formItems/passwordConfirmBlock.vue';
+import { useLocalStore } from '@/store';
+import { useI18n } from 'vue-i18n';
 
 const visible = defineModel();
 const emit = defineEmits(['login']);
 
 const { proxy } = useCurrentInstance();
+const local = useLocalStore();
+const t = useI18n();
 
 const emailFormRef = ref<typeof ElFormItem>();
 const emailCodeFormRef = ref<typeof emailCodeBlock>();
@@ -53,12 +57,12 @@ const email_state = computed(() => {
     else return emailFormRef.value.validateState;
 })
 const confirm_disabled = computed(() => {
-    return !(emailFormRef.value!.validateState === 'success' && emailCodeFormRef.value!.validateState === 'success' && passwordFormRef.value!.validateState === 'success')
+    return !(emailFormRef.value !== undefined && emailFormRef.value!.validateState === 'success' && emailCodeFormRef.value!.validateState === 'success' && passwordFormRef.value!.validateState === 'success')
 })
 
 const submitForm = async (formEl: FormInstance | undefined) => {
     if (!formEl) return
-    if (confirm_disabled) return
+    if (confirm_disabled.value) return
     await proxy.$axios.post('userprofile/retrieve/', {
         password: retrieveForm.password,
         email: retrieveForm.email,
@@ -68,6 +72,15 @@ const submitForm = async (formEl: FormInstance | undefined) => {
         let data = response.data;
         if (data.type == 'success') {
             emit('login', data.user)
+            ElNotification({
+                title: t.t('msg.passwordChanged'),
+                type: 'success',
+                duration: local.notification_duration,
+            })
+        } else if (data.type === 'error') {
+            if (data.object === 'emailcode') {
+                emailCodeFormRef.value!.errorCode()
+            }
         }
     })
 }
