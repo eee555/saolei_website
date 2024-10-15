@@ -45,7 +45,6 @@ def update_saolei_account(id, user: UserProfile | None):
         response.encoding = 'GB2312'
         InfoHtmlStr = response.text
 
-        
         url = f'http://saolei.wang/Video/Satus.asp?Id={id}'
         response = requests.get(url=url, timeout=5,headers=headers)
         response.encoding = 'GB2312'
@@ -144,7 +143,7 @@ def update_msgames_account(id, user: UserProfile | None):
 def update_wom_account(id, user: UserProfile | None):
     print(user)
     account = AccountWorldOfMinesweeper.objects.filter(id=id).first()
-    url = f'https://minesweeper.online/cn/player/{id}'
+    url = f'https://minesweeper.online/player/{id}'
     if not account:
         account = AccountWorldOfMinesweeper.objects.create(id=id, parent=user)
     elif user:
