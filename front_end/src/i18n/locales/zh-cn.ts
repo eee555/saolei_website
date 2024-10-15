@@ -183,6 +183,7 @@ export default {
         illegalCharacter: '非法字符',
         passwordChanged: '修改密码成功',
         passwordMinimum: '密码至少6位',
+        passwordRequired: '请输入密码',
         pleaseWait: '请稍候',
         pleaseSeeEmail: '请查看邮箱',
         registerSuccess: '注册成功！',

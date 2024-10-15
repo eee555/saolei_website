@@ -30,6 +30,7 @@ const validateState = computed(()=>{return confirmPasswordFormRef.value!.validat
 defineExpose({validateState})
 
 const passwordHandler = (value: string) => {
+    if (value.length == 0) validateError(passwordFormRef, t.t('msg.passwordRequired'))
     if (value.length < 6) validateError(passwordFormRef, t.t('msg.passwordMinimum'));
     else validateSuccess(passwordFormRef);
     if (confirmPasswordFormRef.value!.validateState !== '') {

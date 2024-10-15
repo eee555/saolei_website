@@ -183,6 +183,7 @@ export default {
         illegalCharacter: 'Illegal character',
         passwordChanged: 'Password updated',
         passwordMinimum: 'Password requires at least 6 characters',
+        passwordRequired: 'Password required',
         pleaseWait: 'Please wait',
         pleaseSeeEmail: 'Please check your email',
         registerSuccess: 'Successfully registered!',

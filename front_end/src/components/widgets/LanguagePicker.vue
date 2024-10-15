@@ -28,9 +28,9 @@ const local = useLocalStore();
 
 const options = [
     { lang: "zh-cn", text: "简体中文" },
-    { lang: "en", text: "English" },
-    { lang: "de", text: "name" },
-    { lang: "pl", text: "polski" },
+    { lang: "en", text: "English (98%)" },
+    { lang: "de", text: "Deutsch (16%)" },
+    { lang: "pl", text: "polski (21%)" },
     { lang: "dev", text: "dev" },
 ];
 

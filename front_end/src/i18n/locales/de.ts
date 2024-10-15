@@ -1,6 +1,6 @@
 export default {
     local: 'de',
-    name: 'name',
+    name: 'Deutsch',
     form: {
         captcha: 'Captcha',
         confirmPassword: 'Passwort bestätigen',
