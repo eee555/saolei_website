@@ -47,7 +47,7 @@ def send_email(email, send_type='register'):
         return None
     send_status = send_mail(email_title, email_body, 'wangjianing@88.com', [email])
     if send_status:
-        return code, hashkey
+        return hashkey
     else:
         return None
 
