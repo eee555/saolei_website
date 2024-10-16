@@ -71,22 +71,20 @@ def user_retrieve(request):
     emailHashkey = request.POST.get("email_key")
     email_captcha = request.POST.get("email_captcha")
     email = request.POST.get("email")
-    if judge_email_verification(email, email_captcha, emailHashkey):
-        user = UserProfile.objects.filter(email=user_retrieve_form.cleaned_data['email']).first()
-        if not user:
-            return HttpResponseNotFound() # 前端已经查过重了，理论上不应该进到这里
-        # 设置密码(哈希)
-        user.set_password(
-            user_retrieve_form.cleaned_data['password'])
-        user.save()
-        # 保存好数据后立即登录
-        login(request, user)
-        logger.info(f'用户 {user.username}#{user.id} 邮箱找回密码')
-        EmailVerifyRecord.objects.filter(hashkey=emailHashkey).delete()
-        userdata = {"id": user.id, "username": user.username, "realname": user.realname, "is_banned": user.is_banned, "is_staff": user.is_staff}
-        return JsonResponse({'type': 'success', 'user': userdata})
-    else:
+    if not judge_email_verification(email, email_captcha, emailHashkey):
         return JsonResponse({'type': 'error', 'object': 'emailcode'})
+    user = UserProfile.objects.filter(email=user_retrieve_form.cleaned_data['email']).first()
+    if not user:
+        return HttpResponseNotFound() # 前端已经查过重了，理论上不应该进到这里
+    # 设置密码(哈希)
+    user.set_password(user_retrieve_form.cleaned_data['password'])
+    user.save()
+    # 保存好数据后立即登录
+    login(request, user)
+    logger.info(f'用户 {user.username}#{user.id} 邮箱找回密码')
+    EmailVerifyRecord.objects.filter(hashkey=emailHashkey).delete()
+    userdata = {"id": user.id, "username": user.username, "realname": user.realname, "is_banned": user.is_banned, "is_staff": user.is_staff}
+    return JsonResponse({'type': 'success', 'user': userdata})
 
 
 # 用户注册

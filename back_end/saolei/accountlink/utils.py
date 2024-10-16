@@ -141,7 +141,6 @@ def update_msgames_account(id, user: UserProfile | None):
     account.save()
 
 def update_wom_account(id, user: UserProfile | None):
-    print(user)
     account = AccountWorldOfMinesweeper.objects.filter(id=id).first()
     url = f'https://minesweeper.online/player/{id}'
     if not account:
