@@ -327,7 +327,10 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
             'filename': os.path.join(BASE_DIR, 'logs/root.log'),
-            'formatter': 'default'
+            'formatter': 'default',
+            'encoding': 'utf-8',
+            'maxBytes': 5242880 * 20, # 100M
+            'backupCount': 5,
         },
         'userprofile': {
             'level': 'INFO',
