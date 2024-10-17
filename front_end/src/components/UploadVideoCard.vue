@@ -1,3 +1,4 @@
+<!-- 已弃用 -->
 <template>
     <div style="width: 480px;margin: 8px;">
         <el-card :body-style="{ padding: '0px', margin: '8px' }" style="border-radius: 8px;">
@@ -16,6 +17,7 @@
                         <div class="grid-content ep-bg-purple">难度：{{ video_msg.level }}</div>
                     </el-col>
                     <el-col :span="13">
+                        <!-- @vue-skip -->
                         <div class="grid-content ep-bg-purple">时间：{{ ms_to_s(video_msg.timems) }}s</div>
                     </el-col>
                 </el-row>

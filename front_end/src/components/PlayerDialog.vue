@@ -8,14 +8,11 @@
 
 <script setup lang="ts">
 // 播放录像的窗口
-import { useVideoPlayerStore } from '@/store';
+import { videoplayerstore } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { watch } from 'vue';
-import { generalNotification } from '@/utils/system/status';
-import { useI18n } from 'vue-i18n';
+import { httpErrorNotification } from './Notifications';
 const { proxy } = useCurrentInstance();
-const videoplayerstore = useVideoPlayerStore();
-const t = useI18n();
 
 watch(videoplayerstore, () => {
     if (videoplayerstore.visible) {
@@ -52,9 +49,7 @@ const preview = (id: Number | undefined) => {
                 },
             }
         }
-    }).catch((error: any) => {
-        generalNotification(t, error.response.status, t.t('common.action.getSoftware'))
-    })
+    }).catch(httpErrorNotification)
 }
 
 const playVideo = function (url: string) {

@@ -47,19 +47,14 @@
 
 <script lang="ts" setup>
 // 个人主页的个人纪录部分
-import { onMounted, ref, Ref, nextTick } from 'vue'
+import { ref, nextTick } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import PreviewNumber from '@/components/PreviewNumber.vue';
-import { genFileId, ElMessage } from 'element-plus'
+import { ElMessage } from 'element-plus'
 const { proxy } = useCurrentInstance();
-import type { UploadInstance } from 'element-plus'
-const upload = ref<UploadInstance>()
-// const imageUrl = ref(require('@/assets/person.png'))
-const avatar_changed = ref(false);
 import { Record, RecordBIE } from "@/utils/common/structInterface";
 import { ms_to_s } from "@/utils"
-import { useUserStore } from '../store'
-const store = useUserStore()
+import { store } from '../store'
 
 import { useI18n } from 'vue-i18n';
 const t = useI18n();
@@ -69,13 +64,6 @@ const loading = ref(true)
 //编辑前的
 const userid = ref("");
 const username = ref("");
-// const realname = ref("");
-// const signature = ref("");
-
-//编辑状态时的
-// const realname_edit = ref("");
-// const signature_edit = ref("");
-
 
 // 个人纪录表格
 const records = ref<Record[][]>([]);
@@ -87,10 +75,6 @@ const indexMethod = (index: number) => {
 
 // 此处和父组件配合，等一下从store里获取用户的id
 nextTick(() => {
-    // const player = proxy.$store.state.player;
-
-    // const player = JSON.parse(localStorage.getItem("player") as string);
-    // username.value = player.name;
     
     // 把左侧的头像、姓名、个性签名、记录请求过来
     proxy.$axios.get('/msuser/records/',
@@ -107,20 +91,10 @@ nextTick(() => {
         } else {
             userid.value = data.id;
             username.value = data.realname;
-            // signature.value = data.signature;
-            // realname_edit.value = data.realname;
-            // signature_edit.value = data.signature;
-
-            // if (data.avatar) {
-            //     imageUrl.value = "data:image/;base64," + data.avatar;
-            // }
-            // console.log(imageUrl);
             records.value.push(trans_record(JSON.parse(data.std_record)));
             records.value.push(trans_record(JSON.parse(data.nf_record)));
             records.value.push(trans_record(JSON.parse(data.ng_record)));
             records.value.push(trans_record(JSON.parse(data.dg_record)));
-            // console.log(records.value[0]);
-            // console.log(666);
             loading.value = false;
         }
 

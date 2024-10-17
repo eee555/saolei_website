@@ -51,9 +51,7 @@ import PreviewNumber from '@/components/PreviewNumber.vue';
 import { useRouter } from 'vue-router'
 import { ms_to_s, to_fixed_n } from "@/utils"
 const router = useRouter()
-import { useUserStore } from '../store'
-const store = useUserStore()
-
+import { store } from '../store'
 
 const data = defineProps({
     user_id: {
@@ -137,9 +135,9 @@ const pop_hide = () => {
     image_url.value = image_url_default;
     realname.value = "";
     id.value = "";
-    i_t.value = "";
-    b_t.value = "";
-    e_t.value = "";
+    i_t.value = 999999;
+    b_t.value = 999999;
+    e_t.value = 999999;
     b_t_id.value = "";
     i_t_id.value = "";
     e_t_id.value = "";

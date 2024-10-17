@@ -7,6 +7,7 @@
         </el-table-column>
         <el-table-column label="ID">
             <template #default="scope">
+                <!-- @vue-expect-error -->
                 <el-link :href="platformlist[scope.row.platform].profile(scope.row.identifier)" target="_blank">{{
                     scope.row.identifier }}</el-link>
             </template>
@@ -66,7 +67,7 @@
 
 import { computed, onMounted, reactive, ref } from 'vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { useLocalStore, useUserStore } from '@/store';
+import { store, local } from '@/store';
 import { ElMessageBox } from 'element-plus';
 import { Platform, platformlist } from '@/utils/common/accountLinkPlatforms'
 import PlatformIcon from './widgets/PlatformIcon.vue';
@@ -81,8 +82,6 @@ interface AccountLink {
 
 const { proxy } = useCurrentInstance();
 const t = useI18n();
-const store = useUserStore();
-const local = useLocalStore();
 const accountlinks = ref<AccountLink[]>([]);
 const formvisible = ref(false);
 const form = reactive({

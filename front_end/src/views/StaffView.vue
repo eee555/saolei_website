@@ -47,13 +47,10 @@
 // 管理员操作接口，通过'/staff'访问
 
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { generalNotification } from '@/utils/system/status';
 import { ref } from 'vue';
-
-import { useI18n } from 'vue-i18n';
 import { preview } from '@/utils/common/PlayerDialog';
 import StaffAccountLink from '@/components/staff/StaffAccountLink.vue';
-const t = useI18n();
+import { httpErrorNotification, successNotification } from '@/components/Notifications';
 
 const { proxy } = useCurrentInstance();
 
@@ -68,18 +65,16 @@ const getUser = () => {
         function (response: any) {
             userprofile.value = response.data;
         }
-    ).catch(error => {
-        generalNotification(t, error.response.status, t.t('common.action.getUserProfile'))
-    })
+    ).catch(httpErrorNotification)
 }
 
 const setUser = (id: number, field: string, value: string) => {
     proxy.$axios.post('userprofile/set/', {id: id, field: field, value: value}).then(
         function (response: any) {
-            generalNotification(t, response.status, t.t('common.action.setUserProfile'));
+            successNotification(response);
             getUser();
         }
-    )
+    ).catch(httpErrorNotification)
 }
 
 const videoid = ref(0);
@@ -93,18 +88,16 @@ const getVideo = () => {
         function (response: any) {
             videomodel.value = response.data;
         }
-    ).catch(error => {
-        generalNotification(t, error.response.status, t.t('common.action.getUserProfile'))
-    })
+    ).catch(httpErrorNotification)
 }
 
 const setVideo = (id: number, field: string, value: string) => {
     proxy.$axios.post('video/set/', {id: id, field: field, value: value}).then(
         function (response: any) {
-            generalNotification(t, response.status, t.t('common.action.setUserProfile'));
+            successNotification(response);
             getVideo();
         }
-    )
+    ).catch(httpErrorNotification)
 }
 
 </script>

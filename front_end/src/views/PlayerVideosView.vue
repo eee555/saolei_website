@@ -11,11 +11,9 @@ import { onMounted, ref, Ref } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
 // import { genFileId, ElMessage } from 'element-plus'
-import { Record } from "@/utils/common/structInterface";
 import VideoList from '@/components/VideoList.vue';
 // import { fa } from 'element-plus/es/locale';
-import { useUserStore } from '../store'
-const store = useUserStore()
+import { store } from '../store'
 
 const loading = ref(true)
 

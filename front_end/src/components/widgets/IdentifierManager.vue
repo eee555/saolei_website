@@ -8,7 +8,7 @@
 
 <script setup lang="ts">
 
-import { useUserStore } from '@/store';
+import { store } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { onMounted, ref } from 'vue';
 import { removeItem } from '@/utils/system/tools';
@@ -18,7 +18,6 @@ import { generalNotification, unknownErrorNotification } from '@/utils/system/st
 import { useI18n } from 'vue-i18n';
 
 const { proxy } = useCurrentInstance();
-const store = useUserStore();
 const identifiers = ref<string[]>([]);
 const new_identifiers = ref("")
 const t = useI18n();
