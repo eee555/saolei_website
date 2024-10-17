@@ -58,7 +58,7 @@ def user_login_auto(request):
 
 def user_logout(request):
     logout(request)
-    return JsonResponse({'status': 100, 'msg': None})
+    return HttpResponse()
 
 
 # 用户找回密码

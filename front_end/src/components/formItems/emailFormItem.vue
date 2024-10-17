@@ -26,9 +26,9 @@ const { proxy } = useCurrentInstance();
 const t = useI18n();
 
 const emailFormRef = ref<typeof ElFormItem>();
-const validateState = computed(()=>{return emailFormRef.value!.validateState});
+const validateState = computed(() => { return emailFormRef.value!.validateState });
 
-defineExpose({validateState})
+defineExpose({ validateState })
 
 const emailInputHandler = (value: string) => {
     if (value.length == 0) validateError(emailFormRef, t.t('msg.emailRequired'));
@@ -38,14 +38,14 @@ const emailInputHandler = (value: string) => {
 const emailChangeHandler = (value: string) => {
     if (value.length == 0) validateError(emailFormRef, t.t('msg.emailRequired'));
     else if (!isEmail(value)) validateError(emailFormRef, t.t('msg.emailInvalid'));
-    else if (prop.checkCollision!==''){
+    else if (prop.checkCollision !== '') {
         proxy.$axios.get('userprofile/checkcollision/', { params: { email: value } }).then(function (response) {
-            if (response.data === 'True' && prop.checkCollision==='true') validateError(emailFormRef, t.t('msg.emailCollision'));
-            else if (response.data === 'False' && prop.checkCollision==='false') validateError(emailFormRef, t.t('msg.emailNoCollision'));
+            if (response.data === 'True' && prop.checkCollision === 'true') validateError(emailFormRef, t.t('msg.emailCollision'));
+            else if (response.data === 'False' && prop.checkCollision === 'false') validateError(emailFormRef, t.t('msg.emailNoCollision'));
             else validateSuccess(emailFormRef);
         }).catch(function (error) {
             if (error.code === "ERR_NETWORK") validateError(emailFormRef, t.t('msg.connectionFail'));
-            else validateError(emailFormRef, t.t('msg.unknownError', [error]));
+            else validateError(emailFormRef, t.t('msg.unknownError') + error);
         })
     }
 }

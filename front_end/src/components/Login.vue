@@ -13,8 +13,9 @@
     </el-button>
     <!-- 以下的所有表单的输入项都需要@keydown.stop，解决horizontal菜单截留空格操作的问题。 -->
     <!-- https://github.com/element-plus/element-plus/issues/10172#issuecomment-1295794523 -->
-    <LoginDialog v-model="login_visible" @login="login" @forget-password="login_visible = false; retrieve_visible = true;" @keydown.stop />
-    <RegisterDialog v-model="register_visible" @login="login" @keydown.stop/>
+    <LoginDialog v-model="login_visible" @login="login"
+        @forget-password="login_visible = false; retrieve_visible = true;" @keydown.stop />
+    <RegisterDialog v-model="register_visible" @login="login" @keydown.stop />
     <RetrieveDialog v-model="retrieve_visible" @login="login" @keydown.stop />
 </template>
 
@@ -34,6 +35,7 @@ const local = useLocalStore()
 import { useI18n } from 'vue-i18n';
 import { deepCopy } from '@/utils';
 import RegisterDialog from './dialogs/RegisterDialog.vue';
+import { httpErrorNotification } from './Notifications';
 const t = useI18n();
 
 // 登录对话框是否出现
@@ -90,28 +92,24 @@ const logout = async () => {
     proxy.$axios.post('/userprofile/logout/',
         {},
     ).then(function (response) {
-        if (response.data.status == 100) {
-            // login_status.value = LoginStatus.NotLogin;
-            // mutations.updateLoginStatus(LoginStatus.NotLogin);
-            store.login_status = LoginStatus.NotLogin;
-            // const player = store.user;
-            store.user = {
-                id: 0,
-                username: "",
-                realname: "",
-                is_banned: false,
-                is_staff: false,
-                country: ""
-            };
-            emit('logout'); // 向父组件发送消息
-            ElMessage.success({ message: t.t('common.msg.logoutSuccess'), offset: 68 });
-            register_visible.value = false;
-            login_visible.value = false;
-            retrieve_visible.value = false;
-        } else if (response.data.status >= 101) {
-            ElMessage.error({ message: t.t('common.msg.logoutFail'), offset: 68 });
-        }
-    });
+        // login_status.value = LoginStatus.NotLogin;
+        // mutations.updateLoginStatus(LoginStatus.NotLogin);
+        store.login_status = LoginStatus.NotLogin;
+        // const player = store.user;
+        store.user = {
+            id: 0,
+            username: "",
+            realname: "",
+            is_banned: false,
+            is_staff: false,
+            country: ""
+        };
+        emit('logout'); // 向父组件发送消息
+        ElMessage.success({ message: t.t('common.msg.logoutSuccess'), offset: 68 });
+        register_visible.value = false;
+        login_visible.value = false;
+        retrieve_visible.value = false;
+    }).catch(httpErrorNotification);
 }
 
 </script>

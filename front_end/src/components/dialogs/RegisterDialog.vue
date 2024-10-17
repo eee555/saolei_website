@@ -1,6 +1,6 @@
 <template>
-    <el-dialog v-model="visible" :title="$t('login.registerTitle')" width="400px" align-center draggable :lock-scroll="false"
-        @close='resetForm(ruleFormRef)'>
+    <el-dialog v-model="visible" :title="$t('login.registerTitle')" width="400px" align-center draggable
+        :lock-scroll="false" @close='resetForm(ruleFormRef)'>
         <el-form :model="registerForm" ref="ruleFormRef" status-icon>
             <!-- 用户名 -->
             <el-form-item prop="username" :label="$t('form.username')" ref="usernameFormRef">
@@ -18,7 +18,7 @@
             <el-form-item prop="agreeTAC">
                 <el-checkbox v-if="true" v-model="agree_TAC" name="checkoutSecret">{{
                     $t('login.agreeTAC1')
-                }}
+                    }}
                     <a target="_blank" :href="AXIOS_BASE_URL + '/agreement.html'">{{ $t('login.agreeTAC2')
                         }}</a>
                 </el-checkbox>
@@ -105,7 +105,7 @@ const usernameChangeHandler = (value: string) => {
             else validateError(usernameFormRef, t.t('msg.usernameCollision'));
         }).catch(function (error) {
             if (error.code === "ERR_NETWORK") validateError(usernameFormRef, t.t('msg.connectionFail'));
-            else validateError(usernameFormRef, t.t('msg.unknownError', [error]));
+            else validateError(usernameFormRef, t.t('msg.unknownError') + error);
         })
     }
 }
