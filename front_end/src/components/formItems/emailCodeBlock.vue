@@ -35,7 +35,7 @@ import { ElFormItem, ElNotification } from 'element-plus';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import ValidCode from '../ValidCode.vue';
-import { useLocalStore } from '@/store';
+import { local } from '@/store';
 import VueCountdown from '@chenfengyuan/vue-countdown';
 
 const prop = defineProps({
@@ -56,7 +56,6 @@ const emailCode = defineModel();
 
 const { proxy } = useCurrentInstance();
 const t = useI18n();
-const local = useLocalStore();
 
 const captcha = ref(''); // 图形验证码
 const hashkey = ref(''); // 邮箱验证码hash

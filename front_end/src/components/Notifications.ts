@@ -1,9 +1,9 @@
-import { useLocalStore } from "@/store";
+import { local } from "@/store";
 import { ElNotification } from "element-plus";
 import i18n from "@/i18n";
 
+// @ts-ignore
 const { t } = i18n.global;
-const local = useLocalStore();
 
 const notificationMessage: { [code: number]: string } = {
     200: 'common.response.OK',

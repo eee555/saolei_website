@@ -44,14 +44,13 @@ import { useI18n } from 'vue-i18n';
 import emailFormItem from '../formItems/emailFormItem.vue';
 import emailCodeBlock from '../formItems/emailCodeBlock.vue';
 import passwordConfirmBlock from '../formItems/passwordConfirmBlock.vue';
-import { useLocalStore } from '@/store';
+import { local } from '@/store';
 
 const visible = defineModel();
 const emit = defineEmits(['login']);
 
 const { proxy } = useCurrentInstance();
 const t = useI18n();
-const local = useLocalStore();
 const agree_TAC = ref(false);
 const AXIOS_BASE_URL = import.meta.env.VITE_BASE_API;
 

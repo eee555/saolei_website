@@ -71,8 +71,7 @@ import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
 import type { UploadInstance, UploadProps, UploadUserFile, UploadRawFile, UploadFile, UploadFiles, UploadRequestOptions } from 'element-plus'
 // import img_arbiter from '@/assets/img/img_arbiter.png'
-import { useUserStore } from '../store'
-const store = useUserStore()
+import { store } from '../store'
 import { ms_to_s, to_fixed_n } from "@/utils"
 
 import { useI18n } from 'vue-i18n';

@@ -8,12 +8,11 @@
 
 <script setup lang="ts">
 // 播放录像的窗口
-import { useVideoPlayerStore } from '@/store';
+import { videoplayerstore } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { watch } from 'vue';
 import { httpErrorNotification } from './Notifications';
 const { proxy } = useCurrentInstance();
-const videoplayerstore = useVideoPlayerStore();
 
 watch(videoplayerstore, () => {
     if (videoplayerstore.visible) {

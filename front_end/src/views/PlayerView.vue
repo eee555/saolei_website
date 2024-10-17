@@ -99,8 +99,7 @@ import imageUrlDefault from '@/assets/person.png'
 const imageUrl = ref(imageUrlDefault)
 const avatar_changed = ref(false);
 import { compressAccurately } from 'image-conversion';
-import { useUserStore } from '../store'
-const store = useUserStore()
+import { store } from '../store'
 
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';

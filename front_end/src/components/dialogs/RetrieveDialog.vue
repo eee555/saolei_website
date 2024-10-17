@@ -25,14 +25,13 @@ import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import emailFormItem from '../formItems/emailFormItem.vue';
 import emailCodeBlock from '../formItems/emailCodeBlock.vue';
 import passwordConfirmBlock from '../formItems/passwordConfirmBlock.vue';
-import { useLocalStore } from '@/store';
+import { local } from '@/store';
 import { useI18n } from 'vue-i18n';
 
 const visible = defineModel();
 const emit = defineEmits(['login']);
 
 const { proxy } = useCurrentInstance();
-const local = useLocalStore();
 const t = useI18n();
 
 const emailFormRef = ref<typeof ElFormItem>();

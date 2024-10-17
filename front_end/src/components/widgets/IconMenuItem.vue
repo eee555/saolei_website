@@ -15,9 +15,7 @@
 
 <script lang="ts" setup>
 
-import { useLocalStore } from "@/store";
-
-const local = useLocalStore();
+import { local } from "@/store";
 
 const props = defineProps({
     text: String,

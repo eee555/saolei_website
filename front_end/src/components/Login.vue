@@ -28,9 +28,7 @@ import { LoginStatus } from "@/utils/common/structInterface"
 import LoginDialog from "@/components/dialogs/LoginDialog.vue"
 import RetrieveDialog from './dialogs/RetrieveDialog.vue';
 import { ElMessage } from 'element-plus'
-import { useLocalStore, useUserStore } from '../store'
-const store = useUserStore()
-const local = useLocalStore()
+import { store, local } from '../store'
 
 import { useI18n } from 'vue-i18n';
 import { deepCopy } from '@/utils';

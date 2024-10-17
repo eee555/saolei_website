@@ -67,8 +67,7 @@ import { useI18n } from 'vue-i18n';
 import { generalNotification } from '@/utils/system/status';
 const t = useI18n();
 
-import { useVideoFilter } from '@/store';
-const videofilter = useVideoFilter();
+import { videofilter } from '@/store';
 
 const level_tag_selected = ref("EXPERT");
 const mode_tag_selected = ref("STD");
@@ -260,7 +259,9 @@ const request_videos = () => {
     params["r"] = state.ReverseOrder;
     params["ps"] = videofilter.pagesize;
     params["page"] = state.CurrentPage;
+    // @ts-expect-error
     params["bmin"] = videofilter.bbbv_range[level_tags[level_tag_selected.value].key][0];
+    // @ts-expect-error
     params["bmax"] = videofilter.bbbv_range[level_tags[level_tag_selected.value].key][1];
     if (![0,4].includes(videofilter.filter_state.length)) {
         params['s'] = videofilter.filter_state;

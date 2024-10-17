@@ -23,8 +23,7 @@ import i18n from "@/i18n";
 import { useI18n } from "vue-i18n";
 const t = useI18n();
 
-import { useLocalStore } from "@/store";
-const local = useLocalStore();
+import { local } from "@/store";
 
 const options = [
     { lang: "zh-cn", text: "简体中文" },
