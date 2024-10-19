@@ -64,10 +64,10 @@ import { ms_to_s } from "@/utils";
 import { preview } from '@/utils/common/PlayerDialog';
 
 import { useI18n } from 'vue-i18n';
-import { generalNotification } from '@/utils/system/status';
 const t = useI18n();
 
 import { videofilter } from '@/store';
+import { httpErrorNotification } from '@/components/Notifications';
 
 const level_tag_selected = ref("EXPERT");
 const mode_tag_selected = ref("STD");
@@ -84,7 +84,6 @@ const state = reactive({
 });
 
 // const test  = reactive({v: 5});
-const videoData = reactive<Video[]>([]);
 const videoList = reactive<Video[]>([]);
 // 带下划线与不带的至少存在一个
 interface Video {
@@ -275,9 +274,7 @@ const request_videos = () => {
         videoList.splice(0, videoList.length);
         videoList.push(...data.videos);
         state.VideoCount = data.count;
-    }).catch((error: any) => {
-        generalNotification(t, error.response.status, t.t('common.action.videoQuery'))
-    })
+    }).catch(httpErrorNotification)
 }
 
 const index_select = (key: string | number, value: NameKeyReverse) => {
