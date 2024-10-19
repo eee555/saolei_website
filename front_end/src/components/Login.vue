@@ -83,6 +83,7 @@ const login = (user: any, remember: boolean) => {
     store.login_status = LoginStatus.IsLogin;
     login_visible.value = false;
     register_visible.value = false;
+    retrieve_visible.value = false;
     remember_me.value = remember;
 }
 
