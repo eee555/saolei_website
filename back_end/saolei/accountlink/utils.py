@@ -125,14 +125,12 @@ def update_msgames_account(id, user: UserProfile | None):
         # 没有爬取到信息
         return
     tree = etree.HTML(htmlStr)
-    values = tree.xpath('//td[text()="Name"]/../td[2]/text()')
-    account.name = values[0] if values else None
-    
-    values = tree.xpath('//td[text()="Local Name"]/../td[2]/text()')
-    account.local_name = values[0] if values else None
-    
-    values = tree.xpath('//td[text()="Joined"]/../td[2]/text()')
-    account.joined = values[0] if values else None
+    def getValue(text):
+        values = tree.xpath(f'//td[text()="{text}"]/../td[2]/text()')
+        return values[0] if values else None
+    account.name = getValue('Name')
+    account.local_name = getValue('Local Name')
+    account.joined = getValue('Joined')
     account.save()
 
 def update_wom_account(id, user: UserProfile | None):
