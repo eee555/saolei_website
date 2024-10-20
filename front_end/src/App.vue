@@ -57,9 +57,7 @@ import Login from "./components/Login.vue";
 import Footer from "./components/Footer.vue";
 import PlayerDialog from "./components/PlayerDialog.vue";
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
-import { useLocalStore, useUserStore } from "./store";
-const store = useUserStore();
-const local = useLocalStore();
+import { store, local } from "./store";
 
 import { useI18n } from "vue-i18n";
 const t = useI18n();

@@ -1,9 +1,9 @@
 import { createI18n } from 'vue-i18n'
-import { dev } from '@/i18n/locales/dev'
-import { zhCn } from '@/i18n/locales/zh-cn'
-import { de } from '@/i18n/locales/de'
-import { en } from './locales/en'
-import { pl } from './locales/pl'
+import dev from '@/i18n/locales/dev'
+import zhCn from '@/i18n/locales/zh-cn'
+import de from '@/i18n/locales/de'
+import en from './locales/en'
+import pl from './locales/pl'
 
 /**
  * 获取所有语言

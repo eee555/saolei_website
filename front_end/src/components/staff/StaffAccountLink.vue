@@ -22,6 +22,7 @@
 import { platformlist } from '@/utils/common/accountLinkPlatforms';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { reactive } from 'vue';
+import { httpErrorNotification } from '../Notifications';
 
 const { proxy } = useCurrentInstance();
 
@@ -42,7 +43,7 @@ const verify = () => {
         form.id = 0;
         form.platform = '';
         form.identifier = '';
-    })
+    }).catch(httpErrorNotification)
 }
 
 const unverify = () => {
@@ -56,7 +57,7 @@ const unverify = () => {
         form.id = 0;
         form.platform = '';
         form.identifier = '';
-    })
+    }).catch(httpErrorNotification)
 }
 
 </script>

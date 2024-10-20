@@ -19,6 +19,8 @@ class UserLoginForm(forms.Form):
 # 获取邮箱验证码时的表单，检查邮箱格式用
 class EmailForm(forms.Form):
     email = forms.EmailField(max_length=MaxSizes.email, required=True,error_messages = FormErrors.email)
+    captcha = forms.CharField(required=True)
+    hashkey = forms.CharField(required=True)
 
 
 # 注册表单

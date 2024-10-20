@@ -1,6 +1,4 @@
-import { useVideoPlayerStore } from "@/store";
-
-const videoplayerstore = useVideoPlayerStore();
+import { videoplayerstore } from "@/store";
 
 export const preview = (id: number | undefined) => {
     if (!id) {

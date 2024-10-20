@@ -10,6 +10,7 @@
     "build:openms": "vite build --mode openms"
   },
   "dependencies": {
+    "@chenfengyuan/vue-countdown": "^2.1.2",
     "@element-plus/icons-vue": "^2.1.0",
     "@mdit/plugin-abbr": "^0.10.0",
     "@mdit/plugin-align": "^0.10.0",
@@ -22,7 +23,7 @@
     "@vueuse/core": "^10.11.0",
     "axios": "^1.7.2",
     "echarts": "^5.5.0",
-    "element-plus": "^2.7.0",
+    "element-plus": "^2.8.0",
     "flag-icon-css": "^4.1.7",
     "highlight.js": "^11.9.0",
     "image-conversion": "^2.1.1",
@@ -32,10 +33,12 @@
     "markdown-it-highlightjs": "^4.0.1",
     "markdown-it-mathjax3": "^4.3.2",
     "ms-toollib": "^1.4.10",
+    "out-of-character": "^1.2.2",
     "pinia": "^2.1.7",
     "pinia-plugin-persistedstate": "^3.2.1",
     "uuid": "^9.0.0",
-    "vue": "^3.4.0",
+    "validator": "^13.12.0",
+    "vue": "^3.5.12",
     "vue-echarts": "^6.7.1",
     "vue-i18n": "^9.13.1",
     "vue-router": "^4.0.3"

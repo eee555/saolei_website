@@ -1,10 +1,11 @@
 <template>
-    <RangeSlider :min="minbvlim[level]" :max="maxbvlim[level]" v-model="filter.bbbv_range[level]"/>
+    <!-- @vue-ignore -->
+    <RangeSlider :min="minbvlim[level]" :max="maxbvlim[level]" v-model="videofilter.bbbv_range[level]"/>
 </template>
 
 <script setup lang="ts">
 
-import { useVideoFilter } from '@/store';
+import { videofilter } from '@/store';
 import RangeSlider from '../RangeSlider.vue';
 
 defineProps({
@@ -13,8 +14,6 @@ defineProps({
         default: 'e',
     },
 })
-
-const range=defineModel();
 
 const minbvlim = {
     'b': 1,
@@ -27,7 +26,5 @@ const maxbvlim = {
     'i': 216,
     'e': 381,
 }
-
-const filter=useVideoFilter();
 
 </script>
