@@ -1,17 +1,16 @@
 import re
 from .models import AccountSaolei, AccountMinesweeperGames, AccountWorldOfMinesweeper, Platform
-from datetime import datetime
 from userprofile.models import UserProfile
 import requests
 from lxml import etree
 
-def update_account(platform: Platform, id, user: UserProfile | None):
+def link_account(platform: Platform, id, user: UserProfile):
     if platform == Platform.SAOLEI:
-        update_saolei_account(id, user)
+        link_saolei_account(id, user)
     elif platform == Platform.MSGAMES:
-        update_msgames_account(id, user)
+        link_msgames_account(id, user)
     elif platform == Platform.WOM:
-        update_wom_account(id, user)
+        link_wom_account(id, user)
     else:
         ValueError()
 
@@ -25,15 +24,38 @@ def delete_account(user: UserProfile, platform: Platform):
     else:
         ValueError()
 
-def update_saolei_account(id, user: UserProfile | None):
+def link_saolei_account(id, user: UserProfile):
     account = AccountSaolei.objects.filter(id=id).first()
     if not account:
         account = AccountSaolei.objects.create(id=id, parent=user)
-    elif user:
-        account.parent=user
-    account.update_time = datetime.now()
+    else:
+        account.parent = user
+    return account
+
+def link_msgames_account(id, user: UserProfile):
+    account = AccountMinesweeperGames.objects.filter(id=id).first()
+    if not account:
+        account = AccountMinesweeperGames.objects.create(id=id, parent=user)
+    else:
+        account.parent = user
+    return account
+
+def link_wom_account(id, user: UserProfile):
+    account = AccountWorldOfMinesweeper.objects.filter(id=id).first()
+    if not account:
+        account = AccountWorldOfMinesweeper.objects.create(id=id, parent=user)
+    else:
+        account.parent = user
+    return account
+
+def update_saolei_account(account: AccountSaolei):
+    def timeparser(t):
+        return round(float(t)*1000)
+    def bvsparser(b):
+        return round(float(b)*100)
     InfoHtmlStr = None
     VideoHtmlStr = None
+    id = account.id
     try:
         url = f'http://saolei.wang/Player/Info.asp?Id={id}'
         response = requests.get(url=url, timeout=5)
@@ -44,20 +66,14 @@ def update_saolei_account(id, user: UserProfile | None):
         response = requests.get(url=url, timeout=5)
         response.encoding = 'GB2312'
         VideoHtmlStr = response.text
-
     except requests.exceptions.Timeout as e:
-        # 请求超时
-        pass
+        return "timeout" # 请求超时
     except IndexError as e:
-        # 解析html时超出索引
-        pass
+        return "indexerror" # 解析html时超出索引
     except requests.exceptions.RequestException as e:
-        # 其他错误
-        pass
-    # 给account的各attribute赋值
+        return "unknown"
     if not InfoHtmlStr or not VideoHtmlStr:
-        # 这两个都没有爬取到信息
-        return
+        return "empty" # 没有爬取到信息
     tree = etree.HTML(InfoHtmlStr)
     values = tree.xpath('//span[@class="Sign"]/text()')
     account.name = values[0] if values else None
@@ -66,28 +82,28 @@ def update_saolei_account(id, user: UserProfile | None):
     account.total_views = int(values[0]) if values else None
     
     values = tree.xpath('//tr/td[2]/a[1]/text()')
-    account.b_t_ms = float(values[0]) if values else None
+    account.b_t_ms = timeparser(values[0])-1000 if values else None
     
     values = tree.xpath('//tr/td[2]/a[3]/text()')
-    account.i_t_ms = float(values[0]) if values else None
+    account.i_t_ms = timeparser(values[0])-1000 if values else None
     
     values = tree.xpath('//tr/td[2]/a[5]/text()')
-    account.e_t_ms = float(values[0]) if values else None
+    account.e_t_ms = timeparser(values[0])-1000 if values else None
     
     values = tree.xpath('//tr/td[2]/span[8]/text()')
-    account.s_t_ms = float(values[0]) if values else None
+    account.s_t_ms = timeparser(values[0])-3000 if values else None
     
     values = tree.xpath('//tr/td[2]/a[2]/text()')
-    account.b_b_cent = float(values[0]) if values else None
+    account.b_b_cent = bvsparser(values[0]) if values else None
     
     values = tree.xpath('//tr/td[2]/a[4]/text()')
-    account.i_b_cent = float(values[0]) if values else None
+    account.i_b_cent = bvsparser(values[0]) if values else None
     
     values = tree.xpath('//tr/td[2]/a[6]/text()')
-    account.e_b_cent = float(values[0]) if values else None
+    account.e_b_cent = bvsparser(values[0]) if values else None
     
     values = tree.xpath('//tr/td[2]/span[9]/text()')
-    account.s_b_cent = float(values[0]) if values else None
+    account.s_b_cent = bvsparser(values[0]) if values else None
     
     tree = etree.HTML(VideoHtmlStr)
     values = tree.xpath('(//td[@class="Counters"])[1]/text()')
@@ -100,61 +116,44 @@ def update_saolei_account(id, user: UserProfile | None):
     account.exp_count = int(values[0]) if values else None
     
     account.save()
+    return ""
 
-def update_msgames_account(id, user: UserProfile | None):
-    account = AccountMinesweeperGames.objects.filter(id=id).first()
-    url = f'https://minesweepergame.com/profile.php?pid={id}'
-    if not account:
-        account = AccountMinesweeperGames.objects.create(id=id, parent=user)
-    elif user:
-        account.parent=user
-    account.update_time = datetime.now()
-    # 给account的各attribute赋值
+def update_msgames_account(account: AccountMinesweeperGames):
+    id = account.id
     htmlStr = None
     try:
         url = f'https://minesweepergame.com/profile.php?pid={id}'
         response = requests.get(url=url, timeout=5)
         htmlStr = response.text
     except requests.exceptions.Timeout as e:
-        # 请求超时
-        pass
+        return "timeout" # 请求超时
     except requests.exceptions.RequestException as e:
-        # 其他错误
-        pass
+        return "unknown"
     if not htmlStr:
-        # 没有爬取到信息
-        return
+        return "empty" # 没有爬取到信息
     tree = etree.HTML(htmlStr)
     def getValue(text):
         values = tree.xpath(f'//td[text()="{text}"]/../td[2]/text()')
         return values[0] if values else None
-    account.name = getValue('Name')
-    account.local_name = getValue('Local Name')
+    account.name = str(getValue('Name'))
+    account.local_name = str(getValue('Local Name'))
     account.joined = getValue('Joined')
     account.save()
+    return ""
 
-def update_wom_account(id, user: UserProfile | None):
-    print(user)
-    account = AccountWorldOfMinesweeper.objects.filter(id=id).first()
+def update_wom_account(account: AccountWorldOfMinesweeper):
+    id = account.id
     url = f'https://minesweeper.online/player/{id}'
-    if not account:
-        account = AccountWorldOfMinesweeper.objects.create(id=id, parent=user)
-    elif user:
-        account.parent=user
-    account.update_time = datetime.now()
     htmlStr = None
     try:
         response = requests.get(url=url, timeout=5)
         htmlStr = response.text
     except requests.exceptions.Timeout as e:
-        # 请求超时
-        pass
+        return "timeout" # 请求超时
     except requests.exceptions.RequestException as e:
-        # 其他错误
-        pass
+        return "unknown"
     if not htmlStr:
-        # 没有爬取到信息
-        return
+        return "empty" # 没有爬取到信息
     tree = etree.HTML(htmlStr)
     tree = tree.xpath('/html/body/div[3]/div[2]/div/div[1]/div[2]/div/div[4]/div/div[1]')[0]
     def formatXpath(text):
@@ -168,6 +167,7 @@ def update_wom_account(id, user: UserProfile | None):
     def stringToFloat(values) -> float:
         return float(str(values[0]).replace(" ", "").replace("%", "")) if values else None
     values = tree.xpath(formatXpath("Trophies:"))
+    print(values[0])
     account.trophy = int(values[0]) if values else None
     
     values = tree.xpath(formatImgXpath("Experience:","exp-icon icon-right", "/../text()"))
@@ -217,8 +217,6 @@ def update_wom_account(id, user: UserProfile | None):
     values = tree.xpath(formatSpanXpath("Expert",1))
     account.e_t_ms = stringToFloat(values)
     
-    account.s_t_ms = account.b_t_ms + account.i_t_ms + account.e_t_ms
-    
     values = tree.xpath(formatIXpath("Efficiency:","fa fa-dot-circle-o eff-icon level1","/../text()"))
     account.b_ioe = stringToFloat(values) / 100
     
@@ -227,9 +225,7 @@ def update_wom_account(id, user: UserProfile | None):
     
     values = tree.xpath(formatIXpath("Efficiency:","fa fa-dot-circle-o eff-icon level3","/../text()"))
     account.e_ioe = stringToFloat(values) / 100
-    
-    account.s_ioe = account.b_ioe + account.i_ioe + account.e_ioe
-    
+
     values = tree.xpath(formatIXpath("Mastery:","glyphicon glyphicon-flash mastery-icon mastery1","/../text()"))
     account.b_mastery = stringToInt(values)
     
@@ -247,6 +243,7 @@ def update_wom_account(id, user: UserProfile | None):
     
     values = tree.xpath(formatIXpath("Win streak:","fa fa-crosshairs ws-icon ws3","/../text()"))
     account.e_winstreak = stringToInt(values)
-    # 给account的各attribute赋值
+
     account.save()
+    return ""
     

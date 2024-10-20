@@ -1,5 +1,10 @@
 <template>
-    <el-table :data="accountlinks">
+    <el-table :data="accountlinks" @expand-change="expandRow" row-key="key">
+        <el-table-column type="expand">
+            <template #default="props">
+                <AccountSaolei v-if="props.row.platform == 'c'" :data="props.row.data"/>
+            </template>
+        </el-table-column>
         <el-table-column :label="$t('accountlink.platform')">
             <template #default="scope">
                 <PlatformIcon :platform="scope.row.platform" />
@@ -27,8 +32,12 @@
         </el-table-column>
         <el-table-column v-if="store.player.id == store.user.id" :label="$t('common.prop.action')">
             <template #default="scope">
-                <el-link :underline="false" @click.prevent="deleteRow(scope.$index)"><el-icon>
+                <el-link :underline="false" @click.prevent="deleteRow(scope.row)"><el-icon>
                         <Delete />
+                    </el-icon></el-link>
+                &nbsp;
+                <el-link :underline="false" @click.prevent="updateRow(scope.row)"><el-icon>
+                        <Refresh />
                     </el-icon></el-link>
             </template>
         </el-table-column>
@@ -71,12 +80,14 @@ import { ElMessageBox } from 'element-plus';
 import { Platform, platformlist } from '@/utils/common/accountLinkPlatforms'
 import PlatformIcon from './widgets/PlatformIcon.vue';
 import AccountLinkGuide from './dialogs/AccountLinkGuide.vue'
+import AccountSaolei from './accountlinks/AccountSaolei.vue';
 import { useI18n } from 'vue-i18n';
 
 interface AccountLink {
     platform: Platform;
     identifier: string;
     verified: boolean;
+    data: any;
 }
 
 const { proxy } = useCurrentInstance();
@@ -99,6 +110,7 @@ const refresh = () => {
         }
     ).then(function (response) {
         accountlinks.value = response.data;
+        console.log(accountlinks.value)
     })
 }
 onMounted(refresh)
@@ -126,13 +138,34 @@ const addLink = () => {
     })
 }
 
-const deleteRow = (index: number) => {
-    let accountlink = accountlinks.value[index]
-    ElMessageBox.confirm(t.t('accountlink.platform') + ' - ' + platformlist[accountlink.platform].name + ', ID - ' + accountlink.identifier, t.t('accountlink.deleteLinkMessage')).then(() => {
-        proxy.$axios.post('accountlink/delete/', { platform: accountlinks.value[index].platform }).then(function (response) {
+const deleteRow = (row: any) => {
+    ElMessageBox.confirm(t.t('accountlink.platform') + ' - ' + platformlist[row.platform].name + ', ID - ' + row.identifier, t.t('accountlink.deleteLinkMessage')).then(() => {
+        proxy.$axios.post('accountlink/delete/', { platform: row.platform }).then(function (response) {
             refresh()
         })
     }).catch(() => { })
+}
+
+const expandRow = (row: any) => {
+    if (row.data !== undefined) return;
+    loadRow(row);
+}
+
+const updateRow = (row: any) => {
+    proxy.$axios.post('accountlink/update/', { platform: row.platform }).then(function (response) {
+        let data = response.data;
+        if (data.type == 'success') loadRow(row);
+    })
+}
+
+const loadRow = (row: any) => {
+    proxy.$axios.get('accountlink/get/',
+        {
+            params:{id: store.player.id, platform: row.platform}
+        }
+    ).then(function (response) {
+        row.data = response.data
+    })
 }
 
 const userHasPlatform = (platform: string) => {
