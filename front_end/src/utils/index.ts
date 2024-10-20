@@ -16,6 +16,9 @@ export function to_fixed_n(input: string | number | undefined, to_fixed: number)
 export function ms_to_s(ms: number): string {
     return `${Math.floor(ms / 1000)}.${(ms % 1000 + "").padStart(3, '0')}`;
 }
+export function cs_to_s(cs: number): string {
+    return `${Math.floor(cs / 100)}.${(cs % 100 + "").padStart(2, '0')}`;
+}
 
 export function simple_formatter(f: Function): Function {
     return (row: any, col: any, value: any, index: any) => f(value)
