@@ -191,8 +191,8 @@ def update_wom_account(id, user: UserProfile | None):
     values = tree.xpath(formatImgXpath("Resources:","parts-icon ", "/preceding-sibling::text()"))
     account.part = stringToInt(values)
     
-    values = tree.xpath('//div[6]/div[2]/table/tbody/tr/td[11]/span/span/span/span/text()')
-    account.equipment = ''.join(values) if values else None
+    values = tree.xpath(formatImgXpath("Resources:","eq-icon", "/../span/text()"))
+    account.equipment = stringToInt(values)
     
     values = tree.xpath(formatImgXpath("Arena points:","arena-icon ","/../text()"))
     account.arena_point = stringToInt(values)
@@ -249,4 +249,3 @@ def update_wom_account(id, user: UserProfile | None):
     account.e_winstreak = stringToInt(values)
     # 给account的各attribute赋值
     account.save()
-    
