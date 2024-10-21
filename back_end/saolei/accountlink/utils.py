@@ -5,11 +5,6 @@ from userprofile.models import UserProfile
 import requests
 from lxml import etree
 
-
-headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36'
-}
-
 def update_account(platform: Platform, id, user: UserProfile | None):
     if platform == Platform.SAOLEI:
         update_saolei_account(id, user)
@@ -41,12 +36,12 @@ def update_saolei_account(id, user: UserProfile | None):
     VideoHtmlStr = None
     try:
         url = f'http://saolei.wang/Player/Info.asp?Id={id}'
-        response = requests.get(url=url, timeout=5,headers=headers)
+        response = requests.get(url=url, timeout=5)
         response.encoding = 'GB2312'
         InfoHtmlStr = response.text
 
         url = f'http://saolei.wang/Video/Satus.asp?Id={id}'
-        response = requests.get(url=url, timeout=5,headers=headers)
+        response = requests.get(url=url, timeout=5)
         response.encoding = 'GB2312'
         VideoHtmlStr = response.text
 
@@ -118,7 +113,7 @@ def update_msgames_account(id, user: UserProfile | None):
     htmlStr = None
     try:
         url = f'https://minesweepergame.com/profile.php?pid={id}'
-        response = requests.get(url=url, timeout=5, headers=headers)
+        response = requests.get(url=url, timeout=5)
         htmlStr = response.text
     except requests.exceptions.Timeout as e:
         # 请求超时
@@ -130,14 +125,12 @@ def update_msgames_account(id, user: UserProfile | None):
         # 没有爬取到信息
         return
     tree = etree.HTML(htmlStr)
-    values = tree.xpath('/html/body/div[3]/div/div/div/div[2]/table/tr[1]/td[2]/text()')
-    account.name = values[0] if values else None
-    
-    values = tree.xpath('/html/body/div[3]/div/div/div/div[2]/table/tr[2]/td[2]/text()')
-    account.local_name = values[0] if values else None
-    
-    values = tree.xpath('/html/body/div[3]/div/div/div/div[2]/table/tr[6]/td[2]/text()')
-    account.joined = values[0] if values else None
+    def getValue(text):
+        values = tree.xpath(f'//td[text()="{text}"]/../td[2]/text()')
+        return values[0] if values else None
+    account.name = getValue('Name')
+    account.local_name = getValue('Local Name')
+    account.joined = getValue('Joined')
     account.save()
 
 def update_wom_account(id, user: UserProfile | None):
@@ -151,7 +144,7 @@ def update_wom_account(id, user: UserProfile | None):
     account.update_time = datetime.now()
     htmlStr = None
     try:
-        response = requests.get(url=url, timeout=5, headers=headers)
+        response = requests.get(url=url, timeout=5)
         htmlStr = response.text
     except requests.exceptions.Timeout as e:
         # 请求超时
@@ -198,8 +191,8 @@ def update_wom_account(id, user: UserProfile | None):
     values = tree.xpath(formatImgXpath("Resources:","parts-icon ", "/preceding-sibling::text()"))
     account.part = stringToInt(values)
     
-    values = tree.xpath('//div[6]/div[2]/table/tbody/tr/td[11]/span/span/span/span/text()')
-    account.equipment = ''.join(values) if values else None
+    values = tree.xpath(formatImgXpath("Resources:","eq-icon", "/../span/text()"))
+    account.equipment = stringToInt(values)
     
     values = tree.xpath(formatImgXpath("Arena points:","arena-icon ","/../text()"))
     account.arena_point = stringToInt(values)
@@ -256,4 +249,3 @@ def update_wom_account(id, user: UserProfile | None):
     account.e_winstreak = stringToInt(values)
     # 给account的各attribute赋值
     account.save()
-    
