@@ -27,7 +27,7 @@ jobs:
 
     - name: Run Migrations
       run: |
-        python manage.py makemigrations
+        python back_end/saolei/manage.py makemigrations
         python back_end/saolei/manage.py migrate
     
     - name: Flags
