@@ -120,6 +120,13 @@ DATABASES = {
     }
 }
 
+# Use SQLite in memory for testing
+if 'test' in sys.argv:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': ':memory:',
+    }
+
 DEFAULT_CHARSET = 'utf-8'
 
 # Password validation
