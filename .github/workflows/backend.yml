@@ -26,7 +26,7 @@ jobs:
       run: mkdir -p back_end/saolei/logs
 
     - name: Run Migrations for SQLite
-      run: python back_end/saolei/manage.py migrate --noinput --settings=test_settings
+      run: python back_end/saolei/manage.py migrate --noinput
     
     - name: Flags
       run: python -m unittest back_end/saolei/tests.py -v
