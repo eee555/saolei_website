@@ -1,5 +1,5 @@
 from .models import AccountLinkQueue, Platform, AccountSaolei, AccountMinesweeperGames
-from .utils import link_account, delete_account, update_saolei_account, update_msgames_account
+from .utils import link_account, delete_account, update_saolei_account, update_msgames_account, update_wom_account
 from userprofile.models import UserProfile
 from django.http import HttpResponseForbidden, HttpResponseBadRequest, JsonResponse, HttpResponse, HttpResponseNotFound
 from utils.response import HttpResponseConflict
@@ -129,7 +129,7 @@ def update_link(request):
     elif platform == Platform.MSGAMES:
         status = update_msgames_account(request.user.account_msgames)
     elif platform == Platform.WOM:
-        status = 'unsupported'
+        status = update_wom_account(request.user.account_wom)
     else:
         return HttpResponseBadRequest()
     if status == '':

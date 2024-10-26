@@ -1,8 +1,10 @@
 <template>
-    <el-table :data="accountlinks" @expand-change="expandRow" row-key="key">
+    <el-table :data="accountlinks" @expand-change="expandRow" :row-key="(row: any) => 'key' + row.platform">
         <el-table-column type="expand">
             <template #default="props">
                 <AccountSaolei v-if="props.row.platform == 'c'" :data="props.row.data"/>
+                <AccountMsgames v-else-if="props.row.platform == 'a'" :data="props.row.data"/>
+                <AccountWoM v-else-if="props.row.platform == 'w'" :data="props.row.data"/>
             </template>
         </el-table-column>
         <el-table-column :label="$t('accountlink.platform')">
@@ -76,12 +78,15 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { useLocalStore, useUserStore } from '@/store';
-import { ElMessageBox } from 'element-plus';
+import { ElMessageBox, rowContextKey } from 'element-plus';
 import { Platform, platformlist } from '@/utils/common/accountLinkPlatforms'
 import PlatformIcon from './widgets/PlatformIcon.vue';
 import AccountLinkGuide from './dialogs/AccountLinkGuide.vue'
 import AccountSaolei from './accountlinks/AccountSaolei.vue';
+import AccountMsgames from './accountlinks/AccountMsgames.vue';
+import AccountWoM from './accountlinks/AccountWoM.vue';
 import { useI18n } from 'vue-i18n';
+import { Row } from 'element-plus/es/components/table-v2/src/components';
 
 interface AccountLink {
     platform: Platform;
@@ -110,7 +115,6 @@ const refresh = () => {
         }
     ).then(function (response) {
         accountlinks.value = response.data;
-        console.log(accountlinks.value)
     })
 }
 onMounted(refresh)

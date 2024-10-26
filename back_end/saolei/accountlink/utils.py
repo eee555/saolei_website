@@ -209,13 +209,13 @@ def update_wom_account(account: AccountWorldOfMinesweeper):
     def formatSpanXpath(text,index):
         return f'//span[text()="{text}"]/../following-sibling::div[{index}]//text()'
     values = tree.xpath(formatSpanXpath("Beginner",1))
-    account.b_t_ms = stringToFloat(values)
+    account.b_t_ms = round(stringToFloat(values)*1000)
     
     values = tree.xpath(formatSpanXpath("Intermediate",1))
-    account.i_t_ms = stringToFloat(values)
+    account.i_t_ms = round(stringToFloat(values)*1000)
     
     values = tree.xpath(formatSpanXpath("Expert",1))
-    account.e_t_ms = stringToFloat(values)
+    account.e_t_ms = round(stringToFloat(values)*1000)
     
     values = tree.xpath(formatIXpath("Efficiency:","fa fa-dot-circle-o eff-icon level1","/../text()"))
     account.b_ioe = stringToFloat(values) / 100
