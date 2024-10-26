@@ -127,6 +127,10 @@ if 'test' in sys.argv:
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': ':memory:',
     }
+    MIGRATION_MODULES = {
+        'userprofile': None,  # Skip migrations for the userprofile app
+        # Add other apps as needed
+    }
 
 DEFAULT_CHARSET = 'utf-8'
 
