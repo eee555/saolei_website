@@ -14,7 +14,6 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os, json
 import warnings
-import sys
 
 # https://docs.djangoproject.com/en/5.0/ref/settings/#std-setting-DEBUG
 DEBUG = True
@@ -120,17 +119,6 @@ DATABASES = {
         'CONN_MAX_AGE':None
     }
 }
-
-# Use SQLite in memory for testing
-if 'test' in sys.argv:
-    DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': ':memory:',
-    }
-    MIGRATION_MODULES = {
-        'userprofile': None,  # Skip migrations for the userprofile app
-        # Add other apps as needed
-    }
 
 DEFAULT_CHARSET = 'utf-8'
 
