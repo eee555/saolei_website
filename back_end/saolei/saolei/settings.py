@@ -14,6 +14,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os, json
 import warnings
+import sys
 
 # https://docs.djangoproject.com/en/5.0/ref/settings/#std-setting-DEBUG
 DEBUG = True
