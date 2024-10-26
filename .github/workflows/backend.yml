@@ -33,7 +33,9 @@ jobs:
         python-version: '3.10'  # Choose the Python version you want to use
 
     - name: Install Dependencies
-      run: pip install -r requirements.txt
+      run: |
+        pip install -r requirements.txt
+        pip install cryptography
 
     - name: Create Logs Directory
       run: mkdir -p logs
