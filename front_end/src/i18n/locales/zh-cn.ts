@@ -121,6 +121,7 @@ export const zhCn = {
         saoleiTotalViews: '综合人气',
         saoleiVideoCount: '录像数量',
         unverified: '未验证，请联系管理员',
+        unverifiedText: '该账号未验证，请联系管理员。',
         verified: '已验证',
         womArenaPoint: '竞技场',
         womExperience: '经验',

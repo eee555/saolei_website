@@ -2,7 +2,9 @@
     <el-table :data="accountlinks" @expand-change="expandRow" :row-key="(row: any) => 'key' + row.platform">
         <el-table-column type="expand">
             <template #default="props">
-                <AccountSaolei v-if="props.row.platform == 'c'" :data="props.row.data"/>
+                <el-text v-if="!props.row.verified" type="info" style="margin-left:50px">{{ $t('accountlink.unverifiedText') }}</el-text>
+                <el-text v-else-if="props.row.data === undefined" type="info" style="margin-left:50px">No Data</el-text>
+                <AccountSaolei v-else-if="props.row.platform == 'c'" :data="props.row.data"/>
                 <AccountMsgames v-else-if="props.row.platform == 'a'" :data="props.row.data"/>
                 <AccountWoM v-else-if="props.row.platform == 'w'" :data="props.row.data"/>
             </template>
@@ -86,7 +88,6 @@ import AccountSaolei from './accountlinks/AccountSaolei.vue';
 import AccountMsgames from './accountlinks/AccountMsgames.vue';
 import AccountWoM from './accountlinks/AccountWoM.vue';
 import { useI18n } from 'vue-i18n';
-import { Row } from 'element-plus/es/components/table-v2/src/components';
 
 interface AccountLink {
     platform: Platform;

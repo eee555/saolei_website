@@ -120,6 +120,7 @@ export const en = {
         saoleiTotalViews: 'Total Views',
         saoleiVideoCount: 'Video Count',
         unverified: 'Pending. Please contact the moderator.',
+        unverifiedText: 'This account has not been verified. Please contact a moderator.',
         verified: 'Verified',
         womArenaPoint: 'Arena',
         womExperience: 'Experience',
