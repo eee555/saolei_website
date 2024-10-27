@@ -37,9 +37,9 @@ class AccountLinkQueue(models.Model):
 class AccountSaolei(models.Model):
     id = models.PositiveIntegerField(primary_key=True)
     parent = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='account_saolei')
-    update_time = models.DateTimeField(auto_now_add=True)
+    update_time = models.DateTimeField(auto_now=True)
 
-    name = models.CharField(max_length=10) # 姓名，10应该够了吧
+    name = models.CharField(max_length=10, default="") # 姓名，10应该够了吧
     total_views = models.PositiveIntegerField(null=True) # 综合人气
 
     beg_count = models.PositiveSmallIntegerField(null=True) # 初级录像数量
@@ -61,10 +61,10 @@ class AccountSaolei(models.Model):
 class AccountMinesweeperGames(models.Model):
     id = models.PositiveIntegerField(primary_key=True)
     parent = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='account_msgames')
-    update_time = models.DateTimeField(auto_now_add=True)
+    update_time = models.DateTimeField(auto_now=True)
 
-    name = models.CharField(max_length=128)
-    local_name = models.CharField(max_length=128)
+    name = models.CharField(max_length=128, default="")
+    local_name = models.CharField(max_length=128, default="")
     # country = models.CharField() # country和state应该是二合一的枚举类型
     # state = models.CharField()
     joined = models.DateField(null=True)
@@ -75,7 +75,7 @@ class AccountMinesweeperGames(models.Model):
 class AccountWorldOfMinesweeper(models.Model):
     id = models.PositiveIntegerField(primary_key=True)
     parent = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='account_wom')
-    update_time = models.DateTimeField(auto_now_add=True)
+    update_time = models.DateTimeField(auto_now=True)
 
     # name 有的用户名过不了审
     # country 有争议
@@ -99,12 +99,10 @@ class AccountWorldOfMinesweeper(models.Model):
     b_t_ms = models.PositiveIntegerField(null=True)
     i_t_ms = models.PositiveIntegerField(null=True)
     e_t_ms = models.PositiveIntegerField(null=True)
-    s_t_ms = models.PositiveIntegerField(null=True)
 
     b_ioe = models.FloatField(null=True)
     i_ioe = models.FloatField(null=True)
     e_ioe = models.FloatField(null=True)
-    s_ioe = models.FloatField(null=True)
 
     b_mastery = models.PositiveSmallIntegerField(null=True)
     i_mastery = models.PositiveSmallIntegerField(null=True)
