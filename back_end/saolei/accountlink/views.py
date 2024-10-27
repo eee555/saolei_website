@@ -11,9 +11,9 @@ from userprofile.decorators import login_required_error, staff_required
 private_platforms = [""] # 私人账号平台
 
 # 为自己绑定账号，需要指定平台和ID
-@ratelimit(key='user', rate='10/d')
 @require_POST
 @login_required_error
+@ratelimit(key='user', rate='10/d')
 def add_link(request):
     user = UserProfile.objects.filter(id=request.user.id).first()
     platform = request.POST.get('platform')
@@ -121,6 +121,7 @@ def unverify_link(request):
 
 @require_POST
 @login_required_error
+@ratelimit(key='user', rate='1/d')
 def update_link(request):
     platform = request.POST.get('platform')
     if not platform:
