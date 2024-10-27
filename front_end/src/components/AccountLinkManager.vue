@@ -34,7 +34,7 @@
         </el-table-column>
         <el-table-column v-if="store.player.id == store.user.id" :label="$t('common.prop.action')">
             <template #default="scope">
-                <el-link :underline="false" @click.prevent="deleteRow(scope.row)"><el-icon>
+                <el-link :underline="false" @click.prevent="deleteRow(scope.row)" type="error"><el-icon>
                         <Delete />
                     </el-icon></el-link>
                 &nbsp;
@@ -78,7 +78,7 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { useLocalStore, useUserStore } from '@/store';
-import { ElMessageBox, rowContextKey } from 'element-plus';
+import { ElMessageBox } from 'element-plus';
 import { Platform, platformlist } from '@/utils/common/accountLinkPlatforms'
 import PlatformIcon from './widgets/PlatformIcon.vue';
 import AccountLinkGuide from './dialogs/AccountLinkGuide.vue'
@@ -152,6 +152,7 @@ const deleteRow = (row: any) => {
 
 const expandRow = (row: any) => {
     if (row.data !== undefined) return;
+    if (row.verified === false) return;
     loadRow(row);
 }
 
