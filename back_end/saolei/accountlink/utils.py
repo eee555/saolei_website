@@ -48,6 +48,16 @@ def link_wom_account(id, user: UserProfile):
         account.parent = user
     return account
 
+def update_account(platform: Platform, user: UserProfile):
+    if platform == Platform.SAOLEI:
+        return update_saolei_account(user.account_saolei)
+    elif platform == Platform.MSGAMES:
+        return update_msgames_account(user.account_msgames)
+    elif platform == Platform.WOM:
+        return update_wom_account(user.account_wom)
+    else:
+        return 'unsupported'
+
 def update_saolei_account(account: AccountSaolei):
     def timeparser(t):
         return round(float(t)*1000)

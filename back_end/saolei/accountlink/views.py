@@ -1,5 +1,5 @@
-from .models import AccountLinkQueue, Platform, AccountSaolei, AccountMinesweeperGames
-from .utils import link_account, delete_account, update_saolei_account, update_msgames_account, update_wom_account
+from .models import AccountLinkQueue, Platform
+from .utils import link_account, delete_account, update_account
 from userprofile.models import UserProfile
 from django.http import HttpResponseForbidden, HttpResponseBadRequest, JsonResponse, HttpResponse, HttpResponseNotFound
 from utils.response import HttpResponseConflict
@@ -99,6 +99,7 @@ def verify_link(request):
     link_account(platform, identifier, user)
     accountlink.verified = True
     accountlink.save()
+    update_account(platform, user)
     return HttpResponse()
 
 @require_POST
@@ -124,14 +125,9 @@ def update_link(request):
     platform = request.POST.get('platform')
     if not platform:
         return HttpResponseBadRequest()
-    if platform == Platform.SAOLEI:
-        status = update_saolei_account(request.user.account_saolei)
-    elif platform == Platform.MSGAMES:
-        status = update_msgames_account(request.user.account_msgames)
-    elif platform == Platform.WOM:
-        status = update_wom_account(request.user.account_wom)
-    else:
-        return HttpResponseBadRequest()
+    status = update_account(platform, request.user)
     if status == '':
         return JsonResponse({'type': 'success'})
+    elif status == 'unsupported':
+        return HttpResponseBadRequest()
     return JsonResponse({'type': 'error', 'category': 'status'})
