@@ -9,6 +9,19 @@ on:
 jobs:
   check_flag:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: back_end/saolei
+
+    services:
+      mysql:
+        image: mysql:latest
+        env:
+          MYSQL_DATABASE: saolei
+          MYSQL_ROOT_PASSWORD: 123456
+        options: --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=3
+        ports:
+          - 3306:3306
     
     steps:
     - name: Checkout code
@@ -20,10 +33,25 @@ jobs:
         python-version: '3.10'  # Choose the Python version you want to use
 
     - name: Install Dependencies
-      run: pip install -r back_end/saolei/requirements.txt
+      run: |
+        pip install -r requirements.txt
+        pip install cryptography
+
+    - name: Create Logs Directory
+      run: mkdir -p logs
+
+    - name: Run Tests
+      env:
+        DJANGO_DB_NAME: saolei
+        DJANGO_DB_USER: root
+        DJANGO_DB_PASSWORD: 123456
+        DJANGO_DB_HOST: 127.0.0.1
+      run: |
+        python manage.py makemigrations
+        python manage.py migrate
     
     - name: Flags
-      run: python -m unittest back_end/saolei/tests.py -v
+      run: python -m unittest tests.py -v
 
     - name: Account Link
-      run: python back_end/saolei/manage.py accountlink
+      run: python manage.py test accountlink
