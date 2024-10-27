@@ -131,4 +131,4 @@ def update_link(request):
         return JsonResponse({'type': 'success'})
     elif status == 'unsupported':
         return HttpResponseBadRequest()
-    return JsonResponse({'type': 'error', 'category': 'status'})
+    return JsonResponse({'type': 'error', 'category': status})
