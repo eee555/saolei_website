@@ -122,6 +122,13 @@ export const zhCn = {
         saoleiVideoCount: '录像数量',
         unverified: '未验证，请联系管理员',
         unverifiedText: '该账号未验证，请联系管理员。',
+        updateError: {
+            cooldown: '两次更新间隔不得小于12小时。',
+            empty: '数据为空',
+            indexerror: '数据解析失败',
+            timeout: '无法连接到目标服务器',
+            unknown: '发生未知错误',
+        },
         verified: '已验证',
         womArenaPoint: '竞技场',
         womExperience: '经验',
