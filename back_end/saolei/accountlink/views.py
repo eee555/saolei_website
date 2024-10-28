@@ -121,7 +121,6 @@ def unverify_link(request):
 
 @require_POST
 @login_required_error
-@ratelimit(key='user', rate='1/d')
 def update_link(request):
     platform = request.POST.get('platform')
     if not platform:

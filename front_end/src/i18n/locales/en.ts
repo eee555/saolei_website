@@ -121,6 +121,13 @@ export const en = {
         saoleiVideoCount: 'Video Count',
         unverified: 'Pending. Please contact the moderator.',
         unverifiedText: 'This account has not been verified. Please contact a moderator.',
+        updateError: {
+            cooldown: 'Cannot update twice in 12 hours',
+            empty: 'Empty data',
+            indexerror: 'Failed to extract data',
+            timeout: 'Cannot connect to the platform',
+            unknown: 'Unknown error',
+        },
         verified: 'Verified',
         womArenaPoint: 'Arena',
         womExperience: 'Experience',
