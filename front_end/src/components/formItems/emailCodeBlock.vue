@@ -15,15 +15,15 @@
     <!-- 邮箱验证码 -->
     <el-form-item prop="emailCode" :label="$t('form.emailCode')" ref="emailCodeFormRef">
         <div style="display: flex">
-        <el-input v-model.trim="emailCode" prefix-icon="Key" maxlength="6"
-            :disabled="!email_success" @input="emailCodeHandler" :placeholder="$t(email_code_placeholder)"></el-input>
-        &nbsp;
-        <el-button @click="getEmailCaptcha(type)" :disabled="send_email_code_button_disabled || counting">
-            <vue-countdown v-if="counting" :time="60000" @end="counting = false;" v-slot="{ totalSeconds }">
-                ({{ totalSeconds }})
-            </vue-countdown>
-            <span v-else>{{ $t('common.button.send') }}</span>
-        </el-button>
+            <el-input v-model.trim="emailCode" prefix-icon="Key" maxlength="6" :disabled="!email_success"
+                @input="emailCodeHandler" :placeholder="$t(email_code_placeholder)"></el-input>
+            &nbsp;
+            <el-button @click="getEmailCaptcha(type)" :disabled="send_email_code_button_disabled || counting">
+                <vue-countdown v-if="counting" :time="60000" @end="counting = false;" v-slot="{ totalSeconds }">
+                    ({{ totalSeconds }})
+                </vue-countdown>
+                <span v-else>{{ $t('common.button.send') }}</span>
+            </el-button>
         </div>
     </el-form-item>
 </template>
@@ -72,7 +72,7 @@ const validateState = computed(() => { return emailCodeFormRef.value!.validateSt
 
 // 由外部验证后，若不正确则传入修改验证状态
 const errorCode = () => {
-    validateError(emailCodeFormRef,t.t('msg.emailCodeInvalid'))
+    validateError(emailCodeFormRef, t.t('msg.emailCodeInvalid'))
 }
 
 defineExpose({ validateState, hashkey, errorCode })
@@ -106,7 +106,7 @@ const getEmailCaptcha = (type: string) => {
     if (email_success.value) {
         refreshCaptcha();
         validateError(captchaFormRef, t.t('msg.captchaRefresh'));
-        email_success.value=false;
+        email_success.value = false;
         return;
     }
     email_handling.value = true;
@@ -132,6 +132,7 @@ const getEmailCaptcha = (type: string) => {
             refreshCaptcha();
             if (data.object == 'captcha') {
                 validateError(captchaFormRef, t.t('msg.captchaFail'));
+                counting.value = false;
             } else if (data.object == 'email') {
                 validateError(captchaFormRef, t.t('msg.captchaRefresh'));
                 ElNotification({
