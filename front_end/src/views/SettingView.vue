@@ -54,6 +54,5 @@ const t = useI18n()
 
 import DarkMode from '@/components/widgets/DarkMode.vue'
 import IdentifierManager from '@/components/widgets/IdentifierManager.vue';
-import AccountLinkManager from '@/components/AccountLinkManager.vue';
 
 </script>

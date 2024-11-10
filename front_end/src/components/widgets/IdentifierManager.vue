@@ -14,7 +14,7 @@ import { onMounted, ref } from 'vue';
 import { removeItem } from '@/utils/system/tools';
 import { Plus } from '@element-plus/icons-vue';
 import { ElNotification } from 'element-plus';
-import { generalNotification, unknownErrorNotification } from '@/utils/system/status';
+import { httpErrorNotification, unknownErrorNotification } from '@/components/Notifications';
 import { useI18n } from 'vue-i18n';
 
 const { proxy } = useCurrentInstance();
@@ -46,9 +46,7 @@ function delIdentifier(identifier: string) {
             message: t.t('identifierManager.processedNVideos', [response.data.value]),
             type: 'success'
         })
-    }).catch(error => {
-        generalNotification(t, error.response.status, t.t('common.action.addIdentifier'))
-    })
+    }).catch(httpErrorNotification)
 }
 
 function addIdentifier(identifier: string) {
@@ -77,12 +75,10 @@ function addIdentifier(identifier: string) {
                 type: 'error',
             })
         } else {
-            unknownErrorNotification(t)
+            unknownErrorNotification(response.data)
         }
         new_identifiers.value = "";
-    }).catch(error => {
-        generalNotification(t, error.response.status, t.t('common.action.addIdentifier'))
-    })
+    }).catch(httpErrorNotification)
 }
 
 </script>
