@@ -3,7 +3,8 @@ from .models import AccountSaolei, AccountMinesweeperGames, AccountWorldOfMinesw
 from userprofile.models import UserProfile
 import requests
 from lxml import etree
-from datetime import datetime, timedelta
+from datetime import timedelta
+from django.utils import timezone
 
 def link_account(platform: Platform, id, user: UserProfile):
     if platform == Platform.SAOLEI:
@@ -60,7 +61,7 @@ def update_account(platform: Platform, user: UserProfile):
         return 'unsupported'
 
 def update_saolei_account(account: AccountSaolei):
-    if datetime.now() - account.update_time < timedelta(hours=12):
+    if timezone.now() - account.update_time < timedelta(hours=12):
         return "cooldown"
     def timeparser(t):
         return round(float(t)*1000)
@@ -132,7 +133,7 @@ def update_saolei_account(account: AccountSaolei):
     return ""
 
 def update_msgames_account(account: AccountMinesweeperGames):
-    if datetime.now() - account.update_time < timedelta(hours=12):
+    if timezone.now() - account.update_time < timedelta(hours=12):
         return "cooldown"
     id = account.id
     htmlStr = None
@@ -157,7 +158,7 @@ def update_msgames_account(account: AccountMinesweeperGames):
     return ""
 
 def update_wom_account(account: AccountWorldOfMinesweeper):
-    if datetime.now() - account.update_time < timedelta(hours=12):
+    if timezone.now() - account.update_time < timedelta(hours=12):
         return "cooldown"
     id = account.id
     url = f'https://minesweeper.online/player/{id}'
