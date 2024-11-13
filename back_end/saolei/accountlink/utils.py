@@ -50,18 +50,18 @@ def link_wom_account(id, user: UserProfile):
         account.parent = user
     return account
 
-def update_account(platform: Platform, user: UserProfile):
+def update_account(platform: Platform, user: UserProfile, cooldown = 12):
     if platform == Platform.SAOLEI:
-        return update_saolei_account(user.account_saolei)
+        return update_saolei_account(user.account_saolei, cooldown)
     elif platform == Platform.MSGAMES:
-        return update_msgames_account(user.account_msgames)
+        return update_msgames_account(user.account_msgames, cooldown)
     elif platform == Platform.WOM:
-        return update_wom_account(user.account_wom)
+        return update_wom_account(user.account_wom, cooldown)
     else:
         return 'unsupported'
 
-def update_saolei_account(account: AccountSaolei):
-    if timezone.now() - account.update_time < timedelta(hours=12):
+def update_saolei_account(account: AccountSaolei, cooldown):
+    if timezone.now() - account.update_time < timedelta(hours=cooldown):
         return "cooldown"
     def timeparser(t):
         return round(float(t)*1000)
@@ -132,8 +132,8 @@ def update_saolei_account(account: AccountSaolei):
     account.save()
     return ""
 
-def update_msgames_account(account: AccountMinesweeperGames):
-    if timezone.now() - account.update_time < timedelta(hours=12):
+def update_msgames_account(account: AccountMinesweeperGames, cooldown):
+    if timezone.now() - account.update_time < timedelta(hours=cooldown):
         return "cooldown"
     id = account.id
     htmlStr = None
@@ -157,8 +157,8 @@ def update_msgames_account(account: AccountMinesweeperGames):
     account.save()
     return ""
 
-def update_wom_account(account: AccountWorldOfMinesweeper):
-    if timezone.now() - account.update_time < timedelta(hours=12):
+def update_wom_account(account: AccountWorldOfMinesweeper, cooldown):
+    if timezone.now() - account.update_time < timedelta(hours=cooldown):
         return "cooldown"
     id = account.id
     url = f'https://minesweeper.online/player/{id}'
@@ -185,7 +185,6 @@ def update_wom_account(account: AccountWorldOfMinesweeper):
     def stringToFloat(values) -> float:
         return float(str(values[0]).replace(" ", "").replace("%", "")) if values else None
     values = tree.xpath(formatXpath("Trophies:"))
-    print(values[0])
     account.trophy = int(values[0]) if values else None
     
     values = tree.xpath(formatImgXpath("Experience:","exp-icon icon-right", "/../text()"))
