@@ -99,7 +99,7 @@ def verify_link(request):
     link_account(platform, identifier, user)
     accountlink.verified = True
     accountlink.save()
-    update_account(platform, user)
+    update_account(platform, user, 0)
     return HttpResponse()
 
 @require_POST
