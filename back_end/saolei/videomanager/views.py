@@ -29,6 +29,7 @@ from django.views.decorators.http import require_GET, require_POST
 from userprofile.decorators import banned_blocked, staff_required
 
 @login_required(login_url='/')
+@ratelimit(key='ip', rate='5/s')
 @require_POST
 @banned_blocked
 def video_upload(request):
