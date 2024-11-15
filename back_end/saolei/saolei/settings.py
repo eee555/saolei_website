@@ -325,7 +325,7 @@ LOGGING = {
         },
         "root": {
             'level': 'DEBUG',
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(BASE_DIR, 'logs/root.log'),
             'formatter': 'default',
             'encoding': 'utf-8',
