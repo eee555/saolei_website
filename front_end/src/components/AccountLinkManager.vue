@@ -2,11 +2,12 @@
     <el-table :data="accountlinks" @expand-change="expandRow" :row-key="(row: any) => 'key' + row.platform">
         <el-table-column type="expand">
             <template #default="props">
-                <el-text v-if="!props.row.verified" type="info" style="margin-left:50px">{{ $t('accountlink.unverifiedText') }}</el-text>
+                <el-text v-if="!props.row.verified" type="info" style="margin-left:50px">{{
+                    $t('accountlink.unverifiedText') }}</el-text>
                 <el-text v-else-if="props.row.data === undefined" type="info" style="margin-left:50px">No Data</el-text>
-                <AccountSaolei v-else-if="props.row.platform == 'c'" :data="props.row.data"/>
-                <AccountMsgames v-else-if="props.row.platform == 'a'" :data="props.row.data"/>
-                <AccountWoM v-else-if="props.row.platform == 'w'" :data="props.row.data"/>
+                <AccountSaolei v-else-if="props.row.platform == 'c'" :data="props.row.data" />
+                <AccountMsgames v-else-if="props.row.platform == 'a'" :data="props.row.data" />
+                <AccountWoM v-else-if="props.row.platform == 'w'" :data="props.row.data" />
             </template>
         </el-table-column>
         <el-table-column :label="$t('accountlink.platform')">
@@ -16,7 +17,7 @@
         </el-table-column>
         <el-table-column label="ID">
             <template #default="scope">
-                <!-- @vue-expect-error -->
+                <!-- @vue-ignore -->
                 <el-link :href="platformlist[scope.row.platform].profile(scope.row.identifier)" target="_blank">{{
                     scope.row.identifier }}</el-link>
             </template>
@@ -37,11 +38,12 @@
         </el-table-column>
         <el-table-column v-if="store.player.id == store.user.id" :label="$t('common.prop.action')">
             <template #default="scope">
-                <el-link :underline="false" @click.prevent="deleteRow(scope.row)" type="error"><el-icon>
+                <el-link :underline="false" @click.prevent="deleteRow(scope.row)" type="danger"><el-icon>
                         <Delete />
                     </el-icon></el-link>
                 &nbsp;
-                <el-link :underline="false" @click.prevent="updateRow(scope.row)"><el-icon>
+                <el-link v-if="scope.row.data !== undefined" :underline="false"
+                    @click.prevent="updateRow(scope.row)"><el-icon>
                         <Refresh />
                     </el-icon></el-link>
             </template>
@@ -65,7 +67,7 @@
                 <el-input v-model="form.identifier" maxlength="128" />
             </el-form-item>
             <el-form-item v-if="local.tooltip_show">
-                <AccountLinkGuide :platform="form.platform"/>
+                <AccountLinkGuide :platform="form.platform" />
             </el-form-item>
             <el-form-item>
                 <el-button type="primary" :disabled="!formValid" @click.prevent="addLink(); formvisible = false;">{{
@@ -78,7 +80,7 @@
 
 <script setup lang="ts">
 
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { store, local } from '@/store';
 import { ElMessageBox } from 'element-plus';
@@ -106,7 +108,8 @@ const form = reactive({
     identifier: '',
 })
 
-const refresh = () => {
+async function refresh() {
+    if (store.player.id == 0) return;
     proxy.$axios.get('accountlink/get/',
         {
             params: {
@@ -117,7 +120,7 @@ const refresh = () => {
         accountlinks.value = response.data;
     })
 }
-onMounted(refresh)
+watch(store.player, refresh)
 
 const formValid = computed(() => {
     switch (form.platform) {
@@ -143,6 +146,7 @@ const addLink = () => {
 }
 
 const deleteRow = (row: any) => {
+    // @ts-ignore
     ElMessageBox.confirm(t.t('accountlink.platform') + ' - ' + platformlist[row.platform].name + ', ID - ' + row.identifier, t.t('accountlink.deleteLinkMessage')).then(() => {
         proxy.$axios.post('accountlink/delete/', { platform: row.platform }).then(function (response) {
             refresh()
@@ -160,13 +164,21 @@ const updateRow = (row: any) => {
     proxy.$axios.post('accountlink/update/', { platform: row.platform }).then(function (response) {
         let data = response.data;
         if (data.type == 'success') loadRow(row);
+        else if (data.type == 'error') {
+            ElNotification({
+                title: '更新失败',
+                message: t.t('accountlink.updateError.' + data.category),
+                type: 'error',
+                duration: local.notification_duration,
+            })
+        }
     })
 }
 
 const loadRow = (row: any) => {
     proxy.$axios.get('accountlink/get/',
         {
-            params:{id: store.player.id, platform: row.platform}
+            params: { id: store.player.id, platform: row.platform }
         }
     ).then(function (response) {
         row.data = response.data

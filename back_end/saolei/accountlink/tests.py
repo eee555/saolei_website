@@ -14,7 +14,7 @@ class AccountLinkTestCase(TestCase):
 
     def test_update_saolei(self):
         account = AccountSaolei.objects.filter(id=1).first()
-        self.assertEqual(update_saolei_account(account), '')
+        self.assertEqual(update_saolei_account(account, 0), '',)
         account = AccountSaolei.objects.filter(id=1).first()
         self.assertEqual(account.id, 1)
         self.assertEqual(account.name, '张砷镓')
@@ -32,7 +32,7 @@ class AccountLinkTestCase(TestCase):
 
     def test_update_msgames(self):
         account = AccountMinesweeperGames.objects.filter(id=7872).first()
-        self.assertEqual(update_msgames_account(account), '')
+        self.assertEqual(update_msgames_account(account, 0), '')
         account = AccountMinesweeperGames.objects.filter(id=7872).first()
         self.assertEqual(account.id, 7872)
         self.assertEqual(account.name, 'Ze-En JU')
@@ -41,7 +41,7 @@ class AccountLinkTestCase(TestCase):
 
     def test_update_wom(self):
         account = AccountWorldOfMinesweeper.objects.filter(id=1783173).first()
-        self.assertEqual(update_wom_account(account), '')
+        self.assertEqual(update_wom_account(account, 0), '')
         account = AccountWorldOfMinesweeper.objects.filter(id=1783173).first()
         self.assertEqual(account.id, 1783173)
 
@@ -81,6 +81,6 @@ class AccountLinkTestCase(TestCase):
     def test_msgames_private_name(self):
         user = UserProfile.objects.create(username='test_msgames_private_name', email='test_msgames_private_name@test.com')
         account = AccountMinesweeperGames.objects.create(id=8371, parent=user)
-        self.assertEqual(update_msgames_account(account), '')
+        self.assertEqual(update_msgames_account(account, 0), '')
         self.assertEqual(account.name, 'Private')
         self.assertEqual(account.local_name, 'None')

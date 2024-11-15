@@ -99,7 +99,7 @@ def verify_link(request):
     link_account(platform, identifier, user)
     accountlink.verified = True
     accountlink.save()
-    update_account(platform, user)
+    update_account(platform, user, 0)
     return HttpResponse()
 
 @require_POST
@@ -121,7 +121,6 @@ def unverify_link(request):
 
 @require_POST
 @login_required_error
-@ratelimit(key='user', rate='1/d')
 def update_link(request):
     platform = request.POST.get('platform')
     if not platform:
