@@ -18,7 +18,7 @@ class MaxSizes:
     password = 20 # 密码
     signature = 4095 # 个性签名的长度，考虑了一些比较啰嗦的语言。
     software = 1
-    username = 255 # 用户名，考虑了一些名字特别长的文化。
+    username = 30 # 用户名，行业习惯的上限
     videofile = 5*1024*1024 # 录像文件
 
 # 默认修改个人资料的次数

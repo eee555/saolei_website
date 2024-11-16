@@ -1,4 +1,4 @@
-export const pl = {
+export default {
     local: 'pl',
     name: 'polski',
     common: {
@@ -8,31 +8,30 @@ export const pl = {
             e: 'ekspert',
         },
         mode: {
-            standard: 'podstawowy',
-            noFlag: 'bez flag',
-            noGuess: 'bez zgadywania',
-            recursive: 'rekurencyjny akord'
+            std: 'podstawowy',
+            nf: 'bez flag',
+            ng: 'bez zgadywania',
+            dg: 'rekurencyjny akord'
         },
-        time: 'czas'
+        prop: {
+            time: 'czas',
+        },
     },
-    forgetPassword: {
-        title: 'resetuj Hasło',
-        email: 'email',
+    form: {
         captcha: 'captcha',
-        getEmailCode: 'wyślij hasło pojedyńczego użytku',
-        emailCode: 'hasło pojedyńczego użytku',
-        password: 'nowe hasło',
         confirmPassword: 'potwierdź hasło',
-        confirm: 'Potwierdź'
+        email: 'email',
+        emailCode: 'hasło pojedyńczego użytku',
+        password: 'hasło',
+        username: 'nazwa użytkownika',
     },
     login: {
-        title: 'login',
-        username: 'nazwa użytkownika',
-        password: 'hasło',
-        captcha: 'captcha',
         forgetPassword: 'zapomniałeś hasła?',
         keepMeLoggedIn: 'utrzym',
-        confirm: 'zaloguj'
+        loginConfirm: 'zaloguj',
+        loginTitle: 'login',
+        retrieveConfirm: 'Potwierdź',
+        retrieveTitle: 'resetuj Hasło',
     },
     menu: {
         ranking: 'ranking',

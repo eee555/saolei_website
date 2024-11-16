@@ -82,8 +82,8 @@
 
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { useLocalStore, useUserStore } from '@/store';
-import { ElMessageBox, ElNotification } from 'element-plus';
+import { store, local } from '@/store';
+import { ElMessageBox } from 'element-plus';
 import { Platform, platformlist } from '@/utils/common/accountLinkPlatforms'
 import PlatformIcon from './widgets/PlatformIcon.vue';
 import AccountLinkGuide from './dialogs/AccountLinkGuide.vue'
@@ -101,8 +101,6 @@ interface AccountLink {
 
 const { proxy } = useCurrentInstance();
 const t = useI18n();
-const store = useUserStore();
-const local = useLocalStore();
 const accountlinks = ref<AccountLink[]>([]);
 const formvisible = ref(false);
 const form = reactive({

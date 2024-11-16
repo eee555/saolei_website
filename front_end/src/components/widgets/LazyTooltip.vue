@@ -10,10 +10,8 @@
 
 <script setup lang="ts">
 
-import { useLocalStore } from '@/store';
+import { local } from '@/store';
 import { ref } from 'vue';
-
-const local = useLocalStore();
 
 const render = ref<Boolean>(false);
 
