@@ -1,7 +1,8 @@
 import { LoginStatus } from "@/utils/common/structInterface"
 import { defineStore } from 'pinia'
+import { pinia } from "./create"
 
-export const useUserStore = defineStore('user', {
+export const store = defineStore('user', {
     state: () => ({
         user: {
             // 此id为用户的id从1开始，而不是数据库的自增id
@@ -27,16 +28,16 @@ export const useUserStore = defineStore('user', {
         new_identifier: false, // 是否有新标识录像
     }
     ),
-})
+})(pinia)
 
-export const useVideoPlayerStore = defineStore('videoplayer', {
+export const videoplayerstore = defineStore('videoplayer', {
     state: () => ({
         visible: false,
         id: 0,
     }),
-})
+})(pinia)
 
-export const useLocalStore = defineStore('local', {
+export const local = defineStore('local', {
     state: () => ({
         darkmode: false,
         language: (navigator.language).toLocaleLowerCase(),
@@ -48,9 +49,9 @@ export const useLocalStore = defineStore('local', {
         tooltip_show: true,
     }),
     persist: true,
-})
+})(pinia)
 
-export const useVideoFilter = defineStore('videofilter', {
+export const videofilter = defineStore('videofilter', {
     state: () => ({
         pagesize: 100,
         level: 'e',
@@ -62,4 +63,4 @@ export const useVideoFilter = defineStore('videofilter', {
         }
     }),
     persist: true
-})
+})(pinia)

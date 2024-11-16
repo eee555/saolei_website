@@ -47,15 +47,12 @@
 
 <script lang="ts" setup name="UserSettings">
 
-import { useLocalStore, useUserStore } from '@/store';
+import { store, local } from '@/store';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { useI18n } from 'vue-i18n';
-const store = useUserStore()
-const local = useLocalStore()
 const t = useI18n()
 
 import DarkMode from '@/components/widgets/DarkMode.vue'
 import IdentifierManager from '@/components/widgets/IdentifierManager.vue';
-import AccountLinkManager from '@/components/AccountLinkManager.vue';
 
 </script>
