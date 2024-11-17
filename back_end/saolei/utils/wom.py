@@ -27,12 +27,14 @@ class WOM:
     def __wsThreadFunc(self) -> None:
         while not self.__stopFlag.is_set():
             if self.__ws is None and self.__videoIdQueue.empty():
+                time.sleep(1)
                 continue
             if self.__ws and time.time() - self.__lastTime > self.__timeout and self.__videoIdQueue.empty() and self.__isOver:
                 self.__ws.close()
                 self.__ws = None
                 with self.__isConnectedLock:
                     self.__isConnected = False
+                time.sleep(1)
                 continue
             try:
                 if self.__ws:
@@ -81,6 +83,8 @@ class WOM:
                 with self.__lock:
                     self.__lastTime = time.time()
                 self.__callback(self.__videoInfoQueue.get())
+            else:
+                time.sleep(1)
 
     @staticmethod
     def formatMessage(code, message):
