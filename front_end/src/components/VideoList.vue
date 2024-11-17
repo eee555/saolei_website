@@ -17,18 +17,22 @@
         </el-table-column>
         <el-table-column width="20">
             <template #default="scope">
-                <SoftwareIcon :software="scope.row.software"/>
+                <SoftwareIcon :software="scope.row.software" />
             </template>
         </el-table-column>
-        <el-table-column :filters="[{ text: $t('common.level.b'), value: 'b' }, { text: $t('common.level.i'), value: 'i' }, { text: $t('common.level.e'), value: 'e' }]"
-        :filter-method="defaultFilterMethod" :filter-multiple="false">
+        <el-table-column
+            :filters="[{ text: $t('common.level.b'), value: 'b' }, { text: $t('common.level.i'), value: 'i' }, { text: $t('common.level.e'), value: 'e' }]"
+            :filter-method="defaultFilterMethod" :filter-multiple="false">
             <template #default="scope">
                 <GameLevelIcon :level="scope.row.level" />
             </template>
         </el-table-column>
-        <el-table-column prop="mode" :formatter="simple_formatter((mode: string) => $t('common.mode.' + mode))" :filters="[{ text: $t('common.mode.std'), value: 'std' }, { text: $t('common.mode.nf'), value: 'nf' }, { text: $t('common.mode.ng'), value: 'ng' }, { text: $t('common.mode.dg'), value: 'dg' }]" :filter-method="defaultFilterMethod" :filter-multiple="false" />
-        <el-table-column prop="timems" :formatter="simple_formatter((timems: number) => (ms_to_s(timems) + 's'))" sortable/>
-        <el-table-column prop="bv" sortable/>
+        <el-table-column prop="mode" :formatter="simple_formatter((mode: string) => $t('common.mode.' + mode))"
+            :filters="[{ text: $t('common.mode.std'), value: 'std' }, { text: $t('common.mode.nf'), value: 'nf' }, { text: $t('common.mode.ng'), value: 'ng' }, { text: $t('common.mode.dg'), value: 'dg' }]"
+            :filter-method="defaultFilterMethod" :filter-multiple="false" />
+        <el-table-column prop="timems" :formatter="simple_formatter((timems: number) => (ms_to_s(timems) + 's'))"
+            sortable />
+        <el-table-column prop="bv" sortable />
         <!-- <el-table-column min-width="200">
             <template #default="scope">
                 <PreviewDownload :id="scope.row.key"></PreviewDownload>
