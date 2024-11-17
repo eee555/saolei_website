@@ -51,7 +51,6 @@ onMounted(() => {
 
 function generateArbiterCSV(data: any) {
     let csvdata = ['Day,Month,Year,Hour,Min,Sec,mode,Time,BBBV,BBBVs,style,cell0,cell1,cell2,cell3,cell4,cell5,cell6,cell7,cell8,Lcl,Rcl,Dcl,Leff,Reff,Deff,Openings,Islands,Path,GZiNi,HZiNi']
-    console.log(data[0])
     for (let v of data) {
         if (v.mode != 'std' && v.mode != 'nf') continue;
         let date = new Date(v.upload_time);
