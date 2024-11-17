@@ -61,7 +61,7 @@ function generateArbiterCSV(data: any) {
             case 'b': row.push(1); break;
             default: console.error('未知级别');
         }
-        row.push(v.timems / 10);
+        row.push((v.timems / 1000).toFixed(2));
         row.push(v.bv);
         row.push(v.bvs.toFixed(2));
 
