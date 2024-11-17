@@ -1,7 +1,7 @@
 <template>
     <el-button @click="downloadCSV(generateArbiterCSV(videos_queue))" v-if="!loading">
-        导出stats_csv.csv&nbsp;
-        <el-tooltip content="兼容 Minesweeper Arbiter 生成的数据表。<br/> 目前不支持 Leff, Reff, Deff, GZiNi, HZiNi。" raw-content>
+        {{ $t('profile.exportArbiterCSV') }}&nbsp;
+        <el-tooltip :content="$t('profile.exportArbiterCSVTooltip')" raw-content>
             <el-icon v-if="local.tooltip_show">
                 <QuestionFilled />
             </el-icon>
