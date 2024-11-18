@@ -7,9 +7,11 @@ from django.views.decorators.http import require_POST
 from utils.response import HttpResponseConflict
 from videomanager.models import VideoModel
 from videomanager.view_utils import update_state, update_personal_record_stock
+from userprofile.decorators import login_required_error
 
 # 请求修改自己的标识
 @require_POST
+@login_required_error
 def add_identifier(request):
     user = UserProfile.objects.filter(id=request.user.id).first()
     if user == None:
@@ -41,6 +43,7 @@ def add_identifier(request):
 
 # 请求删除自己的标识
 @require_POST
+@login_required_error
 def del_identifier(request):
     user = UserProfile.objects.filter(id=request.user.id).first()
     if user == None:
