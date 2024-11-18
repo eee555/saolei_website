@@ -10,6 +10,7 @@ from videomanager.view_utils import update_state, update_personal_record_stock
 
 # 请求修改自己的标识
 @require_POST
+@login_required_error
 def add_identifier(request):
     user = UserProfile.objects.filter(id=request.user.id).first()
     if user == None:
@@ -41,6 +42,7 @@ def add_identifier(request):
 
 # 请求删除自己的标识
 @require_POST
+@login_required_error
 def del_identifier(request):
     user = UserProfile.objects.filter(id=request.user.id).first()
     if user == None:

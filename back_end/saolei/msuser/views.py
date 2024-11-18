@@ -38,7 +38,7 @@ class DecimalEncoder(json.JSONEncoder):
 
 
 # 获取我的地盘里的头像、姓名、个性签名、过审标识
-@ratelimit(key='ip', rate='60/h')
+@ratelimit(key='ip', rate='20/m')
 @require_GET
 def get_info(request):
     user_id = request.GET.get('id')
@@ -71,7 +71,7 @@ def get_info(request):
 
 
 # 获取我的地盘里的姓名、全部纪录
-@ratelimit(key='ip', rate='60/h')
+@ratelimit(key='ip', rate='15/m')
 @require_GET
 def get_records(request):
     user_id = request.GET.get('id')
@@ -93,6 +93,7 @@ def get_records(request):
     
 
 # 鼠标移到人名上时，展现头像、姓名、id、记录
+@ratelimit(key='ip', rate='5/s')
 @require_GET
 def get_info_abstract(request):
     # 此处要防攻击

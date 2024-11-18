@@ -201,7 +201,7 @@ def refresh_captcha(request):
     return HttpResponse(json.dumps(c), content_type='application/json')
 
 # 验证验证码，若通过，发送email
-@ratelimit(key='ip', rate='20/h')
+@ratelimit(key='ip', rate='1/m')
 @require_POST
 def get_email_captcha(request):
     data = request.POST
