@@ -5,8 +5,8 @@ on:
     branches:
       - main  # Adjust the branch name as needed
   pull_request:
-    paths-ignore: 
-      - 'frontend/**'
+    paths: 
+      - 'back_end/saolei/**'
 
 jobs:
   check_flag:
