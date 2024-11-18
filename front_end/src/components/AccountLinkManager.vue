@@ -22,7 +22,7 @@
                     scope.row.identifier }}</el-link>
             </template>
         </el-table-column>
-        <el-table-column v-if="store.player.id == store.user.id" :label="$t('common.prop.status')">
+        <el-table-column v-if="store.player.id == store.user.id || store.user.is_staff" :label="$t('common.prop.status')">
             <template #default="scope">
                 <el-tooltip v-if="scope.row.verified" :content="$t('accountlink.verified')">
                     <el-text type="success"><el-icon>
@@ -38,7 +38,7 @@
         </el-table-column>
         <el-table-column v-if="store.player.id == store.user.id" :label="$t('common.prop.action')">
             <template #default="scope">
-                <el-link :underline="false" @click.prevent="deleteRow(scope.row)" type="error"><el-icon>
+                <el-link :underline="false" @click.prevent="deleteRow(scope.row)" type="danger"><el-icon>
                         <Delete />
                     </el-icon></el-link>
                 &nbsp;
@@ -80,10 +80,10 @@
 
 <script setup lang="ts">
 
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { useLocalStore, useUserStore } from '@/store';
-import { ElMessageBox, ElNotification } from 'element-plus';
+import { store, local } from '@/store';
+import { ElNotification } from 'element-plus';
 import { Platform, platformlist } from '@/utils/common/accountLinkPlatforms'
 import PlatformIcon from './widgets/PlatformIcon.vue';
 import AccountLinkGuide from './dialogs/AccountLinkGuide.vue'
@@ -101,8 +101,6 @@ interface AccountLink {
 
 const { proxy } = useCurrentInstance();
 const t = useI18n();
-const store = useUserStore();
-const local = useLocalStore();
 const accountlinks = ref<AccountLink[]>([]);
 const formvisible = ref(false);
 const form = reactive({
@@ -110,7 +108,8 @@ const form = reactive({
     identifier: '',
 })
 
-const refresh = () => {
+async function refresh() {
+    if (store.player.id == 0) return;
     proxy.$axios.get('accountlink/get/',
         {
             params: {
@@ -121,7 +120,7 @@ const refresh = () => {
         accountlinks.value = response.data;
     })
 }
-onMounted(refresh)
+watch(store.player, refresh)
 
 const formValid = computed(() => {
     switch (form.platform) {
@@ -168,7 +167,7 @@ const updateRow = (row: any) => {
         else if (data.type == 'error') {
             ElNotification({
                 title: '更新失败',
-                message: t.t('accountlink.updateError.'+data.category),
+                message: t.t('accountlink.updateError.' + data.category),
                 type: 'error',
                 duration: local.notification_duration,
             })

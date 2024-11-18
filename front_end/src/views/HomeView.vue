@@ -115,10 +115,7 @@ import FriendlyLink from "@/components/dialogs/FriendlyLinks.vue";
 import Downloads from "@/components/dialogs/Downloads.vue";
 import Thanks from "@/components/dialogs/Thanks.vue";
 import Groups from "@/components/dialogs/Groups.vue";
-
-
-import { useUserStore } from '../store'
-const store = useUserStore()
+import { store } from '../store'
 
 import { useI18n } from 'vue-i18n';
 const t = useI18n();

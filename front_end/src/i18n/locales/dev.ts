@@ -1,6 +1,4 @@
-import { LocaleConfig } from '@/i18n/config'
-
-export const dev = {
+export default {
     local: 'dev',
     common: {
         prop: {

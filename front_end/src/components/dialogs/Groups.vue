@@ -1,3 +1,5 @@
+<!-- 已弃用 -->
+
 <template>
     <span class="text-button" @click="centerDialogVisible = true;">{{ $t('menu.groups') }}</span>
     <el-dialog v-model="centerDialogVisible" title="扫码加入QQ群" width="50%" align-center draggable :lock-scroll="false">

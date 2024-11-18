@@ -3,9 +3,6 @@ import * as ELIcons from '@element-plus/icons-vue';
 
 import App from './App.vue'
 import router from './router'
-// import store from './store'
-import { createPinia } from 'pinia'
-import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import i18n from '@/i18n'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
@@ -15,11 +12,10 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
 import 'highlight.js/styles/stackoverflow-light.css'
 import 'element-plus/theme-chalk/dark/css-vars.css'
+import { pinia } from './store/create';
 
 
 const app = createApp(App)
-const pinia = createPinia()
-pinia.use(piniaPluginPersistedstate)
 
 app.config.globalProperties.$axios = $axios;
 
