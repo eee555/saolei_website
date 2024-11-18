@@ -7,6 +7,7 @@ from django.views.decorators.http import require_POST
 from utils.response import HttpResponseConflict
 from videomanager.models import VideoModel
 from videomanager.view_utils import update_state, update_personal_record_stock
+from userprofile.decorators import login_required_error
 
 # 请求修改自己的标识
 @require_POST
