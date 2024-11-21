@@ -1,5 +1,5 @@
 <template>
-    <el-button @click="downloadCSV(generateArbiterCSV(videos_queue))" v-if="!loading">
+    <el-button @click="downloadCSV(generateArbiterCSV(store.player.id))" v-if="!store.player.loading">
         {{ $t('profile.exportArbiterCSV') }}&nbsp;
         <el-tooltip :content="$t('profile.exportArbiterCSVTooltip')" raw-content>
             <el-icon v-if="local.tooltip_show">
@@ -8,8 +8,8 @@
         </el-tooltip>
     </el-button>
     <el-card class="box-card" body-style="" style="max-height: 800px; overflow: auto; margin-top:5px">
-        <el-skeleton animated v-show="loading" :rows="8" />
-        <VideoList :videos="videos_queue" :need_player_name="false" reverse></VideoList>
+        <el-skeleton animated v-show="store.player.loading" :rows="8" />
+        <VideoList :videos="store.player.videos" :need_player_name="false" reverse></VideoList>
     </el-card>
 </template>
 
@@ -22,32 +22,6 @@ const { proxy } = useCurrentInstance();
 import VideoList from '@/components/VideoList.vue';
 // import { fa } from 'element-plus/es/locale';
 import { local, store } from '../store'
-
-const loading = ref(true)
-
-const videos_queue = ref<any[]>([]);
-
-
-onMounted(() => {
-    // const player = proxy.$store.state.player;
-    // const player = JSON.parse(localStorage.getItem("player") as string);
-    const player = store.player;
-    proxy.$axios.get('/video/query_by_id/',
-        {
-            params: { id: player.id }
-        }
-    ).then(function (response) {
-        let videos = response.data;
-        for (let key in videos) {
-            videos[key].key = videos[key].id;
-            videos_queue.value.push(videos[key]);
-            if (videos[key].state == 'd' && player.id == store.user.id) {
-                store.new_identifier = true;
-            }
-        }
-        loading.value = false;
-    })
-})
 
 function generateArbiterCSV(data: any) {
     let csvdata = ['Day,Month,Year,Hour,Min,Sec,mode,Time,BBBV,BBBVs,style,cell0,cell1,cell2,cell3,cell4,cell5,cell6,cell7,cell8,Lcl,Rcl,Dcl,Leff,Reff,Deff,Openings,Islands,Path,GZiNi,HZiNi']
