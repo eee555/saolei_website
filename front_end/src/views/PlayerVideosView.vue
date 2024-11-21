@@ -1,5 +1,5 @@
 <template>
-    <el-button @click="downloadCSV(generateArbiterCSV(store.player.id))" v-if="!store.player.loading">
+    <el-button @click="downloadCSV(generateArbiterCSV(store.player.id))" v-if="false && !store.player.loading">
         {{ $t('profile.exportArbiterCSV') }}&nbsp;
         <el-tooltip :content="$t('profile.exportArbiterCSVTooltip')" raw-content>
             <el-icon v-if="local.tooltip_show">
