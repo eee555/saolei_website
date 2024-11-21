@@ -196,6 +196,8 @@ export default {
         captchaRequired: 'Captcha required',
         confirmPasswordMismatch: 'Mismatches password',
         connectionFail: 'Connection failed. Please try again',
+        copyToClipboardFail: 'Failed to copy.',
+        copyToClipboardSuccess: 'Text copied.',
         emailCodeInvalid: 'Email code is invalid or expired',
         emailCodeRequired: 'Email code required',
         emailCollision: 'Email already exists',
