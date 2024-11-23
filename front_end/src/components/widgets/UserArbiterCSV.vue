@@ -1,5 +1,5 @@
 <template>
-    <el-button :disabled="id==0" @click="clickExportJSON">
+    <el-button :disabled="id == 0" @click="clickExportJSON">
         {{ $t('profile.exportJSON') }}&nbsp;
         <el-tooltip :content="$t('profile.exportJSONTooltip')" raw-content>
             <el-icon v-if="local.tooltip_show">
@@ -7,7 +7,7 @@
             </el-icon>
         </el-tooltip>
     </el-button>
-    <el-button @click="clickExportCSV" :disabled="id==0">
+    <el-button @click="clickExportCSV" :disabled="id == 0">
         {{ $t('profile.exportArbiterCSV') }}&nbsp;
         <el-tooltip :content="$t('profile.exportArbiterCSVTooltip')" raw-content>
             <el-icon v-if="local.tooltip_show">
@@ -37,7 +37,7 @@ const prop = defineProps({
     },
 })
 
-watch(prop, ()=>{data.value=[]});
+watch(prop, () => { data.value = [] });
 
 async function fetchData(id: number) {
     await proxy.$axios.get('video/query_by_id',
@@ -46,7 +46,7 @@ async function fetchData(id: number) {
                 id: id,
             }
         }
-    ).then(function(response){
+    ).then(function (response) {
         data.value = response.data
     }).catch(httpErrorNotification)
 }
@@ -83,7 +83,7 @@ function generateArbiterCSV(data: any) {
 
 // Credit: ChatGPT
 function downloadCSV(csv: string) {
-    if (csv==="") return;
+    if (csv === "") return;
     // Create a Blob from the CSV data
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -103,7 +103,7 @@ function downloadCSV(csv: string) {
 }
 
 function downloadJSON(json: string) {
-    if (json==="") return;
+    if (json === "") return;
     // Create a Blob from the CSV data
     const blob = new Blob([json], { type: 'text/json' });
     const url = URL.createObjectURL(blob);
@@ -123,14 +123,14 @@ function downloadJSON(json: string) {
 }
 
 async function clickExportCSV() {
-    if (data.value.length===0) await fetchData(prop.id);
-    if (data.value.length===0) return;
+    if (data.value.length === 0) await fetchData(prop.id);
+    if (data.value.length === 0) return;
     downloadCSV(generateArbiterCSV(data.value));
 }
 
 async function clickExportJSON() {
-    if (data.value.length===0) await fetchData(prop.id);
-    if (data.value.length===0) return;
+    if (data.value.length === 0) await fetchData(prop.id);
+    if (data.value.length === 0) return;
     downloadJSON(JSON.stringify(data.value))
 }
 </script>

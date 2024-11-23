@@ -46,11 +46,12 @@
                     </div>
                     <div style="font-size: 16px;margin-bottom: 12px;color: #555;">
                         <!-- <span class="flag-icon flag-icon-cn"/> -->
-                        {{ realname }}</div>
+                        {{ realname }}
+                    </div>
                     <div style="overflow: auto ;font-size: 16px;margin-bottom: 12px;text-align: justify;">
                         {{ signature }}</div>
                     <button class="edit_button" v-show="show_edit_button" @click="is_editing = true; visible = true;">{{
-                    $t('profile.change') }}</button>
+                        $t('profile.change') }}</button>
                     <!-- <div style="overflow: auto ;">人气：{{ popularity }}</div> -->
                 </div>
             </el-aside>
