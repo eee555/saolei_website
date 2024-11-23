@@ -128,10 +128,10 @@ def user_register(request):
 @require_GET
 def check_collision(request):
     user = None
-    if request.GET.get('username'):
-        user = UserProfile.objects.filter(username=request.GET.get('username')).first()
-    elif request.GET.get('email'):
-        user = UserProfile.objects.filter(email=request.GET.get('email')).first()
+    if username := request.GET.get('username'):
+        user = UserProfile.objects.filter(username=username).first()
+    elif email := request.GET.get('email'):
+        user = UserProfile.objects.filter(email=email).first()
     else:
         return HttpResponseBadRequest()
     if not user:
