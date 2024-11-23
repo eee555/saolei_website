@@ -129,7 +129,6 @@ def user_register(request):
 def check_collision(request):
     user = None
     if request.GET.get('username'):
-        print(request.GET.get('username'))
         user = UserProfile.objects.filter(username=request.GET.get('username')).first()
     elif request.GET.get('email'):
         user = UserProfile.objects.filter(email=request.GET.get('email')).first()

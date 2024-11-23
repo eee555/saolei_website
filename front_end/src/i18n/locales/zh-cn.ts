@@ -251,8 +251,10 @@ export default {
             modeRecord: '模式纪录：'
         },
         videos: '全部录像',
-        exportArbiterCSV: '导出stats_csv.csv',
-        exportArbiterCSVTooltip: '兼容 Minesweeper Arbiter 生成的数据表。<br/> 目前不支持 Leff, Reff, Deff, GZiNi, HZiNi。',
+        exportJSON: '导出JSON',
+        exportJSONTooltip: '从服务器获取的源数据',
+        exportArbiterCSV: '导出CSV',
+        exportArbiterCSVTooltip: '兼容 Minesweeper Arbiter 生成的 <span style="font-family: \'Courier New\', Courier, monospace;">stats_csv.csv</span>。<br/> 目前不支持 Leff, Reff, Deff, GZiNi, HZiNi。',
         upload: {
             title: '上传录像',
             dragOrClick: `将录像拉到此处或 <em>点击此处选择</em>`,
