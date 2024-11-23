@@ -22,7 +22,7 @@
                     scope.row.identifier }}</el-link>
             </template>
         </el-table-column>
-        <el-table-column v-if="store.player.id == store.user.id" :label="$t('common.prop.status')">
+        <el-table-column v-if="store.player.id == store.user.id || store.user.is_staff" :label="$t('common.prop.status')">
             <template #default="scope">
                 <el-tooltip v-if="scope.row.verified" :content="$t('accountlink.verified')">
                     <el-text type="success"><el-icon>
@@ -80,10 +80,10 @@
 
 <script setup lang="ts">
 
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { store, local } from '@/store';
-import { ElMessageBox } from 'element-plus';
+import { ElNotification } from 'element-plus';
 import { Platform, platformlist } from '@/utils/common/accountLinkPlatforms'
 import PlatformIcon from './widgets/PlatformIcon.vue';
 import AccountLinkGuide from './dialogs/AccountLinkGuide.vue'

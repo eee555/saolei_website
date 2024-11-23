@@ -14,7 +14,7 @@ from django.views.decorators.http import require_GET, require_POST
 from .decorators import staff_required
 from django.utils import timezone
 from config.flags import EMAIL_SKIP
-from .utils import judge_captcha, judge_email_verification
+from .utils import judge_captcha, judge_email_verification, user_metadata
 
 # Create your views here.
 
@@ -42,11 +42,10 @@ def user_login(request):
         return JsonResponse({'type': 'error', 'object': 'login', 'category': 'password'})
     # 将用户数据保存在 session 中，即实现了登录动作
     login(request, user)
-    userdata = {"id": user.id, "username": user.username, "realname": user.realname, "is_banned": user.is_banned, "is_staff": user.is_staff}
     if 'user_id' in data and data['user_id'] != str(user.id):
         # 检测到小号
         logger.warning(f'{data["user_id"][:50]} is different from {str(user.id)}.')
-    return JsonResponse({'type': 'success', 'user': userdata})
+    return JsonResponse({'type': 'success', 'user': user_metadata(user)})
         
 
 @require_GET
@@ -83,8 +82,7 @@ def user_retrieve(request):
     login(request, user)
     logger.info(f'用户 {user.username}#{user.id} 邮箱找回密码')
     EmailVerifyRecord.objects.filter(hashkey=emailHashkey).delete()
-    userdata = {"id": user.id, "username": user.username, "realname": user.realname, "is_banned": user.is_banned, "is_staff": user.is_staff}
-    return JsonResponse({'type': 'success', 'user': userdata})
+    return JsonResponse({'type': 'success', 'user': user_metadata(user)})
 
 
 # 用户注册
@@ -113,10 +111,7 @@ def user_register(request):
             logger.info(f'用户 {new_user.username}#{new_user.id} 注册')
             # 顺手把过期的验证码删了
             EmailVerifyRecord.objects.filter(hashkey=emailHashkey).delete()
-            return JsonResponse({'type': 'success', 'user': {
-                "id": new_user.id, "username": new_user.username,
-                "realname": new_user.realname, "is_banned": new_user.is_banned, "is_staff": new_user.is_staff}
-                })
+            return JsonResponse({'type': 'success', 'user': user_metadata(new_user)})
         else:
             return JsonResponse({'type': 'error', 'object': 'emailcode'})
     else:
@@ -133,11 +128,10 @@ def user_register(request):
 @require_GET
 def check_collision(request):
     user = None
-    if request.GET.get('username'):
-        print(request.GET.get('username'))
-        user = UserProfile.objects.filter(username=request.GET.get('username')).first()
-    elif request.GET.get('email'):
-        user = UserProfile.objects.filter(email=request.GET.get('email')).first()
+    if username := request.GET.get('username'):
+        user = UserProfile.objects.filter(username=username).first()
+    elif email := request.GET.get('email'):
+        user = UserProfile.objects.filter(email=email).first()
     else:
         return HttpResponseBadRequest()
     if not user:
@@ -201,7 +195,7 @@ def refresh_captcha(request):
     return HttpResponse(json.dumps(c), content_type='application/json')
 
 # 验证验证码，若通过，发送email
-@ratelimit(key='ip', rate='20/h')
+@ratelimit(key='ip', rate='1/m')
 @require_POST
 def get_email_captcha(request):
     data = request.POST

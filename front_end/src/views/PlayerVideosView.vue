@@ -1,54 +1,15 @@
 <template>
-    <el-card class="box-card" body-style="" style="max-height: 800px; overflow: auto;">
-        <el-skeleton animated v-show="loading" :rows="8" />
-        <VideoList :videos="videos_queue" :need_player_name="false" reverse></VideoList>
+    <UserArbiterCSV :id="store.player.id" />
+    <el-card class="box-card" body-style="" style="max-height: 800px; overflow: auto; margin-top:5px">
+        <el-skeleton animated v-show="store.player.loading" :rows="8" />
+        <VideoList :videos="store.player.videos" :need_player_name="false" reverse></VideoList>
     </el-card>
 </template>
 
 <script lang="ts" setup>
 // 个人主页的个人所有录像部分
-import { onMounted, ref, Ref } from 'vue'
-import useCurrentInstance from "@/utils/common/useCurrentInstance";
-const { proxy } = useCurrentInstance();
-// import { genFileId, ElMessage } from 'element-plus'
 import VideoList from '@/components/VideoList.vue';
-// import { fa } from 'element-plus/es/locale';
 import { store } from '../store'
-
-const loading = ref(true)
-
-const videos_queue = ref<any[]>([]);
-
-
-onMounted(() => {
-    // const player = proxy.$store.state.player;
-    // const player = JSON.parse(localStorage.getItem("player") as string);
-    const player = store.player;
-    proxy.$axios.get('/video/query_by_id/',
-        {
-            params: { id: player.id }
-        }
-    ).then(function (response) {
-        let videos = response.data;
-        for (let key in videos) {
-            videos[key].key = videos[key].id;
-            videos_queue.value.push(videos[key]);
-            if (videos[key].state == 'd' && player.id == store.user.id) {
-                store.new_identifier = true;
-            }
-        }
-        loading.value = false;
-    })
-})
+import UserArbiterCSV from '@/components/widgets/UserArbiterCSV.vue';
 
 </script>
-
-
-<style>
-.avatar-uploader {
-    margin: auto;
-    text-align: center;
-    margin-top: 30px;
-
-}
-</style>

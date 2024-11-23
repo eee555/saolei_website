@@ -101,7 +101,11 @@ const logout = async () => {
             realname: "",
             is_banned: false,
             is_staff: false,
-            country: ""
+            country: "",
+            accountlink: [],
+            identifiers: [],
+            videos: [],
+            loading: true,
         };
         emit('logout'); // 向父组件发送消息
         ElMessage.success({ message: t.t('common.msg.logoutSuccess'), offset: 68 });

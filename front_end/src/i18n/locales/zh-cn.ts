@@ -196,6 +196,8 @@ export default {
         captchaRequired: '请输入图形验证码',
         confirmPasswordMismatch: '密码和确认密码不一致',
         connectionFail: '无法连接到服务器，请重试',
+        copyToClipboardFail: '复制失败',
+        copyToClipboardSuccess: '复制成功',
         emailCodeInvalid: '邮箱验证码过期或不正确',
         emailCodeRequired: '请输入邮箱验证码',
         emailCollision: '邮箱已存在',
@@ -249,6 +251,10 @@ export default {
             modeRecord: '模式纪录：'
         },
         videos: '全部录像',
+        exportJSON: '导出JSON',
+        exportJSONTooltip: '从服务器获取的源数据',
+        exportArbiterCSV: '导出CSV',
+        exportArbiterCSVTooltip: '兼容 Minesweeper Arbiter 生成的 <span style="font-family: \'Courier New\', Courier, monospace;">stats_csv.csv</span>。<br/> 目前不支持 Leff, Reff, Deff, GZiNi, HZiNi。',
         upload: {
             title: '上传录像',
             dragOrClick: `将录像拉到此处或 <em>点击此处选择</em>`,

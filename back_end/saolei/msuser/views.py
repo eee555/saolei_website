@@ -1,15 +1,13 @@
 import logging
 logger = logging.getLogger('userprofile')
-from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from .forms import UserUpdateRealnameForm, UserUpdateAvatarForm, UserUpdateSignatureForm
 # from .models import VideoModel, ExpandVideoModel
-from django.http import HttpResponse, JsonResponse, HttpResponseNotAllowed, HttpResponseBadRequest, HttpResponseNotFound
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound
 # from asgiref.sync import sync_to_async
 import json
 from utils import ComplexEncoder
 # from django.core.paginator import Paginator
-from msuser.models import UserMS
 from userprofile.models import UserProfile
 import base64
 import decimal
@@ -18,11 +16,9 @@ from django_redis import get_redis_connection
 cache = get_redis_connection("saolei_website")
 from django.conf import settings
 import os
-from django.utils import timezone
-from datetime import datetime, timedelta
-from utils import verify_text
 from django_ratelimit.decorators import ratelimit
 from django.views.decorators.http import require_GET, require_POST
+from userprofile.utils import user_metadata
 
 from config.global_settings import *
 
@@ -38,7 +34,7 @@ class DecimalEncoder(json.JSONEncoder):
 
 
 # 获取我的地盘里的头像、姓名、个性签名、过审标识
-@ratelimit(key='ip', rate='60/h')
+@ratelimit(key='ip', rate='20/m')
 @require_GET
 def get_info(request):
     user_id = request.GET.get('id')
@@ -50,28 +46,12 @@ def get_info(request):
 
     user.popularity += 1
     user.save(update_fields=["popularity"])
-        
-    if user.avatar:
-        avatar_path = os.path.join(settings.MEDIA_ROOT, urllib.parse.unquote(user.avatar.url)[7:])
-        image_data = open(avatar_path, "rb").read()
-        image_data = base64.b64encode(image_data).decode()
-    else:
-        image_data = None
-    response = {"id": user_id,
-                "username": user.username,
-                "realname": user.realname,
-                "avatar": image_data,
-                "signature": user.signature,
-                "popularity": user.popularity,
-                "identifiers": user.userms.identifiers,
-                "is_banned": user.is_banned,
-                "country": user.country
-                }
-    return JsonResponse(response)
+
+    return JsonResponse(user_metadata(user))
 
 
 # 获取我的地盘里的姓名、全部纪录
-@ratelimit(key='ip', rate='60/h')
+@ratelimit(key='ip', rate='15/m')
 @require_GET
 def get_records(request):
     user_id = request.GET.get('id')
@@ -93,6 +73,7 @@ def get_records(request):
     
 
 # 鼠标移到人名上时，展现头像、姓名、id、记录
+@ratelimit(key='ip', rate='5/s')
 @require_GET
 def get_info_abstract(request):
     # 此处要防攻击
