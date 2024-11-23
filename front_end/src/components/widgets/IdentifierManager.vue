@@ -1,37 +1,57 @@
 <template>
     <div class="flex gap-2">
-    <el-tag v-for="identifier of identifiers" closable @close="delIdentifier(identifier)">{{ identifier }}</el-tag>
-    <el-input size="small" style="width: 200px" v-model="new_identifiers"></el-input>
-    <el-link :underline="false" @click="addIdentifier(new_identifiers)"><el-icon><Plus/></el-icon></el-link>
-</div>
+        <el-table :data="identifierdata">
+            <el-table-column prop="data" sortable>
+                <template #default="scope">
+                    <el-input v-if="scope.row.data === ''" size="small" style="width: 200px"
+                        v-model="new_identifiers"></el-input>
+                </template>
+            </el-table-column>
+            <el-table-column>
+                <template #default="scope">
+                    <el-link v-if="scope.row.data === ''" :underline="false"
+                        @click="addIdentifier(new_identifiers)"><el-icon>
+                            <Plus />
+                        </el-icon></el-link>
+                    <el-link v-else :underline="false" @click="copyToClipboard(scope.row.data)">
+                        <el-icon>
+                            <CopyDocument />
+                        </el-icon>
+                    </el-link>
+                    &nbsp;
+                    <el-link v-if="scope.row.data !== ''" :underline="false" type="danger"
+                        @click="delIdentifier(scope.row.data)">
+                        <el-icon>
+                            <Delete />
+                        </el-icon>
+                    </el-link>
+                </template>
+            </el-table-column>
+        </el-table>
+    </div>
 </template>
 
 <script setup lang="ts">
 
 import { store } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { onMounted, ref } from 'vue';
+import { ref } from 'vue';
 import { removeItem } from '@/utils/system/tools';
 import { Plus } from '@element-plus/icons-vue';
 import { ElNotification } from 'element-plus';
 import { httpErrorNotification, unknownErrorNotification } from '@/components/Notifications';
 import { useI18n } from 'vue-i18n';
+import { computed } from 'vue';
+import { copyToClipboard } from './CopyToClipboard';
 
 const { proxy } = useCurrentInstance();
-const identifiers = ref<string[]>([]);
 const new_identifiers = ref("")
 const t = useI18n();
 
-onMounted(() => {
-    proxy.$axios.get('msuser/identifiers/',
-        {
-            params: {
-                id: store.user.id
-            }
-        }
-    ).then(function (response) {
-        identifiers.value = response.data;
-    })
+const identifierdata = computed(() => {
+    let data = store.player.identifiers ? store.player.identifiers.map(value => ({ data: value })) : [];
+    data.push({ data: "" })
+    return data
 })
 
 function delIdentifier(identifier: string) {
@@ -40,7 +60,7 @@ function delIdentifier(identifier: string) {
             identifier: identifier
         }
     ).then(function (response) {
-        identifiers.value = removeItem(identifiers.value, identifier);
+        store.player.identifiers = removeItem(store.player.identifiers, identifier);
         ElNotification({
             title: t.t('identifierManager.delIdentifierSuccess'),
             message: t.t('identifierManager.processedNVideos', [response.data.value]),
@@ -56,7 +76,7 @@ function addIdentifier(identifier: string) {
         }
     ).then(function (response) {
         if (response.data.type === 'success') {
-            identifiers.value.push(new_identifiers.value);
+            store.player.identifiers.push(new_identifiers.value);
             ElNotification({
                 title: t.t('identifierManager.addIdentifierSuccess'),
                 message: t.t('identifierManager.processedNVideos', [response.data.value]),
@@ -82,3 +102,11 @@ function addIdentifier(identifier: string) {
 }
 
 </script>
+
+<style lang="less" scoped>
+::v-deep(.el-table .el-table__cell) {
+    font-family: 'Courier New', Courier, monospace;
+    padding: 0;
+    margin: 0;
+}
+</style>
