@@ -19,7 +19,7 @@
                         </el-icon>
                     </el-link>
                     &nbsp;
-                    <el-link v-if="scope.row.data !== ''" :underline="false" type="danger"
+                    <el-link v-if="store.player.id == store.user.id && scope.row.data !== ''" :underline="false" type="danger"
                         @click="delIdentifier(scope.row.data)">
                         <el-icon>
                             <Delete />
@@ -50,7 +50,7 @@ const t = useI18n();
 
 const identifierdata = computed(() => {
     let data = store.player.identifiers ? store.player.identifiers.map(value => ({ data: value })) : [];
-    data.push({ data: "" })
+    if (store.player.id == store.user.id) data.push({ data: "" });
     return data
 })
 
