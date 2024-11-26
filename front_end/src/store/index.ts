@@ -11,7 +11,11 @@ export const store = defineStore('user', {
             realname: "",
             is_banned: false,
             is_staff: false,
-            country: ""
+            country: "",
+            accountlink: [],
+            identifiers: [],
+            videos: [],
+            loading: true,
         },   // 真正的用户
         // 访问谁的地盘不再具有记忆性。即点“我的地盘”，将永远是“我”的地盘
         // 想要访问特定用户，可以用url
@@ -22,7 +26,12 @@ export const store = defineStore('user', {
             username: "",
             realname: "",
             is_banned: false,
-            country: ""
+            is_staff: false,
+            country: "",
+            accountlink: [] as any[],
+            identifiers: [] as string[],
+            videos: [] as any[],
+            loading: true,
         },
         login_status: LoginStatus.Undefined, // 登录状态，全局维护
         new_identifier: false, // 是否有新标识录像

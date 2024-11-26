@@ -46,14 +46,13 @@
                     </div>
                     <div style="font-size: 16px;margin-bottom: 12px;color: #555;">
                         <!-- <span class="flag-icon flag-icon-cn"/> -->
-                        {{ realname }}</div>
+                        {{ realname }}
+                    </div>
                     <div style="overflow: auto ;font-size: 16px;margin-bottom: 12px;text-align: justify;">
                         {{ signature }}</div>
                     <button class="edit_button" v-show="show_edit_button" @click="is_editing = true; visible = true;">{{
-                    $t('profile.change') }}</button>
+                        $t('profile.change') }}</button>
                     <!-- <div style="overflow: auto ;">人气：{{ popularity }}</div> -->
-                    <div style="overflow: auto ;text-align: justify;"><strong>{{ $t('profile.identifier') }}</strong>{{
-                    identifiers.join(", ") }}</div>
                 </div>
             </el-aside>
 
@@ -70,7 +69,7 @@
                     </el-tab-pane>
                     <el-tab-pane v-if="store.user.id + '' == userid" :label="$t('profile.upload.title')" name="upload"
                         :lazy="true">
-                        <UploadView :identifiers="identifiers"></UploadView>
+                        <UploadView :identifiers="store.user.identifiers"></UploadView>
                     </el-tab-pane>
                 </el-tabs>
 
@@ -106,15 +105,12 @@ import { useRoute } from 'vue-router';
 const t = useI18n();
 const route = useRoute()
 
-const loading = ref(true)
-
 //编辑前的
 const userid = ref("");
 const username = ref("");
 const realname = ref("");
 const signature = ref("");
 const popularity = ref("");
-const identifiers = ref<String[]>([]); // 通过审核的标识
 
 //编辑状态时的
 const realname_edit = ref("");
@@ -164,7 +160,9 @@ function refresh() {
         store.player.username = data.username;
         store.player.is_banned = data.is_banned;
         store.player.country = data.country;
-        
+        store.player.is_staff = data.is_staff;
+        store.player.identifiers = data.identifiers;
+        store.player.videos = data.videos;
 
         userid.value = data.id;
         realname.value = data.realname;
@@ -174,15 +172,13 @@ function refresh() {
         popularity.value = data.popularity;
         realname_edit.value = data.realname;
         signature_edit.value = data.signature;
-        identifiers.value.length = 0;
-        identifiers.value.push(...data.identifiers);
         // console.log(imageUrl);
         if (data.avatar) {
             imageUrl.value = "data:image/;base64," + data.avatar;
             imageUrlOld = "data:image/;base64," + data.avatar;
         }
         // console.log(imageUrl);
-        loading.value = false;
+        store.player.loading = false;
 
     })
 }
