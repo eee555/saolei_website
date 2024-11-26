@@ -5,7 +5,7 @@ import requests
 from lxml import etree
 from datetime import timedelta
 from django.utils import timezone
-
+headers = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 Edg/132.0.0.0'}
 def link_account(platform: Platform, id, user: UserProfile):
     if platform == Platform.SAOLEI:
         link_saolei_account(id, user)
@@ -72,12 +72,12 @@ def update_saolei_account(account: AccountSaolei, cooldown):
     id = account.id
     try:
         url = f'http://saolei.wang/Player/Info.asp?Id={id}'
-        response = requests.get(url=url, timeout=5)
+        response = requests.get(url=url, timeout=5,headers=headers)
         response.encoding = 'GB2312'
         InfoHtmlStr = response.text
 
         url = f'http://saolei.wang/Video/Satus.asp?Id={id}'
-        response = requests.get(url=url, timeout=5)
+        response = requests.get(url=url, timeout=5,headers=headers)
         response.encoding = 'GB2312'
         VideoHtmlStr = response.text
     except requests.exceptions.Timeout as e:
@@ -139,7 +139,7 @@ def update_msgames_account(account: AccountMinesweeperGames, cooldown):
     htmlStr = None
     try:
         url = f'https://minesweepergame.com/profile.php?pid={id}'
-        response = requests.get(url=url, timeout=5)
+        response = requests.get(url=url, timeout=5,headers=headers)
         htmlStr = response.text
     except requests.exceptions.Timeout as e:
         return "timeout" # 请求超时
@@ -164,7 +164,7 @@ def update_wom_account(account: AccountWorldOfMinesweeper, cooldown):
     url = f'https://minesweeper.online/player/{id}'
     htmlStr = None
     try:
-        response = requests.get(url=url, timeout=5)
+        response = requests.get(url=url, timeout=5,headers=headers)
         htmlStr = response.text
     except requests.exceptions.Timeout as e:
         return "timeout" # 请求超时
