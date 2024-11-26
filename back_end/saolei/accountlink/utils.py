@@ -72,12 +72,12 @@ def update_saolei_account(account: AccountSaolei, cooldown):
     id = account.id
     try:
         url = f'http://saolei.wang/Player/Info.asp?Id={id}'
-        response = requests.get(url=url, timeout=5,headers=headers)
+        response = requests.get(url=url, timeout=5)
         response.encoding = 'GB2312'
         InfoHtmlStr = response.text
 
         url = f'http://saolei.wang/Video/Satus.asp?Id={id}'
-        response = requests.get(url=url, timeout=5,headers=headers)
+        response = requests.get(url=url, timeout=5)
         response.encoding = 'GB2312'
         VideoHtmlStr = response.text
     except requests.exceptions.Timeout as e:
@@ -164,7 +164,7 @@ def update_wom_account(account: AccountWorldOfMinesweeper, cooldown):
     url = f'https://minesweeper.online/player/{id}'
     htmlStr = None
     try:
-        response = requests.get(url=url, timeout=5,headers=headers)
+        response = requests.get(url=url, timeout=5)
         htmlStr = response.text
     except requests.exceptions.Timeout as e:
         return "timeout" # 请求超时
