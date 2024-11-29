@@ -146,11 +146,9 @@ def video_query(request):
 # 按id查询这个用户的所有录像
 @require_GET
 def video_query_by_id(request):
-    id = request.GET.get("id")
-    if not id:
+    if not (id := request.GET.get("id")):
         return HttpResponseBadRequest()
-    user = UserProfile.objects.filter(id=id).first()
-    if not user:
+    if not (user := UserProfile.objects.filter(id=id).first()):
         return HttpResponseNotFound()
     videos = VideoModel.objects.filter(player=user).values('id', 'upload_time', "level", "mode", "timems", "bv", "bvs", "state", "video__identifier", "software", "video__flag", "video__cell0", "video__cell1", "video__cell2", "video__cell3", "video__cell4", "video__cell5", "video__cell6", "video__cell7", "video__cell8", "video__left", "video__right", "video__double", "video__op", "video__isl", "video__path")
     # print(list(videos))
@@ -199,8 +197,7 @@ def freeze_queue(request):
 # 审核通过单个录像
 # check_identifier 为 true 则检查是否要修改玩家标识列表，并在修改后扫描所有待审录像的标识
 def approve_single(videoid, check_identifier=True):
-    video = VideoModel.objects.filter(id=videoid)
-    if not video:
+    if not (video := VideoModel.objects.filter(id=videoid)):
         return None
     video = video[0]
     if video.state == "c":
@@ -255,19 +252,16 @@ def freeze(request):
     if ids := request.GET.get("ids"):
         res = [] 
         for id in ids:
-            v = VideoModel.objects.filter(id=id).first()
-            if not v:
+            if not (v := VideoModel.objects.filter(id=id).first()):
                 res.append("Null")
             else:
                 update_state(v, VideoModel.State.FROZEN)
                 logger.info(f'管理员 {request.user.username}#{request.user.id} 冻结录像#{id}')
         return JsonResponse(res)
     elif user_id := request.GET.get("user_id"): 
-        user = UserProfile.objects.filter(id=user_id).first()
-        if not user:
+        if not (user := UserProfile.objects.filter(id=user_id).first()):
             return HttpResponseNotFound()
-        videos = VideoModel.objects.filter(player=user)
-        for v in videos:
+        for v in VideoModel.objects.filter(player=user):
             update_state(v, VideoModel.State.FROZEN, update_ranking=False)
         update_personal_record_stock(user)
         return HttpResponse()
@@ -282,8 +276,7 @@ for name in [field.name for field in ExpandVideoModel._meta.get_fields()]:
 @require_GET
 @staff_required
 def get_videoModel(request):
-    videolist = VideoModel.objects.filter(id=request.GET["id"]).values(*get_videoModel_fields)
-    if not videolist:
+    if not (videolist := VideoModel.objects.filter(id=request.GET["id"]).values(*get_videoModel_fields)):
         return HttpResponseNotFound()
     return JsonResponse(videolist[0])
     
