@@ -37,11 +37,9 @@ class DecimalEncoder(json.JSONEncoder):
 @ratelimit(key='ip', rate='20/m')
 @require_GET
 def get_info(request):
-    user_id = request.GET.get('id')
-    if not user_id:
+    if not (user_id := request.GET.get('id')):
         return HttpResponseBadRequest()
-    user = UserProfile.objects.filter(id=user_id).first()
-    if not user:
+    if not (user := UserProfile.objects.filter(id=user_id).first()):
         return HttpResponseNotFound()
 
     user.popularity += 1
@@ -54,11 +52,9 @@ def get_info(request):
 @ratelimit(key='ip', rate='15/m')
 @require_GET
 def get_records(request):
-    user_id = request.GET.get('id')
-    if not user_id:
+    if not (user_id := request.GET.get('id')):
         return HttpResponseBadRequest()
-    user = UserProfile.objects.filter(id=user_id).first()
-    if not user:
+    if not (user := UserProfile.objects.filter(id=user_id).first()):
         return HttpResponseNotFound()
     ms_user = user.userms
 
@@ -77,11 +73,9 @@ def get_records(request):
 @require_GET
 def get_info_abstract(request):
     # 此处要防攻击
-    user_id = request.GET.get('id')
-    if not user_id:
+    if not (user_id := request.GET.get('id')):
         return HttpResponseBadRequest()
-    user = UserProfile.objects.filter(id=user_id).first()
-    if not user:
+    if not (user := UserProfile.objects.filter(id=user_id).first()):
         return HttpResponseNotFound()
     ms_user = user.userms
     
@@ -107,11 +101,9 @@ def get_info_abstract(request):
 
 @require_GET
 def get_identifiers(request):
-    id = request.GET.get('id')
-    if not id:
+    if not (id := request.GET.get('id')):
         return HttpResponseBadRequest()
-    user = UserProfile.objects.filter(id=id).first()
-    if not user:
+    if not (user := UserProfile.objects.filter(id=id).first()):
         return HttpResponseNotFound()
     return JsonResponse(user.userms.identifiers, safe=False)
 

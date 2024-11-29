@@ -13,13 +13,9 @@ from userprofile.decorators import login_required_error
 @require_POST
 @login_required_error
 def add_identifier(request):
-    user = UserProfile.objects.filter(id=request.user.id).first()
-    if user == None:
-        return HttpResponseForbidden()
-    identifier_text = request.POST.get('identifier')
-    if identifier_text == None:
+    user = request.user
+    if not (identifier_text := request.POST.get('identifier')):
         return HttpResponseBadRequest()
-    
     identifier = Identifier.objects.filter(identifier=identifier_text).first()
     if not identifier or not identifier.safe:
         return JsonResponse({'type': 'error', 'object': 'identifier', 'category': 'notFound'})
@@ -45,14 +41,10 @@ def add_identifier(request):
 @require_POST
 @login_required_error
 def del_identifier(request):
-    user = UserProfile.objects.filter(id=request.user.id).first()
-    if user == None:
-        return HttpResponseForbidden()
-    identifier_text = request.POST.get('identifier', None)
-    if identifier_text == None:
+    user = request.user
+    if not (identifier_text := request.POST.get('identifier')):
         return HttpResponseBadRequest()
-    identifier = Identifier.objects.filter(identifier=identifier_text).first()
-    if not identifier:
+    if not (identifier := Identifier.objects.filter(identifier=identifier_text).first()):
         return HttpResponseNotFound()
     if identifier.userms.parent.id != user.id:
         return HttpResponseForbidden()

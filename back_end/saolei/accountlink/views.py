@@ -16,13 +16,11 @@ private_platforms = [""] # 私人账号平台
 @ratelimit(key='user', rate='10/d')
 def add_link(request):
     user = UserProfile.objects.filter(id=request.user.id).first()
-    platform = request.POST.get('platform')
-    if platform == None:
+    if not (platform := request.POST.get('platform')):
         return HttpResponseBadRequest()
-    accountlink = AccountLinkQueue.objects.filter(platform=platform, userprofile=user).first()
-    if accountlink:
+    if AccountLinkQueue.objects.filter(platform=platform, userprofile=user).first():
         return HttpResponseConflict() # 每个平台只能绑一个账号
-    accountlink = AccountLinkQueue.objects.create(platform=platform, identifier=request.POST.get('identifier'), userprofile=user)
+    AccountLinkQueue.objects.create(platform=platform, identifier=request.POST.get('identifier'), userprofile=user)
     return HttpResponse()
 
 # 解绑自己的账号，只需要指定平台
@@ -30,11 +28,9 @@ def add_link(request):
 @login_required_error
 def delete_link(request):
     user = UserProfile.objects.filter(id=request.user.id).first()
-    platform = request.POST.get('platform')
-    if platform == None:
+    if not (platform := request.POST.get('platform')):
         return HttpResponseBadRequest()
-    accountlink = AccountLinkQueue.objects.filter(platform=platform, userprofile=user).first()
-    if accountlink:
+    if accountlink := AccountLinkQueue.objects.filter(platform=platform, userprofile=user).first():
         if accountlink.verified:
             delete_account(user, platform)
         accountlink.delete()
@@ -46,14 +42,11 @@ def delete_link(request):
 # 提供id+platform，返回对应账号的详情
 @require_GET
 def get_link(request):
-    userid = request.GET.get("id")
-    if not userid:
+    if not (userid := request.GET.get("id")):
         return HttpResponseBadRequest()
-    user = UserProfile.objects.filter(id=userid).first()
-    if not user:
+    if not (user := UserProfile.objects.filter(id=userid).first()):
         return HttpResponseNotFound()
-    platform = request.GET.get("platform")
-    if platform:
+    if platform := request.GET.get("platform"):
         if platform in private_platforms and not request.user.is_staff and user != request.user:
             return HttpResponseForbidden()
         if platform == Platform.SAOLEI:
@@ -78,14 +71,11 @@ def get_link(request):
 @staff_required
 def verify_link(request):
     userid = request.POST.get("id")
-    user = UserProfile.objects.filter(id=userid).first()
-    if user == None:
+    if not (user := UserProfile.objects.filter(id=userid).first()):
         return HttpResponseNotFound()
-    platform = request.POST.get('platform')
-    if platform == None:
+    if not (platform := request.POST.get('platform')):
         return HttpResponseBadRequest()
-    identifier = request.POST.get('identifier')
-    if identifier == None:
+    if not (identifier := request.POST.get('identifier')):
         return HttpResponseBadRequest()
     collision = AccountLinkQueue.objects.filter(platform=platform,identifier=identifier,verified=True).first()
     if collision: # 该平台该ID已被绑定
@@ -106,11 +96,12 @@ def verify_link(request):
 @staff_required
 def unverify_link(request):
     userid = request.GET.get("id")
-    user = UserProfile.objects.filter(id=userid).first()
-    if not user:
+    if not (user := UserProfile.objects.filter(id=userid).first()):
         return HttpResponseNotFound()
-    platform = request.POST.get('platform')
-    identifier = request.POST.get('identifier')
+    if not (platform := request.POST.get('platform')):
+        return HttpResponseBadRequest()
+    if not (identifier := request.POST.get('identifier')):
+        return HttpResponseBadRequest()
     accountlink = AccountLinkQueue.objects.filter(userprofile=user,platform=platform,identifier=identifier).first()
     if not accountlink:
         return HttpResponseNotFound()
@@ -122,8 +113,7 @@ def unverify_link(request):
 @require_POST
 @login_required_error
 def update_link(request):
-    platform = request.POST.get('platform')
-    if not platform:
+    if not (platform := request.POST.get('platform')):
         return HttpResponseBadRequest()
     status = update_account(platform, request.user)
     if status == '':
