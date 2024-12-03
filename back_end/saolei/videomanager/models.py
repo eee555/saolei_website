@@ -98,7 +98,7 @@ class VideoModel(models.Model):
     timems = models.PositiveIntegerField(default=DefaultRankingScores["timems"]) # 整数形式存储的毫秒数。
     # 0-32767
     bv = models.PositiveSmallIntegerField()
-    bvs = models.FloatField()
+    bvs = models.GeneratedField(expression = models.F('bv') / models.F('timems') * models.Value(1000), output_field = models.FloatField(), db_persist = True)
 
     # 暂时的解决方案
     def __getattr__(self, name):

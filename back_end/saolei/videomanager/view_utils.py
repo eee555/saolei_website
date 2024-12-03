@@ -244,8 +244,7 @@ def new_video(data, user):
         level=data["level"],
         mode=data["mode"] if data["mode"]!="00" else ("12" if data["flag"]==0 else "00"), 
         timems=data["timems"],
-        bv=data["bv"], 
-        bvs=data["bvs"])
+        bv=data["bv"])
     
     # 参考ms_toollib.is_valid的返回值
     if data['review_code'] == 3: # 不确定
