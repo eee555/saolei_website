@@ -86,7 +86,6 @@ interface VideoStat {
     mode: string,
     timems: number,
     bbbv: number,
-    bvs: number,
     identifier: string,
     review_code: number,
 }

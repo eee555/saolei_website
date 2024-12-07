@@ -13,7 +13,6 @@ class UploadVideoForm(forms.Form):
     mode = forms.CharField(max_length=2, required=True)
     timems = forms.IntegerField(required=True)
     bv = forms.IntegerField(max_value=32767, min_value=1, required=True)
-    bvs = forms.FloatField(min_value=0.0, required=True)
 
     identifier = forms.CharField(max_length=80, required=True)
     left = forms.IntegerField(max_value=32767, min_value=0, required=True)

@@ -35,9 +35,7 @@ def user_login(request):
         return JsonResponse({'type': 'error', 'object': 'login', 'category': 'captcha'})
     # 检验账号、密码是否正确匹配数据库中的某个用户
     # 如果均匹配则返回这个 user 对象
-    user = authenticate(
-        username=username, password=data['password'])
-    if not user:
+    if not (user := authenticate(username=username, password=data['password'])):
         logger.info(f'用户 {username} 账密错误')
         return JsonResponse({'type': 'error', 'object': 'login', 'category': 'password'})
     # 将用户数据保存在 session 中，即实现了登录动作
@@ -72,8 +70,7 @@ def user_retrieve(request):
     email = request.POST.get("email")
     if not judge_email_verification(email, email_captcha, emailHashkey):
         return JsonResponse({'type': 'error', 'object': 'emailcode'})
-    user = UserProfile.objects.filter(email=user_retrieve_form.cleaned_data['email']).first()
-    if not user:
+    if not (user := UserProfile.objects.filter(email=user_retrieve_form.cleaned_data['email']).first()):
         return HttpResponseNotFound() # 前端已经查过重了，理论上不应该进到这里
     # 设置密码(哈希)
     user.set_password(user_retrieve_form.cleaned_data['password'])
@@ -172,9 +169,8 @@ def del_user_info(request):
     logger.info(f'管理员 {request.user.username}#{request.user.id} 删除用户 {user.username}#{user.id}')
     user.realname = ""
     user.signature = ""
-    if user.avatar:
-        if os.path.isfile(user.avatar.path):
-            os.remove(user.avatar.path)
+    if user.avatar and os.path.isfile(user.avatar.path):
+        os.remove(user.avatar.path)
     user.avatar = None
 
 # 创建验证码
@@ -209,8 +205,7 @@ def get_email_captcha(request):
     if EMAIL_SKIP:
         code, hashkey = send_email(data.get("email"), data.get("type"))
         return JsonResponse({'type': 'success', 'code': code, 'hashkey': hashkey})
-    hashkey = send_email(data.get("email"), data.get("type"))
-    if hashkey: # 邮件发送成功
+    if hashkey := send_email(data.get("email"), data.get("type")): # 邮件发送成功
         return JsonResponse({'type': 'success', 'hashkey': hashkey})
     else: # 邮件发送失败
         return JsonResponse({'type': 'error', 'object': 'email'})
@@ -222,10 +217,10 @@ get_userProfile_fields = ["id", "userms__identifiers", "userms__video_num_limit"
 @require_GET
 @staff_required
 def get_userProfile(request):
-    userlist = UserProfile.objects.filter(id=request.GET["id"]).values(*get_userProfile_fields)
-    if not userlist:
-        return HttpResponseNotFound()
-    return JsonResponse(userlist[0])
+    if userlist := UserProfile.objects.filter(id=request.GET["id"]).values(*get_userProfile_fields):
+        return JsonResponse(userlist[0])
+    return HttpResponseNotFound()
+    
 
 # 管理员使用的操作接口，调用方式见前端的StaffView.vue
 set_userProfile_fields = ["userms__identifiers", "userms__video_num_limit", "username", "first_name", "last_name", "email", "realname", "signature", "country", "left_realname_n", "left_avatar_n", "left_signature_n", "is_banned"] # 可修改的域列表

@@ -10,6 +10,7 @@ from utils import ComplexEncoder
 from config.global_settings import *
 from utils.cmp import isbetter
 from django.db.models import F, ExpressionWrapper, DecimalField
+from config.text_choices import MS_TextChoices
 
 record_update_fields = []
 for mode in GameModes:
@@ -24,10 +25,10 @@ for name in [field.name for field in ExpandVideoModel._meta.get_fields()]:
 
 # 状态到redis表名的映射
 state2redis = {
-    VideoModel.State.PLAIN: 'review_queue',
-    VideoModel.State.FROZEN: 'freeze_queue',
-    VideoModel.State.IDENTIFIER: 'newest_queue',
-    VideoModel.State.OFFICIAL: 'newest_queue',
+    MS_TextChoices.State.PLAIN: 'review_queue',
+    MS_TextChoices.State.FROZEN: 'freeze_queue',
+    MS_TextChoices.State.IDENTIFIER: 'newest_queue',
+    MS_TextChoices.State.OFFICIAL: 'newest_queue',
 }
 
 # 确定用户破某个纪录后，且对应模式、指标的三个级别全部有录像后，更新redis中的数据
@@ -188,7 +189,7 @@ def update_video_num(video: VideoModel, add = True):
                                "video_num_exp", "video_num_std", "video_num_nf", "video_num_ng", 
                                "video_num_dg"])
 
-def update_state(video: VideoModel, state: VideoModel.State, update_ranking = True):
+def update_state(video: VideoModel, state: MS_TextChoices.State, update_ranking = True):
     prevstate = video.state
     if prevstate == state:
         return
@@ -197,9 +198,9 @@ def update_state(video: VideoModel, state: VideoModel.State, update_ranking = Tr
     video.push_redis(state2redis[state])
     video.save()
     logger.info(f'录像#{video.id} 状态 从 {prevstate} 到 {state}')
-    if state == VideoModel.State.OFFICIAL:
+    if state == MS_TextChoices.State.OFFICIAL:
         update_personal_record(video)
-    elif update_ranking and prevstate == VideoModel.State.OFFICIAL:
+    elif update_ranking and prevstate == MS_TextChoices.State.OFFICIAL:
         update_personal_record_stock(video)
     
 def new_video(data, user):
@@ -243,8 +244,7 @@ def new_video(data, user):
         level=data["level"],
         mode=data["mode"] if data["mode"]!="00" else ("12" if data["flag"]==0 else "00"), 
         timems=data["timems"],
-        bv=data["bv"], 
-        bvs=data["bvs"])
+        bv=data["bv"])
     
     # 参考ms_toollib.is_valid的返回值
     if data['review_code'] == 3: # 不确定

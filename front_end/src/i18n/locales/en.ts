@@ -116,6 +116,7 @@ export default {
             empty: 'Empty data',
             indexerror: 'Failed to extract data',
             timeout: 'Cannot connect to the platform',
+            title: 'Update failed',
             unknown: 'Unknown error',
         },
         verified: 'Verified',

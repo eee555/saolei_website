@@ -21,13 +21,13 @@
                     <GitHubUser username="putianyi889" />
                 </div>
                 <div>
+                    <GitHubUser username="ljzloser" />
+                </div>
+                <div>
                     <GitHubUser username="hwatson381" />
                 </div>
                 <div>
                     <GitHubUser username="hgraceb" />
-                </div>
-                <div>
-                    <GitHubUser username="ljzloser" />
                 </div>
             </el-col>
             <el-col :span="8">
