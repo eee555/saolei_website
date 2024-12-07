@@ -7,6 +7,7 @@ from django_redis import get_redis_connection
 cache = get_redis_connection("saolei_website")
 import json
 from utils import ComplexEncoder
+from config.text_choices import MS_TextChoices
 
 class ExpandVideoModel(models.Model):
     # video = models.OneToOneField(VideoModel, on_delete=models.CASCADE)
@@ -73,30 +74,6 @@ class ExpandVideoModel(models.Model):
 
 # 基本的录像模型，最小限度展示录像信息
 class VideoModel(models.Model):
-    class Mode(models.TextChoices):
-        STD = '00', ('标准')
-        UPK = '01', ('upk')
-        WQ = '04', ('win7')
-        JSW = '05', ('竞速无猜')
-        QWC = '06', ('强无猜')
-        RWC = '07', ('弱无猜')
-        ZWC = '08', ('准无猜')
-        QKC = '09', ('强可猜')
-        RKC = '10', ('弱可猜')
-        BZD = '11', ('标准递归')
-        NF = '12', ('标准盲扫')
-
-    class State(models.TextChoices):
-        PLAIN = "a", ('已上传但未审核')
-        FROZEN = "b", ('审核未通过，被冻结')
-        OFFICIAL = "c", ('已通过审核')
-        IDENTIFIER = "d", ('标识不匹配')
-
-    class Level(models.TextChoices):
-        BEGINNER = "b", ('初级')
-        INTERMEDIATE = "i", ('中级')
-        EXPERT = "e", ('高级')
-        CUSTOM = "c", ('自定义')
     # 用户
     player = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     # 服务器端文件相对路径
@@ -108,22 +85,20 @@ class VideoModel(models.Model):
     upload_time = models.DateTimeField(auto_now_add=True, verbose_name="上传时间")
     # 审核状态
     state = models.CharField(
-        max_length=1, choices=State.choices, default=State.PLAIN)
+        max_length=1, choices=MS_TextChoices.State.choices, default=MS_TextChoices.State.PLAIN)
     # 软件: "a"->avf; "e"->evf
     software = models.CharField(max_length=MaxSizes.software)
     # 难度
-    level = models.CharField(max_length=MaxSizes.gamelevel, choices=Level.choices)
+    level = models.CharField(max_length=MaxSizes.gamelevel, choices=MS_TextChoices.Level.choices)
     # 游戏模式，evf标准
     # https://github.com/eee555/ms_toollib/tree/main/base#readme
     mode = models.CharField(
-        max_length=MaxSizes.gamemode, choices=Mode.choices, default=Mode.STD)
-    # # 无猜
-    # nf = models.BooleanField()
+        max_length=MaxSizes.gamemode, choices=MS_TextChoices.Mode.choices, default=MS_TextChoices.Mode.STD)
     # 0.000-999.999
     timems = models.PositiveIntegerField(default=DefaultRankingScores["timems"]) # 整数形式存储的毫秒数。
     # 0-32767
     bv = models.PositiveSmallIntegerField()
-    bvs = models.FloatField()
+    bvs = models.GeneratedField(expression = models.F('bv') / models.F('timems') * models.Value(1000), output_field = models.FloatField(), db_persist = True)
 
     # 暂时的解决方案
     def __getattr__(self, name):

@@ -1,26 +1,35 @@
 <template>
+    <!-- 标识管理UI -->
+    <!-- 表格第一列显示标识，用等宽字体。最后一行用来输入新的标识。第二列放操作按钮 -->
     <div class="flex gap-2">
         <el-table :data="identifierdata">
+            <!-- 标识列 -->
             <el-table-column prop="data" sortable>
                 <template #default="scope">
-                    <el-input v-if="scope.row.data === ''" size="small" style="width: 200px"
+                    <!-- 左margin是为了补偿输入框内文本的偏移 -->
+                    <el-input v-if="scope.row.data === ''" size="small" style="width: 200px;margin-left: -7px"
+                        input-style="font-family: 'Courier New', Courier, monospace;"
                         v-model="new_identifiers"></el-input>
                 </template>
             </el-table-column>
+            <!-- 操作列 -->
             <el-table-column>
                 <template #default="scope">
+                    <!-- 添加标识 -->
                     <el-link v-if="scope.row.data === ''" :underline="false"
                         @click="addIdentifier(new_identifiers)"><el-icon>
                             <Plus />
                         </el-icon></el-link>
+                    <!-- 复制标识 -->
                     <el-link v-else :underline="false" @click="copyToClipboard(scope.row.data)">
                         <el-icon>
                             <CopyDocument />
                         </el-icon>
                     </el-link>
                     &nbsp;
-                    <el-link v-if="store.player.id == store.user.id && scope.row.data !== ''" :underline="false" type="danger"
-                        @click="delIdentifier(scope.row.data)">
+                    <!-- 删除标识 -->
+                    <el-link v-if="store.player.id == store.user.id && scope.row.data !== ''" :underline="false"
+                        type="danger" @click="delIdentifier(scope.row.data)">
                         <el-icon>
                             <Delete />
                         </el-icon>
@@ -55,10 +64,7 @@ const identifierdata = computed(() => {
 })
 
 function delIdentifier(identifier: string) {
-    proxy.$axios.post('identifier/del/',
-        {
-            identifier: identifier
-        }
+    proxy.$axios.post('identifier/del/', { identifier: identifier }
     ).then(function (response) {
         store.player.identifiers = removeItem(store.player.identifiers, identifier);
         ElNotification({
@@ -70,10 +76,7 @@ function delIdentifier(identifier: string) {
 }
 
 function addIdentifier(identifier: string) {
-    proxy.$axios.post('identifier/add/',
-        {
-            identifier: identifier,
-        }
+    proxy.$axios.post('identifier/add/', { identifier: identifier, }
     ).then(function (response) {
         if (response.data.type === 'success') {
             store.player.identifiers.push(new_identifiers.value);
@@ -106,6 +109,7 @@ function addIdentifier(identifier: string) {
 <style lang="less" scoped>
 ::v-deep(.el-table .el-table__cell) {
     font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
     padding: 0;
     margin: 0;
 }

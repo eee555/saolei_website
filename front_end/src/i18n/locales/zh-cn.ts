@@ -116,6 +116,7 @@ export default {
             empty: '数据为空',
             indexerror: '数据解析失败',
             timeout: '无法连接到目标服务器',
+            title: '更新失败',
             unknown: '发生未知错误',
         },
         verified: '已验证',

@@ -144,7 +144,6 @@ const push_video_msg = async (uploadFile: UploadFile | UploadRawFile) => {
             mode: String(aa.get_mode).padStart(2, '0'),
             timems: aa.get_rtime_ms,
             bbbv: aa.get_bbbv,
-            bvs: aa.get_bbbv_s,
             identifier: decoder.decode(aa.get_player_identifier),
             review_code: aa.is_valid(),
         }
@@ -231,7 +230,6 @@ const forceUpload = async (i: number) => {
     params.append("mode", video.videostat.mode);
     params.append("timems", video.videostat.timems.toString());
     params.append("bv", video.videostat.bbbv.toString());
-    params.append("bvs", video.videostat.bvs.toString());
     params.append("identifier", video.videostat.identifier);
     for (let prop of extfields) {
         params.append(prop, video.extstat[prop].toString());
