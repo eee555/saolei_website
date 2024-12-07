@@ -20,6 +20,13 @@
                     {{ $t('common.software.metasweeper') }} v3.1.11</a> {{ $t('common.software.download_link') }} 2<br>
                 {{ $t('common.software.metasweeper_int2') }}
             </li>
+            <li><a style="color: blue;" target="_blank" href="https://gitee.com/ee55/Metasweeper/releases/download/3.2.0/Metaminesweeper-3.2.0.exe">
+                    {{ $t('common.software.metasweeper') }} v3.2.0</a> {{ $t('common.software.download_link') }} 1<br>
+                <a style="color: blue;" target="_blank"
+                    href="https://github.com/eee555/Metasweeper/releases/download/3.2.0/Metaminesweeper-3.2.0.exe">
+                    {{ $t('common.software.metasweeper') }} v3.2.0</a> {{ $t('common.software.download_link') }} 2<br>
+                {{ $t('common.software.metasweeper_int2') }}
+            </li>
             <li><a style="color: blue;" target="_blank" href="https://fff666.top/download/Arbiter_0.52.3.zip">Arbiter
                     v0.52.3</a><br>
                 {{ $t('common.software.arbiter_int') }}
