@@ -55,5 +55,8 @@ jobs:
     - name: Flags
       run: python -m unittest tests.py -v
 
+    - name: Video Manager
+      run: python manage.py test videomanager
+      
     - name: Account Link
       run: python manage.py test accountlink
