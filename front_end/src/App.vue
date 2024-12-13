@@ -103,7 +103,7 @@ onMounted(() => {
     }
 
     console.log(`
-  开源扫雷网(fff666.top)开发团队，期待您的加入: 2234208506@qq.com
+  开源扫雷网(openms.top)开发团队，期待您的加入: 2234208506@qq.com
   `);
     router.isReady().then(() => {
         menu_index.value = router.currentRoute.value.fullPath;
