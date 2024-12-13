@@ -42,7 +42,8 @@ Front end:
 1. Download the latest flop player from [https://github.com/eee555/flop-player/releases/download/v1.1/dist.zip](https://github.com/eee555/flop-player/releases/download/v1.1/dist.zip) and unzip it to `saolei_website\front_end\public\flop` (rename the folder name `dist` to `flop`), such that `saolei_website\front_end\public\flop\index.html` is accessible.
 1. `cd saolei_website\front_end`
 1. `npm install`
-1. `npm run dev`
+1. `npm run dev` to test front-end with local back-end.
+2. `npm run frontend` to test front-end with remote back-end. CORS from the browser has to be unblocked. It is recommended to use the "CORS unblock" Chrome extension.
 
 Special debugging parameters are located in `backend\saolei\config\flags.py`
 
