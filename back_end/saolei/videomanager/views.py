@@ -4,7 +4,7 @@ logger = logging.getLogger('videomanager')
 from django.contrib.auth.decorators import login_required
 from .forms import UploadVideoForm
 from .models import VideoModel, ExpandVideoModel
-from .view_utils import update_personal_record, update_personal_record_stock, video_all_fields, update_video_num, update_state, new_video
+from .view_utils import update_personal_record, update_personal_record_stock, video_all_fields, update_video_num, update_state, new_video, refresh_video
 from userprofile.models import UserProfile
 from django.http import HttpResponse, JsonResponse, FileResponse, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseNotFound
 import json, urllib
@@ -298,5 +298,22 @@ def set_videoModel(request):
     video.save()
     return HttpResponse()
 
+@require_POST
+@staff_required
+def update_videoModel(request):
+    videoid = request.POST.get("id")
+    if not (video := VideoModel.objects.filter(id=videoid).first()):
+        return HttpResponseNotFound()
+    refresh_video(video)
+    return HttpResponse()
 
-
+@require_POST
+def refresh_all_videoModel(request):
+    if not request.user.is_superuser:
+        return HttpResponseForbidden()
+    for video in VideoModel.objects.all():
+        try:
+            refresh_video(video)
+        except:
+            return JsonResponse({'type': 'error', 'value': video.id})
+    return JsonResponse({'type': 'success'})

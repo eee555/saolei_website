@@ -97,8 +97,31 @@ class VideoModel(models.Model):
     # 0.000-999.999
     timems = models.PositiveIntegerField(default=DefaultRankingScores["timems"]) # 整数形式存储的毫秒数。
     # 0-32767
-    bv = models.PositiveSmallIntegerField()
+    bv = models.PositiveSmallIntegerField(null=True)
     bvs = models.GeneratedField(expression = models.Case(models.When(timems=0,then=models.Value(0.0)), default=models.F('bv') / models.F('timems') * models.Value(1000), output_field = models.FloatField()), output_field = models.FloatField(), db_persist = True)
+
+    left = models.PositiveSmallIntegerField(null=True)
+    right = models.PositiveSmallIntegerField(null=True)
+    double = models.PositiveSmallIntegerField(null=True)
+
+    left_ce = models.PositiveSmallIntegerField(null=True)
+    right_ce = models.PositiveSmallIntegerField(null=True)
+    double_ce = models.PositiveSmallIntegerField(null=True)
+
+    path = models.FloatField(null=True)
+    flag = models.PositiveSmallIntegerField(null=True)
+    op = models.PositiveSmallIntegerField(null=True)
+    isl = models.PositiveSmallIntegerField(null=True)
+
+    cell0 = models.PositiveSmallIntegerField(null=True)
+    cell1 = models.PositiveSmallIntegerField(null=True)
+    cell2 = models.PositiveSmallIntegerField(null=True)
+    cell3 = models.PositiveSmallIntegerField(null=True)
+    cell4 = models.PositiveSmallIntegerField(null=True)
+    cell5 = models.PositiveSmallIntegerField(null=True)
+    cell6 = models.PositiveSmallIntegerField(null=True)
+    cell7 = models.PositiveSmallIntegerField(null=True)
+    cell8 = models.PositiveSmallIntegerField(null=True)
 
     # 暂时的解决方案
     def __getattr__(self, name):
