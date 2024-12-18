@@ -8,10 +8,11 @@ cache = get_redis_connection("saolei_website")
 import json
 from utils import ComplexEncoder
 from config.text_choices import MS_TextChoices
+from config.global_settings import MaxSizes
 
 class ExpandVideoModel(models.Model):
     # video = models.OneToOneField(VideoModel, on_delete=models.CASCADE)
-    identifier = models.CharField(max_length=80)
+    identifier = models.CharField(max_length=MaxSizes.identifier)
     # 0-32767
     left = models.PositiveSmallIntegerField()
     right = models.PositiveSmallIntegerField()
