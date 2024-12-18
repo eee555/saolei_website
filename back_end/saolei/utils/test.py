@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock
 import time
-from wom import WOM
+from .wom import WOM
 import json
 
 
