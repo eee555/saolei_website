@@ -24,6 +24,7 @@
         <el-input-number v-model="videoid" :controls="false" :min="0"></el-input-number>
         <el-button @click="getVideo">查询</el-button>
         <el-button @click="preview(videoid)">播放</el-button>
+        <el-button @click="updateVideo(videoid)">更新</el-button>
     </div>
     <div>
         域<el-select v-model="videofield">
@@ -61,7 +62,7 @@ const userfieldlist = ["username", "first_name", "last_name", "email", "realname
 const userprofile = ref({});
 
 const getUser = () => {
-    proxy.$axios.get('userprofile/get', {params: {id: userid.value}}).then(
+    proxy.$axios.get('userprofile/get', { params: { id: userid.value } }).then(
         function (response: any) {
             userprofile.value = response.data;
         }
@@ -69,7 +70,7 @@ const getUser = () => {
 }
 
 const setUser = (id: number, field: string, value: string) => {
-    proxy.$axios.post('userprofile/set/', {id: id, field: field, value: value}).then(
+    proxy.$axios.post('userprofile/set/', { id: id, field: field, value: value }).then(
         function (response: any) {
             successNotification(response);
             getUser();
@@ -84,20 +85,24 @@ const videofieldlist = ["player", "upload_time", "state"]; // 可以修改的域
 const videomodel = ref({});
 
 const getVideo = () => {
-    proxy.$axios.get('video/get', {params: {id: videoid.value}}).then(
+    proxy.$axios.get('video/get', { params: { id: videoid.value } }).then(
         function (response: any) {
             videomodel.value = response.data;
         }
     ).catch(httpErrorNotification)
 }
 
+function setVideoResponse(response: any) {
+    successNotification(response);
+    getVideo();
+}
+
 const setVideo = (id: number, field: string, value: string) => {
-    proxy.$axios.post('video/set/', {id: id, field: field, value: value}).then(
-        function (response: any) {
-            successNotification(response);
-            getVideo();
-        }
-    ).catch(httpErrorNotification)
+    proxy.$axios.post('video/set/', { id: id, field: field, value: value }).then(setVideoResponse).catch(httpErrorNotification)
+}
+
+const updateVideo = (id: number) => {
+    proxy.$axios.post('video/update/', { id: id }).then(setVideoResponse).catch(httpErrorNotification)
 }
 
 </script>
