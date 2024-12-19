@@ -1,17 +1,17 @@
 <template>
     <el-text v-if="level == 'b'">
         <LazyTooltip content="8x8/10" :hide-after="0" :show-after="500">
-            {{ $t('common.level.b') }}
+            {{ t('common.level.b') }}
         </LazyTooltip>
     </el-text>
     <el-text v-else-if="level == 'i'">
         <LazyTooltip content="16x16/40" :hide-after="0" :show-after="500">
-            {{ $t('common.level.i') }}
+            {{ t('common.level.i') }}
         </LazyTooltip>
     </el-text>
     <el-text v-else-if="level == 'e'">
         <LazyTooltip content="30x16/99" :hide-after="0" :show-after="500">
-            {{ $t('common.level.e') }}
+            {{ t('common.level.e') }}
         </LazyTooltip>
     </el-text>
     <el-text v-else type="danger">
@@ -31,5 +31,5 @@ const data = defineProps({
     },
 });
 
-const t = useI18n();
+const { t } = useI18n();
 </script>

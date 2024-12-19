@@ -4,7 +4,7 @@
 -->
 <template>
     <!-- 图形验证码 -->
-    <el-form-item :disabled="!email_success" :label="$t('form.imageCaptcha')" ref="captchaFormRef">
+    <el-form-item :disabled="!email_success" :label="t('form.imageCaptcha')" ref="captchaFormRef">
         <div style="display: flex">
             <el-input v-model.trim="captcha" prefix-icon="Key" class="code" maxlength="6"
                 @input="captchaHandler"></el-input>
@@ -13,16 +13,16 @@
         </div>
     </el-form-item>
     <!-- 邮箱验证码 -->
-    <el-form-item prop="emailCode" :label="$t('form.emailCode')" ref="emailCodeFormRef">
+    <el-form-item prop="emailCode" :label="t('form.emailCode')" ref="emailCodeFormRef">
         <div style="display: flex">
             <el-input v-model.trim="emailCode" prefix-icon="Key" maxlength="6" :disabled="!email_success"
-                @input="emailCodeHandler" :placeholder="$t(email_code_placeholder)"></el-input>
+                @input="emailCodeHandler" :placeholder="t(email_code_placeholder)"></el-input>
             &nbsp;
             <el-button @click="getEmailCaptcha(type)" :disabled="send_email_code_button_disabled || counting">
                 <vue-countdown v-if="counting" :time="60000" @end="counting = false;" v-slot="{ totalSeconds }">
                     ({{ totalSeconds }})
                 </vue-countdown>
-                <span v-else>{{ $t('common.button.send') }}</span>
+                <span v-else>{{ t('common.button.send') }}</span>
             </el-button>
         </div>
     </el-form-item>
@@ -55,7 +55,7 @@ const prop = defineProps({
 const emailCode = defineModel();
 
 const { proxy } = useCurrentInstance();
-const t = useI18n();
+const { t } = useI18n();
 
 const captcha = ref(''); // 图形验证码
 const hashkey = ref(''); // 邮箱验证码hash
@@ -72,16 +72,16 @@ const validateState = computed(() => { return emailCodeFormRef.value!.validateSt
 
 // 由外部验证后，若不正确则传入修改验证状态
 const errorCode = () => {
-    validateError(emailCodeFormRef, t.t('msg.emailCodeInvalid'))
+    validateError(emailCodeFormRef, t('msg.emailCodeInvalid'))
 }
 
 defineExpose({ validateState, hashkey, errorCode })
 
 const email_code_placeholder = computed(() => {
-    if (prop.emailState !== 'success') return t.t('msg.emailRequired');
-    else if (captchaFormRef.value?.validateState !== 'success') return t.t('msg.captchaRequired');
-    else if (email_handling.value) return t.t('msg.pleaseWait');
-    else if (email_success.value) return t.t('msg.pleaseSeeEmail');
+    if (prop.emailState !== 'success') return t('msg.emailRequired');
+    else if (captchaFormRef.value?.validateState !== 'success') return t('msg.captchaRequired');
+    else if (email_handling.value) return t('msg.pleaseWait');
+    else if (email_success.value) return t('msg.pleaseSeeEmail');
     else return '';
 })
 const send_email_code_button_disabled = computed(() => {
@@ -92,12 +92,12 @@ const send_email_code_button_disabled = computed(() => {
 })
 
 const captchaHandler = (value: string) => {
-    if (value.length == 0) validateError(captchaFormRef, t.t('msg.captchaRequired'));
+    if (value.length == 0) validateError(captchaFormRef, t('msg.captchaRequired'));
     else validateSuccess(captchaFormRef);
 }
 
 const emailCodeHandler = (value: string) => {
-    if (value.length == 0) validateError(emailCodeFormRef, t.t('msg.emailCodeRequired'));
+    if (value.length == 0) validateError(emailCodeFormRef, t('msg.emailCodeRequired'));
     else validateSuccess(emailCodeFormRef);
 }
 
@@ -105,7 +105,7 @@ const getEmailCaptcha = (type: string) => {
     if (prop.emailState !== 'success') return;
     if (email_success.value) {
         refreshCaptcha();
-        validateError(captchaFormRef, t.t('msg.captchaRefresh'));
+        validateError(captchaFormRef, t('msg.captchaRefresh'));
         email_success.value = false;
         return;
     }
@@ -123,21 +123,21 @@ const getEmailCaptcha = (type: string) => {
             hashkey.value = data.hashkey;
             email_success.value = true;
             ElNotification({
-                title: t.t('msg.emailSendSuccessTitle'),
-                message: t.t('msg.emailSendSuccessMsg'),
+                title: t('msg.emailSendSuccessTitle'),
+                message: t('msg.emailSendSuccessMsg'),
                 type: 'warning',
                 duration: local.notification_duration,
             })
         } else if (data.type == 'error') {
             refreshCaptcha();
             if (data.object == 'captcha') {
-                validateError(captchaFormRef, t.t('msg.captchaFail'));
+                validateError(captchaFormRef, t('msg.captchaFail'));
                 counting.value = false;
             } else if (data.object == 'email') {
-                validateError(captchaFormRef, t.t('msg.captchaRefresh'));
+                validateError(captchaFormRef, t('msg.captchaRefresh'));
                 ElNotification({
-                    title: t.t('msg.emailSendFailTitle'),
-                    message: t.t('msg.emailSendFailMsg'),
+                    title: t('msg.emailSendFailTitle'),
+                    message: t('msg.emailSendFailMsg'),
                     type: 'error',
                     duration: local.notification_duration,
                 })

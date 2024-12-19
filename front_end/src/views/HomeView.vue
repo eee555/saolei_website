@@ -6,7 +6,7 @@
                     <el-tab-pane style="max-height: 300px; overflow: auto;user-select: none;"
                         v-loading="news_queue_status == 1">
                         <template #label>
-                            {{ $t('home.news') }}&nbsp;
+                            {{ t('home.news') }}&nbsp;
                             <el-text v-if="news_queue_status == 2" type="success"><el-icon>
                                     <Check />
                                 </el-icon></el-text>
@@ -23,9 +23,9 @@
                             <PlayerName class="name" style="vertical-align: top;" :user_id="+news.player_id"
                                 :user_name="news.player" />
                             <el-text style="vertical-align: middle;">
-                                {{ $t('news.breakRecordTo', {
-                                    mode: $t('common.mode.' + news.mode), level:
-                                        $t('common.level.' + news.level), stat: $t('common.prop.' + news.index)
+                                {{ t('news.breakRecordTo', {
+                                    mode: t('common.mode.' + news.mode), level:
+                                        t('common.level.' + news.level), stat: t('common.prop.' + news.index)
                                 }) }}
                             </el-text>
                             <PreviewNumber :id="news.video_id" :text="to_fixed_n(news.value, 3)" />
@@ -39,7 +39,7 @@
                 <el-tabs type="border-card" style="margin-top: 2%;" v-model="active_tab">
                     <el-tab-pane class="bottom_tabs" :lazy="true" name="newest" v-loading="newest_queue_status == 1">
                         <template #label>
-                            {{ $t('home.latestScore') }}&nbsp;
+                            {{ t('home.latestScore') }}&nbsp;
                             <el-text v-if="newest_queue_status == 2" type="success"><el-icon>
                                     <Check />
                                 </el-icon></el-text>
@@ -52,7 +52,7 @@
                         <VideoList :videos="newest_queue" :reverse="true" upload_time="time" :show-header="false">
                         </VideoList>
                     </el-tab-pane>
-                    <el-tab-pane :label="$t('home.reviewQueue')" class="bottom_tabs" :lazy="true" name="review">
+                    <el-tab-pane :label="t('home.reviewQueue')" class="bottom_tabs" :lazy="true" name="review">
                         <VideoList :videos="review_queue" :review_mode="store.user.is_staff"
                             @update="update_review_queue" v-loading="review_queue_updating"></VideoList>
                     </el-tab-pane>
@@ -118,7 +118,7 @@ import Groups from "@/components/dialogs/Groups.vue";
 import { store } from '../store'
 
 import { useI18n } from 'vue-i18n';
-const t = useI18n();
+const { t } = useI18n();
 
 const review_queue = ref<any[]>([]);
 const newest_queue = ref<any[]>([]);

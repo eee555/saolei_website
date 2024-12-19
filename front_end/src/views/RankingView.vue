@@ -1,30 +1,30 @@
 <template>
     <el-row class="mb-4" style="margin-bottom: 10px;">
         <el-button v-for="(tag, key) in mode_tags" type="success" :plain="!(mode_tag_selected == key)" :size="'small'"
-            @click="mode_tag_selected = key as string; get_player_rank(1);">{{ $t('common.mode.' + tag.key) }}</el-button>
+            @click="mode_tag_selected = key as string; get_player_rank(1);">{{ t('common.mode.' + tag.key) }}</el-button>
     </el-row>
 
     <el-row class="mb-4" style="margin-bottom: 10px;">
         <el-button v-for="(tag, key) in index_tags" type="primary" :plain="!(index_tag_selected == key)" :size="'small'"
-            @click="index_tag_selected = key as string; mod_style(); get_player_rank(1);">{{ $t('common.prop.' + tag.key)
+            @click="index_tag_selected = key as string; mod_style(); get_player_rank(1);">{{ t('common.prop.' + tag.key)
             }}</el-button>
     </el-row>
 
     <div style="width: 80%;font-size:20px;margin: auto;margin-top: 10px;user-select: none;">
         <div style="border-bottom: 1px solid #555555;padding-bottom: 10px;">
             <span class="rank"></span>
-            <span class="name">{{ $t('common.prop.realName') }}</span>
+            <span class="name">{{ t('common.prop.realName') }}</span>
             <span class="number_wid" :style="{ color: (level_selected === 'b' ? 'rgb(64, 158, 255)' : '') }"
-                @click="setSortDirect('b')">{{ $t('common.level.b') }}{{
+                @click="setSortDirect('b')">{{ t('common.level.b') }}{{
             level_selected === "b" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
             <span class="number_wid" :style="{ color: (level_selected === 'i' ? 'rgb(64, 158, 255)' : '') }"
-                @click="setSortDirect('i')">{{ $t('common.level.i') }}{{
+                @click="setSortDirect('i')">{{ t('common.level.i') }}{{
             level_selected === "i" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
             <span class="number_wid" :style="{ color: (level_selected === 'e' ? 'rgb(64, 158, 255)' : '') }"
-                @click="setSortDirect('e')">{{ $t('common.level.e') }}{{
+                @click="setSortDirect('e')">{{ t('common.level.e') }}{{
             level_selected === "e" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
             <span class="sum_title" :style="{ color: (level_selected === 'sum' ? 'rgb(64, 158, 255)' : '') }"
-                @click="setSortDirect('sum')">{{ $t('common.level.sum') }}{{
+                @click="setSortDirect('sum')">{{ t('common.level.sum') }}{{
             level_selected === "sum" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
         </div>
         <div v-for="(player, key) in playerData" style="margin-top: 10px;">
@@ -69,6 +69,9 @@ import PreviewNumber from '@/components/PreviewNumber.vue';
 import PlayerName from '@/components/PlayerName.vue';
 // const AsyncPlayerName = defineAsyncComponent(() => import('@/components/PlayerName.vue'))
 const { proxy } = useCurrentInstance();
+
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 // const level_tag_selected = ref("EXPERT");
 const mode_tag_selected = ref("STD");

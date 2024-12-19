@@ -1,6 +1,6 @@
 <template>
     <el-text v-if="state == 'd'" type="warning">
-        <LazyTooltip :content="$t('common.state.d')" :hide-after="0" :show-after="500">
+        <LazyTooltip :content="t('common.state.d')" :hide-after="0" :show-after="500">
             <Warning />
         </LazyTooltip>
     </el-text>
@@ -24,5 +24,5 @@ const data = defineProps({
     },
 });
 
-const t = useI18n();
+const { t } = useI18n();
 </script>

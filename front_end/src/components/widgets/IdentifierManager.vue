@@ -55,7 +55,7 @@ import { copyToClipboard } from './CopyToClipboard';
 
 const { proxy } = useCurrentInstance();
 const new_identifiers = ref("")
-const t = useI18n();
+const { t } = useI18n();
 
 const identifierdata = computed(() => {
     let data = store.player.identifiers ? store.player.identifiers.map(value => ({ data: value })) : [];
@@ -68,8 +68,8 @@ function delIdentifier(identifier: string) {
     ).then(function (response) {
         store.player.identifiers = removeItem(store.player.identifiers, identifier);
         ElNotification({
-            title: t.t('identifierManager.delIdentifierSuccess'),
-            message: t.t('identifierManager.processedNVideos', [response.data.value]),
+            title: t('identifierManager.delIdentifierSuccess'),
+            message: t('identifierManager.processedNVideos', [response.data.value]),
             type: 'success'
         })
     }).catch(httpErrorNotification)
@@ -81,20 +81,20 @@ function addIdentifier(identifier: string) {
         if (response.data.type === 'success') {
             store.player.identifiers.push(new_identifiers.value);
             ElNotification({
-                title: t.t('identifierManager.addIdentifierSuccess'),
-                message: t.t('identifierManager.processedNVideos', [response.data.value]),
+                title: t('identifierManager.addIdentifierSuccess'),
+                message: t('identifierManager.processedNVideos', [response.data.value]),
                 type: 'success'
             })
             store.new_identifier = false;
         } else if (response.data.category === 'notFound') {
             ElNotification({
-                title: t.t('identifierManager.notFound'),
+                title: t('identifierManager.notFound'),
                 type: 'error',
             })
         } else if (response.data.category === 'conflict') {
             ElNotification({
-                title: t.t('identifierManager.conflict'),
-                message: t.t('identifierManager.ownedBy', [response.data.value]),
+                title: t('identifierManager.conflict'),
+                message: t('identifierManager.ownedBy', [response.data.value]),
                 type: 'error',
             })
         } else {

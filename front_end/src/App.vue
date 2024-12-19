@@ -9,7 +9,7 @@
                         <el-image v-if="!local.menu_icon" class="logo2" :src="logo_2" :fit="'cover'" />
                     </el-menu-item>
                     <el-menu-item v-for="item in menu_items" :index="'/' + item.index">
-                        <IconMenuItem :text="$t(item.content)" :icon="item.icon" />
+                        <IconMenuItem :text="t(item.content)" :icon="item.icon" />
                     </el-menu-item>
                     <div style="flex-grow: 1" />
                     <el-menu-item :index="player_url" v-if="store.user.id != 0">
@@ -17,7 +17,7 @@
                     </el-menu-item>
                     <el-menu-item index="/settings" style="padding-left: 8px; padding-right: 5px">
                         <el-badge is-dot :hidden="true" :offset="[0,15]">
-                            <IconMenuItem :text="$t('menu.setting')" icon="Setting" />
+                            <IconMenuItem :text="t('menu.setting')" icon="Setting" />
                         </el-badge>
                     </el-menu-item>
                     <LanguagePicker v-show="local.language_show" style="padding-left: 8px; padding-right: 8px;" />
@@ -59,9 +59,6 @@ import PlayerDialog from "./components/PlayerDialog.vue";
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import { store, local } from "./store";
 
-import { useI18n } from "vue-i18n";
-const t = useI18n();
-
 const { proxy } = useCurrentInstance();
 import logo_1 from "@/assets/logo.png";
 import logo_2 from "@/assets/logo2.png";
@@ -72,6 +69,9 @@ const router = useRouter();
 import { useDark, useToggle } from '@vueuse/core';
 const isDark = useDark()
 useToggle(isDark)
+
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 // const player_visible = ref(false)
 const notice_visible = ref(false);

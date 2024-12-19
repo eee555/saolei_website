@@ -4,25 +4,25 @@
         <el-row style="margin-bottom: 15px">
             <el-col :span="8">
                 <div style="padding-bottom: 5px"><strong>
-                    {{ $t('footer.about') }}
+                    {{ t('footer.about') }}
                 </strong></div>
                 <Thanks />
                 <!-- <div><el-link href="https://github.com/eee555/Solvable-Minesweeper">{{ $t('common.software.metasweeper')
                         }}</el-link></div> -->
                 <div style="padding-bottom: 5px; margin-top: 8px;"><strong>
-                    {{ $t('common.software.resource_download') }}
+                    {{ t('common.software.resource_download') }}
                 </strong></div>
                 <Downloads />
             </el-col>
             <el-col :span="8">
-                <div style="padding-bottom: 5px"><strong>{{ $t('footer.contact') }}</strong></div>
+                <div style="padding-bottom: 5px"><strong>{{ t('footer.contact') }}</strong></div>
                 <div><el-link href="https://github.com/eee555/saolei_website" target="_blank">GitHub</el-link></div>
                 <div><el-link href="https://gitee.com/ee55/saolei_website" target="_blank">Gitee</el-link></div>
                 <div><el-link href="https://discord.gg/ks8ngPX5bT" target="_blank">Discord</el-link></div>
                 <div><el-link href="https://qm.qq.com/q/hNShGUQkJG" target="_blank">QQ</el-link></div>
             </el-col>
             <el-col :span="8">
-                <div style="padding-bottom: 5px"><strong>{{ $t('footer.links') }}</strong></div>
+                <div style="padding-bottom: 5px"><strong>{{ t('footer.links') }}</strong></div>
                 <div><el-link href="http://saolei.wang" target="_blank">扫雷网 saolei.wang</el-link></div>
                 <div><el-link href="https://minesweepergame.com" target="_blank">Authoritative Minesweeper</el-link>
                 </div>
@@ -47,5 +47,8 @@
 
 import Thanks from './dialogs/Thanks.vue';
 import Downloads from './dialogs/Downloads.vue';
+
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 </script>
