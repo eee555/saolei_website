@@ -3,14 +3,14 @@
         <el-table-column type="expand">
             <template #default="props">
                 <el-text v-if="!props.row.verified" type="info" style="margin-left:50px">{{
-                    $t('accountlink.unverifiedText') }}</el-text>
+                    t('accountlink.unverifiedText') }}</el-text>
                 <el-text v-else-if="props.row.data === undefined" type="info" style="margin-left:50px">No Data</el-text>
                 <AccountSaolei v-else-if="props.row.platform == 'c'" :data="props.row.data" />
                 <AccountMsgames v-else-if="props.row.platform == 'a'" :data="props.row.data" />
                 <AccountWoM v-else-if="props.row.platform == 'w'" :data="props.row.data" />
             </template>
         </el-table-column>
-        <el-table-column :label="$t('accountlink.platform')">
+        <el-table-column :label="t('accountlink.platform')">
             <template #default="scope">
                 <PlatformIcon :platform="scope.row.platform" />
             </template>
@@ -22,21 +22,21 @@
                     scope.row.identifier }}</el-link>
             </template>
         </el-table-column>
-        <el-table-column v-if="store.player.id == store.user.id || store.user.is_staff" :label="$t('common.prop.status')">
+        <el-table-column v-if="store.player.id == store.user.id || store.user.is_staff" :label="t('common.prop.status')">
             <template #default="scope">
-                <el-tooltip v-if="scope.row.verified" :content="$t('accountlink.verified')">
+                <el-tooltip v-if="scope.row.verified" :content="t('accountlink.verified')">
                     <el-text type="success"><el-icon>
                             <CircleCheck />
                         </el-icon></el-text>
                 </el-tooltip>
-                <el-tooltip v-else :content="$t('accountlink.unverified')">
+                <el-tooltip v-else :content="t('accountlink.unverified')">
                     <el-text><el-icon>
                             <Clock />
                         </el-icon></el-text>
                 </el-tooltip>
             </template>
         </el-table-column>
-        <el-table-column v-if="store.player.id == store.user.id" :label="$t('common.prop.action')">
+        <el-table-column v-if="store.player.id == store.user.id" :label="t('common.prop.action')">
             <template #default="scope">
                 <el-link :underline="false" @click.prevent="deleteRow(scope.row)" type="danger"><el-icon>
                         <Delete />
@@ -54,10 +54,10 @@
             <Plus />
         </el-icon>
     </el-button>
-    <el-dialog v-model="formvisible" :title="$t('accountlink.addLink')"
+    <el-dialog v-model="formvisible" :title="t('accountlink.addLink')"
         @closed="form.platform = ''; form.identifier = '';" width="500px">
         <el-form :model="form">
-            <el-form-item :label="$t('accountlink.platform')">
+            <el-form-item :label="t('accountlink.platform')">
                 <el-select v-model="form.platform">
                     <el-option v-for="(item, key) of platformlist" :value="key" :label="item.name"
                         :disabled="userHasPlatform(key)" />
@@ -71,8 +71,8 @@
             </el-form-item>
             <el-form-item>
                 <el-button type="primary" :disabled="!formValid" @click.prevent="addLink(); formvisible = false;">{{
-                    $t('common.button.confirm') }}</el-button>
-                <el-button @click.prevent="formvisible = false">{{ $t('common.button.cancel') }}</el-button>
+                    t('common.button.confirm') }}</el-button>
+                <el-button @click.prevent="formvisible = false">{{ t('common.button.cancel') }}</el-button>
             </el-form-item>
         </el-form>
     </el-dialog>
@@ -91,6 +91,7 @@ import AccountSaolei from './accountlinks/AccountSaolei.vue';
 import AccountMsgames from './accountlinks/AccountMsgames.vue';
 import AccountWoM from './accountlinks/AccountWoM.vue';
 import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 interface AccountLink {
     platform: Platform;
@@ -100,7 +101,6 @@ interface AccountLink {
 }
 
 const { proxy } = useCurrentInstance();
-const t = useI18n();
 const accountlinks = ref<AccountLink[]>([]);
 const formvisible = ref(false);
 const form = reactive({
@@ -167,7 +167,7 @@ const updateRow = (row: any) => {
         else if (data.type == 'error') {
             ElNotification({
                 title: '更新失败',
-                message: t.t('accountlink.updateError.' + data.category),
+                message: t('accountlink.updateError.' + data.category),
                 type: 'error',
                 duration: local.notification_duration,
             })
