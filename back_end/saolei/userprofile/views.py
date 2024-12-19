@@ -50,7 +50,7 @@ def user_login(request):
 # 用cookie登录
 def user_login_auto(request):
     if request.user.is_authenticated:
-        return JsonResponse({'id': request.user.id, 'username': request.user.username, 'realname': request.user.realname, 'is_banned': request.user.is_banned, 'is_staff': request.user.is_staff})
+        return JsonResponse(user_metadata(request.user))
     return HttpResponse()
 
 def user_logout(request):
