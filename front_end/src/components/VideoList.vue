@@ -2,7 +2,7 @@
     <el-table :data="videos_trans" :show-header="showHeader" @row-click="(row: any) => preview(row.key)"
         table-layout="auto" style="width: 100%;font-size: 16px;user-select: none;">
         <el-table-column prop="state" width="40"
-            :filters="[{ text: $t('common.state.c'), value: 'c' }, { text: $t('common.state.d'), value: 'd' }]"
+            :filters="[{ text: t('common.state.c'), value: 'c' }, { text: t('common.state.d'), value: 'd' }]"
             :filter-method="defaultFilterMethod">
             <template #default="scope">
                 <VideoStateIcon :state="scope.row.state" />
@@ -21,14 +21,14 @@
             </template>
         </el-table-column>
         <el-table-column
-            :filters="[{ text: $t('common.level.b'), value: 'b' }, { text: $t('common.level.i'), value: 'i' }, { text: $t('common.level.e'), value: 'e' }]"
+            :filters="[{ text: t('common.level.b'), value: 'b' }, { text: t('common.level.i'), value: 'i' }, { text: t('common.level.e'), value: 'e' }]"
             :filter-method="defaultFilterMethod" :filter-multiple="false">
             <template #default="scope">
                 <GameLevelIcon :level="scope.row.level" />
             </template>
         </el-table-column>
-        <el-table-column prop="mode" :formatter="simple_formatter((mode: string) => $t('common.mode.' + mode))"
-            :filters="[{ text: $t('common.mode.std'), value: 'std' }, { text: $t('common.mode.nf'), value: 'nf' }, { text: $t('common.mode.ng'), value: 'ng' }, { text: $t('common.mode.dg'), value: 'dg' }]"
+        <el-table-column prop="mode" :formatter="simple_formatter((mode: string) => t('common.mode.' + mode))"
+            :filters="[{ text: t('common.mode.std'), value: 'std' }, { text: t('common.mode.nf'), value: 'nf' }, { text: t('common.mode.ng'), value: 'ng' }, { text: t('common.mode.dg'), value: 'dg' }]"
             :filter-method="defaultFilterMethod" :filter-multiple="false" />
         <el-table-column prop="timems" :formatter="simple_formatter((timems: number) => (ms_to_s(timems) + 's'))"
             sortable />
@@ -55,7 +55,7 @@ import { preview } from '@/utils/common/PlayerDialog';
 import { ms_to_s, simple_formatter, defaultFilterMethod } from '@/utils';
 import { useI18n } from 'vue-i18n';
 
-const t = useI18n();
+const { t } = useI18n();
 
 const data = defineProps({
     videos: {
