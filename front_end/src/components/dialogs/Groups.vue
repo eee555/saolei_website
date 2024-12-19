@@ -1,7 +1,7 @@
 <!-- 已弃用 -->
 
 <template>
-    <span class="text-button" @click="centerDialogVisible = true;">{{ $t('menu.groups') }}</span>
+    <span class="text-button" @click="centerDialogVisible = true;">{{ t('menu.groups') }}</span>
     <el-dialog v-model="centerDialogVisible" title="扫码加入QQ群" width="50%" align-center draggable :lock-scroll="false">
         <div style="text-align: center;">
             <el-image style="border-radius: 20px;" :src="imageGroup1" :fit="'cover'" />
@@ -26,7 +26,7 @@ import imageGroup1 from '@/assets/group_1.jpg'
 
 
 import { useI18n } from 'vue-i18n';
-const t = useI18n();
+const { t } = useI18n();
 
 const centerDialogVisible = ref(false);
 
