@@ -1,7 +1,7 @@
 <template>
     <el-row class="mb-4" style="margin-bottom: 10px;">
         <el-button v-for="(tag, key) in level_tags" type="warning" :plain="!(level_tag_selected == key)" :size="'small'"
-            @click="level_tag_selected = key as string; request_videos();">{{ $t('common.level.' + tag.key)
+            @click="level_tag_selected = key as string; request_videos();">{{ t('common.level.' + tag.key)
             }}</el-button>
     </el-row>
 
@@ -12,15 +12,15 @@
 
     <el-row class="mb-4" style="margin-bottom: 10px;">
         <el-button v-for="(value, key) in index_tags" type="primary" :plain="!value.selected" size="small"
-            @click="index_select(key, value)">{{ $t('common.prop.' + key)
+            @click="index_select(key, value)">{{ t('common.prop.' + key)
             }}</el-button>
     </el-row>
 
-    <el-descriptions :title="$t('common.filter')">
-        <el-descriptions-item :label="$t('common.prop.state')">
+    <el-descriptions :title="t('common.filter')">
+        <el-descriptions-item :label="t('common.prop.state')">
             <VideoStateFilter v-model="videofilter.filter_state" @change="request_videos" />
         </el-descriptions-item>
-        <el-descriptions-item :label="$t('common.prop.bbbv')">
+        <el-descriptions-item :label="t('common.prop.bbbv')">
             <BBBVFilter @change="request_videos" :level="level_tags[level_tag_selected].key"/>
         </el-descriptions-item>
     </el-descriptions>
@@ -31,7 +31,7 @@
             <el-table-column type="index" :index="offsetIndex" fixed></el-table-column>
             <VideoViewRealname />
             <el-table-column v-for="key in selected_index()" :prop="index_tags[key].key"
-                :label="$t('common.prop.' + key)" sortable="custom"
+                :label="t('common.prop.' + key)" sortable="custom"
                 :sort-orders="index_tags[key].reverse ? (['descending', 'ascending']) : (['ascending', 'descending'])"
                 v-slot="scope">
                 <span class="nobr">{{ columnFormatter(key, scope.row[index_tags[key].key]) }}</span>
@@ -64,7 +64,7 @@ import { ms_to_s } from "@/utils";
 import { preview } from '@/utils/common/PlayerDialog';
 
 import { useI18n } from 'vue-i18n';
-const t = useI18n();
+const { t } = useI18n();
 
 import { videofilter } from '@/store';
 import { httpErrorNotification } from '@/components/Notifications';

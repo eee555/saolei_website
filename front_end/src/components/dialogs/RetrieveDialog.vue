@@ -1,5 +1,5 @@
 <template>
-    <el-dialog v-model="visible" :title="$t('login.retrieveTitle')" width="400px" align-center draggable
+    <el-dialog v-model="visible" :title="t('login.retrieveTitle')" width="400px" align-center draggable
         :lock-scroll="false" @close='resetForm(ruleFormRef)'>
         <el-form :model="retrieveForm" ref="ruleFormRef" status-icon>
             <!-- 邮箱 -->
@@ -12,7 +12,7 @@
             <!-- 确认 -->
             <el-form-item>
                 <el-button type="primary" @click="submitForm(ruleFormRef)" :disabled="confirm_disabled">{{
-                    $t('login.retrieveConfirm') }}</el-button>
+                    t('login.retrieveConfirm') }}</el-button>
             </el-form-item>
         </el-form>
     </el-dialog>
@@ -32,7 +32,7 @@ const visible = defineModel();
 const emit = defineEmits(['login']);
 
 const { proxy } = useCurrentInstance();
-const t = useI18n();
+const { t } = useI18n();
 
 const emailFormRef = ref<typeof ElFormItem>();
 const emailCodeFormRef = ref<typeof emailCodeBlock>();
@@ -73,7 +73,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
         if (data.type == 'success') {
             emit('login', data.user)
             ElNotification({
-                title: t.t('msg.passwordChanged'),
+                title: t('msg.passwordChanged'),
                 type: 'success',
                 duration: local.notification_duration,
             })

@@ -14,6 +14,7 @@ class MaxSizes:
     gamelevel = 1 # 级别（初中高）
     gamemode = 2 # 模式（无猜）
     gametime = 6 # 时间（毫秒）
+    identifier = 80 # 标识
     lastname = 255
     password = 20 # 密码
     signature = 4095 # 个性签名的长度，考虑了一些比较啰嗦的语言。

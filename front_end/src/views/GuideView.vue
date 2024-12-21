@@ -7,7 +7,7 @@
                         <el-icon>
                             <Document />
                         </el-icon>
-                        <span>{{ $t('guide.announcement') }}</span>
+                        <span>{{ t('guide.announcement') }}</span>
                     </template>
                     <template v-for="(item, idx) in notice_list">
                         <el-menu-item v-if="item.name[0] == '['" :index="`1-${idx + 1}`">
@@ -26,7 +26,7 @@
                         <el-icon>
                             <Guide />
                         </el-icon>
-                        <span>{{ $t('guide.tutorial') }}</span>
+                        <span>{{ t('guide.tutorial') }}</span>
                     </template>
                     <template v-for="(item, idx) in guide_list">
                         <el-menu-item v-if="item.name[0] == '['" :index="`2-${idx + 1}`">
@@ -45,7 +45,7 @@
                         <el-icon>
                             <Cpu />
                         </el-icon>
-                        <span>{{ $t('guide.skill') }}</span>
+                        <span>{{ t('guide.skill') }}</span>
                     </template>
                     <template v-for="(item, idx) in tech_list">
                         <el-menu-item v-if="item.name[0] == '['" :index="`3-${idx + 1}`">
@@ -64,7 +64,7 @@
                         <el-icon>
                             <Grid />
                         </el-icon>
-                        <span>{{ $t('guide.other') }}</span>
+                        <span>{{ t('guide.other') }}</span>
                     </template>
                     <template v-for="(item, idx) in other_list">
                         <el-menu-item v-if="item.name[0] == '['" :index="`4-${idx + 1}`">
@@ -120,7 +120,7 @@ import anchor from 'markdown-it-anchor'
 // 局面数字的svg数据，原始尺寸都是160*160
 import { cells } from "@/utils/common/cellSVGData";
 import { useI18n } from 'vue-i18n';
-const t = useI18n();
+const { t } = useI18n();
 
 const isCollapse = ref(false);
 

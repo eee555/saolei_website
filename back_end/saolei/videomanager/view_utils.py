@@ -11,6 +11,7 @@ from config.global_settings import *
 from utils.cmp import isbetter
 from django.db.models import F, ExpressionWrapper, DecimalField
 from config.text_choices import MS_TextChoices
+import ms_toollib as ms
 
 record_update_fields = []
 for mode in GameModes:
@@ -263,3 +264,45 @@ def new_video(data, user):
         video.push_redis("newest_queue")
         update_personal_record(video)
         update_video_num(video)
+
+def refresh_video(video: VideoModel):
+    if video.file.path.endswith('.avf'):
+        v = ms.AvfVideo(video.file.path)
+        video.software = 'a'
+    elif video.file.path.endswith('.evf'):
+        v = ms.EvfVideo(video.file.path)
+        video.software = 'e'
+    else:
+        return
+    v.parse_video()
+    v.analyse()
+    v.current_time = 1e8
+    
+    video.timems = v.rtime_ms
+    video.bv = v.bbbv
+
+    video.left = v.left
+    video.right = v.right
+    video.double = v.double
+
+    video.left_ce = v.lce
+    video.right_ce = v.rce
+    video.double_ce = v.dce
+
+    video.path = v.path
+    video.flag = v.flag
+    video.op = v.op
+    video.isl = v.isl
+
+    video.cell0 = v.cell0
+    video.cell1 = v.cell1
+    video.cell2 = v.cell2
+    video.cell3 = v.cell3
+    video.cell4 = v.cell4
+    video.cell5 = v.cell5
+    video.cell6 = v.cell6
+    video.cell7 = v.cell7
+    video.cell8 = v.cell8
+
+    video.save()
+

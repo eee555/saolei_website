@@ -1,6 +1,6 @@
 from django import forms
 from .models import VideoModel
-from django.contrib.auth.models import User
+from config.global_settings import MaxSizes
 
 
 class UploadVideoForm(forms.Form):
@@ -13,8 +13,8 @@ class UploadVideoForm(forms.Form):
     mode = forms.CharField(max_length=2, required=True)
     timems = forms.IntegerField(required=True)
     bv = forms.IntegerField(max_value=32767, min_value=1, required=True)
+    identifier = forms.CharField(max_length=MaxSizes.identifier, required=True)
 
-    identifier = forms.CharField(max_length=80, required=True)
     left = forms.IntegerField(max_value=32767, min_value=0, required=True)
     right = forms.IntegerField(max_value=32767, min_value=0, required=True)
     double = forms.IntegerField(max_value=32767, min_value=0, required=True)

@@ -16,6 +16,8 @@ urlpatterns = [
     # path('freeze/', views.freeze, name='freeze'),
     path('get/',views.get_videoModel),
     path('set/',views.set_videoModel),
+    path('update/',views.update_videoModel),
+    path('refresh_all/', views.refresh_all_videoModel),
     # path('download/', views.video_download, name='download'),
     
 ]

@@ -1,15 +1,15 @@
 <template>
     <el-button v-if="store.login_status != LoginStatus.IsLogin" @click.stop="login_visible = true" class="fakemenuitem"
         text size="small">
-        {{ $t('menu.login') }}
+        {{ t('menu.login') }}
     </el-button>
     <el-button v-if="store.login_status != LoginStatus.IsLogin" @click.stop="register_visible = true"
         style="margin-left: 0px;" class="fakemenuitem" text size="small">
-        {{ $t('menu.register') }}
+        {{ t('menu.register') }}
     </el-button>
     <el-button v-if="store.login_status == LoginStatus.IsLogin" @click.stop="logout();" class="fakemenuitem" text
         size="small">
-        {{ $t('menu.logout') }}
+        {{ t('menu.logout') }}
     </el-button>
     <!-- 以下的所有表单的输入项都需要@keydown.stop，解决horizontal菜单截留空格操作的问题。 -->
     <!-- https://github.com/element-plus/element-plus/issues/10172#issuecomment-1295794523 -->
@@ -34,7 +34,7 @@ import { useI18n } from 'vue-i18n';
 import { deepCopy } from '@/utils';
 import RegisterDialog from './dialogs/RegisterDialog.vue';
 import { httpErrorNotification } from './Notifications';
-const t = useI18n();
+const { t } = useI18n();
 
 // 登录对话框是否出现
 const login_visible = ref(false);
@@ -108,7 +108,7 @@ const logout = async () => {
             loading: true,
         };
         emit('logout'); // 向父组件发送消息
-        ElMessage.success({ message: t.t('common.msg.logoutSuccess'), offset: 68 });
+        ElMessage.success({ message: t('common.msg.logoutSuccess'), offset: 68 });
         register_visible.value = false;
         login_visible.value = false;
         retrieve_visible.value = false;

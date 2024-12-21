@@ -20,8 +20,6 @@
 <script lang="ts" setup name="LanguagePicker">
 import { onBeforeMount } from "vue";
 import i18n from "@/i18n";
-import { useI18n } from "vue-i18n";
-const t = useI18n();
 
 import { local } from "@/store";
 
