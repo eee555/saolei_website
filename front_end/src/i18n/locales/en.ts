@@ -136,9 +136,9 @@ export default {
         about: 'About',
     },
     form: {
-        captcha: 'captcha',
-        confirmPassword: 'confirm password',
-        email: 'email',
+        captcha: 'Captcha',
+        confirmPassword: 'Confirm password',
+        email: 'Email',
         emailCode: 'Email code',
         imageCaptcha: 'Image captcha',
         password: 'Password',
