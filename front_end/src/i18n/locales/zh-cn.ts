@@ -49,6 +49,7 @@ export default {
             identifier: '标识',
             fileName: '文件名',
             is: '岛',
+            isl: '岛',
             level: '级别',
             mastery: '动态胜率',
             op: '空',

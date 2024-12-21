@@ -244,8 +244,28 @@ def new_video(data, user):
         software=data["software"], 
         level=data["level"],
         mode=data["mode"] if data["mode"]!="00" else ("12" if data["flag"]==0 else "00"), 
+
         timems=data["timems"],
-        bv=data["bv"])
+        bv=data["bv"],
+        left=data["left"], 
+        right=data["right"],
+        double=data["double"], 
+        left_ce=data["left_ce"],
+        right_ce=data["right_ce"],
+        double_ce=data["double_ce"],
+        path=data["path"], 
+        flag=data["flag"],
+        op=data["op"], 
+        isl=data["isl"],
+        cell0=data["cell0"], 
+        cell1=data["cell1"],
+        cell2=data["cell2"], 
+        cell3=data["cell3"],
+        cell4=data["cell4"], 
+        cell5=data["cell5"],
+        cell6=data["cell6"], 
+        cell7=data["cell7"],
+        cell8=data["cell8"])
     
     # 参考ms_toollib.is_valid的返回值
     if data['review_code'] == 3: # 不确定
