@@ -93,7 +93,7 @@ def checkPB(video: VideoModel, user: UserMS, userprof: UserProfile, mode):
             checkRanking(userprof, user, mode, statname)
 
 def update_personal_record(video: VideoModel):
-    if video.state != VideoModel.State.OFFICIAL:
+    if video.state != MS_TextChoices.State.OFFICIAL:
         return
     e_video = video.video
     user = video.player

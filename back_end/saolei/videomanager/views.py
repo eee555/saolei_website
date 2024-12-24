@@ -17,6 +17,7 @@ from django.conf import settings
 from identifier.utils import verify_identifier
 from django.views.decorators.http import require_GET, require_POST
 from userprofile.decorators import banned_blocked, staff_required, login_required_error
+from config.text_choices import MS_TextChoices
 
 @require_POST
 @login_required_error
@@ -245,14 +246,14 @@ def freeze(request):
             if not (v := VideoModel.objects.filter(id=id).first()):
                 res.append("Null")
             else:
-                update_state(v, VideoModel.State.FROZEN)
+                update_state(v, MS_TextChoices.State.FROZEN)
                 logger.info(f'管理员 {request.user.username}#{request.user.id} 冻结录像#{id}')
         return JsonResponse(res)
     elif user_id := request.GET.get("user_id"): 
         if not (user := UserProfile.objects.filter(id=user_id).first()):
             return HttpResponseNotFound()
         for v in VideoModel.objects.filter(player=user):
-            update_state(v, VideoModel.State.FROZEN, update_ranking=False)
+            update_state(v, MS_TextChoices.State.FROZEN, update_ranking=False)
         update_personal_record_stock(user)
         return HttpResponse()
     else:
