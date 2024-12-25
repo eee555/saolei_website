@@ -91,10 +91,7 @@ const logout = async () => {
     proxy.$axios.post('/userprofile/logout/',
         {},
     ).then(function (response) {
-        // login_status.value = LoginStatus.NotLogin;
-        // mutations.updateLoginStatus(LoginStatus.NotLogin);
         store.login_status = LoginStatus.NotLogin;
-        // const player = store.user;
         store.user = {
             id: 0,
             username: "",

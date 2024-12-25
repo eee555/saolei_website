@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
 logger = logging.getLogger('videomanager')
-from django.contrib.auth.decorators import login_required
 from .forms import UploadVideoForm
 from .models import VideoModel, ExpandVideoModel
 from .view_utils import update_personal_record, update_personal_record_stock, video_all_fields, update_video_num, update_state, new_video, refresh_video
@@ -10,35 +9,27 @@ from django.http import HttpResponse, JsonResponse, FileResponse, HttpResponseFo
 import json, urllib
 from utils import ComplexEncoder
 from django.core.paginator import Paginator
-from msuser.models import UserMS
 from django.db.models import Q
-# import os
-# import time
-from datetime import datetime
-# from django.core.cache import cache
 from django_redis import get_redis_connection
 cache = get_redis_connection("saolei_website")
-from django.shortcuts import render, redirect
-# https://django-ratelimit.readthedocs.io/en/stable/rates.html
 from django_ratelimit.decorators import ratelimit
-from django.utils import timezone
-# import ms_toollib as ms
 from django.conf import settings
 from identifier.utils import verify_identifier
 from django.views.decorators.http import require_GET, require_POST
-from userprofile.decorators import banned_blocked, staff_required
+from userprofile.decorators import banned_blocked, staff_required, login_required_error
+from config.text_choices import MS_TextChoices
 
-@login_required(login_url='/')
-@ratelimit(key='ip', rate='5/s')
 @require_POST
+@login_required_error
 @banned_blocked
+@ratelimit(key='ip', rate='5/s')
 def video_upload(request):
     if request.user.userms.video_num_total >= request.user.userms.video_num_limit:
         return HttpResponse(status = 402) # 录像仓库已满
             
     video_form = UploadVideoForm(data=request.POST, files=request.FILES)
     if not video_form.is_valid():
-        return HttpResponseBadRequest()
+        return HttpResponseBadRequest(video_form.errors)
     data = video_form.cleaned_data
     identifier = data["identifier"]
     if not verify_identifier(identifier): # 标识不过审
@@ -255,14 +246,14 @@ def freeze(request):
             if not (v := VideoModel.objects.filter(id=id).first()):
                 res.append("Null")
             else:
-                update_state(v, VideoModel.State.FROZEN)
+                update_state(v, MS_TextChoices.State.FROZEN)
                 logger.info(f'管理员 {request.user.username}#{request.user.id} 冻结录像#{id}')
         return JsonResponse(res)
     elif user_id := request.GET.get("user_id"): 
         if not (user := UserProfile.objects.filter(id=user_id).first()):
             return HttpResponseNotFound()
         for v in VideoModel.objects.filter(player=user):
-            update_state(v, VideoModel.State.FROZEN, update_ranking=False)
+            update_state(v, MS_TextChoices.State.FROZEN, update_ranking=False)
         update_personal_record_stock(user)
         return HttpResponse()
     else:
