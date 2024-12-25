@@ -9,7 +9,6 @@ class UploadVideoForm(forms.ModelForm):
     # upload_time = forms.DateTimeField(auto_now_add=True, verbose_name="上传时间")
     review_code = forms.IntegerField(max_value=255, min_value=0, required=True)
     identifier = forms.CharField(max_length=MaxSizes.identifier, required=True)
-
     cl = forms.IntegerField(max_value=32767, min_value=0, required=True)
     left_s = forms.FloatField(min_value=0.0, required=True)
     right_s = forms.FloatField(min_value=0.0, required=True)
