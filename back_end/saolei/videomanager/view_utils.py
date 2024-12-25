@@ -86,7 +86,7 @@ def checkRanking(userprof: UserProfile, user: UserMS, mode, statname):
 def checkPB(video: VideoModel, user: UserMS, userprof: UserProfile, mode):
     for statname in RankingGameStats:
         stat = getattr(video, statname)
-        if isbetter(statname, stat, user.getrecord(video.level, statname, mode)):
+        if stat != None and isbetter(statname, stat, user.getrecord(video.level, statname, mode)):
             update_news_queue(userprof, user, video, statname, mode)
             user.setrecord(video.level, statname, mode, stat)
             user.setrecordID(video.level, statname, mode, video.video.id)
