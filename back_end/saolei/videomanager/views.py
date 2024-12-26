@@ -141,7 +141,7 @@ def video_query_by_id(request):
         return HttpResponseBadRequest()
     if not (user := UserProfile.objects.filter(id=id).first()):
         return HttpResponseNotFound()
-    videos = VideoModel.objects.filter(player=user).values('id', 'upload_time', "level", "mode", "timems", "bv", "bvs", "state", "video__identifier", "software", "video__flag", "video__cell0", "video__cell1", "video__cell2", "video__cell3", "video__cell4", "video__cell5", "video__cell6", "video__cell7", "video__cell8", "video__left", "video__right", "video__double", "video__op", "video__isl", "video__path")
+    videos = VideoModel.objects.filter(player=user).values('id', 'upload_time', "level", "mode", "timems", "bv", "bvs", "state", "video__identifier", "software", "flag", "cell0", "cell1", "cell2", "cell3", "cell4", "cell5", "cell6", "cell7", "cell8", "left", "right", "double", "op", "isl", "path")
     # print(list(videos))
 
     return JsonResponse(list(videos), safe=False)

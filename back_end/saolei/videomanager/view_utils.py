@@ -20,7 +20,7 @@ for mode in GameModes:
             record_update_fields.append(f"{level}_{stat}_{mode}")
             record_update_fields.append(f"{level}_{stat}_id_{mode}")
 
-video_all_fields = ["id", "upload_time", "player__id", "player__realname", "timems", "bv", "bvs", "state"]
+video_all_fields = ["id", "upload_time", "player__id", "player__realname", "timems", "bv", "bvs", "state", "level", "mode", "software", "flag", "op", "isl", "path", "left", "right", "double", "left_ce", "right_ce", "double_ce", "cell0", "cell1", "cell2", "cell3", "cell4", "cell5", "cell6", "cell7", "cell8", "left_s", "right_s", "double_s", "left_ces", "right_ces", "double_ces", "flag_s"]
 for name in [field.name for field in ExpandVideoModel._meta.get_fields()]:
     video_all_fields.append("video__" + name)
 
@@ -207,35 +207,13 @@ def update_state(video: VideoModel, state: MS_TextChoices.State, update_ranking 
 def new_video(data, user):
     e_video = ExpandVideoModel.objects.create(
         identifier=data["identifier"],
-        left=data["left"], 
-        right=data["right"],
-        double=data["double"], 
-        cl=data["cl"],
-        left_s=data["left_s"], 
-        right_s=data["right_s"],
-        double_s=data["double_s"], 
         cl_s=data["cl_s"],
-        path=data["path"], 
-        flag=data["flag"],
-        flag_s=data["flag_s"], 
         stnb=data["stnb"],
         rqp=data["rqp"], 
         ioe=data["ioe"],
         thrp=data["thrp"], 
         corr=data["corr"],
-        ce=data["ce"], 
-        ce_s=data["ce_s"],
-        op=data["op"], 
-        isl=data["isl"],
-        cell0=data["cell0"], 
-        cell1=data["cell1"],
-        cell2=data["cell2"], 
-        cell3=data["cell3"],
-        cell4=data["cell4"], 
-        cell5=data["cell5"],
-        cell6=data["cell6"], 
-        cell7=data["cell7"],
-        cell8=data["cell8"])
+        ce_s=data["ce_s"],)
     video = VideoModel.objects.create(
         player=user, 
         file=data["file"], 
