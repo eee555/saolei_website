@@ -131,13 +131,7 @@ export interface UploadVideoForm {
     cell8: number,
 
     // to be discarded
-    left_s: number,
-    right_s: number,
-    double_s: number,
-    flag_s: number,
-    cl: number,
     cl_s: number,
-    ce: number,
     ce_s: number,
     stnb: number,
     rqp: number,
@@ -183,13 +177,7 @@ export function upload_form(file: UploadRawFile, video: AvfVideo | EvfVideo | nu
         cell7: video.get_cell7,
         cell8: video.get_cell8,
 
-        left_s: video.get_left_s,
-        right_s: video.get_right_s,
-        double_s: video.get_double_s,
-        flag_s: video.get_flag_s,
-        cl: video.get_cl,
         cl_s: video.get_cl_s,
-        ce: video.get_ce,
         ce_s: video.get_ce_s,
         stnb: video.get_stnb,
         rqp: video.get_rqp,
