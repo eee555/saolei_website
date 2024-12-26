@@ -94,6 +94,10 @@ class VideoModel(models.Model):
     right_s = models.GeneratedField(expression = divideByTimeExpression(models.F('right')), output_field = models.FloatField(), db_persist = True)
     double_s = models.GeneratedField(expression = divideByTimeExpression(models.F('double')), output_field = models.FloatField(), db_persist = True)
 
+    left_ces = models.GeneratedField(expression = divideByTimeExpression(models.F('left_ce')), output_field = models.FloatField(), db_persist = True)
+    right_ces = models.GeneratedField(expression = divideByTimeExpression(models.F('right_ce')), output_field = models.FloatField(), db_persist = True)
+    double_ces = models.GeneratedField(expression = divideByTimeExpression(models.F('double_ce')), output_field = models.FloatField(), db_persist = True)
+
     path = models.FloatField(null=True)
     flag = models.PositiveSmallIntegerField(null=True)
     op = models.PositiveSmallIntegerField(null=True)
