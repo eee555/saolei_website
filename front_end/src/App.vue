@@ -206,7 +206,7 @@ body {
 
 @media (min-width: 1024px) {  
   .common-layout {  
-    padding: 1.5em max(20vw, 200px);
+    padding: 1.5em min(15vw, 150px);
     /* 这里设置只在大屏幕（电脑端）上生效的样式 */  
   }  
 }
