@@ -32,12 +32,12 @@ const options = [
 ];
 
 onBeforeMount(() => {
-    i18n.global.locale.value = local.language;
+    i18n.global.locale.value = local.value.language;
 });
 
 const changeLanguage = (value: any) => {
     i18n.global.locale.value = value;
-    local.language = value;
+    local.value.language = value;
 };
 </script>
 

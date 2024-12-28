@@ -126,7 +126,7 @@ const getEmailCaptcha = (type: string) => {
                 title: t('msg.emailSendSuccessTitle'),
                 message: t('msg.emailSendSuccessMsg'),
                 type: 'warning',
-                duration: local.notification_duration,
+                duration: local.value.notification_duration,
             })
         } else if (data.type == 'error') {
             refreshCaptcha();
@@ -139,7 +139,7 @@ const getEmailCaptcha = (type: string) => {
                     title: t('msg.emailSendFailTitle'),
                     message: t('msg.emailSendFailMsg'),
                     type: 'error',
-                    duration: local.notification_duration,
+                    duration: local.value.notification_duration,
                 })
             }
         }

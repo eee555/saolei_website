@@ -23,7 +23,7 @@ export const httpErrorNotification = (error: any) => {
             title: t('msg.actionFail'),
             message: t(notificationMessage[status]),
             type: 'error',
-            duration: local.notification_duration,
+            duration: local.value.notification_duration,
         })
     } else {
         unknownErrorNotification(error)
@@ -36,7 +36,7 @@ export const successNotification = (response: any) => {
         ElNotification({
             title: t('msg.actionSuccess'),
             type: 'success',
-            duration: local.notification_duration,
+            duration: local.value.notification_duration,
         })
     } else {
         unknownErrorNotification(response)
@@ -49,6 +49,6 @@ export const unknownErrorNotification = (error: any) => {
         title: t('msg.unknownError'),
         message: error,
         type: 'error',
-        duration: local.notification_duration,
+        duration: local.value.notification_duration,
     })
 }

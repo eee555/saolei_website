@@ -125,7 +125,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
             ElNotification({
                 title: t('msg.registerSuccess'),
                 type: 'success',
-                duration: local.notification_duration,
+                duration: local.value.notification_duration,
             })
         } else if (data.type === 'error') {
             if (data.object === 'emailcode') {

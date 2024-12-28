@@ -236,7 +236,7 @@ const handleSortChange = (sort: any) => {
 }
 
 const handleSizeChange = (val: number) => {
-    videofilter.pagesize = val;
+    videofilter.value.pagesize = val;
     request_videos();
 }
 
@@ -246,7 +246,7 @@ const handleCurrentChange = (val: number) => {
 }
 
 const offsetIndex = (index: number) => {
-    return index + 1 + (state.CurrentPage - 1) * videofilter.pagesize;
+    return index + 1 + (state.CurrentPage - 1) * videofilter.value.pagesize;
 }
 
 // 根据配置，刷新当前页面的录像表
@@ -256,14 +256,14 @@ const request_videos = () => {
     params["mode"] = mode_tags[mode_tag_selected.value].key;
     params["o"] = index_tags[index_tag_selected.value].key;
     params["r"] = state.ReverseOrder;
-    params["ps"] = videofilter.pagesize;
+    params["ps"] = videofilter.value.pagesize;
     params["page"] = state.CurrentPage;
     // @ts-expect-error
-    params["bmin"] = videofilter.bbbv_range[level_tags[level_tag_selected.value].key][0];
+    params["bmin"] = videofilter.value.bbbv_range[level_tags[level_tag_selected.value].key][0];
     // @ts-expect-error
-    params["bmax"] = videofilter.bbbv_range[level_tags[level_tag_selected.value].key][1];
-    if (![0,4].includes(videofilter.filter_state.length)) {
-        params['s'] = videofilter.filter_state;
+    params["bmax"] = videofilter.value.bbbv_range[level_tags[level_tag_selected.value].key][1];
+    if (![0,4].includes(videofilter.value.filter_state.length)) {
+        params['s'] = videofilter.value.filter_state;
     }
     proxy.$axios.get('/video/query/',
         {
