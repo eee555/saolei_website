@@ -1,4 +1,6 @@
 <template>
+    <ActivityCalendarAbstract />
+    <el-divider/>
     <el-text tag="b" size="large">{{ t('accountlink.title') }}</el-text>
     <AccountLinkManager />
     <el-divider/>
@@ -14,5 +16,6 @@ import IdentifierManager from '@/components/widgets/IdentifierManager.vue';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { store } from '@/store';
 import { useI18n } from 'vue-i18n';
+import ActivityCalendarAbstract from '@/components/visualization/ActivityCalendarAbstract.vue';
 const { t } = useI18n();
 </script>
