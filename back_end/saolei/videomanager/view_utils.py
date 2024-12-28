@@ -105,7 +105,7 @@ def update_personal_record(video: VideoModel):
         checkPB(video, ms_user, user, "std")
 
     if video.mode == "00":
-        if e_video.flag == 0:
+        if video.flag == 0:
             video.mode = "12"
 
     if video.mode == "12":
