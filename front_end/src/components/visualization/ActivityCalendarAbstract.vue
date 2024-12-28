@@ -137,6 +137,10 @@ const option = computed(() => {
     width: 100%;
 }
 
+.el-card {
+    --el-card-padding: 10px;
+}
+
 ::v-deep(.el-checkbox-button:first-child .el-checkbox-button__inner) {
     border-top-left-radius: 1px;
     border-bottom-left-radius: 1px;

@@ -1,5 +1,6 @@
 <template>
     <ActivityCalendarAbstract />
+    <el-divider/>
     <el-text tag="b" size="large">{{ t('accountlink.title') }}</el-text>
     <AccountLinkManager />
     <el-divider/>
