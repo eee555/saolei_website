@@ -298,7 +298,7 @@ def update_videoModel(request):
     refresh_video(video)
     return HttpResponse()
 
-@require_POST
+@require_GET
 def refresh_all_videoModel(request):
     if not request.user.is_superuser:
         return HttpResponseForbidden()
