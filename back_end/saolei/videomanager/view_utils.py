@@ -50,10 +50,9 @@ def update_3_level_cache_record(realname: str, index: str, mode: str, ms_user: U
 def update_news_queue(user: UserProfile, ms_user: UserMS, video: VideoModel, index: str, mode: str):
     if ms_user.e_timems_std >= 60000 and (index != "timems" or video.level != "e"):
         return
-    _video = video if index == "timems" or index == "bvs" else video.video
     # print(f"{type(index)} {index}") # 调试用
-    value = f"{getattr(_video, index)/1000:.3f}" if index == "timems" else f"{getattr(_video, index):.3f}"
-    delta_number = getattr(_video, index) - ms_user.getrecord(video.level, index, mode)
+    value = f"{getattr(video, index)/1000:.3f}" if index == "timems" else f"{getattr(video, index):.3f}"
+    delta_number = getattr(video, index) - ms_user.getrecord(video.level, index, mode)
     if index == "timems":
         delta_number /= 1000
     # 看有没有存纪录录像的id，间接判断有没有纪录
