@@ -5,11 +5,7 @@
             <span style="flex: 1;"></span>
             <el-text size="small">{{ t('msg.totalNVideos', [count]) }}</el-text>
             <span style="width: 10px;"></span>
-            <el-checkbox-group v-model="level" size="small">
-                <el-checkbox-button v-for="l in ['b', 'i', 'e']" :value="l">
-                    {{ t('common.level.' + l) }}
-                </el-checkbox-button>
-            </el-checkbox-group>
+            <MSLevelFilter v-model="level"/>
         </div>
         <v-chart :option="option" class="chart"
             :init-options="{ locale: local.language == 'zh-cn' ? 'ZH' : 'EN' }" :theme="isDark ? 'dark' : 'light'" autoresize/>
@@ -27,6 +23,7 @@ import { CalendarComponent, VisualMapComponent, TooltipComponent } from 'echarts
 import { store, local } from '@/store';
 import { useDark } from '@vueuse/core';
 import { useI18n } from 'vue-i18n';
+import MSLevelFilter from '../Filters/MSLevelFilter.vue';
 
 const isDark = useDark();
 const { t } = useI18n();
@@ -139,21 +136,6 @@ const option = computed(() => {
 
 .el-card {
     --el-card-padding: 10px;
-}
-
-::v-deep(.el-checkbox-button:first-child .el-checkbox-button__inner) {
-    border-top-left-radius: 1px;
-    border-bottom-left-radius: 1px;
-}
-
-::v-deep(.el-checkbox-button:last-child .el-checkbox-button__inner) {
-    border-top-right-radius: 1px;
-    border-bottom-right-radius: 1px;
-}
-
-::v-deep(.el-checkbox-button--small .el-checkbox-button__inner) {
-    padding: 5px 8px;
-    font-size: 10px;
 }
 
 </style>
