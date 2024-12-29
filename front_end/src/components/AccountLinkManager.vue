@@ -169,7 +169,7 @@ const updateRow = (row: any) => {
                 title: '更新失败',
                 message: t('accountlink.updateError.' + data.category),
                 type: 'error',
-                duration: local.notification_duration,
+                duration: local.value.notification_duration,
             })
         }
     })

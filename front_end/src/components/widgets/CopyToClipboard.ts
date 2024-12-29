@@ -9,13 +9,13 @@ export const copyToClipboard = async (str: string) => {
         ElNotification({
             title: t('msg.copyToClipboardSuccess'),
             type: 'success',
-            duration: local.notification_duration,
+            duration: local.value.notification_duration,
         });
     } catch(err) {
         ElNotification({
             title: t('msg.copyToClipboardFail'),
             type: 'error',
-            duration: local.notification_duration,
+            duration: local.value.notification_duration,
         })
     }
 }

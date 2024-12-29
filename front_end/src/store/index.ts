@@ -1,6 +1,7 @@
 import { LoginStatus } from "@/utils/common/structInterface"
 import { defineStore } from 'pinia'
 import { pinia } from "./create"
+import { useLocalStorage } from "@vueuse/core"
 
 export const store = defineStore('user', {
     state: () => ({
@@ -46,30 +47,24 @@ export const videoplayerstore = defineStore('videoplayer', {
     }),
 })(pinia)
 
-export const local = defineStore('local', {
-    state: () => ({
-        darkmode: false,
-        language: (navigator.language).toLocaleLowerCase(),
-        language_show: true,
-        menu_font_size: 18,
-        menu_height: 60,
-        menu_icon: false,
-        notification_duration: 4500,
-        tooltip_show: true,
-    }),
-    persist: true,
-})(pinia)
+export const local = useLocalStorage('local', {
+    darkmode: false,
+    language: (navigator.language).toLocaleLowerCase(),
+    language_show: true,
+    menu_font_size: 18,
+    menu_height: 60,
+    menu_icon: false,
+    notification_duration: 4500,
+    tooltip_show: true,
+})
 
-export const videofilter = defineStore('videofilter', {
-    state: () => ({
-        pagesize: 100,
-        level: 'e',
-        filter_state: ['a','b','c','d'],
-        bbbv_range: {
-            'b': [2,54],
-            'i': [30,216],
-            'e': [100,381],
-        }
-    }),
-    persist: true
-})(pinia)
+export const videofilter = useLocalStorage('videofilter', {
+    pagesize: 100,
+    level: 'e',
+    filter_state: ['a', 'b', 'c', 'd'],
+    bbbv_range: {
+        'b': [2, 54],
+        'i': [30, 216],
+        'e': [100, 381],
+    }
+})
