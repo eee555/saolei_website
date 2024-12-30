@@ -8,7 +8,7 @@
             <MSLevelFilter v-model="level"/>
         </div>
         <v-chart :option="option" class="chart"
-            :init-options="{ locale: local.language == 'zh-cn' ? 'ZH' : 'EN' }" :theme="isDark ? 'dark' : 'light'" autoresize/>
+            :init-options="{ locale: local.language == 'zh-cn' ? 'ZH' : 'EN' }" :theme="isDark ? 'dark' : 'light'" autoresize @mouseover="handleMouseover" ref="calendarCanvas"/>
     </el-card>
 </template>
 
@@ -21,7 +21,7 @@ import { HeatmapChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
 import { CalendarComponent, VisualMapComponent, TooltipComponent } from 'echarts/components';
 import { store, local } from '@/store';
-import { useDark } from '@vueuse/core';
+import { useDark, useElementSize } from '@vueuse/core';
 import { useI18n } from 'vue-i18n';
 import MSLevelFilter from '../Filters/MSLevelFilter.vue';
 
@@ -39,6 +39,10 @@ echarts.use([
 const year = ref(2024);
 const level = ref(['b', 'i', 'e']);
 const count = ref(0);
+const calendarCanvas = ref<any>(null);
+const width = computed(() => calendarCanvas.value === null ? 800 : useElementSize(calendarCanvas).width.value);
+const dayLabelSize = computed(() => 0.012 * width.value);
+const monthLabelSize = computed(() => 0.015 * width.value);
 
 const getData = (videos: Array<any>, year: string | number, level: Array<string>) => {
     const data = [] as Array<[string, number]>;
@@ -79,10 +83,10 @@ const option = computed(() => {
             }
         },
         calendar: {
-            top: 25,
-            bottom: 5,
-            left: 25,
-            right: 5,
+            top: 2 * monthLabelSize.value,
+            bottom: 0,
+            left: 2 * dayLabelSize.value,
+            right: 0,
             range: year.value,
             cellsize: ['auto', 'auto'],
             splitLine: {
@@ -94,14 +98,14 @@ const option = computed(() => {
             },
             itemStyle: {
                 borderColor: isDark.value ? '#000' : '#fff',
-                borderWidth: 2,
+                borderWidth: 0.004 * width.value,
                 borderJoin: 'round',
             },
             dayLabel: {
-                fontSize: 7,
+                fontSize: dayLabelSize.value,
             },
             monthLabel: {
-                fontSize: 10,
+                fontSize: monthLabelSize.value,
             }
         },
         tooltip: {
@@ -126,11 +130,15 @@ const option = computed(() => {
     }
 })
 
+const handleMouseover = (params: any) => {
+    // console.log(params);
+}
+
 </script>
 
 <style scoped lang="less">
 .chart {
-    height: 110px;
+    aspect-ratio: 6.3;
     width: 100%;
 }
 
