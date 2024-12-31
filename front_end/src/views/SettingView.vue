@@ -16,16 +16,20 @@
                 size="small" :min="10" /></el-descriptions-item>
         <el-descriptions-item :label="t('setting.notificationDuration')"><el-tooltip>
                 <template #content>
-                    <div v-html="t('setting.notificationDurationTooltip')"/>
+                    <div v-html="t('setting.notificationDurationTooltip')" />
                 </template>
                 <el-input-number v-model="local.notification_duration" size="small" :min="0" :step="1000" />
             </el-tooltip></el-descriptions-item>
-        <el-descriptions-item :label="t('setting.newUserGuide')"><el-tooltip>
-            <template #content>
-                <div v-html="t('setting.newUserGuideTooltip')"/>
-            </template>
-            <el-switch v-model="local.tooltip_show"></el-switch>
-        </el-tooltip>
+        <el-descriptions-item :label="t('setting.newUserGuide')">
+            <el-tooltip>
+                <template #content>
+                    <div v-html="t('setting.newUserGuideTooltip')" />
+                </template>
+                <el-switch v-model="local.tooltip_show"></el-switch>
+            </el-tooltip>
+        </el-descriptions-item>
+        <el-descriptions-item :label="t('setting.experimentalFeature')">
+            <el-switch v-model="local.experimental" />
         </el-descriptions-item>
     </el-descriptions>
     <el-descriptions v-if="false && store.login_status == LoginStatus.IsLogin" title="个人信息" :column="3">

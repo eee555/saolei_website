@@ -36,8 +36,7 @@ export const store = defineStore('user', {
         },
         login_status: LoginStatus.Undefined, // 登录状态，全局维护
         new_identifier: false, // 是否有新标识录像
-    }
-    ),
+    }),
 })(pinia)
 
 export const videoplayerstore = defineStore('videoplayer', {
@@ -49,6 +48,7 @@ export const videoplayerstore = defineStore('videoplayer', {
 
 export const local = useLocalStorage('local', {
     darkmode: false,
+    experimental: false,
     language: (navigator.language).toLocaleLowerCase(),
     language_show: true,
     menu_font_size: 18,
