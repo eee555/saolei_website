@@ -49,6 +49,7 @@ export default {
             identifier: 'Identifier',
             fileName: 'File name',
             is: 'Island',
+            isl: 'Island',
             level: 'Level',
             mastery: 'Mastery',
             op: 'Opening',
@@ -127,6 +128,9 @@ export default {
         womResource: 'Resources',
         womTrophy: 'Trophies',
         womWin: 'Wins',
+    },
+    experimentalFeature: {
+        watermark: 'EXPERIMENTAL',
     },
     footer: {
         contact: 'Contact',
@@ -288,6 +292,7 @@ export default {
             light: 'light',
             title: 'Color scheme',
         },
+        experimentalFeature: 'Experimental Features',
         languageSwitch: 'Language Switch',
         menuFontSize: 'Menu Font Size',
         menuHeight: 'Menu Height',

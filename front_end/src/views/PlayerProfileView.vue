@@ -1,13 +1,18 @@
 <template>
     <ActivityCalendarAbstract />
-    <el-divider/>
+    <el-divider />
+    <ExperimentalFeature>
+        <ActivityScatter2D />
+        <el-divider />
+    </ExperimentalFeature>
     <el-text tag="b" size="large">{{ t('accountlink.title') }}</el-text>
     <AccountLinkManager />
-    <el-divider/>
+    <el-divider />
     <el-badge is-dot :hidden="true && !store.new_identifier">
-        <el-descriptions v-if="store.login_status == LoginStatus.IsLogin" :title="t('identifierManager.title')"></el-descriptions>
+        <el-descriptions v-if="store.login_status == LoginStatus.IsLogin"
+            :title="t('identifierManager.title')"></el-descriptions>
     </el-badge>
-    <IdentifierManager v-if="store.login_status == LoginStatus.IsLogin"/>
+    <IdentifierManager v-if="store.login_status == LoginStatus.IsLogin" />
 </template>
 
 <script setup lang="ts">
@@ -17,5 +22,7 @@ import { LoginStatus } from '@/utils/common/structInterface';
 import { store } from '@/store';
 import { useI18n } from 'vue-i18n';
 import ActivityCalendarAbstract from '@/components/visualization/ActivityCalendarAbstract.vue';
+import ActivityScatter2D from '@/components/visualization/ActivityScatter2D.vue';
+import ExperimentalFeature from '@/components/ExperimentalFeature.vue';
 const { t } = useI18n();
 </script>

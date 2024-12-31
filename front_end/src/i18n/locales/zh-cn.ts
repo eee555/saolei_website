@@ -129,6 +129,9 @@ export default {
         womTrophy: '奖杯',
         womWin: '总胜场',
     },
+    experimentalFeature: {
+        watermark: '实验功能',
+    },
     footer: {
         contact: '联系我们',
         donate: '捐赠',
@@ -289,6 +292,7 @@ export default {
             light: '浅色',
             title: '颜色主题',
         },
+        experimentalFeature: '实验功能',
         languageSwitch: '语言切换',
         menuFontSize: '菜单字号',
         menuHeight: '菜单高度',
