@@ -32,6 +32,20 @@
             <el-switch v-model="local.experimental" />
         </el-descriptions-item>
     </el-descriptions>
+    <ExperimentalFeature>
+    <el-descriptions title="数据可视化 - 配色方案">
+        <el-descriptions-item>
+            <el-select v-model="colorSchemeName" >
+                <el-option label="Bvs" value="bvs"></el-option>
+                <el-option label="Beg Time" value="btime"></el-option>
+                <el-option label="Int Time" value="itime"></el-option>
+                <el-option label="Exp Time" value="etime"></el-option>
+                <el-option label="STNB" value="stnb"></el-option>
+            </el-select>
+            <ColorSchemeSetting v-model="colorTheme[colorSchemeName]" />
+        </el-descriptions-item>
+    </el-descriptions>
+    </ExperimentalFeature>
     <el-descriptions v-if="false && store.login_status == LoginStatus.IsLogin" title="个人信息" :column="3">
         <el-descriptions-item label="用户id">{{ store.user.id }}</el-descriptions-item>
         <el-descriptions-item label="用户名">{{ store.user.username }}</el-descriptions-item>
@@ -45,12 +59,16 @@
 </template>
 
 <script lang="ts" setup name="UserSettings">
-import { store, local } from '@/store';
+import { store, local, colorTheme } from '@/store';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n()
 
 import DarkMode from '@/components/widgets/DarkMode.vue'
+import ColorSchemeSetting from '@/components/visualization/ColorSchemeSetting.vue'
+import { ref } from 'vue';
+import ExperimentalFeature from '@/components/ExperimentalFeature.vue';
 
+const colorSchemeName = ref('bvs');
 
 </script>

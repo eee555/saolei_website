@@ -31,9 +31,9 @@ import { ElMessage } from 'element-plus'
 import { store, local } from '../store'
 
 import { useI18n } from 'vue-i18n';
-import { deepCopy } from '@/utils';
 import RegisterDialog from './dialogs/RegisterDialog.vue';
 import { httpErrorNotification } from './Notifications';
+import { UserProfile } from '@/userprofile';
 const { t } = useI18n();
 
 // 登录对话框是否出现
@@ -67,8 +67,8 @@ onMounted(() => {
 const login_auto = async () => {
     proxy.$axios.get('/userprofile/loginauto/').then(function (response) {
         if (response.data.id) {
-            store.user = deepCopy(response.data); // 直接赋值会导致user和player共用一个字典！！
-            store.player = deepCopy(response.data);
+            store.user = new UserProfile(response.data);
+            store.player = new UserProfile(response.data);
             store.login_status = LoginStatus.IsLogin;
         }
         else {
@@ -78,8 +78,8 @@ const login_auto = async () => {
 }
 
 const login = (user: any, remember: boolean) => {
-    store.user = deepCopy(user);
-    store.player = deepCopy(user);
+    store.user = new UserProfile(user);
+    store.player = new UserProfile(user);
     store.login_status = LoginStatus.IsLogin;
     login_visible.value = false;
     register_visible.value = false;
@@ -92,18 +92,7 @@ const logout = async () => {
         {},
     ).then(function (response) {
         store.login_status = LoginStatus.NotLogin;
-        store.user = {
-            id: 0,
-            username: "",
-            realname: "",
-            is_banned: false,
-            is_staff: false,
-            country: "",
-            accountlink: [],
-            identifiers: [],
-            videos: [],
-            loading: true,
-        };
+        store.user = new UserProfile();
         emit('logout'); // 向父组件发送消息
         ElMessage.success({ message: t('common.msg.logoutSuccess'), offset: 68 });
         register_visible.value = false;

@@ -24,6 +24,7 @@ import { store, local } from '@/store';
 import { useDark, useElementSize } from '@vueuse/core';
 import { useI18n } from 'vue-i18n';
 import MSLevelFilter from '../Filters/MSLevelFilter.vue';
+import { VideoAbstract } from '@/utils/fileIO';
 
 const isDark = useDark();
 const { t } = useI18n();
@@ -44,7 +45,7 @@ const width = computed(() => calendarCanvas.value === null ? 800 : useElementSiz
 const dayLabelSize = computed(() => 0.012 * width.value);
 const monthLabelSize = computed(() => 0.015 * width.value);
 
-const getData = (videos: Array<any>, year: string | number, level: Array<string>) => {
+const getData = (videos: Array<VideoAbstract>, year: string | number, level: Array<string>) => {
     const data = [] as Array<[string, number]>;
     const date = +echarts.number.parseDate(year + '-01-01');
     const end = +echarts.number.parseDate(year + '-12-31');
