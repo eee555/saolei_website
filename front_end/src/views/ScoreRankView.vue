@@ -9,14 +9,9 @@
 <script setup lang='ts'>
 // 参考：https://www.wst.tv/rankings?
 // 现役排名：世界排名（累计衰减）、赛季排名（一年）、最新比赛排名
-import { onMounted, ref, Ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
-import PreviewNumber from '@/components/PreviewNumber.vue';
-import VideoList from '@/components/VideoList.vue';
-import PlayerName from '@/components/PlayerName.vue';
-import { to_fixed_n } from "@/utils";
 const { proxy } = useCurrentInstance();
-import { utc_to_local_format } from "@/utils/system/tools";
 
 const review_queue = ref<any[]>([]);
 const newest_queue = ref<any[]>([]);

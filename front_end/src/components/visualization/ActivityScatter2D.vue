@@ -23,6 +23,7 @@ import MSLevelFilter from '../Filters/MSLevelFilter.vue';
 import { preview } from '@/utils/common/PlayerDialog';
 import { useI18n } from 'vue-i18n';
 import MSStatSelect from '../Filters/MSStatSelect.vue';
+import { getStat_stat, VideoAbstract } from '@/utils/fileIO';
 
 const video_stats = ['time', 'bv', 'bvs']
 
@@ -31,21 +32,8 @@ const { t } = useI18n();
 echarts.use([ScatterChart])
 
 const level = ref(['b', 'i', 'e']);
-const x = ref('time');
-const y = ref('bv');
-
-function getStat(video: any, stat: string) {
-    switch (stat) {
-        case 'time':
-            return video.timems / 1000;
-        case 'bv':
-            return video.bv;
-        case 'bvs':
-            return video.timems == 0 ? 0 : video.bv / video.timems * 1000;
-        default:
-            return null;
-    }
-}
+const x = ref<getStat_stat>('time');
+const y = ref<getStat_stat>('bv');
 
 const option = computed(() => {
     return {
@@ -79,8 +67,8 @@ const option = computed(() => {
             type: 'scatter',
             data: store.player.videos.filter(
                 (video) => level.value.includes(video.level)
-            ).map((video) => {
-                return [getStat(video,x.value), getStat(video,y.value), video];
+            ).map((video: VideoAbstract) => {
+                return [video.getStat(x.value), video.getStat(y.value), video];
             }),
         },
         tooltip: {
