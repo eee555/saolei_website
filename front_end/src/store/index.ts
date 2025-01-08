@@ -2,42 +2,19 @@ import { LoginStatus } from "@/utils/common/structInterface"
 import { defineStore } from 'pinia'
 import { pinia } from "./create"
 import { useLocalStorage } from "@vueuse/core"
+import { colorSchemeTemplates } from "@/utils/config"
+import { UserProfile } from "@/userprofile"
 
 export const store = defineStore('user', {
     state: () => ({
-        user: {
-            // 此id为用户的id从1开始，而不是数据库的自增id
-            id: 0,
-            username: "",
-            realname: "",
-            is_banned: false,
-            is_staff: false,
-            country: "",
-            accountlink: [],
-            identifiers: [],
-            videos: [],
-            loading: true,
-        },   // 真正的用户
+        user: new UserProfile(),   // 真正的用户
         // 访问谁的地盘不再具有记忆性。即点“我的地盘”，将永远是“我”的地盘
         // 想要访问特定用户，可以用url
         // 访问谁的地盘
-        player: {
-            // 此id为用户的id从1开始，而不是数据库的自增id
-            id: 0,
-            username: "",
-            realname: "",
-            is_banned: false,
-            is_staff: false,
-            country: "",
-            accountlink: [] as any[],
-            identifiers: [] as string[],
-            videos: [] as any[],
-            loading: true,
-        },
+        player: new UserProfile(),
         login_status: LoginStatus.Undefined, // 登录状态，全局维护
         new_identifier: false, // 是否有新标识录像
-    }
-    ),
+    }),
 })(pinia)
 
 export const videoplayerstore = defineStore('videoplayer', {
@@ -49,6 +26,7 @@ export const videoplayerstore = defineStore('videoplayer', {
 
 export const local = useLocalStorage('local', {
     darkmode: false,
+    experimental: false,
     language: (navigator.language).toLocaleLowerCase(),
     language_show: true,
     menu_font_size: 18,
@@ -68,3 +46,5 @@ export const videofilter = useLocalStorage('videofilter', {
         'e': [100, 381],
     }
 })
+
+export const colorTheme = useLocalStorage('colorTheme', colorSchemeTemplates.ArbiterStatsAuto)

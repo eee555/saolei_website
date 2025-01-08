@@ -102,6 +102,7 @@ import { store } from '../store'
 
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
+import { UserProfile } from '@/userprofile';
 const { t } = useI18n();
 const route = useRoute()
 
@@ -156,13 +157,7 @@ function refresh() {
         }
     ).then(function (response) {
         const data = response.data;
-        store.player.realname = data.realname;
-        store.player.username = data.username;
-        store.player.is_banned = data.is_banned;
-        store.player.country = data.country;
-        store.player.is_staff = data.is_staff;
-        store.player.identifiers = data.identifiers;
-        store.player.videos = data.videos;
+        store.player = new UserProfile(data);
 
         userid.value = data.id;
         realname.value = data.realname;
@@ -178,8 +173,6 @@ function refresh() {
             imageUrlOld = "data:image/;base64," + data.avatar;
         }
         // console.log(imageUrl);
-        store.player.loading = false;
-
     })
 }
 
