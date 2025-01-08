@@ -57,21 +57,24 @@
             </el-aside>
 
             <el-main>
-                <el-tabs v-model="activeName" style="overflow: auto;">
-                    <el-tab-pane :label="t('profile.profile.title')" name="profile" :lazy="true" style="overflow: auto;">
-                        <PlayerProfileView :key="store.player.id"></PlayerProfileView>
-                    </el-tab-pane>
-                    <el-tab-pane :label="t('profile.records.title')" name="record" :lazy="true">
-                        <PlayerRecordView :key="store.player.id"></PlayerRecordView>
-                    </el-tab-pane>
-                    <el-tab-pane :label="t('profile.videos')" name="video" :lazy="true">
-                        <PlayerVideosView :key="store.player.id"></PlayerVideosView>
-                    </el-tab-pane>
-                    <el-tab-pane v-if="store.user.id + '' == userid" :label="t('profile.upload.title')" name="upload"
-                        :lazy="true">
-                        <UploadView :identifiers="store.user.identifiers"></UploadView>
-                    </el-tab-pane>
-                </el-tabs>
+                <Suspense>
+                    <el-tabs v-model="activeName" style="overflow: auto;">
+                        <el-tab-pane :label="t('profile.profile.title')" name="profile" :lazy="true"
+                            style="overflow: auto;">
+                            <PlayerProfileView :key="store.player.id"></PlayerProfileView>
+                        </el-tab-pane>
+                        <el-tab-pane :label="t('profile.records.title')" name="record" :lazy="true">
+                            <PlayerRecordView :key="store.player.id"></PlayerRecordView>
+                        </el-tab-pane>
+                        <el-tab-pane :label="t('profile.videos')" name="video" :lazy="true">
+                            <PlayerVideosView :key="store.player.id"></PlayerVideosView>
+                        </el-tab-pane>
+                        <el-tab-pane v-if="store.user.id + '' == userid" :label="t('profile.upload.title')"
+                            name="upload" :lazy="true">
+                            <UploadView :identifiers="store.user.identifiers"></UploadView>
+                        </el-tab-pane>
+                    </el-tabs>
+                </Suspense>
 
             </el-main>
         </el-container>
