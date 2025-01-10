@@ -24,7 +24,8 @@ import { store, local } from '@/store';
 import { useDark, useElementSize } from '@vueuse/core';
 import { useI18n } from 'vue-i18n';
 import MSLevelFilter from '../Filters/MSLevelFilter.vue';
-import { VideoAbstract } from '@/utils/fileIO';
+import { VideoAbstract } from '@/utils/videoabstract';
+import { MS_Levels } from '@/utils/ms_const';
 
 const isDark = useDark();
 const { t } = useI18n();
@@ -38,7 +39,7 @@ echarts.use([
 ]);
 
 const year = ref(2024);
-const level = ref(['b', 'i', 'e']);
+const level = ref([...MS_Levels]);
 const count = ref(0);
 const calendarCanvas = ref<any>(null);
 const width = computed(() => calendarCanvas.value === null ? 800 : useElementSize(calendarCanvas).width.value);

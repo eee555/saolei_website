@@ -8,7 +8,8 @@
     "frontend": "vite --mode frontend",
     "serve": "vite preview",
     "build:fff666": "vite build --mode fff666",
-    "build:openms": "vite build --mode openms"
+    "build:openms": "vite build --mode openms",
+    "build:frontend": "vite build --mode frontend"
   },
   "dependencies": {
     "@chenfengyuan/vue-countdown": "^2.1.2",
@@ -52,7 +53,7 @@
     "@vitejs/plugin-vue": "^5.0.4",
     "less": "^4.1.3",
     "typescript": ">=5.0.0",
-    "vite": "^5.2.13",
+    "vite": "^6.0.0",
     "vite-plugin-top-level-await": "^1.4.1",
     "vite-plugin-wasm": "^3.3.0"
   }

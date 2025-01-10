@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import { pinia } from "./create"
 import { useLocalStorage } from "@vueuse/core"
 import { colorSchemeTemplates } from "@/utils/config"
-import { UserProfile } from "@/userprofile"
+import { UserProfile } from "@/utils/userprofile"
 
 export const store = defineStore('user', {
     state: () => ({

@@ -1,11 +1,13 @@
 <template>
-    <ActivityCalendarAbstract />
+    <!-- <ActivityCalendarAbstract /> -->
+    {{ getData(2024, ['b','i','e']) }}
     <el-divider />
     <ExperimentalFeature>
-        <ActivityScatter2D />
+        <!-- <ActivityScatter2D />
         <el-divider />
         <MS3bvPB />
-        <el-divider />
+        <el-divider /> -->
+        {{ store.player.videos.length == 0 ? "No Data" : store.player.videos[0].getStat('bvs') }}
     </ExperimentalFeature>
     <el-text tag="b" size="large">{{ t('accountlink.title') }}</el-text>
     <AccountLinkManager />
@@ -27,5 +29,6 @@ import ActivityCalendarAbstract from '@/components/visualization/ActivityCalenda
 import ActivityScatter2D from '@/components/visualization/ActivityScatter2D.vue';
 import ExperimentalFeature from '@/components/ExperimentalFeature.vue';
 import MS3bvPB from '@/components/visualization/MS3bvPB.vue';
+import { getData } from '@/utils/videoabstract';
 const { t } = useI18n();
 </script>

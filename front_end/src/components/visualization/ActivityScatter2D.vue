@@ -23,7 +23,8 @@ import MSLevelFilter from '../Filters/MSLevelFilter.vue';
 import { preview } from '@/utils/common/PlayerDialog';
 import { useI18n } from 'vue-i18n';
 import MSStatSelect from '../Filters/MSStatSelect.vue';
-import { getStat_stat, VideoAbstract } from '@/utils/fileIO';
+import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
+import { MS_Levels } from '@/utils/ms_const';
 
 const video_stats = ['time', 'bv', 'bvs']
 
@@ -31,7 +32,7 @@ const { t } = useI18n();
 
 echarts.use([ScatterChart])
 
-const level = ref(['b', 'i', 'e']);
+const level = ref([...MS_Levels]);
 const x = ref<getStat_stat>('time');
 const y = ref<getStat_stat>('bv');
 
