@@ -2,13 +2,15 @@
     <tippy class="cell" :duration="0">
         <!-- <div></div> -->
         <template #content>
-            {{ date.toISOString().split('T')[0] }}
+            {{ toISODateString(date) }}
         </template>
     </tippy>
 </template>
 
 <script setup lang="ts">
+import { toISODateString } from '@/utils/datetime';
 import { VideoAbstract } from '@/utils/videoabstract';
+import { useDark } from '@vueuse/core';
 import { computed, ref, toRaw, watch } from 'vue';
 import { Tippy } from 'vue-tippy';
 
@@ -25,6 +27,8 @@ const prop = defineProps({
     yOffset:{type:Number,default:0},
 })
 
+const isDark = useDark();
+
 const count = ref({ b: 0, i: 0, e: 0, });
 const red = ref(0);
 const green = ref(0);
@@ -37,26 +41,24 @@ watch(prop, () => {
     for (let video of prop.videos) {
         count.value[video.level]++;
     }
-    red.value = 255 * count.value.b / prop.bmax;
-    green.value = 255 * count.value.i / prop.imax;
-    blue.value = 255 * count.value.e / prop.emax;
+    red.value = count.value.b / prop.bmax;
+    green.value = count.value.i / prop.imax;
+    blue.value = count.value.e / prop.emax;
 },{immediate: true})
-
-const top = computed(() => prop.yOffset * (prop.size+prop.margin) + prop.margin + 'px');
-const left = computed(() => prop.xOffset * (prop.size+prop.margin) + prop.margin + 'px');
-const sizeString = computed(() => prop.size + 'px');
-const borderRadiusString = computed(() => prop.cornerRadius + 'px');
 
 </script>
 
 <style lang="less" scoped>
 .cell {
     position: absolute;
-    top: v-bind(top);
-    left: v-bind(left);
-    width: v-bind(sizeString);
-    height: v-bind(sizeString);
-    border-radius: v-bind(borderRadiusString);
-    background: rgb(v-bind(red), v-bind(green), v-bind(blue));
+    top: v-bind("prop.yOffset * (prop.size+prop.margin) + prop.margin + 'px'");
+    left: v-bind("prop.xOffset * (prop.size+prop.margin) + prop.margin + 'px'");
+    width: v-bind("prop.size + 'px'");
+    height: v-bind("prop.size + 'px'");
+    border-radius: v-bind("prop.cornerRadius + 'px'");
+    border-style: solid;
+    border-color: v-bind("isDark ? '#333' : '#ccc'");
+    border-width: 1px;
+    background: rgb(v-bind("255 * (isDark ? red : 1-red)"), v-bind("255 * (isDark ? green : 1-green)"), v-bind("255 * (isDark ? blue : 1-blue)"));
 }
 </style>
