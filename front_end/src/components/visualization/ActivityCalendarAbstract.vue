@@ -1,151 +1,86 @@
 <template>
-    <el-card style="overflow: auto;">
+    <el-card style="overflow: auto">
         <div style="align-items: center; display: flex;">
-            <el-segmented v-model="year" :options="[2024,2025]" size="small" style="font-size: 12px"/>
-            <span style="flex: 1;"></span>
             <el-text size="small">{{ t('msg.totalNVideos', [count]) }}</el-text>
             <span style="width: 10px;"></span>
-            <MSLevelFilter v-model="level"/>
         </div>
-        <v-chart :option="option" class="chart"
-            :init-options="{ locale: local.language == 'zh-cn' ? 'ZH' : 'EN' }" :theme="isDark ? 'dark' : 'light'" autoresize @mouseover="handleMouseover" ref="calendarCanvas"/>
+        <el-row>
+            <div style="display:inline-block;font-size: 13px;margin-top: 17px;">
+                Sun<br>Mon<br>Tue<br>Wed<br>Thu<br>Fri<br>Sat
+            </div>
+            <el-scrollbar style="flex:1;">
+                <div style="position: relative; height: 139px;">
+                    <template v-for="date of generateDateRange(startDate, endDate)">
+                        <el-text v-if="date.getDate() === 15" :style="{
+                            position: 'absolute',
+                            top: 0,
+                            left: (Math.max(1,(date.getTime()-startWeekTime) / fullWeek)) * 17 + 'px',
+                            transform: 'translate(-50%,0)'
+                        }">{{ monthNameShort[date.getMonth()] }}</el-text>
+                        <ActivityCalendarAbstractCell :date="date" :start-date="startDate"
+                            :videos="groupedVideoAbstract.get(date.toISOString().split('T')[0])" :size="14"
+                            :corner-radius="5" :margin="3"
+                            :x-offset="Math.round((getWeekTime(date) - startWeekTime) / fullWeek)" 
+                            :y-offset="date.getDay()+1"/>
+                    </template>
+
+                    <!-- {{ date.toISOString().split('T')[0] }} -->
+                </div>
+            </el-scrollbar>
+        </el-row>
+
     </el-card>
 </template>
 
 <script setup lang="ts">
 
 import { computed, ref, watch } from 'vue';
-import VChart from 'vue-echarts';
-import * as echarts from 'echarts/core';
-import { HeatmapChart } from 'echarts/charts';
-import { CanvasRenderer } from 'echarts/renderers';
-import { CalendarComponent, VisualMapComponent, TooltipComponent } from 'echarts/components';
 import { store, local } from '@/store';
 import { useDark, useElementSize } from '@vueuse/core';
 import { useI18n } from 'vue-i18n';
 import MSLevelFilter from '../Filters/MSLevelFilter.vue';
-import { VideoAbstract } from '@/utils/videoabstract';
+import { groupVideosByUploadDate, VideoAbstract } from '@/utils/videoabstract';
 import { MS_Levels } from '@/utils/ms_const';
+import ActivityCalendarAbstractCell from './ActivityCalendarAbstractCell.vue';
+import { fullWeek, getWeekTime, monthNameShort } from '@/utils/datetime';
 
 const isDark = useDark();
 const { t } = useI18n();
 
-echarts.use([
-    CalendarComponent,
-    VisualMapComponent,
-    HeatmapChart,
-    CanvasRenderer,
-    TooltipComponent
-]);
-
-const year = ref(2024);
-const level = ref([...MS_Levels]);
 const count = ref(0);
-const calendarCanvas = ref<any>(null);
-const width = computed(() => calendarCanvas.value === null ? 800 : useElementSize(calendarCanvas).width.value);
-const dayLabelSize = computed(() => 0.012 * width.value);
-const monthLabelSize = computed(() => 0.015 * width.value);
+const cellSize = ref(14);
 
-const getData = (videos: Array<VideoAbstract>, year: string | number, level: Array<string>) => {
-    const data = [] as Array<[string, number]>;
-    const date = +echarts.number.parseDate(year + '-01-01');
-    const end = +echarts.number.parseDate(year + '-12-31');
-    let thiscount = 0;
-    for (let time = date; time <= end; time += 3600 * 24 * 1000) {
-        data.push([
-            echarts.time.format(time, '{yyyy}-{MM}-{dd}', false),
-            0
-        ]);
+const groupedVideoAbstract = computed(() => groupVideosByUploadDate(store.player.videos));
+const endDate = new Date(new Date().toDateString()); // today
+const startDate = computed(() => {
+    const keys = groupedVideoAbstract.value.keys();
+    let min = new Date(endDate);
+    min.setFullYear(min.getFullYear() - 1);
+    min.setDate(min.getDate() + 1);
+    for (const key of keys) {
+        let keydate = new Date(key);
+        if (keydate < min) min = keydate;
     }
-    for (let video of videos) {
-        if (!level.includes(video.level)) {
-            continue;
-        }
-        let video_date = +echarts.number.parseDate(video.upload_time);
-        let date_index = Math.floor((video_date - date) / (3600 * 24 * 1000));
-        if (date_index >= 0 && date_index < data.length) {
-            data[date_index][1] += 1;
-            thiscount += 1;
-        }
+    return min;
+})
+const startWeekTime = computed(() => getWeekTime(startDate.value));
+
+function* generateDateRange(startDate: Date, endDate: Date, step: number = 1) {
+    let currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+        yield new Date(currentDate);  // Yield a new Date object (to avoid modifying the original one)
+        currentDate.setDate(currentDate.getDate() + step); // Increment by 1 day (or custom step)
     }
-    count.value = thiscount;
-    return data;
 }
+
+
 
 const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--el-color-primary');
-
-const option = computed(() => {
-    return {
-        visualMap: {
-            show: false,
-            min: 0,
-            max: 10,
-            inRange: {
-                color: isDark.value ? ['#333', primaryColor] : ['#ccc', primaryColor]
-            }
-        },
-        calendar: {
-            top: 2 * monthLabelSize.value,
-            bottom: 0,
-            left: 2 * dayLabelSize.value,
-            right: 0,
-            range: year.value,
-            cellsize: ['auto', 'auto'],
-            splitLine: {
-                show: false,
-                lineStyle: {
-                    width: 1.5,
-                    join: 'round',
-                },
-            },
-            itemStyle: {
-                borderColor: isDark.value ? '#000' : '#fff',
-                borderWidth: 0.004 * width.value,
-                borderJoin: 'round',
-            },
-            dayLabel: {
-                fontSize: dayLabelSize.value,
-            },
-            monthLabel: {
-                fontSize: monthLabelSize.value,
-            }
-        },
-        tooltip: {
-            textStyle: {
-                fontSize: 10,
-            },
-            padding: 3,
-            formatter: (p: any) => {
-                return t('msg.uploadedNVideosOnDate', p.value);
-            },
-        },
-        series: [
-            {
-                type: 'heatmap',
-                coordinateSystem: 'calendar',
-                data: getData(store.player.videos, year.value, level.value),
-                itemStyle: {
-                    borderRadius: 3,
-                },
-            }
-        ]
-    }
-})
-
-const handleMouseover = (params: any) => {
-    // console.log(params);
-}
 
 </script>
 
 <style scoped lang="less">
-.chart {
-    aspect-ratio: 6.3;
-    width: 100%;
-}
-
 .el-card {
     --el-card-padding: 10px;
 }
-
 </style>
