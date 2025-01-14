@@ -6,7 +6,7 @@
     <!-- 图形验证码 -->
     <el-form-item :disabled="!email_success" :label="t('form.imageCaptcha')" ref="captchaFormRef">
         <div style="display: flex">
-            <el-input v-model.trim="captcha" prefix-icon="Key" class="code" maxlength="6"
+            <el-input v-model.trim="captcha" prefix-icon="Key" class="code" maxlength="4"
                 @input="captchaHandler"></el-input>
             &nbsp;
             <ValidCode ref="refValidCode" />
@@ -15,10 +15,10 @@
     <!-- 邮箱验证码 -->
     <el-form-item prop="emailCode" :label="t('form.emailCode')" ref="emailCodeFormRef">
         <div style="display: flex">
-            <el-input v-model.trim="emailCode" prefix-icon="Key" maxlength="6" :disabled="!email_success"
+            <el-input v-model.trim="emailCode" prefix-icon="Key" maxlength="6" :disabled="captcha.length!=4"
                 @input="emailCodeHandler" :placeholder="t(email_code_placeholder)"></el-input>
             &nbsp;
-            <el-button @click="getEmailCaptcha(type)" :disabled="send_email_code_button_disabled || counting">
+            <el-button @click="getEmailCaptcha(type)" :disabled="captcha.length!=4">
                 <vue-countdown v-if="counting" :time="60000" @end="counting = false;" v-slot="{ totalSeconds }">
                     ({{ totalSeconds }})
                 </vue-countdown>

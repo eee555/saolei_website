@@ -92,7 +92,6 @@ def user_register(request):
         emailHashkey = request.POST.get("email_key")
         email_captcha = request.POST.get("email_captcha")
         email = request.POST.get("email")
-        print(email, email_captcha, emailHashkey)
         if judge_email_verification(email, email_captcha, emailHashkey):
             new_user = user_register_form.save(commit=False)
             # 设置密码(哈希)

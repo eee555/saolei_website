@@ -24,7 +24,6 @@
     "@vueuse/components": "^10.11.0",
     "@vueuse/core": "^10.11.0",
     "axios": "^1.7.2",
-    "echarts": "^5.5.0",
     "element-plus": "^2.9.0",
     "flag-icon-css": "^4.1.7",
     "highlight.js": "^11.9.0",
