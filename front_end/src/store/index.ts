@@ -48,3 +48,10 @@ export const videofilter = useLocalStorage('videofilter', {
 })
 
 export const colorTheme = useLocalStorage('colorTheme', colorSchemeTemplates.ArbiterStatsAuto)
+
+export const activityCalendarConfig = useLocalStorage('activity-calendar-config', {
+    cellSize: 14,
+    cellMargin: 3,
+    cornerRadius: 20,
+    showDate: false,
+})

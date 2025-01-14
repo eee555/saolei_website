@@ -24,6 +24,9 @@ export default {
             i: '中级',
             e: '高级',
             sum: '总计',
+            shortb: '初',
+            shorti: '中',
+            shorte: '高',
         },
         mode: {
             std: '标准',
@@ -129,6 +132,13 @@ export default {
         womTrophy: '奖杯',
         womWin: '总胜场',
     },
+    activityCalendar: {
+        cellGap: '方格间距',
+        cellSize: '方格边长',
+        cornerRadius: '圆角半径',
+        showDate: '显示日期',
+        totalNVideos: '共{0}个录像',
+    },
     experimentalFeature: {
         watermark: '实验功能',
     },
@@ -222,7 +232,6 @@ export default {
         pleaseSeeEmail: '请查看邮箱',
         registerSuccess: '注册成功！',
         success: '成功：',
-        totalNVideos: '共{0}个录像',
         unknownError: '发生未知错误，请联系开发者。',
         uploadedNVideosOnDate: '{0} 上传了 {1} 个录像',
         usernameCollision: '用户名已存在',

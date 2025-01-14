@@ -1,14 +1,28 @@
 <template>
     <el-card style="overflow: auto">
-        <div style="align-items: center; display: flex;">
-            <el-text size="small">{{ t('msg.totalNVideos', [count]) }}</el-text>
+        <el-row style="align-items: center; display: flex;">
+            <el-text size="small">{{ t('activityCalendar.totalNVideos', [store.player.videos.length]) }}</el-text>
+            <span style="flex: 1;"></span>
+            <span class="dot" style=" background-color: #c00;" />
+            <el-text size="small">{{ t('common.level.shortb') }}</el-text>
+            &nbsp;
+            <span class="dot" style=" background-color: #0c0;" />
+            <el-text size="small">{{ t('common.level.shorti') }}</el-text>
+            &nbsp;
+            <span class="dot" style=" background-color: #00c;" />
+            <el-text size="small">{{ t('common.level.shorte') }}</el-text>
             <span style="width: 10px;"></span>
-        </div>
+            <IconSetting>
+                <ActivityCalendarAbstractSetting />
+            </IconSetting>
+        </el-row>
         <el-row>
             <el-text :style="{
-                display:'inline-block',
-                fontSize: (cellSize + cellMargin - 4) + 'px',
-                marginTop: (cellSize + cellMargin) + 'px',
+                display: 'inline-block',
+                fontSize: (cellFullSize - 8) + 'px',
+                lineHeight: cellFullSize + 'px',
+                marginTop: cellFullSize + 'px',
+                marginRight: activityCalendarConfig.cellMargin + 'px',
             }">
                 Sun<br>Mon<br>Tue<br>Wed<br>Thu<br>Fri<br>Sat
             </el-text>
@@ -16,18 +30,22 @@
                 <el-row>
                     <el-text v-for="date of generateMonthLabelRange(startDate, endDate)" :style="{
                         position: 'absolute',
+                        fontSize: '12px',
                         top: 0,
-                        left: (Math.max(1,(date.getTime()-startWeekTime) / fullWeek)) * (cellSize + cellMargin) + 'px',
+                        left: (Math.max(1, (date.getTime() - startWeekTime) / fullWeek)) * cellFullSize + 'px',
                         transform: 'translate(-50%,0)'
                     }">{{ monthNameShort[date.getMonth()] }}</el-text>
                 </el-row>
-                <el-row style="position: relative; height: 139px;">
+                <el-row :style="{
+                    position: 'relative',
+                    height: (cellFullSize*8+activityCalendarConfig.cellMargin)+'px',
+                }">
                     <template v-for="date of generateDateRange(startDate, endDate)">
                         <ActivityCalendarAbstractCell :date="date" :start-date="startDate"
-                            :videos="groupedVideoAbstract.get(toISODateString(date))" :size="cellSize"
-                            :corner-radius="5" :margin="cellMargin"
-                            :x-offset="Math.round((getWeekTime(date) - startWeekTime) / fullWeek)" 
-                            :y-offset="date.getDay()+1"/>
+                            :videos="groupedVideoAbstract.get(toISODateString(date))" :size="activityCalendarConfig.cellSize"
+                            :corner-radius="activityCalendarConfig.cornerRadius" :margin="activityCalendarConfig.cellMargin"
+                            :x-offset="Math.round((getWeekTime(date) - startWeekTime) / fullWeek)"
+                            :y-offset="date.getDay() + 1" :show-date="activityCalendarConfig.showDate" />
                     </template>
                 </el-row>
             </el-scrollbar>
@@ -38,20 +56,18 @@
 
 <script setup lang="ts">
 
-import { computed, ref, watch } from 'vue';
-import { store, local } from '@/store';
-import { useDark, useElementSize } from '@vueuse/core';
+import { computed } from 'vue';
+import { store, activityCalendarConfig } from '@/store';
 import { useI18n } from 'vue-i18n';
-import { groupVideosByUploadDate, VideoAbstract } from '@/utils/videoabstract';
+import { groupVideosByUploadDate } from '@/utils/videoabstract';
 import ActivityCalendarAbstractCell from './ActivityCalendarAbstractCell.vue';
 import { fullWeek, getWeekTime, monthNameShort, toISODateString } from '@/utils/datetime';
+import IconSetting from '../widgets/IconSetting.vue';
+import ActivityCalendarAbstractSetting from './ActivityCalendarAbstractSetting.vue';
 
-const isDark = useDark();
 const { t } = useI18n();
 
-const count = ref(0);
-const cellSize = ref(14);
-const cellMargin = ref(3);
+const cellFullSize = computed(() => activityCalendarConfig.value.cellSize + activityCalendarConfig.value.cellMargin);
 
 const groupedVideoAbstract = computed(() => groupVideosByUploadDate(store.player.videos));
 const endDate = new Date(new Date().toDateString()); // today
@@ -91,13 +107,17 @@ function generateMonthLabelRange(startDate: Date, endDate: Date) {
     return monthLabels;
 }
 
-
-const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--el-color-primary');
-
 </script>
 
 <style scoped lang="less">
 .el-card {
     --el-card-padding: 10px;
+}
+
+.dot {
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
+    display: inline-block;
 }
 </style>

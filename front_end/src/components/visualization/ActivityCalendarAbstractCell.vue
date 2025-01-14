@@ -1,6 +1,14 @@
 <template>
-    <tippy class="cell" :duration="0">
-        <!-- <div></div> -->
+    <tippy class="cell" :duration="0" sticky>
+        <el-text v-if="showDate" :style="{
+            position: 'absolute',
+            top: size / 2 + 'px',
+            left: size / 2 + 'px',
+            transform: 'translate(-50%, -50%)',
+            fontSize: size - 6 + 'px',
+        }"> <!-- 用class的情况下不知为何字号不会生效 -->
+            {{ date.getDate() }}
+        </el-text>
         <template #content>
             {{ toISODateString(date) }}
         </template>
@@ -21,10 +29,11 @@ const prop = defineProps({
     imax: { type: Number, default: 5, },
     emax: { type: Number, default: 5, },
     size: { type: Number, default: 12 },
-    cornerRadius: { type: Number, default: 2 },
+    cornerRadius: { type: Number, default: 20 },
     margin: { type: Number, default: 2 },
-    xOffset:{type:Number,default:0},
-    yOffset:{type:Number,default:0},
+    xOffset: { type: Number, default: 0 },
+    yOffset: { type: Number, default: 0 },
+    showDate: { type: Boolean, default: false },
 })
 
 const isDark = useDark();
@@ -44,21 +53,21 @@ watch(prop, () => {
     red.value = count.value.b / prop.bmax;
     green.value = count.value.i / prop.imax;
     blue.value = count.value.e / prop.emax;
-},{immediate: true})
+}, { immediate: true })
 
 </script>
 
 <style lang="less" scoped>
 .cell {
     position: absolute;
-    top: v-bind("prop.yOffset * (prop.size+prop.margin) + prop.margin + 'px'");
-    left: v-bind("prop.xOffset * (prop.size+prop.margin) + prop.margin + 'px'");
+    top: v-bind("prop.yOffset * (prop.size + prop.margin) + prop.margin + 'px'");
+    left: v-bind("prop.xOffset * (prop.size + prop.margin) + prop.margin + 'px'");
     width: v-bind("prop.size + 'px'");
     height: v-bind("prop.size + 'px'");
-    border-radius: v-bind("prop.cornerRadius + 'px'");
+    border-radius: v-bind("prop.cornerRadius + '%'");
     border-style: solid;
     border-color: v-bind("isDark ? '#333' : '#ccc'");
     border-width: 1px;
-    background: rgb(v-bind("255 * (isDark ? red : 1-red)"), v-bind("255 * (isDark ? green : 1-green)"), v-bind("255 * (isDark ? blue : 1-blue)"));
+    background: rgb(v-bind("255 * (isDark ? red : 1 - red)"), v-bind("255 * (isDark ? green : 1 - green)"), v-bind("255 * (isDark ? blue : 1 - blue)"));
 }
 </style>
