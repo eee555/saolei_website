@@ -1,16 +1,16 @@
 <template>
-    <el-card style="overflow: auto">
+    <el-card style="overflow: auto;">
         <el-row style="align-items: center; display: flex;">
-            <el-text size="small">{{ t('activityCalendar.totalNVideos', [store.player.videos.length]) }}</el-text>
+            <el-text size="small" v-t="{ path: 'activityCalendar.totalNVideos', args: [store.player.videos.length] }" />
             <span style="flex: 1;"></span>
             <span class="dot" style=" background-color: #c00;" />
-            <el-text size="small">{{ t('common.level.shortb') }}</el-text>
+            <el-text size="small" v-t="'common.level.shortb'" />
             &nbsp;
             <span class="dot" style=" background-color: #0c0;" />
-            <el-text size="small">{{ t('common.level.shorti') }}</el-text>
+            <el-text size="small" v-t="'common.level.shorti'" />
             &nbsp;
             <span class="dot" style=" background-color: #00c;" />
-            <el-text size="small">{{ t('common.level.shorte') }}</el-text>
+            <el-text size="small" v-t="'common.level.shorte'" />
             <span style="width: 10px;"></span>
             <IconSetting>
                 <ActivityCalendarAbstractSetting />
@@ -38,34 +38,30 @@
                 </el-row>
                 <el-row :style="{
                     position: 'relative',
-                    height: (cellFullSize*8+activityCalendarConfig.cellMargin)+'px',
+                    height: (cellFullSize * 8 + activityCalendarConfig.cellMargin) + 'px',
+                    filter: 'invert(' + (local.darkmode ? 0 : 1) + ')',
                 }">
                     <template v-for="date of generateDateRange(startDate, endDate)">
                         <ActivityCalendarAbstractCell :date="date" :start-date="startDate"
-                            :videos="groupedVideoAbstract.get(toISODateString(date))" :size="activityCalendarConfig.cellSize"
-                            :corner-radius="activityCalendarConfig.cornerRadius" :margin="activityCalendarConfig.cellMargin"
+                            :videos="groupedVideoAbstract.get(toISODateString(date))"
                             :x-offset="Math.round((getWeekTime(date) - startWeekTime) / fullWeek)"
                             :y-offset="date.getDay() + 1" :show-date="activityCalendarConfig.showDate" />
                     </template>
                 </el-row>
             </el-scrollbar>
         </el-row>
-
     </el-card>
 </template>
 
 <script setup lang="ts">
 
-import { computed } from 'vue';
-import { store, activityCalendarConfig } from '@/store';
-import { useI18n } from 'vue-i18n';
+import { computed, defineAsyncComponent } from 'vue';
+import { store, activityCalendarConfig, local } from '@/store';
 import { groupVideosByUploadDate } from '@/utils/videoabstract';
-import ActivityCalendarAbstractCell from './ActivityCalendarAbstractCell.vue';
+const ActivityCalendarAbstractCell = defineAsyncComponent(() => import('./ActivityCalendarAbstractCell.vue'));
 import { fullWeek, getWeekTime, monthNameShort, toISODateString } from '@/utils/datetime';
 import IconSetting from '../widgets/IconSetting.vue';
 import ActivityCalendarAbstractSetting from './ActivityCalendarAbstractSetting.vue';
-
-const { t } = useI18n();
 
 const cellFullSize = computed(() => activityCalendarConfig.value.cellSize + activityCalendarConfig.value.cellMargin);
 

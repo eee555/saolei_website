@@ -2,10 +2,10 @@
     <tippy class="cell" :duration="0" sticky>
         <el-text v-if="showDate" :style="{
             position: 'absolute',
-            top: size / 2 + 'px',
-            left: size / 2 + 'px',
+            top: activityCalendarConfig.cellSize / 2 + 'px',
+            left: activityCalendarConfig.cellSize / 2 + 'px',
             transform: 'translate(-50%, -50%)',
-            fontSize: size - 6 + 'px',
+            fontSize: activityCalendarConfig.cellSize - 6 + 'px',
         }"> <!-- 用class的情况下不知为何字号不会生效 -->
             {{ date.getDate() }}
         </el-text>
@@ -16,9 +16,9 @@
 </template>
 
 <script setup lang="ts">
+import { activityCalendarConfig, local } from '@/store';
 import { toISODateString } from '@/utils/datetime';
 import { VideoAbstract } from '@/utils/videoabstract';
-import { useDark } from '@vueuse/core';
 import { computed, ref, toRaw, watch } from 'vue';
 import { Tippy } from 'vue-tippy';
 
@@ -28,15 +28,10 @@ const prop = defineProps({
     bmax: { type: Number, default: 5, },
     imax: { type: Number, default: 5, },
     emax: { type: Number, default: 5, },
-    size: { type: Number, default: 12 },
-    cornerRadius: { type: Number, default: 20 },
-    margin: { type: Number, default: 2 },
     xOffset: { type: Number, default: 0 },
     yOffset: { type: Number, default: 0 },
     showDate: { type: Boolean, default: false },
 })
-
-const isDark = useDark();
 
 const count = ref({ b: 0, i: 0, e: 0, });
 const red = ref(0);
@@ -50,24 +45,29 @@ watch(prop, () => {
     for (let video of prop.videos) {
         count.value[video.level]++;
     }
-    red.value = count.value.b / prop.bmax;
-    green.value = count.value.i / prop.imax;
-    blue.value = count.value.e / prop.emax;
-}, { immediate: true })
+    red.value = 255 * count.value.b / prop.bmax;
+    green.value = 255 * count.value.i / prop.imax;
+    blue.value = 255 * count.value.e / prop.emax;
+})
+
+const size = computed(() => activityCalendarConfig.value.cellSize + 'px');
+const borderRadius = computed(() => activityCalendarConfig.value.cornerRadius + '%');
+const top = computed(() => prop.yOffset * (activityCalendarConfig.value.cellSize + activityCalendarConfig.value.cellMargin) + activityCalendarConfig.value.cellMargin + 'px');
+const left = computed(() => prop.xOffset * (activityCalendarConfig.value.cellSize + activityCalendarConfig.value.cellMargin) + activityCalendarConfig.value.cellMargin + 'px');
 
 </script>
 
 <style lang="less" scoped>
 .cell {
     position: absolute;
-    top: v-bind("prop.yOffset * (prop.size + prop.margin) + prop.margin + 'px'");
-    left: v-bind("prop.xOffset * (prop.size + prop.margin) + prop.margin + 'px'");
-    width: v-bind("prop.size + 'px'");
-    height: v-bind("prop.size + 'px'");
-    border-radius: v-bind("prop.cornerRadius + '%'");
+    top: v-bind(top);
+    left: v-bind(left);
+    width: v-bind(size);
+    height: v-bind(size);
+    border-radius: v-bind(borderRadius);
     border-style: solid;
-    border-color: v-bind("isDark ? '#333' : '#ccc'");
+    border-color: #333;
     border-width: 1px;
-    background: rgb(v-bind("255 * (isDark ? red : 1 - red)"), v-bind("255 * (isDark ? green : 1 - green)"), v-bind("255 * (isDark ? blue : 1 - blue)"));
+    background: rgb(v-bind(red), v-bind(green), v-bind(blue));
 }
 </style>
