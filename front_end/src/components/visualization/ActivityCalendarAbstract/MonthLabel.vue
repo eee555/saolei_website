@@ -3,7 +3,7 @@
         position: 'absolute',
         fontSize: '12px',
         top: 0,
-        left: (Math.max(1, (date.getTime() - startWeekTime) / fullWeek)) * cellFullSize + 'px',
+        left: (date.getTime() - startWeekTime) / fullWeek * cellFullSize + 'px',
         transform: 'translate(-50%,0)'
     }">{{ monthNameShort[date.getMonth()] }}</el-text>
 </template>

@@ -5,7 +5,7 @@
             top: activityCalendarConfig.cellSize / 2 + 'px',
             left: activityCalendarConfig.cellSize / 2 + 'px',
             transform: 'translate(-50%, -50%)',
-            fontSize: activityCalendarConfig.cellSize - 6 + 'px',
+            fontSize: activityCalendarConfig.cellSize * 0.6 + 'px',
         }"> <!-- 用class的情况下不知为何字号不会生效 -->
             {{ date.getDate() }}
         </el-text>
@@ -17,9 +17,9 @@
                 <el-text
                     v-t="{ path: 'activityCalendar.tooltip.uploadedNVideosOnDate', args: [toISODateString(date), videos.length] }" />
                 <br>
-                <span v-for="i in count.b" class="dot" style="background-color: #c00;"></span>
-                <span v-for="i in count.i" class="dot" style="background-color: #0c0;"></span>
-                <span v-for="i in count.e" class="dot" style="background-color: #00c;"></span>
+                <span v-for="i in count.b" class="dot" style="background-color: #f00;"></span>
+                <span v-for="i in count.i" class="dot" style="background-color: #080;"></span>
+                <span v-for="i in count.e" class="dot" style="background-color: #00f;"></span>
             </template>
         </el-card>
         </template>
@@ -49,7 +49,7 @@ const red = ref(0);
 const green = ref(0);
 const blue = ref(0);
 
-watch(prop, () => {
+watch(() => prop.videos, () => {
     count.value.b = 0;
     count.value.i = 0;
     count.value.e = 0;
