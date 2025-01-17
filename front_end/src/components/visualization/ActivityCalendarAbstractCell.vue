@@ -1,5 +1,5 @@
 <template>
-    <tippy class="cell" :duration="0" sticky>
+    <Tippy class="cell" :duration="0" sticky>
         <el-text v-if="showDate" :style="{
             position: 'absolute',
             top: activityCalendarConfig.cellSize / 2 + 'px',
@@ -10,9 +10,20 @@
             {{ date.getDate() }}
         </el-text>
         <template #content>
-            {{ toISODateString(date) }}
+            <!-- vue-tippy的bug，改语言的时候content不会刷新，不算大问题就不用workaround了，等上游修复 -->
+            <el-card>
+            <el-text v-if="videos.length == 0" v-t="{path: 'activityCalendar.tooltip.noVideoOnDate', args: [toISODateString(date)]}" />
+            <template v-else>
+                <el-text
+                    v-t="{ path: 'activityCalendar.tooltip.uploadedNVideosOnDate', args: [toISODateString(date), videos.length] }" />
+                <br>
+                <span v-for="i in count.b" class="dot" style="background-color: #c00;"></span>
+                <span v-for="i in count.i" class="dot" style="background-color: #0c0;"></span>
+                <span v-for="i in count.e" class="dot" style="background-color: #00c;"></span>
+            </template>
+        </el-card>
         </template>
-    </tippy>
+    </Tippy>
 </template>
 
 <script setup lang="ts">
@@ -69,5 +80,16 @@ const left = computed(() => prop.xOffset * (activityCalendarConfig.value.cellSiz
     border-color: #333;
     border-width: 1px;
     background: rgb(v-bind(red), v-bind(green), v-bind(blue));
+}
+
+.dot {
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.el-card {
+    --el-card-padding: 5px;
 }
 </style>
