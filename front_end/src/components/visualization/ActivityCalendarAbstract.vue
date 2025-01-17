@@ -1,40 +1,13 @@
 <template>
     <el-card style="overflow: auto;">
         <el-row style="align-items: center; display: flex;">
-            <el-text size="small" v-t="{ path: 'activityCalendar.totalNVideos', args: [store.player.videos.length] }" />
-            <span style="flex: 1;"></span>
-            <span class="dot" style=" background-color: #c00;" />
-            <el-text size="small" v-t="'common.level.shortb'" />
-            &nbsp;
-            <span class="dot" style=" background-color: #0c0;" />
-            <el-text size="small" v-t="'common.level.shorti'" />
-            &nbsp;
-            <span class="dot" style=" background-color: #00c;" />
-            <el-text size="small" v-t="'common.level.shorte'" />
-            <span style="width: 10px;"></span>
-            <IconSetting>
-                <ActivityCalendarAbstractSetting />
-            </IconSetting>
+            <Header />
         </el-row>
         <el-row>
-            <el-text :style="{
-                display: 'inline-block',
-                fontSize: (cellFullSize - 8) + 'px',
-                lineHeight: cellFullSize + 'px',
-                marginTop: cellFullSize + 'px',
-                marginRight: activityCalendarConfig.cellMargin + 'px',
-            }">
-                Sun<br>Mon<br>Tue<br>Wed<br>Thu<br>Fri<br>Sat
-            </el-text>
+            <DayLabel />
             <el-scrollbar style="flex:1;">
                 <el-row>
-                    <el-text v-for="date of generateMonthLabelRange(startDate, endDate)" :style="{
-                        position: 'absolute',
-                        fontSize: '12px',
-                        top: 0,
-                        left: (Math.max(1, (date.getTime() - startWeekTime) / fullWeek)) * cellFullSize + 'px',
-                        transform: 'translate(-50%,0)'
-                    }">{{ monthNameShort[date.getMonth()] }}</el-text>
+                    <MonthLabel :start-date="startDate" :end-date="endDate" />
                 </el-row>
                 <el-row :style="{
                     position: 'relative',
@@ -59,9 +32,10 @@ import { computed, defineAsyncComponent } from 'vue';
 import { store, activityCalendarConfig, local } from '@/store';
 import { groupVideosByUploadDate } from '@/utils/videoabstract';
 const ActivityCalendarAbstractCell = defineAsyncComponent(() => import('./ActivityCalendarAbstractCell.vue'));
-import { fullWeek, getWeekTime, monthNameShort, toISODateString } from '@/utils/datetime';
-import IconSetting from '../widgets/IconSetting.vue';
-import ActivityCalendarAbstractSetting from './ActivityCalendarAbstractSetting.vue';
+import { fullWeek, getWeekTime, toISODateString } from '@/utils/datetime';
+import Header from './ActivityCalendarAbstract/Header.vue';
+import DayLabel from './ActivityCalendarAbstract/DayLabel.vue';
+import MonthLabel from './ActivityCalendarAbstract/MonthLabel.vue';
 
 const cellFullSize = computed(() => activityCalendarConfig.value.cellSize + activityCalendarConfig.value.cellMargin);
 
@@ -88,32 +62,10 @@ function* generateDateRange(startDate: Date, endDate: Date, step: number = 1) {
     }
 }
 
-function generateMonthLabelRange(startDate: Date, endDate: Date) {
-    let currentDate = new Date(startDate);
-    if (currentDate.getDate() > 15) {
-        currentDate.setMonth(currentDate.getMonth() + 1);
-        currentDate.setDate(15);
-    }
-    let monthLabels = [];
-    while (currentDate <= endDate) {
-        monthLabels.push(currentDate);
-        currentDate = new Date(currentDate);
-        currentDate.setMonth(currentDate.getMonth() + 1);
-    }
-    return monthLabels;
-}
-
 </script>
 
 <style scoped lang="less">
 .el-card {
     --el-card-padding: 10px;
-}
-
-.dot {
-    height: 12px;
-    width: 12px;
-    border-radius: 50%;
-    display: inline-block;
 }
 </style>
