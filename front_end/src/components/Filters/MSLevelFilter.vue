@@ -1,20 +1,21 @@
 <template>
     <el-checkbox-group v-model="level" size="small">
-        <el-checkbox-button v-for="l in ['b', 'i', 'e']" :value="l">
+        <el-checkbox-button v-for="l in MS_Levels" :value="l">
             {{ t('common.level.' + l) }}
         </el-checkbox-button>
     </el-checkbox-group>
 </template>
 
 <script setup lang="ts">
+import { MS_Level, MS_Levels } from '@/utils/ms_const';
 import { useI18n } from 'vue-i18n';
 
 
 const { t } = useI18n();
 
 const level = defineModel({
-    type: Array<"b" | "i" | "e">,
-    default: ['b', 'i', 'e'],
+    type: Array<MS_Level>,
+    default: MS_Levels,
 });
 
 </script>

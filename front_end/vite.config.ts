@@ -28,6 +28,14 @@ export default defineConfig(({ mode }) => {
       port: 8080,
       host: process.env.Host || "localhost",
     },
+    esbuild: {
+      supported: {
+        'top-level-await': true //browsers can handle top-level-await features
+      },
+    },
+    build: {
+      minify: false,
+    }
     // base: baseURL,
   }
 })

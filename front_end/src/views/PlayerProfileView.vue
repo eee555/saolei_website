@@ -2,10 +2,10 @@
     <ActivityCalendarAbstract />
     <el-divider />
     <ExperimentalFeature>
-        <ActivityScatter2D />
+        <!-- <ActivityScatter2D />
         <el-divider />
         <MS3bvPB />
-        <el-divider />
+        <el-divider /> -->
     </ExperimentalFeature>
     <el-text tag="b" size="large">{{ t('accountlink.title') }}</el-text>
     <AccountLinkManager />
@@ -23,7 +23,7 @@ import IdentifierManager from '@/components/widgets/IdentifierManager.vue';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { store } from '@/store';
 import { useI18n } from 'vue-i18n';
-import ActivityCalendarAbstract from '@/components/visualization/ActivityCalendarAbstract.vue';
+import ActivityCalendarAbstract from '@/components/visualization/ActivityCalendarAbstract/App.vue';
 import ActivityScatter2D from '@/components/visualization/ActivityScatter2D.vue';
 import ExperimentalFeature from '@/components/ExperimentalFeature.vue';
 import MS3bvPB from '@/components/visualization/MS3bvPB.vue';
