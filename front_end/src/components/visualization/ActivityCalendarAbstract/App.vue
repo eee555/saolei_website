@@ -15,7 +15,7 @@
                     filter: 'invert(' + (local.darkmode ? 0 : 1) + ')',
                 }">
                     <template v-for="date of generateDateRange(startDate, endDate)">
-                        <ActivityCalendarAbstractCell :date="date" :start-date="startDate"
+                        <Cell :date="date" :start-date="startDate"
                             :videos="groupedVideoAbstract.get(toISODateString(date))"
                             :x-offset="Math.round((getWeekTime(date) - startWeekTime) / fullWeek)"
                             :y-offset="date.getDay() + 1" :show-date="activityCalendarConfig.showDate" />
@@ -31,11 +31,11 @@
 import { computed, defineAsyncComponent } from 'vue';
 import { store, activityCalendarConfig, local } from '@/store';
 import { groupVideosByUploadDate } from '@/utils/videoabstract';
-const ActivityCalendarAbstractCell = defineAsyncComponent(() => import('./ActivityCalendarAbstractCell.vue'));
 import { fullWeek, getWeekTime, toISODateString } from '@/utils/datetime';
-import Header from './ActivityCalendarAbstract/Header.vue';
-import DayLabel from './ActivityCalendarAbstract/DayLabel.vue';
-import MonthLabel from './ActivityCalendarAbstract/MonthLabel.vue';
+import Header from './Header.vue';
+import DayLabel from './DayLabel.vue';
+import MonthLabel from './MonthLabel.vue';
+const Cell = defineAsyncComponent(() => import('./Cell.vue'));
 
 const cellFullSize = computed(() => activityCalendarConfig.value.cellSize + activityCalendarConfig.value.cellMargin);
 
