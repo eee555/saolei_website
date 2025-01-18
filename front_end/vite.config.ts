@@ -3,6 +3,7 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import wasm from "vite-plugin-wasm";
+// import vueDevTools from 'vite-plugin-vue-devtools'
 import topLevelAwait from "vite-plugin-top-level-await";
 
 // https://vitejs.dev/config/
@@ -16,6 +17,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       vue(),
       wasm(),
+      //vueDevTools(),
       topLevelAwait()
     ],
     resolve: {
@@ -28,14 +30,14 @@ export default defineConfig(({ mode }) => {
       port: 8080,
       host: process.env.Host || "localhost",
     },
-    esbuild: {
-      supported: {
-        'top-level-await': true //browsers can handle top-level-await features
-      },
-    },
-    build: {
-      minify: false,
-    }
+    // esbuild: {
+    //   supported: {
+    //     'top-level-await': true //browsers can handle top-level-await features
+    //   },
+    // },
+    // build: {
+    //   minify: false,
+    // }
     // base: baseURL,
   }
 })
