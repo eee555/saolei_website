@@ -58,7 +58,8 @@
 
             <el-main>
                 <el-tabs v-model="activeName" style="overflow: auto;">
-                    <el-tab-pane :label="t('profile.profile.title')" name="profile" :lazy="true" style="overflow: auto;">
+                    <el-tab-pane :label="t('profile.profile.title')" name="profile" :lazy="true"
+                        style="overflow: auto;">
                         <PlayerProfileView :key="store.player.id"></PlayerProfileView>
                     </el-tab-pane>
                     <el-tab-pane :label="t('profile.records.title')" name="record" :lazy="true">
@@ -72,7 +73,6 @@
                         <UploadView :identifiers="store.user.identifiers"></UploadView>
                     </el-tab-pane>
                 </el-tabs>
-
             </el-main>
         </el-container>
     </div>
