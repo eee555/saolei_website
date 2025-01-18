@@ -50,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import LanguagePicker from "./components/widgets/LanguagePicker.vue";
 import IconMenuItem from "./components/widgets/IconMenuItem.vue";
 import Login from "./components/Login.vue";
@@ -69,6 +69,9 @@ const router = useRouter();
 import { useDark, useToggle } from '@vueuse/core';
 const isDark = useDark()
 useToggle(isDark)
+watch(isDark, (v) => {
+    local.value.darkmode = v
+})
 
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
@@ -86,7 +89,7 @@ const menu_items = [
     //{ index: "world", icon: "Odometer", content: "menu.world" },
     { index: "guide", icon: "Document", content: "menu.guide" },
     //{ index: "score", icon: "Histogram", content: "menu.score" },
-];
+] as const;
 
 const notice = ref(`
 0、即日起，网站正式上线！！！

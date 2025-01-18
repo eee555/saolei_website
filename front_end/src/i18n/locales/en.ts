@@ -138,6 +138,10 @@ export default {
         cornerRadius: 'Corner Radius',
         showDate: 'Show Date',
         totalNVideos: '{0} videos in total',
+        tooltip: {
+            noVideoOnDate: 'No video on {0}',
+            uploadedNVideosOnDate: '{1} videos on {0}',
+        }
     },
     experimentalFeature: {
         watermark: 'EXPERIMENTAL',
@@ -233,7 +237,6 @@ export default {
         registerSuccess: 'Successfully registered!',
         success: 'Success: ',
         unknownError: 'An unexpected error occurred. Please contact the developers. {0}',
-        uploadedNVideosOnDate: 'uploaded {1} videos on {0}',
         usernameCollision: 'Username already exists',
         usernameInvalid: 'Username must contain visible characters',
         usernamePasswordInvalid: 'Invalid username or password',

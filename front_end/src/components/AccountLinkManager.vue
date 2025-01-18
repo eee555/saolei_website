@@ -2,8 +2,7 @@
     <el-table :data="accountlinks" @expand-change="expandRow" :row-key="(row: any) => 'key' + row.platform">
         <el-table-column type="expand">
             <template #default="props">
-                <el-text v-if="!props.row.verified" type="info" style="margin-left:50px">{{
-                    t('accountlink.unverifiedText') }}</el-text>
+                <el-text v-if="!props.row.verified" type="info" style="margin-left:50px" v-t="'accountlink.unverifiedText'"></el-text>
                 <el-text v-else-if="props.row.data === undefined" type="info" style="margin-left:50px">No Data</el-text>
                 <AccountSaolei v-else-if="props.row.platform == 'c'" :data="props.row.data" />
                 <AccountMsgames v-else-if="props.row.platform == 'a'" :data="props.row.data" />
