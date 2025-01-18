@@ -3,6 +3,8 @@
         <div style="align-items: center; display: flex;">
             <span style="flex: 1;"></span>
             <MSStatSelect v-model="stat_show" :options="['time', 'bvs']" style="width: 100px" />
+            &nbsp;
+            
         </div>
         <v-chart v-if="level_visible.includes('b')" :option="getOption(store.player.videos, 'b', stat_show)" :style="{ height: heights.b + 30 + 'px', width: '100%' }"
             autoresize @click="handleClick" />
@@ -15,7 +17,8 @@
 
 <script setup lang="ts">
 import { colorTheme, store } from '@/store';
-import { getStat_stat, VideoAbstract } from '@/utils/fileIO';
+import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
+import { MS_Level, MS_Levels } from '@/utils/ms_const';
 import VChart from 'vue-echarts';
 import * as echarts from 'echarts/core';
 import { HeatmapChart } from 'echarts/charts';
@@ -38,7 +41,7 @@ echarts.use([
     GridComponent,
 ])
 
-const level_visible = ref(['b', 'i', 'e']);
+const level_visible = ref([...MS_Levels]);
 const stat_show = ref<'time' | 'bvs'>('time');
 
 const pb_index_all = {
@@ -47,13 +50,13 @@ const pb_index_all = {
     e: new Array<number | null>(381).fill(null),
 };
 
-const heights = {
+const heights = ref({
     b: 100,
     i: 100,
     e: 100,
-}
+})
 
-function getPBindex(videos: Array<VideoAbstract>, stat: getStat_stat, smallIsBetter: boolean, level: 'b' | 'i' | 'e') {
+function getPBindex(videos: Array<VideoAbstract>, stat: getStat_stat, smallIsBetter: boolean, level: MS_Level) {
     let pb_index = pb_index_all[level];
     pb_index.fill(null);
     let pb = deepCopy(pb_index);
@@ -108,7 +111,7 @@ function getHeight(pb_index: Array<number | null>) {
     return 30 * (getPBLastRow(pb_index) - getPBFirstRow(pb_index) + 1);
 }
 
-function getPieces(level: 'b' | 'i' | 'e', stat: 'time' | 'bvs') {
+function getPieces(level: MS_Level, stat: 'time' | 'bvs') {
     let thresholds;
     let colors;
     if (stat === 'bvs') {
@@ -147,9 +150,9 @@ function getPieces(level: 'b' | 'i' | 'e', stat: 'time' | 'bvs') {
     return pieces;
 }
 
-const getOption = (videos: Array<VideoAbstract>, level: 'b' | 'i' | 'e', stat: 'time' | 'bvs') => {
+const getOption = (videos: Array<VideoAbstract>, level: MS_Level, stat: 'time' | 'bvs') => {
     getPBindex(videos, 'time', true, level);
-    heights[level] = getHeight(pb_index_all[level]);
+    heights.value[level] = getHeight(pb_index_all[level]);
     return {
         xAxis: {
             type: 'category',

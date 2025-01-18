@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import { pinia } from "./create"
 import { useLocalStorage } from "@vueuse/core"
 import { colorSchemeTemplates } from "@/utils/config"
-import { UserProfile } from "@/userprofile"
+import { UserProfile } from "@/utils/userprofile"
 
 export const store = defineStore('user', {
     state: () => ({
@@ -48,3 +48,10 @@ export const videofilter = useLocalStorage('videofilter', {
 })
 
 export const colorTheme = useLocalStorage('colorTheme', colorSchemeTemplates.ArbiterStatsAuto)
+
+export const activityCalendarConfig = useLocalStorage('activity-calendar-config', {
+    cellSize: 14,
+    cellMargin: 3,
+    cornerRadius: 20,
+    showDate: false,
+})

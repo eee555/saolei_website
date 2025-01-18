@@ -102,7 +102,7 @@ import { store } from '../store'
 
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
-import { UserProfile } from '@/userprofile';
+import { UserProfile } from '@/utils/userprofile';
 const { t } = useI18n();
 const route = useRoute()
 

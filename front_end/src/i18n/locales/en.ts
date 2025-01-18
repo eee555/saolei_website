@@ -24,6 +24,9 @@ export default {
             i: 'Intermediate',
             e: 'Expert',
             sum: 'Sum',
+            shortb: 'Beg',
+            shorti: 'Int',
+            shorte: 'Exp',
         },
         mode: {
             std: 'Standard',
@@ -129,6 +132,13 @@ export default {
         womTrophy: 'Trophies',
         womWin: 'Wins',
     },
+    activityCalendar: {
+        cellGap: 'Cell Gap',
+        cellSize: 'Cell Size',
+        cornerRadius: 'Corner Radius',
+        showDate: 'Show Date',
+        totalNVideos: '{0} videos in total',
+    },
     experimentalFeature: {
         watermark: 'EXPERIMENTAL',
     },
@@ -222,7 +232,6 @@ export default {
         pleaseSeeEmail: 'Please check your email',
         registerSuccess: 'Successfully registered!',
         success: 'Success: ',
-        totalNVideos: '{0} videos in total',
         unknownError: 'An unexpected error occurred. Please contact the developers. {0}',
         uploadedNVideosOnDate: 'uploaded {1} videos on {0}',
         usernameCollision: 'Username already exists',

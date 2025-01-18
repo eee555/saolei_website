@@ -1,4 +1,4 @@
-import { VideoAbstract, VideoAbstractInfo } from "@/utils/fileIO";
+import { VideoAbstract, VideoAbstractInfo } from "@/utils/videoabstract";
 
 interface userProfileInfo {
     id: number;

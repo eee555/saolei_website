@@ -33,7 +33,7 @@ import { store, local } from '../store'
 import { useI18n } from 'vue-i18n';
 import RegisterDialog from './dialogs/RegisterDialog.vue';
 import { httpErrorNotification } from './Notifications';
-import { UserProfile } from '@/userprofile';
+import { UserProfile } from '@/utils/userprofile';
 const { t } = useI18n();
 
 // 登录对话框是否出现
