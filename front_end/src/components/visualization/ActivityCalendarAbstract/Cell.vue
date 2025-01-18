@@ -1,6 +1,6 @@
 <template>
     <Tippy class="cell" :duration="0" sticky>
-        <el-text v-if="showDate" :style="{
+        <el-text v-if="activityCalendarConfig.showDate" :style="{
             position: 'absolute',
             top: activityCalendarConfig.cellSize / 2 + 'px',
             left: activityCalendarConfig.cellSize / 2 + 'px',
@@ -41,7 +41,6 @@ const prop = defineProps({
     emax: { type: Number, default: 5, },
     xOffset: { type: Number, default: 0 },
     yOffset: { type: Number, default: 0 },
-    showDate: { type: Boolean, default: false },
 })
 
 const count = ref({ b: 0, i: 0, e: 0, });

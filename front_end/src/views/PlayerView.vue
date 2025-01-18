@@ -13,25 +13,20 @@
                             <Plus />
                         </el-icon>
                     </el-upload>
-                    <div style="font-size: 14px;color: #AAA;text-align: center;">{{ t('profile.changeAvatar') }}</div>
-                    <div style="margin-top: 12px;margin-bottom: 4px;">
-                        {{ t('profile.realname') }}
-                    </div>
+                    <div style="font-size: 14px;color: #AAA;text-align: center;" v-t="'profile.changeAvatar'"></div>
+                    <div style="margin-top: 12px;margin-bottom: 4px;" v-t="'profile.realname'"></div>
                     <div>
                         <el-input v-model="realname_edit" :placeholder="t('profile.realnameInput')" minlength="2"
                             maxlength="100"></el-input>
                     </div>
-                    <div style="margin-top: 12px;margin-bottom: 4px;">
-                        {{ t('profile.signature') }}
-                    </div>
+                    <div style="margin-top: 12px;margin-bottom: 4px;" v-t="'profile.signature'"></div>
                     <div>
                         <el-input v-model="signature_edit" :placeholder="t('profile.signatureInput')" minlength="0"
                             maxlength="188" type="textarea" :rows="8"></el-input>
                     </div>
 
-                    <button class="edit_button_ok" @click="upload_info">{{ t('profile.confirmChange') }}</button>
-                    <button class="edit_button_cancel" @click="is_editing = false;">{{ t('profile.cancelChange')
-                        }}</button>
+                    <button class="edit_button_ok" @click="upload_info" v-t="'profile.confirmChange'"></button>
+                    <button class="edit_button_cancel" @click="is_editing = false;" v-t="'profile.cancelChange'"></button>
 
                 </div>
 
@@ -50,8 +45,7 @@
                     </div>
                     <div style="overflow: auto ;font-size: 16px;margin-bottom: 12px;text-align: justify;">
                         {{ signature }}</div>
-                    <button class="edit_button" v-show="show_edit_button" @click="is_editing = true; visible = true;">{{
-                        t('profile.change') }}</button>
+                    <button class="edit_button" v-show="show_edit_button" @click="is_editing = true; visible = true;" v-t="'profile.change'"></button>
                     <!-- <div style="overflow: auto ;">人气：{{ popularity }}</div> -->
                 </div>
             </el-aside>
@@ -103,6 +97,7 @@ import { store } from '../store'
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import { UserProfile } from '@/utils/userprofile';
+import { unknownErrorNotification } from '@/components/Notifications';
 const { t } = useI18n();
 const route = useRoute()
 
@@ -173,7 +168,7 @@ function refresh() {
             imageUrlOld = "data:image/;base64," + data.avatar;
         }
         // console.log(imageUrl);
-    })
+    }).catch(unknownErrorNotification);
 }
 
 onMounted(refresh)

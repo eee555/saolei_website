@@ -138,6 +138,10 @@ export default {
         cornerRadius: '圆角半径',
         showDate: '显示日期',
         totalNVideos: '共{0}个录像',
+        tooltip: {
+            noVideoOnDate: '{0} 无录像',
+            uploadedNVideosOnDate: '{0} 共 {1} 个录像',
+        }
     },
     experimentalFeature: {
         watermark: '实验功能',
@@ -233,7 +237,6 @@ export default {
         registerSuccess: '注册成功！',
         success: '成功：',
         unknownError: '发生未知错误，请联系开发者。',
-        uploadedNVideosOnDate: '{0} 上传了 {1} 个录像',
         usernameCollision: '用户名已存在',
         usernameInvalid: '用户名必须包含至少一个可见字符',
         usernamePasswordInvalid: '用户名或密码不正确',

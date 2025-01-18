@@ -74,14 +74,14 @@ export class VideoAbstract {
 
 export function groupVideosByUploadDate(videos: VideoAbstract[]): Map<string, VideoAbstract[]> {
     const result = new Map<string, VideoAbstract[]>();
-  
+
     videos.forEach(video => {
-      const dateKey = video.upload_time.toISOString().split('T')[0]; // Extract date part as string (YYYY-MM-DD)
-      if (!result.has(dateKey)) {
-        result.set(dateKey, []);
-      }
-      result.get(dateKey)?.push(video);
+        const dateKey = video.upload_time.toISOString().split('T')[0]; // Extract date part as string (YYYY-MM-DD)
+        if (!result.has(dateKey)) {
+            result.set(dateKey, []);
+        }
+        result.get(dateKey)?.push(video);
     });
-  
+
     return result;
-  }
+}
