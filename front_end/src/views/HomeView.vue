@@ -79,9 +79,9 @@
                             <QuestionFilled />
                         </el-icon>帮助中心
                     </div>
-                    <div style="font-size: 14px;padding: 2% 5%;">
+                    <!-- <div style="font-size: 14px;padding: 2% 5%;">
                         <Groups></Groups>
-                    </div>
+                    </div> -->
 
                     <div class="aside-tip-title">
                         <el-icon>
@@ -112,7 +112,7 @@ import { utc_to_local_format } from "@/utils/system/tools";
 import FriendlyLink from "@/components/dialogs/FriendlyLinks.vue";
 import Downloads from "@/components/dialogs/Downloads.vue";
 import Thanks from "@/components/dialogs/Thanks.vue";
-import Groups from "@/components/dialogs/Groups.vue";
+// import Groups from "@/components/dialogs/Groups.vue";
 import { store } from '../store'
 
 import { useI18n } from 'vue-i18n';
