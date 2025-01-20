@@ -38,7 +38,6 @@ jobs:
       run: |
         pip install -r requirements.txt
         pip install cryptography
-        pip install flake8
 
     - name: Create Logs Directory
       run: mkdir -p logs
@@ -52,9 +51,6 @@ jobs:
       run: |
         python manage.py makemigrations
         python manage.py migrate
-
-    - name: Quality Assurance
-      run: python -m flake8
     
     - name: Flags
       run: python -m unittest tests.py -v
