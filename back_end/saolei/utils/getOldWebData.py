@@ -70,11 +70,11 @@ class FormatUrl:
     def get(self, mode: Mode = None, level: Level = None, videoID: int = 0) -> str:
         """
         获取相关URL
-        IF mode = Video THEN 
-            IF level != None THEN 获取指定等级的第一页列表 
-            ELSE 获取指定ID的录像下载链接 
-        ELSE 
-            返回空 
+        IF mode = Video THEN
+            IF level != None THEN 获取指定等级的第一页列表
+            ELSE 获取指定ID的录像下载链接
+        ELSE
+            返回空
         END
         Args:
             mode (Mode, optional): _description_. Defaults to None.
@@ -237,7 +237,7 @@ class VideoData(BasePostData):
                                 mode=Mode.Video, videoID=videoID)
                             infos.append(info)
                             if self.scheduleFunc:
-                                if self.scheduleFunc(len(infos)) == False:
+                                if not self.scheduleFunc(len(infos)):
                                     return infos
                     else:
                         return infos
