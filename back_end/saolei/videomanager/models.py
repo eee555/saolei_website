@@ -13,14 +13,8 @@ from config.global_settings import MaxSizes
 class ExpandVideoModel(models.Model):
     # video = models.OneToOneField(VideoModel, on_delete=models.CASCADE)
     identifier = models.CharField(max_length=MaxSizes.identifier)
-    # 0-32767
-    cl_s = models.FloatField()
     stnb = models.FloatField()
     rqp = models.FloatField()
-    ioe = models.FloatField()
-    thrp = models.FloatField()
-    corr = models.FloatField()
-    ce_s = models.FloatField()
     
 
 # 其他类：checksum_ok, mode
@@ -90,13 +84,16 @@ class VideoModel(models.Model):
     double_ce = models.PositiveSmallIntegerField(null=True)
     ce = models.GeneratedField(expression = models.F('left_ce') + models.F('right_ce') + models.F('double_ce'), output_field = models.PositiveSmallIntegerField(), db_persist = True)
 
+    # 需要处理除零错误
     left_s = models.GeneratedField(expression = divideByTimeExpression(models.F('left')), output_field = models.FloatField(), db_persist = True)
     right_s = models.GeneratedField(expression = divideByTimeExpression(models.F('right')), output_field = models.FloatField(), db_persist = True)
     double_s = models.GeneratedField(expression = divideByTimeExpression(models.F('double')), output_field = models.FloatField(), db_persist = True)
+    cl_s = models.GeneratedField(expression = divideByTimeExpression(models.F('cl')), output_field = models.FloatField(), db_persist = True)
 
     left_ces = models.GeneratedField(expression = divideByTimeExpression(models.F('left_ce')), output_field = models.FloatField(), db_persist = True)
     right_ces = models.GeneratedField(expression = divideByTimeExpression(models.F('right_ce')), output_field = models.FloatField(), db_persist = True)
     double_ces = models.GeneratedField(expression = divideByTimeExpression(models.F('double_ce')), output_field = models.FloatField(), db_persist = True)
+    ce_s = models.GeneratedField(expression = divideByTimeExpression(models.F('ce')), output_field = models.FloatField(), db_persist = True)
 
     path = models.FloatField(null=True)
     flag = models.PositiveSmallIntegerField(null=True)
@@ -104,6 +101,9 @@ class VideoModel(models.Model):
     isl = models.PositiveSmallIntegerField(null=True)
 
     flag_s = models.GeneratedField(expression = divideByTimeExpression(models.F('flag')), output_field = models.FloatField(), db_persist = True)
+    ioe = models.GeneratedField(expression = models.F('bv') / models.F('cl'), output_field = models.FloatField(), db_persist = True)
+    thrp = models.GeneratedField(expression = models.F('bv') / models.F('ce'), output_field = models.FloatField(), db_persist = True)
+    corr = models.GeneratedField(expression = models.F('ce') / models.F('cl'), output_field = models.FloatField(), db_persist = True)
 
     cell0 = models.PositiveSmallIntegerField(null=True)
     cell1 = models.PositiveSmallIntegerField(null=True)

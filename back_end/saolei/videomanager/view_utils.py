@@ -274,6 +274,17 @@ def refresh_video(video: VideoModel):
     v.parse_video()
     v.analyse()
     v.current_time = 1e8
+
+    if v.level == 3:
+        video.level = 'b'
+    elif v.level == 4:
+        video.level = 'i'
+    elif v.level == 5:
+        video.level = 'e'
+    elif v.level == 6:
+        video.level = 'c'
+    else:
+        return
     
     video.timems = v.rtime_ms
     video.bv = v.bbbv
@@ -303,3 +314,9 @@ def refresh_video(video: VideoModel):
 
     video.save()
 
+    e_video = video.video
+    e_video.identifier = bytes(v.player_identifier).decode('utf-8')
+    e_video.stnb = v.stnb
+    e_video.rqp = v.rqp
+
+    e_video.save()
