@@ -1,23 +1,36 @@
 from django.db import models
 
-from config.global_settings import *
+from config.global_settings import DefaultRankingScores, GameLevels
+
 
 def get_default_identifiers():
     return []
 
-def RTimeField(): # 以毫秒计数
+
+def RTimeField():  # 以毫秒计数
     return models.PositiveIntegerField(default=DefaultRankingScores["timems"])
+
+
 def BBBVsField():
     return models.FloatField(default=DefaultRankingScores["bvs"])
+
+
 def STNBField():
     return models.FloatField(default=DefaultRankingScores["stnb"])
+
+
 def IOEField():
     return models.FloatField(default=DefaultRankingScores["ioe"])
+
+
 def PathField():
     return models.FloatField(default=DefaultRankingScores["path"])
 
+
 def VideoIDField():
     return models.BigIntegerField(null=True)
+
+
 def VideoCountField():
     return models.IntegerField(null=False, default=0)
 
@@ -30,16 +43,16 @@ class UserMS(models.Model):
     # 总录像数限制默认100，计划管理员可以修改。高水平玩家也可以增多。
     # 高级标准sub100是200；sub60是500；sub50是600；sub40是800；sub30是1000；vip是1000。
     video_num_limit = models.IntegerField(null=False, default=100)
-    
+
     # 录像计数
-    video_num_total = VideoCountField() # 录像总数
-    video_num_beg   = VideoCountField() # 初级
-    video_num_int   = VideoCountField() # 中级
-    video_num_exp   = VideoCountField() # 高级
-    video_num_std   = VideoCountField() # 标准
-    video_num_nf    = VideoCountField() # 盲扫
-    video_num_ng    = VideoCountField() # 无猜
-    video_num_dg    = VideoCountField() # 递归
+    video_num_total = VideoCountField()  # 录像总数
+    video_num_beg = VideoCountField()  # 初级
+    video_num_int = VideoCountField()  # 中级
+    video_num_exp = VideoCountField()  # 高级
+    video_num_std = VideoCountField()  # 标准
+    video_num_nf = VideoCountField()  # 盲扫
+    video_num_ng = VideoCountField()  # 无猜
+    video_num_dg = VideoCountField()  # 递归
 
     # 标准、盲扫、无猜、递归的记录
     b_timems_std = RTimeField()
@@ -168,16 +181,21 @@ class UserMS(models.Model):
 
     def __str__(self):
         return 'identifiers: {}'.format(self.identifiers)
+
     def getrecord(self, level, stat, mode):
         return getattr(self, f"{level}_{stat}_{mode}")
+
     def getrecordID(self, level, stat, mode):
         return getattr(self, f"{level}_{stat}_id_{mode}")
+
     def setrecord(self, level, stat, mode, score):
         setattr(self, f"{level}_{stat}_{mode}", score)
+
     def setrecordID(self, level, stat, mode, id):
         setattr(self, f"{level}_{stat}_id_{mode}", id)
-    
+
     def getrecords_level(self, stat, mode):
         return [self.getrecord(level, stat, mode) for level in GameLevels]
+
     def getrecordIDs_level(self, stat, mode):
         return [self.getrecordID(level, stat, mode) for level in GameLevels]
