@@ -2,10 +2,12 @@
 from django.db import models
 from userprofile.models import UserProfile
 
+
 class Platform(models.TextChoices):
     MSGAMES = 'a', ('Authoritative Minesweeper')
     SAOLEI = 'c', ('扫雷网')
     WOM = 'w', ('Minesweeper.Online')
+
 
 # 用于验证的队列
 class AccountLinkQueue(models.Model):
@@ -33,18 +35,19 @@ class AccountLinkQueue(models.Model):
 # Y - YouTube
 # Z - Zhihu
 
+
 # 扫雷网账号信息
 class AccountSaolei(models.Model):
     id = models.PositiveIntegerField(primary_key=True)
     parent = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='account_saolei')
     update_time = models.DateTimeField(auto_now=True)
 
-    name = models.CharField(max_length=10, default="") # 姓名，10应该够了吧
-    total_views = models.PositiveIntegerField(null=True) # 综合人气
+    name = models.CharField(max_length=10, default="")  # 姓名，10应该够了吧
+    total_views = models.PositiveIntegerField(null=True)  # 综合人气
 
-    beg_count = models.PositiveSmallIntegerField(null=True) # 初级录像数量
-    int_count = models.PositiveSmallIntegerField(null=True) # 中级录像数量
-    exp_count = models.PositiveSmallIntegerField(null=True) # 高级录像数量
+    beg_count = models.PositiveSmallIntegerField(null=True)  # 初级录像数量
+    int_count = models.PositiveSmallIntegerField(null=True)  # 中级录像数量
+    exp_count = models.PositiveSmallIntegerField(null=True)  # 高级录像数量
 
     # time纪录，单位毫秒
     b_t_ms = models.PositiveIntegerField(null=True)
@@ -57,6 +60,7 @@ class AccountSaolei(models.Model):
     i_b_cent = models.PositiveSmallIntegerField(null=True)
     e_b_cent = models.PositiveSmallIntegerField(null=True)
     s_b_cent = models.PositiveSmallIntegerField(null=True)
+
 
 class AccountMinesweeperGames(models.Model):
     id = models.PositiveIntegerField(primary_key=True)
@@ -71,6 +75,7 @@ class AccountMinesweeperGames(models.Model):
     # mouse_brand = models.CharField(max_length=128) # 枚举
     # mouse_type = models.CharField(max_length=128) # 枚举
     # mouse_model = models.CharField() # 用户自己随便填的，需要审查
+
 
 class AccountWorldOfMinesweeper(models.Model):
     id = models.PositiveIntegerField(primary_key=True)
@@ -90,8 +95,8 @@ class AccountWorldOfMinesweeper(models.Model):
     arena_ticket = models.PositiveIntegerField(null=True)
     equipment = models.PositiveIntegerField(null=True)
     part = models.PositiveIntegerField(null=True)
-    
-    arena_point = models.PositiveSmallIntegerField(null=True) # 最高80
+
+    arena_point = models.PositiveSmallIntegerField(null=True)  # 最高80
     max_difficulty = models.PositiveIntegerField(null=True)
     win = models.PositiveIntegerField(null=True)
     last_season = models.PositiveSmallIntegerField(null=True)

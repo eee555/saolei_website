@@ -4,7 +4,6 @@ import threading
 import queue
 import requests
 import re
-import time
 
 
 class WOM:
@@ -21,7 +20,7 @@ class WOM:
         - None
         """
         if videoInfoFunc is None:
-            if not isinstance(videoInfoFunc,Callable):
+            if not isinstance(videoInfoFunc, Callable):
                 raise ValueError("videoInfoFunc is not None and type is callable")
         self.__videoIdQueue = queue.Queue()
         self.__videoInfoQueue = queue.Queue()
@@ -70,7 +69,7 @@ class WOM:
                     if self.__isOver:
                         if not self.__videoIdQueue.empty():
                             try:
-                                videoId: int|str = self.__videoIdQueue.get()
+                                videoId: int | str = self.__videoIdQueue.get()
                                 message = self.formatMessage(
                                     '42', f'["request",["EnterGameController.enterGameWsAction",[{videoId}],1000,683]]')
                                 self.__ws.send(message)
@@ -87,7 +86,7 @@ class WOM:
                     response = requests.get(
                         'https://minesweeper.online/authorize?session=')
                     data = response.json()
-                    wsUrl = f"wss://main{int(data['userId'])% 10 + 1}.minesweeper.online/mine-websocket/?authKey={data['authKey']}&session={data['session']}&userId={data['userId']}&EIO=4&transport=websocket"
+                    wsUrl = f"wss://main{int(data['userId']) % 10 + 1}.minesweeper.online/mine-websocket/?authKey={data['authKey']}&session={data['session']}&userId={data['userId']}&EIO=4&transport=websocket"
                     self.__ws = websocket.create_connection(wsUrl)
                     isAuthenticated = False
                     while not isAuthenticated:

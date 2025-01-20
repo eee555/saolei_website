@@ -1,6 +1,7 @@
 from functools import wraps
 from django.http import HttpResponseForbidden
 
+
 def staff_required(view_func):
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
@@ -9,6 +10,7 @@ def staff_required(view_func):
         return view_func(request, *args, **kwargs)  # Call the view if not banned
     return _wrapped_view
 
+
 def banned_blocked(view_func):
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
@@ -16,6 +18,7 @@ def banned_blocked(view_func):
             return HttpResponseForbidden()  # Return 403 Forbidden response
         return view_func(request, *args, **kwargs)  # Call the view if not banned
     return _wrapped_view
+
 
 def login_required_error(view_func):
     @wraps(view_func)

@@ -1,5 +1,5 @@
 # coding=utf-8
-#!/usr/bin/env python
+# !/usr/bin/env python
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
@@ -39,8 +39,3 @@ if __name__ == "__main__":
 # python manage.py makemigrations --empty msuser
 # ALTER TABLE videomanager_expandvideomodel CHANGE identifier identifier varchar(255);
 # ALTER TABLE msuser_userms CHANGE identifiers identifiers json;
-
-
-
-
-

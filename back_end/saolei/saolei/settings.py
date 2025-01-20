@@ -12,8 +12,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
-import os, json
-import warnings
+import os
+import json
 
 # https://docs.djangoproject.com/en/5.0/ref/settings/#std-setting-DEBUG
 DEBUG = True
@@ -27,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # 与加密的盐有关！
 try:
-    with open("secrets.json",'r') as f:
+    with open("secrets.json", 'r') as f:
         SECRET_KEY = json.load(f)["django_secret_key"]
 except:
     SECRET_KEY = "django-insecure-3_(yjnup(rsxz&pd@stz25*meq10bn3m3$lt!n_1+s723#k=ay"
@@ -55,11 +55,11 @@ INSTALLED_APPS = [
     'videomanager',
     'msuser',
     'article',
-    #"ranking",
+    # "ranking",
     'identifier',
     'accountlink',
     "monitor",
-    'django_cleanup.apps.CleanupConfig', # 必须放在最后(文档所言)
+    'django_cleanup.apps.CleanupConfig',  # 必须放在最后(文档所言)
 ]
 
 MIDDLEWARE = [
@@ -114,9 +114,9 @@ DATABASES = {
         "USER": "root",
         "PASSWORD": "123456",
         "HOST": "127.0.0.1",
-        #'HOST': 'mysql',   # docker-compose 中的服务名称
+        # 'HOST': 'mysql',   # docker-compose 中的服务名称
         "PORT": "3306",
-        'CONN_MAX_AGE':None
+        'CONN_MAX_AGE': None
     }
 }
 
@@ -179,7 +179,6 @@ else:
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-
 # 格式
 CAPTCHA_OUTPUT_FORMAT = u'%(text_field)s %(hidden_field)s %(image)s'
 # 噪点样式
@@ -195,7 +194,7 @@ CAPTCHA_LENGTH = 4
 # 超时(minutes)
 CAPTCHA_TIMEOUT = 15
 # 文字倾斜
-CAPTCHA_LETTER_ROTATION = (-10,10)
+CAPTCHA_LETTER_ROTATION = (-10, 10)
 # 背景颜色
 CAPTCHA_BACKGROUND_COLOR = '#FFFFFF'
 # 文字颜色
@@ -239,11 +238,11 @@ SESSION_COOKIE_PATH = "/"                # Session的cookie保存的路径(默�
 SESSION_COOKIE_DOMAIN = None             # Session的cookie保存的域名(默认)
 # SESSION_COOKIE_SECURE = False            # 是否Https传输cookie
 SESSION_COOKIE_HTTPONLY = True           # 是否Session的cookie只支持http传输(默认)
-SESSION_COOKIE_AGE = 1209600*2           # Session的cookie失效日期(默认2周)
+SESSION_COOKIE_AGE = 1209600 * 2           # Session的cookie失效日期(默认2周)
 SESSION_SAVE_EVERY_REQUEST = False       # 是否设置关闭浏览器使得Session过期
 SESSION_COOKIE_AT_BROWSER_CLOSE = False  # 是否每次请求都保存Session，默认修改之后才能保存
 
-AUTH_USER_MODEL='userprofile.UserProfile'
+AUTH_USER_MODEL = 'userprofile.UserProfile'
 
 CACHES = {
     "saolei_website": {
@@ -272,7 +271,7 @@ SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "saolei_website"
 
 
-APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a" # 定时任务格式
+APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"  # 定时任务格式
 APSCHEDULER_RUN_NOW_TIMEOUT = 25  # 定时任务最大执行时间，秒
 
 LOGGING = {
@@ -329,7 +328,7 @@ LOGGING = {
             'filename': os.path.join(BASE_DIR, 'logs/root.log'),
             'formatter': 'default',
             'encoding': 'utf-8',
-            'maxBytes': 5242880 * 20, # 100M
+            'maxBytes': 5242880 * 20,  # 100M
             'backupCount': 5,
         },
         'userprofile': {
@@ -338,7 +337,7 @@ LOGGING = {
             'filename': os.path.join(BASE_DIR, 'logs/userprofile.log'),
             'formatter': 'modulehistory',
             'encoding': 'utf-8',
-            'maxBytes': 5242880, # 5M
+            'maxBytes': 5242880,  # 5M
             'backupCount': 20,
         },
         'videomanager': {
@@ -347,7 +346,7 @@ LOGGING = {
             'filename': os.path.join(BASE_DIR, 'logs/videomanager.log'),
             'formatter': 'modulehistory',
             'encoding': 'utf-8',
-            'maxBytes': 5242880, # 5M
+            'maxBytes': 5242880,  # 5M
             'backupCount': 20,
         },
     },
@@ -372,8 +371,5 @@ LOGGING = {
 
 SETTINGS_PATH = os.path.normpath(os.path.dirname(__file__))
 TEMPLATE_DIRS = (
-os.path.join(SETTINGS_PATH, 'templates'),
+    os.path.join(SETTINGS_PATH, 'templates'),
 )
-
-
-

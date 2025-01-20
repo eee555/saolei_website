@@ -5,7 +5,7 @@ from userprofile.models import UserProfile
 # 收录的赛事
 class Match(models.Model):
     # 赛事名称
-    name =  models.CharField(null=False, max_length=100)
+    name = models.CharField(null=False, max_length=100)
     # 赛事的管理员，拥有上传、修改比赛结果的权限
     administrator = models.ForeignKey(UserProfile, null=False, on_delete=models.CASCADE)
     # 赛事的总积分。将管理员上传的积分归一化后加给用户
@@ -31,6 +31,3 @@ class UserMSScoreRank(models.Model):
     score = models.FloatField(null=False, default=100)
     # 比赛
     # score = models.FloatField(null=False, default=100)
-
-
-

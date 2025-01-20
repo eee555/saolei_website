@@ -1,5 +1,4 @@
 import unittest
-from unittest.mock import MagicMock
 import time
 from .wom import WOM
 import json
@@ -10,7 +9,7 @@ class TestWOM(unittest.TestCase):
     def test_insert_video_id(self):
         self.count = 0
         # 创建 WOM 实例并传入 mock_callback
-        wom = WOM(videoInfoFunc=self.callbackFunc, disConnectTime=10, raiseReConnectTime=60,errorFunc=self.errorFunc)
+        wom = WOM(videoInfoFunc=self.callbackFunc, disConnectTime=10, raiseReConnectTime=60, errorFunc=self.errorFunc)
         wom.start()  # 启动 WOM
 
         wom.insertVideoId('3071736950')
@@ -48,8 +47,9 @@ class TestWOM(unittest.TestCase):
                              "Insert video Info 214")
         self.count += 1
 
-    def errorFunc(self, e:Exception):
+    def errorFunc(self, e: Exception):
         print(f"Error: {e}")
+
 
 if __name__ == '__main__':
     unittest.main()

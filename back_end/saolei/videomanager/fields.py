@@ -1,7 +1,8 @@
 from django.db.models import FileField
 from django.forms import forms
 from django.template.defaultfilters import filesizeformat
-from config.global_settings import *
+from config.global_settings import MaxSizes
+
 
 class RestrictedFileField(FileField):
     def __init__(self, *args, **kwargs):
