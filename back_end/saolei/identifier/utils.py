@@ -1,8 +1,8 @@
 import logging
-logger = logging.getLogger('videomanager')
 from utils import verify_text
-
 from .models import Identifier
+logger = logging.getLogger('videomanager')
+
 
 # 审查标识
 # 若未记录该标识则创建条目
