@@ -1,19 +1,14 @@
-from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
-import json
 from django_redis import get_redis_connection
-cache = get_redis_connection("saolei_website")
 from django.conf import settings
 import os
 from typing import List
-from django.core.cache import caches
-
+cache = get_redis_connection("saolei_website")
 
 # 用文件系统管理文章
 # 定时整理文章的目录文件，删除目录里没有文件的目录、添加不在目录里的文章
 # 文章可以是文件夹或文件
 # 任意图片png、jpg封面和md正文
-
 
 
 # 【管理员或站长】手动事先把文章放到指定目录下后，全量更新文章目录（因为用的文件系统来管理文章）
@@ -29,7 +24,7 @@ from django.core.cache import caches
 # 默认其他
 def update_list(request):
     if (request.user.is_staff or request.user.is_superuser) and request.method == 'GET':
-    # if 1:
+        # if 1:
         if settings.DEBUG:
             article_dir = settings.BASE_DIR / "assets" / 'article'
         else:
@@ -41,17 +36,18 @@ def update_list(request):
         for article in articles:
             # 从gitee上直接clone下来的
             # if article in ["LICENSE", ".git"]:
-            #     continue 
+            #     continue
             if os.path.isdir(os.path.join(article_dir, article)):
                 if os.path.isfile(os.path.join(article_dir, article, "a.md")):
                     cache.lpush("articles", article)
                 else:
-                    ... # 删除或往日志中记录，但问题不大
+                    ...  # 删除或往日志中记录，但问题不大
             elif article[-3:] == '.md' and article[0] == "[":
                 cache.lpush("articles", article)
         return HttpResponse("..")
     else:
         return HttpResponse("别瞎玩")
+
 
 # 完整文章目录
 def article_list(request):
