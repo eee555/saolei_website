@@ -92,6 +92,8 @@ class ComplexEncoder(json.JSONEncoder):
 使用 AK，SK 生成鉴权签名（Access Token）。不能调用太多次。
 :return: access_token，或是None(如果错误)
 """
+
+
 def get_access_token() -> str:
     try:
         with open("secrets.json", 'r') as f:

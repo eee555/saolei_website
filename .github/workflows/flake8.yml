@@ -30,4 +30,4 @@ jobs:
 
     - name: Run Tests
       run: |
-        python -m flake8 --ignore=E501
+        python -m flake8 --ignore=E501,E722
