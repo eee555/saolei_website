@@ -1,23 +1,26 @@
 # -*- coding: utf-8 -*-
 import logging
-logger = logging.getLogger('videomanager')
 from .forms import UploadVideoForm
 from .models import VideoModel, ExpandVideoModel
 from .view_utils import update_personal_record, update_personal_record_stock, video_all_fields, update_video_num, update_state, new_video, refresh_video
 from userprofile.models import UserProfile
-from django.http import HttpResponse, JsonResponse, FileResponse, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseNotFound
-import json, urllib
+from django.http import HttpResponse, JsonResponse, FileResponse, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseNotFound
+import json
+import urllib
 from utils import ComplexEncoder
 from django.core.paginator import Paginator
+from config.text_choices import MS_TextChoices
 from django.db.models import Q
 from django_redis import get_redis_connection
-cache = get_redis_connection("saolei_website")
 from django_ratelimit.decorators import ratelimit
 from django.conf import settings
 from identifier.utils import verify_identifier
 from django.views.decorators.http import require_GET, require_POST
 from userprofile.decorators import banned_blocked, staff_required, login_required_error
-from config.text_choices import MS_TextChoices
+
+logger = logging.getLogger('videomanager')
+cache = get_redis_connection("saolei_website")
+
 
 @require_POST
 @login_required_error
@@ -25,23 +28,23 @@ from config.text_choices import MS_TextChoices
 @ratelimit(key='ip', rate='5/s')
 def video_upload(request):
     if request.user.userms.video_num_total >= request.user.userms.video_num_limit:
-        return HttpResponse(status = 402) # 录像仓库已满
-            
+        return HttpResponse(status=402)  # 录像仓库已满
+
     video_form = UploadVideoForm(data=request.POST, files=request.FILES)
     if not video_form.is_valid():
         return HttpResponseBadRequest(video_form.errors)
     data = video_form.cleaned_data
     identifier = data["identifier"]
-    if not verify_identifier(identifier): # 标识不过审
+    if not verify_identifier(identifier):  # 标识不过审
         return JsonResponse({'type': 'error', 'object': 'identifier', 'category': 'censorship'})
     if data['review_code'] == 0 and identifier not in request.user.userms.identifiers:
-        data['review_code'] = 2 # 标识不匹配
+        data['review_code'] = 2  # 标识不匹配
 
     # 查重
-    collisions = list(VideoModel.objects.filter(timems=data["timems"], bv=data["bv"]).filter(path=data["path"]).filter(left=data["left"], right=data["right"],double=data["double"],op=data["op"], isl=data["isl"], video__identifier=data["identifier"]))
+    collisions = list(VideoModel.objects.filter(timems=data["timems"], bv=data["bv"]).filter(path=data["path"]).filter(left=data["left"], right=data["right"], double=data["double"], op=data["op"], isl=data["isl"], video__identifier=data["identifier"]))
     if collisions:
-        return JsonResponse({'type': 'error', 'object': 'videomodel', 'category': 'conflict'})  
-    new_video(data, request.user) # 表中添加数据
+        return JsonResponse({'type': 'error', 'object': 'videomodel', 'category': 'conflict'})
+    new_video(data, request.user)  # 表中添加数据
     return JsonResponse({'type': 'success', 'object': 'videomodel', 'category': 'upload'})
 
 
@@ -50,6 +53,7 @@ def video_upload(request):
 def get_software(request):
     video = VideoModel.objects.get(id=request.GET["id"])
     return JsonResponse({"msg": video.software})
+
 
 # 给预览用的接口，区别是结尾是文件后缀
 # 坑：如果做成必须登录才能下载，由于Django的某种特性，会重定向资源，
@@ -62,14 +66,15 @@ def video_preview(request):
     # video.file.name是相对路径(含upload_to)，video.file.path是绝对路径
     # print(settings.MEDIA_ROOT / "assets" / video.file.name)
     file_path = settings.MEDIA_ROOT / video.file.name
-    response =FileResponse(open(file_path, 'rb'))
-    response['Content-Type']='application/octet-stream'
+    response = FileResponse(open(file_path, 'rb'))
+    response['Content-Type'] = 'application/octet-stream'
     # response['Content-Disposition']=f'attachment;filename="{video.file.name.split("/")[2]}"'
     file_name = video.file.name.split("/")[2]
     file_name_uri = urllib.parse.quote(file_name)
     response['Content-Disposition'] = f'attachment; filename="{file_name_uri}"'
-    response['Access-Control-Expose-Headers']='Content-Disposition'
+    response['Access-Control-Expose-Headers'] = 'Content-Disposition'
     return response
+
 
 # 给下载用的接口，区别是结尾没有文件后缀
 # @login_required(login_url='/')
@@ -78,17 +83,17 @@ def video_preview(request):
 def video_download(request):
     try:
         video = VideoModel.objects.get(id=request.GET["id"])
-        response =FileResponse(open(video.file.path, 'rb'))
-        response['Content-Type']='application/octet-stream'
-        response['Content-Disposition']=f'attachment;filename="{video.file.name.split("/")[2]}"'
+        response = FileResponse(open(video.file.path, 'rb'))
+        response['Content-Type'] = 'application/octet-stream'
+        response['Content-Disposition'] = f'attachment;filename="{video.file.name.split("/")[2]}"'
         return response
     except VideoModel.DoesNotExist:
         return HttpResponseNotFound()
 
+
 # 录像查询（无需登录）
 # 按任何基础指标+难度+模式，排序，分页
 # 每项的定义参见 front_end/src/views/VideoView.vue 的 request_videos 函数
-
 @ratelimit(key='ip', rate='60/m')
 @require_GET
 def video_query(request):
@@ -105,15 +110,15 @@ def video_query(request):
         orderby = (ob, "timems")
     else:
         orderby = (ob,)
-            
+
     if data["mode"] != "00":
         filter = {"level": data["level"], "mode": data["mode"]}
         videos = VideoModel.objects.filter(**filter)
     else:
         filter = {"level": data["level"]}
-        videos = VideoModel.objects.filter(Q(mode="00")|Q(mode="12")).filter(**filter)
-    
-    videos = videos.filter(bv__range=(data["bmin"],data["bmax"]))
+        videos = VideoModel.objects.filter(Q(mode="00") | Q(mode="12")).filter(**filter)
+
+    videos = videos.filter(bv__range=(data["bmin"], data["bmax"]))
 
     states = data.getlist("s[]")
     if states:
@@ -147,14 +152,14 @@ def video_query_by_id(request):
     return JsonResponse(list(videos), safe=False)
 
 
-
 # 获取审查队列里的录像
 # http://127.0.0.1:8000/video/review_queue
 @require_GET
 def review_queue(request):
     review_video_ids = cache.hgetall("review_queue")
     for key in list(review_video_ids.keys()):
-        review_video_ids.update({str(key, encoding="utf-8"): review_video_ids.pop(key)})
+        review_video_ids.update({
+            str(key, encoding="utf-8"): review_video_ids.pop(key)})
     return JsonResponse(review_video_ids, encoder=ComplexEncoder)
 
 
@@ -164,9 +169,10 @@ def review_queue(request):
 def newest_queue(request):
     newest_queue_ids = cache.hgetall("newest_queue")
     for key in list(newest_queue_ids.keys()):
-        newest_queue_ids.update({str(key, encoding="utf-8"): newest_queue_ids.pop(key)})
+        newest_queue_ids.update({
+            str(key, encoding="utf-8"): newest_queue_ids.pop(key)})
     return JsonResponse(newest_queue_ids, encoder=ComplexEncoder)
-    
+
 
 # 获取谁破纪录的消息
 # http://127.0.0.1:8000/video/news_queue
@@ -174,17 +180,19 @@ def newest_queue(request):
 def news_queue(request):
     news_queue = cache.lrange("news_queue", 0, -1)
     return JsonResponse(news_queue, encoder=ComplexEncoder, safe=False)
-    
-    
+
+
 # 获取全网被冻结的录像
 # http://127.0.0.1:8000/video/freeze_queue
 @require_GET
 def freeze_queue(request):
     freeze_queue_ids = cache.hgetall("freeze_queue")
     for key in list(freeze_queue_ids.keys()):
-        freeze_queue_ids.update({str(key, encoding="utf-8"): freeze_queue_ids.pop(key)})
+        freeze_queue_ids.update({
+            str(key, encoding="utf-8"): freeze_queue_ids.pop(key)})
     return JsonResponse(freeze_queue_ids, encoder=ComplexEncoder)
-    
+
+
 # 审核通过单个录像
 # check_identifier 为 true 则检查是否要修改玩家标识列表，并在修改后扫描所有待审录像的标识
 def approve_single(videoid, check_identifier=True):
@@ -207,6 +215,7 @@ def approve_single(videoid, check_identifier=True):
         logger.info(f'用户 {video.player.username}#{video.player.id} 新标识 "{identifier}"')
         approve_identifier(video.player.id, identifier)
     return True
+
 
 # 审核通过所有特定用户特定标识的录像
 def approve_identifier(userid, identifier):
@@ -231,6 +240,7 @@ def approve(request):
         res.append(approve_single(_id))
     return JsonResponse(res, safe=False)
 
+
 # 【管理员】冻结队列里的录像，未审核或审核通过的录像可以冻结
 # 两种用法，冻结指定的录像id，或冻结某用户的所有录像
 # 冻结的录像七到14天后删除，用一个定时任务
@@ -241,7 +251,7 @@ def approve(request):
 @staff_required
 def freeze(request):
     if ids := request.GET.get("ids"):
-        res = [] 
+        res = []
         for id in ids:
             if not (v := VideoModel.objects.filter(id=id).first()):
                 res.append("Null")
@@ -249,7 +259,7 @@ def freeze(request):
                 update_state(v, MS_TextChoices.State.FROZEN)
                 logger.info(f'管理员 {request.user.username}#{request.user.id} 冻结录像#{id}')
         return JsonResponse(res)
-    elif user_id := request.GET.get("user_id"): 
+    elif user_id := request.GET.get("user_id"):
         if not (user := UserProfile.objects.filter(id=user_id).first()):
             return HttpResponseNotFound()
         for v in VideoModel.objects.filter(player=user):
@@ -259,19 +269,25 @@ def freeze(request):
     else:
         return HttpResponseBadRequest()
 
+
 # 管理员使用的操作接口，调用方式见前端的StaffView.vue
-get_videoModel_fields = ["player", "player__realname", "upload_time", "state", "software", "level", "mode", "timems", "bv", "bvs"] # 可获取的域列表
+get_videoModel_fields = ["player", "player__realname", "upload_time", "state", "software", "level", "mode", "timems", "bv", "bvs"]  # 可获取的域列表
 for name in [field.name for field in ExpandVideoModel._meta.get_fields()]:
     get_videoModel_fields.append("video__" + name)
+
 
 @require_GET
 @staff_required
 def get_videoModel(request):
-    if not (videolist := VideoModel.objects.filter(id=request.GET["id"]).values(*get_videoModel_fields)):
+    if not (videolist := VideoModel.objects.filter(id=request.GET["id"])
+            .values(*get_videoModel_fields)):
         return HttpResponseNotFound()
     return JsonResponse(videolist[0])
-    
-set_videoModel_fields = ["player", "upload_time", "state"] # 可修改的域列表
+
+
+set_videoModel_fields = ["player", "upload_time", "state"]  # 可修改的域列表
+
+
 @require_POST
 @staff_required
 def set_videoModel(request):
@@ -279,15 +295,16 @@ def set_videoModel(request):
     video = VideoModel.objects.get(id=videoid)
     user = video.player
     if user.is_staff and user != request.user:
-        return HttpResponseForbidden() # 不能修改除自己以外管理员的信息
+        return HttpResponseForbidden()  # 不能修改除自己以外管理员的信息
     field = request.POST.get("field")
     if field not in set_videoModel_fields:
-        return HttpResponseForbidden() # 只能修改特定的域
+        return HttpResponseForbidden()  # 只能修改特定的域
     value = request.POST.get("value")
     logger.info(f'管理员 {request.user.username}#{request.user.id} 修改录像#{videoid} 域 {field} 从 {getattr(video, field)} 到 {value}')
     setattr(video, field, value)
     video.save()
     return HttpResponse()
+
 
 @require_POST
 @staff_required
@@ -297,6 +314,7 @@ def update_videoModel(request):
         return HttpResponseNotFound()
     refresh_video(video)
     return HttpResponse()
+
 
 @require_GET
 def refresh_all_videoModel(request):

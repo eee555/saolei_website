@@ -31,7 +31,7 @@ class VideoManagerTestCase(TestCase):
             'cell3': 0, 'cell4': 0, 'cell5': 0,
             'cell6': 0, 'cell7': 0, 'cell8': 0,
 
-            'bvs': 0, 'cl': 1, 'ce': 1, 
+            'bvs': 0, 'cl': 1, 'ce': 1,
             'cl_s': 0, 'ce_s': 0, 'flag_s': 0,
             'ioe': 1, 'thrp': 1, 'corr': 1,
         }
@@ -43,7 +43,7 @@ class VideoManagerTestCase(TestCase):
         expandvideo = ExpandVideoModel.objects.create(identifier='test', stnb=0, rqp=0)
         video = VideoModel.objects.create(player=self.user, file=ContentFile(response.content, name='Exp_FL_35.09_3BV=132_3BVs=3.76_Pu Tian Yi(Hu Bei).avf'), video=expandvideo, state='a')
         refresh_video(video)
-        
+
         video = VideoModel.objects.get(id=video.id)
 
         expected_values = {
@@ -57,7 +57,7 @@ class VideoManagerTestCase(TestCase):
             'cell3': 45, 'cell4': 24, 'cell5': 1,
             'cell6': 0, 'cell7': 0, 'cell8': 0,
         }
-        
+
         self.multiple_values_test(video, expected_values)
 
         expected_extended_values = {
