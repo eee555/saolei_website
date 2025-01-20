@@ -1,5 +1,6 @@
 from django.db.models import TextChoices
 
+
 class MS_TextChoices:
     class Mode(TextChoices):
         STD = '00', ('标准')

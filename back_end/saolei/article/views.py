@@ -63,8 +63,3 @@ def article_list(request):
         return HttpResponse("别瞎玩")
 
 # http://127.0.0.1:8000/article/update_list
-
-
-
-
-
