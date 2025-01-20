@@ -90,8 +90,7 @@ class FormatUrl:
                     return f'{self.host}/{mode}/{level}?Id={self.userID}'
                 else:
                     import random
-                    showUrl = f'{
-                        self.host}/{mode}/Show.asp?Id={videoID}&tmp={random.randint(10000, 99999)}'
+                    showUrl = f'{self.host}/{mode}/Show.asp?Id={videoID}&tmp={random.randint(10000, 99999)}'
                     try:
                         response = requests.get(url=showUrl, timeout=5)
                         response.encoding = 'gb2312'

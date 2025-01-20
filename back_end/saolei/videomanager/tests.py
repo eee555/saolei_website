@@ -7,6 +7,7 @@ from .view_utils import refresh_video
 
 # Create your tests here.
 
+
 class VideoManagerTestCase(TestCase):
     def setUp(self):
         self.user = UserProfile.objects.create(username='setUp', email='setUp@test.com')
