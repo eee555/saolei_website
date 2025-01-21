@@ -208,13 +208,9 @@ def update_state(video: VideoModel, state: MS_TextChoices.State, update_ranking=
 def new_video(data, user):
     e_video = ExpandVideoModel.objects.create(
         identifier=data["identifier"],
-        cl_s=data["cl_s"],
         stnb=data["stnb"],
         rqp=data["rqp"],
-        ioe=data["ioe"],
-        thrp=data["thrp"],
-        corr=data["corr"],
-        ce_s=data["ce_s"],)
+    )
     video = VideoModel.objects.create(
         player=user,
         file=data["file"],
@@ -244,7 +240,8 @@ def new_video(data, user):
         cell5=data["cell5"],
         cell6=data["cell6"],
         cell7=data["cell7"],
-        cell8=data["cell8"])
+        cell8=data["cell8"]
+    )
 
     # 参考ms_toollib.is_valid的返回值
     if data['review_code'] == 3:  # 不确定
