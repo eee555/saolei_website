@@ -120,8 +120,6 @@ class VideoModel(models.Model):
     def __getattr__(self, name):
         if name == "stnb":
             return self.video.stnb
-        elif name == "ioe":
-            return self.video.ioe
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
 
     def __str__(self):
