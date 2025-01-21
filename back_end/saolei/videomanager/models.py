@@ -53,7 +53,7 @@ class VideoModel(models.Model):
     player = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     # 服务器端文件相对路径
     file = RestrictedFileField(
-        upload_to="videos/%Y%m%d/", max_length=100, max_upload_size=MaxSizes.videofile,)
+        upload_to="videos/%Y%m%d/", max_length=100, max_upload_size=MaxSizes.videofile)
     video = models.OneToOneField(ExpandVideoModel, on_delete=models.CASCADE, related_name="+")
     # file = models.FileField(upload_to="/assets/videos")
     # 上传时间，兼最近状态变化时间、更新时间（冻结后会刷新）

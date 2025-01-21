@@ -116,8 +116,8 @@ DATABASES = {
         "HOST": "127.0.0.1",
         # 'HOST': 'mysql',   # docker-compose 中的服务名称
         "PORT": "3306",
-        'CONN_MAX_AGE': None
-    }
+        'CONN_MAX_AGE': None,
+    },
 }
 
 DEFAULT_CHARSET = 'utf-8'
@@ -253,7 +253,7 @@ CACHES = {
             "SOCKET_CONNECT_TIMEOUT": 5,  # 连接redis超时时间，单位为秒
             "SOCKET_TIMEOUT": 5,  # redis读写操作超时时间，单位为秒
             # "CONNECTION_POOL_KWARGS": {"decode_responses": True,"encoding": "utf-8"},
-        }
+        },
     },
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
@@ -262,8 +262,8 @@ CACHES = {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "SOCKET_CONNECT_TIMEOUT": 5,  # 连接redis超时时间，单位为秒
             "SOCKET_TIMEOUT": 5,  # redis读写操作超时时间，单位为秒
-        }
-    }
+        },
+    },
 }
 # 会话存储方式二选一
 # SESSION_ENGINE = "django.contrib.sessions.backends.db"
@@ -293,14 +293,14 @@ LOGGING = {
         "default": {
             "format": '%(asctime)s %(name)s  %(pathname)s:%(lineno)d %(module)s:%(funcName)s '
                       '%(levelname)s- %(message)s',
-            "datefmt": "%Y-%m-%d %H:%M:%S"
+            "datefmt": "%Y-%m-%d %H:%M:%S",
         },
     },
     'handlers': {
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
-            'formatter': 'default'
+            'formatter': 'default',
         },
         'file': {
             'level': 'DEBUG',
@@ -308,19 +308,19 @@ LOGGING = {
             'filename': os.path.join(BASE_DIR, 'logs/debug.log'),
             'when': "D",
             'interval': 1,
-            'formatter': 'default'
+            'formatter': 'default',
         },
         "request": {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
             'filename': os.path.join(BASE_DIR, 'logs/request.log'),
-            'formatter': 'default'
+            'formatter': 'default',
         },
         "server": {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
             'filename': os.path.join(BASE_DIR, 'logs/server.log'),
-            'formatter': 'default'
+            'formatter': 'default',
         },
         "root": {
             'level': 'DEBUG',
@@ -366,7 +366,7 @@ LOGGING = {
     'root': {
         "level": "DEBUG",
         "handlers": ["root"],
-    }
+    },
 }
 
 SETTINGS_PATH = os.path.normpath(os.path.dirname(__file__))

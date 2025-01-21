@@ -24,7 +24,7 @@ class UserProfile(AbstractUser):
         max_length=MaxSizes.username,
         unique=True,
         help_text=_(
-            f"Required. {MaxSizes.username} characters or fewer. Letters, digits and @/./+/-/_ only."
+            f"Required. {MaxSizes.username} characters or fewer. Letters, digits and @/./+/-/_ only.",
         ),
         validators=[username_validator],
         error_messages={

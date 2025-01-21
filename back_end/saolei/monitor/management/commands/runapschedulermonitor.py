@@ -81,7 +81,7 @@ class Command(BaseCommand):
         scheduler.add_job(
             delete_old_job_executions,
             trigger=CronTrigger(
-                day_of_week="mon", hour="00", minute="03"
+                day_of_week="mon", hour="00", minute="03",
             ),  # Midnight on Monday, before start of the next work week.
             id="delete_old_job_executions",
             misfire_grace_time=30,
@@ -89,7 +89,7 @@ class Command(BaseCommand):
             replace_existing=True,
         )
         logger.info(
-            "Added weekly job: 'delete_old_job_executions'."
+            "Added weekly job: 'delete_old_job_executions'.",
         )
 
         try:

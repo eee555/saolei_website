@@ -95,9 +95,9 @@ def get_info_abstract(request):
                 "timems": ms_user.getrecords_level("timems", "std"),
                 "bvs": ms_user.getrecords_level("bvs", "std"),
                 "timems_id": ms_user.getrecordIDs_level("timems", "std"),
-                "bvs_id": ms_user.getrecordIDs_level("bvs", "std")
+                "bvs_id": ms_user.getrecordIDs_level("bvs", "std"),
             },
-            cls=DecimalEncoder
+            cls=DecimalEncoder,
         ),
     }
 
@@ -232,6 +232,6 @@ def player_rank(request):
     res = cache.sort(data["ids"], by=data["sort_by"], get=json.loads(data["indexes"]), desc=desc_flag, start=start_idx, num=20)
     response = {
         "total_page": num_player // 20 + 1,
-        "players": res
+        "players": res,
     }
     return JsonResponse(response, safe=False, encoder=ComplexEncoder)

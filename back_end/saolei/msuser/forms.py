@@ -74,7 +74,7 @@ class UserUpdateAvatarForm(forms.ModelForm):
 class UserUpdateSignatureForm(forms.ModelForm):
     # 个性签名
     signature = forms.CharField(max_length=188, required=True, error_messages={
-        'max_length': '最多不能超过188个字符！'
+        'max_length': '最多不能超过188个字符！',
     })  # 签名
 
     def __init__(self, *args, **kwargs):

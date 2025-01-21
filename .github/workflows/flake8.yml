@@ -27,6 +27,7 @@ jobs:
     - name: Install Dependencies
       run: |
         pip install flake8
+        pip install flake8-commas
 
     - name: Run Tests
       run: |

@@ -13,7 +13,7 @@ def get_io_cpus(request):
     return JsonResponse({
         's': cache.lrange("io_s_spds", 0, -1),
         'r': cache.lrange("io_r_spds", 0, -1),
-        'c': cache.lrange("cpus", 0, -1)
+        'c': cache.lrange("cpus", 0, -1),
     }, encoder=ComplexEncoder)
 
 # 1个点。

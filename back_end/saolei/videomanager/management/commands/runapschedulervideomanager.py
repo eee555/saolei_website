@@ -108,7 +108,7 @@ class Command(BaseCommand):
         scheduler.add_job(
             delete_newest_queue,
             trigger=CronTrigger(
-                day_of_week="*", hour="01", minute="08"
+                day_of_week="*", hour="01", minute="08",
             ),
             id="delete_newest_queue",
             misfire_grace_time=30,
@@ -120,7 +120,7 @@ class Command(BaseCommand):
         scheduler.add_job(
             delete_freezed_video,
             trigger=CronTrigger(
-                day_of_week="*", hour="01", minute="13"
+                day_of_week="*", hour="01", minute="13",
             ),
             id="delete_freezed_video",
             misfire_grace_time=30,
@@ -132,7 +132,7 @@ class Command(BaseCommand):
         scheduler.add_job(
             delete_news_queue,
             trigger=CronTrigger(
-                day_of_week="*", hour="17", minute="03"
+                day_of_week="*", hour="17", minute="03",
             ),
             id="delete_news_queue",
             misfire_grace_time=30,
@@ -144,14 +144,14 @@ class Command(BaseCommand):
         scheduler.add_job(
             delete_old_job_executions,
             trigger=CronTrigger(
-                day_of_week="mon", hour="00", minute="03"
+                day_of_week="mon", hour="00", minute="03",
             ),  # Midnight on Monday, before start of the next work week.
             id="delete_old_job_executions",
             max_instances=1,
             replace_existing=True,
         )
         logger.info(
-            "Added weekly job: 'delete_old_job_executions'."
+            "Added weekly job: 'delete_old_job_executions'.",
         )
 
         try:

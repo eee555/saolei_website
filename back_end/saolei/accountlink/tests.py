@@ -15,7 +15,7 @@ class AccountLinkTestCase(TestCase):
 
     def test_update_saolei(self):
         account = AccountSaolei.objects.filter(id=1).first()
-        self.assertEqual(update_saolei_account(account, 0), '',)
+        self.assertEqual(update_saolei_account(account, 0), '')
         account = AccountSaolei.objects.filter(id=1).first()
         self.assertEqual(account.id, 1)
         self.assertEqual(account.name, '张砷镓')

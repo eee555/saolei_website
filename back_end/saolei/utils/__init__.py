@@ -144,11 +144,11 @@ def verify_text(text: str, user_id: int = 0, user_ip: str = '192.168.0.1') -> bo
     payload = {
         "text": text,
         "user_id": user_id,
-        "user_ip": user_ip
+        "user_ip": user_ip,
     }
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Accept': 'application/json'
+        'Accept': 'application/json',
     }
     response = requests.request("POST", url, headers=headers, data=payload)
     if response.json().get("error_code") == 111:
@@ -168,11 +168,11 @@ def verify_image(image_binary, user_id: int, user_ip: str) -> bool:
     payload = {
         "image": image_base64,
         "user_id": user_id,
-        "user_ip": user_ip
+        "user_ip": user_ip,
     }
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Accept': 'application/json'
+        'Accept': 'application/json',
     }
     response = requests.request("POST", url, headers=headers, data=payload)
     if response.json().get("error_code") == 111:

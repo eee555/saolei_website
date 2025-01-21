@@ -51,7 +51,7 @@ class UserRetrieveForm(forms.Form):
         # 自定义错误消息
         error_messages = {
             'email': FormErrors.email,
-            'password': FormErrors.password
+            'password': FormErrors.password,
         }
 
 

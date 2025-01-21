@@ -240,7 +240,7 @@ def new_video(data, user):
         cell5=data["cell5"],
         cell6=data["cell6"],
         cell7=data["cell7"],
-        cell8=data["cell8"]
+        cell8=data["cell8"],
     )
 
     # 参考ms_toollib.is_valid的返回值

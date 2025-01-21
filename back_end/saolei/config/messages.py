@@ -17,10 +17,10 @@ class FormErrors:
     }
     password = {
         'max_length': GeneralErrors.stringsize(MaxSizes.password, True),
-        'min_length': GeneralErrors.stringsize(MaxSizes.password, False)
+        'min_length': GeneralErrors.stringsize(MaxSizes.password, False),
     }
     username = {
         'max_length': GeneralErrors.stringsize(MaxSizes.username, True),
         'required': GeneralErrors.empty("用户名"),
-        'invalid': "非法用户名！"
+        'invalid': "非法用户名！",
     }

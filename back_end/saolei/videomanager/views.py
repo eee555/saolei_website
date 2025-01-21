@@ -132,7 +132,7 @@ def video_query(request):
     page_videos = paginator.get_page(page_number)
     response = {
         "count": len(videos),
-        "videos": list(page_videos)
+        "videos": list(page_videos),
     }
     # t=json.dumps(response, cls=ComplexEncoder)
     # print(t)
