@@ -5,7 +5,6 @@
 
 import { UploadRawFile } from "element-plus";
 import { AvfVideo, EvfVideo } from "ms-toollib";
-import { MS_Level, MS_Levels } from "./ms_const";
 
 export function load_video_file(stream: Uint8Array, filename: string) {
     const ext = filename.slice(-3);

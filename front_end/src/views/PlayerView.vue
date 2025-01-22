@@ -74,12 +74,12 @@
 
 <script lang="ts" setup>
 // 我的地盘页面
-import { onMounted, ref, watch } from 'vue'
+import { defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
-import PlayerRecordView from '@/views/PlayerRecordView.vue';
-import PlayerVideosView from '@/views/PlayerVideosView.vue';
-import PlayerProfileView from './PlayerProfileView.vue';
-import UploadView from './UploadView.vue';
+const PlayerRecordView = defineAsyncComponent(() => import('@/views/PlayerRecordView.vue'));
+const PlayerVideosView = defineAsyncComponent(() => import('@/views/PlayerVideosView.vue'));
+const PlayerProfileView = defineAsyncComponent(() => import('@/views/PlayerProfileView.vue'));
+const UploadView = defineAsyncComponent(() => import('@/views/UploadView.vue'));
 // const AsyncPlayerVideosView = defineAsyncComponent(() => import('@/views/PlayerVideosView.vue'));
 import "../../node_modules/flag-icon-css/css/flag-icons.min.css";
 
