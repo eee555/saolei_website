@@ -1,5 +1,6 @@
 from django.db.models import TextChoices
 
+
 class MS_TextChoices:
     class Mode(TextChoices):
         STD = '00', ('标准')
@@ -25,4 +26,3 @@ class MS_TextChoices:
         FROZEN = "b", ('审核未通过，被冻结')
         OFFICIAL = "c", ('已通过审核')
         IDENTIFIER = "d", ('标识不匹配')
-

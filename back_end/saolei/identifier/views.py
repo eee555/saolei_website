@@ -1,7 +1,5 @@
 import logging
-logger = logging.getLogger('userprofile')
 from .models import Identifier
-from userprofile.models import UserProfile
 from django.http import HttpResponseForbidden, HttpResponseBadRequest, JsonResponse, HttpResponse, HttpResponseNotFound
 from django.views.decorators.http import require_POST
 from utils.response import HttpResponseConflict
@@ -9,6 +7,8 @@ from videomanager.models import VideoModel
 from videomanager.view_utils import update_state, update_personal_record_stock
 from userprofile.decorators import login_required_error
 from config.text_choices import MS_TextChoices
+logger = logging.getLogger('userprofile')
+
 
 # 请求修改自己的标识
 @require_POST
@@ -23,8 +23,8 @@ def add_identifier(request):
     if identifier.userms:
         identifier_user = identifier.userms.parent
         if identifier_user.id == user.id:
-            return HttpResponseConflict() # 本人已有该标识
-        return JsonResponse({'type': 'error', 'object': 'identifier', 'category': 'conflict', 'value': identifier_user.id}) # 返回标识冲突的用户
+            return HttpResponseConflict()  # 本人已有该标识
+        return JsonResponse({'type': 'error', 'object': 'identifier', 'category': 'conflict', 'value': identifier_user.id})  # 返回标识冲突的用户
     video_list = VideoModel.objects.filter(player=user, video__identifier=identifier_text)
     if not video_list:
         return JsonResponse({'type': 'error', 'object': 'identifier', 'category': 'notFound'})
@@ -37,6 +37,7 @@ def add_identifier(request):
     user.userms.save()
     logger.info(f'用户 {user.username}#{user.id} 绑定标识 "{identifier_text}"')
     return JsonResponse({'type': 'success', 'object': 'identifier', 'category': 'add', 'value': len(video_list)})
+
 
 # 请求删除自己的标识
 @require_POST
@@ -62,10 +63,12 @@ def del_identifier(request):
         update_personal_record_stock(user)
     return JsonResponse({'type': 'success', 'object': 'identifier', 'category': 'add', 'value': len(video_list)})
 
+
 # 管理员添加标识
 def staff_add_identifier(request):
     # TODO
     return HttpResponse()
+
 
 # 管理员删除标识
 def staff_del_identifier(request):

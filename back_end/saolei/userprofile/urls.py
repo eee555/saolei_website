@@ -12,12 +12,11 @@ urlpatterns = [
     path('del_user_info/', views.del_user_info, name='del_user_info'),
     # path('delete/<int:id>/', views.user_delete, name='delete'),
     path('captcha/', include('captcha.urls')),
-    path('refresh_captcha/',views.refresh_captcha),
-    path('get_email_captcha/',views.get_email_captcha),
-    path('get/',views.get_userProfile),
-    path('set/',views.set_userProfile),
-    path('checkcollision/',views.check_collision),
+    path('refresh_captcha/', views.refresh_captcha),
+    path('get_email_captcha/', views.get_email_captcha),
+    path('get/', views.get_userProfile),
+    path('set/', views.set_userProfile),
+    path('checkcollision/', views.check_collision),
     # path('captcha/captcha', views.captcha, name='captcha'),
     # path('edit/<int:id>/', views.profile_edit, name='edit'),
-    
 ]
