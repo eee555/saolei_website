@@ -1,5 +1,5 @@
 # coding=utf-8
-#!/usr/bin/env python
+# !/usr/bin/env python
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
@@ -14,7 +14,7 @@ def main():
         raise ImportError(
             "Couldn't import Django. Are you sure it's installed and "
             "available on your PYTHONPATH environment variable? Did you "
-            "forget to activate a virtual environment?"
+            "forget to activate a virtual environment?",
         ) from exc
     execute_from_command_line(sys.argv)
 
@@ -39,8 +39,3 @@ if __name__ == "__main__":
 # python manage.py makemigrations --empty msuser
 # ALTER TABLE videomanager_expandvideomodel CHANGE identifier identifier varchar(255);
 # ALTER TABLE msuser_userms CHANGE identifiers identifiers json;
-
-
-
-
-

@@ -1,12 +1,16 @@
 from userprofile.models import EmailVerifyRecord
 from django.core.mail import send_mail
-import uuid, base64, random, json
+import uuid
+import base64
+import random
+import json
 from datetime import date, datetime
 from decimal import Decimal
-from django.http import HttpResponse, JsonResponse, FileResponse
-from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.shortcuts import redirect
 import requests
 from config.flags import BAIDU_VERIFY_SKIP, EMAIL_SKIP
+
 
 def generate_code(code_len):
     """
@@ -17,7 +21,7 @@ def generate_code(code_len):
     all_chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
     code = ''
     for _ in range(code_len):
-        index = random.randint(0, len(all_chars)-1)
+        index = random.randint(0, len(all_chars) - 1)
         code += all_chars[index]
     return code
 
@@ -33,7 +37,7 @@ def send_email(email, send_type='register'):
     email_record.email = email
     # email_record.send_type = send_type
     email_record.save()
- 
+
     # 验证码保存之后，我们就要把带有验证码的链接发送到注册时的邮箱！
     if EMAIL_SKIP:
         return code, hashkey
@@ -84,19 +88,20 @@ class ComplexEncoder(json.JSONEncoder):
             return json.JSONEncoder.default(self, obj)
 
 
-
 """
 使用 AK，SK 生成鉴权签名（Access Token）。不能调用太多次。
 :return: access_token，或是None(如果错误)
 """
+
+
 def get_access_token() -> str:
     try:
-        with open("secrets.json",'r') as f:
+        with open("secrets.json", 'r') as f:
             API_KEY = json.load(f)["client_id"]
     except:
         API_KEY = input("请输入client_id：")
     try:
-        with open("secrets.json",'r') as f:
+        with open("secrets.json", 'r') as f:
             SECRET_KEY = json.load(f)["client_secret"]
     except:
         SECRET_KEY = input("请输入client_secret：")
@@ -113,16 +118,17 @@ def get_access_token() -> str:
         print("**********************************************\n\n**  警告！内容审核的鉴权签名获取失败！！！  **\n\n**********************************************")
     return token
 
+
 def get_ACCESS_TOKEN() -> str:
     try:
-        with open("secrets.json",'r') as f:
+        with open("secrets.json", 'r') as f:
             ACCESS_TOKEN = json.load(f)["token"]
     except KeyError:
         ACCESS_TOKEN = get_access_token()
-    except json.JSONDecodeError as e:
+    except json.JSONDecodeError:
         # print(f"JSON解析错误: {e}")
         ...
-    except Exception as e:
+    except Exception:
         # print(f"发生其他错误: {e}")
         ...
     return ACCESS_TOKEN
@@ -135,14 +141,14 @@ def verify_text(text: str, user_id: int = 0, user_ip: str = '192.168.0.1') -> bo
     if len(text) < 2:
         return True
     url = "https://aip.baidubce.com/rest/2.0/solution/v1/text_censor/v2/user_defined?access_token=" + get_ACCESS_TOKEN()
-    payload={
+    payload = {
         "text": text,
         "user_id": user_id,
-        "user_ip": user_ip
+        "user_ip": user_ip,
     }
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Accept': 'application/json'
+        'Accept': 'application/json',
     }
     response = requests.request("POST", url, headers=headers, data=payload)
     if response.json().get("error_code") == 111:
@@ -159,14 +165,14 @@ def verify_image(image_binary, user_id: int, user_ip: str) -> bool:
         return True
     image_base64 = base64.b64encode(image_binary).decode()
     url = "https://aip.baidubce.com/rest/2.0/solution/v1/img_censor/v2/user_defined?access_token=" + get_ACCESS_TOKEN()
-    payload={
+    payload = {
         "image": image_base64,
         "user_id": user_id,
-        "user_ip": user_ip
+        "user_ip": user_ip,
     }
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Accept': 'application/json'
+        'Accept': 'application/json',
     }
     response = requests.request("POST", url, headers=headers, data=payload)
     if response.json().get("error_code") == 111:
@@ -191,6 +197,3 @@ def ratelimited(request, exception):
         return JsonResponse({"status": 120, "msg": "请稍后再试！"})
     if "/refresh_captcha/" in request.path:
         return JsonResponse({"status": 120, "msg": "请稍后再试！"})
-
-
-

@@ -5,7 +5,6 @@
 
 import { UploadRawFile } from "element-plus";
 import { AvfVideo, EvfVideo } from "ms-toollib";
-import { MS_Level, MS_Levels } from "./ms_const";
 
 export function load_video_file(stream: Uint8Array, filename: string) {
     const ext = filename.slice(-3);
@@ -132,13 +131,8 @@ export interface UploadVideoForm {
     cell8: number,
 
     // to be discarded
-    cl_s: number,
-    ce_s: number,
     stnb: number,
     rqp: number,
-    ioe: number,
-    corr: number,
-    thrp: number,
 }
 
 export function upload_form(file: UploadRawFile, video: AvfVideo | EvfVideo | null): UploadVideoForm | null {
@@ -178,13 +172,8 @@ export function upload_form(file: UploadRawFile, video: AvfVideo | EvfVideo | nu
         cell7: video.cell7,
         cell8: video.cell8,
 
-        cl_s: video.cl_s,
-        ce_s: video.ce_s,
         stnb: video.stnb,
         rqp: video.rqp,
-        ioe: video.ioe,
-        corr: video.corr,
-        thrp: video.thrp,
     }
 }
 

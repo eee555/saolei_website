@@ -2,15 +2,15 @@ import os
 from django.db import models
 # from django.contrib.auth.models import User
 from django.contrib.auth.models import AbstractUser
-from django.core import validators
 from msuser.models import UserMS
 from .fields import RestrictedImageField
 from django_cleanup import cleanup
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.utils import timezone
-from config.global_settings import *
+from config.global_settings import MaxSizes, DefaultChances
 username_validator = UnicodeUsernameValidator()
+
 
 # 自定义用户
 # 头像修改后，自动删除服务器上原来的图片
@@ -18,13 +18,13 @@ username_validator = UnicodeUsernameValidator()
 class UserProfile(AbstractUser):
     userms = models.OneToOneField(
         UserMS, on_delete=models.CASCADE, related_name='parent', null=True)
-    
+
     username = models.CharField(
         _("username"),
         max_length=MaxSizes.username,
         unique=True,
         help_text=_(
-            f"Required. {MaxSizes.username} characters or fewer. Letters, digits and @/./+/-/_ only."
+            f"Required. {MaxSizes.username} characters or fewer. Letters, digits and @/./+/-/_ only.",
         ),
         validators=[username_validator],
         error_messages={
@@ -34,17 +34,19 @@ class UserProfile(AbstractUser):
     )
     first_name = models.CharField(_("first name"), max_length=MaxSizes.firstname, blank=True)
     last_name = models.CharField(_("last name"), max_length=MaxSizes.lastname, blank=True)
-    email = models.EmailField(_("email address"), 
-                              max_length=MaxSizes.email,
-                              unique=True,
-                              blank=False, 
-                              null=False, 
-                              error_messages={
-                                  "blank": _("必须填写邮箱！"),
-                                  "invalid": _("邮箱格式不正确！"),
-                                  "unique": _("该邮箱已被注册！"),
-                                  "max_length": _(f"邮箱的长度不能超过{MaxSizes.email}！"),
-                                  },)
+    email = models.EmailField(
+        _("email address"),
+        max_length=MaxSizes.email,
+        unique=True,
+        blank=False,
+        null=False,
+        error_messages={
+            "blank": _("必须填写邮箱！"),
+            "invalid": _("邮箱格式不正确！"),
+            "unique": _("该邮箱已被注册！"),
+            "max_length": _(f"邮箱的长度不能超过{MaxSizes.email}！"),
+        },
+    )
     # 考虑了中英文、俄罗斯用户名字，长度需要达到100（虽然还不够）
     realname = models.CharField(
         max_length=MaxSizes.username, unique=False, blank=True, default='匿名', null=False)
@@ -77,9 +79,10 @@ class UserProfile(AbstractUser):
             # 使用os库删除文件
             if os.path.isfile(self.avatar.path):
                 os.remove(self.avatar.path)
-        
+
         # 调用父类的delete方法删除数据库记录
         super(UserProfile, self).delete(*args, **kwargs)
+
     class Meta:
         indexes = [
             models.Index(fields=['country'], name='country_idx'),

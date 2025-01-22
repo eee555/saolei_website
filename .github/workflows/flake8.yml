@@ -1,0 +1,35 @@
+name: Back-end Code Style Check
+
+on:
+  push:
+    branches:
+      - main  # Adjust the branch name as needed
+  pull_request:
+    paths: 
+      - 'back_end/saolei/**'
+
+jobs:
+  check_flag:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: back_end/saolei
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      
+    - name: Install Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'  # Choose the Python version you want to use
+
+    - name: Install Dependencies
+      run: |
+        pip install flake8
+        pip install flake8-commas
+        pip install flake8-comprehensions
+
+    - name: Run Tests
+      run: |
+        python -m flake8 --ignore=E501,E722

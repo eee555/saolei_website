@@ -8,7 +8,8 @@ from django_ratelimit.decorators import ratelimit
 from django.forms.models import model_to_dict
 from userprofile.decorators import login_required_error, staff_required
 
-private_platforms = [""] # 私人账号平台
+private_platforms = [""]  # 私人账号平台
+
 
 # 为自己绑定账号，需要指定平台和ID
 @require_POST
@@ -19,9 +20,10 @@ def add_link(request):
     if not (platform := request.POST.get('platform')):
         return HttpResponseBadRequest()
     if AccountLinkQueue.objects.filter(platform=platform, userprofile=user).first():
-        return HttpResponseConflict() # 每个平台只能绑一个账号
+        return HttpResponseConflict()  # 每个平台只能绑一个账号
     AccountLinkQueue.objects.create(platform=platform, identifier=request.POST.get('identifier'), userprofile=user)
     return HttpResponse()
+
 
 # 解绑自己的账号，只需要指定平台
 @require_POST
@@ -36,6 +38,7 @@ def delete_link(request):
         accountlink.delete()
         return HttpResponse()
     return HttpResponseNotFound()
+
 
 # 二合一接口
 # 仅提供id，则返回该id的所有link的id
@@ -61,11 +64,12 @@ def get_link(request):
         data['update_time'] = account.update_time
         return JsonResponse(data)
     else:
-        if request.user.is_staff or user == request.user: # 管理员或用户本人可以获得全部数据
-            accountlink = AccountLinkQueue.objects.filter(userprofile=user).values("platform","identifier","verified")
-        else: # 其他人不能获得未绑定账号与私人账号数据
-            accountlink = AccountLinkQueue.objects.filter(userprofile=user,verified=True).exclude(platform__in=private_platforms).values("platform","identifier")
+        if request.user.is_staff or user == request.user:  # 管理员或用户本人可以获得全部数据
+            accountlink = AccountLinkQueue.objects.filter(userprofile=user).values("platform", "identifier", "verified")
+        else:  # 其他人不能获得未绑定账号与私人账号数据
+            accountlink = AccountLinkQueue.objects.filter(userprofile=user, verified=True).exclude(platform__in=private_platforms).values("platform", "identifier")
         return JsonResponse(list(accountlink), safe=False)
+
 
 @require_POST
 @staff_required
@@ -77,13 +81,13 @@ def verify_link(request):
         return HttpResponseBadRequest()
     if not (identifier := request.POST.get('identifier')):
         return HttpResponseBadRequest()
-    collision = AccountLinkQueue.objects.filter(platform=platform,identifier=identifier,verified=True).first()
-    if collision: # 该平台该ID已被绑定
+    collision = AccountLinkQueue.objects.filter(platform=platform, identifier=identifier, verified=True).first()
+    if collision:  # 该平台该ID已被绑定
         if collision.userprofile == user:
             return HttpResponse()
         else:
             return HttpResponseConflict()
-    accountlink = AccountLinkQueue.objects.filter(platform=platform,identifier=identifier).first()
+    accountlink = AccountLinkQueue.objects.filter(platform=platform, identifier=identifier).first()
     if not accountlink:
         return HttpResponseNotFound()
     link_account(platform, identifier, user)
@@ -91,6 +95,7 @@ def verify_link(request):
     accountlink.save()
     update_account(platform, user, 0)
     return HttpResponse()
+
 
 @require_POST
 @staff_required
@@ -102,13 +107,14 @@ def unverify_link(request):
         return HttpResponseBadRequest()
     if not (identifier := request.POST.get('identifier')):
         return HttpResponseBadRequest()
-    accountlink = AccountLinkQueue.objects.filter(userprofile=user,platform=platform,identifier=identifier).first()
+    accountlink = AccountLinkQueue.objects.filter(userprofile=user, platform=platform, identifier=identifier).first()
     if not accountlink:
         return HttpResponseNotFound()
     delete_account(user, platform)
     accountlink.verified = False
     accountlink.save()
     return HttpResponse()
+
 
 @require_POST
 @login_required_error

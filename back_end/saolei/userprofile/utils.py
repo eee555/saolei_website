@@ -8,6 +8,7 @@ from django.conf import settings
 import urllib.parse
 import base64
 
+
 # 验证验证码
 def judge_captcha(captchaStr, captchaHashkey):
     if captchaStr and captchaHashkey:
@@ -21,6 +22,7 @@ def judge_captcha(captchaStr, captchaHashkey):
     CaptchaStore.objects.filter(hashkey=captchaHashkey).delete()
     return False
 
+
 def judge_email_verification(email, email_captcha, emailHashkey):
     if not emailHashkey or not email or not email_captcha:
         return False
@@ -32,6 +34,7 @@ def judge_email_verification(email, email_captcha, emailHashkey):
         return False
     return get_email_captcha.code == email_captcha and get_email_captcha.email == email
 
+
 def user_metadata(user: UserProfile):
     if user.avatar:
         avatar_path = os.path.join(settings.MEDIA_ROOT, urllib.parse.unquote(user.avatar.url)[7:])
@@ -41,15 +44,16 @@ def user_metadata(user: UserProfile):
         image_data = None
 
     videos = VideoModel.objects.filter(player=user).values('id', 'upload_time', "level", "mode", "timems", "bv", "state", "software")
-    return {"id": user.id,
-                "username": user.username,
-                "realname": user.realname,
-                "avatar": image_data,
-                "signature": user.signature,
-                "popularity": user.popularity,
-                "identifiers": user.userms.identifiers,
-                "is_banned": user.is_banned,
-                "is_staff": user.is_staff,
-                "country": user.country,
-                "videos": list(videos),
-                }
+    return {
+        "id": user.id,
+        "username": user.username,
+        "realname": user.realname,
+        "avatar": image_data,
+        "signature": user.signature,
+        "popularity": user.popularity,
+        "identifiers": user.userms.identifiers,
+        "is_banned": user.is_banned,
+        "is_staff": user.is_staff,
+        "country": user.country,
+        "videos": list(videos),
+    }

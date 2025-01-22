@@ -85,10 +85,10 @@ import { store, local } from '@/store';
 import { ElNotification } from 'element-plus';
 import { Platform, platformlist } from '@/utils/common/accountLinkPlatforms'
 import PlatformIcon from './widgets/PlatformIcon.vue';
-import AccountLinkGuide from './dialogs/AccountLinkGuide.vue'
-import AccountSaolei from './accountlinks/AccountSaolei.vue';
-import AccountMsgames from './accountlinks/AccountMsgames.vue';
-import AccountWoM from './accountlinks/AccountWoM.vue';
+const AccountLinkGuide = () => import('./dialogs/AccountLinkGuide.vue')
+const AccountSaolei = () => import('./accountlinks/AccountSaolei.vue');
+const AccountMsgames = () => import('./accountlinks/AccountMsgames.vue');
+const AccountWoM = () => import('./accountlinks/AccountWoM.vue');
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
@@ -119,7 +119,7 @@ async function refresh() {
         accountlinks.value = response.data;
     })
 }
-watch(store.player, refresh)
+watch(() => store.player.id, refresh, { immediate: true })
 
 const formValid = computed(() => {
     switch (form.platform) {
