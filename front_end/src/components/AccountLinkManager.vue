@@ -119,7 +119,7 @@ async function refresh() {
         accountlinks.value = response.data;
     })
 }
-watch(store.player, refresh)
+watch(() => store.player.id, refresh, { immediate: true })
 
 const formValid = computed(() => {
     switch (form.platform) {
