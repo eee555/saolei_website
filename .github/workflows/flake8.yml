@@ -28,6 +28,7 @@ jobs:
       run: |
         pip install flake8
         pip install flake8-commas
+        pip install flake8-comprehensions
 
     - name: Run Tests
       run: |
