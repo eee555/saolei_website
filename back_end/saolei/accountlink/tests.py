@@ -31,7 +31,6 @@ class AccountLinkTestCase(TestCase):
         self.assertEqual(account.e_b_cent, 423)
         self.assertEqual(account.s_b_cent, 1681)
 
-    @expectedFailure
     def test_update_msgames(self):
         account = AccountMinesweeperGames.objects.filter(id=7872).first()
         self.assertEqual(update_msgames_account(account, 0), '')
@@ -80,7 +79,6 @@ class AccountLinkTestCase(TestCase):
         self.assertEqual(account.i_winstreak, 21)
         self.assertEqual(account.e_winstreak, 9)
 
-    @expectedFailure
     def test_msgames_private_name(self):
         user = UserProfile.objects.create(username='test_msgames_private_name', email='test_msgames_private_name@test.com')
         account = AccountMinesweeperGames.objects.create(id=8371, parent=user)
