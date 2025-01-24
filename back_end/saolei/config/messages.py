@@ -11,16 +11,16 @@ class GeneralErrors:
 
 class FormErrors:
     email = {
-        'max_length': GeneralErrors.stringsize(MaxSizes.email, True),
+        'max_length': GeneralErrors.stringsize(MaxSizes.EMAIL, True),
         'required': GeneralErrors.empty("邮箱"),
         'invalid': '邮箱格式错误！',
     }
     password = {
-        'max_length': GeneralErrors.stringsize(MaxSizes.password, True),
-        'min_length': GeneralErrors.stringsize(MaxSizes.password, False),
+        'max_length': GeneralErrors.stringsize(MaxSizes.PASSWORD, True),
+        'min_length': GeneralErrors.stringsize(MaxSizes.PASSWORD, False),
     }
     username = {
-        'max_length': GeneralErrors.stringsize(MaxSizes.username, True),
+        'max_length': GeneralErrors.stringsize(MaxSizes.USERNAME, True),
         'required': GeneralErrors.empty("用户名"),
         'invalid': "非法用户名！",
     }

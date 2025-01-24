@@ -9,7 +9,7 @@ User = get_user_model()
 
 # 更新我的地盘里的姓名
 class UserUpdateRealnameForm(forms.ModelForm):
-    realname = forms.CharField(max_length=MaxSizes.username, required=True)
+    realname = forms.CharField(max_length=MaxSizes.USERNAME, required=True)
 
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
