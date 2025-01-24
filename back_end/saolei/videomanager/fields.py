@@ -7,7 +7,7 @@ from config.global_settings import MaxSizes
 class RestrictedFileField(FileField):
     def __init__(self, *args, **kwargs):
         self.content_types = kwargs.pop("content_types", [])
-        self.max_upload_size = kwargs.pop("max_upload_size", MaxSizes.videofile)
+        self.max_upload_size = kwargs.pop("max_upload_size", MaxSizes.VIDEOFILE)
         super().__init__(*args, **kwargs)
 
     def clean(self, *args, **kwargs):
