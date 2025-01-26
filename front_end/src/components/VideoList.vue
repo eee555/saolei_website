@@ -127,7 +127,7 @@ const videos_trans = computed(() => {
 })
 
 </script>
-<style>
+<style lang="less" scoped>
 
 .el-table .cell {
     line-height: 18px;
