@@ -90,6 +90,7 @@ const AccountSaolei = () => import('./accountlinks/AccountSaolei.vue');
 const AccountMsgames = () => import('./accountlinks/AccountMsgames.vue');
 const AccountWoM = () => import('./accountlinks/AccountWoM.vue');
 import { useI18n } from 'vue-i18n';
+import { httpErrorNotification } from './Notifications';
 const { t } = useI18n();
 
 interface AccountLink {
@@ -141,7 +142,7 @@ const addLink = () => {
         }
     ).then(function (response) {
         refresh()
-    })
+    }).catch(httpErrorNotification)
 }
 
 const deleteRow = (row: any) => {
@@ -150,7 +151,7 @@ const deleteRow = (row: any) => {
         proxy.$axios.post('accountlink/delete/', { platform: row.platform }).then(function (response) {
             refresh()
         })
-    }).catch(() => { })
+    }).catch(httpErrorNotification)
 }
 
 const expandRow = (row: any) => {
@@ -171,7 +172,7 @@ const updateRow = (row: any) => {
                 duration: local.value.notification_duration,
             })
         }
-    })
+    }).catch(httpErrorNotification)
 }
 
 const loadRow = (row: any) => {
@@ -181,7 +182,7 @@ const loadRow = (row: any) => {
         }
     ).then(function (response) {
         row.data = response.data
-    })
+    }).catch(httpErrorNotification)
 }
 
 const userHasPlatform = (platform: string) => {
