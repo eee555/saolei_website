@@ -1,5 +1,5 @@
 <template>
-    <el-button :attrs="$attrs" v-t="'common.button.cancel'">
+    <el-button v-bind="$attrs" v-t="'common.button.cancel'">
     </el-button>
 </template>
 
