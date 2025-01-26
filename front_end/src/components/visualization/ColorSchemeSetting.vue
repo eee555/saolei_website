@@ -28,7 +28,7 @@
 <script setup lang="ts">
 import { countRows, stringifyWithLineWrap } from '@/utils/strings';
 import { ref, watch, PropType } from 'vue';
-import { ElRow, ElInput, ElCheckbox, ElTooltip, ElLink, ElInputNumber, ElColorPicker } from 'element-plus';
+import { ElRow, ElInput, ElCheckbox, ElTooltip, ElLink, ElInputNumber, ElColorPicker, ElIcon } from 'element-plus';
 
 interface ColorScheme {
     colors: Array<string>;

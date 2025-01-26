@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { ElBadge, ElDivider, ElDescriptions } from 'element-plus';
+import { ElBadge, ElDivider, ElDescriptions, ElText } from 'element-plus';
 import AccountLinkManager from '@/components/AccountLinkManager.vue';
 import IdentifierManager from '@/components/widgets/IdentifierManager.vue';
 import { LoginStatus } from '@/utils/common/structInterface';
