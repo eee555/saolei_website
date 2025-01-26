@@ -1,21 +1,21 @@
 <template>
     <el-table :data="videos_trans" :show-header="showHeader" @row-click="(row: any) => preview(row.key)"
-        table-layout="auto" style="width: 100%;font-size: 16px;user-select: none;">
-        <el-table-column prop="state" width="40"
+        table-layout="auto" :max-height="maxHeight" style="width: 100%;font-size: 16px;user-select: none;">
+        <el-table-column prop="state" width="24"
             :filters="[{ text: t('common.state.c'), value: 'c' }, { text: t('common.state.d'), value: 'd' }]"
             :filter-method="defaultFilterMethod">
             <template #default="scope">
                 <VideoStateIcon :state="scope.row.state" />
             </template>
         </el-table-column>
-        <el-table-column :prop="upload_time" min-width="180" :formatter="simple_formatter(utc_to_local_format)"
+        <el-table-column :prop="upload_time" min-width="160" :formatter="simple_formatter(utc_to_local_format)"
             sortable />
         <el-table-column v-if="need_player_name" min-width="80">
             <template #default="player">
                 <PlayerName class="name" :user_id="+player.row.player_id" :user_name="player.row.player"></PlayerName>
             </template>
         </el-table-column>
-        <el-table-column width="20">
+        <el-table-column min-width="20">
             <template #default="scope">
                 <SoftwareIcon :software="scope.row.software" />
             </template>
@@ -85,6 +85,9 @@ const data = defineProps({
         type: Boolean,
         default: true,
     },
+    maxHeight: {
+        type: [String, Number],
+    },
 })
 
 const emit = defineEmits(['update'])
@@ -124,4 +127,11 @@ const videos_trans = computed(() => {
 })
 
 </script>
-<style></style>
+<style>
+
+.el-table .cell {
+    line-height: 18px;
+    padding: 0px 5px;
+}
+
+</style>
