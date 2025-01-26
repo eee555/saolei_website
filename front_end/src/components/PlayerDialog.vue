@@ -12,6 +12,7 @@ import { videoplayerstore } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { watch } from 'vue';
 import { httpErrorNotification } from './Notifications';
+import { ElDialog } from 'element-plus';
 const { proxy } = useCurrentInstance();
 
 watch(videoplayerstore, () => {

@@ -1,6 +1,6 @@
 <template>
     <el-descriptions border>
-        <el-descriptions-item :label="t('common.prop.update_time')" span="2">{{ utc_to_local_format(data.update_time) }}</el-descriptions-item>
+        <el-descriptions-item :label="t('common.prop.update_time')" :span="2">{{ utc_to_local_format(data.update_time) }}</el-descriptions-item>
         <el-descriptions-item :label="t('accountlink.saoleiName')">{{ data.name }}</el-descriptions-item>
         <el-descriptions-item :label="t('accountlink.saoleiTotalViews')">{{ data.total_views }}</el-descriptions-item>
     </el-descriptions>
@@ -18,6 +18,7 @@ import { cs_to_s, ms_to_s } from '@/utils';
 import { utc_to_local_format } from '@/utils/system/tools';
 import { computed, PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { ElDescriptions, ElDescriptionsItem, ElTable, ElTableColumn} from 'element-plus';
 
 const prop = defineProps({
     data: {

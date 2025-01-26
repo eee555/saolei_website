@@ -30,6 +30,7 @@ import { ref } from 'vue';
 import { deepCopy } from '@/utils';
 import MSStatSelect from '../Filters/MSStatSelect.vue';
 import { useI18n } from 'vue-i18n';
+import { ElCard } from 'element-plus';
 
 const isDark = useDark();
 const { t } = useI18n();

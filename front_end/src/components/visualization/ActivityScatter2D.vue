@@ -25,6 +25,7 @@ import { useI18n } from 'vue-i18n';
 import MSStatSelect from '../Filters/MSStatSelect.vue';
 import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 import { MS_Levels } from '@/utils/ms_const';
+import { ElCard } from 'element-plus';
 
 const video_stats = ['time', 'bv', 'bvs']
 

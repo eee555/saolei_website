@@ -54,6 +54,7 @@ import { preview } from '@/utils/common/PlayerDialog';
 
 import { ms_to_s, simple_formatter, defaultFilterMethod } from '@/utils';
 import { useI18n } from 'vue-i18n';
+import { ElTable, ElTableColumn } from 'element-plus';
 
 const { t } = useI18n();
 

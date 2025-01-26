@@ -47,7 +47,7 @@ import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { ref } from 'vue';
 import { removeItem } from '@/utils/system/tools';
 import { Plus } from '@element-plus/icons-vue';
-import { ElNotification } from 'element-plus';
+import { ElNotification, ElTable, ElTableColumn, ElLink, ElInput, ElIcon } from 'element-plus';
 import { httpErrorNotification, unknownErrorNotification } from '@/components/Notifications';
 import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';

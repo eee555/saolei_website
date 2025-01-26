@@ -6,6 +6,7 @@
 <script setup lang="ts" name="PreviewNumber">
 // 某个数字或字符串，点击后预览
 import { preview } from '@/utils/common/PlayerDialog';
+import { ElLink } from 'element-plus';
 
 const data = defineProps({
     id: {

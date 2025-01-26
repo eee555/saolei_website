@@ -63,6 +63,7 @@
 <script lang="ts" setup>
 // 玩家排行榜
 import { onMounted, ref, reactive } from 'vue'
+import { ElPagination, ElRow, ElButton } from 'element-plus';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import { to_fixed_n, ms_to_s } from "@/utils";
 import PreviewNumber from '@/components/PreviewNumber.vue';

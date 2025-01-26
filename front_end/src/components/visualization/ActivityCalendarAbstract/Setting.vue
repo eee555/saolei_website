@@ -15,6 +15,7 @@
 
 <script setup lang="ts">
 import { activityCalendarConfig } from '@/store';
+import { ElSwitch, ElInputNumber, ElText } from 'element-plus';
 
 </script>
 

@@ -48,6 +48,7 @@
 <script lang="ts" setup>
 // 个人主页的个人纪录部分
 import { ref, nextTick } from 'vue'
+import { ElCard, ElTable, ElTableColumn, ElSkeleton } from 'element-plus';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import { ElMessage } from 'element-plus'

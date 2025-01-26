@@ -46,7 +46,7 @@
 
 <script lang="ts" setup>
 // 管理员操作接口，通过'/staff'访问
-
+import { ElButton, ElDescriptions, ElDescriptionsItem, ElDivider, ElInput, ElInputNumber, ElSelect, ElOption } from 'element-plus';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { ref } from 'vue';
 import { preview } from '@/utils/common/PlayerDialog';

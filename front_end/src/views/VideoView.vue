@@ -50,6 +50,7 @@
 <script lang="ts" setup>
 // 全网录像的检索器，根据三个维度排序
 import { onMounted, ref, reactive } from 'vue'
+import { ElPagination, ElTable, ElTableColumn, ElDescriptions, ElDescriptionsItem, ElRow, ElButton } from 'element-plus';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 
 import VideoStateFilter from '@/components/Filters/VideoStateFilter.vue';

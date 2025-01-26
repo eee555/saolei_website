@@ -15,7 +15,7 @@
 
 <script setup lang="ts">
 import { Tippy } from 'vue-tippy';
-
+import { ElLink, ElCard, ElIcon } from 'element-plus';
 </script>
 
 <style scoped lang="less">
