@@ -32,6 +32,7 @@ import { computed, defineAsyncComponent } from 'vue';
 import { store, activityCalendarConfig, local } from '@/store';
 import { groupVideosByUploadDate } from '@/utils/videoabstract';
 import { fullWeek, getWeekTime, toISODateString } from '@/utils/datetime';
+import { ElCard, ElRow, ElScrollbar } from 'element-plus';
 import Header from './Header.vue';
 import DayLabel from './DayLabel.vue';
 import MonthLabel from './MonthLabel.vue';

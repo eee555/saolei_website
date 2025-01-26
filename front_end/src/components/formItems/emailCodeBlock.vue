@@ -31,7 +31,7 @@
 <script setup lang="ts">
 import { validateError, validateSuccess } from '@/utils/common/elFormValidate';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { ElFormItem, ElNotification } from 'element-plus';
+import { ElFormItem, ElNotification, ElButton, ElInput } from 'element-plus';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import ValidCode from '../ValidCode.vue';

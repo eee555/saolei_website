@@ -9,7 +9,7 @@
 <script setup lang="ts">
 import { MS_Level, MS_Levels } from '@/utils/ms_const';
 import { useI18n } from 'vue-i18n';
-
+import { ElCheckboxGroup, ElCheckboxButton } from 'element-plus';
 
 const { t } = useI18n();
 

@@ -44,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-
+import { ElFooter, ElLink, ElText } from 'element-plus';
 import Thanks from './dialogs/Thanks.vue';
 import Downloads from './dialogs/Downloads.vue';
 

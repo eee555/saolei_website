@@ -13,6 +13,7 @@
 <script setup lang="ts">
 import { activityCalendarConfig } from '@/store';
 import { computed } from 'vue';
+import { ElText } from 'element-plus';
 
 const cellFullSize = computed(() => activityCalendarConfig.value.cellSize + activityCalendarConfig.value.cellMargin);
 

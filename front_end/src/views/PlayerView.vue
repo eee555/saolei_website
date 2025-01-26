@@ -75,6 +75,7 @@
 <script lang="ts" setup>
 // 我的地盘页面
 import { defineAsyncComponent, onMounted, ref, watch } from 'vue'
+import { ElContainer, ElAside, ElMain, ElTabs, ElTabPane, ElImage, ElInput, ElUpload, ElIcon } from 'element-plus';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const PlayerRecordView = defineAsyncComponent(() => import('@/views/PlayerRecordView.vue'));
 const PlayerVideosView = defineAsyncComponent(() => import('@/views/PlayerVideosView.vue'));

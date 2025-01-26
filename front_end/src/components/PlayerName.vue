@@ -52,6 +52,7 @@ import { useRouter } from 'vue-router'
 import { ms_to_s, to_fixed_n } from "@/utils"
 const router = useRouter()
 import { store } from '../store'
+import { ElLink, ElPopover, ElImage, ElButton } from "element-plus";
 
 const data = defineProps({
     user_id: {

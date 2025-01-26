@@ -33,21 +33,13 @@
             </li>
 
         </ul>
-
-        <!-- <template #footer>
-            <span class="dialog-footer">
-                <el-button type="primary" @click="centerDialogVisible = false">
-                    确定
-                </el-button>
-            </span>
-        </template> -->
     </el-dialog>
 </template>
 
 <script lang="ts" setup>
 // 注册、登录的弹框及右上方按钮
 import { onMounted, ref, Ref } from 'vue'
-
+import { ElLink, ElDialog } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 

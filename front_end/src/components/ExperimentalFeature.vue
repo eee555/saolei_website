@@ -7,6 +7,7 @@
 <script setup lang="ts">
 import { local } from '@/store';
 import { useI18n } from 'vue-i18n';
+import { ElWatermark } from 'element-plus';
 
 const { t } = useI18n();
 </script>

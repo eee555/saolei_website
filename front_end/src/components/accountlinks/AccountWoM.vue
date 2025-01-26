@@ -1,8 +1,8 @@
 <template>
     <el-descriptions border>
-        <el-descriptions-item :label="t('common.prop.update_time')" span="2">{{ utc_to_local_format(data.update_time) }}</el-descriptions-item>
+        <el-descriptions-item :label="t('common.prop.update_time')" :span="2">{{ utc_to_local_format(data.update_time) }}</el-descriptions-item>
         <el-descriptions-item :label="t('accountlink.womTrophy')">{{ data.trophy }}</el-descriptions-item>
-        <el-descriptions-item :label="t('accountlink.womResource')" span="3">
+        <el-descriptions-item :label="t('accountlink.womResource')" :span="3">
             <el-image src="https://minesweeper.online/img/other/hp.svg" class="icon"/><el-text style="vertical-align: middle;">{{ data.honour }}</el-text>&nbsp;
             <el-image src="https://minesweeper.online/img/other/coin.svg" class="icon"/><el-text style="vertical-align: middle;">{{ data.minecoin }}</el-text>&nbsp;
             <el-image src="https://minesweeper.online/img/gems/0.svg" class="icon"/><el-text style="vertical-align: middle;">{{ data.gem }}</el-text>&nbsp;
@@ -30,6 +30,7 @@ import { ms_to_s, to_fixed_n } from '@/utils';
 import { utc_to_local_format } from '@/utils/system/tools';
 import { computed, PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { ElDescriptions, ElDescriptionsItem, ElTable, ElTableColumn, ElText, ElImage } from 'element-plus';
 
 const prop = defineProps({
     data: {

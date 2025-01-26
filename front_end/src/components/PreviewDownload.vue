@@ -11,6 +11,7 @@ import { onMounted, ref } from "vue";
 // import { getCurrentInstance } from 'vue';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import { preview } from "@/utils/common/PlayerDialog";
+import { ElButton } from "element-plus";
 
 const { proxy } = useCurrentInstance();
 // import { genFileId, ElMessage } from 'element-plus'

@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-
+import { ElTableColumn } from 'element-plus';
 import SoftwareIcon from '../widgets/SoftwareIcon.vue';
 
 </script>

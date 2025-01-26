@@ -33,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import { FormInstance, ElFormItem, ElNotification } from 'element-plus';
+import { FormInstance, ElFormItem, ElNotification, ElDialog, ElForm, ElButton, ElCheckbox, ElInput } from 'element-plus';
 import { computed, reactive, ref } from 'vue';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import { containsControl } from '@/utils/strings';

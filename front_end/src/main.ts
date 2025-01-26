@@ -4,7 +4,6 @@ import * as ELIcons from '@element-plus/icons-vue';
 import App from './App.vue'
 import router from './router'
 import i18n from '@/i18n'
-import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import $axios from './http'
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
@@ -24,7 +23,6 @@ for (const name in ELIcons) {
   app.component(name, (ELIcons as any)[name]);
 }
 
-app.use(ElementPlus);
 app.use(pinia).use(router).use(i18n);
 app.mount('#app');
 

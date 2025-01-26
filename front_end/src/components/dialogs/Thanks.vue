@@ -66,6 +66,7 @@
 <script lang="ts" setup>
 // 注册、登录的弹框及右上方按钮
 import { ref } from 'vue'
+import { ElDialog, ElDivider, ElRow, ElCol, ElLink } from 'element-plus';
 import GitHubUser from '../widgets/GitHubUser.vue'
 
 import { useI18n } from 'vue-i18n';

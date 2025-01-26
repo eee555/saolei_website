@@ -32,6 +32,7 @@ import { toISODateString } from '@/utils/datetime';
 import { VideoAbstract } from '@/utils/videoabstract';
 import { computed, ref, toRaw, watch } from 'vue';
 import { Tippy } from 'vue-tippy';
+import { ElText, ElCard } from 'element-plus';
 
 const prop = defineProps({
     date: { type: Date, required: true },

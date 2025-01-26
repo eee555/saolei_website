@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-
+import { ElTableColumn } from 'element-plus';
 import PlayerName from '../PlayerName.vue';
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
