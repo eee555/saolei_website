@@ -41,9 +41,7 @@
         <template #footer>
             <span class="dialog-footer">
                 <el-checkbox v-model="never_show_notice">不再显示此对话框&nbsp;&nbsp;&nbsp;</el-checkbox>
-                <el-button type="primary" @click="handle_notice_close()">
-                    确认
-                </el-button>
+                <base-button-confirm @click="handle_notice_close()" />
             </span>
         </template>
     </el-dialog>
@@ -58,7 +56,8 @@ import Footer from "./components/Footer.vue";
 import PlayerDialog from "./components/PlayerDialog.vue";
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import { store, local } from "./store";
-import { ElScrollbar, ElMenu, ElMenuItem, ElDialog, ElCheckbox, ElButton, ElImage, ElBadge, ElHeader, ElContainer, ElMain } from "element-plus";
+import { ElScrollbar, ElMenu, ElMenuItem, ElDialog, ElCheckbox, ElImage, ElBadge, ElHeader, ElContainer, ElMain } from "element-plus";
+import BaseButtonConfirm from "./components/common/BaseButtonConfirm.vue";
 
 const { proxy } = useCurrentInstance();
 import logo_1 from "@/assets/logo.png";

@@ -69,9 +69,8 @@
                 <AccountLinkGuide :platform="form.platform" />
             </el-form-item>
             <el-form-item>
-                <el-button type="primary" :disabled="!formValid" @click.prevent="addLink(); formvisible = false;">{{
-                    t('common.button.confirm') }}</el-button>
-                <el-button @click.prevent="formvisible = false">{{ t('common.button.cancel') }}</el-button>
+                <base-button-confirm :disabled="!formValid" @click.prevent="addLink(); formvisible = false;" />
+                <base-button-cancel @click.prevent="formvisible = false"/>
             </el-form-item>
         </el-form>
     </el-dialog>
@@ -89,6 +88,8 @@ const AccountLinkGuide = defineAsyncComponent(() => import('./dialogs/AccountLin
 const AccountSaolei = defineAsyncComponent(() => import('./accountlinks/AccountSaolei.vue'));
 const AccountMsgames = defineAsyncComponent(() => import('./accountlinks/AccountMsgames.vue'));
 const AccountWoM = defineAsyncComponent(() => import('./accountlinks/AccountWoM.vue'));
+import BaseButtonConfirm from './common/BaseButtonConfirm.vue';
+import BaseButtonCancel from './common/BaseButtonCancel.vue';
 import { useI18n } from 'vue-i18n';
 import { httpErrorNotification } from './Notifications';
 const { t } = useI18n();
