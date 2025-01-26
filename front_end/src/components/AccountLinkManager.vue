@@ -79,16 +79,16 @@
 
 <script setup lang="ts">
 
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { store, local } from '@/store';
 import { ElNotification, ElDialog, ElForm, ElFormItem, ElInput, ElSelect, ElOption, ElLink, ElTable, ElTableColumn, ElText, ElTooltip, ElButton, ElIcon } from 'element-plus';
 import { Platform, platformlist } from '@/utils/common/accountLinkPlatforms'
 import PlatformIcon from './widgets/PlatformIcon.vue';
-const AccountLinkGuide = () => import('./dialogs/AccountLinkGuide.vue')
-const AccountSaolei = () => import('./accountlinks/AccountSaolei.vue');
-const AccountMsgames = () => import('./accountlinks/AccountMsgames.vue');
-const AccountWoM = () => import('./accountlinks/AccountWoM.vue');
+const AccountLinkGuide = defineAsyncComponent(() => import('./dialogs/AccountLinkGuide.vue'));
+const AccountSaolei = defineAsyncComponent(() => import('./accountlinks/AccountSaolei.vue'));
+const AccountMsgames = defineAsyncComponent(() => import('./accountlinks/AccountMsgames.vue'));
+const AccountWoM = defineAsyncComponent(() => import('./accountlinks/AccountWoM.vue'));
 import { useI18n } from 'vue-i18n';
 import { httpErrorNotification } from './Notifications';
 const { t } = useI18n();
