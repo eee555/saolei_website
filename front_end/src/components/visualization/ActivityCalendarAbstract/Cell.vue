@@ -11,28 +11,30 @@
         </el-text>
         <template #content>
             <!-- vue-tippy的bug，改语言的时候content不会刷新，不算大问题就不用workaround了，等上游修复 -->
-            <el-card>
-            <el-text v-if="videos.length == 0" v-t="{path: 'activityCalendar.tooltip.noVideoOnDate', args: [toISODateString(date)]}" />
-            <template v-else>
-                <el-text
-                    v-t="{ path: 'activityCalendar.tooltip.uploadedNVideosOnDate', args: [toISODateString(date), videos.length] }" />
-                <br>
-                <span v-for="i in count.b" class="dot" style="background-color: #f00;"></span>
-                <span v-for="i in count.i" class="dot" style="background-color: #080;"></span>
-                <span v-for="i in count.e" class="dot" style="background-color: #00f;"></span>
-            </template>
-        </el-card>
+            <base-card-small>
+                <el-text v-if="videos.length == 0"
+                    v-t="{ path: 'activityCalendar.tooltip.noVideoOnDate', args: [toISODateString(date)] }" />
+                <template v-else>
+                    <el-text
+                        v-t="{ path: 'activityCalendar.tooltip.uploadedNVideosOnDate', args: [toISODateString(date), videos.length] }" />
+                    <br>
+                    <span v-for="i in count.b" class="dot" style="background-color: #f00;"></span>
+                    <span v-for="i in count.i" class="dot" style="background-color: #080;"></span>
+                    <span v-for="i in count.e" class="dot" style="background-color: #00f;"></span>
+                </template>
+            </base-card-small>
         </template>
     </Tippy>
 </template>
 
 <script setup lang="ts">
-import { activityCalendarConfig, local } from '@/store';
+import { activityCalendarConfig } from '@/store';
 import { toISODateString } from '@/utils/datetime';
 import { VideoAbstract } from '@/utils/videoabstract';
-import { computed, ref, toRaw, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { Tippy } from 'vue-tippy';
-import { ElText, ElCard } from 'element-plus';
+import { ElText } from 'element-plus';
+import BaseCardSmall from '@/components/common/BaseCardSmall.vue';
 
 const prop = defineProps({
     date: { type: Date, required: true },
@@ -87,9 +89,5 @@ const left = computed(() => prop.xOffset * (activityCalendarConfig.value.cellSiz
     width: 12px;
     border-radius: 50%;
     display: inline-block;
-}
-
-.el-card {
-    --el-card-padding: 5px;
 }
 </style>

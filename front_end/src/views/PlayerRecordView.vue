@@ -1,9 +1,9 @@
 <template>
-    <el-card class="box-card" body-style="padding-top:0px;padding-left:20px;padding-right:12px;">
-        <el-skeleton animated style="margin-top: 20px;" v-show="loading" :rows="8" />
-        <div v-for="(d, idx) in records">
-            <h4 style="margin-bottom: 0px;margin-top: 20px;">{{ t(table_title[idx]) }}{{ t('profile.records.modeRecord') }}</h4>
-            <el-table :data="d" style="width: 100%" :header-cell-style="{ 'text-align': 'center' }">
+    <base-card-large>
+        <el-skeleton animated style="margin-top: 0px;" v-show="loading" :rows="8" />
+        <div v-for="(d, idx) in records" style="margin-top: -10px;">
+            <h4>{{ t(table_title[idx]) }}{{ t('profile.records.modeRecord') }}</h4>
+            <el-table :data="d" style="width: 100%;" :header-cell-style="{ 'text-align': 'center' }">
                 <el-table-column type="index" :index="indexMethod" width="100" align="center" />
 
                 <el-table-column label="time" align="center">
@@ -42,15 +42,16 @@
                 </el-table-column>
             </el-table>
         </div>
-    </el-card>
+    </base-card-large>
 </template>
 
 <script lang="ts" setup>
 // 个人主页的个人纪录部分
 import { ref, nextTick } from 'vue'
-import { ElCard, ElTable, ElTableColumn, ElSkeleton } from 'element-plus';
+import { ElTable, ElTableColumn, ElSkeleton } from 'element-plus';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import PreviewNumber from '@/components/PreviewNumber.vue';
+import BaseCardLarge from '@/components/common/BaseCardLarge.vue';
 import { ElMessage } from 'element-plus'
 const { proxy } = useCurrentInstance();
 import { Record, RecordBIE } from "@/utils/common/structInterface";

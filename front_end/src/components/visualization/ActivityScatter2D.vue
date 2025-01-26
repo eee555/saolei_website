@@ -1,5 +1,5 @@
 <template>
-    <el-card>
+    <base-card-normal>
         <div style="align-items: center; display: flex;">
             <MSLevelFilter v-model="level" />
             <span style="flex: 1;"></span>
@@ -8,7 +8,7 @@
             <MSStatSelect v-model="y" label="y" :options="video_stats" />
         </div>
         <v-chart class="chart" :option="option" autoresize @click="handleClick" />
-    </el-card>
+    </base-card-normal>
 
 </template>
 
@@ -25,7 +25,7 @@ import { useI18n } from 'vue-i18n';
 import MSStatSelect from '../Filters/MSStatSelect.vue';
 import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 import { MS_Levels } from '@/utils/ms_const';
-import { ElCard } from 'element-plus';
+import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
 
 const video_stats = ['time', 'bv', 'bvs']
 
@@ -95,9 +95,5 @@ const handleClick = (params: any) => {
 
 .el-select {
     width: 80px;
-}
-
-.el-card {
-    --el-card-padding: 10px;
 }
 </style>
