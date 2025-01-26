@@ -101,7 +101,7 @@
 
 <script setup lang='ts'>
 import { onMounted, ref, Ref } from 'vue'
-import { ElContainer, ElAside, ElIcon, ElMain, ElTabs, ElTabPane, ElText, ElLink } from 'element-plus';
+import { ElContainer, ElAside, ElIcon, ElMain, ElTabs, ElTabPane, ElText, ElLink, vLoading } from 'element-plus';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import VideoList from '@/components/VideoList.vue';

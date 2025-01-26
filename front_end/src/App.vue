@@ -58,7 +58,7 @@ import Footer from "./components/Footer.vue";
 import PlayerDialog from "./components/PlayerDialog.vue";
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import { store, local } from "./store";
-import { ElScrollbar, ElMenu, ElMenuItem, ElDialog, ElCheckbox, ElButton, ElImage, ElBadge, ElHeader, ElContainer } from "element-plus";
+import { ElScrollbar, ElMenu, ElMenuItem, ElDialog, ElCheckbox, ElButton, ElImage, ElBadge, ElHeader, ElContainer, ElMain } from "element-plus";
 
 const { proxy } = useCurrentInstance();
 import logo_1 from "@/assets/logo.png";

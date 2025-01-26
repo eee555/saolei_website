@@ -8,7 +8,7 @@
 import { onMounted, ref } from "vue";
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
-import { ElMessage } from 'element-plus'
+import { ElMessage, vLoading } from 'element-plus'
 
 const captchaUrl = ref("")
 const hashkey = ref("")
