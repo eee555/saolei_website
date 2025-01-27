@@ -20,9 +20,7 @@
 
         <template #footer>
             <span class="dialog-footer">
-                <el-button type="primary" @click="centerDialogVisible = false">
-                    确定
-                </el-button>
+                <base-button-confirm @click="centerDialogVisible = false" />
             </span>
         </template>
     </el-dialog>
@@ -30,8 +28,9 @@
   
 <script lang="ts" setup>
 // 注册、登录的弹框及右上方按钮
-import { onMounted, ref, Ref } from 'vue'
-import { ElDialog, ElButton } from 'element-plus';
+import { onMounted, ref } from 'vue'
+import { ElDialog } from 'element-plus';
+import BaseButtonConfirm from '@/components/common/BaseButtonConfirm.vue';
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
