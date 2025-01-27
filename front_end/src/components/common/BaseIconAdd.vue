@@ -1,5 +1,5 @@
 <template>
-    <i class="pi pi-trash" />
+    <i class="pi pi-plus" />
 </template>
 
 <script setup lang="ts">

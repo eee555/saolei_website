@@ -47,9 +47,7 @@
         </el-table-column>
     </el-table>
     <el-button v-if="store.player.id == store.user.id" style="width:100%" @click="formvisible = true" size="small">
-        <el-icon>
-            <Plus />
-        </el-icon>
+        <base-icon-add />
     </el-button>
     <el-dialog v-model="formvisible" :title="t('accountlink.addLink')"
         @closed="form.platform = ''; form.identifier = '';" width="500px">
@@ -89,6 +87,7 @@ const AccountWoM = defineAsyncComponent(() => import('./accountlinks/AccountWoM.
 import BaseButtonConfirm from './common/BaseButtonConfirm.vue';
 import BaseButtonCancel from './common/BaseButtonCancel.vue';
 import BaseIconDelete from './common/BaseIconDelete.vue';
+import BaseIconAdd from './common/BaseIconAdd.vue';
 import { useI18n } from 'vue-i18n';
 import { httpErrorNotification } from './Notifications';
 const { t } = useI18n();

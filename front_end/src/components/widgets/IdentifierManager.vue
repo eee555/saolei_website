@@ -17,9 +17,9 @@
                 <template #default="scope">
                     <!-- 添加标识 -->
                     <el-link v-if="scope.row.data === ''" :underline="false"
-                        @click="addIdentifier(new_identifiers)"><el-icon>
-                            <Plus />
-                        </el-icon></el-link>
+                        @click="addIdentifier(new_identifiers)">
+                        <base-icon-add />
+                    </el-link>
                     <!-- 复制标识 -->
                     <el-link v-else :underline="false" @click="copyToClipboard(scope.row.data)">
                         <el-icon>
@@ -44,13 +44,13 @@ import { store } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { ref } from 'vue';
 import { removeItem } from '@/utils/system/tools';
-import { Plus } from '@element-plus/icons-vue';
 import { ElNotification, ElTable, ElTableColumn, ElLink, ElInput, ElIcon } from 'element-plus';
 import { httpErrorNotification, unknownErrorNotification } from '@/components/Notifications';
 import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
 import { copyToClipboard } from './CopyToClipboard';
 import BaseIconDelete from '@/components/common/BaseIconDelete.vue';
+import BaseIconAdd from '../common/BaseIconAdd.vue';
 
 const { proxy } = useCurrentInstance();
 const new_identifiers = ref("")

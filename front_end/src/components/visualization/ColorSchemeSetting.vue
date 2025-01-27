@@ -12,7 +12,7 @@
         &nbsp;
         <el-input-number v-model="operationNode" :controls="false" style="width: 40px"></el-input-number>
         &nbsp;
-        <el-tooltip content="Add"><el-link :underline="false"><el-icon size="large"><Plus /></el-icon></el-link></el-tooltip>
+        <el-tooltip content="Add"><el-link :underline="false"><base-icon-add /></el-link></el-tooltip>
         &nbsp;
         <el-tooltip content="Merge to left"><el-link :underline="false"><el-icon size="large"><ArrowLeft/></el-icon></el-link></el-tooltip>
         &nbsp;
@@ -29,6 +29,7 @@
 import { countRows, stringifyWithLineWrap } from '@/utils/strings';
 import { ref, watch, PropType } from 'vue';
 import { ElRow, ElInput, ElCheckbox, ElTooltip, ElLink, ElInputNumber, ElColorPicker, ElIcon } from 'element-plus';
+import BaseIconAdd from '@/components/common/BaseIconAdd.vue';
 
 interface ColorScheme {
     colors: Array<string>;
