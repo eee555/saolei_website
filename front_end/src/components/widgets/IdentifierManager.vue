@@ -30,9 +30,7 @@
                     <!-- 删除标识 -->
                     <el-link v-if="store.player.id == store.user.id && scope.row.data !== ''" :underline="false"
                         type="danger" @click="delIdentifier(scope.row.data)">
-                        <el-icon>
-                            <Delete />
-                        </el-icon>
+                        <base-icon-delete />
                     </el-link>
                 </template>
             </el-table-column>
@@ -52,6 +50,7 @@ import { httpErrorNotification, unknownErrorNotification } from '@/components/No
 import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
 import { copyToClipboard } from './CopyToClipboard';
+import BaseIconDelete from '@/components/common/BaseIconDelete.vue';
 
 const { proxy } = useCurrentInstance();
 const new_identifiers = ref("")

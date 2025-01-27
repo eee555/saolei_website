@@ -37,9 +37,7 @@
         </el-table-column>
         <el-table-column v-if="store.player.id == store.user.id" :label="t('common.prop.action')">
             <template #default="scope">
-                <el-link :underline="false" @click.prevent="deleteRow(scope.row)" type="danger"><el-icon>
-                        <Delete />
-                    </el-icon></el-link>
+                <el-link :underline="false" @click.prevent="deleteRow(scope.row)" type="danger"><base-icon-delete/></el-link>
                 &nbsp;
                 <el-link v-if="scope.row.data !== undefined" :underline="false"
                     @click.prevent="updateRow(scope.row)"><el-icon>
@@ -90,6 +88,7 @@ const AccountMsgames = defineAsyncComponent(() => import('./accountlinks/Account
 const AccountWoM = defineAsyncComponent(() => import('./accountlinks/AccountWoM.vue'));
 import BaseButtonConfirm from './common/BaseButtonConfirm.vue';
 import BaseButtonCancel from './common/BaseButtonCancel.vue';
+import BaseIconDelete from './common/BaseIconDelete.vue';
 import { useI18n } from 'vue-i18n';
 import { httpErrorNotification } from './Notifications';
 const { t } = useI18n();
