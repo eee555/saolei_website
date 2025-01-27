@@ -40,9 +40,7 @@
                 <el-link :underline="false" @click.prevent="deleteRow(scope.row)" type="danger"><base-icon-delete/></el-link>
                 &nbsp;
                 <el-link v-if="scope.row.data !== undefined" :underline="false"
-                    @click.prevent="updateRow(scope.row)"><el-icon>
-                        <Refresh />
-                    </el-icon></el-link>
+                    @click.prevent="updateRow(scope.row)"><base-icon-refresh /></el-link>
             </template>
         </el-table-column>
     </el-table>
@@ -88,6 +86,7 @@ import BaseButtonConfirm from './common/BaseButtonConfirm.vue';
 import BaseButtonCancel from './common/BaseButtonCancel.vue';
 import BaseIconDelete from './common/BaseIconDelete.vue';
 import BaseIconAdd from './common/BaseIconAdd.vue';
+import BaseIconRefresh from './common/BaseIconRefresh.vue';
 import { useI18n } from 'vue-i18n';
 import { httpErrorNotification } from './Notifications';
 const { t } = useI18n();
