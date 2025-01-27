@@ -24,9 +24,7 @@
         <el-table-column v-if="store.player.id == store.user.id || store.user.is_staff" :label="t('common.prop.status')">
             <template #default="scope">
                 <el-tooltip v-if="scope.row.verified" :content="t('accountlink.verified')">
-                    <el-text type="success"><el-icon>
-                            <CircleCheck />
-                        </el-icon></el-text>
+                    <el-text type="success"><base-icon-verified /></el-text>
                 </el-tooltip>
                 <el-tooltip v-else :content="t('accountlink.unverified')">
                     <el-text><el-icon>
@@ -87,6 +85,7 @@ import BaseButtonCancel from './common/BaseButtonCancel.vue';
 import BaseIconDelete from './common/BaseIconDelete.vue';
 import BaseIconAdd from './common/BaseIconAdd.vue';
 import BaseIconRefresh from './common/BaseIconRefresh.vue';
+import BaseIconVerified from './common/BaseIconVerified.vue';
 import { useI18n } from 'vue-i18n';
 import { httpErrorNotification } from './Notifications';
 const { t } = useI18n();
