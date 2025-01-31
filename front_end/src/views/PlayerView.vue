@@ -9,9 +9,7 @@
                         style="width: 200px; height: 200px;border-radius: 20px;">
                         <el-image style="width: 200px; height: 200px;border-radius: 20px;" v-if="imageUrl"
                             :src="imageUrl" :fit="'cover'" />
-                        <el-icon v-else class="avatar-uploader-icon">
-                            <Plus />
-                        </el-icon>
+                        <base-icon-add v-else />
                     </el-upload>
                     <div style="font-size: 14px;color: #AAA;text-align: center;" v-t="'profile.changeAvatar'"></div>
                     <div style="margin-top: 12px;margin-bottom: 4px;" v-t="'profile.realname'"></div>
@@ -75,20 +73,18 @@
 <script lang="ts" setup>
 // 我的地盘页面
 import { defineAsyncComponent, onMounted, ref, watch } from 'vue'
-import { ElContainer, ElAside, ElMain, ElTabs, ElTabPane, ElImage, ElInput, ElUpload, ElIcon } from 'element-plus';
+import { ElContainer, ElAside, ElMain, ElTabs, ElTabPane, ElImage, ElInput, ElUpload } from 'element-plus';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const PlayerRecordView = defineAsyncComponent(() => import('@/views/PlayerRecordView.vue'));
 const PlayerVideosView = defineAsyncComponent(() => import('@/views/PlayerVideosView.vue'));
 const PlayerProfileView = defineAsyncComponent(() => import('@/views/PlayerProfileView.vue'));
 const UploadView = defineAsyncComponent(() => import('@/views/UploadView.vue'));
-// const AsyncPlayerVideosView = defineAsyncComponent(() => import('@/views/PlayerVideosView.vue'));
 import "../../node_modules/flag-icon-css/css/flag-icons.min.css";
 
 const { proxy } = useCurrentInstance();
 import { genFileId, ElMessage } from 'element-plus'
 import type { UploadInstance, UploadProps, UploadRawFile, UploadFile, UploadFiles, UploadRequestOptions } from 'element-plus'
 const upload = ref<UploadInstance>()
-import { Plus } from '@element-plus/icons-vue'
 import imageUrlDefault from '@/assets/person.png'
 const imageUrl = ref(imageUrlDefault)
 const avatar_changed = ref(false);
@@ -99,6 +95,7 @@ import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import { UserProfile } from '@/utils/userprofile';
 import { unknownErrorNotification } from '@/components/Notifications';
+import BaseIconAdd from '@/components/common/BaseIconAdd.vue';
 const { t } = useI18n();
 const route = useRoute()
 

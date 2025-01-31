@@ -24,9 +24,7 @@
         <el-table-column v-if="store.player.id == store.user.id || store.user.is_staff" :label="t('common.prop.status')">
             <template #default="scope">
                 <el-tooltip v-if="scope.row.verified" :content="t('accountlink.verified')">
-                    <el-text type="success"><el-icon>
-                            <CircleCheck />
-                        </el-icon></el-text>
+                    <el-text type="success"><base-icon-verified /></el-text>
                 </el-tooltip>
                 <el-tooltip v-else :content="t('accountlink.unverified')">
                     <el-text><el-icon>
@@ -37,21 +35,15 @@
         </el-table-column>
         <el-table-column v-if="store.player.id == store.user.id" :label="t('common.prop.action')">
             <template #default="scope">
-                <el-link :underline="false" @click.prevent="deleteRow(scope.row)" type="danger"><el-icon>
-                        <Delete />
-                    </el-icon></el-link>
+                <el-link :underline="false" @click.prevent="deleteRow(scope.row)" type="danger"><base-icon-delete/></el-link>
                 &nbsp;
                 <el-link v-if="scope.row.data !== undefined" :underline="false"
-                    @click.prevent="updateRow(scope.row)"><el-icon>
-                        <Refresh />
-                    </el-icon></el-link>
+                    @click.prevent="updateRow(scope.row)"><base-icon-refresh /></el-link>
             </template>
         </el-table-column>
     </el-table>
     <el-button v-if="store.player.id == store.user.id" style="width:100%" @click="formvisible = true" size="small">
-        <el-icon>
-            <Plus />
-        </el-icon>
+        <base-icon-add />
     </el-button>
     <el-dialog v-model="formvisible" :title="t('accountlink.addLink')"
         @closed="form.platform = ''; form.identifier = '';" width="500px">
@@ -90,6 +82,10 @@ const AccountMsgames = defineAsyncComponent(() => import('./accountlinks/Account
 const AccountWoM = defineAsyncComponent(() => import('./accountlinks/AccountWoM.vue'));
 import BaseButtonConfirm from './common/BaseButtonConfirm.vue';
 import BaseButtonCancel from './common/BaseButtonCancel.vue';
+import BaseIconDelete from './common/BaseIconDelete.vue';
+import BaseIconAdd from './common/BaseIconAdd.vue';
+import BaseIconRefresh from './common/BaseIconRefresh.vue';
+import BaseIconVerified from './common/BaseIconVerified.vue';
 import { useI18n } from 'vue-i18n';
 import { httpErrorNotification } from './Notifications';
 const { t } = useI18n();
