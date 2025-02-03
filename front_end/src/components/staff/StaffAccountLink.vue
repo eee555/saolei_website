@@ -23,6 +23,7 @@ import { platformlist } from '@/utils/common/accountLinkPlatforms';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { reactive } from 'vue';
 import { httpErrorNotification } from '../Notifications';
+import { ElForm, ElFormItem, ElInput, ElButton, ElSelect, ElOption } from 'element-plus';
 
 const { proxy } = useCurrentInstance();
 

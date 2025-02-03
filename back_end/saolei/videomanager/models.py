@@ -13,7 +13,7 @@ cache = get_redis_connection("saolei_website")
 
 class ExpandVideoModel(models.Model):
     # video = models.OneToOneField(VideoModel, on_delete=models.CASCADE)
-    identifier = models.CharField(max_length=MaxSizes.identifier)
+    identifier = models.CharField(max_length=MaxSizes.IDENTIFIER)
     stnb = models.FloatField()
     rqp = models.FloatField()
 
@@ -53,7 +53,7 @@ class VideoModel(models.Model):
     player = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     # 服务器端文件相对路径
     file = RestrictedFileField(
-        upload_to="videos/%Y%m%d/", max_length=100, max_upload_size=MaxSizes.videofile)
+        upload_to="videos/%Y%m%d/", max_length=100, max_upload_size=MaxSizes.VIDEOFILE)
     video = models.OneToOneField(ExpandVideoModel, on_delete=models.CASCADE, related_name="+")
     # file = models.FileField(upload_to="/assets/videos")
     # 上传时间，兼最近状态变化时间、更新时间（冻结后会刷新）
@@ -62,13 +62,13 @@ class VideoModel(models.Model):
     state = models.CharField(
         max_length=1, choices=MS_TextChoices.State.choices, default=MS_TextChoices.State.PLAIN)
     # 软件: "a"->avf; "e"->evf
-    software = models.CharField(max_length=MaxSizes.software)
+    software = models.CharField(max_length=MaxSizes.SOFTWARE)
     # 难度
-    level = models.CharField(max_length=MaxSizes.gamelevel, choices=MS_TextChoices.Level.choices)
+    level = models.CharField(max_length=MaxSizes.GAMELEVEL, choices=MS_TextChoices.Level.choices)
     # 游戏模式，evf标准
     # https://github.com/eee555/ms_toollib/tree/main/base#readme
     mode = models.CharField(
-        max_length=MaxSizes.gamemode, choices=MS_TextChoices.Mode.choices, default=MS_TextChoices.Mode.STD)
+        max_length=MaxSizes.GAMEMODE, choices=MS_TextChoices.Mode.choices, default=MS_TextChoices.Mode.STD)
     # 0.000-999.999
     timems = models.PositiveIntegerField(default=DefaultRankingScores["timems"])  # 整数形式存储的毫秒数。
     # 0-32767

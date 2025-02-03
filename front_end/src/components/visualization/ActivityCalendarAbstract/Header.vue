@@ -15,6 +15,7 @@
 
 <script setup lang="ts">
 import { store } from '@/store';
+import { ElText } from 'element-plus';
 import Setting from './Setting.vue';
 import IconSetting from '@/components/widgets/IconSetting.vue';
 

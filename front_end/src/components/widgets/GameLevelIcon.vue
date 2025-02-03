@@ -16,6 +16,7 @@
 <script setup lang="ts">
 
 import { useI18n } from 'vue-i18n';
+import { ElText } from 'element-plus';
 import LazyTooltip from './LazyTooltip.vue';
 
 const data = defineProps({

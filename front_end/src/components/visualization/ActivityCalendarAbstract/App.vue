@@ -1,5 +1,5 @@
 <template>
-    <el-card style="overflow: auto;">
+    <base-card-normal style="overflow: auto;">
         <el-row style="align-items: center; display: flex;">
             <Header />
         </el-row>
@@ -23,7 +23,7 @@
                 </el-row>
             </el-scrollbar>
         </el-row>
-    </el-card>
+    </base-card-normal>
 </template>
 
 <script setup lang="ts">
@@ -32,6 +32,8 @@ import { computed, defineAsyncComponent } from 'vue';
 import { store, activityCalendarConfig, local } from '@/store';
 import { groupVideosByUploadDate } from '@/utils/videoabstract';
 import { fullWeek, getWeekTime, toISODateString } from '@/utils/datetime';
+import { ElRow, ElScrollbar } from 'element-plus';
+import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
 import Header from './Header.vue';
 import DayLabel from './DayLabel.vue';
 import MonthLabel from './MonthLabel.vue';
@@ -63,9 +65,3 @@ function* generateDateRange(startDate: Date, endDate: Date, step: number = 1) {
 }
 
 </script>
-
-<style scoped lang="less">
-.el-card {
-    --el-card-padding: 10px;
-}
-</style>

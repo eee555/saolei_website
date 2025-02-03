@@ -19,6 +19,7 @@
 
 <script lang="ts" setup name="LanguagePicker">
 import { onBeforeMount } from "vue";
+import { ElDropdown, ElIcon, ElDropdownItem } from "element-plus";
 import i18n from "@/i18n";
 
 import { local } from "@/store";

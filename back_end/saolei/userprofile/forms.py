@@ -8,24 +8,24 @@ User = get_user_model()
 
 # 登录表单，继承了 forms.Form 类
 class UserLoginForm(forms.Form):
-    username = forms.CharField(min_length=1, max_length=MaxSizes.username)
-    password = forms.CharField(min_length=1, max_length=MaxSizes.password)
+    username = forms.CharField(min_length=1, max_length=MaxSizes.USERNAME)
+    password = forms.CharField(min_length=1, max_length=MaxSizes.PASSWORD)
     captcha = forms.CharField(min_length=1, max_length=6)
     hashkey = forms.CharField(min_length=8, max_length=512)
 
 
 # 获取邮箱验证码时的表单，检查邮箱格式用
 class EmailForm(forms.Form):
-    email = forms.EmailField(max_length=MaxSizes.email, required=True, error_messages=FormErrors.email)
+    email = forms.EmailField(max_length=MaxSizes.EMAIL, required=True, error_messages=FormErrors.email)
     captcha = forms.CharField(required=True)
     hashkey = forms.CharField(required=True)
 
 
 # 注册表单
 class UserRegisterForm(forms.ModelForm):
-    username = forms.CharField(min_length=1, max_length=MaxSizes.username, required=True, error_messages=FormErrors.username)
-    password = forms.CharField(max_length=MaxSizes.password, min_length=MinSizes.password, required=True, error_messages=FormErrors.password)
-    email = forms.EmailField(min_length=4, max_length=MaxSizes.email, required=True, error_messages=FormErrors.email)
+    username = forms.CharField(min_length=1, max_length=MaxSizes.USERNAME, required=True, error_messages=FormErrors.username)
+    password = forms.CharField(max_length=MaxSizes.PASSWORD, min_length=MinSizes.PASSWORD, required=True, error_messages=FormErrors.password)
+    email = forms.EmailField(min_length=4, max_length=MaxSizes.EMAIL, required=True, error_messages=FormErrors.email)
 
     def clean_username(self):
         # 删去前后空格，长度不能少于1
@@ -44,8 +44,8 @@ class UserRegisterForm(forms.ModelForm):
 
 # 找回密码表单
 class UserRetrieveForm(forms.Form):
-    password = forms.CharField(max_length=MaxSizes.password, min_length=MinSizes.password, required=True)
-    email = forms.EmailField(max_length=MaxSizes.email, required=True)
+    password = forms.CharField(max_length=MaxSizes.PASSWORD, min_length=MinSizes.PASSWORD, required=True)
+    email = forms.EmailField(max_length=MaxSizes.EMAIL, required=True)
 
     class Meta:
         # 自定义错误消息

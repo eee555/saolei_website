@@ -1,5 +1,5 @@
 <template>
-    <el-card>
+    <base-card-normal>
         <div style="align-items: center; display: flex;">
             <span style="flex: 1;"></span>
             <MSStatSelect v-model="stat_show" :options="['time', 'bvs']" style="width: 100px" />
@@ -12,7 +12,7 @@
             autoresize @click="handleClick" />
         <v-chart v-if="level_visible.includes('e')" :option="getOption(store.player.videos, 'e', stat_show)" :style="{ height: heights.e + 'px', width: '100%' }"
             autoresize @click="handleClick" />
-    </el-card>
+    </base-card-normal>
 </template>
 
 <script setup lang="ts">
@@ -30,6 +30,7 @@ import { ref } from 'vue';
 import { deepCopy } from '@/utils';
 import MSStatSelect from '../Filters/MSStatSelect.vue';
 import { useI18n } from 'vue-i18n';
+import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
 
 const isDark = useDark();
 const { t } = useI18n();
@@ -224,9 +225,5 @@ const handleClick = (params: any) => {
 .chart {
     aspect-ratio: 2;
     width: 100%;
-}
-
-.el-card {
-    --el-card-padding: 10px;
 }
 </style>

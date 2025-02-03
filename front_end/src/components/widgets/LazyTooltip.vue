@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-
+import { ElTooltip } from 'element-plus';
 import { local } from '@/store';
 import { ref } from 'vue';
 

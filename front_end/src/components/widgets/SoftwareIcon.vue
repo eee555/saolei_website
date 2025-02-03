@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-
+import { ElText } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import LazyTooltip from './LazyTooltip.vue';
 

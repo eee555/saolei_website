@@ -6,20 +6,15 @@
             </el-icon>
         </el-link>
         <template #content>
-            <el-card style="width: auto;">
+            <base-card-normal style="width: auto;">
                 <slot />
-            </el-card>
+            </base-card-normal>
         </template>
     </tippy>
 </template>
 
 <script setup lang="ts">
 import { Tippy } from 'vue-tippy';
-
+import { ElLink, ElIcon } from 'element-plus';
+import BaseCardNormal from '../common/BaseCardNormal.vue';
 </script>
-
-<style scoped lang="less">
-.el-card {
-    --el-card-padding: 10px;
-}
-</style>

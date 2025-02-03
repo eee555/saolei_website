@@ -24,9 +24,7 @@
         <el-table-column v-if="store.player.id == store.user.id || store.user.is_staff" :label="t('common.prop.status')">
             <template #default="scope">
                 <el-tooltip v-if="scope.row.verified" :content="t('accountlink.verified')">
-                    <el-text type="success"><el-icon>
-                            <CircleCheck />
-                        </el-icon></el-text>
+                    <el-text type="success"><base-icon-verified /></el-text>
                 </el-tooltip>
                 <el-tooltip v-else :content="t('accountlink.unverified')">
                     <el-text><el-icon>
@@ -37,21 +35,15 @@
         </el-table-column>
         <el-table-column v-if="store.player.id == store.user.id" :label="t('common.prop.action')">
             <template #default="scope">
-                <el-link :underline="false" @click.prevent="deleteRow(scope.row)" type="danger"><el-icon>
-                        <Delete />
-                    </el-icon></el-link>
+                <el-link :underline="false" @click.prevent="deleteRow(scope.row)" type="danger"><base-icon-delete/></el-link>
                 &nbsp;
                 <el-link v-if="scope.row.data !== undefined" :underline="false"
-                    @click.prevent="updateRow(scope.row)"><el-icon>
-                        <Refresh />
-                    </el-icon></el-link>
+                    @click.prevent="updateRow(scope.row)"><base-icon-refresh /></el-link>
             </template>
         </el-table-column>
     </el-table>
     <el-button v-if="store.player.id == store.user.id" style="width:100%" @click="formvisible = true" size="small">
-        <el-icon>
-            <Plus />
-        </el-icon>
+        <base-icon-add />
     </el-button>
     <el-dialog v-model="formvisible" :title="t('accountlink.addLink')"
         @closed="form.platform = ''; form.identifier = '';" width="500px">
@@ -69,9 +61,8 @@
                 <AccountLinkGuide :platform="form.platform" />
             </el-form-item>
             <el-form-item>
-                <el-button type="primary" :disabled="!formValid" @click.prevent="addLink(); formvisible = false;">{{
-                    t('common.button.confirm') }}</el-button>
-                <el-button @click.prevent="formvisible = false">{{ t('common.button.cancel') }}</el-button>
+                <base-button-confirm :disabled="!formValid" @click.prevent="addLink(); formvisible = false;" />
+                <base-button-cancel @click.prevent="formvisible = false"/>
             </el-form-item>
         </el-form>
     </el-dialog>
@@ -79,17 +70,24 @@
 
 <script setup lang="ts">
 
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { store, local } from '@/store';
-import { ElNotification } from 'element-plus';
+import { ElNotification, ElDialog, ElForm, ElFormItem, ElInput, ElSelect, ElOption, ElLink, ElTable, ElTableColumn, ElText, ElTooltip, ElButton, ElIcon } from 'element-plus';
 import { Platform, platformlist } from '@/utils/common/accountLinkPlatforms'
 import PlatformIcon from './widgets/PlatformIcon.vue';
-const AccountLinkGuide = () => import('./dialogs/AccountLinkGuide.vue')
-const AccountSaolei = () => import('./accountlinks/AccountSaolei.vue');
-const AccountMsgames = () => import('./accountlinks/AccountMsgames.vue');
-const AccountWoM = () => import('./accountlinks/AccountWoM.vue');
+const AccountLinkGuide = defineAsyncComponent(() => import('./dialogs/AccountLinkGuide.vue'));
+const AccountSaolei = defineAsyncComponent(() => import('./accountlinks/AccountSaolei.vue'));
+const AccountMsgames = defineAsyncComponent(() => import('./accountlinks/AccountMsgames.vue'));
+const AccountWoM = defineAsyncComponent(() => import('./accountlinks/AccountWoM.vue'));
+import BaseButtonConfirm from './common/BaseButtonConfirm.vue';
+import BaseButtonCancel from './common/BaseButtonCancel.vue';
+import BaseIconDelete from './common/BaseIconDelete.vue';
+import BaseIconAdd from './common/BaseIconAdd.vue';
+import BaseIconRefresh from './common/BaseIconRefresh.vue';
+import BaseIconVerified from './common/BaseIconVerified.vue';
 import { useI18n } from 'vue-i18n';
+import { httpErrorNotification } from './Notifications';
 const { t } = useI18n();
 
 interface AccountLink {
@@ -141,7 +139,7 @@ const addLink = () => {
         }
     ).then(function (response) {
         refresh()
-    })
+    }).catch(httpErrorNotification)
 }
 
 const deleteRow = (row: any) => {
@@ -150,7 +148,7 @@ const deleteRow = (row: any) => {
         proxy.$axios.post('accountlink/delete/', { platform: row.platform }).then(function (response) {
             refresh()
         })
-    }).catch(() => { })
+    }).catch(httpErrorNotification)
 }
 
 const expandRow = (row: any) => {
@@ -171,7 +169,7 @@ const updateRow = (row: any) => {
                 duration: local.value.notification_duration,
             })
         }
-    })
+    }).catch(httpErrorNotification)
 }
 
 const loadRow = (row: any) => {
@@ -181,7 +179,7 @@ const loadRow = (row: any) => {
         }
     ).then(function (response) {
         row.data = response.data
-    })
+    }).catch(httpErrorNotification)
 }
 
 const userHasPlatform = (platform: string) => {

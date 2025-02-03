@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { ElFormItem, ElNotification, FormInstance } from 'element-plus';
+import { ElFormItem, ElNotification, FormInstance, ElForm, ElButton, ElDialog } from 'element-plus';
 import { computed, reactive, ref } from 'vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import emailFormItem from '../formItems/emailFormItem.vue';

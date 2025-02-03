@@ -12,9 +12,9 @@
                                 </el-icon></el-text>
                             <el-link v-else-if="active_tab == 'newest'" :underline="false"
                                 :disabled="news_queue_status != 0" @click="update_news_queue"
-                                style="vertical-align: baseline;"><el-icon>
-                                    <Refresh />
-                                </el-icon></el-link>
+                                style="vertical-align: baseline;">
+                                <base-icon-refresh />
+                            </el-link>
                         </template>
                         <div v-for="news in news_queue">
                             <el-text style="margin-right: 5px">
@@ -43,9 +43,9 @@
                                 </el-icon></el-text>
                             <el-link v-else-if="active_tab == 'newest'" :underline="false"
                                 :disabled="newest_queue_status != 0" @click="update_newest_queue"
-                                style="vertical-align: baseline;"><el-icon>
-                                    <Refresh />
-                                </el-icon></el-link>
+                                style="vertical-align: baseline;">
+                                <base-icon-refresh />
+                            </el-link>
                         </template>
                         <VideoList :videos="newest_queue" :reverse="true" upload_time="time" :show-header="false">
                         </VideoList>
@@ -101,6 +101,7 @@
 
 <script setup lang='ts'>
 import { onMounted, ref, Ref } from 'vue'
+import { ElContainer, ElAside, ElIcon, ElMain, ElTabs, ElTabPane, ElText, ElLink, vLoading } from 'element-plus';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import VideoList from '@/components/VideoList.vue';
@@ -112,7 +113,7 @@ import { utc_to_local_format } from "@/utils/system/tools";
 import FriendlyLink from "@/components/dialogs/FriendlyLinks.vue";
 import Downloads from "@/components/dialogs/Downloads.vue";
 import Thanks from "@/components/dialogs/Thanks.vue";
-// import Groups from "@/components/dialogs/Groups.vue";
+import BaseIconRefresh from '@/components/common/BaseIconRefresh.vue';
 import { store } from '../store'
 
 import { useI18n } from 'vue-i18n';

@@ -12,6 +12,7 @@
 import { activityCalendarConfig } from '@/store';
 import { fullWeek, getWeekTime, monthNameShort } from '@/utils/datetime';
 import { computed } from 'vue';
+import { ElText } from 'element-plus';
 
 const prop = defineProps({
     startDate: { type: Date, required: true },

@@ -52,9 +52,7 @@
                     circle><el-icon>
                         <Upload />
                     </el-icon></el-button>
-                <el-button @click="removeUpload(props.$index)" type="danger" circle><el-icon>
-                        <Delete />
-                    </el-icon></el-button>
+                <el-button @click="removeUpload(props.$index)" type="danger" circle><base-icon-delete /></el-button>
             </template>
         </el-table-column>
     </el-table>
@@ -63,6 +61,7 @@
 <script lang="ts" setup>
 // 上传录像的页面
 import { ref } from 'vue'
+import { ElTable, ElTableColumn, ElButton, ElDescriptions, ElDescriptionsItem, ElUpload, ElIcon } from 'element-plus';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
 import type { UploadInstance, UploadProps, UploadUserFile, UploadRawFile, UploadFile, UploadFiles } from 'element-plus'
@@ -71,6 +70,7 @@ import { ms_to_s, to_fixed_n } from "@/utils"
 import { extract_stat, get_upload_status, load_video_file, upload_form, UploadVideoForm, VideoStat } from '@/utils/fileIO';
 import { Dict2FormData } from '@/utils/forms';
 import { useI18n } from 'vue-i18n';
+import BaseIconDelete from '@/components/common/BaseIconDelete.vue';
 
 const { t } = useI18n();
 

@@ -7,7 +7,7 @@
 
 <script setup lang="ts">
 import { validateError, validateSuccess } from '@/utils/common/elFormValidate';
-import { ElFormItem } from 'element-plus';
+import { ElFormItem, ElInput } from 'element-plus';
 import { computed, ref } from 'vue';
 // @ts-ignore
 import isEmail from 'validator/lib/isEmail.js';

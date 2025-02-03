@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { FormRules, FormInstance, ElNotification } from 'element-plus';
+import { FormRules, FormInstance, ElDialog, ElForm, ElInput, ElFormItem, ElCheckbox, ElLink, ElButton} from 'element-plus';
 import { reactive, ref } from 'vue';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import ValidCode from "@/components/ValidCode.vue";
