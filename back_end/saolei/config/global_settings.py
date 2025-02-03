@@ -7,7 +7,6 @@ class MinSizes:
     PASSWORD = 6
 
 
-
 class MaxSizes:
     AVATAR = 1024 * 300  # 头像图片，大小限制在300k以内。
     COUNTRY = 2  # Alpha-2 code from ISO3166
