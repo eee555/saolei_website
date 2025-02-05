@@ -54,7 +54,6 @@ class VideoModel(models.Model):
     # 服务器端文件相对路径
     file = RestrictedFileField(
         upload_to="videos/%Y%m%d/", max_length=100, max_upload_size=MaxSizes.VIDEOFILE)
-    file_size = models.PositiveIntegerField(default=0)
     video = models.OneToOneField(ExpandVideoModel, on_delete=models.CASCADE, related_name="+")
     # file = models.FileField(upload_to="/assets/videos")
     # 上传时间，兼最近状态变化时间、更新时间（冻结后会刷新）
@@ -135,11 +134,6 @@ class VideoModel(models.Model):
             models.Index(fields=['timems'], name='timems_idx'),
             models.Index(fields=['state'], name='state_idx'),
         ]
-
-    def save(self, *args, **kwargs):
-        if self.file:
-            self.file_size = self.file.size
-        super().save(*args, **kwargs)
 
     def push_redis(self, name: str):
         cache.hset(name, self.id, json.dumps({

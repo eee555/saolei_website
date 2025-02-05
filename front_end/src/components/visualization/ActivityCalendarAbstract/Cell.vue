@@ -61,7 +61,7 @@ watch(() => prop.videos, () => {
     red.value = 255 * count.value.b / prop.bmax;
     green.value = 255 * count.value.i / prop.imax;
     blue.value = 255 * count.value.e / prop.emax;
-}, { immediate: true })
+})
 
 const size = computed(() => activityCalendarConfig.value.cellSize + 'px');
 const borderRadius = computed(() => activityCalendarConfig.value.cornerRadius + '%');
