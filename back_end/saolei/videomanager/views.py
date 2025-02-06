@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
+import datetime
 import logging
 from .forms import UploadVideoForm
 from .models import VideoModel, ExpandVideoModel
-from .view_utils import update_personal_record, update_personal_record_stock, video_all_fields, update_video_num, update_state, new_video, refresh_video
+from .view_utils import update_personal_record, update_personal_record_stock,\
+    video_all_fields, update_video_num, update_state, new_video, refresh_video,\
+    video_saolei_import_by_userid_helper
 from userprofile.models import UserProfile
 from django.http import HttpResponse, JsonResponse, FileResponse, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseNotFound
 import json
@@ -17,7 +20,7 @@ from django.conf import settings
 from identifier.utils import verify_identifier
 from django.views.decorators.http import require_GET, require_POST
 from userprofile.decorators import banned_blocked, staff_required, login_required_error
-
+from accountlink.models import AccountSaolei
 logger = logging.getLogger('videomanager')
 cache = get_redis_connection("saolei_website")
 
@@ -47,6 +50,17 @@ def video_upload(request):
     new_video(data, request.user)  # 表中添加数据
     return JsonResponse({'type': 'success', 'object': 'videomodel', 'category': 'upload'})
 
+@login_required_error
+@ratelimit(key='ip', rate='5/s')
+@require_POST
+@banned_blocked
+def video_saolei_import_by_userid_post(request) -> JsonResponse:
+    user:AccountSaolei = request.user.account_saolei
+    if user is None:
+        return JsonResponse({'type': 'error', 'object': 'accountlink', 'category': 'notFound'})
+    video_saolei_import_by_userid_helper(userProfile=user.parent,user=user)
+    return JsonResponse({'type': 'success', 'object': 'videomodel', 'category': 'import'})
+        
 
 # 根据id向后台请求软件类型（适配flop播放器用）
 @require_GET

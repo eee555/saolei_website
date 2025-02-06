@@ -9,6 +9,8 @@ from config.global_settings import RankingGameStats, GameLevels, GameModes, Defa
 from utils.cmp import isbetter
 from config.text_choices import MS_TextChoices
 import ms_toollib as ms
+from accountlink.models import AccountSaolei
+import datetime
 
 logger = logging.getLogger('videomanager')
 cache = get_redis_connection("saolei_website")
@@ -320,3 +322,24 @@ def refresh_video(video: VideoModel):
     e_video.rqp = v.rqp
 
     e_video.save()
+def video_saolei_import_by_userid_helper(userProfile:UserProfile,accountSaolei:AccountSaolei):
+    data = {}
+    userid = accountSaolei.id
+    for row in data:
+        VideoModel.objects.create(
+            player = userProfile,
+            upload_time = datetime.timezone.utc(),
+            video = ExpandVideoModel.objects.create(
+                identifier='',
+                stnb=0,
+                rqp=0,
+            ),
+            state = MS_TextChoices.State.EXTERNAL,
+            software = 'u',
+            level = ('b','i','e')[0],
+            mode = (MS_TextChoices.Mode.STD,MS_TextChoices.Mode.NF)[0],
+            timems = 0.0,
+            bv = 0.0,
+            url_web = "",
+            url_file = "",
+        )

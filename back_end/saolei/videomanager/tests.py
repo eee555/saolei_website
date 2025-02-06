@@ -1,9 +1,11 @@
+from operator import imod
 from django.test import TestCase
 from django.core.files.base import ContentFile
 from userprofile.models import UserProfile
+from accountlink.models import AccountSaolei
 from .models import VideoModel, ExpandVideoModel
 import requests
-from .view_utils import refresh_video
+from .view_utils import refresh_video,video_saolei_import_by_userid_helper
 
 # Create your tests here.
 
@@ -68,3 +70,6 @@ class VideoManagerTestCase(TestCase):
         }
 
         self.multiple_values_test(video.video, expected_extended_values)
+
+    def test_video_saolei_import_by_userid(self):
+        video_saolei_import_by_userid_helper(userProfile=self.user,accountSaolei=AccountSaolei.objects.create(id=21720))
