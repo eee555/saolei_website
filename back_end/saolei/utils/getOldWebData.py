@@ -6,7 +6,6 @@
 # FilePath: /back_end/saolei/scripts/getOldWebData.py
 # Description: 用于获取老网站数据
 """
-from tabnanny import check
 import requests
 from enum import Enum
 from abc import ABC, abstractmethod
@@ -16,6 +15,7 @@ from typing import overload, Callable
 import re
 from datetime import datetime
 import random
+
 
 class Level(Enum):
     Beg = 0
@@ -67,10 +67,10 @@ class FormatUrl:
     @property
     def ExpVideoUrl(self) -> str:
         return self.get(Mode.Video, Level.Exp)
-    
-    def getShowUrl(self,mode: Mode = None, videoID:int = 0) -> str:
+
+    def getShowUrl(self, mode: Mode = None, videoID: int = 0) -> str:
         return f'{self.host}/{mode}/Show.asp?Id={videoID}&tmp={random.randint(10000, 99999)}'
-    
+
     def get(self, mode: Mode = None, level: Level = None, videoID: int = 0) -> str:
         """
         获取相关URL
@@ -93,8 +93,8 @@ class FormatUrl:
                 if level is not None:
                     return f'{self.host}/{mode}/{level}?Id={self.userID}'
                 else:
-                    
-                    showUrl = self.getShowUrl(mode,videoID)
+
+                    showUrl = self.getShowUrl(mode, videoID)
                     try:
                         response = requests.get(url=showUrl, timeout=5)
                         response.encoding = 'gb2312'
@@ -163,7 +163,7 @@ class VideoData(BasePostData):
             self.videoID: int
             self.level: str
             self.url: str
-            self.showUrl:str
+            self.showUrl: str
             self.mode = 0
 
     def __init__(self, userID, scheduleFunc: Callable[[int], None] = None) -> None:
@@ -227,7 +227,7 @@ class VideoData(BasePostData):
                                 dataTime, '%Y年%m月%d日 %H:%M')
                             if thisTime < lastTime:
                                 continue
-                            if videoInfo.xpath(f'./td[6]/span/text()')[0] == "未审核!":
+                            if videoInfo.xpath('./td[6]/span/text()')[0] == "未审核!":
                                 continue
                             info = self.Info()
                             info.dateTime = thisTime.strftime(
@@ -238,12 +238,14 @@ class VideoData(BasePostData):
                                 f'./td[4]/span[@id="BVS_{i}"]/text()')[0])
                             info.grade = float(videoInfo.xpath(
                                 f'./td[5]/a[@id="Video_{i}"]/text()')[0])
-                            info.mode = int('NF' in videoInfo.xpath(f'./td[5]/span/text()'))
+                            info.mode = int('NF' in videoInfo.xpath(
+                                './td[5]/span/text()'))
                             info.videoID = int(videoID)
                             info.level = args[0].name
                             info.url = formatUrl.get(
                                 mode=Mode.Video, videoID=videoID)
-                            info.showUrl = formatUrl.getShowUrl(mode=Mode.Video,videoID=videoID)
+                            info.showUrl = formatUrl.getShowUrl(
+                                mode=Mode.Video, videoID=videoID)
                             infos.append(info)
                             if self.scheduleFunc:
                                 if not self.scheduleFunc(info):

@@ -26,4 +26,4 @@ class MS_TextChoices:
         FROZEN = "b", ('审核未通过，被冻结')
         OFFICIAL = "c", ('已通过审核')
         IDENTIFIER = "d", ('标识不匹配')
-        EXTERNAL = "e",("外部网站审核")
+        EXTERNAL = "e", ("外部网站审核")

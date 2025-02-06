@@ -1,6 +1,4 @@
 import logging
-from math import inf
-from operator import le
 from .models import VideoModel, ExpandVideoModel
 from django_redis import get_redis_connection
 from userprofile.models import UserProfile
@@ -13,7 +11,7 @@ from config.text_choices import MS_TextChoices
 import ms_toollib as ms
 from accountlink.models import AccountSaolei
 import datetime
-from utils.getOldWebData import VideoData,Level
+from utils.getOldWebData import VideoData, Level
 
 logger = logging.getLogger('videomanager')
 cache = get_redis_connection("saolei_website")
@@ -25,7 +23,8 @@ for mode in GameModes:
             record_update_fields.append(f"{level}_{stat}_{mode}")
             record_update_fields.append(f"{level}_{stat}_id_{mode}")
 
-video_all_fields = ["id", "upload_time", "player__id", "player__realname", "timems", "bv", "bvs", "state", "level", "mode", "software", "flag", "op", "isl", "path", "left", "right", "double", "left_ce", "right_ce", "double_ce", "cell0", "cell1", "cell2", "cell3", "cell4", "cell5", "cell6", "cell7", "cell8", "left_s", "right_s", "double_s", "left_ces", "right_ces", "double_ces", "flag_s", "ioe", "thrp", "cl_s", "ce_s"]
+video_all_fields = ["id", "upload_time", "player__id", "player__realname", "timems", "bv", "bvs", "state", "level", "mode", "software", "flag", "op", "isl", "path", "left", "right", "double", "left_ce", "right_ce",
+                    "double_ce", "cell0", "cell1", "cell2", "cell3", "cell4", "cell5", "cell6", "cell7", "cell8", "left_s", "right_s", "double_s", "left_ces", "right_ces", "double_ces", "flag_s", "ioe", "thrp", "cl_s", "ce_s"]
 for name in [field.name for field in ExpandVideoModel._meta.get_fields()]:
     video_all_fields.append("video__" + name)
 
@@ -45,8 +44,10 @@ def update_3_level_cache_record(realname: str, index: str, mode: str, ms_user: U
     for level in GameLevels:
         cache.hset(key, level, ms_user.getrecord(level, index, mode))
         recordid = ms_user.getrecordID(level, index, mode)
-        cache.hset(key, f"{level}_id", "None" if recordid is None else recordid)
-    s = float(ms_user.getrecord("b", index, mode) + ms_user.getrecord("i", index, mode) + ms_user.getrecord("e", index, mode))
+        cache.hset(key, f"{level}_id",
+                   "None" if recordid is None else recordid)
+    s = float(ms_user.getrecord("b", index, mode) + ms_user.getrecord("i",
+              index, mode) + ms_user.getrecord("e", index, mode))
     cache.hset(key, "sum", s)
     cache.zadd(f"player_{index}_{mode}_ids", {ms_user.id: s})
 
@@ -57,7 +58,8 @@ def update_news_queue(user: UserProfile, ms_user: UserMS, video: VideoModel, ind
         return
     # print(f"{type(index)} {index}") # 调试用
     value = f"{getattr(video, index) / 1000:.3f}" if index == "timems" else f"{getattr(video, index):.3f}"
-    delta_number = getattr(video, index) - ms_user.getrecord(video.level, index, mode)
+    delta_number = getattr(video, index) - \
+        ms_user.getrecord(video.level, index, mode)
     if index == "timems":
         delta_number /= 1000
     # 看有没有存纪录录像的id，间接判断有没有纪录
@@ -131,7 +133,8 @@ def del_user_record_sql(user: UserProfile):
     for mode in GameModes:
         for stat in RankingGameStats:
             for level in GameLevels:
-                ms_user.setrecord(level, stat, mode, DefaultRankingScores[stat])
+                ms_user.setrecord(level, stat, mode,
+                                  DefaultRankingScores[stat])
                 ms_user.setrecordID(level, stat, mode, None)
     ms_user.save(update_fields=record_update_fields)
 
@@ -192,7 +195,8 @@ def update_video_num(video: VideoModel, add=True):
             if video.timems < 30000 and userms.video_num_limit < 1000:
                 userms.video_num_limit = 1000
 
-    userms.save(update_fields=["video_num_limit", "video_num_total", "video_num_beg", "video_num_int", "video_num_exp", "video_num_std", "video_num_nf", "video_num_ng", "video_num_dg"])
+    userms.save(update_fields=["video_num_limit", "video_num_total", "video_num_beg", "video_num_int",
+                "video_num_exp", "video_num_std", "video_num_nf", "video_num_ng", "video_num_dg"])
 
 
 def update_state(video: VideoModel, state: MS_TextChoices.State, update_ranking=True):
@@ -223,7 +227,8 @@ def new_video(data, user):
         state=["c", "b", "d", "a"][data['review_code']],
         software=data["software"],
         level=data["level"],
-        mode=data["mode"] if data["mode"] != "00" else ("12" if data["flag"] == 0 else "00"),
+        mode=data["mode"] if data["mode"] != "00" else (
+            "12" if data["flag"] == 0 else "00"),
 
         timems=data["timems"],
         bv=data["bv"],
@@ -325,34 +330,38 @@ def refresh_video(video: VideoModel):
     e_video.rqp = v.rqp
 
     e_video.save()
-def video_saolei_import_by_userid_helper(userProfile:UserProfile,accountSaolei:AccountSaolei) -> VideoData.Info:
+
+
+def video_saolei_import_by_userid_helper(userProfile: UserProfile, accountSaolei: AccountSaolei) -> VideoData.Info:
     infolast = None
+
     def scheduleFunc(info: VideoData.Info) -> bool:
         nonlocal infolast
         infolast = info
-        video = ExpandVideoModel.objects.create(
-                identifier='',
-                stnb=0,
-                rqp=0,
-            )
-        video.save()
+        videoModel = ExpandVideoModel.objects.create(
+            identifier='',
+            stnb=0,
+            rqp=0,
+        )
+        videoModel.save()
         model = VideoModel.objects.create(
-            player = userProfile,
-            upload_time = datetime.datetime.strptime(info.dateTime,'%Y-%m-%d %H:%M:%S').astimezone(datetime.timezone.utc),
-            video = video,
-            state = MS_TextChoices.State.EXTERNAL,
-            software = 'u',
-            level = info.level[0].lower(),
-            mode = (MS_TextChoices.Mode.STD,MS_TextChoices.Mode.NF)[info.mode],
-            timems = info.grade * 1000,
-            bv = info.bv,
-            url_web = info.showUrl,
-            url_file = info.url,
+            player=userProfile,
+            upload_time=datetime.datetime.strptime(
+                info.dateTime, '%Y-%m-%d %H:%M:%S').astimezone(datetime.timezone.utc),
+            video=videoModel,
+            state=MS_TextChoices.State.EXTERNAL,
+            software='u',
+            level=info.level[0].lower(),
+            mode=(MS_TextChoices.Mode.STD, MS_TextChoices.Mode.NF)[info.mode],
+            timems=info.grade * 1000,
+            bv=info.bv,
+            url_web=info.showUrl,
+            url_file=info.url,
         )
         model.save()
         return True
-    videodata = VideoData(accountSaolei.id,scheduleFunc)
-    videodata.getData(Level.Beg,datetime.datetime.min)
-    videodata.getData(Level.Int,datetime.datetime.min)
-    videodata.getData(Level.Exp,datetime.datetime.min)
+    videodata = VideoData(accountSaolei.id, scheduleFunc)
+    videodata.getData(Level.Beg, datetime.datetime.min)
+    videodata.getData(Level.Int, datetime.datetime.min)
+    videodata.getData(Level.Exp, datetime.datetime.min)
     return infolast

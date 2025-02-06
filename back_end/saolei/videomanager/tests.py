@@ -1,19 +1,18 @@
-from operator import imod
 from django.test import TestCase
 from django.core.files.base import ContentFile
 from userprofile.models import UserProfile
 from accountlink.models import AccountSaolei
 from .models import VideoModel, ExpandVideoModel
 import requests
-from .view_utils import refresh_video,video_saolei_import_by_userid_helper
-import datetime
+from .view_utils import refresh_video, video_saolei_import_by_userid_helper
 from config.text_choices import MS_TextChoices
 # Create your tests here.
 
 
 class VideoManagerTestCase(TestCase):
     def setUp(self):
-        self.user = UserProfile.objects.create(username='setUp', email='setUp@test.com')
+        self.user = UserProfile.objects.create(
+            username='setUp', email='setUp@test.com')
 
     def multiple_values_test(self, object, expected_values):
         for field, expected_value in expected_values.items():
@@ -21,8 +20,10 @@ class VideoManagerTestCase(TestCase):
                 self.assertEqual(getattr(object, field), expected_value)
 
     def test_zero_time(self):
-        expandvideo = ExpandVideoModel.objects.create(identifier='test', stnb=0, rqp=0)
-        video = VideoModel.objects.create(player=self.user, file='test.evf', video=expandvideo, state='a', software='e', level='b', mode='00', timems=0, bv=1, left=1, right=0, double=0, path=0, flag=0, left_ce=1, right_ce=0, double_ce=0, op=1, isl=0, cell0=0, cell1=0, cell2=0, cell3=0, cell4=0, cell5=0, cell6=0, cell7=0, cell8=0)
+        expandvideo = ExpandVideoModel.objects.create(
+            identifier='test', stnb=0, rqp=0)
+        video = VideoModel.objects.create(player=self.user, file='test.evf', video=expandvideo, state='a', software='e', level='b', mode='00', timems=0, bv=1, left=1, right=0,
+                                          double=0, path=0, flag=0, left_ce=1, right_ce=0, double_ce=0, op=1, isl=0, cell0=0, cell1=0, cell2=0, cell3=0, cell4=0, cell5=0, cell6=0, cell7=0, cell8=0)
 
         expected_values = {
             'software': 'e', 'level': 'b', 'mode': '00',
@@ -43,9 +44,12 @@ class VideoManagerTestCase(TestCase):
         self.multiple_values_test(video, expected_values)
 
     def test_refresh(self):
-        response = requests.get('https://github.com/putianyi889/replays/raw/refs/heads/master/EXP/sub40/Exp_FL_35.09_3BV=132_3BVs=3.76_Pu%20Tian%20Yi(Hu%20Bei).avf')
-        expandvideo = ExpandVideoModel.objects.create(identifier='test', stnb=0, rqp=0)
-        video = VideoModel.objects.create(player=self.user, file=ContentFile(response.content, name='Exp_FL_35.09_3BV=132_3BVs=3.76_Pu Tian Yi(Hu Bei).avf'), video=expandvideo, state='a')
+        response = requests.get(
+            'https://github.com/putianyi889/replays/raw/refs/heads/master/EXP/sub40/Exp_FL_35.09_3BV=132_3BVs=3.76_Pu%20Tian%20Yi(Hu%20Bei).avf')
+        expandvideo = ExpandVideoModel.objects.create(
+            identifier='test', stnb=0, rqp=0)
+        video = VideoModel.objects.create(player=self.user, file=ContentFile(
+            response.content, name='Exp_FL_35.09_3BV=132_3BVs=3.76_Pu Tian Yi(Hu Bei).avf'), video=expandvideo, state='a')
         refresh_video(video)
 
         video = VideoModel.objects.get(id=video.id)
@@ -73,8 +77,10 @@ class VideoManagerTestCase(TestCase):
         self.multiple_values_test(video.video, expected_extended_values)
 
     def test_video_saolei_import_by_userid(self):
-        accountSaolei=AccountSaolei.objects.create(id=23756,parent=self.user)
-        info = video_saolei_import_by_userid_helper(userProfile=self.user,accountSaolei=accountSaolei)
+        accountSaolei = AccountSaolei.objects.create(
+            id=23756, parent=self.user)
+        info = video_saolei_import_by_userid_helper(
+            userProfile=self.user, accountSaolei=accountSaolei)
         if info:
             model = VideoModel.objects.filter(url_web=info.showUrl).first()
             # 断言非空
@@ -84,9 +90,10 @@ class VideoManagerTestCase(TestCase):
             #                  datetime.datetime.
             #                  strptime(info.dateTime,'%Y-%m-%d %H:%M:%S').
             #                  astimezone(datetime.timezone.utc))
-            self.assertEqual(model.level,info.level[0].lower())
-            self.assertEqual(model.mode,(MS_TextChoices.Mode.STD,MS_TextChoices.Mode.NF)[info.mode])
-            self.assertEqual(model.timems,info.grade * 1000)
-            self.assertEqual(model.bv,info.bv)
-            self.assertEqual(model.url_web,info.showUrl)
-            self.assertEqual(model.url_file,info.url)
+            self.assertEqual(model.level, info.level[0].lower())
+            self.assertEqual(model.mode, (MS_TextChoices.Mode.STD,
+                             MS_TextChoices.Mode.NF)[info.mode])
+            self.assertEqual(model.timems, info.grade * 1000)
+            self.assertEqual(model.bv, info.bv)
+            self.assertEqual(model.url_web, info.showUrl)
+            self.assertEqual(model.url_file, info.url)

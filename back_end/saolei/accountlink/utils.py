@@ -6,7 +6,9 @@ from lxml import etree
 from datetime import timedelta
 from django.utils import timezone
 
-headers = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 Edg/132.0.0.0'}
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 Edg/132.0.0.0'}
+
 
 def link_account(platform: Platform, id, user: UserProfile):
     if platform == Platform.SAOLEI:
@@ -150,7 +152,7 @@ def update_msgames_account(account: AccountMinesweeperGames, cooldown):
     htmlStr = None
     try:
         url = f'https://minesweepergame.com/profile.php?pid={id}'
-        response = requests.get(url=url, timeout=5,headers=headers)
+        response = requests.get(url=url, timeout=5, headers=headers)
         htmlStr = response.text
     except requests.exceptions.Timeout:
         return "timeout"  # 请求超时
@@ -186,7 +188,8 @@ def update_wom_account(account: AccountWorldOfMinesweeper, cooldown):
     if not htmlStr:
         return "empty"  # 没有爬取到信息
     tree = etree.HTML(htmlStr)
-    tree = tree.xpath('/html/body/div[3]/div[2]/div/div[1]/div[2]/div/div[4]/div/div[1]')[0]
+    tree = tree.xpath(
+        '/html/body/div[3]/div[2]/div/div[1]/div[2]/div/div[4]/div/div[1]')[0]
 
     def formatXpath(text):
         return f'//strong[text()="{text}"]/../following-sibling::div/span/text()'
@@ -205,42 +208,56 @@ def update_wom_account(account: AccountWorldOfMinesweeper, cooldown):
     values = tree.xpath(formatXpath("Trophies:"))
     account.trophy = int(values[0]) if values else None
 
-    values = tree.xpath(formatImgXpath("Experience:", "exp-icon icon-right", "/../text()"))
+    values = tree.xpath(formatImgXpath(
+        "Experience:", "exp-icon icon-right", "/../text()"))
     account.experience = stringToInt(values)
 
-    values = tree.xpath(formatImgXpath("Experience:", "hp-icon icon-right", "/../../text()"))
+    values = tree.xpath(formatImgXpath(
+        "Experience:", "hp-icon icon-right", "/../../text()"))
     account.honour = stringToInt(values)
 
-    values = tree.xpath(formatImgXpath("Resources:", "coin-icon icon-right", "/../../text()"))
+    values = tree.xpath(formatImgXpath(
+        "Resources:", "coin-icon icon-right", "/../../text()"))
     account.minecoin = stringToInt(values)
 
-    values = tree.xpath(formatImgXpath("Resources:", "gem gem0 icon-right", "/../span/text()"))
+    values = tree.xpath(formatImgXpath(
+        "Resources:", "gem gem0 icon-right", "/../span/text()"))
     account.gem = stringToInt(values)
 
-    values = tree.xpath(formatImgXpath("Resources:", "arena-coin-icon icon-right", "/../span/text()"))
+    values = tree.xpath(formatImgXpath(
+        "Resources:", "arena-coin-icon icon-right", "/../span/text()"))
     account.coin = stringToInt(values)
 
-    values = tree.xpath(formatIXpath("Resources:", "fa fa-ticket ticket-right ticket0", "/../span/text()"))
+    values = tree.xpath(formatIXpath(
+        "Resources:", "fa fa-ticket ticket-right ticket0", "/../span/text()"))
     account.arena_ticket = stringToInt(values)
 
-    values = tree.xpath(formatImgXpath("Resources:", "parts-icon ", "/preceding-sibling::text()"))
+    values = tree.xpath(formatImgXpath(
+        "Resources:", "parts-icon ", "/preceding-sibling::text()"))
     account.part = stringToInt(values)
 
-    values = tree.xpath(formatImgXpath("Resources:", "eq-icon", "/../span/text()"))
+    values = tree.xpath(formatImgXpath(
+        "Resources:", "eq-icon", "/../span/text()"))
     account.equipment = stringToInt(values)
 
-    values = tree.xpath(formatImgXpath("Arena points:", "arena-icon ", "/../text()"))
+    values = tree.xpath(formatImgXpath(
+        "Arena points:", "arena-icon ", "/../text()"))
     account.arena_point = stringToInt(values)
 
-    values = tree.xpath(formatImgXpath("Max difficulty:", "diff-icon ", "/../a/text()"))
+    values = tree.xpath(formatImgXpath(
+        "Max difficulty:", "diff-icon ", "/../a/text()"))
     account.max_difficulty = stringToInt(values)
 
-    values = tree.xpath(formatIXpath("Wins:", "fa fa-flag wins-icon ", "/../text()"))
+    values = tree.xpath(formatIXpath(
+        "Wins:", "fa fa-flag wins-icon ", "/../text()"))
     account.win = stringToInt(values)
-    values = tree.xpath('//strong[text()="Last season:"]/../following-sibling::div//text()')
+    values = tree.xpath(
+        '//strong[text()="Last season:"]/../following-sibling::div//text()')
     if not values:
-        values = tree.xpath('//strong[contains(text(),"Season")]/../..//text()')
-    account.last_season = re.search(r'S(\d+)', ' '.join(values)).group(1) if values else None
+        values = tree.xpath(
+            '//strong[contains(text(),"Season")]/../..//text()')
+    account.last_season = re.search(
+        r'S(\d+)', ' '.join(values)).group(1) if values else None
 
     def formatSpanXpath(text, index):
         return f'//span[text()="{text}"]/../following-sibling::div[{index}]//text()'
@@ -253,31 +270,40 @@ def update_wom_account(account: AccountWorldOfMinesweeper, cooldown):
     values = tree.xpath(formatSpanXpath("Expert", 1))
     account.e_t_ms = round(stringToFloat(values) * 1000)
 
-    values = tree.xpath(formatIXpath("Efficiency:", "fa fa-dot-circle-o eff-icon level1", "/../text()"))
+    values = tree.xpath(formatIXpath(
+        "Efficiency:", "fa fa-dot-circle-o eff-icon level1", "/../text()"))
     account.b_ioe = stringToFloat(values) / 100
 
-    values = tree.xpath(formatIXpath("Efficiency:", "fa fa-dot-circle-o eff-icon level2", "/../text()"))
+    values = tree.xpath(formatIXpath(
+        "Efficiency:", "fa fa-dot-circle-o eff-icon level2", "/../text()"))
     account.i_ioe = stringToFloat(values) / 100
 
-    values = tree.xpath(formatIXpath("Efficiency:", "fa fa-dot-circle-o eff-icon level3", "/../text()"))
+    values = tree.xpath(formatIXpath(
+        "Efficiency:", "fa fa-dot-circle-o eff-icon level3", "/../text()"))
     account.e_ioe = stringToFloat(values) / 100
 
-    values = tree.xpath(formatIXpath("Mastery:", "glyphicon glyphicon-flash mastery-icon mastery1", "/../text()"))
+    values = tree.xpath(formatIXpath(
+        "Mastery:", "glyphicon glyphicon-flash mastery-icon mastery1", "/../text()"))
     account.b_mastery = stringToInt(values)
 
-    values = tree.xpath(formatIXpath("Mastery:", "glyphicon glyphicon-flash mastery-icon mastery2", "/../text()"))
+    values = tree.xpath(formatIXpath(
+        "Mastery:", "glyphicon glyphicon-flash mastery-icon mastery2", "/../text()"))
     account.i_mastery = stringToInt(values)
 
-    values = tree.xpath(formatIXpath("Mastery:", "glyphicon glyphicon-flash mastery-icon mastery3", "/../text()"))
+    values = tree.xpath(formatIXpath(
+        "Mastery:", "glyphicon glyphicon-flash mastery-icon mastery3", "/../text()"))
     account.e_mastery = stringToInt(values)
 
-    values = tree.xpath(formatIXpath("Win streak:", "fa fa-crosshairs ws-icon ws1", "/../text()"))
+    values = tree.xpath(formatIXpath(
+        "Win streak:", "fa fa-crosshairs ws-icon ws1", "/../text()"))
     account.b_winstreak = stringToInt(values)
 
-    values = tree.xpath(formatIXpath("Win streak:", "fa fa-crosshairs ws-icon ws2", "/../text()"))
+    values = tree.xpath(formatIXpath(
+        "Win streak:", "fa fa-crosshairs ws-icon ws2", "/../text()"))
     account.i_winstreak = stringToInt(values)
 
-    values = tree.xpath(formatIXpath("Win streak:", "fa fa-crosshairs ws-icon ws3", "/../text()"))
+    values = tree.xpath(formatIXpath(
+        "Win streak:", "fa fa-crosshairs ws-icon ws3", "/../text()"))
     account.e_winstreak = stringToInt(values)
 
     account.save()
