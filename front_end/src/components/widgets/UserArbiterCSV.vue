@@ -1,15 +1,15 @@
 <template>
     <el-button :disabled="id == 0" @click="clickExportJSON">
-        {{ $t('profile.exportJSON') }}&nbsp;
-        <el-tooltip :content="$t('profile.exportJSONTooltip')" raw-content>
+        {{ t('profile.exportJSON') }}&nbsp;
+        <el-tooltip :content="t('profile.exportJSONTooltip')" raw-content>
             <el-icon v-if="local.tooltip_show">
                 <QuestionFilled />
             </el-icon>
         </el-tooltip>
     </el-button>
     <el-button @click="clickExportCSV" :disabled="id == 0">
-        {{ $t('profile.exportArbiterCSV') }}&nbsp;
-        <el-tooltip :content="$t('profile.exportArbiterCSVTooltip')" raw-content>
+        {{ t('profile.exportArbiterCSV') }}&nbsp;
+        <el-tooltip :content="t('profile.exportArbiterCSVTooltip')" raw-content>
             <el-icon v-if="local.tooltip_show">
                 <QuestionFilled />
             </el-icon>
@@ -22,6 +22,10 @@ import { local } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { ref, watch } from 'vue';
 import { httpErrorNotification } from '../Notifications';
+import { ElButton, ElTooltip, ElIcon } from 'element-plus';
+
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 const { proxy } = useCurrentInstance();
 

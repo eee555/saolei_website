@@ -1,4 +1,4 @@
-Django>=4.0.0
+Django>=5.0.0
 django-simple-captcha>=0.5.18
 pymysql>=1.1.0
 django-cors-headers>=4.0.0
@@ -8,7 +8,7 @@ django-apscheduler==0.6.2
 redis==5.0.1
 django-ratelimit==4.1.0
 requests==2.28.1
-ms_toollib==1.4.8
+ms_toollib==1.4.13
 psutil==5.9.1
 lxml==5.1.0
 websocket-client==1.8.0

@@ -24,6 +24,9 @@ export default {
             i: '中级',
             e: '高级',
             sum: '总计',
+            shortb: '初',
+            shorti: '中',
+            shorte: '高',
         },
         mode: {
             std: '标准',
@@ -49,6 +52,7 @@ export default {
             identifier: '标识',
             fileName: '文件名',
             is: '岛',
+            isl: '岛',
             level: '级别',
             mastery: '动态胜率',
             op: '空',
@@ -116,6 +120,7 @@ export default {
             empty: '数据为空',
             indexerror: '数据解析失败',
             timeout: '无法连接到目标服务器',
+            title: '更新失败',
             unknown: '发生未知错误',
         },
         verified: '已验证',
@@ -126,6 +131,20 @@ export default {
         womResource: '资源',
         womTrophy: '奖杯',
         womWin: '总胜场',
+    },
+    activityCalendar: {
+        cellGap: '方格间距',
+        cellSize: '方格边长',
+        cornerRadius: '圆角半径',
+        showDate: '显示日期',
+        totalNVideos: '共{0}个录像',
+        tooltip: {
+            noVideoOnDate: '{0} 无录像',
+            uploadedNVideosOnDate: '{0} 共 {1} 个录像',
+        }
+    },
+    experimentalFeature: {
+        watermark: '实验功能',
     },
     footer: {
         contact: '联系我们',
@@ -285,6 +304,7 @@ export default {
             light: '浅色',
             title: '颜色主题',
         },
+        experimentalFeature: '实验功能',
         languageSwitch: '语言切换',
         menuFontSize: '菜单字号',
         menuHeight: '菜单高度',

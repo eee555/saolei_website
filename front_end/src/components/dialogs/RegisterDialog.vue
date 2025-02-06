@@ -1,9 +1,9 @@
 <template>
-    <el-dialog v-model="visible" :title="$t('login.registerTitle')" width="400px" align-center draggable
+    <el-dialog v-model="visible" :title="t('login.registerTitle')" width="400px" align-center draggable
         :lock-scroll="false" @close='resetForm(ruleFormRef)'>
         <el-form :model="registerForm" ref="ruleFormRef" status-icon>
             <!-- 用户名 -->
-            <el-form-item prop="username" :label="$t('form.username')" ref="usernameFormRef">
+            <el-form-item prop="username" :label="t('form.username')" ref="usernameFormRef">
                 <el-input v-model="registerForm.username" prefix-icon="User" maxlength="20" show-word-limit
                     @input="usernameInputHandler" @change="usernameChangeHandler"></el-input>
             </el-form-item>
@@ -17,23 +17,23 @@
             <!-- 同意协议 -->
             <el-form-item prop="agreeTAC">
                 <el-checkbox v-if="true" v-model="agree_TAC" name="checkoutSecret">{{
-                    $t('login.agreeTAC1')
+                    t('login.agreeTAC1')
                 }}
-                    <a target="_blank" :href="AXIOS_BASE_URL + '/agreement.html'">{{ $t('login.agreeTAC2')
+                    <a target="_blank" :href="AXIOS_BASE_URL + '/agreement.html'">{{ t('login.agreeTAC2')
                         }}</a>
                 </el-checkbox>
             </el-form-item>
             <!-- 确认 -->
             <el-form-item>
                 <el-button type="primary" @click="submitForm(ruleFormRef)" :disabled="confirm_disabled">{{
-                    $t('login.registerConfirm') }}</el-button>
+                    t('login.registerConfirm') }}</el-button>
             </el-form-item>
         </el-form>
     </el-dialog>
 </template>
 
 <script setup lang="ts">
-import { FormInstance, ElFormItem, ElNotification } from 'element-plus';
+import { FormInstance, ElFormItem, ElNotification, ElDialog, ElForm, ElButton, ElCheckbox, ElInput } from 'element-plus';
 import { computed, reactive, ref } from 'vue';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import { containsControl } from '@/utils/strings';
@@ -50,7 +50,7 @@ const visible = defineModel();
 const emit = defineEmits(['login']);
 
 const { proxy } = useCurrentInstance();
-const t = useI18n();
+const { t } = useI18n();
 const agree_TAC = ref(false);
 const AXIOS_BASE_URL = import.meta.env.VITE_BASE_API;
 
@@ -89,22 +89,22 @@ const confirm_disabled = computed(() => {
 })
 
 const usernameInputHandler = (value: string) => {
-    if (value.length == 0) validateError(usernameFormRef, t.t('msg.usernameRequired'));
-    else if (containsControl.test(value)) validateError(usernameFormRef, t.t('msg.illegalCharacter'));
+    if (value.length == 0) validateError(usernameFormRef, t('msg.usernameRequired'));
+    else if (containsControl.test(value)) validateError(usernameFormRef, t('msg.illegalCharacter'));
     else usernameFormRef.value!.clearValidate();
 }
 
 const usernameChangeHandler = (value: string) => {
-    if (value.length == 0) validateError(usernameFormRef, t.t('msg.usernameRequired'));
-    else if (containsControl.test(value)) validateError(usernameFormRef, t.t('msg.illegalCharacter'));
-    else if (outOfCharacter.replace(value).length == 0) validateError(usernameFormRef, t.t('msg.usernameInvalid'));
+    if (value.length == 0) validateError(usernameFormRef, t('msg.usernameRequired'));
+    else if (containsControl.test(value)) validateError(usernameFormRef, t('msg.illegalCharacter'));
+    else if (outOfCharacter.replace(value).length == 0) validateError(usernameFormRef, t('msg.usernameInvalid'));
     else {
         proxy.$axios.get('userprofile/checkcollision/', { params: { username: value } }).then(function (response) {
             if (response.data === 'False') validateSuccess(usernameFormRef)
-            else validateError(usernameFormRef, t.t('msg.usernameCollision'));
+            else validateError(usernameFormRef, t('msg.usernameCollision'));
         }).catch(function (error) {
-            if (error.code === "ERR_NETWORK") validateError(usernameFormRef, t.t('msg.connectionFail'));
-            else validateError(usernameFormRef, t.t('msg.unknownError') + error);
+            if (error.code === "ERR_NETWORK") validateError(usernameFormRef, t('msg.connectionFail'));
+            else validateError(usernameFormRef, t('msg.unknownError') + error);
         })
     }
 }
@@ -123,9 +123,9 @@ const submitForm = async (formEl: FormInstance | undefined) => {
         if (data.type === 'success') {
             emit('login', data.user)
             ElNotification({
-                title: t.t('msg.registerSuccess'),
+                title: t('msg.registerSuccess'),
                 type: 'success',
-                duration: local.notification_duration,
+                duration: local.value.notification_duration,
             })
         } else if (data.type === 'error') {
             if (data.object === 'emailcode') {

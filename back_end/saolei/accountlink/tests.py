@@ -3,18 +3,18 @@ from .models import AccountSaolei, AccountMinesweeperGames, AccountWorldOfMinesw
 from .utils import update_saolei_account, update_msgames_account, update_wom_account
 from userprofile.models import UserProfile
 import datetime
-from unittest import skip, expectedFailure
+
 
 class AccountLinkTestCase(TestCase):
     def setUp(self):
         user = UserProfile.objects.create(username='setUp', email='setUp@test.com')
-        AccountSaolei.objects.create(id=1,parent=user)
+        AccountSaolei.objects.create(id=1, parent=user)
         AccountMinesweeperGames.objects.create(id=7872, parent=user)
         AccountWorldOfMinesweeper.objects.create(id=1783173, parent=user)
 
     def test_update_saolei(self):
         account = AccountSaolei.objects.filter(id=1).first()
-        self.assertEqual(update_saolei_account(account, 0), '',)
+        self.assertEqual(update_saolei_account(account, 0), '')
         account = AccountSaolei.objects.filter(id=1).first()
         self.assertEqual(account.id, 1)
         self.assertEqual(account.name, '张砷镓')
@@ -37,7 +37,7 @@ class AccountLinkTestCase(TestCase):
         self.assertEqual(account.id, 7872)
         self.assertEqual(account.name, 'Ze-En JU')
         self.assertEqual(account.local_name, '鞠泽恩')
-        self.assertEqual(account.joined, datetime.date(2019,5,28))
+        self.assertEqual(account.joined, datetime.date(2019, 5, 28))
 
     def test_update_wom(self):
         account = AccountWorldOfMinesweeper.objects.filter(id=1783173).first()

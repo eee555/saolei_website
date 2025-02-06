@@ -9,29 +9,22 @@
                         style="width: 200px; height: 200px;border-radius: 20px;">
                         <el-image style="width: 200px; height: 200px;border-radius: 20px;" v-if="imageUrl"
                             :src="imageUrl" :fit="'cover'" />
-                        <el-icon v-else class="avatar-uploader-icon">
-                            <Plus />
-                        </el-icon>
+                        <base-icon-add v-else />
                     </el-upload>
-                    <div style="font-size: 14px;color: #AAA;text-align: center;">{{ $t('profile.changeAvatar') }}</div>
-                    <div style="margin-top: 12px;margin-bottom: 4px;">
-                        {{ $t('profile.realname') }}
-                    </div>
+                    <div style="font-size: 14px;color: #AAA;text-align: center;" v-t="'profile.changeAvatar'"></div>
+                    <div style="margin-top: 12px;margin-bottom: 4px;" v-t="'profile.realname'"></div>
                     <div>
-                        <el-input v-model="realname_edit" :placeholder="$t('profile.realnameInput')" minlength="2"
+                        <el-input v-model="realname_edit" :placeholder="t('profile.realnameInput')" minlength="2"
                             maxlength="100"></el-input>
                     </div>
-                    <div style="margin-top: 12px;margin-bottom: 4px;">
-                        {{ $t('profile.signature') }}
-                    </div>
+                    <div style="margin-top: 12px;margin-bottom: 4px;" v-t="'profile.signature'"></div>
                     <div>
-                        <el-input v-model="signature_edit" :placeholder="$t('profile.signatureInput')" minlength="0"
+                        <el-input v-model="signature_edit" :placeholder="t('profile.signatureInput')" minlength="0"
                             maxlength="188" type="textarea" :rows="8"></el-input>
                     </div>
 
-                    <button class="edit_button_ok" @click="upload_info">{{ $t('profile.confirmChange') }}</button>
-                    <button class="edit_button_cancel" @click="is_editing = false;">{{ $t('profile.cancelChange')
-                        }}</button>
+                    <button class="edit_button_ok" @click="upload_info" v-t="'profile.confirmChange'"></button>
+                    <button class="edit_button_cancel" @click="is_editing = false;" v-t="'profile.cancelChange'"></button>
 
                 </div>
 
@@ -50,29 +43,28 @@
                     </div>
                     <div style="overflow: auto ;font-size: 16px;margin-bottom: 12px;text-align: justify;">
                         {{ signature }}</div>
-                    <button class="edit_button" v-show="show_edit_button" @click="is_editing = true; visible = true;">{{
-                        $t('profile.change') }}</button>
+                    <button class="edit_button" v-show="show_edit_button" @click="is_editing = true; visible = true;" v-t="'profile.change'"></button>
                     <!-- <div style="overflow: auto ;">人气：{{ popularity }}</div> -->
                 </div>
             </el-aside>
 
             <el-main>
-                <el-tabs v-model="activeName" style="max-height: 1024px; overflow: auto;">
-                    <el-tab-pane :label="$t('profile.profile.title')" name="profile" :lazy="true">
+                <el-tabs v-model="activeName" style="overflow: auto;">
+                    <el-tab-pane :label="t('profile.profile.title')" name="profile" :lazy="true"
+                        style="overflow: auto;">
                         <PlayerProfileView :key="store.player.id"></PlayerProfileView>
                     </el-tab-pane>
-                    <el-tab-pane :label="$t('profile.records.title')" name="record" :lazy="true">
+                    <el-tab-pane :label="t('profile.records.title')" name="record" :lazy="true">
                         <PlayerRecordView :key="store.player.id"></PlayerRecordView>
                     </el-tab-pane>
-                    <el-tab-pane :label="$t('profile.videos')" name="video" :lazy="true">
+                    <el-tab-pane :label="t('profile.videos')" name="video" :lazy="true">
                         <PlayerVideosView :key="store.player.id"></PlayerVideosView>
                     </el-tab-pane>
-                    <el-tab-pane v-if="store.user.id + '' == userid" :label="$t('profile.upload.title')" name="upload"
+                    <el-tab-pane v-if="store.user.id + '' == userid" :label="t('profile.upload.title')" name="upload"
                         :lazy="true">
                         <UploadView :identifiers="store.user.identifiers"></UploadView>
                     </el-tab-pane>
                 </el-tabs>
-
             </el-main>
         </el-container>
     </div>
@@ -80,20 +72,19 @@
 
 <script lang="ts" setup>
 // 我的地盘页面
-import { onMounted, ref, watch } from 'vue'
+import { defineAsyncComponent, onMounted, ref, watch } from 'vue'
+import { ElContainer, ElAside, ElMain, ElTabs, ElTabPane, ElImage, ElInput, ElUpload } from 'element-plus';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
-import PlayerRecordView from '@/views/PlayerRecordView.vue';
-import PlayerVideosView from '@/views/PlayerVideosView.vue';
-import PlayerProfileView from './PlayerProfileView.vue';
-import UploadView from './UploadView.vue';
-// const AsyncPlayerVideosView = defineAsyncComponent(() => import('@/views/PlayerVideosView.vue'));
+const PlayerRecordView = defineAsyncComponent(() => import('@/views/PlayerRecordView.vue'));
+const PlayerVideosView = defineAsyncComponent(() => import('@/views/PlayerVideosView.vue'));
+const PlayerProfileView = defineAsyncComponent(() => import('@/views/PlayerProfileView.vue'));
+const UploadView = defineAsyncComponent(() => import('@/views/UploadView.vue'));
 import "../../node_modules/flag-icon-css/css/flag-icons.min.css";
 
 const { proxy } = useCurrentInstance();
 import { genFileId, ElMessage } from 'element-plus'
 import type { UploadInstance, UploadProps, UploadRawFile, UploadFile, UploadFiles, UploadRequestOptions } from 'element-plus'
 const upload = ref<UploadInstance>()
-import { Plus } from '@element-plus/icons-vue'
 import imageUrlDefault from '@/assets/person.png'
 const imageUrl = ref(imageUrlDefault)
 const avatar_changed = ref(false);
@@ -102,7 +93,10 @@ import { store } from '../store'
 
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
-const t = useI18n();
+import { UserProfile } from '@/utils/userprofile';
+import { unknownErrorNotification } from '@/components/Notifications';
+import BaseIconAdd from '@/components/common/BaseIconAdd.vue';
+const { t } = useI18n();
 const route = useRoute()
 
 //编辑前的
@@ -156,13 +150,7 @@ function refresh() {
         }
     ).then(function (response) {
         const data = response.data;
-        store.player.realname = data.realname;
-        store.player.username = data.username;
-        store.player.is_banned = data.is_banned;
-        store.player.country = data.country;
-        store.player.is_staff = data.is_staff;
-        store.player.identifiers = data.identifiers;
-        store.player.videos = data.videos;
+        store.player = new UserProfile(data);
 
         userid.value = data.id;
         realname.value = data.realname;
@@ -178,9 +166,7 @@ function refresh() {
             imageUrlOld = "data:image/;base64," + data.avatar;
         }
         // console.log(imageUrl);
-        store.player.loading = false;
-
-    })
+    }).catch(unknownErrorNotification);
 }
 
 onMounted(refresh)
@@ -195,7 +181,7 @@ const post_update_realname = (r: string) => {
         params,
     ).then(function (response) {
         if (response.data.status == 100) {
-            ElMessage.success({ message: t.t('profile.msg.realnameChange', [response.data.msg.n]), offset: 68 });
+            ElMessage.success({ message: t('profile.msg.realnameChange', [response.data.msg.n]), offset: 68 });
 
             realname.value = realname_edit.value;
             store.user.realname = realname.value;
@@ -211,7 +197,7 @@ const post_update_realname = (r: string) => {
             ElMessage.error({ message: response.data.msg, offset: 68 });
         }
     }).catch(() => {
-        ElMessage.error({ message: t.t('common.msg.connectionFail'), offset: 68 });
+        ElMessage.error({ message: t('common.msg.connectionFail'), offset: 68 });
     })
 }
 
@@ -223,14 +209,14 @@ const post_update_avatar = (a: File) => {
         params,
     ).then(function (response) {
         if (response.data.status == 100) {
-            ElMessage.success({ message: t.t('profile.msg.avatarChange', [response.data.msg.n]), offset: 68 });
+            ElMessage.success({ message: t('profile.msg.avatarChange', [response.data.msg.n]), offset: 68 });
             imageUrl.value = URL.createObjectURL(a);
         } else if (response.data.status >= 101) {
             ElMessage.error({ message: response.data.msg, offset: 68 });
             imageUrl.value = imageUrlOld;
         }
     }).catch(() => {
-        ElMessage.error({ message: t.t('common.msg.connectionFail'), offset: 68 });
+        ElMessage.error({ message: t('common.msg.connectionFail'), offset: 68 });
     })
 }
 
@@ -244,14 +230,14 @@ const post_update_signature = (s: string) => {
         // console.log(response.data);
 
         if (response.data.status == 100) {
-            ElMessage.success({ message: t.t('profile.msg.signatureChange', [response.data.msg.n]), offset: 68 });
+            ElMessage.success({ message: t('profile.msg.signatureChange', [response.data.msg.n]), offset: 68 });
             signature.value = signature_edit.value;
         } else if (response.data.status >= 101) {
             ElMessage.error({ message: response.data.msg, offset: 68 });
             signature_edit.value = signature.value;
         }
     }).catch(() => {
-        ElMessage.error({ message: t.t('common.msg.connectionFail'), offset: 68 });
+        ElMessage.error({ message: t('common.msg.connectionFail'), offset: 68 });
     })
 }
 
@@ -300,10 +286,10 @@ const handleExceed: UploadProps['onExceed'] = (files) => {
 
 const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
     if (rawFile.type !== 'image/jpeg' && rawFile.type !== 'image/png') {
-        ElMessage.error({ message: t.t('profile.msg.avatarFormat'), offset: 68 });
+        ElMessage.error({ message: t('profile.msg.avatarFormat'), offset: 68 });
         return false
     } else if (rawFile.size / 1024 / 1024 / 50 > 1.0) {
-        ElMessage.error({ message: t.t('profile.msg.avatarFilesize'), offset: 68 });
+        ElMessage.error({ message: t('profile.msg.avatarFilesize'), offset: 68 });
         return false
     }
     return new Promise((resolve, reject) => {

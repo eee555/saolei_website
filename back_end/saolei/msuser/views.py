@@ -1,5 +1,4 @@
 import logging
-logger = logging.getLogger('userprofile')
 from django.contrib.auth.decorators import login_required
 from .forms import UserUpdateRealnameForm, UserUpdateAvatarForm, UserUpdateSignatureForm
 # from .models import VideoModel, ExpandVideoModel
@@ -13,14 +12,15 @@ import base64
 import decimal
 import urllib.parse
 from django_redis import get_redis_connection
-cache = get_redis_connection("saolei_website")
 from django.conf import settings
 import os
 from django_ratelimit.decorators import ratelimit
 from django.views.decorators.http import require_GET, require_POST
 from userprofile.utils import user_metadata
+from config.global_settings import GameModes, RankingGameStats
 
-from config.global_settings import *
+logger = logging.getLogger('userprofile')
+cache = get_redis_connection("saolei_website")
 
 # 根据id获取用户的基本资料、扫雷记录
 # 无需登录就可获取
@@ -37,11 +37,9 @@ class DecimalEncoder(json.JSONEncoder):
 @ratelimit(key='ip', rate='20/m')
 @require_GET
 def get_info(request):
-    user_id = request.GET.get('id')
-    if not user_id:
+    if not (user_id := request.GET.get('id')):
         return HttpResponseBadRequest()
-    user = UserProfile.objects.filter(id=user_id).first()
-    if not user:
+    if not (user := UserProfile.objects.filter(id=user_id).first()):
         return HttpResponseNotFound()
 
     user.popularity += 1
@@ -54,11 +52,9 @@ def get_info(request):
 @ratelimit(key='ip', rate='15/m')
 @require_GET
 def get_records(request):
-    user_id = request.GET.get('id')
-    if not user_id:
+    if not (user_id := request.GET.get('id')):
         return HttpResponseBadRequest()
-    user = UserProfile.objects.filter(id=user_id).first()
-    if not user:
+    if not (user := UserProfile.objects.filter(id=user_id).first()):
         return HttpResponseNotFound()
     ms_user = user.userms
 
@@ -68,23 +64,21 @@ def get_records(request):
         for stat in RankingGameStats:
             value[stat] = ms_user.getrecords_level(stat, mode)
             value[f"{stat}_id"] = ms_user.getrecordIDs_level(stat, mode)
-        response[f"{mode}_record"] = json.dumps(value, cls=DecimalEncoder) 
+        response[f"{mode}_record"] = json.dumps(value, cls=DecimalEncoder)
     return JsonResponse(response)
-    
+
 
 # 鼠标移到人名上时，展现头像、姓名、id、记录
 @ratelimit(key='ip', rate='5/s')
 @require_GET
 def get_info_abstract(request):
     # 此处要防攻击
-    user_id = request.GET.get('id')
-    if not user_id:
+    if not (user_id := request.GET.get('id')):
         return HttpResponseBadRequest()
-    user = UserProfile.objects.filter(id=user_id).first()
-    if not user:
+    if not (user := UserProfile.objects.filter(id=user_id).first()):
         return HttpResponseNotFound()
     ms_user = user.userms
-    
+
     if user.avatar:
         avatar_path = os.path.join(settings.MEDIA_ROOT, urllib.parse.unquote(user.avatar.url)[7:])
         image_data = open(avatar_path, "rb").read()
@@ -96,24 +90,28 @@ def get_info_abstract(request):
         "id": user_id,
         "realname": user.realname,
         "avatar": image_data,
-        "record_abstract": json.dumps({"timems": ms_user.getrecords_level("timems", "std"),
-                                        "bvs": ms_user.getrecords_level("bvs", "std"),
-                                        "timems_id": ms_user.getrecordIDs_level("timems", "std"),
-                                        "bvs_id": ms_user.getrecordIDs_level("bvs", "std")}, 
-                                        cls=DecimalEncoder),
-        }
-    
+        "record_abstract": json.dumps(
+            {
+                "timems": ms_user.getrecords_level("timems", "std"),
+                "bvs": ms_user.getrecords_level("bvs", "std"),
+                "timems_id": ms_user.getrecordIDs_level("timems", "std"),
+                "bvs_id": ms_user.getrecordIDs_level("bvs", "std"),
+            },
+            cls=DecimalEncoder,
+        ),
+    }
+
     return JsonResponse(response)
+
 
 @require_GET
 def get_identifiers(request):
-    id = request.GET.get('id')
-    if not id:
+    if not (id := request.GET.get('id')):
         return HttpResponseBadRequest()
-    user = UserProfile.objects.filter(id=id).first()
-    if not user:
+    if not (user := UserProfile.objects.filter(id=id).first()):
         return HttpResponseNotFound()
     return JsonResponse(user.userms.identifiers, safe=False)
+
 
 # 上传或更新我的地盘里的头像、姓名、个性签名
 # 应该写到用户的app里，而不是玩家
@@ -131,7 +129,7 @@ def update_realname(request):
         user.realname = realname
         try:
             user.save(update_fields=["realname", "left_realname_n"])
-        except Exception as e:
+        except Exception:
             return JsonResponse({"status": 107, "msg": "未知错误。可能原因：不支持此种字符"})
         update_cache_realname(user.id, realname)
         user.userms.save(update_fields=["identifiers"])
@@ -140,7 +138,7 @@ def update_realname(request):
         ErrorDict = json.loads(user_update_realname_form.errors.as_json())
         Error = ErrorDict[next(iter(ErrorDict))][0]['message']
         return JsonResponse({"status": 101, "msg": Error})
-    
+
 
 # 上传或更新我的地盘里的头像
 # 应该写到用户的app里，而不是玩家
@@ -160,7 +158,7 @@ def update_avatar(request):
         user.save(update_fields=["avatar", "left_avatar_n"])
         logger.info(f'用户 {user.username}#{user.id} 修改头像')
         return JsonResponse({"status": 100, "msg": {"n": user.left_avatar_n}})
-            
+
     else:
         ErrorDict = json.loads(user_update_form.errors.as_json())
         Error = ErrorDict[next(iter(ErrorDict))][0]['message']
@@ -187,7 +185,7 @@ def update_signature(request):
         try:
             user.save(update_fields=["signature", "left_signature_n"])
             return JsonResponse({"status": 100, "msg": {"n": user.left_signature_n}})
-        except Exception as e:
+        except Exception:
             return JsonResponse({"status": 107, "msg": "未知错误。可能原因：不支持此种字符"})
     else:
         ErrorDict = json.loads(user_update_form.errors.as_json())
@@ -223,7 +221,7 @@ def update_cache_realname(user_id, user_realname):
 # 从redis获取用户排行榜
 @require_GET
 def player_rank(request):
-    data=request.GET
+    data = request.GET
     num_player = cache.zcard(data["ids"])
     start_idx = 20 * (int(data["page"]) - 1)
     if start_idx >= num_player:
@@ -234,9 +232,6 @@ def player_rank(request):
     res = cache.sort(data["ids"], by=data["sort_by"], get=json.loads(data["indexes"]), desc=desc_flag, start=start_idx, num=20)
     response = {
         "total_page": num_player // 20 + 1,
-        "players": res
-        }
+        "players": res,
+    }
     return JsonResponse(response, safe=False, encoder=ComplexEncoder)
-
-
-

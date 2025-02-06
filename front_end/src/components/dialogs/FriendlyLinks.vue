@@ -1,7 +1,7 @@
 <!-- 已弃用 -->
 
 <template>
-    <span class="text-button" @click="centerDialogVisible = true;">{{ $t('menu.links') }}</span>
+    <span class="text-button" @click="centerDialogVisible = true;">{{ t('menu.links') }}</span>
     <el-dialog v-model="centerDialogVisible" title="友链" width="50%" align-center draggable :lock-scroll="false">
         <ul>
             <li><a target="_blank" href="https://gitee.com/ee55/saolei_website/issues">本站码云主页</a>
@@ -20,9 +20,7 @@
 
         <template #footer>
             <span class="dialog-footer">
-                <el-button type="primary" @click="centerDialogVisible = false">
-                    确定
-                </el-button>
+                <base-button-confirm @click="centerDialogVisible = false" />
             </span>
         </template>
     </el-dialog>
@@ -30,10 +28,11 @@
   
 <script lang="ts" setup>
 // 注册、登录的弹框及右上方按钮
-import { onMounted, ref, Ref } from 'vue'
-
+import { onMounted, ref } from 'vue'
+import { ElDialog } from 'element-plus';
+import BaseButtonConfirm from '@/components/common/BaseButtonConfirm.vue';
 import { useI18n } from 'vue-i18n';
-const t = useI18n();
+const { t } = useI18n();
 
 const centerDialogVisible = ref(false);
 

@@ -19,9 +19,8 @@
 
 <script lang="ts" setup name="LanguagePicker">
 import { onBeforeMount } from "vue";
+import { ElDropdown, ElIcon, ElDropdownItem } from "element-plus";
 import i18n from "@/i18n";
-import { useI18n } from "vue-i18n";
-const t = useI18n();
 
 import { local } from "@/store";
 
@@ -34,12 +33,12 @@ const options = [
 ];
 
 onBeforeMount(() => {
-    i18n.global.locale.value = local.language;
+    i18n.global.locale.value = local.value.language;
 });
 
 const changeLanguage = (value: any) => {
     i18n.global.locale.value = value;
-    local.language = value;
+    local.value.language = value;
 };
 </script>
 

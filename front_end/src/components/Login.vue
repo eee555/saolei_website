@@ -1,15 +1,15 @@
 <template>
     <el-button v-if="store.login_status != LoginStatus.IsLogin" @click.stop="login_visible = true" class="fakemenuitem"
         text size="small">
-        {{ $t('menu.login') }}
+        {{ t('menu.login') }}
     </el-button>
     <el-button v-if="store.login_status != LoginStatus.IsLogin" @click.stop="register_visible = true"
         style="margin-left: 0px;" class="fakemenuitem" text size="small">
-        {{ $t('menu.register') }}
+        {{ t('menu.register') }}
     </el-button>
     <el-button v-if="store.login_status == LoginStatus.IsLogin" @click.stop="logout();" class="fakemenuitem" text
         size="small">
-        {{ $t('menu.logout') }}
+        {{ t('menu.logout') }}
     </el-button>
     <!-- 以下的所有表单的输入项都需要@keydown.stop，解决horizontal菜单截留空格操作的问题。 -->
     <!-- https://github.com/element-plus/element-plus/issues/10172#issuecomment-1295794523 -->
@@ -27,14 +27,14 @@ const { proxy } = useCurrentInstance();
 import { LoginStatus } from "@/utils/common/structInterface"
 import LoginDialog from "@/components/dialogs/LoginDialog.vue"
 import RetrieveDialog from './dialogs/RetrieveDialog.vue';
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElButton } from 'element-plus'
 import { store, local } from '../store'
 
 import { useI18n } from 'vue-i18n';
-import { deepCopy } from '@/utils';
 import RegisterDialog from './dialogs/RegisterDialog.vue';
 import { httpErrorNotification } from './Notifications';
-const t = useI18n();
+import { UserProfile } from '@/utils/userprofile';
+const { t } = useI18n();
 
 // 登录对话框是否出现
 const login_visible = ref(false);
@@ -67,8 +67,8 @@ onMounted(() => {
 const login_auto = async () => {
     proxy.$axios.get('/userprofile/loginauto/').then(function (response) {
         if (response.data.id) {
-            store.user = deepCopy(response.data); // 直接赋值会导致user和player共用一个字典！！
-            store.player = deepCopy(response.data);
+            store.user = new UserProfile(response.data);
+            store.player = new UserProfile(response.data);
             store.login_status = LoginStatus.IsLogin;
         }
         else {
@@ -78,8 +78,8 @@ const login_auto = async () => {
 }
 
 const login = (user: any, remember: boolean) => {
-    store.user = deepCopy(user);
-    store.player = deepCopy(user);
+    store.user = new UserProfile(user);
+    store.player = new UserProfile(user);
     store.login_status = LoginStatus.IsLogin;
     login_visible.value = false;
     register_visible.value = false;
@@ -91,24 +91,10 @@ const logout = async () => {
     proxy.$axios.post('/userprofile/logout/',
         {},
     ).then(function (response) {
-        // login_status.value = LoginStatus.NotLogin;
-        // mutations.updateLoginStatus(LoginStatus.NotLogin);
         store.login_status = LoginStatus.NotLogin;
-        // const player = store.user;
-        store.user = {
-            id: 0,
-            username: "",
-            realname: "",
-            is_banned: false,
-            is_staff: false,
-            country: "",
-            accountlink: [],
-            identifiers: [],
-            videos: [],
-            loading: true,
-        };
+        store.user = new UserProfile();
         emit('logout'); // 向父组件发送消息
-        ElMessage.success({ message: t.t('common.msg.logoutSuccess'), offset: 68 });
+        ElMessage.success({ message: t('common.msg.logoutSuccess'), offset: 68 });
         register_visible.value = false;
         login_visible.value = false;
         retrieve_visible.value = false;

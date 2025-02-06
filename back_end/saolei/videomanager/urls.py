@@ -1,4 +1,4 @@
-from django.urls import include, path
+from django.urls import path
 
 from . import views
 app_name = 'video'
@@ -14,8 +14,9 @@ urlpatterns = [
     path('news_queue/', views.news_queue, name='news_queue'),
     # path('approve/', views.approve, name='approve'),
     # path('freeze/', views.freeze, name='freeze'),
-    path('get/',views.get_videoModel),
-    path('set/',views.set_videoModel),
+    path('get/', views.get_videoModel),
+    path('set/', views.set_videoModel),
+    path('update/', views.update_videoModel),
+    path('refresh_all/', views.refresh_all_videoModel),
     # path('download/', views.video_download, name='download'),
-    
 ]

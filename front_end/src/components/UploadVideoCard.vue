@@ -44,6 +44,7 @@
 import { onMounted, ref, Ref } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import { ms_to_s } from '@/utils';
+import { ElCard, ElIcon, ElRow, ElCol } from 'element-plus';
 const { proxy } = useCurrentInstance();
 const emit = defineEmits(['cancel_this', 'logout']);
 

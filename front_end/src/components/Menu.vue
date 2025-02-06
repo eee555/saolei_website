@@ -1,3 +1,4 @@
+<!-- 已弃用 -->
 <template>
     <div style="float: right;">
         <div style="display: inline-flex;">

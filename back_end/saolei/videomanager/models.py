@@ -2,46 +2,21 @@
 from django.db import models
 from .fields import RestrictedFileField
 from userprofile.models import UserProfile
-from config.global_settings import *
+from config.global_settings import DefaultRankingScores
 from django_redis import get_redis_connection
-cache = get_redis_connection("saolei_website")
 import json
 from utils import ComplexEncoder
+from config.text_choices import MS_TextChoices
+from config.global_settings import MaxSizes
+cache = get_redis_connection("saolei_website")
+
 
 class ExpandVideoModel(models.Model):
     # video = models.OneToOneField(VideoModel, on_delete=models.CASCADE)
-    identifier = models.CharField(max_length=80)
-    # 0-32767
-    left = models.PositiveSmallIntegerField()
-    right = models.PositiveSmallIntegerField()
-    double = models.PositiveSmallIntegerField()
-    cl = models.PositiveSmallIntegerField()
-    left_s = models.FloatField()
-    right_s = models.FloatField()
-    double_s = models.FloatField()
-    cl_s = models.FloatField()
-    path = models.FloatField()
-    flag = models.PositiveSmallIntegerField()
-    flag_s = models.FloatField()
+    identifier = models.CharField(max_length=MaxSizes.IDENTIFIER)
     stnb = models.FloatField()
     rqp = models.FloatField()
-    ioe = models.FloatField()
-    thrp = models.FloatField()
-    corr = models.FloatField()
-    ce = models.PositiveSmallIntegerField()
-    ce_s = models.FloatField()
-    op = models.PositiveSmallIntegerField()
-    isl = models.PositiveSmallIntegerField()
-    cell0 = models.PositiveSmallIntegerField()
-    cell1 = models.PositiveSmallIntegerField()
-    cell2 = models.PositiveSmallIntegerField()
-    cell3 = models.PositiveSmallIntegerField()
-    cell4 = models.PositiveSmallIntegerField()
-    cell5 = models.PositiveSmallIntegerField()
-    cell6 = models.PositiveSmallIntegerField()
-    cell7 = models.PositiveSmallIntegerField()
-    cell8 = models.PositiveSmallIntegerField()
-    
+
 
 # 其他类：checksum_ok, mode
 
@@ -68,76 +43,88 @@ class ExpandVideoModel(models.Model):
 # content_types=['image/jpeg', 'image/gif', 'image/gif', 'image/bmp', 'image/tiff'],
 # max_upload_size=5242880,)
 
-
+def divideByTimeExpression(expr: models.Expression):
+    return models.Case(models.When(timems=0, then=models.Value(0.0)), default=expr / models.F('timems') * models.Value(1000), output_field=models.FloatField())
 
 
 # 基本的录像模型，最小限度展示录像信息
 class VideoModel(models.Model):
-    class Mode(models.TextChoices):
-        STD = '00', ('标准')
-        UPK = '01', ('upk')
-        WQ = '04', ('win7')
-        JSW = '05', ('竞速无猜')
-        QWC = '06', ('强无猜')
-        RWC = '07', ('弱无猜')
-        ZWC = '08', ('准无猜')
-        QKC = '09', ('强可猜')
-        RKC = '10', ('弱可猜')
-        BZD = '11', ('标准递归')
-        NF = '12', ('标准盲扫')
-
-    class State(models.TextChoices):
-        PLAIN = "a", ('已上传但未审核')
-        FROZEN = "b", ('审核未通过，被冻结')
-        OFFICIAL = "c", ('已通过审核')
-        IDENTIFIER = "d", ('标识不匹配')
-
-    class Level(models.TextChoices):
-        BEGINNER = "b", ('初级')
-        INTERMEDIATE = "i", ('中级')
-        EXPERT = "e", ('高级')
-        CUSTOM = "c", ('自定义')
     # 用户
     player = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     # 服务器端文件相对路径
     file = RestrictedFileField(
-        upload_to="videos/%Y%m%d/", max_length=100, max_upload_size=MaxSizes.videofile,)
+        upload_to="videos/%Y%m%d/", max_length=100, max_upload_size=MaxSizes.VIDEOFILE)
     video = models.OneToOneField(ExpandVideoModel, on_delete=models.CASCADE, related_name="+")
     # file = models.FileField(upload_to="/assets/videos")
     # 上传时间，兼最近状态变化时间、更新时间（冻结后会刷新）
     upload_time = models.DateTimeField(auto_now_add=True, verbose_name="上传时间")
     # 审核状态
     state = models.CharField(
-        max_length=1, choices=State.choices, default=State.PLAIN)
+        max_length=1, choices=MS_TextChoices.State.choices, default=MS_TextChoices.State.PLAIN)
     # 软件: "a"->avf; "e"->evf
-    software = models.CharField(max_length=MaxSizes.software)
+    software = models.CharField(max_length=MaxSizes.SOFTWARE)
     # 难度
-    level = models.CharField(max_length=MaxSizes.gamelevel, choices=Level.choices)
+    level = models.CharField(max_length=MaxSizes.GAMELEVEL, choices=MS_TextChoices.Level.choices)
     # 游戏模式，evf标准
     # https://github.com/eee555/ms_toollib/tree/main/base#readme
     mode = models.CharField(
-        max_length=MaxSizes.gamemode, choices=Mode.choices, default=Mode.STD)
-    # # 无猜
-    # nf = models.BooleanField()
+        max_length=MaxSizes.GAMEMODE, choices=MS_TextChoices.Mode.choices, default=MS_TextChoices.Mode.STD)
     # 0.000-999.999
-    timems = models.PositiveIntegerField(default=DefaultRankingScores["timems"]) # 整数形式存储的毫秒数。
+    timems = models.PositiveIntegerField(default=DefaultRankingScores["timems"])  # 整数形式存储的毫秒数。
     # 0-32767
-    bv = models.PositiveSmallIntegerField()
-    bvs = models.FloatField()
+    bv = models.PositiveSmallIntegerField(null=True)
+    bvs = models.GeneratedField(expression=models.Case(models.When(timems=0, then=models.Value(0.0)), default=models.F('bv') / models.F('timems') * models.Value(1000), output_field=models.FloatField()), output_field=models.FloatField(), db_persist=True)
+
+    left = models.PositiveSmallIntegerField(null=True)
+    right = models.PositiveSmallIntegerField(null=True)
+    double = models.PositiveSmallIntegerField(null=True)
+    cl = models.GeneratedField(expression=models.F('left') + models.F('right') + models.F('double'), output_field=models.PositiveSmallIntegerField(), db_persist=True)
+
+    left_ce = models.PositiveSmallIntegerField(null=True)
+    right_ce = models.PositiveSmallIntegerField(null=True)
+    double_ce = models.PositiveSmallIntegerField(null=True)
+    ce = models.GeneratedField(expression=models.F('left_ce') + models.F('right_ce') + models.F('double_ce'), output_field=models.PositiveSmallIntegerField(), db_persist=True)
+
+    # 需要处理除零错误
+    left_s = models.GeneratedField(expression=divideByTimeExpression(models.F('left')), output_field=models.FloatField(), db_persist=True)
+    right_s = models.GeneratedField(expression=divideByTimeExpression(models.F('right')), output_field=models.FloatField(), db_persist=True)
+    double_s = models.GeneratedField(expression=divideByTimeExpression(models.F('double')), output_field=models.FloatField(), db_persist=True)
+    cl_s = models.GeneratedField(expression=divideByTimeExpression(models.F('cl')), output_field=models.FloatField(), db_persist=True)
+
+    left_ces = models.GeneratedField(expression=divideByTimeExpression(models.F('left_ce')), output_field=models.FloatField(), db_persist=True)
+    right_ces = models.GeneratedField(expression=divideByTimeExpression(models.F('right_ce')), output_field=models.FloatField(), db_persist=True)
+    double_ces = models.GeneratedField(expression=divideByTimeExpression(models.F('double_ce')), output_field=models.FloatField(), db_persist=True)
+    ce_s = models.GeneratedField(expression=divideByTimeExpression(models.F('ce')), output_field=models.FloatField(), db_persist=True)
+
+    path = models.FloatField(null=True)
+    flag = models.PositiveSmallIntegerField(null=True)
+    op = models.PositiveSmallIntegerField(null=True)
+    isl = models.PositiveSmallIntegerField(null=True)
+
+    flag_s = models.GeneratedField(expression=divideByTimeExpression(models.F('flag')), output_field=models.FloatField(), db_persist=True)
+    ioe = models.GeneratedField(expression=models.F('bv') / models.F('cl'), output_field=models.FloatField(), db_persist=True)
+    thrp = models.GeneratedField(expression=models.F('bv') / models.F('ce'), output_field=models.FloatField(), db_persist=True)
+    corr = models.GeneratedField(expression=models.F('ce') / models.F('cl'), output_field=models.FloatField(), db_persist=True)
+
+    cell0 = models.PositiveSmallIntegerField(null=True)
+    cell1 = models.PositiveSmallIntegerField(null=True)
+    cell2 = models.PositiveSmallIntegerField(null=True)
+    cell3 = models.PositiveSmallIntegerField(null=True)
+    cell4 = models.PositiveSmallIntegerField(null=True)
+    cell5 = models.PositiveSmallIntegerField(null=True)
+    cell6 = models.PositiveSmallIntegerField(null=True)
+    cell7 = models.PositiveSmallIntegerField(null=True)
+    cell8 = models.PositiveSmallIntegerField(null=True)
 
     # 暂时的解决方案
     def __getattr__(self, name):
         if name == "stnb":
             return self.video.stnb
-        elif name == "ioe":
-            return self.video.ioe
-        elif name == "path":
-            return self.video.path
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
-    
+
     def __str__(self):
         return f'level: {self.level}, timems: {self.timems}, 3BV: {self.bv}'
-    
+
     class Meta:
         indexes = [
             models.Index(fields=['level'], name='level_idx'),
@@ -161,7 +148,6 @@ class VideoModel(models.Model):
             "bv": self.bv,
             "bvs": self.bvs,
             "identifier": self.video.identifier}, cls=ComplexEncoder))
-        
+
     def pop_redis(self, name: str):
         cache.hdel(name, self.id)
-

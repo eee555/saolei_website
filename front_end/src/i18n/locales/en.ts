@@ -24,6 +24,9 @@ export default {
             i: 'Intermediate',
             e: 'Expert',
             sum: 'Sum',
+            shortb: 'Beg',
+            shorti: 'Int',
+            shorte: 'Exp',
         },
         mode: {
             std: 'Standard',
@@ -49,6 +52,7 @@ export default {
             identifier: 'Identifier',
             fileName: 'File name',
             is: 'Island',
+            isl: 'Island',
             level: 'Level',
             mastery: 'Mastery',
             op: 'Opening',
@@ -116,6 +120,7 @@ export default {
             empty: 'Empty data',
             indexerror: 'Failed to extract data',
             timeout: 'Cannot connect to the platform',
+            title: 'Update failed',
             unknown: 'Unknown error',
         },
         verified: 'Verified',
@@ -127,6 +132,20 @@ export default {
         womTrophy: 'Trophies',
         womWin: 'Wins',
     },
+    activityCalendar: {
+        cellGap: 'Cell Gap',
+        cellSize: 'Cell Size',
+        cornerRadius: 'Corner Radius',
+        showDate: 'Show Date',
+        totalNVideos: '{0} videos in total',
+        tooltip: {
+            noVideoOnDate: 'No video on {0}',
+            uploadedNVideosOnDate: '{1} videos on {0}',
+        }
+    },
+    experimentalFeature: {
+        watermark: 'EXPERIMENTAL',
+    },
     footer: {
         contact: 'Contact',
         donate: 'Donate',
@@ -135,9 +154,9 @@ export default {
         about: 'About',
     },
     form: {
-        captcha: 'captcha',
-        confirmPassword: 'confirm password',
-        email: 'email',
+        captcha: 'Captcha',
+        confirmPassword: 'Confirm password',
+        email: 'Email',
         emailCode: 'Email code',
         imageCaptcha: 'Image captcha',
         password: 'Password',
@@ -285,6 +304,7 @@ export default {
             light: 'light',
             title: 'Color scheme',
         },
+        experimentalFeature: 'Experimental Features',
         languageSwitch: 'Language Switch',
         menuFontSize: 'Menu Font Size',
         menuHeight: 'Menu Height',

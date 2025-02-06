@@ -12,6 +12,7 @@ import { videoplayerstore } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { watch } from 'vue';
 import { httpErrorNotification } from './Notifications';
+import { ElDialog } from 'element-plus';
 const { proxy } = useCurrentInstance();
 
 watch(videoplayerstore, () => {
@@ -21,9 +22,7 @@ watch(videoplayerstore, () => {
 })
 
 const preview = (id: Number | undefined) => {
-    if (!id) {
-        return
-    }
+    if (!id) return;
     (window as any).flop = null;
     proxy.$axios.get('/video/get_software/',
         {
@@ -33,7 +32,6 @@ const preview = (id: Number | undefined) => {
         }
     ).then(function (response) {
         let url = import.meta.env.VITE_BASE_API + "/video/preview/?id=" + id;
-        // console.log(url);
         if (response.data.msg == "a") {
             url += ".avf";
         } else if (response.data.msg == "e") {

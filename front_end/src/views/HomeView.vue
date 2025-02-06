@@ -6,15 +6,15 @@
                     <el-tab-pane style="max-height: 300px; overflow: auto;user-select: none;"
                         v-loading="news_queue_status == 1">
                         <template #label>
-                            {{ $t('home.news') }}&nbsp;
+                            <span v-t="'home.news'"/>&nbsp;
                             <el-text v-if="news_queue_status == 2" type="success"><el-icon>
                                     <Check />
                                 </el-icon></el-text>
                             <el-link v-else-if="active_tab == 'newest'" :underline="false"
                                 :disabled="news_queue_status != 0" @click="update_news_queue"
-                                style="vertical-align: baseline;"><el-icon>
-                                    <Refresh />
-                                </el-icon></el-link>
+                                style="vertical-align: baseline;">
+                                <base-icon-refresh />
+                            </el-link>
                         </template>
                         <div v-for="news in news_queue">
                             <el-text style="margin-right: 5px">
@@ -22,12 +22,10 @@
                             </el-text>
                             <PlayerName class="name" style="vertical-align: top;" :user_id="+news.player_id"
                                 :user_name="news.player" />
-                            <el-text style="vertical-align: middle;">
-                                {{ $t('news.breakRecordTo', {
-                                    mode: $t('common.mode.' + news.mode), level:
-                                        $t('common.level.' + news.level), stat: $t('common.prop.' + news.index)
-                                }) }}
-                            </el-text>
+                            <el-text style="vertical-align: middle;" v-t="{path: 'news.breakRecordTo', args: {
+                                    mode: t('common.mode.' + news.mode), level:
+                                        t('common.level.' + news.level), stat: t('common.prop.' + news.index)
+                                }}"></el-text>
                             <PreviewNumber :id="news.video_id" :text="to_fixed_n(news.value, 3)" />
                             <el-text style="margin-left: 5px; vertical-align: middle;">
                                 {{ news.delta == "新" ? "" : news.delta > 0 ? "↑" : "↓" }}{{ news.delta }}
@@ -39,20 +37,20 @@
                 <el-tabs type="border-card" style="margin-top: 2%;" v-model="active_tab">
                     <el-tab-pane class="bottom_tabs" :lazy="true" name="newest" v-loading="newest_queue_status == 1">
                         <template #label>
-                            {{ $t('home.latestScore') }}&nbsp;
+                            <span v-t="'home.latestScore'"/>&nbsp;
                             <el-text v-if="newest_queue_status == 2" type="success"><el-icon>
                                     <Check />
                                 </el-icon></el-text>
                             <el-link v-else-if="active_tab == 'newest'" :underline="false"
                                 :disabled="newest_queue_status != 0" @click="update_newest_queue"
-                                style="vertical-align: baseline;"><el-icon>
-                                    <Refresh />
-                                </el-icon></el-link>
+                                style="vertical-align: baseline;">
+                                <base-icon-refresh />
+                            </el-link>
                         </template>
                         <VideoList :videos="newest_queue" :reverse="true" upload_time="time" :show-header="false">
                         </VideoList>
                     </el-tab-pane>
-                    <el-tab-pane :label="$t('home.reviewQueue')" class="bottom_tabs" :lazy="true" name="review">
+                    <el-tab-pane :label="t('home.reviewQueue')" class="bottom_tabs" :lazy="true" name="review">
                         <VideoList :videos="review_queue" :review_mode="store.user.is_staff"
                             @update="update_review_queue" v-loading="review_queue_updating"></VideoList>
                     </el-tab-pane>
@@ -81,9 +79,9 @@
                             <QuestionFilled />
                         </el-icon>帮助中心
                     </div>
-                    <div style="font-size: 14px;padding: 2% 5%;">
+                    <!-- <div style="font-size: 14px;padding: 2% 5%;">
                         <Groups></Groups>
-                    </div>
+                    </div> -->
 
                     <div class="aside-tip-title">
                         <el-icon>
@@ -103,6 +101,7 @@
 
 <script setup lang='ts'>
 import { onMounted, ref, Ref } from 'vue'
+import { ElContainer, ElAside, ElIcon, ElMain, ElTabs, ElTabPane, ElText, ElLink, vLoading } from 'element-plus';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import VideoList from '@/components/VideoList.vue';
@@ -114,11 +113,11 @@ import { utc_to_local_format } from "@/utils/system/tools";
 import FriendlyLink from "@/components/dialogs/FriendlyLinks.vue";
 import Downloads from "@/components/dialogs/Downloads.vue";
 import Thanks from "@/components/dialogs/Thanks.vue";
-import Groups from "@/components/dialogs/Groups.vue";
+import BaseIconRefresh from '@/components/common/BaseIconRefresh.vue';
 import { store } from '../store'
 
 import { useI18n } from 'vue-i18n';
-const t = useI18n();
+const { t } = useI18n();
 
 const review_queue = ref<any[]>([]);
 const newest_queue = ref<any[]>([]);

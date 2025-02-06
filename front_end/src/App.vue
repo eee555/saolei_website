@@ -9,7 +9,7 @@
                         <el-image v-if="!local.menu_icon" class="logo2" :src="logo_2" :fit="'cover'" />
                     </el-menu-item>
                     <el-menu-item v-for="item in menu_items" :index="'/' + item.index">
-                        <IconMenuItem :text="$t(item.content)" :icon="item.icon" />
+                        <IconMenuItem :text="t(item.content)" :icon="item.icon" />
                     </el-menu-item>
                     <div style="flex-grow: 1" />
                     <el-menu-item :index="player_url" v-if="store.user.id != 0">
@@ -17,7 +17,7 @@
                     </el-menu-item>
                     <el-menu-item index="/settings" style="padding-left: 8px; padding-right: 5px">
                         <el-badge is-dot :hidden="true" :offset="[0,15]">
-                            <IconMenuItem :text="$t('menu.setting')" icon="Setting" />
+                            <IconMenuItem :text="t('menu.setting')" icon="Setting" />
                         </el-badge>
                     </el-menu-item>
                     <LanguagePicker v-show="local.language_show" style="padding-left: 8px; padding-right: 8px;" />
@@ -41,16 +41,14 @@
         <template #footer>
             <span class="dialog-footer">
                 <el-checkbox v-model="never_show_notice">不再显示此对话框&nbsp;&nbsp;&nbsp;</el-checkbox>
-                <el-button type="primary" @click="handle_notice_close()">
-                    确认
-                </el-button>
+                <base-button-confirm @click="handle_notice_close()" />
             </span>
         </template>
     </el-dialog>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import LanguagePicker from "./components/widgets/LanguagePicker.vue";
 import IconMenuItem from "./components/widgets/IconMenuItem.vue";
 import Login from "./components/Login.vue";
@@ -58,9 +56,8 @@ import Footer from "./components/Footer.vue";
 import PlayerDialog from "./components/PlayerDialog.vue";
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import { store, local } from "./store";
-
-import { useI18n } from "vue-i18n";
-const t = useI18n();
+import { ElScrollbar, ElMenu, ElMenuItem, ElDialog, ElCheckbox, ElImage, ElBadge, ElHeader, ElContainer, ElMain } from "element-plus";
+import BaseButtonConfirm from "./components/common/BaseButtonConfirm.vue";
 
 const { proxy } = useCurrentInstance();
 import logo_1 from "@/assets/logo.png";
@@ -72,6 +69,12 @@ const router = useRouter();
 import { useDark, useToggle } from '@vueuse/core';
 const isDark = useDark()
 useToggle(isDark)
+watch(isDark, (v) => {
+    local.value.darkmode = v
+})
+
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
 
 // const player_visible = ref(false)
 const notice_visible = ref(false);
@@ -86,7 +89,7 @@ const menu_items = [
     //{ index: "world", icon: "Odometer", content: "menu.world" },
     { index: "guide", icon: "Document", content: "menu.guide" },
     //{ index: "score", icon: "Histogram", content: "menu.score" },
-];
+] as const;
 
 const notice = ref(`
 0、即日起，网站正式上线！！！
@@ -103,7 +106,7 @@ onMounted(() => {
     }
 
     console.log(`
-  开源扫雷网(fff666.top)开发团队，期待您的加入: 2234208506@qq.com
+  开源扫雷网(openms.top)开发团队，期待您的加入: 2234208506@qq.com
   `);
     router.isReady().then(() => {
         menu_index.value = router.currentRoute.value.fullPath;
@@ -206,7 +209,7 @@ body {
 
 @media (min-width: 1024px) {  
   .common-layout {  
-    padding: 1.5em max(20vw, 200px);
+    padding: 1.5em min(15vw, 150px);
     /* 这里设置只在大屏幕（电脑端）上生效的样式 */  
   }  
 }

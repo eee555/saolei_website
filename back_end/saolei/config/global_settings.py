@@ -1,31 +1,35 @@
 # 全局设置，约定不可变
 # 全局可变量写在settings.py的GLOBAL_VARIABLES
 
+
 # 数据大小限制
 class MinSizes:
-    password = 6
+    PASSWORD = 6
+
 
 class MaxSizes:
-    avatar = 1024*300 # 头像图片，大小限制在300k以内。
-    country = 2 # Alpha-2 code from ISO3166
-    email = 255
-    emailcaptcha = 6 # 邮箱验证码
-    firstname = 255
-    gamelevel = 1 # 级别（初中高）
-    gamemode = 2 # 模式（无猜）
-    gametime = 6 # 时间（毫秒）
-    lastname = 255
-    password = 20 # 密码
-    signature = 4095 # 个性签名的长度，考虑了一些比较啰嗦的语言。
-    software = 1
-    username = 30 # 用户名，行业习惯的上限
-    videofile = 5*1024*1024 # 录像文件
+    AVATAR = 1024 * 300  # 头像图片，大小限制在300k以内。
+    COUNTRY = 2  # Alpha-2 code from ISO3166
+    EMAIL = 255
+    EMAILCODE = 6  # 邮箱验证码
+    FIRSTNAME = 255
+    GAMELEVEL = 1  # 级别（初中高）
+    GAMEMODE = 2  # 模式（无猜）
+    IDENTIFIER = 80  # 标识
+    LASTNAME = 255
+    PASSWORD = 20  # 密码
+    SIGNATURE = 4095  # 个性签名的长度，考虑了一些比较啰嗦的语言。
+    SOFTWARE = 1
+    USERNAME = 30  # 用户名，行业习惯的上限
+    VIDEOFILE = 5 * 1024 * 1024  # 录像文件
+
 
 # 默认修改个人资料的次数
 class DefaultChances:
-    name = 1 # 名字
-    avatar = 2 # 头像
-    signature = 2 # 签名
+    NAME = 1  # 名字
+    AVATAR = 2  # 头像
+    SIGNATURE = 2  # 签名
+
 
 # 级别
 GameLevels = ["b", "i", "e"]

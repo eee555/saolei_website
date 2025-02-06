@@ -4,25 +4,25 @@
         <el-row style="margin-bottom: 15px">
             <el-col :span="8">
                 <div style="padding-bottom: 5px"><strong>
-                    {{ $t('footer.about') }}
+                    {{ t('footer.about') }}
                 </strong></div>
                 <Thanks />
                 <!-- <div><el-link href="https://github.com/eee555/Solvable-Minesweeper">{{ $t('common.software.metasweeper')
                         }}</el-link></div> -->
                 <div style="padding-bottom: 5px; margin-top: 8px;"><strong>
-                    {{ $t('common.software.resource_download') }}
+                    {{ t('common.software.resource_download') }}
                 </strong></div>
                 <Downloads />
             </el-col>
             <el-col :span="8">
-                <div style="padding-bottom: 5px"><strong>{{ $t('footer.contact') }}</strong></div>
+                <div style="padding-bottom: 5px"><strong>{{ t('footer.contact') }}</strong></div>
                 <div><el-link href="https://github.com/eee555/saolei_website" target="_blank">GitHub</el-link></div>
                 <div><el-link href="https://gitee.com/ee55/saolei_website" target="_blank">Gitee</el-link></div>
                 <div><el-link href="https://discord.gg/ks8ngPX5bT" target="_blank">Discord</el-link></div>
                 <div><el-link href="https://qm.qq.com/q/hNShGUQkJG" target="_blank">QQ</el-link></div>
             </el-col>
             <el-col :span="8">
-                <div style="padding-bottom: 5px"><strong>{{ $t('footer.links') }}</strong></div>
+                <div style="padding-bottom: 5px"><strong>{{ t('footer.links') }}</strong></div>
                 <div><el-link href="http://saolei.wang" target="_blank">扫雷网 saolei.wang</el-link></div>
                 <div><el-link href="https://minesweepergame.com" target="_blank">Authoritative Minesweeper</el-link>
                 </div>
@@ -33,7 +33,7 @@
         </el-row>
         <div style="text-align: center">
             <el-text style="vertical-align: middle">Copyright @ 2023　</el-text>
-            <el-link href="http://fff666.top">开源扫雷网 fff666.top</el-link>
+            <el-link href="http://openms.top">开源扫雷网 openms.top</el-link>
             <el-text style="vertical-align: middle">　版权所有　</el-text>
             <el-link href="https://beian.miit.gov.cn/">苏ICP备2023056839号-1</el-link>
             <span style="width: 12px; display: inline-block"></span>
@@ -44,8 +44,11 @@
 </template>
 
 <script setup lang="ts">
-
+import { ElFooter, ElLink, ElText, ElRow, ElCol, ElDivider } from 'element-plus';
 import Thanks from './dialogs/Thanks.vue';
 import Downloads from './dialogs/Downloads.vue';
+
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 </script>
