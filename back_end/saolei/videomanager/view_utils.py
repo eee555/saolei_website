@@ -1,4 +1,6 @@
 import logging
+from math import inf
+from operator import le
 from .models import VideoModel, ExpandVideoModel
 from django_redis import get_redis_connection
 from userprofile.models import UserProfile
@@ -11,6 +13,7 @@ from config.text_choices import MS_TextChoices
 import ms_toollib as ms
 from accountlink.models import AccountSaolei
 import datetime
+from utils.getOldWebData import VideoData,Level
 
 logger = logging.getLogger('videomanager')
 cache = get_redis_connection("saolei_website")
@@ -322,24 +325,34 @@ def refresh_video(video: VideoModel):
     e_video.rqp = v.rqp
 
     e_video.save()
-def video_saolei_import_by_userid_helper(userProfile:UserProfile,accountSaolei:AccountSaolei):
-    data = {}
-    userid = accountSaolei.id
-    for row in data:
-        VideoModel.objects.create(
-            player = userProfile,
-            upload_time = datetime.timezone.utc(),
-            video = ExpandVideoModel.objects.create(
+def video_saolei_import_by_userid_helper(userProfile:UserProfile,accountSaolei:AccountSaolei) -> VideoData.Info:
+    infolast = None
+    def scheduleFunc(info: VideoData.Info) -> bool:
+        nonlocal infolast
+        infolast = info
+        video = ExpandVideoModel.objects.create(
                 identifier='',
                 stnb=0,
                 rqp=0,
-            ),
+            )
+        video.save()
+        model = VideoModel.objects.create(
+            player = userProfile,
+            upload_time = datetime.datetime.strptime(info.dateTime,'%Y-%m-%d %H:%M:%S').astimezone(datetime.timezone.utc),
+            video = video,
             state = MS_TextChoices.State.EXTERNAL,
             software = 'u',
-            level = ('b','i','e')[0],
-            mode = (MS_TextChoices.Mode.STD,MS_TextChoices.Mode.NF)[0],
-            timems = 0.0,
-            bv = 0.0,
-            url_web = "",
-            url_file = "",
+            level = info.level[0].lower(),
+            mode = (MS_TextChoices.Mode.STD,MS_TextChoices.Mode.NF)[info.mode],
+            timems = info.grade * 1000,
+            bv = info.bv,
+            url_web = info.showUrl,
+            url_file = info.url,
         )
+        model.save()
+        return True
+    videodata = VideoData(accountSaolei.id,scheduleFunc)
+    videodata.getData(Level.Beg,datetime.datetime.min)
+    videodata.getData(Level.Int,datetime.datetime.min)
+    videodata.getData(Level.Exp,datetime.datetime.min)
+    return infolast
