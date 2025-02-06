@@ -72,4 +72,4 @@ class VideoManagerTestCase(TestCase):
         self.multiple_values_test(video.video, expected_extended_values)
 
     def test_video_saolei_import_by_userid(self):
-        video_saolei_import_by_userid_helper(userProfile=self.user,accountSaolei=AccountSaolei.objects.create(id=21720))
+        video_saolei_import_by_userid_helper(userProfile=self.user,accountSaolei=AccountSaolei.objects.create(id=21720,parent=self.user))
