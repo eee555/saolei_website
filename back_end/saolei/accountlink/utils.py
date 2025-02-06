@@ -5,7 +5,7 @@ import requests
 from lxml import etree
 from datetime import timedelta
 from django.utils import timezone
-headers = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 Edg/132.0.0.0'}
+
 def link_account(platform: Platform, id, user: UserProfile):
     if platform == Platform.SAOLEI:
         link_saolei_account(id, user)
@@ -139,7 +139,7 @@ def update_msgames_account(account: AccountMinesweeperGames, cooldown):
     htmlStr = None
     try:
         url = f'https://minesweepergame.com/profile.php?pid={id}'
-        response = requests.get(url=url, timeout=5,headers=headers)
+        response = requests.get(url=url, timeout=5)
         htmlStr = response.text
     except requests.exceptions.Timeout as e:
         return "timeout" # 请求超时
