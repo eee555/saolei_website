@@ -1,3 +1,4 @@
+import datetime
 from django.test import TestCase
 from django.core.files.base import ContentFile
 from userprofile.models import UserProfile
@@ -80,16 +81,11 @@ class VideoManagerTestCase(TestCase):
         accountSaolei = AccountSaolei.objects.create(
             id=23756, parent=self.user)
         info = video_saolei_import_by_userid_helper(
-            userProfile=self.user, accountSaolei=accountSaolei)
+            userProfile=self.user, accountSaolei=accountSaolei, beginTime=datetime.datetime.min, endTime=datetime.datetime.max)
         if info:
             model = VideoModel.objects.filter(url_web=info.showUrl).first()
             # 断言非空
             self.assertIsNotNone(model)
-            # 断言等于
-            # self.assertEqual(model.upload_time,
-            #                  datetime.datetime.
-            #                  strptime(info.dateTime,'%Y-%m-%d %H:%M:%S').
-            #                  astimezone(datetime.timezone.utc))
             self.assertEqual(model.level, info.level[0].lower())
             self.assertEqual(model.mode, (MS_TextChoices.Mode.STD,
                              MS_TextChoices.Mode.NF)[info.mode])
@@ -97,3 +93,7 @@ class VideoManagerTestCase(TestCase):
             self.assertEqual(model.bv, info.bv)
             self.assertEqual(model.url_web, info.showUrl)
             self.assertEqual(model.url_file, info.url)
+        video_saolei_import_by_userid_helper(
+            userProfile=self.user, accountSaolei=accountSaolei, beginTime=datetime.datetime.min, endTime=datetime.datetime.max)
+        videos = VideoModel.objects.filter(player=self.user).values_list()
+        self.assertEqual(len(videos), len(set(videos)))

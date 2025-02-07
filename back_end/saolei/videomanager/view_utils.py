@@ -332,7 +332,7 @@ def refresh_video(video: VideoModel):
     e_video.save()
 
 
-def video_saolei_import_by_userid_helper(userProfile: UserProfile, accountSaolei: AccountSaolei) -> VideoData.Info:
+def video_saolei_import_by_userid_helper(userProfile: UserProfile, accountSaolei: AccountSaolei, beginTime: datetime, endTime: datetime) -> VideoData.Info:
     infolast = None
 
     def scheduleFunc(info: VideoData.Info) -> bool:
@@ -360,8 +360,11 @@ def video_saolei_import_by_userid_helper(userProfile: UserProfile, accountSaolei
         )
         model.save()
         return True
-    videodata = VideoData(accountSaolei.id, scheduleFunc)
-    videodata.getData(Level.Beg, datetime.datetime.min)
-    videodata.getData(Level.Int, datetime.datetime.min)
-    videodata.getData(Level.Exp, datetime.datetime.min)
+    urls = VideoModel.objects.filter(
+        player=userProfile).values_list('url_web')
+    url_set = set(url for url, in urls)
+    videodata = VideoData(accountSaolei.id, url_set, scheduleFunc)
+    videodata.getData(Level.Beg, beginTime, endTime)
+    videodata.getData(Level.Int, beginTime, endTime)
+    videodata.getData(Level.Exp, beginTime, endTime)
     return infolast

@@ -69,7 +69,7 @@ class FormatUrl:
         return self.get(Mode.Video, Level.Exp)
 
     def getShowUrl(self, mode: Mode = None, videoID: int = 0) -> str:
-        return f'{self.host}/{mode}/Show.asp?Id={videoID}&tmp={random.randint(10000, 99999)}'
+        return f'{self.host}/{mode}/Show.asp?Id={videoID}'
 
     def get(self, mode: Mode = None, level: Level = None, videoID: int = 0) -> str:
         """
@@ -166,11 +166,12 @@ class VideoData(BasePostData):
             self.showUrl: str
             self.mode = 0
 
-    def __init__(self, userID, scheduleFunc: Callable[[int], None] = None) -> None:
+    def __init__(self, userID, url_set: set, scheduleFunc: Callable[[int], None] = None) -> None:
         super().__init__(userID, scheduleFunc)
+        self.url_set = url_set
 
     @overload
-    def getData(self, level: Level, lastTime: datetime) -> list[Info]:
+    def getData(self, level: Level, lastTime: datetime, endTime: datetime) -> list[Info]:
         """
         获取视频信息
 
@@ -185,8 +186,9 @@ class VideoData(BasePostData):
 
     def getData(self, *args, **kwargs) -> any:
         formatUrl = FormatUrl(self.userID)
-        if isinstance(args[0], Level) and isinstance(args[1], datetime):
+        if isinstance(args[0], Level) and isinstance(args[1], datetime) and isinstance(args[2], datetime):
             lastTime = args[1]
+            endTime = args[2]
             flag = True
             page = 1
             url = formatUrl.get(mode=Mode.Video, level=args[0])
@@ -225,11 +227,15 @@ class VideoData(BasePostData):
                                 './td[1]/text()')[0].strip()
                             thisTime = datetime.strptime(
                                 dataTime, '%Y年%m月%d日 %H:%M')
-                            if thisTime < lastTime:
+                            if thisTime < lastTime or thisTime > endTime:
                                 continue
                             if videoInfo.xpath('./td[6]/span/text()')[0] == "未审核!":
                                 continue
                             info = self.Info()
+                            info.showUrl = formatUrl.getShowUrl(
+                                mode=Mode.Video, videoID=videoID)
+                            if info.showUrl in self.url_set:
+                                continue
                             info.dateTime = thisTime.strftime(
                                 '%Y-%m-%d %H:%M:%S')
                             info.bv = float(videoInfo.xpath(
@@ -243,8 +249,6 @@ class VideoData(BasePostData):
                             info.videoID = int(videoID)
                             info.level = args[0].name
                             info.url = formatUrl.get(
-                                mode=Mode.Video, videoID=videoID)
-                            info.showUrl = formatUrl.getShowUrl(
                                 mode=Mode.Video, videoID=videoID)
                             infos.append(info)
                             if self.scheduleFunc:

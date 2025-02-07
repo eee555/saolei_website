@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import datetime
 import logging
 from .forms import UploadVideoForm
 from .models import VideoModel, ExpandVideoModel
@@ -59,7 +60,15 @@ def video_saolei_import_by_userid_post(request) -> JsonResponse:
     user: AccountSaolei = request.user.account_saolei
     if user is None:
         return JsonResponse({'type': 'error', 'object': 'accountlink', 'category': 'notFound'})
-    video_saolei_import_by_userid_helper(userProfile=user.parent, user=user)
+    data = request.POST
+    if ('begin_time', 'end_time') not in data:
+        return JsonResponse({'type': 'error', 'object': 'videomodel', 'category': 'notFound'})
+    begin_time = datetime.datetime.strptime(
+        data['begin_time'], '%Y-%m-%d %H:%M:%S')
+    end_time = datetime.datetime.strptime(
+        data['end_time'], '%Y-%m-%d %H:%M:%S')
+    video_saolei_import_by_userid_helper(
+        userProfile=user.parent, user=user, beginTime=begin_time, endTime=end_time)
     return JsonResponse({'type': 'success', 'object': 'videomodel', 'category': 'import'})
 
 
