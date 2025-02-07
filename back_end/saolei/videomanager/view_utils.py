@@ -362,7 +362,7 @@ def video_saolei_import_by_userid_helper(userProfile: UserProfile, accountSaolei
         return True
     urls = VideoModel.objects.filter(
         player=userProfile).values_list('url_web')
-    url_set = set(url for url, in urls)
+    url_set = {url for url, in urls}
     videodata = VideoData(accountSaolei.id, url_set, scheduleFunc)
     videodata.getData(Level.Beg, beginTime, endTime)
     videodata.getData(Level.Int, beginTime, endTime)
