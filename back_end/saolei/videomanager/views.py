@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
+import datetime
 import logging
 from .forms import UploadVideoForm
 from .models import VideoModel, ExpandVideoModel
-from .view_utils import update_personal_record, update_personal_record_stock, video_all_fields, update_video_num, update_state, new_video, refresh_video
+from .view_utils import update_personal_record, update_personal_record_stock, \
+    video_all_fields, update_video_num, update_state, new_video, refresh_video, \
+    video_saolei_import_by_userid_helper
 from userprofile.models import UserProfile
 from django.http import HttpResponse, JsonResponse, FileResponse, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseNotFound
 import json
@@ -17,7 +20,7 @@ from django.conf import settings
 from identifier.utils import verify_identifier
 from django.views.decorators.http import require_GET, require_POST
 from userprofile.decorators import banned_blocked, staff_required, login_required_error
-
+from accountlink.models import AccountSaolei
 logger = logging.getLogger('videomanager')
 cache = get_redis_connection("saolei_website")
 
@@ -41,11 +44,32 @@ def video_upload(request):
         data['review_code'] = 2  # 标识不匹配
 
     # 查重
-    collisions = list(VideoModel.objects.filter(timems=data["timems"], bv=data["bv"]).filter(path=data["path"]).filter(left=data["left"], right=data["right"], double=data["double"], op=data["op"], isl=data["isl"], video__identifier=data["identifier"]))
+    collisions = list(VideoModel.objects.filter(timems=data["timems"], bv=data["bv"]).filter(path=data["path"]).filter(
+        left=data["left"], right=data["right"], double=data["double"], op=data["op"], isl=data["isl"], video__identifier=data["identifier"]))
     if collisions:
         return JsonResponse({'type': 'error', 'object': 'videomodel', 'category': 'conflict'})
     new_video(data, request.user)  # 表中添加数据
     return JsonResponse({'type': 'success', 'object': 'videomodel', 'category': 'upload'})
+
+
+@login_required_error
+@ratelimit(key='ip', rate='5/s')
+@require_POST
+@banned_blocked
+def video_saolei_import_by_userid_post(request) -> JsonResponse:
+    user: AccountSaolei = request.user.account_saolei
+    if user is None:
+        return JsonResponse({'type': 'error', 'object': 'accountlink', 'category': 'notFound'})
+    data = request.POST
+    if ('begin_time', 'end_time') not in data:
+        return JsonResponse({'type': 'error', 'object': 'videomodel', 'category': 'notFound'})
+    begin_time = datetime.datetime.strptime(
+        data['begin_time'], '%Y-%m-%d %H:%M:%S')
+    end_time = datetime.datetime.strptime(
+        data['end_time'], '%Y-%m-%d %H:%M:%S')
+    video_saolei_import_by_userid_helper(
+        userProfile=user.parent, user=user, beginTime=begin_time, endTime=end_time)
+    return JsonResponse({'type': 'success', 'object': 'videomodel', 'category': 'import'})
 
 
 # 根据id向后台请求软件类型（适配flop播放器用）
@@ -85,7 +109,8 @@ def video_download(request):
         video = VideoModel.objects.get(id=request.GET["id"])
         response = FileResponse(open(video.file.path, 'rb'))
         response['Content-Type'] = 'application/octet-stream'
-        response['Content-Disposition'] = f'attachment;filename="{video.file.name.split("/")[2]}"'
+        response[
+            'Content-Disposition'] = f'attachment;filename="{video.file.name.split("/")[2]}"'
         return response
     except VideoModel.DoesNotExist:
         return HttpResponseNotFound()
@@ -116,7 +141,8 @@ def video_query(request):
         videos = VideoModel.objects.filter(**filter)
     else:
         filter = {"level": data["level"]}
-        videos = VideoModel.objects.filter(Q(mode="00") | Q(mode="12")).filter(**filter)
+        videos = VideoModel.objects.filter(
+            Q(mode="00") | Q(mode="12")).filter(**filter)
 
     videos = videos.filter(bv__range=(data["bmin"], data["bmax"]))
 
@@ -146,7 +172,8 @@ def video_query_by_id(request):
         return HttpResponseBadRequest()
     if not (user := UserProfile.objects.filter(id=id).first()):
         return HttpResponseNotFound()
-    videos = VideoModel.objects.filter(player=user).values('id', 'upload_time', "level", "mode", "timems", "bv", "bvs", "state", "video__identifier", "software", "flag", "cell0", "cell1", "cell2", "cell3", "cell4", "cell5", "cell6", "cell7", "cell8", "left", "right", "double", "op", "isl", "path")
+    videos = VideoModel.objects.filter(player=user).values('id', 'upload_time', "level", "mode", "timems", "bv", "bvs", "state", "video__identifier",
+                                                           "software", "flag", "cell0", "cell1", "cell2", "cell3", "cell4", "cell5", "cell6", "cell7", "cell8", "left", "right", "double", "op", "isl", "path")
     # print(list(videos))
 
     return JsonResponse(list(videos), safe=False)
@@ -212,7 +239,8 @@ def approve_single(videoid, check_identifier=True):
     if check_identifier and identifier not in userms.identifiers:
         userms.identifiers.append(identifier)
         userms.save(update_fields=["identifiers"])
-        logger.info(f'用户 {video.player.username}#{video.player.id} 新标识 "{identifier}"')
+        logger.info(
+            f'用户 {video.player.username}#{video.player.id} 新标识 "{identifier}"')
         approve_identifier(video.player.id, identifier)
     return True
 
@@ -236,7 +264,8 @@ def approve(request):
     ids = json.loads(request.GET["ids"])
     res = []
     for _id in ids:
-        logger.info(f'管理员 {request.user.username}#{request.user.id} 过审录像#{_id}')
+        logger.info(
+            f'管理员 {request.user.username}#{request.user.id} 过审录像#{_id}')
         res.append(approve_single(_id))
     return JsonResponse(res, safe=False)
 
@@ -257,7 +286,8 @@ def freeze(request):
                 res.append("Null")
             else:
                 update_state(v, MS_TextChoices.State.FROZEN)
-                logger.info(f'管理员 {request.user.username}#{request.user.id} 冻结录像#{id}')
+                logger.info(
+                    f'管理员 {request.user.username}#{request.user.id} 冻结录像#{id}')
         return JsonResponse(res)
     elif user_id := request.GET.get("user_id"):
         if not (user := UserProfile.objects.filter(id=user_id).first()):
@@ -271,7 +301,8 @@ def freeze(request):
 
 
 # 管理员使用的操作接口，调用方式见前端的StaffView.vue
-get_videoModel_fields = ["player", "player__realname", "upload_time", "state", "software", "level", "mode", "timems", "bv", "bvs"]  # 可获取的域列表
+get_videoModel_fields = ["player", "player__realname", "upload_time",
+                         "state", "software", "level", "mode", "timems", "bv", "bvs"]  # 可获取的域列表
 for name in [field.name for field in ExpandVideoModel._meta.get_fields()]:
     get_videoModel_fields.append("video__" + name)
 
@@ -300,7 +331,8 @@ def set_videoModel(request):
     if field not in set_videoModel_fields:
         return HttpResponseForbidden()  # 只能修改特定的域
     value = request.POST.get("value")
-    logger.info(f'管理员 {request.user.username}#{request.user.id} 修改录像#{videoid} 域 {field} 从 {getattr(video, field)} 到 {value}')
+    logger.info(
+        f'管理员 {request.user.username}#{request.user.id} 修改录像#{videoid} 域 {field} 从 {getattr(video, field)} 到 {value}')
     setattr(video, field, value)
     video.save()
     return HttpResponse()
