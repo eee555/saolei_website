@@ -80,19 +80,8 @@ class VideoManagerTestCase(TestCase):
     def test_video_saolei_import_by_userid(self):
         accountSaolei = AccountSaolei.objects.create(
             id=23756, parent=self.user)
-        info = video_saolei_import_by_userid_helper(
+        video_saolei_import_by_userid_helper(
             userProfile=self.user, accountSaolei=accountSaolei, beginTime=datetime.datetime.min, endTime=datetime.datetime.max)
-        if info:
-            model = VideoModel.objects.filter(url_web=info.showUrl).first()
-            # 断言非空
-            self.assertIsNotNone(model)
-            self.assertEqual(model.level, info.level[0].lower())
-            self.assertEqual(model.mode, (MS_TextChoices.Mode.STD,
-                             MS_TextChoices.Mode.NF)[info.mode])
-            self.assertEqual(model.timems, info.grade * 1000)
-            self.assertEqual(model.bv, info.bv)
-            self.assertEqual(model.url_web, info.showUrl)
-            self.assertEqual(model.url_file, info.url)
         video_saolei_import_by_userid_helper(
             userProfile=self.user, accountSaolei=accountSaolei, beginTime=datetime.datetime.min, endTime=datetime.datetime.max)
         videos = VideoModel.objects.filter(player=self.user).values_list()

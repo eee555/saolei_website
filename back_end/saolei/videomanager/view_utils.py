@@ -333,11 +333,8 @@ def refresh_video(video: VideoModel):
 
 
 def video_saolei_import_by_userid_helper(userProfile: UserProfile, accountSaolei: AccountSaolei, beginTime: datetime, endTime: datetime) -> VideoData.Info:
-    infolast = None
 
     def scheduleFunc(info: VideoData.Info) -> bool:
-        nonlocal infolast
-        infolast = info
         videoModel = ExpandVideoModel.objects.create(
             identifier='',
             stnb=0,
@@ -367,4 +364,3 @@ def video_saolei_import_by_userid_helper(userProfile: UserProfile, accountSaolei
     videodata.getData(Level.Beg, beginTime, endTime)
     videodata.getData(Level.Int, beginTime, endTime)
     videodata.getData(Level.Exp, beginTime, endTime)
-    return infolast
