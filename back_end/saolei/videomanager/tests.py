@@ -6,7 +6,6 @@ from accountlink.models import AccountSaolei
 from .models import VideoModel, ExpandVideoModel
 import requests
 from .view_utils import refresh_video, video_saolei_import_by_userid_helper
-from config.text_choices import MS_TextChoices
 # Create your tests here.
 
 
