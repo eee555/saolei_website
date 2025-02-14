@@ -67,6 +67,9 @@ class FormatUrl:
     def ExpVideoUrl(self) -> str:
         return self.get(Mode.Video, Level.Exp)
 
+    def getShowUrl(self, mode: Mode = None, videoID: int = 0) -> str:
+        return f'{self.host}/{mode}/Show.asp?Id={videoID}'
+
     def get(self, mode: Mode = None, level: Level = None, videoID: int = 0) -> str:
         """
         获取相关URL
@@ -89,8 +92,8 @@ class FormatUrl:
                 if level is not None:
                     return f'{self.host}/{mode}/{level}?Id={self.userID}'
                 else:
-                    import random
-                    showUrl = f'{self.host}/{mode}/Show.asp?Id={videoID}&tmp={random.randint(10000, 99999)}'
+
+                    showUrl = self.getShowUrl(mode, videoID)
                     try:
                         response = requests.get(url=showUrl, timeout=5)
                         response.encoding = 'gb2312'
@@ -110,7 +113,7 @@ class BasePostData(ABC):
     基类，用于获取数据
     """
 
-    def __init__(self, userID, scheduleFunc: Callable[[int], bool] = None) -> None:
+    def __init__(self, userID, scheduleFunc: Callable[[any], bool] = None) -> None:
         self.userID = userID
         self.scheduleFunc = scheduleFunc
         self.errorFunc = None
@@ -159,12 +162,15 @@ class VideoData(BasePostData):
             self.videoID: int
             self.level: str
             self.url: str
+            self.showUrl: str
+            self.mode = 0
 
-    def __init__(self, userID, scheduleFunc: Callable[[int], None] = None) -> None:
+    def __init__(self, userID, url_set: set, scheduleFunc: Callable[[int], None] = None) -> None:
         super().__init__(userID, scheduleFunc)
+        self.url_set = url_set
 
     @overload
-    def getData(self, level: Level, lastTime: datetime) -> list[Info]:
+    def getData(self, level: Level, lastTime: datetime, endTime: datetime) -> list[Info]:
         """
         获取视频信息
 
@@ -179,8 +185,9 @@ class VideoData(BasePostData):
 
     def getData(self, *args, **kwargs) -> any:
         formatUrl = FormatUrl(self.userID)
-        if isinstance(args[0], Level) and isinstance(args[1], datetime):
+        if isinstance(args[0], Level) and isinstance(args[1], datetime) and isinstance(args[2], datetime):
             lastTime = args[1]
+            endTime = args[2]
             flag = True
             page = 1
             url = formatUrl.get(mode=Mode.Video, level=args[0])
@@ -219,9 +226,15 @@ class VideoData(BasePostData):
                                 './td[1]/text()')[0].strip()
                             thisTime = datetime.strptime(
                                 dataTime, '%Y年%m月%d日 %H:%M')
-                            if thisTime < lastTime:
+                            if thisTime < lastTime or thisTime > endTime:
+                                continue
+                            if videoInfo.xpath('./td[6]/span/text()')[0] == "未审核!":
                                 continue
                             info = self.Info()
+                            info.showUrl = formatUrl.getShowUrl(
+                                mode=Mode.Video, videoID=videoID)
+                            if info.showUrl in self.url_set:
+                                continue
                             info.dateTime = thisTime.strftime(
                                 '%Y-%m-%d %H:%M:%S')
                             info.bv = float(videoInfo.xpath(
@@ -230,13 +243,15 @@ class VideoData(BasePostData):
                                 f'./td[4]/span[@id="BVS_{i}"]/text()')[0])
                             info.grade = float(videoInfo.xpath(
                                 f'./td[5]/a[@id="Video_{i}"]/text()')[0])
+                            info.mode = int('NF' in videoInfo.xpath(
+                                './td[5]/span/text()'))
                             info.videoID = int(videoID)
                             info.level = args[0].name
                             info.url = formatUrl.get(
                                 mode=Mode.Video, videoID=videoID)
                             infos.append(info)
                             if self.scheduleFunc:
-                                if not self.scheduleFunc(len(infos)):
+                                if not self.scheduleFunc(info):
                                     return infos
                     else:
                         return infos
@@ -255,7 +270,7 @@ if __name__ == '__main__':
 
     def errorFunc(error: Exception):
         print(error)
-    data = VideoData(userID=21720, scheduleFunc=scheduleFunc)
+    data = VideoData(userID=18290, scheduleFunc=scheduleFunc)
     data.registerError(errorFunc=errorFunc)
     BegData = data.getData(Level.Beg, datetime.min)
     print(len(BegData))
