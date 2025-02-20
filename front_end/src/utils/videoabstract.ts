@@ -1,3 +1,4 @@
+import { toISODateString } from './datetime';
 import { MS_Level } from './ms_const';
 
 export interface VideoAbstractInfo {
@@ -76,7 +77,7 @@ export function groupVideosByUploadDate(videos: VideoAbstract[]): Map<string, Vi
     const result = new Map<string, VideoAbstract[]>();
 
     videos.forEach(video => {
-        const dateKey = video.upload_time.toISOString().split('T')[0]; // Extract date part as string (YYYY-MM-DD)
+        const dateKey = toISODateString(video.upload_time); // Extract date part as string (YYYY-MM-DD)
         if (!result.has(dateKey)) {
             result.set(dateKey, []);
         }
