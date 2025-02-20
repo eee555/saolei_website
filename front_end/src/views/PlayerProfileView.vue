@@ -1,6 +1,7 @@
 <template>
     <ActivityCalendarAbstract />
     <el-divider />
+    <ExperimentalFeature>
     <base-card-normal>
         <BBBvSummary level="b" header />
         <el-divider />
@@ -9,6 +10,7 @@
         <BBBvSummary level="e" />
     </base-card-normal>
     <el-divider />
+    </ExperimentalFeature>
     <el-text tag="b" size="large">{{ t('accountlink.title') }}</el-text>
     <AccountLinkManager />
     <el-divider />
