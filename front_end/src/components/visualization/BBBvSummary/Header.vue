@@ -1,7 +1,7 @@
 <template>
     <el-row :style="{textAlign: 'center', height: BBBvSummaryConfig.cellHeight + 'px'}">
-        <IconSetting style="width: 10%"><Setting/></IconSetting>
-        <span v-for="i in 10" style="width: 9%; min-width: 3em">{{ i-1 }}</span>
+        <IconSetting style="width: 10%; min-width: 75px"><Setting/></IconSetting>
+        <span v-for="i in 10" style="flex: 1; min-width: 3em">{{ i-1 }}</span>
     </el-row>
 </template>
 
