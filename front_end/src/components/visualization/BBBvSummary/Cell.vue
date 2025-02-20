@@ -1,0 +1,92 @@
+<template>
+    <tippy class="cell" :duration="0" sticky>
+        <span v-if="bestIndex == -1">&nbsp;</span>
+        <el-link v-else :underline="false" @click="preview(videos[bestIndex].id)">
+            {{ videos[bestIndex].getStat(displayBy) }}
+        </el-link>
+        <template #content>
+            test
+        </template>
+    </tippy>
+</template>
+
+<script setup lang="ts">
+import { BBBvSummaryConfig, colorTheme } from '@/store';
+import { VideoAbstract, getStat_stat } from '@/utils/videoabstract';
+import { computed, PropType, ref, watch } from 'vue';
+import { Tippy } from 'vue-tippy';
+import { ElLink } from 'element-plus';
+import { MS_Level } from '@/utils/ms_const';
+import { PiecewiseColorScheme } from '@/utils/colors';
+import tinycolor from 'tinycolor2';
+import { preview } from '@/utils/common/PlayerDialog';
+
+const bestValue = ref<number|null>(null);
+const bestIndex = ref(-1);
+
+const prop = defineProps({
+    level: { type: String as PropType<MS_Level>, required: true },
+    bv: { type: Number, required: true },
+    videos: { type: Array<VideoAbstract>, default: [] },
+    xOffset: { type: Number, default: 0 },
+    yOffset: { type: Number, default: 0 },
+    sortBy: { type: String as PropType<getStat_stat>, default: 'timems' },
+    sortDesc: { type: Boolean, default: false },
+    displayBy: { type: String as PropType<getStat_stat>, default: 'time' },
+    colorTheme: { type: Object as PropType<PiecewiseColorScheme>, default: new PiecewiseColorScheme([],[])}
+})
+
+function refresh() {
+    bestValue.value = null;
+    bestIndex.value = -1;
+    prop.videos.forEach((video, index) => {
+        const thisValue = video.getStat(prop.sortBy);
+        if (
+            bestValue.value === null ||
+            thisValue > bestValue.value && prop.sortDesc ||
+            thisValue < bestValue.value && !prop.sortDesc
+        ) {
+            bestValue.value = thisValue;
+            bestIndex.value = index;
+        }
+    });
+}
+
+watch(() => prop.videos, refresh, { immediate: true });
+
+const height = computed(() => BBBvSummaryConfig.value.cellHeight + 'px');
+const borderRadius = computed(() => BBBvSummaryConfig.value.cornerRadius + '%');
+const top = computed(() => prop.yOffset*BBBvSummaryConfig.value.cellHeight + 'px');
+const left = computed(() => prop.xOffset * 10 + '%');
+
+const color = computed(() => {
+    if (bestIndex.value === -1) return 'rgba(0,0,0,0)';
+    return prop.colorTheme.getColor(prop.videos[bestIndex.value].getStat(prop.displayBy))
+})
+
+const fontColor = computed(() => tinycolor(color.value).isDark() ? 'white' : 'black');
+
+</script>
+
+<style lang="less" scoped>
+
+.cell {
+    position: absolute;
+    top: v-bind(top);
+    left: v-bind(left);
+    width: 10%;
+    height: v-bind(height);
+    border-radius: 1px;
+    background-color: v-bind(color);
+    border-style: solid;
+    border-width: 1px;
+    text-align: center;
+    align-items: center;
+}
+
+.el-link {
+    --el-link-text-color: v-bind(fontColor);
+    --el-link-font-size: 16px;
+}
+
+</style>

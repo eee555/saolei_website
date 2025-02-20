@@ -85,3 +85,20 @@ export function groupVideosByUploadDate(videos: VideoAbstract[]): Map<string, Vi
 
     return result;
 }
+
+export function groupVideosByBBBv(videos: VideoAbstract[], level: MS_Level): Map<number, VideoAbstract[]> {
+    const result = new Map<number, VideoAbstract[]>();
+
+    videos.forEach(video => {
+        if (video.level !== level) {
+            return;
+        }
+        const bbbv = video.bv;
+        if (!result.has(bbbv)) {
+            result.set(bbbv, []);
+        }
+        result.get(bbbv)?.push(video);
+    });
+
+    return result;
+}

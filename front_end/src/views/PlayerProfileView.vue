@@ -1,6 +1,7 @@
 <template>
     <ActivityCalendarAbstract />
     <el-divider />
+    <BBBvSummary level="b" />
     <ExperimentalFeature>
         <!-- <ActivityScatter2D />
         <el-divider />
@@ -25,8 +26,7 @@ import { LoginStatus } from '@/utils/common/structInterface';
 import { store } from '@/store';
 import { useI18n } from 'vue-i18n';
 import ActivityCalendarAbstract from '@/components/visualization/ActivityCalendarAbstract/App.vue';
-import ActivityScatter2D from '@/components/visualization/ActivityScatter2D.vue';
 import ExperimentalFeature from '@/components/ExperimentalFeature.vue';
-import MS3bvPB from '@/components/visualization/MS3bvPB.vue';
+import BBBvSummary from '@/components/visualization/BBBvSummary/App.vue';
 const { t } = useI18n();
 </script>
