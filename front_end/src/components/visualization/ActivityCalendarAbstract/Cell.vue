@@ -37,13 +37,13 @@ import { ElText } from 'element-plus';
 import BaseCardSmall from '@/components/common/BaseCardSmall.vue';
 
 const prop = defineProps({
-    date: { type: Date, required: true },
-    videos: { type: Array<VideoAbstract>, default: [] },
+    date: { type: Date, required: true }, 
+    videos: { type: Array<VideoAbstract>, default: [] }, // 该日期的录像
     bmax: { type: Number, default: 5, },
     imax: { type: Number, default: 5, },
-    emax: { type: Number, default: 5, },
-    xOffset: { type: Number, default: 0 },
-    yOffset: { type: Number, default: 0 },
+    emax: { type: Number, default: 5, }, // 三个最大值，用于计算颜色
+    xOffset: { type: Number, default: 0 }, // 横坐标，单位为格
+    yOffset: { type: Number, default: 0 }, // 纵坐标，单位为格
 })
 
 const count = ref({ b: 0, i: 0, e: 0, });
@@ -51,7 +51,7 @@ const red = ref(0);
 const green = ref(0);
 const blue = ref(0);
 
-watch(() => prop.videos, () => {
+function refresh() {
     count.value.b = 0;
     count.value.i = 0;
     count.value.e = 0;
@@ -61,7 +61,9 @@ watch(() => prop.videos, () => {
     red.value = 255 * count.value.b / prop.bmax;
     green.value = 255 * count.value.i / prop.imax;
     blue.value = 255 * count.value.e / prop.emax;
-}, { immediate: true });
+}
+
+watch(() => prop.videos, refresh, { immediate: true });
 
 const size = computed(() => activityCalendarConfig.value.cellSize + 'px');
 const borderRadius = computed(() => activityCalendarConfig.value.cornerRadius + '%');

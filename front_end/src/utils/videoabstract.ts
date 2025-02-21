@@ -1,3 +1,4 @@
+import { toISODateString } from './datetime';
 import { MS_Level } from './ms_const';
 
 export interface VideoAbstractInfo {
@@ -76,11 +77,28 @@ export function groupVideosByUploadDate(videos: VideoAbstract[]): Map<string, Vi
     const result = new Map<string, VideoAbstract[]>();
 
     videos.forEach(video => {
-        const dateKey = video.upload_time.toISOString().split('T')[0]; // Extract date part as string (YYYY-MM-DD)
+        const dateKey = toISODateString(video.upload_time); // Extract date part as string (YYYY-MM-DD)
         if (!result.has(dateKey)) {
             result.set(dateKey, []);
         }
         result.get(dateKey)?.push(video);
+    });
+
+    return result;
+}
+
+export function groupVideosByBBBv(videos: VideoAbstract[], level: MS_Level): Map<number, VideoAbstract[]> {
+    const result = new Map<number, VideoAbstract[]>();
+
+    videos.forEach(video => {
+        if (video.level !== level) {
+            return;
+        }
+        const bbbv = video.bv;
+        if (!result.has(bbbv)) {
+            result.set(bbbv, []);
+        }
+        result.get(bbbv)?.push(video);
     });
 
     return result;

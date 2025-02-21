@@ -2,10 +2,14 @@
     <ActivityCalendarAbstract />
     <el-divider />
     <ExperimentalFeature>
-        <!-- <ActivityScatter2D />
+    <base-card-normal>
+        <BBBvSummary level="b" header />
         <el-divider />
-        <MS3bvPB />
-        <el-divider /> -->
+        <BBBvSummary level="i" />
+        <el-divider />
+        <BBBvSummary level="e" />
+    </base-card-normal>
+    <el-divider />
     </ExperimentalFeature>
     <el-text tag="b" size="large">{{ t('accountlink.title') }}</el-text>
     <AccountLinkManager />
@@ -25,8 +29,8 @@ import { LoginStatus } from '@/utils/common/structInterface';
 import { store } from '@/store';
 import { useI18n } from 'vue-i18n';
 import ActivityCalendarAbstract from '@/components/visualization/ActivityCalendarAbstract/App.vue';
-import ActivityScatter2D from '@/components/visualization/ActivityScatter2D.vue';
 import ExperimentalFeature from '@/components/ExperimentalFeature.vue';
-import MS3bvPB from '@/components/visualization/MS3bvPB.vue';
+import BBBvSummary from '@/components/visualization/BBBvSummary/App.vue';
+import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
 const { t } = useI18n();
 </script>
