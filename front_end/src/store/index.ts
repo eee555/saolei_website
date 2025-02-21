@@ -55,3 +55,7 @@ export const activityCalendarConfig = useLocalStorage('activity-calendar-config'
     cornerRadius: 20,
     showDate: false,
 })
+
+export const BBBvSummaryConfig = useLocalStorage('bbbv-summary-config', {
+    cellHeight: 20,
+})
