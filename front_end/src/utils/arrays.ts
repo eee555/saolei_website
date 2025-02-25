@@ -27,7 +27,7 @@ export function maximum(iter: number[] | MapIterator<number>): number {
     const arr = Array.isArray(iter) ? iter : Array.from(iter);
 
     if (arr.length === 0) {
-        throw new Error("Array is empty");
+        return -Infinity;
     }
 
     let max = arr[0];
@@ -49,7 +49,7 @@ export function minimum(iter: number[] | MapIterator<number>): number {
     const arr = Array.isArray(iter) ? iter : Array.from(iter);
 
     if (arr.length === 0) {
-        throw new Error("Array is empty");
+        return Infinity;
     }
 
     let min = arr[0];

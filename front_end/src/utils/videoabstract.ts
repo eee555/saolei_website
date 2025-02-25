@@ -66,6 +66,16 @@ export class VideoAbstract {
         }
     }
 
+    public displayStat(stat: getStat_stat) {
+        switch (stat) {
+            case 'time': return this.time().toFixed(3);
+            case 'bvs': return this.bvs().toFixed(3);
+            case 'bv': return this.bv.toString();
+            case 'qg': return this.qg().toFixed(3);
+            case 'rqp': return this.rqp().toFixed(3);
+        }
+    }
+
     public tooltipFormatter(t: any) {
         // t is the localization API from i18n
         return `${t('common.prop.upload_time')}: ${this.upload_time} <br>
