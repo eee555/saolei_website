@@ -1,5 +1,5 @@
 <template>
-    <tippy interactive animate-fill arrow trigger="click" :append-to="body">
+    <tippy interactive animate-fill arrow trigger="click" :append-to="'parent'">
         <el-link :underline="false">
             <base-icon-setting />
         </el-link>
@@ -17,5 +17,4 @@ import { ElLink } from 'element-plus';
 import BaseCardNormal from '../common/BaseCardNormal.vue';
 import BaseIconSetting from '../common/BaseIconSetting.vue';
 
-const body = document.body
 </script>

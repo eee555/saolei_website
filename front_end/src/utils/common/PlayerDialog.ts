@@ -1,6 +1,6 @@
 import { videoplayerstore } from "@/store";
 
-export const preview = (id: number | undefined) => {
+export const preview = (id: number | undefined | null) => {
     if (!id) {
         return;
     }
