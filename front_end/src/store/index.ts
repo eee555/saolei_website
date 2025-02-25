@@ -57,5 +57,7 @@ export const activityCalendarConfig = useLocalStorage('activity-calendar-config'
 })
 
 export const BBBvSummaryConfig = useLocalStorage('bbbv-summary-config', {
-    cellHeight: 20,
+    cellHeight: 25,
+    sortBy: 'timems',
+    displayBy: 'time',
 })

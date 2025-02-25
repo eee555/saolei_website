@@ -1,17 +1,20 @@
 <template>
     <tippy class="cell" :duration="0" sticky>
-        <span v-if="bestIndex == -1">&nbsp;</span>
+        <template v-if="bestIndex == -1">&nbsp;</template>
         <el-link v-else :underline="false" @click="preview(videos[bestIndex].id)">
-            {{ videos[bestIndex].getStat(displayBy) }}
+            {{ videos[bestIndex].displayStat(displayBy) }}
         </el-link>
         <template #content>
-            test
+            <base-card-small v-if="bestIndex >= 0">
+                上传时间：{{ videos[bestIndex].upload_time }}<br/>
+
+            </base-card-small>
         </template>
     </tippy>
 </template>
 
 <script setup lang="ts">
-import { BBBvSummaryConfig, colorTheme } from '@/store';
+import { BBBvSummaryConfig } from '@/store';
 import { VideoAbstract, getStat_stat } from '@/utils/videoabstract';
 import { computed, PropType, ref, watch } from 'vue';
 import { Tippy } from 'vue-tippy';
@@ -20,6 +23,7 @@ import { MS_Level } from '@/utils/ms_const';
 import { PiecewiseColorScheme } from '@/utils/colors';
 import tinycolor from 'tinycolor2';
 import { preview } from '@/utils/common/PlayerDialog';
+import BaseCardSmall from '@/components/common/BaseCardSmall.vue';
 
 const bestValue = ref<number|null>(null);
 const bestIndex = ref(-1);
@@ -55,7 +59,6 @@ function refresh() {
 watch(() => prop.videos, refresh, { immediate: true });
 
 const height = computed(() => BBBvSummaryConfig.value.cellHeight + 'px');
-const borderRadius = computed(() => BBBvSummaryConfig.value.cornerRadius + '%');
 const top = computed(() => prop.yOffset*BBBvSummaryConfig.value.cellHeight + 'px');
 const left = computed(() => prop.xOffset * 10 + '%');
 
@@ -71,15 +74,12 @@ const fontColor = computed(() => tinycolor(color.value).isDark() ? 'white' : 'bl
 <style lang="less" scoped>
 
 .cell {
-    position: absolute;
-    top: v-bind(top);
-    left: v-bind(left);
-    width: 10%;
+    display: inline-block;
     height: v-bind(height);
     border-radius: 1px;
     background-color: v-bind(color);
-    border-style: solid;
-    border-width: 1px;
+    outline-style: solid;
+    outline-width: 1px;
     text-align: center;
     align-items: center;
 }

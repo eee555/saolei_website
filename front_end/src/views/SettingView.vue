@@ -33,6 +33,17 @@
         </el-descriptions-item>
     </el-descriptions>
     <ExperimentalFeature>
+    <el-descriptions title="STNB常数">
+        <el-descriptions-item :label="t('common.level.b')">
+            <el-input-number v-model="STNB_const.b" size="small" :controls="false" />
+        </el-descriptions-item>
+        <el-descriptions-item :label="t('common.level.i')">
+            <el-input-number v-model="STNB_const.i" size="small" :controls="false" />
+        </el-descriptions-item>
+        <el-descriptions-item :label="t('common.level.e')">
+            <el-input-number v-model="STNB_const.e" size="small" :controls="false" />
+        </el-descriptions-item>
+    </el-descriptions>
     <el-descriptions title="数据可视化 - 配色方案">
         <el-descriptions-item>
             <el-select v-model="colorSchemeName" >
@@ -69,6 +80,7 @@ import DarkMode from '@/components/widgets/DarkMode.vue'
 import ColorSchemeSetting from '@/components/visualization/ColorSchemeSetting.vue'
 import { ref } from 'vue';
 import ExperimentalFeature from '@/components/ExperimentalFeature.vue';
+import { STNB_const } from '@/utils/ms_const';
 
 const colorSchemeName = ref('bvs');
 
