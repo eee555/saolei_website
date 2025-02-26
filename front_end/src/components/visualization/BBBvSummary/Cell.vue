@@ -76,12 +76,12 @@ const fontColor = computed(() => tinycolor(color.value).isDark() ? 'white' : 'bl
 .cell {
     display: inline-block;
     height: v-bind(height);
-    border-radius: 1px;
     background-color: v-bind(color);
     outline-style: solid;
     outline-width: 1px;
     text-align: center;
     align-items: center;
+    box-sizing: border-box;
 }
 
 .el-link {
