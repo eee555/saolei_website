@@ -6,10 +6,10 @@
                 <div style="width: 80px;float: left;line-height: 200%;">
                     <el-image style="width: 72px; height: 72px;margin-top: 10px;border-radius: 8px;" :src="image_url"
                         :fit="'cover'" />
-                    <el-button style="width: 72px;height: 24px;" @click="visit_me(+id);">我的空间</el-button>
+                    <el-button style="width: 72px;height: 24px;" @click="visit_me(user_id);">我的空间</el-button>
                 </div>
                 <div style="width: 188px;float: right;text-align: center;line-height: 180%;" v-loading="is_loading">
-                    <div><strong>{{ realname }}</strong> (id: {{ id }})</div>
+                    <div><strong>{{ realname }}</strong> (id: {{ user_id }})</div>
                     <div>初级纪录：<PreviewNumber :id="+b_t_id" :text="ms_to_s(b_t)">
                         </PreviewNumber> | <PreviewNumber :id="+b_bvs_id" :text="to_fixed_n(b_bvs, 3)">
                         </PreviewNumber>
@@ -57,6 +57,7 @@ import { ElLink, ElPopover, ElImage, ElButton, vLoading } from "element-plus";
 const data = defineProps({
     user_id: {
         type: Number,
+        required: true,
     },
     user_name: {
         type: String,
@@ -68,7 +69,6 @@ const visible = ref<Boolean>(false);
 const is_loading = ref(true);
 
 const realname = ref("");
-const id = ref("");
 const b_t = ref(999999);
 const b_bvs = ref("");
 const b_t_id = ref("");
@@ -88,7 +88,6 @@ const pop_show = async () => {
 
     image_url.value = image_url_default;
     realname.value = "";
-    id.value = "";
 
     await proxy.$axios.get('/msuser/info_abstract/',
         {
@@ -99,7 +98,6 @@ const pop_show = async () => {
     ).then(function (response) {
 
         const response_data = response.data;
-        id.value = data.user_id + "";
         realname.value = response_data.realname;
         if (response_data.avatar) {
             image_url.value = "data:image/;base64," + response_data.avatar;
@@ -135,7 +133,6 @@ const pop_hide = () => {
     document.removeEventListener('mousedown', handleOutsideClick);
     image_url.value = image_url_default;
     realname.value = "";
-    id.value = "";
     i_t.value = 999999;
     b_t.value = 999999;
     e_t.value = 999999;
@@ -155,7 +152,7 @@ const visit_me = (user_id: Number) => {
     // proxy.$store.commit('updatePlayer', { "id": id.value, "realname":realname.value });
     // localStorage.setItem("player", JSON.stringify({ "id": id.value, "realname":realname.value }));
     // localStorage.setItem("player", JSON.stringify({ "id": id.value }));
-    store.player.id = +id.value;
+    store.player.id = +data.user_id;
     router.push(`player\/${store.player.id}`)
 }
 
