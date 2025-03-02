@@ -3,7 +3,7 @@
     <el-row v-if="groupedVideoAbstract.size > 0" style="white-space: nowrap;">
         <YLabel :minBv="minBv" :maxBv="maxBv" />
         <span
-            :style="{ position: 'relative', height: (maxBv - minBv + 1) / 10 * BBBvSummaryConfig.cellHeight + 'px', width: '89%', minWidth: '40em' }">
+            :style="{ position: 'relative', width: '89%', minWidth: '40em', lineHeight: BBBvSummaryConfig.cellHeight + 'px' }">
             <template v-for="bv in range(minBv, maxBv)">
                 <Cell :bv="bv" :level="level" :videos="groupedVideoAbstract.get(bv)" :x-offset="getLastDigit(bv)"
                     :y-offset="Math.floor((bv - minBv) / 10)" :color-theme="theme" :display-by="BBBvSummaryConfig.displayBy" style="width: 10%" />

@@ -1,6 +1,6 @@
 <template>
     <div style="width: 10%; min-width: 75px; text-align: center">
-        <div v-for="i of range(minBv, maxBv, 10)" :style="{width: '100%', height:BBBvSummaryConfig.cellHeight+'px'}">{{ i }}-{{ i+9 }}</div>
+        <div v-for="i of range(minBv, maxBv, 10)" :style="{width: '100%', lineHeight:BBBvSummaryConfig.cellHeight+'px'}">{{ i }}-{{ i+9 }}</div>
     </div>
 </template>
 
