@@ -343,8 +343,6 @@ def video_saolei_import_by_userid_helper(userProfile: UserProfile, accountSaolei
         videoModel.save()
         model = VideoModel.objects.create(
             player=userProfile,
-            upload_time=datetime.datetime.strptime(
-                info.dateTime, '%Y-%m-%d %H:%M:%S').astimezone(datetime.timezone.utc),
             video=videoModel,
             state=MS_TextChoices.State.EXTERNAL,
             software='u',
@@ -355,6 +353,7 @@ def video_saolei_import_by_userid_helper(userProfile: UserProfile, accountSaolei
             url_web=info.showUrl,
             url_file=info.url,
         )
+        model.upload_time = datetime.datetime.strptime(info.dateTime, '%Y-%m-%d %H:%M:%S').astimezone(datetime.timezone.utc)
         model.save()
         return True
     urls = VideoModel.objects.filter(
