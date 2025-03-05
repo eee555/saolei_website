@@ -83,5 +83,6 @@ class VideoManagerTestCase(TestCase):
             userProfile=self.user, accountSaolei=accountSaolei, beginTime=datetime.datetime.min, endTime=datetime.datetime.max)
         video_saolei_import_by_userid_helper(
             userProfile=self.user, accountSaolei=accountSaolei, beginTime=datetime.datetime.min, endTime=datetime.datetime.max)
-        videos = VideoModel.objects.filter(player=self.user).values_list()
-        self.assertEqual(len(videos), len(set(videos)))
+        videos = list(VideoModel.objects.filter(player=self.user))
+        self.assertEqual(len(videos), 13)
+        self.assertEqual(videos[0].upload_time, datetime.datetime(2023, 8, 18, 16, 47, tzinfo=datetime.timezone.utc))

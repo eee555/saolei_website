@@ -61,14 +61,12 @@ def video_saolei_import_by_userid_post(request) -> JsonResponse:
     if user is None:
         return JsonResponse({'type': 'error', 'object': 'accountlink', 'category': 'notFound'})
     data = request.POST
-    if ('begin_time', 'end_time') not in data:
+    begin_time = data.get('begin_time')
+    end_time = data.get('end_time')
+    if begin_time is None or end_time is None:
         return JsonResponse({'type': 'error', 'object': 'videomodel', 'category': 'notFound'})
-    begin_time = datetime.datetime.strptime(
-        data['begin_time'], '%Y-%m-%d %H:%M:%S')
-    end_time = datetime.datetime.strptime(
-        data['end_time'], '%Y-%m-%d %H:%M:%S')
     video_saolei_import_by_userid_helper(
-        userProfile=user.parent, user=user, beginTime=begin_time, endTime=end_time)
+        userProfile=user.parent, accountSaolei=user, beginTime=datetime.datetime.fromisoformat(begin_time[:-1]), endTime=datetime.datetime.fromisoformat(end_time[:-1]))
     return JsonResponse({'type': 'success', 'object': 'videomodel', 'category': 'import'})
 
 

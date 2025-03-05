@@ -5,7 +5,7 @@ from userprofile.models import UserProfile
 from msuser.models import UserMS
 import json
 from utils import ComplexEncoder
-from config.global_settings import RankingGameStats, GameLevels, GameModes, DefaultRankingScores
+from config.global_settings import RankingGameStats, GameLevels, GameModes, DefaultRankingScores, MINESWEEPER_LEVELS
 from utils.cmp import isbetter
 from config.text_choices import MS_TextChoices
 import ms_toollib as ms
@@ -343,8 +343,6 @@ def video_saolei_import_by_userid_helper(userProfile: UserProfile, accountSaolei
         videoModel.save()
         model = VideoModel.objects.create(
             player=userProfile,
-            upload_time=datetime.datetime.strptime(
-                info.dateTime, '%Y-%m-%d %H:%M:%S').astimezone(datetime.timezone.utc),
             video=videoModel,
             state=MS_TextChoices.State.EXTERNAL,
             software='u',
@@ -355,6 +353,8 @@ def video_saolei_import_by_userid_helper(userProfile: UserProfile, accountSaolei
             url_web=info.showUrl,
             url_file=info.url,
         )
+        model.upload_time = datetime.datetime.strptime(
+                info.dateTime, '%Y-%m-%d %H:%M:%S').astimezone(datetime.timezone.utc)
         model.save()
         return True
     urls = VideoModel.objects.filter(
