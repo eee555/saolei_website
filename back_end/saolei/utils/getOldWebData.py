@@ -13,7 +13,7 @@ from lxml import etree
 import html
 from typing import overload, Callable
 import re
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 
 class Level(Enum):
@@ -225,7 +225,7 @@ class VideoData(BasePostData):
                             dataTime = videoInfo.xpath(
                                 './td[1]/text()')[0].strip()
                             thisTime = datetime.strptime(
-                                dataTime, '%Y年%m月%d日 %H:%M')
+                                dataTime, '%Y年%m月%d日 %H:%M').replace(tzinfo=timezone(timedelta(hours=8)))
                             if thisTime < lastTime or thisTime > endTime:
                                 continue
                             if videoInfo.xpath('./td[6]/span/text()')[0] == "未审核!":
