@@ -10,7 +10,7 @@ from utils.cmp import isbetter
 from config.text_choices import MS_TextChoices
 import ms_toollib as ms
 from accountlink.models import AccountSaolei
-import datetime
+from datetime import datetime, timezone
 from utils.getOldWebData import VideoData, Level
 
 logger = logging.getLogger('videomanager')
@@ -332,7 +332,7 @@ def refresh_video(video: VideoModel):
     e_video.save()
 
 
-def video_saolei_import_by_userid_helper(userProfile: UserProfile, accountSaolei: AccountSaolei, beginTime: datetime, endTime: datetime) -> VideoData.Info:
+def video_saolei_import_by_userid_helper(userProfile: UserProfile, accountSaolei: AccountSaolei, beginTime: datetime = datetime.min.replace(tzinfo=timezone.utc), endTime: datetime = datetime.max.replace(tzinfo=timezone.utc)) -> VideoData.Info:
 
     def scheduleFunc(info: VideoData.Info) -> bool:
         videoModel = ExpandVideoModel.objects.create(
@@ -353,7 +353,7 @@ def video_saolei_import_by_userid_helper(userProfile: UserProfile, accountSaolei
             url_web=info.showUrl,
             url_file=info.url,
         )
-        model.upload_time = datetime.datetime.strptime(info.dateTime, '%Y-%m-%d %H:%M:%S').astimezone(datetime.timezone.utc)
+        model.upload_time = info.dateTime
         model.save()
         return True
     urls = VideoModel.objects.filter(

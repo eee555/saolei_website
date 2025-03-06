@@ -155,7 +155,7 @@ class VideoData(BasePostData):
         """
 
         def __init__(self) -> None:
-            self.dateTime: str
+            self.dateTime: datetime
             self.bv: float
             self.bvs: float
             self.grade: float
@@ -235,8 +235,7 @@ class VideoData(BasePostData):
                                 mode=Mode.Video, videoID=videoID)
                             if info.showUrl in self.url_set:
                                 continue
-                            info.dateTime = thisTime.strftime(
-                                '%Y-%m-%d %H:%M:%S')
+                            info.dateTime = thisTime
                             info.bv = float(videoInfo.xpath(
                                 f'./td[3]/span[@id="BV_{i}"]/text()')[0])
                             info.bvs = float(videoInfo.xpath(
