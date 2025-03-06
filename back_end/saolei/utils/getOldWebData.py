@@ -185,81 +185,85 @@ class VideoData(BasePostData):
 
     def getData(self, *args, **kwargs) -> any:
         formatUrl = FormatUrl(self.userID)
-        if isinstance(args[0], Level) and isinstance(args[1], datetime) and isinstance(args[2], datetime):
-            lastTime = args[1]
-            endTime = args[2]
-            flag = True
-            page = 1
-            url = formatUrl.get(mode=Mode.Video, level=args[0])
-            infos = []
-            while flag:
-                pageUrl = f'{url}&Page={page}&Save=1'
-                try:
-                    response = requests.get(url=pageUrl, timeout=5)
-                    response.encoding = 'GB2312'
-                    if response.status_code == 200:
-                        match = re.search(r'<html>.*?<\/html>',
-                                          response.text, re.DOTALL)
-                        text = ''
-                        if match:
-                            text = match.group(0)
-                        # html反转义
-                        text = html.unescape(text).replace('\xa0', ' ')
-                        tree = etree.HTML(text)
-                        button = tree.xpath(
-                            '/html/body/table/tr[3]/td/span/@onclick')
-                        if button:
-                            page += 1
-                        else:
-                            flag = False
-                        videoInfos = tree.xpath(
-                            '/html/body/table/tr/td/table/tr')
+        if not isinstance(args[0], Level) or not isinstance(args[1], datetime) or not isinstance(args[2], datetime):
+            return []
+        lastTime = args[1]
+        endTime = args[2]
+        flag = True
+        page = 1
+        url = formatUrl.get(mode=Mode.Video, level=args[0])
+        infos = []
 
-                        for i, videoInfo in enumerate(videoInfos, start=1):
-                            videoUrl = videoInfo.xpath('./td[5]/a/@onclick')
-                            if len(videoUrl) == 0:
-                                continue
-                            videoUrl = videoUrl[0]
-                            match = re.search(r"Id=(\d+)", videoUrl)
-                            videoID = match.group(1)
-                            dataTime = videoInfo.xpath(
-                                './td[1]/text()')[0].strip()
-                            thisTime = datetime.strptime(
-                                dataTime, '%Y年%m月%d日 %H:%M').replace(tzinfo=timezone(timedelta(hours=8)))
-                            if thisTime < lastTime or thisTime > endTime:
-                                continue
-                            if videoInfo.xpath('./td[6]/span/text()')[0] == "未审核!":
-                                continue
-                            info = self.Info()
-                            info.showUrl = formatUrl.getShowUrl(
-                                mode=Mode.Video, videoID=videoID)
-                            if info.showUrl in self.url_set:
-                                continue
-                            info.dateTime = thisTime
-                            info.bv = float(videoInfo.xpath(
-                                f'./td[3]/span[@id="BV_{i}"]/text()')[0])
-                            info.bvs = float(videoInfo.xpath(
-                                f'./td[4]/span[@id="BVS_{i}"]/text()')[0])
-                            info.grade = float(videoInfo.xpath(
-                                f'./td[5]/a[@id="Video_{i}"]/text()')[0])
-                            info.mode = int('NF' in videoInfo.xpath(
-                                './td[5]/span/text()'))
-                            info.videoID = int(videoID)
-                            info.level = args[0].name
-                            info.url = formatUrl.get(
-                                mode=Mode.Video, videoID=videoID)
-                            infos.append(info)
-                            if self.scheduleFunc:
-                                if not self.scheduleFunc(info):
-                                    return infos
-                    else:
-                        return infos
-                except Exception as e:
-                    if self.errorFunc:
-                        self.errorFunc(e)
+        def hasNextPage(tree) -> bool:
+            return bool(tree.xpath('/html/body/table/tr[3]/td/span/@onclick'))
+
+        def getInfo(videoInfo):
+            videoUrl = videoInfo.xpath('./td[5]/a/@onclick')
+            if len(videoUrl) == 0:
+                return None
+            videoUrl = videoUrl[0]
+            match = re.search(r"Id=(\d+)", videoUrl)
+            videoID = match.group(1)
+            dataTime = videoInfo.xpath(
+                './td[1]/text()')[0].strip()
+            thisTime = datetime.strptime(
+                dataTime, '%Y年%m月%d日 %H:%M').replace(tzinfo=timezone(timedelta(hours=8)))
+            if thisTime < lastTime or thisTime > endTime:
+                return
+            if videoInfo.xpath('./td[6]/span/text()')[0] == "未审核!":
+                return
+            info = self.Info()
+            info.showUrl = formatUrl.getShowUrl(
+                mode=Mode.Video, videoID=videoID)
+            if info.showUrl in self.url_set:
+                return
+            info.dateTime = thisTime
+            info.bv = float(videoInfo.xpath(f'./td[3]/span[@id="BV_{i}"]/text()')[0])
+            info.bvs = float(videoInfo.xpath(f'./td[4]/span[@id="BVS_{i}"]/text()')[0])
+            info.grade = float(videoInfo.xpath(f'./td[5]/a[@id="Video_{i}"]/text()')[0])
+            info.mode = int('NF' in videoInfo.xpath('./td[5]/span/text()'))
+            info.videoID = int(videoID)
+            info.level = args[0].name
+            info.url = formatUrl.get(
+                mode=Mode.Video, videoID=videoID)
+            return info
+
+        while flag:
+            pageUrl = f'{url}&Page={page}&Save=1'
+            try:
+                response = requests.get(url=pageUrl, timeout=5)
+                response.encoding = 'GB2312'
+                if response.status_code != 200:
                     return infos
+                match = re.search(r'<html>.*?<\/html>', response.text, re.DOTALL)
+                text = ''
+                if match:
+                    text = match.group(0)
+                # html反转义
+                text = html.unescape(text).replace('\xa0', ' ')
+                tree = etree.HTML(text)
+
+                if hasNextPage(tree):
+                    page += 1
+                else:
+                    flag = False
+
+                videoInfos = tree.xpath(
+                    '/html/body/table/tr/td/table/tr')
+
+                for i, videoInfo in enumerate(videoInfos, start=1):
+                    info = getInfo(videoInfo)
+                    if info is None:
+                        continue
+                    infos.append(info)
+                    if self.scheduleFunc:
+                        if not self.scheduleFunc(info):
+                            return infos
+            except Exception as e:
+                if self.errorFunc:
+                    self.errorFunc(e)
+                return infos
             return infos
-        return []
 
 
 if __name__ == '__main__':
