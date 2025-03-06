@@ -21,7 +21,7 @@ cache = get_redis_connection("saolei_website")
 # 定时任务文档
 # https://pypi.org/project/django-apscheduler/
 def n_days_ago(obj, n=7) -> bool:
-    d = datetime.strptime(obj['time'], "%Y-%m-%dT%H:%M:%SZ")
+    d = datetime.strptime(obj['time'], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=None)
     return (timezone.now().replace(tzinfo=None) - d).days > n
 
 
