@@ -21,8 +21,8 @@ cache = get_redis_connection("saolei_website")
 # 定时任务文档
 # https://pypi.org/project/django-apscheduler/
 def n_days_ago(obj, n=7) -> bool:
-    d = datetime.strptime(obj['time'], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=None)
-    return (timezone.now().replace(tzinfo=None) - d).days > n
+    d = datetime.strptime(obj['time'], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+    return (timezone.now().replace(tzinfo=timezone.utc) - d).days > n
 
 
 # 定时清除最新录像，直至剩下最近7天的或剩下不到100条
