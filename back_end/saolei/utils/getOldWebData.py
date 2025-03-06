@@ -13,7 +13,7 @@ from lxml import etree
 import html
 from typing import overload, Callable
 import re
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 
 class Level(Enum):
@@ -155,7 +155,7 @@ class VideoData(BasePostData):
         """
 
         def __init__(self) -> None:
-            self.dateTime: str
+            self.dateTime: datetime
             self.bv: float
             self.bvs: float
             self.grade: float
@@ -225,7 +225,7 @@ class VideoData(BasePostData):
                             dataTime = videoInfo.xpath(
                                 './td[1]/text()')[0].strip()
                             thisTime = datetime.strptime(
-                                dataTime, '%Y年%m月%d日 %H:%M')
+                                dataTime, '%Y年%m月%d日 %H:%M').replace(tzinfo=timezone(timedelta(hours=8)))
                             if thisTime < lastTime or thisTime > endTime:
                                 continue
                             if videoInfo.xpath('./td[6]/span/text()')[0] == "未审核!":
@@ -235,8 +235,7 @@ class VideoData(BasePostData):
                                 mode=Mode.Video, videoID=videoID)
                             if info.showUrl in self.url_set:
                                 continue
-                            info.dateTime = thisTime.strftime(
-                                '%Y-%m-%d %H:%M:%S')
+                            info.dateTime = thisTime
                             info.bv = float(videoInfo.xpath(
                                 f'./td[3]/span[@id="BV_{i}"]/text()')[0])
                             info.bvs = float(videoInfo.xpath(
