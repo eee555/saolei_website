@@ -196,7 +196,7 @@ class VideoData(BasePostData):
 
         def hasNextPage(tree) -> bool:
             return bool(tree.xpath('/html/body/table/tr[3]/td/span/@onclick'))
-        
+
         def getInfo(videoInfo):
             videoUrl = videoInfo.xpath('./td[5]/a/@onclick')
             if len(videoUrl) == 0:
@@ -218,14 +218,10 @@ class VideoData(BasePostData):
             if info.showUrl in self.url_set:
                 return
             info.dateTime = thisTime
-            info.bv = float(videoInfo.xpath(
-                f'./td[3]/span[@id="BV_{i}"]/text()')[0])
-            info.bvs = float(videoInfo.xpath(
-                f'./td[4]/span[@id="BVS_{i}"]/text()')[0])
-            info.grade = float(videoInfo.xpath(
-                        f'./td[5]/a[@id="Video_{i}"]/text()')[0])
-            info.mode = int('NF' in videoInfo.xpath(
-                        './td[5]/span/text()'))
+            info.bv = float(videoInfo.xpath(f'./td[3]/span[@id="BV_{i}"]/text()')[0])
+            info.bvs = float(videoInfo.xpath(f'./td[4]/span[@id="BVS_{i}"]/text()')[0])
+            info.grade = float(videoInfo.xpath(f'./td[5]/a[@id="Video_{i}"]/text()')[0])
+            info.mode = int('NF' in videoInfo.xpath('./td[5]/span/text()'))
             info.videoID = int(videoID)
             info.level = args[0].name
             info.url = formatUrl.get(
