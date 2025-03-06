@@ -7,6 +7,7 @@ on:
   pull_request:
     paths: 
       - 'back_end/saolei/**'
+      - '.github/workflows/flake8.yml'
 
 jobs:
   check_flag:
