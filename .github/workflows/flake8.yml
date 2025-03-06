@@ -7,6 +7,7 @@ on:
   pull_request:
     paths: 
       - 'back_end/saolei/**'
+      - '.github/workflows/flake8.yml'
 
 jobs:
   check_flag:
@@ -29,6 +30,7 @@ jobs:
         pip install flake8
         pip install flake8-commas
         pip install flake8-comprehensions
+        pip install flake8-datetimez
 
     - name: Run Tests
       run: |
