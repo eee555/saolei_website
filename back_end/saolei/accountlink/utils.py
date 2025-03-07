@@ -10,13 +10,13 @@ headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 Edg/132.0.0.0'}
 
 
-def link_account(platform: Platform, id, user: UserProfile):
+def link_account(platform: Platform, linkid, user: UserProfile):
     if platform == Platform.SAOLEI:
-        link_saolei_account(id, user)
+        link_saolei_account(linkid, user)
     elif platform == Platform.MSGAMES:
-        link_msgames_account(id, user)
+        link_msgames_account(linkid, user)
     elif platform == Platform.WOM:
-        link_wom_account(id, user)
+        link_wom_account(linkid, user)
     else:
         ValueError()
 
@@ -32,28 +32,28 @@ def delete_account(user: UserProfile, platform: Platform):
         ValueError()
 
 
-def link_saolei_account(id, user: UserProfile):
-    account = AccountSaolei.objects.filter(id=id).first()
+def link_saolei_account(saoleiid, user: UserProfile):
+    account = AccountSaolei.objects.filter(id=saoleiid).first()
     if not account:
-        account = AccountSaolei.objects.create(id=id, parent=user)
+        account = AccountSaolei.objects.create(id=saoleiid, parent=user)
     else:
         account.parent = user
     return account
 
 
-def link_msgames_account(id, user: UserProfile):
-    account = AccountMinesweeperGames.objects.filter(id=id).first()
+def link_msgames_account(msgamesid, user: UserProfile):
+    account = AccountMinesweeperGames.objects.filter(id=msgamesidid).first()
     if not account:
-        account = AccountMinesweeperGames.objects.create(id=id, parent=user)
+        account = AccountMinesweeperGames.objects.create(id=msgamesidid, parent=user)
     else:
         account.parent = user
     return account
 
 
-def link_wom_account(id, user: UserProfile):
-    account = AccountWorldOfMinesweeper.objects.filter(id=id).first()
+def link_wom_account(womid, user: UserProfile):
+    account = AccountWorldOfMinesweeper.objects.filter(id=womidid).first()
     if not account:
-        account = AccountWorldOfMinesweeper.objects.create(id=id, parent=user)
+        account = AccountWorldOfMinesweeper.objects.create(id=womidid, parent=user)
     else:
         account.parent = user
     return account
@@ -81,14 +81,14 @@ def update_saolei_account(account: AccountSaolei, cooldown):
         return round(float(b) * 100)
     InfoHtmlStr = None
     VideoHtmlStr = None
-    id = account.id
+    saoleiid = account.id
     try:
-        url = f'http://saolei.wang/Player/Info.asp?Id={id}'
+        url = f'http://saolei.wang/Player/Info.asp?Id={saoleiid}'
         response = requests.get(url=url, timeout=5)
         response.encoding = 'GB2312'
         InfoHtmlStr = response.text
 
-        url = f'http://saolei.wang/Video/Satus.asp?Id={id}'
+        url = f'http://saolei.wang/Video/Satus.asp?Id={saoleiid}'
         response = requests.get(url=url, timeout=5)
         response.encoding = 'GB2312'
         VideoHtmlStr = response.text
@@ -148,10 +148,10 @@ def update_saolei_account(account: AccountSaolei, cooldown):
 def update_msgames_account(account: AccountMinesweeperGames, cooldown):
     if timezone.now() - account.update_time < timedelta(hours=cooldown):
         return "cooldown"
-    id = account.id
+    msgamesid = account.id
     htmlStr = None
     try:
-        url = f'https://minesweepergame.com/profile.php?pid={id}'
+        url = f'https://minesweepergame.com/profile.php?pid={msgamesid}'
         response = requests.get(url=url, timeout=5, headers=headers)
         htmlStr = response.text
     except requests.exceptions.Timeout:
@@ -175,8 +175,8 @@ def update_msgames_account(account: AccountMinesweeperGames, cooldown):
 def update_wom_account(account: AccountWorldOfMinesweeper, cooldown):
     if timezone.now() - account.update_time < timedelta(hours=cooldown):
         return "cooldown"
-    id = account.id
-    url = f'https://minesweeper.online/player/{id}'
+    womid = account.id
+    url = f'https://minesweeper.online/player/{womid}'
     htmlStr = None
     try:
         response = requests.get(url=url, timeout=5)
