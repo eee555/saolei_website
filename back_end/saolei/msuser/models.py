@@ -191,8 +191,8 @@ class UserMS(models.Model):
     def setrecord(self, level, stat, mode, score):
         setattr(self, f"{level}_{stat}_{mode}", score)
 
-    def setrecordID(self, level, stat, mode, id):
-        setattr(self, f"{level}_{stat}_id_{mode}", id)
+    def setrecordID(self, level, stat, mode, recordid):
+        setattr(self, f"{level}_{stat}_id_{mode}", recordid)
 
     def getrecords_level(self, stat, mode):
         return [self.getrecord(level, stat, mode) for level in GameLevels]

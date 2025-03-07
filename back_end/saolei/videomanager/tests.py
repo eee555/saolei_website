@@ -14,10 +14,10 @@ class VideoManagerTestCase(TestCase):
         self.user = UserProfile.objects.create(
             username='setUp', email='setUp@test.com')
 
-    def multiple_values_test(self, object, expected_values):
+    def multiple_values_test(self, obj, expected_values):
         for field, expected_value in expected_values.items():
             with self.subTest(field=field):
-                self.assertEqual(getattr(object, field), expected_value)
+                self.assertEqual(getattr(obj, field), expected_value)
 
     def test_zero_time(self):
         expandvideo = ExpandVideoModel.objects.create(
