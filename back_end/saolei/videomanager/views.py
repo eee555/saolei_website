@@ -135,12 +135,12 @@ def video_query(request):
         orderby = (ob,)
 
     if data["mode"] != "00":
-        filter = {"level": data["level"], "mode": data["mode"]}
-        videos = VideoModel.objects.filter(**filter)
+        video_filter = {"level": data["level"], "mode": data["mode"]}
+        videos = VideoModel.objects.filter(**video_filter)
     else:
-        filter = {"level": data["level"]}
+        video_filter = {"level": data["level"]}
         videos = VideoModel.objects.filter(
-            Q(mode="00") | Q(mode="12")).filter(**filter)
+            Q(mode="00") | Q(mode="12")).filter(**video_filter)
 
     videos = videos.filter(bv__range=(data["bmin"], data["bmax"]))
 
@@ -166,9 +166,9 @@ def video_query(request):
 # 按id查询这个用户的所有录像
 @require_GET
 def video_query_by_id(request):
-    if not (id := request.GET.get("id")):
+    if not (userid := request.GET.get("id")):
         return HttpResponseBadRequest()
-    if not (user := UserProfile.objects.filter(id=id).first()):
+    if not (user := UserProfile.objects.filter(id=userid).first()):
         return HttpResponseNotFound()
     videos = VideoModel.objects.filter(player=user).values('id', 'upload_time', "level", "mode", "timems", "bv", "bvs", "state", "video__identifier",
                                                            "software", "flag", "cell0", "cell1", "cell2", "cell3", "cell4", "cell5", "cell6", "cell7", "cell8", "left", "right", "double", "op", "isl", "path")
@@ -277,10 +277,10 @@ def approve(request):
 @require_GET
 @staff_required
 def freeze(request):
-    if ids := request.GET.get("ids"):
+    if video_ids := request.GET.get("ids"):
         res = []
-        for id in ids:
-            if not (v := VideoModel.objects.filter(id=id).first()):
+        for video_id in video_ids:
+            if not (v := VideoModel.objects.filter(id=video_id).first()):
                 res.append("Null")
             else:
                 update_state(v, MS_TextChoices.State.FROZEN)
