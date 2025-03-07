@@ -1,6 +1,6 @@
 <template>
     <el-upload v-model:file-list="fileList" :disabled="store.user.realname == '匿名'" ref="upload" drag action="#"
-        :multiple="true" :on-change="handleChange" :auto-upload="false" :show-file-list="false" accept=".avf,.evf">
+        :multiple="true" :on-change="handleChange" :auto-upload="false" :show-file-list="false" accept=".avf,.evf,.rmv,.mvf">
 
         <el-icon class="el-icon--upload"><upload-filled /></el-icon>
         <div class="el-upload__text" style="font-size: 18px;"
