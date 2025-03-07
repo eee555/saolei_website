@@ -36,6 +36,10 @@ const preview = (id: Number | undefined) => {
             url += ".avf";
         } else if (response.data.msg == "e") {
             url += ".evf";
+        } else if (response.data.msg == "r") {
+            url += ".rmv";
+        } else if (response.data.msg == "m") {
+            url += ".mvf";
         }
 
         if ((window as any).flop) {
