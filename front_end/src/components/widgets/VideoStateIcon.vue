@@ -4,6 +4,11 @@
             <BaseIconIdentifier />
         </LazyTooltip>
     </el-text>
+    <el-text v-else-if="state == 'e'" type="warning">
+        <LazyTooltip :content="t('common.state.e')" :hide-after="0" :show-after="500">
+            <BaseIconExternal />
+        </LazyTooltip>
+    </el-text>
     <el-text v-else-if="state == 'c'" type="success">
         <base-icon-verified />
     </el-text>
@@ -19,6 +24,7 @@ import { ElText, ElIcon } from 'element-plus';
 import LazyTooltip from './LazyTooltip.vue';
 import BaseIconVerified from '@/components/common/BaseIconVerified.vue';
 import BaseIconIdentifier from '@/components/common/BaseIconIdentifier.vue';
+import BaseIconExternal from '@/components/common/BaseIconExternal.vue';
 
 const data = defineProps({
     state: {
