@@ -9,6 +9,16 @@
             <img style="width: 16px; height: 16px" src="../../assets/img/img_meta.png"/>
         </LazyTooltip>
     </el-text>
+    <el-text v-else-if="software == 'm'">
+        <LazyTooltip content="Clone 2007" :hide-after="0" :show-after="500">
+            <img style="width: 16px; height: 16px" src="../../assets/img/clone2007.ico"/>
+        </LazyTooltip>
+    </el-text>
+    <el-text v-else-if="software == 'r'">
+        <LazyTooltip content="Viennasweeper" :hide-after="0" :show-after="500">
+            <img style="width: 16px; height: 16px" src="../../assets/img/viennasweeper.ico"/>
+        </LazyTooltip>
+    </el-text>
     <el-text v-else type="danger">
         <QuestionFilled style="width: 16px; height: 16px"/>
     </el-text>

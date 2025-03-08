@@ -4,15 +4,27 @@
 */
 
 import { UploadRawFile } from "element-plus";
-import { AvfVideo, EvfVideo } from "ms-toollib";
+import { AvfVideo, EvfVideo, RmvVideo, MvfVideo } from "ms-toollib";
+type AnyVideo = AvfVideo | EvfVideo | RmvVideo | MvfVideo;
+
+function get_software(video: AnyVideo) {
+    if (video instanceof AvfVideo) return "a";
+    else if (video instanceof EvfVideo) return "e";
+    else if (video instanceof RmvVideo) return "r";
+    else return "m";
+}
 
 export function load_video_file(stream: Uint8Array, filename: string) {
     const ext = filename.slice(-3);
-    let video: AvfVideo | EvfVideo;
+    let video: AnyVideo;
     if (ext === 'avf') {
         video = AvfVideo.new(stream, filename);
     } else if (ext === 'evf') {
         video = EvfVideo.new(stream, filename);
+    } else if (ext === 'rmv') {
+        video = RmvVideo.new(stream, filename);
+    } else if (ext === 'mvf') {
+        video = MvfVideo.new(stream, filename);
     } else return null;
     video.parse_video();
     video.analyse();
@@ -65,7 +77,7 @@ export interface VideoStat {
     cell8: number,
 }
 
-export function extract_stat(video: AvfVideo | EvfVideo | null): VideoStat | null {
+export function extract_stat(video: AnyVideo | null): VideoStat | null {
     if (video === null) return null;
     const decoder = new TextDecoder();
     video.current_time = 1e8;
@@ -135,11 +147,9 @@ export interface UploadVideoForm {
     rqp: number,
 }
 
-export function upload_form(file: UploadRawFile, video: AvfVideo | EvfVideo | null): UploadVideoForm | null {
-    let software;
-    if (video instanceof AvfVideo) software = "a";
-    else if (video instanceof EvfVideo) software = "e";
-    else return null;
+export function upload_form(file: UploadRawFile, video: AnyVideo | null): UploadVideoForm | null {
+    if (video === null) return null;
+    let software = get_software(video);
     const decoder = new TextDecoder();
     video.current_time = 1e8;
     return {
@@ -177,7 +187,7 @@ export function upload_form(file: UploadRawFile, video: AvfVideo | EvfVideo | nu
     }
 }
 
-export function get_upload_status(file: UploadRawFile, video: AvfVideo | EvfVideo | null, identifiers: Array<string>) {
+export function get_upload_status(file: UploadRawFile, video: AnyVideo | null, identifiers: Array<string>) {
     const decoder = new TextDecoder();
     if (video === null) return "unsupported";
     if (video.level == 6) return "custom";

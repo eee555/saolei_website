@@ -35,7 +35,7 @@
         </el-container>
     </el-container>
 
-    <el-dialog draggable :lock-scroll="false" v-model="notice_visible" title="站长通知"
+    <el-dialog v-if="false" draggable :lock-scroll="false" v-model="notice_visible" title="站长通知"
         :before-close="handle_notice_close" style="white-space: pre-wrap;" width="min(max(50%, 400px), 90vw)">
         <span>{{ notice }}</span>
         <template #footer>

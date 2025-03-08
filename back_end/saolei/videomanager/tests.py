@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timezone
 from django.test import TestCase
 from django.core.files.base import ContentFile
 from userprofile.models import UserProfile
@@ -14,10 +14,10 @@ class VideoManagerTestCase(TestCase):
         self.user = UserProfile.objects.create(
             username='setUp', email='setUp@test.com')
 
-    def multiple_values_test(self, object, expected_values):
+    def multiple_values_test(self, obj, expected_values):
         for field, expected_value in expected_values.items():
             with self.subTest(field=field):
-                self.assertEqual(getattr(object, field), expected_value)
+                self.assertEqual(getattr(obj, field), expected_value)
 
     def test_zero_time(self):
         expandvideo = ExpandVideoModel.objects.create(
@@ -80,8 +80,9 @@ class VideoManagerTestCase(TestCase):
         accountSaolei = AccountSaolei.objects.create(
             id=23756, parent=self.user)
         video_saolei_import_by_userid_helper(
-            userProfile=self.user, accountSaolei=accountSaolei, beginTime=datetime.datetime.min, endTime=datetime.datetime.max)
+            userProfile=self.user, accountSaolei=accountSaolei)
         video_saolei_import_by_userid_helper(
-            userProfile=self.user, accountSaolei=accountSaolei, beginTime=datetime.datetime.min, endTime=datetime.datetime.max)
-        videos = VideoModel.objects.filter(player=self.user).values_list()
-        self.assertEqual(len(videos), len(set(videos)))
+            userProfile=self.user, accountSaolei=accountSaolei)
+        videos = list(VideoModel.objects.filter(player=self.user))
+        self.assertEqual(len(videos), 13)
+        self.assertEqual(videos[0].upload_time, datetime(2023, 8, 18, 16, 47, tzinfo=timezone.utc))

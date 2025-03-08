@@ -27,9 +27,7 @@
                     <el-text type="success"><base-icon-verified /></el-text>
                 </el-tooltip>
                 <el-tooltip v-else :content="t('accountlink.unverified')">
-                    <el-text><el-icon>
-                            <Clock />
-                        </el-icon></el-text>
+                    <el-text><base-icon-pending /></el-text>
                 </el-tooltip>
             </template>
         </el-table-column>
@@ -86,6 +84,7 @@ import BaseIconDelete from './common/BaseIconDelete.vue';
 import BaseIconAdd from './common/BaseIconAdd.vue';
 import BaseIconRefresh from './common/BaseIconRefresh.vue';
 import BaseIconVerified from './common/BaseIconVerified.vue';
+import BaseIconPending from './common/BaseIconPending.vue';
 import { useI18n } from 'vue-i18n';
 import { httpErrorNotification } from './Notifications';
 const { t } = useI18n();
