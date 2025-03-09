@@ -176,7 +176,6 @@ if __name__ == '__main__':
     wom.start()
     wom.insertVideoId('1')
     wom.insertVideoId('1')
-    import time
     time.sleep(20)
     wom.insertVideoId('1')
 
