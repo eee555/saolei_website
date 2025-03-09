@@ -6,11 +6,13 @@ from accountlink.models import AccountSaolei
 from .models import VideoModel, ExpandVideoModel
 import requests
 from .view_utils import refresh_video, video_saolei_import_by_userid_helper, new_video_by_file
+from config.flags import BAIDU_VERIFY_SKIP
 # Create your tests here.
 
 
 class VideoManagerTestCase(TestCase):
     def setUp(self):
+        BAIDU_VERIFY_SKIP = True
         self.user = UserProfile.objects.create(
             username='setUp', email='setUp@test.com')
 
