@@ -374,3 +374,5 @@ SETTINGS_PATH = os.path.normpath(os.path.dirname(__file__))
 TEMPLATE_DIRS = (
     os.path.join(SETTINGS_PATH, 'templates'),
 )
+
+BAIDU_VERIFY_SKIP = False # 是否跳过审查步骤。用于调试。 Skip censorship.

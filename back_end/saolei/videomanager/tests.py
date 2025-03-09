@@ -1,18 +1,16 @@
 from datetime import datetime, timezone
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.core.files.base import ContentFile
 from userprofile.models import UserProfile
 from accountlink.models import AccountSaolei
 from .models import VideoModel, ExpandVideoModel
 import requests
 from .view_utils import refresh_video, video_saolei_import_by_userid_helper, new_video_by_file
-from config.flags import BAIDU_VERIFY_SKIP
 # Create your tests here.
 
 
 class VideoManagerTestCase(TestCase):
     def setUp(self):
-        BAIDU_VERIFY_SKIP = True
         self.user = UserProfile.objects.create(
             username='setUp', email='setUp@test.com')
 
@@ -70,6 +68,8 @@ class VideoManagerTestCase(TestCase):
 
         self.multiple_values_test(video, expected_values)
 
+    
+    @override_settings(BAIDU_VERIFY_SKIP=True)
     def test_new_video_by_file(self):
         video = new_video_by_file(self.user, ContentFile(
             self.testfile_exp.content, name='Exp_FL_35.09_3BV=132_3BVs=3.76_Pu Tian Yi(Hu Bei).avf'))
