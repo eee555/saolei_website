@@ -9,7 +9,8 @@ from decimal import Decimal
 from django.http import JsonResponse
 from django.shortcuts import redirect
 import requests
-from config.flags import BAIDU_VERIFY_SKIP, EMAIL_SKIP
+from config.flags import EMAIL_SKIP
+from django.conf import settings
 
 
 def generate_code(code_len):
@@ -136,7 +137,7 @@ def get_ACCESS_TOKEN() -> str:
 
 # 百度大脑鉴别文本合规性
 def verify_text(text: str, user_id: int = 0, user_ip: str = '192.168.0.1') -> bool:
-    if BAIDU_VERIFY_SKIP:
+    if settings.BAIDU_VERIFY_SKIP:
         return True
     if len(text) < 2:
         return True

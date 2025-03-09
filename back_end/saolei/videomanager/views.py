@@ -4,8 +4,8 @@ import logging
 from .forms import UploadVideoForm
 from .models import VideoModel, ExpandVideoModel
 from .view_utils import update_personal_record, update_personal_record_stock, \
-    video_all_fields, update_video_num, update_state, new_video, refresh_video, \
-    video_saolei_import_by_userid_helper
+    video_all_fields, update_video_num, update_state, refresh_video, \
+    video_saolei_import_by_userid_helper, new_video_by_file
 from userprofile.models import UserProfile
 from django.http import HttpResponse, JsonResponse, FileResponse, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseNotFound
 import json
@@ -17,10 +17,10 @@ from django.db.models import Q
 from django_redis import get_redis_connection
 from django_ratelimit.decorators import ratelimit
 from django.conf import settings
-from identifier.utils import verify_identifier
 from django.views.decorators.http import require_GET, require_POST
 from userprofile.decorators import banned_blocked, staff_required, login_required_error
 from accountlink.models import AccountSaolei
+from utils.exceptions import ExceptionToResponse
 logger = logging.getLogger('videomanager')
 cache = get_redis_connection("saolei_website")
 
@@ -32,23 +32,13 @@ cache = get_redis_connection("saolei_website")
 def video_upload(request):
     if request.user.userms.video_num_total >= request.user.userms.video_num_limit:
         return HttpResponse(status=402)  # 录像仓库已满
-
     video_form = UploadVideoForm(data=request.POST, files=request.FILES)
     if not video_form.is_valid():
         return HttpResponseBadRequest(video_form.errors)
-    data = video_form.cleaned_data
-    identifier = data["identifier"]
-    if not verify_identifier(identifier):  # 标识不过审
-        return JsonResponse({'type': 'error', 'object': 'identifier', 'category': 'censorship'})
-    if data['review_code'] == 0 and identifier not in request.user.userms.identifiers:
-        data['review_code'] = 2  # 标识不匹配
-
-    # 查重
-    collisions = list(VideoModel.objects.filter(timems=data["timems"], bv=data["bv"]).filter(path=data["path"]).filter(
-        left=data["left"], right=data["right"], double=data["double"], op=data["op"], isl=data["isl"], video__identifier=data["identifier"]))
-    if collisions:
-        return JsonResponse({'type': 'error', 'object': 'videomodel', 'category': 'conflict'})
-    new_video(data, request.user)  # 表中添加数据
+    try:
+        new_video_by_file(request.user, video_form.cleaned_data["file"])
+    except ExceptionToResponse as e:
+        return e.response()
     return JsonResponse({'type': 'success', 'object': 'videomodel', 'category': 'upload'})
 
 
