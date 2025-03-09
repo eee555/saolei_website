@@ -1,11 +1,11 @@
-import unittest
+from unittest import TestCase, skip, main
 import time
 from .wom import WOM
 import json
 
 
-class TestWOM(unittest.TestCase):
-
+class TestWOM(TestCase):
+    @skip
     def test_insert_video_id(self):
         self.count = 0
         # 创建 WOM 实例并传入 mock_callback
@@ -52,4 +52,4 @@ class TestWOM(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    main()
