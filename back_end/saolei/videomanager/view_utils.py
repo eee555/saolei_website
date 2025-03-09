@@ -215,6 +215,7 @@ def update_state(video: VideoModel, state: MS_TextChoices.State, update_ranking=
     elif update_ranking and prevstate == MS_TextChoices.State.OFFICIAL:
         update_personal_record_stock(video)
 
+
 def new_video_by_file(user: UserProfile, file: File):
     data = file.read()
     if file.name.endswith('.avf'):
@@ -229,7 +230,7 @@ def new_video_by_file(user: UserProfile, file: File):
     elif file.name.endswith('.mvf'):
         v = ms.MvfVideo(raw_data=data)
         software = 'm'
-    else: 
+    else:
         raise ValueError('不支持的文件类型')
 
     v.parse_video()
@@ -244,7 +245,7 @@ def new_video_by_file(user: UserProfile, file: File):
         level = 'e'
     else:
         raise ValueError('不支持的难度')
-    
+
     review_code = v.is_valid()
     if review_code == 0:
         state = MS_TextChoices.State.OFFICIAL
@@ -268,7 +269,7 @@ def new_video_by_file(user: UserProfile, file: File):
         left=v.left, right=v.right, double=v.double, op=v.op, isl=v.isl))
     if collisions:
         raise ValueError('重复的录像')
-    
+
     mode = str(v.mode).rjust(2, '0')
     if mode == '00' and v.flag == 0:
         mode = '12'

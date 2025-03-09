@@ -1,5 +1,6 @@
 from django.http import JsonResponse
 
+
 class ExceptionToResponse(Exception):
     def __init__(self, obj: str, category: str):
         self.obj = obj

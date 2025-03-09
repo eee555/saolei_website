@@ -16,10 +16,12 @@ class VideoManagerTestCase(TestCase):
 
         try:
             self.testfile_exp = requests.get(
-            'https://github.com/putianyi889/replays/raw/refs/heads/master/EXP/sub40/Exp_FL_35.09_3BV=132_3BVs=3.76_Pu%20Tian%20Yi(Hu%20Bei).avf')
+                'https://github.com/putianyi889/replays/raw/refs/heads/master/EXP/sub40/Exp_FL_35.09_3BV=132_3BVs=3.76_Pu%20Tian%20Yi(Hu%20Bei).avf'
+            )
         except:
             self.testfile_exp = requests.get(
-            'http://saolei.wang/Video/Mvf/9952/Pu%20Tian%20Yi_Exp_36.09(3bv132).avf')
+                'http://saolei.wang/Video/Mvf/9952/Pu%20Tian%20Yi_Exp_36.09(3bv132).avf'
+            )
         self.testfile_exp_values = {
             'software': 'a', 'level': 'e', 'mode': '00',
             'timems': 35090, 'bv': 132,

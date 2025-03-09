@@ -1,6 +1,4 @@
 from django import forms
-from .models import VideoModel
-from config.global_settings import MaxSizes
 
 
 class UploadVideoForm(forms.Form):

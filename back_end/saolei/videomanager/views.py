@@ -17,7 +17,6 @@ from django.db.models import Q
 from django_redis import get_redis_connection
 from django_ratelimit.decorators import ratelimit
 from django.conf import settings
-from identifier.utils import verify_identifier
 from django.views.decorators.http import require_GET, require_POST
 from userprofile.decorators import banned_blocked, staff_required, login_required_error
 from accountlink.models import AccountSaolei
