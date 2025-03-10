@@ -11,8 +11,8 @@ from msuser.models import UserMS
 from django_ratelimit.decorators import ratelimit
 from django.views.decorators.http import require_GET, require_POST
 from .decorators import staff_required
-from config.flags import EMAIL_SKIP
 from .utils import judge_captcha, judge_email_verification, user_metadata
+from django.conf import settings
 
 logger = logging.getLogger('userprofile')
 
@@ -207,7 +207,7 @@ def get_email_captcha(request):
     key = data.get("hashkey")
     if not judge_captcha(capt, key):  # 图形验证码不对
         return JsonResponse({'type': 'error', 'object': 'captcha'})
-    if EMAIL_SKIP:
+    if settings.EMAIL_SKIP:
         code, hashkey = send_email(data.get("email"), data.get("type"))
         return JsonResponse({'type': 'success', 'code': code, 'hashkey': hashkey})
     if hashkey := send_email(data.get("email"), data.get("type")):  # 邮件发送成功

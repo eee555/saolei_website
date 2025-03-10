@@ -1,4 +1,4 @@
-# <a href="https://github.com/eee555/saolei_website" >开源扫雷网（OPEN MINESWEEPER WEBSITE）</a>
+# <a href="https://github.com/eee555/saolei_website" >开源扫雷网（Open Minesweeper）</a>
 
 [![saolei_website](https://img.shields.io/badge/saolei_website-v1.7-brightgreen.svg)](https://github.com/eee555/Solvable-Minesweeper)
 [![stars](https://img.shields.io/github/stars/eee555/saolei_website)](https://github.com/eee555/saolei_website/stargazers)
@@ -42,7 +42,7 @@
 4. 如果使用npm，则npm run dev；如果知道什么是yarn且使用yarn，则yarn dev
 5. 如果使用npm且未部署后端，则`npm run frontend`，并且解除浏览器CORS，例如使用`CORS unblock`插件。
 
-特殊的调试参数：位于`backend\saolei\config\flags.py`
+特殊的调试参数：位于`back_end\saolei\saolei\settings.py`的末尾。
 
 ## 链接
 

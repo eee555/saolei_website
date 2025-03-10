@@ -1,4 +1,4 @@
-# <a href="https://github.com/eee555/saolei_website" >元扫雷网（Meta Saolei Website）</a>
+# <a href="https://github.com/eee555/saolei_website" >开源扫雷网（Open Minesweeper）</a>
 
 
 [![saolei_website](https://img.shields.io/badge/saolei_website-v1.7-brightgreen.svg)](https://github.com/eee555/Solvable-Minesweeper)
@@ -10,16 +10,6 @@ Front end：Vue3 + Ts + Element-ui + wasm-bindgen
 Back end：Django + Mysql + redis  
 Deployment：Nginx + uwsgi  
 Censorship：百度大脑  
-
-## Project status
-:white_check_mark: Develop core functionalities  
-:white_check_mark: Rent server  
-:white_check_mark: Deploy for the first time  
-:white_check_mark: Rent a domain name  
-:white_check_mark: Registration  
-:white_check_mark: Alpha testing  
-:black_square_button: Beta testing  
-:black_square_button: Release  
 
 
 ## Steps for deployment：
@@ -45,7 +35,7 @@ Front end:
 1. `npm run dev` to test front-end with local back-end.
 2. `npm run frontend` to test front-end with remote back-end. CORS from the browser has to be unblocked. It is recommended to use the "CORS unblock" Chrome extension.
 
-Special debugging parameters are located in `backend\saolei\config\flags.py`
+Special debugging parameters are located at the end of `back_end\saolei\saolei\settings.py`
 
 ## Sponsor
 TODO
