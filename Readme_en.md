@@ -45,7 +45,7 @@ Front end:
 1. `npm run dev` to test front-end with local back-end.
 2. `npm run frontend` to test front-end with remote back-end. CORS from the browser has to be unblocked. It is recommended to use the "CORS unblock" Chrome extension.
 
-Special debugging parameters are located in `backend\saolei\config\flags.py`
+Special debugging parameters are located at the end of `back_end\saolei\saolei\settings.py`
 
 ## Sponsor
 TODO
