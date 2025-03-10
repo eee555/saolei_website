@@ -65,7 +65,7 @@ class VideoModel(models.Model):
     state = models.CharField(
         max_length=1, choices=MS_TextChoices.State.choices, default=MS_TextChoices.State.PLAIN)
     # 软件: "a"->avf; "e"->evf; "u" ->url(未下载);
-    software = models.CharField(max_length=MaxSizes.SOFTWARE)
+    software = models.CharField(max_length=MaxSizes.SOFTWARE, choices=MS_TextChoices.Software.choices)
     # 难度
     level = models.CharField(
         max_length=MaxSizes.GAMELEVEL, choices=MS_TextChoices.Level.choices)

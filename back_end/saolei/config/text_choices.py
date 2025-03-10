@@ -27,3 +27,9 @@ class MS_TextChoices:
         OFFICIAL = "c", ('已通过审核')
         IDENTIFIER = "d", ('标识不匹配')
         EXTERNAL = "e", ("外部网站审核")
+
+    class Software(TextChoices):
+        AVF = "a", ('avf')
+        EVF = "e", ('evf')
+        MVF = "m", ('mvf')
+        RMV = "r", ('rmv')

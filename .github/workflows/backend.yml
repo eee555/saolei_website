@@ -24,6 +24,11 @@ jobs:
         options: --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=3
         ports:
           - 3306:3306
+      redis:  # 添加 Redis 服务
+        image: redis:latest
+        ports:
+          - 6379:6379
+        options: --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=3
     
     steps:
     - name: Checkout code
@@ -51,12 +56,4 @@ jobs:
       run: |
         python manage.py makemigrations
         python manage.py migrate
-    
-    - name: Flags
-      run: python -m unittest tests.py -v
-
-    - name: Video Manager
-      run: python manage.py test videomanager
-      
-    - name: Account Link
-      run: python manage.py test accountlink
+        python manage.py test

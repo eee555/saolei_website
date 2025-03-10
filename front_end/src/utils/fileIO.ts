@@ -114,76 +114,12 @@ export function extract_stat(video: AnyVideo | null): VideoStat | null {
 
 export interface UploadVideoForm {
     file: File,
-    review_code: number,
-    identifier: string,
-
-    software: string,
-    level: string,
-    mode: string,
-    timems: number,
-    bv: number,
-    left: number,
-    right: number,
-    double: number,
-    left_ce: number,
-    right_ce: number,
-    double_ce: number,
-    path: number,
-    flag: number,
-    op: number,
-    isl: number,
-    cell0: number,
-    cell1: number,
-    cell2: number,
-    cell3: number,
-    cell4: number,
-    cell5: number,
-    cell6: number,
-    cell7: number,
-    cell8: number,
-
-    // to be discarded
-    stnb: number,
-    rqp: number,
 }
 
 export function upload_form(file: UploadRawFile, video: AnyVideo | null): UploadVideoForm | null {
     if (video === null) return null;
-    let software = get_software(video);
-    const decoder = new TextDecoder();
-    video.current_time = 1e8;
     return {
         file: file,
-        review_code: video.is_valid(),
-        identifier: decoder.decode(video.player_identifier),
-
-        software: software,
-        level: ["b", "i", "e", "c"][video.level - 3],
-        mode: String(video.mode).padStart(2, '0'),
-        timems: video.rtime_ms,
-        bv: video.bbbv,
-        left: video.left,
-        right: video.right,
-        double: video.double,
-        left_ce: video.lce,
-        right_ce: video.rce,
-        double_ce: video.dce,
-        path: video.path,
-        flag: video.flag,
-        op: video.op,
-        isl: video.isl,
-        cell0: video.cell0,
-        cell1: video.cell1,
-        cell2: video.cell2,
-        cell3: video.cell3,
-        cell4: video.cell4,
-        cell5: video.cell5,
-        cell6: video.cell6,
-        cell7: video.cell7,
-        cell8: video.cell8,
-
-        stnb: video.stnb,
-        rqp: video.rqp,
     }
 }
 
