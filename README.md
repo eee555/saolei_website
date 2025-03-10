@@ -42,7 +42,7 @@
 4. 如果使用npm，则npm run dev；如果知道什么是yarn且使用yarn，则yarn dev
 5. 如果使用npm且未部署后端，则`npm run frontend`，并且解除浏览器CORS，例如使用`CORS unblock`插件。
 
-特殊的调试参数：位于`backend\saolei\config\flags.py`
+特殊的调试参数：位于`back_end\saolei\saolei\settings.py`的末尾。
 
 ## 链接
 
