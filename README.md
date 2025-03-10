@@ -1,4 +1,4 @@
-# <a href="https://github.com/eee555/saolei_website" >开源扫雷网（OPEN MINESWEEPER WEBSITE）</a>
+# <a href="https://github.com/eee555/saolei_website" >开源扫雷网（Open Minesweeper）</a>
 
 [![saolei_website](https://img.shields.io/badge/saolei_website-v1.7-brightgreen.svg)](https://github.com/eee555/Solvable-Minesweeper)
 [![stars](https://img.shields.io/github/stars/eee555/saolei_website)](https://github.com/eee555/saolei_website/stargazers)
