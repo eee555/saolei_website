@@ -11,16 +11,6 @@ Back end：Django + Mysql + redis
 Deployment：Nginx + uwsgi  
 Censorship：百度大脑  
 
-## Project status
-:white_check_mark: Develop core functionalities  
-:white_check_mark: Rent server  
-:white_check_mark: Deploy for the first time  
-:white_check_mark: Rent a domain name  
-:white_check_mark: Registration  
-:white_check_mark: Alpha testing  
-:black_square_button: Beta testing  
-:black_square_button: Release  
-
 
 ## Steps for deployment：
 
