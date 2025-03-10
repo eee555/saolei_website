@@ -187,15 +187,15 @@ def update_video_num(video: VideoModel, add=True):
         # 给高玩自动扩容
         if video.mode == "00" and video.level == 'e':
             if video.timems < 100000 and userms.video_num_limit < 200:
-                userms.video_num_limit = 200
-            if video.timems < 60000 and userms.video_num_limit < 500:
-                userms.video_num_limit = 500
-            if video.timems < 50000 and userms.video_num_limit < 600:
-                userms.video_num_limit = 600
-            if video.timems < 40000 and userms.video_num_limit < 800:
-                userms.video_num_limit = 800
-            if video.timems < 30000 and userms.video_num_limit < 1000:
                 userms.video_num_limit = 1000
+            if video.timems < 60000 and userms.video_num_limit < 500:
+                userms.video_num_limit = 3000
+            if video.timems < 50000 and userms.video_num_limit < 600:
+                userms.video_num_limit = 5000
+            if video.timems < 40000 and userms.video_num_limit < 800:
+                userms.video_num_limit = 8000
+            if video.timems < 30000 and userms.video_num_limit < 1000:
+                userms.video_num_limit = 10000
 
     userms.save(update_fields=["video_num_limit", "video_num_total", "video_num_beg", "video_num_int",
                 "video_num_exp", "video_num_std", "video_num_nf", "video_num_ng", "video_num_dg"])
