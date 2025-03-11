@@ -51,6 +51,7 @@
     "@mdit/plugin-img-size": "^0.12.0",
     "@types/axios": "^0.14.0",
     "@types/markdown-it": "^14.1.1",
+    "@types/tinycolor2": "^1.4.6",
     "@types/uuid": "^9.0.2",
     "@vitejs/plugin-vue": "^5.0.4",
     "less": "^4.1.3",

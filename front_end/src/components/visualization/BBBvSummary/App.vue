@@ -6,7 +6,7 @@
             :style="{ position: 'relative', width: '89%', minWidth: '40em', lineHeight: BBBvSummaryConfig.cellHeight + 'px' }">
             <template v-for="bv in range(minBv, maxBv)">
                 <Cell :bv="bv" :level="level" :videos="groupedVideoAbstract.get(bv)" :x-offset="getLastDigit(bv)"
-                    :y-offset="Math.floor((bv - minBv) / 10)" :color-theme="theme" :display-by="BBBvSummaryConfig.displayBy" style="width: 10%" />
+                    :y-offset="Math.floor((bv - minBv) / 10)" :color-theme="theme" :display-by="BBBvSummaryConfig.displayBy" :sort-by="BBBvSummaryConfig.sortBy" :sort-desc="BBBvSummaryConfig.sortDesc" style="width: 10%" />
                 <br v-if="getLastDigit(bv) == 9" />
             </template>
         </span>
@@ -40,6 +40,8 @@ const theme = computed(() => {
         return new PiecewiseColorScheme(colorTheme.value.bvs.colors, colorTheme.value.bvs.thresholds);
     } else if (BBBvSummaryConfig.value.displayBy == 'stnb') {
         return new PiecewiseColorScheme(colorTheme.value.stnb.colors, colorTheme.value.stnb.thresholds);
+    } else if (BBBvSummaryConfig.value.displayBy == 'ioe') {
+        return new PiecewiseColorScheme(colorTheme.value.ioe.colors, colorTheme.value.ioe.thresholds);
     } else if (BBBvSummaryConfig.value.displayBy == 'time') {
         if (prop.level == 'b') return new PiecewiseColorScheme(colorTheme.value.btime.colors, colorTheme.value.btime.thresholds);
         else if (prop.level == 'i') return new PiecewiseColorScheme(colorTheme.value.itime.colors, colorTheme.value.itime.thresholds);

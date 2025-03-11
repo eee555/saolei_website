@@ -45,6 +45,7 @@ function refresh() {
     bestIndex.value = -1;
     prop.videos.forEach((video, index) => {
         const thisValue = video.getStat(prop.sortBy);
+        if (thisValue === null) return;
         if (
             bestValue.value === null ||
             thisValue > bestValue.value && prop.sortDesc ||
