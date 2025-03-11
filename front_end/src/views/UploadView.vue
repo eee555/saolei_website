@@ -23,9 +23,9 @@
         <el-table-column type="expand">
             <template #default="props">
                 <el-descriptions>
-                    <el-descriptions-item :label="t('common.prop.fileName')" span="3">{{ props.row.filename
+                    <el-descriptions-item :label="t('common.prop.fileName')" :span="3">{{ props.row.filename
                         }}</el-descriptions-item>
-                    <el-descriptions-item :label="t('common.prop.identifier')" span="3">{{ props.row.form.identifier }}</el-descriptions-item>
+                    <el-descriptions-item :label="t('common.prop.identifier')" :span="3">{{ props.row.form.identifier }}</el-descriptions-item>
                 </el-descriptions>
             </template>
         </el-table-column>

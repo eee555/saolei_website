@@ -4,6 +4,7 @@ import { pinia } from "./create"
 import { useLocalStorage } from "@vueuse/core"
 import { colorSchemeTemplates } from "@/utils/config"
 import { UserProfile } from "@/utils/userprofile"
+import { getStat_stat } from "@/utils/videoabstract"
 
 export const store = defineStore('user', {
     state: () => ({
@@ -58,6 +59,7 @@ export const activityCalendarConfig = useLocalStorage('activity-calendar-config'
 
 export const BBBvSummaryConfig = useLocalStorage('bbbv-summary-config', {
     cellHeight: 25,
-    sortBy: 'timems',
-    displayBy: 'time',
+    sortBy: 'timems' as getStat_stat,
+    displayBy: 'time' as getStat_stat,
+    sortDesc: false,
 })

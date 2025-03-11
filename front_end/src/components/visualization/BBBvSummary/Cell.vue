@@ -45,6 +45,7 @@ function refresh() {
     bestIndex.value = -1;
     prop.videos.forEach((video, index) => {
         const thisValue = video.getStat(prop.sortBy);
+        if (thisValue === null) return;
         if (
             bestValue.value === null ||
             thisValue > bestValue.value && prop.sortDesc ||
@@ -64,7 +65,7 @@ const left = computed(() => prop.xOffset * 10 + '%');
 
 const color = computed(() => {
     if (bestIndex.value === -1) return 'rgba(0,0,0,0)';
-    return prop.colorTheme.getColor(prop.videos[bestIndex.value].getStat(prop.displayBy))
+    return prop.colorTheme.getColor(prop.videos[bestIndex.value].getStat(prop.displayBy) as number)
 })
 
 const fontColor = computed(() => tinycolor(color.value).isDark() ? 'white' : 'black');

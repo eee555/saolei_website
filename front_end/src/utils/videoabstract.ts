@@ -10,9 +10,11 @@ export interface VideoAbstractInfo {
     bv: number,
     state: string,
     software: string,
+    cl: number | null,
+    ce: number | null,
 }
 
-export type getStat_stat = 'time' | 'bvs' | 'timems' | 'bv' | 'qg' | 'rqp' | 'stnb';
+export type getStat_stat = 'time' | 'bvs' | 'timems' | 'bv' | 'qg' | 'rqp' | 'stnb' | 'cl' | 'ioe' | 'thrp' | 'corr';
 
 export class VideoAbstract {
     public id: number | null;
@@ -23,6 +25,8 @@ export class VideoAbstract {
     public bv: number;
     public state: string;
     public software: string;
+    public cl: number | null;
+    public ce: number | null;
 
     constructor(info: VideoAbstractInfo) {
         this.id = info.id;
@@ -37,6 +41,8 @@ export class VideoAbstract {
         this.bv = info.bv;
         this.state = info.state;
         this.software = info.software;
+        this.cl = info.cl;
+        this.ce = info.ce;
     }
 
     public time() {
@@ -59,6 +65,21 @@ export class VideoAbstract {
         return STNB_const.value[this.level] / this.qg();
     }
 
+    public ioe() {
+        if (this.cl === null) return null;
+        return this.bv / this.cl;
+    }
+
+    public thrp() {
+        if (this.ce === null) return null;
+        return this.bv / this.ce;
+    }
+
+    public corr() {
+        if (this.cl === null || this.ce === null) return null;
+        return this.ce / this.cl;
+    }
+
     public getStat(stat: getStat_stat) {
         switch (stat) {
             case 'time': return this.time();
@@ -68,6 +89,10 @@ export class VideoAbstract {
             case 'qg': return this.qg();
             case 'rqp': return this.rqp();
             case 'stnb': return this.stnb();
+            case 'cl': return this.cl;
+            case 'ioe': return this.ioe();
+            case 'thrp': return this.thrp();
+            case 'corr': return this.corr();
         }
     }
 
@@ -79,6 +104,10 @@ export class VideoAbstract {
             case 'qg': return this.qg().toFixed(3);
             case 'rqp': return this.rqp().toFixed(3);
             case 'stnb': return this.stnb().toFixed(1);
+            case 'cl': return this.cl === null ? "" : this.cl.toString();
+            case 'ioe': return this.cl === null ? "" : this.ioe().toFixed(3);
+            case 'thrp': return this.ce === null ? "" : this.thrp().toFixed(3);
+            case 'corr': return (this.ce === null || this.cl === null) ? "" : this.corr().toFixed(3);
         }
     }
 
