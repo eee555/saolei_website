@@ -65,7 +65,7 @@ const left = computed(() => prop.xOffset * 10 + '%');
 
 const color = computed(() => {
     if (bestIndex.value === -1) return 'rgba(0,0,0,0)';
-    return prop.colorTheme.getColor(prop.videos[bestIndex.value].getStat(prop.displayBy))
+    return prop.colorTheme.getColor(prop.videos[bestIndex.value].getStat(prop.displayBy) as number)
 })
 
 const fontColor = computed(() => tinycolor(color.value).isDark() ? 'white' : 'black');
