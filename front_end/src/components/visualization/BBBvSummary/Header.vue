@@ -24,7 +24,7 @@ import { BBBvSummaryConfig } from '@/store';
 import { ref, watch } from 'vue';
 import { getStat_stat } from '@/utils/videoabstract';
 
-type option_type = 'bvs' | 'time' | 'stnb' | 'ioe';
+type option_type = 'bvs' | 'time' | 'stnb' | 'ioe' | 'thrp';
 const option = ref<option_type>(option_init())
 
 interface Option {
@@ -40,6 +40,7 @@ const options = {
     'time': { value: 'time', sortBy: 'timems', displayBy: 'time', label: 'time', sortDesc: false },
     'stnb': { value: 'stnb', sortBy: 'timems', displayBy: 'stnb', label: 'stnb', sortDesc: false },
     'ioe': { value: 'ioe', sortBy: 'ioe', displayBy: 'ioe', label: 'ioe', sortDesc: true },
+    'thrp': { value: 'thrp', sortBy: 'thrp', displayBy: 'thrp', label: 'thrp', sortDesc: true },
 } as Record<option_type, Option>;
 
 watch(option, () => {
@@ -57,6 +58,8 @@ function option_init() {
         return 'stnb';
     } else if (BBBvSummaryConfig.value.displayBy == 'ioe' && BBBvSummaryConfig.value.sortBy == 'ioe') {
         return 'ioe';
+    } else if (BBBvSummaryConfig.value.displayBy == 'thrp' && BBBvSummaryConfig.value.sortBy == 'thrp') {
+        return 'thrp';
     } else {
         return 'time';
     }

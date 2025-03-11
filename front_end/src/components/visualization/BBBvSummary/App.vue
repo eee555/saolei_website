@@ -40,7 +40,7 @@ const theme = computed(() => {
         return new PiecewiseColorScheme(colorTheme.value.bvs.colors, colorTheme.value.bvs.thresholds);
     } else if (BBBvSummaryConfig.value.displayBy == 'stnb') {
         return new PiecewiseColorScheme(colorTheme.value.stnb.colors, colorTheme.value.stnb.thresholds);
-    } else if (BBBvSummaryConfig.value.displayBy == 'ioe') {
+    } else if (BBBvSummaryConfig.value.displayBy == 'ioe' || BBBvSummaryConfig.value.displayBy == 'thrp') {
         return new PiecewiseColorScheme(colorTheme.value.ioe.colors, colorTheme.value.ioe.thresholds);
     } else if (BBBvSummaryConfig.value.displayBy == 'time') {
         if (prop.level == 'b') return new PiecewiseColorScheme(colorTheme.value.btime.colors, colorTheme.value.btime.thresholds);
