@@ -10,6 +10,7 @@ from django.http import JsonResponse
 from django.shortcuts import redirect
 import requests
 from django.conf import settings
+from .exceptions import ExceptionToResponse
 
 
 def generate_code(code_len):
@@ -122,16 +123,15 @@ def get_access_token() -> str:
 def get_ACCESS_TOKEN() -> str:
     try:
         with open("secrets.json", 'r') as f:
-            ACCESS_TOKEN = json.load(f)["token"]
+            return json.load(f)["token"]
     except KeyError:
-        ACCESS_TOKEN = get_access_token()
-    except json.JSONDecodeError:
-        # print(f"JSON解析错误: {e}")
-        ...
-    except Exception:
-        # print(f"发生其他错误: {e}")
-        ...
-    return ACCESS_TOKEN
+        return get_access_token()
+    except FileNotFoundError:
+        raise ExceptionToResponse(obj='baidu', category='fileNotFound')
+    except json.JSONDecodeError as e:
+        raise ExceptionToResponse(obj='baidu', category='jsonDecode')
+    except Exception as e:
+        raise ExceptionToResponse(obj='baidu', category='unknown')
 
 
 # 百度大脑鉴别文本合规性
