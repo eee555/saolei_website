@@ -128,9 +128,9 @@ def get_ACCESS_TOKEN() -> str:
         return get_access_token()
     except FileNotFoundError:
         raise ExceptionToResponse(obj='baidu', category='fileNotFound')
-    except json.JSONDecodeError as e:
+    except json.JSONDecodeError:
         raise ExceptionToResponse(obj='baidu', category='jsonDecode')
-    except Exception as e:
+    except Exception:
         raise ExceptionToResponse(obj='baidu', category='unknown')
 
 
