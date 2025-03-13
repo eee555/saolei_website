@@ -14,6 +14,7 @@ from datetime import datetime, timezone
 from utils.getOldWebData import VideoData, Level
 from django.core.files import File
 from identifier.utils import verify_identifier
+from utils.exceptions import ExceptionToResponse
 
 logger = logging.getLogger('videomanager')
 cache = get_redis_connection("saolei_website")
@@ -231,7 +232,7 @@ def new_video_by_file(user: UserProfile, file: File):
         v = ms.MvfVideo(raw_data=data)
         software = 'm'
     else:
-        raise ValueError('不支持的文件类型')
+        raise ExceptionToResponse(obj='file', category='type')
 
     v.parse_video()
     v.analyse()
@@ -244,7 +245,7 @@ def new_video_by_file(user: UserProfile, file: File):
     elif v.level == 5:
         level = 'e'
     else:
-        raise ValueError('不支持的难度')
+        raise ExceptionToResponse(obj='file', category='level')
 
     review_code = v.is_valid()
     if review_code == 0:
@@ -254,21 +255,21 @@ def new_video_by_file(user: UserProfile, file: File):
     elif review_code == 3:
         state = MS_TextChoices.State.PLAIN
     else:
-        raise ValueError('无效的录像')
+        raise ExceptionToResponse(obj='file', category='review')
 
     if not user.userms:
         user.userms = UserMS.objects.create()
 
     identifier = bytes(v.player_identifier).decode('utf-8')
     if not verify_identifier(identifier):
-        raise ValueError('无效的标识符')
+        raise ExceptionToResponse(obj='identifier', category='verify')
     if identifier not in user.userms.identifiers and state == MS_TextChoices.State.OFFICIAL:
         state = MS_TextChoices.State.IDENTIFIER
 
     collisions = list(VideoModel.objects.filter(timems=v.rtime_ms, bv=v.bbbv).filter(path=v.path).filter(
         left=v.left, right=v.right, double=v.double, op=v.op, isl=v.isl))
     if collisions:
-        raise ValueError('重复的录像')
+        raise ExceptionToResponse(obj='file', category='collision')
 
     mode = str(v.mode).rjust(2, '0')
     if mode == '00' and v.flag == 0:
