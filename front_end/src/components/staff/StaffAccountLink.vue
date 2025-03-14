@@ -1,4 +1,5 @@
 <template>
+    账号绑定
     <el-form :model="form">
         <el-form-item label="ID">
             <el-input type="number" v-model="form.id"/>
