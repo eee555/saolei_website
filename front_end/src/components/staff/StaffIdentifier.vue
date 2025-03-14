@@ -2,7 +2,8 @@
     标识
     <el-input v-model="identifier"></el-input>
     <el-button @click="handleGet">查询</el-button>
-    <el-button @click="handleDelete">删除</el-button>
+    <el-button v-if="safe != 'unknown'" @click="handleDelete">删除</el-button>
+    <el-button v-if="safe == 'false'" @click="handleApprove">通过审核</el-button>
     <br/>
     用户ID: {{ userid }}，状态：{{ safe }}
 </template>
@@ -35,6 +36,15 @@ function handleDelete() {
             identifier.value = "";
             safe.value = 'unknown';
             userid.value = 0;
+            successNotification(response);
+        }
+    ).catch(httpErrorNotification)
+}
+
+function handleApprove() {
+    proxy.$axios.post('identifier/approve/staff/', {identifier: identifier.value}).then(
+        function (response) {
+            safe.value = 'true';
             successNotification(response);
         }
     ).catch(httpErrorNotification)
