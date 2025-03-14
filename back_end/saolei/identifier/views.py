@@ -88,6 +88,23 @@ def staff_del_identifier(request):
         return HttpResponseConflict()
 
 
+# 管理员过审标识
+@require_POST
+@staff_required
+def staff_approve_identifier(request):
+    identifier_text = request.POST.get('identifier')
+    if not identifier_text:
+        return HttpResponseBadRequest()
+    identifier = Identifier.objects.filter(identifier=identifier_text).first()
+    if not identifier:
+        return HttpResponseNotFound()
+    identifier.safe = True
+    identifier.save()
+    logger.info(f'管理员 #{request.user.id} 过审标识 "{identifier_text}"')
+    return HttpResponse()
+
+
+# 管理员查询标识
 @require_GET
 def staff_get_identifier(request):
     identifier_text = request.GET.get('identifier')
