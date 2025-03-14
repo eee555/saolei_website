@@ -87,7 +87,8 @@ def staff_del_identifier(request):
     else:
         return HttpResponseConflict()
 
-@require_GET    
+
+@require_GET
 def staff_get_identifier(request):
     identifier_text = request.GET.get('identifier')
     if not identifier_text:
