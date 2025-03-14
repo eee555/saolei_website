@@ -42,6 +42,8 @@
     </el-descriptions>
     <el-divider />
     <StaffAccountLink />
+    <el-divider />
+    <StaffIdentifier />
 </template>
 
 <script lang="ts" setup>
@@ -51,6 +53,7 @@ import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { ref } from 'vue';
 import { preview } from '@/utils/common/PlayerDialog';
 import StaffAccountLink from '@/components/staff/StaffAccountLink.vue';
+import StaffIdentifier from '@/components/staff/StaffIdentifier.vue';
 import { httpErrorNotification, successNotification } from '@/components/Notifications';
 
 const { proxy } = useCurrentInstance();
