@@ -14,17 +14,13 @@
 </template>
 
 <script setup lang="ts">
-
-import { useI18n } from 'vue-i18n';
 import { ElText } from 'element-plus';
 import LazyTooltip from './LazyTooltip.vue';
 
-const data = defineProps({
+defineProps({
     level: {
         type: String,
         default: "z",
     },
 });
-
-const { t } = useI18n();
 </script>

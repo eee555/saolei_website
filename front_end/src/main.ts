@@ -6,7 +6,7 @@ import router from './router'
 import i18n from '@/i18n'
 import 'element-plus/dist/index.css'
 import $axios from './http'
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { AxiosInstance } from 'axios';
 // 全局挂载axios
 
 import 'highlight.js/styles/stackoverflow-light.css'

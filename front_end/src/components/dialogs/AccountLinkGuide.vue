@@ -28,7 +28,7 @@ import PlatformIcon from "@/components/widgets/PlatformIcon.vue"
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
-const data = defineProps({
+defineProps({
     platform: {
         type: String,
         default: "",

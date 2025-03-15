@@ -23,7 +23,7 @@ import { ElDescriptions, ElDescriptionsItem, ElTable, ElTableColumn} from 'eleme
 const prop = defineProps({
     data: {
         type: Object as PropType<any>,
-        default: {},
+        default() { return {}; },
     }
 })
 

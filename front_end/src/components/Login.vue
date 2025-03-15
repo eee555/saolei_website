@@ -1,14 +1,14 @@
 <template>
-    <el-button v-if="store.login_status != LoginStatus.IsLogin" @click.stop="login_visible = true" class="fakemenuitem"
-        text size="small">
+    <el-button v-if="store.login_status != LoginStatus.IsLogin" class="fakemenuitem"
+        text size="small" @click.stop="login_visible = true">
         {{ t('menu.login') }}
     </el-button>
-    <el-button v-if="store.login_status != LoginStatus.IsLogin" @click.stop="register_visible = true"
-        style="margin-left: 0px;" class="fakemenuitem" text size="small">
+    <el-button v-if="store.login_status != LoginStatus.IsLogin"
+        style="margin-left: 0px;" class="fakemenuitem" text size="small" @click.stop="register_visible = true">
         {{ t('menu.register') }}
     </el-button>
-    <el-button v-if="store.login_status == LoginStatus.IsLogin" @click.stop="logout();" class="fakemenuitem" text
-        size="small">
+    <el-button v-if="store.login_status == LoginStatus.IsLogin" class="fakemenuitem" text
+        size="small" @click.stop="logout();">
         {{ t('menu.logout') }}
     </el-button>
     <!-- 以下的所有表单的输入项都需要@keydown.stop，解决horizontal菜单截留空格操作的问题。 -->
@@ -54,7 +54,7 @@ onMounted(() => {
         login_visible.value = false;
     }
 
-    window.onbeforeunload = function (e) {
+    window.onbeforeunload = function (_e) {
         // 关闭网页时，假如没选记住我，就退出
         // 对于游客，此处不会发logout
         if (!remember_me.value) {
@@ -90,7 +90,7 @@ const login = (user: any, remember: boolean) => {
 const logout = async () => {
     proxy.$axios.post('/userprofile/logout/',
         {},
-    ).then(function (response) {
+    ).then(function (_response) {
         store.login_status = LoginStatus.NotLogin;
         store.user = new UserProfile();
         emit('logout'); // 向父组件发送消息

@@ -13,6 +13,6 @@ import { ElTooltip } from 'element-plus';
 import { local } from '@/store';
 import { ref } from 'vue';
 
-const render = ref<Boolean>(false);
+const render = ref<boolean>(false);
 
 </script>

@@ -49,7 +49,7 @@ const startDate = computed(() => {
     min.setFullYear(min.getFullYear() - 1);
     min.setDate(min.getDate() + 1);
     for (const key of keys) {
-        let keydate = new Date(key);
+        const keydate = new Date(key);
         if (keydate < min) min = keydate;
     }
     return min;
@@ -57,7 +57,7 @@ const startDate = computed(() => {
 const startWeekTime = computed(() => getWeekTime(startDate.value));
 
 function* generateDateRange(startDate: Date, endDate: Date, step: number = 1) {
-    let currentDate = new Date(startDate);
+    const currentDate = new Date(startDate);
     while (currentDate <= endDate) {
         yield new Date(currentDate);  // Yield a new Date object (to avoid modifying the original one)
         currentDate.setDate(currentDate.getDate() + step); // Increment by 1 day (or custom step)

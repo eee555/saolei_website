@@ -1,19 +1,19 @@
 <template>
     <el-dialog v-model="visible" :title="t('login.registerTitle')" width="400px" align-center draggable
         :lock-scroll="false" @close='resetForm(ruleFormRef)'>
-        <el-form :model="registerForm" ref="ruleFormRef" status-icon>
+        <el-form ref="ruleFormRef" :model="registerForm" status-icon>
             <!-- 用户名 -->
-            <el-form-item prop="username" :label="t('form.username')" ref="usernameFormRef">
+            <el-form-item ref="usernameFormRef" prop="username" :label="t('form.username')">
                 <el-input v-model="registerForm.username" prefix-icon="User" maxlength="20" show-word-limit
                     @input="usernameInputHandler" @change="usernameChangeHandler"></el-input>
             </el-form-item>
             <!-- 邮箱 -->
-            <email-form-item v-model="registerForm.email" ref="emailFormRef" check-collision="true" />
+            <email-form-item ref="emailFormRef" v-model="registerForm.email" check-collision="true" />
             <!-- 邮箱验证码 -->
-            <email-code-block v-model="registerForm.emailCode" :email="registerForm.email" type="register"
-                :email-state="email_state" ref="emailCodeFormRef" />
+            <email-code-block ref="emailCodeFormRef" v-model="registerForm.emailCode" :email="registerForm.email" type="register"
+                :email-state="email_state" />
             <!-- 密码 -->
-            <password-confirm-block v-model="registerForm.password" ref="passwordFormRef" />
+            <password-confirm-block ref="passwordFormRef" v-model="registerForm.password" />
             <!-- 同意协议 -->
             <el-form-item prop="agreeTAC">
                 <el-checkbox v-if="true" v-model="agree_TAC" name="checkoutSecret">{{
@@ -25,7 +25,7 @@
             </el-form-item>
             <!-- 确认 -->
             <el-form-item>
-                <el-button type="primary" @click="submitForm(ruleFormRef)" :disabled="confirm_disabled">{{
+                <el-button type="primary" :disabled="confirm_disabled" @click="submitForm(ruleFormRef)">{{
                     t('login.registerConfirm') }}</el-button>
             </el-form-item>
         </el-form>
@@ -46,7 +46,7 @@ import emailCodeBlock from '../formItems/emailCodeBlock.vue';
 import passwordConfirmBlock from '../formItems/passwordConfirmBlock.vue';
 import { local } from '@/store';
 
-const visible = defineModel();
+const visible = defineModel({ type: Boolean, default: false });
 const emit = defineEmits(['login']);
 
 const { proxy } = useCurrentInstance();
@@ -119,7 +119,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
         email_key: emailCodeFormRef.value!.hashkey,
         email_captcha: registerForm.emailCode,
     }).then(function (response) {
-        let data = response.data;
+        const data = response.data;
         if (data.type === 'success') {
             emit('login', data.user)
             ElNotification({

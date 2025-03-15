@@ -13,6 +13,6 @@ import { useColorMode } from '@vueuse/core';
 import { ElRadioGroup, ElRadioButton } from 'element-plus';
 
 const { t } = useI18n()
-const { system, store } = useColorMode()
+const { store } = useColorMode()
 
 </script>

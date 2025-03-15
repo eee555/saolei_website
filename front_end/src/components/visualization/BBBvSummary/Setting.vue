@@ -5,8 +5,5 @@
 
 <script setup lang="ts">
 import { BBBvSummaryConfig } from '@/store';
-import { ElText, ElInputNumber, ElSelect, ElOption } from 'element-plus';
-
-
-
+import { ElText, ElInputNumber } from 'element-plus';
 </script>

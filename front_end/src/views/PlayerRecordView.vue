@@ -1,6 +1,6 @@
 <template>
     <base-card-large>
-        <el-skeleton animated style="margin-top: 0px;" v-show="loading" :rows="8" />
+        <el-skeleton v-show="loading" animated style="margin-top: 0px;" :rows="8" />
         <div v-for="(d, idx) in records" style="margin-top: -10px;">
             <h4>{{ t(table_title[idx]) }}{{ t('profile.records.modeRecord') }}</h4>
             <el-table :data="d" style="width: 100%;" :header-cell-style="{ 'text-align': 'center' }">

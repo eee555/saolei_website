@@ -1,8 +1,8 @@
 <template>
-    <el-table :data="accountlinks" @expand-change="expandRow" :row-key="(row: any) => 'key' + row.platform">
+    <el-table :data="accountlinks" :row-key="(row: any) => 'key' + row.platform" @expand-change="expandRow">
         <el-table-column type="expand">
             <template #default="props">
-                <el-text v-if="!props.row.verified" type="info" style="margin-left:50px" v-t="'accountlink.unverifiedText'"></el-text>
+                <el-text v-if="!props.row.verified" v-t="'accountlink.unverifiedText'" type="info" style="margin-left:50px"></el-text>
                 <el-text v-else-if="props.row.data === undefined" type="info" style="margin-left:50px">No Data</el-text>
                 <AccountSaolei v-else-if="props.row.platform == 'c'" :data="props.row.data" />
                 <AccountMsgames v-else-if="props.row.platform == 'a'" :data="props.row.data" />
@@ -33,18 +33,18 @@
         </el-table-column>
         <el-table-column v-if="store.player.id == store.user.id" :label="t('common.prop.action')">
             <template #default="scope">
-                <el-link :underline="false" @click.prevent="deleteRow(scope.row)" type="danger"><base-icon-delete/></el-link>
+                <el-link :underline="false" type="danger" @click.prevent="deleteRow(scope.row)"><base-icon-delete/></el-link>
                 &nbsp;
                 <el-link v-if="scope.row.data !== undefined" :underline="false"
                     @click.prevent="updateRow(scope.row)"><base-icon-refresh /></el-link>
             </template>
         </el-table-column>
     </el-table>
-    <el-button v-if="store.player.id == store.user.id" style="width:100%" @click="formvisible = true" size="small">
+    <el-button v-if="store.player.id == store.user.id" style="width:100%" size="small" @click="formvisible = true">
         <base-icon-add />
     </el-button>
-    <el-dialog v-model="formvisible" :title="t('accountlink.addLink')"
-        @closed="form.platform = ''; form.identifier = '';" width="500px">
+    <el-dialog v-model="formvisible" :title="t('accountlink.addLink')" width="500px"
+        @closed="form.platform = ''; form.identifier = '';">
         <el-form :model="form">
             <el-form-item :label="t('accountlink.platform')">
                 <el-select v-model="form.platform">
@@ -71,7 +71,7 @@
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { store, local } from '@/store';
-import { ElNotification, ElDialog, ElForm, ElFormItem, ElInput, ElSelect, ElOption, ElLink, ElTable, ElTableColumn, ElText, ElTooltip, ElButton, ElIcon } from 'element-plus';
+import { ElNotification, ElDialog, ElForm, ElFormItem, ElInput, ElSelect, ElOption, ElLink, ElTable, ElTableColumn, ElText, ElTooltip, ElButton } from 'element-plus';
 import { Platform, platformlist } from '@/utils/common/accountLinkPlatforms'
 import PlatformIcon from './widgets/PlatformIcon.vue';
 const AccountLinkGuide = defineAsyncComponent(() => import('./dialogs/AccountLinkGuide.vue'));
@@ -122,9 +122,10 @@ const formValid = computed(() => {
     switch (form.platform) {
         case 'a':
         case 'c':
-        case 'w':
+        case 'w': {
             const num = parseInt(form.identifier, 10);
             return !isNaN(num) && num.toString() === form.identifier && num > 0
+        }
         default:
             return false;
     }
@@ -136,7 +137,7 @@ const addLink = () => {
             platform: form.platform,
             identifier: form.identifier,
         }
-    ).then(function (response) {
+    ).then(function (_response) {
         refresh()
     }).catch(httpErrorNotification)
 }
@@ -144,7 +145,7 @@ const addLink = () => {
 const deleteRow = (row: any) => {
     // @ts-ignore
     ElMessageBox.confirm(t.t('accountlink.platform') + ' - ' + platformlist[row.platform].name + ', ID - ' + row.identifier, t.t('accountlink.deleteLinkMessage')).then(() => {
-        proxy.$axios.post('accountlink/delete/', { platform: row.platform }).then(function (response) {
+        proxy.$axios.post('accountlink/delete/', { platform: row.platform }).then(function (_response) {
             refresh()
         })
     }).catch(httpErrorNotification)
@@ -158,7 +159,7 @@ const expandRow = (row: any) => {
 
 const updateRow = (row: any) => {
     proxy.$axios.post('accountlink/update/', { platform: row.platform }).then(function (response) {
-        let data = response.data;
+        const data = response.data;
         if (data.type == 'success') loadRow(row);
         else if (data.type == 'error') {
             ElNotification({
@@ -182,7 +183,7 @@ const loadRow = (row: any) => {
 }
 
 const userHasPlatform = (platform: string) => {
-    for (let item of accountlinks.value) {
+    for (const item of accountlinks.value) {
         if (item.platform == platform) return true;
     }
     return false;

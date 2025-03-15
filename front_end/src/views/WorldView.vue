@@ -11,19 +11,18 @@
 <script setup lang="ts">
 import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
-import { PieChart, LineChart, LineSeriesOption, BarChart } from 'echarts/charts';
+import { PieChart, LineChart, BarChart } from 'echarts/charts';
 import {
     TitleComponent,
     TooltipComponent,
     LegendComponent,
     GridComponent,
-    GridComponentOption,
     PolarComponent,
 
 } from 'echarts/components';
-import VChart, { THEME_KEY } from 'vue-echarts';
-import { ref, provide } from 'vue';
-import { onMounted, onBeforeUnmount, Ref, defineAsyncComponent, computed } from 'vue'
+import VChart from 'vue-echarts';
+import { ref } from 'vue';
+import { onMounted, onBeforeUnmount } from 'vue'
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 const { proxy } = useCurrentInstance();
 

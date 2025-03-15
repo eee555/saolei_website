@@ -18,9 +18,9 @@
                     <el-text
                         v-t="{ path: 'activityCalendar.tooltip.uploadedNVideosOnDate', args: [toISODateString(date), videos.length] }" />
                     <br>
-                    <span v-for="i in count.b" class="dot" style="background-color: #f00;"></span>
-                    <span v-for="i in count.i" class="dot" style="background-color: #080;"></span>
-                    <span v-for="i in count.e" class="dot" style="background-color: #00f;"></span>
+                    <span v-for="i in count.b" :key="i" class="dot" style="background-color: #f00;"></span>
+                    <span v-for="i in count.i" :key="i" class="dot" style="background-color: #080;"></span>
+                    <span v-for="i in count.e" :key="i" class="dot" style="background-color: #00f;"></span>
                 </template>
             </base-card-small>
         </template>
@@ -55,7 +55,7 @@ function refresh() {
     count.value.b = 0;
     count.value.i = 0;
     count.value.e = 0;
-    for (let video of prop.videos) {
+    for (const video of prop.videos) {
         count.value[video.level]++;
     }
     red.value = 255 * count.value.b / prop.bmax;

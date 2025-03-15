@@ -15,6 +15,7 @@ export const copyToClipboard = async (str: string) => {
         ElNotification({
             title: t('msg.copyToClipboardFail'),
             type: 'error',
+            message: err + '',
             duration: local.value.notification_duration,
         })
     }

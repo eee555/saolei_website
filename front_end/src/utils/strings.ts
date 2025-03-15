@@ -13,7 +13,7 @@ export function stringifyWithLineWrap(
     function processValue(value: any, currentIndent: string): string {
         if (Array.isArray(value)) {
             let line = "[";
-            let lines: string[] = [];
+            const lines: string[] = [];
             for (let i = 0; i < value.length; i++) {
                 const itemStr = JSON.stringify(value[i]);
                 if (line.length + itemStr.length + 2 > maxLineLength) {

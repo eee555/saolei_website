@@ -9,7 +9,7 @@ import { BBBvSummaryConfig } from '@/store';
 import { range } from '@/utils/arrays';
 
 
-const prop = defineProps({
+defineProps({
     minBv: { type: Number, required: true },
     maxBv: { type: Number, required: true },
 })

@@ -7,7 +7,7 @@
             </el-icon>
         </el-tooltip>
     </el-button>
-    <el-button @click="clickExportCSV" :disabled="id == 0">
+    <el-button :disabled="id == 0" @click="clickExportCSV">
         {{ t('profile.exportArbiterCSV') }}&nbsp;
         <el-tooltip :content="t('profile.exportArbiterCSVTooltip')" raw-content>
             <el-icon v-if="local.tooltip_show">
@@ -30,9 +30,6 @@ const { t } = useI18n();
 const { proxy } = useCurrentInstance();
 
 const data = ref([] as any[]);
-const progress = ref(0);
-const status = ref("");
-const text = ref("")
 
 const prop = defineProps({
     id: {
@@ -57,11 +54,11 @@ async function fetchData(id: number) {
 
 function generateArbiterCSV(data: any) {
     if (!data) return "";
-    let csvdata = ['Day,Month,Year,Hour,Min,Sec,mode,Time,BBBV,BBBVs,style,cell0,cell1,cell2,cell3,cell4,cell5,cell6,cell7,cell8,Lcl,Rcl,Dcl,Leff,Reff,Deff,Openings,Islands,Path,GZiNi,HZiNi']
-    for (let v of data) {
+    const csvdata = ['Day,Month,Year,Hour,Min,Sec,mode,Time,BBBV,BBBVs,style,cell0,cell1,cell2,cell3,cell4,cell5,cell6,cell7,cell8,Lcl,Rcl,Dcl,Leff,Reff,Deff,Openings,Islands,Path,GZiNi,HZiNi']
+    for (const v of data) {
         if (v.mode != '00' && v.mode != '12') continue;
-        let date = new Date(v.upload_time);
-        let row: any[] = [date.getUTCDate(), date.getUTCMonth() + 1, date.getUTCFullYear(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds()];
+        const date = new Date(v.upload_time);
+        const row: any[] = [date.getUTCDate(), date.getUTCMonth() + 1, date.getUTCFullYear(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds()];
         switch (v.level) {
             case 'e': row.push(3); break;
             case 'i': row.push(2); break;

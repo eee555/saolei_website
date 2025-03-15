@@ -28,7 +28,7 @@ function generateMonthLabelRange(startDate: Date, endDate: Date) {
         currentDate.setMonth(currentDate.getMonth() + 1);
         currentDate.setDate(15);
     }
-    let monthLabels = [];
+    const monthLabels = [];
     while (currentDate <= endDate) {
         monthLabels.push(currentDate);
         currentDate = new Date(currentDate);
