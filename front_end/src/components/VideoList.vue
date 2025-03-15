@@ -68,15 +68,15 @@ const data = defineProps({
         default: false
     },
     // 需要用可以点开摘要的用户组件
-    need_player_name: {
+    needPlayerName: {
         type: Boolean,
         default: true
     },
-    review_mode: {
+    reviewMode: {
         type: Boolean,
         default: false
     },
-    upload_time: {
+    uploadTime: {
         type: String,
         default: 'upload_time',
     },

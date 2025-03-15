@@ -46,11 +46,11 @@
                                 <base-icon-refresh />
                             </el-link>
                         </template>
-                        <VideoList :videos="newest_queue" :reverse="true" upload_time="time" :show-header="false">
+                        <VideoList :videos="newest_queue" :reverse="true" upload-time="time" :show-header="false">
                         </VideoList>
                     </el-tab-pane>
                     <el-tab-pane :label="t('home.reviewQueue')" class="bottom_tabs" :lazy="true" name="review">
-                        <VideoList v-loading="review_queue_updating" :videos="review_queue" :review_mode="store.user.is_staff"
+                        <VideoList v-loading="review_queue_updating" :videos="review_queue" :review-mode="store.user.is_staff"
                             @update="update_review_queue"></VideoList>
                     </el-tab-pane>
                 </el-tabs>

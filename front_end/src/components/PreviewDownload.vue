@@ -7,14 +7,8 @@
 // 拟弃用
 // 两个按钮，预览或下载
 import { onMounted } from "vue";
-// import axios from 'axios';
-// import { getCurrentInstance } from 'vue';
 import { preview } from "@/utils/common/PlayerDialog";
 import { ElButton } from "element-plus";
-
-// import { genFileId, ElMessage } from 'element-plus'
-
-// const hashkey = ref("");
 
 const { id } = defineProps({
     id: {
