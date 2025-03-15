@@ -12,7 +12,7 @@
                         <IconMenuItem :text="t(item.content)" :icon="item.icon" />
                     </el-menu-item>
                     <div style="flex-grow: 1" />
-                    <el-menu-item :index="player_url" v-if="store.user.id != 0">
+                    <el-menu-item v-if="store.user.id != 0" :index="player_url">
                         <IconMenuItem :text="store.user.username" icon="User" />
                     </el-menu-item>
                     <el-menu-item index="/settings" style="padding-left: 8px; padding-right: 5px">
@@ -35,7 +35,7 @@
         </el-container>
     </el-container>
 
-    <el-dialog v-if="false" draggable :lock-scroll="false" v-model="notice_visible" title="站长通知"
+    <el-dialog v-if="false" v-model="notice_visible" draggable :lock-scroll="false" title="站长通知"
         :before-close="handle_notice_close" style="white-space: pre-wrap;" width="min(max(50%, 400px), 90vw)">
         <span>{{ notice }}</span>
         <template #footer>
@@ -100,7 +100,7 @@ const notice = ref(`
 `);
 
 onMounted(() => {
-    const notice_hash = localStorage.getItem("notice") as String;
+    const notice_hash = localStorage.getItem("notice") as string;
     if (hash_code(notice.value) + "" != notice_hash) {
         notice_visible.value = true;
     }
@@ -144,7 +144,7 @@ const handle_notice_close = () => {
 };
 
 const hash_code = function (t: string) {
-    var hash = 0,
+    let hash = 0,
         i,
         chr;
     if (t.length === 0) return hash;

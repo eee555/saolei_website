@@ -32,6 +32,8 @@ export default typescriptEslint.config(
       'no-prototype-builtins': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
       'vue/multi-word-component-names': 'off',
+      'vue/no-template-shadow': 'off',
+      'no-irregular-whitespace': 'off',
     },
   },
   eslintConfigPrettier

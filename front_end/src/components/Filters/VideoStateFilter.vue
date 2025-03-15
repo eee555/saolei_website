@@ -10,7 +10,7 @@
 import { useI18n } from 'vue-i18n';
 import { ElCheckboxGroup, ElCheckboxButton } from 'element-plus';
 
-const checkboxGroup = defineModel();
+const checkboxGroup = defineModel({ type: Array<string>, required: true });
 
 const statelist = [
     {state: 'c'},
