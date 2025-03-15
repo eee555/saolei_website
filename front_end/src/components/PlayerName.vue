@@ -6,10 +6,10 @@
                 <div style="width: 80px;float: left;line-height: 200%;">
                     <el-image style="width: 72px; height: 72px;margin-top: 10px;border-radius: 8px;" :src="image_url"
                         :fit="'cover'" />
-                    <el-button style="width: 72px;height: 24px;" @click="visit_me(user_id);">我的空间</el-button>
+                    <el-button style="width: 72px;height: 24px;" @click="visit_me(userId);">我的空间</el-button>
                 </div>
                 <div v-loading="is_loading" style="width: 188px;float: right;text-align: center;line-height: 180%;">
-                    <div><strong>{{ realname }}</strong> (id: {{ user_id }})</div>
+                    <div><strong>{{ realname }}</strong> (id: {{ userId }})</div>
                     <div>初级纪录：<PreviewNumber :id="+b_t_id" :text="ms_to_s(b_t)">
                         </PreviewNumber> | <PreviewNumber :id="+b_bvs_id" :text="to_fixed_n(b_bvs, 3)">
                         </PreviewNumber>
@@ -32,10 +32,10 @@
 
             </div>
             <template #reference>
-                <el-link :underline="false" @click="visible = !visible;">{{ data.user_name }}</el-link>
+                <el-link :underline="false" @click="visible = !visible;">{{ data.userName }}</el-link>
             </template>
         </el-popover>
-        <el-link v-else :underline="false" @click="render = true; visible = true;">{{ data.user_name }}</el-link>
+        <el-link v-else :underline="false" @click="render = true; visible = true;">{{ data.userName }}</el-link>
     </span>
 </template>
 

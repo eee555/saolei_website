@@ -7,9 +7,9 @@
                 <VideoStateIcon :state="scope.row.state" />
             </template>
         </el-table-column>
-        <el-table-column :prop="upload_time" min-width="160" :formatter="simple_formatter(utc_to_local_format)"
+        <el-table-column :prop="uploadTime" min-width="160" :formatter="simple_formatter(utc_to_local_format)"
             sortable />
-        <el-table-column v-if="need_player_name" min-width="80">
+        <el-table-column v-if="needPlayerName" min-width="80">
             <template #default="player">
                 <PlayerName class="name" :user-id="+player.row.player_id" :user-name="player.row.player"></PlayerName>
             </template>

@@ -36,7 +36,7 @@ const props = defineProps({
     },
 });
 
-const range = defineModel({ type: [Number, Number], default: [props.min, props.max]});
+const range = defineModel({ type: Array, required: true });
 
 defineEmits(['change']);
 </script>
