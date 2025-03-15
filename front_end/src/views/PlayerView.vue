@@ -269,7 +269,7 @@ const handleAvatarUpload = async (options: UploadRequestOptions) => {
     post_update_avatar(options.file);
 }
 
-const handleChange: UploadProps['onChange'] = (uploadFile: UploadFile, uploadFiles: UploadFiles) => {
+const handleChange: UploadProps['onChange'] = (uploadFile: UploadFile, _uploadFiles: UploadFiles) => {
     if (!uploadFile.url) {
         uploadFile.url = URL.createObjectURL(uploadFile.raw!)
     }
@@ -292,7 +292,7 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
         ElMessage.error({ message: t('profile.msg.avatarFilesize'), offset: 68 });
         return false
     }
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _reject) => {
         // 此处会报错net::ERR_FILE_NOT_FOUND，但头像依然能更新成功
         compressAccurately(rawFile, 256).then(res => {
             res = new File([res], rawFile.name, { type: res.type, lastModified: Date.now() })

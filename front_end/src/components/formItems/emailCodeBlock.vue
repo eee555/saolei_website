@@ -4,7 +4,7 @@
 -->
 <template>
     <!-- 图形验证码 -->
-    <el-form-item :disabled="!email_success" :label="t('form.imageCaptcha')" ref="captchaFormRef">
+    <el-form-item ref="captchaFormRef" :disabled="!email_success" :label="t('form.imageCaptcha')">
         <div style="display: flex">
             <el-input v-model.trim="captcha" prefix-icon="Key" class="code" maxlength="4"
                 @input="captchaHandler"></el-input>
@@ -13,13 +13,13 @@
         </div>
     </el-form-item>
     <!-- 邮箱验证码 -->
-    <el-form-item prop="emailCode" :label="t('form.emailCode')" ref="emailCodeFormRef">
+    <el-form-item ref="emailCodeFormRef" prop="emailCode" :label="t('form.emailCode')">
         <div style="display: flex">
-            <el-input v-model.trim="emailCode" prefix-icon="Key" maxlength="6" :disabled="captcha.length!=4"
-                @input="emailCodeHandler" :placeholder="t(email_code_placeholder)"></el-input>
+            <el-input v-model.trim="emailCode" prefix-icon="Key" maxlength="6" :disabled="captcha.length!=4" :placeholder="t(email_code_placeholder)"
+                @input="emailCodeHandler"></el-input>
             &nbsp;
-            <el-button @click="getEmailCaptcha(type)" :disabled="captcha.length!=4">
-                <vue-countdown v-if="counting" :time="60000" @end="counting = false;" v-slot="{ totalSeconds }">
+            <el-button :disabled="captcha.length!=4" @click="getEmailCaptcha(type)">
+                <vue-countdown v-if="counting" v-slot="{ totalSeconds }" :time="60000" @end="counting = false;">
                     ({{ totalSeconds }})
                 </vue-countdown>
                 <span v-else>{{ t('common.button.send') }}</span>
@@ -52,7 +52,7 @@ const prop = defineProps({
         default: 'success',
     }
 })
-const emailCode = defineModel();
+const emailCode = defineModel({ type: String, required: true });
 
 const { proxy } = useCurrentInstance();
 const { t } = useI18n();
@@ -115,9 +115,9 @@ const getEmailCaptcha = (type: string) => {
         captcha: captcha.value,
         hashkey: refValidCode.value!.hashkey,
         email: prop.email,
-        type: prop.type,
+        type: type,
     }).then(function (response) {
-        let data = response.data;
+        const data = response.data;
         if (data.type == 'success') {
             captchaFormRef.value!.validateState = 'success';
             hashkey.value = data.hashkey;

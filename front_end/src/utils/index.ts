@@ -21,7 +21,7 @@ export function cs_to_s(cs: number): string {
 }
 
 export function simple_formatter(f: Function): Function {
-    return (row: any, col: any, value: any, index: any) => f(value)
+    return (row: any, col: any, value: any, _index: any) => f(value)
 }
 
 import { ComponentCustomProperties } from "vue";

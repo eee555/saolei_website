@@ -97,7 +97,7 @@ const uploaded_file_num = ref<number>(0);
 const allow_upload = ref(true);
 
 // 录像列表变动的回调，上传多个文件时，有几个文件就会进来几次。
-const handleChange: UploadProps['onChange'] = async (uploadFile: UploadFile, uploadFiles: UploadFiles) => {
+const handleChange: UploadProps['onChange'] = async (uploadFile: UploadFile, _uploadFiles: UploadFiles) => {
 
     if (allow_upload.value) {
         // upload_video_visible.value = true;
@@ -177,7 +177,7 @@ const forceUpload = async (i: number) => {
             // 正常使用不会到这里
             upload_queue.value[i].status = "upload";
         }
-    }).catch((error: any) => {
+    }).catch((_error: any) => {
         upload_queue.value[i].status = "upload";
     })
 }
