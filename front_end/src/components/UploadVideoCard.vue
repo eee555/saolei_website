@@ -30,7 +30,7 @@
                     </el-col>
                 </el-row>
             </div>
-            <span @click="emit('cancel_this',video_msg.id)" class="close_icon" style="vertical-align: middle;">
+            <span class="close_icon" style="vertical-align: middle;" @click="emit('cancel_this',video_msg.id)">
                 <el-icon size="28px">
                     <CircleCloseFilled />
                 </el-icon>
@@ -41,11 +41,8 @@
   
 <script lang="ts" setup>
 // 上传录像的页面，等待上传的录像的卡片
-import { onMounted, ref, Ref } from 'vue'
-import useCurrentInstance from "@/utils/common/useCurrentInstance";
-import { ms_to_s } from '@/utils';
+import { onMounted } from 'vue'
 import { ElCard, ElIcon, ElRow, ElCol } from 'element-plus';
-const { proxy } = useCurrentInstance();
 const emit = defineEmits(['cancel_this', 'logout']);
 
 

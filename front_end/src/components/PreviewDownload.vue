@@ -6,14 +6,12 @@
 <script setup lang="ts" name="PreviewDownload">
 // 拟弃用
 // 两个按钮，预览或下载
-import { onMounted, ref } from "vue";
+import { onMounted } from "vue";
 // import axios from 'axios';
 // import { getCurrentInstance } from 'vue';
-import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import { preview } from "@/utils/common/PlayerDialog";
 import { ElButton } from "element-plus";
 
-const { proxy } = useCurrentInstance();
 // import { genFileId, ElMessage } from 'element-plus'
 
 // const hashkey = ref("");

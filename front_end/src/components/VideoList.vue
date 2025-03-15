@@ -1,6 +1,5 @@
 <template>
-    <el-table :data="videos_trans" :show-header="showHeader" @row-click="(row: any) => preview(row.key)"
-        table-layout="auto" :max-height="maxHeight" style="width: 100%;font-size: 16px;user-select: none;">
+    <el-table :data="videos_trans" :show-header="showHeader" table-layout="auto" :max-height="maxHeight" style="width: 100%;font-size: 16px;user-select: none;" @row-click="(row: any) => preview(row.key)">
         <el-table-column prop="state" :width="32"
             :filters="[{ text: t('common.state.c'), value: 'c' }, { text: t('common.state.d'), value: 'd' }]"
             :filter-method="defaultFilterMethod">
@@ -87,10 +86,11 @@ const data = defineProps({
     },
     maxHeight: {
         type: [String, Number],
+        default: '100%',
     },
 })
 
-const emit = defineEmits(['update'])
+defineEmits(['update'])
 
 const videos_trans = computed(() => {
     const d = data.videos.slice();

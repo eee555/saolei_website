@@ -26,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-import { ms_to_s, to_fixed_n } from '@/utils';
+import { ms_to_s } from '@/utils';
 import { utc_to_local_format } from '@/utils/system/tools';
 import { computed, PropType } from 'vue';
 import { useI18n } from 'vue-i18n';

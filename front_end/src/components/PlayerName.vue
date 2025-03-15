@@ -1,14 +1,14 @@
 <template>
     <span @click.stop>
         <el-popover v-if="render" :visible="visible" placement="bottom" width="298px"
-            popper-class="max-h-300px overflow-auto" @show="pop_show" @hide="pop_hide" popper-style="z-index:888;">
+            popper-class="max-h-300px overflow-auto" popper-style="z-index:888;" @show="pop_show" @hide="pop_hide">
             <div>
                 <div style="width: 80px;float: left;line-height: 200%;">
                     <el-image style="width: 72px; height: 72px;margin-top: 10px;border-radius: 8px;" :src="image_url"
                         :fit="'cover'" />
                     <el-button style="width: 72px;height: 24px;" @click="visit_me(user_id);">我的空间</el-button>
                 </div>
-                <div style="width: 188px;float: right;text-align: center;line-height: 180%;" v-loading="is_loading">
+                <div v-loading="is_loading" style="width: 188px;float: right;text-align: center;line-height: 180%;">
                     <div><strong>{{ realname }}</strong> (id: {{ user_id }})</div>
                     <div>初级纪录：<PreviewNumber :id="+b_t_id" :text="ms_to_s(b_t)">
                         </PreviewNumber> | <PreviewNumber :id="+b_bvs_id" :text="to_fixed_n(b_bvs, 3)">
@@ -61,11 +61,12 @@ const data = defineProps({
     },
     user_name: {
         type: String,
+        default: '',
     },
 })
 
-const render = ref<Boolean>(false); // 控制只渲染一次
-const visible = ref<Boolean>(false);
+const render = ref<boolean>(false); // 控制只渲染一次
+const visible = ref<boolean>(false);
 const is_loading = ref(true);
 
 const realname = ref("");
@@ -148,12 +149,12 @@ const pop_hide = () => {
     is_loading.value = true;
 }
 
-const visit_me = (user_id: Number) => {
+const visit_me = (user_id: number) => {
     // proxy.$store.commit('updatePlayer', { "id": id.value, "realname":realname.value });
     // localStorage.setItem("player", JSON.stringify({ "id": id.value, "realname":realname.value }));
     // localStorage.setItem("player", JSON.stringify({ "id": id.value }));
-    store.player.id = +data.user_id;
-    router.push(`player\/${store.player.id}`)
+    store.player.id = +user_id;
+    router.push(`player/${store.player.id}`)
 }
 
 // 实现点旁边时候关闭气泡
