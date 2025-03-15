@@ -93,7 +93,7 @@ const pop_show = async () => {
     await proxy.$axios.get('/msuser/info_abstract/',
         {
             params: {
-                id: data.user_id,
+                id: data.userId,
             }
         }
     ).then(function (response) {
