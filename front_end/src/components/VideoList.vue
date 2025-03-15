@@ -60,7 +60,7 @@ const { t } = useI18n();
 const data = defineProps({
     videos: {
         type: Array,
-        default: []
+        default() { return [] },
     },
     // 反序
     reverse: {

@@ -84,12 +84,6 @@ const email_code_placeholder = computed(() => {
     else if (email_success.value) return t('msg.pleaseSeeEmail');
     else return '';
 })
-const send_email_code_button_disabled = computed(() => {
-    if (prop.emailState !== 'success') return true;
-    else if (captchaFormRef.value?.validateState !== 'success') return true;
-    else if (email_handling.value) return true;
-    else return false;
-})
 
 const captchaHandler = (value: string) => {
     if (value.length == 0) validateError(captchaFormRef, t('msg.captchaRequired'));

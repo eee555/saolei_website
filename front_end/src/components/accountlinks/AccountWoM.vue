@@ -35,7 +35,7 @@ import { ElDescriptions, ElDescriptionsItem, ElTable, ElTableColumn, ElText, ElI
 const prop = defineProps({
     data: {
         type: Object as PropType<any>,
-        default: {},
+        default() { return {}; },
     }
 })
 

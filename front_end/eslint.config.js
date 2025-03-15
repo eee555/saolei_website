@@ -35,6 +35,7 @@ export default typescriptEslint.config(
       'vue/no-template-shadow': 'off',
       'no-irregular-whitespace': 'off',
       "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_"}],
+      'no-control-regex': 'off',
     },
   },
   eslintConfigPrettier

@@ -13,6 +13,7 @@ import { ElButton } from "element-plus";
 const { id } = defineProps({
     id: {
         type: Number,
+        required: true,
     }
 })
 
@@ -45,7 +46,7 @@ const { id } = defineProps({
 // }
 
 
-const download = (event: MouseEvent, id: Number | undefined) => {
+const download = (event: MouseEvent, id: number | undefined) => {
     if (!id) {
         return
     }
