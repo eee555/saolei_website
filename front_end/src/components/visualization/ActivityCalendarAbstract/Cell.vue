@@ -18,9 +18,9 @@
                     <el-text
                         v-t="{ path: 'activityCalendar.tooltip.uploadedNVideosOnDate', args: [toISODateString(date), videos.length] }" />
                     <br>
-                    <span v-for="_ in count.b" class="dot" style="background-color: #f00;"></span>
-                    <span v-for="_ in count.i" class="dot" style="background-color: #080;"></span>
-                    <span v-for="_ in count.e" class="dot" style="background-color: #00f;"></span>
+                    <span v-for="i in count.b" :key="i" class="dot" style="background-color: #f00;"></span>
+                    <span v-for="i in count.i" :key="i" class="dot" style="background-color: #080;"></span>
+                    <span v-for="i in count.e" :key="i" class="dot" style="background-color: #00f;"></span>
                 </template>
             </base-card-small>
         </template>
