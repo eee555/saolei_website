@@ -55,11 +55,11 @@ import { store } from '../store'
 import { ElLink, ElPopover, ElImage, ElButton, vLoading } from "element-plus";
 
 const data = defineProps({
-    user_id: {
+    userId: {
         type: Number,
         required: true,
     },
-    user_name: {
+    userName: {
         type: String,
         default: '',
     },

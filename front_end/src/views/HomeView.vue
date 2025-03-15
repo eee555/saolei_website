@@ -20,8 +20,8 @@
                             <el-text style="margin-right: 5px">
                                 {{ utc_to_local_format(news.time) }}
                             </el-text>
-                            <PlayerName class="name" style="vertical-align: top;" :user_id="+news.player_id"
-                                :user_name="news.player" />
+                            <PlayerName class="name" style="vertical-align: top;" :user-id="+news.player_id"
+                                :user-name="news.player" />
                             <el-text v-t="{path: 'news.breakRecordTo', args: {
                                     mode: t('common.mode.' + news.mode), level:
                                         t('common.level.' + news.level), stat: t('common.prop.' + news.index)

@@ -31,7 +31,7 @@
 
             <span class="rank">{{ key - 19 + (state.CurrentPage) * 20 }}</span>
             <!-- <span class="name">{{ player.name }}</span> -->
-            <PlayerName class="name" :user_id="player.name_id" :user_name="player.name"></PlayerName>
+            <PlayerName class="name" :user-id="player.name_id" :user-name="player.name"></PlayerName>
             <!-- <span class="beginner">{{ to_fixed_n(player.beginner, 3) }}</span> -->
             <span class="number_wid">
                 <PreviewNumber :id="player.beginner_id" :text="to_fixed_n(player.beginner, 3)">

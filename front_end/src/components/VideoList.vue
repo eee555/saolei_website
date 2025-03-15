@@ -11,7 +11,7 @@
             sortable />
         <el-table-column v-if="need_player_name" min-width="80">
             <template #default="player">
-                <PlayerName class="name" :user_id="+player.row.player_id" :user_name="player.row.player"></PlayerName>
+                <PlayerName class="name" :user-id="+player.row.player_id" :user-name="player.row.player"></PlayerName>
             </template>
         </el-table-column>
         <el-table-column min-width="20">
