@@ -1,7 +1,7 @@
 <template>
     <Header v-if="header" />
     <el-row v-if="groupedVideoAbstract.size > 0" style="white-space: nowrap;">
-        <YLabel :minBv="minBv" :maxBv="maxBv" />
+        <YLabel :min-bv="minBv" :max-bv="maxBv" />
         <span
             :style="{ position: 'relative', width: '89%', minWidth: '40em', lineHeight: BBBvSummaryConfig.cellHeight + 'px' }">
             <template v-for="bv in range(minBv, maxBv)">

@@ -26,7 +26,7 @@ export function simple_formatter(f: Function): Function {
 
 import { ComponentCustomProperties } from "vue";
 export async function approve(proxy: ComponentCustomProperties & Record<string, any>, id: number) {
-    var status;
+    let status;
     await proxy.$axios.get('video/approve?ids=[' + id + ']').then(function (response) {
         const data = response.data;
         if (data.length != 1) {
@@ -39,7 +39,7 @@ export async function approve(proxy: ComponentCustomProperties & Record<string, 
 }
 
 export async function freeze(proxy: ComponentCustomProperties & Record<string, any>, id: number) {
-    var status;
+    let status;
     await proxy.$axios.get('video/freeze?ids=[' + id + ']').then(function (response) {
         const data = response.data;
         if (data.length != 1) {

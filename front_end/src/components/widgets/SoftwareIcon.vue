@@ -29,7 +29,7 @@ import { ElText } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import LazyTooltip from './LazyTooltip.vue';
 
-const data = defineProps({
+defineProps({
     software: {
         type: String,
         default: "z",

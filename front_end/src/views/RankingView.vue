@@ -53,9 +53,8 @@
     </div>
 
     <div style="margin-top: 16px;">
-        <el-pagination v-model:current-page="state.CurrentPage" @current-change="currentChange" @prev-click="prevClick"
-            :next-click="nextClick" :page-size="20" layout="prev, pager, next, jumper" :page-count="state.Total"
-            prev-text="上一页" next-text="下一页">
+        <el-pagination v-model:current-page="state.CurrentPage" :next-click="nextClick" :page-size="20" layout="prev, pager, next, jumper" :page-count="state.Total"
+            prev-text="上一页" next-text="下一页" @current-change="currentChange" @prev-click="prevClick">
         </el-pagination>
     </div>
 </template>

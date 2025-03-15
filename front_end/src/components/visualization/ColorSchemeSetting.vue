@@ -21,7 +21,7 @@
         <el-checkbox v-model="developerMode">Developer Mode</el-checkbox>
     </el-row>
     <el-row v-if="developerMode">
-        <el-input v-model="colorSchemeString" type="textarea" :rows="countRows(colorSchemeString)" @change="(value: string) => {colorScheme = JSON.parse(value)}" style="font-family: 'Courier New', Courier, monospace;"/>
+        <el-input v-model="colorSchemeString" type="textarea" :rows="countRows(colorSchemeString)" style="font-family: 'Courier New', Courier, monospace;" @change="(value: string) => {colorScheme = JSON.parse(value)}"/>
     </el-row>
 </template>
 

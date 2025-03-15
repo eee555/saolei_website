@@ -3,16 +3,16 @@
         <el-container>
             <el-main style="padding: 1%;">
                 <el-tabs type="border-card" style=" min-height: 300px;">
-                    <el-tab-pane style="max-height: 300px; overflow: auto;user-select: none;"
-                        v-loading="news_queue_status == 1">
+                    <el-tab-pane v-loading="news_queue_status == 1" style="max-height: 300px; overflow: auto;user-select: none;"
+                       >
                         <template #label>
                             <span v-t="'home.news'"/>&nbsp;
                             <el-text v-if="news_queue_status == 2" type="success"><el-icon>
                                     <Check />
                                 </el-icon></el-text>
                             <el-link v-else-if="active_tab == 'newest'" :underline="false"
-                                :disabled="news_queue_status != 0" @click="update_news_queue"
-                                style="vertical-align: baseline;">
+                                :disabled="news_queue_status != 0" style="vertical-align: baseline;" @click="update_news_queue"
+                               >
                                 <base-icon-refresh />
                             </el-link>
                         </template>
@@ -22,10 +22,10 @@
                             </el-text>
                             <PlayerName class="name" style="vertical-align: top;" :user_id="+news.player_id"
                                 :user_name="news.player" />
-                            <el-text style="vertical-align: middle;" v-t="{path: 'news.breakRecordTo', args: {
+                            <el-text v-t="{path: 'news.breakRecordTo', args: {
                                     mode: t('common.mode.' + news.mode), level:
                                         t('common.level.' + news.level), stat: t('common.prop.' + news.index)
-                                }}"></el-text>
+                                }}" style="vertical-align: middle;"></el-text>
                             <PreviewNumber :id="news.video_id" :text="to_fixed_n(news.value, 3)" />
                             <el-text style="margin-left: 5px; vertical-align: middle;">
                                 {{ news.delta == "新" ? "" : news.delta > 0 ? "↑" : "↓" }}{{ news.delta }}
@@ -34,16 +34,15 @@
                         <!-- 2023年2月26日 11:45 周炎亮 将高级标准模式时间记录刷新为 91.52 ↑3.60-->
                     </el-tab-pane>
                 </el-tabs>
-                <el-tabs type="border-card" style="margin-top: 2%;" v-model="active_tab">
-                    <el-tab-pane class="bottom_tabs" :lazy="true" name="newest" v-loading="newest_queue_status == 1">
+                <el-tabs v-model="active_tab" type="border-card" style="margin-top: 2%;">
+                    <el-tab-pane v-loading="newest_queue_status == 1" class="bottom_tabs" :lazy="true" name="newest">
                         <template #label>
                             <span v-t="'home.latestScore'"/>&nbsp;
                             <el-text v-if="newest_queue_status == 2" type="success"><el-icon>
                                     <Check />
                                 </el-icon></el-text>
                             <el-link v-else-if="active_tab == 'newest'" :underline="false"
-                                :disabled="newest_queue_status != 0" @click="update_newest_queue"
-                                style="vertical-align: baseline;">
+                                :disabled="newest_queue_status != 0" style="vertical-align: baseline;" @click="update_newest_queue">
                                 <base-icon-refresh />
                             </el-link>
                         </template>
@@ -51,8 +50,8 @@
                         </VideoList>
                     </el-tab-pane>
                     <el-tab-pane :label="t('home.reviewQueue')" class="bottom_tabs" :lazy="true" name="review">
-                        <VideoList :videos="review_queue" :review_mode="store.user.is_staff"
-                            @update="update_review_queue" v-loading="review_queue_updating"></VideoList>
+                        <VideoList v-loading="review_queue_updating" :videos="review_queue" :review_mode="store.user.is_staff"
+                            @update="update_review_queue"></VideoList>
                     </el-tab-pane>
                 </el-tabs>
             </el-main>
@@ -100,7 +99,7 @@
 </template>
 
 <script setup lang='ts'>
-import { onMounted, ref, Ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { ElContainer, ElAside, ElIcon, ElMain, ElTabs, ElTabPane, ElText, ElLink, vLoading } from 'element-plus';
 import useCurrentInstance from "@/utils/common/useCurrentInstance";
 import PreviewNumber from '@/components/PreviewNumber.vue';
@@ -144,7 +143,7 @@ const update_review_queue = async () => {
         }
     ).then(function (response) {
         review_queue.value.splice(0, review_queue.value.length)
-        for (let key in response.data) {
+        for (const key in response.data) {
             response.data[key] = JSON.parse(response.data[key] as string);
             response.data[key]["key"] = Number.parseInt(key);
             review_queue.value.push(response.data[key]);
@@ -161,7 +160,7 @@ const update_newest_queue = async () => {
             params: {}
         }
     ).then(function (response) {
-        for (let key in response.data) {
+        for (const key in response.data) {
             response.data[key] = JSON.parse(response.data[key] as string);
             response.data[key]["key"] = Number.parseInt(key);
             newest_queue.value.push(response.data[key]);

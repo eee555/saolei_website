@@ -23,7 +23,7 @@ onMounted(() => {
             params: {}
         }
     ).then(function (response) {
-        for (let key in response.data) {
+        for (const key in response.data) {
             response.data[key] = JSON.parse(response.data[key] as string);
             response.data[key]["key"] = Number.parseInt(key);
             review_queue.value.push(response.data[key]);
@@ -34,7 +34,7 @@ onMounted(() => {
             params: {}
         }
     ).then(function (response) {
-        for (let key in response.data) {
+        for (const key in response.data) {
             response.data[key] = JSON.parse(response.data[key] as string);
             response.data[key]["key"] = Number.parseInt(key);
             newest_queue.value.push(response.data[key]);

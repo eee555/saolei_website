@@ -5,7 +5,6 @@
 
 <script lang="ts" setup>
 // 个人主页的个人所有录像部分
-import { ElCard } from 'element-plus';
 import VideoList from '@/components/VideoList.vue';
 import { store } from '../store'
 import UserArbiterCSV from '@/components/widgets/UserArbiterCSV.vue';

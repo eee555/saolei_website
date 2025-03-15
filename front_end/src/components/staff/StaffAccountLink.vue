@@ -2,7 +2,7 @@
     账号绑定
     <el-form :model="form">
         <el-form-item label="ID">
-            <el-input type="number" v-model="form.id"/>
+            <el-input v-model="form.id" type="number"/>
         </el-form-item>
         <el-form-item label="平台">
             <el-select v-model="form.platform">
@@ -41,7 +41,7 @@ const verify = () => {
             platform: form.platform,
             identifier: form.identifier,
         }
-    ).then(function (response) {
+    ).then(function (_response) {
         form.id = 0;
         form.platform = '';
         form.identifier = '';
@@ -55,7 +55,7 @@ const unverify = () => {
             platform: form.platform,
             identifier: form.identifier,
         }
-    ).then(function (response) {
+    ).then(function (_response) {
         form.id = 0;
         form.platform = '';
         form.identifier = '';

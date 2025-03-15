@@ -2,13 +2,13 @@
     <el-tooltip v-if="local.menu_icon" :content="props.text">
         <el-icon class="menumargin">
             <slot v-if="props.usehtml" />
-            <component v-else :is="props.icon" class="menuicon" />
+            <component :is="props.icon" v-else class="menuicon" />
         </el-icon>
     </el-tooltip>
     <span v-else style="padding-right: 5px">
         <el-icon>
             <slot v-if="props.usehtml" />
-            <component v-else :is="props.icon" class="menuicon" />
+            <component :is="props.icon" v-else class="menuicon" />
         </el-icon>{{ props.text }}
     </span>
 </template>
@@ -18,8 +18,8 @@ import { ElTooltip, ElIcon } from "element-plus";
 import { local } from "@/store";
 
 const props = defineProps({
-    text: String,
-    icon: String,
+    text: { type: String, required: true},
+    icon: { type: String, required: true},
     usehtml: {
         type: Boolean,
         default: false,

@@ -60,8 +60,6 @@ function refresh() {
 watch(() => prop.videos, refresh, { immediate: true });
 
 const height = computed(() => BBBvSummaryConfig.value.cellHeight + 'px');
-const top = computed(() => prop.yOffset*BBBvSummaryConfig.value.cellHeight + 'px');
-const left = computed(() => prop.xOffset * 10 + '%');
 
 const color = computed(() => {
     if (bestIndex.value === -1) return 'rgba(0,0,0,0)';

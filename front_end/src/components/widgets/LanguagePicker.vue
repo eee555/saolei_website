@@ -1,5 +1,5 @@
 <template>
-    <el-dropdown @command="changeLanguage" trigger="click">
+    <el-dropdown trigger="click" @command="changeLanguage">
         <el-icon class="icon" size="30px">
             <svg width="800px" height="800px" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
                 <title>ionicons-v5-l</title>
