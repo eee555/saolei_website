@@ -13,32 +13,32 @@
             <div style="display: inline-block;vertical-align:middle;width: 360px;text-align:left;">
                 <el-row :gutter="5" style="text-align: center;margin-bottom: 5px;">
                     <el-col :span="24">
-                        <div class="grid-content ep-bg-purple">
+                        <div class="ep-bg-purple grid-content">
                             {{ videoMsg.filename }}
                         </div>
                     </el-col>
                 </el-row>
                 <el-row :gutter="5">
                     <el-col :span="11">
-                        <div class="grid-content ep-bg-purple">
+                        <div class="ep-bg-purple grid-content">
                             难度：{{ videoMsg.level }}
                         </div>
                     </el-col>
                     <el-col :span="13">
                         <!-- @vue-skip -->
-                        <div class="grid-content ep-bg-purple">
+                        <div class="ep-bg-purple grid-content">
                             时间：{{ ms_to_s(videoMsg.timems) }}s
                         </div>
                     </el-col>
                 </el-row>
                 <el-row :gutter="5">
                     <el-col :span="11">
-                        <div class="grid-content ep-bg-purple">
+                        <div class="ep-bg-purple grid-content">
                             3BV：{{ videoMsg.bbbv }}
                         </div>
                     </el-col>
                     <el-col :span="13">
-                        <div class="grid-content ep-bg-purple">
+                        <div class="ep-bg-purple grid-content">
                             3BV/s：{{ videoMsg.bvs }}
                         </div>
                     </el-col>

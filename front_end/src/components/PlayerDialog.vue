@@ -4,7 +4,7 @@
         :modal="false" :lock-scroll="false" width="700"
     >
         <iframe 
-            ref="video_iframe" class="flop-player-iframe flop-player-display-none" style="width: 100%; height: 500px; border: 0px"
+            ref="video_iframe" class="flop-player-display-none flop-player-iframe" style="width: 100%; height: 500px; border: 0px"
             src="/flop/index.html"
         />
     </el-dialog>

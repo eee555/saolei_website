@@ -36,6 +36,7 @@ export default typescriptEslint.config(
       'no-control-regex': 'off',
       'vue/html-indent': ['error', 4],
       'vue/max-attributes-per-line': 'off',
+      'vue/static-class-names-order': 'error',
     },
   },
 );
