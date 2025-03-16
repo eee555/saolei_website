@@ -6,7 +6,7 @@
         </el-form-item>
         <el-form-item label="平台">
             <el-select v-model="form.platform">
-                <el-option v-for="(item, key) of platformlist" :label="item.name" :value="key"></el-option>
+                <el-option v-for="(item, key) of platformlist" :key="key" :label="item.name" :value="key"></el-option>
             </el-select>
         </el-form-item>
         <el-form-item label="平台ID">

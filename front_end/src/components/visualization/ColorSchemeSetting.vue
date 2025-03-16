@@ -1,7 +1,7 @@
 <template>
     <el-row style="align-items: center">
         <el-color-picker v-model="colorScheme.colors[0]" show-alpha />
-        <template v-for = "(item, index) in colorScheme.thresholds">
+        <template v-for = "(item, index) in colorScheme.thresholds" :key="index">
             &nbsp;{{ "<" }}&nbsp;
             <el-input-number v-model="colorScheme.thresholds[index]" :min="index == 0 ? -Infinity : colorScheme.thresholds[index-1]" :max="index == colorScheme.thresholds.length-1 ? Infinity : colorScheme.thresholds[index+1]" :controls="false" size="small" style="width:50px; display: inline-block"/>
             &nbsp;{{ "<" }}&nbsp;

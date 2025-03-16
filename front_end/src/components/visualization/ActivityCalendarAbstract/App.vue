@@ -14,7 +14,7 @@
                     height: (cellFullSize * 8 + activityCalendarConfig.cellMargin) + 'px',
                     filter: 'invert(' + (local.darkmode ? 0 : 1) + ')',
                 }">
-                    <template v-for="date of generateDateRange(startDate, endDate)">
+                    <template v-for="date of generateDateRange(startDate, endDate)" :key="date.toISOString()">
                         <Cell :date="date" :start-date="startDate"
                             :videos="groupedVideoAbstract.get(toISODateString(date))"
                             :x-offset="Math.round((getWeekTime(date) - startWeekTime) / fullWeek)"

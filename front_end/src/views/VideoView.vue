@@ -1,17 +1,17 @@
 <template>
     <el-row class="mb-4" style="margin-bottom: 10px;">
-        <el-button v-for="(tag, key) in level_tags" type="warning" :plain="!(level_tag_selected == key)" :size="'small'"
+        <el-button v-for="(tag, key) in level_tags" :key="key" type="warning" :plain="!(level_tag_selected == key)" :size="'small'"
             @click="level_tag_selected = key as string; request_videos();">{{ t('common.level.' + tag.key)
             }}</el-button>
     </el-row>
 
     <el-row class="mb-4" style="margin-bottom: 10px;">
-        <el-button v-for="(tag, key) in mode_tags" type="success" :plain="!(mode_tag_selected == key)" size="small"
+        <el-button v-for="(tag, key) in mode_tags" :key="key" type="success" :plain="!(mode_tag_selected == key)" size="small"
             @click="mode_tag_selected = key as string; request_videos();">{{ tag.name }}</el-button>
     </el-row>
 
     <el-row class="mb-4" style="margin-bottom: 10px;">
-        <el-button v-for="(value, key) in index_tags" type="primary" :plain="!value.selected" size="small"
+        <el-button v-for="(value, key) in index_tags" :key="key" type="primary" :plain="!value.selected" size="small"
             @click="index_select(key, value)">{{ t('common.prop.' + key)
             }}</el-button>
     </el-row>
@@ -29,7 +29,7 @@
             <VideoViewState />
             <el-table-column type="index" :index="offsetIndex" fixed></el-table-column>
             <VideoViewRealname />
-            <el-table-column v-for="key in selected_index()" v-slot="scope" :prop="index_tags[key].key"
+            <el-table-column v-for="key in selected_index()" :key="key" v-slot="scope" :prop="index_tags[key].key"
                 :label="t('common.prop.' + key)" sortable="custom"
                 :sort-orders="index_tags[key].reverse ? (['descending', 'ascending']) : (['ascending', 'descending'])">
                 <span class="nobr">{{ columnFormatter(key, scope.row[index_tags[key].key]) }}</span>

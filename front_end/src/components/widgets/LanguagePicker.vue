@@ -10,7 +10,7 @@
             </svg><!-- Source: https://www.svgrepo.com/svg/326688/language-outline -->
         </el-icon>
         <template #dropdown>
-            <el-dropdown-item v-for="item in options" :command="item.lang">
+            <el-dropdown-item v-for="item in options" :key="item.lang" :command="item.lang">
                 {{ item.text }}
             </el-dropdown-item>
         </template>

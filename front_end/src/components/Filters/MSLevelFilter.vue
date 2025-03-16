@@ -1,6 +1,6 @@
 <template>
     <el-checkbox-group v-model="level" size="small">
-        <el-checkbox-button v-for="l in MS_Levels" :value="l">
+        <el-checkbox-button v-for="l in MS_Levels" :key="l" :value="l">
             {{ t('common.level.' + l) }}
         </el-checkbox-button>
     </el-checkbox-group>

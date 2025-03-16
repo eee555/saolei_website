@@ -22,7 +22,6 @@ export default typescriptEslint.config(
       },
     },
     rules: {
-      'vue/valid-v-for': 'off',
       'vue/first-attribute-linebreak': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/ban-ts-comment': 'off',

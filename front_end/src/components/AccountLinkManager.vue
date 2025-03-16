@@ -48,7 +48,7 @@
         <el-form :model="form">
             <el-form-item :label="t('accountlink.platform')">
                 <el-select v-model="form.platform">
-                    <el-option v-for="(item, key) of platformlist" :value="key" :label="item.name"
+                    <el-option v-for="(item, key) of platformlist" :key="key" :value="key" :label="item.name"
                         :disabled="userHasPlatform(key)" />
                 </el-select>
             </el-form-item>

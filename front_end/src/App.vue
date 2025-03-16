@@ -8,7 +8,7 @@
                         <el-image class="logo1" :src="logo_1" :fit="'cover'" />
                         <el-image v-if="!local.menu_icon" class="logo2" :src="logo_2" :fit="'cover'" />
                     </el-menu-item>
-                    <el-menu-item v-for="item in menu_items" :index="'/' + item.index">
+                    <el-menu-item v-for="item in menu_items" :key="item.index" :index="'/' + item.index">
                         <IconMenuItem :text="t(item.content)" :icon="item.icon" />
                     </el-menu-item>
                     <div style="flex-grow: 1" />
