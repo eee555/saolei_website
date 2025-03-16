@@ -2,31 +2,45 @@
 <template>
     <div style="width: 480px;margin: 8px;">
         <el-card :body-style="{ padding: '0px', margin: '8px' }" style="border-radius: 8px;">
-            <img v-if="videoMsg.filename.slice(-3) === 'avf'" src="../assets/img/img_arbiter.png"
-                style="height: 54px;width: 54px;vertical-align:middle;margin-left: 5px;margin-right: 12px;" />
-            <img v-if="videoMsg.filename.slice(-3) === 'evf'" src="../assets/img/img_meta.png"
-                style="height: 54px;width: 54px;vertical-align:middle;margin-left: 5px;margin-right: 12px;" />
+            <img 
+                v-if="videoMsg.filename.slice(-3) === 'avf'" src="../assets/img/img_arbiter.png"
+                style="height: 54px;width: 54px;vertical-align:middle;margin-left: 5px;margin-right: 12px;"
+            >
+            <img 
+                v-if="videoMsg.filename.slice(-3) === 'evf'" src="../assets/img/img_meta.png"
+                style="height: 54px;width: 54px;vertical-align:middle;margin-left: 5px;margin-right: 12px;"
+            >
             <div style="display: inline-block;vertical-align:middle;width: 360px;text-align:left;">
                 <el-row :gutter="5" style="text-align: center;margin-bottom: 5px;">
                     <el-col :span="24">
-                        <div class="grid-content ep-bg-purple">{{ videoMsg.filename }}</div>
+                        <div class="ep-bg-purple grid-content">
+                            {{ videoMsg.filename }}
+                        </div>
                     </el-col>
                 </el-row>
                 <el-row :gutter="5">
                     <el-col :span="11">
-                        <div class="grid-content ep-bg-purple">难度：{{ videoMsg.level }}</div>
+                        <div class="ep-bg-purple grid-content">
+                            难度：{{ videoMsg.level }}
+                        </div>
                     </el-col>
                     <el-col :span="13">
                         <!-- @vue-skip -->
-                        <div class="grid-content ep-bg-purple">时间：{{ ms_to_s(videoMsg.timems) }}s</div>
+                        <div class="ep-bg-purple grid-content">
+                            时间：{{ ms_to_s(videoMsg.timems) }}s
+                        </div>
                     </el-col>
                 </el-row>
                 <el-row :gutter="5">
                     <el-col :span="11">
-                        <div class="grid-content ep-bg-purple">3BV：{{ videoMsg.bbbv }}</div>
+                        <div class="ep-bg-purple grid-content">
+                            3BV：{{ videoMsg.bbbv }}
+                        </div>
                     </el-col>
                     <el-col :span="13">
-                        <div class="grid-content ep-bg-purple">3BV/s：{{ videoMsg.bvs }}</div>
+                        <div class="ep-bg-purple grid-content">
+                            3BV/s：{{ videoMsg.bvs }}
+                        </div>
                     </el-col>
                 </el-row>
             </div>

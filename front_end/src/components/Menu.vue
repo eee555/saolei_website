@@ -2,17 +2,14 @@
 <template>
     <div style="float: right;">
         <div style="display: inline-flex;">
-            <Login @login="user_login" @logout="user_logout"></Login>
+            <Login @login="user_login" @logout="user_logout" />
         </div>
-        <span style="width:12px; display:inline-block">
-        </span>|<span style="width:12px; display:inline-block"></span>
-        <Downloads></Downloads>
-        <span style="width:12px; display:inline-block">
-        </span>|<span style="width:12px; display:inline-block"></span>
-        <FriendlyLink></FriendlyLink>
-        <span style="width:12px; display:inline-block">
-        </span>|<span style="width:12px; display:inline-block"></span>
-        <Thanks></Thanks>
+        <span style="width:12px; display:inline-block" />|<span style="width:12px; display:inline-block" />
+        <Downloads />
+        <span style="width:12px; display:inline-block" />|<span style="width:12px; display:inline-block" />
+        <FriendlyLink />
+        <span style="width:12px; display:inline-block" />|<span style="width:12px; display:inline-block" />
+        <Thanks />
     </div>
 </template>
   

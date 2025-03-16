@@ -1,20 +1,28 @@
 <template>
-    <el-button v-if="store.login_status != LoginStatus.IsLogin" class="fakemenuitem"
-        text size="small" @click.stop="login_visible = true">
+    <el-button 
+        v-if="store.login_status != LoginStatus.IsLogin" class="fakemenuitem"
+        text size="small" @click.stop="login_visible = true"
+    >
         {{ t('menu.login') }}
     </el-button>
-    <el-button v-if="store.login_status != LoginStatus.IsLogin"
-        style="margin-left: 0px;" class="fakemenuitem" text size="small" @click.stop="register_visible = true">
+    <el-button 
+        v-if="store.login_status != LoginStatus.IsLogin"
+        style="margin-left: 0px;" class="fakemenuitem" text size="small" @click.stop="register_visible = true"
+    >
         {{ t('menu.register') }}
     </el-button>
-    <el-button v-if="store.login_status == LoginStatus.IsLogin" class="fakemenuitem" text
-        size="small" @click.stop="logout();">
+    <el-button 
+        v-if="store.login_status == LoginStatus.IsLogin" class="fakemenuitem" text
+        size="small" @click.stop="logout();"
+    >
         {{ t('menu.logout') }}
     </el-button>
     <!-- 以下的所有表单的输入项都需要@keydown.stop，解决horizontal菜单截留空格操作的问题。 -->
     <!-- https://github.com/element-plus/element-plus/issues/10172#issuecomment-1295794523 -->
-    <LoginDialog v-model="login_visible" @login="login"
-        @forget-password="login_visible = false; retrieve_visible = true;" @keydown.stop />
+    <LoginDialog 
+        v-model="login_visible" @login="login"
+        @forget-password="login_visible = false; retrieve_visible = true;" @keydown.stop
+    />
     <RegisterDialog v-model="register_visible" @login="login" @keydown.stop />
     <RetrieveDialog v-model="retrieve_visible" @login="login" @keydown.stop />
 </template>
@@ -106,7 +114,7 @@ const logout = async () => {
 
 <style lang="less" scoped>
 .fakemenuitem {
-    height: v-bind("local.menu_height + 'px'");
-    font-size: v-bind("local.menu_font_size + 'px'"); // Somehow doesn't work
+    height: v-bind("`${local.menu_height}px`");
+    font-size: v-bind("`${local.menu_font_size}px`"); // Somehow doesn't work
 }
 </style>

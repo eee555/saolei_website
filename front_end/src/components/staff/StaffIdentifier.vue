@@ -1,10 +1,16 @@
 <template>
     标识
-    <el-input v-model="identifier"></el-input>
-    <el-button @click="handleGet">查询</el-button>
-    <el-button v-if="safe != 'unknown'" @click="handleDelete">删除</el-button>
-    <el-button v-if="safe == 'false'" @click="handleApprove">通过审核</el-button>
-    <br/>
+    <el-input v-model="identifier" />
+    <el-button @click="handleGet">
+        查询
+    </el-button>
+    <el-button v-if="safe != 'unknown'" @click="handleDelete">
+        删除
+    </el-button>
+    <el-button v-if="safe == 'false'" @click="handleApprove">
+        通过审核
+    </el-button>
+    <br>
     用户ID: {{ userid }}，状态：{{ safe }}
 </template>
 

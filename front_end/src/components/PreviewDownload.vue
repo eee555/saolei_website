@@ -1,6 +1,10 @@
 <template>
-    <el-button :size="'small'" plain icon="View" @click="preview(id);">预览</el-button>
-    <el-button :size="'small'" plain icon="Download" @click="download($event, id)">下载</el-button>
+    <el-button :size="'small'" plain icon="View" @click="preview(id);">
+        预览
+    </el-button>
+    <el-button :size="'small'" plain icon="Download" @click="download($event, id)">
+        下载
+    </el-button>
 </template>
 
 <script setup lang="ts" name="PreviewDownload">

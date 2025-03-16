@@ -1,26 +1,26 @@
 <template>
     <el-text v-if="software == 'a'">
         <LazyTooltip content="Minesweeper Arbiter" :hide-after="0" :show-after="500">
-            <img style="width: 16px; height: 16px" src="../../assets/img/ms_arbiter_MAINICON.ico"/>
+            <img style="width: 16px; height: 16px" src="../../assets/img/ms_arbiter_MAINICON.ico">
         </LazyTooltip>
     </el-text>
     <el-text v-else-if="software == 'e'">
         <LazyTooltip :content="t('common.software.metasweeper')" :hide-after="0" :show-after="500">
-            <img style="width: 16px; height: 16px" src="../../assets/img/img_meta.png"/>
+            <img style="width: 16px; height: 16px" src="../../assets/img/img_meta.png">
         </LazyTooltip>
     </el-text>
     <el-text v-else-if="software == 'm'">
         <LazyTooltip content="Clone 2007" :hide-after="0" :show-after="500">
-            <img style="width: 16px; height: 16px" src="../../assets/img/clone2007.ico"/>
+            <img style="width: 16px; height: 16px" src="../../assets/img/clone2007.ico">
         </LazyTooltip>
     </el-text>
     <el-text v-else-if="software == 'r'">
         <LazyTooltip content="Viennasweeper" :hide-after="0" :show-after="500">
-            <img style="width: 16px; height: 16px" src="../../assets/img/viennasweeper.ico"/>
+            <img style="width: 16px; height: 16px" src="../../assets/img/viennasweeper.ico">
         </LazyTooltip>
     </el-text>
     <el-text v-else type="danger">
-        <QuestionFilled style="width: 16px; height: 16px"/>
+        <QuestionFilled style="width: 16px; height: 16px" />
     </el-text>
 </template>
 

@@ -1,7 +1,7 @@
 <template>
-	<div v-loading="loading" class="canvas-box" :style="{ height: '32px' }">
-		<img :src="captchaUrl" alt="" @click="refreshPic()">
-	</div>
+    <div v-loading="loading" class="canvas-box" :style="{ height: '32px' }">
+        <img :src="captchaUrl" alt="" @click="refreshPic()">
+    </div>
 </template>
 
 <script setup lang="ts">

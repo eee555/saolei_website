@@ -1,35 +1,43 @@
 <template>
-    <el-dialog v-model="visible" :title="t('login.loginTitle')" width="400px" align-center draggable
-        :lock-scroll="false" @close="resetForm(ruleFormRef); emit('close')">
+    <el-dialog 
+        v-model="visible" :title="t('login.loginTitle')" width="400px" align-center draggable
+        :lock-scroll="false" @close="resetForm(ruleFormRef); emit('close')"
+    >
         <el-form ref="ruleFormRef" :rules="rules" :model="loginForm">
             <!-- 用户名 -->
             <el-form-item prop="username" :label="t('form.username')">
-                <el-input v-model="loginForm.username" prefix-icon="User" maxlength="20" show-word-limit></el-input>
+                <el-input v-model="loginForm.username" prefix-icon="User" maxlength="20" show-word-limit />
             </el-form-item>
             <!-- 密码 -->
             <el-form-item prop="password" :label="t('form.password')" :error="passwordError">
-                <el-input v-model="loginForm.password" maxlength="20" show-password prefix-icon="Lock"></el-input>
+                <el-input v-model="loginForm.password" maxlength="20" show-password prefix-icon="Lock" />
             </el-form-item>
             <!-- 验证码 -->
             <el-form-item prop="captcha" :label="t('form.captcha')" :error="captchaError">
                 <div style="display: flex;">
-                    <el-input v-model.trim="loginForm.captcha" prefix-icon="Key" class="code" maxlength="4"></el-input>
+                    <el-input v-model.trim="loginForm.captcha" prefix-icon="Key" class="code" maxlength="4" />
                     &nbsp;
                     <ValidCode ref="refValidCode" />
                 </div>
             </el-form-item>
             <!-- 记住我 -->
             <el-form-item>
-                <el-checkbox v-model="remember_me" :label="t('login.keepMeLoggedIn')" class="rememberMe"></el-checkbox>
+                <el-checkbox v-model="remember_me" :label="t('login.keepMeLoggedIn')" class="rememberMe" />
             </el-form-item>
             <!-- 忘记密码 -->
             <el-form-item>
-                <el-link :underline="false" type="primary"
-                    style="vertical-align: bottom;" @click="emit('forgetPassword')">{{ t('login.forgetPassword') }}</el-link>
+                <el-link 
+                    :underline="false" type="primary"
+                    style="vertical-align: bottom;" @click="emit('forgetPassword')"
+                >
+                    {{ t('login.forgetPassword') }}
+                </el-link>
             </el-form-item>
             <!-- 确认 -->
             <el-form-item>
-                <el-button type="primary" @click="submitForm(ruleFormRef)">{{ t('login.loginConfirm') }}</el-button>
+                <el-button type="primary" @click="submitForm(ruleFormRef)">
+                    {{ t('login.loginConfirm') }}
+                </el-button>
             </el-form-item>
         </el-form>
     </el-dialog>

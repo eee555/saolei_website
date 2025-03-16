@@ -1,32 +1,41 @@
 <template>
-    <el-dialog v-model="visible" :title="t('login.registerTitle')" width="400px" align-center draggable
-        :lock-scroll="false" @close='resetForm(ruleFormRef)'>
+    <el-dialog 
+        v-model="visible" :title="t('login.registerTitle')" width="400px" align-center draggable
+        :lock-scroll="false" @close="resetForm(ruleFormRef)"
+    >
         <el-form ref="ruleFormRef" :model="registerForm" status-icon>
             <!-- 用户名 -->
             <el-form-item ref="usernameFormRef" prop="username" :label="t('form.username')">
-                <el-input v-model="registerForm.username" prefix-icon="User" maxlength="20" show-word-limit
-                    @input="usernameInputHandler" @change="usernameChangeHandler"></el-input>
+                <el-input 
+                    v-model="registerForm.username" prefix-icon="User" maxlength="20" show-word-limit
+                    @input="usernameInputHandler" @change="usernameChangeHandler"
+                />
             </el-form-item>
             <!-- 邮箱 -->
             <email-form-item ref="emailFormRef" v-model="registerForm.email" check-collision="true" />
             <!-- 邮箱验证码 -->
-            <email-code-block ref="emailCodeFormRef" v-model="registerForm.emailCode" :email="registerForm.email" type="register"
-                :email-state="email_state" />
+            <email-code-block 
+                ref="emailCodeFormRef" v-model="registerForm.emailCode" :email="registerForm.email" type="register"
+                :email-state="email_state"
+            />
             <!-- 密码 -->
             <password-confirm-block ref="passwordFormRef" v-model="registerForm.password" />
             <!-- 同意协议 -->
             <el-form-item prop="agreeTAC">
-                <el-checkbox v-if="true" v-model="agree_TAC" name="checkoutSecret">{{
-                    t('login.agreeTAC1')
-                }}
-                    <a target="_blank" :href="AXIOS_BASE_URL + '/agreement.html'">{{ t('login.agreeTAC2')
-                        }}</a>
+                <el-checkbox v-if="true" v-model="agree_TAC" name="checkoutSecret">
+                    {{
+                        t('login.agreeTAC1')
+                    }}
+                    <a target="_blank" :href="`${AXIOS_BASE_URL}/agreement.html`">{{ t('login.agreeTAC2')
+                    }}</a>
                 </el-checkbox>
             </el-form-item>
             <!-- 确认 -->
             <el-form-item>
-                <el-button type="primary" :disabled="confirm_disabled" @click="submitForm(ruleFormRef)">{{
-                    t('login.registerConfirm') }}</el-button>
+                <el-button type="primary" :disabled="confirm_disabled" @click="submitForm(ruleFormRef)">
+                    {{
+                        t('login.registerConfirm') }}
+                </el-button>
             </el-form-item>
         </el-form>
     </el-dialog>

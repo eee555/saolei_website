@@ -1,13 +1,14 @@
 <template>
     <tippy class="cell" :duration="0" sticky>
-        <template v-if="bestIndex == -1">&nbsp;</template>
+        <template v-if="bestIndex == -1">
+&nbsp;
+        </template>
         <el-link v-else :underline="false" @click="preview(videos[bestIndex].id)">
             {{ videos[bestIndex].displayStat(displayBy) }}
         </el-link>
         <template #content>
             <base-card-small v-if="bestIndex >= 0">
-                上传时间：{{ videos[bestIndex].upload_time }}<br/>
-
+                上传时间：{{ videos[bestIndex].upload_time }}<br>
             </base-card-small>
         </template>
     </tippy>

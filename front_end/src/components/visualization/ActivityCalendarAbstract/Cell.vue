@@ -1,26 +1,32 @@
 <template>
     <Tippy class="cell" :duration="0" sticky>
-        <el-text v-if="activityCalendarConfig.showDate" :style="{
-            position: 'absolute',
-            top: activityCalendarConfig.cellSize / 2 + 'px',
-            left: activityCalendarConfig.cellSize / 2 + 'px',
-            transform: 'translate(-50%, -50%)',
-            fontSize: activityCalendarConfig.cellSize * 0.6 + 'px',
-        }"> <!-- 用class的情况下不知为何字号不会生效 -->
+        <el-text 
+            v-if="activityCalendarConfig.showDate" :style="{
+                position: 'absolute',
+                top: `${activityCalendarConfig.cellSize / 2}px`,
+                left: `${activityCalendarConfig.cellSize / 2}px`,
+                transform: 'translate(-50%, -50%)',
+                fontSize: `${activityCalendarConfig.cellSize * 0.6}px`,
+            }"
+        >
+            <!-- 用class的情况下不知为何字号不会生效 -->
             {{ date.getDate() }}
         </el-text>
         <template #content>
             <!-- vue-tippy的bug，改语言的时候content不会刷新，不算大问题就不用workaround了，等上游修复 -->
             <base-card-small>
-                <el-text v-if="videos.length == 0"
-                    v-t="{ path: 'activityCalendar.tooltip.noVideoOnDate', args: [toISODateString(date)] }" />
+                <el-text 
+                    v-if="videos.length == 0"
+                    v-t="{ path: 'activityCalendar.tooltip.noVideoOnDate', args: [toISODateString(date)] }"
+                />
                 <template v-else>
                     <el-text
-                        v-t="{ path: 'activityCalendar.tooltip.uploadedNVideosOnDate', args: [toISODateString(date), videos.length] }" />
+                        v-t="{ path: 'activityCalendar.tooltip.uploadedNVideosOnDate', args: [toISODateString(date), videos.length] }"
+                    />
                     <br>
-                    <span v-for="i in count.b" :key="i" class="dot" style="background-color: #f00;"></span>
-                    <span v-for="i in count.i" :key="i" class="dot" style="background-color: #080;"></span>
-                    <span v-for="i in count.e" :key="i" class="dot" style="background-color: #00f;"></span>
+                    <span v-for="i in count.b" :key="i" class="dot" style="background-color: #f00;" />
+                    <span v-for="i in count.i" :key="i" class="dot" style="background-color: #080;" />
+                    <span v-for="i in count.e" :key="i" class="dot" style="background-color: #00f;" />
                 </template>
             </base-card-small>
         </template>

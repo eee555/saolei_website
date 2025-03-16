@@ -1,15 +1,21 @@
 <template>
     <el-descriptions border>
-        <el-descriptions-item :label="t('common.prop.update_time')" :span="2">{{ utc_to_local_format(data.update_time) }}</el-descriptions-item>
-        <el-descriptions-item :label="t('accountlink.saoleiName')">{{ data.name }}</el-descriptions-item>
-        <el-descriptions-item :label="t('accountlink.saoleiTotalViews')">{{ data.total_views }}</el-descriptions-item>
+        <el-descriptions-item :label="t('common.prop.update_time')" :span="2">
+            {{ utc_to_local_format(data.update_time) }}
+        </el-descriptions-item>
+        <el-descriptions-item :label="t('accountlink.saoleiName')">
+            {{ data.name }}
+        </el-descriptions-item>
+        <el-descriptions-item :label="t('accountlink.saoleiTotalViews')">
+            {{ data.total_views }}
+        </el-descriptions-item>
     </el-descriptions>
     <el-table :data="datatable">
-        <el-table-column prop="category"/>
-        <el-table-column prop="b" :label="t('common.level.b')"/>
-        <el-table-column prop="i" :label="t('common.level.i')"/>
-        <el-table-column prop="e" :label="t('common.level.e')"/>
-        <el-table-column prop="s" :label="t('common.level.sum')"/>
+        <el-table-column prop="category" />
+        <el-table-column prop="b" :label="t('common.level.b')" />
+        <el-table-column prop="i" :label="t('common.level.i')" />
+        <el-table-column prop="e" :label="t('common.level.e')" />
+        <el-table-column prop="s" :label="t('common.level.sum')" />
     </el-table>
 </template>
 

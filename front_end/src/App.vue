@@ -1,14 +1,17 @@
 <template>
     <el-container style="height: 100%">
         <el-header>
-            <el-scrollbar :height="100"> <!-- 给一个足够的高度就可以不显示纵向滚动条 -->
-                <el-menu mode="horizontal" :router="true" :default-active="menu_index" :ellipsis="false"
-                    menu-trigger="click">
+            <el-scrollbar :height="100">
+                <!-- 给一个足够的高度就可以不显示纵向滚动条 -->
+                <el-menu 
+                    mode="horizontal" :router="true" :default-active="menu_index" :ellipsis="false"
+                    menu-trigger="click"
+                >
                     <el-menu-item index="/" class="logo">
                         <el-image class="logo1" :src="logo_1" :fit="'cover'" />
                         <el-image v-if="!local.menu_icon" class="logo2" :src="logo_2" :fit="'cover'" />
                     </el-menu-item>
-                    <el-menu-item v-for="item in menu_items" :index="'/' + item.index">
+                    <el-menu-item v-for="item in menu_items" :key="item.index" :index="`/${ item.index}`">
                         <IconMenuItem :text="t(item.content)" :icon="item.icon" />
                     </el-menu-item>
                     <div style="flex-grow: 1" />
@@ -21,7 +24,7 @@
                         </el-badge>
                     </el-menu-item>
                     <LanguagePicker v-show="local.language_show" style="padding-left: 8px; padding-right: 8px;" />
-                    <Login @login="user_login" @logout="user_logout"></Login>
+                    <Login @login="user_login" @logout="user_logout" />
                 </el-menu>
             </el-scrollbar>
         </el-header>
@@ -35,8 +38,10 @@
         </el-container>
     </el-container>
 
-    <el-dialog v-if="false" v-model="notice_visible" draggable :lock-scroll="false" title="站长通知"
-        :before-close="handle_notice_close" style="white-space: pre-wrap;" width="min(max(50%, 400px), 90vw)">
+    <el-dialog 
+        v-if="false" v-model="notice_visible" draggable :lock-scroll="false" title="站长通知"
+        :before-close="handle_notice_close" style="white-space: pre-wrap;" width="min(max(50%, 400px), 90vw)"
+    >
         <span>{{ notice }}</span>
         <template #footer>
             <span class="dialog-footer">
@@ -165,12 +170,12 @@ body {
 
 <style lang="less" scoped>
 .el-header {
-    --el-header-height: v-bind("local.menu_height + 'px'");
+    --el-header-height: v-bind("`${local.menu_height}px`");
     padding: 0px;
 }
 
 .el-menu {
-    height: v-bind("local.menu_height + 'px'");
+    height: v-bind("`${local.menu_height}px`");
 }
 
 .logo {
@@ -179,32 +184,32 @@ body {
     justify-content: center;
     align-items: center;
     padding: 0px;
-    padding-left: v-bind("local.menu_height / 8 + 'px'");
-    padding-right: v-bind("local.menu_height / 8 + 'px'");
+    padding-left: v-bind("`${local.menu_height / 8}px`");
+    padding-right: v-bind("`${local.menu_height / 8}px`");
 }
 
 .logo1 {
-    width: v-bind("local.menu_height - 8 + 'px'");
-    height: v-bind("local.menu_height - 8 + 'px'");
+    width: v-bind("`${local.menu_height - 8}px`");
+    height: v-bind("`${local.menu_height - 8}px`");
     padding-top: 4px;
     padding-bottom: 4px;
     display: inline-flex;
 }
 
 .logo2 {
-    width: v-bind("local.menu_height * 2.5 + 'px'");
-    height: v-bind("local.menu_height + 'px'");
+    width: v-bind("`${local.menu_height * 2.5}px`");
+    height: v-bind("`${local.menu_height}px`");
     display: inline-flex;
 }
 
 .el-menu-item {
-    font-size: v-bind("local.menu_font_size + 'px'");
+    font-size: v-bind("`${local.menu_font_size}px`");
     padding-left: 8px;
     padding-right: 5px;
 }
 
 .mainheight {
-    height: calc(100svh - v-bind("local.menu_height + 'px'"))
+    height: calc(100svh - v-bind("`${local.menu_height}px`"))
 }
 
 @media (min-width: 1024px) {  

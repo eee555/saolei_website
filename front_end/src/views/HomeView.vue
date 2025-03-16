@@ -3,16 +3,18 @@
         <el-container>
             <el-main style="padding: 1%;">
                 <el-tabs type="border-card" style=" min-height: 300px;">
-                    <el-tab-pane v-loading="news_queue_status == 1" style="max-height: 300px; overflow: auto;user-select: none;"
-                       >
+                    <el-tab-pane v-loading="news_queue_status == 1" style="max-height: 300px; overflow: auto;user-select: none;">
                         <template #label>
-                            <span v-t="'home.news'"/>&nbsp;
-                            <el-text v-if="news_queue_status == 2" type="success"><el-icon>
+                            <span v-t="'home.news'" />&nbsp;
+                            <el-text v-if="news_queue_status == 2" type="success">
+                                <el-icon>
                                     <Check />
-                                </el-icon></el-text>
-                            <el-link v-else-if="active_tab == 'newest'" :underline="false"
+                                </el-icon>
+                            </el-text>
+                            <el-link 
+                                v-else-if="active_tab == 'newest'" :underline="false"
                                 :disabled="news_queue_status != 0" style="vertical-align: baseline;" @click="update_news_queue"
-                               >
+                            >
                                 <base-icon-refresh />
                             </el-link>
                         </template>
@@ -20,12 +22,16 @@
                             <el-text style="margin-right: 5px">
                                 {{ utc_to_local_format(news.time) }}
                             </el-text>
-                            <PlayerName class="name" style="vertical-align: top;" :user-id="+news.player_id"
-                                :user-name="news.player" />
-                            <el-text v-t="{path: 'news.breakRecordTo', args: {
-                                    mode: t('common.mode.' + news.mode), level:
-                                        t('common.level.' + news.level), stat: t('common.prop.' + news.index)
-                                }}" style="vertical-align: middle;"></el-text>
+                            <PlayerName 
+                                class="name" style="vertical-align: top;" :user-id="+news.player_id"
+                                :user-name="news.player"
+                            />
+                            <el-text 
+                                v-t="{path: 'news.breakRecordTo', args: {
+                                    mode: t(`common.mode.${news.mode}`), level:
+                                        t(`common.level.${news.level}`), stat: t(`common.prop.${news.index}`)
+                                }}" style="vertical-align: middle;"
+                            />
                             <PreviewNumber :id="news.video_id" :text="to_fixed_n(news.value, 3)" />
                             <el-text style="margin-left: 5px; vertical-align: middle;">
                                 {{ news.delta == "新" ? "" : news.delta > 0 ? "↑" : "↓" }}{{ news.delta }}
@@ -37,29 +43,40 @@
                 <el-tabs v-model="active_tab" type="border-card" style="margin-top: 2%;">
                     <el-tab-pane v-loading="newest_queue_status == 1" class="bottom_tabs" :lazy="true" name="newest">
                         <template #label>
-                            <span v-t="'home.latestScore'"/>&nbsp;
-                            <el-text v-if="newest_queue_status == 2" type="success"><el-icon>
+                            <span v-t="'home.latestScore'" />&nbsp;
+                            <el-text v-if="newest_queue_status == 2" type="success">
+                                <el-icon>
                                     <Check />
-                                </el-icon></el-text>
-                            <el-link v-else-if="active_tab == 'newest'" :underline="false"
-                                :disabled="newest_queue_status != 0" style="vertical-align: baseline;" @click="update_newest_queue">
+                                </el-icon>
+                            </el-text>
+                            <el-link 
+                                v-else-if="active_tab == 'newest'" :underline="false"
+                                :disabled="newest_queue_status != 0" style="vertical-align: baseline;" @click="update_newest_queue"
+                            >
                                 <base-icon-refresh />
                             </el-link>
                         </template>
-                        <VideoList :videos="newest_queue" :reverse="true" upload-time="time" :show-header="false">
-                        </VideoList>
+                        <VideoList :videos="newest_queue" :reverse="true" upload-time="time" :show-header="false" />
                     </el-tab-pane>
                     <el-tab-pane :label="t('home.reviewQueue')" class="bottom_tabs" :lazy="true" name="review">
-                        <VideoList v-loading="review_queue_updating" :videos="review_queue" :review-mode="store.user.is_staff"
-                            @update="update_review_queue"></VideoList>
+                        <VideoList 
+                            v-loading="review_queue_updating" :videos="review_queue" :review-mode="store.user.is_staff"
+                            @update="update_review_queue"
+                        />
                     </el-tab-pane>
                 </el-tabs>
             </el-main>
             <el-aside v-if="false" width="30%" style="padding: 1%;">
                 <el-tabs v-if="false" type="border-card" style="min-height: 300px;">
-                    <el-tab-pane label="每日一星">每日一星</el-tab-pane>
-                    <el-tab-pane label="站长统计">站长统计</el-tab-pane>
-                    <el-tab-pane label="如何评选？">如何评选？</el-tab-pane>
+                    <el-tab-pane label="每日一星">
+                        每日一星
+                    </el-tab-pane>
+                    <el-tab-pane label="站长统计">
+                        站长统计
+                    </el-tab-pane>
+                    <el-tab-pane label="如何评选？">
+                        如何评选？
+                    </el-tab-pane>
                 </el-tabs>
                 <div style="padding-top: 5%;user-select: none;">
                     <div class="aside-tip-title">
@@ -68,9 +85,9 @@
                         </el-icon>下载中心
                     </div>
                     <div style="font-size: 14px;padding: 2% 5%;">
-                        <Downloads></Downloads>
-                        <span style="width:12px; display:inline-block"></span>
-                        <FriendlyLink></FriendlyLink>
+                        <Downloads />
+                        <span style="width:12px; display:inline-block" />
+                        <FriendlyLink />
                     </div>
 
                     <div class="aside-tip-title">
@@ -88,8 +105,8 @@
                         </el-icon>关于我们
                     </div>
                     <div style="font-size: 14px;padding: 2% 5%;">
-                        <Thanks></Thanks>
-                        <span style="width:12px; display:inline-block"></span>
+                        <Thanks />
+                        <span style="width:12px; display:inline-block" />
                         赞助
                     </div>
                 </div>

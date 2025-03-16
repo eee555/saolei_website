@@ -9,16 +9,20 @@
                 <el-row>
                     <MonthLabel :start-date="startDate" :end-date="endDate" />
                 </el-row>
-                <el-row :style="{
-                    position: 'relative',
-                    height: (cellFullSize * 8 + activityCalendarConfig.cellMargin) + 'px',
-                    filter: 'invert(' + (local.darkmode ? 0 : 1) + ')',
-                }">
-                    <template v-for="date of generateDateRange(startDate, endDate)">
-                        <Cell :date="date" :start-date="startDate"
+                <el-row 
+                    :style="{
+                        position: 'relative',
+                        height: `${cellFullSize * 8 + activityCalendarConfig.cellMargin}px`,
+                        filter: `invert(${local.darkmode ? 0 : 1})`,
+                    }"
+                >
+                    <template v-for="date of generateDateRange(startDate, endDate)" :key="date.toISOString()">
+                        <Cell 
+                            :date="date" :start-date="startDate"
                             :videos="groupedVideoAbstract.get(toISODateString(date))"
                             :x-offset="Math.round((getWeekTime(date) - startWeekTime) / fullWeek)"
-                            :y-offset="date.getDay() + 1" :show-date="activityCalendarConfig.showDate" />
+                            :y-offset="date.getDay() + 1" :show-date="activityCalendarConfig.showDate"
+                        />
                     </template>
                 </el-row>
             </el-scrollbar>

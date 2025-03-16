@@ -1,8 +1,6 @@
 <!-- 未使用 -->
 <template>
-    <div>
-        
-    </div>
+    <div />
 </template>
 
 

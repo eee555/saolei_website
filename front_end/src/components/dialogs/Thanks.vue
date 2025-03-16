@@ -1,19 +1,29 @@
 <template>
-    <el-link @click="centerDialogVisible = true;">{{ t('footer.team') }}</el-link>
-    <el-dialog v-model="centerDialogVisible" :title="t('team.title')" width="700px" align-center draggable
-        :lock-scroll="false">
-        <div style="padding-bottom: 5px"><strong>{{ t('team.owner') }}</strong></div>
+    <el-link @click="centerDialogVisible = true;">
+        {{ t('footer.team') }}
+    </el-link>
+    <el-dialog 
+        v-model="centerDialogVisible" :title="t('team.title')" width="700px" align-center draggable
+        :lock-scroll="false"
+    >
+        <div style="padding-bottom: 5px">
+            <strong>{{ t('team.owner') }}</strong>
+        </div>
         <div>
             <GitHubUser username="eee555" />
         </div>
-        <div style="padding-bottom: 5px; margin-top: 15px"><strong>{{ t('team.moderator') }}</strong></div>
+        <div style="padding-bottom: 5px; margin-top: 15px">
+            <strong>{{ t('team.moderator') }}</strong>
+        </div>
         <div>少年</div>
         <div>GodnuX</div>
         <div>auk ;-;</div>
         <el-divider />
         <el-row>
             <el-col :span="8">
-                <div style="padding-bottom: 5px"><strong>{{ t('team.software') }}</strong></div>
+                <div style="padding-bottom: 5px">
+                    <strong>{{ t('team.software') }}</strong>
+                </div>
                 <div>
                     <GitHubUser username="eee555" />
                 </div>
@@ -31,22 +41,30 @@
                 </div>
             </el-col>
             <el-col :span="8">
-                <div style="padding-bottom: 5px"><strong>{{ t('team.localization') }}</strong></div>
-                <div>{{ t('team.zhCn') }}　
+                <div style="padding-bottom: 5px">
+                    <strong>{{ t('team.localization') }}</strong>
+                </div>
+                <div>
+                    {{ t('team.zhCn') }}　
                     <GitHubUser username="putianyi889" />
                 </div>
-                <div>{{ t('team.en') }}　
+                <div>
+                    {{ t('team.en') }}　
                     <GitHubUser username="putianyi889" />
                 </div>
-                <div>{{ t('team.de') }}　
+                <div>
+                    {{ t('team.de') }}　
                     <GitHubUser username="auk3" />
                 </div>
-                <div>{{ t('team.pl') }}　
+                <div>
+                    {{ t('team.pl') }}　
                     <GitHubUser username="kiraa96" />
                 </div>
             </el-col>
             <el-col :span="8">
-                <div style="padding-bottom: 5px"><strong>{{ t('team.designer') }}</strong></div>
+                <div style="padding-bottom: 5px">
+                    <strong>{{ t('team.designer') }}</strong>
+                </div>
                 <div>
                     <GitHubUser username="eee555" />
                 </div>
@@ -56,7 +74,9 @@
             </el-col>
         </el-row>
         <el-divider />
-        <div style="padding-bottom: 5px"><strong>{{ t('team.acknowledgement') }}</strong></div>
+        <div style="padding-bottom: 5px">
+            <strong>{{ t('team.acknowledgement') }}</strong>
+        </div>
         <span v-for="item in acknowledgements" style="padding-right: 10px">
             {{ item.text }}
         </span>

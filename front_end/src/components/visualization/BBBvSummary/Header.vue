@@ -4,13 +4,13 @@
             <el-option v-for="(value, key) in options" :key="key" :label="value.label" :value="key">
             </el-option>
         </el-select>
-        <span style="flex: 1"/>
+        <span style="flex: 1" />
         <IconSetting>
             <Setting />
         </IconSetting>
     </el-row>
-    <el-row :style="{ textAlign: 'center', height: BBBvSummaryConfig.cellHeight + 'px', flexWrap: 'nowrap' }">
-        <span style="width: 10%; min-width: 75px"/>
+    <el-row :style="{ textAlign: 'center', height: `${BBBvSummaryConfig.cellHeight}px`, flexWrap: 'nowrap' }">
+        <span style="width: 10%; min-width: 75px" />
         <span v-for="i in 10" style="width: 8.9%; min-width: 4em">{{ i - 1 }}</span>
     </el-row>
 </template>
