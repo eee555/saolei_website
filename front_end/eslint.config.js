@@ -38,6 +38,7 @@ export default typescriptEslint.config(
       'vue/html-indent': ['error', 4],
       'vue/max-attributes-per-line': 'off',
       'vue/static-class-names-order': 'error',
+      'vue/prefer-template': 'error',
     },
   },
 );

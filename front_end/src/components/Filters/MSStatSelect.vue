@@ -4,7 +4,7 @@
             <span v-if="prop.label !== ''">{{ prop.label }}: </span>
             <span>{{ label }}</span>
         </template>
-        <el-option v-for="stat in options" :key="stat" :value="stat" :label="t('common.prop.' + stat)" />
+        <el-option v-for="stat in options" :key="stat" :value="stat" :label="t(`common.prop.${stat}`)" />
     </el-select>
 </template>
 

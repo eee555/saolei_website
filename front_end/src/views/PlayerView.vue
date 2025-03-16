@@ -73,7 +73,7 @@
                         <PlayerVideosView :key="store.player.id" />
                     </el-tab-pane>
                     <el-tab-pane 
-                        v-if="store.user.id + '' == userid" :label="t('profile.upload.title')" name="upload"
+                        v-if="`${store.user.id}` == userid" :label="t('profile.upload.title')" name="upload"
                         :lazy="true"
                     >
                         <UploadView :identifiers="store.user.identifiers" />

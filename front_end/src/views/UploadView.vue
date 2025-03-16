@@ -50,7 +50,7 @@
         </el-table-column>
         <el-table-column prop="stat.level" :label="t('common.prop.level')" sortable>
             <template #default="props">
-                {{ t('common.level.' + props.row.stat.level) }}
+                {{ t(`common.level.${props.row.stat.level}`) }}
             </template>
         </el-table-column>
         <el-table-column prop="stat.timems" :label="t('common.prop.time')" sortable />
@@ -62,7 +62,7 @@
         />
         <el-table-column :label="t('common.prop.status')" sortable sort-by="status">
             <template #default="props">
-                {{ t('profile.upload.error.' + props.row.status) }}
+                {{ t(`profile.upload.error.${props.row.status}`) }}
             </template>
         </el-table-column>
         <el-table-column :label="t('common.prop.action')" :width="130">

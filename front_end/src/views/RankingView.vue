@@ -4,7 +4,7 @@
             v-for="(tag, key) in mode_tags" :key="key" type="success" :plain="!(mode_tag_selected == key)" :size="'small'"
             @click="mode_tag_selected = key as string; get_player_rank(1);"
         >
-            {{ t('common.mode.' + tag.key) }}
+            {{ t(`common.mode.${tag.key}`) }}
         </el-button>
     </el-row>
 
@@ -13,7 +13,7 @@
             v-for="(tag, key) in index_tags" :key="key" type="primary" :plain="!(index_tag_selected == key)" :size="'small'"
             @click="index_tag_selected = key as string; mod_style(); get_player_rank(1);"
         >
-            {{ t('common.prop.' + tag.key)
+            {{ t(`common.prop.${tag.key}`)
             }}
         </el-button>
     </el-row>

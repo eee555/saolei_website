@@ -32,12 +32,12 @@
             </template>
         </el-table-column>
         <el-table-column 
-            prop="mode" :formatter="simple_formatter((mode: string) => t('common.mode.' + mode))"
+            prop="mode" :formatter="simple_formatter((mode: string) => t(`common.mode.${mode}`))"
             :filters="[{ text: t('common.mode.std'), value: 'std' }, { text: t('common.mode.nf'), value: 'nf' }, { text: t('common.mode.ng'), value: 'ng' }, { text: t('common.mode.dg'), value: 'dg' }]"
             :filter-method="defaultFilterMethod" :filter-multiple="false"
         />
         <el-table-column 
-            prop="timems" :formatter="simple_formatter((timems: number) => (ms_to_s(timems) + 's'))"
+            prop="timems" :formatter="simple_formatter((timems: number) => (`${ms_to_s(timems)}s`))"
             sortable
         />
         <el-table-column prop="bv" sortable />

@@ -3,10 +3,10 @@
         <el-text 
             v-if="activityCalendarConfig.showDate" :style="{
                 position: 'absolute',
-                top: activityCalendarConfig.cellSize / 2 + 'px',
-                left: activityCalendarConfig.cellSize / 2 + 'px',
+                top: `${activityCalendarConfig.cellSize / 2}px`,
+                left: `${activityCalendarConfig.cellSize / 2}px`,
                 transform: 'translate(-50%, -50%)',
-                fontSize: activityCalendarConfig.cellSize * 0.6 + 'px',
+                fontSize: `${activityCalendarConfig.cellSize * 0.6}px`,
             }"
         >
             <!-- 用class的情况下不知为何字号不会生效 -->

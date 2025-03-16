@@ -1,5 +1,5 @@
 <template>
-    <el-table :data="accountlinks" :row-key="(row: any) => 'key' + row.platform" @expand-change="expandRow">
+    <el-table :data="accountlinks" :row-key="(row: any) => `key${row.platform}`" @expand-change="expandRow">
         <el-table-column type="expand">
             <template #default="props">
                 <el-text v-if="!props.row.verified" v-t="'accountlink.unverifiedText'" type="info" style="margin-left:50px" />

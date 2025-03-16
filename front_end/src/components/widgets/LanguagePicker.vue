@@ -46,7 +46,7 @@ const changeLanguage = (value: any) => {
 
 <style lang="less" scoped>
 .icon {
-    margin-top: v-bind("(local.menu_height) / 2 + 'px'");
+    margin-top: v-bind("`${(local.menu_height) / 2}px`");
     height: 0px;
     cursor: pointer;
 }

@@ -26,7 +26,7 @@
                     {{
                         t('login.agreeTAC1')
                     }}
-                    <a target="_blank" :href="AXIOS_BASE_URL + '/agreement.html'">{{ t('login.agreeTAC2')
+                    <a target="_blank" :href="`${AXIOS_BASE_URL}/agreement.html`">{{ t('login.agreeTAC2')
                     }}</a>
                 </el-checkbox>
             </el-form-item>

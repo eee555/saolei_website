@@ -12,8 +12,8 @@
                 <el-row 
                     :style="{
                         position: 'relative',
-                        height: (cellFullSize * 8 + activityCalendarConfig.cellMargin) + 'px',
-                        filter: 'invert(' + (local.darkmode ? 0 : 1) + ')',
+                        height: `${cellFullSize * 8 + activityCalendarConfig.cellMargin}px`,
+                        filter: `invert(${local.darkmode ? 0 : 1})`,
                     }"
                 >
                     <template v-for="date of generateDateRange(startDate, endDate)" :key="date.toISOString()">

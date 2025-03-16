@@ -28,8 +28,8 @@
                             />
                             <el-text 
                                 v-t="{path: 'news.breakRecordTo', args: {
-                                    mode: t('common.mode.' + news.mode), level:
-                                        t('common.level.' + news.level), stat: t('common.prop.' + news.index)
+                                    mode: t(`common.mode.${news.mode}`), level:
+                                        t(`common.level.${news.level}`), stat: t(`common.prop.${news.index}`)
                                 }}" style="vertical-align: middle;"
                             />
                             <PreviewNumber :id="news.video_id" :text="to_fixed_n(news.value, 3)" />

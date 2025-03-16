@@ -4,7 +4,7 @@
             v-for="(tag, key) in level_tags" :key="key" type="warning" :plain="!(level_tag_selected == key)" :size="'small'"
             @click="level_tag_selected = key as string; request_videos();"
         >
-            {{ t('common.level.' + tag.key) }}
+            {{ t(`common.level.${tag.key}`) }}
         </el-button>
     </el-row>
 
@@ -22,7 +22,7 @@
             v-for="(value, key) in index_tags" :key="key" type="primary" :plain="!value.selected" size="small"
             @click="index_select(key, value)"
         >
-            {{ t('common.prop.' + key) }}
+            {{ t(`common.prop.${key}`) }}
         </el-button>
     </el-row>
 
@@ -41,7 +41,7 @@
             <VideoViewRealname />
             <el-table-column 
                 v-for="key in selected_index()" :key="key" v-slot="scope" :prop="index_tags[key].key"
-                :label="t('common.prop.' + key)" sortable="custom"
+                :label="t(`common.prop.${key}`)" sortable="custom"
                 :sort-orders="index_tags[key].reverse ? (['descending', 'ascending']) : (['ascending', 'descending'])"
             >
                 <span class="nobr">{{ columnFormatter(key, scope.row[index_tags[key].key]) }}</span>

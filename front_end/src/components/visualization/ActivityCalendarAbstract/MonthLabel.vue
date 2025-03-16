@@ -4,7 +4,7 @@
             position: 'absolute',
             fontSize: '12px',
             top: 0,
-            left: (date.getTime() - startWeekTime) / fullWeek * cellFullSize + 'px',
+            left: `${(date.getTime() - startWeekTime) / fullWeek * cellFullSize}px`,
             transform: 'translate(-50%,0)'
         }"
     >

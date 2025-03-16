@@ -114,7 +114,7 @@ const logout = async () => {
 
 <style lang="less" scoped>
 .fakemenuitem {
-    height: v-bind("local.menu_height + 'px'");
-    font-size: v-bind("local.menu_font_size + 'px'"); // Somehow doesn't work
+    height: v-bind("`${local.menu_height}px`");
+    font-size: v-bind("`${local.menu_font_size}px`"); // Somehow doesn't work
 }
 </style>
