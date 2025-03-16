@@ -32,6 +32,7 @@ export default typescriptEslint.config(
       'vue/multi-word-component-names': 'off',
       'vue/no-template-shadow': 'off',
       'no-irregular-whitespace': 'off',
+      'vue/no-irregular-whitespace': ['error', { 'skipHTMLTextContents': true }],
       "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_"}],
       'no-control-regex': 'off',
       'vue/html-indent': ['error', 4],
