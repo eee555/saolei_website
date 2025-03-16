@@ -1,11 +1,13 @@
 <template>
     <el-row class="mb-4" style="margin-bottom: 10px;">
-        <el-button v-for="(tag, key) in mode_tags" :key="key" type="success" :plain="!(mode_tag_selected == key)" :size="'small'"
+        <el-button 
+            v-for="(tag, key) in mode_tags" :key="key" type="success" :plain="!(mode_tag_selected == key)" :size="'small'"
             @click="mode_tag_selected = key as string; get_player_rank(1);">{{ t('common.mode.' + tag.key) }}</el-button>
     </el-row>
 
     <el-row class="mb-4" style="margin-bottom: 10px;">
-        <el-button v-for="(tag, key) in index_tags" :key="key" type="primary" :plain="!(index_tag_selected == key)" :size="'small'"
+        <el-button 
+            v-for="(tag, key) in index_tags" :key="key" type="primary" :plain="!(index_tag_selected == key)" :size="'small'"
             @click="index_tag_selected = key as string; mod_style(); get_player_rank(1);">{{ t('common.prop.' + tag.key)
             }}</el-button>
     </el-row>
@@ -14,16 +16,20 @@
         <div style="border-bottom: 1px solid #555555;padding-bottom: 10px;">
             <span class="rank"></span>
             <span class="name">{{ t('common.prop.realName') }}</span>
-            <span class="number_wid" :style="{ color: (level_selected === 'b' ? 'rgb(64, 158, 255)' : '') }"
+            <span 
+                class="number_wid" :style="{ color: (level_selected === 'b' ? 'rgb(64, 158, 255)' : '') }"
                 @click="setSortDirect('b')">{{ t('common.level.b') }}{{
             level_selected === "b" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
-            <span class="number_wid" :style="{ color: (level_selected === 'i' ? 'rgb(64, 158, 255)' : '') }"
+            <span 
+                class="number_wid" :style="{ color: (level_selected === 'i' ? 'rgb(64, 158, 255)' : '') }"
                 @click="setSortDirect('i')">{{ t('common.level.i') }}{{
             level_selected === "i" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
-            <span class="number_wid" :style="{ color: (level_selected === 'e' ? 'rgb(64, 158, 255)' : '') }"
+            <span 
+                class="number_wid" :style="{ color: (level_selected === 'e' ? 'rgb(64, 158, 255)' : '') }"
                 @click="setSortDirect('e')">{{ t('common.level.e') }}{{
             level_selected === "e" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
-            <span class="sum_title" :style="{ color: (level_selected === 'sum' ? 'rgb(64, 158, 255)' : '') }"
+            <span 
+                class="sum_title" :style="{ color: (level_selected === 'sum' ? 'rgb(64, 158, 255)' : '') }"
                 @click="setSortDirect('sum')">{{ t('common.level.sum') }}{{
             level_selected === "sum" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
         </div>
@@ -53,7 +59,8 @@
     </div>
 
     <div style="margin-top: 16px;">
-        <el-pagination v-model:current-page="state.CurrentPage" :next-click="nextClick" :page-size="20" layout="prev, pager, next, jumper" :page-count="state.Total"
+        <el-pagination 
+            v-model:current-page="state.CurrentPage" :next-click="nextClick" :page-size="20" layout="prev, pager, next, jumper" :page-count="state.Total"
             prev-text="上一页" next-text="下一页" @current-change="currentChange" @prev-click="prevClick">
         </el-pagination>
     </div>

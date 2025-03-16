@@ -1,5 +1,6 @@
 <template>
-    <el-text :style="{
+    <el-text 
+        :style="{
         display: 'inline-block',
         fontSize: (cellFullSize - 8) + 'px',
         lineHeight: cellFullSize + 'px',

@@ -1,5 +1,6 @@
 <template>
-    <el-dialog v-model="visible" :title="t('login.loginTitle')" width="400px" align-center draggable
+    <el-dialog 
+        v-model="visible" :title="t('login.loginTitle')" width="400px" align-center draggable
         :lock-scroll="false" @close="resetForm(ruleFormRef); emit('close')">
         <el-form ref="ruleFormRef" :rules="rules" :model="loginForm">
             <!-- 用户名 -->
@@ -24,7 +25,8 @@
             </el-form-item>
             <!-- 忘记密码 -->
             <el-form-item>
-                <el-link :underline="false" type="primary"
+                <el-link 
+                    :underline="false" type="primary"
                     style="vertical-align: bottom;" @click="emit('forgetPassword')">{{ t('login.forgetPassword') }}</el-link>
             </el-form-item>
             <!-- 确认 -->

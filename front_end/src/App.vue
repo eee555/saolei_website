@@ -2,7 +2,8 @@
     <el-container style="height: 100%">
         <el-header>
             <el-scrollbar :height="100"> <!-- 给一个足够的高度就可以不显示纵向滚动条 -->
-                <el-menu mode="horizontal" :router="true" :default-active="menu_index" :ellipsis="false"
+                <el-menu 
+                    mode="horizontal" :router="true" :default-active="menu_index" :ellipsis="false"
                     menu-trigger="click">
                     <el-menu-item index="/" class="logo">
                         <el-image class="logo1" :src="logo_1" :fit="'cover'" />
@@ -35,7 +36,8 @@
         </el-container>
     </el-container>
 
-    <el-dialog v-if="false" v-model="notice_visible" draggable :lock-scroll="false" title="站长通知"
+    <el-dialog 
+        v-if="false" v-model="notice_visible" draggable :lock-scroll="false" title="站长通知"
         :before-close="handle_notice_close" style="white-space: pre-wrap;" width="min(max(50%, 400px), 90vw)">
         <span>{{ notice }}</span>
         <template #footer>

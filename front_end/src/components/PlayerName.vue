@@ -1,10 +1,12 @@
 <template>
     <span @click.stop>
-        <el-popover v-if="render" :visible="visible" placement="bottom" width="298px"
+        <el-popover 
+            v-if="render" :visible="visible" placement="bottom" width="298px"
             popper-class="max-h-300px overflow-auto" popper-style="z-index:888;" @show="pop_show" @hide="pop_hide">
             <div>
                 <div style="width: 80px;float: left;line-height: 200%;">
-                    <el-image style="width: 72px; height: 72px;margin-top: 10px;border-radius: 8px;" :src="image_url"
+                    <el-image 
+                        style="width: 72px; height: 72px;margin-top: 10px;border-radius: 8px;" :src="image_url"
                         :fit="'cover'" />
                     <el-button style="width: 72px;height: 24px;" @click="visit_me(userId);">我的空间</el-button>
                 </div>

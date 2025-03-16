@@ -17,7 +17,8 @@
     <AccountLinkManager />
     <el-divider />
     <el-badge is-dot :hidden="true && !store.new_identifier">
-        <el-descriptions v-if="store.login_status == LoginStatus.IsLogin"
+        <el-descriptions 
+            v-if="store.login_status == LoginStatus.IsLogin"
             :title="t('identifierManager.title')"></el-descriptions>
     </el-badge>
     <IdentifierManager v-if="store.login_status == LoginStatus.IsLogin" />

@@ -3,16 +3,20 @@
         <el-descriptions-item :label="t('setting.colorscheme.title')" style="vertical-align: middle;">
             <DarkMode />
         </el-descriptions-item>
-        <el-descriptions-item :label="t('setting.languageSwitch')"><el-switch v-model="local.language_show"
+        <el-descriptions-item :label="t('setting.languageSwitch')"><el-switch 
+                v-model="local.language_show"
                 :active-text="t('common.show')" :inactive-text="t('common.hide')"></el-switch></el-descriptions-item>
-        <el-descriptions-item :label="t('setting.menuLayout')"><el-switch v-model="local.menu_icon"
+        <el-descriptions-item :label="t('setting.menuLayout')"><el-switch 
+                v-model="local.menu_icon"
                 :active-text="t('setting.menuLayoutAbstract')"
                 :inactive-text="t('setting.menuLayoutDefault')"></el-switch></el-descriptions-item>
         <el-descriptions-item :label="t('setting.menuHeight')">
-            <el-slider v-model="local.menu_height" size="small" :min="20" :max="60"
+            <el-slider 
+                v-model="local.menu_height" size="small" :min="20" :max="60"
                 style="width: 100px; display: inline-block; height: 9px"></el-slider>
         </el-descriptions-item>
-        <el-descriptions-item :label="t('setting.menuFontSize')"><el-input-number v-model="local.menu_font_size"
+        <el-descriptions-item :label="t('setting.menuFontSize')"><el-input-number 
+                v-model="local.menu_font_size"
                 size="small" :min="10" /></el-descriptions-item>
         <el-descriptions-item :label="t('setting.notificationDuration')"><el-tooltip>
                 <template #content>

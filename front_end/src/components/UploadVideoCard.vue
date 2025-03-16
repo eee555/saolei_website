@@ -2,9 +2,11 @@
 <template>
     <div style="width: 480px;margin: 8px;">
         <el-card :body-style="{ padding: '0px', margin: '8px' }" style="border-radius: 8px;">
-            <img v-if="videoMsg.filename.slice(-3) === 'avf'" src="../assets/img/img_arbiter.png"
+            <img 
+                v-if="videoMsg.filename.slice(-3) === 'avf'" src="../assets/img/img_arbiter.png"
                 style="height: 54px;width: 54px;vertical-align:middle;margin-left: 5px;margin-right: 12px;" />
-            <img v-if="videoMsg.filename.slice(-3) === 'evf'" src="../assets/img/img_meta.png"
+            <img 
+                v-if="videoMsg.filename.slice(-3) === 'evf'" src="../assets/img/img_meta.png"
                 style="height: 54px;width: 54px;vertical-align:middle;margin-left: 5px;margin-right: 12px;" />
             <div style="display: inline-block;vertical-align:middle;width: 360px;text-align:left;">
                 <el-row :gutter="5" style="text-align: center;margin-bottom: 5px;">

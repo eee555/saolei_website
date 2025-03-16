@@ -10,7 +10,8 @@
                             <el-text v-if="news_queue_status == 2" type="success"><el-icon>
                                     <Check />
                                 </el-icon></el-text>
-                            <el-link v-else-if="active_tab == 'newest'" :underline="false"
+                            <el-link 
+                                v-else-if="active_tab == 'newest'" :underline="false"
                                 :disabled="news_queue_status != 0" style="vertical-align: baseline;" @click="update_news_queue"
                                >
                                 <base-icon-refresh />
@@ -20,9 +21,11 @@
                             <el-text style="margin-right: 5px">
                                 {{ utc_to_local_format(news.time) }}
                             </el-text>
-                            <PlayerName class="name" style="vertical-align: top;" :user-id="+news.player_id"
+                            <PlayerName 
+                                class="name" style="vertical-align: top;" :user-id="+news.player_id"
                                 :user-name="news.player" />
-                            <el-text v-t="{path: 'news.breakRecordTo', args: {
+                            <el-text 
+                                v-t="{path: 'news.breakRecordTo', args: {
                                     mode: t('common.mode.' + news.mode), level:
                                         t('common.level.' + news.level), stat: t('common.prop.' + news.index)
                                 }}" style="vertical-align: middle;"></el-text>
@@ -41,7 +44,8 @@
                             <el-text v-if="newest_queue_status == 2" type="success"><el-icon>
                                     <Check />
                                 </el-icon></el-text>
-                            <el-link v-else-if="active_tab == 'newest'" :underline="false"
+                            <el-link 
+                                v-else-if="active_tab == 'newest'" :underline="false"
                                 :disabled="newest_queue_status != 0" style="vertical-align: baseline;" @click="update_newest_queue">
                                 <base-icon-refresh />
                             </el-link>
@@ -50,7 +54,8 @@
                         </VideoList>
                     </el-tab-pane>
                     <el-tab-pane :label="t('home.reviewQueue')" class="bottom_tabs" :lazy="true" name="review">
-                        <VideoList v-loading="review_queue_updating" :videos="review_queue" :review-mode="store.user.is_staff"
+                        <VideoList 
+                            v-loading="review_queue_updating" :videos="review_queue" :review-mode="store.user.is_staff"
                             @update="update_review_queue"></VideoList>
                     </el-tab-pane>
                 </el-tabs>

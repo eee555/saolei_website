@@ -35,7 +35,8 @@
             <template #default="scope">
                 <el-link :underline="false" type="danger" @click.prevent="deleteRow(scope.row)"><base-icon-delete/></el-link>
                 &nbsp;
-                <el-link v-if="scope.row.data !== undefined" :underline="false"
+                <el-link 
+                    v-if="scope.row.data !== undefined" :underline="false"
                     @click.prevent="updateRow(scope.row)"><base-icon-refresh /></el-link>
             </template>
         </el-table-column>
@@ -43,12 +44,14 @@
     <el-button v-if="store.player.id == store.user.id" style="width:100%" size="small" @click="formvisible = true">
         <base-icon-add />
     </el-button>
-    <el-dialog v-model="formvisible" :title="t('accountlink.addLink')" width="500px"
+    <el-dialog 
+        v-model="formvisible" :title="t('accountlink.addLink')" width="500px"
         @closed="form.platform = ''; form.identifier = '';">
         <el-form :model="form">
             <el-form-item :label="t('accountlink.platform')">
                 <el-select v-model="form.platform">
-                    <el-option v-for="(item, key) of platformlist" :key="key" :value="key" :label="item.name"
+                    <el-option 
+                        v-for="(item, key) of platformlist" :key="key" :value="key" :label="item.name"
                         :disabled="userHasPlatform(key)" />
                 </el-select>
             </el-form-item>

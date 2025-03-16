@@ -1,13 +1,15 @@
 <template>
     <el-table :data="videos_trans" :show-header="showHeader" table-layout="auto" :max-height="maxHeight" style="width: 100%;font-size: 16px;user-select: none;" @row-click="(row: any) => preview(row.key)">
-        <el-table-column prop="state" :width="32"
+        <el-table-column 
+            prop="state" :width="32"
             :filters="[{ text: t('common.state.c'), value: 'c' }, { text: t('common.state.d'), value: 'd' }]"
             :filter-method="defaultFilterMethod">
             <template #default="scope">
                 <VideoStateIcon :state="scope.row.state" />
             </template>
         </el-table-column>
-        <el-table-column :prop="uploadTime" min-width="160" :formatter="simple_formatter(utc_to_local_format)"
+        <el-table-column 
+            :prop="uploadTime" min-width="160" :formatter="simple_formatter(utc_to_local_format)"
             sortable />
         <el-table-column v-if="needPlayerName" min-width="80">
             <template #default="player">
@@ -26,10 +28,12 @@
                 <GameLevelIcon :level="scope.row.level" />
             </template>
         </el-table-column>
-        <el-table-column prop="mode" :formatter="simple_formatter((mode: string) => t('common.mode.' + mode))"
+        <el-table-column 
+            prop="mode" :formatter="simple_formatter((mode: string) => t('common.mode.' + mode))"
             :filters="[{ text: t('common.mode.std'), value: 'std' }, { text: t('common.mode.nf'), value: 'nf' }, { text: t('common.mode.ng'), value: 'ng' }, { text: t('common.mode.dg'), value: 'dg' }]"
             :filter-method="defaultFilterMethod" :filter-multiple="false" />
-        <el-table-column prop="timems" :formatter="simple_formatter((timems: number) => (ms_to_s(timems) + 's'))"
+        <el-table-column 
+            prop="timems" :formatter="simple_formatter((timems: number) => (ms_to_s(timems) + 's'))"
             sortable />
         <el-table-column prop="bv" sortable />
         <!-- <el-table-column min-width="200">

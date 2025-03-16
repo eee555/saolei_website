@@ -1,6 +1,7 @@
 <template>
     <Tippy class="cell" :duration="0" sticky>
-        <el-text v-if="activityCalendarConfig.showDate" :style="{
+        <el-text 
+            v-if="activityCalendarConfig.showDate" :style="{
             position: 'absolute',
             top: activityCalendarConfig.cellSize / 2 + 'px',
             left: activityCalendarConfig.cellSize / 2 + 'px',
@@ -12,7 +13,8 @@
         <template #content>
             <!-- vue-tippy的bug，改语言的时候content不会刷新，不算大问题就不用workaround了，等上游修复 -->
             <base-card-small>
-                <el-text v-if="videos.length == 0"
+                <el-text 
+                    v-if="videos.length == 0"
                     v-t="{ path: 'activityCalendar.tooltip.noVideoOnDate', args: [toISODateString(date)] }" />
                 <template v-else>
                     <el-text
