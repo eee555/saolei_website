@@ -2,25 +2,33 @@
     <el-upload 
         ref="upload" v-model:file-list="fileList" :disabled="store.user.realname == '匿名'" drag action="#"
         :multiple="true" :on-change="handleChange" :auto-upload="false" :show-file-list="false"
-        accept=".avf,.evf,.rmv,.mvf">
-
-        <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+        accept=".avf,.evf,.rmv,.mvf"
+    >
+        <el-icon class="el-icon--upload">
+            <upload-filled />
+        </el-icon>
         <div 
             class="el-upload__text" style="font-size: 18px;"
-            v-html="store.user.realname == '匿名' ? t('common.msg.realNameRequired') : t('profile.upload.dragOrClick')">
-        </div>
+            v-html="store.user.realname == '匿名' ? t('common.msg.realNameRequired') : t('profile.upload.dragOrClick')"
+        />
 
         <template #tip>
             <div style="text-align: center;">
                 <el-button 
                     v-show="upload_queue.length > 0" size="large" type="primary"
-                    style="display: block;margin: 16px auto;font-size: 18px;width: 220px;" @click="submitUpload()">{{
-                        t('profile.upload.uploadAll', [upload_queue.length]) }}</el-button>
+                    style="display: block;margin: 16px auto;font-size: 18px;width: 220px;" @click="submitUpload()"
+                >
+                    {{
+                        t('profile.upload.uploadAll', [upload_queue.length]) }}
+                </el-button>
                 <el-button 
                     v-show="upload_queue.length > 0" size="small" type="info"
-                    style="display: block;margin: 16px auto;width: 120px;" @click="cancel_all()">{{
+                    style="display: block;margin: 16px auto;width: 120px;" @click="cancel_all()"
+                >
+                    {{
                         t('profile.upload.cancelAll')
-                    }}</el-button>
+                    }}
+                </el-button>
                 <span style="font-size: 14px;">{{ t('profile.upload.constraintNote') }}</span>
             </div>
         </template>
@@ -29,10 +37,14 @@
         <el-table-column type="expand">
             <template #default="props">
                 <el-descriptions>
-                    <el-descriptions-item :label="t('common.prop.fileName')" :span="3">{{ props.row.filename
-                        }}</el-descriptions-item>
-                    <el-descriptions-item :label="t('common.prop.identifier')" :span="3">{{ props.row.form.identifier
-                    }}</el-descriptions-item>
+                    <el-descriptions-item :label="t('common.prop.fileName')" :span="3">
+                        {{ props.row.filename
+                        }}
+                    </el-descriptions-item>
+                    <el-descriptions-item :label="t('common.prop.identifier')" :span="3">
+                        {{ props.row.form.identifier
+                        }}
+                    </el-descriptions-item>
                 </el-descriptions>
             </template>
         </el-table-column>
@@ -41,12 +53,13 @@
                 {{ t('common.level.' + props.row.stat.level) }}
             </template>
         </el-table-column>
-        <el-table-column prop="stat.timems" :label="t('common.prop.time')" sortable></el-table-column>
-        <el-table-column prop="stat.bv" label="3BV" sortable></el-table-column>
+        <el-table-column prop="stat.timems" :label="t('common.prop.time')" sortable />
+        <el-table-column prop="stat.bv" label="3BV" sortable />
         <el-table-column 
             prop="stat.bvs" label="3BV/s"
             :formatter="(row: any, column: any, cellValue: any, index: number) => { return to_fixed_n(cellValue, 3) }"
-            sortable></el-table-column>
+            sortable
+        />
         <el-table-column :label="t('common.prop.status')" sortable sort-by="status">
             <template #default="props">
                 {{ t('profile.upload.error.' + props.row.status) }}
@@ -57,10 +70,15 @@
                 <el-button 
                     :disabled="!(['pass', 'identifier', 'needApprove'].includes(props.row.status))"
                     :type="['pass', 'identifier'].includes(props.row.status) ? 'success' : props.row.status == 'needApprove' ? 'warning' : 'info'"
-                    circle @click="forceUpload(props.$index)"><el-icon>
+                    circle @click="forceUpload(props.$index)"
+                >
+                    <el-icon>
                         <Upload />
-                    </el-icon></el-button>
-                <el-button type="danger" circle @click="removeUpload(props.$index)"><base-icon-delete /></el-button>
+                    </el-icon>
+                </el-button>
+                <el-button type="danger" circle @click="removeUpload(props.$index)">
+                    <base-icon-delete />
+                </el-button>
             </template>
         </el-table-column>
     </el-table>

@@ -8,7 +8,8 @@
         <div style="display: flex">
             <el-input 
                 v-model.trim="captcha" prefix-icon="Key" class="code" maxlength="4"
-                @input="captchaHandler"></el-input>
+                @input="captchaHandler"
+            />
             &nbsp;
             <ValidCode ref="refValidCode" />
         </div>
@@ -18,7 +19,8 @@
         <div style="display: flex">
             <el-input 
                 v-model.trim="emailCode" prefix-icon="Key" maxlength="6" :disabled="captcha.length!=4" :placeholder="t(email_code_placeholder)"
-                @input="emailCodeHandler"></el-input>
+                @input="emailCodeHandler"
+            />
             &nbsp;
             <el-button :disabled="captcha.length!=4" @click="getEmailCaptcha(type)">
                 <vue-countdown v-if="counting" v-slot="{ totalSeconds }" :time="60000" @end="counting = false;">

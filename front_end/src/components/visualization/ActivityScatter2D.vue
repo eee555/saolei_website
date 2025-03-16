@@ -2,14 +2,13 @@
     <base-card-normal>
         <div style="align-items: center; display: flex;">
             <MSLevelFilter v-model="level" />
-            <span style="flex: 1;"></span>
+            <span style="flex: 1;" />
             <MSStatSelect v-model="x" label="x" :options="video_stats" />
-            <span style="width: 10px;"></span>
+            <span style="width: 10px;" />
             <MSStatSelect v-model="y" label="y" :options="video_stats" />
         </div>
         <v-chart class="chart" :option="option" autoresize @click="handleClick" />
     </base-card-normal>
-
 </template>
 
 <script setup lang="ts">

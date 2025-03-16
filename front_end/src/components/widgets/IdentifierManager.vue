@@ -9,7 +9,8 @@
                     <!-- 左margin是为了补偿输入框内文本的偏移 -->
                     <el-input 
                         v-if="scope.row.data === ''" v-model="new_identifiers" size="small" style="width: 200px;margin-left: -7px"
-                        input-style="font-family: 'Courier New', Courier, monospace;"></el-input>
+                        input-style="font-family: 'Courier New', Courier, monospace;"
+                    />
                 </template>
             </el-table-column>
             <!-- 操作列 -->
@@ -18,7 +19,8 @@
                     <!-- 添加标识 -->
                     <el-link 
                         v-if="scope.row.data === ''" :underline="false"
-                        @click="addIdentifier(new_identifiers)">
+                        @click="addIdentifier(new_identifiers)"
+                    >
                         <base-icon-add />
                     </el-link>
                     <!-- 复制标识 -->
@@ -31,7 +33,8 @@
                     <!-- 删除标识 -->
                     <el-link 
                         v-if="store.player.id == store.user.id && scope.row.data !== ''" :underline="false"
-                        type="danger" @click="delIdentifier(scope.row.data)">
+                        type="danger" @click="delIdentifier(scope.row.data)"
+                    >
                         <base-icon-delete />
                     </el-link>
                 </template>

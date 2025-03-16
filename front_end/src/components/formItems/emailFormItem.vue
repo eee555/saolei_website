@@ -2,7 +2,8 @@
     <el-form-item ref="emailFormRef" prop="email" :label="t('form.email')">
         <el-input 
             v-model="email" prefix-icon="Message" type="email" @input="emailInputHandler"
-            @change="emailChangeHandler"></el-input>
+            @change="emailChangeHandler"
+        />
     </el-form-item>
 </template>
 

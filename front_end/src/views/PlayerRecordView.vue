@@ -8,36 +8,31 @@
 
                 <el-table-column label="time" align="center">
                     <template #default="scope">
-                        <PreviewNumber :id="scope.row.timems_id" :text="ms_to_s(scope.row.timems)">
-                        </PreviewNumber>
+                        <PreviewNumber :id="scope.row.timems_id" :text="ms_to_s(scope.row.timems)" />
                     </template>
                 </el-table-column>
 
                 <el-table-column label="3BV/s" align="center">
                     <template #default="scope">
-                        <PreviewNumber :id="scope.row.bvs_id" :text="scope.row.bvs.toFixed(3)">
-                        </PreviewNumber>
+                        <PreviewNumber :id="scope.row.bvs_id" :text="scope.row.bvs.toFixed(3)" />
                     </template>
                 </el-table-column>
 
                 <el-table-column label="STNB" align="center">
                     <template #default="scope">
-                        <PreviewNumber :id="scope.row.stnb_id" :text="scope.row.stnb.toFixed(3)">
-                        </PreviewNumber>
+                        <PreviewNumber :id="scope.row.stnb_id" :text="scope.row.stnb.toFixed(3)" />
                     </template>
                 </el-table-column>
 
                 <el-table-column label="IOE" align="center">
                     <template #default="scope">
-                        <PreviewNumber :id="scope.row.ioe_id" :text="scope.row.ioe.toFixed(3)">
-                        </PreviewNumber>
+                        <PreviewNumber :id="scope.row.ioe_id" :text="scope.row.ioe.toFixed(3)" />
                     </template>
                 </el-table-column>
 
                 <el-table-column label="path" align="center">
                     <template #default="scope">
-                        <PreviewNumber :id="scope.row.path_id" :text="scope.row.path.toFixed(3)">
-                        </PreviewNumber>
+                        <PreviewNumber :id="scope.row.path_id" :text="scope.row.path.toFixed(3)" />
                     </template>
                 </el-table-column>
             </el-table>

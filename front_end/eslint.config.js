@@ -1,5 +1,4 @@
 import eslint from '@eslint/js';
-import eslintConfigPrettier from 'eslint-config-prettier';
 import eslintPluginVue from 'eslint-plugin-vue';
 import globals from 'globals';
 import typescriptEslint from 'typescript-eslint';
@@ -35,7 +34,8 @@ export default typescriptEslint.config(
       'no-irregular-whitespace': 'off',
       "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_"}],
       'no-control-regex': 'off',
+      'vue/html-indent': ['error', 4],
+      'vue/max-attributes-per-line': 'off',
     },
   },
-  eslintConfigPrettier
 );

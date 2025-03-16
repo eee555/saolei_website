@@ -2,19 +2,23 @@
     账号绑定
     <el-form :model="form">
         <el-form-item label="ID">
-            <el-input v-model="form.id" type="number"/>
+            <el-input v-model="form.id" type="number" />
         </el-form-item>
         <el-form-item label="平台">
             <el-select v-model="form.platform">
-                <el-option v-for="(item, key) of platformlist" :key="key" :label="item.name" :value="key"></el-option>
+                <el-option v-for="(item, key) of platformlist" :key="key" :label="item.name" :value="key" />
             </el-select>
         </el-form-item>
         <el-form-item label="平台ID">
-            <el-input v-model="form.identifier"></el-input>
+            <el-input v-model="form.identifier" />
         </el-form-item>
         <el-form-item>
-            <el-button @click="verify">绑定</el-button>
-            <el-button @click="unverify">解绑</el-button>
+            <el-button @click="verify">
+                绑定
+            </el-button>
+            <el-button @click="unverify">
+                解绑
+            </el-button>
         </el-form-item>
     </el-form>
 </template>

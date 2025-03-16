@@ -1,13 +1,13 @@
 <template>
     <el-text v-t="{ path: 'activityCalendar.totalNVideos', args: [store.player.videos.length] }" size="small" />
-    <span style="flex: 1;"></span>
+    <span style="flex: 1;" />
     <span class="dot" style=" background-color: #f00;" />
     <el-text v-t="'common.level.shortb'" size="small" />&nbsp;
     <span class="dot" style=" background-color: #080;" />
     <el-text v-t="'common.level.shorti'" size="small" />&nbsp;
     <span class="dot" style=" background-color: #00f;" />
     <el-text v-t="'common.level.shorte'" size="small" />
-    <span style="width: 10px;"></span>
+    <span style="width: 10px;" />
     <IconSetting>
         <Setting />
     </IconSetting>

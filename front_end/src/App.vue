@@ -1,10 +1,12 @@
 <template>
     <el-container style="height: 100%">
         <el-header>
-            <el-scrollbar :height="100"> <!-- 给一个足够的高度就可以不显示纵向滚动条 -->
+            <el-scrollbar :height="100">
+                <!-- 给一个足够的高度就可以不显示纵向滚动条 -->
                 <el-menu 
                     mode="horizontal" :router="true" :default-active="menu_index" :ellipsis="false"
-                    menu-trigger="click">
+                    menu-trigger="click"
+                >
                     <el-menu-item index="/" class="logo">
                         <el-image class="logo1" :src="logo_1" :fit="'cover'" />
                         <el-image v-if="!local.menu_icon" class="logo2" :src="logo_2" :fit="'cover'" />
@@ -22,7 +24,7 @@
                         </el-badge>
                     </el-menu-item>
                     <LanguagePicker v-show="local.language_show" style="padding-left: 8px; padding-right: 8px;" />
-                    <Login @login="user_login" @logout="user_logout"></Login>
+                    <Login @login="user_login" @logout="user_logout" />
                 </el-menu>
             </el-scrollbar>
         </el-header>
@@ -38,7 +40,8 @@
 
     <el-dialog 
         v-if="false" v-model="notice_visible" draggable :lock-scroll="false" title="站长通知"
-        :before-close="handle_notice_close" style="white-space: pre-wrap;" width="min(max(50%, 400px), 90vw)">
+        :before-close="handle_notice_close" style="white-space: pre-wrap;" width="min(max(50%, 400px), 90vw)"
+    >
         <span>{{ notice }}</span>
         <template #footer>
             <span class="dialog-footer">

@@ -1,6 +1,6 @@
 <template>
     <!-- @vue-ignore -->
-    <RangeSlider v-model="videofilter.bbbv_range[level]" :min="minbvlim[level]" :max="maxbvlim[level]"/>
+    <RangeSlider v-model="videofilter.bbbv_range[level]" :min="minbvlim[level]" :max="maxbvlim[level]" />
 </template>
 
 <script setup lang="ts">

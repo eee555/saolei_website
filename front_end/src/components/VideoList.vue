@@ -3,17 +3,19 @@
         <el-table-column 
             prop="state" :width="32"
             :filters="[{ text: t('common.state.c'), value: 'c' }, { text: t('common.state.d'), value: 'd' }]"
-            :filter-method="defaultFilterMethod">
+            :filter-method="defaultFilterMethod"
+        >
             <template #default="scope">
                 <VideoStateIcon :state="scope.row.state" />
             </template>
         </el-table-column>
         <el-table-column 
             :prop="uploadTime" min-width="160" :formatter="simple_formatter(utc_to_local_format)"
-            sortable />
+            sortable
+        />
         <el-table-column v-if="needPlayerName" min-width="80">
             <template #default="player">
-                <PlayerName class="name" :user-id="+player.row.player_id" :user-name="player.row.player"></PlayerName>
+                <PlayerName class="name" :user-id="+player.row.player_id" :user-name="player.row.player" />
             </template>
         </el-table-column>
         <el-table-column min-width="20">
@@ -23,7 +25,8 @@
         </el-table-column>
         <el-table-column
             :filters="[{ text: t('common.level.b'), value: 'b' }, { text: t('common.level.i'), value: 'i' }, { text: t('common.level.e'), value: 'e' }]"
-            :filter-method="defaultFilterMethod" :filter-multiple="false">
+            :filter-method="defaultFilterMethod" :filter-multiple="false"
+        >
             <template #default="scope">
                 <GameLevelIcon :level="scope.row.level" />
             </template>
@@ -31,10 +34,12 @@
         <el-table-column 
             prop="mode" :formatter="simple_formatter((mode: string) => t('common.mode.' + mode))"
             :filters="[{ text: t('common.mode.std'), value: 'std' }, { text: t('common.mode.nf'), value: 'nf' }, { text: t('common.mode.ng'), value: 'ng' }, { text: t('common.mode.dg'), value: 'dg' }]"
-            :filter-method="defaultFilterMethod" :filter-multiple="false" />
+            :filter-method="defaultFilterMethod" :filter-multiple="false"
+        />
         <el-table-column 
             prop="timems" :formatter="simple_formatter((timems: number) => (ms_to_s(timems) + 's'))"
-            sortable />
+            sortable
+        />
         <el-table-column prop="bv" sortable />
         <!-- <el-table-column min-width="200">
             <template #default="scope">

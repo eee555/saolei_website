@@ -2,33 +2,29 @@
     <span @click.stop>
         <el-popover 
             v-if="render" :visible="visible" placement="bottom" width="298px"
-            popper-class="max-h-300px overflow-auto" popper-style="z-index:888;" @show="pop_show" @hide="pop_hide">
+            popper-class="max-h-300px overflow-auto" popper-style="z-index:888;" @show="pop_show" @hide="pop_hide"
+        >
             <div>
                 <div style="width: 80px;float: left;line-height: 200%;">
                     <el-image 
                         style="width: 72px; height: 72px;margin-top: 10px;border-radius: 8px;" :src="image_url"
-                        :fit="'cover'" />
+                        :fit="'cover'"
+                    />
                     <el-button style="width: 72px;height: 24px;" @click="visit_me(userId);">我的空间</el-button>
                 </div>
                 <div v-loading="is_loading" style="width: 188px;float: right;text-align: center;line-height: 180%;">
                     <div><strong>{{ realname }}</strong> (id: {{ userId }})</div>
-                    <div>初级纪录：<PreviewNumber :id="+b_t_id" :text="ms_to_s(b_t)">
-                        </PreviewNumber> | <PreviewNumber :id="+b_bvs_id" :text="to_fixed_n(b_bvs, 3)">
-                        </PreviewNumber>
+                    <div>初级纪录：<PreviewNumber :id="+b_t_id" :text="ms_to_s(b_t)" /> | <PreviewNumber :id="+b_bvs_id" :text="to_fixed_n(b_bvs, 3)" />
                     </div>
-                    <div>中级纪录：<PreviewNumber :id="+i_t_id" :text="ms_to_s(i_t)">
-                        </PreviewNumber> | <PreviewNumber :id="+i_bvs_id" :text="to_fixed_n(i_bvs, 3)">
-                        </PreviewNumber>
+                    <div>中级纪录：<PreviewNumber :id="+i_t_id" :text="ms_to_s(i_t)" /> | <PreviewNumber :id="+i_bvs_id" :text="to_fixed_n(i_bvs, 3)" />
                     </div>
-                    <div>高级纪录：<PreviewNumber :id="+e_t_id" :text="ms_to_s(e_t)">
-                        </PreviewNumber> | <PreviewNumber :id="+e_bvs_id" :text="to_fixed_n(e_bvs, 3)">
-                        </PreviewNumber>
+                    <div>高级纪录：<PreviewNumber :id="+e_t_id" :text="ms_to_s(e_t)" /> | <PreviewNumber :id="+e_bvs_id" :text="to_fixed_n(e_bvs, 3)" />
                     </div>
                     <div>总计纪录：
                         <span style="color: #BF9000;font-weight: bold;">{{ ms_to_s(b_t + i_t + e_t) }}</span>
                         |
                         <span style="color: #BF9000;font-weight: bold;">{{ to_fixed_n(b_bvs + i_bvs + e_bvs, 3)
-                            }}</span>
+                        }}</span>
                     </div>
                 </div>
 

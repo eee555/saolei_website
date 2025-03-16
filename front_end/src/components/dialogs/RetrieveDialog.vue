@@ -1,20 +1,24 @@
 <template>
     <el-dialog 
         v-model="visible" :title="t('login.retrieveTitle')" width="400px" align-center draggable
-        :lock-scroll="false" @close='resetForm(ruleFormRef)'>
+        :lock-scroll="false" @close="resetForm(ruleFormRef)"
+    >
         <el-form ref="ruleFormRef" :model="retrieveForm" status-icon>
             <!-- 邮箱 -->
-            <email-form-item ref="emailFormRef" v-model="retrieveForm.email" check-collision="false"></email-form-item>
+            <email-form-item ref="emailFormRef" v-model="retrieveForm.email" check-collision="false" />
             <!-- 邮箱验证码 -->
             <email-code-block 
                 ref="emailCodeFormRef" v-model="retrieveForm.emailCode" :email="retrieveForm.email" type="register"
-                :email-state="email_state" />
+                :email-state="email_state"
+            />
             <!-- 密码 -->
             <password-confirm-block ref="passwordFormRef" v-model="retrieveForm.password" />
             <!-- 确认 -->
             <el-form-item>
-                <el-button type="primary" :disabled="confirm_disabled" @click="submitForm(ruleFormRef)">{{
-                    t('login.retrieveConfirm') }}</el-button>
+                <el-button type="primary" :disabled="confirm_disabled" @click="submitForm(ruleFormRef)">
+                    {{
+                        t('login.retrieveConfirm') }}
+                </el-button>
             </el-form-item>
         </el-form>
     </el-dialog>

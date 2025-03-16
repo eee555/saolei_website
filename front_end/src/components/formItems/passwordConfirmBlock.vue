@@ -3,13 +3,15 @@
     <el-form-item ref="passwordFormRef" :label="t('form.password')">
         <el-input 
             v-model="password" show-password prefix-icon="Lock" minlength="6" maxlength="20" show-word-limit
-            @change="passwordHandler"></el-input>
+            @change="passwordHandler"
+        />
     </el-form-item>
     <!-- 确认密码 -->
     <el-form-item ref="confirmPasswordFormRef" prop="password" :label="t('form.confirmPassword')">
         <el-input 
             v-model="confirmPassword" show-password prefix-icon="Lock" minlength="6" maxlength="20"
-            @change="confirmPasswordHandler"></el-input>
+            @change="confirmPasswordHandler"
+        />
     </el-form-item>
 </template>
 

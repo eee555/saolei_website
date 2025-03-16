@@ -1,6 +1,5 @@
 <template>
-    <el-button v-t="'common.button.confirm'" v-bind="$attrs" type="primary">
-    </el-button>
+    <el-button v-t="'common.button.confirm'" v-bind="$attrs" type="primary" />
 </template>
 
 <script setup lang="ts">
