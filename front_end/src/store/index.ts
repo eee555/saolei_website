@@ -65,7 +65,7 @@ export const BBBvSummaryConfig = useLocalStorage(
     'bbbv-summary-config',
     {
         cellHeight: 25,
-        template: 'time' as 'time' | 'bvs' | 'stnb' | 'ioe' | 'thrp',
+        template: 'time' as 'time' | 'bvs' | 'stnb' | 'ioe' | 'thrp' | 'custom',
         sortBy: 'timems' as getStat_stat,
         displayBy: 'time' as getStat_stat,
         sortDesc: false,
