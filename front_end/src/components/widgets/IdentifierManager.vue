@@ -7,17 +7,20 @@
             <el-table-column prop="data" sortable>
                 <template #default="scope">
                     <!-- 左margin是为了补偿输入框内文本的偏移 -->
-                    <el-input v-if="scope.row.data === ''" size="small" style="width: 200px;margin-left: -7px"
+                    <el-input 
+                        v-if="scope.row.data === ''" v-model="new_identifiers" size="small" style="width: 200px;margin-left: -7px"
                         input-style="font-family: 'Courier New', Courier, monospace;"
-                        v-model="new_identifiers"></el-input>
+                    />
                 </template>
             </el-table-column>
             <!-- 操作列 -->
             <el-table-column>
                 <template #default="scope">
                     <!-- 添加标识 -->
-                    <el-link v-if="scope.row.data === ''" :underline="false"
-                        @click="addIdentifier(new_identifiers)">
+                    <el-link 
+                        v-if="scope.row.data === ''" :underline="false"
+                        @click="addIdentifier(new_identifiers)"
+                    >
                         <base-icon-add />
                     </el-link>
                     <!-- 复制标识 -->
@@ -28,8 +31,10 @@
                     </el-link>
                     &nbsp;
                     <!-- 删除标识 -->
-                    <el-link v-if="store.player.id == store.user.id && scope.row.data !== ''" :underline="false"
-                        type="danger" @click="delIdentifier(scope.row.data)">
+                    <el-link 
+                        v-if="store.player.id == store.user.id && scope.row.data !== ''" :underline="false"
+                        type="danger" @click="delIdentifier(scope.row.data)"
+                    >
                         <base-icon-delete />
                     </el-link>
                 </template>
@@ -57,7 +62,7 @@ const new_identifiers = ref("")
 const { t } = useI18n();
 
 const identifierdata = computed(() => {
-    let data = store.player.identifiers ? store.player.identifiers.map(value => ({ data: value })) : [];
+    const data = store.player.identifiers ? store.player.identifiers.map(value => ({ data: value })) : [];
     if (store.player.id == store.user.id) data.push({ data: "" });
     return data
 })

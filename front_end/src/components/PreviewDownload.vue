@@ -1,26 +1,23 @@
 <template>
-    <el-button :size="'small'" plain icon="View" @click="preview(id);">预览</el-button>
-    <el-button :size="'small'" plain icon="Download" @click="download($event, id)">下载</el-button>
+    <el-button :size="'small'" plain icon="View" @click="preview(id);">
+        预览
+    </el-button>
+    <el-button :size="'small'" plain icon="Download" @click="download($event, id)">
+        下载
+    </el-button>
 </template>
 
 <script setup lang="ts" name="PreviewDownload">
 // 拟弃用
 // 两个按钮，预览或下载
-import { onMounted, ref } from "vue";
-// import axios from 'axios';
-// import { getCurrentInstance } from 'vue';
-import useCurrentInstance from "@/utils/common/useCurrentInstance";
+import { onMounted } from "vue";
 import { preview } from "@/utils/common/PlayerDialog";
 import { ElButton } from "element-plus";
-
-const { proxy } = useCurrentInstance();
-// import { genFileId, ElMessage } from 'element-plus'
-
-// const hashkey = ref("");
 
 const { id } = defineProps({
     id: {
         type: Number,
+        required: true,
     }
 })
 
@@ -53,7 +50,7 @@ const { id } = defineProps({
 // }
 
 
-const download = (event: MouseEvent, id: Number | undefined) => {
+const download = (event: MouseEvent, id: number | undefined) => {
     if (!id) {
         return
     }

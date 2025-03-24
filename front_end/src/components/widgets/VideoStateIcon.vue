@@ -26,7 +26,7 @@ import BaseIconVerified from '@/components/common/BaseIconVerified.vue';
 import BaseIconIdentifier from '@/components/common/BaseIconIdentifier.vue';
 import BaseIconExternal from '@/components/common/BaseIconExternal.vue';
 
-const data = defineProps({
+defineProps({
     state: {
         type: String,
         default: "z",

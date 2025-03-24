@@ -1,19 +1,29 @@
 <template>
     <el-row class="mb-4" style="margin-bottom: 10px;">
-        <el-button v-for="(tag, key) in level_tags" type="warning" :plain="!(level_tag_selected == key)" :size="'small'"
-            @click="level_tag_selected = key as string; request_videos();">{{ t('common.level.' + tag.key)
-            }}</el-button>
+        <el-button 
+            v-for="(tag, key) in level_tags" :key="key" type="warning" :plain="!(level_tag_selected == key)" :size="'small'"
+            @click="level_tag_selected = key as string; request_videos();"
+        >
+            {{ t(`common.level.${tag.key}`) }}
+        </el-button>
     </el-row>
 
     <el-row class="mb-4" style="margin-bottom: 10px;">
-        <el-button v-for="(tag, key) in mode_tags" type="success" :plain="!(mode_tag_selected == key)" size="small"
-            @click="mode_tag_selected = key as string; request_videos();">{{ tag.name }}</el-button>
+        <el-button 
+            v-for="(tag, key) in mode_tags" :key="key" type="success" :plain="!(mode_tag_selected == key)" size="small"
+            @click="mode_tag_selected = key as string; request_videos();"
+        >
+            {{ tag.name }}
+        </el-button>
     </el-row>
 
     <el-row class="mb-4" style="margin-bottom: 10px;">
-        <el-button v-for="(value, key) in index_tags" type="primary" :plain="!value.selected" size="small"
-            @click="index_select(key, value)">{{ t('common.prop.' + key)
-            }}</el-button>
+        <el-button 
+            v-for="(value, key) in index_tags" :key="key" type="primary" :plain="!value.selected" size="small"
+            @click="index_select(key, value)"
+        >
+            {{ t(`common.prop.${key}`) }}
+        </el-button>
     </el-row>
 
     <el-descriptions :title="t('common.filter')">
@@ -21,29 +31,26 @@
             <VideoStateFilter v-model="videofilter.filter_state" @change="request_videos" />
         </el-descriptions-item>
         <el-descriptions-item :label="t('common.prop.bbbv')">
-            <BBBVFilter @change="request_videos" :level="level_tags[level_tag_selected].key"/>
+            <BBBVFilter :level="level_tags[level_tag_selected].key" @change="request_videos" />
         </el-descriptions-item>
     </el-descriptions>
     <div style="font-size:20px;margin: auto;margin-top: 10px;">
-        <el-table :data="videoList" @sort-change="handleSortChange" @row-click="(row: any) => preview(row.id)" border
-            table-layout="auto">
+        <el-table :data="videoList" border table-layout="auto" @sort-change="handleSortChange" @row-click="(row: any) => preview(row.id)">
             <VideoViewState />
-            <el-table-column type="index" :index="offsetIndex" fixed></el-table-column>
+            <el-table-column type="index" :index="offsetIndex" fixed />
             <VideoViewRealname />
-            <el-table-column v-for="key in selected_index()" :prop="index_tags[key].key"
-                :label="t('common.prop.' + key)" sortable="custom"
+            <el-table-column 
+                v-for="key in selected_index()" :key="key" v-slot="scope" :prop="index_tags[key].key"
+                :label="t(`common.prop.${key}`)" sortable="custom"
                 :sort-orders="index_tags[key].reverse ? (['descending', 'ascending']) : (['ascending', 'descending'])"
-                v-slot="scope">
+            >
                 <span class="nobr">{{ columnFormatter(key, scope.row[index_tags[key].key]) }}</span>
             </el-table-column>
         </el-table>
     </div>
 
     <div style="margin-top: 16px;">
-        <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
-            :current-page="state.CurrentPage" :page-sizes="[20, 50, 100]" :page-size="videofilter.pagesize"
-            layout="total, sizes, prev, pager, next, jumper" :total="state.VideoCount">
-        </el-pagination>
+        <el-pagination :current-page="state.CurrentPage" :page-sizes="[20, 50, 100]" :page-size="videofilter.pagesize" layout="total, sizes, prev, pager, next, jumper" :total="state.VideoCount" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
 </template>
 
@@ -165,8 +172,8 @@ const index_tags: TagsReverse = reactive({
 })
 
 const selected_index = () => {
-    var list = [];
-    for (var key of Object.keys(index_tags)) {
+    const list = [];
+    for (const key of Object.keys(index_tags)) {
         if (index_tags[key].selected) {
             list.push(key);
         }
@@ -217,7 +224,7 @@ const mod_style = () => {
 
 const prevColumn = ref<any>(null); //上一个排序列
 const handleSortChange = (sort: any) => {
-    for (var key of Object.keys(index_tags)) { // 找到对应的key。很丑陋，but it works
+    for (const key of Object.keys(index_tags)) { // 找到对应的key。很丑陋，but it works
         if (index_tags[key].key == sort.prop) {
             if (key != index_tag_selected.value) { // 改变了排序列，清除之前列的排序
                 if (prevColumn.value != null) {
@@ -252,7 +259,7 @@ const offsetIndex = (index: number) => {
 
 // 根据配置，刷新当前页面的录像表
 const request_videos = () => {
-    let params: { [key: string]: any } = {};
+    const params: { [key: string]: any } = {};
     params["level"] = level_tags[level_tag_selected.value].key;
     params["mode"] = mode_tags[mode_tag_selected.value].key;
     params["o"] = index_tags[index_tag_selected.value].key;

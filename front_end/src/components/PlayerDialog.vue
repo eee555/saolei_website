@@ -1,8 +1,12 @@
 <template>
-    <el-dialog v-model="videoplayerstore.visible" style="backdrop-filter: blur(1px);" draggable align-center destroy-on-close
-        :modal="false" :lock-scroll="false" width="700">
-        <iframe class="flop-player-iframe flop-player-display-none" style="width: 100%; height: 500px; border: 0px"
-            src="/flop/index.html" ref="video_iframe"></iframe>
+    <el-dialog 
+        v-model="videoplayerstore.visible" style="backdrop-filter: blur(1px);" draggable align-center destroy-on-close
+        :modal="false" :lock-scroll="false" width="700"
+    >
+        <iframe 
+            ref="video_iframe" class="flop-player-display-none flop-player-iframe" style="width: 100%; height: 500px; border: 0px"
+            src="/flop/index.html"
+        />
     </el-dialog>
 </template>
 
@@ -21,7 +25,7 @@ watch(videoplayerstore, () => {
     }
 })
 
-const preview = (id: Number | undefined) => {
+const preview = (id: number | undefined) => {
     if (!id) return;
     (window as any).flop = null;
     proxy.$axios.get('/video/get_software/',

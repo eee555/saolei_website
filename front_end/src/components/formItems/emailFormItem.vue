@@ -1,7 +1,9 @@
 <template>
-    <el-form-item prop="email" :label="t('form.email')" ref="emailFormRef">
-        <el-input v-model="email" prefix-icon="Message" type="email" @input="emailInputHandler"
-            @change="emailChangeHandler"></el-input>
+    <el-form-item ref="emailFormRef" prop="email" :label="t('form.email')">
+        <el-input 
+            v-model="email" prefix-icon="Message" type="email" @input="emailInputHandler"
+            @change="emailChangeHandler"
+        />
     </el-form-item>
 </template>
 
@@ -14,7 +16,7 @@ import isEmail from 'validator/lib/isEmail.js';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { useI18n } from 'vue-i18n';
 
-const email = defineModel();
+const email = defineModel({ type: String, required: true });
 const prop = defineProps({
     checkCollision: {
         type: String,

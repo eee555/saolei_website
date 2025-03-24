@@ -1,13 +1,15 @@
 <template>
     <tippy class="cell" :duration="0" sticky>
-        <template v-if="bestIndex == -1">&nbsp;</template>
+        <template v-if="bestIndex == -1">
+&nbsp;
+        </template>
         <el-link v-else :underline="false" @click="preview(videos[bestIndex].id)">
             {{ videos[bestIndex].displayStat(displayBy) }}
         </el-link>
         <template #content>
             <base-card-small v-if="bestIndex >= 0">
-                上传时间：{{ videos[bestIndex].upload_time }}<br/>
-
+                上传时间：{{ videos[bestIndex].upload_time }}<br>
+                共计：{{ videos.length }} 个视频<br>
             </base-card-small>
         </template>
     </tippy>
@@ -32,8 +34,6 @@ const prop = defineProps({
     level: { type: String as PropType<MS_Level>, required: true },
     bv: { type: Number, required: true },
     videos: { type: Array<VideoAbstract>, default: [] },
-    xOffset: { type: Number, default: 0 },
-    yOffset: { type: Number, default: 0 },
     sortBy: { type: String as PropType<getStat_stat>, default: 'timems' },
     sortDesc: { type: Boolean, default: false },
     displayBy: { type: String as PropType<getStat_stat>, default: 'time' },
@@ -57,11 +57,9 @@ function refresh() {
     });
 }
 
-watch(() => prop.videos, refresh, { immediate: true });
+watch(prop, refresh, { immediate: true });
 
 const height = computed(() => BBBvSummaryConfig.value.cellHeight + 'px');
-const top = computed(() => prop.yOffset*BBBvSummaryConfig.value.cellHeight + 'px');
-const left = computed(() => prop.xOffset * 10 + '%');
 
 const color = computed(() => {
     if (bestIndex.value === -1) return 'rgba(0,0,0,0)';

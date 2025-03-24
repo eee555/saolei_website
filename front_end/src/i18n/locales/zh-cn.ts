@@ -143,6 +143,13 @@ export default {
             uploadedNVideosOnDate: '{0} 共 {1} 个录像',
         }
     },
+    BBBvSummary: {
+        cellHeight: '行高',
+        customTemplate: '自定义',
+        settingDisplayBy: '录像的',
+        settingMax: '最大',
+        settingMin: '最小',
+    },
     experimentalFeature: {
         watermark: '实验功能',
     },

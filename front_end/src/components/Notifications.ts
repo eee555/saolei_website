@@ -17,7 +17,7 @@ const notificationMessage: { [code: number]: string } = {
 };
 
 export const httpErrorNotification = (error: any) => {
-    let status = error.response.status
+    const status = error.response.status
     if (status in notificationMessage) {
         ElNotification({
             title: t('msg.actionFail'),

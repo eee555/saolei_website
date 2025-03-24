@@ -104,10 +104,22 @@ export class VideoAbstract {
             case 'qg': return this.qg().toFixed(3);
             case 'rqp': return this.rqp().toFixed(3);
             case 'stnb': return this.stnb().toFixed(1);
-            case 'cl': return this.cl === null ? "" : this.cl.toString();
-            case 'ioe': return this.cl === null ? "" : this.ioe().toFixed(3);
-            case 'thrp': return this.ce === null ? "" : this.thrp().toFixed(3);
-            case 'corr': return (this.ce === null || this.cl === null) ? "" : this.corr().toFixed(3);
+            case 'cl': {
+                const cl = this.cl;
+                return cl === null ? "" : cl.toString();
+            }
+            case 'ioe': {
+                const ioe = this.ioe();
+                return ioe === null ? "" : ioe.toFixed(3);
+            }
+            case 'thrp': {
+                const thrp = this.thrp();
+                return thrp === null ? "" : thrp.toFixed(3);
+            }
+            case 'corr': {
+                const corr = this.corr();
+                return corr === null ? "" : corr.toFixed(3);
+            }
         }
     }
 

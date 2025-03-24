@@ -9,16 +9,20 @@
                 <el-row>
                     <MonthLabel :start-date="startDate" :end-date="endDate" />
                 </el-row>
-                <el-row :style="{
-                    position: 'relative',
-                    height: (cellFullSize * 8 + activityCalendarConfig.cellMargin) + 'px',
-                    filter: 'invert(' + (local.darkmode ? 0 : 1) + ')',
-                }">
-                    <template v-for="date of generateDateRange(startDate, endDate)">
-                        <Cell :date="date" :start-date="startDate"
+                <el-row 
+                    :style="{
+                        position: 'relative',
+                        height: `${cellFullSize * 8 + activityCalendarConfig.cellMargin}px`,
+                        filter: `invert(${local.darkmode ? 0 : 1})`,
+                    }"
+                >
+                    <template v-for="date of generateDateRange(startDate, endDate)" :key="date.toISOString()">
+                        <Cell 
+                            :date="date" :start-date="startDate"
                             :videos="groupedVideoAbstract.get(toISODateString(date))"
                             :x-offset="Math.round((getWeekTime(date) - startWeekTime) / fullWeek)"
-                            :y-offset="date.getDay() + 1" :show-date="activityCalendarConfig.showDate" />
+                            :y-offset="date.getDay() + 1" :show-date="activityCalendarConfig.showDate"
+                        />
                     </template>
                 </el-row>
             </el-scrollbar>
@@ -49,7 +53,7 @@ const startDate = computed(() => {
     min.setFullYear(min.getFullYear() - 1);
     min.setDate(min.getDate() + 1);
     for (const key of keys) {
-        let keydate = new Date(key);
+        const keydate = new Date(key);
         if (keydate < min) min = keydate;
     }
     return min;
@@ -57,7 +61,7 @@ const startDate = computed(() => {
 const startWeekTime = computed(() => getWeekTime(startDate.value));
 
 function* generateDateRange(startDate: Date, endDate: Date, step: number = 1) {
-    let currentDate = new Date(startDate);
+    const currentDate = new Date(startDate);
     while (currentDate <= endDate) {
         yield new Date(currentDate);  // Yield a new Date object (to avoid modifying the original one)
         currentDate.setDate(currentDate.getDate() + step); // Increment by 1 day (or custom step)

@@ -1,18 +1,20 @@
 <template>
     <div class="slider-demo-block">
         <div>
-            <el-slider range :min="props.min" :max="props.max" v-model="range" @change="$emit('change', range)"></el-slider>
+            <el-slider v-model="range" range :min="props.min" :max="props.max" @change="$emit('change', range)" />
         </div>
         <div>
             <!-- @vue-expect-error -->
-            <el-input-number size="small" :step-strictly="true" v-model="range[0]" :min="props.min" :max="range[1]"
-                :value-on-clear="props.min" @change="$emit('change', range)">
-            </el-input-number>
+            <el-input-number 
+                v-model="range[0]" size="small" :step-strictly="true" :min="props.min" :max="range[1]"
+                :value-on-clear="props.min" @change="$emit('change', range)"
+            />
             {{ text }}
             <!-- @vue-expect-error -->
-            <el-input-number size="small" :step-strictly="true" v-model="range[1]" :min="range[0]" :max="props.max"
-                :value-on-clear="props.max" @change="$emit('change', range)">
-            </el-input-number>
+            <el-input-number 
+                v-model="range[1]" size="small" :step-strictly="true" :min="range[0]" :max="props.max"
+                :value-on-clear="props.max" @change="$emit('change', range)"
+            />
         </div>
     </div>
 </template>
@@ -36,7 +38,7 @@ const props = defineProps({
     },
 });
 
-const range = defineModel();
+const range = defineModel({ type: Array, required: true });
 
 defineEmits(['change']);
 </script>

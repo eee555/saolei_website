@@ -1,6 +1,5 @@
 <template>
-    <el-button v-bind="$attrs" v-t="'common.button.cancel'">
-    </el-button>
+    <el-button v-t="'common.button.cancel'" v-bind="$attrs" />
 </template>
 
 <script setup lang="ts">

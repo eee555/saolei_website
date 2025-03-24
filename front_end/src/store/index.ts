@@ -50,16 +50,25 @@ export const videofilter = useLocalStorage('videofilter', {
 
 export const colorTheme = useLocalStorage('colorTheme', colorSchemeTemplates.ArbiterStatsAuto)
 
-export const activityCalendarConfig = useLocalStorage('activity-calendar-config', {
-    cellSize: 14,
-    cellMargin: 3,
-    cornerRadius: 20,
-    showDate: false,
-})
+export const activityCalendarConfig = useLocalStorage(
+    'activity-calendar-config',
+    {
+        cellSize: 14,
+        cellMargin: 3,
+        cornerRadius: 20,
+        showDate: false,
+    },
+    { mergeDefaults: true }
+)
 
-export const BBBvSummaryConfig = useLocalStorage('bbbv-summary-config', {
-    cellHeight: 25,
-    sortBy: 'timems' as getStat_stat,
-    displayBy: 'time' as getStat_stat,
-    sortDesc: false,
-})
+export const BBBvSummaryConfig = useLocalStorage(
+    'bbbv-summary-config',
+    {
+        cellHeight: 25,
+        template: 'time' as 'time' | 'bvs' | 'stnb' | 'ioe' | 'thrp' | 'custom',
+        sortBy: 'timems' as getStat_stat,
+        displayBy: 'time' as getStat_stat,
+        sortDesc: false,
+    },
+    { mergeDefaults: true }
+)

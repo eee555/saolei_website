@@ -7,7 +7,7 @@ import { UploadRawFile } from "element-plus";
 import { AvfVideo, EvfVideo, RmvVideo, MvfVideo } from "ms-toollib";
 type AnyVideo = AvfVideo | EvfVideo | RmvVideo | MvfVideo;
 
-function get_software(video: AnyVideo) {
+export function get_software(video: AnyVideo) {
     if (video instanceof AvfVideo) return "a";
     else if (video instanceof EvfVideo) return "e";
     else if (video instanceof RmvVideo) return "r";
@@ -32,8 +32,8 @@ export function load_video_file(stream: Uint8Array, filename: string) {
 }
 
 export async function upload_prepare(file: UploadRawFile) {
-    let file_u8 = new Uint8Array(await file.arrayBuffer());
-    let video = load_video_file(file_u8, file.name);
+    const file_u8 = new Uint8Array(await file.arrayBuffer());
+    const video = load_video_file(file_u8, file.name);
     let status = 'pass';
     if (video === null) {
         status = 'fileext';

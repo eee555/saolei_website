@@ -1,44 +1,60 @@
 <template>
     <div>
         用户ID
-        <el-input-number v-model="userid" :controls="false" :min="0"></el-input-number>
-        <el-button @click="getUser">查询</el-button>
+        <el-input-number v-model="userid" :controls="false" :min="0" />
+        <el-button @click="getUser">
+            查询
+        </el-button>
     </div>
     <div>
         域<el-select v-model="userfield">
-            <el-option v-for="field in userfieldlist" :value="field"></el-option>
+            <el-option v-for="field in userfieldlist" :key="field" :value="field" />
         </el-select>
     </div>
     <div>
-        值<el-input v-model="uservalue"></el-input>
+        值<el-input v-model="uservalue" />
     </div>
     <div>
-        <el-button @click="setUser(userid, userfield, uservalue)">修改</el-button>
+        <el-button @click="setUser(userid, userfield, uservalue)">
+            修改
+        </el-button>
     </div>
     <el-descriptions title="UserProfile">
-        <el-descriptions-item v-for="(value, field) in userprofile" :label="field">{{ value }}</el-descriptions-item>
+        <el-descriptions-item v-for="(value, field) in userprofile" :key="field" :label="field">
+            {{ value }}
+        </el-descriptions-item>
     </el-descriptions>
     <el-divider />
     <div>
         录像ID
-        <el-input-number v-model="videoid" :controls="false" :min="0"></el-input-number>
-        <el-button @click="getVideo">查询</el-button>
-        <el-button @click="preview(videoid)">播放</el-button>
-        <el-button @click="updateVideo(videoid)">更新</el-button>
+        <el-input-number v-model="videoid" :controls="false" :min="0" />
+        <el-button @click="getVideo">
+            查询
+        </el-button>
+        <el-button @click="preview(videoid)">
+            播放
+        </el-button>
+        <el-button @click="updateVideo(videoid)">
+            更新
+        </el-button>
     </div>
     <div>
         域<el-select v-model="videofield">
-            <el-option v-for="field in videofieldlist" :value="field"></el-option>
+            <el-option v-for="field in videofieldlist" :key="field" :value="field" />
         </el-select>
     </div>
     <div>
-        值<el-input v-model="videovalue"></el-input>
+        值<el-input v-model="videovalue" />
     </div>
     <div>
-        <el-button @click="setVideo(videoid, videofield, videovalue)">修改</el-button>
+        <el-button @click="setVideo(videoid, videofield, videovalue)">
+            修改
+        </el-button>
     </div>
     <el-descriptions title="VideoModel">
-        <el-descriptions-item v-for="(value, field) in videomodel" :label="field">{{ value }}</el-descriptions-item>
+        <el-descriptions-item v-for="(value, field) in videomodel" :key="field" :label="field">
+            {{ value }}
+        </el-descriptions-item>
     </el-descriptions>
     <el-divider />
     <StaffAccountLink />

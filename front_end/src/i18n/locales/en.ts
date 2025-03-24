@@ -143,6 +143,13 @@ export default {
             uploadedNVideosOnDate: '{1} videos on {0}',
         }
     },
+    BBBvSummary: {
+        cellHeight: 'Cell Height',
+        customTemplate: 'Custom',
+        settingDisplayBy: 'and display by',
+        settingMax: 'Find max',
+        settingMin: 'Find min',
+    },
     experimentalFeature: {
         watermark: 'EXPERIMENTAL',
     },
