@@ -1,5 +1,5 @@
 <template>
-    <el-table :data="videos_trans" :show-header="showHeader" table-layout="auto" :max-height="maxHeight" style="width: 100%;font-size: 16px;user-select: none;" @row-click="(row: any) => preview(row.key)">
+    <el-table :data="videos" :show-header="showHeader" table-layout="auto" :max-height="maxHeight" style="width: 100%;font-size: 16px;user-select: none;" :cell-style="{padding: 0}" @row-click="(row: any) => preview(row.id)">
         <el-table-column 
             prop="state" :width="32"
             :filters="[{ text: t('common.state.c'), value: 'c' }, { text: t('common.state.d'), value: 'd' }]"
@@ -10,7 +10,7 @@
             </template>
         </el-table-column>
         <el-table-column 
-            :prop="uploadTime" min-width="160" :formatter="simple_formatter(utc_to_local_format)"
+            prop="upload_time" min-width="160" :formatter="simple_formatter(utc_to_local_format)"
             sortable
         />
         <el-table-column v-if="needPlayerName" min-width="80">
@@ -18,7 +18,7 @@
                 <PlayerName class="name" :user-id="+player.row.player_id" :user-name="player.row.player" />
             </template>
         </el-table-column>
-        <el-table-column min-width="20">
+        <el-table-column min-width="30">
             <template #default="scope">
                 <SoftwareIcon :software="scope.row.software" />
             </template>
@@ -32,8 +32,8 @@
             </template>
         </el-table-column>
         <el-table-column 
-            prop="mode" :formatter="simple_formatter((mode: string) => t(`common.mode.${mode}`))"
-            :filters="[{ text: t('common.mode.std'), value: 'std' }, { text: t('common.mode.nf'), value: 'nf' }, { text: t('common.mode.ng'), value: 'ng' }, { text: t('common.mode.dg'), value: 'dg' }]"
+            prop="mode" :formatter="simple_formatter((mode: string) => t(`common.mode.code${mode}`))"
+            :filters="[{ text: t('common.mode.code00'), value: '00' }, { text: t('common.mode.code12'), value: '12' }, { text: t('common.mode.code05'), value: '05' }, { text: t('common.mode.code11'), value: '11' }]"
             :filter-method="defaultFilterMethod" :filter-multiple="false"
         />
         <el-table-column 
@@ -51,8 +51,6 @@
 
 <script setup lang="ts">
 // 录像列表的组件
-
-import { computed } from 'vue'
 import { utc_to_local_format } from "@/utils/system/tools";
 import PlayerName from '@/components/PlayerName.vue';
 import VideoStateIcon from '@/components/widgets/VideoStateIcon.vue';
@@ -63,12 +61,13 @@ import { preview } from '@/utils/common/PlayerDialog';
 import { ms_to_s, simple_formatter, defaultFilterMethod } from '@/utils';
 import { useI18n } from 'vue-i18n';
 import { ElTable, ElTableColumn } from 'element-plus';
+import { VideoAbstract } from '@/utils/videoabstract';
 
 const { t } = useI18n();
 
-const data = defineProps({
+defineProps({
     videos: {
-        type: Array,
+        type: Array<VideoAbstract>,
         default() { return [] },
     },
     // 反序
@@ -85,10 +84,6 @@ const data = defineProps({
         type: Boolean,
         default: false
     },
-    uploadTime: {
-        type: String,
-        default: 'upload_time',
-    },
     showHeader: {
         type: Boolean,
         default: true,
@@ -99,48 +94,11 @@ const data = defineProps({
     },
 })
 
-defineEmits(['update'])
-
-const videos_trans = computed(() => {
-    const d = data.videos.slice();
-    d.forEach((v: any) => {
-        if (v.mode == "00") {
-            v.mode = "std";
-        } else if (v.mode == "01") {
-            v.mode = "UPK";
-        } else if (v.mode == "04") {
-            v.mode = "Win7";
-        } else if (v.mode == "05") {
-            v.mode = "ng";
-        } else if (v.mode == "06") {
-            v.mode = "sng";
-        } else if (v.mode == "07") {
-            v.mode = "弱无猜";
-        } else if (v.mode == "08") {
-            v.mode = "准无猜";
-        } else if (v.mode == "09") {
-            v.mode = "强可猜";
-        } else if (v.mode == "10") {
-            v.mode = "弱可猜";
-        } else if (v.mode == "11") {
-            v.mode = "dg";
-        } else if (v.mode == "12") {
-            v.mode = "nf";
-        }
-    })
-
-    if (data.reverse) {
-        d.reverse();
-    }
-    return d;
-})
-
 </script>
 <style lang="less" scoped>
 
-.el-table .cell {
-    line-height: 18px;
-    padding: 0px 5px;
+:deep(.el-table .cell) {
+    padding: 0;
 }
 
 </style>
