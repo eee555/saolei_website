@@ -29,6 +29,10 @@ export default {
             shorte: '高',
         },
         mode: {
+            code00: '标准',
+            code05: '无猜',
+            code11: '递归',
+            code12: '盲扫',
             std: '标准',
             nf: '盲扫',
             ng: '无猜',

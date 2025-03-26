@@ -56,7 +56,7 @@
                                 <base-icon-refresh />
                             </el-link>
                         </template>
-                        <VideoList :videos="newest_queue" :reverse="true" upload-time="time" :show-header="false" />
+                        <VideoList :videos="newest_queue" :reverse="true" :show-header="false" />
                     </el-tab-pane>
                     <el-tab-pane :label="t('home.reviewQueue')" class="bottom_tabs" :lazy="true" name="review">
                         <VideoList 
@@ -133,10 +133,11 @@ import BaseIconRefresh from '@/components/common/BaseIconRefresh.vue';
 import { store } from '../store'
 
 import { useI18n } from 'vue-i18n';
+import { VideoAbstract } from '@/utils/videoabstract';
 const { t } = useI18n();
 
-const review_queue = ref<any[]>([]);
-const newest_queue = ref<any[]>([]);
+const review_queue = ref<VideoAbstract[]>([]);
+const newest_queue = ref<VideoAbstract[]>([]);
 const news_queue = ref<any[]>([]);
 const active_tab = ref('newest');
 
@@ -161,9 +162,9 @@ const update_review_queue = async () => {
     ).then(function (response) {
         review_queue.value.splice(0, review_queue.value.length)
         for (const key in response.data) {
-            response.data[key] = JSON.parse(response.data[key] as string);
-            response.data[key]["key"] = Number.parseInt(key);
-            review_queue.value.push(response.data[key]);
+            const videoid = Number.parseInt(key);
+            const videoinfo = JSON.parse(response.data[key] as string);
+            review_queue.value.push(VideoAbstract.fromVideoRedisInfo(videoid, videoinfo));
         }
     })
     review_queue_updating.value = false;
@@ -178,12 +179,9 @@ const update_newest_queue = async () => {
         }
     ).then(function (response) {
         for (const key in response.data) {
-            response.data[key] = JSON.parse(response.data[key] as string);
-            response.data[key]["key"] = Number.parseInt(key);
-            newest_queue.value.push(response.data[key]);
-            if (response.data[key].state == 'd' && response.data[key].player_id == store.user.id) {
-                store.new_identifier = true;
-            }
+            const videoid = Number.parseInt(key);
+            const videoinfo = JSON.parse(response.data[key] as string);
+            newest_queue.value.push(VideoAbstract.fromVideoRedisInfo(videoid, videoinfo));
         }
     })
     if (newest_queue_status.value == 1) {
