@@ -41,6 +41,7 @@ export class VideoAbstract {
     public cl?: number;
     public ce?: number;
     public player_id?: number;
+    public player_name?: string;
 
     constructor(info: any) {
         if (info.id) this.id = info.id;
@@ -59,6 +60,8 @@ export class VideoAbstract {
 
         if (info.cl) this.cl = info.cl;
         if (info.ce) this.ce = info.ce;
+        if (info.player_id) this.player_id = info.player_id;
+        if (info.player_name) this.player_name = info.player_name;
     }
 
     static fromVideoAbstractInfo(info: VideoAbstractInfo): VideoAbstract {
@@ -75,6 +78,8 @@ export class VideoAbstract {
             bv: info.bv,
             state: info.state,
             software: info.software,
+            player_id: info.player_id,
+            player_name: info.player,
         })
     }
 
