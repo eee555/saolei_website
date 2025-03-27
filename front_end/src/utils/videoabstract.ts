@@ -56,8 +56,9 @@ export class VideoAbstract {
         this.bv = info.bv;
         this.state = info.state;
         this.software = info.software;
-        this.cl = info.cl;
-        this.ce = info.ce;
+
+        if (info.cl) this.cl = info.cl;
+        if (info.ce) this.ce = info.ce;
     }
 
     static fromVideoAbstractInfo(info: VideoAbstractInfo): VideoAbstract {
@@ -74,8 +75,6 @@ export class VideoAbstract {
             bv: info.bv,
             state: info.state,
             software: info.software,
-            cl: null,
-            ce: null,
         })
     }
 
@@ -140,19 +139,19 @@ export class VideoAbstract {
             case 'stnb': return this.stnb().toFixed(1);
             case 'cl': {
                 const cl = this.cl;
-                return cl === undefined ? "" : cl.toString();
+                return cl === undefined ? "-" : cl.toString();
             }
             case 'ioe': {
                 const ioe = this.ioe();
-                return ioe === undefined ? "" : ioe.toFixed(3);
+                return ioe === undefined ? "-" : ioe.toFixed(3);
             }
             case 'thrp': {
                 const thrp = this.thrp();
-                return thrp === undefined ? "" : thrp.toFixed(3);
+                return thrp === undefined ? "-" : thrp.toFixed(3);
             }
             case 'corr': {
                 const corr = this.corr();
-                return corr === undefined ? "" : corr.toFixed(3);
+                return corr === undefined ? "-" : corr.toFixed(3);
             }
         }
     }
