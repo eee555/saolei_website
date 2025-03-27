@@ -15,7 +15,7 @@
         />
         <el-table-column v-if="needPlayerName" min-width="80">
             <template #default="player">
-                <PlayerName class="name" :user-id="+player.row.player_id" :user-name="player.row.player" />
+                <PlayerName class="name" :user-id="+player.row.player_id" :user-name="player.row.player_name" />
             </template>
         </el-table-column>
         <el-table-column width="32">
