@@ -10,7 +10,7 @@
                     :bv="bv" :level="level" :videos="groupedVideoAbstract.get(bv)" :color-theme="theme"
                     :display-by="options[BBBvSummaryConfig.template].displayBy"
                     :sort-by="options[BBBvSummaryConfig.template].sortBy"
-                    :sort-desc="options[BBBvSummaryConfig.template].sortDesc" style="width: 10%"
+                    :sort-desc="options[BBBvSummaryConfig.template].sortDesc" style="width: 10%" :software-filter="BBBvSummaryConfig.softwareFilter"
                 />
                 <br v-if="getLastDigit(bv) == 9">
             </template>
