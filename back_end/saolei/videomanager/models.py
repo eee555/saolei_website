@@ -167,8 +167,9 @@ class VideoModel(models.Model):
             "mode": self.mode,
             "timems": self.timems,
             "bv": self.bv,
-            "bvs": self.bvs,
-            "identifier": self.video.identifier}, cls=ComplexEncoder))
+            "cl": self.cl,
+            "ce": self.ce,
+        }, cls=ComplexEncoder))
 
     def pop_redis(self, name: str):
         cache.hdel(name, self.id)

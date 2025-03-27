@@ -29,6 +29,10 @@ export default {
             shorte: 'Exp',
         },
         mode: {
+            code00: 'Standard',
+            code05: 'No Guessing',
+            code11: 'Recursive Chord',
+            code12: 'No Flag',
             std: 'Standard',
             nf: 'No Flag',
             ng: 'No Guessing',

@@ -14,10 +14,23 @@ export interface VideoAbstractInfo {
     ce: number | null,
 }
 
+interface VideoRedisInfo {
+    state: string,
+    software: string,
+    time: string,
+    player: string,
+    player_id: number,
+    level: MS_Level,
+    mode: string,
+    timems: number,
+    bv: number,
+    identifier: string,
+}
+
 export type getStat_stat = 'time' | 'bvs' | 'timems' | 'bv' | 'qg' | 'rqp' | 'stnb' | 'cl' | 'ioe' | 'thrp' | 'corr';
 
 export class VideoAbstract {
-    public id: number | null;
+    public id?: number;
     public upload_time: Date;
     public level: MS_Level;
     public mode: string;
@@ -25,24 +38,49 @@ export class VideoAbstract {
     public bv: number;
     public state: string;
     public software: string;
-    public cl: number | null;
-    public ce: number | null;
+    public cl?: number;
+    public ce?: number;
+    public player_id?: number;
+    public player_name?: string;
 
-    constructor(info: VideoAbstractInfo) {
-        this.id = info.id;
-        if (typeof info.upload_time === 'string') {
-            this.upload_time = new Date(info.upload_time);
-        } else {
-            this.upload_time = info.upload_time;
-        }
+    constructor(info: any) {
+        if (info.id) this.id = info.id;
+        else throw new Error('录像信息未包含id');
+
+        if (info.upload_time) this.upload_time = new Date(info.upload_time);
+        else if (info.time) this.upload_time = new Date(info.time); // newest_queue等返回的
+        else throw new Error('录像信息未包含上传时间');
+
         this.level = info.level;
         this.mode = info.mode;
         this.timems = info.timems;
         this.bv = info.bv;
         this.state = info.state;
         this.software = info.software;
-        this.cl = info.cl;
-        this.ce = info.ce;
+
+        if (info.cl) this.cl = info.cl;
+        if (info.ce) this.ce = info.ce;
+        if (info.player_id) this.player_id = info.player_id;
+        if (info.player_name) this.player_name = info.player_name;
+    }
+
+    static fromVideoAbstractInfo(info: VideoAbstractInfo): VideoAbstract {
+        return new VideoAbstract(info);
+    }
+
+    static fromVideoRedisInfo(key: number, info: VideoRedisInfo): VideoAbstract {
+        return new VideoAbstract({
+            id: key,
+            upload_time: new Date(info.time),
+            level: info.level,
+            mode: info.mode,
+            timems: info.timems,
+            bv: info.bv,
+            state: info.state,
+            software: info.software,
+            player_id: info.player_id,
+            player_name: info.player,
+        })
     }
 
     public time() {
@@ -66,17 +104,17 @@ export class VideoAbstract {
     }
 
     public ioe() {
-        if (this.cl === null) return null;
+        if (this.cl === undefined) return undefined;
         return this.bv / this.cl;
     }
 
     public thrp() {
-        if (this.ce === null) return null;
+        if (this.ce === undefined) return undefined;
         return this.bv / this.ce;
     }
 
     public corr() {
-        if (this.cl === null || this.ce === null) return null;
+        if (this.cl === undefined || this.ce === undefined) return undefined;
         return this.ce / this.cl;
     }
 
@@ -106,19 +144,19 @@ export class VideoAbstract {
             case 'stnb': return this.stnb().toFixed(1);
             case 'cl': {
                 const cl = this.cl;
-                return cl === null ? "" : cl.toString();
+                return cl === undefined ? "-" : cl.toString();
             }
             case 'ioe': {
                 const ioe = this.ioe();
-                return ioe === null ? "" : ioe.toFixed(3);
+                return ioe === undefined ? "-" : ioe.toFixed(3);
             }
             case 'thrp': {
                 const thrp = this.thrp();
-                return thrp === null ? "" : thrp.toFixed(3);
+                return thrp === undefined ? "-" : thrp.toFixed(3);
             }
             case 'corr': {
                 const corr = this.corr();
-                return corr === null ? "" : corr.toFixed(3);
+                return corr === undefined ? "-" : corr.toFixed(3);
             }
         }
     }

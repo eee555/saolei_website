@@ -1,6 +1,6 @@
 <template>
     <UserArbiterCSV :id="store.player.id" />
-    <VideoList :videos="store.player.videos" :need-player-name="false" reverse max-height="800" />
+    <VideoList :videos="store.player.videos" :need-player-name="false" reverse max-height="800" sortable />
 </template>
 
 <script lang="ts" setup>
