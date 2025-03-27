@@ -1,5 +1,5 @@
 import { toISODateString } from './datetime';
-import { MS_Level, STNB_const } from './ms_const';
+import { MS_Level, MS_Software, STNB_const } from './ms_const';
 
 export interface VideoAbstractInfo {
     id: number,
@@ -37,7 +37,7 @@ export class VideoAbstract {
     public timems: number;
     public bv: number;
     public state: string;
-    public software: string;
+    public software: MS_Software;
     public cl?: number;
     public ce?: number;
     public player_id?: number;

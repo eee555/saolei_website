@@ -21,7 +21,7 @@ import { VideoAbstract, getStat_stat } from '@/utils/videoabstract';
 import { computed, PropType, ref, watch } from 'vue';
 import { Tippy } from 'vue-tippy';
 import { ElLink } from 'element-plus';
-import { MS_Level } from '@/utils/ms_const';
+import { MS_Level, MS_Software, MS_Softwares } from '@/utils/ms_const';
 import { PiecewiseColorScheme } from '@/utils/colors';
 import tinycolor from 'tinycolor2';
 import { preview } from '@/utils/common/PlayerDialog';
@@ -37,13 +37,15 @@ const prop = defineProps({
     sortBy: { type: String as PropType<getStat_stat>, default: 'timems' },
     sortDesc: { type: Boolean, default: false },
     displayBy: { type: String as PropType<getStat_stat>, default: 'time' },
-    colorTheme: { type: Object as PropType<PiecewiseColorScheme>, default: new PiecewiseColorScheme([],[])}
+    colorTheme: { type: Object as PropType<PiecewiseColorScheme>, default: new PiecewiseColorScheme([],[])},
+    softwareFilter: { type: Array<MS_Software>, default: () => [...MS_Softwares]}
 })
 
 function refresh() {
     bestValue.value = null;
     bestIndex.value = -1;
     prop.videos.forEach((video, index) => {
+        if (!prop.softwareFilter.includes(video.software)) return;
         const thisValue = video.getStat(prop.sortBy);
         if (thisValue === undefined) return;
         if (
