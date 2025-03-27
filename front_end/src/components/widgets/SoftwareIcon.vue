@@ -30,7 +30,6 @@
 
 <script setup lang="ts">
 import { ElText } from 'element-plus';
-import { useI18n } from 'vue-i18n';
 import BaseTooltip from '@/components/common/BaseTooltip.vue';
 
 defineProps({
@@ -39,6 +38,4 @@ defineProps({
         default: "z",
     },
 });
-
-const { t } = useI18n();
 </script>

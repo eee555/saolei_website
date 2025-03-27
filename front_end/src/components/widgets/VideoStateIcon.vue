@@ -20,8 +20,6 @@
 </template>
 
 <script setup lang="ts">
-
-import { useI18n } from 'vue-i18n';
 import { ElText, ElIcon } from 'element-plus';
 import BaseIconVerified from '@/components/common/BaseIconVerified.vue';
 import BaseIconIdentifier from '@/components/common/BaseIconIdentifier.vue';
@@ -34,6 +32,4 @@ defineProps({
         default: "z",
     },
 });
-
-const { t } = useI18n();
 </script>
