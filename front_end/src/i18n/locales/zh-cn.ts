@@ -148,6 +148,7 @@ export default {
         }
     },
     BBBvSummary: {
+        bbbvInTotal: ({ linked, list }) => `共${list(0)}个${linked('common.prop.bv')}`,
         cellHeight: '行高',
         customTemplate: '自定义',
         settingDisplayBy: '录像的',
