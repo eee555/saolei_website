@@ -25,6 +25,8 @@ interface VideoRedisInfo {
     timems: number,
     bv: number,
     identifier: string,
+    cl?: number,
+    ce?: number,
 }
 
 export type getStat_stat = 'time' | 'bvs' | 'timems' | 'bv' | 'qg' | 'rqp' | 'stnb' | 'cl' | 'ioe' | 'thrp' | 'corr';
@@ -80,6 +82,8 @@ export class VideoAbstract {
             software: info.software,
             player_id: info.player_id,
             player_name: info.player,
+            cl: info.cl,
+            ce: info.ce,
         })
     }
 
