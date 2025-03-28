@@ -148,6 +148,7 @@ export default {
         }
     },
     BBBvSummary: {
+        bbbvInTotal: ({ linked, list }) => `${list(0)} ${linked('common.prop.bv')} in total`,
         cellHeight: 'Cell Height',
         customTemplate: 'Custom',
         settingDisplayBy: 'and display by',
