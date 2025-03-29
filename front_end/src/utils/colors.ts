@@ -1,4 +1,4 @@
-import { getInsertIndex, isAscending, isDescending } from "./arrays";
+import { ArrayUtils } from "./arrays";
 
 /**
  * PiecewiseColorScheme 类用于根据给定的阈值和颜色数组，根据输入值返回相应的颜色。
@@ -35,9 +35,9 @@ export class PiecewiseColorScheme {
     constructor(colors: string[], thresholds: number[]) {
         this.colors = colors;
         this.thresholds = thresholds;
-        if (isAscending(thresholds)) {
+        if (ArrayUtils.isAscending(thresholds)) {
             this.ascending = true;
-        } else if (isDescending(thresholds)) {
+        } else if (ArrayUtils.isDescending(thresholds)) {
             this.ascending = false;
         } else {
             throw new Error("Thresholds must be either ascending or descending");
@@ -51,7 +51,7 @@ export class PiecewiseColorScheme {
      * @returns 返回对应的颜色字符串。
      */
     public getColor(value: number): string {
-        const index = getInsertIndex(this.thresholds, value, this.ascending);
+        const index = ArrayUtils.getInsertIndex(this.thresholds, value, this.ascending);
         return this.colors[index];
     }
 }

@@ -13,7 +13,7 @@
         <span
             :style="{ position: 'relative', width: '89%', minWidth: '40em', lineHeight: `${BBBvSummaryConfig.cellHeight}px` }"
         >
-            <template v-for="bv in range(minBv, maxBv)" :key="bv">
+            <template v-for="bv in ArrayUtils.range(minBv, maxBv)" :key="bv">
                 <Cell
                     :bv="bv" :level="level" :videos="groupedVideoAbstract.get(bv)" :color-theme="theme"
                     :display-by="options[BBBvSummaryConfig.template].displayBy"
@@ -29,7 +29,6 @@
 <script setup lang="ts">
 import { BBBvSummaryConfig, colorTheme, store } from '@/store';
 import { ElRow, ElDivider } from 'element-plus';
-import { maximum, minimum, range } from '@/utils/arrays';
 import { getLastDigit, setLastDigit } from '@/utils/math';
 import { MS_Level } from '@/utils/ms_const';
 import { getStat_stat, groupVideosByBBBv } from '@/utils/videoabstract';
@@ -38,6 +37,7 @@ import Cell from './Cell.vue';
 import YLabel from './YLabel.vue';
 import { PiecewiseColorScheme } from '@/utils/colors';
 import { useI18n } from 'vue-i18n';
+import { ArrayUtils } from '@/utils/arrays';
 
 const { t } = useI18n();
 
@@ -67,8 +67,8 @@ const options = computed(() => {
 });
 
 const groupedVideoAbstract = computed(() => groupVideosByBBBv(store.player.videos, prop.level));
-const maxBv = computed(() => setLastDigit(maximum(groupedVideoAbstract.value.keys()), 9));
-const minBv = computed(() => setLastDigit(minimum(groupedVideoAbstract.value.keys()), 0));
+const maxBv = computed(() => setLastDigit(ArrayUtils.maximum(groupedVideoAbstract.value.keys()), 9));
+const minBv = computed(() => setLastDigit(ArrayUtils.minimum(groupedVideoAbstract.value.keys()), 0));
 
 const displayBy = computed(() => options.value[BBBvSummaryConfig.value.template].displayBy);
 
