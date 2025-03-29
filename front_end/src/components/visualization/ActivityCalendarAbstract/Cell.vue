@@ -15,14 +15,11 @@
         <template #content>
             <!-- vue-tippy的bug，改语言的时候content不会刷新，不算大问题就不用workaround了，等上游修复 -->
             <base-card-small>
-                <el-text 
-                    v-if="videos.length == 0"
-                    v-t="{ path: 'activityCalendar.tooltip.noVideoOnDate', args: [toISODateString(date)] }"
-                />
+                <el-text v-if="videos.length == 0">
+                    {{ t('activityCalendar.tooltip.noVideoOnDate', [toISODateString(date)]) }}
+                </el-text>
                 <template v-else>
-                    <el-text
-                        v-t="{ path: 'activityCalendar.tooltip.uploadedNVideosOnDate', args: [toISODateString(date), videos.length] }"
-                    />
+                    <el-text>{{ t('activityCalendar.tooltip.uploadedNVideosOnDate', [toISODateString(date), videos.length]) }}</el-text>
                     <br>
                     <span v-for="i in count.b" :key="i" class="dot" style="background-color: #f00;" />
                     <span v-for="i in count.i" :key="i" class="dot" style="background-color: #080;" />
@@ -41,6 +38,9 @@ import { computed, ref, watch } from 'vue';
 import { Tippy } from 'vue-tippy';
 import { ElText } from 'element-plus';
 import BaseCardSmall from '@/components/common/BaseCardSmall.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const prop = defineProps({
     date: { type: Date, required: true }, 
