@@ -1,5 +1,13 @@
 <template>
-    <Header v-if="header" />
+    <el-row v-if="header" :style="{ textAlign: 'center', height: `${BBBvSummaryConfig.cellHeight}px`, flexWrap: 'nowrap', marginTop: '10px', marginBottom: '-16px' }">
+        <span style="width: 10%; min-width: 75px" />
+        <span v-for="i in 10" style="width: 8.9%; min-width: 4em">{{ i - 1 }}</span>
+    </el-row>
+    <el-divider style="margin: 18px 0 12px 0;">
+        {{ t(`common.level.${level}`) }}
+        &nbsp;
+        {{ t('BBBvSummary.bbbvInTotal', [groupedVideoAbstract.size]) }}
+    </el-divider>
     <el-row v-if="groupedVideoAbstract.size > 0" style="white-space: nowrap;">
         <YLabel :min-bv="minBv" :max-bv="maxBv" />
         <span
@@ -20,16 +28,18 @@
 
 <script setup lang="ts">
 import { BBBvSummaryConfig, colorTheme, store } from '@/store';
-import { ElRow } from 'element-plus';
+import { ElRow, ElDivider } from 'element-plus';
 import { maximum, minimum, range } from '@/utils/arrays';
 import { getLastDigit, setLastDigit } from '@/utils/math';
 import { MS_Level } from '@/utils/ms_const';
 import { getStat_stat, groupVideosByBBBv } from '@/utils/videoabstract';
 import { computed, PropType } from 'vue';
-import Header from './Header.vue';
 import Cell from './Cell.vue';
 import YLabel from './YLabel.vue';
 import { PiecewiseColorScheme } from '@/utils/colors';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const prop = defineProps({
     header: { type: Boolean, default: false },

@@ -2,12 +2,11 @@
     <ActivityCalendarAbstract />
     <el-divider />
     <ExperimentalFeature>
-        <base-card-normal>
-            <el-scrollbar>
+        <base-card-normal v-if="store.player.videos.length > 0">
+            <BBBvSummaryHeader />
+            <el-scrollbar aria-orientation="horizontal">
                 <BBBvSummary level="b" header />
-                <el-divider />
                 <BBBvSummary level="i" />
-                <el-divider />
                 <BBBvSummary level="e" />
             </el-scrollbar>
         </base-card-normal>
@@ -37,6 +36,7 @@ import { useI18n } from 'vue-i18n';
 import ActivityCalendarAbstract from '@/components/visualization/ActivityCalendarAbstract/App.vue';
 import ExperimentalFeature from '@/components/ExperimentalFeature.vue';
 import BBBvSummary from '@/components/visualization/BBBvSummary/App.vue';
+import BBBvSummaryHeader from '@/components/visualization/BBBvSummary/Header.vue';
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
 const { t } = useI18n();
 </script>

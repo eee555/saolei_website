@@ -2,7 +2,9 @@
     <el-table :data="accountlinks" :row-key="(row: any) => `key${row.platform}`" @expand-change="expandRow">
         <el-table-column type="expand">
             <template #default="props">
-                <el-text v-if="!props.row.verified" v-t="'accountlink.unverifiedText'" type="info" style="margin-left:50px" />
+                <el-text v-if="!props.row.verified" type="info" style="margin-left:50px">
+                    {{ t('accountlink.unverifiedText') }}
+                </el-text>
                 <el-text v-else-if="props.row.data === undefined" type="info" style="margin-left:50px">
                     No Data
                 </el-text>
