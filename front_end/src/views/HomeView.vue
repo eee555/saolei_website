@@ -5,7 +5,7 @@
                 <el-tabs type="border-card" style=" min-height: 300px;">
                     <el-tab-pane v-loading="news_queue_status == 1" style="max-height: 300px; overflow: auto;user-select: none;">
                         <template #label>
-                            <span v-t="'home.news'" />&nbsp;
+                            {{ t('home.news') }}&nbsp;
                             <el-text v-if="news_queue_status == 2" type="success">
                                 <el-icon>
                                     <Check />
@@ -26,12 +26,9 @@
                                 class="name" style="vertical-align: top;" :user-id="+news.player_id"
                                 :user-name="news.player"
                             />
-                            <el-text 
-                                v-t="{path: 'news.breakRecordTo', args: {
-                                    mode: t(`common.mode.${news.mode}`), level:
-                                        t(`common.level.${news.level}`), stat: t(`common.prop.${news.index}`)
-                                }}" style="vertical-align: middle;"
-                            />
+                            <el-text style="vertical-align: middle;">
+                                {{ t('news.breakRecordTo', {mode: t(`common.mode.${news.mode}`), level: t(`common.level.${news.level}`), stat: t(`common.prop.${news.index}`)}) }}
+                            </el-text>
                             <PreviewNumber :id="news.video_id" :text="to_fixed_n(news.value, 3)" />
                             <el-text style="margin-left: 5px; vertical-align: middle;">
                                 {{ news.delta == "新" ? "" : news.delta > 0 ? "↑" : "↓" }}{{ news.delta }}
@@ -43,7 +40,7 @@
                 <el-tabs v-model="active_tab" type="border-card" style="margin-top: 2%;">
                     <el-tab-pane v-loading="newest_queue_status == 1" class="bottom_tabs" :lazy="true" name="newest">
                         <template #label>
-                            <span v-t="'home.latestScore'" />&nbsp;
+                            {{ t('home.latestScore') }}&nbsp;
                             <el-text v-if="newest_queue_status == 2" type="success">
                                 <el-icon>
                                     <Check />
