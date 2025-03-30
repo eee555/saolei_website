@@ -21,9 +21,9 @@ const { proxy } = useCurrentInstance();
 
 watch(videoplayerstore, () => {
     if (videoplayerstore.visible) {
-        preview(videoplayerstore.id)
+        preview(videoplayerstore.id);
     }
-})
+});
 
 const preview = (id: number | undefined) => {
     if (!id) return;
@@ -53,10 +53,10 @@ const preview = (id: number | undefined) => {
                 onload: async function () {
                     playVideo(url);
                 },
-            }
+            };
         }
-    }).catch(httpErrorNotification)
-}
+    }).catch(httpErrorNotification);
+};
 
 const playVideo = function (url: string) {
     (window as any).flop.playVideo(url, {
@@ -75,6 +75,6 @@ const playVideo = function (url: string) {
             (window as any).flop = null;
         },
     });
-}
+};
 
 </script>

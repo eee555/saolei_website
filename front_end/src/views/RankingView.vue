@@ -72,7 +72,7 @@
 
 <script lang="ts" setup>
 // 玩家排行榜
-import { onMounted, ref, reactive } from 'vue'
+import { onMounted, ref, reactive } from 'vue';
 import { ElPagination, ElRow, ElButton } from 'element-plus';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { to_fixed_n, ms_to_s } from '@/utils';
@@ -132,7 +132,7 @@ const mode_tags: Tags = {
     'NF': { key: 'nf' },
     'JSW': { key: 'ng' },
     //"BZD": { key: "dg" }
-}
+};
 
 
 // reverse: true从小到大
@@ -142,7 +142,7 @@ const index_tags: TagsReverse = {
     'path': { key: 'path', reverse: false, to_fixed: 2 },
     'stnb': { key: 'stnb', reverse: true, to_fixed: 2 },
     'ioe': { key: 'ioe', reverse: true, to_fixed: 3 },
-}
+};
 
 onMounted(() => {
     document.getElementsByClassName('el-pagination__goto')[0].childNodes[0].nodeValue = '转到';
@@ -151,7 +151,7 @@ onMounted(() => {
 
     mod_style();
     get_player_rank(1);
-})
+});
 
 
 
@@ -162,10 +162,10 @@ const mod_style = () => {
 
     index_visible.value = !['upload_time', 'bbbv', 'bbbv_s', 'timems'].
         includes(index_tag_selected.value);
-}
+};
 
 const get_player_rank = (page: number) => {
-    state.CurrentPage = page
+    state.CurrentPage = page;
     const iv = index_tags[index_tag_selected.value];
     const mv = mode_tags[mode_tag_selected.value];
     const piv = `player_${iv.key}_${mv.key}_`;
@@ -185,7 +185,7 @@ const get_player_rank = (page: number) => {
         state.Total = data.total_page;
 
         const players = data.players;
-        playerData.splice(0, playerData.length)
+        playerData.splice(0, playerData.length);
         for (let i = 0; i < players.length / 9; i++) {
             playerData.push({
                 name_id: +players[i * 9],
@@ -197,16 +197,16 @@ const get_player_rank = (page: number) => {
                 expert: index_tag_selected.value == 'timems' ? ms_to_s(players[i * 9 + 6]) : players[i * 9 + 6],
                 expert_id: +players[i * 9 + 7],
                 sum: index_tag_selected.value == 'timems' ? ms_to_s(players[i * 9 + 8]) : players[i * 9 + 8],
-            })
+            });
         }
         // console.log(playerData);
-    })
-}
+    });
+};
 
 const currentChange = (val: number) => {
     state.CurrentPage = Math.ceil(val);
     get_player_rank(state.CurrentPage);
-}
+};
 // 上一页
 const prevClick = () => {
     state.CurrentPage = state.CurrentPage - 1;
@@ -214,7 +214,7 @@ const prevClick = () => {
         state.CurrentPage = 1;
     }
     get_player_rank(state.CurrentPage);
-}
+};
 // 下一页
 const nextClick = () => {
     state.CurrentPage = state.CurrentPage + 1;
@@ -222,7 +222,7 @@ const nextClick = () => {
         state.CurrentPage = state.Total;
     }
     get_player_rank(state.CurrentPage);
-}
+};
 
 // 点难度标签右侧排序方向箭头的回调
 const setSortDirect = (level_tag: string) => {
@@ -232,7 +232,7 @@ const setSortDirect = (level_tag: string) => {
         level_selected.value = level_tag;
     }
     get_player_rank(state.CurrentPage);
-}
+};
 
 </script>
 

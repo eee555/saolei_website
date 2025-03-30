@@ -29,14 +29,14 @@
 
 <script lang="ts" setup>
 // 注册、登录、找回密码的弹框及右上方按钮
-import { onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 const { proxy } = useCurrentInstance();
-import { LoginStatus } from '@/utils/common/structInterface'
-import LoginDialog from '@/components/dialogs/LoginDialog.vue'
+import { LoginStatus } from '@/utils/common/structInterface';
+import LoginDialog from '@/components/dialogs/LoginDialog.vue';
 import RetrieveDialog from './dialogs/RetrieveDialog.vue';
-import { ElMessage, ElButton } from 'element-plus'
-import { store, local } from '../store'
+import { ElMessage, ElButton } from 'element-plus';
+import { store, local } from '../store';
 
 import { useI18n } from 'vue-i18n';
 import RegisterDialog from './dialogs/RegisterDialog.vue';
@@ -70,7 +70,7 @@ onMounted(() => {
         }
         return null;
     };
-})
+});
 
 const login_auto = async () => {
     proxy.$axios.get('/userprofile/loginauto/').then(function (response) {
@@ -81,8 +81,8 @@ const login_auto = async () => {
         } else {
             store.login_status = LoginStatus.NotLogin;
         }
-    })
-}
+    });
+};
 
 const login = (user: any, remember: boolean) => {
     store.user = new UserProfile(user);
@@ -92,7 +92,7 @@ const login = (user: any, remember: boolean) => {
     register_visible.value = false;
     retrieve_visible.value = false;
     remember_me.value = remember;
-}
+};
 
 const logout = async () => {
     proxy.$axios.post('/userprofile/logout/',
@@ -106,7 +106,7 @@ const logout = async () => {
         login_visible.value = false;
         retrieve_visible.value = false;
     }).catch(httpErrorNotification);
-}
+};
 
 </script>
 

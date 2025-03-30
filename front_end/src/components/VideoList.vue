@@ -79,7 +79,7 @@ const { t } = useI18n();
 defineProps({
     videos: {
         type: Array<VideoAbstract>,
-        default() { return [] },
+        default() { return []; },
     },
     // 反序
     reverse: {
@@ -107,6 +107,6 @@ defineProps({
         type: [String, Number],
         default: '100%',
     },
-})
+});
 
 </script>

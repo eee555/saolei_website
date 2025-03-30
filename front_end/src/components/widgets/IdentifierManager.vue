@@ -58,14 +58,14 @@ import BaseIconDelete from '@/components/common/BaseIconDelete.vue';
 import BaseIconAdd from '../common/BaseIconAdd.vue';
 
 const { proxy } = useCurrentInstance();
-const new_identifiers = ref('')
+const new_identifiers = ref('');
 const { t } = useI18n();
 
 const identifierdata = computed(() => {
     const data = store.player.identifiers ? store.player.identifiers.map((value) => ({ data: value })) : [];
     if (store.player.id == store.user.id) data.push({ data: '' });
-    return data
-})
+    return data;
+});
 
 function delIdentifier(identifier: string) {
     proxy.$axios.post('identifier/del/', { identifier: identifier },
@@ -75,8 +75,8 @@ function delIdentifier(identifier: string) {
             title: t('identifierManager.delIdentifierSuccess'),
             message: t('identifierManager.processedNVideos', [response.data.value]),
             type: 'success',
-        })
-    }).catch(httpErrorNotification)
+        });
+    }).catch(httpErrorNotification);
 }
 
 function addIdentifier(identifier: string) {
@@ -88,24 +88,24 @@ function addIdentifier(identifier: string) {
                 title: t('identifierManager.addIdentifierSuccess'),
                 message: t('identifierManager.processedNVideos', [response.data.value]),
                 type: 'success',
-            })
+            });
             store.new_identifier = false;
         } else if (response.data.category === 'notFound') {
             ElNotification({
                 title: t('identifierManager.notFound'),
                 type: 'error',
-            })
+            });
         } else if (response.data.category === 'conflict') {
             ElNotification({
                 title: t('identifierManager.conflict'),
                 message: t('identifierManager.ownedBy', [response.data.value]),
                 type: 'error',
-            })
+            });
         } else {
-            unknownErrorNotification(response.data)
+            unknownErrorNotification(response.data);
         }
         new_identifiers.value = '';
-    }).catch(httpErrorNotification)
+    }).catch(httpErrorNotification);
 }
 
 </script>

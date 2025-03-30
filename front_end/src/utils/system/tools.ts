@@ -1,6 +1,6 @@
 
 // import useLogStore from '@/store/system-log'
-import { ElMessage } from 'element-plus'
+import { ElMessage } from 'element-plus';
 // import Log from '../common/log.print'
 
 /**
@@ -34,13 +34,13 @@ export function removeItem<T>(arr: Array<T>, value: T): Array<T> {
  * @param {String} defaultValue 默认值
  */
 export function parse(jsonString = '{}', defaultValue = {}) {
-    let result = defaultValue
+    let result = defaultValue;
     try {
-        result = JSON.parse(jsonString)
+        result = JSON.parse(jsonString);
     } catch (error) {
-        console.log(error)
+        console.log(error);
     }
-    return result
+    return result;
 }
 
 /**
@@ -53,7 +53,7 @@ export function response(data = {}, msg = '', code = 0) {
     return [
         200,
         { code, msg, data },
-    ]
+    ];
 }
 
 /**
@@ -62,7 +62,7 @@ export function response(data = {}, msg = '', code = 0) {
  * @param {String} msg 状态信息
  */
 export function responseSuccess(data = {}, msg = '成功') {
-    return response(data, msg)
+    return response(data, msg);
 }
 
 /**
@@ -72,7 +72,7 @@ export function responseSuccess(data = {}, msg = '成功') {
  * @param {Number} code 状态码
  */
 export function responseError(data = {}, msg = '请求失败', code = 500) {
-    return response(data, msg, code)
+    return response(data, msg, code);
 }
 
 /**
@@ -92,13 +92,13 @@ export function errorLog(error: Error) {
     // 打印到控制台
     if (import.meta.env.NODE_ENV === 'development') {
     // Log.danger('>>>>>> Error >>>>>>')
-        console.log(error)
+        console.log(error);
     }
     // 显示提示
     ElMessage.error({
         message: error.message,
         duration: 5 * 1000,
-    })
+    });
 }
 
 /**
@@ -106,9 +106,9 @@ export function errorLog(error: Error) {
  * @param {String} msg 错误信息
  */
 export function errorCreate(msg: string | undefined) {
-    const error = new Error(msg)
-    errorLog(error)
-    throw error
+    const error = new Error(msg);
+    errorLog(error);
+    throw error;
 }
 
 /**
@@ -120,7 +120,7 @@ export function dataNotFound(msg: string | undefined) {
     ElMessage.info({
         message: msg,
         duration: 5 * 1000,
-    })
+    });
 }
 
 /**
@@ -131,5 +131,5 @@ export function successMsg(msg: string | undefined) {
     ElMessage.success({
         message: msg,
         duration: 5 * 1000,
-    })
+    });
 }

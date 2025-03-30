@@ -28,6 +28,6 @@ const prop = defineProps({
         type: Array<string>,
         default: ['time', 'bv'],
     },
-})
+});
 
 </script>

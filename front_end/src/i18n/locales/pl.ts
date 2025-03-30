@@ -65,4 +65,4 @@ export default {
         videos: 'wszystkie filmy',
         upload: 'prześlij filmy',
     },
-}
+};

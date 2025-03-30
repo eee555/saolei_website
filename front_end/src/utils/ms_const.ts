@@ -10,4 +10,4 @@ export const STNB_const = useLocalStorage('stnb_const', {
     b: 47.299,
     i: 153.73,
     e: 435.001,
-})
+});

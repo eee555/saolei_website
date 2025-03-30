@@ -106,10 +106,10 @@ import { store, local, colorTheme } from '@/store';
 import { ElDescriptions, ElDescriptionsItem, ElSelect, ElOption, ElTooltip, ElSwitch, ElSlider, ElInputNumber } from 'element-plus';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { useI18n } from 'vue-i18n';
-const { t } = useI18n()
+const { t } = useI18n();
 
-import DarkMode from '@/components/widgets/DarkMode.vue'
-import ColorSchemeSetting from '@/components/visualization/ColorSchemeSetting.vue'
+import DarkMode from '@/components/widgets/DarkMode.vue';
+import ColorSchemeSetting from '@/components/visualization/ColorSchemeSetting.vue';
 import { ref } from 'vue';
 import ExperimentalFeature from '@/components/ExperimentalFeature.vue';
 import { STNB_const } from '@/utils/ms_const';

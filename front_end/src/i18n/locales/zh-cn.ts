@@ -341,4 +341,4 @@ export default {
         designer: '外观设计',
         acknowledgement: '致谢',
     },
-}
+};

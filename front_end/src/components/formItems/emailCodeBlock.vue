@@ -55,7 +55,7 @@ const prop = defineProps({
         type: String,
         default: 'success',
     },
-})
+});
 const emailCode = defineModel({ type: String, required: true });
 
 const { proxy } = useCurrentInstance();
@@ -72,14 +72,14 @@ const captchaFormRef = ref<typeof ElFormItem>();
 const emailCodeFormRef = ref<typeof ElFormItem>();
 
 // 获取验证状态
-const validateState = computed(() => { return emailCodeFormRef.value!.validateState });
+const validateState = computed(() => { return emailCodeFormRef.value!.validateState; });
 
 // 由外部验证后，若不正确则传入修改验证状态
 const errorCode = () => {
-    validateError(emailCodeFormRef, t('msg.emailCodeInvalid'))
-}
+    validateError(emailCodeFormRef, t('msg.emailCodeInvalid'));
+};
 
-defineExpose({ validateState, hashkey, errorCode })
+defineExpose({ validateState, hashkey, errorCode });
 
 const email_code_placeholder = computed(() => {
     if (prop.emailState !== 'success') return t('msg.emailRequired');
@@ -87,17 +87,17 @@ const email_code_placeholder = computed(() => {
     else if (email_handling.value) return t('msg.pleaseWait');
     else if (email_success.value) return t('msg.pleaseSeeEmail');
     else return '';
-})
+});
 
 const captchaHandler = (value: string) => {
     if (value.length == 0) validateError(captchaFormRef, t('msg.captchaRequired'));
     else validateSuccess(captchaFormRef);
-}
+};
 
 const emailCodeHandler = (value: string) => {
     if (value.length == 0) validateError(emailCodeFormRef, t('msg.emailCodeRequired'));
     else validateSuccess(emailCodeFormRef);
-}
+};
 
 const getEmailCaptcha = (type: string) => {
     if (prop.emailState !== 'success') return;
@@ -125,7 +125,7 @@ const getEmailCaptcha = (type: string) => {
                 message: t('msg.emailSendSuccessMsg'),
                 type: 'warning',
                 duration: local.value.notification_duration,
-            })
+            });
         } else if (data.type == 'error') {
             refreshCaptcha();
             if (data.object == 'captcha') {
@@ -138,16 +138,16 @@ const getEmailCaptcha = (type: string) => {
                     message: t('msg.emailSendFailMsg'),
                     type: 'error',
                     duration: local.value.notification_duration,
-                })
+                });
             }
         }
     });
     email_handling.value = false;
-}
+};
 
 const refreshCaptcha = () => {
     refValidCode.value!.refreshPic();
     captcha.value = '';
-}
+};
 
 </script>

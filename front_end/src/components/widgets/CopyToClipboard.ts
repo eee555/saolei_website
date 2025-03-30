@@ -17,6 +17,6 @@ export const copyToClipboard = async (str: string) => {
             type: 'error',
             message: err + '',
             duration: local.value.notification_duration,
-        })
+        });
     }
-}
+};

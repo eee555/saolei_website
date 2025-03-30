@@ -72,18 +72,18 @@ const loginForm = reactive<LoginForm>({
     username: '',
     password: '',
     captcha: '',
-})
+});
 
-const ruleFormRef = ref<FormInstance>()
+const ruleFormRef = ref<FormInstance>();
 
 const rules = reactive<FormRules<LoginForm>>({
     username: [{ required: true, message: t('msg.usernameRequired') }],
     password: [{ required: true, message: t('msg.passwordRequired') }],
     captcha: [{ required: true, message: t('msg.captchaRequired') }],
-})
+});
 
 const submitForm = async (formEl: FormInstance | undefined) => {
-    if (!formEl) return
+    if (!formEl) return;
     await formEl.validate((valid, _fields) => {
         if (!valid) return;
         const user_id = localStorage.getItem('history_user_id');
@@ -96,7 +96,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
         }).then(function (response) {
             const data = response.data;
             if (data.type == 'success') {
-                emit('login', data.user, remember_me.value)
+                emit('login', data.user, remember_me.value);
             } else if (data.type == 'error') {
                 if (data.category == 'captcha') {
                     captchaError.value = t('msg.captchaFail');
@@ -105,13 +105,13 @@ const submitForm = async (formEl: FormInstance | undefined) => {
                     passwordError.value = t('msg.usernamePasswordInvalid');
                 }
             }
-        }).catch(httpErrorNotification)
-    })
-}
+        }).catch(httpErrorNotification);
+    });
+};
 
 const resetForm = (formEl: FormInstance | undefined) => {
-    if (!formEl) return
-    formEl.resetFields()
-}
+    if (!formEl) return;
+    formEl.resetFields();
+};
 
 </script>

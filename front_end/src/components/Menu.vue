@@ -15,8 +15,8 @@
 
 <script lang="ts" setup>
 // 注册、登录的弹框及右上方按钮
-import { onMounted, ref } from 'vue'
-import { LoginStatus } from '@/utils/common/structInterface'
+import { onMounted, ref } from 'vue';
+import { LoginStatus } from '@/utils/common/structInterface';
 import FriendlyLink from '@/components/dialogs/FriendlyLinks.vue';
 import Downloads from '@/components/dialogs/Downloads.vue';
 import Thanks from '@/components/dialogs/Thanks.vue';
@@ -31,18 +31,18 @@ const emit = defineEmits(['login', 'logout']);
 onMounted(() => {
 
 
-})
+});
 
 
 const user_login = () => {
     // 配合孙组件向爷组件传
     emit('login');
-}
+};
 
 const user_logout = () => {
     // 配合孙组件向爷组件传
     emit('logout');
-}
+};
 
 
 

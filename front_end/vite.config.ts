@@ -1,7 +1,7 @@
-import { fileURLToPath, URL } from 'node:url'
+import { fileURLToPath, URL } from 'node:url';
 
-import { defineConfig, loadEnv } from 'vite'
-import vue from '@vitejs/plugin-vue'
+import { defineConfig, loadEnv } from 'vite';
+import vue from '@vitejs/plugin-vue';
 import wasm from 'vite-plugin-wasm';
 // import vueDevTools from 'vite-plugin-vue-devtools'
 import topLevelAwait from 'vite-plugin-top-level-await';
@@ -11,7 +11,7 @@ import viteCompression from 'vite-plugin-compression';
 export default defineConfig(({ mode }) => {
     process.env = { ...process.env, ...loadEnv(mode, process.cwd(), '') };
     // 真**坑爹。vite的依赖open，10.0.1修复了这个问题。但目前vite还未更新其版本
-    process.env.SYSTEMROOT = process.env.SystemRoot || 'C://Windows'
+    process.env.SYSTEMROOT = process.env.SystemRoot || 'C://Windows';
 
 
     return {
@@ -48,5 +48,5 @@ export default defineConfig(({ mode }) => {
     //   minify: false,
     // }
     // base: baseURL,
-    }
-})
+    };
+});

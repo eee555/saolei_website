@@ -84,7 +84,7 @@ export class VideoAbstract {
             player_name: info.player,
             cl: info.cl,
             ce: info.ce,
-        })
+        });
     }
 
     public time() {
@@ -168,7 +168,7 @@ export class VideoAbstract {
     public tooltipFormatter(t: any) {
         // t is the localization API from i18n
         return `${t('common.prop.upload_time')}: ${this.upload_time} <br>
-        ${t('common.level.' + this.level)} ${this.bv}Bv = ${this.time().toFixed(3)} * ${this.bvs().toFixed(3)}`
+        ${t('common.level.' + this.level)} ${this.bv}Bv = ${this.time().toFixed(3)} * ${this.bvs().toFixed(3)}`;
     }
 }
 

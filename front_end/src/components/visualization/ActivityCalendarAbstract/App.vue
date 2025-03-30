@@ -57,7 +57,7 @@ const startDate = computed(() => {
         if (keydate < min) min = keydate;
     }
     return min;
-})
+});
 const startWeekTime = computed(() => getWeekTime(startDate.value));
 
 function *generateDateRange(startDate: Date, endDate: Date, step: number = 1) {

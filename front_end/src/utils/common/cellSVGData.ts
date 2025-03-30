@@ -122,7 +122,7 @@ export const cells: { [key: string]: string } = {
     'a': cellup, //未打开
     'n': blast, // 红雷
     'e': falsemine, // 叉雷
-}
+};
 
 
 

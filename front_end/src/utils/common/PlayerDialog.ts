@@ -6,4 +6,4 @@ export const preview = (id: number | undefined | null) => {
     }
     videoplayerstore.id = id;
     videoplayerstore.visible = true;
-}
+};

@@ -46,10 +46,10 @@ import image_url_default from '@/assets/person.png';
 const image_url = ref(image_url_default);
 // import PreviewDownload from '@/components/PreviewDownload.vue';
 import PreviewNumber from '@/components/PreviewNumber.vue';
-import { useRouter } from 'vue-router'
-import { ms_to_s, to_fixed_n } from '@/utils'
-const router = useRouter()
-import { store } from '../store'
+import { useRouter } from 'vue-router';
+import { ms_to_s, to_fixed_n } from '@/utils';
+const router = useRouter();
+import { store } from '../store';
 import { ElLink, ElPopover, ElImage, ElButton, vLoading } from 'element-plus';
 
 const data = defineProps({
@@ -61,7 +61,7 @@ const data = defineProps({
         type: String,
         default: '',
     },
-})
+});
 
 const render = ref<boolean>(false); // 控制只渲染一次
 const visible = ref<boolean>(false);
@@ -101,27 +101,27 @@ const pop_show = async () => {
             image_url.value = 'data:image/;base64,' + response_data.avatar;
         }
 
-        const records = JSON.parse(response_data.record_abstract)
+        const records = JSON.parse(response_data.record_abstract);
 
-        b_t.value = records.timems[0]
-        i_t.value = records.timems[1]
-        e_t.value = records.timems[2]
+        b_t.value = records.timems[0];
+        i_t.value = records.timems[1];
+        e_t.value = records.timems[2];
 
-        b_t_id.value = records.timems_id[0]
-        i_t_id.value = records.timems_id[1]
-        e_t_id.value = records.timems_id[2]
-        b_bvs.value = records.bvs[0]
-        i_bvs.value = records.bvs[1]
-        e_bvs.value = records.bvs[2]
-        b_bvs_id.value = records.bvs_id[0]
-        i_bvs_id.value = records.bvs_id[1]
-        e_bvs_id.value = records.bvs_id[2]
+        b_t_id.value = records.timems_id[0];
+        i_t_id.value = records.timems_id[1];
+        e_t_id.value = records.timems_id[2];
+        b_bvs.value = records.bvs[0];
+        i_bvs.value = records.bvs[1];
+        e_bvs.value = records.bvs[2];
+        b_bvs_id.value = records.bvs_id[0];
+        i_bvs_id.value = records.bvs_id[1];
+        e_bvs_id.value = records.bvs_id[2];
 
         is_loading.value = false;
     }).catch(() => {
         // is_loading.value = false;
-    })
-}
+    });
+};
 
 // 用户记录小弹窗关闭后，删除其中的数据
 const pop_hide = () => {
@@ -141,15 +141,15 @@ const pop_hide = () => {
     i_bvs_id.value = '';
     e_bvs_id.value = '';
     is_loading.value = true;
-}
+};
 
 const visit_me = (user_id: number) => {
     // proxy.$store.commit('updatePlayer', { "id": id.value, "realname":realname.value });
     // localStorage.setItem("player", JSON.stringify({ "id": id.value, "realname":realname.value }));
     // localStorage.setItem("player", JSON.stringify({ "id": id.value }));
     store.player.id = +user_id;
-    router.push(`player/${store.player.id}`)
-}
+    router.push(`player/${store.player.id}`);
+};
 
 // 实现点旁边时候关闭气泡
 const handleOutsideClick = (event: any) => {
@@ -157,7 +157,7 @@ const handleOutsideClick = (event: any) => {
     if (!componentElement?.contains(event.target)) {
         visible.value = false;
     }
-}
+};
 
 
 

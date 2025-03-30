@@ -1,20 +1,20 @@
-import { createApp } from 'vue'
+import { createApp } from 'vue';
 import * as ELIcons from '@element-plus/icons-vue';
 
-import App from './App.vue'
-import router from './router'
-import i18n from '@/i18n'
-import 'element-plus/dist/index.css'
-import $axios from './http'
+import App from './App.vue';
+import router from './router';
+import i18n from '@/i18n';
+import 'element-plus/dist/index.css';
+import $axios from './http';
 import { AxiosInstance } from 'axios';
 // 全局挂载axios
 
-import 'highlight.js/styles/stackoverflow-light.css'
-import 'element-plus/theme-chalk/dark/css-vars.css'
+import 'highlight.js/styles/stackoverflow-light.css';
+import 'element-plus/theme-chalk/dark/css-vars.css';
 import { pinia } from './store/create';
 
 
-const app = createApp(App)
+const app = createApp(App);
 
 app.config.globalProperties.$axios = $axios;
 
@@ -26,10 +26,10 @@ for (const name in ELIcons) {
 app.use(pinia).use(router).use(i18n);
 app.mount('#app');
 
-const win: any = window
+const win: any = window;
 if (import.meta.env.NODE_ENV === 'development') {
     if ('__VUE_DEVTOOLS_GLOBAL_HOOK__' in win) {
-        win.__VUE_DEVTOOLS_GLOBAL_HOOK__.Vue = app
+        win.__VUE_DEVTOOLS_GLOBAL_HOOK__.Vue = app;
     }
 }
 

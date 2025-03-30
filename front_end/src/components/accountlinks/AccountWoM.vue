@@ -65,9 +65,9 @@ const prop = defineProps({
         type: Object as PropType<any>,
         default() { return {}; },
     },
-})
+});
 
-const { t } = useI18n()
+const { t } = useI18n();
 
 const datatable = computed(() => {
     return [
@@ -75,8 +75,8 @@ const datatable = computed(() => {
         { category: t('common.prop.ioe'), b: prop.data.b_ioe, i: prop.data.i_ioe, e: prop.data.e_ioe },
         { category: t('common.prop.mastery'), b: prop.data.b_mastery, i: prop.data.i_mastery, e: prop.data.e_mastery },
         { category: t('common.prop.winstreak'), b: prop.data.b_winstreak, i: prop.data.i_winstreak, e: prop.data.e_winstreak },
-    ]
-})
+    ];
+});
 
 </script>
 

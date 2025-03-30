@@ -17,18 +17,18 @@ const notificationMessage: { [code: number]: string } = {
 };
 
 export const httpErrorNotification = (error: any) => {
-    const status = error.response.status
+    const status = error.response.status;
     if (status in notificationMessage) {
         ElNotification({
             title: t('msg.actionFail'),
             message: t(notificationMessage[status]),
             type: 'error',
             duration: local.value.notification_duration,
-        })
+        });
     } else {
-        unknownErrorNotification(error)
+        unknownErrorNotification(error);
     }
-}
+};
 
 export const successNotification = (response: any) => {
     if (response.status == 200) {
@@ -36,11 +36,11 @@ export const successNotification = (response: any) => {
             title: t('msg.actionSuccess'),
             type: 'success',
             duration: local.value.notification_duration,
-        })
+        });
     } else {
-        unknownErrorNotification(response)
+        unknownErrorNotification(response);
     }
-}
+};
 
 export const unknownErrorNotification = (error: any) => {
     ElNotification({
@@ -48,5 +48,5 @@ export const unknownErrorNotification = (error: any) => {
         message: error,
         type: 'error',
         duration: local.value.notification_duration,
-    })
-}
+    });
+};

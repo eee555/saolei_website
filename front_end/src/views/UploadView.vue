@@ -86,13 +86,13 @@
 
 <script lang="ts" setup>
 // 上传录像的页面
-import { ref } from 'vue'
+import { ref } from 'vue';
 import { ElTable, ElTableColumn, ElButton, ElDescriptions, ElDescriptionsItem, ElUpload, ElIcon } from 'element-plus';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 const { proxy } = useCurrentInstance();
-import type { UploadInstance, UploadProps, UploadUserFile, UploadRawFile, UploadFile, UploadFiles } from 'element-plus'
-import { store } from '../store'
-import { to_fixed_n } from '@/utils'
+import type { UploadInstance, UploadProps, UploadUserFile, UploadRawFile, UploadFile, UploadFiles } from 'element-plus';
+import { store } from '../store';
+import { to_fixed_n } from '@/utils';
 import { extract_stat, get_upload_status, load_video_file, upload_form, UploadVideoForm, VideoStat } from '@/utils/fileIO';
 import { Dict2FormData } from '@/utils/forms';
 import { useI18n } from 'vue-i18n';
@@ -110,11 +110,11 @@ interface UploadEntry {
 
 defineProps({
     identifiers: { type: Array, default: () => [] },
-})
+});
 
-const upload_queue = ref<UploadEntry[]>([])
+const upload_queue = ref<UploadEntry[]>([]);
 
-const fileList = ref<UploadUserFile[]>([])
+const fileList = ref<UploadUserFile[]>([]);
 
 const upload = ref<UploadInstance>();
 const uploaded_file_num = ref<number>(0);
@@ -130,7 +130,7 @@ const handleChange: UploadProps['onChange'] = async (uploadFile: UploadFile, _up
             upload_queue.value[i].index = i;
         }
     }
-}
+};
 
 // 新增一条等待上传的录像信息的记录
 const push_video_msg = async (uploadFile: UploadFile | UploadRawFile) => {
@@ -141,7 +141,7 @@ const push_video_msg = async (uploadFile: UploadFile | UploadRawFile) => {
         video_file = uploadFile as UploadRawFile;
     }
     upload_queue.value.push(await upload_prepare(video_file));
-}
+};
 
 // 清空待上传列表
 const cancel_all = () => {
@@ -150,7 +150,7 @@ const cancel_all = () => {
         upload_queue.value.pop();
     }
     uploaded_file_num.value = 0;
-}
+};
 
 // 点上传按钮的回调，自动上传录像
 const submitUpload = async () => {
@@ -171,7 +171,7 @@ const submitUpload = async () => {
         i++;
     }
     allow_upload.value = true;
-}
+};
 
 // 上传问题不大的录像
 const forceUpload = async (i: number) => {
@@ -192,22 +192,22 @@ const forceUpload = async (i: number) => {
             uploaded_file_num.value += 1;
             removeUpload(i);
         } else if (response.data.type === 'error' && response.data.object === 'videomodel') {
-            upload_queue.value[i].status = 'collision'
+            upload_queue.value[i].status = 'collision';
         } else if (response.data.type === 'error' && response.data.object === 'identifier') {
-            upload_queue.value[i].status = 'censorship'
+            upload_queue.value[i].status = 'censorship';
         } else {
             // 正常使用不会到这里
             upload_queue.value[i].status = 'upload';
         }
     }).catch((_error: any) => {
         upload_queue.value[i].status = 'upload';
-    })
-}
+    });
+};
 
 //删除录像
 const removeUpload = (i: number) => {
     upload_queue.value.splice(i, 1);
-}
+};
 
 // 均匀延时，降低并发。
 function getDelay() {
@@ -228,7 +228,7 @@ async function upload_prepare(file: UploadRawFile): Promise<UploadEntry> {
         status: get_upload_status(file, video, store.user.identifiers),
         stat: extract_stat(video),
         form: upload_form(file, video),
-    }
+    };
 }
 
 </script>

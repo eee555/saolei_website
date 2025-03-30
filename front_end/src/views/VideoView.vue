@@ -56,7 +56,7 @@
 
 <script lang="ts" setup>
 // 全网录像的检索器，根据三个维度排序
-import { onMounted, ref, reactive } from 'vue'
+import { onMounted, ref, reactive } from 'vue';
 import { ElPagination, ElTable, ElTableColumn, ElDescriptions, ElDescriptionsItem, ElRow, ElButton } from 'element-plus';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
@@ -140,7 +140,7 @@ const mode_tags: Tags = {
     //"QKC": { name: "强可猜", key: "09" },
     //"RKC": { name: "弱可猜", key: "10" },
     //"BZD": { name: "递归", key: "11" }
-}
+};
 
 
 // reverse: true从小到大
@@ -169,7 +169,7 @@ const index_tags: TagsReverse = reactive({
     'cell6': { key: 'cell6', reverse: false, to_fixed: 0, selected: false },
     'cell7': { key: 'cell7', reverse: false, to_fixed: 0, selected: false },
     'cell8': { key: 'cell8', reverse: false, to_fixed: 0, selected: false },
-})
+});
 
 const selected_index = () => {
     const list = [];
@@ -179,7 +179,7 @@ const selected_index = () => {
         }
     }
     return list;
-}
+};
 
 const columnFormatter = (key: string, value: any) => {
     if (key == 'upload_time') {
@@ -191,14 +191,14 @@ const columnFormatter = (key: string, value: any) => {
     } else {
         return to_fixed_n(value, index_tags[key].to_fixed);
     }
-}
+};
 
 onMounted(() => {
     document.getElementsByClassName('el-pagination__goto')[0].childNodes[0].nodeValue = '转到';
     // 把分页器的go to改成中文。
     mod_style();
     request_videos();
-})
+});
 
 function to_fixed_n(input: string | number | undefined, to_fixed: number): string | number | undefined {
     // 返回保留to_fixed位小数的字符串，四舍六入五取双
@@ -220,7 +220,7 @@ const mod_style = () => {
 
     index_visible.value = !['upload_time', 'bbbv', 'bbbv_s', 'timems'].
         includes(index_tag_selected.value);
-}
+};
 
 const prevColumn = ref<any>(null); //上一个排序列
 const handleSortChange = (sort: any) => {
@@ -235,27 +235,27 @@ const handleSortChange = (sort: any) => {
             if (sort.order == null) { // 不允许通过点击箭头的方式将排序变成 null
                 sort.column.order = state.ReverseOrder ? 'descending' : 'ascending';
             }
-            state.ReverseOrder = sort.column.order == 'descending'
+            state.ReverseOrder = sort.column.order == 'descending';
             break;
         }
     }
     prevColumn.value = sort.column;
     request_videos();
-}
+};
 
 const handleSizeChange = (val: number) => {
     videofilter.value.pagesize = val;
     request_videos();
-}
+};
 
 const handleCurrentChange = (val: number) => {
     state.CurrentPage = val;
     request_videos();
-}
+};
 
 const offsetIndex = (index: number) => {
     return index + 1 + (state.CurrentPage - 1) * videofilter.value.pagesize;
-}
+};
 
 // 根据配置，刷新当前页面的录像表
 const request_videos = () => {
@@ -282,12 +282,12 @@ const request_videos = () => {
         videoList.splice(0, videoList.length);
         videoList.push(...data.videos);
         state.VideoCount = data.count;
-    }).catch(httpErrorNotification)
-}
+    }).catch(httpErrorNotification);
+};
 
 const index_select = (key: string | number, value: NameKeyReverse) => {
     index_tags[key].selected = !value.selected;
-}
+};
 
 </script>
 

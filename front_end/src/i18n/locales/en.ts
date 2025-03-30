@@ -341,4 +341,4 @@ export default {
         designer: 'UI designers',
         acknowledgement: 'Acknowledgement',
     },
-}
+};

@@ -80,6 +80,8 @@ export default typescriptEslint.config(
       '@stylistic/object-curly-spacing': ['error', 'always'],
       '@stylistic/padded-blocks': ['error', 'never'],
       '@stylistic/quotes': ['error', 'single'],
+      '@stylistic/rest-spread-spacing': 'error',
+      '@stylistic/semi': 'error',
       '@typescript-eslint/ban-ts-comment': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-explicit-any': 'off',

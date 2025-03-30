@@ -44,7 +44,7 @@ export async function upload_prepare(file: UploadRawFile) {
         status: status,
         stat: extract_stat(video),
         form: upload_form(file, video),
-    }
+    };
 }
 
 export interface VideoStat {
@@ -120,7 +120,7 @@ export function upload_form(file: UploadRawFile, video: AnyVideo | null): Upload
     if (video === null) return null;
     return {
         file: file,
-    }
+    };
 }
 
 export function get_upload_status(file: UploadRawFile, video: AnyVideo | null, identifiers: Array<string>) {

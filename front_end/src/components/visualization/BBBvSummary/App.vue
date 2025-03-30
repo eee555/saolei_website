@@ -44,7 +44,7 @@ const { t } = useI18n();
 const prop = defineProps({
     header: { type: Boolean, default: false },
     level: { type: String as PropType<MS_Level>, required: true },
-})
+});
 
 type option_type = 'bvs' | 'time' | 'stnb' | 'ioe' | 'thrp' | 'custom';
 interface Option {
@@ -63,7 +63,7 @@ const options = computed(() => {
         'ioe': { value: 'ioe', sortBy: 'ioe', displayBy: 'ioe', label: 'ioe', sortDesc: true },
         'thrp': { value: 'thrp', sortBy: 'thrp', displayBy: 'thrp', label: 'thrp', sortDesc: true },
         'custom': { value: 'custom', sortBy: BBBvSummaryConfig.value.sortBy, displayBy: BBBvSummaryConfig.value.displayBy, label: 'custom', sortDesc: BBBvSummaryConfig.value.sortDesc },
-    } as Record<option_type, Option>
+    } as Record<option_type, Option>;
 });
 
 const groupedVideoAbstract = computed(() => groupVideosByBBBv(store.player.videos, prop.level));
@@ -85,7 +85,7 @@ const theme = computed(() => {
         else if (prop.level == 'e') return new PiecewiseColorScheme(colorTheme.value.etime.colors, colorTheme.value.etime.thresholds);
         else return new PiecewiseColorScheme([], []);
     } else return new PiecewiseColorScheme([], []);
-})
+});
 
 </script>
 

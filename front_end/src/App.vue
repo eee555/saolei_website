@@ -72,11 +72,11 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 
 import { useDark, useToggle } from '@vueuse/core';
-const isDark = useDark()
-useToggle(isDark)
+const isDark = useDark();
+useToggle(isDark);
 watch(isDark, (v) => {
-    local.value.darkmode = v
-})
+    local.value.darkmode = v;
+});
 
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();

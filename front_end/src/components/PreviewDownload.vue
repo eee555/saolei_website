@@ -19,7 +19,7 @@ const { id } = defineProps({
         type: Number,
         required: true,
     },
-})
+});
 
 
 // // 1. 用户点击播放录像 0
@@ -52,7 +52,7 @@ const { id } = defineProps({
 
 const download = (event: MouseEvent, id: number | undefined) => {
     if (!id) {
-        return
+        return;
     }
     const down = document.createElement('a');
     down.style.display = 'none';
@@ -61,7 +61,7 @@ const download = (event: MouseEvent, id: number | undefined) => {
     down.click();
     URL.revokeObjectURL(down.href);
     document.body.removeChild(down);
-}
+};
 
 // declare interface Window {
 // 	flop: any

@@ -27,6 +27,6 @@ defineProps({
         type: Object as PropType<any>,
         default() { return {}; },
     },
-})
+});
 
 </script>

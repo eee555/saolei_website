@@ -21,7 +21,7 @@ import { ElText } from 'element-plus';
 const prop = defineProps({
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
-})
+});
 
 const startWeekTime = computed(() => getWeekTime(prop.startDate));
 const cellFullSize = computed(() => activityCalendarConfig.value.cellSize + activityCalendarConfig.value.cellMargin);

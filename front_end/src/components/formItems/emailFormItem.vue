@@ -22,20 +22,20 @@ const prop = defineProps({
         type: String,
         default: '',
     },
-})
+});
 
 const { proxy } = useCurrentInstance();
 const { t } = useI18n();
 
 const emailFormRef = ref<typeof ElFormItem>();
-const validateState = computed(() => { return emailFormRef.value!.validateState });
+const validateState = computed(() => { return emailFormRef.value!.validateState; });
 
-defineExpose({ validateState })
+defineExpose({ validateState });
 
 const emailInputHandler = (value: string) => {
     if (value.length == 0) validateError(emailFormRef, t('msg.emailRequired'));
     else emailFormRef.value!.clearValidate();
-}
+};
 
 const emailChangeHandler = (value: string) => {
     if (value.length == 0) validateError(emailFormRef, t('msg.emailRequired'));
@@ -48,8 +48,8 @@ const emailChangeHandler = (value: string) => {
         }).catch(function (error) {
             if (error.code === 'ERR_NETWORK') validateError(emailFormRef, t('msg.connectionFail'));
             else validateError(emailFormRef, t('msg.unknownError') + error);
-        })
+        });
     }
-}
+};
 
 </script>

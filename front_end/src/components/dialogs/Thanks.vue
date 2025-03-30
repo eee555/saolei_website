@@ -85,9 +85,9 @@
 
 <script lang="ts" setup>
 // 注册、登录的弹框及右上方按钮
-import { ref } from 'vue'
+import { ref } from 'vue';
 import { ElDialog, ElDivider, ElRow, ElCol, ElLink } from 'element-plus';
-import GitHubUser from '../widgets/GitHubUser.vue'
+import GitHubUser from '../widgets/GitHubUser.vue';
 
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
@@ -104,7 +104,7 @@ const acknowledgements = [
     { text: '冰糖雪梨' },
     { text: '生命★是┗ 〓┛是☆什么' },
     { text: 'Arya' },
-]
+];
 
 </script>
 

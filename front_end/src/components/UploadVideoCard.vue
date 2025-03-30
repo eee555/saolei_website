@@ -55,7 +55,7 @@
 
 <script lang="ts" setup>
 // 上传录像的页面，等待上传的录像的卡片
-import { onMounted } from 'vue'
+import { onMounted } from 'vue';
 import { ElCard, ElIcon, ElRow, ElCol } from 'element-plus';
 const emit = defineEmits(['cancel_this', 'logout']);
 
@@ -81,16 +81,16 @@ const { videoMsg } = defineProps({
                 timems: '',
                 bbbv: '',
                 bvs: '',
-            }
+            };
         },
     },
-})
+});
 
 onMounted(() => {
     // const player = proxy.$store.state.user;
 
 
-})
+});
 
 
 

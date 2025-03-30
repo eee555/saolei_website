@@ -31,14 +31,14 @@ const prop = defineProps({
         type: Object as PropType<any>,
         default() { return {}; },
     },
-})
+});
 
-const { t } = useI18n()
+const { t } = useI18n();
 
 const datatable = computed(() => [
     { category: t('common.prop.time'), b: ms_to_s(prop.data.b_t_ms), i: ms_to_s(prop.data.i_t_ms), e: ms_to_s(prop.data.e_t_ms), s: ms_to_s(prop.data.b_t_ms+prop.data.i_t_ms+prop.data.e_t_ms) },
     { category: t('common.prop.bvs'), b: cs_to_s(prop.data.b_b_cent), i: cs_to_s(prop.data.i_b_cent), e: cs_to_s(prop.data.e_b_cent), s: cs_to_s(prop.data.b_b_cent+prop.data.i_b_cent+prop.data.e_b_cent) },
     { category: t('accountlink.saoleiVideoCount'), b: prop.data.beg_count, i: prop.data.int_count, e: prop.data.exp_count, s: prop.data.beg_count+prop.data.int_count+prop.data.exp_count },
-])
+]);
 
 </script>

@@ -19,7 +19,7 @@ const data = defineProps({
         type: [String, Number],
         default: '',
     },
-})
+});
 
 </script>
 

@@ -85,8 +85,8 @@ const getUser = () => {
         function (response: any) {
             userprofile.value = response.data;
         },
-    ).catch(httpErrorNotification)
-}
+    ).catch(httpErrorNotification);
+};
 
 const setUser = (id: number, field: string, value: string) => {
     proxy.$axios.post('userprofile/set/', { id: id, field: field, value: value }).then(
@@ -94,8 +94,8 @@ const setUser = (id: number, field: string, value: string) => {
             successNotification(response);
             getUser();
         },
-    ).catch(httpErrorNotification)
-}
+    ).catch(httpErrorNotification);
+};
 
 const videoid = ref(0);
 const videofield = ref('');
@@ -108,8 +108,8 @@ const getVideo = () => {
         function (response: any) {
             videomodel.value = response.data;
         },
-    ).catch(httpErrorNotification)
-}
+    ).catch(httpErrorNotification);
+};
 
 function setVideoResponse(response: any) {
     successNotification(response);
@@ -117,11 +117,11 @@ function setVideoResponse(response: any) {
 }
 
 const setVideo = (id: number, field: string, value: string) => {
-    proxy.$axios.post('video/set/', { id: id, field: field, value: value }).then(setVideoResponse).catch(httpErrorNotification)
-}
+    proxy.$axios.post('video/set/', { id: id, field: field, value: value }).then(setVideoResponse).catch(httpErrorNotification);
+};
 
 const updateVideo = (id: number) => {
-    proxy.$axios.post('video/update/', { id: id }).then(setVideoResponse).catch(httpErrorNotification)
-}
+    proxy.$axios.post('video/update/', { id: id }).then(setVideoResponse).catch(httpErrorNotification);
+};
 
 </script>

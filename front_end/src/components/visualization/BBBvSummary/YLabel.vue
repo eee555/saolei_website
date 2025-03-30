@@ -14,6 +14,6 @@ import { ArrayUtils } from '@/utils/arrays';
 defineProps({
     minBv: { type: Number, required: true },
     maxBv: { type: Number, required: true },
-})
+});
 
 </script>

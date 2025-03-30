@@ -22,7 +22,7 @@ import {
 } from 'echarts/components';
 import VChart from 'vue-echarts';
 import { ref } from 'vue';
-import { onMounted, onBeforeUnmount } from 'vue'
+import { onMounted, onBeforeUnmount } from 'vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 const { proxy } = useCurrentInstance();
 
@@ -41,13 +41,13 @@ onMounted(() => {
     timer_1 = setInterval(refresh_data, 5010);
     refresh_memory_data();
     timer_2 = setInterval(refresh_memory_data, 188010);
-})
+});
 
 onBeforeUnmount(() => {
     // 组件即将卸载前停止定时任务
     clearInterval(timer_1);
     clearInterval(timer_2);
-})
+});
 
 
 // 更新曲线用的数据
@@ -60,11 +60,11 @@ const refresh_data = () => {
                 r: data.r,
                 c: data.c,
             };
-            option_cpu.value.series[0].data = [...io_cpus.value.c.map((i) => { return +i })];
-            option_s.value.series[0].data = [...io_cpus.value.s.map((i) => { return +i / 1000 })];
-            option_r.value.series[0].data = [...io_cpus.value.r.map((i) => { return +i / 1000 })];
-        })
-}
+            option_cpu.value.series[0].data = [...io_cpus.value.c.map((i) => { return +i; })];
+            option_s.value.series[0].data = [...io_cpus.value.s.map((i) => { return +i / 1000; })];
+            option_r.value.series[0].data = [...io_cpus.value.r.map((i) => { return +i / 1000; })];
+        });
+};
 
 const refresh_memory_data = () => {
     proxy.$axios.get('/monitor/capacity/').
@@ -88,8 +88,8 @@ const refresh_memory_data = () => {
             option_virtual_memory.value.series[0].data[0].name = d;
             option_virtual_memory.value.series[0].data[1].name = e;
             option_virtual_memory.value.legend.data = [d, e];
-        })
-}
+        });
+};
 
 use([
     CanvasRenderer,

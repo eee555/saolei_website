@@ -44,7 +44,7 @@ function handleDelete() {
             userid.value = 0;
             successNotification(response);
         },
-    ).catch(httpErrorNotification)
+    ).catch(httpErrorNotification);
 }
 
 function handleApprove() {
@@ -53,7 +53,7 @@ function handleApprove() {
             safe.value = 'true';
             successNotification(response);
         },
-    ).catch(httpErrorNotification)
+    ).catch(httpErrorNotification);
 }
 
 </script>

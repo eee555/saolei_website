@@ -42,4 +42,4 @@ export default {
         confirmChange: 'Änderungen bestätigen',
         cancelChange: 'abbrechen',
     },
-}
+};

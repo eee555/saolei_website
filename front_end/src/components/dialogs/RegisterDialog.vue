@@ -85,23 +85,23 @@ const registerForm = reactive<RegisterForm>({
     password: '',
     email: '',
     emailCode: '',
-})
+});
 
-const ruleFormRef = ref<FormInstance>()
+const ruleFormRef = ref<FormInstance>();
 
 const email_state = computed(() => {
     if (emailFormRef.value === undefined) return '';
     else return emailFormRef.value.validateState;
-})
+});
 const confirm_disabled = computed(() => {
-    return !(agree_TAC.value && usernameFormRef.value!.validateState === 'success' && emailFormRef.value!.validateState === 'success' && emailCodeFormRef.value!.validateState === 'success' && passwordFormRef.value!.validateState === 'success')
-})
+    return !(agree_TAC.value && usernameFormRef.value!.validateState === 'success' && emailFormRef.value!.validateState === 'success' && emailCodeFormRef.value!.validateState === 'success' && passwordFormRef.value!.validateState === 'success');
+});
 
 const usernameInputHandler = (value: string) => {
     if (value.length == 0) validateError(usernameFormRef, t('msg.usernameRequired'));
     else if (containsControl.test(value)) validateError(usernameFormRef, t('msg.illegalCharacter'));
     else usernameFormRef.value!.clearValidate();
-}
+};
 
 const usernameChangeHandler = (value: string) => {
     if (value.length == 0) validateError(usernameFormRef, t('msg.usernameRequired'));
@@ -109,18 +109,18 @@ const usernameChangeHandler = (value: string) => {
     else if (outOfCharacter.replace(value).length == 0) validateError(usernameFormRef, t('msg.usernameInvalid'));
     else {
         proxy.$axios.get('userprofile/checkcollision/', { params: { username: value } }).then(function (response) {
-            if (response.data === 'False') validateSuccess(usernameFormRef)
+            if (response.data === 'False') validateSuccess(usernameFormRef);
             else validateError(usernameFormRef, t('msg.usernameCollision'));
         }).catch(function (error) {
             if (error.code === 'ERR_NETWORK') validateError(usernameFormRef, t('msg.connectionFail'));
             else validateError(usernameFormRef, t('msg.unknownError') + error);
-        })
+        });
     }
-}
+};
 
 const submitForm = async (formEl: FormInstance | undefined) => {
-    if (!formEl) return
-    if (confirm_disabled.value) return
+    if (!formEl) return;
+    if (confirm_disabled.value) return;
     await proxy.$axios.post('userprofile/register/', {
         username: registerForm.username,
         password: registerForm.password,
@@ -130,23 +130,23 @@ const submitForm = async (formEl: FormInstance | undefined) => {
     }).then(function (response) {
         const data = response.data;
         if (data.type === 'success') {
-            emit('login', data.user)
+            emit('login', data.user);
             ElNotification({
                 title: t('msg.registerSuccess'),
                 type: 'success',
                 duration: local.value.notification_duration,
-            })
+            });
         } else if (data.type === 'error') {
             if (data.object === 'emailcode') {
-                emailCodeFormRef.value!.errorCode()
+                emailCodeFormRef.value!.errorCode();
             }
         }
-    })
-}
+    });
+};
 
 const resetForm = (formEl: FormInstance | undefined) => {
-    if (!formEl) return
-    formEl.resetFields()
-}
+    if (!formEl) return;
+    formEl.resetFields();
+};
 
 </script>

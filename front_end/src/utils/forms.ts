@@ -3,5 +3,5 @@ export function Dict2FormData(data: Record<string, any>): FormData {
     for (const [key, value] of Object.entries(data)) {
         form.append(key, value);
     }
-    return form
+    return form;
 }

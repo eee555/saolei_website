@@ -36,9 +36,9 @@ const prop = defineProps({
         type: Number,
         default: 0,
     },
-})
+});
 
-watch(prop, () => { data.value = [] });
+watch(prop, () => { data.value = []; });
 
 async function fetchData(id: number) {
     await proxy.$axios.get('video/query_by_id',
@@ -48,13 +48,13 @@ async function fetchData(id: number) {
             },
         },
     ).then(function (response) {
-        data.value = response.data
-    }).catch(httpErrorNotification)
+        data.value = response.data;
+    }).catch(httpErrorNotification);
 }
 
 function generateArbiterCSV(data: any) {
     if (!data) return '';
-    const csvdata = ['Day,Month,Year,Hour,Min,Sec,mode,Time,BBBV,BBBVs,style,cell0,cell1,cell2,cell3,cell4,cell5,cell6,cell7,cell8,Lcl,Rcl,Dcl,Leff,Reff,Deff,Openings,Islands,Path,GZiNi,HZiNi']
+    const csvdata = ['Day,Month,Year,Hour,Min,Sec,mode,Time,BBBV,BBBVs,style,cell0,cell1,cell2,cell3,cell4,cell5,cell6,cell7,cell8,Lcl,Rcl,Dcl,Leff,Reff,Deff,Openings,Islands,Path,GZiNi,HZiNi'];
     for (const v of data) {
         if (v.mode != '00' && v.mode != '12') continue;
         const date = new Date(v.upload_time);
@@ -72,12 +72,12 @@ function generateArbiterCSV(data: any) {
         if (v.video__flag == 0) row.push('NF');
         else row.push('Flag');
 
-        row.push(v.video__cell0, v.video__cell1, v.video__cell2, v.video__cell3, v.video__cell4, v.video__cell5, v.video__cell6, v.video__cell7, v.video__cell8)
-        row.push(v.video__left, v.video__right, v.video__double, 0, 0, 0)
-        row.push(v.video__op, v.video__isl)
-        row.push(Math.round(v.video__path))
-        row.push(0, 0)
-        csvdata.push(row.join())
+        row.push(v.video__cell0, v.video__cell1, v.video__cell2, v.video__cell3, v.video__cell4, v.video__cell5, v.video__cell6, v.video__cell7, v.video__cell8);
+        row.push(v.video__left, v.video__right, v.video__double, 0, 0, 0);
+        row.push(v.video__op, v.video__isl);
+        row.push(Math.round(v.video__path));
+        row.push(0, 0);
+        csvdata.push(row.join());
     }
     return csvdata.join('\n');
 }
@@ -132,6 +132,6 @@ async function clickExportCSV() {
 async function clickExportJSON() {
     if (data.value.length === 0) await fetchData(prop.id);
     if (data.value.length === 0) return;
-    downloadJSON(JSON.stringify(data.value))
+    downloadJSON(JSON.stringify(data.value));
 }
 </script>

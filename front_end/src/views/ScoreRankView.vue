@@ -7,7 +7,7 @@
 <script setup lang='ts'>
 // 参考：https://www.wst.tv/rankings?
 // 现役排名：世界排名（累计衰减）、赛季排名（一年）、最新比赛排名
-import { onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 const { proxy } = useCurrentInstance();
 
@@ -26,7 +26,7 @@ onMounted(() => {
             response.data[key]['key'] = Number.parseInt(key);
             review_queue.value.push(response.data[key]);
         }
-    })
+    });
     proxy.$axios.get('/video/newest_queue/',
         {
             params: {},
@@ -37,15 +37,15 @@ onMounted(() => {
             response.data[key]['key'] = Number.parseInt(key);
             newest_queue.value.push(response.data[key]);
         }
-    })
+    });
     proxy.$axios.get('/video/news_queue/',
         {
             params: {},
         },
     ).then(function (response) {
-        news_queue.value = response.data.map((v: string) => { return JSON.parse(v) })
-    })
-})
+        news_queue.value = response.data.map((v: string) => { return JSON.parse(v); });
+    });
+});
 
 </script>
 

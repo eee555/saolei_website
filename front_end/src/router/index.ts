@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
 
 
 const routes: Array<RouteRecordRaw> = [
@@ -67,11 +67,11 @@ const routes: Array<RouteRecordRaw> = [
         name: 'staff',
         component: () => import('../views/StaffView.vue'),
     },
-]
+];
 
 const router = createRouter({
     history: createWebHashHistory(import.meta.env.BASE_URL),
     routes,
-})
+});
 
-export default router
+export default router;

@@ -1,11 +1,11 @@
-import { LoginStatus } from '@/utils/common/structInterface'
-import { defineStore } from 'pinia'
-import { pinia } from './create'
-import { useLocalStorage } from '@vueuse/core'
-import { colorSchemeTemplates } from '@/utils/config'
-import { UserProfile } from '@/utils/userprofile'
-import { getStat_stat } from '@/utils/videoabstract'
-import { MS_Software, MS_Softwares } from '@/utils/ms_const'
+import { LoginStatus } from '@/utils/common/structInterface';
+import { defineStore } from 'pinia';
+import { pinia } from './create';
+import { useLocalStorage } from '@vueuse/core';
+import { colorSchemeTemplates } from '@/utils/config';
+import { UserProfile } from '@/utils/userprofile';
+import { getStat_stat } from '@/utils/videoabstract';
+import { MS_Software, MS_Softwares } from '@/utils/ms_const';
 
 export const store = defineStore('user', {
     state: () => ({
@@ -17,14 +17,14 @@ export const store = defineStore('user', {
         login_status: LoginStatus.Undefined, // 登录状态，全局维护
         new_identifier: false, // 是否有新标识录像
     }),
-})(pinia)
+})(pinia);
 
 export const videoplayerstore = defineStore('videoplayer', {
     state: () => ({
         visible: false,
         id: 0,
     }),
-})(pinia)
+})(pinia);
 
 export const local = useLocalStorage('local', {
     darkmode: false,
@@ -36,7 +36,7 @@ export const local = useLocalStorage('local', {
     menu_icon: false,
     notification_duration: 4500,
     tooltip_show: true,
-})
+});
 
 export const videofilter = useLocalStorage('videofilter', {
     pagesize: 100,
@@ -47,9 +47,9 @@ export const videofilter = useLocalStorage('videofilter', {
         'i': [30, 216],
         'e': [100, 381],
     },
-})
+});
 
-export const colorTheme = useLocalStorage('colorTheme', colorSchemeTemplates.ArbiterStatsAuto)
+export const colorTheme = useLocalStorage('colorTheme', colorSchemeTemplates.ArbiterStatsAuto);
 
 export const activityCalendarConfig = useLocalStorage(
     'activity-calendar-config',
@@ -60,7 +60,7 @@ export const activityCalendarConfig = useLocalStorage(
         showDate: false,
     },
     { mergeDefaults: true },
-)
+);
 
 export const BBBvSummaryConfig = useLocalStorage(
     'bbbv-summary-config',
@@ -73,4 +73,4 @@ export const BBBvSummaryConfig = useLocalStorage(
         softwareFilter: [...MS_Softwares] as MS_Software[],
     },
     { mergeDefaults: true },
-)
+);

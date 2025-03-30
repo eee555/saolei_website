@@ -100,7 +100,7 @@
 
 <script lang="ts" setup>
 // 我的地盘页面
-import { defineAsyncComponent, onMounted, ref, watch } from 'vue'
+import { defineAsyncComponent, onMounted, ref, watch } from 'vue';
 import { ElContainer, ElAside, ElMain, ElTabs, ElTabPane, ElImage, ElInput, ElUpload } from 'element-plus';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 const PlayerRecordView = defineAsyncComponent(() => import('@/views/PlayerRecordView.vue'));
@@ -110,14 +110,14 @@ const UploadView = defineAsyncComponent(() => import('@/views/UploadView.vue'));
 import '../../node_modules/flag-icon-css/css/flag-icons.min.css';
 
 const { proxy } = useCurrentInstance();
-import { genFileId, ElMessage } from 'element-plus'
-import type { UploadInstance, UploadProps, UploadRawFile, UploadFile, UploadFiles, UploadRequestOptions } from 'element-plus'
-const upload = ref<UploadInstance>()
-import imageUrlDefault from '@/assets/person.png'
-const imageUrl = ref(imageUrlDefault)
+import { genFileId, ElMessage } from 'element-plus';
+import type { UploadInstance, UploadProps, UploadRawFile, UploadFile, UploadFiles, UploadRequestOptions } from 'element-plus';
+const upload = ref<UploadInstance>();
+import imageUrlDefault from '@/assets/person.png';
+const imageUrl = ref(imageUrlDefault);
 const avatar_changed = ref(false);
 import { compressAccurately } from 'image-conversion';
-import { store } from '../store'
+import { store } from '../store';
 
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
@@ -125,7 +125,7 @@ import { UserProfile } from '@/utils/userprofile';
 import { unknownErrorNotification } from '@/components/Notifications';
 import BaseIconAdd from '@/components/common/BaseIconAdd.vue';
 const { t } = useI18n();
-const route = useRoute()
+const route = useRoute();
 
 //编辑前的
 const userid = ref('');
@@ -144,7 +144,7 @@ const is_editing = ref(false);
 const visible = ref(false);
 
 // 标签默认切在第一页
-const activeName = ref('profile')
+const activeName = ref('profile');
 const player = {
     id: -1,
 };
@@ -197,14 +197,14 @@ function refresh() {
     }).catch(unknownErrorNotification);
 }
 
-onMounted(refresh)
-watch(route, refresh) // 解决切换url不刷新的问题
+onMounted(refresh);
+watch(route, refresh); // 解决切换url不刷新的问题
 
 
 // 向后台发送请求修改姓名
 const post_update_realname = (r: string) => {
-    const params = new FormData()
-    params.append('realname', r)
+    const params = new FormData();
+    params.append('realname', r);
     proxy.$axios.post('/msuser/update_realname/',
         params,
     ).then(function (response) {
@@ -225,13 +225,13 @@ const post_update_realname = (r: string) => {
         }
     }).catch(() => {
         ElMessage.error({ message: t('common.msg.connectionFail'), offset: 68 });
-    })
-}
+    });
+};
 
 // 向后台发送请求修改头像
 const post_update_avatar = (a: File) => {
-    const params = new FormData()
-    params.append('avatar', a)
+    const params = new FormData();
+    params.append('avatar', a);
     proxy.$axios.post('/msuser/update_avatar/',
         params,
     ).then(function (response) {
@@ -244,13 +244,13 @@ const post_update_avatar = (a: File) => {
         }
     }).catch(() => {
         ElMessage.error({ message: t('common.msg.connectionFail'), offset: 68 });
-    })
-}
+    });
+};
 
 // 向后台发送请求修改签名
 const post_update_signature = (s: string) => {
-    const params = new FormData()
-    params.append('signature', s)
+    const params = new FormData();
+    params.append('signature', s);
     proxy.$axios.post('/msuser/update_signature/',
         params,
     ).then(function (response) {
@@ -265,8 +265,8 @@ const post_update_signature = (s: string) => {
         }
     }).catch(() => {
         ElMessage.error({ message: t('common.msg.connectionFail'), offset: 68 });
-    })
-}
+    });
+};
 
 // 修改确认按钮的回调，改过头像就走unload的回调上传，否则就按钮本身回调上传
 const upload_info = () => {
@@ -282,7 +282,7 @@ const upload_info = () => {
             post_update_signature(signature_edit.value);
         }
     }
-}
+};
 
 // 把头像、姓名、个性签名传上去。至少头像改过了。
 const handleAvatarUpload = async (options: UploadRequestOptions) => {
@@ -294,39 +294,39 @@ const handleAvatarUpload = async (options: UploadRequestOptions) => {
         post_update_signature(signature_edit.value);
     }
     post_update_avatar(options.file);
-}
+};
 
 const handleChange: UploadProps['onChange'] = (uploadFile: UploadFile, _uploadFiles: UploadFiles) => {
     if (!uploadFile.url) {
-        uploadFile.url = URL.createObjectURL(uploadFile.raw!)
+        uploadFile.url = URL.createObjectURL(uploadFile.raw!);
     }
     imageUrl.value = uploadFile.url;
     avatar_changed.value = true;
-}
+};
 
 const handleExceed: UploadProps['onExceed'] = (files) => {
-    upload.value!.clearFiles()
-    const file = files[0] as UploadRawFile
-    file.uid = genFileId()
-    upload.value!.handleStart(file)
-}
+    upload.value!.clearFiles();
+    const file = files[0] as UploadRawFile;
+    file.uid = genFileId();
+    upload.value!.handleStart(file);
+};
 
 const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
     if (rawFile.type !== 'image/jpeg' && rawFile.type !== 'image/png') {
         ElMessage.error({ message: t('profile.msg.avatarFormat'), offset: 68 });
-        return false
+        return false;
     } else if (rawFile.size / 1024 / 1024 / 50 > 1.0) {
         ElMessage.error({ message: t('profile.msg.avatarFilesize'), offset: 68 });
-        return false
+        return false;
     }
     return new Promise((resolve, _reject) => {
         // 此处会报错net::ERR_FILE_NOT_FOUND，但头像依然能更新成功
         compressAccurately(rawFile, 256).then((res) => {
-            res = new File([res], rawFile.name, { type: res.type, lastModified: Date.now() })
-            resolve(res)
-        })
-    })
-}
+            res = new File([res], rawFile.name, { type: res.type, lastModified: Date.now() });
+            resolve(res);
+        });
+    });
+};
 
 </script>
 

@@ -54,21 +54,21 @@ const retrieveForm = reactive<RetrieveForm>({
     email: '',
     emailCode: '',
     password: '',
-})
+});
 
-const ruleFormRef = ref<FormInstance>()
+const ruleFormRef = ref<FormInstance>();
 
 const email_state = computed(() => {
     if (emailFormRef.value === undefined) return '';
     else return emailFormRef.value.validateState;
-})
+});
 const confirm_disabled = computed(() => {
-    return !(emailFormRef.value !== undefined && emailFormRef.value!.validateState === 'success' && emailCodeFormRef.value!.validateState === 'success' && passwordFormRef.value!.validateState === 'success')
-})
+    return !(emailFormRef.value !== undefined && emailFormRef.value!.validateState === 'success' && emailCodeFormRef.value!.validateState === 'success' && passwordFormRef.value!.validateState === 'success');
+});
 
 const submitForm = async (formEl: FormInstance | undefined) => {
-    if (!formEl) return
-    if (confirm_disabled.value) return
+    if (!formEl) return;
+    if (confirm_disabled.value) return;
     await proxy.$axios.post('userprofile/retrieve/', {
         password: retrieveForm.password,
         email: retrieveForm.email,
@@ -77,23 +77,23 @@ const submitForm = async (formEl: FormInstance | undefined) => {
     }).then(function (response) {
         const data = response.data;
         if (data.type == 'success') {
-            emit('login', data.user)
+            emit('login', data.user);
             ElNotification({
                 title: t('msg.passwordChanged'),
                 type: 'success',
                 duration: local.value.notification_duration,
-            })
+            });
         } else if (data.type === 'error') {
             if (data.object === 'emailcode') {
-                emailCodeFormRef.value!.errorCode()
+                emailCodeFormRef.value!.errorCode();
             }
         }
-    })
-}
+    });
+};
 
 const resetForm = (formEl: FormInstance | undefined) => {
-    if (!formEl) return
-    formEl.resetFields()
-}
+    if (!formEl) return;
+    formEl.resetFields();
+};
 
 </script>

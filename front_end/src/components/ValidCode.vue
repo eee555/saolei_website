@@ -8,11 +8,11 @@
 import { onMounted, ref } from 'vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 const { proxy } = useCurrentInstance();
-import { ElMessage, vLoading } from 'element-plus'
+import { ElMessage, vLoading } from 'element-plus';
 
-const captchaUrl = ref('')
-const hashkey = ref('')
-const loading = ref(true)
+const captchaUrl = ref('');
+const hashkey = ref('');
+const loading = ref(true);
 
 const refreshPic = () => {
     loading.value = true;
@@ -27,7 +27,7 @@ const refreshPic = () => {
     }).catch(function (error) {
         console.log(error);
     });
-}
+};
 
 onMounted(() => {
     refreshPic();
