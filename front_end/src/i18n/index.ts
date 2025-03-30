@@ -8,7 +8,7 @@ import pl from './locales/pl';
 /**
  * 获取所有语言
  */
-function getMessages (): Record<string, any> {
+function getMessages(): Record<string, any> {
     const messages: Record<string, any> = {};
     messages[dev.local] = dev;
     messages[zhCn.local] = zhCn;
@@ -21,7 +21,7 @@ function getMessages (): Record<string, any> {
 /**
  * 获取默认语言
  */
-function getDefaultLocale () {
+function getDefaultLocale() {
     return 'en';
 }
 
