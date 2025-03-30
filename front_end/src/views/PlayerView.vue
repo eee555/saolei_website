@@ -219,7 +219,6 @@ const post_update_realname = (r: string) => {
                 // localStorage.setItem("player", JSON.stringify({ "id": player.id, "realname": realname.value }));
                 localStorage.setItem("player", JSON.stringify({ "id": player.id }));
             }
-
         } else if (response.data.status >= 101) {
             realname_edit.value = realname.value;
             ElMessage.error({ message: response.data.msg, offset: 68 });

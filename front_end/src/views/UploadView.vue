@@ -122,7 +122,6 @@ const allow_upload = ref(true);
 
 // 录像列表变动的回调，上传多个文件时，有几个文件就会进来几次。
 const handleChange: UploadProps['onChange'] = async (uploadFile: UploadFile, _uploadFiles: UploadFiles) => {
-
     if (allow_upload.value) {
         // upload_video_visible.value = true;
         await push_video_msg(uploadFile);
@@ -131,7 +130,6 @@ const handleChange: UploadProps['onChange'] = async (uploadFile: UploadFile, _up
             upload_queue.value[i].index = i;
         }
     }
-
 }
 
 // 新增一条等待上传的录像信息的记录

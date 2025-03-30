@@ -78,6 +78,7 @@ export default typescriptEslint.config(
       '@stylistic/nonblock-statement-body-position': 'error',
       '@stylistic/object-curly-newline': ['error', { 'consistent': true }],
       '@stylistic/object-curly-spacing': ['error', 'always'],
+      '@stylistic/padded-blocks': ['error', 'never'],
       '@typescript-eslint/ban-ts-comment': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-explicit-any': 'off',

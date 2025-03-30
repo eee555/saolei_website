@@ -47,7 +47,6 @@ onBeforeUnmount(() => {
     // 组件即将卸载前停止定时任务
     clearInterval(timer_1);
     clearInterval(timer_2);
-
 })
 
 
@@ -64,8 +63,6 @@ const refresh_data = () => {
             option_cpu.value.series[0].data = [...io_cpus.value.c.map((i) => { return +i })];
             option_s.value.series[0].data = [...io_cpus.value.s.map((i) => { return +i / 1000 })];
             option_r.value.series[0].data = [...io_cpus.value.r.map((i) => { return +i / 1000 })];
-
-
         })
 }
 

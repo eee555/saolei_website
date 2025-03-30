@@ -28,7 +28,6 @@ export const httpErrorNotification = (error: any) => {
     } else {
         unknownErrorNotification(error)
     }
-
 }
 
 export const successNotification = (response: any) => {
@@ -41,7 +40,6 @@ export const successNotification = (response: any) => {
     } else {
         unknownErrorNotification(response)
     }
-
 }
 
 export const unknownErrorNotification = (error: any) => {

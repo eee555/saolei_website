@@ -200,7 +200,6 @@ const get_player_rank = (page: number) => {
             })
         }
         // console.log(playerData);
-
     })
 }
 

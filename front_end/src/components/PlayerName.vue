@@ -95,7 +95,6 @@ const pop_show = async () => {
             },
         },
     ).then(function (response) {
-
         const response_data = response.data;
         realname.value = response_data.realname;
         if (response_data.avatar) {
@@ -122,9 +121,6 @@ const pop_show = async () => {
     }).catch(() => {
         // is_loading.value = false;
     })
-
-
-
 }
 
 // 用户记录小弹窗关闭后，删除其中的数据
