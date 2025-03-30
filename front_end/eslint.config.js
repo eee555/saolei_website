@@ -56,6 +56,7 @@ export default typescriptEslint.config(
       '@stylistic/computed-property-spacing': 'error',
       '@stylistic/curly-newline': ['error', { 'consistent': true }],
       '@stylistic/dot-location': 'error',
+      '@stylistic/eol-last': 'error',
       '@typescript-eslint/ban-ts-comment': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
