@@ -74,7 +74,7 @@ const option = computed(() => {
         },
         tooltip: {
             formatter: (p: any) => {
-                return `Time: ${p.data[2].timems/1000}<br>BBBV: ${p.data[2].bv}<br>Level: ${t('common.level.'+p.data[2].level)}`;
+                return `Time: ${p.data[2].timems / 1000}<br>BBBV: ${p.data[2].bv}<br>Level: ${t('common.level.' + p.data[2].level)}`;
             },
         },
     };

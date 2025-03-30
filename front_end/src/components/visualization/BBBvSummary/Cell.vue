@@ -27,7 +27,7 @@ import tinycolor from 'tinycolor2';
 import { preview } from '@/utils/common/PlayerDialog';
 import BaseCardSmall from '@/components/common/BaseCardSmall.vue';
 
-const bestValue = ref<number|null>(null);
+const bestValue = ref<number | null>(null);
 const bestIndex = ref(-1);
 
 const prop = defineProps({

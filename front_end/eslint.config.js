@@ -86,6 +86,8 @@ export default typescriptEslint.config(
       '@stylistic/semi-style': 'error',
       '@stylistic/space-before-blocks': 'error',
       '@stylistic/space-before-function-paren': ['error', { 'named': 'never' }],
+      '@stylistic/space-in-parens': 'error',
+      '@stylistic/space-infix-ops': 'error',
       '@typescript-eslint/ban-ts-comment': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
