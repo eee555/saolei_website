@@ -145,7 +145,7 @@ export default {
         tooltip: {
             noVideoOnDate: 'No video on {0}',
             uploadedNVideosOnDate: '{1} videos on {0}',
-        }
+        },
     },
     BBBvSummary: {
         bbbvInTotal: ({ linked, list }) => `${list(0)} ${linked('common.prop.bv')} in total`,
@@ -279,7 +279,7 @@ export default {
         },
         records: {
             title: 'Personal Records',
-            modeRecord: ' mode record: '
+            modeRecord: ' mode record: ',
         },
         videos: 'All videos',
         exportJSON: 'Export as JSON',
@@ -305,8 +305,8 @@ export default {
                 pass: 'Pass',
                 process: 'Uploading',
                 upload: 'Upload fail',
-            }
-        }
+            },
+        },
     },
     setting: {
         appearance: 'Appearance',

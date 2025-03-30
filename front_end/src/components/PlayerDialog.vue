@@ -32,8 +32,8 @@ const preview = (id: number | undefined) => {
         {
             params: {
                 id,
-            }
-        }
+            },
+        },
     ).then(function (response) {
         let url = import.meta.env.VITE_BASE_API + "/video/preview/?id=" + id;
         if (response.data.msg == "a") {

@@ -46,7 +46,7 @@ export const videofilter = useLocalStorage('videofilter', {
         'b': [2, 54],
         'i': [30, 216],
         'e': [100, 381],
-    }
+    },
 })
 
 export const colorTheme = useLocalStorage('colorTheme', colorSchemeTemplates.ArbiterStatsAuto)
@@ -59,7 +59,7 @@ export const activityCalendarConfig = useLocalStorage(
         cornerRadius: 20,
         showDate: false,
     },
-    { mergeDefaults: true }
+    { mergeDefaults: true },
 )
 
 export const BBBvSummaryConfig = useLocalStorage(
@@ -72,5 +72,5 @@ export const BBBvSummaryConfig = useLocalStorage(
         sortDesc: false,
         softwareFilter: [...MS_Softwares] as MS_Software[],
     },
-    { mergeDefaults: true }
+    { mergeDefaults: true },
 )

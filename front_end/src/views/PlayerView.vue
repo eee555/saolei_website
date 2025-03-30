@@ -174,8 +174,8 @@ function refresh() {
         {
             params: {
                 id: player.id,
-            }
-        }
+            },
+        },
     ).then(function (response) {
         const data = response.data;
         store.player = new UserProfile(data);

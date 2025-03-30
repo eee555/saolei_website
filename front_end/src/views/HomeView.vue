@@ -154,8 +154,8 @@ const update_review_queue = async () => {
     review_queue_updating.value = true;
     await proxy.$axios.get('/video/review_queue/',
         {
-            params: {}
-        }
+            params: {},
+        },
     ).then(function (response) {
         review_queue.value.splice(0, review_queue.value.length)
         for (const key in response.data) {
@@ -172,8 +172,8 @@ const update_newest_queue = async () => {
     setTimeout(() => { newest_queue_status.value = 0; }, 5000)
     await proxy.$axios.get('/video/newest_queue/',
         {
-            params: {}
-        }
+            params: {},
+        },
     ).then(function (response) {
         for (const key in response.data) {
             const videoid = Number.parseInt(key);
@@ -191,8 +191,8 @@ const update_news_queue = async () => {
     setTimeout(() => { news_queue_status.value = 0; }, 5000)
     await proxy.$axios.get('/video/news_queue/',
         {
-            params: {}
-        }
+            params: {},
+        },
     ).then(function (response) {
         news_queue.value = response.data.map((v: string) => { return JSON.parse(v) })
     })

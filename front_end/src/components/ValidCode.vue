@@ -35,7 +35,7 @@ onMounted(() => {
 
 defineExpose({
 	hashkey,
-	refreshPic
+	refreshPic,
 });
 
 </script>

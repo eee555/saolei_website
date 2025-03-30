@@ -109,7 +109,7 @@ interface UploadEntry {
 }
 
 defineProps({
-    identifiers: { type: Array, default: () => [] }
+    identifiers: { type: Array, default: () => [] },
 })
 
 const upload_queue = ref<UploadEntry[]>([])

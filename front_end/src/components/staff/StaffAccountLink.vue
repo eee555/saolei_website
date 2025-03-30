@@ -44,7 +44,7 @@ const verify = () => {
             id: form.id,
             platform: form.platform,
             identifier: form.identifier,
-        }
+        },
     ).then(function (_response) {
         form.id = 0;
         form.platform = '';
@@ -58,7 +58,7 @@ const unverify = () => {
             id: form.id,
             platform: form.platform,
             identifier: form.identifier,
-        }
+        },
     ).then(function (_response) {
         form.id = 0;
         form.platform = '';

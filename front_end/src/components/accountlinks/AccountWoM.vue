@@ -64,7 +64,7 @@ const prop = defineProps({
     data: {
         type: Object as PropType<any>,
         default() { return {}; },
-    }
+    },
 })
 
 const { t } = useI18n()

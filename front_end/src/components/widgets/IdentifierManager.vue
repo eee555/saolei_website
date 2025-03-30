@@ -68,26 +68,26 @@ const identifierdata = computed(() => {
 })
 
 function delIdentifier(identifier: string) {
-    proxy.$axios.post('identifier/del/', { identifier: identifier }
+    proxy.$axios.post('identifier/del/', { identifier: identifier },
     ).then(function (response) {
         store.player.identifiers = removeItem(store.player.identifiers, identifier);
         ElNotification({
             title: t('identifierManager.delIdentifierSuccess'),
             message: t('identifierManager.processedNVideos', [response.data.value]),
-            type: 'success'
+            type: 'success',
         })
     }).catch(httpErrorNotification)
 }
 
 function addIdentifier(identifier: string) {
-    proxy.$axios.post('identifier/add/', { identifier: identifier, }
+    proxy.$axios.post('identifier/add/', { identifier: identifier },
     ).then(function (response) {
         if (response.data.type === 'success') {
             store.player.identifiers.push(new_identifiers.value);
             ElNotification({
                 title: t('identifierManager.addIdentifierSuccess'),
                 message: t('identifierManager.processedNVideos', [response.data.value]),
-                type: 'success'
+                type: 'success',
             })
             store.new_identifier = false;
         } else if (response.data.category === 'notFound') {

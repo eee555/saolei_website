@@ -45,8 +45,8 @@ async function fetchData(id: number) {
         {
             params: {
                 id: id,
-            }
-        }
+            },
+        },
     ).then(function (response) {
         data.value = response.data
     }).catch(httpErrorNotification)

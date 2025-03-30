@@ -127,9 +127,9 @@ async function refresh() {
     proxy.$axios.get('accountlink/get/',
         {
             params: {
-                id: store.player.id
-            }
-        }
+                id: store.player.id,
+            },
+        },
     ).then(function (response) {
         accountlinks.value = response.data;
     })
@@ -154,7 +154,7 @@ const addLink = () => {
         {
             platform: form.platform,
             identifier: form.identifier,
-        }
+        },
     ).then(function (_response) {
         refresh()
     }).catch(httpErrorNotification)
@@ -193,8 +193,8 @@ const updateRow = (row: any) => {
 const loadRow = (row: any) => {
     proxy.$axios.get('accountlink/get/',
         {
-            params: { id: store.player.id, platform: row.platform }
-        }
+            params: { id: store.player.id, platform: row.platform },
+        },
     ).then(function (response) {
         row.data = response.data
     }).catch(httpErrorNotification)

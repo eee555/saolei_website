@@ -20,7 +20,7 @@ export enum LoginStatus {
     // 正在打开弹窗填写注册信息
     Register,
     // 正在弹窗上找回密码
-    IsRetrieve
+    IsRetrieve,
 }
 
 export interface RecordBIE {

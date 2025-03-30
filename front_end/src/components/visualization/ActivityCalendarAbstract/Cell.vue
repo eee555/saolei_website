@@ -45,14 +45,14 @@ const { t } = useI18n();
 const prop = defineProps({
     date: { type: Date, required: true }, 
     videos: { type: Array<VideoAbstract>, default: [] }, // 该日期的录像
-    bmax: { type: Number, default: 5, },
-    imax: { type: Number, default: 5, },
-    emax: { type: Number, default: 5, }, // 三个最大值，用于计算颜色
+    bmax: { type: Number, default: 5 },
+    imax: { type: Number, default: 5 },
+    emax: { type: Number, default: 5 }, // 三个最大值，用于计算颜色
     xOffset: { type: Number, default: 0 }, // 横坐标，单位为格
     yOffset: { type: Number, default: 0 }, // 纵坐标，单位为格
 })
 
-const count = ref({ b: 0, i: 0, e: 0, });
+const count = ref({ b: 0, i: 0, e: 0 });
 const red = ref(0);
 const green = ref(0);
 const blue = ref(0);

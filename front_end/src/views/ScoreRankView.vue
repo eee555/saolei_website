@@ -18,8 +18,8 @@ const news_queue = ref<any[]>([]);
 onMounted(() => {
     proxy.$axios.get('/video/review_queue/',
         {
-            params: {}
-        }
+            params: {},
+        },
     ).then(function (response) {
         for (const key in response.data) {
             response.data[key] = JSON.parse(response.data[key] as string);
@@ -29,8 +29,8 @@ onMounted(() => {
     })
     proxy.$axios.get('/video/newest_queue/',
         {
-            params: {}
-        }
+            params: {},
+        },
     ).then(function (response) {
         for (const key in response.data) {
             response.data[key] = JSON.parse(response.data[key] as string);
@@ -40,8 +40,8 @@ onMounted(() => {
     })
     proxy.$axios.get('/video/news_queue/',
         {
-            params: {}
-        }
+            params: {},
+        },
     ).then(function (response) {
         news_queue.value = response.data.map((v: string) => { return JSON.parse(v) })
     })

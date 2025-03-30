@@ -84,7 +84,7 @@ const getUser = () => {
     proxy.$axios.get('userprofile/get', { params: { id: userid.value } }).then(
         function (response: any) {
             userprofile.value = response.data;
-        }
+        },
     ).catch(httpErrorNotification)
 }
 
@@ -93,7 +93,7 @@ const setUser = (id: number, field: string, value: string) => {
         function (response: any) {
             successNotification(response);
             getUser();
-        }
+        },
     ).catch(httpErrorNotification)
 }
 
@@ -107,7 +107,7 @@ const getVideo = () => {
     proxy.$axios.get('video/get', { params: { id: videoid.value } }).then(
         function (response: any) {
             videomodel.value = response.data;
-        }
+        },
     ).catch(httpErrorNotification)
 }
 

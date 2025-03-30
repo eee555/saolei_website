@@ -78,8 +78,8 @@ nextTick(() => {
         {
             params: {
                 id: store.player.id,
-            }
-        }
+            },
+        },
     ).then(function (response) {
         const data = response.data;
         if (data.status > 100) {

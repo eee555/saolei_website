@@ -84,16 +84,16 @@ defineProps({
     // 反序
     reverse: {
         type: Boolean,
-        default: false
+        default: false,
     },
     // 需要用可以点开摘要的用户组件
     needPlayerName: {
         type: Boolean,
-        default: true
+        default: true,
     },
     reviewMode: {
         type: Boolean,
-        default: false
+        default: false,
     },
     showHeader: {
         type: Boolean,

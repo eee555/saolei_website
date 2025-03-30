@@ -83,7 +83,7 @@ const { videoMsg } = defineProps({
                 bvs: "",
             }
         },
-    }
+    },
 })
 
 onMounted(() => {

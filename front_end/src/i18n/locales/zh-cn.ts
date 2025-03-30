@@ -145,7 +145,7 @@ export default {
         tooltip: {
             noVideoOnDate: '{0} 无录像',
             uploadedNVideosOnDate: '{0} 共 {1} 个录像',
-        }
+        },
     },
     BBBvSummary: {
         bbbvInTotal: ({ linked, list }) => `共${list(0)}个${linked('common.prop.bv')}`,
@@ -279,7 +279,7 @@ export default {
         },
         records: {
             title: '个人纪录',
-            modeRecord: '模式纪录：'
+            modeRecord: '模式纪录：',
         },
         videos: '全部录像',
         exportJSON: '导出JSON',
@@ -305,8 +305,8 @@ export default {
                 pass: '通过',
                 process: '上传中',
                 upload: '上传失败',
-            }
-        }
+            },
+        },
     },
     setting: {
         appearance: '外观设置',

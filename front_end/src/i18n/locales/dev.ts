@@ -29,7 +29,7 @@ export default {
             right_s: 'RCls',
             lrd: 'LRD',
             stnb: 'STNB',
-            thrp: 'ThrP'
-        }
-    }
+            thrp: 'ThrP',
+        },
+    },
 }

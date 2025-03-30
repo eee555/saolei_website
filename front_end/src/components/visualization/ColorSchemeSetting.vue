@@ -56,7 +56,7 @@ interface ColorScheme {
 
 const colorScheme = defineModel({
     type: Object as PropType<ColorScheme>,
-    required: true
+    required: true,
 });
 
 const operationNode = ref(0);

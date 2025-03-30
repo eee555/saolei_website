@@ -27,7 +27,7 @@ const prop = defineProps({
     options: {
         type: Array<string>,
         default: ['time', 'bv'],
-    }
+    },
 })
 
 </script>

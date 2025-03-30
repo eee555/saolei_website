@@ -32,7 +32,7 @@ function handleGet() {
         function (response) {
             safe.value = response.data.safe.toString();
             userid.value = response.data.user;
-        }
+        },
     ).catch(httpErrorNotification);
 }
 
@@ -43,7 +43,7 @@ function handleDelete() {
             safe.value = 'unknown';
             userid.value = 0;
             successNotification(response);
-        }
+        },
     ).catch(httpErrorNotification)
 }
 
@@ -52,7 +52,7 @@ function handleApprove() {
         function (response) {
             safe.value = 'true';
             successNotification(response);
-        }
+        },
     ).catch(httpErrorNotification)
 }
 

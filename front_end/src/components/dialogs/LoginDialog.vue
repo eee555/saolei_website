@@ -77,15 +77,9 @@ const loginForm = reactive<LoginForm>({
 const ruleFormRef = ref<FormInstance>()
 
 const rules = reactive<FormRules<LoginForm>>({
-    username: [
-        { required: true, message: t('msg.usernameRequired') },
-    ],
-    password: [
-        { required: true, message: t('msg.passwordRequired') },
-    ],
-    captcha: [
-        { required: true, message: t('msg.captchaRequired') },
-    ],
+    username: [{ required: true, message: t('msg.usernameRequired') }],
+    password: [{ required: true, message: t('msg.passwordRequired') }],
+    captcha: [{ required: true, message: t('msg.captchaRequired') }],
 })
 
 const submitForm = async (formEl: FormInstance | undefined) => {

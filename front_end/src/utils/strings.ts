@@ -6,7 +6,7 @@ export const containsControl = /[\x00-\x1F\x7F-\x9F\u2028\u2029]/;
 export function stringifyWithLineWrap(
     obj: any,
     maxLineLength: number = 80,
-    indent: number = 2
+    indent: number = 2,
 ): string {
     const INDENTATION = " ".repeat(indent);
 

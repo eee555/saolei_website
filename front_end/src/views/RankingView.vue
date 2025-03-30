@@ -177,8 +177,8 @@ const get_player_rank = (page: number) => {
                 reverse: iv.reverse,
                 indexes: `["#","${piv}*->name","${piv}*->b","${piv}*->b_id","${piv}*->i","${piv}*->i_id","${piv}*->e","${piv}*->e_id","${piv}*->sum"]`,
                 page: page,
-            }
-        }
+            },
+        },
     ).then(function (response) {
         // console.log(response.data);
         const data = response.data;

@@ -18,7 +18,7 @@ const { id } = defineProps({
     id: {
         type: Number,
         required: true,
-    }
+    },
 })
 
 

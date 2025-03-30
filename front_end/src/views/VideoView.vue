@@ -88,7 +88,7 @@ const state = reactive({
     CurrentPage: 1,
     VideoCount: 0,
     ReverseOrder: false,
-    Total: 3
+    Total: 3,
 });
 
 // const test  = reactive({v: 5});
@@ -168,7 +168,7 @@ const index_tags: TagsReverse = reactive({
     "cell5": { key: "cell5", reverse: false, to_fixed: 0, selected: false },
     "cell6": { key: "cell6", reverse: false, to_fixed: 0, selected: false },
     "cell7": { key: "cell7", reverse: false, to_fixed: 0, selected: false },
-    "cell8": { key: "cell8", reverse: false, to_fixed: 0, selected: false }
+    "cell8": { key: "cell8", reverse: false, to_fixed: 0, selected: false },
 })
 
 const selected_index = () => {
@@ -276,7 +276,7 @@ const request_videos = () => {
     proxy.$axios.get('/video/query/',
         {
             params: params,
-        }
+        },
     ).then(function (response) {
         const data = JSON.parse(response.data);
         videoList.splice(0, videoList.length);

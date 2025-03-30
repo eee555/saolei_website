@@ -15,7 +15,7 @@ export function utc_to_local_format(t = "2024-01-10T14:03:09Z") {
     day: '2-digit',
     hour: "2-digit",
     minute: "2-digit",
-    second: "2-digit"
+    second: "2-digit",
   }).replace(/\//g, "-");
 }
 
@@ -52,7 +52,7 @@ export function parse(jsonString = '{}', defaultValue = {}) {
 export function response(data = {}, msg = '', code = 0) {
   return [
     200,
-    { code, msg, data }
+    { code, msg, data },
   ]
 }
 
@@ -97,7 +97,7 @@ export function errorLog(error: Error) {
   // 显示提示
   ElMessage.error({
     message: error.message,
-    duration: 5 * 1000
+    duration: 5 * 1000,
   })
 }
 
@@ -119,7 +119,7 @@ export function dataNotFound(msg: string | undefined) {
   // 显示提示
   ElMessage.info({
     message: msg,
-    duration: 5 * 1000
+    duration: 5 * 1000,
   })
 }
 
@@ -130,6 +130,6 @@ export function dataNotFound(msg: string | undefined) {
 export function successMsg(msg: string | undefined) {
   ElMessage.success({
     message: msg,
-    duration: 5 * 1000
+    duration: 5 * 1000,
   })
 }

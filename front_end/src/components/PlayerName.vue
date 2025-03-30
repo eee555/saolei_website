@@ -92,8 +92,8 @@ const pop_show = async () => {
         {
             params: {
                 id: data.userId,
-            }
-        }
+            },
+        },
     ).then(function (response) {
 
         const response_data = response.data;

@@ -34,7 +34,7 @@ export default {
         register: 'Registrieren',
         downloads: 'Downloads',
         links: 'Links',
-        team: 'Team'
+        team: 'Team',
     },
     profile: {
         changeAvatar: 'Profilbild ändern',

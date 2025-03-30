@@ -67,7 +67,7 @@ const option = computed(() => {
         series: {
             type: 'scatter',
             data: store.player.videos.filter(
-                (video) => level.value.includes(video.level)
+                (video) => level.value.includes(video.level),
             ).map((video: VideoAbstract) => {
                 return [video.getStat(x.value), video.getStat(y.value), video];
             }),
@@ -75,8 +75,8 @@ const option = computed(() => {
         tooltip: {
             formatter: (p: any) => {
                 return `Time: ${p.data[2].timems/1000}<br>BBBV: ${p.data[2].bv}<br>Level: ${t('common.level.'+p.data[2].level)}`;
-            }
-        }
+            },
+        },
     }
 })
 

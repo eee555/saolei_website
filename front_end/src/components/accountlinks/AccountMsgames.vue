@@ -26,7 +26,7 @@ defineProps({
     data: {
         type: Object as PropType<any>,
         default() { return {}; },
-    }
+    },
 })
 
 </script>

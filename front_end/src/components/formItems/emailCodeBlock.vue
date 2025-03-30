@@ -54,7 +54,7 @@ const prop = defineProps({
     emailState: {// 邮箱表单项的状态，参考el-form文档
         type: String,
         default: 'success',
-    }
+    },
 })
 const emailCode = defineModel({ type: String, required: true });
 

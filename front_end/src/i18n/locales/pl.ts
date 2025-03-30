@@ -11,7 +11,7 @@ export default {
             std: 'podstawowy',
             nf: 'bez flag',
             ng: 'bez zgadywania',
-            dg: 'rekurencyjny akord'
+            dg: 'rekurencyjny akord',
         },
         prop: {
             time: 'czas',
@@ -46,7 +46,7 @@ export default {
         register: 'zarejestruj się',
         downloads: 'do pobrania',
         links: 'linki',
-        team: 'drużyna'
+        team: 'drużyna',
     },
     profile: {
         changeAvatar: 'kliknij na obrazek aby zmienić awatar',
@@ -60,9 +60,9 @@ export default {
         identifier: 'moje oznaczenie: ',
         records: {
             title: 'moje rekordy',
-            modeRecord: '-rekord trybu: '
+            modeRecord: '-rekord trybu: ',
         },
         videos: 'wszystkie filmy',
-        upload: 'prześlij filmy'
+        upload: 'prześlij filmy',
     },
 }
