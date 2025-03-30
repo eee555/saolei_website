@@ -60,7 +60,7 @@ const startDate = computed(() => {
 })
 const startWeekTime = computed(() => getWeekTime(startDate.value));
 
-function* generateDateRange(startDate: Date, endDate: Date, step: number = 1) {
+function *generateDateRange(startDate: Date, endDate: Date, step: number = 1) {
     const currentDate = new Date(startDate);
     while (currentDate <= endDate) {
         yield new Date(currentDate);  // Yield a new Date object (to avoid modifying the original one)
