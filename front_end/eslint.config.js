@@ -59,6 +59,7 @@ export default typescriptEslint.config(
       '@stylistic/eol-last': 'error',
       '@stylistic/function-call-spacing': 'error',
       '@stylistic/generator-star-spacing': 'error',
+      '@stylistic/indent': ['error', 4],
       '@typescript-eslint/ban-ts-comment': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
