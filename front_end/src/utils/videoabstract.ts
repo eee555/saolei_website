@@ -2,31 +2,31 @@ import { toISODateString } from './datetime';
 import { MS_Level, MS_Software, STNB_const } from './ms_const';
 
 export interface VideoAbstractInfo {
-    id: number,
-    upload_time: string | Date,
-    level: MS_Level,
-    mode: string,
-    timems: number,
-    bv: number,
-    state: string,
-    software: string,
-    cl: number | null,
-    ce: number | null,
+    id: number;
+    upload_time: string | Date;
+    level: MS_Level;
+    mode: string;
+    timems: number;
+    bv: number;
+    state: string;
+    software: string;
+    cl: number | null;
+    ce: number | null;
 }
 
 interface VideoRedisInfo {
-    state: string,
-    software: string,
-    time: string,
-    player: string,
-    player_id: number,
-    level: MS_Level,
-    mode: string,
-    timems: number,
-    bv: number,
-    identifier: string,
-    cl?: number,
-    ce?: number,
+    state: string;
+    software: string;
+    time: string;
+    player: string;
+    player_id: number;
+    level: MS_Level;
+    mode: string;
+    timems: number;
+    bv: number;
+    identifier: string;
+    cl?: number;
+    ce?: number;
 }
 
 export type getStat_stat = 'time' | 'bvs' | 'timems' | 'bv' | 'qg' | 'rqp' | 'stnb' | 'cl' | 'ioe' | 'thrp' | 'corr';

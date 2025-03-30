@@ -48,33 +48,33 @@ export async function upload_prepare(file: UploadRawFile) {
 }
 
 export interface VideoStat {
-    id: number,
-    level: string,
-    mode: string,
-    timems: number,
-    bv: number,
-    bvs: number,
-    review_code: number,
-    identifier: string,
-    left: number,
-    right: number,
-    double: number,
-    left_ce: number,
-    right_ce: number,
-    double_ce: number,
-    path: number,
-    flag: number,
-    op: number,
-    isl: number,
-    cell0: number,
-    cell1: number,
-    cell2: number,
-    cell3: number,
-    cell4: number,
-    cell5: number,
-    cell6: number,
-    cell7: number,
-    cell8: number,
+    id: number;
+    level: string;
+    mode: string;
+    timems: number;
+    bv: number;
+    bvs: number;
+    review_code: number;
+    identifier: string;
+    left: number;
+    right: number;
+    double: number;
+    left_ce: number;
+    right_ce: number;
+    double_ce: number;
+    path: number;
+    flag: number;
+    op: number;
+    isl: number;
+    cell0: number;
+    cell1: number;
+    cell2: number;
+    cell3: number;
+    cell4: number;
+    cell5: number;
+    cell6: number;
+    cell7: number;
+    cell8: number;
 }
 
 export function extract_stat(video: AnyVideo | null): VideoStat | null {
@@ -113,7 +113,7 @@ export function extract_stat(video: AnyVideo | null): VideoStat | null {
 }
 
 export interface UploadVideoForm {
-    file: File,
+    file: File;
 }
 
 export function upload_form(file: UploadRawFile, video: AnyVideo | null): UploadVideoForm | null {

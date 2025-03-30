@@ -116,10 +116,10 @@ interface TagsReverse {
 
 interface LevelTag {
     [index: string]: {
-        key: string,
-        min: number,
-        max: number,
-    }
+        key: string;
+        min: number;
+        max: number;
+    };
 }
 
 const level_tags: LevelTag = reactive({

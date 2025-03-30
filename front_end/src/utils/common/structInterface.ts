@@ -1,12 +1,12 @@
 export interface DbSchema {
-    sys: {},
-    database: {}
+    sys: {};
+    database: {};
 }
 export interface dbAcceptParma {
-    dbName: string,
-    path: string,
-    value: boolean | string,
-    user: boolean
+    dbName: string;
+    path: string;
+    value: boolean | string;
+    user: boolean;
 }
 export enum LoginStatus {
     // 首次打开页面，还没有做判断，判断是否需要尝试登录，主要是防抖用
@@ -24,27 +24,27 @@ export enum LoginStatus {
 }
 
 export interface RecordBIE {
-    timems: number[],
-    bvs: number[],
-    stnb: number[],
-    ioe: number[],
-    path: number[],
-    timems_id: number[],
-    bvs_id: number[],
-    stnb_id: number[],
-    ioe_id: number[],
-    path_id: number[],
+    timems: number[];
+    bvs: number[];
+    stnb: number[];
+    ioe: number[];
+    path: number[];
+    timems_id: number[];
+    bvs_id: number[];
+    stnb_id: number[];
+    ioe_id: number[];
+    path_id: number[];
 }
 
 export interface Record {
-    timems: number,
-    bvs: number,
-    stnb: number,
-    ioe: number,
-    path: number,
-    timems_id: number,
-    bvs_id: number,
-    stnb_id: number,
-    ioe_id: number,
-    path_id: number,
+    timems: number;
+    bvs: number;
+    stnb: number;
+    ioe: number;
+    path: number;
+    timems_id: number;
+    bvs_id: number;
+    stnb_id: number;
+    ioe_id: number;
+    path_id: number;
 }

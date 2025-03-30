@@ -63,9 +63,9 @@ const captchaError = ref("");
 const passwordError = ref("");
 
 interface LoginForm {
-    username: string,
-    password: string,
-    captcha: string,
+    username: string;
+    password: string;
+    captcha: string;
 }
 
 const loginForm = reactive<LoginForm>({

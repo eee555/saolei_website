@@ -74,10 +74,10 @@ const emailCodeFormRef = ref<typeof emailCodeBlock>();
 const passwordFormRef = ref<typeof passwordConfirmBlock>();
 
 interface RegisterForm {
-    username: string,
-    password: string,
-    email: string,
-    emailCode: string,
+    username: string;
+    password: string;
+    email: string;
+    emailCode: string;
 }
 
 const registerForm = reactive<RegisterForm>({

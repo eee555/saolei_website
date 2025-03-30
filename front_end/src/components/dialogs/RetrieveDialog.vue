@@ -45,9 +45,9 @@ const emailCodeFormRef = ref<typeof emailCodeBlock>();
 const passwordFormRef = ref<typeof passwordConfirmBlock>();
 
 interface RetrieveForm {
-    email: string,
-    emailCode: string,
-    password: string,
+    email: string;
+    emailCode: string;
+    password: string;
 }
 
 const retrieveForm = reactive<RetrieveForm>({

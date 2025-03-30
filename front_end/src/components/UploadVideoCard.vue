@@ -65,9 +65,9 @@ const { videoMsg } = defineProps({
     videoMsg: {
         type: Object as () => {
             // 在待上传列表中排第几个
-            id: number,
+            id: number;
             // 文件名，后缀提示录像的类型，按类型显示图标
-            filename: string,
+            filename: string;
             level: string;
             timems: string;
             bbbv: string;

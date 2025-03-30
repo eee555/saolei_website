@@ -101,11 +101,11 @@ import BaseIconDelete from '@/components/common/BaseIconDelete.vue';
 const { t } = useI18n();
 
 interface UploadEntry {
-    index: number,
-    filename: string,
-    status: string,
-    form: UploadVideoForm | null, // for upload
-    stat: VideoStat | null, // for display
+    index: number;
+    filename: string;
+    status: string;
+    form: UploadVideoForm | null; // for upload
+    stat: VideoStat | null; // for display
 }
 
 defineProps({

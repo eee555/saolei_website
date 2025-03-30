@@ -64,6 +64,7 @@ export default typescriptEslint.config(
       '@stylistic/indent-binary-ops': ['error', 4],
       '@stylistic/key-spacing': 'error',
       '@stylistic/keyword-spacing': 'error',
+      '@stylistic/member-delimiter-style': 'error',
       '@typescript-eslint/ban-ts-comment': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
