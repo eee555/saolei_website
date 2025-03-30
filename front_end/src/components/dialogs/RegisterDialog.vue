@@ -44,7 +44,7 @@
 <script setup lang="ts">
 import { FormInstance, ElFormItem, ElNotification, ElDialog, ElForm, ElButton, ElCheckbox, ElInput } from 'element-plus';
 import { computed, reactive, ref } from 'vue';
-import useCurrentInstance from "@/utils/common/useCurrentInstance";
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { containsControl } from '@/utils/strings';
 // @ts-ignore
 import outOfCharacter from 'out-of-character';
@@ -81,10 +81,10 @@ interface RegisterForm {
 }
 
 const registerForm = reactive<RegisterForm>({
-    username: "",
-    password: "",
-    email: "",
-    emailCode: "",
+    username: '',
+    password: '',
+    email: '',
+    emailCode: '',
 })
 
 const ruleFormRef = ref<FormInstance>()
@@ -112,7 +112,7 @@ const usernameChangeHandler = (value: string) => {
             if (response.data === 'False') validateSuccess(usernameFormRef)
             else validateError(usernameFormRef, t('msg.usernameCollision'));
         }).catch(function (error) {
-            if (error.code === "ERR_NETWORK") validateError(usernameFormRef, t('msg.connectionFail'));
+            if (error.code === 'ERR_NETWORK') validateError(usernameFormRef, t('msg.connectionFail'));
             else validateError(usernameFormRef, t('msg.unknownError') + error);
         })
     }

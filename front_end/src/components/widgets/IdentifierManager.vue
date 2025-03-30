@@ -58,12 +58,12 @@ import BaseIconDelete from '@/components/common/BaseIconDelete.vue';
 import BaseIconAdd from '../common/BaseIconAdd.vue';
 
 const { proxy } = useCurrentInstance();
-const new_identifiers = ref("")
+const new_identifiers = ref('')
 const { t } = useI18n();
 
 const identifierdata = computed(() => {
     const data = store.player.identifiers ? store.player.identifiers.map((value) => ({ data: value })) : [];
-    if (store.player.id == store.user.id) data.push({ data: "" });
+    if (store.player.id == store.user.id) data.push({ data: '' });
     return data
 })
 
@@ -104,7 +104,7 @@ function addIdentifier(identifier: string) {
         } else {
             unknownErrorNotification(response.data)
         }
-        new_identifiers.value = "";
+        new_identifiers.value = '';
     }).catch(httpErrorNotification)
 }
 

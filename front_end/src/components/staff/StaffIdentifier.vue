@@ -23,7 +23,7 @@ import { httpErrorNotification, successNotification } from '@/components/Notific
 
 const { proxy } = useCurrentInstance();
 
-const identifier = ref("");
+const identifier = ref('');
 const safe = ref('unknown');
 const userid = ref(0);
 
@@ -39,7 +39,7 @@ function handleGet() {
 function handleDelete() {
     proxy.$axios.post('identifier/del/staff/', { identifier: identifier.value }).then(
         function (response) {
-            identifier.value = "";
+            identifier.value = '';
             safe.value = 'unknown';
             userid.value = 0;
             successNotification(response);

@@ -23,14 +23,14 @@ import {
 import VChart from 'vue-echarts';
 import { ref } from 'vue';
 import { onMounted, onBeforeUnmount } from 'vue'
-import useCurrentInstance from "@/utils/common/useCurrentInstance";
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 const { proxy } = useCurrentInstance();
 
 
 const io_cpus = ref({
-    s: ["0"],
-    r: ["0"],
-    c: ["0"],
+    s: ['0'],
+    r: ['0'],
+    c: ['0'],
 });
 let timer_1: number;
 let timer_2: number;
@@ -107,8 +107,8 @@ use([
 
 const option_cpu = ref({
     title: {
-        text: "CPU",
-        left: "center",
+        text: 'CPU',
+        left: 'center',
     },
     xAxis: {
         type: 'category',
@@ -138,8 +138,8 @@ const option_cpu = ref({
 
 const option_s = ref({
     title: {
-        text: "发送的数据",
-        left: "center",
+        text: '发送的数据',
+        left: 'center',
     },
     xAxis: {
         type: 'category',
@@ -169,8 +169,8 @@ const option_s = ref({
 
 const option_r = ref({
     title: {
-        text: "收到的数据",
-        left: "center",
+        text: '收到的数据',
+        left: 'center',
     },
     xAxis: {
         type: 'category',

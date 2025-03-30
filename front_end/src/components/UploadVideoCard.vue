@@ -76,11 +76,11 @@ const { videoMsg } = defineProps({
         default() {
             return {
                 id: 0,
-                filename: "",
-                level: "",
-                timems: "",
-                bbbv: "",
-                bvs: "",
+                filename: '',
+                level: '',
+                timems: '',
+                bbbv: '',
+                bvs: '',
             }
         },
     },

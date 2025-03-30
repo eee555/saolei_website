@@ -39,18 +39,18 @@
 
 <script setup lang="ts" name="PlayerName">
 // 用户的名字，鼠标移上去以后弹出气泡框，可以访问他的主页
-import { ref } from "vue";
-import useCurrentInstance from "@/utils/common/useCurrentInstance";
+import { ref } from 'vue';
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 const { proxy } = useCurrentInstance();
 import image_url_default from '@/assets/person.png';
 const image_url = ref(image_url_default);
 // import PreviewDownload from '@/components/PreviewDownload.vue';
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import { useRouter } from 'vue-router'
-import { ms_to_s, to_fixed_n } from "@/utils"
+import { ms_to_s, to_fixed_n } from '@/utils'
 const router = useRouter()
 import { store } from '../store'
-import { ElLink, ElPopover, ElImage, ElButton, vLoading } from "element-plus";
+import { ElLink, ElPopover, ElImage, ElButton, vLoading } from 'element-plus';
 
 const data = defineProps({
     userId: {
@@ -67,26 +67,26 @@ const render = ref<boolean>(false); // 控制只渲染一次
 const visible = ref<boolean>(false);
 const is_loading = ref(true);
 
-const realname = ref("");
+const realname = ref('');
 const b_t = ref(999999);
-const b_bvs = ref("");
-const b_t_id = ref("");
-const b_bvs_id = ref("");
+const b_bvs = ref('');
+const b_t_id = ref('');
+const b_bvs_id = ref('');
 const i_t = ref(999999);
-const i_bvs = ref("");
-const i_t_id = ref("");
-const i_bvs_id = ref("");
+const i_bvs = ref('');
+const i_t_id = ref('');
+const i_bvs_id = ref('');
 const e_t = ref(999999);
-const e_bvs = ref("");
-const e_t_id = ref("");
-const e_bvs_id = ref("");
+const e_bvs = ref('');
+const e_t_id = ref('');
+const e_bvs_id = ref('');
 
 const pop_show = async () => {
     document.addEventListener('mousedown', handleOutsideClick);
     is_loading.value = true;
 
     image_url.value = image_url_default;
-    realname.value = "";
+    realname.value = '';
 
     await proxy.$axios.get('/msuser/info_abstract/',
         {
@@ -98,7 +98,7 @@ const pop_show = async () => {
         const response_data = response.data;
         realname.value = response_data.realname;
         if (response_data.avatar) {
-            image_url.value = "data:image/;base64," + response_data.avatar;
+            image_url.value = 'data:image/;base64,' + response_data.avatar;
         }
 
         const records = JSON.parse(response_data.record_abstract)
@@ -127,19 +127,19 @@ const pop_show = async () => {
 const pop_hide = () => {
     document.removeEventListener('mousedown', handleOutsideClick);
     image_url.value = image_url_default;
-    realname.value = "";
+    realname.value = '';
     i_t.value = 999999;
     b_t.value = 999999;
     e_t.value = 999999;
-    b_t_id.value = "";
-    i_t_id.value = "";
-    e_t_id.value = "";
-    b_bvs.value = "";
-    i_bvs.value = "";
-    e_bvs.value = "";
-    b_bvs_id.value = "";
-    i_bvs_id.value = "";
-    e_bvs_id.value = "";
+    b_t_id.value = '';
+    i_t_id.value = '';
+    e_t_id.value = '';
+    b_bvs.value = '';
+    i_bvs.value = '';
+    e_bvs.value = '';
+    b_bvs_id.value = '';
+    i_bvs_id.value = '';
+    e_bvs_id.value = '';
     is_loading.value = true;
 }
 

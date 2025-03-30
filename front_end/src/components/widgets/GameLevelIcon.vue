@@ -32,7 +32,7 @@ const { t } = useI18n();
 defineProps({
     level: {
         type: String,
-        default: "z",
+        default: 'z',
     },
 });
 </script>

@@ -148,19 +148,19 @@ export class VideoAbstract {
             case 'stnb': return this.stnb().toFixed(1);
             case 'cl': {
                 const cl = this.cl;
-                return cl === undefined ? "-" : cl.toString();
+                return cl === undefined ? '-' : cl.toString();
             }
             case 'ioe': {
                 const ioe = this.ioe();
-                return ioe === undefined ? "-" : ioe.toFixed(3);
+                return ioe === undefined ? '-' : ioe.toFixed(3);
             }
             case 'thrp': {
                 const thrp = this.thrp();
-                return thrp === undefined ? "-" : thrp.toFixed(3);
+                return thrp === undefined ? '-' : thrp.toFixed(3);
             }
             case 'corr': {
                 const corr = this.corr();
-                return corr === undefined ? "-" : corr.toFixed(3);
+                return corr === undefined ? '-' : corr.toFixed(3);
             }
         }
     }

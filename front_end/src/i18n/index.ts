@@ -22,7 +22,7 @@ function getMessages (): Record<string, any> {
  * 获取默认语言
  */
 function getDefaultLocale () {
-    return "en"
+    return 'en'
 }
 
 /**

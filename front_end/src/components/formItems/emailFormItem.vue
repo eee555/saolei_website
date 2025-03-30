@@ -46,7 +46,7 @@ const emailChangeHandler = (value: string) => {
             else if (response.data === 'False' && prop.checkCollision === 'false') validateError(emailFormRef, t('msg.emailNoCollision'));
             else validateSuccess(emailFormRef);
         }).catch(function (error) {
-            if (error.code === "ERR_NETWORK") validateError(emailFormRef, t('msg.connectionFail'));
+            if (error.code === 'ERR_NETWORK') validateError(emailFormRef, t('msg.connectionFail'));
             else validateError(emailFormRef, t('msg.unknownError') + error);
         })
     }

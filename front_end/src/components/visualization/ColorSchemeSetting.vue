@@ -61,7 +61,7 @@ const colorScheme = defineModel({
 
 const operationNode = ref(0);
 const developerMode = ref(false);
-const colorSchemeString = ref("");
+const colorSchemeString = ref('');
 
 watch(colorScheme.value, (value) => {
     colorSchemeString.value = stringifyWithLineWrap(value);

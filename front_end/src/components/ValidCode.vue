@@ -5,13 +5,13 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-import useCurrentInstance from "@/utils/common/useCurrentInstance";
+import { onMounted, ref } from 'vue';
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 const { proxy } = useCurrentInstance();
 import { ElMessage, vLoading } from 'element-plus'
 
-const captchaUrl = ref("")
-const hashkey = ref("")
+const captchaUrl = ref('')
+const hashkey = ref('')
 const loading = ref(true)
 
 const refreshPic = () => {
@@ -19,7 +19,7 @@ const refreshPic = () => {
     proxy.$axios.get('/userprofile/refresh_captcha/').then(function (response) {
         if (response.data.status == 100) {
             hashkey.value = response.data.hashkey;
-            captchaUrl.value = import.meta.env.VITE_BASE_API + `/userprofile/captcha/image/` + hashkey.value + "/";
+            captchaUrl.value = import.meta.env.VITE_BASE_API + '/userprofile/captcha/image/' + hashkey.value + '/';
         } else if (response.data.status >= 101) {
             ElMessage.error({ message: response.data.msg, offset: 68 });
         }

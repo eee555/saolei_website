@@ -62,7 +62,7 @@
 
 <script setup lang="ts">
 // 录像列表的组件
-import { utc_to_local_format } from "@/utils/system/tools";
+import { utc_to_local_format } from '@/utils/system/tools';
 import PlayerName from '@/components/PlayerName.vue';
 import VideoStateIcon from '@/components/widgets/VideoStateIcon.vue';
 import SoftwareIcon from '@/components/widgets/SoftwareIcon.vue';

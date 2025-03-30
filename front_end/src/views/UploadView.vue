@@ -88,11 +88,11 @@
 // 上传录像的页面
 import { ref } from 'vue'
 import { ElTable, ElTableColumn, ElButton, ElDescriptions, ElDescriptionsItem, ElUpload, ElIcon } from 'element-plus';
-import useCurrentInstance from "@/utils/common/useCurrentInstance";
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 const { proxy } = useCurrentInstance();
 import type { UploadInstance, UploadProps, UploadUserFile, UploadRawFile, UploadFile, UploadFiles } from 'element-plus'
 import { store } from '../store'
-import { to_fixed_n } from "@/utils"
+import { to_fixed_n } from '@/utils'
 import { extract_stat, get_upload_status, load_video_file, upload_form, UploadVideoForm, VideoStat } from '@/utils/fileIO';
 import { Dict2FormData } from '@/utils/forms';
 import { useI18n } from 'vue-i18n';
@@ -135,7 +135,7 @@ const handleChange: UploadProps['onChange'] = async (uploadFile: UploadFile, _up
 // 新增一条等待上传的录像信息的记录
 const push_video_msg = async (uploadFile: UploadFile | UploadRawFile) => {
     let video_file;
-    if ("raw" in uploadFile) {
+    if ('raw' in uploadFile) {
         video_file = uploadFile.raw as UploadRawFile;
     } else {
         video_file = uploadFile as UploadRawFile;
@@ -160,8 +160,8 @@ const submitUpload = async () => {
     let count = 0; // 最多上传99个
     while (count < 99) {
         if (i >= upload_queue.value.length) break;
-        if (["pass", "identifier"].includes(upload_queue.value[i].status)) {
-            if (upload_queue.value[i].status == "identifier") {
+        if (['pass', 'identifier'].includes(upload_queue.value[i].status)) {
+            if (upload_queue.value[i].status == 'identifier') {
                 store.new_identifier = true;
             }
             await forceUpload(i);
@@ -176,13 +176,13 @@ const submitUpload = async () => {
 // 上传问题不大的录像
 const forceUpload = async (i: number) => {
     const video = upload_queue.value[i];
-    if (video.status != "pass" && video.status != "identifier") {
+    if (video.status != 'pass' && video.status != 'identifier') {
         return;
     }
-    upload_queue.value[i].status = "process";
+    upload_queue.value[i].status = 'process';
     await getDelay();
     if (video.stat == null) {
-        upload_queue.value[i].status = "upload";
+        upload_queue.value[i].status = 'upload';
         return;
     }
     await proxy.$axios.post('/video/upload/',
@@ -192,15 +192,15 @@ const forceUpload = async (i: number) => {
             uploaded_file_num.value += 1;
             removeUpload(i);
         } else if (response.data.type === 'error' && response.data.object === 'videomodel') {
-            upload_queue.value[i].status = "collision"
+            upload_queue.value[i].status = 'collision'
         } else if (response.data.type === 'error' && response.data.object === 'identifier') {
-            upload_queue.value[i].status = "censorship"
+            upload_queue.value[i].status = 'censorship'
         } else {
             // 正常使用不会到这里
-            upload_queue.value[i].status = "upload";
+            upload_queue.value[i].status = 'upload';
         }
     }).catch((_error: any) => {
-        upload_queue.value[i].status = "upload";
+        upload_queue.value[i].status = 'upload';
     })
 }
 

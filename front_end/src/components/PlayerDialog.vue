@@ -35,15 +35,15 @@ const preview = (id: number | undefined) => {
             },
         },
     ).then(function (response) {
-        let url = import.meta.env.VITE_BASE_API + "/video/preview/?id=" + id;
-        if (response.data.msg == "a") {
-            url += ".avf";
-        } else if (response.data.msg == "e") {
-            url += ".evf";
-        } else if (response.data.msg == "r") {
-            url += ".rmv";
-        } else if (response.data.msg == "m") {
-            url += ".mvf";
+        let url = import.meta.env.VITE_BASE_API + '/video/preview/?id=' + id;
+        if (response.data.msg == 'a') {
+            url += '.avf';
+        } else if (response.data.msg == 'e') {
+            url += '.evf';
+        } else if (response.data.msg == 'r') {
+            url += '.rmv';
+        } else if (response.data.msg == 'm') {
+            url += '.mvf';
         }
 
         if ((window as any).flop) {
@@ -62,14 +62,14 @@ const playVideo = function (url: string) {
     (window as any).flop.playVideo(url, {
         share: {
             uri: url,
-            pathname: "/flop-player/player",
+            pathname: '/flop-player/player',
             anonymous: false,
-            background: "rgba(100, 100, 100, 0.05)",
-            title: "Flop Player Share",
-            favicon: "https://avatars.githubusercontent.com/u/38378650?s=32", // 胡帝的头像
+            background: 'rgba(100, 100, 100, 0.05)',
+            title: 'Flop Player Share',
+            favicon: 'https://avatars.githubusercontent.com/u/38378650?s=32', // 胡帝的头像
         },
         anonymous: false,
-        background: "rgba(0, 0, 0, 0)",
+        background: 'rgba(0, 0, 0, 0)',
         listener: function () {
             videoplayerstore.visible = false;
             (window as any).flop = null;

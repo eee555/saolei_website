@@ -44,13 +44,13 @@
 // 个人主页的个人纪录部分
 import { ref, nextTick } from 'vue'
 import { ElTable, ElTableColumn, ElSkeleton } from 'element-plus';
-import useCurrentInstance from "@/utils/common/useCurrentInstance";
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import BaseCardLarge from '@/components/common/BaseCardLarge.vue';
 import { ElMessage } from 'element-plus'
 const { proxy } = useCurrentInstance();
-import { Record, RecordBIE } from "@/utils/common/structInterface";
-import { ms_to_s } from "@/utils"
+import { Record, RecordBIE } from '@/utils/common/structInterface';
+import { ms_to_s } from '@/utils'
 import { store } from '../store'
 
 import { useI18n } from 'vue-i18n';
@@ -59,15 +59,15 @@ const { t } = useI18n();
 const loading = ref(true)
 
 //编辑前的
-const userid = ref("");
-const username = ref("");
+const userid = ref('');
+const username = ref('');
 
 // 个人纪录表格
 const records = ref<Record[][]>([]);
 const table_title = ['common.mode.std', 'common.mode.nf', 'common.mode.ng', 'common.mode.dg'];
 
 const indexMethod = (index: number) => {
-    return ["", t('common.level.b'), t('common.level.i'), t('common.level.e')][index + 1]
+    return ['', t('common.level.b'), t('common.level.i'), t('common.level.e')][index + 1]
 }
 
 // 此处和父组件配合，等一下从store里获取用户的id

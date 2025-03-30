@@ -8,7 +8,7 @@
 // 参考：https://www.wst.tv/rankings?
 // 现役排名：世界排名（累计衰减）、赛季排名（一年）、最新比赛排名
 import { onMounted, ref } from 'vue'
-import useCurrentInstance from "@/utils/common/useCurrentInstance";
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 const { proxy } = useCurrentInstance();
 
 const review_queue = ref<any[]>([]);
@@ -23,7 +23,7 @@ onMounted(() => {
     ).then(function (response) {
         for (const key in response.data) {
             response.data[key] = JSON.parse(response.data[key] as string);
-            response.data[key]["key"] = Number.parseInt(key);
+            response.data[key]['key'] = Number.parseInt(key);
             review_queue.value.push(response.data[key]);
         }
     })
@@ -34,7 +34,7 @@ onMounted(() => {
     ).then(function (response) {
         for (const key in response.data) {
             response.data[key] = JSON.parse(response.data[key] as string);
-            response.data[key]["key"] = Number.parseInt(key);
+            response.data[key]['key'] = Number.parseInt(key);
             newest_queue.value.push(response.data[key]);
         }
     })

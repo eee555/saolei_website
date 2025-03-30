@@ -58,7 +58,7 @@
 // 全网录像的检索器，根据三个维度排序
 import { onMounted, ref, reactive } from 'vue'
 import { ElPagination, ElTable, ElTableColumn, ElDescriptions, ElDescriptionsItem, ElRow, ElButton } from 'element-plus';
-import useCurrentInstance from "@/utils/common/useCurrentInstance";
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 import VideoStateFilter from '@/components/Filters/VideoStateFilter.vue';
 import BBBVFilter from '@/components/Filters/BBBVFilter.vue';
@@ -67,8 +67,8 @@ import VideoViewRealname from '@/components/tableColumns/VideoViewRealname.vue';
 import VideoViewState from '@/components/tableColumns/VideoViewState.vue';
 
 const { proxy } = useCurrentInstance();
-import { utc_to_local_format } from "@/utils/system/tools";
-import { ms_to_s } from "@/utils";
+import { utc_to_local_format } from '@/utils/system/tools';
+import { ms_to_s } from '@/utils';
 import { preview } from '@/utils/common/PlayerDialog';
 
 import { useI18n } from 'vue-i18n';
@@ -77,9 +77,9 @@ const { t } = useI18n();
 import { videofilter } from '@/store';
 import { httpErrorNotification } from '@/components/Notifications';
 
-const level_tag_selected = ref("EXPERT");
-const mode_tag_selected = ref("STD");
-const index_tag_selected = ref("timems");
+const level_tag_selected = ref('EXPERT');
+const mode_tag_selected = ref('STD');
+const index_tag_selected = ref('timems');
 
 const index_visible = ref(true);
 
@@ -123,19 +123,19 @@ interface LevelTag {
 }
 
 const level_tags: LevelTag = reactive({
-    "BEGINNER": { key: "b", min: 1, max: 54 },
-    "INTERMEDIATE": { key: "i", min: 30, max: 216 },
-    "EXPERT": { key: "e", min: 100, max: 381 },
+    'BEGINNER': { key: 'b', min: 1, max: 54 },
+    'INTERMEDIATE': { key: 'i', min: 30, max: 216 },
+    'EXPERT': { key: 'e', min: 100, max: 381 },
 });
 
 const mode_tags: Tags = {
-    "STD": { name: "标准", key: "00" },
-    "NF": { name: "盲扫", key: "12" },
+    'STD': { name: '标准', key: '00' },
+    'NF': { name: '盲扫', key: '12' },
     //"UPK": { name: "UPK", key: "01" },
-    "WQI": { name: "Win7", key: "04" },
-    "JSW": { name: "竞速无猜", key: "05" },
-    "QWC": { name: "强无猜", key: "06" },
-    "RWC": { name: "弱无猜", key: "07" },
+    'WQI': { name: 'Win7', key: '04' },
+    'JSW': { name: '竞速无猜', key: '05' },
+    'QWC': { name: '强无猜', key: '06' },
+    'RWC': { name: '弱无猜', key: '07' },
     //"ZWC": { name: "准无猜", key: "08" },
     //"QKC": { name: "强可猜", key: "09" },
     //"RKC": { name: "弱可猜", key: "10" },
@@ -145,30 +145,30 @@ const mode_tags: Tags = {
 
 // reverse: true从小到大
 const index_tags: TagsReverse = reactive({
-    "upload_time": { key: "upload_time", reverse: true, to_fixed: -1, selected: true },
+    'upload_time': { key: 'upload_time', reverse: true, to_fixed: -1, selected: true },
     // "name": { name: "姓名", key: "player__realname", reverse: false, to_fixed: 0, selected: true},
-    "timems": { key: "timems", reverse: false, to_fixed: 3, selected: true },
-    "bbbv": { key: "bv", reverse: false, to_fixed: 0, selected: true },
-    "bbbv_s": { key: "bvs", reverse: true, to_fixed: 3, selected: true },
-    "left_s": { key: "left_s", reverse: true, to_fixed: 3, selected: false },
-    "right_s": { key: "right_s", reverse: true, to_fixed: 3, selected: false },
-    "double_s": { key: "double_s", reverse: true, to_fixed: 3, selected: false },
-    "cl_s": { key: "cl_s", reverse: true, to_fixed: 3, selected: false },
-    "path": { key: "path", reverse: false, to_fixed: 2, selected: false },
-    "stnb": { key: "video__stnb", reverse: true, to_fixed: 2, selected: true },
-    "ioe": { key: "ioe", reverse: true, to_fixed: 3, selected: false },
-    "thrp": { key: "thrp", reverse: true, to_fixed: 3, selected: false },
-    "ce_s": { key: "ce_s", reverse: true, to_fixed: 3, selected: false },
-    "op": { key: "op", reverse: false, to_fixed: 0, selected: false },
-    "is": { key: "isl", reverse: false, to_fixed: 0, selected: false },
-    "cell1": { key: "cell1", reverse: false, to_fixed: 0, selected: false },
-    "cell2": { key: "cell2", reverse: false, to_fixed: 0, selected: false },
-    "cell3": { key: "cell3", reverse: false, to_fixed: 0, selected: false },
-    "cell4": { key: "cell4", reverse: false, to_fixed: 0, selected: false },
-    "cell5": { key: "cell5", reverse: false, to_fixed: 0, selected: false },
-    "cell6": { key: "cell6", reverse: false, to_fixed: 0, selected: false },
-    "cell7": { key: "cell7", reverse: false, to_fixed: 0, selected: false },
-    "cell8": { key: "cell8", reverse: false, to_fixed: 0, selected: false },
+    'timems': { key: 'timems', reverse: false, to_fixed: 3, selected: true },
+    'bbbv': { key: 'bv', reverse: false, to_fixed: 0, selected: true },
+    'bbbv_s': { key: 'bvs', reverse: true, to_fixed: 3, selected: true },
+    'left_s': { key: 'left_s', reverse: true, to_fixed: 3, selected: false },
+    'right_s': { key: 'right_s', reverse: true, to_fixed: 3, selected: false },
+    'double_s': { key: 'double_s', reverse: true, to_fixed: 3, selected: false },
+    'cl_s': { key: 'cl_s', reverse: true, to_fixed: 3, selected: false },
+    'path': { key: 'path', reverse: false, to_fixed: 2, selected: false },
+    'stnb': { key: 'video__stnb', reverse: true, to_fixed: 2, selected: true },
+    'ioe': { key: 'ioe', reverse: true, to_fixed: 3, selected: false },
+    'thrp': { key: 'thrp', reverse: true, to_fixed: 3, selected: false },
+    'ce_s': { key: 'ce_s', reverse: true, to_fixed: 3, selected: false },
+    'op': { key: 'op', reverse: false, to_fixed: 0, selected: false },
+    'is': { key: 'isl', reverse: false, to_fixed: 0, selected: false },
+    'cell1': { key: 'cell1', reverse: false, to_fixed: 0, selected: false },
+    'cell2': { key: 'cell2', reverse: false, to_fixed: 0, selected: false },
+    'cell3': { key: 'cell3', reverse: false, to_fixed: 0, selected: false },
+    'cell4': { key: 'cell4', reverse: false, to_fixed: 0, selected: false },
+    'cell5': { key: 'cell5', reverse: false, to_fixed: 0, selected: false },
+    'cell6': { key: 'cell6', reverse: false, to_fixed: 0, selected: false },
+    'cell7': { key: 'cell7', reverse: false, to_fixed: 0, selected: false },
+    'cell8': { key: 'cell8', reverse: false, to_fixed: 0, selected: false },
 })
 
 const selected_index = () => {
@@ -182,11 +182,11 @@ const selected_index = () => {
 }
 
 const columnFormatter = (key: string, value: any) => {
-    if (key == "upload_time") {
+    if (key == 'upload_time') {
         return utc_to_local_format(value);
-    } else if (key == "timems") {
+    } else if (key == 'timems') {
         return ms_to_s(value);
-    } else if (key == "name") {
+    } else if (key == 'name') {
         return value;
     } else {
         return to_fixed_n(value, index_tags[key].to_fixed);
@@ -194,7 +194,7 @@ const columnFormatter = (key: string, value: any) => {
 }
 
 onMounted(() => {
-    document.getElementsByClassName("el-pagination__goto")[0].childNodes[0].nodeValue = "转到";
+    document.getElementsByClassName('el-pagination__goto')[0].childNodes[0].nodeValue = '转到';
     // 把分页器的go to改成中文。
     mod_style();
     request_videos();
@@ -208,7 +208,7 @@ function to_fixed_n(input: string | number | undefined, to_fixed: number): strin
     if (to_fixed <= 0) {
         return input;
     }
-    if (typeof (input) == "string") {
+    if (typeof (input) == 'string') {
         return parseFloat(input).toFixed(to_fixed);
     }
     return (input as number).toFixed(to_fixed);
@@ -218,7 +218,7 @@ const mod_style = () => {
     // 调整列宽样式
     // console.log(index_visible.value);
 
-    index_visible.value = !["upload_time", "bbbv", "bbbv_s", "timems"].
+    index_visible.value = !['upload_time', 'bbbv', 'bbbv_s', 'timems'].
         includes(index_tag_selected.value);
 }
 
@@ -233,9 +233,9 @@ const handleSortChange = (sort: any) => {
                 index_tag_selected.value = key;
             }
             if (sort.order == null) { // 不允许通过点击箭头的方式将排序变成 null
-                sort.column.order = state.ReverseOrder ? "descending" : "ascending";
+                sort.column.order = state.ReverseOrder ? 'descending' : 'ascending';
             }
-            state.ReverseOrder = sort.column.order == "descending"
+            state.ReverseOrder = sort.column.order == 'descending'
             break;
         }
     }
@@ -260,16 +260,16 @@ const offsetIndex = (index: number) => {
 // 根据配置，刷新当前页面的录像表
 const request_videos = () => {
     const params: { [key: string]: any } = {};
-    params["level"] = level_tags[level_tag_selected.value].key;
-    params["mode"] = mode_tags[mode_tag_selected.value].key;
-    params["o"] = index_tags[index_tag_selected.value].key;
-    params["r"] = state.ReverseOrder;
-    params["ps"] = videofilter.value.pagesize;
-    params["page"] = state.CurrentPage;
+    params['level'] = level_tags[level_tag_selected.value].key;
+    params['mode'] = mode_tags[mode_tag_selected.value].key;
+    params['o'] = index_tags[index_tag_selected.value].key;
+    params['r'] = state.ReverseOrder;
+    params['ps'] = videofilter.value.pagesize;
+    params['page'] = state.CurrentPage;
     // @ts-expect-error
-    params["bmin"] = videofilter.value.bbbv_range[level_tags[level_tag_selected.value].key][0];
+    params['bmin'] = videofilter.value.bbbv_range[level_tags[level_tag_selected.value].key][0];
     // @ts-expect-error
-    params["bmax"] = videofilter.value.bbbv_range[level_tags[level_tag_selected.value].key][1];
+    params['bmax'] = videofilter.value.bbbv_range[level_tags[level_tag_selected.value].key][1];
     if (![0, 4].includes(videofilter.value.filter_state.length)) {
         params['s'] = videofilter.value.filter_state;
     }

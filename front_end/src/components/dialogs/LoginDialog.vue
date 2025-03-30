@@ -46,10 +46,10 @@
 <script setup lang="ts">
 import { FormRules, FormInstance, ElDialog, ElForm, ElInput, ElFormItem, ElCheckbox, ElLink, ElButton } from 'element-plus';
 import { reactive, ref } from 'vue';
-import useCurrentInstance from "@/utils/common/useCurrentInstance";
-import ValidCode from "@/components/ValidCode.vue";
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import ValidCode from '@/components/ValidCode.vue';
 import { useI18n } from 'vue-i18n';
-import { httpErrorNotification } from "@/components/Notifications";
+import { httpErrorNotification } from '@/components/Notifications';
 
 const visible = defineModel({ type: Boolean, default: false });
 const emit = defineEmits(['close', 'forgetPassword', 'login']);
@@ -59,8 +59,8 @@ const { proxy } = useCurrentInstance();
 
 const refValidCode = ref<typeof ValidCode>();
 const remember_me = ref(false);
-const captchaError = ref("");
-const passwordError = ref("");
+const captchaError = ref('');
+const passwordError = ref('');
 
 interface LoginForm {
     username: string;
@@ -69,9 +69,9 @@ interface LoginForm {
 }
 
 const loginForm = reactive<LoginForm>({
-    username: "",
-    password: "",
-    captcha: "",
+    username: '',
+    password: '',
+    captcha: '',
 })
 
 const ruleFormRef = ref<FormInstance>()
@@ -86,7 +86,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
     if (!formEl) return
     await formEl.validate((valid, _fields) => {
         if (!valid) return;
-        const user_id = localStorage.getItem("history_user_id");
+        const user_id = localStorage.getItem('history_user_id');
         proxy.$axios.post('userprofile/login/', {
             user_id: user_id, // 为空时post会自动忽略该项
             username: loginForm.username,

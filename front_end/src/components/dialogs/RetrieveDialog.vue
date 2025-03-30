@@ -51,9 +51,9 @@ interface RetrieveForm {
 }
 
 const retrieveForm = reactive<RetrieveForm>({
-    email: "",
-    emailCode: "",
-    password: "",
+    email: '',
+    emailCode: '',
+    password: '',
 })
 
 const ruleFormRef = ref<FormInstance>()

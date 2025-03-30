@@ -53,7 +53,7 @@ async function fetchData(id: number) {
 }
 
 function generateArbiterCSV(data: any) {
-    if (!data) return "";
+    if (!data) return '';
     const csvdata = ['Day,Month,Year,Hour,Min,Sec,mode,Time,BBBV,BBBVs,style,cell0,cell1,cell2,cell3,cell4,cell5,cell6,cell7,cell8,Lcl,Rcl,Dcl,Leff,Reff,Deff,Openings,Islands,Path,GZiNi,HZiNi']
     for (const v of data) {
         if (v.mode != '00' && v.mode != '12') continue;
@@ -84,7 +84,7 @@ function generateArbiterCSV(data: any) {
 
 // Credit: ChatGPT
 function downloadCSV(csv: string) {
-    if (csv === "") return;
+    if (csv === '') return;
     // Create a Blob from the CSV data
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -104,7 +104,7 @@ function downloadCSV(csv: string) {
 }
 
 function downloadJSON(json: string) {
-    if (json === "") return;
+    if (json === '') return;
     // Create a Blob from the CSV data
     const blob = new Blob([json], { type: 'text/json' });
     const url = URL.createObjectURL(blob);

@@ -40,7 +40,7 @@ export default {
         guide: 'poradniki',
         score: 'wyniki',
         profile: 'profil',
-        welcome: `witaj, {0}!`,
+        welcome: 'witaj, {0}!',
         login: 'login',
         logout: 'wyloguj',
         register: 'zarejestruj się',

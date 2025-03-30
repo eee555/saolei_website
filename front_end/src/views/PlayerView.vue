@@ -102,12 +102,12 @@
 // 我的地盘页面
 import { defineAsyncComponent, onMounted, ref, watch } from 'vue'
 import { ElContainer, ElAside, ElMain, ElTabs, ElTabPane, ElImage, ElInput, ElUpload } from 'element-plus';
-import useCurrentInstance from "@/utils/common/useCurrentInstance";
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 const PlayerRecordView = defineAsyncComponent(() => import('@/views/PlayerRecordView.vue'));
 const PlayerVideosView = defineAsyncComponent(() => import('@/views/PlayerVideosView.vue'));
 const PlayerProfileView = defineAsyncComponent(() => import('@/views/PlayerProfileView.vue'));
 const UploadView = defineAsyncComponent(() => import('@/views/UploadView.vue'));
-import "../../node_modules/flag-icon-css/css/flag-icons.min.css";
+import '../../node_modules/flag-icon-css/css/flag-icons.min.css';
 
 const { proxy } = useCurrentInstance();
 import { genFileId, ElMessage } from 'element-plus'
@@ -128,15 +128,15 @@ const { t } = useI18n();
 const route = useRoute()
 
 //编辑前的
-const userid = ref("");
-const username = ref("");
-const realname = ref("");
-const signature = ref("");
-const popularity = ref("");
+const userid = ref('');
+const username = ref('');
+const realname = ref('');
+const signature = ref('');
+const popularity = ref('');
 
 //编辑状态时的
-const realname_edit = ref("");
-const signature_edit = ref("");
+const realname_edit = ref('');
+const signature_edit = ref('');
 
 // 是否在编辑的标识
 const is_editing = ref(false);
@@ -190,8 +190,8 @@ function refresh() {
         signature_edit.value = data.signature;
         // console.log(imageUrl);
         if (data.avatar) {
-            imageUrl.value = "data:image/;base64," + data.avatar;
-            imageUrlOld = "data:image/;base64," + data.avatar;
+            imageUrl.value = 'data:image/;base64,' + data.avatar;
+            imageUrlOld = 'data:image/;base64,' + data.avatar;
         }
         // console.log(imageUrl);
     }).catch(unknownErrorNotification);
@@ -217,7 +217,7 @@ const post_update_realname = (r: string) => {
                 // 访问用户自己的地盘
                 // 解决改名后，个人录像列表里名字不能立即改过来
                 // localStorage.setItem("player", JSON.stringify({ "id": player.id, "realname": realname.value }));
-                localStorage.setItem("player", JSON.stringify({ "id": player.id }));
+                localStorage.setItem('player', JSON.stringify({ 'id': player.id }));
             }
         } else if (response.data.status >= 101) {
             realname_edit.value = realname.value;

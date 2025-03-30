@@ -1,4 +1,4 @@
-import { ArrayUtils } from "./arrays";
+import { ArrayUtils } from './arrays';
 
 /**
  * PiecewiseColorScheme 类用于根据给定的阈值和颜色数组，根据输入值返回相应的颜色。
@@ -40,7 +40,7 @@ export class PiecewiseColorScheme {
         } else if (ArrayUtils.isDescending(thresholds)) {
             this.ascending = false;
         } else {
-            throw new Error("Thresholds must be either ascending or descending");
+            throw new Error('Thresholds must be either ascending or descending');
         }
     }
 

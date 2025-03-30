@@ -10,9 +10,9 @@
 <script setup lang="ts" name="PreviewDownload">
 // 拟弃用
 // 两个按钮，预览或下载
-import { onMounted } from "vue";
-import { preview } from "@/utils/common/PlayerDialog";
-import { ElButton } from "element-plus";
+import { onMounted } from 'vue';
+import { preview } from '@/utils/common/PlayerDialog';
+import { ElButton } from 'element-plus';
 
 const { id } = defineProps({
     id: {
@@ -56,7 +56,7 @@ const download = (event: MouseEvent, id: number | undefined) => {
     }
     const down = document.createElement('a');
     down.style.display = 'none';
-    down.href = import.meta.env.VITE_BASE_API + "/video/download/?id=" + id;
+    down.href = import.meta.env.VITE_BASE_API + '/video/download/?id=' + id;
     document.body.appendChild(down);
     down.click();
     URL.revokeObjectURL(down.href);

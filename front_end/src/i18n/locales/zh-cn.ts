@@ -288,7 +288,7 @@ export default {
         exportArbiterCSVTooltip: '兼容 Minesweeper Arbiter 生成的 <span style="font-family: \'Courier New\', Courier, monospace;">stats_csv.csv</span>。<br/> 目前不支持 Leff, Reff, Deff, GZiNi, HZiNi。',
         upload: {
             title: '上传录像',
-            dragOrClick: `将录像拉到此处或 <em>点击此处选择</em>`,
+            dragOrClick: '将录像拉到此处或 <em>点击此处选择</em>',
             uploadAll: '一键上传（{0}个）',
             cancelAll: '全部清空',
             constraintNote: '*单个文件大小不能超过5MB',

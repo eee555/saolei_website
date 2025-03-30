@@ -3,15 +3,15 @@
 这两个类型有非常大的重叠，但是无法共用代码。VideoStat 用于提供给前端进行可视化，UploadVideoForm 储存的是发送给后端的表单，两个需求随时可能失去同步。
 */
 
-import { UploadRawFile } from "element-plus";
-import { AvfVideo, EvfVideo, RmvVideo, MvfVideo } from "ms-toollib";
+import { UploadRawFile } from 'element-plus';
+import { AvfVideo, EvfVideo, RmvVideo, MvfVideo } from 'ms-toollib';
 type AnyVideo = AvfVideo | EvfVideo | RmvVideo | MvfVideo;
 
 export function get_software(video: AnyVideo) {
-    if (video instanceof AvfVideo) return "a";
-    else if (video instanceof EvfVideo) return "e";
-    else if (video instanceof RmvVideo) return "r";
-    else return "m";
+    if (video instanceof AvfVideo) return 'a';
+    else if (video instanceof EvfVideo) return 'e';
+    else if (video instanceof RmvVideo) return 'r';
+    else return 'm';
 }
 
 export function load_video_file(stream: Uint8Array, filename: string) {
@@ -83,7 +83,7 @@ export function extract_stat(video: AnyVideo | null): VideoStat | null {
     video.current_time = 1e8;
     return {
         id: 0,
-        level: ["b", "i", "e", "c"][video.level - 3],
+        level: ['b', 'i', 'e', 'c'][video.level - 3],
         mode: String(video.mode).padStart(2, '0'),
         timems: video.rtime_ms,
         bv: video.bbbv,
@@ -125,12 +125,12 @@ export function upload_form(file: UploadRawFile, video: AnyVideo | null): Upload
 
 export function get_upload_status(file: UploadRawFile, video: AnyVideo | null, identifiers: Array<string>) {
     const decoder = new TextDecoder();
-    if (video === null) return "unsupported";
-    if (video.level == 6) return "custom";
-    if (file.name.length >= 100) return "filename";
-    if (video.is_valid() == 1) return "invalid";
-    if (video.is_valid() == 3) return "needApprove";
-    if (!identifiers.includes(decoder.decode(video.player_identifier))) return "identifier";
-    return "pass";
+    if (video === null) return 'unsupported';
+    if (video.level == 6) return 'custom';
+    if (file.name.length >= 100) return 'filename';
+    if (video.is_valid() == 1) return 'invalid';
+    if (video.is_valid() == 3) return 'needApprove';
+    if (!identifiers.includes(decoder.decode(video.player_identifier))) return 'identifier';
+    return 'pass';
 }
 

@@ -20,18 +20,18 @@
 </template>
 
 <script lang="ts" setup name="LanguagePicker">
-import { onBeforeMount } from "vue";
-import { ElDropdown, ElIcon, ElDropdownItem } from "element-plus";
-import i18n from "@/i18n";
+import { onBeforeMount } from 'vue';
+import { ElDropdown, ElIcon, ElDropdownItem } from 'element-plus';
+import i18n from '@/i18n';
 
-import { local } from "@/store";
+import { local } from '@/store';
 
 const options = [
-    { lang: "zh-cn", text: "简体中文" },
-    { lang: "en", text: "English (98%)" },
-    { lang: "de", text: "Deutsch (13%)" },
-    { lang: "pl", text: "Polski (17%)" },
-    { lang: "dev", text: "dev" },
+    { lang: 'zh-cn', text: '简体中文' },
+    { lang: 'en', text: 'English (98%)' },
+    { lang: 'de', text: 'Deutsch (13%)' },
+    { lang: 'pl', text: 'Polski (17%)' },
+    { lang: 'dev', text: 'dev' },
 ];
 
 onBeforeMount(() => {

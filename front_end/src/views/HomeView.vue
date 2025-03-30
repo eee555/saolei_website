@@ -115,17 +115,17 @@
 <script setup lang='ts'>
 import { onMounted, ref } from 'vue'
 import { ElContainer, ElAside, ElIcon, ElMain, ElTabs, ElTabPane, ElText, ElLink, vLoading } from 'element-plus';
-import useCurrentInstance from "@/utils/common/useCurrentInstance";
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import VideoList from '@/components/VideoList.vue';
 import PlayerName from '@/components/PlayerName.vue';
-import { to_fixed_n } from "@/utils";
+import { to_fixed_n } from '@/utils';
 const { proxy } = useCurrentInstance();
-import { utc_to_local_format } from "@/utils/system/tools";
+import { utc_to_local_format } from '@/utils/system/tools';
 
-import FriendlyLink from "@/components/dialogs/FriendlyLinks.vue";
-import Downloads from "@/components/dialogs/Downloads.vue";
-import Thanks from "@/components/dialogs/Thanks.vue";
+import FriendlyLink from '@/components/dialogs/FriendlyLinks.vue';
+import Downloads from '@/components/dialogs/Downloads.vue';
+import Thanks from '@/components/dialogs/Thanks.vue';
 import BaseIconRefresh from '@/components/common/BaseIconRefresh.vue';
 import { store } from '../store'
 

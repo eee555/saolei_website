@@ -74,20 +74,20 @@
 // 玩家排行榜
 import { onMounted, ref, reactive } from 'vue'
 import { ElPagination, ElRow, ElButton } from 'element-plus';
-import useCurrentInstance from "@/utils/common/useCurrentInstance";
-import { to_fixed_n, ms_to_s } from "@/utils";
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import { to_fixed_n, ms_to_s } from '@/utils';
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import PlayerName from '@/components/PlayerName.vue';
 // const AsyncPlayerName = defineAsyncComponent(() => import('@/components/PlayerName.vue'))
 const { proxy } = useCurrentInstance();
 
-import { useI18n } from "vue-i18n";
+import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
 // const level_tag_selected = ref("EXPERT");
-const mode_tag_selected = ref("STD");
-const index_tag_selected = ref("timems");
-const level_selected = ref("sum"); // bie&sum
+const mode_tag_selected = ref('STD');
+const index_tag_selected = ref('timems');
+const level_selected = ref('sum'); // bie&sum
 
 const index_visible = ref(true);
 
@@ -128,24 +128,24 @@ interface TagsReverse {
 }
 
 const mode_tags: Tags = {
-    "STD": { key: "std" },
-    "NF": { key: "nf" },
-    "JSW": { key: "ng" },
+    'STD': { key: 'std' },
+    'NF': { key: 'nf' },
+    'JSW': { key: 'ng' },
     //"BZD": { key: "dg" }
 }
 
 
 // reverse: true从小到大
 const index_tags: TagsReverse = {
-    "timems": { key: "timems", reverse: false, to_fixed: 3 },
-    "bbbv_s": { key: "bvs", reverse: true, to_fixed: 3 },
-    "path": { key: "path", reverse: false, to_fixed: 2 },
-    "stnb": { key: "stnb", reverse: true, to_fixed: 2 },
-    "ioe": { key: "ioe", reverse: true, to_fixed: 3 },
+    'timems': { key: 'timems', reverse: false, to_fixed: 3 },
+    'bbbv_s': { key: 'bvs', reverse: true, to_fixed: 3 },
+    'path': { key: 'path', reverse: false, to_fixed: 2 },
+    'stnb': { key: 'stnb', reverse: true, to_fixed: 2 },
+    'ioe': { key: 'ioe', reverse: true, to_fixed: 3 },
 }
 
 onMounted(() => {
-    document.getElementsByClassName("el-pagination__goto")[0].childNodes[0].nodeValue = "转到";
+    document.getElementsByClassName('el-pagination__goto')[0].childNodes[0].nodeValue = '转到';
     // 把分页器的go to改成中文。
 
 
@@ -160,7 +160,7 @@ const mod_style = () => {
     // 调整列宽样式
     // console.log(index_visible.value);
 
-    index_visible.value = !["upload_time", "bbbv", "bbbv_s", "timems"].
+    index_visible.value = !['upload_time', 'bbbv', 'bbbv_s', 'timems'].
         includes(index_tag_selected.value);
 }
 
@@ -190,13 +190,13 @@ const get_player_rank = (page: number) => {
             playerData.push({
                 name_id: +players[i * 9],
                 name: players[i * 9 + 1],
-                beginner: index_tag_selected.value == "timems" ? ms_to_s(players[i * 9 + 2]) : players[i * 9 + 2],
+                beginner: index_tag_selected.value == 'timems' ? ms_to_s(players[i * 9 + 2]) : players[i * 9 + 2],
                 beginner_id: +players[i * 9 + 3],
-                intermediate: index_tag_selected.value == "timems" ? ms_to_s(players[i * 9 + 4]) : players[i * 9 + 4],
+                intermediate: index_tag_selected.value == 'timems' ? ms_to_s(players[i * 9 + 4]) : players[i * 9 + 4],
                 intermediate_id: +players[i * 9 + 5],
-                expert: index_tag_selected.value == "timems" ? ms_to_s(players[i * 9 + 6]) : players[i * 9 + 6],
+                expert: index_tag_selected.value == 'timems' ? ms_to_s(players[i * 9 + 6]) : players[i * 9 + 6],
                 expert_id: +players[i * 9 + 7],
-                sum: index_tag_selected.value == "timems" ? ms_to_s(players[i * 9 + 8]) : players[i * 9 + 8],
+                sum: index_tag_selected.value == 'timems' ? ms_to_s(players[i * 9 + 8]) : players[i * 9 + 8],
             })
         }
         // console.log(playerData);

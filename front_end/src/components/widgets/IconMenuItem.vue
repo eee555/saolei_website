@@ -14,8 +14,8 @@
 </template>
 
 <script lang="ts" setup>
-import { ElTooltip, ElIcon } from "element-plus";
-import { local } from "@/store";
+import { ElTooltip, ElIcon } from 'element-plus';
+import { local } from '@/store';
 
 const props = defineProps({
     text: { type: String, required: true },
