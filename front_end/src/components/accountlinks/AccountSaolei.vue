@@ -24,7 +24,7 @@ import { cs_to_s, ms_to_s } from '@/utils';
 import { utc_to_local_format } from '@/utils/system/tools';
 import { computed, PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ElDescriptions, ElDescriptionsItem, ElTable, ElTableColumn} from 'element-plus';
+import { ElDescriptions, ElDescriptionsItem, ElTable, ElTableColumn } from 'element-plus';
 
 const prop = defineProps({
     data: {
