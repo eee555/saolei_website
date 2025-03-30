@@ -108,21 +108,21 @@ const falsemine = `<svg class="ms_cell" width="160" height="160" xmlns="http://w
 
 // 摆雷语法，原则上致敬tikz-minesweeper，兼顾已有的svg资源、修改部分不合理的设计
 export const cells: { [key: string]: string } = {
-    "1": cell1,
-    "2": cell2,
-    "3": cell3,
-    "4": cell4,
-    "5": cell5,
-    "6": cell6,
-    "7": cell7,
-    "8": cell8,
-    "0": celldown,
-    "f": cellflag, // 旗
-    "m": cellmine, // 白雷
-    "a": cellup, //未打开
-    "n": blast, // 红雷
-    "e": falsemine, // 叉雷
-}
+    '1': cell1,
+    '2': cell2,
+    '3': cell3,
+    '4': cell4,
+    '5': cell5,
+    '6': cell6,
+    '7': cell7,
+    '8': cell8,
+    '0': celldown,
+    'f': cellflag, // 旗
+    'm': cellmine, // 白雷
+    'a': cellup, // 未打开
+    'n': blast, // 红雷
+    'e': falsemine, // 叉雷
+};
 
 
 

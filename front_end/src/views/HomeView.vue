@@ -11,7 +11,7 @@
                                     <Check />
                                 </el-icon>
                             </el-text>
-                            <el-link 
+                            <el-link
                                 v-else-if="active_tab == 'newest'" :underline="false"
                                 :disabled="news_queue_status != 0" style="vertical-align: baseline;" @click="update_news_queue"
                             >
@@ -22,7 +22,7 @@
                             <el-text style="margin-right: 5px">
                                 {{ utc_to_local_format(news.time) }}
                             </el-text>
-                            <PlayerName 
+                            <PlayerName
                                 class="name" style="vertical-align: top;" :user-id="+news.player_id"
                                 :user-name="news.player"
                             />
@@ -46,7 +46,7 @@
                                     <Check />
                                 </el-icon>
                             </el-text>
-                            <el-link 
+                            <el-link
                                 v-else-if="active_tab == 'newest'" :underline="false"
                                 :disabled="newest_queue_status != 0" style="vertical-align: baseline;" @click="update_newest_queue"
                             >
@@ -56,7 +56,7 @@
                         <VideoList :videos="newest_queue" :reverse="true" :show-header="false" />
                     </el-tab-pane>
                     <el-tab-pane :label="t('home.reviewQueue')" class="bottom_tabs" :lazy="true" name="review">
-                        <VideoList 
+                        <VideoList
                             v-loading="review_queue_updating" :videos="review_queue" :review-mode="store.user.is_staff"
                             @update="update_review_queue"
                         />
@@ -113,21 +113,21 @@
 </template>
 
 <script setup lang='ts'>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue';
 import { ElContainer, ElAside, ElIcon, ElMain, ElTabs, ElTabPane, ElText, ElLink, vLoading } from 'element-plus';
-import useCurrentInstance from "@/utils/common/useCurrentInstance";
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import VideoList from '@/components/VideoList.vue';
 import PlayerName from '@/components/PlayerName.vue';
-import { to_fixed_n } from "@/utils";
+import { to_fixed_n } from '@/utils';
 const { proxy } = useCurrentInstance();
-import { utc_to_local_format } from "@/utils/system/tools";
+import { utc_to_local_format } from '@/utils/system/tools';
 
-import FriendlyLink from "@/components/dialogs/FriendlyLinks.vue";
-import Downloads from "@/components/dialogs/Downloads.vue";
-import Thanks from "@/components/dialogs/Thanks.vue";
+import FriendlyLink from '@/components/dialogs/FriendlyLinks.vue';
+import Downloads from '@/components/dialogs/Downloads.vue';
+import Thanks from '@/components/dialogs/Thanks.vue';
 import BaseIconRefresh from '@/components/common/BaseIconRefresh.vue';
-import { store } from '../store'
+import { store } from '../store';
 
 import { useI18n } from 'vue-i18n';
 import { VideoAbstract } from '@/utils/videoabstract';
@@ -145,61 +145,61 @@ const newest_queue_status = ref(1);
 const news_queue_status = ref(1);
 
 onMounted(() => {
-    update_review_queue()
-    update_newest_queue()
-    update_news_queue()
-})
+    update_review_queue();
+    update_newest_queue();
+    update_news_queue();
+});
 
 const update_review_queue = async () => {
     review_queue_updating.value = true;
     await proxy.$axios.get('/video/review_queue/',
         {
-            params: {}
-        }
+            params: {},
+        },
     ).then(function (response) {
-        review_queue.value.splice(0, review_queue.value.length)
+        review_queue.value.splice(0, review_queue.value.length);
         for (const key in response.data) {
             const videoid = Number.parseInt(key);
             const videoinfo = JSON.parse(response.data[key] as string);
             review_queue.value.push(VideoAbstract.fromVideoRedisInfo(videoid, videoinfo));
         }
-    })
+    });
     review_queue_updating.value = false;
-}
+};
 
 const update_newest_queue = async () => {
     newest_queue_status.value = 1;
-    setTimeout(() => { newest_queue_status.value = 0; }, 5000)
+    setTimeout(() => { newest_queue_status.value = 0; }, 5000);
     await proxy.$axios.get('/video/newest_queue/',
         {
-            params: {}
-        }
+            params: {},
+        },
     ).then(function (response) {
         for (const key in response.data) {
             const videoid = Number.parseInt(key);
             const videoinfo = JSON.parse(response.data[key] as string);
             newest_queue.value.push(VideoAbstract.fromVideoRedisInfo(videoid, videoinfo));
         }
-    })
+    });
     if (newest_queue_status.value == 1) {
         newest_queue_status.value = 2;
     }
-}
+};
 
 const update_news_queue = async () => {
     news_queue_status.value = 1;
-    setTimeout(() => { news_queue_status.value = 0; }, 5000)
+    setTimeout(() => { news_queue_status.value = 0; }, 5000);
     await proxy.$axios.get('/video/news_queue/',
         {
-            params: {}
-        }
+            params: {},
+        },
     ).then(function (response) {
-        news_queue.value = response.data.map((v: string) => { return JSON.parse(v) })
-    })
+        news_queue.value = response.data.map((v: string) => { return JSON.parse(v); });
+    });
     if (news_queue_status.value == 1) {
         news_queue_status.value = 2;
     }
-}
+};
 
 </script>
 

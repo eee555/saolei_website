@@ -2,11 +2,11 @@
 <template>
     <div style="width: 480px;margin: 8px;">
         <el-card :body-style="{ padding: '0px', margin: '8px' }" style="border-radius: 8px;">
-            <img 
+            <img
                 v-if="videoMsg.filename.slice(-3) === 'avf'" src="../assets/img/img_arbiter.png"
                 style="height: 54px;width: 54px;vertical-align:middle;margin-left: 5px;margin-right: 12px;"
             >
-            <img 
+            <img
                 v-if="videoMsg.filename.slice(-3) === 'evf'" src="../assets/img/img_meta.png"
                 style="height: 54px;width: 54px;vertical-align:middle;margin-left: 5px;margin-right: 12px;"
             >
@@ -52,10 +52,10 @@
         </el-card>
     </div>
 </template>
-  
+
 <script lang="ts" setup>
 // 上传录像的页面，等待上传的录像的卡片
-import { onMounted } from 'vue'
+import { onMounted } from 'vue';
 import { ElCard, ElIcon, ElRow, ElCol } from 'element-plus';
 const emit = defineEmits(['cancel_this', 'logout']);
 
@@ -65,9 +65,9 @@ const { videoMsg } = defineProps({
     videoMsg: {
         type: Object as () => {
             // 在待上传列表中排第几个
-            id: number,
+            id: number;
             // 文件名，后缀提示录像的类型，按类型显示图标
-            filename: string,
+            filename: string;
             level: string;
             timems: string;
             bbbv: string;
@@ -76,21 +76,21 @@ const { videoMsg } = defineProps({
         default() {
             return {
                 id: 0,
-                filename: "",
-                level: "",
-                timems: "",
-                bbbv: "",
-                bvs: "",
-            }
+                filename: '',
+                level: '',
+                timems: '',
+                bbbv: '',
+                bvs: '',
+            };
         },
-    }
-})
+    },
+});
 
 onMounted(() => {
     // const player = proxy.$store.state.user;
 
 
-})
+});
 
 
 

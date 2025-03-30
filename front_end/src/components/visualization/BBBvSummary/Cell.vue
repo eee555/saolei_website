@@ -27,7 +27,7 @@ import tinycolor from 'tinycolor2';
 import { preview } from '@/utils/common/PlayerDialog';
 import BaseCardSmall from '@/components/common/BaseCardSmall.vue';
 
-const bestValue = ref<number|null>(null);
+const bestValue = ref<number | null>(null);
 const bestIndex = ref(-1);
 
 const prop = defineProps({
@@ -37,9 +37,9 @@ const prop = defineProps({
     sortBy: { type: String as PropType<getStat_stat>, default: 'timems' },
     sortDesc: { type: Boolean, default: false },
     displayBy: { type: String as PropType<getStat_stat>, default: 'time' },
-    colorTheme: { type: Object as PropType<PiecewiseColorScheme>, default: new PiecewiseColorScheme([],[])},
-    softwareFilter: { type: Array<MS_Software>, default: () => [...MS_Softwares]}
-})
+    colorTheme: { type: Object as PropType<PiecewiseColorScheme>, default: new PiecewiseColorScheme([], []) },
+    softwareFilter: { type: Array<MS_Software>, default: () => [...MS_Softwares] },
+});
 
 function refresh() {
     bestValue.value = null;
@@ -65,8 +65,8 @@ const height = computed(() => BBBvSummaryConfig.value.cellHeight + 'px');
 
 const color = computed(() => {
     if (bestIndex.value === -1) return 'rgba(0,0,0,0)';
-    return prop.colorTheme.getColor(prop.videos[bestIndex.value].getStat(prop.displayBy) as number)
-})
+    return prop.colorTheme.getColor(prop.videos[bestIndex.value].getStat(prop.displayBy) as number);
+});
 
 const fontColor = computed(() => tinycolor(color.value).isDark() ? 'white' : 'black');
 

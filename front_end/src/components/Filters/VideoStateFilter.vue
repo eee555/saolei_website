@@ -13,10 +13,10 @@ import { ElCheckboxGroup, ElCheckboxButton } from 'element-plus';
 const checkboxGroup = defineModel({ type: Array<string>, required: true });
 
 const statelist = [
-    {state: 'c'},
-    {state: 'd'},
-    {state: 'a'},
-    {state: 'b'},
+    { state: 'c' },
+    { state: 'd' },
+    { state: 'a' },
+    { state: 'b' },
 ];
 
 const { t } = useI18n();

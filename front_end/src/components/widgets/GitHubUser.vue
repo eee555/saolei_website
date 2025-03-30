@@ -9,6 +9,6 @@
 import { ElLink, ElImage, ElText } from 'element-plus';
 const props = defineProps({
     username: { type: String, required: true },
-})
+});
 
 </script>

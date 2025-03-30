@@ -1,5 +1,5 @@
 <template>
-    <el-dialog 
+    <el-dialog
         v-model="visible" :title="t('login.loginTitle')" width="400px" align-center draggable
         :lock-scroll="false" @close="resetForm(ruleFormRef); emit('close')"
     >
@@ -26,7 +26,7 @@
             </el-form-item>
             <!-- 忘记密码 -->
             <el-form-item>
-                <el-link 
+                <el-link
                     :underline="false" type="primary"
                     style="vertical-align: bottom;" @click="emit('forgetPassword')"
                 >
@@ -44,12 +44,12 @@
 </template>
 
 <script setup lang="ts">
-import { FormRules, FormInstance, ElDialog, ElForm, ElInput, ElFormItem, ElCheckbox, ElLink, ElButton} from 'element-plus';
+import { FormRules, FormInstance, ElDialog, ElForm, ElInput, ElFormItem, ElCheckbox, ElLink, ElButton } from 'element-plus';
 import { reactive, ref } from 'vue';
-import useCurrentInstance from "@/utils/common/useCurrentInstance";
-import ValidCode from "@/components/ValidCode.vue";
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import ValidCode from '@/components/ValidCode.vue';
 import { useI18n } from 'vue-i18n';
-import { httpErrorNotification } from "@/components/Notifications";
+import { httpErrorNotification } from '@/components/Notifications';
 
 const visible = defineModel({ type: Boolean, default: false });
 const emit = defineEmits(['close', 'forgetPassword', 'login']);
@@ -59,40 +59,34 @@ const { proxy } = useCurrentInstance();
 
 const refValidCode = ref<typeof ValidCode>();
 const remember_me = ref(false);
-const captchaError = ref("");
-const passwordError = ref("");
+const captchaError = ref('');
+const passwordError = ref('');
 
 interface LoginForm {
-    username: string,
-    password: string,
-    captcha: string,
+    username: string;
+    password: string;
+    captcha: string;
 }
 
 const loginForm = reactive<LoginForm>({
-    username: "",
-    password: "",
-    captcha: "",
-})
+    username: '',
+    password: '',
+    captcha: '',
+});
 
-const ruleFormRef = ref<FormInstance>()
+const ruleFormRef = ref<FormInstance>();
 
 const rules = reactive<FormRules<LoginForm>>({
-    username: [
-        { required: true, message: t('msg.usernameRequired') },
-    ],
-    password: [
-        { required: true, message: t('msg.passwordRequired') },
-    ],
-    captcha: [
-        { required: true, message: t('msg.captchaRequired') },
-    ],
-})
+    username: [{ required: true, message: t('msg.usernameRequired') }],
+    password: [{ required: true, message: t('msg.passwordRequired') }],
+    captcha: [{ required: true, message: t('msg.captchaRequired') }],
+});
 
 const submitForm = async (formEl: FormInstance | undefined) => {
-    if (!formEl) return
+    if (!formEl) return;
     await formEl.validate((valid, _fields) => {
         if (!valid) return;
-        const user_id = localStorage.getItem("history_user_id");
+        const user_id = localStorage.getItem('history_user_id');
         proxy.$axios.post('userprofile/login/', {
             user_id: user_id, // 为空时post会自动忽略该项
             username: loginForm.username,
@@ -102,7 +96,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
         }).then(function (response) {
             const data = response.data;
             if (data.type == 'success') {
-                emit('login', data.user, remember_me.value)
+                emit('login', data.user, remember_me.value);
             } else if (data.type == 'error') {
                 if (data.category == 'captcha') {
                     captchaError.value = t('msg.captchaFail');
@@ -111,13 +105,13 @@ const submitForm = async (formEl: FormInstance | undefined) => {
                     passwordError.value = t('msg.usernamePasswordInvalid');
                 }
             }
-        }).catch(httpErrorNotification)
-    })
-}
+        }).catch(httpErrorNotification);
+    });
+};
 
 const resetForm = (formEl: FormInstance | undefined) => {
-    if (!formEl) return
-    formEl.resetFields()
-}
+    if (!formEl) return;
+    formEl.resetFields();
+};
 
 </script>

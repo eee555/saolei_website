@@ -2,7 +2,7 @@
     <el-link @click="centerDialogVisible = true;">
         {{ t('footer.team') }}
     </el-link>
-    <el-dialog 
+    <el-dialog
         v-model="centerDialogVisible" :title="t('team.title')" width="700px" align-center draggable
         :lock-scroll="false"
     >
@@ -45,19 +45,19 @@
                     <strong>{{ t('team.localization') }}</strong>
                 </div>
                 <div>
-                    {{ t('team.zhCn') }}　
+                    {{ t('team.zhCn') }}
                     <GitHubUser username="putianyi889" />
                 </div>
                 <div>
-                    {{ t('team.en') }}　
+                    {{ t('team.en') }}
                     <GitHubUser username="putianyi889" />
                 </div>
                 <div>
-                    {{ t('team.de') }}　
+                    {{ t('team.de') }}
                     <GitHubUser username="auk3" />
                 </div>
                 <div>
-                    {{ t('team.pl') }}　
+                    {{ t('team.pl') }}
                     <GitHubUser username="kiraa96" />
                 </div>
             </el-col>
@@ -85,9 +85,9 @@
 
 <script lang="ts" setup>
 // 注册、登录的弹框及右上方按钮
-import { ref } from 'vue'
+import { ref } from 'vue';
 import { ElDialog, ElDivider, ElRow, ElCol, ElLink } from 'element-plus';
-import GitHubUser from '../widgets/GitHubUser.vue'
+import GitHubUser from '../widgets/GitHubUser.vue';
 
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
@@ -104,7 +104,7 @@ const acknowledgements = [
     { text: '冰糖雪梨' },
     { text: '生命★是┗ 〓┛是☆什么' },
     { text: 'Arya' },
-]
+];
 
 </script>
 

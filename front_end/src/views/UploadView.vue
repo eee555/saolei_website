@@ -1,5 +1,5 @@
 <template>
-    <el-upload 
+    <el-upload
         ref="upload" v-model:file-list="fileList" :disabled="store.user.realname == '匿名'" drag action="#"
         :multiple="true" :on-change="handleChange" :auto-upload="false" :show-file-list="false"
         accept=".avf,.evf,.rmv,.mvf"
@@ -7,21 +7,21 @@
         <el-icon class="el-icon--upload">
             <upload-filled />
         </el-icon>
-        <div 
+        <div
             class="el-upload__text" style="font-size: 18px;"
             v-html="store.user.realname == '匿名' ? t('common.msg.realNameRequired') : t('profile.upload.dragOrClick')"
         />
 
         <template #tip>
             <div style="text-align: center;">
-                <el-button 
+                <el-button
                     v-show="upload_queue.length > 0" size="large" type="primary"
                     style="display: block;margin: 16px auto;font-size: 18px;width: 220px;" @click="submitUpload()"
                 >
                     {{
                         t('profile.upload.uploadAll', [upload_queue.length]) }}
                 </el-button>
-                <el-button 
+                <el-button
                     v-show="upload_queue.length > 0" size="small" type="info"
                     style="display: block;margin: 16px auto;width: 120px;" @click="cancel_all()"
                 >
@@ -55,7 +55,7 @@
         </el-table-column>
         <el-table-column prop="stat.timems" :label="t('common.prop.time')" sortable />
         <el-table-column prop="stat.bv" label="3BV" sortable />
-        <el-table-column 
+        <el-table-column
             prop="stat.bvs" label="3BV/s"
             :formatter="(row: any, column: any, cellValue: any, index: number) => { return to_fixed_n(cellValue, 3) }"
             sortable
@@ -67,7 +67,7 @@
         </el-table-column>
         <el-table-column :label="t('common.prop.action')" :width="130">
             <template #default="props">
-                <el-button 
+                <el-button
                     :disabled="!(['pass', 'identifier', 'needApprove'].includes(props.row.status))"
                     :type="['pass', 'identifier'].includes(props.row.status) ? 'success' : props.row.status == 'needApprove' ? 'warning' : 'info'"
                     circle @click="forceUpload(props.$index)"
@@ -86,13 +86,13 @@
 
 <script lang="ts" setup>
 // 上传录像的页面
-import { ref } from 'vue'
+import { ref } from 'vue';
 import { ElTable, ElTableColumn, ElButton, ElDescriptions, ElDescriptionsItem, ElUpload, ElIcon } from 'element-plus';
-import useCurrentInstance from "@/utils/common/useCurrentInstance";
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 const { proxy } = useCurrentInstance();
-import type { UploadInstance, UploadProps, UploadUserFile, UploadRawFile, UploadFile, UploadFiles } from 'element-plus'
-import { store } from '../store'
-import { to_fixed_n } from "@/utils"
+import type { UploadInstance, UploadProps, UploadUserFile, UploadRawFile, UploadFile, UploadFiles } from 'element-plus';
+import { store } from '../store';
+import { to_fixed_n } from '@/utils';
 import { extract_stat, get_upload_status, load_video_file, upload_form, UploadVideoForm, VideoStat } from '@/utils/fileIO';
 import { Dict2FormData } from '@/utils/forms';
 import { useI18n } from 'vue-i18n';
@@ -101,20 +101,20 @@ import BaseIconDelete from '@/components/common/BaseIconDelete.vue';
 const { t } = useI18n();
 
 interface UploadEntry {
-    index: number,
-    filename: string,
-    status: string,
-    form: UploadVideoForm | null, // for upload
-    stat: VideoStat | null, // for display
+    index: number;
+    filename: string;
+    status: string;
+    form: UploadVideoForm | null; // for upload
+    stat: VideoStat | null; // for display
 }
 
 defineProps({
-    identifiers: { type: Array, default: () => [] }
-})
+    identifiers: { type: Array, default: () => [] },
+});
 
-const upload_queue = ref<UploadEntry[]>([])
+const upload_queue = ref<UploadEntry[]>([]);
 
-const fileList = ref<UploadUserFile[]>([])
+const fileList = ref<UploadUserFile[]>([]);
 
 const upload = ref<UploadInstance>();
 const uploaded_file_num = ref<number>(0);
@@ -122,7 +122,6 @@ const allow_upload = ref(true);
 
 // 录像列表变动的回调，上传多个文件时，有几个文件就会进来几次。
 const handleChange: UploadProps['onChange'] = async (uploadFile: UploadFile, _uploadFiles: UploadFiles) => {
-
     if (allow_upload.value) {
         // upload_video_visible.value = true;
         await push_video_msg(uploadFile);
@@ -131,19 +130,18 @@ const handleChange: UploadProps['onChange'] = async (uploadFile: UploadFile, _up
             upload_queue.value[i].index = i;
         }
     }
-
-}
+};
 
 // 新增一条等待上传的录像信息的记录
 const push_video_msg = async (uploadFile: UploadFile | UploadRawFile) => {
     let video_file;
-    if ("raw" in uploadFile) {
+    if ('raw' in uploadFile) {
         video_file = uploadFile.raw as UploadRawFile;
     } else {
         video_file = uploadFile as UploadRawFile;
     }
     upload_queue.value.push(await upload_prepare(video_file));
-}
+};
 
 // 清空待上传列表
 const cancel_all = () => {
@@ -152,7 +150,7 @@ const cancel_all = () => {
         upload_queue.value.pop();
     }
     uploaded_file_num.value = 0;
-}
+};
 
 // 点上传按钮的回调，自动上传录像
 const submitUpload = async () => {
@@ -162,8 +160,8 @@ const submitUpload = async () => {
     let count = 0; // 最多上传99个
     while (count < 99) {
         if (i >= upload_queue.value.length) break;
-        if (["pass", "identifier"].includes(upload_queue.value[i].status)) {
-            if (upload_queue.value[i].status == "identifier") {
+        if (['pass', 'identifier'].includes(upload_queue.value[i].status)) {
+            if (upload_queue.value[i].status == 'identifier') {
                 store.new_identifier = true;
             }
             await forceUpload(i);
@@ -173,18 +171,18 @@ const submitUpload = async () => {
         i++;
     }
     allow_upload.value = true;
-}
+};
 
 // 上传问题不大的录像
 const forceUpload = async (i: number) => {
     const video = upload_queue.value[i];
-    if (video.status != "pass" && video.status != "identifier") {
+    if (video.status != 'pass' && video.status != 'identifier') {
         return;
     }
-    upload_queue.value[i].status = "process";
+    upload_queue.value[i].status = 'process';
     await getDelay();
     if (video.stat == null) {
-        upload_queue.value[i].status = "upload";
+        upload_queue.value[i].status = 'upload';
         return;
     }
     await proxy.$axios.post('/video/upload/',
@@ -194,26 +192,26 @@ const forceUpload = async (i: number) => {
             uploaded_file_num.value += 1;
             removeUpload(i);
         } else if (response.data.type === 'error' && response.data.object === 'videomodel') {
-            upload_queue.value[i].status = "collision"
+            upload_queue.value[i].status = 'collision';
         } else if (response.data.type === 'error' && response.data.object === 'identifier') {
-            upload_queue.value[i].status = "censorship"
+            upload_queue.value[i].status = 'censorship';
         } else {
             // 正常使用不会到这里
-            upload_queue.value[i].status = "upload";
+            upload_queue.value[i].status = 'upload';
         }
     }).catch((_error: any) => {
-        upload_queue.value[i].status = "upload";
-    })
-}
+        upload_queue.value[i].status = 'upload';
+    });
+};
 
-//删除录像
+// 删除录像
 const removeUpload = (i: number) => {
     upload_queue.value.splice(i, 1);
-}
+};
 
 // 均匀延时，降低并发。
 function getDelay() {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
         const delay = 200;
         setTimeout(() => {
             resolve(delay);
@@ -230,7 +228,7 @@ async function upload_prepare(file: UploadRawFile): Promise<UploadEntry> {
         status: get_upload_status(file, video, store.user.identifiers),
         stat: extract_stat(video),
         form: upload_form(file, video),
-    }
+    };
 }
 
 </script>

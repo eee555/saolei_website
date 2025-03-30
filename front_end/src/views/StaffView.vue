@@ -75,41 +75,41 @@ import { httpErrorNotification, successNotification } from '@/components/Notific
 const { proxy } = useCurrentInstance();
 
 const userid = ref(0);
-const userfield = ref("");
-const uservalue = ref("");
-const userfieldlist = ["username", "first_name", "last_name", "email", "realname", "country", "is_banned", "left_realname_n", "left_avatar_n", "left_signature_n", "userms__video_num_limit"]; // 可以修改的域列表
+const userfield = ref('');
+const uservalue = ref('');
+const userfieldlist = ['username', 'first_name', 'last_name', 'email', 'realname', 'country', 'is_banned', 'left_realname_n', 'left_avatar_n', 'left_signature_n', 'userms__video_num_limit']; // 可以修改的域列表
 const userprofile = ref({});
 
 const getUser = () => {
     proxy.$axios.get('userprofile/get', { params: { id: userid.value } }).then(
         function (response: any) {
             userprofile.value = response.data;
-        }
-    ).catch(httpErrorNotification)
-}
+        },
+    ).catch(httpErrorNotification);
+};
 
 const setUser = (id: number, field: string, value: string) => {
     proxy.$axios.post('userprofile/set/', { id: id, field: field, value: value }).then(
         function (response: any) {
             successNotification(response);
             getUser();
-        }
-    ).catch(httpErrorNotification)
-}
+        },
+    ).catch(httpErrorNotification);
+};
 
 const videoid = ref(0);
-const videofield = ref("");
-const videovalue = ref("");
-const videofieldlist = ["player", "upload_time", "state"]; // 可以修改的域列表
+const videofield = ref('');
+const videovalue = ref('');
+const videofieldlist = ['player', 'upload_time', 'state']; // 可以修改的域列表
 const videomodel = ref({});
 
 const getVideo = () => {
     proxy.$axios.get('video/get', { params: { id: videoid.value } }).then(
         function (response: any) {
             videomodel.value = response.data;
-        }
-    ).catch(httpErrorNotification)
-}
+        },
+    ).catch(httpErrorNotification);
+};
 
 function setVideoResponse(response: any) {
     successNotification(response);
@@ -117,11 +117,11 @@ function setVideoResponse(response: any) {
 }
 
 const setVideo = (id: number, field: string, value: string) => {
-    proxy.$axios.post('video/set/', { id: id, field: field, value: value }).then(setVideoResponse).catch(httpErrorNotification)
-}
+    proxy.$axios.post('video/set/', { id: id, field: field, value: value }).then(setVideoResponse).catch(httpErrorNotification);
+};
 
 const updateVideo = (id: number) => {
-    proxy.$axios.post('video/update/', { id: id }).then(setVideoResponse).catch(httpErrorNotification)
-}
+    proxy.$axios.post('video/update/', { id: id }).then(setVideoResponse).catch(httpErrorNotification);
+};
 
 </script>

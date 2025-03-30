@@ -17,6 +17,6 @@ import { Tippy } from 'vue-tippy';
 defineProps({
     showDelay: { type: Number, default: 0 },
     hideDelay: { type: Number, default: 0 },
-})
+});
 
 </script>

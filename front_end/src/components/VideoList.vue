@@ -1,6 +1,6 @@
 <template>
     <el-table :data="videos" table-layout="auto" size="small" :height="height" style="min-width: 100%;font-size: 16px;user-select: none;" :cell-style="{padding: 0}" :default-sort="{prop: 'upload_time', order: 'descending'}" @row-click="(row: any) => preview(row.id)">
-        <el-table-column 
+        <el-table-column
             prop="state" :width="32"
             :filters="[{ text: t('common.state.c'), value: 'c' }, { text: t('common.state.d'), value: 'd' }]"
             :filter-method="defaultFilterMethod"
@@ -9,7 +9,7 @@
                 <VideoStateIcon :state="scope.row.state" />
             </template>
         </el-table-column>
-        <el-table-column 
+        <el-table-column
             prop="upload_time" min-width="180" :formatter="simple_formatter(utc_to_local_format)"
             :sortable="sortable"
         />
@@ -31,7 +31,7 @@
                 <GameLevelIcon :level="scope.row.level" />
             </template>
         </el-table-column>
-        <el-table-column 
+        <el-table-column
             prop="mode" :formatter="simple_formatter((mode: string) => t(`common.mode.code${mode}`))"
             :filters="[{ text: t('common.mode.code00'), value: '00' }, { text: t('common.mode.code12'), value: '12' }, { text: t('common.mode.code05'), value: '05' }, { text: t('common.mode.code11'), value: '11' }]"
             :filter-method="defaultFilterMethod" :filter-multiple="false"
@@ -62,7 +62,7 @@
 
 <script setup lang="ts">
 // 录像列表的组件
-import { utc_to_local_format } from "@/utils/system/tools";
+import { utc_to_local_format } from '@/utils/system/tools';
 import PlayerName from '@/components/PlayerName.vue';
 import VideoStateIcon from '@/components/widgets/VideoStateIcon.vue';
 import SoftwareIcon from '@/components/widgets/SoftwareIcon.vue';
@@ -79,21 +79,21 @@ const { t } = useI18n();
 defineProps({
     videos: {
         type: Array<VideoAbstract>,
-        default() { return [] },
+        default() { return []; },
     },
     // 反序
     reverse: {
         type: Boolean,
-        default: false
+        default: false,
     },
     // 需要用可以点开摘要的用户组件
     needPlayerName: {
         type: Boolean,
-        default: true
+        default: true,
     },
     reviewMode: {
         type: Boolean,
-        default: false
+        default: false,
     },
     showHeader: {
         type: Boolean,
@@ -107,6 +107,6 @@ defineProps({
         type: [String, Number],
         default: '100%',
     },
-})
+});
 
 </script>

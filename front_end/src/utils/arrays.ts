@@ -19,24 +19,24 @@ export class ArrayUtils {
 
     /**
      * 返回给定迭代器中的最大值。
-     * 
+     *
      * @param iter - 一个数字数组或一个数字迭代器。
      * @returns 迭代器中的最大值，如果迭代器为空，则返回负无穷大。
      */
     static maximum(iter: number[] | MapIterator<number>): number {
         const arr = Array.isArray(iter) ? iter : Array.from(iter);
-    
+
         if (arr.length === 0) {
             return -Infinity;
         }
-    
+
         let max = arr[0];
         for (let i = 1; i < arr.length; i++) {
             if (arr[i] > max) {
                 max = arr[i];
             }
         }
-    
+
         return max;
     }
 
@@ -47,18 +47,18 @@ export class ArrayUtils {
      */
     static minimum(iter: number[] | MapIterator<number>): number {
         const arr = Array.isArray(iter) ? iter : Array.from(iter);
-    
+
         if (arr.length === 0) {
             return Infinity;
         }
-    
+
         let min = arr[0];
         for (let i = 1; i < arr.length; i++) {
             if (arr[i] < min) {
                 min = arr[i];
             }
         }
-    
+
         return min;
     }
 
@@ -73,10 +73,10 @@ export class ArrayUtils {
         // Determine the insertion point using binary search
         let low = 0;
         let high = sortedArray.length;
-    
+
         while (low < high) {
             const mid = Math.floor((low + high) / 2);
-    
+
             if (isAscending) {
                 if (sortedArray[mid] < value) low = mid + 1;
                 else high = mid;
@@ -85,7 +85,7 @@ export class ArrayUtils {
                 else high = mid;
             }
         }
-    
+
         return low;
     }
 

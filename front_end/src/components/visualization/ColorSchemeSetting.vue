@@ -56,16 +56,16 @@ interface ColorScheme {
 
 const colorScheme = defineModel({
     type: Object as PropType<ColorScheme>,
-    required: true
+    required: true,
 });
 
 const operationNode = ref(0);
 const developerMode = ref(false);
-const colorSchemeString = ref("");
+const colorSchemeString = ref('');
 
 watch(colorScheme.value, (value) => {
     colorSchemeString.value = stringifyWithLineWrap(value);
-}, {immediate: true});
+}, { immediate: true });
 
 </script>
 

@@ -3,7 +3,7 @@
         <el-header>
             <el-scrollbar :height="100">
                 <!-- 给一个足够的高度就可以不显示纵向滚动条 -->
-                <el-menu 
+                <el-menu
                     mode="horizontal" :router="true" :default-active="menu_index" :ellipsis="false"
                     menu-trigger="click"
                 >
@@ -38,7 +38,7 @@
         </el-container>
     </el-container>
 
-    <el-dialog 
+    <el-dialog
         v-if="false" v-model="notice_visible" draggable :lock-scroll="false" title="站长通知"
         :before-close="handle_notice_close" style="white-space: pre-wrap;" width="min(max(50%, 400px), 90vw)"
     >
@@ -53,32 +53,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from "vue";
-import LanguagePicker from "./components/widgets/LanguagePicker.vue";
-import IconMenuItem from "./components/widgets/IconMenuItem.vue";
-import Login from "./components/Login.vue";
-import Footer from "./components/Footer.vue";
-import PlayerDialog from "./components/PlayerDialog.vue";
-import useCurrentInstance from "@/utils/common/useCurrentInstance";
-import { store, local } from "./store";
-import { ElScrollbar, ElMenu, ElMenuItem, ElDialog, ElCheckbox, ElImage, ElBadge, ElHeader, ElContainer, ElMain } from "element-plus";
-import BaseButtonConfirm from "./components/common/BaseButtonConfirm.vue";
+import { ref, onMounted, computed, watch } from 'vue';
+import LanguagePicker from './components/widgets/LanguagePicker.vue';
+import IconMenuItem from './components/widgets/IconMenuItem.vue';
+import Login from './components/Login.vue';
+import Footer from './components/Footer.vue';
+import PlayerDialog from './components/PlayerDialog.vue';
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import { store, local } from './store';
+import { ElScrollbar, ElMenu, ElMenuItem, ElDialog, ElCheckbox, ElImage, ElBadge, ElHeader, ElContainer, ElMain } from 'element-plus';
+import BaseButtonConfirm from './components/common/BaseButtonConfirm.vue';
 
 const { proxy } = useCurrentInstance();
-import logo_1 from "@/assets/logo.png";
-import logo_2 from "@/assets/logo2.png";
+import logo_1 from '@/assets/logo.png';
+import logo_2 from '@/assets/logo2.png';
 
-import { useRouter } from "vue-router";
+import { useRouter } from 'vue-router';
 const router = useRouter();
 
 import { useDark, useToggle } from '@vueuse/core';
-const isDark = useDark()
-useToggle(isDark)
+const isDark = useDark();
+useToggle(isDark);
 watch(isDark, (v) => {
-    local.value.darkmode = v
-})
+    local.value.darkmode = v;
+});
 
-import { useI18n } from "vue-i18n";
+import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
 // const player_visible = ref(false)
@@ -89,11 +89,11 @@ const never_show_notice = ref(false);
 const menu_index = ref();
 
 const menu_items = [
-    { index: "ranking", icon: "Trophy", content: "menu.ranking" },
-    { index: "video", icon: "VideoCameraFilled", content: "menu.video" },
-    //{ index: "world", icon: "Odometer", content: "menu.world" },
-    { index: "guide", icon: "Document", content: "menu.guide" },
-    //{ index: "score", icon: "Histogram", content: "menu.score" },
+    { index: 'ranking', icon: 'Trophy', content: 'menu.ranking' },
+    { index: 'video', icon: 'VideoCameraFilled', content: 'menu.video' },
+    // { index: "world", icon: "Odometer", content: "menu.world" },
+    { index: 'guide', icon: 'Document', content: 'menu.guide' },
+    // { index: "score", icon: "Histogram", content: "menu.score" },
 ] as const;
 
 const notice = ref(`
@@ -105,8 +105,8 @@ const notice = ref(`
 `);
 
 onMounted(() => {
-    const notice_hash = localStorage.getItem("notice") as string;
-    if (hash_code(notice.value) + "" != notice_hash) {
+    const notice_hash = localStorage.getItem('notice') as string;
+    if (hash_code(notice.value) + '' != notice_hash) {
         notice_visible.value = true;
     }
 
@@ -119,7 +119,7 @@ onMounted(() => {
 });
 
 const player_url = computed(() => {
-    return "/player/" + store.user.id;
+    return '/player/' + store.user.id;
 });
 
 const user_login = () => {
@@ -130,9 +130,9 @@ const user_login = () => {
 const user_logout = () => {
     // console.log(router.currentRoute.value.fullPath);
     // 如果切在我的地盘，就切到主页
-    if (router.currentRoute.value.fullPath.slice(0, 7) == "/player") {
-        menu_index.value = "/";
-        proxy.$router.push("/");
+    if (router.currentRoute.value.fullPath.slice(0, 7) == '/player') {
+        menu_index.value = '/';
+        proxy.$router.push('/');
     }
 };
 
@@ -143,7 +143,7 @@ const user_logout = () => {
 // 站长通知关闭的回调
 const handle_notice_close = () => {
     if (never_show_notice.value) {
-        localStorage.setItem("notice", hash_code(notice.value) + "");
+        localStorage.setItem('notice', hash_code(notice.value) + '');
     }
     notice_visible.value = false;
 };
@@ -212,11 +212,11 @@ body {
     height: calc(100svh - v-bind("`${local.menu_height}px`"))
 }
 
-@media (min-width: 1024px) {  
-  .common-layout {  
+@media (min-width: 1024px) {
+  .common-layout {
     padding: 1.5em min(15vw, 150px);
-    /* 这里设置只在大屏幕（电脑端）上生效的样式 */  
-  }  
+    /* 这里设置只在大屏幕（电脑端）上生效的样式 */
+  }
 }
 
 </style>
