@@ -78,8 +78,7 @@ const login_auto = async () => {
             store.user = new UserProfile(response.data);
             store.player = new UserProfile(response.data);
             store.login_status = LoginStatus.IsLogin;
-        }
-        else {
+        } else {
             store.login_status = LoginStatus.NotLogin;
         }
     })

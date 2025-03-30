@@ -84,8 +84,7 @@ const theme = computed(() => {
         else if (prop.level == 'i') return new PiecewiseColorScheme(colorTheme.value.itime.colors, colorTheme.value.itime.thresholds);
         else if (prop.level == 'e') return new PiecewiseColorScheme(colorTheme.value.etime.colors, colorTheme.value.etime.thresholds);
         else return new PiecewiseColorScheme([], []);
-    }
-    else return new PiecewiseColorScheme([], []);
+    } else return new PiecewiseColorScheme([], []);
 })
 
 </script>
