@@ -37,7 +37,7 @@ const prop = defineProps({
     sortBy: { type: String as PropType<getStat_stat>, default: 'timems' },
     sortDesc: { type: Boolean, default: false },
     displayBy: { type: String as PropType<getStat_stat>, default: 'time' },
-    colorTheme: { type: Object as PropType<PiecewiseColorScheme>, default: new PiecewiseColorScheme([],[])},
+    colorTheme: { type: Object as PropType<PiecewiseColorScheme>, default: new PiecewiseColorScheme([], [])},
     softwareFilter: { type: Array<MS_Software>, default: () => [...MS_Softwares]},
 })
 

@@ -270,7 +270,7 @@ const request_videos = () => {
     params["bmin"] = videofilter.value.bbbv_range[level_tags[level_tag_selected.value].key][0];
     // @ts-expect-error
     params["bmax"] = videofilter.value.bbbv_range[level_tags[level_tag_selected.value].key][1];
-    if (![0,4].includes(videofilter.value.filter_state.length)) {
+    if (![0, 4].includes(videofilter.value.filter_state.length)) {
         params['s'] = videofilter.value.filter_state;
     }
     proxy.$axios.get('/video/query/',

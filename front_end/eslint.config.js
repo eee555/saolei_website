@@ -47,6 +47,7 @@ export default typescriptEslint.config(
       '@stylistic/array-bracket-newline': 'error',
       '@stylistic/array-bracket-spacing': 'error',
       '@stylistic/comma-dangle': ['error', 'always-multiline'],
+      '@stylistic/comma-spacing': 'error',
       '@typescript-eslint/ban-ts-comment': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
