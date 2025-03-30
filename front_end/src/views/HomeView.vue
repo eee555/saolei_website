@@ -113,7 +113,7 @@
 </template>
 
 <script setup lang='ts'>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue';
 import { ElContainer, ElAside, ElIcon, ElMain, ElTabs, ElTabPane, ElText, ElLink, vLoading } from 'element-plus';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import PreviewNumber from '@/components/PreviewNumber.vue';
@@ -127,7 +127,7 @@ import FriendlyLink from '@/components/dialogs/FriendlyLinks.vue';
 import Downloads from '@/components/dialogs/Downloads.vue';
 import Thanks from '@/components/dialogs/Thanks.vue';
 import BaseIconRefresh from '@/components/common/BaseIconRefresh.vue';
-import { store } from '../store'
+import { store } from '../store';
 
 import { useI18n } from 'vue-i18n';
 import { VideoAbstract } from '@/utils/videoabstract';
@@ -145,10 +145,10 @@ const newest_queue_status = ref(1);
 const news_queue_status = ref(1);
 
 onMounted(() => {
-    update_review_queue()
-    update_newest_queue()
-    update_news_queue()
-})
+    update_review_queue();
+    update_newest_queue();
+    update_news_queue();
+});
 
 const update_review_queue = async () => {
     review_queue_updating.value = true;
@@ -157,19 +157,19 @@ const update_review_queue = async () => {
             params: {},
         },
     ).then(function (response) {
-        review_queue.value.splice(0, review_queue.value.length)
+        review_queue.value.splice(0, review_queue.value.length);
         for (const key in response.data) {
             const videoid = Number.parseInt(key);
             const videoinfo = JSON.parse(response.data[key] as string);
             review_queue.value.push(VideoAbstract.fromVideoRedisInfo(videoid, videoinfo));
         }
-    })
+    });
     review_queue_updating.value = false;
-}
+};
 
 const update_newest_queue = async () => {
     newest_queue_status.value = 1;
-    setTimeout(() => { newest_queue_status.value = 0; }, 5000)
+    setTimeout(() => { newest_queue_status.value = 0; }, 5000);
     await proxy.$axios.get('/video/newest_queue/',
         {
             params: {},
@@ -180,15 +180,15 @@ const update_newest_queue = async () => {
             const videoinfo = JSON.parse(response.data[key] as string);
             newest_queue.value.push(VideoAbstract.fromVideoRedisInfo(videoid, videoinfo));
         }
-    })
+    });
     if (newest_queue_status.value == 1) {
         newest_queue_status.value = 2;
     }
-}
+};
 
 const update_news_queue = async () => {
     news_queue_status.value = 1;
-    setTimeout(() => { news_queue_status.value = 0; }, 5000)
+    setTimeout(() => { news_queue_status.value = 0; }, 5000);
     await proxy.$axios.get('/video/news_queue/',
         {
             params: {},
