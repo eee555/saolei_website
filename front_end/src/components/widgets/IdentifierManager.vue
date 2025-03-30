@@ -62,7 +62,7 @@ const new_identifiers = ref("")
 const { t } = useI18n();
 
 const identifierdata = computed(() => {
-    const data = store.player.identifiers ? store.player.identifiers.map(value => ({ data: value })) : [];
+    const data = store.player.identifiers ? store.player.identifiers.map((value) => ({ data: value })) : [];
     if (store.player.id == store.user.id) data.push({ data: "" });
     return data
 })

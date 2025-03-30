@@ -175,7 +175,7 @@ export class VideoAbstract {
 export function groupVideosByUploadDate(videos: VideoAbstract[]): Map<string, VideoAbstract[]> {
     const result = new Map<string, VideoAbstract[]>();
 
-    videos.forEach(video => {
+    videos.forEach((video) => {
         const dateKey = toISODateString(video.upload_time); // Extract date part as string (YYYY-MM-DD)
         if (!result.has(dateKey)) {
             result.set(dateKey, []);
@@ -189,7 +189,7 @@ export function groupVideosByUploadDate(videos: VideoAbstract[]): Map<string, Vi
 export function groupVideosByBBBv(videos: VideoAbstract[], level: MS_Level): Map<number, VideoAbstract[]> {
     const result = new Map<number, VideoAbstract[]>();
 
-    videos.forEach(video => {
+    videos.forEach((video) => {
         if (video.level !== level) {
             return;
         }

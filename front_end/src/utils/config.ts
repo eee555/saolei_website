@@ -40,7 +40,7 @@ export const colorSchemeTemplates = {
             colors: ArbiterStatsAutoColorTemplate,
         },
         stnb: {
-            thresholds: ArbiterStatsAutoValueTemplate.map(v => v * 25),
+            thresholds: ArbiterStatsAutoValueTemplate.map((v) => v * 25),
             colors: ArbiterStatsAutoColorTemplate,
         },
         ioe: {
@@ -48,15 +48,15 @@ export const colorSchemeTemplates = {
             colors: ArbiterStatsAutoColorTemplate,
         },
         btime: {
-            thresholds: ArbiterStatsAutoValueTemplate.map(v => 12 - v * 2).reverse(),
+            thresholds: ArbiterStatsAutoValueTemplate.map((v) => 12 - v * 2).reverse(),
             colors: ArbiterStatsAutoColorTemplate.toReversed(),
         },
         itime: {
-            thresholds: ArbiterStatsAutoValueTemplate.map(v => 30 - v * 4).reverse(),
+            thresholds: ArbiterStatsAutoValueTemplate.map((v) => 30 - v * 4).reverse(),
             colors: ArbiterStatsAutoColorTemplate.toReversed(),
         },
         etime: {
-            thresholds: ArbiterStatsAutoValueTemplate.map(v => 90 - v * 10).reverse(),
+            thresholds: ArbiterStatsAutoValueTemplate.map((v) => 90 - v * 10).reverse(),
             colors: ArbiterStatsAutoColorTemplate.toReversed(),
         },
     },

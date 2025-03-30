@@ -46,8 +46,10 @@ export default typescriptEslint.config(
       '@intlify/vue-i18n/no-v-html': 'off', // 有个别的翻译包含了html标签
       '@stylistic/array-bracket-newline': 'error',
       '@stylistic/array-bracket-spacing': 'error',
+      '@stylistic/arrow-parens': 'error',
       '@stylistic/comma-dangle': ['error', 'always-multiline'],
       '@stylistic/comma-spacing': 'error',
+      '@stylistic/comma-style': 'error',
       '@typescript-eslint/ban-ts-comment': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-explicit-any': 'off',

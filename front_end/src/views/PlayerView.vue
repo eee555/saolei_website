@@ -322,7 +322,7 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
     }
     return new Promise((resolve, _reject) => {
         // 此处会报错net::ERR_FILE_NOT_FOUND，但头像依然能更新成功
-        compressAccurately(rawFile, 256).then(res => {
+        compressAccurately(rawFile, 256).then((res) => {
             res = new File([res], rawFile.name, { type: res.type, lastModified: Date.now() })
             resolve(res)
         })
