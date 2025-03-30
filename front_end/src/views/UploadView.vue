@@ -204,7 +204,7 @@ const forceUpload = async (i: number) => {
     });
 };
 
-//删除录像
+// 删除录像
 const removeUpload = (i: number) => {
     upload_queue.value.splice(i, 1);
 };

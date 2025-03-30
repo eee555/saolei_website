@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => {
         plugins: [
             vue(),
             wasm(),
-            //vueDevTools(),
+            // vueDevTools(),
             topLevelAwait(),
             viteCompression({
                 algorithm: 'gzip', // Or 'brotliCompress' for Brotli compression

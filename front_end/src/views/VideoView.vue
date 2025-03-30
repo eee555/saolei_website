@@ -131,15 +131,15 @@ const level_tags: LevelTag = reactive({
 const mode_tags: Tags = {
     'STD': { name: '标准', key: '00' },
     'NF': { name: '盲扫', key: '12' },
-    //"UPK": { name: "UPK", key: "01" },
+    // "UPK": { name: "UPK", key: "01" },
     'WQI': { name: 'Win7', key: '04' },
     'JSW': { name: '竞速无猜', key: '05' },
     'QWC': { name: '强无猜', key: '06' },
     'RWC': { name: '弱无猜', key: '07' },
-    //"ZWC": { name: "准无猜", key: "08" },
-    //"QKC": { name: "强可猜", key: "09" },
-    //"RKC": { name: "弱可猜", key: "10" },
-    //"BZD": { name: "递归", key: "11" }
+    // "ZWC": { name: "准无猜", key: "08" },
+    // "QKC": { name: "强可猜", key: "09" },
+    // "RKC": { name: "弱可猜", key: "10" },
+    // "BZD": { name: "递归", key: "11" }
 };
 
 
@@ -222,7 +222,7 @@ const mod_style = () => {
         includes(index_tag_selected.value);
 };
 
-const prevColumn = ref<any>(null); //上一个排序列
+const prevColumn = ref<any>(null); // 上一个排序列
 const handleSortChange = (sort: any) => {
     for (const key of Object.keys(index_tags)) { // 找到对应的key。很丑陋，but it works
         if (index_tags[key].key == sort.prop) {

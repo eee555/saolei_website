@@ -119,7 +119,7 @@ export const cells: { [key: string]: string } = {
     '0': celldown,
     'f': cellflag, // 旗
     'm': cellmine, // 白雷
-    'a': cellup, //未打开
+    'a': cellup, // 未打开
     'n': blast, // 红雷
     'e': falsemine, // 叉雷
 };

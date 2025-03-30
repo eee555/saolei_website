@@ -127,14 +127,14 @@ import BaseIconAdd from '@/components/common/BaseIconAdd.vue';
 const { t } = useI18n();
 const route = useRoute();
 
-//编辑前的
+// 编辑前的
 const userid = ref('');
 const username = ref('');
 const realname = ref('');
 const signature = ref('');
 const popularity = ref('');
 
-//编辑状态时的
+// 编辑状态时的
 const realname_edit = ref('');
 const signature_edit = ref('');
 
