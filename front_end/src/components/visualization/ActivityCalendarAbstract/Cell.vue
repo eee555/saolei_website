@@ -1,6 +1,6 @@
 <template>
     <Tippy class="cell" :duration="0" sticky>
-        <el-text 
+        <el-text
             v-if="activityCalendarConfig.showDate" :style="{
                 position: 'absolute',
                 top: `${activityCalendarConfig.cellSize / 2}px`,
@@ -43,7 +43,7 @@ import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
 const prop = defineProps({
-    date: { type: Date, required: true }, 
+    date: { type: Date, required: true },
     videos: { type: Array<VideoAbstract>, default: [] }, // 该日期的录像
     bmax: { type: Number, default: 5 },
     imax: { type: Number, default: 5 },

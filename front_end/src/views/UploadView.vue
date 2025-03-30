@@ -1,5 +1,5 @@
 <template>
-    <el-upload 
+    <el-upload
         ref="upload" v-model:file-list="fileList" :disabled="store.user.realname == '匿名'" drag action="#"
         :multiple="true" :on-change="handleChange" :auto-upload="false" :show-file-list="false"
         accept=".avf,.evf,.rmv,.mvf"
@@ -7,21 +7,21 @@
         <el-icon class="el-icon--upload">
             <upload-filled />
         </el-icon>
-        <div 
+        <div
             class="el-upload__text" style="font-size: 18px;"
             v-html="store.user.realname == '匿名' ? t('common.msg.realNameRequired') : t('profile.upload.dragOrClick')"
         />
 
         <template #tip>
             <div style="text-align: center;">
-                <el-button 
+                <el-button
                     v-show="upload_queue.length > 0" size="large" type="primary"
                     style="display: block;margin: 16px auto;font-size: 18px;width: 220px;" @click="submitUpload()"
                 >
                     {{
                         t('profile.upload.uploadAll', [upload_queue.length]) }}
                 </el-button>
-                <el-button 
+                <el-button
                     v-show="upload_queue.length > 0" size="small" type="info"
                     style="display: block;margin: 16px auto;width: 120px;" @click="cancel_all()"
                 >
@@ -55,7 +55,7 @@
         </el-table-column>
         <el-table-column prop="stat.timems" :label="t('common.prop.time')" sortable />
         <el-table-column prop="stat.bv" label="3BV" sortable />
-        <el-table-column 
+        <el-table-column
             prop="stat.bvs" label="3BV/s"
             :formatter="(row: any, column: any, cellValue: any, index: number) => { return to_fixed_n(cellValue, 3) }"
             sortable
@@ -67,7 +67,7 @@
         </el-table-column>
         <el-table-column :label="t('common.prop.action')" :width="130">
             <template #default="props">
-                <el-button 
+                <el-button
                     :disabled="!(['pass', 'identifier', 'needApprove'].includes(props.row.status))"
                     :type="['pass', 'identifier'].includes(props.row.status) ? 'success' : props.row.status == 'needApprove' ? 'warning' : 'info'"
                     circle @click="forceUpload(props.$index)"

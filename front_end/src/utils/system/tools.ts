@@ -20,7 +20,7 @@ export function utc_to_local_format(t = "2024-01-10T14:03:09Z") {
 }
 
 // credit: https://stackoverflow.com/a/5767357/12144822
-export function removeItem<T>(arr: Array<T>, value: T): Array<T> { 
+export function removeItem<T>(arr: Array<T>, value: T): Array<T> {
     const index = arr.indexOf(value);
     if (index > -1) {
         arr.splice(index, 1);

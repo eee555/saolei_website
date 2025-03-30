@@ -1,6 +1,6 @@
 <template>
     <el-row class="mb-4" style="margin-bottom: 10px;">
-        <el-button 
+        <el-button
             v-for="(tag, key) in level_tags" :key="key" type="warning" :plain="!(level_tag_selected == key)" :size="'small'"
             @click="level_tag_selected = key as string; request_videos();"
         >
@@ -9,7 +9,7 @@
     </el-row>
 
     <el-row class="mb-4" style="margin-bottom: 10px;">
-        <el-button 
+        <el-button
             v-for="(tag, key) in mode_tags" :key="key" type="success" :plain="!(mode_tag_selected == key)" size="small"
             @click="mode_tag_selected = key as string; request_videos();"
         >
@@ -18,7 +18,7 @@
     </el-row>
 
     <el-row class="mb-4" style="margin-bottom: 10px;">
-        <el-button 
+        <el-button
             v-for="(value, key) in index_tags" :key="key" type="primary" :plain="!value.selected" size="small"
             @click="index_select(key, value)"
         >
@@ -39,7 +39,7 @@
             <VideoViewState />
             <el-table-column type="index" :index="offsetIndex" fixed />
             <VideoViewRealname />
-            <el-table-column 
+            <el-table-column
                 v-for="key in selected_index()" :key="key" v-slot="scope" :prop="index_tags[key].key"
                 :label="t(`common.prop.${key}`)" sortable="custom"
                 :sort-orders="index_tags[key].reverse ? (['descending', 'ascending']) : (['ascending', 'descending'])"

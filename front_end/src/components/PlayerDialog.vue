@@ -1,9 +1,9 @@
 <template>
-    <el-dialog 
+    <el-dialog
         v-model="videoplayerstore.visible" style="backdrop-filter: blur(1px);" draggable align-center destroy-on-close
         :modal="false" :lock-scroll="false" width="700"
     >
-        <iframe 
+        <iframe
             ref="video_iframe" class="flop-player-display-none flop-player-iframe" style="width: 100%; height: 500px; border: 0px"
             src="/flop/index.html"
         />

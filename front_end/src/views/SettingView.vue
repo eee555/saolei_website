@@ -4,26 +4,26 @@
             <DarkMode />
         </el-descriptions-item>
         <el-descriptions-item :label="t('setting.languageSwitch')">
-            <el-switch 
+            <el-switch
                 v-model="local.language_show"
                 :active-text="t('common.show')" :inactive-text="t('common.hide')"
             />
         </el-descriptions-item>
         <el-descriptions-item :label="t('setting.menuLayout')">
-            <el-switch 
+            <el-switch
                 v-model="local.menu_icon"
                 :active-text="t('setting.menuLayoutAbstract')"
                 :inactive-text="t('setting.menuLayoutDefault')"
             />
         </el-descriptions-item>
         <el-descriptions-item :label="t('setting.menuHeight')">
-            <el-slider 
+            <el-slider
                 v-model="local.menu_height" size="small" :min="20" :max="60"
                 style="width: 100px; display: inline-block; height: 9px"
             />
         </el-descriptions-item>
         <el-descriptions-item :label="t('setting.menuFontSize')">
-            <el-input-number 
+            <el-input-number
                 v-model="local.menu_font_size"
                 size="small" :min="10"
             />

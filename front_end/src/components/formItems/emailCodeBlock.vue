@@ -1,4 +1,4 @@
-<!-- 
+<!--
 邮箱验证码表单项
 发送验证码的前置条件：填写了有效邮箱，且通过了图形验证
 -->
@@ -6,7 +6,7 @@
     <!-- 图形验证码 -->
     <el-form-item ref="captchaFormRef" :disabled="!email_success" :label="t('form.imageCaptcha')">
         <div style="display: flex">
-            <el-input 
+            <el-input
                 v-model.trim="captcha" prefix-icon="Key" class="code" maxlength="4"
                 @input="captchaHandler"
             />
@@ -17,7 +17,7 @@
     <!-- 邮箱验证码 -->
     <el-form-item ref="emailCodeFormRef" prop="emailCode" :label="t('form.emailCode')">
         <div style="display: flex">
-            <el-input 
+            <el-input
                 v-model.trim="emailCode" prefix-icon="Key" maxlength="6" :disabled="captcha.length!=4" :placeholder="t(email_code_placeholder)"
                 @input="emailCodeHandler"
             />

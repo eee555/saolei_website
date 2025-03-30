@@ -3,7 +3,7 @@
         <el-header>
             <el-scrollbar :height="100">
                 <!-- 给一个足够的高度就可以不显示纵向滚动条 -->
-                <el-menu 
+                <el-menu
                     mode="horizontal" :router="true" :default-active="menu_index" :ellipsis="false"
                     menu-trigger="click"
                 >
@@ -38,7 +38,7 @@
         </el-container>
     </el-container>
 
-    <el-dialog 
+    <el-dialog
         v-if="false" v-model="notice_visible" draggable :lock-scroll="false" title="站长通知"
         :before-close="handle_notice_close" style="white-space: pre-wrap;" width="min(max(50%, 400px), 90vw)"
     >
@@ -212,11 +212,11 @@ body {
     height: calc(100svh - v-bind("`${local.menu_height}px`"))
 }
 
-@media (min-width: 1024px) {  
-  .common-layout {  
+@media (min-width: 1024px) {
+  .common-layout {
     padding: 1.5em min(15vw, 150px);
-    /* 这里设置只在大屏幕（电脑端）上生效的样式 */  
-  }  
+    /* 这里设置只在大屏幕（电脑端）上生效的样式 */
+  }
 }
 
 </style>

@@ -72,7 +72,7 @@ const indexMethod = (index: number) => {
 
 // 此处和父组件配合，等一下从store里获取用户的id
 nextTick(() => {
-    
+
     // 把左侧的头像、姓名、个性签名、记录请求过来
     proxy.$axios.get('/msuser/records/',
         {

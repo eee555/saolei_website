@@ -1,6 +1,6 @@
 <template>
     <el-form-item ref="emailFormRef" prop="email" :label="t('form.email')">
-        <el-input 
+        <el-input
             v-model="email" prefix-icon="Message" type="email" @input="emailInputHandler"
             @change="emailChangeHandler"
         />

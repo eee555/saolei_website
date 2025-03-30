@@ -2,7 +2,7 @@
     <el-link @click="centerDialogVisible = true;">
         {{ t('footer.team') }}
     </el-link>
-    <el-dialog 
+    <el-dialog
         v-model="centerDialogVisible" :title="t('team.title')" width="700px" align-center draggable
         :lock-scroll="false"
     >
@@ -45,19 +45,19 @@
                     <strong>{{ t('team.localization') }}</strong>
                 </div>
                 <div>
-                    {{ t('team.zhCn') }}　
+                    {{ t('team.zhCn') }}
                     <GitHubUser username="putianyi889" />
                 </div>
                 <div>
-                    {{ t('team.en') }}　
+                    {{ t('team.en') }}
                     <GitHubUser username="putianyi889" />
                 </div>
                 <div>
-                    {{ t('team.de') }}　
+                    {{ t('team.de') }}
                     <GitHubUser username="auk3" />
                 </div>
                 <div>
-                    {{ t('team.pl') }}　
+                    {{ t('team.pl') }}
                     <GitHubUser username="kiraa96" />
                 </div>
             </el-col>

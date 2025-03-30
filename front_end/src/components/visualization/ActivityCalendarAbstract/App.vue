@@ -9,7 +9,7 @@
                 <el-row>
                     <MonthLabel :start-date="startDate" :end-date="endDate" />
                 </el-row>
-                <el-row 
+                <el-row
                     :style="{
                         position: 'relative',
                         height: `${cellFullSize * 8 + activityCalendarConfig.cellMargin}px`,
@@ -17,7 +17,7 @@
                     }"
                 >
                     <template v-for="date of generateDateRange(startDate, endDate)" :key="date.toISOString()">
-                        <Cell 
+                        <Cell
                             :date="date" :start-date="startDate"
                             :videos="groupedVideoAbstract.get(toISODateString(date))"
                             :x-offset="Math.round((getWeekTime(date) - startWeekTime) / fullWeek)"

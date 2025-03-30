@@ -1,5 +1,5 @@
 <template>
-    <el-dialog 
+    <el-dialog
         v-model="visible" :title="t('login.loginTitle')" width="400px" align-center draggable
         :lock-scroll="false" @close="resetForm(ruleFormRef); emit('close')"
     >
@@ -26,7 +26,7 @@
             </el-form-item>
             <!-- 忘记密码 -->
             <el-form-item>
-                <el-link 
+                <el-link
                     :underline="false" type="primary"
                     style="vertical-align: bottom;" @click="emit('forgetPassword')"
                 >

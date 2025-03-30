@@ -2,11 +2,11 @@
 <template>
     <div style="width: 480px;margin: 8px;">
         <el-card :body-style="{ padding: '0px', margin: '8px' }" style="border-radius: 8px;">
-            <img 
+            <img
                 v-if="videoMsg.filename.slice(-3) === 'avf'" src="../assets/img/img_arbiter.png"
                 style="height: 54px;width: 54px;vertical-align:middle;margin-left: 5px;margin-right: 12px;"
             >
-            <img 
+            <img
                 v-if="videoMsg.filename.slice(-3) === 'evf'" src="../assets/img/img_meta.png"
                 style="height: 54px;width: 54px;vertical-align:middle;margin-left: 5px;margin-right: 12px;"
             >
@@ -52,7 +52,7 @@
         </el-card>
     </div>
 </template>
-  
+
 <script lang="ts" setup>
 // 上传录像的页面，等待上传的录像的卡片
 import { onMounted } from 'vue'

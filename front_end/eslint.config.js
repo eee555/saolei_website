@@ -65,6 +65,15 @@ export default typescriptEslint.config(
       '@stylistic/key-spacing': 'error',
       '@stylistic/keyword-spacing': 'error',
       '@stylistic/member-delimiter-style': 'error',
+      '@stylistic/new-parens': 'error',
+      '@stylistic/newline-per-chained-call': 'off', // 不兼容代码风格
+      '@stylistic/no-extra-parens': 'off', // 有些一元运算符需要括号保持可读性
+      '@stylistic/no-extra-semi': 'error',
+      '@stylistic/no-floating-decimal': 'error',
+      '@stylistic/no-mixed-operators': 'off', // 加法和乘法还是不需要括号的
+      '@stylistic/no-mixed-spaces-and-tabs': 'error',
+      '@stylistic/no-multi-spaces': ['error', { 'ignoreEOLComments': true }],
+      '@stylistic/no-trailing-spaces': 'error',
       '@typescript-eslint/ban-ts-comment': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-explicit-any': 'off',

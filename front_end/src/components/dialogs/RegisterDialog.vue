@@ -1,12 +1,12 @@
 <template>
-    <el-dialog 
+    <el-dialog
         v-model="visible" :title="t('login.registerTitle')" width="400px" align-center draggable
         :lock-scroll="false" @close="resetForm(ruleFormRef)"
     >
         <el-form ref="ruleFormRef" :model="registerForm" status-icon>
             <!-- 用户名 -->
             <el-form-item ref="usernameFormRef" prop="username" :label="t('form.username')">
-                <el-input 
+                <el-input
                     v-model="registerForm.username" prefix-icon="User" maxlength="20" show-word-limit
                     @input="usernameInputHandler" @change="usernameChangeHandler"
                 />
@@ -14,7 +14,7 @@
             <!-- 邮箱 -->
             <email-form-item ref="emailFormRef" v-model="registerForm.email" check-collision="true" />
             <!-- 邮箱验证码 -->
-            <email-code-block 
+            <email-code-block
                 ref="emailCodeFormRef" v-model="registerForm.emailCode" :email="registerForm.email" type="register"
                 :email-state="email_state"
             />

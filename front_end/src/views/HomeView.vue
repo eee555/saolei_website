@@ -11,7 +11,7 @@
                                     <Check />
                                 </el-icon>
                             </el-text>
-                            <el-link 
+                            <el-link
                                 v-else-if="active_tab == 'newest'" :underline="false"
                                 :disabled="news_queue_status != 0" style="vertical-align: baseline;" @click="update_news_queue"
                             >
@@ -22,7 +22,7 @@
                             <el-text style="margin-right: 5px">
                                 {{ utc_to_local_format(news.time) }}
                             </el-text>
-                            <PlayerName 
+                            <PlayerName
                                 class="name" style="vertical-align: top;" :user-id="+news.player_id"
                                 :user-name="news.player"
                             />
@@ -46,7 +46,7 @@
                                     <Check />
                                 </el-icon>
                             </el-text>
-                            <el-link 
+                            <el-link
                                 v-else-if="active_tab == 'newest'" :underline="false"
                                 :disabled="newest_queue_status != 0" style="vertical-align: baseline;" @click="update_newest_queue"
                             >
@@ -56,7 +56,7 @@
                         <VideoList :videos="newest_queue" :reverse="true" :show-header="false" />
                     </el-tab-pane>
                     <el-tab-pane :label="t('home.reviewQueue')" class="bottom_tabs" :lazy="true" name="review">
-                        <VideoList 
+                        <VideoList
                             v-loading="review_queue_updating" :videos="review_queue" :review-mode="store.user.is_staff"
                             @update="update_review_queue"
                         />

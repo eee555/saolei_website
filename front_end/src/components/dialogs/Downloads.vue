@@ -3,7 +3,7 @@
     <el-link @click="centerDialogVisible = true;">
         {{ t('common.software.software_download') }}
     </el-link>
-    <el-dialog 
+    <el-dialog
         v-model="centerDialogVisible" :title="t('common.software.software_download')" width="50%" align-center
         draggable :lock-scroll="false"
     >
@@ -11,7 +11,7 @@
             <li>
                 <a style="color: blue;" target="_blank" href="https://openms.top/download/Metaminesweeper-v3.1.9.zip">
                     {{ t('common.software.metasweeper') }} v3.1.9</a> {{ t('common.software.download_link') }} 1<br>
-                <a 
+                <a
                     style="color: blue;" target="_blank"
                     href="https://github.com/eee555/Solvable-Minesweeper/releases/download/3.1.9/Metaminesweeper-v3.1.9.zip"
                 >
@@ -21,7 +21,7 @@
             <li>
                 <a style="color: blue;" target="_blank" href="https://openms.top/download/Metaminesweeper-v3.1.11.zip">
                     {{ t('common.software.metasweeper') }} v3.1.11</a> {{ t('common.software.download_link') }} 1<br>
-                <a 
+                <a
                     style="color: blue;" target="_blank"
                     href="https://github.com/eee555/Solvable-Minesweeper/releases/download/3.1.11/Metaminesweeper-v3.1.11.zip"
                 >
@@ -31,7 +31,7 @@
             <li>
                 <a style="color: blue;" target="_blank" href="https://gitee.com/ee55/Metasweeper/releases/download/3.2.0/Metaminesweeper-3.2.0.exe">
                     {{ t('common.software.metasweeper') }} v3.2.0</a> {{ t('common.software.download_link') }} 1<br>
-                <a 
+                <a
                     style="color: blue;" target="_blank"
                     href="https://github.com/eee555/Metasweeper/releases/download/3.2.0/Metaminesweeper-3.2.0.exe"
                 >

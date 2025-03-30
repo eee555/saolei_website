@@ -76,19 +76,19 @@
         </el-row>
         <div style="text-align: center">
             <el-text style="vertical-align: middle">
-                Copyright @ 2023　
+                Copyright @ 2023
             </el-text>
             <el-link href="http://openms.top">
                 开源扫雷网 openms.top
             </el-link>
             <el-text style="vertical-align: middle">
-                　版权所有　
+                　版权所有
             </el-text>
             <el-link href="https://beian.miit.gov.cn/">
                 苏ICP备2023056839号-1
             </el-link>
             <span style="width: 12px; display: inline-block" />
-            <el-link 
+            <el-link
                 href="https://beian.mps.gov.cn/#/query/webSearch?code=32020602001691" rel="noreferrer"
                 target="_blank"
             >

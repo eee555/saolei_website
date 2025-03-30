@@ -44,7 +44,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-    // 组件即将卸载前停止定时任务  
+    // 组件即将卸载前停止定时任务
     clearInterval(timer_1);
     clearInterval(timer_2);
 

@@ -1,12 +1,12 @@
 <template>
     <span @click.stop>
-        <el-popover 
+        <el-popover
             v-if="render" :visible="visible" placement="bottom" width="298px"
             popper-class="max-h-300px overflow-auto" popper-style="z-index:888;" @show="pop_show" @hide="pop_hide"
         >
             <div>
                 <div style="width: 80px;float: left;line-height: 200%;">
-                    <el-image 
+                    <el-image
                         style="width: 72px; height: 72px;margin-top: 10px;border-radius: 8px;" :src="image_url"
                         :fit="'cover'"
                     />

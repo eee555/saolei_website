@@ -1,5 +1,5 @@
 <template>
-    <el-text 
+    <el-text
         v-for="date of generateMonthLabelRange(startDate, endDate)" :key="date.toISOString()" :style="{
             position: 'absolute',
             fontSize: '12px',
