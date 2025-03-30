@@ -194,12 +194,12 @@ const update_news_queue = async () => {
             params: {},
         },
     ).then(function (response) {
-        news_queue.value = response.data.map((v: string) => { return JSON.parse(v) })
-    })
+        news_queue.value = response.data.map((v: string) => { return JSON.parse(v); });
+    });
     if (news_queue_status.value == 1) {
         news_queue_status.value = 2;
     }
-}
+};
 
 </script>
 
