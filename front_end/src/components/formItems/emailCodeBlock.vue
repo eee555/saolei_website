@@ -51,7 +51,7 @@ const prop = defineProps({
         type: String,
         required: true,
     },
-    emailState: {// 邮箱表单项的状态，参考el-form文档
+    emailState: { // 邮箱表单项的状态，参考el-form文档
         type: String,
         default: 'success',
     },

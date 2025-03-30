@@ -71,10 +71,10 @@ const { t } = useI18n()
 
 const datatable = computed(() => {
     return [
-        {category: t('common.prop.time'), b: ms_to_s(prop.data.b_t_ms), i: ms_to_s(prop.data.i_t_ms), e: ms_to_s(prop.data.e_t_ms)},
-        {category: t('common.prop.ioe'), b: prop.data.b_ioe, i: prop.data.i_ioe, e: prop.data.e_ioe},
-        {category: t('common.prop.mastery'), b: prop.data.b_mastery, i: prop.data.i_mastery, e: prop.data.e_mastery},
-        {category: t('common.prop.winstreak'), b: prop.data.b_winstreak, i: prop.data.i_winstreak, e: prop.data.e_winstreak},
+        { category: t('common.prop.time'), b: ms_to_s(prop.data.b_t_ms), i: ms_to_s(prop.data.i_t_ms), e: ms_to_s(prop.data.e_t_ms) },
+        { category: t('common.prop.ioe'), b: prop.data.b_ioe, i: prop.data.i_ioe, e: prop.data.e_ioe },
+        { category: t('common.prop.mastery'), b: prop.data.b_mastery, i: prop.data.i_mastery, e: prop.data.e_mastery },
+        { category: t('common.prop.winstreak'), b: prop.data.b_winstreak, i: prop.data.i_winstreak, e: prop.data.e_winstreak },
     ]
 })
 

@@ -65,7 +65,7 @@ const colorSchemeString = ref("");
 
 watch(colorScheme.value, (value) => {
     colorSchemeString.value = stringifyWithLineWrap(value);
-}, {immediate: true});
+}, { immediate: true });
 
 </script>
 

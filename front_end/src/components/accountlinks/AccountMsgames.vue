@@ -19,7 +19,7 @@
 import { utc_to_local_format } from '@/utils/system/tools';
 import { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ElDescriptions, ElDescriptionsItem} from 'element-plus';
+import { ElDescriptions, ElDescriptionsItem } from 'element-plus';
 const { t } = useI18n();
 
 defineProps({
