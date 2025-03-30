@@ -53,8 +53,8 @@ onBeforeUnmount(() => {
 
 // 更新曲线用的数据
 const refresh_data = () => {
-    proxy.$axios.get('/monitor/io_cpus/')
-        .then(function (response) {
+    proxy.$axios.get('/monitor/io_cpus/').
+        then(function (response) {
             const data = response.data;
             io_cpus.value = {
                 s: data.s,
@@ -70,8 +70,8 @@ const refresh_data = () => {
 }
 
 const refresh_memory_data = () => {
-    proxy.$axios.get('/monitor/capacity/')
-        .then(function (response) {
+    proxy.$axios.get('/monitor/capacity/').
+        then(function (response) {
             const data = response.data;
             option_disk.value.series[0].data[0].value = +data.v / 1000000;
             option_disk.value.series[0].endAngle = 90 - 360 * (data.v / data.d_t);
