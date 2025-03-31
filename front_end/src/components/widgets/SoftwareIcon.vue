@@ -18,7 +18,7 @@ import BaseIconClone07 from '../common/BaseIconClone07.vue';
 defineProps({
     software: {
         type: String,
-        default: "z",
+        default: 'z',
     },
 });
 </script>

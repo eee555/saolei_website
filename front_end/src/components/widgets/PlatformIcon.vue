@@ -12,7 +12,7 @@ import { ElLink } from 'element-plus';
 defineProps({
     platform: {
         type: String,
-        default: "",
+        default: '',
     },
 });
 </script>

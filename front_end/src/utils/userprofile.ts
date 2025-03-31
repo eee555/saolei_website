@@ -1,4 +1,4 @@
-import { VideoAbstract, VideoAbstractInfo } from "@/utils/videoabstract";
+import { VideoAbstract, VideoAbstractInfo } from '@/utils/videoabstract';
 
 interface userProfileInfo {
     id: number;
@@ -35,11 +35,11 @@ export class UserProfile {
             this.videos = info.videos.map((video) => new VideoAbstract(video));
         } else {
             this.id = 0;
-            this.username = "";
-            this.realname = "";
+            this.username = '';
+            this.realname = '';
             this.is_banned = false;
             this.is_staff = false;
-            this.country = "";
+            this.country = '';
             this.accountlink = [];
             this.identifiers = [];
             this.videos = [];

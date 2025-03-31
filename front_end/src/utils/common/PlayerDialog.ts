@@ -1,4 +1,4 @@
-import { videoplayerstore } from "@/store";
+import { videoplayerstore } from '@/store';
 
 export const preview = (id: number | undefined | null) => {
     if (!id) {
@@ -6,4 +6,4 @@ export const preview = (id: number | undefined | null) => {
     }
     videoplayerstore.id = id;
     videoplayerstore.visible = true;
-}
+};

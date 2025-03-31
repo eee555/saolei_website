@@ -1,6 +1,6 @@
-import { ElNotification } from "element-plus";
-import { local } from "@/store";
-import i18n from "@/i18n";
+import { ElNotification } from 'element-plus';
+import { local } from '@/store';
+import i18n from '@/i18n';
 const { t } = i18n.global;
 
 export const copyToClipboard = async (str: string) => {
@@ -11,12 +11,12 @@ export const copyToClipboard = async (str: string) => {
             type: 'success',
             duration: local.value.notification_duration,
         });
-    } catch(err) {
+    } catch (err) {
         ElNotification({
             title: t('msg.copyToClipboardFail'),
             type: 'error',
             message: err + '',
             duration: local.value.notification_duration,
-        })
+        });
     }
-}
+};

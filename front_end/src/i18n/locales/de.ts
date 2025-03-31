@@ -28,13 +28,13 @@ export default {
         guide: 'Hilfe',
         score: 'Ergebnisse',
         profile: 'Profil',
-        welcome: `Willkommen{0}`,
+        welcome: 'Willkommen{0}',
         login: 'Login',
         logout: 'Abmeldem',
         register: 'Registrieren',
         downloads: 'Downloads',
         links: 'Links',
-        team: 'Team'
+        team: 'Team',
     },
     profile: {
         changeAvatar: 'Profilbild ändern',
@@ -42,4 +42,4 @@ export default {
         confirmChange: 'Änderungen bestätigen',
         cancelChange: 'abbrechen',
     },
-}
+};

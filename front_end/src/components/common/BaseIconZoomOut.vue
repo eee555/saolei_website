@@ -1,5 +1,5 @@
 <template>
-    <i class="pi pi-verified" />
+    <i class="pi pi-search-minus" />
 </template>
 
 <script setup lang="ts">

@@ -23,37 +23,37 @@ import { httpErrorNotification, successNotification } from '@/components/Notific
 
 const { proxy } = useCurrentInstance();
 
-const identifier = ref("");
+const identifier = ref('');
 const safe = ref('unknown');
 const userid = ref(0);
 
 function handleGet() {
-    proxy.$axios.get('identifier/get/staff/', {params: {identifier: identifier.value}}).then(
+    proxy.$axios.get('identifier/get/staff/', { params: { identifier: identifier.value } }).then(
         function (response) {
             safe.value = response.data.safe.toString();
             userid.value = response.data.user;
-        }
+        },
     ).catch(httpErrorNotification);
 }
 
 function handleDelete() {
-    proxy.$axios.post('identifier/del/staff/', {identifier: identifier.value}).then(
+    proxy.$axios.post('identifier/del/staff/', { identifier: identifier.value }).then(
         function (response) {
-            identifier.value = "";
+            identifier.value = '';
             safe.value = 'unknown';
             userid.value = 0;
             successNotification(response);
-        }
-    ).catch(httpErrorNotification)
+        },
+    ).catch(httpErrorNotification);
 }
 
 function handleApprove() {
-    proxy.$axios.post('identifier/approve/staff/', {identifier: identifier.value}).then(
+    proxy.$axios.post('identifier/approve/staff/', { identifier: identifier.value }).then(
         function (response) {
             safe.value = 'true';
             successNotification(response);
-        }
-    ).catch(httpErrorNotification)
+        },
+    ).catch(httpErrorNotification);
 }
 
 </script>

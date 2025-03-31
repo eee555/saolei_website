@@ -2,31 +2,31 @@ import { toISODateString } from './datetime';
 import { MS_Level, MS_Software, STNB_const } from './ms_const';
 
 export interface VideoAbstractInfo {
-    id: number,
-    upload_time: string | Date,
-    level: MS_Level,
-    mode: string,
-    timems: number,
-    bv: number,
-    state: string,
-    software: string,
-    cl: number | null,
-    ce: number | null,
+    id: number;
+    upload_time: string | Date;
+    level: MS_Level;
+    mode: string;
+    timems: number;
+    bv: number;
+    state: string;
+    software: string;
+    cl: number | null;
+    ce: number | null;
 }
 
 interface VideoRedisInfo {
-    state: string,
-    software: string,
-    time: string,
-    player: string,
-    player_id: number,
-    level: MS_Level,
-    mode: string,
-    timems: number,
-    bv: number,
-    identifier: string,
-    cl?: number,
-    ce?: number,
+    state: string;
+    software: string;
+    time: string;
+    player: string;
+    player_id: number;
+    level: MS_Level;
+    mode: string;
+    timems: number;
+    bv: number;
+    identifier: string;
+    cl?: number;
+    ce?: number;
 }
 
 export type getStat_stat = 'time' | 'bvs' | 'timems' | 'bv' | 'qg' | 'rqp' | 'stnb' | 'cl' | 'ioe' | 'thrp' | 'corr';
@@ -84,7 +84,7 @@ export class VideoAbstract {
             player_name: info.player,
             cl: info.cl,
             ce: info.ce,
-        })
+        });
     }
 
     public time() {
@@ -148,19 +148,19 @@ export class VideoAbstract {
             case 'stnb': return this.stnb().toFixed(1);
             case 'cl': {
                 const cl = this.cl;
-                return cl === undefined ? "-" : cl.toString();
+                return cl === undefined ? '-' : cl.toString();
             }
             case 'ioe': {
                 const ioe = this.ioe();
-                return ioe === undefined ? "-" : ioe.toFixed(3);
+                return ioe === undefined ? '-' : ioe.toFixed(3);
             }
             case 'thrp': {
                 const thrp = this.thrp();
-                return thrp === undefined ? "-" : thrp.toFixed(3);
+                return thrp === undefined ? '-' : thrp.toFixed(3);
             }
             case 'corr': {
                 const corr = this.corr();
-                return corr === undefined ? "-" : corr.toFixed(3);
+                return corr === undefined ? '-' : corr.toFixed(3);
             }
         }
     }
@@ -168,14 +168,14 @@ export class VideoAbstract {
     public tooltipFormatter(t: any) {
         // t is the localization API from i18n
         return `${t('common.prop.upload_time')}: ${this.upload_time} <br>
-        ${t('common.level.' + this.level)} ${this.bv}Bv = ${this.time().toFixed(3)} * ${this.bvs().toFixed(3)}`
+        ${t('common.level.' + this.level)} ${this.bv}Bv = ${this.time().toFixed(3)} * ${this.bvs().toFixed(3)}`;
     }
 }
 
 export function groupVideosByUploadDate(videos: VideoAbstract[]): Map<string, VideoAbstract[]> {
     const result = new Map<string, VideoAbstract[]>();
 
-    videos.forEach(video => {
+    videos.forEach((video) => {
         const dateKey = toISODateString(video.upload_time); // Extract date part as string (YYYY-MM-DD)
         if (!result.has(dateKey)) {
             result.set(dateKey, []);
@@ -189,7 +189,7 @@ export function groupVideosByUploadDate(videos: VideoAbstract[]): Map<string, Vi
 export function groupVideosByBBBv(videos: VideoAbstract[], level: MS_Level): Map<number, VideoAbstract[]> {
     const result = new Map<number, VideoAbstract[]>();
 
-    videos.forEach(video => {
+    videos.forEach((video) => {
         if (video.level !== level) {
             return;
         }

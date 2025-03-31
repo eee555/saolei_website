@@ -13,7 +13,7 @@
         <span
             :style="{ position: 'relative', width: '89%', minWidth: '40em', lineHeight: `${BBBvSummaryConfig.cellHeight}px` }"
         >
-            <template v-for="bv in range(minBv, maxBv)" :key="bv">
+            <template v-for="bv in ArrayUtils.range(minBv, maxBv)" :key="bv">
                 <Cell
                     :bv="bv" :level="level" :videos="groupedVideoAbstract.get(bv)" :color-theme="theme"
                     :display-by="options[BBBvSummaryConfig.template].displayBy"
@@ -29,7 +29,6 @@
 <script setup lang="ts">
 import { BBBvSummaryConfig, colorTheme, store } from '@/store';
 import { ElRow, ElDivider } from 'element-plus';
-import { maximum, minimum, range } from '@/utils/arrays';
 import { getLastDigit, setLastDigit } from '@/utils/math';
 import { MS_Level } from '@/utils/ms_const';
 import { getStat_stat, groupVideosByBBBv } from '@/utils/videoabstract';
@@ -38,13 +37,14 @@ import Cell from './Cell.vue';
 import YLabel from './YLabel.vue';
 import { PiecewiseColorScheme } from '@/utils/colors';
 import { useI18n } from 'vue-i18n';
+import { ArrayUtils } from '@/utils/arrays';
 
 const { t } = useI18n();
 
 const prop = defineProps({
     header: { type: Boolean, default: false },
     level: { type: String as PropType<MS_Level>, required: true },
-})
+});
 
 type option_type = 'bvs' | 'time' | 'stnb' | 'ioe' | 'thrp' | 'custom';
 interface Option {
@@ -63,12 +63,12 @@ const options = computed(() => {
         'ioe': { value: 'ioe', sortBy: 'ioe', displayBy: 'ioe', label: 'ioe', sortDesc: true },
         'thrp': { value: 'thrp', sortBy: 'thrp', displayBy: 'thrp', label: 'thrp', sortDesc: true },
         'custom': { value: 'custom', sortBy: BBBvSummaryConfig.value.sortBy, displayBy: BBBvSummaryConfig.value.displayBy, label: 'custom', sortDesc: BBBvSummaryConfig.value.sortDesc },
-    } as Record<option_type, Option>
+    } as Record<option_type, Option>;
 });
 
 const groupedVideoAbstract = computed(() => groupVideosByBBBv(store.player.videos, prop.level));
-const maxBv = computed(() => setLastDigit(maximum(groupedVideoAbstract.value.keys()), 9));
-const minBv = computed(() => setLastDigit(minimum(groupedVideoAbstract.value.keys()), 0));
+const maxBv = computed(() => setLastDigit(ArrayUtils.maximum(groupedVideoAbstract.value.keys()), 9));
+const minBv = computed(() => setLastDigit(ArrayUtils.minimum(groupedVideoAbstract.value.keys()), 0));
 
 const displayBy = computed(() => options.value[BBBvSummaryConfig.value.template].displayBy);
 
@@ -84,9 +84,8 @@ const theme = computed(() => {
         else if (prop.level == 'i') return new PiecewiseColorScheme(colorTheme.value.itime.colors, colorTheme.value.itime.thresholds);
         else if (prop.level == 'e') return new PiecewiseColorScheme(colorTheme.value.etime.colors, colorTheme.value.etime.thresholds);
         else return new PiecewiseColorScheme([], []);
-    }
-    else return new PiecewiseColorScheme([], []);
-})
+    } else return new PiecewiseColorScheme([], []);
+});
 
 </script>
 

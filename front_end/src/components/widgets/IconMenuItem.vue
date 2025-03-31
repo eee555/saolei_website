@@ -14,17 +14,17 @@
 </template>
 
 <script lang="ts" setup>
-import { ElTooltip, ElIcon } from "element-plus";
-import { local } from "@/store";
+import { ElTooltip, ElIcon } from 'element-plus';
+import { local } from '@/store';
 
 const props = defineProps({
-    text: { type: String, required: true},
-    icon: { type: String, required: true},
+    text: { type: String, required: true },
+    icon: { type: String, required: true },
     usehtml: {
         type: Boolean,
         default: false,
     },
-})
+});
 
 </script>
 

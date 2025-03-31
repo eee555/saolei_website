@@ -5,13 +5,13 @@
         </div>
         <div>
             <!-- @vue-expect-error -->
-            <el-input-number 
+            <el-input-number
                 v-model="range[0]" size="small" :step-strictly="true" :min="props.min" :max="range[1]"
                 :value-on-clear="props.min" @change="$emit('change', range)"
             />
             {{ text }}
             <!-- @vue-expect-error -->
-            <el-input-number 
+            <el-input-number
                 v-model="range[1]" size="small" :step-strictly="true" :min="range[0]" :max="props.max"
                 :value-on-clear="props.max" @change="$emit('change', range)"
             />
@@ -34,7 +34,7 @@ const props = defineProps({
     },
     text: {
         type: String,
-        default: "",
+        default: '',
     },
 });
 

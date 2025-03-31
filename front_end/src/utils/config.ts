@@ -9,7 +9,7 @@ const ArbiterStatsAutoColorTemplate = [
     '#FF57B7', '#FF97D2', '#D6007B', '#A2005D', // 6
     '#14D2A0', '#7DF3D4', '#0F9D78', '#0B7B5E', // 7
     '#CCFF66',
-]
+];
 
 const ArbiterStatsAutoValueTemplate = [
     0.01,
@@ -20,7 +20,7 @@ const ArbiterStatsAutoValueTemplate = [
     5.25, 5.5, 5.75, 6,
     6.25, 6.5, 6.75, 7,
     7.25, 7.5, 7.75, 8,
-]
+];
 
 const ArbiterStatsAutoValueTemplate_IOE = [
     0.01,
@@ -31,7 +31,7 @@ const ArbiterStatsAutoValueTemplate_IOE = [
     1.5, 1.55, 1.6, 1.65,
     1.7, 1.75, 1.8, 1.85,
     1.9, 1.95, 2, 2.1,
-]
+];
 
 export const colorSchemeTemplates = {
     ArbiterStatsAuto: {
@@ -40,7 +40,7 @@ export const colorSchemeTemplates = {
             colors: ArbiterStatsAutoColorTemplate,
         },
         stnb: {
-            thresholds: ArbiterStatsAutoValueTemplate.map(v => v * 25),
+            thresholds: ArbiterStatsAutoValueTemplate.map((v) => v * 25),
             colors: ArbiterStatsAutoColorTemplate,
         },
         ioe: {
@@ -48,16 +48,16 @@ export const colorSchemeTemplates = {
             colors: ArbiterStatsAutoColorTemplate,
         },
         btime: {
-            thresholds: ArbiterStatsAutoValueTemplate.map(v => 12 - v * 2).reverse(),
+            thresholds: ArbiterStatsAutoValueTemplate.map((v) => 12 - v * 2).reverse(),
             colors: ArbiterStatsAutoColorTemplate.toReversed(),
         },
         itime: {
-            thresholds: ArbiterStatsAutoValueTemplate.map(v => 30 - v * 4).reverse(),
+            thresholds: ArbiterStatsAutoValueTemplate.map((v) => 30 - v * 4).reverse(),
             colors: ArbiterStatsAutoColorTemplate.toReversed(),
         },
         etime: {
-            thresholds: ArbiterStatsAutoValueTemplate.map(v => 90 - v * 10).reverse(),
+            thresholds: ArbiterStatsAutoValueTemplate.map((v) => 90 - v * 10).reverse(),
             colors: ArbiterStatsAutoColorTemplate.toReversed(),
         },
     },
-}
+};

@@ -1,17 +1,17 @@
 <template>
-    <el-button 
+    <el-button
         v-if="store.login_status != LoginStatus.IsLogin" class="fakemenuitem"
         text size="small" @click.stop="login_visible = true"
     >
         {{ t('menu.login') }}
     </el-button>
-    <el-button 
+    <el-button
         v-if="store.login_status != LoginStatus.IsLogin"
         style="margin-left: 0px;" class="fakemenuitem" text size="small" @click.stop="register_visible = true"
     >
         {{ t('menu.register') }}
     </el-button>
-    <el-button 
+    <el-button
         v-if="store.login_status == LoginStatus.IsLogin" class="fakemenuitem" text
         size="small" @click.stop="logout();"
     >
@@ -19,7 +19,7 @@
     </el-button>
     <!-- 以下的所有表单的输入项都需要@keydown.stop，解决horizontal菜单截留空格操作的问题。 -->
     <!-- https://github.com/element-plus/element-plus/issues/10172#issuecomment-1295794523 -->
-    <LoginDialog 
+    <LoginDialog
         v-model="login_visible" @login="login"
         @forget-password="login_visible = false; retrieve_visible = true;" @keydown.stop
     />
@@ -29,14 +29,14 @@
 
 <script lang="ts" setup>
 // 注册、登录、找回密码的弹框及右上方按钮
-import { onMounted, ref } from 'vue'
-import useCurrentInstance from "@/utils/common/useCurrentInstance";
+import { onMounted, ref } from 'vue';
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 const { proxy } = useCurrentInstance();
-import { LoginStatus } from "@/utils/common/structInterface"
-import LoginDialog from "@/components/dialogs/LoginDialog.vue"
+import { LoginStatus } from '@/utils/common/structInterface';
+import LoginDialog from '@/components/dialogs/LoginDialog.vue';
 import RetrieveDialog from './dialogs/RetrieveDialog.vue';
-import { ElMessage, ElButton } from 'element-plus'
-import { store, local } from '../store'
+import { ElMessage, ElButton } from 'element-plus';
+import { store, local } from '../store';
 
 import { useI18n } from 'vue-i18n';
 import RegisterDialog from './dialogs/RegisterDialog.vue';
@@ -70,7 +70,7 @@ onMounted(() => {
         }
         return null;
     };
-})
+});
 
 const login_auto = async () => {
     proxy.$axios.get('/userprofile/loginauto/').then(function (response) {
@@ -78,12 +78,11 @@ const login_auto = async () => {
             store.user = new UserProfile(response.data);
             store.player = new UserProfile(response.data);
             store.login_status = LoginStatus.IsLogin;
-        }
-        else {
+        } else {
             store.login_status = LoginStatus.NotLogin;
         }
-    })
-}
+    });
+};
 
 const login = (user: any, remember: boolean) => {
     store.user = new UserProfile(user);
@@ -93,7 +92,7 @@ const login = (user: any, remember: boolean) => {
     register_visible.value = false;
     retrieve_visible.value = false;
     remember_me.value = remember;
-}
+};
 
 const logout = async () => {
     proxy.$axios.post('/userprofile/logout/',
@@ -107,7 +106,7 @@ const logout = async () => {
         login_visible.value = false;
         retrieve_visible.value = false;
     }).catch(httpErrorNotification);
-}
+};
 
 </script>
 

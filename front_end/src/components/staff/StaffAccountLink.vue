@@ -44,13 +44,13 @@ const verify = () => {
             id: form.id,
             platform: form.platform,
             identifier: form.identifier,
-        }
+        },
     ).then(function (_response) {
         form.id = 0;
         form.platform = '';
         form.identifier = '';
-    }).catch(httpErrorNotification)
-}
+    }).catch(httpErrorNotification);
+};
 
 const unverify = () => {
     proxy.$axios.post('accountlink/unverify/',
@@ -58,12 +58,12 @@ const unverify = () => {
             id: form.id,
             platform: form.platform,
             identifier: form.identifier,
-        }
+        },
     ).then(function (_response) {
         form.id = 0;
         form.platform = '';
         form.identifier = '';
-    }).catch(httpErrorNotification)
-}
+    }).catch(httpErrorNotification);
+};
 
 </script>
