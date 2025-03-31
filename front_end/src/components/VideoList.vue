@@ -57,6 +57,7 @@
                 {{ scope.row.displayStat('thrp') }}
             </template>
         </el-table-column>
+        <ColumnFileSize v-if="fileSize" :sortable="sortable" />
     </el-table>
 </template>
 
@@ -73,6 +74,7 @@ import { simple_formatter, defaultFilterMethod } from '@/utils';
 import { useI18n } from 'vue-i18n';
 import { ElTable, ElTableColumn } from 'element-plus';
 import { VideoAbstract } from '@/utils/videoabstract';
+import ColumnFileSize from './VideoList/ColumnFileSize.vue';
 
 const { t } = useI18n();
 
@@ -106,6 +108,10 @@ defineProps({
     height: {
         type: [String, Number],
         default: '100%',
+    },
+    fileSize: {
+        type: Boolean,
+        default: false,
     },
 });
 

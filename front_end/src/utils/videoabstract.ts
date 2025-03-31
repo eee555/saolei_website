@@ -12,6 +12,7 @@ export interface VideoAbstractInfo {
     software: string;
     cl: number | null;
     ce: number | null;
+    file_size: number;
 }
 
 interface VideoRedisInfo {
@@ -44,6 +45,7 @@ export class VideoAbstract {
     public ce?: number;
     public player_id?: number;
     public player_name?: string;
+    public file_size: number;
 
     constructor(info: any) {
         if (info.id) this.id = info.id;
@@ -64,6 +66,9 @@ export class VideoAbstract {
         if (info.ce) this.ce = info.ce;
         if (info.player_id) this.player_id = info.player_id;
         if (info.player_name) this.player_name = info.player_name;
+
+        if (info.file_size) this.file_size = info.file_size;
+        else this.file_size = 0;
     }
 
     static fromVideoAbstractInfo(info: VideoAbstractInfo): VideoAbstract {
