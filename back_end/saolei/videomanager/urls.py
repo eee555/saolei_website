@@ -17,6 +17,6 @@ urlpatterns = [
     path('get/', views.get_videoModel),
     path('set/', views.set_videoModel),
     path('update/', views.update_videoModel),
-    path('refresh_all/', views.refresh_all_videoModel),
+    path('update/batch/', views.batch_update_videoModel),
     # path('download/', views.video_download, name='download'),
 ]

@@ -335,14 +335,17 @@ def update_videoModel(request):
     refresh_video(video)
     return HttpResponse()
 
-
-@require_GET
-def refresh_all_videoModel(request):
-    if not request.user.is_superuser:
-        return HttpResponseForbidden()
-    for video in VideoModel.objects.all():
+@require_POST
+@staff_required
+def batch_update_videoModel(request):
+    startid = request.POST.get("startid")
+    endid = request.POST.get("endid")
+    errorList = []
+    successCount = 0
+    for video in VideoModel.objects.filter(id__gte=startid, id__lte=endid):
         try:
             refresh_video(video)
+            successCount += 1
         except:
-            return JsonResponse({'type': 'error', 'value': video.id})
-    return JsonResponse({'type': 'success'})
+            errorList.append(video.id)
+    return JsonResponse({'errorList': errorList, 'successCount': successCount})
