@@ -1,17 +1,15 @@
 <template>
     <ActivityCalendarAbstract />
-            <el-scrollbar aria-orientation="horizontal" :style="{ zoom: BBBvSummaryConfig.zoom }">
+    <div style="height: 10px;" />
+    <base-card-normal v-if="store.player.videos.length > 0">
+        <BBBvSummaryHeader />
+        <el-scrollbar aria-orientation="horizontal" :style="{ zoom: BBBvSummaryConfig.zoom }">
+            <BBBvSummary level="b" header />
+            <BBBvSummary level="i" />
+            <BBBvSummary level="e" />
+        </el-scrollbar>
+    </base-card-normal>
     <el-divider />
-    <ExperimentalFeature>
-        <base-card-normal v-if="store.player.videos.length > 0">
-            <BBBvSummaryHeader />
-                <BBBvSummary level="b" header />
-                <BBBvSummary level="i" />
-                <BBBvSummary level="e" />
-            </el-scrollbar>
-        </base-card-normal>
-        <el-divider />
-    </ExperimentalFeature>
     <el-text tag="b" size="large">
         {{ t('accountlink.title') }}
     </el-text>
