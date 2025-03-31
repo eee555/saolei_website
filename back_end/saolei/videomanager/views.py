@@ -335,6 +335,7 @@ def update_videoModel(request):
     refresh_video(video)
     return HttpResponse()
 
+
 @require_POST
 @staff_required
 def batch_update_videoModel(request):
