@@ -347,7 +347,7 @@ def refresh_video(video: VideoModel):
         video.software = 'm'
     else:
         return
-    
+
     video.file_size = video.file.size
 
     v.parse_video()
