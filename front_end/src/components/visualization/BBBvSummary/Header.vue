@@ -11,9 +11,7 @@
         &nbsp;
         <SoftwareFilter v-model="BBBvSummaryConfig.softwareFilter" />
         <span style="flex: 1" />
-        <IconSetting>
-            <Setting />
-        </IconSetting>
+        <Zoomer v-model="BBBvSummaryConfig.zoom" />
     </el-row>
     <el-row v-if="BBBvSummaryConfig.template === 'custom'" style="margin-top: 5px;">
         <el-link :underline="false" @click="BBBvSummaryConfig.sortDesc=!BBBvSummaryConfig.sortDesc">
@@ -41,11 +39,10 @@
 <script setup lang="ts">
 
 import { ElRow, ElSelect, ElOption, ElLink, ElText } from 'element-plus';
-import IconSetting from '@/components/widgets/IconSetting.vue';
-import Setting from './Setting.vue';
 import { BBBvSummaryConfig } from '@/store';
 import { useI18n } from 'vue-i18n';
 import SoftwareFilter from '@/components/Filters/SoftwareFilter.vue';
+import Zoomer from '@/components/widgets/Zoomer.vue';
 
 const { t } = useI18n();
 
