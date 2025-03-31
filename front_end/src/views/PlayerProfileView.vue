@@ -1,10 +1,10 @@
 <template>
     <ActivityCalendarAbstract />
+            <el-scrollbar aria-orientation="horizontal" :style="{ zoom: BBBvSummaryConfig.zoom }">
     <el-divider />
     <ExperimentalFeature>
         <base-card-normal v-if="store.player.videos.length > 0">
             <BBBvSummaryHeader />
-            <el-scrollbar aria-orientation="horizontal">
                 <BBBvSummary level="b" header />
                 <BBBvSummary level="i" />
                 <BBBvSummary level="e" />
@@ -31,7 +31,7 @@ import { ElBadge, ElDivider, ElDescriptions, ElText, ElScrollbar } from 'element
 import AccountLinkManager from '@/components/AccountLinkManager.vue';
 import IdentifierManager from '@/components/widgets/IdentifierManager.vue';
 import { LoginStatus } from '@/utils/common/structInterface';
-import { store } from '@/store';
+import { BBBvSummaryConfig, store } from '@/store';
 import { useI18n } from 'vue-i18n';
 import ActivityCalendarAbstract from '@/components/visualization/ActivityCalendarAbstract/App.vue';
 import ExperimentalFeature from '@/components/ExperimentalFeature.vue';

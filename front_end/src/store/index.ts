@@ -71,6 +71,7 @@ export const BBBvSummaryConfig = useLocalStorage(
         displayBy: 'time' as getStat_stat,
         sortDesc: false,
         softwareFilter: [...MS_Softwares] as MS_Software[],
+        zoom: 1,
     },
     { mergeDefaults: true },
 );
