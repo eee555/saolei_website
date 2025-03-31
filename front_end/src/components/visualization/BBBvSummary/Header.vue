@@ -39,8 +39,6 @@
 <script setup lang="ts">
 
 import { ElRow, ElSelect, ElOption, ElLink, ElText } from 'element-plus';
-import IconSetting from '@/components/widgets/IconSetting.vue';
-import Setting from './Setting.vue';
 import { BBBvSummaryConfig } from '@/store';
 import { useI18n } from 'vue-i18n';
 import SoftwareFilter from '@/components/Filters/SoftwareFilter.vue';

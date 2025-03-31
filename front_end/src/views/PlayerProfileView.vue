@@ -34,7 +34,6 @@ import { LoginStatus } from '@/utils/common/structInterface';
 import { BBBvSummaryConfig, store } from '@/store';
 import { useI18n } from 'vue-i18n';
 import ActivityCalendarAbstract from '@/components/visualization/ActivityCalendarAbstract/App.vue';
-import ExperimentalFeature from '@/components/ExperimentalFeature.vue';
 import BBBvSummary from '@/components/visualization/BBBvSummary/App.vue';
 import BBBvSummaryHeader from '@/components/visualization/BBBvSummary/Header.vue';
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
