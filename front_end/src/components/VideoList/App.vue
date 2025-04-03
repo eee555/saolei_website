@@ -14,9 +14,9 @@ import { VideoAbstract } from '@/utils/videoabstract';
 import { ElTable } from 'element-plus';
 import { defineAsyncComponent } from 'vue';
 
-const ColumnLevel = defineAsyncComponent(() => import('./ColumnLevel.vue'));
-const ColumnState = defineAsyncComponent(() => import('./ColumnState.vue'));
-const ColumnUploadTime = defineAsyncComponent(() => import('./ColumnUploadTime.vue'));
+const ColumnLevel = defineAsyncComponent(() => import('./ColumnLevel.vue')); // eslint-disable-line @typescript-eslint/no-unused-vars
+const ColumnState = defineAsyncComponent(() => import('./ColumnState.vue')); // eslint-disable-line @typescript-eslint/no-unused-vars
+const ColumnUploadTime = defineAsyncComponent(() => import('./ColumnUploadTime.vue')); // eslint-disable-line @typescript-eslint/no-unused-vars
 
 type columnChoices = 'level' | 'state' | 'upload_time';
 
