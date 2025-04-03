@@ -1,5 +1,6 @@
 <template>
     <el-table-column
+        prop="level"
         :filters="[{ text: t('common.level.b'), value: 'b' }, { text: t('common.level.i'), value: 'i' }, { text: t('common.level.e'), value: 'e' }]"
         :filter-method="defaultFilterMethod" :filter-multiple="false"
     >
