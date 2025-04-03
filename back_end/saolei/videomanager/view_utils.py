@@ -283,6 +283,7 @@ def new_video_by_file(user: UserProfile, file: File):
     video = VideoModel.objects.create(
         player=user,
         file=file,
+        file_size=file.size,
         video=e_video,
         state=state,
         software=software,
@@ -338,8 +339,17 @@ def refresh_video(video: VideoModel):
     elif video.file.path.endswith('.evf'):
         v = ms.EvfVideo(video.file.path)
         video.software = 'e'
+    elif video.file.path.endswith('.rmv'):
+        v = ms.RmvVideo(video.file.path)
+        video.software = 'r'
+    elif video.file.path.endswith('.mvf'):
+        v = ms.MvfVideo(video.file.path)
+        video.software = 'm'
     else:
         return
+
+    video.file_size = video.file.size
+
     v.parse_video()
     v.analyse()
     v.current_time = 1e8

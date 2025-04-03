@@ -60,6 +60,8 @@
     <StaffAccountLink />
     <el-divider />
     <StaffIdentifier />
+    <el-divider />
+    <StaffBatchUpdateVideo />
 </template>
 
 <script lang="ts" setup>
@@ -70,6 +72,7 @@ import { ref } from 'vue';
 import { preview } from '@/utils/common/PlayerDialog';
 import StaffAccountLink from '@/components/staff/StaffAccountLink.vue';
 import StaffIdentifier from '@/components/staff/StaffIdentifier.vue';
+import StaffBatchUpdateVideo from '@/components/staff/StaffBatchUpdateVideo.vue';
 import { httpErrorNotification, successNotification } from '@/components/Notifications';
 
 const { proxy } = useCurrentInstance();

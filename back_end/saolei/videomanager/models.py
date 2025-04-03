@@ -54,6 +54,7 @@ class VideoModel(models.Model):
     # 服务器端文件相对路径
     file = RestrictedFileField(
         upload_to="videos/%Y%m%d/", max_length=100, max_upload_size=MaxSizes.VIDEOFILE)
+    file_size = models.PositiveIntegerField(default=0)
     url_web = models.TextField(max_length=255, blank=True, default="")
     url_file = models.TextField(max_length=255, blank=True, default="")
     video = models.OneToOneField(
