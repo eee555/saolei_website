@@ -1,13 +1,21 @@
 <template>
-    <el-text size="small" v-t="{ path: 'activityCalendar.totalNVideos', args: [store.player.videos.length] }" />
-    <span style="flex: 1;"></span>
+    <el-text size="small">
+        {{ t('activityCalendar.totalNVideos', [store.player.videos.length]) }}
+    </el-text>
+    <span style="flex: 1;" />
     <span class="dot" style=" background-color: #f00;" />
-    <el-text size="small" v-t="'common.level.shortb'" />&nbsp;
+    <el-text size="small">
+        {{ t('common.level.shortb') }}
+    </el-text>&nbsp;
     <span class="dot" style=" background-color: #080;" />
-    <el-text size="small" v-t="'common.level.shorti'" />&nbsp;
+    <el-text size="small">
+        {{ t('common.level.shorti') }}
+    </el-text>&nbsp;
     <span class="dot" style=" background-color: #00f;" />
-    <el-text size="small" v-t="'common.level.shorte'" />
-    <span style="width: 10px;"></span>
+    <el-text size="small">
+        {{ t('common.level.shorte') }}
+    </el-text>
+    <span style="width: 10px;" />
     <IconSetting>
         <Setting />
     </IconSetting>
@@ -18,6 +26,9 @@ import { store } from '@/store';
 import { ElText } from 'element-plus';
 import Setting from './Setting.vue';
 import IconSetting from '@/components/widgets/IconSetting.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 </script>
 

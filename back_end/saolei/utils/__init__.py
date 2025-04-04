@@ -9,7 +9,8 @@ from decimal import Decimal
 from django.http import JsonResponse
 from django.shortcuts import redirect
 import requests
-from config.flags import BAIDU_VERIFY_SKIP, EMAIL_SKIP
+from django.conf import settings
+from .exceptions import ExceptionToResponse
 
 
 def generate_code(code_len):
@@ -39,7 +40,7 @@ def send_email(email, send_type='register'):
     email_record.save()
 
     # 验证码保存之后，我们就要把带有验证码的链接发送到注册时的邮箱！
-    if EMAIL_SKIP:
+    if settings.EMAIL_SKIP:
         return code, hashkey
     if send_type == 'register':
         email_title = '元扫雷网邮箱注册验证码'
@@ -122,21 +123,20 @@ def get_access_token() -> str:
 def get_ACCESS_TOKEN() -> str:
     try:
         with open("secrets.json", 'r') as f:
-            ACCESS_TOKEN = json.load(f)["token"]
+            return json.load(f)["token"]
     except KeyError:
-        ACCESS_TOKEN = get_access_token()
+        return get_access_token()
+    except FileNotFoundError:
+        raise ExceptionToResponse(obj='baidu', category='fileNotFound')
     except json.JSONDecodeError:
-        # print(f"JSON解析错误: {e}")
-        ...
+        raise ExceptionToResponse(obj='baidu', category='jsonDecode')
     except Exception:
-        # print(f"发生其他错误: {e}")
-        ...
-    return ACCESS_TOKEN
+        raise ExceptionToResponse(obj='baidu', category='unknown')
 
 
 # 百度大脑鉴别文本合规性
 def verify_text(text: str, user_id: int = 0, user_ip: str = '192.168.0.1') -> bool:
-    if BAIDU_VERIFY_SKIP:
+    if settings.BAIDU_VERIFY_SKIP:
         return True
     if len(text) < 2:
         return True

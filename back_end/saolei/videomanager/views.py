@@ -4,8 +4,8 @@ import logging
 from .forms import UploadVideoForm
 from .models import VideoModel, ExpandVideoModel
 from .view_utils import update_personal_record, update_personal_record_stock, \
-    video_all_fields, update_video_num, update_state, new_video, refresh_video, \
-    video_saolei_import_by_userid_helper
+    video_all_fields, update_video_num, update_state, refresh_video, \
+    video_saolei_import_by_userid_helper, new_video_by_file
 from userprofile.models import UserProfile
 from django.http import HttpResponse, JsonResponse, FileResponse, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseNotFound
 import json
@@ -17,10 +17,10 @@ from django.db.models import Q
 from django_redis import get_redis_connection
 from django_ratelimit.decorators import ratelimit
 from django.conf import settings
-from identifier.utils import verify_identifier
 from django.views.decorators.http import require_GET, require_POST
 from userprofile.decorators import banned_blocked, staff_required, login_required_error
 from accountlink.models import AccountSaolei
+from utils.exceptions import ExceptionToResponse
 logger = logging.getLogger('videomanager')
 cache = get_redis_connection("saolei_website")
 
@@ -32,23 +32,13 @@ cache = get_redis_connection("saolei_website")
 def video_upload(request):
     if request.user.userms.video_num_total >= request.user.userms.video_num_limit:
         return HttpResponse(status=402)  # 录像仓库已满
-
     video_form = UploadVideoForm(data=request.POST, files=request.FILES)
     if not video_form.is_valid():
         return HttpResponseBadRequest(video_form.errors)
-    data = video_form.cleaned_data
-    identifier = data["identifier"]
-    if not verify_identifier(identifier):  # 标识不过审
-        return JsonResponse({'type': 'error', 'object': 'identifier', 'category': 'censorship'})
-    if data['review_code'] == 0 and identifier not in request.user.userms.identifiers:
-        data['review_code'] = 2  # 标识不匹配
-
-    # 查重
-    collisions = list(VideoModel.objects.filter(timems=data["timems"], bv=data["bv"]).filter(path=data["path"]).filter(
-        left=data["left"], right=data["right"], double=data["double"], op=data["op"], isl=data["isl"], video__identifier=data["identifier"]))
-    if collisions:
-        return JsonResponse({'type': 'error', 'object': 'videomodel', 'category': 'conflict'})
-    new_video(data, request.user)  # 表中添加数据
+    try:
+        new_video_by_file(request.user, video_form.cleaned_data["file"])
+    except ExceptionToResponse as e:
+        return e.response()
     return JsonResponse({'type': 'success', 'object': 'videomodel', 'category': 'upload'})
 
 
@@ -61,14 +51,12 @@ def video_saolei_import_by_userid_post(request) -> JsonResponse:
     if user is None:
         return JsonResponse({'type': 'error', 'object': 'accountlink', 'category': 'notFound'})
     data = request.POST
-    if ('begin_time', 'end_time') not in data:
+    begin_time = data.get('begin_time')
+    end_time = data.get('end_time')
+    if begin_time is None or end_time is None:
         return JsonResponse({'type': 'error', 'object': 'videomodel', 'category': 'notFound'})
-    begin_time = datetime.datetime.strptime(
-        data['begin_time'], '%Y-%m-%d %H:%M:%S')
-    end_time = datetime.datetime.strptime(
-        data['end_time'], '%Y-%m-%d %H:%M:%S')
     video_saolei_import_by_userid_helper(
-        userProfile=user.parent, user=user, beginTime=begin_time, endTime=end_time)
+        userProfile=user.parent, accountSaolei=user, beginTime=datetime.datetime.fromisoformat(begin_time[:-1]), endTime=datetime.datetime.fromisoformat(end_time[:-1]))
     return JsonResponse({'type': 'success', 'object': 'videomodel', 'category': 'import'})
 
 
@@ -137,12 +125,12 @@ def video_query(request):
         orderby = (ob,)
 
     if data["mode"] != "00":
-        filter = {"level": data["level"], "mode": data["mode"]}
-        videos = VideoModel.objects.filter(**filter)
+        video_filter = {"level": data["level"], "mode": data["mode"]}
+        videos = VideoModel.objects.filter(**video_filter)
     else:
-        filter = {"level": data["level"]}
+        video_filter = {"level": data["level"]}
         videos = VideoModel.objects.filter(
-            Q(mode="00") | Q(mode="12")).filter(**filter)
+            Q(mode="00") | Q(mode="12")).filter(**video_filter)
 
     videos = videos.filter(bv__range=(data["bmin"], data["bmax"]))
 
@@ -168,9 +156,9 @@ def video_query(request):
 # 按id查询这个用户的所有录像
 @require_GET
 def video_query_by_id(request):
-    if not (id := request.GET.get("id")):
+    if not (userid := request.GET.get("id")):
         return HttpResponseBadRequest()
-    if not (user := UserProfile.objects.filter(id=id).first()):
+    if not (user := UserProfile.objects.filter(id=userid).first()):
         return HttpResponseNotFound()
     videos = VideoModel.objects.filter(player=user).values('id', 'upload_time', "level", "mode", "timems", "bv", "bvs", "state", "video__identifier",
                                                            "software", "flag", "cell0", "cell1", "cell2", "cell3", "cell4", "cell5", "cell6", "cell7", "cell8", "left", "right", "double", "op", "isl", "path")
@@ -279,10 +267,10 @@ def approve(request):
 @require_GET
 @staff_required
 def freeze(request):
-    if ids := request.GET.get("ids"):
+    if video_ids := request.GET.get("ids"):
         res = []
-        for id in ids:
-            if not (v := VideoModel.objects.filter(id=id).first()):
+        for video_id in video_ids:
+            if not (v := VideoModel.objects.filter(id=video_id).first()):
                 res.append("Null")
             else:
                 update_state(v, MS_TextChoices.State.FROZEN)
@@ -348,13 +336,17 @@ def update_videoModel(request):
     return HttpResponse()
 
 
-@require_GET
-def refresh_all_videoModel(request):
-    if not request.user.is_superuser:
-        return HttpResponseForbidden()
-    for video in VideoModel.objects.all():
+@require_POST
+@staff_required
+def batch_update_videoModel(request):
+    startid = request.POST.get("startid")
+    endid = request.POST.get("endid")
+    errorList = []
+    successCount = 0
+    for video in VideoModel.objects.filter(id__gte=startid, id__lte=endid):
         try:
             refresh_video(video)
+            successCount += 1
         except:
-            return JsonResponse({'type': 'error', 'value': video.id})
-    return JsonResponse({'type': 'success'})
+            errorList.append(video.id)
+    return JsonResponse({'errorList': errorList, 'successCount': successCount})

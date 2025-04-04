@@ -10,8 +10,11 @@ from utils.cmp import isbetter
 from config.text_choices import MS_TextChoices
 import ms_toollib as ms
 from accountlink.models import AccountSaolei
-import datetime
+from datetime import datetime, timezone
 from utils.getOldWebData import VideoData, Level
+from django.core.files import File
+from identifier.utils import verify_identifier
+from utils.exceptions import ExceptionToResponse
 
 logger = logging.getLogger('videomanager')
 cache = get_redis_connection("saolei_website")
@@ -185,15 +188,15 @@ def update_video_num(video: VideoModel, add=True):
         # 给高玩自动扩容
         if video.mode == "00" and video.level == 'e':
             if video.timems < 100000 and userms.video_num_limit < 200:
-                userms.video_num_limit = 200
-            if video.timems < 60000 and userms.video_num_limit < 500:
-                userms.video_num_limit = 500
-            if video.timems < 50000 and userms.video_num_limit < 600:
-                userms.video_num_limit = 600
-            if video.timems < 40000 and userms.video_num_limit < 800:
-                userms.video_num_limit = 800
-            if video.timems < 30000 and userms.video_num_limit < 1000:
                 userms.video_num_limit = 1000
+            if video.timems < 60000 and userms.video_num_limit < 500:
+                userms.video_num_limit = 3000
+            if video.timems < 50000 and userms.video_num_limit < 600:
+                userms.video_num_limit = 5000
+            if video.timems < 40000 and userms.video_num_limit < 800:
+                userms.video_num_limit = 8000
+            if video.timems < 30000 and userms.video_num_limit < 1000:
+                userms.video_num_limit = 10000
 
     userms.save(update_fields=["video_num_limit", "video_num_total", "video_num_beg", "video_num_int",
                 "video_num_exp", "video_num_std", "video_num_nf", "video_num_ng", "video_num_dg"])
@@ -214,62 +217,119 @@ def update_state(video: VideoModel, state: MS_TextChoices.State, update_ranking=
         update_personal_record_stock(video)
 
 
-def new_video(data, user):
+def new_video_by_file(user: UserProfile, file: File):
+    data = file.read()
+    if file.name.endswith('.avf'):
+        v = ms.AvfVideo(raw_data=data)
+        software = 'a'
+    elif file.name.endswith('.evf'):
+        v = ms.EvfVideo(raw_data=data)
+        software = 'e'
+    elif file.name.endswith('.rmv'):
+        v = ms.RmvVideo(raw_data=data)
+        software = 'r'
+    elif file.name.endswith('.mvf'):
+        v = ms.MvfVideo(raw_data=data)
+        software = 'm'
+    else:
+        raise ExceptionToResponse(obj='file', category='type')
+
+    v.parse_video()
+    v.analyse()
+    v.current_time = 1e8
+
+    if v.level == 3:
+        level = 'b'
+    elif v.level == 4:
+        level = 'i'
+    elif v.level == 5:
+        level = 'e'
+    else:
+        raise ExceptionToResponse(obj='file', category='level')
+
+    review_code = v.is_valid()
+    if review_code == 0:
+        state = MS_TextChoices.State.OFFICIAL
+    elif review_code == 1:
+        state = MS_TextChoices.State.FROZEN
+    elif review_code == 3:
+        state = MS_TextChoices.State.PLAIN
+    else:
+        raise ExceptionToResponse(obj='file', category='review')
+
+    if not user.userms:
+        user.userms = UserMS.objects.create()
+
+    identifier = bytes(v.player_identifier).decode('utf-8')
+    if not verify_identifier(identifier):
+        raise ExceptionToResponse(obj='identifier', category='verify')
+    if identifier not in user.userms.identifiers and state == MS_TextChoices.State.OFFICIAL:
+        state = MS_TextChoices.State.IDENTIFIER
+
+    collisions = list(VideoModel.objects.filter(timems=v.rtime_ms, bv=v.bbbv).filter(path=v.path).filter(
+        left=v.left, right=v.right, double=v.double, op=v.op, isl=v.isl))
+    if collisions:
+        raise ExceptionToResponse(obj='file', category='collision')
+
+    mode = str(v.mode).rjust(2, '0')
+    if mode == '00' and v.flag == 0:
+        mode = '12'
+
     e_video = ExpandVideoModel.objects.create(
-        identifier=data["identifier"],
-        stnb=data["stnb"],
-        rqp=data["rqp"],
+        identifier=identifier,
+        stnb=v.stnb,
+        rqp=v.rqp,
     )
     video = VideoModel.objects.create(
         player=user,
-        file=data["file"],
+        file=file,
+        file_size=file.size,
         video=e_video,
-        state=["c", "b", "d", "a"][data['review_code']],
-        software=data["software"],
-        level=data["level"],
-        mode=data["mode"] if data["mode"] != "00" else (
-            "12" if data["flag"] == 0 else "00"),
-
-        timems=data["timems"],
-        bv=data["bv"],
-        left=data["left"],
-        right=data["right"],
-        double=data["double"],
-        left_ce=data["left_ce"],
-        right_ce=data["right_ce"],
-        double_ce=data["double_ce"],
-        path=data["path"],
-        flag=data["flag"],
-        op=data["op"],
-        isl=data["isl"],
-        cell0=data["cell0"],
-        cell1=data["cell1"],
-        cell2=data["cell2"],
-        cell3=data["cell3"],
-        cell4=data["cell4"],
-        cell5=data["cell5"],
-        cell6=data["cell6"],
-        cell7=data["cell7"],
-        cell8=data["cell8"],
+        state=state,
+        software=software,
+        level=level,
+        mode=mode,
+        timems=v.rtime_ms,
+        bv=v.bbbv,
+        left=v.left,
+        right=v.right,
+        double=v.double,
+        left_ce=v.lce,
+        right_ce=v.rce,
+        double_ce=v.dce,
+        path=v.path,
+        flag=v.flag,
+        op=v.op,
+        isl=v.isl,
+        cell0=v.cell0,
+        cell1=v.cell1,
+        cell2=v.cell2,
+        cell3=v.cell3,
+        cell4=v.cell4,
+        cell5=v.cell5,
+        cell6=v.cell6,
+        cell7=v.cell7,
+        cell8=v.cell8,
     )
 
-    # 参考ms_toollib.is_valid的返回值
-    if data['review_code'] == 3:  # 不确定
+    if state == MS_TextChoices.State.PLAIN:
         logger.info(f'用户 {user.username}#{user.id} 录像#{video.id} 机审失败')
         video.push_redis("review_queue")
         update_video_num(video)
-    elif data['review_code'] == 2:
+    elif state == MS_TextChoices.State.IDENTIFIER:
         logger.info(f'用户 {user.username}#{user.id} 录像#{video.id} 标识不匹配')
         video.push_redis("newest_queue")
         update_video_num(video)
-    elif data['review_code'] == 1:
+    elif state == MS_TextChoices.State.FROZEN:
         logger.info(f'用户 {user.username}#{user.id} 录像#{video.id} 不合法')
         video.push_redis("freeze_queue")
-    elif data['review_code'] == 0:  # 合法
+    elif state == MS_TextChoices.State.OFFICIAL:  # 合法
         logger.info(f'用户 {user.username}#{user.id} 录像#{video.id} 机审成功')
         video.push_redis("newest_queue")
         update_personal_record(video)
         update_video_num(video)
+
+    return video
 
 
 def refresh_video(video: VideoModel):
@@ -279,8 +339,17 @@ def refresh_video(video: VideoModel):
     elif video.file.path.endswith('.evf'):
         v = ms.EvfVideo(video.file.path)
         video.software = 'e'
+    elif video.file.path.endswith('.rmv'):
+        v = ms.RmvVideo(video.file.path)
+        video.software = 'r'
+    elif video.file.path.endswith('.mvf'):
+        v = ms.MvfVideo(video.file.path)
+        video.software = 'm'
     else:
         return
+
+    video.file_size = video.file.size
+
     v.parse_video()
     v.analyse()
     v.current_time = 1e8
@@ -332,7 +401,7 @@ def refresh_video(video: VideoModel):
     e_video.save()
 
 
-def video_saolei_import_by_userid_helper(userProfile: UserProfile, accountSaolei: AccountSaolei, beginTime: datetime, endTime: datetime) -> VideoData.Info:
+def video_saolei_import_by_userid_helper(userProfile: UserProfile, accountSaolei: AccountSaolei, beginTime: datetime = datetime.min.replace(tzinfo=timezone.utc), endTime: datetime = datetime.max.replace(tzinfo=timezone.utc)) -> VideoData.Info:
 
     def scheduleFunc(info: VideoData.Info) -> bool:
         videoModel = ExpandVideoModel.objects.create(
@@ -343,8 +412,6 @@ def video_saolei_import_by_userid_helper(userProfile: UserProfile, accountSaolei
         videoModel.save()
         model = VideoModel.objects.create(
             player=userProfile,
-            upload_time=datetime.datetime.strptime(
-                info.dateTime, '%Y-%m-%d %H:%M:%S').astimezone(datetime.timezone.utc),
             video=videoModel,
             state=MS_TextChoices.State.EXTERNAL,
             software='u',
@@ -355,6 +422,7 @@ def video_saolei_import_by_userid_helper(userProfile: UserProfile, accountSaolei
             url_web=info.showUrl,
             url_file=info.url,
         )
+        model.upload_time = info.dateTime
         model.save()
         return True
     urls = VideoModel.objects.filter(

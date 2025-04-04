@@ -1,5 +1,7 @@
 <template>
-    <el-link v-if="data.id" :underline="false" @click="preview(data.id);" class="clickable">{{ data.text }}</el-link>
+    <el-link v-if="data.id" :underline="false" class="clickable" @click="preview(data.id);">
+        {{ data.text }}
+    </el-link>
     <span v-else>--</span>
 </template>
 
@@ -11,11 +13,13 @@ import { ElLink } from 'element-plus';
 const data = defineProps({
     id: {
         type: Number,
+        default: 0,
     },
     text: {
         type: [String, Number],
+        default: '',
     },
-})
+});
 
 </script>
 

@@ -1,27 +1,45 @@
 <template>
     <el-row style="align-items: center">
         <el-color-picker v-model="colorScheme.colors[0]" show-alpha />
-        <template v-for = "(item, index) in colorScheme.thresholds">
+        <template v-for="(item, index) in colorScheme.thresholds" :key="index">
             &nbsp;{{ "<" }}&nbsp;
-            <el-input-number v-model="colorScheme.thresholds[index]" :min="index == 0 ? -Infinity : colorScheme.thresholds[index-1]" :max="index == colorScheme.thresholds.length-1 ? Infinity : colorScheme.thresholds[index+1]" :controls="false" size="small" style="width:50px; display: inline-block"/>
+            <el-input-number v-model="colorScheme.thresholds[index]" :min="index == 0 ? -Infinity : colorScheme.thresholds[index-1]" :max="index == colorScheme.thresholds.length-1 ? Infinity : colorScheme.thresholds[index+1]" :controls="false" size="small" style="width:50px; display: inline-block" />
             &nbsp;{{ "<" }}&nbsp;
             <el-color-picker v-model="colorScheme.colors[index+1]" show-alpha />
         </template>
         <span style="flex: 1" />
         {{ "增删节点" }}
         &nbsp;
-        <el-input-number v-model="operationNode" :controls="false" style="width: 40px"></el-input-number>
+        <el-input-number v-model="operationNode" :controls="false" style="width: 40px" />
         &nbsp;
-        <el-tooltip content="Add"><el-link :underline="false"><base-icon-add /></el-link></el-tooltip>
+        <el-tooltip content="Add">
+            <el-link :underline="false">
+                <base-icon-add />
+            </el-link>
+        </el-tooltip>
         &nbsp;
-        <el-tooltip content="Merge to left"><el-link :underline="false"><el-icon size="large"><ArrowLeft/></el-icon></el-link></el-tooltip>
+        <el-tooltip content="Merge to left">
+            <el-link :underline="false">
+                <el-icon size="large">
+                    <ArrowLeft />
+                </el-icon>
+            </el-link>
+        </el-tooltip>
         &nbsp;
-        <el-tooltip content="Merge to right"><el-link :underline="false"><el-icon size="large"><ArrowRight/></el-icon></el-link></el-tooltip>
+        <el-tooltip content="Merge to right">
+            <el-link :underline="false">
+                <el-icon size="large">
+                    <ArrowRight />
+                </el-icon>
+            </el-link>
+        </el-tooltip>
         &nbsp;
-        <el-checkbox v-model="developerMode">Developer Mode</el-checkbox>
+        <el-checkbox v-model="developerMode">
+            Developer Mode
+        </el-checkbox>
     </el-row>
     <el-row v-if="developerMode">
-        <el-input v-model="colorSchemeString" type="textarea" :rows="countRows(colorSchemeString)" @change="(value: string) => {colorScheme = JSON.parse(value)}" style="font-family: 'Courier New', Courier, monospace;"/>
+        <el-input v-model="colorSchemeString" type="textarea" :rows="countRows(colorSchemeString)" style="font-family: 'Courier New', Courier, monospace;" @change="(value: string) => {colorScheme = JSON.parse(value)}" />
     </el-row>
 </template>
 
@@ -38,16 +56,16 @@ interface ColorScheme {
 
 const colorScheme = defineModel({
     type: Object as PropType<ColorScheme>,
-    required: true
+    required: true,
 });
 
 const operationNode = ref(0);
 const developerMode = ref(false);
-const colorSchemeString = ref("");
+const colorSchemeString = ref('');
 
 watch(colorScheme.value, (value) => {
     colorSchemeString.value = stringifyWithLineWrap(value);
-}, {immediate: true});
+}, { immediate: true });
 
 </script>
 

@@ -1,9 +1,7 @@
 <template>
-    <tippy interactive animate-fill arrow trigger="click">
+    <tippy interactive animate-fill arrow trigger="click" :append-to="'parent'">
         <el-link :underline="false">
-            <el-icon>
-                <Setting />
-            </el-icon>
+            <base-icon-setting />
         </el-link>
         <template #content>
             <base-card-normal style="width: auto;">
@@ -15,6 +13,8 @@
 
 <script setup lang="ts">
 import { Tippy } from 'vue-tippy';
-import { ElLink, ElIcon } from 'element-plus';
+import { ElLink } from 'element-plus';
 import BaseCardNormal from '../common/BaseCardNormal.vue';
+import BaseIconSetting from '../common/BaseIconSetting.vue';
+
 </script>

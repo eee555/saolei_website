@@ -1,11 +1,11 @@
 import logging
 from .models import Identifier
 from django.http import HttpResponseForbidden, HttpResponseBadRequest, JsonResponse, HttpResponse, HttpResponseNotFound
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
 from utils.response import HttpResponseConflict
 from videomanager.models import VideoModel
 from videomanager.view_utils import update_state, update_personal_record_stock
-from userprofile.decorators import login_required_error
+from userprofile.decorators import login_required_error, staff_required
 from config.text_choices import MS_TextChoices
 logger = logging.getLogger('userprofile')
 
@@ -71,6 +71,50 @@ def staff_add_identifier(request):
 
 
 # 管理员删除标识
+@require_POST
+@staff_required
 def staff_del_identifier(request):
-    # TODO
+    identifier_text = request.POST.get('identifier')
+    if not identifier_text:
+        return HttpResponseBadRequest()
+    identifier = Identifier.objects.filter(identifier=identifier_text).first()
+    if not identifier:
+        return HttpResponseNotFound()
+    videos = VideoModel.objects.filter(video__identifier=identifier_text)
+    if not videos:
+        identifier.delete()
+        return HttpResponse()
+    else:
+        return HttpResponseConflict()
+
+
+# 管理员过审标识
+@require_POST
+@staff_required
+def staff_approve_identifier(request):
+    identifier_text = request.POST.get('identifier')
+    if not identifier_text:
+        return HttpResponseBadRequest()
+    identifier = Identifier.objects.filter(identifier=identifier_text).first()
+    if not identifier:
+        return HttpResponseNotFound()
+    identifier.safe = True
+    identifier.save()
+    logger.info(f'管理员 #{request.user.id} 过审标识 "{identifier_text}"')
     return HttpResponse()
+
+
+# 管理员查询标识
+@require_GET
+def staff_get_identifier(request):
+    identifier_text = request.GET.get('identifier')
+    if not identifier_text:
+        return HttpResponseBadRequest()
+    identifier = Identifier.objects.filter(identifier=identifier_text).first()
+    if not identifier:
+        return HttpResponseNotFound()
+    if identifier.userms:
+        userid = identifier.userms.parent.id
+    else:
+        userid = None
+    return JsonResponse({'user': userid, 'safe': identifier.safe})

@@ -1,7 +1,7 @@
 <template>
-    <el-table-column :label="t('common.prop.realName')" v-slot="scope" width="auto">
+    <el-table-column v-slot="scope" :label="t('common.prop.realName')" width="auto">
         <span class="nobr">
-            <PlayerName class="name" :user_id="scope.row.player__id" :user_name="scope.row.player__realname" />
+            <PlayerName class="name" :user-id="scope.row.player__id" :user-name="scope.row.player__realname" />
         </span>
     </el-table-column>
 </template>

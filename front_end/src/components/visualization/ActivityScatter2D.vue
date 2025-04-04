@@ -2,14 +2,13 @@
     <base-card-normal>
         <div style="align-items: center; display: flex;">
             <MSLevelFilter v-model="level" />
-            <span style="flex: 1;"></span>
+            <span style="flex: 1;" />
             <MSStatSelect v-model="x" label="x" :options="video_stats" />
-            <span style="width: 10px;"></span>
+            <span style="width: 10px;" />
             <MSStatSelect v-model="y" label="y" :options="video_stats" />
         </div>
         <v-chart class="chart" :option="option" autoresize @click="handleClick" />
     </base-card-normal>
-
 </template>
 
 <script setup lang="ts">
@@ -27,11 +26,11 @@ import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 import { MS_Levels } from '@/utils/ms_const';
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
 
-const video_stats = ['time', 'bv', 'bvs']
+const video_stats = ['time', 'bv', 'bvs'];
 
 const { t } = useI18n();
 
-echarts.use([ScatterChart])
+echarts.use([ScatterChart]);
 
 const level = ref([...MS_Levels]);
 const x = ref<getStat_stat>('time');
@@ -68,22 +67,22 @@ const option = computed(() => {
         series: {
             type: 'scatter',
             data: store.player.videos.filter(
-                (video) => level.value.includes(video.level)
+                (video) => level.value.includes(video.level),
             ).map((video: VideoAbstract) => {
                 return [video.getStat(x.value), video.getStat(y.value), video];
             }),
         },
         tooltip: {
             formatter: (p: any) => {
-                return `Time: ${p.data[2].timems/1000}<br>BBBV: ${p.data[2].bv}<br>Level: ${t('common.level.'+p.data[2].level)}`;
-            }
-        }
-    }
-})
+                return `Time: ${p.data[2].timems / 1000}<br>BBBV: ${p.data[2].bv}<br>Level: ${t('common.level.' + p.data[2].level)}`;
+            },
+        },
+    };
+});
 
 const handleClick = (params: any) => {
     preview(params.data[2].id);
-}
+};
 
 </script>
 

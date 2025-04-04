@@ -12,7 +12,7 @@ import { useI18n } from 'vue-i18n';
 import { useColorMode } from '@vueuse/core';
 import { ElRadioGroup, ElRadioButton } from 'element-plus';
 
-const { t } = useI18n()
-const { system, store } = useColorMode()
+const { t } = useI18n();
+const { store } = useColorMode();
 
 </script>

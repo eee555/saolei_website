@@ -106,9 +106,9 @@ def get_info_abstract(request):
 
 @require_GET
 def get_identifiers(request):
-    if not (id := request.GET.get('id')):
+    if not (userid := request.GET.get('id')):
         return HttpResponseBadRequest()
-    if not (user := UserProfile.objects.filter(id=id).first()):
+    if not (user := UserProfile.objects.filter(id=userid).first()):
         return HttpResponseNotFound()
     return JsonResponse(user.userms.identifiers, safe=False)
 

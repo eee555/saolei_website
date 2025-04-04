@@ -7,17 +7,20 @@
             <el-table-column prop="data" sortable>
                 <template #default="scope">
                     <!-- 左margin是为了补偿输入框内文本的偏移 -->
-                    <el-input v-if="scope.row.data === ''" size="small" style="width: 200px;margin-left: -7px"
+                    <el-input
+                        v-if="scope.row.data === ''" v-model="new_identifiers" size="small" style="width: 200px;margin-left: -7px"
                         input-style="font-family: 'Courier New', Courier, monospace;"
-                        v-model="new_identifiers"></el-input>
+                    />
                 </template>
             </el-table-column>
             <!-- 操作列 -->
             <el-table-column>
                 <template #default="scope">
                     <!-- 添加标识 -->
-                    <el-link v-if="scope.row.data === ''" :underline="false"
-                        @click="addIdentifier(new_identifiers)">
+                    <el-link
+                        v-if="scope.row.data === ''" :underline="false"
+                        @click="addIdentifier(new_identifiers)"
+                    >
                         <base-icon-add />
                     </el-link>
                     <!-- 复制标识 -->
@@ -28,8 +31,10 @@
                     </el-link>
                     &nbsp;
                     <!-- 删除标识 -->
-                    <el-link v-if="store.player.id == store.user.id && scope.row.data !== ''" :underline="false"
-                        type="danger" @click="delIdentifier(scope.row.data)">
+                    <el-link
+                        v-if="store.player.id == store.user.id && scope.row.data !== ''" :underline="false"
+                        type="danger" @click="delIdentifier(scope.row.data)"
+                    >
                         <base-icon-delete />
                     </el-link>
                 </template>
@@ -53,54 +58,54 @@ import BaseIconDelete from '@/components/common/BaseIconDelete.vue';
 import BaseIconAdd from '../common/BaseIconAdd.vue';
 
 const { proxy } = useCurrentInstance();
-const new_identifiers = ref("")
+const new_identifiers = ref('');
 const { t } = useI18n();
 
 const identifierdata = computed(() => {
-    let data = store.player.identifiers ? store.player.identifiers.map(value => ({ data: value })) : [];
-    if (store.player.id == store.user.id) data.push({ data: "" });
-    return data
-})
+    const data = store.player.identifiers ? store.player.identifiers.map((value) => ({ data: value })) : [];
+    if (store.player.id == store.user.id) data.push({ data: '' });
+    return data;
+});
 
 function delIdentifier(identifier: string) {
-    proxy.$axios.post('identifier/del/', { identifier: identifier }
+    proxy.$axios.post('identifier/del/', { identifier: identifier },
     ).then(function (response) {
         store.player.identifiers = removeItem(store.player.identifiers, identifier);
         ElNotification({
             title: t('identifierManager.delIdentifierSuccess'),
             message: t('identifierManager.processedNVideos', [response.data.value]),
-            type: 'success'
-        })
-    }).catch(httpErrorNotification)
+            type: 'success',
+        });
+    }).catch(httpErrorNotification);
 }
 
 function addIdentifier(identifier: string) {
-    proxy.$axios.post('identifier/add/', { identifier: identifier, }
+    proxy.$axios.post('identifier/add/', { identifier: identifier },
     ).then(function (response) {
         if (response.data.type === 'success') {
             store.player.identifiers.push(new_identifiers.value);
             ElNotification({
                 title: t('identifierManager.addIdentifierSuccess'),
                 message: t('identifierManager.processedNVideos', [response.data.value]),
-                type: 'success'
-            })
+                type: 'success',
+            });
             store.new_identifier = false;
         } else if (response.data.category === 'notFound') {
             ElNotification({
                 title: t('identifierManager.notFound'),
                 type: 'error',
-            })
+            });
         } else if (response.data.category === 'conflict') {
             ElNotification({
                 title: t('identifierManager.conflict'),
                 message: t('identifierManager.ownedBy', [response.data.value]),
                 type: 'error',
-            })
+            });
         } else {
-            unknownErrorNotification(response.data)
+            unknownErrorNotification(response.data);
         }
-        new_identifiers.value = "";
-    }).catch(httpErrorNotification)
+        new_identifiers.value = '';
+    }).catch(httpErrorNotification);
 }
 
 </script>

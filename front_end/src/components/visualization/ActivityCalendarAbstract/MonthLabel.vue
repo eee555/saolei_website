@@ -1,11 +1,15 @@
 <template>
-    <el-text v-for="date of generateMonthLabelRange(startDate, endDate)" :style="{
-        position: 'absolute',
-        fontSize: '12px',
-        top: 0,
-        left: (date.getTime() - startWeekTime) / fullWeek * cellFullSize + 'px',
-        transform: 'translate(-50%,0)'
-    }">{{ monthNameShort[date.getMonth()] }}</el-text>
+    <el-text
+        v-for="date of generateMonthLabelRange(startDate, endDate)" :key="date.toISOString()" :style="{
+            position: 'absolute',
+            fontSize: '12px',
+            top: 0,
+            left: `${(date.getTime() - startWeekTime) / fullWeek * cellFullSize}px`,
+            transform: 'translate(-50%,0)'
+        }"
+    >
+        {{ monthNameShort[date.getMonth()] }}
+    </el-text>
 </template>
 
 <script setup lang="ts">
@@ -17,7 +21,7 @@ import { ElText } from 'element-plus';
 const prop = defineProps({
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
-})
+});
 
 const startWeekTime = computed(() => getWeekTime(prop.startDate));
 const cellFullSize = computed(() => activityCalendarConfig.value.cellSize + activityCalendarConfig.value.cellMargin);
@@ -28,7 +32,7 @@ function generateMonthLabelRange(startDate: Date, endDate: Date) {
         currentDate.setMonth(currentDate.getMonth() + 1);
         currentDate.setDate(15);
     }
-    let monthLabels = [];
+    const monthLabels = [];
     while (currentDate <= endDate) {
         monthLabels.push(currentDate);
         currentDate = new Date(currentDate);

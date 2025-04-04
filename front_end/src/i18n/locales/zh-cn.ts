@@ -29,6 +29,10 @@ export default {
             shorte: '高',
         },
         mode: {
+            code00: '标准',
+            code05: '无猜',
+            code11: '递归',
+            code12: '盲扫',
             std: '标准',
             nf: '盲扫',
             ng: '无猜',
@@ -141,7 +145,15 @@ export default {
         tooltip: {
             noVideoOnDate: '{0} 无录像',
             uploadedNVideosOnDate: '{0} 共 {1} 个录像',
-        }
+        },
+    },
+    BBBvSummary: {
+        bbbvInTotal: ({ linked, list }) => `共${list(0)}个${linked('common.prop.bv')}`,
+        cellHeight: '行高',
+        customTemplate: '自定义',
+        settingDisplayBy: '录像的',
+        settingMax: '最大',
+        settingMin: '最小',
     },
     experimentalFeature: {
         watermark: '实验功能',
@@ -267,7 +279,7 @@ export default {
         },
         records: {
             title: '个人纪录',
-            modeRecord: '模式纪录：'
+            modeRecord: '模式纪录：',
         },
         videos: '全部录像',
         exportJSON: '导出JSON',
@@ -276,7 +288,7 @@ export default {
         exportArbiterCSVTooltip: '兼容 Minesweeper Arbiter 生成的 <span style="font-family: \'Courier New\', Courier, monospace;">stats_csv.csv</span>。<br/> 目前不支持 Leff, Reff, Deff, GZiNi, HZiNi。',
         upload: {
             title: '上传录像',
-            dragOrClick: `将录像拉到此处或 <em>点击此处选择</em>`,
+            dragOrClick: '将录像拉到此处或 <em>点击此处选择</em>',
             uploadAll: '一键上传（{0}个）',
             cancelAll: '全部清空',
             constraintNote: '*单个文件大小不能超过5MB',
@@ -293,8 +305,8 @@ export default {
                 pass: '通过',
                 process: '上传中',
                 upload: '上传失败',
-            }
-        }
+            },
+        },
     },
     setting: {
         appearance: '外观设置',
@@ -329,4 +341,4 @@ export default {
         designer: '外观设计',
         acknowledgement: '致谢',
     },
-}
+};

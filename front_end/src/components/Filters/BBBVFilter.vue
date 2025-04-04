@@ -1,6 +1,6 @@
 <template>
     <!-- @vue-ignore -->
-    <RangeSlider :min="minbvlim[level]" :max="maxbvlim[level]" v-model="videofilter.bbbv_range[level]"/>
+    <RangeSlider v-model="videofilter.bbbv_range[level]" :min="minbvlim[level]" :max="maxbvlim[level]" />
 </template>
 
 <script setup lang="ts">
@@ -13,7 +13,7 @@ defineProps({
         type: String,
         default: 'e',
     },
-})
+});
 
 const minbvlim = {
     'b': 1,
@@ -25,6 +25,6 @@ const maxbvlim = {
     'b': 54,
     'i': 216,
     'e': 381,
-}
+};
 
 </script>

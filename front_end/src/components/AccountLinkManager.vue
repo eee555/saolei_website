@@ -1,9 +1,13 @@
 <template>
-    <el-table :data="accountlinks" @expand-change="expandRow" :row-key="(row: any) => 'key' + row.platform">
+    <el-table :data="accountlinks" :row-key="(row: any) => `key${row.platform}`" @expand-change="expandRow">
         <el-table-column type="expand">
             <template #default="props">
-                <el-text v-if="!props.row.verified" type="info" style="margin-left:50px" v-t="'accountlink.unverifiedText'"></el-text>
-                <el-text v-else-if="props.row.data === undefined" type="info" style="margin-left:50px">No Data</el-text>
+                <el-text v-if="!props.row.verified" type="info" style="margin-left:50px">
+                    {{ t('accountlink.unverifiedText') }}
+                </el-text>
+                <el-text v-else-if="props.row.data === undefined" type="info" style="margin-left:50px">
+                    No Data
+                </el-text>
                 <AccountSaolei v-else-if="props.row.platform == 'c'" :data="props.row.data" />
                 <AccountMsgames v-else-if="props.row.platform == 'a'" :data="props.row.data" />
                 <AccountWoM v-else-if="props.row.platform == 'w'" :data="props.row.data" />
@@ -17,41 +21,53 @@
         <el-table-column label="ID">
             <template #default="scope">
                 <!-- @vue-ignore -->
-                <el-link :href="platformlist[scope.row.platform].profile(scope.row.identifier)" target="_blank">{{
-                    scope.row.identifier }}</el-link>
+                <el-link :href="platformlist[scope.row.platform].profile(scope.row.identifier)" target="_blank">
+                    {{
+                        scope.row.identifier }}
+                </el-link>
             </template>
         </el-table-column>
         <el-table-column v-if="store.player.id == store.user.id || store.user.is_staff" :label="t('common.prop.status')">
             <template #default="scope">
                 <el-tooltip v-if="scope.row.verified" :content="t('accountlink.verified')">
-                    <el-text type="success"><base-icon-verified /></el-text>
+                    <el-text type="success">
+                        <base-icon-verified />
+                    </el-text>
                 </el-tooltip>
                 <el-tooltip v-else :content="t('accountlink.unverified')">
-                    <el-text><el-icon>
-                            <Clock />
-                        </el-icon></el-text>
+                    <el-text><base-icon-pending /></el-text>
                 </el-tooltip>
             </template>
         </el-table-column>
         <el-table-column v-if="store.player.id == store.user.id" :label="t('common.prop.action')">
             <template #default="scope">
-                <el-link :underline="false" @click.prevent="deleteRow(scope.row)" type="danger"><base-icon-delete/></el-link>
+                <el-link :underline="false" type="danger" @click.prevent="deleteRow(scope.row)">
+                    <base-icon-delete />
+                </el-link>
                 &nbsp;
-                <el-link v-if="scope.row.data !== undefined" :underline="false"
-                    @click.prevent="updateRow(scope.row)"><base-icon-refresh /></el-link>
+                <el-link
+                    v-if="scope.row.data !== undefined" :underline="false"
+                    @click.prevent="updateRow(scope.row)"
+                >
+                    <base-icon-refresh />
+                </el-link>
             </template>
         </el-table-column>
     </el-table>
-    <el-button v-if="store.player.id == store.user.id" style="width:100%" @click="formvisible = true" size="small">
+    <el-button v-if="store.player.id == store.user.id" style="width:100%" size="small" @click="formvisible = true">
         <base-icon-add />
     </el-button>
-    <el-dialog v-model="formvisible" :title="t('accountlink.addLink')"
-        @closed="form.platform = ''; form.identifier = '';" width="500px">
+    <el-dialog
+        v-model="formvisible" :title="t('accountlink.addLink')" width="500px"
+        @closed="form.platform = ''; form.identifier = '';"
+    >
         <el-form :model="form">
             <el-form-item :label="t('accountlink.platform')">
                 <el-select v-model="form.platform">
-                    <el-option v-for="(item, key) of platformlist" :value="key" :label="item.name"
-                        :disabled="userHasPlatform(key)" />
+                    <el-option
+                        v-for="(item, key) of platformlist" :key="key" :value="key" :label="item.name"
+                        :disabled="userHasPlatform(key)"
+                    />
                 </el-select>
             </el-form-item>
             <el-form-item label="ID">
@@ -62,7 +78,7 @@
             </el-form-item>
             <el-form-item>
                 <base-button-confirm :disabled="!formValid" @click.prevent="addLink(); formvisible = false;" />
-                <base-button-cancel @click.prevent="formvisible = false"/>
+                <base-button-cancel @click.prevent="formvisible = false" />
             </el-form-item>
         </el-form>
     </el-dialog>
@@ -73,8 +89,8 @@
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { store, local } from '@/store';
-import { ElNotification, ElDialog, ElForm, ElFormItem, ElInput, ElSelect, ElOption, ElLink, ElTable, ElTableColumn, ElText, ElTooltip, ElButton, ElIcon } from 'element-plus';
-import { Platform, platformlist } from '@/utils/common/accountLinkPlatforms'
+import { ElNotification, ElDialog, ElForm, ElFormItem, ElInput, ElSelect, ElOption, ElLink, ElTable, ElTableColumn, ElText, ElTooltip, ElButton } from 'element-plus';
+import { Platform, platformlist } from '@/utils/common/accountLinkPlatforms';
 import PlatformIcon from './widgets/PlatformIcon.vue';
 const AccountLinkGuide = defineAsyncComponent(() => import('./dialogs/AccountLinkGuide.vue'));
 const AccountSaolei = defineAsyncComponent(() => import('./accountlinks/AccountSaolei.vue'));
@@ -86,6 +102,7 @@ import BaseIconDelete from './common/BaseIconDelete.vue';
 import BaseIconAdd from './common/BaseIconAdd.vue';
 import BaseIconRefresh from './common/BaseIconRefresh.vue';
 import BaseIconVerified from './common/BaseIconVerified.vue';
+import BaseIconPending from './common/BaseIconPending.vue';
 import { useI18n } from 'vue-i18n';
 import { httpErrorNotification } from './Notifications';
 const { t } = useI18n();
@@ -103,63 +120,64 @@ const formvisible = ref(false);
 const form = reactive({
     platform: '',
     identifier: '',
-})
+});
 
 async function refresh() {
     if (store.player.id == 0) return;
     proxy.$axios.get('accountlink/get/',
         {
             params: {
-                id: store.player.id
-            }
-        }
+                id: store.player.id,
+            },
+        },
     ).then(function (response) {
         accountlinks.value = response.data;
-    })
+    });
 }
-watch(() => store.player.id, refresh, { immediate: true })
+watch(() => store.player.id, refresh, { immediate: true });
 
 const formValid = computed(() => {
     switch (form.platform) {
         case 'a':
         case 'c':
-        case 'w':
+        case 'w': {
             const num = parseInt(form.identifier, 10);
-            return !isNaN(num) && num.toString() === form.identifier && num > 0
+            return !isNaN(num) && num.toString() === form.identifier && num > 0;
+        }
         default:
             return false;
     }
-})
+});
 
 const addLink = () => {
     proxy.$axios.post('accountlink/add/',
         {
             platform: form.platform,
             identifier: form.identifier,
-        }
-    ).then(function (response) {
-        refresh()
-    }).catch(httpErrorNotification)
-}
+        },
+    ).then(function (_response) {
+        refresh();
+    }).catch(httpErrorNotification);
+};
 
 const deleteRow = (row: any) => {
     // @ts-ignore
     ElMessageBox.confirm(t.t('accountlink.platform') + ' - ' + platformlist[row.platform].name + ', ID - ' + row.identifier, t.t('accountlink.deleteLinkMessage')).then(() => {
-        proxy.$axios.post('accountlink/delete/', { platform: row.platform }).then(function (response) {
-            refresh()
-        })
-    }).catch(httpErrorNotification)
-}
+        proxy.$axios.post('accountlink/delete/', { platform: row.platform }).then(function (_response) {
+            refresh();
+        });
+    }).catch(httpErrorNotification);
+};
 
 const expandRow = (row: any) => {
     if (row.data !== undefined) return;
     if (row.verified === false) return;
     loadRow(row);
-}
+};
 
 const updateRow = (row: any) => {
     proxy.$axios.post('accountlink/update/', { platform: row.platform }).then(function (response) {
-        let data = response.data;
+        const data = response.data;
         if (data.type == 'success') loadRow(row);
         else if (data.type == 'error') {
             ElNotification({
@@ -167,26 +185,26 @@ const updateRow = (row: any) => {
                 message: t('accountlink.updateError.' + data.category),
                 type: 'error',
                 duration: local.value.notification_duration,
-            })
+            });
         }
-    }).catch(httpErrorNotification)
-}
+    }).catch(httpErrorNotification);
+};
 
 const loadRow = (row: any) => {
     proxy.$axios.get('accountlink/get/',
         {
-            params: { id: store.player.id, platform: row.platform }
-        }
+            params: { id: store.player.id, platform: row.platform },
+        },
     ).then(function (response) {
-        row.data = response.data
-    }).catch(httpErrorNotification)
-}
+        row.data = response.data;
+    }).catch(httpErrorNotification);
+};
 
 const userHasPlatform = (platform: string) => {
-    for (let item of accountlinks.value) {
+    for (const item of accountlinks.value) {
         if (item.platform == platform) return true;
     }
     return false;
-}
+};
 
 </script>

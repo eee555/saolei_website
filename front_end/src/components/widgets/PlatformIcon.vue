@@ -9,10 +9,10 @@
 <script setup lang="ts">
 import { platformlist } from '@/utils/common/accountLinkPlatforms';
 import { ElLink } from 'element-plus';
-const data = defineProps({
+defineProps({
     platform: {
         type: String,
-        default: "",
+        default: '',
     },
 });
 </script>

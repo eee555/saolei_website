@@ -16,6 +16,7 @@ export default {
             cell7: '7',
             cell8: '8',
             ce_s: 'Ces',
+            cl: 'Cl',
             cl_s: 'Cls',
             double: 'DCl',
             double_s: 'DCls',
@@ -28,7 +29,7 @@ export default {
             right_s: 'RCls',
             lrd: 'LRD',
             stnb: 'STNB',
-            thrp: 'ThrP'
-        }
-    }
-}
+            thrp: 'ThrP',
+        },
+    },
+};

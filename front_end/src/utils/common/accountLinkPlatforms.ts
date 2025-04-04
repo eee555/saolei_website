@@ -1,12 +1,12 @@
 const saoleiProfile = (id: string | number) => {
-    return "http://saolei.wang/Player/Index.asp?Id=" + id;
-}
+    return 'http://saolei.wang/Player/Index.asp?Id=' + id;
+};
 const msgamesProfile = (id: string | number) => {
-    return "https://minesweepergame.com/profile.php?pid=" + id;
-}
+    return 'https://minesweepergame.com/profile.php?pid=' + id;
+};
 const womProfile = (id: string | number) => {
-    return "https://minesweeper.online/player/" + id;
-}
+    return 'https://minesweeper.online/player/' + id;
+};
 
 export declare type Platform = 'a' | 'c' | 'w';
 interface PlatformProfile {

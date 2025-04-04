@@ -54,6 +54,7 @@ class VideoModel(models.Model):
     # 服务器端文件相对路径
     file = RestrictedFileField(
         upload_to="videos/%Y%m%d/", max_length=100, max_upload_size=MaxSizes.VIDEOFILE)
+    file_size = models.PositiveIntegerField(default=0)
     url_web = models.TextField(max_length=255, blank=True, default="")
     url_file = models.TextField(max_length=255, blank=True, default="")
     video = models.OneToOneField(
@@ -65,7 +66,8 @@ class VideoModel(models.Model):
     state = models.CharField(
         max_length=1, choices=MS_TextChoices.State.choices, default=MS_TextChoices.State.PLAIN)
     # 软件: "a"->avf; "e"->evf; "u" ->url(未下载);
-    software = models.CharField(max_length=MaxSizes.SOFTWARE)
+    software = models.CharField(
+        max_length=MaxSizes.SOFTWARE, choices=MS_TextChoices.Software.choices)
     # 难度
     level = models.CharField(
         max_length=MaxSizes.GAMELEVEL, choices=MS_TextChoices.Level.choices)
@@ -167,8 +169,9 @@ class VideoModel(models.Model):
             "mode": self.mode,
             "timems": self.timems,
             "bv": self.bv,
-            "bvs": self.bvs,
-            "identifier": self.video.identifier}, cls=ComplexEncoder))
+            "cl": self.cl,
+            "ce": self.ce,
+        }, cls=ComplexEncoder))
 
     def pop_redis(self, name: str):
         cache.hdel(name, self.id)

@@ -1,7 +1,9 @@
 <template>
-    <el-form-item prop="email" :label="t('form.email')" ref="emailFormRef">
-        <el-input v-model="email" prefix-icon="Message" type="email" @input="emailInputHandler"
-            @change="emailChangeHandler"></el-input>
+    <el-form-item ref="emailFormRef" prop="email" :label="t('form.email')">
+        <el-input
+            v-model="email" prefix-icon="Message" type="email" @input="emailInputHandler"
+            @change="emailChangeHandler"
+        />
     </el-form-item>
 </template>
 
@@ -14,26 +16,26 @@ import isEmail from 'validator/lib/isEmail.js';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { useI18n } from 'vue-i18n';
 
-const email = defineModel();
+const email = defineModel({ type: String, required: true });
 const prop = defineProps({
     checkCollision: {
         type: String,
         default: '',
     },
-})
+});
 
 const { proxy } = useCurrentInstance();
 const { t } = useI18n();
 
 const emailFormRef = ref<typeof ElFormItem>();
-const validateState = computed(() => { return emailFormRef.value!.validateState });
+const validateState = computed(() => { return emailFormRef.value!.validateState; });
 
-defineExpose({ validateState })
+defineExpose({ validateState });
 
 const emailInputHandler = (value: string) => {
     if (value.length == 0) validateError(emailFormRef, t('msg.emailRequired'));
     else emailFormRef.value!.clearValidate();
-}
+};
 
 const emailChangeHandler = (value: string) => {
     if (value.length == 0) validateError(emailFormRef, t('msg.emailRequired'));
@@ -44,10 +46,10 @@ const emailChangeHandler = (value: string) => {
             else if (response.data === 'False' && prop.checkCollision === 'false') validateError(emailFormRef, t('msg.emailNoCollision'));
             else validateSuccess(emailFormRef);
         }).catch(function (error) {
-            if (error.code === "ERR_NETWORK") validateError(emailFormRef, t('msg.connectionFail'));
+            if (error.code === 'ERR_NETWORK') validateError(emailFormRef, t('msg.connectionFail'));
             else validateError(emailFormRef, t('msg.unknownError') + error);
-        })
+        });
     }
-}
+};
 
 </script>

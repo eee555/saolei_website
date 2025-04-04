@@ -1,18 +1,24 @@
 <template>
-    <el-dialog v-model="visible" :title="t('login.retrieveTitle')" width="400px" align-center draggable
-        :lock-scroll="false" @close='resetForm(ruleFormRef)'>
-        <el-form :model="retrieveForm" ref="ruleFormRef" status-icon>
+    <el-dialog
+        v-model="visible" :title="t('login.retrieveTitle')" width="400px" align-center draggable
+        :lock-scroll="false" @close="resetForm(ruleFormRef)"
+    >
+        <el-form ref="ruleFormRef" :model="retrieveForm" status-icon>
             <!-- 邮箱 -->
-            <email-form-item v-model="retrieveForm.email" ref="emailFormRef" check-collision="false"></email-form-item>
+            <email-form-item ref="emailFormRef" v-model="retrieveForm.email" check-collision="false" />
             <!-- 邮箱验证码 -->
-            <email-code-block v-model="retrieveForm.emailCode" :email="retrieveForm.email" type="register"
-                :email-state="email_state" ref="emailCodeFormRef" />
+            <email-code-block
+                ref="emailCodeFormRef" v-model="retrieveForm.emailCode" :email="retrieveForm.email" type="register"
+                :email-state="email_state"
+            />
             <!-- 密码 -->
-            <password-confirm-block v-model="retrieveForm.password" ref="passwordFormRef" />
+            <password-confirm-block ref="passwordFormRef" v-model="retrieveForm.password" />
             <!-- 确认 -->
             <el-form-item>
-                <el-button type="primary" @click="submitForm(ruleFormRef)" :disabled="confirm_disabled">{{
-                    t('login.retrieveConfirm') }}</el-button>
+                <el-button type="primary" :disabled="confirm_disabled" @click="submitForm(ruleFormRef)">
+                    {{
+                        t('login.retrieveConfirm') }}
+                </el-button>
             </el-form-item>
         </el-form>
     </el-dialog>
@@ -28,7 +34,7 @@ import passwordConfirmBlock from '../formItems/passwordConfirmBlock.vue';
 import { local } from '@/store';
 import { useI18n } from 'vue-i18n';
 
-const visible = defineModel();
+const visible = defineModel({ type: Boolean, default: false });
 const emit = defineEmits(['login']);
 
 const { proxy } = useCurrentInstance();
@@ -39,55 +45,55 @@ const emailCodeFormRef = ref<typeof emailCodeBlock>();
 const passwordFormRef = ref<typeof passwordConfirmBlock>();
 
 interface RetrieveForm {
-    email: string,
-    emailCode: string,
-    password: string,
+    email: string;
+    emailCode: string;
+    password: string;
 }
 
 const retrieveForm = reactive<RetrieveForm>({
-    email: "",
-    emailCode: "",
-    password: "",
-})
+    email: '',
+    emailCode: '',
+    password: '',
+});
 
-const ruleFormRef = ref<FormInstance>()
+const ruleFormRef = ref<FormInstance>();
 
 const email_state = computed(() => {
     if (emailFormRef.value === undefined) return '';
     else return emailFormRef.value.validateState;
-})
+});
 const confirm_disabled = computed(() => {
-    return !(emailFormRef.value !== undefined && emailFormRef.value!.validateState === 'success' && emailCodeFormRef.value!.validateState === 'success' && passwordFormRef.value!.validateState === 'success')
-})
+    return !(emailFormRef.value !== undefined && emailFormRef.value!.validateState === 'success' && emailCodeFormRef.value!.validateState === 'success' && passwordFormRef.value!.validateState === 'success');
+});
 
 const submitForm = async (formEl: FormInstance | undefined) => {
-    if (!formEl) return
-    if (confirm_disabled.value) return
+    if (!formEl) return;
+    if (confirm_disabled.value) return;
     await proxy.$axios.post('userprofile/retrieve/', {
         password: retrieveForm.password,
         email: retrieveForm.email,
         email_key: emailCodeFormRef.value!.hashkey,
         email_captcha: retrieveForm.emailCode,
     }).then(function (response) {
-        let data = response.data;
+        const data = response.data;
         if (data.type == 'success') {
-            emit('login', data.user)
+            emit('login', data.user);
             ElNotification({
                 title: t('msg.passwordChanged'),
                 type: 'success',
                 duration: local.value.notification_duration,
-            })
+            });
         } else if (data.type === 'error') {
             if (data.object === 'emailcode') {
-                emailCodeFormRef.value!.errorCode()
+                emailCodeFormRef.value!.errorCode();
             }
         }
-    })
-}
+    });
+};
 
 const resetForm = (formEl: FormInstance | undefined) => {
-    if (!formEl) return
-    formEl.resetFields()
-}
+    if (!formEl) return;
+    formEl.resetFields();
+};
 
 </script>

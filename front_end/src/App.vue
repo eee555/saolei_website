@@ -1,18 +1,21 @@
 <template>
     <el-container style="height: 100%">
         <el-header>
-            <el-scrollbar :height="100"> <!-- 给一个足够的高度就可以不显示纵向滚动条 -->
-                <el-menu mode="horizontal" :router="true" :default-active="menu_index" :ellipsis="false"
-                    menu-trigger="click">
+            <el-scrollbar :height="100">
+                <!-- 给一个足够的高度就可以不显示纵向滚动条 -->
+                <el-menu
+                    mode="horizontal" :router="true" :default-active="menu_index" :ellipsis="false"
+                    menu-trigger="click"
+                >
                     <el-menu-item index="/" class="logo">
                         <el-image class="logo1" :src="logo_1" :fit="'cover'" />
                         <el-image v-if="!local.menu_icon" class="logo2" :src="logo_2" :fit="'cover'" />
                     </el-menu-item>
-                    <el-menu-item v-for="item in menu_items" :index="'/' + item.index">
+                    <el-menu-item v-for="item in menu_items" :key="item.index" :index="`/${ item.index}`">
                         <IconMenuItem :text="t(item.content)" :icon="item.icon" />
                     </el-menu-item>
                     <div style="flex-grow: 1" />
-                    <el-menu-item :index="player_url" v-if="store.user.id != 0">
+                    <el-menu-item v-if="store.user.id != 0" :index="player_url">
                         <IconMenuItem :text="store.user.username" icon="User" />
                     </el-menu-item>
                     <el-menu-item index="/settings" style="padding-left: 8px; padding-right: 5px">
@@ -21,7 +24,7 @@
                         </el-badge>
                     </el-menu-item>
                     <LanguagePicker v-show="local.language_show" style="padding-left: 8px; padding-right: 8px;" />
-                    <Login @login="user_login" @logout="user_logout"></Login>
+                    <Login @login="user_login" @logout="user_logout" />
                 </el-menu>
             </el-scrollbar>
         </el-header>
@@ -35,8 +38,10 @@
         </el-container>
     </el-container>
 
-    <el-dialog draggable :lock-scroll="false" v-model="notice_visible" title="站长通知"
-        :before-close="handle_notice_close" style="white-space: pre-wrap;" width="min(max(50%, 400px), 90vw)">
+    <el-dialog
+        v-if="false" v-model="notice_visible" draggable :lock-scroll="false" title="站长通知"
+        :before-close="handle_notice_close" style="white-space: pre-wrap;" width="min(max(50%, 400px), 90vw)"
+    >
         <span>{{ notice }}</span>
         <template #footer>
             <span class="dialog-footer">
@@ -48,32 +53,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from "vue";
-import LanguagePicker from "./components/widgets/LanguagePicker.vue";
-import IconMenuItem from "./components/widgets/IconMenuItem.vue";
-import Login from "./components/Login.vue";
-import Footer from "./components/Footer.vue";
-import PlayerDialog from "./components/PlayerDialog.vue";
-import useCurrentInstance from "@/utils/common/useCurrentInstance";
-import { store, local } from "./store";
-import { ElScrollbar, ElMenu, ElMenuItem, ElDialog, ElCheckbox, ElImage, ElBadge, ElHeader, ElContainer, ElMain } from "element-plus";
-import BaseButtonConfirm from "./components/common/BaseButtonConfirm.vue";
+import { ref, onMounted, computed, watch } from 'vue';
+import LanguagePicker from './components/widgets/LanguagePicker.vue';
+import IconMenuItem from './components/widgets/IconMenuItem.vue';
+import Login from './components/Login.vue';
+import Footer from './components/Footer.vue';
+import PlayerDialog from './components/PlayerDialog.vue';
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import { store, local } from './store';
+import { ElScrollbar, ElMenu, ElMenuItem, ElDialog, ElCheckbox, ElImage, ElBadge, ElHeader, ElContainer, ElMain } from 'element-plus';
+import BaseButtonConfirm from './components/common/BaseButtonConfirm.vue';
 
 const { proxy } = useCurrentInstance();
-import logo_1 from "@/assets/logo.png";
-import logo_2 from "@/assets/logo2.png";
+import logo_1 from '@/assets/logo.png';
+import logo_2 from '@/assets/logo2.png';
 
-import { useRouter } from "vue-router";
+import { useRouter } from 'vue-router';
 const router = useRouter();
 
 import { useDark, useToggle } from '@vueuse/core';
-const isDark = useDark()
-useToggle(isDark)
+const isDark = useDark();
+useToggle(isDark);
 watch(isDark, (v) => {
-    local.value.darkmode = v
-})
+    local.value.darkmode = v;
+});
 
-import { useI18n } from "vue-i18n";
+import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
 // const player_visible = ref(false)
@@ -84,11 +89,11 @@ const never_show_notice = ref(false);
 const menu_index = ref();
 
 const menu_items = [
-    { index: "ranking", icon: "Trophy", content: "menu.ranking" },
-    { index: "video", icon: "VideoCameraFilled", content: "menu.video" },
-    //{ index: "world", icon: "Odometer", content: "menu.world" },
-    { index: "guide", icon: "Document", content: "menu.guide" },
-    //{ index: "score", icon: "Histogram", content: "menu.score" },
+    { index: 'ranking', icon: 'Trophy', content: 'menu.ranking' },
+    { index: 'video', icon: 'VideoCameraFilled', content: 'menu.video' },
+    // { index: "world", icon: "Odometer", content: "menu.world" },
+    { index: 'guide', icon: 'Document', content: 'menu.guide' },
+    // { index: "score", icon: "Histogram", content: "menu.score" },
 ] as const;
 
 const notice = ref(`
@@ -100,8 +105,8 @@ const notice = ref(`
 `);
 
 onMounted(() => {
-    const notice_hash = localStorage.getItem("notice") as String;
-    if (hash_code(notice.value) + "" != notice_hash) {
+    const notice_hash = localStorage.getItem('notice') as string;
+    if (hash_code(notice.value) + '' != notice_hash) {
         notice_visible.value = true;
     }
 
@@ -114,7 +119,7 @@ onMounted(() => {
 });
 
 const player_url = computed(() => {
-    return "/player/" + store.user.id;
+    return '/player/' + store.user.id;
 });
 
 const user_login = () => {
@@ -125,9 +130,9 @@ const user_login = () => {
 const user_logout = () => {
     // console.log(router.currentRoute.value.fullPath);
     // 如果切在我的地盘，就切到主页
-    if (router.currentRoute.value.fullPath.slice(0, 7) == "/player") {
-        menu_index.value = "/";
-        proxy.$router.push("/");
+    if (router.currentRoute.value.fullPath.slice(0, 7) == '/player') {
+        menu_index.value = '/';
+        proxy.$router.push('/');
     }
 };
 
@@ -138,13 +143,13 @@ const user_logout = () => {
 // 站长通知关闭的回调
 const handle_notice_close = () => {
     if (never_show_notice.value) {
-        localStorage.setItem("notice", hash_code(notice.value) + "");
+        localStorage.setItem('notice', hash_code(notice.value) + '');
     }
     notice_visible.value = false;
 };
 
 const hash_code = function (t: string) {
-    var hash = 0,
+    let hash = 0,
         i,
         chr;
     if (t.length === 0) return hash;
@@ -165,12 +170,12 @@ body {
 
 <style lang="less" scoped>
 .el-header {
-    --el-header-height: v-bind("local.menu_height + 'px'");
+    --el-header-height: v-bind("`${local.menu_height}px`");
     padding: 0px;
 }
 
 .el-menu {
-    height: v-bind("local.menu_height + 'px'");
+    height: v-bind("`${local.menu_height}px`");
 }
 
 .logo {
@@ -179,39 +184,39 @@ body {
     justify-content: center;
     align-items: center;
     padding: 0px;
-    padding-left: v-bind("local.menu_height / 8 + 'px'");
-    padding-right: v-bind("local.menu_height / 8 + 'px'");
+    padding-left: v-bind("`${local.menu_height / 8}px`");
+    padding-right: v-bind("`${local.menu_height / 8}px`");
 }
 
 .logo1 {
-    width: v-bind("local.menu_height - 8 + 'px'");
-    height: v-bind("local.menu_height - 8 + 'px'");
+    width: v-bind("`${local.menu_height - 8}px`");
+    height: v-bind("`${local.menu_height - 8}px`");
     padding-top: 4px;
     padding-bottom: 4px;
     display: inline-flex;
 }
 
 .logo2 {
-    width: v-bind("local.menu_height * 2.5 + 'px'");
-    height: v-bind("local.menu_height + 'px'");
+    width: v-bind("`${local.menu_height * 2.5}px`");
+    height: v-bind("`${local.menu_height}px`");
     display: inline-flex;
 }
 
 .el-menu-item {
-    font-size: v-bind("local.menu_font_size + 'px'");
+    font-size: v-bind("`${local.menu_font_size}px`");
     padding-left: 8px;
     padding-right: 5px;
 }
 
 .mainheight {
-    height: calc(100svh - v-bind("local.menu_height + 'px'"))
+    height: calc(100svh - v-bind("`${local.menu_height}px`"))
 }
 
-@media (min-width: 1024px) {  
-  .common-layout {  
+@media (min-width: 1024px) {
+  .common-layout {
     padding: 1.5em min(15vw, 150px);
-    /* 这里设置只在大屏幕（电脑端）上生效的样式 */  
-  }  
+    /* 这里设置只在大屏幕（电脑端）上生效的样式 */
+  }
 }
 
 </style>
