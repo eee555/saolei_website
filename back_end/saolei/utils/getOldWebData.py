@@ -170,7 +170,7 @@ class VideoData(BasePostData):
         self.url_set = url_set
 
     @overload
-    def getData(self, level: Level, lastTime: datetime, endTime: datetime) -> list[Info]:
+    def getData(self, level: Level, lastTime: datetime, endTime: datetime, is_need_file_url: bool) -> list[Info]:
         """
         获取视频信息
 
@@ -189,6 +189,7 @@ class VideoData(BasePostData):
             return []
         lastTime = args[1]
         endTime = args[2]
+        is_need_file_url = args[3]
         flag = True
         page = 1
         url = formatUrl.get(mode=Mode.Video, level=args[0])
@@ -228,7 +229,7 @@ class VideoData(BasePostData):
             info.videoID = int(videoID)
             info.level = args[0].name
             info.url = formatUrl.get(
-                mode=Mode.Video, videoID=videoID)
+                mode=Mode.Video, videoID=videoID) if is_need_file_url else ""
             return info
 
         while flag:
