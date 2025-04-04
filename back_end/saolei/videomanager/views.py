@@ -53,10 +53,13 @@ def video_saolei_import_by_userid_post(request) -> JsonResponse:
     data = request.POST
     begin_time = data.get('begin_time')
     end_time = data.get('end_time')
+    is_need_file_url = data.get('is_need_file_url')
+    if is_need_file_url is None:
+        is_need_file_url = False
     if begin_time is None or end_time is None:
         return JsonResponse({'type': 'error', 'object': 'videomodel', 'category': 'notFound'})
     video_saolei_import_by_userid_helper(
-        userProfile=user.parent, accountSaolei=user, beginTime=datetime.datetime.fromisoformat(begin_time[:-1]), endTime=datetime.datetime.fromisoformat(end_time[:-1]))
+        userProfile=user.parent, accountSaolei=user, beginTime=datetime.datetime.fromisoformat(begin_time[:-1]), endTime=datetime.datetime.fromisoformat(end_time[:-1]), is_need_file_url=is_need_file_url)
     return JsonResponse({'type': 'success', 'object': 'videomodel', 'category': 'import'})
 
 

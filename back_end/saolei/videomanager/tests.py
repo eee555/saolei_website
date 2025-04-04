@@ -73,7 +73,8 @@ class VideoManagerTestCase(TestCase):
         video = new_video_by_file(self.user, ContentFile(
             self.testfile_exp.content, name='Exp_FL_35.09_3BV=132_3BVs=3.76_Pu Tian Yi(Hu Bei).avf'))
         self.multiple_values_test(video, self.testfile_exp_values)
-        self.multiple_values_test(video.video, self.testfile_exp_values_extended)
+        self.multiple_values_test(
+            video.video, self.testfile_exp_values_extended)
         video.delete()
 
     def test_refresh(self):
@@ -85,7 +86,8 @@ class VideoManagerTestCase(TestCase):
 
         video = VideoModel.objects.get(id=video.id)
         self.multiple_values_test(video, self.testfile_exp_values)
-        self.multiple_values_test(video.video, self.testfile_exp_values_extended)
+        self.multiple_values_test(
+            video.video, self.testfile_exp_values_extended)
         video.delete()
 
     def test_video_saolei_import_by_userid(self):
@@ -97,4 +99,5 @@ class VideoManagerTestCase(TestCase):
             userProfile=self.user, accountSaolei=accountSaolei)
         videos = list(VideoModel.objects.filter(player=self.user))
         self.assertEqual(len(videos), 13)
-        self.assertEqual(videos[0].upload_time, datetime(2023, 8, 18, 16, 47, tzinfo=timezone.utc))
+        self.assertEqual(videos[0].upload_time, datetime(
+            2023, 8, 18, 16, 47, tzinfo=timezone.utc))
