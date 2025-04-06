@@ -73,8 +73,7 @@ class VideoManagerTestCase(TestCase):
         video = new_video_by_file(self.user, ContentFile(
             self.testfile_exp.content, name='Exp_FL_35.09_3BV=132_3BVs=3.76_Pu Tian Yi(Hu Bei).avf'))
         self.multiple_values_test(video, self.testfile_exp_values)
-        self.multiple_values_test(
-            video.video, self.testfile_exp_values_extended)
+        self.multiple_values_test(video.video, self.testfile_exp_values_extended)
         video.delete()
 
     def test_refresh(self):
