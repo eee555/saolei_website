@@ -85,8 +85,7 @@ class VideoManagerTestCase(TestCase):
 
         video = VideoModel.objects.get(id=video.id)
         self.multiple_values_test(video, self.testfile_exp_values)
-        self.multiple_values_test(
-            video.video, self.testfile_exp_values_extended)
+        self.multiple_values_test(video.video, self.testfile_exp_values_extended)
         video.delete()
 
     def test_video_saolei_import_by_userid(self):
