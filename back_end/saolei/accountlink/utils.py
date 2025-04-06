@@ -44,8 +44,7 @@ def link_saolei_account(saoleiid, user: UserProfile):
 def link_msgames_account(msgamesid, user: UserProfile):
     account = AccountMinesweeperGames.objects.filter(id=msgamesid).first()
     if not account:
-        account = AccountMinesweeperGames.objects.create(
-            id=msgamesid, parent=user)
+        account = AccountMinesweeperGames.objects.create(id=msgamesid, parent=user)
     else:
         account.parent = user
     return account
