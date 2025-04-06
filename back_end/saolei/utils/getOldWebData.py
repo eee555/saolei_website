@@ -236,8 +236,7 @@ class VideoData(BasePostData):
                 response.encoding = 'GB2312'
                 if response.status_code != 200:
                     return infos
-                match = re.search(r'<html>.*?<\/html>',
-                                  response.text, re.DOTALL)
+                match = re.search(r'<html>.*?<\/html>', response.text, re.DOTALL)
                 text = ''
                 if match:
                     text = match.group(0)
