@@ -54,8 +54,7 @@ def link_msgames_account(msgamesid, user: UserProfile):
 def link_wom_account(womid, user: UserProfile):
     account = AccountWorldOfMinesweeper.objects.filter(id=womid).first()
     if not account:
-        account = AccountWorldOfMinesweeper.objects.create(
-            id=womid, parent=user)
+        account = AccountWorldOfMinesweeper.objects.create(id=womid, parent=user)
     else:
         account.parent = user
     return account
