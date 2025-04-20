@@ -192,6 +192,8 @@ function refresh() {
         if (data.avatar) {
             imageUrl.value = 'data:image/;base64,' + data.avatar;
             imageUrlOld = 'data:image/;base64,' + data.avatar;
+        } else {
+            imageUrl.value = imageUrlDefault;
         }
         // console.log(imageUrl);
     }).catch(unknownErrorNotification);
