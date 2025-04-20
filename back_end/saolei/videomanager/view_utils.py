@@ -401,7 +401,7 @@ def refresh_video(video: VideoModel):
     e_video.save()
 
 
-def video_saolei_import_by_userid_helper(userProfile: UserProfile, accountSaolei: AccountSaolei, beginTime: datetime = datetime.min.replace(tzinfo=timezone.utc), endTime: datetime = datetime.max.replace(tzinfo=timezone.utc)) -> VideoData.Info:
+def video_saolei_import_by_userid_helper(userProfile: UserProfile, accountSaolei: AccountSaolei, beginTime: datetime = datetime.min.replace(tzinfo=timezone.utc), endTime: datetime = datetime.max.replace(tzinfo=timezone.utc), is_need_file_url=False) -> VideoData.Info:
 
     def scheduleFunc(info: VideoData.Info) -> bool:
         videoModel = ExpandVideoModel.objects.create(
@@ -429,6 +429,9 @@ def video_saolei_import_by_userid_helper(userProfile: UserProfile, accountSaolei
         player=userProfile).values_list('url_web')
     url_set = {url for url, in urls}
     videodata = VideoData(accountSaolei.id, url_set, scheduleFunc)
-    videodata.getData(Level.Beg, beginTime, endTime)
-    videodata.getData(Level.Int, beginTime, endTime)
-    videodata.getData(Level.Exp, beginTime, endTime)
+    videodata.getData(Level.Beg, beginTime, endTime,
+                      is_need_file_url)
+    videodata.getData(Level.Int, beginTime, endTime,
+                      is_need_file_url)
+    videodata.getData(Level.Exp, beginTime, endTime,
+                      is_need_file_url)
