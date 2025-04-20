@@ -76,7 +76,6 @@ const login_auto = async () => {
     proxy.$axios.get('/userprofile/loginauto/').then(function (response) {
         if (response.data.id) {
             store.user = new UserProfile(response.data);
-            store.player = new UserProfile(response.data);
             store.login_status = LoginStatus.IsLogin;
         } else {
             store.login_status = LoginStatus.NotLogin;
@@ -86,7 +85,6 @@ const login_auto = async () => {
 
 const login = (user: any, remember: boolean) => {
     store.user = new UserProfile(user);
-    store.player = new UserProfile(user);
     store.login_status = LoginStatus.IsLogin;
     login_visible.value = false;
     register_visible.value = false;
