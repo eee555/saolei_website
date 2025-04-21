@@ -5,6 +5,7 @@ from userprofile.models import UserProfile
 
 class Platform(models.TextChoices):
     MSGAMES = 'a', ('Authoritative Minesweeper')
+    QQ = 'q', ('腾讯QQ')
     SAOLEI = 'c', ('扫雷网')
     WOM = 'w', ('Minesweeper.Online')
 
@@ -121,3 +122,29 @@ class AccountWorldOfMinesweeper(models.Model):
     # b_endurance = models.TimeField()
     # i_endurance = models.TimeField()
     # e_endurance = models.TimeField()
+
+
+# 使用QQ互联提供的登录接口需要开发者注册，步骤繁琐，不利于去中心化
+class AccountQQ(models.Model):
+    id = models.PositiveBigIntegerField(primary_key=True)
+    parent = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='account_qq')
+
+
+PLATFORM_CONFIG = {
+    Platform.MSGAMES: {
+        'model': AccountMinesweeperGames,
+        'related_name': 'account_msgames',
+    },
+    Platform.SAOLEI: {
+        'model': AccountSaolei,
+        'related_name': 'account_saolei',
+    },
+    Platform.WOM: {
+        'model': AccountWorldOfMinesweeper,
+        'related_name': 'account_wom',
+    },
+    Platform.QQ: {
+        'model': AccountQQ,
+        'related_name': 'account_qq',
+    },
+}

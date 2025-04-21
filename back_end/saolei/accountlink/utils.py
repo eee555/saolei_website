@@ -1,5 +1,5 @@
 import re
-from .models import AccountSaolei, AccountMinesweeperGames, AccountWorldOfMinesweeper, Platform
+from .models import AccountSaolei, AccountMinesweeperGames, AccountWorldOfMinesweeper, Platform, PLATFORM_CONFIG
 from userprofile.models import UserProfile
 import requests
 from lxml import etree
@@ -11,14 +11,13 @@ headers = {
 
 
 def link_account(platform: Platform, linkid, user: UserProfile):
-    if platform == Platform.SAOLEI:
-        link_saolei_account(linkid, user)
-    elif platform == Platform.MSGAMES:
-        link_msgames_account(linkid, user)
-    elif platform == Platform.WOM:
-        link_wom_account(linkid, user)
+    model = PLATFORM_CONFIG[platform]['model']
+    account = model.objects.filter(id=linkid).first()
+    if not account:
+        account = model.objects.create(id=linkid, parent=user)
     else:
-        ValueError()
+        account.parent = user
+    return account
 
 
 def delete_account(user: UserProfile, platform: Platform):
@@ -30,33 +29,6 @@ def delete_account(user: UserProfile, platform: Platform):
         user.account_wom.delete()
     else:
         ValueError()
-
-
-def link_saolei_account(saoleiid, user: UserProfile):
-    account = AccountSaolei.objects.filter(id=saoleiid).first()
-    if not account:
-        account = AccountSaolei.objects.create(id=saoleiid, parent=user)
-    else:
-        account.parent = user
-    return account
-
-
-def link_msgames_account(msgamesid, user: UserProfile):
-    account = AccountMinesweeperGames.objects.filter(id=msgamesid).first()
-    if not account:
-        account = AccountMinesweeperGames.objects.create(id=msgamesid, parent=user)
-    else:
-        account.parent = user
-    return account
-
-
-def link_wom_account(womid, user: UserProfile):
-    account = AccountWorldOfMinesweeper.objects.filter(id=womid).first()
-    if not account:
-        account = AccountWorldOfMinesweeper.objects.create(id=womid, parent=user)
-    else:
-        account.parent = user
-    return account
 
 
 def update_account(platform: Platform, user: UserProfile, cooldown=12):

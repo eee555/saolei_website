@@ -46,7 +46,7 @@
                 </el-link>
                 &nbsp;
                 <el-link
-                    v-if="scope.row.data !== undefined" :underline="false"
+                    v-if="scope.row.data !== undefined && scope.row.platform !== 'q'" :underline="false"
                     @click.prevent="updateRow(scope.row)"
                 >
                     <base-icon-refresh />
@@ -89,7 +89,7 @@
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { store, local } from '@/store';
-import { ElNotification, ElDialog, ElForm, ElFormItem, ElInput, ElSelect, ElOption, ElLink, ElTable, ElTableColumn, ElText, ElTooltip, ElButton } from 'element-plus';
+import { ElNotification, ElDialog, ElForm, ElFormItem, ElInput, ElSelect, ElOption, ElLink, ElTable, ElTableColumn, ElText, ElTooltip, ElButton, ElMessageBox } from 'element-plus';
 import { Platform, platformlist } from '@/utils/common/accountLinkPlatforms';
 import PlatformIcon from './widgets/PlatformIcon.vue';
 const AccountLinkGuide = defineAsyncComponent(() => import('./dialogs/AccountLinkGuide.vue'));
@@ -140,6 +140,7 @@ const formValid = computed(() => {
     switch (form.platform) {
         case 'a':
         case 'c':
+        case 'q':
         case 'w': {
             const num = parseInt(form.identifier, 10);
             return !isNaN(num) && num.toString() === form.identifier && num > 0;
@@ -162,11 +163,11 @@ const addLink = () => {
 
 const deleteRow = (row: any) => {
     // @ts-ignore
-    ElMessageBox.confirm(t.t('accountlink.platform') + ' - ' + platformlist[row.platform].name + ', ID - ' + row.identifier, t.t('accountlink.deleteLinkMessage')).then(() => {
+    ElMessageBox.confirm(t('accountlink.platform') + ' - ' + platformlist[row.platform].name + ', ID - ' + row.identifier, t('accountlink.deleteLinkMessage')).then(() => {
         proxy.$axios.post('accountlink/delete/', { platform: row.platform }).then(function (_response) {
             refresh();
-        });
-    }).catch(httpErrorNotification);
+        }).catch(httpErrorNotification);
+    }).catch(() => {});
 };
 
 const expandRow = (row: any) => {
