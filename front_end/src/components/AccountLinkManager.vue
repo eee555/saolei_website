@@ -46,7 +46,7 @@
                 </el-link>
                 &nbsp;
                 <el-link
-                    v-if="scope.row.data !== undefined" :underline="false"
+                    v-if="scope.row.data !== undefined && scope.row.platform !== 'q'" :underline="false"
                     @click.prevent="updateRow(scope.row)"
                 >
                     <base-icon-refresh />
@@ -140,6 +140,7 @@ const formValid = computed(() => {
     switch (form.platform) {
         case 'a':
         case 'c':
+        case 'q':
         case 'w': {
             const num = parseInt(form.identifier, 10);
             return !isNaN(num) && num.toString() === form.identifier && num > 0;

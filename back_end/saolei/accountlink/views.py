@@ -1,4 +1,4 @@
-from .models import AccountLinkQueue, Platform
+from .models import AccountLinkQueue, Platform, PLATFORM_CONFIG
 from .utils import link_account, delete_account, update_account
 from userprofile.models import UserProfile
 from django.http import HttpResponseForbidden, HttpResponseBadRequest, JsonResponse, HttpResponse, HttpResponseNotFound
@@ -8,7 +8,7 @@ from django_ratelimit.decorators import ratelimit
 from django.forms.models import model_to_dict
 from userprofile.decorators import login_required_error, staff_required
 
-private_platforms = [""]  # 私人账号平台
+private_platforms = ["q"]  # 私人账号平台
 
 
 # 为自己绑定账号，需要指定平台和ID
@@ -52,16 +52,10 @@ def get_link(request):
     if platform := request.GET.get("platform"):
         if platform in private_platforms and not request.user.is_staff and user != request.user:
             return HttpResponseForbidden()
-        if platform == Platform.SAOLEI:
-            account = user.account_saolei
-        elif platform == Platform.MSGAMES:
-            account = user.account_msgames
-        elif platform == Platform.WOM:
-            account = user.account_wom
-        else:
-            return HttpResponseBadRequest()
+        account = getattr(user, PLATFORM_CONFIG[platform]['related_name'])
         data = model_to_dict(account)
-        data['update_time'] = account.update_time
+        if platform != Platform.QQ:
+            data['update_time'] = account.update_time
         return JsonResponse(data)
     else:
         if request.user.is_staff or user == request.user:  # 管理员或用户本人可以获得全部数据
