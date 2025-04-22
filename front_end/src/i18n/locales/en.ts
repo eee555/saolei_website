@@ -105,6 +105,7 @@ export default {
         guideMsgames1: 'Find yourself on the ',
         guideMsgames2: ' ranking:',
         guideMsgames3: 'Click the link next to your name (see image above) to get to your profile (see image below). The number at the end of the url is your ID.',
+        guideQQ: 'The QQ number is accessible from site moderators. Please be aware of your privacy safety.',
         guideSaolei1: 'Go to your profile page on ',
         guideSaolei2: '. The positions of the ID are shown below.',
         guideTitle: 'How to locate the ID',
