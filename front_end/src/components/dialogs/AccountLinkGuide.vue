@@ -19,6 +19,9 @@
         <PlatformIcon platform="w" />{{ t('accountlink.guideWom2') }}
         <img src="../../assets/IdGuideWom.png" width="100%">
     </el-text>
+    <el-text v-else-if="platform == 'q'">
+        {{ t('accountlink.guideQQ') }}
+    </el-text>
 </template>
 
 <script setup lang="ts">
