@@ -43,6 +43,7 @@ jobs:
       run: |
         pip install -r requirements.txt
         pip install cryptography
+        pip install coverage pytest-cov
 
     - name: Create Logs Directory
       run: mkdir -p logs
@@ -56,4 +57,9 @@ jobs:
       run: |
         python manage.py makemigrations
         python manage.py migrate
-        python manage.py test
+        coverage run manage.py test
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secret.CODECOV_TOKEN }}
