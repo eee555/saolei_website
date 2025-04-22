@@ -8,6 +8,7 @@ on:
     paths: 
       - 'back_end/saolei/**'
       - '.github/workflows/backend.yml'
+      - '.github/workflows/codecov.yml'
 
 jobs:
   check_flag:
