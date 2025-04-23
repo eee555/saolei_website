@@ -1,10 +1,14 @@
 <template>
     <el-row style="width: 100%; align-items: center">
-        <el-text size="small" style="margin-right: 0.5em">{{ t('activityCalendar.totalNVideos', [store.player.videos.length]) }}</el-text>
+        <el-text size="small" style="margin-right: 0.5em">
+            {{ t('activityCalendar.totalNVideos', [store.player.videos.length]) }}
+        </el-text>
         <StackBar :data="videoCountData" style="flex: 1;" />
     </el-row>
     <el-row style="width: 100%; align-items: center">
-        <el-text size="small" style="margin-right: 0.5em">{{ t('activityCalendar.totalNBytes', [begSize + intSize + expSize]) }}</el-text>
+        <el-text size="small" style="margin-right: 0.5em">
+            {{ t('activityCalendar.totalNBytes', [begSize + intSize + expSize]) }}
+        </el-text>
         <StackBar :data="videoFileSizeDate" style="flex: 1;" />
     </el-row>
 </template>
