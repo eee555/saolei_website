@@ -105,6 +105,7 @@ export default {
         guideMsgames1: '在',
         guideMsgames2: '排行榜找到你的位置：',
         guideMsgames3: '在上图点击名字右边的链接，进入如下的个人主页，网址结尾的数字就是ID。',
+        guideQQ: 'QQ号信息网站管理员可见。请注意隐私安全。',
         guideSaolei1: '登录',
         guideSaolei2: '，进入“我的地盘”，ID位置如下图所示。',
         guideTitle: '如何找到ID',
@@ -141,6 +142,7 @@ export default {
         cellSize: '方格边长',
         cornerRadius: '圆角半径',
         showDate: '显示日期',
+        totalNBytes: '占用{0}字节',
         totalNVideos: '共{0}个录像',
         tooltip: {
             noVideoOnDate: '{0} 无录像',
