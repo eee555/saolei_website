@@ -16,7 +16,6 @@
 <script setup lang="ts">
 import { store } from '@/store';
 import { useI18n } from 'vue-i18n';
-import 'vue-data-ui/style.css';
 import Lazy from 'lazy.js';
 import { computed } from 'vue';
 import StackBar from '@/components/visualization/StackBar/App.vue';

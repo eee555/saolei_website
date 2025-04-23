@@ -1,0 +1,36 @@
+name: Front-end Build
+
+on:
+  pull_request:
+    paths: 
+      - 'front_end/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 检出当前的代码仓库
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # 设置 Node.js 版本
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20.11.1' # 设置 Node.js 版本，你可以根据你的项目需要调整
+
+    # 安装依赖
+    - name: Install dependencies
+      run: |
+        node -v
+        npm -v
+        cd front_end
+        npm install
+        npm list
+
+    # 运行构建命令
+    - name: Build project 1
+      run: |
+        cd front_end
+        npm run build:openms
