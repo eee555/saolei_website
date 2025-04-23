@@ -39,6 +39,7 @@ export default typescriptEslint.config(
       'vue/no-v-html': 'off',
       'vue/prefer-template': 'error',
       'vue/require-v-for-key': 'off',
+      'vue/singleline-html-element-content-newline': 'error',
       'vue/static-class-names-order': 'error',
       '@intlify/vue-i18n/no-duplicate-keys-in-locale': 'error',
       '@intlify/vue-i18n/no-missing-keys': 'off', // 目前不兼容ts
