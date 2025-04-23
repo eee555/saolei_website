@@ -142,6 +142,7 @@ export default {
         cellSize: '方格边长',
         cornerRadius: '圆角半径',
         showDate: '显示日期',
+        totalNBytes: '占用{0}字节',
         totalNVideos: '共{0}个录像',
         tooltip: {
             noVideoOnDate: '{0} 无录像',

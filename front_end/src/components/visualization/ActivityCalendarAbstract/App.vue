@@ -1,6 +1,6 @@
 <template>
     <base-card-normal style="overflow: auto;">
-        <el-row style="align-items: center; display: flex;">
+        <el-row style="align-items: center; display: flex; margin-bottom: 5px;">
             <Header />
         </el-row>
         <el-row>
