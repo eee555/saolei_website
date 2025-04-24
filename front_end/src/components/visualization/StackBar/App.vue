@@ -15,6 +15,7 @@
 import { ElText } from 'element-plus';
 import { sum } from 'd3-array';
 import BaseTooltip from '@/components/common/BaseTooltip.vue';
+import { computed } from 'vue';
 
 interface DataItem {
     name: string;
@@ -29,6 +30,6 @@ const prop = defineProps({
     },
 });
 
-const sumValue = sum(prop.data, (item) => item.value);
+const sumValue = computed(() => sum(prop.data, (item) => item.value));
 
 </script>
