@@ -22,6 +22,7 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
+          component: true
           start: npm run dev
           working-directory: front_end
           browser: chrome
