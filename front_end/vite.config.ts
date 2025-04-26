@@ -26,10 +26,10 @@ export default defineConfig(({ mode }) => {
                 ext: '.gz', // Add a .gz extension to the compressed files
                 threshold: 1024, // Minimum file size in bytes to compress
             }),
-            removeAttr({
+            process.env.NODE_ENV === 'production' ? removeAttr({
                 extensions: ['vue'],
                 attributes: ['data-cy'],
-            }),
+            }) : null,
         ],
         resolve: {
             alias: {
