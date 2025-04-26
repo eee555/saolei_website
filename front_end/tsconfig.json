@@ -15,7 +15,8 @@
     "baseUrl": ".",
     "downlevelIteration": true,
     "types": [
-      "vite/client"
+      "vite/client",
+      "cypress",
     ],
     "paths": {
       "@/*": [
