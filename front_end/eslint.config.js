@@ -3,10 +3,13 @@ import eslintPluginVue from 'eslint-plugin-vue';
 import globals from 'globals';
 import typescriptEslint from 'typescript-eslint';
 import vueI18n from '@intlify/eslint-plugin-vue-i18n';
-import stylistic from '@stylistic/eslint-plugin'
+import stylistic from '@stylistic/eslint-plugin';
+import pluginCypress from 'eslint-plugin-cypress/flat';
 
 export default typescriptEslint.config(
   { ignores: ['*.d.ts', '**/coverage', '**/dist', '**/GuideView.vue'] },
+  pluginCypress.configs.recommended,
+  pluginCypress.configs.globals,
   {
     plugins: {
       '@stylistic': stylistic,
