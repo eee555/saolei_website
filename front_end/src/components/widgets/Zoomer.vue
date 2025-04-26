@@ -21,12 +21,7 @@ const zoom = defineModel({ type: Number, default: 1 });
 
 function handleTextWheel(event: WheelEvent) {
     event.preventDefault();
-    const delta = Math.sign(event.deltaY);
-    if (delta > 0) {
-        zoom.value = Math.max(zoom.value - 0.1, 0.1);
-    } else {
-        zoom.value = Math.min(zoom.value + 0.1, 4);
-    }
+    zoom.value = Math.max(Math.min(zoom.value + event.deltaY * -0.001, 4), 0.1);
 }
 
 </script>

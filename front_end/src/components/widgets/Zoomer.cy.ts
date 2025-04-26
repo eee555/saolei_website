@@ -21,9 +21,14 @@ describe('<Zoomer />', () => {
         cy.mount(Zoomer);
         cy.get('[data-cy=main]').trigger('wheel', { deltaY: -100 });
         cy.get('[data-cy=main').should('contain', '110%');
-        cy.get('[data-cy=main]').trigger('wheel', { deltaY: 100 });
-        cy.get('[data-cy=main').should('contain', '100%');
-        cy.get('[data-cy=main]').trigger('wheel', { deltaY: 100 });
+        cy.get('[data-cy=main]').trigger('wheel', { deltaY: 200 });
         cy.get('[data-cy=main').should('contain', '90%');
+    });
+    it('min and max', () => {
+        cy.mount(Zoomer);
+        cy.get('[data-cy=main]').trigger('wheel', { deltaY: 1000 });
+        cy.get('[data-cy=main').should('contain', '10%');
+        cy.get('[data-cy=main]').trigger('wheel', { deltaY: -10000 });
+        cy.get('[data-cy=main').should('contain', '400%');
     });
 });
