@@ -9,14 +9,15 @@ on:
 jobs:
   cypress-run:
     runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: front_end
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       # Install npm dependencies, cache them correctly
       - name: Install dependencies
-        run: |
-          cd front_end
-          npm install
+        run: npm install
       # and run all Cypress tests
       - name: Cypress run
         uses: cypress-io/github-action@v6
