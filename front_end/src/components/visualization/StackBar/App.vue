@@ -1,6 +1,6 @@
 <template>
     <div style="height: 0.3em; display: flex; align-items: center;">
-        <base-tooltip v-for="(item, index) in prop.data" :key="item.name" :show-delay="200" :style="{ width: `${(item.value / sumValue * 100)}%`, height: '100%', background: item.color, borderTopLeftRadius: index === 0 ? '0.1em' : '0', borderBottomLeftRadius: index === 0 ? '0.1em' : '0', borderTopRightRadius: index === prop.data.length - 1 ? '0.1em' : '0', borderBottomRightRadius: index === prop.data.length - 1 ? '0.1em' : '0'}">
+        <base-tooltip v-for="(item, index) in prop.data" :data-cy="item.name" :key="item.name" :show-delay="200" :style="{ width: `${(item.value / sumValue * 100)}%`, height: '100%', background: item.color, borderTopLeftRadius: index === 0 ? '0.1em' : '0', borderBottomLeftRadius: index === 0 ? '0.1em' : '0', borderTopRightRadius: index === prop.data.length - 1 ? '0.1em' : '0', borderBottomRightRadius: index === prop.data.length - 1 ? '0.1em' : '0'}">
             <template #content>
                 <el-text>
                     {{ item.name }}: {{ (item.value / sumValue * 100).toFixed(0) }}%({{ item.value }})
