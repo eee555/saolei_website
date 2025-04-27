@@ -1,5 +1,4 @@
 import StackBar from './App.vue';
-import { mount } from 'cypress/vue';
 
 describe('<StackBar />', () => {
     it('renders', () => {
