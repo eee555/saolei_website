@@ -1,4 +1,4 @@
-import GitHubUser from './GitHubUser.vue'
+import GitHubUser from './GitHubUser.vue';
 
 describe('<GitHubUser />', () => {
     it('renders', () => {
