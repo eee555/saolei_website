@@ -1,5 +1,5 @@
 <template>
-    <ActivityCalendarAbstract />
+    <ActivityCalendarAbstract :video-list="store.player.videos" :options="activityCalendarConfig" :dark-mode="local.darkmode" />
     <div style="height: 10px;" />
     <base-card-normal v-if="store.player.videos.length > 0">
         <BBBvSummaryHeader />
@@ -29,7 +29,7 @@ import { ElBadge, ElDivider, ElDescriptions, ElText, ElScrollbar } from 'element
 import AccountLinkManager from '@/components/AccountLinkManager.vue';
 import IdentifierManager from '@/components/widgets/IdentifierManager.vue';
 import { LoginStatus } from '@/utils/common/structInterface';
-import { BBBvSummaryConfig, store } from '@/store';
+import { activityCalendarConfig, BBBvSummaryConfig, local, store } from '@/store';
 import { useI18n } from 'vue-i18n';
 import ActivityCalendarAbstract from '@/components/visualization/ActivityCalendarAbstract/App.vue';
 import BBBvSummary from '@/components/visualization/BBBvSummary/App.vue';
