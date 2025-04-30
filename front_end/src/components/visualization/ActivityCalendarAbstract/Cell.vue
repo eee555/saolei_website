@@ -1,5 +1,5 @@
 <template>
-    <Tippy class="cell" :duration="0" sticky>
+    <base-tooltip class="cell" :show-animation="0" :hide-animation="0" sticky>
         <el-text
             v-if="showDate" :style="{
                 position: 'absolute',
@@ -14,30 +14,27 @@
         </el-text>
         <template #content>
             <!-- vue-tippy的bug，改语言的时候content不会刷新，不算大问题就不用workaround了，等上游修复 -->
-            <base-card-small>
-                <el-text v-if="videos.length == 0">
-                    {{ t('activityCalendar.tooltip.noVideoOnDate', [toISODateString(date)]) }}
-                </el-text>
-                <template v-else>
-                    <el-text>{{ t('activityCalendar.tooltip.uploadedNVideosOnDate', [toISODateString(date), videos.length]) }}</el-text>
-                    <br>
-                    <span v-for="i in count.b" :key="i" class="dot" style="background-color: #f00;" />
-                    <span v-for="i in count.i" :key="i" class="dot" style="background-color: #080;" />
-                    <span v-for="i in count.e" :key="i" class="dot" style="background-color: #00f;" />
-                </template>
-            </base-card-small>
+            <el-text v-if="videos.length == 0">
+                {{ t('activityCalendar.tooltip.noVideoOnDate', [toISODateString(date)]) }}
+            </el-text>
+            <template v-else>
+                <el-text>{{ t('activityCalendar.tooltip.uploadedNVideosOnDate', [toISODateString(date), videos.length]) }}</el-text>
+                <br>
+                <span v-for="i in count.b" :key="i" class="dot" style="background-color: #f00;" />
+                <span v-for="i in count.i" :key="i" class="dot" style="background-color: #080;" />
+                <span v-for="i in count.e" :key="i" class="dot" style="background-color: #00f;" />
+            </template>
         </template>
-    </Tippy>
+    </base-tooltip>
 </template>
 
 <script setup lang="ts">
 import { toISODateString } from '@/utils/datetime';
 import { VideoAbstract } from '@/utils/videoabstract';
 import { computed, ref, watch } from 'vue';
-import { Tippy } from 'vue-tippy';
 import { ElText } from 'element-plus';
-import BaseCardSmall from '@/components/common/BaseCardSmall.vue';
 import { useI18n } from 'vue-i18n';
+import BaseTooltip from '@/components/common/BaseTooltip.vue';
 
 const { t } = useI18n();
 
