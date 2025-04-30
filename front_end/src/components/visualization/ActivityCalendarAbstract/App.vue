@@ -1,10 +1,10 @@
 <template>
     <base-card-normal style="overflow: auto;">
         <el-row style="align-items: center; display: flex; margin-bottom: 5px;">
-            <Header :video-list="videoList" />
+            <Header data-cy="header" :video-list="videoList" />
         </el-row>
         <el-row>
-            <DayLabel :cell-size="options.cellSize" :cell-margin="options.cellMargin" />
+            <DayLabel data-cy="dayLabel" :cell-size="options.cellSize" :cell-margin="options.cellMargin" />
             <el-scrollbar style="flex:1;">
                 <el-row>
                     <MonthLabel :start-date="startDate" :end-date="endDate" :cell-size="options.cellSize" :cell-margin="options.cellMargin" />

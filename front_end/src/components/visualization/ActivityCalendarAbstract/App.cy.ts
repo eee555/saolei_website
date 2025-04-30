@@ -20,5 +20,7 @@ describe('<ActivityCalendarAbstract />', () => {
                 plugins: [i18n],
             },
         });
+        cy.get('[data-cy=count] > :nth-child(1)').should('contain', '2 videos in total');
+        cy.get('[data-cy=size] > :nth-child(1)').should('contain', '56574 bytes');
     });
 });
