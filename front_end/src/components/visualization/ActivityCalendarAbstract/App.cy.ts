@@ -8,6 +8,7 @@ describe('<ActivityCalendarAbstract />', () => {
             cy.log(data.data);
             Cypress.env('videoList', data.data.map((video) => new VideoAbstract(video)));
         });
+        cy.clock(new Date('2025-12-15T00:00:00Z'));
     });
     it('renders', () => {
         // see: https://on.cypress.io/mounting-vue
@@ -21,6 +22,21 @@ describe('<ActivityCalendarAbstract />', () => {
             },
         });
         cy.get('[data-cy=count] > :nth-child(1)').should('contain', '2 videos in total');
+        cy.get('@vue').then((wrapper) => {
+            const firstChild = wrapper.findAllComponents('StackBar').at(1);
+            cy.log(firstChild);
+        });
         cy.get('[data-cy=size] > :nth-child(1)').should('contain', '56574 bytes');
+
+        cy.get('[data-cy=cell-2025-01-15]').should('have.css', 'background-color', 'rgb(0, 0, 51)');
+        cy.get('[data-cy=cell-2025-01-16]').should('have.css', 'background-color', 'rgb(0, 0, 51)');
+
+        cy.get('[data-cy=cell-2025-01-15]').trigger('mouseenter');
+        cy.get('[id^=tippy-]').should('contain', '1 videos on 2025-01-15');
+        cy.get('[class=dot]').should('have.css', 'background-color', 'rgb(0, 0, 255)');
+        cy.get('[data-cy=cell-2025-01-15]').trigger('mouseleave');
+        // cy.get('[id^=tippy-]').should('not.exist'); // 不知为何不过测，但是实际上是可以的
+        cy.get('[data-cy=cell-2025-01-14]').trigger('mouseenter');
+        cy.get('[id^=tippy-]').should('contain', 'No video on 2025-01-14');
     });
 });

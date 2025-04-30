@@ -18,6 +18,7 @@
                 >
                     <template v-for="date of generateDateRange(startDate, endDate)" :key="date.toISOString()">
                         <Cell
+                            :data-cy="`cell-${toISODateString(date)}`"
                             :date="date" :start-date="startDate"
                             :videos="groupedVideoAbstract.get(toISODateString(date))"
                             :x-offset="Math.round((getWeekTime(date) - startWeekTime) / fullWeek)"
