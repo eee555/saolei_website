@@ -22,10 +22,6 @@ describe('<ActivityCalendarAbstract />', () => {
             },
         });
         cy.get('[data-cy=count] > :nth-child(1)').should('contain', '2 videos in total');
-        cy.get('@vue').then((wrapper) => {
-            const firstChild = wrapper.findAllComponents('StackBar').at(1);
-            cy.log(firstChild);
-        });
         cy.get('[data-cy=size] > :nth-child(1)').should('contain', '56574 bytes');
 
         cy.get('[data-cy=cell-2025-01-15]').should('have.css', 'background-color', 'rgb(0, 0, 51)');
