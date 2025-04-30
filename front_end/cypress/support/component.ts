@@ -37,5 +37,14 @@ Cypress.Commands.add('mount', (...args) => {
     });
 });
 
+Cypress.on('test:before:run', () => {
+    Cypress.automation('remote:debugger:protocol', {
+        command: 'Emulation.setTimezoneOverride',
+        params: {
+            timezoneId: 'Asia/Shanghai', // OR  'UTC'
+        },
+    });
+});
+
 // Example use:
 // cy.mount(MyComponent)
