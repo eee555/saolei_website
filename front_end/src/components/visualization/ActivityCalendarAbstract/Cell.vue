@@ -1,12 +1,12 @@
 <template>
-    <Tippy class="cell" :duration="0" sticky>
+    <base-tooltip class="cell" :show-animation="0" :hide-animation="0" sticky>
         <el-text
-            v-if="activityCalendarConfig.showDate" :style="{
+            v-if="showDate" :style="{
                 position: 'absolute',
-                top: `${activityCalendarConfig.cellSize / 2}px`,
-                left: `${activityCalendarConfig.cellSize / 2}px`,
+                top: `${cellSize / 2}px`,
+                left: `${cellSize / 2}px`,
                 transform: 'translate(-50%, -50%)',
-                fontSize: `${activityCalendarConfig.cellSize * 0.6}px`,
+                fontSize: `${cellSize * 0.6}px`,
             }"
         >
             <!-- 用class的情况下不知为何字号不会生效 -->
@@ -14,31 +14,27 @@
         </el-text>
         <template #content>
             <!-- vue-tippy的bug，改语言的时候content不会刷新，不算大问题就不用workaround了，等上游修复 -->
-            <base-card-small>
-                <el-text v-if="videos.length == 0">
-                    {{ t('activityCalendar.tooltip.noVideoOnDate', [toISODateString(date)]) }}
-                </el-text>
-                <template v-else>
-                    <el-text>{{ t('activityCalendar.tooltip.uploadedNVideosOnDate', [toISODateString(date), videos.length]) }}</el-text>
-                    <br>
-                    <span v-for="i in count.b" :key="i" class="dot" style="background-color: #f00;" />
-                    <span v-for="i in count.i" :key="i" class="dot" style="background-color: #080;" />
-                    <span v-for="i in count.e" :key="i" class="dot" style="background-color: #00f;" />
-                </template>
-            </base-card-small>
+            <el-text v-if="videos.length == 0">
+                {{ t('activityCalendar.tooltip.noVideoOnDate', [toISODateString(date)]) }}
+            </el-text>
+            <template v-else>
+                <el-text>{{ t('activityCalendar.tooltip.uploadedNVideosOnDate', [toISODateString(date), videos.length]) }}</el-text>
+                <br>
+                <span v-for="i in count.b" :key="i" class="dot" style="background-color: #f00;" />
+                <span v-for="i in count.i" :key="i" class="dot" style="background-color: #080;" />
+                <span v-for="i in count.e" :key="i" class="dot" style="background-color: #00f;" />
+            </template>
         </template>
-    </Tippy>
+    </base-tooltip>
 </template>
 
 <script setup lang="ts">
-import { activityCalendarConfig } from '@/store';
 import { toISODateString } from '@/utils/datetime';
 import { VideoAbstract } from '@/utils/videoabstract';
 import { computed, ref, watch } from 'vue';
-import { Tippy } from 'vue-tippy';
 import { ElText } from 'element-plus';
-import BaseCardSmall from '@/components/common/BaseCardSmall.vue';
 import { useI18n } from 'vue-i18n';
+import BaseTooltip from '@/components/common/BaseTooltip.vue';
 
 const { t } = useI18n();
 
@@ -50,6 +46,10 @@ const prop = defineProps({
     emax: { type: Number, default: 5 }, // 三个最大值，用于计算颜色
     xOffset: { type: Number, default: 0 }, // 横坐标，单位为格
     yOffset: { type: Number, default: 0 }, // 纵坐标，单位为格
+    cellSize: { type: Number, default: 14 }, // 格子大小，单位为px
+    cellMargin: { type: Number, default: 3 }, // 格子间距，单位为px
+    showDate: { type: Boolean, default: true }, // 是否显示日期
+    cornerRadius: { type: Number, default: 20 }, // 圆角，单位为%
 });
 
 const count = ref({ b: 0, i: 0, e: 0 });
@@ -71,10 +71,10 @@ function refresh() {
 
 watch(() => prop.videos, refresh, { immediate: true });
 
-const size = computed(() => activityCalendarConfig.value.cellSize + 'px');
-const borderRadius = computed(() => activityCalendarConfig.value.cornerRadius + '%');
-const top = computed(() => prop.yOffset * (activityCalendarConfig.value.cellSize + activityCalendarConfig.value.cellMargin) + activityCalendarConfig.value.cellMargin + 'px');
-const left = computed(() => prop.xOffset * (activityCalendarConfig.value.cellSize + activityCalendarConfig.value.cellMargin) + activityCalendarConfig.value.cellMargin + 'px');
+const size = computed(() => prop.cellSize + 'px');
+const borderRadius = computed(() => prop.cornerRadius + '%');
+const top = computed(() => prop.yOffset * (prop.cellSize + prop.cellMargin) + prop.cellMargin + 'px');
+const left = computed(() => prop.xOffset * (prop.cellSize + prop.cellMargin) + prop.cellMargin + 'px');
 
 </script>
 

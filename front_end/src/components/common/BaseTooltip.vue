@@ -1,5 +1,5 @@
 <template>
-    <tippy :delay="[showDelay, hideDelay]">
+    <tippy :delay="[showDelay, hideDelay]" :duration="[showAnimation, hideAnimation]">
         <slot />
         <template #content>
             <base-card-small>
@@ -17,6 +17,8 @@ import { Tippy } from 'vue-tippy';
 defineProps({
     showDelay: { type: Number, default: 0 },
     hideDelay: { type: Number, default: 0 },
+    showAnimation: { type: Number, default: 300 },
+    hideAnimation: { type: Number, default: 250 },
 });
 
 </script>

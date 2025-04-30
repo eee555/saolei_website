@@ -15,6 +15,7 @@
 
 // Import commands.js using ES2015 syntax:
 import './commands';
+import '../../src/setup.ts';
 
 import { mount } from 'cypress/vue';
 
@@ -33,6 +34,15 @@ declare global {
 Cypress.Commands.add('mount', (...args) => {
     return mount(...args).then(({ wrapper }) => {
         return cy.wrap(wrapper).as('vue');
+    });
+});
+
+Cypress.on('test:before:run', () => {
+    Cypress.automation('remote:debugger:protocol', {
+        command: 'Emulation.setTimezoneOverride',
+        params: {
+            timezoneId: 'Asia/Shanghai', // OR  'UTC'
+        },
     });
 });
 
