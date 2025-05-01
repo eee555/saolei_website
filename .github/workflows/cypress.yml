@@ -27,7 +27,6 @@ jobs:
       - name: Install Chrome 109
         if: matrix.browser == 'chrome-109'
         run: |
-          choco uninstall googlechrome -y || echo "Chrome not installed"
           Invoke-WebRequest https://archive.org/download/chrome109offline64bit/Chrome109StandaloneSetup64.exe -OutFile chrome_installer.exe
           Start-Process chrome_installer.exe -Wait
           & "C:\Program Files\Google\Chrome\Application\chrome.exe" --version
