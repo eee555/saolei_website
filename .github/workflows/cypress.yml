@@ -33,5 +33,5 @@ jobs:
           start: npm run dev
           working-directory: front_end
           browser: ${{ matrix.browser }}
-          env:
-            CYPRESS_INSTALL_BINARY: 0
+        env:
+          CYPRESS_INSTALL_BINARY: 0
