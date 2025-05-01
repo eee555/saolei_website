@@ -12,6 +12,12 @@ jobs:
     defaults:
       run:
         working-directory: front_end
+    matrix:
+      browser: [chrome, firefox, edge, electron]
+      image: [latest, node-16.18.1-chrome-109.0.5414.74-1-ff-109.0-edge-109.0.1518.52-1]
+    container:
+      image: cypress/included:${{ matrix.image }}
+      options: --user 1001
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,4 +31,4 @@ jobs:
           component: true
           start: npm run dev
           working-directory: front_end
-          browser: chrome
+          browser: ${{ matrix.browser }}
