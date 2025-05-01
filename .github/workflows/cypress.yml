@@ -14,17 +14,31 @@ jobs:
         working-directory: front_end
     strategy:
       matrix:
-        browser: [chrome, firefox, edge, electron]
-        image: [cypress/included:latest, cypress/cypress-chrome:109.0.5414.120]
-    container:
-      image: ${{ matrix.image }}
-      options: --user 1001
+        browser: [chrome, firefox, edge, electron, chrome-109]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       # Install npm dependencies, cache them correctly
       - name: Install dependencies
         run: npm install
+
+      # Install Chrome 109 only for that matrix entry
+      - name: Install Chrome 109
+        if: matrix.browser == 'chrome-109'
+        run: |
+          wget https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_109.0.5414.74-1_amd64.deb
+          sudo dpkg -i google-chrome-stable_109.0.5414.74-1_amd64.deb || sudo apt-get -fy install
+
+      - name: Check browser version
+        run: |
+          if [[ "${{ matrix.browser }}" == "chrome-109" || "${{ matrix.browser }}" == "chrome" ]]; then
+            google-chrome --version
+          elif [[ "${{ matrix.browser }}" == "firefox" ]]; then
+            firefox --version
+          fi
+        shell: bash
+
       # and run all Cypress tests
       - name: Cypress run
         uses: cypress-io/github-action@v6
@@ -32,6 +46,6 @@ jobs:
           component: true
           start: npm run dev
           working-directory: front_end
-          browser: ${{ matrix.browser }}
+          browser: ${{ matrix.browser == 'chrome-109' && 'chrome' || matrix.browser }}
         env:
           CYPRESS_INSTALL_BINARY: 0
