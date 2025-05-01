@@ -8,7 +8,7 @@ on:
 
 jobs:
   cypress-run:
-    runs-on: ubuntu-24.04
+    runs-on: windows-latest
     defaults:
       run:
         working-directory: front_end
@@ -27,17 +27,10 @@ jobs:
       - name: Install Chrome 109
         if: matrix.browser == 'chrome-109'
         run: |
-          wget https://dl.google.com/linux/direct/google-chrome-stable_109.0.5414.74-1_amd64.deb
-          sudo dpkg -i google-chrome-stable_109.0.5414.74-1_amd64.deb || sudo apt-get -fy install
-
-      - name: Check browser version
-        run: |
-          if [[ "${{ matrix.browser }}" == "chrome-109" || "${{ matrix.browser }}" == "chrome" ]]; then
-            google-chrome --version
-          elif [[ "${{ matrix.browser }}" == "firefox" ]]; then
-            firefox --version
-          fi
-        shell: bash
+          choco uninstall googlechrome -y || echo "Chrome not installed"
+          Invoke-WebRequest https://dl.google.com/linux/chrome/win/stable/109.0.5414.74_chrome_installer.exe -OutFile chrome_installer.exe
+          Start-Process chrome_installer.exe -Wait
+          & "C:\Program Files\Google\Chrome\Application\chrome.exe" --version
 
       # and run all Cypress tests
       - name: Cypress run
