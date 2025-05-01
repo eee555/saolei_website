@@ -17,7 +17,7 @@ jobs:
         browser: [chrome, firefox, edge, electron]
         image: [latest, node-16.18.1-chrome-109.0.5414.74-1-ff-109.0-edge-109.0.1518.52-1]
     container:
-      image: cypress/included:${{ matrix.image }}
+      image: cypress/browsers:${{ matrix.image }}
       options: --user 1001
     steps:
       - name: Checkout
