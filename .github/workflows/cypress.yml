@@ -15,9 +15,9 @@ jobs:
     strategy:
       matrix:
         browser: [chrome, firefox, edge, electron]
-        image: [latest, node-16.18.1-chrome-109.0.5414.74-1-ff-109.0-edge-109.0.1518.52-1]
+        image: [cypress/included:latest, cypress/cypress-chrome:109.0.5414.120]
     container:
-      image: cypress/browsers:${{ matrix.image }}
+      image: ${{ matrix.image }}
       options: --user 1001
     steps:
       - name: Checkout
