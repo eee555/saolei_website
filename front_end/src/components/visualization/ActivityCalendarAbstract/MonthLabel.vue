@@ -13,7 +13,6 @@
 </template>
 
 <script setup lang="ts">
-import { activityCalendarConfig } from '@/store';
 import { fullWeek, getWeekTime, monthNameShort } from '@/utils/datetime';
 import { computed } from 'vue';
 import { ElText } from 'element-plus';
@@ -21,10 +20,12 @@ import { ElText } from 'element-plus';
 const prop = defineProps({
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
+    cellSize: { type: Number, default: 14 }, // 格子大小，单位为px
+    cellMargin: { type: Number, default: 3 }, // 格子间距，单位为px
 });
 
 const startWeekTime = computed(() => getWeekTime(prop.startDate));
-const cellFullSize = computed(() => activityCalendarConfig.value.cellSize + activityCalendarConfig.value.cellMargin);
+const cellFullSize = computed(() => prop.cellSize + prop.cellMargin);
 
 function generateMonthLabelRange(startDate: Date, endDate: Date) {
     let currentDate = new Date(startDate);
