@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => {
             host: process.env.Host || 'localhost',
         },
         build: {
-            target: ['chrome89', 'edge89', 'firefox89', 'safari15'],
+            target: 'es2015',
         },
     // esbuild: {
     //   supported: {
