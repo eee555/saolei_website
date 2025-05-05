@@ -15,25 +15,31 @@
     </el-text>
     <AccountLinkManager />
     <el-divider />
-    <el-badge is-dot :hidden="true && !store.new_identifier">
-        <el-descriptions
-            v-if="store.login_status == LoginStatus.IsLogin"
-            :title="t('identifierManager.title')"
-        />
-    </el-badge>
-    <IdentifierManager v-if="store.login_status == LoginStatus.IsLogin" />
+    <el-text tag="b" size="large">
+        {{ t('identifierManager.title') }}
+    </el-text>
+    <base-overlay>
+        <base-icon-info />
+        <template #overlay>
+            <IdentifierHelper style="width: 60%; min-width: 400px; max-width: 100%; margin: auto; display: block" />
+        </template>
+    </base-overlay>
+    <IdentifierManager />
 </template>
 
 <script setup lang="ts">
-import { ElBadge, ElDivider, ElDescriptions, ElText, ElScrollbar } from 'element-plus';
+import { ElDivider, ElText, ElScrollbar } from 'element-plus';
 import AccountLinkManager from '@/components/AccountLinkManager.vue';
 import IdentifierManager from '@/components/widgets/IdentifierManager.vue';
-import { LoginStatus } from '@/utils/common/structInterface';
 import { activityCalendarConfig, BBBvSummaryConfig, local, store } from '@/store';
 import { useI18n } from 'vue-i18n';
 import ActivityCalendarAbstract from '@/components/visualization/ActivityCalendarAbstract/App.vue';
 import BBBvSummary from '@/components/visualization/BBBvSummary/App.vue';
 import BBBvSummaryHeader from '@/components/visualization/BBBvSummary/Header.vue';
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
+import BaseOverlay from '@/components/common/BaseOverlay.vue';
+import BaseIconInfo from '@/components/common/BaseIconInfo.vue';
+import { defineAsyncComponent } from 'vue';
 const { t } = useI18n();
+const IdentifierHelper = defineAsyncComponent(() => import('@/components/dialogs/IdentifierHelper.vue'));
 </script>
