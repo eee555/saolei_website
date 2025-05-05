@@ -4,9 +4,9 @@
     <base-card-normal v-if="store.player.videos.length > 0">
         <BBBvSummaryHeader />
         <el-scrollbar aria-orientation="horizontal" :style="{ zoom: BBBvSummaryConfig.zoom }">
-            <BBBvSummary level="b" header />
-            <BBBvSummary level="i" />
-            <BBBvSummary level="e" />
+            <BBBvSummary level="b" header :video-list="store.player.videos" />
+            <BBBvSummary level="i" :video-list="store.player.videos" />
+            <BBBvSummary level="e" :video-list="store.player.videos" />
         </el-scrollbar>
     </base-card-normal>
     <el-divider />
@@ -18,6 +18,7 @@
     <el-text tag="b" size="large">
         {{ t('identifierManager.title') }}
     </el-text>
+    &nbsp;
     <base-overlay>
         <base-icon-info />
         <template #overlay>

@@ -22,7 +22,7 @@ import { computed, PropType, ref, watch } from 'vue';
 import { Tippy } from 'vue-tippy';
 import { ElLink } from 'element-plus';
 import { MS_Level, MS_Software, MS_Softwares } from '@/utils/ms_const';
-import { PiecewiseColorScheme } from '@/utils/colors';
+import { getTextColor, PiecewiseColorScheme } from '@/utils/colors';
 import tinycolor from 'tinycolor2';
 import { preview } from '@/utils/common/PlayerDialog';
 import BaseCardSmall from '@/components/common/BaseCardSmall.vue';
@@ -68,7 +68,10 @@ const color = computed(() => {
     return prop.colorTheme.getColor(prop.videos[bestIndex.value].getStat(prop.displayBy) as number);
 });
 
-const fontColor = computed(() => tinycolor(color.value).isDark() ? 'white' : 'black');
+const fontColor = computed(() => {
+    const tc = tinycolor(color.value);
+    return tc.getAlpha() == 0 ? getTextColor() : tc.isDark() ? 'white' : 'black';
+});
 
 </script>
 

@@ -3,7 +3,7 @@
         <span style="width: 10%; min-width: 75px" />
         <span v-for="i in 10" style="width: 8.9%; min-width: 4em">{{ i - 1 }}</span>
     </el-row>
-    <el-divider style="margin: 18px 0 12px 0;">
+    <el-divider data-cy="summary" style="margin: 18px 0 12px 0;">
         {{ t(`common.level.${level}`) }}
         &nbsp;
         {{ t('BBBvSummary.bbbvInTotal', [groupedVideoAbstract.size]) }}
@@ -15,6 +15,7 @@
         >
             <template v-for="bv in ArrayUtils.range(minBv, maxBv)" :key="bv">
                 <Cell
+                    :data-cy="`bv-${bv}`"
                     :bv="bv" :level="level" :videos="groupedVideoAbstract.get(bv)" :color-theme="theme"
                     :display-by="options[BBBvSummaryConfig.template].displayBy"
                     :sort-by="options[BBBvSummaryConfig.template].sortBy"
@@ -27,11 +28,11 @@
 </template>
 
 <script setup lang="ts">
-import { BBBvSummaryConfig, colorTheme, store } from '@/store';
+import { BBBvSummaryConfig, colorTheme } from '@/store';
 import { ElRow, ElDivider } from 'element-plus';
 import { getLastDigit, setLastDigit } from '@/utils/math';
 import { MS_Level } from '@/utils/ms_const';
-import { getStat_stat, groupVideosByBBBv } from '@/utils/videoabstract';
+import { getStat_stat, groupVideosByBBBv, VideoAbstract } from '@/utils/videoabstract';
 import { computed, PropType } from 'vue';
 import Cell from './Cell.vue';
 import YLabel from './YLabel.vue';
@@ -44,6 +45,7 @@ const { t } = useI18n();
 const prop = defineProps({
     header: { type: Boolean, default: false },
     level: { type: String as PropType<MS_Level>, required: true },
+    videoList: { type: Array<VideoAbstract>, default: () => [] },
 });
 
 type option_type = 'bvs' | 'time' | 'stnb' | 'ioe' | 'thrp' | 'custom';
@@ -66,7 +68,7 @@ const options = computed(() => {
     } as Record<option_type, Option>;
 });
 
-const groupedVideoAbstract = computed(() => groupVideosByBBBv(store.player.videos, prop.level));
+const groupedVideoAbstract = computed(() => groupVideosByBBBv(prop.videoList, prop.level));
 const maxBv = computed(() => setLastDigit(ArrayUtils.maximum(groupedVideoAbstract.value.keys()), 9));
 const minBv = computed(() => setLastDigit(ArrayUtils.minimum(groupedVideoAbstract.value.keys()), 0));
 
