@@ -1,13 +1,19 @@
 <template>
-    <el-button @click="getLogDir">获取日志目录</el-button>
+    <el-button @click="getLogDir">
+        获取日志目录
+    </el-button>
     <el-table :data="fileStats">
-        <el-table-column prop="name" label="文件名" width="180"></el-table-column>
-        <el-table-column prop="size" label="大小" width="180"></el-table-column>
-        <el-table-column prop="mtime" label="修改时间"></el-table-column>
+        <el-table-column prop="name" label="文件名" width="180" />
+        <el-table-column prop="size" label="大小" width="180" />
+        <el-table-column prop="mtime" label="修改时间" />
         <el-table-column label="操作" width="180">
             <template #default="scope">
-                <el-button @click="viewLog(scope.row.name)">查看</el-button>
-                <el-button @click="downloadLog(scope.row.name)">下载</el-button>
+                <el-button @click="viewLog(scope.row.name)">
+                    查看
+                </el-button>
+                <el-button @click="downloadLog(scope.row.name)">
+                    下载
+                </el-button>
             </template>
         </el-table-column>
     </el-table>
