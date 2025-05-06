@@ -1,13 +1,15 @@
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET
 from userprofile.decorators import staff_required
 from django.http import JsonResponse, FileResponse
 import os
 from datetime import datetime
 
+
 @require_GET
 @staff_required
 def get_log_file(request):
     return FileResponse(open('logs/' + request.GET.get('filename'), 'rb'), content_type='text/plain')
+
 
 @require_GET
 @staff_required
@@ -20,7 +22,6 @@ def get_log_dir(request):
         file_stats.append({
             'name': file,
             'size': file_stat.st_size,
-            'mtime': datetime.fromtimestamp(file_stat.st_ctime),
+            'mtime': datetime.fromtimestamp(file_stat.st_ctime, tz=None),
         })
     return JsonResponse(file_stats, safe=False)
-
