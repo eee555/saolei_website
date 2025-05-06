@@ -15,6 +15,9 @@
         <el-tab-pane label="录像批量更新" name="batchupdate">
             <StaffBatchUpdateVideo />
         </el-tab-pane>
+        <el-tab-pane label="后台日志" name="logs">
+            <StaffLogs />
+        </el-tab-pane>
     </el-tabs>
 </template>
 
@@ -27,6 +30,7 @@ import StaffVideoModel from '@/components/staff/StaffVideoModel.vue';
 import StaffAccountLink from '@/components/staff/StaffAccountLink.vue';
 import StaffIdentifier from '@/components/staff/StaffIdentifier.vue';
 import StaffBatchUpdateVideo from '@/components/staff/StaffBatchUpdateVideo.vue';
+import StaffLogs from '@/components/staff/StaffLogs.vue';
 
 const activeTab = ref('userprofile');
 
