@@ -1,5 +1,4 @@
 <template>
-    批量刷新录像<br>
     开始ID<el-input-number v-model="startid" />&nbsp;
     结束ID<el-input-number v-model="endid" />&nbsp;
     批处理数量<el-input-number v-model="batchsize" />&nbsp;
