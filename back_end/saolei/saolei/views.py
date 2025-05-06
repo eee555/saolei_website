@@ -2,7 +2,7 @@ from django.views.decorators.http import require_GET
 from userprofile.decorators import staff_required
 from django.http import JsonResponse, FileResponse
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 @require_GET
@@ -22,6 +22,6 @@ def get_log_dir(request):
         file_stats.append({
             'name': file,
             'size': file_stat.st_size,
-            'mtime': datetime.fromtimestamp(file_stat.st_ctime, tz=None),
+            'mtime': datetime.fromtimestamp(file_stat.st_ctime, datetime.now().astimezone().tzinfo),
         })
     return JsonResponse(file_stats, safe=False)
