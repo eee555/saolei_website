@@ -5,7 +5,7 @@
             fontSize: `${cellFullSize - 8}px`,
             lineHeight: `${cellFullSize}px`,
             marginTop: '0',
-            marginRight: `${activityCalendarConfig.cellMargin}px`,
+            marginRight: `${cellMargin}px`,
         }"
     >
         <IconSetting>
@@ -16,12 +16,16 @@
 </template>
 
 <script setup lang="ts">
-import { activityCalendarConfig } from '@/store';
 import { computed } from 'vue';
 import { ElText } from 'element-plus';
 import IconSetting from '@/components/widgets/IconSetting.vue';
 import Setting from './Setting.vue';
 
-const cellFullSize = computed(() => activityCalendarConfig.value.cellSize + activityCalendarConfig.value.cellMargin);
+const prop = defineProps({
+    cellSize: { type: Number, default: 14 }, // 格子大小，单位为px
+    cellMargin: { type: Number, default: 3 }, // 格子间距，单位为px
+});
+
+const cellFullSize = computed(() => prop.cellSize + prop.cellMargin);
 
 </script>

@@ -6,6 +6,7 @@ import wasm from 'vite-plugin-wasm';
 // import vueDevTools from 'vite-plugin-vue-devtools'
 import topLevelAwait from 'vite-plugin-top-level-await';
 import viteCompression from 'vite-plugin-compression';
+import removeAttr from 'remove-attr';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -25,6 +26,10 @@ export default defineConfig(({ mode }) => {
                 ext: '.gz', // Add a .gz extension to the compressed files
                 threshold: 1024, // Minimum file size in bytes to compress
             }),
+            process.env.NODE_ENV === 'production' ? removeAttr({
+                extensions: ['vue'],
+                attributes: ['data-cy'],
+            }) : null,
         ],
         resolve: {
             alias: {
@@ -37,7 +42,7 @@ export default defineConfig(({ mode }) => {
             host: process.env.Host || 'localhost',
         },
         build: {
-            target: ['chrome89', 'edge89', 'firefox89', 'safari15'],
+            target: 'es2015',
         },
     // esbuild: {
     //   supported: {
