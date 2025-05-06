@@ -1,5 +1,4 @@
 <template>
-    标识
     <el-input v-model="identifier" />
     <el-button @click="handleGet">
         查询
