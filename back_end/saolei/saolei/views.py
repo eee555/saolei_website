@@ -22,6 +22,6 @@ def get_log_dir(request):
         file_stats.append({
             'name': file,
             'size': file_stat.st_size,
-            'mtime': datetime.fromtimestamp(file_stat.st_ctime, datetime.now().astimezone().tzinfo),
+            'mtime': datetime.fromtimestamp(file_stat.st_ctime, tz=timezone.utc),
         })
     return JsonResponse(file_stats, safe=False)
