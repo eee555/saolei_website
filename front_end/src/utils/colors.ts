@@ -55,3 +55,7 @@ export class PiecewiseColorScheme {
         return this.colors[index];
     }
 }
+
+export function getTextColor(style: string = 'regular') {
+    return getComputedStyle(document.documentElement).getPropertyValue('--el-text-color-' + style);
+}
