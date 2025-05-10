@@ -18,6 +18,7 @@ export default {
             ce_s: 'Ces',
             cl: 'Cl',
             cl_s: 'Cls',
+            corr: 'Corr',
             double: 'DCl',
             double_s: 'DCls',
             ioe: 'IOE',
