@@ -156,6 +156,12 @@ export default {
         settingDisplayBy: '录像的',
         settingMax: '最大',
         settingMin: '最小',
+        tooltipMode: {
+            fast: '简易模式',
+            fastTooltip: '点击播放录像',
+            advanced: '高级模式',
+            advancedTooltip: '点击显示录像列表，悬浮窗中播放录像',
+        },
     },
     experimentalFeature: {
         watermark: '实验功能',

@@ -4,7 +4,7 @@ import { pinia } from './create';
 import { useLocalStorage } from '@vueuse/core';
 import { colorSchemeTemplates } from '@/utils/config';
 import { UserProfile } from '@/utils/userprofile';
-import { getStat_stat } from '@/utils/videoabstract';
+import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 import { MS_Software, MS_Softwares } from '@/utils/ms_const';
 
 export const store = defineStore('user', {
@@ -16,6 +16,8 @@ export const store = defineStore('user', {
         player: new UserProfile(),
         login_status: LoginStatus.Undefined, // 登录状态，全局维护
         new_identifier: false, // 是否有新标识录像
+        video_list: [] as VideoAbstract[],
+        video_list_show: false,
     }),
 })(pinia);
 
@@ -72,6 +74,7 @@ export const BBBvSummaryConfig = useLocalStorage(
         sortDesc: false,
         softwareFilter: [...MS_Softwares] as MS_Software[],
         zoom: 1,
+        tooltipMode: 'fast' as 'fast' | 'advanced',
     },
     { mergeDefaults: true },
 );

@@ -32,6 +32,7 @@
         <el-container class="mainheight">
             <el-main class="common-layout">
                 <PlayerDialog />
+                <VideoListDialog />
                 <router-view />
                 <Footer />
             </el-main>
@@ -59,6 +60,7 @@ import IconMenuItem from './components/widgets/IconMenuItem.vue';
 import Login from './components/Login.vue';
 import Footer from './components/Footer.vue';
 import PlayerDialog from './components/PlayerDialog.vue';
+import VideoListDialog from './components/dialogs/VideoListDialog.vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { store, local } from './store';
 import { ElScrollbar, ElMenu, ElMenuItem, ElDialog, ElCheckbox, ElImage, ElBadge, ElHeader, ElContainer, ElMain } from 'element-plus';
