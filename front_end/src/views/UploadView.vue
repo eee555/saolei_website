@@ -53,13 +53,17 @@
                 {{ t(`common.level.${props.row.stat.level}`) }}
             </template>
         </el-table-column>
-        <el-table-column prop="stat.timems" :label="t('common.prop.time')" sortable />
-        <el-table-column prop="stat.bv" label="3BV" sortable />
-        <el-table-column
-            prop="stat.bvs" label="3BV/s"
-            :formatter="(row: any, column: any, cellValue: any, index: number) => { return to_fixed_n(cellValue, 3) }"
-            sortable
-        />
+        <el-table-column prop="stat.timems" :label="t('common.prop.time')" sortable>
+            <template #default="props">
+                {{ props.row.stat.displayStat('time') }}
+            </template>
+        </el-table-column>
+        <el-table-column prop="stat.bv" :label="t('common.prop.bv')" sortable />
+        <el-table-column :label="t('common.prop.bvs')" sortable :sort-by="(v) => v.bvs()">
+            <template #default="props">
+                {{ props.row.stat.displayStat('bvs') }}
+            </template>
+        </el-table-column>
         <el-table-column :label="t('common.prop.status')" sortable sort-by="status">
             <template #default="props">
                 {{ t(`profile.upload.error.${props.row.status}`) }}
@@ -92,11 +96,11 @@ import useCurrentInstance from '@/utils/common/useCurrentInstance';
 const { proxy } = useCurrentInstance();
 import type { UploadInstance, UploadProps, UploadUserFile, UploadRawFile, UploadFile, UploadFiles } from 'element-plus';
 import { store } from '../store';
-import { to_fixed_n } from '@/utils';
-import { extract_stat, get_upload_status, load_video_file, upload_form, UploadVideoForm, VideoStat } from '@/utils/fileIO';
+import { extract_stat, get_upload_status, load_video_file, upload_form, UploadVideoForm } from '@/utils/fileIO';
 import { Dict2FormData } from '@/utils/forms';
 import { useI18n } from 'vue-i18n';
 import BaseIconDelete from '@/components/common/BaseIconDelete.vue';
+import { VideoAbstract } from '@/utils/videoabstract';
 
 const { t } = useI18n();
 
@@ -105,7 +109,7 @@ interface UploadEntry {
     filename: string;
     status: string;
     form: UploadVideoForm | null; // for upload
-    stat: VideoStat | null; // for display
+    stat: VideoAbstract | null; // for display
 }
 
 defineProps({
