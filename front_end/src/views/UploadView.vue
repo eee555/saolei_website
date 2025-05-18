@@ -194,6 +194,12 @@ const forceUpload = async (i: number) => {
     ).then(function (response) {
         if (response.data.type === 'success') {
             uploaded_file_num.value += 1;
+            upload_queue.value[i].stat!.id = response.data.data.id;
+            upload_queue.value[i].stat!.state = response.data.data.state;
+            store.user.videos.push(upload_queue.value[i].stat!);
+            if (store.user.id === store.player.id) {
+                store.player.videos.push(upload_queue.value[i].stat!);
+            }
             removeUpload(i);
         } else if (response.data.type === 'error' && response.data.object === 'videomodel') {
             upload_queue.value[i].status = 'collision';
