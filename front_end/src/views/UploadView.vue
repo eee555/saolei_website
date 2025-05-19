@@ -4,9 +4,6 @@
         :multiple="true" :on-change="handleChange" :auto-upload="false" :show-file-list="false"
         accept=".avf,.evf,.rmv,.mvf"
     >
-        <el-icon class="el-icon--upload">
-            <upload-filled />
-        </el-icon>
         <div
             class="el-upload__text" style="font-size: 18px;"
             v-html="store.user.realname == '匿名' ? t('common.msg.realNameRequired') : t('profile.upload.dragOrClick')"
@@ -18,16 +15,13 @@
                     v-show="upload_queue.length > 0" size="large" type="primary"
                     style="display: block;margin: 16px auto;font-size: 18px;width: 220px;" @click="submitUpload()"
                 >
-                    {{
-                        t('profile.upload.uploadAll', [upload_queue.length]) }}
+                    {{ t('profile.upload.uploadAll', [upload_queue.length]) }}
                 </el-button>
                 <el-button
                     v-show="upload_queue.length > 0" size="small" type="info"
                     style="display: block;margin: 16px auto;width: 120px;" @click="cancel_all()"
                 >
-                    {{
-                        t('profile.upload.cancelAll')
-                    }}
+                    {{ t('profile.upload.cancelAll') }}
                 </el-button>
                 <span style="font-size: 14px;">{{ t('profile.upload.constraintNote') }}</span>
             </div>
@@ -38,12 +32,10 @@
             <template #default="props">
                 <el-descriptions>
                     <el-descriptions-item :label="t('common.prop.fileName')" :span="3">
-                        {{ props.row.filename
-                        }}
+                        {{ props.row.filename }}
                     </el-descriptions-item>
                     <el-descriptions-item :label="t('common.prop.identifier')" :span="3">
-                        {{ props.row.form.identifier
-                        }}
+                        {{ props.row.form.identifier }}
                     </el-descriptions-item>
                 </el-descriptions>
             </template>
@@ -76,9 +68,7 @@
                     :type="['pass', 'identifier'].includes(props.row.status) ? 'success' : props.row.status == 'needApprove' ? 'warning' : 'info'"
                     circle @click="forceUpload(props.$index)"
                 >
-                    <el-icon>
-                        <Upload />
-                    </el-icon>
+                    <base-icon-upload />
                 </el-button>
                 <el-button type="danger" circle @click="removeUpload(props.$index)">
                     <base-icon-delete />
@@ -91,7 +81,7 @@
 <script lang="ts" setup>
 // 上传录像的页面
 import { ref } from 'vue';
-import { ElTable, ElTableColumn, ElButton, ElDescriptions, ElDescriptionsItem, ElUpload, ElIcon } from 'element-plus';
+import { ElTable, ElTableColumn, ElButton, ElDescriptions, ElDescriptionsItem, ElUpload } from 'element-plus';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 const { proxy } = useCurrentInstance();
 import type { UploadInstance, UploadProps, UploadUserFile, UploadRawFile, UploadFile, UploadFiles } from 'element-plus';
@@ -100,6 +90,7 @@ import { extract_stat, get_upload_status, load_video_file, upload_form, UploadVi
 import { Dict2FormData } from '@/utils/forms';
 import { useI18n } from 'vue-i18n';
 import BaseIconDelete from '@/components/common/BaseIconDelete.vue';
+import BaseIconUpload from '@/components/common/BaseIconUpload.vue';
 import { VideoAbstract } from '@/utils/videoabstract';
 
 const { t } = useI18n();
