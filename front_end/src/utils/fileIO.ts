@@ -1,10 +1,6 @@
-/*
-关于 VideoStat 和 UploadVideoForm
-这两个类型有非常大的重叠，但是无法共用代码。VideoStat 用于提供给前端进行可视化，UploadVideoForm 储存的是发送给后端的表单，两个需求随时可能失去同步。
-*/
-
 import { UploadRawFile } from 'element-plus';
 import { AvfVideo, EvfVideo, RmvVideo, MvfVideo } from 'ms-toollib';
+import { VideoAbstract } from './videoabstract';
 type AnyVideo = AvfVideo | EvfVideo | RmvVideo | MvfVideo;
 
 export function get_software(video: AnyVideo) {
@@ -47,69 +43,19 @@ export async function upload_prepare(file: UploadRawFile) {
     };
 }
 
-export interface VideoStat {
-    id: number;
-    level: string;
-    mode: string;
-    timems: number;
-    bv: number;
-    bvs: number;
-    review_code: number;
-    identifier: string;
-    left: number;
-    right: number;
-    double: number;
-    left_ce: number;
-    right_ce: number;
-    double_ce: number;
-    path: number;
-    flag: number;
-    op: number;
-    isl: number;
-    cell0: number;
-    cell1: number;
-    cell2: number;
-    cell3: number;
-    cell4: number;
-    cell5: number;
-    cell6: number;
-    cell7: number;
-    cell8: number;
-}
-
-export function extract_stat(video: AnyVideo | null): VideoStat | null {
+export function extract_stat(video: AnyVideo | null): VideoAbstract | null {
     if (video === null) return null;
-    const decoder = new TextDecoder();
     video.current_time = 1e8;
-    return {
+    return new VideoAbstract({
         id: 0,
         level: ['b', 'i', 'e', 'c'][video.level - 3],
         mode: String(video.mode).padStart(2, '0'),
+        software: get_software(video),
         timems: video.rtime_ms,
         bv: video.bbbv,
-        bvs: video.bbbv_s,
-        identifier: decoder.decode(video.player_identifier),
-        review_code: video.is_valid(),
-        left: video.left,
-        right: video.right,
-        double: video.double,
-        left_ce: video.lce,
-        right_ce: video.rce,
-        double_ce: video.dce,
-        path: video.path,
-        flag: video.flag,
-        op: video.op,
-        isl: video.isl,
-        cell0: video.cell0,
-        cell1: video.cell1,
-        cell2: video.cell2,
-        cell3: video.cell3,
-        cell4: video.cell4,
-        cell5: video.cell5,
-        cell6: video.cell6,
-        cell7: video.cell7,
-        cell8: video.cell8,
-    };
+        ce: video.ce,
+        cl: video.cl,
+    });
 }
 
 export interface UploadVideoForm {

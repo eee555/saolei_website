@@ -36,10 +36,10 @@ def video_upload(request):
     if not video_form.is_valid():
         return HttpResponseBadRequest(video_form.errors)
     try:
-        new_video_by_file(request.user, video_form.cleaned_data["file"])
+        video = new_video_by_file(request.user, video_form.cleaned_data["file"])
     except ExceptionToResponse as e:
         return e.response()
-    return JsonResponse({'type': 'success', 'object': 'videomodel', 'category': 'upload'})
+    return JsonResponse({'type': 'success', 'object': 'videomodel', 'category': 'upload', 'data': {'id': video.id, 'state': video.state}})
 
 
 @login_required_error
