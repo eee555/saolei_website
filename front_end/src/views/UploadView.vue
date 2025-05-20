@@ -4,6 +4,9 @@
         :multiple="true" :on-change="handleChange" :auto-upload="false" :show-file-list="false"
         accept=".avf,.evf,.rmv,.mvf"
     >
+        <el-icon class="el-icon--upload">
+            <upload-filled />
+        </el-icon>
         <div
             class="el-upload__text" style="font-size: 18px;"
             v-html="store.user.realname == '匿名' ? t('common.msg.realNameRequired') : t('profile.upload.dragOrClick')"
@@ -34,8 +37,26 @@
                     <el-descriptions-item :label="t('common.prop.fileName')" :span="3">
                         {{ props.row.filename }}
                     </el-descriptions-item>
-                    <el-descriptions-item :label="t('common.prop.identifier')" :span="3">
-                        {{ props.row.form.identifier }}
+                    <el-descriptions-item :label="t('common.prop.cl')">
+                        {{ props.row.stat.displayStat('cl') }}
+                    </el-descriptions-item>
+                    <el-descriptions-item :label="t('common.prop.ce')" :span="2">
+                        {{ props.row.stat.displayStat('ce') }}
+                    </el-descriptions-item>
+                    <el-descriptions-item :label="t('common.prop.cl_s')">
+                        {{ props.row.stat.displayStat('cls') }}
+                    </el-descriptions-item>
+                    <el-descriptions-item :label="t('common.prop.ce_s')" :span="2">
+                        {{ props.row.stat.displayStat('ces') }}
+                    </el-descriptions-item>
+                    <el-descriptions-item :label="t('common.prop.ioe')">
+                        {{ props.row.stat.displayStat('ioe') }}
+                    </el-descriptions-item>
+                    <el-descriptions-item :label="t('common.prop.thrp')">
+                        {{ props.row.stat.displayStat('thrp') }}
+                    </el-descriptions-item>
+                    <el-descriptions-item :label="t('common.prop.corr')">
+                        {{ props.row.stat.displayStat('corr') }}
                     </el-descriptions-item>
                 </el-descriptions>
             </template>
@@ -81,7 +102,7 @@
 <script lang="ts" setup>
 // 上传录像的页面
 import { ref } from 'vue';
-import { ElTable, ElTableColumn, ElButton, ElDescriptions, ElDescriptionsItem, ElUpload } from 'element-plus';
+import { ElTable, ElTableColumn, ElButton, ElDescriptions, ElDescriptionsItem, ElUpload, ElIcon } from 'element-plus';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 const { proxy } = useCurrentInstance();
 import type { UploadInstance, UploadProps, UploadUserFile, UploadRawFile, UploadFile, UploadFiles } from 'element-plus';
