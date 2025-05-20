@@ -18,16 +18,13 @@
                     v-show="upload_queue.length > 0" size="large" type="primary"
                     style="display: block;margin: 16px auto;font-size: 18px;width: 220px;" @click="submitUpload()"
                 >
-                    {{
-                        t('profile.upload.uploadAll', [upload_queue.length]) }}
+                    {{ t('profile.upload.uploadAll', [upload_queue.length]) }}
                 </el-button>
                 <el-button
                     v-show="upload_queue.length > 0" size="small" type="info"
                     style="display: block;margin: 16px auto;width: 120px;" @click="cancel_all()"
                 >
-                    {{
-                        t('profile.upload.cancelAll')
-                    }}
+                    {{ t('profile.upload.cancelAll') }}
                 </el-button>
                 <span style="font-size: 14px;">{{ t('profile.upload.constraintNote') }}</span>
             </div>
@@ -38,12 +35,28 @@
             <template #default="props">
                 <el-descriptions>
                     <el-descriptions-item :label="t('common.prop.fileName')" :span="3">
-                        {{ props.row.filename
-                        }}
+                        {{ props.row.filename }}
                     </el-descriptions-item>
-                    <el-descriptions-item :label="t('common.prop.identifier')" :span="3">
-                        {{ props.row.form.identifier
-                        }}
+                    <el-descriptions-item :label="t('common.prop.cl')">
+                        {{ props.row.stat.displayStat('cl') }}
+                    </el-descriptions-item>
+                    <el-descriptions-item :label="t('common.prop.ce')" :span="2">
+                        {{ props.row.stat.displayStat('ce') }}
+                    </el-descriptions-item>
+                    <el-descriptions-item :label="t('common.prop.cl_s')">
+                        {{ props.row.stat.displayStat('cls') }}
+                    </el-descriptions-item>
+                    <el-descriptions-item :label="t('common.prop.ce_s')" :span="2">
+                        {{ props.row.stat.displayStat('ces') }}
+                    </el-descriptions-item>
+                    <el-descriptions-item :label="t('common.prop.ioe')">
+                        {{ props.row.stat.displayStat('ioe') }}
+                    </el-descriptions-item>
+                    <el-descriptions-item :label="t('common.prop.thrp')">
+                        {{ props.row.stat.displayStat('thrp') }}
+                    </el-descriptions-item>
+                    <el-descriptions-item :label="t('common.prop.corr')">
+                        {{ props.row.stat.displayStat('corr') }}
                     </el-descriptions-item>
                 </el-descriptions>
             </template>
@@ -76,9 +89,7 @@
                     :type="['pass', 'identifier'].includes(props.row.status) ? 'success' : props.row.status == 'needApprove' ? 'warning' : 'info'"
                     circle @click="forceUpload(props.$index)"
                 >
-                    <el-icon>
-                        <Upload />
-                    </el-icon>
+                    <base-icon-upload />
                 </el-button>
                 <el-button type="danger" circle @click="removeUpload(props.$index)">
                     <base-icon-delete />
@@ -100,6 +111,7 @@ import { extract_stat, get_upload_status, load_video_file, upload_form, UploadVi
 import { Dict2FormData } from '@/utils/forms';
 import { useI18n } from 'vue-i18n';
 import BaseIconDelete from '@/components/common/BaseIconDelete.vue';
+import BaseIconUpload from '@/components/common/BaseIconUpload.vue';
 import { VideoAbstract } from '@/utils/videoabstract';
 
 const { t } = useI18n();
