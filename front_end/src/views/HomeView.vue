@@ -175,6 +175,7 @@ const update_newest_queue = async () => {
             params: {},
         },
     ).then(function (response) {
+        newest_queue.value.splice(0, newest_queue.value.length);
         for (const key in response.data) {
             const videoid = Number.parseInt(key);
             const videoinfo = JSON.parse(response.data[key] as string);

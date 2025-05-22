@@ -260,7 +260,7 @@ def new_video_by_file(user: UserProfile, file: File):
     if not user.userms:
         user.userms = UserMS.objects.create()
 
-    identifier = bytes(v.player_identifier).decode('utf-8')
+    identifier = v.player_identifier
     if not verify_identifier(identifier):
         raise ExceptionToResponse(obj='identifier', category='verify')
     if identifier not in user.userms.identifiers and state == MS_TextChoices.State.OFFICIAL:
@@ -394,7 +394,7 @@ def refresh_video(video: VideoModel):
     video.save()
 
     e_video = video.video
-    e_video.identifier = bytes(v.player_identifier).decode('utf-8')
+    e_video.identifier = v.player_identifier
     e_video.stnb = v.stnb
     e_video.rqp = v.rqp
 

@@ -1,6 +1,27 @@
 import { toISODateString } from './datetime';
 import { MS_Level, MS_Software, STNB_const } from './ms_const';
 
+function undefinedOrToString(value: any): string | undefined {
+    return value === undefined ? undefined : value.toString();
+}
+
+function undefinedOrToFixed(value: any, digits: number): string | undefined {
+    return value === undefined ? undefined : value.toFixed(digits);
+}
+
+function undefinedDivideNumber(a: number | undefined, b: number): number | undefined {
+    if (a === undefined) return undefined;
+    return a / b;
+}
+function numberDivideUndefined(a: number, b: number | undefined): number | undefined {
+    if (b === undefined) return undefined;
+    return a / b;
+}
+function undefinedDivideUndefined(a: number | undefined, b: number | undefined): number | undefined {
+    if (a === undefined || b === undefined) return undefined;
+    return a / b;
+}
+
 export interface VideoAbstractInfo {
     id: number;
     upload_time: string | Date;
@@ -30,10 +51,10 @@ interface VideoRedisInfo {
     ce?: number;
 }
 
-export type getStat_stat = 'time' | 'bvs' | 'timems' | 'bv' | 'qg' | 'rqp' | 'stnb' | 'cl' | 'ioe' | 'thrp' | 'corr';
+export type getStat_stat = 'time' | 'bvs' | 'timems' | 'bv' | 'qg' | 'rqp' | 'stnb' | 'ce' | 'ces' | 'cl' | 'cls' | 'ioe' | 'thrp' | 'corr';
 
 export class VideoAbstract {
-    public id?: number;
+    public id: number;
     public upload_time: Date;
     public level: MS_Level;
     public mode: string;
@@ -49,11 +70,11 @@ export class VideoAbstract {
 
     constructor(info: any) {
         if (info.id) this.id = info.id;
-        else throw new Error('录像信息未包含id');
+        else this.id = 0;
 
         if (info.upload_time) this.upload_time = new Date(info.upload_time);
         else if (info.time) this.upload_time = new Date(info.time); // newest_queue等返回的
-        else throw new Error('录像信息未包含上传时间');
+        else this.upload_time = new Date();
 
         this.level = info.level;
         this.mode = info.mode;
@@ -113,18 +134,23 @@ export class VideoAbstract {
     }
 
     public ioe() {
-        if (this.cl === undefined) return undefined;
-        return this.bv / this.cl;
+        return numberDivideUndefined(this.bv, this.cl);
     }
 
     public thrp() {
-        if (this.ce === undefined) return undefined;
-        return this.bv / this.ce;
+        return numberDivideUndefined(this.bv, this.ce);
     }
 
     public corr() {
-        if (this.cl === undefined || this.ce === undefined) return undefined;
-        return this.ce / this.cl;
+        return undefinedDivideUndefined(this.ce, this.cl);
+    }
+
+    public cls() {
+        return undefinedDivideNumber(this.cl, this.time());
+    }
+
+    public ces() {
+        return undefinedDivideNumber(this.ce, this.time());
     }
 
     public getStat(stat: getStat_stat) {
@@ -136,7 +162,10 @@ export class VideoAbstract {
             case 'qg': return this.qg();
             case 'rqp': return this.rqp();
             case 'stnb': return this.stnb();
+            case 'ce': return this.ce;
+            case 'ces': return this.ces();
             case 'cl': return this.cl;
+            case 'cls': return this.cls();
             case 'ioe': return this.ioe();
             case 'thrp': return this.thrp();
             case 'corr': return this.corr();
@@ -151,22 +180,13 @@ export class VideoAbstract {
             case 'qg': return this.qg().toFixed(3);
             case 'rqp': return this.rqp().toFixed(3);
             case 'stnb': return this.stnb().toFixed(1);
-            case 'cl': {
-                const cl = this.cl;
-                return cl === undefined ? '-' : cl.toString();
-            }
-            case 'ioe': {
-                const ioe = this.ioe();
-                return ioe === undefined ? '-' : ioe.toFixed(3);
-            }
-            case 'thrp': {
-                const thrp = this.thrp();
-                return thrp === undefined ? '-' : thrp.toFixed(3);
-            }
-            case 'corr': {
-                const corr = this.corr();
-                return corr === undefined ? '-' : corr.toFixed(3);
-            }
+            case 'ce': return undefinedOrToString(this.ce);
+            case 'ces': return undefinedOrToFixed(this.ces(), 3);
+            case 'cl': return undefinedOrToString(this.cl);
+            case 'cls': return undefinedOrToFixed(this.cls(), 3);
+            case 'ioe': return undefinedOrToFixed(this.ioe(), 3);
+            case 'thrp': return undefinedOrToFixed(this.thrp(), 3);
+            case 'corr': return undefinedOrToFixed(this.corr(), 3);
         }
     }
 
