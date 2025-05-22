@@ -14,13 +14,13 @@ export function load_video_file(stream: Uint8Array, filename: string) {
     const ext = filename.slice(-3);
     let video: AnyVideo;
     if (ext === 'avf') {
-        video = AvfVideo.new(stream, filename);
+        video = new AvfVideo(stream, filename);
     } else if (ext === 'evf') {
-        video = EvfVideo.new(stream, filename);
+        video = new EvfVideo(stream, filename);
     } else if (ext === 'rmv') {
-        video = RmvVideo.new(stream, filename);
+        video = new RmvVideo(stream, filename);
     } else if (ext === 'mvf') {
-        video = MvfVideo.new(stream, filename);
+        video = new MvfVideo(stream, filename);
     } else return null;
     video.parse_video();
     video.analyse();
@@ -70,13 +70,13 @@ export function upload_form(file: UploadRawFile, video: AnyVideo | null): Upload
 }
 
 export function get_upload_status(file: UploadRawFile, video: AnyVideo | null, identifiers: Array<string>) {
-    const decoder = new TextDecoder();
+    // const decoder = new TextDecoder();
     if (video === null) return 'unsupported';
     if (video.level == 6) return 'custom';
     if (file.name.length >= 100) return 'filename';
     if (video.is_valid() == 1) return 'invalid';
     if (video.is_valid() == 3) return 'needApprove';
-    if (!identifiers.includes(decoder.decode(video.player_identifier))) return 'identifier';
+    if (!identifiers.includes(video.player_identifier)) return 'identifier';
     return 'pass';
 }
 
