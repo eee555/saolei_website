@@ -34,7 +34,7 @@
 <script setup lang="ts">
 
 import { computed, defineAsyncComponent, PropType } from 'vue';
-import { groupVideosByUploadDate, VideoAbstract } from '@/utils/videoabstract';
+import { groupVideosByDate, VideoAbstract } from '@/utils/videoabstract';
 import { fullWeek, getWeekTime, toISODateString } from '@/utils/datetime';
 import { ElRow, ElScrollbar } from 'element-plus';
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
@@ -48,6 +48,7 @@ interface Options {
     cellMargin: number;
     showDate: boolean;
     cornerRadius: number;
+    useEndTime: boolean;
 }
 
 const props = defineProps({
@@ -63,6 +64,7 @@ const props = defineProps({
                 cellMargin: 3,
                 showDate: true,
                 cornerRadius: 20,
+                useEndTime: false,
             };
         },
     },
@@ -74,7 +76,7 @@ const props = defineProps({
 
 const cellFullSize = computed(() => props.options.cellSize + props.options.cellMargin);
 
-const groupedVideoAbstract = computed(() => groupVideosByUploadDate(props.videoList));
+const groupedVideoAbstract = computed(() => groupVideosByDate(props.videoList, props.options.useEndTime ? 'end_time' : 'upload_time'));
 const endDate = new Date(new Date().toDateString()); // today
 const startDate = computed(() => {
     const keys = groupedVideoAbstract.value.keys();
