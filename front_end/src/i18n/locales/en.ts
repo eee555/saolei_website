@@ -148,6 +148,8 @@ export default {
             noVideoOnDate: 'No video on {0}',
             uploadedNVideosOnDate: '{1} videos on {0}',
         },
+        useSaveTime: 'Display by finishing time',
+        useSaveTimeTooltip: 'Display by the time of finishing games when switching on, and the time of uploading when switching off. The finishing time represents the user\'s system time and can be incorrect.',
     },
     BBBvSummary: {
         bbbvInTotal: ({ linked, list }) => `${list(0)} ${linked('common.prop.bv')} in total`,

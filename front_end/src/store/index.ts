@@ -60,6 +60,7 @@ export const activityCalendarConfig = useLocalStorage(
         cellMargin: 3,
         cornerRadius: 20,
         showDate: false,
+        useEndTime: false,
     },
     { mergeDefaults: true },
 );
