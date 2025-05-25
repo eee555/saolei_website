@@ -61,6 +61,11 @@
                 </el-descriptions>
             </template>
         </el-table-column>
+        <el-table-column prop="stat.end_time" :label="t('common.prop.end_time')" :width="150">
+            <template #default="props">
+                {{ toISODateTimeString(props.row.stat.end_time) }}
+            </template>
+        </el-table-column>
         <el-table-column prop="stat.level" :label="t('common.prop.level')" sortable>
             <template #default="props">
                 {{ t(`common.level.${props.row.stat.level}`) }}
@@ -113,6 +118,7 @@ import { useI18n } from 'vue-i18n';
 import BaseIconDelete from '@/components/common/BaseIconDelete.vue';
 import BaseIconUpload from '@/components/common/BaseIconUpload.vue';
 import { VideoAbstract } from '@/utils/videoabstract';
+import { toISODateTimeString } from '@/utils/datetime';
 
 const { t } = useI18n();
 
