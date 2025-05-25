@@ -39,7 +39,7 @@
 import { PropType } from 'vue';
 import { VideoAbstract } from '@/utils/videoabstract';
 import { toISODateTimeString } from '@/utils/datetime';
-import { ElDescriptions, ElDescriptionsItem, ElRow } from 'element-plus';
+import { ElDescriptions, ElDescriptionsItem, ElRow, ElText } from 'element-plus';
 import VideoStateIcon from './VideoStateIcon.vue';
 import SoftwareIcon from './SoftwareIcon.vue';
 import { useI18n } from 'vue-i18n';
