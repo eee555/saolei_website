@@ -25,6 +25,7 @@ function undefinedDivideUndefined(a: number | undefined, b: number | undefined):
 export interface VideoAbstractInfo {
     id: number;
     upload_time: string | Date;
+    end_time: Date | null;
     level: MS_Level;
     mode: string;
     timems: number;
@@ -56,6 +57,7 @@ export type getStat_stat = 'time' | 'bvs' | 'timems' | 'bv' | 'qg' | 'rqp' | 'st
 export class VideoAbstract {
     public id: number;
     public upload_time: Date;
+    public end_time?: Date;
     public level: MS_Level;
     public mode: string;
     public timems: number;
@@ -75,6 +77,8 @@ export class VideoAbstract {
         if (info.upload_time) this.upload_time = new Date(info.upload_time);
         else if (info.time) this.upload_time = new Date(info.time); // newest_queue等返回的
         else this.upload_time = new Date();
+
+        if (info.end_time) this.end_time = new Date(info.end_time);
 
         this.level = info.level;
         this.mode = info.mode;
@@ -197,11 +201,13 @@ export class VideoAbstract {
     }
 }
 
-export function groupVideosByUploadDate(videos: VideoAbstract[]): Map<string, VideoAbstract[]> {
+export function groupVideosByDate(videos: VideoAbstract[], attr: 'upload_time' | 'end_time' = 'upload_time'): Map<string, VideoAbstract[]> {
     const result = new Map<string, VideoAbstract[]>();
 
     videos.forEach((video) => {
-        const dateKey = toISODateString(video.upload_time); // Extract date part as string (YYYY-MM-DD)
+        let date = video[attr];
+        if (!date) date = video.upload_time; // fallback to upload_time if end_time is not available
+        const dateKey = toISODateString(date); // Extract date part as string (YYYY-MM-DD)
         if (!result.has(dateKey)) {
             result.set(dateKey, []);
         }

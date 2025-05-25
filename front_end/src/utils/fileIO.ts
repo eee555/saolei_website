@@ -55,6 +55,7 @@ export function extract_stat(video: AnyVideo | null): VideoAbstract | null {
         bv: video.bbbv,
         ce: video.ce,
         cl: video.cl,
+        end_time: new Date(Number(video.end_time / BigInt(1000))),
     });
 }
 

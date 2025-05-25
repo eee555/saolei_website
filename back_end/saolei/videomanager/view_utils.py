@@ -285,6 +285,7 @@ def new_video_by_file(user: UserProfile, file: File):
         file=file,
         file_size=file.size,
         video=e_video,
+        end_time=datetime.fromtimestamp(v.end_time / 1000000, tz=timezone.utc),
         state=state,
         software=software,
         level=level,
@@ -365,6 +366,7 @@ def refresh_video(video: VideoModel):
     else:
         return
 
+    video.end_time = datetime.fromtimestamp(v.end_time / 1000000, tz=timezone.utc)
     video.timems = v.rtime_ms
     video.bv = v.bbbv
 

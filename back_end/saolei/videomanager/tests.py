@@ -23,6 +23,7 @@ class VideoManagerTestCase(TestCase):
                 'http://saolei.wang/Video/Mvf/9952/Pu%20Tian%20Yi_Exp_36.09(3bv132).avf',
             )
         self.testfile_exp_values = {
+            'end_time': datetime(2023, 10, 5, 21, 25, 57, 244000, tzinfo=timezone.utc),
             'software': 'a', 'level': 'e', 'mode': '00',
             'timems': 35090, 'bv': 132,
             'left': 95, 'right': 20, 'double': 43,
