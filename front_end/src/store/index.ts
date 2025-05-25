@@ -28,17 +28,21 @@ export const videoplayerstore = defineStore('videoplayer', {
     }),
 })(pinia);
 
-export const local = useLocalStorage('local', {
-    darkmode: false,
-    experimental: false,
-    language: (navigator.language).toLocaleLowerCase(),
-    language_show: true,
-    menu_font_size: 18,
-    menu_height: 60,
-    menu_icon: false,
-    notification_duration: 4500,
-    tooltip_show: true,
-});
+export const local = useLocalStorage(
+    'local',
+    {
+        darkmode: false,
+        experimental: false,
+        language: (navigator.language).toLocaleLowerCase(),
+        language_show: true,
+        menu_font_size: 18,
+        menu_height: 60,
+        menu_icon: false,
+        notification_duration: 4500,
+        tooltip_show: true,
+    },
+    { mergeDefaults: true },
+);
 
 export const videofilter = useLocalStorage('videofilter', {
     pagesize: 100,
