@@ -54,7 +54,8 @@ export default {
         prop: {
             action: 'Action',
             identifier: 'Identifier',
-            fileName: 'File name',
+            end_time: 'End Time',
+            fileName: 'File Name',
             is: 'Island',
             isl: 'Island',
             level: 'Level',
@@ -148,6 +149,8 @@ export default {
             noVideoOnDate: 'No video on {0}',
             uploadedNVideosOnDate: '{1} videos on {0}',
         },
+        useSaveTime: 'Display by finishing time',
+        useSaveTimeTooltip: 'Display by the time of finishing games when switching on, and the time of uploading when switching off. The finishing time represents the user\'s system time and can be incorrect.',
     },
     BBBvSummary: {
         bbbvInTotal: ({ linked, list }) => `${list(0)} ${linked('common.prop.bv')} in total`,
@@ -156,6 +159,12 @@ export default {
         settingDisplayBy: 'and display by',
         settingMax: 'Find max',
         settingMin: 'Find min',
+        tooltipMode: {
+            fast: 'Fast',
+            fastTooltip: 'Click to play the video',
+            advanced: 'Advanced',
+            advancedTooltip: 'Click to show list of videos',
+        },
     },
     experimentalFeature: {
         watermark: 'EXPERIMENTAL',

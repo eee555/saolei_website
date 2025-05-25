@@ -62,6 +62,8 @@ class VideoModel(models.Model):
     # file = models.FileField(upload_to="/assets/videos")
     # 上传时间，兼最近状态变化时间、更新时间（冻结后会刷新）
     upload_time = models.DateTimeField(auto_now_add=True, verbose_name="上传时间")
+    # 录像自带时间戳，可被用户篡改，用于用户自用。实际上无时区，因为Django限制，固定时区为UTC。
+    end_time = models.DateTimeField(null=True, blank=True)
     # 审核状态
     state = models.CharField(
         max_length=1, choices=MS_TextChoices.State.choices, default=MS_TextChoices.State.PLAIN)

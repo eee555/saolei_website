@@ -4,7 +4,7 @@ import { pinia } from './create';
 import { useLocalStorage } from '@vueuse/core';
 import { colorSchemeTemplates } from '@/utils/config';
 import { UserProfile } from '@/utils/userprofile';
-import { getStat_stat } from '@/utils/videoabstract';
+import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 import { MS_Software, MS_Softwares } from '@/utils/ms_const';
 
 export const store = defineStore('user', {
@@ -16,6 +16,8 @@ export const store = defineStore('user', {
         player: new UserProfile(),
         login_status: LoginStatus.Undefined, // 登录状态，全局维护
         new_identifier: false, // 是否有新标识录像
+        video_list: [] as VideoAbstract[],
+        video_list_show: false,
     }),
 })(pinia);
 
@@ -26,17 +28,21 @@ export const videoplayerstore = defineStore('videoplayer', {
     }),
 })(pinia);
 
-export const local = useLocalStorage('local', {
-    darkmode: false,
-    experimental: false,
-    language: (navigator.language).toLocaleLowerCase(),
-    language_show: true,
-    menu_font_size: 18,
-    menu_height: 60,
-    menu_icon: false,
-    notification_duration: 4500,
-    tooltip_show: true,
-});
+export const local = useLocalStorage(
+    'local',
+    {
+        darkmode: false,
+        experimental: false,
+        language: (navigator.language).toLocaleLowerCase(),
+        language_show: true,
+        menu_font_size: 18,
+        menu_height: 60,
+        menu_icon: false,
+        notification_duration: 4500,
+        tooltip_show: true,
+    },
+    { mergeDefaults: true },
+);
 
 export const videofilter = useLocalStorage('videofilter', {
     pagesize: 100,
@@ -58,6 +64,7 @@ export const activityCalendarConfig = useLocalStorage(
         cellMargin: 3,
         cornerRadius: 20,
         showDate: false,
+        useEndTime: false,
     },
     { mergeDefaults: true },
 );
@@ -72,6 +79,7 @@ export const BBBvSummaryConfig = useLocalStorage(
         sortDesc: false,
         softwareFilter: [...MS_Softwares] as MS_Software[],
         zoom: 1,
+        tooltipMode: 'fast' as 'fast' | 'advanced',
     },
     { mergeDefaults: true },
 );

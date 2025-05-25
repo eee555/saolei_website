@@ -3,13 +3,12 @@
         <template v-if="bestIndex == -1">
 &nbsp;
         </template>
-        <el-link v-else :underline="false" @click="preview(videos[bestIndex].id)">
+        <el-link v-else :underline="false" @click="handleClick">
             {{ videos[bestIndex].displayStat(displayBy) }}
         </el-link>
         <template #content>
             <base-card-small v-if="bestIndex >= 0">
-                上传时间：{{ videos[bestIndex].upload_time }}<br>
-                共计：{{ videos.length }} 个视频<br>
+                <video-abstract-display :video="videos[bestIndex]" />
             </base-card-small>
         </template>
     </tippy>
@@ -26,6 +25,8 @@ import { getTextColor, PiecewiseColorScheme } from '@/utils/colors';
 import tinycolor from 'tinycolor2';
 import { preview } from '@/utils/common/PlayerDialog';
 import BaseCardSmall from '@/components/common/BaseCardSmall.vue';
+import VideoAbstractDisplay from '@/components/widgets/VideoAbstractDisplay.vue';
+import { store } from '@/store';
 
 const bestValue = ref<number | null>(null);
 const bestIndex = ref(-1);
@@ -39,6 +40,7 @@ const prop = defineProps({
     displayBy: { type: String as PropType<getStat_stat>, default: 'time' },
     colorTheme: { type: Object as PropType<PiecewiseColorScheme>, default: new PiecewiseColorScheme([], []) },
     softwareFilter: { type: Array<MS_Software>, default: () => [...MS_Softwares] },
+    tooltipMode: { type: String as PropType<'fast' | 'advanced'>, default: 'fast' },
 });
 
 function refresh() {
@@ -72,6 +74,15 @@ const fontColor = computed(() => {
     const tc = tinycolor(color.value);
     return tc.getAlpha() == 0 ? getTextColor() : tc.isDark() ? 'white' : 'black';
 });
+
+function handleClick() {
+    if (prop.tooltipMode === 'fast') {
+        preview(prop.videos[bestIndex.value].id);
+    } else {
+        store.video_list = prop.videos;
+        store.video_list_show = true;
+    }
+}
 
 </script>
 

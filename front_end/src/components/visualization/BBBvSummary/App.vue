@@ -20,6 +20,7 @@
                     :display-by="options[BBBvSummaryConfig.template].displayBy"
                     :sort-by="options[BBBvSummaryConfig.template].sortBy"
                     :sort-desc="options[BBBvSummaryConfig.template].sortDesc" style="width: 10%" :software-filter="BBBvSummaryConfig.softwareFilter"
+                    :tooltip-mode="BBBvSummaryConfig.tooltipMode"
                 />
                 <br v-if="getLastDigit(bv) == 9">
             </template>

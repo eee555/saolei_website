@@ -18,16 +18,13 @@
                     v-show="upload_queue.length > 0" size="large" type="primary"
                     style="display: block;margin: 16px auto;font-size: 18px;width: 220px;" @click="submitUpload()"
                 >
-                    {{
-                        t('profile.upload.uploadAll', [upload_queue.length]) }}
+                    {{ t('profile.upload.uploadAll', [upload_queue.length]) }}
                 </el-button>
                 <el-button
                     v-show="upload_queue.length > 0" size="small" type="info"
                     style="display: block;margin: 16px auto;width: 120px;" @click="cancel_all()"
                 >
-                    {{
-                        t('profile.upload.cancelAll')
-                    }}
+                    {{ t('profile.upload.cancelAll') }}
                 </el-button>
                 <span style="font-size: 14px;">{{ t('profile.upload.constraintNote') }}</span>
             </div>
@@ -38,14 +35,35 @@
             <template #default="props">
                 <el-descriptions>
                     <el-descriptions-item :label="t('common.prop.fileName')" :span="3">
-                        {{ props.row.filename
-                        }}
+                        {{ props.row.filename }}
                     </el-descriptions-item>
-                    <el-descriptions-item :label="t('common.prop.identifier')" :span="3">
-                        {{ props.row.form.identifier
-                        }}
+                    <el-descriptions-item :label="t('common.prop.cl')">
+                        {{ props.row.stat.displayStat('cl') }}
+                    </el-descriptions-item>
+                    <el-descriptions-item :label="t('common.prop.ce')" :span="2">
+                        {{ props.row.stat.displayStat('ce') }}
+                    </el-descriptions-item>
+                    <el-descriptions-item :label="t('common.prop.cl_s')">
+                        {{ props.row.stat.displayStat('cls') }}
+                    </el-descriptions-item>
+                    <el-descriptions-item :label="t('common.prop.ce_s')" :span="2">
+                        {{ props.row.stat.displayStat('ces') }}
+                    </el-descriptions-item>
+                    <el-descriptions-item :label="t('common.prop.ioe')">
+                        {{ props.row.stat.displayStat('ioe') }}
+                    </el-descriptions-item>
+                    <el-descriptions-item :label="t('common.prop.thrp')">
+                        {{ props.row.stat.displayStat('thrp') }}
+                    </el-descriptions-item>
+                    <el-descriptions-item :label="t('common.prop.corr')">
+                        {{ props.row.stat.displayStat('corr') }}
                     </el-descriptions-item>
                 </el-descriptions>
+            </template>
+        </el-table-column>
+        <el-table-column prop="stat.end_time" :label="t('common.prop.end_time')" :width="150">
+            <template #default="props">
+                {{ toISODateTimeString(props.row.stat.end_time) }}
             </template>
         </el-table-column>
         <el-table-column prop="stat.level" :label="t('common.prop.level')" sortable>
@@ -53,13 +71,17 @@
                 {{ t(`common.level.${props.row.stat.level}`) }}
             </template>
         </el-table-column>
-        <el-table-column prop="stat.timems" :label="t('common.prop.time')" sortable />
-        <el-table-column prop="stat.bv" label="3BV" sortable />
-        <el-table-column
-            prop="stat.bvs" label="3BV/s"
-            :formatter="(row: any, column: any, cellValue: any, index: number) => { return to_fixed_n(cellValue, 3) }"
-            sortable
-        />
+        <el-table-column prop="stat.timems" :label="t('common.prop.time')" sortable>
+            <template #default="props">
+                {{ props.row.stat.displayStat('time') }}
+            </template>
+        </el-table-column>
+        <el-table-column prop="stat.bv" :label="t('common.prop.bv')" sortable />
+        <el-table-column :label="t('common.prop.bvs')" sortable :sort-by="(v) => v.bvs()">
+            <template #default="props">
+                {{ props.row.stat.displayStat('bvs') }}
+            </template>
+        </el-table-column>
         <el-table-column :label="t('common.prop.status')" sortable sort-by="status">
             <template #default="props">
                 {{ t(`profile.upload.error.${props.row.status}`) }}
@@ -72,9 +94,7 @@
                     :type="['pass', 'identifier'].includes(props.row.status) ? 'success' : props.row.status == 'needApprove' ? 'warning' : 'info'"
                     circle @click="forceUpload(props.$index)"
                 >
-                    <el-icon>
-                        <Upload />
-                    </el-icon>
+                    <base-icon-upload />
                 </el-button>
                 <el-button type="danger" circle @click="removeUpload(props.$index)">
                     <base-icon-delete />
@@ -92,11 +112,13 @@ import useCurrentInstance from '@/utils/common/useCurrentInstance';
 const { proxy } = useCurrentInstance();
 import type { UploadInstance, UploadProps, UploadUserFile, UploadRawFile, UploadFile, UploadFiles } from 'element-plus';
 import { store } from '../store';
-import { to_fixed_n } from '@/utils';
-import { extract_stat, get_upload_status, load_video_file, upload_form, UploadVideoForm, VideoStat } from '@/utils/fileIO';
+import { extract_stat, get_upload_status, load_video_file, upload_form, UploadVideoForm } from '@/utils/fileIO';
 import { Dict2FormData } from '@/utils/forms';
 import { useI18n } from 'vue-i18n';
 import BaseIconDelete from '@/components/common/BaseIconDelete.vue';
+import BaseIconUpload from '@/components/common/BaseIconUpload.vue';
+import { VideoAbstract } from '@/utils/videoabstract';
+import { toISODateTimeString } from '@/utils/datetime';
 
 const { t } = useI18n();
 
@@ -105,7 +127,7 @@ interface UploadEntry {
     filename: string;
     status: string;
     form: UploadVideoForm | null; // for upload
-    stat: VideoStat | null; // for display
+    stat: VideoAbstract | null; // for display
 }
 
 defineProps({
@@ -190,6 +212,12 @@ const forceUpload = async (i: number) => {
     ).then(function (response) {
         if (response.data.type === 'success') {
             uploaded_file_num.value += 1;
+            upload_queue.value[i].stat!.id = response.data.data.id;
+            upload_queue.value[i].stat!.state = response.data.data.state;
+            store.user.videos.push(upload_queue.value[i].stat!);
+            if (store.user.id === store.player.id) {
+                store.player.videos.push(upload_queue.value[i].stat!);
+            }
             removeUpload(i);
         } else if (response.data.type === 'error' && response.data.object === 'videomodel') {
             upload_queue.value[i].status = 'collision';

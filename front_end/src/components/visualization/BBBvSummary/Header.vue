@@ -11,10 +11,22 @@
         &nbsp;
         <SoftwareFilter v-model="BBBvSummaryConfig.softwareFilter" />
         <span style="flex: 1" />
+        <base-tooltip follow-cursor>
+            <el-link
+                :underline="false"
+                @click="BBBvSummaryConfig.tooltipMode === 'fast' ? BBBvSummaryConfig.tooltipMode = 'advanced' : BBBvSummaryConfig.tooltipMode = 'fast'"
+            >
+                {{ t(`BBBvSummary.tooltipMode.${BBBvSummaryConfig.tooltipMode}`) }}
+            </el-link>
+            <template #content>
+                {{ t(`BBBvSummary.tooltipMode.${BBBvSummaryConfig.tooltipMode}Tooltip`) }}
+            </template>
+        </base-tooltip>
+        &nbsp;
         <Zoomer v-model="BBBvSummaryConfig.zoom" />
     </el-row>
     <el-row v-if="BBBvSummaryConfig.template === 'custom'" style="margin-top: 5px;">
-        <el-link :underline="false" @click="BBBvSummaryConfig.sortDesc=!BBBvSummaryConfig.sortDesc">
+        <el-link :underline="false" @click="BBBvSummaryConfig.sortDesc = !BBBvSummaryConfig.sortDesc">
             {{ BBBvSummaryConfig.sortDesc ? t('BBBvSummary.settingMax') : t('BBBvSummary.settingMin') }}
         </el-link>
         &nbsp;
@@ -43,6 +55,7 @@ import { BBBvSummaryConfig } from '@/store';
 import { useI18n } from 'vue-i18n';
 import SoftwareFilter from '@/components/Filters/SoftwareFilter.vue';
 import Zoomer from '@/components/widgets/Zoomer.vue';
+import BaseTooltip from '@/components/common/BaseTooltip.vue';
 
 const { t } = useI18n();
 

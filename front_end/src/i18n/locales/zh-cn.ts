@@ -54,6 +54,7 @@ export default {
         prop: {
             action: '操作',
             identifier: '标识',
+            end_time: '结束时间',
             fileName: '文件名',
             is: '岛',
             isl: '岛',
@@ -148,6 +149,8 @@ export default {
             noVideoOnDate: '{0} 无录像',
             uploadedNVideosOnDate: '{0} 共 {1} 个录像',
         },
+        useEndTime: '结束时间',
+        useEndTimeTooltip: '依录像结束时间显示，关闭此项将使用录像上传时间。结束时间为用户的系统时间，可能不准确。',
     },
     BBBvSummary: {
         bbbvInTotal: ({ linked, list }) => `共${list(0)}个${linked('common.prop.bv')}`,
@@ -156,6 +159,12 @@ export default {
         settingDisplayBy: '录像的',
         settingMax: '最大',
         settingMin: '最小',
+        tooltipMode: {
+            fast: '简易模式',
+            fastTooltip: '点击播放录像',
+            advanced: '高级模式',
+            advancedTooltip: '点击显示录像列表，悬浮窗中播放录像',
+        },
     },
     experimentalFeature: {
         watermark: '实验功能',

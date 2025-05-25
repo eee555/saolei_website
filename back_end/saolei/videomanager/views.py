@@ -36,10 +36,10 @@ def video_upload(request):
     if not video_form.is_valid():
         return HttpResponseBadRequest(video_form.errors)
     try:
-        new_video_by_file(request.user, video_form.cleaned_data["file"])
+        video = new_video_by_file(request.user, video_form.cleaned_data["file"])
     except ExceptionToResponse as e:
         return e.response()
-    return JsonResponse({'type': 'success', 'object': 'videomodel', 'category': 'upload'})
+    return JsonResponse({'type': 'success', 'object': 'videomodel', 'category': 'upload', 'data': {'id': video.id, 'state': video.state}})
 
 
 @login_required_error
@@ -163,7 +163,7 @@ def video_query_by_id(request):
         return HttpResponseBadRequest()
     if not (user := UserProfile.objects.filter(id=userid).first()):
         return HttpResponseNotFound()
-    videos = VideoModel.objects.filter(player=user).values('id', 'upload_time', "level", "mode", "timems", "bv", "bvs", "state", "video__identifier",
+    videos = VideoModel.objects.filter(player=user).values('id', 'upload_time', "end_time", "level", "mode", "timems", "bv", "bvs", "state", "video__identifier",
                                                            "software", "flag", "cell0", "cell1", "cell2", "cell3", "cell4", "cell5", "cell6", "cell7", "cell8", "left", "right", "double", "op", "isl", "path")
     # print(list(videos))
 
