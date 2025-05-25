@@ -54,7 +54,8 @@ export default {
         prop: {
             action: 'Action',
             identifier: 'Identifier',
-            fileName: 'File name',
+            end_time: 'End Time',
+            fileName: 'File Name',
             is: 'Island',
             isl: 'Island',
             level: 'Level',

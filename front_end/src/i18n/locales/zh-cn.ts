@@ -54,6 +54,7 @@ export default {
         prop: {
             action: '操作',
             identifier: '标识',
+            end_time: '结束时间',
             fileName: '文件名',
             is: '岛',
             isl: '岛',
