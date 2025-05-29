@@ -27,10 +27,10 @@ describe('<ActivityCalendarAbstract />', () => {
         cy.get('[data-cy=cell-2025-01-15]').should('have.css', 'background-color', 'rgb(0, 0, 51)');
         cy.get('[data-cy=cell-2025-01-16]').should('have.css', 'background-color', 'rgb(0, 0, 51)');
 
-        cy.get('[data-cy=cell-2025-01-15]').trigger('mouseenter').trigger('mouseover');
+        cy.get('[data-cy=cell-2025-01-15]').realHover();
         cy.get('[id^=tippy-]').should('contain', '1 videos on 2025-01-15');
         cy.get('[class=dot]').should('have.css', 'background-color', 'rgb(0, 0, 255)');
-        cy.get('[data-cy=cell-2025-01-14]').trigger('mouseenter').trigger('mouseover');
+        cy.get('[data-cy=cell-2025-01-14]').realHover();
         cy.get('[id^=tippy-]').should('contain', 'No video on 2025-01-14');
     });
 });
