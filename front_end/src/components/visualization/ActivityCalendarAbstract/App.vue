@@ -16,15 +16,41 @@
                         filter: `invert(${darkMode ? 0 : 1})`,
                     }"
                 >
-                    <template v-for="date of generateDateRange(startDate, endDate)" :key="date.toISOString()">
-                        <Cell
-                            :data-cy="`cell-${toISODateString(date)}`"
-                            :date="date" :start-date="startDate"
-                            :videos="groupedVideoAbstract.get(toISODateString(date))"
-                            :x-offset="Math.round((getWeekTime(date) - startWeekTime) / fullWeek)"
-                            :y-offset="date.getDay() + 1" :show-date="options.showDate" :cell-size="options.cellSize" :cell-margin="options.cellMargin" :corner-radius="options.cornerRadius"
-                        />
-                    </template>
+                    <base-tooltip :show-animation="0" :hide-animation="0" sticky follow-cursor>
+                        <!-- 为每个日期生成一个单元格 -->
+                        <template v-for="date of generateDateRange(startDate, endDate)" :key="date.toISOString()">
+                            <span
+                                :style="{
+                                    position: 'absolute',
+                                    top: `${(date.getDay() + 1) * cellFullSize}px`,
+                                    left: `${Math.round((getWeekTime(date) - startWeekTime) / fullWeek) * cellFullSize}px`,
+                                    width: `${options.cellSize}px`,
+                                    height: `${options.cellSize}px`,
+                                    borderRadius: `${options.cornerRadius}%`,
+                                    backgroundColor: getColor(groupedVideoAbstract.get(toISODateString(date)) || []),
+                                }"
+                                :data-cy="`cell-${toISODateString(date)}`"
+                                @mouseover="tooltipVideos = groupedVideoAbstract.get(toISODateString(date)) || []; tooltipDate = date"
+                            >
+                                <el-text
+                                    v-if="options.showDate"
+                                    :style="{
+                                        position: 'absolute',
+                                        top: '50%',
+                                        left: '50%',
+                                        transform: 'translate(-50%, -50%)',
+                                        fontSize: `${options.cellSize * 0.6}px`,
+                                        color: darkMode ? '#fff' : '#000',
+                                    }"
+                                >
+                                    {{ date.getDate() }}
+                                </el-text>
+                            </span>
+                        </template>
+                        <template #content>
+                            <Tooltip :date="tooltipDate" :videos="tooltipVideos" />
+                        </template>
+                    </base-tooltip>
                 </el-row>
             </el-scrollbar>
         </el-row>
@@ -33,15 +59,16 @@
 
 <script setup lang="ts">
 
-import { computed, defineAsyncComponent, PropType } from 'vue';
+import { computed, PropType, ref } from 'vue';
 import { groupVideosByDate, VideoAbstract } from '@/utils/videoabstract';
 import { fullWeek, getWeekTime, toISODateString } from '@/utils/datetime';
-import { ElRow, ElScrollbar } from 'element-plus';
+import { ElRow, ElScrollbar, ElText } from 'element-plus';
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
+import BaseTooltip from '@/components/common/BaseTooltip.vue';
 import Header from './Header.vue';
 import DayLabel from './DayLabel.vue';
 import MonthLabel from './MonthLabel.vue';
-const Cell = defineAsyncComponent(() => import('./Cell.vue'));
+import Tooltip from './Tooltip.vue';
 
 interface Options {
     cellSize: number;
@@ -74,6 +101,9 @@ const props = defineProps({
     },
 });
 
+const tooltipVideos = ref([] as VideoAbstract[]);
+const tooltipDate = ref(new Date());
+
 const cellFullSize = computed(() => props.options.cellSize + props.options.cellMargin);
 
 const groupedVideoAbstract = computed(() => groupVideosByDate(props.videoList, props.options.useEndTime ? 'end_time' : 'upload_time'));
@@ -97,6 +127,16 @@ function *generateDateRange(startDate: Date, endDate: Date, step: number = 1) {
         yield new Date(currentDate);  // Yield a new Date object (to avoid modifying the original one)
         currentDate.setDate(currentDate.getDate() + step); // Increment by 1 day (or custom step)
     }
+}
+
+function getColor(videos: VideoAbstract[]) {
+    let red = 0, green = 0, blue = 0;
+    for (const video of videos) {
+        if (video.level === 'b') red++;
+        else if (video.level === 'i') green++;
+        else if (video.level === 'e') blue++;
+    }
+    return `rgb(${Math.min(255, red * 51)}, ${Math.min(255, green * 51)}, ${Math.min(255, blue * 51)})`;
 }
 
 </script>

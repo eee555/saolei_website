@@ -8,20 +8,37 @@
             {{ t(`common.level.${video.level}`) }}
             &nbsp;
             {{ t(`common.mode.code${video.mode}`) }}
-            &nbsp;
-            {{ toISODateTimeString(video.upload_time) }}
         </el-text>
     </el-row>
-    <el-descriptions size="small" border :column="2">
+    <el-descriptions size="small" border :column="3">
+        <el-descriptions-item :label="t('common.prop.upload_time')" :span="3">
+            {{ toISODateTimeString(video.upload_time) }}
+        </el-descriptions-item>
+
+        <el-descriptions-item v-if="video.end_time" :label="t('common.prop.end_time')" :span="3">
+            {{ toISODateTimeString(video.end_time) }}
+        </el-descriptions-item>
+
         <el-descriptions-item :label="t('common.prop.time')">
             {{ video.displayStat('time') }}
         </el-descriptions-item>
         <el-descriptions-item :label="t('common.prop.bv')">
             {{ video.displayStat('bv') }}
         </el-descriptions-item>
+        <el-descriptions-item :label="t('common.prop.stnb')">
+            {{ video.displayStat('stnb') }}
+        </el-descriptions-item>
+
         <el-descriptions-item :label="t('common.prop.bvs')">
             {{ video.displayStat('bvs') }}
         </el-descriptions-item>
+        <el-descriptions-item :label="t('common.prop.cl_s')">
+            {{ video.displayStat('cls') }}
+        </el-descriptions-item>
+        <el-descriptions-item :label="t('common.prop.ce_s')">
+            {{ video.displayStat('ces') }}
+        </el-descriptions-item>
+
         <el-descriptions-item :label="t('common.prop.ioe')">
             {{ video.displayStat('ioe') }}
         </el-descriptions-item>

@@ -18,6 +18,7 @@ import './commands';
 import '../../src/setup.ts';
 
 import { mount } from 'cypress/vue';
+import 'cypress-real-events';
 
 // Augment the Cypress namespace to include type definitions for
 // your custom command.
