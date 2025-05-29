@@ -17,6 +17,7 @@
     "types": [
       "vite/client",
       "cypress",
+      "cypress-real-events",
     ],
     "paths": {
       "@/*": [
