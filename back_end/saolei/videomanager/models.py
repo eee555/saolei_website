@@ -2,6 +2,7 @@
 from django.db import models
 from .fields import RestrictedFileField
 from userprofile.models import UserProfile
+from tournaments.models import Tournament
 from config.global_settings import DefaultRankingScores
 from django_redis import get_redis_connection
 import json
@@ -176,3 +177,8 @@ class VideoModel(models.Model):
 
     def pop_redis(self, name: str):
         cache.hdel(name, self.id)
+
+class TournamentVideoModel(models.Model):
+    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE, related_name='videos')
+    video = models.ForeignKey(VideoModel, on_delete=models.CASCADE, related_name='tournaments')
+    state = models.CharField(max_length=1, choices=MS_TextChoices.State.choices)

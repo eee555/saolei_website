@@ -67,6 +67,11 @@ const routes: Array<RouteRecordRaw> = [
         name: 'staff',
         component: () => import('../views/StaffView.vue'),
     },
+    {
+        path: '/gsc/admin',
+        name: 'gsc_admin',
+        component: () => import('../views/GSCAdminView.vue'),
+    },
 ];
 
 const router = createRouter({

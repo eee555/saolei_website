@@ -1,13 +1,14 @@
 import logging
-from .models import VideoModel, ExpandVideoModel
+from .models import VideoModel, ExpandVideoModel, TournamentVideoModel
 from django_redis import get_redis_connection
 from userprofile.models import UserProfile
 from msuser.models import UserMS
+from tournaments.models import TournamentParticipant
 import json
 from utils import ComplexEncoder
 from config.global_settings import RankingGameStats, GameLevels, GameModes, DefaultRankingScores
 from utils.cmp import isbetter
-from config.text_choices import MS_TextChoices
+from config.text_choices import MS_TextChoices, Tournament_TextChoices
 import ms_toollib as ms
 from accountlink.models import AccountSaolei
 from datetime import datetime, timezone
@@ -313,18 +314,25 @@ def new_video_by_file(user: UserProfile, file: File):
         cell8=v.cell8,
     )
 
-    if state == MS_TextChoices.State.PLAIN:
+    tournament_tokens = v.race_identifier.split(',')
+    for token in tournament_tokens:
+        participant = TournamentParticipant.objects.filter(token=token).first()
+        if participant.tournament.state == Tournament_TextChoices.State.ONGOING and user == participant.user:
+            TournamentVideoModel.objects.create(tournament=participant.tournament, video=video, state=state)
+            video.state = MS_TextChoices.State.TOURNAMENT
+
+    if video.state == MS_TextChoices.State.PLAIN:
         logger.info(f'用户 {user.username}#{user.id} 录像#{video.id} 机审失败')
         video.push_redis("review_queue")
         update_video_num(video)
-    elif state == MS_TextChoices.State.IDENTIFIER:
+    elif video.state == MS_TextChoices.State.IDENTIFIER:
         logger.info(f'用户 {user.username}#{user.id} 录像#{video.id} 标识不匹配')
         video.push_redis("newest_queue")
         update_video_num(video)
-    elif state == MS_TextChoices.State.FROZEN:
+    elif video.state == MS_TextChoices.State.FROZEN:
         logger.info(f'用户 {user.username}#{user.id} 录像#{video.id} 不合法')
         video.push_redis("freeze_queue")
-    elif state == MS_TextChoices.State.OFFICIAL:  # 合法
+    elif video.state == MS_TextChoices.State.OFFICIAL:  # 合法
         logger.info(f'用户 {user.username}#{user.id} 录像#{video.id} 机审成功')
         video.push_redis("newest_queue")
         update_personal_record(video)
