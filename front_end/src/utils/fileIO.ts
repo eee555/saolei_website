@@ -27,22 +27,6 @@ export function load_video_file(stream: Uint8Array, filename: string) {
     return video;
 }
 
-export async function upload_prepare(file: UploadRawFile) {
-    const file_u8 = new Uint8Array(await file.arrayBuffer());
-    const video = load_video_file(file_u8, file.name);
-    let status = 'pass';
-    if (video === null) {
-        status = 'fileext';
-    }
-    return {
-        index: 0,
-        filename: file.name,
-        status: status,
-        stat: extract_stat(video),
-        form: upload_form(file, video),
-    };
-}
-
 export function extract_stat(video: AnyVideo | null): VideoAbstract | null {
     if (video === null) return null;
     video.current_time = 1e8;
@@ -72,7 +56,7 @@ export function upload_form(file: UploadRawFile, video: AnyVideo | null): Upload
 
 export function get_upload_status(file: UploadRawFile, video: AnyVideo | null, identifiers: Array<string>) {
     // const decoder = new TextDecoder();
-    if (video === null) return 'unsupported';
+    if (video === null) return 'fileext';
     if (video.level == 6) return 'custom';
     if (file.name.length >= 100) return 'filename';
     if (video.is_valid() == 1) return 'invalid';
