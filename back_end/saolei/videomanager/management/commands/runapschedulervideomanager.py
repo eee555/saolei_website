@@ -9,8 +9,7 @@ from django_apscheduler.jobstores import DjangoJobStore
 from django_apscheduler.models import DjangoJobExecution
 from django_apscheduler import util
 from django_redis import get_redis_connection
-from django.utils import timezone
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import json
 from videomanager.models import VideoModel
 
@@ -20,9 +19,14 @@ cache = get_redis_connection("saolei_website")
 
 # 定时任务文档
 # https://pypi.org/project/django-apscheduler/
-def n_days_ago(obj, n=7) -> bool:
-    d = datetime.strptime(obj['time'], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
-    return (timezone.now().replace(tzinfo=timezone.utc) - d).days > n
+# def n_days_ago(obj, n=7) -> bool:
+#     d = datetime.strptime(obj['time'], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+#     return (timezone.now().replace(tzinfo=timezone.utc) - d).days > n
+def n_days_ago(time_str: str, n=7) -> bool:
+    t = datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+    now = datetime.now(timezone.utc)
+    delta = now - t
+    return delta > timedelta(days=7)
 
 
 # 定时清除最新录像，直至剩下最近7天的或剩下不到100条
@@ -37,13 +41,13 @@ def delete_newest_queue():
     # "level": "e", "mode": "00", "timems": 74710, "bv": 227, "bvs": 3.0384152054611167}'}
     for key in newest_queue_ids.keys():
         a = json.loads(newest_queue_ids[key])
-        if n_days_ago(a):
+        if n_days_ago(a['time']):
             cache.hdel("newest_queue", key)
 
 
 # 定时清除7天以前冻结的录像
 def delete_freezed_video():
-    ddl = timezone.now() - timezone.timedelta(days=7)
+    ddl = datetime.now(timezone.utc) - timedelta(days=7)
     VideoModel.objects.filter(upload_time__lt=ddl, state="b").delete()
 
 
@@ -56,7 +60,7 @@ def delete_news_queue():
             logger.info("news_queue length <= 100, skipping cleanup")
             return
         news_queue_list = cache.lrange("news_queue", 0, -1)
-        news_queue_list = [x for x in news_queue_list if not n_days_ago(json.loads(x))]
+        news_queue_list = [x for x in news_queue_list if not n_days_ago(json.loads(x)['time'])]
         cache.delete("news_queue")
         if news_queue_list:
             cache.rpush("news_queue", *news_queue_list)
