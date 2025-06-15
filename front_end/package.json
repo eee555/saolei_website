@@ -10,7 +10,6 @@
     "frontend": "vite --mode frontend",
     "serve": "vite preview",
     "build:dev": "vite build --mode dev",
-    "build:fff666": "vite build --mode fff666",
     "build:openms": "vite build --mode openms",
     "build:frontend": "vite build --mode frontend"
   },

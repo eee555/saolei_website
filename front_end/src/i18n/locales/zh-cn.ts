@@ -327,6 +327,7 @@ export default {
                 filesize: '文件大小超过了5MB',
                 mode: '暂不支持此模式',
                 needApprove: '需要人工审核',
+                parse: '录像解析失败',
                 pass: '通过',
                 process: '上传中',
                 upload: '上传失败',
