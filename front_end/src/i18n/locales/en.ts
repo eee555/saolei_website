@@ -327,6 +327,7 @@ export default {
                 filesize: 'File size exceeds 5MB',
                 mode: 'Unsupported game mode',
                 needApprove: 'Need manual approval',
+                parse: 'Cannot parse the file',
                 pass: 'Pass',
                 process: 'Uploading',
                 upload: 'Upload fail',
