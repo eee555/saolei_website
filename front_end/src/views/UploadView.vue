@@ -61,30 +61,30 @@
                 </el-descriptions>
             </template>
         </el-table-column>
+        <el-table-column :label="t('common.prop.status')" sortable sort-by="status">
+            <template #default="{ row }">
+                {{ t(`profile.upload.error.${row.status}`) }}
+            </template>
+        </el-table-column>
         <el-table-column prop="stat.end_time" :label="t('common.prop.end_time')" :width="150">
-            <template #default="props">
-                {{ toISODateTimeString(props.row.stat.end_time) }}
+            <template #default="{ row }">
+                {{ row.stat ? toISODateTimeString(row.stat.end_time) : '' }}
             </template>
         </el-table-column>
         <el-table-column prop="stat.level" :label="t('common.prop.level')" sortable>
-            <template #default="props">
-                {{ t(`common.level.${props.row.stat.level}`) }}
+            <template #default="{ row }">
+                {{ row.stat ? t(`common.level.${row.stat.level}`) : '' }}
             </template>
         </el-table-column>
         <el-table-column prop="stat.timems" :label="t('common.prop.time')" sortable>
-            <template #default="props">
-                {{ props.row.stat.displayStat('time') }}
+            <template #default="{ row }">
+                {{ row.stat ? row.stat.displayStat('time') : '' }}
             </template>
         </el-table-column>
         <el-table-column prop="stat.bv" :label="t('common.prop.bv')" sortable />
         <el-table-column :label="t('common.prop.bvs')" sortable :sort-by="(v) => v.bvs()">
-            <template #default="props">
-                {{ props.row.stat.displayStat('bvs') }}
-            </template>
-        </el-table-column>
-        <el-table-column :label="t('common.prop.status')" sortable sort-by="status">
-            <template #default="props">
-                {{ t(`profile.upload.error.${props.row.status}`) }}
+            <template #default="{ row }">
+                {{ row.stat ? row.stat.displayStat('bvs') : '' }}
             </template>
         </el-table-column>
         <el-table-column :label="t('common.prop.action')" :width="130">
@@ -249,14 +249,24 @@ function getDelay() {
 
 async function upload_prepare(file: UploadRawFile): Promise<UploadEntry> {
     const file_u8 = new Uint8Array(await file.arrayBuffer());
-    const video = load_video_file(file_u8, file.name);
-    return {
-        index: 0,
-        filename: file.name,
-        status: get_upload_status(file, video, store.user.identifiers),
-        stat: extract_stat(video),
-        form: upload_form(file, video),
-    };
+    try {
+        const video = load_video_file(file_u8, file.name);
+        return {
+            index: 0,
+            filename: file.name,
+            status: get_upload_status(file, video, store.user.identifiers),
+            stat: extract_stat(video),
+            form: upload_form(file, video),
+        };
+    } catch (_e) {
+        return {
+            index: 0,
+            filename: file.name,
+            status: 'parse',
+            stat: null,
+            form: null,
+        };
+    }
 }
 
 </script>
