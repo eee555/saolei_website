@@ -28,5 +28,6 @@ def get_log_dir(request):
 
 
 # 用于调试
+@require_GET
 def hello_world(request):
     return HttpResponse('Hello, world!')

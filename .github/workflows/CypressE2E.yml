@@ -66,7 +66,7 @@ jobs:
       - name: Wait for backend to start
         run: |
           cd front_end
-          npx wait-on http://localhost:8000/ping --timeout 90000
+          npx wait-on --httpMethod GET http://localhost:8000/ping --timeout 30000
         continue-on-error: true
       
       - name: Check backend status and print logs
