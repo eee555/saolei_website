@@ -1,9 +1,8 @@
 import logging
-from .models import VideoModel, ExpandVideoModel, TournamentVideoModel
+from .models import VideoModel, ExpandVideoModel
 from django_redis import get_redis_connection
 from userprofile.models import UserProfile
 from msuser.models import UserMS
-from tournaments.models import TournamentParticipant
 import json
 from utils import ComplexEncoder
 from config.global_settings import RankingGameStats, GameLevels, GameModes, DefaultRankingScores

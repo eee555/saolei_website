@@ -13,7 +13,7 @@ class Tournament(models.Model):
     start_time = models.DateTimeField() # 比赛开始时间
     end_time = models.DateTimeField() # 比赛结束时间
     state = models.CharField(max_length=1, choices=Tournament_TextChoices.State.choices, default=Tournament_TextChoices.State.PENDING) # 比赛状态
-    host = models.ForeignKey(UserProfile, on_delete=models.CASCADE) # 主办方
+    host = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True) # 主办方
     weight = models.PositiveIntegerField(default=0) # 比赛总积分
 
 class GSCTournament(Tournament):
@@ -28,10 +28,9 @@ class GeneralTournament(Tournament):
 class TournamentParticipant(models.Model):
     token = models.CharField(max_length=4, unique=True) # 比赛标识
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE) # 比赛
-    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE) # 用户
+    user = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True) # 用户
     start_time = models.DateTimeField(auto_now_add=True) # 参赛时间
     end_time = models.DateTimeField(null=True, blank=True) # 结束时间
-    csv_row = models.JSONField(default='') # 各项分数
     rank = models.PositiveIntegerField(null=True, blank=True) # 排名
     rank_score = models.PositiveSmallIntegerField(default=0) # 比赛积分
 
@@ -45,4 +44,26 @@ class TournamentParticipant(models.Model):
                     break
         super().create(*args, **kwargs)
 
-    
+class GSCParticipant(TournamentParticipant):
+    bt1st = models.PositiveIntegerField(default=10000)
+    bt20th = models.PositiveIntegerField(default=10000)
+    bt20sum = models.PositiveIntegerField(default=200000)
+
+    it1st = models.PositiveIntegerField(default=60000)
+    it12th = models.PositiveIntegerField(default=60000)
+    it12sum = models.PositiveIntegerField(default=720000)
+
+    et1st = models.PositiveIntegerField(default=240000)
+    et5th = models.PositiveIntegerField(default=240000)
+    et5sum = models.PositiveIntegerField(default=1200000)
+
+    t37 = models.GeneratedField(
+        models.F('et5sum') + models.F('it12sum') + models.F('bt20sum'),
+        output_field=models.PositiveIntegerField(),
+        db_persist=True
+    )
+
+class TournamentVideo(models.Model):
+    participant = models.ForeignKey(TournamentParticipant, on_delete=models.CASCADE)
+    video = models.ForeignKey('videomanager.VideoModel', on_delete=models.CASCADE)
+

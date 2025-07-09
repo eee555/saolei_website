@@ -110,4 +110,4 @@ def tournament_checkin(request):
     return JsonResponse({'type': 'success', 'object': 'tournament', 'data': participant})
 
 def download_tournament(request):
-    
+    pass
