@@ -1,0 +1,78 @@
+name: Cypress E2E Tests
+
+on:
+  pull_request:
+    paths: 
+      - 'front_end/**'
+      - 'back_end/**'
+      - '.github/workflows/CypressE2E.yml'
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:latest
+        env:
+          MYSQL_DATABASE: saolei
+          MYSQL_ROOT_PASSWORD: 123456
+        options: --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=3
+        ports:
+          - 3306:3306
+      redis:  # 添加 Redis 服务
+        image: redis:latest
+        ports:
+          - 6379:6379
+        options: --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install backend dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install cryptography
+          pip install coverage pytest-cov
+          
+      - name: Create Logs Directory
+        run: mkdir -p logs
+
+      - name: Set up backend
+        run: |
+          cd backend
+          python manage.py makemigrations
+          python manage.py migrate
+          python manage.py runserver
+
+      - name: Wait for backend to start
+        run: |
+          npx wait-on http://localhost:8000
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm install
+
+      - name: Start frontend
+        run: |
+          cd frontend
+          npm run dev
+
+      - name: Wait for frontend (if Cypress hits it)
+        run: npx wait-on http://localhost:8080
+
+      - name: Run Cypress
+        run: |
+          npx cypress install
+          npx cypress run
