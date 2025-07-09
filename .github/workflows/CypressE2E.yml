@@ -64,6 +64,7 @@ jobs:
 
       - name: Wait for backend to start
         run: |
+          cd front_end
           npx wait-on http://localhost:8000
 
       - name: Start frontend
@@ -72,7 +73,9 @@ jobs:
           npm run dev &
 
       - name: Wait for frontend
-        run: npx wait-on http://localhost:8080
+        run: |
+          cd front_end
+          npx wait-on http://localhost:8080
 
       - name: Run Cypress
         run: |
