@@ -49,7 +49,8 @@ jobs:
           cd back_end/saolei
           python manage.py makemigrations
           python manage.py migrate
-          python manage.py runserver &
+          python manage.py runserver > backend.log 2>&1 &
+          echo "Backend started in background"
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -65,7 +66,19 @@ jobs:
       - name: Wait for backend to start
         run: |
           cd front_end
-          npx wait-on http://127.0.0.1:8000
+          npx wait-on http://127.0.0.1:8000 --timeout 120000
+        continue-on-error: true
+      
+      - name: Check backend status and print logs
+        run: |
+          if ! curl -sf http://localhost:8000 > /dev/null; then
+            echo "❌ Backend did not start in time."
+            echo "====== Backend Logs ======"
+            cat backend.log
+            exit 1
+          else
+            echo "✅ Backend is up."
+          fi
 
       - name: Start frontend
         run: |
