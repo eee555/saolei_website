@@ -42,7 +42,7 @@ jobs:
           pip install coverage pytest-cov
           
       - name: Create Logs Directory
-        run: mkdir -p logs
+        run: mkdir -p back_end/saolei/logs
 
       - name: Set up backend
         run: |
