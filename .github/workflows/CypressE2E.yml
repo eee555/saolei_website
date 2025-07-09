@@ -51,10 +51,6 @@ jobs:
           python manage.py migrate
           python manage.py runserver
 
-      - name: Wait for backend to start
-        run: |
-          npx wait-on http://localhost:8000
-
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
