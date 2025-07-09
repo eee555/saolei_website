@@ -36,7 +36,7 @@ jobs:
 
       - name: Install backend dependencies
         run: |
-          cd backend/saolei
+          cd back_end/saolei
           pip install -r requirements.txt
           pip install cryptography
           pip install coverage pytest-cov
@@ -46,7 +46,7 @@ jobs:
 
       - name: Set up backend
         run: |
-          cd backend/saolei
+          cd back_end/saolei
           python manage.py makemigrations
           python manage.py migrate
           python manage.py runserver
