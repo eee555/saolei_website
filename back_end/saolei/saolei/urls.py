@@ -38,6 +38,7 @@ urlpatterns = [
     path(r'', TemplateView.as_view(template_name="index.html")),
     path('logs/', views.get_log_dir),
     path('log_view/', views.get_log_file),
+    path('ping/', views.hello_world),
 ]
 
 
