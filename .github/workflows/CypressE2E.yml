@@ -66,7 +66,7 @@ jobs:
       - name: Wait for backend to start
         run: |
           cd front_end
-          npx wait-on http://127.0.0.1:8000 --timeout 120000
+          npx wait-on http://127.0.0.1:8000 --timeout 90000
         continue-on-error: true
       
       - name: Check backend status and print logs
@@ -74,7 +74,7 @@ jobs:
           if ! curl -sf http://localhost:8000 > /dev/null; then
             echo "❌ Backend did not start in time."
             echo "====== Backend Logs ======"
-            cat backend.log
+            cat back_end/saolei/backend.log
             exit 1
           else
             echo "✅ Backend is up."
