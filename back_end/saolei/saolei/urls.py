@@ -27,6 +27,7 @@ from . import views
 
 
 urlpatterns = [
+    path('', views.hello_world),
     path('video/', include('videomanager.urls')),
     path('userprofile/', include('userprofile.urls', namespace='userprofile')),
     path("admin/", admin.site.urls),
@@ -38,7 +39,6 @@ urlpatterns = [
     path(r'', TemplateView.as_view(template_name="index.html")),
     path('logs/', views.get_log_dir),
     path('log_view/', views.get_log_file),
-    path('ping/', views.hello_world),
 ]
 
 
