@@ -14,4 +14,5 @@ export default defineConfig({
             bundler: 'vite',
         },
     },
+    chromeWebSecurity: false,
 });
