@@ -60,6 +60,7 @@ jobs:
         run: |
           cd front_end
           npm install
+          npm install --save-dev wait-on
 
       - name: Wait for backend to start
         run: |
