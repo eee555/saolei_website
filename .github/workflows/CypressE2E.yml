@@ -49,24 +49,28 @@ jobs:
           cd back_end/saolei
           python manage.py makemigrations
           python manage.py migrate
-          python manage.py runserver
+          python manage.py runserver &
 
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '20.11.1'
 
       - name: Install frontend dependencies
         run: |
           cd frontend
           npm install
 
+      - name: Wait for backend to start
+        run: |
+          npx wait-on http://localhost:8000
+
       - name: Start frontend
         run: |
           cd frontend
-          npm run dev
+          npm run dev &
 
-      - name: Wait for frontend (if Cypress hits it)
+      - name: Wait for frontend
         run: npx wait-on http://localhost:8080
 
       - name: Run Cypress
