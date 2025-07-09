@@ -58,7 +58,7 @@ jobs:
 
       - name: Install frontend dependencies
         run: |
-          cd frontend
+          cd front_end
           npm install
 
       - name: Wait for backend to start
@@ -75,5 +75,6 @@ jobs:
 
       - name: Run Cypress
         run: |
+          cd front_end
           npx cypress install
           npx cypress run
