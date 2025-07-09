@@ -67,7 +67,7 @@ jobs:
 
       - name: Start frontend
         run: |
-          cd frontend
+          cd front_end
           npm run dev &
 
       - name: Wait for frontend
