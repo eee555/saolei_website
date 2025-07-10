@@ -38,7 +38,13 @@
 
 Cypress.Commands.add('getLocalStorage', (key: string) => {
     return cy.window().then((win) => {
-        return win.localStorage.getItem(key);
+        const value = win.localStorage.getItem(key);
+        try {
+            return value ? JSON.parse(value) : null;
+        } catch (e) {
+            // If not valid JSON, return the raw string
+            return value;
+        }
     });
 });
 
