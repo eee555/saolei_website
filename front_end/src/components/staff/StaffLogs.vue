@@ -17,9 +17,7 @@
             </template>
         </el-table-column>
     </el-table>
-    <code-highlight language="log">
-        {{ logContent }}
-    </code-highlight>
+    <v-code-block lang="log" :code="logContent" prismjs />
 </template>
 
 <script lang="ts" setup>
@@ -28,7 +26,7 @@ import { ElButton, ElTable, ElTableColumn } from 'element-plus';
 import { ref } from 'vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { httpErrorNotification } from '../Notifications';
-import CodeHighlight from 'vue-code-highlight/src/CodeHighlight.vue';
+import VCodeBlock from '@wdns/vue-code-block';
 
 interface FileStat {
     name: string;

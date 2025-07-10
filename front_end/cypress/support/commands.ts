@@ -35,3 +35,21 @@
 //     }
 //   }
 // }
+
+Cypress.Commands.add('getLocalStorage', (key: string) => {
+    return cy.window().then((win) => {
+        const value = win.localStorage.getItem(key);
+        try {
+            return value ? JSON.parse(value) : null;
+        } catch (_e) {
+            // If not valid JSON, return the raw string
+            return value;
+        }
+    });
+});
+
+Cypress.Commands.add('setLocalStorage', (key: string, value: string) => {
+    cy.window().then((win) => {
+        win.localStorage.setItem(key, value);
+    });
+});
