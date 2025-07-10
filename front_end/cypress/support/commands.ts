@@ -35,3 +35,15 @@
 //     }
 //   }
 // }
+
+Cypress.Commands.add('getLocalStorage', (key: string) => {
+    return cy.window().then((win) => {
+        return win.localStorage.getItem(key);
+    });
+});
+
+Cypress.Commands.add('setLocalStorage', (key: string, value: string) => {
+    cy.window().then((win) => {
+        win.localStorage.setItem(key, value);
+    });
+});
