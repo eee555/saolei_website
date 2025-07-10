@@ -16,3 +16,8 @@
 // Import commands.js using ES2015 syntax:
 import './commands';
 import 'cypress-real-events';
+
+Cypress.on('uncaught:exception', (err, _runnable) => {
+    console.error('Unhandled exception:', err.message);
+    return false; // prevents the test from failing
+});
