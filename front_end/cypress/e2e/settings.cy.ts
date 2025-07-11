@@ -43,8 +43,8 @@ describe('language setting', () => {
     });
 });
 
-describe('Detect Sys Color Theme', () => {
-    it('Dark Mode', () => {
+describe('Color Theme', () => {
+    it('Detect Sys Dark Mode', () => {
         cy.visit('http://localhost:8080/#/settings', {
             onBeforeLoad: (win) => {
                 cy.stub(win, 'matchMedia').withArgs('(prefers-color-scheme: dark)').returns({
@@ -57,8 +57,11 @@ describe('Detect Sys Color Theme', () => {
         cy.getLocalStorage('local').then((value) => {
             expect(value.darkmode).to.be.true;
         });
+        cy.getLocalStorage('vueuse-color-scheme').then((value) => {
+            expect(value).to.eq('auto');
+        });
     });
-    it('Light Mode', () => {
+    it('Detect Sys Light Mode', () => {
         cy.visit('http://localhost:8080/#/settings', {
             onBeforeLoad: (win) => {
                 cy.stub(win, 'matchMedia').withArgs('(prefers-color-scheme: dark)').returns({
@@ -70,6 +73,28 @@ describe('Detect Sys Color Theme', () => {
         });
         cy.getLocalStorage('local').then((value) => {
             expect(value.darkmode).to.be.false;
+        });
+        cy.getLocalStorage('vueuse-color-scheme').then((value) => {
+            expect(value).to.eq('auto');
+        });
+    });
+
+    it('Change Theme', () => {
+        cy.visit('http://localhost:8080/#/settings');
+        cy.getLocalStorage('vueuse-color-scheme').then((value) => {
+            expect(value).to.eq('auto');
+        });
+        cy.contains('浅色').click();
+        cy.getLocalStorage('vueuse-color-scheme').then((value) => {
+            expect(value).to.eq('light');
+        });
+        cy.contains('深色').click();
+        cy.getLocalStorage('vueuse-color-scheme').then((value) => {
+            expect(value).to.eq('dark');
+        });
+        cy.contains('自动').click();
+        cy.getLocalStorage('vueuse-color-scheme').then((value) => {
+            expect(value).to.eq('auto');
         });
     });
 });
