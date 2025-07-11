@@ -98,3 +98,14 @@ describe('Color Theme', () => {
         });
     });
 });
+
+describe('General Settings', () => {
+    it('Hide Language Icon', () => {
+        cy.visit('http://localhost:8080/#/settings');
+        cy.get('[data-cy=languagePicker]').should('be.visible');
+        cy.contains('语言切换').next().click();
+        cy.get('[data-cy=languagePicker]').should('not.be.visible');
+        cy.contains('语言切换').next().click();
+        cy.get('[data-cy=languagePicker]').should('be.visible');
+    });
+});
