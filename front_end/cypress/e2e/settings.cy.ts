@@ -27,7 +27,7 @@ describe('dark mode auto detect', () => {
     it('dark mode', () => {
         cy.visit('http://localhost:8080/#/settings', {
             onBeforeLoad: (win) => {
-                cy.stub(win, "matchMedia").withArgs("(prefers-color-scheme: dark)").returns({
+                cy.stub(win, 'matchMedia').withArgs('(prefers-color-scheme: dark)').returns({
                     matches: true,
                     addEventListener: () => {},
                     addListener: () => {},
@@ -41,7 +41,7 @@ describe('dark mode auto detect', () => {
     it('light mode', () => {
         cy.visit('http://localhost:8080/#/settings', {
             onBeforeLoad: (win) => {
-                cy.stub(win, "matchMedia").withArgs("(prefers-color-scheme: dark)").returns({
+                cy.stub(win, 'matchMedia').withArgs('(prefers-color-scheme: dark)').returns({
                     matches: false,
                     addEventListener: () => {},
                     addListener: () => {},
