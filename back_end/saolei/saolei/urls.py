@@ -27,6 +27,7 @@ from . import views
 
 
 urlpatterns = [
+    path('', views.hello_world),
     path('video/', include('videomanager.urls')),
     path('userprofile/', include('userprofile.urls', namespace='userprofile')),
     path("admin/", admin.site.urls),
