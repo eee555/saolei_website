@@ -1,4 +1,4 @@
-describe('language auto detect', () => {
+describe('language setting', () => {
     const languages = {
         'zh-CN': '教程',
         'zh-TW': '教程', // fallback to zh-cn
@@ -8,8 +8,9 @@ describe('language auto detect', () => {
         'pl': 'poradniki',
         'fr': 'Guides', // fallback to en
     };
+
     for (const lang in languages) {
-        it(lang, () => {
+        it(`Detect Sys Language: ${lang}`, () => {
             cy.visit('http://localhost:8080/#/settings', {
                 onBeforeLoad: (win) => {
                     Object.defineProperty(win.navigator, 'language', {
@@ -21,10 +22,29 @@ describe('language auto detect', () => {
             cy.contains(languages[lang]);
         });
     }
+
+    it('Change Language', () => {
+        cy.visit('http://localhost:8080/#/settings');
+        cy.get('[data-cy=languagePicker]').realClick();
+        cy.contains('dev').filter(':visible').click();
+        cy.contains('menu.guide');
+        cy.get('[data-cy=languagePicker]').realClick();
+        cy.contains('简体中文').filter(':visible').click();
+        cy.contains('教程');
+        cy.get('[data-cy=languagePicker]').realClick();
+        cy.contains('English').filter(':visible').click();
+        cy.contains('Guides');
+        cy.get('[data-cy=languagePicker]').realClick();
+        cy.contains('Deutsch').filter(':visible').click();
+        cy.contains('Hilfe');
+        cy.get('[data-cy=languagePicker]').realClick();
+        cy.contains('Polski').filter(':visible').click();
+        cy.contains('poradniki');
+    });
 });
 
-describe('dark mode auto detect', () => {
-    it('dark mode', () => {
+describe('Detect Sys Color Theme', () => {
+    it('Dark Mode', () => {
         cy.visit('http://localhost:8080/#/settings', {
             onBeforeLoad: (win) => {
                 cy.stub(win, 'matchMedia').withArgs('(prefers-color-scheme: dark)').returns({
@@ -38,7 +58,7 @@ describe('dark mode auto detect', () => {
             expect(value.darkmode).to.be.true;
         });
     });
-    it('light mode', () => {
+    it('Light Mode', () => {
         cy.visit('http://localhost:8080/#/settings', {
             onBeforeLoad: (win) => {
                 cy.stub(win, 'matchMedia').withArgs('(prefers-color-scheme: dark)').returns({
