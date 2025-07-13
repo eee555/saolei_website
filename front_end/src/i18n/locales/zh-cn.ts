@@ -178,6 +178,8 @@ export default {
     },
     form: {
         captcha: '验证码',
+        captchaLoading: '加载中',
+        captchaLoadingFail: '加载失败',
         confirmPassword: '确认密码',
         email: '邮箱',
         emailCode: '邮箱验证码',
