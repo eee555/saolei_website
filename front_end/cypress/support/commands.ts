@@ -53,3 +53,30 @@ Cypress.Commands.add('setLocalStorage', (key: string, value: string) => {
         win.localStorage.setItem(key, value);
     });
 });
+
+Cypress.Commands.add('mockCaptchaRefresh', (options) => {
+    cy.intercept('GET', '/userprofile/refresh_captcha/', {
+        statusCode: 200,
+        headers: { 'Content-Type': 'application/json' },
+        body: {
+            status: 100,
+            hashkey: 'testkey',
+        },
+        ...options,
+    }).as('captchaRefresh');
+    cy.intercept('GET', '/userprofile/captcha/image/testkey/', {
+        fixture: 'test.png',
+    }).as('testImage');
+});
+
+Cypress.Commands.add('mockGetEmailCode', (options) => {
+    cy.intercept('POST', '/userprofile/get_email_captcha/', {
+        statusCode: 200,
+        headers: { 'Content-Type': 'application/json' },
+        body: {
+            type: 'success',
+            hashkey: 'testkey',
+        },
+        ...options,
+    }).as('getEmailCode');
+});
