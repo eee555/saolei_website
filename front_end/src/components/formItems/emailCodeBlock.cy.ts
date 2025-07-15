@@ -86,7 +86,7 @@ describe('<EmailCodeBlock />', () => {
                 hashkey: 'refresh',
             },
         });
-        cy.mockGetEmailCode({ 
+        cy.mockGetEmailCode({
             body: {
                 type: 'error',
                 object: 'captcha',
@@ -143,11 +143,9 @@ describe('<EmailCodeBlock />', () => {
         cy.get('button').contains('(60)');
         cy.get('button').should('be.disabled');
         cy.tick(60000);
-        cy.wait(0);
         cy.get('button').contains('(0)');
         cy.get('button').should('be.disabled');
         cy.tick(1000);
-        cy.wait(0);
 
         // Return to initial states
         cy.contains('Image captcha').next().get('input').should('be.empty');
