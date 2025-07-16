@@ -55,16 +55,20 @@ Cypress.Commands.add('setLocalStorage', (key: string, value: string) => {
 });
 
 Cypress.Commands.add('mockCaptchaRefresh', (options) => {
-    cy.intercept('GET', '/userprofile/refresh_captcha/', {
-        statusCode: 200,
-        headers: { 'Content-Type': 'application/json' },
-        body: {
-            status: 100,
-            hashkey: 'testkey',
-        },
-        ...options,
+    let captchaRefreshCount = 0;
+    cy.intercept('GET', '/userprofile/refresh_captcha/', (req) => {
+        captchaRefreshCount += 1;
+        req.reply({
+            statusCode: 200,
+            headers: { 'Content-Type': 'application/json' },
+            body: {
+                status: 100,
+                hashkey: `testkey${captchaRefreshCount}`,
+            },
+            ...options,
+        });
     }).as('captchaRefresh');
-    cy.intercept('GET', '/userprofile/captcha/image/testkey/', {
+    cy.intercept('GET', '/userprofile/captcha/image/**', {
         fixture: 'test.png',
     }).as('testImage');
 });
@@ -79,4 +83,33 @@ Cypress.Commands.add('mockGetEmailCode', (options) => {
         },
         ...options,
     }).as('getEmailCode');
+});
+
+Cypress.Commands.add('mockLogin', () => {
+    cy.intercept('POST', '/userprofile/login/', (req) => {
+        const params = new URLSearchParams(req.body);
+        const username = params.get('username');
+        const password = params.get('password');
+        const captcha = params.get('captcha');
+        if (captcha !== 'test') {
+            req.reply({
+                'type': 'error',
+                'object': 'login',
+                'category': 'captcha',
+            });
+            return;
+        }
+        if (username === 'test' && password === 'test') {
+            req.reply({
+                'type': 'success',
+                'user': {},
+            });
+        } else {
+            req.reply({
+                'type': 'error',
+                'object': 'login',
+                'category': 'password',
+            });
+        }
+    });
 });
