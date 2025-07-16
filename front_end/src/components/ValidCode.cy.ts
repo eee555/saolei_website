@@ -24,7 +24,7 @@ describe('<ValidCode />', () => {
         cy.contains('Loading').should('be.visible');
 
         // Rendering
-        cy.get('img').should('have.attr', 'src', 'http://127.0.0.1:8000/userprofile/captcha/image/testkey/');
+        cy.get('img').should('have.attr', 'src', 'http://127.0.0.1:8000/userprofile/captcha/image/testkey1/');
         cy.get('img').should('be.visible');
         cy.contains('Loading').should('not.exist');
     });

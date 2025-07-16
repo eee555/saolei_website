@@ -85,7 +85,7 @@ Cypress.Commands.add('mockGetEmailCode', (options) => {
     }).as('getEmailCode');
 });
 
-Cypress.Commands.add('mockLogin', (options) => {
+Cypress.Commands.add('mockLogin', () => {
     cy.intercept('POST', '/userprofile/login/', (req) => {
         const params = new URLSearchParams(req.body);
         const username = params.get('username');
