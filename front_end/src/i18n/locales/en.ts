@@ -178,6 +178,8 @@ export default {
     },
     form: {
         captcha: 'Captcha',
+        captchaLoading: 'Loading',
+        captchaLoadingFail: 'Failed',
         confirmPassword: 'Confirm password',
         email: 'Email',
         emailCode: 'Email code',

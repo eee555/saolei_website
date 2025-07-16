@@ -1,6 +1,12 @@
 <template>
-    <div v-loading="loading" class="canvas-box" :style="{ height: '32px' }">
-        <img :src="captchaUrl" alt="" @click="refreshPic()">
+    <div class="canvas-box" :style="{ height: '32px' }" @click="refreshPic()">
+        <el-text v-if="loading">
+            {{ t('form.captchaLoading') }}
+        </el-text>
+        <img v-else-if="captchaUrl" :src="captchaUrl" alt="">
+        <el-text v-else>
+            {{ t('form.captchaLoadingFail') }}
+        </el-text>
     </div>
 </template>
 
@@ -8,7 +14,11 @@
 import { onMounted, ref } from 'vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 const { proxy } = useCurrentInstance();
-import { ElMessage, vLoading } from 'element-plus';
+import { ElText } from 'element-plus';
+import { httpErrorNotification, unknownErrorNotification } from './Notifications';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const captchaUrl = ref('');
 const hashkey = ref('');
@@ -20,12 +30,15 @@ const refreshPic = () => {
         if (response.data.status == 100) {
             hashkey.value = response.data.hashkey;
             captchaUrl.value = import.meta.env.VITE_BASE_API + '/userprofile/captcha/image/' + hashkey.value + '/';
-        } else if (response.data.status >= 101) {
-            ElMessage.error({ message: response.data.msg, offset: 68 });
+        } else {
+            unknownErrorNotification(response.data);
+            captchaUrl.value = '';
         }
         loading.value = false;
-    }).catch(function (error) {
-        console.log(error);
+    }).catch((error) => {
+        httpErrorNotification(error);
+        captchaUrl.value = '';
+        loading.value = false;
     });
 };
 

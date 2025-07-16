@@ -18,11 +18,12 @@
     <el-form-item ref="emailCodeFormRef" prop="emailCode" :label="t('form.emailCode')">
         <div style="display: flex">
             <el-input
-                v-model.trim="emailCode" prefix-icon="Key" maxlength="6" :disabled="captcha.length!=4" :placeholder="t(email_code_placeholder)"
+                v-model.trim="emailCode" data-cy="emailCode"
+                prefix-icon="Key" maxlength="6" :disabled="captcha.length!=4" :placeholder="t(email_code_placeholder)"
                 @input="emailCodeHandler"
             />
             &nbsp;
-            <el-button :disabled="captcha.length!=4" @click="getEmailCaptcha(type)">
+            <el-button :disabled="captcha.length != 4 || counting" @click="getEmailCaptcha(type)">
                 <vue-countdown v-if="counting" v-slot="{ totalSeconds }" :time="60000" @end="counting = false;">
                     ({{ totalSeconds }})
                 </vue-countdown>

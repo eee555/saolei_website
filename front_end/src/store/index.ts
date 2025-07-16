@@ -31,7 +31,7 @@ export const videoplayerstore = defineStore('videoplayer', {
 export const local = useLocalStorage(
     'local',
     {
-        darkmode: false,
+        darkmode: matchMedia('(prefers-color-scheme: dark)').matches,
         experimental: false,
         language: (navigator.language).toLocaleLowerCase(),
         language_show: true,
