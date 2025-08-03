@@ -25,9 +25,3 @@ def get_log_dir(request):
             'mtime': datetime.fromtimestamp(file_stat.st_ctime, tz=timezone.utc),
         })
     return JsonResponse(file_stats, safe=False)
-
-
-# 用于调试
-@require_GET
-def hello_world(request):
-    return HttpResponse('Hello, world!')
