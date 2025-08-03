@@ -33,8 +33,9 @@ declare global {
 }
 
 Cypress.Commands.add('mount', (...args) => {
-    return mount(...args).then(({ wrapper }) => {
-        return cy.wrap(wrapper).as('vue');
+    return mount(...args).then((result) => {
+        cy.wrap(result.wrapper).as('vue');
+        return cy.wrap(result);
     });
 });
 
