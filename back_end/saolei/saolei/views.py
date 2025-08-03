@@ -1,6 +1,6 @@
 from django.views.decorators.http import require_GET
 from userprofile.decorators import staff_required
-from django.http import JsonResponse, FileResponse, HttpResponse
+from django.http import JsonResponse, FileResponse
 import os
 from datetime import datetime, timezone
 
