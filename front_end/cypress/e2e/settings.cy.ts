@@ -13,7 +13,7 @@ describe('language setting', () => {
         it(`Detect Sys Language: ${lang}`, () => {
             cy.visit('http://localhost:8080/#/settings', {
                 onBeforeLoad: (win) => {
-                    Object.defineProperty(win.navigator, 'language', {
+                    Object.defineProperty((win as unknown as Window).navigator, 'language', {
                         value: lang,
                         configurable: true,
                     });
