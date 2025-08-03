@@ -25,16 +25,46 @@
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 //
-// declare global {
-//   namespace Cypress {
-//     interface Chainable {
-//       login(email: string, password: string): Chainable<void>
-//       drag(subject: string, options?: Partial<TypeOptions>): Chainable<Element>
-//       dismiss(subject: string, options?: Partial<TypeOptions>): Chainable<Element>
-//       visit(originalFn: CommandOriginalFn, url: string, options: Partial<VisitOptions>): Chainable<Element>
-//     }
-//   }
-// }
+declare global {
+    namespace Cypress {
+        interface Chainable {
+            /**
+             * 获取本地存储的值
+             * @param key - 本地存储的键
+             * @example cy.getLocalStorage('authToken')
+             */
+            getLocalStorage(key: string): Chainable;
+
+            /**
+             * 设置本地存储的值
+             * @param key - 本地存储的键
+             * @param value - 要存储的值
+             * @example cy.setLocalStorage('authToken', 'abc123')
+             */
+            setLocalStorage(key: string, value: string): void;
+
+            /**
+             * 模拟验证码刷新
+             * @param options - 请求选项
+             * @example cy.mockCaptchaRefresh({})
+             */
+            mockCaptchaRefresh(options?: any): void;
+
+            /**
+             * 模拟获取邮件验证码
+             * @param options - 请求选项
+             * @example cy.mockGetEmailCode({})
+             */
+            mockGetEmailCode(options?: any): void;
+
+            /**
+             * 模拟登录
+             * @example cy.mockLogin()
+             */
+            mockLogin(): void;
+        }
+    }
+}
 
 Cypress.Commands.add('getLocalStorage', (key: string) => {
     return cy.window().then((win) => {
@@ -113,3 +143,5 @@ Cypress.Commands.add('mockLogin', () => {
         }
     });
 });
+
+export {};
