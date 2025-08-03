@@ -1,3 +1,5 @@
+import type {} from '@cy/support/component';
+
 import LoginDialog from './LoginDialog.vue';
 import i18n from '@/i18n';
 import $axios from '@/http';
@@ -16,9 +18,9 @@ const mountOptions = {
     },
 };
 
-Cypress.Commands.add('expectCaptchaRefresh', (count: number) => {
+function expectCaptchaRefresh(count: number) {
     cy.contains('Captcha').next().find('img').should('have.attr', 'src', `http://127.0.0.1:8000/userprofile/captcha/image/testkey${count}/`);
-});
+}
 
 describe('<LoginDialog />', () => {
     beforeEach(() => {
@@ -114,7 +116,7 @@ describe('<LoginDialog />', () => {
 
         cy.contains('Log in').click();
         cy.contains('Invalid captcha. Please input again');
-        cy.expectCaptchaRefresh(2);
+        expectCaptchaRefresh(2);
     });
 
     it('Incorrect Username or Password', () => {
@@ -125,7 +127,7 @@ describe('<LoginDialog />', () => {
 
         cy.contains('Log in').click();
         cy.contains('Invalid username or password');
-        cy.expectCaptchaRefresh(2);
+        expectCaptchaRefresh(2);
         cy.contains('Captcha required');
     });
 });

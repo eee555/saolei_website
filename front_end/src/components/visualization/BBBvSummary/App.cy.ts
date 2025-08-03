@@ -7,7 +7,7 @@ describe('<BBBvSummary />', () => {
     before(() => {
         cy.fixture('videoAbstractList.json').then((data) => {
             cy.log(data.data);
-            Cypress.env('videoList', data.data.map((video) => new VideoAbstract(video)));
+            Cypress.env('videoList', data.data.map((video: any) => new VideoAbstract(video)));
         });
         cy.clock(new Date('2025-12-15T00:00:00Z'));
     });

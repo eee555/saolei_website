@@ -25,7 +25,7 @@ import 'cypress-real-events';
 // Alternatively, can be defined in cypress/support/component.d.ts
 // with a <reference path="./component" /> at the top of your spec.
 declare global {
-    namespace Cypress { // eslint-disable-line @typescript-eslint/no-namespace
+    namespace Cypress {
         interface Chainable {
             mount: typeof mount;
         }
@@ -33,8 +33,9 @@ declare global {
 }
 
 Cypress.Commands.add('mount', (...args) => {
-    return mount(...args).then(({ wrapper }) => {
-        return cy.wrap(wrapper).as('vue');
+    return mount(...args).then((result) => {
+        cy.wrap(result.wrapper).as('vue');
+        return cy.wrap(result);
     });
 });
 
