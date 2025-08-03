@@ -35,6 +35,7 @@ export default createI18n({
         'en': ['dev'],
         'de': ['en'],
         'pl': ['en'],
+        'zh-tw': ['zh-cn'],
     },
     fallbackWarn: false,
     missingWarn: false,

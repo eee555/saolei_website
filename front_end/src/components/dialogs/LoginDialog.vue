@@ -100,10 +100,11 @@ const submitForm = async (formEl: FormInstance | undefined) => {
             } else if (data.type == 'error') {
                 if (data.category == 'captcha') {
                     captchaError.value = t('msg.captchaFail');
-                    if (refValidCode.value !== undefined) refValidCode.value.refreshPic();
                 } else if (data.category == 'password') {
+                    loginForm.captcha = '';
                     passwordError.value = t('msg.usernamePasswordInvalid');
                 }
+                if (refValidCode.value !== undefined) refValidCode.value.refreshPic();
             }
         }).catch(httpErrorNotification);
     });

@@ -1,0 +1,97 @@
+name: Cypress E2E Tests
+
+on:
+  pull_request:
+    paths: 
+      - 'front_end/**'
+      - 'back_end/**'
+      - '.github/workflows/CypressE2E.yml'
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:latest
+        env:
+          MYSQL_DATABASE: saolei
+          MYSQL_ROOT_PASSWORD: 123456
+        options: --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=3
+        ports:
+          - 3306:3306
+      redis:  # 添加 Redis 服务
+        image: redis:latest
+        ports:
+          - 6379:6379
+        options: --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install backend dependencies
+        run: |
+          cd back_end/saolei
+          pip install -r requirements.txt
+          pip install cryptography
+          pip install coverage pytest-cov
+          
+      - name: Create Logs Directory
+        run: mkdir -p back_end/saolei/logs
+
+      - name: Set up backend
+        run: |
+          cd back_end/saolei
+          python manage.py makemigrations
+          python manage.py migrate
+          python manage.py runserver > backend.log 2>&1 &
+          echo "Backend started in background"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.11.1'
+
+      - name: Install frontend dependencies
+        run: |
+          cd front_end
+          npm install
+          npm install --save-dev wait-on
+
+      - name: Wait for backend to start
+        run: |
+          cd front_end
+          npx wait-on http-get://localhost:8000/ --timeout 30000
+        continue-on-error: true
+      
+      - name: Check backend status and print logs
+        run: |
+          if ! curl -sf http://localhost:8000 > /dev/null; then
+            echo "❌ Backend did not start in time."
+            echo "====== Backend Logs ======"
+            cat back_end/saolei/backend.log
+            exit 1
+          else
+            echo "✅ Backend is up."
+          fi
+
+      - name: Start frontend
+        run: |
+          cd front_end
+          npm run dev &
+
+      - name: Wait for frontend
+        run: |
+          cd front_end
+          npx wait-on http://localhost:8080
+
+      - name: Run Cypress
+        run: |
+          cd front_end
+          npx cypress install
+          npx cypress run

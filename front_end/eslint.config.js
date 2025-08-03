@@ -105,8 +105,10 @@ export default typescriptEslint.config(
       '@typescript-eslint/ban-ts-comment': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-namespace': 'off',
       '@typescript-eslint/no-unsafe-function-type': 'off',
-      "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_", "caughtErrorsIgnorePattern": "^_"}],
+      '@typescript-eslint/no-unused-expressions': 'off',
+      '@typescript-eslint/no-unused-vars': ['error', { 'argsIgnorePattern': '^_', 'caughtErrorsIgnorePattern': '^_'}],
     },
     settings: {
       'vue-i18n': {
