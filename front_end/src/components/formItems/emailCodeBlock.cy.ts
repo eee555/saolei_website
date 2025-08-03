@@ -19,13 +19,13 @@ const defaultProps = {
     modelValue: '',
 };
 
-Cypress.Commands.add('inputCaptcha', () => {
+function inputCaptcha() {
     cy.contains('Image captcha').next().find('input').type('1234');
-});
+}
 
-Cypress.Commands.add('expectCaptchaRefresh', (count: number) => {
+function expectCaptchaRefresh(count: number) {
     cy.get('img').should('have.attr', 'src', `http://127.0.0.1:8000/userprofile/captcha/image/testkey${count}/`);
-});
+}
 
 describe('<EmailCodeBlock />', () => {
     it('Rendering', () => {
@@ -54,7 +54,7 @@ describe('<EmailCodeBlock />', () => {
         cy.get('[data-cy=emailCode]').should('have.attr', 'placeholder', 'Captcha required');
 
         // Input captcha
-        cy.inputCaptcha();
+        inputCaptcha();
         cy.get('button').should('be.enabled');
         cy.get('button').should('have.text', 'Send');
         cy.get('[data-cy=emailCode]').should('be.enabled');
@@ -93,7 +93,7 @@ describe('<EmailCodeBlock />', () => {
         cy.get('button').click();
 
         // Captcha auto refreshes
-        cy.expectCaptchaRefresh(2);
+        expectCaptchaRefresh(2);
 
         // Return to initial states
         cy.contains('Image captcha').next().get('input').should('be.empty');
@@ -114,7 +114,7 @@ describe('<EmailCodeBlock />', () => {
         cy.get('img').should('be.visible'); // wait for image to load
 
         // Input captcha
-        cy.inputCaptcha();
+        inputCaptcha();
 
         // Send email code
         cy.mockGetEmailCode({
@@ -129,7 +129,7 @@ describe('<EmailCodeBlock />', () => {
         cy.contains('Failed to send email').next().next().click();
 
         // Captcha auto refreshes
-        cy.expectCaptchaRefresh(2);
+        expectCaptchaRefresh(2);
 
         // Countdown
         cy.get('button').contains('(60)');
