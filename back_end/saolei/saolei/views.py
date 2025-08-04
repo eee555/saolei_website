@@ -1,6 +1,6 @@
 from django.views.decorators.http import require_GET
 from userprofile.decorators import staff_required
-from django.http import JsonResponse, FileResponse, HttpResponse
+from django.http import JsonResponse, FileResponse
 import os
 from datetime import datetime, timezone
 
@@ -25,9 +25,3 @@ def get_log_dir(request):
             'mtime': datetime.fromtimestamp(file_stat.st_ctime, tz=timezone.utc),
         })
     return JsonResponse(file_stats, safe=False)
-
-
-# 用于调试
-@require_GET
-def hello_world(request):
-    return HttpResponse('Hello, world!')
