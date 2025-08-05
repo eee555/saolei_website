@@ -1,6 +1,8 @@
-// \u2028: Line Separator
-// \u2029: Paragraph Separator
-export const containsControl = /[\x00-\x1F\x7F-\x9F\u2028\u2029]/;
+export { default as ControlRegex } from '@unicode/unicode-16.0.0/General_Category/Control/regex';
+export { default as MarkRegex } from '@unicode/unicode-16.0.0/General_Category/Mark/regex';
+export { default as LineSeparatorRegex } from '@unicode/unicode-16.0.0/General_Category/Line_Separator/regex';
+export { default as ParagraphSeparatorRegex } from '@unicode/unicode-16.0.0/General_Category/Paragraph_Separator/regex';
+export { default as SpaceSeparatorRegex } from '@unicode/unicode-16.0.0/General_Category/Space_Separator/regex';
 
 // credit: ChatGPT
 export function stringifyWithLineWrap(

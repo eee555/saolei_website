@@ -5,21 +5,24 @@
     >
         <el-form ref="ruleFormRef" :model="registerForm" status-icon>
             <!-- 用户名 -->
-            <el-form-item ref="usernameFormRef" prop="username" :label="t('form.username')">
+            <el-form-item ref="usernameFormRef" prop="username" data-cy="usernameFormItem">
+                <template #label>
+                    {{ t('form.username') }}
+                </template>
                 <el-input
                     v-model="registerForm.username" prefix-icon="User" maxlength="20" show-word-limit
                     @input="usernameInputHandler" @change="usernameChangeHandler"
                 />
             </el-form-item>
             <!-- 邮箱 -->
-            <email-form-item ref="emailFormRef" v-model="registerForm.email" check-collision="true" />
+            <email-form-item ref="emailFormRef" v-model="registerForm.email" data-cy="emailFormItem" check-collision="true" />
             <!-- 邮箱验证码 -->
             <email-code-block
                 ref="emailCodeFormRef" v-model="registerForm.emailCode" :email="registerForm.email" type="register"
                 :email-state="email_state"
             />
             <!-- 密码 -->
-            <password-confirm-block ref="passwordFormRef" v-model="registerForm.password" />
+            <password-confirm-block ref="passwordFormRef" v-model="registerForm.password" data-cy="passwordFormItem" />
             <!-- 同意协议 -->
             <el-form-item prop="agreeTAC">
                 <el-checkbox v-if="true" v-model="agree_TAC" name="checkoutSecret">
@@ -45,15 +48,13 @@
 import { FormInstance, ElFormItem, ElNotification, ElDialog, ElForm, ElButton, ElCheckbox, ElInput } from 'element-plus';
 import { computed, reactive, ref } from 'vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { containsControl } from '@/utils/strings';
-// @ts-ignore
-import outOfCharacter from 'out-of-character';
 import { validateError, validateSuccess } from '@/utils/common/elFormValidate';
 import { useI18n } from 'vue-i18n';
 import emailFormItem from '../formItems/emailFormItem.vue';
 import emailCodeBlock from '../formItems/emailCodeBlock.vue';
 import passwordConfirmBlock from '../formItems/passwordConfirmBlock.vue';
 import { local } from '@/store';
+import { ControlRegex, LineSeparatorRegex, ParagraphSeparatorRegex, SpaceSeparatorRegex, MarkRegex } from '@/utils/strings';
 
 const visible = defineModel({ type: Boolean, default: false });
 const emit = defineEmits(['login']);
@@ -98,15 +99,12 @@ const confirm_disabled = computed(() => {
 });
 
 const usernameInputHandler = (value: string) => {
-    if (value.length == 0) validateError(usernameFormRef, t('msg.usernameRequired'));
-    else if (containsControl.test(value)) validateError(usernameFormRef, t('msg.illegalCharacter'));
+    if (usernameCharacterValidation(value)) return;
     else usernameFormRef.value!.clearValidate();
 };
 
 const usernameChangeHandler = (value: string) => {
-    if (value.length == 0) validateError(usernameFormRef, t('msg.usernameRequired'));
-    else if (containsControl.test(value)) validateError(usernameFormRef, t('msg.illegalCharacter'));
-    else if (outOfCharacter.replace(value).length == 0) validateError(usernameFormRef, t('msg.usernameInvalid'));
+    if (usernameCharacterValidation(value)) return;
     else {
         proxy.$axios.get('userprofile/checkcollision/', { params: { username: value } }).then(function (response) {
             if (response.data === 'False') validateSuccess(usernameFormRef);
@@ -148,5 +146,20 @@ const resetForm = (formEl: FormInstance | undefined) => {
     if (!formEl) return;
     formEl.resetFields();
 };
+
+// 通过验证（无异常）返回 false，否则返回 true
+// 用法：
+// if (usernameCharacterValidation(value)) return;
+// else 检查其他错误;
+function usernameCharacterValidation(value: string) {
+    if (value.length == 0) validateError(usernameFormRef, t('msg.usernameRequired'));
+    else if (ControlRegex.test(value)) validateError(usernameFormRef, t('msg.usernameCannotContainControl'));
+    else if (LineSeparatorRegex.test(value)) validateError(usernameFormRef, t('msg.usernameCannotContainLineSeparator'));
+    else if (ParagraphSeparatorRegex.test(value)) validateError(usernameFormRef, t('msg.usernameCannotContainParagraphSeparator'));
+    else if (SpaceSeparatorRegex.test(value[0]) || SpaceSeparatorRegex.test(value[value.length - 1])) validateError(usernameFormRef, t('msg.usernameCannotStartOrEndWithSpace'));
+    else if (MarkRegex.test(value[0])) validateError(usernameFormRef, t('msg.usernameCannotStartWithMark'));
+    else return false;
+    return true;
+}
 
 </script>
