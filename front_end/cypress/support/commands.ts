@@ -62,6 +62,12 @@ declare global {
              * @example cy.mockLogin()
              */
             mockLogin(): void;
+
+            /**
+             * 模拟注册
+             * @example cy.mockRegister()
+             */
+            mockRegister(): void;
         }
     }
 }
@@ -113,6 +119,25 @@ Cypress.Commands.add('mockGetEmailCode', (options) => {
         },
         ...options,
     }).as('getEmailCode');
+});
+
+Cypress.Commands.add('mockRegister', () => {
+    cy.intercept('POST', '/userprofile/register', (req) => {
+        const params = new URLSearchParams(req.body);
+        const email_captcha = params.get('email_captcha');
+
+        if (email_captcha !== '123456') {
+            req.reply({
+                type: 'error',
+                object: 'emailCode',
+            });
+            return;
+        }
+        req.reply({
+            type: 'success',
+            user: {},
+        });
+    });
 });
 
 Cypress.Commands.add('mockLogin', () => {
