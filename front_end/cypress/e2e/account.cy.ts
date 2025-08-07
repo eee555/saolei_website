@@ -133,6 +133,7 @@ describe('User Authentication', () => {
         cy.contains('确认密码').next().find('input').type('newPassword');
 
         // 完成找回密码
+        cy.contains('修改密码').parent().parent().find('button').contains('确认').should('be.enabled');
         cy.contains('修改密码').parent().parent().find('button').contains('确认').click();
         cy.contains('修改密码').should('not.be.visible');
         cy.closeElNotifications();
