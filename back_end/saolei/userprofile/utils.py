@@ -42,7 +42,7 @@ def send_email(email, send_type='register'):
     email_record.save()
 
     # 验证码保存之后，我们就要把带有验证码的链接发送到注册时的邮箱！
-    if settings.EMAIL_SKIP:
+    if settings.EMAIL_SKIP or settings.E2E_TEST:
         return code, hashkey
     if send_type == 'register':
         email_title = '元扫雷网邮箱注册验证码'
