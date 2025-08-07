@@ -25,6 +25,7 @@ def judge_captcha(captchaStr, captchaHashkey):
     CaptchaStore.objects.filter(hashkey=captchaHashkey).delete()
     return False
 
+
 # 发送邮件，根据send_type不同发送不同的邮件内容
 def send_email(email, send_type='register'):
     email_record = EmailVerifyRecord()
@@ -56,6 +57,7 @@ def send_email(email, send_type='register'):
         return hashkey
     else:
         return None
+
 
 def judge_email_verification(email, email_captcha, emailHashkey):
     if not emailHashkey or not email or not email_captcha:

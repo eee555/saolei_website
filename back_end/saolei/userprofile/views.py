@@ -7,7 +7,6 @@ import json
 import os
 from .models import EmailVerifyRecord, UserProfile
 from msuser.models import UserMS
-from django_ratelimit.decorators import ratelimit
 from django.views.decorators.http import require_GET, require_POST
 from .decorators import staff_required
 from .utils import judge_captcha, judge_email_verification, user_metadata, send_email

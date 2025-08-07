@@ -1,7 +1,7 @@
 
-from functools import wraps
 from django.conf import settings
 from django_ratelimit.decorators import ratelimit
+
 
 def ratelimit_testaware(*args, **kwargs):
     """

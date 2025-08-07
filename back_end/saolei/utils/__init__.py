@@ -9,6 +9,7 @@ import requests
 from django.conf import settings
 from .exceptions import ExceptionToResponse
 
+
 def generate_code(code_len):
     """
     生成指定长度的验证码
