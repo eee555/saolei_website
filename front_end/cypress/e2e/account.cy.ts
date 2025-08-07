@@ -57,7 +57,7 @@ describe('User Authentication', () => {
         // 退出登录
         expectLoggedIn();
         cy.closeElNotifications();
-        cy.contains('退出').click();
+        cy.contains(/^退出$/).click();
         expectNotLoggedIn();
     });
 
@@ -130,7 +130,7 @@ describe('User Authentication', () => {
         cy.contains('发送').click();
         cy.contains('邮箱验证码').next().find('input').type('abcdef');
         cy.get('label').filter(':visible').contains(/^密码$/).next().find('input').type('newPassword');
-        cy.contains('确认密码').next().find('input').type('newPassword');
+        cy.contains('确认密码').next().find('input').type('newPassword{enter}');
 
         // 完成找回密码
         cy.contains('修改密码').parent().parent().find('button').contains('确认').should('be.enabled');
