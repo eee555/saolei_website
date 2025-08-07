@@ -49,7 +49,7 @@ jobs:
           cd back_end/saolei
           python manage.py makemigrations
           python manage.py migrate
-          E2E_TEST=true python manage.py runserver > backend.log 2>&1 &
+          python manage.py runserver > backend.log 2>&1 &
           echo "Backend started in background"
 
       - name: Set up Node
@@ -84,6 +84,9 @@ jobs:
         run: |
           cd front_end
           npm run dev &
+
+      - name: Install Chinese fonts
+        run: sudo apt-get install -y fonts-wqy-zenhei fonts-noto-cjk
 
       - name: Wait for frontend
         run: |
