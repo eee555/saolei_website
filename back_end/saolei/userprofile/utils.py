@@ -10,6 +10,9 @@ import base64
 import uuid
 from django.core.mail import send_mail
 from utils import generate_code
+import logging
+
+logger = logging.getLogger('userprofile')
 
 
 # 验证验证码
@@ -60,17 +63,15 @@ def send_email(email, send_type='register'):
 
 
 def judge_email_verification(email, email_captcha, emailHashkey):
-    print(email)
-    print(email_captcha)
-    print(emailHashkey)
+    logger.info(f'邮箱验证码 {email} {email_captcha} {emailHashkey}')
     if not emailHashkey or not email or not email_captcha:
         return False
     get_email_captcha = EmailVerifyRecord.objects.filter(hashkey=emailHashkey).first()
     if not get_email_captcha:
-        print('not found')
+        logger.info('未找到')
         return False
     if (timezone.now() - get_email_captcha.send_time).seconds > 3600:
-        print('expired')
+        logger.info(f'已过期 当前 {timezone.now()} 发送 {get_email_captcha.send_time}')
         EmailVerifyRecord.objects.filter(hashkey=emailHashkey).delete()
         return False
     return get_email_captcha.code == email_captcha and get_email_captcha.email == email
