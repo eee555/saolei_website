@@ -29,6 +29,11 @@ declare global {
     namespace Cypress {
         interface Chainable {
             /**
+             * 关闭所有通知
+             */
+            closeElNotifications(): void;
+
+            /**
              * 获取本地存储的值
              * @param key - 本地存储的键
              * @example cy.getLocalStorage('authToken')
@@ -166,6 +171,12 @@ Cypress.Commands.add('mockLogin', () => {
                 'category': 'password',
             });
         }
+    });
+});
+
+Cypress.Commands.add('closeElNotifications', () => {
+    cy.get('.el-notification__closeBtn').each(($el) => {
+        cy.wrap($el).click();
     });
 });
 

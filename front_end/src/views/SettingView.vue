@@ -29,20 +29,26 @@
             />
         </el-descriptions-item>
         <el-descriptions-item :label="t('setting.notificationDuration')">
-            <el-tooltip>
-                <template #content>
-                    <div v-html="t('setting.notificationDurationTooltip')" />
-                </template>
+            <base-tooltip>
                 <el-input-number v-model="local.notification_duration" size="small" :min="0" :step="1000" />
-            </el-tooltip>
+                <template #content>
+                    <el-text>
+                        {{ t('setting.notificationDurationTooltip1') }}
+                        <br>
+                        {{ t('setting.notificationDurationTooltip2') }}
+                    </el-text>
+                </template>
+            </base-tooltip>
         </el-descriptions-item>
         <el-descriptions-item :label="t('setting.newUserGuide')">
-            <el-tooltip>
-                <template #content>
-                    <div v-html="t('setting.newUserGuideTooltip')" />
-                </template>
+            <base-tooltip>
                 <el-switch v-model="local.tooltip_show" />
-            </el-tooltip>
+                <template #content>
+                    <el-text>
+                        {{ t('setting.newUserGuideTooltip') }}
+                    </el-text>
+                </template>
+            </base-tooltip>
         </el-descriptions-item>
         <el-descriptions-item :label="t('setting.experimentalFeature')">
             <el-switch v-model="local.experimental" />

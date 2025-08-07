@@ -6,20 +6,18 @@ from captcha.models import CaptchaStore
 import json
 import os
 from .models import EmailVerifyRecord, UserProfile
-from utils import send_email
 from msuser.models import UserMS
 from django_ratelimit.decorators import ratelimit
 from django.views.decorators.http import require_GET, require_POST
 from .decorators import staff_required
-from .utils import judge_captcha, judge_email_verification, user_metadata
+from .utils import judge_captcha, judge_email_verification, user_metadata, send_email
 from django.conf import settings
+from utils.decorators import ratelimit_testaware
 
 logger = logging.getLogger('userprofile')
 
-# Create your views here.
 
-
-@ratelimit(key='ip', rate='60/h')
+@ratelimit_testaware(key='ip', rate='60/h')
 @require_POST
 # 用账号、密码登录
 # 此处要分成两个，密码容易碰撞，hash难碰撞
@@ -60,7 +58,7 @@ def user_logout(request):
 
 
 # 用户找回密码
-@ratelimit(key='ip', rate='60/h')
+@ratelimit_testaware(key='ip', rate='60/h')
 @require_POST
 def user_retrieve(request):
     user_retrieve_form = UserRetrieveForm(data=request.POST)
@@ -85,7 +83,7 @@ def user_retrieve(request):
 
 # 用户注册
 # @method_decorator(ensure_csrf_cookie)
-@ratelimit(key='ip', rate='6/h')
+@ratelimit_testaware(key='ip', rate='6/h')
 @require_POST
 def user_register(request):
     user_register_form = UserRegisterForm(data=request.POST)
@@ -177,18 +175,20 @@ def del_user_info(request):
 
 
 # 创建验证码
-@ratelimit(key='ip', rate='60/h')
+@ratelimit_testaware(key='ip', rate='60/h')
 def captcha(request):
-    hashkey = CaptchaStore.generate_key()  # 验证码答案
-    # print(f"?captcha-image={hashkey}")
-    # image_url = captcha_image_url(hashkey)  # 验证码地址
-    # http://127.0.0.1:8000/userprofile/captcha/image/846d863374767ce04f8949882b05b3b21c697765
-    captcha = {'hashkey': hashkey}
-    return captcha
+    if settings.E2E_TEST:
+        # Create a fixed captcha for E2E tests
+        captcha_obj = CaptchaStore.objects.create(challenge="test", response="test")
+        hashkey = captcha_obj.hashkey
+    else:
+        hashkey = CaptchaStore.generate_key()
+
+    return {"hashkey": hashkey}
 
 
 # 刷新验证码
-@ratelimit(key='ip', rate='60/h')
+@ratelimit_testaware(key='ip', rate='60/h')
 def refresh_captcha(request):
     c = captcha(request)
     c.update({'status': 100})
@@ -196,7 +196,7 @@ def refresh_captcha(request):
 
 
 # 验证验证码，若通过，发送email
-@ratelimit(key='ip', rate='1/m')
+@ratelimit_testaware(key='ip', rate='1/m')
 @require_POST
 def get_email_captcha(request):
     data = request.POST
