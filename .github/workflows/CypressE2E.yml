@@ -49,7 +49,7 @@ jobs:
           cd back_end/saolei
           python manage.py makemigrations
           python manage.py migrate
-          python manage.py runserver > backend.log 2>&1 &
+          E2E_TEST=True python manage.py runserver > backend.log 2>&1 &
           echo "Backend started in background"
 
       - name: Set up Node
@@ -85,6 +85,9 @@ jobs:
           cd front_end
           npm run dev &
 
+      - name: Install Chinese fonts
+        run: sudo apt-get install -y fonts-wqy-zenhei fonts-noto-cjk
+
       - name: Wait for frontend
         run: |
           cd front_end
@@ -95,3 +98,27 @@ jobs:
           cd front_end
           npx cypress install
           npx cypress run
+
+      - name: Print backend logs if Cypress fails
+        if: failure()
+        run: |
+          echo "❌ Cypress tests failed — printing backend logs:"
+          echo "====== Backend Logs ======"
+          cat back_end/saolei/backend.log || echo "No backend log found"
+
+      # Upload screenshots (if any failures)
+      - name: Upload Cypress screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-screenshots
+          path: front_end/cypress/screenshots
+          if-no-files-found: ignore
+          
+      - name: Upload backend logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-logs
+          path: back_end/saolei/logs
+          if-no-files-found: ignore
