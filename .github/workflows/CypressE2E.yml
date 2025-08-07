@@ -95,3 +95,12 @@ jobs:
           cd front_end
           npx cypress install
           npx cypress run
+
+      # Upload screenshots (if any failures)
+      - name: Upload Cypress screenshots
+        if: always()  # ensures this runs even if tests fail
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
+          if-no-files-found: ignore
