@@ -99,6 +99,13 @@ jobs:
           npx cypress install
           npx cypress run
 
+      - name: Print backend logs if Cypress fails
+        if: failure()
+        run: |
+          echo "❌ Cypress tests failed — printing backend logs:"
+          echo "====== Backend Logs ======"
+          cat back_end/saolei/backend.log || echo "No backend log found"
+
       # Upload screenshots (if any failures)
       - name: Upload Cypress screenshots
         if: always()  # ensures this runs even if tests fail
