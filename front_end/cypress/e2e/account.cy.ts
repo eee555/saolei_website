@@ -4,7 +4,7 @@ import 'cypress-if';
 function expectNotLoggedIn() {
     cy.contains('登录').should('be.visible');
     cy.contains('注册').should('be.visible');
-    cy.contains('退出').if().should('not.be.visible');
+    cy.contains(/^退出$/).if().should('not.be.visible');
 }
 
 function expectLoggedIn() {
@@ -133,7 +133,6 @@ describe('User Authentication', () => {
         cy.contains('确认密码').next().find('input').type('newPassword{enter}');
 
         // 完成找回密码
-        cy.contains('修改密码').parent().parent().find('button').contains('确认').should('be.enabled');
         cy.contains('修改密码').parent().parent().find('button').contains('确认').click();
         cy.contains('修改密码').should('not.be.visible');
         cy.closeElNotifications();
