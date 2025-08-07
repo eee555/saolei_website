@@ -49,7 +49,7 @@ jobs:
           cd back_end/saolei
           python manage.py makemigrations
           python manage.py migrate
-          python manage.py runserver > backend.log 2>&1 &
+          E2E_TEST=true python manage.py runserver > backend.log 2>&1 &
           echo "Backend started in background"
 
       - name: Set up Node
