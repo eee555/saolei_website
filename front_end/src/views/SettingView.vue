@@ -109,7 +109,8 @@
 
 <script lang="ts" setup name="UserSettings">
 import { store, local, colorTheme } from '@/store';
-import { ElDescriptions, ElDescriptionsItem, ElSelect, ElOption, ElTooltip, ElSwitch, ElSlider, ElInputNumber } from 'element-plus';
+import { ElDescriptions, ElDescriptionsItem, ElSelect, ElOption, ElText, ElSwitch, ElSlider, ElInputNumber } from 'element-plus';
+import BaseTooltip from '@/components/common/BaseTooltip.vue';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
