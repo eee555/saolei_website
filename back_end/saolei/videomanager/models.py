@@ -2,6 +2,7 @@
 from django.db import models
 from .fields import RestrictedFileField
 from userprofile.models import UserProfile
+from identifier.models import Identifier
 from config.global_settings import DefaultRankingScores
 from django_redis import get_redis_connection
 import json
@@ -176,3 +177,4 @@ class VideoModel(models.Model):
 
     def pop_redis(self, name: str):
         cache.hdel(name, self.id)
+
