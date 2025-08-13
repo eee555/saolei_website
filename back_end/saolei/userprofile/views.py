@@ -206,7 +206,7 @@ def get_email_captcha(request):
     key = data.get("hashkey")
     if not judge_captcha(capt, key):  # 图形验证码不对
         return JsonResponse({'type': 'error', 'object': 'captcha'})
-    if settings.EMAIL_SKIP:
+    if settings.EMAIL_SKIP and not settings.E2E_TEST:
         code, hashkey = send_email(data.get("email"), data.get("type"))
         return JsonResponse({'type': 'success', 'code': code, 'hashkey': hashkey})
     if hashkey := send_email(data.get("email"), data.get("type")):  # 邮件发送成功
