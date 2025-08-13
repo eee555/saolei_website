@@ -89,7 +89,7 @@ def test_no_dangerzone_imports():
 
 
 def get_view_functions():
-    views_path = pathlib.Path(__file__).parent.parent.parent / "dangerzone" / "views.py"
+    views_path = pathlib.Path(__file__).parent.parent / "dangerzone" / "views.py"
     with open(views_path, "r", encoding="utf-8") as f:
         tree = ast.parse(f.read(), filename=str(views_path))
 
