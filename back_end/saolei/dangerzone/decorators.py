@@ -22,7 +22,7 @@ def local_only(view_func):
         # Check E2E_TEST flag
         if not settings.E2E_TEST:
             return HttpResponseForbidden("Forbidden: E2E_TEST mode is not enabled.")
-        
+
         client_ip = request.META.get("HTTP_X_FORWARDED_FOR", request.META.get("REMOTE_ADDR", "")).split(",")[0].strip()
         if client_ip not in ALLOWED_IPS:
             return HttpResponseForbidden(f"Forbidden: Access from {client_ip} is not allowed.")

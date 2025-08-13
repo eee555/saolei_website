@@ -10,6 +10,7 @@ from unittest import mock
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parent.parent
 DANGERZONE_APP = "dangerzone"
 
+
 def _scan_static_imports():
     """
     Scan Python source files for any imports of the dangerzone app

@@ -5,6 +5,7 @@ from userprofile.decorators import login_required_error
 from userprofile.models import UserProfile
 from .decorators import local_only
 
+
 @require_POST
 @local_only
 @login_required_error
