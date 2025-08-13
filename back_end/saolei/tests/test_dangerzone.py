@@ -106,5 +106,5 @@ def get_view_functions():
 def test_all_dangerzone_views_are_local_only():
     funcs = get_view_functions()
     missing = [name for name, decorators in funcs
-               if "local_only_and_e2e" not in decorators]
-    assert not missing, f"These views are missing @local_only_and_e2e: {missing}"
+               if "local_only" not in decorators]
+    assert not missing, f"These views are missing @local_only: {missing}"
