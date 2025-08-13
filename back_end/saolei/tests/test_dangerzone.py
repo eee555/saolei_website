@@ -4,7 +4,7 @@ import pathlib
 import sys
 import importlib
 import builtins
-import inspect
+import ast
 from unittest import mock
 
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -88,20 +88,23 @@ def test_no_dangerzone_imports():
     )
 
 
+def get_view_functions():
+    views_path = pathlib.Path(__file__).parent.parent.parent / "dangerzone" / "views.py"
+    with open(views_path, "r", encoding="utf-8") as f:
+        tree = ast.parse(f.read(), filename=str(views_path))
+
+    functions = []
+    for node in tree.body:
+        if isinstance(node, ast.FunctionDef):
+            decorators = [d.id if isinstance(d, ast.Name) else
+                          d.attr if isinstance(d, ast.Attribute) else None
+                          for d in node.decorator_list]
+            functions.append((node.name, decorators))
+    return functions
+
+
 def test_all_dangerzone_views_are_local_only():
-    # Import the dangerzone/views module
-    views_module = importlib.import_module("dangerzone.views")
-
-    missing = []
-    for name, obj in inspect.getmembers(views_module, inspect.isfunction):
-        # Skip private functions (starting with _)
-        if name.startswith("_"):
-            continue
-        # Check if it's missing the _local_only marker
-        if not getattr(obj, "_local_only", False):
-            missing.append(name)
-
-    assert not missing, (
-        "The following view functions in dangerzone/views.py are missing @local_only:\n"
-        + "\n".join(missing)
-    )
+    funcs = get_view_functions()
+    missing = [name for name, decorators in funcs
+               if "local_only_and_e2e" not in decorators]
+    assert not missing, f"These views are missing @local_only_and_e2e: {missing}"
