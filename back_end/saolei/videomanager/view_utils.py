@@ -109,22 +109,16 @@ def update_personal_record(video: VideoModel):
     user = video.player
     ms_user = user.userms
 
-    if video.mode == "12":
-        video.mode = "00"
-    if video.mode == "00":
+    if video.mode == MS_TextChoices.Mode.NF or video.mode == MS_TextChoices.Mode.STD:
         checkPB(video, ms_user, user, "std")
 
-    if video.mode == "00":
-        if video.flag == 0:
-            video.mode = "12"
-
-    if video.mode == "12":
+    if video.mode == MS_TextChoices.Mode.NF:
         checkPB(video, ms_user, user, "nf")
 
-    if video.mode == "05":
+    if video.mode == MS_TextChoices.Mode.JSW:
         checkPB(video, ms_user, user, "ng")
 
-    if video.mode == "11":
+    if video.mode == MS_TextChoices.Mode.BZD:
         checkPB(video, ms_user, user, "dg")
     # 改完记录，存回数据库
     ms_user.save(update_fields=record_update_fields)
@@ -221,16 +215,16 @@ def new_video_by_file(user: UserProfile, file: File):
     data = file.read()
     if file.name.endswith('.avf'):
         v = ms.AvfVideo(raw_data=data)
-        software = 'a'
+        software = MS_TextChoices.Software.AVF
     elif file.name.endswith('.evf'):
         v = ms.EvfVideo(raw_data=data)
-        software = 'e'
+        software = MS_TextChoices.Software.EVF
     elif file.name.endswith('.rmv'):
         v = ms.RmvVideo(raw_data=data)
-        software = 'r'
+        software = MS_TextChoices.Software.RMV
     elif file.name.endswith('.mvf'):
         v = ms.MvfVideo(raw_data=data)
-        software = 'm'
+        software = MS_TextChoices.Software.MVF
     else:
         raise ExceptionToResponse(obj='file', category='type')
 
@@ -239,11 +233,11 @@ def new_video_by_file(user: UserProfile, file: File):
     v.current_time = 1e8
 
     if v.level == 3:
-        level = 'b'
+        level = MS_TextChoices.Level.BEGINNER
     elif v.level == 4:
-        level = 'i'
+        level = MS_TextChoices.Level.INTERMEDIATE
     elif v.level == 5:
-        level = 'e'
+        level = MS_TextChoices.Level.EXPERT
     else:
         raise ExceptionToResponse(obj='file', category='level')
 

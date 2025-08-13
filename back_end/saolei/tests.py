@@ -14,6 +14,7 @@ class TestFlags(unittest.TestCase):
     def test_skip(self):
         self.assertFalse(settings.EMAIL_SKIP)
         self.assertFalse(settings.BAIDU_VERIFY_SKIP)
+        self.assertFalse(settings.E2E_TEST)
 
 
 if __name__ == "__main__":
