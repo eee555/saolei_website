@@ -28,4 +28,4 @@ jobs:
           pip install pytest
 
       - name: Run static safety tests
-        run: pytest tests/ --maxfail=1 --disable-warnings -v
+        run: pytest back_end/saolei/tests/ --maxfail=1 --disable-warnings -v
