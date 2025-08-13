@@ -377,5 +377,8 @@ TEMPLATE_DIRS = (
 
 BAIDU_VERIFY_SKIP = False  # 是否跳过审查步骤。用于调试。 Skip censorship.
 EMAIL_SKIP = False  # 是否跳过邮箱验证。用于调试。 Skip the email verification.
+E2E_TEST = False or os.environ.get("E2E_TEST") == "True"  # 是否为端到端测试模式。 End-to-end test mode.
 
-E2E_TEST = False or os.environ.get("E2E_TEST") == "True"  # 是否为端到端测试模式。用于调试。 End-to-end test mode.
+if E2E_TEST:
+    INSTALLED_APPS.append('dangerzone')
+

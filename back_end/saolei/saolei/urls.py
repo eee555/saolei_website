@@ -44,3 +44,6 @@ urlpatterns = [
 if settings.DEBUG:
     # python manage.py runserver --nostatic
     urlpatterns += static(settings.STATIC_URL, document_root=settings.MEDIA_ROOT)
+
+if settings.E2E_TEST:
+    urlpatterns.append(path('dangerzone/', include('dangerzone.urls')))
