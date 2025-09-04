@@ -2,8 +2,9 @@ import { defineConfig } from 'cypress';
 
 export default defineConfig({
     e2e: {
-        baseUrl: 'http://localhost:8080/#',
+        baseUrl: 'http://localhost:8080',
         defaultBrowser: 'chrome',
+        experimentalStudio: true,
         setupNodeEvents(on, _config) {
             on('before:browser:launch', (browser, launchOptions) => {
                 if (browser.name === 'chrome') {
@@ -21,4 +22,5 @@ export default defineConfig({
         },
     },
     chromeWebSecurity: false,
+    watchForFileChanges: false,
 });
