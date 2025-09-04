@@ -10,13 +10,12 @@ from .decorators import local_only
 @local_only
 @login_required_error
 def delete_user(request):
-    UserProfile.objects.get(user=request.user).delete()
+    request.user.delete()
     return HttpResponse()
 
 
 @require_POST
 @local_only
-@login_required_error
 def flush_database(request):
     call_command('flush', interactive=False)
     return HttpResponse()
