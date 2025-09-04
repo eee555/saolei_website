@@ -8,7 +8,7 @@ const UPLOAD_BUTTON = '.pi-upload';
 describe('Personal Profile', () => {
     before(() => {
         // 初始化数据库
-        // cy.flushDatabase();
+        cy.flushDatabase();
 
         // 准备录像文件
         cy.request({
@@ -25,8 +25,8 @@ describe('Personal Profile', () => {
         });
 
         // 注册并登录用户
-        // cy.register('testUser', 'test@email.com', 'testPassword');
-        // cy.login('testUser', 'testPassword');
+        cy.register('testUser', 'test@email.com', 'testPassword');
+        cy.login('testUser', 'testPassword');
     });
 
     it.skip('Guest view', () => {

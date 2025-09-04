@@ -14,6 +14,11 @@ function expectLoggedIn() {
 }
 
 describe('User Authentication', () => {
+    before(() => {
+        // 初始化数据库
+        cy.flushDatabase();
+    });
+
     it('Popup Functions', () => {
         // 初始状态
         cy.visit('/#/settings');
@@ -140,11 +145,5 @@ describe('User Authentication', () => {
 
         cy.reload();
         expectNotLoggedIn();
-    });
-
-    it('Delete Account', () => {
-        cy.login('testUser', 'newPassword');
-        cy.visit('/#/settings');
-        cy.deleteUser();
     });
 });
