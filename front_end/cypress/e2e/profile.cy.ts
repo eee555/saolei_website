@@ -6,30 +6,16 @@ import { binaryStringToUint8Array } from '../support/stupidCypress';
 const UPLOAD_BUTTON = '.pi-upload';
 
 describe('Personal Profile', () => {
-    before(() => {
+    it('Before All', () => {
         // 初始化数据库
         cy.flushDatabase();
-
-        // 准备录像文件
-        cy.request({
-            url: 'https://github.com/putianyi889/replays/raw/refs/heads/master/EXP/sub40/Exp_FL_35.09_3BV=132_3BVs=3.76_Pu%20Tian%20Yi(Hu%20Bei).avf',
-            encoding: 'binary',
-        }).then((resp) => {
-            cy.wrap(binaryStringToUint8Array(resp.body)).as('videoFileExp'); // alias it for later use in same test
-        });
-        cy.request({
-            url: 'https://minesweepergame.com/member/file/4376/4376-Custom-FL-30x24-860.360-357-226m-20220522.avf',
-            encoding: 'binary',
-        }).then((resp) => {
-            cy.wrap(binaryStringToUint8Array(resp.body)).as('videoFileCus'); // alias it for later use in same test
-        });
 
         // 注册并登录用户
         cy.register('testUser', 'test@email.com', 'testPassword');
         cy.login('testUser', 'testPassword');
     });
 
-    it.skip('Guest view', () => {
+    it('Guest view', () => {
         cy.visit('/#/player/1');
         cy.contains('个人信息');
         cy.contains('个人纪录');
@@ -37,14 +23,14 @@ describe('Personal Profile', () => {
         cy.contains('上传录像').should('not.exist');
     });
 
-    it.skip('Cannot upload videos without real name', () => {
+    it('Cannot upload videos without real name', () => {
         cy.login('testUser', 'testPassword');
         cy.visit('/#/player/1');
         cy.contains('上传录像').click();
         cy.contains('请修改为实名');
     });
 
-    it.skip('Change real name', () => {
+    it('Change real name', () => {
         cy.login('testUser', 'testPassword');
         cy.visit('/#/player/1');
         cy.contains('修改简介').click();
@@ -57,14 +43,28 @@ describe('Personal Profile', () => {
         cy.contains('修改简介').if().should('be.visible');
     });
 
-    it('Parse video', () => {
+    it('Parse video', function () {
         cy.login('testUser', 'testPassword');
         cy.visit('/#/player/1');
         cy.contains('上传录像').click();
 
+        // 准备录像文件
+        cy.request({
+            url: 'https://github.com/putianyi889/replays/raw/refs/heads/master/EXP/sub40/Exp_FL_35.09_3BV=132_3BVs=3.76_Pu%20Tian%20Yi(Hu%20Bei).avf',
+            encoding: 'binary',
+        }).then((resp) => {
+            cy.wrap(binaryStringToUint8Array(resp.body)).as('videoFileExp');
+        });
+        cy.request({
+            url: 'https://minesweepergame.com/member/file/4376/4376-Custom-FL-30x24-860.360-357-226m-20220522.avf',
+            encoding: 'binary',
+        }).then((resp) => {
+            cy.wrap(binaryStringToUint8Array(resp.body)).as('videoFileCus');
+        });
+
         cy.get('input[type=file]').selectFile([
             {
-                contents: '@videoFileExp',
+                contents: this.videoFileExp,
                 fileName: 'videoFileExp.avf',
             },
             {

@@ -2,7 +2,6 @@ from django.views.decorators.http import require_POST
 from django.http import HttpResponse
 from django.core.management import call_command
 from userprofile.decorators import login_required_error
-from userprofile.models import UserProfile
 from .decorators import local_only
 
 
