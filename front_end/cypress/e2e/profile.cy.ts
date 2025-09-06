@@ -64,7 +64,7 @@ describe('Personal Profile', () => {
 
         cy.get('input[type=file]').selectFile([
             {
-                contents: this.videoFileExp,
+                contents: '@videoFileExp',
                 fileName: 'videoFileExp.avf',
             },
             {
