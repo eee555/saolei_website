@@ -82,6 +82,6 @@ describe('Personal Profile', () => {
             expect(tableData[0].级别).to.equal('高级');
             expect(tableData[0].结束时间).to.equal('2023-10-05 21:25:57');
         });
-        cy.get('table:visible').find('tbody').find('i').find(UPLOAD_BUTTON);
+        cy.get('table:visible').find('tbody').find('i').filter(UPLOAD_BUTTON);
     });
 });
