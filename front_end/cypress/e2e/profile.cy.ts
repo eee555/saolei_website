@@ -80,7 +80,7 @@ describe('Personal Profile', () => {
             expect(tableData[0].状态).to.equal('新标识');
             expect(tableData[0].用时).to.equal('35.090');
             expect(tableData[0].级别).to.equal('高级');
-            expect(tableData[0].结束时间).to.equal('2023-10-06 05:25:57');
+            expect(tableData[0].结束时间).to.equal('2023-10-05 21:25:57');
         });
         cy.get('table:visible').find('tbody').find('i').find(UPLOAD_BUTTON);
     });
