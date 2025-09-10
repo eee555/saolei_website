@@ -64,6 +64,7 @@
     "@types/uuid": "^9.0.2",
     "@vitejs/plugin-vue": "^5.0.4",
     "cypress": "^14.5.3",
+    "cypress-get-table": "^1.0.1",
     "cypress-if": "^1.13.2",
     "cypress-real-events": "^1.14.0",
     "eslint": "^9.32.0",

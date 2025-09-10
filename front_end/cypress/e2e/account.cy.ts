@@ -14,9 +14,14 @@ function expectLoggedIn() {
 }
 
 describe('User Authentication', () => {
+    before(() => {
+        // 初始化数据库
+        cy.flushDatabase();
+    });
+
     it('Popup Functions', () => {
         // 初始状态
-        cy.visit('/settings');
+        cy.visit('/#/settings');
         expectNotLoggedIn();
         cy.contains('用户注册').should('not.exist');
         cy.contains('用户登录').should('not.exist');
@@ -36,7 +41,7 @@ describe('User Authentication', () => {
 
     it('Register', () => {
         // 打开注册界面
-        cy.visit('/settings');
+        cy.visit('/#/settings');
         cy.contains('注册').click();
 
         // 填写注册信息
@@ -63,7 +68,7 @@ describe('User Authentication', () => {
 
     it('Login & Logout', () => {
         // 打开登录界面
-        cy.visit('/settings');
+        cy.visit('/#/settings');
         expectNotLoggedIn();
         cy.contains('登录').click();
 
@@ -83,7 +88,7 @@ describe('User Authentication', () => {
     });
 
     it('Remember Me', () => {
-        cy.visit('/settings');
+        cy.visit('/#/settings');
         expectNotLoggedIn();
 
         // 登录
@@ -107,7 +112,7 @@ describe('User Authentication', () => {
     });
 
     it('Forget Password', () => {
-        cy.visit('/settings');
+        cy.visit('/#/settings');
         expectNotLoggedIn();
 
         // 尝试用错误密码登录
