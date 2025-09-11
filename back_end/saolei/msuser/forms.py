@@ -1,9 +1,11 @@
 # 引入表单类
 from django import forms
 from django.contrib.auth import get_user_model
-from utils import verify_text, verify_image
 from django.utils import timezone
+
 from config.global_settings import MaxSizes
+from utils import verify_image, verify_text
+
 User = get_user_model()
 
 

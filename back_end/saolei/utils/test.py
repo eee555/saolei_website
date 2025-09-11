@@ -1,7 +1,8 @@
-from unittest import TestCase, skip, main
-import time
-from .wom import WOM
 import json
+import time
+from unittest import main, skip, TestCase
+
+from .wom import WOM
 
 
 class TestWOM(TestCase):

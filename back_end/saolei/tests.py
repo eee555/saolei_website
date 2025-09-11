@@ -1,6 +1,7 @@
-import unittest
-import sys
 import os
+import sys
+import unittest
+
 from django.conf import settings
 
 # Get the parent directory of the current directory (my_script)

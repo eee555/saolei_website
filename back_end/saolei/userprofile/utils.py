@@ -1,15 +1,16 @@
-from captcha.models import CaptchaStore
-from django.utils import timezone
-from .models import EmailVerifyRecord
-from .models import UserProfile
-from videomanager.models import VideoModel
-import os
-from django.conf import settings
-import urllib.parse
 import base64
+import os
+import urllib.parse
 import uuid
+
+from captcha.models import CaptchaStore
+from django.conf import settings
 from django.core.mail import send_mail
+from django.utils import timezone
+
 from utils import generate_code
+from videomanager.models import VideoModel
+from .models import EmailVerifyRecord, UserProfile
 
 
 # 验证验证码

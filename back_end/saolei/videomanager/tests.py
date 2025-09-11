@@ -1,11 +1,13 @@
 from datetime import datetime, timezone
-from django.test import TestCase, override_settings
+
 from django.core.files.base import ContentFile
-from userprofile.models import UserProfile
-from accountlink.models import AccountSaolei
-from .models import VideoModel, ExpandVideoModel
+from django.test import override_settings, TestCase
 import requests
-from .view_utils import refresh_video, video_saolei_import_by_userid_helper, new_video_by_file
+
+from accountlink.models import AccountSaolei
+from userprofile.models import UserProfile
+from .models import ExpandVideoModel, VideoModel
+from .view_utils import new_video_by_file, refresh_video, video_saolei_import_by_userid_helper
 # Create your tests here.
 
 

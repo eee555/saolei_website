@@ -1,10 +1,10 @@
-import os
-import re
-import pathlib
-import sys
-import importlib
-import builtins
 import ast
+import builtins
+import importlib
+import os
+import pathlib
+import re
+import sys
 from unittest import mock
 
 PROJECT_ROOT = pathlib.Path(__file__).resolve().parent.parent

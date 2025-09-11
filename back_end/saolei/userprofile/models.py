@@ -1,14 +1,16 @@
 import os
-from django.db import models
-# from django.contrib.auth.models import User
+
 from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.db import models
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+from django_cleanup import cleanup
+
+from config.global_settings import DefaultChances, MaxSizes
 from msuser.models import UserMS
 from .fields import RestrictedImageField
-from django_cleanup import cleanup
-from django.utils.translation import gettext_lazy as _
-from django.contrib.auth.validators import UnicodeUsernameValidator
-from django.utils import timezone
-from config.global_settings import MaxSizes, DefaultChances
+
 username_validator = UnicodeUsernameValidator()
 
 
