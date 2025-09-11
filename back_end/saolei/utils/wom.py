@@ -1,10 +1,11 @@
-from typing import Callable
-import websocket
-import threading
 import queue
-import requests
 import re
+import threading
 import time
+from typing import Callable
+
+import requests
+import websocket
 
 
 class WOM:

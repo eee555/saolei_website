@@ -1,10 +1,12 @@
-import re
-from .models import AccountSaolei, AccountMinesweeperGames, AccountWorldOfMinesweeper, Platform, PLATFORM_CONFIG
-from userprofile.models import UserProfile
-import requests
-from lxml import etree
 from datetime import timedelta
+import re
+
 from django.utils import timezone
+from lxml import etree
+import requests
+
+from userprofile.models import UserProfile
+from .models import AccountMinesweeperGames, AccountSaolei, AccountWorldOfMinesweeper, Platform, PLATFORM_CONFIG
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 Edg/132.0.0.0'}

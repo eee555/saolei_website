@@ -1,12 +1,13 @@
-from .models import AccountLinkQueue, Platform, PLATFORM_CONFIG
-from .utils import link_account, delete_account, update_account
-from userprofile.models import UserProfile
-from django.http import HttpResponseForbidden, HttpResponseBadRequest, JsonResponse, HttpResponse, HttpResponseNotFound
-from utils.response import HttpResponseConflict
+from django.forms.models import model_to_dict
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 from django_ratelimit.decorators import ratelimit
-from django.forms.models import model_to_dict
+
 from userprofile.decorators import login_required_error, staff_required
+from userprofile.models import UserProfile
+from utils.response import HttpResponseConflict
+from .models import AccountLinkQueue, Platform, PLATFORM_CONFIG
+from .utils import delete_account, link_account, update_account
 
 private_platforms = ["q"]  # 私人账号平台
 

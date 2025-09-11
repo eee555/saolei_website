@@ -1,20 +1,22 @@
-import logging
-from .models import VideoModel, ExpandVideoModel
-from django_redis import get_redis_connection
-from userprofile.models import UserProfile
-from msuser.models import UserMS
-import json
-from utils import ComplexEncoder
-from config.global_settings import RankingGameStats, GameLevels, GameModes, DefaultRankingScores
-from utils.cmp import isbetter
-from config.text_choices import MS_TextChoices
-import ms_toollib as ms
-from accountlink.models import AccountSaolei
 from datetime import datetime, timezone
-from utils.getOldWebData import VideoData, Level
+import json
+import logging
+
 from django.core.files import File
+from django_redis import get_redis_connection
+import ms_toollib as ms
+
+from accountlink.models import AccountSaolei
+from config.global_settings import DefaultRankingScores, GameLevels, GameModes, RankingGameStats
+from config.text_choices import MS_TextChoices
 from identifier.utils import verify_identifier
+from msuser.models import UserMS
+from userprofile.models import UserProfile
+from utils import ComplexEncoder
+from utils.cmp import isbetter
 from utils.exceptions import ExceptionToResponse
+from utils.getOldWebData import Level, VideoData
+from .models import ExpandVideoModel, VideoModel
 
 logger = logging.getLogger('videomanager')
 cache = get_redis_connection("saolei_website")

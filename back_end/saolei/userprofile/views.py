@@ -1,17 +1,19 @@
-import logging
-from django.contrib.auth import authenticate, login, logout
-from django.http import HttpResponse, JsonResponse, HttpResponseForbidden, HttpResponseNotFound, HttpResponseBadRequest
-from .forms import UserLoginForm, UserRegisterForm, UserRetrieveForm, EmailForm
-from captcha.models import CaptchaStore
 import json
+import logging
 import os
-from .models import EmailVerifyRecord, UserProfile
-from msuser.models import UserMS
-from django.views.decorators.http import require_GET, require_POST
-from .decorators import staff_required
-from .utils import judge_captcha, judge_email_verification, user_metadata, send_email
+
+from captcha.models import CaptchaStore
 from django.conf import settings
+from django.contrib.auth import authenticate, login, logout
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
+from django.views.decorators.http import require_GET, require_POST
+
+from msuser.models import UserMS
 from utils.decorators import ratelimit_testaware
+from .decorators import staff_required
+from .forms import EmailForm, UserLoginForm, UserRegisterForm, UserRetrieveForm
+from .models import EmailVerifyRecord, UserProfile
+from .utils import judge_captcha, judge_email_verification, send_email, user_metadata
 
 logger = logging.getLogger('userprofile')
 

@@ -11,9 +11,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
-from pathlib import Path
-import os
 import json
+import os
+from pathlib import Path
 
 # https://docs.djangoproject.com/en/5.0/ref/settings/#std-setting-DEBUG
 DEBUG = True

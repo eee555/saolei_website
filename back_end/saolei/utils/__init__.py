@@ -1,12 +1,14 @@
 import base64
-import random
-import json
 from datetime import date, datetime
 from decimal import Decimal
+import json
+import random
+
+from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import redirect
 import requests
-from django.conf import settings
+
 from .exceptions import ExceptionToResponse
 
 

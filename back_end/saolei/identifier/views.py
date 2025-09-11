@@ -1,12 +1,15 @@
 import logging
-from .models import Identifier
-from django.http import HttpResponseForbidden, HttpResponseBadRequest, JsonResponse, HttpResponse, HttpResponseNotFound
-from django.views.decorators.http import require_POST, require_GET
+
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
+from django.views.decorators.http import require_GET, require_POST
+
+from config.text_choices import MS_TextChoices
+from userprofile.decorators import login_required_error, staff_required
 from utils.response import HttpResponseConflict
 from videomanager.models import VideoModel
-from videomanager.view_utils import update_state, update_personal_record_stock
-from userprofile.decorators import login_required_error, staff_required
-from config.text_choices import MS_TextChoices
+from videomanager.view_utils import update_personal_record_stock, update_state
+from .models import Identifier
+
 logger = logging.getLogger('userprofile')
 
 
