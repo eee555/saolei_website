@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
-from django.db import models
-from .fields import RestrictedFileField
-from userprofile.models import UserProfile
-from identifier.models import Identifier
-from config.global_settings import DefaultRankingScores
-from django_redis import get_redis_connection
 import json
-from utils import ComplexEncoder
+
+from django.db import models
+from django_redis import get_redis_connection
+
+from config.global_settings import DefaultRankingScores, MaxSizes
 from config.text_choices import MS_TextChoices
-from config.global_settings import MaxSizes
+from identifier.models import Identifier
+from userprofile.models import UserProfile
+from utils import ComplexEncoder
+from .fields import RestrictedFileField
 cache = get_redis_connection("saolei_website")
 
 

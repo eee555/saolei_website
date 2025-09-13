@@ -50,12 +50,12 @@ describe('<StackBar />', () => {
             { name: 'C', value: 30, color: '#0000FF' },
         ];
         cy.mount(StackBar, {
-            propsData: {
+            props: {
                 data: data,
                 style: 'width: 600px;',
             },
         });
-        cy.get('@vue').then((wrapper) => {
+        cy.get('@vue').then((wrapper: any) => {
             wrapper.setProps({
                 data: [
                     { name: 'A', value: 30, color: '#FF0000' },

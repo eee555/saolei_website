@@ -32,7 +32,8 @@ jobs:
         pip install flake8-commas
         pip install flake8-comprehensions
         pip install flake8-datetimez
+        pip install flake8-import-order
 
     - name: Run Tests
       run: |
-        python -m flake8 --ignore=E501,E722,A003
+        python -m flake8

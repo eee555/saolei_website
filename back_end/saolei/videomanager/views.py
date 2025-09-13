@@ -1,26 +1,27 @@
 # -*- coding: utf-8 -*-
 import datetime
-import logging
-from .forms import UploadVideoForm
-from .models import VideoModel, ExpandVideoModel
-from .view_utils import update_personal_record, update_personal_record_stock, \
-    video_all_fields, update_video_num, update_state, refresh_video, \
-    video_saolei_import_by_userid_helper, new_video_by_file
-from userprofile.models import UserProfile
-from django.http import HttpResponse, JsonResponse, FileResponse, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseNotFound
 import json
+import logging
 import urllib
-from utils import ComplexEncoder
-from django.core.paginator import Paginator
-from config.text_choices import MS_TextChoices
-from django.db.models import Q
-from django_redis import get_redis_connection
-from django_ratelimit.decorators import ratelimit
+
 from django.conf import settings
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.http import FileResponse, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
 from django.views.decorators.http import require_GET, require_POST
-from userprofile.decorators import banned_blocked, staff_required, login_required_error
+from django_ratelimit.decorators import ratelimit
+from django_redis import get_redis_connection
+
 from accountlink.models import AccountSaolei
+from config.text_choices import MS_TextChoices
+from userprofile.decorators import banned_blocked, login_required_error, staff_required
+from userprofile.models import UserProfile
+from utils import ComplexEncoder
 from utils.exceptions import ExceptionToResponse
+from .forms import UploadVideoForm
+from .models import ExpandVideoModel, VideoModel
+from .view_utils import new_video_by_file, refresh_video, update_personal_record, update_personal_record_stock, update_state, update_video_num, video_all_fields, video_saolei_import_by_userid_helper
+
 logger = logging.getLogger('videomanager')
 cache = get_redis_connection("saolei_website")
 

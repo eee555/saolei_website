@@ -3,8 +3,15 @@ import { defineConfig } from 'cypress';
 export default defineConfig({
     e2e: {
         baseUrl: 'http://localhost:8080',
-        setupNodeEvents(_on, _config) {
-            // implement node event listeners here
+        defaultBrowser: 'chrome',
+        experimentalStudio: true,
+        setupNodeEvents(on, _config) {
+            on('before:browser:launch', (browser, launchOptions) => {
+                if (browser.name === 'chrome') {
+                    launchOptions.args.push('--accept-lang=zh-CN');
+                }
+                return launchOptions;
+            });
         },
     },
 
@@ -14,4 +21,6 @@ export default defineConfig({
             bundler: 'vite',
         },
     },
+    chromeWebSecurity: false,
+    watchForFileChanges: false,
 });

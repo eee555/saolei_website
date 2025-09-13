@@ -11,9 +11,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
-from pathlib import Path
-import os
 import json
+import os
+from pathlib import Path
 
 # https://docs.djangoproject.com/en/5.0/ref/settings/#std-setting-DEBUG
 DEBUG = True
@@ -375,5 +375,10 @@ TEMPLATE_DIRS = (
     os.path.join(SETTINGS_PATH, 'templates'),
 )
 
-BAIDU_VERIFY_SKIP = False  # 是否跳过审查步骤。用于调试。 Skip censorship.
-EMAIL_SKIP = False  # 是否跳过邮箱验证。用于调试。 Skip the email verification.
+E2E_TEST = False or os.environ.get("E2E_TEST") == "True"  # 是否为端到端测试模式。 End-to-end test mode.
+
+if E2E_TEST:
+    INSTALLED_APPS.append('dangerzone')
+
+EMAIL_SKIP = False or E2E_TEST  # 是否跳过邮箱验证。用于调试。 Skip the email verification.
+BAIDU_VERIFY_SKIP = False or E2E_TEST  # 是否跳过审查步骤。用于调试。 Skip censorship.

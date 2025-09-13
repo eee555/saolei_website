@@ -1,10 +1,13 @@
-from django.http import JsonResponse
-from django.conf import settings
-import psutil
-import time
 import os
+import time
+
+from django.conf import settings
+from django.http import JsonResponse
 from django_redis import get_redis_connection
+import psutil
+
 from utils import ComplexEncoder
+
 cache = get_redis_connection("saolei_website")
 
 

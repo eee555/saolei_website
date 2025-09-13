@@ -2,7 +2,7 @@ import eslint from '@eslint/js';
 import eslintPluginVue from 'eslint-plugin-vue';
 import globals from 'globals';
 import typescriptEslint from 'typescript-eslint';
-import vueI18n from '@intlify/eslint-plugin-vue-i18n';
+// import vueI18n from '@intlify/eslint-plugin-vue-i18n'; // 不兼容ts。https://github.com/intlify/eslint-plugin-vue-i18n/issues/32
 import stylistic from '@stylistic/eslint-plugin';
 import pluginCypress from 'eslint-plugin-cypress/flat';
 
@@ -18,7 +18,7 @@ export default typescriptEslint.config(
       eslint.configs.recommended,
       ...typescriptEslint.configs.recommended,
       ...eslintPluginVue.configs['flat/recommended'],
-      ...vueI18n.configs.recommended,
+      // ...vueI18n.configs.recommended, // 不兼容ts。https://github.com/intlify/eslint-plugin-vue-i18n/issues/32
     ],
     files: ['**/*.{ts,vue}'],
     languageOptions: {
@@ -39,15 +39,10 @@ export default typescriptEslint.config(
       'vue/multi-word-component-names': 'off',
       'vue/no-irregular-whitespace': ['error', { 'skipHTMLTextContents': true }],
       'vue/no-template-shadow': 'off',
-      'vue/no-v-html': 'off',
       'vue/prefer-template': 'error',
       'vue/require-v-for-key': 'off',
       'vue/singleline-html-element-content-newline': 'error',
       'vue/static-class-names-order': 'error',
-      '@intlify/vue-i18n/no-duplicate-keys-in-locale': 'error',
-      '@intlify/vue-i18n/no-missing-keys': 'off', // 目前不兼容ts
-      '@intlify/vue-i18n/no-raw-text': 'off', // 开发中有些地方需要使用原始文本
-      '@intlify/vue-i18n/no-v-html': 'off', // 有个别的翻译包含了html标签
       '@stylistic/array-bracket-newline': 'error',
       '@stylistic/array-bracket-spacing': 'error',
       '@stylistic/arrow-parens': 'error',
@@ -105,8 +100,10 @@ export default typescriptEslint.config(
       '@typescript-eslint/ban-ts-comment': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-namespace': 'off',
       '@typescript-eslint/no-unsafe-function-type': 'off',
-      "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_"}],
+      '@typescript-eslint/no-unused-expressions': 'off',
+      '@typescript-eslint/no-unused-vars': ['error', { 'argsIgnorePattern': '^_', 'caughtErrorsIgnorePattern': '^_'}],
     },
     settings: {
       'vue-i18n': {
