@@ -16,7 +16,6 @@ class ExpandVideoModel(models.Model):
     # video = models.OneToOneField(VideoModel, on_delete=models.CASCADE)
     identifier = models.CharField(max_length=MaxSizes.IDENTIFIER)
     stnb = models.FloatField()
-    rqp = models.FloatField()
 
 
 # 其他类：checksum_ok, mode
