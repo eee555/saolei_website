@@ -80,7 +80,7 @@ class VideoManagerTestCase(TestCase):
 
     def test_refresh(self):
         expandvideo = ExpandVideoModel.objects.create(
-            identifier='test', stnb=0, rqp=0)
+            identifier='test', stnb=0)
         video = VideoModel.objects.create(player=self.user, file=ContentFile(
             self.testfile_exp.content, name='Exp_FL_35.09_3BV=132_3BVs=3.76_Pu Tian Yi(Hu Bei).avf'), video=expandvideo, state='a')
         refresh_video(video)
