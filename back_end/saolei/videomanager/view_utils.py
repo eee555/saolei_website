@@ -403,7 +403,6 @@ def video_saolei_import_by_userid_helper(userProfile: UserProfile, accountSaolei
         videoModel = ExpandVideoModel.objects.create(
             identifier='',
             stnb=0,
-            rqp=0,
         )
         videoModel.save()
         model = VideoModel.objects.create(
