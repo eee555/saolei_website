@@ -39,7 +39,6 @@ class VideoManagerTestCase(TestCase):
         self.testfile_exp_values_extended = {
             'identifier': 'Pu Tian Yi(Hu Bei)',
             'stnb': 135.59774291678048,
-            'rqp': 9.328091666666667,
         }
 
     def multiple_values_test(self, obj, expected_values):
@@ -49,7 +48,7 @@ class VideoManagerTestCase(TestCase):
 
     def test_zero_time(self):
         expandvideo = ExpandVideoModel.objects.create(
-            identifier='test', stnb=0, rqp=0)
+            identifier='test', stnb=0)
         video = VideoModel.objects.create(player=self.user, file='test.evf', video=expandvideo, state='a', software='e', level='b', mode='00', timems=0, bv=1, left=1, right=0,
                                           double=0, path=0, flag=0, left_ce=1, right_ce=0, double_ce=0, op=1, isl=0, cell0=0, cell1=0, cell2=0, cell3=0, cell4=0, cell5=0, cell6=0, cell7=0, cell8=0)
 
