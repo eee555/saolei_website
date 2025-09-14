@@ -9,8 +9,17 @@
         </el-icon>
         <div
             class="el-upload__text" style="font-size: 18px;"
-            v-html="store.user.realname == '匿名' ? t('common.msg.realNameRequired') : t('profile.upload.dragOrClick')"
-        />
+        >
+            <span v-if="store.user.realname == '匿名'">
+                {{ t('common.msg.realNameRequired') }}
+            </span>
+            <span v-else>
+                {{ t('profile.upload.dragOrClick1') }}
+                <em>
+                    {{ t('profile.upload.dragOrClick2') }}
+                </em>
+            </span>
+        </div>
 
         <template #tip>
             <div style="text-align: center;">

@@ -1,9 +1,11 @@
-from django.test import TestCase
-from .models import AccountSaolei, AccountMinesweeperGames, AccountWorldOfMinesweeper
-from .utils import update_saolei_account, update_msgames_account, update_wom_account
-from userprofile.models import UserProfile
 import datetime
 from unittest import expectedFailure
+
+from django.test import TestCase
+
+from userprofile.models import UserProfile
+from .models import AccountMinesweeperGames, AccountSaolei, AccountWorldOfMinesweeper
+from .utils import update_msgames_account, update_saolei_account, update_wom_account
 
 
 class AccountLinkTestCase(TestCase):

@@ -1,6 +1,7 @@
 import { UploadRawFile } from 'element-plus';
 import { AvfVideo, EvfVideo, RmvVideo, MvfVideo } from 'ms-toollib';
 import { VideoAbstract } from './videoabstract';
+import { arbiterTimeStampToDate, generalTimeStampToDate } from './datetime';
 type AnyVideo = AvfVideo | EvfVideo | RmvVideo | MvfVideo;
 
 export function get_software(video: AnyVideo) {
@@ -39,7 +40,7 @@ export function extract_stat(video: AnyVideo | null): VideoAbstract | null {
         bv: video.bbbv,
         ce: video.ce,
         cl: video.cl,
-        end_time: new Date(Number(video.end_time / BigInt(1000))),
+        end_time: (video instanceof AvfVideo) ? arbiterTimeStampToDate(video.end_time) : generalTimeStampToDate(video.end_time),
     });
 }
 

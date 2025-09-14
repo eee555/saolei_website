@@ -20,8 +20,27 @@ export function toISODateString(date: Date) {
     return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, '0') + '-' + date.getDate().toString().padStart(2, '0');
 }
 
+/**
+ * 将日期对象转换为 ISO 格式的日期时间字符串 (YYYY-MM-DD HH:mm:ss)
+ *
+ * @param {Date} date - 要转换的日期对象
+ * @returns {string} 返回格式化后的 ISO 日期时间字符串
+ *
+ * @example
+ * const date = new Date('2023-10-05T14:30:00');
+ * const isoString = toISODateTimeString(date); // "2023-10-05 14:30:00"
+ */
 export function toISODateTimeString(date: Date) {
     return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, '0') + '-' + date.getDate().toString().padStart(2, '0') + ' ' +
         date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0') + ':' +
         date.getSeconds().toString().padStart(2, '0');
+}
+
+export function arbiterTimeStampToDate(timestamp: bigint) {
+    const date = new Date();
+    return new Date(Number(timestamp / BigInt(1000)) + date.getTimezoneOffset() * 60000);
+}
+
+export function generalTimeStampToDate(timestamp: bigint) {
+    return new Date(Number(timestamp / BigInt(1000)));
 }

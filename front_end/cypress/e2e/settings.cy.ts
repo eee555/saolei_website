@@ -11,7 +11,7 @@ describe('language setting', () => {
 
     for (const lang in languages) {
         it(`Detect Sys Language: ${lang}`, () => {
-            cy.visit('http://localhost:8080/#/settings', {
+            cy.visit('/#/settings', {
                 onBeforeLoad: (win) => {
                     Object.defineProperty((win as unknown as Window).navigator, 'language', {
                         value: lang,
@@ -24,7 +24,7 @@ describe('language setting', () => {
     }
 
     it('Change Language', () => {
-        cy.visit('http://localhost:8080/#/settings');
+        cy.visit('/#/settings');
         cy.get('[data-cy=languagePicker]').realClick();
         cy.contains('dev').filter(':visible').click();
         cy.contains('menu.guide');
@@ -45,7 +45,7 @@ describe('language setting', () => {
 
 describe('Color Theme', () => {
     it('Detect Sys Dark Mode', () => {
-        cy.visit('http://localhost:8080/#/settings', {
+        cy.visit('/#/settings', {
             onBeforeLoad: (win) => {
                 cy.stub(win, 'matchMedia').withArgs('(prefers-color-scheme: dark)').returns({
                     matches: true,
@@ -62,7 +62,7 @@ describe('Color Theme', () => {
         });
     });
     it('Detect Sys Light Mode', () => {
-        cy.visit('http://localhost:8080/#/settings', {
+        cy.visit('/#/settings', {
             onBeforeLoad: (win) => {
                 cy.stub(win, 'matchMedia').withArgs('(prefers-color-scheme: dark)').returns({
                     matches: false,
@@ -80,7 +80,7 @@ describe('Color Theme', () => {
     });
 
     it('Change Theme', () => {
-        cy.visit('http://localhost:8080/#/settings');
+        cy.visit('/#/settings');
         cy.getLocalStorage('vueuse-color-scheme').then((value) => {
             expect(value).to.eq('auto');
         });
@@ -101,7 +101,7 @@ describe('Color Theme', () => {
 
 describe('General Settings', () => {
     it('Hide Language Icon', () => {
-        cy.visit('http://localhost:8080/#/settings');
+        cy.visit('/#/settings');
         cy.get('[data-cy=languagePicker]').should('be.visible');
         cy.contains('语言切换').next().click();
         cy.get('[data-cy=languagePicker]').should('not.be.visible');

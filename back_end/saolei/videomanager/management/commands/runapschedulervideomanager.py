@@ -1,16 +1,16 @@
+from datetime import datetime, timedelta, timezone
+import json
 import logging
-
-from django.conf import settings
 
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
+from django.conf import settings
 from django.core.management.base import BaseCommand
+from django_apscheduler import util
 from django_apscheduler.jobstores import DjangoJobStore
 from django_apscheduler.models import DjangoJobExecution
-from django_apscheduler import util
 from django_redis import get_redis_connection
-from datetime import datetime, timezone, timedelta
-import json
+
 from videomanager.models import VideoModel
 
 logger = logging.getLogger(__name__)

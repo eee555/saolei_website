@@ -29,6 +29,11 @@ declare global {
     namespace Cypress {
         interface Chainable {
             /**
+             * 关闭所有通知
+             */
+            closeElNotifications(): void;
+
+            /**
              * 获取本地存储的值
              * @param key - 本地存储的键
              * @example cy.getLocalStorage('authToken')
@@ -62,6 +67,12 @@ declare global {
              * @example cy.mockLogin()
              */
             mockLogin(): void;
+
+            /**
+             * 模拟注册
+             * @example cy.mockRegister()
+             */
+            mockRegister(): void;
         }
     }
 }
@@ -115,6 +126,25 @@ Cypress.Commands.add('mockGetEmailCode', (options) => {
     }).as('getEmailCode');
 });
 
+Cypress.Commands.add('mockRegister', () => {
+    cy.intercept('POST', '/userprofile/register', (req) => {
+        const params = new URLSearchParams(req.body);
+        const email_captcha = params.get('email_captcha');
+
+        if (email_captcha !== '123456') {
+            req.reply({
+                type: 'error',
+                object: 'emailCode',
+            });
+            return;
+        }
+        req.reply({
+            type: 'success',
+            user: {},
+        });
+    });
+});
+
 Cypress.Commands.add('mockLogin', () => {
     cy.intercept('POST', '/userprofile/login/', (req) => {
         const params = new URLSearchParams(req.body);
@@ -141,6 +171,12 @@ Cypress.Commands.add('mockLogin', () => {
                 'category': 'password',
             });
         }
+    });
+});
+
+Cypress.Commands.add('closeElNotifications', () => {
+    cy.get('.el-notification__closeBtn').each(($el) => {
+        cy.wrap($el).click();
     });
 });
 

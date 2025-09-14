@@ -1,0 +1,31 @@
+name: Backend Static Safety Checks
+
+on:
+  push:
+    branches:
+      - main  # Adjust the branch name as needed
+  pull_request:
+    paths: 
+      - 'back_end/saolei/**'
+      - '.github/workflows/BackendSafety.yml'
+
+jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+
+      - name: Run static safety tests
+        run: pytest back_end/saolei/tests/ --maxfail=1 --disable-warnings -v

@@ -1,23 +1,22 @@
-import logging
-from django.contrib.auth.decorators import login_required
-from .forms import UserUpdateRealnameForm, UserUpdateAvatarForm, UserUpdateSignatureForm
-# from .models import VideoModel, ExpandVideoModel
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound
-# from asgiref.sync import sync_to_async
-import json
-from utils import ComplexEncoder
-# from django.core.paginator import Paginator
-from userprofile.models import UserProfile
 import base64
 import decimal
-import urllib.parse
-from django_redis import get_redis_connection
-from django.conf import settings
+import json
+import logging
 import os
-from django_ratelimit.decorators import ratelimit
+import urllib.parse
+
+from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseBadRequest, HttpResponseNotFound, JsonResponse
 from django.views.decorators.http import require_GET, require_POST
-from userprofile.utils import user_metadata
+from django_ratelimit.decorators import ratelimit
+from django_redis import get_redis_connection
+
 from config.global_settings import GameModes, RankingGameStats
+from userprofile.models import UserProfile
+from userprofile.utils import user_metadata
+from utils import ComplexEncoder
+from .forms import UserUpdateAvatarForm, UserUpdateRealnameForm, UserUpdateSignatureForm
 
 logger = logging.getLogger('userprofile')
 cache = get_redis_connection("saolei_website")

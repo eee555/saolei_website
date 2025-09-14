@@ -6,14 +6,15 @@
 # FilePath: /back_end/saolei/scripts/getOldWebData.py
 # Description: 用于获取老网站数据
 """
-import requests
-from enum import Enum
 from abc import ABC, abstractmethod
-from lxml import etree
+from datetime import datetime, timedelta, timezone
+from enum import Enum
 import html
-from typing import overload, Callable
 import re
-from datetime import datetime, timezone, timedelta
+from typing import Callable, overload
+
+from lxml import etree
+import requests
 
 
 class Level(Enum):

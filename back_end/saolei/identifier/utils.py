@@ -1,4 +1,5 @@
 import logging
+
 from utils import verify_text
 from .models import Identifier
 logger = logging.getLogger('videomanager')

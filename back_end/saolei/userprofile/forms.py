@@ -1,8 +1,10 @@
 from django import forms
 # from .models import Profile
 from django.contrib.auth import get_user_model
+
 from config.global_settings import MaxSizes, MinSizes
 from config.messages import FormErrors
+
 User = get_user_model()
 
 
