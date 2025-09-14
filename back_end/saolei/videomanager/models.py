@@ -6,6 +6,7 @@ from django_redis import get_redis_connection
 
 from config.global_settings import DefaultRankingScores, MaxSizes
 from config.text_choices import MS_TextChoices
+from identifier.models import Identifier
 from userprofile.models import UserProfile
 from utils import ComplexEncoder
 from .fields import RestrictedFileField
@@ -176,3 +177,4 @@ class VideoModel(models.Model):
 
     def pop_redis(self, name: str):
         cache.hdel(name, self.id)
+
