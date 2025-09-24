@@ -1,0 +1,15 @@
+
+class GSC_Defaults:
+    BT = 10000
+    IT = 60000
+    ET = 240000
+
+    B_BV_MIN = 10
+    I_BV_MIN = 30
+    E_BV_MIN = 100
+
+    HOST_ID = 48  # 郭锦洋
+
+
+class TournamentWeights:
+    GSC = 1000
