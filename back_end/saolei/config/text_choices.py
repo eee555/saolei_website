@@ -33,3 +33,17 @@ class MS_TextChoices:
         EVF = "e", ('evf')
         MVF = "m", ('mvf')
         RMV = "r", ('rmv')
+
+
+class Tournament_TextChoices:
+    class Series(TextChoices):
+        WEEKLY = "w", ('周赛')
+        GSC = "g", ('GSC')
+
+    class State(TextChoices):
+        PENDING = "p", ('审核中')
+        ONGOING = "o", ('进行中')
+        FINISHED = "f", ('已结束')
+        PREPARING = "r", ('准备中')
+        CANCELLED = "c", ('已取消')
+        AWARDED = "a", ('已颁奖')
