@@ -4,7 +4,6 @@ from django.http import HttpResponseBadRequest, JsonResponse, HttpResponse, Http
 from userprofile.decorators import banned_blocked, staff_required, login_required_error
 from .models import Tournament, TournamentParticipant, GSCTournament
 from .forms import TournamentForm
-from .utils import refresh_tournament
 from utils import verify_text
 from config.text_choices import Tournament_TextChoices
 from datetime import datetime
@@ -52,7 +51,7 @@ def allow_tournament(request):
 
 @require_POST
 @login_required_error
-def cancel_tournament(request):
+def cancel_tournament(request: HttpRequest):
     id = request.POST.get('id')
     if not id:
         return HttpResponseBadRequest()
@@ -66,11 +65,18 @@ def cancel_tournament(request):
     return HttpResponse()
 
 @require_GET
-def get_tournament_list(request):
+def get_tournament_list(request: HttpRequest):
     tournament_list = Tournament.objects.all()
-    for tournament in tournament_list:
-        refresh_tournament(tournament)
-    return JsonResponse({'type': 'success', 'data': tournament_list.values('id', 'name', 'description', 'start_time', 'end_time', 'series', 'host__id', 'host__realname', 'state')})
+    return JsonResponse({
+        'type': 'success',
+        'data': [{
+            'id': tournament.id,
+            'name': tournament.name,
+            'start_time': tournament.start_time,
+            'end_time': tournament.end_time,
+            'series': tournament.series,
+        } for tournament in tournament_list],
+    })
 
 @require_GET
 def get_tournament(request):

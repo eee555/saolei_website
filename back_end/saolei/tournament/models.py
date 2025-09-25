@@ -20,13 +20,11 @@ class Tournament(models.Model):
     weight = models.PositiveIntegerField(default=0) # 比赛总积分
     videos = models.ManyToManyField(VideoModel, related_name='tournaments')
 
-
-class GSCTournament(Tournament):
-    order = models.PositiveSmallIntegerField(primary_key=True) # 届数
-    token = models.CharField(max_length=6) # 比赛标识
+    @property
+    def series(self):
+        raise NotImplementedError("Subclasses of Tournament must implement the 'series' property.")
 
     def start(self):
-        self.token = 'G' + generate_random_token(5)
         self.state = Tournament_TextChoices.State.ONGOING
         self.save()
 
@@ -34,18 +32,36 @@ class GSCTournament(Tournament):
         self.state = Tournament_TextChoices.State.FINISHED
         self.save()
 
-    def add_video(self, video: VideoModel):
-        self.videos.add(video)
-        participant = GSCParticipant.objects.filter(user=video.player, tournament=self).first()
-        if not participant:
-            participant = GSCParticipant.objects.create(user=video.player, tournament=self, token=self.token, start_time=datetime.now())
-
     def refresh_state(self):
         if self.state == Tournament_TextChoices.State.PREPARING and datetime.now() >= self.start_time:
             self.start()
         if self.state == Tournament_TextChoices.State.ONGOING and datetime.now() >= self.end_time:
             self.end()
-            return
+        return
+    
+    def add_participant(self, user: UserProfile):
+        raise NotImplementedError("Subclasses of Tournament must implement the 'add_participant' method.")
+    
+    def add_video(self, video: VideoModel):
+        self.videos.add(video)
+        self.add_participant(video.player)
+
+
+class GSCTournament(Tournament):
+    order = models.PositiveSmallIntegerField(primary_key=True) # 届数
+    token = models.CharField(max_length=6) # 比赛标识
+
+    @property
+    def series(self):
+        return Tournament_TextChoices.Series.GSC
+
+    def start(self):
+        self.token = 'G' + generate_random_token(5)
+        super().start()
+
+    def add_participant(self, user: UserProfile):
+        if not GSCParticipant.objects.filter(user=user, tournament=self).exists():
+            GSCParticipant.objects.create(user=user, tournament=self, token=self.token, start_time=datetime.now())
 
     def refresh_score(self):
         for video in self.videos.all():
@@ -58,6 +74,10 @@ class GeneralTournament(Tournament):
     name = models.JSONField()
     description = models.JSONField()
     csv_head = models.JSONField()
+
+    @property
+    def series(self):
+        return ''
 
 
 class TournamentParticipant(models.Model):
@@ -97,7 +117,7 @@ class GSCParticipant(TournamentParticipant):
     et5sum = models.PositiveIntegerField(default=GSC_Defaults.ET * 5)
 
     t37 = models.GeneratedField(
-        models.F('et5sum') + models.F('it12sum') + models.F('bt20sum'),
+        expression=models.F('et5sum') + models.F('it12sum') + models.F('bt20sum'),
         output_field=models.PositiveIntegerField(),
         db_persist=True
     )
