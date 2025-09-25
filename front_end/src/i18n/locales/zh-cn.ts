@@ -245,6 +245,7 @@ export default {
         logout: '退出',
         register: '注册',
         setting: '设置',
+        tournament: '比赛',
     },
     msg: {
         actionFail: '操作失败',

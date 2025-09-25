@@ -68,6 +68,11 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('../views/StaffView.vue'),
     },
     {
+        path: '/tournament',
+        name: 'tournament',
+        component: () => import('../views/TournamentView/TournamentView.vue'),
+    },
+    {
         path: '/gsc/admin',
         name: 'gsc_admin',
         component: () => import('../views/GSCAdminView.vue'),

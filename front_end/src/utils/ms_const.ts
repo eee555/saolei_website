@@ -11,3 +11,16 @@ export const STNB_const = useLocalStorage('stnb_const', {
     i: 153.73,
     e: 435.001,
 });
+
+export enum TournamentState {
+    Pending = 'p',
+    Ongoing = 'o',
+    Finished = 'f',
+    Preparing = 'r',
+    Cancelled = 'c',
+    Awarded = 'a',
+}
+
+export enum TournamentSeries {
+    GSC = 'g',
+}

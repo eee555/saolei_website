@@ -96,6 +96,7 @@ const menu_items = [
     // { index: "world", icon: "Odometer", content: "menu.world" },
     { index: 'guide', icon: 'Document', content: 'menu.guide' },
     // { index: "score", icon: "Histogram", content: "menu.score" },
+    { index: 'tournament', icon: 'Medal', content: 'menu.tournament' },
 ] as const;
 
 const notice = ref(`

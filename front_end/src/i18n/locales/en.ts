@@ -245,6 +245,7 @@ export default {
         logout: 'Logout',
         register: 'Register',
         setting: 'Settings',
+        tournament: 'Tournament',
     },
     msg: {
         actionFail: 'Action failed',
