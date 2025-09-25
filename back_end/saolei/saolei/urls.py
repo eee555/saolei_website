@@ -33,6 +33,7 @@ urlpatterns = [
     path('article/', include('article.urls')),
     path('identifier/', include('identifier.urls')),
     path('accountlink/', include('accountlink.urls')),
+    path('tournament/', include('tournament.urls')),
     path(r'', TemplateView.as_view(template_name="index.html")),
     path('logs/', views.get_log_dir),
     path('log_view/', views.get_log_file),
