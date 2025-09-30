@@ -274,7 +274,6 @@ def new_video_by_file(user: UserProfile, file: File):
     e_video = ExpandVideoModel.objects.create(
         identifier=identifier,
         stnb=v.stnb,
-        rqp=v.rqp,
     )
     video = VideoModel.objects.create(
         player=user,
@@ -401,7 +400,6 @@ def refresh_video(video: VideoModel):
     e_video = video.video
     e_video.identifier = v.player_identifier
     e_video.stnb = v.stnb
-    e_video.rqp = v.rqp
 
     e_video.save()
 
@@ -412,7 +410,6 @@ def video_saolei_import_by_userid_helper(userProfile: UserProfile, accountSaolei
         videoModel = ExpandVideoModel.objects.create(
             identifier='',
             stnb=0,
-            rqp=0,
         )
         videoModel.save()
         model = VideoModel.objects.create(
