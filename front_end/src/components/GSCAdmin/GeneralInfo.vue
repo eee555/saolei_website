@@ -2,6 +2,12 @@
     <el-text v-if="id === 0">
         请输入非零届数
     </el-text>
+    <el-text v-else-if="notFound">
+        未找到该届信息
+        <el-button @click="createGSC">
+            创建比赛
+        </el-button>
+    </el-text>
     <el-text v-else-if="loadingGSCInfo">
         正在加载信息...
     </el-text>
@@ -28,7 +34,7 @@ import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { GSCInfo } from '@/utils/gsc';
 import { ref, watch } from 'vue';
 import { httpErrorNotification, successNotification } from '../Notifications';
-import { ElText } from 'element-plus';
+import { ElText, ElDatePicker, ElInput, ElButton } from 'element-plus';
 
 
 const props = defineProps({
@@ -47,6 +53,7 @@ const newStartTime = ref<Date | undefined>(undefined);
 const newEndTime = ref<Date | undefined>(undefined);
 const newToken = ref<string>('');
 const loadingGSCInfo = ref(false);
+const notFound = ref(false);
 
 async function getGSCInfo(id: number | undefined) {
     if (id === undefined || id < 1) {
@@ -54,25 +61,40 @@ async function getGSCInfo(id: number | undefined) {
         return;
     }
     loadingGSCInfo.value = true;
-    await proxy.$axios.get('gsc/info', { params: { id: id } }).then(
+    notFound.value = false;
+    await proxy.$axios.get('tournament/get_gsc_tournament/', { params: { id: id } }).then(
         function (response: any) {
-            if (response.data.start_time) {
-                gscInfo.value.start_time = new Date(response.data.start_time);
+            if (response.data.type === 'error') {
+                notFound.value = true;
             }
-            if (response.data.end_time) {
-                gscInfo.value.end_time = new Date(response.data.end_time);
+            if (response.data.data.start_time) {
+                gscInfo.value.start_time = new Date(response.data.data.start_time);
             }
-            if (response.data.token) {
+            if (response.data.data.end_time) {
+                gscInfo.value.end_time = new Date(response.data.data.end_time);
+            }
+            if (response.data.data.token) {
                 gscInfo.value.token = response.data.token;
             }
+            gscInfo.value.id = response.data.data.id;
         },
     ).catch(httpErrorNotification);
     loadingGSCInfo.value = false;
 }
 
+function createGSC() {
+    proxy.$axios.post('tournament/new_gsc/', { id: props.id }).then(
+        function (response: any) {
+            successNotification(response);
+            getGSCInfo(props.id);
+        },
+    ).catch(httpErrorNotification);
+}
+
 function setStartTime(time: Date | undefined) {
     if (time === undefined) return;
-    proxy.$axios.post('gsc/set', { id: gscInfo.value.id, field: 'start_time', value: time }).then(
+    console.log(gscInfo.value);
+    proxy.$axios.post('tournament/set/', { id: gscInfo.value.id, start_time: time }).then(
         function (response: any) {
             gscInfo.value.start_time = time;
             newStartTime.value = undefined;
@@ -83,7 +105,7 @@ function setStartTime(time: Date | undefined) {
 
 function setEndTime(time: Date | undefined) {
     if (time === undefined) return;
-    proxy.$axios.post('gsc/set', { id: gscInfo.value.id, field: 'end_time', value: time }).then(
+    proxy.$axios.post('tournament/set/', { id: gscInfo.value.id, end_time: time }).then(
         function (response: any) {
             gscInfo.value.end_time = time;
             newEndTime.value = undefined;
@@ -94,7 +116,7 @@ function setEndTime(time: Date | undefined) {
 
 function setToken(token: string) {
     if (token === undefined || token.trim() === '') return;
-    proxy.$axios.post('gsc/set', { id: gscInfo.value.id, field: 'token', value: token }).then(
+    proxy.$axios.post('tournament/set/', { id: gscInfo.value.id, token: token }).then(
         function (response: any) {
             gscInfo.value.token = token;
             successNotification(response);

@@ -68,6 +68,11 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('../views/StaffView.vue'),
     },
     {
+        path: '/tournament/:id',
+        name: 'tournament_id',
+        component: () => import('../views/TournamentView/TournamentView.vue'),
+    },
+    {
         path: '/tournament',
         name: 'tournament',
         component: () => import('../views/TournamentView/TournamentView.vue'),

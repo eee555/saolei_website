@@ -66,15 +66,18 @@ def cancel_tournament(request: HttpRequest):
 
 @require_GET
 def get_tournament_list(request: HttpRequest):
-    tournament_list = Tournament.objects.all()
+    tournament_list = Tournament.objects.all().select_subclasses()
     return JsonResponse({
         'type': 'success',
         'data': [{
             'id': tournament.id,
+            'series': tournament.series,
             'name': tournament.name,
             'start_time': tournament.start_time,
             'end_time': tournament.end_time,
-            'series': tournament.series,
+            'state': tournament.state,
+            'host_id': tournament.host.id,
+            'host_realname': tournament.host.realname,
         } for tournament in tournament_list],
     })
 
@@ -83,10 +86,9 @@ def get_tournament(request):
     id = request.GET.get('id')
     if not id:
         return HttpResponseBadRequest()
-    tournament = Tournament.objects.filter(id=id).first()
+    tournament = Tournament.objects.select_subclasses().filter(id=id).first()
     if not tournament:
         return HttpResponseNotFound()
-    refresh_tournament(tournament)
     data = {
         'id': tournament.id,
         'name': tournament.name,
@@ -107,7 +109,6 @@ def tournament_checkin(request):
     if not id:
         return HttpResponseBadRequest()
     tournament = Tournament.objects.filter(id=id).first()
-    refresh_tournament(tournament)
     if not tournament:
         return HttpResponseNotFound()
     if tournament.state != Tournament_TextChoices.State.ONGOING:
@@ -130,20 +131,20 @@ def new_GSC_tournament(request: HttpRequest):
     end_time = request.POST.get('end_time')
     
     if not start_time or not end_time:
-        status = Tournament_TextChoices.State.PENDING
+        state = Tournament_TextChoices.State.PENDING
     elif datetime.now() < start_time:
-        status = Tournament_TextChoices.State.PREPARING
+        state = Tournament_TextChoices.State.PREPARING
     else:
         return JsonResponse({'type': 'error', 'msg': 'invalid_start_time'})
     
-    order = request.POST.get('order')
+    order = request.POST.get('id')
     if GSCTournament.objects.filter(order=order).exists():
         return HttpResponseConflict()
     
     new_GSC = GSCTournament.objects.create(
         start_time=start_time,
         end_time=end_time,
-        status=status,
+        state=state,
         host=request.user,
         weight=TournamentWeights.GSC,
         order=order,

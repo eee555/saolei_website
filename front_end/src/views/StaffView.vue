@@ -18,6 +18,9 @@
         <el-tab-pane label="后台日志" name="logs">
             <StaffLogs />
         </el-tab-pane>
+        <el-tab-pane label="比赛管理" name="tournament">
+            <StaffTournament />
+        </el-tab-pane>
     </el-tabs>
 </template>
 
@@ -31,6 +34,7 @@ import StaffAccountLink from '@/components/staff/StaffAccountLink.vue';
 import StaffIdentifier from '@/components/staff/StaffIdentifier.vue';
 import StaffBatchUpdateVideo from '@/components/staff/StaffBatchUpdateVideo.vue';
 import StaffLogs from '@/components/staff/StaffLogs.vue';
+import StaffTournament from '@/components/staff/StaffTournament.vue';
 
 const activeTab = ref('userprofile');
 

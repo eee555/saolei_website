@@ -5,7 +5,8 @@ from userprofile.models import UserProfile
 from videomanager.models import VideoModel
 from config.text_choices import Tournament_TextChoices, MS_TextChoices
 from config.tournaments import GSC_Defaults
-from datetime import datetime
+from datetime import datetime, timezone
+from model_utils.managers import InheritanceManager
 
 def generate_random_token(length=4):
     """生成指定位数的随机字母数字混合码"""
@@ -13,8 +14,9 @@ def generate_random_token(length=4):
     return ''.join(secrets.choice(alphabet) for _ in range(length))
 
 class Tournament(models.Model):
-    start_time = models.DateTimeField() # 比赛开始时间
-    end_time = models.DateTimeField() # 比赛结束时间
+    objects = InheritanceManager()
+    start_time = models.DateTimeField(null=True) # 比赛开始时间
+    end_time = models.DateTimeField(null=True) # 比赛结束时间
     state = models.CharField(max_length=1, choices=Tournament_TextChoices.State.choices, default=Tournament_TextChoices.State.PENDING) # 比赛状态
     host = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, related_name='owned_tournaments') # 主办方
     weight = models.PositiveIntegerField(default=0) # 比赛总积分
@@ -23,6 +25,14 @@ class Tournament(models.Model):
     @property
     def series(self):
         raise NotImplementedError("Subclasses of Tournament must implement the 'series' property.")
+    
+    @property
+    def name(self):
+        raise NotImplementedError("Subclasses of Tournament must implement the 'name' property.")
+    
+    @property
+    def description(self):
+        raise NotImplementedError("Subclasses of Tournament must implement the 'description' property.")
 
     def start(self):
         self.state = Tournament_TextChoices.State.ONGOING
@@ -33,9 +43,9 @@ class Tournament(models.Model):
         self.save()
 
     def refresh_state(self):
-        if self.state == Tournament_TextChoices.State.PREPARING and datetime.now() >= self.start_time:
+        if self.state == Tournament_TextChoices.State.PREPARING and datetime.now(timezone.utc) >= self.start_time:
             self.start()
-        if self.state == Tournament_TextChoices.State.ONGOING and datetime.now() >= self.end_time:
+        if self.state == Tournament_TextChoices.State.ONGOING and datetime.now(timezone.utc) >= self.end_time:
             self.end()
         return
     
@@ -54,6 +64,14 @@ class GSCTournament(Tournament):
     @property
     def series(self):
         return Tournament_TextChoices.Series.GSC
+    
+    @property
+    def name(self):
+        return f'第{self.order}届金羊杯'
+    
+    @property
+    def description(self):
+        return ''
 
     def start(self):
         self.token = 'G' + generate_random_token(5)

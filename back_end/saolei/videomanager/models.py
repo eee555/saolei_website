@@ -15,9 +15,9 @@ cache = get_redis_connection("saolei_website")
 
 class ExpandVideoModel(models.Model):
     # video = models.OneToOneField(VideoModel, on_delete=models.CASCADE)
-    identifier = models.CharField(max_length=MaxSizes.IDENTIFIER)
-    stnb = models.FloatField()
-    rqp = models.FloatField()
+    identifier = models.CharField(max_length=MaxSizes.IDENTIFIER, default="")
+    stnb = models.FloatField(default=0.0)
+    rqp = models.FloatField(default=0.0)
 
 
 # 其他类：checksum_ok, mode
