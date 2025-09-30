@@ -8,4 +8,5 @@ urlpatterns = [
     path('new_gsc/', views.new_GSC_tournament),
     path('set/', views.set_tournament),
     path('get/', views.get_tournament),
+    path('validate/', views.validate_tournament),
 ]

@@ -14,6 +14,9 @@
     <el-text v-else-if="state === TournamentState.Awarded" type="info">
         已结束
     </el-text>
+    <el-text v-else-if="state === TournamentState.Cancelled" type="info">
+        已取消
+    </el-text>
     <el-text v-else>
         ???
     </el-text>

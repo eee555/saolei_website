@@ -151,7 +151,7 @@ def new_GSC_tournament(request: HttpRequest):
         token='',
     )
 
-    return JsonResponse({'type': 'success', 'data': new_GSC})
+    return HttpResponse()
 
 @require_POST
 def set_tournament(request: HttpRequest):
@@ -159,13 +159,13 @@ def set_tournament(request: HttpRequest):
     比赛的主办方可以修改比赛信息。目前仅支持修改部分信息，参见下文。
 
     request应包含POST数据：
-        - tournament_id: 要更新的比赛ID
+        - id: 要更新的比赛ID
         - start_time (可选): 比赛开始时间
         - end_time (可选): 比赛结束时间
         - order (可选, 仅GSC比赛): 届数
         - token (可选, 仅GSC比赛): 比赛标识
     """
-    if not (tournament_id := request.POST.get('tournament_id')):
+    if not (tournament_id := request.POST.get('id')):
         return HttpResponseBadRequest()
     if not (tournament := Tournament.objects.filter(id=tournament_id).first()):
         return HttpResponseNotFound()
@@ -173,8 +173,12 @@ def set_tournament(request: HttpRequest):
         return HttpResponseForbidden()
     
     if start_time := request.POST.get('start_time'):
+        if isinstance(start_time, str):
+            start_time = datetime.fromisoformat(start_time.replace('Z', '+00:00'))
         tournament.start_time = start_time
     if end_time := request.POST.get('end_time'):
+        if isinstance(end_time, str):
+            end_time = datetime.fromisoformat(end_time.replace('Z', '+00:00'))
         tournament.end_time = end_time
 
     if isinstance(tournament, GSCTournament):
@@ -186,7 +190,8 @@ def set_tournament(request: HttpRequest):
             tournament.token = token
 
     tournament.save()
-    return JsonResponse({'type': 'success', 'data': tournament})
+    tournament.refresh_state()
+    return HttpResponse()
 
 @require_POST
 @staff_required
@@ -213,3 +218,34 @@ def set_tournament_staff(request: HttpRequest):
     
     tournament.save()
     return JsonResponse({'type': 'success', 'data': tournament})
+
+@require_GET
+def get_GSC_tournament(request: HttpRequest):
+    if not (id := request.GET.get('id')):
+        return HttpResponseBadRequest()
+    tournament = GSCTournament.objects.filter(order=id).first()
+    if not tournament:
+        return JsonResponse({'type': 'error'})
+    return JsonResponse({'type': 'success', 'data': {
+        'id': tournament.id,
+        'start_time': tournament.start_time,
+        'end_time': tournament.end_time,
+        'state': tournament.state,
+        'token': tournament.token,
+    }})
+
+@require_POST
+@staff_required
+def validate_tournament(request: HttpRequest):
+    if not (tournament_id := request.POST.get('id')):
+        return HttpResponseBadRequest()
+    if not (tournament := Tournament.objects.filter(id=tournament_id).first()):
+        return HttpResponseNotFound()
+    valid = request.POST.get('valid')
+    if valid == 'true':
+        tournament.validate()
+        return HttpResponse()
+    elif valid == 'false':
+        tournament.invalidate()
+        return HttpResponse()
+    return HttpResponseBadRequest()

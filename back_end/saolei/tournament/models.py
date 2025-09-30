@@ -49,6 +49,18 @@ class Tournament(models.Model):
             self.end()
         return
     
+    def validate(self):
+        if not self.start_time or not self.end_time or self.start_time >= self.end_time:
+            return
+        if self.state == Tournament_TextChoices.State.PENDING or self.state == Tournament_TextChoices.State.CANCELLED:
+            self.state = Tournament_TextChoices.State.PREPARING
+            self.refresh_state()
+    
+    def invalidate(self):
+        if self.state != Tournament_TextChoices.State.AWARDED:
+            self.state = Tournament_TextChoices.State.CANCELLED
+            self.save()
+    
     def add_participant(self, user: UserProfile):
         raise NotImplementedError("Subclasses of Tournament must implement the 'add_participant' method.")
     
