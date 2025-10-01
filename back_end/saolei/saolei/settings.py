@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'accountlink',
     'tournament',
     "monitor",
+    'common',
     'django_cleanup.apps.CleanupConfig',  # 必须放在最后(文档所言)
 ]
 

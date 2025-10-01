@@ -68,6 +68,7 @@ class VideoModel(models.Model):
     # 审核状态
     state = models.CharField(
         max_length=1, choices=MS_TextChoices.State.choices, default=MS_TextChoices.State.PLAIN)
+    ongoing_tournament = models.BooleanField(default=False)
     # 软件: "a"->avf; "e"->evf; "u" ->url(未下载);
     software = models.CharField(max_length=MaxSizes.SOFTWARE, choices=MS_TextChoices.Software.choices)
     # 难度
@@ -163,6 +164,7 @@ class VideoModel(models.Model):
     def push_redis(self, name: str):
         cache.hset(name, self.id, json.dumps({
             "state": self.state,
+            "tournament": self.ongoing_tournament,
             "software": self.software,
             "time": self.upload_time,
             "player": self.player.realname,

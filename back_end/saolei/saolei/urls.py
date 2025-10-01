@@ -28,6 +28,7 @@ urlpatterns = [
     path('userprofile/', include('userprofile.urls', namespace='userprofile')),
     path("admin/", admin.site.urls),
     # path('gsc/', include('gsc.urls')),
+    path('common/', include('common.urls')),
     path('msuser/', include('msuser.urls')),
     path('monitor/', include('monitor.urls')),
     path('article/', include('article.urls')),

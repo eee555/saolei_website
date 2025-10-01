@@ -18,29 +18,11 @@ from userprofile.decorators import banned_blocked, login_required_error, staff_r
 from userprofile.models import UserProfile
 from utils import ComplexEncoder
 from utils.exceptions import ExceptionToResponse
-from .forms import UploadVideoForm
 from .models import ExpandVideoModel, VideoModel
-from .view_utils import new_video_by_file, refresh_video, update_personal_record, update_personal_record_stock, update_state, update_video_num, video_all_fields, video_saolei_import_by_userid_helper
+from .view_utils import refresh_video, update_personal_record, update_personal_record_stock, update_state, update_video_num, video_all_fields, video_saolei_import_by_userid_helper
 
 logger = logging.getLogger('videomanager')
 cache = get_redis_connection("saolei_website")
-
-
-@require_POST
-@login_required_error
-@banned_blocked
-@ratelimit(key='ip', rate='5/s')
-def video_upload(request):
-    if request.user.userms.video_num_total >= request.user.userms.video_num_limit:
-        return HttpResponse(status=402)  # 录像仓库已满
-    video_form = UploadVideoForm(data=request.POST, files=request.FILES)
-    if not video_form.is_valid():
-        return HttpResponseBadRequest(video_form.errors)
-    try:
-        video = new_video_by_file(request.user, video_form.cleaned_data["file"])
-    except ExceptionToResponse as e:
-        return e.response()
-    return JsonResponse({'type': 'success', 'object': 'videomodel', 'category': 'upload', 'data': {'id': video.id, 'state': video.state}})
 
 
 @login_required_error
