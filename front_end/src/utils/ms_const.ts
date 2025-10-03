@@ -22,5 +22,7 @@ export enum TournamentState {
 }
 
 export enum TournamentSeries {
+    General = 'a',
     GSC = 'g',
+    Unknown = 'u',
 }

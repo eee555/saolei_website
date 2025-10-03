@@ -24,11 +24,7 @@
                         <base-icon-add />
                     </el-link>
                     <!-- 复制标识 -->
-                    <el-link v-else :underline="false" @click="copyToClipboard(scope.row.data)">
-                        <el-icon>
-                            <CopyDocument />
-                        </el-icon>
-                    </el-link>
+                    <IconCopy v-else :text="scope.row.data" />
                     &nbsp;
                     <!-- 删除标识 -->
                     <el-link
@@ -49,13 +45,13 @@ import { store } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { ref } from 'vue';
 import { removeItem } from '@/utils/system/tools';
-import { ElNotification, ElTable, ElTableColumn, ElLink, ElInput, ElIcon } from 'element-plus';
+import { ElNotification, ElTable, ElTableColumn, ElLink, ElInput } from 'element-plus';
 import { httpErrorNotification, unknownErrorNotification } from '@/components/Notifications';
 import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
-import { copyToClipboard } from './CopyToClipboard';
 import BaseIconDelete from '@/components/common/BaseIconDelete.vue';
 import BaseIconAdd from '../common/BaseIconAdd.vue';
+import IconCopy from './IconCopy.vue';
 
 const { proxy } = useCurrentInstance();
 const new_identifiers = ref('');

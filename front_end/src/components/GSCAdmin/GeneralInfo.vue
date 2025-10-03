@@ -69,13 +69,15 @@ async function getGSCInfo(id: number | undefined) {
             }
             if (response.data.data.start_time) {
                 gscInfo.value.start_time = new Date(response.data.data.start_time);
+            } else {
+                gscInfo.value.start_time = undefined;
             }
             if (response.data.data.end_time) {
                 gscInfo.value.end_time = new Date(response.data.data.end_time);
+            } else {
+                gscInfo.value.end_time = undefined;
             }
-            if (response.data.data.token) {
-                gscInfo.value.token = response.data.token;
-            }
+            gscInfo.value.token = response.data.data.token;
             gscInfo.value.id = response.data.data.id;
         },
     ).catch(httpErrorNotification);

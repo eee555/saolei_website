@@ -8,7 +8,8 @@
             <template #label>
                 <span>{{ tournament.name }}</span>
             </template>
-            <TournamentDetail :tournament="tournament" />
+            <GSCDetail v-if="tournament.series === TournamentSeries.GSC" :id="tournament.id" />
+            <TournamentDetail v-else :tournament="tournament" />
         </el-tab-pane>
     </el-tabs>
 </template>
@@ -23,6 +24,8 @@ import { store } from '@/store';
 import { TabPaneName, ElTabs, ElTabPane } from 'element-plus';
 import { useRoute, useRouter } from 'vue-router';
 import TournamentDetail from './TournamentDetail.vue';
+import GSCDetail from './GSCDetail.vue';
+import { TournamentSeries } from '@/utils/ms_const';
 
 const { proxy } = useCurrentInstance();
 

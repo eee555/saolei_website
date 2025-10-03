@@ -142,11 +142,9 @@ class VideoModel(models.Model):
     cell8 = models.PositiveSmallIntegerField(null=True)
 
     # 暂时的解决方案
-    def __getattr__(self, name):
-        if name == "stnb":
-            return self.video.stnb
-        raise AttributeError(
-            f"'{self.__class__.__name__}' object has no attribute '{name}'")
+    @property
+    def stnb(self):
+        return self.video.stnb
 
     def __str__(self):
         return f'level: {self.level}, timems: {self.timems}, 3BV: {self.bv}'

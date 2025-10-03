@@ -2,7 +2,7 @@
 from django.views.decorators.http import require_GET, require_POST
 from django.http import HttpResponseBadRequest, JsonResponse, HttpResponse, HttpResponseNotFound, HttpResponseForbidden, HttpRequest
 from userprofile.decorators import banned_blocked, staff_required, login_required_error
-from .models import Tournament, TournamentParticipant, GSCTournament
+from .models import Tournament, TournamentParticipant, GSCTournament, GSCParticipant
 from .forms import TournamentForm
 from utils import verify_text
 from config.text_choices import Tournament_TextChoices
@@ -86,7 +86,7 @@ def get_tournament(request):
     id = request.GET.get('id')
     if not id:
         return HttpResponseBadRequest()
-    tournament = Tournament.objects.select_subclasses().filter(id=id).first()
+    tournament: Tournament = Tournament.objects.select_subclasses().filter(id=id).first()
     if not tournament:
         return HttpResponseNotFound()
     data = {
@@ -141,14 +141,13 @@ def new_GSC_tournament(request: HttpRequest):
     if GSCTournament.objects.filter(order=order).exists():
         return HttpResponseConflict()
     
-    new_GSC = GSCTournament.objects.create(
+    GSCTournament.objects.create(
         start_time=start_time,
         end_time=end_time,
         state=state,
         host=request.user,
         weight=TournamentWeights.GSC,
         order=order,
-        token='',
     )
 
     return HttpResponse()
@@ -160,14 +159,14 @@ def set_tournament(request: HttpRequest):
 
     request应包含POST数据：
         - id: 要更新的比赛ID
-        - start_time (可选): 比赛开始时间
-        - end_time (可选): 比赛结束时间
+        - start_time (可选): 比赛开始时间。比赛开始后不可修改
+        - end_time (可选): 比赛结束时间。比赛开始后不可修改
         - order (可选, 仅GSC比赛): 届数
-        - token (可选, 仅GSC比赛): 比赛标识
+        - token (可选, 仅GSC比赛): 比赛标识，不能与其他存在的比赛标识冲突
     """
     if not (tournament_id := request.POST.get('id')):
         return HttpResponseBadRequest()
-    if not (tournament := Tournament.objects.filter(id=tournament_id).first()):
+    if not (tournament := Tournament.objects.select_subclasses().filter(id=tournament_id).first()):
         return HttpResponseNotFound()
     if tournament.host != request.user:
         return HttpResponseForbidden()
@@ -187,6 +186,10 @@ def set_tournament(request: HttpRequest):
                 return HttpResponseConflict()
             tournament.order = order
         if token := request.POST.get('token'):
+            if GSCTournament.objects.filter(token=token).first():
+                return HttpResponseConflict()
+            if TournamentParticipant.objects.filter(token=token).first():
+                return HttpResponseConflict()
             tournament.token = token
 
     tournament.save()
@@ -249,3 +252,55 @@ def validate_tournament(request: HttpRequest):
         tournament.invalidate()
         return HttpResponse()
     return HttpResponseBadRequest()
+
+@require_GET
+def get_gscinfo(request: HttpRequest):
+    """
+    获取GSC比赛信息。
+    
+    根据请求参数中的id或order获取比赛信息，并返回比赛详情和比赛结果。
+
+    request应包含GET数据： 
+        - id（可选）: 比赛ID
+        - order（可选）: GSC届数，优先级低于id
+        - 二者至少包含其一，否则返回 400 Bad Request
+
+    返回包含以下结构的JSON响应：
+        {
+            'type': 'success',
+            'data': 比赛数据,
+            'results': 比赛结果。若未颁奖则为空
+        }
+    """
+    if not (id := request.GET.get('id')):
+        if not (order := request.GET.get('order')):
+            return HttpResponseBadRequest()
+        tournament = GSCTournament.objects.filter(order=order).first()
+    else:
+        tournament: GSCTournament = Tournament.objects.select_subclasses().filter(id=id).first()
+    if not tournament:
+        return HttpResponseNotFound()
+    tournament.refresh_state()
+    if tournament.state == Tournament_TextChoices.State.AWARDED:
+        results = GSCParticipant.objects.filter(tournament=tournament).values(
+            'user__id', 'user__realname',
+            'start_time', 'end_time',
+            'rank', 'rank_score',
+            'bt1st', 'bt20th', 'bt20sum',
+            'it1st', 'it12th', 'it12sum',
+            'et1st', 'et5th', 'et5sum',
+        )
+    else:
+        results = []
+    return JsonResponse({
+        'type': 'success', 
+        'data': {
+            'id': tournament.id,
+            'start_time': tournament.start_time,
+            'end_time': tournament.end_time,
+            'state': tournament.state,
+            'order': tournament.order,
+            'token': tournament.token,
+        },
+        'results': list(results),
+    })

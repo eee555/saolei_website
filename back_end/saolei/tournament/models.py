@@ -13,6 +13,9 @@ def generate_random_token(length=4):
     alphabet = string.ascii_letters + string.digits  # 大小写字母+数字
     return ''.join(secrets.choice(alphabet) for _ in range(length))
 
+def generate_GSC_token(length=GSC_Defaults.TOKEN_LENGTH):
+    return 'G' + ''.join(secrets.choice(string.digits) for _ in range(length))
+
 class Tournament(models.Model):
     objects = InheritanceManager()
     start_time = models.DateTimeField(null=True) # 比赛开始时间
@@ -45,8 +48,12 @@ class Tournament(models.Model):
     def refresh_state(self):
         if self.state == Tournament_TextChoices.State.PREPARING and datetime.now(timezone.utc) >= self.start_time:
             self.start()
-        if self.state == Tournament_TextChoices.State.ONGOING and datetime.now(timezone.utc) >= self.end_time:
-            self.end()
+        if self.state == Tournament_TextChoices.State.ONGOING:
+            if datetime.now(timezone.utc) >= self.end_time:
+                self.end()
+            elif datetime.now(timezone.utc) < self.start_time:
+                self.state = Tournament_TextChoices.State.PREPARING
+                self.save()
         return
     
     def validate(self):
@@ -71,7 +78,7 @@ class Tournament(models.Model):
 
 class GSCTournament(Tournament):
     order = models.PositiveSmallIntegerField(primary_key=True) # 届数
-    token = models.CharField(max_length=6) # 比赛标识
+    token = models.CharField(max_length=6, default='') # 比赛标识
 
     @property
     def series(self):
@@ -84,9 +91,16 @@ class GSCTournament(Tournament):
     @property
     def description(self):
         return ''
+    
+    def new_token(self):
+        token = generate_GSC_token()
+        while GSCTournament.objects.filter(token=token).exists() or TournamentParticipant.objects.filter(token=token).exists():
+            token = generate_GSC_token()
+        self.token = token
+        self.save()
 
     def start(self):
-        self.token = 'G' + generate_random_token(5)
+        self.new_token()
         super().start()
 
     def add_participant(self, user: UserProfile):

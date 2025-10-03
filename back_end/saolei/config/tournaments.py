@@ -9,6 +9,7 @@ class GSC_Defaults:
     E_BV_MIN = 100
 
     HOST_ID = 48  # 郭锦洋
+    TOKEN_LENGTH = 5
 
 
 class TournamentWeights:

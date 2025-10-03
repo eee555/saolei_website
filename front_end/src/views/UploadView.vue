@@ -216,7 +216,7 @@ const forceUpload = async (i: number) => {
         upload_queue.value[i].status = 'upload';
         return;
     }
-    await proxy.$axios.post('/common/videoupload/',
+    await proxy.$axios.post('/common/uploadvideo/',
         Dict2FormData(video.form!),
     ).then(function (response) {
         if (response.data.type === 'success') {

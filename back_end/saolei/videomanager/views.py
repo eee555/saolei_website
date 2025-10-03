@@ -7,7 +7,7 @@ import urllib
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.http import FileResponse, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
+from django.http import FileResponse, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse, HttpRequest
 from django.views.decorators.http import require_GET, require_POST
 from django_ratelimit.decorators import ratelimit
 from django_redis import get_redis_connection
@@ -20,6 +20,7 @@ from utils import ComplexEncoder
 from utils.exceptions import ExceptionToResponse
 from .models import ExpandVideoModel, VideoModel
 from .view_utils import refresh_video, update_personal_record, update_personal_record_stock, update_state, update_video_num, video_all_fields, video_saolei_import_by_userid_helper
+from msuser.models import UserMS
 
 logger = logging.getLogger('videomanager')
 cache = get_redis_connection("saolei_website")
@@ -95,7 +96,7 @@ def video_download(request):
 # 每项的定义参见 front_end/src/views/VideoView.vue 的 request_videos 函数
 @ratelimit(key='ip', rate='60/m')
 @require_GET
-def video_query(request):
+def video_query(request: HttpRequest):
     data = request.GET
 
     values = video_all_fields
@@ -126,6 +127,9 @@ def video_query(request):
 
     videos = videos.order_by(*orderby).values(*values)
 
+    if not request.user.is_staff:
+        videos = videos.filter(ongoing_tournament=False)
+
     # print(videos)
     paginator = Paginator(videos, data["ps"])
     page_number = data["page"]
@@ -141,12 +145,15 @@ def video_query(request):
 
 # 按id查询这个用户的所有录像
 @require_GET
-def video_query_by_id(request):
+def video_query_by_id(request: HttpRequest):
     if not (userid := request.GET.get("id")):
         return HttpResponseBadRequest()
     if not (user := UserProfile.objects.filter(id=userid).first()):
         return HttpResponseNotFound()
-    videos = VideoModel.objects.filter(player=user).values('id', 'upload_time', "end_time", "level", "mode", "timems", "bv", "bvs", "state", "video__identifier",
+    videos = VideoModel.objects.filter(player=user)
+    if request.user != user:
+        videos = videos.filter(ongoing_tournament=False)
+    videos = videos.values('id', 'upload_time', "end_time", "level", "mode", "timems", "bv", "bvs", "state", "video__identifier",
                                                            "software", "flag", "cell0", "cell1", "cell2", "cell3", "cell4", "cell5", "cell6", "cell7", "cell8", "left", "right", "double", "op", "isl", "path")
     # print(list(videos))
 
@@ -156,18 +163,30 @@ def video_query_by_id(request):
 # 获取审查队列里的录像
 # http://127.0.0.1:8000/video/review_queue
 @require_GET
-def review_queue(request):
-    review_video_ids = cache.hgetall("review_queue")
-    for key in list(review_video_ids.keys()):
-        review_video_ids.update({
-            str(key, encoding="utf-8"): review_video_ids.pop(key)})
-    return JsonResponse(review_video_ids, encoder=ComplexEncoder)
+def review_queue(request: HttpRequest):
+    videos = VideoModel.objects.filter(state=MS_TextChoices.State.PLAIN)
+    if not request.user.is_staff:
+        videos = videos.filter(ongoing_tournament=False)
+    ret = videos.values(
+        'player__realname',
+        'player__id',
+        'level',
+        'mode',
+        'timems',
+        'bv',
+        'cl',
+        'ce',
+        'state',
+        'software',
+        'ongoing_tournament',
+    )
+    return JsonResponse(list(ret), safe=False)
 
 
 # 获取最新录像
 # http://127.0.0.1:8000/video/newest_queue
 @require_GET
-def newest_queue(request):
+def newest_queue(request: HttpRequest):
     newest_queue_ids = cache.hgetall("newest_queue")
     for key in list(newest_queue_ids.keys()):
         newest_queue_ids.update({
@@ -197,18 +216,16 @@ def freeze_queue(request):
 # 审核通过单个录像
 # check_identifier 为 true 则检查是否要修改玩家标识列表，并在修改后扫描所有待审录像的标识
 def approve_single(videoid, check_identifier=True):
-    if not (video := VideoModel.objects.filter(id=videoid)):
+    if not (video := VideoModel.objects.filter(id=videoid).first()):
         return None
-    video = video[0]
-    if video.state == "c":
+    if video.state == MS_TextChoices.State.OFFICIAL:
         return False
-    userms = video.player.userms
-    video.state = "c"
+    userms: UserMS = video.player.userms
+    video.state = MS_TextChoices.State.OFFICIAL
     video.save()
-    cache.hset("newest_queue", videoid, cache.hget("review_queue", videoid))
+    video.push_redis('newest_queue')
     update_personal_record(video)
     update_video_num(video)
-    cache.hdel("review_queue", videoid)
     identifier = video.video.identifier
     if check_identifier and identifier not in userms.identifiers:
         userms.identifiers.append(identifier)
@@ -276,7 +293,7 @@ def freeze(request):
 
 # 管理员使用的操作接口，调用方式见前端的StaffView.vue
 get_videoModel_fields = ["player", "player__realname", "upload_time",
-                         "state", "software", "level", "mode", "timems", "bv", "bvs"]  # 可获取的域列表
+                         "state", "software", "level", "mode", "timems", "bv", "bvs", "ongoing_tournament"]  # 可获取的域列表
 for name in [field.name for field in ExpandVideoModel._meta.get_fields()]:
     get_videoModel_fields.append("video__" + name)
 

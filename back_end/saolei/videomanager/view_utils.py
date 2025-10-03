@@ -106,7 +106,7 @@ def checkPB(video: VideoModel, user: UserMS, userprof: UserProfile, mode):
 
 
 def update_personal_record(video: VideoModel):
-    if video.state != MS_TextChoices.State.OFFICIAL:
+    if video.state != MS_TextChoices.State.OFFICIAL or video.ongoing_tournament:
         return
     user = video.player
     ms_user = user.userms

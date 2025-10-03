@@ -1,4 +1,5 @@
-import { TournamentState } from './ms_const';
+import { toISODateTimeString } from './datetime';
+import { TournamentState, TournamentSeries } from './ms_const';
 
 export class Tournament {
     public id: number;
@@ -9,9 +10,9 @@ export class Tournament {
     public hostId: number;
     public hostName: string;
     public state: TournamentState;
+    public series: TournamentSeries;
 
     constructor(info: any) {
-        console.log(info);
         if (info.id) this.id = info.id;
         else this.id = 0;
 
@@ -36,6 +37,9 @@ export class Tournament {
 
         if (info.state) this.state = info.state;
         else this.state = TournamentState.Pending;
+
+        if (info.series) this.series = info.series;
+        else this.series = TournamentSeries.Unknown;
     }
 
     /**
@@ -69,5 +73,15 @@ export class Tournament {
         if (local.startsWith('zh')) return 'zh';
         if (local === 'en') return undefined;
         return 'en';
+    }
+
+    public displayStartTime() {
+        if (!this.startDate) return '';
+        return toISODateTimeString(this.startDate);
+    }
+
+    public displayEndTime() {
+        if (!this.endDate) return '';
+        return toISODateTimeString(this.endDate);
     }
 }

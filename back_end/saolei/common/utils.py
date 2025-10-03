@@ -12,6 +12,27 @@ import logging
 
 logger = logging.getLogger('videomanager')
 
+def push_to_redis(video: VideoModel):
+    user = video.player
+    if video.state == MS_TextChoices.State.PLAIN:
+        logger.info(f'用户 {user.username}#{user.id} 录像#{video.id} 机审失败')
+        video.push_redis("review_queue")
+        update_video_num(video)
+    elif video.state == MS_TextChoices.State.IDENTIFIER:
+        logger.info(f'用户 {user.username}#{user.id} 录像#{video.id} 标识不匹配')
+        if not video.ongoing_tournament:
+            video.push_redis("newest_queue")
+        update_video_num(video)
+    elif video.state == MS_TextChoices.State.FROZEN:
+        logger.info(f'用户 {user.username}#{user.id} 录像#{video.id} 不合法')
+        video.push_redis("freeze_queue")
+    elif video.state == MS_TextChoices.State.OFFICIAL:  # 合法
+        logger.info(f'用户 {user.username}#{user.id} 录像#{video.id} 机审成功')
+        if not video.ongoing_tournament:
+            video.push_redis("newest_queue")
+            update_personal_record(video)
+        update_video_num(video)
+
 def new_video_by_file(user: UserProfile, file: File, check_tournament: bool = True) -> VideoModel:
     data = file.read()
     if file.name.endswith('.avf'):
@@ -110,30 +131,19 @@ def new_video_by_file(user: UserProfile, file: File, check_tournament: bool = Tr
     if check_tournament:
         tournament_tokens = v.race_identifier.split(',')
         for token in tournament_tokens:
+            if token == '':
+                continue
             gsc_tournament = GSCTournament.objects.filter(token=token).first()
             participant = TournamentParticipant.objects.filter(user=user,token=token).first()
             if not gsc_tournament: # 暂时只支持gsc
                 continue
             if gsc_tournament and gsc_tournament.state == Tournament_TextChoices.State.ONGOING:
+                print(token, gsc_tournament.token)
                 video.ongoing_tournament = True
                 if not participant:
                     GSCParticipant.objects.create(user=user, tournament=gsc_tournament, token=token)
 
-    if video.state == MS_TextChoices.State.PLAIN:
-        logger.info(f'用户 {user.username}#{user.id} 录像#{video.id} 机审失败')
-        video.push_redis("review_queue")
-        update_video_num(video)
-    elif video.state == MS_TextChoices.State.IDENTIFIER:
-        logger.info(f'用户 {user.username}#{user.id} 录像#{video.id} 标识不匹配')
-        video.push_redis("newest_queue")
-        update_video_num(video)
-    elif video.state == MS_TextChoices.State.FROZEN:
-        logger.info(f'用户 {user.username}#{user.id} 录像#{video.id} 不合法')
-        video.push_redis("freeze_queue")
-    elif video.state == MS_TextChoices.State.OFFICIAL:  # 合法
-        logger.info(f'用户 {user.username}#{user.id} 录像#{video.id} 机审成功')
-        video.push_redis("newest_queue")
-        update_personal_record(video)
-        update_video_num(video)
+    video.save()
+    push_to_redis(video)
 
     return video

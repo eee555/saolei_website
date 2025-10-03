@@ -1,5 +1,5 @@
 from django.forms.models import model_to_dict
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse, HttpRequest
 from django.views.decorators.http import require_GET, require_POST
 from django_ratelimit.decorators import ratelimit
 
@@ -16,7 +16,7 @@ private_platforms = ["q"]  # 私人账号平台
 @require_POST
 @login_required_error
 @ratelimit(key='user', rate='10/d')
-def add_link(request):
+def add_link(request: HttpRequest):
     user = UserProfile.objects.filter(id=request.user.id).first()
     if not (platform := request.POST.get('platform')):
         return HttpResponseBadRequest()

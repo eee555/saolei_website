@@ -9,4 +9,5 @@ urlpatterns = [
     path('set/', views.set_tournament),
     path('get/', views.get_tournament),
     path('validate/', views.validate_tournament),
+    path('gscinfo/', views.get_gscinfo),
 ]
