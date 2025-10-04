@@ -8,11 +8,18 @@
     </el-text>
     &nbsp;
     <br>
-    在比赛期间上传的所有录像中，取成绩最好的20局初级（bv>=10）、12局中级（bv>=30）、5局高级（bv>=100），计算总成绩。
+    在比赛期间上传（以服务器接收时间为准）的所有录像中，取成绩最好的20局初级（bv>=10）、12局中级（bv>=30）、5局高级（bv>=100），计算总成绩。
     <br>
-    比赛标识：{{ token === '' ? '比赛开始后显示' : token }} <!-- 增加复制按钮 -->
+    比赛标识：{{ token === '' ? '比赛开始后显示' : token }}
+    <IconCopy :text="token" />
     <br>
-    在元扫雷中，设置正确的比赛标识，上传录像时即可自动参赛。
+    <h3>如何参赛</h3>
+    <GSCTokenGuide v-model="personaltoken" :order="order" :token="token" />
+    <h3>
+        即时成绩&nbsp;
+        <base-icon-refresh @click="refresh" />
+    </h3>
+    <GSCPersonalSummary v-if="personalresult !== null" :participant="personalresult" />
 </template>
 
 <script setup lang="ts">
@@ -22,22 +29,15 @@ import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { Tournament } from '@/utils/tournaments';
 import { ElText } from 'element-plus';
 import { ref, watch } from 'vue';
-import BaseOverlay from '@/components/common/BaseOverlay.vue';
 import TournamentStateBadge from './TournamentStateBadge.vue';
-
-interface GSCParticipant {
-    id: number;
-    realname: string;
-    bt1st: number;
-    bt20th: number;
-    bt20sum: number;
-    it1st: number;
-    it12th: number;
-    it12sum: number;
-    et1st: number;
-    et5th: number;
-    et5sum: number;
-}
+import IconCopy from '@/components/widgets/IconCopy.vue';
+import { store } from '@/store';
+import { LoginStatus } from '@/utils/common/structInterface';
+import { TournamentState } from '@/utils/ms_const';
+import { GSCParticipant } from '@/utils/gsc';
+import GSCPersonalSummary from './GSCPersonalSummary.vue';
+import GSCTokenGuide from './GSCTokenGuide.vue';
+import BaseIconRefresh from '@/components/common/BaseIconRefresh.vue';
 
 const props = defineProps({
     id: {
@@ -52,8 +52,10 @@ const tournament = ref<Tournament>(new Tournament({}));
 const order = ref<number>(0);
 const token = ref<string>('');
 const result = ref<GSCParticipant[]>([]);
+const personaltoken = ref<string>('');
+const personalresult = ref<GSCParticipant | null>(null);
 
-watch(() => props.id, () => {
+function refresh() {
     proxy.$axios.get('tournament/gscinfo/', {
         params: {
             id: props.id,
@@ -62,8 +64,31 @@ watch(() => props.id, () => {
         tournament.value = new Tournament(response.data.data);
         order.value = response.data.data.order;
         token.value = response.data.data.token;
-        result.value = response.data.result;
+
+        if (tournament.value.state === TournamentState.Ongoing && store.login_status === LoginStatus.IsLogin) {
+            result.value = [];
+            personaltoken.value = response.data.results.token;
+            personalresult.value = {
+                id: store.user.id,
+                realname: store.user.realname,
+                bt1st: response.data.results.bt1st,
+                bt20th: response.data.results.bt20th,
+                bt20sum: response.data.results.bt20sum,
+                it1st: response.data.results.it1st,
+                it12th: response.data.results.it12th,
+                it12sum: response.data.results.it12sum,
+                et1st: response.data.results.et1st,
+                et5th: response.data.results.et5th,
+                et5sum: response.data.results.et5sum,
+            };
+        } else {
+            personaltoken.value = '';
+            personalresult.value = null;
+            result.value = response.data.results;
+        }
     }).catch(httpErrorNotification);
-}, { immediate: true });
+}
+
+watch(() => props.id, refresh, { immediate: true });
 
 </script>

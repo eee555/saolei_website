@@ -7,6 +7,7 @@ from config.text_choices import Tournament_TextChoices, MS_TextChoices
 from config.tournaments import GSC_Defaults
 from datetime import datetime, timezone
 from model_utils.managers import InheritanceManager
+from config.global_settings import MaxSizes
 
 def generate_random_token(length=4):
     """生成指定位数的随机字母数字混合码"""
@@ -125,7 +126,7 @@ class GeneralTournament(Tournament):
 
 
 class TournamentParticipant(models.Model):
-    token = models.CharField(max_length=6) # 比赛标识
+    token = models.CharField(max_length=MaxSizes.IDENTIFIER) # 比赛标识
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE) # 比赛
     user = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True) # 用户
     start_time = models.DateTimeField(auto_now_add=True) # 参赛时间

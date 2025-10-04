@@ -10,6 +10,8 @@ from datetime import datetime
 from config.tournaments import GSC_Defaults, TournamentWeights
 from utils.response import HttpResponseConflict
 from userprofile.models import UserProfile
+from identifier.models import Identifier
+from identifier.utils import verify_identifier
 
 @require_POST
 @banned_blocked
@@ -282,16 +284,32 @@ def get_gscinfo(request: HttpRequest):
         return HttpResponseNotFound()
     tournament.refresh_state()
     if tournament.state == Tournament_TextChoices.State.AWARDED:
-        results = GSCParticipant.objects.filter(tournament=tournament).values(
+        results = list(GSCParticipant.objects.filter(tournament=tournament).values(
             'user__id', 'user__realname',
             'start_time', 'end_time',
             'rank', 'rank_score',
             'bt1st', 'bt20th', 'bt20sum',
             'it1st', 'it12th', 'it12sum',
             'et1st', 'et5th', 'et5sum',
-        )
-    else:
-        results = []
+        ))
+    elif request.user.is_authenticated:
+        participant = GSCParticipant.objects.filter(tournament=tournament, user=request.user).first()
+        if not participant:
+            results = None
+        else:
+            participant.refresh()
+            results = {
+                'token': participant.token,
+                'bt1st': participant.bt1st,
+                'bt20th': participant.bt20th,
+                'bt20sum': participant.bt20sum,
+                'it1st': participant.it1st,
+                'it12th': participant.it12th,
+                'it12sum': participant.it12sum,
+                'et1st': participant.et1st,
+                'et5th': participant.et5th,
+                'et5sum': participant.et5sum,
+            }
     return JsonResponse({
         'type': 'success', 
         'data': {
@@ -302,5 +320,33 @@ def get_gscinfo(request: HttpRequest):
             'order': tournament.order,
             'token': tournament.token,
         },
-        'results': list(results),
+        'results': results,
     })
+
+@require_POST
+@login_required_error
+def register_GSCParticipant(request: HttpRequest):
+    if not (token := request.POST.get('token')):
+        return HttpResponseBadRequest()
+    if not (order := request.POST.get('order')):
+        return HttpResponseBadRequest()
+    if not (tournament := GSCTournament.objects.filter(order=order).first()):
+        return HttpResponseNotFound()
+    if tournament.state != Tournament_TextChoices.State.ONGOING: # 比赛必须是进行中
+        return HttpResponseForbidden()
+    if (GSCParticipant.objects.filter(tournament=tournament, user=request.user)): # 用户必须未注册
+        return HttpResponseConflict()
+    if not token.endswith(tournament.token): # 检查尾号
+        return JsonResponse({'type': 'error', 'object': 'identifier', 'category': 'suffix'})
+    if not verify_identifier(token): # 审查标识
+        return JsonResponse({'type': 'error', 'object': 'identifier', 'category': 'invalid'})
+    identifier = Identifier.objects.filter(identifier=token).first()
+    if identifier.userms and identifier.userms != request.user.userms: # 检查标识是否被占用
+        return JsonResponse({'type': 'error', 'object': 'identifier', 'category': 'collision'})
+    GSCParticipant.objects.create(tournament=tournament, user=request.user, token=token)
+    if not identifier.userms:
+        identifier.userms = request.user.userms
+        request.user.userms.identifiers.append(token)
+        identifier.save()
+        request.user.userms.save()
+    return JsonResponse({'type': 'success'})

@@ -13,9 +13,6 @@
 import { Tournament } from '@/utils/tournaments';
 import { ElText, ElTable, ElTableColumn } from 'element-plus';
 import { local } from '@/store';
-import { getCurrentInstance, watch } from 'vue';
-import { TournamentSeries } from '@/utils/ms_const';
-import { httpErrorNotification } from '@/components/Notifications';
 
 defineProps({
     tournament: {

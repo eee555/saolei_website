@@ -129,19 +129,26 @@ def new_video_by_file(user: UserProfile, file: File, check_tournament: bool = Tr
     )
 
     if check_tournament:
-        tournament_tokens = v.race_identifier.split(',')
-        for token in tournament_tokens:
-            if token == '':
-                continue
-            gsc_tournament = GSCTournament.objects.filter(token=token).first()
-            participant = TournamentParticipant.objects.filter(user=user,token=token).first()
-            if not gsc_tournament: # 暂时只支持gsc
-                continue
-            if gsc_tournament and gsc_tournament.state == Tournament_TextChoices.State.ONGOING:
-                print(token, gsc_tournament.token)
-                video.ongoing_tournament = True
-                if not participant:
-                    GSCParticipant.objects.create(user=user, tournament=gsc_tournament, token=token)
+        if file.name.endswith('.avf'):
+            if participant := TournamentParticipant.objects.filter(user=user, token=video.video.identifier).first():
+                tournament = participant.tournament
+                if tournament.state == Tournament_TextChoices.State.ONGOING:
+                    video.ongoing_tournament = True
+                    tournament.videos.add(video)
+        elif file.name.endswith('.evf'):
+            tournament_tokens = v.race_identifier.split(',')
+            for token in tournament_tokens:
+                if token == '':
+                    continue
+                gsc_tournament = GSCTournament.objects.filter(token=token).first()
+                participant = TournamentParticipant.objects.filter(user=user,token=token).first()
+                if not gsc_tournament: # 暂时只支持gsc
+                    continue
+                if gsc_tournament and gsc_tournament.state == Tournament_TextChoices.State.ONGOING:
+                    video.ongoing_tournament = True
+                    gsc_tournament.videos.add(video)
+                    if not participant:
+                        GSCParticipant.objects.create(user=user, tournament=gsc_tournament, token=token)
 
     video.save()
     push_to_redis(video)
