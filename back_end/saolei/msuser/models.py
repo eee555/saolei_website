@@ -1,6 +1,9 @@
 from django.db import models
 
-from config.global_settings import DefaultRankingScores, GameLevels
+from django_redis import get_redis_connection
+from config.global_settings import GameLevels, DefaultRankingScores, record_update_fields, GameModes, RankingGameStats
+
+cache = get_redis_connection("saolei_website")
 
 
 def get_default_identifiers():
@@ -199,3 +202,37 @@ class UserMS(models.Model):
 
     def getrecordIDs_level(self, stat, mode):
         return [self.getrecordID(level, stat, mode) for level in GameLevels]
+
+    def update_3_level_cache_record(self, realname: str, index: str, mode: str):
+        key = f"player_{index}_{mode}_{self.id}"
+        cache.hset(key, "name", realname)
+        for level in GameLevels:
+            cache.hset(key, level, self.getrecord(level, index, mode))
+            recordid = self.getrecordID(level, index, mode)
+            cache.hset(key, f"{level}_id", "None" if recordid is None else recordid)
+        s = float(
+            self.getrecord("b", index, mode)
+            + self.getrecord("i", index, mode)
+            + self.getrecord("e", index, mode),
+        )
+        cache.hset(key, "sum", s)
+        cache.zadd(f"player_{index}_{mode}_ids", {self.id: s})
+
+    # 删除mysql中该用户所有的记录。删录像时用
+    def del_user_record_sql(self):
+        for mode in GameModes:
+            for stat in RankingGameStats:
+                for level in GameLevels:
+                    self.setrecord(
+                        level, stat, mode,
+                        DefaultRankingScores[stat],
+                    )
+                    self.setrecordID(level, stat, mode, None)
+        self.save(update_fields=record_update_fields)
+
+    # 删除redis中该用户所有的记录。删录像、删用户时用
+    def del_user_record_redis(self):
+        for mode in GameModes:
+            for stat in RankingGameStats:
+                cache.delete(f"player_{stat}_{mode}_{self.id}")
+                cache.zrem(f"player_{stat}_{mode}_ids", self.id)

@@ -1,10 +1,11 @@
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse, HttpResponseNotFound, HttpRequest
-from django.views.decorators.http import require_GET, require_POST
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse, HttpRequest
+from django.views.decorators.http import require_POST
 from .forms import UploadVideoForm
 from .utils import new_video_by_file
 from userprofile.decorators import login_required_error, banned_blocked
 from django_ratelimit.decorators import ratelimit
 from utils.exceptions import ExceptionToResponse
+
 
 @require_POST
 @login_required_error

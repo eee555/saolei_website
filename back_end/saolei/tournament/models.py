@@ -9,31 +9,34 @@ from datetime import datetime, timezone
 from model_utils.managers import InheritanceManager
 from config.global_settings import MaxSizes
 
+
 def generate_random_token(length=4):
     """生成指定位数的随机字母数字混合码"""
     alphabet = string.ascii_letters + string.digits  # 大小写字母+数字
     return ''.join(secrets.choice(alphabet) for _ in range(length))
 
+
 def generate_GSC_token(length=GSC_Defaults.TOKEN_LENGTH):
     return 'G' + ''.join(secrets.choice(string.digits) for _ in range(length))
 
+
 class Tournament(models.Model):
     objects = InheritanceManager()
-    start_time = models.DateTimeField(null=True) # 比赛开始时间
-    end_time = models.DateTimeField(null=True) # 比赛结束时间
-    state = models.CharField(max_length=1, choices=Tournament_TextChoices.State.choices, default=Tournament_TextChoices.State.PENDING) # 比赛状态
-    host = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, related_name='owned_tournaments') # 主办方
-    weight = models.PositiveIntegerField(default=0) # 比赛总积分
+    start_time = models.DateTimeField(null=True)  # 比赛开始时间
+    end_time = models.DateTimeField(null=True)  # 比赛结束时间
+    state = models.CharField(max_length=1, choices=Tournament_TextChoices.State.choices, default=Tournament_TextChoices.State.PENDING)  # 比赛状态
+    host = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, related_name='owned_tournaments')  # 主办方
+    weight = models.PositiveIntegerField(default=0)  # 比赛总积分
     videos = models.ManyToManyField(VideoModel, related_name='tournaments')
 
     @property
     def series(self):
         raise NotImplementedError("Subclasses of Tournament must implement the 'series' property.")
-    
+
     @property
     def name(self):
         raise NotImplementedError("Subclasses of Tournament must implement the 'name' property.")
-    
+
     @property
     def description(self):
         raise NotImplementedError("Subclasses of Tournament must implement the 'description' property.")
@@ -45,54 +48,68 @@ class Tournament(models.Model):
     def end(self):
         self.state = Tournament_TextChoices.State.FINISHED
         self.save()
+        self.videos.all().update(ongoing_tournament=False)
+        for video in self.videos.all():
+            video.update_redis()
 
     def refresh_state(self):
-        if self.state == Tournament_TextChoices.State.PREPARING and datetime.now(timezone.utc) >= self.start_time:
-            self.start()
-        if self.state == Tournament_TextChoices.State.ONGOING:
+        if self.state == Tournament_TextChoices.State.PREPARING:
+            if datetime.now(timezone.utc) > self.end_time:
+                self.start()
+                self.end()
+            elif datetime.now(timezone.utc) >= self.start_time:
+                self.start()
+        elif self.state == Tournament_TextChoices.State.ONGOING:
             if datetime.now(timezone.utc) >= self.end_time:
                 self.end()
             elif datetime.now(timezone.utc) < self.start_time:
                 self.state = Tournament_TextChoices.State.PREPARING
                 self.save()
+        elif self.state == Tournament_TextChoices.State.FINISHED:
+            if datetime.now(timezone.utc) < self.start_time:
+                self.state = Tournament_TextChoices.State.PREPARING
+                self.save()
+            elif datetime.now(timezone.utc) < self.end_time:
+                self.state = Tournament_TextChoices.State.ONGOING
+                self.save()
         return
-    
+
     def validate(self):
         if not self.start_time or not self.end_time or self.start_time >= self.end_time:
             return
         if self.state == Tournament_TextChoices.State.PENDING or self.state == Tournament_TextChoices.State.CANCELLED:
             self.state = Tournament_TextChoices.State.PREPARING
             self.refresh_state()
-    
+
     def invalidate(self):
         if self.state != Tournament_TextChoices.State.AWARDED:
             self.state = Tournament_TextChoices.State.CANCELLED
             self.save()
-    
+
     def add_participant(self, user: UserProfile):
         raise NotImplementedError("Subclasses of Tournament must implement the 'add_participant' method.")
-    
+
     def add_video(self, video: VideoModel):
         self.videos.add(video)
         self.add_participant(video.player)
 
 
 class GSCTournament(Tournament):
-    order = models.PositiveSmallIntegerField(primary_key=True) # 届数
-    token = models.CharField(max_length=6, default='') # 比赛标识
+    order = models.PositiveSmallIntegerField(primary_key=True)  # 届数
+    token = models.CharField(max_length=6, default='')  # 比赛标识
 
     @property
     def series(self):
         return Tournament_TextChoices.Series.GSC
-    
+
     @property
     def name(self):
         return f'第{self.order}届金羊杯'
-    
+
     @property
     def description(self):
         return ''
-    
+
     def new_token(self):
         token = generate_GSC_token()
         while GSCTournament.objects.filter(token=token).exists() or TournamentParticipant.objects.filter(token=token).exists():
@@ -101,18 +118,25 @@ class GSCTournament(Tournament):
         self.save()
 
     def start(self):
-        self.new_token()
+        if self.token == '':
+            self.new_token()
         super().start()
+
+    def end(self):
+        self.refresh_score()
 
     def add_participant(self, user: UserProfile):
         if not GSCParticipant.objects.filter(user=user, tournament=self).exists():
-            GSCParticipant.objects.create(user=user, tournament=self, token=self.token, start_time=datetime.now())
+            GSCParticipant.objects.create(user=user, tournament=self, token=self.token, start_time=datetime.now(tz=timezone.utc))
 
     def refresh_score(self):
-        for video in self.videos.all():
-            participant = GSCParticipant.objects.filter(user=video.player, tournament=self).first()
         for participant in GSCParticipant.objects.filter(tournament=self):
             participant.refresh()
+        rank = 1
+        for participant in GSCParticipant.objects.filter(tournament=self).order_by('t37'):
+            participant.rank = rank
+            participant.save()
+            rank += 1
 
 
 class GeneralTournament(Tournament):
@@ -126,14 +150,13 @@ class GeneralTournament(Tournament):
 
 
 class TournamentParticipant(models.Model):
-    token = models.CharField(max_length=MaxSizes.IDENTIFIER) # 比赛标识
-    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE) # 比赛
-    user = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True) # 用户
-    start_time = models.DateTimeField(auto_now_add=True) # 参赛时间
-    end_time = models.DateTimeField(null=True, blank=True) # 结束时间
-    rank = models.PositiveIntegerField(null=True, blank=True) # 排名
-    rank_score = models.PositiveSmallIntegerField(default=0) # 比赛积分
-
+    token = models.CharField(max_length=MaxSizes.IDENTIFIER)  # 比赛标识
+    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)  # 比赛
+    user = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True)  # 用户
+    start_time = models.DateTimeField(auto_now_add=True)  # 参赛时间
+    end_time = models.DateTimeField(null=True, blank=True)  # 结束时间
+    rank = models.PositiveIntegerField(null=True, blank=True)  # 排名
+    rank_score = models.PositiveSmallIntegerField(default=0)  # 比赛积分
 
     def create(self, *args, **kwargs):
         """创建参赛者时生成唯一的token"""
@@ -145,8 +168,10 @@ class TournamentParticipant(models.Model):
                     break
         super().create(*args, **kwargs)
 
+
 class GeneralParticipant(TournamentParticipant):
     pass
+
 
 class GSCParticipant(TournamentParticipant):
     bt1st = models.PositiveIntegerField(default=GSC_Defaults.BT)
@@ -164,7 +189,7 @@ class GSCParticipant(TournamentParticipant):
     t37 = models.GeneratedField(
         expression=models.F('et5sum') + models.F('it12sum') + models.F('bt20sum'),
         output_field=models.PositiveIntegerField(),
-        db_persist=True
+        db_persist=True,
     )
 
     def refresh(self):
@@ -189,4 +214,3 @@ class GSCParticipant(TournamentParticipant):
         self.et5sum = sum(videos_et) + (5 - len(videos_et)) * 240000
 
         self.save()
-

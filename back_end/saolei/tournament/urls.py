@@ -11,4 +11,5 @@ urlpatterns = [
     path('validate/', views.validate_tournament),
     path('gscinfo/', views.get_gscinfo),
     path('gscregister/', views.register_GSCParticipant),
+    path('get_news/', views.get_tournament_news),
 ]

@@ -17,9 +17,8 @@ from config.text_choices import MS_TextChoices
 from userprofile.decorators import banned_blocked, login_required_error, staff_required
 from userprofile.models import UserProfile
 from utils import ComplexEncoder
-from utils.exceptions import ExceptionToResponse
 from .models import ExpandVideoModel, VideoModel
-from .view_utils import refresh_video, update_personal_record, update_personal_record_stock, update_state, update_video_num, video_all_fields, video_saolei_import_by_userid_helper
+from .view_utils import refresh_video, update_personal_record_stock, update_state, video_all_fields, video_saolei_import_by_userid_helper
 from msuser.models import UserMS
 
 logger = logging.getLogger('videomanager')
@@ -50,7 +49,12 @@ def video_saolei_import_by_userid_post(request) -> JsonResponse:
 # 根据id向后台请求软件类型（适配flop播放器用）
 @require_GET
 def get_software(request):
-    video = VideoModel.objects.get(id=request.GET["id"])
+    if not (id := request.GET.get("id")):
+        return HttpResponseBadRequest()
+    if not (video := VideoModel.objects.filter(id=id).first()):
+        return HttpResponseNotFound()
+    if video.ongoing_tournament and request.user != video.player:
+        return HttpResponseForbidden()
     return JsonResponse({"msg": video.software})
 
 
@@ -59,9 +63,18 @@ def get_software(request):
 # 然而flop播放器不能处理此状态码，因此会请求到空文件，导致解码失败
 @ratelimit(key='ip', rate='20/m')
 @require_GET
-def video_preview(request):
+def video_preview(request: HttpRequest):
     # 这里性能可能有问题
-    video = VideoModel.objects.get(id=int(request.GET["id"][:-4]))
+    if not (id := request.GET.get("id")[:-4]):
+        return HttpResponseBadRequest()
+    print(id)
+    if not (video := VideoModel.objects.filter(id=id).first()):
+        return HttpResponseNotFound()
+    print(video.ongoing_tournament)
+    print(request.user)
+    print(video.player.id)
+    if video.ongoing_tournament and request.user != video.player:
+        return HttpResponseForbidden()
     # video.file.name是相对路径(含upload_to)，video.file.path是绝对路径
     # print(settings.MEDIA_ROOT / "assets" / video.file.name)
     file_path = settings.MEDIA_ROOT / video.file.name
@@ -153,8 +166,10 @@ def video_query_by_id(request: HttpRequest):
     videos = VideoModel.objects.filter(player=user)
     if request.user != user:
         videos = videos.filter(ongoing_tournament=False)
-    videos = videos.values('id', 'upload_time', "end_time", "level", "mode", "timems", "bv", "bvs", "state", "video__identifier",
-                                                           "software", "flag", "cell0", "cell1", "cell2", "cell3", "cell4", "cell5", "cell6", "cell7", "cell8", "left", "right", "double", "op", "isl", "path")
+    videos = videos.values(
+        'id', 'upload_time', "end_time", "level", "mode", "timems", "bv", "bvs", "state", "video__identifier",
+        "software", "flag", "cell0", "cell1", "cell2", "cell3", "cell4", "cell5", "cell6", "cell7", "cell8", "left", "right", "double", "op", "isl", "path",
+    )
     # print(list(videos))
 
     return JsonResponse(list(videos), safe=False)
@@ -224,8 +239,8 @@ def approve_single(videoid, check_identifier=True):
     video.state = MS_TextChoices.State.OFFICIAL
     video.save()
     video.push_redis('newest_queue')
-    update_personal_record(video)
-    update_video_num(video)
+    video.update_personal_record()
+    video.update_video_num()
     identifier = video.video.identifier
     if check_identifier and identifier not in userms.identifiers:
         userms.identifiers.append(identifier)
