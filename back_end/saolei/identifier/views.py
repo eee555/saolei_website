@@ -70,7 +70,7 @@ def del_identifier(request):
 @require_POST
 @login_required_error
 def refresh_identifier(request: HttpRequest):
-    identifiers_new = Identifier.objects.filter(userms=request.user.userms, safe=True).values_list('identifier', flat=True)
+    identifiers_new = list(Identifier.objects.filter(userms=request.user.userms, safe=True).values_list('identifier', flat=True))
     identifiers_old = request.user.userms.identifiers
     for identifier in identifiers_old:
         if identifier not in identifiers_new:
