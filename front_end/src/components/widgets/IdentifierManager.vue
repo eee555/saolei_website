@@ -5,7 +5,7 @@
         <el-table :data="identifierdata">
             <!-- 标识列 -->
             <el-table-column prop="data" sortable>
-                <template #label>
+                <template #header>
                     <el-link v-if="store.player.id == store.user.id" :underline="false" @click="refreshIdentifiers">
                         <base-icon-refresh />
                     </el-link>
