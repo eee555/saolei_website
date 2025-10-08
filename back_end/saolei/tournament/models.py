@@ -8,6 +8,7 @@ from config.tournaments import GSC_Defaults
 from datetime import datetime, timezone
 from model_utils.managers import InheritanceManager
 from config.global_settings import MaxSizes
+from identifier.models import Identifier
 
 
 def generate_random_token(length=4):
@@ -124,6 +125,7 @@ class GSCTournament(Tournament):
 
     def end(self):
         self.refresh_score()
+        super().end()
 
     def add_participant(self, user: UserProfile):
         if not GSCParticipant.objects.filter(user=user, tournament=self).exists():
@@ -158,6 +160,9 @@ class TournamentParticipant(models.Model):
     rank = models.PositiveIntegerField(null=True, blank=True)  # 排名
     rank_score = models.PositiveSmallIntegerField(default=0)  # 比赛积分
 
+    class Meta:
+        unique_together = ('tournament', 'user')
+
     def create(self, *args, **kwargs):
         """创建参赛者时生成唯一的token"""
         if not self.token:
@@ -174,6 +179,8 @@ class GeneralParticipant(TournamentParticipant):
 
 
 class GSCParticipant(TournamentParticipant):
+    ArbiterIdentifier = models.ForeignKey(Identifier, null=True, on_delete=models.SET_NULL)
+
     bt1st = models.PositiveIntegerField(default=GSC_Defaults.BT)
     bt20th = models.PositiveIntegerField(default=GSC_Defaults.BT)
     bt20sum = models.PositiveIntegerField(default=GSC_Defaults.BT * 20)

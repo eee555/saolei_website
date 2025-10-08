@@ -238,16 +238,16 @@ class VideoModel(models.Model):
         ms_user: UserMS = user.userms
 
         if self.mode == MS_TextChoices.Mode.NF or self.mode == MS_TextChoices.Mode.STD:
-            self.checkPB(self, "std")
+            self.checkPB("std")
 
         if self.mode == MS_TextChoices.Mode.NF:
-            self.checkPB(self, "nf")
+            self.checkPB("nf")
 
         if self.mode == MS_TextChoices.Mode.JSW:
-            self.checkPB(self, "ng")
+            self.checkPB("ng")
 
         if self.mode == MS_TextChoices.Mode.BZD:
-            self.checkPB(self, "dg")
+            self.checkPB("dg")
 
         # 改完记录，存回数据库
         ms_user.save(update_fields=record_update_fields)

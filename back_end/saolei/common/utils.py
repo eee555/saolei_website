@@ -5,7 +5,7 @@ from tournament.models import TournamentParticipant, GSCTournament, GSCParticipa
 from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from django.core.files import File
 from datetime import datetime, timezone
-from videomanager.view_utils import ExceptionToResponse
+from utils.exceptions import ExceptionToResponse
 from identifier.utils import verify_identifier
 import logging
 

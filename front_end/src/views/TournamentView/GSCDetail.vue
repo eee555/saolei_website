@@ -1,5 +1,7 @@
 <template>
-    <h1>第{{ order }}届金羊杯<TournamentStateBadge :state="tournament.state" /></h1>
+    <h1>第{{ order }}届金羊杯
+        <TournamentStateBadge :state="tournament.state" />
+    </h1>
     比赛时间：
     <el-text>
         {{ tournament.displayStartTime() }}
@@ -15,11 +17,19 @@
     <br>
     <h3>如何参赛</h3>
     <GSCTokenGuide v-model="personaltoken" :order="order" :token="token" />
-    <h3>
-        即时成绩&nbsp;
-        <base-icon-refresh @click="refresh" />
-    </h3>
-    <GSCPersonalSummary v-if="personalresult !== null" :participant="personalresult" />
+    <template v-if="tournament.state === TournamentState.Ongoing">
+        <h3>
+            即时成绩&nbsp;
+            <base-icon-refresh @click="refresh" />
+        </h3>
+        <GSCPersonalSummary v-if="personalresult !== null" :participant="personalresult" />
+    </template>
+    <template v-if="[TournamentState.Finished, TournamentState.Awarded].includes(tournament.state)">
+        <h3>
+            比赛结果
+        </h3>
+        <GSCAllSummary :data="result" />
+    </template>
 </template>
 
 <script setup lang="ts">
@@ -38,6 +48,7 @@ import { GSCParticipant } from '@/utils/gsc';
 import GSCPersonalSummary from './GSCPersonalSummary.vue';
 import GSCTokenGuide from './GSCTokenGuide.vue';
 import BaseIconRefresh from '@/components/common/BaseIconRefresh.vue';
+import GSCAllSummary from './GSCAllSummary.vue';
 
 const props = defineProps({
     id: {
@@ -69,8 +80,8 @@ function refresh() {
             result.value = [];
             personaltoken.value = response.data.results.token;
             personalresult.value = {
-                id: store.user.id,
-                realname: store.user.realname,
+                user__id: store.user.id,
+                user__realname: store.user.realname,
                 bt1st: response.data.results.bt1st,
                 bt20th: response.data.results.bt20th,
                 bt20sum: response.data.results.bt20sum,

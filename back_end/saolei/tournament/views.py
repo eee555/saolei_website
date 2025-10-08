@@ -17,7 +17,7 @@ from identifier.utils import verify_identifier
 @require_POST
 @banned_blocked
 @login_required_error
-def create_tournament(request):
+def create_tournament(request: HttpRequest):
     # 处理创建比赛的逻辑
     create_form = TournamentForm(data=request.POST)
     if not create_form.is_valid():
@@ -39,7 +39,7 @@ def create_tournament(request):
 
 @require_POST
 @staff_required
-def allow_tournament(request):
+def allow_tournament(request: HttpRequest):
     id = request.POST.get('id')
     if not id:
         return HttpResponseBadRequest()
@@ -295,7 +295,7 @@ def get_gscinfo(request: HttpRequest):
     if not tournament:
         return HttpResponseNotFound()
     tournament.refresh_state()
-    if tournament.state == Tournament_TextChoices.State.AWARDED:
+    if tournament.state == Tournament_TextChoices.State.FINISHED or tournament.state == Tournament_TextChoices.State.AWARDED:
         results = list(GSCParticipant.objects.filter(tournament=tournament).values(
             'user__id', 'user__realname',
             'start_time', 'end_time',
@@ -341,7 +341,8 @@ def get_gscinfo(request: HttpRequest):
 @require_POST
 @login_required_error
 def register_GSCParticipant(request: HttpRequest):
-    if not (token := request.POST.get('token')):
+    # 不应由正常的前端产生的错误
+    if not (identifier_text := request.POST.get('identifier')):
         return HttpResponseBadRequest()
     if not (order := request.POST.get('order')):
         return HttpResponseBadRequest()
@@ -351,17 +352,22 @@ def register_GSCParticipant(request: HttpRequest):
         return HttpResponseForbidden()
     if (GSCParticipant.objects.filter(tournament=tournament, user=request.user)):  # 用户必须未注册
         return HttpResponseConflict()
-    if not token.endswith(tournament.token):  # 检查尾号
+    if not identifier_text.endswith(tournament.token):  # 检查尾号
         return JsonResponse({'type': 'error', 'object': 'identifier', 'category': 'suffix'})
-    if not verify_identifier(token):  # 审查标识
+
+    if not verify_identifier(identifier_text):  # 审查标识
         return JsonResponse({'type': 'error', 'object': 'identifier', 'category': 'invalid'})
-    identifier = Identifier.objects.filter(identifier=token).first()
+    identifier = Identifier.objects.filter(identifier=identifier_text).first()
     if identifier.userms and identifier.userms != request.user.userms:  # 检查标识是否被占用
         return JsonResponse({'type': 'error', 'object': 'identifier', 'category': 'collision'})
-    GSCParticipant.objects.create(tournament=tournament, user=request.user, token=token)
+    if participant := GSCParticipant.objects.filter(tournament=tournament, user=request.user).first():
+        participant.ArbiterIdentifier = identifier
+        participant.save()
+    else:
+        GSCParticipant.objects.create(tournament=tournament, user=request.user, ArbiterIdentifier=identifier)
     if not identifier.userms:
         identifier.userms = request.user.userms
-        request.user.userms.identifiers.append(token)
+        request.user.userms.identifiers.append(identifier_text)
         identifier.save()
         request.user.userms.save()
     return JsonResponse({'type': 'success'})

@@ -7,8 +7,8 @@ export interface GSCInfo {
 }
 
 export interface GSCParticipant {
-    id: number;
-    realname: string;
+    user__id: number;
+    user__realname: string;
     bt1st: number;
     bt20th: number;
     bt20sum: number;
