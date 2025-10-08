@@ -210,7 +210,7 @@ def update_state(video: VideoModel, state: MS_TextChoices.State, update_ranking=
     if state == MS_TextChoices.State.OFFICIAL:
         update_personal_record(video)
     elif update_ranking and prevstate == MS_TextChoices.State.OFFICIAL:
-        update_personal_record_stock(video)
+        update_personal_record_stock(video.player)
 
 
 def new_video_by_file(user: UserProfile, file: File):
