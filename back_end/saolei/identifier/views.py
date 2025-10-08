@@ -1,6 +1,6 @@
 import logging
 
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse, HttpRequest
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 
 from config.text_choices import MS_TextChoices
@@ -66,6 +66,7 @@ def del_identifier(request):
         update_personal_record_stock(user)
     return JsonResponse({'type': 'success', 'object': 'identifier', 'category': 'add', 'value': len(video_list)})
 
+
 @require_POST
 @login_required_error
 def refresh_identifier(request: HttpRequest):
@@ -84,6 +85,7 @@ def refresh_identifier(request: HttpRequest):
     request.user.userms.identifiers = identifiers_new
     request.user.userms.save()
     return JsonResponse(identifiers_new, safe=False)
+
 
 # 管理员添加标识
 def staff_add_identifier(request):
