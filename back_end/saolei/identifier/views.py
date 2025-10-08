@@ -106,9 +106,12 @@ def staff_del_identifier(request):
     videos = VideoModel.objects.filter(video__identifier=identifier_text)
     if not videos:
         identifier.delete()
-        return HttpResponse()
     else:
-        return HttpResponseConflict()
+        identifier.userms = None
+        for video in videos:
+            if video.state == MS_TextChoices.State.OFFICIAL:
+                update_state(video, MS_TextChoices.State.IDENTIFIER)
+    return HttpResponse()
 
 
 # 管理员过审标识
