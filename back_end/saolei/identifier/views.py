@@ -1,6 +1,6 @@
 import logging
 
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 
 from config.text_choices import MS_TextChoices
@@ -65,6 +65,26 @@ def del_identifier(request):
     if video_list:
         update_personal_record_stock(user)
     return JsonResponse({'type': 'success', 'object': 'identifier', 'category': 'add', 'value': len(video_list)})
+
+
+@require_POST
+@login_required_error
+def refresh_identifier(request: HttpRequest):
+    identifiers_new = Identifier.objects.filter(userms=request.user.userms, safe=True).values_list('identifier', flat=True)
+    identifiers_old = request.user.userms.identifiers
+    for identifier in identifiers_old:
+        if identifier not in identifiers_new:
+            for video in VideoModel.objects.filter(player=request.user, video__identifier=identifier):
+                if video.state == MS_TextChoices.State.OFFICIAL:
+                    update_state(video, MS_TextChoices.State.IDENTIFIER)
+    for identifier in identifiers_new:
+        if identifier not in identifiers_old:
+            for video in VideoModel.objects.filter(player=request.user, video__identifier=identifier):
+                if video.state == MS_TextChoices.State.IDENTIFIER:
+                    update_state(video, MS_TextChoices.State.OFFICIAL)
+    request.user.userms.identifiers = identifiers_new
+    request.user.userms.save()
+    return JsonResponse(identifiers_new, safe=False)
 
 
 # 管理员添加标识
