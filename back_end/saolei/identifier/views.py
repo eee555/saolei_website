@@ -9,6 +9,7 @@ from utils.response import HttpResponseConflict
 from videomanager.models import VideoModel
 from videomanager.view_utils import update_personal_record_stock, update_state
 from .models import Identifier
+from userprofile.models import UserProfile
 
 logger = logging.getLogger('userprofile')
 
@@ -129,7 +130,8 @@ def staff_del_identifier(request):
         identifier.delete()
         logger.info(f'管理员 #{request.user.id} 删除标识 "{identifier_text}"')
     else:
-        if userms := identifier.userms and identifier_text in userms.identifiers:
+        userms = identifier.userms
+        if userms and identifier_text in userms.identifiers:
             userms.identifiers.remove(identifier_text)
             userms.save()
         identifier.userms = None
