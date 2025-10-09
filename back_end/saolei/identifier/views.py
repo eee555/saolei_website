@@ -5,6 +5,7 @@ from django.views.decorators.http import require_GET, require_POST
 
 from config.text_choices import MS_TextChoices
 from userprofile.decorators import login_required_error, staff_required
+from userprofile.models import UserProfile
 from utils.response import HttpResponseConflict
 from videomanager.models import VideoModel
 from videomanager.view_utils import update_personal_record_stock, update_state
@@ -88,8 +89,29 @@ def refresh_identifier(request: HttpRequest):
 
 
 # 管理员添加标识
-def staff_add_identifier(request):
-    # TODO
+@require_POST
+@staff_required
+def staff_add_identifier(request: HttpRequest):
+    if not (identifier_text := request.POST.get('identifier')):
+        return HttpResponseBadRequest('identifier')
+    if not (userid := request.POST.get('userid')):
+        return HttpResponseBadRequest('userid')
+    if not (user := UserProfile.objects.filter(id=userid).first()):
+        return HttpResponseNotFound('user')
+    if not (identifier := Identifier.objects.filter(identifier=identifier_text).first()):
+        identifier = Identifier.objects.create(identifier=identifier_text, safe=True, userms=user.userms)
+    if identifier.userms and identifier.userms.parent != user:
+        return HttpResponseForbidden()
+    identifier.userms = user.userms
+    identifier.save()
+    if identifier_text not in user.userms.identifiers:
+        user.userms.identifiers.append(identifier_text)
+        user.userms.save()
+    logger.info(f'管理员 #{request.user.id} 为用户 {user.realname}#{user.id} 添加标识 "{identifier_text}"')
+    video_list = VideoModel.objects.filter(player=user, video__identifier=identifier_text, state=MS_TextChoices.State.IDENTIFIER)
+    for video in video_list:
+        update_state(video, MS_TextChoices.State.OFFICIAL)
+    logger.info(f'修改了 {len(video_list)} 个录像状态')
     return HttpResponse()
 
 
@@ -103,14 +125,21 @@ def staff_del_identifier(request):
     identifier = Identifier.objects.filter(identifier=identifier_text).first()
     if not identifier:
         return HttpResponseNotFound()
-    videos = VideoModel.objects.filter(video__identifier=identifier_text)
+    videos = VideoModel.objects.filter(video__identifier=identifier_text, state=MS_TextChoices.State.OFFICIAL)
     if not videos:
         identifier.delete()
+        logger.info(f'管理员 #{request.user.id} 删除标识 "{identifier_text}"')
     else:
+        userms = identifier.userms
+        if userms and identifier_text in userms.identifiers:
+            userms.identifiers.remove(identifier_text)
+            userms.save()
         identifier.userms = None
+        identifier.save()
+        logger.info(f'管理员 #{request.user.id} 解绑标识 "{identifier_text}"')
         for video in videos:
-            if video.state == MS_TextChoices.State.OFFICIAL:
-                update_state(video, MS_TextChoices.State.IDENTIFIER)
+            update_state(video, MS_TextChoices.State.IDENTIFIER)
+        logger.info(f'修改了 {len(videos)} 个录像状态')
     return HttpResponse()
 
 
