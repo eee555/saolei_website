@@ -225,7 +225,7 @@ class VideoModel(models.Model):
         for statname in RankingGameStats:
             stat = getattr(self, statname)
             if stat is not None and isbetter(statname, stat, userms.getrecord(self.level, statname, mode)):
-                self.update_news_queue()
+                self.update_news_queue(statname, mode)
                 userms.setrecord(self.level, statname, mode, stat)
                 userms.setrecordID(self.level, statname, mode, self.video.id)
                 user.check_ms_ranking(statname, mode)
