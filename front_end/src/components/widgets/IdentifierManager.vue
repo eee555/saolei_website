@@ -5,11 +5,6 @@
         <el-table :data="identifierdata">
             <!-- 标识列 -->
             <el-table-column prop="data" sortable>
-                <template #header>
-                    <el-link v-if="store.player.id == store.user.id" :underline="false" @click="refreshIdentifiers">
-                        <base-icon-refresh />
-                    </el-link>
-                </template>
                 <template #default="scope">
                     <!-- 左margin是为了补偿输入框内文本的偏移 -->
                     <el-input
@@ -57,7 +52,6 @@ import { computed } from 'vue';
 import BaseIconDelete from '@/components/common/BaseIconDelete.vue';
 import IconCopy from './IconCopy.vue';
 import BaseIconAdd from '@/components/common/BaseIconAdd.vue';
-import BaseIconRefresh from '@/components/common/BaseIconRefresh.vue';
 
 const { proxy } = useCurrentInstance();
 const new_identifiers = ref('');
@@ -107,12 +101,6 @@ function addIdentifier(identifier: string) {
             unknownErrorNotification(response.data);
         }
         new_identifiers.value = '';
-    }).catch(httpErrorNotification);
-}
-
-function refreshIdentifiers() {
-    proxy.$axios.post('identifier/refresh/').then((response) => {
-        store.player.identifiers = response.data;
     }).catch(httpErrorNotification);
 }
 
