@@ -50,7 +50,7 @@ def update_personal_record_stock(user: UserProfile):
     # ms_user: UserMS = user.userms
     user.userms.del_user_record_sql()
     user.userms.del_user_record_redis()
-    videos = VideoModel.objects.filter(player=user)
+    videos = VideoModel.objects.filter(player=user, ongoing_tournament=False)
     for v in videos:
         v.update_personal_record()
 

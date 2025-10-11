@@ -228,7 +228,7 @@ const forceUpload = async (i: number) => {
                 store.player.videos.push(upload_queue.value[i].stat!);
             }
             removeUpload(i);
-        } else if (response.data.type === 'error' && response.data.object === 'videomodel') {
+        } else if (response.data.type === 'error' && response.data.object === 'file') {
             upload_queue.value[i].status = 'collision';
         } else if (response.data.type === 'error' && response.data.object === 'identifier') {
             upload_queue.value[i].status = 'censorship';

@@ -15,10 +15,10 @@
             <el-text v-if="token === ''">
                 请在比赛标识公布后，先在这里注册参赛标识，然后上传使用该标识的录像。
             </el-text>
-            <el-text v-else-if="personaltoken === ''">
+            <el-text v-else-if="identifier === ''">
                 请先在这里注册参赛标识，然后上传使用该标识的录像。参赛标识必须以{{ token }}结尾，例如
                 <span style="font-family: 'Courier New', Courier, monospace;">Guo Jin Yang {{ token }}</span>
-                <el-input v-model="newPersonaltoken" placeholder="参赛标识" />
+                <el-input v-model="newIdentifier" placeholder="参赛标识" />
                 <el-button @click="registerToken">
                     注册
                 </el-button>
@@ -28,9 +28,9 @@
             </el-text>
             <el-text v-else>
                 您的参赛标识为
-                <span style="font-family: 'Courier New', Courier, monospace;">{{ personaltoken }}</span>
+                <span style="font-family: 'Courier New', Courier, monospace;">{{ identifier }}</span>
                 &nbsp;
-                <IconCopy :text="personaltoken" />
+                <IconCopy :text="identifier" />
                 <br>
                 个人主页上传的对应标识的录像将自动归入比赛录像。
             </el-text>
@@ -59,7 +59,7 @@ const props = defineProps({
     },
 });
 
-const personaltoken = defineModel({
+const identifier = defineModel({
     type: String,
     default: '',
 });
@@ -67,19 +67,19 @@ const personaltoken = defineModel({
 const { proxy } = useCurrentInstance();
 
 const errorText = ref<string>('');
-const newPersonaltoken = ref<string>('');
+const newIdentifier = ref<string>('');
 
 function registerToken() {
     proxy.$axios.post('tournament/gscregister/', {
-        token: newPersonaltoken.value,
+        identifier: newIdentifier.value,
         order: props.order,
     }).then((response) => {
         const data = response.data;
         switch (data.type) {
             case 'success':
                 successNotification(response);
-                personaltoken.value = newPersonaltoken.value;
-                newPersonaltoken.value = '';
+                identifier.value = newIdentifier.value;
+                newIdentifier.value = '';
                 break;
             case 'error':
                 switch (data.category) {

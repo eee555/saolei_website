@@ -67,12 +67,8 @@ def video_preview(request: HttpRequest):
     # 这里性能可能有问题
     if not (id := request.GET.get("id")[:-4]):
         return HttpResponseBadRequest()
-    print(id)
     if not (video := VideoModel.objects.filter(id=id).first()):
         return HttpResponseNotFound()
-    print(video.ongoing_tournament)
-    print(request.user)
-    print(video.player.id)
     if video.ongoing_tournament and request.user != video.player:
         return HttpResponseForbidden()
     # video.file.name是相对路径(含upload_to)，video.file.path是绝对路径
@@ -93,15 +89,17 @@ def video_preview(request: HttpRequest):
 @ratelimit(key='ip', rate='20/m')
 @require_GET
 def video_download(request):
-    try:
-        video = VideoModel.objects.get(id=request.GET["id"])
-        response = FileResponse(open(video.file.path, 'rb'))
-        response['Content-Type'] = 'application/octet-stream'
-        response[
-            'Content-Disposition'] = f'attachment;filename="{video.file.name.split("/")[2]}"'
-        return response
-    except VideoModel.DoesNotExist:
+    if not (id := request.GET.get("id")):
+        return HttpResponseBadRequest()
+    if not (video := VideoModel.objects.filter(id=id).first()):
         return HttpResponseNotFound()
+    if video.ongoing_tournament and request.user != video.player:
+        return HttpResponseForbidden()
+    response = FileResponse(open(video.file.path, 'rb'))
+    response['Content-Type'] = 'application/octet-stream'
+    response[
+        'Content-Disposition'] = f'attachment;filename="{video.file.name.split("/")[2]}"'
+    return response
 
 
 # 录像查询（无需登录）
@@ -168,7 +166,7 @@ def video_query_by_id(request: HttpRequest):
         videos = videos.filter(ongoing_tournament=False)
     videos = videos.values(
         'id', 'upload_time', "end_time", "level", "mode", "timems", "bv", "bvs", "state", "video__identifier",
-        "software", "flag", "cell0", "cell1", "cell2", "cell3", "cell4", "cell5", "cell6", "cell7", "cell8", "left", "right", "double", "op", "isl", "path",
+        "software", "flag", "cell0", "cell1", "cell2", "cell3", "cell4", "cell5", "cell6", "cell7", "cell8", "left", "right", "double", "op", "isl", "path", 
     )
     # print(list(videos))
 

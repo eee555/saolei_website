@@ -11,6 +11,25 @@ import logging
 
 logger = logging.getLogger('videomanager')
 
+def get_level_from_BaseVideo(v: ms.BaseVideo):
+    if v.level == 3:
+        return MS_TextChoices.Level.BEGINNER
+    elif v.level == 4:
+        return MS_TextChoices.Level.INTERMEDIATE
+    elif v.level == 5:
+        return MS_TextChoices.Level.EXPERT
+    else:
+        raise ExceptionToResponse(obj='file', category='level')
+    
+def get_state_from_review_code(review_code: int):
+    if review_code == 0:
+        return MS_TextChoices.State.OFFICIAL
+    elif review_code == 1:
+        return MS_TextChoices.State.FROZEN
+    elif review_code == 3:
+        return MS_TextChoices.State.PLAIN
+    else:
+        raise ExceptionToResponse(obj='file', category='review')
 
 def new_video_by_file(user: UserProfile, file: File, check_tournament: bool = True) -> VideoModel:
     data = file.read()
@@ -33,24 +52,10 @@ def new_video_by_file(user: UserProfile, file: File, check_tournament: bool = Tr
     v.analyse()
     v.current_time = 1e8
 
-    if v.level == 3:
-        level = MS_TextChoices.Level.BEGINNER
-    elif v.level == 4:
-        level = MS_TextChoices.Level.INTERMEDIATE
-    elif v.level == 5:
-        level = MS_TextChoices.Level.EXPERT
-    else:
-        raise ExceptionToResponse(obj='file', category='level')
+    level = get_level_from_BaseVideo(v)
 
     review_code = v.is_valid()
-    if review_code == 0:
-        state = MS_TextChoices.State.OFFICIAL
-    elif review_code == 1:
-        state = MS_TextChoices.State.FROZEN
-    elif review_code == 3:
-        state = MS_TextChoices.State.PLAIN
-    else:
-        raise ExceptionToResponse(obj='file', category='review')
+    state = get_state_from_review_code(review_code)
 
     if not user.userms:
         user.userms = UserMS.objects.create()
@@ -109,7 +114,7 @@ def new_video_by_file(user: UserProfile, file: File, check_tournament: bool = Tr
 
     if check_tournament:
         if file.name.endswith('.avf'):
-            if participant := TournamentParticipant.objects.filter(user=user, token=video.video.identifier).first():
+            if participant := TournamentParticipant.objects.filter(user=user, arbiter_identifier__identifier=video.video.identifier).first():
                 tournament = participant.tournament
                 if tournament.state == Tournament_TextChoices.State.ONGOING:
                     video.ongoing_tournament = True
@@ -120,7 +125,7 @@ def new_video_by_file(user: UserProfile, file: File, check_tournament: bool = Tr
                 if token == '':
                     continue
                 gsc_tournament = GSCTournament.objects.filter(token=token).first()
-                participant = TournamentParticipant.objects.filter(user=user, token=token).first()
+                participant = TournamentParticipant.objects.filter(user=user, tournament=gsc_tournament).first()
                 if not gsc_tournament:  # 暂时只支持gsc
                     continue
                 if gsc_tournament and gsc_tournament.state == Tournament_TextChoices.State.ONGOING:

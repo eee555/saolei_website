@@ -12,6 +12,7 @@ from utils.response import HttpResponseConflict
 from userprofile.models import UserProfile
 from identifier.models import Identifier
 from identifier.utils import verify_identifier
+from msuser.models import UserMS
 
 
 @require_POST
@@ -73,9 +74,10 @@ def cancel_tournament(request: HttpRequest):
 @require_GET
 def get_tournament_list(request: HttpRequest):
     tournament_list = Tournament.objects.all().select_subclasses()
-    return JsonResponse({
-        'type': 'success',
-        'data': [{
+    data = []
+    for tournament in tournament_list:
+        tournament.refresh_state()
+        data.append({
             'id': tournament.id,
             'series': tournament.series,
             'name': tournament.name,
@@ -84,7 +86,10 @@ def get_tournament_list(request: HttpRequest):
             'state': tournament.state,
             'host_id': tournament.host.id,
             'host_realname': tournament.host.realname,
-        } for tournament in tournament_list],
+        })
+    return JsonResponse({
+        'type': 'success',
+        'data': data,
     })
 
 
@@ -310,8 +315,10 @@ def get_gscinfo(request: HttpRequest):
             results = None
         else:
             participant.refresh()
+            identifier = participant.arbiter_identifier
             results = {
                 'token': participant.token,
+                'arbiter_identifier': identifier.identifier if identifier else '',
                 'bt1st': participant.bt1st,
                 'bt20th': participant.bt20th,
                 'bt20sum': participant.bt20sum,
@@ -341,7 +348,37 @@ def get_gscinfo(request: HttpRequest):
 @require_POST
 @login_required_error
 def register_GSCParticipant(request: HttpRequest):
+    """
+    该函数用于处理用户注册GSC比赛的阿比特标识的请求。它会验证请求参数、比赛状态、用户注册状态以及标识符的有效性，
+    在所有条件满足后为用户关联相应的标识。若有需要，将用户注册为比赛参与者。
+    
+    Args:
+        request (HttpRequest): HTTP请求对象，包含以下POST参数：
+            - identifier (str): 阿比特标识
+            - order (str): 比赛届数
+    
+    Returns:
+        JsonResponse: 包含注册结果的JSON响应。可能的返回值：
+            - 成功：{'type': 'success'}
+            - 错误：{'type': 'error', 'object': str, 'category': str}
+            - HTTP错误响应：
+                * 400 Bad Request：缺少必要参数
+                * 404 Not Found：比赛不存在
+                * 403 Forbidden：比赛未进行中
+                * 409 Conflict：用户已注册
+    
+    错误类型说明：
+        - object: 'identifier' - 表示错误与标识符相关
+        - category: 
+            * 'suffix' - 标识符后缀不匹配
+            * 'invalid' - 标识符无效
+            * 'collision' - 标识符已被其他用户占用
+    """
     # 不应由正常的前端产生的错误
+    user = request.user
+    assert isinstance(user, UserProfile)
+    userms = user.userms
+    assert isinstance(userms, UserMS)
     if not (identifier_text := request.POST.get('identifier')):
         return HttpResponseBadRequest()
     if not (order := request.POST.get('order')):
@@ -358,18 +395,19 @@ def register_GSCParticipant(request: HttpRequest):
     if not verify_identifier(identifier_text):  # 审查标识
         return JsonResponse({'type': 'error', 'object': 'identifier', 'category': 'invalid'})
     identifier = Identifier.objects.filter(identifier=identifier_text).first()
-    if identifier.userms and identifier.userms != request.user.userms:  # 检查标识是否被占用
+    assert identifier
+    if identifier.userms and identifier.userms != userms:  # 检查标识是否被占用
         return JsonResponse({'type': 'error', 'object': 'identifier', 'category': 'collision'})
     if participant := GSCParticipant.objects.filter(tournament=tournament, user=request.user).first():
-        participant.ArbiterIdentifier = identifier
+        participant.arbiter_identifier = identifier
         participant.save()
     else:
-        GSCParticipant.objects.create(tournament=tournament, user=request.user, ArbiterIdentifier=identifier)
+        GSCParticipant.objects.create(tournament=tournament, user=user, arbiter_identifier=identifier)
     if not identifier.userms:
-        identifier.userms = request.user.userms
-        request.user.userms.identifiers.append(identifier_text)
+        identifier.userms = userms
+        userms.identifiers.append(identifier_text)
         identifier.save()
-        request.user.userms.save()
+        userms.save()
     return JsonResponse({'type': 'success'})
 
 

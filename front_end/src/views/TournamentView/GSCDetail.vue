@@ -15,8 +15,10 @@
     比赛标识：{{ token === '' ? '比赛开始后显示' : token }}
     <IconCopy :text="token" />
     <br>
-    <h3>如何参赛</h3>
-    <GSCTokenGuide v-model="personaltoken" :order="order" :token="token" />
+    <template v-if="[TournamentState.Preparing, TournamentState.Ongoing].includes(tournament.state)">
+        <h3>如何参赛</h3>
+        <GSCTokenGuide v-model="personaltoken" :order="order" :token="token" />
+    </template>
     <template v-if="tournament.state === TournamentState.Ongoing">
         <h3>
             即时成绩&nbsp;
@@ -49,6 +51,7 @@ import GSCPersonalSummary from './GSCPersonalSummary.vue';
 import GSCTokenGuide from './GSCTokenGuide.vue';
 import BaseIconRefresh from '@/components/common/BaseIconRefresh.vue';
 import GSCAllSummary from './GSCAllSummary.vue';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
     id: {
@@ -58,6 +61,7 @@ const props = defineProps({
 });
 
 const { proxy } = useCurrentInstance();
+const { t } = useI18n();
 
 const tournament = ref<Tournament>(new Tournament({}));
 const order = ref<number>(0);
@@ -78,7 +82,7 @@ function refresh() {
 
         if (tournament.value.state === TournamentState.Ongoing && store.login_status === LoginStatus.IsLogin) {
             result.value = [];
-            personaltoken.value = response.data.results.token;
+            personaltoken.value = response.data.results.arbiter_identifier;
             personalresult.value = {
                 user__id: store.user.id,
                 user__realname: store.user.realname,

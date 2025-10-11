@@ -80,6 +80,7 @@ class Tournament(models.Model):
             return
         if self.state == Tournament_TextChoices.State.PENDING or self.state == Tournament_TextChoices.State.CANCELLED:
             self.state = Tournament_TextChoices.State.PREPARING
+            self.save()
             self.refresh_state()
 
     def invalidate(self):
@@ -153,6 +154,7 @@ class GeneralTournament(Tournament):
 
 class TournamentParticipant(models.Model):
     token = models.CharField(max_length=MaxSizes.IDENTIFIER)  # 比赛标识
+    arbiter_identifier = models.ForeignKey(Identifier, null=True, on_delete=models.PROTECT)  # 阿比特标识
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)  # 比赛
     user = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True)  # 用户
     start_time = models.DateTimeField(auto_now_add=True)  # 参赛时间
@@ -179,8 +181,6 @@ class GeneralParticipant(TournamentParticipant):
 
 
 class GSCParticipant(TournamentParticipant):
-    ArbiterIdentifier = models.ForeignKey(Identifier, null=True, on_delete=models.SET_NULL)
-
     bt1st = models.PositiveIntegerField(default=GSC_Defaults.BT)
     bt20th = models.PositiveIntegerField(default=GSC_Defaults.BT)
     bt20sum = models.PositiveIntegerField(default=GSC_Defaults.BT * 20)
