@@ -27,19 +27,12 @@ class MS_TextChoices:
         OFFICIAL = "c", ('已通过审核')
         IDENTIFIER = "d", ('标识不匹配')
         EXTERNAL = "e", ("外部网站审核")
-        TOURNAMENT = "f", ('比赛中')
 
     class Software(TextChoices):
         AVF = "a", ('avf')
         EVF = "e", ('evf')
         MVF = "m", ('mvf')
         RMV = "r", ('rmv')
-
-    class MouseMode(TextChoices):
-        CLASSIC = "a"
-        NF = "b"
-        RC = "c", 'Recursive Chord'
-        LLC = "d"
 
 
 class Tournament_TextChoices:
