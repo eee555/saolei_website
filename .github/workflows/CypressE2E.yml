@@ -122,8 +122,3 @@ jobs:
           name: backend-logs
           path: back_end/saolei/logs
           if-no-files-found: ignore
-          
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}

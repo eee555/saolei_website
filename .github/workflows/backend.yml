@@ -13,6 +13,9 @@ on:
 jobs:
   check_flag:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: back_end/saolei
 
     services:
       mysql:
@@ -40,20 +43,17 @@ jobs:
 
     - name: Install Dependencies
       run: |
-        cd back_end/saolei
         pip install -r requirements.txt
         pip install cryptography
         pip install coverage pytest-cov
 
     - name: Create Logs Directory
-      run: mkdir -p back_end/saolei/logs
+      run: mkdir -p logs
 
     - name: Run Tests
       run: |
-        cd back_end/saolei
         python manage.py makemigrations
         python manage.py migrate
-        grep -R "settings.AUTH_USER_MODEL" ./*/migrations
         coverage run manage.py test
     
     - name: Upload coverage to Codecov
