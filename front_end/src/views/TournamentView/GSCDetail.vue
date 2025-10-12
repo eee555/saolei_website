@@ -1,8 +1,9 @@
 <template>
-    <h1>第{{ order }}届金羊杯
-        <TournamentStateBadge :state="tournament.state" />
+    <h1>
+        {{ t('gsc.title', { order: order }) }}
+        <TournamentStateIcon :state="tournament.state" />
     </h1>
-    比赛时间：
+    {{ t('gsc.schedule') }}{{ t('common.punct.colon') }}
     <el-text>
         {{ tournament.displayStartTime() }}
         &nbsp;~&nbsp;
@@ -10,25 +11,24 @@
     </el-text>
     &nbsp;
     <br>
-    在比赛期间上传（以服务器接收时间为准）的所有录像中，取成绩最好的20局初级（bv>=10）、12局中级（bv>=30）、5局高级（bv>=100），计算总成绩。
+    {{ t('gsc.description.line1') }}
     <br>
-    比赛标识：{{ token === '' ? '比赛开始后显示' : token }}
-    <IconCopy :text="token" />
+    {{ t('gsc.description.line2') }}
     <br>
     <template v-if="[TournamentState.Preparing, TournamentState.Ongoing].includes(tournament.state)">
-        <h3>如何参赛</h3>
+        <h3>{{ t('gsc.howToParticipate') }}</h3>
         <GSCTokenGuide v-model="personaltoken" :order="order" :token="token" />
     </template>
     <template v-if="tournament.state === TournamentState.Ongoing">
         <h3>
-            即时成绩&nbsp;
+            {{ t('gsc.realTimeScore') }}&nbsp;
             <base-icon-refresh @click="refresh" />
         </h3>
         <GSCPersonalSummary v-if="personalresult !== null" :participant="personalresult" />
     </template>
     <template v-if="[TournamentState.Finished, TournamentState.Awarded].includes(tournament.state)">
         <h3>
-            比赛结果
+            {{ t('gsc.finalResults') }}
         </h3>
         <GSCAllSummary :data="result" />
     </template>
@@ -41,8 +41,6 @@ import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { Tournament } from '@/utils/tournaments';
 import { ElText } from 'element-plus';
 import { ref, watch } from 'vue';
-import TournamentStateBadge from './TournamentStateBadge.vue';
-import IconCopy from '@/components/widgets/IconCopy.vue';
 import { store } from '@/store';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { TournamentState } from '@/utils/ms_const';
@@ -52,6 +50,7 @@ import GSCTokenGuide from './GSCTokenGuide.vue';
 import BaseIconRefresh from '@/components/common/BaseIconRefresh.vue';
 import GSCAllSummary from './GSCAllSummary.vue';
 import { useI18n } from 'vue-i18n';
+import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
 
 const props = defineProps({
     id: {

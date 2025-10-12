@@ -1,3 +1,5 @@
+import ordinal from 'ordinal';
+
 export default {
     local: 'en',
     name: 'English',
@@ -15,6 +17,7 @@ export default {
         button: {
             cancel: 'Cancel',
             confirm: 'Confirm',
+            register: 'Register',
             send: 'Send',
         },
         filter: 'Filter',
@@ -71,6 +74,9 @@ export default {
             upload_time: 'Upload Time',
             winstreak: 'Win Streak',
         },
+        punct: {
+            colon: ': ',
+        },
         response: {
             OK: '',
             BadRequest: 'Unrecognised request',
@@ -80,6 +86,11 @@ export default {
             PayloadTooLarge: 'Payload too large',
             TooManyRequests: 'Too many requests',
             UnsupportedMediaType: 'Unsupported file type',
+        },
+        score: {
+            best: 'Best',
+            edge: 'Edge',
+            sum: 'Sum',
         },
         show: 'Show',
         software: {
@@ -186,6 +197,27 @@ export default {
         imageCaptcha: 'Image captcha',
         password: 'Password',
         username: 'Username',
+    },
+    gsc: {
+        title: ({ named }) => `The ${ordinal(named('order'))} Gold Sheep Cup`,
+        finalResults: 'Final Results',
+        howToParticipate: 'How to Participate',
+        identifierGuide: {
+            arbiter: {
+                preparing: 'Register your tournament identifier here after the tournament begins.',
+                ongoing_pre1: 'Please register your tournament identifier below. The identifier should end with ',
+                ongoing_pre2: ', for example, ',
+                ongoing_post1: 'Your tournament identifier is ',
+                ongoing_post2: '. Arbiter videos with the identifier will be automatically added to the tournament.',
+            },
+            metasweeper: {
+                preparing: 'After the tournament begins, a tournament token will be announced. Set the tournament token on Metasweeper and any video with that token will be automatically added to the tournament.',
+                ongoing_1: 'Assign ',
+                ongoing_2: ' to the tournament token on Metasweeper. Metasweeper videos with the token will be automatically added to the tournament.',
+            },
+        },
+        realTimeScore: 'Real-Time Score',
+        schedule: 'Schedule',
     },
     guide: {
         announcement: 'Announcements',
@@ -375,5 +407,21 @@ export default {
         pl: 'Polish',
         designer: 'UI designers',
         acknowledgement: 'Acknowledgement',
+    },
+    tournament: {
+        endsBy: 'Ends By',
+        host: 'Host',
+        index: 'Index',
+        startsFrom: 'Starts From',
+        state: {
+            p: 'Pending',
+            r: 'Preparing',
+            o: 'Ongoing',
+            f: 'Finished',
+            a: 'Awarded',
+            c: 'Cancelled',
+        },
+        tournament: 'Tournament',
+        undecided: 'Undecided',
     },
 };

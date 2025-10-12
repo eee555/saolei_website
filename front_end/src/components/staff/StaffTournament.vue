@@ -10,7 +10,7 @@
     <template v-if="tournament">
         状态
         &nbsp;
-        <TournamentStateBadge :state="tournament.state" />
+        <TournamentStateIcon :state="tournament.state" />
         <br>
         开始时间
         &nbsp;
@@ -43,10 +43,10 @@ import { ElInputNumber, ElButton } from 'element-plus';
 import { computed, ref } from 'vue';
 import { httpErrorNotification, successNotification } from '@/components/Notifications';
 import { VCodeBlock } from '@wdns/vue-code-block';
-import TournamentStateBadge from '@/views/TournamentView/TournamentStateBadge.vue';
 import BaseIconTick from '@/components/common/BaseIconTick.vue';
 import BaseIconClose from '@/components/common/BaseIconClose.vue';
 import { TournamentState } from '@/utils/ms_const';
+import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
 
 const { proxy } = useCurrentInstance();
 

@@ -1,14 +1,14 @@
 <template>
-    总成绩：{{ T37 }}
+    {{ t('common.score.sum') }}{{ t('common.punct.colon') }}{{ T37 }}
     <el-table :data="data">
         <el-table-column>
             <template #default="scope">
                 {{ indexMethod(scope.$index) }}
             </template>
         </el-table-column>
-        <el-table-column prop="b" label="初级" />
-        <el-table-column prop="i" label="中级" />
-        <el-table-column prop="e" label="高级" />
+        <el-table-column prop="b" :label="t('common.level.b')" />
+        <el-table-column prop="i" :label="t('common.level.i')" />
+        <el-table-column prop="e" :label="t('common.level.e')" />
     </el-table>
 </template>
 
@@ -16,6 +16,9 @@
 import { GSCParticipant } from '@/utils/gsc';
 import { computed, PropType } from 'vue';
 import { ElTable, ElTableColumn } from 'element-plus';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
     participant: {
@@ -38,9 +41,9 @@ const T37 = computed(() => {
 
 function indexMethod(index: number) {
     switch (index) {
-        case 0: return '尖端成绩';
-        case 1: return '边缘成绩';
-        case 2: return '总成绩';
+        case 0: return t('common.score.best');
+        case 1: return t('common.score.edge');
+        case 2: return t('common.score.sum');
     }
 }
 

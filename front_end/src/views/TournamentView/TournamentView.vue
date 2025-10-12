@@ -1,7 +1,7 @@
 <template>
     <TournamentList v-if="store.tournamentTabs.length === 0" :tournament-list="tournamentList" />
     <el-tabs v-else v-model="currentTab" tab-position="left" @tab-remove="tabRemoveHandler" @tab-change="tabChangeHandler">
-        <el-tab-pane label="比赛首页" lazy>
+        <el-tab-pane :label="t('tournament.index')" lazy>
             <TournamentList :tournament-list="tournamentList" />
         </el-tab-pane>
         <el-tab-pane v-for="tournament in store.tournamentTabs" :key="tournament.id">
@@ -26,8 +26,10 @@ import { useRoute, useRouter } from 'vue-router';
 import TournamentDetail from './TournamentDetail.vue';
 import GSCDetail from './GSCDetail.vue';
 import { TournamentSeries } from '@/utils/ms_const';
+import { useI18n } from 'vue-i18n';
 
 const { proxy } = useCurrentInstance();
+const { t } = useI18n();
 
 const tournamentList = ref<Tournament[]>([]);
 

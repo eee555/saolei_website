@@ -15,6 +15,7 @@ export default {
         button: {
             cancel: '取消',
             confirm: '确认',
+            register: '注册',
             send: '发送',
         },
         filter: '筛选',
@@ -71,6 +72,9 @@ export default {
             upload_time: '上传时间',
             winstreak: '连胜',
         },
+        punct: {
+            colon: '：',
+        },
         response: {
             OK: '',
             BadRequest: '无法识别的请求',
@@ -80,6 +84,11 @@ export default {
             PayloadTooLarge: '文件过大',
             TooManyRequests: '请求过于频繁',
             UnsupportedMediaType: '不支持的文件类型',
+        },
+        score: {
+            best: '尖端',
+            edge: '边缘',
+            sum: '总计',
         },
         show: '显示',
         software: {
@@ -187,6 +196,31 @@ export default {
         password: '密码',
         username: '用户名',
     },
+    gsc: {
+        title: ({ named }) => `第${named('order')}届金羊杯`,
+        description: {
+            line1: '比赛期间上传（以服务器接收时间为准）的所有录像中，取成绩最好的20局初级（bv>=10）、12局中级（bv>=30）、5局高级（bv>=100），计算总成绩。',
+            line2: '局数不够的，初级按照10秒，中级按照60秒，高级按照240秒补全。'
+        },
+        finalResults: '比赛结果',
+        howToParticipate: '如何参赛',
+        identifierGuide: {
+            arbiter: {
+                preparing: '比赛开始后在这里注册标识。',
+                ongoing_pre1: '请在这里注册参赛标识。参赛标识必须以',
+                ongoing_pre2: '结尾。例如',
+                ongoing_post1: '您的参赛标识为',
+                ongoing_post2: '，现在上传的拥有该参赛标识的Arbiter录像会被自动识别为比赛录像。',
+            },
+            metasweeper: {
+                preparing: '比赛开始后会公布比赛标识。在元扫雷中设置该比赛标识。比赛期间拥有该比赛标识的元扫雷录像会被自动识别为比赛录像。',
+                ongoing_1: '在元扫雷中将比赛标识设置为',
+                ongoing_2: '，上传的拥有该比赛标识的元扫雷录像会被自动识别为比赛录像。',
+            },
+        },
+        realTimeScore: '即时成绩',
+        schedule: '赛程',
+    },
     guide: {
         announcement: '公告',
         other: '其他',
@@ -268,6 +302,9 @@ export default {
         emailSendSuccessMsg: '请至邮箱查看',
         emailSendSuccessTitle: '邮件发送成功',
         fail: '失败：',
+        identifierIllegal: '标志违规',
+        identifierIncorrectSuffix: '后缀错误',
+        identifierOccupied: '标识已被占用',
         illegalCharacter: '非法字符',
         passwordChanged: '修改密码成功',
         passwordMinimum: '密码至少6位',
@@ -375,5 +412,21 @@ export default {
         pl: '波兰语',
         designer: '外观设计',
         acknowledgement: '致谢',
+    },
+    tournament: {
+        endsBy: '结束时间',
+        host: '主办方',
+        index: '比赛首页',
+        startsFrom: '开始时间',
+        state: {
+            p: '审核中',
+            r: '即将开始',
+            o: '进行中',
+            f: '结算中',
+            a: '已结束',
+            c: '已取消',
+        },
+        tournament: '比赛',
+        undecided: '未定',
     },
 };

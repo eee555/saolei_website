@@ -4,8 +4,14 @@
             <template #label>
                 <BaseIconMetasweeper />
             </template>
-            <el-text>
-                设置正确的比赛标识，上传录像时即可自动参赛。
+            <el-text v-if="token === ''">
+                {{ t('gsc.identifierGuide.metasweeper.preparing') }}
+            </el-text>
+            <el-text v-else>
+                {{ t('gsc.identifierGuide.metasweeper.ongoing_1') }}
+                <span class="ttfamily">{{ token }}</span>
+                <IconCopy :text="token" />
+                {{ t('gsc.identifierGuide.metasweeper.ongoing_2') }}
             </el-text>
         </el-tab-pane>
         <el-tab-pane>
@@ -13,26 +19,28 @@
                 <BaseIconArbiter />
             </template>
             <el-text v-if="token === ''">
-                请在比赛标识公布后，先在这里注册参赛标识，然后上传使用该标识的录像。
+                {{ t('gsc.identifierGuide.arbiter.preparing') }}
             </el-text>
             <el-text v-else-if="identifier === ''">
-                请先在这里注册参赛标识，然后上传使用该标识的录像。参赛标识必须以{{ token }}结尾，例如
-                <span style="font-family: 'Courier New', Courier, monospace;">Guo Jin Yang {{ token }}</span>
+                {{ t('gsc.identifierGuide.arbiter.ongoing_pre1') }}
+                <span class="ttfamily">{{ token }}</span>
+                <IconCopy :text="token" />
+                {{ t('gsc.identifierGuide.arbiter.ongoing_pre2') }}
+                <span class="ttfamily">Guo Jin Yang {{ token }}</span>
                 <el-input v-model="newIdentifier" placeholder="参赛标识" />
                 <el-button @click="registerToken">
-                    注册
+                    {{ t('common.button.register') }}
                 </el-button>
                 <el-text v-if="errorText !== ''" type="danger">
                     {{ errorText }}
                 </el-text>
             </el-text>
             <el-text v-else>
-                您的参赛标识为
-                <span style="font-family: 'Courier New', Courier, monospace;">{{ identifier }}</span>
+                {{ t('gsc.identifierGuide.arbiter.ongoing_post1') }}
+                <span class="ttfamily">{{ identifier }}</span>
                 &nbsp;
                 <IconCopy :text="identifier" />
-                <br>
-                个人主页上传的对应标识的录像将自动归入比赛录像。
+                {{ t('gsc.identifierGuide.arbiter.ongoing_post2') }}
             </el-text>
         </el-tab-pane>
     </el-tabs>
@@ -47,6 +55,7 @@ import { httpErrorNotification, successNotification, unknownErrorNotification } 
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import BaseIconArbiter from '@/components/common/BaseIconArbiter.vue';
 import BaseIconMetasweeper from '@/components/common/BaseIconMetasweeper.vue';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
     order: {
@@ -65,6 +74,7 @@ const identifier = defineModel({
 });
 
 const { proxy } = useCurrentInstance();
+const { t } = useI18n();
 
 const errorText = ref<string>('');
 const newIdentifier = ref<string>('');
@@ -83,9 +93,9 @@ function registerToken() {
                 break;
             case 'error':
                 switch (data.category) {
-                    case 'suffix': errorText.value = '后缀错误'; break;
-                    case 'collision': errorText.value = '标识被占用'; break;
-                    case 'invalid': errorText.value = '标识违规'; break;
+                    case 'suffix': errorText.value = t('msg.identifierIncorrectSuffix'); break;
+                    case 'collision': errorText.value = t('msg.identifierOccupied'); break;
+                    case 'invalid': errorText.value = t('msg.identifierIllegal'); break;
                     default: unknownErrorNotification(response);
                 }
                 break;
@@ -96,3 +106,11 @@ function registerToken() {
 }
 
 </script>
+
+<style scoped>
+
+.ttfamily {
+    font-family: 'Courier New', Courier, monospace;
+}
+
+</style>

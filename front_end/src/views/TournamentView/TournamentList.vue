@@ -1,28 +1,28 @@
 <template>
     <el-table :data="tournamentList" @row-click="rowClick">
-        <el-table-column label="状态">
+        <el-table-column :label="t('common.prop.state')">
             <template #default="{row}">
-                <TournamentStateBadge :state="row.state" />
+                <TournamentStateIcon :state="row.state" />
             </template>
         </el-table-column>
-        <el-table-column label="比赛名称">
+        <el-table-column :label="t('tournament.tournament')">
             <template #default="{row}">
                 {{ row.name }}
             </template>
         </el-table-column>
-        <el-table-column label="主办方">
+        <el-table-column :label="t('tournament.host')">
             <template #default="{row}">
                 <PlayerName :user-id="row.hostId" :user-name="row.hostName" />
             </template>
         </el-table-column>
-        <el-table-column label="开始时间">
+        <el-table-column :label="t('tournament.startsFrom')">
             <template #default="{row}">
-                {{ row.startDate === undefined ? '未定' : toISODateTimeString(row.startDate) }}
+                {{ row.startDate === undefined ? t('tournament.undecided') : toISODateTimeString(row.startDate) }}
             </template>
         </el-table-column>
-        <el-table-column label="结束时间">
+        <el-table-column :label="t('tournament.endsBy')">
             <template #default="{row}">
-                {{ row.endDate === undefined ? '未定' : toISODateTimeString(row.endDate) }}
+                {{ row.endDate === undefined ? t('tournament.undecided') : toISODateTimeString(row.endDate) }}
             </template>
         </el-table-column>
     </el-table>
@@ -32,15 +32,16 @@
 
 import { PropType } from 'vue';
 import { ElTable, ElTableColumn } from 'element-plus';
-import TournamentStateBadge from './TournamentStateBadge.vue';
 import PlayerName from '@/components/PlayerName.vue';
 import { toISODateTimeString } from '@/utils/datetime';
 import { Tournament } from '@/utils/tournaments';
 import { useRouter } from 'vue-router';
 import { store } from '@/store';
+import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
+import { useI18n } from 'vue-i18n';
 
 const router = useRouter();
-
+const { t } = useI18n();
 
 defineProps({
     tournamentList: {
