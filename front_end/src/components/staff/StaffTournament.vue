@@ -64,7 +64,7 @@ const canInvalidate = computed(() => {
     if (!tournament.value) return false;
     if ([TournamentState.Awarded, TournamentState.Cancelled].includes(tournament.value.state)) return false;
     return true;
-})
+});
 
 function refreshTournamentInfo() {
     if (!tournamentId.value) {
