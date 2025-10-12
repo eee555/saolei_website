@@ -53,6 +53,8 @@ jobs:
         cd back_end/saolei
         python manage.py makemigrations
         python manage.py migrate
+        grep -R "settings.AUTH_USER_MODEL" back_end/saolei/*/migrations
+        grep -R "ForeignKey.*AUTH_USER_MODEL" back_end/saolei/*/models
         coverage run manage.py test
     
     - name: Upload coverage to Codecov
