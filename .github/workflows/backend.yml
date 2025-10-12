@@ -51,11 +51,6 @@ jobs:
       run: mkdir -p logs
 
     - name: Run Tests
-      env:
-        DJANGO_DB_NAME: saolei
-        DJANGO_DB_USER: root
-        DJANGO_DB_PASSWORD: 123456
-        DJANGO_DB_HOST: 127.0.0.1
       run: |
         python manage.py makemigrations
         python manage.py migrate

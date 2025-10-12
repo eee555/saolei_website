@@ -7,7 +7,6 @@ from config.text_choices import Tournament_TextChoices
 from config.tournaments import GSC_Defaults, TournamentWeights
 from identifier.models import Identifier
 from identifier.utils import verify_identifier
-from msuser.models import UserMS
 from userprofile.decorators import banned_blocked, login_required_error, staff_required
 from userprofile.models import UserProfile
 from utils import verify_text

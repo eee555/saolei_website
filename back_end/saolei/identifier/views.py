@@ -4,7 +4,6 @@ from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpR
 from django.views.decorators.http import require_GET, require_POST
 
 from config.text_choices import MS_TextChoices
-from msuser.models import UserMS
 from userprofile.decorators import login_required_error, staff_required
 from userprofile.models import UserProfile
 from utils.response import HttpResponseConflict
