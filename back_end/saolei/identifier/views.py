@@ -108,14 +108,21 @@ def staff_del_identifier(request):
     identifier = Identifier.objects.filter(identifier=identifier_text).first()
     if not identifier:
         return HttpResponseNotFound()
-    videos = VideoModel.objects.filter(video__identifier=identifier_text)
+    videos = VideoModel.objects.filter(video__identifier=identifier_text, state=MS_TextChoices.State.OFFICIAL)
     if not videos:
         identifier.delete()
+        logger.info(f'管理员 #{request.user.id} 删除标识 "{identifier_text}"')
     else:
+        userms = identifier.userms
+        if userms and identifier_text in userms.identifiers:
+            userms.identifiers.remove(identifier_text)
+            userms.save()
         identifier.userms = None
+        identifier.save()
+        logger.info(f'管理员 #{request.user.id} 解绑标识 "{identifier_text}"')
         for video in videos:
-            if video.state == MS_TextChoices.State.OFFICIAL:
-                update_state(video, MS_TextChoices.State.IDENTIFIER)
+            update_state(video, MS_TextChoices.State.IDENTIFIER)
+        logger.info(f'修改了 {len(videos)} 个录像状态')
     return HttpResponse()
 
 
