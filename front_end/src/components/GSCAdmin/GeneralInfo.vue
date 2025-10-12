@@ -25,7 +25,10 @@
         标识：{{ gscInfo.token || '未设置' }}
         &nbsp;
         设置标识：
-        <el-input v-model="newToken" @change="setToken" />
+        <el-input v-model="newToken" style="width: 300px;" />
+        <el-button @click="setToken(newToken)">
+            修改！
+        </el-button>
         <br>
         想设置空标识需打开此开关<el-switch v-model="allowEmptyToken" />
     </el-text>
