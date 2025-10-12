@@ -7,8 +7,9 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_cleanup import cleanup
 
-from config.global_settings import DefaultChances, MaxSizes
+from config.global_settings import DefaultChances, DefaultRankingScores, GameLevels, MaxSizes
 from msuser.models import UserMS
+from utils.cmp import isbetter
 from .fields import RestrictedImageField
 
 username_validator = UnicodeUsernameValidator()
@@ -90,6 +91,13 @@ class UserProfile(AbstractUser):
             models.Index(fields=['country'], name='country_idx'),
             models.Index(fields=['vip'], name='vip_idx'),
         ]
+
+    # 检查用户是否可以加入排行，并更新排行榜
+    def check_ms_ranking(self, statname: str, mode: str):
+        for level in GameLevels:
+            if not isbetter(statname, self.userms.getrecord(level, statname, mode), DefaultRankingScores[statname]):
+                return
+        self.userms.update_3_level_cache_record(self.realname, statname, mode)
 
 
 # 邮箱验证

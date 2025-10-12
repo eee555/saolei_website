@@ -82,7 +82,7 @@ def user_metadata(user: UserProfile):
     else:
         image_data = None
 
-    videos = VideoModel.objects.filter(player=user).values('id', 'upload_time', "level", "mode", "timems", "bv", "state", "software", "cl", "ce", "file_size", "end_time")
+    videos = VideoModel.objects.filter(player=user).values('id', 'upload_time', "level", "mode", "timems", "bv", "state", "software", "cl", "ce", "file_size", "end_time", "ongoing_tournament")
     return {
         "id": user.id,
         "username": user.username,

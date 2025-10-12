@@ -5,7 +5,7 @@ import os
 from captcha.models import CaptchaStore
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 
 from msuser.models import UserMS
@@ -138,8 +138,8 @@ def check_collision(request):
 # 【站长】任命解除管理员
 # http://127.0.0.1:8000/userprofile/set_staff/?id=1&is_staff=True
 @require_GET
-def set_staff(request):
-    if not request.user.is_superuser:
+def set_staff(request: HttpRequest):
+    if not request.user.is_superuser and not settings.E2E_TEST:
         return HttpResponseForbidden()
     user = UserProfile.objects.get(id=request.GET["id"])
     user.is_staff = request.GET["is_staff"]
