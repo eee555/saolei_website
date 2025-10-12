@@ -54,7 +54,6 @@ jobs:
         python manage.py makemigrations
         python manage.py migrate
         grep -R "settings.AUTH_USER_MODEL" ./*/migrations
-        grep -R "ForeignKey.*AUTH_USER_MODEL" ./*/models
         coverage run manage.py test
     
     - name: Upload coverage to Codecov

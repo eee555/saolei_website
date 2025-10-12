@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 import secrets
 import string
 
+from django.conf import settings
 from django.db import models
 from model_utils.managers import InheritanceManager
 
@@ -28,7 +29,7 @@ class Tournament(models.Model):
     start_time = models.DateTimeField(null=True)  # 比赛开始时间
     end_time = models.DateTimeField(null=True)  # 比赛结束时间
     state = models.CharField(max_length=1, choices=Tournament_TextChoices.State.choices, default=Tournament_TextChoices.State.PENDING)  # 比赛状态
-    host = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, related_name='owned_tournaments')  # 主办方
+    host = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='owned_tournaments')  # 主办方
     weight = models.PositiveIntegerField(default=0)  # 比赛总积分
     videos = models.ManyToManyField(VideoModel, related_name='tournaments')
 
