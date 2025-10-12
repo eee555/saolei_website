@@ -86,7 +86,6 @@ def staff_add_identifier(request: HttpRequest):
     identifier.userms = user.userms
     identifier.save()
     userms = user.userms
-    assert isinstance(userms, UserMS)
     if identifier_text not in userms.identifiers:
         userms.identifiers.append(identifier_text)
         userms.save()

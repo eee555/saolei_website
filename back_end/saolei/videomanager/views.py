@@ -49,9 +49,9 @@ def video_saolei_import_by_userid_post(request) -> JsonResponse:
 # 根据id向后台请求软件类型（适配flop播放器用）
 @require_GET
 def get_software(request):
-    if not (id := request.GET.get("id")):
+    if not (videoid := request.GET.get("id")):
         return HttpResponseBadRequest()
-    if not (video := VideoModel.objects.filter(id=id).first()):
+    if not (video := VideoModel.objects.filter(id=videoid).first()):
         return HttpResponseNotFound()
     if video.ongoing_tournament and request.user != video.player:
         return HttpResponseForbidden()
@@ -65,9 +65,9 @@ def get_software(request):
 @require_GET
 def video_preview(request: HttpRequest):
     # 这里性能可能有问题
-    if not (id := request.GET.get("id")[:-4]):
+    if not (videoid := request.GET.get("id")[:-4]):
         return HttpResponseBadRequest()
-    if not (video := VideoModel.objects.filter(id=id).first()):
+    if not (video := VideoModel.objects.filter(id=videoid).first()):
         return HttpResponseNotFound()
     if video.ongoing_tournament and request.user != video.player:
         return HttpResponseForbidden()
@@ -89,9 +89,9 @@ def video_preview(request: HttpRequest):
 @ratelimit(key='ip', rate='20/m')
 @require_GET
 def video_download(request):
-    if not (id := request.GET.get("id")):
+    if not (videoid := request.GET.get("id")):
         return HttpResponseBadRequest()
-    if not (video := VideoModel.objects.filter(id=id).first()):
+    if not (video := VideoModel.objects.filter(id=videoid).first()):
         return HttpResponseNotFound()
     if video.ongoing_tournament and request.user != video.player:
         return HttpResponseForbidden()

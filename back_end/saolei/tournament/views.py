@@ -42,10 +42,10 @@ def create_tournament(request: HttpRequest):
 @require_POST
 @staff_required
 def allow_tournament(request: HttpRequest):
-    id = request.POST.get('id')
+    tournament_id = request.POST.get('id')
     if not id:
         return HttpResponseBadRequest()
-    tournament = Tournament.objects.filter(id=id).first()
+    tournament = Tournament.objects.filter(id=tournament_id).first()
     if not tournament:
         return HttpResponseNotFound()
     if datetime.now(tz=timezone.utc) > tournament.start_time:
@@ -59,10 +59,10 @@ def allow_tournament(request: HttpRequest):
 @require_POST
 @login_required_error
 def cancel_tournament(request: HttpRequest):
-    id = request.POST.get('id')
-    if not id:
+    tournament_id = request.POST.get('id')
+    if not tournament_id:
         return HttpResponseBadRequest()
-    tournament = Tournament.objects.filter(id=id).first()
+    tournament = Tournament.objects.filter(id=tournament_id).first()
     if not tournament:
         return HttpResponseNotFound()
     if not request.user.is_staff and tournament.host != request.user:
@@ -96,10 +96,10 @@ def get_tournament_list(request: HttpRequest):
 
 @require_GET
 def get_tournament(request):
-    id = request.GET.get('id')
-    if not id:
+    tournament_id = request.GET.get('id')
+    if not tournament_id:
         return HttpResponseBadRequest()
-    tournament: Tournament = Tournament.objects.select_subclasses().filter(id=id).first()
+    tournament: Tournament = Tournament.objects.select_subclasses().filter(id=tournament_id).first()
     if not tournament:
         return HttpResponseNotFound()
     data = {
@@ -119,10 +119,10 @@ def get_tournament(request):
 @require_POST
 @banned_blocked
 def tournament_checkin(request):
-    id = request.POST.get('id')
-    if not id:
+    tournament_id = request.POST.get('id')
+    if not tournament_id:
         return HttpResponseBadRequest()
-    tournament = Tournament.objects.filter(id=id).first()
+    tournament = Tournament.objects.filter(id=tournament_id).first()
     if not tournament:
         return HttpResponseNotFound()
     if tournament.state != Tournament_TextChoices.State.ONGOING:
@@ -242,9 +242,9 @@ def set_tournament_staff(request: HttpRequest):
 
 @require_GET
 def get_GSC_tournament(request: HttpRequest):
-    if not (id := request.GET.get('id')):
+    if not (gsc_id := request.GET.get('id')):
         return HttpResponseBadRequest()
-    tournament = GSCTournament.objects.filter(order=id).first()
+    tournament = GSCTournament.objects.filter(order=gsc_id).first()
     if not tournament:
         return JsonResponse({'type': 'error'})
     return JsonResponse({'type': 'success', 'data': {
@@ -292,12 +292,12 @@ def get_gscinfo(request: HttpRequest):
             'results': 比赛结果。若未颁奖则为空
         }
     """
-    if not (id := request.GET.get('id')):
+    if not (tournament_id := request.GET.get('id')):
         if not (order := request.GET.get('order')):
             return HttpResponseBadRequest()
         tournament = GSCTournament.objects.filter(order=order).first()
     else:
-        tournament: GSCTournament = Tournament.objects.select_subclasses().filter(id=id).first()
+        tournament: GSCTournament = Tournament.objects.select_subclasses().filter(id=tournament_id).first()
     if not tournament:
         return HttpResponseNotFound()
     tournament.refresh_state()
@@ -377,9 +377,7 @@ def register_GSCParticipant(request: HttpRequest):
     """
     # 不应由正常的前端产生的错误
     user = request.user
-    assert isinstance(user, UserProfile)
     userms = user.userms
-    assert isinstance(userms, UserMS)
     if not (identifier_text := request.POST.get('identifier')):
         return HttpResponseBadRequest()
     if not (order := request.POST.get('order')):
@@ -396,7 +394,6 @@ def register_GSCParticipant(request: HttpRequest):
     if not verify_identifier(identifier_text):  # 审查标识
         return JsonResponse({'type': 'error', 'object': 'identifier', 'category': 'invalid'})
     identifier = Identifier.objects.filter(identifier=identifier_text).first()
-    assert identifier
     if identifier.userms and identifier.userms != userms:  # 检查标识是否被占用
         return JsonResponse({'type': 'error', 'object': 'identifier', 'category': 'collision'})
     if participant := GSCParticipant.objects.filter(tournament=tournament, user=request.user).first():
