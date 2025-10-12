@@ -78,7 +78,6 @@ class Tournament(models.Model):
         return
 
     def validate(self):
-        print('validate')
         if not self.start_time or not self.end_time or self.start_time >= self.end_time:
             return
         if self.state == Tournament_TextChoices.State.PENDING or self.state == Tournament_TextChoices.State.CANCELLED:
@@ -101,7 +100,7 @@ class Tournament(models.Model):
 
 class GSCTournament(Tournament):
     order = models.PositiveSmallIntegerField(primary_key=True)  # 届数
-    token = models.CharField(max_length=6, default='')  # 比赛标识
+    token = models.CharField(max_length=6, default='', db_collation='utf8mb4_0900_as_cs')  # 比赛标识
 
     @property
     def series(self):
@@ -156,7 +155,7 @@ class GeneralTournament(Tournament):
 
 
 class TournamentParticipant(models.Model):
-    token = models.CharField(max_length=MaxSizes.IDENTIFIER)  # 比赛标识
+    token = models.CharField(max_length=MaxSizes.IDENTIFIER, db_collation='utf8mb4_0900_as_cs')  # 比赛标识
     arbiter_identifier = models.ForeignKey(Identifier, null=True, on_delete=models.PROTECT)  # 阿比特标识
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)  # 比赛
     user = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True)  # 用户
