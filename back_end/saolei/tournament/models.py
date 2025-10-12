@@ -160,7 +160,7 @@ class TournamentParticipant(models.Model):
     token = models.CharField(max_length=MaxSizes.IDENTIFIER)  # 比赛标识
     arbiter_identifier = models.ForeignKey(Identifier, null=True, on_delete=models.PROTECT)  # 阿比特标识
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)  # 比赛
-    user = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True)  # 用户
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)  # 用户
     start_time = models.DateTimeField(auto_now_add=True)  # 参赛时间
     end_time = models.DateTimeField(null=True, blank=True)  # 结束时间
     rank = models.PositiveIntegerField(null=True, blank=True)  # 排名
