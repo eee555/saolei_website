@@ -5,10 +5,10 @@ from django.test import override_settings, TestCase
 import requests
 
 from accountlink.models import AccountSaolei
+from common.utils import new_video_by_file
 from userprofile.models import UserProfile
 from .models import ExpandVideoModel, VideoModel
 from .view_utils import refresh_video, video_saolei_import_by_userid_helper
-from common.utils import new_video_by_file
 # Create your tests here.
 
 
