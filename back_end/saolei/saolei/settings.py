@@ -44,7 +44,6 @@ ALLOWED_HOSTS = ["*"]
 INSTALLED_APPS = [
     "captcha",
     "django.contrib.admin",
-    'userprofile',
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -52,6 +51,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     'django_apscheduler',
     'corsheaders',
+    'userprofile',
     'videomanager',
     'msuser',
     'article',
