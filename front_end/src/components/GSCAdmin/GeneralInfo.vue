@@ -26,6 +26,8 @@
         &nbsp;
         设置标识：
         <el-input v-model="newToken" @change="setToken" />
+        <br>
+        想设置空标识需打开此开关<el-switch v-model="allowEmptyToken" />
     </el-text>
 </template>
 
@@ -34,7 +36,7 @@ import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { GSCInfo } from '@/utils/gsc';
 import { ref, watch } from 'vue';
 import { httpErrorNotification, successNotification } from '../Notifications';
-import { ElText, ElDatePicker, ElInput, ElButton } from 'element-plus';
+import { ElText, ElDatePicker, ElInput, ElButton, ElSwitch } from 'element-plus';
 
 
 const props = defineProps({
@@ -54,6 +56,7 @@ const newEndTime = ref<Date | undefined>(undefined);
 const newToken = ref<string>('');
 const loadingGSCInfo = ref(false);
 const notFound = ref(false);
+const allowEmptyToken = ref(false);
 
 async function getGSCInfo(id: number | undefined) {
     if (id === undefined || id < 1) {
@@ -117,7 +120,7 @@ function setEndTime(time: Date | undefined) {
 }
 
 function setToken(token: string) {
-    if (token === undefined || token.trim() === '') return;
+    if ((token === undefined || token.trim() === '') && !allowEmptyToken.value) return;
     proxy.$axios.post('tournament/set/', { id: gscInfo.value.id, token: token }).then(
         function (response: any) {
             gscInfo.value.token = token;
