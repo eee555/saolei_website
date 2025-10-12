@@ -67,6 +67,17 @@ export class Tournament {
         return this.description[_local];
     }
 
+    public getLocalName(local: string) {
+        if (!this.name) return '';
+        if (typeof this.name === 'string') return this.name;
+        let _local = local as string | undefined;
+        while (_local && !this.name[_local]) {
+            _local = Tournament.localFallback(_local);
+        }
+        if (_local === undefined) return '';
+        return this.name[_local];
+    }
+
     public static localFallback(local: string | undefined) {
         if (local === undefined) return undefined;
         if (local === 'zh') return undefined;

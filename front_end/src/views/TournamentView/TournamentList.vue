@@ -6,8 +6,8 @@
             </template>
         </el-table-column>
         <el-table-column :label="t('tournament.tournament')">
-            <template #default="{row}">
-                {{ row.name }}
+            <template #default="{row}: {row: Tournament}">
+                {{ row.getLocalName(local.language) }}
             </template>
         </el-table-column>
         <el-table-column :label="t('tournament.host')">
@@ -36,7 +36,7 @@ import PlayerName from '@/components/PlayerName.vue';
 import { toISODateTimeString } from '@/utils/datetime';
 import { Tournament } from '@/utils/tournaments';
 import { useRouter } from 'vue-router';
-import { store } from '@/store';
+import { local, store } from '@/store';
 import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
 import { useI18n } from 'vue-i18n';
 

@@ -108,7 +108,10 @@ class GSCTournament(Tournament):
 
     @property
     def name(self):
-        return f'第{self.order}届金羊杯'
+        return {
+            'zh': f'第{self.order}届金羊杯',
+            'en': f'GSC#{self.order}',
+        }
 
     @property
     def description(self):

@@ -6,7 +6,7 @@
         </el-tab-pane>
         <el-tab-pane v-for="tournament in store.tournamentTabs" :key="tournament.id">
             <template #label>
-                <span>{{ tournament.name }}</span>
+                <span>{{ tournament.getLocalName(local.language) }}</span>
             </template>
             <GSCDetail v-if="tournament.series === TournamentSeries.GSC" :id="tournament.id" />
             <TournamentDetail v-else :tournament="tournament" />
@@ -20,7 +20,7 @@ import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { onMounted, ref, watch } from 'vue';
 import TournamentList from './TournamentList.vue';
 import { Tournament } from '@/utils/tournaments';
-import { store } from '@/store';
+import { store, local } from '@/store';
 import { TabPaneName, ElTabs, ElTabPane } from 'element-plus';
 import { useRoute, useRouter } from 'vue-router';
 import TournamentDetail from './TournamentDetail.vue';
