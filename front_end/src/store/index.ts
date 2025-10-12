@@ -6,6 +6,7 @@ import { colorSchemeTemplates } from '@/utils/config';
 import { UserProfile } from '@/utils/userprofile';
 import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 import { MS_Software, MS_Softwares } from '@/utils/ms_const';
+import { Tournament } from '@/utils/tournaments';
 
 export const store = defineStore('user', {
     state: () => ({
@@ -18,6 +19,7 @@ export const store = defineStore('user', {
         new_identifier: false, // 是否有新标识录像
         video_list: [] as VideoAbstract[],
         video_list_show: false,
+        tournamentTabs: [] as Tournament[],
     }),
 })(pinia);
 

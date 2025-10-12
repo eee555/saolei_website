@@ -177,3 +177,4 @@ front_end/yarn.lock
 **/migrations/*
 !**/migrations/__init__.py
 *.tmp
+/back_end/saolei/.vscode

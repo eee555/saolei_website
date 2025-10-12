@@ -37,3 +37,10 @@ GameModes = ["std", "nf", "ng", "dg"]
 RankingGameStats = ["timems", "bvs", "stnb", "ioe", "path"]
 DefaultRankingScores = {"timems": 999999, "bvs": 0.0, "stnb": 0.0, "ioe": 0.0, "path": 100000.0}
 VideoModeToName = {"00": "std", "12": "std"}
+
+record_update_fields = []
+for mode in GameModes:
+    for stat in RankingGameStats:
+        for level in GameLevels:
+            record_update_fields.append(f"{level}_{stat}_{mode}")
+            record_update_fields.append(f"{level}_{stat}_id_{mode}")

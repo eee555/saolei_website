@@ -67,6 +67,21 @@ const routes: Array<RouteRecordRaw> = [
         name: 'staff',
         component: () => import('../views/StaffView.vue'),
     },
+    {
+        path: '/tournament/:id',
+        name: 'tournament_id',
+        component: () => import('../views/TournamentView/TournamentView.vue'),
+    },
+    {
+        path: '/tournament',
+        name: 'tournament',
+        component: () => import('../views/TournamentView/TournamentView.vue'),
+    },
+    {
+        path: '/gsc/admin',
+        name: 'gsc_admin',
+        component: () => import('../views/GSCAdminView.vue'),
+    },
 ];
 
 const router = createRouter({

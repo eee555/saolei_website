@@ -69,6 +69,7 @@ export class VideoAbstract {
     public player_id?: number;
     public player_name?: string;
     public file_size: number;
+    public ongoing_tournament?: boolean;
 
     constructor(info: any) {
         if (info.id) this.id = info.id;
@@ -94,6 +95,8 @@ export class VideoAbstract {
 
         if (info.file_size) this.file_size = info.file_size;
         else this.file_size = 0;
+
+        if (info.ongoing_tournament) this.ongoing_tournament = info.ongoing_tournament;
     }
 
     static fromVideoAbstractInfo(info: VideoAbstractInfo): VideoAbstract {
