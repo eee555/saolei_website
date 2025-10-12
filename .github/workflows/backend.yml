@@ -13,9 +13,6 @@ on:
 jobs:
   check_flag:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: back_end/saolei
 
     services:
       mysql:
@@ -43,15 +40,17 @@ jobs:
 
     - name: Install Dependencies
       run: |
+        cd back_end/saolei
         pip install -r requirements.txt
         pip install cryptography
         pip install coverage pytest-cov
 
     - name: Create Logs Directory
-      run: mkdir -p logs
+      run: mkdir -p back_end/saolei/logs
 
     - name: Run Tests
       run: |
+        cd back_end/saolei
         python manage.py makemigrations
         python manage.py migrate
         coverage run manage.py test
