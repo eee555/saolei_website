@@ -1,18 +1,19 @@
-
-from django.views.decorators.http import require_GET, require_POST
-from django.http import HttpResponseBadRequest, JsonResponse, HttpResponse, HttpResponseNotFound, HttpResponseForbidden, HttpRequest
-from userprofile.decorators import banned_blocked, staff_required, login_required_error
-from .models import Tournament, TournamentParticipant, GSCTournament, GSCParticipant
-from .forms import TournamentForm
-from utils import verify_text
-from config.text_choices import Tournament_TextChoices
 from datetime import datetime, timezone
+
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
+from django.views.decorators.http import require_GET, require_POST
+
+from config.text_choices import Tournament_TextChoices
 from config.tournaments import GSC_Defaults, TournamentWeights
-from utils.response import HttpResponseConflict
-from userprofile.models import UserProfile
 from identifier.models import Identifier
 from identifier.utils import verify_identifier
 from msuser.models import UserMS
+from userprofile.decorators import banned_blocked, login_required_error, staff_required
+from userprofile.models import UserProfile
+from utils import verify_text
+from utils.response import HttpResponseConflict
+from .forms import TournamentForm
+from .models import GSCParticipant, GSCTournament, Tournament, TournamentParticipant
 
 
 @require_POST
@@ -351,12 +352,12 @@ def register_GSCParticipant(request: HttpRequest):
     """
     该函数用于处理用户注册GSC比赛的阿比特标识的请求。它会验证请求参数、比赛状态、用户注册状态以及标识符的有效性，
     在所有条件满足后为用户关联相应的标识。若有需要，将用户注册为比赛参与者。
-    
+
     Args:
         request (HttpRequest): HTTP请求对象，包含以下POST参数：
             - identifier (str): 阿比特标识
             - order (str): 比赛届数
-    
+
     Returns:
         JsonResponse: 包含注册结果的JSON响应。可能的返回值：
             - 成功：{'type': 'success'}
@@ -366,10 +367,10 @@ def register_GSCParticipant(request: HttpRequest):
                 * 404 Not Found：比赛不存在
                 * 403 Forbidden：比赛未进行中
                 * 409 Conflict：用户已注册
-    
+
     错误类型说明：
         - object: 'identifier' - 表示错误与标识符相关
-        - category: 
+        - category:
             * 'suffix' - 标识符后缀不匹配
             * 'invalid' - 标识符无效
             * 'collision' - 标识符已被其他用户占用

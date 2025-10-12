@@ -1,7 +1,7 @@
 from django.db import models
-
 from django_redis import get_redis_connection
-from config.global_settings import GameLevels, DefaultRankingScores, record_update_fields, GameModes, RankingGameStats
+
+from config.global_settings import DefaultRankingScores, GameLevels, GameModes, RankingGameStats, record_update_fields
 
 cache = get_redis_connection("saolei_website")
 

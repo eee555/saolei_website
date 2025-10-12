@@ -7,11 +7,11 @@ from django_redis import get_redis_connection
 
 from config.global_settings import DefaultRankingScores, MaxSizes, RankingGameStats, record_update_fields
 from config.text_choices import MS_TextChoices
+from msuser.models import UserMS
 from userprofile.models import UserProfile
 from utils import ComplexEncoder
-from .fields import RestrictedFileField
 from utils.cmp import isbetter
-from msuser.models import UserMS
+from .fields import RestrictedFileField
 
 cache = get_redis_connection("saolei_website")
 logger = logging.getLogger('videomanager')

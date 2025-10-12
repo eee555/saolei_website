@@ -1,15 +1,19 @@
-import ms_toollib as ms
-from userprofile.models import UserProfile, UserMS
-from videomanager.models import VideoModel, ExpandVideoModel
-from tournament.models import TournamentParticipant, GSCTournament, GSCParticipant
-from config.text_choices import MS_TextChoices, Tournament_TextChoices
-from django.core.files import File
 from datetime import datetime, timezone
-from utils.exceptions import ExceptionToResponse
-from identifier.utils import verify_identifier
 import logging
 
+from django.core.files import File
+import ms_toollib as ms
+
+from config.text_choices import MS_TextChoices, Tournament_TextChoices
+from identifier.utils import verify_identifier
+from msuser.models import UserMS
+from tournament.models import GSCParticipant, GSCTournament, TournamentParticipant
+from userprofile.models import UserProfile
+from utils.exceptions import ExceptionToResponse
+from videomanager.models import ExpandVideoModel, VideoModel
+
 logger = logging.getLogger('videomanager')
+
 
 def get_level_from_BaseVideo(v: ms.BaseVideo):
     if v.level == 3:
@@ -20,7 +24,8 @@ def get_level_from_BaseVideo(v: ms.BaseVideo):
         return MS_TextChoices.Level.EXPERT
     else:
         raise ExceptionToResponse(obj='file', category='level')
-    
+
+
 def get_state_from_review_code(review_code: int):
     if review_code == 0:
         return MS_TextChoices.State.OFFICIAL
@@ -30,6 +35,7 @@ def get_state_from_review_code(review_code: int):
         return MS_TextChoices.State.PLAIN
     else:
         raise ExceptionToResponse(obj='file', category='review')
+
 
 def new_video_by_file(user: UserProfile, file: File, check_tournament: bool = True) -> VideoModel:
     data = file.read()

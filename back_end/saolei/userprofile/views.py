@@ -5,7 +5,7 @@ import os
 from captcha.models import CaptchaStore
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse, HttpRequest
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 
 from msuser.models import UserMS

@@ -7,19 +7,19 @@ import urllib
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.http import FileResponse, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse, HttpRequest
+from django.http import FileResponse, HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 from django_ratelimit.decorators import ratelimit
 from django_redis import get_redis_connection
 
 from accountlink.models import AccountSaolei
 from config.text_choices import MS_TextChoices
+from msuser.models import UserMS
 from userprofile.decorators import banned_blocked, login_required_error, staff_required
 from userprofile.models import UserProfile
 from utils import ComplexEncoder
 from .models import ExpandVideoModel, VideoModel
 from .view_utils import refresh_video, update_personal_record_stock, update_state, video_all_fields, video_saolei_import_by_userid_helper
-from msuser.models import UserMS
 
 logger = logging.getLogger('videomanager')
 cache = get_redis_connection("saolei_website")
@@ -166,7 +166,7 @@ def video_query_by_id(request: HttpRequest):
         videos = videos.filter(ongoing_tournament=False)
     videos = videos.values(
         'id', 'upload_time', "end_time", "level", "mode", "timems", "bv", "bvs", "state", "video__identifier",
-        "software", "flag", "cell0", "cell1", "cell2", "cell3", "cell4", "cell5", "cell6", "cell7", "cell8", "left", "right", "double", "op", "isl", "path", 
+        "software", "flag", "cell0", "cell1", "cell2", "cell3", "cell4", "cell5", "cell6", "cell7", "cell8", "left", "right", "double", "op", "isl", "path",
     )
     # print(list(videos))
 

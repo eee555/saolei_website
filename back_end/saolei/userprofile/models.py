@@ -7,9 +7,9 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_cleanup import cleanup
 
-from config.global_settings import DefaultChances, MaxSizes, GameLevels, DefaultRankingScores
-from utils.cmp import isbetter
+from config.global_settings import DefaultChances, DefaultRankingScores, GameLevels, MaxSizes
 from msuser.models import UserMS
+from utils.cmp import isbetter
 from .fields import RestrictedImageField
 
 username_validator = UnicodeUsernameValidator()

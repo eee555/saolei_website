@@ -1,14 +1,16 @@
-import string
+from datetime import datetime, timezone
 import secrets
+import string
+
 from django.db import models
+from model_utils.managers import InheritanceManager
+
+from config.global_settings import MaxSizes
+from config.text_choices import MS_TextChoices, Tournament_TextChoices
+from config.tournaments import GSC_Defaults
+from identifier.models import Identifier
 from userprofile.models import UserProfile
 from videomanager.models import VideoModel
-from config.text_choices import Tournament_TextChoices, MS_TextChoices
-from config.tournaments import GSC_Defaults
-from datetime import datetime, timezone
-from model_utils.managers import InheritanceManager
-from config.global_settings import MaxSizes
-from identifier.models import Identifier
 
 
 def generate_random_token(length=4):
@@ -76,6 +78,7 @@ class Tournament(models.Model):
         return
 
     def validate(self):
+        print('validate')
         if not self.start_time or not self.end_time or self.start_time >= self.end_time:
             return
         if self.state == Tournament_TextChoices.State.PENDING or self.state == Tournament_TextChoices.State.CANCELLED:
