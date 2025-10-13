@@ -32,3 +32,6 @@ export const GSCDefaults = {
     it: 60000,
     et: 240000,
 } as const;
+
+export const ColorTemplateNames = ['time', 'bvs', 'stnb', 'ioe', 'thrp', 'path', 'custom'] as const;
+export type ColorTemplateName = typeof ColorTemplateNames[number];
