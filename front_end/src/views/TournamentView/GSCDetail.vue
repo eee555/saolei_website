@@ -24,7 +24,7 @@
             {{ t('gsc.realTimeScore') }}&nbsp;
             <base-icon-refresh @click="refresh" />
         </h3>
-        <GSCPersonalSummary v-if="personalresult !== null" :participant="personalresult" />
+        <GSCPersonalSummary :participant="personalresult" />
     </template>
     <template v-if="[TournamentState.Finished, TournamentState.Awarded].includes(tournament.state)">
         <h3>
@@ -44,7 +44,7 @@ import { ref, watch } from 'vue';
 import { store } from '@/store';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { TournamentState } from '@/utils/ms_const';
-import { GSCParticipant } from '@/utils/gsc';
+import { GSCParticipant, GSCParticipantDefault } from '@/utils/gsc';
 import GSCPersonalSummary from './GSCPersonalSummary.vue';
 import GSCTokenGuide from './GSCTokenGuide.vue';
 import BaseIconRefresh from '@/components/common/BaseIconRefresh.vue';
@@ -67,7 +67,7 @@ const order = ref<number>(0);
 const token = ref<string>('');
 const result = ref<GSCParticipant[]>([]);
 const personaltoken = ref<string>('');
-const personalresult = ref<GSCParticipant | null>(null);
+const personalresult = ref<GSCParticipant>(GSCParticipantDefault);
 
 function refresh() {
     proxy.$axios.get('tournament/gscinfo/', {
@@ -97,7 +97,7 @@ function refresh() {
             };
         } else {
             personaltoken.value = '';
-            personalresult.value = null;
+            personalresult.value = GSCParticipantDefault;
             result.value = response.data.results;
         }
     }).catch(httpErrorNotification);

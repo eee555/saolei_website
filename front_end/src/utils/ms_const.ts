@@ -26,3 +26,9 @@ export enum TournamentSeries {
     GSC = 'g',
     Unknown = 'u',
 }
+
+export const GSCDefaults = {
+    bt: 10000,
+    it: 60000,
+    et: 240000,
+} as const;
