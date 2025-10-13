@@ -52,7 +52,7 @@ interface VideoRedisInfo {
     ce?: number;
 }
 
-export type getStat_stat = 'time' | 'bvs' | 'timems' | 'bv' | 'qg' | 'rqp' | 'stnb' | 'ce' | 'ces' | 'cl' | 'cls' | 'ioe' | 'thrp' | 'corr';
+export type getStat_stat = 'time' | 'bvs' | 'timems' | 'bv' | 'qg' | 'rqp' | 'stnb' | 'ce' | 'ces' | 'cl' | 'cls' | 'ioe' | 'thrp' | 'corr' | 'path' | 'mov' | 'iome';
 
 export class VideoAbstract {
     public id: number;
@@ -66,6 +66,7 @@ export class VideoAbstract {
     public software: MS_Software;
     public cl?: number;
     public ce?: number;
+    public path?: number;
     public player_id?: number;
     public player_name?: string;
     public file_size: number;
@@ -90,6 +91,7 @@ export class VideoAbstract {
 
         if (info.cl) this.cl = info.cl;
         if (info.ce) this.ce = info.ce;
+        if (info.path) this.path = info.path;
         if (info.player_id) this.player_id = info.player_id;
         if (info.player_name) this.player_name = info.player_name;
 
@@ -160,6 +162,14 @@ export class VideoAbstract {
         return undefinedDivideNumber(this.ce, this.time());
     }
 
+    public mov() {
+        return undefinedDivideNumber(this.path, this.time());
+    }
+
+    public iome() {
+        return numberDivideUndefined(this.bv, this.path);
+    }
+
     public getStat(stat: getStat_stat) {
         switch (stat) {
             case 'time': return this.time();
@@ -176,6 +186,9 @@ export class VideoAbstract {
             case 'ioe': return this.ioe();
             case 'thrp': return this.thrp();
             case 'corr': return this.corr();
+            case 'path': return this.path;
+            case 'mov': return this.mov();
+            case 'iome': return this.iome();
         }
     }
 
@@ -194,6 +207,9 @@ export class VideoAbstract {
             case 'ioe': return undefinedOrToFixed(this.ioe(), 3);
             case 'thrp': return undefinedOrToFixed(this.thrp(), 3);
             case 'corr': return undefinedOrToFixed(this.corr(), 3);
+            case 'path': return undefinedOrToFixed(this.path, 0);
+            case 'mov': return undefinedOrToFixed(this.mov(), 3);
+            case 'iome': return undefinedOrToFixed(this.iome(), 3);
         }
     }
 

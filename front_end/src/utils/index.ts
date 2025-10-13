@@ -20,7 +20,7 @@ export function cs_to_s(cs: number): string {
     return `${Math.floor(cs / 100)}.${(cs % 100 + '').padStart(2, '0')}`;
 }
 
-export function simple_formatter(f: Function): Function {
+export function simple_formatter(f: Function) {
     return (row: any, col: any, value: any, _index: any) => f(value);
 }
 

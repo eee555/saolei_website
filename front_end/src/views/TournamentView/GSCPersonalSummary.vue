@@ -6,9 +6,9 @@
                 {{ indexMethod(scope.$index) }}
             </template>
         </el-table-column>
-        <el-table-column prop="b" :label="t('common.level.b')" />
-        <el-table-column prop="i" :label="t('common.level.i')" />
-        <el-table-column prop="e" :label="t('common.level.e')" />
+        <el-table-column prop="b" :label="t('common.level.b')" :formatter="simple_formatter(ms_to_s)" />
+        <el-table-column prop="i" :label="t('common.level.i')" :formatter="simple_formatter(ms_to_s)" />
+        <el-table-column prop="e" :label="t('common.level.e')" :formatter="simple_formatter(ms_to_s)" />
     </el-table>
 </template>
 
@@ -17,6 +17,7 @@ import { GSCParticipant } from '@/utils/gsc';
 import { computed, PropType } from 'vue';
 import { ElTable, ElTableColumn } from 'element-plus';
 import { useI18n } from 'vue-i18n';
+import { ms_to_s, simple_formatter } from '@/utils';
 
 const { t } = useI18n();
 

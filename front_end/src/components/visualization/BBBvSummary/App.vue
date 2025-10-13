@@ -32,7 +32,7 @@
 import { BBBvSummaryConfig, colorTheme } from '@/store';
 import { ElRow, ElDivider } from 'element-plus';
 import { getLastDigit, setLastDigit } from '@/utils/math';
-import { MS_Level } from '@/utils/ms_const';
+import { ColorTemplateName, MS_Level } from '@/utils/ms_const';
 import { getStat_stat, groupVideosByBBBv, VideoAbstract } from '@/utils/videoabstract';
 import { computed, PropType } from 'vue';
 import Cell from './Cell.vue';
@@ -49,9 +49,8 @@ const prop = defineProps({
     videoList: { type: Array<VideoAbstract>, default: () => [] },
 });
 
-type option_type = 'bvs' | 'time' | 'stnb' | 'ioe' | 'thrp' | 'custom';
 interface Option {
-    value: option_type;
+    value: ColorTemplateName;
     sortBy: getStat_stat;
     displayBy: getStat_stat;
     label: string;
@@ -65,8 +64,9 @@ const options = computed(() => {
         'stnb': { value: 'stnb', sortBy: 'timems', displayBy: 'stnb', label: 'stnb', sortDesc: false },
         'ioe': { value: 'ioe', sortBy: 'ioe', displayBy: 'ioe', label: 'ioe', sortDesc: true },
         'thrp': { value: 'thrp', sortBy: 'thrp', displayBy: 'thrp', label: 'thrp', sortDesc: true },
+        'path': { value: 'path', sortBy: 'path', displayBy: 'path', label: 'path', sortDesc: false },
         'custom': { value: 'custom', sortBy: BBBvSummaryConfig.value.sortBy, displayBy: BBBvSummaryConfig.value.displayBy, label: 'custom', sortDesc: BBBvSummaryConfig.value.sortDesc },
-    } as Record<option_type, Option>;
+    } as Record<ColorTemplateName, Option>;
 });
 
 const groupedVideoAbstract = computed(() => groupVideosByBBBv(prop.videoList, prop.level));
