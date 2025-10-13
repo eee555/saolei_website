@@ -6,6 +6,7 @@
             <el-option :label="t('common.prop.stnb')" value="stnb" />
             <el-option :label="t('common.prop.ioe')" value="ioe" />
             <el-option :label="t('common.prop.thrp')" value="thrp" />
+            <el-option :label="t('common.prop.path')" value="path" />
             <el-option :label="t('BBBvSummary.customTemplate')" value="custom" />
         </el-select>
         &nbsp;
@@ -34,6 +35,7 @@
             <el-option :label="t('common.prop.time')" value="timems" />
             <el-option :label="t('common.prop.ioe')" value="ioe" />
             <el-option :label="t('common.prop.thrp')" value="thrp" />
+            <el-option :label="t('common.prop.path')" value="path" />
         </el-select>
         &nbsp;
         <el-text>{{ t('BBBvSummary.settingDisplayBy') }}</el-text>
@@ -44,6 +46,7 @@
             <el-option :label="t('common.prop.stnb')" value="stnb" />
             <el-option :label="t('common.prop.ioe')" value="ioe" />
             <el-option :label="t('common.prop.thrp')" value="thrp" />
+            <el-option :label="t('common.prop.path')" value="path" />
         </el-select>
     </el-row>
 </template>

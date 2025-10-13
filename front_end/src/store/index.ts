@@ -5,7 +5,7 @@ import { useLocalStorage } from '@vueuse/core';
 import { colorSchemeTemplates } from '@/utils/config';
 import { UserProfile } from '@/utils/userprofile';
 import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
-import { MS_Software, MS_Softwares } from '@/utils/ms_const';
+import { ColorTemplateName, MS_Software, MS_Softwares } from '@/utils/ms_const';
 import { Tournament } from '@/utils/tournaments';
 
 export const store = defineStore('user', {
@@ -75,7 +75,7 @@ export const BBBvSummaryConfig = useLocalStorage(
     'bbbv-summary-config',
     {
         cellHeight: 25,
-        template: 'time' as 'time' | 'bvs' | 'stnb' | 'ioe' | 'thrp' | 'custom',
+        template: 'time' as ColorTemplateName,
         sortBy: 'timems' as getStat_stat,
         displayBy: 'time' as getStat_stat,
         sortDesc: false,
