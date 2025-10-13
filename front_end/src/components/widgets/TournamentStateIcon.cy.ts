@@ -3,7 +3,7 @@ import { TournamentState } from '@/utils/ms_const';
 import i18n from '@/i18n';
 
 describe('<TournamentStateIcon />', () => {
-    it(TournamentState.Pending, () => {
+    it('Pending', () => {
         // see: https://on.cypress.io/mounting-vue
         cy.mount(TournamentStateIcon, {
             props: {
@@ -16,7 +16,7 @@ describe('<TournamentStateIcon />', () => {
         cy.contains('Pending');
     });
 
-    it(TournamentState.Preparing, () => {
+    it('Preparing', () => {
         cy.mount(TournamentStateIcon, {
             props: {
                 state: TournamentState.Preparing,
@@ -28,7 +28,7 @@ describe('<TournamentStateIcon />', () => {
         cy.contains('Preparing');
     });
 
-    it(TournamentState.Ongoing, () => {
+    it('Ongoing', () => {
         cy.mount(TournamentStateIcon, {
             props: {
                 state: TournamentState.Ongoing,
@@ -40,7 +40,7 @@ describe('<TournamentStateIcon />', () => {
         cy.contains('Ongoing');
     });
 
-    it(TournamentState.Finished, () => {
+    it('Finished', () => {
         cy.mount(TournamentStateIcon, {
             props: {
                 state: TournamentState.Finished,
@@ -52,7 +52,7 @@ describe('<TournamentStateIcon />', () => {
         cy.contains('Finished');
     });
 
-    it(TournamentState.Awarded, () => {
+    it('Awarded', () => {
         cy.mount(TournamentStateIcon, {
             props: {
                 state: TournamentState.Awarded,
@@ -64,7 +64,7 @@ describe('<TournamentStateIcon />', () => {
         cy.contains('Awarded');
     });
 
-    it(TournamentState.Cancelled, () => {
+    it('Cancelled', () => {
         cy.mount(TournamentStateIcon, {
             props: {
                 state: TournamentState.Cancelled,
