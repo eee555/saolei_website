@@ -44,9 +44,6 @@ export default {
         login: 'login',
         logout: 'wyloguj',
         register: 'zarejestruj się',
-        downloads: 'do pobrania',
-        links: 'linki',
-        team: 'drużyna',
     },
     profile: {
         changeAvatar: 'kliknij na obrazek aby zmienić awatar',

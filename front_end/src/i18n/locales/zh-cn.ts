@@ -302,7 +302,7 @@ export default {
         emailSendSuccessMsg: '请至邮箱查看',
         emailSendSuccessTitle: '邮件发送成功',
         fail: '失败：',
-        identifierIllegal: '标志违规',
+        identifierIllegal: '标识违规',
         identifierIncorrectSuffix: '后缀错误',
         identifierOccupied: '标识已被占用',
         illegalCharacter: '非法字符',
