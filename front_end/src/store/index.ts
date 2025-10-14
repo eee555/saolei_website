@@ -5,7 +5,7 @@ import { useLocalStorage } from '@vueuse/core';
 import { colorSchemeTemplates } from '@/utils/config';
 import { UserProfile } from '@/utils/userprofile';
 import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
-import { ColorTemplateName, MS_Software, MS_Softwares } from '@/utils/ms_const';
+import { ColorTemplateName, ColumnChoice, MS_Software, MS_Softwares } from '@/utils/ms_const';
 import { Tournament } from '@/utils/tournaments';
 
 export const store = defineStore('user', {
@@ -82,6 +82,14 @@ export const BBBvSummaryConfig = useLocalStorage(
         softwareFilter: [...MS_Softwares] as MS_Software[],
         zoom: 1,
         tooltipMode: 'fast' as 'fast' | 'advanced',
+    },
+    { mergeDefaults: true },
+);
+
+export const VideoListConfig = useLocalStorage(
+    'video-list-config',
+    {
+        profile: ['state', 'upload_time', 'software', 'level', 'mode', 'time', 'bv', 'bvs', 'ioe', 'thrp', 'path', 'file_size'] as ColumnChoice[],
     },
     { mergeDefaults: true },
 );
