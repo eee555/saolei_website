@@ -12,6 +12,14 @@ export const STNB_const = useLocalStorage('stnb_const', {
     e: 435.001,
 });
 
+export enum MS_State {
+    Plain = 'a',
+    Frozen = 'b',
+    Official = 'c',
+    Identifier = 'd',
+    External = 'e',
+}
+
 export enum TournamentState {
     Pending = 'p',
     Ongoing = 'o',

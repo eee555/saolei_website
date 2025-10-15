@@ -220,6 +220,8 @@ export default {
         },
         realTimeScore: '即时成绩',
         schedule: '赛程',
+        summary: '概览',
+        videos: '录像',
     },
     guide: {
         announcement: '公告',

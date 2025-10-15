@@ -222,6 +222,8 @@ export default {
         },
         realTimeScore: 'Real-Time Score',
         schedule: 'Schedule',
+        summary: 'Summary',
+        videos: 'Videos',
     },
     guide: {
         announcement: 'Announcements',

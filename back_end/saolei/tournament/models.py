@@ -56,19 +56,20 @@ class Tournament(models.Model):
             video.update_redis()
 
     def refresh_state(self):
-        if self.state == Tournament_TextChoices.State.PREPARING:
+        current_state = self.state
+        if current_state == Tournament_TextChoices.State.PREPARING:
             if datetime.now(timezone.utc) > self.end_time:
                 self.start()
                 self.end()
             elif datetime.now(timezone.utc) >= self.start_time:
                 self.start()
-        elif self.state == Tournament_TextChoices.State.ONGOING:
+        elif current_state == Tournament_TextChoices.State.ONGOING:
             if datetime.now(timezone.utc) >= self.end_time:
                 self.end()
             elif datetime.now(timezone.utc) < self.start_time:
                 self.state = Tournament_TextChoices.State.PREPARING
                 self.save()
-        elif self.state == Tournament_TextChoices.State.FINISHED:
+        elif current_state == Tournament_TextChoices.State.FINISHED:
             if datetime.now(timezone.utc) < self.start_time:
                 self.state = Tournament_TextChoices.State.PREPARING
                 self.save()
@@ -179,6 +180,10 @@ class TournamentParticipant(models.Model):
                     self.token = token
                     break
         super().create(*args, **kwargs)
+
+    @property
+    def videos(self):
+        return self.tournament.videos.filter(player=self.user)
 
 
 class GeneralParticipant(TournamentParticipant):

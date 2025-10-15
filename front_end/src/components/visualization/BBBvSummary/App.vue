@@ -1,5 +1,5 @@
 <template>
-    <el-row v-if="header" :style="{ textAlign: 'center', height: `${BBBvSummaryConfig.cellHeight}px`, flexWrap: 'nowrap', marginTop: '10px', marginBottom: '-16px' }">
+    <el-row v-if="header" :style="{ textAlign: 'center', height: '25px', flexWrap: 'nowrap', marginTop: '10px', marginBottom: '-16px' }">
         <span style="width: 10%; min-width: 75px" />
         <span v-for="i in 10" style="width: 8.9%; min-width: 4em">{{ i - 1 }}</span>
     </el-row>
@@ -11,7 +11,7 @@
     <el-row v-if="groupedVideoAbstract.size > 0" style="white-space: nowrap;">
         <YLabel :min-bv="minBv" :max-bv="maxBv" />
         <span
-            :style="{ position: 'relative', width: '89%', minWidth: '40em', lineHeight: `${BBBvSummaryConfig.cellHeight}px` }"
+            :style="{ position: 'relative', width: '89%', minWidth: '40em', lineHeight: '25px' }"
         >
             <template v-for="bv in ArrayUtils.range(minBv, maxBv)" :key="bv">
                 <Cell
