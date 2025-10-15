@@ -319,7 +319,7 @@ def get_gscinfo(request: HttpRequest):
             identifier = None
             results = None
         else:
-            identifier = participant.arbiter_identifier
+            identifier = participant.arbiter_identifier.identifier
             results = participant_videos(participant)
     else:
         identifier = None
@@ -379,8 +379,6 @@ def register_GSCParticipant(request: HttpRequest):
         return HttpResponseNotFound()
     if tournament.state != Tournament_TextChoices.State.ONGOING:  # 比赛必须是进行中
         return HttpResponseForbidden()
-    if (GSCParticipant.objects.filter(tournament=tournament, user=request.user)):  # 用户必须未注册
-        return HttpResponseConflict()
     if not identifier_text.endswith(tournament.token):  # 检查尾号
         return JsonResponse({'type': 'error', 'object': 'identifier', 'category': 'suffix'})
 
@@ -390,6 +388,8 @@ def register_GSCParticipant(request: HttpRequest):
     if identifier.userms and identifier.userms != userms:  # 检查标识是否被占用
         return JsonResponse({'type': 'error', 'object': 'identifier', 'category': 'collision'})
     if participant := GSCParticipant.objects.filter(tournament=tournament, user=request.user).first():
+        if participant.arbiter_identifier:
+            return JsonResponse({'type': 'error', 'object': 'participant', 'category': 'registered'})
         participant.arbiter_identifier = identifier
         participant.save()
     else:

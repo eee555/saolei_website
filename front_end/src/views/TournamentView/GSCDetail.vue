@@ -93,7 +93,7 @@ function refresh() {
 
         if (tournament.value.state === TournamentState.Ongoing && store.login_status === LoginStatus.IsLogin) {
             result.value = [];
-            personaltoken.value = response.data.results.arbiter_identifier;
+            personaltoken.value = response.data.identifier ? response.data.identifier : '';
             personalVideos.value = response.data.results.map((video: any) => new VideoAbstract(video));
         } else {
             personaltoken.value = '';
