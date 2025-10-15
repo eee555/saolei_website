@@ -11,6 +11,9 @@
         <el-button @click="updateVideo(videoid)">
             更新
         </el-button>
+        <el-button @click="removeNewest(videoid)">
+            从最新录像中移除
+        </el-button>
     </div>
     <div>
         域<el-select v-model="videofield">
@@ -67,6 +70,10 @@ const setVideo = (id: number, field: string, value: string) => {
 
 const updateVideo = (id: number) => {
     proxy.$axios.post('video/update/', { id: id }).then(setVideoResponse).catch(httpErrorNotification);
+};
+
+const removeNewest = (id: number) => {
+    proxy.$axios.post('video/newest_queue/remove/', { id: id }).then(setVideoResponse).catch(httpErrorNotification);
 };
 
 </script>
