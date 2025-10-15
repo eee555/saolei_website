@@ -15,7 +15,6 @@
 </template>
 
 <script setup lang="ts">
-import { BBBvSummaryConfig } from '@/store';
 import { VideoAbstract, getStat_stat } from '@/utils/videoabstract';
 import { computed, PropType, ref, watch } from 'vue';
 import { Tippy } from 'vue-tippy';
@@ -63,8 +62,6 @@ function refresh() {
 
 watch(prop, refresh, { immediate: true });
 
-const height = computed(() => BBBvSummaryConfig.value.cellHeight + 'px');
-
 const color = computed(() => {
     if (bestIndex.value === -1) return 'rgba(0,0,0,0)';
     return prop.colorTheme.getColor(prop.videos[bestIndex.value].getStat(prop.displayBy) as number);
@@ -90,7 +87,7 @@ function handleClick() {
 
 .cell {
     display: inline-block;
-    height: v-bind(height);
+    height: 25px;
     background-color: v-bind(color);
     outline-style: solid;
     outline-width: 1px;

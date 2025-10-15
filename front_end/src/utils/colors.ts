@@ -1,5 +1,10 @@
 import { ArrayUtils } from './arrays';
 
+interface Theme {
+    thresholds: number[];
+    colors: string[];
+}
+
 /**
  * PiecewiseColorScheme 类用于根据给定的阈值和颜色数组，根据输入值返回相应的颜色。
  * 该类支持阈值数组按升序或降序排列，根据输入值返回对应的颜色。
@@ -42,6 +47,10 @@ export class PiecewiseColorScheme {
         } else {
             throw new Error('Thresholds must be either ascending or descending');
         }
+    }
+
+    static createFromTheme(theme: Theme) {
+        return new PiecewiseColorScheme(theme.colors, theme.thresholds);
     }
 
     /**

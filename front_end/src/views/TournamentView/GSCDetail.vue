@@ -24,7 +24,15 @@
             {{ t('gsc.realTimeScore') }}&nbsp;
             <base-icon-refresh @click="refresh" />
         </h3>
-        <GSCPersonalSummary :participant="personalresult" />
+        <el-tabs>
+            <el-tab-pane label="概览">
+                <GSCPersonalSummary :videos="personalVideos" />
+            </el-tab-pane>
+            <el-tab-pane label="全部录像">
+                <MultiSelector v-model="VideoListConfig.tournament" :options="ColumnChoices" />
+                <VideoList :videos="personalVideos" :columns="VideoListConfig.tournament" sortable />
+            </el-tab-pane>
+        </el-tabs>
     </template>
     <template v-if="[TournamentState.Finished, TournamentState.Awarded].includes(tournament.state)">
         <h3>
@@ -39,18 +47,21 @@
 import { httpErrorNotification } from '@/components/Notifications';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { Tournament } from '@/utils/tournaments';
-import { ElText } from 'element-plus';
+import { ElText, ElTabs, ElTabPane } from 'element-plus';
 import { ref, watch } from 'vue';
-import { store } from '@/store';
+import { store, VideoListConfig } from '@/store';
 import { LoginStatus } from '@/utils/common/structInterface';
-import { TournamentState } from '@/utils/ms_const';
+import { ColumnChoices, TournamentState } from '@/utils/ms_const';
 import { GSCParticipant, GSCParticipantDefault } from '@/utils/gsc';
-import GSCPersonalSummary from './GSCPersonalSummary.vue';
+import GSCPersonalSummary from '@/components/visualization/GSCPersonalSummary/App.vue';
 import GSCTokenGuide from './GSCTokenGuide.vue';
 import BaseIconRefresh from '@/components/common/BaseIconRefresh.vue';
 import GSCAllSummary from './GSCAllSummary.vue';
 import { useI18n } from 'vue-i18n';
 import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
+import { VideoAbstract } from '@/utils/videoabstract';
+import VideoList from '@/components/VideoList/App.vue';
+import MultiSelector from '@/components/widgets/MultiSelector.vue';
 
 const props = defineProps({
     id: {
@@ -68,6 +79,7 @@ const token = ref<string>('');
 const result = ref<GSCParticipant[]>([]);
 const personaltoken = ref<string>('');
 const personalresult = ref<GSCParticipant>(GSCParticipantDefault);
+const personalVideos = ref<VideoAbstract[]>([]);
 
 function refresh() {
     proxy.$axios.get('tournament/gscinfo/', {
@@ -82,19 +94,7 @@ function refresh() {
         if (tournament.value.state === TournamentState.Ongoing && store.login_status === LoginStatus.IsLogin) {
             result.value = [];
             personaltoken.value = response.data.results.arbiter_identifier;
-            personalresult.value = {
-                user__id: store.user.id,
-                user__realname: store.user.realname,
-                bt1st: response.data.results.bt1st,
-                bt20th: response.data.results.bt20th,
-                bt20sum: response.data.results.bt20sum,
-                it1st: response.data.results.it1st,
-                it12th: response.data.results.it12th,
-                it12sum: response.data.results.it12sum,
-                et1st: response.data.results.et1st,
-                et5th: response.data.results.et5th,
-                et5sum: response.data.results.et5sum,
-            };
+            personalVideos.value = response.data.results.map((video: any) => new VideoAbstract(video));
         } else {
             personaltoken.value = '';
             personalresult.value = GSCParticipantDefault;
