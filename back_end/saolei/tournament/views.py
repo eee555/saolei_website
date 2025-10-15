@@ -319,7 +319,11 @@ def get_gscinfo(request: HttpRequest):
             identifier = None
             results = None
         else:
-            identifier = participant.arbiter_identifier.identifier
+            arbiter_identifier = participant.arbiter_identifier
+            if arbiter_identifier:
+                identifier = arbiter_identifier.identifier
+            else:
+                identifier = None
             results = participant_videos(participant)
     else:
         identifier = None
