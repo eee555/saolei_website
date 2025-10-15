@@ -4,8 +4,8 @@
         :filters="[{ text: t('common.state.c'), value: 'c' }, { text: t('common.state.d'), value: 'd' }]"
         :filter-method="defaultFilterMethod"
     >
-        <template #default="scope">
-            <VideoStateIcon :state="scope.row.state" />
+        <template #default="{row}: {row: VideoAbstract}">
+            <VideoStateIcon :state="row.state" />
         </template>
     </el-table-column>
 </template>
@@ -16,6 +16,7 @@ import { ElTableColumn } from 'element-plus';
 import VideoStateIcon from '@/components/widgets/VideoStateIcon.vue';
 import { defaultFilterMethod } from '@/utils';
 import { useI18n } from 'vue-i18n';
+import { VideoAbstract } from '@/utils/videoabstract';
 
 const { t } = useI18n();
 

@@ -1,7 +1,7 @@
 <template>
     <el-table-column min-width="80">
-        <template #default="player">
-            <PlayerName class="name" :user-id="+player.row.player_id" :user-name="player.row.player_name" />
+        <template #default="{row}: {row: VideoAbstract}">
+            <PlayerName class="name" :user-id="row.player_id" :user-name="row.player_name" />
         </template>
     </el-table-column>
 </template>
@@ -10,5 +10,6 @@
 
 import { ElTableColumn } from 'element-plus';
 import PlayerName from '@/components/PlayerName.vue';
+import { VideoAbstract } from '@/utils/videoabstract';
 
 </script>

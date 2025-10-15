@@ -55,7 +55,7 @@ import { ElLink, ElPopover, ElImage, ElButton, vLoading } from 'element-plus';
 const data = defineProps({
     userId: {
         type: Number,
-        required: true,
+        default: 0,
     },
     userName: {
         type: String,
@@ -82,6 +82,7 @@ const e_t_id = ref('');
 const e_bvs_id = ref('');
 
 const pop_show = async () => {
+    if (data.userId === 0) return;
     document.addEventListener('mousedown', handleOutsideClick);
     is_loading.value = true;
 
@@ -147,7 +148,7 @@ const visit_me = (user_id: number) => {
     // proxy.$store.commit('updatePlayer', { "id": id.value, "realname":realname.value });
     // localStorage.setItem("player", JSON.stringify({ "id": id.value, "realname":realname.value }));
     // localStorage.setItem("player", JSON.stringify({ "id": id.value }));
-    store.player.id = +user_id;
+    store.player.id = user_id;
     router.push(`player/${store.player.id}`);
 };
 

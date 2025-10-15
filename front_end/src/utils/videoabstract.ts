@@ -1,5 +1,5 @@
 import { toISODateString } from './datetime';
-import { MS_Level, MS_Software, STNB_const } from './ms_const';
+import { MS_Level, MS_Software, MS_State, STNB_const } from './ms_const';
 
 function undefinedOrToString(value: any): string | undefined {
     return value === undefined ? undefined : value.toString();
@@ -62,7 +62,7 @@ export class VideoAbstract {
     public mode: string;
     public timems: number;
     public bv: number;
-    public state: string;
+    public state: MS_State;
     public software: MS_Software;
     public cl?: number;
     public ce?: number;
