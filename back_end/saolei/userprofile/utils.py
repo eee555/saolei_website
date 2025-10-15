@@ -48,10 +48,10 @@ def send_email(email, send_type='register'):
     if settings.EMAIL_SKIP:
         return code, hashkey
     if send_type == 'register':
-        email_title = '元扫雷网邮箱注册验证码'
-        email_body = f'欢迎您注册元扫雷网，您的邮箱验证码为：{code}（一小时内有效）。'
+        email_title = '开源扫雷网邮箱注册验证码'
+        email_body = f'欢迎您注册开源扫雷网，您的邮箱验证码为：{code}（一小时内有效）。'
     elif send_type == 'retrieve':
-        email_title = '元扫雷网找回密码验证码'
+        email_title = '开源扫雷网找回密码验证码'
         email_body = f'您正在找回密码。您的邮箱验证码为：{code}（一小时内有效）。请勿与任何人分享此代码，我们的管理员永远不会向您索要此代码。'
     else:
         return None
