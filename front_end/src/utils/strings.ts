@@ -67,7 +67,7 @@ export function formatNumberSmart(
     maxDecimalPlaces: number = Infinity,
 ): string {
     // 分离整数和小数部分
-    const [integerPart, decimalPart = ''] = num.toString().split('.');
+    const integerPart = num.toString().split('.')[0];
 
     // 如果整数部分已经超过或等于总长度
     if (integerPart.length >= totalLength) {
