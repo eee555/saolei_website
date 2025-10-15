@@ -164,6 +164,8 @@ class VideoModel(models.Model):
         ]
 
     def push_redis(self, name: str):
+        if self.ongoing_tournament and name == 'newest_queue':
+            return
         cache.hset(name, self.id, json.dumps({
             "state": self.state,
             "tournament": self.ongoing_tournament,
