@@ -25,10 +25,10 @@
             <base-icon-refresh @click="refresh" />
         </h3>
         <el-tabs>
-            <el-tab-pane label="概览">
+            <el-tab-pane :label="t('gsc.summary')">
                 <GSCPersonalSummary :videos="personalVideos" />
             </el-tab-pane>
-            <el-tab-pane label="全部录像">
+            <el-tab-pane :label="t('gsc.videos')">
                 <MultiSelector v-model="VideoListConfig.tournament" :options="ColumnChoices" />
                 <VideoList :videos="personalVideos" :columns="VideoListConfig.tournament" sortable />
             </el-tab-pane>
