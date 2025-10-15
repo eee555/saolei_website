@@ -207,6 +207,15 @@ def newest_queue(request: HttpRequest):
     return JsonResponse(newest_queue_ids, encoder=ComplexEncoder)
 
 
+@require_POST
+@staff_required
+def remove_from_newest_queue(request: HttpRequest):
+    if not (video_id := request.POST.get("id")):
+        return HttpResponseBadRequest()
+    cache.hdel("newest_queue", video_id)
+    return HttpResponse()
+
+
 # 获取谁破纪录的消息
 # http://127.0.0.1:8000/video/news_queue
 @require_GET
