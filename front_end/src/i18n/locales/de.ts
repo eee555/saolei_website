@@ -32,9 +32,6 @@ export default {
         login: 'Login',
         logout: 'Abmeldem',
         register: 'Registrieren',
-        downloads: 'Downloads',
-        links: 'Links',
-        team: 'Team',
     },
     profile: {
         changeAvatar: 'Profilbild ändern',

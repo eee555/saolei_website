@@ -13,6 +13,7 @@ from utils import verify_text
 from utils.response import HttpResponseConflict
 from .forms import TournamentForm
 from .models import GSCParticipant, GSCTournament, Tournament, TournamentParticipant
+from .utils import participant_videos
 
 
 @require_POST
@@ -295,8 +296,10 @@ def get_gscinfo(request: HttpRequest):
         if not (order := request.GET.get('order')):
             return HttpResponseBadRequest()
         tournament = GSCTournament.objects.filter(order=order).first()
+        tournament_id = tournament.tournament_ptr_id
     else:
         tournament: GSCTournament = Tournament.objects.select_subclasses().filter(id=tournament_id).first()
+        order = tournament.order
     if not tournament:
         return HttpResponseNotFound()
     tournament.refresh_state()
@@ -309,39 +312,30 @@ def get_gscinfo(request: HttpRequest):
             'it1st', 'it12th', 'it12sum',
             'et1st', 'et5th', 'et5sum',
         ))
+        identifier = None
     elif request.user.is_authenticated:
         participant = GSCParticipant.objects.filter(tournament=tournament, user=request.user).first()
         if not participant:
+            identifier = None
             results = None
         else:
-            participant.refresh()
-            identifier = participant.arbiter_identifier
-            results = {
-                'token': participant.token,
-                'arbiter_identifier': identifier.identifier if identifier else '',
-                'bt1st': participant.bt1st,
-                'bt20th': participant.bt20th,
-                'bt20sum': participant.bt20sum,
-                'it1st': participant.it1st,
-                'it12th': participant.it12th,
-                'it12sum': participant.it12sum,
-                'et1st': participant.et1st,
-                'et5th': participant.et5th,
-                'et5sum': participant.et5sum,
-            }
+            identifier = participant.arbiter_identifier.identifier
+            results = participant_videos(participant)
     else:
+        identifier = None
         results = []
     return JsonResponse({
         'type': 'success',
         'data': {
-            'id': tournament.id,
+            'id': tournament_id,
             'start_time': tournament.start_time,
             'end_time': tournament.end_time,
             'state': tournament.state,
-            'order': tournament.order,
+            'order': order,
             'token': tournament.token,
         },
         'results': results,
+        'identifier': identifier,
     })
 
 
@@ -385,8 +379,6 @@ def register_GSCParticipant(request: HttpRequest):
         return HttpResponseNotFound()
     if tournament.state != Tournament_TextChoices.State.ONGOING:  # 比赛必须是进行中
         return HttpResponseForbidden()
-    if (GSCParticipant.objects.filter(tournament=tournament, user=request.user)):  # 用户必须未注册
-        return HttpResponseConflict()
     if not identifier_text.endswith(tournament.token):  # 检查尾号
         return JsonResponse({'type': 'error', 'object': 'identifier', 'category': 'suffix'})
 
@@ -396,6 +388,8 @@ def register_GSCParticipant(request: HttpRequest):
     if identifier.userms and identifier.userms != userms:  # 检查标识是否被占用
         return JsonResponse({'type': 'error', 'object': 'identifier', 'category': 'collision'})
     if participant := GSCParticipant.objects.filter(tournament=tournament, user=request.user).first():
+        if participant.arbiter_identifier:
+            return JsonResponse({'type': 'error', 'object': 'participant', 'category': 'registered'})
         participant.arbiter_identifier = identifier
         participant.save()
     else:

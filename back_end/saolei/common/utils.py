@@ -122,6 +122,7 @@ def new_video_by_file(user: UserProfile, file: File, check_tournament: bool = Tr
         if file.name.endswith('.avf'):
             if participant := TournamentParticipant.objects.filter(user=user, arbiter_identifier__identifier=video.video.identifier).first():
                 tournament = participant.tournament
+                tournament.refresh_state()
                 if tournament.state == Tournament_TextChoices.State.ONGOING:
                     video.ongoing_tournament = True
                     tournament.videos.add(video)
@@ -134,7 +135,8 @@ def new_video_by_file(user: UserProfile, file: File, check_tournament: bool = Tr
                 participant = TournamentParticipant.objects.filter(user=user, tournament=gsc_tournament).first()
                 if not gsc_tournament:  # 暂时只支持gsc
                     continue
-                if gsc_tournament and gsc_tournament.state == Tournament_TextChoices.State.ONGOING:
+                gsc_tournament.refresh_state()
+                if gsc_tournament.state == Tournament_TextChoices.State.ONGOING:
                     video.ongoing_tournament = True
                     gsc_tournament.videos.add(video)
                     if not participant:

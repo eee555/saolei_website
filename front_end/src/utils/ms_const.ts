@@ -12,6 +12,14 @@ export const STNB_const = useLocalStorage('stnb_const', {
     e: 435.001,
 });
 
+export enum MS_State {
+    Plain = 'a',
+    Frozen = 'b',
+    Official = 'c',
+    Identifier = 'd',
+    External = 'e',
+}
+
 export enum TournamentState {
     Pending = 'p',
     Ongoing = 'o',
@@ -35,3 +43,6 @@ export const GSCDefaults = {
 
 export const ColorTemplateNames = ['time', 'bvs', 'stnb', 'ioe', 'thrp', 'path', 'custom'] as const;
 export type ColorTemplateName = typeof ColorTemplateNames[number];
+
+export const ColumnChoices = ['bv', 'bvs', 'ces', 'cls', 'corr', 'end_time', 'ioe', 'level', 'state', 'software', 'thrp', 'time', 'upload_time', 'path', 'file_size', 'mode'] as const;
+export type ColumnChoice = typeof ColumnChoices[number];
