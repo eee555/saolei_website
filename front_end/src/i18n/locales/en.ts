@@ -205,6 +205,7 @@ export default {
             line1: 'Among all videos uploaded during (depending on when the server receives the file) the tournament, sum up the best 20 beginner (bv >= 10) games, 12 intermediate (bv >= 30) games and 5 expert (bv >= 100) games.',
             line2: 'The default scores are 10s for beginner, 60s for intermediate and 240s for expert, when there are not enough games uploaded.',
         },
+        bbbvSummary: 'Bv Chart',
         finalResults: 'Final Results',
         howToParticipate: 'How to Participate',
         identifierGuide: {

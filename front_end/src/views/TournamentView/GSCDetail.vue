@@ -32,6 +32,12 @@
                 <MultiSelector v-model="VideoListConfig.tournament" :options="ColumnChoices" />
                 <VideoList :videos="personalVideos" :columns="VideoListConfig.tournament" sortable />
             </el-tab-pane>
+            <el-tab-pane :label="t('gsc.bbbvSummary')">
+                <BBBvSummaryHeader />
+                <BBBvSummary level="b" header :video-list="personalVideos" />
+                <BBBvSummary level="i" :video-list="personalVideos" />
+                <BBBvSummary level="e" :video-list="personalVideos" />
+            </el-tab-pane>
         </el-tabs>
     </template>
     <template v-if="[TournamentState.Finished, TournamentState.Awarded].includes(tournament.state)">
@@ -62,6 +68,8 @@ import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
 import { VideoAbstract } from '@/utils/videoabstract';
 import VideoList from '@/components/VideoList/App.vue';
 import MultiSelector from '@/components/widgets/MultiSelector.vue';
+import BBBvSummary from '@/components/visualization/BBBvSummary/App.vue';
+import BBBvSummaryHeader from '@/components/visualization/BBBvSummary/Header.vue';
 
 const props = defineProps({
     id: {
