@@ -1,5 +1,5 @@
 <template>
-    <el-table :data="videos" size="small" table-layout="auto" :default-sort="{prop: 'upload_time', order: 'descending'}" @row-click="(row: any) => preview(row.id)">
+    <el-table :data="videos" size="small" table-layout="auto" @row-click="(row: any) => preview(row.id)">
         <component
             :is="componentConfig(column).component" v-for="column in columns" :key="column"
             :sortable="componentConfig(column).sortable ? sortable : undefined"

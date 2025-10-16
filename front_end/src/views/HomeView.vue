@@ -126,6 +126,7 @@ const update_newest_queue = async () => {
             const videoid = Number.parseInt(key);
             const videoinfo = JSON.parse(response.data[key] as string);
             newest_queue.value.push(VideoAbstract.fromVideoRedisInfo(videoid, videoinfo));
+            newest_queue.value.sort((v1, v2) => v2.upload_time.getTime() - v1.upload_time.getTime());
         }
     });
     if (newest_queue_status.value == 1) {

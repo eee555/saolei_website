@@ -179,6 +179,7 @@ function refresh() {
     ).then(function (response) {
         const data = response.data;
         store.player = new UserProfile(data);
+        store.player.videos.sort((v1, v2) => v2.upload_time.getTime() - v1.upload_time.getTime());
 
         userid.value = data.id;
         realname.value = data.realname;
