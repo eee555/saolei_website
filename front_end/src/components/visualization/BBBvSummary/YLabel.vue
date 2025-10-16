@@ -1,15 +1,14 @@
 <template>
     <div style="width: 10%; min-width: 75px; text-align: center">
-        <div v-for="i of ArrayUtils.range(minBv, maxBv, 10)" :style="{width: '100%', lineHeight:`${BBBvSummaryConfig.cellHeight}px`}">
+        <el-text v-for="i of ArrayUtils.range(minBv, maxBv, 10)" :key="i" tag="div" :style="{width: '100%', lineHeight: '25px'}">
             {{ i }}-{{ i+9 }}
-        </div>
+        </el-text>
     </div>
 </template>
 
 <script setup lang="ts">
-import { BBBvSummaryConfig } from '@/store';
 import { ArrayUtils } from '@/utils/arrays';
-
+import { ElText } from 'element-plus';
 
 defineProps({
     minBv: { type: Number, required: true },
