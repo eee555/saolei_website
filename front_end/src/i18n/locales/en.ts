@@ -59,6 +59,7 @@ export default {
             identifier: 'Identifier',
             end_time: 'End Time',
             fileName: 'File Name',
+            file_size: 'File Size',
             is: 'Island',
             isl: 'Island',
             level: 'Level',

@@ -74,7 +74,6 @@ export const activityCalendarConfig = useLocalStorage(
 export const BBBvSummaryConfig = useLocalStorage(
     'bbbv-summary-config',
     {
-        cellHeight: 25,
         template: 'time' as ColorTemplateName,
         sortBy: 'timems' as getStat_stat,
         displayBy: 'time' as getStat_stat,
@@ -90,6 +89,7 @@ export const VideoListConfig = useLocalStorage(
     'video-list-config',
     {
         profile: ['state', 'upload_time', 'software', 'level', 'mode', 'time', 'bv', 'bvs', 'ioe', 'thrp', 'path', 'file_size'] as ColumnChoice[],
+        tournament: ['state', 'upload_time', 'software', 'level', 'mode', 'time', 'bv', 'bvs', 'ioe', 'thrp', 'path'] as ColumnChoice[],
     },
     { mergeDefaults: true },
 );

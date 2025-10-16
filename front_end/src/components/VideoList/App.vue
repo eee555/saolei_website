@@ -19,6 +19,7 @@ import { ColumnChoice } from '@/utils/ms_const';
 const ColumnFileSize = defineAsyncComponent(() => import('./ColumnFileSize.vue'));
 const ColumnLevel = defineAsyncComponent(() => import('./ColumnLevel.vue'));
 const ColumnMode = defineAsyncComponent(() => import('./ColumnMode.vue'));
+const ColumnPlayerName = defineAsyncComponent(() => import('./ColumnPlayerName.vue'));
 const ColumnStat = defineAsyncComponent(() => import('./ColumnStat.vue'));
 const ColumnState = defineAsyncComponent(() => import('./ColumnState.vue'));
 const ColumnSoftware = defineAsyncComponent(() => import('./ColumnSoftware.vue'));
@@ -48,6 +49,11 @@ function componentConfig(choice: ColumnChoice) {
         };
         case 'mode': return {
             component: ColumnMode,
+            sortable: false,
+            isStat: false,
+        };
+        case 'player': return {
+            component: ColumnPlayerName,
             sortable: false,
             isStat: false,
         };

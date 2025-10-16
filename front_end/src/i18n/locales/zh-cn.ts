@@ -57,6 +57,7 @@ export default {
             identifier: '标识',
             end_time: '结束时间',
             fileName: '文件名',
+            file_size: '文件大小',
             is: '岛',
             isl: '岛',
             level: '级别',
