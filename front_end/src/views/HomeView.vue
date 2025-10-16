@@ -34,7 +34,6 @@
                                 {{ news.delta == "新" ? "" : news.delta > 0 ? "↑" : "↓" }}{{ news.delta }}
                             </el-text>
                         </div>
-                        <!-- 2023年2月26日 11:45 周炎亮 将高级标准模式时间记录刷新为 91.52 ↑3.60-->
                     </el-tab-pane>
                 </el-tabs>
                 <el-tabs v-model="active_tab" type="border-card" style="margin-top: 2%;">
@@ -53,84 +52,31 @@
                                 <base-icon-refresh />
                             </el-link>
                         </template>
-                        <VideoList :videos="newest_queue" :reverse="true" :show-header="false" />
+                        <VideoList :videos="newest_queue" :columns="['state', 'upload_time', 'player', 'software', 'mode', 'level', 'time', 'bv', 'bvs', 'ioe', 'thrp']" sortable />
                     </el-tab-pane>
                     <el-tab-pane :label="t('home.reviewQueue')" class="bottom_tabs" :lazy="true" name="review">
-                        <VideoList
-                            v-loading="review_queue_updating" :videos="review_queue" :review-mode="store.user.is_staff"
-                            @update="update_review_queue"
-                        />
+                        <VideoList v-loading="review_queue_updating" :videos="review_queue" :columns="['state', 'upload_time', 'player', 'software', 'mode', 'level', 'time', 'bv', 'bvs', 'ioe', 'thrp']" />
                     </el-tab-pane>
                 </el-tabs>
             </el-main>
-            <el-aside v-if="false" width="30%" style="padding: 1%;">
-                <el-tabs v-if="false" type="border-card" style="min-height: 300px;">
-                    <el-tab-pane label="每日一星">
-                        每日一星
-                    </el-tab-pane>
-                    <el-tab-pane label="站长统计">
-                        站长统计
-                    </el-tab-pane>
-                    <el-tab-pane label="如何评选？">
-                        如何评选？
-                    </el-tab-pane>
-                </el-tabs>
-                <div style="padding-top: 5%;user-select: none;">
-                    <div class="aside-tip-title">
-                        <el-icon>
-                            <Download />
-                        </el-icon>下载中心
-                    </div>
-                    <div style="font-size: 14px;padding: 2% 5%;">
-                        <Downloads />
-                        <span style="width:12px; display:inline-block" />
-                        <FriendlyLink />
-                    </div>
-
-                    <div class="aside-tip-title">
-                        <el-icon>
-                            <QuestionFilled />
-                        </el-icon>帮助中心
-                    </div>
-                    <!-- <div style="font-size: 14px;padding: 2% 5%;">
-                        <Groups></Groups>
-                    </div> -->
-
-                    <div class="aside-tip-title">
-                        <el-icon>
-                            <InfoFilled />
-                        </el-icon>关于我们
-                    </div>
-                    <div style="font-size: 14px;padding: 2% 5%;">
-                        <Thanks />
-                        <span style="width:12px; display:inline-block" />
-                        赞助
-                    </div>
-                </div>
-            </el-aside>
         </el-container>
     </div>
 </template>
 
 <script setup lang='ts'>
 import { onMounted, ref } from 'vue';
-import { ElContainer, ElAside, ElIcon, ElMain, ElTabs, ElTabPane, ElText, ElLink, vLoading } from 'element-plus';
+import { ElContainer, ElIcon, ElMain, ElTabs, ElTabPane, ElText, ElLink, vLoading } from 'element-plus';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import PreviewNumber from '@/components/PreviewNumber.vue';
-import VideoList from '@/components/VideoList.vue';
+import VideoList from '@/components/VideoList/App.vue';
 import PlayerName from '@/components/PlayerName.vue';
 import { to_fixed_n } from '@/utils';
-const { proxy } = useCurrentInstance();
 import { utc_to_local_format } from '@/utils/system/tools';
-
-import FriendlyLink from '@/components/dialogs/FriendlyLinks.vue';
-import Downloads from '@/components/dialogs/Downloads.vue';
-import Thanks from '@/components/dialogs/Thanks.vue';
 import BaseIconRefresh from '@/components/common/BaseIconRefresh.vue';
-import { store } from '../store';
-
 import { useI18n } from 'vue-i18n';
 import { VideoAbstract } from '@/utils/videoabstract';
+
+const { proxy } = useCurrentInstance();
 const { t } = useI18n();
 
 const review_queue = ref<VideoAbstract[]>([]);
@@ -180,6 +126,7 @@ const update_newest_queue = async () => {
             const videoid = Number.parseInt(key);
             const videoinfo = JSON.parse(response.data[key] as string);
             newest_queue.value.push(VideoAbstract.fromVideoRedisInfo(videoid, videoinfo));
+            newest_queue.value.sort((v1, v2) => v2.upload_time.getTime() - v1.upload_time.getTime());
         }
     });
     if (newest_queue_status.value == 1) {

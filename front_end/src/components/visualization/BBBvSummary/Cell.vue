@@ -91,6 +91,7 @@ function handleClick() {
     background-color: v-bind(color);
     outline-style: solid;
     outline-width: 1px;
+    outline-color: var(--el-border-color-lighter);
     text-align: center;
     align-items: center;
     box-sizing: border-box;

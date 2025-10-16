@@ -26,13 +26,15 @@ import BaseIconIdentifier from '@/components/common/BaseIconIdentifier.vue';
 import BaseIconExternal from '@/components/common/BaseIconExternal.vue';
 import BaseTooltip from '@/components/common/BaseTooltip.vue';
 import { useI18n } from 'vue-i18n';
+import { PropType } from 'vue';
+import { MS_State } from '@/utils/ms_const';
 
 const { t } = useI18n();
 
 defineProps({
     state: {
-        type: String,
-        default: 'z',
+        type: String as PropType<MS_State>,
+        required: true,
     },
 });
 </script>

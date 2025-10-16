@@ -1,12 +1,16 @@
 <template>
     <el-row v-if="header" :style="{ textAlign: 'center', height: '25px', flexWrap: 'nowrap', marginTop: '10px', marginBottom: '-16px' }">
         <span style="width: 10%; min-width: 75px" />
-        <span v-for="i in 10" style="width: 8.9%; min-width: 4em">{{ i - 1 }}</span>
+        <el-text v-for="i in 10" :key="i" style="width: 8.9%; min-width: 4em">
+            {{ i - 1 }}
+        </el-text>
     </el-row>
     <el-divider data-cy="summary" style="margin: 18px 0 12px 0;">
-        {{ t(`common.level.${level}`) }}
-        &nbsp;
-        {{ t('BBBvSummary.bbbvInTotal', [groupedVideoAbstract.size]) }}
+        <el-text>
+            {{ t(`common.level.${level}`) }}
+            &nbsp;
+            {{ t('BBBvSummary.bbbvInTotal', [groupedVideoAbstract.size]) }}
+        </el-text>
     </el-divider>
     <el-row v-if="groupedVideoAbstract.size > 0" style="white-space: nowrap;">
         <YLabel :min-bv="minBv" :max-bv="maxBv" />
@@ -30,7 +34,7 @@
 
 <script setup lang="ts">
 import { BBBvSummaryConfig, colorTheme } from '@/store';
-import { ElRow, ElDivider } from 'element-plus';
+import { ElRow, ElDivider, ElText } from 'element-plus';
 import { getLastDigit, setLastDigit } from '@/utils/math';
 import { ColorTemplateName, MS_Level } from '@/utils/ms_const';
 import { getStat_stat, groupVideosByBBBv, VideoAbstract } from '@/utils/videoabstract';
