@@ -203,6 +203,7 @@ export default {
             line1: '比赛期间上传（以服务器接收时间为准）的所有录像中，取成绩最好的20局初级（bv>=10）、12局中级（bv>=30）、5局高级（bv>=100），计算总成绩。',
             line2: '局数不够的，初级按照10秒，中级按照60秒，高级按照240秒补全。',
         },
+        bbbvSummary: 'Bv表',
         finalResults: '比赛结果',
         howToParticipate: '如何参赛',
         identifierGuide: {

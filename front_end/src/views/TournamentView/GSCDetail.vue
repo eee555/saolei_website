@@ -25,12 +25,18 @@
             <base-icon-refresh @click="refresh" />
         </h3>
         <el-tabs>
-            <el-tab-pane :label="t('gsc.summary')">
+            <el-tab-pane :label="t('gsc.summary')" lazy>
                 <GSCPersonalSummary :videos="personalVideos" />
             </el-tab-pane>
-            <el-tab-pane :label="t('gsc.videos')">
+            <el-tab-pane :label="t('gsc.videos')" lazy>
                 <MultiSelector v-model="VideoListConfig.tournament" :options="ColumnChoices" />
                 <VideoList :videos="personalVideos" :columns="VideoListConfig.tournament" sortable />
+            </el-tab-pane>
+            <el-tab-pane :label="t('gsc.bbbvSummary')" lazy>
+                <BBBvSummaryHeader />
+                <BBBvSummary level="b" header :video-list="personalVideos" />
+                <BBBvSummary level="i" :video-list="personalVideos" />
+                <BBBvSummary level="e" :video-list="personalVideos" />
             </el-tab-pane>
         </el-tabs>
     </template>
@@ -62,6 +68,8 @@ import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
 import { VideoAbstract } from '@/utils/videoabstract';
 import VideoList from '@/components/VideoList/App.vue';
 import MultiSelector from '@/components/widgets/MultiSelector.vue';
+import BBBvSummary from '@/components/visualization/BBBvSummary/App.vue';
+import BBBvSummaryHeader from '@/components/visualization/BBBvSummary/Header.vue';
 
 const props = defineProps({
     id: {
