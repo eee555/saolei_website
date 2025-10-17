@@ -29,7 +29,7 @@
                 <GSCPersonalSummary :videos="personalVideos" />
             </el-tab-pane>
             <el-tab-pane :label="t('gsc.videos')" lazy>
-                <MultiSelector v-model="VideoListConfig.tournament" :options="ColumnChoices" />
+                <MultiSelector v-model="VideoListConfig.tournament" :options="thisColumnChoices" :labels="thisColumnChoices.map((s) => t(`common.prop.${s}`))" />
                 <VideoList :videos="personalVideos" :columns="VideoListConfig.tournament" sortable />
             </el-tab-pane>
             <el-tab-pane :label="t('gsc.bbbvSummary')" lazy>
@@ -57,7 +57,7 @@ import { ElText, ElTabs, ElTabPane } from 'element-plus';
 import { ref, watch } from 'vue';
 import { store, VideoListConfig } from '@/store';
 import { LoginStatus } from '@/utils/common/structInterface';
-import { ColumnChoices, TournamentState } from '@/utils/ms_const';
+import { TournamentState } from '@/utils/ms_const';
 import { GSCParticipant, GSCParticipantDefault } from '@/utils/gsc';
 import GSCPersonalSummary from '@/components/visualization/GSCPersonalSummary/App.vue';
 import GSCTokenGuide from './GSCTokenGuide.vue';
@@ -80,6 +80,7 @@ const props = defineProps({
 
 const { proxy } = useCurrentInstance();
 const { t } = useI18n();
+const thisColumnChoices = ['bv', 'bvs', 'stnb', 'ces', 'cls', 'corr', 'end_time', 'ioe', 'level', 'state', 'software', 'thrp', 'time', 'upload_time', 'path', 'file_size'] as const;
 
 const tournament = ref<Tournament>(new Tournament({}));
 const order = ref<number>(0);
