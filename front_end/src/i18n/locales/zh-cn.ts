@@ -62,9 +62,11 @@ export default {
             isl: '岛',
             level: '级别',
             mastery: '动态胜率',
+            mode: '模式',
             op: '空',
             realName: '姓名',
             sex: '性别',
+            software: '软件',
             state: '状态', // 录像属性
             status: '状态',
             time: '用时',

@@ -1,7 +1,7 @@
 <template>
     <el-table-column
-        prop="upload_time" min-width="180" :formatter="simple_formatter(utc_to_local_format)"
-        :sortable="sortable" :label="t('common.prop.upload_time')"
+        prop="end_time" min-width="180" :formatter="simple_formatter(utc_to_local_format)"
+        :sortable="sortable" :label="t('common.prop.end_time')"
     />
 </template>
 

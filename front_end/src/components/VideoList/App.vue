@@ -16,6 +16,7 @@ import { ElTable } from 'element-plus';
 import { defineAsyncComponent } from 'vue';
 import { ColumnChoice } from '@/utils/ms_const';
 
+const ColumnEndTime = defineAsyncComponent(() => import('./ColumnEndTime.vue'));
 const ColumnFileSize = defineAsyncComponent(() => import('./ColumnFileSize.vue'));
 const ColumnLevel = defineAsyncComponent(() => import('./ColumnLevel.vue'));
 const ColumnMode = defineAsyncComponent(() => import('./ColumnMode.vue'));
@@ -69,6 +70,11 @@ function componentConfig(choice: ColumnChoice) {
         };
         case 'upload_time': return {
             component: ColumnUploadTime,
+            sortable: true,
+            isStat: false,
+        };
+        case 'end_time': return {
+            component: ColumnEndTime,
             sortable: true,
             isStat: false,
         };
