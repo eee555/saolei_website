@@ -7,9 +7,18 @@
         </el-col>
         <el-col :span="1" />
         <el-col :span="8">
-            <el-button @click="calculate">计算所有选手成绩</el-button><br>
-            <el-button @click="logList = []">清空日志</el-button><br>
-            <el-button @click="award">计算排行并结束比赛</el-button><br>
+            <el-button @click="calculate">
+                计算所有选手成绩
+            </el-button>
+            <br>
+            <el-button @click="logList = []">
+                清空日志
+            </el-button>
+            <br>
+            <el-button @click="award">
+                计算排行并结束比赛
+            </el-button>
+            <br>
             <el-text v-for="(log, index) in logList" :key="index" :style="{ display: 'block' }">
                 {{ log }}
             </el-text>

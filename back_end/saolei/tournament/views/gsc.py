@@ -1,16 +1,17 @@
+from datetime import datetime, timezone
+
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
 from django.views.decorators.http import require_GET, require_POST
-from ..decorators import GSC_admin_required
-from ..models import GSCParticipant, GSCTournament, Tournament
+
 from config.text_choices import Tournament_TextChoices
-from datetime import datetime, timezone
 from config.tournaments import TournamentWeights
-from utils.response import HttpResponseConflict
-from userprofile.decorators import login_required_error
 from identifier.models import Identifier
 from identifier.utils import verify_identifier
+from userprofile.decorators import login_required_error
+from utils.response import HttpResponseConflict
+from ..decorators import GSC_admin_required
+from ..models import GSCParticipant, GSCTournament, Tournament
 from ..utils import participant_videos
-from django.forms.models import model_to_dict
 
 
 @require_POST

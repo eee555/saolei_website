@@ -43,7 +43,7 @@ class Tournament(models.Model):
     @property
     def description(self):
         raise NotImplementedError("Subclasses of Tournament must implement the 'description' property.")
-    
+
     @property
     def participants(self):
         return TournamentParticipant.objects.filter(tournament=self)

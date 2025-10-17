@@ -1,6 +1,9 @@
 from functools import wraps
+
 from django.http import HttpResponseForbidden
+
 from config.tournaments import GSC_Defaults
+
 
 def GSC_admin_required(view_func):
     @wraps(view_func)
