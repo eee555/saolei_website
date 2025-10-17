@@ -43,6 +43,10 @@ class Tournament(models.Model):
     @property
     def description(self):
         raise NotImplementedError("Subclasses of Tournament must implement the 'description' property.")
+    
+    @property
+    def participants(self):
+        return TournamentParticipant.objects.filter(tournament=self)
 
     def start(self):
         self.state = Tournament_TextChoices.State.ONGOING
@@ -130,22 +134,31 @@ class GSCTournament(Tournament):
             self.new_token()
         super().start()
 
-    def end(self):
-        self.refresh_score()
-        super().end()
-
     def add_participant(self, user: UserProfile):
         if not GSCParticipant.objects.filter(user=user, tournament=self).exists():
             GSCParticipant.objects.create(user=user, tournament=self, token=self.token, start_time=datetime.now(tz=timezone.utc))
 
-    def refresh_score(self):
-        for participant in GSCParticipant.objects.filter(tournament=self):
-            participant.refresh()
+    def refresh_rank(self):
         rank = 1
         for participant in GSCParticipant.objects.filter(tournament=self).order_by('t37'):
             participant.rank = rank
             participant.save()
             rank += 1
+
+    def refresh_score(self):
+        for participant in GSCParticipant.objects.filter(tournament=self):
+            participant.refresh()
+
+    def get_scores(self):
+        GSCParticipant.objects.filter(tournament=self).values(
+            'id',
+            'user__id', 'user__realname',
+            'start_time', 'end_time',
+            'rank', 'rank_score',
+            'bt1st', 'bt20th', 'bt20sum',
+            'it1st', 'it12th', 'it12sum',
+            'et1st', 'et5th', 'et5sum',
+        )
 
 
 class GeneralTournament(Tournament):
