@@ -1,11 +1,11 @@
 <template>
     <el-checkbox-group v-model="selected">
-        <el-checkbox v-for="i in options.length" :key="options[i]" size="small">
+        <el-checkbox v-for="(option, i) in options" :key="`check-${option}`" :value="option" size="small">
             {{ _labels[i] }}
         </el-checkbox>
     </el-checkbox-group>
-    <el-tag v-for="i in options.length" :key="options[i]" closable size="small" round @close="handleClose">
-        {{ _labels[i] }}
+    <el-tag v-for="(option) in selected" :key="`tag-${option}`" closable size="small" round @close="handleClose(option)">
+        {{ _labels[options.indexOf(option)] }}
     </el-tag>
 </template>
 
