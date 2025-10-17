@@ -8,6 +8,7 @@ export interface GSCInfo {
 }
 
 export interface GSCParticipant {
+    id: number;
     user__id: number;
     user__realname: string;
     bt1st: number;
@@ -22,6 +23,7 @@ export interface GSCParticipant {
 }
 
 export const GSCParticipantDefault: GSCParticipant = {
+    id: 0,
     user__id: 0,
     user__realname: '',
     bt1st: GSCDefaults.bt,
