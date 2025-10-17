@@ -1,6 +1,12 @@
 import { toISODateTimeString } from './datetime';
 import { TournamentState, TournamentSeries } from './ms_const';
 
+export interface TournamentParticipant {
+    id: number;
+    user__id: number;
+    user__realname: string;
+}
+
 export class Tournament {
     public id: number;
     public name: string;

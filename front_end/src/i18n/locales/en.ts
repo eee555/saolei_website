@@ -64,9 +64,11 @@ export default {
             isl: 'Island',
             level: 'Level',
             mastery: 'Mastery',
+            mode: 'Mode',
             op: 'Opening',
             realName: 'Real Name',
             sex: 'Sex',
+            software: 'Software',
             state: 'State', // video attribute
             status: 'Status',
             time: 'Time',

@@ -72,6 +72,7 @@ describe('<RegisterDialog />', () => {
         cy.mockCaptchaRefresh();
         mockCheckCollision();
     });
+
     it('Rendering', () => {
         cy.mount(RegisterDialog, mountOptions);
         cy.contains('Register').find('button').should('not.exist');
@@ -87,6 +88,73 @@ describe('<RegisterDialog />', () => {
         cy.contains('Agree to').find('input').should('have.attr', 'type', 'checkbox');
     });
 
+    it('Username Validation - Collision', () => {
+        cy.mount(RegisterDialog, mountOptions);
+
+        findUsernameInput().type('existingUsername{enter}');
+        expectUsernameValidationError('Username already exists');
+
+        findUsernameInput().clear();
+        findUsernameInput().type('newUsername{enter}');
+        expectUsernameValidationSuccess();
+    });
+
+    it('Email Validation - Format', () => {
+        cy.mount(RegisterDialog, mountOptions);
+        findEmailInput().type('a{enter}');
+        expectEmailValidationError('Invalid email address');
+
+        findEmailInput().clear();
+        findEmailInput().type('a@b{enter}');
+        expectEmailValidationError('Invalid email address');
+
+        findEmailInput().clear();
+        expectEmailValidationError('Email required');
+    });
+
+    it('Email Validation - Collision', () => {
+        cy.mount(RegisterDialog, mountOptions);
+        findEmailInput().type('existing@email.com{enter}');
+        expectEmailValidationError('Email already exists');
+
+        findEmailInput().clear();
+        findEmailInput().type('new@email.com{enter}');
+        expectEmailValidationSuccess();
+    });
+
+    it('Normal Flow', () => {
+        cy.mockGetEmailCode();
+        cy.mockRegister();
+        cy.mount(RegisterDialog, mountOptions);
+
+        findRegisterButton().should('be.disabled');
+
+        findUsernameInput().type('validUsername{enter}');
+        findRegisterButton().should('be.disabled');
+
+        findEmailInput().type('valid@email.com{enter}');
+        findRegisterButton().should('be.disabled');
+
+        cy.contains('Image captcha').next().find('input').type('test{enter}');
+        cy.get('button').contains('Send').click();
+        cy.contains('Email code').next().find('input').should('be.enabled');
+        cy.contains('Email code').next().find('input').type('123456{enter}');
+        findRegisterButton().should('be.disabled');
+
+        findPasswordInput().type('validPassword{enter}');
+        findRegisterButton().should('be.disabled');
+
+        findConfirmPasswordInput().type('validPassword{enter}');
+        findRegisterButton().should('be.disabled');
+
+        cy.contains('Agree to').find('input').parent().click();
+        findRegisterButton().should('be.enabled');
+
+        findRegisterButton().click();
+        cy.contains('Successfully registered!');
+    });
+
+    // 这个不放到最后就会出奇怪的bug
     it('Username Validation - Format', () => {
         cy.mount(RegisterDialog, mountOptions);
 
@@ -131,71 +199,6 @@ describe('<RegisterDialog />', () => {
         expectUsernameValidationError('Username cannot contain paragraph separators');
     });
 
-    it('Username Validation - Collision', () => {
-        cy.mount(RegisterDialog, mountOptions);
-        findUsernameInput().type('existingUsername{enter}');
-        expectUsernameValidationError('Username already exists');
-
-        findUsernameInput().clear();
-        findUsernameInput().type('newUsername{enter}');
-        expectUsernameValidationSuccess();
-    });
-
-    it('Email Validation - Format', () => {
-        cy.mount(RegisterDialog, mountOptions);
-        findEmailInput().type('a{enter}');
-        expectEmailValidationError('Invalid email address');
-
-        findEmailInput().clear();
-        findEmailInput().type('a@b{enter}');
-        expectEmailValidationError('Invalid email address');
-
-        findEmailInput().clear();
-        expectEmailValidationError('Email required');
-    });
-
-    it('Email Validation - Collision', () => {
-        cy.mount(RegisterDialog, mountOptions);
-        findEmailInput().type('existing@email.com{enter}');
-        expectEmailValidationError('Email already exists');
-
-        findEmailInput().clear();
-        findEmailInput().type('new@email.com{enter}');
-        expectEmailValidationSuccess();
-    });
-
     // Email code validation is handled in emailCodeBlock.cy.ts
     // Password validation is handled in passwordConfirmBlock.cy.ts
-
-    it('Normal Flow', () => {
-        cy.mockGetEmailCode();
-        cy.mockRegister();
-        cy.mount(RegisterDialog, mountOptions);
-
-        findRegisterButton().should('be.disabled');
-
-        findUsernameInput().type('validUsername{enter}');
-        findRegisterButton().should('be.disabled');
-
-        findEmailInput().type('valid@email.com{enter}');
-        findRegisterButton().should('be.disabled');
-
-        cy.contains('Image captcha').next().find('input').type('test{enter}');
-        cy.get('button').contains('Send').click();
-        cy.contains('Email code').next().find('input').should('be.enabled');
-        cy.contains('Email code').next().find('input').type('123456{enter}');
-        findRegisterButton().should('be.disabled');
-
-        findPasswordInput().type('validPassword{enter}');
-        findRegisterButton().should('be.disabled');
-
-        findConfirmPasswordInput().type('validPassword{enter}');
-        findRegisterButton().should('be.disabled');
-
-        cy.contains('Agree to').find('input').parent().click();
-        findRegisterButton().should('be.enabled');
-
-        findRegisterButton().click();
-        cy.contains('Successfully registered!');
-    });
 });

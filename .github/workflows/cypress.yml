@@ -15,9 +15,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       # Install npm dependencies, cache them correctly
       - name: Install dependencies
         run: npm install
+
       # and run all Cypress tests
       - name: Cypress run
         uses: cypress-io/github-action@v6
@@ -26,3 +28,12 @@ jobs:
           start: npm run dev
           working-directory: front_end
           browser: chrome
+
+      # Upload screenshots (if any failures)
+      - name: Upload Cypress screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-screenshots
+          path: front_end/cypress/screenshots
+          if-no-files-found: ignore
