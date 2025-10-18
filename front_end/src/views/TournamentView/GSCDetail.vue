@@ -32,6 +32,10 @@
         </h3>
         <el-tabs v-model="allSummaryTabPosition">
             <el-tab-pane :label="t('tournament.ranking')" lazy :name="-1">
+                <el-button size="small" @click="downloadAll">
+                    {{ t('tournament.downloadAll') }}{{ t('common.punct.lparen') }}{{ t('common.ratelimit.oncePerHour') }}{{ t('common.punct.rparen') }}
+                </el-button>
+                <el-row style="height: 0.5em" />
                 <GSCAllSummary :data="result" @row-click="handleAllSummaryRowClick" />
             </el-tab-pane>
             <el-tab-pane v-for="(participant, index) in viewedParticipants" :key="participant.id" lazy :name="index">
@@ -53,7 +57,7 @@
 import { httpErrorNotification } from '@/components/Notifications';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { Tournament } from '@/utils/tournaments';
-import { ElText, ElTabs, ElTabPane, ElLink } from 'element-plus';
+import { ElText, ElTabs, ElTabPane, ElLink, ElButton, ElRow } from 'element-plus';
 import { ref, watch } from 'vue';
 import { store } from '@/store';
 import { LoginStatus } from '@/utils/common/structInterface';
@@ -66,6 +70,7 @@ import { useI18n } from 'vue-i18n';
 import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
 import GSCPersonalView from './GSCPersonalView.vue';
 import BaseIconClose from '@/components/common/BaseIconClose.vue';
+import { streamToZip } from '@/utils/fileIO';
 
 const props = defineProps({
     id: {
@@ -121,6 +126,17 @@ function handleAllSummaryTabClose(index: number) {
     if (allSummaryTabPosition.value === index) {
         allSummaryTabPosition.value = -1;
     }
+}
+
+function downloadAll() {
+    proxy.$axios.get('tournament/download/', {
+        params: {
+            tournament_id: tournament.value.id,
+        },
+        responseType: 'arraybuffer',
+    }).then((response) => {
+        streamToZip(new Uint8Array(response.data), 'gsc.zip');
+    }).catch(httpErrorNotification);
 }
 
 </script>

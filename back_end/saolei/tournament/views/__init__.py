@@ -1,13 +1,15 @@
 from datetime import datetime, timezone
 
-from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse, StreamingHttpResponse
 from django.views.decorators.http import require_GET, require_POST
+from django_ratelimit.decorators import ratelimit
 
 from config.text_choices import Tournament_TextChoices
 from userprofile.decorators import banned_blocked, login_required_error, staff_required
 from userprofile.models import UserProfile
 from utils import verify_text
 from utils.response import HttpResponseConflict
+from videomanager.view_utils import generate_file_stream
 from ..forms import TournamentForm
 from ..models import GSCTournament, Tournament, TournamentParticipant
 from ..utils import participant_videos
@@ -262,3 +264,35 @@ def get_tournament_news(request: HttpRequest):
         'preparing': list(preparing_tournaments.values('id', 'start_time')),
         'ongoing': list(ongoing_tournaments.values('id', 'end_time')),
     })
+
+
+@require_GET
+@ratelimit(key='ip', rate='1/h')
+def download_all_videos(request: HttpRequest):
+    if not (tournament_id := request.GET.get('tournament_id')):
+        return HttpResponseBadRequest()
+    if not (tournament := Tournament.objects.filter(id=tournament_id).first()):
+        return HttpResponseNotFound()
+    if tournament.state not in [Tournament_TextChoices.State.FINISHED, Tournament_TextChoices.State.AWARDED]:
+        return HttpResponseForbidden()
+    response = StreamingHttpResponse(generate_file_stream(tournament.videos.all()), content_type="application/octet-stream")
+    response["Content-Disposition"] = 'attachment; filename="all_files_stream.bin"'
+    return response
+
+
+@require_GET
+@ratelimit(key='ip', rate='1/m')
+def download_videos_participant(request: HttpRequest):
+    if not (tournament_id := request.GET.get('tournament_id')):
+        return HttpResponseBadRequest()
+    if not (tournament := Tournament.objects.filter(id=tournament_id).first()):
+        return HttpResponseNotFound()
+    if not (user_id := request.GET.get('user_id')):
+        return HttpResponseBadRequest()
+    if not (user := UserProfile.objects.filter(id=user_id).first()):
+        return HttpResponseNotFound()
+    if tournament.state == Tournament_TextChoices.State.ONGOING and request.user != user:
+        return HttpResponseForbidden()
+    response = StreamingHttpResponse(generate_file_stream(tournament.videos.filter(player=user)), content_type="application/octet-stream")
+    response["Content-Disposition"] = 'attachment; filename="all_files_stream.bin"'
+    return response

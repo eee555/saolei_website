@@ -77,6 +77,12 @@ export default {
         },
         punct: {
             colon: '：',
+            lparen: '（',
+            rparen: '）',
+        },
+        ratelimit: {
+            oncePerHour: '每小时限一次',
+            oncePerMinute: '每分钟限一次',
         },
         response: {
             OK: '',
@@ -420,9 +426,12 @@ export default {
         acknowledgement: '致谢',
     },
     tournament: {
+        downloadAll: '下载全部录像',
+        downloadParticipant: '下载录像包',
         endsBy: '结束时间',
         host: '主办方',
         index: '比赛首页',
+        management: '管理',
         ranking: '排行',
         startsFrom: '开始时间',
         state: {
