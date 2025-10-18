@@ -9,8 +9,10 @@
             </base-card-small>
         </template>
     </tippy>
-    <div v-else class="cell" :style="{ backgroundColor: color, color: fontColor }">
-        <el-text>{{ defaultVideos[level][displayBy] }}</el-text>
+    <div v-else class="cell" :style="{ backgroundColor: color }">
+        <el-text :style="{ color: fontColor }">
+            {{ defaultVideos[level][displayBy] }}
+        </el-text>
     </div>
 </template>
 
@@ -54,7 +56,6 @@ const fontColor = computed(() => {
 
 .el-link {
     --el-link-text-color: v-bind(fontColor);
-    --el-link-font-size: 16px;
 }
 
 </style>

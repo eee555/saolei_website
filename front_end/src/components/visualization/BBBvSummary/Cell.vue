@@ -99,7 +99,6 @@ function handleClick() {
 
 .el-link {
     --el-link-text-color: v-bind(fontColor);
-    --el-link-font-size: 16px;
 }
 
 </style>
