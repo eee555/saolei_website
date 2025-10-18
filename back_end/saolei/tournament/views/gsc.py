@@ -11,7 +11,6 @@ from userprofile.decorators import login_required_error
 from utils.response import HttpResponseConflict
 from ..decorators import GSC_admin_required
 from ..models import GSCParticipant, GSCTournament, Tournament
-from ..utils import participant_videos
 
 
 @require_POST
