@@ -6,8 +6,8 @@
     </div>
     <Cell v-for="video in sortedVideos" :key="video.id" :video="video" :level="video.level" :color-theme="colorScheme" :display-by="sortBy" />
     <Cell v-for="i in count - sortedVideos.length" :key="i" :level="level" :color-theme="colorScheme" :display-by="sortBy" />
-    <div class="cell" :style="{ backgroundColor: avgColor, color: avgFontColor }">
-        <el-text>
+    <div class="cell" :style="{ backgroundColor: avgColor }">
+        <el-text :style="{ color: avgFontColor }">
             {{ formatNumberSmart(sumStat, 6, 3) }}
         </el-text>
     </div>
