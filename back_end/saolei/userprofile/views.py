@@ -42,14 +42,14 @@ def user_login(request):
     if 'user_id' in data and data['user_id'] != str(user.id):
         # 检测到小号
         logger.warning(f'{data["user_id"][:50]} is different from {str(user.id)}.')
-    return JsonResponse({'type': 'success', 'user': user_metadata(user)})
+    return JsonResponse({'type': 'success', 'user': user_metadata(user, user)})
 
 
 @require_GET
 # 用cookie登录
 def user_login_auto(request):
     if request.user.is_authenticated:
-        return JsonResponse(user_metadata(request.user))
+        return JsonResponse(user_metadata(request.user, request.user))
     return HttpResponse()
 
 

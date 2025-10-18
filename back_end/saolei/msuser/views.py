@@ -44,7 +44,7 @@ def get_info(request):
     user.popularity += 1
     user.save(update_fields=["popularity"])
 
-    return JsonResponse(user_metadata(user))
+    return JsonResponse(user_metadata(user, request.user))
 
 
 # 获取我的地盘里的姓名、全部纪录
