@@ -14,7 +14,7 @@ from .models import EmailVerifyRecord, UserProfile
 
 
 # 验证验证码
-def judge_captcha(captchaStr, captchaHashkey):
+def judge_captcha(captchaStr: str, captchaHashkey):
     if captchaStr and captchaHashkey:
         get_captcha = CaptchaStore.objects.filter(
             hashkey=captchaHashkey).first()
@@ -74,7 +74,7 @@ def judge_email_verification(email, email_captcha, emailHashkey):
     return get_email_captcha.code == email_captcha and get_email_captcha.email == email
 
 
-def user_metadata(user: UserProfile):
+def user_metadata(user: UserProfile, client):
     if user.avatar:
         avatar_path = os.path.join(settings.MEDIA_ROOT, urllib.parse.unquote(user.avatar.url)[7:])
         image_data = open(avatar_path, "rb").read()
@@ -82,7 +82,10 @@ def user_metadata(user: UserProfile):
     else:
         image_data = None
 
-    videos = VideoModel.objects.filter(player=user).values('id', 'upload_time', "level", "mode", "timems", "bv", "state", "software", "cl", "ce", "file_size", "end_time", "ongoing_tournament", 'path')
+    queryset = VideoModel.objects.filter(player=user)
+    if client != user:
+        queryset = queryset.filter(ongoing_tournament=False)
+    videos = queryset.values('id', 'upload_time', "level", "mode", "timems", "bv", "state", "software", "cl", "ce", "file_size", "end_time", "ongoing_tournament", 'path')
     return {
         "id": user.id,
         "username": user.username,

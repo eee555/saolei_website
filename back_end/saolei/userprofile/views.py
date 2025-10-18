@@ -42,14 +42,14 @@ def user_login(request):
     if 'user_id' in data and data['user_id'] != str(user.id):
         # 检测到小号
         logger.warning(f'{data["user_id"][:50]} is different from {str(user.id)}.')
-    return JsonResponse({'type': 'success', 'user': user_metadata(user)})
+    return JsonResponse({'type': 'success', 'user': user_metadata(user, user)})
 
 
 @require_GET
 # 用cookie登录
 def user_login_auto(request):
     if request.user.is_authenticated:
-        return JsonResponse(user_metadata(request.user))
+        return JsonResponse(user_metadata(request.user, request.user))
     return HttpResponse()
 
 
@@ -79,7 +79,7 @@ def user_retrieve(request):
     login(request, user)
     logger.info(f'用户 {user.username}#{user.id} 邮箱找回密码')
     EmailVerifyRecord.objects.filter(hashkey=emailHashkey).delete()
-    return JsonResponse({'type': 'success', 'user': user_metadata(user)})
+    return JsonResponse({'type': 'success', 'user': user_metadata(user, user)})
 
 
 # 用户注册
@@ -107,7 +107,7 @@ def user_register(request):
             logger.info(f'用户 {new_user.username}#{new_user.id} 注册')
             # 顺手把过期的验证码删了
             EmailVerifyRecord.objects.filter(hashkey=emailHashkey).delete()
-            return JsonResponse({'type': 'success', 'user': user_metadata(new_user)})
+            return JsonResponse({'type': 'success', 'user': user_metadata(new_user, new_user)})
         else:
             return JsonResponse({'type': 'error', 'object': 'emailcode'})
     else:
