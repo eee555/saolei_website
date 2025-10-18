@@ -425,6 +425,7 @@ export default {
         endsBy: 'Ends By',
         host: 'Host',
         index: 'Index',
+        ranking: 'Ranking',
         startsFrom: 'Starts From',
         state: {
             p: 'Pending',

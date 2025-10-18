@@ -235,13 +235,21 @@ def get_participant_list(request: HttpRequest):
 
 @require_GET
 def get_participant_videos(request: HttpRequest):
-    if not (participant_id := request.GET.get('id')):
+    if not (tournament_id := request.GET.get('tournament_id')):
         return HttpResponseBadRequest()
-    participant = TournamentParticipant.objects.filter(id=participant_id).first()
+    print(tournament_id)
+    if not (tournament := Tournament.objects.filter(id=tournament_id).first()):
+        return HttpResponseNotFound()
+    if not (user_id := request.GET.get('user_id')):
+        return HttpResponseBadRequest()
+    print(user_id)
+    if not (user := UserProfile.objects.filter(id=user_id).first()):
+        return HttpResponseNotFound()
+    if tournament.state == Tournament_TextChoices.State.ONGOING and request.user != user:
+        return HttpResponseForbidden()
+    participant = TournamentParticipant.objects.filter(user=user, tournament=tournament).first()
     if not participant:
         return HttpResponseNotFound()
-    if participant.tournament.state == Tournament_TextChoices.State.ONGOING and request.user != participant.user:
-        return HttpResponseForbidden()
     return JsonResponse({'type': 'success', 'data': participant_videos(participant)})
 
 

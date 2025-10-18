@@ -89,28 +89,26 @@ def get_gscinfo(request: HttpRequest):
     if not tournament:
         return HttpResponseNotFound()
     tournament.refresh_state()
+    results = None
     if tournament.state == Tournament_TextChoices.State.FINISHED or tournament.state == Tournament_TextChoices.State.AWARDED:
-        results = list(tournament.get_scores)
+        results = list(tournament.get_scores())
         identifier = None
     elif request.user.is_authenticated:
         participant = GSCParticipant.objects.filter(tournament=tournament, user=request.user).first()
         if not participant:
             identifier = None
-            results = None
         else:
             arbiter_identifier = participant.arbiter_identifier
             if arbiter_identifier:
                 identifier = arbiter_identifier.identifier
             else:
                 identifier = None
-            results = participant_videos(participant)
     else:
         identifier = None
-        results = []
     return JsonResponse({
         'type': 'success',
         'data': {
-            'id': tournament_id,
+            'id': tournament.tournament_ptr_id,
             'start_time': tournament.start_time,
             'end_time': tournament.end_time,
             'state': tournament.state,

@@ -10,7 +10,7 @@ urlpatterns = [
     path('participants/', views.get_participant_list),
     path('validate/', views.validate_tournament),
     path('get_news/', views.get_tournament_news),
-    path('get_videos/participant', views.get_participant_videos),
+    path('get_videos/participant/', views.get_participant_videos),
     path('get_gsc_tournament/', gsc.get_GSC_tournament),
     path('new_gsc/', gsc.new_GSC_tournament),
     path('gscregister/', gsc.register_GSCParticipant),
