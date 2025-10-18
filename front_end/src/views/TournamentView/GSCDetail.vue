@@ -24,27 +24,31 @@
             {{ t('gsc.realTimeScore') }}&nbsp;
             <base-icon-refresh @click="refresh" />
         </h3>
-        <el-tabs>
-            <el-tab-pane :label="t('gsc.summary')" lazy>
-                <GSCPersonalSummary :videos="personalVideos" />
-            </el-tab-pane>
-            <el-tab-pane :label="t('gsc.videos')" lazy>
-                <MultiSelector v-model="VideoListConfig.tournament" :options="thisColumnChoices" :labels="thisColumnChoices.map((s) => t(`common.prop.${s}`))" />
-                <VideoList :videos="personalVideos" :columns="VideoListConfig.tournament" sortable />
-            </el-tab-pane>
-            <el-tab-pane :label="t('gsc.bbbvSummary')" lazy>
-                <BBBvSummaryHeader />
-                <BBBvSummary level="b" header :video-list="personalVideos" />
-                <BBBvSummary level="i" :video-list="personalVideos" />
-                <BBBvSummary level="e" :video-list="personalVideos" />
-            </el-tab-pane>
-        </el-tabs>
+        <GSCPersonalView :user-id="store.user.id" :tournament-id="tournament.id" />
     </template>
     <template v-if="[TournamentState.Finished, TournamentState.Awarded].includes(tournament.state)">
         <h3>
             {{ t('gsc.finalResults') }}
         </h3>
-        <GSCAllSummary :data="result" />
+        <el-tabs v-model="allSummaryTabPosition">
+            <el-tab-pane :label="t('tournament.ranking')" lazy :name="-1">
+                <el-button size="small" @click="downloadAll">
+                    {{ t('tournament.downloadAll') }}{{ t('common.punct.lparen') }}{{ t('common.ratelimit.oncePerHour') }}{{ t('common.punct.rparen') }}
+                </el-button>
+                <el-row style="height: 0.5em" />
+                <GSCAllSummary :data="result" @row-click="handleAllSummaryRowClick" />
+            </el-tab-pane>
+            <el-tab-pane v-for="(participant, index) in viewedParticipants" :key="participant.id" lazy :name="index">
+                <template #label>
+                    <el-text>{{ participant.user__realname }}</el-text>
+                    &nbsp;
+                    <el-link :underline="false" @click="handleAllSummaryTabClose(index)">
+                        <base-icon-close style="scale: 65%" />
+                    </el-link>
+                </template>
+                <GSCPersonalView :user-id="participant.user__id" :tournament-id="tournament.id" />
+            </el-tab-pane>
+        </el-tabs>
     </template>
 </template>
 
@@ -53,23 +57,20 @@
 import { httpErrorNotification } from '@/components/Notifications';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { Tournament } from '@/utils/tournaments';
-import { ElText, ElTabs, ElTabPane } from 'element-plus';
+import { ElText, ElTabs, ElTabPane, ElLink, ElButton, ElRow } from 'element-plus';
 import { ref, watch } from 'vue';
-import { store, VideoListConfig } from '@/store';
+import { store } from '@/store';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { TournamentState } from '@/utils/ms_const';
-import { GSCParticipant, GSCParticipantDefault } from '@/utils/gsc';
-import GSCPersonalSummary from '@/components/visualization/GSCPersonalSummary/App.vue';
+import { GSCParticipant } from '@/utils/gsc';
 import GSCTokenGuide from './GSCTokenGuide.vue';
 import BaseIconRefresh from '@/components/common/BaseIconRefresh.vue';
 import GSCAllSummary from './GSCAllSummary.vue';
 import { useI18n } from 'vue-i18n';
 import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
-import { VideoAbstract } from '@/utils/videoabstract';
-import VideoList from '@/components/VideoList/App.vue';
-import MultiSelector from '@/components/widgets/MultiSelector.vue';
-import BBBvSummary from '@/components/visualization/BBBvSummary/App.vue';
-import BBBvSummaryHeader from '@/components/visualization/BBBvSummary/Header.vue';
+import GSCPersonalView from './GSCPersonalView.vue';
+import BaseIconClose from '@/components/common/BaseIconClose.vue';
+import { streamToZip } from '@/utils/fileIO';
 
 const props = defineProps({
     id: {
@@ -80,15 +81,14 @@ const props = defineProps({
 
 const { proxy } = useCurrentInstance();
 const { t } = useI18n();
-const thisColumnChoices = ['bv', 'bvs', 'stnb', 'ces', 'cls', 'corr', 'end_time', 'ioe', 'level', 'state', 'software', 'thrp', 'time', 'upload_time', 'path', 'file_size'] as const;
 
 const tournament = ref<Tournament>(new Tournament({}));
 const order = ref<number>(0);
 const token = ref<string>('');
 const result = ref<GSCParticipant[]>([]);
 const personaltoken = ref<string>('');
-const personalresult = ref<GSCParticipant>(GSCParticipantDefault);
-const personalVideos = ref<VideoAbstract[]>([]);
+const viewedParticipants = ref<GSCParticipant[]>([]);
+const allSummaryTabPosition = ref(-1);
 
 function refresh() {
     proxy.$axios.get('tournament/gscinfo/', {
@@ -103,15 +103,40 @@ function refresh() {
         if (tournament.value.state === TournamentState.Ongoing && store.login_status === LoginStatus.IsLogin) {
             result.value = [];
             personaltoken.value = response.data.identifier ? response.data.identifier : '';
-            personalVideos.value = response.data.results.map((video: any) => new VideoAbstract(video));
         } else {
             personaltoken.value = '';
-            personalresult.value = GSCParticipantDefault;
             result.value = response.data.results;
         }
     }).catch(httpErrorNotification);
 }
 
 watch(() => props.id, refresh, { immediate: true });
+
+function handleAllSummaryRowClick(row: GSCParticipant) {
+    const index = viewedParticipants.value.findIndex((item) => item.id === row.id);
+    if (index === -1) {
+        viewedParticipants.value.push(row);
+        allSummaryTabPosition.value = viewedParticipants.value.length - 1;
+    } else {
+        allSummaryTabPosition.value = index;
+    }
+}
+function handleAllSummaryTabClose(index: number) {
+    viewedParticipants.value.splice(index, 1);
+    if (allSummaryTabPosition.value === index) {
+        allSummaryTabPosition.value = -1;
+    }
+}
+
+function downloadAll() {
+    proxy.$axios.get('tournament/download/', {
+        params: {
+            tournament_id: tournament.value.id,
+        },
+        responseType: 'arraybuffer',
+    }).then((response) => {
+        streamToZip(new Uint8Array(response.data), 'gsc.zip');
+    }).catch(httpErrorNotification);
+}
 
 </script>

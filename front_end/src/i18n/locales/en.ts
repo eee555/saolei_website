@@ -79,6 +79,12 @@ export default {
         },
         punct: {
             colon: ': ',
+            lparen: ' (',
+            rparen: ')',
+        },
+        ratelimit: {
+            oncePerHour: 'once per hour',
+            oncePerMinute: 'once per minute',
         },
         response: {
             OK: '',
@@ -422,9 +428,13 @@ export default {
         acknowledgement: 'Acknowledgement',
     },
     tournament: {
+        downloadAll: 'Download all videos',
+        downloadParticipant: 'Download videos',
         endsBy: 'Ends By',
         host: 'Host',
         index: 'Index',
+        management: 'Management',
+        ranking: 'Ranking',
         startsFrom: 'Starts From',
         state: {
             p: 'Pending',
