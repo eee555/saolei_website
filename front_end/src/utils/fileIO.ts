@@ -2,6 +2,7 @@ import { UploadRawFile } from 'element-plus';
 import { AvfVideo, EvfVideo, RmvVideo, MvfVideo } from 'ms-toollib';
 import { VideoAbstract } from './videoabstract';
 import { arbiterTimeStampToDate, generalTimeStampToDate } from './datetime';
+import JSZip from 'jszip';
 type AnyVideo = AvfVideo | EvfVideo | RmvVideo | MvfVideo;
 
 export function get_software(video: AnyVideo) {
@@ -66,3 +67,36 @@ export function get_upload_status(file: UploadRawFile, video: AnyVideo | null, i
     return 'pass';
 }
 
+export async function streamToZip(data: Uint8Array, filename: string) {
+    const zip = new JSZip();
+    let offset = 0;
+
+    while (offset < data.length) {
+        // Read 4-byte filename length
+        const filenameLen = new DataView(data.buffer, offset, 4).getUint32(0, false);
+        offset += 4;
+
+        // Read filename
+        const filenameBytes = data.slice(offset, offset + filenameLen);
+        const filename = new TextDecoder().decode(filenameBytes);
+        offset += filenameLen;
+
+        // Read 8-byte file size
+        const fileSize = Number(new DataView(data.buffer, offset, 8).getBigUint64(0, false));
+        offset += 8;
+
+        // Read file content
+        const fileData = data.slice(offset, offset + fileSize);
+        offset += fileSize;
+
+        zip.file(filename, fileData);
+    }
+
+    const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+}

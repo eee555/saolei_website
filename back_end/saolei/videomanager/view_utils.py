@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 import logging
+import struct
 
 from django_redis import get_redis_connection
 import ms_toollib as ms
@@ -177,3 +178,26 @@ def video_saolei_import_by_userid_helper(userProfile: UserProfile, accountSaolei
                       is_need_file_url)
     videodata.getData(Level.Exp, beginTime, endTime,
                       is_need_file_url)
+
+
+def generate_file_stream(queryset):
+    def file_iterator():
+        for video in queryset:
+            if not video.file:
+                continue
+
+            filename = f'{video.player.id}_{video.player.realname}/{video.file.name.split("/")[-1]}'
+            filename_bytes = filename.encode("utf-8")
+            filename_len = len(filename_bytes)
+            filesize = video.file.size
+
+            # Header: 4-byte filename length + filename + 8-byte file size
+            yield struct.pack(">I", filename_len)
+            yield filename_bytes
+            yield struct.pack(">Q", filesize)  # unsigned long long, 8 bytes
+
+            # File content
+            with video.file.open("rb") as f:
+                while chunk := f.read(8192):
+                    yield chunk
+    return file_iterator()

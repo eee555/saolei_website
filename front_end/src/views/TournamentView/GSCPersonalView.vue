@@ -13,12 +13,17 @@
             <BBBvSummary level="i" :video-list="videos" />
             <BBBvSummary level="e" :video-list="videos" />
         </el-tab-pane>
+        <el-tab-pane :label="t('tournament.management')" lazy>
+            <el-button @click="handleDownload">
+                {{ t('tournament.downloadParticipant') }}{{ t('common.punct.lparen') }}{{ t('common.ratelimit.oncePerMinute') }}{{ t('common.punct.rparen') }}
+            </el-button>
+        </el-tab-pane>
     </el-tabs>
 </template>
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import { ElTabs, ElTabPane } from 'element-plus';
+import { ElTabs, ElTabPane, ElButton } from 'element-plus';
 import VideoList from '@/components/VideoList/App.vue';
 import MultiSelector from '@/components/widgets/MultiSelector.vue';
 import BBBvSummary from '@/components/visualization/BBBvSummary/App.vue';
@@ -29,6 +34,7 @@ import { VideoListConfig } from '@/store';
 import GSCPersonalSummary from '@/components/visualization/GSCPersonalSummary/App.vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { httpErrorNotification } from '@/components/Notifications';
+import { streamToZip } from '@/utils/fileIO';
 
 
 const { proxy } = useCurrentInstance();
@@ -61,5 +67,17 @@ function refresh() {
 }
 
 watch(props, refresh, { immediate: true });
+
+function handleDownload() {
+    proxy.$axios.get('tournament/download/participant/', {
+        params: {
+            user_id: props.userId,
+            tournament_id: props.tournamentId,
+        },
+        responseType: 'arraybuffer',
+    }).then((response) => {
+        streamToZip(new Uint8Array(response.data), `gsc_${props.userId}.zip`);
+    }).catch(httpErrorNotification);
+}
 
 </script>

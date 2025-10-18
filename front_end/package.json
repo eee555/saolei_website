@@ -34,6 +34,7 @@
     "highlight.js": "^11.11.1",
     "image-conversion": "^2.1.1",
     "js-cookie": "^2.2.1",
+    "jszip": "^3.10.1",
     "lazy.js": "^0.5.1",
     "markdown-it": "^14.1.0",
     "markdown-it-anchor": "^9.0.1",
