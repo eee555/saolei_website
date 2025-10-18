@@ -423,6 +423,7 @@ export default {
         endsBy: '结束时间',
         host: '主办方',
         index: '比赛首页',
+        ranking: '排行',
         startsFrom: '开始时间',
         state: {
             p: '审核中',

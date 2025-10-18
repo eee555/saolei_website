@@ -1,5 +1,5 @@
 <template>
-    <el-table :data="data">
+    <el-table :data="data" @row-click="handleRowClick">
         <el-table-column prop="user__realname" sortable>
             <template #default="{ row }: { row: GSCParticipant }">
                 <PlayerName :user-id="row.user__id" :user-name="row.user__realname" />
@@ -92,5 +92,11 @@ defineProps({
 });
 
 const { t } = useI18n();
+
+const emit = defineEmits(['row-click']);
+
+function handleRowClick(row: GSCParticipant) {
+    emit('row-click', row);
+}
 
 </script>
