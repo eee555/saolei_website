@@ -244,7 +244,6 @@ def get_participant_videos(request: HttpRequest):
         return HttpResponseNotFound()
     if not (user_id := request.GET.get('user_id')):
         return HttpResponseBadRequest()
-    print(user_id)
     if not (user := UserProfile.objects.filter(id=user_id).first()):
         return HttpResponseNotFound()
     if tournament.state == Tournament_TextChoices.State.ONGOING and request.user != user:
