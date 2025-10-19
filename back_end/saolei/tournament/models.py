@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 import secrets
 import string
+import threading
 
 from django.db import models
 from model_utils.managers import InheritanceManager
@@ -55,9 +56,11 @@ class Tournament(models.Model):
     def end(self):
         self.state = Tournament_TextChoices.State.FINISHED
         self.save()
-        self.videos.all().update(ongoing_tournament=False)
-        for video in self.videos.all():
-            video.update_redis()
+        def background_task():
+            self.videos.all().update(ongoing_tournament=False)
+            for video in self.videos.order_by('upload_time'):
+                video.update_personal_record()
+        threading.Thread(target=background_task).start()
 
     def refresh_state(self):
         current_state = self.state
@@ -133,6 +136,13 @@ class GSCTournament(Tournament):
         if self.token == '':
             self.new_token()
         super().start()
+
+    def end(self):
+        super().end()
+        def background_task():
+            self.refresh_score()
+            self.refresh_rank()
+        threading.Thread(target=background_task).start()
 
     def add_participant(self, user: UserProfile):
         if not GSCParticipant.objects.filter(user=user, tournament=self).exists():
