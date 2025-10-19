@@ -56,6 +56,7 @@ class Tournament(models.Model):
     def end(self):
         self.state = Tournament_TextChoices.State.FINISHED
         self.save()
+
         def background_task():
             self.videos.all().update(ongoing_tournament=False)
             for video in self.videos.order_by('upload_time'):
@@ -139,6 +140,7 @@ class GSCTournament(Tournament):
 
     def end(self):
         super().end()
+
         def background_task():
             self.refresh_score()
             self.refresh_rank()
