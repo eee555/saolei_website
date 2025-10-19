@@ -239,7 +239,6 @@ def get_participant_list(request: HttpRequest):
 def get_participant_videos(request: HttpRequest):
     if not (tournament_id := request.GET.get('tournament_id')):
         return HttpResponseBadRequest()
-    print(tournament_id)
     if not (tournament := Tournament.objects.filter(id=tournament_id).first()):
         return HttpResponseNotFound()
     if not (user_id := request.GET.get('user_id')):
