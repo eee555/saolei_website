@@ -249,7 +249,7 @@ def get_participant_videos(request: HttpRequest):
         return HttpResponseForbidden()
     participant = TournamentParticipant.objects.filter(user=user, tournament=tournament).first()
     if not participant:
-        return HttpResponseNotFound()
+        return JsonResponse({'type': 'success', 'data': []})
     return JsonResponse({'type': 'success', 'data': participant_videos(participant)})
 
 
