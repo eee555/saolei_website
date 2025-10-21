@@ -20,10 +20,12 @@ import BaseIconSetting from '@/components/common/BaseIconSetting.vue';
 import { ref } from 'vue';
 import { ElButton, ElRow } from 'element-plus';
 import { useI18n } from 'vue-i18n';
+import { ArrayUtils } from '@/utils/arrays';
+import { ColumnChoices } from '@/utils/ms_const';
 
 const { t } = useI18n();
 
 const showSetting = ref(false);
-const thisColumnChoices = ['bv', 'bvs', 'stnb', 'ces', 'cls', 'corr', 'end_time', 'ioe', 'level', 'state', 'software', 'thrp', 'time', 'upload_time', 'path', 'file_size', 'mode'] as const;
+const thisColumnChoices = ArrayUtils.sortByReferenceOrder(['bv', 'bvs', 'stnb', 'ces', 'cls', 'corr', 'end_time', 'ioe', 'level', 'state', 'software', 'thrp', 'time', 'upload_time', 'path', 'file_size', 'mode'], ColumnChoices);
 
 </script>
