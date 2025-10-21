@@ -1,3 +1,5 @@
+import { ComponentCustomProperties } from 'vue';
+
 export function to_fixed_n(input: string | number | undefined, to_fixed: number): string | number | undefined {
     // 返回保留to_fixed位小数的字符串，四舍六入五取双
     if (input === undefined) {
@@ -23,8 +25,6 @@ export function cs_to_s(cs: number): string {
 export function simple_formatter(f: Function) {
     return (row: any, col: any, value: any, _index: any) => f(value);
 }
-
-import { ComponentCustomProperties } from 'vue';
 export async function approve(proxy: ComponentCustomProperties & Record<string, any>, id: number) {
     let status;
     await proxy.$axios.get('video/approve?ids=[' + id + ']').then(function (response) {

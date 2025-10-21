@@ -103,18 +103,9 @@
 import { defineAsyncComponent, onMounted, ref, watch } from 'vue';
 import { ElContainer, ElAside, ElMain, ElTabs, ElTabPane, ElImage, ElInput, ElUpload, genFileId, ElMessage } from 'element-plus';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
-const PlayerRecordView = defineAsyncComponent(() => import('@/views/PlayerRecordView.vue'));
-const PlayerVideosView = defineAsyncComponent(() => import('@/views/PlayerVideosView.vue'));
-const PlayerProfileView = defineAsyncComponent(() => import('@/views/PlayerProfileView.vue'));
-const UploadView = defineAsyncComponent(() => import('@/views/UploadView.vue'));
 import 'flag-icon-css/css/flag-icons.min.css';
-
-const { proxy } = useCurrentInstance();
 import type { UploadInstance, UploadProps, UploadRawFile, UploadFile, UploadFiles, UploadRequestOptions } from 'element-plus';
-const upload = ref<UploadInstance>();
 import imageUrlDefault from '@/assets/person.png';
-const imageUrl = ref(imageUrlDefault);
-const avatar_changed = ref(false);
 import { compressAccurately } from 'image-conversion';
 import { store } from '../store';
 
@@ -123,6 +114,15 @@ import { useRoute } from 'vue-router';
 import { UserProfile } from '@/utils/userprofile';
 import { unknownErrorNotification } from '@/components/Notifications';
 import BaseIconAdd from '@/components/common/BaseIconAdd.vue';
+const PlayerRecordView = defineAsyncComponent(() => import('@/views/PlayerRecordView.vue'));
+const PlayerVideosView = defineAsyncComponent(() => import('@/views/PlayerVideosView.vue'));
+const PlayerProfileView = defineAsyncComponent(() => import('@/views/PlayerProfileView.vue'));
+const UploadView = defineAsyncComponent(() => import('@/views/UploadView.vue'));
+
+const { proxy } = useCurrentInstance();
+const upload = ref<UploadInstance>();
+const imageUrl = ref(imageUrlDefault);
+const avatar_changed = ref(false);
 const { t } = useI18n();
 const route = useRoute();
 

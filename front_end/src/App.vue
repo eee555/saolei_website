@@ -65,22 +65,22 @@ import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { store, local } from './store';
 import { ElScrollbar, ElMenu, ElMenuItem, ElDialog, ElCheckbox, ElImage, ElBadge, ElHeader, ElContainer, ElMain } from 'element-plus';
 import BaseButtonConfirm from './components/common/BaseButtonConfirm.vue';
-
-const { proxy } = useCurrentInstance();
 import logo_1 from '@/assets/logo.png';
 import logo_2 from '@/assets/logo2.png';
 
 import { useRouter } from 'vue-router';
-const router = useRouter();
 
 import { useDark, useToggle } from '@vueuse/core';
+
+import { useI18n } from 'vue-i18n';
+
+const { proxy } = useCurrentInstance();
+const router = useRouter();
 const isDark = useDark();
 useToggle(isDark);
 watch(isDark, (v) => {
     local.value.darkmode = v;
 });
-
-import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
 // const player_visible = ref(false)

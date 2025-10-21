@@ -47,12 +47,12 @@ import { ElTable, ElTableColumn, ElSkeleton, ElMessage } from 'element-plus';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import BaseCardLarge from '@/components/common/BaseCardLarge.vue';
-const { proxy } = useCurrentInstance();
 import { Record, RecordBIE } from '@/utils/common/structInterface';
 import { ms_to_s } from '@/utils';
 import { store } from '../store';
 
 import { useI18n } from 'vue-i18n';
+const { proxy } = useCurrentInstance();
 const { t } = useI18n();
 
 const loading = ref(true);

@@ -65,17 +65,17 @@ import BBBVFilter from '@/components/Filters/BBBVFilter.vue';
 
 import VideoViewRealname from '@/components/tableColumns/VideoViewRealname.vue';
 import VideoViewState from '@/components/tableColumns/VideoViewState.vue';
-
-const { proxy } = useCurrentInstance();
 import { utc_to_local_format } from '@/utils/system/tools';
 import { ms_to_s } from '@/utils';
 import { preview } from '@/utils/common/PlayerDialog';
 
 import { useI18n } from 'vue-i18n';
-const { t } = useI18n();
 
 import { videofilter } from '@/store';
 import { httpErrorNotification } from '@/components/Notifications';
+
+const { proxy } = useCurrentInstance();
+const { t } = useI18n();
 
 const level_tag_selected = ref('EXPERT');
 const mode_tag_selected = ref('STD');

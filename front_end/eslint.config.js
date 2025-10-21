@@ -34,6 +34,7 @@ export default typescriptEslint.config(
     rules: {
       'import/consistent-type-specifier-style': 'error',
       'import/extensions': 'error',
+      'import/first': 'error',
       'import/no-absolute-path': 'error',
       'import/no-cycle': 'error',
       'import/no-duplicates': 'error',
