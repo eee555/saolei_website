@@ -62,7 +62,7 @@
                     {{ ms_to_s(row.bt1st + row.it1st + row.et1st) }}
                 </template>
             </el-table-column>
-            <el-table-column :label="t('common.score.edge')" sortable, :sort-by="(r: GSCParticipant) => r.bt20th + r.it12th + r.et5th">
+            <el-table-column :label="t('common.score.edge')" sortable :sort-by="(r: GSCParticipant) => r.bt20th + r.it12th + r.et5th">
                 <template #default="{ row }: { row: GSCParticipant }">
                     {{ ms_to_s(row.bt20th + row.it12th + row.et5th) }}
                 </template>
