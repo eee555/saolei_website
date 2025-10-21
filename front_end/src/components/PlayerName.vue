@@ -149,7 +149,7 @@ const visit_me = (user_id: number) => {
     // localStorage.setItem("player", JSON.stringify({ "id": id.value, "realname":realname.value }));
     // localStorage.setItem("player", JSON.stringify({ "id": id.value }));
     store.player.id = user_id;
-    router.push(`player/${store.player.id}`);
+    router.push({ name: 'player_id', params: { id: user_id } });
 };
 
 // 实现点旁边时候关闭气泡
