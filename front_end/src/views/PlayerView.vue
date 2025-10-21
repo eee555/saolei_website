@@ -107,7 +107,7 @@ const PlayerRecordView = defineAsyncComponent(() => import('@/views/PlayerRecord
 const PlayerVideosView = defineAsyncComponent(() => import('@/views/PlayerVideosView.vue'));
 const PlayerProfileView = defineAsyncComponent(() => import('@/views/PlayerProfileView.vue'));
 const UploadView = defineAsyncComponent(() => import('@/views/UploadView.vue'));
-import '../../node_modules/flag-icon-css/css/flag-icons.min.css';
+import 'flag-icon-css/css/flag-icons.min.css';
 
 const { proxy } = useCurrentInstance();
 import type { UploadInstance, UploadProps, UploadRawFile, UploadFile, UploadFiles, UploadRequestOptions } from 'element-plus';
