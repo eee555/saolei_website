@@ -1,6 +1,7 @@
-import i18n from '@/i18n';
 import EmailCodeBlock from './emailCodeBlock.vue';
+
 import $axios from '@/http';
+import i18n from '@/i18n';
 
 const mountOptions = {
     global: {

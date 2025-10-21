@@ -26,15 +26,16 @@
 
 <script lang="ts" setup>
 // 管理员操作接口，通过'/staff'访问
-import { ElTabs, ElTabPane } from 'element-plus';
+import { ElTabPane, ElTabs } from 'element-plus';
 import { ref } from 'vue';
-import StaffUserProfile from '@/components/staff/StaffUserProfile.vue';
-import StaffVideoModel from '@/components/staff/StaffVideoModel.vue';
+
 import StaffAccountLink from '@/components/staff/StaffAccountLink.vue';
-import StaffIdentifier from '@/components/staff/StaffIdentifier.vue';
 import StaffBatchUpdateVideo from '@/components/staff/StaffBatchUpdateVideo.vue';
+import StaffIdentifier from '@/components/staff/StaffIdentifier.vue';
 import StaffLogs from '@/components/staff/StaffLogs.vue';
 import StaffTournament from '@/components/staff/StaffTournament.vue';
+import StaffUserProfile from '@/components/staff/StaffUserProfile.vue';
+import StaffVideoModel from '@/components/staff/StaffVideoModel.vue';
 
 const activeTab = ref('userprofile');
 

@@ -16,12 +16,14 @@
 <script lang="ts" setup>
 // 注册、登录的弹框及右上方按钮
 import { onMounted, ref } from 'vue';
-import { LoginStatus } from '@/utils/common/structInterface';
-import FriendlyLink from '@/components/dialogs/FriendlyLinks.vue';
-import Downloads from '@/components/dialogs/Downloads.vue';
-import Thanks from '@/components/dialogs/Thanks.vue';
-// import { AXIOS_BASE_URL } from '../config';
+
 import Login from './Login.vue';
+
+import Downloads from '@/components/dialogs/Downloads.vue';
+import FriendlyLink from '@/components/dialogs/FriendlyLinks.vue';
+import Thanks from '@/components/dialogs/Thanks.vue';
+import { LoginStatus } from '@/utils/common/structInterface';
+// import { AXIOS_BASE_URL } from '../config';
 
 const login_status = ref(LoginStatus.NotLogin);
 

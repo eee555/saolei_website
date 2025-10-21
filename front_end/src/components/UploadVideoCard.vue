@@ -55,8 +55,8 @@
 
 <script lang="ts" setup>
 // 上传录像的页面，等待上传的录像的卡片
+import { ElCard, ElCol, ElIcon, ElRow } from 'element-plus';
 import { onMounted } from 'vue';
-import { ElCard, ElIcon, ElRow, ElCol } from 'element-plus';
 
 const emit = defineEmits(['cancel_this', 'logout']);
 

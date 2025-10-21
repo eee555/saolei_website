@@ -1,5 +1,5 @@
-import type { VueMessageType } from 'vue-i18n';
 import { LocaleMessage } from '@intlify/core-base';
+import type { VueMessageType } from 'vue-i18n';
 
 /**
  * 配置语法：https://vue-i18n.intlify.dev/guide/essentials/syntax.html

@@ -11,10 +11,11 @@
 </template>
 
 <script setup lang="ts">
-import { MS_Level } from '@/utils/ms_const';
+import { ElText } from 'element-plus';
 import { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ElText } from 'element-plus';
+
+import { MS_Level } from '@/utils/ms_const';
 
 const { t } = useI18n();
 

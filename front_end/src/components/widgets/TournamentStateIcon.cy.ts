@@ -1,6 +1,7 @@
 import TournamentStateIcon from './TournamentStateIcon.vue';
-import { TournamentState } from '@/utils/ms_const';
+
 import i18n from '@/i18n';
+import { TournamentState } from '@/utils/ms_const';
 
 describe('<TournamentStateIcon />', () => {
     it('Pending', () => {

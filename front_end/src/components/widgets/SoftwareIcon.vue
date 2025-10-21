@@ -10,13 +10,15 @@
 
 <script setup lang="ts">
 import { ElText } from 'element-plus';
+import { PropType } from 'vue';
+
+import BaseIconClone07 from '../common/BaseIconClone07.vue';
+import BaseIconViennasweeper from '../common/BaseIconViennasweeper.vue';
+
 import BaseIconArbiter from '@/components/common/BaseIconArbiter.vue';
 import BaseIconMetasweeper from '@/components/common/BaseIconMetasweeper.vue';
-import BaseIconViennasweeper from '../common/BaseIconViennasweeper.vue';
-import BaseIconClone07 from '../common/BaseIconClone07.vue';
-import { MS_Software } from '@/utils/ms_const';
-import { PropType } from 'vue';
 import BaseIconQuestion from '@/components/common/BaseIconQuestion.vue';
+import { MS_Software } from '@/utils/ms_const';
 
 defineProps({
     software: {

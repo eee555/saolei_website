@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { ElSelect, ElOption } from 'element-plus';
+import { ElOption, ElSelect } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();

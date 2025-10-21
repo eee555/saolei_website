@@ -48,14 +48,15 @@
 
 <script setup lang="ts">
 
-import { ElTabs, ElTabPane, ElText, ElInput, ElButton } from 'element-plus';
-import IconCopy from '@/components/widgets/IconCopy.vue';
+import { ElButton, ElInput, ElTabPane, ElTabs, ElText } from 'element-plus';
 import { ref } from 'vue';
-import { httpErrorNotification, successNotification, unknownErrorNotification } from '@/components/Notifications';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import { useI18n } from 'vue-i18n';
+
 import BaseIconArbiter from '@/components/common/BaseIconArbiter.vue';
 import BaseIconMetasweeper from '@/components/common/BaseIconMetasweeper.vue';
-import { useI18n } from 'vue-i18n';
+import { httpErrorNotification, successNotification, unknownErrorNotification } from '@/components/Notifications';
+import IconCopy from '@/components/widgets/IconCopy.vue';
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const props = defineProps({
     order: {

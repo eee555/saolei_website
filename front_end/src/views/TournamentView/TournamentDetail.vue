@@ -10,9 +10,10 @@
 
 <script setup lang="ts">
 
-import { Tournament } from '@/utils/tournaments';
-import { ElText, ElTable, ElTableColumn } from 'element-plus';
+import { ElTable, ElTableColumn, ElText } from 'element-plus';
+
 import { local } from '@/store';
+import { Tournament } from '@/utils/tournaments';
 
 defineProps({
     tournament: {

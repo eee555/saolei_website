@@ -1,8 +1,9 @@
 import type {} from '@cy/support/component';
 
 import LoginDialog from './LoginDialog.vue';
-import i18n from '@/i18n';
+
 import $axios from '@/http';
+import i18n from '@/i18n';
 
 const mountOptions = {
     props: {

@@ -100,20 +100,21 @@
 
 <script lang="ts" setup>
 // 我的地盘页面
-import { defineAsyncComponent, onMounted, ref, watch } from 'vue';
-import { ElContainer, ElAside, ElMain, ElTabs, ElTabPane, ElImage, ElInput, ElUpload, genFileId, ElMessage } from 'element-plus';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import 'flag-icon-css/css/flag-icons.min.css';
-import type { UploadInstance, UploadProps, UploadRawFile, UploadFile, UploadFiles, UploadRequestOptions } from 'element-plus';
-import imageUrlDefault from '@/assets/person.png';
+import type { UploadFile, UploadFiles, UploadInstance, UploadProps, UploadRawFile, UploadRequestOptions } from 'element-plus';
+import { ElAside, ElContainer, ElImage, ElInput, ElMain, ElMessage, ElTabPane, ElTabs, ElUpload, genFileId } from 'element-plus';
 import { compressAccurately } from 'image-conversion';
-import { store } from '../store';
-
+import { defineAsyncComponent, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
-import { UserProfile } from '@/utils/userprofile';
-import { unknownErrorNotification } from '@/components/Notifications';
+
+import { store } from '../store';
+
+import imageUrlDefault from '@/assets/person.png';
 import BaseIconAdd from '@/components/common/BaseIconAdd.vue';
+import { unknownErrorNotification } from '@/components/Notifications';
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import { UserProfile } from '@/utils/userprofile';
 
 const PlayerRecordView = defineAsyncComponent(() => import('@/views/PlayerRecordView.vue'));
 const PlayerVideosView = defineAsyncComponent(() => import('@/views/PlayerVideosView.vue'));

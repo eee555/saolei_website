@@ -79,10 +79,11 @@
 <script setup lang="ts">
 
 import { ElTable, ElTableColumn } from 'element-plus';
-import { GSCParticipant } from '@/utils/gsc';
+import { useI18n } from 'vue-i18n';
+
 import PlayerName from '@/components/PlayerName.vue';
 import { ms_to_s } from '@/utils';
-import { useI18n } from 'vue-i18n';
+import { GSCParticipant } from '@/utils/gsc';
 
 defineProps({
     data: {

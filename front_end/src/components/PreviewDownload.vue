@@ -10,9 +10,10 @@
 <script setup lang="ts" name="PreviewDownload">
 // 拟弃用
 // 两个按钮，预览或下载
-import { onMounted } from 'vue';
-import { preview } from '@/utils/common/PlayerDialog';
 import { ElButton } from 'element-plus';
+import { onMounted } from 'vue';
+
+import { preview } from '@/utils/common/PlayerDialog';
 
 const { id } = defineProps({
     id: {

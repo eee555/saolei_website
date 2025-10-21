@@ -44,12 +44,13 @@
 </template>
 
 <script setup lang="ts">
-import { FormRules, FormInstance, ElDialog, ElForm, ElInput, ElFormItem, ElCheckbox, ElLink, ElButton } from 'element-plus';
+import { ElButton, ElCheckbox, ElDialog, ElForm, ElFormItem, ElInput, ElLink, FormInstance, FormRules } from 'element-plus';
 import { reactive, ref } from 'vue';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import ValidCode from '@/components/ValidCode.vue';
 import { useI18n } from 'vue-i18n';
+
 import { httpErrorNotification } from '@/components/Notifications';
+import ValidCode from '@/components/ValidCode.vue';
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const visible = defineModel({ type: Boolean, default: false });
 const emit = defineEmits(['close', 'forgetPassword', 'login']);

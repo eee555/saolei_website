@@ -42,15 +42,17 @@
 
 <script lang="ts" setup>
 // 个人主页的个人纪录部分
-import { ref, nextTick } from 'vue';
-import { ElTable, ElTableColumn, ElSkeleton, ElMessage } from 'element-plus';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import PreviewNumber from '@/components/PreviewNumber.vue';
-import BaseCardLarge from '@/components/common/BaseCardLarge.vue';
-import { Record, RecordBIE } from '@/utils/common/structInterface';
-import { ms_to_s } from '@/utils';
-import { store } from '../store';
+import { ElMessage, ElSkeleton, ElTable, ElTableColumn } from 'element-plus';
+import { nextTick, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+
+import { store } from '../store';
+
+import BaseCardLarge from '@/components/common/BaseCardLarge.vue';
+import PreviewNumber from '@/components/PreviewNumber.vue';
+import { ms_to_s } from '@/utils';
+import { Record, RecordBIE } from '@/utils/common/structInterface';
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const { proxy } = useCurrentInstance();
 const { t } = useI18n();

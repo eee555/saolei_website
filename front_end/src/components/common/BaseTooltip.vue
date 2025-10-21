@@ -11,8 +11,9 @@
 
 <script setup lang="ts">
 
-import BaseCardSmall from './BaseCardSmall.vue';
 import { Tippy } from 'vue-tippy';
+
+import BaseCardSmall from './BaseCardSmall.vue';
 
 defineProps({
     showDelay: { type: Number, default: 0 },

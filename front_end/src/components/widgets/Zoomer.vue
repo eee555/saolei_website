@@ -13,6 +13,7 @@
 <script setup lang="ts">
 
 import { ElLink } from 'element-plus';
+
 import BaseIconZoomIn from '@/components/common/BaseIconZoomIn.vue';
 import BaseIconZoomOut from '@/components/common/BaseIconZoomOut.vue';
 import BaseTextButton from '@/components/common/BaseTextButton.vue';

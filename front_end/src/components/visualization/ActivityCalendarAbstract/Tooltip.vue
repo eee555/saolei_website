@@ -15,10 +15,11 @@
 
 <script setup lang="ts">
 import { ElText } from 'element-plus';
-import { toISODateString } from '@/utils/datetime';
-import { VideoAbstract } from '@/utils/videoabstract';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+
+import { toISODateString } from '@/utils/datetime';
+import { VideoAbstract } from '@/utils/videoabstract';
 
 const { t } = useI18n();
 

@@ -13,9 +13,10 @@
 </template>
 
 <script setup lang="ts">
-import { fullWeek, getWeekTime, monthNameShort } from '@/utils/datetime';
-import { computed } from 'vue';
 import { ElText } from 'element-plus';
+import { computed } from 'vue';
+
+import { fullWeek, getWeekTime, monthNameShort } from '@/utils/datetime';
 
 const prop = defineProps({
     startDate: { type: Date, required: true },

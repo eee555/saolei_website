@@ -9,8 +9,9 @@
 <script setup lang="ts">
 
 import { ElTableColumn } from 'element-plus';
-import { formatBytes } from '@/utils/strings';
 import { useI18n } from 'vue-i18n';
+
+import { formatBytes } from '@/utils/strings';
 import { VideoAbstract } from '@/utils/videoabstract';
 
 const { t } = useI18n();

@@ -36,11 +36,13 @@
 </template>
 
 <script lang="ts" setup>
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import { ElButton, ElDescriptions, ElDescriptionsItem, ElInput, ElInputNumber, ElOption, ElSelect } from 'element-plus';
 import { ref } from 'vue';
+
 import { httpErrorNotification, successNotification } from '../Notifications';
-import { ElInputNumber, ElButton, ElDescriptions, ElDescriptionsItem, ElSelect, ElOption, ElInput } from 'element-plus';
+
 import { preview } from '@/utils/common/PlayerDialog';
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 
 const { proxy } = useCurrentInstance();

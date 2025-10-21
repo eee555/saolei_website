@@ -16,10 +16,11 @@
 </template>
 
 <script setup lang="ts">
-import { validateError, validateSuccess } from '@/utils/common/elFormValidate';
 import { ElFormItem, ElInput } from 'element-plus';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+
+import { validateError, validateSuccess } from '@/utils/common/elFormValidate';
 
 const password = defineModel({ type: String, required: true });
 

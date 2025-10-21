@@ -7,9 +7,10 @@
 </template>
 
 <script setup lang="ts">
-import { MS_Software, MS_Softwares } from '@/utils/ms_const';
-import { ElCheckboxGroup, ElCheckboxButton } from 'element-plus';
+import { ElCheckboxButton, ElCheckboxGroup } from 'element-plus';
+
 import SoftwareIcon from '@/components/widgets/SoftwareIcon.vue';
+import { MS_Software, MS_Softwares } from '@/utils/ms_const';
 
 const level = defineModel({
     type: Array<MS_Software>,

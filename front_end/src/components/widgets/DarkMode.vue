@@ -8,9 +8,9 @@
 
 <script lang="ts" setup name="DarkMode">
 
-import { useI18n } from 'vue-i18n';
 import { useColorMode } from '@vueuse/core';
-import { ElRadioGroup, ElRadioButton } from 'element-plus';
+import { ElRadioButton, ElRadioGroup } from 'element-plus';
+import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 const { store } = useColorMode();

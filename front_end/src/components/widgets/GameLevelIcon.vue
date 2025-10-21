@@ -33,9 +33,10 @@
 
 <script setup lang="ts">
 import { ElText } from 'element-plus';
-import BaseTooltip from '@/components/common/BaseTooltip.vue';
-import { useI18n } from 'vue-i18n';
 import { PropType } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+import BaseTooltip from '@/components/common/BaseTooltip.vue';
 import { MS_Level } from '@/utils/ms_const';
 
 const { t } = useI18n();

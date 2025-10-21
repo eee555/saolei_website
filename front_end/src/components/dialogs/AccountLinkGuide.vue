@@ -26,8 +26,9 @@
 
 <script setup lang="ts">
 import { ElText } from 'element-plus';
-import PlatformIcon from '@/components/widgets/PlatformIcon.vue';
 import { useI18n } from 'vue-i18n';
+
+import PlatformIcon from '@/components/widgets/PlatformIcon.vue';
 
 const { t } = useI18n();
 

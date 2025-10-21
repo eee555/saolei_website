@@ -86,21 +86,23 @@
 
 <script setup lang="ts">
 
+import { ElButton, ElDialog, ElForm, ElFormItem, ElInput, ElLink, ElMessageBox, ElNotification, ElOption, ElSelect, ElTable, ElTableColumn, ElText, ElTooltip } from 'element-plus';
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { store, local } from '@/store';
-import { ElNotification, ElDialog, ElForm, ElFormItem, ElInput, ElSelect, ElOption, ElLink, ElTable, ElTableColumn, ElText, ElTooltip, ElButton, ElMessageBox } from 'element-plus';
-import { Platform, platformlist } from '@/utils/common/accountLinkPlatforms';
-import PlatformIcon from './widgets/PlatformIcon.vue';
-import BaseButtonConfirm from './common/BaseButtonConfirm.vue';
+import { useI18n } from 'vue-i18n';
+
 import BaseButtonCancel from './common/BaseButtonCancel.vue';
-import BaseIconDelete from './common/BaseIconDelete.vue';
+import BaseButtonConfirm from './common/BaseButtonConfirm.vue';
 import BaseIconAdd from './common/BaseIconAdd.vue';
+import BaseIconDelete from './common/BaseIconDelete.vue';
+import BaseIconPending from './common/BaseIconPending.vue';
 import BaseIconRefresh from './common/BaseIconRefresh.vue';
 import BaseIconVerified from './common/BaseIconVerified.vue';
-import BaseIconPending from './common/BaseIconPending.vue';
-import { useI18n } from 'vue-i18n';
 import { httpErrorNotification } from './Notifications';
+import PlatformIcon from './widgets/PlatformIcon.vue';
+
+import { local, store } from '@/store';
+import { Platform, platformlist } from '@/utils/common/accountLinkPlatforms';
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const AccountLinkGuide = defineAsyncComponent(() => import('./dialogs/AccountLinkGuide.vue'));
 const AccountSaolei = defineAsyncComponent(() => import('./accountlinks/AccountSaolei.vue'));

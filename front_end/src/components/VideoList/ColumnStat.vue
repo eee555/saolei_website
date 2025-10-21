@@ -11,10 +11,11 @@
 
 <script setup lang="ts">
 
-import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 import { ElTableColumn } from 'element-plus';
 import { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
+
+import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 
 const { t } = useI18n();
 
