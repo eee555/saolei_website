@@ -12,7 +12,7 @@ import { validateError, validateSuccess } from '@/utils/common/elFormValidate';
 import { ElFormItem, ElInput } from 'element-plus';
 import { computed, ref } from 'vue';
 // @ts-ignore
-import isEmail from 'validator/lib/isEmail.js';
+import isEmail from 'validator/lib/isEmail';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { useI18n } from 'vue-i18n';
 

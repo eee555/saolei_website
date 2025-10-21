@@ -15,7 +15,7 @@
 
 // Import commands.js using ES2015 syntax:
 import './commands';
-import '../../src/setup.ts';
+import '../../src/setup';
 
 import { mount } from 'cypress/vue';
 import 'cypress-real-events';
