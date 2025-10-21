@@ -21,7 +21,7 @@
 
 <script setup lang="ts" name="RangeSlider">
 
-import { ElSlider, ElInputNumber } from 'element-plus';
+import { ElInputNumber, ElSlider } from 'element-plus';
 
 const props = defineProps({
     min: {

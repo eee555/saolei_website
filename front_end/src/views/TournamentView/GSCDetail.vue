@@ -54,23 +54,25 @@
 
 <script setup lang="ts">
 
-import { httpErrorNotification } from '@/components/Notifications';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { Tournament } from '@/utils/tournaments';
-import { ElText, ElTabs, ElTabPane, ElLink, ElButton, ElRow } from 'element-plus';
+import { ElButton, ElLink, ElRow, ElTabPane, ElTabs, ElText } from 'element-plus';
 import { ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+import GSCAllSummary from './GSCAllSummary.vue';
+import GSCPersonalView from './GSCPersonalView.vue';
+import GSCTokenGuide from './GSCTokenGuide.vue';
+
+import BaseIconClose from '@/components/common/BaseIconClose.vue';
+import BaseIconRefresh from '@/components/common/BaseIconRefresh.vue';
+import { httpErrorNotification } from '@/components/Notifications';
+import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
 import { store } from '@/store';
 import { LoginStatus } from '@/utils/common/structInterface';
-import { TournamentState } from '@/utils/ms_const';
-import { GSCParticipant } from '@/utils/gsc';
-import GSCTokenGuide from './GSCTokenGuide.vue';
-import BaseIconRefresh from '@/components/common/BaseIconRefresh.vue';
-import GSCAllSummary from './GSCAllSummary.vue';
-import { useI18n } from 'vue-i18n';
-import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
-import GSCPersonalView from './GSCPersonalView.vue';
-import BaseIconClose from '@/components/common/BaseIconClose.vue';
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { streamToZip } from '@/utils/fileIO';
+import { GSCParticipant } from '@/utils/gsc';
+import { TournamentState } from '@/utils/ms_const';
+import { Tournament } from '@/utils/tournaments';
 
 const props = defineProps({
     id: {

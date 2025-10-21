@@ -41,17 +41,18 @@
 
 <script setup lang="ts">
 
+import { ElInput, ElLink, ElNotification, ElTable, ElTableColumn } from 'element-plus';
+import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+import IconCopy from './IconCopy.vue';
+
+import BaseIconAdd from '@/components/common/BaseIconAdd.vue';
+import BaseIconDelete from '@/components/common/BaseIconDelete.vue';
+import { httpErrorNotification, unknownErrorNotification } from '@/components/Notifications';
 import { store } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { ref } from 'vue';
 import { removeItem } from '@/utils/system/tools';
-import { ElNotification, ElTable, ElTableColumn, ElLink, ElInput } from 'element-plus';
-import { httpErrorNotification, unknownErrorNotification } from '@/components/Notifications';
-import { useI18n } from 'vue-i18n';
-import { computed } from 'vue';
-import BaseIconDelete from '@/components/common/BaseIconDelete.vue';
-import IconCopy from './IconCopy.vue';
-import BaseIconAdd from '@/components/common/BaseIconAdd.vue';
 
 const { proxy } = useCurrentInstance();
 const new_identifiers = ref('');

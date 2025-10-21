@@ -16,13 +16,15 @@
 </template>
 
 <script setup lang="ts">
-import { MS_Level, MS_State } from '@/utils/ms_const';
-import { computed, PropType, ref } from 'vue';
-import HeadColumn from './HeadColumn.vue';
-import { defaultCounts, defaultVideos } from './utils';
-import SortedColumn from './SortedColumn.vue';
-import { VideoAbstract } from '@/utils/videoabstract';
 import { ElCol } from 'element-plus';
+import { computed, PropType, ref } from 'vue';
+
+import HeadColumn from './HeadColumn.vue';
+import SortedColumn from './SortedColumn.vue';
+import { defaultCounts, defaultVideos } from './utils';
+
+import { MS_Level, MS_State } from '@/utils/ms_const';
+import { VideoAbstract } from '@/utils/videoabstract';
 
 
 const props = defineProps({

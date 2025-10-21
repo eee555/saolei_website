@@ -45,16 +45,18 @@
 </template>
 
 <script setup lang="ts">
-import { FormInstance, ElFormItem, ElNotification, ElDialog, ElForm, ElButton, ElCheckbox, ElInput } from 'element-plus';
+import { ElButton, ElCheckbox, ElDialog, ElForm, ElFormItem, ElInput, ElNotification, FormInstance } from 'element-plus';
 import { computed, reactive, ref } from 'vue';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { validateError, validateSuccess } from '@/utils/common/elFormValidate';
 import { useI18n } from 'vue-i18n';
-import emailFormItem from '../formItems/emailFormItem.vue';
+
 import emailCodeBlock from '../formItems/emailCodeBlock.vue';
+import emailFormItem from '../formItems/emailFormItem.vue';
 import passwordConfirmBlock from '../formItems/passwordConfirmBlock.vue';
+
 import { local } from '@/store';
-import { ControlRegex, LineSeparatorRegex, ParagraphSeparatorRegex, SpaceSeparatorRegex, MarkRegex } from '@/utils/strings';
+import { validateError, validateSuccess } from '@/utils/common/elFormValidate';
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import { ControlRegex, LineSeparatorRegex, MarkRegex, ParagraphSeparatorRegex, SpaceSeparatorRegex } from '@/utils/strings';
 
 const visible = defineModel({ type: Boolean, default: false });
 const emit = defineEmits(['login']);

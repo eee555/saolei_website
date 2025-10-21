@@ -7,8 +7,10 @@
 </template>
 
 <script setup lang="ts">
-import { platformlist } from '@/utils/common/accountLinkPlatforms';
 import { ElLink } from 'element-plus';
+
+import { platformlist } from '@/utils/common/accountLinkPlatforms';
+
 defineProps({
     platform: {
         type: String,

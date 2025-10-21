@@ -5,6 +5,7 @@ import typescriptEslint from 'typescript-eslint';
 // import vueI18n from '@intlify/eslint-plugin-vue-i18n'; // 不兼容ts。https://github.com/intlify/eslint-plugin-vue-i18n/issues/32
 import stylistic from '@stylistic/eslint-plugin';
 import pluginCypress from 'eslint-plugin-cypress/flat';
+import importPlugin from 'eslint-plugin-import';
 
 export default typescriptEslint.config(
   { ignores: ['*.d.ts', '**/coverage', '**/dist', '**/GuideView.vue'] },
@@ -16,6 +17,7 @@ export default typescriptEslint.config(
     },
     extends: [
       eslint.configs.recommended,
+      importPlugin.flatConfigs.recommended,
       ...typescriptEslint.configs.recommended,
       ...eslintPluginVue.configs['flat/recommended'],
       // ...vueI18n.configs.recommended, // 不兼容ts。https://github.com/intlify/eslint-plugin-vue-i18n/issues/32
@@ -30,6 +32,28 @@ export default typescriptEslint.config(
       },
     },
     rules: {
+      'import/consistent-type-specifier-style': 'error',
+      'import/extensions': 'error',
+      'import/first': 'error',
+      'import/newline-after-import': 'error',
+      'import/no-absolute-path': 'error',
+      'import/no-cycle': 'error',
+      'import/no-duplicates': 'error',
+      'import/no-dynamic-require': 'error',
+      'import/no-relative-packages': 'error',
+      'import/no-restricted-paths': 'error',
+      'import/no-self-import': 'error',
+      'import/no-unused-modules': 'error',
+      'import/no-useless-path-segments': 'error',
+      'import/no-webpack-loader-syntax': 'error',
+      'import/order': ['error', {
+        'newlines-between': 'always',
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        },
+        'named': true,
+      }],
       'no-control-regex': 'off', 
       'no-irregular-whitespace': 'off',
       'no-prototype-builtins': 'off',
@@ -109,6 +133,12 @@ export default typescriptEslint.config(
       'vue-i18n': {
         localeDir: 'src/i18n/locales/*.ts',
         messageSyntaxVersion: '^11.0.0',
+      },
+      "import/resolver": {
+        // You will also need to install and configure the TypeScript resolver
+        // See also https://github.com/import-js/eslint-import-resolver-typescript#configuration
+        "typescript": true,
+        "node": true,
       },
     }
   },

@@ -33,17 +33,19 @@
 </template>
 
 <script setup lang="ts">
+import { ElDivider, ElRow, ElText } from 'element-plus';
+import { computed, PropType } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+import Cell from './Cell.vue';
+import YLabel from './YLabel.vue';
+
 import { BBBvSummaryConfig, colorTheme } from '@/store';
-import { ElRow, ElDivider, ElText } from 'element-plus';
+import { ArrayUtils } from '@/utils/arrays';
+import { PiecewiseColorScheme } from '@/utils/colors';
 import { getLastDigit, setLastDigit } from '@/utils/math';
 import { ColorTemplateName, MS_Level } from '@/utils/ms_const';
 import { getStat_stat, groupVideosByBBBv, VideoAbstract } from '@/utils/videoabstract';
-import { computed, PropType } from 'vue';
-import Cell from './Cell.vue';
-import YLabel from './YLabel.vue';
-import { PiecewiseColorScheme } from '@/utils/colors';
-import { useI18n } from 'vue-i18n';
-import { ArrayUtils } from '@/utils/arrays';
 
 const { t } = useI18n();
 

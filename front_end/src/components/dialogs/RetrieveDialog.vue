@@ -25,14 +25,16 @@
 </template>
 
 <script setup lang="ts">
-import { ElFormItem, ElNotification, FormInstance, ElForm, ElButton, ElDialog } from 'element-plus';
+import { ElButton, ElDialog, ElForm, ElFormItem, ElNotification, FormInstance } from 'element-plus';
 import { computed, reactive, ref } from 'vue';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import emailFormItem from '../formItems/emailFormItem.vue';
-import emailCodeBlock from '../formItems/emailCodeBlock.vue';
-import passwordConfirmBlock from '../formItems/passwordConfirmBlock.vue';
-import { local } from '@/store';
 import { useI18n } from 'vue-i18n';
+
+import emailCodeBlock from '../formItems/emailCodeBlock.vue';
+import emailFormItem from '../formItems/emailFormItem.vue';
+import passwordConfirmBlock from '../formItems/passwordConfirmBlock.vue';
+
+import { local } from '@/store';
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const visible = defineModel({ type: Boolean, default: false });
 const emit = defineEmits(['login']);

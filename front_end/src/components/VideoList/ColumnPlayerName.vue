@@ -9,6 +9,7 @@
 <script setup lang="ts">
 
 import { ElTableColumn } from 'element-plus';
+
 import PlayerName from '@/components/PlayerName.vue';
 import { VideoAbstract } from '@/utils/videoabstract';
 

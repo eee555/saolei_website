@@ -108,18 +108,19 @@
 </template>
 
 <script lang="ts" setup name="UserSettings">
-import { store, local, colorTheme } from '@/store';
-import { ElDescriptions, ElDescriptionsItem, ElSelect, ElOption, ElText, ElSwitch, ElSlider, ElInputNumber } from 'element-plus';
-import BaseTooltip from '@/components/common/BaseTooltip.vue';
-import { LoginStatus } from '@/utils/common/structInterface';
-import { useI18n } from 'vue-i18n';
-const { t } = useI18n();
-
-import DarkMode from '@/components/widgets/DarkMode.vue';
-import ColorSchemeSetting from '@/components/visualization/ColorSchemeSetting.vue';
+import { ElDescriptions, ElDescriptionsItem, ElInputNumber, ElOption, ElSelect, ElSlider, ElSwitch, ElText } from 'element-plus';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+import BaseTooltip from '@/components/common/BaseTooltip.vue';
 import ExperimentalFeature from '@/components/ExperimentalFeature.vue';
+import ColorSchemeSetting from '@/components/visualization/ColorSchemeSetting.vue';
+import DarkMode from '@/components/widgets/DarkMode.vue';
+import { colorTheme, local, store } from '@/store';
+import { LoginStatus } from '@/utils/common/structInterface';
 import { STNB_const } from '@/utils/ms_const';
+
+const { t } = useI18n();
 
 const colorSchemeName = ref('bvs');
 

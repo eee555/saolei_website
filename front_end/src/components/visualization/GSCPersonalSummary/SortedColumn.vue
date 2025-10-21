@@ -14,18 +14,20 @@
 </template>
 
 <script setup lang="ts">
+import { sum } from 'd3-array';
+import { ElText } from 'element-plus';
+import tinycolor from 'tinycolor2';
+import { computed, PropType } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+import Cell from './Cell.vue';
+import { defaultVideos } from './utils';
+
 import { colorTheme } from '@/store';
 import { getTextColor, PiecewiseColorScheme } from '@/utils/colors';
 import { MS_Level } from '@/utils/ms_const';
-import { VideoAbstract } from '@/utils/videoabstract';
-import { computed, PropType } from 'vue';
-import Cell from './Cell.vue';
-import { useI18n } from 'vue-i18n';
-import { sum } from 'd3-array';
-import { defaultVideos } from './utils';
-import tinycolor from 'tinycolor2';
 import { formatNumberSmart } from '@/utils/strings';
-import { ElText } from 'element-plus';
+import { VideoAbstract } from '@/utils/videoabstract';
 
 type sortByOptions = 'time' | 'bvs' | 'stnb';
 

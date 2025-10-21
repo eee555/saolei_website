@@ -14,11 +14,12 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n';
+import { ElRow, ElText } from 'element-plus';
 import Lazy from 'lazy.js';
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+
 import StackBar from '@/components/visualization/StackBar/App.vue';
-import { ElText, ElRow } from 'element-plus';
 import { VideoAbstract } from '@/utils/videoabstract';
 
 const { t } = useI18n();

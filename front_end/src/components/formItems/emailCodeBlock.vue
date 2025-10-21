@@ -34,14 +34,16 @@
 </template>
 
 <script setup lang="ts">
-import { validateError, validateSuccess } from '@/utils/common/elFormValidate';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { ElFormItem, ElNotification, ElButton, ElInput } from 'element-plus';
+import VueCountdown from '@chenfengyuan/vue-countdown';
+import { ElButton, ElFormItem, ElInput, ElNotification } from 'element-plus';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+
 import ValidCode from '../ValidCode.vue';
+
 import { local } from '@/store';
-import VueCountdown from '@chenfengyuan/vue-countdown';
+import { validateError, validateSuccess } from '@/utils/common/elFormValidate';
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const prop = defineProps({
     type: { // 邮件模板，参考后端

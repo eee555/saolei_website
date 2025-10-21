@@ -8,13 +8,14 @@
 </template>
 
 <script setup lang="ts">
-import { validateError, validateSuccess } from '@/utils/common/elFormValidate';
 import { ElFormItem, ElInput } from 'element-plus';
+import isEmail from 'validator/lib/isEmail';
 import { computed, ref } from 'vue';
 // @ts-ignore
-import isEmail from 'validator/lib/isEmail.js';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { useI18n } from 'vue-i18n';
+
+import { validateError, validateSuccess } from '@/utils/common/elFormValidate';
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const email = defineModel({ type: String, required: true });
 const prop = defineProps({

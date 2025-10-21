@@ -1,6 +1,7 @@
-import { VideoAbstract } from '@/utils/videoabstract';
 import ActivityCalendarAbstract from './App.vue';
+
 import i18n from '@/i18n';
+import { VideoAbstract } from '@/utils/videoabstract';
 
 describe('<ActivityCalendarAbstract />', () => {
     before(() => {

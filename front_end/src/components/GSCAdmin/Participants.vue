@@ -27,10 +27,11 @@
 </template>
 
 <script setup lang="ts">
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import { ElButton, ElCol, ElRow, ElTable, ElTableColumn, ElText } from 'element-plus';
 import { ref, watch } from 'vue';
+
 import { httpErrorNotification, successNotification } from '@/components/Notifications';
-import { ElButton, ElCol, ElTable, ElTableColumn, ElText, ElRow } from 'element-plus';
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { GSCParticipant } from '@/utils/gsc';
 import { TournamentParticipant } from '@/utils/tournaments';
 

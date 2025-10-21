@@ -85,11 +85,12 @@
 
 <script lang="ts" setup>
 // 注册、登录的弹框及右上方按钮
+import { ElCol, ElDialog, ElDivider, ElLink, ElRow } from 'element-plus';
 import { ref } from 'vue';
-import { ElDialog, ElDivider, ElRow, ElCol, ElLink } from 'element-plus';
+import { useI18n } from 'vue-i18n';
+
 import GitHubUser from '../widgets/GitHubUser.vue';
 
-import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
 const centerDialogVisible = ref(false);

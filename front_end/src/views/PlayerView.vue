@@ -100,30 +100,31 @@
 
 <script lang="ts" setup>
 // 我的地盘页面
+import 'flag-icon-css/css/flag-icons.min.css';
+import type { UploadFile, UploadFiles, UploadInstance, UploadProps, UploadRawFile, UploadRequestOptions } from 'element-plus';
+import { ElAside, ElContainer, ElImage, ElInput, ElMain, ElMessage, ElTabPane, ElTabs, ElUpload, genFileId } from 'element-plus';
+import { compressAccurately } from 'image-conversion';
 import { defineAsyncComponent, onMounted, ref, watch } from 'vue';
-import { ElContainer, ElAside, ElMain, ElTabs, ElTabPane, ElImage, ElInput, ElUpload } from 'element-plus';
+import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
+
+import { store } from '../store';
+
+import imageUrlDefault from '@/assets/person.png';
+import BaseIconAdd from '@/components/common/BaseIconAdd.vue';
+import { unknownErrorNotification } from '@/components/Notifications';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import { UserProfile } from '@/utils/userprofile';
+
 const PlayerRecordView = defineAsyncComponent(() => import('@/views/PlayerRecordView.vue'));
 const PlayerVideosView = defineAsyncComponent(() => import('@/views/PlayerVideosView.vue'));
 const PlayerProfileView = defineAsyncComponent(() => import('@/views/PlayerProfileView.vue'));
 const UploadView = defineAsyncComponent(() => import('@/views/UploadView.vue'));
-import '../../node_modules/flag-icon-css/css/flag-icons.min.css';
 
 const { proxy } = useCurrentInstance();
-import { genFileId, ElMessage } from 'element-plus';
-import type { UploadInstance, UploadProps, UploadRawFile, UploadFile, UploadFiles, UploadRequestOptions } from 'element-plus';
 const upload = ref<UploadInstance>();
-import imageUrlDefault from '@/assets/person.png';
 const imageUrl = ref(imageUrlDefault);
 const avatar_changed = ref(false);
-import { compressAccurately } from 'image-conversion';
-import { store } from '../store';
-
-import { useI18n } from 'vue-i18n';
-import { useRoute } from 'vue-router';
-import { UserProfile } from '@/utils/userprofile';
-import { unknownErrorNotification } from '@/components/Notifications';
-import BaseIconAdd from '@/components/common/BaseIconAdd.vue';
 const { t } = useI18n();
 const route = useRoute();
 

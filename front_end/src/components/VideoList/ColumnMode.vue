@@ -9,8 +9,9 @@
 <script setup lang="ts">
 
 import { ElTableColumn } from 'element-plus';
-import { simple_formatter, defaultFilterMethod } from '@/utils';
 import { useI18n } from 'vue-i18n';
+
+import { defaultFilterMethod, simple_formatter } from '@/utils';
 
 const { t } = useI18n();
 

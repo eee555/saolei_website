@@ -20,13 +20,14 @@
 </template>
 
 <script setup lang="ts">
-import { ElText, ElIcon } from 'element-plus';
-import BaseIconVerified from '@/components/common/BaseIconVerified.vue';
-import BaseIconIdentifier from '@/components/common/BaseIconIdentifier.vue';
-import BaseIconExternal from '@/components/common/BaseIconExternal.vue';
-import BaseTooltip from '@/components/common/BaseTooltip.vue';
-import { useI18n } from 'vue-i18n';
+import { ElIcon, ElText } from 'element-plus';
 import { PropType } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+import BaseIconExternal from '@/components/common/BaseIconExternal.vue';
+import BaseIconIdentifier from '@/components/common/BaseIconIdentifier.vue';
+import BaseIconVerified from '@/components/common/BaseIconVerified.vue';
+import BaseTooltip from '@/components/common/BaseTooltip.vue';
 import { MS_State } from '@/utils/ms_const';
 
 const { t } = useI18n();

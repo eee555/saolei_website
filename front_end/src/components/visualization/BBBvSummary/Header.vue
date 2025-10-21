@@ -53,12 +53,13 @@
 
 <script setup lang="ts">
 
-import { ElRow, ElSelect, ElOption, ElLink, ElText } from 'element-plus';
-import { BBBvSummaryConfig } from '@/store';
+import { ElLink, ElOption, ElRow, ElSelect, ElText } from 'element-plus';
 import { useI18n } from 'vue-i18n';
+
+import BaseTooltip from '@/components/common/BaseTooltip.vue';
 import SoftwareFilter from '@/components/Filters/SoftwareFilter.vue';
 import Zoomer from '@/components/widgets/Zoomer.vue';
-import BaseTooltip from '@/components/common/BaseTooltip.vue';
+import { BBBvSummaryConfig } from '@/store';
 
 const { t } = useI18n();
 

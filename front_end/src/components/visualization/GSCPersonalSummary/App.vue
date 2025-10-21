@@ -24,11 +24,13 @@
 
 <script setup lang="ts">
 
+import { ElCol, ElRow } from 'element-plus';
 import { computed, PropType, ref } from 'vue';
-import LevelBlock from './LevelBlock.vue';
-import { VideoAbstract } from '@/utils/videoabstract';
-import { ElRow, ElCol } from 'element-plus';
+
 import AllSums from './AllSums.vue';
+import LevelBlock from './LevelBlock.vue';
+
+import { VideoAbstract } from '@/utils/videoabstract';
 
 defineProps({
     videos: {

@@ -15,18 +15,20 @@
 </template>
 
 <script setup lang="ts">
-import { httpErrorNotification } from '@/components/Notifications';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import { ElTabPane, ElTabs, TabPaneName } from 'element-plus';
 import { onMounted, ref, watch } from 'vue';
-import TournamentList from './TournamentList.vue';
-import { Tournament } from '@/utils/tournaments';
-import { store, local } from '@/store';
-import { TabPaneName, ElTabs, ElTabPane } from 'element-plus';
-import { useRoute, useRouter } from 'vue-router';
-import TournamentDetail from './TournamentDetail.vue';
-import GSCDetail from './GSCDetail.vue';
-import { TournamentSeries } from '@/utils/ms_const';
 import { useI18n } from 'vue-i18n';
+import { useRoute, useRouter } from 'vue-router';
+
+import GSCDetail from './GSCDetail.vue';
+import TournamentDetail from './TournamentDetail.vue';
+import TournamentList from './TournamentList.vue';
+
+import { httpErrorNotification } from '@/components/Notifications';
+import { local, store } from '@/store';
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import { TournamentSeries } from '@/utils/ms_const';
+import { Tournament } from '@/utils/tournaments';
 
 const { proxy } = useCurrentInstance();
 const { t } = useI18n();

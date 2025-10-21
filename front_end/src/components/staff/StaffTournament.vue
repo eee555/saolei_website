@@ -37,16 +37,17 @@
 
 <script setup lang="ts">
 
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { Tournament } from '@/utils/tournaments';
-import { ElInputNumber, ElButton } from 'element-plus';
-import { computed, ref } from 'vue';
-import { httpErrorNotification, successNotification } from '@/components/Notifications';
 import { VCodeBlock } from '@wdns/vue-code-block';
-import BaseIconTick from '@/components/common/BaseIconTick.vue';
+import { ElButton, ElInputNumber } from 'element-plus';
+import { computed, ref } from 'vue';
+
 import BaseIconClose from '@/components/common/BaseIconClose.vue';
-import { TournamentState } from '@/utils/ms_const';
+import BaseIconTick from '@/components/common/BaseIconTick.vue';
+import { httpErrorNotification, successNotification } from '@/components/Notifications';
 import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import { TournamentState } from '@/utils/ms_const';
+import { Tournament } from '@/utils/tournaments';
 
 const { proxy } = useCurrentInstance();
 

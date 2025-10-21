@@ -9,23 +9,23 @@
 </template>
 
 <script setup lang="ts">
-import { use } from 'echarts/core';
-import { CanvasRenderer } from 'echarts/renderers';
-import { PieChart, LineChart, BarChart } from 'echarts/charts';
+import { BarChart, LineChart, PieChart } from 'echarts/charts';
 import {
+    GridComponent,
+    LegendComponent,
+    PolarComponent,
     TitleComponent,
     TooltipComponent,
-    LegendComponent,
-    GridComponent,
-    PolarComponent,
 
 } from 'echarts/components';
+import { use } from 'echarts/core';
+import { CanvasRenderer } from 'echarts/renderers';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 import VChart from 'vue-echarts';
-import { ref } from 'vue';
-import { onMounted, onBeforeUnmount } from 'vue';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
-const { proxy } = useCurrentInstance();
 
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
+
+const { proxy } = useCurrentInstance();
 
 const io_cpus = ref({
     s: ['0'],

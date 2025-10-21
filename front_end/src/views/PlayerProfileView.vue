@@ -29,18 +29,20 @@
 </template>
 
 <script setup lang="ts">
-import { ElDivider, ElText, ElScrollbar } from 'element-plus';
-import AccountLinkManager from '@/components/AccountLinkManager.vue';
-import IdentifierManager from '@/components/widgets/IdentifierManager.vue';
-import { activityCalendarConfig, BBBvSummaryConfig, local, store } from '@/store';
+import { ElDivider, ElScrollbar, ElText } from 'element-plus';
+import { defineAsyncComponent } from 'vue';
 import { useI18n } from 'vue-i18n';
+
+import AccountLinkManager from '@/components/AccountLinkManager.vue';
+import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
+import BaseIconInfo from '@/components/common/BaseIconInfo.vue';
+import BaseOverlay from '@/components/common/BaseOverlay.vue';
 import ActivityCalendarAbstract from '@/components/visualization/ActivityCalendarAbstract/App.vue';
 import BBBvSummary from '@/components/visualization/BBBvSummary/App.vue';
 import BBBvSummaryHeader from '@/components/visualization/BBBvSummary/Header.vue';
-import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
-import BaseOverlay from '@/components/common/BaseOverlay.vue';
-import BaseIconInfo from '@/components/common/BaseIconInfo.vue';
-import { defineAsyncComponent } from 'vue';
+import IdentifierManager from '@/components/widgets/IdentifierManager.vue';
+import { activityCalendarConfig, BBBvSummaryConfig, local, store } from '@/store';
+
 const { t } = useI18n();
 const IdentifierHelper = defineAsyncComponent(() => import('@/components/dialogs/IdentifierHelper.vue'));
 </script>

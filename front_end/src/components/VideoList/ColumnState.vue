@@ -13,9 +13,10 @@
 <script setup lang="ts">
 
 import { ElTableColumn } from 'element-plus';
+import { useI18n } from 'vue-i18n';
+
 import VideoStateIcon from '@/components/widgets/VideoStateIcon.vue';
 import { defaultFilterMethod } from '@/utils';
-import { useI18n } from 'vue-i18n';
 import { VideoAbstract } from '@/utils/videoabstract';
 
 const { t } = useI18n();

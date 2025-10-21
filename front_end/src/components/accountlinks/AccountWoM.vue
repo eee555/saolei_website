@@ -54,11 +54,12 @@
 </template>
 
 <script setup lang="ts">
-import { ms_to_s } from '@/utils';
-import { utc_to_local_format } from '@/utils/system/tools';
+import { ElDescriptions, ElDescriptionsItem, ElImage, ElTable, ElTableColumn, ElText } from 'element-plus';
 import { computed, PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ElDescriptions, ElDescriptionsItem, ElTable, ElTableColumn, ElText, ElImage } from 'element-plus';
+
+import { ms_to_s } from '@/utils';
+import { utc_to_local_format } from '@/utils/system/tools';
 
 const prop = defineProps({
     data: {

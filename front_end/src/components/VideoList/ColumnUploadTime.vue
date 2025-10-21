@@ -8,9 +8,10 @@
 <script setup lang="ts">
 
 import { ElTableColumn } from 'element-plus';
+import { useI18n } from 'vue-i18n';
+
 import { simple_formatter } from '@/utils';
 import { utc_to_local_format } from '@/utils/system/tools';
-import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 

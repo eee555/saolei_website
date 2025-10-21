@@ -6,7 +6,8 @@
 </template>
 
 <script setup lang="ts" name="GitHubUser">
-import { ElLink, ElImage, ElText } from 'element-plus';
+import { ElImage, ElLink, ElText } from 'element-plus';
+
 const props = defineProps({
     username: { type: String, required: true },
 });

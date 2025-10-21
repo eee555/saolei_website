@@ -7,8 +7,9 @@
 </template>
 
 <script setup lang="ts">
-import { ArrayUtils } from '@/utils/arrays';
 import { ElText } from 'element-plus';
+
+import { ArrayUtils } from '@/utils/arrays';
 
 defineProps({
     minBv: { type: Number, required: true },

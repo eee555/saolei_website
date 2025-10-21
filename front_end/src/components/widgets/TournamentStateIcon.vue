@@ -7,9 +7,10 @@
 <script setup lang="ts">
 
 import { ElText } from 'element-plus';
-import { TournamentState } from '@/utils/ms_const';
 import { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
+
+import { TournamentState } from '@/utils/ms_const';
 
 defineProps({
     state: {

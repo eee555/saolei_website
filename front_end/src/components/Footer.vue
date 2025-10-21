@@ -99,11 +99,12 @@
 </template>
 
 <script setup lang="ts">
-import { ElFooter, ElLink, ElText, ElRow, ElCol, ElDivider } from 'element-plus';
-import Thanks from './dialogs/Thanks.vue';
-import Downloads from './dialogs/Downloads.vue';
-
+import { ElCol, ElDivider, ElFooter, ElLink, ElRow, ElText } from 'element-plus';
 import { useI18n } from 'vue-i18n';
+
+import Downloads from './dialogs/Downloads.vue';
+import Thanks from './dialogs/Thanks.vue';
+
 const { t } = useI18n();
 
 </script>

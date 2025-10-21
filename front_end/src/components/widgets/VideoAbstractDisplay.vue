@@ -53,13 +53,15 @@
 
 <script setup lang="ts">
 
-import { PropType } from 'vue';
-import { VideoAbstract } from '@/utils/videoabstract';
-import { toISODateTimeString } from '@/utils/datetime';
 import { ElDescriptions, ElDescriptionsItem, ElRow, ElText } from 'element-plus';
-import VideoStateIcon from './VideoStateIcon.vue';
-import SoftwareIcon from './SoftwareIcon.vue';
+import { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
+
+import SoftwareIcon from './SoftwareIcon.vue';
+import VideoStateIcon from './VideoStateIcon.vue';
+
+import { toISODateTimeString } from '@/utils/datetime';
+import { VideoAbstract } from '@/utils/videoabstract';
 
 const { t } = useI18n();
 

@@ -29,10 +29,12 @@
 <script lang="ts" setup>
 
 import { ElText } from 'element-plus';
+import { useI18n } from 'vue-i18n';
+
 import BaseIconArbiter from '../common/BaseIconArbiter.vue';
 import BaseIconMetasweeper from '../common/BaseIconMetasweeper.vue';
 import VideoStateIcon from '../widgets/VideoStateIcon.vue';
-import { useI18n } from 'vue-i18n';
+
 const { t } = useI18n();
 
 </script>

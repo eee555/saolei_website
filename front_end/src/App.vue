@@ -54,33 +54,35 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue';
-import LanguagePicker from './components/widgets/LanguagePicker.vue';
-import IconMenuItem from './components/widgets/IconMenuItem.vue';
-import Login from './components/Login.vue';
-import Footer from './components/Footer.vue';
-import PlayerDialog from './components/PlayerDialog.vue';
-import VideoListDialog from './components/dialogs/VideoListDialog.vue';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { store, local } from './store';
-import { ElScrollbar, ElMenu, ElMenuItem, ElDialog, ElCheckbox, ElImage, ElBadge, ElHeader, ElContainer, ElMain } from 'element-plus';
-import BaseButtonConfirm from './components/common/BaseButtonConfirm.vue';
+import { useDark, useToggle } from '@vueuse/core';
+import { ElBadge, ElCheckbox, ElContainer, ElDialog, ElHeader, ElImage, ElMain, ElMenu, ElMenuItem, ElScrollbar } from 'element-plus';
+import { computed, onMounted, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
 
-const { proxy } = useCurrentInstance();
+import BaseButtonConfirm from './components/common/BaseButtonConfirm.vue';
+import VideoListDialog from './components/dialogs/VideoListDialog.vue';
+import Footer from './components/Footer.vue';
+import Login from './components/Login.vue';
+import PlayerDialog from './components/PlayerDialog.vue';
+import IconMenuItem from './components/widgets/IconMenuItem.vue';
+import LanguagePicker from './components/widgets/LanguagePicker.vue';
+import { local, store } from './store';
+
 import logo_1 from '@/assets/logo.png';
 import logo_2 from '@/assets/logo2.png';
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
-import { useRouter } from 'vue-router';
+
+
+
+const { proxy } = useCurrentInstance();
 const router = useRouter();
-
-import { useDark, useToggle } from '@vueuse/core';
 const isDark = useDark();
 useToggle(isDark);
 watch(isDark, (v) => {
     local.value.darkmode = v;
 });
-
-import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
 // const player_visible = ref(false)

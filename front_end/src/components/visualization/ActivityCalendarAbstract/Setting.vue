@@ -22,11 +22,12 @@
 </template>
 
 <script setup lang="ts">
-import { activityCalendarConfig } from '@/store';
-import { ElSwitch, ElInputNumber, ElText } from 'element-plus';
+import { ElInputNumber, ElSwitch, ElText } from 'element-plus';
 import { useI18n } from 'vue-i18n';
+
 import BaseIconQuestion from '@/components/common/BaseIconQuestion.vue';
 import BaseTooltip from '@/components/common/BaseTooltip.vue';
+import { activityCalendarConfig } from '@/store';
 
 const { t } = useI18n();
 

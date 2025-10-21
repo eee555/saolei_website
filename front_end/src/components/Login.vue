@@ -29,19 +29,22 @@
 
 <script lang="ts" setup>
 // 注册、登录、找回密码的弹框及右上方按钮
+import { ElButton, ElMessage } from 'element-plus';
 import { onMounted, ref } from 'vue';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
-const { proxy } = useCurrentInstance();
-import { LoginStatus } from '@/utils/common/structInterface';
-import LoginDialog from '@/components/dialogs/LoginDialog.vue';
-import RetrieveDialog from './dialogs/RetrieveDialog.vue';
-import { ElMessage, ElButton } from 'element-plus';
-import { store, local } from '../store';
-
 import { useI18n } from 'vue-i18n';
+
+import { local, store } from '../store';
+
 import RegisterDialog from './dialogs/RegisterDialog.vue';
+import RetrieveDialog from './dialogs/RetrieveDialog.vue';
 import { httpErrorNotification } from './Notifications';
+
+import LoginDialog from '@/components/dialogs/LoginDialog.vue';
+import { LoginStatus } from '@/utils/common/structInterface';
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { UserProfile } from '@/utils/userprofile';
+
+const { proxy } = useCurrentInstance();
 const { t } = useI18n();
 
 // 登录对话框是否出现

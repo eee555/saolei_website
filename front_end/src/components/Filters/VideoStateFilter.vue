@@ -7,8 +7,8 @@
 </template>
 
 <script setup lang="ts">
+import { ElCheckboxButton, ElCheckboxGroup } from 'element-plus';
 import { useI18n } from 'vue-i18n';
-import { ElCheckboxGroup, ElCheckboxButton } from 'element-plus';
 
 const checkboxGroup = defineModel({ type: Array<string>, required: true });
 

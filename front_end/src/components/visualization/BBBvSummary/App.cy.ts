@@ -1,4 +1,5 @@
 import BBBvSummary from './App.vue';
+
 import i18n from '@/i18n';
 import { pinia } from '@/store/create';
 import { VideoAbstract } from '@/utils/videoabstract';

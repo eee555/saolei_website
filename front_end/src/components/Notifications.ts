@@ -1,6 +1,7 @@
-import { local } from '@/store';
 import { ElNotification } from 'element-plus';
+
 import i18n from '@/i18n';
+import { local } from '@/store';
 
 // @ts-ignore
 const { t } = i18n.global;
