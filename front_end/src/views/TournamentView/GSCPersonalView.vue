@@ -35,11 +35,13 @@ import GSCPersonalSummary from '@/components/visualization/GSCPersonalSummary/Ap
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { httpErrorNotification } from '@/components/Notifications';
 import { streamToZip } from '@/utils/fileIO';
+import { ArrayUtils } from '@/utils/arrays';
+import { ColumnChoices } from '@/utils/ms_const';
 
 
 const { proxy } = useCurrentInstance();
 const { t } = useI18n();
-const thisColumnChoices = ['bv', 'bvs', 'stnb', 'ces', 'cls', 'corr', 'end_time', 'ioe', 'level', 'state', 'software', 'thrp', 'time', 'upload_time', 'path', 'file_size'] as const;
+const thisColumnChoices = ArrayUtils.sortByReferenceOrder(['bv', 'bvs', 'stnb', 'ces', 'cls', 'corr', 'end_time', 'ioe', 'level', 'state', 'software', 'thrp', 'time', 'upload_time', 'path', 'file_size'], ColumnChoices);
 
 const props = defineProps({
     userId: {

@@ -125,4 +125,8 @@ export class ArrayUtils {
     static isEmpty<T>(arr: T[]): boolean {
         return arr.length === 0;
     }
+
+    static sortByReferenceOrder<T>(subset: Array<T>, referenceOrder: ReadonlyArray<T>): T[] {
+        return subset.sort((a, b) => referenceOrder.indexOf(a) - referenceOrder.indexOf(b));
+    }
 }
