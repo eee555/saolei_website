@@ -21,8 +21,7 @@ import {
 
 } from 'echarts/components';
 import VChart from 'vue-echarts';
-import { ref } from 'vue';
-import { onMounted, onBeforeUnmount } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 const { proxy } = useCurrentInstance();
 
