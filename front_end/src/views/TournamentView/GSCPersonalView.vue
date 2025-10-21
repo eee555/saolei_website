@@ -22,21 +22,22 @@
 </template>
 
 <script setup lang="ts">
+import { ElButton, ElTabPane, ElTabs } from 'element-plus';
+import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ElTabs, ElTabPane, ElButton } from 'element-plus';
+
+import { httpErrorNotification } from '@/components/Notifications';
 import VideoList from '@/components/VideoList/App.vue';
-import MultiSelector from '@/components/widgets/MultiSelector.vue';
 import BBBvSummary from '@/components/visualization/BBBvSummary/App.vue';
 import BBBvSummaryHeader from '@/components/visualization/BBBvSummary/Header.vue';
-import { ref, watch } from 'vue';
-import { VideoAbstract } from '@/utils/videoabstract';
-import { VideoListConfig } from '@/store';
 import GSCPersonalSummary from '@/components/visualization/GSCPersonalSummary/App.vue';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { httpErrorNotification } from '@/components/Notifications';
-import { streamToZip } from '@/utils/fileIO';
+import MultiSelector from '@/components/widgets/MultiSelector.vue';
+import { VideoListConfig } from '@/store';
 import { ArrayUtils } from '@/utils/arrays';
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import { streamToZip } from '@/utils/fileIO';
 import { ColumnChoices } from '@/utils/ms_const';
+import { VideoAbstract } from '@/utils/videoabstract';
 
 
 const { proxy } = useCurrentInstance();

@@ -16,10 +16,11 @@
 </template>
 
 <script setup lang="ts">
-import { utc_to_local_format } from '@/utils/system/tools';
+import { ElDescriptions, ElDescriptionsItem } from 'element-plus';
 import { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ElDescriptions, ElDescriptionsItem } from 'element-plus';
+
+import { utc_to_local_format } from '@/utils/system/tools';
 
 const { t } = useI18n();
 

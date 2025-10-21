@@ -11,11 +11,13 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { ElText } from 'element-plus';
-import { httpErrorNotification, unknownErrorNotification } from './Notifications';
+import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+
+import { httpErrorNotification, unknownErrorNotification } from './Notifications';
+
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const { proxy } = useCurrentInstance();
 

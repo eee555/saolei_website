@@ -12,8 +12,9 @@
 </template>
 
 <script setup lang="ts">
-import { Tippy } from 'vue-tippy';
 import { ElLink } from 'element-plus';
+import { Tippy } from 'vue-tippy';
+
 import BaseCardNormal from '../common/BaseCardNormal.vue';
 import BaseIconSetting from '../common/BaseIconSetting.vue';
 

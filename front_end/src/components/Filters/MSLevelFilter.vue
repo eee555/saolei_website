@@ -7,9 +7,10 @@
 </template>
 
 <script setup lang="ts">
-import { MS_Level, MS_Levels } from '@/utils/ms_const';
+import { ElCheckboxButton, ElCheckboxGroup } from 'element-plus';
 import { useI18n } from 'vue-i18n';
-import { ElCheckboxGroup, ElCheckboxButton } from 'element-plus';
+
+import { MS_Level, MS_Levels } from '@/utils/ms_const';
 
 const { t } = useI18n();
 

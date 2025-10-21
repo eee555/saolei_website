@@ -10,6 +10,7 @@
 <script setup lang="ts">
 
 import { ElText } from 'element-plus';
+
 import BaseTooltip from './BaseTooltip.vue';
 
 </script>

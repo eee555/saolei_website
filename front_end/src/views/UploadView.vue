@@ -115,18 +115,20 @@
 
 <script lang="ts" setup>
 // 上传录像的页面
+import { ElButton, ElDescriptions, ElDescriptionsItem, ElIcon, ElTable, ElTableColumn, ElUpload } from 'element-plus';
+import type { UploadFile, UploadFiles, UploadInstance, UploadProps, UploadRawFile, UploadUserFile } from 'element-plus';
 import { ref } from 'vue';
-import { ElTable, ElTableColumn, ElButton, ElDescriptions, ElDescriptionsItem, ElUpload, ElIcon } from 'element-plus';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import type { UploadInstance, UploadProps, UploadUserFile, UploadRawFile, UploadFile, UploadFiles } from 'element-plus';
-import { store } from '../store';
-import { extract_stat, get_upload_status, load_video_file, upload_form, UploadVideoForm } from '@/utils/fileIO';
-import { Dict2FormData } from '@/utils/forms';
 import { useI18n } from 'vue-i18n';
+
+import { store } from '../store';
+
 import BaseIconDelete from '@/components/common/BaseIconDelete.vue';
 import BaseIconUpload from '@/components/common/BaseIconUpload.vue';
-import { VideoAbstract } from '@/utils/videoabstract';
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { toISODateTimeString } from '@/utils/datetime';
+import { extract_stat, get_upload_status, load_video_file, upload_form, UploadVideoForm } from '@/utils/fileIO';
+import { Dict2FormData } from '@/utils/forms';
+import { VideoAbstract } from '@/utils/videoabstract';
 
 const { proxy } = useCurrentInstance();
 

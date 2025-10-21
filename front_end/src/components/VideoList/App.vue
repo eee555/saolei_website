@@ -10,11 +10,12 @@
 
 <script setup lang="ts">
 
-import { preview } from '@/utils/common/PlayerDialog';
-import { VideoAbstract } from '@/utils/videoabstract';
 import { ElTable } from 'element-plus';
 import { defineAsyncComponent } from 'vue';
+
+import { preview } from '@/utils/common/PlayerDialog';
 import { ColumnChoice } from '@/utils/ms_const';
+import { VideoAbstract } from '@/utils/videoabstract';
 
 const ColumnEndTime = defineAsyncComponent(() => import('./ColumnEndTime.vue'));
 const ColumnFileSize = defineAsyncComponent(() => import('./ColumnFileSize.vue'));

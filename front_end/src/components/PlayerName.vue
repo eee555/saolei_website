@@ -39,15 +39,17 @@
 
 <script setup lang="ts" name="PlayerName">
 // 用户的名字，鼠标移上去以后弹出气泡框，可以访问他的主页
+import { ElButton, ElImage, ElLink, ElPopover, vLoading } from 'element-plus';
 import { ref } from 'vue';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import { useRouter } from 'vue-router';
+
+import { store } from '../store';
+
 import image_url_default from '@/assets/person.png';
 // import PreviewDownload from '@/components/PreviewDownload.vue';
 import PreviewNumber from '@/components/PreviewNumber.vue';
-import { useRouter } from 'vue-router';
 import { ms_to_s, to_fixed_n } from '@/utils';
-import { store } from '../store';
-import { ElLink, ElPopover, ElImage, ElButton, vLoading } from 'element-plus';
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const { proxy } = useCurrentInstance();
 const image_url = ref(image_url_default);

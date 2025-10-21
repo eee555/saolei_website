@@ -72,14 +72,15 @@
 
 <script lang="ts" setup>
 // 玩家排行榜
-import { onMounted, ref, reactive } from 'vue';
-import { ElPagination, ElRow, ElButton } from 'element-plus';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { to_fixed_n, ms_to_s } from '@/utils';
-import PreviewNumber from '@/components/PreviewNumber.vue';
-import PlayerName from '@/components/PlayerName.vue';
-
+import { ElButton, ElPagination, ElRow } from 'element-plus';
+import { onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+
+import PlayerName from '@/components/PlayerName.vue';
+import PreviewNumber from '@/components/PreviewNumber.vue';
+import { ms_to_s, to_fixed_n } from '@/utils';
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
+
 // const AsyncPlayerName = defineAsyncComponent(() => import('@/components/PlayerName.vue'))
 const { proxy } = useCurrentInstance();
 const { t } = useI18n();

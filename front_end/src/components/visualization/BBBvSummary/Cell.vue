@@ -15,17 +15,18 @@
 </template>
 
 <script setup lang="ts">
-import { VideoAbstract, getStat_stat } from '@/utils/videoabstract';
+import { ElLink } from 'element-plus';
+import tinycolor from 'tinycolor2';
 import { computed, PropType, ref, watch } from 'vue';
 import { Tippy } from 'vue-tippy';
-import { ElLink } from 'element-plus';
-import { MS_Level, MS_Software, MS_Softwares } from '@/utils/ms_const';
-import { getTextColor, PiecewiseColorScheme } from '@/utils/colors';
-import tinycolor from 'tinycolor2';
-import { preview } from '@/utils/common/PlayerDialog';
+
 import BaseCardSmall from '@/components/common/BaseCardSmall.vue';
 import VideoAbstractDisplay from '@/components/widgets/VideoAbstractDisplay.vue';
 import { store } from '@/store';
+import { getTextColor, PiecewiseColorScheme } from '@/utils/colors';
+import { preview } from '@/utils/common/PlayerDialog';
+import { MS_Level, MS_Software, MS_Softwares } from '@/utils/ms_const';
+import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 
 const bestValue = ref<number | null>(null);
 const bestIndex = ref(-1);

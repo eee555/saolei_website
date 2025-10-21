@@ -30,15 +30,16 @@
 
 <script setup lang="ts">
 
-import { PropType } from 'vue';
 import { ElTable, ElTableColumn } from 'element-plus';
+import { PropType } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
+
 import PlayerName from '@/components/PlayerName.vue';
+import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
+import { local, store } from '@/store';
 import { toISODateTimeString } from '@/utils/datetime';
 import { Tournament } from '@/utils/tournaments';
-import { useRouter } from 'vue-router';
-import { local, store } from '@/store';
-import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
-import { useI18n } from 'vue-i18n';
 
 const router = useRouter();
 const { t } = useI18n();

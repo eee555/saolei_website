@@ -12,10 +12,11 @@
 
 <script setup lang="ts">
 
-import { ElText } from 'element-plus';
 import { sum } from 'd3-array';
-import BaseTooltip from '@/components/common/BaseTooltip.vue';
+import { ElText } from 'element-plus';
 import { computed } from 'vue';
+
+import BaseTooltip from '@/components/common/BaseTooltip.vue';
 
 interface DataItem {
     name: string;

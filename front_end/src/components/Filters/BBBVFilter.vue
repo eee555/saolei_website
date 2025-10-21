@@ -5,8 +5,9 @@
 
 <script setup lang="ts">
 
-import { videofilter } from '@/store';
 import RangeSlider from '../RangeSlider.vue';
+
+import { videofilter } from '@/store';
 
 defineProps({
     level: {

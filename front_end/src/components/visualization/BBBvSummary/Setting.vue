@@ -5,9 +5,10 @@
 </template>
 
 <script setup lang="ts">
-import { BBBvSummaryConfig } from '@/store';
-import { ElText, ElInputNumber } from 'element-plus';
+import { ElInputNumber, ElText } from 'element-plus';
 import { useI18n } from 'vue-i18n';
+
+import { BBBvSummaryConfig } from '@/store';
 
 const { t } = useI18n();
 </script>

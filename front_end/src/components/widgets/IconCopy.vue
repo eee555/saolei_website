@@ -6,9 +6,11 @@
 
 <script setup lang="ts">
 
-import BaseIconCopy from '@/components/common/BaseIconCopy.vue';
-import { copyToClipboard } from './CopyToClipboard';
 import { ElLink } from 'element-plus';
+
+import { copyToClipboard } from './CopyToClipboard';
+
+import BaseIconCopy from '@/components/common/BaseIconCopy.vue';
 
 defineProps({
     text: {

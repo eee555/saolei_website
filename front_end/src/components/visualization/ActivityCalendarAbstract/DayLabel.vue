@@ -16,10 +16,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import { ElText } from 'element-plus';
-import IconSetting from '@/components/widgets/IconSetting.vue';
+import { computed } from 'vue';
+
 import Setting from './Setting.vue';
+
+import IconSetting from '@/components/widgets/IconSetting.vue';
 
 const prop = defineProps({
     cellSize: { type: Number, default: 14 }, // 格子大小，单位为px

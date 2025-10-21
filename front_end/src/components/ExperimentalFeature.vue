@@ -5,9 +5,10 @@
 </template>
 
 <script setup lang="ts">
-import { local } from '@/store';
-import { useI18n } from 'vue-i18n';
 import { ElWatermark } from 'element-plus';
+import { useI18n } from 'vue-i18n';
+
+import { local } from '@/store';
 
 const { t } = useI18n();
 </script>

@@ -15,8 +15,9 @@
 
 <script setup lang="ts">
 
-import { ElInputNumber, ElTabs, ElTabPane } from 'element-plus';
+import { ElInputNumber, ElTabPane, ElTabs } from 'element-plus';
 import { ref } from 'vue';
+
 import GSCGeneralInfo from '@/components/GSCAdmin/GeneralInfo.vue';
 import GSCParticipants from '@/components/GSCAdmin/Participants.vue';
 

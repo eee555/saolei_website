@@ -17,17 +17,19 @@
 </template>
 
 <script setup lang="ts">
-import { VideoAbstract } from '@/utils/videoabstract';
+import { ElLink, ElText } from 'element-plus';
+import tinycolor from 'tinycolor2';
 import { computed, PropType } from 'vue';
 import { Tippy } from 'vue-tippy';
-import { ElLink, ElText } from 'element-plus';
-import { MS_Level } from '@/utils/ms_const';
-import { getTextColor, PiecewiseColorScheme } from '@/utils/colors';
-import tinycolor from 'tinycolor2';
-import { preview } from '@/utils/common/PlayerDialog';
+
+import { defaultVideos } from './utils';
+
 import BaseCardSmall from '@/components/common/BaseCardSmall.vue';
 import VideoAbstractDisplay from '@/components/widgets/VideoAbstractDisplay.vue';
-import { defaultVideos } from './utils';
+import { getTextColor, PiecewiseColorScheme } from '@/utils/colors';
+import { preview } from '@/utils/common/PlayerDialog';
+import { MS_Level } from '@/utils/ms_const';
+import { VideoAbstract } from '@/utils/videoabstract';
 
 type sortByOption = 'time' | 'bvs' | 'stnb';
 

@@ -27,10 +27,12 @@
 </template>
 
 <script setup lang="ts">
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { httpErrorNotification, successNotification } from '../Notifications';
+import { ElButton, ElDescriptions, ElDescriptionsItem, ElInput, ElInputNumber, ElOption, ElSelect } from 'element-plus';
 import { ref } from 'vue';
-import { ElInput, ElInputNumber, ElButton, ElDescriptions, ElDescriptionsItem, ElSelect, ElOption } from 'element-plus';
+
+import { httpErrorNotification, successNotification } from '../Notifications';
+
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const { proxy } = useCurrentInstance();
 

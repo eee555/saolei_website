@@ -64,16 +64,17 @@
 </template>
 
 <script setup lang='ts'>
+import { ElContainer, ElIcon, ElLink, ElMain, ElTabPane, ElTabs, ElText, vLoading } from 'element-plus';
 import { onMounted, ref } from 'vue';
-import { ElContainer, ElIcon, ElMain, ElTabs, ElTabPane, ElText, ElLink, vLoading } from 'element-plus';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import { useI18n } from 'vue-i18n';
+
+import BaseIconRefresh from '@/components/common/BaseIconRefresh.vue';
+import PlayerName from '@/components/PlayerName.vue';
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import VideoList from '@/components/VideoList/App.vue';
-import PlayerName from '@/components/PlayerName.vue';
 import { to_fixed_n } from '@/utils';
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { utc_to_local_format } from '@/utils/system/tools';
-import BaseIconRefresh from '@/components/common/BaseIconRefresh.vue';
-import { useI18n } from 'vue-i18n';
 import { VideoAbstract } from '@/utils/videoabstract';
 
 const { proxy } = useCurrentInstance();

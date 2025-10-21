@@ -1,16 +1,15 @@
 import './setup.js';
-import { createApp } from 'vue';
 import * as ELIcons from '@element-plus/icons-vue';
+import { AxiosInstance } from 'axios';
+import { createApp } from 'vue';
 
 import App from './App.vue';
-import router from './router';
-import i18n from '@/i18n';
 import $axios from './http';
-import { AxiosInstance } from 'axios';
-// 全局挂载axios
-
+import router from './router';
 import 'highlight.js/styles/stackoverflow-light.css';
 import { pinia } from './store/create';
+
+import i18n from '@/i18n';
 
 
 const app = createApp(App);

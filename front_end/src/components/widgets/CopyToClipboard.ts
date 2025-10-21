@@ -1,6 +1,7 @@
 import { ElNotification } from 'element-plus';
-import { local } from '@/store';
+
 import i18n from '@/i18n';
+import { local } from '@/store';
 
 const { t } = i18n.global;
 

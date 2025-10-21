@@ -7,7 +7,8 @@
 <script setup lang="ts">
 
 import { ElDialog } from 'element-plus';
-import { store } from '@/store';
+
 import VideoList from '@/components/VideoList/App.vue';
+import { store } from '@/store';
 
 </script>

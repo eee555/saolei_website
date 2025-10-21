@@ -44,10 +44,11 @@
 </template>
 
 <script setup lang="ts">
-import { countRows, stringifyWithLineWrap } from '@/utils/strings';
-import { ref, watch, PropType } from 'vue';
-import { ElRow, ElInput, ElCheckbox, ElTooltip, ElLink, ElInputNumber, ElColorPicker, ElIcon } from 'element-plus';
+import { ElCheckbox, ElColorPicker, ElIcon, ElInput, ElInputNumber, ElLink, ElRow, ElTooltip } from 'element-plus';
+import { PropType, ref, watch } from 'vue';
+
 import BaseIconAdd from '@/components/common/BaseIconAdd.vue';
+import { countRows, stringifyWithLineWrap } from '@/utils/strings';
 
 interface ColorScheme {
     colors: Array<string>;

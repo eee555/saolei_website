@@ -10,8 +10,9 @@
 <script setup lang="ts">
 
 import { ElText } from 'element-plus';
-import BaseTooltip from './BaseTooltip.vue';
 import { useI18n } from 'vue-i18n';
+
+import BaseTooltip from './BaseTooltip.vue';
 
 const { t } = useI18n();
 

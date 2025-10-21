@@ -15,8 +15,9 @@
 </template>
 
 <script setup lang="ts">
+import { ElButton, ElInputNumber, ElText } from 'element-plus';
 import { ref } from 'vue';
-import { ElInputNumber, ElButton, ElText } from 'element-plus';
+
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const { proxy } = useCurrentInstance();

@@ -1,4 +1,5 @@
 import ValidCode from './ValidCode.vue';
+
 import $axios from '@/http';
 import i18n from '@/i18n';
 

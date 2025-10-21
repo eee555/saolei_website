@@ -11,7 +11,7 @@
 
 <script setup lang="ts">
 
-import { ElCheckboxGroup, ElCheckbox, ElTag } from 'element-plus';
+import { ElCheckbox, ElCheckboxGroup, ElTag } from 'element-plus';
 import { computed, PropType } from 'vue';
 
 const props = defineProps({

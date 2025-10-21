@@ -13,18 +13,20 @@
 
 <script setup lang="ts">
 
-import VChart from 'vue-echarts';
-import { store } from '@/store';
-import * as echarts from 'echarts/core';
 import { ScatterChart } from 'echarts/charts';
+import * as echarts from 'echarts/core';
 import { computed, ref } from 'vue';
-import MSLevelFilter from '../Filters/MSLevelFilter.vue';
-import { preview } from '@/utils/common/PlayerDialog';
+import VChart from 'vue-echarts';
 import { useI18n } from 'vue-i18n';
+
+import MSLevelFilter from '../Filters/MSLevelFilter.vue';
 import MSStatSelect from '../Filters/MSStatSelect.vue';
-import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
-import { MS_Levels } from '@/utils/ms_const';
+
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
+import { store } from '@/store';
+import { preview } from '@/utils/common/PlayerDialog';
+import { MS_Levels } from '@/utils/ms_const';
+import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 
 const video_stats = ['time', 'bv', 'bvs'];
 

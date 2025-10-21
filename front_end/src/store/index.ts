@@ -1,12 +1,14 @@
-import { LoginStatus } from '@/utils/common/structInterface';
-import { defineStore } from 'pinia';
-import { pinia } from './create';
 import { useLocalStorage } from '@vueuse/core';
+import { defineStore } from 'pinia';
+
+import { pinia } from './create';
+
+import { LoginStatus } from '@/utils/common/structInterface';
 import { colorSchemeTemplates } from '@/utils/config';
-import { UserProfile } from '@/utils/userprofile';
-import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 import { ColorTemplateName, ColumnChoice, MS_Software, MS_Softwares } from '@/utils/ms_const';
 import { Tournament } from '@/utils/tournaments';
+import { UserProfile } from '@/utils/userprofile';
+import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 
 export const store = defineStore('user', {
     state: () => ({

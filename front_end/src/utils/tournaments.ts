@@ -1,5 +1,5 @@
 import { toISODateTimeString } from './datetime';
-import { TournamentState, TournamentSeries } from './ms_const';
+import { TournamentSeries, TournamentState } from './ms_const';
 
 export interface TournamentParticipant {
     id: number;

@@ -46,6 +46,14 @@ export default typescriptEslint.config(
       'import/no-unused-modules': 'error',
       'import/no-useless-path-segments': 'error',
       'import/no-webpack-loader-syntax': 'error',
+      'import/order': ['error', {
+        'newlines-between': 'always',
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        },
+        'named': true,
+      }],
       'no-control-regex': 'off', 
       'no-irregular-whitespace': 'off',
       'no-prototype-builtins': 'off',
