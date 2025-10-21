@@ -9,6 +9,7 @@
 // 现役排名：世界排名（累计衰减）、赛季排名（一年）、最新比赛排名
 import { onMounted, ref } from 'vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
+
 const { proxy } = useCurrentInstance();
 
 const review_queue = ref<any[]>([]);

@@ -41,6 +41,7 @@ import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
 import BaseOverlay from '@/components/common/BaseOverlay.vue';
 import BaseIconInfo from '@/components/common/BaseIconInfo.vue';
 import { defineAsyncComponent } from 'vue';
+
 const { t } = useI18n();
 const IdentifierHelper = defineAsyncComponent(() => import('@/components/dialogs/IdentifierHelper.vue'));
 </script>

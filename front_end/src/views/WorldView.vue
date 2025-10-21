@@ -23,8 +23,8 @@ import {
 import VChart from 'vue-echarts';
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
-const { proxy } = useCurrentInstance();
 
+const { proxy } = useCurrentInstance();
 
 const io_cpus = ref({
     s: ['0'],

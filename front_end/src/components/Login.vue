@@ -36,11 +36,11 @@ import LoginDialog from '@/components/dialogs/LoginDialog.vue';
 import RetrieveDialog from './dialogs/RetrieveDialog.vue';
 import { ElMessage, ElButton } from 'element-plus';
 import { store, local } from '../store';
-
 import { useI18n } from 'vue-i18n';
 import RegisterDialog from './dialogs/RegisterDialog.vue';
 import { httpErrorNotification } from './Notifications';
 import { UserProfile } from '@/utils/userprofile';
+
 const { proxy } = useCurrentInstance();
 const { t } = useI18n();
 

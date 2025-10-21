@@ -3,6 +3,7 @@ import { AvfVideo, EvfVideo, RmvVideo, MvfVideo } from 'ms-toollib';
 import { VideoAbstract } from './videoabstract';
 import { arbiterTimeStampToDate, generalTimeStampToDate } from './datetime';
 import JSZip from 'jszip';
+
 type AnyVideo = AvfVideo | EvfVideo | RmvVideo | MvfVideo;
 
 export function get_software(video: AnyVideo) {

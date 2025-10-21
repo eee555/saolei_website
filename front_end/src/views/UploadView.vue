@@ -127,6 +127,7 @@ import BaseIconDelete from '@/components/common/BaseIconDelete.vue';
 import BaseIconUpload from '@/components/common/BaseIconUpload.vue';
 import { VideoAbstract } from '@/utils/videoabstract';
 import { toISODateTimeString } from '@/utils/datetime';
+
 const { proxy } = useCurrentInstance();
 
 const { t } = useI18n();
