@@ -101,7 +101,7 @@
 <script lang="ts" setup>
 // 我的地盘页面
 import { defineAsyncComponent, onMounted, ref, watch } from 'vue';
-import { ElContainer, ElAside, ElMain, ElTabs, ElTabPane, ElImage, ElInput, ElUpload } from 'element-plus';
+import { ElContainer, ElAside, ElMain, ElTabs, ElTabPane, ElImage, ElInput, ElUpload, genFileId, ElMessage } from 'element-plus';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 const PlayerRecordView = defineAsyncComponent(() => import('@/views/PlayerRecordView.vue'));
 const PlayerVideosView = defineAsyncComponent(() => import('@/views/PlayerVideosView.vue'));
@@ -110,7 +110,6 @@ const UploadView = defineAsyncComponent(() => import('@/views/UploadView.vue'));
 import '../../node_modules/flag-icon-css/css/flag-icons.min.css';
 
 const { proxy } = useCurrentInstance();
-import { genFileId, ElMessage } from 'element-plus';
 import type { UploadInstance, UploadProps, UploadRawFile, UploadFile, UploadFiles, UploadRequestOptions } from 'element-plus';
 const upload = ref<UploadInstance>();
 import imageUrlDefault from '@/assets/person.png';

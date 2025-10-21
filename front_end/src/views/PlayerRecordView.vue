@@ -43,11 +43,10 @@
 <script lang="ts" setup>
 // 个人主页的个人纪录部分
 import { ref, nextTick } from 'vue';
-import { ElTable, ElTableColumn, ElSkeleton } from 'element-plus';
+import { ElTable, ElTableColumn, ElSkeleton, ElMessage } from 'element-plus';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import BaseCardLarge from '@/components/common/BaseCardLarge.vue';
-import { ElMessage } from 'element-plus';
 const { proxy } = useCurrentInstance();
 import { Record, RecordBIE } from '@/utils/common/structInterface';
 import { ms_to_s } from '@/utils';
