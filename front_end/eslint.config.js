@@ -32,7 +32,12 @@ export default typescriptEslint.config(
       },
     },
     rules: {
+      'import/no-absolute-path': 'error',
+      'import/no-cycle': 'error',
       'import/no-duplicates': 'error',
+      'import/no-dynamic-require': 'error',
+      'import/no-relative-packages': 'error',
+      'import/no-unused-modules': 'error',
       'no-control-regex': 'off', 
       'no-irregular-whitespace': 'off',
       'no-prototype-builtins': 'off',
