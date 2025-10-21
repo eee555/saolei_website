@@ -113,12 +113,12 @@ import { ElDescriptions, ElDescriptionsItem, ElSelect, ElOption, ElText, ElSwitc
 import BaseTooltip from '@/components/common/BaseTooltip.vue';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { useI18n } from 'vue-i18n';
-
 import DarkMode from '@/components/widgets/DarkMode.vue';
 import ColorSchemeSetting from '@/components/visualization/ColorSchemeSetting.vue';
 import { ref } from 'vue';
 import ExperimentalFeature from '@/components/ExperimentalFeature.vue';
 import { STNB_const } from '@/utils/ms_const';
+
 const { t } = useI18n();
 
 const colorSchemeName = ref('bvs');

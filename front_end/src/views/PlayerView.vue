@@ -114,6 +114,7 @@ import { useRoute } from 'vue-router';
 import { UserProfile } from '@/utils/userprofile';
 import { unknownErrorNotification } from '@/components/Notifications';
 import BaseIconAdd from '@/components/common/BaseIconAdd.vue';
+
 const PlayerRecordView = defineAsyncComponent(() => import('@/views/PlayerRecordView.vue'));
 const PlayerVideosView = defineAsyncComponent(() => import('@/views/PlayerVideosView.vue'));
 const PlayerProfileView = defineAsyncComponent(() => import('@/views/PlayerProfileView.vue'));

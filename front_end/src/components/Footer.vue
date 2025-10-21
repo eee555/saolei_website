@@ -102,8 +102,8 @@
 import { ElFooter, ElLink, ElText, ElRow, ElCol, ElDivider } from 'element-plus';
 import Thanks from './dialogs/Thanks.vue';
 import Downloads from './dialogs/Downloads.vue';
-
 import { useI18n } from 'vue-i18n';
+
 const { t } = useI18n();
 
 </script>
