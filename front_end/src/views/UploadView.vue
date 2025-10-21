@@ -118,7 +118,6 @@
 import { ref } from 'vue';
 import { ElTable, ElTableColumn, ElButton, ElDescriptions, ElDescriptionsItem, ElUpload, ElIcon } from 'element-plus';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
-const { proxy } = useCurrentInstance();
 import type { UploadInstance, UploadProps, UploadUserFile, UploadRawFile, UploadFile, UploadFiles } from 'element-plus';
 import { store } from '../store';
 import { extract_stat, get_upload_status, load_video_file, upload_form, UploadVideoForm } from '@/utils/fileIO';
@@ -128,6 +127,7 @@ import BaseIconDelete from '@/components/common/BaseIconDelete.vue';
 import BaseIconUpload from '@/components/common/BaseIconUpload.vue';
 import { VideoAbstract } from '@/utils/videoabstract';
 import { toISODateTimeString } from '@/utils/datetime';
+const { proxy } = useCurrentInstance();
 
 const { t } = useI18n();
 

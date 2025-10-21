@@ -31,7 +31,6 @@
 // 注册、登录、找回密码的弹框及右上方按钮
 import { onMounted, ref } from 'vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
-const { proxy } = useCurrentInstance();
 import { LoginStatus } from '@/utils/common/structInterface';
 import LoginDialog from '@/components/dialogs/LoginDialog.vue';
 import RetrieveDialog from './dialogs/RetrieveDialog.vue';
@@ -42,6 +41,7 @@ import { useI18n } from 'vue-i18n';
 import RegisterDialog from './dialogs/RegisterDialog.vue';
 import { httpErrorNotification } from './Notifications';
 import { UserProfile } from '@/utils/userprofile';
+const { proxy } = useCurrentInstance();
 const { t } = useI18n();
 
 // 登录对话框是否出现

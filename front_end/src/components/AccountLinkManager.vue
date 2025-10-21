@@ -92,10 +92,6 @@ import { store, local } from '@/store';
 import { ElNotification, ElDialog, ElForm, ElFormItem, ElInput, ElSelect, ElOption, ElLink, ElTable, ElTableColumn, ElText, ElTooltip, ElButton, ElMessageBox } from 'element-plus';
 import { Platform, platformlist } from '@/utils/common/accountLinkPlatforms';
 import PlatformIcon from './widgets/PlatformIcon.vue';
-const AccountLinkGuide = defineAsyncComponent(() => import('./dialogs/AccountLinkGuide.vue'));
-const AccountSaolei = defineAsyncComponent(() => import('./accountlinks/AccountSaolei.vue'));
-const AccountMsgames = defineAsyncComponent(() => import('./accountlinks/AccountMsgames.vue'));
-const AccountWoM = defineAsyncComponent(() => import('./accountlinks/AccountWoM.vue'));
 import BaseButtonConfirm from './common/BaseButtonConfirm.vue';
 import BaseButtonCancel from './common/BaseButtonCancel.vue';
 import BaseIconDelete from './common/BaseIconDelete.vue';
@@ -105,6 +101,10 @@ import BaseIconVerified from './common/BaseIconVerified.vue';
 import BaseIconPending from './common/BaseIconPending.vue';
 import { useI18n } from 'vue-i18n';
 import { httpErrorNotification } from './Notifications';
+const AccountLinkGuide = defineAsyncComponent(() => import('./dialogs/AccountLinkGuide.vue'));
+const AccountSaolei = defineAsyncComponent(() => import('./accountlinks/AccountSaolei.vue'));
+const AccountMsgames = defineAsyncComponent(() => import('./accountlinks/AccountMsgames.vue'));
+const AccountWoM = defineAsyncComponent(() => import('./accountlinks/AccountWoM.vue'));
 const { t } = useI18n();
 
 interface AccountLink {
