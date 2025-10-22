@@ -33,13 +33,14 @@ declare global {
             flushDatabase(): void;
 
             /**
-             * 注册一个账号并退出登录。如果该账号已存在，则报错。
+             * 注册一个账号。如果该账号已存在，则报错。
+             * @param {number} id - 用户ID
              * @param {string} username - 用户名
              * @param {string} email - 邮箱
              * @param {string} password - 密码
              * @example cy.register('user', 'user@example.com', 'password');
              * */
-            register(username: string, email: string, password: string): void;
+            register(id: number, username: string, email: string, password: string): void;
 
 
             /**
@@ -59,27 +60,10 @@ Cypress.on('uncaught:exception', (err, _runnable) => {
     return false; // prevents the test from failing
 });
 
-Cypress.Commands.add('register', (username, email, password) => {
-    cy.visit('/#/settings');
-    cy.contains(/^注册$/).click();
-    cy.contains(/^用户注册$/).should('be.visible');
-    cy.contains(/^用户名$/).next().find('input').type(username);
-    cy.contains(/^邮箱$/).next().find('input').type(email);
-    cy.contains(/^图形验证码$/).next().find('input').type('test{enter}');
-    cy.contains('用户名已存在').should('not.exist');
-    cy.contains('邮箱已存在').should('not.exist');
-    cy.get('button').contains(/^发送$/).click();
-    cy.contains(/^邮箱验证码$/).next().find('input').type('abcdef{enter}');
-    cy.contains(/^密码$/).next().find('input').type(password);
-    cy.contains(/^确认密码$/).next().find('input').type(password);
-    cy.contains('已阅读并同意').find('input').parent().click();
-    cy.contains('用户注册').parent().parent().find('button').contains('注册').click();
-    cy.contains('注册成功');
-    cy.contains('用户注册').should('not.be.visible');
-    cy.closeElNotifications();
-    cy.contains(/^退出$/).click();
-    cy.contains('退出成功');
-    cy.reload();
+Cypress.Commands.add('register', (id: number, username: string, email: string, password: string) => {
+    cy.request('POST', 'http://127.0.0.1:8000/dangerzone/register', {
+        id, username, email, password,
+    });
 });
 
 Cypress.Commands.add('login', (username: string, password: string) => {
