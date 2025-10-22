@@ -30,7 +30,7 @@ def quick_register(request: HttpRequest):
     password = request.POST.get('password')
     user_id = request.POST.get('id')
 
-    if not username or not email or not password or not id:
+    if not username or not email or not password or not user_id:
         return HttpResponse('missing_parameters', status=400)
 
     if UserProfile.objects.filter(username=username).exists():
