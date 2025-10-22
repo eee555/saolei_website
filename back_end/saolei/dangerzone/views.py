@@ -28,7 +28,7 @@ def quick_register(request: HttpRequest):
     username = request.POST.get('username')
     email = request.POST.get('email')
     password = request.POST.get('password')
-    id = request.POST.get('id')
+    user_id = request.POST.get('id')
 
     if not username or not email or not password or not id:
         return HttpResponse('missing_parameters', status=400)
@@ -37,9 +37,9 @@ def quick_register(request: HttpRequest):
         return HttpResponse('user_exists', status=409)
     if UserProfile.objects.filter(email=email).exists():
         return HttpResponse('email_exists', status=409)
-    if UserProfile.objects.filter(id=id).exists():
+    if UserProfile.objects.filter(id=user_id).exists():
         return HttpResponse('id_exists', status=409)
 
-    UserProfile.objects.create_user(username=username, password=password, id=id)
+    UserProfile.objects.create_user(username=username, password=password, id=user_id, email=email)
 
     return HttpResponse('success')
