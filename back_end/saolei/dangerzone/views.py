@@ -31,7 +31,7 @@ def quick_register(request: HttpRequest):
     user_id = request.POST.get('id')
 
     if not username or not email or not password or not user_id:
-        return HttpResponse('missing_parameters', status=400)
+        return HttpResponse(f'missing_parameters. username={username}, email={email}, password={password}, user_id={user_id}', status=400)
 
     if UserProfile.objects.filter(username=username).exists():
         return HttpResponse('user_exists', status=409)
