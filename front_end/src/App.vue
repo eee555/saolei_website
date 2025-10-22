@@ -164,7 +164,7 @@ function hash_code(t: string) {
         hash |= 0; // 32bit integer
     }
     return hash;
-};
+}
 </script>
 
 <style lang="less">
