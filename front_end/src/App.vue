@@ -153,7 +153,7 @@ const handle_notice_close = () => {
     notice_visible.value = false;
 };
 
-const hash_code = function (t: string) {
+function hash_code(t: string) {
     let hash = 0,
         i,
         chr;
