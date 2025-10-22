@@ -115,7 +115,7 @@ class Command(BaseCommand):
                 day_of_week="*", hour="01", minute="08",
             ),
             id="delete_newest_queue",
-            misfire_grace_time=30,
+            misfire_grace_time=300,
             max_instances=1,
             replace_existing=True,
         )
@@ -124,10 +124,10 @@ class Command(BaseCommand):
         scheduler.add_job(
             delete_freezed_video,
             trigger=CronTrigger(
-                day_of_week="*", hour="01", minute="13",
+                day_of_week="*", hour="01", minute="28",
             ),
             id="delete_freezed_video",
-            misfire_grace_time=30,
+            misfire_grace_time=300,
             max_instances=1,
             replace_existing=True,
         )
@@ -139,7 +139,7 @@ class Command(BaseCommand):
                 day_of_week="*", hour="17", minute="03",
             ),
             id="delete_news_queue",
-            misfire_grace_time=30,
+            misfire_grace_time=300,
             max_instances=1,
             replace_existing=True,
         )
