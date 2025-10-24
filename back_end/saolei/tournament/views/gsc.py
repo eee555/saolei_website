@@ -4,7 +4,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpR
 from django.views.decorators.http import require_GET, require_POST
 
 from config.text_choices import Tournament_TextChoices
-from config.tournaments import TournamentWeights
+from config.tournaments import GSC_Defaults, TournamentWeights
 from identifier.models import Identifier
 from identifier.utils import verify_identifier
 from userprofile.decorators import login_required_error
@@ -192,8 +192,10 @@ def get_participant_list(request: HttpRequest):
 
 
 @require_POST
-@GSC_admin_required
+@login_required_error
 def refresh_GSCParticipant(request: HttpRequest):
+    if not request.user.staff and request.user.id != GSC_Defaults.HOST_ID:
+        return HttpResponseForbidden()
     if not (participant_id := request.POST.get('id')):
         return HttpResponseBadRequest()
     participant = GSCParticipant.objects.filter(tournamentparticipant_ptr_id=participant_id).first()

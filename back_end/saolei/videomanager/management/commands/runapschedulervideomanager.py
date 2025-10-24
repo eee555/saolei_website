@@ -30,6 +30,7 @@ def n_days_ago(time_str: str, n=7) -> bool:
 
 
 # 定时清除最新录像，直至剩下最近7天的或剩下不到100条
+@util.close_old_connections
 def delete_newest_queue():
     if cache.hlen("newest_queue") <= 100:
         return
@@ -46,12 +47,14 @@ def delete_newest_queue():
 
 
 # 定时清除7天以前冻结的录像
+@util.close_old_connections
 def delete_freezed_video():
     ddl = datetime.now(timezone.utc) - timedelta(days=7)
     VideoModel.objects.filter(upload_time__lt=ddl, state="b").delete()
 
 
 # 定时清除新闻
+@util.close_old_connections
 def delete_news_queue():
     # 此处经常只能执行一次后任务消失。尝试在线上环境捕获问题。
     logger.info("Starting delete_news_queue task")
@@ -115,7 +118,7 @@ class Command(BaseCommand):
                 day_of_week="*", hour="01", minute="08",
             ),
             id="delete_newest_queue",
-            misfire_grace_time=30,
+            misfire_grace_time=300,
             max_instances=1,
             replace_existing=True,
         )
@@ -124,10 +127,10 @@ class Command(BaseCommand):
         scheduler.add_job(
             delete_freezed_video,
             trigger=CronTrigger(
-                day_of_week="*", hour="01", minute="13",
+                day_of_week="*", hour="01", minute="28",
             ),
             id="delete_freezed_video",
-            misfire_grace_time=30,
+            misfire_grace_time=300,
             max_instances=1,
             replace_existing=True,
         )
@@ -139,7 +142,7 @@ class Command(BaseCommand):
                 day_of_week="*", hour="17", minute="03",
             ),
             id="delete_news_queue",
-            misfire_grace_time=30,
+            misfire_grace_time=300,
             max_instances=1,
             replace_existing=True,
         )
