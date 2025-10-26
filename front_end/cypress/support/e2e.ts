@@ -61,8 +61,15 @@ Cypress.on('uncaught:exception', (err, _runnable) => {
 });
 
 Cypress.Commands.add('register', (id: number, username: string, email: string, password: string) => {
-    cy.request('POST', 'http://127.0.0.1:8000/dangerzone/register/', {
-        id, username, email, password,
+    cy.request({
+        method: 'POST',
+        url: 'http://127.0.0.1:8000/dangerzone/register/',
+        body: {
+            id: id,
+            username: username,
+            email: email,
+            password: password,
+        },
     });
 });
 
