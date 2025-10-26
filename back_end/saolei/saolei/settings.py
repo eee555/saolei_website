@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     'django_apscheduler',
     'corsheaders',
+    'rest_framework',
     'userprofile',
     'videomanager',
     'msuser',
