@@ -8,7 +8,7 @@ const UPLOAD_BUTTON = '.pi-upload';
 describe('Personal Profile', () => {
     it('Before All', () => {
         // 初始化数据库
-        // cy.flushDatabase();
+        cy.flushDatabase();
 
         // 注册并登录用户
         cy.register(2418, 'testUser', 'test@email.com', 'testPassword');
@@ -16,7 +16,7 @@ describe('Personal Profile', () => {
     });
 
     it('Guest view', () => {
-        cy.visit('/#/player/1');
+        cy.visit('/#/player/2418');
         cy.contains('个人信息');
         cy.contains('个人纪录');
         cy.contains('全部录像');
