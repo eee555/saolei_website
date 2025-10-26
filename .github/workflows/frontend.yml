@@ -18,7 +18,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '20.11.1' # 设置 Node.js 版本，你可以根据你的项目需要调整
+        node-version: '22.13.0' # 设置 Node.js 版本，你可以根据你的项目需要调整
 
     # 安装依赖
     - name: Install dependencies

@@ -19,12 +19,14 @@ logger = logging.getLogger(__name__)
 # https://pypi.org/project/django-apscheduler/
 
 
+@util.close_old_connections
 def delete_overdue_emailverifyrecord():
     # 定时清除过期邮箱验证码（1小时过期）
     start = timezone.now() - timezone.timedelta(seconds=3600)
     EmailVerifyRecord.objects.filter(send_time__lt=start).delete()
 
 
+@util.close_old_connections
 def delete_overdue_captcha():
     # 定时清除过期图形验证码（15分钟过期）
     # start = timezone.now() - timezone.timedelta(seconds=900)
