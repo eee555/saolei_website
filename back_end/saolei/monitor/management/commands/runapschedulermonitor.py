@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 # 5秒执行一次。定时计算刷新监视状态量。服务器io
+@util.close_old_connections
 def refresh_state_always():
     net_io = psutil.net_io_counters()
     net_io_sent_old = cache.get("io_s_old") if cache.exists("io_s_old") else "0.0"
