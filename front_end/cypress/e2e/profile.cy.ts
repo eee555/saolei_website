@@ -4,6 +4,7 @@ import 'cypress-get-table';
 import { binaryStringToUint8Array } from '../support/stupidCypress';
 
 const UPLOAD_BUTTON = '.pi-upload';
+const USER_ID = 2418 as const;
 
 describe('Personal Profile', () => {
     it('Before All', () => {
@@ -11,12 +12,12 @@ describe('Personal Profile', () => {
         cy.flushDatabase();
 
         // 注册并登录用户
-        cy.register(2418, 'testUser', 'test@email.com', 'testPassword');
+        cy.register(USER_ID, 'testUser', 'test@email.com', 'testPassword');
         cy.login('testUser', 'testPassword');
     });
 
     it('Guest view', () => {
-        cy.visit('/#/player/2418');
+        cy.visitUser(USER_ID);
         cy.contains('个人信息');
         cy.contains('个人纪录');
         cy.contains('全部录像');
@@ -25,14 +26,14 @@ describe('Personal Profile', () => {
 
     it('Cannot upload videos without real name', () => {
         cy.login('testUser', 'testPassword');
-        cy.visit('/#/player/2418');
+        cy.visitUser(USER_ID);
         cy.contains('上传录像').click();
         cy.contains('请修改为实名');
     });
 
     it('Change real name', () => {
         cy.login('testUser', 'testPassword');
-        cy.visit('/#/player/2418');
+        cy.visitUser(USER_ID);
         cy.contains('修改简介').click();
         cy.contains('修改简介').if().should('not.be.visible');
 
@@ -45,7 +46,7 @@ describe('Personal Profile', () => {
 
     it('Parse video', function () {
         cy.login('testUser', 'testPassword');
-        cy.visit('/#/player/2418');
+        cy.visitUser(USER_ID);
         cy.contains('上传录像').click();
 
         // 准备录像文件

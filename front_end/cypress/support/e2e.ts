@@ -51,6 +51,14 @@ declare global {
              * cy.session('user);
              * */
             login(username: string, password: string): void;
+
+
+            /**
+             * 访问指定用户的个人主页
+             * @param {number} userId - 用户ID
+             * @example cy.visitUser(1);
+             * */
+            visitUser(userId: number): void;
         }
     }
 }
@@ -96,4 +104,8 @@ Cypress.Commands.add('flushDatabase', () => {
     cy.request('POST', 'http://127.0.0.1:8000/dangerzone/flush_database/').then((response) => {
         expect(response.status).to.eq(200);
     });
+});
+
+Cypress.Commands.add('visitUser', (userId: number) => {
+    cy.visit(`/#/player/${userId}`);
 });
