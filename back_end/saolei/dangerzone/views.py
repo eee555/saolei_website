@@ -1,10 +1,10 @@
 from django.core.management import call_command
 from django.http import HttpRequest, HttpResponse
 from django.views.decorators.http import require_POST
-
-from msuser.models import UserMS
 from rest_framework.decorators import api_view
 from rest_framework.request import Request
+
+from msuser.models import UserMS
 from userprofile.decorators import login_required_error
 from userprofile.models import UserProfile
 from .decorators import local_only

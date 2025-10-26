@@ -8,7 +8,7 @@ const UPLOAD_BUTTON = '.pi-upload';
 describe('Personal Profile', () => {
     it('Before All', () => {
         // 初始化数据库
-        cy.flushDatabase();
+        // cy.flushDatabase();
 
         // 注册并登录用户
         cy.register(2418, 'testUser', 'test@email.com', 'testPassword');
@@ -25,14 +25,14 @@ describe('Personal Profile', () => {
 
     it('Cannot upload videos without real name', () => {
         cy.login('testUser', 'testPassword');
-        cy.visit('/#/player/1');
+        cy.visit('/#/player/2418');
         cy.contains('上传录像').click();
         cy.contains('请修改为实名');
     });
 
     it('Change real name', () => {
         cy.login('testUser', 'testPassword');
-        cy.visit('/#/player/1');
+        cy.visit('/#/player/2418');
         cy.contains('修改简介').click();
         cy.contains('修改简介').if().should('not.be.visible');
 
@@ -45,7 +45,7 @@ describe('Personal Profile', () => {
 
     it('Parse video', function () {
         cy.login('testUser', 'testPassword');
-        cy.visit('/#/player/1');
+        cy.visit('/#/player/2418');
         cy.contains('上传录像').click();
 
         // 准备录像文件
