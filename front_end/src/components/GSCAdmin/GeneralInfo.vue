@@ -12,12 +12,12 @@
         正在加载信息...
     </el-text>
     <el-text v-else>
-        <span>开始时间：{{ gscInfo.start_time ? gscInfo.start_time.toLocaleString() : '未设置' }}</span>
+        <span>开始时间：{{ gscInfo.start_time ? toISODateTimeString(gscInfo.start_time) : '未设置' }}</span>
         &nbsp;
         <span>设置开始时间：</span>
         <el-date-picker v-model="newStartTime" type="datetime" @change="setStartTime" />
         <br>
-        <span>结束时间：{{ gscInfo.end_time ? gscInfo.end_time.toLocaleString() : '未设置' }}</span>
+        <span>结束时间：{{ gscInfo.end_time ? toISODateTimeString(gscInfo.end_time) : '未设置' }}</span>
         &nbsp;
         <span>设置结束时间：</span>
         <el-date-picker v-model="newEndTime" type="datetime" @change="setEndTime" />
@@ -41,6 +41,7 @@ import { ref, watch } from 'vue';
 import { httpErrorNotification, successNotification } from '../Notifications';
 
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import { toISODateTimeString } from '@/utils/datetime';
 import { GSCInfo } from '@/utils/gsc';
 
 
@@ -72,21 +73,23 @@ async function getGSCInfo(id: number | undefined) {
     notFound.value = false;
     await proxy.$axios.get('tournament/get_gsc_tournament/', { params: { id: id } }).then(
         function (response: any) {
-            if (response.data.type === 'error') {
+            const data = response.data;
+            if (data.type === 'error') {
                 notFound.value = true;
-            }
-            if (response.data.data.start_time) {
-                gscInfo.value.start_time = new Date(response.data.data.start_time);
             } else {
-                gscInfo.value.start_time = undefined;
+                if (data.data.start_time) {
+                    gscInfo.value.start_time = new Date(data.data.start_time);
+                } else {
+                    gscInfo.value.start_time = undefined;
+                }
+                if (data.data.end_time) {
+                    gscInfo.value.end_time = new Date(data.data.end_time);
+                } else {
+                    gscInfo.value.end_time = undefined;
+                }
+                gscInfo.value.token = data.data.token;
+                gscInfo.value.id = data.data.id;
             }
-            if (response.data.data.end_time) {
-                gscInfo.value.end_time = new Date(response.data.data.end_time);
-            } else {
-                gscInfo.value.end_time = undefined;
-            }
-            gscInfo.value.token = response.data.data.token;
-            gscInfo.value.id = response.data.data.id;
         },
     ).catch(httpErrorNotification);
     loadingGSCInfo.value = false;

@@ -92,7 +92,7 @@ describe('GSC', () => {
 
         cy.contains('开始时间：未设置');
         setStartDateTime('2100-01-01', '00:00:00');
-        cy.contains('开始时间：2100/1/1 00:00:00');
+        cy.contains('开始时间：2100-01-01 00:00:00');
 
         cy.visit('/#/tournament/');
         cy.contains('第2届金羊杯');
@@ -107,7 +107,7 @@ describe('GSC', () => {
 
         cy.contains('结束时间：未设置');
         setEndDateTime('2100-01-02', '00:00:00');
-        cy.contains('结束时间：2100/1/2 00:00:00');
+        cy.contains('结束时间：2100-01-02 00:00:00');
 
         cy.visit('/#/tournament/');
         cy.contains('第2届金羊杯');
@@ -120,9 +120,9 @@ describe('GSC', () => {
         cy.login(HOST.username, HOST.password);
 
         visitGSCAdmin(2);
-        cy.contains('开始时间：2100/1/1 00:00:00');
+        cy.contains('开始时间：2100-01-01 00:00:00');
         setStartDateTime('2099-12-31', '00:00:00');
-        cy.contains('开始时间：2099/12/31 00:00:00');
+        cy.contains('开始时间：2099-12-31 00:00:00');
 
         cy.visit('/#/tournament/');
         cy.contains('第2届金羊杯');
@@ -134,9 +134,9 @@ describe('GSC', () => {
     it('Reset end time', () => {
         cy.login(HOST.username, HOST.password);
         visitGSCAdmin(2);
-        cy.contains('结束时间：2100/1/2 00:00:00');
+        cy.contains('结束时间：2100-01-02 00:00:00');
         setEndDateTime('2100-01-03', '00:00:00');
-        cy.contains('结束时间：2100/1/3 00:00:00');
+        cy.contains('结束时间：2100-01-03 00:00:00');
 
         cy.visit('/#/tournament/');
         cy.contains('第2届金羊杯');
@@ -188,5 +188,11 @@ describe('GSC', () => {
             expect(tableData[1].结束时间).to.equal('2100-01-01 00:00:00');
             expect(tableData[2].结束时间).to.equal('2000-01-02 00:00:00');
         });
+    });
+
+    it('Admin validate', () => {
+        cy.login(STAFF.username, STAFF.password);
+        cy.visit('/#/staff/');
+        cy.contains('比赛管理').click();
     });
 });
