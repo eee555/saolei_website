@@ -12,25 +12,25 @@
         正在加载信息...
     </el-text>
     <el-text v-else>
-        开始时间：{{ gscInfo.start_time ? gscInfo.start_time.toLocaleString() : '未设置' }}
+        <span>开始时间：{{ gscInfo.start_time ? gscInfo.start_time.toLocaleString() : '未设置' }}</span>
         &nbsp;
-        设置开始时间：
+        <span>设置开始时间：</span>
         <el-date-picker v-model="newStartTime" type="datetime" @change="setStartTime" />
         <br>
-        结束时间：{{ gscInfo.end_time ? gscInfo.end_time.toLocaleString() : '未设置' }}
+        <span>结束时间：{{ gscInfo.end_time ? gscInfo.end_time.toLocaleString() : '未设置' }}</span>
         &nbsp;
-        设置结束时间：
+        <span>设置结束时间：</span>
         <el-date-picker v-model="newEndTime" type="datetime" @change="setEndTime" />
         <br>
-        标识：{{ gscInfo.token || '未设置' }}
+        <span>标识：{{ gscInfo.token || '未设置' }}</span>
         &nbsp;
-        设置标识：
+        <span>设置标识：</span>
         <el-input v-model="newToken" style="width: 300px;" />
         <el-button @click="setToken(newToken)">
             修改！
         </el-button>
         <br>
-        想设置空标识需打开此开关<el-switch v-model="allowEmptyToken" />
+        <span>想设置空标识需打开此开关</span><el-switch v-model="allowEmptyToken" />
     </el-text>
 </template>
 
@@ -103,7 +103,6 @@ function createGSC() {
 
 function setStartTime(time: Date | undefined) {
     if (time === undefined) return;
-    console.log(gscInfo.value);
     proxy.$axios.post('tournament/set/', { id: gscInfo.value.id, start_time: time }).then(
         function (response: any) {
             gscInfo.value.start_time = time;
