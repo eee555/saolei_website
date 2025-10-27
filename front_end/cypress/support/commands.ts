@@ -1,33 +1,15 @@
 /// <reference types="cypress" />
-// ***********************************************
-// This example commands.ts shows you how to
-// create various custom commands and overwrite
-// existing commands.
-//
-// For more comprehensive examples of custom
-// commands please read more here:
-// https://on.cypress.io/custom-commands
-// ***********************************************
-//
-//
-// -- This is a parent command --
-// Cypress.Commands.add('login', (email, password) => { ... })
-//
-//
-// -- This is a child command --
-// Cypress.Commands.add('drag', { prevSubject: 'element'}, (subject, options) => { ... })
-//
-//
-// -- This is a dual command --
-// Cypress.Commands.add('dismiss', { prevSubject: 'optional'}, (subject, options) => { ... })
-//
-//
-// -- This will overwrite an existing command --
-// Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
-//
+
+import 'cypress-get-table';
+
 declare global {
     namespace Cypress {
         interface Chainable {
+            /**
+             * cypress-get-table 插件，用于获取表格数据
+             */
+            getTable(): Chainable<Array<Record<string, string>>>;
+
             /**
              * 关闭所有通知
              */
@@ -175,7 +157,7 @@ Cypress.Commands.add('mockLogin', () => {
 });
 
 Cypress.Commands.add('closeElNotifications', () => {
-    cy.get('.el-notification__closeBtn').each(($el) => {
+    cy.get('.el-notification__closeBtn:visible').each(($el) => {
         cy.wrap($el).click();
     });
 });

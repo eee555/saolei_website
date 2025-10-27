@@ -1,5 +1,4 @@
 // 金羊杯
-import 'cypress-get-table';
 
 const HOST = {
     id: 48,
