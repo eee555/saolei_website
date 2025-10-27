@@ -194,7 +194,7 @@ def get_participant_list(request: HttpRequest):
 @require_POST
 @login_required_error
 def refresh_GSCParticipant(request: HttpRequest):
-    if not request.user.staff and request.user.id != GSC_Defaults.HOST_ID:
+    if not request.user.is_staff and request.user.id != GSC_Defaults.HOST_ID:
         return HttpResponseForbidden()
     if not (participant_id := request.POST.get('id')):
         return HttpResponseBadRequest()
