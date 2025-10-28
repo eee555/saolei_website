@@ -160,6 +160,7 @@ Cypress.Commands.add('closeElNotifications', () => {
     cy.get('.el-notification__closeBtn:visible').each(($el) => {
         cy.wrap($el).click();
     });
+    cy.get('.el-notification__closeBtn:visible').should('not.exist');
 });
 
 export {};
