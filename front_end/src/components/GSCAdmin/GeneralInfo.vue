@@ -12,25 +12,25 @@
         正在加载信息...
     </el-text>
     <el-text v-else>
-        开始时间：{{ gscInfo.start_time ? gscInfo.start_time.toLocaleString() : '未设置' }}
+        <span>开始时间：{{ gscInfo.start_time ? toISODateTimeString(gscInfo.start_time) : '未设置' }}</span>
         &nbsp;
-        设置开始时间：
+        <span>设置开始时间：</span>
         <el-date-picker v-model="newStartTime" type="datetime" @change="setStartTime" />
         <br>
-        结束时间：{{ gscInfo.end_time ? gscInfo.end_time.toLocaleString() : '未设置' }}
+        <span>结束时间：{{ gscInfo.end_time ? toISODateTimeString(gscInfo.end_time) : '未设置' }}</span>
         &nbsp;
-        设置结束时间：
+        <span>设置结束时间：</span>
         <el-date-picker v-model="newEndTime" type="datetime" @change="setEndTime" />
         <br>
-        标识：{{ gscInfo.token || '未设置' }}
+        <span>标识：{{ gscInfo.token || '未设置' }}</span>
         &nbsp;
-        设置标识：
+        <span>设置标识：</span>
         <el-input v-model="newToken" style="width: 300px;" />
         <el-button @click="setToken(newToken)">
             修改！
         </el-button>
         <br>
-        想设置空标识需打开此开关<el-switch v-model="allowEmptyToken" />
+        <span>想设置空标识需打开此开关</span><el-switch v-model="allowEmptyToken" />
     </el-text>
 </template>
 
@@ -41,6 +41,7 @@ import { ref, watch } from 'vue';
 import { httpErrorNotification, successNotification } from '../Notifications';
 
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import { toISODateTimeString } from '@/utils/datetime';
 import { GSCInfo } from '@/utils/gsc';
 
 
@@ -72,21 +73,23 @@ async function getGSCInfo(id: number | undefined) {
     notFound.value = false;
     await proxy.$axios.get('tournament/get_gsc_tournament/', { params: { id: id } }).then(
         function (response: any) {
-            if (response.data.type === 'error') {
+            const data = response.data;
+            if (data.type === 'error') {
                 notFound.value = true;
-            }
-            if (response.data.data.start_time) {
-                gscInfo.value.start_time = new Date(response.data.data.start_time);
             } else {
-                gscInfo.value.start_time = undefined;
+                if (data.data.start_time) {
+                    gscInfo.value.start_time = new Date(data.data.start_time);
+                } else {
+                    gscInfo.value.start_time = undefined;
+                }
+                if (data.data.end_time) {
+                    gscInfo.value.end_time = new Date(data.data.end_time);
+                } else {
+                    gscInfo.value.end_time = undefined;
+                }
+                gscInfo.value.token = data.data.token;
+                gscInfo.value.id = data.data.id;
             }
-            if (response.data.data.end_time) {
-                gscInfo.value.end_time = new Date(response.data.data.end_time);
-            } else {
-                gscInfo.value.end_time = undefined;
-            }
-            gscInfo.value.token = response.data.data.token;
-            gscInfo.value.id = response.data.data.id;
         },
     ).catch(httpErrorNotification);
     loadingGSCInfo.value = false;
@@ -103,7 +106,6 @@ function createGSC() {
 
 function setStartTime(time: Date | undefined) {
     if (time === undefined) return;
-    console.log(gscInfo.value);
     proxy.$axios.post('tournament/set/', { id: gscInfo.value.id, start_time: time }).then(
         function (response: any) {
             gscInfo.value.start_time = time;

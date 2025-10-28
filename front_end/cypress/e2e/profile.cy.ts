@@ -1,6 +1,5 @@
 // 个人主页
 import 'cypress-if';
-import 'cypress-get-table';
 import { binaryStringToUint8Array } from '../support/stupidCypress';
 
 const UPLOAD_BUTTON = '.pi-upload';
