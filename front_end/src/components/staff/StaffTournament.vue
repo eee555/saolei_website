@@ -41,8 +41,7 @@ import { VCodeBlock } from '@wdns/vue-code-block';
 import { ElButton, ElInputNumber } from 'element-plus';
 import { computed, ref } from 'vue';
 
-import BaseIconClose from '@/components/common/BaseIconClose.vue';
-import BaseIconTick from '@/components/common/BaseIconTick.vue';
+import { BaseIconClose, BaseIconTick } from '@/components/common/icon';
 import { httpErrorNotification, successNotification } from '@/components/Notifications';
 import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';

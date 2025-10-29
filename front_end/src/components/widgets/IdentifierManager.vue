@@ -47,8 +47,7 @@ import { useI18n } from 'vue-i18n';
 
 import IconCopy from './IconCopy.vue';
 
-import BaseIconAdd from '@/components/common/BaseIconAdd.vue';
-import BaseIconDelete from '@/components/common/BaseIconDelete.vue';
+import { BaseIconAdd, BaseIconDelete } from '@/components/common/icon';
 import { httpErrorNotification, unknownErrorNotification } from '@/components/Notifications';
 import { store } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';

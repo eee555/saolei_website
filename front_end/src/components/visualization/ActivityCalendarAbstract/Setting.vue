@@ -25,8 +25,8 @@
 import { ElInputNumber, ElSwitch, ElText } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
-import BaseIconQuestion from '@/components/common/BaseIconQuestion.vue';
 import BaseTooltip from '@/components/common/BaseTooltip.vue';
+import { BaseIconQuestion } from '@/components/common/icon';
 import { activityCalendarConfig } from '@/store';
 
 const { t } = useI18n();

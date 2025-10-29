@@ -16,6 +16,7 @@ import { ElLink } from 'element-plus';
 import { Tippy } from 'vue-tippy';
 
 import BaseCardNormal from '../common/BaseCardNormal.vue';
-import BaseIconSetting from '../common/BaseIconSetting.vue';
+
+import { BaseIconSetting } from '@/components/common/icon';
 
 </script>

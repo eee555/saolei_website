@@ -122,8 +122,7 @@ import { useI18n } from 'vue-i18n';
 
 import { store } from '../store';
 
-import BaseIconDelete from '@/components/common/BaseIconDelete.vue';
-import BaseIconUpload from '@/components/common/BaseIconUpload.vue';
+import { BaseIconDelete, BaseIconUpload } from '@/components/common/icon';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { toISODateTimeString } from '@/utils/datetime';
 import { extract_stat, get_upload_status, load_video_file, upload_form, UploadVideoForm } from '@/utils/fileIO';
