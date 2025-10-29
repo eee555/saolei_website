@@ -58,7 +58,6 @@
                         <span style="font-size: 18px; color: #555;">id: {{ userid }}</span>
                     </div>
                     <div style="font-size: 16px;margin-bottom: 12px;color: #555;">
-                        <!-- <span class="flag-icon flag-icon-cn"/> -->
                         {{ realname }}
                     </div>
                     <div style="overflow: auto ;font-size: 16px;margin-bottom: 12px;text-align: justify;">
@@ -100,7 +99,6 @@
 
 <script lang="ts" setup>
 // 我的地盘页面
-import 'flag-icon-css/css/flag-icons.min.css';
 import type { UploadFile, UploadFiles, UploadInstance, UploadProps, UploadRawFile, UploadRequestOptions } from 'element-plus';
 import { ElAside, ElContainer, ElImage, ElInput, ElMain, ElMessage, ElTabPane, ElTabs, ElUpload, genFileId } from 'element-plus';
 import { compressAccurately } from 'image-conversion';

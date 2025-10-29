@@ -8,7 +8,7 @@
                 {{ t('helper.identifier.line_2_1') }}
             </li>
             <li>
-                {{ t('helper.identifier.line_3_1') }}<VideoStateIcon state="d" />{{ t('helper.identifier.line_3_2') }}
+                {{ t('helper.identifier.line_3_1') }}<VideoStateIcon :state="MS_State.Identifier" />{{ t('helper.identifier.line_3_2') }}
             </li>
             <li>
                 {{ t('helper.identifier.line_4_1') }}
@@ -31,9 +31,10 @@
 import { ElText } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
-import BaseIconArbiter from '../common/BaseIconArbiter.vue';
-import BaseIconMetasweeper from '../common/BaseIconMetasweeper.vue';
-import VideoStateIcon from '../widgets/VideoStateIcon.vue';
+import BaseIconArbiter from '@/components/common/BaseIconArbiter.vue';
+import BaseIconMetasweeper from '@/components/common/BaseIconMetasweeper.vue';
+import VideoStateIcon from '@/components/widgets/VideoStateIcon.vue';
+import { MS_State } from '@/utils/ms_const';
 
 const { t } = useI18n();
 

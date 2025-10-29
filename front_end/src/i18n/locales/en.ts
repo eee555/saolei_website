@@ -104,12 +104,9 @@ export default {
         show: 'Show',
         software: {
             resource_download: 'Downloads',
-            software_download: 'Software',
+            software_download: 'Software Downloads',
             download_link: 'Resource',
             metasweeper: 'MetaSweeper',
-            metasweeper_int: '',
-            metasweeper_int2: '',
-            arbiter_int: '',
         },
         state: {
             a: 'Pending',
@@ -118,6 +115,11 @@ export default {
             d: 'Identifier Mismatch',
         },
         toDo: 'TODO',
+        website: {
+            msgames: 'Authoritative Minesweeper',
+            openms: 'Open Minesweeper',
+            saolei: 'Saolei.wang',
+        },
     },
     accountlink: {
         title: 'Account Links',
@@ -413,6 +415,26 @@ export default {
         notificationDuration: 'Notification Duration',
         notificationDurationTooltip1: 'Duration before close. ',
         notificationDurationTooltip2: 'It will not automatically close if set 0. ',
+    },
+    software: {
+        arbiterDescription: 'Minesweeper Arbiter is the most popular authoritative minesweeper clone.',
+        download: 'Download',
+        feature: 'Features',
+        features: {
+            customMode: 'Custom mode',
+            customCounter: 'Custom counter',
+            cellScale: 'Cell scale',
+            mouseLock: 'Lock cursor',
+            noGuessing: 'No guessing',
+            tournament: 'Tournament',
+        },
+        metaDescription: 'Metasweeper is an open-source minesweeper clone under active development.',
+        operatingSystem: 'Operating System',
+        platform: 'Platforms',
+        releaseDate: 'Released',
+        repository: 'Repository',
+        supportedLanguages: 'Languages',
+        version: 'Version',
     },
     team: {
         title: 'Team',
