@@ -24,10 +24,10 @@ import { ElIcon, ElText } from 'element-plus';
 import { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import BaseIconExternal from '@/components/common/BaseIconExternal.vue';
 import BaseIconIdentifier from '@/components/common/BaseIconIdentifier.vue';
 import BaseIconVerified from '@/components/common/BaseIconVerified.vue';
 import BaseTooltip from '@/components/common/BaseTooltip.vue';
+import { BaseIconExternal } from '@/components/common/icon';
 import { MS_State } from '@/utils/ms_const';
 
 const { t } = useI18n();

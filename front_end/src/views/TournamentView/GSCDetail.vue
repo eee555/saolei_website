@@ -62,8 +62,7 @@ import GSCAllSummary from './GSCAllSummary.vue';
 import GSCPersonalView from './GSCPersonalView.vue';
 import GSCTokenGuide from './GSCTokenGuide.vue';
 
-import BaseIconClose from '@/components/common/BaseIconClose.vue';
-import BaseIconRefresh from '@/components/common/BaseIconRefresh.vue';
+import { BaseIconClose, BaseIconRefresh } from '@/components/common/icon';
 import { httpErrorNotification } from '@/components/Notifications';
 import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
 import { store } from '@/store';

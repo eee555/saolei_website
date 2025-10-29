@@ -10,7 +10,7 @@ import { ElLink } from 'element-plus';
 
 import { copyToClipboard } from './CopyToClipboard';
 
-import BaseIconCopy from '@/components/common/BaseIconCopy.vue';
+import { BaseIconCopy } from '@/components/common/icon';
 
 defineProps({
     text: {

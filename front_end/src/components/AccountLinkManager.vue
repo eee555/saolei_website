@@ -92,14 +92,11 @@ import { useI18n } from 'vue-i18n';
 
 import BaseButtonCancel from './common/BaseButtonCancel.vue';
 import BaseButtonConfirm from './common/BaseButtonConfirm.vue';
-import BaseIconAdd from './common/BaseIconAdd.vue';
-import BaseIconDelete from './common/BaseIconDelete.vue';
-import BaseIconPending from './common/BaseIconPending.vue';
-import BaseIconRefresh from './common/BaseIconRefresh.vue';
 import BaseIconVerified from './common/BaseIconVerified.vue';
 import { httpErrorNotification } from './Notifications';
 import PlatformIcon from './widgets/PlatformIcon.vue';
 
+import { BaseIconAdd, BaseIconDelete, BaseIconPending, BaseIconRefresh } from '@/components/common/icon';
 import { local, store } from '@/store';
 import { Platform, platformlist } from '@/utils/common/accountLinkPlatforms';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';

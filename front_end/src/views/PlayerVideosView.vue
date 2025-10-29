@@ -18,7 +18,7 @@ import { useI18n } from 'vue-i18n';
 
 import { store, VideoListConfig } from '../store';
 
-import BaseIconSetting from '@/components/common/BaseIconSetting.vue';
+import { BaseIconSetting } from '@/components/common/icon';
 import VideoList from '@/components/VideoList/App.vue';
 import MultiSelector from '@/components/widgets/MultiSelector.vue';
 import UserArbiterCSV from '@/components/widgets/UserArbiterCSV.vue';

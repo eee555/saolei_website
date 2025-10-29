@@ -109,7 +109,7 @@ import { useRoute } from 'vue-router';
 import { store } from '../store';
 
 import imageUrlDefault from '@/assets/person.png';
-import BaseIconAdd from '@/components/common/BaseIconAdd.vue';
+import { BaseIconAdd } from '@/components/common/icon';
 import { unknownErrorNotification } from '@/components/Notifications';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { UserProfile } from '@/utils/userprofile';

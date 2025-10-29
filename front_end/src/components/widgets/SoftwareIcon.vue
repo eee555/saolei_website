@@ -17,7 +17,7 @@ import BaseIconViennasweeper from '../common/BaseIconViennasweeper.vue';
 
 import BaseIconArbiter from '@/components/common/BaseIconArbiter.vue';
 import BaseIconMetasweeper from '@/components/common/BaseIconMetasweeper.vue';
-import BaseIconQuestion from '@/components/common/BaseIconQuestion.vue';
+import { BaseIconQuestion } from '@/components/common/icon';
 import { MS_Software } from '@/utils/ms_const';
 
 defineProps({

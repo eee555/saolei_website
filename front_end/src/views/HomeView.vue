@@ -68,7 +68,7 @@ import { ElContainer, ElIcon, ElLink, ElMain, ElTabPane, ElTabs, ElText, vLoadin
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import BaseIconRefresh from '@/components/common/BaseIconRefresh.vue';
+import { BaseIconRefresh } from '@/components/common/icon';
 import PlayerName from '@/components/PlayerName.vue';
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import VideoList from '@/components/VideoList/App.vue';

@@ -9,8 +9,7 @@
 <script setup lang="ts">
 import { ElTag } from 'element-plus';
 
-import BaseIconClose from './BaseIconClose.vue';
-import BaseIconTick from './BaseIconTick.vue';
+import { BaseIconClose, BaseIconTick } from '@/components/common/icon';
 
 defineProps({
     support: {
