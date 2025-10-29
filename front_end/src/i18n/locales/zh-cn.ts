@@ -105,9 +105,6 @@ export default {
             software_download: '软件下载',
             download_link: '下载链接',
             metasweeper: '元扫雷',
-            metasweeper_int: '（开源扫雷网官方扫雷软件，开源扫雷网支持其标准、竞速（标准）无猜模式。）', // introduction
-            metasweeper_int2: '（开源扫雷网官方扫雷软件，开源扫雷网支持其标准、标准无猜、强无猜、弱可猜模式。）', // introduction
-            arbiter_int: '（同时受到国际网、中国扫雷网、开源扫雷网认可的老牌扫雷软件，只有标准模式。）',
         },
         state: {
             a: '审核中',
@@ -116,6 +113,11 @@ export default {
             d: '标识不匹配',
         },
         toDo: '敬请期待',
+        website: {
+            msgames: '国际网',
+            openms: '开源扫雷网',
+            saolei: '扫雷网',
+        },
     },
     accountlink: {
         title: '账号关联',
@@ -411,6 +413,26 @@ export default {
         notificationDuration: '通知时长',
         notificationDurationTooltip1: '显示的时间，单位毫秒。',
         notificationDurationTooltip2: '值为0则不会自动关闭。',
+    },
+    software: {
+        arbiterDescription: 'Minesweeper Arbiter 是最流行的专业扫雷软件。',
+        download: '下载',
+        feature: '功能',
+        features: {
+            customMode: '自定义模式',
+            customCounter: '自定义计数器',
+            cellScale: '格子缩放',
+            mouseLock: '鼠标锁定',
+            noGuessing: '无猜模式',
+            tournament: '比赛',
+        },
+        metaDescription: '元扫雷是一款开源扫雷软件，正处于活跃更新中。',
+        operatingSystem: '操作系统',
+        platform: '平台',
+        releaseDate: '发布日期',
+        repository: '项目地址',
+        supportedLanguages: '语言',
+        version: '版本',
     },
     team: {
         title: '团队',

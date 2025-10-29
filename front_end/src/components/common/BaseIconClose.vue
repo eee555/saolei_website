@@ -1,5 +1,5 @@
 <template>
-    <i class="pi pi-times" />
+    <i class="pi pi-times" style="vertical-align: middle;" />
 </template>
 
 <script setup lang="ts">
