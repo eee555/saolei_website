@@ -1,8 +1,8 @@
 <template>
-    <el-link @click="visible = true">
+    <el-link @click.stop="visible = true">
         <slot />
     </el-link>
-    <el-dialog v-model="visible" width="100%" align-center body-class="center" :show-close="false">
+    <el-dialog v-model="visible" width="100%" align-center body-class="center" :show-close="false" append-to-body>
         <slot name="overlay" />
         <template #header>
             <h2 style="justify-self: center; color: var(--el-text-color-regular)">

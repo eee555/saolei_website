@@ -101,10 +101,7 @@ export default {
         },
         show: '显示',
         software: {
-            resource_download: '资源下载',
             software_download: '软件下载',
-            download_link: '下载链接',
-            metasweeper: '元扫雷',
         },
         state: {
             a: '审核中',
@@ -415,6 +412,7 @@ export default {
         notificationDurationTooltip2: '值为0则不会自动关闭。',
     },
     software: {
+        arbiter: 'Minesweeper Arbiter',
         arbiterDescription: 'Minesweeper Arbiter 是最流行的专业扫雷软件。',
         download: '下载',
         feature: '功能',
@@ -427,6 +425,7 @@ export default {
             tournament: '比赛',
         },
         metaDescription: '元扫雷是一款开源扫雷软件，正处于活跃更新中。',
+        metasweeper: '元扫雷',
         operatingSystem: '操作系统',
         platform: '平台',
         releaseDate: '发布日期',

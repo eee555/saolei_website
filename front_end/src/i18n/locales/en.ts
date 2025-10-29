@@ -106,7 +106,6 @@ export default {
             resource_download: 'Downloads',
             software_download: 'Software Downloads',
             download_link: 'Resource',
-            metasweeper: 'MetaSweeper',
         },
         state: {
             a: 'Pending',
@@ -417,6 +416,7 @@ export default {
         notificationDurationTooltip2: 'It will not automatically close if set 0. ',
     },
     software: {
+        arbiter: 'Minesweeper Arbiter',
         arbiterDescription: 'Minesweeper Arbiter is the most popular authoritative minesweeper clone.',
         download: 'Download',
         feature: 'Features',
@@ -429,6 +429,7 @@ export default {
             tournament: 'Tournament',
         },
         metaDescription: 'Metasweeper is an open-source minesweeper clone under active development.',
+        metasweeper: 'Metasweeper',
         operatingSystem: 'Operating System',
         platform: 'Platforms',
         releaseDate: 'Released',
