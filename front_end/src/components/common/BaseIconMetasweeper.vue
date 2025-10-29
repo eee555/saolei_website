@@ -2,7 +2,7 @@
     <base-tooltip :show-delay="500">
         <img style="width: 16px; height: 16px" src="@/assets/img/img_meta.png">
         <template #content>
-            <el-text>{{ t('common.software.metasweeper') }}</el-text>
+            <el-text>{{ t('software.metasweeper') }}</el-text>
         </template>
     </base-tooltip>
 </template>
