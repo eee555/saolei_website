@@ -1,60 +1,44 @@
 <template>
-    <!-- <span class="text-button" @click="centerDialogVisible = true;"> -->
-    <el-link @click="centerDialogVisible = true;">
+    <base-overlay>
         {{ t('common.software.software_download') }}
-    </el-link>
-    <el-dialog
-        v-model="centerDialogVisible" :title="t('common.software.software_download')" width="50%" align-center
-        draggable :lock-scroll="false"
-    >
-        <ul>
-            <li>
-                <a style="color: blue;" target="_blank" href="https://openms.top/download/Metaminesweeper-v3.1.9.zip">
-                    {{ t('common.software.metasweeper') }} v3.1.9</a> {{ t('common.software.download_link') }} 1<br>
-                <a
-                    style="color: blue;" target="_blank"
-                    href="https://github.com/eee555/Solvable-Minesweeper/releases/download/3.1.9/Metaminesweeper-v3.1.9.zip"
-                >
-                    {{ t('common.software.metasweeper') }} v3.1.9</a> {{ t('common.software.download_link') }} 2<br>
-                {{ t('common.software.metasweeper_int') }}
-            </li>
-            <li>
-                <a style="color: blue;" target="_blank" href="https://openms.top/download/Metaminesweeper-v3.1.11.zip">
-                    {{ t('common.software.metasweeper') }} v3.1.11</a> {{ t('common.software.download_link') }} 1<br>
-                <a
-                    style="color: blue;" target="_blank"
-                    href="https://github.com/eee555/Solvable-Minesweeper/releases/download/3.1.11/Metaminesweeper-v3.1.11.zip"
-                >
-                    {{ t('common.software.metasweeper') }} v3.1.11</a> {{ t('common.software.download_link') }} 2<br>
-                {{ t('common.software.metasweeper_int2') }}
-            </li>
-            <li>
-                <a style="color: blue;" target="_blank" href="https://gitee.com/ee55/Metasweeper/releases/download/3.2.0/Metaminesweeper-3.2.0.exe">
-                    {{ t('common.software.metasweeper') }} v3.2.0</a> {{ t('common.software.download_link') }} 1<br>
-                <a
-                    style="color: blue;" target="_blank"
-                    href="https://github.com/eee555/Metasweeper/releases/download/3.2.0/Metaminesweeper-3.2.0.exe"
-                >
-                    {{ t('common.software.metasweeper') }} v3.2.0</a> {{ t('common.software.download_link') }} 2<br>
-                {{ t('common.software.metasweeper_int2') }}
-            </li>
-            <li>
-                <a style="color: blue;" target="_blank" href="https://openms.top/download/Arbiter_0.52.3.zip">Arbiter
-                    v0.52.3</a><br>
-                {{ t('common.software.arbiter_int') }}
-            </li>
-        </ul>
-    </el-dialog>
+        <template #header>
+            {{ t('common.software.software_download') }}
+        </template>
+        <template #overlay>
+            <el-tabs tab-position="left" style="height: 350px; width: 700px; justify-self: center;">
+                <el-tab-pane>
+                    <template #label>
+                        <BaseIconMetasweeper />
+                    </template>
+                    <MetasweeperHelper />
+                </el-tab-pane>
+                <el-tab-pane>
+                    <template #label>
+                        <BaseIconArbiter />
+                    </template>
+                    <ArbiterHelper />
+                </el-tab-pane>
+            </el-tabs>
+        </template>
+    </base-overlay>
 </template>
 
 <script lang="ts" setup>
-// 注册、登录的弹框及右上方按钮
-import { ElDialog, ElLink } from 'element-plus';
-import { ref } from 'vue';
+import { ElTabPane, ElTabs } from 'element-plus';
 import { useI18n } from 'vue-i18n';
+
+import BaseIconArbiter from '@/components/common/BaseIconArbiter.vue';
+import BaseIconMetasweeper from '@/components/common/BaseIconMetasweeper.vue';
+import BaseOverlay from '@/components/common/BaseOverlay.vue';
+import ArbiterHelper from '@/components/dialogs/ArbiterHelper.vue';
+import MetasweeperHelper from '@/components/dialogs/MetasweeperHelper.vue';
 
 const { t } = useI18n();
 
-const centerDialogVisible = ref(false);
-
 </script>
+
+<style lang="less" scoped>
+:deep(.el-tabs__content) {
+    overflow: auto;
+}
+</style>

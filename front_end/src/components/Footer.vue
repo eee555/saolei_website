@@ -9,13 +9,7 @@
                     </strong>
                 </div>
                 <Thanks />
-                <!-- <div><el-link href="https://github.com/eee555/Solvable-Minesweeper">{{ $t('common.software.metasweeper')
-                        }}</el-link></div> -->
-                <div style="padding-bottom: 5px; margin-top: 8px;">
-                    <strong>
-                        {{ t('common.software.resource_download') }}
-                    </strong>
-                </div>
+                <br>
                 <Downloads />
             </el-col>
             <el-col :span="8">

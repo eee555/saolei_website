@@ -35,8 +35,8 @@ import { useI18n } from 'vue-i18n';
 
 import AccountLinkManager from '@/components/AccountLinkManager.vue';
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
-import BaseIconInfo from '@/components/common/BaseIconInfo.vue';
 import BaseOverlay from '@/components/common/BaseOverlay.vue';
+import { BaseIconInfo } from '@/components/common/icon';
 import ActivityCalendarAbstract from '@/components/visualization/ActivityCalendarAbstract/App.vue';
 import BBBvSummary from '@/components/visualization/BBBvSummary/App.vue';
 import BBBvSummaryHeader from '@/components/visualization/BBBvSummary/Header.vue';

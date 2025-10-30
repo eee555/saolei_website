@@ -1,5 +1,5 @@
 <template>
-    <el-table :data="tournamentList" @row-click="rowClick">
+    <el-table :data="tournamentList" table-layout="auto" @row-click="rowClick">
         <el-table-column :label="t('common.prop.state')">
             <template #default="{row}">
                 <TournamentStateIcon :state="row.state" />
