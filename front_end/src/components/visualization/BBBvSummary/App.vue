@@ -1,9 +1,11 @@
 <template>
     <el-row v-if="header" :style="{ textAlign: 'center', height: '25px', flexWrap: 'nowrap', marginTop: '10px', marginBottom: '-16px' }">
         <span style="width: 10%; min-width: 75px" />
-        <el-text v-for="i in 10" :key="i" style="width: 8.9%; min-width: 4em">
-            {{ i - 1 }}
-        </el-text>
+        <span v-for="i in 10" :key="i" style="width: 8.9%; min-width: 4em">
+            <el-text>
+                {{ i - 1 }}
+            </el-text>
+        </span>
     </el-row>
     <el-divider data-cy="summary" style="margin: 18px 0 12px 0;">
         <el-text>
