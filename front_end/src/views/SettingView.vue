@@ -79,32 +79,6 @@
             </el-descriptions-item>
         </el-descriptions>
     </ExperimentalFeature>
-    <el-descriptions v-if="false && store.login_status == LoginStatus.IsLogin" title="个人信息" :column="3">
-        <el-descriptions-item label="用户id">
-            {{ store.user.id }}
-        </el-descriptions-item>
-        <el-descriptions-item label="用户名">
-            {{ store.user.username }}
-        </el-descriptions-item>
-        <el-descriptions-item :label="t('common.prop.realName')">
-            {{ store.user.realname }}
-        </el-descriptions-item>
-        <el-descriptions-item label="英文姓">
-            {{ t('common.toDo') }}
-        </el-descriptions-item>
-        <el-descriptions-item label="英文名">
-            {{ t('common.toDo') }}
-        </el-descriptions-item>
-        <el-descriptions-item :label="t('common.prop.sex')">
-            {{ t('common.toDo') }}
-        </el-descriptions-item>
-        <el-descriptions-item label="属地">
-            {{ t('common.toDo') }}
-        </el-descriptions-item>
-        <el-descriptions-item label="出生年份">
-            {{ t('common.toDo') }}
-        </el-descriptions-item>
-    </el-descriptions>
 </template>
 
 <script lang="ts" setup name="UserSettings">
@@ -116,8 +90,7 @@ import BaseTooltip from '@/components/common/BaseTooltip.vue';
 import ExperimentalFeature from '@/components/ExperimentalFeature.vue';
 import ColorSchemeSetting from '@/components/visualization/ColorSchemeSetting.vue';
 import DarkMode from '@/components/widgets/DarkMode.vue';
-import { colorTheme, local, store } from '@/store';
-import { LoginStatus } from '@/utils/common/structInterface';
+import { colorTheme, local } from '@/store';
 import { STNB_const } from '@/utils/ms_const';
 
 const { t } = useI18n();
