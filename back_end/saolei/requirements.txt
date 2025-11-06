@@ -1,3 +1,4 @@
+beautifulsoup4>=4.14.0
 Django>=5.0.0
 djangorestframework>=3.15.0
 django-apscheduler==0.6.2
