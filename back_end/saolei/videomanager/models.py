@@ -12,6 +12,7 @@ from userprofile.models import UserProfile
 from utils import ComplexEncoder
 from utils.cmp import isbetter
 from .fields import RestrictedFileField
+from utils.parser import MSVideoParser
 
 cache = get_redis_connection("saolei_website")
 logger = logging.getLogger('videomanager')
@@ -163,6 +164,54 @@ class VideoModel(models.Model):
             models.Index(fields=['state'], name='state_idx'),
         ]
 
+    @staticmethod
+    def create_from_parser(parser: MSVideoParser, user: UserProfile):
+        """
+        注意：
+        - 执行之前：
+          - 检查identifier
+        - 执行之后：
+          - 检查比赛标识
+          - 刷新排行
+        """
+        e_video = ExpandVideoModel.objects.create(
+            identifier=parser.identifier,
+            stnb=parser.stnb,
+        )
+        print(parser.end_time)
+        return VideoModel.objects.create(
+            player=user,
+            file=parser.file,
+            file_size=parser.file.size,
+            video=e_video,
+            end_time=parser.end_time,
+            state=parser.state,
+            software=parser.software,
+            level=parser.level,
+            mode=parser.mode,
+            timems=parser.timems,
+            bv=parser.bv,
+            left=parser.left,
+            right=parser.right,
+            double=parser.double,
+            left_ce=parser.left_ce,
+            right_ce=parser.right_ce,
+            double_ce=parser.double_ce,
+            path=parser.path,
+            flag=parser.flag,
+            op=parser.op,
+            isl=parser.isl,
+            cell0=parser.cell0,
+            cell1=parser.cell1,
+            cell2=parser.cell2,
+            cell3=parser.cell3,
+            cell4=parser.cell4,
+            cell5=parser.cell5,
+            cell6=parser.cell6,
+            cell7=parser.cell7,
+            cell8=parser.cell8,
+        )
+
     def push_redis(self, name: str):
         if self.ongoing_tournament and name == 'newest_queue':
             return
@@ -236,8 +285,6 @@ class VideoModel(models.Model):
     def update_personal_record(self):
         if self.state != MS_TextChoices.State.OFFICIAL or self.ongoing_tournament:
             return
-        user: UserProfile = self.player
-        ms_user: UserMS = user.userms
 
         if self.mode == MS_TextChoices.Mode.NF or self.mode == MS_TextChoices.Mode.STD:
             self.checkPB("std")
@@ -252,7 +299,7 @@ class VideoModel(models.Model):
             self.checkPB("dg")
 
         # 改完记录，存回数据库
-        ms_user.save(update_fields=record_update_fields)
+        self.player.userms.save(update_fields=record_update_fields)
 
     # 确定用户破某个纪录后，更新redis破纪录的记录，显示在首页用
     def update_news_queue(self, index: str, mode: str):

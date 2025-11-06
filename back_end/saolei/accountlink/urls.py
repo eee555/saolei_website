@@ -9,4 +9,7 @@ urlpatterns = [
     path('update/', views.update_link),
     path('verify/', views.verify_link),
     path('unverify/', views.unverify_link),
+    path('saolei/getlist/', views.get_saolei_videolist),
+    path('saolei/importlist/', views.import_saolei_videolist),
+    path('saolei/importvideo/', views.import_saolei_video),
 ]

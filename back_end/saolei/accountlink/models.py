@@ -1,7 +1,19 @@
 # -*- coding: utf-8 -*-
+import re
+import requests
+
 from django.db import models
+from django.core.files.base import ContentFile
 
 from userprofile.models import UserProfile
+from videomanager.models import VideoModel
+from utils.exceptions import ExceptionToResponse
+from utils.parser import MSVideoParser
+from msuser.models import UserMS
+from config.text_choices import MS_TextChoices
+from identifier.models import Identifier
+from tournament.utils import video_checkin
+from utils.saolei import SaoleiUtils, SaoleiUserInfo
 
 
 class Platform(models.TextChoices):
@@ -9,6 +21,19 @@ class Platform(models.TextChoices):
     QQ = 'q', ('腾讯QQ')
     SAOLEI = 'c', ('扫雷网')
     WOM = 'w', ('Minesweeper.Online')
+
+class SaoleiVideoState(models.TextChoices):
+    NOTEXIST = 'n', ('不存在')
+    PENDING = 'p', ('未审核')
+    FROZEN = 'f', ('已冻结')
+    OFFICIAL = 'o', ('正常')
+
+class SaoleiVideoImportState(models.TextChoices):
+    NOTPLANNED = 'n', ('未计划')
+    QUEUEING = 'q', ('排队中')
+    IMPORTING = 'i', ('导入中')
+    IMPORTED = 'd', ('已导入')
+    FAILED = 'f', ('导入失败')
 
 
 # 用于验证的队列
@@ -62,6 +87,102 @@ class AccountSaolei(models.Model):
     i_b_cent = models.PositiveSmallIntegerField(null=True)
     e_b_cent = models.PositiveSmallIntegerField(null=True)
     s_b_cent = models.PositiveSmallIntegerField(null=True)
+
+    def import_video_list(self, page: int):
+        saolei_user = SaoleiUserInfo(saolei_id=self.id)
+        video_list = SaoleiUtils.get_video_list(saolei_user.videos_url(page=page))
+        existing_video_ids = list(VideoSaolei.objects.filter(id__in=[info.video_id for info in video_list]).values_list('id', flat=True))
+
+        count = 0
+        new_video_list = []
+        for video_info in video_list:
+            if video_info.video_id not in existing_video_ids:
+                VideoSaolei.objects.create(id=video_info.video_id, user=self, upload_time=video_info.upload_time, level=video_info.level, bv=video_info.bv, timems=video_info.timems, nf=video_info.nf)
+                count += 1
+                new_video_list.append(video_info)
+
+        return new_video_list
+
+
+class VideoSaolei(models.Model):
+    id = models.PositiveIntegerField(primary_key=True)
+    user = models.ForeignKey(AccountSaolei, on_delete=models.DO_NOTHING, related_name='videos')
+    upload_time = models.DateTimeField()
+    level = models.CharField(max_length=1, choices=MS_TextChoices.Level.choices)
+    bv = models.PositiveSmallIntegerField(default=0)
+    timems = models.PositiveIntegerField(default=0)
+    nf = models.BooleanField(default=False)
+    state = models.CharField(max_length=1, choices=SaoleiVideoState.choices)
+    import_state = models.CharField(max_length=1, choices=SaoleiVideoImportState.choices, default=SaoleiVideoImportState.NOTPLANNED)
+    import_video = models.OneToOneField(VideoModel, on_delete=models.SET_NULL, null=True)
+
+    @property
+    def url(self):
+        return f'http://saolei.wang/Video/Show.asp?Id={self.id}'
+    
+    def get_download_url(self):
+        response = requests.get(url=self.url, timeout=5)
+        response.encoding = 'GB2312'
+        if response.text == '''<script language="JavaScript">alert('此录象不存在!');</script><script language=JavaScript>top.location=top.location</script>''':
+            self.verified = False
+            return None
+        if '此录像尚未通过审核！' in response.text or '为什么冻结？' in response.text:
+            self.verified = False
+        return 'http://saolei.wang/' + re.search(r"PlayVideo\('([^']+)'\)", response.text).group(1)
+
+    def run_import(self):
+        if self.import_state == SaoleiVideoImportState.IMPORTING:
+            return
+        self.import_state = SaoleiVideoImportState.IMPORTING
+        self.save()
+        try:
+            download_url = self.get_download_url()
+            file_name = download_url.split('/')[-1]
+            response = requests.get(url=self.get_download_url(), timeout=5)
+            file_size = response.headers.get('Content-Length')
+            if file_size is None:
+                raise ExceptionToResponse(obj='import', category='response')
+            
+            collisions = VideoModel.objects.filter(file_size=file_size)
+            for collision in collisions:
+                if collision.file.read() == response.content:
+                    collision.url_file = download_url
+                    collision.url_web = self.url
+                    if collision.upload_time > self.upload_time:
+                        collision.upload_time = self.upload_time
+                    collision.ongoing_tournament = False
+                    collision.save()
+                    self.import_state = SaoleiVideoImportState.IMPORTED
+                    self.import_video = collision
+                    self.save()
+                    return
+            
+            parser = MSVideoParser(ContentFile(response.content, file_name))
+            user = self.user.parent
+
+            if not user.userms:
+                user.userms = UserMS.objects.create()
+            if not Identifier.verify(parser.identifier, user.userms) and parser.state == MS_TextChoices.State.OFFICIAL:
+                parser.state = MS_TextChoices.State.IDENTIFIER
+
+            video = VideoModel.create_from_parser(parser, user)
+            video_checkin(video, parser.tournament_identifiers)
+            video.update_redis()
+            self.import_video = video
+            self.import_state = SaoleiVideoImportState.IMPORTED
+            self.save()
+        except requests.exceptions.ConnectionError as e:
+            self.import_state = SaoleiVideoImportState.FAILED
+            self.save()
+            raise ExceptionToResponse(obj='import', category='connection')
+        except requests.exceptions.ReadTimeout as e:
+            self.import_state = SaoleiVideoImportState.FAILED
+            self.save()
+            raise ExceptionToResponse(obj='import', category='readtimeout')
+        except Exception as e:
+            self.import_state = SaoleiVideoImportState.FAILED
+            self.save()
+            raise e
 
 
 class AccountMinesweeperGames(models.Model):
