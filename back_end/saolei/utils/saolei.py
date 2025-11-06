@@ -3,6 +3,7 @@ from lxml import etree
 import requests
 from bs4 import BeautifulSoup, element
 import re
+from .exceptions import ExceptionToResponse
 
 
 SAOLEI_LEVEL = {
@@ -17,7 +18,7 @@ SAOLEI_TEXT2LEVEL = {
 }
 
 class SaoleiVideoInfo:
-    video_id: int
+    id: int
     level: str
     bv: int
     timems: int
@@ -25,8 +26,8 @@ class SaoleiVideoInfo:
     upload_time: datetime
     verified: bool
 
-    def __init__(self, video_id: int, level: int, bv: int, timems: int, nf: bool, upload_time: datetime, verified: bool):
-        self.video_id = video_id
+    def __init__(self, id: int, level: int, bv: int, timems: int, nf: bool, upload_time: datetime, verified: bool):
+        self.id = id
         self.level = level
         self.bv = bv
         self.timems = timems
@@ -36,7 +37,7 @@ class SaoleiVideoInfo:
 
     def dict(self):
         return {
-            'video_id': self.video_id,
+            'id': self.id,
             'level': self.level,
             'bv': self.bv,
             'timems': self.timems,
@@ -47,7 +48,7 @@ class SaoleiVideoInfo:
 
     @property
     def url(self):
-        return f'http://saolei.wang/Video/Show.asp?Id={self.video_id}'
+        return f'http://saolei.wang/Video/Show.asp?Id={self.id}'
 
     def get_download_url(self):
         response = requests.get(url=self.url, timeout=5)
@@ -127,18 +128,15 @@ class SaoleiUtils:
         level = SAOLEI_TEXT2LEVEL[span_tags[0].get_text(strip=True)]
         nf =  len(span_tags) > 1 and span_tags[1].get_text(strip=True) == 'NF'
 
-        #print(cols[4])
-        #print(cols[4].get_text())
         a_tag = cols[4].find('a')
-        #print(a_tag)
         timems = int(a_tag.get_text(strip=True).replace('.', '')) * 10
         video_id = int(re.search(r"/Video/Show\.asp\?Id=(\d+)", a_tag.get('onclick')).group(1))
 
         verified = cols[5].get_text(strip=True).startswith('评论')
 
         return SaoleiVideoInfo(
-            video_id=video_id,
-            level = level,
+            id=video_id,
+            level=level,
             bv=bv,
             timems=timems,
             nf=nf,

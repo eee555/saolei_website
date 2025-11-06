@@ -91,13 +91,15 @@ class AccountSaolei(models.Model):
     def import_video_list(self, page: int):
         saolei_user = SaoleiUserInfo(saolei_id=self.id)
         video_list = SaoleiUtils.get_video_list(saolei_user.videos_url(page=page))
-        existing_video_ids = list(VideoSaolei.objects.filter(id__in=[info.video_id for info in video_list]).values_list('id', flat=True))
+        if not video_list:
+            return None
+        existing_video_ids = list(VideoSaolei.objects.filter(id__in=[info.id for info in video_list]).values_list('id', flat=True))
 
         count = 0
         new_video_list = []
         for video_info in video_list:
-            if video_info.video_id not in existing_video_ids:
-                VideoSaolei.objects.create(id=video_info.video_id, user=self, upload_time=video_info.upload_time, level=video_info.level, bv=video_info.bv, timems=video_info.timems, nf=video_info.nf)
+            if video_info.id not in existing_video_ids:
+                VideoSaolei.objects.create(id=video_info.id, user=self, upload_time=video_info.upload_time, level=video_info.level, bv=video_info.bv, timems=video_info.timems, nf=video_info.nf)
                 count += 1
                 new_video_list.append(video_info)
 

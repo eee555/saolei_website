@@ -178,7 +178,6 @@ class VideoModel(models.Model):
             identifier=parser.identifier,
             stnb=parser.stnb,
         )
-        print(parser.end_time)
         return VideoModel.objects.create(
             player=user,
             file=parser.file,

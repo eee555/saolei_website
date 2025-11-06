@@ -143,6 +143,8 @@ def import_saolei_videolist(request: HttpRequest):
         return HttpResponseBadRequest()
     
     new_video_list = account.import_video_list(page)
+    if new_video_list is None:
+        return HttpResponseNotFound()
     return JsonResponse({'type': 'success', 'data': [v.dict() for v in new_video_list]})
 
 
