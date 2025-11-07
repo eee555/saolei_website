@@ -1,3 +1,4 @@
+beautifulsoup4>=4.14.0
 Django>=5.0.0
 djangorestframework>=3.15.0
 django-apscheduler==0.6.2
@@ -7,7 +8,7 @@ django-model-utils==5.0.0
 django-ratelimit==4.1.0
 django-redis==5.4.0
 django-simple-captcha>=0.5.18
-lxml==5.1.0
+lxml>=6.0.0
 ms_toollib==1.4.19
 psutil==5.9.1
 pymysql>=1.1.0

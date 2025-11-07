@@ -1,16 +1,19 @@
 <template>
-    <el-table-column
-        prop="upload_time" min-width="180" :formatter="simple_formatter(utc_to_local_format)"
-        :sortable="sortable" :label="t('common.prop.upload_time')"
-    />
+    <PrColumn field="upload_time" :sortable="sortable" :header="t('common.prop.upload_time')" style="min-width: 11em">
+        <template #body="{ data }">
+            <el-text>
+                {{ utc_to_local_format(data.upload_time) }}
+            </el-text>
+        </template>
+    </PrColumn>
 </template>
 
 <script setup lang="ts">
 
-import { ElTableColumn } from 'element-plus';
+import { ElText } from 'element-plus';
+import PrColumn from 'primevue/column';
 import { useI18n } from 'vue-i18n';
 
-import { simple_formatter } from '@/utils';
 import { utc_to_local_format } from '@/utils/system/tools';
 
 const { t } = useI18n();

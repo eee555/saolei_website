@@ -1,22 +1,28 @@
 <template>
-    <el-table-column
-        prop="state" :width="32"
-        :filters="[{ text: t('common.state.c'), value: 'c' }, { text: t('common.state.d'), value: 'd' }]"
-        :filter-method="defaultFilterMethod"
-    >
-        <template #default="{row}: {row: VideoAbstract}">
-            <VideoStateIcon :state="row.state" />
+    <PrColumn field="state" :show-filter-match-modes="false" :show-filter-operator="false" style="width: 0.5em" :show-apply-button="false" :show-clear-button="false">
+        <template #body="{data}: {data: VideoAbstract}">
+            <VideoStateIcon :state="data.state" />
         </template>
-    </el-table-column>
+        <template #filter="{ filterModel, filterCallback }">
+            <PrListbox v-model="filterModel.value" multiple :options="Object.values(MS_State)" @change="filterCallback()">
+                <template #option="slotProps">
+                    <VideoStateIcon :state="slotProps.option" />
+                    &nbsp;
+                    {{ t(`common.state.${slotProps.option}`) }}
+                </template>
+            </PrListbox>
+        </template>
+    </PrColumn>
 </template>
 
 <script setup lang="ts">
 
-import { ElTableColumn } from 'element-plus';
+import PrColumn from 'primevue/column';
+import PrListbox from 'primevue/listbox';
 import { useI18n } from 'vue-i18n';
 
 import VideoStateIcon from '@/components/widgets/VideoStateIcon.vue';
-import { defaultFilterMethod } from '@/utils';
+import { MS_State } from '@/utils/ms_const';
 import { VideoAbstract } from '@/utils/videoabstract';
 
 const { t } = useI18n();

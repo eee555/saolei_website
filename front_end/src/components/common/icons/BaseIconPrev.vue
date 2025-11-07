@@ -1,5 +1,5 @@
 <template>
-    <i class="pi pi-exclamation-triangle" />
+    <i class="pi pi-angle-left" />
 </template>
 
 <script setup lang="ts">

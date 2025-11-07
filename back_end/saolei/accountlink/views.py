@@ -6,7 +6,8 @@ from django_ratelimit.decorators import ratelimit
 from userprofile.decorators import login_required_error, staff_required
 from userprofile.models import UserProfile
 from utils.response import HttpResponseConflict
-from .models import AccountLinkQueue, Platform, PLATFORM_CONFIG
+from utils.exceptions import ExceptionToResponse
+from .models import AccountLinkQueue, Platform, PLATFORM_CONFIG, VideoSaolei, AccountSaolei
 from .utils import delete_account, link_account, update_account
 
 private_platforms = ["q"]  # 私人账号平台
@@ -122,3 +123,63 @@ def update_link(request):
     elif status == 'unsupported':
         return HttpResponseBadRequest()
     return JsonResponse({'type': 'error', 'category': status})
+
+
+@require_POST
+@login_required_error
+def import_saolei_videolist(request: HttpRequest):
+    if request.user.is_staff:
+        if user_id := request.POST.get('user_id'):
+            if not (user := UserProfile.objects.filter(id=user_id).first()):
+                return HttpResponseNotFound()
+        else:
+            user = request.user
+    else:
+        user = request.user
+
+    if not (account := user.account_saolei):  # 普通用户前端不应当出现此问题
+        return HttpResponseForbidden()
+    if not (page := request.POST.get('page')):
+        return HttpResponseBadRequest()
+    
+    new_video_list = account.import_video_list(page)
+    if new_video_list is None:
+        return HttpResponseNotFound()
+    return JsonResponse({'type': 'success', 'data': [v.dict() for v in new_video_list]})
+
+
+@require_GET
+def get_saolei_videolist(request: HttpRequest):
+    if not (saolei_id := request.GET.get('saolei_id')):
+        return HttpResponseBadRequest()
+    if not (saolei_account := AccountSaolei.objects.filter(id=saolei_id).first()):
+        return HttpResponseNotFound()
+    
+    return JsonResponse(list(saolei_account.videos.values('id', 'upload_time', 'level', 'bv', 'timems', 'nf', 'import_state', 'import_video')), safe=False)
+
+
+@require_POST
+@login_required_error
+def import_saolei_video(request: HttpRequest):
+    if not (video_id := request.POST.get('video_id')):
+        return HttpResponseBadRequest()
+    if not (video := VideoSaolei.objects.filter(id=video_id).first()):
+        return HttpResponseNotFound()
+    if not request.user.is_staff and video.user.parent != request.user:
+        return HttpResponseForbidden()
+    
+    try:
+        video.run_import()
+    except ExceptionToResponse as e:
+        return e.response()
+    
+    return JsonResponse({'type': 'success', 'data': {
+        'id': video.id,
+        'upload_time': video.upload_time,
+        'level': video.level,
+        'bv': video.bv,
+        'timems': video.timems,
+        'nf': video.nf,
+        'import_state': video.import_state,
+        'import_video': video.import_video.id,
+    }})
