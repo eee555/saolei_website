@@ -1,24 +1,32 @@
 <template>
-    <el-table-column
-        prop="level"
-        :filters="[{ text: t('common.level.b'), value: 'b' }, { text: t('common.level.i'), value: 'i' }, { text: t('common.level.e'), value: 'e' }]"
-        :filter-method="defaultFilterMethod" :filter-multiple="false"
-    >
-        <template #default="{row}: {row: VideoAbstract}">
-            <GameLevelIcon :level="row.level" />
+    <PrColumn field="level" :show-filter-match-modes="false" :show-filter-operator="false" style="width: 5em" :filter-header-style="{ marginInlineStart: '0px' }">
+        <template #body="{data}: {data: VideoAbstract}">
+            <GameLevelIcon :level="data.level" />
         </template>
-    </el-table-column>
+        <template #filter="{ filterModel, applyFilter }">
+            <PrListbox v-model="filterModel.value" :options="[...MS_Levels]" @change="applyFilter()">
+                <template #option="slotProps">
+                    <GameLevelIcon :level="slotProps.option" />
+                </template>
+            </PrListbox>
+        </template>
+    </PrColumn>
 </template>
 
 <script setup lang="ts">
 
-import { ElTableColumn } from 'element-plus';
-import { useI18n } from 'vue-i18n';
+import PrColumn from 'primevue/column';
+import PrListbox from 'primevue/listbox';
 
 import GameLevelIcon from '@/components/widgets/GameLevelIcon.vue';
-import { defaultFilterMethod } from '@/utils';
+import { MS_Levels } from '@/utils/ms_const';
 import { VideoAbstract } from '@/utils/videoabstract';
 
-const { t } = useI18n();
-
 </script>
+
+<style lang="less">
+.p-datatable-popover-filter {
+    margin-inline-start: 0px;
+}
+
+</style>

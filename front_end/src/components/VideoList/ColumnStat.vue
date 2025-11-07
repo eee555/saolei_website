@@ -1,17 +1,15 @@
 <template>
-    <el-table-column
-        :label="t(`common.prop.${ stat}`)" align="right" :sortable="sortable"
-        :sort-by="(row) => row.getStat(stat)"
-    >
-        <template #default="{row}: {row: VideoAbstract}">
-            {{ row.displayStat(stat) }}
+    <PrColumn :header="t(`common.prop.${ stat}`)" :sortable="sortable" :sort-field="(data) => data.getStat(stat)">
+        <template #body="{data}: {data: VideoAbstract}">
+            <el-text>{{ data.displayStat(stat) }}</el-text>
         </template>
-    </el-table-column>
+    </PrColumn>
 </template>
 
 <script setup lang="ts">
 
-import { ElTableColumn } from 'element-plus';
+import { ElText } from 'element-plus';
+import PrColumn from 'primevue/column';
 import { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 

@@ -1,5 +1,5 @@
 <template>
-    <i class="pi pi-verified" />
+    <i class="pi pi-check-circle" />
     <!-- <CircleCheck style="vertical-align: middle; margin-left: -1px; margin-right: 3px;" /> -->
 </template>
 

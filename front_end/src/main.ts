@@ -1,6 +1,9 @@
 import './setup.js';
 import * as ELIcons from '@element-plus/icons-vue';
+import { definePreset } from '@primeuix/themes';
+import Aura from '@primeuix/themes/aura';
 import { AxiosInstance } from 'axios';
+import PrimeVue from 'primevue/config';
 import { createApp } from 'vue';
 
 import App from './App.vue';
@@ -21,6 +24,25 @@ for (const name in ELIcons) {
     app.component(name, (ELIcons as any)[name]);
 }
 
+const myTheme = definePreset(Aura, {
+    components: {
+        datatable: {
+            bodyCell: {
+                padding: '0px 5px',
+            },
+            headerCell: {
+                padding: '0px 5px',
+            },
+        },
+    },
+});
+
+app.use(PrimeVue, {
+    theme: {
+        preset: myTheme,
+    },
+    autoImport: false,
+});
 app.use(pinia).use(router).use(i18n);
 app.mount('#app');
 

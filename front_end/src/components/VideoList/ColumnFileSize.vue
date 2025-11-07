@@ -1,14 +1,14 @@
 <template>
-    <el-table-column :label="t('common.prop.file_size')" align="right" prop="file_size" :sortable="sortable">
-        <template #default="{row}: {row: VideoAbstract}">
-            {{ row.file_size === 0 ? '-' : formatBytes(row.file_size) }}
+    <PrColumn :header="t('common.prop.file_size')" field="file_size" :sortable="sortable">
+        <template #body="{data}: {data: VideoAbstract}">
+            {{ data.file_size === 0 ? '-' : formatBytes(data.file_size) }}
         </template>
-    </el-table-column>
+    </PrColumn>
 </template>
 
 <script setup lang="ts">
 
-import { ElTableColumn } from 'element-plus';
+import PrColumn from 'primevue/column';
 import { useI18n } from 'vue-i18n';
 
 import { formatBytes } from '@/utils/strings';
