@@ -90,9 +90,31 @@ const { t } = useI18n();
 
 const tableData = [
     {
+        version: 'v3.2.1',
+        date: '2025-11-22',
+        links: [
+            {
+                label: 'OpenMS',
+                url: 'https://openms.top/download/Metaminesweeper-3.2.1.exe',
+            },
+            {
+                label: 'Gitee',
+                url: 'https://gitee.com/ee55/Metasweeper/releases/download/3.2.1/Metaminesweeper-3.2.1.exe',
+            },
+            {
+                label: 'GitHub',
+                url: 'https://github.com/eee555/Metasweeper/releases/download/3.2.1/Metaminesweeper-3.2.1.exe',
+            },
+        ],
+    },
+    {
         version: 'v3.2.0',
         date: '2024-11-21',
         links: [
+            {
+                label: 'OpenMS',
+                url: 'https://openms.top/download/Metaminesweeper-3.2.0.exe',
+            },
             {
                 label: 'Gitee',
                 url: 'https://gitee.com/ee55/Metasweeper/releases/download/3.2.0/Metaminesweeper-3.2.0.exe',
