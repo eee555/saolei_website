@@ -1,9 +1,7 @@
 <template>
-    <!-- <i class="pi pi-verified" /> -->
-    <CircleCheck style="vertical-align: middle; margin-left: -1px; margin-right: 3px;" />
+    <i class="pi pi-verified" />
 </template>
 
 <script setup lang="ts">
-// import 'primeicons/primeicons.css';
-import { CircleCheck } from '@element-plus/icons-vue';
+import 'primeicons/primeicons.css';
 </script>
