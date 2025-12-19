@@ -54,7 +54,7 @@ def new_video_by_file(user: UserProfile, file: File, check_tournament: bool = Tr
     else:
         raise ExceptionToResponse(obj='file', category='type')
 
-    v.parse_video()
+    v.parse()
     v.analyse()
     v.current_time = 1e8
 
