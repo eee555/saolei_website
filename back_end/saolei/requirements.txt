@@ -1,4 +1,4 @@
-Django==5.0.0
+Django>=5.0.0,<6.0.0
 djangorestframework>=3.15.0
 django-apscheduler==0.6.2
 django-cleanup==8.0.0
