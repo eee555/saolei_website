@@ -26,7 +26,7 @@ export function load_video_file(stream: Uint8Array, filename: string) {
     } else if (ext === 'mvf') {
         video = new MvfVideo(stream, filename);
     } else return null;
-    video.parse_video();
+    video.parse();
     video.analyse();
     return video;
 }

@@ -90,7 +90,7 @@ def refresh_video(video: VideoModel):
 
     video.file_size = video.file.size
 
-    v.parse_video()
+    v.parse()
     v.analyse()
     v.current_time = 1e8
 
