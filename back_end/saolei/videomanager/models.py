@@ -85,7 +85,7 @@ class VideoModel(models.Model):
         max_length=MaxSizes.GAMEMODE, choices=MS_TextChoices.Mode.choices, default=MS_TextChoices.Mode.STD)
     # 0.000-999.999
     timems = models.PositiveIntegerField(
-        default=DefaultRankingScores["timems"])  # 整数形式存储的毫秒数。
+        default=DefaultRankingScores.timems)  # 整数形式存储的毫秒数。
     # 0-32767
     bv = models.PositiveSmallIntegerField(null=True)
     bvs = models.GeneratedField(expression=models.Case(models.When(timems=0, then=models.Value(0.0)), default=models.F(

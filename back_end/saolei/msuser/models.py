@@ -11,23 +11,23 @@ def get_default_identifiers():
 
 
 def RTimeField():  # 以毫秒计数
-    return models.PositiveIntegerField(default=DefaultRankingScores["timems"])
+    return models.PositiveIntegerField(default=DefaultRankingScores.timems])
 
 
 def BBBVsField():
-    return models.FloatField(default=DefaultRankingScores["bvs"])
+    return models.FloatField(default=DefaultRankingScores.bvs)
 
 
 def STNBField():
-    return models.FloatField(default=DefaultRankingScores["stnb"])
+    return models.FloatField(default=DefaultRankingScores.stnb)
 
 
 def IOEField():
-    return models.FloatField(default=DefaultRankingScores["ioe"])
+    return models.FloatField(default=DefaultRankingScores.ioe)
 
 
 def PathField():
-    return models.FloatField(default=DefaultRankingScores["path"])
+    return models.FloatField(default=DefaultRankingScores.path)
 
 
 def VideoIDField():
@@ -225,7 +225,7 @@ class UserMS(models.Model):
                 for level in GameLevels:
                     self.setrecord(
                         level, stat, mode,
-                        DefaultRankingScores[stat],
+                        getattr(DefaultRankingScores, stat),
                     )
                     self.setrecordID(level, stat, mode, None)
         self.save(update_fields=record_update_fields)
