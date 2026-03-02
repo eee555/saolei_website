@@ -13,7 +13,7 @@ from msuser.models import UserMS
 from config.text_choices import MS_TextChoices
 from identifier.models import Identifier
 from tournament.utils import video_checkin
-from utils.saolei import SaoleiUtils, SaoleiUserInfo
+from utils.saolei import SaoleiUtils, SaoleiUserInfo, SaoleiVideoInfo
 
 
 class Platform(models.TextChoices):
@@ -124,10 +124,10 @@ class VideoSaolei(models.Model):
         response = requests.get(url=self.url, timeout=5)
         response.encoding = 'GB2312'
         if response.text == '''<script language="JavaScript">alert('此录象不存在!');</script><script language=JavaScript>top.location=top.location</script>''':
-            self.verified = False
+            self.state = SaoleiVideoState.NOTEXIST
             return None
         if '此录像尚未通过审核！' in response.text or '为什么冻结？' in response.text:
-            self.verified = False
+            self.state = SaoleiVideoState.FROZEN
         return 'http://saolei.wang/' + re.search(r"PlayVideo\('([^']+)'\)", response.text).group(1)
 
     def run_import(self):
