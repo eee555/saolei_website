@@ -11,7 +11,7 @@ def get_default_identifiers():
 
 
 def RTimeField():  # 以毫秒计数
-    return models.PositiveIntegerField(default=DefaultRankingScores.timems])
+    return models.PositiveIntegerField(default=DefaultRankingScores.timems)
 
 
 def BBBVsField():

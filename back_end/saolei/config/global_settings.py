@@ -30,6 +30,7 @@ class DefaultChances:
     AVATAR = 2  # 头像
     SIGNATURE = 2  # 签名
 
+
 class DefaultRankingScores:
     timems = 999999
     bvs = 0.0
@@ -37,7 +38,9 @@ class DefaultRankingScores:
     ioe = 0.0
     path = 100000.0
 
+
 # 级别
+MINESWEEPER_LEVELS = ["", "", "", "b", "i", "e", "c"]
 GameLevels = ["b", "i", "e"]
 GameModes = ["std", "nf", "ng", "dg"]
 RankingGameStats = ["timems", "bvs", "stnb", "ioe", "path"]

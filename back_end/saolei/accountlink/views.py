@@ -4,12 +4,14 @@ from django.views.decorators.http import require_GET, require_POST
 from django_ratelimit.decorators import ratelimit
 import requests
 
+from config.text_choices import Saolei_TextChoices
 from userprofile.decorators import login_required_error, staff_required
 from userprofile.models import UserProfile
 from utils.response import HttpResponseConflict
 from utils.exceptions import ExceptionToResponse
-from .models import AccountLinkQueue, Platform, PLATFORM_CONFIG, VideoSaolei, AccountSaolei, SaoleiVideoImportState
-from .utils import delete_account, link_account, update_account
+from .models import AccountLinkQueue, Platform, PLATFORM_CONFIG, VideoSaolei, AccountSaolei
+from .services import update_account
+from .utils import delete_account, link_account
 
 private_platforms = ["q"]  # 私人账号平台
 
@@ -19,12 +21,11 @@ private_platforms = ["q"]  # 私人账号平台
 @login_required_error
 @ratelimit(key='user', rate='10/d')
 def add_link(request: HttpRequest):
-    user = UserProfile.objects.filter(id=request.user.id).first()
     if not (platform := request.POST.get('platform')):
         return HttpResponseBadRequest()
-    if AccountLinkQueue.objects.filter(platform=platform, userprofile=user).first():
+    if AccountLinkQueue.objects.filter(platform=platform, userprofile=request.user).first():
         return HttpResponseConflict()  # 每个平台只能绑一个账号
-    AccountLinkQueue.objects.create(platform=platform, identifier=request.POST.get('identifier'), userprofile=user)
+    AccountLinkQueue.objects.create(platform=platform, identifier=request.POST.get('identifier'), userprofile=request.user)
     return HttpResponse()
 
 
@@ -32,12 +33,11 @@ def add_link(request: HttpRequest):
 @require_POST
 @login_required_error
 def delete_link(request):
-    user = UserProfile.objects.filter(id=request.user.id).first()
     if not (platform := request.POST.get('platform')):
         return HttpResponseBadRequest()
-    if accountlink := AccountLinkQueue.objects.filter(platform=platform, userprofile=user).first():
+    if accountlink := AccountLinkQueue.objects.filter(platform=platform, userprofile=request.user).first():
         if accountlink.verified:
-            delete_account(user, platform)
+            delete_account(request.user, platform)
         accountlink.delete()
         return HttpResponse()
     return HttpResponseNotFound()
@@ -159,7 +159,7 @@ def import_saolei_videolist(request: HttpRequest):
         return HttpResponseBadRequest()
 
     if page == 0:
-        video_list = list(account.videos.exclude(import_state=SaoleiVideoImportState.IMPORTED).values('id', 'upload_time', 'level', 'bv', 'timems', 'nf', 'import_state', 'import_video'))
+        video_list = list(account.videos.exclude(import_state=Saolei_TextChoices.SaoleiVideoImportState.IMPORTED).values('id', 'upload_time', 'level', 'bv', 'timems', 'nf', 'import_state', 'import_video'))
     else:
         try:
             video_list = [v.dict() for v in account.import_video_list(page)]
@@ -190,12 +190,12 @@ def import_saolei_video(request: HttpRequest):
         return HttpResponseNotFound()
     if not request.user.is_staff and video.user.parent != request.user:
         return HttpResponseForbidden()
-    
+
     try:
         video.run_import()
     except ExceptionToResponse as e:
         return e.response()
-    
+
     return JsonResponse({'type': 'success', 'data': {
         'id': video.id,
         'upload_time': video.upload_time,

@@ -92,6 +92,9 @@ class UserProfile(AbstractUser):
             models.Index(fields=['vip'], name='vip_idx'),
         ]
 
+    def has_realname(self) -> bool:
+        return self.realname != '匿名'
+
     # 检查用户是否可以加入排行，并更新排行榜
     def check_ms_ranking(self, statname: str, mode: str):
         for level in GameLevels:

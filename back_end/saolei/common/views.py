@@ -15,6 +15,8 @@ from .utils import new_video_by_file
 def video_upload(request: HttpRequest):
     if request.user.userms.video_num_total >= request.user.userms.video_num_limit:
         return HttpResponse(status=402)  # 录像仓库已满
+    if not request.user.has_realname():
+        return JsonResponse({'type': 'error', 'obj': 'userprofile', 'category': 'realname_required'})
     video_form = UploadVideoForm(data=request.POST, files=request.FILES)
     if not video_form.is_valid():
         return HttpResponseBadRequest(video_form.errors)

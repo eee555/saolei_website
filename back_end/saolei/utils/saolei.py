@@ -1,9 +1,7 @@
 from datetime import datetime, timedelta, timezone
-from lxml import etree
 import requests
 from bs4 import BeautifulSoup, element
 import re
-from .exceptions import ExceptionToResponse
 
 
 SAOLEI_LEVEL = {
@@ -17,6 +15,7 @@ SAOLEI_TEXT2LEVEL = {
     '高级': 'e',
 }
 
+
 class SaoleiVideoInfo:
     id: int
     level: str
@@ -24,7 +23,7 @@ class SaoleiVideoInfo:
     timems: int
     nf: bool
     upload_time: datetime
-    verified: bool
+    state: str
 
     def __init__(self, id: int, level: int, bv: int, timems: int, nf: bool, upload_time: datetime, verified: bool):
         self.id = id
@@ -70,44 +69,44 @@ class SaoleiUserInfo:
     @property
     def profile_url(self):
         return f'http://saolei.wang/Player/Index.asp?Id={self.user_id}'
-    
+
     @property
     def info_url(self):
         return f'http://saolei.wang/Player/Info.asp?Id={self.user_id}'
-    
+
     @property
     def stat_url(self):
         return f'http://saolei.wang/Player/Satus.asp?Id={self.user_id}'
-    
+
     @property
     def bio_url(self):
         return f'http://saolei.wang/Player/More.asp?Id={self.user_id}'
-    
+
     @property
     def video_count_url(self):
         return f'http://saolei.wang/Video/Satus.asp?Id={self.user_id}'
-    
+
     @property
     def diary_url(self):
         return f'http://saolei.wang/Player/History_List.asp?Id={self.user_id}'
-    
+
     @property
     def new_post_url(self):
         return f'http://saolei.wang/BBS/My_New.asp?Id={self.user_id}'
-    
+
     @property
     def star_post_url(self):
         return f'http://saolei.wang/BBS/My_Nice.asp?Id={self.user_id}'
-    
+
     @property
     def avatar_url(self):
         return f'http://saolei.wang/Models/Images/Player/{self.user_id}.jpg'
-    
+
     def news_url(self, level: str = '', page: int = 1):
         if level == '':
             return f'http://saolei.wang/News/My.asp?Id={self.user_id}&Page={page}'
         return f'http://saolei.wang/News/My_{level}.asp?Id={self.user_id}&Page={page}'
-    
+
     def videos_url(self, level: str = '', order: str = 'Time', page: int = 1):
         # order in ['Time', 'Score', '3BV', '3BVS', 'Comment']
         if level == '':
@@ -126,7 +125,7 @@ class SaoleiUtils:
 
         span_tags = cols[4].find_all('span')
         level = SAOLEI_TEXT2LEVEL[span_tags[0].get_text(strip=True)]
-        nf =  len(span_tags) > 1 and span_tags[1].get_text(strip=True) == 'NF'
+        nf = len(span_tags) > 1 and span_tags[1].get_text(strip=True) == 'NF'
 
         a_tag = cols[4].find('a')
         timems = int(a_tag.get_text(strip=True).replace('.', '')) * 10
@@ -143,7 +142,6 @@ class SaoleiUtils:
             upload_time=upload_time,
             verified=verified
         )
-
 
     @staticmethod
     def get_video_list(url: str):

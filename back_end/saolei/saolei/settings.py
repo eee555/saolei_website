@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     'django_apscheduler',
+    'django_tasks_db',
     'corsheaders',
     'rest_framework',
     'userprofile',
@@ -143,6 +144,13 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
+
+TASKS = {
+    'default': {
+        'BACKEND': 'django_tasks_db.DatabaseBackend',
+        'QUEUES': ['default'],
+    },
+}
 
 
 # Internationalization
