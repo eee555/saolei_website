@@ -52,10 +52,10 @@
                                 <base-icon-refresh />
                             </el-link>
                         </template>
-                        <VideoList :videos="newest_queue" :columns="['state', 'upload_time', 'player', 'software', 'mode', 'level', 'time', 'bv', 'bvs', 'ioe', 'thrp']" sortable />
+                        <VideoList :videos="newest_queue" :columns="['state', 'upload_time', 'player', 'software', 'mode', 'level', 'time', 'bv', 'bvs', 'ioe', 'thrp']" sortable paginator />
                     </el-tab-pane>
                     <el-tab-pane :label="t('home.reviewQueue')" class="bottom_tabs" :lazy="true" name="review">
-                        <VideoList v-loading="review_queue_updating" :videos="review_queue" :columns="['state', 'upload_time', 'player', 'software', 'mode', 'level', 'time', 'bv', 'bvs', 'ioe', 'thrp']" />
+                        <VideoList v-loading="review_queue_updating" :videos="review_queue" :columns="['state', 'upload_time', 'player', 'software', 'mode', 'level', 'time', 'bv', 'bvs', 'ioe', 'thrp']" paginator />
                     </el-tab-pane>
                 </el-tabs>
             </el-main>
@@ -154,9 +154,7 @@ const update_news_queue = async () => {
 
 <style lang='less'>
 .bottom_tabs {
-    height: 500px;
     overflow: auto;
-
 }
 
 .aside-tip-title {

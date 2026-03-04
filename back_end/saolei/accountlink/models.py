@@ -2,6 +2,8 @@
 from django.db import models
 
 from userprofile.models import UserProfile
+from videomanager.models import VideoModel
+from config.text_choices import MS_TextChoices, Saolei_TextChoices
 
 
 class Platform(models.TextChoices):
@@ -62,6 +64,23 @@ class AccountSaolei(models.Model):
     i_b_cent = models.PositiveSmallIntegerField(null=True)
     e_b_cent = models.PositiveSmallIntegerField(null=True)
     s_b_cent = models.PositiveSmallIntegerField(null=True)
+
+
+class VideoSaolei(models.Model):
+    id = models.PositiveIntegerField(primary_key=True)
+    user = models.ForeignKey(AccountSaolei, on_delete=models.DO_NOTHING, related_name='videos')
+    upload_time = models.DateTimeField()
+    level = models.CharField(max_length=1, choices=MS_TextChoices.Level.choices)
+    bv = models.PositiveSmallIntegerField(default=0)
+    timems = models.PositiveIntegerField(default=0)
+    nf = models.BooleanField(default=False)
+    state = models.CharField(max_length=1, choices=Saolei_TextChoices.SaoleiVideoState.choices)
+    import_state = models.CharField(max_length=1, choices=Saolei_TextChoices.SaoleiVideoImportState.choices, default=Saolei_TextChoices.SaoleiVideoImportState.NOTPLANNED)
+    import_video = models.OneToOneField(VideoModel, on_delete=models.SET_NULL, null=True)
+
+    @property
+    def url(self):
+        return f'http://saolei.wang/Video/Show.asp?Id={self.id}'
 
 
 class AccountMinesweeperGames(models.Model):

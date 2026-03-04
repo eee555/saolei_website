@@ -1,20 +1,37 @@
 <template>
-    <el-table :data="videos" size="small" table-layout="auto" @row-click="(row: any) => preview(row.id)">
+    <DataTable
+        v-model:filters="filters" :value="videos" filter-display="menu" row-hover
+        style="min-width: 50em" size="small"
+        :filter-button-props="{
+            filter: {
+                severity: 'secondary',
+                text: true,
+                rounded: false,
+                size: 'small',
+                style: { borderRadius: '0', padding: '0', width: '1rem' }
+            }
+        }"
+        sort-field="upload_time" :sort-order="-1"
+        :paginator="paginator" :rows="paginatorRows"
+        :rows-per-page-options="[5, 10, 25, 50, 100]"
+        @row-click="(event: any) => preview(event.data.id)"
+    >
         <component
             :is="componentConfig(column).component" v-for="column in columns" :key="column"
             :sortable="componentConfig(column).sortable ? sortable : undefined"
             :stat="componentConfig(column).isStat ? column : undefined"
         />
-    </el-table>
+    </DataTable>
 </template>
 
 <script setup lang="ts">
 
-import { ElTable } from 'element-plus';
-import { defineAsyncComponent } from 'vue';
+import { FilterMatchMode } from '@primevue/core/api';
+import { DataTable } from 'primevue';
+import { defineAsyncComponent, ref } from 'vue';
 
 import { preview } from '@/utils/common/PlayerDialog';
-import { ColumnChoice } from '@/utils/ms_const';
+import { ColumnChoice, MS_Mode, MS_State } from '@/utils/ms_const';
 import { VideoAbstract } from '@/utils/videoabstract';
 
 const ColumnEndTime = defineAsyncComponent(() => import('./ColumnEndTime.vue'));
@@ -35,6 +52,14 @@ defineProps({
     columns: {
         type: Array<ColumnChoice>,
         default: () => [],
+    },
+    paginator: {
+        type: Boolean,
+        default: false,
+    },
+    paginatorRows: {
+        type: Number,
+        default: 25,
     },
     sortable: {
         type: Boolean,
@@ -91,5 +116,11 @@ function componentConfig(choice: ColumnChoice) {
         };
     }
 }
+
+const filters = ref({
+    'state': { value: Object.values(MS_State), matchMode: FilterMatchMode.IN },
+    'level': { value: null, matchMode: FilterMatchMode.EQUALS },
+    'mode': { value: Object.values(MS_Mode), matchMode: FilterMatchMode.IN },
+});
 
 </script>

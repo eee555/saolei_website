@@ -1,30 +1,30 @@
 <template>
-    <el-table-column width="32">
-        <template #default="{row}: {row: VideoAbstract}">
+    <PrColumn>
+        <template #body="{data}: {data: VideoAbstract}">
             <base-overlay>
-                <SoftwareIcon :software="row.software" style="margin: 0 -8px;" />
+                <SoftwareIcon :software="data.software" style="margin: 0 -8px;" />
                 <template #header>
-                    <template v-if="row.software === 'e'">
+                    <template v-if="data.software === 'e'">
                         <img style="width: 24px; height: 24px; vertical-align: middle;" src="@/assets/img/img_meta.png">
                         {{ t('software.metasweeper') }}
                     </template>
-                    <template v-else-if="row.software === 'a'">
+                    <template v-else-if="data.software === 'a'">
                         <img style="width: 24px; height: 24px; vertical-align: middle;" src="@/assets/img/ms_arbiter_MAINICON.ico">
                         {{ t('software.arbiter') }}
                     </template>
                 </template>
                 <template #overlay>
-                    <MetasweeperHelper v-if="row.software == 'e'" style="justify-self: center;" />
-                    <ArbiterHelper v-else-if="row.software == 'a'" style="justify-self: center;" />
+                    <MetasweeperHelper v-if="data.software == 'e'" style="justify-self: center;" />
+                    <ArbiterHelper v-else-if="data.software == 'a'" style="justify-self: center;" />
                 </template>
             </base-overlay>
         </template>
-    </el-table-column>
+    </PrColumn>
 </template>
 
 <script setup lang="ts">
 
-import { ElTableColumn } from 'element-plus';
+import PrColumn from 'primevue/column';
 import { defineAsyncComponent } from 'vue';
 import { useI18n } from 'vue-i18n';
 

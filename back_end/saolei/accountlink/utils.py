@@ -5,8 +5,9 @@ from django.utils import timezone
 from lxml import etree
 import requests
 
+from config.text_choices import Saolei_TextChoices
 from userprofile.models import UserProfile
-from .models import AccountMinesweeperGames, AccountSaolei, AccountWorldOfMinesweeper, Platform, PLATFORM_CONFIG
+from .models import AccountMinesweeperGames, AccountWorldOfMinesweeper, Platform, PLATFORM_CONFIG
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 Edg/132.0.0.0'}
@@ -33,21 +34,7 @@ def delete_account(user: UserProfile, platform: Platform):
         ValueError()
 
 
-def update_account(platform: Platform, user: UserProfile, cooldown=12):
-    if platform == Platform.SAOLEI:
-        return update_saolei_account(user.account_saolei, cooldown)
-    elif platform == Platform.MSGAMES:
-        return update_msgames_account(user.account_msgames, cooldown)
-    elif platform == Platform.WOM:
-        return update_wom_account(user.account_wom, cooldown)
-    else:
-        return 'unsupported'
-
-
-def update_saolei_account(account: AccountSaolei, cooldown):
-    if timezone.now() - account.update_time < timedelta(hours=cooldown):
-        return "cooldown"
-
+def fetch_saolei_profile(saolei_id: int):
     def timeparser(t):
         return round(float(t) * 1000)
 
@@ -55,68 +42,96 @@ def update_saolei_account(account: AccountSaolei, cooldown):
         return round(float(b) * 100)
     InfoHtmlStr = None
     VideoHtmlStr = None
-    saoleiid = account.id
-    try:
-        url = f'http://saolei.wang/Player/Info.asp?Id={saoleiid}'
-        response = requests.get(url=url, timeout=5)
-        response.encoding = 'GB2312'
-        InfoHtmlStr = response.text
 
-        url = f'http://saolei.wang/Video/Satus.asp?Id={saoleiid}'
-        response = requests.get(url=url, timeout=5)
-        response.encoding = 'GB2312'
-        VideoHtmlStr = response.text
-    except requests.exceptions.Timeout:
-        return "timeout"  # 请求超时
-    except IndexError:
-        return "indexerror"  # 解析html时超出索引
-    except requests.exceptions.RequestException:
-        return "unknown"
+    url = f'http://saolei.wang/Player/Info.asp?Id={saolei_id}'
+    response = requests.get(url=url, timeout=5)
+    response.encoding = 'GB2312'
+    InfoHtmlStr = response.text
+
+    url = f'http://saolei.wang/Video/Satus.asp?Id={saolei_id}'
+    response = requests.get(url=url, timeout=5)
+    response.encoding = 'GB2312'
+    VideoHtmlStr = response.text
+
     if not InfoHtmlStr or not VideoHtmlStr:
-        return "empty"  # 没有爬取到信息
+        raise ValueError("Failed to fetch profile or video page")  # 没有爬取到信息
+
     tree = etree.HTML(InfoHtmlStr)
     values = tree.xpath('//span[@class="Sign"]/text()')
-    account.name = values[0] if values else None
+    name = values[0] if values else None
 
     values = tree.xpath('//td[@class="Text"]/span[@class="Highest"]/text()')
-    account.total_views = int(values[0]) if values else None
+    total_views = int(values[0]) if values else None
 
     values = tree.xpath('//tr/td[2]/a[1]/text()')
-    account.b_t_ms = timeparser(values[0]) - 1000 if values else None
+    b_t_ms = timeparser(values[0]) - 1000 if values else None
 
     values = tree.xpath('//tr/td[2]/a[3]/text()')
-    account.i_t_ms = timeparser(values[0]) - 1000 if values else None
+    i_t_ms = timeparser(values[0]) - 1000 if values else None
 
     values = tree.xpath('//tr/td[2]/a[5]/text()')
-    account.e_t_ms = timeparser(values[0]) - 1000 if values else None
+    e_t_ms = timeparser(values[0]) - 1000 if values else None
 
     values = tree.xpath('//tr/td[2]/span[8]/text()')
-    account.s_t_ms = timeparser(values[0]) - 3000 if values else None
+    s_t_ms = timeparser(values[0]) - 3000 if values else None
+
+    timems = {
+        'b': b_t_ms,
+        'i': i_t_ms,
+        'e': e_t_ms,
+        's': s_t_ms
+    }
 
     values = tree.xpath('//tr/td[2]/a[2]/text()')
-    account.b_b_cent = bvsparser(values[0]) if values else None
+    b_b_cent = bvsparser(values[0]) if values else None
 
     values = tree.xpath('//tr/td[2]/a[4]/text()')
-    account.i_b_cent = bvsparser(values[0]) if values else None
+    i_b_cent = bvsparser(values[0]) if values else None
 
     values = tree.xpath('//tr/td[2]/a[6]/text()')
-    account.e_b_cent = bvsparser(values[0]) if values else None
+    e_b_cent = bvsparser(values[0]) if values else None
 
     values = tree.xpath('//tr/td[2]/span[9]/text()')
-    account.s_b_cent = bvsparser(values[0]) if values else None
+    s_b_cent = bvsparser(values[0]) if values else None
+
+    bvs_cent = {
+        'b': b_b_cent,
+        'i': i_b_cent,
+        'e': e_b_cent,
+        's': s_b_cent
+    }
 
     tree = etree.HTML(VideoHtmlStr)
     values = tree.xpath('(//td[@class="Counters"])[1]/text()')
-    account.beg_count = int(values[0]) if values else None
+    beg_count = int(values[0]) if values else None
 
     values = tree.xpath('(//td[@class="Counters"])[2]/text()')
-    account.int_count = int(values[0]) if values else None
+    int_count = int(values[0]) if values else None
 
     values = tree.xpath('(//td[@class="Counters"])[3]/text()')
-    account.exp_count = int(values[0]) if values else None
+    exp_count = int(values[0]) if values else None
 
-    account.save()
-    return ""
+    count = {
+        'b': beg_count,
+        'i': int_count,
+        'e': exp_count
+    }
+
+    return {"name": name, "total_views": total_views, "timems": timems, "bvs_cent": bvs_cent, "count": count}
+
+
+def fetch_saolei_video_download_and_state(video_id: int) -> tuple[str, ]:
+    response = requests.get(url=f'http://saolei.wang/Video/Show.asp?Id={video_id}', timeout=5)
+    response.encoding = 'GB2312'
+    if response.text == '''<script language="JavaScript">alert('此录象不存在!');</script><script language=JavaScript>top.location=top.location</script>''':
+        return "", Saolei_TextChoices.SaoleiVideoState.NOTEXIST
+    if '此录像尚未通过审核！' in response.text:
+        state = Saolei_TextChoices.SaoleiVideoState.PENDING
+    elif '为什么冻结？' in response.text:
+        state = Saolei_TextChoices.SaoleiVideoState.FROZEN
+    else:
+        state = Saolei_TextChoices.SaoleiVideoState.OFFICIAL
+    return 'http://saolei.wang/' + re.search(r"PlayVideo\('([^']+)'\)", response.text).group(1), state
 
 
 def update_msgames_account(account: AccountMinesweeperGames, cooldown):

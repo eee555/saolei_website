@@ -37,12 +37,12 @@ import AccountLinkManager from '@/components/AccountLinkManager.vue';
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
 import BaseOverlay from '@/components/common/BaseOverlay.vue';
 import { BaseIconInfo } from '@/components/common/icon';
-import ActivityCalendarAbstract from '@/components/visualization/ActivityCalendarAbstract/App.vue';
-import BBBvSummary from '@/components/visualization/BBBvSummary/App.vue';
-import BBBvSummaryHeader from '@/components/visualization/BBBvSummary/Header.vue';
 import IdentifierManager from '@/components/widgets/IdentifierManager.vue';
 import { activityCalendarConfig, BBBvSummaryConfig, local, store } from '@/store';
 
 const { t } = useI18n();
 const IdentifierHelper = defineAsyncComponent(() => import('@/components/dialogs/IdentifierHelper.vue'));
+const ActivityCalendarAbstract = defineAsyncComponent(() => import('@/components/visualization/ActivityCalendarAbstract/App.vue'));
+const BBBvSummary = defineAsyncComponent(() => import('@/components/visualization/BBBvSummary/App.vue'));
+const BBBvSummaryHeader = defineAsyncComponent(() => import('@/components/visualization/BBBvSummary/Header.vue'));
 </script>

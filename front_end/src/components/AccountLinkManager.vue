@@ -51,6 +51,21 @@
                 >
                     <base-icon-refresh />
                 </el-link>
+                &nbsp;
+                <base-overlay v-if="scope.row.platform === 'c' && scope.row.verified" :underline="false">
+                    <base-tooltip>
+                        <base-icon-tool />
+                        <template #content>
+                            扫雷网录像导入工具
+                        </template>
+                    </base-tooltip>
+                    <template #header>
+                        扫雷网录像导入工具
+                    </template>
+                    <template #overlay>
+                        <SaoleiTools :saolei-id="+scope.row.identifier" />
+                    </template>
+                </base-overlay>
             </template>
         </el-table-column>
     </el-table>
@@ -96,15 +111,18 @@ import BaseIconVerified from './common/BaseIconVerified.vue';
 import { httpErrorNotification } from './Notifications';
 import PlatformIcon from './widgets/PlatformIcon.vue';
 
-import { BaseIconAdd, BaseIconDelete, BaseIconPending, BaseIconRefresh } from '@/components/common/icon';
+import { BaseIconAdd, BaseIconDelete, BaseIconPending, BaseIconRefresh, BaseIconTool } from '@/components/common/icon';
 import { local, store } from '@/store';
 import { Platform, platformlist } from '@/utils/common/accountLinkPlatforms';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import BaseTooltip from '@/components/common/BaseTooltip.vue';
+import BaseOverlay from '@/components/common/BaseOverlay.vue';
 
 const AccountLinkGuide = defineAsyncComponent(() => import('./dialogs/AccountLinkGuide.vue'));
 const AccountSaolei = defineAsyncComponent(() => import('./accountlinks/AccountSaolei.vue'));
 const AccountMsgames = defineAsyncComponent(() => import('./accountlinks/AccountMsgames.vue'));
 const AccountWoM = defineAsyncComponent(() => import('./accountlinks/AccountWoM.vue'));
+const SaoleiTools = defineAsyncComponent(() => import('@/components/saolei/App.vue'));
 const { t } = useI18n();
 
 interface AccountLink {

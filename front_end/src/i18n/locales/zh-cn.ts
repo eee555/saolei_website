@@ -13,6 +13,7 @@ export default {
             videoQuery: '查询录像',
         },
         button: {
+            back: '返回',
             cancel: '取消',
             confirm: '确认',
             register: '注册',
@@ -47,6 +48,8 @@ export default {
             connectionFail: '无法连接到服务器！',
             contactDeveloper: '请联系开发者',
             fileTooLarge: '文件大小不能超过{0}',
+            importFail: '导入失败！',
+            importFailResponse: '无法识别的响应',
             logoutFail: '退出失败！',
             logoutSuccess: '退出成功！',
             realNameRequired: '请修改为实名',
@@ -181,6 +184,30 @@ export default {
             fastTooltip: '点击播放录像',
             advanced: '高级模式',
             advancedTooltip: '点击显示录像列表，悬浮窗中播放录像',
+        },
+    },
+    errorMsg: {
+        file: {
+            title: '文件解析失败！',
+            collision: '文件已存在',
+            level: '不支持的级别',
+            review: '未知审核状态，请联系开发者',
+            type: '不支持的文件类型',
+        },
+        identifier: {
+            title: '标识无效！',
+            verify: '未通过审查',
+        },
+        import: {
+            title: '导入失败！',
+            connection: '无法连接到目标服务器',
+            importing: '正在导入中，请稍后重试',
+            readtimeout: '目标服务器响应超时',
+            response: '无法识别的响应',
+        },
+        rust: {
+            title: '录像解析器崩溃！',
+            panic: '录像解析器发生未知错误，请联系开发者',
         },
     },
     experimentalFeature: {

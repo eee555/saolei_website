@@ -27,7 +27,7 @@ export function simple_formatter(f: Function) {
 }
 export async function approve(proxy: ComponentCustomProperties & Record<string, any>, id: number) {
     let status;
-    await proxy.$axios.get('video/approve?ids=[' + id + ']').then(function (response) {
+    await proxy.$axios.get('video/approve?ids=[' + id + ']').then(function (response: any) {
         const data = response.data;
         if (data.length != 1) {
             console.log(data);
@@ -40,7 +40,7 @@ export async function approve(proxy: ComponentCustomProperties & Record<string, 
 
 export async function freeze(proxy: ComponentCustomProperties & Record<string, any>, id: number) {
     let status;
-    await proxy.$axios.get('video/freeze?ids=[' + id + ']').then(function (response) {
+    await proxy.$axios.get('video/freeze?ids=[' + id + ']').then(function (response: any) {
         const data = response.data;
         if (data.length != 1) {
             console.log(data);
@@ -80,4 +80,8 @@ export function deepCopy<T>(obj: T): T {
 
 export function defaultFilterMethod(value: any, row: any, column: any) {
     return row[column.property] === value;
+}
+
+export function sleep(ms: number) {
+    return new Promise((resolve) => setTimeout(() => resolve(ms), ms));
 }

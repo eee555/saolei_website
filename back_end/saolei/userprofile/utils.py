@@ -28,7 +28,7 @@ def judge_captcha(captchaStr: str, captchaHashkey):
 
 
 # 发送邮件，根据send_type不同发送不同的邮件内容
-def send_email(email, send_type='register'):
+def send_email(email: str, send_type='register'):
     email_record = EmailVerifyRecord()
     if settings.E2E_TEST:
         code = 'abcdef'
