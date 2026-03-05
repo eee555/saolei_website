@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db import models
+from django_tasks_db.models import DBTaskResult
 
 from userprofile.models import UserProfile
 from videomanager.models import VideoModel
@@ -46,6 +47,8 @@ class AccountSaolei(models.Model):
     parent = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='account_saolei')
     update_time = models.DateTimeField(auto_now=True)
 
+    video_import_task = models.ForeignKey(DBTaskResult, on_delete=models.SET_NULL, null=True)
+
     name = models.CharField(max_length=10, default="")  # 姓名，10应该够了吧
     total_views = models.PositiveIntegerField(null=True)  # 综合人气
 
@@ -75,8 +78,8 @@ class VideoSaolei(models.Model):
     timems = models.PositiveIntegerField(default=0)
     nf = models.BooleanField(default=False)
     state = models.CharField(max_length=1, choices=Saolei_TextChoices.SaoleiVideoState.choices)
-    import_state = models.CharField(max_length=1, choices=Saolei_TextChoices.SaoleiVideoImportState.choices, default=Saolei_TextChoices.SaoleiVideoImportState.NOTPLANNED)
     import_video = models.OneToOneField(VideoModel, on_delete=models.SET_NULL, null=True)
+    import_task = models.ForeignKey(DBTaskResult, on_delete=models.SET_NULL, null=True)
 
     @property
     def url(self):

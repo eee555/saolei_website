@@ -1,4 +1,4 @@
-
+import logging
 import requests
 
 from django.core.files.base import ContentFile
@@ -10,11 +10,13 @@ from tournament.utils import video_checkin
 from userprofile.models import UserProfile
 from utils.exceptions import ExceptionToResponse
 from utils.parser import MSVideoParser
-from utils.saolei import SaoleiUserInfo, SaoleiVideoInfo, SaoleiUtils
+from utils.saolei import SaoleiUserInfo, SaoleiUtils
 from videomanager.models import VideoModel
 
 from .models import AccountSaolei, VideoSaolei, Platform
 from .utils import fetch_saolei_profile, fetch_saolei_video_download_and_state, update_msgames_account, update_wom_account
+
+logger = logging.getLogger('accountlink')
 
 
 def update_account(platform: Platform, user: UserProfile, cooldown=12):
@@ -32,12 +34,14 @@ def update_saolei_account_info(account: AccountSaolei):
     try:
         profile = fetch_saolei_profile(account.id)
     except requests.exceptions.Timeout:  # 请求超时
+        logger.error(f"雷网 用户#{account.id} 信息获取失败：请求超时")
         raise ExceptionToResponse(obj='saolei_profile', category='timeout')
     except IndexError:  # 解析html时超出索引
+        logger.error(f"雷网 用户#{account.id} 信息获取失败：解析错误")
         raise ExceptionToResponse(obj='saolei_profile', category='index_error')
     except requests.exceptions.RequestException:  # 其他请求异常
         raise ExceptionToResponse(obj='saolei_profile', category='request_exception')
-    except Exception as e:  # 其他异常
+    except BaseException as e:  # 其他异常
         raise e
 
     account.name = profile.name
@@ -62,59 +66,17 @@ def update_saolei_account_info(account: AccountSaolei):
 
 # 扫描一页扫雷网用户录像，返回新录像列表
 def update_saolei_user_video_one_page(account: AccountSaolei, page: int):
-    if not account.parent.has_realname():
-        raise ExceptionToResponse(obj='saolei', category='realname_required')
     saolei_user = SaoleiUserInfo(saolei_id=account.id)
     video_list = SaoleiUtils.get_video_list(saolei_user.videos_url(page=page))
     if not video_list:
         raise ExceptionToResponse(obj='saolei', category='page_empty')
     existing_video_ids = list(VideoSaolei.objects.filter(id__in=[info.id for info in video_list]).values_list('id', flat=True))
 
-    new_video_list: list[SaoleiVideoInfo] = []
+    new_video_list: list[VideoSaolei] = []
     for video_info in video_list:
         if video_info.id not in existing_video_ids:
-            _ = VideoSaolei.objects.create(id=video_info.id, user=account, upload_time=video_info.upload_time, level=video_info.level, bv=video_info.bv, timems=video_info.timems, nf=video_info.nf)
-            new_video_list.append(video_info)
-
-    return new_video_list
-
-
-# 扫描一个扫雷网用户的所有录像
-def update_saolei_user_video_all(account: AccountSaolei):
-    page = 1
-    all_video_list: list[SaoleiVideoInfo] = []
-
-    while True:
-        try:
-            new_video_list = update_saolei_user_video_one_page(account, page)
-        except ExceptionToResponse as e:
-            if e.obj == 'saolei' and e.category == 'page_empty':
-                break
-            else:
-                raise e
-        all_video_list.extend(new_video_list)
-        page += 1
-
-    return all_video_list
-
-
-# 从前往后按页扫描一个扫雷网用户的录像，扫描到一页没有新录像即停止
-def update_saolei_user_video_new(account: AccountSaolei):
-    page = 1
-    new_video_list: list[SaoleiVideoInfo] = []
-
-    while True:
-        try:
-            new_video_list_page = update_saolei_user_video_one_page(account, page)
-        except ExceptionToResponse as e:
-            if e.obj == 'saolei' and e.category == 'page_empty':
-                break
-            else:
-                raise e
-        if not new_video_list_page:
-            break
-        new_video_list.extend(new_video_list_page)
-        page += 1
+            new_video = VideoSaolei.objects.create(id=video_info.id, user=account, upload_time=video_info.upload_time, level=video_info.level, bv=video_info.bv, timems=video_info.timems, nf=video_info.nf)
+            new_video_list.append(new_video)
 
     return new_video_list
 

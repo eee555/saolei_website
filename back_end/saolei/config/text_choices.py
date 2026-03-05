@@ -44,6 +44,7 @@ class Saolei_TextChoices:
 
     class SaoleiVideoImportState(TextChoices):
         NOTPLANNED = 'n', ('未计划')
+        READY = 'r', ('准备就绪')
         QUEUEING = 'q', ('排队中')
         IMPORTING = 'i', ('导入中')
         IMPORTED = 'd', ('已导入')
