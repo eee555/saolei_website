@@ -11,6 +11,7 @@ import BaseIconPrev from './icons/BaseIconPrev.vue';
 import BaseIconQuestion from './icons/BaseIconQuestion.vue';
 import BaseIconRefresh from './icons/BaseIconRefresh.vue';
 import BaseIconSetting from './icons/BaseIconSetting.vue';
+import BaseIconSync from './icons/BaseIconSync.vue';
 import BaseIconTick from './icons/BaseIconTick.vue';
 import BaseIconUpload from './icons/BaseIconUpload.vue';
 import BaseIconZoomIn from './icons/BaseIconZoomIn.vue';
@@ -30,6 +31,7 @@ export {
     BaseIconQuestion,
     BaseIconRefresh,
     BaseIconSetting,
+    BaseIconSync,
     BaseIconTick,
     BaseIconUpload,
     BaseIconZoomIn,
