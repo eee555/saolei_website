@@ -1,3 +1,5 @@
+import logging
+
 from django.tasks import task
 
 from utils.exceptions import ExceptionToResponse
@@ -5,19 +7,24 @@ from utils.exceptions import ExceptionToResponse
 from .models import AccountSaolei, VideoSaolei
 from .services import saolei_video_import_one, update_saolei_account_info, update_saolei_user_video_one_page
 
+logger = logging.getLogger('accountlink')
 
-@task
-def task_saolei_video_import(video: VideoSaolei):
+
+@task(priority=-1)
+def task_saolei_video_import(video_id: int):
+    video = VideoSaolei.objects.get(id=video_id)
     saolei_video_import_one(video)
 
 
 @task
-def task_saolei_profile(saolei_account: AccountSaolei):
+def task_saolei_profile(saolei_id: int):
+    saolei_account = AccountSaolei.objects.get(id=saolei_id)
     update_saolei_account_info(saolei_account)
 
 
 @task
-def task_update_saolei_video_list(saolei_account: AccountSaolei, mode: str):
+def task_update_saolei_video_list(saolei_id: int, mode: str):
+    saolei_account = AccountSaolei.objects.get(id=saolei_id)
     page = 1
     while True:
         try:
@@ -32,7 +39,9 @@ def task_update_saolei_video_list(saolei_account: AccountSaolei, mode: str):
             break
 
         for video in new_video_list_page:
-            video.import_task = task_saolei_video_import.enqueue(video)
-            video.save()
+            import_task = video.import_task
+            if not import_task:
+                video.import_task = task_saolei_video_import.enqueue(video.id).db_result
+                video.save()
 
         page += 1

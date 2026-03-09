@@ -4,4 +4,5 @@ from . import views
 app_name = 'common'
 urlpatterns = [
     path('uploadvideo/', views.video_upload, name='upload'),
+    path('tasksummary/', views.view_task_summary, name='task_summary'),
 ]

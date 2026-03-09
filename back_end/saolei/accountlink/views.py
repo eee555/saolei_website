@@ -1,16 +1,21 @@
+import logging
+
 from django.forms.models import model_to_dict
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 from django_ratelimit.decorators import ratelimit
+from django_tasks import TaskResultStatus
 
 from userprofile.decorators import login_required_error, staff_required
 from userprofile.models import UserProfile
+from utils.exceptions import ExceptionToResponse
 from utils.response import HttpResponseConflict
-from .models import AccountLinkQueue, Platform, PLATFORM_CONFIG
+from .models import AccountLinkQueue, Platform, PLATFORM_CONFIG, VideoSaolei
 from .services import update_account
-from .tasks import task_update_saolei_video_list
+from .tasks import task_saolei_video_import, task_update_saolei_video_list
 from .utils import delete_account, link_account
 
+logger = logging.getLogger('accountlink')
 private_platforms = ["q"]  # 私人账号平台
 
 
@@ -118,12 +123,35 @@ def unverify_link(request):
 def update_link(request):
     if not (platform := request.POST.get('platform')):
         return HttpResponseBadRequest()
-    status = update_account(platform, request.user)
+    try:
+        status = update_account(platform, request.user)
+    except ExceptionToResponse as e:
+        return e.response()
     if status == '':
         return JsonResponse({'type': 'success'})
     elif status == 'unsupported':
         return HttpResponseBadRequest()
     return JsonResponse({'type': 'error', 'category': status})
+
+
+@require_POST
+@login_required_error
+def view_saolei_import_one_video(request):
+    if not (video_id := request.POST.get('video_id')):
+        return HttpResponseBadRequest()
+    video = VideoSaolei.objects.filter(id=video_id).first()
+    if not video:
+        return HttpResponseNotFound()
+    if video.user != request.user.account_saolei:
+        return HttpResponseForbidden()
+    import_task = video.import_task
+    if import_task:
+        if import_task.status in [TaskResultStatus.RUNNING, TaskResultStatus.READY]:
+            return HttpResponseConflict()
+        import_task.delete()
+    video.import_task = task_saolei_video_import.enqueue(video_id).db_result
+    video.save(update_fields=['import_task'])
+    return HttpResponse()
 
 
 @require_POST
@@ -142,6 +170,7 @@ def view_saolei_import_videos(request):
     返回:
         HttpResponseForbidden: 如果用户没有关联的saolei账号。
         HttpResponseBadRequest: 如果请求中缺少mode参数或mode参数无效。
+        HttpResponseConflict: 如果已有排队中或进行中的任务。
         HttpResponse: 成功创建导入任务后返回空响应。
     """
     if not (saolei_account := request.user.account_saolei):
@@ -151,7 +180,18 @@ def view_saolei_import_videos(request):
     if mode not in ['all', 'new']:
         return HttpResponseBadRequest()
 
-    saolei_account.video_import_task = task_update_saolei_video_list.enqueue(saolei_account, mode)
-    saolei_account.save(update_fields=['video_import_task'])
-
-    return HttpResponse()
+    import_task = saolei_account.video_import_task
+    if not import_task:
+        logger.info(f"用户#{request.user.id} 开始创建扫雷网录像导入任务，模式：{mode}")
+        saolei_account.video_import_task = task_update_saolei_video_list.enqueue(saolei_account.id, mode).db_result
+        saolei_account.save(update_fields=['video_import_task'])
+        return HttpResponse()
+    elif import_task.status in [TaskResultStatus.SUCCESSFUL, TaskResultStatus.FAILED]:
+        logger.info(f"用户#{request.user.id} 的上个扫雷网录像导入任务已完成，开始创建新任务，模式：{mode}")
+        saolei_account.video_import_task.delete()  # 删除已完成的任务记录
+        saolei_account.video_import_task = task_update_saolei_video_list.enqueue(saolei_account.id, mode).db_result
+        saolei_account.save(update_fields=['video_import_task'])
+        return HttpResponse()
+    else:
+        logger.warning(f"用户#{request.user.id} 已有一个扫雷网录像导入任务在进行中，无法创建新任务，模式：{mode}")
+        return HttpResponseConflict()
