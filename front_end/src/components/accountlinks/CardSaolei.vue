@@ -1,5 +1,5 @@
 <template>
-    <base-card-normal class="card">
+    <base-card-normal>
         <div style="margin-bottom: 0.5em;">
             <pr-toolbar>
                 <template #start>
@@ -8,13 +8,7 @@
                     </el-text>
                 </template>
                 <template #end>
-                    <el-link :underline="false" @click="refCarousel?.prev">
-                        <base-icon-prev />
-                    </el-link>
-                    &nbsp;
-                    <el-link :underline="false" @click="refCarousel?.next">
-                        <base-icon-next />
-                    </el-link>
+                    <CarouselControl :ref-carousel="refCarousel" :length="2" />
                 </template>
             </pr-toolbar>
         </div>
@@ -104,6 +98,7 @@ import PrToolbar from 'primevue/toolbar';
 import { PropType, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import CarouselControl from './CarouselControl.vue';
 import { AccountSaolei, AccountSaoleiDefault } from './utils';
 
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
@@ -112,8 +107,6 @@ import { httpErrorNotification } from '@/components/Notifications';
 import { cs_to_s } from '@/utils';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { utc_to_local_format } from '@/utils/system/tools';
-
-import './style.css';
 
 const { t } = useI18n();
 const { proxy } = useCurrentInstance();

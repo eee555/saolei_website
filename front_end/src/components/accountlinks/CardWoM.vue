@@ -1,5 +1,5 @@
 <template>
-    <base-card-normal class="card">
+    <base-card-normal>
         <div style="margin-bottom: 0.5em;">
             <pr-toolbar>
                 <template #start>
@@ -8,13 +8,7 @@
                     </el-text>
                 </template>
                 <template #end>
-                    <el-link :underline="false" :disabled="refCarousel?.activeIndex == 0" @click="refCarousel?.prev">
-                        <base-icon-prev />
-                    </el-link>
-                    &nbsp;
-                    <el-link :underline="false" @click="refCarousel?.next">
-                        <base-icon-next />
-                    </el-link>
+                    <CarouselControl :ref-carousel="refCarousel" :length="3" />
                 </template>
             </pr-toolbar>
         </div>
@@ -106,15 +100,15 @@
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElCarousel, ElCarouselItem, ElDescriptions, ElDescriptionsItem, ElImage, ElLink, ElResult, ElText } from 'element-plus';
+import { ElButton, ElCarousel, ElCarouselItem, ElDescriptions, ElDescriptionsItem, ElImage, ElResult, ElText } from 'element-plus';
 import PrToolbar from 'primevue/toolbar';
-import { computed, PropType, ref, watch } from 'vue';
+import { PropType, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import CarouselControl from './CarouselControl.vue';
 import { AccountWoM, AccountWoMDefault } from './utils';
 
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
-import { BaseIconNext, BaseIconPrev } from '@/components/common/icon';
 import IconTaskStatus from '@/components/common/IconTaskStatus.vue';
 import { httpErrorNotification } from '@/components/Notifications';
 import { store } from '@/store';
@@ -122,8 +116,6 @@ import { ms_to_s } from '@/utils';
 import { TaskStatus } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { utc_to_local_format } from '@/utils/system/tools';
-
-import './style.css';
 
 const { t } = useI18n();
 const { proxy } = useCurrentInstance();

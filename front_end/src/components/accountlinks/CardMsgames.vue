@@ -1,5 +1,5 @@
 <template>
-    <base-card-normal class="card">
+    <base-card-normal>
         <div style="margin-bottom: 0.5em;">
             <pr-toolbar>
                 <template #start>
@@ -37,8 +37,6 @@ import { AccountMSGames, AccountMSGamesDefault } from './utils';
 
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
 import { utc_to_local_format } from '@/utils/system/tools';
-
-import './style.css';
 
 const { t } = useI18n();
 

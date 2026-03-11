@@ -1,8 +1,6 @@
 <template>
-    <el-button plain class="card" @click="formvisible = true">
-        <div style="display: flex; justify-content: center; align-items: center; height: 100%; width: 100%;">
-            <base-icon-add />
-        </div>
+    <el-button style="height: 100%; align-items: center;" plain @click="formvisible = true">
+        <base-icon-add />
     </el-button>
 
     <el-dialog
@@ -45,8 +43,6 @@ import { BaseIconAdd } from '@/components/common/icon';
 import AccountLinkGuide from '@/components/dialogs/AccountLinkGuide.vue';
 import { local } from '@/store';
 import { platformlist } from '@/utils/common/accountLinkPlatforms';
-
-import './style.css';
 
 const { t } = useI18n();
 
