@@ -13,7 +13,9 @@
     <el-text tag="b" size="large">
         {{ t('accountlink.title') }}
     </el-text>
-    <AccountLinkManager />
+    <div>
+        <AccountLinks :user-id="store.player.id" />
+    </div>
     <el-divider />
     <el-text tag="b" size="large">
         {{ t('identifierManager.title') }}
@@ -33,7 +35,7 @@ import { ElDivider, ElScrollbar, ElText } from 'element-plus';
 import { defineAsyncComponent } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import AccountLinkManager from '@/components/AccountLinkManager.vue';
+import AccountLinks from '@/components/accountlinks/App.vue';
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
 import BaseOverlay from '@/components/common/BaseOverlay.vue';
 import { BaseIconInfo } from '@/components/common/icon';

@@ -19,15 +19,13 @@ from .utils import fetch_saolei_profile, fetch_saolei_video_download_and_state, 
 logger = logging.getLogger('accountlink')
 
 
-def update_account(platform: Platform, user: UserProfile, cooldown=12):
+def update_account(platform: Platform, user: UserProfile):
     if platform == Platform.SAOLEI:
-        return update_saolei_account_info(user.account_saolei)
+        update_saolei_account_info(user.account_saolei)
     elif platform == Platform.MSGAMES:
-        return update_msgames_account(user.account_msgames, cooldown)
+        update_msgames_account(user.account_msgames)
     elif platform == Platform.WOM:
-        return update_wom_account(user.account_wom, cooldown)
-    else:
-        return 'unsupported'
+        update_wom_account(user.account_wom)
 
 
 def update_saolei_account_info(account: AccountSaolei):
@@ -35,14 +33,12 @@ def update_saolei_account_info(account: AccountSaolei):
         profile = fetch_saolei_profile(account.id)
     except requests.exceptions.Timeout:  # 请求超时
         logger.error(f"雷网 用户#{account.id} 信息获取失败：请求超时")
-        raise ExceptionToResponse(obj='saolei_profile', category='timeout')
+        raise ExceptionToResponse(obj='import', category='timeout')
     except IndexError:  # 解析html时超出索引
         logger.error(f"雷网 用户#{account.id} 信息获取失败：解析错误")
-        raise ExceptionToResponse(obj='saolei_profile', category='index_error')
+        raise ExceptionToResponse(obj='import', category='indexerror')
     except requests.exceptions.RequestException:  # 其他请求异常
-        raise ExceptionToResponse(obj='saolei_profile', category='request_exception')
-    except BaseException as e:  # 其他异常
-        raise e
+        raise ExceptionToResponse(obj='import', category='requestexception')
 
     account.name = profile.name
     account.total_views = profile.total_views

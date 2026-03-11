@@ -124,14 +124,10 @@ def update_link(request):
     if not (platform := request.POST.get('platform')):
         return HttpResponseBadRequest()
     try:
-        status = update_account(platform, request.user)
+        update_account(platform, request.user)
     except ExceptionToResponse as e:
         return e.response()
-    if status == '':
-        return JsonResponse({'type': 'success'})
-    elif status == 'unsupported':
-        return HttpResponseBadRequest()
-    return JsonResponse({'type': 'error', 'category': status})
+    return JsonResponse({'type': 'success'})
 
 
 @require_POST

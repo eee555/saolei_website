@@ -48,3 +48,5 @@ export interface Record {
     ioe_id: number;
     path_id: number;
 }
+
+export type TaskStatus = '' | 'loading' | 'success' | 'error';

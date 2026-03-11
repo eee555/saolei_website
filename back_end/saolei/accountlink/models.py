@@ -50,11 +50,11 @@ class AccountSaolei(models.Model):
     video_import_task = models.ForeignKey(DBTaskResult, on_delete=models.SET_NULL, null=True)
 
     name = models.CharField(max_length=10, default="")  # 姓名，10应该够了吧
-    total_views = models.PositiveIntegerField(null=True)  # 综合人气
+    total_views = models.PositiveIntegerField(default=0)  # 综合人气
 
-    beg_count = models.PositiveSmallIntegerField(null=True)  # 初级录像数量
-    int_count = models.PositiveSmallIntegerField(null=True)  # 中级录像数量
-    exp_count = models.PositiveSmallIntegerField(null=True)  # 高级录像数量
+    beg_count = models.PositiveSmallIntegerField(default=0)  # 初级录像数量
+    int_count = models.PositiveSmallIntegerField(default=0)  # 中级录像数量
+    exp_count = models.PositiveSmallIntegerField(default=0)  # 高级录像数量
 
     # time纪录，单位毫秒
     b_t_ms = models.PositiveIntegerField(null=True)

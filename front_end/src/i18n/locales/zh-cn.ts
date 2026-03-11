@@ -201,9 +201,18 @@ export default {
         import: {
             title: '导入失败！',
             connection: '无法连接到目标服务器',
+            cooldown: '冷却中',
             importing: '正在导入中，请稍后重试',
+            indexerror: 'HTML解析错误',
+            pageempty: '页面没有数据',
             readtimeout: '目标服务器响应超时',
+            requestexception: '未知的请求错误',
             response: '无法识别的响应',
+            timeout: '目标服务器请求超时',
+        },
+        saolei: {
+            page_empty: '页面没有数据',
+            realname_required: '请修改为实名',
         },
         rust: {
             title: '录像解析器崩溃！',

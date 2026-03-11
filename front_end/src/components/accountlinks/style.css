@@ -1,0 +1,7 @@
+.card {
+    width: 19rem;
+    height: 23rem;
+    margin: 1rem;
+    display: inline-grid;
+    vertical-align: middle;
+}

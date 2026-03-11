@@ -1,12 +1,11 @@
-from datetime import timedelta
 import re
 
-from django.utils import timezone
 from lxml import etree
 import requests
 
 from config.text_choices import Saolei_TextChoices
 from userprofile.models import UserProfile
+from utils.exceptions import ExceptionToResponse
 from .models import AccountMinesweeperGames, AccountWorldOfMinesweeper, Platform, PLATFORM_CONFIG
 
 headers = {
@@ -30,8 +29,6 @@ def delete_account(user: UserProfile, platform: Platform):
         user.account_msgames.delete()
     elif platform == Platform.WOM:
         user.account_wom.delete()
-    else:
-        ValueError()
 
 
 def fetch_saolei_profile(saolei_id: int):
@@ -134,9 +131,7 @@ def fetch_saolei_video_download_and_state(video_id: int) -> tuple[str, ]:
     return 'http://saolei.wang/' + re.search(r"PlayVideo\('([^']+)'\)", response.text).group(1), state
 
 
-def update_msgames_account(account: AccountMinesweeperGames, cooldown):
-    if timezone.now() - account.update_time < timedelta(hours=cooldown):
-        return "cooldown"
+def update_msgames_account(account: AccountMinesweeperGames):
     msgamesid = account.id
     htmlStr = None
     try:
@@ -144,11 +139,11 @@ def update_msgames_account(account: AccountMinesweeperGames, cooldown):
         response = requests.get(url=url, timeout=5, headers=headers)
         htmlStr = response.text
     except requests.exceptions.Timeout:
-        return "timeout"  # 请求超时
+        raise ExceptionToResponse(obj='import', category='timeout')  # 请求超时
     except requests.exceptions.RequestException:
-        return "unknown"
+        raise ExceptionToResponse(obj='import', category='requestexception')
     if not htmlStr:
-        return "empty"  # 没有爬取到信息
+        raise ExceptionToResponse(obj='import', category='pageempty')  # 没有爬取到信息
     tree = etree.HTML(htmlStr)
 
     def getValue(text):
@@ -158,12 +153,9 @@ def update_msgames_account(account: AccountMinesweeperGames, cooldown):
     account.local_name = str(getValue('Local Name'))
     account.joined = getValue('Joined')
     account.save()
-    return ""
 
 
-def update_wom_account(account: AccountWorldOfMinesweeper, cooldown):
-    if timezone.now() - account.update_time < timedelta(hours=cooldown):
-        return "cooldown"
+def update_wom_account(account: AccountWorldOfMinesweeper):
     womid = account.id
     url = f'https://minesweeper.online/player/{womid}'
     htmlStr = None
@@ -171,11 +163,11 @@ def update_wom_account(account: AccountWorldOfMinesweeper, cooldown):
         response = requests.get(url=url, timeout=5)
         htmlStr = response.text
     except requests.exceptions.Timeout:
-        return "timeout"  # 请求超时
+        raise ExceptionToResponse(obj='import', category='timeout')  # 请求超时
     except requests.exceptions.RequestException:
-        return "unknown"
+        raise ExceptionToResponse(obj='import', category='requestexception')
     if not htmlStr:
-        return "empty"  # 没有爬取到信息
+        raise ExceptionToResponse(obj='import', category='pageempty')  # 没有爬取到信息
     tree = etree.HTML(htmlStr)
     tree = tree.xpath(
         '/html/body/div[3]/div[2]/div/div[1]/div[2]/div/div[4]/div/div[1]')[0]
@@ -197,49 +189,83 @@ def update_wom_account(account: AccountWorldOfMinesweeper, cooldown):
     values = tree.xpath(formatXpath("Trophies:"))
     account.trophy = int(values[0]) if values else None
 
-    values = tree.xpath(formatImgXpath(
-        "Experience:", "exp-icon icon-right", "/../text()"))
-    account.experience = stringToInt(values)
+    try:
+        values = tree.xpath(formatImgXpath(
+            "Experience:", "exp-icon icon-right", "/../text()"))
+        account.experience = stringToInt(values)
+    except ValueError:
+        pass
 
-    values = tree.xpath(formatImgXpath(
-        "Experience:", "hp-icon icon-right", "/../../text()"))
-    account.honour = stringToInt(values)
+    try:
+        values = tree.xpath(formatImgXpath(
+            "Experience:", "hp-icon icon-right", "/../../text()"))
+        account.honour = stringToInt(values)
+    except ValueError:
+        pass
 
-    values = tree.xpath(formatImgXpath(
-        "Resources:", "coin-icon icon-right", "/../../text()"))
-    account.minecoin = stringToInt(values)
+    try:
+        values = tree.xpath(formatImgXpath(
+            "Resources:", "coin-icon icon-right", "/../../text()"))
+        account.minecoin = stringToInt(values)
+    except ValueError:
+        pass
 
-    values = tree.xpath(formatImgXpath(
-        "Resources:", "gem gem0 icon-right", "/../span/text()"))
-    account.gem = stringToInt(values)
+    try:
+        values = tree.xpath(formatImgXpath(
+            "Resources:", "gem gem0 icon-right", "/../span/text()"))
+        account.gem = stringToInt(values)
+    except ValueError:
+        pass
 
-    values = tree.xpath(formatImgXpath(
-        "Resources:", "arena-coin-icon icon-right", "/../span/text()"))
-    account.coin = stringToInt(values)
+    try:
+        values = tree.xpath(formatImgXpath(
+            "Resources:", "arena-coin-icon icon-right", "/../span/text()"))
+        account.coin = stringToInt(values)
+    except ValueError:
+        pass
 
-    values = tree.xpath(formatIXpath(
-        "Resources:", "fa fa-ticket ticket-right ticket0", "/../span/text()"))
-    account.arena_ticket = stringToInt(values)
+    try:
+        values = tree.xpath(formatIXpath(
+            "Resources:", "fa fa-ticket ticket-right ticket0", "/../span/text()"))
+        account.arena_ticket = stringToInt(values)
+    except ValueError:
+        pass
 
-    values = tree.xpath(formatImgXpath(
-        "Resources:", "parts-icon ", "/preceding-sibling::text()"))
-    account.part = stringToInt(values)
+    try:
+        values = tree.xpath(formatImgXpath(
+            "Resources:", "parts-icon ", "/preceding-sibling::text()"))
+        account.part = stringToInt(values)
+    except ValueError:
+        pass
 
-    values = tree.xpath(formatImgXpath(
-        "Resources:", "eq-icon", "/../span/text()"))
-    account.equipment = stringToInt(values)
+    try:
+        values = tree.xpath(formatImgXpath(
+            "Resources:", "eq-icon", "/../span/text()"))
+        account.equipment = stringToInt(values)
+    except ValueError:
+        pass
 
-    values = tree.xpath(formatImgXpath(
-        "Arena points:", "arena-icon ", "/../text()"))
-    account.arena_point = stringToInt(values)
+    try:
+        values = tree.xpath(formatImgXpath(
+            "Arena points:", "arena-icon ", "/../text()"))
+        account.arena_point = stringToInt(values)
+    except ValueError:
+        pass
 
-    values = tree.xpath(formatImgXpath(
-        "Max difficulty:", "diff-icon ", "/../a/text()"))
-    account.max_difficulty = stringToInt(values)
+    try:
+        values = tree.xpath(formatImgXpath(
+            "Max difficulty:", "diff-icon ", "/../a/text()"))
+        account.max_difficulty = stringToInt(values)
+    except ValueError:
+        pass
 
-    values = tree.xpath(formatIXpath(
-        "Wins:", "fa fa-flag wins-icon ", "/../text()"))
-    account.win = stringToInt(values)
+    try:
+        values = tree.xpath(formatIXpath(
+            "Wins:", "fa fa-flag wins-icon ", "/../text()"))
+        account.win = stringToInt(values)
+    except ValueError:
+        pass
+
     values = tree.xpath(
         '//strong[text()="Last season:"]/../following-sibling::div//text()')
     if not values:
@@ -296,4 +322,3 @@ def update_wom_account(account: AccountWorldOfMinesweeper, cooldown):
     account.e_winstreak = stringToInt(values)
 
     account.save()
-    return ""

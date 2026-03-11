@@ -207,6 +207,10 @@ export default {
             readtimeout: 'The target server did not respond in time',
             response: 'Unrecognised response',
         },
+        saolei: {
+            page_empty: 'Page has no data',
+            realname_required: 'Real name required',
+        },
         rust: {
             title: 'Video parser crashed',
             panic: 'The video parser encountered an unknown error. Please contact the developers.',

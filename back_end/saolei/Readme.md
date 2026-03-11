@@ -75,12 +75,11 @@
 - 返回`HttpResponseBadRequest`：参数缺失
 - 返回`JsonResponse`
   - `{type: 'success'}`：操作成功
-  - `{type: 'error', object: 'saolei_profile' | None, category: 'timeout'}`：第三方网站响应超时
-  - `{type: 'error', object: 'saolei_profile' | None, category: 'index_error'}`：HTML解析错误
-  - `{type: 'error', object: 'saolei_profile' | None, category: 'request_exception'}`：请求返回`RequestException`
-  - `{type: 'error', category: 'cooldown'}`：还在冷却中（12小时）
-  - `{type: 'error', category: 'unknown'}`：请求返回`RequestException`
-  - `{type: 'error', category: 'empty'}`：没有爬取到信息
+  - `{type: 'error', object: 'import', category: 'timeout'}`：第三方网站响应超时
+  - `{type: 'error', object: 'import', category: 'indexerror'}`：HTML解析错误
+  - `{type: 'error', object: 'import', category: 'requestexception'}`：请求返回`RequestException`
+  - `{type: 'error', object: 'import', category: 'cooldown'}`：还在冷却中（12小时）
+  - `{type: 'error', object: 'import', category: 'pageempty'}`：页面为空
 
 ### `saolei_import_video`：导入一个扫雷网录像
 - POST|需要登录
