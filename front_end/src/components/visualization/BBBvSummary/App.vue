@@ -16,19 +16,22 @@
     </el-divider>
     <el-row v-if="groupedVideoAbstract.size > 0" style="white-space: nowrap;">
         <YLabel :min-bv="minBv" :max-bv="maxBv" />
-        <tippy :duration="0" sticky follow-cursor style="position: relative; width: 89%; min-width: 40em; line-height: 25px;">
-            <template v-for="bv in ArrayUtils.range(minBv, maxBv)" :key="bv">
-                <Cell
-                    :data-cy="`bv-${bv}`"
-                    :bv="bv" :level="level" :videos="groupedVideoAbstract.get(bv)" :color-theme="theme"
-                    :display-by="options[BBBvSummaryConfig.template].displayBy"
-                    :sort-by="options[BBBvSummaryConfig.template].sortBy"
-                    :sort-desc="options[BBBvSummaryConfig.template].sortDesc" style="width: 10%" :software-filter="BBBvSummaryConfig.softwareFilter"
-                    :tooltip-mode="BBBvSummaryConfig.tooltipMode"
-                    @mouseover="tooltipVideos=groupedVideoAbstract.get(bv) || []"
-                />
-                <br v-if="getLastDigit(bv) == 9">
-            </template>
+        <tippy :duration="0" sticky follow-cursor style="display: grid; width: 89%; min-width: 40em; grid-template-columns: repeat(10, 1fr); grid-auto-rows: 25px;">
+            <Cell
+                v-for="bv in ArrayUtils.range(minBv, maxBv)"
+                :key="bv"
+                :data-cy="`bv-${bv}`"
+                :bv="bv"
+                :level="level"
+                :videos="groupedVideoAbstract.get(bv)"
+                :color-theme="theme"
+                :display-by="options[BBBvSummaryConfig.template].displayBy"
+                :sort-by="options[BBBvSummaryConfig.template].sortBy"
+                :sort-desc="options[BBBvSummaryConfig.template].sortDesc"
+                :software-filter="BBBvSummaryConfig.softwareFilter"
+                :tooltip-mode="BBBvSummaryConfig.tooltipMode"
+                @mouseover="tooltipVideos=groupedVideoAbstract.get(bv) || []"
+            />
             <template #content>
                 <Tooltip
                     :videos="tooltipVideos"
@@ -54,7 +57,7 @@ import YLabel from './YLabel.vue';
 import { BBBvSummaryConfig, colorTheme } from '@/store';
 import { ArrayUtils } from '@/utils/arrays';
 import { PiecewiseColorScheme } from '@/utils/colors';
-import { getLastDigit, setLastDigit } from '@/utils/math';
+import { setLastDigit } from '@/utils/math';
 import { ColorTemplateName, MS_Level } from '@/utils/ms_const';
 import { getStat_stat, groupVideosByBBBv, VideoAbstract } from '@/utils/videoabstract';
 

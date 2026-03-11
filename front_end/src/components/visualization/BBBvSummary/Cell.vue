@@ -71,8 +71,6 @@ function handleClick() {
 <style lang="less" scoped>
 
 .cell {
-    display: inline-block;
-    height: 25px;
     background-color: v-bind(color);
     outline-style: solid;
     outline-width: 1px;

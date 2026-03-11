@@ -6,41 +6,49 @@
         <el-row>
             <DayLabel data-cy="dayLabel" :cell-size="options.cellSize" :cell-margin="options.cellMargin" />
             <el-scrollbar style="flex:1;">
-                <el-row>
+                <el-row :style="{ height: `${cellFullSize}px` }">
                     <MonthLabel :start-date="startDate" :end-date="endDate" :cell-size="options.cellSize" :cell-margin="options.cellMargin" />
                 </el-row>
                 <el-row
                     :style="{
-                        position: 'relative',
-                        height: `${cellFullSize * 8 + options.cellMargin}px`,
+                        height: `${cellFullSize * 7 + options.cellMargin}px`,
                         filter: `invert(${darkMode ? 0 : 1})`,
                     }"
                 >
-                    <tippy :duration="0" sticky follow-cursor>
+                    <tippy
+                        :duration="0"
+                        sticky
+                        follow-cursor
+                        :style="{
+                            height: '100%',
+                            display: 'grid',
+                            gridTemplateRows: 'repeat(7, 1fr)',
+                            gridAutoFlow: 'column',
+                            gap: `${options.cellMargin}px`,
+                        }"
+                    >
                         <!-- 为每个日期生成一个单元格 -->
-                        <template v-for="date of dateRange" :key="date.toISOString()">
-                            <span
-                                class="text-normal"
-                                :style="{
-                                    position: 'absolute',
-                                    top: `${(date.getDay() + 1) * cellFullSize}px`,
-                                    left: `${Math.round((getWeekTime(date) - startWeekTime) / fullWeek) * cellFullSize}px`,
-                                    width: `${options.cellSize}px`,
-                                    height: `${options.cellSize}px`,
-                                    borderRadius: `${options.cornerRadius}%`,
-                                    backgroundColor: getColor(groupedVideoAbstract.get(toISODateString(date)) || []),
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    fontSize: `${options.cellSize * 0.6}px`,
-                                }"
-                                :data-cy="`cell-${toISODateString(date)}`"
-                                @mouseover="tooltipVideos = groupedVideoAbstract.get(toISODateString(date)) || []; tooltipDate = date"
-                            >
-                                <template v-if="options.showDate">
-                                    {{ date.getDate() }}
-                                </template>
-                            </span>
-                        </template>
+                        <div :style="{gridRowStart: `${startDate.getDay()}`}" />
+                        <div
+                            v-for="date of dateRange"
+                            :key="date.toISOString()"
+                            class="text-normal"
+                            :style="{
+                                width: `${options.cellSize}px`,
+                                height: `${options.cellSize}px`,
+                                borderRadius: `${options.cornerRadius}%`,
+                                backgroundColor: getColor(groupedVideoAbstract.get(toISODateString(date)) || []),
+                                display: 'flex',
+                                justifyContent: 'center',
+                                fontSize: `${options.cellSize * 0.6}px`,
+                            }"
+                            :data-cy="`cell-${toISODateString(date)}`"
+                            @mouseover="tooltipVideos = groupedVideoAbstract.get(toISODateString(date)) || []; tooltipDate = date"
+                        >
+                            <template v-if="options.showDate">
+                                {{ date.getDate() }}
+                            </template>
+                        </div>
                         <template #content>
                             <Tooltip :date="tooltipDate" :videos="tooltipVideos" />
                         </template>
@@ -64,7 +72,7 @@ import MonthLabel from './MonthLabel.vue';
 import Tooltip from './Tooltip.vue';
 
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
-import { fullWeek, getWeekTime, toISODateString } from '@/utils/datetime';
+import { toISODateString } from '@/utils/datetime';
 import { groupVideosByDate, VideoAbstract } from '@/utils/videoabstract';
 
 interface Options {
@@ -116,7 +124,6 @@ const startDate = computed(() => {
     }
     return min;
 });
-const startWeekTime = computed(() => getWeekTime(startDate.value));
 
 function *generateDateRange(startDate: Date, endDate: Date, step: number = 1) {
     const currentDate = new Date(startDate);
