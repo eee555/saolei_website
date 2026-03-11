@@ -1,0 +1,8 @@
+.text-normal {
+    align-self: center;
+    color: var(--el-text-color-regular);
+    font-size: var(--el-text-font-size-base);
+    margin: 0;
+    overflow-wrap: break-word;
+    padding: 0;
+}

@@ -16,10 +16,11 @@
                         filter: `invert(${darkMode ? 0 : 1})`,
                     }"
                 >
-                    <base-tooltip :show-animation="0" :hide-animation="0" sticky follow-cursor>
+                    <tippy :duration="0" sticky follow-cursor>
                         <!-- 为每个日期生成一个单元格 -->
-                        <template v-for="date of generateDateRange(startDate, endDate)" :key="date.toISOString()">
+                        <template v-for="date of dateRange" :key="date.toISOString()">
                             <span
+                                class="text-normal"
                                 :style="{
                                     position: 'absolute',
                                     top: `${(date.getDay() + 1) * cellFullSize}px`,
@@ -28,29 +29,22 @@
                                     height: `${options.cellSize}px`,
                                     borderRadius: `${options.cornerRadius}%`,
                                     backgroundColor: getColor(groupedVideoAbstract.get(toISODateString(date)) || []),
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    fontSize: `${options.cellSize * 0.6}px`,
                                 }"
                                 :data-cy="`cell-${toISODateString(date)}`"
                                 @mouseover="tooltipVideos = groupedVideoAbstract.get(toISODateString(date)) || []; tooltipDate = date"
                             >
-                                <el-text
-                                    v-if="options.showDate"
-                                    :style="{
-                                        position: 'absolute',
-                                        top: '50%',
-                                        left: '50%',
-                                        transform: 'translate(-50%, -50%)',
-                                        fontSize: `${options.cellSize * 0.6}px`,
-                                        color: darkMode ? '#fff' : '#000',
-                                    }"
-                                >
+                                <template v-if="options.showDate">
                                     {{ date.getDate() }}
-                                </el-text>
+                                </template>
                             </span>
                         </template>
                         <template #content>
                             <Tooltip :date="tooltipDate" :videos="tooltipVideos" />
                         </template>
-                    </base-tooltip>
+                    </tippy>
                 </el-row>
             </el-scrollbar>
         </el-row>
@@ -58,9 +52,11 @@
 </template>
 
 <script setup lang="ts">
+import '@/styles/text.css';
 
-import { ElRow, ElScrollbar, ElText } from 'element-plus';
+import { ElRow, ElScrollbar } from 'element-plus';
 import { computed, PropType, ref } from 'vue';
+import { Tippy } from 'vue-tippy';
 
 import DayLabel from './DayLabel.vue';
 import Header from './Header.vue';
@@ -68,7 +64,6 @@ import MonthLabel from './MonthLabel.vue';
 import Tooltip from './Tooltip.vue';
 
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
-import BaseTooltip from '@/components/common/BaseTooltip.vue';
 import { fullWeek, getWeekTime, toISODateString } from '@/utils/datetime';
 import { groupVideosByDate, VideoAbstract } from '@/utils/videoabstract';
 
@@ -130,6 +125,8 @@ function *generateDateRange(startDate: Date, endDate: Date, step: number = 1) {
         currentDate.setDate(currentDate.getDate() + step); // Increment by 1 day (or custom step)
     }
 }
+
+const dateRange = computed(() => Array.from(generateDateRange(startDate.value, endDate, 1)));
 
 function getColor(videos: VideoAbstract[]) {
     let red = 0, green = 0, blue = 0;
