@@ -128,14 +128,15 @@ def saolei_video_import_one(saolei_video: VideoSaolei):
         video.upload_time = saolei_video.upload_time
         video_checkin(video, parser.tournament_identifiers)
         video.update_redis()
+        video.save()
         saolei_video.import_video = video
         saolei_video.save()
     except requests.exceptions.ConnectionError:
-        logger.error(f"雷网 录像#{video.id} 下载失败：连接错误")
+        logger.error(f"雷网 录像#{saolei_video.id} 下载失败：连接错误")
         raise ExceptionToResponse(obj='import', category='connection')
     except requests.exceptions.ReadTimeout:
-        logger.error(f"雷网 录像#{video.id} 下载失败：请求超时")
+        logger.error(f"雷网 录像#{saolei_video.id} 下载失败：请求超时")
         raise ExceptionToResponse(obj='import', category='timeout')
     except BaseException as e:
-        logger.error(f"雷网 录像#{video.id} 下载失败：未知错误")
+        logger.error(f"雷网 录像#{saolei_video.id} 下载失败：未知错误")
         raise e
