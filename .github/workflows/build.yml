@@ -42,11 +42,15 @@ jobs:
         cd front_end
         npm run build:openms
         cd dist
-        # 打包完后，下载录像播放器
-        wget "https://github.com/eee555/flop-player/releases/download/v1.3/dist.zip"
-        unzip dist.zip
-        rm dist.zip
-        mv dist flop
+        # 打包完后，克隆录像播放器并构建
+        git clone https://github.com/eee555/flop-player.git flop
+        cd flop
+        npm install
+        npm run build
+        cd dist
+        mv * ../flop
+        cd ..
+        rm -rf flop
         # 从gitee下载文章静态资源
         mkdir article
         cd article
