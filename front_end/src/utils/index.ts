@@ -15,7 +15,8 @@ export function to_fixed_n(input: string | number | undefined, to_fixed: number)
 }
 
 // 毫秒的整数到字符串秒的小数
-export function ms_to_s(ms: number): string {
+export function ms_to_s(ms: number | undefined): string {
+    if (ms === undefined) return '-';
     return `${Math.floor(ms / 1000)}.${(ms % 1000 + '').padStart(3, '0')}`;
 }
 export function cs_to_s(cs: number): string {
@@ -27,7 +28,7 @@ export function simple_formatter(f: Function) {
 }
 export async function approve(proxy: ComponentCustomProperties & Record<string, any>, id: number) {
     let status;
-    await proxy.$axios.get('video/approve?ids=[' + id + ']').then(function (response) {
+    await proxy.$axios.get('video/approve?ids=[' + id + ']').then(function (response: any) {
         const data = response.data;
         if (data.length != 1) {
             console.log(data);
@@ -40,7 +41,7 @@ export async function approve(proxy: ComponentCustomProperties & Record<string, 
 
 export async function freeze(proxy: ComponentCustomProperties & Record<string, any>, id: number) {
     let status;
-    await proxy.$axios.get('video/freeze?ids=[' + id + ']').then(function (response) {
+    await proxy.$axios.get('video/freeze?ids=[' + id + ']').then(function (response: any) {
         const data = response.data;
         if (data.length != 1) {
             console.log(data);
@@ -80,4 +81,8 @@ export function deepCopy<T>(obj: T): T {
 
 export function defaultFilterMethod(value: any, row: any, column: any) {
     return row[column.property] === value;
+}
+
+export function sleep(ms: number) {
+    return new Promise((resolve) => setTimeout(() => resolve(ms), ms));
 }

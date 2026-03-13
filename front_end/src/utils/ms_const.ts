@@ -12,12 +12,19 @@ export const STNB_const = useLocalStorage('stnb_const', {
     e: 435.001,
 });
 
+export enum MS_Mode {
+    Standard = '00',
+    NoGuessing = '05',
+    Recursive = '11',
+    NoFlag = '12',
+}
+
 export enum MS_State {
     Plain = 'a',
     Frozen = 'b',
     Official = 'c',
     Identifier = 'd',
-    External = 'e',
+    // External = 'e',
 }
 
 export enum TournamentState {

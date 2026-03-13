@@ -15,6 +15,7 @@ export default {
             videoQuery: 'fetch video data',
         },
         button: {
+            back: 'Back',
             cancel: 'Cancel',
             confirm: 'Confirm',
             register: 'Register',
@@ -123,6 +124,7 @@ export default {
     accountlink: {
         title: 'Account Links',
         addLink: 'Link New Account',
+        deleteLink: 'Unlink account',
         deleteLinkMessage: 'Are you sure to unlink this account?',
         guideMsgames1: 'Find yourself on the ',
         guideMsgames2: ' ranking:',
@@ -140,8 +142,16 @@ export default {
         saoleiName: 'Name',
         saoleiTotalViews: 'Total Views',
         saoleiVideoCount: 'Video Count',
-        unverified: 'Pending. Please contact the moderator.',
-        unverifiedText: 'This account has not been verified. Please contact a moderator.',
+        statSummary: 'Summaries',
+        statSummaryTooltip: 'Summaries include personal records, views and video counts.',
+        synchronize: 'Synchronize',
+        synchronizeAll: 'All',
+        synchronizeManage: 'Manage',
+        synchronizeNew: 'New',
+        synchronizeTooltip: "Video synchronization will create a background task that helps you downloads videos from @:common.website.saolei and upload them to @:{'common.website.openms'}. The task will visit your saolei profile, scan videos page by page, and download them one by one. The \"New\" mode is cheaper: it stops at the first page with no new video. The \"All\" mode is more expensive: it scans all pages.", // eslint-disable-line @stylistic/quotes
+        synchronizeVideos: 'Synchronize videos',
+        unverified: 'This account has not been verified.',
+        unverifiedText: 'Please contact a moderator.',
         updateError: {
             cooldown: 'Cannot update twice in 12 hours',
             empty: 'Empty data',
@@ -185,6 +195,34 @@ export default {
             fastTooltip: 'Click to play the video',
             advanced: 'Advanced',
             advancedTooltip: 'Click to show list of videos',
+        },
+    },
+    errorMsg: {
+        file: {
+            title: 'Error while parsing file',
+            collision: 'File already exists',
+            level: 'Unsupported level',
+            review: 'Unknown review state. Please contact the developers.',
+            type: 'Unsupported file extension',
+        },
+        identifier: {
+            title: 'Invalid identifier',
+            verify: 'Not allowed by censorship',
+        },
+        import: {
+            title: 'Failed to import',
+            connection: 'Unable to connect to the target server',
+            importing: 'Video is already being imported, please try again later',
+            readtimeout: 'The target server did not respond in time',
+            response: 'Unrecognised response',
+        },
+        saolei: {
+            page_empty: 'Page has no data',
+            realname_required: 'Real name required',
+        },
+        rust: {
+            title: 'Video parser crashed',
+            panic: 'The video parser encountered an unknown error. Please contact the developers.',
         },
     },
     experimentalFeature: {

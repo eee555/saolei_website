@@ -1,6 +1,6 @@
 <template>
     <base-tooltip v-if="level == 'b'" :show-delay="500">
-        <el-text size="small">
+        <el-text>
             {{ t('common.level.b') }}
         </el-text>
         <template #content>
@@ -10,7 +10,7 @@
         </template>
     </base-tooltip>
     <base-tooltip v-else-if="level == 'i'" :show-delay="500">
-        <el-text size="small">
+        <el-text>
             {{ t('common.level.i') }}
         </el-text>
         <template #content>
@@ -20,7 +20,7 @@
         </template>
     </base-tooltip>
     <base-tooltip v-else-if="level == 'e'" :show-delay="500">
-        <el-text size="small">
+        <el-text>
             {{ t('common.level.e') }}
         </el-text>
         <template #content>

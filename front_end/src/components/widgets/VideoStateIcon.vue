@@ -1,22 +1,27 @@
 <template>
-    <base-tooltip v-if="state == 'd'" :show-delay="500">
-        <BaseIconIdentifier style="color: var(--el-color-warning)" />
+    <base-tooltip v-if="state == MS_State.Identifier" :show-delay="500">
+        <el-icon>
+            <base-icon-identifier style="color: var(--el-color-warning)" />
+        </el-icon>
         <template #content>
             <el-text>{{ t('common.state.d') }}</el-text>
         </template>
     </base-tooltip>
-    <base-tooltip v-else-if="state == 'e'" :show-delay="500">
-        <BaseIconExternal style="color: var(--el-color-warning)" />
-        <template #content>
-            <el-text>{{ t('common.state.e') }}</el-text>
-        </template>
-    </base-tooltip>
-    <el-text v-else-if="state == 'c'" type="success">
-        <base-icon-verified />
+    <el-text v-else-if="state == MS_State.Official" type="success">
+        <el-icon>
+            <base-icon-verified />
+        </el-icon>
     </el-text>
-    <el-icon v-else type="danger">
-        <QuestionFilled />
-    </el-icon>
+    <el-text v-else-if="state == MS_State.Plain" type="info">
+        <el-icon>
+            <base-icon-pending />
+        </el-icon>
+    </el-text>
+    <el-text v-else-if="state == MS_State.Frozen" type="danger">
+        <el-icon>
+            <base-icon-frozen />
+        </el-icon>
+    </el-text>
 </template>
 
 <script setup lang="ts">
@@ -27,7 +32,7 @@ import { useI18n } from 'vue-i18n';
 import BaseIconIdentifier from '@/components/common/BaseIconIdentifier.vue';
 import BaseIconVerified from '@/components/common/BaseIconVerified.vue';
 import BaseTooltip from '@/components/common/BaseTooltip.vue';
-import { BaseIconExternal } from '@/components/common/icon';
+import { BaseIconFrozen, BaseIconPending } from '@/components/common/icon';
 import { MS_State } from '@/utils/ms_const';
 
 const { t } = useI18n();
