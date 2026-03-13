@@ -47,10 +47,10 @@ jobs:
         cd flop
         npm install
         npm run build
-        cd dist
-        mv * ../flop
+        mv dist ../temp_dist
         cd ..
         rm -rf flop
+        mv temp_dist flop
         # 从gitee下载文章静态资源
         mkdir article
         cd article
