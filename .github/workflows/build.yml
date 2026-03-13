@@ -46,8 +46,6 @@ jobs:
         git clone https://github.com/eee555/flop-player.git flop
         cd flop
         npm install
-        # 解决在 Linux 环境下 SET 命令不存在的问题
-        export NODE_OPTIONS=--openssl-legacy-provider
         npm run build
         cd dist
         mv * ../flop
