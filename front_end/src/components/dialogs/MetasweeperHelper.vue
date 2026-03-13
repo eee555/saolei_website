@@ -90,69 +90,87 @@ const { t } = useI18n();
 
 const tableData = [
     {
-        version: 'v3.2.1',
-        date: '2025-11-22',
+        version: 'v3.2.2',
+        date: '2026-3-3',
         links: [
             {
                 label: 'OpenMS',
-                url: 'https://openms.top/download/Metaminesweeper-3.2.1.exe',
+                url: 'https://openms.top/download/Metaminesweeper-3.2.2.exe',
             },
             {
                 label: 'Gitee',
-                url: 'https://gitee.com/ee55/Metasweeper/releases/download/3.2.1/Metaminesweeper-3.2.1.exe',
+                url: 'https://gitee.com/ee55/Metasweeper/releases/download/3.2.2/Metaminesweeper-3.2.2.exe',
             },
             {
                 label: 'GitHub',
-                url: 'https://github.com/eee555/Metasweeper/releases/download/3.2.1/Metaminesweeper-3.2.1.exe',
+                url: 'https://github.com/eee555/Metasweeper/releases/download/3.2.2/Metaminesweeper-3.2.2.exe',
             },
         ],
-    },
-    {
-        version: 'v3.2.0',
-        date: '2024-11-21',
-        links: [
-            {
-                label: 'OpenMS',
-                url: 'https://openms.top/download/Metaminesweeper-3.2.0.exe',
-            },
-            {
-                label: 'Gitee',
-                url: 'https://gitee.com/ee55/Metasweeper/releases/download/3.2.0/Metaminesweeper-3.2.0.exe',
-            },
-            {
-                label: 'GitHub',
-                url: 'https://github.com/eee555/Metasweeper/releases/download/3.2.0/Metaminesweeper-3.2.0.exe',
-            },
-        ],
-    },
-    {
-        version: 'v3.1.11',
-        date: '2024-9-10',
-        links: [
-            {
-                label: 'OpenMS',
-                url: 'https://openms.top/download/Metaminesweeper-v3.1.11.zip',
-            },
-            {
-                label: 'GitHub',
-                url: 'https://github.com/eee555/Metasweeper/releases/download/3.1.11/Metaminesweeper-v3.1.11.zip',
-            },
-        ],
-    },
-    {
-        version: 'v3.1.9',
-        date: '2024-7-27',
-        links: [
-            {
-                label: 'OpenMS',
-                url: 'https://openms.top/download/Metaminesweeper-v3.1.9.zip',
-            },
-            {
-                label: 'GitHub',
-                url: 'https://github.com/eee555/Metasweeper/releases/download/3.1.9/Metaminesweeper-v3.1.9.zip',
-            },
-        ],
-    },
+    }
+    // {
+    //     version: 'v3.2.1',
+    //     date: '2025-11-22',
+    //     links: [
+    //         {
+    //             label: 'OpenMS',
+    //             url: 'https://openms.top/download/Metaminesweeper-3.2.1.exe',
+    //         },
+    //         {
+    //             label: 'Gitee',
+    //             url: 'https://gitee.com/ee55/Metasweeper/releases/download/3.2.1/Metaminesweeper-3.2.1.exe',
+    //         },
+    //         {
+    //             label: 'GitHub',
+    //             url: 'https://github.com/eee555/Metasweeper/releases/download/3.2.1/Metaminesweeper-3.2.1.exe',
+    //         },
+    //     ],
+    // },
+    // {
+    //     version: 'v3.2.0',
+    //     date: '2024-11-21',
+    //     links: [
+    //         {
+    //             label: 'OpenMS',
+    //             url: 'https://openms.top/download/Metaminesweeper-3.2.0.exe',
+    //         },
+    //         {
+    //             label: 'Gitee',
+    //             url: 'https://gitee.com/ee55/Metasweeper/releases/download/3.2.0/Metaminesweeper-3.2.0.exe',
+    //         },
+    //         {
+    //             label: 'GitHub',
+    //             url: 'https://github.com/eee555/Metasweeper/releases/download/3.2.0/Metaminesweeper-3.2.0.exe',
+    //         },
+    //     ],
+    // },
+    // {
+    //     version: 'v3.1.11',
+    //     date: '2024-9-10',
+    //     links: [
+    //         {
+    //             label: 'OpenMS',
+    //             url: 'https://openms.top/download/Metaminesweeper-v3.1.11.zip',
+    //         },
+    //         {
+    //             label: 'GitHub',
+    //             url: 'https://github.com/eee555/Metasweeper/releases/download/3.1.11/Metaminesweeper-v3.1.11.zip',
+    //         },
+    //     ],
+    // },
+    // {
+    //     version: 'v3.1.9',
+    //     date: '2024-7-27',
+    //     links: [
+    //         {
+    //             label: 'OpenMS',
+    //             url: 'https://openms.top/download/Metaminesweeper-v3.1.9.zip',
+    //         },
+    //         {
+    //             label: 'GitHub',
+    //             url: 'https://github.com/eee555/Metasweeper/releases/download/3.1.9/Metaminesweeper-v3.1.9.zip',
+    //         },
+    //     ],
+    // },
 ];
 
 </script>

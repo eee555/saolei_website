@@ -1,4 +1,7 @@
-pkill -f uwsgi -9
-# kill -9 `cat /run/nginx.pid`
+# 假如有多个同名进程将不适用
+pkill -f uwsgi
 
+pkill -f runapschedulermonitor
+pkill -f runapscheduleruserprofile
+pkill -f runapschedulervideomanager
 
