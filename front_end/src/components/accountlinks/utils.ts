@@ -1,4 +1,6 @@
 import { Platform } from '@/utils/common/accountLinkPlatforms';
+import { DjangoTaskResultStatus } from '@/utils/common/structInterface';
+import { MS_Level } from '@/utils/ms_const';
 
 export interface AccountSaolei {
     id: number;
@@ -103,4 +105,16 @@ export interface AccountLink {
     identifier: string;
     verified: boolean;
     data?: AccountSaolei | AccountMSGames | AccountWoM;
+}
+
+export interface SaoleiVideo {
+    id: number;
+    user__id: number;
+    level: MS_Level;
+    timems: number;
+    bv: number;
+    nf: boolean;
+    upload_time: string;
+    import_video__id: number;
+    import_task__status: DjangoTaskResultStatus;
 }

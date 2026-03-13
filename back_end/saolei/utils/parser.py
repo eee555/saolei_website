@@ -50,7 +50,7 @@ class MSVideoParser:
 
         v, self.software = MSVideoParser.read_file(file)
 
-        v.parse_video()
+        v.parse()
         v.analyse()
         v.current_time = 1e8
 
@@ -159,7 +159,7 @@ class MSVideoParser:
         else:
             raise ExceptionToResponse(obj='file', category='type')
 
-        v.parse_video()
+        v.parse()
         v.analyse()
         v.current_time = 1e8
 
@@ -180,6 +180,7 @@ class MSVideoParser:
             'software': software,
             'level': level,
             'mode': mode,
+            'state': state,
             'timems': v.rtime_ms,
             'bv': v.bbbv,
             'left': v.left,

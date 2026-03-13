@@ -23,16 +23,17 @@
                 {{ info.joined }}
             </el-descriptions-item>
         </el-descriptions>
-        <el-result v-else icon="warning" title="账号未验证" sub-title="请联系管理员" />
+        <UnverifiedNotice v-else />
     </base-card-normal>
 </template>
 
 <script setup lang="ts">
-import { ElDescriptions, ElDescriptionsItem, ElResult, ElText } from 'element-plus';
+import { ElDescriptions, ElDescriptionsItem, ElText } from 'element-plus';
 import PrToolbar from 'primevue/toolbar';
 import { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import UnverifiedNotice from './UnverifiedNotice.vue';
 import { AccountMSGames, AccountMSGamesDefault } from './utils';
 
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';

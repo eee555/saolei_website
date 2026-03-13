@@ -31,6 +31,7 @@ def update_account(platform: Platform, user: UserProfile):
 def update_saolei_account_info(account: AccountSaolei):
     try:
         profile = fetch_saolei_profile(account.id)
+        print(profile)
     except requests.exceptions.Timeout:  # 请求超时
         logger.error(f"雷网 用户#{account.id} 信息获取失败：请求超时")
         raise ExceptionToResponse(obj='import', category='timeout')
@@ -40,22 +41,22 @@ def update_saolei_account_info(account: AccountSaolei):
     except requests.exceptions.RequestException:  # 其他请求异常
         raise ExceptionToResponse(obj='import', category='requestexception')
 
-    account.name = profile.name
-    account.total_views = profile.total_views
+    account.name = profile['name']
+    account.total_views = profile['total_views']
 
-    account.b_t_ms = profile.timems.b
-    account.i_t_ms = profile.timems.i
-    account.e_t_ms = profile.timems.e
-    account.s_t_ms = profile.timems.s
+    account.b_t_ms = profile['timems']['b']
+    account.i_t_ms = profile['timems']['i']
+    account.e_t_ms = profile['timems']['e']
+    account.s_t_ms = profile['timems']['s']
 
-    account.b_b_cent = profile.bvs_cent.b
-    account.i_b_cent = profile.bvs_cent.i
-    account.e_b_cent = profile.bvs_cent.e
-    account.s_b_cent = profile.bvs_cent.s
+    account.b_b_cent = profile['bvs_cent']['b']
+    account.i_b_cent = profile['bvs_cent']['i']
+    account.e_b_cent = profile['bvs_cent']['e']
+    account.s_b_cent = profile['bvs_cent']['s']
 
-    account.beg_count = profile.count.b
-    account.int_count = profile.count.i
-    account.exp_count = profile.count.e
+    account.beg_count = profile['count']['b']
+    account.int_count = profile['count']['i']
+    account.exp_count = profile['count']['e']
 
     account.save()
 
@@ -64,7 +65,12 @@ def update_saolei_account_info(account: AccountSaolei):
 def update_saolei_user_video_one_page(account: AccountSaolei, page: int):
     logger.info(f"开始扫描扫雷网用户#{account.id}的第{page}页录像列表")
     saolei_user = SaoleiUserInfo(saolei_id=account.id)
-    video_list = SaoleiUtils.get_video_list(saolei_user.videos_url(page=page))
+    try:
+        video_list = SaoleiUtils.get_video_list(saolei_user.videos_url(page=page))
+    except requests.exceptions.ConnectionError:
+        logger.error(f"扫雷网用户#{account.id}的第{page}页录像列表获取失败：连接失败")
+        raise ExceptionToResponse(obj='import', category='connection')
+
     if not video_list:
         logger.warning(f"扫雷网用户#{account.id}的第{page}页录像列表为空")
         raise ExceptionToResponse(obj='saolei', category='page_empty')
@@ -81,37 +87,37 @@ def update_saolei_user_video_one_page(account: AccountSaolei, page: int):
 
 
 # 导入一个扫雷网录像
-def saolei_video_import_one(video: VideoSaolei):
-    logger.info(f"开始导入扫雷网录像#{video.id}")
+def saolei_video_import_one(saolei_video: VideoSaolei):
+    logger.info(f"开始导入扫雷网录像#{saolei_video.id}")
 
     try:
-        download_url, state = fetch_saolei_video_download_and_state(video.id)
-        video.state = state
-        video.save(update_fields=['state'])
+        download_url, state = fetch_saolei_video_download_and_state(saolei_video.id)
+        saolei_video.state = state
+        saolei_video.save(update_fields=['state'])
 
         if state == Saolei_TextChoices.SaoleiVideoState.NOTEXIST:
-            logger.warning(f"扫雷网 录像#{video.id} 不存在，可能已被删除")
+            logger.warning(f"扫雷网 录像#{saolei_video.id} 不存在，可能已被删除")
             return
 
         file_name = download_url.split('/')[-1]
         response = requests.get(url=download_url, timeout=5)
         file_size = response.headers.get('Content-Length')
         if file_size is None:
-            logger.error(f"雷网 录像#{video.id} 下载失败：无法获取文件大小")
-            raise ExceptionToResponse(obj='import', category='response')
+            logger.error(f"雷网 录像#{saolei_video.id} 下载失败：无法获取文件大小")
+            raise ExceptionToResponse(obj='import', category='unknown')
 
         collisions = VideoModel.objects.filter(file_size=file_size)
         for collision in collisions:
             if collision.file.read() == response.content:
-                if collision.upload_time > video.upload_time:
-                    collision.upload_time = video.upload_time
+                if collision.upload_time > saolei_video.upload_time:
+                    collision.upload_time = saolei_video.upload_time
                 collision.save()
-                video.import_video = collision
-                video.save()
+                saolei_video.import_video = collision
+                saolei_video.save()
                 return
 
         parser = MSVideoParser(ContentFile(response.content, file_name))
-        user = video.user.parent
+        user = saolei_video.user.parent
 
         if not user.userms:
             user.userms = UserMS.objects.create()
@@ -119,17 +125,17 @@ def saolei_video_import_one(video: VideoSaolei):
             parser.state = MS_TextChoices.State.IDENTIFIER
 
         video = VideoModel.create_from_parser(parser, user)
-        video.upload_time = video.upload_time
+        video.upload_time = saolei_video.upload_time
         video_checkin(video, parser.tournament_identifiers)
         video.update_redis()
-        video.import_video = video
-        video.save()
+        saolei_video.import_video = video
+        saolei_video.save()
     except requests.exceptions.ConnectionError:
         logger.error(f"雷网 录像#{video.id} 下载失败：连接错误")
         raise ExceptionToResponse(obj='import', category='connection')
     except requests.exceptions.ReadTimeout:
         logger.error(f"雷网 录像#{video.id} 下载失败：请求超时")
-        raise ExceptionToResponse(obj='import', category='readtimeout')
+        raise ExceptionToResponse(obj='import', category='timeout')
     except BaseException as e:
         logger.error(f"雷网 录像#{video.id} 下载失败：未知错误")
         raise e

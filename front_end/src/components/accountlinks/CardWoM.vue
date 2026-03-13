@@ -8,7 +8,7 @@
                     </el-text>
                 </template>
                 <template #end>
-                    <CarouselControl :ref-carousel="refCarousel" :length="3" />
+                    <CarouselControl :ref-carousel="refCarousel" :length="carouselLength" />
                 </template>
             </pr-toolbar>
         </div>
@@ -80,11 +80,11 @@
             <el-carousel-item v-if="store.user.id == store.player.id">
                 <div>
                     <el-text size="large">
-                        统计数据
+                        {{ t('accountlink.statSummary') }}
                     </el-text>
                     &nbsp;
                     <el-button @click="updateLink(); $emit('refresh')">
-                        更新
+                        {{ t('accountlink.synchronize') }}
                     </el-button>
                     &nbsp;
                     <icon-task-status :status="taskStatus" />
@@ -95,17 +95,18 @@
                 </div>
             </el-carousel-item>
         </el-carousel>
-        <el-result v-else icon="warning" title="账号未验证" sub-title="请联系管理员" />
+        <UnverifiedNotice v-else />
     </base-card-normal>
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElCarousel, ElCarouselItem, ElDescriptions, ElDescriptionsItem, ElImage, ElResult, ElText } from 'element-plus';
+import { ElButton, ElCarousel, ElCarouselItem, ElDescriptions, ElDescriptionsItem, ElImage, ElText } from 'element-plus';
 import PrToolbar from 'primevue/toolbar';
-import { PropType, ref } from 'vue';
+import { computed, PropType, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import CarouselControl from './CarouselControl.vue';
+import UnverifiedNotice from './UnverifiedNotice.vue';
 import { AccountWoM, AccountWoMDefault } from './utils';
 
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
@@ -123,6 +124,7 @@ const { proxy } = useCurrentInstance();
 const refCarousel = ref<typeof ElCarousel>();
 const errorMsg = ref('');
 const taskStatus = ref<TaskStatus>('');
+const carouselLength = computed(() => store.player.id == store.user.id ? 3 : 2);
 
 defineProps({
     id: { type: String, default: '0' },

@@ -1,7 +1,7 @@
 <template>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(19rem, auto)); grid-gap: 1rem;">
-        <template v-for="account in accountlinks" :key="account.platform" >
-            <card-saolei v-if="account.platform == 'c'" :id="account.identifier" :verified="account.verified" :info="account.data as AccountSaolei" />
+        <template v-for="account in accountlinks" :key="account.platform">
+            <card-saolei v-if="account.platform == 'c'" :id="account.identifier" :verified="account.verified" :info="account.data as AccountSaolei" @refresh="refreshAccount(account)" />
             <card-msgames v-else-if="account.platform == 'a'" :verified="account.verified" :info="account.data as AccountMSGames" />
             <card-wo-m v-else-if="account.platform == 'w'" :id="account.identifier" :verified="account.verified" :info="account.data as AccountWoM" @refresh="refreshAccount(account)" />
         </template>

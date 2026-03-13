@@ -10,9 +10,9 @@ from userprofile.decorators import login_required_error, staff_required
 from userprofile.models import UserProfile
 from utils.exceptions import ExceptionToResponse
 from utils.response import HttpResponseConflict
-from .models import AccountLinkQueue, Platform, PLATFORM_CONFIG, VideoSaolei
-from .services import update_account
-from .tasks import task_saolei_video_import, task_update_saolei_video_list
+from .models import AccountLinkQueue, AccountSaolei, Platform, PLATFORM_CONFIG, VideoSaolei
+from .services import saolei_video_import_one, update_account
+from .tasks import task_update_saolei_video_list
 from .utils import delete_account, link_account
 
 logger = logging.getLogger('accountlink')
@@ -95,7 +95,7 @@ def verify_link(request):
     link_account(platform, identifier, user)
     accountlink.verified = True
     accountlink.save()
-    update_account(platform, user, 0)
+    update_account(platform, user)
     return HttpResponse()
 
 
@@ -120,6 +120,7 @@ def unverify_link(request):
 
 @require_POST
 @login_required_error
+@ratelimit(key='user', rate='6/h')
 def update_link(request):
     if not (platform := request.POST.get('platform')):
         return HttpResponseBadRequest()
@@ -142,12 +143,18 @@ def view_saolei_import_one_video(request):
         return HttpResponseForbidden()
     import_task = video.import_task
     if import_task:
-        if import_task.status in [TaskResultStatus.RUNNING, TaskResultStatus.READY]:
+        status = import_task.status
+        if status == TaskResultStatus.RUNNING:
             return HttpResponseConflict()
         import_task.delete()
-    video.import_task = task_saolei_video_import.enqueue(video_id).db_result
-    video.save(update_fields=['import_task'])
-    return HttpResponse()
+    
+    try:
+        saolei_video_import_one(video)
+    except ExceptionToResponse as e:
+        return e.response()
+
+    video.refresh_from_db()
+    return JsonResponse({'type': 'success', 'import_video__id': video.import_video.id})
 
 
 @require_POST
@@ -191,3 +198,26 @@ def view_saolei_import_videos(request):
     else:
         logger.warning(f"用户#{request.user.id} 已有一个扫雷网录像导入任务在进行中，无法创建新任务，模式：{mode}")
         return HttpResponseConflict()
+
+
+@require_GET
+@ratelimit(key='ip', rate='1/s')
+def view_saolei_get_import_list(request: HttpRequest):
+    videos = VideoSaolei.objects.all()
+    user_id = request.GET.get('user_id')
+    saolei_id = request.GET.get('saolei_id')
+    if user_id and saolei_id:
+        return HttpResponseBadRequest()
+    if user_id:
+        user = UserProfile.objects.filter(id=user_id).first()
+        if not user:
+            return HttpResponseNotFound()
+        videos = videos.filter(user=user.account_saolei)
+    if saolei_id:
+        account = AccountSaolei.objects.filter(id=saolei_id).first()
+        if not account:
+            return HttpResponseNotFound()
+        videos = videos.filter(user=account)
+
+    data = videos.values('id', 'user__id', 'upload_time', 'level', 'bv', 'timems', 'nf', 'state', 'import_video__id', 'import_task__status')
+    return JsonResponse(list(data), safe=False)

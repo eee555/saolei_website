@@ -8,7 +8,7 @@
                     </el-text>
                 </template>
                 <template #end>
-                    <CarouselControl :ref-carousel="refCarousel" :length="2" />
+                    <CarouselControl :ref-carousel="refCarousel" :length="carouselLength" />
                 </template>
             </pr-toolbar>
         </div>
@@ -46,41 +46,51 @@
                     </el-descriptions-item>
                 </el-descriptions>
             </el-carousel-item>
-            <el-carousel-item>
+            <el-carousel-item style="display: flex; flex-direction: column;">
                 <div>
                     <el-text size="large">
-                        统计数据
+                        {{ t('accountlink.statSummary') }}
                     </el-text>
                     &nbsp;
-                    <el-button>更新</el-button>
+                    <el-button @click="updateLink(); $emit('refresh')">
+                        {{ t('accountlink.synchronize') }}
+                    </el-button>
                 </div>
-                <el-text tag="div" size="small" style="margin-bottom: 2em; margin-top: 0.25em;">
-                    统计数据仅包括纪录、人气、录像数量
+                <el-text tag="div" size="small" style="margin-bottom: auto; margin-top: 0.25em;">
+                    {{ t('accountlink.statSummaryTooltip') }}
                 </el-text>
                 <div>
                     <el-text size="large">
-                        同步录像
+                        {{ t('accountlink.synchronizeVideos') }}
                     </el-text>
-                    &nbsp;
+                </div>
+                <div style="margin-top: 0.25em;">
                     <el-button @click="createSyncTask('new')">
-                        增量
+                        {{ t('accountlink.synchronizeNew') }}
                     </el-button>
                     <el-button @click="createSyncTask('all')">
-                        全量
+                        {{ t('accountlink.synchronizeAll') }}
+                    </el-button>
+                    <el-button @click="importQueueVisible = true">
+                        {{ t('accountlink.synchronizeManage') }}
                     </el-button>
                 </div>
-                <el-text tag="div" size="small" style="margin-bottom: 2em; margin-top: 0.25em;">
-                    同步录像会创建一个后台任务，代替您从扫雷网下载录像并上传到开源扫雷网。它会访问您的扫雷网个人地盘，逐页扫描所有录像，然后依次下载录像。增量同步扫描到没有新录像的一页即停止，消耗资源较少。全量同步会扫描每一页，消耗资源较多。
+                <el-text tag="div" size="small" style="margin-top: 0.25em;">
+                    {{ t('accountlink.synchronizeTooltip') }}
                 </el-text>
-                <div style="margin-top: 3em">
-                    <!-- 后端暂时有bug，删不掉 -->
+                <!-- 后端暂时有bug，删不掉 -->
+                <!-- <div style="margin-top: auto">
                     <el-button type="danger" plain disabled @click="deleteDialogVisible = true; confirmSaoleiId = ''">
-                        解除账号关联
+                        {{ t('accountlink.deleteLink') }}
                     </el-button>
-                </div>
+                </div> -->
             </el-carousel-item>
         </el-carousel>
-        <el-result v-else icon="warning" title="账号未验证" sub-title="请联系管理员" />
+        <UnverifiedNotice v-else />
+
+        <el-dialog v-model="importQueueVisible" destroy-on-close>
+            <VideoImportQueue :saolei-id="info.id" />
+        </el-dialog>
     </base-card-normal>
 
     <el-dialog v-model="deleteDialogVisible" title="请输入扫雷网ID" style="width: 15em">
@@ -93,18 +103,21 @@
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElCarousel, ElCarouselItem, ElDescriptions, ElDescriptionsItem, ElDialog, ElInput, ElLink, ElResult, ElText } from 'element-plus';
+import { ElButton, ElCarousel, ElCarouselItem, ElDescriptions, ElDescriptionsItem, ElDialog, ElInput, ElText } from 'element-plus';
 import PrToolbar from 'primevue/toolbar';
-import { PropType, ref } from 'vue';
+import { computed, PropType, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import CarouselControl from './CarouselControl.vue';
+import UnverifiedNotice from './UnverifiedNotice.vue';
 import { AccountSaolei, AccountSaoleiDefault } from './utils';
+import VideoImportQueue from './VideoImportQueue.vue';
 
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
-import { BaseIconNext, BaseIconPrev } from '@/components/common/icon';
 import { httpErrorNotification } from '@/components/Notifications';
+import { store } from '@/store';
 import { cs_to_s } from '@/utils';
+import { TaskStatus } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { utc_to_local_format } from '@/utils/system/tools';
 
@@ -112,14 +125,36 @@ const { t } = useI18n();
 const { proxy } = useCurrentInstance();
 
 const refCarousel = ref<typeof ElCarousel>();
+const errorMsg = ref('');
+const taskStatus = ref<TaskStatus>('');
 const deleteDialogVisible = ref(false);
+const importQueueVisible = ref(false);
 const confirmSaoleiId = ref('');
+const carouselLength = computed(() => store.player.id == store.user.id ? 2 : 1);
 
 defineProps({
     id: { type: String, default: '0' },
     verified: { type: Boolean, default: false },
     info: { type: Object as PropType<AccountSaolei>, default: () => AccountSaoleiDefault },
 });
+
+async function updateLink() {
+    taskStatus.value = 'loading';
+    await proxy.$axios.post('accountlink/update/', {
+        platform: 'c',
+    }).then(function (response) {
+        const data = response.data;
+        errorMsg.value = '';
+        taskStatus.value = data.type;
+        if (data.type == 'error') {
+            errorMsg.value = t(`errorMsg.${data.object}.title`) + t('common.punct.colon') + t(`errorMsg.${data.object}.${data.category}`);
+        }
+    }).catch(function (error) {
+        errorMsg.value = '';
+        taskStatus.value = 'error';
+        httpErrorNotification(error);
+    });
+}
 
 function deleteAccountLink() {
     proxy.$axios.post('/accountlink/delete/', {
@@ -134,4 +169,5 @@ function createSyncTask(mode: 'all' | 'new') {
     });
 }
 
+defineEmits(['refresh']);
 </script>

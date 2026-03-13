@@ -25,13 +25,27 @@ def task_saolei_profile(saolei_id: int):
 @task
 def task_update_saolei_video_list(saolei_id: int, mode: str):
     saolei_account = AccountSaolei.objects.get(id=saolei_id)
+
+    # 重新导入失败的录像
+    for saolei_video in saolei_account.videos.filter(import_video__isnull=True):
+        if saolei_video.import_task:
+            saolei_video.import_task.delete()
+        saolei_video.import_task = task_saolei_video_import.enqueue(saolei_video.id).db_result
+        saolei_video.save()
+
     page = 1
+    connection_retry = 3
     while True:
         try:
             new_video_list_page = update_saolei_user_video_one_page(saolei_account, page)
         except ExceptionToResponse as e:
             if e.obj == 'saolei' and e.category == 'page_empty':
                 break
+            elif e.obj == 'import' and e.category == 'connection':
+                if connection_retry <= 0:
+                    raise e
+                connection_retry -= 1
+                continue
             else:
                 raise e
 

@@ -50,3 +50,6 @@ export interface Record {
 }
 
 export type TaskStatus = '' | 'loading' | 'success' | 'error';
+
+export const DjangoTaskResultStatusOptions = ['READY', 'RUNNING', 'FAILED', 'SUCCESSFUL', 'NULL'] as const;
+export type DjangoTaskResultStatus = typeof DjangoTaskResultStatusOptions[number];

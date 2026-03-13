@@ -144,8 +144,8 @@ class SaoleiUtils:
         )
 
     @staticmethod
-    def get_video_list(url: str):
-        response = requests.get(url=url, timeout=5)
+    def get_video_list(url: str) -> list[SaoleiVideoInfo]:
+        response = requests.get(url=url)
         response.encoding = 'GB2312'
         soup = BeautifulSoup(response.text, 'html.parser')
 

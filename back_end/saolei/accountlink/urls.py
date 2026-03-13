@@ -11,4 +11,5 @@ urlpatterns = [
     path('unverify/', views.unverify_link),
     path('saolei_import_video/', views.view_saolei_import_one_video),
     path('saolei_import_videos/', views.view_saolei_import_videos),
+    path('saolei/videolist/get/', views.view_saolei_get_import_list),
 ]
