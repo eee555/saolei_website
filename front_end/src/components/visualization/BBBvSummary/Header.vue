@@ -14,7 +14,7 @@
         <span style="flex: 1" />
         <base-tooltip follow-cursor>
             <el-link
-                :underline="false"
+                underline="never"
                 @click="BBBvSummaryConfig.tooltipMode === 'fast' ? BBBvSummaryConfig.tooltipMode = 'advanced' : BBBvSummaryConfig.tooltipMode = 'fast'"
             >
                 {{ t(`BBBvSummary.tooltipMode.${BBBvSummaryConfig.tooltipMode}`) }}
@@ -27,7 +27,7 @@
         <Zoomer v-model="BBBvSummaryConfig.zoom" />
     </el-row>
     <el-row v-if="BBBvSummaryConfig.template === 'custom'" style="margin-top: 5px;">
-        <el-link :underline="false" @click="BBBvSummaryConfig.sortDesc = !BBBvSummaryConfig.sortDesc">
+        <el-link underline="never" @click="BBBvSummaryConfig.sortDesc = !BBBvSummaryConfig.sortDesc">
             {{ BBBvSummaryConfig.sortDesc ? t('BBBvSummary.settingMax') : t('BBBvSummary.settingMin') }}
         </el-link>
         &nbsp;

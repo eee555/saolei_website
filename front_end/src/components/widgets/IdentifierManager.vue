@@ -18,7 +18,7 @@
                 <template #default="scope">
                     <!-- 添加标识 -->
                     <el-link
-                        v-if="scope.row.data === ''" :underline="false"
+                        v-if="scope.row.data === ''" underline="never"
                         @click="addIdentifier(new_identifiers)"
                     >
                         <base-icon-add />
@@ -28,7 +28,7 @@
                     &nbsp;
                     <!-- 删除标识 -->
                     <el-link
-                        v-if="store.player.id == store.user.id && scope.row.data !== ''" :underline="false"
+                        v-if="store.player.id == store.user.id && scope.row.data !== ''" underline="never"
                         type="danger" @click="delIdentifier(scope.row.data)"
                     >
                         <base-icon-delete />

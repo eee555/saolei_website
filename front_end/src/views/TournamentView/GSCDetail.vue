@@ -42,7 +42,7 @@
                 <template #label>
                     <el-text>{{ participant.user__realname }}</el-text>
                     &nbsp;
-                    <el-link :underline="false" @click="handleAllSummaryTabClose(index)">
+                    <el-link underline="never" @click="handleAllSummaryTabClose(index)">
                         <base-icon-close style="scale: 65%" />
                     </el-link>
                 </template>

@@ -60,6 +60,8 @@ export function upload_form(file: UploadRawFile, video: AnyVideo | null): Upload
 
 export function get_upload_status(file: UploadRawFile, video: AnyVideo | null, identifiers: Array<string>) {
     // const decoder = new TextDecoder();
+    console.log(video!.is_valid());
+    
     if (video === null) return 'fileext';
     if (video.level == 6) return 'custom';
     if (file.name.length >= 100) return 'filename';
