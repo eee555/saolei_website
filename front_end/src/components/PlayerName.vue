@@ -30,10 +30,10 @@
 
             </div>
             <template #reference>
-                <el-link :underline="false" @click="visible = !visible;">{{ data.userName }}</el-link>
+                <el-link underline="never" @click="visible = !visible;">{{ data.userName }}</el-link>
             </template>
         </el-popover>
-        <el-link v-else :underline="false" @click="render = true; visible = true;">{{ data.userName }}</el-link>
+        <el-link v-else underline="never" @click="render = true; visible = true;">{{ data.userName }}</el-link>
     </span>
 </template>
 

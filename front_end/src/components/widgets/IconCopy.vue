@@ -1,5 +1,5 @@
 <template>
-    <el-link :underline="false" @click="copyToClipboard(text)">
+    <el-link underline="never" @click="copyToClipboard(text)">
         <base-icon-copy />
     </el-link>
 </template>

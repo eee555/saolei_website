@@ -13,13 +13,13 @@
         <el-input-number v-model="operationNode" :controls="false" style="width: 40px" />
         &nbsp;
         <el-tooltip content="Add">
-            <el-link :underline="false">
+            <el-link underline="never">
                 <base-icon-add />
             </el-link>
         </el-tooltip>
         &nbsp;
         <el-tooltip content="Merge to left">
-            <el-link :underline="false">
+            <el-link underline="never">
                 <el-icon size="large">
                     <ArrowLeft />
                 </el-icon>
@@ -27,7 +27,7 @@
         </el-tooltip>
         &nbsp;
         <el-tooltip content="Merge to right">
-            <el-link :underline="false">
+            <el-link underline="never">
                 <el-icon size="large">
                     <ArrowRight />
                 </el-icon>

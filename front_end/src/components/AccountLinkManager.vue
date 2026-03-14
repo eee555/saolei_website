@@ -41,12 +41,12 @@
         </el-table-column>
         <el-table-column v-if="store.player.id == store.user.id" :label="t('common.prop.action')">
             <template #default="scope">
-                <el-link :underline="false" type="danger" @click.prevent="deleteRow(scope.row)">
+                <el-link underline="never" type="danger" @click.prevent="deleteRow(scope.row)">
                     <base-icon-delete />
                 </el-link>
                 &nbsp;
                 <el-link
-                    v-if="scope.row.data !== undefined && scope.row.platform !== 'q'" :underline="false"
+                    v-if="scope.row.data !== undefined && scope.row.platform !== 'q'" underline="never"
                     @click.prevent="updateRow(scope.row)"
                 >
                     <base-icon-refresh />

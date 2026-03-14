@@ -27,7 +27,7 @@
             <!-- 忘记密码 -->
             <el-form-item>
                 <el-link
-                    :underline="false" type="primary"
+                    underline="never" type="primary"
                     style="vertical-align: bottom;" @click="emit('forgetPassword')"
                 >
                     {{ t('login.forgetPassword') }}

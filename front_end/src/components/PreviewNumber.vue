@@ -1,5 +1,5 @@
 <template>
-    <el-link v-if="data.id" :underline="false" class="clickable" @click="preview(data.id);">
+    <el-link v-if="data.id" underline="never" class="clickable" @click="preview(data.id);">
         {{ data.text }}
     </el-link>
     <span v-else>--</span>
