@@ -8,7 +8,7 @@ django-ratelimit==4.1.0
 django-redis==5.4.0
 django-simple-captcha>=0.5.18
 lxml>=6.0.2
-ms_toollib==1.5.2
+ms_toollib
 psutil==5.9.1
 pymysql>=1.1.0
 redis>=5.0.1
