@@ -1,5 +1,6 @@
 <template>
-    <el-row>
+    <div>
+        <el-row>
         <el-select v-model="BBBvSummaryConfig.template" size="small" style="width: 80px">
             <el-option :label="t('common.prop.bvs')" value="bvs" />
             <el-option :label="t('common.prop.time')" value="time" />
@@ -49,6 +50,7 @@
             <el-option :label="t('common.prop.path')" value="path" />
         </el-select>
     </el-row>
+    </div>
 </template>
 
 <script setup lang="ts">
