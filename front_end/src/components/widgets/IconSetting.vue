@@ -1,6 +1,6 @@
 <template>
     <tippy interactive animate-fill arrow trigger="click" :append-to="'parent'">
-        <el-link :underline="false">
+        <el-link underline="never">
             <base-icon-setting />
         </el-link>
         <template #content>

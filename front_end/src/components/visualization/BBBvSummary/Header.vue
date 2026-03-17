@@ -1,5 +1,6 @@
 <template>
-    <el-row>
+    <div>
+        <el-row>
         <el-select v-model="BBBvSummaryConfig.template" size="small" style="width: 80px">
             <el-option :label="t('common.prop.bvs')" value="bvs" />
             <el-option :label="t('common.prop.time')" value="time" />
@@ -14,7 +15,7 @@
         <span style="flex: 1" />
         <base-tooltip follow-cursor>
             <el-link
-                :underline="false"
+                underline="never"
                 @click="BBBvSummaryConfig.tooltipMode === 'fast' ? BBBvSummaryConfig.tooltipMode = 'advanced' : BBBvSummaryConfig.tooltipMode = 'fast'"
             >
                 {{ t(`BBBvSummary.tooltipMode.${BBBvSummaryConfig.tooltipMode}`) }}
@@ -27,7 +28,7 @@
         <Zoomer v-model="BBBvSummaryConfig.zoom" />
     </el-row>
     <el-row v-if="BBBvSummaryConfig.template === 'custom'" style="margin-top: 5px;">
-        <el-link :underline="false" @click="BBBvSummaryConfig.sortDesc = !BBBvSummaryConfig.sortDesc">
+        <el-link underline="never" @click="BBBvSummaryConfig.sortDesc = !BBBvSummaryConfig.sortDesc">
             {{ BBBvSummaryConfig.sortDesc ? t('BBBvSummary.settingMax') : t('BBBvSummary.settingMin') }}
         </el-link>
         &nbsp;
@@ -49,6 +50,7 @@
             <el-option :label="t('common.prop.path')" value="path" />
         </el-select>
     </el-row>
+    </div>
 </template>
 
 <script setup lang="ts">

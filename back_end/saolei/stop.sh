@@ -1,7 +1,7 @@
 # 假如有多个同名进程将不适用
-pkill -f uwsgi
+sudo pkill -9 uwsgi
 
-pkill -f runapschedulermonitor
-pkill -f runapscheduleruserprofile
-pkill -f runapschedulervideomanager
+sudo pkill -9 runapschedulermonitor
+sudo pkill -9 runapscheduleruserprofile
+sudo pkill -9 runapschedulervideomanager
 

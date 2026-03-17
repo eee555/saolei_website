@@ -12,7 +12,7 @@
                                 </el-icon>
                             </el-text>
                             <el-link
-                                v-else-if="active_tab == 'newest'" :underline="false"
+                                v-else-if="active_tab == 'newest'" underline="never"
                                 :disabled="news_queue_status != 0" style="vertical-align: baseline;" @click="update_news_queue"
                             >
                                 <base-icon-refresh />
@@ -46,7 +46,7 @@
                                 </el-icon>
                             </el-text>
                             <el-link
-                                v-else-if="active_tab == 'newest'" :underline="false"
+                                v-else-if="active_tab == 'newest'" underline="never"
                                 :disabled="newest_queue_status != 0" style="vertical-align: baseline;" @click="update_newest_queue"
                             >
                                 <base-icon-refresh />

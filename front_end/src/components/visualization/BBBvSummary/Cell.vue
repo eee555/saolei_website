@@ -3,7 +3,7 @@
         <template v-if="bestIndex == -1">
             &nbsp;
         </template>
-        <el-link v-else :underline="false" @click="handleClick">
+        <el-link v-else underline="never" @click="handleClick">
             {{ videos[bestIndex].displayStat(displayBy) }}
         </el-link>
     </span>

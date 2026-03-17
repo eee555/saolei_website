@@ -1,6 +1,6 @@
 <template>
     <tippy v-if="video" class="cell" :style="{ backgroundColor: color }" :duration="0" sticky>
-        <el-link :underline="false" @click="preview(video.id)">
+        <el-link underline="never" @click="preview(video.id)">
             {{ video.displayStat(displayBy) }}
         </el-link>
         <template #content>
