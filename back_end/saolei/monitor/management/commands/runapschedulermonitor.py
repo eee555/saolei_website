@@ -27,8 +27,6 @@ def refresh_state_always():
     cache.set("io_r_old", str(net_io.bytes_recv))
     io_s_spd = (net_io.bytes_sent - float(net_io_sent_old)) / 5
     io_r_spd = (net_io.bytes_recv - float(net_io_recv_old)) / 5
-    # print(io_s_spd)
-    # print(io_r_spd)
     # cache.set("io_s_spd", str((net_io.bytes_sent - float(net_io_sent_old)) / 5))
     # cache.set("io_r_spd", str((net_io.bytes_recv - float(net_io_recv_old)) / 5))
     cache.rpush("io_s_spds", str(io_s_spd))

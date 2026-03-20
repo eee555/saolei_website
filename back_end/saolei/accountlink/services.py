@@ -31,7 +31,6 @@ def update_account(platform: Platform, user: UserProfile):
 def update_saolei_account_info(account: AccountSaolei):
     try:
         profile = fetch_saolei_profile(account.id)
-        print(profile)
     except requests.exceptions.Timeout:  # 请求超时
         logger.error(f"雷网 用户#{account.id} 信息获取失败：请求超时")
         raise ExceptionToResponse(obj='import', category='timeout')

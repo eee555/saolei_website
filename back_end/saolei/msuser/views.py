@@ -188,7 +188,6 @@ def update_signature(request):
             return JsonResponse({"status": 107, "msg": "未知错误。可能原因：不支持此种字符"})
     else:
         ErrorDict = json.loads(user_update_form.errors.as_json())
-        # print(ErrorDict)
         Error = ErrorDict[next(iter(ErrorDict))][0]['message']
         return JsonResponse({"status": 101, "msg": Error})
 

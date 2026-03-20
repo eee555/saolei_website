@@ -28,7 +28,6 @@ class ExpandVideoModel(models.Model):
 
 # @receiver(post_save, sender=VideoModel)
 # def create_expand_video(sender, instance, created, **kwargs):
-#    print(kwargs)
 #    if created:
 #        ExpandVideoModel.objects.create(user=instance)
 
@@ -306,7 +305,6 @@ class VideoModel(models.Model):
         ms_user: UserMS = user.userms
         if ms_user.e_timems_std >= 60000 and (index != "timems" or self.level != "e"):
             return
-        # print(f"{type(index)} {index}") # 调试用
         value = f"{getattr(self, index) / 1000:.3f}" if index == "timems" else f"{getattr(self, index):.3f}"
         delta_number = getattr(self, index) - \
             ms_user.getrecord(self.level, index, mode)

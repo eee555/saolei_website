@@ -49,7 +49,6 @@ def video_preview(request: HttpRequest):
     if video.ongoing_tournament and request.user != video.player:
         return HttpResponseForbidden()
     # video.file.name是相对路径(含upload_to)，video.file.path是绝对路径
-    # print(settings.MEDIA_ROOT / "assets" / video.file.name)
     file_path = settings.MEDIA_ROOT / video.file.name
     response = FileResponse(open(file_path, 'rb'))
     response['Content-Type'] = 'application/octet-stream'
@@ -118,7 +117,6 @@ def video_query(request: HttpRequest):
     if not request.user.is_staff:
         videos = videos.filter(ongoing_tournament=False)
 
-    # print(videos)
     paginator = Paginator(videos, data["ps"])
     page_number = data["page"]
     page_videos = paginator.get_page(page_number)
@@ -127,7 +125,6 @@ def video_query(request: HttpRequest):
         "videos": list(page_videos),
     }
     # t=json.dumps(response, cls=ComplexEncoder)
-    # print(t)
     return JsonResponse(json.dumps(response, cls=ComplexEncoder), safe=False)
 
 
@@ -145,7 +142,6 @@ def video_query_by_id(request: HttpRequest):
         'id', 'upload_time', "end_time", "level", "mode", "timems", "bv", "bvs", "state", "video__identifier",
         "software", "flag", "cell0", "cell1", "cell2", "cell3", "cell4", "cell5", "cell6", "cell7", "cell8", "left", "right", "double", "op", "isl", "path",
     )
-    # print(list(videos))
 
     return JsonResponse(list(videos), safe=False)
 

@@ -90,7 +90,6 @@ class UserUpdateSignatureForm(forms.ModelForm):
         n_add = delta_t.days // 365
         self.user.left_signature_n += n_add
         self.user.last_change_signature += timezone.timedelta(days=n_add * 365)
-        # print(self.user.left_signature_n)
         if self.user.left_signature_n <= 0:
             raise forms.ValidationError("个性签名剩余修改次数不足！", code='no_times')
         else:
