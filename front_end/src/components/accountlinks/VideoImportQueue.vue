@@ -47,12 +47,12 @@
         <PrColumn field="bv" :header="t('common.prop.bv')" sortable />
         <PrColumn field="import_task__status" :header="t('common.prop.state')" :show-filter-match-modes="false" :show-filter-operator="false" :show-apply-button="false" :show-clear-button="false" :filter-header-style="{ marginInlineStart: '0px' }">
             <template #body="{ data }: { data: SaoleiVideo }">
-                <DjangoTaskResultStatusBadge :state="data.import_task__status" />
+                <DjangoTaskResultStatusBadge :status="data.import_task__status" />
             </template>
             <template #filter="{ filterModel, filterCallback }">
                 <PrListbox v-model="filterModel.value" :options="[...DjangoTaskResultStatusOptions]" @change="filterCallback()">
                     <template #option="slotProps">
-                        <DjangoTaskResultStatusBadge :state="slotProps.option" />
+                        <DjangoTaskResultStatusBadge :status="slotProps.option" />
                     </template>
                 </PrListbox>
             </template>
@@ -82,7 +82,7 @@ import { utc_to_local_format } from '@/utils/system/tools';
 
 
 const filters = ref({
-    'import_task__status': { value: [...DjangoTaskResultStatusOptions], matchMode: FilterMatchMode.IN },
+    'import_task__status': { value: [...DjangoTaskResultStatusOptions], matchMode: FilterMatchMode.EQUALS },
     'level': { value: null, matchMode: FilterMatchMode.EQUALS },
 });
 

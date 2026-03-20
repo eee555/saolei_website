@@ -118,3 +118,25 @@ export interface SaoleiVideo {
     import_video__id: number;
     import_task__status: DjangoTaskResultStatus;
 }
+
+export interface SaoleiImportSummary {
+    bulk_task_status: DjangoTaskResultStatus;
+    total: number;
+    old_imported: number;
+    new_total: number;
+    new_ready: number;
+    new_success: number;
+    new_failed: number;
+    new_connection: number;
+}
+
+export const SaoleiImportSummaryDefault: SaoleiImportSummary = {
+    bulk_task_status: 'NULL',
+    total: 0,
+    old_imported: 0,
+    new_total: 0,
+    new_ready: 0,
+    new_success: 0,
+    new_failed: 0,
+    new_connection: 0,
+};

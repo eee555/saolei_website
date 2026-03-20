@@ -104,21 +104,22 @@ const filters = ref({
     status: { value: null, matchMode: FilterMatchMode.EQUALS },
 });
 
-function refresh() {
-    proxy.$axios.get('/common/staff/taskdetail/').then((response) => {
+async function refresh() {
+    await proxy.$axios.get('/common/staff/taskdetail/').then((response) => {
         taskData.value = response.data;
     });
 }
 
 onMounted(refresh);
 
-function deleteSelected() {
-    selectedTasks.value.splice(0, selectedTasks.value.length);
+async function deleteSelected() {
+    if (selectedTasks.value.length === 0) return;
     for (const task of selectedTasks.value) {
-        proxy.$axios.post('/common/staff/taskdelete/', {
+        await proxy.$axios.post('/common/staff/taskdelete/', {
             task_id: task.id,
         });
     }
+    selectedTasks.value.splice(0, selectedTasks.value.length);
     refresh();
 }
 
