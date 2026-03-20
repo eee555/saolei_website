@@ -5,12 +5,10 @@ import struct
 from django_redis import get_redis_connection
 import ms_toollib as ms
 
-from accountlink.models import AccountSaolei
 from config.global_settings import GameLevels
 from config.text_choices import MS_TextChoices
 from msuser.models import UserMS
 from userprofile.models import UserProfile
-from utils.getOldWebData import Level, VideoData
 from .models import ExpandVideoModel, VideoModel
 
 logger = logging.getLogger('videomanager')
