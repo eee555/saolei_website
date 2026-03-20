@@ -3,6 +3,7 @@ import StackBar from './App.vue';
 describe('<StackBar />', () => {
     it('renders', () => {
     // see: https://on.cypress.io/mounting-vue
+        cy.viewport(616, 30);
         cy.mount(StackBar, {
             props: {
                 data: [
@@ -10,7 +11,6 @@ describe('<StackBar />', () => {
                     { name: 'B', value: 20, color: '#00FF00' },
                     { name: 'C', value: 30, color: '#0000FF' },
                 ],
-                style: 'width: 600px;',
             },
         });
         cy.get('[data-cy=A]').should('have.css', 'background-color', 'rgb(255, 0, 0)');
@@ -21,6 +21,7 @@ describe('<StackBar />', () => {
         cy.get('[data-cy=C]').should('have.css', 'width', '300px');
     });
     it('tooltip', () => {
+        cy.viewport(616, 30);
         cy.mount(StackBar, {
             props: {
                 data: [
@@ -44,6 +45,7 @@ describe('<StackBar />', () => {
         cy.get('[data-cy=C]').trigger('mouseleave');
     });
     it('reactive to data', () => {
+        cy.viewport(616, 30);
         const data = [
             { name: 'A', value: 10, color: '#FF0000' },
             { name: 'B', value: 20, color: '#00FF00' },
