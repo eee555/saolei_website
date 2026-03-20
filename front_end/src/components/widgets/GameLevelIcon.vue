@@ -1,38 +1,27 @@
 <template>
     <base-tooltip v-if="level == 'b'" :show-delay="500">
-        <el-text>
-            {{ t('common.level.b') }}
-        </el-text>
+        <span class="text-normal">{{ t('common.level.b') }}</span>
         <template #content>
-            <el-text size="small">
-                8x8/10
-            </el-text>
+            <span class="text-small">8x8/10</span>
         </template>
     </base-tooltip>
     <base-tooltip v-else-if="level == 'i'" :show-delay="500">
-        <el-text>
-            {{ t('common.level.i') }}
-        </el-text>
+        <span class="text-normal">{{ t('common.level.i') }}</span>
         <template #content>
-            <el-text size="small">
-                16x16/40
-            </el-text>
+            <span class="text-small">16x16/40</span>
         </template>
     </base-tooltip>
     <base-tooltip v-else-if="level == 'e'" :show-delay="500">
-        <el-text>
-            {{ t('common.level.e') }}
-        </el-text>
+        <span class="text-normal">{{ t('common.level.e') }}</span>
         <template #content>
-            <el-text size="small">
-                30x16/99
-            </el-text>
+            <span class="text-small">30x16/99</span>
         </template>
     </base-tooltip>
 </template>
 
 <script setup lang="ts">
-import { ElText } from 'element-plus';
+import '@/styles/text.css';
+
 import { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 

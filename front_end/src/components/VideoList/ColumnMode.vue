@@ -1,9 +1,9 @@
 <template>
     <PrColumn field="mode" :show-filter-match-modes="false" :show-filter-operator="false" style="width: 5em">
         <template #body="{ data }">
-            <el-text>
+            <span class="text-normal">
                 {{ t(`common.mode.code${data.mode}`) }}
-            </el-text>
+            </span>
         </template>
         <template #filter="{ filterModel, filterCallback }">
             <PrListbox v-model="filterModel.value" :options="Object.values(MS_Mode)" multiple @change="filterCallback()">
@@ -16,8 +16,8 @@
 </template>
 
 <script setup lang="ts">
+import '@/styles/text.css';
 
-import { ElText } from 'element-plus';
 import PrColumn from 'primevue/column';
 import PrListbox from 'primevue/listbox';
 import { useI18n } from 'vue-i18n';

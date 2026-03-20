@@ -1,14 +1,14 @@
 <template>
     <PrColumn :header="t(`common.prop.${ stat}`)" :sortable="sortable" :sort-field="(data) => data.getStat(stat)">
         <template #body="{data}: {data: VideoAbstract}">
-            <el-text>{{ data.displayStat(stat) }}</el-text>
+            <span class="text-normal">{{ data.displayStat(stat) }}</span>
         </template>
     </PrColumn>
 </template>
 
 <script setup lang="ts">
+import '@/styles/text.css';
 
-import { ElText } from 'element-plus';
 import PrColumn from 'primevue/column';
 import { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
