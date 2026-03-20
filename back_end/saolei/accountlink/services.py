@@ -1,9 +1,8 @@
 from datetime import datetime, timezone
 import logging
-from django_tasks import TaskResultStatus
-import requests
 
 from django.core.files.base import ContentFile
+import requests
 
 from config.text_choices import MS_TextChoices, Saolei_TextChoices
 from identifier.models import Identifier
@@ -15,7 +14,7 @@ from utils.parser import MSVideoParser
 from utils.saolei import SaoleiUserInfo, SaoleiUtils
 from videomanager.models import VideoModel
 
-from .models import AccountSaolei, VideoSaolei, Platform
+from .models import AccountSaolei, Platform, VideoSaolei
 from .utils import fetch_saolei_profile, fetch_saolei_video_download_and_state, update_msgames_account, update_wom_account
 
 logger = logging.getLogger('accountlink')
@@ -144,19 +143,3 @@ def saolei_video_import_one(saolei_video: VideoSaolei):
     except BaseException as e:
         logger.error(f"雷网 录像#{saolei_video.id} 下载失败：未知错误")
         raise e
-
-
-def saolei_video_import_progress(saolei_account: AccountSaolei):
-    # 查询导入状态
-    all_videos = VideoSaolei.objects.filter(user=saolei_account)
-    active_videos = all_videos.filter(import_task__isnull=False)
-
-    return {
-        'total': all_videos.count(),
-        'old_imported': all_videos.filter(import_task__isnull=True, import_video__isnull=False).count(),
-        'active': active_videos.count(),
-        'active_successful': active_videos.filter(import_task__status=TaskResultStatus.SUCCESSFUL).count(),
-        'active_failed': active_videos.filter(import_task__status=TaskResultStatus.FAILED).count(),
-        'active_ready': active_videos.filter(import_task__status=TaskResultStatus.READY).count(),
-        'running': active_videos.filter(import_task__status=TaskResultStatus.RUNNING).values('id'),
-    }

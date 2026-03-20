@@ -2,9 +2,9 @@
 from django.db import models
 from django_tasks_db.models import DBTaskResult
 
+from config.text_choices import MS_TextChoices, Saolei_TextChoices
 from userprofile.models import UserProfile
 from videomanager.models import VideoModel
-from config.text_choices import MS_TextChoices, Saolei_TextChoices
 
 
 class Platform(models.TextChoices):
@@ -45,7 +45,7 @@ class AccountLinkQueue(models.Model):
 class AccountSaolei(models.Model):
     id = models.PositiveIntegerField(primary_key=True)
     parent = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='account_saolei')
-    update_time = models.DateTimeField()
+    update_time = models.DateTimeField(auto_now_add=True)
 
     video_import_task = models.ForeignKey(DBTaskResult, on_delete=models.SET_NULL, null=True)
 

@@ -1,19 +1,17 @@
-from datetime import datetime, timezone
+from datetime import datetime
 import logging
 
 from django.core.files import File
-import ms_toollib as ms
 
-from config.text_choices import MS_TextChoices, Tournament_TextChoices
+from config.text_choices import MS_TextChoices
+from identifier.models import Identifier
 from identifier.utils import verify_identifier
 from msuser.models import UserMS
-from tournament.models import GSCParticipant, GSCTournament, TournamentParticipant
+from tournament.utils import video_checkin
 from userprofile.models import UserProfile
 from utils.exceptions import ExceptionToResponse
-from videomanager.models import ExpandVideoModel, VideoModel
+from videomanager.models import VideoModel
 from utils.parser import MSVideoParser
-from tournament.utils import video_checkin
-from identifier.models import Identifier
 
 logger = logging.getLogger('videomanager')
 

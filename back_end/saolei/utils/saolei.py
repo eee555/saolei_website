@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta, timezone
-import requests
-from bs4 import BeautifulSoup, element
 import re
+
+from bs4 import BeautifulSoup, element
+import requests
 
 
 SAOLEI_LEVEL = {
@@ -42,7 +43,7 @@ class SaoleiVideoInfo:
             'timems': self.timems,
             'nf': self.nf,
             'upload_time': self.upload_time,
-            'verified': self.verified
+            'verified': self.verified,
         }
 
     @property
@@ -140,7 +141,7 @@ class SaoleiUtils:
             timems=timems,
             nf=nf,
             upload_time=upload_time,
-            verified=verified
+            verified=verified,
         )
 
     @staticmethod

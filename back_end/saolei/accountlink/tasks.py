@@ -6,7 +6,6 @@ from django_tasks import TaskResultStatus
 from django_tasks_db.models import DBTaskResult
 
 from utils.exceptions import ExceptionToResponse
-
 from .models import AccountSaolei, VideoSaolei
 from .services import saolei_video_import_one, update_saolei_account_info, update_saolei_user_video_one_page
 
@@ -31,7 +30,7 @@ def helper_saolei_video_import_bulk(saolei_account: AccountSaolei, mode: Literal
     finished_saolei_videos = VideoSaolei.objects.filter(
         user=saolei_account,
         import_video__isnull=False,
-        import_task__isnull=False
+        import_task__isnull=False,
     ).values_list('import_task__id', flat=True)
     DBTaskResult.objects.filter(id__in=finished_saolei_videos).delete()
 

@@ -224,7 +224,7 @@ const stackBarNewData = computed(() => [
     { name: '排队中', color: '#60a5fa', value: importSummary.value.new_ready },
     { name: '连接失败', color: '#c084fc', value: importSummary.value.new_connection },
     { name: '严重错误', color: '#f43f5e', value: importSummary.value.new_failed },
-])
+]);
 
 async function getImportSummary() {
     if (props.info.id == 0) return;

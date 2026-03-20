@@ -1,10 +1,11 @@
-from .models import TournamentParticipant, GSCTournament, GSCParticipant
-from videomanager.models import VideoModel
 from config.text_choices import MS_TextChoices, Tournament_TextChoices
+from videomanager.models import VideoModel
+from .models import GSCParticipant, GSCTournament, TournamentParticipant
 
 
 def participant_videos(participant: TournamentParticipant):
     return list(participant.videos.values('id', 'upload_time', "level", "mode", "timems", "bv", "state", "software", "cl", "ce", "file_size", "end_time", 'path'))
+
 
 def video_checkin(video: VideoModel, tournament_identifiers: list[str]):
     user = video.player

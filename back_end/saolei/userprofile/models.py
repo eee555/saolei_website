@@ -98,7 +98,7 @@ class UserProfile(AbstractUser):
     # 检查用户是否可以加入排行，并更新排行榜
     def check_ms_ranking(self, statname: str, mode: str):
         for level in GameLevels:
-            if not isbetter(statname, self.userms.getrecord(level, statname, mode), getattr(DefaultRankingScores,statname)):
+            if not isbetter(statname, self.userms.getrecord(level, statname, mode), getattr(DefaultRankingScores, statname)):
                 return
         self.userms.update_3_level_cache_record(self.realname, statname, mode)
 

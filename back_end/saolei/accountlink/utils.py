@@ -76,7 +76,7 @@ def fetch_saolei_profile(saolei_id: int):
         'b': b_t_ms,
         'i': i_t_ms,
         'e': e_t_ms,
-        's': s_t_ms
+        's': s_t_ms,
     }
 
     values = tree.xpath('//tr/td[2]/a[2]/text()')
@@ -95,7 +95,7 @@ def fetch_saolei_profile(saolei_id: int):
         'b': b_b_cent,
         'i': i_b_cent,
         'e': e_b_cent,
-        's': s_b_cent
+        's': s_b_cent,
     }
 
     tree = etree.HTML(VideoHtmlStr)
@@ -111,7 +111,7 @@ def fetch_saolei_profile(saolei_id: int):
     count = {
         'b': beg_count,
         'i': int_count,
-        'e': exp_count
+        'e': exp_count,
     }
 
     return {"name": name, "total_views": total_views, "timems": timems, "bvs_cent": bvs_cent, "count": count}

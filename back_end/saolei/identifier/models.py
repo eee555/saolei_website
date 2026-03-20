@@ -1,9 +1,10 @@
-from django.db import models
 import logging
 
+from django.db import models
+
 from msuser.models import UserMS
-from utils.exceptions import ExceptionToResponse
 from utils import verify_text
+from utils.exceptions import ExceptionToResponse
 
 logger = logging.getLogger('videomanager')
 
@@ -25,4 +26,3 @@ class Identifier(models.Model):
         identifier = Identifier.objects.create(identifier=identifier_text, safe=verify_text(identifier_text))
         logger.info(f'新标识 "{identifier}" 审查 {identifier.safe}')
         return False
-            
