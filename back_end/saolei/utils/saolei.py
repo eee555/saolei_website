@@ -26,8 +26,8 @@ class SaoleiVideoInfo:
     upload_time: datetime
     state: str
 
-    def __init__(self, id: int, level: int, bv: int, timems: int, nf: bool, upload_time: datetime, verified: bool):
-        self.id = id
+    def __init__(self, video_id: int, level: int, bv: int, timems: int, nf: bool, upload_time: datetime, verified: bool):
+        self.id = video_id
         self.level = level
         self.bv = bv
         self.timems = timems

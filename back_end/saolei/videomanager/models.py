@@ -11,8 +11,8 @@ from msuser.models import UserMS
 from userprofile.models import UserProfile
 from utils import ComplexEncoder
 from utils.cmp import isbetter
-from .fields import RestrictedFileField
 from utils.parser import MSVideoParser
+from .fields import RestrictedFileField
 
 cache = get_redis_connection("saolei_website")
 logger = logging.getLogger('videomanager')

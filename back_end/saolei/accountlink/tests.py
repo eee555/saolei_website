@@ -5,7 +5,8 @@ from django.test import TestCase
 
 from userprofile.models import UserProfile
 from .models import AccountMinesweeperGames, AccountSaolei, AccountWorldOfMinesweeper
-from .utils import update_msgames_account, update_saolei_account, update_wom_account
+from .services import update_saolei_account_info
+from .utils import update_msgames_account, update_wom_account
 
 
 class AccountLinkTestCase(TestCase):
@@ -17,7 +18,7 @@ class AccountLinkTestCase(TestCase):
 
     def test_update_saolei(self):
         account = AccountSaolei.objects.filter(id=1).first()
-        self.assertEqual(update_saolei_account(account, 0), '')
+        self.assertEqual(update_saolei_account_info(account), '')
         account = AccountSaolei.objects.filter(id=1).first()
         self.assertEqual(account.id, 1)
         self.assertEqual(account.name, '张砷镓')

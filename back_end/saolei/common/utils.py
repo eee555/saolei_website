@@ -10,8 +10,8 @@ from msuser.models import UserMS
 from tournament.utils import video_checkin
 from userprofile.models import UserProfile
 from utils.exceptions import ExceptionToResponse
-from videomanager.models import VideoModel
 from utils.parser import MSVideoParser
+from videomanager.models import VideoModel
 
 logger = logging.getLogger('videomanager')
 
