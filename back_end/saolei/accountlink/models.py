@@ -45,7 +45,7 @@ class AccountLinkQueue(models.Model):
 class AccountSaolei(models.Model):
     id = models.PositiveIntegerField(primary_key=True)
     parent = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='account_saolei')
-    update_time = models.DateTimeField(auto_now=True)
+    update_time = models.DateTimeField()
 
     video_import_task = models.ForeignKey(DBTaskResult, on_delete=models.SET_NULL, null=True)
 

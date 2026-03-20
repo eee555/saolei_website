@@ -1,4 +1,6 @@
+from datetime import datetime, timezone
 import logging
+from django_tasks import TaskResultStatus
 import requests
 
 from django.core.files.base import ContentFile
@@ -58,6 +60,8 @@ def update_saolei_account_info(account: AccountSaolei):
     account.int_count = profile['count']['i']
     account.exp_count = profile['count']['e']
 
+    account.update_time = datetime.now(tz=timezone.utc)
+
     account.save()
 
 
@@ -89,7 +93,6 @@ def update_saolei_user_video_one_page(account: AccountSaolei, page: int):
 # 导入一个扫雷网录像
 def saolei_video_import_one(saolei_video: VideoSaolei):
     logger.info(f"开始导入扫雷网录像#{saolei_video.id}")
-
     try:
         download_url, state = fetch_saolei_video_download_and_state(saolei_video.id)
         saolei_video.state = state
@@ -100,6 +103,7 @@ def saolei_video_import_one(saolei_video: VideoSaolei):
             return
 
         file_name = download_url.split('/')[-1]
+
         response = requests.get(url=download_url, timeout=5)
         file_size = response.headers.get('Content-Length')
         if file_size is None:
@@ -140,3 +144,19 @@ def saolei_video_import_one(saolei_video: VideoSaolei):
     except BaseException as e:
         logger.error(f"雷网 录像#{saolei_video.id} 下载失败：未知错误")
         raise e
+
+
+def saolei_video_import_progress(saolei_account: AccountSaolei):
+    # 查询导入状态
+    all_videos = VideoSaolei.objects.filter(user=saolei_account)
+    active_videos = all_videos.filter(import_task__isnull=False)
+
+    return {
+        'total': all_videos.count(),
+        'old_imported': all_videos.filter(import_task__isnull=True, import_video__isnull=False).count(),
+        'active': active_videos.count(),
+        'active_successful': active_videos.filter(import_task__status=TaskResultStatus.SUCCESSFUL).count(),
+        'active_failed': active_videos.filter(import_task__status=TaskResultStatus.FAILED).count(),
+        'active_ready': active_videos.filter(import_task__status=TaskResultStatus.READY).count(),
+        'running': active_videos.filter(import_task__status=TaskResultStatus.RUNNING).values('id'),
+    }

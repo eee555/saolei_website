@@ -12,7 +12,7 @@ from utils.exceptions import ExceptionToResponse
 from utils.response import HttpResponseConflict
 from .models import AccountLinkQueue, AccountSaolei, Platform, PLATFORM_CONFIG, VideoSaolei
 from .services import saolei_video_import_one, update_account
-from .tasks import task_update_saolei_video_list
+from .tasks import helper_saolei_video_import_bulk
 from .utils import delete_account, link_account
 
 logger = logging.getLogger('accountlink')
@@ -144,10 +144,10 @@ def view_saolei_import_one_video(request):
     import_task = video.import_task
     if import_task:
         status = import_task.status
-        if status == TaskResultStatus.RUNNING:
+        if status in [TaskResultStatus.READY, TaskResultStatus.RUNNING]:
             return HttpResponseConflict()
         import_task.delete()
-    
+
     try:
         saolei_video_import_one(video)
     except ExceptionToResponse as e:
@@ -184,20 +184,13 @@ def view_saolei_import_videos(request):
         return HttpResponseBadRequest()
 
     import_task = saolei_account.video_import_task
-    if not import_task:
-        logger.info(f"用户#{request.user.id} 开始创建扫雷网录像导入任务，模式：{mode}")
-        saolei_account.video_import_task = task_update_saolei_video_list.enqueue(saolei_account.id, mode).db_result
-        saolei_account.save(update_fields=['video_import_task'])
-        return HttpResponse()
-    elif import_task.status in [TaskResultStatus.SUCCESSFUL, TaskResultStatus.FAILED]:
-        logger.info(f"用户#{request.user.id} 的上个扫雷网录像导入任务已完成，开始创建新任务，模式：{mode}")
-        saolei_account.video_import_task.delete()  # 删除已完成的任务记录
-        saolei_account.video_import_task = task_update_saolei_video_list.enqueue(saolei_account.id, mode).db_result
-        saolei_account.save(update_fields=['video_import_task'])
-        return HttpResponse()
-    else:
-        logger.warning(f"用户#{request.user.id} 已有一个扫雷网录像导入任务在进行中，无法创建新任务，模式：{mode}")
+    if import_task and import_task.status in [TaskResultStatus.READY, TaskResultStatus.RUNNING]:
+        logger.warning(f"用户#{request.user.id} 已有一个扫雷网录像同步任务在进行中，无法创建新任务，模式：{mode}")
         return HttpResponseConflict()
+    else:
+        logger.info(f"用户#{request.user.id} 开始创建扫雷网录像同步任务，模式：{mode}")
+        helper_saolei_video_import_bulk(saolei_account, mode)
+        return HttpResponse()
 
 
 @require_GET
@@ -221,3 +214,29 @@ def view_saolei_get_import_list(request: HttpRequest):
 
     data = videos.values('id', 'user__id', 'upload_time', 'level', 'bv', 'timems', 'nf', 'state', 'import_video__id', 'import_task__status')
     return JsonResponse(list(data), safe=False)
+
+
+@require_GET
+def view_saolei_get_import_summary(request: HttpRequest):
+    if not (saolei_id := request.GET.get('saolei_id')):
+        return HttpResponseBadRequest
+    if not (saolei_account := AccountSaolei.objects.filter(id=saolei_id).first()):
+        return HttpResponseNotFound()
+
+    bulk_task = saolei_account.video_import_task
+    bulk_task_status = bulk_task.status if bulk_task else None
+
+    videos = VideoSaolei.objects.filter(user=saolei_account)
+    imported_videos = videos.filter(import_video__isnull=False)
+    data = {
+        'bulk_task_status': bulk_task_status,
+        'total': videos.count(),
+        'old_imported': imported_videos.filter(import_task__isnull=True).count(),
+        'new_total': videos.filter(import_task__isnull=False).count(),
+        'new_ready': videos.filter(import_task__status=TaskResultStatus.READY).count(),
+        'new_success': imported_videos.filter(import_task__isnull=False).count(),
+        'new_failed': imported_videos.filter(import_task__status=TaskResultStatus.FAILED).count(),
+        'new_connection': videos.filter(import_video__isnull=True, import_task__status=TaskResultStatus.SUCCESSFUL).count(),
+    }
+
+    return JsonResponse(data)

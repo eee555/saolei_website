@@ -148,7 +148,6 @@ export default {
         synchronizeAll: 'All',
         synchronizeManage: 'Manage',
         synchronizeNew: 'New',
-        synchronizeTooltip: "Video synchronization will create a background task that helps you downloads videos from @:common.website.saolei and upload them to @:{'common.website.openms'}. The task will visit your saolei profile, scan videos page by page, and download them one by one. The \"New\" mode is cheaper: it stops at the first page with no new video. The \"All\" mode is more expensive: it scans all pages.", // eslint-disable-line @stylistic/quotes
         synchronizeVideos: 'Synchronize videos',
         unverified: 'This account has not been verified.',
         unverifiedText: 'Please contact a moderator.',
@@ -292,6 +291,12 @@ export default {
             line_4_2: 'Firstly, protect the right of users using their own real name in identifiers;',
             line_4_3: 'Secondly, approve the earlist claim of the identifier, where a claim refers to publishing a video with the identifier anywhere.',
             line_4_4: 'After the decision, some users may lose the identifier, which could result in scores withdrawn from Ranking.',
+        },
+        saoleiImport: {
+            line_1: "The function of video synchronization helps you download videos from @:common.website.saolei and upload them to @:{'common.website.openms'}. Furthermore, @:{'common.website.openms'} will respect the upload time provided by @:{'common.website.saolei'}. If you have uploaded the same file to both websites, @:{'common.website.openms'} will take the earlier upload time.", // eslint-disable-line @stylistic/quotes
+            line_2: "There are two sub-functions: collecting and importing. The collecting will visit your profile and gather the metadata of all videos, including video ID and upload time. The importing will access the video file through video ID and pass the file through @:{'common.website.openms'}'s verification process.", // eslint-disable-line @stylistic/quotes
+            line_3: 'Both collecting and importing run in the background. The page will update their progress every 30 seconds.',
+            line_4: 'The collecting has two modes. The "New" mode is cheaper: it stops at the first already-collected video. The "All" mode is more expensive: it scans all videos, even if they have been collected before.',
         },
     },
     home: {
