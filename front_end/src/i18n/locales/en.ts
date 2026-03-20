@@ -135,6 +135,13 @@ export default {
         guideTitle: 'How to locate the ID',
         guideWom1: 'Go to your profile page on ',
         guideWom2: '. The number at the end of the url is your ID.',
+        importStatus: {
+            connection: 'Connection Failed',
+            failed: 'Critical Error',
+            successful: 'Imported',
+            ready: 'Queueing',
+            running: 'Importing',
+        },
         msgamesJoined: 'Joined',
         msgamesLocalName: 'Local Name',
         msgamesName: 'Name',

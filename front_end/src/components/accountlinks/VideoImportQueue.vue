@@ -15,8 +15,9 @@
                 style: { borderRadius: '0', padding: '0', width: '1rem' }
             }
         }"
-        filter-display="menu" @row-click="handleRowClick"
+        filter-display="menu"
     >
+        <PrColumn field="id" sortable header="ID" />
         <PrColumn field="upload_time" sortable :header="t('common.prop.upload_time')" style="min-width: 11em">
             <template #body="{ data }">
                 <el-text>
@@ -47,7 +48,24 @@
         <PrColumn field="bv" :header="t('common.prop.bv')" sortable />
         <PrColumn field="import_task__status" :header="t('common.prop.state')" :show-filter-match-modes="false" :show-filter-operator="false" :show-apply-button="false" :show-clear-button="false" :filter-header-style="{ marginInlineStart: '0px' }">
             <template #body="{ data }: { data: SaoleiVideo }">
-                <DjangoTaskResultStatusBadge :status="data.import_task__status" />
+                <el-text v-if="data.import_task__status == 'RUNNING'" type="warning">
+                    {{ t('accountlink.importStatus.running') }}
+                </el-text>
+                <el-text v-else-if="data.import_task__status == 'SUCCESSFUL' && data.import_video__id != 0" type="success">
+                    {{ t('accountlink.importStatus.successful') }}（新）
+                </el-text>
+                <el-text v-else-if="data.import_task__status == 'FAILED'" type="danger">
+                    {{ t('accountlink.importStatus.failed') }}
+                </el-text>
+                <el-text v-else-if="data.import_task__status == 'READY'" type="primary">
+                    {{ t('accountlink.importStatus.ready') }}
+                </el-text>
+                <el-text v-else-if="data.import_task__status == 'SUCCESSFUL' && data.import_video__id == 0" type="danger">
+                    {{ t('accountlink.importStatus.connection') }}
+                </el-text>
+                <el-text v-else-if="data.import_task__status == 'NULL' && data.import_video__id != 0" type="success">
+                    {{ t('accountlink.importStatus.successful') }}
+                </el-text>
             </template>
             <template #filter="{ filterModel, filterCallback }">
                 <PrListbox v-model="filterModel.value" :options="[...DjangoTaskResultStatusOptions]" @change="filterCallback()">
@@ -57,12 +75,22 @@
                 </PrListbox>
             </template>
         </PrColumn>
+        <PrColumn>
+            <template #body="{ data }: { data: SaoleiVideo }">
+                <el-link v-if="data.import_video__id != 0" underline="never" @click="preview(data.import_video__id)">
+                    <i class="pi pi-play-circle" />
+                </el-link>
+            </template>
+        </PrColumn>
     </PrDataTable>
 </template>
 
 <script setup lang="ts">
+import 'primeicons/primeicons.css';
+import '@/styles/button.css';
+
 import { FilterMatchMode } from '@primevue/core/api';
-import { ElText, vLoading } from 'element-plus';
+import { ElLink, ElText, vLoading } from 'element-plus';
 import PrColumn from 'primevue/column';
 import PrDataTable from 'primevue/datatable';
 import PrListbox from 'primevue/listbox';
@@ -71,7 +99,7 @@ import { useI18n } from 'vue-i18n';
 
 import { SaoleiVideo } from './utils';
 
-import { generalErrorNotification, httpErrorNotification, successNotification, unknownErrorNotification } from '@/components/Notifications';
+import { httpErrorNotification } from '@/components/Notifications';
 import DjangoTaskResultStatusBadge from '@/components/widgets/DjangoTaskResultStatusBadge.vue';
 import GameLevelIcon from '@/components/widgets/GameLevelIcon.vue';
 import { preview } from '@/utils/common/PlayerDialog';
@@ -82,7 +110,7 @@ import { utc_to_local_format } from '@/utils/system/tools';
 
 
 const filters = ref({
-    'import_task__status': { value: [...DjangoTaskResultStatusOptions], matchMode: FilterMatchMode.EQUALS },
+    'import_task__status': { value: null, matchMode: FilterMatchMode.EQUALS },
     'level': { value: null, matchMode: FilterMatchMode.EQUALS },
 });
 
@@ -119,36 +147,6 @@ function preprocessTable(data: any) {
         if (video.import_task__status === null) video.import_task__status = 'NULL';
     }));
     return data;
-}
-
-async function runImport(video: SaoleiVideo) {
-    importing.value = true;
-    await proxy.$axios.post('accountlink/saolei/importvideo/', {
-        video_id: video.id,
-    }).then((response) => {
-        const data = response.data;
-        switch (data.type) {
-            case 'success':
-                video.import_video__id = data.import_video__id;
-                successNotification(response);
-                return;
-            case 'error':
-                generalErrorNotification(data.object, data.category);
-                return;
-            default:
-                unknownErrorNotification(data);
-                return;
-        }
-    }).catch(httpErrorNotification);
-    importing.value = false;
-}
-
-function handleRowClick(event: any) {
-    if (event.data.import_video__id != 0) {
-        preview(event.data.import_video__id);
-    } else {
-        runImport(event.data);
-    }
 }
 
 defineEmits(['back', 'enterAuto', 'enterHelp']);

@@ -133,6 +133,13 @@ export default {
         guideTitle: '如何找到ID',
         guideWom1: '在',
         guideWom2: '进入你的个人主页，网址结尾的数字就是你的ID。',
+        importStatus: {
+            connection: '连接失败',
+            failed: '严重错误',
+            successful: '已导入',
+            ready: '排队中',
+            running: '导入中',
+        },
         msgamesJoined: '加入时间',
         msgamesLocalName: '本名',
         msgamesName: '英文名',

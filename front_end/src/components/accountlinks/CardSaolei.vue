@@ -117,7 +117,7 @@
         </el-carousel>
         <UnverifiedNotice v-else />
 
-        <el-dialog v-model="importQueueVisible" destroy-on-close>
+        <el-dialog v-model="importQueueVisible" destroy-on-close style="width: 50em">
             <VideoImportQueue :saolei-id="info.id" />
         </el-dialog>
     </base-card-normal>
@@ -212,18 +212,18 @@ let importSummarySaoleiId = 0;
 const videoImporting = computed(() => importSummary.value.new_connection + importSummary.value.new_failed + importSummary.value.new_success != importSummary.value.new_total);
 const videoListImporting = computed(() => ['READY', 'RUNNING'].includes(importSummary.value.bulk_task_status));
 const stackBarData = computed(() => [
-    { name: '已导入', color: '#34d399', value: importSummary.value.old_imported + importSummary.value.new_success },
-    { name: '导入中', color: '#fbbf24', value: importSummary.value.new_total - importSummary.value.new_success - importSummary.value.new_ready - importSummary.value.new_failed - importSummary.value.new_connection },
-    { name: '排队中', color: '#60a5fa', value: importSummary.value.new_ready },
-    { name: '连接失败', color: '#c084fc', value: importSummary.value.new_connection },
-    { name: '严重错误', color: '#f43f5e', value: importSummary.value.new_failed },
+    { name: t('accountlink.importStatus.successful'), color: '#34d399', value: importSummary.value.old_imported + importSummary.value.new_success },
+    { name: t('accountlink.importStatus.running'), color: '#fbbf24', value: importSummary.value.new_total - importSummary.value.new_success - importSummary.value.new_ready - importSummary.value.new_failed - importSummary.value.new_connection },
+    { name: t('accountlink.importStatus.ready'), color: '#60a5fa', value: importSummary.value.new_ready },
+    { name: t('accountlink.importStatus.connection'), color: '#c084fc', value: importSummary.value.new_connection },
+    { name: t('accountlink.importStatus.failed'), color: '#f43f5e', value: importSummary.value.new_failed },
 ]);
 const stackBarNewData = computed(() => [
-    { name: '已导入', color: '#34d399', value: importSummary.value.new_success },
-    { name: '导入中', color: '#fbbf24', value: importSummary.value.new_total - importSummary.value.new_success - importSummary.value.new_ready - importSummary.value.new_failed - importSummary.value.new_connection },
-    { name: '排队中', color: '#60a5fa', value: importSummary.value.new_ready },
-    { name: '连接失败', color: '#c084fc', value: importSummary.value.new_connection },
-    { name: '严重错误', color: '#f43f5e', value: importSummary.value.new_failed },
+    { name: t('accountlink.importStatus.successful'), color: '#34d399', value: importSummary.value.new_success },
+    { name: t('accountlink.importStatus.running'), color: '#fbbf24', value: importSummary.value.new_total - importSummary.value.new_success - importSummary.value.new_ready - importSummary.value.new_failed - importSummary.value.new_connection },
+    { name: t('accountlink.importStatus.ready'), color: '#60a5fa', value: importSummary.value.new_ready },
+    { name: t('accountlink.importStatus.connection'), color: '#c084fc', value: importSummary.value.new_connection },
+    { name: t('accountlink.importStatus.failed'), color: '#f43f5e', value: importSummary.value.new_failed },
 ]);
 
 async function getImportSummary() {
