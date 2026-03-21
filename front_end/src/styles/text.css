@@ -1,0 +1,17 @@
+.text-normal {
+    color: var(--el-text-color-regular);
+    font-size: var(--el-font-size-base);
+    margin: 0;
+    overflow-wrap: break-word;
+    padding: 0;
+    vertical-align: middle;
+}
+
+.text-small {
+    color: var(--el-text-color-regular);
+    font-size: var(--el-font-size-extra-small);
+    margin: 0;
+    overflow-wrap: break-word;
+    padding: 0;
+    vertical-align: middle;
+}

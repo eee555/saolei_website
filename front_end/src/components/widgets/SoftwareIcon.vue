@@ -3,13 +3,14 @@
     <BaseIconMetasweeper v-else-if="software == 'e'" />
     <BaseIconViennasweeper v-else-if="software == 'r'" />
     <BaseIconClone07 v-else-if="software == 'm'" />
-    <el-text v-else type="danger">
+    <span v-else type="danger" class="text-normal">
         <base-icon-question />
-    </el-text>
+    </span>
 </template>
 
 <script setup lang="ts">
-import { ElText } from 'element-plus';
+import '@/styles/text.css';
+
 import { PropType } from 'vue';
 
 import BaseIconClone07 from '../common/BaseIconClone07.vue';

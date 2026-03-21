@@ -1,0 +1,7 @@
+.card-small {
+  --el-card-padding: 5px;
+}
+
+.card-normal {
+  background-color: var(--el-bg-color-overlay);
+}

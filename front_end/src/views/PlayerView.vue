@@ -64,8 +64,7 @@
                         {{ signature }}
                     </div>
                     <button v-show="show_edit_button" class="edit_button" @click="is_editing = true; visible = true;">
-                        {{
-                            t('profile.change') }}
+                        {{ t('profile.change') }}
                     </button>
                     <!-- <div style="overflow: auto ;">人气：{{ popularity }}</div> -->
                 </div>
@@ -190,8 +189,8 @@ function refresh() {
         signature_edit.value = data.signature;
         // console.log(imageUrl);
         if (data.avatar) {
-            imageUrl.value = 'data:image/;base64,' + data.avatar;
-            imageUrlOld = 'data:image/;base64,' + data.avatar;
+            imageUrl.value = 'data:image/png;base64,' + data.avatar;
+            imageUrlOld = 'data:image/png;base64,' + data.avatar;
         } else {
             imageUrl.value = imageUrlDefault;
         }

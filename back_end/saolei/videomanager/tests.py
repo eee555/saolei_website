@@ -4,11 +4,10 @@ from django.core.files.base import ContentFile
 from django.test import override_settings, TestCase
 import requests
 
-from accountlink.models import AccountSaolei
 from common.utils import new_video_by_file
 from userprofile.models import UserProfile
 from .models import ExpandVideoModel, VideoModel
-from .view_utils import refresh_video, video_saolei_import_by_userid_helper
+from .view_utils import refresh_video
 # Create your tests here.
 
 
@@ -90,14 +89,3 @@ class VideoManagerTestCase(TestCase):
         self.multiple_values_test(video, self.testfile_exp_values)
         self.multiple_values_test(video.video, self.testfile_exp_values_extended)
         video.delete()
-
-    def test_video_saolei_import_by_userid(self):
-        accountSaolei = AccountSaolei.objects.create(
-            id=23756, parent=self.user)
-        video_saolei_import_by_userid_helper(
-            userProfile=self.user, accountSaolei=accountSaolei)
-        video_saolei_import_by_userid_helper(
-            userProfile=self.user, accountSaolei=accountSaolei)
-        videos = list(VideoModel.objects.filter(player=self.user))
-        self.assertEqual(len(videos), 13)
-        self.assertEqual(videos[0].upload_time, datetime(2023, 8, 18, 16, 47, tzinfo=timezone.utc))

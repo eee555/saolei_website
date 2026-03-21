@@ -16,40 +16,53 @@
     </el-divider>
     <el-row v-if="groupedVideoAbstract.size > 0" style="white-space: nowrap;">
         <YLabel :min-bv="minBv" :max-bv="maxBv" />
-        <span
-            :style="{ position: 'relative', width: '89%', minWidth: '40em', lineHeight: '25px' }"
-        >
-            <template v-for="bv in ArrayUtils.range(minBv, maxBv)" :key="bv">
-                <Cell
-                    :data-cy="`bv-${bv}`"
-                    :bv="bv" :level="level" :videos="groupedVideoAbstract.get(bv)" :color-theme="theme"
-                    :display-by="options[BBBvSummaryConfig.template].displayBy"
+        <tippy :duration="0" sticky follow-cursor style="display: grid; width: 89%; min-width: 40em; grid-template-columns: repeat(10, 1fr); grid-auto-rows: 25px;">
+            <Cell
+                v-for="bv in ArrayUtils.range(minBv, maxBv)"
+                :key="bv"
+                :data-cy="`bv-${bv}`"
+                :bv="bv"
+                :level="level"
+                :videos="groupedVideoAbstract.get(bv)"
+                :color-theme="theme"
+                :display-by="options[BBBvSummaryConfig.template].displayBy"
+                :sort-by="options[BBBvSummaryConfig.template].sortBy"
+                :sort-desc="options[BBBvSummaryConfig.template].sortDesc"
+                :software-filter="BBBvSummaryConfig.softwareFilter"
+                :tooltip-mode="BBBvSummaryConfig.tooltipMode"
+                @mouseover="tooltipVideos=groupedVideoAbstract.get(bv) || []"
+            />
+            <template #content>
+                <Tooltip
+                    :videos="tooltipVideos"
                     :sort-by="options[BBBvSummaryConfig.template].sortBy"
-                    :sort-desc="options[BBBvSummaryConfig.template].sortDesc" style="width: 10%" :software-filter="BBBvSummaryConfig.softwareFilter"
-                    :tooltip-mode="BBBvSummaryConfig.tooltipMode"
+                    :sort-desc="options[BBBvSummaryConfig.template].sortDesc"
+                    :software-filter="BBBvSummaryConfig.softwareFilter"
                 />
-                <br v-if="getLastDigit(bv) == 9">
             </template>
-        </span>
+        </tippy>
     </el-row>
 </template>
 
 <script setup lang="ts">
 import { ElDivider, ElRow, ElText } from 'element-plus';
-import { computed, PropType } from 'vue';
+import { computed, PropType, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { Tippy } from 'vue-tippy';
 
 import Cell from './Cell.vue';
+import Tooltip from './Tooltip.vue';
 import YLabel from './YLabel.vue';
 
 import { BBBvSummaryConfig, colorTheme } from '@/store';
 import { ArrayUtils } from '@/utils/arrays';
 import { PiecewiseColorScheme } from '@/utils/colors';
-import { getLastDigit, setLastDigit } from '@/utils/math';
+import { setLastDigit } from '@/utils/math';
 import { ColorTemplateName, MS_Level } from '@/utils/ms_const';
 import { getStat_stat, groupVideosByBBBv, VideoAbstract } from '@/utils/videoabstract';
 
 const { t } = useI18n();
+const tooltipVideos = ref([] as VideoAbstract[]);
 
 const prop = defineProps({
     header: { type: Boolean, default: false },

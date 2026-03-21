@@ -33,7 +33,7 @@ class UserProfile(AbstractUser):
         error_messages={
             'max_length': _(f'用户名的长度不超过{MaxSizes.USERNAME}，支持各国语言！'),
             "unique": _("该用户名已存在！"),
-        },
+        }, db_collation='utf8mb4_0900_as_cs',
     )
     first_name = models.CharField(_("first name"), max_length=MaxSizes.FIRSTNAME, blank=True)
     last_name = models.CharField(_("last name"), max_length=MaxSizes.LASTNAME, blank=True)
@@ -92,10 +92,13 @@ class UserProfile(AbstractUser):
             models.Index(fields=['vip'], name='vip_idx'),
         ]
 
+    def has_realname(self) -> bool:
+        return self.realname != '匿名'
+
     # 检查用户是否可以加入排行，并更新排行榜
     def check_ms_ranking(self, statname: str, mode: str):
         for level in GameLevels:
-            if not isbetter(statname, self.userms.getrecord(level, statname, mode), DefaultRankingScores[statname]):
+            if not isbetter(statname, self.userms.getrecord(level, statname, mode), getattr(DefaultRankingScores, statname)):
                 return
         self.userms.update_3_level_cache_record(self.realname, statname, mode)
 

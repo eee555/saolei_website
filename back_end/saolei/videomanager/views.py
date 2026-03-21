@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import datetime
 import json
 import logging
 import urllib
@@ -12,38 +11,16 @@ from django.views.decorators.http import require_GET, require_POST
 from django_ratelimit.decorators import ratelimit
 from django_redis import get_redis_connection
 
-from accountlink.models import AccountSaolei
 from config.text_choices import MS_TextChoices
 from msuser.models import UserMS
-from userprofile.decorators import banned_blocked, login_required_error, staff_required
+from userprofile.decorators import staff_required
 from userprofile.models import UserProfile
 from utils import ComplexEncoder
 from .models import ExpandVideoModel, VideoModel
-from .view_utils import refresh_video, update_personal_record_stock, update_state, video_all_fields, video_saolei_import_by_userid_helper
+from .view_utils import refresh_video, update_personal_record_stock, update_state, video_all_fields
 
 logger = logging.getLogger('videomanager')
 cache = get_redis_connection("saolei_website")
-
-
-@login_required_error
-@ratelimit(key='ip', rate='5/s')
-@require_POST
-@banned_blocked
-def video_saolei_import_by_userid_post(request) -> JsonResponse:
-    user: AccountSaolei = request.user.account_saolei
-    if user is None:
-        return JsonResponse({'type': 'error', 'object': 'accountlink', 'category': 'notFound'})
-    data = request.POST
-    begin_time = data.get('begin_time')
-    end_time = data.get('end_time')
-    is_need_file_url = data.get('is_need_file_url')
-    if is_need_file_url is None:
-        is_need_file_url = False
-    if begin_time is None or end_time is None:
-        return JsonResponse({'type': 'error', 'object': 'videomodel', 'category': 'notFound'})
-    video_saolei_import_by_userid_helper(
-        userProfile=user.parent, accountSaolei=user, beginTime=datetime.datetime.fromisoformat(begin_time[:-1]), endTime=datetime.datetime.fromisoformat(end_time[:-1]), is_need_file_url=is_need_file_url)
-    return JsonResponse({'type': 'success', 'object': 'videomodel', 'category': 'import'})
 
 
 # 根据id向后台请求软件类型（适配flop播放器用）
@@ -72,7 +49,6 @@ def video_preview(request: HttpRequest):
     if video.ongoing_tournament and request.user != video.player:
         return HttpResponseForbidden()
     # video.file.name是相对路径(含upload_to)，video.file.path是绝对路径
-    # print(settings.MEDIA_ROOT / "assets" / video.file.name)
     file_path = settings.MEDIA_ROOT / video.file.name
     response = FileResponse(open(file_path, 'rb'))
     response['Content-Type'] = 'application/octet-stream'
@@ -141,7 +117,6 @@ def video_query(request: HttpRequest):
     if not request.user.is_staff:
         videos = videos.filter(ongoing_tournament=False)
 
-    # print(videos)
     paginator = Paginator(videos, data["ps"])
     page_number = data["page"]
     page_videos = paginator.get_page(page_number)
@@ -150,7 +125,6 @@ def video_query(request: HttpRequest):
         "videos": list(page_videos),
     }
     # t=json.dumps(response, cls=ComplexEncoder)
-    # print(t)
     return JsonResponse(json.dumps(response, cls=ComplexEncoder), safe=False)
 
 
@@ -168,7 +142,6 @@ def video_query_by_id(request: HttpRequest):
         'id', 'upload_time', "end_time", "level", "mode", "timems", "bv", "bvs", "state", "video__identifier",
         "software", "flag", "cell0", "cell1", "cell2", "cell3", "cell4", "cell5", "cell6", "cell7", "cell8", "left", "right", "double", "op", "isl", "path",
     )
-    # print(list(videos))
 
     return JsonResponse(list(videos), safe=False)
 

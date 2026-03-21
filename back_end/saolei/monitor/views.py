@@ -21,7 +21,6 @@ def get_io_cpus(request):
 
 # 1个点。
 # def get_io_cpu(request):
-#     # print(cache.get("io_s_spd"))
 #     return JsonResponse({'s': cache.get("io_s_spd"),
 #                         'r': cache.get("io_r_spd")}, encoder=ComplexEncoder)
 

@@ -31,11 +31,19 @@ class DefaultChances:
     SIGNATURE = 2  # 签名
 
 
+class DefaultRankingScores:
+    timems = 999999
+    bvs = 0.0
+    stnb = 0.0
+    ioe = 0.0
+    path = 100000.0
+
+
 # 级别
+MINESWEEPER_LEVELS = ["", "", "", "b", "i", "e", "c"]
 GameLevels = ["b", "i", "e"]
 GameModes = ["std", "nf", "ng", "dg"]
 RankingGameStats = ["timems", "bvs", "stnb", "ioe", "path"]
-DefaultRankingScores = {"timems": 999999, "bvs": 0.0, "stnb": 0.0, "ioe": 0.0, "path": 100000.0}
 VideoModeToName = {"00": "std", "12": "std"}
 
 record_update_fields = []

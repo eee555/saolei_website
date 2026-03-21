@@ -7,7 +7,7 @@
         </el-button>
     </el-row>
     <MultiSelector v-if="showSetting" v-model="VideoListConfig.profile" :options="thisColumnChoices" :labels="thisColumnChoices.map((s) => t(`common.prop.${s}`))" />
-    <VideoList :videos="store.player.videos" :columns="VideoListConfig.profile" sortable />
+    <VideoList :videos="store.player.videos" :columns="VideoListConfig.profile" sortable paginator />
 </template>
 
 <script lang="ts" setup>
