@@ -135,7 +135,7 @@ class SaoleiUtils:
         verified = cols[5].get_text(strip=True).startswith('评论')
 
         return SaoleiVideoInfo(
-            id=video_id,
+            video_id=video_id,
             level=level,
             bv=bv,
             timems=timems,
