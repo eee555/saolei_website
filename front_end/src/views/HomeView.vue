@@ -19,20 +19,23 @@
                             </el-link>
                         </template>
                         <div v-for="news in news_queue">
-                            <el-text style="margin-right: 5px">
+                            <span class="text-normal">
                                 {{ utc_to_local_format(news.time) }}
-                            </el-text>
+                            </span>
+                            &nbsp;
                             <PlayerName
                                 class="name" style="vertical-align: top;" :user-id="+news.player_id"
                                 :user-name="news.player"
                             />
-                            <el-text style="vertical-align: middle;">
+                            &nbsp;
+                            <span class="text-normal">
                                 {{ t('news.breakRecordTo', {mode: t(`common.mode.${news.mode}`), level: t(`common.level.${news.level}`), stat: t(`common.prop.${news.index}`)}) }}
-                            </el-text>
+                            </span>
+                            &nbsp;
                             <PreviewNumber :id="news.video_id" :text="to_fixed_n(news.value, 3)" />
-                            <el-text style="margin-left: 5px; vertical-align: middle;">
+                            <span class="text-normal">
                                 {{ news.delta == "新" ? "" : news.delta > 0 ? "↑" : "↓" }}{{ news.delta }}
-                            </el-text>
+                            </span>
                         </div>
                     </el-tab-pane>
                 </el-tabs>
@@ -52,10 +55,10 @@
                                 <base-icon-refresh />
                             </el-link>
                         </template>
-                        <VideoList :videos="newest_queue" :columns="['state', 'upload_time', 'player', 'software', 'mode', 'level', 'time', 'bv', 'bvs', 'ioe', 'thrp']" sortable />
+                        <VideoList :videos="newest_queue" :columns="['state', 'upload_time', 'player', 'software', 'mode', 'level', 'time', 'bv', 'bvs', 'ioe', 'thrp']" sortable paginator />
                     </el-tab-pane>
                     <el-tab-pane :label="t('home.reviewQueue')" class="bottom_tabs" :lazy="true" name="review">
-                        <VideoList v-loading="review_queue_updating" :videos="review_queue" :columns="['state', 'upload_time', 'player', 'software', 'mode', 'level', 'time', 'bv', 'bvs', 'ioe', 'thrp']" />
+                        <VideoList v-loading="review_queue_updating" :videos="review_queue" :columns="['state', 'upload_time', 'player', 'software', 'mode', 'level', 'time', 'bv', 'bvs', 'ioe', 'thrp']" paginator />
                     </el-tab-pane>
                 </el-tabs>
             </el-main>
@@ -64,6 +67,8 @@
 </template>
 
 <script setup lang='ts'>
+import '@/styles/text.css';
+
 import { ElContainer, ElIcon, ElLink, ElMain, ElTabPane, ElTabs, ElText, vLoading } from 'element-plus';
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -127,7 +132,6 @@ const update_newest_queue = async () => {
             const videoid = Number.parseInt(key);
             const videoinfo = JSON.parse(response.data[key] as string);
             newest_queue.value.push(VideoAbstract.fromVideoRedisInfo(videoid, videoinfo));
-            newest_queue.value.sort((v1, v2) => v2.upload_time.getTime() - v1.upload_time.getTime());
         }
     });
     if (newest_queue_status.value == 1) {
@@ -154,9 +158,7 @@ const update_news_queue = async () => {
 
 <style lang='less'>
 .bottom_tabs {
-    height: 500px;
     overflow: auto;
-
 }
 
 .aside-tip-title {

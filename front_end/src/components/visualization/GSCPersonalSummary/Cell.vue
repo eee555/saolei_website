@@ -4,9 +4,9 @@
             {{ video.displayStat(displayBy) }}
         </el-link>
         <template #content>
-            <base-card-small v-if="video">
+            <el-card v-if="video" class="card-small">
                 <video-abstract-display :video="video" />
-            </base-card-small>
+            </el-card>
         </template>
     </tippy>
     <div v-else class="cell" :style="{ backgroundColor: color }">
@@ -17,14 +17,15 @@
 </template>
 
 <script setup lang="ts">
-import { ElLink, ElText } from 'element-plus';
+import '@/styles/cards.css';
+
+import { ElCard, ElLink, ElText } from 'element-plus';
 import tinycolor from 'tinycolor2';
 import { computed, PropType } from 'vue';
 import { Tippy } from 'vue-tippy';
 
 import { defaultVideos } from './utils';
 
-import BaseCardSmall from '@/components/common/BaseCardSmall.vue';
 import VideoAbstractDisplay from '@/components/widgets/VideoAbstractDisplay.vue';
 import { getTextColor, PiecewiseColorScheme } from '@/utils/colors';
 import { preview } from '@/utils/common/PlayerDialog';

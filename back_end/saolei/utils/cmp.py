@@ -3,7 +3,7 @@
 SmallIsBetter = {"timems": True, "bvs": False, "stnb": False, "ioe": False, "path": True}
 
 
-def isbetter(item, a, b):
+def isbetter(item: str, a: int | float, b: int | float):
     if SmallIsBetter[item]:
         return a < b
     else:

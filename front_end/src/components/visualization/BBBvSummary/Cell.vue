@@ -1,34 +1,27 @@
 <template>
-    <tippy class="cell" :duration="0" sticky>
+    <span class="cell">
         <template v-if="bestIndex == -1">
-&nbsp;
+            &nbsp;
         </template>
         <el-link v-else underline="never" @click="handleClick">
             {{ videos[bestIndex].displayStat(displayBy) }}
         </el-link>
-        <template #content>
-            <base-card-small v-if="bestIndex >= 0">
-                <video-abstract-display :video="videos[bestIndex]" />
-            </base-card-small>
-        </template>
-    </tippy>
+    </span>
 </template>
 
 <script setup lang="ts">
 import { ElLink } from 'element-plus';
 import tinycolor from 'tinycolor2';
 import { computed, PropType, ref, watch } from 'vue';
-import { Tippy } from 'vue-tippy';
 
-import BaseCardSmall from '@/components/common/BaseCardSmall.vue';
-import VideoAbstractDisplay from '@/components/widgets/VideoAbstractDisplay.vue';
+import { getBest } from './utils';
+
 import { store } from '@/store';
 import { getTextColor, PiecewiseColorScheme } from '@/utils/colors';
 import { preview } from '@/utils/common/PlayerDialog';
 import { MS_Level, MS_Software, MS_Softwares } from '@/utils/ms_const';
 import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 
-const bestValue = ref<number | null>(null);
 const bestIndex = ref(-1);
 
 const prop = defineProps({
@@ -44,21 +37,12 @@ const prop = defineProps({
 });
 
 function refresh() {
-    bestValue.value = null;
-    bestIndex.value = -1;
-    prop.videos.forEach((video, index) => {
-        if (!prop.softwareFilter.includes(video.software)) return;
-        const thisValue = video.getStat(prop.sortBy);
-        if (thisValue === undefined) return;
-        if (
-            bestValue.value === null ||
-            thisValue > bestValue.value && prop.sortDesc ||
-            thisValue < bestValue.value && !prop.sortDesc
-        ) {
-            bestValue.value = thisValue;
-            bestIndex.value = index;
-        }
+    const bests = getBest(prop.videos, {
+        sortBy: prop.sortBy,
+        sortDesc: prop.sortDesc,
+        softwareFilter: prop.softwareFilter,
     });
+    bestIndex.value = bests.bestIndex;
 }
 
 watch(prop, refresh, { immediate: true });
@@ -87,8 +71,6 @@ function handleClick() {
 <style lang="less" scoped>
 
 .cell {
-    display: inline-block;
-    height: 25px;
     background-color: v-bind(color);
     outline-style: solid;
     outline-width: 1px;

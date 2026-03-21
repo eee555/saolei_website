@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     'django_apscheduler',
+    'django_tasks_db',
     'corsheaders',
     'rest_framework',
     'userprofile',
@@ -143,6 +144,13 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
+
+TASKS = {
+    'default': {
+        'BACKEND': 'django_tasks_db.DatabaseBackend',
+        'QUEUES': ['default'],
+    },
+}
 
 
 # Internationalization
@@ -335,14 +343,23 @@ LOGGING = {
             'maxBytes': 5242880 * 20,  # 100M
             'backupCount': 5,
         },
+        'accountlink': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/accountlink.log'),
+            'formatter': 'modulehistory',
+            'encoding': 'utf-8',
+            'maxBytes': 5242880,  # 1M
+            'backupCount': 10,
+        },
         'userprofile': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': os.path.join(BASE_DIR, 'logs/userprofile.log'),
             'formatter': 'modulehistory',
             'encoding': 'utf-8',
-            'maxBytes': 5242880,  # 5M
-            'backupCount': 20,
+            'maxBytes': 5242880,  # 1M
+            'backupCount': 10,
         },
         'videomanager': {
             'level': 'INFO',
@@ -350,12 +367,17 @@ LOGGING = {
             'filename': os.path.join(BASE_DIR, 'logs/videomanager.log'),
             'formatter': 'modulehistory',
             'encoding': 'utf-8',
-            'maxBytes': 5242880,  # 5M
-            'backupCount': 20,
+            'maxBytes': 5242880,  # 1M
+            'backupCount': 10,
         },
     },
     'loggers': {
         # 应用中自定义日志记录器
+        'accountlink': {
+            'level': 'INFO',
+            'handlers': ['accountlink'],
+            'propagate': False,
+        },
         'videomanager': {
             'level': 'INFO',
             'handlers': ['videomanager'],

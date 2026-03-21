@@ -17,21 +17,25 @@ const notificationMessage: { [code: number]: string } = {
     500: 'common.response.InternalServerError',
 };
 
-export const httpErrorNotification = (error: any) => {
+export function baseErrorNotification(title: string, message: string) {
+    ElNotification({
+        title: title,
+        message: message,
+        type: 'error',
+        duration: local.value.notification_duration,
+    });
+}
+
+export function httpErrorNotification(error: any) {
     const status = error.response.status;
     if (status in notificationMessage) {
-        ElNotification({
-            title: t('msg.actionFail'),
-            message: t(notificationMessage[status]),
-            type: 'error',
-            duration: local.value.notification_duration,
-        });
+        baseErrorNotification(t('msg.actionFail'), t(notificationMessage[status]));
     } else {
         unknownErrorNotification(error);
     }
-};
+}
 
-export const successNotification = (response: any) => {
+export function successNotification(response: any) {
     if (response.status == 200) {
         ElNotification({
             title: t('msg.actionSuccess'),
@@ -41,13 +45,12 @@ export const successNotification = (response: any) => {
     } else {
         unknownErrorNotification(response);
     }
-};
+}
 
-export const unknownErrorNotification = (error: any) => {
-    ElNotification({
-        title: t('msg.unknownError'),
-        message: error,
-        type: 'error',
-        duration: local.value.notification_duration,
-    });
-};
+export function unknownErrorNotification(error: any) {
+    baseErrorNotification(t('msg.unknownError'), error);
+}
+
+export function generalErrorNotification(object: string, category: string) {
+    baseErrorNotification(t(`errorMsg.${object}.title`), t(`errorMsg.${object}.${category}`));
+}

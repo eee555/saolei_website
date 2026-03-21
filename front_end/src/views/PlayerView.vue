@@ -3,12 +3,16 @@
         <el-container>
             <el-aside width="200px">
                 <div v-if="is_editing">
-                    <el-upload ref="upload" class="avatar-uploader" action="#" :limit="1" :show-file-list="false"
+                    <el-upload
+                        ref="upload" class="avatar-uploader" action="#" :limit="1" :show-file-list="false"
                         :auto-upload="false" :on-exceed="handleExceed" :on-change="handleChange"
                         :before-upload="beforeAvatarUpload" :http-request="handleAvatarUpload"
-                        style="width: 200px; height: 200px;border-radius: 20px;">
-                        <el-image v-if="imageUrl" style="width: 200px; height: 200px;border-radius: 20px;"
-                            :src="imageUrl" :fit="'cover'" />
+                        style="width: 200px; height: 200px;border-radius: 20px;"
+                    >
+                        <el-image
+                            v-if="imageUrl" style="width: 200px; height: 200px;border-radius: 20px;"
+                            :src="imageUrl" :fit="'cover'"
+                        />
                         <base-icon-add v-else />
                     </el-upload>
                     <div style="font-size: 14px;color: #AAA;text-align: center;">
@@ -18,15 +22,19 @@
                         {{ t('profile.realname') }}
                     </div>
                     <div>
-                        <el-input v-model="realname_edit" :placeholder="t('profile.realnameInput')" minlength="2"
-                            maxlength="100" />
+                        <el-input
+                            v-model="realname_edit" :placeholder="t('profile.realnameInput')" minlength="2"
+                            maxlength="100"
+                        />
                     </div>
                     <div style="margin-top: 12px;margin-bottom: 4px;">
                         {{ t('profile.signature') }}
                     </div>
                     <div>
-                        <el-input v-model="signature_edit" :placeholder="t('profile.signatureInput')" minlength="0"
-                            maxlength="188" type="textarea" :rows="8" />
+                        <el-input
+                            v-model="signature_edit" :placeholder="t('profile.signatureInput')" minlength="0"
+                            maxlength="188" type="textarea" :rows="8"
+                        />
                     </div>
 
                     <button class="edit_button_ok" @click="upload_info">
@@ -40,8 +48,10 @@
 
                 <div v-else>
                     <div :key="'cover'" class="avatar-uploader">
-                        <el-image style="width: 200px; height: 200px;border-radius: 20px;" :src="imageUrl"
-                            :fit="'cover'" />
+                        <el-image
+                            style="width: 200px; height: 200px;border-radius: 20px;" :src="imageUrl"
+                            :fit="'cover'"
+                        />
                     </div>
                     <div style="font-size: 30px;margin-top: 10px;">
                         {{ username }}
@@ -54,8 +64,7 @@
                         {{ signature }}
                     </div>
                     <button v-show="show_edit_button" class="edit_button" @click="is_editing = true; visible = true;">
-                        {{
-                        t('profile.change') }}
+                        {{ t('profile.change') }}
                     </button>
                     <!-- <div style="overflow: auto ;">人气：{{ popularity }}</div> -->
                 </div>
@@ -63,8 +72,10 @@
 
             <el-main>
                 <el-tabs v-model="activeName" style="overflow: auto;">
-                    <el-tab-pane :label="t('profile.profile.title')" name="profile" :lazy="true"
-                        style="overflow: auto;">
+                    <el-tab-pane
+                        :label="t('profile.profile.title')" name="profile" :lazy="true"
+                        style="overflow: auto;"
+                    >
                         <PlayerProfileView :key="store.player.id" />
                     </el-tab-pane>
                     <el-tab-pane :label="t('profile.records.title')" name="record" :lazy="true">
@@ -73,8 +84,10 @@
                     <el-tab-pane :label="t('profile.videos')" name="video" :lazy="true">
                         <PlayerVideosView :key="store.player.id" />
                     </el-tab-pane>
-                    <el-tab-pane v-if="`${store.user.id}` == userid" :label="t('profile.upload.title')" name="upload"
-                        :lazy="true">
+                    <el-tab-pane
+                        v-if="`${store.user.id}` == userid" :label="t('profile.upload.title')" name="upload"
+                        :lazy="true"
+                    >
                         <UploadView :identifiers="store.user.identifiers" />
                     </el-tab-pane>
                 </el-tabs>

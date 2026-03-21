@@ -5,12 +5,10 @@ import struct
 from django_redis import get_redis_connection
 import ms_toollib as ms
 
-from accountlink.models import AccountSaolei
 from config.global_settings import GameLevels
 from config.text_choices import MS_TextChoices
 from msuser.models import UserMS
 from userprofile.models import UserProfile
-from utils.getOldWebData import Level, VideoData
 from .models import ExpandVideoModel, VideoModel
 
 logger = logging.getLogger('videomanager')
@@ -143,41 +141,6 @@ def refresh_video(video: VideoModel):
     if video.state == MS_TextChoices.State.IDENTIFIER and (e_video.identifier in video.player.userms.identifiers):
         video.state = MS_TextChoices.State.OFFICIAL
         video.save()
-
-
-def video_saolei_import_by_userid_helper(userProfile: UserProfile, accountSaolei: AccountSaolei, beginTime: datetime = datetime.min.replace(tzinfo=timezone.utc), endTime: datetime = datetime.max.replace(tzinfo=timezone.utc), is_need_file_url=False) -> VideoData.Info:
-
-    def scheduleFunc(info: VideoData.Info) -> bool:
-        videoModel = ExpandVideoModel.objects.create(
-            identifier='',
-            stnb=0,
-        )
-        videoModel.save()
-        model = VideoModel.objects.create(
-            player=userProfile,
-            video=videoModel,
-            state=MS_TextChoices.State.EXTERNAL,
-            software='u',
-            level=info.level[0].lower(),
-            mode=(MS_TextChoices.Mode.STD, MS_TextChoices.Mode.NF)[info.mode],
-            timems=info.grade * 1000,
-            bv=info.bv,
-            url_web=info.showUrl,
-            url_file=info.url,
-        )
-        model.upload_time = info.dateTime
-        model.save()
-        return True
-    urls = VideoModel.objects.filter(
-        player=userProfile).values_list('url_web')
-    url_set = {url for url, in urls}
-    videodata = VideoData(accountSaolei.id, url_set, scheduleFunc)
-    videodata.getData(Level.Beg, beginTime, endTime,
-                      is_need_file_url)
-    videodata.getData(Level.Int, beginTime, endTime,
-                      is_need_file_url)
-    videodata.getData(Level.Exp, beginTime, endTime,
-                      is_need_file_url)
 
 
 def generate_file_stream(queryset):

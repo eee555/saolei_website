@@ -1,5 +1,5 @@
 <template>
-    <i class="pi pi-sync" />
+    <i class="pi pi-refresh" />
 </template>
 
 <script setup lang="ts">

@@ -172,7 +172,8 @@ class WOM:
 
 if __name__ == '__main__':
     def callback(message):
-        print(message)
+        pass
+
     wom = WOM(callback)
     wom.start()
     wom.insertVideoId('1')
@@ -180,5 +181,4 @@ if __name__ == '__main__':
     time.sleep(20)
     wom.insertVideoId('1')
 
-    print('over')
     wom.stop()

@@ -106,7 +106,7 @@ const tableData = [
                 url: 'https://github.com/eee555/Metasweeper/releases/download/3.2.2/Metaminesweeper-3.2.2.exe',
             },
         ],
-    }
+    },
     // {
     //     version: 'v3.2.1',
     //     date: '2025-11-22',

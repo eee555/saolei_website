@@ -15,6 +15,7 @@ export default {
             videoQuery: 'fetch video data',
         },
         button: {
+            back: 'Back',
             cancel: 'Cancel',
             confirm: 'Confirm',
             register: 'Register',
@@ -123,6 +124,7 @@ export default {
     accountlink: {
         title: 'Account Links',
         addLink: 'Link New Account',
+        deleteLink: 'Unlink account',
         deleteLinkMessage: 'Are you sure to unlink this account?',
         guideMsgames1: 'Find yourself on the ',
         guideMsgames2: ' ranking:',
@@ -133,6 +135,13 @@ export default {
         guideTitle: 'How to locate the ID',
         guideWom1: 'Go to your profile page on ',
         guideWom2: '. The number at the end of the url is your ID.',
+        importStatus: {
+            connection: 'Connection Failed',
+            failed: 'Critical Error',
+            successful: 'Imported',
+            ready: 'Queueing',
+            running: 'Importing',
+        },
         msgamesJoined: 'Joined',
         msgamesLocalName: 'Local Name',
         msgamesName: 'Name',
@@ -140,8 +149,15 @@ export default {
         saoleiName: 'Name',
         saoleiTotalViews: 'Total Views',
         saoleiVideoCount: 'Video Count',
-        unverified: 'Pending. Please contact the moderator.',
-        unverifiedText: 'This account has not been verified. Please contact a moderator.',
+        statSummary: 'Summaries',
+        statSummaryTooltip: 'Summaries include personal records, views and video counts.',
+        synchronize: 'Synchronize',
+        synchronizeAll: 'All',
+        synchronizeManage: 'Manage',
+        synchronizeNew: 'New',
+        synchronizeVideos: 'Synchronize videos',
+        unverified: 'This account has not been verified.',
+        unverifiedText: 'Please contact a moderator.',
         updateError: {
             cooldown: 'Cannot update twice in 12 hours',
             empty: 'Empty data',
@@ -185,6 +201,34 @@ export default {
             fastTooltip: 'Click to play the video',
             advanced: 'Advanced',
             advancedTooltip: 'Click to show list of videos',
+        },
+    },
+    errorMsg: {
+        file: {
+            title: 'Error while parsing file',
+            collision: 'File already exists',
+            level: 'Unsupported level',
+            review: 'Unknown review state. Please contact the developers.',
+            type: 'Unsupported file extension',
+        },
+        identifier: {
+            title: 'Invalid identifier',
+            verify: 'Not allowed by censorship',
+        },
+        import: {
+            title: 'Failed to import',
+            connection: 'Unable to connect to the target server',
+            importing: 'Video is already being imported, please try again later',
+            readtimeout: 'The target server did not respond in time',
+            response: 'Unrecognised response',
+        },
+        saolei: {
+            page_empty: 'Page has no data',
+            realname_required: 'Real name required',
+        },
+        rust: {
+            title: 'Video parser crashed',
+            panic: 'The video parser encountered an unknown error. Please contact the developers.',
         },
     },
     experimentalFeature: {
@@ -254,6 +298,12 @@ export default {
             line_4_2: 'Firstly, protect the right of users using their own real name in identifiers;',
             line_4_3: 'Secondly, approve the earlist claim of the identifier, where a claim refers to publishing a video with the identifier anywhere.',
             line_4_4: 'After the decision, some users may lose the identifier, which could result in scores withdrawn from Ranking.',
+        },
+        saoleiImport: {
+            line_1: "The function of video synchronization helps you download videos from @:common.website.saolei and upload them to @:{'common.website.openms'}. Furthermore, @:{'common.website.openms'} will respect the upload time provided by @:{'common.website.saolei'}. If you have uploaded the same file to both websites, @:{'common.website.openms'} will take the earlier upload time.", // eslint-disable-line @stylistic/quotes
+            line_2: "There are two sub-functions: collecting and importing. The collecting will visit your profile and gather the metadata of all videos, including video ID and upload time. The importing will access the video file through video ID and pass the file through @:{'common.website.openms'}'s verification process.", // eslint-disable-line @stylistic/quotes
+            line_3: 'Both collecting and importing run in the background. The page will update their progress every 30 seconds.',
+            line_4: 'The collecting has two modes. The "New" mode is cheaper: it stops at the first already-collected video. The "All" mode is more expensive: it scans all videos, even if they have been collected before.',
         },
     },
     home: {

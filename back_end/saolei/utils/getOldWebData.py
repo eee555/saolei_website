@@ -270,12 +270,11 @@ class VideoData(BasePostData):
 
 if __name__ == '__main__':
     def scheduleFunc(num: int) -> bool:
-        print(num)
         return False if num > 10 else True
 
     def errorFunc(error: Exception):
-        print(error)
+        pass
+
     data = VideoData(userID=18290, scheduleFunc=scheduleFunc)
     data.registerError(errorFunc=errorFunc)
     BegData = data.getData(Level.Beg, datetime.min)
-    print(len(BegData))

@@ -28,15 +28,11 @@ def generate_code(code_len):
 # https://zhuanlan.zhihu.com/p/429228350
 # def active_user(request, active_code):
 #     """查询验证码"""
-#     print(active_code)
 #     all_records = EmailVerifyRecord.objects.filter(code=active_code)
-#     print(all_records)
 #     if all_records:
 #         for record in all_records:
 #             email = record.email
-#             print(email)
 #             user = User.objects.get(email=email)
-#             print(user)
 #             user.is_staff = True
 #             user.save()
 #     else:
@@ -85,7 +81,7 @@ def get_access_token() -> str:
         json.dump(data, file)
 
     if token == "None":
-        print("**********************************************\n\n**  警告！内容审核的鉴权签名获取失败！！！  **\n\n**********************************************")
+        return "**********************************************\n\n**  警告！内容审核的鉴权签名获取失败！！！  **\n\n**********************************************"
     return token
 
 
