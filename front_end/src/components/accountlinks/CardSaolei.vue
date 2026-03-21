@@ -52,7 +52,7 @@
                         {{ t('accountlink.statSummary') }}
                     </el-text>
                     &nbsp;
-                    <el-button @click="updateLink(); $emit('refresh')">
+                    <el-button v-loading="taskStatus == 'loading'" @click="updateLink(); $emit('refresh')">
                         {{ t('accountlink.synchronize') }}
                     </el-button>
                 </div>
