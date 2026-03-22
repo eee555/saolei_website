@@ -63,6 +63,7 @@ def task_saolei_video_import(video_id: int):
     while connection_retry > 0:
         try:
             saolei_video_import_one(video)
+            return
         except ExceptionToResponse as e:
             if e.obj == 'import' and e.category == 'connection':
                 connection_retry -= 1
