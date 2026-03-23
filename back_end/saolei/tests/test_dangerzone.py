@@ -89,10 +89,10 @@ def test_no_dangerzone_imports():
     )
 
 
-def get_view_functions():
-    views_path = pathlib.Path(__file__).parent.parent / "dangerzone" / "views.py"
-    with open(views_path, "r", encoding="utf-8") as f:
-        tree = ast.parse(f.read(), filename=str(views_path))
+def get_api_functions():
+    api_path = pathlib.Path(__file__).parent.parent / "dangerzone" / "api.py"
+    with open(api_path, "r", encoding="utf-8") as f:
+        tree = ast.parse(f.read(), filename=str(api_path))
 
     functions = []
     for node in tree.body:
@@ -104,8 +104,8 @@ def get_view_functions():
     return functions
 
 
-def test_all_dangerzone_views_are_local_only():
-    funcs = get_view_functions()
+def test_all_dangerzone_api_are_local_only():
+    funcs = get_api_functions()
     missing = [name for name, decorators in funcs
                if "local_only" not in decorators]
-    assert not missing, f"These views are missing @local_only: {missing}"
+    assert not missing, f"These apis are missing @local_only: {missing}"
