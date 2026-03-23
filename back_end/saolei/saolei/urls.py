@@ -20,6 +20,8 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import TemplateView
 
+from dangerzone.api import api as dangerzone_api
+
 from . import views
 
 
@@ -46,4 +48,4 @@ if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.E2E_TEST:
-    urlpatterns.append(path('dangerzone/', include('dangerzone.urls')))
+    urlpatterns.append(path('dangerzone/', dangerzone_api.urls))
