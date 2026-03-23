@@ -71,7 +71,7 @@ Cypress.on('uncaught:exception', (err, _runnable) => {
 Cypress.Commands.add('register', (id: number, username: string, email: string, password: string) => {
     cy.request({
         method: 'POST',
-        url: 'http://127.0.0.1:8000/dangerzone/register/',
+        url: 'http://127.0.0.1:8000/dangerzone/register',
         body: {
             id: id,
             username: username,
@@ -95,13 +95,13 @@ Cypress.Commands.add('login', (username: string, password: string) => {
 });
 
 Cypress.Commands.add('deleteUser', () => {
-    cy.request('POST', 'http://127.0.0.1:8000/dangerzone/delete_user/').then((response) => {
+    cy.request('POST', 'http://127.0.0.1:8000/dangerzone/delete_user').then((response) => {
         expect(response.status).to.eq(200);
     });
 });
 
 Cypress.Commands.add('flushDatabase', () => {
-    cy.request('POST', 'http://127.0.0.1:8000/dangerzone/flush_database/').then((response) => {
+    cy.request('POST', 'http://127.0.0.1:8000/dangerzone/flush_database').then((response) => {
         expect(response.status).to.eq(200);
     });
 });
