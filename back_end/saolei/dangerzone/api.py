@@ -1,9 +1,9 @@
 from django.core.management import call_command
 from ninja import NinjaAPI, Schema
 
-from dangerzone.decorators import local_only
 from msuser.models import UserMS
 from userprofile.models import UserProfile
+from .decorators import local_only
 
 api = NinjaAPI()
 
