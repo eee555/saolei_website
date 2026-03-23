@@ -42,6 +42,12 @@ declare global {
              * */
             register(id: number, username: string, email: string, password: string): void;
 
+            /**
+             * 将指定用户设为管理员。
+             * @param {number} user_id - 用户ID
+             * @example cy.setStaff(1);
+             */
+            setStaff(user_id: number): void;
 
             /**
              * 创建/加载一个记住登录状态的登录会话
@@ -77,6 +83,16 @@ Cypress.Commands.add('register', (id: number, username: string, email: string, p
             username: username,
             email: email,
             password: password,
+        },
+    });
+});
+
+Cypress.Commands.add('setStaff', (id: number) => {
+    cy.request({
+        method: 'POST',
+        url: 'http://127.0.0.1:8000/dangerzone/setstaff',
+        body: {
+            id: id,
         },
     });
 });
