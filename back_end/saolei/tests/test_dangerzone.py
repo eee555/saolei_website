@@ -30,7 +30,7 @@ def _scan_static_imports():
                 filepath = pathlib.Path(root) / file
                 rel_path = pathlib.Path(root, file).relative_to(PROJECT_ROOT)
                 print(rel_path)
-                if str(rel_path) == 'saolei\\urls.py':
+                if rel_path.as_posix() == 'saolei/urls.py':
                     print('file skipped')
                     continue
                 with open(filepath, "r", encoding="utf-8") as f:
@@ -75,7 +75,7 @@ def _scan_dynamic_imports():
                 if file.endswith(".py") and file != "__init__.py":
                     rel_path = pathlib.Path(root, file).relative_to(PROJECT_ROOT)
                     print(rel_path)
-                    if str(rel_path) == 'saolei\\urls.py':
+                    if rel_path.as_posix() == 'saolei/urls.py':
                         print('file skipped')
                         continue
                     module_name = ".".join(rel_path.with_suffix("").parts)
