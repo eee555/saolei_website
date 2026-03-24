@@ -1,8 +1,8 @@
 <template>
-    <el-link v-if="length > 1" :underline="false" :disabled="refCarousel?.activeIndex == 0" @click="refCarousel?.prev">
+    <el-link v-if="length > 1" underline="never" :disabled="refCarousel?.activeIndex == 0" @click="refCarousel?.prev">
         <base-icon-prev />
     </el-link>
-    <el-link v-if="length > 1" :underline="false" :disabled="refCarousel?.activeIndex == length - 1" @click="refCarousel?.next">
+    <el-link v-if="length > 1" underline="never" :disabled="refCarousel?.activeIndex == length - 1" @click="refCarousel?.next">
         <base-icon-next />
     </el-link>
 </template>

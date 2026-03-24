@@ -15,7 +15,7 @@
 <script lang="ts" setup>
 
 import { ElDialog, ElLink } from 'element-plus';
-import { ref } from 'vue';
+import { PropType, ref } from 'vue';
 
 const visible = ref(false);
 
@@ -25,8 +25,8 @@ defineProps({
         default: undefined,
     },
     underline: {
-        type: Boolean,
-        default: true,
+        type: String as PropType<'hover' | 'always' | 'never'>,
+        default: 'never',
     },
 });
 
