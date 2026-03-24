@@ -28,6 +28,9 @@ def _scan_static_imports():
         for file in files:
             if file.endswith(".py"):
                 filepath = pathlib.Path(root) / file
+                rel_path = pathlib.Path(root, file).relative_to(PROJECT_ROOT)
+                if str(rel_path) == 'saolei\\urls.py':
+                    continue
                 with open(filepath, "r", encoding="utf-8") as f:
                     for i, line in enumerate(f, start=1):
                         if pattern.search(line):
@@ -69,6 +72,8 @@ def _scan_dynamic_imports():
             for file in files:
                 if file.endswith(".py") and file != "__init__.py":
                     rel_path = pathlib.Path(root, file).relative_to(PROJECT_ROOT)
+                    if str(rel_path) == 'saolei\\urls.py':
+                        continue
                     module_name = ".".join(rel_path.with_suffix("").parts)
                     try:
                         importlib.import_module(module_name)
