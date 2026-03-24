@@ -5,7 +5,7 @@
             <card-msgames v-else-if="account.platform == 'a'" :verified="account.verified" :info="account.data as AccountMSGames" />
             <card-wo-m v-else-if="account.platform == 'w'" :id="account.identifier" :verified="account.verified" :info="account.data as AccountWoM" @refresh="refreshAccount(account)" />
         </template>
-        <card-add v-if="accountlinks.length < 4" :accountlinks="accountlinks" @add-link="addLink" />
+        <card-add v-if="accountlinks.length < 4" :accountlinks="accountlinks" :disabled="store.player.id != store.user.id" @add-link="addLink" />
     </div>
 </template>
 
@@ -19,6 +19,7 @@ import CardWoM from './CardWoM.vue';
 import { AccountLink, AccountMSGames, AccountSaolei, AccountWoM } from './utils';
 
 import { httpErrorNotification } from '@/components/Notifications';
+import { store } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const { proxy } = useCurrentInstance();
