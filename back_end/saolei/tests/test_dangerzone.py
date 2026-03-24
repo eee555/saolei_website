@@ -74,10 +74,6 @@ def _scan_dynamic_imports():
             for file in files:
                 if file.endswith(".py") and file != "__init__.py":
                     rel_path = pathlib.Path(root, file).relative_to(PROJECT_ROOT)
-                    print(rel_path)
-                    if rel_path.as_posix() == 'saolei/urls.py':
-                        print('file skipped')
-                        continue
                     module_name = ".".join(rel_path.with_suffix("").parts)
                     try:
                         importlib.import_module(module_name)
