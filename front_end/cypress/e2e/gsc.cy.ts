@@ -55,6 +55,7 @@ describe('GSC', () => {
         // 注册用户
         cy.register(HOST.id, HOST.username, HOST.email, HOST.password);
         cy.register(STAFF.id, STAFF.username, STAFF.email, STAFF.password);
+        cy.setStaff(STAFF.id);
         cy.register(USER.id, USER.username, USER.email, USER.password);
     });
 
@@ -193,5 +194,55 @@ describe('GSC', () => {
         cy.login(STAFF.username, STAFF.password);
         cy.visit('/#/staff/');
         cy.contains('比赛管理').click();
+
+        cy.contains('比赛ID').get('input').filter(':visible').clear();
+        cy.contains('比赛ID').get('input').filter(':visible').type('1{enter}');
+        cy.get('button').filter(':visible').contains('查询').click();
+        cy.contains('审核中');
+        cy.get('.pi-check').click();
+        cy.contains('即将开始');
+
+        cy.get('.pi-times').click();
+        cy.contains('已取消');
+
+        cy.contains('比赛ID').get('input').filter(':visible').clear();
+        cy.contains('比赛ID').get('input').filter(':visible').type('2{enter}');
+        cy.get('button').filter(':visible').contains('查询').click();
+        cy.contains('审核中');
+        cy.get('.pi-check').click();
+        cy.contains('进行中');
+
+        cy.contains('比赛ID').get('input').filter(':visible').clear();
+        cy.contains('比赛ID').get('input').filter(':visible').type('3{enter}');
+        cy.get('button').filter(':visible').contains('查询').click();
+        cy.contains('审核中');
+        cy.get('.pi-check').click();
+        cy.contains('结算中');
+    });
+
+    it('Tournament page', () => {
+        cy.visit('/#/tournament/');
+        cy.contains('第2届金羊杯');
+        cy.get('table:visible').getTable().should((tableData) => {
+            expect(tableData[0].状态).to.equal('已取消');
+            expect(tableData[1].状态).to.equal('进行中');
+            expect(tableData[2].状态).to.equal('结算中');
+
+            expect(tableData[0].比赛).to.equal('第2届金羊杯');
+            expect(tableData[1].比赛).to.equal('第3届金羊杯');
+            expect(tableData[2].比赛).to.equal('第4届金羊杯');
+
+            expect(tableData[0].主办方).to.equal(HOST.realname);
+            expect(tableData[1].主办方).to.equal(HOST.realname);
+            expect(tableData[2].主办方).to.equal(HOST.realname);
+
+            expect(tableData[0].开始时间).to.equal('2099-12-31 00:00:00');
+            expect(tableData[1].开始时间).to.equal('2000-01-01 00:00:00');
+            expect(tableData[2].开始时间).to.equal('2000-01-01 00:00:00');
+
+            expect(tableData[0].结束时间).to.equal('2100-01-03 00:00:00');
+            expect(tableData[1].结束时间).to.equal('2100-01-01 00:00:00');
+            expect(tableData[2].结束时间).to.equal('2000-01-02 00:00:00');
+        });
     });
 });

@@ -46,4 +46,5 @@ if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.E2E_TEST:
-    urlpatterns.append(path('dangerzone/', include('dangerzone.urls')))
+    from dangerzone.api import api as dangerzone_api
+    urlpatterns.append(path('dangerzone/', dangerzone_api.urls))
