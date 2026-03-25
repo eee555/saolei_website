@@ -34,5 +34,11 @@ export default {
             stnb: 'STNB',
             thrp: 'ThrP',
         },
+        software: {
+            a: 'Avf',
+            e: 'Evf',
+            r: 'Rmv',
+            m: 'Mvf',
+        },
     },
 };
