@@ -18,6 +18,9 @@
                     <el-menu-item v-if="store.user.id != 0" :index="player_url">
                         <IconMenuItem :text="store.user.username" icon="User" />
                     </el-menu-item>
+                    <el-menu-item v-if="store.user.is_staff" key="staff" index="/staff">
+                        <IconMenuItem :text="t('menu.staff')" icon="Key" />
+                    </el-menu-item>
                     <el-menu-item index="/settings" style="padding-left: 8px; padding-right: 5px">
                         <el-badge is-dot :hidden="true" :offset="[0,15]">
                             <IconMenuItem :text="t('menu.setting')" icon="Setting" />
