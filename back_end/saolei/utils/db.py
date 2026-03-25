@@ -1,4 +1,5 @@
 from typing import Type
+
 from django.db.models import Count, Model, TextChoices
 
 
