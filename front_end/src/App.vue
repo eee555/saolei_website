@@ -99,6 +99,7 @@ const menu_items = [
     { index: 'guide', icon: 'Document', content: 'menu.guide' },
     // { index: "score", icon: "Histogram", content: "menu.score" },
     { index: 'tournament', icon: 'Medal', content: 'menu.tournament' },
+    { index: 'server', icon: 'Cpu', content: 'menu.server' },
 ] as const;
 
 const notice = ref(`

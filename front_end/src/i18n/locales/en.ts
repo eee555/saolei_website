@@ -34,7 +34,8 @@ export default {
         },
         mode: {
             code00: 'Standard',
-            code05: 'No Guessing',
+            code05: 'Speed NG',
+            code06: 'Hardcore NG',
             code11: 'Recursive Chord',
             code12: 'No Flag',
             std: 'Standard',
@@ -101,12 +102,11 @@ export default {
             best: 'Best',
             edge: 'Edge',
             sum: 'Sum',
+            total: 'Total',
         },
         show: 'Show',
         software: {
-            resource_download: 'Downloads',
             software_download: 'Software Downloads',
-            download_link: 'Resource',
         },
         state: {
             a: 'Pending',
@@ -218,9 +218,14 @@ export default {
         import: {
             title: 'Failed to import',
             connection: 'Unable to connect to the target server',
+            cooldown: 'Cooling down',
             importing: 'Video is already being imported, please try again later',
+            indexerror: 'HTML parse error',
+            pageempty: 'Page has no data',
             readtimeout: 'The target server did not respond in time',
+            requestexception: 'Unknown request exception',
             response: 'Unrecognised response',
+            timeout: 'Remote server time out',
         },
         saolei: {
             page_empty: 'Page has no data',
@@ -343,6 +348,7 @@ export default {
         login: 'Login',
         logout: 'Logout',
         register: 'Register',
+        server: 'Server',
         setting: 'Settings',
         tournament: 'Tournament',
     },
@@ -444,6 +450,20 @@ export default {
             },
         },
     },
+    server: {
+        diskUsage: {
+            title: 'Disk Usage',
+            label: {
+                video: 'Videos',
+                db: 'Database',
+                other: 'Other',
+                free: 'Free',
+            },
+        },
+        videoSummary: {
+            title: 'Video Summary',
+        },
+    },
     setting: {
         appearance: 'Appearance',
         colorscheme: {
@@ -486,6 +506,15 @@ export default {
         repository: 'Repository',
         supportedLanguages: 'Languages',
         version: 'Version',
+    },
+    task: {
+        title: 'Background tasks',
+        status: {
+            READY: 'Ready',
+            RUNNING: 'Running',
+            SUCCESSFUL: 'Successful',
+            FAILED: 'Failed',
+        },
     },
     team: {
         title: 'Team',
