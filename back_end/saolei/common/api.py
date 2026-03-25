@@ -1,10 +1,13 @@
 
 
+from django.db.models import Sum
 from django_tasks import TaskResultStatus
 from django_tasks_db.models import DBTaskResult
 from ninja import NinjaAPI, Schema
 from ninja.throttling import AnonRateThrottle
+import psutil
 
+from common.utils import get_db_size
 from config.text_choices import MS_TextChoices
 from utils.db import get_choice_counts_filtered
 from videomanager.models import VideoModel
@@ -48,3 +51,14 @@ def api_task_summary(request):
     status = get_choice_counts_filtered(DBTaskResult, 'status', TaskResultStatus)
 
     return {'total': total, 'status': status}
+
+
+@api.get('/diskusage', throttle=[AnonRateThrottle('10/m')])
+def api_disk_usage(request):
+    disk = psutil.disk_usage(".")
+
+    video_size: int = VideoModel.objects.aggregate(s=Sum('file_size'))['s']
+
+    db_size = get_db_size()
+
+    return {'total': disk.total, 'used': disk.used, 'free': disk.free, 'video': video_size, 'db': db_size}

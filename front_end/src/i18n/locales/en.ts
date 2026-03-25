@@ -102,6 +102,7 @@ export default {
             best: 'Best',
             edge: 'Edge',
             sum: 'Sum',
+            total: 'Total',
         },
         show: 'Show',
         software: {
@@ -450,8 +451,17 @@ export default {
         },
     },
     server: {
+        diskUsage: {
+            title: 'Disk Usage',
+            label: {
+                video: 'Videos',
+                db: 'Database',
+                other: 'Other',
+                free: 'Free',
+            },
+        },
         videoSummary: {
-            title: 'Video Summary'
+            title: 'Video Summary',
         },
     },
     setting: {

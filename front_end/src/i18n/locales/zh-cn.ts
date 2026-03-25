@@ -449,6 +449,15 @@ export default {
         },
     },
     server: {
+        diskUsage: {
+            title: '磁盘使用情况',
+            label: {
+                video: '录像文件',
+                db: '数据库',
+                other: '其他文件',
+                free: '可用空间',
+            },
+        },
         videoSummary: {
             title: '录像总量',
         },

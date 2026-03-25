@@ -47,8 +47,8 @@ function refresh() {
     loading.value = true;
     proxy.$axios.get('/common/api/videosummary').then((response) => {
         Object.assign(videoSummaryData.value, response.data);
+        loading.value = false;
     });
-    loading.value = false;
 }
 
 onMounted(refresh);
