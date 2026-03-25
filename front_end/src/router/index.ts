@@ -43,6 +43,11 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('../views/ScoreRankView.vue'),
     },
     {
+        path: '/server',
+        name: 'server',
+        component: () => import('../views/ServerView/App.vue'),
+    },
+    {
         path: '/settings',
         name: 'settings',
         component: () => import('../views/SettingView.vue'),
