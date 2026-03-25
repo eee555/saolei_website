@@ -1,6 +1,6 @@
 <template>
     <div>
-        <el-container>
+        <el-container v-loading="playerLoading">
             <el-aside width="200px">
                 <div v-if="is_editing">
                     <el-upload
@@ -99,7 +99,7 @@
 <script lang="ts" setup>
 // 我的地盘页面
 import type { UploadFile, UploadFiles, UploadInstance, UploadProps, UploadRawFile, UploadRequestOptions } from 'element-plus';
-import { ElAside, ElContainer, ElImage, ElInput, ElMain, ElMessage, ElTabPane, ElTabs, ElUpload, genFileId } from 'element-plus';
+import { ElAside, ElContainer, ElImage, ElInput, ElMain, ElMessage, ElTabPane, ElTabs, ElUpload, genFileId, vLoading } from 'element-plus';
 import { compressAccurately } from 'image-conversion';
 import { defineAsyncComponent, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -140,6 +140,7 @@ const signature_edit = ref('');
 const is_editing = ref(false);
 // 弹窗的可见性
 const visible = ref(false);
+const playerLoading = ref(false);
 
 // 标签默认切在第一页
 const activeName = ref('profile');
@@ -153,7 +154,7 @@ let imageUrlOld: any;
 // const user = store.user;
 let show_edit_button: boolean;
 
-function refresh() {
+async function refresh() {
     const player_id = +proxy.$route.params.id;
     // http://localhost:8080/#/player/1
     // 首先看url里有没有带参，如果有，就访问这个用户；其次看store里有没有用户id。
@@ -168,7 +169,8 @@ function refresh() {
     }
     show_edit_button = player.id == store.user.id;
 
-    proxy.$axios.get('/msuser/info/',
+    playerLoading.value = true;
+    await proxy.$axios.get('/msuser/info/',
         {
             params: {
                 id: player.id,
@@ -196,6 +198,7 @@ function refresh() {
         }
         // console.log(imageUrl);
     }).catch(unknownErrorNotification);
+    playerLoading.value = false;
 }
 
 onMounted(refresh);
