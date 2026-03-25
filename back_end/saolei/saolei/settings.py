@@ -52,7 +52,6 @@ INSTALLED_APPS = [
     'django_apscheduler',
     'django_tasks_db',
     'corsheaders',
-    'rest_framework',
     'userprofile',
     'videomanager',
     'msuser',

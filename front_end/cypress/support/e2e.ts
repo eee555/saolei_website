@@ -42,6 +42,12 @@ declare global {
              * */
             register(id: number, username: string, email: string, password: string): void;
 
+            /**
+             * 将指定用户设为管理员。
+             * @param {number} user_id - 用户ID
+             * @example cy.setStaff(1);
+             */
+            setStaff(user_id: number): void;
 
             /**
              * 创建/加载一个记住登录状态的登录会话
@@ -71,12 +77,22 @@ Cypress.on('uncaught:exception', (err, _runnable) => {
 Cypress.Commands.add('register', (id: number, username: string, email: string, password: string) => {
     cy.request({
         method: 'POST',
-        url: 'http://127.0.0.1:8000/dangerzone/register/',
+        url: 'http://127.0.0.1:8000/dangerzone/register',
         body: {
             id: id,
             username: username,
             email: email,
             password: password,
+        },
+    });
+});
+
+Cypress.Commands.add('setStaff', (id: number) => {
+    cy.request({
+        method: 'POST',
+        url: 'http://127.0.0.1:8000/dangerzone/setstaff',
+        body: {
+            id: id,
         },
     });
 });
@@ -95,13 +111,13 @@ Cypress.Commands.add('login', (username: string, password: string) => {
 });
 
 Cypress.Commands.add('deleteUser', () => {
-    cy.request('POST', 'http://127.0.0.1:8000/dangerzone/delete_user/').then((response) => {
+    cy.request('POST', 'http://127.0.0.1:8000/dangerzone/delete_user').then((response) => {
         expect(response.status).to.eq(200);
     });
 });
 
 Cypress.Commands.add('flushDatabase', () => {
-    cy.request('POST', 'http://127.0.0.1:8000/dangerzone/flush_database/').then((response) => {
+    cy.request('POST', 'http://127.0.0.1:8000/dangerzone/flush_database').then((response) => {
         expect(response.status).to.eq(200);
     });
 });

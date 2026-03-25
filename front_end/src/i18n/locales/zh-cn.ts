@@ -33,6 +33,7 @@ export default {
         mode: {
             code00: '标准',
             code05: '无猜',
+            code06: '强无猜',
             code11: '递归',
             code12: '盲扫',
             std: '标准',
@@ -48,8 +49,6 @@ export default {
             connectionFail: '无法连接到服务器！',
             contactDeveloper: '请联系开发者',
             fileTooLarge: '文件大小不能超过{0}',
-            importFail: '导入失败！',
-            importFailResponse: '无法识别的响应',
             logoutFail: '退出失败！',
             logoutSuccess: '退出成功！',
             realNameRequired: '请修改为实名',
@@ -101,6 +100,7 @@ export default {
             best: '尖端',
             edge: '边缘',
             sum: '总计',
+            total: '总计',
         },
         show: '显示',
         software: {
@@ -346,6 +346,7 @@ export default {
         login: '登录',
         logout: '退出',
         register: '注册',
+        server: '服务器',
         setting: '设置',
         tournament: '比赛',
     },
@@ -447,6 +448,20 @@ export default {
             },
         },
     },
+    server: {
+        diskUsage: {
+            title: '磁盘使用情况',
+            label: {
+                video: '录像文件',
+                db: '数据库',
+                other: '其他文件',
+                free: '可用空间',
+            },
+        },
+        videoSummary: {
+            title: '录像总量',
+        },
+    },
     setting: {
         appearance: '外观设置',
         colorscheme: {
@@ -489,6 +504,15 @@ export default {
         repository: '项目地址',
         supportedLanguages: '语言',
         version: '版本',
+    },
+    task: {
+        title: '后台任务',
+        status: {
+            READY: '排队中',
+            RUNNING: '运行中',
+            SUCCESSFUL: '已完成',
+            FAILED: '失败',
+        },
     },
     team: {
         title: '团队',

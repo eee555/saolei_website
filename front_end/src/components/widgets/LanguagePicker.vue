@@ -29,8 +29,8 @@ import { local } from '@/store';
 const options = [
     { lang: 'zh-cn', text: '简体中文' },
     { lang: 'en', text: 'English (99%)' },
-    { lang: 'de', text: 'Deutsch (10%)' },
-    { lang: 'pl', text: 'Polski (13%)' },
+    { lang: 'de', text: 'Deutsch (7%)' },
+    { lang: 'pl', text: 'Polski (10%)' },
     { lang: 'dev', text: 'dev' },
 ];
 
