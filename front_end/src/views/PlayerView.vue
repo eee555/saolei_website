@@ -189,16 +189,14 @@ async function refresh() {
         popularity.value = data.popularity;
         realname_edit.value = data.realname;
         signature_edit.value = data.signature;
-        // console.log(imageUrl);
         if (data.avatar) {
             imageUrl.value = 'data:image/png;base64,' + data.avatar;
             imageUrlOld = 'data:image/png;base64,' + data.avatar;
         } else {
             imageUrl.value = imageUrlDefault;
         }
-        // console.log(imageUrl);
+        playerLoading.value = false;
     }).catch(unknownErrorNotification);
-    playerLoading.value = false;
 }
 
 onMounted(refresh);
