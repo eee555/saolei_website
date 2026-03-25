@@ -49,8 +49,6 @@ export default {
             connectionFail: '无法连接到服务器！',
             contactDeveloper: '请联系开发者',
             fileTooLarge: '文件大小不能超过{0}',
-            importFail: '导入失败！',
-            importFailResponse: '无法识别的响应',
             logoutFail: '退出失败！',
             logoutSuccess: '退出成功！',
             realNameRequired: '请修改为实名',

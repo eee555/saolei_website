@@ -82,9 +82,7 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
         };
         show: string;
         software: {
-            resource_download: string;
             software_download: string;
-            download_link: string;
             metasweeper: string;
             metasweeper_int: string; // introduction
             arbiter_int: string;
