@@ -350,6 +350,7 @@ export default {
         register: 'Register',
         server: 'Server',
         setting: 'Settings',
+        staff: 'Moderate',
         tournament: 'Tournament',
     },
     msg: {

@@ -341,6 +341,7 @@ export default {
         world: '统计',
         guide: '教程',
         score: '积分',
+        staff: '管理',
         profile: '我的地盘',
         welcome: '欢迎您，{0}！',
         login: '登录',
