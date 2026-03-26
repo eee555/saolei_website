@@ -5,7 +5,7 @@
             <card-msgames v-else-if="account.platform == 'a'" :verified="account.verified" :info="account.data as AccountMSGames" />
             <card-wo-m v-else-if="account.platform == 'w'" :id="account.identifier" :verified="account.verified" :info="account.data as AccountWoM" @refresh="refreshAccount(account)" />
         </template>
-        <card-add v-if="accountlinks.length < 4" :accountlinks="accountlinks" :disabled="store.player.id != store.user.id" @add-link="addLink" />
+        <card-add v-if="store.player.id == store.user.id && accountlinks.length < 4" :accountlinks="accountlinks" @add-link="addLink" />
     </div>
 </template>
 
