@@ -14,6 +14,7 @@
         filter-display="menu"
         paginator
         :rows="10"
+        paginator-template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown JumpToPageInput CurrentPageReport"
     >
         <pr-column selection-mode="multiple" />
         <pr-column field="id" header="id" />
