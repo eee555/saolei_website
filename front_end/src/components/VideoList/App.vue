@@ -13,6 +13,7 @@
         }"
         sort-field="upload_time" :sort-order="-1"
         :paginator="paginator" :rows="paginatorRows"
+        paginator-template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown JumpToPageInput CurrentPageReport"
         :rows-per-page-options="[5, 10, 25, 50, 100]"
         @row-click="(event: any) => preview(event.data.id)"
     >
