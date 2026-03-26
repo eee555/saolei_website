@@ -1,20 +1,24 @@
 <template>
-    <el-row data-cy="count" style="width: 100%; align-items: center">
+    <div data-cy="count" style="display: flex; width: 100%; align-items: center">
         <el-text size="small" style="margin-right: 0.5em">
             {{ t('activityCalendar.totalNVideos', [videoList.length]) }}
         </el-text>
-        <StackBar :data="videoCountData" style="flex: 1;" />
-    </el-row>
-    <el-row data-cy="size" style="width: 100%; align-items: center">
+        <div style="flex-grow: 1;">
+            <StackBar :data="videoCountData" style="flex: 1;" />
+        </div>
+    </div>
+    <div data-cy="size" style="display: flex; width: 100%; align-items: center">
         <el-text size="small" style="margin-right: 0.5em">
             {{ t('activityCalendar.totalNBytes', [begSize + intSize + expSize]) }}
         </el-text>
-        <StackBar :data="videoFileSizeDate" style="flex: 1;" />
-    </el-row>
+        <div style="flex-grow: 1;">
+            <StackBar :data="videoFileSizeDate" />
+        </div>
+    </div>
 </template>
 
 <script setup lang="ts">
-import { ElRow, ElText } from 'element-plus';
+import { ElText } from 'element-plus';
 import Lazy from 'lazy.js';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
