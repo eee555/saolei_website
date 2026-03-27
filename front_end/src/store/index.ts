@@ -44,6 +44,7 @@ export const local = useLocalStorage(
         menu_icon: false,
         notification_duration: 4500,
         tooltip_show: true,
+        vienna_logo_legacy: false,
     },
     { mergeDefaults: true },
 );
