@@ -2,6 +2,7 @@ import datetime
 from unittest import expectedFailure
 
 from django.test import TestCase
+import requests
 
 from userprofile.models import UserProfile
 from .models import AccountMinesweeperGames, AccountSaolei, AccountWorldOfMinesweeper
@@ -11,7 +12,8 @@ from .utils import update_msgames_account, update_wom_account
 
 class AccountLinkTestCase(TestCase):
     def setUp(self):
-        user = UserProfile.objects.create(username='setUp', email='setUp@test.com')
+        user = UserProfile.objects.create(
+            username='setUp', email='setUp@test.com')
         AccountSaolei.objects.create(id=1, parent=user)
         AccountMinesweeperGames.objects.create(id=7872, parent=user)
         AccountWorldOfMinesweeper.objects.create(id=1783173, parent=user)
@@ -84,8 +86,12 @@ class AccountLinkTestCase(TestCase):
         self.assertEqual(account.e_winstreak, 9)
 
     def test_msgames_private_name(self):
-        user = UserProfile.objects.create(username='test_msgames_private_name', email='test_msgames_private_name@test.com')
+        user = UserProfile.objects.create(
+            username='test_msgames_private_name', email='test_msgames_private_name@test.com')
         account = AccountMinesweeperGames.objects.create(id=8371, parent=user)
-        update_msgames_account(account)
+        try:
+            update_msgames_account(account)
+        except requests.ConnectTimeout:
+            return
         self.assertEqual(account.name, 'Private')
         self.assertEqual(account.local_name, 'None')
