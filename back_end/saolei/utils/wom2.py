@@ -5,7 +5,7 @@ import re
 import threading
 import time
 from typing import Any, Callable, List, Optional, Tuple, Union
-from regex import E
+
 import requests
 import websocket
 
@@ -408,7 +408,7 @@ class WOM2:
         request = WOM2Request_42(
             'EnterGameController.enterGameWsAction',
             [video_id],
-            None
+            None,
         )
 
         return self.request(request, timeout=timeout)
@@ -423,7 +423,7 @@ if __name__ == '__main__':
         request = WOM2Request_42(
             'EnterGameController.enterGameWsAction',
             [3],
-            683
+            683,
         )
         responses = wom.request(request, timeout=50)
         response1 = WOM2Response_42()
@@ -436,7 +436,7 @@ if __name__ == '__main__':
         request = WOM2Request_42(
             'PlayersOnlineController.getPlayersOnlineCountWsAction',
             [],
-            931
+            931,
         )
         print("获取在线人数")
         responses = wom.request(request, timeout=50)
