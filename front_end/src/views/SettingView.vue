@@ -9,6 +9,26 @@
                 :active-text="t('common.show')" :inactive-text="t('common.hide')"
             />
         </el-descriptions-item>
+        <el-descriptions-item :label="t('setting.viennaLogo')">
+            <el-switch v-model="local.vienna_logo_legacy">
+                <template #active>
+                    <Tippy :duration="0">
+                        <img style="width: 16px; height: 16px" src="@/assets/img/viennasweeper.ico">
+                        <template #content>
+                            {{ t('common.old') }}
+                        </template>
+                    </Tippy>
+                </template>
+                <template #inactive>
+                    <Tippy :duration="0">
+                        <img style="width: 16px; height: 16px" src="@/assets/img/vsweep_16x16_4bit.ico">
+                        <template #content>
+                            {{ t('common.new') }}
+                        </template>
+                    </Tippy>
+                </template>
+            </el-switch>
+        </el-descriptions-item>
         <el-descriptions-item :label="t('setting.menuLayout')">
             <el-switch
                 v-model="local.menu_icon"
@@ -85,6 +105,7 @@
 import { ElDescriptions, ElDescriptionsItem, ElInputNumber, ElOption, ElSelect, ElSlider, ElSwitch, ElText } from 'element-plus';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { Tippy } from 'vue-tippy';
 
 import BaseTooltip from '@/components/common/BaseTooltip.vue';
 import ExperimentalFeature from '@/components/ExperimentalFeature.vue';

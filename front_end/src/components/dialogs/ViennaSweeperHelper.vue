@@ -1,10 +1,12 @@
 <template>
     <div>
         <el-text size="large">
-            {{ t('software.metaDescription') }}
+            {{ t('software.viennaDescription1') }}
             <br>
-            {{ t('software.repository') }}{{ t('common.punct.colon') }}
-            https://github.com/eee555/Metasweeper
+            {{ t('software.viennaDescription2') }}
+            <br>
+            {{ t('software.officialSite') }}{{ t('common.punct.colon') }}
+            https://sweeper.wien
         </el-text>
         <el-row style="height: 1em" />
         <el-descriptions border>
@@ -12,21 +14,18 @@
                 Windows
             </el-descriptions-item>
             <el-descriptions-item :label="t('software.supportedLanguages')">
-                <BaseFlagCN />&nbsp;
-                <BaseFlagUK />&nbsp;
-                <BaseFlagPL />&nbsp;
-                <BaseFlagDE />
+                <BaseFlagUK />
             </el-descriptions-item>
             <el-descriptions-item :label="t('software.feature')" :span="3">
                 <BaseTagSupport>
                     {{ t('software.features.customMode') }}
                 </BaseTagSupport>
                 &nbsp;
-                <BaseTagSupport>
+                <BaseTagSupport :support="false">
                     {{ t('software.features.customCounter') }}
                 </BaseTagSupport>
                 &nbsp;
-                <BaseTagSupport>
+                <BaseTagSupport :support="false">
                     {{ t('software.features.noGuessing') }}
                 </BaseTagSupport>
                 &nbsp;
@@ -38,7 +37,7 @@
                     {{ t('software.features.tournament') }}
                 </BaseTagSupport>
                 &nbsp;
-                <BaseTagSupport>
+                <BaseTagSupport :support="false">
                     {{ t('software.features.mouseLock') }}
                 </BaseTagSupport>
             </el-descriptions-item>
@@ -51,11 +50,11 @@
                     <BaseBadgeSaolei />
                 </BaseTagSupport>
                 &nbsp;
-                <BaseTagSupport :support="false">
+                <BaseTagSupport>
                     <BaseBadgeMsgames />
                 </BaseTagSupport>
                 &nbsp;
-                <BaseTagSupport :support="false">
+                <BaseTagSupport>
                     <BaseBadgeScoreganizer />
                 </BaseTagSupport>
             </el-descriptions-item>
@@ -85,95 +84,41 @@ import { useI18n } from 'vue-i18n';
 
 import { BaseBadgeMsgames, BaseBadgeOpenms, BaseBadgeSaolei, BaseBadgeScoreganizer } from '@/components/common/badge';
 import BaseTagSupport from '@/components/common/BaseTagSupport.vue';
-import { BaseFlagCN, BaseFlagDE, BaseFlagPL, BaseFlagUK } from '@/components/common/flag';
+import { BaseFlagUK } from '@/components/common/flag';
 
 const { t } = useI18n();
 
 const tableData = [
     {
-        version: 'v3.2.2',
-        date: '2026-3-3',
+        version: 'v4.0.0',
+        date: '2024-11-15',
         expire: '-',
         links: [
             {
-                label: 'OpenMS',
-                url: 'https://openms.top/download/Metaminesweeper-3.2.2.exe',
-            },
-            {
-                label: 'Gitee',
-                url: 'https://gitee.com/ee55/Metasweeper/releases/download/3.2.2/Metaminesweeper-3.2.2.exe',
-            },
-            {
-                label: 'GitHub',
-                url: 'https://github.com/eee555/Metasweeper/releases/download/3.2.2/Metaminesweeper-3.2.2.exe',
+                label: 'Official',
+                url: 'https://sweeper.wien/static/downloads/vsweep-4.0.0-vsh-0.1.0.zip',
             },
         ],
     },
     {
-        version: 'v3.2.1',
-        date: '2025-11-22',
-        expire: '2026-3-3',
+        version: 'v5.0.0b4',
+        date: '2025-9-7',
+        expire: 'Beta',
         links: [
             {
-                label: 'OpenMS',
-                url: 'https://openms.top/download/Metaminesweeper-3.2.1.exe',
-            },
-            {
-                label: 'Gitee',
-                url: 'https://gitee.com/ee55/Metasweeper/releases/download/3.2.1/Metaminesweeper-3.2.1.exe',
-            },
-            {
-                label: 'GitHub',
-                url: 'https://github.com/eee555/Metasweeper/releases/download/3.2.1/Metaminesweeper-3.2.1.exe',
+                label: 'Official',
+                url: 'https://sweeper.wien/static/downloads/vsweep-5.0.0b4-vsh-0.2.0b2.zip',
             },
         ],
     },
     {
-        version: 'v3.2.0',
-        date: '2024-11-21',
-        expire: '2026-3-3',
+        version: 'v3.0',
+        date: 'Unknown',
+        expire: '2023-4-24',
         links: [
             {
-                label: 'OpenMS',
-                url: 'https://openms.top/download/Metaminesweeper-3.2.0.exe',
-            },
-            {
-                label: 'Gitee',
-                url: 'https://gitee.com/ee55/Metasweeper/releases/download/3.2.0/Metaminesweeper-3.2.0.exe',
-            },
-            {
-                label: 'GitHub',
-                url: 'https://github.com/eee555/Metasweeper/releases/download/3.2.0/Metaminesweeper-3.2.0.exe',
-            },
-        ],
-    },
-    {
-        version: 'v3.1.11',
-        date: '2024-9-10',
-        expire: '2026-3-3',
-        links: [
-            {
-                label: 'OpenMS',
-                url: 'https://openms.top/download/Metaminesweeper-v3.1.11.zip',
-            },
-            {
-                label: 'GitHub',
-                url: 'https://github.com/eee555/Metasweeper/releases/download/3.1.11/Metaminesweeper-v3.1.11.zip',
-            },
-        ],
-    },
-    {
-        version: 'v3.1.9',
-        date: '2024-7-27',
-        expire: '2026-3-3',
-        links: [
-            {
-                label: 'OpenMS',
-                url: 'https://openms.top/download/Metaminesweeper-v3.1.9.zip',
-            },
-            {
-                label: 'GitHub',
-                url: 'https://github.com/eee555/Metasweeper/releases/download/3.1.9/Metaminesweeper-v3.1.9.zip',
+                label: 'Saolei',
+                url: 'http://saolei.wang/Download/Viennasweeper_3.0.zip',
             },
         ],
     },

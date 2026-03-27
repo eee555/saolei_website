@@ -1,6 +1,6 @@
 <template>
     <base-tooltip :show-delay="500">
-        <img style="width: 16px; height: 16px" src="@/assets/img/viennasweeper.ico">
+        <img style="width: 16px; height: 16px" :src="local.vienna_logo_legacy ? 'src/assets/img/viennasweeper.ico' : 'src/assets/img/vsweep_16x16_4bit.ico'">
         <template #content>
             <el-text>Viennasweeper</el-text>
         </template>
@@ -12,5 +12,7 @@
 import { ElText } from 'element-plus';
 
 import BaseTooltip from './BaseTooltip.vue';
+
+import { local } from '@/store';
 
 </script>
