@@ -10,12 +10,7 @@
         </el-scrollbar>
     </base-card-normal>
     <el-divider />
-    <el-text tag="b" size="large">
-        {{ t('accountlink.title') }}
-    </el-text>
-    <div>
-        <AccountLinks :user-id="store.player.id" />
-    </div>
+    <AccountLinks :user-id="store.player.id" />
     <el-divider />
     <el-text tag="b" size="large">
         {{ t('identifierManager.title') }}

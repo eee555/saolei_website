@@ -23,7 +23,7 @@
                 <AccountLinkGuide :platform="form.platform" />
             </el-form-item>
             <el-form-item>
-                <base-button-confirm :disabled="!formValid" :formvisible="false" @click.prevent="$emit('addLink', form.platform, form.identifier)" />
+                <base-button-confirm :disabled="!formValid" @click.prevent="$emit('addLink', form.platform, form.identifier); formvisible=false" />
                 <base-button-cancel @click.prevent="formvisible = false" />
             </el-form-item>
         </el-form>
