@@ -18,6 +18,12 @@
                     </template>
                     <ArbiterHelper />
                 </el-tab-pane>
+                <el-tab-pane>
+                    <template #label>
+                        <BaseIconViennasweeper />
+                    </template>
+                    <ViennaSweeperHelper />
+                </el-tab-pane>
             </el-tabs>
         </template>
     </base-overlay>
@@ -29,9 +35,11 @@ import { useI18n } from 'vue-i18n';
 
 import BaseIconArbiter from '@/components/common/BaseIconArbiter.vue';
 import BaseIconMetasweeper from '@/components/common/BaseIconMetasweeper.vue';
+import BaseIconViennasweeper from '@/components/common/BaseIconViennasweeper.vue';
 import BaseOverlay from '@/components/common/BaseOverlay.vue';
 import ArbiterHelper from '@/components/dialogs/ArbiterHelper.vue';
 import MetasweeperHelper from '@/components/dialogs/MetasweeperHelper.vue';
+import ViennaSweeperHelper from '@/components/dialogs/ViennaSweeperHelper.vue';
 
 const { t } = useI18n();
 

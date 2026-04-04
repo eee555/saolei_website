@@ -6,6 +6,7 @@
         :value="tableData" row-hover size="small"
         sort-field="upload_time" :sort-order="-1"
         paginator :rows="10" :rows-per-page-options="[5, 10, 25, 50, 100]"
+        paginator-template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown JumpToPageInput CurrentPageReport"
         :filter-button-props="{
             filter: {
                 severity: 'secondary',

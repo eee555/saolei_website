@@ -56,6 +56,8 @@ export default {
             realNameRequired: 'Real name required',
             unknownError: 'An unknown error has occurred.',
         },
+        new: 'New',
+        old: 'Old',
         prop: {
             action: 'Action',
             identifier: 'Identifier',
@@ -350,6 +352,7 @@ export default {
         register: 'Register',
         server: 'Server',
         setting: 'Settings',
+        staff: 'Moderate',
         tournament: 'Tournament',
     },
     msg: {
@@ -484,11 +487,13 @@ export default {
         notificationDuration: 'Notification Duration',
         notificationDurationTooltip1: 'Duration before close. ',
         notificationDurationTooltip2: 'It will not automatically close if set 0. ',
+        viennaLogo: 'RMV logo',
     },
     software: {
         arbiter: 'Minesweeper Arbiter',
         arbiterDescription: 'Minesweeper Arbiter is the most popular authoritative minesweeper clone.',
         download: 'Download',
+        expireDate: 'Expired',
         feature: 'Features',
         features: {
             customMode: 'Custom mode',
@@ -500,12 +505,16 @@ export default {
         },
         metaDescription: 'Metasweeper is an open-source minesweeper clone under active development.',
         metasweeper: 'Metasweeper',
+        officialSite: 'Official website',
         operatingSystem: 'Operating System',
         platform: 'Platforms',
         releaseDate: 'Released',
         repository: 'Repository',
         supportedLanguages: 'Languages',
         version: 'Version',
+        viennaDescription1: 'Viennasweeper is an official minesweeper clone. It has the best compatibility with Scoreganizer.',
+        viennaDescription2: 'From v5.0.0, Viennasweeper moves to a new replay format that is only currently supported by Open Minesweeper and Scoreganizer.',
+        viennasweeper: 'Viennasweeper',
     },
     task: {
         title: 'Background tasks',
