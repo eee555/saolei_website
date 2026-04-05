@@ -6,8 +6,8 @@ from captcha.models import CaptchaStore
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
-from django_ratelimit.decorators import ratelimit
 from django.views.decorators.http import require_GET, require_POST
+from django_ratelimit.decorators import ratelimit
 
 from msuser.models import UserMS
 from .decorators import staff_required
