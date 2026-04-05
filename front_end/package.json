@@ -81,7 +81,7 @@
     "rollup": "*",
     "typescript": "6.0.2",
     "typescript-eslint": "*",
-    "vite": "*",
+    "vite": "^7",
     "vite-plugin-compression": "*",
     "vite-plugin-top-level-await": "*",
     "vite-plugin-wasm": "*"
