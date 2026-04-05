@@ -79,7 +79,7 @@
     "less": "*",
     "remove-attr": "*",
     "rollup": "*",
-    "typescript": "^5.4",
+    "typescript": "*",
     "typescript-eslint": "^8.0.0",
     "vite": "*",
     "vite-plugin-compression": "*",

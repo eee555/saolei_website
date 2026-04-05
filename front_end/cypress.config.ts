@@ -2,6 +2,7 @@ import { defineConfig } from 'cypress';
 
 export default defineConfig({
     e2e: {
+        'allowCypressEnv': false,
         baseUrl: 'http://localhost:8080',
         defaultBrowser: 'chrome',
         setupNodeEvents(on, _config) {
@@ -15,6 +16,7 @@ export default defineConfig({
     },
 
     component: {
+        'allowCypressEnv': false,
         devServer: {
             framework: 'vue',
             bundler: 'vite',
