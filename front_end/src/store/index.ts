@@ -23,6 +23,9 @@ export const store = defineStore('user', {
         video_list_show: false,
         tournamentTabs: [] as Tournament[],
     }),
+    getters: {
+        isSelf: (state) => state.user.id === state.player.id && state.user.id !== 0,
+    },
 })(pinia);
 
 export const videoplayerstore = defineStore('videoplayer', {

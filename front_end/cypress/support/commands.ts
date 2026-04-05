@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-import 'cypress-get-table';
+import 'cypress-table';
 
 declare global {
     namespace Cypress {
