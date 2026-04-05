@@ -55,7 +55,6 @@
     "vue-tippy": "^6.7.1"
   },
   "devDependencies": {
-    "@intlify/eslint-plugin-vue-i18n": "*",
     "@mdit/plugin-img-size": "*",
     "@stylistic/eslint-plugin": "*",
     "@types/axios": "*",
