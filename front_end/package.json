@@ -19,7 +19,7 @@
     "@mdit/plugin-abbr": "^0.22.1",
     "@mdit/plugin-align": "^0.22.2",
     "@mdit/plugin-img-lazyload": "^0.22.1",
-    "@mdit/plugin-mathjax": "^0.23.2",
+    "@mdit/plugin-mathjax": "^0.26.2",
     "@primeuix/themes": "^1.2.5",
     "@unicode/unicode-16.0.0": "^1.6.14",
     "@vueuse/components": "^13.9.0",
