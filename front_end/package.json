@@ -70,6 +70,7 @@
     "cypress-get-table": "*",
     "cypress-if": "*",
     "cypress-real-events": "*",
+    "esbuild": "*",
     "eslint": "*",
     "eslint-import-resolver-typescript": "*",
     "eslint-plugin-cypress": "*",
