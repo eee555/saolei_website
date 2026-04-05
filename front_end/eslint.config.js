@@ -4,29 +4,32 @@ import globals from 'globals';
 import typescriptEslint from 'typescript-eslint';
 // import vueI18n from '@intlify/eslint-plugin-vue-i18n'; // 不兼容ts。https://github.com/intlify/eslint-plugin-vue-i18n/issues/32
 import stylistic from '@stylistic/eslint-plugin';
-import pluginCypress from 'eslint-plugin-cypress/flat';
+import pluginCypress from 'eslint-plugin-cypress';
 import importPlugin from 'eslint-plugin-import';
 
 export default typescriptEslint.config(
   { ignores: ['*.d.ts', '**/coverage', '**/dist', '**/GuideView.vue'] },
-  pluginCypress.configs.recommended,
-  pluginCypress.configs.globals,
   {
     plugins: {
       '@stylistic': stylistic,
+      'cypress': pluginCypress,
     },
     extends: [
       eslint.configs.recommended,
       importPlugin.flatConfigs.recommended,
       ...typescriptEslint.configs.recommended,
       ...eslintPluginVue.configs['flat/recommended'],
+      pluginCypress.configs.recommended,
       // ...vueI18n.configs.recommended, // 不兼容ts。https://github.com/intlify/eslint-plugin-vue-i18n/issues/32
     ],
     files: ['**/*.{ts,vue}'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
-      globals: globals.browser,
+      globals: {
+        ...globals.browser,
+        ...pluginCypress.configs.recommended.globals,
+      },
       parserOptions: {
         parser: typescriptEslint.parser,
       },
