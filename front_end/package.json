@@ -69,7 +69,7 @@
     "cypress-if": "*",
     "cypress-real-events": "*",
     "cypress-table": "^1.0.2",
-    "eslint": "^9.0.0",
+    "eslint": "^8.0.0",
     "esbuild": "^0.27.0",
     "eslint-import-resolver-typescript": "*",
     "eslint-plugin-cypress": "*",
@@ -81,7 +81,7 @@
     "rollup": "*",
     "typescript": "6.0.2",
     "typescript-eslint": "*",
-    "vite": "^7",
+    "vite": "*",
     "vite-plugin-compression": "*",
     "vite-plugin-top-level-await": "*",
     "vite-plugin-wasm": "*"
