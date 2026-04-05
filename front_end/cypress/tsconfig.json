@@ -2,6 +2,7 @@
   "compilerOptions": {
     "target": "es2015",
     "lib": ["es2015", "dom"],
+    "ignoreDeprecations": "6.0",
     "moduleResolution": "bundler",
     "sourceMap": true,
     "types": ["cypress", "node"],
