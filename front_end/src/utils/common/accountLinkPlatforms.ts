@@ -20,7 +20,7 @@ interface PlatformProfile {
 export const platformlist: { [key in Platform]: PlatformProfile } = {
     a: { name: 'Authoritative Minesweeper', url: 'https://minesweepergame.com/', profile: msgamesProfile },
     c: { name: '扫雷网', url: 'http://saolei.wang/', profile: saoleiProfile },
-    q: { name: '腾讯qq', url: 'https://im.qq.com/index/', profile: qqProfile },
+    q: { name: '腾讯QQ', url: 'https://im.qq.com/index/', profile: qqProfile },
     w: { name: 'Minesweeper.Online', url: 'https://minesweeper.online/', profile: womProfile },
 };
 

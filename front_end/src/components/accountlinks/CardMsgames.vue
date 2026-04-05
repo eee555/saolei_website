@@ -4,7 +4,7 @@
             <pr-toolbar>
                 <template #start>
                     <el-text size="large">
-                        Authoritative Minesweeper&nbsp;#{{ info.id }}
+                        Authoritative Minesweeper&nbsp;#{{ id }}
                     </el-text>
                 </template>
             </pr-toolbar>
@@ -42,6 +42,7 @@ import { utc_to_local_format } from '@/utils/system/tools';
 const { t } = useI18n();
 
 defineProps({
+    id: { type: String, default: '' },
     verified: { type: Boolean, default: false },
     info: {
         type: Object as PropType<AccountMSGames>,
