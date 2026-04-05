@@ -4,7 +4,7 @@
             <pr-toolbar>
                 <template #start>
                     <el-text size="large">
-                        Authoritative Minesweeper&nbsp;#{{ info.id }}
+                        Authoritative Minesweeper&nbsp;#{{ id }}
                     </el-text>
                 </template>
             </pr-toolbar>

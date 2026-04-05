@@ -41,7 +41,7 @@ function linkNewAccount(platform: string, identifier: string) {
         cy.contains('ID').next().find('input').type(identifier);
         cy.contains('确认').click();
     });
-    cy.get('.el-dialog__body').should('not.be.visible');
+    cy.get('.el-dialog__body:visible').should('not.exist');
 }
 
 function expectUnverifiedAccount(index: number, platform: string, identifier: string) {
@@ -50,6 +50,20 @@ function expectUnverifiedAccount(index: number, platform: string, identifier: st
         cy.contains(`#${identifier}`);
         cy.contains('账号未验证');
     });
+}
+
+function staffVerifyAccount(platform: string, identifier: string) {
+    cy.login(STAFF.username, STAFF.password);
+    cy.visit('/#/staff');
+    cy.contains('账号绑定').click();
+
+    cy.contains(':visible', 'ID').first().next().find('input').type(`${USER.id}{enter}`);
+    cy.contains('平台').next().contains('Select').click();
+    cy.get('li').contains(platform).click();
+    cy.contains('平台ID').next().find('input').type(`${identifier}{enter}`);
+    cy.contains(/^\s*绑定\s*$/).click();
+
+    cy.contains(':visible', 'ID').first().next().find('input').should('have.value', '0');
 }
 
 describe('Account Link', () => {
@@ -99,25 +113,25 @@ describe('Account Link', () => {
         cy.visitUser(USER.id);
 
         linkNewAccount(LINKS.qq.platform, LINKS.qq.identifier);
-        expectUnverifiedAccount(3, LINKS.qq.platform, LINKS.qq.identifier);
 
         cy.contains('账号关联').next().find('.pi-plus').should('not.exist');
     });
 
-    it('Guest View - Should Not See Private Accounts', () => {
-        cy.visitUser(USER.id);
-        cy.contains('账号关联').next().children().should('have.length', 3);
+    it('Verify WoM Account', () => {
+        staffVerifyAccount(LINKS.wom.platform, LINKS.wom.identifier);
     });
 
     it('Verify Saolei Account', () => {
-        // 登录管理员账号进行验证
-        cy.login(STAFF.username, STAFF.password);
-        cy.visit('/#/staff');
-        cy.contains('账号绑定').click();
+        staffVerifyAccount(LINKS.saolei.platform, LINKS.saolei.identifier);
+    });
 
-        cy.contains('ID').next().find('input').type(`${USER.id}{enter}`);
-        cy.contains('平台').next().contains('Select').click();
-        cy.get('li').contains(LINKS.wom.platform).click();
+    it('Verify MSGames Account', () => {
+        staffVerifyAccount(LINKS.msgames.platform, LINKS.msgames.identifier);
+    });
+
+    it('Guest View - Should Not See Private Accounts', () => {
+        cy.visitUser(USER.id);
+        cy.contains('账号关联').next().children().filter(':visible').should('have.length', 3);
     });
 });
 
