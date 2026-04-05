@@ -78,6 +78,7 @@
     "globals": "*",
     "less": "*",
     "remove-attr": "*",
+    "rollup": "*",
     "typescript": "*",
     "typescript-eslint": "*",
     "vite": "*",
