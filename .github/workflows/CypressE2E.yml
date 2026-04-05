@@ -96,7 +96,6 @@ jobs:
       - name: Run Cypress
         run: |
           cd front_end
-          npm install vite@7
           npx cypress install
           npx cypress run
 
