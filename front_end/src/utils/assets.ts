@@ -1,8 +1,9 @@
-import ArbiterIcon from '/img/ms_arbiter_MAINICON.ico';
-import Clone07Icon from '/img/clone2007.ico';
 import MetasweeperIcon from '@/assets/img/img_meta.png';
-import ViennaIconLegacy from '/img/viennasweeper.ico';
-import ViennaIconNew from '/img/vsweep_16x16_4bit.ico';
+
+const ArbiterIcon = '/img/ms_arbiter_MAINICON.ico' as const;
+const Clone07Icon = '/img/clone2007.ico' as const;
+const ViennaIconLegacy = '/img/viennasweeper.ico' as const;
+const ViennaIconNew = '/img/vsweep_16x16_4bit.ico' as const;
 
 export {
     ArbiterIcon,
@@ -10,4 +11,4 @@ export {
     MetasweeperIcon,
     ViennaIconLegacy,
     ViennaIconNew,
-}
+};

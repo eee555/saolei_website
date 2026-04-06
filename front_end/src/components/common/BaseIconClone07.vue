@@ -12,6 +12,7 @@
 import { ElText } from 'element-plus';
 
 import BaseTooltip from './BaseTooltip.vue';
+
 import { Clone07Icon } from '@/utils/assets';
 
 </script>

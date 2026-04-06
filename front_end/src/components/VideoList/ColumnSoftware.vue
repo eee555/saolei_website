@@ -30,8 +30,8 @@ import { useI18n } from 'vue-i18n';
 
 import BaseOverlay from '@/components/common/BaseOverlay.vue';
 import SoftwareIcon from '@/components/widgets/SoftwareIcon.vue';
-import { VideoAbstract } from '@/utils/videoabstract';
 import { ArbiterIcon, MetasweeperIcon } from '@/utils/assets';
+import { VideoAbstract } from '@/utils/videoabstract';
 
 const MetasweeperHelper = defineAsyncComponent(() => import('@/components/dialogs/MetasweeperHelper.vue'));
 const ArbiterHelper = defineAsyncComponent(() => import('@/components/dialogs/ArbiterHelper.vue'));

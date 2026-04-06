@@ -112,8 +112,8 @@ import ExperimentalFeature from '@/components/ExperimentalFeature.vue';
 import ColorSchemeSetting from '@/components/visualization/ColorSchemeSetting.vue';
 import DarkMode from '@/components/widgets/DarkMode.vue';
 import { colorTheme, local } from '@/store';
-import { STNB_const } from '@/utils/ms_const';
 import { ViennaIconLegacy, ViennaIconNew } from '@/utils/assets';
+import { STNB_const } from '@/utils/ms_const';
 
 const { t } = useI18n();
 

@@ -13,6 +13,7 @@ import { ElText } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
 import BaseTooltip from './BaseTooltip.vue';
+
 import { MetasweeperIcon } from '@/utils/assets';
 
 const { t } = useI18n();
