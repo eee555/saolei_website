@@ -13,7 +13,7 @@
             <el-switch v-model="local.vienna_logo_legacy">
                 <template #active>
                     <Tippy :duration="0">
-                        <img style="width: 16px; height: 16px" src="@/assets/img/viennasweeper.ico">
+                        <img style="width: 16px; height: 16px" :src="ViennaIconLegacy">
                         <template #content>
                             {{ t('common.old') }}
                         </template>
@@ -21,7 +21,7 @@
                 </template>
                 <template #inactive>
                     <Tippy :duration="0">
-                        <img style="width: 16px; height: 16px" src="@/assets/img/vsweep_16x16_4bit.ico">
+                        <img style="width: 16px; height: 16px" :src="ViennaIconNew">
                         <template #content>
                             {{ t('common.new') }}
                         </template>
@@ -112,6 +112,7 @@ import ExperimentalFeature from '@/components/ExperimentalFeature.vue';
 import ColorSchemeSetting from '@/components/visualization/ColorSchemeSetting.vue';
 import DarkMode from '@/components/widgets/DarkMode.vue';
 import { colorTheme, local } from '@/store';
+import { ViennaIconLegacy, ViennaIconNew } from '@/utils/assets';
 import { STNB_const } from '@/utils/ms_const';
 
 const { t } = useI18n();
