@@ -29,9 +29,9 @@
         </el-button>
         <br>
         名称
-        <v-code-block v-if="tournament" :code="tournament.name" lang="javascript" prismjs />
+        <v-code-block v-if="tournament" :code="JSON.stringify(tournament.name)" lang="json" highlightjs />
         描述
-        <v-code-block v-if="tournament.description" :code="tournament.description" lang="javascript" prismjs />
+        <v-code-block v-if="tournament.description" :code="JSON.stringify(tournament.description)" lang="json" highlightjs />
     </template>
 </template>
 
