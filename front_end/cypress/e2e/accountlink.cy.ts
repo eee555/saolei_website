@@ -130,6 +130,7 @@ describe('Account Link', () => {
     });
 
     it('Guest View - Should Not See Private Accounts', () => {
+        cy.viewport(1000, 2000);
         cy.visitUser(USER.id);
         cy.contains('账号关联').next().children().filter(':visible').should('have.length', 3);
     });

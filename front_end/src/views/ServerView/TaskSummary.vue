@@ -25,19 +25,19 @@ function refresh() {
         dataset.value = [
             {
                 name: t('task.status.READY'),
-                values: [response.data.READY],
+                values: [response.data.status.READY],
             },
             {
                 name: t('task.status.RUNNING'),
-                values: [response.data.RUNNING],
+                values: [response.data.status.RUNNING],
             },
             {
                 name: t('task.status.SUCCESSFUL'),
-                values: [response.data.SUCCESSFUL],
+                values: [response.data.status.SUCCESSFUL],
             },
             {
                 name: t('task.status.FAILED'),
-                values: [response.data.FAILED],
+                values: [response.data.status.FAILED],
             },
         ];
     });
