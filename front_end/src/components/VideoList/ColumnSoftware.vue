@@ -5,11 +5,11 @@
                 <SoftwareIcon :software="data.software" style="margin: 0 -8px;" />
                 <template #header>
                     <template v-if="data.software === 'e'">
-                        <img style="width: 24px; height: 24px; vertical-align: middle;" src="@/assets/img/img_meta.png">
+                        <img style="width: 24px; height: 24px; vertical-align: middle;" :src="MetasweeperIcon">
                         {{ t('software.metasweeper') }}
                     </template>
                     <template v-else-if="data.software === 'a'">
-                        <img style="width: 24px; height: 24px; vertical-align: middle;" src="@/assets/img/ms_arbiter_MAINICON.ico">
+                        <img style="width: 24px; height: 24px; vertical-align: middle;" :src="ArbiterIcon">
                         {{ t('software.arbiter') }}
                     </template>
                 </template>
@@ -30,6 +30,7 @@ import { useI18n } from 'vue-i18n';
 
 import BaseOverlay from '@/components/common/BaseOverlay.vue';
 import SoftwareIcon from '@/components/widgets/SoftwareIcon.vue';
+import { ArbiterIcon, MetasweeperIcon } from '@/utils/assets';
 import { VideoAbstract } from '@/utils/videoabstract';
 
 const MetasweeperHelper = defineAsyncComponent(() => import('@/components/dialogs/MetasweeperHelper.vue'));

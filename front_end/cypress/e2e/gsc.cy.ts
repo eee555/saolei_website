@@ -198,6 +198,7 @@ describe('GSC', () => {
         cy.contains('比赛ID').get('input').filter(':visible').clear();
         cy.contains('比赛ID').get('input').filter(':visible').type('1{enter}');
         cy.get('button').filter(':visible').contains('查询').click();
+        cy.contains('第2届金羊杯');
         cy.contains('审核中');
         cy.get('.pi-check').click();
         cy.contains('即将开始');
@@ -208,6 +209,7 @@ describe('GSC', () => {
         cy.contains('比赛ID').get('input').filter(':visible').clear();
         cy.contains('比赛ID').get('input').filter(':visible').type('2{enter}');
         cy.get('button').filter(':visible').contains('查询').click();
+        cy.contains('第3届金羊杯');
         cy.contains('审核中');
         cy.get('.pi-check').click();
         cy.contains('进行中');
@@ -215,6 +217,7 @@ describe('GSC', () => {
         cy.contains('比赛ID').get('input').filter(':visible').clear();
         cy.contains('比赛ID').get('input').filter(':visible').type('3{enter}');
         cy.get('button').filter(':visible').contains('查询').click();
+        cy.contains('第4届金羊杯');
         cy.contains('审核中');
         cy.get('.pi-check').click();
         cy.contains('结算中');
