@@ -1,4 +1,3 @@
-import { UploadRawFile } from 'element-plus';
 import JSZip from 'jszip';
 import { AvfVideo, EvfVideo, MvfVideo, RmvVideo } from 'ms-toollib';
 
@@ -51,14 +50,14 @@ export interface UploadVideoForm {
     file: File;
 }
 
-export function upload_form(file: UploadRawFile, video: AnyVideo | null): UploadVideoForm | null {
+export function upload_form(file: File, video: AnyVideo | null): UploadVideoForm | null {
     if (video === null) return null;
     return {
         file: file,
     };
 }
 
-export function get_upload_status(file: UploadRawFile, video: AnyVideo | null, identifiers: Array<string>) {
+export function get_upload_status(file: File, video: AnyVideo | null, identifiers: Array<string>) {
     // const decoder = new TextDecoder();
 
     if (video === null) return 'fileext';
