@@ -2,7 +2,6 @@
 import 'cypress-if';
 import { binaryStringToUint8Array } from '../support/stupidCypress';
 
-const UPLOAD_BUTTON = '.pi-upload';
 const USER_ID = 2418 as const;
 
 describe('Personal Profile', () => {
