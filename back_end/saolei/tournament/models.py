@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
 import secrets
 import string
-import threading
 
 from django.db import models
 from model_utils.managers import InheritanceManager
@@ -51,17 +50,11 @@ class Tournament(models.Model):
 
     def start(self):
         self.state = Tournament_TextChoices.State.ONGOING
-        self.save()
+        self.save(update_fields=['state'])
 
     def end(self):
         self.state = Tournament_TextChoices.State.FINISHED
-        self.save()
-
-        def background_task():
-            self.videos.all().update(ongoing_tournament=False)
-            for video in self.videos.order_by('upload_time'):
-                video.update_personal_record()
-        threading.Thread(target=background_task).start()
+        self.save(update_fields=['state'])
 
     def refresh_state(self):
         current_state = self.state
@@ -76,14 +69,14 @@ class Tournament(models.Model):
                 self.end()
             elif datetime.now(timezone.utc) < self.start_time:
                 self.state = Tournament_TextChoices.State.PREPARING
-                self.save()
+                self.save(update_fields=['state'])
         elif current_state == Tournament_TextChoices.State.FINISHED:
             if datetime.now(timezone.utc) < self.start_time:
                 self.state = Tournament_TextChoices.State.PREPARING
-                self.save()
+                self.save(update_fields=['state'])
             elif datetime.now(timezone.utc) < self.end_time:
                 self.state = Tournament_TextChoices.State.ONGOING
-                self.save()
+                self.save(update_fields=['state'])
         return
 
     def validate(self):
@@ -91,13 +84,13 @@ class Tournament(models.Model):
             return
         if self.state == Tournament_TextChoices.State.PENDING or self.state == Tournament_TextChoices.State.CANCELLED:
             self.state = Tournament_TextChoices.State.PREPARING
-            self.save()
+            self.save(update_fields=['state'])
             self.refresh_state()
 
     def invalidate(self):
         if self.state != Tournament_TextChoices.State.AWARDED:
             self.state = Tournament_TextChoices.State.CANCELLED
-            self.save()
+            self.save(update_fields=['state'])
 
     def add_participant(self, user: UserProfile):
         raise NotImplementedError("Subclasses of Tournament must implement the 'add_participant' method.")
@@ -131,7 +124,7 @@ class GSCTournament(Tournament):
         while GSCTournament.objects.filter(token=token).exists() or TournamentParticipant.objects.filter(token=token).exists():
             token = generate_GSC_token()
         self.token = token
-        self.save()
+        self.save(update_fields=['token'])
 
     def start(self):
         if self.token == '':
@@ -140,11 +133,6 @@ class GSCTournament(Tournament):
 
     def end(self):
         super().end()
-
-        def background_task():
-            self.refresh_score()
-            self.refresh_rank()
-        threading.Thread(target=background_task).start()
 
     def add_participant(self, user: UserProfile):
         if not GSCParticipant.objects.filter(user=user, tournament=self).exists():

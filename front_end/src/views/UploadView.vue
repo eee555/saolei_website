@@ -1,142 +1,195 @@
 <template>
-    <el-upload
-        ref="upload" v-model:file-list="fileList" :disabled="store.user.realname == '匿名'" drag action="#"
-        :multiple="true" :on-change="handleChange" :auto-upload="false" :show-file-list="false"
-        accept=".avf,.evf,.rmv,.mvf"
-    >
-        <el-icon class="el-icon--upload">
-            <upload-filled />
-        </el-icon>
-        <div
-            class="el-upload__text" style="font-size: 18px;"
-        >
-            <span v-if="store.user.realname == '匿名'">
+    <div style="text-align: center;">
+        <base-file-input :accept="'.avf,.evf,.rmv,.mvf'" :disabled="store.isUserAnonymous || isParsing || isUploading" :style="{ height: uploadQueue.length > 0 ? '50px' : '300px' }" @add="handleFileChange">
+            <span v-if="store.isUserAnonymous" class="text-large">
                 {{ t('common.msg.realNameRequired') }}
             </span>
-            <span v-else>
-                {{ t('profile.upload.dragOrClick1') }}
-                <em>
-                    {{ t('profile.upload.dragOrClick2') }}
-                </em>
-            </span>
-        </div>
-
-        <template #tip>
-            <div style="text-align: center;">
-                <el-button
-                    v-show="upload_queue.length > 0" size="large" type="primary"
-                    style="display: block;margin: 16px auto;font-size: 18px;width: 220px;" @click="submitUpload()"
-                >
-                    {{ t('profile.upload.uploadAll', [upload_queue.length]) }}
-                </el-button>
-                <el-button
-                    v-show="upload_queue.length > 0" size="small" type="info"
-                    style="display: block;margin: 16px auto;width: 120px;" @click="cancel_all()"
-                >
-                    {{ t('profile.upload.cancelAll') }}
-                </el-button>
-                <span style="font-size: 14px;">{{ t('profile.upload.constraintNote') }}</span>
+            <div v-else>
+                <div class="text-large" style="padding: 0.1em">
+                    {{ t('profile.upload.dragOrClick') }}
+                </div>
+                <div class="text-small" style="padding: 0.1em">
+                    {{ t('profile.upload.constraintNote') }}
+                </div>
             </div>
-        </template>
-    </el-upload>
-    <el-table :data="upload_queue" table-layout="auto">
-        <el-table-column type="expand">
-            <template #default="props">
-                <el-descriptions>
-                    <el-descriptions-item :label="t('common.prop.fileName')" :span="3">
-                        {{ props.row.filename }}
-                    </el-descriptions-item>
+        </base-file-input>
+    </div>
+    <div style="height: 1rem" />
+    <div v-if="uploadQueue.length > 0">
+        <span class="text-normal">
+            {{ t('profile.upload.selected', [selectedQueue.length, uploadQueue.length]) }}
+        </span>
+        &nbsp;
+        <el-button :disabled="isWaiting || selectedNone" @click="uploadSelected">
+            <base-icon-upload />&nbsp;{{ t('profile.upload.upload') }}
+        </el-button>
+        <el-button :disabled="isWaiting || selectedNone" @click="removeSelected">
+            <base-icon-delete />&nbsp;{{ t('profile.upload.delete') }}
+        </el-button>
+    </div>
+    <div v-if="isParsing" style="margin-top: 1em;">
+        <span class="text-normal">
+            {{ t('profile.upload.parsing', [parserProgress.parsed, parserProgress.total]) }}
+        </span>
+        &nbsp;
+        <StackBar
+            :data="[
+                { name: t('profile.upload.parsed'), value: parserProgress.parsed, color: '#409EFF' },
+                { name: t('profile.upload.toParse'), value: parserProgress.total - parserProgress.parsed, color: '#C0C4CC' },
+            ]"
+        />
+    </div>
+    <div v-if="isUploading" style="margin-top: 1em;">
+        <span class="text-normal">
+            {{ t('profile.upload.uploading', [uploadProgress.uploaded + uploadProgress.failed, uploadProgress.total]) }}
+        </span>
+        &nbsp;
+        <el-button @click="pleaseStopUploading = true">
+            {{ t('profile.upload.stopUpload') }}
+        </el-button>
+        <StackBar
+            :data="[
+                { name: t('profile.upload.uploaded'), value: uploadProgress.uploaded, color: '#67C23A' },
+                { name: t('profile.upload.uploadFailed'), value: uploadProgress.failed, color: '#F56C6C' },
+                { name: t('profile.upload.toUpload'), value: uploadProgress.total - uploadProgress.uploaded - uploadProgress.failed, color: '#C0C4CC' },
+            ]"
+        />
+    </div>
+    <pr-data-table
+        v-if="uploadQueue.length > 0"
+        v-model:filters="filters"
+        v-model:expanded-rows="expandedRows"
+        v-loading="isWaiting" filter-display="menu" :value="uploadQueue" table-layout="auto" data-key="hash"
+        :filter-button-props="{
+            filter: {
+                severity: 'secondary',
+                text: true,
+                rounded: false,
+                size: 'small',
+                style: { borderRadius: '0', padding: '0', width: '1rem' }
+            }
+        }"
+        paginator :rows="25" row-hover
+        paginator-template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown JumpToPageInput CurrentPageReport"
+        :rows-per-page-options="[5, 10, 25, 50, 100]"
+        @filter="onFilter"
+    >
+        <pr-column expander />
+        <pr-column>
+            <template #header>
+                <el-checkbox :model-value="!selectedNone && selectedAll" :indeterminate="!selectedAll && !selectedNone" @click="handleSelectAllClick" />
+            </template>
+            <template #body="{data}: {data: UploadEntry}">
+                <el-checkbox :model-value="selectedQueue.includes(data)" @change="(value) => handleSelectOneChange(value, data)" />
+            </template>
+        </pr-column>
+        <pr-column field="status" :header="t('common.prop.status')" :show-filter-match-modes="false" :show-filter-operator="false">
+            <template #body="{data}: {data: UploadEntry}">
+                {{ t(`profile.upload.error.${data.status}`) }}
+            </template>
+            <template #filter="{ filterModel, applyFilter }">
+                <PrListbox v-model="filterModel.value" :options="[...UploadStatus]" @change="applyFilter()">
+                    <template #option="slotProps">
+                        {{ t(`profile.upload.error.${slotProps.option}`) }}
+                    </template>
+                </PrListbox>
+            </template>
+        </pr-column>
+        <pr-column field="stat.end_time" :header="t('common.prop.end_time')" sortable>
+            <template #body="{data}: {data: UploadEntry}">
+                {{ data.stat ? toISODateTimeString(data.stat.end_time!) : '' }}
+            </template>
+        </pr-column>
+        <pr-column field="stat.level" :header="t('common.prop.level')" :show-filter-match-modes="false" :show-filter-operator="false">
+            <template #body="{data}: {data: UploadEntry}">
+                {{ data.stat ? t(`common.level.${data.stat.level}`) : '' }}
+            </template>
+            <template #filter="{ filterModel, applyFilter }">
+                <PrListbox v-model="filterModel.value" :options="[...MS_Levels]" @change="applyFilter()">
+                    <template #option="slotProps">
+                        {{ t(`common.level.${slotProps.option}`) }}
+                    </template>
+                </PrListbox>
+            </template>
+        </pr-column>
+        <pr-column field="stat.timems" :header="t('common.prop.time')" sortable>
+            <template #body="{data}: {data: UploadEntry}">
+                {{ data.stat ? data.stat.displayStat('time') : '' }}
+            </template>
+        </pr-column>
+        <pr-column field="stat.bv" :header="t('common.prop.bv')" sortable />
+        <pr-column field="stat.bvs" :header="t('common.prop.bvs')" sortable>
+            <template #body="{data}: {data: UploadEntry}">
+                {{ data.stat ? data.stat.displayStat('bvs') : '' }}
+            </template>
+        </pr-column>
+        <template #expansion="{data}: {data: UploadEntry}">
+            <el-descriptions>
+                <el-descriptions-item :label="t('common.prop.fileName')" :span="3">
+                    {{ data.filename }}
+                </el-descriptions-item>
+                <template v-if="data.stat">
                     <el-descriptions-item :label="t('common.prop.cl')">
-                        {{ props.row.stat.displayStat('cl') }}
+                        {{ data.stat.displayStat('cl') }}
                     </el-descriptions-item>
                     <el-descriptions-item :label="t('common.prop.ce')" :span="2">
-                        {{ props.row.stat.displayStat('ce') }}
+                        {{ data.stat.displayStat('ce') }}
                     </el-descriptions-item>
                     <el-descriptions-item :label="t('common.prop.cl_s')">
-                        {{ props.row.stat.displayStat('cls') }}
+                        {{ data.stat.displayStat('cls') }}
                     </el-descriptions-item>
                     <el-descriptions-item :label="t('common.prop.ce_s')" :span="2">
-                        {{ props.row.stat.displayStat('ces') }}
+                        {{ data.stat.displayStat('ces') }}
                     </el-descriptions-item>
                     <el-descriptions-item :label="t('common.prop.ioe')">
-                        {{ props.row.stat.displayStat('ioe') }}
+                        {{ data.stat.displayStat('ioe') }}
                     </el-descriptions-item>
                     <el-descriptions-item :label="t('common.prop.thrp')">
-                        {{ props.row.stat.displayStat('thrp') }}
+                        {{ data.stat.displayStat('thrp') }}
                     </el-descriptions-item>
                     <el-descriptions-item :label="t('common.prop.corr')">
-                        {{ props.row.stat.displayStat('corr') }}
+                        {{ data.stat.displayStat('corr') }}
                     </el-descriptions-item>
-                </el-descriptions>
-            </template>
-        </el-table-column>
-        <el-table-column :label="t('common.prop.status')" sortable sort-by="status">
-            <template #default="{ row }">
-                {{ t(`profile.upload.error.${row.status}`) }}
-            </template>
-        </el-table-column>
-        <el-table-column prop="stat.end_time" :label="t('common.prop.end_time')" :width="150">
-            <template #default="{ row }">
-                {{ row.stat ? toISODateTimeString(row.stat.end_time) : '' }}
-            </template>
-        </el-table-column>
-        <el-table-column prop="stat.level" :label="t('common.prop.level')" sortable>
-            <template #default="{ row }">
-                {{ row.stat ? t(`common.level.${row.stat.level}`) : '' }}
-            </template>
-        </el-table-column>
-        <el-table-column prop="stat.timems" :label="t('common.prop.time')" sortable>
-            <template #default="{ row }">
-                {{ row.stat ? row.stat.displayStat('time') : '' }}
-            </template>
-        </el-table-column>
-        <el-table-column prop="stat.bv" :label="t('common.prop.bv')" sortable />
-        <el-table-column :label="t('common.prop.bvs')" sortable :sort-by="(v) => v.bvs()">
-            <template #default="{ row }">
-                {{ row.stat ? row.stat.displayStat('bvs') : '' }}
-            </template>
-        </el-table-column>
-        <el-table-column :label="t('common.prop.action')" :width="130">
-            <template #default="props">
-                <el-button
-                    :disabled="!(['pass', 'identifier', 'needApprove'].includes(props.row.status))"
-                    :type="['pass', 'identifier'].includes(props.row.status) ? 'success' : props.row.status == 'needApprove' ? 'warning' : 'info'"
-                    circle @click="forceUpload(props.$index)"
-                >
-                    <base-icon-upload />
-                </el-button>
-                <el-button type="danger" circle @click="removeUpload(props.$index)">
-                    <base-icon-delete />
-                </el-button>
-            </template>
-        </el-table-column>
-    </el-table>
+                </template>
+            </el-descriptions>
+        </template>
+    </pr-data-table>
 </template>
 
 <script lang="ts" setup>
-// 上传录像的页面
-import { ElButton, ElDescriptions, ElDescriptionsItem, ElIcon, ElTable, ElTableColumn, ElUpload } from 'element-plus';
-import type { UploadFile, UploadFiles, UploadInstance, UploadProps, UploadRawFile, UploadUserFile } from 'element-plus';
-import { ref } from 'vue';
+import '@/styles/text.css';
+
+import { FilterMatchMode } from '@primevue/core/api';
+import { CheckboxValueType, ElButton, ElCheckbox, ElDescriptions, ElDescriptionsItem, vLoading } from 'element-plus';
+import PrColumn from 'primevue/column';
+import PrDataTable, { DataTableFilterEvent } from 'primevue/datatable';
+import PrListbox from 'primevue/listbox';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { store } from '../store';
 
+import BaseFileInput from '@/components/common/BaseFileInput.vue';
 import { BaseIconDelete, BaseIconUpload } from '@/components/common/icon';
+import StackBar from '@/components/visualization/StackBar/App.vue';
+import { sleep } from '@/utils';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { toISODateTimeString } from '@/utils/datetime';
 import { extract_stat, get_upload_status, load_video_file, upload_form, UploadVideoForm } from '@/utils/fileIO';
 import { Dict2FormData } from '@/utils/forms';
+import { MS_Levels } from '@/utils/ms_const';
 import { VideoAbstract } from '@/utils/videoabstract';
 
 const { proxy } = useCurrentInstance();
-
 const { t } = useI18n();
 
+const UploadStatus = ['parse', 'pass', 'filename', 'fileext', 'custom', 'invalid', 'identifier', 'needApprove', 'censorship', 'collision', 'upload', 'process', 'success'] as const;
+type UploadStatus = 'parse' | 'pass' | 'filename' | 'fileext' | 'custom' | 'invalid' | 'identifier' | 'needApprove' | 'censorship' | 'collision' | 'upload' | 'process' | 'success';
+
 interface UploadEntry {
-    index: number;
+    hash: string;
     filename: string;
-    status: string;
+    status: UploadStatus;
     form: UploadVideoForm | null; // for upload
     stat: VideoAbstract | null; // for display
 }
@@ -145,125 +198,154 @@ defineProps({
     identifiers: { type: Array, default: () => [] },
 });
 
-const upload_queue = ref<UploadEntry[]>([]);
+const filters = ref({
+    'status': { value: null, matchMode: FilterMatchMode.EQUALS },
+    'stat.level': { value: null, matchMode: FilterMatchMode.EQUALS },
+    // 'mode': { value: Object.values(MS_Mode), matchMode: FilterMatchMode.IN },
+});
 
-const fileList = ref<UploadUserFile[]>([]);
+const uploadQueue = ref<UploadEntry[]>([]);
+const selectedQueue = ref<UploadEntry[]>([]);
+const filteredQueue = ref<UploadEntry[]>([]);
+const expandedRows = ref<UploadEntry[]>([]);
 
-const upload = ref<UploadInstance>();
-const uploaded_file_num = ref<number>(0);
-const allow_upload = ref(true);
-
-// 录像列表变动的回调，上传多个文件时，有几个文件就会进来几次。
-const handleChange: UploadProps['onChange'] = async (uploadFile: UploadFile, _uploadFiles: UploadFiles) => {
-    if (allow_upload.value) {
-        // upload_video_visible.value = true;
-        await push_video_msg(uploadFile);
-        // 修改id。最后一个协程才是真正起作用的。
-        for (let i = 0; i < upload_queue.value.length; i++) {
-            upload_queue.value[i].index = i;
-        }
-    }
-};
-
-// 新增一条等待上传的录像信息的记录
-const push_video_msg = async (uploadFile: UploadFile | UploadRawFile) => {
-    let video_file;
-    if ('raw' in uploadFile) {
-        video_file = uploadFile.raw as UploadRawFile;
+const selectedAll = computed(() => selectedQueue.value.length === filteredQueue.value.length);
+const selectedNone = computed(() => selectedQueue.value.length === 0);
+function handleSelectAllClick() {
+    if (!selectedNone.value) {
+        selectedQueue.value.length = 0;
     } else {
-        video_file = uploadFile as UploadRawFile;
+        selectedQueue.value = [...filteredQueue.value];
     }
-    upload_queue.value.push(await upload_prepare(video_file));
-};
-
-// 清空待上传列表
-const cancel_all = () => {
-    upload.value!.clearFiles();
-    while (upload_queue.value.length > 0) {
-        upload_queue.value.pop();
-    }
-    uploaded_file_num.value = 0;
-};
-
-// 点上传按钮的回调，自动上传录像
-const submitUpload = async () => {
-    // 先锁死，不让进变化回调
-    allow_upload.value = false;
-    let i = 0;
-    let count = 0; // 最多上传99个
-    while (count < 99) {
-        if (i >= upload_queue.value.length) break;
-        if (['pass', 'identifier'].includes(upload_queue.value[i].status)) {
-            if (upload_queue.value[i].status == 'identifier') {
-                store.new_identifier = true;
-            }
-            await forceUpload(i);
-            count++;
-            continue;
-        }
-        i++;
-    }
-    allow_upload.value = true;
-};
-
-// 上传问题不大的录像
-const forceUpload = async (i: number) => {
-    const video = upload_queue.value[i];
-    if (video.status != 'pass' && video.status != 'identifier') {
-        return;
-    }
-    upload_queue.value[i].status = 'process';
-    await getDelay();
-    if (video.stat == null) {
-        upload_queue.value[i].status = 'upload';
-        return;
-    }
-    await proxy.$axios.post('/common/uploadvideo/',
-        Dict2FormData(video.form!),
-    ).then(function (response) {
-        if (response.data.type === 'success') {
-            uploaded_file_num.value += 1;
-            upload_queue.value[i].stat!.id = response.data.data.id;
-            upload_queue.value[i].stat!.state = response.data.data.state;
-            store.user.videos.push(upload_queue.value[i].stat!);
-            if (store.user.id === store.player.id) {
-                store.player.videos.push(upload_queue.value[i].stat!);
-            }
-            removeUpload(i);
-        } else if (response.data.type === 'error' && response.data.object === 'file') {
-            upload_queue.value[i].status = 'collision';
-        } else if (response.data.type === 'error' && response.data.object === 'identifier') {
-            upload_queue.value[i].status = 'censorship';
-        } else {
-            // 正常使用不会到这里
-            upload_queue.value[i].status = 'upload';
-        }
-    }).catch((_error: any) => {
-        upload_queue.value[i].status = 'upload';
-    });
-};
-
-// 删除录像
-const removeUpload = (i: number) => {
-    upload_queue.value.splice(i, 1);
-};
-
-// 均匀延时，降低并发。
-function getDelay() {
-    return new Promise((resolve) => {
-        const delay = 200;
-        setTimeout(() => {
-            resolve(delay);
-        }, delay);
-    });
 }
 
-async function upload_prepare(file: UploadRawFile): Promise<UploadEntry> {
+const parserProgress = ref({
+    total: 0,
+    parsed: 0,
+});
+const isParsing = computed(() => parserProgress.value.total != parserProgress.value.parsed);
+
+const uploadProgress = ref({
+    total: 0,
+    uploaded: 0,
+    failed: 0,
+});
+const isUploading = computed(() => uploadProgress.value.uploaded + uploadProgress.value.failed != uploadProgress.value.total);
+
+const isWaiting = computed(() => isParsing.value || isUploading.value);
+
+const pleaseStopUploading = ref(false);
+
+function simpleHash(file: File) {
+    return `${file.name}_${file.size}_${file.lastModified}`;
+}
+
+async function handleFileChange(files: File[]) {
+    if (!files) return;
+    parserProgress.value.total = files.length;
+    parserProgress.value.parsed = 0;
+    const uploadQueueTemp: UploadEntry[] = [];
+    for (let i = 0; i < files.length; i++) {
+        const hash = simpleHash(files[i]);
+        const exists = uploadQueue.value.some((entry) => entry.hash === hash) || uploadQueueTemp.some((entry) => entry.hash === hash);
+        if (!exists) {
+            uploadQueueTemp.push(await upload_prepare(files[i], hash));
+        }
+        parserProgress.value.parsed += 1;
+    }
+    uploadQueue.value = [...uploadQueue.value, ...uploadQueueTemp];
+}
+
+function onFilter(event: DataTableFilterEvent) {
+    filteredQueue.value = event.filteredValue;
+}
+watch(filteredQueue, (newVal) => {
+    selectedQueue.value = selectedQueue.value.filter((entry) => newVal.includes(entry));
+});
+
+function handleSelectOneChange(value: CheckboxValueType, entry: UploadEntry) {
+    if (value) {
+        selectedQueue.value.push(entry);
+    } else {
+        const index = selectedQueue.value.indexOf(entry);
+        selectedQueue.value.splice(index, 1);
+    }
+}
+
+function removeSelected() {
+    // uploadQueue.value.splice(0, uploadQueue.value.length);
+    for (const entry of selectedQueue.value) {
+        const index = uploadQueue.value.indexOf(entry);
+        uploadQueue.value.splice(index, 1);
+    }
+    selectedQueue.value.length = 0;
+}
+
+async function uploadSelected() {
+    uploadProgress.value.total = selectedQueue.value.length;
+    uploadProgress.value.uploaded = 0;
+    uploadProgress.value.failed = 0;
+    pleaseStopUploading.value = false;
+
+    for (const entry of selectedQueue.value) {
+        if (pleaseStopUploading.value) {
+            uploadProgress.value.total = uploadProgress.value.uploaded + uploadProgress.value.failed;
+            return;
+        }
+
+        if (['pass', 'identifier'].includes(entry.status)) {
+            await forceUpload(entry);
+            if (entry.status === 'success') {
+                uploadProgress.value.uploaded += 1;
+            } else {
+                uploadProgress.value.failed += 1;
+            }
+        }
+    }
+}
+
+// 上传问题不大的录像
+const forceUpload = async (entry: UploadEntry) => {
+    if (entry.status != 'pass' && entry.status != 'identifier') {
+        return entry;
+    }
+    entry.status = 'process';
+    if (entry.stat == null) {
+        entry.status = 'upload';
+        return entry;
+    }
+    await sleep(200);
+    try {
+        const response = await proxy.$axios.post('/common/uploadvideo/', Dict2FormData(entry.form!));
+        if (response.data.type === 'success') {
+            entry.stat.id = response.data.data.id;
+            entry.stat.state = response.data.data.state;
+            store.user.videos.push(entry.stat!);
+            if (store.user.id === store.player.id) {
+                store.player.videos.push(entry.stat!);
+            }
+            entry.status = 'success';
+            return entry;
+        } else if (response.data.type === 'error' && response.data.object === 'file') {
+            entry.status = 'collision';
+        } else if (response.data.type === 'error' && response.data.object === 'identifier') {
+            entry.status = 'censorship';
+        } else {
+            // 正常使用不会到这里
+            entry.status = 'upload';
+        }
+    } catch (_error) {
+        entry.status = 'upload';
+    }
+    return entry;
+};
+
+async function upload_prepare(file: File, hash: string): Promise<UploadEntry> {
     const file_u8 = new Uint8Array(await file.arrayBuffer());
     try {
         const video = load_video_file(file_u8, file.name);
         return {
-            index: 0,
+            hash: hash,
             filename: file.name,
             status: get_upload_status(file, video, store.user.identifiers),
             stat: extract_stat(video),
@@ -271,7 +353,7 @@ async function upload_prepare(file: UploadRawFile): Promise<UploadEntry> {
         };
     } catch (_e) {
         return {
-            index: 0,
+            hash: hash,
             filename: file.name,
             status: 'parse',
             stat: null,

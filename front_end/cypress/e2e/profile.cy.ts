@@ -2,7 +2,6 @@
 import 'cypress-if';
 import { binaryStringToUint8Array } from '../support/stupidCypress';
 
-const UPLOAD_BUTTON = '.pi-upload';
 const USER_ID = 2418 as const;
 
 describe('Personal Profile', () => {
@@ -49,17 +48,11 @@ describe('Personal Profile', () => {
         cy.contains('上传录像').click();
 
         // 准备录像文件
-        cy.request({
-            url: 'https://github.com/putianyi889/replays/raw/refs/heads/master/EXP/sub40/Exp_FL_35.09_3BV=132_3BVs=3.76_Pu%20Tian%20Yi(Hu%20Bei).avf',
-            encoding: 'binary',
-        }).then((resp) => {
-            cy.wrap(binaryStringToUint8Array(resp.body)).as('videoFileExp');
+        cy.fixture('Exp_FL_35.09_3BV=132_3BVs=3.76_Pu Tian Yi(Hu Bei).avf', 'binary').then((fileContent) => {
+            cy.wrap(binaryStringToUint8Array(fileContent)).as('videoFileExp');
         });
-        cy.request({
-            url: 'https://minesweepergame.com/member/file/4376/4376-Custom-FL-30x24-860.360-357-226m-20220522.avf',
-            encoding: 'binary',
-        }).then((resp) => {
-            cy.wrap(binaryStringToUint8Array(resp.body)).as('videoFileCus');
+        cy.fixture('4376-Custom-FL-30x24-860.360-357-226m-20220522.avf', 'binary').then((fileContent) => {
+            cy.wrap(binaryStringToUint8Array(fileContent)).as('videoFileCus');
         });
 
         cy.get('input[type=file]').selectFile([
@@ -82,6 +75,5 @@ describe('Personal Profile', () => {
             expect(tableData[0].级别).to.equal('高级');
             expect(tableData[0].结束时间).to.equal('2023-10-05 21:25:57');
         });
-        cy.get('table:visible').find('tbody').find('i').filter(UPLOAD_BUTTON);
     });
 });

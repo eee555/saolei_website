@@ -25,6 +25,7 @@ export const store = defineStore('user', {
     }),
     getters: {
         isSelf: (state) => state.user.id === state.player.id && state.user.id !== 0,
+        isUserAnonymous: (state) => state.user.realname === '匿名',
     },
 })(pinia);
 
