@@ -4,7 +4,7 @@
             <HeadColumn :level="level" :count="defaultCounts[level]" />
         </el-col>
         <el-col :span="6" style="display: inline-block; width: 25%">
-            <SortedColumn ref="timeColumnRef" :level="level" :count="defaultCounts[level]" :videos="filteredVideos.filter((video) => video.time() < defaultVideos[level].time)" sort-by="time" />
+            <SortedColumn ref="timeColumnRef" :level="level" :count="defaultCounts[level]" :videos="filteredVideos.filter((video) => video.time < defaultVideos[level].time)" sort-by="time" />
         </el-col>
         <el-col :span="6" style="display: inline-block; width: 25%">
             <SortedColumn ref="bvsColumnRef" :level="level" :count="defaultCounts[level]" :videos="filteredVideos" sort-by="bvs" />

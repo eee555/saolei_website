@@ -122,101 +122,83 @@ export class VideoAbstract {
         });
     }
 
-    public time() {
+    get time() {
         return this.timems / 1000;
     }
 
-    public bvs() {
-        return this.bv / this.time();
+    get bvs() {
+        return this.bv / this.time;
     }
 
-    public qg() {
-        return Math.pow(this.time(), 1.7) / this.bv;
+    get qg() {
+        return Math.pow(this.time, 1.7) / this.bv;
     }
 
-    public rqp() {
-        return this.time() * (this.time() - 1) / this.bv;
+    get rqp() {
+        return this.time * (this.time - 1) / this.bv;
     }
 
-    public stnb() {
-        return STNB_const.value[this.level] / this.qg();
+    get stnb() {
+        return STNB_const.value[this.level] / this.qg;
     }
 
-    public ioe() {
+    get ioe() {
         return numberDivideUndefined(this.bv, this.cl);
     }
 
-    public thrp() {
+    get thrp() {
         return numberDivideUndefined(this.bv, this.ce);
     }
 
-    public corr() {
+    get corr() {
         return undefinedDivideUndefined(this.ce, this.cl);
     }
 
-    public cls() {
-        return undefinedDivideNumber(this.cl, this.time());
+    get cls() {
+        return undefinedDivideNumber(this.cl, this.time);
     }
 
-    public ces() {
-        return undefinedDivideNumber(this.ce, this.time());
+    get ces() {
+        return undefinedDivideNumber(this.ce, this.time);
     }
 
-    public mov() {
-        return undefinedDivideNumber(this.path, this.time());
+    get mov() {
+        return undefinedDivideNumber(this.path, this.time);
     }
 
-    public iome() {
+    get iome() {
         return numberDivideUndefined(this.bv, this.path);
     }
 
     public getStat(stat: getStat_stat) {
-        switch (stat) {
-            case 'time': return this.time();
-            case 'bvs': return this.bvs();
-            case 'timems': return this.timems;
-            case 'bv': return this.bv;
-            case 'qg': return this.qg();
-            case 'rqp': return this.rqp();
-            case 'stnb': return this.stnb();
-            case 'ce': return this.ce;
-            case 'ces': return this.ces();
-            case 'cl': return this.cl;
-            case 'cls': return this.cls();
-            case 'ioe': return this.ioe();
-            case 'thrp': return this.thrp();
-            case 'corr': return this.corr();
-            case 'path': return this.path;
-            case 'mov': return this.mov();
-            case 'iome': return this.iome();
-        }
+        return this[stat];
     }
 
     public displayStat(stat: getStat_stat) {
         switch (stat) {
-            case 'time': return this.time().toFixed(3);
-            case 'bvs': return this.bvs().toFixed(3);
+            case 'time': return this.time.toFixed(3);
+            case 'bvs': return this.bvs.toFixed(3);
             case 'bv': return this.bv.toString();
-            case 'qg': return this.qg().toFixed(3);
-            case 'rqp': return this.rqp().toFixed(3);
-            case 'stnb': return this.stnb().toFixed(1);
+            case 'qg': return this.qg.toFixed(3);
+            case 'rqp': return this.rqp.toFixed(3);
+            case 'stnb': return this.stnb.toFixed(1);
             case 'ce': return undefinedOrToString(this.ce);
-            case 'ces': return undefinedOrToFixed(this.ces(), 3);
+            case 'ces': return undefinedOrToFixed(this.ces, 3);
             case 'cl': return undefinedOrToString(this.cl);
-            case 'cls': return undefinedOrToFixed(this.cls(), 3);
-            case 'ioe': return undefinedOrToFixed(this.ioe(), 3);
-            case 'thrp': return undefinedOrToFixed(this.thrp(), 3);
-            case 'corr': return undefinedOrToFixed(this.corr(), 3);
+            case 'cls': return undefinedOrToFixed(this.cls, 3);
+            case 'ioe': return undefinedOrToFixed(this.ioe, 3);
+            case 'thrp': return undefinedOrToFixed(this.thrp, 3);
+            case 'corr': return undefinedOrToFixed(this.corr, 3);
             case 'path': return undefinedOrToFixed(this.path, 0);
-            case 'mov': return undefinedOrToFixed(this.mov(), 3);
-            case 'iome': return undefinedOrToFixed(this.iome(), 3);
+            case 'mov': return undefinedOrToFixed(this.mov, 3);
+            case 'iome': return undefinedOrToFixed(this.iome, 3);
         }
     }
 
     public tooltipFormatter(t: any) {
         // t is the localization API from i18n
         return `${t('common.prop.upload_time')}: ${this.upload_time} <br>
-        ${t('common.level.' + this.level)} ${this.bv}Bv = ${this.time().toFixed(3)} * ${this.bvs().toFixed(3)}`;
+        ${t('common.level.' + this.level)} ${this.bv}Bv = ${this.time.toFixed(3)} * ${this.bvs.toFixed(3)}`;
     }
 }
 
