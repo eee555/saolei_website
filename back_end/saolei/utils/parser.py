@@ -104,6 +104,7 @@ class MSVideoParser:
     @staticmethod
     def read_file(file: File):
         data = file.read()
+        file.seek(0)
         if file.name.endswith('.avf'):
             v = ms.AvfVideo(raw_data=data)
             software = MS_TextChoices.Software.AVF
