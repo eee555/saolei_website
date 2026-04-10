@@ -49,17 +49,11 @@ describe('Personal Profile', () => {
         cy.contains('上传录像').click();
 
         // 准备录像文件
-        cy.request({
-            url: 'https://github.com/putianyi889/replays/raw/refs/heads/master/EXP/sub40/Exp_FL_35.09_3BV=132_3BVs=3.76_Pu%20Tian%20Yi(Hu%20Bei).avf',
-            encoding: 'binary',
-        }).then((resp) => {
-            cy.wrap(binaryStringToUint8Array(resp.body)).as('videoFileExp');
+        cy.fixture('Exp_FL_35.09_3BV=132_3BVs=3.76_Pu Tian Yi(Hu Bei).avf', 'binary').then((fileContent) => {
+            cy.wrap(binaryStringToUint8Array(fileContent)).as('videoFileExp');
         });
-        cy.request({
-            url: 'https://minesweepergame.com/member/file/4376/4376-Custom-FL-30x24-860.360-357-226m-20220522.avf',
-            encoding: 'binary',
-        }).then((resp) => {
-            cy.wrap(binaryStringToUint8Array(resp.body)).as('videoFileCus');
+        cy.fixture('4376-Custom-FL-30x24-860.360-357-226m-20220522.avf', 'binary').then((fileContent) => {
+            cy.wrap(binaryStringToUint8Array(fileContent)).as('videoFileCus');
         });
 
         cy.get('input[type=file]').selectFile([
