@@ -29,9 +29,12 @@ def new_video_by_file(user: UserProfile, file: File, check_tournament: bool = Tr
         parser.state = MS_TextChoices.State.IDENTIFIER
 
     collisions = VideoModel.objects.filter(timems=parser.timems, bv=parser.bv).filter(file_size=parser.file.size)
-    for v_collision in collisions:
-        if v_collision.file.read() == file.read():
-            raise ExceptionToResponse(obj='file', category='collision')
+    if collisions.exists():
+        file_binary = file.read()
+        file.seek(0)
+        for v_collision in collisions:
+            if v_collision.file.read() == file_binary:
+                raise ExceptionToResponse(obj='file', category='collision')
 
     video = VideoModel.create_from_parser(parser, user)
 
