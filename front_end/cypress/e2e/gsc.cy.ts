@@ -1,4 +1,6 @@
 // 金羊杯
+const ArbiterIcon = '/img/ms_arbiter_MAINICON.ico';
+const MetasweeperIcon = '/src/assets/img/img_meta.png';
 
 const HOST = {
     id: 48,
@@ -19,6 +21,8 @@ const USER = {
     email: 'user@email.com',
     password: 'userPassword',
 } as const;
+
+const GSC_TOKEN = 'G1234' as const;
 
 function visitGSCAdmin(gscID: number) {
     cy.visit('/#/gsc/admin/');
@@ -45,6 +49,16 @@ function setEndDateTime(dateStr: string, timeStr: string) {
     setDateTime(dateStr, timeStr);
     cy.contains('操作成功');
     cy.closeElNotifications();
+}
+
+function assertTableData(expected: Array<Record<string, any>>) {
+    return cy.get('table:visible').getTable().should((tableData) => {
+        expected.forEach((exp, i) => {
+            Object.keys(exp).forEach((key) => {
+                expect(tableData[i][key]).to.equal(exp[key]);
+            });
+        });
+    });
 }
 
 describe('GSC', () => {
@@ -74,16 +88,6 @@ describe('GSC', () => {
         cy.contains('开始时间：未设置');
         cy.contains('结束时间：未设置');
         cy.contains('标识：未设置');
-
-        cy.visit('/#/tournament/');
-        cy.contains('第2届金羊杯');
-        cy.get('table:visible').getTable().should((tableData) => {
-            expect(tableData[0].状态).to.equal('审核中');
-            expect(tableData[0].比赛).to.equal('第2届金羊杯');
-            expect(tableData[0].主办方).to.equal(HOST.realname);
-            expect(tableData[0].开始时间).to.equal('未定');
-            expect(tableData[0].结束时间).to.equal('未定');
-        });
     });
 
     it('Set start time', () => {
@@ -167,27 +171,11 @@ describe('GSC', () => {
         // 比赛页
         cy.visit('/#/tournament/');
         cy.contains('第2届金羊杯');
-        cy.get('table:visible').getTable().should((tableData) => {
-            expect(tableData[0].状态).to.equal('审核中');
-            expect(tableData[1].状态).to.equal('审核中');
-            expect(tableData[2].状态).to.equal('审核中');
-
-            expect(tableData[0].比赛).to.equal('第2届金羊杯');
-            expect(tableData[1].比赛).to.equal('第3届金羊杯');
-            expect(tableData[2].比赛).to.equal('第4届金羊杯');
-
-            expect(tableData[0].主办方).to.equal(HOST.realname);
-            expect(tableData[1].主办方).to.equal(HOST.realname);
-            expect(tableData[2].主办方).to.equal(HOST.realname);
-
-            expect(tableData[0].开始时间).to.equal('2099-12-31 00:00:00');
-            expect(tableData[1].开始时间).to.equal('2000-01-01 00:00:00');
-            expect(tableData[2].开始时间).to.equal('2000-01-01 00:00:00');
-
-            expect(tableData[0].结束时间).to.equal('2100-01-03 00:00:00');
-            expect(tableData[1].结束时间).to.equal('2100-01-01 00:00:00');
-            expect(tableData[2].结束时间).to.equal('2000-01-02 00:00:00');
-        });
+        assertTableData([
+            { 状态: '审核中', 比赛: '第2届金羊杯', 主办方: HOST.realname, 开始时间: '2099-12-31 00:00:00', 结束时间: '2100-01-03 00:00:00' },
+            { 状态: '审核中', 比赛: '第3届金羊杯', 主办方: HOST.realname, 开始时间: '2000-01-01 00:00:00', 结束时间: '2100-01-01 00:00:00' },
+            { 状态: '审核中', 比赛: '第4届金羊杯', 主办方: HOST.realname, 开始时间: '2000-01-01 00:00:00', 结束时间: '2000-01-02 00:00:00' },
+        ]);
     });
 
     it('Admin validate', () => {
@@ -200,11 +188,11 @@ describe('GSC', () => {
         cy.get('button').filter(':visible').contains('查询').click();
         cy.contains('第2届金羊杯');
         cy.contains('审核中');
-        cy.get('.pi-check').click();
-        cy.contains('即将开始');
-
         cy.get('.pi-times').click();
         cy.contains('已取消');
+
+        cy.get('.pi-check').click();
+        cy.contains('即将开始');
 
         cy.contains('比赛ID').get('input').filter(':visible').clear();
         cy.contains('比赛ID').get('input').filter(':visible').type('2{enter}');
@@ -223,29 +211,71 @@ describe('GSC', () => {
         cy.contains('结算中');
     });
 
-    it('Tournament page', () => {
+    it('Tournament Page', () => {
         cy.visit('/#/tournament/');
         cy.contains('第2届金羊杯');
+        assertTableData([
+            { 状态: '即将开始', 比赛: '第2届金羊杯', 主办方: HOST.realname, 开始时间: '2099-12-31 00:00:00', 结束时间: '2100-01-03 00:00:00' },
+            { 状态: '进行中', 比赛: '第3届金羊杯', 主办方: HOST.realname, 开始时间: '2000-01-01 00:00:00', 结束时间: '2100-01-01 00:00:00' },
+            { 状态: '结算中', 比赛: '第4届金羊杯', 主办方: HOST.realname, 开始时间: '2000-01-01 00:00:00', 结束时间: '2000-01-02 00:00:00' },
+        ]);
+    });
+
+    it('Generate and Modify Token', () => {
+        cy.login(HOST.username, HOST.password);
+        visitGSCAdmin(3);
+        cy.contains('span', /^标识：G\d{5}$/).should('exist');
+        cy.contains('设置标识：').next().find('input').type(`${GSC_TOKEN}{enter}`);
+        cy.contains('修改').click();
+        cy.contains('操作成功');
+        cy.closeElNotifications();
+        cy.contains('span', `标识：${GSC_TOKEN}`).should('exist');
+    });
+
+    it('Preparing Tournament', () => {
+        cy.visit('/#/tournament/1');
+        cy.contains('即将开始');
+        cy.contains('如何参赛').next().within(() => {
+            cy.get(`img[src="${MetasweeperIcon}"]`).click();
+            cy.contains('比赛开始后会公布比赛标识。');
+
+            cy.get(`img[src="${ArbiterIcon}"]`).click();
+            cy.contains('比赛开始后在这里注册标识。');
+        });
+
+        cy.visit('/#/tournament/2');
+        cy.contains('进行中');
+    });
+
+    it('Ongoing Tournament', () => {
+        cy.visit('/#/tournament/2');
+        cy.contains('进行中');
+        cy.contains('如何参赛').next().within(() => {
+            cy.get(`img[src="${MetasweeperIcon}"]`).click();
+            cy.contains('在元扫雷中将比赛标识设置为');
+            cy.contains(`${GSC_TOKEN}`);
+
+            cy.get(`img[src="${ArbiterIcon}"]`).click();
+            cy.contains('请在这里注册参赛标识。');
+            cy.contains(`Guo Jin Yang ${GSC_TOKEN}`);
+        });
+        cy.contains('即时成绩');
+    });
+
+    it('Finished Tournament', () => {
+        cy.visit('/#/tournament/3');
+        cy.contains('结算中');
+        cy.contains('如何参赛').should('not.exist');
+        cy.contains('比赛结果');
+
+        cy.login(STAFF.username, STAFF.password);
+        cy.visit('/#/staff/');
+        cy.contains('后台任务').click();
+
         cy.get('table:visible').getTable().should((tableData) => {
-            expect(tableData[0].状态).to.equal('已取消');
-            expect(tableData[1].状态).to.equal('进行中');
-            expect(tableData[2].状态).to.equal('结算中');
-
-            expect(tableData[0].比赛).to.equal('第2届金羊杯');
-            expect(tableData[1].比赛).to.equal('第3届金羊杯');
-            expect(tableData[2].比赛).to.equal('第4届金羊杯');
-
-            expect(tableData[0].主办方).to.equal(HOST.realname);
-            expect(tableData[1].主办方).to.equal(HOST.realname);
-            expect(tableData[2].主办方).to.equal(HOST.realname);
-
-            expect(tableData[0].开始时间).to.equal('2099-12-31 00:00:00');
-            expect(tableData[1].开始时间).to.equal('2000-01-01 00:00:00');
-            expect(tableData[2].开始时间).to.equal('2000-01-01 00:00:00');
-
-            expect(tableData[0].结束时间).to.equal('2100-01-03 00:00:00');
-            expect(tableData[1].结束时间).to.equal('2100-01-01 00:00:00');
-            expect(tableData[2].结束时间).to.equal('2000-01-02 00:00:00');
+            expect(tableData[0].status).to.equal('READY');
+            expect(tableData[0].args_kwargs.replace(/\s/g, '')).to.equal('{"args":[4],"kwargs":{}}');
+            expect(tableData[0].task_path).to.equal('tournament.tasks.task_gsc_finish');
         });
     });
 });
