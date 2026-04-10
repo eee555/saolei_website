@@ -5,7 +5,7 @@
         </el-tab-pane>
         <el-tab-pane :label="t('gsc.videos')" lazy>
             <MultiSelector v-model="VideoListConfig.tournament" :options="thisColumnChoices" :labels="thisColumnChoices.map((s) => t(`common.prop.${s}`))" />
-            <VideoList :videos="videos" :columns="VideoListConfig.tournament" sortable />
+            <VideoList :videos="videos" :columns="VideoListConfig.tournament" sortable paginator />
         </el-tab-pane>
         <el-tab-pane :label="t('gsc.bbbvSummary')" lazy>
             <BBBvSummaryHeader />
