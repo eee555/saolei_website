@@ -1,4 +1,5 @@
 from django.core.management import call_command
+from django_redis import get_redis_connection
 from ninja import NinjaAPI, Schema
 
 from msuser.models import UserMS
@@ -16,6 +17,7 @@ class UserIdSchema(Schema):
 @local_only
 def flush_database(request):
     call_command('flush', interactive=False)
+    get_redis_connection("saolei_website").flushdb()
 
 
 class RegisterSchema(Schema):
