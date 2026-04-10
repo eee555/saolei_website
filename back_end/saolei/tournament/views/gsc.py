@@ -11,6 +11,7 @@ from userprofile.decorators import login_required_error
 from utils.response import HttpResponseConflict
 from ..decorators import GSC_admin_required
 from ..models import GSCParticipant, GSCTournament, Tournament
+from ..tasks import task_gsc_finish
 
 
 @require_POST
@@ -227,7 +228,6 @@ def award_GSC(request: HttpRequest):
         return HttpResponseNotFound()
     if tournament.state not in [Tournament_TextChoices.State.FINISHED, Tournament_TextChoices.State.AWARDED]:
         return HttpResponseForbidden()
-    tournament.refresh_rank()
-    tournament.state = Tournament_TextChoices.State.AWARDED
-    tournament.save()
+
+    task_gsc_finish.enqueue(order)
     return HttpResponse()

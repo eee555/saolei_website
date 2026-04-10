@@ -156,28 +156,34 @@ def set_tournament(request: HttpRequest):
     if tournament.host != request.user:
         return HttpResponseForbidden()
 
+    update_fields = []
     if start_time := request.POST.get('start_time'):
         if isinstance(start_time, str):
             start_time = datetime.fromisoformat(start_time.replace('Z', '+00:00'))
         tournament.start_time = start_time
+        update_fields.append('start_time')
+
     if end_time := request.POST.get('end_time'):
         if isinstance(end_time, str):
             end_time = datetime.fromisoformat(end_time.replace('Z', '+00:00'))
         tournament.end_time = end_time
+        update_fields.append('end_time')
 
     if isinstance(tournament, GSCTournament):
         if order := request.POST.get('order'):
             if GSCTournament.objects.filter(order=order).exists():
                 return HttpResponseConflict()
             tournament.order = order
+            update_fields.append('order')
         if token := request.POST.get('token'):
             if GSCTournament.objects.filter(token=token).first():
                 return HttpResponseConflict()
             if TournamentParticipant.objects.filter(token=token).first():
                 return HttpResponseConflict()
             tournament.token = token
+            update_fields.append('token')
 
-    tournament.save()
+    tournament.save(update_fields=update_fields)
     tournament.refresh_state()
     return HttpResponse()
 
@@ -214,7 +220,7 @@ def set_tournament_staff(request: HttpRequest):
 def validate_tournament(request: HttpRequest):
     if not (tournament_id := request.POST.get('id')):
         return HttpResponseBadRequest()
-    if not (tournament := Tournament.objects.filter(id=tournament_id).first()):
+    if not (tournament := Tournament.objects.filter(id=tournament_id).select_subclasses().first()):
         return HttpResponseNotFound()
     valid = request.POST.get('valid')
     if valid == 'true':
