@@ -1,5 +1,5 @@
 from config.text_choices import Tournament_TextChoices
-from tournament.models import Tournament
+from .models import Tournament
 
 
 def tournament_videos_reveal(tournament: Tournament):
