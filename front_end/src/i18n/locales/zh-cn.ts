@@ -25,6 +25,7 @@ export default {
             b: '初级',
             i: '中级',
             e: '高级',
+            c: '自定义',
             sum: '总计',
             shortb: '初',
             shorti: '中',

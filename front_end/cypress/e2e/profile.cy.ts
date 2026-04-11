@@ -4,6 +4,8 @@ import { binaryStringToUint8Array } from '../support/stupidCypress';
 
 const USER_ID = 2418 as const;
 
+
+
 describe('Personal Profile', () => {
     it('Before All', () => {
         // 初始化数据库
@@ -49,31 +51,51 @@ describe('Personal Profile', () => {
 
         // 准备录像文件
         cy.fixture('Exp_FL_35.09_3BV=132_3BVs=3.76_Pu Tian Yi(Hu Bei).avf', 'binary').then((fileContent) => {
-            cy.wrap(binaryStringToUint8Array(fileContent)).as('videoFileExp');
+            cy.wrap(binaryStringToUint8Array(fileContent)).as('videoFileExpAvf');
         });
         cy.fixture('4376-Custom-FL-30x24-860.360-357-226m-20220522.avf', 'binary').then((fileContent) => {
-            cy.wrap(binaryStringToUint8Array(fileContent)).as('videoFileCus');
+            cy.wrap(binaryStringToUint8Array(fileContent)).as('videoFileCusAvf');
+        });
+        cy.fixture('3819-Time-1616-NF-9469-32-20151031.rmv', 'binary').then((fileContent) => {
+            cy.wrap(binaryStringToUint8Array(fileContent)).as('videoFileIntRmv');
         });
 
         cy.get('input[type=file]').selectFile([
             {
-                contents: '@videoFileExp',
+                contents: '@videoFileExpAvf',
                 fileName: 'videoFileExp.avf',
             },
             {
-                contents: '@videoFileCus',
+                contents: '@videoFileCusAvf',
                 fileName: 'videoFileCus.avf',
-            }, // ms-toollib 暂时有bug，无法解析自定义级别录像
+            },
+            {
+                contents: '@videoFileIntRmv',
+                fileName: 'videoFileInt.rmv',
+            },
         ], { force: true });
 
-        cy.contains('新标识');
+        const expectedData = {
+            ExpAvf: { '': '', Bv: '132', Bvs: '3.762', 状态: '新标识', 用时: '35.090', 级别: '高级', 结束时间: '2023-10-05 21:25:57' },
+            CusAvf: { '': '', Bv: '357', Bvs: '0.415', 状态: '暂不支持自定义级别', 用时: '860.360', 级别: '自定义', 结束时间: '2022-05-22 23:30:49' },
+            IntRmv: { '': '', Bv: '32', Bvs: '3.379', 状态: '新标识', 用时: '9.469', 级别: '中级', 结束时间: '2015-10-31 15:53:35' },
+        };
+
         cy.get('table:visible').getTable().should((tableData) => {
-            expect(tableData[0].Bv).to.equal('132');
-            expect(tableData[0].Bvs).to.equal('3.762');
-            expect(tableData[0].状态).to.equal('新标识');
-            expect(tableData[0].用时).to.equal('35.090');
-            expect(tableData[0].级别).to.equal('高级');
-            expect(tableData[0].结束时间).to.equal('2023-10-05 21:25:57');
+            expect(tableData.length).to.equal(3);
+            expect(tableData[0]).to.deep.equal(expectedData.ExpAvf);
+            expect(tableData[1]).to.deep.equal(expectedData.CusAvf);
+            expect(tableData[2]).to.deep.equal(expectedData.IntRmv);
+        });
+
+        cy.get('table:visible').find('.el-checkbox__input').first().click(); // 全选
+        cy.get('button').contains('上传').click();
+        cy.get('.el-loading-spinner').should('exist');
+        cy.get('.el-loading-spinner').should('not.exist');
+
+        cy.get('table:visible').getTable().should((tableData) => {
+            expect(tableData.length).to.equal(1);
+            expect(tableData[0]).to.deep.equal(expectedData.CusAvf);
         });
     });
 });
