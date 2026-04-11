@@ -106,7 +106,7 @@ function refresh() {
             personaltoken.value = response.data.identifier ? response.data.identifier : '';
         } else {
             personaltoken.value = '';
-            result.value = response.data.results;
+            result.value = (response.data.results as Array<object>).map((value) => new GSCParticipant(value));
         }
     }).catch(httpErrorNotification);
 }

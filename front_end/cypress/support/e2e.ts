@@ -74,6 +74,15 @@ Cypress.on('uncaught:exception', (err, _runnable) => {
     return false; // prevents the test from failing
 });
 
+Cypress.on('test:before:run', () => {
+    Cypress.automation('remote:debugger:protocol', {
+        command: 'Emulation.setTimezoneOverride',
+        params: {
+            timezoneId: 'Asia/Shanghai', // OR  'UTC'
+        },
+    });
+});
+
 Cypress.Commands.add('register', (id: number, username: string, email: string, password: string) => {
     cy.request({
         method: 'POST',

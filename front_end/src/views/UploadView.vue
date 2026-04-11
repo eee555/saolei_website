@@ -287,21 +287,32 @@ async function uploadSelected() {
     uploadProgress.value.failed = 0;
     pleaseStopUploading.value = false;
 
+    const selectedQueueTemp = [...selectedQueue.value];
+    const uploadQueueTemp = [...uploadQueue.value];
     for (const entry of selectedQueue.value) {
         if (pleaseStopUploading.value) {
             uploadProgress.value.total = uploadProgress.value.uploaded + uploadProgress.value.failed;
-            return;
+            break;
         }
 
         if (['pass', 'identifier'].includes(entry.status)) {
             await forceUpload(entry);
             if (entry.status === 'success') {
+                const selectedIndex = selectedQueueTemp.indexOf(entry);
+                selectedQueueTemp.splice(selectedIndex, 1);
+                const uploadIndex = uploadQueueTemp.indexOf(entry);
+                uploadQueueTemp.splice(uploadIndex, 1);
                 uploadProgress.value.uploaded += 1;
             } else {
                 uploadProgress.value.failed += 1;
             }
+        } else {
+            uploadProgress.value.failed += 1;
         }
     }
+
+    selectedQueue.value = selectedQueueTemp;
+    uploadQueue.value = uploadQueueTemp;
 }
 
 // 上传问题不大的录像
@@ -325,7 +336,6 @@ const forceUpload = async (entry: UploadEntry) => {
                 store.player.videos.push(entry.stat!);
             }
             entry.status = 'success';
-            return entry;
         } else if (response.data.type === 'error' && response.data.object === 'file') {
             entry.status = 'collision';
         } else if (response.data.type === 'error' && response.data.object === 'identifier') {

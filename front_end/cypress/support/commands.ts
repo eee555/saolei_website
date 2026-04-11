@@ -55,6 +55,8 @@ declare global {
              * @example cy.mockRegister()
              */
             mockRegister(): void;
+
+            extractTableData(): Chainable<string[][]>;
         }
     }
 }
@@ -161,6 +163,22 @@ Cypress.Commands.add('closeElNotifications', () => {
         cy.wrap($el).click();
     });
     cy.get('.el-notification__closeBtn:visible').should('not.exist');
+});
+
+Cypress.Commands.add('extractTableData', { prevSubject: 'element' }, (subject) => {
+    const $table = Cypress.$(subject);
+    const $rows = $table.find('> thead > tr, > tbody > tr, > tr');
+    const tableData = [] as string[][];
+    $rows.each((i, row) => {
+        const $row = Cypress.$(row);
+        const $cells = $row.find('> th, > td');
+        const rowData = [] as string[];
+        $cells.each((j, cell) => {
+            rowData.push(Cypress.$(cell).text().trim());
+        });
+        tableData.push(rowData);
+    });
+    return cy.wrap(tableData);
 });
 
 export {};

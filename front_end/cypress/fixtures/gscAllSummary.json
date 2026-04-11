@@ -1,0 +1,58 @@
+{
+    "data": [
+        {
+            "id": 22,
+            "user__id": 18,
+            "user__realname": "UserNoFinish",
+            "start_time": "2025-10-18T16:49:07.530Z",
+            "end_time": null,
+            "rank": 15,
+            "rank_score": 0,
+            "bt1st": 1467,
+            "bt20th": 10000,
+            "bt20sum": 191467,
+            "it1st": 60000,
+            "it12th": 60000,
+            "it12sum": 720000,
+            "et1st": 35279,
+            "et5th": 240000,
+            "et5sum": 995279
+        },
+        {
+            "id": 18,
+            "user__id": 6,
+            "user__realname": "UserChampion",
+            "start_time": "2025-10-17T11:49:53.542Z",
+            "end_time": null,
+            "rank": 1,
+            "rank_score": 0,
+            "bt1st": 1430,
+            "bt20th": 1770,
+            "bt20sum": 33010,
+            "it1st": 8850,
+            "it12th": 10650,
+            "it12sum": 120410,
+            "et1st": 36940,
+            "et5th": 42460,
+            "et5sum": 204980
+        },
+        {
+            "id": 23,
+            "user__id": 82,
+            "user__realname": "UserNoScore",
+            "start_time": "2025-10-19T03:55:12.152Z",
+            "end_time": null,
+            "rank": 23,
+            "rank_score": 0,
+            "bt1st": 10000,
+            "bt20th": 10000,
+            "bt20sum": 200000,
+            "it1st": 60000,
+            "it12th": 60000,
+            "it12sum": 720000,
+            "et1st": 240000,
+            "et5th": 240000,
+            "et5sum": 1200000
+        }
+    ]
+}

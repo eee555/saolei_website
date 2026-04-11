@@ -27,6 +27,7 @@ export default {
             b: 'Beginner',
             i: 'Intermediate',
             e: 'Expert',
+            c: 'Custom',
             sum: 'Sum',
             shortb: 'Beg',
             shorti: 'Int',
