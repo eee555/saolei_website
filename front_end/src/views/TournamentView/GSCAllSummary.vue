@@ -1,5 +1,5 @@
 <template>
-    <el-table :data="data" @row-click="handleRowClick">
+    <el-table :data="data" :default-sort="{ prop: 'sum_tsum', order: 'ascending' }" @row-click="handleRowClick">
         <el-table-column prop="user__realname" sortable>
             <template #default="{ row }: { row: GSCParticipant }">
                 <PlayerName :user-id="row.user__id" :user-name="row.user__realname" />
