@@ -57,19 +57,19 @@
             </el-table-column>
         </el-table-column>
         <el-table-column :label="t('common.level.sum')">
-            <el-table-column :label="t('common.score.best')" sortable :sort-by="(r: GSCParticipant) => r.bt1st + r.it1st + r.et1st">
+            <el-table-column prop="sum_tbest" :label="t('common.score.best')" sortable>
                 <template #default="{ row }: { row: GSCParticipant }">
-                    {{ ms_to_s(row.bt1st + row.it1st + row.et1st) }}
+                    {{ ms_to_s(row.sum_tbest) }}
                 </template>
             </el-table-column>
-            <el-table-column :label="t('common.score.edge')" sortable :sort-by="(r: GSCParticipant) => r.bt20th + r.it12th + r.et5th">
+            <el-table-column prop="sum_tedge" :label="t('common.score.edge')" sortable>
                 <template #default="{ row }: { row: GSCParticipant }">
-                    {{ ms_to_s(row.bt20th + row.it12th + row.et5th) }}
+                    {{ ms_to_s(row.sum_tedge) }}
                 </template>
             </el-table-column>
-            <el-table-column :label="t('common.score.sum')" sortable :sort-by="(r: GSCParticipant) => r.bt20sum + r.it12sum + r.et5sum">
+            <el-table-column prop="sum_tsum" :label="t('common.score.sum')" sortable>
                 <template #default="{ row }: { row: GSCParticipant }">
-                    {{ ms_to_s(row.bt20sum + row.it12sum + row.et5sum) }}
+                    {{ ms_to_s(row.sum_tsum) }}
                 </template>
             </el-table-column>
         </el-table-column>
