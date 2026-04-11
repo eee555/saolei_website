@@ -2,6 +2,7 @@
     <el-button
         style="width: 100%"
         size="large"
+        :disabled="disabled"
         @dragover.prevent="onDragOver"
         @dragleave.prevent="onDragLeave"
         @drop.prevent="onDrop"
