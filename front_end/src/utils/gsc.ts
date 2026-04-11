@@ -7,32 +7,33 @@ export interface GSCInfo {
     token?: string;
 }
 
-export interface GSCParticipant {
-    id: number;
-    user__id: number;
-    user__realname: string;
-    bt1st: number;
-    bt20th: number;
-    bt20sum: number;
-    it1st: number;
-    it12th: number;
-    it12sum: number;
-    et1st: number;
-    et5th: number;
-    et5sum: number;
-}
+export class GSCParticipant {
+    id: number = 0;
+    user__id: number = 0;
+    user__realname: string = '';
+    bt1st: number = GSCDefaults.bt;
+    bt20th: number = GSCDefaults.bt;
+    bt20sum: number = GSCDefaults.bt * 20;
+    it1st: number = GSCDefaults.it;
+    it12th: number = GSCDefaults.it;
+    it12sum: number = GSCDefaults.it * 12;
+    et1st: number = GSCDefaults.et;
+    et5th: number = GSCDefaults.et;
+    et5sum: number = GSCDefaults.et * 5;
 
-export const GSCParticipantDefault: GSCParticipant = {
-    id: 0,
-    user__id: 0,
-    user__realname: '',
-    bt1st: GSCDefaults.bt,
-    bt20th: GSCDefaults.bt,
-    bt20sum: GSCDefaults.bt * 20,
-    it1st: GSCDefaults.it,
-    it12th: GSCDefaults.it,
-    it12sum: GSCDefaults.it * 12,
-    et1st: GSCDefaults.et,
-    et5th: GSCDefaults.et,
-    et5sum: GSCDefaults.et * 5,
-} as const;
+    constructor(init?: Partial<GSCParticipant>) {
+        Object.assign(this, init);
+    }
+
+    get sum_tbest() {
+        return this.bt1st + this.it1st + this.et1st;
+    }
+
+    get sum_tedge() {
+        return this.bt20th + this.it12th + this.et5th;
+    }
+
+    get sum_tsum() {
+        return this.bt20sum + this.it12sum + this.et5sum;
+    }
+}
