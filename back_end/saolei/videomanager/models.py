@@ -253,15 +253,15 @@ class VideoModel(models.Model):
         if add:
             # 给高玩自动扩容
             if self.mode == MS_TextChoices.Mode.STD and self.level == MS_TextChoices.Level.EXPERT:
-                if self.timems < 100000 and userms.video_num_limit < 200:
+                if self.timems < 100000 and userms.video_num_limit < 1000:
                     userms.video_num_limit = 1000
-                if self.timems < 60000 and userms.video_num_limit < 500:
+                if self.timems < 60000 and userms.video_num_limit < 3000:
                     userms.video_num_limit = 3000
-                if self.timems < 50000 and userms.video_num_limit < 600:
+                if self.timems < 50000 and userms.video_num_limit < 5000:
                     userms.video_num_limit = 5000
-                if self.timems < 40000 and userms.video_num_limit < 800:
+                if self.timems < 40000 and userms.video_num_limit < 8000:
                     userms.video_num_limit = 8000
-                if self.timems < 30000 and userms.video_num_limit < 1000:
+                if self.timems < 30000 and userms.video_num_limit < 10000:
                     userms.video_num_limit = 10000
 
         userms.save(update_fields=["video_num_limit", "video_num_total", "video_num_beg", "video_num_int",
