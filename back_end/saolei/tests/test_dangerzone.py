@@ -102,15 +102,19 @@ def get_api_functions():
     functions = []
     for node in tree.body:
         if isinstance(node, ast.FunctionDef):
-            decorators = [d.id if isinstance(d, ast.Name) else
-                          d.attr if isinstance(d, ast.Attribute) else None
-                          for d in node.decorator_list]
+            decorators = [
+                d.id if isinstance(d, ast.Name) else
+                d.attr if isinstance(d, ast.Attribute) else None
+                for d in node.decorator_list
+            ]
             functions.append((node.name, decorators))
     return functions
 
 
 def test_all_dangerzone_api_are_local_only():
     funcs = get_api_functions()
-    missing = [name for name, decorators in funcs
-               if "local_only" not in decorators]
+    missing = [
+        name for name, decorators in funcs
+        if "local_only" not in decorators
+    ]
     assert not missing, f"These apis are missing @local_only: {missing}"

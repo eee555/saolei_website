@@ -264,8 +264,10 @@ class VideoModel(models.Model):
                 if self.timems < 30000 and userms.video_num_limit < 10000:
                     userms.video_num_limit = 10000
 
-        userms.save(update_fields=["video_num_limit", "video_num_total", "video_num_beg", "video_num_int",
-                    "video_num_exp", "video_num_std", "video_num_nf", "video_num_ng", "video_num_dg"])
+        userms.save(update_fields=[
+            "video_num_limit", "video_num_total", "video_num_beg", "video_num_int",
+            "video_num_exp", "video_num_std", "video_num_nf", "video_num_ng", "video_num_dg",
+        ])
 
     # 检查某录像是否打破个人纪录
     def checkPB(self, mode):
@@ -324,7 +326,8 @@ class VideoModel(models.Model):
             "mode": mode,
             "level": self.level,
             "value": value,
-            "delta": delta}, cls=ComplexEncoder))
+            "delta": delta,
+        }, cls=ComplexEncoder))
 
     def update_redis(self):
         user: UserProfile = self.player
