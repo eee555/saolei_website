@@ -50,18 +50,18 @@ def delete_old_job_executions(max_age=604_800):
 
 
 class Command(BaseCommand):
-    help = "Runs APScheduler."
+    help = 'Runs APScheduler.'
 
     def handle(self, *args, **options):
         scheduler = BlockingScheduler(timezone=settings.TIME_ZONE)
-        scheduler.add_jobstore(DjangoJobStore(), "default")
+        scheduler.add_jobstore(DjangoJobStore(), 'default')
 
         scheduler.add_job(
             delete_overdue_emailverifyrecord,
             trigger=CronTrigger(
-                day_of_week="mon", hour="01", minute="03",
+                day_of_week='mon', hour='01', minute='03',
             ),
-            id="delete_overdue_emailverifyrecord",  # The `id` assigned to each job MUST be unique
+            id='delete_overdue_emailverifyrecord',  # The `id` assigned to each job MUST be unique
             misfire_grace_time=30,
             max_instances=1,
             replace_existing=True,
@@ -71,9 +71,9 @@ class Command(BaseCommand):
         scheduler.add_job(
             delete_overdue_captcha,
             trigger=CronTrigger(
-                day_of_week="mon", hour="01", minute="05",
+                day_of_week='mon', hour='01', minute='05',
             ),
-            id="delete_overdue_captcha",  # The `id` assigned to each job MUST be unique
+            id='delete_overdue_captcha',  # The `id` assigned to each job MUST be unique
             misfire_grace_time=30,
             max_instances=1,
             replace_existing=True,
@@ -83,9 +83,9 @@ class Command(BaseCommand):
         scheduler.add_job(
             delete_old_job_executions,
             trigger=CronTrigger(
-                day_of_week="mon", hour="00", minute="03",
+                day_of_week='mon', hour='00', minute='03',
             ),  # Midnight on Monday, before start of the next work week.
-            id="delete_old_job_executions",
+            id='delete_old_job_executions',
             misfire_grace_time=30,
             max_instances=1,
             replace_existing=True,
@@ -95,9 +95,9 @@ class Command(BaseCommand):
         )
 
         try:
-            logger.info("Starting scheduler...")
+            logger.info('Starting scheduler...')
             scheduler.start()
         except KeyboardInterrupt:
-            logger.info("Stopping scheduler...")
+            logger.info('Stopping scheduler...')
             scheduler.shutdown()
-            logger.info("Scheduler shut down successfully!")
+            logger.info('Scheduler shut down successfully!')

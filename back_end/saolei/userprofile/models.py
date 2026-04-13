@@ -23,31 +23,31 @@ class UserProfile(AbstractUser):
         UserMS, on_delete=models.CASCADE, related_name='parent', null=True)
 
     username = models.CharField(
-        _("username"),
+        _('username'),
         max_length=MaxSizes.USERNAME,
         unique=True,
         help_text=_(
-            f"Required. {MaxSizes.USERNAME} characters or fewer. Letters, digits and @/./+/-/_ only.",
+            f'Required. {MaxSizes.USERNAME} characters or fewer. Letters, digits and @/./+/-/_ only.',
         ),
         validators=[username_validator],
         error_messages={
             'max_length': _(f'用户名的长度不超过{MaxSizes.USERNAME}，支持各国语言！'),
-            "unique": _("该用户名已存在！"),
+            'unique': _('该用户名已存在！'),
         }, db_collation='utf8mb4_0900_as_cs',
     )
-    first_name = models.CharField(_("first name"), max_length=MaxSizes.FIRSTNAME, blank=True)
-    last_name = models.CharField(_("last name"), max_length=MaxSizes.LASTNAME, blank=True)
+    first_name = models.CharField(_('first name'), max_length=MaxSizes.FIRSTNAME, blank=True)
+    last_name = models.CharField(_('last name'), max_length=MaxSizes.LASTNAME, blank=True)
     email = models.EmailField(
-        _("email address"),
+        _('email address'),
         max_length=MaxSizes.EMAIL,
         unique=True,
         blank=False,
         null=False,
         error_messages={
-            "blank": _("必须填写邮箱！"),
-            "invalid": _("邮箱格式不正确！"),
-            "unique": _("该邮箱已被注册！"),
-            "max_length": _(f"邮箱的长度不能超过{MaxSizes.EMAIL}！"),
+            'blank': _('必须填写邮箱！'),
+            'invalid': _('邮箱格式不正确！'),
+            'unique': _('该邮箱已被注册！'),
+            'max_length': _(f'邮箱的长度不能超过{MaxSizes.EMAIL}！'),
         },
     )
     # 考虑了中英文、俄罗斯用户名字，长度需要达到100（虽然还不够）
@@ -57,8 +57,8 @@ class UserProfile(AbstractUser):
     avatar = RestrictedImageField(upload_to='avatar/%Y%m%d/', max_length=100,
                                   max_upload_size=MaxSizes.AVATAR, blank=True, null=True)
     # 签名
-    signature = models.TextField(max_length=MaxSizes.SIGNATURE, blank=True, default="")  # 签名
-    country = models.CharField(max_length=MaxSizes.COUNTRY, blank=True, default="")
+    signature = models.TextField(max_length=MaxSizes.SIGNATURE, blank=True, default='')  # 签名
+    country = models.CharField(max_length=MaxSizes.COUNTRY, blank=True, default='')
     # 封禁用户，禁止上传录像、头像、签名
     is_banned = models.BooleanField(default=False, blank=False)
     # 剩余修改真实姓名的次数，0~32767
@@ -106,16 +106,16 @@ class UserProfile(AbstractUser):
 # 邮箱验证
 class EmailVerifyRecord(models.Model):
     # 验证码
-    code = models.CharField(max_length=MaxSizes.EMAILCODE, verbose_name="验证码")
-    email = models.EmailField(max_length=MaxSizes.EMAIL, verbose_name="邮箱")
+    code = models.CharField(max_length=MaxSizes.EMAILCODE, verbose_name='验证码')
+    email = models.EmailField(max_length=MaxSizes.EMAIL, verbose_name='邮箱')
     # 包含注册验证和找回验证
     # send_type = models.CharField(verbose_name="验证码类型", max_length=10,
     #                              choices=(("register", "注册"), ("forget", "找回密码")))
-    send_time = models.DateTimeField(verbose_name="发送时间", auto_now_add=True)
+    send_time = models.DateTimeField(verbose_name='发送时间', auto_now_add=True)
     hashkey = models.CharField(max_length=40, unique=True, default='???')
 
     class Meta:
-        verbose_name = u"2. 邮箱验证码"
+        verbose_name = u'2. 邮箱验证码'
         verbose_name_plural = verbose_name
 
     def __unicode__(self):

@@ -40,15 +40,15 @@ class DefaultRankingScores:
 
 
 # 级别
-MINESWEEPER_LEVELS = ["", "", "", "b", "i", "e", "c"]
-GameLevels = ["b", "i", "e"]
-GameModes = ["std", "nf", "ng", "dg"]
-RankingGameStats = ["timems", "bvs", "stnb", "ioe", "path"]
-VideoModeToName = {"00": "std", "12": "std"}
+MINESWEEPER_LEVELS = ['', '', '', 'b', 'i', 'e', 'c']
+GameLevels = ['b', 'i', 'e']
+GameModes = ['std', 'nf', 'ng', 'dg']
+RankingGameStats = ['timems', 'bvs', 'stnb', 'ioe', 'path']
+VideoModeToName = {'00': 'std', '12': 'std'}
 
 record_update_fields = []
 for mode in GameModes:
     for stat in RankingGameStats:
         for level in GameLevels:
-            record_update_fields.append(f"{level}_{stat}_{mode}")
-            record_update_fields.append(f"{level}_{stat}_id_{mode}")
+            record_update_fields.append(f'{level}_{stat}_{mode}')
+            record_update_fields.append(f'{level}_{stat}_id_{mode}')

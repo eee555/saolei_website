@@ -16,7 +16,7 @@ from .tasks import helper_saolei_video_import_bulk
 from .utils import delete_account, link_account
 
 logger = logging.getLogger('accountlink')
-private_platforms = ["q"]  # 私人账号平台
+private_platforms = ['q']  # 私人账号平台
 
 
 # 为自己绑定账号，需要指定平台和ID
@@ -53,11 +53,11 @@ def delete_link(request):
 # 提供id+platform，返回对应账号的详情
 @require_GET
 def get_link(request):
-    if not (userid := request.GET.get("id")):
+    if not (userid := request.GET.get('id')):
         return HttpResponseBadRequest()
     if not (user := UserProfile.objects.filter(id=userid).first()):
         return HttpResponseNotFound()
-    if platform := request.GET.get("platform"):
+    if platform := request.GET.get('platform'):
         if platform in private_platforms and not request.user.is_staff and user != request.user:
             return HttpResponseForbidden()
         account = getattr(user, PLATFORM_CONFIG[platform]['related_name'])
@@ -67,16 +67,16 @@ def get_link(request):
         return JsonResponse(data)
     else:
         if request.user.is_staff or user == request.user:  # 管理员或用户本人可以获得全部数据
-            accountlink = AccountLinkQueue.objects.filter(userprofile=user).values("platform", "identifier", "verified")
+            accountlink = AccountLinkQueue.objects.filter(userprofile=user).values('platform', 'identifier', 'verified')
         else:  # 其他人不能获得未绑定账号与私人账号数据
-            accountlink = AccountLinkQueue.objects.filter(userprofile=user, verified=True).exclude(platform__in=private_platforms).values("platform", "identifier", "verified")
+            accountlink = AccountLinkQueue.objects.filter(userprofile=user, verified=True).exclude(platform__in=private_platforms).values('platform', 'identifier', 'verified')
         return JsonResponse(list(accountlink), safe=False)
 
 
 @require_POST
 @staff_required
 def verify_link(request):
-    userid = request.POST.get("id")
+    userid = request.POST.get('id')
     if not (user := UserProfile.objects.filter(id=userid).first()):
         return HttpResponseNotFound()
     if not (platform := request.POST.get('platform')):
@@ -102,7 +102,7 @@ def verify_link(request):
 @require_POST
 @staff_required
 def unverify_link(request):
-    userid = request.GET.get("id")
+    userid = request.GET.get('id')
     if not (user := UserProfile.objects.filter(id=userid).first()):
         return HttpResponseNotFound()
     if not (platform := request.POST.get('platform')):
@@ -185,10 +185,10 @@ def view_saolei_import_videos(request):
 
     import_task = saolei_account.video_import_task
     if import_task and import_task.status in [TaskResultStatus.READY, TaskResultStatus.RUNNING]:
-        logger.warning(f"用户#{request.user.id} 已有一个扫雷网录像同步任务在进行中，无法创建新任务，模式：{mode}")
+        logger.warning(f'用户#{request.user.id} 已有一个扫雷网录像同步任务在进行中，无法创建新任务，模式：{mode}')
         return HttpResponseConflict()
     else:
-        logger.info(f"用户#{request.user.id} 开始创建扫雷网录像同步任务，模式：{mode}")
+        logger.info(f'用户#{request.user.id} 开始创建扫雷网录像同步任务，模式：{mode}')
         helper_saolei_video_import_bulk(saolei_account, mode)
         return HttpResponse()
 

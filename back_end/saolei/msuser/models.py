@@ -3,7 +3,7 @@ from django_redis import get_redis_connection
 
 from config.global_settings import DefaultRankingScores, GameLevels, GameModes, RankingGameStats, record_update_fields
 
-cache = get_redis_connection("saolei_website")
+cache = get_redis_connection('saolei_website')
 
 
 def get_default_identifiers():
@@ -186,16 +186,16 @@ class UserMS(models.Model):
         return 'identifiers: {}'.format(self.identifiers)
 
     def getrecord(self, level, stat, mode):
-        return getattr(self, f"{level}_{stat}_{mode}")
+        return getattr(self, f'{level}_{stat}_{mode}')
 
     def getrecordID(self, level, stat, mode):
-        return getattr(self, f"{level}_{stat}_id_{mode}")
+        return getattr(self, f'{level}_{stat}_id_{mode}')
 
     def setrecord(self, level, stat, mode, score):
-        setattr(self, f"{level}_{stat}_{mode}", score)
+        setattr(self, f'{level}_{stat}_{mode}', score)
 
     def setrecordID(self, level, stat, mode, recordid):
-        setattr(self, f"{level}_{stat}_id_{mode}", recordid)
+        setattr(self, f'{level}_{stat}_id_{mode}', recordid)
 
     def getrecords_level(self, stat, mode):
         return [self.getrecord(level, stat, mode) for level in GameLevels]
@@ -204,19 +204,19 @@ class UserMS(models.Model):
         return [self.getrecordID(level, stat, mode) for level in GameLevels]
 
     def update_3_level_cache_record(self, realname: str, index: str, mode: str):
-        key = f"player_{index}_{mode}_{self.id}"
-        cache.hset(key, "name", realname)
+        key = f'player_{index}_{mode}_{self.id}'
+        cache.hset(key, 'name', realname)
         for level in GameLevels:
             cache.hset(key, level, self.getrecord(level, index, mode))
             recordid = self.getrecordID(level, index, mode)
-            cache.hset(key, f"{level}_id", "None" if recordid is None else recordid)
+            cache.hset(key, f'{level}_id', 'None' if recordid is None else recordid)
         s = float(
-            self.getrecord("b", index, mode)
-            + self.getrecord("i", index, mode)
-            + self.getrecord("e", index, mode),
+            self.getrecord('b', index, mode)
+            + self.getrecord('i', index, mode)
+            + self.getrecord('e', index, mode),
         )
-        cache.hset(key, "sum", s)
-        cache.zadd(f"player_{index}_{mode}_ids", {self.id: s})
+        cache.hset(key, 'sum', s)
+        cache.zadd(f'player_{index}_{mode}_ids', {self.id: s})
 
     # 删除mysql中该用户所有的记录。删录像时用
     def del_user_record_sql(self):
@@ -234,5 +234,5 @@ class UserMS(models.Model):
     def del_user_record_redis(self):
         for mode in GameModes:
             for stat in RankingGameStats:
-                cache.delete(f"player_{stat}_{mode}_{self.id}")
-                cache.zrem(f"player_{stat}_{mode}_ids", self.id)
+                cache.delete(f'player_{stat}_{mode}_{self.id}')
+                cache.zrem(f'player_{stat}_{mode}_ids', self.id)

@@ -23,7 +23,7 @@ class WOM:
         """
         if videoInfoFunc is None:
             if not isinstance(videoInfoFunc, Callable):
-                raise ValueError("videoInfoFunc is not None and type is callable")
+                raise ValueError('videoInfoFunc is not None and type is callable')
         self.__videoIdQueue = queue.Queue()
         self.__videoInfoQueue = queue.Queue()
         self.__callback = videoInfoFunc
@@ -143,15 +143,15 @@ class WOM:
     def insertVideoId(self, videoId: str | int):
         """插入一个请求的视频ID"""
         if videoId is None:
-            raise ValueError("videoId is None")
+            raise ValueError('videoId is None')
         self.__videoIdQueue.put(videoId)
 
     def insertVideoIds(self, videoIds: list[str | int]):
         """插入多个请求的视频ID"""
         if videoIds is None:
-            raise ValueError("videoIds is None")
+            raise ValueError('videoIds is None')
         elif not isinstance(videoIds, list):
-            raise ValueError("videoIds is not a list")
+            raise ValueError('videoIds is not a list')
         for videoId in videoIds:
             self.__videoIdQueue.put(videoId)
 

@@ -22,20 +22,20 @@ class UserUpdateRealnameForm(forms.ModelForm):
         realname = self.cleaned_data.get('realname')
 
         if self.user.left_realname_n <= 0:
-            raise forms.ValidationError("姓名剩余修改次数不足！", code='no_times')
+            raise forms.ValidationError('姓名剩余修改次数不足！', code='no_times')
         else:
             self.user.left_realname_n -= 1
         try:
             is_valid = verify_text(realname, self.request.user.id, self.request.get_host())
         except Exception:
-            raise forms.ValidationError("网站已欠费，该功能暂停使用！", code='no_money')
+            raise forms.ValidationError('网站已欠费，该功能暂停使用！', code='no_money')
         if not is_valid:
-            raise forms.ValidationError("姓名违规！", code='invalid_realname')
+            raise forms.ValidationError('姓名违规！', code='invalid_realname')
         return realname
 
     class Meta:
         model = User
-        fields = ("realname",)
+        fields = ('realname',)
 
 
 # 更新我的地盘里的头像
@@ -56,20 +56,20 @@ class UserUpdateAvatarForm(forms.ModelForm):
         self.user.last_change_avatar += timezone.timedelta(days=n_add * 365)
 
         if self.user.left_avatar_n <= 0:
-            raise forms.ValidationError("头像剩余修改次数不足！", code='no_times')
+            raise forms.ValidationError('头像剩余修改次数不足！', code='no_times')
         else:
             self.user.left_avatar_n -= 1
         try:
             is_valid = verify_image(avatar.read(), self.request.user.id, self.request.get_host())
         except Exception:
-            raise forms.ValidationError("网站已欠费，该功能暂停使用！", code='no_money')
+            raise forms.ValidationError('网站已欠费，该功能暂停使用！', code='no_money')
         if not is_valid:
-            raise forms.ValidationError("头像违规！", code='invalid_avatar')
+            raise forms.ValidationError('头像违规！', code='invalid_avatar')
         return avatar
 
     class Meta:
         model = User
-        fields = ("avatar",)
+        fields = ('avatar',)
 
 
 # 更新我的地盘里的头像、姓名、个性签名
@@ -91,17 +91,17 @@ class UserUpdateSignatureForm(forms.ModelForm):
         self.user.left_signature_n += n_add
         self.user.last_change_signature += timezone.timedelta(days=n_add * 365)
         if self.user.left_signature_n <= 0:
-            raise forms.ValidationError("个性签名剩余修改次数不足！", code='no_times')
+            raise forms.ValidationError('个性签名剩余修改次数不足！', code='no_times')
         else:
             self.user.left_signature_n -= 1
         try:
             is_valid = verify_text(signature, self.request.user.id, self.request.get_host())
         except Exception:
-            raise forms.ValidationError("网站已欠费，该功能暂停使用！", code='no_money')
+            raise forms.ValidationError('网站已欠费，该功能暂停使用！', code='no_money')
         if not is_valid:
-            raise forms.ValidationError("个性签名违规！", code='invalid_signature')
+            raise forms.ValidationError('个性签名违规！', code='invalid_signature')
         return signature
 
     class Meta:
         model = User
-        fields = ("signature",)
+        fields = ('signature',)

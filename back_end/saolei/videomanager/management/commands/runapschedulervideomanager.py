@@ -14,7 +14,7 @@ from django_redis import get_redis_connection
 from videomanager.models import VideoModel
 
 logger = logging.getLogger(__name__)
-cache = get_redis_connection("saolei_website")
+cache = get_redis_connection('saolei_website')
 
 
 # 定时任务文档
@@ -23,7 +23,7 @@ cache = get_redis_connection("saolei_website")
 #     d = datetime.strptime(obj['time'], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
 #     return (timezone.now().replace(tzinfo=timezone.utc) - d).days > n
 def n_days_ago(time_str: str, n=7) -> bool:
-    t = datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+    t = datetime.strptime(time_str, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
     now = datetime.now(timezone.utc)
     delta = now - t
     return delta > timedelta(days=7)
@@ -32,9 +32,9 @@ def n_days_ago(time_str: str, n=7) -> bool:
 # 定时清除最新录像，直至剩下最近7天的或剩下不到100条
 @util.close_old_connections
 def delete_newest_queue():
-    if cache.hlen("newest_queue") <= 100:
+    if cache.hlen('newest_queue') <= 100:
         return
-    newest_queue_ids = cache.hgetall("newest_queue")
+    newest_queue_ids = cache.hgetall('newest_queue')
     # newest_queue_ids的示例：
     # {b'1': b'{"time": "2024-05-22T17:31:06Z", "player": "\\u5b9e\\u540d", "player_id": 1,
     #  "level": "b", "mode": "00", "timems": 4770, "bv": 23, "bvs": 4.821802935010482}',
@@ -43,35 +43,35 @@ def delete_newest_queue():
     for key in newest_queue_ids.keys():
         a = json.loads(newest_queue_ids[key])
         if n_days_ago(a['time']):
-            cache.hdel("newest_queue", key)
+            cache.hdel('newest_queue', key)
 
 
 # 定时清除7天以前冻结的录像
 @util.close_old_connections
 def delete_freezed_video():
     ddl = datetime.now(timezone.utc) - timedelta(days=7)
-    VideoModel.objects.filter(upload_time__lt=ddl, state="b").delete()
+    VideoModel.objects.filter(upload_time__lt=ddl, state='b').delete()
 
 
 # 定时清除新闻
 @util.close_old_connections
 def delete_news_queue():
     # 此处经常只能执行一次后任务消失。尝试在线上环境捕获问题。
-    logger.info("Starting delete_news_queue task")
+    logger.info('Starting delete_news_queue task')
     try:
-        if cache.llen("news_queue") <= 100:
-            logger.info("news_queue length <= 100, skipping cleanup")
+        if cache.llen('news_queue') <= 100:
+            logger.info('news_queue length <= 100, skipping cleanup')
             return
-        news_queue_list = cache.lrange("news_queue", 0, -1)
+        news_queue_list = cache.lrange('news_queue', 0, -1)
         news_queue_list = [x for x in news_queue_list if not n_days_ago(json.loads(x)['time'])]
-        cache.delete("news_queue")
+        cache.delete('news_queue')
         if news_queue_list:
-            cache.rpush("news_queue", *news_queue_list)
-        logger.info("delete_news_queue task completed successfully")
+            cache.rpush('news_queue', *news_queue_list)
+        logger.info('delete_news_queue task completed successfully')
     except Exception as e:
-        logger.error(f"Error in delete_news_queue: {e}")
+        logger.error(f'Error in delete_news_queue: {e}')
     finally:
-        logger.info("Finished delete_news_queue task")
+        logger.info('Finished delete_news_queue task')
 
     # if cache.llen("news_queue") <= 100:
     #     return
@@ -106,18 +106,18 @@ def delete_old_job_executions(max_age=604_800):
 
 
 class Command(BaseCommand):
-    help = "Runs APScheduler."
+    help = 'Runs APScheduler.'
 
     def handle(self, *args, **options):
         scheduler = BlockingScheduler(timezone=settings.TIME_ZONE)
-        scheduler.add_jobstore(DjangoJobStore(), "default")
+        scheduler.add_jobstore(DjangoJobStore(), 'default')
 
         scheduler.add_job(
             delete_newest_queue,
             trigger=CronTrigger(
-                day_of_week="*", hour="01", minute="08",
+                day_of_week='*', hour='01', minute='08',
             ),
-            id="delete_newest_queue",
+            id='delete_newest_queue',
             misfire_grace_time=300,
             max_instances=1,
             replace_existing=True,
@@ -127,9 +127,9 @@ class Command(BaseCommand):
         scheduler.add_job(
             delete_freezed_video,
             trigger=CronTrigger(
-                day_of_week="*", hour="01", minute="28",
+                day_of_week='*', hour='01', minute='28',
             ),
-            id="delete_freezed_video",
+            id='delete_freezed_video',
             misfire_grace_time=300,
             max_instances=1,
             replace_existing=True,
@@ -139,9 +139,9 @@ class Command(BaseCommand):
         scheduler.add_job(
             delete_news_queue,
             trigger=CronTrigger(
-                day_of_week="*", hour="17", minute="03",
+                day_of_week='*', hour='17', minute='03',
             ),
-            id="delete_news_queue",
+            id='delete_news_queue',
             misfire_grace_time=300,
             max_instances=1,
             replace_existing=True,
@@ -151,9 +151,9 @@ class Command(BaseCommand):
         scheduler.add_job(
             delete_old_job_executions,
             trigger=CronTrigger(
-                day_of_week="mon", hour="00", minute="03",
+                day_of_week='mon', hour='00', minute='03',
             ),  # Midnight on Monday, before start of the next work week.
-            id="delete_old_job_executions",
+            id='delete_old_job_executions',
             max_instances=1,
             replace_existing=True,
         )
@@ -162,9 +162,9 @@ class Command(BaseCommand):
         )
 
         try:
-            logger.info("Starting scheduler...")
+            logger.info('Starting scheduler...')
             scheduler.start()
         except KeyboardInterrupt:
-            logger.info("Stopping scheduler...")
+            logger.info('Stopping scheduler...')
             scheduler.shutdown()
-            logger.info("Scheduler shut down successfully!")
+            logger.info('Scheduler shut down successfully!')
