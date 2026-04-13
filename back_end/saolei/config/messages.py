@@ -2,17 +2,17 @@ from .global_settings import MaxSizes
 
 
 class GeneralErrors:
-    def stringsize(number, hilo, item=""):
+    def stringsize(number, hilo, item=''):
         return f'{item}不能{"超过" if hilo else "少于"}{number}个字符！'
 
-    def empty(item=""):
+    def empty(item=''):
         return f'{item}不能为空！'
 
 
 class FormErrors:
     email = {
         'max_length': GeneralErrors.stringsize(MaxSizes.EMAIL, True),
-        'required': GeneralErrors.empty("邮箱"),
+        'required': GeneralErrors.empty('邮箱'),
         'invalid': '邮箱格式错误！',
     }
     password = {
@@ -21,6 +21,6 @@ class FormErrors:
     }
     username = {
         'max_length': GeneralErrors.stringsize(MaxSizes.USERNAME, True),
-        'required': GeneralErrors.empty("用户名"),
-        'invalid': "非法用户名！",
+        'required': GeneralErrors.empty('用户名'),
+        'invalid': '非法用户名！',
     }

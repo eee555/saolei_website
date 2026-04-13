@@ -10,7 +10,7 @@ from django_apscheduler.models import DjangoJobExecution
 from django_redis import get_redis_connection
 import psutil
 
-cache = get_redis_connection("saolei_website")
+cache = get_redis_connection('saolei_website')
 logger = logging.getLogger(__name__)
 
 # 定时任务文档
@@ -21,26 +21,26 @@ logger = logging.getLogger(__name__)
 @util.close_old_connections
 def refresh_state_always():
     net_io = psutil.net_io_counters()
-    net_io_sent_old = cache.get("io_s_old") if cache.exists("io_s_old") else "0.0"
-    net_io_recv_old = cache.get("io_r_old") if cache.exists("io_r_old") else "0.0"
-    cache.set("io_s_old", str(net_io.bytes_sent))
-    cache.set("io_r_old", str(net_io.bytes_recv))
+    net_io_sent_old = cache.get('io_s_old') if cache.exists('io_s_old') else '0.0'
+    net_io_recv_old = cache.get('io_r_old') if cache.exists('io_r_old') else '0.0'
+    cache.set('io_s_old', str(net_io.bytes_sent))
+    cache.set('io_r_old', str(net_io.bytes_recv))
     io_s_spd = (net_io.bytes_sent - float(net_io_sent_old)) / 5
     io_r_spd = (net_io.bytes_recv - float(net_io_recv_old)) / 5
-    # cache.set("io_s_spd", str((net_io.bytes_sent - float(net_io_sent_old)) / 5))
-    # cache.set("io_r_spd", str((net_io.bytes_recv - float(net_io_recv_old)) / 5))
-    cache.rpush("io_s_spds", str(io_s_spd))
-    cache.rpush("io_r_spds", str(io_r_spd))
-    if cache.llen("io_s_spds") > 120:
-        cache.lpop("io_s_spds")
-    if cache.llen("io_r_spds") > 120:
-        cache.lpop("io_r_spds")
+    # cache.set('io_s_spd', str((net_io.bytes_sent - float(net_io_sent_old)) / 5))
+    # cache.set('io_r_spd', str((net_io.bytes_recv - float(net_io_recv_old)) / 5))
+    cache.rpush('io_s_spds', str(io_s_spd))
+    cache.rpush('io_r_spds', str(io_r_spd))
+    if cache.llen('io_s_spds') > 120:
+        cache.lpop('io_s_spds')
+    if cache.llen('io_r_spds') > 120:
+        cache.lpop('io_r_spds')
 
     cpu = psutil.cpu_percent()
-    # cache.set("cpu", str(cpu))
-    cache.rpush("cpus", str(cpu))
-    if cache.llen("cpus") > 120:
-        cache.lpop("cpus")
+    # cache.set('cpu', str(cpu))
+    cache.rpush('cpus', str(cpu))
+    if cache.llen('cpus') > 120:
+        cache.lpop('cpus')
 
 
 # The `close_old_connections` decorator ensures that database connections, that have become
@@ -60,18 +60,18 @@ def delete_old_job_executions(max_age=604_800):
 
 
 class Command(BaseCommand):
-    help = "Runs APScheduler."
+    help = 'Runs APScheduler.'
 
     def handle(self, *args, **options):
         logger.setLevel(logging.ERROR)
 
         scheduler = BlockingScheduler(timezone=settings.TIME_ZONE)
-        scheduler.add_jobstore(DjangoJobStore(), "default")
+        scheduler.add_jobstore(DjangoJobStore(), 'default')
 
         scheduler.add_job(
             refresh_state_always,
-            trigger=CronTrigger(second="*/5"),  # Every 5 seconds
-            id="refresh_state_always",  # The `id` assigned to each job MUST be unique
+            trigger=CronTrigger(second='*/5'),  # Every 5 seconds
+            id='refresh_state_always',  # The `id` assigned to each job MUST be unique
             misfire_grace_time=3,
             max_instances=1,
             replace_existing=True,
@@ -81,9 +81,9 @@ class Command(BaseCommand):
         scheduler.add_job(
             delete_old_job_executions,
             trigger=CronTrigger(
-                day_of_week="mon", hour="00", minute="03",
+                day_of_week='mon', hour='00', minute='03',
             ),  # Midnight on Monday, before start of the next work week.
-            id="delete_old_job_executions",
+            id='delete_old_job_executions',
             misfire_grace_time=30,
             max_instances=1,
             replace_existing=True,
@@ -93,9 +93,9 @@ class Command(BaseCommand):
         )
 
         try:
-            logger.info("Starting scheduler...")
+            logger.info('Starting scheduler...')
             scheduler.start()
         except KeyboardInterrupt:
-            logger.info("Stopping scheduler...")
+            logger.info('Stopping scheduler...')
             scheduler.shutdown()
-            logger.info("Scheduler shut down successfully!")
+            logger.info('Scheduler shut down successfully!')

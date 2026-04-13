@@ -61,7 +61,7 @@ class MSVideoParser:
         try:
             self.state = MSVideoParser.get_state_from_review_code(v.is_valid())
         except BaseException as e:
-            if e.__class__.__name__ == "PanicException":
+            if e.__class__.__name__ == 'PanicException':
                 raise ExceptionToResponse(obj='rust', category='panic')
             else:
                 raise e

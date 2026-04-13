@@ -279,8 +279,8 @@ def download_all_videos(request: HttpRequest):
         return HttpResponseNotFound()
     if tournament.state not in [Tournament_TextChoices.State.FINISHED, Tournament_TextChoices.State.AWARDED]:
         return HttpResponseForbidden()
-    response = StreamingHttpResponse(generate_file_stream(tournament.videos.all()), content_type="application/octet-stream")
-    response["Content-Disposition"] = 'attachment; filename="all_files_stream.bin"'
+    response = StreamingHttpResponse(generate_file_stream(tournament.videos.all()), content_type='application/octet-stream')
+    response['Content-Disposition'] = 'attachment; filename="all_files_stream.bin"'
     return response
 
 
@@ -297,6 +297,6 @@ def download_videos_participant(request: HttpRequest):
         return HttpResponseNotFound()
     if tournament.state == Tournament_TextChoices.State.ONGOING and request.user != user:
         return HttpResponseForbidden()
-    response = StreamingHttpResponse(generate_file_stream(tournament.videos.filter(player=user)), content_type="application/octet-stream")
-    response["Content-Disposition"] = 'attachment; filename="all_files_stream.bin"'
+    response = StreamingHttpResponse(generate_file_stream(tournament.videos.filter(player=user)), content_type='application/octet-stream')
+    response['Content-Disposition'] = 'attachment; filename="all_files_stream.bin"'
     return response

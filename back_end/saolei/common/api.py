@@ -55,7 +55,7 @@ def api_task_summary(request):
 
 @api.get('/diskusage', throttle=[AnonRateThrottle('10/m')])
 def api_disk_usage(request):
-    disk = psutil.disk_usage(".")
+    disk = psutil.disk_usage('.')
 
     video_size: int = VideoModel.objects.aggregate(s=Sum('file_size'))['s']
 

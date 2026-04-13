@@ -5,7 +5,7 @@ from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django_redis import get_redis_connection
 
-cache = get_redis_connection("saolei_website")
+cache = get_redis_connection('saolei_website')
 
 # 用文件系统管理文章
 # 定时整理文章的目录文件，删除目录里没有文件的目录、添加不在目录里的文章
@@ -28,36 +28,36 @@ def update_list(request):
     if (request.user.is_staff or request.user.is_superuser) and request.method == 'GET':
         # if 1:
         if settings.DEBUG:
-            article_dir = settings.BASE_DIR / "assets" / 'article'
+            article_dir = settings.BASE_DIR / 'assets' / 'article'
         else:
             article_dir = os.path.join(settings.STATIC_ROOT, 'article')
         articles: List[str] = os.listdir(article_dir)
         # 先清空已有
-        while cache.llen("articles") > 0:
-            cache.rpop("articles")
+        while cache.llen('articles') > 0:
+            cache.rpop('articles')
         for article in articles:
             # 从gitee上直接clone下来的
-            # if article in ["LICENSE", ".git"]:
+            # if article in ['LICENSE', '.git']:
             #     continue
             if os.path.isdir(os.path.join(article_dir, article)):
-                if os.path.isfile(os.path.join(article_dir, article, "a.md")):
-                    cache.lpush("articles", article)
+                if os.path.isfile(os.path.join(article_dir, article, 'a.md')):
+                    cache.lpush('articles', article)
                 else:
                     ...  # 删除或往日志中记录，但问题不大
-            elif article[-3:] == '.md' and article[0] == "[":
-                cache.lpush("articles", article)
-        return HttpResponse("..")
+            elif article[-3:] == '.md' and article[0] == '[':
+                cache.lpush('articles', article)
+        return HttpResponse('..')
     else:
-        return HttpResponse("别瞎玩")
+        return HttpResponse('别瞎玩')
 
 
 # 完整文章目录
 def article_list(request):
     if request.method == 'GET':
-        a_list = cache.lrange("articles", 0, -1)
+        a_list = cache.lrange('articles', 0, -1)
         # 不做过多处理（排序、分类）直接发到前端
-        return JsonResponse([a.decode("utf-8") for a in a_list], safe=False)
+        return JsonResponse([a.decode('utf-8') for a in a_list], safe=False)
     else:
-        return HttpResponse("别瞎玩")
+        return HttpResponse('别瞎玩')
 
 # http://127.0.0.1:8000/article/update_list

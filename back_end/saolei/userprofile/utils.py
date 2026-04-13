@@ -77,7 +77,7 @@ def judge_email_verification(email, email_captcha, emailHashkey):
 def user_metadata(user: UserProfile, client):
     if user.avatar:
         avatar_path = os.path.join(settings.MEDIA_ROOT, urllib.parse.unquote(user.avatar.url)[7:])
-        image_data = open(avatar_path, "rb").read()
+        image_data = open(avatar_path, 'rb').read()
         image_data = base64.b64encode(image_data).decode()
     else:
         image_data = None
@@ -85,17 +85,17 @@ def user_metadata(user: UserProfile, client):
     queryset = VideoModel.objects.filter(player=user)
     if client != user:
         queryset = queryset.filter(ongoing_tournament=False)
-    videos = queryset.values('id', 'upload_time', "level", "mode", "timems", "bv", "state", "software", "cl", "ce", "file_size", "end_time", "ongoing_tournament", 'path')
+    videos = queryset.values('id', 'upload_time', 'level', 'mode', 'timems', 'bv', 'state', 'software', 'cl', 'ce', 'file_size', 'end_time', 'ongoing_tournament', 'path')
     return {
-        "id": user.id,
-        "username": user.username,
-        "realname": user.realname,
-        "avatar": image_data,
-        "signature": user.signature,
-        "popularity": user.popularity,
-        "identifiers": user.userms.identifiers,
-        "is_banned": user.is_banned,
-        "is_staff": user.is_staff,
-        "country": user.country,
-        "videos": list(videos),
+        'id': user.id,
+        'username': user.username,
+        'realname': user.realname,
+        'avatar': image_data,
+        'signature': user.signature,
+        'popularity': user.popularity,
+        'identifiers': user.userms.identifiers,
+        'is_banned': user.is_banned,
+        'is_staff': user.is_staff,
+        'country': user.country,
+        'videos': list(videos),
     }

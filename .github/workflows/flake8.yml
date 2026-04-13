@@ -38,6 +38,7 @@ jobs:
         pip install flake8-import-order
         pip install flake8-multiline-containers
         pip install flake8-print
+        pip install flake8-quotes
 
     - name: Run Tests
       run: |

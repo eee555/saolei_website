@@ -52,7 +52,7 @@ def fetch_saolei_profile(saolei_id: int):
     VideoHtmlStr = response.text
 
     if not InfoHtmlStr or not VideoHtmlStr:
-        raise ValueError("Failed to fetch profile or video page")  # 没有爬取到信息
+        raise ValueError('Failed to fetch profile or video page')  # 没有爬取到信息
 
     tree = etree.HTML(InfoHtmlStr)
     values = tree.xpath('//span[@class="Sign"]/text()')
@@ -115,14 +115,14 @@ def fetch_saolei_profile(saolei_id: int):
         'e': exp_count,
     }
 
-    return {"name": name, "total_views": total_views, "timems": timems, "bvs_cent": bvs_cent, "count": count}
+    return {'name': name, 'total_views': total_views, 'timems': timems, 'bvs_cent': bvs_cent, 'count': count}
 
 
 def fetch_saolei_video_download_and_state(video_id: int) -> tuple[str, ]:
     response = requests.get(url=f'http://saolei.wang/Video/Show.asp?Id={video_id}', timeout=5)
     response.encoding = 'GB2312'
-    if response.text == '''<script language="JavaScript">alert('此录象不存在!');</script><script language=JavaScript>top.location=top.location</script>''':
-        return "", Saolei_TextChoices.SaoleiVideoState.NOTEXIST
+    if response.text == """<script language="JavaScript">alert('此录象不存在!');</script><script language=JavaScript>top.location=top.location</script>""":
+        return '', Saolei_TextChoices.SaoleiVideoState.NOTEXIST
     if '此录像尚未通过审核！' in response.text:
         state = Saolei_TextChoices.SaoleiVideoState.PENDING
     elif '为什么冻结？' in response.text:
@@ -183,86 +183,86 @@ def update_wom_account(account: AccountWorldOfMinesweeper):
         return f'//strong[text()="{text}"]/../following-sibling::div//i[@class="{i}"]{last}'
 
     def stringToInt(values) -> int:
-        return int(str(values[0]).replace(" ", "").replace("%", "")) if values else None
+        return int(str(values[0]).replace(' ', '').replace('%', '')) if values else None
 
     def stringToFloat(values) -> float:
-        return float(str(values[0]).replace(" ", "").replace("%", "")) if values else None
-    values = tree.xpath(formatXpath("Trophies:"))
+        return float(str(values[0]).replace(' ', '').replace('%', '')) if values else None
+    values = tree.xpath(formatXpath('Trophies:'))
     account.trophy = int(values[0]) if values else None
 
     try:
         values = tree.xpath(formatImgXpath(
-            "Experience:", "exp-icon icon-right", "/../text()"))
+            'Experience:', 'exp-icon icon-right', '/../text()'))
         account.experience = stringToInt(values)
     except ValueError:
         pass
 
     try:
         values = tree.xpath(formatImgXpath(
-            "Experience:", "hp-icon icon-right", "/../../text()"))
+            'Experience:', 'hp-icon icon-right', '/../../text()'))
         account.honour = stringToInt(values)
     except ValueError:
         pass
 
     try:
         values = tree.xpath(formatImgXpath(
-            "Resources:", "coin-icon icon-right", "/../../text()"))
+            'Resources:', 'coin-icon icon-right', '/../../text()'))
         account.minecoin = stringToInt(values)
     except ValueError:
         pass
 
     try:
         values = tree.xpath(formatImgXpath(
-            "Resources:", "gem gem0 icon-right", "/../span/text()"))
+            'Resources:', 'gem gem0 icon-right', '/../span/text()'))
         account.gem = stringToInt(values)
     except ValueError:
         pass
 
     try:
         values = tree.xpath(formatImgXpath(
-            "Resources:", "arena-coin-icon icon-right", "/../span/text()"))
+            'Resources:', 'arena-coin-icon icon-right', '/../span/text()'))
         account.coin = stringToInt(values)
     except ValueError:
         pass
 
     try:
         values = tree.xpath(formatIXpath(
-            "Resources:", "fa fa-ticket ticket-right ticket0", "/../span/text()"))
+            'Resources:', 'fa fa-ticket ticket-right ticket0', '/../span/text()'))
         account.arena_ticket = stringToInt(values)
     except ValueError:
         pass
 
     try:
         values = tree.xpath(formatImgXpath(
-            "Resources:", "parts-icon ", "/preceding-sibling::text()"))
+            'Resources:', 'parts-icon ', '/preceding-sibling::text()'))
         account.part = stringToInt(values)
     except ValueError:
         pass
 
     try:
         values = tree.xpath(formatImgXpath(
-            "Resources:", "eq-icon", "/../span/text()"))
+            'Resources:', 'eq-icon', '/../span/text()'))
         account.equipment = stringToInt(values)
     except ValueError:
         pass
 
     try:
         values = tree.xpath(formatImgXpath(
-            "Arena points:", "arena-icon ", "/../text()"))
+            'Arena points:', 'arena-icon ', '/../text()'))
         account.arena_point = stringToInt(values)
     except ValueError:
         pass
 
     try:
         values = tree.xpath(formatImgXpath(
-            "Max difficulty:", "diff-icon ", "/../a/text()"))
+            'Max difficulty:', 'diff-icon ', '/../a/text()'))
         account.max_difficulty = stringToInt(values)
     except ValueError:
         pass
 
     try:
         values = tree.xpath(formatIXpath(
-            "Wins:", "fa fa-flag wins-icon ", "/../text()"))
+            'Wins:', 'fa fa-flag wins-icon ', '/../text()'))
         account.win = stringToInt(values)
     except ValueError:
         pass
@@ -277,49 +277,49 @@ def update_wom_account(account: AccountWorldOfMinesweeper):
 
     def formatSpanXpath(text, index):
         return f'//span[text()="{text}"]/../following-sibling::div[{index}]//text()'
-    values = tree.xpath(formatSpanXpath("Beginner", 1))
+    values = tree.xpath(formatSpanXpath('Beginner', 1))
     account.b_t_ms = round(stringToFloat(values) * 1000)
 
-    values = tree.xpath(formatSpanXpath("Intermediate", 1))
+    values = tree.xpath(formatSpanXpath('Intermediate', 1))
     account.i_t_ms = round(stringToFloat(values) * 1000)
 
-    values = tree.xpath(formatSpanXpath("Expert", 1))
+    values = tree.xpath(formatSpanXpath('Expert', 1))
     account.e_t_ms = round(stringToFloat(values) * 1000)
 
     values = tree.xpath(formatIXpath(
-        "Efficiency:", "fa fa-dot-circle-o eff-icon level1", "/../text()"))
+        'Efficiency:', 'fa fa-dot-circle-o eff-icon level1', '/../text()'))
     account.b_ioe = stringToFloat(values) / 100
 
     values = tree.xpath(formatIXpath(
-        "Efficiency:", "fa fa-dot-circle-o eff-icon level2", "/../text()"))
+        'Efficiency:', 'fa fa-dot-circle-o eff-icon level2', '/../text()'))
     account.i_ioe = stringToFloat(values) / 100
 
     values = tree.xpath(formatIXpath(
-        "Efficiency:", "fa fa-dot-circle-o eff-icon level3", "/../text()"))
+        'Efficiency:', 'fa fa-dot-circle-o eff-icon level3', '/../text()'))
     account.e_ioe = stringToFloat(values) / 100
 
     values = tree.xpath(formatIXpath(
-        "Mastery:", "glyphicon glyphicon-flash mastery-icon mastery1", "/../text()"))
+        'Mastery:', 'glyphicon glyphicon-flash mastery-icon mastery1', '/../text()'))
     account.b_mastery = stringToInt(values)
 
     values = tree.xpath(formatIXpath(
-        "Mastery:", "glyphicon glyphicon-flash mastery-icon mastery2", "/../text()"))
+        'Mastery:', 'glyphicon glyphicon-flash mastery-icon mastery2', '/../text()'))
     account.i_mastery = stringToInt(values)
 
     values = tree.xpath(formatIXpath(
-        "Mastery:", "glyphicon glyphicon-flash mastery-icon mastery3", "/../text()"))
+        'Mastery:', 'glyphicon glyphicon-flash mastery-icon mastery3', '/../text()'))
     account.e_mastery = stringToInt(values)
 
     values = tree.xpath(formatIXpath(
-        "Win streak:", "fa fa-crosshairs ws-icon ws1", "/../text()"))
+        'Win streak:', 'fa fa-crosshairs ws-icon ws1', '/../text()'))
     account.b_winstreak = stringToInt(values)
 
     values = tree.xpath(formatIXpath(
-        "Win streak:", "fa fa-crosshairs ws-icon ws2", "/../text()"))
+        'Win streak:', 'fa fa-crosshairs ws-icon ws2', '/../text()'))
     account.i_winstreak = stringToInt(values)
 
     values = tree.xpath(formatIXpath(
-        "Win streak:", "fa fa-crosshairs ws-icon ws3", "/../text()"))
+        'Win streak:', 'fa fa-crosshairs ws-icon ws3', '/../text()'))
     account.e_winstreak = stringToInt(values)
 
     account.save()
