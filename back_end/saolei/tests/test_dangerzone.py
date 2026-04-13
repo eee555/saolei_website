@@ -29,9 +29,9 @@ def _scan_static_imports():
             if file.endswith(".py"):
                 filepath = pathlib.Path(root) / file
                 rel_path = pathlib.Path(root, file).relative_to(PROJECT_ROOT)
-                print(rel_path)
+                print(rel_path)  # noqa: T201
                 if rel_path.as_posix() == 'saolei/urls.py':
-                    print('file skipped')
+                    print('file skipped')  # noqa: T201
                     continue
                 with open(filepath, "r", encoding="utf-8") as f:
                     for i, line in enumerate(f, start=1):
