@@ -345,6 +345,6 @@ def batch_update_videoModel(request):
         try:
             refresh_video(video)
             successCount += 1
-        except:
+        except Exception:
             errorList.append(video.id)
     return JsonResponse({'errorList': errorList, 'successCount': successCount})
