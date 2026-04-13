@@ -27,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # 与加密的盐有关！
 try:
-    with open("secrets.json", 'r') as f:
+    with open("secrets.json", 'r', encoding='utf-8') as f:
         SECRET_KEY = json.load(f)["django_secret_key"]
 except Exception:
     SECRET_KEY = "django-insecure-3_(yjnup(rsxz&pd@stz25*meq10bn3m3$lt!n_1+s723#k=ay"
