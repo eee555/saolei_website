@@ -64,12 +64,12 @@ def get_access_token() -> str:
     try:
         with open("secrets.json", 'r') as f:
             API_KEY = json.load(f)["client_id"]
-    except:
+    except Exception:
         API_KEY = input("请输入client_id：")
     try:
         with open("secrets.json", 'r') as f:
             SECRET_KEY = json.load(f)["client_secret"]
-    except:
+    except Exception:
         SECRET_KEY = input("请输入client_secret：")
     url = "https://aip.baidubce.com/oauth/2.0/token"
     params = {"grant_type": "client_credentials", "client_id": API_KEY, "client_secret": SECRET_KEY}

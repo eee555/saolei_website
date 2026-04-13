@@ -27,7 +27,7 @@ class UserUpdateRealnameForm(forms.ModelForm):
             self.user.left_realname_n -= 1
         try:
             is_valid = verify_text(realname, self.request.user.id, self.request.get_host())
-        except:
+        except Exception:
             raise forms.ValidationError("网站已欠费，该功能暂停使用！", code='no_money')
         if not is_valid:
             raise forms.ValidationError("姓名违规！", code='invalid_realname')
@@ -61,7 +61,7 @@ class UserUpdateAvatarForm(forms.ModelForm):
             self.user.left_avatar_n -= 1
         try:
             is_valid = verify_image(avatar.read(), self.request.user.id, self.request.get_host())
-        except:
+        except Exception:
             raise forms.ValidationError("网站已欠费，该功能暂停使用！", code='no_money')
         if not is_valid:
             raise forms.ValidationError("头像违规！", code='invalid_avatar')
@@ -96,7 +96,7 @@ class UserUpdateSignatureForm(forms.ModelForm):
             self.user.left_signature_n -= 1
         try:
             is_valid = verify_text(signature, self.request.user.id, self.request.get_host())
-        except:
+        except Exception:
             raise forms.ValidationError("网站已欠费，该功能暂停使用！", code='no_money')
         if not is_valid:
             raise forms.ValidationError("个性签名违规！", code='invalid_signature')

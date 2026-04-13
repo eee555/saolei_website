@@ -68,7 +68,7 @@ class WOM2Request_42(IWOM2Request):
     _unknown_num: int = 0
     _data_type_num: int = 42
 
-    def __init__(self, request_type: str, params: List[Any] = [], unknown_num: int = 0) -> None:
+    def __init__(self, request_type: str, params: List[Any], unknown_num: int = 0) -> None:
         super().__init__()
         self._request_type = request_type
         self._params = params

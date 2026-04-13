@@ -25,6 +25,7 @@ class ExceptionToResponse(Exception):
     - response()方法返回的JsonResponse需要Django框架支持
     """
     def __init__(self, obj: str, category: str):
+        super().__init__(obj, category)
         self.obj = obj
         self.category = category
 
