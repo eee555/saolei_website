@@ -49,7 +49,7 @@ class TestWOM(TestCase):
         self.count += 1
 
     def errorFunc(self, e: Exception):
-        print(f"Error: {e}")
+        print(f"Error: {e}")  # noqa: T201
 
 
 if __name__ == '__main__':

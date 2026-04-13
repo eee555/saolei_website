@@ -419,7 +419,7 @@ if __name__ == '__main__':
     with WOM2() as wom:
 
         # 使用自定义请求
-        print("获取录像信息")
+        print("获取录像信息")  # noqa: T201
         request = WOM2Request_42(
             'EnterGameController.enterGameWsAction',
             [3],
@@ -430,16 +430,16 @@ if __name__ == '__main__':
         response2 = WOM2Response_42()
         response1.from_string(responses[0])
         response2.from_string(responses[1])
-        print(response1.data)
-        print(response2.data)
+        print(response1.data)  # noqa: T201
+        print(response2.data)  # noqa: T201
 
         request = WOM2Request_42(
             'PlayersOnlineController.getPlayersOnlineCountWsAction',
             [],
             931,
         )
-        print("获取在线人数")
+        print("获取在线人数")  # noqa: T201
         responses = wom.request(request, timeout=50)
         response1 = WOM2Response_42()
         response1.from_string(responses[0])
-        print(response1.data)
+        print(response1.data)  # noqa: T201
