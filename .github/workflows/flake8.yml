@@ -34,7 +34,9 @@ jobs:
         pip install flake8-comprehensions
         pip install flake8-datetimez
         pip install flake8-encodings
+        pip install flake8-implicit-str-concat
         pip install flake8-import-order
+        pip install flake8-multiline-containers
         pip install flake8-print
 
     - name: Run Tests

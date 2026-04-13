@@ -176,7 +176,8 @@ def newest_queue(request: HttpRequest):
     newest_queue_ids = cache.hgetall("newest_queue")
     for key in list(newest_queue_ids.keys()):
         newest_queue_ids.update({
-            str(key, encoding="utf-8"): newest_queue_ids.pop(key)})
+            str(key, encoding="utf-8"): newest_queue_ids.pop(key)
+        })
     return JsonResponse(newest_queue_ids, encoder=ComplexEncoder)
 
 
@@ -204,7 +205,8 @@ def freeze_queue(request):
     freeze_queue_ids = cache.hgetall("freeze_queue")
     for key in list(freeze_queue_ids.keys()):
         freeze_queue_ids.update({
-            str(key, encoding="utf-8"): freeze_queue_ids.pop(key)})
+            str(key, encoding="utf-8"): freeze_queue_ids.pop(key)
+        })
     return JsonResponse(freeze_queue_ids, encoder=ComplexEncoder)
 
 
@@ -287,8 +289,10 @@ def freeze(request):
 
 
 # 管理员使用的操作接口，调用方式见前端的StaffView.vue
-get_videoModel_fields = ["player", "player__realname", "upload_time",
-                         "state", "software", "level", "mode", "timems", "bv", "bvs", "ongoing_tournament"]  # 可获取的域列表
+get_videoModel_fields = [
+    "player", "player__realname", "upload_time",
+    "state", "software", "level", "mode", "timems", "bv", "bvs", "ongoing_tournament"
+]  # 可获取的域列表
 for name in [field.name for field in ExpandVideoModel._meta.get_fields()]:
     get_videoModel_fields.append("video__" + name)
 
