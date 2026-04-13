@@ -266,7 +266,7 @@ class VideoModel(models.Model):
 
         userms.save(update_fields=[
             "video_num_limit", "video_num_total", "video_num_beg", "video_num_int",
-            "video_num_exp", "video_num_std", "video_num_nf", "video_num_ng", "video_num_dg"
+            "video_num_exp", "video_num_std", "video_num_nf", "video_num_ng", "video_num_dg",
         ])
 
     # 检查某录像是否打破个人纪录
@@ -326,7 +326,7 @@ class VideoModel(models.Model):
             "mode": mode,
             "level": self.level,
             "value": value,
-            "delta": delta
+            "delta": delta,
         }, cls=ComplexEncoder))
 
     def update_redis(self):

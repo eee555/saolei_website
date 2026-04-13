@@ -68,5 +68,5 @@ def get_capacity(request):
     virtual = psutil.virtual_memory()
     return JsonResponse({
         "d_t": disk.total, "d_u": disk.used, "v": video_size,
-        "v_t": virtual.total, "v_u": virtual.used
+        "v_t": virtual.total, "v_u": virtual.used,
     })

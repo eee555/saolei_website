@@ -18,8 +18,8 @@ class RestrictedImageField(ImageField):
                     '上传图片大小不能超过 %(max_size)s， 当前图片大小 %(file_size)s。',
                     params={
                         "max_size": filesizeformat(self.max_upload_size),
-                        "file_size": filesizeformat(file.size)
-                    }
+                        "file_size": filesizeformat(file.size),
+                    },
                 )
         except AttributeError:
             pass

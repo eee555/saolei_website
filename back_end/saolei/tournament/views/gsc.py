@@ -58,7 +58,7 @@ def get_GSC_tournament(request: HttpRequest):
             'end_time': tournament.end_time,
             'state': tournament.state,
             'token': tournament.token,
-        }
+        },
     })
 
 
