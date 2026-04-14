@@ -180,8 +180,7 @@ describe('GSC', () => {
 
     it('Admin validate', () => {
         cy.login(STAFF.username, STAFF.password);
-        cy.visit('/#/staff/');
-        cy.contains('比赛管理').click();
+        cy.visit('/#/staff/tournament');
 
         cy.contains('比赛ID').get('input').filter(':visible').clear();
         cy.contains('比赛ID').get('input').filter(':visible').type('1{enter}');
@@ -269,9 +268,9 @@ describe('GSC', () => {
         cy.contains('比赛结果');
 
         cy.login(STAFF.username, STAFF.password);
-        cy.visit('/#/staff/');
-        cy.contains('后台任务').click();
+        cy.visit('/#/staff/task');
 
+        cy.contains('READY');
         cy.get('table:visible').getTable().should((tableData) => {
             expect(tableData[0].status).to.equal('READY');
             expect(tableData[0].args_kwargs.replace(/\s/g, '')).to.equal('{"args":[4],"kwargs":{}}');
