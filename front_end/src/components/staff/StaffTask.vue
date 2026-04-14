@@ -10,6 +10,7 @@
     <pr-data-table
         v-model:filters="filters"
         v-model:selection="selectedTasks"
+        v-loading="loading"
         :value="taskData"
         filter-display="menu"
         paginator
@@ -64,13 +65,14 @@
 
 <script setup lang="ts">
 import { FilterMatchMode } from '@primevue/core/api';
-import { ElButton } from 'element-plus';
+import { ElButton, vLoading } from 'element-plus';
 import PrColumn from 'primevue/column';
 import PrDataTable from 'primevue/datatable';
 import PrSelect from 'primevue/select';
 import PrToolbar from 'primevue/toolbar';
 import { onMounted, ref } from 'vue';
 
+import { httpErrorNotification } from '@/components/Notifications';
 import { DjangoTaskResultStatus, DjangoTaskResultStatusOptions } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { utc_to_local_format } from '@/utils/system/tools';
@@ -100,15 +102,18 @@ const { proxy } = useCurrentInstance();
 
 const taskData = ref<TaskDetail[]>([]);
 const selectedTasks = ref<TaskDetail[]>([]);
+const loading = ref(false);
 
 const filters = ref({
     status: { value: null, matchMode: FilterMatchMode.EQUALS },
 });
 
 async function refresh() {
+    loading.value = true;
     await proxy.$axios.get('/common/staff/taskdetail/').then((response) => {
         taskData.value = response.data;
-    });
+    }).catch(httpErrorNotification);
+    loading.value = false;
 }
 
 onMounted(refresh);
