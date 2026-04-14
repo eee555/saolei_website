@@ -1,27 +1,27 @@
 <template>
     <el-tabs v-model="activeTab">
-        <el-tab-pane label="用户信息" name="userprofile">
+        <el-tab-pane label="用户信息" name="userprofile" lazy>
             <StaffUserProfile />
         </el-tab-pane>
-        <el-tab-pane label="录像信息" name="videomodel">
+        <el-tab-pane label="录像信息" name="videomodel" lazy>
             <StaffVideoModel />
         </el-tab-pane>
-        <el-tab-pane label="账号绑定" name="accountlink">
+        <el-tab-pane label="账号绑定" name="accountlink" lazy>
             <StaffAccountLink />
         </el-tab-pane>
-        <el-tab-pane label="标识管理" name="identifier">
+        <el-tab-pane label="标识管理" name="identifier" lazy>
             <StaffIdentifier />
         </el-tab-pane>
-        <el-tab-pane label="录像批量更新" name="batchupdate">
+        <el-tab-pane label="录像批量更新" name="batchupdate" lazy>
             <StaffBatchUpdateVideo />
         </el-tab-pane>
-        <el-tab-pane label="后台日志" name="logs">
+        <el-tab-pane label="后台日志" name="logs" lazy>
             <StaffLogs />
         </el-tab-pane>
-        <el-tab-pane label="比赛管理" name="tournament">
+        <el-tab-pane label="比赛管理" name="tournament" lazy>
             <StaffTournament />
         </el-tab-pane>
-        <el-tab-pane label="后台任务" name="task">
+        <el-tab-pane label="后台任务" name="task" lazy>
             <StaffTask />
         </el-tab-pane>
     </el-tabs>
