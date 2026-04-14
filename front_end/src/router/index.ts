@@ -70,7 +70,7 @@ const routes: Array<RouteRecordRaw> = [
     {
         path: '/staff',
         name: 'staff',
-        component: () => import('../views/StaffView.vue'),
+        component: () => import('../views/StaffView/App.vue'),
     },
     {
         path: '/tournament/:id',
