@@ -26,8 +26,7 @@ import VCodeBlock from '@wdns/vue-code-block';
 import { ElButton, ElTable, ElTableColumn } from 'element-plus';
 import { ref } from 'vue';
 
-import { httpErrorNotification } from '../../components/Notifications';
-
+import { httpErrorNotification } from '@/components/Notifications';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 interface FileStat {

@@ -32,14 +32,14 @@
 import { ElTabPane, ElTabs } from 'element-plus';
 import { ref } from 'vue';
 
-import StaffAccountLink from '@/components/staff/StaffAccountLink.vue';
-import StaffBatchUpdateVideo from '@/components/staff/StaffBatchUpdateVideo.vue';
-import StaffIdentifier from '@/components/staff/StaffIdentifier.vue';
-import StaffLogs from '@/components/staff/StaffLogs.vue';
-import StaffTask from '@/components/staff/StaffTask.vue';
-import StaffTournament from '@/components/staff/StaffTournament.vue';
-import StaffUserProfile from '@/components/staff/StaffUserProfile.vue';
-import StaffVideoModel from '@/components/staff/StaffVideoModel.vue';
+import StaffAccountLink from './AccountLink.vue';
+import StaffBatchUpdateVideo from './BatchUpdateVideo.vue';
+import StaffIdentifier from './Identifier.vue';
+import StaffLogs from './Logs.vue';
+import StaffTask from './Task.vue';
+import StaffTournament from './Tournament.vue';
+import StaffUserProfile from './UserProfile.vue';
+import StaffVideoModel from './VideoModel.vue';
 
 const activeTab = ref('userprofile');
 
