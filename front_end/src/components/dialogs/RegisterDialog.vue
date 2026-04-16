@@ -1,7 +1,7 @@
 <template>
     <el-dialog
         v-if="visible" :model-value="true" :title="t('login.registerTitle')" width="400px" align-center draggable
-        :lock-scroll="false" @closed="resetForm(ruleFormRef); visible = false"
+        :lock-scroll="false" @closed="resetForm(ruleFormRef); visible = false;"
     >
         <el-form ref="ruleFormRef" :model="registerForm" status-icon>
             <!-- 用户名 -->
@@ -93,7 +93,7 @@ const registerForm = reactive<RegisterForm>({
 const ruleFormRef = ref<FormInstance>();
 
 const email_state = computed(() => {
-    if (emailFormRef.value === undefined) return '';
+    if (!emailFormRef.value) return '';
     else return emailFormRef.value.validateState;
 });
 const confirm_disabled = computed(() => {
