@@ -2,7 +2,7 @@
     <el-text size="large">
         <ul>
             <li>
-                {{ t('helper.identifier.line_1_1') }}<BaseIconArbiter />{{ t('helper.identifier.line_1_2') }}<BaseIconMetasweeper />{{ t('helper.identifier.line_1_3') }}
+                {{ t('helper.identifier.line_1_1') }}<SoftwareIcon software="a" />{{ t('helper.identifier.line_1_2') }}<SoftwareIcon software="m" />{{ t('helper.identifier.line_1_3') }}
             </li>
             <li>
                 {{ t('helper.identifier.line_2_1') }}
@@ -31,8 +31,7 @@
 import { ElText } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
-import BaseIconArbiter from '@/components/common/BaseIconArbiter.vue';
-import BaseIconMetasweeper from '@/components/common/BaseIconMetasweeper.vue';
+import SoftwareIcon from '@/components/widgets/SoftwareIcon.vue';
 import VideoStateIcon from '@/components/widgets/VideoStateIcon.vue';
 import { MS_State } from '@/utils/ms_const';
 

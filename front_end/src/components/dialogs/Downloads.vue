@@ -8,19 +8,19 @@
             <el-tabs tab-position="left" style="height: 350px; width: 700px; justify-self: center;">
                 <el-tab-pane>
                     <template #label>
-                        <BaseIconMetasweeper />
+                        <SoftwareIcon software="m" />
                     </template>
                     <MetasweeperHelper />
                 </el-tab-pane>
                 <el-tab-pane>
                     <template #label>
-                        <BaseIconArbiter />
+                        <SoftwareIcon software="a" />
                     </template>
                     <ArbiterHelper />
                 </el-tab-pane>
                 <el-tab-pane>
                     <template #label>
-                        <BaseIconViennasweeper />
+                        <SoftwareIcon software="r" />
                     </template>
                     <ViennaSweeperHelper />
                 </el-tab-pane>
@@ -33,13 +33,11 @@
 import { ElTabPane, ElTabs } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
-import BaseIconArbiter from '@/components/common/BaseIconArbiter.vue';
-import BaseIconMetasweeper from '@/components/common/BaseIconMetasweeper.vue';
-import BaseIconViennasweeper from '@/components/common/BaseIconViennasweeper.vue';
 import BaseOverlay from '@/components/common/BaseOverlay.vue';
 import ArbiterHelper from '@/components/dialogs/ArbiterHelper.vue';
 import MetasweeperHelper from '@/components/dialogs/MetasweeperHelper.vue';
 import ViennaSweeperHelper from '@/components/dialogs/ViennaSweeperHelper.vue';
+import SoftwareIcon from '@/components/widgets/SoftwareIcon.vue';
 
 const { t } = useI18n();
 

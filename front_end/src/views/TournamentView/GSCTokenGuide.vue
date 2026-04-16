@@ -2,7 +2,7 @@
     <el-tabs>
         <el-tab-pane>
             <template #label>
-                <BaseIconMetasweeper />
+                <SoftwareIcon software="e" />
             </template>
             <el-text v-if="token === ''">
                 {{ t('gsc.identifierGuide.metasweeper.preparing') }}
@@ -16,7 +16,7 @@
         </el-tab-pane>
         <el-tab-pane>
             <template #label>
-                <BaseIconArbiter />
+                <SoftwareIcon software="a" />
             </template>
             <el-text v-if="token === ''">
                 {{ t('gsc.identifierGuide.arbiter.preparing') }}
@@ -52,10 +52,9 @@ import { ElButton, ElInput, ElTabPane, ElTabs, ElText } from 'element-plus';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import BaseIconArbiter from '@/components/common/BaseIconArbiter.vue';
-import BaseIconMetasweeper from '@/components/common/BaseIconMetasweeper.vue';
 import { httpErrorNotification, successNotification, unknownErrorNotification } from '@/components/Notifications';
 import IconCopy from '@/components/widgets/IconCopy.vue';
+import SoftwareIcon from '@/components/widgets/SoftwareIcon.vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const props = defineProps({

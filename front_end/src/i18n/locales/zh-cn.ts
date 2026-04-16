@@ -109,6 +109,9 @@ export default {
         software: {
             software_download: '软件下载',
         },
+        softwareName: {
+            e: '元扫雷',
+        },
         state: {
             a: '审核中',
             b: '已冻结',

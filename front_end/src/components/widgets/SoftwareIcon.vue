@@ -1,30 +1,39 @@
 <template>
-    <BaseIconArbiter v-if="software == 'a'" />
-    <BaseIconMetasweeper v-else-if="software == 'e'" />
-    <BaseIconViennasweeper v-else-if="software == 'r'" />
-    <BaseIconClone07 v-else-if="software == 'm'" />
-    <span v-else type="danger" class="text-normal">
-        <base-icon-question />
-    </span>
+    <tippy v-if="local.tooltip_show" :delay="[500, 0]">
+        <img style="width: 16px; height: 16px" :src="iconSrc">
+        <template #content>
+            <span class="text-normal">{{ t(`common.software.${software}`) }}</span>
+        </template>
+    </tippy>
+    <img v-else style="width: 16px; height: 16px" :src="iconSrc">
 </template>
 
 <script setup lang="ts">
 import '@/styles/text.css';
 
-import { PropType } from 'vue';
+import { computed, PropType } from 'vue';
+import { useI18n } from 'vue-i18n';
 
-import BaseIconClone07 from '../common/BaseIconClone07.vue';
-import BaseIconViennasweeper from '../common/BaseIconViennasweeper.vue';
-
-import BaseIconArbiter from '@/components/common/BaseIconArbiter.vue';
-import BaseIconMetasweeper from '@/components/common/BaseIconMetasweeper.vue';
-import { BaseIconQuestion } from '@/components/common/icon';
+import { local } from '@/store';
+import { ArbiterIcon, Clone07Icon, MetasweeperIcon, ViennaIconLegacy, ViennaIconNew } from '@/utils/assets';
 import { MS_Software } from '@/utils/ms_const';
 
-defineProps({
+const { t } = useI18n();
+
+const props = defineProps({
     software: {
         type: String as PropType<MS_Software>,
-        default: 'u',
+        required: true,
     },
+});
+
+const iconSrc = computed(() => {
+    switch (props.software) {
+        case 'a': return ArbiterIcon;
+        case 'e': return MetasweeperIcon;
+        case 'r': return local.value.vienna_logo_legacy ? ViennaIconLegacy : ViennaIconNew;
+        case 'm': return Clone07Icon;
+        default: return '';
+    }
 });
 </script>
