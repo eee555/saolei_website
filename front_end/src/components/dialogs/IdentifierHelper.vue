@@ -1,5 +1,5 @@
 <template>
-    <el-text size="large">
+    <span class="text text-medium">
         <ul>
             <li>
                 {{ t('helper.identifier.line_1_1') }}<SoftwareIcon software="a" />{{ t('helper.identifier.line_1_2') }}<SoftwareIcon software="m" />{{ t('helper.identifier.line_1_3') }}
@@ -23,12 +23,12 @@
                 {{ t('helper.identifier.line_4_4') }}
             </li>
         </ul>
-    </el-text>
+    </span>
 </template>
 
 <script lang="ts" setup>
 
-import { ElText } from 'element-plus';
+import '@/styles/text.css';
 import { useI18n } from 'vue-i18n';
 
 import SoftwareIcon from '@/components/widgets/SoftwareIcon.vue';

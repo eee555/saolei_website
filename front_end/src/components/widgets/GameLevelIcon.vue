@@ -1,20 +1,20 @@
 <template>
     <base-tooltip v-if="level == 'b'" :show-delay="500">
-        <span class="text-normal">{{ t('common.level.b') }}</span>
+        <span class="text">{{ t('common.level.b') }}</span>
         <template #content>
-            <span class="text-small">8x8/10</span>
+            <span class="text text-small">8x8/10</span>
         </template>
     </base-tooltip>
     <base-tooltip v-else-if="level == 'i'" :show-delay="500">
-        <span class="text-normal">{{ t('common.level.i') }}</span>
+        <span class="text">{{ t('common.level.i') }}</span>
         <template #content>
-            <span class="text-small">16x16/40</span>
+            <span class="text text-small">16x16/40</span>
         </template>
     </base-tooltip>
     <base-tooltip v-else-if="level == 'e'" :show-delay="500">
-        <span class="text-normal">{{ t('common.level.e') }}</span>
+        <span class="text">{{ t('common.level.e') }}</span>
         <template #content>
-            <span class="text-small">30x16/99</span>
+            <span class="text text-small">30x16/99</span>
         </template>
     </base-tooltip>
 </template>

@@ -1,14 +1,14 @@
 <template>
     <div style="text-align: center;">
         <base-file-input :accept="'.avf,.evf,.rmv,.mvf'" :disabled="store.isUserAnonymous || isParsing || isUploading" :style="{ height: uploadQueue.length > 0 ? '50px' : '300px' }" @add="handleFileChange">
-            <span v-if="store.isUserAnonymous" class="text-large">
+            <span v-if="store.isUserAnonymous" class="text text-large">
                 {{ t('common.msg.realNameRequired') }}
             </span>
             <div v-else>
-                <div class="text-large" style="padding: 0.1em">
+                <div class="text text-large" style="padding: 0.1em; color: auto;">
                     {{ t('profile.upload.dragOrClick') }}
                 </div>
-                <div class="text-small" style="padding: 0.1em">
+                <div class="text text-small" style="padding: 0.1em; color: auto;">
                     {{ t('profile.upload.constraintNote') }}
                 </div>
             </div>
@@ -16,7 +16,7 @@
     </div>
     <div style="height: 1rem" />
     <div v-if="uploadQueue.length > 0">
-        <span class="text-normal">
+        <span class="text">
             {{ t('profile.upload.selected', [selectedQueue.length, uploadQueue.length]) }}
         </span>
         &nbsp;
@@ -28,7 +28,7 @@
         </el-button>
     </div>
     <div v-if="isParsing" style="margin-top: 1em;">
-        <span class="text-normal">
+        <span class="text">
             {{ t('profile.upload.parsing', [parserProgress.parsed, parserProgress.total]) }}
         </span>
         &nbsp;
@@ -40,7 +40,7 @@
         />
     </div>
     <div v-if="isUploading" style="margin-top: 1em;">
-        <span class="text-normal">
+        <span class="text">
             {{ t('profile.upload.uploading', [uploadProgress.uploaded + uploadProgress.failed, uploadProgress.total]) }}
         </span>
         &nbsp;

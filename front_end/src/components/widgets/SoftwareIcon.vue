@@ -2,7 +2,7 @@
     <tippy v-if="local.tooltip_show" :delay="[500, 0]">
         <img style="width: 16px; height: 16px" :src="iconSrc">
         <template #content>
-            <span class="text-normal">{{ t(`common.software.${software}`) }}</span>
+            <span class="text">{{ t(`common.software.${software}`) }}</span>
         </template>
     </tippy>
     <img v-else style="width: 16px; height: 16px" :src="iconSrc">

@@ -1,5 +1,5 @@
 <template>
-    <el-text tag="div" size="large">
+    <div class="text text-medium">
         <ul>
             <li>
                 {{ t('helper.saoleiImport.line_1') }}
@@ -14,11 +14,11 @@
                 {{ t('helper.saoleiImport.line_4') }}
             </li>
         </ul>
-    </el-text>
+    </div>
 </template>
 
 <script setup lang="ts">
-import { ElText } from 'element-plus';
+import '@/styles/text.css';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();

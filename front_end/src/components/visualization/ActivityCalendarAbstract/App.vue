@@ -32,7 +32,7 @@
                         <div
                             v-for="date of dateRange"
                             :key="date.toISOString()"
-                            class="text-normal"
+                            class="text"
                             :style="{
                                 width: `${options.cellSize}px`,
                                 height: `${options.cellSize}px`,

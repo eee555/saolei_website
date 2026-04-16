@@ -3,9 +3,9 @@
         <div style="margin-bottom: 0.5em;">
             <pr-toolbar>
                 <template #start>
-                    <el-text size="large">
+                    <span class="text text-medium">
                         Minesweeper.Online&nbsp;#{{ id }}
-                    </el-text>
+                    </span>
                 </template>
                 <template #end>
                     <CarouselControl :ref-carousel="refCarousel" :length="carouselLength" />
@@ -53,35 +53,35 @@
                         {{ info.last_season }}
                     </el-descriptions-item>
                     <el-descriptions-item :label="t('accountlink.womResource')" :span="3">
-                        <el-image src="https://minesweeper.online/img/other/hp.svg" class="icon" /><el-text style="vertical-align: middle;">
+                        <el-image src="https://minesweeper.online/img/other/hp.svg" class="icon" /><span class="text">
                             {{ info.honour }}
-                        </el-text>&nbsp;
-                        <el-image src="https://minesweeper.online/img/other/coin.svg" class="icon" /><el-text style="vertical-align: middle;">
+                        </span>&nbsp;
+                        <el-image src="https://minesweeper.online/img/other/coin.svg" class="icon" /><span class="text">
                             {{ info.minecoin }}
-                        </el-text>&nbsp;
-                        <el-image src="https://minesweeper.online/img/gems/0.svg" class="icon" /><el-text style="vertical-align: middle;">
+                        </span>&nbsp;
+                        <el-image src="https://minesweeper.online/img/gems/0.svg" class="icon" /><span class="text">
                             {{ info.gem }}
-                        </el-text>&nbsp;
-                        <el-image src="https://minesweeper.online/img/arena-coins/0.svg" class="icon" /><el-text style="vertical-align: middle;">
+                        </span>&nbsp;
+                        <el-image src="https://minesweeper.online/img/arena-coins/0.svg" class="icon" /><span class="text">
                             {{ info.coin }}
-                        </el-text>&nbsp;
-                        <Ticket class="icon" /><el-text style="vertical-align: middle;">
+                        </span>&nbsp;
+                        <Ticket class="icon" /><span class="text">
                             {{ info.arena_ticket }}
-                        </el-text>&nbsp;
-                        <el-image src="https://minesweeper.online/img/eq.svg" class="icon" /><el-text style="vertical-align: middle;">
+                        </span>&nbsp;
+                        <el-image src="https://minesweeper.online/img/eq.svg" class="icon" /><span class="text">
                             {{ info.equipment }}
-                        </el-text>&nbsp;
-                        <el-image src="https://minesweeper.online/img/item/parts0.svg" class="icon" /><el-text style="vertical-align: middle;">
+                        </span>&nbsp;
+                        <el-image src="https://minesweeper.online/img/item/parts0.svg" class="icon" /><span class="text">
                             {{ info.part }}
-                        </el-text>&nbsp;
+                        </span>&nbsp;
                     </el-descriptions-item>
                 </el-descriptions>
             </el-carousel-item>
             <el-carousel-item v-if="store.user.id == store.player.id">
                 <div>
-                    <el-text size="large">
+                    <span class="text text-large">
                         {{ t('accountlink.statSummary') }}
-                    </el-text>
+                    </span>
                     &nbsp;
                     <el-button @click="updateLink(); $emit('refresh')">
                         {{ t('accountlink.synchronize') }}
@@ -89,9 +89,9 @@
                     &nbsp;
                     <icon-task-status :status="taskStatus" />
                     <br>
-                    <el-text size="small" type="danger">
+                    <span class="text text-danger text-small">
                         {{ errorMsg }}
-                    </el-text>
+                    </span>
                 </div>
             </el-carousel-item>
         </el-carousel>
@@ -100,7 +100,7 @@
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElCarousel, ElCarouselItem, ElDescriptions, ElDescriptionsItem, ElImage, ElText } from 'element-plus';
+import { ElButton, ElCarousel, ElCarouselItem, ElDescriptions, ElDescriptionsItem, ElImage } from 'element-plus';
 import PrToolbar from 'primevue/toolbar';
 import { computed, PropType, ref } from 'vue';
 import { useI18n } from 'vue-i18n';

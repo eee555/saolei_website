@@ -19,7 +19,7 @@
                             </el-link>
                         </template>
                         <div v-for="news in news_queue">
-                            <span class="text-normal">
+                            <span class="text">
                                 {{ utc_to_local_format(news.time) }}
                             </span>
                             &nbsp;
@@ -28,12 +28,12 @@
                                 :user-name="news.player"
                             />
                             &nbsp;
-                            <span class="text-normal">
+                            <span class="text">
                                 {{ t('news.breakRecordTo', {mode: t(`common.mode.${news.mode}`), level: t(`common.level.${news.level}`), stat: t(`common.prop.${news.index}`)}) }}
                             </span>
                             &nbsp;
                             <PreviewNumber :id="news.video_id" :text="to_fixed_n(news.value, 3)" />
-                            <span class="text-normal">
+                            <span class="text">
                                 {{ news.delta == "新" ? "" : news.delta > 0 ? "↑" : "↓" }}{{ news.delta }}
                             </span>
                         </div>

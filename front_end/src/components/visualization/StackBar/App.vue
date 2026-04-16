@@ -12,7 +12,7 @@
         <span v-for="item in data" :key="item.name" style="margin: 0 0.2em">
             <template v-if="item.value > 0">
                 <span class="dot" :style="{ background: item.color }" />
-                <span class="text-normal">
+                <span class="text">
                     {{ item.name }}: {{ (item.value / sumValue * 100).toFixed(0) }}%({{ item.value }})
                 </span>
             </template>

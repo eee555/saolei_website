@@ -3,9 +3,9 @@
         <div style="margin-bottom: 0.5em;">
             <pr-toolbar>
                 <template #start>
-                    <el-text size="large">
+                    <span class="text text-medium">
                         Authoritative Minesweeper&nbsp;#{{ id }}
-                    </el-text>
+                    </span>
                 </template>
             </pr-toolbar>
         </div>
