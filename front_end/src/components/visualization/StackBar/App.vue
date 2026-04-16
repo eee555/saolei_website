@@ -2,9 +2,9 @@
     <div style="height: 0.3em; display: flex; align-items: center;">
         <base-tooltip v-for="(item, index) in data" :key="item.name" :data-cy="item.name" :show-delay="200" :style="{ width: `${(item.value / sumValue * 100)}%`, height: '100%', background: item.color, borderTopLeftRadius: index === 0 ? '0.1em' : '0', borderBottomLeftRadius: index === 0 ? '0.1em' : '0', borderTopRightRadius: index === prop.data.length - 1 ? '0.1em' : '0', borderBottomRightRadius: index === prop.data.length - 1 ? '0.1em' : '0'}">
             <template #content>
-                <el-text>
+                <span class="text">
                     {{ item.name }}: {{ (item.value / sumValue * 100).toFixed(0) }}%({{ item.value }})
-                </el-text>
+                </span>
             </template>
         </base-tooltip>
     </div>
@@ -24,7 +24,6 @@
 import '@/styles/text.css';
 
 import { sum } from 'd3-array';
-import { ElText } from 'element-plus';
 import { computed } from 'vue';
 
 import BaseTooltip from '@/components/common/BaseTooltip.vue';
