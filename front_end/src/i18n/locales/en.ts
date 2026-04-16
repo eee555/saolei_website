@@ -469,12 +469,7 @@ export default {
     },
     setting: {
         appearance: 'Appearance',
-        colorscheme: {
-            auto: 'auto',
-            dark: 'dark',
-            light: 'light',
-            title: 'Color scheme',
-        },
+        colorscheme: 'Color scheme',
         experimentalFeature: 'Experimental Features',
         languageSwitch: 'Language Switch',
         menuFontSize: 'Menu Font Size',

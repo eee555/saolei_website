@@ -467,12 +467,7 @@ export default {
     },
     setting: {
         appearance: '外观设置',
-        colorscheme: {
-            auto: '自动',
-            dark: '深色',
-            light: '浅色',
-            title: '颜色主题',
-        },
+        colorscheme: '颜色主题',
         experimentalFeature: '实验功能',
         languageSwitch: '语言切换',
         menuFontSize: '菜单字号',
