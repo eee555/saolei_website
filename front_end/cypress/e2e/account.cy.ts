@@ -30,13 +30,13 @@ describe('User Authentication', () => {
         cy.contains('注册').click();
         cy.contains('用户注册').should('be.visible');
         cy.contains('用户注册').next().click();
-        cy.contains('用户注册').should('not.be.visible');
+        cy.contains('用户注册').should('not.exist');
 
         // 打开并关闭登录界面
         cy.contains('登录').click();
         cy.contains('用户登录').should('be.visible');
         cy.contains('用户登录').next().click();
-        cy.contains('用户登录').should('not.be.visible');
+        cy.contains('用户登录').should('not.exist');
     });
 
     it('Register', () => {
@@ -49,6 +49,8 @@ describe('User Authentication', () => {
         cy.contains('邮箱').next().find('input').type('testUser@example.com');
         cy.contains('图形验证码').next().find('input').type('test');
         cy.contains('发送').click();
+        cy.contains('邮件发送成功');
+        cy.closeElNotifications();
         cy.contains('邮箱验证码').next().find('input').type('abcdef');
         cy.contains('密码').next().find('input').type('testPassword');
         cy.contains('确认密码').next().find('input').type('testPassword');
@@ -57,7 +59,7 @@ describe('User Authentication', () => {
         // 完成注册
         cy.contains('用户注册').parent().parent().find('button').contains('注册').click();
         cy.contains('注册成功');
-        cy.contains('用户注册').should('not.be.visible');
+        cy.contains('用户注册').should('not.exist');
 
         // 退出登录
         expectLoggedIn();
@@ -79,7 +81,7 @@ describe('User Authentication', () => {
 
         // 完成登录
         cy.contains('用户登录').parent().parent().find('button').contains('登录').click();
-        cy.contains('用户登录').should('not.be.visible');
+        cy.contains('用户登录').should('not.exist');
         expectLoggedIn();
 
         // 刷新页面
@@ -98,7 +100,7 @@ describe('User Authentication', () => {
         cy.contains('验证码').next().find('input').type('test');
         cy.contains('记住我').click();
         cy.contains('用户登录').parent().parent().find('button').contains('登录').click();
-        cy.contains('用户登录').should('not.be.visible');
+        cy.contains('用户登录').should('not.exist');
         expectLoggedIn();
 
         // 刷新
@@ -127,20 +129,23 @@ describe('User Authentication', () => {
         // 打开找回密码界面
         cy.contains('忘记密码').click();
         cy.contains('修改密码').should('be.visible');
-        cy.contains('用户登录').should('not.be.visible');
+        cy.contains('用户登录').should('not.exist');
 
         // 填写找回密码信息
         cy.contains('邮箱').next().find('input').type('testUser@example.com');
         cy.contains('图形验证码').next().find('input').type('test');
         cy.contains('发送').click();
+        cy.contains('邮件发送成功');
+        cy.closeElNotifications();
         cy.contains('邮箱验证码').next().find('input').type('abcdef');
         cy.get('label').filter(':visible').contains(/^密码$/).next().find('input').type('newPassword');
         cy.contains('确认密码').next().find('input').type('newPassword{enter}');
 
         // 完成找回密码
         cy.contains('修改密码').parent().parent().find('button').contains('确认').click();
-        cy.contains('修改密码').should('not.be.visible');
+        cy.contains('修改密码成功');
         cy.closeElNotifications();
+        cy.contains('修改密码').should('not.exist');
         expectLoggedIn();
 
         cy.reload();

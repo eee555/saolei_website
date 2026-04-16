@@ -3,8 +3,8 @@
         {{ t('footer.team') }}
     </el-link>
     <el-dialog
-        v-model="centerDialogVisible" :title="t('team.title')" width="700px" align-center draggable
-        :lock-scroll="false"
+        v-if="centerDialogVisible" :model-value="true" :title="t('team.title')" width="700px" align-center draggable
+        :lock-scroll="false" @closed="centerDialogVisible = false;"
     >
         <div style="padding-bottom: 5px">
             <strong>{{ t('team.owner') }}</strong>

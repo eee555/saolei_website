@@ -1,7 +1,7 @@
 <template>
     <el-dialog
-        v-model="visible" :title="t('login.loginTitle')" width="400px" align-center draggable
-        :lock-scroll="false" @close="resetForm(ruleFormRef); emit('close')"
+        v-if="visible" :model-value="true" :title="t('login.loginTitle')" width="400px" align-center draggable
+        :lock-scroll="false" @closed="resetForm(ruleFormRef); visible = false;"
     >
         <el-form ref="ruleFormRef" :rules="rules" :model="loginForm">
             <!-- 用户名 -->
@@ -53,7 +53,7 @@ import ValidCode from '@/components/ValidCode.vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const visible = defineModel({ type: Boolean, default: false });
-const emit = defineEmits(['close', 'forgetPassword', 'login']);
+const emit = defineEmits(['forgetPassword', 'login']);
 
 const { t } = useI18n();
 const { proxy } = useCurrentInstance();
