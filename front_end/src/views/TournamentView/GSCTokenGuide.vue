@@ -4,24 +4,24 @@
             <template #label>
                 <SoftwareIcon software="e" />
             </template>
-            <el-text v-if="token === ''">
+            <span v-if="token === ''" class="text">
                 {{ t('gsc.identifierGuide.metasweeper.preparing') }}
-            </el-text>
-            <el-text v-else>
+            </span>
+            <span v-else class="text">
                 {{ t('gsc.identifierGuide.metasweeper.ongoing_1') }}
                 <span class="ttfamily">{{ token }}</span>
                 <IconCopy :text="token" />
                 {{ t('gsc.identifierGuide.metasweeper.ongoing_2') }}
-            </el-text>
+            </span>
         </el-tab-pane>
         <el-tab-pane>
             <template #label>
                 <SoftwareIcon software="a" />
             </template>
-            <el-text v-if="token === ''">
+            <span v-if="token === ''" class="text">
                 {{ t('gsc.identifierGuide.arbiter.preparing') }}
-            </el-text>
-            <el-text v-else-if="identifier === ''">
+            </span>
+            <span v-else-if="identifier === ''" class="text">
                 {{ t('gsc.identifierGuide.arbiter.ongoing_pre1') }}
                 <span class="ttfamily">{{ token }}</span>
                 <IconCopy :text="token" />
@@ -31,27 +31,28 @@
                 <el-button @click="registerToken">
                     {{ t('common.button.register') }}
                 </el-button>
-                <el-text v-if="errorText !== ''" type="danger">
+                <span v-if="errorText !== ''" class="text text-danger">
                     {{ errorText }}
-                </el-text>
-            </el-text>
-            <el-text v-else>
+                </span>
+            </span>
+            <span v-else class="text">
                 {{ t('gsc.identifierGuide.arbiter.ongoing_post1') }}
                 <span class="ttfamily">{{ identifier }}</span>
                 &nbsp;
                 <IconCopy :text="identifier" />
                 {{ t('gsc.identifierGuide.arbiter.ongoing_post2') }}
-            </el-text>
+            </span>
         </el-tab-pane>
     </el-tabs>
 </template>
 
 <script setup lang="ts">
 
-import { ElButton, ElInput, ElTabPane, ElTabs, ElText } from 'element-plus';
+import { ElButton, ElInput, ElTabPane, ElTabs } from 'element-plus';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import '@/styles/text.css';
 import { httpErrorNotification, successNotification, unknownErrorNotification } from '@/components/Notifications';
 import IconCopy from '@/components/widgets/IconCopy.vue';
 import SoftwareIcon from '@/components/widgets/SoftwareIcon.vue';
