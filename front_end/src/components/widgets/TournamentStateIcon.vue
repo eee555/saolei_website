@@ -1,12 +1,12 @@
 <template>
-    <el-text :type="types[state]">
+    <span :class="['text', classes[state]]">
         {{ t(`tournament.state.${state}`) }}
-    </el-text>
+    </span>
 </template>
 
 <script setup lang="ts">
 
-import { ElText } from 'element-plus';
+import '@/styles/text.css';
 import { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -21,13 +21,13 @@ defineProps({
 
 const { t } = useI18n();
 
-const types = {
-    [TournamentState.Pending]: 'primary',
-    [TournamentState.Preparing]: 'warning',
-    [TournamentState.Ongoing]: 'danger',
-    [TournamentState.Finished]: 'success',
-    [TournamentState.Awarded]: 'info',
-    [TournamentState.Cancelled]: 'info',
+const classes = {
+    [TournamentState.Pending]: 'text-primary',
+    [TournamentState.Preparing]: 'text-warning',
+    [TournamentState.Ongoing]: 'text-danger',
+    [TournamentState.Finished]: 'text-success',
+    [TournamentState.Awarded]: 'text-info',
+    [TournamentState.Cancelled]: 'text-info',
 } as const;
 
 </script>
