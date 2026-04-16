@@ -19,6 +19,10 @@
     font-size: var(--el-font-size-extra-small);
 }
 
+.text-regular {
+    color: var(--el-text-color-regular);
+}
+
 .text-primary {
     color: var(--el-color-primary);
 }
