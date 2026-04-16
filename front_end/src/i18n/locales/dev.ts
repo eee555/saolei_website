@@ -40,5 +40,10 @@ export default {
             r: 'Rmv',
             m: 'Mvf',
         },
+        softwareName: {
+            a: 'Minesweeper Arbiter',
+            r: 'Viennasweeper',
+            m: 'Clone 2007',
+        },
     },
 };

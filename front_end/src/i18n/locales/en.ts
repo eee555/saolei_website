@@ -111,6 +111,9 @@ export default {
         software: {
             software_download: 'Software Downloads',
         },
+        softwareName: {
+            e: 'Metasweeper',
+        },
         state: {
             a: 'Pending',
             b: 'Frozen',
