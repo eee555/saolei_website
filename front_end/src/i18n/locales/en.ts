@@ -454,15 +454,6 @@ export default {
         },
     },
     server: {
-        diskUsage: {
-            title: 'Disk Usage',
-            label: {
-                video: 'Videos',
-                db: 'Database',
-                other: 'Other',
-                free: 'Free',
-            },
-        },
         videoSummary: {
             title: 'Video Summary',
         },
