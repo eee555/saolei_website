@@ -107,6 +107,7 @@ import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Tippy } from 'vue-tippy';
 
+import '@/styles/text.css';
 import BaseTooltip from '@/components/common/BaseTooltip.vue';
 import ExperimentalFeature from '@/components/ExperimentalFeature.vue';
 import ColorSchemeSetting from '@/components/visualization/ColorSchemeSetting.vue';

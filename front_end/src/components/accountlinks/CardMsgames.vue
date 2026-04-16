@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { ElDescriptions, ElDescriptionsItem, ElText } from 'element-plus';
+import { ElDescriptions, ElDescriptionsItem } from 'element-plus';
 import PrToolbar from 'primevue/toolbar';
 import { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';

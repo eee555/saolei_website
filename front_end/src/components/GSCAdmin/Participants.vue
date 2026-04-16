@@ -19,7 +19,7 @@
                 计算排行并结束比赛
             </el-button>
             <br>
-            <span class="text" v-for="(log, index) in logList" :key="index" :style="{ display: 'block' }">
+            <span v-for="(log, index) in logList" :key="index" class="text" :style="{ display: 'block' }">
                 {{ log }}
             </span>
         </el-col>
