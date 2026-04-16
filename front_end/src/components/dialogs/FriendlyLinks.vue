@@ -2,7 +2,7 @@
 
 <template>
     <span class="text-button" @click="centerDialogVisible = true;">{{ t('menu.links') }}</span>
-    <el-dialog v-model="centerDialogVisible" title="友链" width="50%" align-center draggable :lock-scroll="false">
+    <el-dialog v-if="centerDialogVisible" :model-value="true" title="友链" width="50%" align-center draggable :lock-scroll="false" @closed="centerDialogVisible = false">
         <ul>
             <li>
                 <a target="_blank" href="https://gitee.com/ee55/saolei_website/issues">本站码云主页</a>

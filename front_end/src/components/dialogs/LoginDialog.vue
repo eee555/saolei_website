@@ -1,7 +1,7 @@
 <template>
     <el-dialog
-        v-model="visible" :title="t('login.loginTitle')" width="400px" align-center draggable
-        :lock-scroll="false" @close="resetForm(ruleFormRef); emit('close')"
+        v-if="visible" :model-value="true" :title="t('login.loginTitle')" width="400px" align-center draggable
+        :lock-scroll="false" @closed="resetForm(ruleFormRef); visible = false; emit('close')"
     >
         <el-form ref="ruleFormRef" :rules="rules" :model="loginForm">
             <!-- 用户名 -->
