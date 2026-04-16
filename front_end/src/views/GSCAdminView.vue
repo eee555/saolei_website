@@ -1,7 +1,7 @@
 <template>
-    <el-text>第</el-text>
+    <span class="text">第</span>
     <el-input-number v-model="gscID" size="small" :min="0" />
-    <el-text>届</el-text>
+    <span class="text">届</span>
     <br>
     <el-tabs v-model="currentTab">
         <el-tab-pane label="基本信息" name="general" lazy>
@@ -15,9 +15,10 @@
 
 <script setup lang="ts">
 
-import { ElInputNumber, ElTabPane, ElTabs, ElText } from 'element-plus';
+import { ElInputNumber, ElTabPane, ElTabs } from 'element-plus';
 import { ref } from 'vue';
 
+import '@/styles/text.css';
 import GSCGeneralInfo from '@/components/GSCAdmin/GeneralInfo.vue';
 import GSCParticipants from '@/components/GSCAdmin/Participants.vue';
 

@@ -9,15 +9,16 @@
         停止！
     </el-button><br>
     客户端会将需要处理的ID段按照批处理数量发送到服务器进行批处理。批处理数量越大，服务器处理效率越高，但是如果批处理数量过大，会导致连接超时。
-    <el-text v-for="(log, index) in logList" :key="index" :style="{ display: 'block' }">
+    <span v-for="(log, index) in logList" :key="index" class="text" :style="{ display: 'block' }">
         {{ log }}
-    </el-text>
+    </span>
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElInputNumber, ElText } from 'element-plus';
+import { ElButton, ElInputNumber } from 'element-plus';
 import { ref } from 'vue';
 
+import '@/styles/text.css';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const { proxy } = useCurrentInstance();

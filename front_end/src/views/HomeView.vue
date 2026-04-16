@@ -6,11 +6,11 @@
                     <el-tab-pane v-loading="news_queue_status == 1" style="max-height: 300px; overflow: auto;user-select: none;">
                         <template #label>
                             {{ t('home.news') }}&nbsp;
-                            <el-text v-if="news_queue_status == 2" type="success">
+                            <span v-if="news_queue_status == 2" class="text text-success">
                                 <el-icon>
                                     <Check />
                                 </el-icon>
-                            </el-text>
+                            </span>
                             <el-link
                                 v-else-if="active_tab == 'newest'" underline="never"
                                 :disabled="news_queue_status != 0" style="vertical-align: baseline;" @click="update_news_queue"
@@ -43,11 +43,11 @@
                     <el-tab-pane v-loading="newest_queue_status == 1" class="bottom_tabs" :lazy="true" name="newest">
                         <template #label>
                             {{ t('home.latestScore') }}&nbsp;
-                            <el-text v-if="newest_queue_status == 2" type="success">
+                            <span v-if="newest_queue_status == 2" class="text text-success">
                                 <el-icon>
                                     <Check />
                                 </el-icon>
-                            </el-text>
+                            </span>
                             <el-link
                                 v-else-if="active_tab == 'newest'" underline="never"
                                 :disabled="newest_queue_status != 0" style="vertical-align: baseline;" @click="update_newest_queue"
@@ -69,7 +69,7 @@
 <script setup lang='ts'>
 import '@/styles/text.css';
 
-import { ElContainer, ElIcon, ElLink, ElMain, ElTabPane, ElTabs, ElText, vLoading } from 'element-plus';
+import { ElContainer, ElIcon, ElLink, ElMain, ElTabPane, ElTabs, vLoading } from 'element-plus';
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 

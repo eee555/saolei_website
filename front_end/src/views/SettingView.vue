@@ -52,11 +52,11 @@
             <base-tooltip>
                 <el-input-number v-model="local.notification_duration" size="small" :min="0" :step="1000" />
                 <template #content>
-                    <el-text>
+                    <span class="text">
                         {{ t('setting.notificationDurationTooltip1') }}
                         <br>
                         {{ t('setting.notificationDurationTooltip2') }}
-                    </el-text>
+                    </span>
                 </template>
             </base-tooltip>
         </el-descriptions-item>
@@ -64,9 +64,9 @@
             <base-tooltip>
                 <el-switch v-model="local.tooltip_show" />
                 <template #content>
-                    <el-text>
+                    <span class="text">
                         {{ t('setting.newUserGuideTooltip') }}
-                    </el-text>
+                    </span>
                 </template>
             </base-tooltip>
         </el-descriptions-item>
@@ -102,7 +102,7 @@
 </template>
 
 <script lang="ts" setup name="UserSettings">
-import { ElDescriptions, ElDescriptionsItem, ElInputNumber, ElOption, ElSelect, ElSlider, ElSwitch, ElText } from 'element-plus';
+import { ElDescriptions, ElDescriptionsItem, ElInputNumber, ElOption, ElSelect, ElSlider, ElSwitch } from 'element-plus';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Tippy } from 'vue-tippy';
