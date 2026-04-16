@@ -1,7 +1,7 @@
 <template>
-    <el-text>{{ t('activityCalendar.showDate') }}</el-text>&nbsp;
+    <span class="text">{{ t('activityCalendar.showDate') }}</span>&nbsp;
     <el-switch v-model="activityCalendarConfig.showDate" size="small" /><br>
-    <el-text>{{ t('activityCalendar.useEndTime') }}</el-text>&nbsp;
+    <span class="text">{{ t('activityCalendar.useEndTime') }}</span>&nbsp;
     <el-switch v-model="activityCalendarConfig.useEndTime" size="small" />&nbsp;
     <base-tooltip>
         <base-icon-question />
@@ -9,11 +9,11 @@
             {{ t('activityCalendar.useEndTimeTooltip') }}
         </template>
     </base-tooltip><br>
-    <el-text>{{ t('activityCalendar.cellSize') }}</el-text>&nbsp;
+    <span class="text">{{ t('activityCalendar.cellSize') }}</span>&nbsp;
     <el-input-number v-model="activityCalendarConfig.cellSize" :min="1" :max="20" size="small" controls-position="right" /><br>
-    <el-text>{{ t('activityCalendar.cellGap') }}</el-text>&nbsp;
+    <span class="text">{{ t('activityCalendar.cellGap') }}</span>&nbsp;
     <el-input-number v-model="activityCalendarConfig.cellMargin" :min="0" :max="10" size="small" controls-position="right" /><br>
-    <el-text>{{ t('activityCalendar.cornerRadius') }}</el-text>&nbsp;
+    <span class="text">{{ t('activityCalendar.cornerRadius') }}</span>&nbsp;
     <el-input-number v-model="activityCalendarConfig.cornerRadius" :min="0" :max="50" size="small" controls-position="right">
         <template #suffix>
             %
@@ -22,7 +22,8 @@
 </template>
 
 <script setup lang="ts">
-import { ElInputNumber, ElSwitch, ElText } from 'element-plus';
+import '@/styles/text.css';
+import { ElInputNumber, ElSwitch } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
 import BaseTooltip from '@/components/common/BaseTooltip.vue';

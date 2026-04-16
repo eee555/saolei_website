@@ -3,9 +3,9 @@
         <div style="margin-bottom: 0.5em;">
             <pr-toolbar>
                 <template #start>
-                    <el-text size="large">
+                    <span class="text text-medium">
                         Authoritative Minesweeper&nbsp;#{{ id }}
-                    </el-text>
+                    </span>
                 </template>
             </pr-toolbar>
         </div>
@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { ElDescriptions, ElDescriptionsItem, ElText } from 'element-plus';
+import { ElDescriptions, ElDescriptionsItem } from 'element-plus';
 import PrToolbar from 'primevue/toolbar';
 import { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';

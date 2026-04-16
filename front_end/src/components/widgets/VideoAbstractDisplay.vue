@@ -1,6 +1,6 @@
 <template>
     <el-row style="margin-bottom: 5px;">
-        <el-text>
+        <span class="text">
             <VideoStateIcon :state="video.state" />
             &nbsp;
             <SoftwareIcon :software="video.software" />
@@ -8,7 +8,7 @@
             {{ t(`common.level.${video.level}`) }}
             &nbsp;
             {{ t(`common.mode.code${video.mode}`) }}
-        </el-text>
+        </span>
     </el-row>
     <el-descriptions size="small" border :column="3">
         <el-descriptions-item :label="t('common.prop.upload_time')" :span="3">
@@ -53,7 +53,8 @@
 
 <script setup lang="ts">
 
-import { ElDescriptions, ElDescriptionsItem, ElRow, ElText } from 'element-plus';
+import '@/styles/text.css';
+import { ElDescriptions, ElDescriptionsItem, ElRow } from 'element-plus';
 import { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 

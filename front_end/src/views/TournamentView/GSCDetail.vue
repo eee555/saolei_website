@@ -4,11 +4,11 @@
         <TournamentStateIcon :state="tournament.state" />
     </h1>
     {{ t('gsc.schedule') }}{{ t('common.punct.colon') }}
-    <el-text>
+    <span class="text">
         {{ tournament.displayStartTime() }}
         &nbsp;~&nbsp;
         {{ tournament.displayEndTime() }}
-    </el-text>
+    </span>
     &nbsp;
     <br>
     {{ t('gsc.description.line1') }}
@@ -42,7 +42,7 @@
             </el-tab-pane>
             <el-tab-pane v-for="(participant, index) in viewedParticipants" :key="participant.id" lazy :name="index">
                 <template #label>
-                    <el-text>{{ participant.user__realname }}</el-text>
+                    <span class="text">{{ participant.user__realname }}</span>
                     &nbsp;
                     <el-link underline="never" @click="handleAllSummaryTabClose(index)">
                         <base-icon-close style="scale: 65%" />
@@ -56,10 +56,11 @@
 
 <script setup lang="ts">
 
-import { ElButton, ElLink, ElRow, ElTabPane, ElTabs, ElText, vLoading } from 'element-plus';
+import { ElButton, ElLink, ElRow, ElTabPane, ElTabs, vLoading } from 'element-plus';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import '@/styles/text.css';
 import GSCAllSummary from './GSCAllSummary.vue';
 import GSCPersonalView from './GSCPersonalView.vue';
 import GSCTokenGuide from './GSCTokenGuide.vue';

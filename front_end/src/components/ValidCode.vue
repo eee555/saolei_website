@@ -1,17 +1,18 @@
 <template>
     <div class="canvas-box" :style="{ height: '32px' }" @click="refreshPic()">
-        <el-text v-if="loading">
+        <span v-if="loading" class="text">
             {{ t('form.captchaLoading') }}
-        </el-text>
+        </span>
         <img v-else-if="captchaUrl" :src="captchaUrl" alt="">
-        <el-text v-else>
+        <span v-else class="text">
             {{ t('form.captchaLoadingFail') }}
-        </el-text>
+        </span>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ElText } from 'element-plus';
+import '@/styles/text.css';
+
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 

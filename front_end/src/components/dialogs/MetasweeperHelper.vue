@@ -1,11 +1,11 @@
 <template>
     <div>
-        <el-text size="large">
+        <span class="text text-medium">
             {{ t('software.metaDescription') }}
             <br>
             {{ t('software.repository') }}{{ t('common.punct.colon') }}
             https://github.com/eee555/Metasweeper
-        </el-text>
+        </span>
         <el-row style="height: 1em" />
         <el-descriptions border>
             <el-descriptions-item :label="t('software.operatingSystem')" :span="2">
@@ -80,7 +80,8 @@
 </template>
 
 <script setup lang="ts">
-import { ElDescriptions, ElDescriptionsItem, ElLink, ElRow, ElTable, ElTableColumn, ElText } from 'element-plus';
+import '@/styles/text.css';
+import { ElDescriptions, ElDescriptionsItem, ElLink, ElRow, ElTable, ElTableColumn } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
 import { BaseBadgeMsgames, BaseBadgeOpenms, BaseBadgeSaolei, BaseBadgeScoreganizer } from '@/components/common/badge';

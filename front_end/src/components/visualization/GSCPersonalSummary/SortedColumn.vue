@@ -1,21 +1,21 @@
 <template>
     <div class="cell">
-        <el-text>
+        <span class="text">
             {{ t(`common.prop.${sortBy}`) }}
-        </el-text>
+        </span>
     </div>
     <Cell v-for="video in sortedVideos" :key="video.id" :video="video" :level="video.level" :color-theme="colorScheme" :display-by="sortBy" />
     <Cell v-for="i in count - sortedVideos.length" :key="i" :level="level" :color-theme="colorScheme" :display-by="sortBy" />
     <div class="cell" :style="{ backgroundColor: avgColor }">
-        <el-text :style="{ color: avgFontColor }">
+        <span class="text" :style="{ color: avgFontColor }">
             {{ formatNumberSmart(sumStat, 6, 3) }}
-        </el-text>
+        </span>
     </div>
 </template>
 
 <script setup lang="ts">
+import '@/styles/text.css';
 import { sum } from 'd3-array';
-import { ElText } from 'element-plus';
 import tinycolor from 'tinycolor2';
 import { computed, PropType } from 'vue';
 import { useI18n } from 'vue-i18n';

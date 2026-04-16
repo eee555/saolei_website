@@ -1,21 +1,21 @@
 <template>
-    <el-text :type="statusToType[status]">
+    <span :class="['text', statusToClass[status]]">
         {{ status }}
-    </el-text>
+    </span>
 </template>
 
 <script setup lang="ts">
-import { ElText } from 'element-plus';
+import '@/styles/text.css';
 import { PropType } from 'vue';
 
 import { DjangoTaskResultStatus } from '@/utils/common/structInterface';
 
-const statusToType = {
-    'READY': 'primary',
-    'RUNNING': 'warning',
-    'SUCCESSFUL': 'success',
-    'FAILED': 'danger',
-    'NULL': 'info',
+const statusToClass = {
+    'READY': 'text-primary',
+    'RUNNING': 'text-warning',
+    'SUCCESSFUL': 'text-success',
+    'FAILED': 'text-danger',
+    'NULL': 'text-info',
 } as const;
 
 defineProps({

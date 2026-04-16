@@ -1,12 +1,12 @@
 <template>
     <img :src="MetasweeperIcon" style="height: 16px; vertical-align: middle">
-    <el-text size="small">
+    <span class="text text-small">
         {{ t('common.website.openms') }}
-    </el-text>
+    </span>
 </template>
 
 <script setup lang="ts">
-import { ElText } from 'element-plus';
+import '@/styles/text.css';
 import { useI18n } from 'vue-i18n';
 
 import { MetasweeperIcon } from '@/utils/assets';

@@ -1,4 +1,4 @@
-.text-normal {
+.text {
     color: var(--el-text-color-regular);
     font-size: var(--el-font-size-base);
     margin: 0;
@@ -9,17 +9,36 @@
 
 .text-large {
     font-size: var(--el-font-size-large);
-    margin: 0;
-    overflow-wrap: break-word;
-    padding: 0;
-    vertical-align: middle;
+}
+
+.text-medium {
+    font-size: var(--el-font-size-medium);
 }
 
 .text-small {
-    color: var(--el-text-color-regular);
     font-size: var(--el-font-size-extra-small);
-    margin: 0;
-    overflow-wrap: break-word;
-    padding: 0;
-    vertical-align: middle;
+}
+
+.text-regular {
+    color: var(--el-text-color-regular);
+}
+
+.text-primary {
+    color: var(--el-color-primary);
+}
+
+.text-danger {
+    color: var(--el-color-danger);
+}
+
+.text-warning {
+    color: var(--el-color-warning);
+}
+
+.text-success {
+    color: var(--el-color-success);
+}
+
+.text-info {
+    color: var(--el-color-info);
 }

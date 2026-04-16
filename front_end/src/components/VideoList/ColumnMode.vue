@@ -1,7 +1,7 @@
 <template>
     <PrColumn field="mode" :show-filter-match-modes="false" :show-filter-operator="false" style="width: 5em">
         <template #body="{ data }">
-            <span class="text-normal">
+            <span class="text">
                 {{ t(`common.mode.code${data.mode}`) }}
             </span>
         </template>
