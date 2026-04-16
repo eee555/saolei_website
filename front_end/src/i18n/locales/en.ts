@@ -298,18 +298,6 @@ export default {
         tutorial: 'Tutorials',
     },
     helper: {
-        identifier: {
-            line_1_1: 'An identifier is a string signature attached to the video file by the player. It is referred to as "Player Identification Text" in the settings of ',
-            line_1_2: ' and "Identifier" in the settings of ',
-            line_1_3: '.',
-            line_2_1: 'Each user can have unlimited number of identifiers, while different users cannot have the same identifier. A user can modify their identifiers at their profile page.',
-            line_3_1: 'If the identifier of a video is not included by the user\'s identifier list, then the video is categorized as ',
-            line_3_2: ' and ignored by News and Ranking.',
-            line_4_1: 'When multiple users face an identifier collision, they can figure out a solution by themselves or contact a moderator for help. The moderator will make a decision based on the following principles:',
-            line_4_2: 'Firstly, protect the right of users using their own real name in identifiers;',
-            line_4_3: 'Secondly, approve the earlist claim of the identifier, where a claim refers to publishing a video with the identifier anywhere.',
-            line_4_4: 'After the decision, some users may lose the identifier, which could result in scores withdrawn from Ranking.',
-        },
         saoleiImport: {
             line_1: "The function of video synchronization helps you download videos from @:common.website.saolei and upload them to @:{'common.website.openms'}. Furthermore, @:{'common.website.openms'} will respect the upload time provided by @:{'common.website.saolei'}. If you have uploaded the same file to both websites, @:{'common.website.openms'} will take the earlier upload time.", // eslint-disable-line @stylistic/quotes
             line_2: "There are two sub-functions: collecting and importing. The collecting will visit your profile and gather the metadata of all videos, including video ID and upload time. The importing will access the video file through video ID and pass the file through @:{'common.website.openms'}'s verification process.", // eslint-disable-line @stylistic/quotes
