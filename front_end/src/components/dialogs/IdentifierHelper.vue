@@ -2,25 +2,25 @@
     <span class="text text-medium">
         <ul>
             <li>
-                {{ t('line_1_1') }}<SoftwareIcon software="a" />{{ t('line_1_2') }}<SoftwareIcon software="m" />{{ t('line_1_3') }}
+                {{ t('local.line_1_1') }}<SoftwareIcon software="a" />{{ t('local.line_1_2') }}<SoftwareIcon software="m" />{{ t('local.line_1_3') }}
             </li>
             <li>
-                {{ t('line_2_1') }}
+                {{ t('local.line_2_1') }}
             </li>
             <li>
-                {{ t('line_3_1') }}<VideoStateIcon :state="MS_State.Identifier" />{{ t('line_3_2') }}
+                {{ t('local.line_3_1') }}<VideoStateIcon :state="MS_State.Identifier" />{{ t('local.line_3_2') }}
             </li>
             <li>
-                {{ t('line_4_1') }}
+                {{ t('local.line_4_1') }}
                 <ul>
                     <li>
-                        {{ t('line_4_2') }}
+                        {{ t('local.line_4_2') }}
                     </li>
                     <li>
-                        {{ t('line_4_3') }}
+                        {{ t('local.line_4_3') }}
                     </li>
                 </ul>
-                {{ t('line_4_4') }}
+                {{ t('local.line_4_4') }}
             </li>
         </ul>
     </span>
@@ -36,7 +36,7 @@ import VideoStateIcon from '@/components/widgets/VideoStateIcon.vue';
 import { MS_State } from '@/utils/ms_const';
 
 const componentMessages = {
-    'zh-cn': {
+    'zh-cn': { local: {
         line_1_1: '标识是玩家自己填写的，录像中包含的一段字符串签名。在',
         line_1_2: '的设置中，这被称为“玩家身份标识”。在',
         line_1_3: '的设置中，这被称为“标识”。',
@@ -47,8 +47,8 @@ const componentMessages = {
         line_4_2: '首先保护用户使用自己的实名作为标识的权利；',
         line_4_3: '其次保护先使用该标识的用户。“使用”是指在任何地方（需要可查证）公开发表该标识的录像。',
         line_4_4: '管理员裁决后可能会删除某些用户的对应标识，这会导致用户成绩受损。',
-    },
-    'en': {
+    } },
+    'en': { local: {
         line_1_1: 'An identifier is a string signature attached to the video file by the player. It is referred to as "Player Identification Text" in the settings of ',
         line_1_2: ' and "Identifier" in the settings of ',
         line_1_3: '.',
@@ -59,7 +59,7 @@ const componentMessages = {
         line_4_2: 'Firstly, protect the right of users using their own real name in identifiers;',
         line_4_3: 'Secondly, approve the earlist claim of the identifier, where a claim refers to publishing a video with the identifier anywhere.',
         line_4_4: 'After the decision, some users may lose the identifier, which could result in scores withdrawn from Ranking.',
-    },
+    } },
 };
 
 const { t } = useI18n({

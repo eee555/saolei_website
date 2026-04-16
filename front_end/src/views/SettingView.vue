@@ -1,15 +1,15 @@
 <template>
-    <el-descriptions :title="t('appearance')" :column="3">
-        <el-descriptions-item :label="t('colorscheme')" style="vertical-align: middle;">
+    <el-descriptions :title="t('local.appearance')" :column="3">
+        <el-descriptions-item :label="t('local.colorscheme')" style="vertical-align: middle;">
             <DarkMode />
         </el-descriptions-item>
-        <el-descriptions-item :label="t('languageSwitch')">
+        <el-descriptions-item :label="t('local.languageSwitch')">
             <el-switch
                 v-model="local.language_show"
                 :active-text="t('common.show')" :inactive-text="t('common.hide')"
             />
         </el-descriptions-item>
-        <el-descriptions-item :label="t('viennaLogo')">
+        <el-descriptions-item :label="t('local.viennaLogo')">
             <el-switch v-model="local.vienna_logo_legacy">
                 <template #active>
                     <Tippy :duration="0">
@@ -29,53 +29,53 @@
                 </template>
             </el-switch>
         </el-descriptions-item>
-        <el-descriptions-item :label="t('menuLayout')">
+        <el-descriptions-item :label="t('local.menuLayout')">
             <el-switch
                 v-model="local.menu_icon"
-                :active-text="t('menuLayoutAbstract')"
-                :inactive-text="t('menuLayoutDefault')"
+                :active-text="t('local.menuLayoutAbstract')"
+                :inactive-text="t('local.menuLayoutDefault')"
             />
         </el-descriptions-item>
-        <el-descriptions-item :label="t('menuHeight')">
+        <el-descriptions-item :label="t('local.menuHeight')">
             <el-slider
                 v-model="local.menu_height" size="small" :min="20" :max="60"
                 style="width: 100px; display: inline-block; height: 9px"
             />
         </el-descriptions-item>
-        <el-descriptions-item :label="t('menuFontSize')">
+        <el-descriptions-item :label="t('local.menuFontSize')">
             <el-input-number
                 v-model="local.menu_font_size"
                 size="small" :min="10"
             />
         </el-descriptions-item>
-        <el-descriptions-item :label="t('notificationDuration')">
+        <el-descriptions-item :label="t('local.notificationDuration')">
             <base-tooltip>
                 <el-input-number v-model="local.notification_duration" size="small" :min="0" :step="1000" />
                 <template #content>
                     <span class="text">
-                        {{ t('notificationDurationTooltip1') }}
+                        {{ t('local.notificationDurationTooltip1') }}
                         <br>
-                        {{ t('notificationDurationTooltip2') }}
+                        {{ t('local.notificationDurationTooltip2') }}
                     </span>
                 </template>
             </base-tooltip>
         </el-descriptions-item>
-        <el-descriptions-item :label="t('newUserGuide')">
+        <el-descriptions-item :label="t('local.newUserGuide')">
             <base-tooltip>
                 <el-switch v-model="local.tooltip_show" />
                 <template #content>
                     <span class="text">
-                        {{ t('newUserGuideTooltip') }}
+                        {{ t('local.newUserGuideTooltip') }}
                     </span>
                 </template>
             </base-tooltip>
         </el-descriptions-item>
-        <el-descriptions-item :label="t('experimentalFeature')">
+        <el-descriptions-item :label="t('local.experimentalFeature')">
             <el-switch v-model="local.experimental" />
         </el-descriptions-item>
     </el-descriptions>
     <ExperimentalFeature>
-        <el-descriptions :title="t('stnbConst')">
+        <el-descriptions :title="t('local.stnbConst')">
             <el-descriptions-item :label="t('common.level.b')">
                 <el-input-number v-model="STNB_const.b" size="small" :controls="false" />
             </el-descriptions-item>
@@ -86,7 +86,7 @@
                 <el-input-number v-model="STNB_const.e" size="small" :controls="false" />
             </el-descriptions-item>
         </el-descriptions>
-        <el-descriptions :title="t('visualizationColorScheme')">
+        <el-descriptions :title="t('local.visualizationColorScheme')">
             <el-descriptions-item>
                 <el-select v-model="colorSchemeName">
                     <el-option label="Bvs" value="bvs" />
@@ -119,7 +119,7 @@ import { STNB_const } from '@/utils/ms_const';
 const colorSchemeName = ref<'bvs' | 'btime' | 'itime' | 'etime' | 'stnb'>('bvs');
 
 const i18nMessages = {
-    'zh-cn': {
+    'zh-cn': { local: {
         appearance: '外观设置',
         colorscheme: '颜色主题',
         experimentalFeature: '实验功能',
@@ -137,8 +137,8 @@ const i18nMessages = {
         stnbConst: 'STNB常数',
         viennaLogo: 'RMV图标',
         visualizationColorScheme: '数据可视化 - 配色方案',
-    },
-    'en': {
+    } },
+    'en': { local: {
         appearance: 'Appearance',
         colorscheme: 'Color scheme',
         experimentalFeature: 'Experimental Features',
@@ -156,7 +156,7 @@ const i18nMessages = {
         stnbConst: 'STNB Constants',
         viennaLogo: 'RMV logo',
         visualizationColorScheme: 'Visualization - Color scheme',
-    },
+    } },
 };
 
 const { t } = useI18n({
