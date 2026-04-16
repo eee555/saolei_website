@@ -1,12 +1,12 @@
 <template>
     <el-card class="card-small">
-        <el-text v-if="videos.length == 0">
+        <span v-if="videos.length == 0" class="text">
             {{ t('activityCalendar.tooltip.noVideoOnDate', [toISODateString(date)]) }}
-        </el-text>
+        </span>
         <template v-else>
-            <el-text>
+            <span class="text">
                 {{ t('activityCalendar.tooltip.uploadedNVideosOnDate', [toISODateString(date), videos.length]) }}
-            </el-text>
+            </span>
             <br>
             <span v-for="i in count.b" :key="i" class="dot" style="background-color: #f00;" />
             <span v-for="i in count.i" :key="i" class="dot" style="background-color: #080;" />
@@ -16,9 +16,10 @@
 </template>
 
 <script setup lang="ts">
+import '@/styles/text.css';
 import '@/styles/cards.css';
 
-import { ElCard, ElText } from 'element-plus';
+import { ElCard } from 'element-plus';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 

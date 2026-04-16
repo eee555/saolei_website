@@ -2,17 +2,17 @@
     <el-row v-if="header" :style="{ textAlign: 'center', height: '25px', flexWrap: 'nowrap', marginTop: '10px', marginBottom: '-16px' }">
         <span style="width: 10%; min-width: 75px" />
         <span v-for="i in 10" :key="i" style="width: 8.9%; min-width: 4em">
-            <el-text>
+            <span class="text">
                 {{ i - 1 }}
-            </el-text>
+            </span>
         </span>
     </el-row>
     <el-divider data-cy="summary" style="margin: 18px 0 12px 0;">
-        <el-text>
+        <span class="text">
             {{ t(`common.level.${level}`) }}
             &nbsp;
             {{ t('BBBvSummary.bbbvInTotal', [groupedVideoAbstract.size]) }}
-        </el-text>
+        </span>
     </el-divider>
     <el-row v-if="groupedVideoAbstract.size > 0" style="white-space: nowrap;">
         <YLabel :min-bv="minBv" :max-bv="maxBv" />
@@ -45,7 +45,8 @@
 </template>
 
 <script setup lang="ts">
-import { ElDivider, ElRow, ElText } from 'element-plus';
+import '@/styles/text.css';
+import { ElDivider, ElRow } from 'element-plus';
 import { computed, PropType, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Tippy } from 'vue-tippy';

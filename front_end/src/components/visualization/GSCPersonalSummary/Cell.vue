@@ -10,16 +10,17 @@
         </template>
     </tippy>
     <div v-else class="cell" :style="{ backgroundColor: color }">
-        <el-text :style="{ color: fontColor }">
+        <span class="text" :style="{ color: fontColor }">
             {{ defaultVideos[level][displayBy] }}
-        </el-text>
+        </span>
     </div>
 </template>
 
 <script setup lang="ts">
+import '@/styles/text.css';
 import '@/styles/cards.css';
 
-import { ElCard, ElLink, ElText } from 'element-plus';
+import { ElCard, ElLink } from 'element-plus';
 import tinycolor from 'tinycolor2';
 import { computed, PropType } from 'vue';
 import { Tippy } from 'vue-tippy';
