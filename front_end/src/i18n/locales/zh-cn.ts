@@ -462,8 +462,6 @@ export default {
         repository: '项目地址',
         supportedLanguages: '语言',
         version: '版本',
-        viennaDescription1: 'Viennasweeper 是一款专业扫雷软件，它和Scoreganizer的兼容性最好。',
-        viennaDescription2: '从v5.0.0版本开始，Viennasweeper使用了新的录像格式，该格式目前仅被开源扫雷网和Scoreganizer支持。',
         viennasweeper: 'Viennasweeper',
     },
     task: {

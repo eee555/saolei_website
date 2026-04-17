@@ -464,8 +464,6 @@ export default {
         repository: 'Repository',
         supportedLanguages: 'Languages',
         version: 'Version',
-        viennaDescription1: 'Viennasweeper is an official minesweeper clone. It has the best compatibility with Scoreganizer.',
-        viennaDescription2: 'From v5.0.0, Viennasweeper moves to a new replay format that is only currently supported by Open Minesweeper and Scoreganizer.',
         viennasweeper: 'Viennasweeper',
     },
     task: {

@@ -1,9 +1,9 @@
 <template>
     <div>
         <span class="text text-medium">
-            {{ t('software.viennaDescription1') }}
+            {{ t('local.description1') }}
             <br>
-            {{ t('software.viennaDescription2') }}
+            {{ t('local.description2') }}
             <br>
             {{ t('software.officialSite') }}{{ t('common.punct.colon') }}
             https://sweeper.wien
@@ -87,8 +87,6 @@ import { BaseBadgeMsgames, BaseBadgeOpenms, BaseBadgeSaolei, BaseBadgeScoreganiz
 import BaseTagSupport from '@/components/common/BaseTagSupport.vue';
 import { BaseFlagUK } from '@/components/common/flag';
 
-const { t } = useI18n();
-
 const tableData = [
     {
         version: 'v4.0.0',
@@ -124,5 +122,20 @@ const tableData = [
         ],
     },
 ];
+
+const i18nMessages = {
+    'zh-cn': { local: {
+        description1: 'Viennasweeper 是一款专业扫雷软件，它和Scoreganizer的兼容性最好。',
+        description2: '从v5.0.0版本开始，Viennasweeper使用了新的录像格式，该格式目前仅被开源扫雷网和Scoreganizer支持。',
+    } },
+    'en': { local: {
+        description1: 'Viennasweeper is an official minesweeper clone. It has the best compatibility with Scoreganizer.',
+        description2: 'From v5.0.0, Viennasweeper moves to a new replay format that is only currently supported by Open Minesweeper and Scoreganizer.',
+    } },
+};
+
+const { t } = useI18n({
+    messages: i18nMessages,
+});
 
 </script>
