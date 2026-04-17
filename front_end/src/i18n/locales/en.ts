@@ -162,12 +162,6 @@ export default {
         },
         verified: 'Verified',
     },
-    activityCalendar: {
-        tooltip: {
-            noVideoOnDate: 'No video on {0}',
-            uploadedNVideosOnDate: '{1} videos on {0}',
-        },
-    },
     BBBvSummary: {
         bbbvInTotal: ({ linked, list }) => `${list(0)} ${linked('common.prop.bv')} in total`,
         cellHeight: 'Cell Height',

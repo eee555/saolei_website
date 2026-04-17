@@ -160,12 +160,6 @@ export default {
         },
         verified: '已验证',
     },
-    activityCalendar: {
-        tooltip: {
-            noVideoOnDate: '{0} 无录像',
-            uploadedNVideosOnDate: '{0} 共 {1} 个录像',
-        },
-    },
     BBBvSummary: {
         bbbvInTotal: ({ linked, list }) => `共${list(0)}个${linked('common.prop.bv')}`,
         cellHeight: '行高',

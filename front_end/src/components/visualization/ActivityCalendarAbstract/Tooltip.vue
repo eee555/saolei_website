@@ -1,11 +1,11 @@
 <template>
     <el-card class="card-small">
         <span v-if="videos.length == 0" class="text">
-            {{ t('activityCalendar.tooltip.noVideoOnDate', [toISODateString(date)]) }}
+            {{ t('local.noVideoOnDate', [toISODateString(date)]) }}
         </span>
         <template v-else>
             <span class="text">
-                {{ t('activityCalendar.tooltip.uploadedNVideosOnDate', [toISODateString(date), videos.length]) }}
+                {{ t('local.uploadedNVideosOnDate', [toISODateString(date), videos.length]) }}
             </span>
             <br>
             <span v-for="i in count.b" :key="i" class="dot" style="background-color: #f00;" />
@@ -26,8 +26,6 @@ import { useI18n } from 'vue-i18n';
 import { toISODateString } from '@/utils/datetime';
 import { VideoAbstract } from '@/utils/videoabstract';
 
-const { t } = useI18n();
-
 const props = defineProps({
     date: { type: Date, required: true },
     videos: { type: Array<VideoAbstract>, default: () => [] },
@@ -44,6 +42,19 @@ watch(() => props.videos, () => {
     }
 }, { immediate: true });
 
+/* 本地化 Localization */
+const i18nMessages = {
+    'zh-cn': { local: {
+        noVideoOnDate: '{0} 无录像',
+        uploadedNVideosOnDate: '{0} 共 {1} 个录像',
+    } },
+    'en': { local: {
+        noVideoOnDate: '{0} 无录像',
+        uploadedNVideosOnDate: '{0} 共 {1} 个录像',
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
 </script>
 
 <style lang="less" scoped>
