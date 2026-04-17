@@ -409,7 +409,6 @@ export default {
     },
     software: {
         arbiter: 'Minesweeper Arbiter',
-        arbiterDescription: 'Minesweeper Arbiter is the most popular authoritative minesweeper clone.',
         download: 'Download',
         expireDate: 'Expired',
         feature: 'Features',

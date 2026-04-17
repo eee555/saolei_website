@@ -407,7 +407,6 @@ export default {
     },
     software: {
         arbiter: 'Minesweeper Arbiter',
-        arbiterDescription: 'Minesweeper Arbiter 是最流行的专业扫雷软件。',
         download: '下载',
         expireDate: '失效日期',
         feature: '功能',
