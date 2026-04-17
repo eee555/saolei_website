@@ -430,18 +430,6 @@ export default {
         version: 'Version',
         viennasweeper: 'Viennasweeper',
     },
-    team: {
-        owner: 'Owner',
-        moderator: 'Moderators',
-        software: 'Developers',
-        localization: 'Localization',
-        zhCn: 'Simplified Chinese',
-        en: 'English',
-        de: 'German',
-        pl: 'Polish',
-        designer: 'UI designers',
-        acknowledgement: 'Acknowledgement',
-    },
     tournament: {
         downloadAll: 'Download all videos',
         downloadParticipant: 'Download videos',

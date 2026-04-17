@@ -1,12 +1,12 @@
 <template>
     <div style="padding-bottom: 5px">
-        <strong>{{ t('team.owner') }}</strong>
+        <strong>{{ t('local.owner') }}</strong>
     </div>
     <div>
         <GitHubUser username="eee555" />
     </div>
     <div style="padding-bottom: 5px; margin-top: 15px">
-        <strong>{{ t('team.moderator') }}</strong>
+        <strong>{{ t('local.moderator') }}</strong>
     </div>
     <div>少年</div>
     <div>GodnuX</div>
@@ -15,7 +15,7 @@
     <el-row>
         <el-col :span="8">
             <div style="padding-bottom: 5px">
-                <strong>{{ t('team.software') }}</strong>
+                <strong>{{ t('local.software') }}</strong>
             </div>
             <div>
                 <GitHubUser username="eee555" />
@@ -35,28 +35,28 @@
         </el-col>
         <el-col :span="8">
             <div style="padding-bottom: 5px">
-                <strong>{{ t('team.localization') }}</strong>
+                <strong>{{ t('local.localization') }}</strong>
             </div>
             <div>
-                {{ t('team.zhCn') }}
+                {{ t('local.zhCn') }}
                 <GitHubUser username="putianyi889" />
             </div>
             <div>
-                {{ t('team.en') }}
+                {{ t('local.en') }}
                 <GitHubUser username="putianyi889" />
             </div>
             <div>
-                {{ t('team.de') }}
+                {{ t('local.de') }}
                 <GitHubUser username="auk3" />
             </div>
             <div>
-                {{ t('team.pl') }}
+                {{ t('local.pl') }}
                 <GitHubUser username="kiraa96" />
             </div>
         </el-col>
         <el-col :span="8">
             <div style="padding-bottom: 5px">
-                <strong>{{ t('team.designer') }}</strong>
+                <strong>{{ t('local.designer') }}</strong>
             </div>
             <div>
                 <GitHubUser username="eee555" />
@@ -68,7 +68,7 @@
     </el-row>
     <el-divider />
     <div style="padding-bottom: 5px">
-        <strong>{{ t('team.acknowledgement') }}</strong>
+        <strong>{{ t('local.acknowledgement') }}</strong>
     </div>
     <span v-for="item in acknowledgements" style="padding-right: 10px">
         {{ item.text }}
@@ -80,9 +80,7 @@
 import { ElCol, ElDivider, ElRow } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
-import GitHubUser from '../widgets/GitHubUser.vue';
-
-const { t } = useI18n();
+import GitHubUser from '@/components/widgets/GitHubUser.vue';
 
 // 积分系统完成后需要加jsd
 const acknowledgements = [
@@ -95,7 +93,33 @@ const acknowledgements = [
     { text: 'Arya' },
 ];
 
+/* 本地化 Localization */
+const i18nMessage = {
+    'zh-cn': { local: {
+        owner: '站长',
+        moderator: '管理员',
+        software: '开发',
+        localization: '本地化',
+        zhCn: '简体中文',
+        en: '英语',
+        de: '德语',
+        pl: '波兰语',
+        designer: '外观设计',
+        acknowledgement: '致谢',
+    } },
+    'en': { local: {
+        owner: 'Owner',
+        moderator: 'Moderators',
+        software: 'Developers',
+        localization: 'Localization',
+        zhCn: 'Simplified Chinese',
+        en: 'English',
+        de: 'German',
+        pl: 'Polish',
+        designer: 'UI designers',
+        acknowledgement: 'Acknowledgement',
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessage });
 </script>
-
-
-<style></style>

@@ -428,18 +428,6 @@ export default {
         version: '版本',
         viennasweeper: 'Viennasweeper',
     },
-    team: {
-        owner: '站长',
-        moderator: '管理员',
-        software: '开发',
-        localization: '本地化',
-        zhCn: '简体中文',
-        en: '英语',
-        de: '德语',
-        pl: '波兰语',
-        designer: '外观设计',
-        acknowledgement: '致谢',
-    },
     tournament: {
         downloadAll: '下载全部录像',
         downloadParticipant: '下载录像包',
