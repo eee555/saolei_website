@@ -200,6 +200,7 @@ interface UploadEntry {
 }
 
 defineProps({
+    isUserAnonymous: { type: Boolean, default: true },
     identifiers: { type: Array as PropType<string[]>, default: () => [] },
 });
 

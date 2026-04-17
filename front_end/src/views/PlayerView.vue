@@ -88,7 +88,7 @@
                         v-if="`${store.user.id}` == userid" :label="t('profile.upload.title')" name="upload"
                         :lazy="true"
                     >
-                        <UploadView :identifiers="store.user.identifiers" />
+                        <VideoUpload :is-user-anonymous="store.isUserAnonymous" :identifiers="store.user.identifiers" />
                     </el-tab-pane>
                 </el-tabs>
             </el-main>
@@ -116,7 +116,7 @@ import { UserProfile } from '@/utils/userprofile';
 const PlayerRecordView = defineAsyncComponent(() => import('@/views/PlayerRecordView.vue'));
 const PlayerVideosView = defineAsyncComponent(() => import('@/views/PlayerVideosView.vue'));
 const PlayerProfileView = defineAsyncComponent(() => import('@/views/PlayerProfileView.vue'));
-const UploadView = defineAsyncComponent(() => import('@/views/UploadView.vue'));
+const VideoUpload = defineAsyncComponent(() => import('@/components/VideoUpload.vue'));
 
 const { proxy } = useCurrentInstance();
 const upload = ref<UploadInstance>();
