@@ -8,7 +8,15 @@
                         {{ t('local.about') }}
                     </strong>
                 </div>
-                <Thanks />
+                <BaseOverlay>
+                    {{ t('local.team') }}
+                    <template #header>
+                        {{ t('local.team') }}
+                    </template>
+                    <template #overlay>
+                        <Thanks />
+                    </template>
+                </BaseOverlay>
                 <br>
                 <Downloads />
             </el-col>
@@ -98,6 +106,7 @@ import '@/styles/text.css';
 import { ElCol, ElDivider, ElFooter, ElLink, ElRow } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
+import BaseOverlay from './common/BaseOverlay.vue';
 import Downloads from './dialogs/Downloads.vue';
 import Thanks from './dialogs/Thanks.vue';
 

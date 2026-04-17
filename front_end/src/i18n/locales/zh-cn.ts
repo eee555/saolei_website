@@ -429,7 +429,6 @@ export default {
         viennasweeper: 'Viennasweeper',
     },
     team: {
-        title: '团队',
         owner: '站长',
         moderator: '管理员',
         software: '开发',

@@ -431,7 +431,6 @@ export default {
         viennasweeper: 'Viennasweeper',
     },
     team: {
-        title: 'Team',
         owner: 'Owner',
         moderator: 'Moderators',
         software: 'Developers',
