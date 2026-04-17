@@ -1,15 +1,21 @@
 <template>
     <div style="text-align: center;">
-        <base-file-input :accept="'.avf,.evf,.rmv,.mvf'" :disabled="store.isUserAnonymous || isParsing || isUploading" :style="{ height: uploadQueue.length > 0 ? '50px' : '300px' }" @add="handleFileChange">
+        <base-file-input :accept="'.avf,.evf,.rmv,.mvf'" :disabled="store.isUserAnonymous || isParsing || isUploading" :style="{ height: uploadQueue.length > 0 ? 'auto' : '300px' }" @add="handleFileChange">
             <span v-if="store.isUserAnonymous" class="text text-large">
                 {{ t('common.msg.realNameRequired') }}
             </span>
             <div v-else>
-                <div class="text text-large" style="padding: 0.1em; color: auto;">
-                    {{ t('profile.upload.dragOrClick') }}
+                <div class="text text-large" style="padding: 0.1em; color: inherit;">
+                    {{ t('local.dragOrClick') }}
                 </div>
-                <div class="text text-small" style="padding: 0.1em; color: auto;">
-                    {{ t('profile.upload.constraintNote') }}
+                <el-checkbox v-model="local.autoUploadAfterParse" :disabled="isParsing || isUploading" @click.stop>
+                    {{ t('local.autoUploadAfterParse') }}
+                </el-checkbox>
+                <el-checkbox v-model="local.autoDeleteAfterUpload" :disabled="isParsing || isUploading" @click.stop>
+                    {{ t('local.autoRemoveAfterUpload') }}
+                </el-checkbox>
+                <div class="text text-small" style="padding: 0.1em;">
+                    {{ t('local.constraintNote') }}
                 </div>
             </div>
         </base-file-input>
@@ -17,41 +23,41 @@
     <div style="height: 1rem" />
     <div v-if="uploadQueue.length > 0">
         <span class="text">
-            {{ t('profile.upload.selected', [selectedQueue.length, uploadQueue.length]) }}
+            {{ t('local.selected', [selectedQueue.length, uploadQueue.length]) }}
         </span>
         &nbsp;
         <el-button :disabled="isWaiting || selectedNone" @click="uploadSelected">
-            <base-icon-upload />&nbsp;{{ t('profile.upload.upload') }}
+            <base-icon-upload />&nbsp;{{ t('local.upload') }}
         </el-button>
         <el-button :disabled="isWaiting || selectedNone" @click="removeSelected">
-            <base-icon-delete />&nbsp;{{ t('profile.upload.delete') }}
+            <base-icon-delete />&nbsp;{{ t('local.remove') }}
         </el-button>
     </div>
     <div v-if="isParsing" style="margin-top: 1em;">
         <span class="text">
-            {{ t('profile.upload.parsing', [parserProgress.parsed, parserProgress.total]) }}
+            {{ t('local.parsing', [parserProgress.parsed, parserProgress.total]) }}
         </span>
         &nbsp;
         <StackBar
             :data="[
-                { name: t('profile.upload.parsed'), value: parserProgress.parsed, color: '#409EFF' },
-                { name: t('profile.upload.toParse'), value: parserProgress.total - parserProgress.parsed, color: '#C0C4CC' },
+                { name: t('local.parsed'), value: parserProgress.parsed, color: '#409EFF' },
+                { name: t('local.toParse'), value: parserProgress.total - parserProgress.parsed, color: '#C0C4CC' },
             ]"
         />
     </div>
     <div v-if="isUploading" style="margin-top: 1em;">
         <span class="text">
-            {{ t('profile.upload.uploading', [uploadProgress.uploaded + uploadProgress.failed, uploadProgress.total]) }}
+            {{ t('local.uploading', [uploadProgress.uploaded + uploadProgress.failed, uploadProgress.total]) }}
         </span>
         &nbsp;
         <el-button @click="pleaseStopUploading = true">
-            {{ t('profile.upload.stopUpload') }}
+            {{ t('local.stopUpload') }}
         </el-button>
         <StackBar
             :data="[
-                { name: t('profile.upload.uploaded'), value: uploadProgress.uploaded, color: '#67C23A' },
-                { name: t('profile.upload.uploadFailed'), value: uploadProgress.failed, color: '#F56C6C' },
-                { name: t('profile.upload.toUpload'), value: uploadProgress.total - uploadProgress.uploaded - uploadProgress.failed, color: '#C0C4CC' },
+                { name: t('local.uploaded'), value: uploadProgress.uploaded, color: '#67C23A' },
+                { name: t('local.uploadFailed'), value: uploadProgress.failed, color: '#F56C6C' },
+                { name: t('local.toUpload'), value: uploadProgress.total - uploadProgress.uploaded - uploadProgress.failed, color: '#C0C4CC' },
             ]"
         />
     </div>
@@ -85,12 +91,12 @@
         </pr-column>
         <pr-column field="status" :header="t('common.prop.status')" :show-filter-match-modes="false" :show-filter-operator="false">
             <template #body="{data}: {data: UploadEntry}">
-                {{ t(`profile.upload.error.${data.status}`) }}
+                {{ t(`local.status.${data.status}`) }}
             </template>
             <template #filter="{ filterModel, applyFilter }">
                 <PrListbox v-model="filterModel.value" :options="[...UploadStatus]" @change="applyFilter()">
                     <template #option="slotProps">
-                        {{ t(`profile.upload.error.${slotProps.option}`) }}
+                        {{ t(`local.status.${slotProps.option}`) }}
                     </template>
                 </PrListbox>
             </template>
@@ -164,10 +170,10 @@ import { CheckboxValueType, ElButton, ElCheckbox, ElDescriptions, ElDescriptions
 import PrColumn from 'primevue/column';
 import PrDataTable, { DataTableFilterEvent } from 'primevue/datatable';
 import PrListbox from 'primevue/listbox';
-import { computed, ref, watch } from 'vue';
+import { computed, PropType, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { store } from '../store';
+import { local, store } from '../store';
 
 import BaseFileInput from '@/components/common/BaseFileInput.vue';
 import { BaseIconDelete, BaseIconUpload } from '@/components/common/icon';
@@ -181,10 +187,9 @@ import { MS_Levels } from '@/utils/ms_const';
 import { VideoAbstract } from '@/utils/videoabstract';
 
 const { proxy } = useCurrentInstance();
-const { t } = useI18n();
 
 const UploadStatus = ['parse', 'pass', 'filename', 'fileext', 'custom', 'invalid', 'identifier', 'needApprove', 'censorship', 'collision', 'upload', 'process', 'success'] as const;
-type UploadStatus = 'parse' | 'pass' | 'filename' | 'fileext' | 'custom' | 'invalid' | 'identifier' | 'needApprove' | 'censorship' | 'collision' | 'upload' | 'process' | 'success';
+type UploadStatus = typeof UploadStatus[number];
 
 interface UploadEntry {
     hash: string;
@@ -195,7 +200,7 @@ interface UploadEntry {
 }
 
 defineProps({
-    identifiers: { type: Array, default: () => [] },
+    identifiers: { type: Array as PropType<string[]>, default: () => [] },
 });
 
 const filters = ref({
@@ -242,18 +247,28 @@ function simpleHash(file: File) {
 
 async function handleFileChange(files: File[]) {
     if (!files) return;
+
     parserProgress.value.total = files.length;
     parserProgress.value.parsed = 0;
+
     const uploadQueueTemp: UploadEntry[] = [];
+
     for (let i = 0; i < files.length; i++) {
         const hash = simpleHash(files[i]);
         const exists = uploadQueue.value.some((entry) => entry.hash === hash) || uploadQueueTemp.some((entry) => entry.hash === hash);
         if (!exists) {
-            uploadQueueTemp.push(await upload_prepare(files[i], hash));
+            const entry = await upload_prepare(files[i], hash);
+            if (local.value.autoUploadAfterParse) {
+                await forceUpload(entry);
+            }
+            if (entry.status !== 'success' || !local.value.autoDeleteAfterUpload) {
+                uploadQueueTemp.push(entry);
+            }
         }
         parserProgress.value.parsed += 1;
     }
-    uploadQueue.value = [...uploadQueue.value, ...uploadQueueTemp];
+
+    uploadQueue.value = [...uploadQueueTemp, ...uploadQueue.value];
 }
 
 function onFilter(event: DataTableFilterEvent) {
@@ -311,8 +326,10 @@ async function uploadSelected() {
         }
     }
 
-    selectedQueue.value = selectedQueueTemp;
-    uploadQueue.value = uploadQueueTemp;
+    if (local.value.autoDeleteAfterUpload) {
+        selectedQueue.value = selectedQueueTemp;
+        uploadQueue.value = uploadQueueTemp;
+    }
 }
 
 // 上传问题不大的录像
@@ -372,4 +389,75 @@ async function upload_prepare(file: File, hash: string): Promise<UploadEntry> {
     }
 }
 
+/* 本地化 Localization */
+const i18nMessages = {
+    'zh-cn': { local: {
+        dragOrClick: '将录像拉到此处或点击此处选择',
+        autoUploadAfterParse: '解析完成自动上传',
+        autoRemoveAfterUpload: '上传完成自动移除',
+        constraintNote: '*单个文件大小不能超过5MB',
+        selected: '已选中：{0} / {1}',
+        upload: '上传',
+        remove: '移除',
+        parsing: '正在解析：{0} / {1}',
+        parsed: '已解析',
+        toParse: '待解析',
+        uploading: '上传中：{0} / {1}',
+        stopUpload: '停止上传',
+        uploaded: '已上传',
+        uploadFailed: '上传失败',
+        toUpload: '待上传',
+        status: {
+            collision: '录像已存在',
+            custom: '暂不支持自定义级别',
+            identifier: '新标识',
+            fail: '不通过',
+            fileext: '无法识别的文件类型',
+            filename: '文件名超过了100字节',
+            filesize: '文件大小超过了5MB',
+            mode: '暂不支持此模式',
+            needApprove: '需要人工审核',
+            parse: '录像解析失败',
+            pass: '通过',
+            process: '上传中',
+            success: '上传成功',
+            upload: '上传失败',
+        },
+    } },
+    'en': { local: {
+        dragOrClick: 'Drag files here or click here to select',
+        autoUploadAfterParse: 'Auto-upload after parsing',
+        autoRemoveAfterUpload: 'Auto-remove after uploading',
+        constraintNote: '*File size maximum is 5MB.',
+        selected: 'Selected: {0} / {1}',
+        upload: 'Upload',
+        remove: 'Remove',
+        parsing: 'Parsing files: {0} / {1}',
+        parsed: 'Parsed',
+        toParse: 'Not parsed',
+        uploading: 'Uploading: {0} / {1}',
+        stopUpload: 'Stop',
+        uploaded: 'Uploaded',
+        uploadFailed: 'Failed',
+        toUpload: 'Queueing',
+        status: {
+            collision: 'Video already exist',
+            custom: 'Custom level is currently not supported',
+            identifier: 'New identifier',
+            fail: 'Fail',
+            fileext: 'Invalid file extension',
+            filename: 'File name exceeds 100 bytes',
+            filesize: 'File size exceeds 5MB',
+            mode: 'Unsupported game mode',
+            needApprove: 'Need manual approval',
+            parse: 'Cannot parse the file',
+            pass: 'Pass',
+            process: 'Uploading',
+            success: 'Success',
+            upload: 'Upload fail',
+        },
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
 </script>

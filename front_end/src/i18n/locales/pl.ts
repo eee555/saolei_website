@@ -60,6 +60,8 @@ export default {
             modeRecord: '-rekord trybu: ',
         },
         videos: 'wszystkie filmy',
-        upload: 'prześlij filmy',
+        upload: {
+            title: 'prześlij filmy',
+        },
     },
 };
