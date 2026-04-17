@@ -430,15 +430,6 @@ export default {
         version: '版本',
         viennasweeper: 'Viennasweeper',
     },
-    task: {
-        title: '后台任务',
-        status: {
-            READY: '排队中',
-            RUNNING: '运行中',
-            SUCCESSFUL: '已完成',
-            FAILED: '失败',
-        },
-    },
     team: {
         title: '团队',
         owner: '站长',

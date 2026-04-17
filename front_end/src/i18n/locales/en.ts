@@ -432,15 +432,6 @@ export default {
         version: 'Version',
         viennasweeper: 'Viennasweeper',
     },
-    task: {
-        title: 'Background tasks',
-        status: {
-            READY: 'Ready',
-            RUNNING: 'Running',
-            SUCCESSFUL: 'Successful',
-            FAILED: 'Failed',
-        },
-    },
     team: {
         title: 'Team',
         owner: 'Owner',

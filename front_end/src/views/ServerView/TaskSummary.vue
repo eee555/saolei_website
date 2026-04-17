@@ -15,7 +15,6 @@ import { local } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const { proxy } = useCurrentInstance();
-const { t } = useI18n();
 const dataset = ref<VueUiDonutDatasetItem[]>([]);
 const loading = ref(false);
 
@@ -24,19 +23,19 @@ function refresh() {
     proxy.$axios.get('/common/api/tasksummary').then((response) => {
         dataset.value = [
             {
-                name: t('task.status.READY'),
+                name: t('local.READY'),
                 values: [response.data.status.READY],
             },
             {
-                name: t('task.status.RUNNING'),
+                name: t('local.RUNNING'),
                 values: [response.data.status.RUNNING],
             },
             {
-                name: t('task.status.SUCCESSFUL'),
+                name: t('local.SUCCESSFUL'),
                 values: [response.data.status.SUCCESSFUL],
             },
             {
-                name: t('task.status.FAILED'),
+                name: t('local.FAILED'),
                 values: [response.data.status.FAILED],
             },
         ];
@@ -65,10 +64,30 @@ const config = computed<VueUiDonutConfig>(() => {
                     },
                 },
                 title: {
-                    text: t('task.title'),
+                    text: t('local.title'),
                 },
             },
         },
     } as VueUiDonutConfig;
 });
+
+/* 本地化 Localization */
+const i18nMessages = {
+    'zh-cn': { local: {
+        title: '后台任务',
+        READY: '排队中',
+        RUNNING: '运行中',
+        SUCCESSFUL: '已完成',
+        FAILED: '失败',
+    } },
+    'en': { local: {
+        title: 'Background tasks',
+        READY: 'Ready',
+        RUNNING: 'Running',
+        SUCCESSFUL: 'Successful',
+        FAILED: 'Failed',
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
 </script>
