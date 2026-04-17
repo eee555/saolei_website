@@ -223,9 +223,6 @@ export default {
             panic: 'The video parser encountered an unknown error. Please contact the developers.',
         },
     },
-    experimentalFeature: {
-        watermark: 'EXPERIMENTAL',
-    },
     form: {
         captcha: 'Captcha',
         captchaLoading: 'Loading',

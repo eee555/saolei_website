@@ -221,9 +221,6 @@ export default {
             panic: '录像解析器发生未知错误，请联系开发者',
         },
     },
-    experimentalFeature: {
-        watermark: '实验功能',
-    },
     form: {
         captcha: '验证码',
         captchaLoading: '加载中',
