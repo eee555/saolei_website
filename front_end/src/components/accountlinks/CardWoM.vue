@@ -18,7 +18,7 @@
                     <el-descriptions-item :label="t('common.prop.update_time')" :span="3">
                         {{ utc_to_local_format(info.update_time) }}
                     </el-descriptions-item>
-                    <el-descriptions-item :label="t('accountlink.womTrophy')" :span="3">
+                    <el-descriptions-item :label="t('local.trophy')" :span="3">
                         {{ info.trophy }}
                     </el-descriptions-item>
                     <el-descriptions-item :label="t('common.prop.time')" :span="3">
@@ -33,26 +33,26 @@
                     <el-descriptions-item :label="t('common.prop.winstreak')" :span="3">
                         {{ maybeUndefined(info.b_winstreak) }} | {{ maybeUndefined(info.i_winstreak) }} | {{ maybeUndefined(info.e_winstreak) }}
                     </el-descriptions-item>
-                    <el-descriptions-item :label="t('accountlink.womMaxDifficulty')" :span="3">
+                    <el-descriptions-item :label="t('local.maxDifficulty')" :span="3">
                         {{ info.max_difficulty }}
                     </el-descriptions-item>
                 </el-descriptions>
             </el-carousel-item>
             <el-carousel-item>
                 <el-descriptions border>
-                    <el-descriptions-item :label="t('accountlink.womExperience')" :span="3">
+                    <el-descriptions-item :label="t('local.experience')" :span="3">
                         {{ info.experience }}
                     </el-descriptions-item>
-                    <el-descriptions-item :label="t('accountlink.womArenaPoint')" :span="3">
+                    <el-descriptions-item :label="t('local.arenaPoint')" :span="3">
                         {{ info.arena_point }}
                     </el-descriptions-item>
-                    <el-descriptions-item :label="t('accountlink.womWin')" :span="3">
+                    <el-descriptions-item :label="t('local.win')" :span="3">
                         {{ info.win }}
                     </el-descriptions-item>
-                    <el-descriptions-item :label="t('accountlink.womLastSeason')" :span="3">
+                    <el-descriptions-item :label="t('local.lastSeason')" :span="3">
                         {{ info.last_season }}
                     </el-descriptions-item>
-                    <el-descriptions-item :label="t('accountlink.womResource')" :span="3">
+                    <el-descriptions-item :label="t('local.resource')" :span="3">
                         <el-image src="https://minesweeper.online/img/other/hp.svg" class="icon" /><span class="text">
                             {{ info.honour }}
                         </span>&nbsp;
@@ -118,7 +118,6 @@ import { TaskStatus } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { utc_to_local_format } from '@/utils/system/tools';
 
-const { t } = useI18n();
 const { proxy } = useCurrentInstance();
 
 const refCarousel = ref<typeof ElCarousel>();
@@ -162,6 +161,30 @@ async function updateLink() {
 }
 
 defineEmits(['refresh']);
+
+/* 本地化 Localization */
+const i18nMessage = {
+    'zh-cn': { local: {
+        arenaPoint: '竞技场',
+        experience: '经验',
+        lastSeason: '最近赛季',
+        maxDifficulty: '高难',
+        resource: '资源',
+        trophy: '奖杯',
+        win: '总胜场',
+    } },
+    'en': { local: {
+        arenaPoint: 'Arena',
+        experience: 'Experience',
+        lastSeason: 'Last Season',
+        maxDifficulty: 'Max Difficulty',
+        resource: 'Resources',
+        trophy: 'Trophies',
+        win: 'Wins',
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessage });
 </script>
 
 <style lang="less" scoped>

@@ -161,13 +161,6 @@ export default {
             unknown: 'Unknown error',
         },
         verified: 'Verified',
-        womArenaPoint: 'Arena',
-        womExperience: 'Experience',
-        womLastSeason: 'Last Season',
-        womMaxDifficulty: 'Max Difficulty',
-        womResource: 'Resources',
-        womTrophy: 'Trophies',
-        womWin: 'Wins',
     },
     activityCalendar: {
         cellGap: 'Cell Gap',

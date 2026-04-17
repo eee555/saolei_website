@@ -159,13 +159,6 @@ export default {
             unknown: '发生未知错误',
         },
         verified: '已验证',
-        womArenaPoint: '竞技场',
-        womExperience: '经验',
-        womLastSeason: '最近赛季',
-        womMaxDifficulty: '高难',
-        womResource: '资源',
-        womTrophy: '奖杯',
-        womWin: '总胜场',
     },
     activityCalendar: {
         cellGap: '方格间距',
