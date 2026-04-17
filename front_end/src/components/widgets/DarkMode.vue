@@ -1,8 +1,8 @@
 <template>
     <el-radio-group v-model="store" size="small" style="vertical-align: middle;">
-        <el-radio-button :label="t('setting.colorscheme.light')" value="light" />
-        <el-radio-button :label="t('setting.colorscheme.auto')" value="auto" />
-        <el-radio-button :label="t('setting.colorscheme.dark')" value="dark" />
+        <el-radio-button :label="t('local.light')" value="light" />
+        <el-radio-button :label="t('local.auto')" value="auto" />
+        <el-radio-button :label="t('local.dark')" value="dark" />
     </el-radio-group>
 </template>
 
@@ -12,7 +12,23 @@ import { useColorMode } from '@vueuse/core';
 import { ElRadioButton, ElRadioGroup } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
-const { t } = useI18n();
 const { store } = useColorMode();
+
+const i18nMessages = {
+    'zh-cn': { local: {
+        auto: '自动',
+        dark: '深色',
+        light: '浅色',
+    } },
+    'en': { local: {
+        auto: 'auto',
+        dark: 'dark',
+        light: 'light',
+    } },
+};
+
+const { t } = useI18n({
+    messages: i18nMessages,
+});
 
 </script>

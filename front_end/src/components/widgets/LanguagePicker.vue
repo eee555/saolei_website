@@ -35,6 +35,19 @@ const options = [
 ];
 
 onBeforeMount(() => {
+    switch (local.value.language) {
+        case 'zh-cn':
+        case 'en':
+        case 'de':
+        case 'pl':
+        case 'dev':
+            break;
+        case 'zh-tw':
+            local.value.language = 'zh-cn';
+            break;
+        default:
+            local.value.language = 'en';
+    }
     i18n.global.locale.value = local.value.language;
 });
 

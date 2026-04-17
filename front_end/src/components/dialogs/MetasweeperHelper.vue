@@ -1,7 +1,7 @@
 <template>
     <div>
         <span class="text text-medium">
-            {{ t('software.metaDescription') }}
+            {{ t('local.description') }}
             <br>
             {{ t('software.repository') }}{{ t('common.punct.colon') }}
             https://github.com/eee555/Metasweeper
@@ -87,8 +87,6 @@ import { useI18n } from 'vue-i18n';
 import { BaseBadgeMsgames, BaseBadgeOpenms, BaseBadgeSaolei, BaseBadgeScoreganizer } from '@/components/common/badge';
 import BaseTagSupport from '@/components/common/BaseTagSupport.vue';
 import { BaseFlagCN, BaseFlagDE, BaseFlagPL, BaseFlagUK } from '@/components/common/flag';
-
-const { t } = useI18n();
 
 const tableData = [
     {
@@ -180,4 +178,15 @@ const tableData = [
     },
 ];
 
+/* 本地化 Localization */
+const i18nMessages = {
+    'zh-cn': { local: {
+        description: '元扫雷是一款开源扫雷软件，正处于活跃更新中。',
+    } },
+    'en': { local: {
+        description: 'Metasweeper is an open-source minesweeper clone under active development.',
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
 </script>
