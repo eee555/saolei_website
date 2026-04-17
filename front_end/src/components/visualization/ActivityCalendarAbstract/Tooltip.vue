@@ -49,8 +49,8 @@ const i18nMessages = {
         uploadedNVideosOnDate: '{0} 共 {1} 个录像',
     } },
     'en': { local: {
-        noVideoOnDate: '{0} 无录像',
-        uploadedNVideosOnDate: '{0} 共 {1} 个录像',
+        noVideoOnDate: 'No video on {0}',
+        uploadedNVideosOnDate: '{1} videos on {0}',
     } },
 };
 
