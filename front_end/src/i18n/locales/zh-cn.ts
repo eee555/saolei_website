@@ -162,17 +162,6 @@ export default {
     },
     BBBvSummary: {
         bbbvInTotal: ({ linked, list }) => `共${list(0)}个${linked('common.prop.bv')}`,
-        cellHeight: '行高',
-        customTemplate: '自定义',
-        settingDisplayBy: '录像的',
-        settingMax: '最大',
-        settingMin: '最小',
-        tooltipMode: {
-            fast: '简易模式',
-            fastTooltip: '点击播放录像',
-            advanced: '高级模式',
-            advancedTooltip: '点击显示录像列表，悬浮窗中播放录像',
-        },
     },
     errorMsg: {
         file: {

@@ -4,6 +4,8 @@
             &nbsp;
         </template>
         <el-link v-else underline="never" @click="handleClick">
+            <software-icon v-if="prop.showIcon === 'software'" :software="videos[bestIndex].software" />
+            <video-state-icon v-else-if="prop.showIcon === 'state'" :state="videos[bestIndex].state" />
             {{ videos[bestIndex].displayStat(displayBy) }}
         </el-link>
     </span>
@@ -16,6 +18,8 @@ import { computed, PropType, ref, watch } from 'vue';
 
 import { getBest } from './utils';
 
+import SoftwareIcon from '@/components/widgets/SoftwareIcon.vue';
+import VideoStateIcon from '@/components/widgets/VideoStateIcon.vue';
 import { store } from '@/store';
 import { getTextColor, PiecewiseColorScheme } from '@/utils/colors';
 import { preview } from '@/utils/common/PlayerDialog';
@@ -34,6 +38,7 @@ const prop = defineProps({
     colorTheme: { type: Object as PropType<PiecewiseColorScheme>, default: new PiecewiseColorScheme([], []) },
     softwareFilter: { type: Array<MS_Software>, default: () => [...MS_Softwares] },
     tooltipMode: { type: String as PropType<'fast' | 'advanced'>, default: 'fast' },
+    showIcon: { type: String as PropType<'' | 'software' | 'state'>, default: '' },
 });
 
 function refresh() {

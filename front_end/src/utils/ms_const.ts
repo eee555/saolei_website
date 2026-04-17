@@ -1,20 +1,5 @@
 import { useLocalStorage } from '@vueuse/core';
 
-export type EnumMap<T extends string | number | symbol, V> = { [K in T]: V; };
-
-/**
- * 根据键数组和默认值，创建一个包含所有键且值均为默认值的对象。
- * 返回类型精确到键的联合类型，确保所有键都存在。
- */
-export function createEnumMap<T extends readonly string[], V>(
-    keys: T,
-    defaultValue: V,
-): { [K in T[number]]: V } {
-    return Object.fromEntries(keys.map((key) => [key, defaultValue])) as {
-        [K in T[number]]: V;
-    };
-}
-
 export const MS_Levels = ['b', 'i', 'e'] as const;
 export type MS_Level = typeof MS_Levels[number];
 
@@ -66,8 +51,11 @@ export const GSCDefaults = {
     et: 240000,
 } as const;
 
-export const ColorTemplateNames = ['time', 'bvs', 'stnb', 'ioe', 'thrp', 'path', 'custom'] as const;
+export const ColorTemplateNames = ['time', 'bvs', 'stnb', 'ioe', 'thrp', 'custom'] as const;
 export type ColorTemplateName = typeof ColorTemplateNames[number];
 
 export const ColumnChoices = ['state', 'upload_time', 'end_time', 'player', 'software', 'mode', 'level', 'time', 'bv', 'bvs', 'stnb', 'ces', 'cls', 'corr', 'ioe', 'thrp', 'path', 'file_size'] as const;
 export type ColumnChoice = typeof ColumnChoices[number];
+
+export const CellChoices = ['time', 'bvs', 'stnb', 'ioe', 'thrp', 'path', 'cls', 'ces', 'iome', 'file_size'] as const;
+export type CellChoice = typeof CellChoices[number];

@@ -1,5 +1,6 @@
 import { toISODateString } from './datetime';
 import { MS_Level, MS_Software, MS_State, STNB_const } from './ms_const';
+import { formatBytes } from './strings';
 
 function undefinedOrToString(value: any): string | undefined {
     return value === undefined ? undefined : value.toString();
@@ -52,7 +53,7 @@ interface VideoRedisInfo {
     ce?: number;
 }
 
-export type getStat_stat = 'time' | 'bvs' | 'timems' | 'bv' | 'qg' | 'rqp' | 'stnb' | 'ce' | 'ces' | 'cl' | 'cls' | 'ioe' | 'thrp' | 'corr' | 'path' | 'mov' | 'iome';
+export type getStat_stat = 'time' | 'bvs' | 'timems' | 'bv' | 'qg' | 'rqp' | 'stnb' | 'ce' | 'ces' | 'cl' | 'cls' | 'ioe' | 'thrp' | 'corr' | 'path' | 'npath' | 'mov' | 'iome' | 'file_size';
 
 export class VideoAbstract {
     public id: number;
@@ -162,12 +163,16 @@ export class VideoAbstract {
         return undefinedDivideNumber(this.ce, this.time);
     }
 
+    get npath() {
+        return undefinedDivideNumber(this.path, 16);
+    }
+
     get mov() {
-        return undefinedDivideNumber(this.path, this.time);
+        return undefinedDivideNumber(this.npath, this.time);
     }
 
     get iome() {
-        return numberDivideUndefined(this.bv, this.path);
+        return numberDivideUndefined(this.bv, this.npath);
     }
 
     public getStat(stat: getStat_stat) {
@@ -190,8 +195,10 @@ export class VideoAbstract {
             case 'thrp': return undefinedOrToFixed(this.thrp, 3);
             case 'corr': return undefinedOrToFixed(this.corr, 3);
             case 'path': return undefinedOrToFixed(this.path, 0);
+            case 'npath': return undefinedOrToFixed(this.npath, 1);
             case 'mov': return undefinedOrToFixed(this.mov, 3);
             case 'iome': return undefinedOrToFixed(this.iome, 3);
+            case 'file_size': return formatBytes(this.file_size);
         }
     }
 
