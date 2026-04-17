@@ -167,8 +167,6 @@ export default {
         cellSize: 'Cell Size',
         cornerRadius: 'Corner Radius',
         showDate: 'Show Date',
-        totalNBytes: '{0} bytes',
-        totalNVideos: '{0} videos in total',
         tooltip: {
             noVideoOnDate: 'No video on {0}',
             uploadedNVideosOnDate: '{1} videos on {0}',

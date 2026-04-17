@@ -1,7 +1,7 @@
 <template>
     <div data-cy="count" style="display: flex; width: 100%; align-items: center">
         <span class="text text-small" style="margin-right: 0.5em">
-            {{ t('activityCalendar.totalNVideos', [videoList.length]) }}
+            {{ t('local.totalNVideos', [videoList.length]) }}
         </span>
         <div style="flex-grow: 1;">
             <StackBar :data="videoCountData" style="flex: 1;" />
@@ -9,7 +9,7 @@
     </div>
     <div data-cy="size" style="display: flex; width: 100%; align-items: center">
         <span class="text text-small" style="margin-right: 0.5em">
-            {{ t('activityCalendar.totalNBytes', [begSize + intSize + expSize]) }}
+            {{ t('local.totalNBytes', [begSize + intSize + expSize]) }}
         </span>
         <div style="flex-grow: 1;">
             <StackBar :data="videoFileSizeDate" />
@@ -25,8 +25,6 @@ import { useI18n } from 'vue-i18n';
 
 import StackBar from '@/components/visualization/StackBar/App.vue';
 import { VideoAbstract } from '@/utils/videoabstract';
-
-const { t } = useI18n();
 
 const prop = defineProps({
     videoList: {
@@ -71,6 +69,19 @@ const videoFileSizeDate = computed(() => {
     ];
 });
 
+/* 本地化 Localization */
+const i18nMessages = {
+    'zh-cn': { local: {
+        totalNBytes: '占用{0}字节',
+        totalNVideos: '共{0}个录像',
+    } },
+    'en': { local: {
+        totalNBytes: '{0} bytes',
+        totalNVideos: '{0} videos in total',
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
 </script>
 
 <style scoped lang="less">
