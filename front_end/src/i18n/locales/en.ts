@@ -226,13 +226,6 @@ export default {
     experimentalFeature: {
         watermark: 'EXPERIMENTAL',
     },
-    footer: {
-        contact: 'Contact',
-        donate: 'Donate',
-        team: 'Team',
-        links: 'Links',
-        about: 'About',
-    },
     form: {
         captcha: 'Captcha',
         captchaLoading: 'Loading',

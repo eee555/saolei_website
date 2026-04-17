@@ -224,13 +224,6 @@ export default {
     experimentalFeature: {
         watermark: '实验功能',
     },
-    footer: {
-        contact: '联系我们',
-        donate: '捐赠',
-        team: '团队',
-        links: '友链',
-        about: '关于我们',
-    },
     form: {
         captcha: '验证码',
         captchaLoading: '加载中',

@@ -5,7 +5,7 @@
             <el-col :span="8">
                 <div style="padding-bottom: 5px">
                     <strong>
-                        {{ t('footer.about') }}
+                        {{ t('local.about') }}
                     </strong>
                 </div>
                 <Thanks />
@@ -14,7 +14,7 @@
             </el-col>
             <el-col :span="8">
                 <div style="padding-bottom: 5px">
-                    <strong>{{ t('footer.contact') }}</strong>
+                    <strong>{{ t('local.contact') }}</strong>
                 </div>
                 <div>
                     <el-link href="https://github.com/eee555/saolei_website" target="_blank">
@@ -39,7 +39,7 @@
             </el-col>
             <el-col :span="8">
                 <div style="padding-bottom: 5px">
-                    <strong>{{ t('footer.links') }}</strong>
+                    <strong>{{ t('local.links') }}</strong>
                 </div>
                 <div>
                     <el-link href="http://saolei.wang" target="_blank">
@@ -101,6 +101,23 @@ import { useI18n } from 'vue-i18n';
 import Downloads from './dialogs/Downloads.vue';
 import Thanks from './dialogs/Thanks.vue';
 
-const { t } = useI18n();
+/* 本地化 Localization */
+const i18nMessage = {
+    'zh-cn': { local: {
+        contact: '联系我们',
+        donate: '捐赠',
+        team: '团队',
+        links: '友链',
+        about: '关于我们',
+    } },
+    'en': { local: {
+        contact: 'Contact',
+        donate: 'Donate',
+        team: 'Team',
+        links: 'Links',
+        about: 'About',
+    } },
+};
 
+const { t } = useI18n({ messages: i18nMessage });
 </script>
