@@ -19,8 +19,9 @@ import { useI18n } from 'vue-i18n';
 
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
 import { local } from '@/store';
+import { createEnumMap, EnumMap } from '@/utils';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { createEnumMap, EnumMap, MS_Level, MS_Levels, MS_Mode, MS_Software, MS_Softwares, MS_State } from '@/utils/ms_const';
+import { MS_Level, MS_Levels, MS_Mode, MS_Software, MS_Softwares, MS_State } from '@/utils/ms_const';
 
 const { proxy } = useCurrentInstance();
 const { t } = useI18n();
