@@ -18,10 +18,10 @@
                     <el-descriptions-item :label="t('common.prop.update_time')" :span="3">
                         {{ utc_to_local_format(info.update_time!) }}
                     </el-descriptions-item>
-                    <el-descriptions-item :label="t('accountlink.saoleiName')" :span="3">
+                    <el-descriptions-item :label="t('local.name')" :span="3">
                         {{ info.name }}
                     </el-descriptions-item>
-                    <el-descriptions-item :label="t('accountlink.saoleiTotalViews')" :span="3">
+                    <el-descriptions-item :label="t('local.totalViews')" :span="3">
                         {{ info.total_views }}
                     </el-descriptions-item>
                     <el-descriptions-item :label="t('common.level.b')" :span="3">
@@ -157,7 +157,6 @@ import { TaskStatus } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { utc_to_local_format } from '@/utils/system/tools';
 
-const { t } = useI18n();
 const { proxy } = useCurrentInstance();
 
 const refCarousel = ref<typeof ElCarousel>();
@@ -253,4 +252,20 @@ onMounted(async () => {
 });
 
 defineEmits(['refresh']);
+
+/* 本地化 Localization */
+const i18nMessage = {
+    'zh-cn': { local: {
+        name: '姓名',
+        totalViews: '综合人气',
+        videoCount: '录像数量',
+    } },
+    'en': { local: {
+        name: 'Name',
+        totalViews: 'Total Views',
+        videoCount: 'Video Count',
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessage });
 </script>
