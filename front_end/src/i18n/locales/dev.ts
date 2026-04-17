@@ -24,6 +24,7 @@ export default {
             double: 'DCl',
             double_s: 'DCls',
             ioe: 'IOE',
+            iome: 'IOME',
             left: 'LCl',
             left_s: 'LCls',
             path: 'Path',

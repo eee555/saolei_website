@@ -164,17 +164,6 @@ export default {
     },
     BBBvSummary: {
         bbbvInTotal: ({ linked, list }) => `${list(0)} ${linked('common.prop.bv')} in total`,
-        cellHeight: 'Cell Height',
-        customTemplate: 'Custom',
-        settingDisplayBy: 'and display by',
-        settingMax: 'Find max',
-        settingMin: 'Find min',
-        tooltipMode: {
-            fast: 'Fast',
-            fastTooltip: 'Click to play the video',
-            advanced: 'Advanced',
-            advancedTooltip: 'Click to show list of videos',
-        },
     },
     errorMsg: {
         file: {
