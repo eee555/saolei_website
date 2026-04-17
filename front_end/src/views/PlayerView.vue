@@ -116,7 +116,7 @@ import { UserProfile } from '@/utils/userprofile';
 const PlayerRecordView = defineAsyncComponent(() => import('@/views/PlayerRecordView.vue'));
 const PlayerVideosView = defineAsyncComponent(() => import('@/views/PlayerVideosView.vue'));
 const PlayerProfileView = defineAsyncComponent(() => import('@/views/PlayerProfileView.vue'));
-const VideoUpload = defineAsyncComponent(() => import('@/components/VideoUpload.vue'));
+const VideoUpload = defineAsyncComponent(() => import('@/components/VideoUpload/App.vue'));
 
 const { proxy } = useCurrentInstance();
 const upload = ref<UploadInstance>();
