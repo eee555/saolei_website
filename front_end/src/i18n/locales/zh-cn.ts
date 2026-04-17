@@ -419,7 +419,6 @@ export default {
             noGuessing: '无猜模式',
             tournament: '比赛',
         },
-        metaDescription: '元扫雷是一款开源扫雷软件，正处于活跃更新中。',
         metasweeper: '元扫雷',
         officialSite: '官方网站',
         operatingSystem: '操作系统',

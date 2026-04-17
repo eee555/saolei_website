@@ -421,7 +421,6 @@ export default {
             noGuessing: 'No guessing',
             tournament: 'Tournament',
         },
-        metaDescription: 'Metasweeper is an open-source minesweeper clone under active development.',
         metasweeper: 'Metasweeper',
         officialSite: 'Official website',
         operatingSystem: 'Operating System',
