@@ -161,16 +161,10 @@ export default {
         verified: '已验证',
     },
     activityCalendar: {
-        cellGap: '方格间距',
-        cellSize: '方格边长',
-        cornerRadius: '圆角半径',
-        showDate: '显示日期',
         tooltip: {
             noVideoOnDate: '{0} 无录像',
             uploadedNVideosOnDate: '{0} 共 {1} 个录像',
         },
-        useEndTime: '结束时间',
-        useEndTimeTooltip: '依录像结束时间显示，关闭此项将使用录像上传时间。结束时间为用户的系统时间，可能不准确。',
     },
     BBBvSummary: {
         bbbvInTotal: ({ linked, list }) => `共${list(0)}个${linked('common.prop.bv')}`,
