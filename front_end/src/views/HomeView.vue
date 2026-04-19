@@ -6,11 +6,11 @@
                     <el-tab-pane v-loading="news_queue_status == 1" style="max-height: 300px; overflow: auto;user-select: none;">
                         <template #label>
                             {{ t('home.news') }}&nbsp;
-                            <el-text v-if="news_queue_status == 2" type="success">
+                            <span v-if="news_queue_status == 2" class="text text-success">
                                 <el-icon>
                                     <Check />
                                 </el-icon>
-                            </el-text>
+                            </span>
                             <el-link
                                 v-else-if="active_tab == 'newest'" underline="never"
                                 :disabled="news_queue_status != 0" style="vertical-align: baseline;" @click="update_news_queue"
@@ -19,7 +19,7 @@
                             </el-link>
                         </template>
                         <div v-for="news in news_queue">
-                            <span class="text-normal">
+                            <span class="text">
                                 {{ utc_to_local_format(news.time) }}
                             </span>
                             &nbsp;
@@ -28,12 +28,12 @@
                                 :user-name="news.player"
                             />
                             &nbsp;
-                            <span class="text-normal">
+                            <span class="text">
                                 {{ t('news.breakRecordTo', {mode: t(`common.mode.${news.mode}`), level: t(`common.level.${news.level}`), stat: t(`common.prop.${news.index}`)}) }}
                             </span>
                             &nbsp;
                             <PreviewNumber :id="news.video_id" :text="to_fixed_n(news.value, 3)" />
-                            <span class="text-normal">
+                            <span class="text">
                                 {{ news.delta == "新" ? "" : news.delta > 0 ? "↑" : "↓" }}{{ news.delta }}
                             </span>
                         </div>
@@ -43,11 +43,11 @@
                     <el-tab-pane v-loading="newest_queue_status == 1" class="bottom_tabs" :lazy="true" name="newest">
                         <template #label>
                             {{ t('home.latestScore') }}&nbsp;
-                            <el-text v-if="newest_queue_status == 2" type="success">
+                            <span v-if="newest_queue_status == 2" class="text text-success">
                                 <el-icon>
                                     <Check />
                                 </el-icon>
-                            </el-text>
+                            </span>
                             <el-link
                                 v-else-if="active_tab == 'newest'" underline="never"
                                 :disabled="newest_queue_status != 0" style="vertical-align: baseline;" @click="update_newest_queue"
@@ -69,7 +69,7 @@
 <script setup lang='ts'>
 import '@/styles/text.css';
 
-import { ElContainer, ElIcon, ElLink, ElMain, ElTabPane, ElTabs, ElText, vLoading } from 'element-plus';
+import { ElContainer, ElIcon, ElLink, ElMain, ElTabPane, ElTabs, vLoading } from 'element-plus';
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 

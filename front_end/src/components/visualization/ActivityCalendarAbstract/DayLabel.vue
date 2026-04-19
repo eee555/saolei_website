@@ -1,5 +1,6 @@
 <template>
-    <el-text
+    <span
+        class="text"
         :style="{
             display: 'inline-block',
             fontSize: `${cellFullSize - 8}px`,
@@ -12,11 +13,11 @@
             <Setting />
         </IconSetting><br>
         Sun<br>Mon<br>Tue<br>Wed<br>Thu<br>Fri<br>Sat
-    </el-text>
+    </span>
 </template>
 
 <script setup lang="ts">
-import { ElText } from 'element-plus';
+import '@/styles/text.css';
 import { computed } from 'vue';
 
 import Setting from './Setting.vue';

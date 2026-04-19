@@ -53,7 +53,7 @@ class SaoleiVideoInfo:
     def get_download_url(self):
         response = requests.get(url=self.url, timeout=5)
         response.encoding = 'GB2312'
-        if response.text == '''<script language="JavaScript">alert('此录象不存在!');</script><script language=JavaScript>top.location=top.location</script>''':
+        if response.text == """<script language="JavaScript">alert('此录象不存在!');</script><script language=JavaScript>top.location=top.location</script>""":
             self.verified = False
             return None
         if '此录像尚未通过审核！' in response.text or '为什么冻结？' in response.text:
@@ -122,7 +122,7 @@ class SaoleiUtils:
 
         upload_time = datetime.strptime(cols[0].get_text(strip=True), '%Y年%m月%d日\xa0%H:%M').replace(tzinfo=timezone(timedelta(hours=8)))
 
-        bv = re.search(r"3BV=(\d+)", cols[2].get_text(strip=True)).group(1)
+        bv = re.search(r'3BV=(\d+)', cols[2].get_text(strip=True)).group(1)
 
         span_tags = cols[4].find_all('span')
         level = SAOLEI_TEXT2LEVEL[span_tags[0].get_text(strip=True)]
@@ -130,7 +130,7 @@ class SaoleiUtils:
 
         a_tag = cols[4].find('a')
         timems = int(a_tag.get_text(strip=True).replace('.', '')) * 10
-        video_id = int(re.search(r"/Video/Show\.asp\?Id=(\d+)", a_tag.get('onclick')).group(1))
+        video_id = int(re.search(r'/Video/Show\.asp\?Id=(\d+)', a_tag.get('onclick')).group(1))
 
         verified = cols[5].get_text(strip=True).startswith('评论')
 
@@ -155,6 +155,6 @@ class SaoleiUtils:
         if len(tables) < 2:
             return []
         table = tables[1]  # second table (the first is the 575px wrapper)
-        rows = table.find_all("tr")
+        rows = table.find_all('tr')
 
         return [SaoleiUtils.parse_video_row(row) for row in rows]

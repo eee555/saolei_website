@@ -21,9 +21,9 @@
         <PrColumn field="id" sortable header="ID" />
         <PrColumn field="upload_time" sortable :header="t('common.prop.upload_time')" style="min-width: 11em">
             <template #body="{ data }">
-                <el-text>
+                <span class="text">
                     {{ utc_to_local_format(data.upload_time) }}
-                </el-text>
+                </span>
             </template>
         </PrColumn>
         <PrColumn field="level" :show-filter-match-modes="false" :show-filter-operator="false" style="width: 5em" :filter-header-style="{ marginInlineStart: '0px' }">
@@ -41,32 +41,32 @@
         <PrColumn field="timems" :header="t('common.prop.time')" sortable>
             <template #body="{ data }: { data: SaoleiVideo }">
                 {{ (data.timems / 1000).toFixed(2) }}
-                <el-text v-if="data.nf" type="warning">
+                <span v-if="data.nf" class="text text-warning">
                     NF
-                </el-text>
+                </span>
             </template>
         </PrColumn>
         <PrColumn field="bv" :header="t('common.prop.bv')" sortable />
         <PrColumn field="import_task__status" :header="t('common.prop.state')" :show-filter-match-modes="false" :show-filter-operator="false" :show-apply-button="false" :show-clear-button="false" :filter-header-style="{ marginInlineStart: '0px' }">
             <template #body="{ data }: { data: SaoleiVideo }">
-                <el-text v-if="data.import_task__status == 'RUNNING'" type="warning">
+                <span v-if="data.import_task__status == 'RUNNING'" class="text text-warning">
                     {{ t('accountlink.importStatus.running') }}
-                </el-text>
-                <el-text v-else-if="data.import_task__status == 'SUCCESSFUL' && data.import_video__id != 0" type="success">
+                </span>
+                <span v-else-if="data.import_task__status == 'SUCCESSFUL' && data.import_video__id != 0" class="text text-success">
                     {{ t('accountlink.importStatus.successful') }}（新）
-                </el-text>
-                <el-text v-else-if="data.import_task__status == 'FAILED'" type="danger">
+                </span>
+                <span v-else-if="data.import_task__status == 'FAILED'" class="text text-danger">
                     {{ t('accountlink.importStatus.failed') }}
-                </el-text>
-                <el-text v-else-if="data.import_task__status == 'READY'" type="primary">
+                </span>
+                <span v-else-if="data.import_task__status == 'READY'" class="text text-primary">
                     {{ t('accountlink.importStatus.ready') }}
-                </el-text>
-                <el-text v-else-if="data.import_task__status == 'SUCCESSFUL' && data.import_video__id == 0" type="danger">
+                </span>
+                <span v-else-if="data.import_task__status == 'SUCCESSFUL' && data.import_video__id == 0" class="text text-danger">
                     {{ t('accountlink.importStatus.connection') }}
-                </el-text>
-                <el-text v-else-if="data.import_task__status == 'NULL' && data.import_video__id != 0" type="success">
+                </span>
+                <span v-else-if="data.import_task__status == 'NULL' && data.import_video__id != 0" class="text text-success">
                     {{ t('accountlink.importStatus.successful') }}
-                </el-text>
+                </span>
             </template>
             <template #filter="{ filterModel, filterCallback }">
                 <PrListbox v-model="filterModel.value" :options="[...DjangoTaskResultStatusOptions]" @change="filterCallback()">
@@ -89,9 +89,10 @@
 <script setup lang="ts">
 import 'primeicons/primeicons.css';
 import '@/styles/button.css';
+import '@/styles/text.css';
 
 import { FilterMatchMode } from '@primevue/core/api';
-import { ElLink, ElText, vLoading } from 'element-plus';
+import { ElLink, vLoading } from 'element-plus';
 import PrColumn from 'primevue/column';
 import PrDataTable from 'primevue/datatable';
 import PrListbox from 'primevue/listbox';

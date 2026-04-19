@@ -14,13 +14,13 @@ from utils.cmp import isbetter
 from utils.parser import MSVideoParser
 from .fields import RestrictedFileField
 
-cache = get_redis_connection("saolei_website")
+cache = get_redis_connection('saolei_website')
 logger = logging.getLogger('videomanager')
 
 
 class ExpandVideoModel(models.Model):
     # video = models.OneToOneField(VideoModel, on_delete=models.CASCADE)
-    identifier = models.CharField(max_length=MaxSizes.IDENTIFIER, default="")
+    identifier = models.CharField(max_length=MaxSizes.IDENTIFIER, default='')
     stnb = models.FloatField(default=0.0)
 
 
@@ -58,13 +58,13 @@ class VideoModel(models.Model):
     player = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     # 服务器端文件相对路径
     file = RestrictedFileField(
-        upload_to="videos/%Y%m%d/", max_length=100, max_upload_size=MaxSizes.VIDEOFILE)
+        upload_to='videos/%Y%m%d/', max_length=100, max_upload_size=MaxSizes.VIDEOFILE)
     file_size = models.PositiveIntegerField(default=0)
     video = models.OneToOneField(
-        ExpandVideoModel, on_delete=models.CASCADE, related_name="+")
-    # file = models.FileField(upload_to="/assets/videos")
+        ExpandVideoModel, on_delete=models.CASCADE, related_name='+')
+    # file = models.FileField(upload_to='/assets/videos')
     # 上传时间，兼最近状态变化时间、更新时间（冻结后会刷新）
-    upload_time = models.DateTimeField(auto_now_add=True, verbose_name="上传时间")
+    upload_time = models.DateTimeField(auto_now_add=True, verbose_name='上传时间')
     # 录像自带时间戳，可被用户篡改，用于用户自用。实际上无时区，因为Django限制，固定时区为UTC。
     end_time = models.DateTimeField(null=True, blank=True)
     # 审核状态
@@ -214,18 +214,18 @@ class VideoModel(models.Model):
         if self.ongoing_tournament and name == 'newest_queue':
             return
         cache.hset(name, self.id, json.dumps({
-            "state": self.state,
-            "tournament": self.ongoing_tournament,
-            "software": self.software,
-            "time": self.upload_time,
-            "player": self.player.realname,
-            "player_id": self.player.id,
-            "level": self.level,
-            "mode": self.mode,
-            "timems": self.timems,
-            "bv": self.bv,
-            "cl": self.cl,
-            "ce": self.ce,
+            'state': self.state,
+            'tournament': self.ongoing_tournament,
+            'software': self.software,
+            'time': self.upload_time,
+            'player': self.player.realname,
+            'player_id': self.player.id,
+            'level': self.level,
+            'mode': self.mode,
+            'timems': self.timems,
+            'bv': self.bv,
+            'cl': self.cl,
+            'ce': self.ce,
         }, cls=ComplexEncoder))
 
     def pop_redis(self, name: str):
@@ -264,8 +264,10 @@ class VideoModel(models.Model):
                 if self.timems < 30000 and userms.video_num_limit < 10000:
                     userms.video_num_limit = 10000
 
-        userms.save(update_fields=["video_num_limit", "video_num_total", "video_num_beg", "video_num_int",
-                    "video_num_exp", "video_num_std", "video_num_nf", "video_num_ng", "video_num_dg"])
+        userms.save(update_fields=[
+            'video_num_limit', 'video_num_total', 'video_num_beg', 'video_num_int',
+            'video_num_exp', 'video_num_std', 'video_num_nf', 'video_num_ng', 'video_num_dg',
+        ])
 
     # 检查某录像是否打破个人纪录
     def checkPB(self, mode):
@@ -285,16 +287,16 @@ class VideoModel(models.Model):
             return
 
         if self.mode == MS_TextChoices.Mode.NF or self.mode == MS_TextChoices.Mode.STD:
-            self.checkPB("std")
+            self.checkPB('std')
 
         if self.mode == MS_TextChoices.Mode.NF:
-            self.checkPB("nf")
+            self.checkPB('nf')
 
         if self.mode == MS_TextChoices.Mode.JSW:
-            self.checkPB("ng")
+            self.checkPB('ng')
 
         if self.mode == MS_TextChoices.Mode.BZD:
-            self.checkPB("dg")
+            self.checkPB('dg')
 
         # 改完记录，存回数据库
         self.player.userms.save(update_fields=record_update_fields)
@@ -303,28 +305,29 @@ class VideoModel(models.Model):
     def update_news_queue(self, index: str, mode: str):
         user: UserProfile = self.player
         ms_user: UserMS = user.userms
-        if ms_user.e_timems_std >= 60000 and (index != "timems" or self.level != "e"):
+        if ms_user.e_timems_std >= 60000 and (index != 'timems' or self.level != 'e'):
             return
-        value = f"{getattr(self, index) / 1000:.3f}" if index == "timems" else f"{getattr(self, index):.3f}"
+        value = f'{getattr(self, index) / 1000:.3f}' if index == 'timems' else f'{getattr(self, index):.3f}'
         delta_number = getattr(self, index) - \
             ms_user.getrecord(self.level, index, mode)
-        if index == "timems":
+        if index == 'timems':
             delta_number /= 1000
         # 看有没有存纪录录像的id，间接判断有没有纪录
         if ms_user.getrecordID(self.level, index, mode):
-            delta = f"{delta_number:.3f}"
+            delta = f'{delta_number:.3f}'
         else:
-            delta = "新"
-        cache.lpush("news_queue", json.dumps({
-            "time": self.upload_time,
-            "player": user.realname,
-            "player_id": self.player.id,
-            "video_id": self.id,
-            "index": index,
-            "mode": mode,
-            "level": self.level,
-            "value": value,
-            "delta": delta}, cls=ComplexEncoder))
+            delta = '新'
+        cache.lpush('news_queue', json.dumps({
+            'time': self.upload_time,
+            'player': user.realname,
+            'player_id': self.player.id,
+            'video_id': self.id,
+            'index': index,
+            'mode': mode,
+            'level': self.level,
+            'value': value,
+            'delta': delta,
+        }, cls=ComplexEncoder))
 
     def update_redis(self):
         user: UserProfile = self.player
@@ -334,14 +337,14 @@ class VideoModel(models.Model):
         elif self.state == MS_TextChoices.State.IDENTIFIER:
             logger.info(f'用户 {user.username}#{user.id} 录像#{self.id} 标识不匹配')
             if not self.ongoing_tournament:
-                self.push_redis("newest_queue")
+                self.push_redis('newest_queue')
             self.update_video_num()
         elif self.state == MS_TextChoices.State.FROZEN:
             logger.info(f'用户 {user.username}#{user.id} 录像#{self.id} 不合法')
-            self.push_redis("freeze_queue")
+            self.push_redis('freeze_queue')
         elif self.state == MS_TextChoices.State.OFFICIAL:  # 合法
             logger.info(f'用户 {user.username}#{user.id} 录像#{self.id} 机审成功')
             if not self.ongoing_tournament:
-                self.push_redis("newest_queue")
+                self.push_redis('newest_queue')
                 self.update_personal_record()
             self.update_video_num()

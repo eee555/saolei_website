@@ -12,9 +12,9 @@ class Match(models.Model):
     # 赛事的总积分。将管理员上传的积分归一化后加给用户
     sum_score = models.PositiveBigIntegerField(null=False, default=0)
     # 赛事注册时间
-    register_time = models.DateTimeField(auto_now_add=True, verbose_name="注册时间")
+    register_time = models.DateTimeField(auto_now_add=True, verbose_name='注册时间')
     # 赛事注销时间
-    unregister_time = models.DateTimeField(auto_now_add=True, verbose_name="注销时间")
+    unregister_time = models.DateTimeField(auto_now_add=True, verbose_name='注销时间')
     # 赛事的最小举办周期，预留，非强制
     cycle_min = models.PositiveIntegerField()
     # 赛事的平均举办周期，预留，非强制
@@ -27,7 +27,7 @@ class Match(models.Model):
 class UserMSScoreRank(models.Model):
     player = models.ForeignKey(UserProfile, null=False, on_delete=models.CASCADE)
     # 增加积分的时间戳
-    models.DateTimeField(auto_now_add=True, verbose_name="更新时间")
+    models.DateTimeField(auto_now_add=True, verbose_name='更新时间')
     # 增加的积分数值
     score = models.FloatField(null=False, default=100)
     # 比赛

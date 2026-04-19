@@ -1,19 +1,19 @@
 <template>
-    <el-text v-if="status == 'loading'" type="primary">
+    <span v-if="status == 'loading'" class="text text-primary">
         <i class="pi pi-spin pi-spinner-dotted" />
-    </el-text>
-    <el-text v-else-if="status == 'success'" type="success">
+    </span>
+    <span v-else-if="status == 'success'" class="text text-success">
         <i class="pi pi-check-circle" />
-    </el-text>
-    <el-text v-else-if="status == 'error'" type="danger">
+    </span>
+    <span v-else-if="status == 'error'" class="text text-danger">
         <i class="pi pi-times-circle" />
-    </el-text>
+    </span>
 </template>
 
 <script setup lang="ts">
-import { ElText } from 'element-plus';
 import { PropType } from 'vue';
 
+import '@/styles/text.css';
 import 'primeicons/primeicons.css';
 import { TaskStatus } from '@/utils/common/structInterface';
 

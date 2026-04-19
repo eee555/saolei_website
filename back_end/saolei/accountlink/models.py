@@ -49,7 +49,7 @@ class AccountSaolei(models.Model):
 
     video_import_task = models.ForeignKey(DBTaskResult, on_delete=models.SET_NULL, null=True)
 
-    name = models.CharField(max_length=10, default="")  # 姓名，10应该够了吧
+    name = models.CharField(max_length=10, default='')  # 姓名，10应该够了吧
     total_views = models.PositiveIntegerField(default=0)  # 综合人气
 
     beg_count = models.PositiveSmallIntegerField(default=0)  # 初级录像数量
@@ -91,8 +91,8 @@ class AccountMinesweeperGames(models.Model):
     parent = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='account_msgames')
     update_time = models.DateTimeField(auto_now=True)
 
-    name = models.CharField(max_length=128, default="")
-    local_name = models.CharField(max_length=128, default="")
+    name = models.CharField(max_length=128, default='')
+    local_name = models.CharField(max_length=128, default='')
     # country = models.CharField() # country和state应该是二合一的枚举类型
     # state = models.CharField()
     joined = models.DateField(null=True)

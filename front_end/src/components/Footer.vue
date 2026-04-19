@@ -5,16 +5,24 @@
             <el-col :span="8">
                 <div style="padding-bottom: 5px">
                     <strong>
-                        {{ t('footer.about') }}
+                        {{ t('local.about') }}
                     </strong>
                 </div>
-                <Thanks />
+                <BaseOverlay>
+                    {{ t('local.team') }}
+                    <template #header>
+                        {{ t('local.team') }}
+                    </template>
+                    <template #overlay>
+                        <Thanks />
+                    </template>
+                </BaseOverlay>
                 <br>
                 <Downloads />
             </el-col>
             <el-col :span="8">
                 <div style="padding-bottom: 5px">
-                    <strong>{{ t('footer.contact') }}</strong>
+                    <strong>{{ t('local.contact') }}</strong>
                 </div>
                 <div>
                     <el-link href="https://github.com/eee555/saolei_website" target="_blank">
@@ -39,7 +47,7 @@
             </el-col>
             <el-col :span="8">
                 <div style="padding-bottom: 5px">
-                    <strong>{{ t('footer.links') }}</strong>
+                    <strong>{{ t('local.links') }}</strong>
                 </div>
                 <div>
                     <el-link href="http://saolei.wang" target="_blank">
@@ -69,15 +77,15 @@
             </el-col>
         </el-row>
         <div style="text-align: center">
-            <el-text style="vertical-align: middle">
+            <span class="text">
                 Copyright @ 2023
-            </el-text>
+            </span>
             <el-link href="http://openms.top">
                 开源扫雷网 openms.top
             </el-link>
-            <el-text style="vertical-align: middle">
+            <span class="text">
                 　版权所有
-            </el-text>
+            </span>
             <el-link href="https://beian.miit.gov.cn/">
                 苏ICP备2023056839号-1
             </el-link>
@@ -93,12 +101,32 @@
 </template>
 
 <script setup lang="ts">
-import { ElCol, ElDivider, ElFooter, ElLink, ElRow, ElText } from 'element-plus';
+import '@/styles/text.css';
+
+import { ElCol, ElDivider, ElFooter, ElLink, ElRow } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
+import BaseOverlay from './common/BaseOverlay.vue';
 import Downloads from './dialogs/Downloads.vue';
 import Thanks from './dialogs/Thanks.vue';
 
-const { t } = useI18n();
+/* 本地化 Localization */
+const i18nMessage = {
+    'zh-cn': { local: {
+        contact: '联系我们',
+        donate: '捐赠',
+        team: '团队',
+        links: '友链',
+        about: '关于我们',
+    } },
+    'en': { local: {
+        contact: 'Contact',
+        donate: 'Donate',
+        team: 'Team',
+        links: 'Links',
+        about: 'About',
+    } },
+};
 
+const { t } = useI18n({ messages: i18nMessage });
 </script>

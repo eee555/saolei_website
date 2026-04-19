@@ -1,18 +1,27 @@
 <template>
-    <el-text :type="hovering ? 'primary' : undefined" :size="size" style="cursor: pointer;" @mouseenter="hovering = true" @mouseleave="hovering = false">
+    <span :class="['text', sizeClass, typeClass]" style="cursor: pointer;" @mouseenter="hovering = true" @mouseleave="hovering = false">
         <slot />
-    </el-text>
+    </span>
 </template>
 
 <script setup lang="ts">
+import '@/styles/text.css';
+import { computed, PropType, ref } from 'vue';
 
-import { ElText } from 'element-plus';
-import { PropType, ref } from 'vue';
-
-defineProps({
+const props = defineProps({
     size: { type: String as PropType<'small' | 'default' | 'large'>, default: 'default' },
 });
 
 const hovering = ref(false);
+
+const sizeClass = computed(() => {
+    if (props.size === 'small') return 'text-small';
+    if (props.size === 'large') return 'text-medium';
+    return '';
+});
+
+const typeClass = computed(() => {
+    return hovering.value ? 'text-primary' : '';
+});
 
 </script>

@@ -2,10 +2,10 @@
     <el-link :underline="underline" @click.stop="visible = true">
         <slot />
     </el-link>
-    <el-dialog v-model="visible" width="100%" align-center body-class="center" :show-close="false" append-to-body :z-index="zIndex">
+    <el-dialog v-if="visible" :model-value="true" width="100%" align-center body-class="center" :show-close="false" append-to-body :z-index="zIndex" @closed="visible=false">
         <slot name="overlay" />
         <template #header>
-            <h2 style="justify-self: center; color: var(--el-text-color-regular)">
+            <h2 class="text-regular" style="justify-self: center;">
                 <slot name="header" />
             </h2>
         </template>

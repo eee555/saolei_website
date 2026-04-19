@@ -18,5 +18,5 @@ class TestFlags(unittest.TestCase):
         self.assertFalse(settings.E2E_TEST)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()

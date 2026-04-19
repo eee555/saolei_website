@@ -49,46 +49,44 @@ class ComplexEncoder(json.JSONEncoder):
         elif isinstance(obj, Decimal):
             return str(obj)
         elif isinstance(obj, bytes):
-            return str(obj, encoding="utf-8")
+            return str(obj, encoding='utf-8')
         else:
             return json.JSONEncoder.default(self, obj)
 
 
-"""
-使用 AK，SK 生成鉴权签名（Access Token）。不能调用太多次。
-:return: access_token，或是None(如果错误)
-"""
-
-
 def get_access_token() -> str:
+    """
+    使用 AK，SK 生成鉴权签名（Access Token）。不能调用太多次。
+    :return: access_token，或是None(如果错误)
+    """
     try:
-        with open("secrets.json", 'r') as f:
-            API_KEY = json.load(f)["client_id"]
-    except:
-        API_KEY = input("请输入client_id：")
+        with open('secrets.json', 'r', encoding='utf-8') as f:
+            API_KEY = json.load(f)['client_id']
+    except Exception:
+        API_KEY = input('请输入client_id：')
     try:
-        with open("secrets.json", 'r') as f:
-            SECRET_KEY = json.load(f)["client_secret"]
-    except:
-        SECRET_KEY = input("请输入client_secret：")
-    url = "https://aip.baidubce.com/oauth/2.0/token"
-    params = {"grant_type": "client_credentials", "client_id": API_KEY, "client_secret": SECRET_KEY}
-    token = str(requests.post(url, params=params).json().get("access_token"))
-    with open('secrets.json', 'r') as file:
+        with open('secrets.json', 'r', encoding='utf-8') as f:
+            SECRET_KEY = json.load(f)['client_secret']
+    except Exception:
+        SECRET_KEY = input('请输入client_secret：')
+    url = 'https://aip.baidubce.com/oauth/2.0/token'
+    params = {'grant_type': 'client_credentials', 'client_id': API_KEY, 'client_secret': SECRET_KEY}
+    token = str(requests.post(url, params=params).json().get('access_token'))
+    with open('secrets.json', 'r', encoding='utf-8') as file:
         data = json.load(file)
     data['token'] = token
-    with open('secrets.json', 'w') as file:
+    with open('secrets.json', 'w', encoding='utf-8') as file:
         json.dump(data, file)
 
-    if token == "None":
-        return "**********************************************\n\n**  警告！内容审核的鉴权签名获取失败！！！  **\n\n**********************************************"
+    if token == 'None':
+        return '**********************************************\n\n**  警告！内容审核的鉴权签名获取失败！！！  **\n\n**********************************************'
     return token
 
 
 def get_ACCESS_TOKEN() -> str:
     try:
-        with open("secrets.json", 'r') as f:
-            return json.load(f)["token"]
+        with open('secrets.json', 'r', encoding='utf-8') as f:
+            return json.load(f)['token']
     except KeyError:
         return get_access_token()
     except FileNotFoundError:
@@ -105,22 +103,22 @@ def verify_text(text: str, user_id: int = 0, user_ip: str = '192.168.0.1') -> bo
         return True
     if len(text) < 2:
         return True
-    url = "https://aip.baidubce.com/rest/2.0/solution/v1/text_censor/v2/user_defined?access_token=" + get_ACCESS_TOKEN()
+    url = 'https://aip.baidubce.com/rest/2.0/solution/v1/text_censor/v2/user_defined?access_token=' + get_ACCESS_TOKEN()
     payload = {
-        "text": text,
-        "user_id": user_id,
-        "user_ip": user_ip,
+        'text': text,
+        'user_id': user_id,
+        'user_ip': user_ip,
     }
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Accept': 'application/json',
     }
-    response = requests.request("POST", url, headers=headers, data=payload)
-    if response.json().get("error_code") == 111:
+    response = requests.request('POST', url, headers=headers, data=payload)
+    if response.json().get('error_code') == 111:
         # token过期了
-        url = "https://aip.baidubce.com/rest/2.0/solution/v1/text_censor/v2/user_defined?access_token=" + get_access_token()
-        response = requests.request("POST", url, headers=headers, data=payload)
-    return response.json().get("conclusion") == "合规"
+        url = 'https://aip.baidubce.com/rest/2.0/solution/v1/text_censor/v2/user_defined?access_token=' + get_access_token()
+        response = requests.request('POST', url, headers=headers, data=payload)
+    return response.json().get('conclusion') == '合规'
 
 
 # 百度大脑鉴别图片合规性
@@ -131,36 +129,36 @@ def verify_image(image_binary, user_id: int, user_ip: str) -> bool:
     if not image_binary:
         return True
     image_base64 = base64.b64encode(image_binary).decode()
-    url = "https://aip.baidubce.com/rest/2.0/solution/v1/img_censor/v2/user_defined?access_token=" + get_ACCESS_TOKEN()
+    url = 'https://aip.baidubce.com/rest/2.0/solution/v1/img_censor/v2/user_defined?access_token=' + get_ACCESS_TOKEN()
     payload = {
-        "image": image_base64,
-        "user_id": user_id,
-        "user_ip": user_ip,
+        'image': image_base64,
+        'user_id': user_id,
+        'user_ip': user_ip,
     }
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Accept': 'application/json',
     }
-    response = requests.request("POST", url, headers=headers, data=payload)
-    if response.json().get("error_code") == 111:
+    response = requests.request('POST', url, headers=headers, data=payload)
+    if response.json().get('error_code') == 111:
         # token过期了
-        url = "https://aip.baidubce.com/rest/2.0/solution/v1/img_censor/v2/user_defined?access_token=" + get_access_token()
-        response = requests.request("POST", url, headers=headers, data=payload)
-    return response.json().get("conclusion") == "合规"
+        url = 'https://aip.baidubce.com/rest/2.0/solution/v1/img_censor/v2/user_defined?access_token=' + get_access_token()
+        response = requests.request('POST', url, headers=headers, data=payload)
+    return response.json().get('conclusion') == '合规'
 
 
 def ratelimited(request, exception):
-    if "/video/download/" in request.path:
+    if '/video/download/' in request.path:
         return redirect(request.META.get('HTTP_REFERER', '/'))
-    if "/login/" in request.path:
-        return JsonResponse({"status": 120, "msg": "请稍后再试！"})
-    if "/register/" in request.path:
-        return JsonResponse({"status": 120, "msg": "请稍后再试！"})
-    if "/retrieve/" in request.path:
-        return JsonResponse({"status": 120, "msg": "请稍后再试！"})
-    if "/get_email_captcha/" in request.path:
-        return JsonResponse({"status": 120, "msg": "请稍后再试！"})
-    if "/captcha/" in request.path:
-        return JsonResponse({"status": 120, "msg": "请稍后再试！"})
-    if "/refresh_captcha/" in request.path:
-        return JsonResponse({"status": 120, "msg": "请稍后再试！"})
+    if '/login/' in request.path:
+        return JsonResponse({'status': 120, 'msg': '请稍后再试！'})
+    if '/register/' in request.path:
+        return JsonResponse({'status': 120, 'msg': '请稍后再试！'})
+    if '/retrieve/' in request.path:
+        return JsonResponse({'status': 120, 'msg': '请稍后再试！'})
+    if '/get_email_captcha/' in request.path:
+        return JsonResponse({'status': 120, 'msg': '请稍后再试！'})
+    if '/captcha/' in request.path:
+        return JsonResponse({'status': 120, 'msg': '请稍后再试！'})
+    if '/refresh_captcha/' in request.path:
+        return JsonResponse({'status': 120, 'msg': '请稍后再试！'})

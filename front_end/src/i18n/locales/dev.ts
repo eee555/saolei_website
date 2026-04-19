@@ -24,6 +24,7 @@ export default {
             double: 'DCl',
             double_s: 'DCls',
             ioe: 'IOE',
+            iome: 'IOME',
             left: 'LCl',
             left_s: 'LCls',
             path: 'Path',
@@ -39,6 +40,11 @@ export default {
             e: 'Evf',
             r: 'Rmv',
             m: 'Mvf',
+        },
+        softwareName: {
+            a: 'Minesweeper Arbiter',
+            r: 'Viennasweeper',
+            m: 'Clone 2007',
         },
     },
 };

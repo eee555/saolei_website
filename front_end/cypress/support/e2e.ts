@@ -115,7 +115,7 @@ Cypress.Commands.add('login', (username: string, password: string) => {
         cy.contains('验证码').next().find('input').type('test{enter}');
         cy.contains('记住我').click();
         cy.contains('用户登录').parent().parent().find('button').contains('登录').click();
-        cy.contains('用户登录').should('not.be.visible'); // wait for the popup to disappear
+        cy.contains('用户登录').should('not.exist'); // wait for the popup to disappear
     });
 });
 

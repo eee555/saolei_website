@@ -19,15 +19,16 @@
                 计算排行并结束比赛
             </el-button>
             <br>
-            <el-text v-for="(log, index) in logList" :key="index" :style="{ display: 'block' }">
+            <span v-for="(log, index) in logList" :key="index" class="text" :style="{ display: 'block' }">
                 {{ log }}
-            </el-text>
+            </span>
         </el-col>
     </el-row>
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElCol, ElRow, ElTable, ElTableColumn, ElText } from 'element-plus';
+import '@/styles/text.css';
+import { ElButton, ElCol, ElRow, ElTable, ElTableColumn } from 'element-plus';
 import { ref, watch } from 'vue';
 
 import { httpErrorNotification, successNotification } from '@/components/Notifications';

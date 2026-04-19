@@ -1,8 +1,8 @@
 <template>
     <div>
-        <el-text size="large">
-            {{ t('software.arbiterDescription') }}
-        </el-text>
+        <span class="text text-medium">
+            {{ t('local.description') }}
+        </span>
         <el-row style="height: 1em" />
         <el-descriptions border style="max-width: 600px">
             <el-descriptions-item :label="t('software.operatingSystem')" :span="2">
@@ -73,14 +73,13 @@
 </template>
 
 <script setup lang="ts">
-import { ElDescriptions, ElDescriptionsItem, ElLink, ElRow, ElTable, ElTableColumn, ElText } from 'element-plus';
+import '@/styles/text.css';
+import { ElDescriptions, ElDescriptionsItem, ElLink, ElRow, ElTable, ElTableColumn } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
 import { BaseBadgeMsgames, BaseBadgeOpenms, BaseBadgeSaolei, BaseBadgeScoreganizer } from '@/components/common/badge';
 import BaseTagSupport from '@/components/common/BaseTagSupport.vue';
 import { BaseFlagCN, BaseFlagJP, BaseFlagUK } from '@/components/common/flag';
-
-const { t } = useI18n();
 
 const tableData = [
     {
@@ -103,4 +102,15 @@ const tableData = [
     },
 ];
 
+/* 本地化 Localization */
+const i18nMessages = {
+    'zh-cn': { local: {
+        description: 'Minesweeper Arbiter 是最流行的专业扫雷软件。',
+    } },
+    'en': { local: {
+        description: 'Minesweeper Arbiter is the most popular authoritative minesweeper clone.',
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
 </script>

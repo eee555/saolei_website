@@ -1,5 +1,37 @@
 import { ComponentCustomProperties } from 'vue';
 
+type DeepMutable<T> = T extends readonly (infer U)[]
+    ? DeepMutable<U>[]                     // 数组递归
+    : T extends object
+        ? { -readonly [K in keyof T]: DeepMutable<T[K]> }  // 对象递归移除 readonly
+        : T;                                  // 基础类型原样
+
+/**
+ * 创建对象的深拷贝副本，确保返回的对象是完全可变的
+ * @param obj - 需要进行深拷贝的对象
+ * @returns 返回一个深拷贝后的可变对象
+ */
+export function deepMutableCopy<T>(obj: T): DeepMutable<T> {
+    // 使用structuredClone方法进行深拷贝
+    // 并将结果断言为DeepMutable类型
+    return structuredClone(obj) as DeepMutable<T>;
+}
+
+export type EnumMap<T extends string | number | symbol, V> = { [K in T]: V; };
+
+/**
+ * 根据键数组和默认值，创建一个包含所有键且值均为默认值的对象。
+ * 返回类型精确到键的联合类型，确保所有键都存在。
+ */
+export function createEnumMap<T extends readonly string[], V>(
+    keys: T,
+    defaultValue: V,
+): { [K in T[number]]: V } {
+    return Object.fromEntries(keys.map((key) => [key, defaultValue])) as {
+        [K in T[number]]: V;
+    };
+}
+
 export function to_fixed_n(input: string | number | undefined, to_fixed: number): string | number | undefined {
     // 返回保留to_fixed位小数的字符串，四舍六入五取双
     if (input === undefined) {

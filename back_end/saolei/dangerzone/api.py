@@ -17,7 +17,7 @@ class UserIdSchema(Schema):
 @local_only
 def flush_database(request):
     call_command('flush', interactive=False)
-    get_redis_connection("saolei_website").flushdb()
+    get_redis_connection('saolei_website').flushdb()
 
 
 class RegisterSchema(Schema):

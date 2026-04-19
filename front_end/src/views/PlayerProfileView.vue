@@ -12,9 +12,9 @@
     <el-divider />
     <AccountLinks :user-id="store.player.id" />
     <el-divider />
-    <el-text tag="b" size="large">
+    <b class="text text-medium">
         {{ t('identifierManager.title') }}
-    </el-text>
+    </b>
     &nbsp;
     <base-overlay>
         <base-icon-info />
@@ -26,10 +26,11 @@
 </template>
 
 <script setup lang="ts">
-import { ElDivider, ElScrollbar, ElText } from 'element-plus';
+import { ElDivider, ElScrollbar } from 'element-plus';
 import { defineAsyncComponent } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import '@/styles/text.css';
 import AccountLinks from '@/components/accountlinks/App.vue';
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
 import BaseOverlay from '@/components/common/BaseOverlay.vue';

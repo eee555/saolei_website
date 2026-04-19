@@ -4,29 +4,31 @@
         <TournamentStateIcon :state="tournament.state" />
     </h1>
     {{ t('gsc.schedule') }}{{ t('common.punct.colon') }}
-    <el-text>
+    <span class="text">
         {{ tournament.displayStartTime() }}
         &nbsp;~&nbsp;
         {{ tournament.displayEndTime() }}
-    </el-text>
+    </span>
     &nbsp;
     <br>
     {{ t('gsc.description.line1') }}
     <br>
     {{ t('gsc.description.line2') }}
     <br>
-    <template v-if="[TournamentState.Preparing, TournamentState.Ongoing].includes(tournament.state)">
+    <template v-if="([TournamentState.Preparing, TournamentState.Ongoing] as TournamentState[]).includes(tournament.state)">
         <h3>{{ t('gsc.howToParticipate') }}</h3>
         <GSCTokenGuide v-model="personaltoken" :order="order" :token="token" />
     </template>
     <template v-if="tournament.state === TournamentState.Ongoing">
         <h3>
             {{ t('gsc.realTimeScore') }}&nbsp;
-            <base-icon-refresh @click="refresh" />
+            <el-link underline="never" :disabled="loading">
+                <base-icon-refresh @click="refresh" />
+            </el-link>
         </h3>
-        <GSCPersonalView :user-id="store.user.id" :tournament-id="tournament.id" />
+        <GSCPersonalView v-loading="loading" :user-id="store.user.id" :tournament-id="tournament.id" />
     </template>
-    <template v-if="[TournamentState.Finished, TournamentState.Awarded].includes(tournament.state)">
+    <template v-if="([TournamentState.Finished, TournamentState.Awarded] as TournamentState[]).includes(tournament.state)">
         <h3>
             {{ t('gsc.finalResults') }}
         </h3>
@@ -40,7 +42,7 @@
             </el-tab-pane>
             <el-tab-pane v-for="(participant, index) in viewedParticipants" :key="participant.id" lazy :name="index">
                 <template #label>
-                    <el-text>{{ participant.user__realname }}</el-text>
+                    <span class="text">{{ participant.user__realname }}</span>
                     &nbsp;
                     <el-link underline="never" @click="handleAllSummaryTabClose(index)">
                         <base-icon-close style="scale: 65%" />
@@ -54,10 +56,11 @@
 
 <script setup lang="ts">
 
-import { ElButton, ElLink, ElRow, ElTabPane, ElTabs, ElText } from 'element-plus';
+import { ElButton, ElLink, ElRow, ElTabPane, ElTabs, vLoading } from 'element-plus';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import '@/styles/text.css';
 import GSCAllSummary from './GSCAllSummary.vue';
 import GSCPersonalView from './GSCPersonalView.vue';
 import GSCTokenGuide from './GSCTokenGuide.vue';
@@ -90,9 +93,11 @@ const result = ref<GSCParticipant[]>([]);
 const personaltoken = ref<string>('');
 const viewedParticipants = ref<GSCParticipant[]>([]);
 const allSummaryTabPosition = ref(-1);
+const loading = ref(false);
 
-function refresh() {
-    proxy.$axios.get('tournament/gscinfo/', {
+async function refresh() {
+    loading.value = true;
+    await proxy.$axios.get('tournament/gscinfo/', {
         params: {
             id: props.id,
         },
@@ -109,6 +114,7 @@ function refresh() {
             result.value = (response.data.results as Array<object>).map((value) => new GSCParticipant(value));
         }
     }).catch(httpErrorNotification);
+    loading.value = false;
 }
 
 watch(() => props.id, refresh, { immediate: true });

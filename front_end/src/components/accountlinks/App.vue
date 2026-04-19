@@ -1,8 +1,8 @@
 <template>
     <template v-if="store.isSelf || accountlinks.length > 0">
-        <el-text tag="b" size="large">
+        <b class="text text-medium">
             {{ t('accountlink.title') }}
-        </el-text>
+        </b>
         <div v-loading="loading" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(19rem, auto)); grid-gap: 1rem;">
             <template v-for="account in accountlinks" :key="account.platform">
                 <card-saolei v-if="account.platform == 'c'" :id="account.identifier" :verified="account.verified" :info="account.data as AccountSaolei" @refresh="refreshAccount(account)" />
@@ -15,7 +15,9 @@
 </template>
 
 <script setup lang="ts">
-import { ElText, vLoading } from 'element-plus';
+import '@/styles/text.css';
+
+import { vLoading } from 'element-plus';
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 

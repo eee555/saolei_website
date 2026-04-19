@@ -3,9 +3,9 @@
         <div style="margin-bottom: 0.5em;">
             <pr-toolbar>
                 <template #start>
-                    <el-text size="large">
+                    <span class="text text-medium">
                         {{ t('common.website.saolei') }}&nbsp;#{{ id }}
-                    </el-text>
+                    </span>
                 </template>
                 <template #end>
                     <CarouselControl :ref-carousel="refCarousel" :length="carouselLength" />
@@ -18,10 +18,10 @@
                     <el-descriptions-item :label="t('common.prop.update_time')" :span="3">
                         {{ utc_to_local_format(info.update_time!) }}
                     </el-descriptions-item>
-                    <el-descriptions-item :label="t('accountlink.saoleiName')" :span="3">
+                    <el-descriptions-item :label="t('local.name')" :span="3">
                         {{ info.name }}
                     </el-descriptions-item>
-                    <el-descriptions-item :label="t('accountlink.saoleiTotalViews')" :span="3">
+                    <el-descriptions-item :label="t('local.totalViews')" :span="3">
                         {{ info.total_views }}
                     </el-descriptions-item>
                     <el-descriptions-item :label="t('common.level.b')" :span="3">
@@ -48,21 +48,21 @@
             </el-carousel-item>
             <el-carousel-item style="display: flex; flex-direction: column;">
                 <div>
-                    <el-text size="large">
+                    <span class="text text-medium">
                         {{ t('accountlink.statSummary') }}
-                    </el-text>
+                    </span>
                     &nbsp;
                     <el-button v-loading="taskStatus == 'loading'" @click="updateLink(); $emit('refresh')">
                         {{ t('accountlink.synchronize') }}
                     </el-button>
                 </div>
-                <div class="text-small" style="margin-bottom: auto; margin-top: 0.25em;">
+                <div class="text text-small" style="margin-bottom: auto; margin-top: 0.25em;">
                     {{ t('accountlink.statSummaryTooltip') }}
                 </div>
                 <div style="margin-bottom: 0.25em">
-                    <el-text size="large">
+                    <span class="text text-medium">
                         {{ t('accountlink.synchronizeVideos') }}
-                    </el-text>
+                    </span>
                     <base-overlay>
                         <base-icon-info />
                         <template #header>
@@ -73,18 +73,18 @@
                         </template>
                     </base-overlay>
                 </div>
-                <div class="text-normal">
+                <div class="text">
                     已收藏{{ importSummary.total }}个录像
                     &nbsp;
-                    <el-text v-if="importSummary.bulk_task_status == 'FAILED'" type="danger">
+                    <span v-if="importSummary.bulk_task_status == 'FAILED'" class="text text-danger">
                         后台任务出错，请联系管理员
-                    </el-text>
-                    <el-text v-else-if="importSummary.bulk_task_status == 'READY'" type="primary">
+                    </span>
+                    <span v-else-if="importSummary.bulk_task_status == 'READY'" class="text text-primary">
                         正在排队中
-                    </el-text>
-                    <el-text v-else-if="importSummary.bulk_task_status == 'RUNNING'" type="warning">
+                    </span>
+                    <span v-else-if="importSummary.bulk_task_status == 'RUNNING'" class="text text-warning">
                         正在同步中
-                    </el-text>
+                    </span>
                     <template v-else>
                         <el-link underline="never" style="vertical-align: top;" @click="syncModeAll = !syncModeAll">
                             {{ syncModeAll ? t('accountlink.synchronizeAll') : t('accountlink.synchronizeNew') }}
@@ -98,13 +98,13 @@
                         {{ t('accountlink.synchronizeManage') }}
                     </el-button>
                 </div>
-                <div class="text-normal" style="margin-top: 0.25em">
+                <div class="text" style="margin-top: 0.25em">
                     <StackBar :data="stackBarData" legend />
                 </div>
-                <div class="text-normal" style="margin-top: 0.5em">
+                <div class="text" style="margin-top: 0.5em">
                     新收藏{{ importSummary.new_total }}个录像
                 </div>
-                <div class="text-normal" style="margin-top: 0.25em">
+                <div class="text" style="margin-top: 0.25em">
                     <StackBar :data="stackBarNewData" legend />
                 </div>
                 <!-- 后端暂时有bug，删不掉 -->
@@ -135,7 +135,7 @@
 import 'vue-data-ui/style.css';
 import '@/styles/button.css';
 
-import { ElButton, ElCarousel, ElCarouselItem, ElDescriptions, ElDescriptionsItem, ElDialog, ElInput, ElLink, ElText, vLoading } from 'element-plus';
+import { ElButton, ElCarousel, ElCarouselItem, ElDescriptions, ElDescriptionsItem, ElDialog, ElInput, ElLink, vLoading } from 'element-plus';
 import PrToolbar from 'primevue/toolbar';
 import { computed, onMounted, PropType, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -157,7 +157,6 @@ import { TaskStatus } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { utc_to_local_format } from '@/utils/system/tools';
 
-const { t } = useI18n();
 const { proxy } = useCurrentInstance();
 
 const refCarousel = ref<typeof ElCarousel>();
@@ -253,4 +252,20 @@ onMounted(async () => {
 });
 
 defineEmits(['refresh']);
+
+/* 本地化 Localization */
+const i18nMessage = {
+    'zh-cn': { local: {
+        name: '姓名',
+        totalViews: '综合人气',
+        videoCount: '录像数量',
+    } },
+    'en': { local: {
+        name: 'Name',
+        totalViews: 'Total Views',
+        videoCount: 'Video Count',
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessage });
 </script>

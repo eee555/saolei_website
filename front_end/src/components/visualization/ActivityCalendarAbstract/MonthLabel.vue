@@ -1,6 +1,6 @@
 <template>
-    <el-text
-        v-for="date of generateMonthLabelRange(startDate, endDate)" :key="date.toISOString()" :style="{
+    <span
+        v-for="date of generateMonthLabelRange(startDate, endDate)" :key="date.toISOString()" class="text" :style="{
             position: 'absolute',
             fontSize: '12px',
             top: 0,
@@ -9,11 +9,11 @@
         }"
     >
         {{ monthNameShort[date.getMonth()] }}
-    </el-text>
+    </span>
 </template>
 
 <script setup lang="ts">
-import { ElText } from 'element-plus';
+import '@/styles/text.css';
 import { computed } from 'vue';
 
 import { fullWeek, getWeekTime, monthNameShort } from '@/utils/datetime';

@@ -39,8 +39,7 @@
 import { ElButton, ElDescriptions, ElDescriptionsItem, ElInput, ElInputNumber, ElOption, ElSelect } from 'element-plus';
 import { ref } from 'vue';
 
-import { httpErrorNotification, successNotification } from '../Notifications';
-
+import { httpErrorNotification, successNotification } from '@/components/Notifications';
 import { preview } from '@/utils/common/PlayerDialog';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 

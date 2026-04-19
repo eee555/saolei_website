@@ -68,7 +68,7 @@ class WOM2Request_42(IWOM2Request):
     _unknown_num: int = 0
     _data_type_num: int = 42
 
-    def __init__(self, request_type: str, params: List[Any] = [], unknown_num: int = 0) -> None:
+    def __init__(self, request_type: str, params: List[Any], unknown_num: int = 0) -> None:
         super().__init__()
         self._request_type = request_type
         self._params = params
@@ -97,11 +97,11 @@ class WOM2Request_42(IWOM2Request):
         result = re.findall(reStr, data)[0]
         if result:
             if self._data_type_num != 42:
-                raise ValueError("Invalid data type number")
+                raise ValueError('Invalid data type number')
             self._data_type_num = int(result[0])
             self.from_json(json.loads(result[1]))
         else:
-            raise ValueError("Invalid data")
+            raise ValueError('Invalid data')
 
     def from_json(self, json_data: List[Any]):
         self._request_type = json_data[1][0]
@@ -126,9 +126,9 @@ class WOM2Response_42(IWOM2Response):
             self._data_type_num = int(result[0])
             self.from_json(json.loads(result[1]))
             if self._data_type_num != 42:
-                raise ValueError("Invalid data type number")
+                raise ValueError('Invalid data type number')
         else:
-            raise ValueError("Invalid data")
+            raise ValueError('Invalid data')
 
     def from_json(self, json_data: List[Any]):
         self._seq = json_data[1][0]
@@ -184,7 +184,7 @@ class WOM2:
         if self.wait_for_connection():
             return self
         self.stop()
-        raise WOM2Exception("Failed to connect to WOM server")
+        raise WOM2Exception('Failed to connect to WOM server')
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.stop()
@@ -295,14 +295,14 @@ class WOM2:
             原始响应字符串，超时返回 None。用户需要根据数据类型自行解析。
         """
         if request is None:
-            raise ValueError("request is None")
+            raise ValueError('request is None')
         responses = []
         # 处理不同类型的请求
         if isinstance(request, str):
             message = request
             target_seq = seq
             if target_seq is None:
-                raise ValueError("seq is required when request is a string")
+                raise ValueError('seq is required when request is a string')
         else:
             message = request.to_string()
             target_seq = request.seq
@@ -337,7 +337,7 @@ class WOM2:
             except queue.Empty:
                 continue
 
-        raise WOM2Exception("Timeout")
+        raise WOM2Exception('Timeout')
 
     def __extract_seq(self, message: str) -> Optional[int]:
         """
@@ -403,7 +403,7 @@ class WOM2:
             原始响应字符串，超时返回 None
         """
         if video_id is None:
-            raise ValueError("video_id is None")
+            raise ValueError('video_id is None')
 
         request = WOM2Request_42(
             'EnterGameController.enterGameWsAction',
@@ -419,7 +419,7 @@ if __name__ == '__main__':
     with WOM2() as wom:
 
         # 使用自定义请求
-        print("获取录像信息")
+        print('获取录像信息')  # noqa: T201
         request = WOM2Request_42(
             'EnterGameController.enterGameWsAction',
             [3],
@@ -430,16 +430,16 @@ if __name__ == '__main__':
         response2 = WOM2Response_42()
         response1.from_string(responses[0])
         response2.from_string(responses[1])
-        print(response1.data)
-        print(response2.data)
+        print(response1.data)  # noqa: T201
+        print(response2.data)  # noqa: T201
 
         request = WOM2Request_42(
             'PlayersOnlineController.getPlayersOnlineCountWsAction',
             [],
             931,
         )
-        print("获取在线人数")
+        print('获取在线人数')  # noqa: T201
         responses = wom.request(request, timeout=50)
         response1 = WOM2Response_42()
         response1.from_string(responses[0])
-        print(response1.data)
+        print(response1.data)  # noqa: T201

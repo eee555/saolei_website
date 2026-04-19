@@ -50,13 +50,16 @@ def get_GSC_tournament(request: HttpRequest):
     tournament = GSCTournament.objects.filter(order=gsc_id).first()
     if not tournament:
         return JsonResponse({'type': 'error'})
-    return JsonResponse({'type': 'success', 'data': {
-        'id': tournament.id,
-        'start_time': tournament.start_time,
-        'end_time': tournament.end_time,
-        'state': tournament.state,
-        'token': tournament.token,
-    }})
+    return JsonResponse({
+        'type': 'success',
+        'data': {
+            'id': tournament.id,
+            'start_time': tournament.start_time,
+            'end_time': tournament.end_time,
+            'state': tournament.state,
+            'token': tournament.token,
+        },
+    })
 
 
 @require_GET

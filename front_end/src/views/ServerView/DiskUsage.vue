@@ -16,7 +16,6 @@ import { formatBytes } from '@/utils/strings';
 
 
 const { proxy } = useCurrentInstance();
-const { t } = useI18n();
 const loading = ref(false);
 
 const diskUsage = ref({
@@ -28,10 +27,10 @@ const diskUsage = ref({
 });
 
 const diskUsageData = computed(() => [
-    { name: t('server.diskUsage.label.video'), values: [diskUsage.value.video] },
-    { name: t('server.diskUsage.label.db'), values: [diskUsage.value.db] },
-    { name: t('server.diskUsage.label.other'), values: [diskUsage.value.total - diskUsage.value.video - diskUsage.value.db] },
-    { name: t('server.diskUsage.label.free'), values: [diskUsage.value.free] },
+    { name: t('local.video'), values: [diskUsage.value.video] },
+    { name: t('local.db'), values: [diskUsage.value.db] },
+    { name: t('local.other'), values: [diskUsage.value.total - diskUsage.value.video - diskUsage.value.db] },
+    { name: t('local.free'), values: [diskUsage.value.free] },
 ]);
 
 async function refresh() {
@@ -76,11 +75,33 @@ const config = computed(() => {
                     },
                 },
                 title: {
-                    text: t('server.diskUsage.title'),
+                    text: t('local.title'),
                 },
             },
         },
     } as VueUiDonutConfig;
+});
+
+
+const i18nMessages = {
+    'zh-cn': { local: {
+        title: '磁盘使用情况',
+        video: '录像文件',
+        db: '数据库',
+        other: '其他文件',
+        free: '可用空间',
+    } },
+    'en': { local: {
+        title: 'Disk Usage',
+        video: 'Videos',
+        db: 'Database',
+        other: 'Other',
+        free: 'Free',
+    } },
+};
+
+const { t } = useI18n({
+    messages: i18nMessages,
 });
 
 </script>

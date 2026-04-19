@@ -28,11 +28,17 @@ jobs:
     - name: Install Dependencies
       run: |
         pip install flake8
+        pip install flake8-bugbear
         pip install flake8-builtins
         pip install flake8-commas
         pip install flake8-comprehensions
         pip install flake8-datetimez
+        pip install flake8-encodings
+        pip install flake8-implicit-str-concat
         pip install flake8-import-order
+        pip install flake8-multiline-containers
+        pip install flake8-print
+        pip install flake8-quotes
 
     - name: Run Tests
       run: |

@@ -1,7 +1,7 @@
 <template>
     <PrColumn field="end_time" :sortable="sortable" :header="t('common.prop.end_time')">
         <template #body="{ data }">
-            <span class="text-normal">
+            <span class="text">
                 {{ utc_to_local_format(data.end_time) }}
             </span>
         </template>

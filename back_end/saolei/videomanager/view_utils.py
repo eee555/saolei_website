@@ -12,12 +12,14 @@ from userprofile.models import UserProfile
 from .models import ExpandVideoModel, VideoModel
 
 logger = logging.getLogger('videomanager')
-cache = get_redis_connection("saolei_website")
+cache = get_redis_connection('saolei_website')
 
-video_all_fields = ["id", "upload_time", "player__id", "player__realname", "timems", "bv", "bvs", "state", "level", "mode", "software", "flag", "op", "isl", "path", "left", "right", "double", "left_ce", "right_ce",
-                    "double_ce", "cell0", "cell1", "cell2", "cell3", "cell4", "cell5", "cell6", "cell7", "cell8", "left_s", "right_s", "double_s", "left_ces", "right_ces", "double_ces", "flag_s", "ioe", "thrp", "cl_s", "ce_s"]
+video_all_fields = [
+    'id', 'upload_time', 'player__id', 'player__realname', 'timems', 'bv', 'bvs', 'state', 'level', 'mode', 'software', 'flag', 'op', 'isl', 'path', 'left', 'right', 'double', 'left_ce', 'right_ce',
+    'double_ce', 'cell0', 'cell1', 'cell2', 'cell3', 'cell4', 'cell5', 'cell6', 'cell7', 'cell8', 'left_s', 'right_s', 'double_s', 'left_ces', 'right_ces', 'double_ces', 'flag_s', 'ioe', 'thrp', 'cl_s', 'ce_s',
+]
 for name in [field.name for field in ExpandVideoModel._meta.get_fields()]:
-    video_all_fields.append("video__" + name)
+    video_all_fields.append('video__' + name)
 
 # 状态到redis表名的映射
 state2redis = {
@@ -30,17 +32,17 @@ state2redis = {
 
 # 确定用户破某个纪录后，且对应模式、指标的三个级别全部有录像后，更新redis中的数据
 def update_3_level_cache_record(realname: str, index: str, mode: str, ms_user: UserMS):
-    key = f"player_{index}_{mode}_{ms_user.id}"
-    cache.hset(key, "name", realname)
+    key = f'player_{index}_{mode}_{ms_user.id}'
+    cache.hset(key, 'name', realname)
     for level in GameLevels:
         cache.hset(key, level, ms_user.getrecord(level, index, mode))
         recordid = ms_user.getrecordID(level, index, mode)
-        cache.hset(key, f"{level}_id",
-                   "None" if recordid is None else recordid)
-    s = float(ms_user.getrecord("b", index, mode) + ms_user.getrecord("i",
-              index, mode) + ms_user.getrecord("e", index, mode))
-    cache.hset(key, "sum", s)
-    cache.zadd(f"player_{index}_{mode}_ids", {ms_user.id: s})
+        cache.hset(key, f'{level}_id',
+                   'None' if recordid is None else recordid)
+    s = float(ms_user.getrecord('b', index, mode) + ms_user.getrecord('i',
+              index, mode) + ms_user.getrecord('e', index, mode))
+    cache.hset(key, 'sum', s)
+    cache.zadd(f'player_{index}_{mode}_ids', {ms_user.id: s})
 
 
 # 存量式更新用户的记录。删录像后用，恢复用户的记录。
@@ -150,17 +152,17 @@ def generate_file_stream(queryset):
                 continue
 
             filename = f'{video.player.id}_{video.player.realname}/{video.file.name.split("/")[-1]}'
-            filename_bytes = filename.encode("utf-8")
+            filename_bytes = filename.encode('utf-8')
             filename_len = len(filename_bytes)
             filesize = video.file.size
 
             # Header: 4-byte filename length + filename + 8-byte file size
-            yield struct.pack(">I", filename_len)
+            yield struct.pack('>I', filename_len)
             yield filename_bytes
-            yield struct.pack(">Q", filesize)  # unsigned long long, 8 bytes
+            yield struct.pack('>Q', filesize)  # unsigned long long, 8 bytes
 
             # File content
-            with video.file.open("rb") as f:
+            with video.file.open('rb') as f:
                 while chunk := f.read(8192):
                     yield chunk
     return file_iterator()

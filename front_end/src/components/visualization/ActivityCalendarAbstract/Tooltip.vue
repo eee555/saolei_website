@@ -1,12 +1,12 @@
 <template>
     <el-card class="card-small">
-        <el-text v-if="videos.length == 0">
-            {{ t('activityCalendar.tooltip.noVideoOnDate', [toISODateString(date)]) }}
-        </el-text>
+        <span v-if="videos.length == 0" class="text">
+            {{ t('local.noVideoOnDate', [toISODateString(date)]) }}
+        </span>
         <template v-else>
-            <el-text>
-                {{ t('activityCalendar.tooltip.uploadedNVideosOnDate', [toISODateString(date), videos.length]) }}
-            </el-text>
+            <span class="text">
+                {{ t('local.uploadedNVideosOnDate', [toISODateString(date), videos.length]) }}
+            </span>
             <br>
             <span v-for="i in count.b" :key="i" class="dot" style="background-color: #f00;" />
             <span v-for="i in count.i" :key="i" class="dot" style="background-color: #080;" />
@@ -16,16 +16,15 @@
 </template>
 
 <script setup lang="ts">
+import '@/styles/text.css';
 import '@/styles/cards.css';
 
-import { ElCard, ElText } from 'element-plus';
+import { ElCard } from 'element-plus';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { toISODateString } from '@/utils/datetime';
 import { VideoAbstract } from '@/utils/videoabstract';
-
-const { t } = useI18n();
 
 const props = defineProps({
     date: { type: Date, required: true },
@@ -43,6 +42,19 @@ watch(() => props.videos, () => {
     }
 }, { immediate: true });
 
+/* 本地化 Localization */
+const i18nMessages = {
+    'zh-cn': { local: {
+        noVideoOnDate: '{0} 无录像',
+        uploadedNVideosOnDate: '{0} 共 {1} 个录像',
+    } },
+    'en': { local: {
+        noVideoOnDate: 'No video on {0}',
+        uploadedNVideosOnDate: '{1} videos on {0}',
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
 </script>
 
 <style lang="less" scoped>

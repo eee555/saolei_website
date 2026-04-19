@@ -26,7 +26,7 @@ from . import views
 urlpatterns = [
     path('video/', include('videomanager.urls')),
     path('userprofile/', include('userprofile.urls', namespace='userprofile')),
-    path("admin/", admin.site.urls),
+    path('admin/', admin.site.urls),
     # path('gsc/', include('gsc.urls')),
     path('common/', include('common.urls')),
     path('msuser/', include('msuser.urls')),
@@ -35,7 +35,7 @@ urlpatterns = [
     path('identifier/', include('identifier.urls')),
     path('accountlink/', include('accountlink.urls')),
     path('tournament/', include('tournament.urls')),
-    path(r'', TemplateView.as_view(template_name="index.html")),
+    path(r'', TemplateView.as_view(template_name='index.html')),
     path('logs/', views.get_log_dir),
     path('log_view/', views.get_log_file),
 ]

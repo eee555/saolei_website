@@ -4,28 +4,29 @@
             <base-icon-identifier style="color: var(--el-color-warning)" />
         </el-icon>
         <template #content>
-            <el-text>{{ t('common.state.d') }}</el-text>
+            <span class="text">{{ t('common.state.d') }}</span>
         </template>
     </base-tooltip>
-    <el-text v-else-if="state == MS_State.Official" type="success">
+    <span v-else-if="state == MS_State.Official" class="text text-success">
         <el-icon>
             <base-icon-verified />
         </el-icon>
-    </el-text>
-    <el-text v-else-if="state == MS_State.Plain" type="info">
+    </span>
+    <span v-else-if="state == MS_State.Plain" class="text text-info">
         <el-icon>
             <base-icon-pending />
         </el-icon>
-    </el-text>
-    <el-text v-else-if="state == MS_State.Frozen" type="danger">
+    </span>
+    <span v-else-if="state == MS_State.Frozen" class="text text-danger">
         <el-icon>
             <base-icon-frozen />
         </el-icon>
-    </el-text>
+    </span>
 </template>
 
 <script setup lang="ts">
-import { ElIcon, ElText } from 'element-plus';
+import '@/styles/text.css';
+import { ElIcon } from 'element-plus';
 import { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 

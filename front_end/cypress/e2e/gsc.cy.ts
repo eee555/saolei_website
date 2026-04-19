@@ -173,15 +173,14 @@ describe('GSC', () => {
         cy.contains('第2届金羊杯');
         assertTableData([
             { 状态: '审核中', 比赛: '第2届金羊杯', 主办方: HOST.realname, 开始时间: '2099-12-31 00:00:00', 结束时间: '2100-01-03 00:00:00' },
-            { 状态: '审核中', 比赛: '第3届金羊杯', 主办方: HOST.realname, 开始时间: '2000-01-01 00:00:00', 结束时间: '2100-01-01 00:00:00' },
             { 状态: '审核中', 比赛: '第4届金羊杯', 主办方: HOST.realname, 开始时间: '2000-01-01 00:00:00', 结束时间: '2000-01-02 00:00:00' },
+            { 状态: '审核中', 比赛: '第3届金羊杯', 主办方: HOST.realname, 开始时间: '2000-01-01 00:00:00', 结束时间: '2100-01-01 00:00:00' },
         ]);
     });
 
     it('Admin validate', () => {
         cy.login(STAFF.username, STAFF.password);
-        cy.visit('/#/staff/');
-        cy.contains('比赛管理').click();
+        cy.visit('/#/staff/tournament');
 
         cy.contains('比赛ID').get('input').filter(':visible').clear();
         cy.contains('比赛ID').get('input').filter(':visible').type('1{enter}');
@@ -216,8 +215,8 @@ describe('GSC', () => {
         cy.contains('第2届金羊杯');
         assertTableData([
             { 状态: '即将开始', 比赛: '第2届金羊杯', 主办方: HOST.realname, 开始时间: '2099-12-31 00:00:00', 结束时间: '2100-01-03 00:00:00' },
-            { 状态: '进行中', 比赛: '第3届金羊杯', 主办方: HOST.realname, 开始时间: '2000-01-01 00:00:00', 结束时间: '2100-01-01 00:00:00' },
             { 状态: '结算中', 比赛: '第4届金羊杯', 主办方: HOST.realname, 开始时间: '2000-01-01 00:00:00', 结束时间: '2000-01-02 00:00:00' },
+            { 状态: '进行中', 比赛: '第3届金羊杯', 主办方: HOST.realname, 开始时间: '2000-01-01 00:00:00', 结束时间: '2100-01-01 00:00:00' },
         ]);
     });
 
@@ -269,9 +268,9 @@ describe('GSC', () => {
         cy.contains('比赛结果');
 
         cy.login(STAFF.username, STAFF.password);
-        cy.visit('/#/staff/');
-        cy.contains('后台任务').click();
+        cy.visit('/#/staff/task');
 
+        cy.contains('READY');
         cy.get('table:visible').getTable().should((tableData) => {
             expect(tableData[0].status).to.equal('READY');
             expect(tableData[0].args_kwargs.replace(/\s/g, '')).to.equal('{"args":[4],"kwargs":{}}');

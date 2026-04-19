@@ -33,15 +33,15 @@ class UserRegisterForm(forms.ModelForm):
         # 删去前后空格，长度不能少于1
         username = self.cleaned_data.get('username')
         # 普通的空格，django自己会删，只有下面这个，既是合法的unicode字符，又是不可见字符，同时django不会自动删
-        username = username.strip("ㅤ")
+        username = username.strip('ㅤ')
         # 检查剩余可见字符长度至少为1
         if len(username) < 1:
-            raise forms.ValidationError("别瞎玩！", code='invalid_username')
+            raise forms.ValidationError('别瞎玩！', code='invalid_username')
         return username
 
     class Meta:
         model = User
-        fields = ("username", "password", "email")
+        fields = ('username', 'password', 'email')
 
 
 # 找回密码表单

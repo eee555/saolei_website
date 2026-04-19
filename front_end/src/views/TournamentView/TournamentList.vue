@@ -15,12 +15,12 @@
                 <PlayerName :user-id="row.hostId" :user-name="row.hostName" />
             </template>
         </el-table-column>
-        <el-table-column :label="t('tournament.startsFrom')">
+        <el-table-column prop="startDate" :label="t('tournament.startsFrom')" sortable>
             <template #default="{row}">
                 {{ row.startDate === undefined ? t('tournament.undecided') : toISODateTimeString(row.startDate) }}
             </template>
         </el-table-column>
-        <el-table-column :label="t('tournament.endsBy')">
+        <el-table-column prop="endDate" :label="t('tournament.endsBy')" sortable>
             <template #default="{row}">
                 {{ row.endDate === undefined ? t('tournament.undecided') : toISODateTimeString(row.endDate) }}
             </template>

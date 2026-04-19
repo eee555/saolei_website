@@ -26,8 +26,7 @@
 import { ElButton, ElForm, ElFormItem, ElInput, ElOption, ElSelect } from 'element-plus';
 import { reactive } from 'vue';
 
-import { httpErrorNotification } from '../Notifications';
-
+import { httpErrorNotification } from '@/components/Notifications';
 import { platformlist } from '@/utils/common/accountLinkPlatforms';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 

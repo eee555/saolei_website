@@ -1,7 +1,7 @@
 <template>
     <PrColumn :header="t(`common.prop.${ stat}`)" :sortable="sortable" :sort-field="(data) => data.getStat(stat)">
         <template #body="{data}: {data: VideoAbstract}">
-            <span class="text-normal">{{ data.displayStat(stat) }}</span>
+            <span class="text">{{ data.displayStat(stat) }}</span>
         </template>
     </PrColumn>
 </template>

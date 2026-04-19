@@ -3,9 +3,10 @@ import { defineStore } from 'pinia';
 
 import { pinia } from './create';
 
+import { deepMutableCopy } from '@/utils';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { colorSchemeTemplates } from '@/utils/config';
-import { ColorTemplateName, ColumnChoice, MS_Software, MS_Softwares } from '@/utils/ms_const';
+import { CellChoice, ColorTemplateName, ColumnChoice, MS_Software, MS_Softwares } from '@/utils/ms_const';
 import { Tournament } from '@/utils/tournaments';
 import { UserProfile } from '@/utils/userprofile';
 import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
@@ -64,7 +65,7 @@ export const videofilter = useLocalStorage('videofilter', {
     },
 });
 
-export const colorTheme = useLocalStorage('colorTheme', colorSchemeTemplates.ArbiterStatsAuto);
+export const colorTheme = useLocalStorage('colorTheme', deepMutableCopy(colorSchemeTemplates.ArbiterStatsAuto));
 
 export const activityCalendarConfig = useLocalStorage(
     'activity-calendar-config',
@@ -83,11 +84,12 @@ export const BBBvSummaryConfig = useLocalStorage(
     {
         template: 'time' as ColorTemplateName,
         sortBy: 'timems' as getStat_stat,
-        displayBy: 'time' as getStat_stat,
+        displayBy: 'time' as CellChoice,
         sortDesc: false,
         softwareFilter: [...MS_Softwares] as MS_Software[],
         zoom: 1,
         tooltipMode: 'fast' as 'fast' | 'advanced',
+        showIcon: 'software' as '' | 'software' | 'state',
     },
     { mergeDefaults: true },
 );
