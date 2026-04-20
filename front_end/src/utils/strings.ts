@@ -102,3 +102,28 @@ export function formatNumberSmart(
     // 确保不超过总长度（toFixed 可能因为四舍五入进位导致长度变化）
     return rounded.length > totalLength ? rounded.substring(0, totalLength) : rounded;
 }
+
+/**
+ * 获取文件名的扩展名（不含点号）
+ * @param filename - 文件名（可包含路径）
+ * @returns 扩展名（小写），若无扩展名则返回空字符串
+ * @example
+ * getFileExtension("document.pdf") // "pdf"
+ * getFileExtension("archive.tar.gz") // "gz"
+ * getFileExtension(".hiddenfile") // ""
+ * getFileExtension("noextension") // ""
+ * getFileExtension("path/to/file.txt") // "txt"
+ */
+export function getFileExtension(filename: string): string {
+    // 提取最后一个点号之后的部分
+    const lastDotIndex = filename.lastIndexOf('.');
+
+    // 如果没有点号，或者点号在开头（隐藏文件），返回空字符串
+    if (lastDotIndex <= 0) {
+        return '';
+    }
+
+
+    // 返回点号后的部分，并转为小写
+    return filename.slice(lastDotIndex + 1).toLowerCase();
+}
