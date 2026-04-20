@@ -70,7 +70,7 @@
         <template #expansion="{data}: {data: UploadEntry}">
             <el-descriptions>
                 <el-descriptions-item :label="t('common.prop.fileName')" :span="3">
-                    {{ data.filename }}
+                    {{ data.file.name }}
                 </el-descriptions-item>
                 <template v-if="data.stat">
                     <el-descriptions-item :label="t('common.prop.cl')">
@@ -164,13 +164,14 @@ function handleSelectOneChange(value: CheckboxValueType, entry: UploadEntry) {
 /* 本地化 Localization */
 const i18nMessages = {
     'zh-cn': { local: {
+        censorship: '标识未通过',
         collision: '录像已存在',
         custom: '暂不支持自定义级别',
-        identifier: '新标识',
         fail: '不通过',
         fileext: '无法识别的文件类型',
         filename: '文件名超过了100字节',
         filesize: '文件大小超过了5MB',
+        identifier: '新标识',
         mode: '暂不支持此模式',
         needApprove: '需要人工审核',
         parse: '录像解析失败',
@@ -180,13 +181,14 @@ const i18nMessages = {
         upload: '上传失败',
     } },
     'en': { local: {
-        collision: 'Video already exist',
+        censorship: 'Identifier blocked',
+        collision: 'Video already exists',
         custom: 'Custom level is currently not supported',
-        identifier: 'New identifier',
         fail: 'Fail',
         fileext: 'Invalid file extension',
         filename: 'File name exceeds 100 bytes',
         filesize: 'File size exceeds 5MB',
+        identifier: 'New identifier',
         mode: 'Unsupported game mode',
         needApprove: 'Need manual approval',
         parse: 'Cannot parse the file',

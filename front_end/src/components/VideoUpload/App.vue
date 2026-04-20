@@ -1,6 +1,6 @@
 <template>
     <div style="text-align: center;">
-        <base-file-input :accept="'.avf,.evf,.rmv,.mvf'" :disabled="store.isUserAnonymous || isParsing || isUploading" :style="{ height: uploadQueue.length > 0 ? 'auto' : '300px' }" @add="handleFileChange">
+        <base-file-input :accept="'.avf,.evf,.rmv,.mvf'" :disabled="isUserAnonymous || isParsing || isUploading" :style="{ height: uploadQueue.length > 0 ? 'auto' : '300px' }" @add="handleFileChange">
             <FileInputContent :is-user-anonymous="isUserAnonymous" />
         </base-file-input>
     </div>
@@ -10,27 +10,34 @@
 </template>
 
 <script setup lang="ts">
+import { vLoading } from 'element-plus';
 import { computed, PropType, ref } from 'vue';
 
 import FileInputContent from './FileInputContent.vue';
 import Progress from './Progress.vue';
 import Table from './Table.vue';
 import ToolBar from './ToolBar.vue';
-import { simpleHash, UploadEntry } from './utils';
+import { fileCollide, UploadEntry, UploadStatus } from './utils';
 
 import BaseFileInput from '@/components/common/BaseFileInput.vue';
-import { local, store } from '@/store';
+import { local } from '@/store';
 import { sleep } from '@/utils';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { extract_stat, get_upload_status, load_video_file, upload_form } from '@/utils/fileIO';
+import { AnyVideo, extract_stat, fileHash, load_video_file } from '@/utils/fileIO';
 import { Dict2FormData } from '@/utils/forms';
+import { getFileExtension } from '@/utils/strings';
+import { VideoAbstract } from '@/utils/videoabstract';
 
 const { proxy } = useCurrentInstance();
 
-defineProps({
+const props = defineProps({
     isUserAnonymous: { type: Boolean, default: true },
     identifiers: { type: Array as PropType<string[]>, default: () => [] },
 });
+
+const emit = defineEmits<{
+    (e: 'onUpload', video: VideoAbstract): void;
+}>();
 
 const uploadQueue = ref<UploadEntry[]>([]);
 const selectedQueue = ref<UploadEntry[]>([]);
@@ -61,14 +68,13 @@ async function handleFileChange(files: File[]) {
     const uploadQueueTemp: UploadEntry[] = [];
 
     for (let i = 0; i < files.length; i++) {
-        const hash = simpleHash(files[i]);
-        const exists = uploadQueue.value.some((entry) => entry.hash === hash) || uploadQueueTemp.some((entry) => entry.hash === hash);
+        const entry = await upload_prepare(files[i]);
+        const exists = uploadQueue.value.some((e) => fileCollide(e, entry)) || uploadQueueTemp.some((e) => fileCollide(e, entry));
         if (!exists) {
-            const entry = await upload_prepare(files[i], hash);
             if (local.value.autoUploadAfterParse) {
                 await forceUpload(entry);
             }
-            if (entry.status !== 'success' || !local.value.autoDeleteAfterUpload) {
+            if (entry.status !== 'success' || !local.value.autoRemoveAfterUpload) {
                 uploadQueueTemp.push(entry);
             }
         }
@@ -79,7 +85,7 @@ async function handleFileChange(files: File[]) {
 }
 
 const forceUpload = async (entry: UploadEntry) => {
-    if (entry.status != 'pass' && entry.status != 'identifier') {
+    if (!['pass', 'identifier', 'needApprove'].includes(entry.status)) {
         return entry;
     }
     entry.status = 'process';
@@ -89,14 +95,14 @@ const forceUpload = async (entry: UploadEntry) => {
     }
     await sleep(200);
     try {
-        const response = await proxy.$axios.post('/common/uploadvideo/', Dict2FormData(entry.form!));
+        const response = await proxy.$axios.post('/common/uploadvideo/', Dict2FormData({
+            file: entry.file,
+        }));
         if (response.data.type === 'success') {
             entry.stat.id = response.data.data.id;
             entry.stat.state = response.data.data.state;
-            store.user.videos.push(entry.stat!);
-            if (store.user.id === store.player.id) {
-                store.player.videos.push(entry.stat!);
-            }
+            entry.stat.upload_time = new Date(Date.now());
+            emit('onUpload', entry.stat);
             entry.status = 'success';
         } else if (response.data.type === 'error' && response.data.object === 'file') {
             entry.status = 'collision';
@@ -107,31 +113,50 @@ const forceUpload = async (entry: UploadEntry) => {
             entry.status = 'upload';
         }
     } catch (_error) {
+        console.error(_error);
         entry.status = 'upload';
     }
     return entry;
 };
 
-async function upload_prepare(file: File, hash: string): Promise<UploadEntry> {
-    const file_u8 = new Uint8Array(await file.arrayBuffer());
-    try {
-        const video = load_video_file(file_u8, file.name);
+async function upload_prepare(file: File): Promise<UploadEntry> {
+    const buffer = await file.arrayBuffer();
+    const hash = await fileHash(buffer);
+    let status: UploadStatus = 'pass';
+    if (file.size > 5 * 1024 * 1024) status = 'filesize';
+    else if (file.name.length >= 100) status = 'filename';
+    else if (!['avf', 'evf', 'rmv', 'mvf'].includes(getFileExtension(file.name))) status = 'fileext';
+    if (status !== 'pass') {
         return {
             hash: hash,
-            filename: file.name,
-            status: get_upload_status(file, video, store.user.identifiers),
-            stat: extract_stat(video),
-            form: upload_form(file, video),
+            file: file,
+            status: status,
+            stat: null,
         };
+    }
+    let video: AnyVideo;
+    try {
+        video = load_video_file(buffer, file.name);
     } catch (_e) {
         return {
             hash: hash,
-            filename: file.name,
+            file: file,
             status: 'parse',
             stat: null,
-            form: null,
         };
     }
+
+    if (video.level == 6) status = 'custom';
+    else if (video.is_valid() == 1) status = 'invalid';
+    else if (video.is_valid() == 3) status = 'needApprove';
+    else if (!props.identifiers.includes(video.player_identifier)) status = 'identifier';
+
+    return {
+        hash: hash,
+        file: file,
+        status: status,
+        stat: extract_stat(video),
+    };
 }
 
 async function uploadSelected() {
@@ -148,7 +173,7 @@ async function uploadSelected() {
             break;
         }
 
-        if (['pass', 'identifier'].includes(entry.status)) {
+        if (['pass', 'identifier', 'needApprove'].includes(entry.status)) {
             await forceUpload(entry);
             if (entry.status === 'success') {
                 const selectedIndex = selectedQueueTemp.indexOf(entry);
@@ -164,7 +189,7 @@ async function uploadSelected() {
         }
     }
 
-    if (local.value.autoDeleteAfterUpload) {
+    if (local.value.autoRemoveAfterUpload) {
         selectedQueue.value = selectedQueueTemp;
         uploadQueue.value = uploadQueueTemp;
     }

@@ -4,7 +4,7 @@ import { AvfVideo, EvfVideo, MvfVideo, RmvVideo } from 'ms-toollib';
 import { arbiterTimeStampToDate, generalTimeStampToDate } from './datetime';
 import { VideoAbstract } from './videoabstract';
 
-type AnyVideo = AvfVideo | EvfVideo | RmvVideo | MvfVideo;
+export type AnyVideo = AvfVideo | EvfVideo | RmvVideo | MvfVideo;
 
 export function get_software(video: AnyVideo) {
     if (video instanceof AvfVideo) return 'a';
@@ -13,18 +13,21 @@ export function get_software(video: AnyVideo) {
     else return 'm';
 }
 
-export function load_video_file(stream: Uint8Array, filename: string) {
+export function load_video_file(buffer: ArrayBuffer, filename: string) {
+    const u8 = new Uint8Array(buffer);
     const ext = filename.slice(-3);
     let video: AnyVideo;
     if (ext === 'avf') {
-        video = new AvfVideo(stream, filename);
+        video = new AvfVideo(u8, filename);
     } else if (ext === 'evf') {
-        video = new EvfVideo(stream, filename);
+        video = new EvfVideo(u8, filename);
     } else if (ext === 'rmv') {
-        video = new RmvVideo(stream, filename);
+        video = new RmvVideo(u8, filename);
     } else if (ext === 'mvf') {
-        video = new MvfVideo(stream, filename);
-    } else return null;
+        video = new MvfVideo(u8, filename);
+    } else {
+        throw new Error('Unsupported file extension');
+    }
     video.parse();
     video.analyse();
     return video;
@@ -44,29 +47,6 @@ export function extract_stat(video: AnyVideo | null): VideoAbstract | null {
         cl: video.cl,
         end_time: (video instanceof AvfVideo) ? arbiterTimeStampToDate(video.end_time) : generalTimeStampToDate(video.end_time),
     });
-}
-
-export interface UploadVideoForm {
-    file: File;
-}
-
-export function upload_form(file: File, video: AnyVideo | null): UploadVideoForm | null {
-    if (video === null) return null;
-    return {
-        file: file,
-    };
-}
-
-export function get_upload_status(file: File, video: AnyVideo | null, identifiers: Array<string>) {
-    // const decoder = new TextDecoder();
-
-    if (video === null) return 'fileext';
-    if (video.level == 6) return 'custom';
-    if (file.name.length >= 100) return 'filename';
-    if (video.is_valid() == 1) return 'invalid';
-    if (video.is_valid() == 3) return 'needApprove';
-    if (!identifiers.includes(video.player_identifier)) return 'identifier';
-    return 'pass';
 }
 
 export async function streamToZip(data: Uint8Array, filename: string) {
@@ -101,4 +81,10 @@ export async function streamToZip(data: Uint8Array, filename: string) {
     a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
+}
+
+export async function fileHash(buffer: ArrayBuffer) {
+    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 }

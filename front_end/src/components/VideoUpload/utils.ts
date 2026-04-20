@@ -1,14 +1,13 @@
-import { UploadVideoForm } from '@/utils/fileIO';
+import { getFileExtension } from '@/utils/strings';
 import { VideoAbstract } from '@/utils/videoabstract';
 
-export const UploadStatus = ['parse', 'pass', 'filename', 'fileext', 'custom', 'invalid', 'identifier', 'needApprove', 'censorship', 'collision', 'upload', 'process', 'success'] as const;
+export const UploadStatus = ['parse', 'pass', 'filename', 'filesize', 'fileext', 'custom', 'invalid', 'identifier', 'needApprove', 'censorship', 'collision', 'upload', 'process', 'success'] as const;
 export type UploadStatus = typeof UploadStatus[number];
 
 export interface UploadEntry {
     hash: string;
-    filename: string;
+    file: File;
     status: UploadStatus;
-    form: UploadVideoForm | null; // for upload
     stat: VideoAbstract | null; // for display
 }
 
@@ -23,6 +22,6 @@ export interface UploadProgress {
     failed: number;
 }
 
-export function simpleHash(file: File) {
-    return `${file.name}_${file.size}_${file.lastModified}`;
+export function fileCollide(e1: UploadEntry, e2: UploadEntry) {
+    return e1.hash === e2.hash && getFileExtension(e1.file.name) === getFileExtension(e2.file.name);
 }

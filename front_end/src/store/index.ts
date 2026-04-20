@@ -51,7 +51,7 @@ export const local = useLocalStorage(
         tooltip_show: true,
         vienna_logo_legacy: false,
         autoUploadAfterParse: true,
-        autoDeleteAfterUpload: true,
+        autoRemoveAfterUpload: true,
     },
     { mergeDefaults: true },
 );

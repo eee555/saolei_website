@@ -13,7 +13,7 @@
             {{ t('local.autoRemoveAfterUpload') }}
         </el-checkbox>
         <div class="text text-small" style="padding: 0.1em;">
-            {{ t('local.constraintNote') }}
+            {{ t('local.constraintSize') }}
         </div>
     </div>
 </template>
@@ -34,13 +34,13 @@ const i18nMessages = {
         dragOrClick: '将录像拉到此处或点击此处选择',
         autoUploadAfterParse: '解析完成自动上传',
         autoRemoveAfterUpload: '上传完成自动移除',
-        constraintNote: '*单个文件大小不能超过5MB',
+        constraintSize: '*单个文件大小不能超过5MB',
     } },
     'en': { local: {
         dragOrClick: 'Drag files here or click here to select',
         autoUploadAfterParse: 'Auto-upload after parsing',
         autoRemoveAfterUpload: 'Auto-remove after uploading',
-        constraintNote: '*File size maximum is 5MB.',
+        constraintSize: '*File size maximum is 5MB.',
     } },
 };
 
