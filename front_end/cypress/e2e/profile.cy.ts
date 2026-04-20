@@ -89,13 +89,15 @@ describe('Personal Profile', () => {
         });
 
         cy.get('table:visible').find('.el-checkbox__input').first().click(); // 全选
-        cy.get('button').contains('上传').click();
+        cy.get('button').contains(/^\s*上传\s*$/).click();
         cy.get('.el-loading-spinner').should('exist');
         cy.get('.el-loading-spinner').should('not.exist');
 
         cy.get('table:visible').getTable().should((tableData) => {
-            expect(tableData.length).to.equal(1);
-            expect(tableData[0]).to.deep.equal(expectedData.CusAvf);
+            expect(tableData.length).to.equal(3);
+            expect(tableData[0]).to.deep.equal({ ...expectedData.ExpAvf, 状态: '上传成功' });
+            expect(tableData[1]).to.deep.equal(expectedData.CusAvf);
+            expect(tableData[2]).to.deep.equal({ ...expectedData.IntRmv, 状态: '上传成功' });
         });
     });
 });

@@ -9,7 +9,7 @@
         <el-checkbox v-model="local.autoUploadAfterParse" @click.stop>
             {{ t('local.autoUploadAfterParse') }}
         </el-checkbox>
-        <el-checkbox v-model="local.autoDeleteAfterUpload" @click.stop>
+        <el-checkbox v-model="local.autoRemoveAfterUpload" @click.stop>
             {{ t('local.autoRemoveAfterUpload') }}
         </el-checkbox>
         <div class="text text-small" style="padding: 0.1em;">
