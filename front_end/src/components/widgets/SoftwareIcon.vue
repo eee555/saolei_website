@@ -13,6 +13,7 @@ import '@/styles/text.css';
 
 import { computed, PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { Tippy } from 'vue-tippy';
 
 import { local } from '@/store';
 import { ArbiterIcon, Clone07Icon, MetasweeperIcon, ViennaIconLegacy, ViennaIconNew } from '@/utils/assets';

@@ -64,11 +64,6 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('../views/PlayerView.vue'),
     },
     {
-        path: '/upload',
-        name: 'upload',
-        component: () => import('../views/UploadView.vue'),
-    },
-    {
         path: '/staff',
         name: 'staff',
         component: () => import('../views/StaffView/App.vue'),

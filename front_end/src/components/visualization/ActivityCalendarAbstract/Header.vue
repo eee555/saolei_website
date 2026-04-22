@@ -4,7 +4,7 @@
             {{ t('local.totalNVideos', [videoList.length]) }}
         </span>
         <div style="flex-grow: 1;">
-            <StackBar :data="videoCountData" style="flex: 1;" />
+            <StackBar :data="videoCountData" />
         </div>
     </div>
     <div data-cy="size" style="display: flex; width: 100%; align-items: center">

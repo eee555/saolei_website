@@ -67,6 +67,7 @@
     "@vitejs/plugin-vue": "6.0.5",
     "cypress": "15.13.0",
     "cypress-if": "1.13.2",
+    "cypress-intercept-formdata": "^1.0.0",
     "cypress-real-events": "1.15.0",
     "cypress-table": "1.0.2",
     "eslint": "9.39.4",
