@@ -88,7 +88,7 @@
                         v-if="`${store.user.id}` == userid" :label="t('profile.upload.title')" name="upload"
                         :lazy="true"
                     >
-                        <VideoUpload :is-user-anonymous="store.isUserAnonymous" :identifiers="store.user.identifiers" />
+                        <VideoUpload :is-user-anonymous="store.isUserAnonymous" :identifiers="store.user.identifiers" @on-upload="(video) => { store.user.videos.push(video); store.player.videos.push(video); }" />
                     </el-tab-pane>
                 </el-tabs>
             </el-main>
