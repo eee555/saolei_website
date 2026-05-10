@@ -20,10 +20,11 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import TemplateView
 
-from . import views
+from . import api, views
 
 
 urlpatterns = [
+    path('api/', api.api.urls),
     path('video/', include('videomanager.urls')),
     path('userprofile/', include('userprofile.urls', namespace='userprofile')),
     path('admin/', admin.site.urls),

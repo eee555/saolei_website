@@ -35,7 +35,7 @@ const diskUsageData = computed(() => [
 
 async function refresh() {
     loading.value = true;
-    await proxy.$axios.get('/common/api/diskusage').then(function (response) {
+    await proxy.$axios.get('/api/common/diskusage').then(function (response) {
         const data = response.data as {
             total: number;
             used: number;
