@@ -1,9 +1,9 @@
 import mimetypes
 import os
 
-from django.http import FileResponse, HttpRequest, HttpResponseForbidden, HttpResponseNotFound
+from django.http import FileResponse, HttpResponseNotFound
 from django.shortcuts import get_object_or_404
-from ninja import File, Router, Schema, UploadedFile
+from ninja import Router
 
 from .models import UserProfile
 
