@@ -20,7 +20,7 @@ const loading = ref(false);
 
 function refresh() {
     loading.value = true;
-    proxy.$axios.get('/common/api/tasksummary').then((response) => {
+    proxy.$axios.get('/api/common/tasksummary').then((response) => {
         dataset.value = [
             {
                 name: t('local.READY'),

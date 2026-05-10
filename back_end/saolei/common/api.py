@@ -4,7 +4,7 @@ from django.core.cache import cache
 from django.db.models import Sum
 from django_tasks import TaskResultStatus
 from django_tasks_db.models import DBTaskResult
-from ninja import NinjaAPI, Schema
+from ninja import Router, Schema
 from ninja.throttling import AnonRateThrottle
 import psutil
 
@@ -13,8 +13,7 @@ from config.text_choices import MS_TextChoices
 from utils.db import get_choice_counts_filtered
 from videomanager.models import VideoModel
 
-
-api = NinjaAPI()
+router = Router()
 
 
 class VideoSummaryOut(Schema):
@@ -25,8 +24,8 @@ class VideoSummaryOut(Schema):
     state: dict[str, int]
 
 
-@api.get('/videosummary', response=VideoSummaryOut, throttle=[AnonRateThrottle('10/m')])
-def api_video_summary(request):
+@router.get('/videosummary', response=VideoSummaryOut, throttle=[AnonRateThrottle('10/m')])
+def video_summary(request):
     if (cached_data := cache.get('api:common/videosummary')) is not None:
         return cached_data
 
@@ -47,8 +46,8 @@ class TaskSummaryOut(Schema):
     status: dict[str, int]
 
 
-@api.get('/tasksummary', throttle=[AnonRateThrottle('10/m')])
-def api_task_summary(request):
+@router.get('/tasksummary', throttle=[AnonRateThrottle('10/m')])
+def task_summary(request):
     if (cached_data := cache.get('api:common/tasksummary')) is not None:
         return cached_data
 
@@ -61,8 +60,8 @@ def api_task_summary(request):
     return result
 
 
-@api.get('/diskusage', throttle=[AnonRateThrottle('10/m')])
-def api_disk_usage(request):
+@router.get('/diskusage', throttle=[AnonRateThrottle('10/m')])
+def disk_usage(request):
     if (cached_data := cache.get('api:common/diskusage')) is not None:
         return cached_data
 
