@@ -46,7 +46,7 @@ const loading = ref(false);
 
 function refresh() {
     loading.value = true;
-    proxy.$axios.get('/common/api/videosummary').then((response) => {
+    proxy.$axios.get('/api/common/videosummary').then((response) => {
         Object.assign(videoSummaryData.value, response.data);
         loading.value = false;
     });

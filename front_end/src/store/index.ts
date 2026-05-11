@@ -50,6 +50,8 @@ export const local = useLocalStorage(
         notification_duration: 4500,
         tooltip_show: true,
         vienna_logo_legacy: false,
+        autoUploadAfterParse: false,
+        autoRemoveAfterUpload: false,
     },
     { mergeDefaults: true },
 );
