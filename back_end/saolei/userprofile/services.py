@@ -1,10 +1,20 @@
+
+from datetime import datetime, timezone
+import json
 import logging
+from typing import Literal
+import uuid
+
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django_redis import get_redis_connection
 from config.global_settings import GameModes, RankingGameStats
 from userprofile.models import EmailVerifyRecord, UserProfile
+from userprofile.utils import count_new_avatar_chance, count_new_signature_chance
 from utils import generate_code, verify_text
+from utils.exceptions import ExceptionToResponse
+from videomanager.models import VideoModel
 
 cache = get_redis_connection('saolei_website')
 logger = logging.getLogger('userprofile')
@@ -32,6 +42,68 @@ def update_cache_realname(user_id, user_realname):
             new_value['player'] = user_realname
             # 将修改后的值存回哈希表
             cache.hset('review_queue', video_id, json.dumps(new_value))
+
+
+NAME_DEFAULT = {
+    'realname': '匿名',
+    'firstname': '',
+    'lastname': '',
+}
+
+
+def try_update_user_name_fields(user: UserProfile, field_name: Literal['realname', 'firstname', 'lastname'], field_value: str, user_ip: str):
+    old_value = getattr(user, field_name)
+    if old_value == field_value:
+        return
+
+    if getattr(user, field_name) != NAME_DEFAULT[field_name]:
+        raise ExceptionToResponse('name', 'exist')
+
+    try:
+        is_valid = verify_text(field_value, user.id, user_ip)
+    except Exception:
+        raise ExceptionToResponse('censorship', 'unknown')
+
+    if not is_valid:
+        raise ExceptionToResponse('censorship', 'illegal')
+
+    setattr(user, field_name, field_value)
+    try:
+        user.save(update_fields=[field_name])
+    except ValidationError:
+        raise ExceptionToResponse('database', 'validation')
+
+    logger.info(f'用户 {user.username}#{user.id} 设置 {field_name} 为 "{field_value}"')
+    return
+
+
+def try_update_user_signature(user: UserProfile, signature: str, user_ip: str):
+    if user.signature == signature:
+        return
+
+    if user.userms.e_timems_std >= 200000:
+        raise ExceptionToResponse('signature', 'expTime')
+
+    refresh_signature_chance(user)
+    if user.left_signature_n <= 0:
+        raise ExceptionToResponse('signature', 'cooldown')
+
+    try:
+        is_valid = verify_text(signature, user.id, user_ip)
+    except Exception:
+        raise ExceptionToResponse('censorship', 'unknown')
+
+    if not is_valid:
+        raise ExceptionToResponse('censorship', 'illegal')
+
+    user.signature = signature
+    user.left_signature_n -= 1
+    try:
+        user.save(update_fields=['signature', 'left_signature_n'])
+    except ValidationError:
+        raise ExceptionToResponse('database', 'validation')
+
+    return
 
 
 # 发送邮件，根据send_type不同发送不同的邮件内容
@@ -98,3 +170,27 @@ def user_metadata(user: UserProfile, client):
         'country': user.country,
         'videos': list(videos),
     }
+
+
+def refresh_avatar_chance(user: UserProfile):
+    now = datetime.now(timezone.utc)
+    new_avatar = count_new_avatar_chance(user.last_change_avatar, now)
+
+    if new_avatar > 0:
+        user.left_avatar_n += new_avatar
+        user.last_change_avatar = now
+        user.save(update_fields=['left_avatar_n', 'last_change_avatar'])
+
+    return
+
+
+def refresh_signature_chance(user: UserProfile):
+    now = datetime.now(timezone.utc)
+    new_signature = count_new_signature_chance(user.last_change_signature, now)
+
+    if new_signature > 0:
+        user.left_signature_n += new_signature
+        user.last_change_signature = now
+        user.save(update_fields=['left_signature_n', 'last_change_signature'])
+
+    return
