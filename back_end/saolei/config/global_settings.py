@@ -18,6 +18,7 @@ class MaxSizes:
     IDENTIFIER = 80  # 标识
     LASTNAME = 255
     PASSWORD = 20  # 密码
+    REALNAME = 100
     SIGNATURE = 4095  # 个性签名的长度，考虑了一些比较啰嗦的语言。
     SOFTWARE = 1
     USERNAME = 30  # 用户名，行业习惯的上限

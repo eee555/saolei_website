@@ -52,7 +52,7 @@ class UserProfile(AbstractUser):
     )
     # 考虑了中英文、俄罗斯用户名字，长度需要达到100（虽然还不够）
     realname = models.CharField(
-        max_length=MaxSizes.USERNAME, unique=False, blank=True, default='匿名', null=False)
+        max_length=MaxSizes.REALNAME, unique=False, blank=True, default='匿名', null=False)
     # 头像
     avatar = RestrictedImageField(upload_to='avatar/%Y%m%d/', max_length=100,
                                   max_upload_size=MaxSizes.AVATAR, blank=True, null=True)
