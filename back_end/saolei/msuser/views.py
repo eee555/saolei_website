@@ -14,7 +14,7 @@ from django_redis import get_redis_connection
 
 from config.global_settings import GameModes, RankingGameStats
 from userprofile.models import UserProfile
-from userprofile.services import user_metadata
+from userprofile.services import update_cache_realname, user_metadata
 from utils import ComplexEncoder
 from .forms import UserUpdateAvatarForm, UserUpdateRealnameForm, UserUpdateSignatureForm
 
@@ -190,30 +190,6 @@ def update_signature(request):
         ErrorDict = json.loads(user_update_form.errors.as_json())
         Error = ErrorDict[next(iter(ErrorDict))][0]['message']
         return JsonResponse({'status': 101, 'msg': Error})
-
-
-# 用户修改自己的名字后，同步修改redis缓存里的真实姓名，使得排行榜数据同步修改
-# 开销较大，然而用户改名只有1次机会
-def update_cache_realname(user_id, user_realname):
-    for index in RankingGameStats:
-        for mode in GameModes:
-            key = f'player_{index}_{mode}_{user_id}'
-            if cache.exists(key):
-                cache.hset(key, 'name', user_realname)
-    # 遍历并修改最新录像
-    for video_id, value in cache.hgetall('newest_queue').items():
-        new_value = json.loads(value)
-        if new_value['player_id'] == user_id:
-            new_value['player'] = user_realname
-            # 将修改后的值存回哈希表
-            cache.hset('newest_queue', video_id, json.dumps(new_value))
-    # 遍历并修改审查队列
-    for video_id, value in cache.hgetall('review_queue').items():
-        new_value = json.loads(value)
-        if new_value['player_id'] == user_id:
-            new_value['player'] = user_realname
-            # 将修改后的值存回哈希表
-            cache.hset('review_queue', video_id, json.dumps(new_value))
 
 
 # 从redis获取用户排行榜
