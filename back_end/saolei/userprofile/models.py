@@ -35,8 +35,8 @@ class UserProfile(AbstractUser):
             'unique': _('该用户名已存在！'),
         }, db_collation='utf8mb4_0900_as_cs',
     )
-    first_name = models.CharField(_('first name'), max_length=MaxSizes.FIRSTNAME, blank=True)
-    last_name = models.CharField(_('last name'), max_length=MaxSizes.LASTNAME, blank=True)
+    firstname = models.CharField(_('first name'), max_length=MaxSizes.FIRSTNAME, blank=True)
+    lastname = models.CharField(_('last name'), max_length=MaxSizes.LASTNAME, blank=True)
     email = models.EmailField(
         _('email address'),
         max_length=MaxSizes.EMAIL,

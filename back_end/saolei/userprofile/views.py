@@ -218,7 +218,7 @@ def get_email_captcha(request):
 
 
 # 管理员使用的操作接口，调用方式见前端的StaffView.vue
-get_userProfile_fields = ['id', 'userms__identifiers', 'userms__video_num_limit', 'username', 'first_name', 'last_name', 'email', 'realname', 'signature', 'country', 'left_realname_n', 'left_avatar_n', 'left_signature_n', 'is_banned']  # 可获取的域列表
+get_userProfile_fields = ['id', 'userms__identifiers', 'userms__video_num_limit', 'username', 'firstname', 'lastname', 'email', 'realname', 'signature', 'country', 'left_realname_n', 'left_avatar_n', 'left_signature_n', 'is_banned']  # 可获取的域列表
 
 
 @require_GET
