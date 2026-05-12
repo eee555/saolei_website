@@ -2,17 +2,20 @@ from datetime import datetime
 import logging
 import mimetypes
 import os
+from typing import List
 
 from django.core.exceptions import ValidationError
 from django.http import FileResponse, HttpRequest, HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import get_object_or_404
 from ninja import File, Router, Schema, UploadedFile
 from ninja.decorators import decorate_view
+from ninja.orm import create_schema
 
 from userprofile.decorators import banned_blocked, login_required_error
 from userprofile.services import refresh_avatar_chance, try_update_user_name_fields, try_update_user_signature
 from utils import verify_image
 from utils.exceptions import ExceptionToResponse
+from videomanager.models import VideoModel
 
 from .models import UserProfile
 
@@ -56,6 +59,27 @@ def get_user_avatar(request, user_id: int):
         return HttpResponseNotFound()
     content_type, _ = mimetypes.guess_type(user.avatar.path)
     return FileResponse(open(user.avatar.path, 'rb'), content_type=content_type or 'image/jpeg')
+
+
+UserVideoOut = create_schema(
+    VideoModel,
+    fields=[
+        'id',
+        'upload_time', 'level', 'mode', 'timems', 'bv',
+        'state', 'software', 'cl', 'ce', 'file_size',
+        'end_time', 'ongoing_tournament', 'path',
+    ],
+)
+
+
+@router.get('/videos/', response=List[UserVideoOut])
+def get_user_videos(request, user_id: int):
+    user = get_object_or_404(UserProfile, id=user_id)
+    queryset = VideoModel.objects.filter(player=user)
+    if user != request.user:
+        queryset = queryset.filter(ongoing_tournament=False)
+    videos = queryset.values('id', 'upload_time', 'level', 'mode', 'timems', 'bv', 'state', 'software', 'cl', 'ce', 'file_size', 'end_time', 'ongoing_tournament', 'path')
+    return list(videos)
 
 
 class UpdateUserProfileIn(Schema):
