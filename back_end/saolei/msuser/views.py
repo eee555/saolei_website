@@ -14,7 +14,7 @@ from django_redis import get_redis_connection
 
 from config.global_settings import GameModes, RankingGameStats
 from userprofile.models import UserProfile
-from userprofile.utils import user_metadata
+from userprofile.services import user_metadata
 from utils import ComplexEncoder
 from .forms import UserUpdateAvatarForm, UserUpdateRealnameForm, UserUpdateSignatureForm
 

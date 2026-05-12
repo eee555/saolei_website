@@ -13,7 +13,8 @@ from msuser.models import UserMS
 from .decorators import staff_required
 from .forms import EmailForm, UserLoginForm, UserRegisterForm, UserRetrieveForm
 from .models import EmailVerifyRecord, UserProfile
-from .utils import judge_captcha, judge_email_verification, send_email, user_metadata
+from .services import send_email, judge_email_verification, user_metadata
+from .utils import judge_captcha
 
 logger = logging.getLogger('userprofile')
 
