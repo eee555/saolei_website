@@ -1,4 +1,3 @@
-from datetime import datetime
 import logging
 import mimetypes
 import os
@@ -66,7 +65,7 @@ UserVideoOut = create_schema(
 )
 
 
-@router.get('/videos/', response=List[UserVideoOut])
+@router.get('/videos', response=List[UserVideoOut])
 def get_user_videos(request, user_id: int):
     user = get_object_or_404(UserProfile, id=user_id)
     queryset = VideoModel.objects.filter(player=user)
