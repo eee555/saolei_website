@@ -1,3 +1,4 @@
+from datetime import datetime
 from captcha.models import CaptchaStore
 from django.utils import timezone
 
@@ -16,5 +17,9 @@ def judge_captcha(captchaStr: str, captchaHashkey):
     return False
 
 
+def count_new_avatar_chance(old: datetime, new: datetime):
+    return new.year - old.year
 
 
+def count_new_signature_chance(old: datetime, new: datetime):
+    return 12 * (new.year - old.year) + (new.month - old.month)
