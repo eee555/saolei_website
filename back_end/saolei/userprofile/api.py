@@ -9,6 +9,7 @@ from django.http import FileResponse, HttpRequest, HttpResponseForbidden, HttpRe
 from django.shortcuts import get_object_or_404
 from ninja import File, Router, Schema, UploadedFile
 from ninja.decorators import decorate_view
+from ninja.errors import HttpError
 from ninja.orm import create_schema
 
 from userprofile.decorators import banned_blocked, login_required_error
@@ -23,33 +24,26 @@ router = Router()
 logger = logging.getLogger('userprofile')
 
 
-class UserInfoOut(Schema):
-    id: int
-    firstname: str
-    lastname: str
-    realname: str
-    signature: str
-    country: str
-    is_banned: bool
-    last_change_avatar: datetime
-    last_change_signature: datetime
+UserInfoOut = create_schema(
+    UserProfile,
+    fields=[
+        'id', 'username',
+        'firstname', 'lastname', 'realname',
+        'signature', 'country',
+        'is_banned', 'is_staff',
+        'last_change_avatar', 'last_change_signature',
+        'left_avatar_n', 'left_signature_n',
+    ],
+)
 
 
 @router.get('/info', response=UserInfoOut)
-def get_user_info(request, user_id: int):
-    user = get_object_or_404(UserProfile, id=user_id)
-
-    return {
-        'id': user.id,
-        'firstname': user.firstname,
-        'lastname': user.lastname,
-        'realname': user.realname,
-        'signature': user.signature,
-        'country': user.country,
-        'is_banned': user.is_banned,
-        'last_change_avatar': user.last_change_avatar,
-        'last_change_signature': user.last_change_signature,
-    }
+def get_user_info(request, user_id: int = None):
+    if user_id is None:
+        if request.user.is_authenticated:
+            return request.user
+        raise HttpError(401)
+    return get_object_or_404(UserProfile, id=user_id)
 
 
 @router.get('/avatar/{user_id}')
