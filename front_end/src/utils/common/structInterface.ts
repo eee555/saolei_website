@@ -53,3 +53,19 @@ export type TaskStatus = '' | 'loading' | 'success' | 'error';
 
 export const DjangoTaskResultStatusOptions = ['READY', 'RUNNING', 'FAILED', 'SUCCESSFUL', 'NULL'] as const;
 export type DjangoTaskResultStatus = typeof DjangoTaskResultStatusOptions[number];
+
+export interface GetUserInfoResponse {
+    id: number;
+    username: string;
+    firstname: string;
+    lastname: string;
+    realname: string;
+    signature: string;
+    country: string;
+    is_banned: boolean;
+    is_staff: boolean;
+    last_change_avatar: string;
+    last_change_signature: string;
+    left_avatar_n: number;
+    left_signature_n: number;
+}

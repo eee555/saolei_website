@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
 
 import { staffRoutes } from '@/views/StaffView/routes';
+import { userRoutes } from '@/views/UserView/routes';
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -56,7 +57,9 @@ const routes: Array<RouteRecordRaw> = [
     {
         path: '/player/:id',
         name: 'player_id',
-        component: () => import('../views/PlayerView.vue'),
+        component: () => import('../views/UserView/App.vue'),
+        redirect: (to) => `/player/${to.params.id}/summary`,
+        children: userRoutes,
     },
     {
         path: '/player',
