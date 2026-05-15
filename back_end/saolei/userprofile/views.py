@@ -46,14 +46,6 @@ def user_login(request):
     return JsonResponse({'type': 'success', 'user': user_metadata(user, user)})
 
 
-@require_GET
-# 用cookie登录
-def user_login_auto(request):
-    if request.user.is_authenticated:
-        return JsonResponse(user_metadata(request.user, request.user))
-    return HttpResponse()
-
-
 def user_logout(request):
     logout(request)
     return HttpResponse()
