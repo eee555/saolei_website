@@ -45,6 +45,12 @@ def get_user_info(request, user_id: int = None):
     return get_object_or_404(UserProfile, id=user_id)
 
 
+@router.get('/identifier', response=List[str])
+def get_user_identifier(request, user_id: int):
+    user = get_object_or_404(UserProfile, id=user_id)
+    return user.userms.identifiers
+
+
 @router.get('/avatar/{user_id}')
 def get_user_avatar(request, user_id: int):
     user = get_object_or_404(UserProfile, id=user_id)
