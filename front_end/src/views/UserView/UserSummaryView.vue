@@ -20,7 +20,7 @@
             <IdentifierHelper style="width: 60%; min-width: 400px; max-width: 100%; margin: auto; display: block" />
         </template>
     </base-overlay>
-    <IdentifierManager />
+    <IdentifierManager v-model:user="store.player" />
 </template>
 
 <script setup lang="ts">
