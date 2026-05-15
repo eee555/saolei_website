@@ -235,6 +235,12 @@ else:
     CSRF_COOKIE_SAMESITE = 'Lax'
     CSRF_COOKIE_SECURE = True     # https时候改成True
 
+    CORS_ALLOWED_ORIGINS = [
+        'https://strange-dust.github.io',
+    ]
+    # Optionally restrict to only the preview/download endpoints
+    CORS_URLS_REGEX = r'^/video/(preview|download)/.*$'
+    
 # 发送邮箱验证码
 EMAIL_HOST = 'smtp.88.com'     # 服务器
 EMAIL_PORT = 25                 # 一般情况下都为25
