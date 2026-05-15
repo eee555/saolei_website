@@ -76,13 +76,12 @@ onMounted(() => {
 });
 
 const login_auto = async () => {
-    proxy.$axios.get('/userprofile/loginauto/').then(function (response) {
-        if (response.data.id) {
-            store.user = new UserProfile(response.data);
-            store.login_status = LoginStatus.IsLogin;
-        } else {
-            store.login_status = LoginStatus.NotLogin;
-        }
+    await proxy.$axios.get('api/userprofile/info').then(function (response) {
+        store.user = UserProfile.from(response.data);
+        store.login_status = LoginStatus.IsLogin;
+    }).catch((err) => {
+        store.login_status = LoginStatus.NotLogin;
+        console.log(err);
     });
 };
 

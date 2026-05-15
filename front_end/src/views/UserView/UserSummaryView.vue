@@ -1,0 +1,43 @@
+<template>
+    <ActivityCalendarAbstract :video-list="store.player.videos" :options="activityCalendarConfig" :dark-mode="local.darkmode" />
+    <div style="height: 10px;" />
+    <base-card-normal v-if="store.player.videos.length > 0">
+        <BBBvSummaryHeader />
+        <el-scrollbar aria-orientation="horizontal" :style="{ zoom: BBBvSummaryConfig.zoom }">
+            <BBBvSummary level="b" header :video-list="store.player.videos" />
+            <BBBvSummary level="i" :video-list="store.player.videos" />
+            <BBBvSummary level="e" :video-list="store.player.videos" />
+        </el-scrollbar>
+    </base-card-normal>
+    <el-divider />
+    <b class="text text-medium">
+        {{ t('identifierManager.title') }}
+    </b>
+    &nbsp;
+    <base-overlay>
+        <base-icon-info />
+        <template #overlay>
+            <IdentifierHelper style="width: 60%; min-width: 400px; max-width: 100%; margin: auto; display: block" />
+        </template>
+    </base-overlay>
+    <IdentifierManager v-model:user="store.player" />
+</template>
+
+<script setup lang="ts">
+import { ElDivider, ElScrollbar } from 'element-plus';
+import { defineAsyncComponent } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+import '@/styles/text.css';
+import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
+import BaseOverlay from '@/components/common/BaseOverlay.vue';
+import { BaseIconInfo } from '@/components/common/icon';
+import IdentifierManager from '@/components/widgets/IdentifierManager.vue';
+import { activityCalendarConfig, BBBvSummaryConfig, local, store } from '@/store';
+
+const { t } = useI18n();
+const IdentifierHelper = defineAsyncComponent(() => import('@/components/dialogs/IdentifierHelper.vue'));
+const ActivityCalendarAbstract = defineAsyncComponent(() => import('@/components/visualization/ActivityCalendarAbstract/App.vue'));
+const BBBvSummary = defineAsyncComponent(() => import('@/components/visualization/BBBvSummary/App.vue'));
+const BBBvSummaryHeader = defineAsyncComponent(() => import('@/components/visualization/BBBvSummary/Header.vue'));
+</script>
