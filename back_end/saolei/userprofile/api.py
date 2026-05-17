@@ -10,6 +10,7 @@ from ninja import File, Router, Schema, UploadedFile
 from ninja.decorators import decorate_view
 from ninja.errors import HttpError
 from ninja.orm import create_schema
+from ninja.throttling import AnonRateThrottle
 
 from userprofile.decorators import banned_blocked, login_required_error
 from userprofile.services import refresh_avatar_chance, try_update_user_name_fields, try_update_user_signature
@@ -36,8 +37,11 @@ UserInfoOut = create_schema(
 )
 
 
-@router.get('/info', response=UserInfoOut)
+@router.get('/info', response=UserInfoOut, throttle=[AnonRateThrottle('2/s')])
 def get_user_info(request, user_id: int = None):
+    """
+    - Throttle: AnonRateThrottle('2/s')
+    """
     if user_id is None:
         if request.user.is_authenticated:
             return request.user
@@ -45,14 +49,20 @@ def get_user_info(request, user_id: int = None):
     return get_object_or_404(UserProfile, id=user_id)
 
 
-@router.get('/identifier', response=List[str])
+@router.get('/identifier', response=List[str], throttle=[AnonRateThrottle('2/s')])
 def get_user_identifier(request, user_id: int):
+    """
+    - Throttle: AnonRateThrottle('2/s')
+    """
     user = get_object_or_404(UserProfile, id=user_id)
     return user.userms.identifiers
 
 
-@router.get('/avatar/{user_id}')
+@router.get('/avatar/{user_id}', throttle=[AnonRateThrottle('2/s')])
 def get_user_avatar(request, user_id: int):
+    """
+    - Throttle: AnonRateThrottle('2/s')
+    """
     user = get_object_or_404(UserProfile, id=user_id)
     if not user.avatar or not os.path.exists(user.avatar.path):
         return HttpResponseNotFound()
@@ -71,8 +81,11 @@ UserVideoOut = create_schema(
 )
 
 
-@router.get('/videos', response=List[UserVideoOut])
+@router.get('/videos', response=List[UserVideoOut], throttle=[AnonRateThrottle('1/s')])
 def get_user_videos(request, user_id: int):
+    """
+    - Throttle: AnonRateThrottle('1/s')
+    """
     user = get_object_or_404(UserProfile, id=user_id)
     queryset = VideoModel.objects.filter(player=user)
     if user != request.user:
@@ -88,10 +101,13 @@ class UpdateUserProfileIn(Schema):
     lastname: str = None
 
 
-@router.post('/update_profile')
+@router.post('/update_profile', throttle=[AnonRateThrottle('1/m')])
 @decorate_view(login_required_error, banned_blocked)
 def update_user_profile(request: HttpRequest, data: UpdateUserProfileIn):
     """
+    - Decorator: login_required_error, banned_blocked
+    - Throttle: AnonRateThrottle('1/m')
+
     ### Example response
     ```json
     {
@@ -155,10 +171,13 @@ def update_user_profile(request: HttpRequest, data: UpdateUserProfileIn):
     return data_out
 
 
-@router.post('/update_avatar')
+@router.post('/update_avatar', throttle=[AnonRateThrottle('1/m')])
 @decorate_view(login_required_error, banned_blocked)
 def update_user_avatar(request, avatar: File[UploadedFile]):
     """
+    - Decorator: login_required_error, banned_blocked
+    - Throttle: AnonRateThrottle('1/m')
+
     ### Success response
     ```json
     {"type": "success"}

@@ -24,8 +24,11 @@ class VideoSummaryOut(Schema):
     state: dict[str, int]
 
 
-@router.get('/videosummary', response=VideoSummaryOut, throttle=[AnonRateThrottle('10/m')])
+@router.get('/videosummary', response=VideoSummaryOut, throttle=[AnonRateThrottle('30/m')])
 def video_summary(request):
+    """
+    - Throttle: AnonRateThrottle('30/m')
+    """
     if (cached_data := cache.get('api:common/videosummary')) is not None:
         return cached_data
 
@@ -46,8 +49,11 @@ class TaskSummaryOut(Schema):
     status: dict[str, int]
 
 
-@router.get('/tasksummary', throttle=[AnonRateThrottle('10/m')])
+@router.get('/tasksummary', throttle=[AnonRateThrottle('30/m')])
 def task_summary(request):
+    """
+    - Throttle: AnonRateThrottle('30/m')
+    """
     if (cached_data := cache.get('api:common/tasksummary')) is not None:
         return cached_data
 
@@ -60,8 +66,11 @@ def task_summary(request):
     return result
 
 
-@router.get('/diskusage', throttle=[AnonRateThrottle('10/m')])
+@router.get('/diskusage', throttle=[AnonRateThrottle('30/m')])
 def disk_usage(request):
+    """
+    - Throttle: AnonRateThrottle('30/m')
+    """
     if (cached_data := cache.get('api:common/diskusage')) is not None:
         return cached_data
 
