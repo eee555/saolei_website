@@ -1,42 +1,43 @@
-import { GetUserInfoResponse } from './common/structInterface';
 import { VideoAbstract } from './videoabstract';
 
 export class UserProfile {
-    constructor(
-        public id: number = 0,
-        public username: string = '',
-        public realname: string = '匿名',
-        public firstname: string = '',
-        public lastname: string = '',
-        public is_banned: boolean = false,
-        public is_staff: boolean = false,
-        public country: string = '',
-        public signature: string = '',
-        public last_change_avatar: Date = new Date(),
-        public last_change_signature: Date = new Date(),
-        public left_avatar_n: number = 0,
-        public left_signature_n: number = 0,
-        public accountlink: any[] = [],
-        public identifiers: string[] = [],
-        public videos: VideoAbstract[] = [],
-    ) {}
+    public id: number = 0;
+    public username: string = '';
+    public realname: string = '匿名';
+    public firstname: string = '';
+    public lastname: string = '';
+    public is_banned: boolean = false;
+    public is_staff: boolean = false;
+    public country: string = '';
+    public signature: string = '';
+    public last_change_avatar: Date = new Date();
+    public last_change_signature: Date = new Date();
+    public left_avatar_n: number = 0;
+    public left_signature_n: number = 0;
+    public accountlink: any[] = [];
+    public identifiers: string[] = [];
+    public videos: VideoAbstract[] = [];
 
-    static from(info: GetUserInfoResponse): UserProfile {
-        return new UserProfile(
-            info.id,
-            info.username,
-            info.realname,
-            info.firstname,
-            info.lastname,
-            info.is_banned,
-            info.is_staff,
-            info.country,
-            info.signature,
-            new Date(info.last_change_avatar),
-            new Date(info.last_change_signature),
-            info.left_avatar_n,
-            info.left_signature_n,
-        );
+    constructor(data?: any) {
+        if (!data) return;
+        this.id = data.id ?? 0;
+        this.username = data.username ?? '';
+        this.realname = data.realname ?? '匿名';
+        this.firstname = data.firstname ?? '';
+        this.lastname = data.lastname ?? '';
+        this.is_banned = data.is_banned ?? false;
+        this.is_staff = data.is_staff ?? false;
+        this.country = data.country ?? '';
+        this.signature = data.signature ?? '';
+
+        this.last_change_avatar = data.last_change_avatar ? new Date(data.last_change_avatar) : new Date();
+        this.last_change_signature = data.last_change_signature ? new Date(data.last_change_signature) : new Date();
+
+        this.left_avatar_n = data.left_avatar_n ?? 0;
+        this.left_signature_n = data.left_signature_n ?? 0;
+
+        this.identifiers = data.identifiers ?? [];
+        this.videos = data.videos ? data.videos.map((video: any) => new VideoAbstract(video)) : [];
     }
 
     public newAvatarBudget(newDate: Date) {

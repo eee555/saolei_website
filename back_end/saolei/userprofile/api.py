@@ -45,7 +45,7 @@ def get_user_info(request, user_id: int = None):
     if user_id is None:
         if request.user.is_authenticated:
             return request.user
-        raise HttpError(401)
+        raise HttpError(401, 'Unauthorized')
     return get_object_or_404(UserProfile, id=user_id)
 
 

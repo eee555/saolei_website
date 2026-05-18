@@ -62,11 +62,6 @@ const routes: Array<RouteRecordRaw> = [
         children: userRoutes,
     },
     {
-        path: '/player',
-        name: 'player',
-        component: () => import('../views/PlayerView.vue'),
-    },
-    {
         path: '/staff',
         name: 'staff',
         component: () => import('../views/StaffView/App.vue'),

@@ -77,11 +77,15 @@ onMounted(() => {
 
 const login_auto = async () => {
     await proxy.$axios.get('api/userprofile/info').then(function (response) {
-        store.user = UserProfile.from(response.data);
+        store.user = new UserProfile(response.data);
         store.login_status = LoginStatus.IsLogin;
     }).catch((err) => {
         store.login_status = LoginStatus.NotLogin;
-        console.log(err);
+        if (err.status == 401) {
+            console.log('401 is normal, indicating that the user is not logged in.');
+            return;
+        }
+        httpErrorNotification(err);
     });
 };
 
