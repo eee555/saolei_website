@@ -1,7 +1,11 @@
 <template>
     <input ref="fileInputRef" type="file" accept="image/jpeg,image/png,image/gif,image/webp" style="display: none" @change="handleFileChange">
-    <tippy v-loading="updating">
-        <el-avatar :src="avatarSrc" :disabled="disabled" @click="triggerFileDialog" />
+    <tippy v-loading="updating" follow-cursor>
+        <el-image :src="avatarSrc" :disabled="disabled" @click="triggerFileDialog">
+            <template #error>
+                <img src="@/assets/person.png" style="max-width: 100%; max-height: 100%;">
+            </template>
+        </el-image>
         <template v-if="store.isSelf" #content>
             <div v-if="store.expTimeMs >= 200000">
                 {{ t('local.tooltipExpTime') }}
@@ -19,7 +23,7 @@
 <script setup lang="ts">
 import '@/styles/text.css';
 
-import { ElAvatar, vLoading } from 'element-plus';
+import { ElImage, vLoading } from 'element-plus';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Tippy } from 'vue-tippy';

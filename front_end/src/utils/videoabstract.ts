@@ -90,16 +90,15 @@ export class VideoAbstract {
         this.state = info.state;
         this.software = info.software;
 
-        if (info.cl) this.cl = info.cl;
-        if (info.ce) this.ce = info.ce;
-        if (info.path) this.path = info.path;
-        if (info.player_id) this.player_id = info.player_id;
-        if (info.player_name) this.player_name = info.player_name;
+        this.cl = info.cl;
+        this.ce = info.ce;
+        this.path = info.path;
+        this.player_id = info.player_id;
+        this.player_name = info.player_name;
 
-        if (info.file_size) this.file_size = info.file_size;
-        else this.file_size = 0;
+        this.file_size = info.file_size ?? 0;
 
-        if (info.ongoing_tournament) this.ongoing_tournament = info.ongoing_tournament;
+        this.ongoing_tournament = info.ongoing_tournament;
     }
 
     static fromVideoAbstractInfo(info: VideoAbstractInfo): VideoAbstract {

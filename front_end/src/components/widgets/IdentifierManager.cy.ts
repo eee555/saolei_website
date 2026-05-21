@@ -7,7 +7,7 @@ import { pinia } from '@/store/create';
 import { UserProfile } from '@/utils/userprofile';
 
 // 模拟用户工厂函数
-function createMockUser(id: number, identifiers: string[] = []): UserProfile {
+function createMockUser(id: number, identifiers?: string[]): UserProfile {
     const user = new UserProfile();
     user.id = id;
     user.identifiers = identifiers;

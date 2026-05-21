@@ -21,7 +21,7 @@
     <div>
         <el-input
             v-model="newRealName" minlength="2"
-            maxlength="100" show-word-limit
+            maxlength="100" show-word-limit :disabled="store.user.realname !== ''"
         />
     </div>
 
@@ -35,8 +35,8 @@
         </div>
     </div>
     <div>
-        <el-input v-model="newFirstName" :placeholder="t('local.firstname')" minlength="1" maxlength="255" show-word-limit />
-        <el-input v-model="newLastName" :placeholder="t('local.lastname')" minlength="1" maxlength="255" show-word-limit />
+        <el-input v-model="newFirstName" :placeholder="t('local.firstname')" minlength="1" maxlength="255" show-word-limit :disabled="store.user.firstname !== ''" />
+        <el-input v-model="newLastName" :placeholder="t('local.lastname')" minlength="1" maxlength="255" show-word-limit :disabled="store.user.lastname !== ''" />
     </div>
 
     <!-- 个性签名 -->
@@ -62,7 +62,7 @@
 import '@/styles/text.css';
 
 import { ElButton, ElInput } from 'element-plus';
-import { ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { httpErrorNotification } from '@/components/Notifications';
@@ -101,15 +101,18 @@ const statusSignature = ref({
     errorMsg: '',
 });
 
+function refresh() {
+    newRealName.value = store.user.realname;
+    newFirstName.value = store.user.firstname;
+    newLastName.value = store.user.lastname;
+    newSignature.value = store.user.signature;
+}
+
 watch(() => props.isEditing, () => {
-    if (props.isEditing) {
-        newRealName.value = store.user.realname;
-        newFirstName.value = store.user.firstname;
-        newLastName.value = store.user.lastname;
-        newSignature.value = store.user.signature;
-    }
+    if (props.isEditing) refresh();
 }, { immediate: true });
 
+onMounted(refresh);
 
 type UpdateProfileField = 'realname' | 'firstname' | 'lastname' | 'signature';
 type UpdateProfileResponseSingle =
@@ -154,9 +157,21 @@ async function updateProfile() {
     ).then((response) => {
         const data = response.data as EnumMap<UpdateProfileField, UpdateProfileResponseSingle>;
         statusRealName.value = processUpdateResponse(data.realname);
+        if (statusRealName.value.status === 'success') {
+            store.user.realname = newRealName.value;
+        }
         statusFirstName.value = processUpdateResponse(data.firstname);
+        if (statusFirstName.value.status === 'success') {
+            store.user.firstname = newFirstName.value;
+        }
         statusLastName.value = processUpdateResponse(data.lastname);
+        if (statusLastName.value.status === 'success') {
+            store.user.lastname = newLastName.value;
+        }
         statusSignature.value = processUpdateResponse(data.signature);
+        if (statusSignature.value.status === 'success') {
+            store.user.signature = newSignature.value;
+        }
     }).catch(httpErrorNotification);
     updating.value = false;
     emit('close');

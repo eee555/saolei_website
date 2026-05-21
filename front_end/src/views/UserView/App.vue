@@ -1,14 +1,14 @@
 <template>
     <div ref="containerRef" v-loading="playerLoading" class="personal-homepage" :class="{ 'wide-mode': isWide, 'narrow-mode': !isWide }">
         <div v-loading="infoLoading" class="profile-section">
-            <Profile :direction="isWide ? 'vertical' : 'horizontal'" />
+            <Profile :user="store.player" :direction="isWide ? 'vertical' : 'horizontal'" />
         </div>
         <div v-loading="videoLoading" class="content-area">
             <el-tabs :model-value="activeTab" @tab-click="handleTabClick">
                 <el-tab-pane v-for="tab in tabItems" :key="tab.name" :label="tab.label" :name="tab.name" />
                 <router-view v-slot="{ Component }">
                     <keep-alive>
-                        <component :is="Component" />
+                        <component :is="Component" v-model:user="store.player" />
                     </keep-alive>
                 </router-view>
             </el-tabs>
@@ -20,19 +20,17 @@
 // 我的地盘页面
 import { useElementSize } from '@vueuse/core';
 import { ElTabPane, ElTabs, vLoading } from 'element-plus';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 
 import Profile from './Profile.vue';
 
 import { httpErrorNotification } from '@/components/Notifications';
+import { fetchUserInfo } from '@/services/userService';
 import { store } from '@/store';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { UserProfile } from '@/utils/userprofile';
-import { VideoAbstract } from '@/utils/videoabstract';
 
-const { proxy } = useCurrentInstance();
 const route = useRoute();
 const router = useRouter();
 
@@ -68,7 +66,7 @@ const videoLoading = ref(false);
 
 const containerRef = ref<HTMLElement | null>(null);
 const { width } = useElementSize(containerRef);
-const isWide = computed(() => width.value >= 768);
+const isWide = computed(() => width.value >= 960);
 
 async function refresh() {
     const idStr = route.params.id;
@@ -81,36 +79,17 @@ async function refresh() {
     if (newId === store.user.id) {
         store.player = store.user;
     } else {
-        await fetchPlayerInfo(newId);
-    }
-    if (store.player.videos.length === 0) {
-        await fetchPlayerVideos(newId);
+        try {
+            store.player = new UserProfile(await fetchUserInfo(newId));
+        } catch (error) {
+            httpErrorNotification(error);
+        }
     }
     playerLoading.value = false;
 }
 
 watch(() => route.params.id, refresh, { immediate: true });
-onMounted(refresh);
-
-async function fetchPlayerInfo(playerId: number) {
-    await proxy.$axios.get('/api/userprofile/info', {
-        params: { user_id: playerId },
-    }).then(({ data }) => {
-        store.player = UserProfile.from(data);
-        playerLoading.value = false;
-    }).catch(httpErrorNotification);
-    infoLoading.value = false;
-}
-
-async function fetchPlayerVideos(playerId: number) {
-    videoLoading.value = true;
-    await proxy.$axios.get('/api/userprofile/videos', {
-        params: { user_id: playerId },
-    }).then(({ data }: { data: VideoAbstract[] }) => {
-        store.player.videos = data.map((video) => new VideoAbstract(video));
-    }).catch(httpErrorNotification);
-    videoLoading.value = false;
-}
+// onMounted(refresh);
 
 const i18nMessages = {
     'zh-cn': { local: {
@@ -120,6 +99,13 @@ const i18nMessages = {
         videos: '录像',
         upload: '上传',
     } },
+    'en': { local: {
+        accountlink: 'Account Link',
+        summary: 'Summary',
+        record: 'Record',
+        videos: 'Videos',
+        upload: 'Upload',
+    } },
 };
 
 const { t } = useI18n({ messages: i18nMessages });
@@ -127,7 +113,6 @@ const { t } = useI18n({ messages: i18nMessages });
 </script>
 
 <style scoped lang="less">
-@breakpoint: 768px;
 
 .personal-homepage {
     display: flex;
@@ -149,8 +134,7 @@ const { t } = useI18n({ messages: i18nMessages });
     &.wide-mode {
         flex-direction: row;
         .profile-section {
-            width: 320px;
-            min-width: 280px;
+            width: 200px;
             max-width: 35%;
         }
     }

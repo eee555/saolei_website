@@ -15,14 +15,17 @@ export class UserProfile {
     public left_avatar_n: number = 0;
     public left_signature_n: number = 0;
     public accountlink: any[] = [];
-    public identifiers: string[] = [];
-    public videos: VideoAbstract[] = [];
+    public identifiers?: string[];
+    public videos?: VideoAbstract[];
 
     constructor(data?: any) {
         if (!data) return;
         this.id = data.id ?? 0;
         this.username = data.username ?? '';
-        this.realname = data.realname ?? '匿名';
+
+        if (data.realname === '匿名') this.realname = '';
+        else this.realname = data.realname ?? '';
+
         this.firstname = data.firstname ?? '';
         this.lastname = data.lastname ?? '';
         this.is_banned = data.is_banned ?? false;
@@ -36,8 +39,16 @@ export class UserProfile {
         this.left_avatar_n = data.left_avatar_n ?? 0;
         this.left_signature_n = data.left_signature_n ?? 0;
 
-        this.identifiers = data.identifiers ?? [];
-        this.videos = data.videos ? data.videos.map((video: any) => new VideoAbstract(video)) : [];
+        this.identifiers = data.identifiers;
+        this.videos = data.videos ? data.videos.map((video: any) => new VideoAbstract(video)) : undefined;
+    }
+
+    get isAnonymous() {
+        return this.realname === '';
+    }
+
+    get canSetName() {
+        return this.isAnonymous || this.firstname === '' || this.lastname === '';
     }
 
     public newAvatarBudget(newDate: Date) {

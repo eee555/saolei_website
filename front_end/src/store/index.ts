@@ -29,6 +29,7 @@ export const store = defineStore('user', {
         isUserAnonymous: (state) => state.user.realname === '匿名',
         expTimeMs: (state) => {
             let ret = 999999;
+            if (!state.user.videos) return ret;
             for (const video of state.user.videos) {
                 if (video.state === MS_State.Official && video.level === 'e') {
                     ret = Math.min(ret, video.timems);
@@ -61,6 +62,8 @@ export const local = useLocalStorage(
         vienna_logo_legacy: false,
         autoUploadAfterParse: false,
         autoRemoveAfterUpload: false,
+        folderMonitorPollingInterval: 3000,
+        nameFormat: 'first-last' as 'first-last' | 'last-first',
     },
     { mergeDefaults: true },
 );

@@ -1,27 +1,53 @@
 <template>
     <div :class="{ 'horizontal-profile': direction === 'horizontal', 'vertical-profile': direction === 'vertical' }">
-        <div class="profile-placeholder">
-            <div class="avatar-placeholder">
-                <avatar :user-id="store.player.id" />
+        <div class="profile">
+            <div class="avatar">
+                <avatar :user-id="user.id" />
             </div>
-            <div class="info-placeholder">
-                <edit-profile v-if="isEditing" @close="isEditing = false" />
-                <show-profile v-else @edit="isEditing = true" />
+            <div>
+                <span class="username">
+                    {{ user.username }}
+                </span>
+                <span class="id">
+                    #{{ user.id }}
+                </span>
+            </div>
+            <div class="realname">
+                {{ user.isAnonymous ? t('local.anonymous') : user.realname }}
+            </div>
+            <div class="fullname">
+                {{ formatName(user.firstname, user.lastname, local.nameFormat) }}
             </div>
         </div>
+        <el-button v-if="user.id === store.user.id" class="edit-button" @click="isEditing = true">
+            编辑信息
+        </el-button>
+        <div class="signature">
+            {{ user.signature }}
+        </div>
     </div>
+    <el-dialog v-model="isEditing">
+        <edit-profile @close="isEditing = false" />
+    </el-dialog>
 </template>
 
 <script setup lang="ts">
+import { ElButton, ElDialog } from 'element-plus';
 import { PropType, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 import Avatar from './Avatar.vue';
 import EditProfile from './EditProfile.vue';
-import ShowProfile from './ShowProfile.vue';
 
-import { store } from '@/store';
+import { local, store } from '@/store';
+import { formatName } from '@/utils/strings';
+import { UserProfile } from '@/utils/userprofile';
 
 defineProps({
+    user: {
+        type: UserProfile,
+        default: () => new UserProfile(),
+    },
     direction: {
         type: String as PropType<'horizontal' | 'vertical'>,
         default: 'vertical',
@@ -30,53 +56,144 @@ defineProps({
 
 const isEditing = ref(false);
 
+const i18nMessages = {
+    'zh-cn': { local: {
+        anonymous: '匿名',
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
+
 </script>
 
-<style lang="less" scoped>
-.input-label {
-    margin-top: 1em;
-    margin-bottom: 0.5em;
-}
-
-.avatar(@size) {
-    width: @size;
-    height: @size;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
+<style scoped lang="less">
+/* 横向布局：窄屏顶部栏 */
 .horizontal-profile {
-    padding: 1rem 1.5rem;
-    .profile-placeholder {
+    display: flex;
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--el-bg-color);
+    border-bottom: 1px solid var(--el-border-color-light);
+    box-sizing: border-box;
+
+    .profile {
         display: flex;
         align-items: center;
-        gap: 1.2rem;
-        border-radius: 2rem;
-        .avatar-placeholder {
-            .avatar(56px);
-        }
-        .name {
-            font-size: 1.3rem;
-        }
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .avatar {
+        height: 64px;
+        aspect-ratio: 1 / 1;
+        border-radius: 50%;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+    .username {
+        font-weight: 600;
+        font-size: var(--el-font-size-extra-large);
+        color: var(--el-text-color-primary);
+    }
+
+    .id {
+        font-size: var(--el-font-size-large);
+        color: var(--el-text-color-secondary);
+    }
+
+    .realname {
+        font-weight: 500;
+        font-size: var(--el-font-size-large);
+        color: var(--el-text-color-primary);
+    }
+    .fullname {
+        font-size: var(--el-font-size-small);
+        color: var(--el-text-color-regular);
+    }
+
+    .signature {
+        width: 100%;
+        max-height: 64px;
+        overflow: auto;
+        font-size: var(--el-font-size-extra-small);
+        color: var(--el-text-color-placeholder);
+        padding-left: 12px;
+    }
+
+    .edit-button {
+        margin-left: auto;
     }
 }
 
+/* 纵向布局：宽屏侧边栏 */
 .vertical-profile {
-    padding: 2rem 1.5rem;
-    .profile-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: 12px 8px;
+    background-color: var(--el-bg-color);
+    border-right: 1px solid var(--el-border-color-light);
+    box-sizing: border-box;
+
+    .profile {
         display: flex;
         flex-direction: column;
         align-items: center;
+        gap: 4px;
+        margin-bottom: 16px;
+    }
+
+    .avatar {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-bottom: 8px;
+    }
+
+    .username {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--el-text-color-primary);
         text-align: center;
-        .avatar-placeholder.large {
-            .avatar(100px);
-        }
-        .name {
-            font-size: 1.6rem;
-        }
+    }
+
+    .id {
+        font-size: 13px;
+        color: var(--el-text-color-secondary);
+        text-align: center;
+    }
+
+    .realname {
+        font-weight: 500;
+        font-size: var(--el-font-size-large);
+        color: var(--el-text-color-regular);
+        text-align: center;
+    }
+    .fullname {
+        font-size: var(--el-font-size-small);
+        color: var(--el-text-color-regular);
+        text-align: center;
+    }
+
+    .signature {
+        width: 100%;
+        font-size: var(--el-font-size-extra-small);
+        line-height: 1.6;
+        color: var(--el-text-color-placeholder);
+        overflow: auto;
+        word-break: break-word;
+    }
+
+    .edit-button {
+        width: 100%;
+        margin-top: 1rem;
+        order: 1;
     }
 }
-
 </style>

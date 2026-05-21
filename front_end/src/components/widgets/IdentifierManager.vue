@@ -49,6 +49,7 @@ import IconCopy from './IconCopy.vue';
 
 import { BaseIconAdd, BaseIconDelete } from '@/components/common/icon';
 import { httpErrorNotification, unknownErrorNotification } from '@/components/Notifications';
+import { fetchUserIdentifiers } from '@/services/userService';
 import { store } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { removeItem } from '@/utils/system/tools';
@@ -62,16 +63,17 @@ const loading = ref(false);
 const user = defineModel('user', { type: UserProfile, default: () => new UserProfile() });
 
 async function refresh() {
+    if (loading.value) return;
     if (user.value.id < 1) return;
-    if (user.value.identifiers.length > 0) return;
-    loading.value = true;
-    await proxy.$axios.get('api/userprofile/identifier', {
-        params: { user_id: user.value.id },
-    }).then((response) => {
-        console.log(response.data);
-        user.value.identifiers = response.data;
-    }).catch(httpErrorNotification);
-    loading.value = false;
+    if (user.value.identifiers === undefined) {
+        loading.value = true;
+        try {
+            user.value.identifiers = await fetchUserIdentifiers(user.value.id);
+        } catch (error) {
+            httpErrorNotification(error);
+        }
+        loading.value = false;
+    }
 }
 
 onMounted(refresh);
@@ -86,7 +88,7 @@ const identifierdata = computed(() => {
 function delIdentifier(identifier: string) {
     proxy.$axios.post('identifier/del/', { identifier: identifier },
     ).then(function (response) {
-        user.value.identifiers = removeItem(user.value.identifiers, identifier);
+        user.value.identifiers = removeItem(user.value.identifiers!, identifier);
         ElNotification({
             title: t('identifierManager.delIdentifierSuccess'),
             message: t('identifierManager.processedNVideos', [response.data.value]),
@@ -99,7 +101,7 @@ function addIdentifier(identifier: string) {
     proxy.$axios.post('identifier/add/', { identifier: identifier },
     ).then(function (response) {
         if (response.data.type === 'success') {
-            user.value.identifiers.push(new_identifiers.value);
+            user.value.identifiers!.push(new_identifiers.value);
             ElNotification({
                 title: t('identifierManager.addIdentifierSuccess'),
                 message: t('identifierManager.processedNVideos', [response.data.value]),
