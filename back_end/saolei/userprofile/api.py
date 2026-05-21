@@ -6,11 +6,11 @@ from typing import List
 from django.core.exceptions import ValidationError
 from django.http import FileResponse, HttpRequest, HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import get_object_or_404
-from ninja import File, Router, Schema, UploadedFile
+from django_ratelimit.decorators import ratelimit
+from ninja import File, Form, Router, Schema, UploadedFile
 from ninja.decorators import decorate_view
 from ninja.errors import HttpError
 from ninja.orm import create_schema
-from ninja.throttling import AnonRateThrottle
 
 from userprofile.decorators import banned_blocked, login_required_error
 from userprofile.services import refresh_avatar_chance, try_update_user_name_fields, try_update_user_signature
@@ -37,10 +37,11 @@ UserInfoOut = create_schema(
 )
 
 
-@router.get('/info', response=UserInfoOut, throttle=[AnonRateThrottle('2/s')])
+@router.get('/info', response=UserInfoOut)
+@decorate_view(ratelimit(key='ip', rate='2/s'))
 def get_user_info(request, user_id: int = None):
     """
-    - Throttle: AnonRateThrottle('2/s')
+    - ratelimit(key='ip', rate='2/s')
     """
     if user_id is None:
         if request.user.is_authenticated:
@@ -49,19 +50,21 @@ def get_user_info(request, user_id: int = None):
     return get_object_or_404(UserProfile, id=user_id)
 
 
-@router.get('/identifier', response=List[str], throttle=[AnonRateThrottle('2/s')])
+@router.get('/identifier', response=List[str])
+@decorate_view(ratelimit(key='ip', rate='2/s'))
 def get_user_identifier(request, user_id: int):
     """
-    - Throttle: AnonRateThrottle('2/s')
+    - ratelimit(key='ip', rate='2/s')
     """
     user = get_object_or_404(UserProfile, id=user_id)
     return user.userms.identifiers
 
 
-@router.get('/avatar/{user_id}', throttle=[AnonRateThrottle('2/s')])
+@router.get('/avatar/{user_id}')
+@decorate_view(ratelimit(key='ip', rate='2/s'))
 def get_user_avatar(request, user_id: int):
     """
-    - Throttle: AnonRateThrottle('2/s')
+    - ratelimit(key='ip', rate='2/s')
     """
     user = get_object_or_404(UserProfile, id=user_id)
     if not user.avatar or not os.path.exists(user.avatar.path):
@@ -81,10 +84,11 @@ UserVideoOut = create_schema(
 )
 
 
-@router.get('/videos', response=List[UserVideoOut], throttle=[AnonRateThrottle('1/s')])
+@router.get('/videolist', response=List[UserVideoOut])
+@decorate_view(ratelimit(key='ip', rate='1/s'))
 def get_user_videos(request, user_id: int):
     """
-    - Throttle: AnonRateThrottle('1/s')
+    - ratelimit(key='ip', rate='1/s')
     """
     user = get_object_or_404(UserProfile, id=user_id)
     queryset = VideoModel.objects.filter(player=user)
@@ -101,12 +105,17 @@ class UpdateUserProfileIn(Schema):
     lastname: str = None
 
 
-@router.post('/update_profile', throttle=[AnonRateThrottle('1/m')])
-@decorate_view(login_required_error, banned_blocked)
-def update_user_profile(request: HttpRequest, data: UpdateUserProfileIn):
+@router.post('/update_profile')
+@decorate_view(
+    login_required_error,
+    banned_blocked,
+    ratelimit(key='ip', rate='1/m'),
+)
+def update_user_profile(request: HttpRequest, data: UpdateUserProfileIn = Form(...)):  # noqa: B008
     """
-    - Decorator: login_required_error, banned_blocked
-    - Throttle: AnonRateThrottle('1/m')
+    - login_required_error
+    - banned_blocked
+    - ratelimit(key='ip', rate='1/m')
 
     ### Example response
     ```json
@@ -163,20 +172,24 @@ def update_user_profile(request: HttpRequest, data: UpdateUserProfileIn):
     if (signature := data.signature) is not None:
         try:
             try_update_user_signature(user, signature, user_ip)
+            data_out['signature'] = success_out
         except ExceptionToResponse as e:
             data_out['signature'] = e.body
-
-        data_out['signature'] = success_out
 
     return data_out
 
 
-@router.post('/update_avatar', throttle=[AnonRateThrottle('1/m')])
-@decorate_view(login_required_error, banned_blocked)
+@router.post('/update_avatar')
+@decorate_view(
+    login_required_error,
+    banned_blocked,
+    ratelimit(key='ip', rate='1/m'),
+)
 def update_user_avatar(request, avatar: File[UploadedFile]):
     """
-    - Decorator: login_required_error, banned_blocked
-    - Throttle: AnonRateThrottle('1/m')
+    - login_required_error
+    - banned_blocked
+    - ratelimit(key='ip', rate='1/m')
 
     ### Success response
     ```json
