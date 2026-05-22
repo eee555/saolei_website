@@ -40,13 +40,19 @@
     </div>
 
     <!-- 个性签名 -->
-    <div class="input-label text text-large">
-        {{ t('local.signature') }}
+    <div class="input-label">
+        <div class="text text-large">
+            {{ t('local.signature') }}
+        </div>
+        <div class="text text-small">
+            {{ t('local.signatureTooltip', { left: store.user.newSignatureBudget(new Date(Date.now())), next: toISODateTimeString(store.user.nextSignatureAvailable) }) }}
+        </div>
     </div>
     <div>
         <el-input
             v-model="formStatus.signature.new" minlength="0"
             maxlength="4095" type="textarea" :rows="8" show-word-limit
+            :disabled="store.user.nextSignatureAvailable > globalNow"
         />
     </div>
 
@@ -71,6 +77,7 @@ import { httpErrorNotification } from '@/components/Notifications';
 import { store } from '@/store';
 import { createEnumMap, EnumMap } from '@/utils';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import { globalNow, toISODateTimeString } from '@/utils/datetime';
 
 const { proxy } = useCurrentInstance();
 
@@ -126,6 +133,10 @@ function processUpdateResponse(field: UpdateProfileField, data: UpdateProfileRes
         formStatus.value[field].status = 'success';
         formStatus.value[field].errorMsg = '';
         store.user[field] = formStatus.value[field].new;
+        if (field === 'signature') {
+            store.user.left_signature_n -= 1;
+            store.user.last_change_signature = new Date(Date.now());
+        }
     } else if (data.type === 'error') {
         formStatus.value[field].status = 'error';
         formStatus.value[field].errorMsg = t(`local.error.${data.object}.${data.category}`);
@@ -166,6 +177,13 @@ const i18nMessages = {
         realname: '真实姓名',
         realnameTooltip: '真实姓名一旦设置无法修改，请谨慎填写。如果有正当理由修改姓名，请联系管理员。',
         signature: '个性签名',
+        signatureTooltip: ({ named }: { named: any }) => {
+            if (named('left') > 0) {
+                return `您每月可获得一次签名修改次数。当前剩余${named('left')}次。`;
+            } else {
+                return `您每月可获得一次签名修改次数。当前没有修改次数。下次可修改：${named('next')}`;
+            }
+        },
     } },
     'en': { local: {
         englishName: 'International Name',
@@ -177,6 +195,13 @@ const i18nMessages = {
         realname: 'Real Name',
         realnameTooltip: 'Your real name cannot be changed once set. If you have a legitimate reason to change your name, please contact a moderator.',
         signature: 'Signature',
+        signatureTooltip: ({ named }: { named: any }) => {
+            if (named('left') > 0) {
+                return `You gain one chance to modify your signature each month. You have ${named('left')} chances remaining.`;
+            } else {
+                return `You gain one chance to modify your signature each month. You have no chance remaining. Next available on: ${named('next')}`;
+            }
+        },
     } },
 };
 
