@@ -20,7 +20,7 @@
             </div>
         </div>
         <el-button v-if="user.id === store.user.id" class="edit-button" @click="isEditing = true">
-            编辑信息
+            {{ t('local.editButton') }}
         </el-button>
         <div class="signature">
             {{ user.signature }}
@@ -59,6 +59,11 @@ const isEditing = ref(false);
 const i18nMessages = {
     'zh-cn': { local: {
         anonymous: '匿名',
+        editButton: '编辑信息',
+    } },
+    'en': { local: {
+        anonymous: 'Anonymous',
+        editButton: 'Edit Profile',
     } },
 };
 
@@ -121,6 +126,7 @@ const { t } = useI18n({ messages: i18nMessages });
         font-size: var(--el-font-size-extra-small);
         color: var(--el-text-color-placeholder);
         padding-left: 12px;
+        white-space: pre-wrap;
     }
 
     .edit-button {
@@ -188,6 +194,7 @@ const { t } = useI18n({ messages: i18nMessages });
         color: var(--el-text-color-placeholder);
         overflow: auto;
         word-break: break-word;
+        white-space: pre-wrap;
     }
 
     .edit-button {

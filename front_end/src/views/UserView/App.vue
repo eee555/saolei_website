@@ -116,11 +116,9 @@ const { t } = useI18n({ messages: i18nMessages });
 
 .personal-homepage {
     display: flex;
-    min-height: 100vh;
 
     .content-area {
         flex: 1;
-        padding: 2rem;
         overflow-y: auto;
         border-radius: 1rem;
     }

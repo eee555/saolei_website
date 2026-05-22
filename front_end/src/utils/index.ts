@@ -27,7 +27,7 @@ export function createEnumMap<T extends readonly string[], V>(
     keys: T,
     defaultValue: V,
 ): { [K in T[number]]: V } {
-    return Object.fromEntries(keys.map((key) => [key, defaultValue])) as {
+    return Object.fromEntries(keys.map((key) => [key, structuredClone(defaultValue)])) as {
         [K in T[number]]: V;
     };
 }

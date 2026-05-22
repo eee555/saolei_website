@@ -1,6 +1,12 @@
 export default {
     local: 'de',
     name: 'Deutsch',
+    common: {
+        button: {
+            cancel: 'abbrechen',
+            confirm: 'bestätigen',
+        },
+    },
     form: {
         captcha: 'Captcha',
         confirmPassword: 'Passwort bestätigen',
@@ -32,11 +38,5 @@ export default {
         login: 'Login',
         logout: 'Abmeldem',
         register: 'Registrieren',
-    },
-    profile: {
-        changeAvatar: 'Profilbild ändern',
-        realname: 'Name',
-        confirmChange: 'Änderungen bestätigen',
-        cancelChange: 'abbrechen',
     },
 };
