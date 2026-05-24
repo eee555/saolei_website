@@ -2,7 +2,7 @@
     <div :class="{ 'horizontal-profile': direction === 'horizontal', 'vertical-profile': direction === 'vertical' }">
         <div class="profile">
             <div class="avatar">
-                <avatar :user-id="user.id" />
+                <avatar :user="user" :is-self="store.isSelf" :exp-time-ms="store.expTimeMs" />
             </div>
             <div>
                 <span class="username">
@@ -93,7 +93,6 @@ const { t } = useI18n({ messages: i18nMessages });
     .avatar {
         height: 64px;
         aspect-ratio: 1 / 1;
-        border-radius: 50%;
         overflow: hidden;
         flex-shrink: 0;
     }
@@ -157,7 +156,6 @@ const { t } = useI18n({ messages: i18nMessages });
     .avatar {
         width: 100%;
         aspect-ratio: 1 / 1;
-        border-radius: 50%;
         overflow: hidden;
         margin-bottom: 8px;
     }
