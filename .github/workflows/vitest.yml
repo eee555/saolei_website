@@ -7,6 +7,9 @@ on:
   pull_request:
     paths:
       - 'front_end/src/**/*.ts'
+      - '!front_end/src/**/*.cy.ts'
+      - 'front_end/package.json'
+      - '.github/workflows/vitest.yml'
 
 jobs:
   test:
