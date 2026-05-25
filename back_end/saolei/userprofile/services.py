@@ -10,11 +10,12 @@ from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django_redis import get_redis_connection
 from config.global_settings import GameModes, RankingGameStats
-from userprofile.models import EmailVerifyRecord, UserProfile
-from userprofile.utils import count_new_avatar_chance, count_new_signature_chance
 from utils import generate_code, verify_text
 from utils.exceptions import ExceptionToResponse
 from videomanager.models import VideoModel
+from .models import EmailVerifyRecord, UserProfile
+from .utils import count_new_avatar_chance, count_new_signature_chance
+
 
 cache = get_redis_connection('saolei_website')
 logger = logging.getLogger('userprofile')

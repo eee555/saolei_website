@@ -12,13 +12,12 @@ from ninja.decorators import decorate_view
 from ninja.errors import HttpError
 from ninja.orm import create_schema
 
-from userprofile.decorators import banned_blocked, login_required_error
-from userprofile.services import refresh_avatar_chance, try_update_user_name_fields, try_update_user_signature
 from utils import verify_image
 from utils.exceptions import ExceptionToResponse
 from videomanager.models import VideoModel
-
+from .decorators import banned_blocked, login_required_error
 from .models import UserProfile
+from .services import refresh_avatar_chance, try_update_user_name_fields, try_update_user_signature
 
 router = Router()
 logger = logging.getLogger('userprofile')
