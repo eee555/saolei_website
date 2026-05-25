@@ -1,9 +1,9 @@
 <template>
     <div ref="containerRef" v-loading="playerLoading" class="personal-homepage" :class="{ 'wide-mode': isWide, 'narrow-mode': !isWide }">
-        <div v-loading="infoLoading" class="profile-section">
+        <div class="profile-section">
             <Profile :user="store.player" :direction="isWide ? 'vertical' : 'horizontal'" />
         </div>
-        <div v-loading="videoLoading" class="content-area">
+        <div class="content-area">
             <el-tabs :model-value="activeTab" @tab-click="handleTabClick">
                 <el-tab-pane v-for="tab in tabItems" :key="tab.name" :label="tab.label" :name="tab.name" />
                 <router-view v-slot="{ Component }">
@@ -17,7 +17,6 @@
 </template>
 
 <script lang="ts" setup>
-// 我的地盘页面
 import { useElementSize } from '@vueuse/core';
 import { ElTabPane, ElTabs, vLoading } from 'element-plus';
 import { computed, ref, watch } from 'vue';
@@ -61,8 +60,6 @@ const handleTabClick = (tab: any) => {
 };
 
 const playerLoading = ref(false);
-const infoLoading = ref(false);
-const videoLoading = ref(false);
 
 const containerRef = ref<HTMLElement | null>(null);
 const { width } = useElementSize(containerRef);
@@ -117,23 +114,25 @@ const { t } = useI18n({ messages: i18nMessages });
 .personal-homepage {
     display: flex;
 
-    .content-area {
-        flex: 1;
-        overflow-y: auto;
-        border-radius: 1rem;
-    }
-
     &.narrow-mode {
         flex-direction: column;
         .profile-section { width: 100%; }
-        .content-area { margin: 1rem; }
+        .content-area {
+            width: 100%;
+            margin-top: 1rem;
+        }
     }
 
     &.wide-mode {
         flex-direction: row;
         .profile-section {
             width: 200px;
-            max-width: 35%;
+            min-width: 200px;
+        }
+        .content-area {
+            flex: 1;
+            margin-left: 1rem;
+            overflow-y: auto;
         }
     }
 }

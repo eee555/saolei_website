@@ -19,9 +19,15 @@
         </div>
     </div>
     <div>
+        <div v-if="formStatus.realname.status === 'error'" class="text text-danger text-small">
+            {{ formStatus.realname.errorMsg }}
+        </div>
+        <div v-else-if="formStatus.realname.status === 'success'" class="text text-small text-success">
+            {{ t('local.updateSuccess') }}
+        </div>
         <el-input
             v-model="formStatus.realname.new" minlength="2"
-            maxlength="100" show-word-limit :disabled="store.user.realname !== ''"
+            maxlength="100" show-word-limit :disabled="user.realname !== ''"
         />
     </div>
 
@@ -35,8 +41,20 @@
         </div>
     </div>
     <div>
-        <el-input v-model="formStatus.firstname.new" :placeholder="t('local.firstname')" minlength="1" maxlength="255" show-word-limit :disabled="store.user.firstname !== ''" />
-        <el-input v-model="formStatus.lastname.new" :placeholder="t('local.lastname')" minlength="1" maxlength="255" show-word-limit :disabled="store.user.lastname !== ''" />
+        <div v-if="formStatus.firstname.status === 'error'" class="text text-danger text-small">
+            {{ formStatus.firstname.errorMsg }}
+        </div>
+        <div v-else-if="formStatus.firstname.status === 'success'" class="text text-small text-success">
+            {{ t('local.updateSuccess') }}
+        </div>
+        <el-input v-model="formStatus.firstname.new" :placeholder="t('local.firstname')" minlength="1" maxlength="255" show-word-limit :disabled="user.firstname !== ''" />
+        <div v-if="formStatus.lastname.status === 'error'" class="text text-danger text-small">
+            {{ formStatus.lastname.errorMsg }}
+        </div>
+        <div v-else-if="formStatus.lastname.status === 'success'" class="text text-small text-success">
+            {{ t('local.updateSuccess') }}
+        </div>
+        <el-input v-model="formStatus.lastname.new" :placeholder="t('local.lastname')" minlength="1" maxlength="255" show-word-limit :disabled="user.lastname !== ''" />
     </div>
 
     <!-- 个性签名 -->
@@ -45,14 +63,23 @@
             {{ t('local.signature') }}
         </div>
         <div class="text text-small">
-            {{ t('local.signatureTooltip', { left: store.user.newSignatureBudget(new Date(Date.now())), next: toISODateTimeString(store.user.nextSignatureAvailable) }) }}
+            {{ t('local.signatureTooltip', { left: user.newSignatureBudget(new Date(Date.now())), next: toISODateTimeString(user.nextSignatureAvailable) }) }}
+        </div>
+        <div v-if="expTimeMs >= 200000" class="text text-small text-warning">
+            {{ t('local.tooltipExpTime') }}
         </div>
     </div>
     <div>
+        <div v-if="formStatus.signature.status === 'error'" class="text text-danger text-small">
+            {{ formStatus.signature.errorMsg }}
+        </div>
+        <div v-else-if="formStatus.signature.status === 'success'" class="text text-small text-success">
+            {{ t('local.updateSuccess') }}
+        </div>
         <el-input
             v-model="formStatus.signature.new" minlength="0"
             maxlength="4095" type="textarea" :rows="8" show-word-limit
-            :disabled="store.user.nextSignatureAvailable > globalNow"
+            :disabled="signatureDisabled"
         />
     </div>
 
@@ -60,7 +87,7 @@
         <el-button type="primary" @click="updateProfile">
             {{ t('common.button.save') }}
         </el-button>
-        <el-button type="info" @click="emit('close')">
+        <el-button type="info" @click="isEditing = false">
             {{ t('common.button.cancel') }}
         </el-button>
     </div>
@@ -70,18 +97,16 @@
 import '@/styles/text.css';
 
 import { ElButton, ElInput } from 'element-plus';
-import { onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { httpErrorNotification } from '@/components/Notifications';
-import { store } from '@/store';
 import { createEnumMap, EnumMap } from '@/utils';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { globalNow, toISODateTimeString } from '@/utils/datetime';
+import { UserProfile } from '@/utils/userprofile';
 
 const { proxy } = useCurrentInstance();
-
-const emit = defineEmits(['close']);
 
 const UpdateProfileFields = ['realname', 'firstname', 'lastname', 'signature'] as const;
 type UpdateProfileField = typeof UpdateProfileFields[number];
@@ -91,8 +116,11 @@ interface formStatusSingle {
     errorMsg: string;
 }
 
+const user = defineModel('user', { type: UserProfile, default: () => new UserProfile() });
+const isEditing = defineModel('isEditing', { type: Boolean, default: false });
+
 const props = defineProps({
-    isEditing: { type: Boolean, default: false },
+    expTimeMs: { type: Number, default: 999999 },
 });
 
 const updating = ref(false);
@@ -110,15 +138,17 @@ const formStatus = ref<EnumMap<UpdateProfileField, formStatusSingle>>(
 
 function refresh() {
     for (const field of UpdateProfileFields) {
-        formStatus.value[field].new = store.user[field];
+        formStatus.value[field].new = user.value[field];
     }
 }
 
-watch(() => props.isEditing, () => {
-    if (props.isEditing) refresh();
+watch(() => isEditing.value, () => {
+    if (isEditing.value) refresh();
 }, { immediate: true });
 
 onMounted(refresh);
+
+const signatureDisabled = computed(() => user.value.nextSignatureAvailable > globalNow.value || props.expTimeMs >= 200000);
 
 type UpdateProfileResponseSingle =
     | null
@@ -132,16 +162,14 @@ function processUpdateResponse(field: UpdateProfileField, data: UpdateProfileRes
     } else if (data.type === 'success') {
         formStatus.value[field].status = 'success';
         formStatus.value[field].errorMsg = '';
-        store.user[field] = formStatus.value[field].new;
+        user.value[field] = formStatus.value[field].new;
         if (field === 'signature') {
-            store.user.left_signature_n -= 1;
-            store.user.last_change_signature = new Date(Date.now());
+            user.value.left_signature_n -= 1;
+            user.value.last_change_signature = new Date(Date.now());
         }
     } else if (data.type === 'error') {
         formStatus.value[field].status = 'error';
         formStatus.value[field].errorMsg = t(`local.error.${data.object}.${data.category}`);
-    } else {
-        throw new Error('This branch should never be reached. Please report this bug.');
     }
 }
 
@@ -149,21 +177,24 @@ async function updateProfile() {
     updating.value = true;
     const params = new FormData();
     for (const field of UpdateProfileFields) {
-        if (formStatus.value[field].new !== store.user[field]) {
+        if (formStatus.value[field].new !== user.value[field]) {
             params.append(field, formStatus.value[field].new);
         }
     }
-    await proxy.$axios.post(
-        '/api/userprofile/update_profile',
-        params,
-    ).then((response) => {
-        const data = response.data as EnumMap<UpdateProfileField, UpdateProfileResponseSingle>;
-        for (const field of UpdateProfileFields) {
-            processUpdateResponse(field, data[field]);
-        }
-    }).catch(httpErrorNotification);
+    if (!params.keys().next().done) {
+        await proxy.$axios.post(
+            '/api/userprofile/update_profile',
+            params,
+        ).then((response) => {
+            const data = response.data as EnumMap<UpdateProfileField, UpdateProfileResponseSingle>;
+            for (const field of UpdateProfileFields) {
+                processUpdateResponse(field, data[field]);
+            }
+        }).catch(httpErrorNotification);
+    }
     updating.value = false;
-    emit('close');
+    isEditing.value = false;
+    console.log('isEditing');
 }
 
 const i18nMessages = {
@@ -177,12 +208,20 @@ const i18nMessages = {
         realname: '真实姓名',
         realnameTooltip: '真实姓名一旦设置无法修改，请谨慎填写。如果有正当理由修改姓名，请联系管理员。',
         signature: '个性签名',
+        tooltipExpTime: '高级sub200后才可以修改个性签名',
+        updateSuccess: '修改成功',
         signatureTooltip: ({ named }: { named: any }) => {
             if (named('left') > 0) {
                 return `您每月可获得一次签名修改次数。当前剩余${named('left')}次。`;
             } else {
                 return `您每月可获得一次签名修改次数。当前没有修改次数。下次可修改：${named('next')}`;
             }
+        },
+        error: {
+            censorship: {
+                unknown: '机器审核发生未知错误，请联系管理员',
+                illegal: '未通过机器审核，请更换内容或联系管理员进行人工审核',
+            },
         },
     } },
     'en': { local: {
@@ -195,12 +234,20 @@ const i18nMessages = {
         realname: 'Real Name',
         realnameTooltip: 'Your real name cannot be changed once set. If you have a legitimate reason to change your name, please contact a moderator.',
         signature: 'Signature',
+        tooltipExpTime: 'Achieve expert sub200 to change signature',
+        updateSuccess: 'Update successful',
         signatureTooltip: ({ named }: { named: any }) => {
             if (named('left') > 0) {
                 return `You gain one chance to modify your signature each month. You have ${named('left')} chances remaining.`;
             } else {
                 return `You gain one chance to modify your signature each month. You have no chance remaining. Next available on: ${named('next')}`;
             }
+        },
+        error: {
+            censorship: {
+                unknown: 'Unknown error occurred in censorship. Please contact a moderator',
+                illegal: 'The content is blocked by censorship. Please change the text or contact a moderator for manual review',
+            },
         },
     } },
 };

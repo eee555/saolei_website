@@ -27,21 +27,22 @@
         </div>
     </div>
     <el-dialog v-model="isEditing">
-        <edit-profile @close="isEditing = false" />
+        <edit-profile v-model:user="store.user" v-model:is-editing="isEditing" :exp-time-ms="store.expTimeMs" />
     </el-dialog>
 </template>
 
 <script setup lang="ts">
 import { ElButton, ElDialog } from 'element-plus';
-import { PropType, ref } from 'vue';
+import { defineAsyncComponent, PropType, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import Avatar from './Avatar.vue';
-import EditProfile from './EditProfile.vue';
 
 import { local, store } from '@/store';
 import { formatName } from '@/utils/strings';
 import { UserProfile } from '@/utils/userprofile';
+
+const EditProfile = defineAsyncComponent(() => import('./EditProfile.vue'));
 
 defineProps({
     user: {
