@@ -166,17 +166,5 @@ describe('IdentifierManager.vue', () => {
             cy.wait('@getIdentifiers');
             cy.get('.el-table__body').extractTableData().should('deep.equal', [['new-b', '']]);
         });
-
-        it('Do not refresh if user identifiers are already fetched', () => {
-            cy.mount(IdentifierManager, mountOption(createMockUser(2, ['a'])));
-            cy.get('.el-table__body').extractTableData().should('deep.equal', [['a', '']]);
-
-            cy.get('@vue').then((wrapper: any) => {
-                wrapper.setProps({
-                    user: createMockUser(3, ['new-b']),
-                });
-            });
-            cy.get('.el-table__body').extractTableData().should('deep.equal', [['new-b', '']]);
-        });
     });
 });

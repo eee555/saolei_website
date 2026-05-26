@@ -32,21 +32,21 @@ import { useI18n } from 'vue-i18n';
 import { Tippy } from 'vue-tippy';
 
 import { baseErrorNotification, httpErrorNotification } from '@/components/Notifications';
-import { store } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { globalNow, toISODateTimeString } from '@/utils/datetime';
 import { UserProfile } from '@/utils/userprofile';
 
 const { proxy } = useCurrentInstance();
 
+const user = defineModel('user', { type: UserProfile, default: () => new UserProfile() });
+
 const props = defineProps({
-    user: { type: UserProfile, default: () => new UserProfile() },
     isSelf: { type: Boolean, default: false },
     expTimeMs: { type: Number, default: 999999 },
 });
 
 const avatarVersion = ref(0);
-const avatarSrc = computed(() => `${proxy.$axios.defaults.baseURL}/api/userprofile/avatar/${props.user.id}?v=${avatarVersion.value}`);
+const avatarSrc = computed(() => `${proxy.$axios.defaults.baseURL}/api/userprofile/avatar/${user.value.id}?v=${avatarVersion.value}`);
 
 const fileInputRef = ref<HTMLInputElement>();
 function triggerFileDialog() {
@@ -72,10 +72,10 @@ async function handleFileChange(event: Event) {
     updating.value = false;
 }
 
-const avatarBudget = computed(() => props.user.newAvatarBudget(globalNow.value));
+const avatarBudget = computed(() => user.value.newAvatarBudget(globalNow.value));
 
 const updating = ref(false);
-const disabled = computed(() => props.user.id !== store.user.id || store.expTimeMs >= 200000 || avatarBudget.value <= 0);
+const disabled = computed(() => !props.isSelf || props.expTimeMs >= 200000 || avatarBudget.value <= 0);
 
 async function updateAvatar(a: File) {
     const formData = new FormData();
@@ -86,7 +86,7 @@ async function updateAvatar(a: File) {
         const data = response.data;
         if (data.type === 'success') {
             avatarVersion.value += 1;
-            store.user.left_avatar_n -= 1;
+            user.value.left_avatar_n -= 1;
         } else if (data.type === 'error') {
             baseErrorNotification(t('local.errorTitle'), t(`local.errorMsg.${data.object}.${data.category}`));
         }

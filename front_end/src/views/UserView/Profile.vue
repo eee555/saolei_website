@@ -2,7 +2,7 @@
     <div :class="{ 'horizontal-profile': direction === 'horizontal', 'vertical-profile': direction === 'vertical' }">
         <div class="profile">
             <div class="avatar">
-                <avatar :user="user" :is-self="user.id === store.user.id" :exp-time-ms="store.expTimeMs" />
+                <avatar v-model:user="store.player" :is-self="user.id === store.user.id" :exp-time-ms="store.expTimeMs" />
             </div>
             <div>
                 <span class="username">

@@ -44,7 +44,7 @@ describe('<Avatar />', () => {
             expTimeMs: 30000,
         }));
 
-        cy.get('img').realHover();
+        cy.get('img').realHover({ position: 'center' });
         cy.get('[id^=tippy-]').should('not.exist');
     });
 
@@ -55,7 +55,7 @@ describe('<Avatar />', () => {
             expTimeMs: 999999,
         }));
 
-        cy.get('img').realHover();
+        cy.get('img').realHover({ position: 'center' });
         cy.contains('Achieve expert sub200 to set avatar');
     });
 
@@ -66,7 +66,7 @@ describe('<Avatar />', () => {
             expTimeMs: 30000,
         }));
 
-        cy.get('img').realHover();
+        cy.get('img').realHover({ position: 'center' });
         cy.contains('Avatar can be changed once every year. Next available time: 2026-01-01 08:00:00');
     });
 
@@ -77,7 +77,7 @@ describe('<Avatar />', () => {
             expTimeMs: 30000,
         }));
 
-        cy.get('img').realHover();
+        cy.get('img').realHover({ position: 'center' });
         cy.contains('Click to change avatar (2 times left)');
     });
 
