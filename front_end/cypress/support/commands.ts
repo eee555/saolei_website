@@ -1,6 +1,7 @@
 /// <reference types="cypress" />
 
 import 'cypress-table';
+import 'cypress-intercept-formdata';
 
 declare global {
     namespace Cypress {
