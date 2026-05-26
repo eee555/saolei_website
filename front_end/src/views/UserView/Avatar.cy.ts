@@ -26,6 +26,8 @@ const validFile = Cypress.Buffer.from('x');
 describe('<Avatar />', () => {
     beforeEach(() => {
         cy.clock(new Date('2025-01-01T00:00:01Z'));
+
+        cy.intercept('GET', '/api/userprofile/avatar/0?*', { fixture: 'test.png' });
     });
 
     it('Rendering', () => {

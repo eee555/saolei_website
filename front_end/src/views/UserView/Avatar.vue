@@ -7,14 +7,14 @@
             </template>
         </el-image>
         <template v-if="isSelf" #content>
-            <el-card class="card-small">
+            <el-card class="card-small text">
                 <div v-if="expTimeMs >= 200000">
                     {{ t('local.tooltipExpTime') }}
                 </div>
                 <div v-else-if="avatarBudget > 0">
                     {{ t('local.tooltipBase', [avatarBudget]) }}
                 </div>
-                <div v-else class="text">
+                <div v-else>
                     {{ t('local.tooltipCooldown') }}{{ toISODateTimeString(user.nextAvatarAvailable) }}
                 </div>
             </el-card>
