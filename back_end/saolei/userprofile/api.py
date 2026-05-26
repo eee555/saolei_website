@@ -106,8 +106,8 @@ class UpdateUserProfileIn(Schema):
 
 @router.post('/update_profile')
 @decorate_view(
-    login_required_error,
     banned_blocked,
+    login_required_error,
     ratelimit(key='ip', rate='1/m'),
 )
 def update_user_profile(request: HttpRequest, data: UpdateUserProfileIn = Form(...)):  # noqa: B008

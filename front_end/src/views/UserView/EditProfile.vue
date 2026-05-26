@@ -204,7 +204,7 @@ const i18nMessages = {
         firstname: '名',
         lastname: '姓',
         localname: '本名',
-        localnameTooltip: '使用您的本地语言填写完整姓名。',
+        localnameTooltip: '使用您的本地语言填写完整姓名。这是上传录像所必需的信息。',
         realname: '真实姓名',
         realnameTooltip: '真实姓名一旦设置无法修改，请谨慎填写。如果有正当理由修改姓名，请联系管理员。',
         signature: '个性签名',

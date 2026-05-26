@@ -26,7 +26,7 @@ export const store = defineStore('user', {
     }),
     getters: {
         isSelf: (state) => state.user.id === state.player.id && state.user.id !== 0,
-        isUserAnonymous: (state) => state.user.realname === '匿名',
+        isUserAnonymous: (state) => state.user.realname === '',
         expTimeMs: (state) => {
             let ret = 999999;
             if (!state.user.videos) return ret;

@@ -3,7 +3,7 @@
     <tippy v-loading="updating" follow-cursor :duration="0">
         <el-image :src="avatarSrc" :disabled="disabled" style="max-height: 100%; max-width: 100%; aspect-ratio: 1 / 1; border-radius: 50%;" @click="triggerFileDialog">
             <template #error>
-                <img src="@/assets/person.png">
+                <img src="@/assets/person.png" style="max-height: 100%; max-width: 100%; aspect-ratio: 1 / 1; border-radius: 50%;">
             </template>
         </el-image>
         <template v-if="isSelf" #content>
@@ -78,12 +78,15 @@ const updating = ref(false);
 const disabled = computed(() => props.user.id !== store.user.id || store.expTimeMs >= 200000 || avatarBudget.value <= 0);
 
 async function updateAvatar(a: File) {
-    await proxy.$axios.post('/api/userprofile/update_avatar/',
-        { avatar: a },
+    const formData = new FormData();
+    formData.append('avatar', a);
+    await proxy.$axios.post('/api/userprofile/update_avatar',
+        formData,
     ).then(function (response) {
         const data = response.data;
         if (data.type === 'success') {
-            avatarVersion.value++;
+            avatarVersion.value += 1;
+            store.user.left_avatar_n -= 1;
         } else if (data.type === 'error') {
             baseErrorNotification(t('local.errorTitle'), t(`local.errorMsg.${data.object}.${data.category}`));
         }

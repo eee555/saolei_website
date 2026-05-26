@@ -47,21 +47,18 @@ const user = defineModel('user', { type: UserProfile, required: true });
 
 const loading = ref(false);
 
-watch(() => user.value.videos, async (newVideos) => {
+async function refresh() {
     if (loading.value) return;
-    if (newVideos === undefined) {
-        loading.value = true;
-        user.value.videos = await fetchUserVideos(user.value.id);
-        loading.value = false;
-    }
-}, { immediate: true });
-
-onMounted(async () => {
-    if (loading.value) return;
+    if (user.value.id < 1) return;
     if (user.value.videos === undefined) {
         loading.value = true;
         user.value.videos = await fetchUserVideos(user.value.id);
         loading.value = false;
     }
-});
+}
+
+watch(() => user.value.id, refresh, { immediate: true });
+
+onMounted(refresh);
+
 </script>

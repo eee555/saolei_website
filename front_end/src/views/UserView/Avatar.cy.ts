@@ -94,7 +94,7 @@ describe('<Avatar />', () => {
     });
 
     it('Upload - database validation', () => {
-        cy.intercept('POST', '/api/userprofile/update_avatar/', {
+        cy.intercept('POST', '/api/userprofile/update_avatar', {
             body: {
                 type: 'error',
                 object: 'avatar',
@@ -114,7 +114,7 @@ describe('<Avatar />', () => {
     });
 
     it('Upload - censorship failure', () => {
-        cy.intercept('POST', '/api/userprofile/update_avatar/', {
+        cy.intercept('POST', '/api/userprofile/update_avatar', {
             body: {
                 type: 'error',
                 object: 'censorship',
@@ -134,7 +134,7 @@ describe('<Avatar />', () => {
     });
 
     it('Upload - illegal content', () => {
-        cy.intercept('POST', '/api/userprofile/update_avatar/', {
+        cy.intercept('POST', '/api/userprofile/update_avatar', {
             body: {
                 type: 'error',
                 object: 'censorship',
@@ -154,19 +154,25 @@ describe('<Avatar />', () => {
     });
 
     it('Upload - success', () => {
-        cy.intercept('POST', '/api/userprofile/update_avatar/', {
+        const user = new UserProfile({ left_avatar_n: 1 });
+
+        cy.intercept('POST', '/api/userprofile/update_avatar', {
             body: {
                 type: 'success',
             },
         });
 
         cy.mount(Avatar, mountOptions({
-            user: new UserProfile({ left_avatar_n: 1 }),
+            user: user,
             isSelf: true,
             expTimeMs: 30000,
         }));
 
         cy.get('input[type=file]').selectFile([{ contents: validFile }], { force: true });
         cy.get('img').should('have.attr', 'src').and('include', '?v=1');
+
+        cy.then(() => {
+            expect(user.left_avatar_n).to.equal(0);
+        });
     });
 });

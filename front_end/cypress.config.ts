@@ -1,4 +1,7 @@
+import path from 'path';
+
 import { defineConfig } from 'cypress';
+import vitePreprocessor from 'cypress-vite';
 
 export default defineConfig({
     e2e: {
@@ -11,6 +14,9 @@ export default defineConfig({
                 }
                 return launchOptions;
             });
+            on('file:preprocessor', vitePreprocessor({
+                configFile: path.resolve(__dirname, 'vite.config.ts'),
+            }));
         },
     },
 
