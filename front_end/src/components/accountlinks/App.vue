@@ -13,7 +13,7 @@
 import '@/styles/text.css';
 
 import { vLoading } from 'element-plus';
-import { onMounted, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 
 import CardAdd from './CardAdd.vue';
 import CardMsgames from './CardMsgames.vue';
