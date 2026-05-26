@@ -103,6 +103,14 @@ export function formatNumberSmart(
     return rounded.length > totalLength ? rounded.substring(0, totalLength) : rounded;
 }
 
+export function formatName(firstname: string, lastname: string, mode: 'first-last' | 'last-first'): string {
+    if (mode === 'first-last') {
+        return `${firstname} ${lastname}`;
+    } else {
+        return `${lastname}, ${firstname}`;
+    }
+}
+
 /**
  * 获取文件名的扩展名（不含点号）
  * @param filename - 文件名（可包含路径）

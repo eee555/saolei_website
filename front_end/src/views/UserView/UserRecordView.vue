@@ -46,10 +46,10 @@ import { ElMessage, ElSkeleton, ElTable, ElTableColumn } from 'element-plus';
 import { nextTick, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { store } from '../store';
 
 import BaseCardLarge from '@/components/common/BaseCardLarge.vue';
 import PreviewNumber from '@/components/PreviewNumber.vue';
+import { store } from '@/store';
 import { ms_to_s } from '@/utils';
 import { Record, RecordBIE } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';

@@ -60,6 +60,19 @@
                 </template>
             </base-tooltip>
         </el-descriptions-item>
+        <el-descriptions-item :label="t('local.nameFormat')">
+            <base-tooltip>
+                <el-radio-group v-model="local.nameFormat" size="small" style="vertical-align: middle;">
+                    <el-radio-button :label="t('local.nameFormatFirstLast')" value="first-last" />
+                    <el-radio-button :label="t('local.nameFormatLastFirst')" value="last-first" />
+                </el-radio-group>
+                <template #content>
+                    <span class="text">
+                        {{ t('local.nameFormatTooltip') }}
+                    </span>
+                </template>
+            </base-tooltip>
+        </el-descriptions-item>
         <el-descriptions-item :label="t('local.newUserGuide')">
             <base-tooltip>
                 <el-switch v-model="local.tooltip_show" />
@@ -102,7 +115,7 @@
 </template>
 
 <script lang="ts" setup name="UserSettings">
-import { ElDescriptions, ElDescriptionsItem, ElInputNumber, ElOption, ElSelect, ElSlider, ElSwitch } from 'element-plus';
+import { ElDescriptions, ElDescriptionsItem, ElInputNumber, ElOption, ElRadioButton, ElRadioGroup, ElSelect, ElSlider, ElSwitch } from 'element-plus';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Tippy } from 'vue-tippy';
@@ -129,6 +142,10 @@ const i18nMessages = {
         menuLayout: '菜单排版',
         menuLayoutAbstract: '抽象',
         menuLayoutDefault: '默认',
+        nameFormat: '姓名格式',
+        nameFormatFirstLast: '名 姓',
+        nameFormatLastFirst: '姓, 名',
+        nameFormatTooltip: '英文名显示格式',
         newUserGuide: '新手引导',
         newUserGuideTooltip: '鼠标在各种地方悬停时获取帮助。',
         notificationDuration: '通知时长',
@@ -148,6 +165,10 @@ const i18nMessages = {
         menuLayout: 'Menu Layout',
         menuLayoutAbstract: 'Abstract',
         menuLayoutDefault: 'Default',
+        nameFormat: 'Name Format',
+        nameFormatFirstLast: 'Given Family',
+        nameFormatLastFirst: 'Family, Given',
+        nameFormatTooltip: 'Display format for international names',
         newUserGuide: 'Get Help',
         newUserGuideTooltip: 'Get help by hovering over components',
         notificationDuration: 'Notification Duration',

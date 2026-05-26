@@ -11,7 +11,8 @@
     "serve": "vite preview",
     "build:dev": "vite build --mode dev",
     "build:openms": "vite build --mode openms",
-    "build:frontend": "vite build --mode frontend"
+    "build:frontend": "vite build --mode frontend",
+    "vitest": "vitest"
   },
   "dependencies": {
     "@chenfengyuan/vue-countdown": "2.1.3",
@@ -70,14 +71,16 @@
     "cypress-intercept-formdata": "^1.0.0",
     "cypress-real-events": "1.15.0",
     "cypress-table": "1.0.2",
-    "eslint": "9.39.4",
+    "cypress-vite": "^1.10.0",
     "esbuild": "0.28.0",
+    "eslint": "9.39.4",
     "eslint-import-resolver-typescript": "4.4.4",
     "eslint-plugin-cypress": "6.2.2",
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-vue": "10.8.0",
     "globals": "17.4.0",
     "less": "4.6.4",
+    "path": "^0.12.7",
     "remove-attr": "0.0.15",
     "rollup": "4.60.1",
     "typescript": "6.0.2",
@@ -85,6 +88,7 @@
     "vite": "7.0.0",
     "vite-plugin-compression": "0.5.1",
     "vite-plugin-top-level-await": "1.6.0",
-    "vite-plugin-wasm": "3.6.0"
+    "vite-plugin-wasm": "3.6.0",
+    "vitest": "^4.1.7"
   }
 }

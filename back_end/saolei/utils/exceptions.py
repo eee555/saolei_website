@@ -29,5 +29,9 @@ class ExceptionToResponse(Exception):
         self.obj = obj
         self.category = category
 
+    @property
+    def body(self):
+        return {'type': 'error', 'object': self.obj, 'category': self.category}
+
     def response(self):
-        return JsonResponse({'type': 'error', 'object': self.obj, 'category': self.category})
+        return JsonResponse(self.body)

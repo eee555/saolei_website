@@ -62,9 +62,10 @@ declare global {
             /**
              * 访问指定用户的个人主页
              * @param {number} userId - 用户ID
+             * @param {string} [tab] - 可选参数，指定要访问的标签页，如'summary'、'record'、'accountlink'、'video'、'upload'
              * @example cy.visitUser(1);
              * */
-            visitUser(userId: number): void;
+            visitUser(userId: number, tab?: string): void;
         }
     }
 }
@@ -131,6 +132,10 @@ Cypress.Commands.add('flushDatabase', () => {
     });
 });
 
-Cypress.Commands.add('visitUser', (userId: number) => {
-    cy.visit(`/#/player/${userId}`);
+Cypress.Commands.add('visitUser', (userId: number, tab?: string) => {
+    if (tab) {
+        cy.visit(`/#/player/${userId}/${tab}`);
+    } else {
+        cy.visit(`/#/player/${userId}`);
+    }
 });

@@ -28,7 +28,7 @@
                     &nbsp;
                     <!-- 删除标识 -->
                     <el-link
-                        v-if="store.player.id == store.user.id && scope.row.data !== ''" underline="never"
+                        v-if="user.id == store.user.id && scope.row.data !== ''" underline="never"
                         type="danger" @click="delIdentifier(scope.row.data)"
                     >
                         <base-icon-delete />
@@ -42,31 +42,53 @@
 <script setup lang="ts">
 
 import { ElInput, ElLink, ElNotification, ElTable, ElTableColumn } from 'element-plus';
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import IconCopy from './IconCopy.vue';
 
 import { BaseIconAdd, BaseIconDelete } from '@/components/common/icon';
 import { httpErrorNotification, unknownErrorNotification } from '@/components/Notifications';
+import { fetchUserIdentifiers } from '@/services/userService';
 import { store } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { removeItem } from '@/utils/system/tools';
+import { UserProfile } from '@/utils/userprofile';
 
 const { proxy } = useCurrentInstance();
 const new_identifiers = ref('');
 const { t } = useI18n();
+const loading = ref(false);
+
+const user = defineModel('user', { type: UserProfile, default: () => new UserProfile() });
+
+async function refresh() {
+    if (loading.value) return;
+    if (user.value.id < 1) return;
+    if (user.value.identifiers === undefined) {
+        loading.value = true;
+        try {
+            user.value.identifiers = await fetchUserIdentifiers(user.value.id);
+        } catch (error) {
+            httpErrorNotification(error);
+        }
+        loading.value = false;
+    }
+}
+
+onMounted(refresh);
+watch(() => user.value.id, refresh, { immediate: true });
 
 const identifierdata = computed(() => {
-    const data = store.player.identifiers ? store.player.identifiers.map((value) => ({ data: value })) : [];
-    if (store.player.id == store.user.id) data.push({ data: '' });
+    const data = user.value.identifiers ? user.value.identifiers.map((value) => ({ data: value })) : [];
+    if (user.value.id == store.user.id) data.push({ data: '' });
     return data;
 });
 
 function delIdentifier(identifier: string) {
     proxy.$axios.post('identifier/del/', { identifier: identifier },
     ).then(function (response) {
-        store.player.identifiers = removeItem(store.player.identifiers, identifier);
+        user.value.identifiers = removeItem(user.value.identifiers!, identifier);
         ElNotification({
             title: t('identifierManager.delIdentifierSuccess'),
             message: t('identifierManager.processedNVideos', [response.data.value]),
@@ -79,7 +101,7 @@ function addIdentifier(identifier: string) {
     proxy.$axios.post('identifier/add/', { identifier: identifier },
     ).then(function (response) {
         if (response.data.type === 'success') {
-            store.player.identifiers.push(new_identifiers.value);
+            user.value.identifiers!.push(new_identifiers.value);
             ElNotification({
                 title: t('identifierManager.addIdentifierSuccess'),
                 message: t('identifierManager.processedNVideos', [response.data.value]),

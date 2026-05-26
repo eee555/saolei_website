@@ -6,7 +6,7 @@ import { pinia } from './create';
 import { deepMutableCopy } from '@/utils';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { colorSchemeTemplates } from '@/utils/config';
-import { CellChoice, ColorTemplateName, ColumnChoice, MS_Software, MS_Softwares } from '@/utils/ms_const';
+import { CellChoice, ColorTemplateName, ColumnChoice, MS_Software, MS_Softwares, MS_State } from '@/utils/ms_const';
 import { Tournament } from '@/utils/tournaments';
 import { UserProfile } from '@/utils/userprofile';
 import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
@@ -26,7 +26,17 @@ export const store = defineStore('user', {
     }),
     getters: {
         isSelf: (state) => state.user.id === state.player.id && state.user.id !== 0,
-        isUserAnonymous: (state) => state.user.realname === '匿名',
+        isUserAnonymous: (state) => state.user.realname === '',
+        expTimeMs: (state) => {
+            let ret = 999999;
+            if (!state.user.videos) return ret;
+            for (const video of state.user.videos) {
+                if (video.state === MS_State.Official && video.level === 'e') {
+                    ret = Math.min(ret, video.timems);
+                }
+            }
+            return ret;
+        },
     },
 })(pinia);
 
@@ -52,6 +62,8 @@ export const local = useLocalStorage(
         vienna_logo_legacy: false,
         autoUploadAfterParse: false,
         autoRemoveAfterUpload: false,
+        folderMonitorPollingInterval: 3000,
+        nameFormat: 'first-last' as 'first-last' | 'last-first',
     },
     { mergeDefaults: true },
 );

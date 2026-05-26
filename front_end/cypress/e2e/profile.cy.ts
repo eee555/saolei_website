@@ -3,7 +3,8 @@ import 'cypress-if';
 import { binaryStringToUint8Array } from '../support/stupidCypress';
 
 const USER_ID = 2418 as const;
-
+const USERNAME = 'testUser' as const;
+const PASSWORD = 'testPassword' as const;
 
 
 describe('Personal Profile', () => {
@@ -12,62 +13,76 @@ describe('Personal Profile', () => {
         cy.flushDatabase();
 
         // 注册并登录用户
-        cy.register(USER_ID, 'testUser', 'test@email.com', 'testPassword');
-        cy.login('testUser', 'testPassword');
+        cy.register(USER_ID, USERNAME, 'test@email.com', PASSWORD);
+        cy.login(USERNAME, PASSWORD);
     });
 
-    it('Guest view', () => {
+    it('Profile section', () => {
         cy.visitUser(USER_ID);
-        cy.contains('个人信息');
-        cy.contains('个人纪录');
-        cy.contains('全部录像');
-        cy.contains('上传录像').should('not.exist');
+
+        cy.get('.profile').contains(USERNAME);
+        cy.get('.profile').contains(`#${USER_ID}`);
+        cy.get('.profile').contains('匿名');
+
+        cy.get('.avatar').find('img').should('have.attr', 'src').should('include', 'person.png');
+    });
+
+    it('Navigation', () => {
+        cy.login(USERNAME, PASSWORD);
+        cy.visitUser(USER_ID);
+        cy.url().should('eq', `http://localhost:8080/#/player/${USER_ID}/summary`);
+
+        cy.get('div.el-tabs__item').contains('纪录').click();
+        cy.url().should('eq', `http://localhost:8080/#/player/${USER_ID}/record`);
+
+        cy.get('div.el-tabs__item').contains('账号关联').click();
+        cy.url().should('eq', `http://localhost:8080/#/player/${USER_ID}/accountlink`);
+
+        cy.get('div.el-tabs__item').contains('录像').click();
+        cy.url().should('eq', `http://localhost:8080/#/player/${USER_ID}/videos`);
+
+        cy.get('div.el-tabs__item').contains('上传').click();
+        cy.url().should('eq', `http://localhost:8080/#/player/${USER_ID}/upload`);
     });
 
     it('Cannot upload videos without real name', () => {
-        cy.login('testUser', 'testPassword');
+        cy.login(USERNAME, PASSWORD);
         cy.visitUser(USER_ID);
-        cy.contains('上传录像').click();
+        cy.get('div.el-tabs__item').contains('上传').click();
         cy.contains('请修改为实名');
     });
 
-    it('Change real name', () => {
-        cy.login('testUser', 'testPassword');
+    it('Change local name', () => {
+        cy.login(USERNAME, PASSWORD);
         cy.visitUser(USER_ID);
-        cy.contains('修改简介').click();
-        cy.contains('修改简介').if().should('not.be.visible');
 
-        cy.contains('姓名').next().find('input').clear();
-        cy.contains('姓名').next().find('input').type('testName');
-        cy.contains('确认').click();
+        cy.get('.profile-section').contains('编辑信息').click();
 
-        cy.contains('修改简介').if().should('be.visible');
+        cy.get('.el-dialog').then((dialog) => {
+            cy.wrap(dialog).contains('本名').parent().next().find('input').type('testName');
+            cy.wrap(dialog).find('button').contains('保存').click();
+        });
+
+        cy.get('.el-dialog').should('not.be.visible');
+        cy.get('.profile').contains('testName');
     });
 
-    it('Parse video', function () {
-        cy.login('testUser', 'testPassword');
-        cy.visitUser(USER_ID);
-        cy.contains('上传录像').click();
+    it('Upload video', function () {
+        cy.login(USERNAME, PASSWORD);
+        cy.visitUser(USER_ID, 'upload');
 
         // 准备录像文件
         cy.fixture('Exp_FL_35.09_3BV=132_3BVs=3.76_Pu Tian Yi(Hu Bei).avf', 'binary').then((fileContent) => {
             cy.wrap(binaryStringToUint8Array(fileContent)).as('videoFileExpAvf');
         });
-        cy.fixture('4376-Custom-FL-30x24-860.360-357-226m-20220522.avf', 'binary').then((fileContent) => {
-            cy.wrap(binaryStringToUint8Array(fileContent)).as('videoFileCusAvf');
-        });
         cy.fixture('3819-Time-1616-NF-9469-32-20151031.rmv', 'binary').then((fileContent) => {
             cy.wrap(binaryStringToUint8Array(fileContent)).as('videoFileIntRmv');
         });
 
-        cy.get('input[type=file]').selectFile([
+        cy.get('.el-tabs__content').find('input[type=file]').selectFile([
             {
                 contents: '@videoFileExpAvf',
                 fileName: 'videoFileExp.avf',
-            },
-            {
-                contents: '@videoFileCusAvf',
-                fileName: 'videoFileCus.avf',
             },
             {
                 contents: '@videoFileIntRmv',
@@ -77,15 +92,13 @@ describe('Personal Profile', () => {
 
         const expectedData = {
             ExpAvf: { '': '', Bv: '132', Bvs: '3.762', 状态: '新标识', 用时: '35.090', 级别: '高级', 结束时间: '2023-10-05 21:25:57' },
-            CusAvf: { '': '', Bv: '357', Bvs: '0.415', 状态: '暂不支持自定义级别', 用时: '860.360', 级别: '自定义', 结束时间: '2022-05-22 23:30:49' },
             IntRmv: { '': '', Bv: '32', Bvs: '3.379', 状态: '新标识', 用时: '9.469', 级别: '中级', 结束时间: '2015-10-31 22:53:35' },
         };
 
         cy.get('table:visible').getTable().should((tableData) => {
-            expect(tableData.length).to.equal(3);
+            expect(tableData.length).to.equal(2);
             expect(tableData[0]).to.deep.equal(expectedData.ExpAvf);
-            expect(tableData[1]).to.deep.equal(expectedData.CusAvf);
-            expect(tableData[2]).to.deep.equal(expectedData.IntRmv);
+            expect(tableData[1]).to.deep.equal(expectedData.IntRmv);
         });
 
         cy.get('table:visible').find('.el-checkbox__input').first().click(); // 全选
@@ -94,10 +107,92 @@ describe('Personal Profile', () => {
         cy.get('.el-loading-spinner').should('not.exist');
 
         cy.get('table:visible').getTable().should((tableData) => {
-            expect(tableData.length).to.equal(3);
+            expect(tableData.length).to.equal(2);
             expect(tableData[0]).to.deep.equal({ ...expectedData.ExpAvf, 状态: '上传成功' });
-            expect(tableData[1]).to.deep.equal(expectedData.CusAvf);
-            expect(tableData[2]).to.deep.equal({ ...expectedData.IntRmv, 状态: '上传成功' });
+            expect(tableData[1]).to.deep.equal({ ...expectedData.IntRmv, 状态: '上传成功' });
+        });
+    });
+
+    it('Cannot update avatar before sub200', () => {
+        cy.login(USERNAME, PASSWORD);
+        cy.visitUser(USER_ID);
+
+        cy.get('.avatar').realHover({ position: 'center' });
+        cy.contains('高级sub200后才可以修改头像');
+    });
+
+    it('Cannot update signature before sub200', () => {
+        cy.login(USERNAME, PASSWORD);
+        cy.visitUser(USER_ID);
+
+        cy.get('.profile-section').contains('编辑信息').click();
+
+        cy.get('.el-dialog').then((dialog) => {
+            cy.wrap(dialog).contains('个性签名').parent().next().find('textarea').should('be.disabled');
+            cy.wrap(dialog).contains('高级sub200后才可以修改个性签名');
+        });
+    });
+
+    it('Add identifier', () => {
+        cy.login(USERNAME, PASSWORD);
+        cy.visitUser(USER_ID, 'summary');
+
+        cy.contains('扫雷标识').next().next().find('table').then((table) => {
+            cy.wrap(table).find('input').type('Pu Tian Yi(Hu Bei)');
+            cy.wrap(table).find('.pi-plus').click();
+        });
+
+        cy.contains('添加标识成功');
+        cy.closeElNotifications();
+    });
+
+    it('Auto load videos and identifiers', () => {
+        cy.visitUser(USER_ID);
+
+        cy.contains('共2个录像'); // calendar
+        cy.contains('共1个Bv'); // bv
+
+        cy.contains('扫雷标识').next().next().find('table').contains('Pu Tian Yi(Hu Bei)');
+    });
+
+    it('Update avatar', () => {
+        cy.login(USERNAME, PASSWORD);
+        cy.visitUser(USER_ID);
+
+        cy.get('.avatar').realHover({ position: 'center' });
+        cy.contains('点击修改头像（剩余2次）');
+
+        cy.get('.avatar').find('input[type=file]').selectFile('cypress/fixtures/test.png', { force: true });
+
+        cy.get('.avatar').find('img').should('have.attr', 'src').and('include', `${USER_ID}?v=1`);
+
+        cy.get('.avatar').realHover({ position: 'center' });
+        cy.contains('点击修改头像（剩余1次）');
+    });
+
+    it('Update signature', () => {
+        cy.login(USERNAME, PASSWORD);
+        cy.visitUser(USER_ID);
+
+        cy.get('.profile-section').contains('编辑信息').click();
+
+        cy.get('.el-dialog').then((dialog) => {
+            cy.wrap(dialog).contains('个性签名').parent().next().find('textarea').type('testSignature');
+            cy.wrap(dialog).find('button').contains('保存').click();
+        });
+
+        cy.get('.el-dialog').should('not.be.visible');
+        cy.get('.profile-section').contains('testSignature');
+    });
+
+    it('Guest view', () => {
+        cy.visitUser(USER_ID);
+
+        cy.get('div.el-tabs__item').contains('上传').should('not.exist');
+        cy.get('.profile-section').contains('编辑信息').should('not.exist');
+
+        cy.contains('扫雷标识').next().next().find('table').then((table) => {
+            cy.wrap(table).find('input').should('not.exist');
         });
     });
 });

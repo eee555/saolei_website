@@ -1,3 +1,6 @@
+import { readonly, ref } from 'vue';
+import type { Ref } from 'vue';
+
 export const fullDay = 86400000 as const;
 export const fullWeek = 604800000 as const;
 export const monthNameShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
@@ -44,3 +47,17 @@ export function arbiterTimeStampToDate(timestamp: bigint) {
 export function generalTimeStampToDate(timestamp: bigint) {
     return new Date(Number(timestamp / BigInt(1000)));
 }
+
+// 响应式的 Date 对象（内部可变，外部只读）
+const now = ref(new Date());
+function scheduleUpdate() {
+    const nowDate = new Date();
+    // 计算到下一整秒的剩余毫秒数
+    const delay = 1000 - nowDate.getMilliseconds();
+    setTimeout(() => {
+        now.value = new Date();  // 更新时间
+        scheduleUpdate();        // 递归调度下一次
+    }, delay);
+}
+scheduleUpdate();
+export const globalNow: Readonly<Ref<Date>> = readonly(now);

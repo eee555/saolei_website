@@ -1,25 +1,19 @@
 <template>
-    <template v-if="store.isSelf || accountlinks.length > 0">
-        <b class="text text-medium">
-            {{ t('accountlink.title') }}
-        </b>
-        <div v-loading="loading" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(19rem, auto)); grid-gap: 1rem;">
-            <template v-for="account in accountlinks" :key="account.platform">
-                <card-saolei v-if="account.platform == 'c'" :id="account.identifier" :verified="account.verified" :info="account.data as AccountSaolei" @refresh="refreshAccount(account)" />
-                <card-msgames v-else-if="account.platform == 'a'" :id="account.identifier" :verified="account.verified" :info="account.data as AccountMSGames" />
-                <card-wo-m v-else-if="account.platform == 'w'" :id="account.identifier" :verified="account.verified" :info="account.data as AccountWoM" @refresh="refreshAccount(account)" />
-            </template>
-            <card-add v-if="store.player.id == store.user.id && accountlinks.length < 4" :accountlinks="accountlinks" @add-link="addLink" />
-        </div>
-    </template>
+    <div v-loading="loading" class="account-link-main">
+        <template v-for="account in accountlinks" :key="account.platform">
+            <card-saolei v-if="account.platform == 'c'" :id="account.identifier" :verified="account.verified" :info="account.data as AccountSaolei" @refresh="refreshAccount(account)" />
+            <card-msgames v-else-if="account.platform == 'a'" :id="account.identifier" :verified="account.verified" :info="account.data as AccountMSGames" />
+            <card-wo-m v-else-if="account.platform == 'w'" :id="account.identifier" :verified="account.verified" :info="account.data as AccountWoM" @refresh="refreshAccount(account)" />
+        </template>
+        <card-add v-if="store.player.id == store.user.id && accountlinks.length < 4" :accountlinks="accountlinks" @add-link="addLink" />
+    </div>
 </template>
 
 <script setup lang="ts">
 import '@/styles/text.css';
 
 import { vLoading } from 'element-plus';
-import { onMounted, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { ref, watch } from 'vue';
 
 import CardAdd from './CardAdd.vue';
 import CardMsgames from './CardMsgames.vue';
@@ -32,7 +26,6 @@ import { store } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const { proxy } = useCurrentInstance();
-const { t } = useI18n();
 
 const props = defineProps({
     userId: {
@@ -44,7 +37,7 @@ const props = defineProps({
 const loading = ref(false);
 const accountlinks = ref<AccountLink[]>([]);
 
-onMounted(refresh);
+watch(() => props.userId, refresh, { immediate: true });
 
 async function refresh() {
     if (props.userId == 0) return;
@@ -92,3 +85,13 @@ function refreshAccount(account: AccountLink) {
 }
 
 </script>
+
+<style lang="less" scoped>
+
+.account-link-main {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(19rem, auto));
+    grid-gap: 1rem;
+}
+
+</style>
