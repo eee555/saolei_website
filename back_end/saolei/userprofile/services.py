@@ -9,6 +9,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django_redis import get_redis_connection
+
 from config.global_settings import GameModes, RankingGameStats
 from utils import generate_code, verify_text
 from utils.exceptions import ExceptionToResponse
