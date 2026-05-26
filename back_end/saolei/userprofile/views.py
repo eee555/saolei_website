@@ -13,7 +13,8 @@ from msuser.models import UserMS
 from .decorators import staff_required
 from .forms import EmailForm, UserLoginForm, UserRegisterForm, UserRetrieveForm
 from .models import EmailVerifyRecord, UserProfile
-from .utils import judge_captcha, judge_email_verification, send_email, user_metadata
+from .services import judge_email_verification, send_email, user_metadata
+from .utils import judge_captcha
 
 logger = logging.getLogger('userprofile')
 
@@ -43,14 +44,6 @@ def user_login(request):
         # 检测到小号
         logger.warning(f'{data["user_id"][:50]} is different from {str(user.id)}.')
     return JsonResponse({'type': 'success', 'user': user_metadata(user, user)})
-
-
-@require_GET
-# 用cookie登录
-def user_login_auto(request):
-    if request.user.is_authenticated:
-        return JsonResponse(user_metadata(request.user, request.user))
-    return HttpResponse()
 
 
 def user_logout(request):
@@ -218,7 +211,7 @@ def get_email_captcha(request):
 
 
 # 管理员使用的操作接口，调用方式见前端的StaffView.vue
-get_userProfile_fields = ['id', 'userms__identifiers', 'userms__video_num_limit', 'username', 'first_name', 'last_name', 'email', 'realname', 'signature', 'country', 'left_realname_n', 'left_avatar_n', 'left_signature_n', 'is_banned']  # 可获取的域列表
+get_userProfile_fields = ['id', 'userms__identifiers', 'userms__video_num_limit', 'username', 'firstname', 'lastname', 'email', 'realname', 'signature', 'country', 'left_realname_n', 'left_avatar_n', 'left_signature_n', 'is_banned']  # 可获取的域列表
 
 
 @require_GET

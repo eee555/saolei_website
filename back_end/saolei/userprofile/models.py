@@ -3,7 +3,6 @@ import os
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_cleanup import cleanup
 
@@ -35,8 +34,8 @@ class UserProfile(AbstractUser):
             'unique': _('该用户名已存在！'),
         }, db_collation='utf8mb4_0900_as_cs',
     )
-    first_name = models.CharField(_('first name'), max_length=MaxSizes.FIRSTNAME, blank=True)
-    last_name = models.CharField(_('last name'), max_length=MaxSizes.LASTNAME, blank=True)
+    firstname = models.CharField(_('first name'), max_length=MaxSizes.FIRSTNAME, blank=True)
+    lastname = models.CharField(_('last name'), max_length=MaxSizes.LASTNAME, blank=True)
     email = models.EmailField(
         _('email address'),
         max_length=MaxSizes.EMAIL,
@@ -52,7 +51,7 @@ class UserProfile(AbstractUser):
     )
     # 考虑了中英文、俄罗斯用户名字，长度需要达到100（虽然还不够）
     realname = models.CharField(
-        max_length=MaxSizes.USERNAME, unique=False, blank=True, default='匿名', null=False)
+        max_length=MaxSizes.REALNAME, unique=False, blank=True, default='匿名', null=False)
     # 头像
     avatar = RestrictedImageField(upload_to='avatar/%Y%m%d/', max_length=100,
                                   max_upload_size=MaxSizes.AVATAR, blank=True, null=True)
@@ -66,11 +65,11 @@ class UserProfile(AbstractUser):
     # 剩余修改头像次数，0~32767
     left_avatar_n = models.PositiveSmallIntegerField(null=False, default=DefaultChances.AVATAR)
     # 最近修改头像时间
-    last_change_avatar = models.DateTimeField(default=timezone.now)
+    last_change_avatar = models.DateTimeField(auto_now_add=True)
     # 剩余修改签名次数，0~32767
     left_signature_n = models.PositiveSmallIntegerField(null=False, default=DefaultChances.SIGNATURE)
     # 最近修改签名时间
-    last_change_signature = models.DateTimeField(default=timezone.now)
+    last_change_signature = models.DateTimeField(auto_now_add=True)
     # 人气
     popularity = models.BigIntegerField(null=False, default=0)
     # vip，0为非vip，理论0~32767。类似于权限

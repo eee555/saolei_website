@@ -3,7 +3,12 @@ name: Front-end Build
 on:
   pull_request:
     paths: 
-      - 'front_end/**'
+      - 'front_end/cypress/**'
+      - '!front_end/cypress/e2e/**'
+      - '!front_end/cypress/support/e2e.ts'
+      - 'front_end/src/**'
+      - '!front_end/src/**/*.test.ts'
+      - '.github/workflows/frontend.yml'
 
 jobs:
   build:

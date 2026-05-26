@@ -5,6 +5,9 @@ on:
     paths: 
       - 'front_end/**'
       - 'back_end/**'
+      - '!front_end/src/**/*.cy.ts'
+      - '!front_end/src/**/*.test.ts'
+      - '!front_end/cypress/support/component.ts'
       - '.github/workflows/CypressE2E.yml'
 
 jobs:

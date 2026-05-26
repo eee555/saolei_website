@@ -17,6 +17,7 @@ export default {
             cancel: '取消',
             confirm: '确认',
             register: '注册',
+            save: '保存',
             send: '发送',
         },
         filter: '筛选',
@@ -329,37 +330,13 @@ export default {
         breakRecordTo: '将{mode}{level}{stat}纪录刷新为',
     },
     profile: {
-        changeAvatar: '*点击图片修改头像',
-        realname: '姓名：',
-        realnameInput: '请输入真实姓名',
-        signature: '个人简介',
-        signatureInput: '请输入个人简介',
-        change: '修改简介',
-        confirmChange: '确认',
-        cancelChange: '取消',
-        identifier: '我的标识：',
-        msg: {
-            avatarChange: '头像修改成功！剩余{0}次',
-            avatarFormat: '头像必须为JPG或PNG格式！',
-            avatarFilesize: '头像大小不能超过50MB！',
-            realnameChange: '姓名修改成功！剩余{0}次',
-            signatureChange: '个性签名修改成功！剩余{0}次',
-        },
-        profile: {
-            title: '个人信息',
-        },
         records: {
-            title: '个人纪录',
             modeRecord: '模式纪录：',
         },
-        videos: '全部录像',
         exportJSON: '导出JSON',
         exportJSONTooltip: '从服务器获取的源数据',
         exportArbiterCSV: '导出CSV',
         exportArbiterCSVTooltip: '兼容 Minesweeper Arbiter 生成的 <span style="font-family: \'Courier New\', Courier, monospace;">stats_csv.csv</span>。<br/> 目前不支持 Leff, Reff, Deff, GZiNi, HZiNi。',
-        upload: {
-            title: '上传录像',
-        },
     },
     server: {
         videoSummary: {
