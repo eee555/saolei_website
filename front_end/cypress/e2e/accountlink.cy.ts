@@ -31,7 +31,7 @@ const LINKS = {
 } as const;
 
 function linkNewAccount(platform: string, identifier: string) {
-    cy.contains('账号关联').next().find('.pi-plus').click();
+    cy.get('.account-link-main').find('.pi-plus').click();
     cy.contains('添加关联账号');
     cy.get('.el-dialog__body').within(() => {
         cy.contains('平台').next().contains('Select').click();
@@ -45,7 +45,7 @@ function linkNewAccount(platform: string, identifier: string) {
 }
 
 function expectUnverifiedAccount(index: number, platform: string, identifier: string) {
-    cy.contains('账号关联').next().children().filter(':visible').eq(index).within(() => {
+    cy.get('.account-link-main').children().filter(':visible').eq(index).within(() => {
         cy.contains(platform);
         cy.contains(`#${identifier}`);
         cy.contains('账号未验证');
@@ -78,14 +78,13 @@ describe('Account Link', () => {
     });
 
     it('Guest View - No Account Links', () => {
-        cy.visitUser(USER.id);
-        cy.contains('账号关联').should('not.exist');
+        cy.visitUser(USER.id, 'accountlink');
+        cy.get('.account-link-main').children().should('not.exist');
     });
 
     it('Link Public Accounts', () => {
-        cy.viewport(1000, 2000);
         cy.login(USER.username, USER.password);
-        cy.visitUser(USER.id);
+        cy.visitUser(USER.id, 'accountlink');
 
         linkNewAccount(LINKS.wom.platform, LINKS.wom.identifier);
         expectUnverifiedAccount(0, LINKS.wom.platform, LINKS.wom.identifier);
@@ -98,23 +97,23 @@ describe('Account Link', () => {
     });
 
     it('Guest View - Should Not See Unverified Accounts', () => {
-        cy.visitUser(USER.id);
-        cy.contains('账号关联').should('not.exist');
+        cy.visitUser(USER.id, 'accountlink');
+        cy.get('.account-link-main').children().should('not.exist');
     });
 
     it('Staff View - Should Not See The Add Button', () => {
         cy.login(STAFF.username, STAFF.password);
-        cy.visitUser(USER.id);
-        cy.contains('账号关联').next().find('.pi-plus').should('not.exist');
+        cy.visitUser(USER.id, 'accountlink');
+        cy.get('.account-link-main').find('.pi-plus').should('not.exist');
     });
 
     it('Link Private Accounts', () => {
         cy.login(USER.username, USER.password);
-        cy.visitUser(USER.id);
+        cy.visitUser(USER.id, 'accountlink');
 
         linkNewAccount(LINKS.qq.platform, LINKS.qq.identifier);
 
-        cy.contains('账号关联').next().find('.pi-plus').should('not.exist');
+        cy.get('.account-link-main').find('.pi-plus').should('not.exist');
     });
 
     it('Verify WoM Account', () => {
@@ -130,9 +129,8 @@ describe('Account Link', () => {
     });
 
     it('Guest View - Should Not See Private Accounts', () => {
-        cy.viewport(1000, 2000);
-        cy.visitUser(USER.id);
-        cy.contains('账号关联').next().children().filter(':visible').should('have.length', 3);
+        cy.visitUser(USER.id, 'accountlink');
+        cy.get('.account-link-main').children().filter(':visible').should('have.length', 3);
     });
 });
 
