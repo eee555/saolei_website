@@ -38,6 +38,16 @@ export const store = defineStore('user', {
             return ret;
         },
     },
+    actions: {
+        login(userdata: any) {
+            this.user = new UserProfile(userdata);
+            this.login_status = LoginStatus.IsLogin;
+        },
+        logout() {
+            this.user = new UserProfile();
+            this.login_status = LoginStatus.NotLogin;
+        },
+    },
 })(pinia);
 
 export const videoplayerstore = defineStore('videoplayer', {

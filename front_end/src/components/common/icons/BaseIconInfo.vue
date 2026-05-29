@@ -1,5 +1,5 @@
 <template>
-    <i class="pi pi-info-circle" />
+    <i class="pi pi-info-circle" style="font-size: inherit" />
 </template>
 
 <script setup lang="ts">
