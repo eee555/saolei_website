@@ -25,14 +25,6 @@ export default {
         password: 'hasło',
         username: 'nazwa użytkownika',
     },
-    login: {
-        forgetPassword: 'zapomniałeś hasła?',
-        keepMeLoggedIn: 'utrzym',
-        loginConfirm: 'zaloguj',
-        loginTitle: 'login',
-        retrieveConfirm: 'Potwierdź',
-        retrieveTitle: 'resetuj Hasło',
-    },
     menu: {
         ranking: 'ranking',
         video: 'filmy',
@@ -41,9 +33,6 @@ export default {
         score: 'wyniki',
         profile: 'profil',
         welcome: 'witaj, {0}!',
-        login: 'login',
-        logout: 'wyloguj',
-        register: 'zarejestruj się',
     },
     profile: {
         changeAvatar: 'kliknij na obrazek aby zmienić awatar',
