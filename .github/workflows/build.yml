@@ -15,7 +15,7 @@ jobs:
     steps:
     # 检出当前的代码仓库
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v6
 
     # 安装 sshpass 工具，用于处理 SCP 密码认证
     - name: Install sshpass
