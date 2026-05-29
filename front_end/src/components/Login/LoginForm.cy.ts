@@ -1,14 +1,11 @@
 import type {} from '@cy/support/component';
 
-import LoginDialog from './LoginDialog.vue';
+import LoginForm from './LoginForm.vue';
 
 import $axios from '@/http';
 import i18n from '@/i18n';
 
 const mountOptions = {
-    props: {
-        modelValue: true,
-    },
     global: {
         plugins: [i18n],
         config: {
@@ -23,15 +20,14 @@ function expectCaptchaRefresh(count: number) {
     cy.contains('Captcha').next().find('img').should('have.attr', 'src', `http://127.0.0.1:8000/userprofile/captcha/image/testkey${count}/`);
 }
 
-describe('<LoginDialog />', () => {
+describe('<LoginForm />', () => {
     beforeEach(() => {
         cy.mockLogin();
         cy.mockCaptchaRefresh();
     });
 
     it('Rendering', () => {
-        cy.mount(LoginDialog, mountOptions);
-        cy.contains('Login');
+        cy.mount(LoginForm, mountOptions);
         cy.contains('Username').next().find('input').should('have.attr', 'type', 'text');
         cy.contains('Password').next().find('input').should('have.attr', 'type', 'password');
         cy.contains('Captcha').next().find('input').should('have.attr', 'type', 'text');
@@ -42,32 +38,18 @@ describe('<LoginDialog />', () => {
     });
 
     it('Normal Flow', () => {
-        cy.mount(LoginDialog, mountOptions);
+        cy.mount(LoginForm, mountOptions);
         cy.contains('Username').next().type('test');
         cy.contains('Password').next().type('test');
-        cy.contains('Captcha').next().type('test');
+        cy.contains('Captcha').next().find('input').type('test');
         cy.contains('Log in').click();
 
         cy.contains('Invalid captcha. Please input again').should('not.exist');
         cy.contains('Invalid username or password').should('not.exist');
     });
 
-    it('Closing with Icon', () => {
-        // 点击右上角关闭
-        cy.mount(LoginDialog, mountOptions);
-        cy.contains('Login').next().click();
-        cy.contains('Login').should('not.be.visible');
-    });
-
-    it('Closing by Clicking Outside', () => {
-        // 点击空白处关闭
-        cy.mount(LoginDialog, mountOptions);
-        cy.get('body').click(0, 0);
-        cy.contains('Login').should('not.be.visible');
-    });
-
     it('Username Validation', () => {
-        cy.mount(LoginDialog, mountOptions);
+        cy.mount(LoginForm, mountOptions);
 
         // Normal username
         cy.contains('Username').next().type('test');
@@ -84,7 +66,7 @@ describe('<LoginDialog />', () => {
     });
 
     it('Password Validation', () => {
-        cy.mount(LoginDialog, mountOptions);
+        cy.mount(LoginForm, mountOptions);
 
         // Normal password
         cy.contains('Password').next().type('test');
@@ -97,7 +79,7 @@ describe('<LoginDialog />', () => {
     });
 
     it('Captcha Validation', () => {
-        cy.mount(LoginDialog, mountOptions);
+        cy.mount(LoginForm, mountOptions);
 
         // Normal captcha
         cy.contains('Captcha').next().find('input').type('test');
@@ -110,7 +92,7 @@ describe('<LoginDialog />', () => {
     });
 
     it('Incorrect Captcha', () => {
-        cy.mount(LoginDialog, mountOptions);
+        cy.mount(LoginForm, mountOptions);
         cy.contains('Username').next().type('test');
         cy.contains('Password').next().type('test');
         cy.contains('Captcha').next().find('input').type('maga');
@@ -121,7 +103,7 @@ describe('<LoginDialog />', () => {
     });
 
     it('Incorrect Username or Password', () => {
-        cy.mount(LoginDialog, mountOptions);
+        cy.mount(LoginForm, mountOptions);
         cy.contains('Username').next().type('test');
         cy.contains('Password').next().type('password');
         cy.contains('Captcha').next().find('input').type('test');

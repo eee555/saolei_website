@@ -14,7 +14,7 @@ jobs:
         working-directory: front_end
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # Install npm dependencies, cache them correctly
       - name: Install dependencies
@@ -32,7 +32,7 @@ jobs:
       # Upload screenshots (if any failures)
       - name: Upload Cypress screenshots
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: cypress-screenshots
           path: front_end/cypress/screenshots

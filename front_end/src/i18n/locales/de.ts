@@ -15,18 +15,6 @@ export default {
         password: 'Passwort',
         username: 'Benutzername',
     },
-    login: {
-        agreeTAC1: 'Zustimmen',
-        agreeTAC2: 'Nutzungsbedingungen',
-        forgetPassword: 'Passwort vergessen?',
-        keepMeLoggedIn: 'eingeloggt bleiben',
-        loginConfirm: 'Login',
-        loginTitle: 'Titel',
-        registerConfirm: 'bestätigen',
-        registerTitle: 'Titel',
-        retrieveConfirm: 'bestätigen',
-        retrieveTitle: 'Titel',
-    },
     menu: {
         ranking: 'Ranking',
         video: 'Video',
@@ -35,8 +23,5 @@ export default {
         score: 'Ergebnisse',
         profile: 'Profil',
         welcome: 'Willkommen{0}',
-        login: 'Login',
-        logout: 'Abmeldem',
-        register: 'Registrieren',
     },
 };

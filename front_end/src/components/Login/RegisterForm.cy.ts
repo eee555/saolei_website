@@ -1,12 +1,9 @@
-import RegisterDialog from './RegisterDialog.vue';
+import RegisterForm from './RegisterForm.vue';
 
 import $axios from '@/http';
 import i18n from '@/i18n';
 
 const mountOptions = {
-    props: {
-        modelValue: true,
-    },
     global: {
         plugins: [i18n],
         config: {
@@ -68,14 +65,14 @@ function mockCheckCollision() {
     }).as('checkCollision');
 }
 
-describe('<RegisterDialog />', () => {
+describe('<RegisterForm />', () => {
     beforeEach(() => {
         cy.mockCaptchaRefresh();
         mockCheckCollision();
     });
 
     it('Rendering', () => {
-        cy.mount(RegisterDialog, mountOptions);
+        cy.mount(RegisterForm, mountOptions);
         cy.contains('Register').find('button').should('not.exist');
         findRegisterButton().should('be.disabled');
         findUsernameInput().should('have.attr', 'type', 'text');
@@ -90,7 +87,7 @@ describe('<RegisterDialog />', () => {
     });
 
     it('Username Validation - Collision', () => {
-        cy.mount(RegisterDialog, mountOptions);
+        cy.mount(RegisterForm, mountOptions);
 
         findUsernameInput().type('existingUsername{enter}');
         expectUsernameValidationError('Username already exists');
@@ -101,7 +98,7 @@ describe('<RegisterDialog />', () => {
     });
 
     it('Email Validation - Format', () => {
-        cy.mount(RegisterDialog, mountOptions);
+        cy.mount(RegisterForm, mountOptions);
         findEmailInput().type('a{enter}');
         expectEmailValidationError('Invalid email address');
 
@@ -114,7 +111,7 @@ describe('<RegisterDialog />', () => {
     });
 
     it('Email Validation - Collision', () => {
-        cy.mount(RegisterDialog, mountOptions);
+        cy.mount(RegisterForm, mountOptions);
         findEmailInput().type('existing@email.com{enter}');
         expectEmailValidationError('Email already exists');
 
@@ -126,7 +123,7 @@ describe('<RegisterDialog />', () => {
     it('Normal Flow', () => {
         cy.mockGetEmailCode();
         cy.mockRegister();
-        cy.mount(RegisterDialog, mountOptions);
+        cy.mount(RegisterForm, mountOptions);
 
         findRegisterButton().should('be.disabled');
 
@@ -157,7 +154,7 @@ describe('<RegisterDialog />', () => {
 
     // 这个不放到最后就会出奇怪的bug
     it('Username Validation - Format', () => {
-        cy.mount(RegisterDialog, mountOptions);
+        cy.mount(RegisterForm, mountOptions);
 
         cy.log('Empty username');
         findUsernameInput().type('a');
