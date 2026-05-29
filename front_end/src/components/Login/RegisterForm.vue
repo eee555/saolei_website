@@ -1,68 +1,61 @@
 <template>
-    <el-dialog
-        v-if="visible" :model-value="true" :title="t('login.registerTitle')" width="400px" align-center draggable
-        :lock-scroll="false" @closed="resetForm(ruleFormRef); visible = false;"
-    >
-        <el-form ref="ruleFormRef" :model="registerForm" status-icon>
-            <!-- 用户名 -->
-            <el-form-item ref="usernameFormRef" prop="username" data-cy="usernameFormItem">
-                <template #label>
-                    {{ t('form.username') }}
-                </template>
-                <el-input
-                    v-model="registerForm.username" prefix-icon="User" maxlength="20" show-word-limit
-                    @input="usernameInputHandler" @change="usernameChangeHandler"
-                />
-            </el-form-item>
-            <!-- 邮箱 -->
-            <email-form-item ref="emailFormRef" v-model="registerForm.email" data-cy="emailFormItem" check-collision="true" />
-            <!-- 邮箱验证码 -->
-            <email-code-block
-                ref="emailCodeFormRef" v-model="registerForm.emailCode" :email="registerForm.email" type="register"
-                :email-state="email_state"
+    <el-form ref="ruleFormRef" :model="registerForm" status-icon>
+        <!-- 用户名 -->
+        <el-form-item ref="usernameFormRef" prop="username" data-cy="usernameFormItem">
+            <template #label>
+                {{ t('form.username') }}
+            </template>
+            <el-input
+                v-model="registerForm.username" prefix-icon="User" maxlength="20" show-word-limit
+                @input="usernameInputHandler" @change="usernameChangeHandler"
             />
-            <!-- 密码 -->
-            <password-confirm-block ref="passwordFormRef" v-model="registerForm.password" data-cy="passwordFormItem" />
-            <!-- 同意协议 -->
-            <el-form-item prop="agreeTAC">
-                <el-checkbox v-if="true" v-model="agree_TAC" name="checkoutSecret">
-                    {{
-                        t('login.agreeTAC1')
-                    }}
-                    <a target="_blank" :href="`${AXIOS_BASE_URL}/agreement.html`">{{ t('login.agreeTAC2')
-                    }}</a>
-                </el-checkbox>
-            </el-form-item>
-            <!-- 确认 -->
-            <el-form-item>
-                <el-button type="primary" :disabled="confirm_disabled" @click="submitForm(ruleFormRef)">
-                    {{
-                        t('login.registerConfirm') }}
-                </el-button>
-            </el-form-item>
-        </el-form>
-    </el-dialog>
+        </el-form-item>
+        <!-- 邮箱 -->
+        <email-form-item ref="emailFormRef" v-model="registerForm.email" data-cy="emailFormItem" check-collision="true" />
+        <!-- 邮箱验证码 -->
+        <email-code-block
+            ref="emailCodeFormRef" v-model="registerForm.emailCode" :email="registerForm.email" type="register"
+            :email-state="email_state"
+        />
+        <!-- 密码 -->
+        <password-confirm-block ref="passwordFormRef" v-model="registerForm.password" data-cy="passwordFormItem" />
+        <!-- 同意协议 -->
+        <el-form-item prop="agreeTAC">
+            <el-checkbox v-if="true" v-model="agree_TAC" name="checkoutSecret">
+                {{
+                    t('local.agreeTAC1')
+                }}
+                <a target="_blank" :href="`${AXIOS_BASE_URL}/agreement.html`">{{ t('local.agreeTAC2')
+                }}</a>
+            </el-checkbox>
+        </el-form-item>
+        <!-- 确认 -->
+        <el-form-item>
+            <el-button type="primary" :disabled="confirm_disabled" @click="submitForm(ruleFormRef)">
+                {{
+                    t('local.confirm') }}
+            </el-button>
+        </el-form-item>
+    </el-form>
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElCheckbox, ElDialog, ElForm, ElFormItem, ElInput, ElNotification, FormInstance } from 'element-plus';
-import { computed, reactive, ref } from 'vue';
+
+import { ElButton, ElCheckbox, ElForm, ElFormItem, ElInput, ElNotification, FormInstance } from 'element-plus';
+import { computed, onUnmounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import emailCodeBlock from '../formItems/emailCodeBlock.vue';
-import emailFormItem from '../formItems/emailFormItem.vue';
-import passwordConfirmBlock from '../formItems/passwordConfirmBlock.vue';
-
+import emailCodeBlock from '@/components/formItems/emailCodeBlock.vue';
+import emailFormItem from '@/components/formItems/emailFormItem.vue';
+import passwordConfirmBlock from '@/components/formItems/passwordConfirmBlock.vue';
 import { local } from '@/store';
 import { validateError, validateSuccess } from '@/utils/common/elFormValidate';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { ControlRegex, LineSeparatorRegex, MarkRegex, ParagraphSeparatorRegex, SpaceSeparatorRegex } from '@/utils/strings';
 
-const visible = defineModel({ type: Boolean, default: false });
 const emit = defineEmits(['login']);
 
 const { proxy } = useCurrentInstance();
-const { t } = useI18n();
 const agree_TAC = ref(false);
 const AXIOS_BASE_URL = import.meta.env.VITE_BASE_API;
 
@@ -144,15 +137,31 @@ const submitForm = async (formEl: FormInstance | undefined) => {
     });
 };
 
-const resetForm = (formEl: FormInstance | undefined) => {
-    if (!formEl) return;
-    formEl.resetFields();
+onUnmounted(() => {
+    if (!ruleFormRef.value) return;
+    ruleFormRef.value.resetFields();
+});
+
+const i18nMessages = {
+    'zh-cn': { local: {
+        agreeTAC1: '已阅读并同意',
+        agreeTAC2: '开源扫雷网用户协议',
+        confirm: '注册',
+    } },
+    'en': { local: {
+        agreeTAC1: 'Agree to',
+        agreeTAC2: 'Terms & Conditions',
+        confirm: 'Register',
+    } },
+    'de': { local: {
+        confirm: 'bestätigen',
+        agreeTAC1: 'Zustimmen',
+        agreeTAC2: 'Nutzungsbedingungen',
+    } },
 };
 
-// 通过验证（无异常）返回 false，否则返回 true
-// 用法：
-// if (usernameCharacterValidation(value)) return;
-// else 检查其他错误;
+const { t } = useI18n({ messages: i18nMessages });
+
 function usernameCharacterValidation(value: string) {
     if (value.length == 0) validateError(usernameFormRef, t('msg.usernameRequired'));
     else if (ControlRegex.test(value)) validateError(usernameFormRef, t('msg.usernameCannotContainControl'));

@@ -1,32 +1,28 @@
 <template>
-    <el-dialog
-        v-if="visible" :model-value="true" :title="t('login.retrieveTitle')" width="400px" align-center draggable
-        :lock-scroll="false" @closed="resetForm(ruleFormRef); visible = false;"
-    >
-        <el-form ref="ruleFormRef" :model="retrieveForm" status-icon>
-            <!-- 邮箱 -->
-            <email-form-item ref="emailFormRef" v-model="retrieveForm.email" check-collision="false" />
-            <!-- 邮箱验证码 -->
-            <email-code-block
-                ref="emailCodeFormRef" v-model="retrieveForm.emailCode" :email="retrieveForm.email" type="register"
-                :email-state="email_state"
-            />
-            <!-- 密码 -->
-            <password-confirm-block ref="passwordFormRef" v-model="retrieveForm.password" />
-            <!-- 确认 -->
-            <el-form-item>
-                <el-button type="primary" :disabled="confirm_disabled" @click="submitForm(ruleFormRef)">
-                    {{
-                        t('login.retrieveConfirm') }}
-                </el-button>
-            </el-form-item>
-        </el-form>
-    </el-dialog>
+    <el-form ref="ruleFormRef" :model="retrieveForm" status-icon>
+        <!-- 邮箱 -->
+        <email-form-item ref="emailFormRef" v-model="retrieveForm.email" check-collision="false" />
+        <!-- 邮箱验证码 -->
+        <email-code-block
+            ref="emailCodeFormRef" v-model="retrieveForm.emailCode" :email="retrieveForm.email" type="register"
+            :email-state="email_state"
+        />
+        <!-- 密码 -->
+        <password-confirm-block ref="passwordFormRef" v-model="retrieveForm.password" />
+        <!-- 确认 -->
+        <el-form-item>
+            <el-button type="primary" :disabled="confirm_disabled" @click="submitForm(ruleFormRef)">
+                {{
+                    t('local.confirm') }}
+            </el-button>
+        </el-form-item>
+    </el-form>
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElDialog, ElForm, ElFormItem, ElNotification, FormInstance } from 'element-plus';
-import { computed, reactive, ref } from 'vue';
+
+import { ElButton, ElForm, ElFormItem, ElNotification, FormInstance } from 'element-plus';
+import { computed, onUnmounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import emailCodeBlock from '../formItems/emailCodeBlock.vue';
@@ -36,11 +32,9 @@ import passwordConfirmBlock from '../formItems/passwordConfirmBlock.vue';
 import { local } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
-const visible = defineModel({ type: Boolean, default: false });
 const emit = defineEmits(['login']);
 
 const { proxy } = useCurrentInstance();
-const { t } = useI18n();
 
 const emailFormRef = ref<typeof ElFormItem>();
 const emailCodeFormRef = ref<typeof emailCodeBlock>();
@@ -93,9 +87,26 @@ const submitForm = async (formEl: FormInstance | undefined) => {
     });
 };
 
-const resetForm = (formEl: FormInstance | undefined) => {
-    if (!formEl) return;
-    formEl.resetFields();
+onUnmounted(() => {
+    if (!ruleFormRef.value) return;
+    ruleFormRef.value.resetFields();
+});
+
+const i18nMessages = {
+    'zh-cn': { local: {
+        confirm: '更新密码',
+    } },
+    'en': { local: {
+        confirm: 'Update password',
+    } },
+    'de': { local: {
+        confirm: 'bestätigen',
+    } },
+    'pl': { local: {
+        confirm: 'Potwierdź',
+    } },
 };
+
+const { t } = useI18n({ messages: i18nMessages });
 
 </script>

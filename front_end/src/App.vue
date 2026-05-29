@@ -66,7 +66,7 @@ import { useRouter } from 'vue-router';
 import BaseButtonConfirm from './components/common/BaseButtonConfirm.vue';
 import VideoListDialog from './components/dialogs/VideoListDialog.vue';
 import Footer from './components/Footer.vue';
-import Login from './components/Login.vue';
+import Login from './components/Login/App.vue';
 import PlayerDialog from './components/PlayerDialog.vue';
 import IconMenuItem from './components/widgets/IconMenuItem.vue';
 import LanguagePicker from './components/widgets/LanguagePicker.vue';
@@ -74,12 +74,7 @@ import { local, store } from './store';
 
 import logo_1 from '@/assets/logo.png';
 import logo_2 from '@/assets/logo2.png';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
-
-
-
-const { proxy } = useCurrentInstance();
 const router = useRouter();
 const isDark = useDark();
 useToggle(isDark);
@@ -130,20 +125,6 @@ onMounted(() => {
 const player_url = computed(() => {
     return '/player/' + store.user.id;
 });
-
-const user_login = () => {
-    // player_visible.value = true;
-    // tab_width.value = "14vw";
-};
-
-const user_logout = () => {
-    // console.log(router.currentRoute.value.fullPath);
-    // 如果切在我的地盘，就切到主页
-    if (router.currentRoute.value.fullPath.slice(0, 7) == '/player') {
-        menu_index.value = '/';
-        proxy.$router.push('/');
-    }
-};
 
 // const goback_home = () => {
 //     router.push("/")
