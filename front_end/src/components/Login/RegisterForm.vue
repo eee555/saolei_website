@@ -19,8 +19,8 @@
         />
         <!-- 密码 -->
         <password-confirm-block ref="passwordFormRef" v-model="registerForm.password" data-cy="passwordFormItem" />
-        <!-- 同意协议 -->
         <el-form-item prop="agreeTAC">
+            <!-- 同意协议 -->
             <el-checkbox v-if="true" v-model="agree_TAC" name="checkoutSecret">
                 {{
                     t('local.agreeTAC1')
@@ -28,10 +28,8 @@
                 <a target="_blank" :href="`${AXIOS_BASE_URL}/agreement.html`">{{ t('local.agreeTAC2')
                 }}</a>
             </el-checkbox>
-        </el-form-item>
-        <!-- 确认 -->
-        <el-form-item>
-            <el-button type="primary" :disabled="confirm_disabled" @click="submitForm(ruleFormRef)">
+            <!-- 确认 -->
+            <el-button type="primary" :disabled="confirm_disabled" style="margin-left: auto" @click="submitForm(ruleFormRef)">
                 {{
                     t('local.confirm') }}
             </el-button>

@@ -27,7 +27,7 @@
                         </el-badge>
                     </el-menu-item>
                     <LanguagePicker v-show="local.language_show" style="padding-left: 8px; padding-right: 8px;" />
-                    <Login @login="user_login" @logout="user_logout" />
+                    <Login @keydown.stop />
                 </el-menu>
             </el-scrollbar>
         </el-header>
