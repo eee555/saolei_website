@@ -16,5 +16,5 @@ psutil>=7.2.0
 pyo3_runtime>=0.0.1
 redis>=5.0.1
 requests>=2.28.1
-websocket-client>=1.8.0
+websocket-client>=1.9.0
 cryptography>=46.0.5
