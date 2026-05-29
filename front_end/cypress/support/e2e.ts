@@ -111,12 +111,16 @@ Cypress.Commands.add('login', (username: string, password: string) => {
     cy.session(username, () => {
         cy.visit('/#/settings');
         cy.contains(/^登录$/).click();
-        cy.contains('用户名').next().find('input').type(username);
-        cy.contains('密码').next().find('input').type(password);
-        cy.contains('验证码').next().find('input').type('test{enter}');
-        cy.contains('记住我').click();
-        cy.contains('用户登录').parent().parent().find('button').contains('登录').click();
-        cy.contains('用户登录').should('not.exist'); // wait for the popup to disappear
+
+        cy.get('.el-dialog').then((dialog) => {
+            cy.wrap(dialog).contains('用户名').next().find('input').type(username);
+            cy.wrap(dialog).contains('密码').next().find('input').type(password);
+            cy.wrap(dialog).contains('验证码').next().find('input').type('test{enter}');
+            cy.wrap(dialog).contains('记住我').click();
+            cy.wrap(dialog).find('button').contains('登录').click();
+        });
+
+        cy.get('.el-dialog').should('not.be.visible');
     });
 });
 
