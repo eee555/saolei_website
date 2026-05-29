@@ -5,6 +5,7 @@ import { binaryStringToUint8Array } from '../support/stupidCypress';
 const USER_ID = 2418 as const;
 const USERNAME = 'testUser' as const;
 const PASSWORD = 'testPassword' as const;
+const REALNAME = 'testName' as const;
 
 
 describe('Personal Profile', () => {
@@ -59,12 +60,12 @@ describe('Personal Profile', () => {
         cy.get('.profile-section').contains('编辑信息').click();
 
         cy.get('.el-dialog').then((dialog) => {
-            cy.wrap(dialog).contains('本名').parent().next().find('input').type('testName');
+            cy.wrap(dialog).contains('本名').parent().next().find('input').type(REALNAME);
             cy.wrap(dialog).find('button').contains('保存').click();
         });
 
         cy.get('.el-dialog').should('not.be.visible');
-        cy.get('.profile').contains('testName');
+        cy.get('.profile').contains(REALNAME);
     });
 
     it('Upload video', function () {
@@ -194,5 +195,17 @@ describe('Personal Profile', () => {
         cy.contains('扫雷标识').next().next().find('table').then((table) => {
             cy.wrap(table).find('input').should('not.exist');
         });
+    });
+
+    it('Navigate from homepage', () => {
+        cy.visit('/');
+
+        cy.get('.el-tabs').eq(1).contains(REALNAME).click();
+
+        cy.get('button').contains('我的空间').click();
+
+        cy.url().should('eq', `http://localhost:8080/#/player/${USER_ID}/summary`);
+
+        cy.contains('共2个录像');
     });
 });

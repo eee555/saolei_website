@@ -51,8 +51,6 @@ import { ElButton, ElImage, ElLink, ElPopover, vLoading } from 'element-plus';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { store } from '../store';
-
 import image_url_default from '@/assets/person.png';
 // import PreviewDownload from '@/components/PreviewDownload.vue';
 import PreviewNumber from '@/components/PreviewNumber.vue';
@@ -156,10 +154,6 @@ const pop_hide = () => {
 };
 
 const visit_me = (user_id: number) => {
-    // proxy.$store.commit('updatePlayer', { "id": id.value, "realname":realname.value });
-    // localStorage.setItem("player", JSON.stringify({ "id": id.value, "realname":realname.value }));
-    // localStorage.setItem("player", JSON.stringify({ "id": id.value }));
-    store.player.id = user_id;
     router.push({ name: 'player_id', params: { id: user_id } });
 };
 
