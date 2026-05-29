@@ -14,6 +14,7 @@ class UserLoginForm(forms.Form):
     password = forms.CharField(min_length=1, max_length=MaxSizes.PASSWORD)
     captcha = forms.CharField(min_length=1, max_length=6)
     hashkey = forms.CharField(min_length=8, max_length=512)
+    set_expiry = forms.IntegerField(min_value=0, max_value=90)
 
 
 # 获取邮箱验证码时的表单，检查邮箱格式用

@@ -40,6 +40,7 @@ def user_login(request):
         return JsonResponse({'type': 'error', 'object': 'login', 'category': 'password'})
     # 将用户数据保存在 session 中，即实现了登录动作
     login(request, user)
+    request.session.set_expiry(int(data['set_expiry']) * 86400)
     if 'user_id' in data and data['user_id'] != str(user.id):
         # 检测到小号
         logger.warning(f'{data["user_id"][:50]} is different from {str(user.id)}.')
