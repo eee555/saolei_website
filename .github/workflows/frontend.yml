@@ -17,7 +17,7 @@ jobs:
     steps:
     # 检出当前的代码仓库
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v6
 
     # 设置 Node.js 版本
     - name: Set up Node.js
