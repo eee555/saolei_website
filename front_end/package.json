@@ -65,7 +65,7 @@
     "@types/markdown-it": "14.1.2",
     "@types/node": "25.9.1",
     "@types/tinycolor2": "1.4.6",
-    "@vitejs/plugin-vue": "6.0.5",
+    "@vitejs/plugin-vue": "6.0.7",
     "cypress": "15.13.0",
     "cypress-if": "1.13.2",
     "cypress-intercept-formdata": "^1.0.0",
