@@ -14,6 +14,7 @@ export default {
             uploadFile: 'upload file',
             videoQuery: 'fetch video data',
         },
+        anonymous: 'Anonymous',
         button: {
             back: 'Back',
             cancel: 'Cancel',

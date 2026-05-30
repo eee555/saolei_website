@@ -12,6 +12,7 @@ export default {
             uploadFile: '上传文件',
             videoQuery: '查询录像',
         },
+        anonymous: '匿名',
         button: {
             back: '返回',
             cancel: '取消',

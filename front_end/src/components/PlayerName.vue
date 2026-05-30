@@ -16,7 +16,10 @@
                 </div>
                 <div style="width: 188px;float: right;text-align: center;line-height: 180%;">
                     <div>
-                        <span>
+                        <span v-if="user.isAnonymous">
+                            {{ t('common.anonymous') }}
+                        </span>
+                        <span v-else>
                             {{ user.realname }}
                         </span>
                         <span v-if="user.hasInternationalName">
@@ -65,7 +68,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
             <template #reference>
                 <el-link underline="never" @click="visible = !visible;">
