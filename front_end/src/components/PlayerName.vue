@@ -9,56 +9,96 @@
         >
             <div>
                 <div style="width: 80px;float: left;line-height: 200%;">
-                    <el-image
-                        style="width: 72px; height: 72px;margin-top: 10px;border-radius: 8px;" :src="image_url"
-                        :fit="'cover'"
-                    />
-                    <el-button style="width: 72px;height: 24px;" @click="visit_me(userId);">我的空间</el-button>
+                    <UserAvatar :user-id="userId" />
+                    <el-button style="width: 72px;height: 24px;" @click="visit_me(userId);">
+                        {{ t('local.visitMe') }}
+                    </el-button>
                 </div>
-                <div v-loading="is_loading" style="width: 188px;float: right;text-align: center;line-height: 180%;">
-                    <div><strong>{{ realname }}</strong> (id: {{ userId }})</div>
-                    <div>初级纪录：
-                        <PreviewNumber :id="+b_t_id" :text="ms_to_s(b_t)" /> |
-                        <PreviewNumber :id="+b_bvs_id" :text="to_fixed_n(b_bvs, 3)" />
+                <div style="width: 188px;float: right;text-align: center;line-height: 180%;">
+                    <div>
+                        <span v-if="user.isAnonymous">
+                            {{ t('common.anonymous') }}
+                        </span>
+                        <span v-else>
+                            {{ user.realname }}
+                        </span>
+                        <span v-if="user.hasInternationalName">
+                            ({{ formatName(user.firstname, user.lastname, local.nameFormat) }})
+                        </span>
+                        <span>
+                            #{{ userId }}
+                        </span>
                     </div>
-                    <div>中级纪录：
-                        <PreviewNumber :id="+i_t_id" :text="ms_to_s(i_t)" /> |
-                        <PreviewNumber :id="+i_bvs_id" :text="to_fixed_n(i_bvs, 3)" />
-                    </div>
-                    <div>高级纪录：
-                        <PreviewNumber :id="+e_t_id" :text="ms_to_s(e_t)" /> |
-                        <PreviewNumber :id="+e_bvs_id" :text="to_fixed_n(e_bvs, 3)" />
-                    </div>
-                    <div>总计纪录：
-                        <span style="color: #BF9000;font-weight: bold;">{{ ms_to_s(b_t + i_t + e_t) }}</span>
-                        |
-                        <span style="color: #BF9000;font-weight: bold;">{{ to_fixed_n(b_bvs + i_bvs + e_bvs, 3) }}</span>
+                    <div v-loading="is_loading" class="record-table">
+                        <div>
+                            {{ t('common.level.shortb') }}
+                        </div>
+                        <div>
+                            <PreviewNumber :id="+b_t_id" :text="ms_to_s(b_t)" />
+                        </div>
+                        <div>
+                            <PreviewNumber :id="+b_bvs_id" :text="to_fixed_n(b_bvs, 3)" />
+                        </div>
+                        <div>
+                            {{ t('common.level.shorti') }}
+                        </div>
+                        <div>
+                            <PreviewNumber :id="+i_t_id" :text="ms_to_s(i_t)" />
+                        </div>
+                        <div>
+                            <PreviewNumber :id="+i_bvs_id" :text="to_fixed_n(i_bvs, 3)" />
+                        </div>
+                        <div>
+                            {{ t('common.level.shorte') }}
+                        </div>
+                        <div>
+                            <PreviewNumber :id="+e_t_id" :text="ms_to_s(e_t)" />
+                        </div>
+                        <div>
+                            <PreviewNumber :id="+e_bvs_id" :text="to_fixed_n(e_bvs, 3)" />
+                        </div>
+                        <div>
+                            {{ t('common.level.sum') }}
+                        </div>
+                        <div style="color: #BF9000;font-weight: bold;">
+                            {{ ms_to_s(b_t + i_t + e_t) }}
+                        </div>
+                        <div style="color: #BF9000;font-weight: bold;">
+                            {{ to_fixed_n(b_bvs + i_bvs + e_bvs, 3) }}
+                        </div>
                     </div>
                 </div>
-
             </div>
             <template #reference>
-                <el-link underline="never" @click="visible = !visible;">{{ data.userName }}</el-link>
+                <el-link underline="never" @click="visible = !visible;">
+                    <PlayerBadge :user-id="userId" :name="user.realname" />
+                </el-link>
             </template>
         </el-popover>
-        <el-link v-else underline="never" @click="render = true; visible = true;">{{ data.userName }}</el-link>
+        <el-link v-else underline="never" @click="render = true; visible = true;">
+            <PlayerBadge :user-id="userId" :name="user.realname" />
+        </el-link>
     </span>
 </template>
 
 <script setup lang="ts" name="PlayerName">
 // 用户的名字，鼠标移上去以后弹出气泡框，可以访问他的主页
-import { ElButton, ElImage, ElLink, ElPopover, vLoading } from 'element-plus';
-import { ref } from 'vue';
+import { ElButton, ElLink, ElPopover, vLoading } from 'element-plus';
+import { ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
-import image_url_default from '@/assets/person.png';
-// import PreviewDownload from '@/components/PreviewDownload.vue';
 import PreviewNumber from '@/components/PreviewNumber.vue';
+import PlayerBadge from '@/components/widgets/PlayerBadge.vue';
+import UserAvatar from '@/components/widgets/UserAvatar.vue';
+import { fetchUserInfo } from '@/services/userService';
+import { local } from '@/store';
 import { ms_to_s, to_fixed_n } from '@/utils';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import { formatName } from '@/utils/strings';
+import { UserProfile } from '@/utils/userprofile';
 
 const { proxy } = useCurrentInstance();
-const image_url = ref(image_url_default);
 const router = useRouter();
 
 const data = defineProps({
@@ -66,17 +106,23 @@ const data = defineProps({
         type: Number,
         default: 0,
     },
-    userName: {
-        type: String,
-        default: '',
-    },
 });
+
+const user = ref(new UserProfile());
+
+watch(() => data.userId, async (newVal) => {
+    if (newVal === 0) {
+        user.value = new UserProfile();
+    } else {
+        const response = await fetchUserInfo(data.userId);
+        user.value = new UserProfile(response);
+    }
+}, { immediate: true });
 
 const render = ref<boolean>(false); // 控制只渲染一次
 const visible = ref<boolean>(false);
 const is_loading = ref(true);
 
-const realname = ref('');
 const b_t = ref(999999);
 const b_bvs = ref('');
 const b_t_id = ref('');
@@ -95,9 +141,6 @@ const pop_show = async () => {
     document.addEventListener('mousedown', handleOutsideClick);
     is_loading.value = true;
 
-    image_url.value = image_url_default;
-    realname.value = '';
-
     await proxy.$axios.get('/msuser/info_abstract/',
         {
             params: {
@@ -106,10 +149,6 @@ const pop_show = async () => {
         },
     ).then(function (response) {
         const response_data = response.data;
-        realname.value = response_data.realname;
-        if (response_data.avatar) {
-            image_url.value = 'data:image/png;base64,' + response_data.avatar;
-        }
 
         const records = JSON.parse(response_data.record_abstract);
 
@@ -136,8 +175,6 @@ const pop_show = async () => {
 // 用户记录小弹窗关闭后，删除其中的数据
 const pop_hide = () => {
     document.removeEventListener('mousedown', handleOutsideClick);
-    image_url.value = image_url_default;
-    realname.value = '';
     i_t.value = 999999;
     b_t.value = 999999;
     e_t.value = 999999;
@@ -165,8 +202,27 @@ const handleOutsideClick = (event: any) => {
     }
 };
 
+const i18nMessages = {
+    'zh-cn': { local: {
+        visitMe: '我的空间',
+    } },
+    'en': { local: {
+        visitMe: 'My space',
+    } },
+    'fr': { local: {
+        visitMe: 'Mon espace',
+    } },
+};
 
+const { t } = useI18n({ messages: i18nMessages });
 
 </script>
 
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+
+.record-table {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+</style>

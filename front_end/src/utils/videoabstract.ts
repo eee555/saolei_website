@@ -69,7 +69,6 @@ export class VideoAbstract {
     public ce?: number;
     public path?: number;
     public player_id?: number;
-    public player_name?: string;
     public file_size: number;
     public ongoing_tournament?: boolean;
 
@@ -94,7 +93,6 @@ export class VideoAbstract {
         this.ce = info.ce;
         this.path = info.path;
         this.player_id = info.player_id;
-        this.player_name = info.player_name;
 
         this.file_size = info.file_size ?? 0;
 
@@ -116,7 +114,6 @@ export class VideoAbstract {
             state: info.state,
             software: info.software,
             player_id: info.player_id,
-            player_name: info.player,
             cl: info.cl,
             ce: info.ce,
         });

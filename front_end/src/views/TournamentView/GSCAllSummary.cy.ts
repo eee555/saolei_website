@@ -1,7 +1,14 @@
 import GSCAllSummary from './GSCAllSummary.vue';
 
+import $axios from '@/http';
 import i18n from '@/i18n';
 import { GSCParticipant } from '@/utils/gsc';
+
+const realnames = {
+    18: 'UserNoFinish',
+    6: 'UserChampion',
+    82: 'UserNoScore',
+};
 
 describe('<GSCAllSummary />', () => {
     before(() => {
@@ -9,6 +16,14 @@ describe('<GSCAllSummary />', () => {
             cy.log(data.data);
             Cypress.expose('gscParticipantList', data.data.map((value: any) => new GSCParticipant(value)));
         });
+
+        cy.intercept('GET', '/api/userprofile/info/*', (req) => {
+            const userId = Number(req.url.split('/').pop()) as 18 | 6 | 82;
+            req.reply({
+                id: userId,
+                realname: realnames[userId],
+            });
+        }).as('getUserInfo');
     });
     it('renders', () => {
         // see: https://on.cypress.io/mounting-vue
@@ -19,10 +34,20 @@ describe('<GSCAllSummary />', () => {
             },
             global: {
                 plugins: [i18n],
+                config: {
+                    globalProperties: {
+                        $axios,
+                    },
+                },
             },
         });
 
+        cy.wait('@getUserInfo');
+        cy.wait('@getUserInfo');
+        cy.wait('@getUserInfo');
+
         cy.get('.el-table__body').extractTableData().should((tableData) => {
+            console.log(tableData[0]);
             expect(tableData[0]).to.deep.equal([
                 'UserChampion',
                 '1.430', '1.770', '33.010',

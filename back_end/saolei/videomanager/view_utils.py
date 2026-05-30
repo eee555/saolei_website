@@ -5,9 +5,7 @@ import struct
 from django_redis import get_redis_connection
 import ms_toollib as ms
 
-from config.global_settings import GameLevels
 from config.text_choices import MS_TextChoices
-from msuser.models import UserMS
 from userprofile.models import UserProfile
 from .models import ExpandVideoModel, VideoModel
 
@@ -28,21 +26,6 @@ state2redis = {
     MS_TextChoices.State.IDENTIFIER: 'newest_queue',
     MS_TextChoices.State.OFFICIAL: 'newest_queue',
 }
-
-
-# 确定用户破某个纪录后，且对应模式、指标的三个级别全部有录像后，更新redis中的数据
-def update_3_level_cache_record(realname: str, index: str, mode: str, ms_user: UserMS):
-    key = f'player_{index}_{mode}_{ms_user.id}'
-    cache.hset(key, 'name', realname)
-    for level in GameLevels:
-        cache.hset(key, level, ms_user.getrecord(level, index, mode))
-        recordid = ms_user.getrecordID(level, index, mode)
-        cache.hset(key, f'{level}_id',
-                   'None' if recordid is None else recordid)
-    s = float(ms_user.getrecord('b', index, mode) + ms_user.getrecord('i',
-              index, mode) + ms_user.getrecord('e', index, mode))
-    cache.hset(key, 'sum', s)
-    cache.zadd(f'player_{index}_{mode}_ids', {ms_user.id: s})
 
 
 # 存量式更新用户的记录。删录像后用，恢复用户的记录。

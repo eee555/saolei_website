@@ -1,7 +1,7 @@
 <template>
     <PrColumn min-width="80">
         <template #body="{data}: {data: VideoAbstract}">
-            <PlayerName class="name" :user-id="data.player_id" :user-name="data.player_name" />
+            <PlayerName class="name" :user-id="data.player_id" />
         </template>
     </PrColumn>
 </template>
