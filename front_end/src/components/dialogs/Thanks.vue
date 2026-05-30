@@ -3,14 +3,20 @@
         <strong>{{ t('local.owner') }}</strong>
     </div>
     <div>
-        <GitHubUser username="eee555" />
+        <PlayerName :user-id="1" />
     </div>
     <div style="padding-bottom: 5px; margin-top: 15px">
         <strong>{{ t('local.moderator') }}</strong>
     </div>
-    <div>少年</div>
-    <div>GodnuX</div>
-    <div>auk ;-;</div>
+    <div>
+        <PlayerName :user-id="2" />
+    </div>
+    <div>
+        <PlayerName :user-id="24" />
+    </div>
+    <div>
+        <PlayerName :user-id="82" />
+    </div>
     <el-divider />
     <el-row>
         <el-col :span="8">
@@ -80,6 +86,7 @@
 import { ElCol, ElDivider, ElRow } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
+import PlayerName from '@/components/PlayerName.vue';
 import GitHubUser from '@/components/widgets/GitHubUser.vue';
 
 // 积分系统完成后需要加jsd
