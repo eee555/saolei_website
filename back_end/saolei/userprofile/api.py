@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 from django.http import FileResponse, HttpRequest, HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import get_object_or_404
 from django_ratelimit.decorators import ratelimit
+from django.views.decorators.cache import cache_control
 from ninja import File, Form, Router, Schema, UploadedFile
 from ninja.decorators import decorate_view
 from ninja.errors import HttpError
@@ -36,13 +37,17 @@ UserInfoOut = create_schema(
 )
 
 
-@router.get('/info', response=UserInfoOut)
-@decorate_view(ratelimit(key='ip', rate='2/s'))
-def get_user_info(request, user_id: int = None):
+@router.get('/info/{user_id}', response=UserInfoOut)
+@decorate_view(
+    ratelimit(key='ip', rate='1/s'),
+    cache_control(max_age=5),
+)
+def get_user_info(request, user_id: int):
     """
-    - ratelimit(key='ip', rate='2/s')
+    - ratelimit(key='ip', rate='1/s')
+    - cache_control(max_age=5)
     """
-    if user_id is None:
+    if user_id == 0:
         if request.user.is_authenticated:
             return request.user
         raise HttpError(401, 'Unauthorized')
@@ -60,10 +65,14 @@ def get_user_identifier(request, user_id: int):
 
 
 @router.get('/avatar/{user_id}')
-@decorate_view(ratelimit(key='ip', rate='2/s'))
+@decorate_view(
+    ratelimit(key='ip', rate='1/s'),
+    cache_control(max_age=5),
+)
 def get_user_avatar(request, user_id: int):
     """
-    - ratelimit(key='ip', rate='2/s')
+    - ratelimit(key='ip', rate='1/s')
+    - cache_control(max_age=5)
     """
     user = get_object_or_404(UserProfile, id=user_id)
     if not user.avatar or not os.path.exists(user.avatar.path):

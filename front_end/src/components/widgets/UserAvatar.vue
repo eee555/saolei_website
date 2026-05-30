@@ -7,6 +7,8 @@
 </template>
 
 <script setup lang="ts">
+import { ElImage } from 'element-plus';
+
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 defineProps({

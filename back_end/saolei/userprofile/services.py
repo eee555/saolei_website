@@ -1,6 +1,5 @@
 
 from datetime import datetime, timezone
-import json
 import logging
 from typing import Literal
 import uuid
@@ -8,42 +7,14 @@ import uuid
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
-from django_redis import get_redis_connection
 
-from config.global_settings import GameModes, RankingGameStats
 from utils import generate_code, verify_text
 from utils.exceptions import ExceptionToResponse
 from videomanager.models import VideoModel
 from .models import EmailVerifyRecord, UserProfile
 from .utils import count_new_avatar_chance, count_new_signature_chance
 
-
-cache = get_redis_connection('saolei_website')
 logger = logging.getLogger('userprofile')
-
-
-# 用户修改自己的名字后，同步修改redis缓存里的真实姓名，使得排行榜数据同步修改
-# 开销较大
-def update_cache_realname(user_id, user_realname):
-    for index in RankingGameStats:
-        for mode in GameModes:
-            key = f'player_{index}_{mode}_{user_id}'
-            if cache.exists(key):
-                cache.hset(key, 'name', user_realname)
-    # 遍历并修改最新录像
-    for video_id, value in cache.hgetall('newest_queue').items():
-        new_value = json.loads(value)
-        if new_value['player_id'] == user_id:
-            new_value['player'] = user_realname
-            # 将修改后的值存回哈希表
-            cache.hset('newest_queue', video_id, json.dumps(new_value))
-    # 遍历并修改审查队列
-    for video_id, value in cache.hgetall('review_queue').items():
-        new_value = json.loads(value)
-        if new_value['player_id'] == user_id:
-            new_value['player'] = user_realname
-            # 将修改后的值存回哈希表
-            cache.hset('review_queue', video_id, json.dumps(new_value))
 
 
 NAME_DEFAULT = {
