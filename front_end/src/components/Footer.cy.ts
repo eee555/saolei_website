@@ -1,10 +1,16 @@
 import Footer from './Footer.vue';
 
+import $axios from '@/http';
 import i18n from '@/i18n';
 
 const mountOptions = {
     global: {
         plugins: [i18n],
+        config: {
+            globalProperties: {
+                $axios,
+            },
+        },
     },
 };
 

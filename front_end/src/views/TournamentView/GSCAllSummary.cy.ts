@@ -47,7 +47,6 @@ describe('<GSCAllSummary />', () => {
         cy.wait('@getUserInfo');
 
         cy.get('.el-table__body').extractTableData().should((tableData) => {
-            console.log(tableData[0]);
             expect(tableData[0]).to.deep.equal([
                 'UserChampion',
                 '1.430', '1.770', '33.010',
