@@ -47,6 +47,10 @@ export class UserProfile {
         return this.realname === '';
     }
 
+    get hasInternationalName() {
+        return this.firstname !== '' && this.lastname !== '';
+    }
+
     get canSetName() {
         return this.isAnonymous || this.firstname === '' || this.lastname === '';
     }

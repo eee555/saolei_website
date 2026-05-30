@@ -124,6 +124,28 @@ describe('UserProfile', () => {
         });
     });
 
+    describe('getter: hasInternationalName', () => {
+        it('None set', () => {
+            const profile = new UserProfile();
+            expect(profile.hasInternationalName).toBe(false);
+        });
+
+        it('firstname not set', () => {
+            const profile = new UserProfile({ lastname: 'a' });
+            expect(profile.hasInternationalName).toBe(false);
+        });
+
+        it('lastname not set', () => {
+            const profile = new UserProfile({ firstname: 'a' });
+            expect(profile.hasInternationalName).toBe(false);
+        });
+
+        it('All set', () => {
+            const profile = new UserProfile({ firstname: 'a', lastname: 'b' });
+            expect(profile.hasInternationalName).toBe(true);
+        });
+    });
+
     describe('getter: nextAvatarAvailable', () => {
         it('left_avatar_n > 0', () => {
             const lastChange = new Date('2023-05-01T00:00:00Z');
