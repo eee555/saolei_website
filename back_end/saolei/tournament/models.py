@@ -152,7 +152,7 @@ class GSCTournament(Tournament):
     def get_scores(self):
         return GSCParticipant.objects.filter(tournament=self).values(
             'id',
-            'user__id', 'user__realname',
+            'user__id',
             'start_time', 'end_time',
             'rank', 'rank_score',
             'bt1st', 'bt20th', 'bt20sum',

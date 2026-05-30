@@ -3,9 +3,7 @@ import { GetUserInfoResponse } from '@/utils/common/structInterface';
 import { VideoAbstract, VideoAbstractInfo } from '@/utils/videoabstract';
 
 export async function fetchUserInfo(userId: number) {
-    const response = await $axios.get('/api/userprofile/info', {
-        params: { user_id: userId },
-    });
+    const response = await $axios.get(`/api/userprofile/info/${userId}`);
     return response.data as GetUserInfoResponse;
 }
 

@@ -25,7 +25,6 @@
                             &nbsp;
                             <PlayerName
                                 class="name" style="vertical-align: top;" :user-id="+news.player_id"
-                                :user-name="news.player"
                             />
                             &nbsp;
                             <span class="text">

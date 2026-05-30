@@ -99,7 +99,7 @@ class UserProfile(AbstractUser):
         for level in GameLevels:
             if not isbetter(statname, self.userms.getrecord(level, statname, mode), getattr(DefaultRankingScores, statname)):
                 return
-        self.userms.update_3_level_cache_record(self.realname, statname, mode)
+        self.userms.update_3_level_cache_record(statname, mode)
 
 
 # 邮箱验证

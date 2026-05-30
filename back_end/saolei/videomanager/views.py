@@ -154,7 +154,6 @@ def review_queue(request: HttpRequest):
     if not request.user.is_staff:
         videos = videos.filter(ongoing_tournament=False)
     ret = videos.values(
-        'player__realname',
         'player__id',
         'level',
         'mode',

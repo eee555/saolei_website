@@ -203,9 +203,8 @@ class UserMS(models.Model):
     def getrecordIDs_level(self, stat, mode):
         return [self.getrecordID(level, stat, mode) for level in GameLevels]
 
-    def update_3_level_cache_record(self, realname: str, index: str, mode: str):
+    def update_3_level_cache_record(self, index: str, mode: str):
         key = f'player_{index}_{mode}_{self.id}'
-        cache.hset(key, 'name', realname)
         for level in GameLevels:
             cache.hset(key, level, self.getrecord(level, index, mode))
             recordid = self.getrecordID(level, index, mode)

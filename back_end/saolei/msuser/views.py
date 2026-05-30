@@ -35,7 +35,7 @@ def get_records(request):
         return HttpResponseNotFound()
     ms_user = user.userms
 
-    response = {'id': user_id, 'realname': user.realname}
+    response = {'id': user_id}
     for mode in GameModes:
         value = {}
         for stat in RankingGameStats:
