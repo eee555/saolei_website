@@ -6,8 +6,8 @@ from typing import List
 from django.core.exceptions import ValidationError
 from django.http import FileResponse, HttpRequest, HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import get_object_or_404
-from django_ratelimit.decorators import ratelimit
 from django.views.decorators.cache import cache_control
+from django_ratelimit.decorators import ratelimit
 from ninja import File, Form, Router, Schema, UploadedFile
 from ninja.decorators import decorate_view
 from ninja.errors import HttpError
