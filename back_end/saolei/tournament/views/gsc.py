@@ -209,6 +209,7 @@ def refresh_GSCParticipant(request: HttpRequest):
     return JsonResponse({
         'id': participant.id,
         'user__id': participant.user.id,
+        'user__realname': participant.user.realname,
         'bt1st': participant.bt1st,
         'bt20th': participant.bt20th,
         'bt20sum': participant.bt20sum,
