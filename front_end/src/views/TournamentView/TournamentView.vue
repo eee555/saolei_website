@@ -75,7 +75,6 @@ watch(() => route.params.id, async (newId) => {
 // }, { immediate: true });
 
 function tabRemoveHandler(tabIndex: TabPaneName) {
-    console.log(tabIndex);
     tabIndex = Number(tabIndex) - 1;
     store.tournamentTabs.splice(tabIndex as number, 1);
     if (tabIndex === 0) {

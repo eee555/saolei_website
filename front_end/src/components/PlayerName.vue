@@ -114,8 +114,13 @@ watch(() => data.userId, async (newVal) => {
     if (newVal === 0) {
         user.value = new UserProfile();
     } else {
-        const response = await fetchUserInfo(data.userId);
-        user.value = new UserProfile(response);
+        try {
+            const response = await fetchUserInfo(data.userId);
+            user.value = new UserProfile(response);
+        } catch (error) {
+            user.value = new UserProfile();
+            console.log(error);
+        }
     }
 }, { immediate: true });
 
