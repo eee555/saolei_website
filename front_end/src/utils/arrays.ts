@@ -126,6 +126,10 @@ export class ArrayUtils {
         return arr.length === 0;
     }
 
+    static last<T>(arr: T[]): T | undefined {
+        return arr[arr.length - 1];
+    }
+
     static sortByReferenceOrder<T>(subset: Array<T>, referenceOrder: ReadonlyArray<T>): T[] {
         return subset.sort((a, b) => referenceOrder.indexOf(a) - referenceOrder.indexOf(b));
     }
