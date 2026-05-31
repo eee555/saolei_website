@@ -34,7 +34,7 @@
 
         <el-container class="mainheight">
             <el-main class="common-layout">
-                <PlayerDialog />
+                <VideoPlayer />
                 <VideoListDialog />
                 <router-view />
                 <Footer />
@@ -67,7 +67,7 @@ import BaseButtonConfirm from './components/common/BaseButtonConfirm.vue';
 import VideoListDialog from './components/dialogs/VideoListDialog.vue';
 import Footer from './components/Footer.vue';
 import Login from './components/Login/App.vue';
-import PlayerDialog from './components/PlayerDialog.vue';
+import VideoPlayer from './components/VideoPlayer/App.vue';
 import IconMenuItem from './components/widgets/IconMenuItem.vue';
 import LanguagePicker from './components/widgets/LanguagePicker.vue';
 import { local, store } from './store';

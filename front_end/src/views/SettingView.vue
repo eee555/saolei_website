@@ -87,6 +87,13 @@
             <el-switch v-model="local.experimental" />
         </el-descriptions-item>
     </el-descriptions>
+    <el-descriptions :title="t('local.thirdPartyTrust')">
+        <el-descriptions-item>
+            <el-checkbox v-model="videoPlayerConfig.strangeDustTrust">
+                https://strange-dust.github.io/minesweeper-replay-analyzer/
+            </el-checkbox>
+        </el-descriptions-item>
+    </el-descriptions>
     <ExperimentalFeature>
         <el-descriptions :title="t('local.stnbConst')">
             <el-descriptions-item :label="t('common.level.b')">
@@ -115,7 +122,7 @@
 </template>
 
 <script lang="ts" setup name="UserSettings">
-import { ElDescriptions, ElDescriptionsItem, ElInputNumber, ElOption, ElRadioButton, ElRadioGroup, ElSelect, ElSlider, ElSwitch } from 'element-plus';
+import { ElCheckbox, ElDescriptions, ElDescriptionsItem, ElInputNumber, ElOption, ElRadioButton, ElRadioGroup, ElSelect, ElSlider, ElSwitch } from 'element-plus';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Tippy } from 'vue-tippy';
@@ -125,7 +132,7 @@ import BaseTooltip from '@/components/common/BaseTooltip.vue';
 import ExperimentalFeature from '@/components/ExperimentalFeature.vue';
 import ColorSchemeSetting from '@/components/visualization/ColorSchemeSetting.vue';
 import DarkMode from '@/components/widgets/DarkMode.vue';
-import { colorTheme, local } from '@/store';
+import { colorTheme, local, videoPlayerConfig } from '@/store';
 import { ViennaIconLegacy, ViennaIconNew } from '@/utils/assets';
 import { STNB_const } from '@/utils/ms_const';
 
@@ -152,6 +159,7 @@ const i18nMessages = {
         notificationDurationTooltip1: '显示的时间，单位毫秒。',
         notificationDurationTooltip2: '值为0则不会自动关闭。',
         stnbConst: 'STNB常数',
+        thirdPartyTrust: '第三方网站信任列表',
         viennaLogo: 'RMV图标',
         visualizationColorScheme: '数据可视化 - 配色方案',
     } },
@@ -175,6 +183,7 @@ const i18nMessages = {
         notificationDurationTooltip1: 'Duration before close. ',
         notificationDurationTooltip2: 'It will not automatically close if set 0. ',
         stnbConst: 'STNB Constants',
+        thirdPartyTrust: 'Third Party Trust List',
         viennaLogo: 'RMV logo',
         visualizationColorScheme: 'Visualization - Color scheme',
     } },

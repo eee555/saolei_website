@@ -78,6 +78,15 @@ export const local = useLocalStorage(
     { mergeDefaults: true },
 );
 
+export const videoPlayerConfig = useLocalStorage(
+    'video-player-config',
+    {
+        backend: 'flop' as 'flop' | 'StrangeDust',
+        strangeDustTrust: false,
+    },
+    { mergeDefaults: true },
+);
+
 export const videofilter = useLocalStorage('videofilter', {
     pagesize: 100,
     level: 'e',
