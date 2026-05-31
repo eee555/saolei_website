@@ -13,7 +13,7 @@
                 </span>
             </div>
             <div class="realname">
-                {{ user.isAnonymous ? t('local.anonymous') : user.realname }}
+                {{ user.isAnonymous ? t('common.anonymous') : user.realname }}
             </div>
             <div class="fullname">
                 {{ formatName(user.firstname, user.lastname, local.nameFormat) }}
@@ -59,11 +59,9 @@ const isEditing = ref(false);
 
 const i18nMessages = {
     'zh-cn': { local: {
-        anonymous: '匿名',
         editButton: '编辑信息',
     } },
     'en': { local: {
-        anonymous: 'Anonymous',
         editButton: 'Edit Profile',
     } },
 };

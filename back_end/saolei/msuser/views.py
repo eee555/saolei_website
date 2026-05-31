@@ -1,11 +1,7 @@
-import base64
 import decimal
 import json
 import logging
-import os
-import urllib.parse
 
-from django.conf import settings
 from django.http import HttpResponseBadRequest, HttpResponseNotFound, JsonResponse
 from django.views.decorators.http import require_GET
 from django_ratelimit.decorators import ratelimit
@@ -39,7 +35,7 @@ def get_records(request):
         return HttpResponseNotFound()
     ms_user = user.userms
 
-    response = {'id': user_id, 'realname': user.realname}
+    response = {'id': user_id}
     for mode in GameModes:
         value = {}
         for stat in RankingGameStats:
@@ -60,17 +56,7 @@ def get_info_abstract(request):
         return HttpResponseNotFound()
     ms_user = user.userms
 
-    if user.avatar:
-        avatar_path = os.path.join(settings.MEDIA_ROOT, urllib.parse.unquote(user.avatar.url)[7:])
-        image_data = open(avatar_path, 'rb').read()
-        image_data = base64.b64encode(image_data).decode()
-    else:
-        image_data = None
-
     response = {
-        'id': user_id,
-        'realname': user.realname,
-        'avatar': image_data,
         'record_abstract': json.dumps(
             {
                 'timems': ms_user.getrecords_level('timems', 'std'),

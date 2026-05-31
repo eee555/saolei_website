@@ -12,7 +12,7 @@
         </el-table-column>
         <el-table-column :label="t('tournament.host')">
             <template #default="{row}">
-                <PlayerName :user-id="row.hostId" :user-name="row.hostName" />
+                <PlayerName :user-id="row.hostId" />
             </template>
         </el-table-column>
         <el-table-column prop="startDate" :label="t('tournament.startsFrom')" sortable>

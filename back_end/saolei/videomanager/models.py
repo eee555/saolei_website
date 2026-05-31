@@ -218,7 +218,6 @@ class VideoModel(models.Model):
             'tournament': self.ongoing_tournament,
             'software': self.software,
             'time': self.upload_time,
-            'player': self.player.realname,
             'player_id': self.player.id,
             'level': self.level,
             'mode': self.mode,
@@ -319,7 +318,6 @@ class VideoModel(models.Model):
             delta = '新'
         cache.lpush('news_queue', json.dumps({
             'time': self.upload_time,
-            'player': user.realname,
             'player_id': self.player.id,
             'video_id': self.id,
             'index': index,

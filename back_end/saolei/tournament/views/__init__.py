@@ -85,7 +85,6 @@ def get_tournament_list(request: HttpRequest):
             'end_time': tournament.end_time,
             'state': tournament.state,
             'host_id': tournament.host.id,
-            'host_realname': tournament.host.realname,
         })
     return JsonResponse({
         'type': 'success',
@@ -109,7 +108,6 @@ def get_tournament(request):
         'end_time': tournament.end_time,
         'series': tournament.series,
         'host_id': tournament.host.id,
-        'host_realname': tournament.host.realname,
         'state': tournament.state,
     }
     return JsonResponse({'type': 'success', 'data': data})
@@ -238,7 +236,7 @@ def get_participant_list(request: HttpRequest):
         return HttpResponseBadRequest()
     if not (tournament := Tournament.objects.filter(id=tournament_id).first()):
         return HttpResponseNotFound()
-    return JsonResponse({'type': 'success', 'data': list(tournament.participants.values('id', 'user__id', 'user__realname'))})
+    return JsonResponse({'type': 'success', 'data': list(tournament.participants.values('id', 'user__id'))})
 
 
 @require_GET

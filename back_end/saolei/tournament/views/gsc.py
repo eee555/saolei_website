@@ -192,7 +192,7 @@ def get_participant_list(request: HttpRequest):
         return HttpResponseBadRequest()
     if not (tournament := GSCTournament.objects.filter(order=order).first()):
         return HttpResponseNotFound()
-    return JsonResponse({'type': 'success', 'data': list(tournament.participants.values('id', 'user__id', 'user__realname'))})
+    return JsonResponse({'type': 'success', 'data': list(tournament.participants.values('id', 'user__id'))})
 
 
 @require_POST

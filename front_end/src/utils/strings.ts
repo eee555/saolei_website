@@ -1,3 +1,5 @@
+import { MS_Software } from './ms_const';
+
 export { default as ControlRegex } from '@unicode/unicode-16.0.0/General_Category/Control/regex';
 export { default as MarkRegex } from '@unicode/unicode-16.0.0/General_Category/Mark/regex';
 export { default as LineSeparatorRegex } from '@unicode/unicode-16.0.0/General_Category/Line_Separator/regex';
@@ -134,4 +136,13 @@ export function getFileExtension(filename: string): string {
 
     // 返回点号后的部分，并转为小写
     return filename.slice(lastDotIndex + 1).toLowerCase();
+}
+
+export function getSoftwareExtension(software: MS_Software) {
+    switch (software) {
+        case 'a': return '.avf';
+        case 'e': return '.evf';
+        case 'r': return '.rmv';
+        case 'm': return '.mvf';
+    }
 }

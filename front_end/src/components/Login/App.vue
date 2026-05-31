@@ -49,7 +49,7 @@ const dialogVisible = ref(false);
 const activeDialog = ref<'login' | 'register' | 'retrieve'>('login');
 
 onMounted(async () => {
-    await proxy.$axios.get('api/userprofile/info').then(function (response) {
+    await proxy.$axios.get('api/userprofile/info/0').then(function (response) {
         store.login(response.data);
     }).catch((err) => {
         store.logout();

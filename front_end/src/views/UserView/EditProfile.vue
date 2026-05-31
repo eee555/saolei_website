@@ -194,7 +194,6 @@ async function updateProfile() {
     }
     updating.value = false;
     isEditing.value = false;
-    console.log('isEditing');
 }
 
 const i18nMessages = {

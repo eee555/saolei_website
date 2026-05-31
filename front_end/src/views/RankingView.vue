@@ -46,7 +46,7 @@
         <div v-for="(player, key) in playerData" style="margin-top: 10px;">
             <span class="rank">{{ key - 19 + (state.CurrentPage) * 20 }}</span>
             <!-- <span class="name">{{ player.name }}</span> -->
-            <PlayerName class="name" :user-id="player.name_id" :user-name="player.name" />
+            <PlayerName class="name" :user-id="player.name_id" />
             <!-- <span class="beginner">{{ to_fixed_n(player.beginner, 3) }}</span> -->
             <span class="number_wid">
                 <PreviewNumber :id="player.beginner_id" :text="to_fixed_n(player.beginner, 3)" />
@@ -81,7 +81,6 @@ import PreviewNumber from '@/components/PreviewNumber.vue';
 import { ms_to_s, to_fixed_n } from '@/utils';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
-// const AsyncPlayerName = defineAsyncComponent(() => import('@/components/PlayerName.vue'))
 const { proxy } = useCurrentInstance();
 const { t } = useI18n();
 
