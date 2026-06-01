@@ -39,6 +39,14 @@ export function toISODateTimeString(date: Date) {
         date.getSeconds().toString().padStart(2, '0');
 }
 
+export function *generateDateRange(startDate: Date, endDate: Date, step: number = 1) {
+    const currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+        yield new Date(currentDate);
+        currentDate.setDate(currentDate.getDate() + step);
+    }
+}
+
 export function arbiterTimeStampToDate(timestamp: bigint) {
     const date = new Date();
     return new Date(Number(timestamp / BigInt(1000)) + date.getTimezoneOffset() * 60000);
