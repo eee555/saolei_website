@@ -133,7 +133,7 @@ i18n 配置位于 `src/i18n`：
 
 ## 测试
 
-项目测试分为 Vitest、Cypress 组件测试和 Cypress e2e 测试。完整规则见 [测试文档](./testing.md)。
+项目测试分为 Vitest、Cypress 组件测试和 Cypress e2e 测试。项目内的测试入口和目录约定见 [测试文档](./testing.md)。
 
 运行 Vitest：
 
@@ -163,7 +163,7 @@ npm run lint
 npm run lintfix
 ```
 
-ESLint 配置在 [eslint.config.js](../eslint.config.js)。提交前建议至少运行一次 lint 和相关测试。
+ESLint 配置在 [eslint.config.js](../eslint.config.js)。改动较大时建议运行一次 lint 和相关测试。
 
 ## 构建与预览
 
@@ -196,4 +196,4 @@ npm run serve
 ## 提交流程建议
 
 1. 明确改动范围，避免混入无关文件。
-2. 新增或修改功能时，补充相邻的单元测试或 Cypress 测试。
+2. 新增或修改关键功能时，按风险补充或运行相邻的单元测试、Cypress 测试。
