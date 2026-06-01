@@ -135,7 +135,7 @@ const i18nMessages = {
     } },
 };
 
-const { t } = useI18n();
+const { t } = useI18n({ messages: i18nMessages });
 ```
 
 ## 组件开发建议
