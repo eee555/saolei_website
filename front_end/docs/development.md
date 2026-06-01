@@ -118,7 +118,6 @@ LocalStorage 也在 `src/store` 定义。
 i18n 配置位于 `src/i18n`：
 
 - `src/i18n/index.ts`：创建 i18n 实例
-- `src/i18n/config.ts`：语言配置
 - `src/i18n/locales/*.ts`：语言包
 
 新增页面文案时，同步更新需要支持的语言包。组件内局部文案、fallback 规则和新增语言流程见 [国际化文档](./i18n.md)。
