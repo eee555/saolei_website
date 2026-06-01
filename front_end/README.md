@@ -11,6 +11,12 @@ npm run dev
 
 默认开发地址为 `http://localhost:8080`。更完整的本地开发、目录结构、测试和构建说明见 [开发文档](./docs/development.md)。
 
+## 文档
+
+- [开发文档](./docs/development.md)
+- [国际化文档](./docs/i18n.md)
+- [测试文档](./docs/testing.md)
+
 ## 常用命令
 
 ```bash

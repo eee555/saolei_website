@@ -121,22 +121,7 @@ i18n 配置位于 `src/i18n`：
 - `src/i18n/config.ts`：语言配置
 - `src/i18n/locales/*.ts`：语言包
 
-新增页面文案时，同步更新需要支持的语言包，必须至少支持中英文其中一个，以便我们补充翻译。Vue 组件内不可复用的文案直接放在组件内，且用`local`前缀明确区分。示例：
-
-```ts
-import { useI18n } from 'vue-i18n';
-
-const i18nMessages = {
-    'zh-cn': { local: {
-        example: '示例',
-    } },
-    'en': { local: {
-        example: 'Example',
-    } },
-};
-
-const { t } = useI18n({ messages: i18nMessages });
-```
+新增页面文案时，同步更新需要支持的语言包。组件内局部文案、fallback 规则和新增语言流程见 [国际化文档](./i18n.md)。
 
 ## 组件开发建议
 
@@ -148,6 +133,8 @@ const { t } = useI18n({ messages: i18nMessages });
 - 路径别名 `@` 指向 `src`，见 [tsconfig.json](../tsconfig.json) 和 [vite.config.ts](../vite.config.ts)。
 
 ## 测试
+
+项目测试分为 Vitest、Cypress 组件测试和 Cypress e2e 测试。完整规则见 [测试文档](./testing.md)。
 
 运行 Vitest：
 
@@ -162,13 +149,13 @@ npx cypress open
 npx cypress run
 ```
 
-运行Cypress测试前须启动前端开发服务：
+运行 Cypress e2e 测试前须启动前端开发服务：
 
 ```bash
 npm run dev
 ```
 
-特别地，运行端到端测试前须启动后端开发服务。
+组件测试由 Cypress 启动自己的 Vite dev server，不需要手动执行 `npm run dev`。涉及真实后端流程的 e2e 测试还需要启动后端开发服务。
 
 ## 代码检查
 
