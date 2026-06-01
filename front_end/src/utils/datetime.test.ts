@@ -4,6 +4,7 @@ import {
     arbiterTimeStampToDate,
     fullDay,
     generalTimeStampToDate,
+    generateDateRange,
     getWeekTime,
     toISODateString,
     toISODateTimeString,
@@ -31,6 +32,45 @@ describe('datetime', () => {
     describe('toISODateTimeString', () => {
         it('Formats local date and time with padded fields', () => {
             expect(toISODateTimeString(new Date(2025, 0, 5, 8, 9, 10))).toBe('2025-01-05 08:09:10');
+        });
+    });
+
+    describe('generateDateRange', () => {
+        it('Generates dates from start to end inclusively', () => {
+            const dates = Array.from(generateDateRange(new Date(2025, 0, 1), new Date(2025, 0, 3)));
+
+            expect(dates).toEqual([
+                new Date(2025, 0, 1),
+                new Date(2025, 0, 2),
+                new Date(2025, 0, 3),
+            ]);
+        });
+
+        it('Supports custom day steps', () => {
+            const dates = Array.from(generateDateRange(new Date(2025, 0, 1), new Date(2025, 0, 7), 2));
+
+            expect(dates).toEqual([
+                new Date(2025, 0, 1),
+                new Date(2025, 0, 3),
+                new Date(2025, 0, 5),
+                new Date(2025, 0, 7),
+            ]);
+        });
+
+        it('Does not mutate the input dates or reuse yielded date objects', () => {
+            const startDate = new Date(2025, 0, 1);
+            const endDate = new Date(2025, 0, 2);
+            const dates = Array.from(generateDateRange(startDate, endDate));
+
+            dates[0].setFullYear(2030);
+
+            expect(startDate).toEqual(new Date(2025, 0, 1));
+            expect(endDate).toEqual(new Date(2025, 0, 2));
+            expect(dates[1]).toEqual(new Date(2025, 0, 2));
+        });
+
+        it('Returns an empty range when start is after end', () => {
+            expect(Array.from(generateDateRange(new Date(2025, 0, 3), new Date(2025, 0, 1)))).toEqual([]);
         });
     });
 

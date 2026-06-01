@@ -72,7 +72,7 @@ import MonthLabel from './MonthLabel.vue';
 import Tooltip from './Tooltip.vue';
 
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
-import { toISODateString } from '@/utils/datetime';
+import { generateDateRange, toISODateString } from '@/utils/datetime';
 import { groupVideosByDate, VideoAbstract } from '@/utils/videoabstract';
 
 interface Options {
@@ -124,14 +124,6 @@ const startDate = computed(() => {
     }
     return min;
 });
-
-function *generateDateRange(startDate: Date, endDate: Date, step: number = 1) {
-    const currentDate = new Date(startDate);
-    while (currentDate <= endDate) {
-        yield new Date(currentDate);  // Yield a new Date object (to avoid modifying the original one)
-        currentDate.setDate(currentDate.getDate() + step); // Increment by 1 day (or custom step)
-    }
-}
 
 const dateRange = computed(() => Array.from(generateDateRange(startDate.value, endDate, 1)));
 
