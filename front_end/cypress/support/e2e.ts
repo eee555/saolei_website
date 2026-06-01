@@ -17,6 +17,11 @@
 import './commands';
 import 'cypress-real-events';
 
+function getAppOrigin() {
+    const baseUrl = Cypress.config('baseUrl');
+    return baseUrl ? new URL(baseUrl).origin : 'http://localhost:8080';
+}
+
 declare global {
     namespace Cypress {
         interface Chainable {
@@ -80,6 +85,14 @@ Cypress.on('test:before:run', () => {
         command: 'Emulation.setTimezoneOverride',
         params: {
             timezoneId: 'Asia/Shanghai', // OR  'UTC'
+        },
+    });
+
+    Cypress.automation('remote:debugger:protocol', {
+        command: 'Storage.clearDataForOrigin',
+        params: {
+            origin: getAppOrigin(),
+            storageTypes: 'indexeddb',
         },
     });
 });

@@ -1,27 +1,123 @@
 import $axios from '@/http';
+import { localDatabase } from '@/services/localDatabase';
+import type { LocalUser } from '@/services/localDatabase';
 import { GetUserInfoResponse } from '@/utils/common/structInterface';
 import { VideoAbstract, VideoAbstractInfo } from '@/utils/videoabstract';
 
-const userInfoCache = new Map<number, { promise: Promise<GetUserInfoResponse>; timestamp: number }>();
-const userInfoCacheTTL = 5000 as const; // 5秒
+const userInfoPendingRequests = new Map<number, Promise<GetUserInfoResponse>>();
+const userInfoCacheTTL = 1000 as const; // 1 second
+let lastUserInfoRequestTime = 0;
+let userInfoRequestQueue = Promise.resolve();
 
-export function fetchUserInfo(userId: number) {
+async function getCachedUserInfo(userId: number, now: number) {
+    try {
+        const cached = await localDatabase.users.get(userId);
+        if (!cached) {
+            return null;
+        }
+
+        if (now - cached.updatedAt >= userInfoCacheTTL) {
+            await localDatabase.users.delete(userId);
+            return null;
+        }
+
+        return localUserToUserInfo(cached);
+    } catch {
+        return null;
+    }
+}
+
+async function setCachedUserInfo(userId: number, data: GetUserInfoResponse) {
+    try {
+        await localDatabase.users.put(userInfoToLocalUser(userId, data));
+    } catch {
+        // Ignore storage errors such as quota limits or disabled storage.
+    }
+}
+
+function userInfoToLocalUser(userId: number, data: GetUserInfoResponse): LocalUser {
+    return {
+        id: data.id ?? userId,
+        username: data.username,
+        realname: data.realname,
+        firstname: data.firstname,
+        lastname: data.lastname,
+        is_banned: data.is_banned,
+        is_staff: data.is_staff,
+        country: data.country,
+        signature: data.signature,
+        last_change_avatar: data.last_change_avatar,
+        last_change_signature: data.last_change_signature,
+        left_avatar_n: data.left_avatar_n,
+        left_signature_n: data.left_signature_n,
+        updatedAt: Date.now(),
+    };
+}
+
+function localUserToUserInfo(user: LocalUser): GetUserInfoResponse {
+    return {
+        id: user.id,
+        username: user.username,
+        realname: user.realname,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        is_banned: user.is_banned,
+        is_staff: user.is_staff,
+        country: user.country,
+        signature: user.signature,
+        last_change_avatar: user.last_change_avatar,
+        last_change_signature: user.last_change_signature,
+        left_avatar_n: user.left_avatar_n,
+        left_signature_n: user.left_signature_n,
+    };
+}
+
+function scheduleUserInfoRequest<T>(request: () => Promise<T>) {
+    const runRequest = userInfoRequestQueue.then(async () => {
+        const delay = Math.max(0, lastUserInfoRequestTime + userInfoCacheTTL - Date.now());
+
+        if (delay > 0) {
+            await new Promise((resolve) => {
+                window.setTimeout(resolve, delay);
+            });
+        }
+
+        lastUserInfoRequestTime = Date.now();
+        return request();
+    });
+
+    userInfoRequestQueue = runRequest.then(
+        () => undefined,
+        () => undefined,
+    );
+
+    return runRequest;
+}
+
+export async function fetchUserInfo(userId: number) {
     const now = Date.now();
-    const cached = userInfoCache.get(userId);
+    const cached = await getCachedUserInfo(userId, now);
 
-    if (cached && now - cached.timestamp < userInfoCacheTTL) {
-        return cached.promise;
+    if (cached) {
+        return Promise.resolve(cached);
     }
 
-    const promise = $axios.get(`/api/userprofile/info/${userId}`).then((response) => {
-        userInfoCache.set(userId, { promise, timestamp: now });
-        return response.data as GetUserInfoResponse;
+    const pendingRequest = userInfoPendingRequests.get(userId);
+    if (pendingRequest) {
+        return pendingRequest;
+    }
+
+    const promise = scheduleUserInfoRequest(() => $axios.get(`/api/userprofile/info/${userId}`)).then(async (response) => {
+        const data = response.data as GetUserInfoResponse;
+        await setCachedUserInfo(userId, data);
+        userInfoPendingRequests.delete(userId);
+        return data;
     }).catch((error) => {
-        userInfoCache.delete(userId);
+        userInfoPendingRequests.delete(userId);
         throw error;
     });
 
-    userInfoCache.set(userId, { promise, timestamp: now });
+    userInfoPendingRequests.set(userId, promise);
     return promise;
 }
 

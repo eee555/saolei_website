@@ -28,6 +28,7 @@
     "@wdns/vue-code-block": "2.3.5",
     "axios": "1.14.0",
     "d3-array": "3.2.4",
+    "dexie": "4.4.2",
     "element-plus": "2.13.6",
     "flag-icons": "7.5.0",
     "highlight.js": "11.11.1",
