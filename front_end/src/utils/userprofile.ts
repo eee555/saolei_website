@@ -3,7 +3,7 @@ import { VideoAbstract } from './videoabstract';
 export class UserProfile {
     public id: number = 0;
     public username: string = '';
-    public realname: string = '匿名';
+    public realname: string = '';
     public firstname: string = '';
     public lastname: string = '';
     public is_banned: boolean = false;
