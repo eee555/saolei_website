@@ -22,6 +22,7 @@ export default {
         confirmPassword: 'potwierdź hasło',
         email: 'email',
         emailCode: 'hasło pojedyńczego użytku',
+        openAllSafe: 'Otwórz wszystkie bezpieczne pola',
         password: 'hasło',
         username: 'nazwa użytkownika',
     },

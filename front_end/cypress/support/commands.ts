@@ -38,6 +38,12 @@ declare global {
             mockCaptchaRefresh(options?: any): void;
 
             /**
+             * 解判雷题验证码（E2E 模式下固定为 PUZZLES[0]，正确答案：点开 [1, 3]）
+             * @example cy.solveMineCaptcha()
+             */
+            solveMineCaptcha(): Chainable<void>;
+
+            /**
              * 模拟获取邮件验证码
              * @param options - 请求选项
              * @example cy.mockGetEmailCode({})
@@ -90,13 +96,18 @@ Cypress.Commands.add('mockCaptchaRefresh', (options) => {
             body: {
                 status: 100,
                 hashkey: `testkey${captchaRefreshCount}`,
+                top: [1, 2, 1, 2, 1],  // mine-captcha puzzle: PUZZLES[0]
             },
             ...options,
         });
     }).as('captchaRefresh');
-    cy.intercept('GET', '/userprofile/captcha/image/**', {
-        fixture: 'test.png',
-    }).as('testImage');
+});
+
+// E2E mode pins PUZZLES[0] (top=[1,2,1,2,1], mines=[0,2,4]).
+// Correct answer = open all non-mine cells = [1, 3].
+Cypress.Commands.add('solveMineCaptcha', () => {
+    cy.get('[data-cy=mine-cell-1]').click();
+    cy.get('[data-cy=mine-cell-3]').click();
 });
 
 Cypress.Commands.add('mockGetEmailCode', (options) => {
@@ -136,7 +147,8 @@ Cypress.Commands.add('mockLogin', () => {
         const username = params.get('username');
         const password = params.get('password');
         const captcha = params.get('captcha');
-        if (captcha !== 'test') {
+        // Mine-captcha PUZZLES[0]: correct answer = opened set {1, 3} -> "1,3"
+        if (captcha !== '1,3') {
             req.reply({
                 'type': 'error',
                 'object': 'login',

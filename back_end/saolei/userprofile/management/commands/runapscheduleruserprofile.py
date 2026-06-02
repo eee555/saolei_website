@@ -2,7 +2,7 @@ import logging
 
 from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
-from captcha.models import CaptchaStore
+# from captcha.models import CaptchaStore  # replaced by mine-sweeper captcha (Redis TTL handles expiry)
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils import timezone
@@ -26,11 +26,11 @@ def delete_overdue_emailverifyrecord():
     EmailVerifyRecord.objects.filter(send_time__lt=start).delete()
 
 
-@util.close_old_connections
-def delete_overdue_captcha():
-    # 定时清除过期图形验证码（15分钟过期）
-    # start = timezone.now() - timezone.timedelta(seconds=900)
-    CaptchaStore.objects.filter(expiration__lt=timezone.now()).delete()
+# @util.close_old_connections
+# def delete_overdue_captcha():
+#     # 定时清除过期图形验证码（15分钟过期）
+#     CaptchaStore.objects.filter(expiration__lt=timezone.now()).delete()
+# Replaced by mine-sweeper captcha; Redis TTL auto-expires keys.
 
 
 # The `close_old_connections` decorator ensures that database connections, that have become
@@ -68,17 +68,18 @@ class Command(BaseCommand):
         )
         logger.info("Added job 'delete_overdue_emailverifyrecord'.")
 
-        scheduler.add_job(
-            delete_overdue_captcha,
-            trigger=CronTrigger(
-                day_of_week='mon', hour='01', minute='05',
-            ),
-            id='delete_overdue_captcha',  # The `id` assigned to each job MUST be unique
-            misfire_grace_time=30,
-            max_instances=1,
-            replace_existing=True,
-        )
-        logger.info("Added job 'delete_overdue_captcha'.")
+        # scheduler.add_job(
+        #     delete_overdue_captcha,
+        #     trigger=CronTrigger(
+        #         day_of_week='mon', hour='01', minute='05',
+        #     ),
+        #     id='delete_overdue_captcha',
+        #     misfire_grace_time=30,
+        #     max_instances=1,
+        #     replace_existing=True,
+        # )
+        # logger.info("Added job 'delete_overdue_captcha'.")
+        # Replaced by mine-sweeper captcha; Redis TTL handles expiry.
 
         scheduler.add_job(
             delete_old_job_executions,

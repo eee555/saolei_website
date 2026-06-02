@@ -3,28 +3,61 @@ import os
 import urllib.parse
 import uuid
 
-from captcha.models import CaptchaStore
+# from captcha.models import CaptchaStore  # replaced by mine-sweeper captcha
 from django.conf import settings
 from django.core.mail import send_mail
 from django.utils import timezone
+from django_redis import get_redis_connection
 
 from utils import generate_code
 from videomanager.models import VideoModel
+from .mine_captcha_puzzles import PUZZLES
 from .models import EmailVerifyRecord, UserProfile
 
 
-# 验证验证码
-def judge_captcha(captchaStr: str, captchaHashkey):
-    if captchaStr and captchaHashkey:
-        get_captcha = CaptchaStore.objects.filter(
-            hashkey=captchaHashkey).first()
-        if get_captcha and get_captcha.response == captchaStr.lower():
-            # 图形验证码15分钟有效，get_captcha.expiration是过期时间
-            if (get_captcha.expiration - timezone.now()).seconds >= 0:
-                CaptchaStore.objects.filter(hashkey=captchaHashkey).delete()
-                return True
-    CaptchaStore.objects.filter(hashkey=captchaHashkey).delete()
-    return False
+_MINE_CAPTCHA_REDIS_PREFIX = 'mine_captcha:'
+_MINE_CAPTCHA_BOTTOM_WIDTH = 5
+
+
+def judge_captcha(captchaStr: str, captchaHashkey: str) -> bool:
+    """
+    Validate a mine-sweeper captcha submission.
+
+    captchaStr: comma-separated 0-based indices of cells the user OPENED
+                (i.e. believed to be safe / non-mines), e.g. "1,3".
+                Order does not matter.
+    captchaHashkey: the hashkey returned by refresh_captcha.
+
+    Returns True iff the opened set exactly equals the puzzle's non-mine set
+    (every safe cell opened, no mine cell opened). Deletes the redis key in
+    all cases (one-shot, error-once-rotate-puzzle).
+    """
+    if not captchaStr or not captchaHashkey:
+        return False
+
+    conn = get_redis_connection('saolei_website')
+    redis_key = f'{_MINE_CAPTCHA_REDIS_PREFIX}{captchaHashkey}'
+    raw = conn.get(redis_key)
+    if raw is None:
+        return False
+    conn.delete(redis_key)  # one-shot regardless of outcome
+
+    try:
+        puzzle_idx = int(raw)
+        opened = {int(s) for s in captchaStr.split(',') if s.strip() != ''}
+    except (ValueError, TypeError):
+        return False
+
+    if not opened:
+        return False
+    if any(i < 0 or i >= _MINE_CAPTCHA_BOTTOM_WIDTH for i in opened):
+        return False
+    if puzzle_idx < 0 or puzzle_idx >= len(PUZZLES):
+        return False
+
+    _, mine_positions = PUZZLES[puzzle_idx]
+    safe_positions = set(range(_MINE_CAPTCHA_BOTTOM_WIDTH)) - set(mine_positions)
+    return opened == safe_positions
 
 
 # 发送邮件，根据send_type不同发送不同的邮件内容

@@ -204,6 +204,7 @@ export default {
         email: '邮箱',
         emailCode: '邮箱验证码',
         imageCaptcha: '图形验证码',
+        openAllSafe: '请点开所有非雷格',
         password: '密码',
         username: '用户名',
     },

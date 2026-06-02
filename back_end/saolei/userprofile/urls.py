@@ -11,7 +11,7 @@ urlpatterns = [
     path('set_staff/', views.set_staff, name='set_staff'),
     path('del_user_info/', views.del_user_info, name='del_user_info'),
     # path('delete/<int:id>/', views.user_delete, name='delete'),
-    path('captcha/', include('captcha.urls')),
+    # path('captcha/', include('captcha.urls')),  # replaced by mine-sweeper captcha
     path('refresh_captcha/', views.refresh_captcha),
     path('get_email_captcha/', views.get_email_captcha),
     path('get/', views.get_userProfile),

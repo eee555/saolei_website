@@ -1,29 +1,22 @@
 <!--
 邮箱验证码表单项
-发送验证码的前置条件：填写了有效邮箱，且通过了图形验证
+发送验证码的前置条件：填写了有效邮箱，且通过了判雷题验证
 -->
 <template>
-    <!-- 图形验证码 -->
+    <!-- 验证码（判雷题） -->
     <el-form-item ref="captchaFormRef" :disabled="!email_success" :label="t('form.imageCaptcha')">
-        <div style="display: flex">
-            <el-input
-                v-model.trim="captcha" prefix-icon="Key" class="code" maxlength="4"
-                @input="captchaHandler"
-            />
-            &nbsp;
-            <ValidCode ref="refValidCode" />
-        </div>
+        <MineCaptcha ref="refMineCaptcha" />
     </el-form-item>
     <!-- 邮箱验证码 -->
     <el-form-item ref="emailCodeFormRef" prop="emailCode" :label="t('form.emailCode')">
         <div style="display: flex">
             <el-input
                 v-model.trim="emailCode" data-cy="emailCode"
-                prefix-icon="Key" maxlength="6" :disabled="captcha.length!=4" :placeholder="t(email_code_placeholder)"
+                prefix-icon="Key" maxlength="6" :disabled="(refMineCaptcha?.openedCount() ?? 0) === 0" :placeholder="t(email_code_placeholder)"
                 @input="emailCodeHandler"
             />
             &nbsp;
-            <el-button :disabled="captcha.length != 4 || counting" @click="getEmailCaptcha(type)">
+            <el-button :disabled="(refMineCaptcha?.openedCount() ?? 0) === 0 || counting" @click="getEmailCaptcha(type)">
                 <vue-countdown v-if="counting" v-slot="{ totalSeconds }" :time="60000" @end="counting = false;">
                     ({{ totalSeconds }})
                 </vue-countdown>
@@ -39,7 +32,7 @@ import { ElButton, ElFormItem, ElInput, ElNotification } from 'element-plus';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import ValidCode from '../ValidCode.vue';
+import MineCaptcha from '../MineCaptcha.vue';
 
 import { local } from '@/store';
 import { validateError, validateSuccess } from '@/utils/common/elFormValidate';
@@ -64,13 +57,12 @@ const emailCode = defineModel({ type: String, required: true });
 const { proxy } = useCurrentInstance();
 const { t } = useI18n();
 
-const captcha = ref(''); // 图形验证码
 const hashkey = ref(''); // 邮箱验证码hash
 const email_success = ref(false); // 邮件发送成功
 const email_handling = ref(false); // 正在校验图形验证码与发送邮件
 const counting = ref(false);
 
-const refValidCode = ref<typeof ValidCode>();
+const refMineCaptcha = ref<typeof MineCaptcha>();
 const captchaFormRef = ref<typeof ElFormItem>();
 const emailCodeFormRef = ref<typeof ElFormItem>();
 
@@ -92,11 +84,6 @@ const email_code_placeholder = computed(() => {
     else return '';
 });
 
-const captchaHandler = (value: string) => {
-    if (value.length == 0) validateError(captchaFormRef, t('msg.captchaRequired'));
-    else validateSuccess(captchaFormRef);
-};
-
 const emailCodeHandler = (value: string) => {
     if (value.length == 0) validateError(emailCodeFormRef, t('msg.emailCodeRequired'));
     else validateSuccess(emailCodeFormRef);
@@ -113,8 +100,8 @@ const getEmailCaptcha = (type: string) => {
     email_handling.value = true;
     counting.value = true;
     proxy.$axios.post('/userprofile/get_email_captcha/', {
-        captcha: captcha.value,
-        hashkey: refValidCode.value!.hashkey,
+        captcha: refMineCaptcha.value?.getResponse(),
+        hashkey: refMineCaptcha.value?.hashkey,
         email: prop.email,
         type: type,
     }).then(function (response) {
@@ -149,8 +136,7 @@ const getEmailCaptcha = (type: string) => {
 };
 
 const refreshCaptcha = () => {
-    refValidCode.value!.refreshPic();
-    captcha.value = '';
+    refMineCaptcha.value!.refreshPic();
 };
 
 </script>

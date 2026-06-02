@@ -12,13 +12,9 @@
             <el-form-item prop="password" :label="t('form.password')" :error="passwordError">
                 <el-input v-model="loginForm.password" maxlength="20" show-password prefix-icon="Lock" />
             </el-form-item>
-            <!-- 验证码 -->
-            <el-form-item prop="captcha" :label="t('form.captcha')" :error="captchaError">
-                <div style="display: flex;">
-                    <el-input v-model.trim="loginForm.captcha" prefix-icon="Key" class="code" maxlength="4" />
-                    &nbsp;
-                    <ValidCode ref="refValidCode" />
-                </div>
+            <!-- 验证码（判雷题） -->
+            <el-form-item :label="t('form.captcha')" :error="captchaError">
+                <MineCaptcha ref="refMineCaptcha" />
             </el-form-item>
             <!-- 记住我 -->
             <el-form-item>
@@ -49,7 +45,7 @@ import { reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { httpErrorNotification } from '@/components/Notifications';
-import ValidCode from '@/components/ValidCode.vue';
+import MineCaptcha from '@/components/MineCaptcha.vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const visible = defineModel({ type: Boolean, default: false });
@@ -58,7 +54,7 @@ const emit = defineEmits(['forgetPassword', 'login']);
 const { t } = useI18n();
 const { proxy } = useCurrentInstance();
 
-const refValidCode = ref<typeof ValidCode>();
+const refMineCaptcha = ref<typeof MineCaptcha>();
 const remember_me = ref(false);
 const captchaError = ref('');
 const passwordError = ref('');
@@ -66,13 +62,11 @@ const passwordError = ref('');
 interface LoginForm {
     username: string;
     password: string;
-    captcha: string;
 }
 
 const loginForm = reactive<LoginForm>({
     username: '',
     password: '',
-    captcha: '',
 });
 
 const ruleFormRef = ref<FormInstance>();
@@ -80,7 +74,6 @@ const ruleFormRef = ref<FormInstance>();
 const rules = reactive<FormRules<LoginForm>>({
     username: [{ required: true, message: t('msg.usernameRequired') }],
     password: [{ required: true, message: t('msg.passwordRequired') }],
-    captcha: [{ required: true, message: t('msg.captchaRequired') }],
 });
 
 const submitForm = async (formEl: FormInstance | undefined) => {
@@ -92,8 +85,8 @@ const submitForm = async (formEl: FormInstance | undefined) => {
             user_id: user_id, // 为空时post会自动忽略该项
             username: loginForm.username,
             password: loginForm.password,
-            captcha: loginForm.captcha,
-            hashkey: refValidCode.value?.hashkey,
+            captcha: refMineCaptcha.value?.getResponse(),
+            hashkey: refMineCaptcha.value?.hashkey,
         }).then(function (response) {
             const data = response.data;
             if (data.type == 'success') {
@@ -102,10 +95,9 @@ const submitForm = async (formEl: FormInstance | undefined) => {
                 if (data.category == 'captcha') {
                     captchaError.value = t('msg.captchaFail');
                 } else if (data.category == 'password') {
-                    loginForm.captcha = '';
                     passwordError.value = t('msg.usernamePasswordInvalid');
                 }
-                if (refValidCode.value !== undefined) refValidCode.value.refreshPic();
+                if (refMineCaptcha.value !== undefined) refMineCaptcha.value.refreshPic();
             }
         }).catch(httpErrorNotification);
     });

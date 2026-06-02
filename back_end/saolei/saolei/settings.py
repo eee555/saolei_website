@@ -41,7 +41,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
-    'captcha',
+    # 'captcha',  # replaced by mine-sweeper captcha
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

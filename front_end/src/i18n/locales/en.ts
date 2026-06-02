@@ -206,6 +206,7 @@ export default {
         email: 'Email',
         emailCode: 'Email code',
         imageCaptcha: 'Image captcha',
+        openAllSafe: 'Open all safe cells',
         password: 'Password',
         username: 'Username',
     },

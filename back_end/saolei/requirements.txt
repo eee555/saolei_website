@@ -7,7 +7,7 @@ django-model-utils==5.0.0
 django-ninja>=1.6.0
 django-ratelimit==4.1.0
 django-redis>=6.0.0
-django-simple-captcha>=0.5.18
+# django-simple-captcha>=0.5.18  # replaced by mine-sweeper captcha
 django-tasks-db>=0.12.0
 lxml>=6.0.2
 ms_toollib

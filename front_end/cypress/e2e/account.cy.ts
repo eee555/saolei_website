@@ -47,7 +47,7 @@ describe('User Authentication', () => {
         // 填写注册信息
         cy.contains('用户名').next().find('input').type('testUser');
         cy.contains('邮箱').next().find('input').type('testUser@example.com');
-        cy.contains('图形验证码').next().find('input').type('test');
+        cy.solveMineCaptcha();
         cy.contains('发送').click();
         cy.contains('邮件发送成功');
         cy.closeElNotifications();
@@ -77,7 +77,7 @@ describe('User Authentication', () => {
         // 填写登录信息
         cy.contains('用户名').next().find('input').type('testUser');
         cy.contains('密码').next().find('input').type('testPassword');
-        cy.contains('验证码').next().find('input').type('test');
+        cy.solveMineCaptcha();
 
         // 完成登录
         cy.contains('用户登录').parent().parent().find('button').contains('登录').click();
@@ -97,7 +97,7 @@ describe('User Authentication', () => {
         cy.contains('登录').click();
         cy.contains('用户名').next().find('input').type('testUser');
         cy.contains('密码').next().find('input').type('testPassword');
-        cy.contains('验证码').next().find('input').type('test');
+        cy.solveMineCaptcha();
         cy.contains('记住我').click();
         cy.contains('用户登录').parent().parent().find('button').contains('登录').click();
         cy.contains('用户登录').should('not.exist');
@@ -121,7 +121,7 @@ describe('User Authentication', () => {
         cy.contains('登录').click();
         cy.contains('用户名').next().find('input').type('testUser');
         cy.contains('密码').next().find('input').type('newPassword');
-        cy.contains('验证码').next().find('input').type('test');
+        cy.solveMineCaptcha();
         cy.contains('用户登录').parent().parent().find('button').contains('登录').click();
         cy.contains('用户名或密码不正确');
         expectNotLoggedIn();
@@ -133,7 +133,7 @@ describe('User Authentication', () => {
 
         // 填写找回密码信息
         cy.contains('邮箱').next().find('input').type('testUser@example.com');
-        cy.contains('图形验证码').next().find('input').type('test');
+        cy.solveMineCaptcha();
         cy.contains('发送').click();
         cy.contains('邮件发送成功');
         cy.closeElNotifications();

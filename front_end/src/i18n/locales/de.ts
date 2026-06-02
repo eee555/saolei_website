@@ -6,6 +6,7 @@ export default {
         confirmPassword: 'Passwort bestätigen',
         email: 'E-Mail',
         emailCode: 'E-Mail Code',
+        openAllSafe: 'Öffne alle sicheren Felder',
         password: 'Passwort',
         username: 'Benutzername',
     },

@@ -1,17 +1,21 @@
 import json
 import logging
 import os
+import random
+import uuid
 
-from captcha.models import CaptchaStore
+# from captcha.models import CaptchaStore  # replaced by mine-sweeper captcha
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 from django_ratelimit.decorators import ratelimit
+from django_redis import get_redis_connection
 
 from msuser.models import UserMS
 from .decorators import staff_required
 from .forms import EmailForm, UserLoginForm, UserRegisterForm, UserRetrieveForm
+from .mine_captcha_puzzles import PUZZLES
 from .models import EmailVerifyRecord, UserProfile
 from .utils import judge_captcha, judge_email_verification, send_email, user_metadata
 
@@ -175,25 +179,32 @@ def del_user_info(request):
     user.avatar = None
 
 
-# 创建验证码
+_MINE_CAPTCHA_REDIS_PREFIX = 'mine_captcha:'
+_MINE_CAPTCHA_TTL_SECONDS = 900
+
+
+def _new_mine_captcha() -> dict:
+    """Pick a puzzle (PUZZLES[0] in E2E mode, random otherwise), persist to Redis,
+    return the public payload (hashkey + top-row numbers)."""
+    puzzle_idx = 0 if settings.E2E_TEST else random.randrange(len(PUZZLES))
+    hashkey = str(uuid.uuid4())
+    conn = get_redis_connection('saolei_website')
+    conn.set(
+        f'{_MINE_CAPTCHA_REDIS_PREFIX}{hashkey}',
+        str(puzzle_idx),
+        ex=_MINE_CAPTCHA_TTL_SECONDS,
+    )
+    top, _ = PUZZLES[puzzle_idx]
+    return {'hashkey': hashkey, 'top': list(top)}
+
+
+# 刷新验证码（判雷题）
 @ratelimit(key='ip', rate='60/h')
-def captcha(request):
-    if settings.E2E_TEST:
-        # Create a fixed captcha for E2E tests
-        captcha_obj = CaptchaStore.objects.create(challenge='test', response='test')
-        hashkey = captcha_obj.hashkey
-    else:
-        hashkey = CaptchaStore.generate_key()
-
-    return {'hashkey': hashkey}
-
-
-# 刷新验证码
-@ratelimit(key='ip', rate='60/h')
+@require_GET
 def refresh_captcha(request):
-    c = captcha(request)
-    c.update({'status': 100})
-    return HttpResponse(json.dumps(c), content_type='application/json')
+    payload = _new_mine_captcha()
+    payload['status'] = 100
+    return JsonResponse(payload)
 
 
 # 验证验证码，若通过，发送email
