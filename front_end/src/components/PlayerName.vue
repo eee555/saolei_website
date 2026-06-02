@@ -131,7 +131,7 @@ watch(() => data.userId, async (newVal) => {
             loading.value = false;
         } catch (error) {
             user.value = new UserProfile();
-            throw error;
+            console.log(error);
         }
     }
 }, { immediate: true });
