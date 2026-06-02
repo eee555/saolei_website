@@ -1,35 +1,23 @@
 <template>
     <input ref="fileInputRef" type="file" accept="image/jpeg,image/png,image/gif,image/webp" style="display: none" @change="handleFileChange">
-    <tippy v-loading="updating" follow-cursor :duration="0">
-        <el-image :src="avatarSrc" :disabled="disabled" style="max-height: 100%; max-width: 100%; aspect-ratio: 1 / 1; border-radius: 50%;" @click="triggerFileDialog">
-            <template #error>
-                <img src="@/assets/person.png" style="max-height: 100%; max-width: 100%; aspect-ratio: 1 / 1; border-radius: 50%;">
-            </template>
-        </el-image>
-        <template v-if="isSelf" #content>
-            <el-card class="card-small text">
-                <div v-if="expTimeMs >= 200000">
-                    {{ t('local.tooltipExpTime') }}
-                </div>
-                <div v-else-if="avatarBudget > 0">
-                    {{ t('local.tooltipBase', [avatarBudget]) }}
-                </div>
-                <div v-else>
-                    {{ t('local.tooltipCooldown') }}{{ toISODateTimeString(user.nextAvatarAvailable) }}
-                </div>
-            </el-card>
+    <el-image
+        v-loading="updating"
+        :src="avatarSrc"
+        :disabled="disabled"
+        :title="avatarTitle"
+        style="max-height: 100%; max-width: 100%; aspect-ratio: 1 / 1; border-radius: 50%;"
+        @click="triggerFileDialog"
+    >
+        <template #error>
+            <img src="@/assets/person.png" style="max-height: 100%; max-width: 100%; aspect-ratio: 1 / 1; border-radius: 50%;">
         </template>
-    </tippy>
+    </el-image>
 </template>
 
 <script setup lang="ts">
-import '@/styles/cards.css';
-import '@/styles/text.css';
-
-import { ElCard, ElImage, vLoading } from 'element-plus';
+import { ElImage, vLoading } from 'element-plus';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Tippy } from 'vue-tippy';
 
 import { baseErrorNotification, httpErrorNotification } from '@/components/Notifications';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
@@ -73,6 +61,12 @@ async function handleFileChange(event: Event) {
 }
 
 const avatarBudget = computed(() => user.value.newAvatarBudget(globalNow.value));
+const avatarTitle = computed(() => {
+    if (!props.isSelf) return undefined;
+    if (props.expTimeMs >= 200000) return t('local.tooltipExpTime');
+    if (avatarBudget.value > 0) return t('local.tooltipBase', [avatarBudget.value]);
+    return `${t('local.tooltipCooldown')}${toISODateTimeString(user.value.nextAvatarAvailable)}`;
+});
 
 const updating = ref(false);
 const disabled = computed(() => !props.isSelf || props.expTimeMs >= 200000 || avatarBudget.value <= 0);

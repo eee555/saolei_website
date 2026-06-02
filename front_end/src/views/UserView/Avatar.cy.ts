@@ -46,8 +46,7 @@ describe('<Avatar />', () => {
             expTimeMs: 30000,
         }));
 
-        cy.get('img').realHover({ position: 'center' });
-        cy.get('[id^=tippy-]').should('not.exist');
+        cy.get('img').should('not.have.attr', 'title');
     });
 
     it('Tooltip - et sup 200', () => {
@@ -57,8 +56,7 @@ describe('<Avatar />', () => {
             expTimeMs: 999999,
         }));
 
-        cy.get('img').realHover({ position: 'center' });
-        cy.contains('Achieve expert sub200 to set avatar');
+        cy.get('img').should('have.attr', 'title', 'Achieve expert sub200 to set avatar');
     });
 
     it('Tooltip - no budget', () => {
@@ -68,8 +66,7 @@ describe('<Avatar />', () => {
             expTimeMs: 30000,
         }));
 
-        cy.get('img').realHover({ position: 'center' });
-        cy.contains('Avatar can be changed once every year. Next available time: 2026-01-01 08:00:00');
+        cy.get('img').should('have.attr', 'title', 'Avatar can be changed once every year. Next available time: 2026-01-01 08:00:00');
     });
 
     it('Tooltip - normal', () => {
@@ -79,8 +76,7 @@ describe('<Avatar />', () => {
             expTimeMs: 30000,
         }));
 
-        cy.get('img').realHover({ position: 'center' });
-        cy.contains('Click to change avatar (2 times left)');
+        cy.get('img').should('have.attr', 'title', 'Click to change avatar (2 times left)');
     });
 
     it('Upload - large file', () => {
