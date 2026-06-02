@@ -1,38 +1,29 @@
 import $axios from '@/http';
 import { localDatabase } from '@/services/localDatabase';
 import type { LocalUser } from '@/services/localDatabase';
+import { sleep } from '@/utils';
 import { GetUserInfoResponse } from '@/utils/common/structInterface';
 import { VideoAbstract, VideoAbstractInfo } from '@/utils/videoabstract';
 
 const userInfoPendingRequests = new Map<number, Promise<GetUserInfoResponse>>();
-const userInfoCacheTTL = 1000 as const; // 1 second
+const userInfoRequestInterval = 100 as const; // 10 requests per second
+const userInfoRateLimitPause = 60000 as const; // 1 minute
+const userInfoCacheTTL = 86400000 as const; // 1 day
 let lastUserInfoRequestTime = 0;
 let userInfoRequestQueue = Promise.resolve();
 
 async function getCachedUserInfo(userId: number, now: number) {
-    try {
-        const cached = await localDatabase.users.get(userId);
-        if (!cached) {
-            return null;
-        }
-
-        if (now - cached.updatedAt >= userInfoCacheTTL) {
-            await localDatabase.users.delete(userId);
-            return null;
-        }
-
-        return localUserToUserInfo(cached);
-    } catch {
+    const cached = await localDatabase.users.get(userId);
+    if (!cached) {
         return null;
     }
-}
 
-async function setCachedUserInfo(userId: number, data: GetUserInfoResponse) {
-    try {
-        await localDatabase.users.put(userInfoToLocalUser(userId, data));
-    } catch {
-        // Ignore storage errors such as quota limits or disabled storage.
+    if (now - cached.updatedAt >= userInfoCacheTTL) {
+        await localDatabase.users.delete(userId);
+        return null;
     }
+
+    return localUserToUserInfo(cached);
 }
 
 function userInfoToLocalUser(userId: number, data: GetUserInfoResponse): LocalUser {
@@ -72,18 +63,25 @@ function localUserToUserInfo(user: LocalUser): GetUserInfoResponse {
     };
 }
 
-function scheduleUserInfoRequest<T>(request: () => Promise<T>) {
+function scheduleUserInfoRequest(userId: number) {
     const runRequest = userInfoRequestQueue.then(async () => {
-        const delay = Math.max(0, lastUserInfoRequestTime + userInfoCacheTTL - Date.now());
+        while (true) {
+            const delay = Math.max(0, lastUserInfoRequestTime + userInfoRequestInterval - Date.now());
 
-        if (delay > 0) {
-            await new Promise((resolve) => {
-                window.setTimeout(resolve, delay);
-            });
+            if (delay > 0) {
+                await sleep(delay);
+            }
+
+            lastUserInfoRequestTime = Date.now();
+
+            try {
+                const response = await $axios.get(`/api/userprofile/info/${userId}`);
+                return response.data as GetUserInfoResponse;
+            } catch (error: any) {
+                if (error.response.status !== 429) throw error;
+                await sleep(userInfoRateLimitPause);
+            }
         }
-
-        lastUserInfoRequestTime = Date.now();
-        return request();
     });
 
     userInfoRequestQueue = runRequest.then(
@@ -98,18 +96,13 @@ export async function fetchUserInfo(userId: number) {
     const now = Date.now();
     const cached = await getCachedUserInfo(userId, now);
 
-    if (cached) {
-        return Promise.resolve(cached);
-    }
+    if (cached) return cached;
 
     const pendingRequest = userInfoPendingRequests.get(userId);
-    if (pendingRequest) {
-        return pendingRequest;
-    }
+    if (pendingRequest) return pendingRequest;
 
-    const promise = scheduleUserInfoRequest(() => $axios.get(`/api/userprofile/info/${userId}`)).then(async (response) => {
-        const data = response.data as GetUserInfoResponse;
-        await setCachedUserInfo(userId, data);
+    const promise = scheduleUserInfoRequest(userId).then(async (data) => {
+        await localDatabase.users.put(userInfoToLocalUser(userId, data));
         userInfoPendingRequests.delete(userId);
         return data;
     }).catch((error) => {

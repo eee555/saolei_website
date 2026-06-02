@@ -85,7 +85,7 @@ describe('userService local user database behavior', () => {
     it('deletes expired local user data before falling back to the mocked request path', async () => {
         const freshUser = createUserInfo(7);
         freshUser.username = 'fresh-user';
-        userGet.mockResolvedValue(createLocalUser(7, fixedNow.getTime() - 1000));
+        userGet.mockResolvedValue(createLocalUser(7, fixedNow.getTime() - 24 * 60 * 60 * 1000));
         axiosGet.mockResolvedValue({ data: freshUser });
 
         const fetchUserInfo = await importFetchUserInfo();
@@ -100,19 +100,96 @@ describe('userService local user database behavior', () => {
         });
     });
 
-    it('ignores local database read errors and continues through the mocked request path', async () => {
-        const freshUser = createUserInfo(12);
-        userGet.mockRejectedValue(new Error('database unavailable'));
-        axiosGet.mockResolvedValue({ data: freshUser });
+    it('throws local database read errors without requesting the network', async () => {
+        const databaseError = new Error('database unavailable');
+        userGet.mockRejectedValue(databaseError);
 
         const fetchUserInfo = await importFetchUserInfo();
-        const result = await fetchUserInfo(12);
 
-        expect(result).toEqual(freshUser);
+        await expect(fetchUserInfo(12)).rejects.toThrow(databaseError);
+        expect(axiosGet).not.toHaveBeenCalled();
+        expect(userPut).not.toHaveBeenCalled();
+    });
+
+    it('throws local database write errors after fetching user info', async () => {
+        const freshUser = createUserInfo(12);
+        const databaseError = new Error('database unavailable');
+        userGet.mockResolvedValue(null);
+        axiosGet.mockResolvedValue({ data: freshUser });
+        userPut.mockRejectedValue(databaseError);
+
+        const fetchUserInfo = await importFetchUserInfo();
+
+        await expect(fetchUserInfo(12)).rejects.toThrow(databaseError);
         expect(axiosGet).toHaveBeenCalledWith('/api/userprofile/info/12');
         expect(userPut).toHaveBeenCalledWith({
             ...freshUser,
             updatedAt: fixedNow.getTime(),
         });
+    });
+
+    it('limits user info requests to 10 per second', async () => {
+        userGet.mockResolvedValue(null);
+        axiosGet.mockImplementation((url: string) => {
+            const userId = Number(url.split('/').at(-1));
+            return Promise.resolve({ data: createUserInfo(userId) });
+        });
+
+        const fetchUserInfo = await importFetchUserInfo();
+        const firstRequest = fetchUserInfo(1);
+        const secondRequest = fetchUserInfo(2);
+
+        await vi.advanceTimersByTimeAsync(0);
+        expect(axiosGet).toHaveBeenCalledTimes(1);
+
+        await vi.advanceTimersByTimeAsync(99);
+        expect(axiosGet).toHaveBeenCalledTimes(1);
+
+        await vi.advanceTimersByTimeAsync(1);
+        expect(axiosGet).toHaveBeenCalledTimes(2);
+
+        await expect(Promise.all([firstRequest, secondRequest])).resolves.toEqual([
+            createUserInfo(1),
+            createUserInfo(2),
+        ]);
+    });
+
+    it('pauses the whole queue for one minute and retries when the backend returns 429', async () => {
+        userGet.mockResolvedValue(null);
+        const firstUser = createUserInfo(1);
+        const secondUser = createUserInfo(2);
+
+        axiosGet.mockImplementation((url: string) => {
+            if (url.endsWith('/1') && axiosGet.mock.calls.filter(([calledUrl]) => calledUrl === url).length === 1) {
+                return Promise.reject({ response: { status: 429 } });
+            }
+
+            return Promise.resolve({
+                data: url.endsWith('/1') ? firstUser : secondUser,
+            });
+        });
+
+        const fetchUserInfo = await importFetchUserInfo();
+        const firstRequest = fetchUserInfo(1);
+        const secondRequest = fetchUserInfo(2);
+
+        await vi.advanceTimersByTimeAsync(0);
+        expect(axiosGet).toHaveBeenCalledTimes(1);
+
+        await vi.advanceTimersByTimeAsync(59_999);
+        expect(axiosGet).toHaveBeenCalledTimes(1);
+
+        await vi.advanceTimersByTimeAsync(1);
+        expect(axiosGet).toHaveBeenCalledTimes(2);
+        expect(axiosGet).toHaveBeenNthCalledWith(2, '/api/userprofile/info/1');
+
+        await vi.advanceTimersByTimeAsync(99);
+        expect(axiosGet).toHaveBeenCalledTimes(2);
+
+        await vi.advanceTimersByTimeAsync(1);
+        expect(axiosGet).toHaveBeenCalledTimes(3);
+        expect(axiosGet).toHaveBeenNthCalledWith(3, '/api/userprofile/info/2');
+
+        await expect(Promise.all([firstRequest, secondRequest])).resolves.toEqual([firstUser, secondUser]);
     });
 });
