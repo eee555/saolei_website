@@ -7,7 +7,7 @@ const HOST = {
     username: 'gscHost',
     email: 'gscHost@email.com',
     password: 'gscHostPassword',
-    realname: '匿名',
+    realname: 'hostName',
 } as const;
 const STAFF = {
     id: 1,

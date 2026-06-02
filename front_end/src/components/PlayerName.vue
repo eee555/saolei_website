@@ -5,7 +5,7 @@
             interactive
             :duration="0"
             :max-width="298"
-            :append-to="'parent'"
+            :append-to="getAppendTarget"
             placement="bottom"
             :on-show="pop_show"
             :on-hide="pop_hide"
@@ -119,6 +119,7 @@ const nameShown = computed(() => {
     }
 });
 const playerProfileHref = computed(() => `#/player/${data.userId}`);
+const getAppendTarget = () => document.body;
 
 watch(() => data.userId, async (newVal) => {
     user.value = new UserProfile();
