@@ -1,24 +1,22 @@
 <template>
     <input ref="fileInputRef" type="file" accept="image/jpeg,image/png,image/gif,image/webp" style="display: none" @change="handleFileChange">
-    <el-image
+    <img
         v-loading="updating"
         :src="avatarSrc"
         :disabled="disabled"
         :title="avatarTitle"
         style="max-height: 100%; max-width: 100%; aspect-ratio: 1 / 1; border-radius: 50%;"
         @click="triggerFileDialog"
+        @error="handleAvatarError"
     >
-        <template #error>
-            <img src="@/assets/person.png" style="max-height: 100%; max-width: 100%; aspect-ratio: 1 / 1; border-radius: 50%;">
-        </template>
-    </el-image>
 </template>
 
 <script setup lang="ts">
-import { ElImage, vLoading } from 'element-plus';
-import { computed, ref } from 'vue';
+import { vLoading } from 'element-plus';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import defaultAvatarSrc from '@/assets/person.png';
 import { baseErrorNotification, httpErrorNotification } from '@/components/Notifications';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { globalNow, toISODateTimeString } from '@/utils/datetime';
@@ -34,7 +32,20 @@ const props = defineProps({
 });
 
 const avatarVersion = ref(0);
-const avatarSrc = computed(() => `${proxy.$axios.defaults.baseURL}/api/userprofile/avatar/${user.value.id}?v=${avatarVersion.value}`);
+const avatarSrc = ref(defaultAvatarSrc);
+
+watch(() => user.value.id, (newId) => {
+    if (newId) {
+        avatarVersion.value = 0;
+        avatarSrc.value = `${proxy.$axios.defaults.baseURL}/api/userprofile/avatar/${newId}?v=${avatarVersion.value}`;
+    } else {
+        avatarSrc.value = defaultAvatarSrc;
+    }
+});
+
+function handleAvatarError() {
+    avatarSrc.value = defaultAvatarSrc;
+}
 
 const fileInputRef = ref<HTMLInputElement>();
 function triggerFileDialog() {
