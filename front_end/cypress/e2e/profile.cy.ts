@@ -202,7 +202,7 @@ describe('Personal Profile', () => {
 
         cy.get('.el-tabs').eq(1).contains(REALNAME).click();
 
-        cy.get('button').contains('我的空间').click();
+        cy.contains('我的空间').click();
 
         cy.url().should('eq', `http://localhost:8080/#/player/${USER_ID}/summary`);
 

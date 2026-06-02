@@ -20,7 +20,7 @@ describe('UserProfile', () => {
 
             expect(profile.id).toBe(0);
             expect(profile.username).toBe('');
-            expect(profile.realname).toBe('匿名');
+            expect(profile.realname).toBe('');
             expect(profile.firstname).toBe('');
             expect(profile.lastname).toBe('');
             expect(profile.is_banned).toBe(false);
