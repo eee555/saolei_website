@@ -1,20 +1,31 @@
 <template>
-    <el-image :src="`${proxy.$axios.defaults.baseURL}/api/userprofile/avatar/${userId}`" loading="lazy" style="max-height: 100%; max-width: 100%; aspect-ratio: 1 / 1;">
-        <template #error>
-            <img src="@/assets/person.png" style="max-height: 100%; max-width: 100%; aspect-ratio: 1 / 1;">
-        </template>
-    </el-image>
+    <img
+        :src="avatarSrc" loading="lazy"
+        style="max-height: 100%; max-width: 100%; aspect-ratio: 1 / 1;"
+        @error="avatarSrc = DefaultAvatar"
+    >
 </template>
 
 <script setup lang="ts">
-import { ElImage } from 'element-plus';
+import { ref, watch } from 'vue';
 
+import { DefaultAvatar } from '@/utils/assets';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
-defineProps({
+const props = defineProps({
     userId: { type: Number, required: true },
 });
 
 const { proxy } = useCurrentInstance();
+
+const avatarSrc = ref(DefaultAvatar);
+
+watch(() => props.userId, (newId) => {
+    if (newId) {
+        avatarSrc.value = `${proxy.$axios.defaults.baseURL}/api/userprofile/avatar/${newId}`;
+    } else {
+        avatarSrc.value = DefaultAvatar;
+    }
+}, { immediate: true });
 
 </script>

@@ -6,8 +6,9 @@
         :disabled="disabled"
         :title="avatarTitle"
         style="max-height: 100%; max-width: 100%; aspect-ratio: 1 / 1; border-radius: 50%;"
+        sizes="auto"
         @click="triggerFileDialog"
-        @error="handleAvatarError"
+        @error="avatarSrc = DefaultAvatar"
     >
 </template>
 
@@ -16,8 +17,8 @@ import { vLoading } from 'element-plus';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import defaultAvatarSrc from '@/assets/person.png';
 import { baseErrorNotification, httpErrorNotification } from '@/components/Notifications';
+import { DefaultAvatar } from '@/utils/assets';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { globalNow, toISODateTimeString } from '@/utils/datetime';
 import { UserProfile } from '@/utils/userprofile';
@@ -32,20 +33,17 @@ const props = defineProps({
 });
 
 const avatarVersion = ref(0);
-const avatarSrc = ref(defaultAvatarSrc);
+const avatarSrc = ref(DefaultAvatar);
 
-watch(() => user.value.id, (newId) => {
+function refresh(newId: number) {
     if (newId) {
-        avatarVersion.value = 0;
         avatarSrc.value = `${proxy.$axios.defaults.baseURL}/api/userprofile/avatar/${newId}?v=${avatarVersion.value}`;
     } else {
-        avatarSrc.value = defaultAvatarSrc;
+        avatarSrc.value = DefaultAvatar;
     }
-});
-
-function handleAvatarError() {
-    avatarSrc.value = defaultAvatarSrc;
 }
+
+watch(() => user.value.id, refresh, { immediate: true });
 
 const fileInputRef = ref<HTMLInputElement>();
 function triggerFileDialog() {
@@ -92,6 +90,7 @@ async function updateAvatar(a: File) {
         if (data.type === 'success') {
             avatarVersion.value += 1;
             user.value.left_avatar_n -= 1;
+            refresh(user.value.id);
         } else if (data.type === 'error') {
             baseErrorNotification(t('local.errorTitle'), t(`local.errorMsg.${data.object}.${data.category}`));
         }
