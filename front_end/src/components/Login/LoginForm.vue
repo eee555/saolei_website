@@ -19,14 +19,9 @@
         <!-- 记住我 -->
         <el-form-item>
             <el-checkbox v-model="remember_me" :label="t('local.keepMeLoggedIn')" class="rememberMe" />
-            <tippy>
+            <span :title="t('local.keepMeLoggedInTooltip')">
                 <BaseIconInfo class="text" style="margin-left: 0.2rem" />
-                <template #content>
-                    <el-card class="card-small text text-small">
-                        {{ t('local.keepMeLoggedInTooltip') }}
-                    </el-card>
-                </template>
-            </tippy>
+            </span>
             <div v-if="remember_me" style="margin-left: 0.5rem;">
                 <span class="text">
                     {{ t('local.forDays1') }}
@@ -62,10 +57,9 @@
 import '@/styles/text.css';
 import '@/styles/cards.css';
 
-import { ElButton, ElCard, ElCheckbox, ElForm, ElFormItem, ElInput, ElLink, ElRadioButton, ElRadioGroup, FormInstance, FormRules } from 'element-plus';
+import { ElButton, ElCheckbox, ElForm, ElFormItem, ElInput, ElLink, ElRadioButton, ElRadioGroup, FormInstance, FormRules } from 'element-plus';
 import { onUnmounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Tippy } from 'vue-tippy';
 
 import BaseIconInfo from '../common/icons/BaseIconInfo.vue';
 

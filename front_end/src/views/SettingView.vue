@@ -12,20 +12,10 @@
         <el-descriptions-item :label="t('local.viennaLogo')">
             <el-switch v-model="local.vienna_logo_legacy">
                 <template #active>
-                    <Tippy :duration="0">
-                        <img style="width: 16px; height: 16px" :src="ViennaIconLegacy">
-                        <template #content>
-                            {{ t('common.old') }}
-                        </template>
-                    </Tippy>
+                    <img style="width: 16px; height: 16px" :src="ViennaIconLegacy" :title="t('common.old')">
                 </template>
                 <template #inactive>
-                    <Tippy :duration="0">
-                        <img style="width: 16px; height: 16px" :src="ViennaIconNew">
-                        <template #content>
-                            {{ t('common.new') }}
-                        </template>
-                    </Tippy>
+                    <img style="width: 16px; height: 16px" :src="ViennaIconNew" :title="t('common.new')">
                 </template>
             </el-switch>
         </el-descriptions-item>
@@ -61,27 +51,17 @@
             </base-tooltip>
         </el-descriptions-item>
         <el-descriptions-item :label="t('local.nameFormat')">
-            <base-tooltip>
+            <span :title="t('local.nameFormatTooltip')">
                 <el-radio-group v-model="local.nameFormat" size="small" style="vertical-align: middle;">
                     <el-radio-button :label="t('local.nameFormatFirstLast')" value="first-last" />
                     <el-radio-button :label="t('local.nameFormatLastFirst')" value="last-first" />
                 </el-radio-group>
-                <template #content>
-                    <span class="text">
-                        {{ t('local.nameFormatTooltip') }}
-                    </span>
-                </template>
-            </base-tooltip>
+            </span>
         </el-descriptions-item>
         <el-descriptions-item :label="t('local.newUserGuide')">
-            <base-tooltip>
+            <span :title="t('local.newUserGuideTooltip')">
                 <el-switch v-model="local.tooltip_show" />
-                <template #content>
-                    <span class="text">
-                        {{ t('local.newUserGuideTooltip') }}
-                    </span>
-                </template>
-            </base-tooltip>
+            </span>
         </el-descriptions-item>
         <el-descriptions-item :label="t('local.experimentalFeature')">
             <el-switch v-model="local.experimental" />
@@ -125,7 +105,6 @@
 import { ElCheckbox, ElDescriptions, ElDescriptionsItem, ElInputNumber, ElOption, ElRadioButton, ElRadioGroup, ElSelect, ElSlider, ElSwitch } from 'element-plus';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Tippy } from 'vue-tippy';
 
 import '@/styles/text.css';
 import BaseTooltip from '@/components/common/BaseTooltip.vue';
