@@ -1,41 +1,19 @@
-import BaseIconAdd from './icons/BaseIconAdd.vue';
-import BaseIconClose from './icons/BaseIconClose.vue';
-import BaseIconCopy from './icons/BaseIconCopy.vue';
-import BaseIconDelete from './icons/BaseIconDelete.vue';
-import BaseIconExternal from './icons/BaseIconExternal.vue';
-import BaseIconFrozen from './icons/BaseIconFrozen.vue';
-import BaseIconInfo from './icons/BaseIconInfo.vue';
-import BaseIconNext from './icons/BaseIconNext.vue';
-import BaseIconPending from './icons/BaseIconPending.vue';
-import BaseIconPrev from './icons/BaseIconPrev.vue';
-import BaseIconQuestion from './icons/BaseIconQuestion.vue';
-import BaseIconRefresh from './icons/BaseIconRefresh.vue';
-import BaseIconSetting from './icons/BaseIconSetting.vue';
-import BaseIconSync from './icons/BaseIconSync.vue';
-import BaseIconTick from './icons/BaseIconTick.vue';
-import BaseIconTool from './icons/BaseIconTool.vue';
-import BaseIconUpload from './icons/BaseIconUpload.vue';
-import BaseIconZoomIn from './icons/BaseIconZoomIn.vue';
-import BaseIconZoomOut from './icons/BaseIconZoomOut.vue';
-
-export {
-    BaseIconAdd,
-    BaseIconClose,
-    BaseIconCopy,
-    BaseIconDelete,
-    BaseIconExternal,
-    BaseIconFrozen,
-    BaseIconInfo,
-    BaseIconNext,
-    BaseIconPending,
-    BaseIconPrev,
-    BaseIconQuestion,
-    BaseIconRefresh,
-    BaseIconSetting,
-    BaseIconSync,
-    BaseIconTick,
-    BaseIconTool,
-    BaseIconUpload,
-    BaseIconZoomIn,
-    BaseIconZoomOut,
-};
+export { default as BaseIconAdd } from './icons/BaseIconAdd.vue';
+export { default as BaseIconClose } from './icons/BaseIconClose.vue';
+export { default as BaseIconCopy } from './icons/BaseIconCopy.vue';
+export { default as BaseIconDelete } from './icons/BaseIconDelete.vue';
+export { default as BaseIconExternal } from './icons/BaseIconExternal.vue';
+export { default as BaseIconFrozen } from './icons/BaseIconFrozen.vue';
+export { default as BaseIconInfo } from './icons/BaseIconInfo.vue';
+export { default as BaseIconNext } from './icons/BaseIconNext.vue';
+export { default as BaseIconPending } from './icons/BaseIconPending.vue';
+export { default as BaseIconPrev } from './icons/BaseIconPrev.vue';
+export { default as BaseIconQuestion } from './icons/BaseIconQuestion.vue';
+export { default as BaseIconRefresh } from './icons/BaseIconRefresh.vue';
+export { default as BaseIconSetting } from './icons/BaseIconSetting.vue';
+export { default as BaseIconSync } from './icons/BaseIconSync.vue';
+export { default as BaseIconTick } from './icons/BaseIconTick.vue';
+export { default as BaseIconTool } from './icons/BaseIconTool.vue';
+export { default as BaseIconUpload } from './icons/BaseIconUpload.vue';
+export { default as BaseIconZoomIn } from './icons/BaseIconZoomIn.vue';
+export { default as BaseIconZoomOut } from './icons/BaseIconZoomOut.vue';

@@ -1,7 +1,5 @@
-import BaseFlagCN from './flags/BaseFlagCN.vue';
-import BaseFlagDE from './flags/BaseFlagDE.vue';
-import BaseFlagJP from './flags/BaseFlagJP.vue';
-import BaseFlagPL from './flags/BaseFlagPL.vue';
-import BaseFlagUK from './flags/BaseFlagUK.vue';
-
-export { BaseFlagCN, BaseFlagDE, BaseFlagJP, BaseFlagPL, BaseFlagUK };
+export { default as BaseFlagCN } from './flags/BaseFlagCN.vue';
+export { default as BaseFlagDE } from './flags/BaseFlagDE.vue';
+export { default as BaseFlagJP } from './flags/BaseFlagJP.vue';
+export { default as BaseFlagPL } from './flags/BaseFlagPL.vue';
+export { default as BaseFlagUK } from './flags/BaseFlagUK.vue';

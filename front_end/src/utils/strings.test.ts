@@ -1,0 +1,103 @@
+import { describe, expect, it } from 'vitest';
+
+import {
+    countRows,
+    formatBytes,
+    formatName,
+    formatNumberSmart,
+    getFileExtension,
+    getSoftwareExtension,
+    stringifyWithLineWrap,
+} from './strings';
+
+describe('strings', () => {
+    describe('stringifyWithLineWrap', () => {
+        it('Keeps short arrays on one line', () => {
+            expect(stringifyWithLineWrap({ values: [1, 2, 3] }, 80, 2)).toBe(`{
+  "values": [1, 2, 3]
+}`);
+        });
+
+        it('Wraps arrays that exceed max line length', () => {
+            expect(stringifyWithLineWrap({ values: ['alpha', 'beta', 'gamma'] }, 16, 2)).toBe(`{
+  "values": ["alpha", "beta",
+    "gamma"]
+}`);
+        });
+    });
+
+    describe('countRows', () => {
+        it('Single line', () => {
+            expect(countRows('abc')).toBe(1);
+        });
+
+        it('Multiple lines', () => {
+            expect(countRows('a\nb\n')).toBe(3);
+        });
+    });
+
+    describe('formatBytes', () => {
+        it('Zero bytes', () => {
+            expect(formatBytes(0)).toBe('0 B');
+        });
+
+        it('Formats with default decimals', () => {
+            expect(formatBytes(1536)).toBe('1.5 KB');
+        });
+
+        it('Negative decimals are treated as zero', () => {
+            expect(formatBytes(1536, -1)).toBe('2 KB');
+        });
+    });
+
+    describe('formatNumberSmart', () => {
+        it('Truncates integer part when it fills total length', () => {
+            expect(formatNumberSmart(12345.67, 4)).toBe('1234');
+        });
+
+        it('Rounds decimal part within total length', () => {
+            expect(formatNumberSmart(12.3456, 5)).toBe('12.35');
+        });
+
+        it('Honors max decimal places', () => {
+            expect(formatNumberSmart(12.3456, 8, 1)).toBe('12.3');
+        });
+    });
+
+    describe('formatName', () => {
+        it('First last', () => {
+            expect(formatName('Ada', 'Lovelace', 'first-last')).toBe('Ada Lovelace');
+        });
+
+        it('Last first', () => {
+            expect(formatName('Ada', 'Lovelace', 'last-first')).toBe('Lovelace, Ada');
+        });
+    });
+
+    describe('getFileExtension', () => {
+        it('Lowercases extension', () => {
+            expect(getFileExtension('Replay.AVF')).toBe('avf');
+        });
+
+        it('Uses final extension segment', () => {
+            expect(getFileExtension('archive.tar.gz')).toBe('gz');
+        });
+
+        it('Hidden file without another dot has no extension', () => {
+            expect(getFileExtension('.env')).toBe('');
+        });
+
+        it('Filename without dot has no extension', () => {
+            expect(getFileExtension('README')).toBe('');
+        });
+    });
+
+    describe('getSoftwareExtension', () => {
+        it('Maps supported software codes', () => {
+            expect(getSoftwareExtension('a')).toBe('.avf');
+            expect(getSoftwareExtension('e')).toBe('.evf');
+            expect(getSoftwareExtension('r')).toBe('.rmv');
+            expect(getSoftwareExtension('m')).toBe('.mvf');
+        });
+    });
+});
