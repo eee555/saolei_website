@@ -1,10 +1,5 @@
 <template>
-    <tippy v-if="local.tooltip_show" :delay="[500, 0]">
-        <img style="width: 16px; height: 16px" :src="iconSrc">
-        <template #content>
-            <span class="text">{{ t(`common.software.${software}`) }}</span>
-        </template>
-    </tippy>
+    <img v-if="local.tooltip_show" style="width: 16px; height: 16px" :src="iconSrc" :title="t(`common.software.${software}`)">
     <img v-else style="width: 16px; height: 16px" :src="iconSrc">
 </template>
 
@@ -13,7 +8,6 @@ import '@/styles/text.css';
 
 import { computed, PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Tippy } from 'vue-tippy';
 
 import { local } from '@/store';
 import { ArbiterIcon, Clone07Icon, MetasweeperIcon, ViennaIconLegacy, ViennaIconNew } from '@/utils/assets';

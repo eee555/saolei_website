@@ -1,22 +1,5 @@
 <template>
-    <base-tooltip v-if="level == 'b'" :show-delay="500">
-        <span class="text">{{ t('common.level.b') }}</span>
-        <template #content>
-            <span class="text text-small">8x8/10</span>
-        </template>
-    </base-tooltip>
-    <base-tooltip v-else-if="level == 'i'" :show-delay="500">
-        <span class="text">{{ t('common.level.i') }}</span>
-        <template #content>
-            <span class="text text-small">16x16/40</span>
-        </template>
-    </base-tooltip>
-    <base-tooltip v-else-if="level == 'e'" :show-delay="500">
-        <span class="text">{{ t('common.level.e') }}</span>
-        <template #content>
-            <span class="text text-small">30x16/99</span>
-        </template>
-    </base-tooltip>
+    <span class="text" :title="titles[level]">{{ t(`common.level.${level}`) }}</span>
 </template>
 
 <script setup lang="ts">
@@ -25,8 +8,13 @@ import '@/styles/text.css';
 import { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import BaseTooltip from '@/components/common/BaseTooltip.vue';
 import { MS_Level } from '@/utils/ms_const';
+
+const titles = {
+    b: '8x8/10',
+    i: '16x16/40',
+    e: '30x16/99',
+};
 
 const { t } = useI18n();
 
