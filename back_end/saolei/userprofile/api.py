@@ -38,13 +38,10 @@ UserInfoOut = create_schema(
 
 
 @router.get('/info/{user_id}', response=UserInfoOut)
-@decorate_view(
-    ratelimit(key='ip', rate='60/m'),
-    cache_control(max_age=5),
-)
+@decorate_view(cache_control(max_age=5))
 def get_user_info(request, user_id: int):
     """
-    - ratelimit(key='ip', rate='60/m')
+    - Rate limited by nginx
     - cache_control(max_age=5)
     """
     if user_id == 0:
@@ -65,13 +62,10 @@ def get_user_identifier(request, user_id: int):
 
 
 @router.get('/avatar/{user_id}')
-@decorate_view(
-    ratelimit(key='ip', rate='60/m'),
-    cache_control(max_age=5),
-)
+@decorate_view(cache_control(max_age=5))
 def get_user_avatar(request, user_id: int):
     """
-    - ratelimit(key='ip', rate='60/m')
+    - Rate limited by nginx
     - cache_control(max_age=5)
     """
     user = get_object_or_404(UserProfile, id=user_id)
