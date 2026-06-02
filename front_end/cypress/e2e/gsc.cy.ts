@@ -177,8 +177,6 @@ describe('GSC', () => {
         cy.contains('第2届金羊杯');
 
         cy.wait('@fetchUser');
-        cy.wait('@fetchUser');
-        cy.wait('@fetchUser');
 
         assertTableData([
             { 状态: '审核中', 比赛: '第2届金羊杯', 主办方: HOST.realname, 开始时间: '2099-12-31 00:00:00', 结束时间: '2100-01-03 00:00:00' },
@@ -223,8 +221,6 @@ describe('GSC', () => {
         cy.visit('/#/tournament/');
         cy.contains('第2届金羊杯');
 
-        cy.wait('@fetchUser');
-        cy.wait('@fetchUser');
         cy.wait('@fetchUser');
 
         assertTableData([
