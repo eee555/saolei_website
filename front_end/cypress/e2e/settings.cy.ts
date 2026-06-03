@@ -27,7 +27,7 @@ describe('language setting', () => {
         cy.visit('/#/settings');
         cy.get('[data-cy=languagePicker]').realClick();
         cy.contains('dev').filter(':visible').click();
-        cy.contains('menu.guide');
+        cy.contains('local.guide');
         cy.get('[data-cy=languagePicker]').realClick();
         cy.contains('简体中文').filter(':visible').click();
         cy.contains('教程');

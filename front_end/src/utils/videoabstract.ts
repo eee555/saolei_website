@@ -92,7 +92,7 @@ export class VideoAbstract {
         this.cl = info.cl;
         this.ce = info.ce;
         this.path = info.path;
-        this.player_id = info.player_id;
+        this.player_id = info.player_id ?? info.player;
 
         this.file_size = info.file_size ?? 0;
 

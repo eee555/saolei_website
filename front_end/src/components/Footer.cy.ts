@@ -81,6 +81,7 @@ describe('<Footer />', () => {
     });
 
     it('opens and closes team dialog', () => {
+        cy.intercept('GET', '/api/userprofile/info/**', { statusCode: 404 }).as('fetchUser');
         cy.viewport(500, 1000);
         cy.mount(Footer, mountOptions);
 

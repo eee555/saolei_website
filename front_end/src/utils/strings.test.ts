@@ -41,12 +41,20 @@ describe('strings', () => {
             expect(formatBytes(0)).toBe('0 B');
         });
 
-        it('Formats with default decimals', () => {
-            expect(formatBytes(1536)).toBe('1.5 KB');
+        it('Formats with default three significant digits', () => {
+            expect(formatBytes(1536)).toBe('1.50 KB');
+            expect(formatBytes(126484480)).toBe('121 MB');
         });
 
-        it('Negative decimals are treated as zero', () => {
-            expect(formatBytes(1536, -1)).toBe('2 KB');
+        it('Keeps trailing zeros for significant digits', () => {
+            expect(formatBytes(1024)).toBe('1.00 KB');
+            expect(formatBytes(10240)).toBe('10.0 KB');
+        });
+
+        it('Formats with custom significant digits', () => {
+            expect(formatBytes(1536, 2)).toBe('1.5 KB');
+            expect(formatBytes(1536, 4)).toBe('1.500 KB');
+            expect(formatBytes(126484480, 2)).toBe('121 MB');
         });
     });
 
