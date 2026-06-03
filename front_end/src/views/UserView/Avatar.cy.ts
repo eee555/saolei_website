@@ -27,16 +27,25 @@ describe('<Avatar />', () => {
     beforeEach(() => {
         cy.clock(new Date('2025-01-01T00:00:01Z'));
 
-        cy.intercept('GET', '/api/userprofile/avatar/0?*', { fixture: 'test.png' });
+        cy.intercept('GET', '/api/userprofile/avatar/*', { fixture: 'test.png' });
     });
 
     it('Rendering', () => {
         cy.mount(Avatar, mountOptions({
-            user: new UserProfile(),
+            user: new UserProfile({ id: 1 }),
             isSelf: true,
         }));
 
         cy.get('img').should('have.attr', 'src').and('include', '?v=0');
+    });
+
+    it('Id = 0', () => {
+        cy.mount(Avatar, mountOptions({
+            user: new UserProfile({ id: 0 }),
+            isSelf: true,
+        }));
+
+        cy.get('img').should('have.attr', 'src').and('include', 'person.png');
     });
 
     it('Guest view', () => {
@@ -46,8 +55,7 @@ describe('<Avatar />', () => {
             expTimeMs: 30000,
         }));
 
-        cy.get('img').realHover({ position: 'center' });
-        cy.get('[id^=tippy-]').should('not.exist');
+        cy.get('img').should('not.have.attr', 'title');
     });
 
     it('Tooltip - et sup 200', () => {
@@ -57,8 +65,7 @@ describe('<Avatar />', () => {
             expTimeMs: 999999,
         }));
 
-        cy.get('img').realHover({ position: 'center' });
-        cy.contains('Achieve expert sub200 to set avatar');
+        cy.get('img').should('have.attr', 'title', 'Achieve expert sub200 to set avatar');
     });
 
     it('Tooltip - no budget', () => {
@@ -68,8 +75,7 @@ describe('<Avatar />', () => {
             expTimeMs: 30000,
         }));
 
-        cy.get('img').realHover({ position: 'center' });
-        cy.contains('Avatar can be changed once every year. Next available time: 2026-01-01 08:00:00');
+        cy.get('img').should('have.attr', 'title', 'Avatar can be changed once every year. Next available time: 2026-01-01 08:00:00');
     });
 
     it('Tooltip - normal', () => {
@@ -79,8 +85,7 @@ describe('<Avatar />', () => {
             expTimeMs: 30000,
         }));
 
-        cy.get('img').realHover({ position: 'center' });
-        cy.contains('Click to change avatar (2 times left)');
+        cy.get('img').should('have.attr', 'title', 'Click to change avatar (2 times left)');
     });
 
     it('Upload - large file', () => {
@@ -156,7 +161,7 @@ describe('<Avatar />', () => {
     });
 
     it('Upload - success', () => {
-        const user = new UserProfile({ left_avatar_n: 1 });
+        const user = new UserProfile({ id: 1, left_avatar_n: 1 });
 
         cy.intercept('POST', '/api/userprofile/update_avatar', {
             body: {
