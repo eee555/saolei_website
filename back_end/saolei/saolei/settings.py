@@ -15,11 +15,13 @@ import json
 import os
 from pathlib import Path
 
-# https://docs.djangoproject.com/en/5.0/ref/settings/#std-setting-DEBUG
-DEBUG = True
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# https://docs.djangoproject.com/en/5.0/ref/settings/#std-setting-DEBUG
+# 在 git 仓库的上一层放 .production 文件则自动设为生产环境
+PRODUCTION_MARK = BASE_DIR.parent.parent.parent / '.production'
+DEBUG = not PRODUCTION_MARK.exists()
 
 
 # Quick-start development settings - unsuitable for production
