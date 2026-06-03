@@ -8,18 +8,18 @@
             <el-image v-if="!local.menu_icon" class="logo2" :src="logo_2" :fit="'cover'" />
         </el-menu-item>
         <el-menu-item v-for="item in menu_items" :key="item.index" :index="`/${ item.index}`">
-            <IconMenuItem :text="t(item.content)" :icon="item.icon" />
+            <IconMenuItem :text="t(`local.${item.index}`)" :icon="item.icon" />
         </el-menu-item>
         <div style="flex-grow: 1" />
         <el-menu-item v-if="store.user.id != 0" :index="player_url">
             <IconMenuItem :text="store.user.username" icon="User" />
         </el-menu-item>
         <el-menu-item v-if="store.user.is_staff" key="staff" index="/staff">
-            <IconMenuItem :text="t('menu.staff')" icon="Key" />
+            <IconMenuItem :text="t('local.staff')" icon="Key" />
         </el-menu-item>
         <el-menu-item index="/settings" style="padding-left: 8px; padding-right: 5px">
             <el-badge is-dot :hidden="true" :offset="[0,15]">
-                <IconMenuItem :text="t('menu.setting')" icon="Setting" />
+                <IconMenuItem :text="t('local.setting')" icon="Setting" />
             </el-badge>
         </el-menu-item>
         <LanguagePicker v-show="local.language_show" style="padding-left: 8px; padding-right: 8px;" />
@@ -44,13 +44,13 @@ const menu_index = ref();
 const router = useRouter();
 
 const menu_items = [
-    { index: 'ranking', icon: 'Trophy', content: 'menu.ranking' },
-    { index: 'video', icon: 'VideoCameraFilled', content: 'menu.video' },
-    // { index: "world", icon: "Odometer", content: "menu.world" },
-    { index: 'guide', icon: 'Document', content: 'menu.guide' },
-    // { index: "score", icon: "Histogram", content: "menu.score" },
-    { index: 'tournament', icon: 'Medal', content: 'menu.tournament' },
-    { index: 'server', icon: 'Cpu', content: 'menu.server' },
+    { index: 'ranking', icon: 'Trophy' },
+    { index: 'video', icon: 'VideoCameraFilled' },
+    // { index: "world", icon: "Odometer" },
+    { index: 'guide', icon: 'Document' },
+    // { index: "score", icon: "Histogram" },
+    { index: 'tournament', icon: 'Medal' },
+    { index: 'server', icon: 'Cpu' },
 ] as const;
 
 const player_url = computed(() => `/player/${store.user.id}`);
@@ -61,7 +61,50 @@ onMounted(() => {
     });
 });
 
-const { t } = useI18n();
+const i18nMessages = {
+    'zh-cn': { local: {
+        ranking: '排行榜',
+        video: '录像',
+        world: '统计',
+        guide: '教程',
+        score: '积分',
+        staff: '管理',
+        profile: '我的地盘',
+        server: '服务器',
+        setting: '设置',
+        tournament: '比赛',
+    } },
+    'en': { local: {
+        ranking: 'Ranking',
+        video: 'Videos',
+        world: 'Statistics',
+        guide: 'Guides',
+        score: 'Scores',
+        profile: 'Profile',
+        server: 'Server',
+        setting: 'Settings',
+        staff: 'Moderate',
+        tournament: 'Tournament',
+    } },
+    'de': { local: {
+        ranking: 'Ranking',
+        video: 'Video',
+        world: 'Welt',
+        guide: 'Hilfe',
+        score: 'Ergebnisse',
+        profile: 'Profil',
+    } },
+    'pl': { local: {
+        ranking: 'ranking',
+        video: 'filmy',
+        world: 'statystyki',
+        guide: 'poradniki',
+        score: 'wyniki',
+        profile: 'profil',
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
 
 </script>
 
