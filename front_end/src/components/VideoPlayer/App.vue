@@ -42,9 +42,9 @@ const { proxy } = useCurrentInstance();
 const software = ref<MS_Software>('a');
 const url = ref('');
 
-watch(videoplayerstore, () => {
+watch(videoplayerstore, async () => {
     if (videoplayerstore.visible) {
-        fetchSoftware(videoplayerstore.id);
+        await fetchSoftware(videoplayerstore.id);
         generateURL();
     }
 });

@@ -1,12 +1,9 @@
 <template>
-    <base-tooltip v-if="state == MS_State.Identifier" :show-delay="500">
+    <span v-if="state == MS_State.Identifier" :title="t('common.state.d')">
         <el-icon>
             <base-icon-identifier style="color: var(--el-color-warning)" />
         </el-icon>
-        <template #content>
-            <span class="text">{{ t('common.state.d') }}</span>
-        </template>
-    </base-tooltip>
+    </span>
     <span v-else-if="state == MS_State.Official" class="text text-success">
         <el-icon>
             <base-icon-verified />
@@ -32,7 +29,6 @@ import { useI18n } from 'vue-i18n';
 
 import BaseIconIdentifier from '@/components/common/BaseIconIdentifier.vue';
 import BaseIconVerified from '@/components/common/BaseIconVerified.vue';
-import BaseTooltip from '@/components/common/BaseTooltip.vue';
 import { BaseIconFrozen, BaseIconPending } from '@/components/common/icon';
 import { MS_State } from '@/utils/ms_const';
 

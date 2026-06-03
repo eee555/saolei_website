@@ -3,12 +3,9 @@
     <el-switch v-model="activityCalendarConfig.showDate" size="small" /><br>
     <span class="text">{{ t('local.useEndTime') }}</span>&nbsp;
     <el-switch v-model="activityCalendarConfig.useEndTime" size="small" />&nbsp;
-    <base-tooltip>
+    <span :title="t('local.useEndTimeTooltip')">
         <base-icon-question />
-        <template #content>
-            {{ t('local.useEndTimeTooltip') }}
-        </template>
-    </base-tooltip><br>
+    </span><br>
     <span class="text">{{ t('local.cellSize') }}</span>&nbsp;
     <el-input-number v-model="activityCalendarConfig.cellSize" :min="1" :max="20" size="small" controls-position="right" /><br>
     <span class="text">{{ t('local.cellGap') }}</span>&nbsp;
@@ -26,7 +23,6 @@ import '@/styles/text.css';
 import { ElInputNumber, ElSwitch } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
-import BaseTooltip from '@/components/common/BaseTooltip.vue';
 import { BaseIconQuestion } from '@/components/common/icon';
 import { activityCalendarConfig } from '@/store';
 
