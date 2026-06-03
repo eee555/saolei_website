@@ -146,28 +146,6 @@ def video_query_by_id(request: HttpRequest):
     return JsonResponse(list(videos), safe=False)
 
 
-# 获取审查队列里的录像
-# http://127.0.0.1:8000/video/review_queue
-@require_GET
-def review_queue(request: HttpRequest):
-    videos = VideoModel.objects.filter(state=MS_TextChoices.State.PLAIN)
-    if not request.user.is_staff:
-        videos = videos.filter(ongoing_tournament=False)
-    ret = videos.values(
-        'player__id',
-        'level',
-        'mode',
-        'timems',
-        'bv',
-        'cl',
-        'ce',
-        'state',
-        'software',
-        'ongoing_tournament',
-    )
-    return JsonResponse(list(ret), safe=False)
-
-
 # 获取最新录像
 # http://127.0.0.1:8000/video/newest_queue
 @require_GET
