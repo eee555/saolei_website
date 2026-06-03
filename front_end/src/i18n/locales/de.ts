@@ -15,13 +15,4 @@ export default {
         password: 'Passwort',
         username: 'Benutzername',
     },
-    menu: {
-        ranking: 'Ranking',
-        video: 'Video',
-        world: 'Welt',
-        guide: 'Hilfe',
-        score: 'Ergebnisse',
-        profile: 'Profil',
-        welcome: 'Willkommen{0}',
-    },
 };
