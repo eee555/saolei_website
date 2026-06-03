@@ -13,6 +13,7 @@ npm run dev
 
 ## 文档
 
+- [贡献指南](./docs/contributing.md)
 - [开发文档](./docs/development.md)
 - [国际化文档](./docs/i18n.md)
 - [测试文档](./docs/testing.md)

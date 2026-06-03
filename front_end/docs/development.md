@@ -16,13 +16,25 @@
 
 ## 环境准备
 
-建议使用较新的 Node.js LTS 版本，并通过项目内的 `package-lock.json` 固定依赖版本。
+建议使用 Node.js LTS 版本，优先使用 Node.js 22 或更新的 LTS。依赖版本由项目内的 `package-lock.json` 固定。
+
+首次安装或需要更新依赖时：
 
 ```bash
 npm install
 ```
 
+在全新环境、CI 或希望严格按 lockfile 复现依赖时，优先使用：
+
+```bash
+npm ci
+```
+
 项目默认开发服务端口是 `8080`，配置在 [vite.config.ts](../vite.config.ts) 中。
+
+## 编码与终端
+
+项目源码和文档统一按 UTF-8 读取，否则在 Windows 终端会出现乱码。这主要影响依赖终端的 Agent，不影响普遍兼容 UTF-8 的现代IDE。
 
 ## 环境变量
 
@@ -156,6 +168,8 @@ npm run dev
 
 组件测试由 Cypress 启动自己的 Vite dev server，不需要手动执行 `npm run dev`。涉及真实后端流程的 e2e 测试还需要启动后端开发服务。
 
+测试时可能遇到浏览器警告冗余的`data-cy`属性，可以忽略，因为该属性会在生产构建时被移除。
+
 ## 代码检查
 
 ```bash
@@ -191,7 +205,7 @@ npm run build:frontend
 npm run serve
 ```
 
-构建产物输出到 `dist`。生产构建时，Vite 插件会移除 Vue 文件中的 `data-cy` 属性，并生成 gzip 压缩文件。
+构建产物输出到 `dist`。
 
 ## 提交流程建议
 
