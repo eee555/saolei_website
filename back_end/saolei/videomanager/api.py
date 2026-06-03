@@ -4,7 +4,6 @@ from ninja.decorators import decorate_view
 from ninja.orm import create_schema
 
 from config.text_choices import MS_TextChoices
-
 from .models import VideoModel
 
 router = Router()
