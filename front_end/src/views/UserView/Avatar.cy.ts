@@ -27,16 +27,25 @@ describe('<Avatar />', () => {
     beforeEach(() => {
         cy.clock(new Date('2025-01-01T00:00:01Z'));
 
-        cy.intercept('GET', '/api/userprofile/avatar/0?*', { fixture: 'test.png' });
+        cy.intercept('GET', '/api/userprofile/avatar/*', { fixture: 'test.png' });
     });
 
     it('Rendering', () => {
         cy.mount(Avatar, mountOptions({
-            user: new UserProfile(),
+            user: new UserProfile({ id: 1 }),
             isSelf: true,
         }));
 
         cy.get('img').should('have.attr', 'src').and('include', '?v=0');
+    });
+
+    it('Id = 0', () => {
+        cy.mount(Avatar, mountOptions({
+            user: new UserProfile({ id: 0 }),
+            isSelf: true,
+        }));
+
+        cy.get('img').should('have.attr', 'src').and('include', 'person.png');
     });
 
     it('Guest view', () => {
@@ -152,7 +161,7 @@ describe('<Avatar />', () => {
     });
 
     it('Upload - success', () => {
-        const user = new UserProfile({ left_avatar_n: 1 });
+        const user = new UserProfile({ id: 1, left_avatar_n: 1 });
 
         cy.intercept('POST', '/api/userprofile/update_avatar', {
             body: {
