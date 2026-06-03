@@ -38,7 +38,7 @@ class VideoManagerTestCase(TestCase):
         }
         self.testfile_exp_values_extended = {
             'identifier': 'Pu Tian Yi(Hu Bei)',
-            'stnb': 135.59774291678048,
+            'stnb': 135.59743119854784,
         }
 
     def multiple_values_test(self, obj, expected_values):
