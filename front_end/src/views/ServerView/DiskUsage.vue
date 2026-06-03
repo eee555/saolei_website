@@ -59,7 +59,7 @@ const config = computed(() => {
                 layout: {
                     labels: {
                         value: {
-                            formatter: ({ value }) => formatBytes(value, 1),
+                            formatter: ({ value }) => formatBytes(value),
                         },
                         hollow: {
                             average: {
@@ -68,7 +68,7 @@ const config = computed(() => {
                             total: {
                                 text: t('common.score.total'),
                                 value: {
-                                    formatter: ({ value }) => formatBytes(value, 1),
+                                    formatter: ({ value }) => formatBytes(value),
                                 },
                             },
                         },
