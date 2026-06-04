@@ -1,5 +1,6 @@
 import Cell from './Cell.vue';
 
+import i18n from '@/i18n';
 import { pinia } from '@/store/create';
 import { PiecewiseColorScheme } from '@/utils/colors';
 import { VideoAbstract } from '@/utils/videoabstract';
@@ -33,7 +34,7 @@ const mountCell = (props: Record<string, unknown> = {}) => {
             ...props,
         },
         global: {
-            plugins: [pinia],
+            plugins: [i18n, pinia],
         },
     });
 };
