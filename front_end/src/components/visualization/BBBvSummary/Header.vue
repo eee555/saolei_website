@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; column-gap: 10px; align-items: center;">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; column-gap: 2rem; row-gap: 0.25rem; align-items: center;">
             <!-- 选择排序模板 -->
             <div>
                 <el-select v-model="BBBvSummaryConfig.template" size="small" style="width: 80px">
@@ -48,13 +48,29 @@
             <!-- 是否显示图标 -->
             <div>
                 <span class="text text-small">
-                    图标
+                    {{ t('local.iconLabel') }}
                 </span>
                 <el-select v-model="BBBvSummaryConfig.showIcon" size="small" placeholder="" style="width: 4em">
-                    <el-option label="无" value="" />
+                    <el-option :label="t('local.noIcon')" value="" />
                     <el-option :label="t('common.prop.software')" value="software" />
                     <el-option :label="t('common.prop.state')" value="state" />
                 </el-select>
+            </div>
+            <!-- 高亮新录像 -->
+            <div>
+                <span class="text text-small">
+                    {{ t('local.newHighlight1') }}
+                </span>
+                <el-link class="text text-small" underline="always" @click="switchNewDateField">
+                    {{ t(`local.newHighlight.${BBBvSummaryConfig.newDateField}`) }}
+                </el-link>
+                <span class="text text-small">
+                    {{ t('local.newHighlight2') }}
+                </span>
+                <el-input-number v-model="BBBvSummaryConfig.newThresh" :min="0" :step="1" size="small" style="width: fit-content" />
+                <span class="text text-small">
+                    {{ t('local.newHighlight3') }}
+                </span>
             </div>
             <!-- 点击格子的模式 -->
             <base-tooltip follow-cursor>
@@ -77,13 +93,21 @@
 <script setup lang="ts">
 import '@/styles/text.css';
 
-import { ElLink, ElOption, ElSelect } from 'element-plus';
+import { ElInputNumber, ElLink, ElOption, ElSelect } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
 import BaseTooltip from '@/components/common/BaseTooltip.vue';
 import SoftwareFilter from '@/components/Filters/SoftwareFilter.vue';
 import Zoomer from '@/components/widgets/Zoomer.vue';
 import { BBBvSummaryConfig } from '@/store';
+
+function switchNewDateField() {
+    if (BBBvSummaryConfig.value.newDateField === 'upload_time') {
+        BBBvSummaryConfig.value.newDateField = 'end_time';
+    } else {
+        BBBvSummaryConfig.value.newDateField = 'upload_time';
+    }
+}
 
 /* 本地化 Localization */
 const i18nMessage = {
@@ -96,6 +120,15 @@ const i18nMessage = {
         fastTooltip: '点击播放录像',
         advanced: '高级模式',
         advancedTooltip: '点击显示录像列表，悬浮窗中播放录像',
+        newHighlight1: '高亮',
+        newHighlight2: '于',
+        newHighlight3: '天内的录像',
+        newHighlight: {
+            end_time: '结束',
+            upload_time: '上传',
+        },
+        iconLabel: '图标',
+        noIcon: '无',
     } },
     'en': { local: {
         customTemplate: 'Custom',
@@ -106,6 +139,15 @@ const i18nMessage = {
         fastTooltip: 'Click to play the video',
         advanced: 'Advanced',
         advancedTooltip: 'Click to show list of videos',
+        newHighlight1: 'Highlight videos ',
+        newHighlight2: ' within ',
+        newHighlight3: ' days',
+        newHighlight: {
+            end_time: 'finished',
+            upload_time: 'uploaded',
+        },
+        iconLabel: 'Icon ',
+        noIcon: 'None',
     } },
 };
 
@@ -117,6 +159,10 @@ const { t } = useI18n({ messages: i18nMessage });
 .el-select-dropdown__item {
     height: 25px;
     line-height: 25px;
+}
+
+:deep(.el-input__inner) {
+    field-sizing: content;
 }
 
 </style>

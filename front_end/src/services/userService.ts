@@ -32,9 +32,19 @@ export async function fetchUserIdentifiers(userId: number) {
     return response.data as string[];
 }
 
-export async function fetchUserVideos(userId: number) {
-    const response = await $axios.get('/api/userprofile/videolist', {
+
+const userVideosPendingRequests = new Map<number, Promise<VideoAbstract[]>>();
+export function fetchUserVideos(userId: number) {
+    const pendingRequest = userVideosPendingRequests.get(userId);
+
+    if (pendingRequest) return pendingRequest;
+
+    const promise = $axios.get('/api/userprofile/videolist', {
         params: { user_id: userId },
+    }).then((response) => response.data.map((video: VideoAbstractInfo) => new VideoAbstract(video))).finally(() => {
+        userVideosPendingRequests.delete(userId);
     });
-    return response.data.map((video: VideoAbstractInfo) => new VideoAbstract(video));
+
+    userVideosPendingRequests.set(userId, promise);
+    return promise;
 }

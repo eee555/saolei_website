@@ -1,13 +1,15 @@
 <template>
-    <span class="cell">
+    <span class="cell" :class="isNew ? 'cell-new' : ''">
         <template v-if="bestIndex == -1">
             &nbsp;
         </template>
-        <el-link v-else underline="never" @click="handleClick">
+        <template v-else>
             <software-icon v-if="prop.showIcon === 'software'" :software="videos[bestIndex].software" />
             <video-state-icon v-else-if="prop.showIcon === 'state'" :state="videos[bestIndex].state" />
-            {{ videos[bestIndex].displayStat(displayBy) }}
-        </el-link>
+            <el-link underline="never" style="font-weight: inherit" @click="handleClick">
+                {{ videos[bestIndex].displayStat(displayBy) }}
+            </el-link>
+        </template>
     </span>
 </template>
 
@@ -23,10 +25,9 @@ import VideoStateIcon from '@/components/widgets/VideoStateIcon.vue';
 import { store } from '@/store';
 import { getTextColor, PiecewiseColorScheme } from '@/utils/colors';
 import { preview } from '@/utils/common/PlayerDialog';
+import { fullDay, globalNow } from '@/utils/datetime';
 import { MS_Level, MS_Software, MS_Softwares } from '@/utils/ms_const';
 import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
-
-const bestIndex = ref(-1);
 
 const prop = defineProps({
     level: { type: String as PropType<MS_Level>, required: true },
@@ -39,7 +40,11 @@ const prop = defineProps({
     softwareFilter: { type: Array<MS_Software>, default: () => [...MS_Softwares] },
     tooltipMode: { type: String as PropType<'fast' | 'advanced'>, default: 'fast' },
     showIcon: { type: String as PropType<'' | 'software' | 'state'>, default: '' },
+    newThresh: { type: Number, default: 1 },
+    newDateField: { type: String as PropType<'upload_time' | 'end_time'>, default: 'upload_time' },
 });
+
+const bestIndex = ref(-1);
 
 function refresh() {
     const bests = getBest(prop.videos, {
@@ -60,6 +65,13 @@ const color = computed(() => {
 const fontColor = computed(() => {
     const tc = tinycolor(color.value);
     return tc.getAlpha() == 0 ? getTextColor() : tc.isDark() ? 'white' : 'black';
+});
+
+const isNew = computed(() => {
+    if (bestIndex.value === -1) return false;
+    const time = prop.videos[bestIndex.value][prop.newDateField];
+    if (!time) return false;
+    return globalNow.value.getTime() - time.getTime() < prop.newThresh * fullDay;
 });
 
 function handleClick() {
@@ -83,6 +95,10 @@ function handleClick() {
     text-align: center;
     align-items: center;
     box-sizing: border-box;
+}
+
+.cell-new {
+    font-weight: 1000;
 }
 
 .el-link {

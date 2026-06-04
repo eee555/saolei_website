@@ -32,7 +32,7 @@ import { DataTable } from 'primevue';
 import { defineAsyncComponent, ref } from 'vue';
 
 import { preview } from '@/utils/common/PlayerDialog';
-import { ColumnChoice, MS_Mode, MS_State } from '@/utils/ms_const';
+import { ColumnChoice, MS_Mode, MS_Softwares, MS_State } from '@/utils/ms_const';
 import { VideoAbstract } from '@/utils/videoabstract';
 
 const ColumnEndTime = defineAsyncComponent(() => import('./ColumnEndTime.vue'));
@@ -120,6 +120,7 @@ function componentConfig(choice: ColumnChoice) {
 
 const filters = ref({
     'state': { value: Object.values(MS_State), matchMode: FilterMatchMode.IN },
+    'software': { value: [...MS_Softwares], matchMode: FilterMatchMode.IN },
     'level': { value: null, matchMode: FilterMatchMode.EQUALS },
     'mode': { value: Object.values(MS_Mode), matchMode: FilterMatchMode.IN },
 });
