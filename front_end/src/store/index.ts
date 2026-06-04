@@ -123,6 +123,8 @@ export const BBBvSummaryConfig = useLocalStorage(
         zoom: 1,
         tooltipMode: 'fast' as 'fast' | 'advanced',
         showIcon: 'software' as '' | 'software' | 'state',
+        newThresh: 1,
+        newDateField: 'upload_time' as 'upload_time' | 'end_time',
     },
     { mergeDefaults: true },
 );
