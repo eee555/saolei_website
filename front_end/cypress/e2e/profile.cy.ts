@@ -146,13 +146,21 @@ describe('Personal Profile', () => {
         cy.closeElNotifications();
     });
 
-    it('Auto load videos and identifiers', () => {
+    it('Auto load videos and identifiers when visiting summary', () => {
         cy.visitUser(USER_ID);
 
         cy.contains('共2个录像'); // calendar
         cy.contains('共1个Bv'); // bv
 
         cy.contains('扫雷标识').next().next().find('table').contains('Pu Tian Yi(Hu Bei)');
+    });
+
+    it('Auto load videos when visiting videos', () => {
+        cy.visitUser(USER_ID, 'videos');
+
+        cy.get('table:visible').getTable().should((tableData) => {
+            expect(tableData.length).to.equal(2);
+        });
     });
 
     it('Update avatar', () => {

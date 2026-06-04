@@ -41,7 +41,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING(
                 '警告：此命令将根据录像文件全量重写所有录像数据和用户纪录（timems/bvs/stnb/ioe/path），'
                 '并重建 Redis 排行榜。\n'
-                '执行前建议备份 msuser_userms 表及 Redis，且期间不应有用户上传录像。\n'
+                '执行前建议备份 msuser_userms 表及 Redis，且期间不应有用户上传录像。\n',
             ))
             answer = input('确认执行？(yes/no): ')
             if answer.lower() != 'yes':
@@ -56,7 +56,7 @@ class Command(BaseCommand):
         video_ids = list(
             VideoModel.objects.filter(
                 state=MS_TextChoices.State.OFFICIAL,
-            ).values_list('id', flat=True).iterator()
+            ).values_list('id', flat=True).iterator(),
         )
         total = len(video_ids)
         self.stdout.write(f'共 {total} 个官方录像')
@@ -76,7 +76,7 @@ class Command(BaseCommand):
 
         if missing_files:
             self.stdout.write(self.style.WARNING(
-                f'\n以下 {len(missing_files)} 个录像文件缺失，无法重算：'
+                f'\n以下 {len(missing_files)} 个录像文件缺失，无法重算：',
             ))
             for vid, fpath in missing_files:
                 self.stdout.write(f'  录像#{vid}: {fpath}')
@@ -97,7 +97,7 @@ class Command(BaseCommand):
             UserProfile.objects.filter(
                 has_official_videos,
                 userms__isnull=False,
-            ).values_list('id', flat=True).iterator()
+            ).values_list('id', flat=True).iterator(),
         )
         total_users = len(user_ids)
         self.stdout.write(f'共 {total_users} 个有录像的用户')
