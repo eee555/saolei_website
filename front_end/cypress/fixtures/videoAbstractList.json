@@ -3,6 +3,7 @@
         {
             "id": 1,
             "upload_time": "2025-01-15T00:00:00.307Z",
+            "end_time": "2020-01-15T00:00:00.307Z",
             "level": "e",
             "mode": "00",
             "timems": 108463,
@@ -25,6 +26,48 @@
             "cl": 281,
             "ce": 205,
             "file_size": 12345
+        },
+        {
+            "id": 3,
+            "upload_time": "2025-12-14T08:00:00.000Z",
+            "end_time": "2025-12-14T08:25:00.000Z",
+            "level": "e",
+            "mode": "00",
+            "timems": 25000,
+            "bv": 100,
+            "state": "c",
+            "software": "r",
+            "cl": 100,
+            "ce": 40,
+            "file_size": 2048
+        },
+        {
+            "id": 4,
+            "upload_time": "2025-01-15T20:00:00.307Z",
+            "end_time": "2025-01-15T20:45:00.307Z",
+            "level": "e",
+            "mode": "00",
+            "timems": 45000,
+            "bv": 101,
+            "state": "a",
+            "software": "m",
+            "cl": 50,
+            "ce": 25,
+            "file_size": 4096
+        },
+        {
+            "id": 5,
+            "upload_time": "2025-01-16T00:00:00.307Z",
+            "end_time": "2025-01-16T01:00:00.307Z",
+            "level": "i",
+            "mode": "00",
+            "timems": 60000,
+            "bv": 100,
+            "state": "c",
+            "software": "a",
+            "cl": 200,
+            "ce": 100,
+            "file_size": 1024
         }
     ]
 }
