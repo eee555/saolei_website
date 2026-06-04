@@ -31,6 +31,8 @@
                 :software-filter="BBBvSummaryConfig.softwareFilter"
                 :tooltip-mode="BBBvSummaryConfig.tooltipMode"
                 :show-icon="BBBvSummaryConfig.showIcon"
+                :new-thresh="BBBvSummaryConfig.newThresh"
+                :new-date-field="BBBvSummaryConfig.newDateField"
                 @mouseover="tooltipVideos=groupedVideoAbstract.get(bv) || []"
             />
             <template #content>
