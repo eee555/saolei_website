@@ -12,7 +12,6 @@
     "forceConsistentCasingInFileNames": true,
     "useDefineForClassFields": true,
     "sourceMap": true,
-    "baseUrl": ".",
     "types": [
       "vite/client",
       "cypress",
@@ -20,7 +19,7 @@
     ],
     "paths": {
       "@/*": [
-        "src/*"
+        "./src/*"
       ],
       "@cy/*": [
         "./cypress/*"
@@ -37,9 +36,9 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
-    "tests/**/*.ts",
-    "tests/**/*.tsx"
-, "src/setup.ts"  ],
+    "cypress/**/*.ts",
+    "src/setup.ts"
+  ],
   "exclude": [
     "node_modules"
   ]

@@ -7,7 +7,7 @@
             :max-width="298"
             :append-to="getAppendTarget"
             placement="bottom"
-            :on-show="pop_show"
+            :on-shown="pop_show"
             :on-hide="pop_hide"
         >
             <el-link underline="never">

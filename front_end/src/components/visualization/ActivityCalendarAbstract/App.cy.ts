@@ -7,13 +7,13 @@ describe('<ActivityCalendarAbstract />', () => {
     before(() => {
         cy.fixture('videoAbstractList.json').then((data) => {
             cy.log(data.data);
-            Cypress.env('videoList', data.data.map((video: any) => new VideoAbstract(video)));
+            Cypress.expose('videoList', data.data.map((video: any) => new VideoAbstract(video)));
         });
         cy.clock(new Date('2025-12-15T00:00:00Z'));
     });
     it('renders', () => {
         // see: https://on.cypress.io/mounting-vue
-        const videoList = Cypress.env('videoList');
+        const videoList = Cypress.expose('videoList');
         cy.mount(ActivityCalendarAbstract, {
             props: {
                 videoList: videoList,

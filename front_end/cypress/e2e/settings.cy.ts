@@ -19,6 +19,7 @@ describe('language setting', () => {
                     });
                 },
             });
+            // @ts-expect-error ts有毛病，认为lang可能不是languages的key
             cy.contains(languages[lang]);
         });
     }
