@@ -10,12 +10,12 @@ describe('<BBBvSummary />', () => {
         cy.clearLocalStorage('bbbv-summary-config');
         cy.clock(new Date('2025-12-15T00:00:00Z'));
         cy.fixture('videoAbstractList.json').then((data) => {
-            Cypress.env('videoList', data.data.map((video: any) => new VideoAbstract(video)));
+            Cypress.expose('videoList', data.data.map((video: any) => new VideoAbstract(video)));
         });
     });
 
     const mountSummary = (props: Record<string, unknown> = {}) => {
-        const videoList = Cypress.env('videoList');
+        const videoList = Cypress.expose('videoList');
         cy.mount(BBBvSummary, {
             props: {
                 level: 'e',
