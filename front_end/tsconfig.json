@@ -12,7 +12,6 @@
     "forceConsistentCasingInFileNames": true,
     "useDefineForClassFields": true,
     "sourceMap": true,
-    "baseUrl": ".",
     "types": [
       "vite/client",
       "cypress",
@@ -20,7 +19,7 @@
     ],
     "paths": {
       "@/*": [
-        "src/*"
+        "./src/*"
       ],
       "@cy/*": [
         "./cypress/*"
