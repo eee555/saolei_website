@@ -66,7 +66,7 @@
     "@types/tinycolor2": "1.4.6",
     "@vitejs/plugin-vue": "6.0.7",
     "cypress": "15.16.0",
-    "cypress-if": "1.13.2",
+    "cypress-if": "1.16.1",
     "cypress-intercept-formdata": "1.0.0",
     "cypress-real-events": "1.15.0",
     "cypress-table": "1.0.2",
