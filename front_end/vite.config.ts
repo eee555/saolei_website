@@ -4,7 +4,6 @@ import vue from '@vitejs/plugin-vue';
 import removeAttr from 'remove-attr';
 import { defineConfig, loadEnv } from 'vite';
 import viteCompression from 'vite-plugin-compression';
-import topLevelAwait from 'vite-plugin-top-level-await';
 import wasm from 'vite-plugin-wasm';
 // import vueDevTools from 'vite-plugin-vue-devtools'
 
@@ -20,7 +19,6 @@ export default defineConfig(({ mode }) => {
             vue(),
             wasm(),
             // vueDevTools(),
-            topLevelAwait(),
             viteCompression({
                 algorithm: 'gzip', // Or 'brotliCompress' for Brotli compression
                 ext: '.gz', // Add a .gz extension to the compressed files
