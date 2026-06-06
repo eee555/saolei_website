@@ -9,6 +9,9 @@
             <BBBvSummary level="e" :video-list="user.videos" />
         </el-scrollbar>
     </base-card-normal>
+    <base-card-normal v-if="user.videos" style="height: 100%; display: flex; flex-direction: column; min-height: 30rem;">
+        <VideoScatter :videos="user.videos" />
+    </base-card-normal>
     <el-divider />
     <b class="text text-medium">
         {{ t('identifierManager.title') }}
@@ -42,6 +45,7 @@ const IdentifierHelper = defineAsyncComponent(() => import('@/components/dialogs
 const ActivityCalendarAbstract = defineAsyncComponent(() => import('@/components/visualization/ActivityCalendarAbstract/App.vue'));
 const BBBvSummary = defineAsyncComponent(() => import('@/components/visualization/BBBvSummary/App.vue'));
 const BBBvSummaryHeader = defineAsyncComponent(() => import('@/components/visualization/BBBvSummary/Header.vue'));
+const VideoScatter = defineAsyncComponent(() => import('@/components/visualization/VideoScatter.vue'));
 
 const user = defineModel('user', { type: UserProfile, required: true });
 
