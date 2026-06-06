@@ -1,50 +1,52 @@
 <template>
-    <el-row style="align-items: center">
+    <div style="display: flex; gap: 0.25em; align-items: center; flex-wrap: wrap; justify-content: flex-end">
         <el-color-picker v-model="colorScheme.colors[0]" show-alpha />
         <template v-for="(item, index) in colorScheme.thresholds" :key="index">
-            &nbsp;{{ "<" }}&nbsp;
+            <span>&lt;</span>
             <el-input-number v-model="colorScheme.thresholds[index]" :min="index == 0 ? -Infinity : colorScheme.thresholds[index-1]" :max="index == colorScheme.thresholds.length-1 ? Infinity : colorScheme.thresholds[index+1]" :controls="false" size="small" style="width:50px; display: inline-block" />
-            &nbsp;{{ "<" }}&nbsp;
+            <span>&lt;</span>
             <el-color-picker v-model="colorScheme.colors[index+1]" show-alpha />
         </template>
-        <span style="flex: 1" />
-        {{ "增删节点" }}
-        &nbsp;
-        <el-input-number v-model="operationNode" :controls="false" style="width: 40px" />
-        &nbsp;
-        <el-tooltip content="Add">
-            <el-link underline="never">
-                <base-icon-add />
-            </el-link>
-        </el-tooltip>
-        &nbsp;
-        <el-tooltip content="Merge to left">
-            <el-link underline="never">
-                <el-icon size="large">
-                    <ArrowLeft />
-                </el-icon>
-            </el-link>
-        </el-tooltip>
-        &nbsp;
-        <el-tooltip content="Merge to right">
-            <el-link underline="never">
-                <el-icon size="large">
-                    <ArrowRight />
-                </el-icon>
-            </el-link>
-        </el-tooltip>
-        &nbsp;
-        <el-checkbox v-model="developerMode">
-            Developer Mode
-        </el-checkbox>
-    </el-row>
-    <el-row v-if="developerMode">
+        <span style="flex-grow: 1" />
+        <div>
+            {{ "增删节点" }}
+            &nbsp;
+            <el-input-number v-model="operationNode" :controls="false" style="width: 40px" />
+            &nbsp;
+            <el-tooltip content="Add">
+                <el-link underline="never">
+                    <base-icon-add />
+                </el-link>
+            </el-tooltip>
+            &nbsp;
+            <el-tooltip content="Merge to left">
+                <el-link underline="never">
+                    <el-icon size="large">
+                        <ArrowLeft />
+                    </el-icon>
+                </el-link>
+            </el-tooltip>
+            &nbsp;
+            <el-tooltip content="Merge to right">
+                <el-link underline="never">
+                    <el-icon size="large">
+                        <ArrowRight />
+                    </el-icon>
+                </el-link>
+            </el-tooltip>
+            &nbsp;
+            <el-checkbox v-model="developerMode">
+                Developer Mode
+            </el-checkbox>
+        </div>
+    </div>
+    <div v-if="developerMode">
         <el-input v-model="colorSchemeString" type="textarea" :rows="countRows(colorSchemeString)" style="font-family: 'Courier New', Courier, monospace;" @change="(value: string) => {colorScheme = JSON.parse(value)}" />
-    </el-row>
+    </div>
 </template>
 
 <script setup lang="ts">
-import { ElCheckbox, ElColorPicker, ElIcon, ElInput, ElInputNumber, ElLink, ElRow, ElTooltip } from 'element-plus';
+import { ElCheckbox, ElColorPicker, ElIcon, ElInput, ElInputNumber, ElLink, ElTooltip } from 'element-plus';
 import { PropType, ref, watch } from 'vue';
 
 import { BaseIconAdd } from '@/components/common/icon';

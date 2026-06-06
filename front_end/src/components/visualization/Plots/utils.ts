@@ -34,6 +34,8 @@ export interface SvgPoint {
     y: number;
 }
 
+export type MarkerShape = 'circle';
+
 export const defaultPlotPadding: PlotPadding = {
     top: 12,
     right: 16,

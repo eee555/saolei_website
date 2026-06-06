@@ -131,7 +131,6 @@ function handlePointEnter(point: PlotPoint<VideoAbstract>) {
 const dataset = computed(() => {
     return levelOrder.map((level) => ({
         level,
-        name: t(`common.level.${level}`),
         color: colorTheme.value.level[level],
         values: getDataset(level),
     }));
