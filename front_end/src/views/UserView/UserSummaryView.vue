@@ -1,33 +1,35 @@
 <template>
-    <ActivityCalendarAbstract :video-list="user.videos" :options="activityCalendarConfig" :dark-mode="local.darkmode" />
-    <div style="height: 10px;" />
-    <base-card-normal v-if="user.videos">
-        <BBBvSummaryHeader />
-        <el-scrollbar aria-orientation="horizontal" :style="{ zoom: BBBvSummaryConfig.zoom }">
-            <BBBvSummary level="b" header :video-list="user.videos" />
-            <BBBvSummary level="i" :video-list="user.videos" />
-            <BBBvSummary level="e" :video-list="user.videos" />
-        </el-scrollbar>
-    </base-card-normal>
-    <base-card-normal v-if="user.videos" style="height: 100%; display: flex; flex-direction: column; min-height: 30rem;">
-        <VideoScatter :videos="user.videos" />
-    </base-card-normal>
-    <el-divider />
-    <b class="text text-medium">
-        {{ t('identifierManager.title') }}
-    </b>
-    &nbsp;
-    <base-overlay>
-        <base-icon-info />
-        <template #overlay>
-            <IdentifierHelper style="width: 60%; min-width: 400px; max-width: 100%; margin: auto; display: block" />
-        </template>
-    </base-overlay>
-    <IdentifierManager v-model:user="user" />
+    <div style="display: flex; flex-direction: column; gap: 1rem">
+        <ActivityCalendarAbstract :video-list="user.videos" :options="activityCalendarConfig" :dark-mode="local.darkmode" />
+        <base-card-normal v-if="user.videos">
+            <BBBvSummaryHeader />
+            <el-scrollbar aria-orientation="horizontal" :style="{ zoom: BBBvSummaryConfig.zoom }">
+                <BBBvSummary level="b" header :video-list="user.videos" />
+                <BBBvSummary level="i" :video-list="user.videos" />
+                <BBBvSummary level="e" :video-list="user.videos" />
+            </el-scrollbar>
+        </base-card-normal>
+        <base-card-normal v-if="user.videos">
+            <VideoScatter :videos="user.videos" />
+        </base-card-normal>
+        <div>
+            <b class="text text-medium">
+                {{ t('identifierManager.title') }}
+            </b>
+            &nbsp;
+            <base-overlay>
+                <base-icon-info />
+                <template #overlay>
+                    <IdentifierHelper style="width: 60%; min-width: 400px; max-width: 100%; margin: auto; display: block" />
+                </template>
+            </base-overlay>
+            <IdentifierManager v-model:user="user" />
+        </div>
+    </div>
 </template>
 
 <script setup lang="ts">
-import { ElDivider, ElScrollbar } from 'element-plus';
+import { ElScrollbar } from 'element-plus';
 import { defineAsyncComponent, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 

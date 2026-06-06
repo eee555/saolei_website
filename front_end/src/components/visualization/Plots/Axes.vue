@@ -18,7 +18,7 @@
             vector-effect="non-scaling-stroke"
         />
 
-        <g v-for="tick in resolvedXTicks" :key="`x-${tick}`" class="plot-axes__tick">
+        <g v-for="tick in xTicks" :key="`x-${tick}`" class="plot-axes__tick">
             <line
                 :stroke="stroke" :stroke-width="strokeWidth"
                 :x1="xScale(tick)" :x2="xScale(tick)"
@@ -39,7 +39,7 @@
             </text>
         </g>
 
-        <g v-for="tick in resolvedYTicks" :key="`y-${tick}`" class="plot-axes__tick">
+        <g v-for="tick in yTicks" :key="`y-${tick}`" class="plot-axes__tick">
             <line
                 :stroke="stroke" :stroke-width="strokeWidth"
                 :x1="area.x - tickSize" :x2="area.x"
@@ -81,7 +81,7 @@
 import { computed } from 'vue';
 import type { PropType } from 'vue';
 
-import { createLinearScale, defaultPlotPadding, formatTick, getNiceTicks, getPlotArea } from './utils';
+import { createLinearScale, defaultPlotPadding, formatTick, getPlotArea } from './utils';
 import type { PlotDomain, PlotPadding, PlotSize } from './utils';
 
 defineSlots<{
@@ -90,24 +90,33 @@ defineSlots<{
 }>();
 
 const props = defineProps({
+    // Data-space bounds used to map values onto the plot area.
     domain: { type: Object as PropType<PlotDomain>, required: true },
+    // Outer SVG size in pixels. Parent components usually provide this from ResizeObserver.
     size: { type: Object as PropType<PlotSize>, default: () => ({ width: 320, height: 200 }) },
+    // Insets reserved inside the SVG for labels, ticks, and axis titles.
     padding: { type: Object as PropType<PlotPadding>, default: () => defaultPlotPadding },
-    xTicks: { type: Array as PropType<number[]>, default: undefined },
-    yTicks: { type: Array as PropType<number[]>, default: undefined },
-    tickCount: { type: Number, default: 5 },
+    // X-axis tick values in data-space coordinates.
+    xTicks: { type: Array as PropType<number[]>, default: () => [] },
+    // Y-axis tick values in data-space coordinates.
+    yTicks: { type: Array as PropType<number[]>, default: () => [] },
+    // Length of tick marks in pixels.
     tickSize: { type: Number, default: 4 },
+    // Axis line and tick mark color.
     stroke: { type: String, default: '#71717a' },
+    // Axis line and tick mark width in pixels.
     strokeWidth: { type: Number, default: 1 },
+    // Tick label and axis title color.
     labelColor: { type: String, default: '#52525b' },
+    // Tick label and axis title font size in pixels.
     fontSize: { type: Number, default: 11 },
+    // Optional title shown below the x axis.
     xLabel: { type: String, default: '' },
+    // Optional title shown along the y axis.
     yLabel: { type: String, default: '' },
 });
 
 const area = computed(() => getPlotArea(props.size, props.padding));
-const resolvedXTicks = computed(() => props.xTicks ?? getNiceTicks(props.domain.xMin, props.domain.xMax, props.tickCount));
-const resolvedYTicks = computed(() => props.yTicks ?? getNiceTicks(props.domain.yMin, props.domain.yMax, props.tickCount));
 const xScale = computed(() => createLinearScale(props.domain.xMin, props.domain.xMax, area.value.x, area.value.x + area.value.width));
 const yScale = computed(() => createLinearScale(props.domain.yMin, props.domain.yMax, area.value.y + area.value.height, area.value.y));
 </script>

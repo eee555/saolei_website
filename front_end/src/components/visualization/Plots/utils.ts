@@ -1,7 +1,7 @@
-export interface PlotPoint {
+export type PlotPoint<T = unknown> = {
     x: number;
     y: number;
-}
+} & ([unknown] extends [T] ? { data?: T } : { data: T });
 
 export interface PlotPadding {
     top: number;
@@ -60,7 +60,7 @@ export function createLinearScale(domainMin: number, domainMax: number, rangeMin
     };
 }
 
-export function pointToSvg(point: PlotPoint, domain: PlotDomain, area: PlotArea): SvgPoint {
+export function pointToSvg<T>(point: PlotPoint<T>, domain: PlotDomain, area: PlotArea): SvgPoint {
     const scaleX = createLinearScale(domain.xMin, domain.xMax, area.x, area.x + area.width);
     const scaleY = createLinearScale(domain.yMin, domain.yMax, area.y + area.height, area.y);
 
@@ -70,11 +70,11 @@ export function pointToSvg(point: PlotPoint, domain: PlotDomain, area: PlotArea)
     };
 }
 
-export function pointsToSvg(points: PlotPoint[], domain: PlotDomain, area: PlotArea): SvgPoint[] {
+export function pointsToSvg<T>(points: PlotPoint<T>[], domain: PlotDomain, area: PlotArea): SvgPoint[] {
     return points.filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y)).map((point) => pointToSvg(point, domain, area));
 }
 
-export function getDataDomain(points: PlotPoint[], paddingRatio = 0.05): PlotDomain {
+export function getDataDomain<T>(points: PlotPoint<T>[], paddingRatio = 0.05): PlotDomain {
     const xs = points.map((point) => point.x).filter(Number.isFinite);
     const ys = points.map((point) => point.y).filter(Number.isFinite);
 
