@@ -1,10 +1,7 @@
 <template>
     <el-container style="height: 100%">
-        <el-header>
-            <el-scrollbar :height="100">
-                <!-- 给一个足够的高度就可以不显示纵向滚动条 -->
-                <Menu />
-            </el-scrollbar>
+        <el-header height="fit-content">
+            <Menu />
         </el-header>
 
         <el-container class="mainheight">
@@ -33,7 +30,7 @@
 
 <script setup lang="ts">
 import { useDark, useToggle } from '@vueuse/core';
-import { ElCheckbox, ElContainer, ElDialog, ElHeader, ElMain, ElScrollbar } from 'element-plus';
+import { ElCheckbox, ElContainer, ElDialog, ElHeader, ElMain } from 'element-plus';
 import { onMounted, ref, watch } from 'vue';
 
 import BaseButtonConfirm from './components/common/BaseButtonConfirm.vue';

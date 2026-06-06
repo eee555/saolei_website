@@ -1,4 +1,5 @@
 import ordinal from 'ordinal';
+import { MessageContext } from 'vue-i18n';
 
 export default {
     local: 'en',
@@ -165,7 +166,7 @@ export default {
         verified: 'Verified',
     },
     BBBvSummary: {
-        bbbvInTotal: ({ linked, list }) => `${list(0)} ${linked('common.prop.bv')} in total`,
+        bbbvInTotal: (ctx: MessageContext) => `${ctx.list(0)} ${ctx.linked('common.prop.bv')} in total`,
     },
     errorMsg: {
         file: {
@@ -200,6 +201,7 @@ export default {
             panic: 'The video parser encountered an unknown error. Please contact the developers.',
         },
     },
+    experimentalFeature: 'EXPERIMENTAL',
     form: {
         captcha: 'Captcha',
         captchaLoading: 'Loading',
@@ -212,7 +214,7 @@ export default {
         username: 'Username',
     },
     gsc: {
-        title: ({ named }) => `The ${ordinal(named('order'))} Gold Sheep Cup`,
+        title: (ctx: MessageContext) => `The ${ordinal(ctx.named('order') as number)} Gold Sheep Cup`,
         description: {
             line1: 'Among all videos uploaded during (depending on when the server receives the file) the tournament, sum up the best 20 beginner (bv >= 10) games, 12 intermediate (bv >= 30) games and 5 expert (bv >= 100) games.',
             line2: 'The default scores are 10s for beginner, 60s for intermediate and 240s for expert, when there are not enough games uploaded.',

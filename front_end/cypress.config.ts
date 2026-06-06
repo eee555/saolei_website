@@ -27,5 +27,6 @@ export default defineConfig({
         },
     },
     chromeWebSecurity: false,
+    allowCypressEnv: false,
     watchForFileChanges: false,
 });

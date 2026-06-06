@@ -26,7 +26,7 @@
     "@vueuse/components": "14.2.1",
     "@vueuse/core": "14.2.1",
     "@wdns/vue-code-block": "2.3.5",
-    "axios": "1.14.0",
+    "axios": "1.17.0",
     "d3-array": "3.2.4",
     "element-plus": "2.13.6",
     "flag-icons": "7.5.0",
@@ -49,7 +49,7 @@
     "uuid": "14.0.0",
     "validator": "13.15.35",
     "vue": "3.5.35",
-    "vue-data-ui": "3.17.9",
+    "vue-data-ui": "3.21.1",
     "vue-echarts": "8.0.1",
     "vue-i18n": "11.4.4",
     "vue-router": "5.0.4",
@@ -58,7 +58,6 @@
   "devDependencies": {
     "@mdit/plugin-img-size": "0.23.2",
     "@stylistic/eslint-plugin": "5.10.0",
-    "@types/axios": "0.14.4",
     "@types/d3-array": "3.2.2",
     "@types/js-cookie": "3.0.6",
     "@types/lazy.js": "0.5.9",
@@ -66,9 +65,9 @@
     "@types/node": "25.9.1",
     "@types/tinycolor2": "1.4.6",
     "@vitejs/plugin-vue": "6.0.7",
-    "cypress": "15.13.0",
+    "cypress": "15.16.0",
     "cypress-if": "1.16.1",
-    "cypress-intercept-formdata": "^1.0.0",
+    "cypress-intercept-formdata": "1.0.0",
     "cypress-real-events": "1.15.0",
     "cypress-table": "1.0.2",
     "cypress-vite": "^1.10.0",
@@ -85,10 +84,9 @@
     "rollup": "4.60.1",
     "typescript": "6.0.2",
     "typescript-eslint": "8.58.0",
-    "vite": "7.0.0",
+    "vite": "8.0.9",
     "vite-plugin-compression": "0.5.1",
-    "vite-plugin-top-level-await": "1.6.0",
     "vite-plugin-wasm": "3.6.0",
-    "vitest": "^4.1.7"
+    "vitest": "4.1.7"
   }
 }
