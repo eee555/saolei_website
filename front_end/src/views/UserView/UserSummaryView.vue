@@ -9,7 +9,7 @@
                 <BBBvSummary level="e" :video-list="user.videos" />
             </el-scrollbar>
         </base-card-normal>
-        <base-card-normal v-if="user.videos">
+        <base-card-normal v-if="user.videos" v-experimental>
             <VideoScatter :videos="user.videos" />
         </base-card-normal>
         <div>
@@ -37,6 +37,7 @@ import '@/styles/text.css';
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
 import BaseOverlay from '@/components/common/BaseOverlay.vue';
 import { BaseIconInfo } from '@/components/common/icon';
+import { vExperimental } from '@/components/ExperimentalFeature';
 import IdentifierManager from '@/components/widgets/IdentifierManager.vue';
 import { fetchUserVideos } from '@/services/userService';
 import { activityCalendarConfig, BBBvSummaryConfig, local } from '@/store';

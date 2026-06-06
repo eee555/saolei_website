@@ -2,8 +2,8 @@
     <div class="video-scatter">
         <div style="display: flex; flex-wrap: wrap; gap: 2em">
             <div style="width: 14em; display: flex; gap: 1em">
-                <MSStatSelect v-model="x" label="x" :options="statOptions" />
-                <MSStatSelect v-model="y" label="y" :options="statOptions" />
+                <MSStatSelect v-model="VideoScatterConfig.x" label="x" :options="[...VideoScatterAxisChoice]" />
+                <MSStatSelect v-model="VideoScatterConfig.y" label="y" :options="[...VideoScatterAxisChoice]" />
             </div>
             <div style="display: flex; gap: 1em; text-align: center">
                 <span v-for="level in ['b', 'i', 'e']">
@@ -40,8 +40,8 @@
                     :domain="domain" :padding="padding" :size="plotSize"
                     :label-color="labelColor" :stroke="axisColor"
                     :x-ticks="xTicks" :y-ticks="yTicks"
-                    :x-label="t(`common.prop.${x}`)"
-                    :y-label="t(`common.prop.${y}`)"
+                    :x-label="t(`common.prop.${VideoScatterConfig.x}`)"
+                    :y-label="t(`common.prop.${VideoScatterConfig.y}`)"
                 />
             </div>
 
@@ -67,13 +67,12 @@ import MSStatSelect from '@/components/Filters/MSStatSelect.vue';
 import { Axes, Grid, MarkerSetting, Scatter } from '@/components/visualization/Plots';
 import { defaultPlotPadding, getDataDomain, getNiceTicks, PlotPadding, PlotPoint } from '@/components/visualization/Plots/utils';
 import VideoAbstractDisplay from '@/components/widgets/VideoAbstractDisplay.vue';
-import { colorTheme, VideoScatterConfig } from '@/store';
+import { colorTheme, VideoScatterAxisChoice, VideoScatterConfig } from '@/store';
 import { getTextColor } from '@/utils/colors';
 import { preview } from '@/utils/common/PlayerDialog';
 import type { MS_Level } from '@/utils/ms_const';
 import type { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 
-const statOptions = ['time', 'bv', 'bvs', 'cl', 'ce', 'stnb'];
 const levelOrder: MS_Level[] = ['b', 'i', 'e'];
 const padding: PlotPadding = {
     ...defaultPlotPadding,
@@ -86,8 +85,6 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
-const x = ref<getStat_stat>('bv');
-const y = ref<getStat_stat>('time');
 const plotRef = ref<HTMLElement>();
 const plotSize = ref({
     width: 640,
@@ -112,7 +109,7 @@ function getDataset(level: MS_Level) {
 
     props.videos.forEach((video) => {
         if (video.level !== level) return;
-        const dataPoint = videoToDataPoint(video, x.value, y.value);
+        const dataPoint = videoToDataPoint(video, VideoScatterConfig.value.x, VideoScatterConfig.value.y);
         if (dataPoint === undefined) return;
         values.push(dataPoint);
     });

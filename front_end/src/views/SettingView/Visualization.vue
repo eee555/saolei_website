@@ -1,28 +1,30 @@
 <template>
     <el-card :header="t('local.visualizationColorScheme')">
-        <div v-experimental>
-            <div class="text text-large">
-                {{ t('local.piecewise') }}
-            </div>
-            <el-select v-model="colorSchemeName">
-                <el-option label="Bvs" value="bvs" />
-                <el-option label="Beg Time" value="btime" />
-                <el-option label="Int Time" value="itime" />
-                <el-option label="Exp Time" value="etime" />
-                <el-option label="STNB" value="stnb" />
-            </el-select>
-            <ColorSchemeSetting v-model="colorTheme[colorSchemeName]" />
-        </div>
-        <div style="width: 100%; display: flex; flex-wrap: wrap">
-            <div class="text text-large">
-                {{ t('local.level') }}
-            </div>
-            <span v-for="level in ['b', 'i', 'e']">
-                <span class="text">
-                    {{ t(`common.level.${level}`) }}
+        <div style="display: flex; flex-direction: column; gap: 1rem">
+            <div style="display: flex; flex-wrap: wrap; gap: 2rem; align-items: center">
+                <div class="text">
+                    {{ t('local.level') }}
+                </div>
+                <span v-for="level in ['b', 'i', 'e']" style="display: flex; gap: 0.5em">
+                    <span class="text">
+                        {{ t(`common.level.${level}`) }}
+                    </span>
+                    <ElColorPicker v-model="colorTheme.level[level]" size="small" />
                 </span>
-                <ElColorPicker v-model="colorTheme.level[level]" size="small" />
-            </span>
+            </div>
+            <div v-experimental style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <div class="text">
+                    {{ t('local.piecewise') }}
+                </div>
+                <el-select v-model="colorSchemeName">
+                    <el-option label="Bvs" value="bvs" />
+                    <el-option label="Beg Time" value="btime" />
+                    <el-option label="Int Time" value="itime" />
+                    <el-option label="Exp Time" value="etime" />
+                    <el-option label="STNB" value="stnb" />
+                </el-select>
+                <ColorSchemeSetting v-model="colorTheme[colorSchemeName]" />
+            </div>
         </div>
     </el-card>
 </template>
@@ -47,7 +49,7 @@ const i18nMessages = {
         visualizationColorScheme: '数据可视化 - 配色方案',
     } },
     'en': { local: {
-        level: 'Primary Color for Each Level',
+        level: 'Primary Colors for Levels',
         piecewise: 'Piecewise Palette',
         visualizationColorScheme: 'Visualization - Color Scheme',
     } },

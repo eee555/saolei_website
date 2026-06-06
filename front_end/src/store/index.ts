@@ -140,10 +140,14 @@ export const BBBvSummaryConfig = useLocalStorage(
     { mergeDefaults: true },
 );
 
+export const VideoScatterAxisChoice = ['time', 'bv', 'bvs', 'stnb', 'ioe', 'thrp', 'corr', 'ces', 'cls', 'cl', 'ce', 'rqp'] as const;
+export type VideoScatterAxisChoice = typeof VideoScatterAxisChoice[number];
 export const VideoScatterConfig = useLocalStorage(
     'video-scatter-config',
     {
         radius: 3,
+        x: 'bv' as VideoScatterAxisChoice,
+        y: 'time' as VideoScatterAxisChoice,
     },
     { mergeDefaults: true },
 );
