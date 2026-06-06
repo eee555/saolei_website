@@ -52,7 +52,7 @@ const routes: Array<RouteRecordRaw> = [
     {
         path: '/settings',
         name: 'settings',
-        component: () => import('../views/SettingView.vue'),
+        component: () => import('../views/SettingView/App.vue'),
     },
     {
         path: '/player/:id',

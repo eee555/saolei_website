@@ -1,4 +1,5 @@
 import ordinal from 'ordinal';
+import { MessageContext } from 'vue-i18n';
 
 export default {
     local: 'en',
@@ -200,6 +201,7 @@ export default {
             panic: 'The video parser encountered an unknown error. Please contact the developers.',
         },
     },
+    experimentalFeature: 'EXPERIMENTAL',
     form: {
         captcha: 'Captcha',
         captchaLoading: 'Loading',

@@ -24,6 +24,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import StackBar from '@/components/visualization/StackBar/App.vue';
+import { colorTheme } from '@/store';
 import { VideoAbstract } from '@/utils/videoabstract';
 
 const prop = defineProps({
@@ -55,17 +56,17 @@ const expSize = computed(() => {
 
 const videoCountData = computed(() => {
     return [
-        { name: t('common.level.b'), value: begCount.value, color: '#FF0000' },
-        { name: t('common.level.i'), value: intCount.value, color: '#008000' },
-        { name: t('common.level.e'), value: expCount.value, color: '#0000FF' },
+        { name: t('common.level.b'), value: begCount.value, color: colorTheme.value.level.b },
+        { name: t('common.level.i'), value: intCount.value, color: colorTheme.value.level.i },
+        { name: t('common.level.e'), value: expCount.value, color: colorTheme.value.level.e },
     ];
 });
 
 const videoFileSizeDate = computed(() => {
     return [
-        { name: t('common.level.b'), value: begSize.value, color: '#FF0000' },
-        { name: t('common.level.i'), value: intSize.value, color: '#008000' },
-        { name: t('common.level.e'), value: expSize.value, color: '#0000FF' },
+        { name: t('common.level.b'), value: begSize.value, color: colorTheme.value.level.b },
+        { name: t('common.level.i'), value: intSize.value, color: colorTheme.value.level.i },
+        { name: t('common.level.e'), value: expSize.value, color: colorTheme.value.level.e },
     ];
 });
 
