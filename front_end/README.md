@@ -1,19 +1,31 @@
 # front_end
 
-## Project setup
-```
+开源扫雷网前端项目，基于 Vue 3、TypeScript 和 Vite 构建。
+
+## 快速开始
+
+```bash
 npm install
+npm run dev
 ```
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+默认开发地址为 `http://localhost:8080`。更完整的本地开发、目录结构、测试和构建说明见 [开发文档](./docs/development.md)。
 
-### Compiles and minifies for production
-```
-npm run build
-```
+## 文档
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+- [贡献指南](./docs/contributing.md)
+- [开发文档](./docs/development.md)
+- [国际化文档](./docs/i18n.md)
+- [测试文档](./docs/testing.md)
+
+## 常用命令
+
+```bash
+npm run dev             # 本地开发
+npm run frontend        # 连接远程 openms.top 服务器
+npm run build:dev       # 构建 dev 模式产物
+npm run build:openms    # 构建生产模式产物
+npm run build:frontend  # 构建 frontend 模式产物
+npm run vitest          # 运行 Vitest 测试
+npm run lint            # 运行 ESLint
+```

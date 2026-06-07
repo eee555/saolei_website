@@ -103,17 +103,8 @@ onMounted(() => {
 
 const update_review_queue = async () => {
     review_queue_updating.value = true;
-    await proxy.$axios.get('/video/review_queue/',
-        {
-            params: {},
-        },
-    ).then(function (response) {
-        review_queue.value.splice(0, review_queue.value.length);
-        for (const key in response.data) {
-            const videoid = Number.parseInt(key);
-            const videoinfo = JSON.parse(response.data[key] as string);
-            review_queue.value.push(VideoAbstract.fromVideoRedisInfo(videoid, videoinfo));
-        }
+    await proxy.$axios.get('/api/video/review_queue').then(function (response) {
+        review_queue.value = response.data.map((v: any) => new VideoAbstract(v));
     });
     review_queue_updating.value = false;
 };

@@ -8,7 +8,6 @@ urlpatterns = [
     path('get_software/', views.get_software, name='get_software'),
     path('query/', views.video_query, name='query'),
     path('query_by_id/', views.video_query_by_id, name='query_by_id'),
-    path('review_queue/', views.review_queue, name='review_queue'),
     path('newest_queue/', views.newest_queue, name='newest_queue'),
     path('newest_queue/remove/', views.remove_from_newest_queue),
     path('news_queue/', views.news_queue, name='news_queue'),

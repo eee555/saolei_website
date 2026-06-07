@@ -1,6 +1,6 @@
 <template>
     <el-row v-if="header" :style="{ textAlign: 'center', height: '25px', flexWrap: 'nowrap', marginTop: '10px', marginBottom: '-20px' }">
-        <span style="width: 10%; min-width: 75px" />
+        <span style="width: 10%; min-width: 4em" />
         <span :style="gridStyle">
             <span v-for="i in 10" :key="i" class="text text-small">
                 {{ i - 1 }}
@@ -31,6 +31,8 @@
                 :software-filter="BBBvSummaryConfig.softwareFilter"
                 :tooltip-mode="BBBvSummaryConfig.tooltipMode"
                 :show-icon="BBBvSummaryConfig.showIcon"
+                :new-thresh="BBBvSummaryConfig.newThresh"
+                :new-date-field="BBBvSummaryConfig.newDateField"
                 @mouseover="tooltipVideos=groupedVideoAbstract.get(bv) || []"
             />
             <template #content>
@@ -118,7 +120,7 @@ const gridStyle = computed(() => {
     return {
         'display': 'grid',
         width: '89%',
-        minWidth: BBBvSummaryConfig.value.showIcon === '' ? '45em' : '54em',
+        minWidth: BBBvSummaryConfig.value.showIcon === '' ? '37em' : '48em',
         gridTemplateColumns: 'repeat(10, 1fr)',
         gridAutoRows: '25px',
     };

@@ -98,7 +98,18 @@ export const videofilter = useLocalStorage('videofilter', {
     },
 });
 
-export const colorTheme = useLocalStorage('colorTheme', deepMutableCopy(colorSchemeTemplates.ArbiterStatsAuto));
+export const colorTheme = useLocalStorage(
+    'colorTheme',
+    {
+        ...deepMutableCopy(colorSchemeTemplates.ArbiterStatsAuto),
+        level: {
+            b: '#dc2626',
+            i: '#16a34a',
+            e: '#2563eb',
+        },
+    },
+    { mergeDefaults: true },
+);
 
 export const activityCalendarConfig = useLocalStorage(
     'activity-calendar-config',
@@ -123,6 +134,20 @@ export const BBBvSummaryConfig = useLocalStorage(
         zoom: 1,
         tooltipMode: 'fast' as 'fast' | 'advanced',
         showIcon: 'software' as '' | 'software' | 'state',
+        newThresh: 1,
+        newDateField: 'upload_time' as 'upload_time' | 'end_time',
+    },
+    { mergeDefaults: true },
+);
+
+export const VideoScatterAxisChoice = ['time', 'bv', 'bvs', 'stnb', 'ioe', 'thrp', 'corr', 'ces', 'cls', 'cl', 'ce', 'rqp'] as const;
+export type VideoScatterAxisChoice = typeof VideoScatterAxisChoice[number];
+export const VideoScatterConfig = useLocalStorage(
+    'video-scatter-config',
+    {
+        radius: 3,
+        x: 'bv' as VideoScatterAxisChoice,
+        y: 'time' as VideoScatterAxisChoice,
     },
     { mergeDefaults: true },
 );

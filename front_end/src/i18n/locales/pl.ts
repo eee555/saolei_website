@@ -25,15 +25,6 @@ export default {
         password: 'hasło',
         username: 'nazwa użytkownika',
     },
-    menu: {
-        ranking: 'ranking',
-        video: 'filmy',
-        world: 'statystyki',
-        guide: 'poradniki',
-        score: 'wyniki',
-        profile: 'profil',
-        welcome: 'witaj, {0}!',
-    },
     profile: {
         changeAvatar: 'kliknij na obrazek aby zmienić awatar',
         realname: 'imie: ',

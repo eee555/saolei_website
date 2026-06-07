@@ -118,8 +118,7 @@ describe('Personal Profile', () => {
         cy.login(USERNAME, PASSWORD);
         cy.visitUser(USER_ID);
 
-        cy.get('.avatar').realHover({ position: 'center' });
-        cy.contains('高级sub200后才可以修改头像');
+        cy.get('.avatar').find('img').should('have.attr', 'title', '高级sub200后才可以修改头像');
     });
 
     it('Cannot update signature before sub200', () => {
@@ -147,7 +146,7 @@ describe('Personal Profile', () => {
         cy.closeElNotifications();
     });
 
-    it('Auto load videos and identifiers', () => {
+    it('Auto load videos and identifiers when visiting summary', () => {
         cy.visitUser(USER_ID);
 
         cy.contains('共2个录像'); // calendar
@@ -156,19 +155,25 @@ describe('Personal Profile', () => {
         cy.contains('扫雷标识').next().next().find('table').contains('Pu Tian Yi(Hu Bei)');
     });
 
+    it('Auto load videos when visiting videos', () => {
+        cy.visitUser(USER_ID, 'videos');
+
+        cy.get('table:visible').getTable().should((tableData) => {
+            expect(tableData.length).to.equal(2);
+        });
+    });
+
     it('Update avatar', () => {
         cy.login(USERNAME, PASSWORD);
         cy.visitUser(USER_ID);
 
-        cy.get('.avatar').realHover({ position: 'center' });
-        cy.contains('点击修改头像（剩余2次）');
+        cy.get('.avatar').find('img').should('have.attr', 'title', '点击修改头像（剩余2次）');
 
         cy.get('.avatar').find('input[type=file]').selectFile('cypress/fixtures/test.png', { force: true });
 
         cy.get('.avatar').find('img').should('have.attr', 'src').and('include', `${USER_ID}?v=1`);
 
-        cy.get('.avatar').realHover({ position: 'center' });
-        cy.contains('点击修改头像（剩余1次）');
+        cy.get('.avatar').find('img').should('have.attr', 'title', '点击修改头像（剩余1次）');
     });
 
     it('Update signature', () => {
@@ -202,7 +207,7 @@ describe('Personal Profile', () => {
 
         cy.get('.el-tabs').eq(1).contains(REALNAME).click();
 
-        cy.get('button').contains('我的空间').click();
+        cy.contains('我的空间').click();
 
         cy.url().should('eq', `http://localhost:8080/#/player/${USER_ID}/summary`);
 

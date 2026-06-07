@@ -95,7 +95,10 @@ def verify_link(request):
     link_account(platform, identifier, user)
     accountlink.verified = True
     accountlink.save()
-    update_account(platform, user)
+    try:
+        update_account(platform, user)
+    except ExceptionToResponse as e:
+        return e.response()
     return HttpResponse()
 
 

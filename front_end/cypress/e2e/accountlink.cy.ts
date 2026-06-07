@@ -52,18 +52,53 @@ function expectUnverifiedAccount(index: number, platform: string, identifier: st
     });
 }
 
-function staffVerifyAccount(platform: string, identifier: string) {
+function visitStaffAccountLink() {
     cy.login(STAFF.username, STAFF.password);
-    cy.visit('/#/staff');
-    cy.contains('账号绑定').click();
+    cy.intercept('GET', '/api/accountlink/admin/queue').as('accountLinkQueue');
+    cy.visit('/#/staff/accountlink');
+    cy.wait('@accountLinkQueue');
+}
+
+function expectAccountLinkTableRow(platform: string, identifier: string, verified: boolean) {
+    cy.get('table:visible').getTable().should((tableData) => {
+        const row = tableData.find((item) => item['Platform ID'] === identifier);
+
+        expect(row).to.deep.equal({
+            'User ID': `${USER.id}`,
+            Platform: platform,
+            'Platform ID': identifier,
+            Verified: `${verified}`,
+        });
+    });
+}
+
+function expectAccountLinkTableData(expected: Array<{ platform: string; identifier: string; verified: boolean }>) {
+    cy.get('table:visible').getTable().should((tableData) => {
+        expect(tableData.length).to.equal(expected.length);
+        expected.forEach((item) => {
+            const row = tableData.find((tableRow) => tableRow['Platform ID'] === item.identifier);
+            expect(row).to.deep.equal({
+                'User ID': `${USER.id}`,
+                Platform: item.platform,
+                'Platform ID': item.identifier,
+                Verified: `${item.verified}`,
+            });
+        });
+    });
+}
+
+function staffVerifyAccount(platform: string, identifier: string) {
+    visitStaffAccountLink();
+    expectAccountLinkTableRow(platform, identifier, false);
 
     cy.contains(':visible', 'ID').first().next().find('input').type(`${USER.id}{enter}`);
     cy.contains('平台').next().contains('Select').click();
     cy.get('li').contains(platform).click();
     cy.contains('平台ID').next().find('input').type(`${identifier}{enter}`);
     cy.contains(/^\s*绑定\s*$/).click();
+    cy.wait('@accountLinkQueue');
 
-    cy.contains(':visible', 'ID').first().next().find('input').should('have.value', '0');
+    expectAccountLinkTableRow(platform, identifier, true);
 }
 
 describe('Account Link', () => {
@@ -114,6 +149,17 @@ describe('Account Link', () => {
         linkNewAccount(LINKS.qq.platform, LINKS.qq.identifier);
 
         cy.get('.account-link-main').find('.pi-plus').should('not.exist');
+    });
+
+    it('Staff View - Should Render Account Link Table', () => {
+        visitStaffAccountLink();
+
+        expectAccountLinkTableData([
+            { platform: LINKS.wom.platform, identifier: LINKS.wom.identifier, verified: false },
+            { platform: LINKS.saolei.platform, identifier: LINKS.saolei.identifier, verified: false },
+            { platform: LINKS.msgames.platform, identifier: LINKS.msgames.identifier, verified: false },
+            { platform: LINKS.qq.platform, identifier: LINKS.qq.identifier, verified: false },
+        ]);
     });
 
     it('Verify WoM Account', () => {

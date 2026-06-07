@@ -53,7 +53,8 @@ interface VideoRedisInfo {
     ce?: number;
 }
 
-export type getStat_stat = 'time' | 'bvs' | 'timems' | 'bv' | 'qg' | 'rqp' | 'stnb' | 'ce' | 'ces' | 'cl' | 'cls' | 'ioe' | 'thrp' | 'corr' | 'path' | 'npath' | 'mov' | 'iome' | 'file_size';
+export const getStat_keys = ['time', 'bvs', 'timems', 'bv', 'qg', 'rqp', 'stnb', 'ce', 'ces', 'cl', 'cls', 'ioe', 'thrp', 'corr', 'path', 'npath', 'mov', 'iome', 'file_size'] as const;
+export type getStat_stat = typeof getStat_keys[number];
 
 export class VideoAbstract {
     public id: number;
@@ -92,7 +93,7 @@ export class VideoAbstract {
         this.cl = info.cl;
         this.ce = info.ce;
         this.path = info.path;
-        this.player_id = info.player_id;
+        this.player_id = info.player_id ?? info.player;
 
         this.file_size = info.file_size ?? 0;
 

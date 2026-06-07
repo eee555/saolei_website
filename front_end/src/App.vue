@@ -1,35 +1,7 @@
 <template>
     <el-container style="height: 100%">
-        <el-header>
-            <el-scrollbar :height="100">
-                <!-- 给一个足够的高度就可以不显示纵向滚动条 -->
-                <el-menu
-                    mode="horizontal" :router="true" :default-active="menu_index" :ellipsis="false"
-                    menu-trigger="click"
-                >
-                    <el-menu-item index="/" class="logo">
-                        <el-image class="logo1" :src="logo_1" :fit="'cover'" />
-                        <el-image v-if="!local.menu_icon" class="logo2" :src="logo_2" :fit="'cover'" />
-                    </el-menu-item>
-                    <el-menu-item v-for="item in menu_items" :key="item.index" :index="`/${ item.index}`">
-                        <IconMenuItem :text="t(item.content)" :icon="item.icon" />
-                    </el-menu-item>
-                    <div style="flex-grow: 1" />
-                    <el-menu-item v-if="store.user.id != 0" :index="player_url">
-                        <IconMenuItem :text="store.user.username" icon="User" />
-                    </el-menu-item>
-                    <el-menu-item v-if="store.user.is_staff" key="staff" index="/staff">
-                        <IconMenuItem :text="t('menu.staff')" icon="Key" />
-                    </el-menu-item>
-                    <el-menu-item index="/settings" style="padding-left: 8px; padding-right: 5px">
-                        <el-badge is-dot :hidden="true" :offset="[0,15]">
-                            <IconMenuItem :text="t('menu.setting')" icon="Setting" />
-                        </el-badge>
-                    </el-menu-item>
-                    <LanguagePicker v-show="local.language_show" style="padding-left: 8px; padding-right: 8px;" />
-                    <Login @keydown.stop />
-                </el-menu>
-            </el-scrollbar>
+        <el-header height="fit-content">
+            <Menu />
         </el-header>
 
         <el-container class="mainheight">
@@ -58,47 +30,25 @@
 
 <script setup lang="ts">
 import { useDark, useToggle } from '@vueuse/core';
-import { ElBadge, ElCheckbox, ElContainer, ElDialog, ElHeader, ElImage, ElMain, ElMenu, ElMenuItem, ElScrollbar } from 'element-plus';
-import { computed, onMounted, ref, watch } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
+import { ElCheckbox, ElContainer, ElDialog, ElHeader, ElMain } from 'element-plus';
+import { onMounted, ref, watch } from 'vue';
 
 import BaseButtonConfirm from './components/common/BaseButtonConfirm.vue';
 import VideoListDialog from './components/dialogs/VideoListDialog.vue';
 import Footer from './components/Footer.vue';
-import Login from './components/Login/App.vue';
 import VideoPlayer from './components/VideoPlayer/App.vue';
-import IconMenuItem from './components/widgets/IconMenuItem.vue';
-import LanguagePicker from './components/widgets/LanguagePicker.vue';
-import { local, store } from './store';
+import { local } from './store';
+import Menu from './views/Menu.vue';
 
-import logo_1 from '@/assets/logo.png';
-import logo_2 from '@/assets/logo2.png';
-
-const router = useRouter();
 const isDark = useDark();
 useToggle(isDark);
 watch(isDark, (v) => {
     local.value.darkmode = v;
 });
-const { t } = useI18n();
 
 // const player_visible = ref(false)
 const notice_visible = ref(false);
 const never_show_notice = ref(false);
-
-// 主要是切换后的高亮
-const menu_index = ref();
-
-const menu_items = [
-    { index: 'ranking', icon: 'Trophy', content: 'menu.ranking' },
-    { index: 'video', icon: 'VideoCameraFilled', content: 'menu.video' },
-    // { index: "world", icon: "Odometer", content: "menu.world" },
-    { index: 'guide', icon: 'Document', content: 'menu.guide' },
-    // { index: "score", icon: "Histogram", content: "menu.score" },
-    { index: 'tournament', icon: 'Medal', content: 'menu.tournament' },
-    { index: 'server', icon: 'Cpu', content: 'menu.server' },
-] as const;
 
 const notice = ref(`
 0、即日起，网站正式上线！！！
@@ -117,13 +67,7 @@ onMounted(() => {
     console.log(`
   开源扫雷网(openms.top)开发团队，期待您的加入: 2234208506@qq.com
   `);
-    router.isReady().then(() => {
-        menu_index.value = router.currentRoute.value.fullPath;
-    });
-});
-
-const player_url = computed(() => {
-    return '/player/' + store.user.id;
+    local.value.darkmode = isDark.value;
 });
 
 // const goback_home = () => {
@@ -162,40 +106,6 @@ body {
 .el-header {
     --el-header-height: v-bind("`${local.menu_height}px`");
     padding: 0px;
-}
-
-.el-menu {
-    height: v-bind("`${local.menu_height}px`");
-}
-
-.logo {
-    cursor: pointer;
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0px;
-    padding-left: v-bind("`${local.menu_height / 8}px`");
-    padding-right: v-bind("`${local.menu_height / 8}px`");
-}
-
-.logo1 {
-    width: v-bind("`${local.menu_height - 8}px`");
-    height: v-bind("`${local.menu_height - 8}px`");
-    padding-top: 4px;
-    padding-bottom: 4px;
-    display: inline-flex;
-}
-
-.logo2 {
-    width: v-bind("`${local.menu_height * 2.5}px`");
-    height: v-bind("`${local.menu_height}px`");
-    display: inline-flex;
-}
-
-.el-menu-item {
-    font-size: v-bind("`${local.menu_font_size}px`");
-    padding-left: 8px;
-    padding-right: 5px;
 }
 
 .mainheight {

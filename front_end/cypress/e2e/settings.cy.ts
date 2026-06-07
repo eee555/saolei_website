@@ -19,6 +19,7 @@ describe('language setting', () => {
                     });
                 },
             });
+            // @ts-expect-error ts有毛病，认为lang可能不是languages的key
             cy.contains(languages[lang]);
         });
     }
@@ -27,7 +28,7 @@ describe('language setting', () => {
         cy.visit('/#/settings');
         cy.get('[data-cy=languagePicker]').realClick();
         cy.contains('dev').filter(':visible').click();
-        cy.contains('menu.guide');
+        cy.contains('local.guide');
         cy.get('[data-cy=languagePicker]').realClick();
         cy.contains('简体中文').filter(':visible').click();
         cy.contains('教程');
