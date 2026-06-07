@@ -54,6 +54,9 @@ export const videoplayerstore = defineStore('videoplayer', {
     state: () => ({
         visible: false,
         id: 0,
+        software: 'a' as MS_Software,
+        url: '',
+        error: null as any,
     }),
 })(pinia);
 

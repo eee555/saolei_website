@@ -17,52 +17,19 @@
                 </span>
             </div>
         </template>
-        <FlopPlayer v-if="videoPlayerConfig.backend == 'flop'" :src="url" />
-        <StrangeDust v-if="videoPlayerConfig.backend == 'StrangeDust'" :src="url" />
+        <FlopPlayer v-if="videoPlayerConfig.backend == 'flop'" :src="videoplayerstore.url" />
+        <StrangeDust v-if="videoPlayerConfig.backend == 'StrangeDust'" :src="videoplayerstore.url" />
     </el-dialog>
 </template>
 
 <script setup lang="ts">
 import { ElDialog, ElOption, ElSelect } from 'element-plus';
-import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-
-import { httpErrorNotification } from '../Notifications';
 
 import FlopPlayer from './FlopPlayer.vue';
 import StrangeDust from './StrangeDust.vue';
 
 import { videoPlayerConfig, videoplayerstore } from '@/store';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { MS_Software } from '@/utils/ms_const';
-import { getSoftwareExtension } from '@/utils/strings';
-
-const { proxy } = useCurrentInstance();
-
-const software = ref<MS_Software>('a');
-const url = ref('');
-
-watch(videoplayerstore, async () => {
-    if (videoplayerstore.visible) {
-        await fetchSoftware(videoplayerstore.id);
-        generateURL();
-    }
-});
-
-async function fetchSoftware(id: number) {
-    try {
-        const response = await proxy.$axios.get('/video/get_software/',
-            { params: { id } },
-        );
-        software.value = response.data.msg;
-    } catch (e) {
-        httpErrorNotification(e);
-    }
-}
-
-function generateURL() {
-    url.value = import.meta.env.VITE_BASE_API + '/video/preview/?id=' + videoplayerstore.id + getSoftwareExtension(software.value);
-}
 
 const i18nMessages = {
     'zh-cn': { local: {
