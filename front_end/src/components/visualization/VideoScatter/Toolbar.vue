@@ -2,9 +2,10 @@
     <div class="video-scatter-toolbar">
         <div style="display: flex; gap: 1em; justify-content: flex-end; align-items: center">
             <!-- 选择xy用的数据 -->
-            <div style="width: 14em; display: flex; gap: 1em;">
+            <div style="width: 24em; display: flex; gap: 1em;">
                 <MSStatSelect v-model="VideoScatterConfig.x" label="x" :options="[...VideoScatterAxisChoice]" />
                 <MSStatSelect v-model="VideoScatterConfig.y" label="y" :options="[...VideoScatterAxisChoice]" />
+                <MSStatSelect v-model="VideoScatterConfig.colorBy" :label="t('local.colorBy')" :options="[...VideoScatterColorByChoice]" />
             </div>
 
             <div style="flex-grow: 1" />
@@ -21,11 +22,11 @@
                 v-model="VideoScatterStore.canvasMode"
                 :options="[
                     {
-                        label: '光标',
+                        label: t('local.cursor'),
                         value: '',
                     },
                     {
-                        label: '框选',
+                        label: t('local.select'),
                         value: 'select',
                     },
                 ]"
@@ -35,7 +36,7 @@
                 <el-button
                     type="primary"
                     :plain="!VideoScatterConfig.showOnlySelected"
-                    title="Hide non-selected"
+                    :title="t('local.hideNonSelected')"
                     style="padding: 8px"
                     @click="VideoScatterConfig.showOnlySelected = !VideoScatterConfig.showOnlySelected"
                 >
@@ -44,7 +45,7 @@
                 <el-button
                     type="primary"
                     :plain="!VideoScatterConfig.highlightSelected"
-                    title="Highlight selected"
+                    :title="t('local.highlightSelected')"
                     style="padding: 8px; margin: 0"
                     @click="VideoScatterConfig.highlightSelected = !VideoScatterConfig.highlightSelected"
                 >
@@ -58,19 +59,19 @@
                 v-model="VideoScatterStore.selectionMode"
                 :options="[
                     {
-                        label: '覆盖',
+                        label: t('local.assign'),
                         value: 'assign',
                     },
                     {
-                        label: '并集',
+                        label: t('local.union'),
                         value: 'union',
                     },
                     {
-                        label: '差集',
+                        label: t('local.diff'),
                         value: 'diff',
                     },
                     {
-                        label: '交集',
+                        label: t('local.intersect'),
                         value: 'intersect',
                     },
                 ]"
@@ -84,13 +85,42 @@ import 'primeicons/primeicons.css';
 import '@/styles/text.css';
 
 import { ElButton, ElSegmented } from 'element-plus';
+import { useI18n } from 'vue-i18n';
 
 import { VideoScatterStore } from './store';
 
 import { BaseIconHide } from '@/components/common/icon';
 import MSStatSelect from '@/components/Filters/MSStatSelect.vue';
 import { MarkerSetting } from '@/components/visualization/Plots';
-import { VideoScatterAxisChoice, VideoScatterConfig } from '@/store';
+import { VideoScatterAxisChoice, VideoScatterColorByChoice, VideoScatterConfig } from '@/store';
+
+const i18nMessages = {
+    'zh-cn': { local: {
+        assign: '覆盖',
+        select: '框选',
+        colorBy: '颜色',
+        cursor: '光标',
+        diff: '差集',
+        hideNonSelected: '隐藏未选中项',
+        highlightSelected: '高亮选中项',
+        intersect: '交集',
+        union: '并集',
+    } },
+    'en': { local: {
+        assign: 'New',
+        select: 'Select points',
+        colorBy: 'Color by',
+        cursor: 'Cursor',
+        diff: 'Difference',
+        hideNonSelected: 'Hide non-selected',
+        highlightSelected: 'Highlight selected',
+        intersect: 'Intersection',
+        union: 'Union',
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
+
 </script>
 
 <style lang="less" scoped>
@@ -98,13 +128,6 @@ import { VideoScatterAxisChoice, VideoScatterConfig } from '@/store';
     display: flex;
     flex-direction: column;
     gap: 0.5em;
-}
-
-.selection-panel-primary {
-    align-items: center;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75em;
 }
 
 .selection-panel-secondary {
