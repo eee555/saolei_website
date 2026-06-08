@@ -48,7 +48,7 @@ const IdentifierHelper = defineAsyncComponent(() => import('@/components/dialogs
 const ActivityCalendarAbstract = defineAsyncComponent(() => import('@/components/visualization/ActivityCalendarAbstract/App.vue'));
 const BBBvSummary = defineAsyncComponent(() => import('@/components/visualization/BBBvSummary/App.vue'));
 const BBBvSummaryHeader = defineAsyncComponent(() => import('@/components/visualization/BBBvSummary/Header.vue'));
-const VideoScatter = defineAsyncComponent(() => import('@/components/visualization/VideoScatter.vue'));
+const VideoScatter = defineAsyncComponent(() => import('@/components/visualization/VideoScatter/App.vue'));
 
 const user = defineModel('user', { type: UserProfile, required: true });
 

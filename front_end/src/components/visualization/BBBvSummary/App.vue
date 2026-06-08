@@ -62,7 +62,7 @@ import { BBBvSummaryConfig, colorTheme } from '@/store';
 import { ArrayUtils } from '@/utils/arrays';
 import { PiecewiseColorScheme } from '@/utils/colors';
 import { setLastDigit } from '@/utils/math';
-import { CellChoice, ColorTemplateName, MS_Level } from '@/utils/ms_const';
+import { CellChoice, ColorTemplateName, getPiecewiseColorSchemeName, MS_Level, PiecewiseColorSchemeName } from '@/utils/ms_const';
 import { getStat_stat, groupVideosByBBBv, VideoAbstract } from '@/utils/videoabstract';
 
 const { t } = useI18n();
@@ -102,18 +102,9 @@ const minBv = computed(() => setLastDigit(ArrayUtils.minimum(groupedVideoAbstrac
 const displayBy = computed(() => options.value[BBBvSummaryConfig.value.template].displayBy);
 
 const theme = computed(() => {
-    if (['bvs', 'cls', 'ces'].includes(displayBy.value)) {
-        return new PiecewiseColorScheme(colorTheme.value.bvs.colors, colorTheme.value.bvs.thresholds);
-    } else if (displayBy.value == 'stnb') {
-        return new PiecewiseColorScheme(colorTheme.value.stnb.colors, colorTheme.value.stnb.thresholds);
-    } else if (['ioe', 'thrp', 'iome'].includes(displayBy.value)) {
-        return new PiecewiseColorScheme(colorTheme.value.ioe.colors, colorTheme.value.ioe.thresholds);
-    } else if (displayBy.value == 'time') {
-        if (prop.level == 'b') return new PiecewiseColorScheme(colorTheme.value.btime.colors, colorTheme.value.btime.thresholds);
-        else if (prop.level == 'i') return new PiecewiseColorScheme(colorTheme.value.itime.colors, colorTheme.value.itime.thresholds);
-        else if (prop.level == 'e') return new PiecewiseColorScheme(colorTheme.value.etime.colors, colorTheme.value.etime.thresholds);
-        else return new PiecewiseColorScheme([], []);
-    } else return new PiecewiseColorScheme([], []);
+    if (!(PiecewiseColorSchemeName as readonly string[]).includes(displayBy.value)) return new PiecewiseColorScheme([], []);
+    const themeName = getPiecewiseColorSchemeName(displayBy.value as PiecewiseColorSchemeName, prop.level);
+    return new PiecewiseColorScheme(colorTheme.value[themeName].colors, colorTheme.value[themeName].thresholds);
 });
 
 const gridStyle = computed(() => {
