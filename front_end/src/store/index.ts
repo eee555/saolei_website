@@ -145,12 +145,17 @@ export const BBBvSummaryConfig = useLocalStorage(
 
 export const VideoScatterAxisChoice = ['time', 'bv', 'bvs', 'stnb', 'ioe', 'thrp', 'corr', 'ces', 'cls', 'cl', 'ce', 'rqp'] as const;
 export type VideoScatterAxisChoice = typeof VideoScatterAxisChoice[number];
+export const VideoScatterColorByChoice = ['level', 'time', 'bvs', 'stnb', 'ioe', 'thrp', 'ces', 'cls'] as const;
+export type VideoScatterColorByChoice = typeof VideoScatterColorByChoice[number];
 export const VideoScatterConfig = useLocalStorage(
     'video-scatter-config',
     {
         radius: 3,
         x: 'bv' as VideoScatterAxisChoice,
         y: 'time' as VideoScatterAxisChoice,
+        colorBy: 'level' as VideoScatterColorByChoice,
+        highlightSelected: false,
+        showOnlySelected: false,
     },
     { mergeDefaults: true },
 );

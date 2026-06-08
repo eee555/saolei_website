@@ -7,12 +7,15 @@
     >
         <circle
             v-for="(point, index) in renderedPoints" :key="index" class="plot-scatter__point"
-            :cx="point.x" :cy="point.y" :fill="fill" :r="radius"
-            :stroke="stroke" :stroke-width="strokeWidth"
+            :cx="point.x" :cy="point.y" :r="radius"
+            :fill-opacity="getMaybeArray(opacity,point.index)"
+            :fill="getMaybeArray(fillColor, point.index)"
+            :stroke="getMaybeArray(strokeColor, point.index)"
+            :stroke-width="getMaybeArray(strokeWidth, point.index)"
             vector-effect="non-scaling-stroke"
-            @click="console.log('point-click'); emit('point-click', point.source)"
-            @mouseenter="emit('point-enter', point.source)"
-            @mouseleave="emit('point-leave', point.source)"
+            @click="console.log('point-click'); emit('point-click', points[point.index])"
+            @mouseenter="emit('point-enter', points[point.index])"
+            @mouseleave="emit('point-leave', points[point.index])"
         />
     </svg>
 </template>
@@ -36,11 +39,13 @@ const props = defineProps({
     // Circle radius in pixels.
     radius: { type: Number, default: 3 },
     // Circle fill color.
-    fill: { type: String, default: '#2563eb' },
+    fillColor: { type: [String, Array] as PropType<string | string[]>, default: '#2563eb' },
+    // Point opacity. Pass a number for all points or an array aligned with the input points.
+    opacity: { type: [Number, Array] as PropType<number | number[]>, default: 1 },
     // Circle outline color. Use "none" to hide the outline.
-    stroke: { type: String, default: 'none' },
+    strokeColor: { type: [String, Array] as PropType<string | string[]>, default: 'none' },
     // Circle outline width in pixels.
-    strokeWidth: { type: Number, default: 0 },
+    strokeWidth: { type: [Number, Array] as PropType<number | number[]>, default: 0 },
 });
 
 const emit = defineEmits<{
@@ -49,15 +54,26 @@ const emit = defineEmits<{
     (e: 'point-leave', point: PlotPoint<T>): void;
 }>();
 
+function getMaybeArray<T>(arr: T | T[], index: number) {
+    return Array.isArray(arr) ? arr[index] : arr;
+}
+
 const renderedPoints = computed(() => {
     const area = getPlotArea(props.size, props.padding);
+    const result = [];
 
-    return props.points.
-        filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y)).
-        map((point) => ({
-            ...pointToSvg(point, props.domain, area),
-            source: point,
-        }));
+    for (let i = 0; i < props.points.length; i++) {
+        const point = props.points[i];
+        if (!point) continue;
+        if (Number.isFinite(point.x) && Number.isFinite(point.y)) {
+            result.push({
+                ...pointToSvg(point, props.domain, area),
+                index: i,
+            });
+        }
+    }
+
+    return result;
 });
 </script>
 
