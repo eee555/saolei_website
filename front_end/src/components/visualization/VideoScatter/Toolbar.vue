@@ -82,7 +82,6 @@
 
 <script setup lang="ts">
 import 'primeicons/primeicons.css';
-import '@/styles/text.css';
 
 import { ElButton, ElSegmented } from 'element-plus';
 import { useI18n } from 'vue-i18n';

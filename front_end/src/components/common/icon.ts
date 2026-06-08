@@ -1,7 +1,6 @@
 export { default as BaseIconAdd } from './icons/BaseIconAdd.vue';
 export { default as BaseIconClose } from './icons/BaseIconClose.vue';
 export { default as BaseIconCopy } from './icons/BaseIconCopy.vue';
-export { default as BaseIconCursor } from './icons/BaseIconCursor.vue';
 export { default as BaseIconDelete } from './icons/BaseIconDelete.vue';
 export { default as BaseIconExternal } from './icons/BaseIconExternal.vue';
 export { default as BaseIconFrozen } from './icons/BaseIconFrozen.vue';
@@ -12,7 +11,6 @@ export { default as BaseIconPending } from './icons/BaseIconPending.vue';
 export { default as BaseIconPrev } from './icons/BaseIconPrev.vue';
 export { default as BaseIconQuestion } from './icons/BaseIconQuestion.vue';
 export { default as BaseIconRefresh } from './icons/BaseIconRefresh.vue';
-export { default as BaseIconSelection } from './icons/BaseIconSelection.vue';
 export { default as BaseIconSetting } from './icons/BaseIconSetting.vue';
 export { default as BaseIconShow } from './icons/BaseIconShow.vue';
 export { default as BaseIconSync } from './icons/BaseIconSync.vue';
