@@ -1,26 +1,36 @@
 <template>
     <div class="video-scatter-toolbar">
-        <!-- 选择xy用的数据 -->
-        <div style="width: 14em; display: flex; gap: 1em">
-            <MSStatSelect v-model="VideoScatterConfig.x" label="x" :options="[...VideoScatterAxisChoice]" />
-            <MSStatSelect v-model="VideoScatterConfig.y" label="y" :options="[...VideoScatterAxisChoice]" />
-        </div>
-        <!-- 设置散点的属性 -->
-        <div>
-            <MarkerSetting
-                v-model:radius="VideoScatterConfig.radius"
-                options="radius"
+        <div style="display: flex; gap: 1em; justify-content: flex-end; align-items: center">
+            <!-- 选择xy用的数据 -->
+            <div style="width: 14em; display: flex; gap: 1em;">
+                <MSStatSelect v-model="VideoScatterConfig.x" label="x" :options="[...VideoScatterAxisChoice]" />
+                <MSStatSelect v-model="VideoScatterConfig.y" label="y" :options="[...VideoScatterAxisChoice]" />
+            </div>
+
+            <div style="flex-grow: 1" />
+
+            <!-- 设置散点的属性 -->
+            <div>
+                <MarkerSetting
+                    v-model:radius="VideoScatterConfig.radius"
+                    options="radius"
+                />
+            </div>
+
+            <el-segmented
+                v-model="VideoScatterStore.canvasMode"
+                :options="[
+                    {
+                        label: '光标',
+                        value: '',
+                    },
+                    {
+                        label: '框选',
+                        value: 'select',
+                    },
+                ]"
             />
-        </div>
-        <div class="selection-panel-primary">
-            <el-radio-group v-model="VideoScatterStore.canvasMode">
-                <el-radio-button title="光标" value="">
-                    <BaseIconCursor />
-                </el-radio-button>
-                <el-radio-button title="框选" value="select">
-                    <BaseIconSelection />
-                </el-radio-button>
-            </el-radio-group>
+
             <div class="toggle-switches">
                 <el-button
                     type="primary"
@@ -43,20 +53,28 @@
             </div>
         </div>
         <div class="selection-panel-secondary">
-            <ElRadioGroup v-if="VideoScatterStore.canvasMode === 'select'" v-model="VideoScatterStore.selectionMode">
-                <ElRadioButton title="重选" value="assign">
-                    =
-                </ElRadioButton>
-                <ElRadioButton title="并集" value="union">
-                    ∪
-                </ElRadioButton>
-                <ElRadioButton title="差集" value="diff">
-                    \
-                </ElRadioButton>
-                <el-radio-button title="交集" value="intersect">
-                    ∩
-                </el-radio-button>
-            </ElRadioGroup>
+            <el-segmented
+                v-if="VideoScatterStore.canvasMode === 'select'"
+                v-model="VideoScatterStore.selectionMode"
+                :options="[
+                    {
+                        label: '覆盖',
+                        value: 'assign',
+                    },
+                    {
+                        label: '并集',
+                        value: 'union',
+                    },
+                    {
+                        label: '差集',
+                        value: 'diff',
+                    },
+                    {
+                        label: '交集',
+                        value: 'intersect',
+                    },
+                ]"
+            />
         </div>
     </div>
 </template>
@@ -65,11 +83,11 @@
 import 'primeicons/primeicons.css';
 import '@/styles/text.css';
 
-import { ElButton, ElRadioButton, ElRadioGroup } from 'element-plus';
+import { ElButton, ElSegmented } from 'element-plus';
 
 import { VideoScatterStore } from './store';
 
-import { BaseIconCursor, BaseIconHide, BaseIconSelection } from '@/components/common/icon';
+import { BaseIconHide } from '@/components/common/icon';
 import MSStatSelect from '@/components/Filters/MSStatSelect.vue';
 import { MarkerSetting } from '@/components/visualization/Plots';
 import { VideoScatterAxisChoice, VideoScatterConfig } from '@/store';

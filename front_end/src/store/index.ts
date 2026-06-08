@@ -154,7 +154,7 @@ export const VideoScatterConfig = useLocalStorage(
         x: 'bv' as VideoScatterAxisChoice,
         y: 'time' as VideoScatterAxisChoice,
         colorBy: 'level' as VideoScatterColorByChoice,
-        highlightSelected: true,
+        highlightSelected: false,
         showOnlySelected: false,
     },
     { mergeDefaults: true },

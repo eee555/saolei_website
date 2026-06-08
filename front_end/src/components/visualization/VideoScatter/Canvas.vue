@@ -2,19 +2,29 @@
     <Tippy :duration="0" sticky follow-cursor>
         <div ref="plotRef" class="plot-stage">
             <Grid
-                :domain="domain" :padding="padding" :size="plotSize"
+                :domain="VideoScatterStore.plotDomain"
+                :padding="VideoScatterStore.plotPadding" :size="VideoScatterStore.plotSize"
                 :stroke="gridColor" :x-ticks="xTicks" :y-ticks="yTicks"
             />
+            <HighlightSelected v-if="VideoScatterConfig.highlightSelected" />
             <Scatter
-                :domain="domain" :padding="padding" :size="plotSize"
-                :fill-color="VideoScatterStore.scatterData.colors" :radius="VideoScatterConfig.radius"
+                :domain="VideoScatterStore.plotDomain"
+                :padding="VideoScatterStore.plotPadding"
+                :size="VideoScatterStore.plotSize"
                 :points="VideoScatterStore.scatterData.points"
+                :fill-color="VideoScatterStore.fillColor"
+                :radius="VideoScatterConfig.radius"
+                :stroke-color="VideoScatterStore.fillColor"
+                :stroke-width="VideoScatterStore.strokeWidth"
+                :stroke-opacity="0.5"
                 @point-click="handlePointClick"
                 @point-enter="handlePointEnter"
                 @point-leave="activePoint = null;"
             />
             <Axes
-                :domain="domain" :padding="padding" :size="plotSize"
+                :domain="VideoScatterStore.plotDomain"
+                :padding="VideoScatterStore.plotPadding"
+                :size="VideoScatterStore.plotSize"
                 :label-color="labelColor" :stroke="axisColor"
                 :x-ticks="xTicks" :y-ticks="yTicks"
                 :x-label="t(`common.prop.${VideoScatterConfig.x}`)"
@@ -22,7 +32,7 @@
             />
             <MouseDraw
                 :mode="VideoScatterStore.canvasMode == 'select' ? 'rect' : ''"
-                :size="plotSize"
+                :size="VideoScatterStore.plotSize"
                 @draw="handleDraw"
             />
         </div>
@@ -40,36 +50,27 @@ import '@/styles/cards.css';
 
 import { ElCard } from 'element-plus';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
-import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Tippy } from 'vue-tippy';
 
+import HighlightSelected from './HighlightSelected.vue';
 import { VideoScatterStore } from './store';
 
-import { Axes, createLinearScale, Ellipse, getDataDomain, getNiceTicks, getPlotArea, Grid, MouseDraw, Rect, Scatter } from '@/components/visualization/Plots';
+import { Axes, createLinearScale, Ellipse, getNiceTicks, getPlotArea, Grid, MouseDraw, Rect, Scatter } from '@/components/visualization/Plots';
 import type { AnyShape } from '@/components/visualization/Plots';
-import type { PlotPadding, PlotPoint, PlotSize } from '@/components/visualization/Plots/utils';
+import type { PlotPoint } from '@/components/visualization/Plots/utils';
 import VideoAbstractDisplay from '@/components/widgets/VideoAbstractDisplay.vue';
 import { VideoScatterConfig } from '@/store';
 import { getTextColor } from '@/utils/colors';
 import { preview } from '@/utils/common/PlayerDialog';
 import type { VideoAbstract } from '@/utils/videoabstract';
 
-const props = defineProps({
-    padding: { type: Object as PropType<PlotPadding>, default: () => ({ top: 12, right: 16, bottom: 42, left: 52 }) },
-});
-
 const plotRef = ref<HTMLElement>();
-const plotSize = ref<PlotSize>({
-    width: 640,
-    height: 360,
-});
 const activePoint = ref<PlotPoint<VideoAbstract> | null>(null);
 let resizeObserver: ResizeObserver | undefined;
 
-const domain = computed(() => getDataDomain(VideoScatterStore.scatterData.points));
-const xTicks = computed(() => getNiceTicks(domain.value.xMin, domain.value.xMax, 5));
-const yTicks = computed(() => getNiceTicks(domain.value.yMin, domain.value.yMax, 5));
+const xTicks = computed(() => getNiceTicks(VideoScatterStore.plotDomain.xMin, VideoScatterStore.plotDomain.xMax, 5));
+const yTicks = computed(() => getNiceTicks(VideoScatterStore.plotDomain.yMin, VideoScatterStore.plotDomain.yMax, 5));
 
 const axisColor = computed(() => getTextColor('regular'));
 const labelColor = computed(() => getTextColor('regular'));
@@ -123,20 +124,20 @@ function ellipseToData(shape: Ellipse): Ellipse {
 }
 
 function createSvgToDataXScale() {
-    const area = getPlotArea(plotSize.value, props.padding);
-    return createLinearScale(area.x, area.x + area.width, domain.value.xMin, domain.value.xMax);
+    const area = getPlotArea(VideoScatterStore.plotSize, VideoScatterStore.plotPadding);
+    return createLinearScale(area.x, area.x + area.width, VideoScatterStore.plotDomain.xMin, VideoScatterStore.plotDomain.xMax);
 }
 
 function createSvgToDataYScale() {
-    const area = getPlotArea(plotSize.value, props.padding);
-    return createLinearScale(area.y + area.height, area.y, domain.value.yMin, domain.value.yMax);
+    const area = getPlotArea(VideoScatterStore.plotSize, VideoScatterStore.plotPadding);
+    return createLinearScale(area.y + area.height, area.y, VideoScatterStore.plotDomain.yMin, VideoScatterStore.plotDomain.yMax);
 }
 
 function updatePlotSize() {
     if (plotRef.value === undefined) return;
 
     const rect = plotRef.value.getBoundingClientRect();
-    plotSize.value = {
+    VideoScatterStore.plotSize = {
         width: Math.max(1, rect.width),
         height: Math.max(1, rect.height),
     };

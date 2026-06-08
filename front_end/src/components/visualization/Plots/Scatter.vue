@@ -60,14 +60,20 @@ function getMaybeArray<T>(arr: T | T[], index: number) {
 
 const renderedPoints = computed(() => {
     const area = getPlotArea(props.size, props.padding);
+    const result = [];
 
-    return props.points.
-        map((point, index) => ({ point, index })).
-        filter(({ point }) => Number.isFinite(point.x) && Number.isFinite(point.y)).
-        map(({ point, index }) => ({
-            ...pointToSvg(point, props.domain, area),
-            index: index,
-        }));
+    for (let i = 0; i < props.points.length; i++) {
+        const point = props.points[i];
+        if (!point) continue;
+        if (Number.isFinite(point.x) && Number.isFinite(point.y)) {
+            result.push({
+                ...pointToSvg(point, props.domain, area),
+                index: i,
+            });
+        }
+    }
+
+    return result;
 });
 </script>
 

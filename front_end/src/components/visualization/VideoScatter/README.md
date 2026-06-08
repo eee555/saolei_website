@@ -1,6 +1,6 @@
 # VideoScatter 组件架构
 
-`VideoScatter` 是一个以 `App.vue` 为入口的视频散点图组件。它负责接收外部传入的视频摘要数据，提供坐标轴、点样式和选择模式配置，并在画布中渲染可交互的散点图。
+`VideoScatter` 是一个以 `App.vue` 为入口的视频散点图组件。它接收外部传入的视频摘要数据，提供坐标轴、点样式、颜色映射和选择模式配置，并在画布中渲染可交互的散点图。
 
 ## 文件结构
 
@@ -9,7 +9,7 @@ VideoScatter/
 ├── App.vue      # 入口组件，组装工具栏和画布
 ├── Toolbar.vue  # 控制面板，修改散点图配置和选择模式
 ├── Canvas.vue   # 绘图区域，渲染散点图并处理鼠标交互
-├── store.ts     # Pinia 状态仓库，维护原始数据、选择状态和派生散点数据
+├── store.ts     # Pinia 状态仓库，维护数据、选择状态和派生绘图数据
 └── utils.ts     # 数据转换工具
 ```
 
@@ -30,7 +30,7 @@ App.vue
     └── Canvas.vue
 ```
 
-这意味着父组件只需要把视频数据传给 `App.vue`，后续的配置、渲染和选择状态都由 `VideoScatter` 内部模块协作完成。
+父组件只需要把视频数据传给 `App.vue`，后续的配置、渲染、颜色计算和选择状态都由 `VideoScatter` 内部模块协作完成。
 
 ## 状态层：store.ts
 
@@ -45,28 +45,50 @@ App.vue
 
 核心 getter：
 
-- `scatterData`：根据当前 `VideoScatterConfig` 把 `rawData` 转换成绘图所需的 `indices`、`points` 和 `colors`。
+- `colorHandle`：根据 `VideoScatterConfig.colorBy` 返回一个视频到颜色的映射函数。
+- `scatterData`：把 `rawData` 转换成绘图层需要的 `indices`、`points` 和 `colors`。
+
+`colorHandle` 支持三类颜色来源：
+
+- `level`：直接使用 `colorTheme.value.level[video.level]`。
+- `time`：按视频所属的 `MS_Level` 获取对应的分段时间配色方案。
+- 其他统计字段：通过 `getPiecewiseColorSchemeName(colorBy)` 获取分段配色方案，再用 `video.getStat(colorBy)` 映射颜色。
+
+`scatterData` 会逐个处理 `rawData`：
+
+- 如果 `VideoScatterConfig.showOnlySelected` 为真，会过滤掉未选中的视频。
+- 使用 `videoToPlotPoint(video, x, y)` 将视频转换为散点坐标。
+- 跳过无法形成有效坐标的点。
+- 使用 `this.colorHandle(video)` 计算点颜色。
+- 返回绘图层使用的点、颜色和原始下标。
 
 核心 action：
 
-- `setRawData(data)`：更新原始数据，并重置选择状态。
-- `selectionDraw(shape)`：根据当前选择模式，把画布上的选择区域应用到 `selectedFlags`。
+- `setRawData(data)`：更新原始数据，并把 `selectedFlags` 重置为与数据长度一致的全 `false` 数组。
+- `selectionDraw(shape)`：根据当前 `this.selectionMode`，把数据坐标系下的选择区域应用到 `selectedFlags`。
 
-`scatterData` 同时依赖全局配置 `VideoScatterConfig` 和颜色主题 `colorTheme`，因此坐标轴、颜色字段、点半径、是否只显示选中项等配置变化后，画布会通过响应式数据自动更新。
+选择策略如下：
+
+- `assign`：区域内为选中，区域外为未选中。
+- `union`：区域内加入当前选择。
+- `diff`：区域内从当前选择中移除。
+- `intersect`：只保留当前选择中也位于区域内的项。
 
 ## 工具栏：Toolbar.vue
 
-`Toolbar.vue` 负责提供用户可操作的配置入口，主要修改两类状态：
+`Toolbar.vue` 负责提供用户可操作的配置入口，主要修改两类状态。
 
-- 修改 `VideoScatterConfig`：
-  - `x` / `y`：选择散点图横纵轴对应的统计字段。
-  - `radius`：调整散点半径。
-  - `showOnlySelected`：只显示已选中的点。
-  - `highlightSelected`：高亮已选中的点。
+修改 `VideoScatterConfig`：
 
-- 修改 `VideoScatterStore`：
-  - `canvasMode`：切换普通光标或框选模式。
-  - `selectionMode`：在框选模式下选择赋值、并集、差集或交集策略。
+- `x` / `y`：选择散点图横纵轴对应的统计字段。
+- `radius`：调整散点半径。
+- `showOnlySelected`：只显示已选中的点。
+- `highlightSelected`：高亮已选中的点。
+
+修改 `VideoScatterStore`：
+
+- `canvasMode`：切换普通光标或框选模式。
+- `selectionMode`：在框选模式下选择赋值、并集、差集或交集策略。
 
 因此，`Toolbar` 不直接绘图，也不直接处理数据转换；它只修改配置和交互状态。
 
@@ -104,12 +126,26 @@ VideoScatterStore.setRawData
         ▼
 VideoScatterStore.scatterData
         │
-        ├── 读取 VideoScatterConfig 的 x / y / colorBy / showOnlySelected
+        ├── 读取 VideoScatterConfig.x / y / showOnlySelected
         ├── 使用 utils.videoToPlotPoint 转换视频为散点坐标
-        └── 根据 colorTheme 计算每个点的颜色
+        ├── 调用 VideoScatterStore.colorHandle 计算颜色
+        └── 输出 indices / points / colors
         │
         ▼
 Canvas.vue 渲染 Grid / Scatter / Axes / MouseDraw
+```
+
+颜色计算流：
+
+```text
+VideoScatterConfig.colorBy
+        │
+        ▼
+VideoScatterStore.colorHandle
+        │
+        ├── level -> colorTheme.level
+        ├── time -> 按 b / i / e 级别使用时间分段配色
+        └── 其他统计字段 -> PiecewiseColorScheme
 ```
 
 用户交互的反向数据流：
@@ -117,7 +153,7 @@ Canvas.vue 渲染 Grid / Scatter / Axes / MouseDraw
 ```text
 Toolbar 修改配置或模式
         │
-        ├── VideoScatterConfig 变化后触发 scatterData 重新计算
+        ├── VideoScatterConfig 变化后触发 colorHandle / scatterData 重新计算
         └── VideoScatterStore.canvasMode / selectionMode 影响 Canvas 交互
 
 Canvas 框选区域
@@ -148,7 +184,7 @@ scatterData 根据 showOnlySelected 等配置重新派生
 - `App.vue`：对外入口和模块组装。
 - `Toolbar.vue`：只负责用户配置输入。
 - `Canvas.vue`：只负责绘图、尺寸监听和图形交互。
-- `store.ts`：负责原始数据、选择状态和绘图数据派生。
+- `store.ts`：负责原始数据、选择状态、颜色映射和绘图数据派生。
 - `utils.ts`：负责可复用的数据转换逻辑。
 
-这种拆分让入口组件保持简单，也让配置、状态、渲染和数据转换各自有清晰边界。
+这种拆分让入口组件保持简单，也让配置、状态、颜色、渲染和数据转换各自有清晰边界。
