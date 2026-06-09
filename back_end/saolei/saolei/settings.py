@@ -235,9 +235,14 @@ else:
     CSRF_COOKIE_SAMESITE = 'Lax'
     CSRF_COOKIE_SECURE = True     # https时候改成True
 
-    # allow CORS for the preview/download endpoints
+    # allow CORS for public video and user profile endpoints
     CORS_ALLOW_ALL_ORIGINS = True
-    CORS_URLS_REGEX = r'^/video/(preview|download)/.*$'
+    CORS_URLS_REGEX = (
+        r'^/('
+        r'video/(preview|download)/.*'
+        r'|api/userprofile/(videolist/?|info/.*|identifier/?|avatar/.*)'
+        r')$'
+    )
 
 # 发送邮箱验证码
 EMAIL_HOST = 'smtp.88.com'     # 服务器
