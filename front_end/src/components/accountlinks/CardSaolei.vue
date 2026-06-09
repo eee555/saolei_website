@@ -137,7 +137,7 @@ import '@/styles/button.css';
 
 import { ElButton, ElCarousel, ElCarouselItem, ElDescriptions, ElDescriptionsItem, ElDialog, ElInput, ElLink, vLoading } from 'element-plus';
 import PrToolbar from 'primevue/toolbar';
-import { computed, onMounted, PropType, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, PropType, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import CarouselControl from './CarouselControl.vue';
@@ -208,6 +208,7 @@ function createSyncTask(mode: 'all' | 'new') {
 const importSummary = ref<SaoleiImportSummary>(SaoleiImportSummaryDefault);
 const importSummaryLoading = ref(false);
 let importSummarySaoleiId = 0;
+let isActive = true;
 const videoImporting = computed(() => importSummary.value.new_connection + importSummary.value.new_failed + importSummary.value.new_success != importSummary.value.new_total);
 const videoListImporting = computed(() => ['READY', 'RUNNING'].includes(importSummary.value.bulk_task_status));
 const stackBarData = computed(() => [
@@ -233,22 +234,30 @@ async function getImportSummary() {
             saolei_id: props.info.id,
         },
     }).then((response) => {
+        if (!isActive) return;
         importSummary.value = response.data;
+    }).finally(() => {
+        if (!isActive) return;
+        importSummaryLoading.value = false;
     });
-    importSummaryLoading.value = false;
 }
 
 watch(() => props.info.id, getImportSummary, { immediate: true });
 
 onMounted(async () => {
-    while (true) {
+    while (isActive) {
         await sleep(30000);
+        if (!isActive) return;
         if (props.info.id != importSummarySaoleiId) {
             importSummarySaoleiId = props.info.id;
         } else if (videoImporting.value || videoListImporting.value) {
             await getImportSummary();
         }
     }
+});
+
+onUnmounted(() => {
+    isActive = false;
 });
 
 defineEmits(['refresh']);
