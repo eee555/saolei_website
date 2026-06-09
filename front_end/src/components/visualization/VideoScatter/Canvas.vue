@@ -1,5 +1,5 @@
 <template>
-    <Tippy :duration="0" sticky follow-cursor>
+    <Tippy class="video-scatter-tippy" :duration="0" sticky follow-cursor>
         <div ref="plotRef" class="plot-stage">
             <Grid
                 :domain="VideoScatterStore.plotDomain"
@@ -157,10 +157,15 @@ const { t } = useI18n();
 </script>
 
 <style lang="less" scoped>
+.video-scatter-tippy {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
 .plot-stage {
-    flex-grow: 1;
-    height: 500px;
+    height: 100%;
     overflow: hidden;
     position: relative;
+    width: 100%;
 }
 </style>

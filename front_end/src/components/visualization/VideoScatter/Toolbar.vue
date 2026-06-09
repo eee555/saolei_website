@@ -32,12 +32,20 @@
                 ]"
             />
 
-            <div class="toggle-switches">
+            <div class="button-group">
+                <el-button
+                    class="square-button"
+                    type="primary" :plain="!isFullscreen"
+                    :title="t('local.fullscreen')"
+                    @click="emit('toggleFullscreen')"
+                >
+                    <i class="pi pi-expand" />
+                </el-button>
                 <el-button
                     type="primary"
                     :plain="!VideoScatterConfig.showOnlySelected"
                     :title="t('local.hideNonSelected')"
-                    style="padding: 8px"
+                    class="square-button"
                     @click="VideoScatterConfig.showOnlySelected = !VideoScatterConfig.showOnlySelected"
                 >
                     <BaseIconHide />
@@ -82,6 +90,7 @@
 
 <script setup lang="ts">
 import 'primeicons/primeicons.css';
+import '@/styles/button.css';
 
 import { ElButton, ElSegmented } from 'element-plus';
 import { useI18n } from 'vue-i18n';
@@ -93,6 +102,14 @@ import MSStatSelect from '@/components/Filters/MSStatSelect.vue';
 import { MarkerSetting } from '@/components/visualization/Plots';
 import { VideoScatterAxisChoice, VideoScatterColorByChoice, VideoScatterConfig } from '@/store';
 
+defineProps({
+    isFullscreen: { type: Boolean, default: false },
+});
+
+const emit = defineEmits<{
+    toggleFullscreen: [];
+}>();
+
 const i18nMessages = {
     'zh-cn': { local: {
         assign: '覆盖',
@@ -100,6 +117,7 @@ const i18nMessages = {
         colorBy: '颜色',
         cursor: '光标',
         diff: '差集',
+        fullscreen: '全屏',
         hideNonSelected: '隐藏未选中项',
         highlightSelected: '高亮选中项',
         intersect: '交集',
@@ -111,6 +129,7 @@ const i18nMessages = {
         colorBy: 'Color by',
         cursor: 'Cursor',
         diff: 'Difference',
+        fullscreen: 'Fullscreen',
         hideNonSelected: 'Hide non-selected',
         highlightSelected: 'Highlight selected',
         intersect: 'Intersection',
@@ -134,10 +153,5 @@ const { t } = useI18n({ messages: i18nMessages });
     display: flex;
     flex-wrap: wrap;
     gap: 0.75em;
-}
-
-.toggle-switches {
-    display: flex;
-    gap: 0.25em;
 }
 </style>
