@@ -1,4 +1,4 @@
-beautifulsoup4==4.14.3
+beautifulsoup4==4.15.0
 Django==6.0.6
 django-apscheduler==0.7.0
 django-cleanup==9.0.0
