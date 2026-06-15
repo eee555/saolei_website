@@ -1,6 +1,6 @@
 <template>
     <div style="text-align: center;">
-        <BaseFileInput :accept="'.avf,.evf,.rmv,.mvf'" :disabled="isUserAnonymous || isParsing || isUploading" :style="{ height: uploadQueue.length > 0 ? 'auto' : '300px' }" @add="handleFileChange">
+        <BaseFileInput accept=".avf,.evf,.rmv,.mvf" :disabled="isUserAnonymous || isParsing || isUploading" :style="{ height: uploadQueue.length > 0 ? 'auto' : '300px' }" @add="handleFileChange">
             <FileInputContent :is-user-anonymous="isUserAnonymous" />
         </BaseFileInput>
     </div>

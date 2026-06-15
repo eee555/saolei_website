@@ -17,7 +17,7 @@
 
 <script setup lang="ts">
 import { ElCol } from 'element-plus';
-import { computed, PropType, ref } from 'vue';
+import { computed, PropType, useTemplateRef } from 'vue';
 
 import HeadColumn from './HeadColumn.vue';
 import SortedColumn from './SortedColumn.vue';
@@ -38,9 +38,9 @@ const props = defineProps({
     },
 });
 
-const timeColumnRef = ref<InstanceType<typeof SortedColumn>>();
-const bvsColumnRef = ref<InstanceType<typeof SortedColumn>>();
-const stnbColumnRef = ref<InstanceType<typeof SortedColumn>>();
+const timeColumnRef = useTemplateRef('timeColumnRef');
+const bvsColumnRef = useTemplateRef('bvsColumnRef');
+const stnbColumnRef = useTemplateRef('stnbColumnRef');
 
 function isValid(video: VideoAbstract) {
     if (video.level != props.level || video.state != MS_State.Official) return false;

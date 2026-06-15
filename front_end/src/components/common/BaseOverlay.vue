@@ -2,7 +2,7 @@
     <ElLink :underline="underline" @click.stop="visible = true">
         <slot />
     </ElLink>
-    <ElDialog v-if="visible" :model-value="true" width="100%" align-center body-class="center" :show-close="false" append-to-body :z-index="zIndex" @closed="visible=false">
+    <ElDialog v-if="visible" model-value width="100%" align-center body-class="center" :show-close="false" append-to-body :z-index="zIndex" @closed="visible=false">
         <slot name="overlay" />
         <template #header>
             <h2 class="text-regular" style="justify-self: center;">

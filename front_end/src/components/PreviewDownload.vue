@@ -1,8 +1,8 @@
 <template>
-    <ElButton :size="'small'" plain icon="View" @click="preview(id);">
+    <ElButton size="small" plain icon="View" @click="preview(id);">
         预览
     </ElButton>
-    <ElButton :size="'small'" plain icon="Download" @click="download($event, id)">
+    <ElButton size="small" plain icon="Download" @click="download($event, id)">
         下载
     </ElButton>
 </template>

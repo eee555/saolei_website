@@ -1,11 +1,11 @@
 <template>
     <ElMenu
-        mode="horizontal" :router="true" :default-active="menu_index" :ellipsis="false"
+        mode="horizontal" router :default-active="menu_index" :ellipsis="false"
         menu-trigger="click"
     >
         <ElMenuItem index="/" class="logo">
-            <ElImage class="logo1" :src="logo_1" :fit="'cover'" />
-            <ElImage v-if="!local.menu_icon" class="logo2" :src="logo_2" :fit="'cover'" />
+            <ElImage class="logo1" :src="logo_1" fit="cover" />
+            <ElImage v-if="!local.menu_icon" class="logo2" :src="logo_2" fit="cover" />
         </ElMenuItem>
         <ElMenuItem v-for="item in menu_items" :key="item.index" :index="`/${ item.index}`">
             <IconMenuItem :text="t(`local.${item.index}`)" :icon="item.icon" />

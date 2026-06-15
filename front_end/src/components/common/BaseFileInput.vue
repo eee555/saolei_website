@@ -21,7 +21,7 @@
 
 <script setup lang="ts">
 import { ElButton } from 'element-plus';
-import { ref } from 'vue';
+import { ref, useTemplateRef } from 'vue';
 
 const props = defineProps({
     // 限制文件类型，例如 'image/*' 或 '.pdf,.jpg'
@@ -37,7 +37,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['add']);
-const fileInputRef = ref<HTMLInputElement>();
+const fileInputRef = useTemplateRef('fileInputRef');
 const isDragover = ref(false);
 
 // 触发原生文件选择框

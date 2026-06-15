@@ -1,5 +1,5 @@
 <template>
-    <span :class="['text', statusToClass[status]]">
+    <span class="text" :class="statusToClass[status]">
         {{ status }}
     </span>
 </template>

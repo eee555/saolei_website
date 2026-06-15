@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
 import { useFullscreen } from '@vueuse/core';
-import { ref, watch } from 'vue';
+import { useTemplateRef, watch } from 'vue';
 
 import Canvas from './Canvas.vue';
 import { VideoScatterStore } from './store';
@@ -21,7 +21,7 @@ const props = defineProps({
     videos: { type: Array<VideoAbstract>, default: () => [] },
 });
 
-const scatterRef = ref<HTMLElement>();
+const scatterRef = useTemplateRef('scatterRef');
 const { isFullscreen, toggle } = useFullscreen(scatterRef);
 
 watch(() => props.videos, VideoScatterStore.setRawData, { immediate: true });

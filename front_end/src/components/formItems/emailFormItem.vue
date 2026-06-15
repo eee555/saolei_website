@@ -10,8 +10,7 @@
 <script setup lang="ts">
 import { ElFormItem, ElInput } from 'element-plus';
 import isEmail from 'validator/lib/isEmail';
-import { computed, ref } from 'vue';
-// @ts-ignore
+import { computed, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { validateError, validateSuccess } from '@/utils/common/elFormValidate';
@@ -27,7 +26,7 @@ const email = defineModel({ type: String, required: true });
 const { proxy } = useCurrentInstance();
 const { t } = useI18n();
 
-const emailFormRef = ref<typeof ElFormItem>();
+const emailFormRef = useTemplateRef('emailFormRef');
 const validateState = computed(() => { return emailFormRef.value!.validateState; });
 
 defineExpose({ validateState });

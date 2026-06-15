@@ -46,14 +46,6 @@ const props = defineProps({
     strokeWidth: { type: Number, default: 1 },
     // SVG stroke-dasharray value, for example "4 4" for dashed grid lines.
     dashArray: { type: String, default: '' },
-    // Reserved for API symmetry with axes; this component does not render labels.
-    labelColor: { type: String, default: '#52525b' },
-    // Reserved for API symmetry with axes; this component does not render text.
-    fontSize: { type: Number, default: 11 },
-    // Reserved for API symmetry with axes; this component does not render axis titles.
-    xLabel: { type: String, default: '' },
-    // Reserved for API symmetry with axes; this component does not render axis titles.
-    yLabel: { type: String, default: '' },
 });
 
 const area = computed(() => getPlotArea(props.size, props.padding));

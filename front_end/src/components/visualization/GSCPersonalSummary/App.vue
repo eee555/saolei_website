@@ -24,7 +24,7 @@
 
 <script setup lang="ts">
 import { ElCol, ElRow } from 'element-plus';
-import { computed, PropType, ref } from 'vue';
+import { computed, PropType, useTemplateRef } from 'vue';
 
 import AllSums from './AllSums.vue';
 import LevelBlock from './LevelBlock.vue';
@@ -38,9 +38,9 @@ defineProps({
     },
 });
 
-const BBlockRef = ref<InstanceType<typeof LevelBlock>>();
-const IBlockRef = ref<InstanceType<typeof LevelBlock>>();
-const EBlockRef = ref<InstanceType<typeof LevelBlock>>();
+const BBlockRef = useTemplateRef('BBlockRef');
+const IBlockRef = useTemplateRef('IBlockRef');
+const EBlockRef = useTemplateRef('EBlockRef');
 
 const sumTime = computed(() => {
     return (BBlockRef.value ? BBlockRef.value.sumAll.time : 0) + (IBlockRef.value ? IBlockRef.value.sumAll.time : 0) + (EBlockRef.value ? EBlockRef.value.sumAll.time : 0);

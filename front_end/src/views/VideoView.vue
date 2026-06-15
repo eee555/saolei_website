@@ -1,7 +1,7 @@
 <template>
     <ElRow class="mb-4" style="margin-bottom: 10px;">
         <ElButton
-            v-for="(tag, key) in level_tags" :key="key" type="warning" :plain="!(level_tag_selected == key)" :size="'small'"
+            v-for="(tag, key) in level_tags" :key="key" type="warning" :plain="!(level_tag_selected == key)" size="small"
             @click="level_tag_selected = key as string; request_videos();"
         >
             {{ t(`common.level.${tag.key}`) }}

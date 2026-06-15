@@ -8,7 +8,7 @@
                     </span>
                 </template>
                 <template #end>
-                    <CarouselControl :ref-carousel="refCarousel" :length="carouselLength" />
+                    <CarouselControl :ref-carousel="refCarousel!" :length="carouselLength" />
                 </template>
             </PrToolbar>
         </div>
@@ -137,7 +137,7 @@ import '@/styles/button.css';
 
 import { ElButton, ElCarousel, ElCarouselItem, ElDescriptions, ElDescriptionsItem, ElDialog, ElInput, ElLink, vLoading } from 'element-plus';
 import PrToolbar from 'primevue/toolbar';
-import { computed, onMounted, onUnmounted, PropType, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, PropType, ref, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import CarouselControl from './CarouselControl.vue';
@@ -167,7 +167,7 @@ defineEmits(['refresh']);
 
 const { proxy } = useCurrentInstance();
 
-const refCarousel = ref<typeof ElCarousel>();
+const refCarousel = useTemplateRef<typeof ElCarousel>('refCarousel');
 const errorMsg = ref('');
 const taskStatus = ref<TaskStatus>('');
 const deleteDialogVisible = ref(false);

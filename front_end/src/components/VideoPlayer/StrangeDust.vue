@@ -7,7 +7,7 @@
                 {{ t('local.playerTooltip2') }}
             </template>
             <template #sub-title>
-                <ElLink href="https://strange-dust.github.io/minesweeper-replay-analyzer/" target="_blank">
+                <ElLink href="https://strange-dust.github.io/minesweeper-replay-analyzer/" target="_blank" rel="noopener noreferrer">
                     https://strange-dust.github.io/minesweeper-replay-analyzer/
                 </ElLink>
             </template>

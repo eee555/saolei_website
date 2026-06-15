@@ -40,7 +40,7 @@
                 />
             </ElDescriptionsItem>
             <ElDescriptionsItem :label="t('local.notificationDuration')">
-                <base-tooltip>
+                <BaseTooltip>
                     <ElInputNumber v-model="local.notification_duration" size="small" :min="0" :step="1000" />
                     <template #content>
                         <span class="text">
@@ -49,7 +49,7 @@
                             {{ t('local.notificationDurationTooltip2') }}
                         </span>
                     </template>
-                </base-tooltip>
+                </BaseTooltip>
             </ElDescriptionsItem>
             <ElDescriptionsItem :label="t('local.nameFormat')">
                 <span :title="t('local.nameFormatTooltip')">
@@ -77,6 +77,7 @@ import '@/styles/text.css';
 import { ElCard, ElDescriptions, ElDescriptionsItem, ElInputNumber, ElRadioButton, ElRadioGroup, ElSlider, ElSwitch } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
+import BaseTooltip from '@/components/common/BaseTooltip.vue';
 import DarkMode from '@/components/widgets/DarkMode.vue';
 import { local } from '@/store';
 import { ViennaIconLegacy, ViennaIconNew } from '@/utils/assets';

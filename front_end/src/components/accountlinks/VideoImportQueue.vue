@@ -118,8 +118,6 @@ const props = defineProps({
     },
 });
 
-defineEmits(['back', 'enterAuto', 'enterHelp']);
-
 const filters = ref({
     'import_task__status': { value: null, matchMode: FilterMatchMode.EQUALS },
     'level': { value: null, matchMode: FilterMatchMode.EQUALS },

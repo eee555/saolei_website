@@ -1,17 +1,17 @@
 <template>
     <ElForm ref="ruleFormRef" :model="retrieveForm" status-icon>
         <!-- 邮箱 -->
-        <email-form-item ref="emailFormRef" v-model="retrieveForm.email" check-collision="false" />
+        <EmailFormItem ref="emailFormRef" v-model="retrieveForm.email" check-collision="false" />
         <!-- 邮箱验证码 -->
-        <email-code-block
+        <EmailCodeBlock
             ref="emailCodeFormRef" v-model="retrieveForm.emailCode" :email="retrieveForm.email" type="register"
             :email-state="email_state"
         />
         <!-- 密码 -->
-        <password-confirm-block ref="passwordFormRef" v-model="retrieveForm.password" />
+        <PasswordConfirmBlock ref="passwordFormRef" v-model="retrieveForm.password" />
         <!-- 确认 -->
         <ElFormItem>
-            <ElButton type="primary" :disabled="confirm_disabled" @click="submitForm(ruleFormRef)">
+            <ElButton type="primary" :disabled="confirm_disabled" @click="submitForm(ruleFormRef!)">
                 {{
                     t('local.confirm') }}
             </ElButton>
@@ -21,12 +21,12 @@
 
 <script setup lang="ts">
 import { ElButton, ElForm, ElFormItem, ElNotification, FormInstance } from 'element-plus';
-import { computed, onUnmounted, reactive, ref } from 'vue';
+import { computed, onUnmounted, reactive, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import emailCodeBlock from '../formItems/emailCodeBlock.vue';
-import emailFormItem from '../formItems/emailFormItem.vue';
-import passwordConfirmBlock from '../formItems/passwordConfirmBlock.vue';
+import EmailCodeBlock from '../formItems/EmailCodeBlock.vue';
+import EmailFormItem from '../formItems/EmailFormItem.vue';
+import PasswordConfirmBlock from '../formItems/PasswordConfirmBlock.vue';
 
 import { local } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
@@ -35,9 +35,9 @@ const emit = defineEmits(['login']);
 
 const { proxy } = useCurrentInstance();
 
-const emailFormRef = ref<typeof ElFormItem>();
-const emailCodeFormRef = ref<typeof emailCodeBlock>();
-const passwordFormRef = ref<typeof passwordConfirmBlock>();
+const emailFormRef = useTemplateRef<typeof EmailFormItem>('emailFormRef');
+const emailCodeFormRef = useTemplateRef<typeof EmailCodeBlock>('emailCodeFormRef');
+const passwordFormRef = useTemplateRef<typeof PasswordConfirmBlock>('passwordFormRef');
 
 interface RetrieveForm {
     email: string;
@@ -51,10 +51,10 @@ const retrieveForm = reactive<RetrieveForm>({
     password: '',
 });
 
-const ruleFormRef = ref<FormInstance>();
+const ruleFormRef = useTemplateRef('ruleFormRef');
 
 const email_state = computed(() => {
-    if (emailFormRef.value === undefined) return '';
+    if (!emailFormRef.value) return '';
     else return emailFormRef.value.validateState;
 });
 const confirm_disabled = computed(() => {

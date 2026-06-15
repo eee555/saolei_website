@@ -26,12 +26,10 @@ import { store } from '@/store';
 import { getTextColor, PiecewiseColorScheme } from '@/utils/colors';
 import { preview } from '@/utils/common/PlayerDialog';
 import { fullDay, globalNow } from '@/utils/datetime';
-import { MS_Level, MS_Software, MS_Softwares } from '@/utils/ms_const';
+import { MS_Software, MS_Softwares } from '@/utils/ms_const';
 import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 
 const prop = defineProps({
-    level: { type: String as PropType<MS_Level>, required: true },
-    bv: { type: Number, required: true },
     videos: { type: Array<VideoAbstract>, default: [] },
     sortBy: { type: String as PropType<getStat_stat>, default: 'timems' },
     sortDesc: { type: Boolean, default: false },

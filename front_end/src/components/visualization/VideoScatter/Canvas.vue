@@ -49,7 +49,7 @@
 import '@/styles/cards.css';
 
 import { ElCard } from 'element-plus';
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Tippy } from 'vue-tippy';
 
@@ -65,7 +65,7 @@ import { getTextColor } from '@/utils/colors';
 import { preview } from '@/utils/common/PlayerDialog';
 import type { VideoAbstract } from '@/utils/videoabstract';
 
-const plotRef = ref<HTMLElement>();
+const plotRef = useTemplateRef('plotRef');
 const activePoint = ref<PlotPoint<VideoAbstract> | null>(null);
 let resizeObserver: ResizeObserver | undefined;
 
@@ -134,7 +134,7 @@ function createSvgToDataYScale() {
 }
 
 function updatePlotSize() {
-    if (plotRef.value === undefined) return;
+    if (!plotRef.value) return;
 
     const rect = plotRef.value.getBoundingClientRect();
     VideoScatterStore.plotSize = {
@@ -146,7 +146,7 @@ function updatePlotSize() {
 onMounted(() => {
     updatePlotSize();
     resizeObserver = new ResizeObserver(updatePlotSize);
-    if (plotRef.value !== undefined) resizeObserver.observe(plotRef.value);
+    if (plotRef.value) resizeObserver.observe(plotRef.value);
 });
 
 onUnmounted(() => {
