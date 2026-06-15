@@ -61,7 +61,7 @@
             <ElTableColumn :label="t('software.download')">
                 <template #default="{row}">
                     <template v-for="link in row.links" :key="link.url">
-                        <ElLink :href="link.url" target="_blank">
+                        <ElLink :href="link.url" target="_blank" rel="noopener noreferrer">
                             {{ link.label }}
                         </ElLink>
                         &nbsp;

@@ -21,8 +21,6 @@
                 v-for="bv in ArrayUtils.range(minBv, maxBv)"
                 :key="bv"
                 :data-cy="`bv-${bv}`"
-                :bv="bv"
-                :level="level"
                 :videos="groupedVideoAbstract.get(bv)"
                 :color-theme="theme"
                 :display-by="options[BBBvSummaryConfig.template].displayBy"

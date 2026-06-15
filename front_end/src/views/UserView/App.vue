@@ -19,7 +19,7 @@
 <script lang="ts" setup>
 import { useElementSize } from '@vueuse/core';
 import { ElTabPane, ElTabs, vLoading } from 'element-plus';
-import { computed, ref, watch } from 'vue';
+import { computed, ref, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -61,7 +61,7 @@ const handleTabClick = (tab: any) => {
 
 const playerLoading = ref(false);
 
-const containerRef = ref<HTMLElement | null>(null);
+const containerRef = useTemplateRef('containerRef');
 const { width } = useElementSize(containerRef);
 const isWide = computed(() => width.value >= 960);
 

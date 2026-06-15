@@ -8,7 +8,7 @@
                     </span>
                 </template>
                 <template #end>
-                    <CarouselControl :ref-carousel="refCarousel" :length="carouselLength" />
+                    <CarouselControl :ref-carousel="refCarousel!" :length="carouselLength" />
                 </template>
             </PrToolbar>
         </div>
@@ -102,7 +102,7 @@
 <script setup lang="ts">
 import { ElButton, ElCarousel, ElCarouselItem, ElDescriptions, ElDescriptionsItem, ElImage } from 'element-plus';
 import PrToolbar from 'primevue/toolbar';
-import { computed, PropType, ref } from 'vue';
+import { computed, PropType, ref, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import CarouselControl from './CarouselControl.vue';
@@ -131,7 +131,7 @@ defineEmits(['refresh']);
 
 const { proxy } = useCurrentInstance();
 
-const refCarousel = ref<typeof ElCarousel>();
+const refCarousel = useTemplateRef<typeof ElCarousel>('refCarousel');
 const errorMsg = ref('');
 const taskStatus = ref<TaskStatus>('');
 const carouselLength = computed(() => store.player.id == store.user.id ? 3 : 2);

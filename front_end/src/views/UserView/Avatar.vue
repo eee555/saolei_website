@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
 import { vLoading } from 'element-plus';
-import { computed, ref, watch } from 'vue';
+import { computed, ref, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { baseErrorNotification, httpErrorNotification } from '@/components/Notifications';
@@ -45,7 +45,7 @@ function refresh(newId: number) {
 
 watch(() => user.value.id, refresh, { immediate: true });
 
-const fileInputRef = ref<HTMLInputElement>();
+const fileInputRef = useTemplateRef('fileInputRef');
 function triggerFileDialog() {
     if (disabled.value) return;
     fileInputRef.value!.click();

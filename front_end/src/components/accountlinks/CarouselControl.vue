@@ -15,8 +15,8 @@ import { BaseIconNext, BaseIconPrev } from '@/components/common/icon';
 
 defineProps({
     refCarousel: {
-        type: Object as PropType<typeof ElCarousel> | undefined,
-        default: undefined,
+        type: Object as PropType<typeof ElCarousel> | null,
+        default: null,
     },
     length: {
         type: Number,

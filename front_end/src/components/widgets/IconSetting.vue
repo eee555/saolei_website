@@ -1,5 +1,5 @@
 <template>
-    <Tippy interactive animate-fill arrow trigger="click" :append-to="'parent'">
+    <Tippy interactive animate-fill arrow trigger="click" append-to="parent">
         <ElLink underline="never">
             <BaseIconSetting />
         </ElLink>

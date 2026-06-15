@@ -34,7 +34,7 @@
 <script setup lang="ts">
 import VueCountdown from '@chenfengyuan/vue-countdown';
 import { ElButton, ElFormItem, ElInput, ElNotification } from 'element-plus';
-import { computed, ref } from 'vue';
+import { computed, ref, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import ValidCode from '../ValidCode.vue';
@@ -68,9 +68,9 @@ const email_success = ref(false); // 邮件发送成功
 const email_handling = ref(false); // 正在校验图形验证码与发送邮件
 const counting = ref(false);
 
-const refValidCode = ref<typeof ValidCode>();
-const captchaFormRef = ref<typeof ElFormItem>();
-const emailCodeFormRef = ref<typeof ElFormItem>();
+const refValidCode = useTemplateRef('refValidCode');
+const captchaFormRef = useTemplateRef('captchaFormRef');
+const emailCodeFormRef = useTemplateRef('emailCodeFormRef');
 
 // 获取验证状态
 const validateState = computed(() => { return emailCodeFormRef.value!.validateState; });

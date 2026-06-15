@@ -39,7 +39,7 @@
         </ElFormItem>
         <ElFormItem>
             <!-- 确认 -->
-            <ElButton type="primary" @click="submitForm(ruleFormRef)">
+            <ElButton type="primary" @click="submitForm(ruleFormRef!)">
                 {{ t('local.confirm') }}
             </ElButton>
             <!-- 忘记密码 -->
@@ -58,7 +58,7 @@ import '@/styles/text.css';
 import '@/styles/cards.css';
 
 import { ElButton, ElCheckbox, ElForm, ElFormItem, ElInput, ElLink, ElRadioButton, ElRadioGroup, FormInstance, FormRules } from 'element-plus';
-import { onUnmounted, reactive, ref } from 'vue';
+import { onUnmounted, reactive, ref, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import BaseIconInfo from '../common/icons/BaseIconInfo.vue';
@@ -71,7 +71,7 @@ const emit = defineEmits(['forgetPassword', 'login']);
 
 const { proxy } = useCurrentInstance();
 
-const refValidCode = ref<typeof ValidCode>();
+const refValidCode = useTemplateRef('refValidCode');
 const remember_me = ref(false);
 const setExpiry = ref(7);
 const captchaError = ref('');
@@ -89,7 +89,7 @@ const loginForm = reactive<LoginForm>({
     captcha: '',
 });
 
-const ruleFormRef = ref<FormInstance>();
+const ruleFormRef = useTemplateRef('ruleFormRef');
 
 const submitForm = async (formEl: FormInstance | undefined) => {
     if (!formEl) return;
@@ -114,7 +114,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
                     loginForm.captcha = '';
                     passwordError.value = t('msg.usernamePasswordInvalid');
                 }
-                if (refValidCode.value !== undefined) refValidCode.value.refreshPic();
+                if (refValidCode.value) refValidCode.value.refreshPic();
             }
         }).catch(httpErrorNotification);
     });

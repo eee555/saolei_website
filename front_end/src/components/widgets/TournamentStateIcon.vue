@@ -1,5 +1,5 @@
 <template>
-    <span :class="['text', classes[state]]">
+    <span class="text" :class="classes[state]">
         {{ t(`tournament.state.${state}`) }}
     </span>
 </template>

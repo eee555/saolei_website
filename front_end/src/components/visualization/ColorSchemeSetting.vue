@@ -9,7 +9,7 @@
         </template>
         <span style="flex-grow: 1" />
         <div>
-            {{ "增删节点" }}
+            增删节点
             &nbsp;
             <ElInputNumber v-model="operationNode" :controls="false" style="width: 40px" />
             &nbsp;

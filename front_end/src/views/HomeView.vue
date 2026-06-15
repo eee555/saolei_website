@@ -39,7 +39,7 @@
                     </ElTabPane>
                 </ElTabs>
                 <ElTabs v-model="active_tab" type="border-card" style="margin-top: 2%;">
-                    <ElTabPane v-loading="newest_queue_status == 1" class="bottom_tabs" :lazy="true" name="newest">
+                    <ElTabPane v-loading="newest_queue_status == 1" class="bottom_tabs" lazy name="newest">
                         <template #label>
                             {{ t('home.latestScore') }}&nbsp;
                             <span v-if="newest_queue_status == 2" class="text text-success">
@@ -56,7 +56,7 @@
                         </template>
                         <VideoList :videos="newest_queue" :columns="['state', 'upload_time', 'player', 'software', 'mode', 'level', 'time', 'bv', 'bvs', 'ioe', 'thrp']" sortable paginator />
                     </ElTabPane>
-                    <ElTabPane :label="t('home.reviewQueue')" class="bottom_tabs" :lazy="true" name="review">
+                    <ElTabPane :label="t('home.reviewQueue')" class="bottom_tabs" lazy name="review">
                         <VideoList v-loading="review_queue_updating" :videos="review_queue" :columns="['state', 'upload_time', 'player', 'software', 'mode', 'level', 'time', 'bv', 'bvs', 'ioe', 'thrp']" paginator />
                     </ElTabPane>
                 </ElTabs>

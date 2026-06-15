@@ -17,7 +17,7 @@
 
 <script setup lang="ts">
 import { ElFormItem, ElInput } from 'element-plus';
-import { computed, ref } from 'vue';
+import { computed, ref, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { validateError, validateSuccess } from '@/utils/common/elFormValidate';
@@ -28,8 +28,8 @@ const { t } = useI18n();
 
 const confirmPassword = ref('');
 
-const passwordFormRef = ref<typeof ElFormItem>();
-const confirmPasswordFormRef = ref<typeof ElFormItem>();
+const passwordFormRef = useTemplateRef('passwordFormRef');
+const confirmPasswordFormRef = useTemplateRef('confirmPasswordFormRef');
 
 const validateState = computed(() => { return confirmPasswordFormRef.value!.validateState; });
 defineExpose({ validateState });
