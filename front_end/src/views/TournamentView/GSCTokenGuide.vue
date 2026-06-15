@@ -47,7 +47,6 @@
 </template>
 
 <script setup lang="ts">
-
 import { ElButton, ElInput, ElTabPane, ElTabs } from 'element-plus';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -105,13 +104,10 @@ function registerToken() {
         }
     }).catch(httpErrorNotification);
 }
-
 </script>
 
 <style scoped>
-
 .ttfamily {
     font-family: 'Courier New', Courier, monospace;
 }
-
 </style>

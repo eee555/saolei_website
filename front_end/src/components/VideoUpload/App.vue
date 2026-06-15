@@ -28,8 +28,6 @@ import { Dict2FormData } from '@/utils/forms';
 import { getFileExtension } from '@/utils/strings';
 import { VideoAbstract } from '@/utils/videoabstract';
 
-const { proxy } = useCurrentInstance();
-
 const props = defineProps({
     isUserAnonymous: { type: Boolean, default: true },
     identifiers: { type: Array as PropType<string[]>, default: () => [] },
@@ -38,6 +36,8 @@ const props = defineProps({
 const emit = defineEmits<{
     (e: 'onUpload', video: VideoAbstract): void;
 }>();
+
+const { proxy } = useCurrentInstance();
 
 const uploadQueue = ref<UploadEntry[]>([]);
 const selectedQueue = ref<UploadEntry[]>([]);

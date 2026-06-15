@@ -4,7 +4,6 @@
 </template>
 
 <script setup lang="ts">
-
 import RangeSlider from '../RangeSlider.vue';
 
 import { videofilter } from '@/store';
@@ -27,5 +26,4 @@ const maxbvlim = {
     'i': 216,
     'e': 381,
 };
-
 </script>

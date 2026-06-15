@@ -10,7 +10,6 @@
 </template>
 
 <script setup lang="ts">
-
 import { ElCheckbox, ElCheckboxGroup, ElTag } from 'element-plus';
 import { computed, PropType } from 'vue';
 
@@ -35,5 +34,4 @@ const _labels = computed(() => props.labels || props.options);
 function handleClose(tag: string) {
     selected.value.splice(selected.value.indexOf(tag), 1);
 }
-
 </script>

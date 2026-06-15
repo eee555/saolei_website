@@ -21,7 +21,6 @@
 </template>
 
 <script lang="ts" setup>
-
 import VCodeBlock from '@wdns/vue-code-block';
 import { ElButton, ElTable, ElTableColumn } from 'element-plus';
 import { ref } from 'vue';
@@ -68,5 +67,4 @@ function downloadLog(log: string) {
         },
     ).catch(httpErrorNotification);
 }
-
 </script>

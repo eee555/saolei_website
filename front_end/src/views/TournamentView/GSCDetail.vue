@@ -55,7 +55,6 @@
 </template>
 
 <script setup lang="ts">
-
 import { ElButton, ElLink, ElRow, ElTabPane, ElTabs, vLoading } from 'element-plus';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -145,5 +144,4 @@ function downloadAll() {
         streamToZip(new Uint8Array(response.data), 'gsc.zip');
     }).catch(httpErrorNotification);
 }
-
 </script>

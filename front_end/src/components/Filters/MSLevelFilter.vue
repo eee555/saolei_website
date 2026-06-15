@@ -18,7 +18,6 @@ const level = defineModel({
     type: Array<MS_Level>,
     default: MS_Levels,
 });
-
 </script>
 
 <style scoped lang="less">

@@ -5,10 +5,8 @@
 </template>
 
 <script setup lang="ts">
-
 import { ElDialog } from 'element-plus';
 
 import VideoList from '@/components/VideoList/App.vue';
 import { store } from '@/store';
-
 </script>

@@ -23,7 +23,6 @@
 </template>
 
 <script setup lang="ts">
-
 import { ElCol, ElRow } from 'element-plus';
 import { computed, PropType, ref } from 'vue';
 
@@ -54,5 +53,4 @@ const sumBvs = computed(() => {
 const sumStnb = computed(() => {
     return (BBlockRef.value ? BBlockRef.value.sumAll.stnb : 0) + (IBlockRef.value ? IBlockRef.value.sumAll.stnb : 0) + (EBlockRef.value ? EBlockRef.value.sumAll.stnb : 0);
 });
-
 </script>

@@ -138,7 +138,6 @@ const i18nMessages = {
 };
 
 const { t } = useI18n({ messages: i18nMessages });
-
 </script>
 
 <style lang="less" scoped>

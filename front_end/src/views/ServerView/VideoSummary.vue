@@ -88,5 +88,4 @@ function getConfig(prop: string) {
         },
     } as VueUiSparkStackbarConfig;
 }
-
 </script>

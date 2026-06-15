@@ -22,7 +22,6 @@
 </template>
 
 <script setup lang="ts">
-
 import { ElButton, ElInput, ElInputNumber } from 'element-plus';
 import { ref } from 'vue';
 
@@ -74,5 +73,4 @@ function handleAdd() {
         },
     ).catch(httpErrorNotification);
 }
-
 </script>

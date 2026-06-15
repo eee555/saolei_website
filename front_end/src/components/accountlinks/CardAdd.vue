@@ -44,14 +44,18 @@ import AccountLinkGuide from '@/components/dialogs/AccountLinkGuide.vue';
 import { local } from '@/store';
 import { platformlist } from '@/utils/common/accountLinkPlatforms';
 
-const { t } = useI18n();
-
 const props = defineProps({
     accountlinks: {
         type: Array<AccountLink>,
         default: () => [],
     },
 });
+
+defineEmits<{
+    (e: 'addLink', platform: string, identifier: string): void;
+}>();
+
+const { t } = useI18n();
 
 const formvisible = ref(false);
 const form = reactive({
@@ -79,9 +83,4 @@ function userHasPlatform(platform: string) {
     }
     return false;
 }
-
-defineEmits<{
-    (e: 'addLink', platform: string, identifier: string): void;
-}>();
-
 </script>

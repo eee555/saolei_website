@@ -36,6 +36,7 @@ const props = defineProps({
     },
 });
 
+const emit = defineEmits(['add']);
 const fileInputRef = ref<HTMLInputElement>();
 const isDragover = ref(false);
 
@@ -77,8 +78,6 @@ function onDrop(event: DragEvent) {
         emit('add', files);
     }
 }
-
-const emit = defineEmits(['add']);
 </script>
 
 <style scoped>

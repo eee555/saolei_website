@@ -30,5 +30,4 @@ const selectedSeries = computed(() => {
 
     return { points, colors };
 });
-
 </script>

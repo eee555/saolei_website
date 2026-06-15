@@ -77,7 +77,6 @@
 </template>
 
 <script setup lang="ts">
-
 import { ElTable, ElTableColumn } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
@@ -92,12 +91,11 @@ defineProps({
     },
 });
 
-const { t } = useI18n();
-
 const emit = defineEmits(['row-click']);
+
+const { t } = useI18n();
 
 function handleRowClick(row: GSCParticipant) {
     emit('row-click', row);
 }
-
 </script>

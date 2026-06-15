@@ -256,7 +256,6 @@ const option_virtual_memory = ref({
         },
     ],
 });
-
 </script>
 
 <style scoped>

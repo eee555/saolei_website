@@ -167,5 +167,4 @@ const rules = reactive<FormRules<LoginForm>>({
     password: [{ required: true, message: t('msg.passwordRequired') }],
     captcha: [{ required: true, message: t('msg.captchaRequired') }],
 });
-
 </script>

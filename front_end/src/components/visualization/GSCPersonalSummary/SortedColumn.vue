@@ -31,8 +31,6 @@ import { VideoAbstract } from '@/utils/videoabstract';
 
 type sortByOptions = 'time' | 'bvs' | 'stnb';
 
-const { t } = useI18n();
-
 const props = defineProps({
     videos: {
         type: Array as PropType<VideoAbstract[]>,
@@ -51,6 +49,8 @@ const props = defineProps({
         required: true,
     },
 });
+
+const { t } = useI18n();
 
 const colorScheme = computed(() => {
     switch (props.sortBy) {
@@ -94,7 +94,6 @@ const avgFontColor = computed(() => {
 defineExpose({
     sumStat,
 });
-
 </script>
 
 <style lang="less" scoped>

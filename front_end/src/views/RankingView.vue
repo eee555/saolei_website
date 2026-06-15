@@ -233,7 +233,6 @@ const setSortDirect = (level_tag: string) => {
     }
     get_player_rank(state.CurrentPage);
 };
-
 </script>
 
 

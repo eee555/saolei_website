@@ -26,7 +26,6 @@ const props = defineProps({
         default: false,
     },
 });
-
 </script>
 
 <style lang="less" scoped>

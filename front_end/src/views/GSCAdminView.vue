@@ -14,7 +14,6 @@
 </template>
 
 <script setup lang="ts">
-
 import { ElInputNumber, ElTabPane, ElTabs } from 'element-plus';
 import { ref } from 'vue';
 
@@ -24,5 +23,4 @@ import GSCParticipants from '@/components/GSCAdmin/Participants.vue';
 
 const currentTab = ref('general');
 const gscID = ref(0);
-
 </script>

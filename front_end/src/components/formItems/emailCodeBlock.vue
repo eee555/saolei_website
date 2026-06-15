@@ -152,5 +152,4 @@ const refreshCaptcha = () => {
     refValidCode.value!.refreshPic();
     captcha.value = '';
 };
-
 </script>

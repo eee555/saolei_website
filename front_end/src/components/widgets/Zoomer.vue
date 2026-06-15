@@ -11,7 +11,6 @@
 </template>
 
 <script setup lang="ts">
-
 import { ElLink } from 'element-plus';
 
 import BaseTextButton from '@/components/common/BaseTextButton.vue';
@@ -23,7 +22,6 @@ function handleTextWheel(event: WheelEvent) {
     event.preventDefault();
     zoom.value = Math.max(Math.min(zoom.value + event.deltaY * -0.001, 4), 0.1);
 }
-
 </script>
 
 <style scoped lang="less">

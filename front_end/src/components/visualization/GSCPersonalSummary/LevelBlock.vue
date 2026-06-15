@@ -63,5 +63,4 @@ const sumAll = computed(() => {
 defineExpose({
     sumAll,
 });
-
 </script>

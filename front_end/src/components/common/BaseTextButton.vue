@@ -23,5 +23,4 @@ const sizeClass = computed(() => {
 const typeClass = computed(() => {
     return hovering.value ? 'text-primary' : '';
 });
-
 </script>

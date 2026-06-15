@@ -20,7 +20,6 @@
 </template>
 
 <script setup lang="ts" name="RangeSlider">
-
 import { ElInputNumber, ElSlider } from 'element-plus';
 
 const props = defineProps({
@@ -38,9 +37,9 @@ const props = defineProps({
     },
 });
 
-const range = defineModel({ type: Array, required: true });
-
 defineEmits(['change']);
+
+const range = defineModel({ type: Array, required: true });
 </script>
 
 <style scoped>

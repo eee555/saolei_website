@@ -56,5 +56,4 @@ async function startBatchUpdate() {
 function stopBatchUpdate() {
     working.value = false;
 }
-
 </script>

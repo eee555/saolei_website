@@ -69,14 +69,11 @@ const colorSchemeString = ref('');
 watch(colorScheme.value, (value) => {
     colorSchemeString.value = stringifyWithLineWrap(value);
 }, { immediate: true });
-
 </script>
 
 <style lang="less" scoped>
-
 ::v-deep(.el-input-number.is-without-controls .el-input__wrapper) {
     padding-left: 5px;
     padding-right: 5px;
 }
-
 </style>

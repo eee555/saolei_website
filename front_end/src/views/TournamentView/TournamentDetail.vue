@@ -26,5 +26,4 @@ defineProps({
         default: () => [],
     },
 });
-
 </script>

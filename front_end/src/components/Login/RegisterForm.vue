@@ -38,7 +38,6 @@
 </template>
 
 <script setup lang="ts">
-
 import { ElButton, ElCheckbox, ElForm, ElFormItem, ElInput, ElNotification, FormInstance } from 'element-plus';
 import { computed, onUnmounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -170,5 +169,4 @@ function usernameCharacterValidation(value: string) {
     else return false;
     return true;
 }
-
 </script>

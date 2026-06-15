@@ -12,13 +12,6 @@
 import { ElOption, ElSelect } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
-const { t } = useI18n();
-
-const value = defineModel({
-    type: String,
-    default: '',
-});
-
 const prop = defineProps({
     label: {
         type: String,
@@ -30,4 +23,10 @@ const prop = defineProps({
     },
 });
 
+const { t } = useI18n();
+
+const value = defineModel({
+    type: String,
+    default: '',
+});
 </script>

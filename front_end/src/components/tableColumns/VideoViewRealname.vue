@@ -13,14 +13,11 @@ import { useI18n } from 'vue-i18n';
 import PlayerName from '@/components/PlayerName.vue';
 
 const { t } = useI18n();
-
 </script>
 
 <style lang="less">
-
 .nobr {
     white-space: nowrap;
     hyphens: none;
 }
-
 </style>

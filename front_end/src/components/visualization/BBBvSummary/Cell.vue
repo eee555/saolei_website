@@ -82,11 +82,9 @@ function handleClick() {
         store.video_list_show = true;
     }
 }
-
 </script>
 
 <style lang="less" scoped>
-
 .cell {
     background-color: v-bind(color);
     outline-style: solid;
@@ -104,5 +102,4 @@ function handleClick() {
 .el-link {
     --el-link-text-color: v-bind(fontColor);
 }
-
 </style>

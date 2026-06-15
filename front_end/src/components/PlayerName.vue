@@ -100,14 +100,14 @@ import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { formatName } from '@/utils/strings';
 import { UserProfile } from '@/utils/userprofile';
 
-const { proxy } = useCurrentInstance();
-
 const data = defineProps({
     userId: {
         type: Number,
         default: 0,
     },
 });
+
+const { proxy } = useCurrentInstance();
 
 const user = ref(new UserProfile());
 const loading = ref(false);
@@ -219,14 +219,11 @@ const i18nMessages = {
 };
 
 const { t } = useI18n({ messages: i18nMessages });
-
 </script>
 
 <style lang="less" scoped>
-
 .record-table {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
 }
-
 </style>

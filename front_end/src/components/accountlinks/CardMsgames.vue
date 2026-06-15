@@ -39,8 +39,6 @@ import { AccountMSGames, AccountMSGamesDefault } from './utils';
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
 import { utc_to_local_format } from '@/utils/system/tools';
 
-const { t } = useI18n();
-
 defineProps({
     id: { type: String, default: '' },
     verified: { type: Boolean, default: false },
@@ -49,4 +47,6 @@ defineProps({
         default: () => AccountMSGamesDefault,
     },
 });
+
+const { t } = useI18n();
 </script>

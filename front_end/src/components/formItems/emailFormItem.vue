@@ -17,14 +17,13 @@ import { useI18n } from 'vue-i18n';
 import { validateError, validateSuccess } from '@/utils/common/elFormValidate';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
-const email = defineModel({ type: String, required: true });
 const prop = defineProps({
     checkCollision: {
         type: String,
         default: '',
     },
 });
-
+const email = defineModel({ type: String, required: true });
 const { proxy } = useCurrentInstance();
 const { t } = useI18n();
 
@@ -52,5 +51,4 @@ const emailChangeHandler = (value: string) => {
         });
     }
 };
-
 </script>

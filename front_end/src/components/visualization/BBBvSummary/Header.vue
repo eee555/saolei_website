@@ -155,7 +155,6 @@ const { t } = useI18n({ messages: i18nMessage });
 </script>
 
 <style lang="less" scoped>
-
 .el-select-dropdown__item {
     height: 25px;
     line-height: 25px;
@@ -164,5 +163,4 @@ const { t } = useI18n({ messages: i18nMessage });
 :deep(.el-input__inner) {
     field-sizing: content;
 }
-
 </style>

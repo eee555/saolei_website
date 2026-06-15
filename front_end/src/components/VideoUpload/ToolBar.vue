@@ -29,9 +29,9 @@ const props = defineProps({
     processing: { type: Boolean, required: true },
 });
 
-const stopping = defineModel<boolean>('stopping');
-
 const emit = defineEmits(['upload', 'remove']);
+
+const stopping = defineModel<boolean>('stopping');
 
 const selectedNone = computed(() => props.selected === 0);
 

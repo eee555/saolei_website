@@ -103,5 +103,4 @@ const i18nMessages = {
 const { t } = useI18n({
     messages: i18nMessages,
 });
-
 </script>

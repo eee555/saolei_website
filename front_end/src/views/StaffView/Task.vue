@@ -128,12 +128,10 @@ async function deleteSelected() {
     selectedTasks.value.splice(0, selectedTasks.value.length);
     refresh();
 }
-
 </script>
 
 <style lang="less" scoped>
 .card {
     background-color: black;
 }
-
 </style>

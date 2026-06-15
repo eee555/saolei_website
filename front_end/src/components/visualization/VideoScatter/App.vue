@@ -25,7 +25,6 @@ const scatterRef = ref<HTMLElement>();
 const { isFullscreen, toggle } = useFullscreen(scatterRef);
 
 watch(() => props.videos, VideoScatterStore.setRawData, { immediate: true });
-
 </script>
 
 <style lang="less" scoped>

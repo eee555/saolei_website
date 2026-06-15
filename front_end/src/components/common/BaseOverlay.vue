@@ -13,11 +13,8 @@
 </template>
 
 <script lang="ts" setup>
-
 import { ElDialog, ElLink } from 'element-plus';
 import { PropType, ref } from 'vue';
-
-const visible = ref(false);
 
 defineProps({
     zIndex: {
@@ -30,6 +27,7 @@ defineProps({
     },
 });
 
+const visible = ref(false);
 </script>
 
 <style scoped lang="less">

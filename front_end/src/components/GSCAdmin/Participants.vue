@@ -36,14 +36,14 @@ import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { GSCParticipant } from '@/utils/gsc';
 import { TournamentParticipant } from '@/utils/tournaments';
 
-const { proxy } = useCurrentInstance();
-
 const props = defineProps({
     id: {
         type: Number,
         default: 0,
     },
 });
+
+const { proxy } = useCurrentInstance();
 
 const columns = ['user__id', 'user__realname', 'bt1st', 'bt20th', 'bt20sum', 'it1st', 'it12th', 'it12sum', 'et1st', 'et5th', 'et5sum', 't37'];
 
@@ -83,5 +83,4 @@ function award() {
     if (props.id === 0) return;
     proxy.$axios.post('tournament/gsc/award/', { order: props.id }).then(successNotification).catch(httpErrorNotification);
 }
-
 </script>
