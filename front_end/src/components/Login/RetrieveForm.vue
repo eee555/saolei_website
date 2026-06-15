@@ -24,10 +24,10 @@ import { ElButton, ElForm, ElFormItem, ElNotification, FormInstance } from 'elem
 import { computed, onUnmounted, reactive, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import EmailCodeBlock from '../formItems/EmailCodeBlock.vue';
-import EmailFormItem from '../formItems/EmailFormItem.vue';
-import PasswordConfirmBlock from '../formItems/PasswordConfirmBlock.vue';
 
+import EmailCodeBlock from '@/components/formItems/EmailCodeBlock.vue';
+import EmailFormItem from '@/components/formItems/EmailFormItem.vue';
+import PasswordConfirmBlock from '@/components/formItems/PasswordConfirmBlock.vue';
 import { local } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
@@ -58,7 +58,8 @@ const email_state = computed(() => {
     else return emailFormRef.value.validateState;
 });
 const confirm_disabled = computed(() => {
-    return !(emailFormRef.value !== undefined && emailFormRef.value!.validateState === 'success' && emailCodeFormRef.value!.validateState === 'success' && passwordFormRef.value!.validateState === 'success');
+    if (!emailFormRef.value || !emailCodeFormRef.value || !passwordFormRef.value) return true;
+    return emailFormRef.value.validateState !== 'success' || emailCodeFormRef.value.validateState !== 'success' || passwordFormRef.value.validateState !== 'success';
 });
 
 const submitForm = async (formEl: FormInstance | undefined) => {
