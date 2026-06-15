@@ -1,4 +1,4 @@
-import passwordConfirmBlock from './passwordConfirmBlock.vue';
+import passwordConfirmBlock from './PasswordConfirmBlock.vue';
 
 import i18n from '@/i18n';
 

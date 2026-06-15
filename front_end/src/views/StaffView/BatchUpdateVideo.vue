@@ -1,13 +1,13 @@
 <template>
-    开始ID<el-input-number v-model="startid" />&nbsp;
-    结束ID<el-input-number v-model="endid" />&nbsp;
-    批处理数量<el-input-number v-model="batchsize" />&nbsp;
-    <el-button :disabled="working" @click="startBatchUpdate">
+    开始ID<ElInputNumber v-model="startid" />&nbsp;
+    结束ID<ElInputNumber v-model="endid" />&nbsp;
+    批处理数量<ElInputNumber v-model="batchsize" />&nbsp;
+    <ElButton :disabled="working" @click="startBatchUpdate">
         开始！
-    </el-button>
-    <el-button :disabled="!working" @click="stopBatchUpdate">
+    </ElButton>
+    <ElButton :disabled="!working" @click="stopBatchUpdate">
         停止！
-    </el-button><br>
+    </ElButton><br>
     客户端会将需要处理的ID段按照批处理数量发送到服务器进行批处理。批处理数量越大，服务器处理效率越高，但是如果批处理数量过大，会导致连接超时。
     <span v-for="(log, index) in logList" :key="index" class="text" :style="{ display: 'block' }">
         {{ log }}
@@ -56,5 +56,4 @@ async function startBatchUpdate() {
 function stopBatchUpdate() {
     working.value = false;
 }
-
 </script>

@@ -1,23 +1,20 @@
 <template>
-    <el-link :underline="underline" @click.stop="visible = true">
+    <ElLink :underline="underline" @click.stop="visible = true">
         <slot />
-    </el-link>
-    <el-dialog v-if="visible" :model-value="true" width="100%" align-center body-class="center" :show-close="false" append-to-body :z-index="zIndex" @closed="visible=false">
+    </ElLink>
+    <ElDialog v-if="visible" model-value width="100%" align-center body-class="center" :show-close="false" append-to-body :z-index="zIndex" @closed="visible=false">
         <slot name="overlay" />
         <template #header>
             <h2 class="text-regular" style="justify-self: center;">
                 <slot name="header" />
             </h2>
         </template>
-    </el-dialog>
+    </ElDialog>
 </template>
 
 <script lang="ts" setup>
-
 import { ElDialog, ElLink } from 'element-plus';
 import { PropType, ref } from 'vue';
-
-const visible = ref(false);
 
 defineProps({
     zIndex: {
@@ -30,6 +27,7 @@ defineProps({
     },
 });
 
+const visible = ref(false);
 </script>
 
 <style scoped lang="less">

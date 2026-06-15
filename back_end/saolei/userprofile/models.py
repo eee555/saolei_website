@@ -21,6 +21,8 @@ class UserProfile(AbstractUser):
     userms = models.OneToOneField(
         UserMS, on_delete=models.CASCADE, related_name='parent', null=True)
 
+    date_updated = models.DateTimeField(auto_now=True)
+
     username = models.CharField(
         _('username'),
         max_length=MaxSizes.USERNAME,
@@ -87,6 +89,7 @@ class UserProfile(AbstractUser):
 
     class Meta:
         indexes = [
+            models.Index(fields=['date_updated'], name='date_updated_idx'),
             models.Index(fields=['country'], name='country_idx'),
             models.Index(fields=['vip'], name='vip_idx'),
         ]

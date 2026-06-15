@@ -1,14 +1,14 @@
 <template>
-    <tippy v-if="video" class="cell" :style="{ backgroundColor: color }" :duration="0" sticky>
-        <el-link underline="never" @click="preview(video.id)">
+    <Tippy v-if="video" class="cell" :style="{ backgroundColor: color }" :duration="0" sticky>
+        <ElLink underline="never" @click="preview(video.id)">
             {{ video.displayStat(displayBy) }}
-        </el-link>
+        </ElLink>
         <template #content>
-            <el-card v-if="video" class="card-small">
-                <video-abstract-display :video="video" />
-            </el-card>
+            <ElCard v-if="video" class="card-small">
+                <VideoAbstractDisplay :video="video" />
+            </ElCard>
         </template>
-    </tippy>
+    </Tippy>
     <div v-else class="cell" :style="{ backgroundColor: color }">
         <span class="text" :style="{ color: fontColor }">
             {{ defaultVideos[level][displayBy] }}
@@ -51,15 +51,12 @@ const fontColor = computed(() => {
     const tc = tinycolor(color.value);
     return tc.getAlpha() == 0 ? getTextColor() : tc.isDark() ? 'white' : 'black';
 });
-
 </script>
 
 <style lang="less" scoped>
-
 @import './cell.less';
 
 .el-link {
     --el-link-text-color: v-bind(fontColor);
 }
-
 </style>

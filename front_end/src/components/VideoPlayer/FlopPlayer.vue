@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue';
 
 import { videoplayerstore } from '@/store';
 
@@ -57,7 +57,7 @@ function playVideo() {
     });
 }
 
-const iframeRef = ref<HTMLIFrameElement | null>(null);
+const iframeRef = useTemplateRef('iframeRef');
 const iframeWidth = ref(0);
 const iframeHeight = ref(0);
 const backgroundColor = computed(() => getComputedStyle(document.documentElement).getPropertyValue('--el-bg-color'));
@@ -164,5 +164,4 @@ onUnmounted(() => {
         mutationObserver = null;
     }
 });
-
 </script>

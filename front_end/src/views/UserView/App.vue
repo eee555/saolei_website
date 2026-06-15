@@ -4,14 +4,14 @@
             <Profile :user="store.player" :direction="isWide ? 'vertical' : 'horizontal'" />
         </div>
         <div class="content-area">
-            <el-tabs :model-value="activeTab" @tab-click="handleTabClick">
-                <el-tab-pane v-for="tab in tabItems" :key="tab.name" :label="tab.label" :name="tab.name" />
+            <ElTabs :model-value="activeTab" @tab-click="handleTabClick">
+                <ElTabPane v-for="tab in tabItems" :key="tab.name" :label="tab.label" :name="tab.name" />
                 <router-view v-slot="{ Component }">
                     <keep-alive>
                         <component :is="Component" v-model:user="store.player" />
                     </keep-alive>
                 </router-view>
-            </el-tabs>
+            </ElTabs>
         </div>
     </div>
 </template>
@@ -19,7 +19,7 @@
 <script lang="ts" setup>
 import { useElementSize } from '@vueuse/core';
 import { ElTabPane, ElTabs, vLoading } from 'element-plus';
-import { computed, ref, watch } from 'vue';
+import { computed, ref, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -61,7 +61,7 @@ const handleTabClick = (tab: any) => {
 
 const playerLoading = ref(false);
 
-const containerRef = ref<HTMLElement | null>(null);
+const containerRef = useTemplateRef('containerRef');
 const { width } = useElementSize(containerRef);
 const isWide = computed(() => width.value >= 960);
 
@@ -106,11 +106,9 @@ const i18nMessages = {
 };
 
 const { t } = useI18n({ messages: i18nMessages });
-
 </script>
 
 <style scoped lang="less">
-
 .personal-homepage {
     display: flex;
 

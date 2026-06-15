@@ -1,5 +1,5 @@
 <template>
-    <span :class="['text', statusToClass[status]]">
+    <span class="text" :class="statusToClass[status]">
         {{ status }}
     </span>
 </template>
@@ -10,6 +10,10 @@ import { PropType } from 'vue';
 
 import { DjangoTaskResultStatus } from '@/utils/common/structInterface';
 
+defineProps({
+    status: { type: String as PropType<DjangoTaskResultStatus>, default: 'NULL' },
+});
+
 const statusToClass = {
     'READY': 'text-primary',
     'RUNNING': 'text-warning',
@@ -17,9 +21,4 @@ const statusToClass = {
     'FAILED': 'text-danger',
     'NULL': 'text-info',
 } as const;
-
-defineProps({
-    status: { type: String as PropType<DjangoTaskResultStatus>, default: 'NULL' },
-});
-
 </script>

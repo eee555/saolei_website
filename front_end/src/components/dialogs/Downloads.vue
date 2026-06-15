@@ -1,32 +1,32 @@
 <template>
-    <base-overlay>
+    <BaseOverlay>
         {{ t('common.software.software_download') }}
         <template #header>
             {{ t('common.software.software_download') }}
         </template>
         <template #overlay>
-            <el-tabs tab-position="left" style="height: 350px; width: 700px; justify-self: center;">
-                <el-tab-pane>
+            <ElTabs tab-position="left" style="height: 350px; width: 700px; justify-self: center;">
+                <ElTabPane>
                     <template #label>
                         <SoftwareIcon software="m" />
                     </template>
                     <MetasweeperHelper />
-                </el-tab-pane>
-                <el-tab-pane>
+                </ElTabPane>
+                <ElTabPane>
                     <template #label>
                         <SoftwareIcon software="a" />
                     </template>
                     <ArbiterHelper />
-                </el-tab-pane>
-                <el-tab-pane>
+                </ElTabPane>
+                <ElTabPane>
                     <template #label>
                         <SoftwareIcon software="r" />
                     </template>
                     <ViennaSweeperHelper />
-                </el-tab-pane>
-            </el-tabs>
+                </ElTabPane>
+            </ElTabs>
         </template>
-    </base-overlay>
+    </BaseOverlay>
 </template>
 
 <script lang="ts" setup>
@@ -40,7 +40,6 @@ import ViennaSweeperHelper from '@/components/dialogs/ViennaSweeperHelper.vue';
 import SoftwareIcon from '@/components/widgets/SoftwareIcon.vue';
 
 const { t } = useI18n();
-
 </script>
 
 <style lang="less" scoped>

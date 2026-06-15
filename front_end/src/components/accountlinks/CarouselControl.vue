@@ -1,10 +1,10 @@
 <template>
-    <el-link v-if="length > 1" underline="never" :disabled="refCarousel?.activeIndex == 0" @click="refCarousel?.prev">
-        <base-icon-prev />
-    </el-link>
-    <el-link v-if="length > 1" underline="never" :disabled="refCarousel?.activeIndex == length - 1" @click="refCarousel?.next">
-        <base-icon-next />
-    </el-link>
+    <ElLink v-if="length > 1" underline="never" :disabled="refCarousel?.activeIndex == 0" @click="refCarousel?.prev">
+        <BaseIconPrev />
+    </ElLink>
+    <ElLink v-if="length > 1" underline="never" :disabled="refCarousel?.activeIndex == length - 1" @click="refCarousel?.next">
+        <BaseIconNext />
+    </ElLink>
 </template>
 
 <script setup lang="ts">
@@ -15,8 +15,8 @@ import { BaseIconNext, BaseIconPrev } from '@/components/common/icon';
 
 defineProps({
     refCarousel: {
-        type: Object as PropType<typeof ElCarousel> | undefined,
-        default: undefined,
+        type: Object as PropType<typeof ElCarousel> | null,
+        default: null,
     },
     length: {
         type: Number,

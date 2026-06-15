@@ -1,5 +1,5 @@
 <template>
-    <el-card class="card-small">
+    <ElCard class="card-small">
         <span v-if="videos.length == 0" class="text">
             {{ t('local.noVideoOnDate', [toISODateString(date)]) }}
         </span>
@@ -12,7 +12,7 @@
             <span v-for="i in count.i" :key="i" class="dot" style="background-color: #080;" />
             <span v-for="i in count.e" :key="i" class="dot" style="background-color: #00f;" />
         </template>
-    </el-card>
+    </ElCard>
 </template>
 
 <script setup lang="ts">

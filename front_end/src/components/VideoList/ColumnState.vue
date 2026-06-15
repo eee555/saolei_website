@@ -16,7 +16,6 @@
 </template>
 
 <script setup lang="ts">
-
 import PrColumn from 'primevue/column';
 import PrListbox from 'primevue/listbox';
 import { useI18n } from 'vue-i18n';
@@ -26,5 +25,4 @@ import { MS_State } from '@/utils/ms_const';
 import { VideoAbstract } from '@/utils/videoabstract';
 
 const { t } = useI18n();
-
 </script>

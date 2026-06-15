@@ -1,29 +1,29 @@
 <template>
-    <el-button
+    <ElButton
         v-if="store.login_status != LoginStatus.IsLogin" class="fakemenuitem"
         text size="small" @click.stop="activeDialog = 'login'; dialogVisible = true"
     >
         {{ t('local.menu.login') }}
-    </el-button>
-    <el-button
+    </ElButton>
+    <ElButton
         v-if="store.login_status != LoginStatus.IsLogin"
         style="margin-left: 0px;" class="fakemenuitem" text size="small" @click.stop="activeDialog = 'register'; dialogVisible = true"
     >
         {{ t('local.menu.register') }}
-    </el-button>
-    <el-button
+    </ElButton>
+    <ElButton
         v-if="store.login_status == LoginStatus.IsLogin" class="fakemenuitem" text
         size="small" @click.stop="logout();"
     >
         {{ t('local.menu.logout') }}
-    </el-button>
+    </ElButton>
     <!-- 以下的所有表单的输入项都需要@keydown.stop，解决horizontal菜单截留空格操作的问题。 -->
     <!-- https://github.com/element-plus/element-plus/issues/10172#issuecomment-1295794523 -->
-    <el-dialog v-model="dialogVisible" style="min-width: 24rem;" :title="t(`local.title.${activeDialog}`)">
+    <ElDialog v-model="dialogVisible" style="min-width: 24rem;" :title="t(`local.title.${activeDialog}`)">
         <LoginForm v-if="activeDialog === 'login'" @forget-password="activeDialog = 'retrieve'" @login="login" />
         <RegisterForm v-else-if="activeDialog === 'register'" @login="login" />
         <RetrieveForm v-else @login="login" />
-    </el-dialog>
+    </ElDialog>
 </template>
 
 <script lang="ts" setup>
@@ -130,7 +130,6 @@ const i18nMessages = {
 };
 
 const { t } = useI18n({ messages: i18nMessages });
-
 </script>
 
 

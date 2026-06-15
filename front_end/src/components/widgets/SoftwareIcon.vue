@@ -13,14 +13,14 @@ import { local } from '@/store';
 import { ArbiterIcon, Clone07Icon, MetasweeperIcon, ViennaIconLegacy, ViennaIconNew } from '@/utils/assets';
 import { MS_Software } from '@/utils/ms_const';
 
-const { t } = useI18n();
-
 const props = defineProps({
     software: {
         type: String as PropType<MS_Software>,
         required: true,
     },
 });
+
+const { t } = useI18n();
 
 const iconSrc = computed(() => {
     switch (props.software) {

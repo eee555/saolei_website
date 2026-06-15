@@ -1,5 +1,5 @@
 <template>
-    <span :class="['text', sizeClass, typeClass]" style="cursor: pointer;" @mouseenter="hovering = true" @mouseleave="hovering = false">
+    <span class="text" :class="[sizeClass, typeClass]" style="cursor: pointer;" @mouseenter="hovering = true" @mouseleave="hovering = false">
         <slot />
     </span>
 </template>
@@ -23,5 +23,4 @@ const sizeClass = computed(() => {
 const typeClass = computed(() => {
     return hovering.value ? 'text-primary' : '';
 });
-
 </script>

@@ -26,7 +26,6 @@
 </template>
 
 <script setup lang="ts">
-
 import { FilterMatchMode } from '@primevue/core/api';
 import { DataTable } from 'primevue';
 import { defineAsyncComponent, ref } from 'vue';
@@ -34,16 +33,6 @@ import { defineAsyncComponent, ref } from 'vue';
 import { preview } from '@/utils/common/PlayerDialog';
 import { ColumnChoice, MS_Mode, MS_Softwares, MS_State } from '@/utils/ms_const';
 import { VideoAbstract } from '@/utils/videoabstract';
-
-const ColumnEndTime = defineAsyncComponent(() => import('./ColumnEndTime.vue'));
-const ColumnFileSize = defineAsyncComponent(() => import('./ColumnFileSize.vue'));
-const ColumnLevel = defineAsyncComponent(() => import('./ColumnLevel.vue'));
-const ColumnMode = defineAsyncComponent(() => import('./ColumnMode.vue'));
-const ColumnPlayerName = defineAsyncComponent(() => import('./ColumnPlayerName.vue'));
-const ColumnStat = defineAsyncComponent(() => import('./ColumnStat.vue'));
-const ColumnState = defineAsyncComponent(() => import('./ColumnState.vue'));
-const ColumnSoftware = defineAsyncComponent(() => import('./ColumnSoftware.vue'));
-const ColumnUploadTime = defineAsyncComponent(() => import('./ColumnUploadTime.vue'));
 
 defineProps({
     videos: {
@@ -67,6 +56,15 @@ defineProps({
         default: false,
     },
 });
+const ColumnEndTime = defineAsyncComponent(() => import('./ColumnEndTime.vue'));
+const ColumnFileSize = defineAsyncComponent(() => import('./ColumnFileSize.vue'));
+const ColumnLevel = defineAsyncComponent(() => import('./ColumnLevel.vue'));
+const ColumnMode = defineAsyncComponent(() => import('./ColumnMode.vue'));
+const ColumnPlayerName = defineAsyncComponent(() => import('./ColumnPlayerName.vue'));
+const ColumnStat = defineAsyncComponent(() => import('./ColumnStat.vue'));
+const ColumnState = defineAsyncComponent(() => import('./ColumnState.vue'));
+const ColumnSoftware = defineAsyncComponent(() => import('./ColumnSoftware.vue'));
+const ColumnUploadTime = defineAsyncComponent(() => import('./ColumnUploadTime.vue'));
 
 function componentConfig(choice: ColumnChoice) {
     switch (choice) {
@@ -124,5 +122,4 @@ const filters = ref({
     'level': { value: null, matchMode: FilterMatchMode.EQUALS },
     'mode': { value: Object.values(MS_Mode), matchMode: FilterMatchMode.IN },
 });
-
 </script>

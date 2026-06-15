@@ -1,34 +1,32 @@
 <template>
-    <el-form-item ref="emailFormRef" prop="email" :label="t('form.email')">
-        <el-input
+    <ElFormItem ref="emailFormRef" prop="email" :label="t('form.email')">
+        <ElInput
             v-model="email" prefix-icon="Message" type="email" @input="emailInputHandler"
             @change="emailChangeHandler"
         />
-    </el-form-item>
+    </ElFormItem>
 </template>
 
 <script setup lang="ts">
 import { ElFormItem, ElInput } from 'element-plus';
 import isEmail from 'validator/lib/isEmail';
-import { computed, ref } from 'vue';
-// @ts-ignore
+import { computed, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { validateError, validateSuccess } from '@/utils/common/elFormValidate';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
-const email = defineModel({ type: String, required: true });
 const prop = defineProps({
     checkCollision: {
         type: String,
         default: '',
     },
 });
-
+const email = defineModel({ type: String, required: true });
 const { proxy } = useCurrentInstance();
 const { t } = useI18n();
 
-const emailFormRef = ref<typeof ElFormItem>();
+const emailFormRef = useTemplateRef('emailFormRef');
 const validateState = computed(() => { return emailFormRef.value!.validateState; });
 
 defineExpose({ validateState });
@@ -52,5 +50,4 @@ const emailChangeHandler = (value: string) => {
         });
     }
 };
-
 </script>

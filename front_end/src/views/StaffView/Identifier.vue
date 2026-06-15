@@ -1,28 +1,27 @@
 <template>
-    <el-input v-model="identifier" />
-    <el-button @click="handleGet">
+    <ElInput v-model="identifier" />
+    <ElButton @click="handleGet">
         查询
-    </el-button>
-    <el-button v-if="safe != 'unknown'" @click="handleDelete">
+    </ElButton>
+    <ElButton v-if="safe != 'unknown'" @click="handleDelete">
         删除
-    </el-button>
-    <el-button v-if="safe == 'false'" @click="handleApprove">
+    </ElButton>
+    <ElButton v-if="safe == 'false'" @click="handleApprove">
         通过审核
-    </el-button>
+    </ElButton>
     <template v-if="userid === 0 && identifier !== ''">
         <br>&nbsp;
         绑定用户ID
-        <el-input-number v-model="newUserid" />
-        <el-button @click="handleAdd">
+        <ElInputNumber v-model="newUserid" />
+        <ElButton @click="handleAdd">
             绑定
-        </el-button>
+        </ElButton>
     </template>
     <br>
     用户ID: {{ userid }}，状态：{{ safe }}
 </template>
 
 <script setup lang="ts">
-
 import { ElButton, ElInput, ElInputNumber } from 'element-plus';
 import { ref } from 'vue';
 
@@ -74,5 +73,4 @@ function handleAdd() {
         },
     ).catch(httpErrorNotification);
 }
-
 </script>

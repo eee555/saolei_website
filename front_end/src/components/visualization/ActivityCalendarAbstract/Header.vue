@@ -86,12 +86,10 @@ const { t } = useI18n({ messages: i18nMessages });
 </script>
 
 <style scoped lang="less">
-
 .dot {
     height: 12px;
     width: 12px;
     border-radius: 50%;
     display: inline-block;
 }
-
 </style>

@@ -1,22 +1,22 @@
 <template>
     <div>
-        <el-container>
-            <el-main style="padding: 1%;">
-                <el-tabs type="border-card" style=" min-height: 300px;">
-                    <el-tab-pane v-loading="news_queue_status == 1" style="max-height: 300px; overflow: auto;user-select: none;">
+        <ElContainer>
+            <ElMain style="padding: 1%;">
+                <ElTabs type="border-card" style=" min-height: 300px;">
+                    <ElTabPane v-loading="news_queue_status == 1" style="max-height: 300px; overflow: auto;user-select: none;">
                         <template #label>
                             {{ t('home.news') }}&nbsp;
                             <span v-if="news_queue_status == 2" class="text text-success">
-                                <el-icon>
+                                <ElIcon>
                                     <Check />
-                                </el-icon>
+                                </ElIcon>
                             </span>
-                            <el-link
+                            <ElLink
                                 v-else-if="active_tab == 'newest'" underline="never"
                                 :disabled="news_queue_status != 0" style="vertical-align: baseline;" @click="update_news_queue"
                             >
-                                <base-icon-refresh />
-                            </el-link>
+                                <BaseIconRefresh />
+                            </ElLink>
                         </template>
                         <div v-for="news in news_queue">
                             <span class="text">
@@ -36,32 +36,32 @@
                                 {{ news.delta == "新" ? "" : news.delta > 0 ? "↑" : "↓" }}{{ news.delta }}
                             </span>
                         </div>
-                    </el-tab-pane>
-                </el-tabs>
-                <el-tabs v-model="active_tab" type="border-card" style="margin-top: 2%;">
-                    <el-tab-pane v-loading="newest_queue_status == 1" class="bottom_tabs" :lazy="true" name="newest">
+                    </ElTabPane>
+                </ElTabs>
+                <ElTabs v-model="active_tab" type="border-card" style="margin-top: 2%;">
+                    <ElTabPane v-loading="newest_queue_status == 1" class="bottom_tabs" lazy name="newest">
                         <template #label>
                             {{ t('home.latestScore') }}&nbsp;
                             <span v-if="newest_queue_status == 2" class="text text-success">
-                                <el-icon>
+                                <ElIcon>
                                     <Check />
-                                </el-icon>
+                                </ElIcon>
                             </span>
-                            <el-link
+                            <ElLink
                                 v-else-if="active_tab == 'newest'" underline="never"
                                 :disabled="newest_queue_status != 0" style="vertical-align: baseline;" @click="update_newest_queue"
                             >
-                                <base-icon-refresh />
-                            </el-link>
+                                <BaseIconRefresh />
+                            </ElLink>
                         </template>
                         <VideoList :videos="newest_queue" :columns="['state', 'upload_time', 'player', 'software', 'mode', 'level', 'time', 'bv', 'bvs', 'ioe', 'thrp']" sortable paginator />
-                    </el-tab-pane>
-                    <el-tab-pane :label="t('home.reviewQueue')" class="bottom_tabs" :lazy="true" name="review">
+                    </ElTabPane>
+                    <ElTabPane :label="t('home.reviewQueue')" class="bottom_tabs" lazy name="review">
                         <VideoList v-loading="review_queue_updating" :videos="review_queue" :columns="['state', 'upload_time', 'player', 'software', 'mode', 'level', 'time', 'bv', 'bvs', 'ioe', 'thrp']" paginator />
-                    </el-tab-pane>
-                </el-tabs>
-            </el-main>
-        </el-container>
+                    </ElTabPane>
+                </ElTabs>
+            </ElMain>
+        </ElContainer>
     </div>
 </template>
 
@@ -143,7 +143,6 @@ const update_news_queue = async () => {
         news_queue_status.value = 2;
     }
 };
-
 </script>
 
 <style lang='less'>

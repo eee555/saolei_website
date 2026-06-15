@@ -3,10 +3,8 @@
 </template>
 
 <script setup lang="ts">
-
 import VideoUpload from '@/components/VideoUpload/App.vue';
 import { UserProfile } from '@/utils/userprofile';
 
 const user = defineModel('user', { type: UserProfile, required: true });
-
 </script>

@@ -84,11 +84,6 @@ import type { PropType } from 'vue';
 import { createLinearScale, defaultPlotPadding, formatTick, getPlotArea } from './utils';
 import type { PlotDomain, PlotPadding, PlotSize } from './utils';
 
-defineSlots<{
-    'x-tick': (props: { tick: number; x: number; y: number }) => unknown;
-    'y-tick': (props: { tick: number; x: number; y: number }) => unknown;
-}>();
-
 const props = defineProps({
     // Data-space bounds used to map values onto the plot area.
     domain: { type: Object as PropType<PlotDomain>, required: true },
@@ -115,6 +110,11 @@ const props = defineProps({
     // Optional title shown along the y axis.
     yLabel: { type: String, default: '' },
 });
+
+defineSlots<{
+    'x-tick': (props: { tick: number; x: number; y: number }) => unknown;
+    'y-tick': (props: { tick: number; x: number; y: number }) => unknown;
+}>();
 
 const area = computed(() => getPlotArea(props.size, props.padding));
 const xScale = computed(() => createLinearScale(props.domain.xMin, props.domain.xMax, area.value.x, area.value.x + area.value.width));

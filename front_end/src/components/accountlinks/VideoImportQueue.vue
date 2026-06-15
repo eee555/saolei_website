@@ -78,9 +78,9 @@
         </PrColumn>
         <PrColumn>
             <template #body="{ data }: { data: SaoleiVideo }">
-                <el-link v-if="data.import_video__id != 0" underline="never" @click="preview(data.import_video__id)">
+                <ElLink v-if="data.import_video__id != 0" underline="never" @click="preview(data.import_video__id)">
                     <i class="pi pi-play-circle" />
-                </el-link>
+                </ElLink>
             </template>
         </PrColumn>
     </PrDataTable>
@@ -111,6 +111,13 @@ import { MS_Levels } from '@/utils/ms_const';
 import { utc_to_local_format } from '@/utils/system/tools';
 
 
+const props = defineProps({
+    saoleiId: {
+        type: Number,
+        required: true,
+    },
+});
+
 const filters = ref({
     'import_task__status': { value: null, matchMode: FilterMatchMode.EQUALS },
     'level': { value: null, matchMode: FilterMatchMode.EQUALS },
@@ -121,13 +128,6 @@ const { t } = useI18n();
 
 const tableData = ref<SaoleiVideo[]>([]);
 const importing = ref(false);
-
-const props = defineProps({
-    saoleiId: {
-        type: Number,
-        required: true,
-    },
-});
 
 function refresh() {
     tableData.value.splice(0, tableData.value.length);
@@ -150,13 +150,10 @@ function preprocessTable(data: any) {
     }));
     return data;
 }
-
-defineEmits(['back', 'enterAuto', 'enterHelp']);
 </script>
 
 <style lang="less" scoped>
 .el-overlay .p-select-overlay {
     z-index: 3000 !important;
 }
-
 </style>

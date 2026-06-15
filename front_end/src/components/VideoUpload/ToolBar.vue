@@ -4,15 +4,15 @@
             {{ t('local.selected', [selected, total]) }}
         </span>
         &nbsp;
-        <el-button :disabled="processing || selectedNone" @click="emit('upload')">
-            <base-icon-upload />&nbsp;{{ t('local.upload') }}
-        </el-button>
-        <el-button :disabled="processing || selectedNone" @click="emit('remove')">
-            <base-icon-delete />&nbsp;{{ t('local.remove') }}
-        </el-button>
-        <el-button v-if="processing" :disabled="stopping" @click="stopping = true">
+        <ElButton :disabled="processing || selectedNone" @click="emit('upload')">
+            <BaseIconUpload />&nbsp;{{ t('local.upload') }}
+        </ElButton>
+        <ElButton :disabled="processing || selectedNone" @click="emit('remove')">
+            <BaseIconDelete />&nbsp;{{ t('local.remove') }}
+        </ElButton>
+        <ElButton v-if="processing" :disabled="stopping" @click="stopping = true">
             {{ t('local.stop') }}
-        </el-button>
+        </ElButton>
     </div>
 </template>
 
@@ -29,9 +29,9 @@ const props = defineProps({
     processing: { type: Boolean, required: true },
 });
 
-const stopping = defineModel<boolean>('stopping');
-
 const emit = defineEmits(['upload', 'remove']);
+
+const stopping = defineModel<boolean>('stopping');
 
 const selectedNone = computed(() => props.selected === 0);
 

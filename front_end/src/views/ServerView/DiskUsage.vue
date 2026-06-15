@@ -1,7 +1,7 @@
 <template>
-    <base-card-normal>
+    <BaseCardNormal>
         <VueUiDonut :dataset="diskUsageData" :config="config" />
-    </base-card-normal>
+    </BaseCardNormal>
 </template>
 
 <script setup lang="ts">
@@ -103,5 +103,4 @@ const i18nMessages = {
 const { t } = useI18n({
     messages: i18nMessages,
 });
-
 </script>

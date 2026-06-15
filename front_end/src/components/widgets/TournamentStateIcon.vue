@@ -1,11 +1,10 @@
 <template>
-    <span :class="['text', classes[state]]">
+    <span class="text" :class="classes[state]">
         {{ t(`tournament.state.${state}`) }}
     </span>
 </template>
 
 <script setup lang="ts">
-
 import '@/styles/text.css';
 import { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -29,5 +28,4 @@ const classes = {
     [TournamentState.Awarded]: 'text-info',
     [TournamentState.Cancelled]: 'text-info',
 } as const;
-
 </script>

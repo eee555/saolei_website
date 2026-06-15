@@ -30,5 +30,4 @@ const prop = defineProps({
 });
 
 const cellFullSize = computed(() => prop.cellSize + prop.cellMargin);
-
 </script>

@@ -1,12 +1,12 @@
 <template>
-    <tippy :delay="[showDelay, hideDelay]" :duration="[showAnimation, hideAnimation]" :follow-cursor="followCursor" placement="auto-start">
+    <Tippy :delay="[showDelay, hideDelay]" :duration="[showAnimation, hideAnimation]" :follow-cursor="followCursor" placement="auto-start">
         <slot />
         <template #content>
-            <el-card class="card-small">
+            <ElCard class="card-small">
                 <slot name="content" />
-            </el-card>
+            </ElCard>
         </template>
-    </tippy>
+    </Tippy>
 </template>
 
 <script setup lang="ts">
@@ -20,7 +20,6 @@ defineProps({
     hideAnimation: { type: Number, default: 250 },
     followCursor: { type: Boolean, default: false },
 });
-
 </script>
 
 <style lang="less" scoped>

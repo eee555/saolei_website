@@ -1,28 +1,28 @@
 <template>
-    <el-menu
-        mode="horizontal" :router="true" :default-active="menu_index" :ellipsis="false"
+    <ElMenu
+        mode="horizontal" router :default-active="menu_index" :ellipsis="false"
         menu-trigger="click"
     >
-        <el-menu-item index="/" class="logo">
-            <el-image class="logo1" :src="logo_1" :fit="'cover'" />
-            <el-image v-if="!local.menu_icon" class="logo2" :src="logo_2" :fit="'cover'" />
-        </el-menu-item>
-        <el-menu-item v-for="item in menu_items" :key="item.index" :index="`/${ item.index}`">
+        <ElMenuItem index="/" class="logo">
+            <ElImage class="logo1" :src="logo_1" fit="cover" />
+            <ElImage v-if="!local.menu_icon" class="logo2" :src="logo_2" fit="cover" />
+        </ElMenuItem>
+        <ElMenuItem v-for="item in menu_items" :key="item.index" :index="`/${ item.index}`">
             <IconMenuItem :text="t(`local.${item.index}`)" :icon="item.icon" />
-        </el-menu-item>
+        </ElMenuItem>
         <div class="menu-spacer" />
-        <el-menu-item v-if="store.user.id != 0" :index="player_url">
+        <ElMenuItem v-if="store.user.id != 0" :index="player_url">
             <IconMenuItem :text="store.user.username" icon="User" />
-        </el-menu-item>
-        <el-menu-item v-if="store.user.is_staff" key="staff" index="/staff">
+        </ElMenuItem>
+        <ElMenuItem v-if="store.user.is_staff" key="staff" index="/staff">
             <IconMenuItem :text="t('local.staff')" icon="Key" />
-        </el-menu-item>
-        <el-menu-item index="/settings" style="padding-left: 8px; padding-right: 5px">
+        </ElMenuItem>
+        <ElMenuItem index="/settings" style="padding-left: 8px; padding-right: 5px">
             <IconMenuItem :text="t('local.setting')" icon="Setting" />
-        </el-menu-item>
+        </ElMenuItem>
         <LanguagePicker v-show="local.language_show" style="padding-left: 8px; padding-right: 8px;" />
         <Login @keydown.stop />
-    </el-menu>
+    </ElMenu>
 </template>
 
 <script setup lang="ts">
@@ -105,11 +105,9 @@ const i18nMessages = {
 };
 
 const { t } = useI18n({ messages: i18nMessages });
-
 </script>
 
 <style lang="less" scoped>
-
 .el-menu {
     line-height: v-bind("menuHeight");
     flex-wrap: wrap;
@@ -147,5 +145,4 @@ const { t } = useI18n({ messages: i18nMessages });
     padding-right: 5px;
     height: v-bind("menuHeight");
 }
-
 </style>

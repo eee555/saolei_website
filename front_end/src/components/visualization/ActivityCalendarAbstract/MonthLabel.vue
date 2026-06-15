@@ -42,5 +42,4 @@ function generateMonthLabelRange(startDate: Date, endDate: Date) {
     }
     return monthLabels;
 }
-
 </script>

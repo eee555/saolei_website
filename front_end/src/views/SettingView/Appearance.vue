@@ -1,47 +1,47 @@
 <template>
-    <el-card :header="t('local.appearance')">
-        <el-descriptions>
-            <el-descriptions-item :label="t('local.colorscheme')" style="vertical-align: middle;">
+    <ElCard :header="t('local.appearance')">
+        <ElDescriptions>
+            <ElDescriptionsItem :label="t('local.colorscheme')" style="vertical-align: middle;">
                 <DarkMode />
-            </el-descriptions-item>
-            <el-descriptions-item :label="t('local.languageSwitch')">
-                <el-switch
+            </ElDescriptionsItem>
+            <ElDescriptionsItem :label="t('local.languageSwitch')">
+                <ElSwitch
                     v-model="local.language_show"
                     :active-text="t('common.show')" :inactive-text="t('common.hide')"
                 />
-            </el-descriptions-item>
-            <el-descriptions-item :label="t('local.viennaLogo')">
-                <el-switch v-model="local.vienna_logo_legacy">
+            </ElDescriptionsItem>
+            <ElDescriptionsItem :label="t('local.viennaLogo')">
+                <ElSwitch v-model="local.vienna_logo_legacy">
                     <template #active>
                         <img style="width: 16px; height: 16px" :src="ViennaIconLegacy" :title="t('common.old')">
                     </template>
                     <template #inactive>
                         <img style="width: 16px; height: 16px" :src="ViennaIconNew" :title="t('common.new')">
                     </template>
-                </el-switch>
-            </el-descriptions-item>
-            <el-descriptions-item :label="t('local.menuLayout')">
-                <el-switch
+                </ElSwitch>
+            </ElDescriptionsItem>
+            <ElDescriptionsItem :label="t('local.menuLayout')">
+                <ElSwitch
                     v-model="local.menu_icon"
                     :active-text="t('local.menuLayoutAbstract')"
                     :inactive-text="t('local.menuLayoutDefault')"
                 />
-            </el-descriptions-item>
-            <el-descriptions-item :label="t('local.menuHeight')">
-                <el-slider
+            </ElDescriptionsItem>
+            <ElDescriptionsItem :label="t('local.menuHeight')">
+                <ElSlider
                     v-model="local.menu_height" size="small" :min="20" :max="60"
                     style="width: 100px; display: inline-block; height: 9px"
                 />
-            </el-descriptions-item>
-            <el-descriptions-item :label="t('local.menuFontSize')">
-                <el-input-number
+            </ElDescriptionsItem>
+            <ElDescriptionsItem :label="t('local.menuFontSize')">
+                <ElInputNumber
                     v-model="local.menu_font_size"
                     size="small" :min="10"
                 />
-            </el-descriptions-item>
-            <el-descriptions-item :label="t('local.notificationDuration')">
-                <base-tooltip>
-                    <el-input-number v-model="local.notification_duration" size="small" :min="0" :step="1000" />
+            </ElDescriptionsItem>
+            <ElDescriptionsItem :label="t('local.notificationDuration')">
+                <BaseTooltip>
+                    <ElInputNumber v-model="local.notification_duration" size="small" :min="0" :step="1000" />
                     <template #content>
                         <span class="text">
                             {{ t('local.notificationDurationTooltip1') }}
@@ -49,26 +49,26 @@
                             {{ t('local.notificationDurationTooltip2') }}
                         </span>
                     </template>
-                </base-tooltip>
-            </el-descriptions-item>
-            <el-descriptions-item :label="t('local.nameFormat')">
+                </BaseTooltip>
+            </ElDescriptionsItem>
+            <ElDescriptionsItem :label="t('local.nameFormat')">
                 <span :title="t('local.nameFormatTooltip')">
-                    <el-radio-group v-model="local.nameFormat" size="small" style="vertical-align: middle;">
-                        <el-radio-button :label="t('local.nameFormatFirstLast')" value="first-last" />
-                        <el-radio-button :label="t('local.nameFormatLastFirst')" value="last-first" />
-                    </el-radio-group>
+                    <ElRadioGroup v-model="local.nameFormat" size="small" style="vertical-align: middle;">
+                        <ElRadioButton :label="t('local.nameFormatFirstLast')" value="first-last" />
+                        <ElRadioButton :label="t('local.nameFormatLastFirst')" value="last-first" />
+                    </ElRadioGroup>
                 </span>
-            </el-descriptions-item>
-            <el-descriptions-item :label="t('local.newUserGuide')">
+            </ElDescriptionsItem>
+            <ElDescriptionsItem :label="t('local.newUserGuide')">
                 <span :title="t('local.newUserGuideTooltip')">
-                    <el-switch v-model="local.tooltip_show" />
+                    <ElSwitch v-model="local.tooltip_show" />
                 </span>
-            </el-descriptions-item>
-            <el-descriptions-item :label="t('local.experimentalFeature')">
-                <el-switch v-model="local.experimental" />
-            </el-descriptions-item>
-        </el-descriptions>
-    </el-card>
+            </ElDescriptionsItem>
+            <ElDescriptionsItem :label="t('local.experimentalFeature')">
+                <ElSwitch v-model="local.experimental" />
+            </ElDescriptionsItem>
+        </ElDescriptions>
+    </ElCard>
 </template>
 
 <script setup lang="ts">
@@ -77,6 +77,7 @@ import '@/styles/text.css';
 import { ElCard, ElDescriptions, ElDescriptionsItem, ElInputNumber, ElRadioButton, ElRadioGroup, ElSlider, ElSwitch } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
+import BaseTooltip from '@/components/common/BaseTooltip.vue';
 import DarkMode from '@/components/widgets/DarkMode.vue';
 import { local } from '@/store';
 import { ViennaIconLegacy, ViennaIconNew } from '@/utils/assets';
@@ -129,5 +130,4 @@ const i18nMessages = {
 const { t } = useI18n({
     messages: i18nMessages,
 });
-
 </script>

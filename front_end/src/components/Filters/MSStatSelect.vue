@@ -1,23 +1,16 @@
 <template>
-    <el-select v-model="value" size="small">
+    <ElSelect v-model="value" size="small">
         <template #label="{ label }">
             <span v-if="prop.label !== ''">{{ prop.label }}: </span>
             <span>{{ label }}</span>
         </template>
-        <el-option v-for="stat in options" :key="stat" :value="stat" :label="t(`common.prop.${stat}`)" />
-    </el-select>
+        <ElOption v-for="stat in options" :key="stat" :value="stat" :label="t(`common.prop.${stat}`)" />
+    </ElSelect>
 </template>
 
 <script setup lang="ts">
 import { ElOption, ElSelect } from 'element-plus';
 import { useI18n } from 'vue-i18n';
-
-const { t } = useI18n();
-
-const value = defineModel({
-    type: String,
-    default: '',
-});
 
 const prop = defineProps({
     label: {
@@ -30,4 +23,10 @@ const prop = defineProps({
     },
 });
 
+const { t } = useI18n();
+
+const value = defineModel({
+    type: String,
+    default: '',
+});
 </script>

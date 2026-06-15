@@ -1,25 +1,25 @@
 <template>
     <div style="display: flex; flex-direction: column; gap: 1rem;">
         <Appearance />
-        <el-card :header="t('local.thirdPartyTrust')">
-            <el-checkbox v-model="videoPlayerConfig.strangeDustTrust">
+        <ElCard :header="t('local.thirdPartyTrust')">
+            <ElCheckbox v-model="videoPlayerConfig.strangeDustTrust">
                 https://strange-dust.github.io/minesweeper-replay-analyzer/
-            </el-checkbox>
-        </el-card>
+            </ElCheckbox>
+        </ElCard>
         <Visualization />
-        <el-card v-experimental :header="t('local.stnbConst')">
-            <el-descriptions>
-                <el-descriptions-item :label="t('common.level.b')">
-                    <el-input-number v-model="STNB_const.b" size="small" :controls="false" />
-                </el-descriptions-item>
-                <el-descriptions-item :label="t('common.level.i')">
-                    <el-input-number v-model="STNB_const.i" size="small" :controls="false" />
-                </el-descriptions-item>
-                <el-descriptions-item :label="t('common.level.e')">
-                    <el-input-number v-model="STNB_const.e" size="small" :controls="false" />
-                </el-descriptions-item>
-            </el-descriptions>
-        </el-card>
+        <ElCard v-experimental :header="t('local.stnbConst')">
+            <ElDescriptions>
+                <ElDescriptionsItem :label="t('common.level.b')">
+                    <ElInputNumber v-model="STNB_const.b" size="small" :controls="false" />
+                </ElDescriptionsItem>
+                <ElDescriptionsItem :label="t('common.level.i')">
+                    <ElInputNumber v-model="STNB_const.i" size="small" :controls="false" />
+                </ElDescriptionsItem>
+                <ElDescriptionsItem :label="t('common.level.e')">
+                    <ElInputNumber v-model="STNB_const.e" size="small" :controls="false" />
+                </ElDescriptionsItem>
+            </ElDescriptions>
+        </ElCard>
     </div>
 </template>
 
@@ -49,5 +49,4 @@ const i18nMessages = {
 const { t } = useI18n({
     messages: i18nMessages,
 });
-
 </script>

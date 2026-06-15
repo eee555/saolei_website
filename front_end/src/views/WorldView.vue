@@ -1,10 +1,10 @@
 <template>
     <div style="margin: auto;text-align: center;width: 888px;">
-        <v-chart style="height: 240px;width: 888px;" class="chart" :option="option_cpu" autoresize />
-        <v-chart style="height: 240px;width: 888px;" class="chart" :option="option_s" autoresize />
-        <v-chart style="height: 240px;width: 888px;" class="chart" :option="option_r" autoresize />
-        <v-chart style="height: 328px;" class="chart" :option="option_disk" autoresize />
-        <v-chart style="height: 328px;" class="chart" :option="option_virtual_memory" autoresize />
+        <VChart style="height: 240px;width: 888px;" class="chart" :option="option_cpu" autoresize />
+        <VChart style="height: 240px;width: 888px;" class="chart" :option="option_s" autoresize />
+        <VChart style="height: 240px;width: 888px;" class="chart" :option="option_r" autoresize />
+        <VChart style="height: 328px;" class="chart" :option="option_disk" autoresize />
+        <VChart style="height: 328px;" class="chart" :option="option_virtual_memory" autoresize />
     </div>
 </template>
 
@@ -256,7 +256,6 @@ const option_virtual_memory = ref({
         },
     ],
 });
-
 </script>
 
 <style scoped>

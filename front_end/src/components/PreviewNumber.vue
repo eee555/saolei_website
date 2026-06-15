@@ -1,7 +1,7 @@
 <template>
-    <el-link v-if="data.id" underline="never" class="clickable" @click="preview(data.id);">
+    <ElLink v-if="data.id" underline="never" class="clickable" @click="preview(data.id);">
         {{ data.text }}
-    </el-link>
+    </ElLink>
     <span v-else>--</span>
 </template>
 
@@ -21,7 +21,4 @@ const data = defineProps({
         default: '',
     },
 });
-
 </script>
-
-<style lang="less" scoped></style>

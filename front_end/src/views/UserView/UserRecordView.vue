@@ -1,43 +1,43 @@
 <template>
-    <base-card-large>
-        <el-skeleton v-show="loading" animated style="margin-top: 0px;" :rows="8" />
+    <BaseCardLarge>
+        <ElSkeleton v-show="loading" animated style="margin-top: 0px;" :rows="8" />
         <div v-for="(d, idx) in records" style="margin-top: -10px;">
             <h4>{{ t(table_title[idx]) }}{{ t('profile.records.modeRecord') }}</h4>
-            <el-table :data="d" style="width: 100%;" :header-cell-style="{ 'text-align': 'center' }">
-                <el-table-column type="index" :index="indexMethod" width="100" align="center" />
+            <ElTable :data="d" style="width: 100%;" :header-cell-style="{ 'text-align': 'center' }">
+                <ElTableColumn type="index" :index="indexMethod" width="100" align="center" />
 
-                <el-table-column label="time" align="center">
+                <ElTableColumn label="time" align="center">
                     <template #default="scope">
                         <PreviewNumber :id="scope.row.timems_id" :text="ms_to_s(scope.row.timems)" />
                     </template>
-                </el-table-column>
+                </ElTableColumn>
 
-                <el-table-column label="3BV/s" align="center">
+                <ElTableColumn label="3BV/s" align="center">
                     <template #default="scope">
                         <PreviewNumber :id="scope.row.bvs_id" :text="scope.row.bvs.toFixed(3)" />
                     </template>
-                </el-table-column>
+                </ElTableColumn>
 
-                <el-table-column label="STNB" align="center">
+                <ElTableColumn label="STNB" align="center">
                     <template #default="scope">
                         <PreviewNumber :id="scope.row.stnb_id" :text="scope.row.stnb.toFixed(3)" />
                     </template>
-                </el-table-column>
+                </ElTableColumn>
 
-                <el-table-column label="IOE" align="center">
+                <ElTableColumn label="IOE" align="center">
                     <template #default="scope">
                         <PreviewNumber :id="scope.row.ioe_id" :text="scope.row.ioe.toFixed(3)" />
                     </template>
-                </el-table-column>
+                </ElTableColumn>
 
-                <el-table-column label="path" align="center">
+                <ElTableColumn label="path" align="center">
                     <template #default="scope">
                         <PreviewNumber :id="scope.row.path_id" :text="scope.row.path.toFixed(3)" />
                     </template>
-                </el-table-column>
-            </el-table>
+                </ElTableColumn>
+            </ElTable>
         </div>
-    </base-card-large>
+    </BaseCardLarge>
 </template>
 
 <script lang="ts" setup>
@@ -119,14 +119,6 @@ function trans_record(r: RecordBIE): Record[] {
     }
     return record;
 }
-
-
-
-
-
-
-
-
 </script>
 
 

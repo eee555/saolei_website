@@ -25,5 +25,4 @@ import { useI18n } from 'vue-i18n';
 import { MS_Mode } from '@/utils/ms_const';
 
 const { t } = useI18n();
-
 </script>

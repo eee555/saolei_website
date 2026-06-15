@@ -16,10 +16,9 @@ import { useI18n } from 'vue-i18n';
 
 import { utc_to_local_format } from '@/utils/system/tools';
 
-const { t } = useI18n();
-
 defineProps({
     sortable: { type: Boolean, default: false },
 });
 
+const { t } = useI18n();
 </script>

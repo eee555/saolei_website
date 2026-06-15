@@ -1,11 +1,11 @@
 <template>
-    <el-row>
+    <ElRow>
         <UserArbiterCSV :id="user.id" />
         <span style="flex: 1" />
-        <el-button circle :type="showSetting ? 'primary' : 'default'" @click="showSetting = !showSetting">
-            <base-icon-setting />
-        </el-button>
-    </el-row>
+        <ElButton circle :type="showSetting ? 'primary' : 'default'" @click="showSetting = !showSetting">
+            <BaseIconSetting />
+        </ElButton>
+    </ElRow>
     <MultiSelector v-if="showSetting" v-model="VideoListConfig.profile" :options="thisColumnChoices" :labels="thisColumnChoices.map((s) => t(`common.prop.${s}`))" />
     <VideoList v-loading="loading" :videos="user.videos" :columns="VideoListConfig.profile" sortable paginator />
 </template>
@@ -50,5 +50,4 @@ async function refresh() {
 watch(() => user.value.id, refresh, { immediate: true });
 
 onMounted(refresh);
-
 </script>

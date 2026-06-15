@@ -1,51 +1,50 @@
 <template>
-    <el-form ref="ruleFormRef" :model="registerForm" status-icon>
+    <ElForm ref="ruleFormRef" :model="registerForm" status-icon>
         <!-- 用户名 -->
-        <el-form-item ref="usernameFormRef" prop="username" data-cy="usernameFormItem">
+        <ElFormItem ref="usernameFormRef" prop="username" data-cy="usernameFormItem">
             <template #label>
                 {{ t('form.username') }}
             </template>
-            <el-input
+            <ElInput
                 v-model="registerForm.username" prefix-icon="User" maxlength="20" show-word-limit
                 @input="usernameInputHandler" @change="usernameChangeHandler"
             />
-        </el-form-item>
+        </ElFormItem>
         <!-- 邮箱 -->
-        <email-form-item ref="emailFormRef" v-model="registerForm.email" data-cy="emailFormItem" check-collision="true" />
+        <EmailFormItem ref="emailFormRef" v-model="registerForm.email" data-cy="emailFormItem" check-collision="true" />
         <!-- 邮箱验证码 -->
-        <email-code-block
+        <EmailCodeBlock
             ref="emailCodeFormRef" v-model="registerForm.emailCode" :email="registerForm.email" type="register"
             :email-state="email_state"
         />
         <!-- 密码 -->
-        <password-confirm-block ref="passwordFormRef" v-model="registerForm.password" data-cy="passwordFormItem" />
-        <el-form-item prop="agreeTAC">
+        <PasswordConfirmBlock ref="passwordFormRef" v-model="registerForm.password" data-cy="passwordFormItem" />
+        <ElFormItem prop="agreeTAC">
             <!-- 同意协议 -->
-            <el-checkbox v-if="true" v-model="agree_TAC" name="checkoutSecret">
+            <ElCheckbox v-if="true" v-model="agree_TAC" name="checkoutSecret">
                 {{
                     t('local.agreeTAC1')
                 }}
-                <a target="_blank" :href="`${AXIOS_BASE_URL}/agreement.html`">{{ t('local.agreeTAC2')
+                <a target="_blank" rel="noopener noreferrer" :href="`${AXIOS_BASE_URL}/agreement.html`">{{ t('local.agreeTAC2')
                 }}</a>
-            </el-checkbox>
+            </ElCheckbox>
             <!-- 确认 -->
-            <el-button type="primary" :disabled="confirm_disabled" style="margin-left: auto" @click="submitForm(ruleFormRef)">
+            <ElButton type="primary" :disabled="confirm_disabled" style="margin-left: auto" @click="submitForm(ruleFormRef!)">
                 {{
                     t('local.confirm') }}
-            </el-button>
-        </el-form-item>
-    </el-form>
+            </ElButton>
+        </ElFormItem>
+    </ElForm>
 </template>
 
 <script setup lang="ts">
-
 import { ElButton, ElCheckbox, ElForm, ElFormItem, ElInput, ElNotification, FormInstance } from 'element-plus';
-import { computed, onUnmounted, reactive, ref } from 'vue';
+import { computed, onUnmounted, reactive, ref, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import emailCodeBlock from '@/components/formItems/emailCodeBlock.vue';
-import emailFormItem from '@/components/formItems/emailFormItem.vue';
-import passwordConfirmBlock from '@/components/formItems/passwordConfirmBlock.vue';
+import EmailCodeBlock from '@/components/formItems/EmailCodeBlock.vue';
+import EmailFormItem from '@/components/formItems/EmailFormItem.vue';
+import PasswordConfirmBlock from '@/components/formItems/PasswordConfirmBlock.vue';
 import { local } from '@/store';
 import { validateError, validateSuccess } from '@/utils/common/elFormValidate';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
@@ -62,10 +61,10 @@ const AXIOS_BASE_URL = import.meta.env.VITE_BASE_API;
 // 主要体现在多个校验器的优先级混乱，所以只能直接改 el-form-item 的内部变量
 // el-form-item 有直接的 error 属性，可以实现完美的本地化
 // 但是现版本控制不了 state，为了代码简洁，暂时不用 error 的解决方案
-const usernameFormRef = ref<typeof ElFormItem>();
-const emailFormRef = ref<typeof emailFormItem>();
-const emailCodeFormRef = ref<typeof emailCodeBlock>();
-const passwordFormRef = ref<typeof passwordConfirmBlock>();
+const usernameFormRef = useTemplateRef('usernameFormRef');
+const emailFormRef = useTemplateRef<typeof EmailFormItem>('emailFormRef');
+const emailCodeFormRef = useTemplateRef<typeof EmailCodeBlock>('emailCodeFormRef');
+const passwordFormRef = useTemplateRef<typeof PasswordConfirmBlock>('passwordFormRef');
 
 interface RegisterForm {
     username: string;
@@ -81,7 +80,7 @@ const registerForm = reactive<RegisterForm>({
     emailCode: '',
 });
 
-const ruleFormRef = ref<FormInstance>();
+const ruleFormRef = useTemplateRef('ruleFormRef');
 
 const email_state = computed(() => {
     if (!emailFormRef.value) return '';
@@ -170,5 +169,4 @@ function usernameCharacterValidation(value: string) {
     else return false;
     return true;
 }
-
 </script>

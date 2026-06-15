@@ -1,11 +1,11 @@
 <template>
     <div v-loading="loading" class="account-link-main">
         <template v-for="account in accountlinks" :key="account.platform">
-            <card-saolei v-if="account.platform == 'c'" :id="account.identifier" :verified="account.verified" :info="account.data as AccountSaolei" @refresh="refreshAccount(account)" />
-            <card-msgames v-else-if="account.platform == 'a'" :id="account.identifier" :verified="account.verified" :info="account.data as AccountMSGames" />
-            <card-wo-m v-else-if="account.platform == 'w'" :id="account.identifier" :verified="account.verified" :info="account.data as AccountWoM" @refresh="refreshAccount(account)" />
+            <CardSaolei v-if="account.platform == 'c'" :id="account.identifier" :verified="account.verified" :info="account.data as AccountSaolei" @refresh="refreshAccount(account)" />
+            <CardMsgames v-else-if="account.platform == 'a'" :id="account.identifier" :verified="account.verified" :info="account.data as AccountMSGames" />
+            <CardWoM v-else-if="account.platform == 'w'" :id="account.identifier" :verified="account.verified" :info="account.data as AccountWoM" @refresh="refreshAccount(account)" />
         </template>
-        <card-add v-if="store.player.id == store.user.id && accountlinks.length < 4" :accountlinks="accountlinks" @add-link="addLink" />
+        <CardAdd v-if="store.player.id == store.user.id && accountlinks.length < 4" :accountlinks="accountlinks" @add-link="addLink" />
     </div>
 </template>
 
@@ -25,14 +25,14 @@ import { httpErrorNotification } from '@/components/Notifications';
 import { store } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
-const { proxy } = useCurrentInstance();
-
 const props = defineProps({
     userId: {
         type: Number,
         default: 0,
     },
 });
+
+const { proxy } = useCurrentInstance();
 
 const loading = ref(false);
 const accountlinks = ref<AccountLink[]>([]);
@@ -83,15 +83,12 @@ function refreshAccount(account: AccountLink) {
         }).catch(httpErrorNotification);
     }
 }
-
 </script>
 
 <style lang="less" scoped>
-
 .account-link-main {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(19rem, auto));
     grid-gap: 1rem;
 }
-
 </style>

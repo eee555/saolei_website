@@ -4,11 +4,11 @@
             &nbsp;
         </template>
         <template v-else>
-            <software-icon v-if="prop.showIcon === 'software'" :software="videos[bestIndex].software" />
-            <video-state-icon v-else-if="prop.showIcon === 'state'" :state="videos[bestIndex].state" />
-            <el-link underline="never" style="font-weight: inherit" @click="handleClick">
+            <SoftwareIcon v-if="prop.showIcon === 'software'" :software="videos[bestIndex].software" />
+            <VideoStateIcon v-else-if="prop.showIcon === 'state'" :state="videos[bestIndex].state" />
+            <ElLink underline="never" style="font-weight: inherit" @click="handleClick">
                 {{ videos[bestIndex].displayStat(displayBy) }}
-            </el-link>
+            </ElLink>
         </template>
     </span>
 </template>
@@ -26,12 +26,10 @@ import { store } from '@/store';
 import { getTextColor, PiecewiseColorScheme } from '@/utils/colors';
 import { preview } from '@/utils/common/PlayerDialog';
 import { fullDay, globalNow } from '@/utils/datetime';
-import { MS_Level, MS_Software, MS_Softwares } from '@/utils/ms_const';
+import { MS_Software, MS_Softwares } from '@/utils/ms_const';
 import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 
 const prop = defineProps({
-    level: { type: String as PropType<MS_Level>, required: true },
-    bv: { type: Number, required: true },
     videos: { type: Array<VideoAbstract>, default: [] },
     sortBy: { type: String as PropType<getStat_stat>, default: 'timems' },
     sortDesc: { type: Boolean, default: false },
@@ -82,11 +80,9 @@ function handleClick() {
         store.video_list_show = true;
     }
 }
-
 </script>
 
 <style lang="less" scoped>
-
 .cell {
     background-color: v-bind(color);
     outline-style: solid;
@@ -104,5 +100,4 @@ function handleClick() {
 .el-link {
     --el-link-text-color: v-bind(fontColor);
 }
-
 </style>

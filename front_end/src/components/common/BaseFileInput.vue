@@ -1,5 +1,5 @@
 <template>
-    <el-button
+    <ElButton
         style="width: 100%"
         size="large"
         :disabled="disabled"
@@ -16,12 +16,12 @@
             <!-- 默认占位内容 -->
             <span>点击此处或拖拽文件到此区域</span>
         </slot>
-    </el-button>
+    </ElButton>
 </template>
 
 <script setup lang="ts">
 import { ElButton } from 'element-plus';
-import { ref } from 'vue';
+import { ref, useTemplateRef } from 'vue';
 
 const props = defineProps({
     // 限制文件类型，例如 'image/*' 或 '.pdf,.jpg'
@@ -36,7 +36,8 @@ const props = defineProps({
     },
 });
 
-const fileInputRef = ref<HTMLInputElement>();
+const emit = defineEmits(['add']);
+const fileInputRef = useTemplateRef('fileInputRef');
 const isDragover = ref(false);
 
 // 触发原生文件选择框
@@ -77,8 +78,6 @@ function onDrop(event: DragEvent) {
         emit('add', files);
     }
 }
-
-const emit = defineEmits(['add']);
 </script>
 
 <style scoped>

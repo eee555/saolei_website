@@ -48,7 +48,6 @@ onMounted(() => {
         news_queue.value = response.data.map((v: string) => { return JSON.parse(v); });
     });
 });
-
 </script>
 
 <style scope lang='less'>
@@ -57,5 +56,4 @@ onMounted(() => {
     overflow: auto;
 
 }
-
 </style>

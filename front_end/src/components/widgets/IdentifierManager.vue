@@ -2,45 +2,44 @@
     <!-- 标识管理UI -->
     <!-- 表格第一列显示标识，用等宽字体。最后一行用来输入新的标识。第二列放操作按钮 -->
     <div class="flex gap-2">
-        <el-table :data="identifierdata">
+        <ElTable :data="identifierdata">
             <!-- 标识列 -->
-            <el-table-column prop="data" sortable>
+            <ElTableColumn prop="data" sortable>
                 <template #default="scope">
                     <!-- 左margin是为了补偿输入框内文本的偏移 -->
-                    <el-input
+                    <ElInput
                         v-if="scope.row.data === ''" v-model="new_identifiers" size="small" style="width: 200px;margin-left: -7px"
                         input-style="font-family: 'Courier New', Courier, monospace;"
                     />
                 </template>
-            </el-table-column>
+            </ElTableColumn>
             <!-- 操作列 -->
-            <el-table-column>
+            <ElTableColumn>
                 <template #default="scope">
                     <!-- 添加标识 -->
-                    <el-link
+                    <ElLink
                         v-if="scope.row.data === ''" underline="never"
                         @click="addIdentifier(new_identifiers)"
                     >
-                        <base-icon-add />
-                    </el-link>
+                        <BaseIconAdd />
+                    </ElLink>
                     <!-- 复制标识 -->
                     <IconCopy v-else :text="scope.row.data" />
                     &nbsp;
                     <!-- 删除标识 -->
-                    <el-link
+                    <ElLink
                         v-if="user.id == store.user.id && scope.row.data !== ''" underline="never"
                         type="danger" @click="delIdentifier(scope.row.data)"
                     >
-                        <base-icon-delete />
-                    </el-link>
+                        <BaseIconDelete />
+                    </ElLink>
                 </template>
-            </el-table-column>
-        </el-table>
+            </ElTableColumn>
+        </ElTable>
     </div>
 </template>
 
 <script setup lang="ts">
-
 import { ElInput, ElLink, ElNotification, ElTable, ElTableColumn } from 'element-plus';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -125,7 +124,6 @@ function addIdentifier(identifier: string) {
         new_identifiers.value = '';
     }).catch(httpErrorNotification);
 }
-
 </script>
 
 <style lang="less" scoped>

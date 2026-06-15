@@ -1,5 +1,5 @@
 <template>
-    <el-card :header="t('local.visualizationColorScheme')">
+    <ElCard :header="t('local.visualizationColorScheme')">
         <div style="display: flex; flex-direction: column; gap: 1rem">
             <div style="display: flex; flex-wrap: wrap; gap: 2rem; align-items: center">
                 <div class="text">
@@ -16,17 +16,17 @@
                 <div class="text">
                     {{ t('local.piecewise') }}
                 </div>
-                <el-select v-model="colorSchemeName">
-                    <el-option label="Bvs" value="bvs" />
-                    <el-option label="Beg Time" value="btime" />
-                    <el-option label="Int Time" value="itime" />
-                    <el-option label="Exp Time" value="etime" />
-                    <el-option label="STNB" value="stnb" />
-                </el-select>
+                <ElSelect v-model="colorSchemeName">
+                    <ElOption label="Bvs" value="bvs" />
+                    <ElOption label="Beg Time" value="btime" />
+                    <ElOption label="Int Time" value="itime" />
+                    <ElOption label="Exp Time" value="etime" />
+                    <ElOption label="STNB" value="stnb" />
+                </ElSelect>
                 <ColorSchemeSetting v-model="colorTheme[colorSchemeName]" />
             </div>
         </div>
-    </el-card>
+    </ElCard>
 </template>
 
 <script setup lang="ts">
@@ -58,15 +58,12 @@ const i18nMessages = {
 const { t } = useI18n({
     messages: i18nMessages,
 });
-
 </script>
 
 <style lang="less" scoped>
-
 .card-body {
     display: flex;
     flex-direction: column;
     gap: 1rem;
 }
-
 </style>

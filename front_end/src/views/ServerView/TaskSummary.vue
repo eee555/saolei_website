@@ -1,7 +1,7 @@
 <template>
-    <base-card-normal style="max-width: 40em">
-        <vue-ui-donut :dataset="dataset" :config="config" />
-    </base-card-normal>
+    <BaseCardNormal style="max-width: 40em">
+        <VueUiDonut :dataset="dataset" :config="config" />
+    </BaseCardNormal>
 </template>
 
 <script setup lang="ts">

@@ -1,22 +1,22 @@
 <template>
-    <el-row class="mb-4" style="margin-bottom: 10px;">
-        <el-button
-            v-for="(tag, key) in mode_tags" :key="key" type="success" :plain="!(mode_tag_selected == key)" :size="'small'"
+    <ElRow class="mb-4" style="margin-bottom: 10px;">
+        <ElButton
+            v-for="(tag, key) in mode_tags" :key="key" type="success" :plain="!(mode_tag_selected == key)" size="small"
             @click="mode_tag_selected = key as string; get_player_rank(1);"
         >
             {{ t(`common.mode.${tag.key}`) }}
-        </el-button>
-    </el-row>
+        </ElButton>
+    </ElRow>
 
-    <el-row class="mb-4" style="margin-bottom: 10px;">
-        <el-button
-            v-for="(tag, key) in index_tags" :key="key" type="primary" :plain="!(index_tag_selected == key)" :size="'small'"
+    <ElRow class="mb-4" style="margin-bottom: 10px;">
+        <ElButton
+            v-for="(tag, key) in index_tags" :key="key" type="primary" :plain="!(index_tag_selected == key)" size="small"
             @click="index_tag_selected = key as string; mod_style(); get_player_rank(1);"
         >
             {{ t(`common.prop.${tag.key}`)
             }}
-        </el-button>
-    </el-row>
+        </ElButton>
+    </ElRow>
 
     <div style="width: 80%;font-size:20px;margin: auto;margin-top: 10px;user-select: none;">
         <div style="border-bottom: 1px solid #555555;padding-bottom: 10px;">
@@ -63,7 +63,7 @@
     </div>
 
     <div style="margin-top: 16px;">
-        <el-pagination
+        <ElPagination
             v-model:current-page="state.CurrentPage" :next-click="nextClick" :page-size="20" layout="prev, pager, next, jumper" :page-count="state.Total"
             prev-text="上一页" next-text="下一页" @current-change="currentChange" @prev-click="prevClick"
         />
@@ -233,7 +233,6 @@ const setSortDirect = (level_tag: string) => {
     }
     get_player_rank(state.CurrentPage);
 };
-
 </script>
 
 

@@ -1,9 +1,9 @@
 <template>
-    <el-tag :type="support ? 'success' : 'danger'" size="small" effect="plain">
-        <base-icon-tick v-if="support" />
-        <base-icon-close v-else />
+    <ElTag :type="support ? 'success' : 'danger'" size="small" effect="plain">
+        <BaseIconTick v-if="support" />
+        <BaseIconClose v-else />
         <slot />
-    </el-tag>
+    </ElTag>
 </template>
 
 <script setup lang="ts">
@@ -17,5 +17,4 @@ defineProps({
         default: true,
     },
 });
-
 </script>

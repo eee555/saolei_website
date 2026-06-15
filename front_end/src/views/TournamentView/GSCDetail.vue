@@ -22,9 +22,9 @@
     <template v-if="tournament.state === TournamentState.Ongoing">
         <h3>
             {{ t('gsc.realTimeScore') }}&nbsp;
-            <el-link underline="never" :disabled="loading">
-                <base-icon-refresh @click="refresh" />
-            </el-link>
+            <ElLink underline="never" :disabled="loading">
+                <BaseIconRefresh @click="refresh" />
+            </ElLink>
         </h3>
         <GSCPersonalView v-loading="loading" :user-id="store.user.id" :tournament-id="tournament.id" />
     </template>
@@ -32,30 +32,29 @@
         <h3>
             {{ t('gsc.finalResults') }}
         </h3>
-        <el-tabs v-model="allSummaryTabPosition">
-            <el-tab-pane :label="t('tournament.ranking')" lazy :name="-1">
-                <el-button size="small" @click="downloadAll">
+        <ElTabs v-model="allSummaryTabPosition">
+            <ElTabPane :label="t('tournament.ranking')" lazy :name="-1">
+                <ElButton size="small" @click="downloadAll">
                     {{ t('tournament.downloadAll') }}{{ t('common.punct.lparen') }}{{ t('common.ratelimit.oncePerHour') }}{{ t('common.punct.rparen') }}
-                </el-button>
-                <el-row style="height: 0.5em" />
+                </ElButton>
+                <ElRow style="height: 0.5em" />
                 <GSCAllSummary :data="result" @row-click="handleAllSummaryRowClick" />
-            </el-tab-pane>
-            <el-tab-pane v-for="(participant, index) in viewedParticipants" :key="participant.id" lazy :name="index">
+            </ElTabPane>
+            <ElTabPane v-for="(participant, index) in viewedParticipants" :key="participant.id" lazy :name="index">
                 <template #label>
                     <span class="text">{{ participant.user__realname }}</span>
                     &nbsp;
-                    <el-link underline="never" @click="handleAllSummaryTabClose(index)">
-                        <base-icon-close style="scale: 65%" />
-                    </el-link>
+                    <ElLink underline="never" @click="handleAllSummaryTabClose(index)">
+                        <BaseIconClose style="scale: 65%" />
+                    </ElLink>
                 </template>
                 <GSCPersonalView :user-id="participant.user__id" :tournament-id="tournament.id" />
-            </el-tab-pane>
-        </el-tabs>
+            </ElTabPane>
+        </ElTabs>
     </template>
 </template>
 
 <script setup lang="ts">
-
 import { ElButton, ElLink, ElRow, ElTabPane, ElTabs, vLoading } from 'element-plus';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -145,5 +144,4 @@ function downloadAll() {
         streamToZip(new Uint8Array(response.data), 'gsc.zip');
     }).catch(httpErrorNotification);
 }
-
 </script>

@@ -7,17 +7,15 @@
 </template>
 
 <script setup lang="ts">
-
 import PrColumn from 'primevue/column';
 import { useI18n } from 'vue-i18n';
 
 import { formatBytes } from '@/utils/strings';
 import { VideoAbstract } from '@/utils/videoabstract';
 
-const { t } = useI18n();
-
 defineProps({
     sortable: { type: Boolean, default: false },
 });
 
+const { t } = useI18n();
 </script>
