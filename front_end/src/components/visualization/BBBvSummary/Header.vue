@@ -3,44 +3,44 @@
         <div style="display: flex; flex-wrap: wrap; justify-content: space-between; column-gap: 2rem; row-gap: 0.25rem; align-items: center;">
             <!-- 选择排序模板 -->
             <div>
-                <el-select v-model="BBBvSummaryConfig.template" size="small" style="width: 80px">
-                    <el-option :label="t('common.prop.bvs')" value="bvs" />
-                    <el-option :label="t('common.prop.time')" value="time" />
-                    <el-option :label="t('common.prop.stnb')" value="stnb" />
-                    <el-option :label="t('common.prop.ioe')" value="ioe" />
-                    <el-option :label="t('common.prop.thrp')" value="thrp" />
-                    <el-option :label="t('common.prop.path')" value="path" />
-                    <el-option :label="t('local.customTemplate')" value="custom" />
-                </el-select>
+                <ElSelect v-model="BBBvSummaryConfig.template" size="small" style="width: 80px">
+                    <ElOption :label="t('common.prop.bvs')" value="bvs" />
+                    <ElOption :label="t('common.prop.time')" value="time" />
+                    <ElOption :label="t('common.prop.stnb')" value="stnb" />
+                    <ElOption :label="t('common.prop.ioe')" value="ioe" />
+                    <ElOption :label="t('common.prop.thrp')" value="thrp" />
+                    <ElOption :label="t('common.prop.path')" value="path" />
+                    <ElOption :label="t('local.customTemplate')" value="custom" />
+                </ElSelect>
                 <template v-if="BBBvSummaryConfig.template === 'custom'">
                     &nbsp;
-                    <el-link class="text text-small" underline="always" @click="BBBvSummaryConfig.sortDesc = !BBBvSummaryConfig.sortDesc">
+                    <ElLink class="text text-small" underline="always" @click="BBBvSummaryConfig.sortDesc = !BBBvSummaryConfig.sortDesc">
                         {{ BBBvSummaryConfig.sortDesc ? t('local.settingMax') : t('local.settingMin') }}
-                    </el-link>
-                    <el-select v-model="BBBvSummaryConfig.sortBy" size="small" style="width:65px; margin-left: 0.2em; margin-right: 0.2em">
-                        <el-option :label="t('common.prop.time')" value="timems" />
-                        <el-option :label="t('common.prop.ioe')" value="ioe" />
-                        <el-option :label="t('common.prop.thrp')" value="thrp" />
-                        <el-option :label="t('common.prop.path')" value="path" />
-                        <el-option :label="t('common.prop.cls')" value="cls" />
-                        <el-option :label="t('common.prop.ces')" value="ces" />
-                        <el-option :label="t('common.prop.iome')" value="iome" />
-                    </el-select>
+                    </ElLink>
+                    <ElSelect v-model="BBBvSummaryConfig.sortBy" size="small" style="width:65px; margin-left: 0.2em; margin-right: 0.2em">
+                        <ElOption :label="t('common.prop.time')" value="timems" />
+                        <ElOption :label="t('common.prop.ioe')" value="ioe" />
+                        <ElOption :label="t('common.prop.thrp')" value="thrp" />
+                        <ElOption :label="t('common.prop.path')" value="path" />
+                        <ElOption :label="t('common.prop.cls')" value="cls" />
+                        <ElOption :label="t('common.prop.ces')" value="ces" />
+                        <ElOption :label="t('common.prop.iome')" value="iome" />
+                    </ElSelect>
                     <span class="text text-small">
                         {{ t('local.settingDisplayBy') }}
                     </span>
-                    <el-select v-model="BBBvSummaryConfig.displayBy" size="small" style="width:6em; margin-left: 0.2em">
-                        <el-option :label="t('common.prop.bvs')" value="bvs" />
-                        <el-option :label="t('common.prop.time')" value="time" />
-                        <el-option :label="t('common.prop.stnb')" value="stnb" />
-                        <el-option :label="t('common.prop.ioe')" value="ioe" />
-                        <el-option :label="t('common.prop.thrp')" value="thrp" />
-                        <el-option :label="t('common.prop.cls')" value="cls" />
-                        <el-option :label="t('common.prop.ces')" value="ces" />
-                        <el-option :label="t('common.prop.iome')" value="iome" />
-                        <el-option :label="t('common.prop.path')" value="path" />
-                        <el-option :label="t('common.prop.file_size')" value="file_size" />
-                    </el-select>
+                    <ElSelect v-model="BBBvSummaryConfig.displayBy" size="small" style="width:6em; margin-left: 0.2em">
+                        <ElOption :label="t('common.prop.bvs')" value="bvs" />
+                        <ElOption :label="t('common.prop.time')" value="time" />
+                        <ElOption :label="t('common.prop.stnb')" value="stnb" />
+                        <ElOption :label="t('common.prop.ioe')" value="ioe" />
+                        <ElOption :label="t('common.prop.thrp')" value="thrp" />
+                        <ElOption :label="t('common.prop.cls')" value="cls" />
+                        <ElOption :label="t('common.prop.ces')" value="ces" />
+                        <ElOption :label="t('common.prop.iome')" value="iome" />
+                        <ElOption :label="t('common.prop.path')" value="path" />
+                        <ElOption :label="t('common.prop.file_size')" value="file_size" />
+                    </ElSelect>
                 </template>
             </div>
             <!-- 软件筛选 -->
@@ -50,40 +50,40 @@
                 <span class="text text-small">
                     {{ t('local.iconLabel') }}
                 </span>
-                <el-select v-model="BBBvSummaryConfig.showIcon" size="small" placeholder="" style="width: 4em">
-                    <el-option :label="t('local.noIcon')" value="" />
-                    <el-option :label="t('common.prop.software')" value="software" />
-                    <el-option :label="t('common.prop.state')" value="state" />
-                </el-select>
+                <ElSelect v-model="BBBvSummaryConfig.showIcon" size="small" placeholder="" style="width: 4em">
+                    <ElOption :label="t('local.noIcon')" value="" />
+                    <ElOption :label="t('common.prop.software')" value="software" />
+                    <ElOption :label="t('common.prop.state')" value="state" />
+                </ElSelect>
             </div>
             <!-- 高亮新录像 -->
             <div>
                 <span class="text text-small">
                     {{ t('local.newHighlight1') }}
                 </span>
-                <el-link class="text text-small" underline="always" @click="switchNewDateField">
+                <ElLink class="text text-small" underline="always" @click="switchNewDateField">
                     {{ t(`local.newHighlight.${BBBvSummaryConfig.newDateField}`) }}
-                </el-link>
+                </ElLink>
                 <span class="text text-small">
                     {{ t('local.newHighlight2') }}
                 </span>
-                <el-input-number v-model="BBBvSummaryConfig.newThresh" :min="0" :step="1" size="small" style="width: fit-content" />
+                <ElInputNumber v-model="BBBvSummaryConfig.newThresh" :min="0" :step="1" size="small" style="width: fit-content" />
                 <span class="text text-small">
                     {{ t('local.newHighlight3') }}
                 </span>
             </div>
             <!-- 点击格子的模式 -->
-            <base-tooltip follow-cursor>
-                <el-link
+            <BaseTooltip follow-cursor>
+                <ElLink
                     underline="always"
                     @click="BBBvSummaryConfig.tooltipMode === 'fast' ? BBBvSummaryConfig.tooltipMode = 'advanced' : BBBvSummaryConfig.tooltipMode = 'fast'"
                 >
                     {{ t(`local.${BBBvSummaryConfig.tooltipMode}`) }}
-                </el-link>
+                </ElLink>
                 <template #content>
                     {{ t(`local.${BBBvSummaryConfig.tooltipMode}Tooltip`) }}
                 </template>
-            </base-tooltip>
+            </BaseTooltip>
             <!-- 显示比例 -->
             <Zoomer v-model="BBBvSummaryConfig.zoom" />
         </div>

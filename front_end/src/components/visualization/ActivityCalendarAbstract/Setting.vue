@@ -1,21 +1,21 @@
 <template>
     <span class="text">{{ t('local.showDate') }}</span>&nbsp;
-    <el-switch v-model="activityCalendarConfig.showDate" size="small" /><br>
+    <ElSwitch v-model="activityCalendarConfig.showDate" size="small" /><br>
     <span class="text">{{ t('local.useEndTime') }}</span>&nbsp;
-    <el-switch v-model="activityCalendarConfig.useEndTime" size="small" />&nbsp;
+    <ElSwitch v-model="activityCalendarConfig.useEndTime" size="small" />&nbsp;
     <span :title="t('local.useEndTimeTooltip')">
-        <base-icon-question />
+        <BaseIconQuestion />
     </span><br>
     <span class="text">{{ t('local.cellSize') }}</span>&nbsp;
-    <el-input-number v-model="activityCalendarConfig.cellSize" :min="1" :max="20" size="small" controls-position="right" /><br>
+    <ElInputNumber v-model="activityCalendarConfig.cellSize" :min="1" :max="20" size="small" controls-position="right" /><br>
     <span class="text">{{ t('local.cellGap') }}</span>&nbsp;
-    <el-input-number v-model="activityCalendarConfig.cellMargin" :min="0" :max="10" size="small" controls-position="right" /><br>
+    <ElInputNumber v-model="activityCalendarConfig.cellMargin" :min="0" :max="10" size="small" controls-position="right" /><br>
     <span class="text">{{ t('local.cornerRadius') }}</span>&nbsp;
-    <el-input-number v-model="activityCalendarConfig.cornerRadius" :min="0" :max="50" size="small" controls-position="right">
+    <ElInputNumber v-model="activityCalendarConfig.cornerRadius" :min="0" :max="50" size="small" controls-position="right">
         <template #suffix>
             %
         </template>
-    </el-input-number>
+    </ElInputNumber>
 </template>
 
 <script setup lang="ts">

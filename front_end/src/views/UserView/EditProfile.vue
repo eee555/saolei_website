@@ -25,7 +25,7 @@
         <div v-else-if="formStatus.realname.status === 'success'" class="text text-small text-success">
             {{ t('local.updateSuccess') }}
         </div>
-        <el-input
+        <ElInput
             v-model="formStatus.realname.new" minlength="2"
             maxlength="100" show-word-limit :disabled="user.realname !== ''"
         />
@@ -47,14 +47,14 @@
         <div v-else-if="formStatus.firstname.status === 'success'" class="text text-small text-success">
             {{ t('local.updateSuccess') }}
         </div>
-        <el-input v-model="formStatus.firstname.new" :placeholder="t('local.firstname')" minlength="1" maxlength="255" show-word-limit :disabled="user.firstname !== ''" />
+        <ElInput v-model="formStatus.firstname.new" :placeholder="t('local.firstname')" minlength="1" maxlength="255" show-word-limit :disabled="user.firstname !== ''" />
         <div v-if="formStatus.lastname.status === 'error'" class="text text-danger text-small">
             {{ formStatus.lastname.errorMsg }}
         </div>
         <div v-else-if="formStatus.lastname.status === 'success'" class="text text-small text-success">
             {{ t('local.updateSuccess') }}
         </div>
-        <el-input v-model="formStatus.lastname.new" :placeholder="t('local.lastname')" minlength="1" maxlength="255" show-word-limit :disabled="user.lastname !== ''" />
+        <ElInput v-model="formStatus.lastname.new" :placeholder="t('local.lastname')" minlength="1" maxlength="255" show-word-limit :disabled="user.lastname !== ''" />
     </div>
 
     <!-- 个性签名 -->
@@ -76,7 +76,7 @@
         <div v-else-if="formStatus.signature.status === 'success'" class="text text-small text-success">
             {{ t('local.updateSuccess') }}
         </div>
-        <el-input
+        <ElInput
             v-model="formStatus.signature.new" minlength="0"
             maxlength="4095" type="textarea" :rows="8" show-word-limit
             :disabled="signatureDisabled"
@@ -84,12 +84,12 @@
     </div>
 
     <div style="margin-top: 1em">
-        <el-button type="primary" @click="updateProfile">
+        <ElButton type="primary" @click="updateProfile">
             {{ t('common.button.save') }}
-        </el-button>
-        <el-button type="info" @click="isEditing = false">
+        </ElButton>
+        <ElButton type="info" @click="isEditing = false">
             {{ t('common.button.cancel') }}
-        </el-button>
+        </ElButton>
     </div>
 </template>
 

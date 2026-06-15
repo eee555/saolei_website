@@ -6,12 +6,12 @@
         <div class="text text-large" style="padding: 0.1em; color: inherit;">
             {{ t('local.dragOrClick') }}
         </div>
-        <el-checkbox v-model="local.autoUploadAfterParse" @click.stop>
+        <ElCheckbox v-model="local.autoUploadAfterParse" @click.stop>
             {{ t('local.autoUploadAfterParse') }}
-        </el-checkbox>
-        <el-checkbox v-model="local.autoRemoveAfterUpload" @click.stop>
+        </ElCheckbox>
+        <ElCheckbox v-model="local.autoRemoveAfterUpload" @click.stop>
             {{ t('local.autoRemoveAfterUpload') }}
-        </el-checkbox>
+        </ElCheckbox>
         <div class="text text-small" style="padding: 0.1em;">
             {{ t('local.constraintSize') }}
         </div>

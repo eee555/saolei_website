@@ -1,7 +1,7 @@
 <template>
-    <el-card style="--el-card-padding: 10px;">
+    <ElCard style="--el-card-padding: 10px;">
         <slot />
-    </el-card>
+    </ElCard>
 </template>
 
 <script setup lang="ts">

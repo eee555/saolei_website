@@ -1,17 +1,17 @@
 <template>
     <TournamentList v-if="store.tournamentTabs.length === 0" :tournament-list="tournamentList" />
-    <el-tabs v-else v-model="currentTab" tab-position="left" @tab-remove="tabRemoveHandler" @tab-change="tabChangeHandler">
-        <el-tab-pane :label="t('tournament.index')" lazy>
+    <ElTabs v-else v-model="currentTab" tab-position="left" @tab-remove="tabRemoveHandler" @tab-change="tabChangeHandler">
+        <ElTabPane :label="t('tournament.index')" lazy>
             <TournamentList :tournament-list="tournamentList" />
-        </el-tab-pane>
-        <el-tab-pane v-for="tournament in store.tournamentTabs" :key="tournament.id">
+        </ElTabPane>
+        <ElTabPane v-for="tournament in store.tournamentTabs" :key="tournament.id">
             <template #label>
                 <span>{{ tournament.getLocalName(local.language) }}</span>
             </template>
             <GSCDetail v-if="tournament.series === TournamentSeries.GSC" :id="tournament.id" />
             <TournamentDetail v-else :tournament="tournament" />
-        </el-tab-pane>
-    </el-tabs>
+        </ElTabPane>
+    </ElTabs>
 </template>
 
 <script setup lang="ts">

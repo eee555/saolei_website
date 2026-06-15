@@ -1,13 +1,13 @@
 <template>
-    <pr-toolbar>
+    <PrToolbar>
         对于失败的任务，点击“FAILED”按钮可以在控制台输出报错。
         <template #start>
-            <el-button @click="deleteSelected">
+            <ElButton @click="deleteSelected">
                 删除选中任务
-            </el-button>
+            </ElButton>
         </template>
-    </pr-toolbar>
-    <pr-data-table
+    </PrToolbar>
+    <PrDataTable
         v-model:filters="filters"
         v-model:selection="selectedTasks"
         v-loading="loading"
@@ -17,50 +17,50 @@
         :rows="10"
         paginator-template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown JumpToPageInput CurrentPageReport"
     >
-        <pr-column selection-mode="multiple" />
-        <pr-column field="id" header="id" />
-        <pr-column field="status" header="status">
+        <PrColumn selection-mode="multiple" />
+        <PrColumn field="id" header="id" />
+        <PrColumn field="status" header="status">
             <template #body="{ data }">
-                <el-button v-if="data.status === 'FAILED'" @click="console.log(data.traceback)">
+                <ElButton v-if="data.status === 'FAILED'" @click="console.log(data.traceback)">
                     {{ data.status }}
-                </el-button>
+                </ElButton>
                 <template v-else>
                     {{ data.status }}
                 </template>
             </template>
             <template #filter="{ filterModel, filterCallback }">
-                <pr-select v-model="filterModel.value" :options="[...DjangoTaskResultStatusOptions]" @change="filterCallback()" />
+                <PrSelect v-model="filterModel.value" :options="[...DjangoTaskResultStatusOptions]" @change="filterCallback()" />
             </template>
-        </pr-column>
-        <pr-column field="enqueued_at" header="enqueued_at" sortable>
+        </PrColumn>
+        <PrColumn field="enqueued_at" header="enqueued_at" sortable>
             <template #body="{ data }">
                 {{ utc_to_local_format(data.enqueued_at) }}
             </template>
-        </pr-column>
-        <pr-column field="started_at" header="started_at" sortable>
+        </PrColumn>
+        <PrColumn field="started_at" header="started_at" sortable>
             <template #body="{ data }">
                 {{ utc_to_local_format(data.started_at) }}
             </template>
-        </pr-column>
-        <pr-column field="finished_at" header="finished_at" sortable>
+        </PrColumn>
+        <PrColumn field="finished_at" header="finished_at" sortable>
             <template #body="{ data }">
                 {{ utc_to_local_format(data.finished_at) }}
             </template>
-        </pr-column>
-        <pr-column field="args_kwargs" header="args_kwargs" />
-        <pr-column field="priority" header="priority" sortable />
-        <pr-column field="task_path" header="task_path" />
-        <pr-column field="worker_ids" header="worker_ids" />
-        <pr-column field="queue_name" header="queue_name" />
-        <pr-column field="backend_name" header="backend_name" />
-        <pr-column field="run_after" header="run_after" sortable>
+        </PrColumn>
+        <PrColumn field="args_kwargs" header="args_kwargs" />
+        <PrColumn field="priority" header="priority" sortable />
+        <PrColumn field="task_path" header="task_path" />
+        <PrColumn field="worker_ids" header="worker_ids" />
+        <PrColumn field="queue_name" header="queue_name" />
+        <PrColumn field="backend_name" header="backend_name" />
+        <PrColumn field="run_after" header="run_after" sortable>
             <template #body="{ data }">
                 {{ utc_to_local_format(data.run_after) }}
             </template>
-        </pr-column>
-        <pr-column field="return_value" header="return_value" />
-        <pr-column field="exception_class_path" header="exception_class_path" />
-    </pr-data-table>
+        </PrColumn>
+        <PrColumn field="return_value" header="return_value" />
+        <PrColumn field="exception_class_path" header="exception_class_path" />
+    </PrDataTable>
 </template>
 
 <script setup lang="ts">

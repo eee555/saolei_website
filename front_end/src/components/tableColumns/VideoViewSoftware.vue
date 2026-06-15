@@ -1,9 +1,9 @@
 <template>
-    <el-table-column prop="software" width="40">
+    <ElTableColumn prop="software" width="40">
         <template #default="scope">
             <SoftwareIcon :state="scope.row.software" />
         </template>
-    </el-table-column>
+    </ElTableColumn>
 </template>
 
 <script setup lang="ts">

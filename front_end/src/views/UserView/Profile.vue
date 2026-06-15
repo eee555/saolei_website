@@ -2,7 +2,7 @@
     <div :class="{ 'horizontal-profile': direction === 'horizontal', 'vertical-profile': direction === 'vertical' }">
         <div class="profile">
             <div class="avatar">
-                <avatar v-model:user="store.player" :is-self="user.id === store.user.id" :exp-time-ms="store.expTimeMs" />
+                <Avatar v-model:user="store.player" :is-self="user.id === store.user.id" :exp-time-ms="store.expTimeMs" />
             </div>
             <div>
                 <span class="username">
@@ -19,16 +19,16 @@
                 {{ formatName(user.firstname, user.lastname, local.nameFormat) }}
             </div>
         </div>
-        <el-button v-if="user.id === store.user.id" class="edit-button" @click="isEditing = true">
+        <ElButton v-if="user.id === store.user.id" class="edit-button" @click="isEditing = true">
             {{ t('local.editButton') }}
-        </el-button>
+        </ElButton>
         <div class="signature">
             {{ user.signature }}
         </div>
     </div>
-    <el-dialog v-model="isEditing">
-        <edit-profile v-model:user="store.user" v-model:is-editing="isEditing" :exp-time-ms="store.expTimeMs" />
-    </el-dialog>
+    <ElDialog v-model="isEditing">
+        <EditProfile v-model:user="store.user" v-model:is-editing="isEditing" :exp-time-ms="store.expTimeMs" />
+    </ElDialog>
 </template>
 
 <script setup lang="ts">

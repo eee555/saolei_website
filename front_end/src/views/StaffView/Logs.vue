@@ -1,23 +1,23 @@
 <template>
-    <el-button @click="getLogDir">
+    <ElButton @click="getLogDir">
         获取日志目录
-    </el-button>
-    <el-table :data="fileStats">
-        <el-table-column prop="name" label="文件名" width="180" />
-        <el-table-column prop="size" label="大小" width="180" />
-        <el-table-column prop="mtime" label="修改时间" />
-        <el-table-column label="操作" width="180">
+    </ElButton>
+    <ElTable :data="fileStats">
+        <ElTableColumn prop="name" label="文件名" width="180" />
+        <ElTableColumn prop="size" label="大小" width="180" />
+        <ElTableColumn prop="mtime" label="修改时间" />
+        <ElTableColumn label="操作" width="180">
             <template #default="scope">
-                <el-button @click="viewLog(scope.row.name)">
+                <ElButton @click="viewLog(scope.row.name)">
                     查看
-                </el-button>
-                <el-button @click="downloadLog(scope.row.name)">
+                </ElButton>
+                <ElButton @click="downloadLog(scope.row.name)">
                     下载
-                </el-button>
+                </ElButton>
             </template>
-        </el-table-column>
-    </el-table>
-    <v-code-block lang="log" :code="logContent" prismjs />
+        </ElTableColumn>
+    </ElTable>
+    <VCodeBlock lang="log" :code="logContent" prismjs />
 </template>
 
 <script lang="ts" setup>

@@ -78,9 +78,9 @@
         </PrColumn>
         <PrColumn>
             <template #body="{ data }: { data: SaoleiVideo }">
-                <el-link v-if="data.import_video__id != 0" underline="never" @click="preview(data.import_video__id)">
+                <ElLink v-if="data.import_video__id != 0" underline="never" @click="preview(data.import_video__id)">
                     <i class="pi pi-play-circle" />
-                </el-link>
+                </ElLink>
             </template>
         </PrColumn>
     </PrDataTable>

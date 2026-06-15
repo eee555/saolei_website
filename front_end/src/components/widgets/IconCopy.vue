@@ -1,7 +1,7 @@
 <template>
-    <el-link underline="never" @click="copyToClipboard(text)">
-        <base-icon-copy />
-    </el-link>
+    <ElLink underline="never" @click="copyToClipboard(text)">
+        <BaseIconCopy />
+    </ElLink>
 </template>
 
 <script setup lang="ts">

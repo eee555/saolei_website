@@ -1,5 +1,5 @@
 <template>
-    <base-card-normal style="display: flex; flex-direction: column;">
+    <BaseCardNormal style="display: flex; flex-direction: column;">
         <div style="text-align: center; margin-top: 0; font-size: 20px; font-weight: bold;">
             {{ t('server.videoSummary.title') }}
         </div>
@@ -9,7 +9,7 @@
             <VueUiSparkStackbar :dataset="modeStackBarData" :config="getConfig('mode')" />
             <VueUiSparkStackbar :dataset="stateStackBarData" :config="getConfig('state')" />
         </div>
-    </base-card-normal>
+    </BaseCardNormal>
 </template>
 
 <script setup lang="ts">

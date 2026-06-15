@@ -1,56 +1,56 @@
 <template>
-    <el-row class="mb-4" style="margin-bottom: 10px;">
-        <el-button
+    <ElRow class="mb-4" style="margin-bottom: 10px;">
+        <ElButton
             v-for="(tag, key) in level_tags" :key="key" type="warning" :plain="!(level_tag_selected == key)" :size="'small'"
             @click="level_tag_selected = key as string; request_videos();"
         >
             {{ t(`common.level.${tag.key}`) }}
-        </el-button>
-    </el-row>
+        </ElButton>
+    </ElRow>
 
-    <el-row class="mb-4" style="margin-bottom: 10px;">
-        <el-button
+    <ElRow class="mb-4" style="margin-bottom: 10px;">
+        <ElButton
             v-for="(tag, key) in mode_tags" :key="key" type="success" :plain="!(mode_tag_selected == key)" size="small"
             @click="mode_tag_selected = key as string; request_videos();"
         >
             {{ tag.name }}
-        </el-button>
-    </el-row>
+        </ElButton>
+    </ElRow>
 
-    <el-row class="mb-4" style="margin-bottom: 10px;">
-        <el-button
+    <ElRow class="mb-4" style="margin-bottom: 10px;">
+        <ElButton
             v-for="(value, key) in index_tags" :key="key" type="primary" :plain="!value.selected" size="small"
             @click="index_select(key, value)"
         >
             {{ t(`common.prop.${key}`) }}
-        </el-button>
-    </el-row>
+        </ElButton>
+    </ElRow>
 
-    <el-descriptions :title="t('common.filter')">
-        <el-descriptions-item :label="t('common.prop.state')">
+    <ElDescriptions :title="t('common.filter')">
+        <ElDescriptionsItem :label="t('common.prop.state')">
             <VideoStateFilter v-model="videofilter.filter_state" @change="request_videos" />
-        </el-descriptions-item>
-        <el-descriptions-item :label="t('common.prop.bbbv')">
+        </ElDescriptionsItem>
+        <ElDescriptionsItem :label="t('common.prop.bbbv')">
             <BBBVFilter :level="level_tags[level_tag_selected].key" @change="request_videos" />
-        </el-descriptions-item>
-    </el-descriptions>
+        </ElDescriptionsItem>
+    </ElDescriptions>
     <div style="font-size:20px;margin: auto;margin-top: 10px;">
-        <el-table :data="videoList" border table-layout="auto" @sort-change="handleSortChange" @row-click="(row: any) => preview(row.id)">
+        <ElTable :data="videoList" border table-layout="auto" @sort-change="handleSortChange" @row-click="(row: any) => preview(row.id)">
             <VideoViewState />
-            <el-table-column type="index" :index="offsetIndex" fixed />
+            <ElTableColumn type="index" :index="offsetIndex" fixed />
             <VideoViewRealname />
-            <el-table-column
+            <ElTableColumn
                 v-for="key in selected_index()" :key="key" v-slot="scope" :prop="index_tags[key].key"
                 :label="t(`common.prop.${key}`)" sortable="custom"
                 :sort-orders="index_tags[key].reverse ? (['descending', 'ascending']) : (['ascending', 'descending'])"
             >
                 <span class="nobr">{{ columnFormatter(key, scope.row[index_tags[key].key]) }}</span>
-            </el-table-column>
-        </el-table>
+            </ElTableColumn>
+        </ElTable>
     </div>
 
     <div style="margin-top: 16px;">
-        <el-pagination :current-page="state.CurrentPage" :page-sizes="[20, 50, 100]" :page-size="videofilter.pagesize" layout="total, sizes, prev, pager, next, jumper" :total="state.VideoCount" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+        <ElPagination :current-page="state.CurrentPage" :page-sizes="[20, 50, 100]" :page-size="videofilter.pagesize" layout="total, sizes, prev, pager, next, jumper" :total="state.VideoCount" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
 </template>
 

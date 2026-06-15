@@ -1,15 +1,15 @@
 <template>
-    <el-tooltip v-if="local.menu_icon" :content="props.text">
-        <el-icon class="menumargin">
+    <ElTooltip v-if="local.menu_icon" :content="props.text">
+        <ElIcon class="menumargin">
             <slot v-if="props.usehtml" />
             <component :is="props.icon" v-else class="menuicon" />
-        </el-icon>
-    </el-tooltip>
+        </ElIcon>
+    </ElTooltip>
     <span v-else style="padding-right: 5px">
-        <el-icon>
+        <ElIcon>
             <slot v-if="props.usehtml" />
             <component :is="props.icon" v-else class="menuicon" />
-        </el-icon>{{ props.text }}
+        </ElIcon>{{ props.text }}
     </span>
 </template>
 

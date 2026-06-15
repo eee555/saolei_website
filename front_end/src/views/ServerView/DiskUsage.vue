@@ -1,7 +1,7 @@
 <template>
-    <base-card-normal>
+    <BaseCardNormal>
         <VueUiDonut :dataset="diskUsageData" :config="config" />
-    </base-card-normal>
+    </BaseCardNormal>
 </template>
 
 <script setup lang="ts">

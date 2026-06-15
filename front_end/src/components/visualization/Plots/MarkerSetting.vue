@@ -1,6 +1,6 @@
 <template>
     <Tippy trigger="click" placement="bottom-start" interactive>
-        <el-button :aria-label="label" circle>
+        <ElButton :aria-label="label" circle>
             <svg class="marker-setting__icon" viewBox="0 0 24 24" aria-hidden="true">
                 <circle
                     v-if="shape === 'circle'"
@@ -9,39 +9,39 @@
                     stroke="currentColor" :stroke-width="iconStrokeWidth"
                 />
             </svg>
-        </el-button>
+        </ElButton>
 
         <template #content>
-            <el-card class="card-small" :body-style="{ overflowX: 'hidden' }">
+            <ElCard class="card-small" :body-style="{ overflowX: 'hidden' }">
                 <div class="marker-setting">
                     <div v-if="hasOption('shape')" class="marker-setting__item">
                         <span class="text text-small">
                             {{ t('local.shape') }}
                         </span>
-                        <el-select v-model="shape">
-                            <el-option label="Circle" value="circle" />
-                        </el-select>
+                        <ElSelect v-model="shape">
+                            <ElOption label="Circle" value="circle" />
+                        </ElSelect>
                     </div>
                     <div v-if="hasOption('radius')" class="marker-setting__item">
                         <span class="text text-small">
                             {{ t('local.radius') }}
                         </span>
-                        <el-input-number v-model="radius" size="small" :min="0" :step="1" controls-position="right" />
+                        <ElInputNumber v-model="radius" size="small" :min="0" :step="1" controls-position="right" />
                     </div>
                     <div v-if="hasOption('opacity')" class="marker-setting__item">
                         <span class="text text-small">
                             {{ t('local.opacity') }}
                         </span>
-                        <el-slider v-model="opacity" :min="0" :max="1" :step="0.05" />
+                        <ElSlider v-model="opacity" :min="0" :max="1" :step="0.05" />
                     </div>
                     <div v-if="hasOption('strokeWidth')" class="marker-setting__item">
                         <span class="text text-small">
                             {{ t('local.strokeWidth') }}
                         </span>
-                        <el-input-number v-model="strokeWidth" :min="0" :step="1" controls-position="right" />
+                        <ElInputNumber v-model="strokeWidth" :min="0" :step="1" controls-position="right" />
                     </div>
                 </div>
-            </el-card>
+            </ElCard>
         </template>
     </Tippy>
 </template>

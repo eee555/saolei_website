@@ -1,36 +1,34 @@
-<!--
-邮箱验证码表单项
-发送验证码的前置条件：填写了有效邮箱，且通过了图形验证
--->
+<!-- 邮箱验证码表单项
+    发送验证码的前置条件：填写了有效邮箱，且通过了图形验证 -->
 <template>
     <!-- 图形验证码 -->
-    <el-form-item ref="captchaFormRef" :disabled="!email_success" :label="t('form.imageCaptcha')">
+    <ElFormItem ref="captchaFormRef" :disabled="!email_success" :label="t('form.imageCaptcha')">
         <div style="display: flex">
-            <el-input
+            <ElInput
                 v-model.trim="captcha" prefix-icon="Key" class="code" maxlength="4"
                 @input="captchaHandler"
             />
             &nbsp;
             <ValidCode ref="refValidCode" />
         </div>
-    </el-form-item>
+    </ElFormItem>
     <!-- 邮箱验证码 -->
-    <el-form-item ref="emailCodeFormRef" prop="emailCode" :label="t('form.emailCode')">
+    <ElFormItem ref="emailCodeFormRef" prop="emailCode" :label="t('form.emailCode')">
         <div style="display: flex">
-            <el-input
+            <ElInput
                 v-model.trim="emailCode" data-cy="emailCode"
                 prefix-icon="Key" maxlength="6" :disabled="captcha.length!=4" :placeholder="t(email_code_placeholder)"
                 @input="emailCodeHandler"
             />
             &nbsp;
-            <el-button :disabled="captcha.length != 4 || counting" @click="getEmailCaptcha(type)">
-                <vue-countdown v-if="counting" v-slot="{ totalSeconds }" :time="60000" @end="counting = false;">
+            <ElButton :disabled="captcha.length != 4 || counting" @click="getEmailCaptcha(type)">
+                <VueCountdown v-if="counting" v-slot="{ totalSeconds }" :time="60000" @end="counting = false;">
                     ({{ totalSeconds }})
-                </vue-countdown>
+                </VueCountdown>
                 <span v-else>{{ t('common.button.send') }}</span>
-            </el-button>
+            </ElButton>
         </div>
-    </el-form-item>
+    </ElFormItem>
 </template>
 
 <script setup lang="ts">

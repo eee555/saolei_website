@@ -1,33 +1,33 @@
 <template>
-    <el-button style="height: 100%; align-items: center;" plain @click="formvisible = true">
-        <base-icon-add />
-    </el-button>
+    <ElButton style="height: 100%; align-items: center;" plain @click="formvisible = true">
+        <BaseIconAdd />
+    </ElButton>
 
-    <el-dialog
+    <ElDialog
         v-model="formvisible" :title="t('accountlink.addLink')" width="25rem"
         @closed="form.platform = ''; form.identifier = '';"
     >
-        <el-form :model="form">
-            <el-form-item :label="t('accountlink.platform')">
-                <el-select v-model="form.platform">
-                    <el-option
+        <ElForm :model="form">
+            <ElFormItem :label="t('accountlink.platform')">
+                <ElSelect v-model="form.platform">
+                    <ElOption
                         v-for="(item, key) of platformlist" :key="key" :value="key" :label="item.name"
                         :disabled="userHasPlatform(key)"
                     />
-                </el-select>
-            </el-form-item>
-            <el-form-item label="ID">
-                <el-input v-model="form.identifier" maxlength="128" />
-            </el-form-item>
-            <el-form-item v-if="local.tooltip_show">
+                </ElSelect>
+            </ElFormItem>
+            <ElFormItem label="ID">
+                <ElInput v-model="form.identifier" maxlength="128" />
+            </ElFormItem>
+            <ElFormItem v-if="local.tooltip_show">
                 <AccountLinkGuide :platform="form.platform" />
-            </el-form-item>
-            <el-form-item>
-                <base-button-confirm :disabled="!formValid" @click.prevent="$emit('addLink', form.platform, form.identifier); formvisible=false" />
-                <base-button-cancel @click.prevent="formvisible = false" />
-            </el-form-item>
-        </el-form>
-    </el-dialog>
+            </ElFormItem>
+            <ElFormItem>
+                <BaseButtonConfirm :disabled="!formValid" @click.prevent="$emit('addLink', form.platform, form.identifier); formvisible=false" />
+                <BaseButtonCancel @click.prevent="formvisible = false" />
+            </ElFormItem>
+        </ElForm>
+    </ElDialog>
 </template>
 
 <script setup lang="ts">

@@ -1,8 +1,8 @@
 <template>
-    <el-divider />
-    <el-footer>
-        <el-row style="margin-bottom: 15px">
-            <el-col :span="8">
+    <ElDivider />
+    <ElFooter>
+        <ElRow style="margin-bottom: 15px">
+            <ElCol :span="8">
                 <div style="padding-bottom: 5px">
                     <strong>
                         {{ t('local.about') }}
@@ -19,85 +19,85 @@
                 </BaseOverlay>
                 <br>
                 <Downloads />
-            </el-col>
-            <el-col :span="8">
+            </ElCol>
+            <ElCol :span="8">
                 <div style="padding-bottom: 5px">
                     <strong>{{ t('local.contact') }}</strong>
                 </div>
                 <div>
-                    <el-link href="https://github.com/eee555/saolei_website" target="_blank">
+                    <ElLink href="https://github.com/eee555/saolei_website" target="_blank">
                         GitHub
-                    </el-link>
+                    </ElLink>
                 </div>
                 <div>
-                    <el-link href="https://gitee.com/ee55/saolei_website" target="_blank">
+                    <ElLink href="https://gitee.com/ee55/saolei_website" target="_blank">
                         Gitee
-                    </el-link>
+                    </ElLink>
                 </div>
                 <div>
-                    <el-link href="https://discord.gg/ks8ngPX5bT" target="_blank">
+                    <ElLink href="https://discord.gg/ks8ngPX5bT" target="_blank">
                         Discord
-                    </el-link>
+                    </ElLink>
                 </div>
                 <div>
-                    <el-link href="https://qm.qq.com/q/hNShGUQkJG" target="_blank">
+                    <ElLink href="https://qm.qq.com/q/hNShGUQkJG" target="_blank">
                         QQ
-                    </el-link>
+                    </ElLink>
                 </div>
-            </el-col>
-            <el-col :span="8">
+            </ElCol>
+            <ElCol :span="8">
                 <div style="padding-bottom: 5px">
                     <strong>{{ t('local.links') }}</strong>
                 </div>
                 <div>
-                    <el-link href="http://saolei.wang" target="_blank">
+                    <ElLink href="http://saolei.wang" target="_blank">
                         扫雷网 saolei.wang
-                    </el-link>
+                    </ElLink>
                 </div>
                 <div>
-                    <el-link href="https://minesweepergame.com" target="_blank">
+                    <ElLink href="https://minesweepergame.com" target="_blank">
                         Authoritative Minesweeper
-                    </el-link>
+                    </ElLink>
                 </div>
                 <div>
-                    <el-link href="https://minesweeper.online" target="_blank">
+                    <ElLink href="https://minesweeper.online" target="_blank">
                         Minesweeper.Online
-                    </el-link>
+                    </ElLink>
                 </div>
                 <div>
-                    <el-link href="http://tapsss.com" target="_blank">
+                    <ElLink href="http://tapsss.com" target="_blank">
                         扫雷联萌 League of Minesweeper
-                    </el-link>
+                    </ElLink>
                 </div>
                 <div>
-                    <el-link href="https://scoreganizer.net" target="_blank">
+                    <ElLink href="https://scoreganizer.net" target="_blank">
                         Scoreganizer
-                    </el-link>
+                    </ElLink>
                 </div>
-            </el-col>
-        </el-row>
+            </ElCol>
+        </ElRow>
         <div style="text-align: center">
             <span class="text">
                 Copyright @ 2023
             </span>
-            <el-link href="http://openms.top">
+            <ElLink href="http://openms.top">
                 开源扫雷网 openms.top
-            </el-link>
+            </ElLink>
             <span class="text">
                 　版权所有
             </span>
-            <el-link href="https://beian.miit.gov.cn/">
+            <ElLink href="https://beian.miit.gov.cn/">
                 苏ICP备2023056839号-1
-            </el-link>
+            </ElLink>
             <span style="width: 12px; display: inline-block" />
-            <el-link
+            <ElLink
                 href="https://beian.mps.gov.cn/#/query/webSearch?code=32020602001691" rel="noreferrer"
                 target="_blank"
             >
                 苏公网安备32020602001691
-            </el-link>
+            </ElLink>
         </div>
-    </el-footer>
+    </ElFooter>
 </template>
 
 <script setup lang="ts">
