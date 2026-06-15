@@ -65,14 +65,13 @@ import { setLastDigit } from '@/utils/math';
 import { CellChoice, ColorTemplateName, getPiecewiseColorSchemeName, MS_Level, PiecewiseColorSchemeName } from '@/utils/ms_const';
 import { getStat_stat, groupVideosByBBBv, VideoAbstract } from '@/utils/videoabstract';
 
-const { t } = useI18n();
-const tooltipVideos = ref([] as VideoAbstract[]);
-
 const prop = defineProps({
     header: { type: Boolean, default: false },
     level: { type: String as PropType<MS_Level>, required: true },
     videoList: { type: Array<VideoAbstract>, default: () => [] },
 });
+const { t } = useI18n();
+const tooltipVideos = ref([] as VideoAbstract[]);
 
 interface Option {
     value: ColorTemplateName;
@@ -116,7 +115,6 @@ const gridStyle = computed(() => {
         gridAutoRows: '25px',
     };
 });
-
 </script>
 
 <style lang="less" scoped>

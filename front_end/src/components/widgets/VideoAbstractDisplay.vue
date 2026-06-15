@@ -52,7 +52,6 @@
 </template>
 
 <script setup lang="ts">
-
 import '@/styles/text.css';
 import { ElDescriptions, ElDescriptionsItem, ElRow } from 'element-plus';
 import { PropType } from 'vue';
@@ -64,8 +63,6 @@ import VideoStateIcon from './VideoStateIcon.vue';
 import { toISODateTimeString } from '@/utils/datetime';
 import { VideoAbstract } from '@/utils/videoabstract';
 
-const { t } = useI18n();
-
 defineProps({
     video: {
         type: Object as PropType<VideoAbstract>,
@@ -73,4 +70,5 @@ defineProps({
     },
 });
 
+const { t } = useI18n();
 </script>

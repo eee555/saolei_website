@@ -10,5 +10,4 @@
 import { ElTableColumn } from 'element-plus';
 
 import SoftwareIcon from '../widgets/SoftwareIcon.vue';
-
 </script>

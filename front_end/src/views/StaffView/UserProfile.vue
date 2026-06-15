@@ -57,5 +57,4 @@ const setUser = (id: number, field: string, value: string) => {
         },
     ).catch(httpErrorNotification);
 };
-
 </script>

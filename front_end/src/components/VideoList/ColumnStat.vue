@@ -15,11 +15,10 @@ import { useI18n } from 'vue-i18n';
 
 import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 
-const { t } = useI18n();
-
 defineProps({
     sortable: { type: Boolean, default: false },
     stat: { type: String as PropType<getStat_stat>, required: true },
 });
 
+const { t } = useI18n();
 </script>

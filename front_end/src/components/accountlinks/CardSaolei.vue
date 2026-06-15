@@ -157,6 +157,14 @@ import { TaskStatus } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { utc_to_local_format } from '@/utils/system/tools';
 
+const props = defineProps({
+    id: { type: String, default: '0' },
+    verified: { type: Boolean, default: false },
+    info: { type: Object as PropType<AccountSaolei>, default: () => AccountSaoleiDefault },
+});
+
+defineEmits(['refresh']);
+
 const { proxy } = useCurrentInstance();
 
 const refCarousel = ref<typeof ElCarousel>();
@@ -167,12 +175,6 @@ const importQueueVisible = ref(false);
 const confirmSaoleiId = ref('');
 const syncModeAll = ref(false);
 const carouselLength = computed(() => store.player.id == store.user.id ? 2 : 1);
-
-const props = defineProps({
-    id: { type: String, default: '0' },
-    verified: { type: Boolean, default: false },
-    info: { type: Object as PropType<AccountSaolei>, default: () => AccountSaoleiDefault },
-});
 
 async function updateLink() {
     taskStatus.value = 'loading';
@@ -259,8 +261,6 @@ onMounted(async () => {
 onUnmounted(() => {
     isActive = false;
 });
-
-defineEmits(['refresh']);
 
 /* 本地化 Localization */
 const i18nMessage = {

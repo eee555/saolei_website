@@ -42,8 +42,6 @@ import { local, store } from '@/store';
 import { formatName } from '@/utils/strings';
 import { UserProfile } from '@/utils/userprofile';
 
-const EditProfile = defineAsyncComponent(() => import('./EditProfile.vue'));
-
 defineProps({
     user: {
         type: UserProfile,
@@ -54,6 +52,8 @@ defineProps({
         default: 'vertical',
     },
 });
+
+const EditProfile = defineAsyncComponent(() => import('./EditProfile.vue'));
 
 const isEditing = ref(false);
 
@@ -67,7 +67,6 @@ const i18nMessages = {
 };
 
 const { t } = useI18n({ messages: i18nMessages });
-
 </script>
 
 <style scoped lang="less">

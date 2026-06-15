@@ -51,15 +51,12 @@ const fontColor = computed(() => {
     const tc = tinycolor(color.value);
     return tc.getAlpha() == 0 ? getTextColor() : tc.isDark() ? 'white' : 'black';
 });
-
 </script>
 
 <style lang="less" scoped>
-
 @import './cell.less';
 
 .el-link {
     --el-link-text-color: v-bind(fontColor);
 }
-
 </style>

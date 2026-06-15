@@ -18,5 +18,4 @@ import { Tippy } from 'vue-tippy';
 import BaseCardNormal from '../common/BaseCardNormal.vue';
 
 import { BaseIconSetting } from '@/components/common/icon';
-
 </script>

@@ -48,5 +48,4 @@ const confirmPasswordHandler = (value: any) => {
     if (value !== password.value) validateError(confirmPasswordFormRef, t('msg.confirmPasswordMismatch'));
     else validateSuccess(confirmPasswordFormRef);
 };
-
 </script>

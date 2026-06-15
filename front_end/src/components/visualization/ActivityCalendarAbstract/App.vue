@@ -136,5 +136,4 @@ function getColor(videos: VideoAbstract[]) {
     }
     return `rgb(${Math.min(255, red * 51)}, ${Math.min(255, green * 51)}, ${Math.min(255, blue * 51)})`;
 }
-
 </script>

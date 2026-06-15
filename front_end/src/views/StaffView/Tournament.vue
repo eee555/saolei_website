@@ -36,7 +36,6 @@
 </template>
 
 <script setup lang="ts">
-
 import { VCodeBlock } from '@wdns/vue-code-block';
 import { ElButton, ElInputNumber } from 'element-plus';
 import { computed, ref } from 'vue';
@@ -89,5 +88,4 @@ function validateTournament(valid: boolean) {
         successNotification(response);
     }).catch(httpErrorNotification);
 }
-
 </script>

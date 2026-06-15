@@ -16,7 +16,6 @@ const level = defineModel({
     type: Array<MS_Software>,
     default: () => [...MS_Softwares],
 });
-
 </script>
 
 <style scoped lang="less">

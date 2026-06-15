@@ -5,7 +5,6 @@
 </template>
 
 <script setup lang="ts">
-
 import { ElLink } from 'element-plus';
 
 import { copyToClipboard } from './CopyToClipboard';
@@ -18,5 +17,4 @@ defineProps({
         default: '',
     },
 });
-
 </script>

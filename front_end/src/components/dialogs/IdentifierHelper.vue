@@ -27,7 +27,6 @@
 </template>
 
 <script lang="ts" setup>
-
 import '@/styles/text.css';
 import { useI18n } from 'vue-i18n';
 
@@ -65,5 +64,4 @@ const componentMessages = {
 const { t } = useI18n({
     messages: componentMessages,
 });
-
 </script>

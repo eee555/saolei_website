@@ -10,8 +10,6 @@
 import { ElStatistic } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
-const { t } = useI18n();
-
 defineProps({
     sumTime: {
         type: Number,
@@ -27,6 +25,7 @@ defineProps({
     },
 });
 
+const { t } = useI18n();
 </script>
 
 <style lang="less" scoped>

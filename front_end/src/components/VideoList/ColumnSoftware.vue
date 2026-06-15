@@ -30,7 +30,6 @@
 </template>
 
 <script setup lang="ts">
-
 import PrColumn from 'primevue/column';
 import PrListbox from 'primevue/listbox';
 import { defineAsyncComponent } from 'vue';
@@ -46,5 +45,4 @@ const MetasweeperHelper = defineAsyncComponent(() => import('@/components/dialog
 const ArbiterHelper = defineAsyncComponent(() => import('@/components/dialogs/ArbiterHelper.vue'));
 
 const { t } = useI18n();
-
 </script>

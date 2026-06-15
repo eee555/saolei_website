@@ -106,11 +106,9 @@ const i18nMessages = {
 };
 
 const { t } = useI18n({ messages: i18nMessages });
-
 </script>
 
 <style scoped lang="less">
-
 .personal-homepage {
     display: flex;
 

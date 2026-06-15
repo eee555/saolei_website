@@ -20,7 +20,6 @@
 </template>
 
 <script setup lang="ts">
-
 import { ElButton, ElForm, ElFormItem, ElNotification, FormInstance } from 'element-plus';
 import { computed, onUnmounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -108,5 +107,4 @@ const i18nMessages = {
 };
 
 const { t } = useI18n({ messages: i18nMessages });
-
 </script>

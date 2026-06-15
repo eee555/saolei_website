@@ -10,6 +10,13 @@ import { useI18n } from 'vue-i18n';
 
 import { MS_Level } from '@/utils/ms_const';
 
+defineProps({
+    level: {
+        type: String as PropType<MS_Level>,
+        required: true,
+    },
+});
+
 const titles = {
     b: '8x8/10',
     i: '16x16/40',
@@ -17,11 +24,4 @@ const titles = {
 };
 
 const { t } = useI18n();
-
-defineProps({
-    level: {
-        type: String as PropType<MS_Level>,
-        required: true,
-    },
-});
 </script>

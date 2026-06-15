@@ -67,5 +67,4 @@ async function refresh() {
 watch(() => user.value.id, refresh, { immediate: true });
 
 onMounted(refresh);
-
 </script>

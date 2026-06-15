@@ -40,7 +40,6 @@ import ViennaSweeperHelper from '@/components/dialogs/ViennaSweeperHelper.vue';
 import SoftwareIcon from '@/components/widgets/SoftwareIcon.vue';
 
 const { t } = useI18n();
-
 </script>
 
 <style lang="less" scoped>

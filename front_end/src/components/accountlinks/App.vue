@@ -25,14 +25,14 @@ import { httpErrorNotification } from '@/components/Notifications';
 import { store } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
-const { proxy } = useCurrentInstance();
-
 const props = defineProps({
     userId: {
         type: Number,
         default: 0,
     },
 });
+
+const { proxy } = useCurrentInstance();
 
 const loading = ref(false);
 const accountlinks = ref<AccountLink[]>([]);
@@ -83,15 +83,12 @@ function refreshAccount(account: AccountLink) {
         }).catch(httpErrorNotification);
     }
 }
-
 </script>
 
 <style lang="less" scoped>
-
 .account-link-main {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(19rem, auto));
     grid-gap: 1rem;
 }
-
 </style>

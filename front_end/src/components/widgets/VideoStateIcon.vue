@@ -32,12 +32,12 @@ import BaseIconVerified from '@/components/common/BaseIconVerified.vue';
 import { BaseIconFrozen, BaseIconPending } from '@/components/common/icon';
 import { MS_State } from '@/utils/ms_const';
 
-const { t } = useI18n();
-
 defineProps({
     state: {
         type: String as PropType<MS_State>,
         required: true,
     },
 });
+
+const { t } = useI18n();
 </script>

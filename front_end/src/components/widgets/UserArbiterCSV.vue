@@ -27,18 +27,18 @@ import { httpErrorNotification } from '../Notifications';
 import { local } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
-const { t } = useI18n();
-
-const { proxy } = useCurrentInstance();
-
-const data = ref([] as any[]);
-
 const prop = defineProps({
     id: {
         type: Number,
         default: 0,
     },
 });
+
+const { t } = useI18n();
+
+const { proxy } = useCurrentInstance();
+
+const data = ref([] as any[]);
 
 watch(prop, () => { data.value = []; });
 

@@ -43,7 +43,6 @@ const prop = defineProps({
 });
 
 const sumValue = computed(() => sum(prop.data, (item) => item.value));
-
 </script>
 
 <style lang="less" scoped>

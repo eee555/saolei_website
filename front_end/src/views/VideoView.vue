@@ -285,7 +285,6 @@ const request_videos = () => {
 const index_select = (key: string | number, value: NameKeyReverse) => {
     index_tags[key].selected = !value.selected;
 };
-
 </script>
 
 

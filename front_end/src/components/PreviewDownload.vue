@@ -15,7 +15,7 @@ import { onMounted } from 'vue';
 
 import { preview } from '@/utils/common/PlayerDialog';
 
-const { id } = defineProps({
+defineProps({
     id: {
         type: Number,
         required: true,
@@ -92,8 +92,6 @@ onMounted(() => {
     // },
     // };
 });
-
-
 </script>
 
 <style></style>

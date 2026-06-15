@@ -40,7 +40,6 @@
 </template>
 
 <script setup lang="ts">
-
 import { ElInput, ElLink, ElNotification, ElTable, ElTableColumn } from 'element-plus';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -125,7 +124,6 @@ function addIdentifier(identifier: string) {
         new_identifiers.value = '';
     }).catch(httpErrorNotification);
 }
-
 </script>
 
 <style lang="less" scoped>

@@ -91,5 +91,4 @@ function tabChangeHandler(tabIndex: TabPaneName) {
     }
     router.push({ name: 'tournament_id', params: { id: store.tournamentTabs[tabIndex as number - 1].id } });
 }
-
 </script>

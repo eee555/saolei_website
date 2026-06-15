@@ -41,7 +41,6 @@ import BaseButtonConfirm from '@/components/common/BaseButtonConfirm.vue';
 const { t } = useI18n();
 
 const centerDialogVisible = ref(false);
-
 </script>
 
 

@@ -20,5 +20,4 @@ const statelist = [
 ];
 
 const { t } = useI18n();
-
 </script>

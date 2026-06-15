@@ -23,14 +23,14 @@ import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { globalNow, toISODateTimeString } from '@/utils/datetime';
 import { UserProfile } from '@/utils/userprofile';
 
-const { proxy } = useCurrentInstance();
-
-const user = defineModel('user', { type: UserProfile, default: () => new UserProfile() });
-
 const props = defineProps({
     isSelf: { type: Boolean, default: false },
     expTimeMs: { type: Number, default: 999999 },
 });
+
+const { proxy } = useCurrentInstance();
+
+const user = defineModel('user', { type: UserProfile, default: () => new UserProfile() });
 
 const avatarVersion = ref(0);
 const avatarSrc = ref(DefaultAvatar);
@@ -133,5 +133,4 @@ const i18nMessages = {
 };
 
 const { t } = useI18n({ messages: i18nMessages });
-
 </script>

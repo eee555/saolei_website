@@ -136,5 +136,4 @@ function setToken(token: string) {
         },
     ).catch(httpErrorNotification);
 }
-
 </script>

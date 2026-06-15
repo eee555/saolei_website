@@ -50,9 +50,7 @@ const { t } = useI18n({ messages: i18nMessages });
 </script>
 
 <style lang="less" scoped>
-
 .el-input-number--small {
     width: 75px;
 }
-
 </style>

@@ -17,5 +17,4 @@ defineProps({
         default: true,
     },
 });
-
 </script>

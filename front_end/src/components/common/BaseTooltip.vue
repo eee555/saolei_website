@@ -20,7 +20,6 @@ defineProps({
     hideAnimation: { type: Number, default: 250 },
     followCursor: { type: Boolean, default: false },
 });
-
 </script>
 
 <style lang="less" scoped>

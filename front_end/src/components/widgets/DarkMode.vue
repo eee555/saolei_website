@@ -7,7 +7,6 @@
 </template>
 
 <script lang="ts" setup name="DarkMode">
-
 import { useColorMode } from '@vueuse/core';
 import { ElRadioButton, ElRadioGroup } from 'element-plus';
 import { useI18n } from 'vue-i18n';
@@ -30,5 +29,4 @@ const i18nMessages = {
 const { t } = useI18n({
     messages: i18nMessages,
 });
-
 </script>

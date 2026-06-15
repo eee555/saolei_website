@@ -40,10 +40,6 @@ import { ColumnChoices } from '@/utils/ms_const';
 import { VideoAbstract } from '@/utils/videoabstract';
 
 
-const { proxy } = useCurrentInstance();
-const { t } = useI18n();
-const thisColumnChoices = ArrayUtils.sortByReferenceOrder(['bv', 'bvs', 'stnb', 'ces', 'cls', 'corr', 'end_time', 'ioe', 'level', 'state', 'software', 'thrp', 'time', 'upload_time', 'path', 'file_size'], ColumnChoices);
-
 const props = defineProps({
     userId: {
         type: Number,
@@ -54,6 +50,9 @@ const props = defineProps({
         required: true,
     },
 });
+const { proxy } = useCurrentInstance();
+const { t } = useI18n();
+const thisColumnChoices = ArrayUtils.sortByReferenceOrder(['bv', 'bvs', 'stnb', 'ces', 'cls', 'corr', 'end_time', 'ioe', 'level', 'state', 'software', 'thrp', 'time', 'upload_time', 'path', 'file_size'], ColumnChoices);
 
 const videos = ref<VideoAbstract[]>([]);
 
@@ -82,5 +81,4 @@ function handleDownload() {
         streamToZip(new Uint8Array(response.data), `gsc_${props.userId}.zip`);
     }).catch(httpErrorNotification);
 }
-
 </script>

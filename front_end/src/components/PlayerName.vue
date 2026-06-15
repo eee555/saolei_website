@@ -100,14 +100,14 @@ import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { formatName } from '@/utils/strings';
 import { UserProfile } from '@/utils/userprofile';
 
-const { proxy } = useCurrentInstance();
-
 const data = defineProps({
     userId: {
         type: Number,
         default: 0,
     },
 });
+
+const { proxy } = useCurrentInstance();
 
 const user = ref(new UserProfile());
 const loading = ref(false);
@@ -127,8 +127,7 @@ watch(() => data.userId, async (newVal) => {
     else {
         loading.value = true;
         try {
-            const response = await fetchUserInfo(data.userId);
-            user.value = new UserProfile(response);
+            user.value = await fetchUserInfo(data.userId);
             loading.value = false;
         } catch (error) {
             user.value = new UserProfile();
@@ -219,14 +218,11 @@ const i18nMessages = {
 };
 
 const { t } = useI18n({ messages: i18nMessages });
-
 </script>
 
 <style lang="less" scoped>
-
 .record-table {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
 }
-
 </style>

@@ -143,7 +143,6 @@ const update_news_queue = async () => {
         news_queue_status.value = 2;
     }
 };
-
 </script>
 
 <style lang='less'>

@@ -119,14 +119,6 @@ function trans_record(r: RecordBIE): Record[] {
     }
     return record;
 }
-
-
-
-
-
-
-
-
 </script>
 
 

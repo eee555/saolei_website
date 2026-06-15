@@ -17,8 +17,6 @@ import { useI18n } from 'vue-i18n';
 
 import { MS_Level } from '@/utils/ms_const';
 
-const { t } = useI18n();
-
 defineProps({
     level: {
         type: String as PropType<MS_Level | ''>,
@@ -30,6 +28,7 @@ defineProps({
     },
 });
 
+const { t } = useI18n();
 </script>
 
 <style lang="less" scoped>

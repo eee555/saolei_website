@@ -118,13 +118,6 @@ import { TaskStatus } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { utc_to_local_format } from '@/utils/system/tools';
 
-const { proxy } = useCurrentInstance();
-
-const refCarousel = ref<typeof ElCarousel>();
-const errorMsg = ref('');
-const taskStatus = ref<TaskStatus>('');
-const carouselLength = computed(() => store.player.id == store.user.id ? 3 : 2);
-
 defineProps({
     id: { type: String, default: '0' },
     verified: { type: Boolean, default: false },
@@ -133,6 +126,15 @@ defineProps({
         default: () => AccountWoMDefault,
     },
 });
+
+defineEmits(['refresh']);
+
+const { proxy } = useCurrentInstance();
+
+const refCarousel = ref<typeof ElCarousel>();
+const errorMsg = ref('');
+const taskStatus = ref<TaskStatus>('');
+const carouselLength = computed(() => store.player.id == store.user.id ? 3 : 2);
 
 function maybeUndefined(value: any) {
     return value === undefined ? '-' : value;
@@ -160,8 +162,6 @@ async function updateLink() {
     });
 }
 
-defineEmits(['refresh']);
-
 /* 本地化 Localization */
 const i18nMessage = {
     'zh-cn': { local: {
@@ -188,10 +188,8 @@ const { t } = useI18n({ messages: i18nMessage });
 </script>
 
 <style lang="less" scoped>
-
 .icon {
     height: 18px;
     vertical-align: middle;
 }
-
 </style>

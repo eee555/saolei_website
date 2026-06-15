@@ -29,7 +29,6 @@
 </template>
 
 <script setup lang="ts">
-
 import { ElTable, ElTableColumn } from 'element-plus';
 import { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -41,15 +40,14 @@ import { local, store } from '@/store';
 import { toISODateTimeString } from '@/utils/datetime';
 import { Tournament } from '@/utils/tournaments';
 
-const router = useRouter();
-const { t } = useI18n();
-
 defineProps({
     tournamentList: {
         type: Array as PropType<Tournament[]>,
         default: () => [],
     },
 });
+const router = useRouter();
+const { t } = useI18n();
 
 function rowClick(row: Tournament) {
     if (store.tournamentTabs.length === 0) {
@@ -57,5 +55,4 @@ function rowClick(row: Tournament) {
     }
     router.push({ name: 'tournament_id', params: { id: row.id } });
 }
-
 </script>

@@ -106,6 +106,10 @@ import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { globalNow, toISODateTimeString } from '@/utils/datetime';
 import { UserProfile } from '@/utils/userprofile';
 
+const props = defineProps({
+    expTimeMs: { type: Number, default: 999999 },
+});
+
 const { proxy } = useCurrentInstance();
 
 const UpdateProfileFields = ['realname', 'firstname', 'lastname', 'signature'] as const;
@@ -118,10 +122,6 @@ interface formStatusSingle {
 
 const user = defineModel('user', { type: UserProfile, default: () => new UserProfile() });
 const isEditing = defineModel('isEditing', { type: Boolean, default: false });
-
-const props = defineProps({
-    expTimeMs: { type: Number, default: 999999 },
-});
 
 const updating = ref(false);
 
@@ -255,10 +255,8 @@ const { t } = useI18n({ messages: i18nMessages });
 </script>
 
 <style lang="less" scoped>
-
 .input-label {
     margin-top: 1.5em;
     margin-bottom: 0.5em;
 }
-
 </style>

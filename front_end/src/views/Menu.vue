@@ -105,11 +105,9 @@ const i18nMessages = {
 };
 
 const { t } = useI18n({ messages: i18nMessages });
-
 </script>
 
 <style lang="less" scoped>
-
 .el-menu {
     line-height: v-bind("menuHeight");
     flex-wrap: wrap;
@@ -147,5 +145,4 @@ const { t } = useI18n({ messages: i18nMessages });
     padding-right: 5px;
     height: v-bind("menuHeight");
 }
-
 </style>
