@@ -17,4 +17,4 @@ pyo3_runtime==0.0.1
 redis==8.0.0
 requests==2.34.2
 websocket-client==1.9.0
-cryptography==48.0.1
+cryptography==49.0.0
