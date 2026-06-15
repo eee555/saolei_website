@@ -71,7 +71,7 @@
     "cypress-real-events": "1.15.0",
     "cypress-table": "1.0.2",
     "cypress-vite": "^1.10.0",
-    "esbuild": "0.28.0",
+    "esbuild": "0.28.1",
     "eslint": "9.39.4",
     "eslint-import-resolver-typescript": "4.4.5",
     "eslint-plugin-cypress": "6.4.1",
