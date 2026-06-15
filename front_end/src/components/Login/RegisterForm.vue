@@ -1,15 +1,15 @@
 <template>
-    <el-form ref="ruleFormRef" :model="registerForm" status-icon>
+    <ElForm ref="ruleFormRef" :model="registerForm" status-icon>
         <!-- 用户名 -->
-        <el-form-item ref="usernameFormRef" prop="username" data-cy="usernameFormItem">
+        <ElFormItem ref="usernameFormRef" prop="username" data-cy="usernameFormItem">
             <template #label>
                 {{ t('form.username') }}
             </template>
-            <el-input
+            <ElInput
                 v-model="registerForm.username" prefix-icon="User" maxlength="20" show-word-limit
                 @input="usernameInputHandler" @change="usernameChangeHandler"
             />
-        </el-form-item>
+        </ElFormItem>
         <!-- 邮箱 -->
         <email-form-item ref="emailFormRef" v-model="registerForm.email" data-cy="emailFormItem" check-collision="true" />
         <!-- 邮箱验证码 -->
@@ -19,22 +19,22 @@
         />
         <!-- 密码 -->
         <password-confirm-block ref="passwordFormRef" v-model="registerForm.password" data-cy="passwordFormItem" />
-        <el-form-item prop="agreeTAC">
+        <ElFormItem prop="agreeTAC">
             <!-- 同意协议 -->
-            <el-checkbox v-if="true" v-model="agree_TAC" name="checkoutSecret">
+            <ElCheckbox v-if="true" v-model="agree_TAC" name="checkoutSecret">
                 {{
                     t('local.agreeTAC1')
                 }}
                 <a target="_blank" :href="`${AXIOS_BASE_URL}/agreement.html`">{{ t('local.agreeTAC2')
                 }}</a>
-            </el-checkbox>
+            </ElCheckbox>
             <!-- 确认 -->
-            <el-button type="primary" :disabled="confirm_disabled" style="margin-left: auto" @click="submitForm(ruleFormRef)">
+            <ElButton type="primary" :disabled="confirm_disabled" style="margin-left: auto" @click="submitForm(ruleFormRef)">
                 {{
                     t('local.confirm') }}
-            </el-button>
-        </el-form-item>
-    </el-form>
+            </ElButton>
+        </ElFormItem>
+    </ElForm>
 </template>
 
 <script setup lang="ts">

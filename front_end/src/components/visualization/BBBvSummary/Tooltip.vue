@@ -1,7 +1,7 @@
 <template>
-    <el-card v-if="bestIndex > -1" class="card-small">
-        <video-abstract-display :video="videos[bestIndex]" />
-    </el-card>
+    <ElCard v-if="bestIndex > -1" class="card-small">
+        <VideoAbstractDisplay :video="videos[bestIndex]" />
+    </ElCard>
 </template>
 
 <script setup lang="ts">

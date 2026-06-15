@@ -1,47 +1,47 @@
 <template>
     <div style="display: flex; gap: 0.25em; align-items: center; flex-wrap: wrap; justify-content: flex-end">
-        <el-color-picker v-model="colorScheme.colors[0]" show-alpha />
+        <ElColorPicker v-model="colorScheme.colors[0]" show-alpha />
         <template v-for="(item, index) in colorScheme.thresholds" :key="index">
             <span>&lt;</span>
-            <el-input-number v-model="colorScheme.thresholds[index]" :min="index == 0 ? -Infinity : colorScheme.thresholds[index-1]" :max="index == colorScheme.thresholds.length-1 ? Infinity : colorScheme.thresholds[index+1]" :controls="false" size="small" style="width:50px; display: inline-block" />
+            <ElInputNumber v-model="colorScheme.thresholds[index]" :min="index == 0 ? -Infinity : colorScheme.thresholds[index-1]" :max="index == colorScheme.thresholds.length-1 ? Infinity : colorScheme.thresholds[index+1]" :controls="false" size="small" style="width:50px; display: inline-block" />
             <span>&lt;</span>
-            <el-color-picker v-model="colorScheme.colors[index+1]" show-alpha />
+            <ElColorPicker v-model="colorScheme.colors[index+1]" show-alpha />
         </template>
         <span style="flex-grow: 1" />
         <div>
             {{ "增删节点" }}
             &nbsp;
-            <el-input-number v-model="operationNode" :controls="false" style="width: 40px" />
+            <ElInputNumber v-model="operationNode" :controls="false" style="width: 40px" />
             &nbsp;
-            <el-tooltip content="Add">
-                <el-link underline="never">
-                    <base-icon-add />
-                </el-link>
-            </el-tooltip>
+            <ElTooltip content="Add">
+                <ElLink underline="never">
+                    <BaseIconAdd />
+                </ElLink>
+            </ElTooltip>
             &nbsp;
-            <el-tooltip content="Merge to left">
-                <el-link underline="never">
-                    <el-icon size="large">
+            <ElTooltip content="Merge to left">
+                <ElLink underline="never">
+                    <ElIcon size="large">
                         <ArrowLeft />
-                    </el-icon>
-                </el-link>
-            </el-tooltip>
+                    </ElIcon>
+                </ElLink>
+            </ElTooltip>
             &nbsp;
-            <el-tooltip content="Merge to right">
-                <el-link underline="never">
-                    <el-icon size="large">
+            <ElTooltip content="Merge to right">
+                <ElLink underline="never">
+                    <ElIcon size="large">
                         <ArrowRight />
-                    </el-icon>
-                </el-link>
-            </el-tooltip>
+                    </ElIcon>
+                </ElLink>
+            </ElTooltip>
             &nbsp;
-            <el-checkbox v-model="developerMode">
+            <ElCheckbox v-model="developerMode">
                 Developer Mode
-            </el-checkbox>
+            </ElCheckbox>
         </div>
     </div>
     <div v-if="developerMode">
-        <el-input v-model="colorSchemeString" type="textarea" :rows="countRows(colorSchemeString)" style="font-family: 'Courier New', Courier, monospace;" @change="(value: string) => {colorScheme = JSON.parse(value)}" />
+        <ElInput v-model="colorSchemeString" type="textarea" :rows="countRows(colorSchemeString)" style="font-family: 'Courier New', Courier, monospace;" @change="(value: string) => {colorScheme = JSON.parse(value)}" />
     </div>
 </template>
 

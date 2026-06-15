@@ -1,20 +1,20 @@
 <template>
-    <el-button :disabled="id == 0" @click="clickExportJSON">
+    <ElButton :disabled="id == 0" @click="clickExportJSON">
         {{ t('profile.exportJSON') }}&nbsp;
-        <el-tooltip :content="t('profile.exportJSONTooltip')" raw-content>
-            <el-icon v-if="local.tooltip_show">
+        <ElTooltip :content="t('profile.exportJSONTooltip')" raw-content>
+            <ElIcon v-if="local.tooltip_show">
                 <QuestionFilled />
-            </el-icon>
-        </el-tooltip>
-    </el-button>
-    <el-button :disabled="id == 0" @click="clickExportCSV">
+            </ElIcon>
+        </ElTooltip>
+    </ElButton>
+    <ElButton :disabled="id == 0" @click="clickExportCSV">
         {{ t('profile.exportArbiterCSV') }}&nbsp;
-        <el-tooltip :content="t('profile.exportArbiterCSVTooltip')" raw-content>
-            <el-icon v-if="local.tooltip_show">
+        <ElTooltip :content="t('profile.exportArbiterCSVTooltip')" raw-content>
+            <ElIcon v-if="local.tooltip_show">
                 <QuestionFilled />
-            </el-icon>
-        </el-tooltip>
-    </el-button>
+            </ElIcon>
+        </ElTooltip>
+    </ElButton>
 </template>
 
 <script setup lang="ts">

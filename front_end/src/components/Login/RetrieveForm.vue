@@ -1,5 +1,5 @@
 <template>
-    <el-form ref="ruleFormRef" :model="retrieveForm" status-icon>
+    <ElForm ref="ruleFormRef" :model="retrieveForm" status-icon>
         <!-- 邮箱 -->
         <email-form-item ref="emailFormRef" v-model="retrieveForm.email" check-collision="false" />
         <!-- 邮箱验证码 -->
@@ -10,13 +10,13 @@
         <!-- 密码 -->
         <password-confirm-block ref="passwordFormRef" v-model="retrieveForm.password" />
         <!-- 确认 -->
-        <el-form-item>
-            <el-button type="primary" :disabled="confirm_disabled" @click="submitForm(ruleFormRef)">
+        <ElFormItem>
+            <ElButton type="primary" :disabled="confirm_disabled" @click="submitForm(ruleFormRef)">
                 {{
                     t('local.confirm') }}
-            </el-button>
-        </el-form-item>
-    </el-form>
+            </ElButton>
+        </ElFormItem>
+    </ElForm>
 </template>
 
 <script setup lang="ts">

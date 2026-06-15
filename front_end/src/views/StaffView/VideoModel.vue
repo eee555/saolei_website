@@ -1,38 +1,38 @@
 <template>
     <div>
         录像ID
-        <el-input-number v-model="videoid" :controls="false" :min="0" />
-        <el-button @click="getVideo">
+        <ElInputNumber v-model="videoid" :controls="false" :min="0" />
+        <ElButton @click="getVideo">
             查询
-        </el-button>
-        <el-button @click="preview(videoid)">
+        </ElButton>
+        <ElButton @click="preview(videoid)">
             播放
-        </el-button>
-        <el-button @click="updateVideo(videoid)">
+        </ElButton>
+        <ElButton @click="updateVideo(videoid)">
             更新
-        </el-button>
-        <el-button @click="removeNewest(videoid)">
+        </ElButton>
+        <ElButton @click="removeNewest(videoid)">
             从最新录像中移除
-        </el-button>
+        </ElButton>
     </div>
     <div>
-        域<el-select v-model="videofield">
-            <el-option v-for="field in videofieldlist" :key="field" :value="field" />
-        </el-select>
+        域<ElSelect v-model="videofield">
+            <ElOption v-for="field in videofieldlist" :key="field" :value="field" />
+        </ElSelect>
     </div>
     <div>
-        值<el-input v-model="videovalue" />
+        值<ElInput v-model="videovalue" />
     </div>
     <div>
-        <el-button @click="setVideo(videoid, videofield, videovalue)">
+        <ElButton @click="setVideo(videoid, videofield, videovalue)">
             修改
-        </el-button>
+        </ElButton>
     </div>
-    <el-descriptions title="VideoModel">
-        <el-descriptions-item v-for="(value, field) in videomodel" :key="field" :label="field">
+    <ElDescriptions title="VideoModel">
+        <ElDescriptionsItem v-for="(value, field) in videomodel" :key="field" :label="field">
             {{ value }}
-        </el-descriptions-item>
-    </el-descriptions>
+        </ElDescriptionsItem>
+    </ElDescriptions>
 </template>
 
 <script lang="ts" setup>

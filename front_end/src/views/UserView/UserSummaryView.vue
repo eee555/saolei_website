@@ -1,28 +1,28 @@
 <template>
     <div style="display: flex; flex-direction: column; gap: 1rem">
         <ActivityCalendarAbstract :video-list="user.videos" :options="activityCalendarConfig" :dark-mode="local.darkmode" />
-        <base-card-normal v-if="user.videos">
+        <BaseCardNormal v-if="user.videos">
             <BBBvSummaryHeader />
-            <el-scrollbar aria-orientation="horizontal" :style="{ zoom: BBBvSummaryConfig.zoom }">
+            <ElScrollbar aria-orientation="horizontal" :style="{ zoom: BBBvSummaryConfig.zoom }">
                 <BBBvSummary level="b" header :video-list="user.videos" />
                 <BBBvSummary level="i" :video-list="user.videos" />
                 <BBBvSummary level="e" :video-list="user.videos" />
-            </el-scrollbar>
-        </base-card-normal>
-        <base-card-normal v-if="user.videos" v-experimental>
+            </ElScrollbar>
+        </BaseCardNormal>
+        <BaseCardNormal v-if="user.videos" v-experimental>
             <VideoScatter :videos="user.videos" />
-        </base-card-normal>
+        </BaseCardNormal>
         <div>
             <b class="text text-medium">
                 {{ t('identifierManager.title') }}
             </b>
             &nbsp;
-            <base-overlay>
-                <base-icon-info />
+            <BaseOverlay>
+                <BaseIconInfo />
                 <template #overlay>
                     <IdentifierHelper style="width: 60%; min-width: 400px; max-width: 100%; margin: auto; display: block" />
                 </template>
-            </base-overlay>
+            </BaseOverlay>
             <IdentifierManager v-model:user="user" />
         </div>
     </div>

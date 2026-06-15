@@ -1,7 +1,7 @@
 <template>
-    <el-button v-bind="$attrs" type="primary">
+    <ElButton v-bind="$attrs" type="primary">
         {{ t('common.button.confirm') }}
-    </el-button>
+    </ElButton>
 </template>
 
 <script setup lang="ts">

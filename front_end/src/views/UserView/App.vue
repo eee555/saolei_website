@@ -4,14 +4,14 @@
             <Profile :user="store.player" :direction="isWide ? 'vertical' : 'horizontal'" />
         </div>
         <div class="content-area">
-            <el-tabs :model-value="activeTab" @tab-click="handleTabClick">
-                <el-tab-pane v-for="tab in tabItems" :key="tab.name" :label="tab.label" :name="tab.name" />
+            <ElTabs :model-value="activeTab" @tab-click="handleTabClick">
+                <ElTabPane v-for="tab in tabItems" :key="tab.name" :label="tab.label" :name="tab.name" />
                 <router-view v-slot="{ Component }">
                     <keep-alive>
                         <component :is="Component" v-model:user="store.player" />
                     </keep-alive>
                 </router-view>
-            </el-tabs>
+            </ElTabs>
         </div>
     </div>
 </template>

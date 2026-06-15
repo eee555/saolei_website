@@ -1,22 +1,22 @@
 <template>
-    <el-row v-if="header" :style="{ textAlign: 'center', height: '25px', flexWrap: 'nowrap', marginTop: '10px', marginBottom: '-20px' }">
+    <ElRow v-if="header" :style="{ textAlign: 'center', height: '25px', flexWrap: 'nowrap', marginTop: '10px', marginBottom: '-20px' }">
         <span style="width: 10%; min-width: 4em" />
         <span :style="gridStyle">
             <span v-for="i in 10" :key="i" class="text text-small">
                 {{ i - 1 }}
             </span>
         </span>
-    </el-row>
-    <el-divider data-cy="summary" style="margin: 18px 0 12px 0;">
+    </ElRow>
+    <ElDivider data-cy="summary" style="margin: 18px 0 12px 0;">
         <span class="text">
             {{ t(`common.level.${level}`) }}
             &nbsp;
             {{ t('BBBvSummary.bbbvInTotal', [groupedVideoAbstract.size]) }}
         </span>
-    </el-divider>
-    <el-row v-if="groupedVideoAbstract.size > 0" style="white-space: nowrap;">
+    </ElDivider>
+    <ElRow v-if="groupedVideoAbstract.size > 0" style="white-space: nowrap;">
         <YLabel :min-bv="minBv" :max-bv="maxBv" />
-        <tippy :duration="0" sticky follow-cursor :style="gridStyle">
+        <Tippy :duration="0" sticky follow-cursor :style="gridStyle">
             <Cell
                 v-for="bv in ArrayUtils.range(minBv, maxBv)"
                 :key="bv"
@@ -43,8 +43,8 @@
                     :software-filter="BBBvSummaryConfig.softwareFilter"
                 />
             </template>
-        </tippy>
-    </el-row>
+        </Tippy>
+    </ElRow>
 </template>
 
 <script setup lang="ts">

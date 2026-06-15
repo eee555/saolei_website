@@ -1,9 +1,9 @@
 <template>
-    <el-radio-group v-model="store" size="small" style="vertical-align: middle;">
-        <el-radio-button :label="t('local.light')" value="light" />
-        <el-radio-button :label="t('local.auto')" value="auto" />
-        <el-radio-button :label="t('local.dark')" value="dark" />
-    </el-radio-group>
+    <ElRadioGroup v-model="store" size="small" style="vertical-align: middle;">
+        <ElRadioButton :label="t('local.light')" value="light" />
+        <ElRadioButton :label="t('local.auto')" value="auto" />
+        <ElRadioButton :label="t('local.dark')" value="dark" />
+    </ElRadioGroup>
 </template>
 
 <script lang="ts" setup name="DarkMode">

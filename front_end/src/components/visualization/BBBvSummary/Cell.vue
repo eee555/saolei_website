@@ -4,11 +4,11 @@
             &nbsp;
         </template>
         <template v-else>
-            <software-icon v-if="prop.showIcon === 'software'" :software="videos[bestIndex].software" />
-            <video-state-icon v-else-if="prop.showIcon === 'state'" :state="videos[bestIndex].state" />
-            <el-link underline="never" style="font-weight: inherit" @click="handleClick">
+            <SoftwareIcon v-if="prop.showIcon === 'software'" :software="videos[bestIndex].software" />
+            <VideoStateIcon v-else-if="prop.showIcon === 'state'" :state="videos[bestIndex].state" />
+            <ElLink underline="never" style="font-weight: inherit" @click="handleClick">
                 {{ videos[bestIndex].displayStat(displayBy) }}
-            </el-link>
+            </ElLink>
         </template>
     </span>
 </template>

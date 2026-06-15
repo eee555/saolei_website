@@ -1,17 +1,17 @@
 <template>
     <div class="slider-demo-block">
         <div>
-            <el-slider v-model="range" range :min="props.min" :max="props.max" @change="$emit('change', range)" />
+            <ElSlider v-model="range" range :min="props.min" :max="props.max" @change="$emit('change', range)" />
         </div>
         <div>
             <!-- @vue-expect-error -->
-            <el-input-number
+            <ElInputNumber
                 v-model="range[0]" size="small" :step-strictly="true" :min="props.min" :max="range[1]"
                 :value-on-clear="props.min" @change="$emit('change', range)"
             />
             {{ text }}
             <!-- @vue-expect-error -->
-            <el-input-number
+            <ElInputNumber
                 v-model="range[1]" size="small" :step-strictly="true" :min="range[0]" :max="props.max"
                 :value-on-clear="props.max" @change="$emit('change', range)"
             />

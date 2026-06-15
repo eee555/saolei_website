@@ -1,8 +1,8 @@
 <template>
-    <el-button v-bind="$attrs">
-        <base-icon-prev />
+    <ElButton v-bind="$attrs">
+        <BaseIconPrev />
         {{ t('common.button.back') }}
-    </el-button>
+    </ElButton>
 </template>
 
 <script setup lang="ts">

@@ -1,14 +1,14 @@
 <template>
-    <tippy interactive animate-fill arrow trigger="click" :append-to="'parent'">
-        <el-link underline="never">
-            <base-icon-setting />
-        </el-link>
+    <Tippy interactive animate-fill arrow trigger="click" :append-to="'parent'">
+        <ElLink underline="never">
+            <BaseIconSetting />
+        </ElLink>
         <template #content>
-            <base-card-normal style="width: auto;">
+            <BaseCardNormal style="width: auto;">
                 <slot />
-            </base-card-normal>
+            </BaseCardNormal>
         </template>
-    </tippy>
+    </Tippy>
 </template>
 
 <script setup lang="ts">

@@ -1,5 +1,5 @@
 <template>
-    <el-dialog
+    <ElDialog
         v-model="videoplayerstore.visible" style="backdrop-filter: blur(1px); height: fit-content;" align-center destroy-on-close
         :modal="false" :lock-scroll="false" width="fit-content"
     >
@@ -10,16 +10,16 @@
                 </span>
                 <span style="margin-left: auto;">
                     {{ t('local.player') }}
-                    <el-select v-model="videoPlayerConfig.backend" style="width: 10rem">
-                        <el-option key="flop" value="flop" label="flop-player" />
-                        <el-option key="StrangeDust" value="StrangeDust" label="strange-dust.github.io" />
-                    </el-select>
+                    <ElSelect v-model="videoPlayerConfig.backend" style="width: 10rem">
+                        <ElOption key="flop" value="flop" label="flop-player" />
+                        <ElOption key="StrangeDust" value="StrangeDust" label="strange-dust.github.io" />
+                    </ElSelect>
                 </span>
             </div>
         </template>
         <FlopPlayer v-if="videoPlayerConfig.backend == 'flop'" :src="videoplayerstore.url" />
         <StrangeDust v-if="videoPlayerConfig.backend == 'StrangeDust'" :src="videoplayerstore.url" />
-    </el-dialog>
+    </ElDialog>
 </template>
 
 <script setup lang="ts">

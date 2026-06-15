@@ -1,10 +1,10 @@
 <template>
-    <el-form-item ref="emailFormRef" prop="email" :label="t('form.email')">
-        <el-input
+    <ElFormItem ref="emailFormRef" prop="email" :label="t('form.email')">
+        <ElInput
             v-model="email" prefix-icon="Message" type="email" @input="emailInputHandler"
             @change="emailChangeHandler"
         />
-    </el-form-item>
+    </ElFormItem>
 </template>
 
 <script setup lang="ts">

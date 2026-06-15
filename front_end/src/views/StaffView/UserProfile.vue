@@ -1,29 +1,29 @@
 <template>
     <div>
         用户ID
-        <el-input-number v-model="userid" :controls="false" :min="0" />
-        <el-button @click="getUser">
+        <ElInputNumber v-model="userid" :controls="false" :min="0" />
+        <ElButton @click="getUser">
             查询
-        </el-button>
+        </ElButton>
     </div>
     <div>
-        域<el-select v-model="userfield">
-            <el-option v-for="field in userfieldlist" :key="field" :value="field" />
-        </el-select>
+        域<ElSelect v-model="userfield">
+            <ElOption v-for="field in userfieldlist" :key="field" :value="field" />
+        </ElSelect>
     </div>
     <div>
-        值<el-input v-model="uservalue" />
+        值<ElInput v-model="uservalue" />
     </div>
     <div>
-        <el-button @click="setUser(userid, userfield, uservalue)">
+        <ElButton @click="setUser(userid, userfield, uservalue)">
             修改
-        </el-button>
+        </ElButton>
     </div>
-    <el-descriptions title="UserProfile">
-        <el-descriptions-item v-for="(value, field) in userprofile" :key="field" :label="field">
+    <ElDescriptions title="UserProfile">
+        <ElDescriptionsItem v-for="(value, field) in userprofile" :key="field" :label="field">
             {{ value }}
-        </el-descriptions-item>
-    </el-descriptions>
+        </ElDescriptionsItem>
+    </ElDescriptions>
 </template>
 
 <script setup lang="ts">

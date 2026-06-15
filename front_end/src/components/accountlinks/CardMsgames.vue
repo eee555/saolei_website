@@ -1,30 +1,30 @@
 <template>
-    <base-card-normal>
+    <BaseCardNormal>
         <div style="margin-bottom: 0.5em;">
-            <pr-toolbar>
+            <PrToolbar>
                 <template #start>
                     <span class="text text-medium">
                         Authoritative Minesweeper&nbsp;#{{ id }}
                     </span>
                 </template>
-            </pr-toolbar>
+            </PrToolbar>
         </div>
-        <el-descriptions v-if="verified" border>
-            <el-descriptions-item :label="t('common.prop.update_time')" :span="3">
+        <ElDescriptions v-if="verified" border>
+            <ElDescriptionsItem :label="t('common.prop.update_time')" :span="3">
                 {{ utc_to_local_format(info.update_time) }}
-            </el-descriptions-item>
-            <el-descriptions-item :label="t('accountlink.msgamesName')" :span="3">
+            </ElDescriptionsItem>
+            <ElDescriptionsItem :label="t('accountlink.msgamesName')" :span="3">
                 {{ info.name }}
-            </el-descriptions-item>
-            <el-descriptions-item :label="t('accountlink.msgamesLocalName')" :span="3">
+            </ElDescriptionsItem>
+            <ElDescriptionsItem :label="t('accountlink.msgamesLocalName')" :span="3">
                 {{ info.local_name }}
-            </el-descriptions-item>
-            <el-descriptions-item :label="t('accountlink.msgamesJoined')" :span="3">
+            </ElDescriptionsItem>
+            <ElDescriptionsItem :label="t('accountlink.msgamesJoined')" :span="3">
                 {{ info.joined }}
-            </el-descriptions-item>
-        </el-descriptions>
+            </ElDescriptionsItem>
+        </ElDescriptions>
         <UnverifiedNotice v-else />
-    </base-card-normal>
+    </BaseCardNormal>
 </template>
 
 <script setup lang="ts">

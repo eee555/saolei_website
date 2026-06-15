@@ -2,7 +2,7 @@
 
 <template>
     <span class="text-button" @click="centerDialogVisible = true;">{{ t('menu.links') }}</span>
-    <el-dialog v-if="centerDialogVisible" :model-value="true" title="友链" width="50%" align-center draggable :lock-scroll="false" @closed="centerDialogVisible = false">
+    <ElDialog v-if="centerDialogVisible" :model-value="true" title="友链" width="50%" align-center draggable :lock-scroll="false" @closed="centerDialogVisible = false">
         <ul>
             <li>
                 <a target="_blank" href="https://gitee.com/ee55/saolei_website/issues">本站码云主页</a>
@@ -24,10 +24,10 @@
 
         <template #footer>
             <span class="dialog-footer">
-                <base-button-confirm @click="centerDialogVisible = false" />
+                <BaseButtonConfirm @click="centerDialogVisible = false" />
             </span>
         </template>
-    </el-dialog>
+    </ElDialog>
 </template>
 
 <script lang="ts" setup>

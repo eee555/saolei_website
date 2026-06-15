@@ -1,7 +1,7 @@
 <template>
     <PrColumn field="software" :show-filter-match-modes="false" :show-filter-operator="false" :show-apply-button="false" :show-clear-button="false">
         <template #body="{data}: {data: VideoAbstract}">
-            <base-overlay>
+            <BaseOverlay>
                 <SoftwareIcon :software="data.software" style="margin: 0 -8px;" />
                 <template #header>
                     <template v-if="data.software === 'e'">
@@ -17,7 +17,7 @@
                     <MetasweeperHelper v-if="data.software == 'e'" style="justify-self: center;" />
                     <ArbiterHelper v-else-if="data.software == 'a'" style="justify-self: center;" />
                 </template>
-            </base-overlay>
+            </BaseOverlay>
         </template>
         <template #filter="{ filterModel, applyFilter }">
             <PrListbox v-model="filterModel.value" multiple :options="[...MS_Softwares]" @change="applyFilter()">

@@ -18,7 +18,7 @@
                 />
             </div>
 
-            <el-segmented
+            <ElSegmented
                 v-model="VideoScatterStore.canvasMode"
                 :options="[
                     {
@@ -33,15 +33,15 @@
             />
 
             <div class="button-group">
-                <el-button
+                <ElButton
                     class="square-button"
                     type="primary" :plain="!isFullscreen"
                     :title="t('local.fullscreen')"
                     @click="emit('toggleFullscreen')"
                 >
                     <i class="pi pi-expand" />
-                </el-button>
-                <el-button
+                </ElButton>
+                <ElButton
                     type="primary"
                     :plain="!VideoScatterConfig.showOnlySelected"
                     :title="t('local.hideNonSelected')"
@@ -49,8 +49,8 @@
                     @click="VideoScatterConfig.showOnlySelected = !VideoScatterConfig.showOnlySelected"
                 >
                     <BaseIconHide />
-                </el-button>
-                <el-button
+                </ElButton>
+                <ElButton
                     type="primary"
                     :plain="!VideoScatterConfig.highlightSelected"
                     :title="t('local.highlightSelected')"
@@ -58,11 +58,11 @@
                     @click="VideoScatterConfig.highlightSelected = !VideoScatterConfig.highlightSelected"
                 >
                     <i class="pi pi-star" />
-                </el-button>
+                </ElButton>
             </div>
         </div>
         <div class="selection-panel-secondary">
-            <el-segmented
+            <ElSegmented
                 v-if="VideoScatterStore.canvasMode === 'select'"
                 v-model="VideoScatterStore.selectionMode"
                 :options="[

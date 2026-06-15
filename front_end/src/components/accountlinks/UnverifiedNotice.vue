@@ -1,5 +1,5 @@
 <template>
-    <el-result icon="warning" :title="t('accountlink.unverified')" :sub-title="t('accountlink.unverifiedText')" />
+    <ElResult icon="warning" :title="t('accountlink.unverified')" :sub-title="t('accountlink.unverifiedText')" />
 </template>
 
 <script setup lang="ts">

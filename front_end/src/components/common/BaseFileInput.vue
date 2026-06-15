@@ -1,5 +1,5 @@
 <template>
-    <el-button
+    <ElButton
         style="width: 100%"
         size="large"
         :disabled="disabled"
@@ -16,7 +16,7 @@
             <!-- 默认占位内容 -->
             <span>点击此处或拖拽文件到此区域</span>
         </slot>
-    </el-button>
+    </ElButton>
 </template>
 
 <script setup lang="ts">

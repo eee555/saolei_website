@@ -1,16 +1,16 @@
 <template>
     <span class="text">第</span>
-    <el-input-number v-model="gscID" size="small" :min="0" />
+    <ElInputNumber v-model="gscID" size="small" :min="0" />
     <span class="text">届</span>
     <br>
-    <el-tabs v-model="currentTab">
-        <el-tab-pane label="基本信息" name="general" lazy>
+    <ElTabs v-model="currentTab">
+        <ElTabPane label="基本信息" name="general" lazy>
             <GSCGeneralInfo :id="gscID" />
-        </el-tab-pane>
-        <el-tab-pane label="参赛选手" lazy>
+        </ElTabPane>
+        <ElTabPane label="参赛选手" lazy>
             <GSCParticipants :id="gscID" />
-        </el-tab-pane>
-    </el-tabs>
+        </ElTabPane>
+    </ElTabs>
 </template>
 
 <script setup lang="ts">

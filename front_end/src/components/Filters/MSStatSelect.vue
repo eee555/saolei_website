@@ -1,11 +1,11 @@
 <template>
-    <el-select v-model="value" size="small">
+    <ElSelect v-model="value" size="small">
         <template #label="{ label }">
             <span v-if="prop.label !== ''">{{ prop.label }}: </span>
             <span>{{ label }}</span>
         </template>
-        <el-option v-for="stat in options" :key="stat" :value="stat" :label="t(`common.prop.${stat}`)" />
-    </el-select>
+        <ElOption v-for="stat in options" :key="stat" :value="stat" :label="t(`common.prop.${stat}`)" />
+    </ElSelect>
 </template>
 
 <script setup lang="ts">

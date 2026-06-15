@@ -1,7 +1,7 @@
 <template>
-    <base-card-normal>
+    <BaseCardNormal>
         <div style="margin-bottom: 0.5em;">
-            <pr-toolbar>
+            <PrToolbar>
                 <template #start>
                     <span class="text text-medium">
                         {{ t('common.website.saolei') }}&nbsp;#{{ id }}
@@ -10,51 +10,51 @@
                 <template #end>
                     <CarouselControl :ref-carousel="refCarousel" :length="carouselLength" />
                 </template>
-            </pr-toolbar>
+            </PrToolbar>
         </div>
-        <el-carousel v-if="verified" ref="refCarousel" trigger="click" :autoplay="false" indicator-position="none" :loop="false" arrow="never">
-            <el-carousel-item>
-                <el-descriptions border>
-                    <el-descriptions-item :label="t('common.prop.update_time')" :span="3">
+        <ElCarousel v-if="verified" ref="refCarousel" trigger="click" :autoplay="false" indicator-position="none" :loop="false" arrow="never">
+            <ElCarouselItem>
+                <ElDescriptions border>
+                    <ElDescriptionsItem :label="t('common.prop.update_time')" :span="3">
                         {{ utc_to_local_format(info.update_time!) }}
-                    </el-descriptions-item>
-                    <el-descriptions-item :label="t('local.name')" :span="3">
+                    </ElDescriptionsItem>
+                    <ElDescriptionsItem :label="t('local.name')" :span="3">
                         {{ info.name }}
-                    </el-descriptions-item>
-                    <el-descriptions-item :label="t('local.totalViews')" :span="3">
+                    </ElDescriptionsItem>
+                    <ElDescriptionsItem :label="t('local.totalViews')" :span="3">
                         {{ info.total_views }}
-                    </el-descriptions-item>
-                    <el-descriptions-item :label="t('common.level.b')" :span="3">
+                    </ElDescriptionsItem>
+                    <ElDescriptionsItem :label="t('common.level.b')" :span="3">
                         {{ cs_to_s(info.b_t_ms! / 10) }}
                         &nbsp;|&nbsp;
                         {{ cs_to_s(info.b_b_cent!) }}
-                    </el-descriptions-item>
-                    <el-descriptions-item :label="t('common.level.i')" :span="3">
+                    </ElDescriptionsItem>
+                    <ElDescriptionsItem :label="t('common.level.i')" :span="3">
                         {{ cs_to_s(info.i_t_ms! / 10) }}
                         &nbsp;|&nbsp;
                         {{ cs_to_s(info.i_b_cent!) }}
-                    </el-descriptions-item>
-                    <el-descriptions-item :label="t('common.level.e')" :span="3">
+                    </ElDescriptionsItem>
+                    <ElDescriptionsItem :label="t('common.level.e')" :span="3">
                         {{ cs_to_s(info.e_t_ms! / 10) }}
                         &nbsp;|&nbsp;
                         {{ cs_to_s(info.e_b_cent!) }}
-                    </el-descriptions-item>
-                    <el-descriptions-item :label="t('common.level.sum')">
+                    </ElDescriptionsItem>
+                    <ElDescriptionsItem :label="t('common.level.sum')">
                         {{ cs_to_s((info.b_t_ms! + info.i_t_ms! + info.e_t_ms!) / 10) }}
                         &nbsp;|&nbsp;
                         {{ cs_to_s(info.b_b_cent! + info.i_b_cent! + info.e_b_cent!) }}
-                    </el-descriptions-item>
-                </el-descriptions>
-            </el-carousel-item>
-            <el-carousel-item style="display: flex; flex-direction: column;">
+                    </ElDescriptionsItem>
+                </ElDescriptions>
+            </ElCarouselItem>
+            <ElCarouselItem style="display: flex; flex-direction: column;">
                 <div>
                     <span class="text text-medium">
                         {{ t('accountlink.statSummary') }}
                     </span>
                     &nbsp;
-                    <el-button v-loading="taskStatus == 'loading'" @click="updateLink(); $emit('refresh')">
+                    <ElButton v-loading="taskStatus == 'loading'" @click="updateLink(); $emit('refresh')">
                         {{ t('accountlink.synchronize') }}
-                    </el-button>
+                    </ElButton>
                 </div>
                 <div class="text text-small" style="margin-bottom: auto; margin-top: 0.25em;">
                     {{ t('accountlink.statSummaryTooltip') }}
@@ -63,15 +63,15 @@
                     <span class="text text-medium">
                         {{ t('accountlink.synchronizeVideos') }}
                     </span>
-                    <base-overlay>
-                        <base-icon-info />
+                    <BaseOverlay>
+                        <BaseIconInfo />
                         <template #header>
                             扫雷网录像同步功能
                         </template>
                         <template #overlay>
                             <SaoleiImportHelper />
                         </template>
-                    </base-overlay>
+                    </BaseOverlay>
                 </div>
                 <div class="text">
                     已收藏{{ importSummary.total }}个录像
@@ -86,17 +86,17 @@
                         正在同步中
                     </span>
                     <template v-else>
-                        <el-link underline="never" style="vertical-align: top;" @click="syncModeAll = !syncModeAll">
+                        <ElLink underline="never" style="vertical-align: top;" @click="syncModeAll = !syncModeAll">
                             {{ syncModeAll ? t('accountlink.synchronizeAll') : t('accountlink.synchronizeNew') }}
-                        </el-link>
-                        <el-button class="button-compact" @click="syncModeAll ? createSyncTask('all') : createSyncTask('new')">
+                        </ElLink>
+                        <ElButton class="button-compact" @click="syncModeAll ? createSyncTask('all') : createSyncTask('new')">
                             更新
-                        </el-button>
+                        </ElButton>
                     </template>
                     &nbsp;
-                    <el-button v-loading="videoListImporting" class="button-compact" @click="importQueueVisible = true">
+                    <ElButton v-loading="videoListImporting" class="button-compact" @click="importQueueVisible = true">
                         {{ t('accountlink.synchronizeManage') }}
-                    </el-button>
+                    </ElButton>
                 </div>
                 <div class="text" style="margin-top: 0.25em">
                     <StackBar :data="stackBarData" legend />
@@ -113,22 +113,22 @@
                         {{ t('accountlink.deleteLink') }}
                     </el-button>
                 </div> -->
-            </el-carousel-item>
-        </el-carousel>
+            </ElCarouselItem>
+        </ElCarousel>
         <UnverifiedNotice v-else />
 
-        <el-dialog v-model="importQueueVisible" destroy-on-close style="width: 50em">
+        <ElDialog v-model="importQueueVisible" destroy-on-close style="width: 50em">
             <VideoImportQueue :saolei-id="info.id" />
-        </el-dialog>
-    </base-card-normal>
+        </ElDialog>
+    </BaseCardNormal>
 
-    <el-dialog v-model="deleteDialogVisible" title="请输入扫雷网ID" style="width: 15em">
-        <el-input v-model="confirmSaoleiId" style="width: 7.8em" />
+    <ElDialog v-model="deleteDialogVisible" title="请输入扫雷网ID" style="width: 15em">
+        <ElInput v-model="confirmSaoleiId" style="width: 7.8em" />
         &nbsp;
-        <el-button :disabled="confirmSaoleiId != info.id.toString()" type="danger" plain @click="deleteAccountLink">
+        <ElButton :disabled="confirmSaoleiId != info.id.toString()" type="danger" plain @click="deleteAccountLink">
             确认解除
-        </el-button>
-    </el-dialog>
+        </ElButton>
+    </ElDialog>
 </template>
 
 <script setup lang="ts">

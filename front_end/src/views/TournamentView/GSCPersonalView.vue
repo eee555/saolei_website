@@ -1,24 +1,24 @@
 <template>
-    <el-tabs>
-        <el-tab-pane :label="t('gsc.summary')" lazy>
+    <ElTabs>
+        <ElTabPane :label="t('gsc.summary')" lazy>
             <GSCPersonalSummary :videos="videos" />
-        </el-tab-pane>
-        <el-tab-pane :label="t('gsc.videos')" lazy>
+        </ElTabPane>
+        <ElTabPane :label="t('gsc.videos')" lazy>
             <MultiSelector v-model="VideoListConfig.tournament" :options="thisColumnChoices" :labels="thisColumnChoices.map((s) => t(`common.prop.${s}`))" />
             <VideoList :videos="videos" :columns="VideoListConfig.tournament" sortable paginator />
-        </el-tab-pane>
-        <el-tab-pane :label="t('gsc.bbbvSummary')" lazy>
+        </ElTabPane>
+        <ElTabPane :label="t('gsc.bbbvSummary')" lazy>
             <BBBvSummaryHeader />
             <BBBvSummary level="b" header :video-list="videos" />
             <BBBvSummary level="i" :video-list="videos" />
             <BBBvSummary level="e" :video-list="videos" />
-        </el-tab-pane>
-        <el-tab-pane :label="t('tournament.management')" lazy>
-            <el-button @click="handleDownload">
+        </ElTabPane>
+        <ElTabPane :label="t('tournament.management')" lazy>
+            <ElButton @click="handleDownload">
                 {{ t('tournament.downloadParticipant') }}{{ t('common.punct.lparen') }}{{ t('common.ratelimit.oncePerMinute') }}{{ t('common.punct.rparen') }}
-            </el-button>
-        </el-tab-pane>
-    </el-tabs>
+            </ElButton>
+        </ElTabPane>
+    </ElTabs>
 </template>
 
 <script setup lang="ts">

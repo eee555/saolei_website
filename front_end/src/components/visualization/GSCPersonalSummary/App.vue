@@ -1,25 +1,25 @@
 <template>
-    <el-row>
+    <ElRow>
         <AllSums :sum-time="sumTime" :sum-bvs="sumBvs" :sum-stnb="sumStnb" />
-    </el-row>
-    <el-row style="height: 20px" />
-    <el-row>
+    </ElRow>
+    <ElRow style="height: 20px" />
+    <ElRow>
         <span style="flex: 1" />
-        <el-col :span="10" style="min-width: 16em">
+        <ElCol :span="10" style="min-width: 16em">
             <LevelBlock ref="BBlockRef" level="b" :videos="videos" />
-        </el-col>
+        </ElCol>
         <span style="flex: 1" />
-        <el-col :span="10" style="min-width: 16em">
+        <ElCol :span="10" style="min-width: 16em">
             <LevelBlock ref="IBlockRef" level="i" :videos="videos" />
-            <el-row style="height: 25px" />
+            <ElRow style="height: 25px" />
             <LevelBlock ref="EBlockRef" level="e" :videos="videos" />
-        </el-col>
+        </ElCol>
         <span style="flex: 1" />
-    </el-row>
-    <el-row style="height: 20px" />
-    <el-row>
+    </ElRow>
+    <ElRow style="height: 20px" />
+    <ElRow>
         <AllSums :sum-time="sumTime" :sum-bvs="sumBvs" :sum-stnb="sumStnb" />
-    </el-row>
+    </ElRow>
 </template>
 
 <script setup lang="ts">

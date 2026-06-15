@@ -10,16 +10,16 @@
             :on-shown="pop_show"
             :on-hide="pop_hide"
         >
-            <el-link underline="never">
+            <ElLink underline="never">
                 <PlayerBadge :user-id="userId" :name="nameShown" />
-            </el-link>
+            </ElLink>
             <template #content>
-                <el-card class="card-small">
+                <ElCard class="card-small">
                     <div style="width: 80px;float: left;line-height: 200%;">
                         <UserAvatar :user-id="userId" />
-                        <el-button tag="a" :href="playerProfileHref" style="width: 72px; height: 24px; text-decoration: none;">
+                        <ElButton tag="a" :href="playerProfileHref" style="width: 72px; height: 24px; text-decoration: none;">
                             {{ t('local.visitMe') }}
-                        </el-button>
+                        </ElButton>
                     </div>
                     <div style="width: 188px; float: right; text-align: center;line-height: 180%;">
                         <div>
@@ -75,7 +75,7 @@
                             </div>
                         </div>
                     </div>
-                </el-card>
+                </ElCard>
             </template>
         </Tippy>
     </span>

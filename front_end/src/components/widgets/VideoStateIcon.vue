@@ -1,23 +1,23 @@
 <template>
     <span v-if="state == MS_State.Identifier" :title="t('common.state.d')">
-        <el-icon>
-            <base-icon-identifier style="color: var(--el-color-warning)" />
-        </el-icon>
+        <ElIcon>
+            <BaseIconIdentifier style="color: var(--el-color-warning)" />
+        </ElIcon>
     </span>
     <span v-else-if="state == MS_State.Official" class="text text-success">
-        <el-icon>
-            <base-icon-verified />
-        </el-icon>
+        <ElIcon>
+            <BaseIconVerified />
+        </ElIcon>
     </span>
     <span v-else-if="state == MS_State.Plain" class="text text-info">
-        <el-icon>
-            <base-icon-pending />
-        </el-icon>
+        <ElIcon>
+            <BaseIconPending />
+        </ElIcon>
     </span>
     <span v-else-if="state == MS_State.Frozen" class="text text-danger">
-        <el-icon>
-            <base-icon-frozen />
-        </el-icon>
+        <ElIcon>
+            <BaseIconFrozen />
+        </ElIcon>
     </span>
 </template>
 

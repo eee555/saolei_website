@@ -1,22 +1,22 @@
 <template>
     <div v-if="!videoPlayerConfig.strangeDustTrust">
-        <el-result icon="warning">
+        <ElResult icon="warning">
             <template #title>
                 {{ t('local.playerTooltip1') }}
                 <PlayerName :user-id="114" />
                 {{ t('local.playerTooltip2') }}
             </template>
             <template #sub-title>
-                <el-link href="https://strange-dust.github.io/minesweeper-replay-analyzer/" target="_blank">
+                <ElLink href="https://strange-dust.github.io/minesweeper-replay-analyzer/" target="_blank">
                     https://strange-dust.github.io/minesweeper-replay-analyzer/
-                </el-link>
+                </ElLink>
             </template>
             <template #extra>
-                <el-button size="large" @click="videoPlayerConfig.strangeDustTrust = true">
+                <ElButton size="large" @click="videoPlayerConfig.strangeDustTrust = true">
                     {{ t('local.ITrustIt') }}
-                </el-button>
+                </ElButton>
             </template>
-        </el-result>
+        </ElResult>
     </div>
     <iframe v-else :src="`https://strange-dust.github.io/minesweeper-replay-analyzer/?replay=${src}`" style="width: calc(95vw - 50px); height: calc(100vh - 200px); background-color: transparent" />
 </template>

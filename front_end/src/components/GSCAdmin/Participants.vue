@@ -1,29 +1,29 @@
 <template>
-    <el-row style="height: 100%">
-        <el-col :span="15">
-            <el-table :data="data" table-layout="auto" sortable>
-                <el-table-column v-for="prop in columns" :key="prop" :prop="prop" :label="prop" />
-            </el-table>
-        </el-col>
-        <el-col :span="1" />
-        <el-col :span="8">
-            <el-button @click="calculate">
+    <ElRow style="height: 100%">
+        <ElCol :span="15">
+            <ElTable :data="data" table-layout="auto" sortable>
+                <ElTableColumn v-for="prop in columns" :key="prop" :prop="prop" :label="prop" />
+            </ElTable>
+        </ElCol>
+        <ElCol :span="1" />
+        <ElCol :span="8">
+            <ElButton @click="calculate">
                 计算所有选手成绩
-            </el-button>
+            </ElButton>
             <br>
-            <el-button @click="logList = []">
+            <ElButton @click="logList = []">
                 清空日志
-            </el-button>
+            </ElButton>
             <br>
-            <el-button @click="award">
+            <ElButton @click="award">
                 计算排行并结束比赛
-            </el-button>
+            </ElButton>
             <br>
             <span v-for="(log, index) in logList" :key="index" class="text" :style="{ display: 'block' }">
                 {{ log }}
             </span>
-        </el-col>
-    </el-row>
+        </ElCol>
+    </ElRow>
 </template>
 
 <script setup lang="ts">
