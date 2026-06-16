@@ -81,13 +81,21 @@ async function refreshUpdatedUsers() {
 
     updateCachePromise = (async () => {
         const requestTime = Date.now();
+        const lastUpdate = serviceConfig.value.userInfoLastUpdate;
+        const db = await userInfoDB;
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+
+        if (lastUpdate === 0) {
+            await tx.store.clear();
+            await tx.done;
+            serviceConfig.value.userInfoLastUpdate = requestTime;
+            return;
+        }
+
         const { data } = await $axios.get('/api/userprofile/infoupdated', {
-            params: { since: serviceConfig.value.userInfoLastUpdate },
+            params: { since: lastUpdate },
         });
         const updatedUserIds = data as number[];
-        const db = await userInfoDB;
-
-        const tx = db.transaction(STORE_NAME, 'readwrite');
         await Promise.all(updatedUserIds.map((userId) => tx.store.delete(userId)));
         await tx.done;
 

@@ -32,8 +32,8 @@ function mountPlayerName(userId: number) {
     });
 }
 
-function mockUserInfo(response: StaticResponse = { body: user }) {
-    cy.intercept('GET', `/api/userprofile/info/${user.id}`, response).as('fetchUser');
+function mockUserInfo(response: StaticResponse = { body: [user] }) {
+    cy.intercept('GET', `/api/userprofile/infobulk?ids=${user.id}`, response).as('fetchUser');
 }
 
 function mockRecordAbstract() {
@@ -47,14 +47,25 @@ describe('PlayerName', () => {
         cy.intercept('GET', '/api/userprofile/avatar/**', {
             statusCode: 404,
         });
+        // cy.intercept('GET', '/api/userprofile/infoupdated?**', {
+        //     body: [user.id],
+        // }).as('getInfoUpdated');
     });
 
-    it('shows the fallback name when fetching user info fails', () => {
+    it('shows the fallback name when server error', () => {
         cy.on('uncaught:exception', (error) => {
             expect(error.message).to.include('Request failed with status code 500');
             return false;
         });
         mockUserInfo({ statusCode: 500, body: {} });
+        mountPlayerName(user.id);
+
+        cy.wait('@fetchUser');
+        cy.contains(`User#${user.id}`);
+    });
+
+    it('shows the fallback name when no user info', () => {
+        mockUserInfo({ body: [] });
         mountPlayerName(user.id);
 
         cy.wait('@fetchUser');
@@ -69,7 +80,7 @@ describe('PlayerName', () => {
     });
 
     it('does not fetch user info when userId is zero', () => {
-        cy.intercept('GET', '**/api/userprofile/info/**').as('fetchUser');
+        cy.intercept('GET', '**/api/userprofile/infobulk?**').as('fetchUser');
 
         mountPlayerName(0);
 
