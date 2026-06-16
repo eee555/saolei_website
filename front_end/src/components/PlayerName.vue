@@ -127,8 +127,8 @@ watch(() => props.userId, async (newVal) => {
     else {
         loading.value = true;
         try {
-            user.value = new UserProfile(response);
             const response = await fetchUserInfo(props.userId);
+            user.value = new UserProfile(response);
             loading.value = false;
         } catch (error) {
             user.value = new UserProfile();
