@@ -28,7 +28,6 @@ import Profile from './Profile.vue';
 import { httpErrorNotification } from '@/components/Notifications';
 import { fetchUserInfo } from '@/services/userService';
 import { store } from '@/store';
-import { UserProfile } from '@/utils/userprofile';
 
 const route = useRoute();
 const router = useRouter();
@@ -77,7 +76,7 @@ async function refresh() {
         store.player = store.user;
     } else {
         try {
-            store.player = new UserProfile(await fetchUserInfo(newId));
+            store.player = await fetchUserInfo(newId);
         } catch (error) {
             httpErrorNotification(error);
         }
