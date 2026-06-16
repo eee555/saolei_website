@@ -27,7 +27,7 @@ import { httpErrorNotification } from '../Notifications';
 import { local } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
-const prop = defineProps({
+const props = defineProps({
     id: {
         type: Number,
         default: 0,
@@ -40,7 +40,7 @@ const { proxy } = useCurrentInstance();
 
 const data = ref([] as any[]);
 
-watch(prop, () => { data.value = []; });
+watch(props, () => { data.value = []; });
 
 async function fetchData(id: number) {
     await proxy.$axios.get('video/query_by_id',
@@ -126,13 +126,13 @@ function downloadJSON(json: string) {
 }
 
 async function clickExportCSV() {
-    if (data.value.length === 0) await fetchData(prop.id);
+    if (data.value.length === 0) await fetchData(props.id);
     if (data.value.length === 0) return;
     downloadCSV(generateArbiterCSV(data.value));
 }
 
 async function clickExportJSON() {
-    if (data.value.length === 0) await fetchData(prop.id);
+    if (data.value.length === 0) await fetchData(props.id);
     if (data.value.length === 0) return;
     downloadJSON(JSON.stringify(data.value));
 }

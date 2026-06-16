@@ -18,15 +18,15 @@ import { computed } from 'vue';
 
 import { fullWeek, getWeekTime, monthNameShort } from '@/utils/datetime';
 
-const prop = defineProps({
+const props = defineProps({
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
     cellSize: { type: Number, default: 14 }, // 格子大小，单位为px
     cellMargin: { type: Number, default: 3 }, // 格子间距，单位为px
 });
 
-const startWeekTime = computed(() => getWeekTime(prop.startDate));
-const cellFullSize = computed(() => prop.cellSize + prop.cellMargin);
+const startWeekTime = computed(() => getWeekTime(props.startDate));
+const cellFullSize = computed(() => props.cellSize + props.cellMargin);
 
 function generateMonthLabelRange(startDate: Date, endDate: Date) {
     let currentDate = new Date(startDate);

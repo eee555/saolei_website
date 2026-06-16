@@ -43,7 +43,7 @@ import { local } from '@/store';
 import { validateError, validateSuccess } from '@/utils/common/elFormValidate';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
-const prop = defineProps({
+const props = defineProps({
     type: { // 邮件模板，参考后端
         type: String,
         default: 'register',
@@ -83,7 +83,7 @@ const errorCode = () => {
 defineExpose({ validateState, hashkey, errorCode });
 
 const email_code_placeholder = computed(() => {
-    if (prop.emailState !== 'success') return t('msg.emailRequired');
+    if (props.emailState !== 'success') return t('msg.emailRequired');
     else if (captchaFormRef.value?.validateState !== 'success') return t('msg.captchaRequired');
     else if (email_handling.value) return t('msg.pleaseWait');
     else if (email_success.value) return t('msg.pleaseSeeEmail');
@@ -101,7 +101,7 @@ const emailCodeHandler = (value: string) => {
 };
 
 const getEmailCaptcha = (type: string) => {
-    if (prop.emailState !== 'success') return;
+    if (props.emailState !== 'success') return;
     if (email_success.value) {
         refreshCaptcha();
         validateError(captchaFormRef, t('msg.captchaRefresh'));
@@ -113,7 +113,7 @@ const getEmailCaptcha = (type: string) => {
     proxy.$axios.post('/userprofile/get_email_captcha/', {
         captcha: captcha.value,
         hashkey: refValidCode.value!.hashkey,
-        email: prop.email,
+        email: props.email,
         type: type,
     }).then(function (response) {
         const data = response.data;
