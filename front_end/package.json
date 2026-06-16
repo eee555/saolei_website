@@ -23,7 +23,7 @@
     "@mdit/plugin-mathjax": "0.26.2",
     "@primeuix/themes": "2.0.3",
     "@unicode/unicode-16.0.0": "1.6.16",
-    "@vueuse/components": "14.2.1",
+    "@vueuse/components": "14.3.0",
     "@vueuse/core": "14.2.1",
     "@wdns/vue-code-block": "2.3.5",
     "axios": "1.17.0",
