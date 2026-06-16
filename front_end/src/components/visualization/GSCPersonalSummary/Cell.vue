@@ -35,7 +35,7 @@ import { VideoAbstract } from '@/utils/videoabstract';
 
 type sortByOption = 'time' | 'bvs' | 'stnb';
 
-const prop = defineProps({
+const props = defineProps({
     level: { type: String as PropType<MS_Level>, required: true },
     video: { type: Object as PropType<VideoAbstract | undefined>, default: undefined },
     displayBy: { type: String as PropType<sortByOption>, default: 'time' },
@@ -43,8 +43,8 @@ const prop = defineProps({
 });
 
 const color = computed(() => {
-    if (!prop.video) return prop.colorTheme.getColor(defaultVideos[prop.level][prop.displayBy]);
-    return prop.colorTheme.getColor(prop.video.getStat(prop.displayBy) as number);
+    if (!props.video) return props.colorTheme.getColor(defaultVideos[props.level][props.displayBy]);
+    return props.colorTheme.getColor(props.video.getStat(props.displayBy) as number);
 });
 
 const fontColor = computed(() => {

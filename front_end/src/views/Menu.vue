@@ -38,7 +38,7 @@ import IconMenuItem from '@/components/widgets/IconMenuItem.vue';
 import LanguagePicker from '@/components/widgets/LanguagePicker.vue';
 import { local, store } from '@/store';
 
-const menu_index = ref();
+const menu_index = ref('');
 const router = useRouter();
 
 const menu_items = [

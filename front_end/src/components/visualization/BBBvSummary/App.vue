@@ -63,7 +63,7 @@ import { setLastDigit } from '@/utils/math';
 import { CellChoice, ColorTemplateName, getPiecewiseColorSchemeName, MS_Level, PiecewiseColorSchemeName } from '@/utils/ms_const';
 import { getStat_stat, groupVideosByBBBv, VideoAbstract } from '@/utils/videoabstract';
 
-const prop = defineProps({
+const props = defineProps({
     header: { type: Boolean, default: false },
     level: { type: String as PropType<MS_Level>, required: true },
     videoList: { type: Array<VideoAbstract>, default: () => [] },
@@ -92,7 +92,7 @@ const options = computed(() => {
     } as Record<ColorTemplateName, Option>;
 });
 
-const groupedVideoAbstract = computed(() => groupVideosByBBBv(prop.videoList, prop.level));
+const groupedVideoAbstract = computed(() => groupVideosByBBBv(props.videoList, props.level));
 const maxBv = computed(() => setLastDigit(ArrayUtils.maximum(groupedVideoAbstract.value.keys()), 9));
 const minBv = computed(() => setLastDigit(ArrayUtils.minimum(groupedVideoAbstract.value.keys()), 0));
 
@@ -100,7 +100,7 @@ const displayBy = computed(() => options.value[BBBvSummaryConfig.value.template]
 
 const theme = computed(() => {
     if (!(PiecewiseColorSchemeName as readonly string[]).includes(displayBy.value)) return new PiecewiseColorScheme([], []);
-    const themeName = getPiecewiseColorSchemeName(displayBy.value as PiecewiseColorSchemeName, prop.level);
+    const themeName = getPiecewiseColorSchemeName(displayBy.value as PiecewiseColorSchemeName, props.level);
     return new PiecewiseColorScheme(colorTheme.value[themeName].colors, colorTheme.value[themeName].thresholds);
 });
 

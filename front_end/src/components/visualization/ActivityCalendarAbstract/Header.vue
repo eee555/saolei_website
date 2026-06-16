@@ -27,7 +27,7 @@ import StackBar from '@/components/visualization/StackBar/App.vue';
 import { colorTheme } from '@/store';
 import { VideoAbstract } from '@/utils/videoabstract';
 
-const prop = defineProps({
+const props = defineProps({
     videoList: {
         type: Array<VideoAbstract>,
         default: () => [],
@@ -35,23 +35,23 @@ const prop = defineProps({
 });
 
 const begCount = computed(() => {
-    return Lazy(prop.videoList).filter((v) => v.level == 'b').size();
+    return Lazy(props.videoList).filter((v) => v.level == 'b').size();
 });
 const intCount = computed(() => {
-    return Lazy(prop.videoList).filter((v) => v.level == 'i').size();
+    return Lazy(props.videoList).filter((v) => v.level == 'i').size();
 });
 const expCount = computed(() => {
-    return Lazy(prop.videoList).filter((v) => v.level == 'e').size();
+    return Lazy(props.videoList).filter((v) => v.level == 'e').size();
 });
 
 const begSize = computed(() => {
-    return Lazy(prop.videoList).filter((v) => v.level == 'b').sum((v) => v.file_size);
+    return Lazy(props.videoList).filter((v) => v.level == 'b').sum((v) => v.file_size);
 });
 const intSize = computed(() => {
-    return Lazy(prop.videoList).filter((v) => v.level == 'i').sum((v) => v.file_size);
+    return Lazy(props.videoList).filter((v) => v.level == 'i').sum((v) => v.file_size);
 });
 const expSize = computed(() => {
-    return Lazy(prop.videoList).filter((v) => v.level == 'e').sum((v) => v.file_size);
+    return Lazy(props.videoList).filter((v) => v.level == 'e').sum((v) => v.file_size);
 });
 
 const videoCountData = computed(() => {

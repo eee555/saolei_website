@@ -1,6 +1,6 @@
 <template>
-    <ElLink v-if="data.id" underline="never" class="clickable" @click="preview(data.id);">
-        {{ data.text }}
+    <ElLink v-if="props.id" underline="never" class="clickable" @click="preview(props.id);">
+        {{ props.text }}
     </ElLink>
     <span v-else>--</span>
 </template>
@@ -11,7 +11,7 @@ import { ElLink } from 'element-plus';
 
 import { preview } from '@/utils/common/PlayerDialog';
 
-const data = defineProps({
+const props = defineProps({
     id: {
         type: Number,
         default: 0,
