@@ -78,7 +78,7 @@
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-vue": "10.9.2",
     "globals": "17.6.0",
-    "less": "4.6.4",
+    "less": "4.6.6",
     "path": "^0.12.7",
     "remove-attr": "0.0.15",
     "rollup": "4.60.1",
