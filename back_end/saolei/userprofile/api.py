@@ -1,3 +1,4 @@
+from datetime import datetime
 import logging
 import mimetypes
 import os
@@ -49,6 +50,23 @@ def get_user_info(request, user_id: int):
             return request.user
         raise HttpError(401, 'Unauthorized')
     return get_object_or_404(UserProfile, id=user_id)
+
+
+class UserInfoBulkOut(Schema):
+    users: List[UserInfoOut]
+    updated: List[int] = None
+
+
+@router.get('/infobulk', response=List[UserInfoOut])
+def get_user_info_bulk(request, ids: str):
+    user_ids: List[int] = ids.split(',')
+    return UserProfile.objects.filter(id__in=user_ids)
+
+
+@router.get(path='/infoupdated', response=List[int])
+def get_user_info_updated(request, since: int):
+    since_datetime = datetime.fromtimestamp(since)
+    return UserProfile.objects.filter(date_updated__gte=since_datetime).values_list('id', flat=True)
 
 
 @router.get('/identifier', response=List[str])
