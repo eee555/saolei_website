@@ -5,9 +5,8 @@ export const serviceConfig = useLocalStorage(
     {
         userInfoUpdateInterval: 86400000,
         userInfoLastUpdate: 0,
-        userInfoPollRate: 500,
-        userInfoRequestTimeout: 10000,
-        userInfoBulkSize: 100,
+        userInfoBatchDelay: 500,
+        userInfoBatchSize: 100,
     },
     { mergeDefaults: true },
 );
