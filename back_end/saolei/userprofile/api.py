@@ -53,6 +53,7 @@ def get_user_info(request, user_id: int):
 
 
 @router.get('/infobulk', response=List[UserInfoOut])
+@decorate_view(ratelimit(key='ip', rate='2/s'))
 def get_user_info_bulk(request, ids: str):
     """
     The format of `ids` is a comma-separated list of user ids. Example: `ids=1,2,3`
@@ -62,6 +63,7 @@ def get_user_info_bulk(request, ids: str):
 
 
 @router.get(path='/infoupdated', response=List[int])
+@decorate_view(ratelimit(key='ip', rate='2/s'))
 def get_user_info_updated(request, since: int):
     """
     Get the ids of users that have been updated since the given timestamp.
