@@ -24,7 +24,7 @@
     "@primeuix/themes": "2.0.3",
     "@unicode/unicode-16.0.0": "1.6.17",
     "@vueuse/components": "14.3.0",
-    "@vueuse/core": "14.2.1",
+    "@vueuse/core": "14.3.0",
     "@wdns/vue-code-block": "2.3.5",
     "axios": "1.18.0",
     "d3-array": "3.2.4",
