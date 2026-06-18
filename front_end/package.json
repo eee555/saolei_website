@@ -87,6 +87,6 @@
     "vite": "8.0.16",
     "vite-plugin-compression": "0.5.1",
     "vite-plugin-wasm": "3.6.0",
-    "vitest": "4.1.7"
+    "vitest": "4.1.9"
   }
 }
