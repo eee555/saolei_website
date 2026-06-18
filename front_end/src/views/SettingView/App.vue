@@ -20,6 +20,9 @@
                 </ElDescriptionsItem>
             </ElDescriptions>
         </ElCard>
+        <ElCard :header="t('local.localCache')">
+            <IDB />
+        </ElCard>
     </div>
 </template>
 
@@ -28,6 +31,7 @@ import { ElCard, ElCheckbox, ElDescriptions, ElDescriptionsItem, ElInputNumber }
 import { useI18n } from 'vue-i18n';
 
 import Appearance from './Appearance.vue';
+import IDB from './IDB.vue';
 import Visualization from './Visualization.vue';
 
 import { vExperimental } from '@/components/ExperimentalFeature';
@@ -37,10 +41,12 @@ import { STNB_const } from '@/utils/ms_const';
 
 const i18nMessages = {
     'zh-cn': { local: {
+        localCache: '本地缓存',
         stnbConst: 'STNB常数',
         thirdPartyTrust: '第三方网站信任列表',
     } },
     'en': { local: {
+        localCache: 'Local Cache',
         stnbConst: 'STNB Constants',
         thirdPartyTrust: 'Third Party Trust List',
     } },
