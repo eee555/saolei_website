@@ -82,7 +82,7 @@
     "path": "^0.12.7",
     "remove-attr": "0.0.15",
     "rollup": "4.60.1",
-    "typescript": "6.0.2",
+    "typescript": "6.0.3",
     "typescript-eslint": "8.61.1",
     "vite": "8.0.16",
     "vite-plugin-compression": "0.5.1",
