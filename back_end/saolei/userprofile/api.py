@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 import mimetypes
 import os
@@ -65,7 +65,7 @@ def get_user_info_bulk(request, ids: str):
 
 @router.get(path='/infoupdated', response=List[int])
 def get_user_info_updated(request, since: int):
-    since_datetime = datetime.fromtimestamp(since)
+    since_datetime = datetime.fromtimestamp(since, tz=timezone.utc)
     return UserProfile.objects.filter(date_updated__gte=since_datetime).values_list('id', flat=True)
 
 
