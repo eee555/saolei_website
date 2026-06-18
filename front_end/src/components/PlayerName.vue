@@ -100,7 +100,7 @@ import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { formatName } from '@/utils/strings';
 import { UserProfile } from '@/utils/userprofile';
 
-const data = defineProps({
+const props = defineProps({
     userId: {
         type: Number,
         default: 0,
@@ -113,21 +113,21 @@ const user = ref(new UserProfile());
 const loading = ref(false);
 const nameShown = computed(() => {
     if (loading.value) {
-        return `${t('local.user')}#${data.userId}`;
+        return `${t('local.user')}#${props.userId}`;
     } else {
         return user.value.realname;
     }
 });
-const playerProfileHref = computed(() => `#/player/${data.userId}`);
+const playerProfileHref = computed(() => `#/player/${props.userId}`);
 const getAppendTarget = () => document.body;
 
-watch(() => data.userId, async (newVal) => {
+watch(() => props.userId, async (newVal) => {
     user.value = new UserProfile();
     if (newVal === 0) return;
     else {
         loading.value = true;
         try {
-            const response = await fetchUserInfo(data.userId);
+            const response = await fetchUserInfo(props.userId);
             user.value = new UserProfile(response);
             loading.value = false;
         } catch (error) {
@@ -153,13 +153,13 @@ const e_t_id = ref('');
 const e_bvs_id = ref('');
 
 async function pop_show() {
-    if (data.userId === 0) return;
+    if (props.userId === 0) return;
     is_loading.value = true;
 
     await proxy.$axios.get('/msuser/info_abstract/',
         {
             params: {
-                id: data.userId,
+                id: props.userId,
             },
         },
     ).then(function (response) {

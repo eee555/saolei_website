@@ -4,8 +4,8 @@
             &nbsp;
         </template>
         <template v-else>
-            <SoftwareIcon v-if="prop.showIcon === 'software'" :software="videos[bestIndex].software" />
-            <VideoStateIcon v-else-if="prop.showIcon === 'state'" :state="videos[bestIndex].state" />
+            <SoftwareIcon v-if="props.showIcon === 'software'" :software="videos[bestIndex].software" />
+            <VideoStateIcon v-else-if="props.showIcon === 'state'" :state="videos[bestIndex].state" />
             <ElLink underline="never" style="font-weight: inherit" @click="handleClick">
                 {{ videos[bestIndex].displayStat(displayBy) }}
             </ElLink>
@@ -29,7 +29,7 @@ import { fullDay, globalNow } from '@/utils/datetime';
 import { MS_Software, MS_Softwares } from '@/utils/ms_const';
 import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 
-const prop = defineProps({
+const props = defineProps({
     videos: { type: Array<VideoAbstract>, default: [] },
     sortBy: { type: String as PropType<getStat_stat>, default: 'timems' },
     sortDesc: { type: Boolean, default: false },
@@ -45,19 +45,19 @@ const prop = defineProps({
 const bestIndex = ref(-1);
 
 function refresh() {
-    const bests = getBest(prop.videos, {
-        sortBy: prop.sortBy,
-        sortDesc: prop.sortDesc,
-        softwareFilter: prop.softwareFilter,
+    const bests = getBest(props.videos, {
+        sortBy: props.sortBy,
+        sortDesc: props.sortDesc,
+        softwareFilter: props.softwareFilter,
     });
     bestIndex.value = bests.bestIndex;
 }
 
-watch(prop, refresh, { immediate: true });
+watch(props, refresh, { immediate: true });
 
 const color = computed(() => {
     if (bestIndex.value === -1) return 'rgba(0,0,0,0)';
-    return prop.colorTheme.getColor(prop.videos[bestIndex.value].getStat(prop.displayBy) as number);
+    return props.colorTheme.getColor(props.videos[bestIndex.value].getStat(props.displayBy) as number);
 });
 
 const fontColor = computed(() => {
@@ -67,16 +67,16 @@ const fontColor = computed(() => {
 
 const isNew = computed(() => {
     if (bestIndex.value === -1) return false;
-    const time = prop.videos[bestIndex.value][prop.newDateField];
+    const time = props.videos[bestIndex.value][props.newDateField];
     if (!time) return false;
-    return globalNow.value.getTime() - time.getTime() < prop.newThresh * fullDay;
+    return globalNow.value.getTime() - time.getTime() < props.newThresh * fullDay;
 });
 
 function handleClick() {
-    if (prop.tooltipMode === 'fast') {
-        preview(prop.videos[bestIndex.value].id);
+    if (props.tooltipMode === 'fast') {
+        preview(props.videos[bestIndex.value].id);
     } else {
-        store.video_list = prop.videos;
+        store.video_list = props.videos;
         store.video_list_show = true;
     }
 }

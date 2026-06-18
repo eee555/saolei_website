@@ -16,7 +16,7 @@ import { useI18n } from 'vue-i18n';
 import { validateError, validateSuccess } from '@/utils/common/elFormValidate';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
-const prop = defineProps({
+const props = defineProps({
     checkCollision: {
         type: String,
         default: '',
@@ -39,10 +39,10 @@ const emailInputHandler = (value: string) => {
 const emailChangeHandler = (value: string) => {
     if (value.length == 0) validateError(emailFormRef, t('msg.emailRequired'));
     else if (!isEmail(value)) validateError(emailFormRef, t('msg.emailInvalid'));
-    else if (prop.checkCollision !== '') {
+    else if (props.checkCollision !== '') {
         proxy.$axios.get('userprofile/checkcollision/', { params: { email: value } }).then(function (response) {
-            if (response.data === 'True' && prop.checkCollision === 'true') validateError(emailFormRef, t('msg.emailCollision'));
-            else if (response.data === 'False' && prop.checkCollision === 'false') validateError(emailFormRef, t('msg.emailNoCollision'));
+            if (response.data === 'True' && props.checkCollision === 'true') validateError(emailFormRef, t('msg.emailCollision'));
+            else if (response.data === 'False' && props.checkCollision === 'false') validateError(emailFormRef, t('msg.emailNoCollision'));
             else validateSuccess(emailFormRef);
         }).catch(function (error) {
             if (error.code === 'ERR_NETWORK') validateError(emailFormRef, t('msg.connectionFail'));

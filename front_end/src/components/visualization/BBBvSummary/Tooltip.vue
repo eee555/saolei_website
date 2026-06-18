@@ -15,7 +15,7 @@ import VideoAbstractDisplay from '@/components/widgets/VideoAbstractDisplay.vue'
 import { MS_Software, MS_Softwares } from '@/utils/ms_const';
 import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 
-const prop = defineProps({
+const props = defineProps({
     videos: { type: Array<VideoAbstract>, default: [] },
     sortBy: { type: String as PropType<getStat_stat>, default: 'timems' },
     sortDesc: { type: Boolean, default: false },
@@ -25,14 +25,14 @@ const bestValue = ref<number>(NaN);
 const bestIndex = ref(-1);
 
 function refresh() {
-    const bests = getBest(prop.videos, {
-        sortBy: prop.sortBy,
-        sortDesc: prop.sortDesc,
-        softwareFilter: prop.softwareFilter,
+    const bests = getBest(props.videos, {
+        sortBy: props.sortBy,
+        sortDesc: props.sortDesc,
+        softwareFilter: props.softwareFilter,
     });
     bestValue.value = bests.bestValue;
     bestIndex.value = bests.bestIndex;
 }
 
-watch(prop, refresh, { immediate: true });
+watch(props, refresh, { immediate: true });
 </script>

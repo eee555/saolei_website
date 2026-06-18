@@ -31,7 +31,7 @@
                 text-anchor="middle"
             >
                 <slot
-                    name="x-tick" :tick="tick"
+                    name="xTick" :tick="tick"
                     :x="xScale(tick)" :y="area.y + area.height + tickSize + fontSize"
                 >
                     {{ formatTick(tick) }}
@@ -52,7 +52,7 @@
                 dominant-baseline="middle" text-anchor="end"
             >
                 <slot
-                    name="y-tick" :tick="tick"
+                    name="yTick" :tick="tick"
                     :x="area.x - tickSize - 4" :y="yScale(tick)"
                 >
                     {{ formatTick(tick) }}
@@ -112,8 +112,8 @@ const props = defineProps({
 });
 
 defineSlots<{
-    'x-tick': (props: { tick: number; x: number; y: number }) => unknown;
-    'y-tick': (props: { tick: number; x: number; y: number }) => unknown;
+    'xTick': (props: { tick: number; x: number; y: number }) => unknown;
+    'yTick': (props: { tick: number; x: number; y: number }) => unknown;
 }>();
 
 const area = computed(() => getPlotArea(props.size, props.padding));

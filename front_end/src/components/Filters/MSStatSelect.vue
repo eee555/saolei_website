@@ -1,7 +1,7 @@
 <template>
     <ElSelect v-model="value" size="small">
         <template #label="{ label }">
-            <span v-if="prop.label !== ''">{{ prop.label }}: </span>
+            <span v-if="props.label !== ''">{{ props.label }}: </span>
             <span>{{ label }}</span>
         </template>
         <ElOption v-for="stat in options" :key="stat" :value="stat" :label="t(`common.prop.${stat}`)" />
@@ -12,7 +12,7 @@
 import { ElOption, ElSelect } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
-const prop = defineProps({
+const props = defineProps({
     label: {
         type: String,
         default: '',
