@@ -3,11 +3,20 @@ import 'fake-indexeddb/auto';
 import { openDB } from 'idb';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import {
+    CACHE_DB_NAME,
+    CACHE_DB_VERSION,
+    CACHE_STORE_SCHEMA_VERSIONS,
+    META_STORE_NAME,
+    SaoleiCacheDB,
+    USER_INFO_STORE_NAME,
+} from './database';
+
 import { GetUserInfoResponse } from '@/utils/common/structInterface';
 
-const DB_NAME = 'saolei-user-info';
-const DB_VERSION = 1;
-const STORE_NAME = 'user-info';
+const STORE_NAME = USER_INFO_STORE_NAME;
+const STORE_VERSIONS_KEY = 'storeVersions';
+const ROW_SCHEMAS_KEY = 'rowSchemas';
 
 type ServiceConfigValue = {
     userInfoUpdateInterval: number;
@@ -41,8 +50,11 @@ function createUser(id: number, realname: string): GetUserInfoResponse {
 }
 
 async function openUserInfoDB() {
-    return openDB(DB_NAME, DB_VERSION, {
+    return openDB<SaoleiCacheDB>(CACHE_DB_NAME, CACHE_DB_VERSION, {
         upgrade(db) {
+            if (!db.objectStoreNames.contains(META_STORE_NAME)) {
+                db.createObjectStore(META_STORE_NAME);
+            }
             if (!db.objectStoreNames.contains(STORE_NAME)) {
                 db.createObjectStore(STORE_NAME, { keyPath: 'id' });
             }
@@ -52,7 +64,16 @@ async function openUserInfoDB() {
 
 async function putCachedUser(user: GetUserInfoResponse) {
     const db = await openUserInfoDB();
+    await db.put(META_STORE_NAME, CACHE_STORE_SCHEMA_VERSIONS, STORE_VERSIONS_KEY);
     await db.put(STORE_NAME, user);
+    db.close();
+}
+
+async function putRawCachedUser(row: Record<string, unknown>, rowSchema: Record<string, unknown>) {
+    const db = await openUserInfoDB();
+    await db.put(META_STORE_NAME, CACHE_STORE_SCHEMA_VERSIONS, STORE_VERSIONS_KEY);
+    await db.put(META_STORE_NAME, { [STORE_NAME]: rowSchema }, ROW_SCHEMAS_KEY);
+    await db.put(STORE_NAME, row);
     db.close();
 }
 
@@ -102,6 +123,66 @@ describe('fetchUserInfo', () => {
         expect(user.id).toBe(1);
         expect(user.realname).toBe('Cached User');
         expect(axiosGet).not.toHaveBeenCalled();
+    });
+
+    it('migrates cached user rows when row schema changes', async () => {
+        await putRawCachedUser(
+            {
+                id: '1',
+                username: 'user1',
+                realname: 'Migrated User',
+                is_banned: 'false',
+                unused_column: 'removed',
+            },
+            {
+                id: { type: 'string' },
+                username: { type: 'string' },
+                realname: { type: 'string' },
+                is_banned: { type: 'string' },
+                unused_column: { type: 'string' },
+            },
+        );
+        const fetchUserInfo = await loadFetchUserInfo();
+
+        const user = await fetchUserInfo(1);
+        const cached = await getCachedUser(1);
+
+        expect(user.realname).toBe('Migrated User');
+        expect(cached?.id).toBe(1);
+        expect(cached?.is_banned).toBe(false);
+        expect(cached?.left_avatar_n).toBe(0);
+        expect(cached).not.toHaveProperty('unused_column');
+        expect(axiosGet).not.toHaveBeenCalled();
+    });
+
+    it('clears cached user rows when row migration fails', async () => {
+        const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+        await putRawCachedUser(
+            {
+                id: 1,
+                username: 'user1',
+                realname: 'Broken User',
+                is_banned: 'not-a-boolean',
+            },
+            {
+                id: { type: 'number' },
+                username: { type: 'string' },
+                realname: { type: 'string' },
+                is_banned: { type: 'string' },
+            },
+        );
+        const fetchUserInfo = await loadFetchUserInfo();
+        axiosGet.mockResolvedValueOnce({ data: [createUser(1, 'Fresh User')] });
+
+        const promise = fetchUserInfo(1);
+        await waitForBatch();
+        const user = await promise;
+
+        expect(user.realname).toBe('Fresh User');
+        expect((await getCachedUser(1))?.realname).toBe('Fresh User');
+        expect(axiosGet).toHaveBeenCalledWith('/api/userprofile/infobulk', { params: { ids: '1' } });
+        expect(warnSpy).toHaveBeenCalledOnce();
+        warnSpy.mockRestore();
     });
 
     it('clears local cache instead of requesting infoupdated when lastUpdate is zero', async () => {

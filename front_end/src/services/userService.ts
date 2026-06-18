@@ -1,5 +1,4 @@
-import { DBSchema, openDB } from 'idb';
-
+import { CacheRowSchema, getDatabase, getTransaction, registerStoreRowSchema, USER_INFO_STORE_NAME } from './database';
 import { serviceConfig } from './store';
 
 import $axios from '@/http';
@@ -7,7 +6,6 @@ import { GetUserInfoResponse } from '@/utils/common/structInterface';
 import { UserProfile } from '@/utils/userprofile';
 import { VideoAbstract, VideoAbstractInfo } from '@/utils/videoabstract';
 
-type UserInfoRow = GetUserInfoResponse;
 type RequestStatus = 'pending' | 'inFlight';
 type UserInfoRequest = {
     promise: Promise<GetUserInfoResponse>;
@@ -15,26 +13,24 @@ type UserInfoRequest = {
     reject: (reason?: unknown) => void;
     status: RequestStatus;
 };
-interface UserInfoCacheDB extends DBSchema {
-    'user-info': {
-        key: number;
-        value: UserInfoRow;
-    };
-}
 
 const userInfoRequests = new Map<number, UserInfoRequest>();
 
-const DB_NAME = 'saolei-user-info';
-const DB_VERSION = 1;
-const STORE_NAME = 'user-info';
-
-const userInfoDB = openDB<UserInfoCacheDB>(DB_NAME, DB_VERSION, {
-    upgrade(db) {
-        if (!db.objectStoreNames.contains(STORE_NAME)) {
-            db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-        }
-    },
-});
+registerStoreRowSchema(USER_INFO_STORE_NAME, {
+    id: { type: 'number' },
+    username: { type: 'string', default: '' },
+    firstname: { type: 'string', default: '' },
+    lastname: { type: 'string', default: '' },
+    realname: { type: 'string', default: '' },
+    is_banned: { type: 'boolean', default: false },
+    is_staff: { type: 'boolean', default: false },
+    country: { type: 'string', default: '' },
+    signature: { type: 'string', default: '' },
+    last_change_avatar: { type: 'string', default: '' },
+    last_change_signature: { type: 'string', default: '' },
+    left_avatar_n: { type: 'number', default: 0 },
+    left_signature_n: { type: 'number', default: 0 },
+} satisfies CacheRowSchema);
 
 let batchTimer: ReturnType<typeof setTimeout> | null = null;
 let updateCachePromise: Promise<void> | null = null;
@@ -91,12 +87,13 @@ async function refreshUpdatedUsers() {
         // 初始化
         const requestTime = Date.now();
         const lastUpdate = serviceConfig.value.userInfoLastUpdate;
-        const db = await userInfoDB;
-        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const tx = await getTransaction(USER_INFO_STORE_NAME, 'readwrite');
+        const store = tx.store;
+        if (!store) throw new Error(`Store ${USER_INFO_STORE_NAME} is not available`);
 
         // 如果是首次更新（lastUpdate为0），则清空整个存储
         if (lastUpdate === 0) {
-            await tx.store.clear();
+            await store.clear();
             await tx.done;
 
             serviceConfig.value.userInfoLastUpdate = requestTime;
@@ -108,7 +105,7 @@ async function refreshUpdatedUsers() {
             params: { since: lastUpdate },
         });
         const updatedUserIds = data as number[];
-        await Promise.all(updatedUserIds.map((userId) => tx.store.delete(userId)));
+        await Promise.all(updatedUserIds.map((userId) => store.delete(userId)));
         await tx.done;
 
         serviceConfig.value.userInfoLastUpdate = requestTime;
@@ -153,9 +150,11 @@ async function processUserInfoBatch() {
 
         // 将所有用户信息存储到数据库
         const infoMap = new Map(userInfos.map((u) => [u.id, u]));
-        const db = await userInfoDB;
-        const tx = db.transaction(STORE_NAME, 'readwrite');
-        await Promise.all(userInfos.map((userInfo) => tx.store.put(userInfo)));
+        const tx = await getTransaction(USER_INFO_STORE_NAME, 'readwrite');
+        const store = tx.store;
+        if (!store) throw new Error(`Store ${USER_INFO_STORE_NAME} is not available`);
+
+        await Promise.all(userInfos.map((userInfo) => store.put(userInfo)));
         await tx.done;
 
         // 遍历所有请求，解决或拒绝相应的Promise
@@ -181,8 +180,8 @@ async function processUserInfoBatch() {
 export async function fetchUserInfo(userId: number) {
     try {
         await refreshUpdatedUsers().catch(() => undefined);
-        const db = await userInfoDB;
-        const cached = await db.get(STORE_NAME, userId);
+        const db = await getDatabase();
+        const cached = await db.get(USER_INFO_STORE_NAME, userId) as GetUserInfoResponse | undefined;
         if (cached) return new UserProfile(cached);
     } catch {
         // 忽略 IndexedDB 错误（如隐私模式）
