@@ -62,7 +62,7 @@
     "@types/js-cookie": "3.0.6",
     "@types/lazy.js": "0.5.9",
     "@types/markdown-it": "14.1.2",
-    "@types/node": "25.9.3",
+    "@types/node": "26.0.0",
     "@types/tinycolor2": "1.4.6",
     "@vitejs/plugin-vue": "6.0.7",
     "cypress": "15.17.0",
