@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import logging
 import mimetypes
 import os
@@ -49,6 +50,26 @@ def get_user_info(request, user_id: int):
             return request.user
         raise HttpError(401, 'Unauthorized')
     return get_object_or_404(UserProfile, id=user_id)
+
+
+@router.get('/infobulk', response=List[UserInfoOut])
+@decorate_view(ratelimit(key='ip', rate='2/s'))
+def get_user_info_bulk(request, ids: str):
+    """
+    The format of `ids` is a comma-separated list of user ids. Example: `ids=1,2,3`
+    """
+    user_ids: List[int] = ids.split(',')
+    return UserProfile.objects.filter(id__in=user_ids)
+
+
+@router.get(path='/infoupdated', response=List[int])
+@decorate_view(ratelimit(key='ip', rate='2/s'))
+def get_user_info_updated(request, since: int):
+    """
+    Get the ids of users that have been updated since the given timestamp.
+    """
+    since_datetime = datetime.fromtimestamp(since, tz=timezone.utc)
+    return UserProfile.objects.filter(date_updated__gte=since_datetime).values_list('id', flat=True)
 
 
 @router.get('/identifier', response=List[str])

@@ -11,19 +11,31 @@ const realnames = {
 };
 
 describe('<GSCAllSummary />', () => {
+    beforeEach(() => {
+        cy.intercept('GET', '/api/userprofile/avatar/**', {
+            statusCode: 404,
+        });
+        cy.intercept(
+            {
+                method: 'GET',
+                pathname: '/api/userprofile/infobulk',
+                query: { ids: '6,18,82' },
+            },
+            {
+                body: [
+                    { id: 6, realname: realnames[6] },
+                    { id: 18, realname: realnames[18] },
+                    { id: 82, realname: realnames[82] },
+                ],
+            },
+        ).as('getUserInfo');
+    });
+
     before(() => {
         cy.fixture('gscAllSummary.json').then((data) => {
             cy.log(data.data);
             Cypress.expose('gscParticipantList', data.data.map((value: any) => new GSCParticipant(value)));
         });
-
-        cy.intercept('GET', '/api/userprofile/info/*', (req) => {
-            const userId = Number(req.url.split('/').pop()) as 18 | 6 | 82;
-            req.reply({
-                id: userId,
-                realname: realnames[userId],
-            });
-        }).as('getUserInfo');
     });
     it('renders', () => {
         // see: https://on.cypress.io/mounting-vue
@@ -42,9 +54,7 @@ describe('<GSCAllSummary />', () => {
             },
         });
 
-        cy.wait('@getUserInfo');
-        cy.wait('@getUserInfo');
-        cy.wait('@getUserInfo');
+        cy.contains('UserChampion');
 
         cy.get('.el-table__body').extractTableData().should((tableData) => {
             expect(tableData[0]).to.deep.equal([
