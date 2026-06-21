@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "lint": "eslint . --ext .js,.vue",
+    "lint": "eslint .",
     "lintfix": "eslint . --ext .js,.vue --fix",
     "dev": "vite",
     "frontend": "vite --mode frontend",
