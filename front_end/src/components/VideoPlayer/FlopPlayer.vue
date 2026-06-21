@@ -11,15 +11,15 @@ import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vu
 
 import { videoplayerstore } from '@/store';
 
+interface FlopPlayer {
+    playVideo: (src: string, options: any) => void;
+}
+
+interface FlopPlaceholder {
+    onload: () => void;
+}
+
 declare global {
-    interface FlopPlayer {
-        playVideo: (src: string, options: any) => void;
-    }
-
-    interface FlopPlaceholder {
-        onload: () => void;
-    }
-
     interface Window {
         flop: FlopPlayer | FlopPlaceholder | null;
     }
