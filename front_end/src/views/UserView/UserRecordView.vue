@@ -47,10 +47,11 @@ import { nextTick, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import BaseCardLarge from '@/components/common/BaseCardLarge.vue';
+import { httpErrorNotification } from '@/components/Notifications';
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import { store } from '@/store';
 import { ms_to_s } from '@/utils';
-import { Record, RecordBIE } from '@/utils/common/structInterface';
+import type { Record, RecordBIE } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const { proxy } = useCurrentInstance();
@@ -66,19 +67,18 @@ const username = ref('');
 const records = ref<Record[][]>([]);
 const table_title = ['common.mode.std', 'common.mode.nf', 'common.mode.ng', 'common.mode.dg'];
 
-const indexMethod = (index: number) => {
+function indexMethod(index: number): string {
     return ['', t('common.level.b'), t('common.level.i'), t('common.level.e')][index + 1];
-};
+}
 
 // 此处和父组件配合，等一下从store里获取用户的id
-nextTick(() => {
+void nextTick(async () => {
     // 把左侧的头像、姓名、个性签名、记录请求过来
-    proxy.$axios.get('/msuser/records/', {
+    await proxy.$axios.get('/msuser/records/', {
         params: {
             id: store.player.id,
         },
-    }).then(function (response) {
-        const data = response.data;
+    }).then(function ({ data }) {
         if (data.status > 100) {
             loading.value = false;
             ElMessage.error({ message: '不知哪里出现了问题', offset: 68 });
@@ -91,7 +91,7 @@ nextTick(() => {
             records.value.push(trans_record(JSON.parse(data.dg_record)));
             loading.value = false;
         }
-    });
+    }).catch(httpErrorNotification);
 
     // 再把个人纪录请求过来
     // std_record
