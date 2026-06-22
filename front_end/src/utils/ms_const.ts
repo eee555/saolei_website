@@ -60,7 +60,6 @@ export type ColumnChoice = typeof ColumnChoices[number];
 export const CellChoices = ['time', 'bvs', 'stnb', 'ioe', 'thrp', 'path', 'cls', 'ces', 'iome', 'file_size'] as const;
 export type CellChoice = typeof CellChoices[number];
 
-
 export const PiecewiseColorSchemeName = ['time', 'ioe', 'bvs', 'stnb', 'thrp', 'corr', 'ces', 'cls', 'iome'] as const;
 export type PiecewiseColorSchemeName = typeof PiecewiseColorSchemeName[number];
 

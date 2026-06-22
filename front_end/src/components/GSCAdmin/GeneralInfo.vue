@@ -45,7 +45,6 @@ import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { toISODateTimeString } from '@/utils/datetime';
 import { GSCInfo } from '@/utils/gsc';
 
-
 const props = defineProps({
     id: { type: Number, default: 0 },
 });

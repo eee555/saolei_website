@@ -27,7 +27,9 @@ const { proxy } = useCurrentInstance();
 const { t } = useI18n();
 
 const emailFormRef = useTemplateRef('emailFormRef');
-const validateState = computed(() => { return emailFormRef.value!.validateState; });
+const validateState = computed(() => {
+    return emailFormRef.value!.validateState;
+});
 
 defineExpose({ validateState });
 

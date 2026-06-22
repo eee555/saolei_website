@@ -85,8 +85,9 @@ const identifierdata = computed(() => {
 });
 
 function delIdentifier(identifier: string) {
-    proxy.$axios.post('identifier/del/', { identifier: identifier },
-    ).then(function (response) {
+    proxy.$axios.post('identifier/del/', {
+        identifier: identifier,
+    }).then(function (response) {
         user.value.identifiers = removeItem(user.value.identifiers!, identifier);
         ElNotification({
             title: t('identifierManager.delIdentifierSuccess'),
@@ -97,8 +98,9 @@ function delIdentifier(identifier: string) {
 }
 
 function addIdentifier(identifier: string) {
-    proxy.$axios.post('identifier/add/', { identifier: identifier },
-    ).then(function (response) {
+    proxy.$axios.post('identifier/add/', {
+        identifier: identifier,
+    }).then(function (response) {
         if (response.data.type === 'success') {
             user.value.identifiers!.push(new_identifiers.value);
             ElNotification({

@@ -36,7 +36,7 @@ const i18nMessages = {
         useEndTime: '结束时间',
         useEndTimeTooltip: '依录像结束时间显示，关闭此项将使用录像上传时间。结束时间为用户的系统时间，可能不准确。',
     } },
-    'en': { local: {
+    en: { local: {
         cellGap: 'Cell Gap',
         cellSize: 'Cell Size',
         cornerRadius: 'Corner Radius',

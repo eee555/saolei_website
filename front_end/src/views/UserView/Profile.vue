@@ -61,7 +61,7 @@ const i18nMessages = {
     'zh-cn': { local: {
         editButton: '编辑信息',
     } },
-    'en': { local: {
+    en: { local: {
         editButton: 'Edit Profile',
     } },
 };

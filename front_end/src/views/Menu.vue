@@ -74,7 +74,7 @@ const i18nMessages = {
         setting: '设置',
         tournament: '比赛',
     } },
-    'en': { local: {
+    en: { local: {
         ranking: 'Ranking',
         video: 'Videos',
         world: 'Statistics',
@@ -86,7 +86,7 @@ const i18nMessages = {
         staff: 'Moderate',
         tournament: 'Tournament',
     } },
-    'de': { local: {
+    de: { local: {
         ranking: 'Ranking',
         video: 'Video',
         world: 'Welt',
@@ -94,7 +94,7 @@ const i18nMessages = {
         score: 'Ergebnisse',
         profile: 'Profil',
     } },
-    'pl': { local: {
+    pl: { local: {
         ranking: 'ranking',
         video: 'filmy',
         world: 'statystyki',

@@ -174,7 +174,7 @@ const deleteDialogVisible = ref(false);
 const importQueueVisible = ref(false);
 const confirmSaoleiId = ref('');
 const syncModeAll = ref(false);
-const carouselLength = computed(() => store.player.id == store.user.id ? 2 : 1);
+const carouselLength = computed(() => (store.player.id == store.user.id ? 2 : 1));
 
 async function updateLink() {
     taskStatus.value = 'loading';
@@ -269,7 +269,7 @@ const i18nMessage = {
         totalViews: '综合人气',
         videoCount: '录像数量',
     } },
-    'en': { local: {
+    en: { local: {
         name: 'Name',
         totalViews: 'Total Views',
         videoCount: 'Video Count',

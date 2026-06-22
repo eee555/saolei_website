@@ -80,7 +80,7 @@ const i18nMessages = {
         SUCCESSFUL: '已完成',
         FAILED: '失败',
     } },
-    'en': { local: {
+    en: { local: {
         title: 'Background tasks',
         READY: 'Ready',
         RUNNING: 'Running',

@@ -81,14 +81,14 @@ interface Option {
 
 const options = computed(() => {
     return {
-        'bvs': { value: 'bvs', sortBy: 'timems', displayBy: 'bvs', label: 'bvs', sortDesc: false },
-        'time': { value: 'time', sortBy: 'timems', displayBy: 'time', label: 'time', sortDesc: false },
-        'stnb': { value: 'stnb', sortBy: 'timems', displayBy: 'stnb', label: 'stnb', sortDesc: false },
-        'ioe': { value: 'ioe', sortBy: 'ioe', displayBy: 'ioe', label: 'ioe', sortDesc: true },
-        'thrp': { value: 'thrp', sortBy: 'thrp', displayBy: 'thrp', label: 'thrp', sortDesc: true },
-        'ces': { value: 'ces', sortBy: 'ces', displayBy: 'ces', label: 'ces', sortDesc: true },
-        'cls': { value: 'cls', sortBy: 'cls', displayBy: 'cls', label: 'cls', sortDesc: true },
-        'custom': { value: 'custom', sortBy: BBBvSummaryConfig.value.sortBy, displayBy: BBBvSummaryConfig.value.displayBy, label: 'custom', sortDesc: BBBvSummaryConfig.value.sortDesc },
+        bvs: { value: 'bvs', sortBy: 'timems', displayBy: 'bvs', label: 'bvs', sortDesc: false },
+        time: { value: 'time', sortBy: 'timems', displayBy: 'time', label: 'time', sortDesc: false },
+        stnb: { value: 'stnb', sortBy: 'timems', displayBy: 'stnb', label: 'stnb', sortDesc: false },
+        ioe: { value: 'ioe', sortBy: 'ioe', displayBy: 'ioe', label: 'ioe', sortDesc: true },
+        thrp: { value: 'thrp', sortBy: 'thrp', displayBy: 'thrp', label: 'thrp', sortDesc: true },
+        ces: { value: 'ces', sortBy: 'ces', displayBy: 'ces', label: 'ces', sortDesc: true },
+        cls: { value: 'cls', sortBy: 'cls', displayBy: 'cls', label: 'cls', sortDesc: true },
+        custom: { value: 'custom', sortBy: BBBvSummaryConfig.value.sortBy, displayBy: BBBvSummaryConfig.value.displayBy, label: 'custom', sortDesc: BBBvSummaryConfig.value.sortDesc },
     } as Record<ColorTemplateName, Option>;
 });
 
@@ -106,7 +106,7 @@ const theme = computed(() => {
 
 const gridStyle = computed(() => {
     return {
-        'display': 'grid',
+        display: 'grid',
         width: '89%',
         minWidth: BBBvSummaryConfig.value.showIcon === '' ? '37em' : '48em',
         gridTemplateColumns: 'repeat(10, 1fr)',

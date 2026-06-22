@@ -28,7 +28,7 @@ const i18nMessages = {
         line_3: '收藏和导入均在后台运行，运行中网页会每30秒刷新一次进度。',
         line_4: '刷新收藏有两种模式。增量模式遇到已经收藏过的录像就停止，全量模式会一直扫描到最后一页。',
     } },
-    'en': { local: {
+    en: { local: {
         line_1: "The function of video synchronization helps you download videos from @:common.website.saolei and upload them to @:{'common.website.openms'}. Furthermore, @:{'common.website.openms'} will respect the upload time provided by @:{'common.website.saolei'}. If you have uploaded the same file to both websites, @:{'common.website.openms'} will take the earlier upload time.", // eslint-disable-line @stylistic/quotes
         line_2: "There are two sub-functions: collecting and importing. The collecting will visit your profile and gather the metadata of all videos, including video ID and upload time. The importing will access the video file through video ID and pass the file through @:{'common.website.openms'}'s verification process.", // eslint-disable-line @stylistic/quotes
         line_3: 'Both collecting and importing run in the background. The page will update their progress every 30 seconds.',

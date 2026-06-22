@@ -134,7 +134,7 @@ const { proxy } = useCurrentInstance();
 const refCarousel = useTemplateRef<typeof ElCarousel>('refCarousel');
 const errorMsg = ref('');
 const taskStatus = ref<TaskStatus>('');
-const carouselLength = computed(() => store.player.id == store.user.id ? 3 : 2);
+const carouselLength = computed(() => (store.player.id == store.user.id ? 3 : 2));
 
 function maybeUndefined(value: any) {
     return value === undefined ? '-' : value;
@@ -173,7 +173,7 @@ const i18nMessage = {
         trophy: '奖杯',
         win: '总胜场',
     } },
-    'en': { local: {
+    en: { local: {
         arenaPoint: 'Arena',
         experience: 'Experience',
         lastSeason: 'Last Season',

@@ -38,14 +38,13 @@ import { vExperimental } from '@/components/ExperimentalFeature';
 import { videoPlayerConfig } from '@/store';
 import { STNB_const } from '@/utils/ms_const';
 
-
 const i18nMessages = {
     'zh-cn': { local: {
         localCache: '本地缓存',
         stnbConst: 'STNB常数',
         thirdPartyTrust: '第三方网站信任列表',
     } },
-    'en': { local: {
+    en: { local: {
         localCache: 'Local Cache',
         stnbConst: 'STNB Constants',
         thirdPartyTrust: 'Third Party Trust List',

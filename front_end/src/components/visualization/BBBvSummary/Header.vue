@@ -130,7 +130,7 @@ const i18nMessage = {
         iconLabel: '图标',
         noIcon: '无',
     } },
-    'en': { local: {
+    en: { local: {
         customTemplate: 'Custom',
         settingDisplayBy: 'and display by',
         settingMax: 'Find max',

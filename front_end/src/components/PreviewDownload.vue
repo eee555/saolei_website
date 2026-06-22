@@ -22,7 +22,6 @@ defineProps({
     },
 });
 
-
 // // 1. 用户点击播放录像 0
 // const id = 0
 
@@ -49,7 +48,6 @@ defineProps({
 //   // 录像播放地址
 //   onSuccess(`https://example.com/${id}.avf`)
 // }
-
 
 const download = (event: MouseEvent, id: number | undefined) => {
     if (!id) {

@@ -104,7 +104,7 @@ const i18nMessages = {
         notificationDurationTooltip2: '值为0则不会自动关闭。',
         viennaLogo: 'RMV图标',
     } },
-    'en': { local: {
+    en: { local: {
         appearance: 'Appearance',
         colorscheme: 'Color scheme',
         experimentalFeature: 'Experimental Features',

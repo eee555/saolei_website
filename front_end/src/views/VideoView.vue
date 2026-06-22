@@ -120,52 +120,51 @@ interface LevelTag {
 }
 
 const level_tags: LevelTag = reactive({
-    'BEGINNER': { key: 'b', min: 1, max: 54 },
-    'INTERMEDIATE': { key: 'i', min: 30, max: 216 },
-    'EXPERT': { key: 'e', min: 100, max: 381 },
+    BEGINNER: { key: 'b', min: 1, max: 54 },
+    INTERMEDIATE: { key: 'i', min: 30, max: 216 },
+    EXPERT: { key: 'e', min: 100, max: 381 },
 });
 
 const mode_tags: Tags = {
-    'STD': { name: '标准', key: '00' },
-    'NF': { name: '盲扫', key: '12' },
+    STD: { name: '标准', key: '00' },
+    NF: { name: '盲扫', key: '12' },
     // "UPK": { name: "UPK", key: "01" },
-    'WQI': { name: 'Win7', key: '04' },
-    'JSW': { name: '竞速无猜', key: '05' },
-    'QWC': { name: '强无猜', key: '06' },
-    'RWC': { name: '弱无猜', key: '07' },
+    WQI: { name: 'Win7', key: '04' },
+    JSW: { name: '竞速无猜', key: '05' },
+    QWC: { name: '强无猜', key: '06' },
+    RWC: { name: '弱无猜', key: '07' },
     // "ZWC": { name: "准无猜", key: "08" },
     // "QKC": { name: "强可猜", key: "09" },
     // "RKC": { name: "弱可猜", key: "10" },
     // "BZD": { name: "递归", key: "11" }
 };
 
-
 // reverse: true从小到大
 const index_tags: TagsReverse = reactive({
-    'upload_time': { key: 'upload_time', reverse: true, to_fixed: -1, selected: true },
+    upload_time: { key: 'upload_time', reverse: true, to_fixed: -1, selected: true },
     // "name": { name: "姓名", key: "player__realname", reverse: false, to_fixed: 0, selected: true},
-    'timems': { key: 'timems', reverse: false, to_fixed: 3, selected: true },
-    'bbbv': { key: 'bv', reverse: false, to_fixed: 0, selected: true },
-    'bbbv_s': { key: 'bvs', reverse: true, to_fixed: 3, selected: true },
-    'left_s': { key: 'left_s', reverse: true, to_fixed: 3, selected: false },
-    'right_s': { key: 'right_s', reverse: true, to_fixed: 3, selected: false },
-    'double_s': { key: 'double_s', reverse: true, to_fixed: 3, selected: false },
-    'cl_s': { key: 'cl_s', reverse: true, to_fixed: 3, selected: false },
-    'path': { key: 'path', reverse: false, to_fixed: 2, selected: false },
-    'stnb': { key: 'video__stnb', reverse: true, to_fixed: 2, selected: true },
-    'ioe': { key: 'ioe', reverse: true, to_fixed: 3, selected: false },
-    'thrp': { key: 'thrp', reverse: true, to_fixed: 3, selected: false },
-    'ce_s': { key: 'ce_s', reverse: true, to_fixed: 3, selected: false },
-    'op': { key: 'op', reverse: false, to_fixed: 0, selected: false },
-    'is': { key: 'isl', reverse: false, to_fixed: 0, selected: false },
-    'cell1': { key: 'cell1', reverse: false, to_fixed: 0, selected: false },
-    'cell2': { key: 'cell2', reverse: false, to_fixed: 0, selected: false },
-    'cell3': { key: 'cell3', reverse: false, to_fixed: 0, selected: false },
-    'cell4': { key: 'cell4', reverse: false, to_fixed: 0, selected: false },
-    'cell5': { key: 'cell5', reverse: false, to_fixed: 0, selected: false },
-    'cell6': { key: 'cell6', reverse: false, to_fixed: 0, selected: false },
-    'cell7': { key: 'cell7', reverse: false, to_fixed: 0, selected: false },
-    'cell8': { key: 'cell8', reverse: false, to_fixed: 0, selected: false },
+    timems: { key: 'timems', reverse: false, to_fixed: 3, selected: true },
+    bbbv: { key: 'bv', reverse: false, to_fixed: 0, selected: true },
+    bbbv_s: { key: 'bvs', reverse: true, to_fixed: 3, selected: true },
+    left_s: { key: 'left_s', reverse: true, to_fixed: 3, selected: false },
+    right_s: { key: 'right_s', reverse: true, to_fixed: 3, selected: false },
+    double_s: { key: 'double_s', reverse: true, to_fixed: 3, selected: false },
+    cl_s: { key: 'cl_s', reverse: true, to_fixed: 3, selected: false },
+    path: { key: 'path', reverse: false, to_fixed: 2, selected: false },
+    stnb: { key: 'video__stnb', reverse: true, to_fixed: 2, selected: true },
+    ioe: { key: 'ioe', reverse: true, to_fixed: 3, selected: false },
+    thrp: { key: 'thrp', reverse: true, to_fixed: 3, selected: false },
+    ce_s: { key: 'ce_s', reverse: true, to_fixed: 3, selected: false },
+    op: { key: 'op', reverse: false, to_fixed: 0, selected: false },
+    is: { key: 'isl', reverse: false, to_fixed: 0, selected: false },
+    cell1: { key: 'cell1', reverse: false, to_fixed: 0, selected: false },
+    cell2: { key: 'cell2', reverse: false, to_fixed: 0, selected: false },
+    cell3: { key: 'cell3', reverse: false, to_fixed: 0, selected: false },
+    cell4: { key: 'cell4', reverse: false, to_fixed: 0, selected: false },
+    cell5: { key: 'cell5', reverse: false, to_fixed: 0, selected: false },
+    cell6: { key: 'cell6', reverse: false, to_fixed: 0, selected: false },
+    cell7: { key: 'cell7', reverse: false, to_fixed: 0, selected: false },
+    cell8: { key: 'cell8', reverse: false, to_fixed: 0, selected: false },
 });
 
 const selected_index = () => {
@@ -205,7 +204,7 @@ function to_fixed_n(input: string | number | undefined, to_fixed: number): strin
     if (to_fixed <= 0) {
         return input;
     }
-    if (typeof (input) == 'string') {
+    if (typeof input == 'string') {
         return parseFloat(input).toFixed(to_fixed);
     }
     return (input as number).toFixed(to_fixed);
@@ -270,11 +269,9 @@ const request_videos = () => {
     if (![0, 4].includes(videofilter.value.filter_state.length)) {
         params['s'] = videofilter.value.filter_state;
     }
-    proxy.$axios.get('/video/query/',
-        {
-            params: params,
-        },
-    ).then(function (response) {
+    proxy.$axios.get('/video/query/', {
+        params: params,
+    }).then(function (response) {
         const data = JSON.parse(response.data);
         videoList.splice(0, videoList.length);
         videoList.push(...data.videos);
@@ -286,7 +283,6 @@ const index_select = (key: string | number, value: NameKeyReverse) => {
     index_tags[key].selected = !value.selected;
 };
 </script>
-
 
 <style lang="less" scoped>
 .rank {
@@ -322,7 +318,6 @@ const index_select = (key: string | number, value: NameKeyReverse) => {
     text-align: center;
     // cursor: pointer;
 }
-
 
 .hoverable:hover {
     // color: rgb(64, 158, 255);

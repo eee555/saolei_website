@@ -31,7 +31,9 @@ const confirmPassword = ref('');
 const passwordFormRef = useTemplateRef('passwordFormRef');
 const confirmPasswordFormRef = useTemplateRef('confirmPasswordFormRef');
 
-const validateState = computed(() => { return confirmPasswordFormRef.value!.validateState; });
+const validateState = computed(() => {
+    return confirmPasswordFormRef.value!.validateState;
+});
 defineExpose({ validateState });
 
 const passwordHandler = (value: string) => {

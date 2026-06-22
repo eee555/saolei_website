@@ -10,10 +10,13 @@ import tseslint from 'typescript-eslint';
 
 export default defineConfig({
     files: ['**/*.{js,ts,vue}'],
-    ignores: ['**/node_modules/**', '**/dist/**', '**/build/**', '**/GuideView.vue', '**/public/**'],
+    ignores: [
+        '**/node_modules/**', '**/dist/**', '**/build/**', '**/public/**',
+        '**/GuideView.vue', '**/WorldView.vue',
+    ],
     plugins: {
         '@stylistic': stylistic,
-        'cypress': pluginCypress,
+        cypress: pluginCypress,
     },
     extends: [
         eslint.configs.recommended,
@@ -21,6 +24,7 @@ export default defineConfig({
         tseslint.configs.recommended,
         ...pluginVue.configs['flat/recommended'],
         pluginCypress.configs.recommended,
+        stylistic.configs.all,
         // ...vueI18n.configs.recommended, // 不兼容ts。https://github.com/intlify/eslint-plugin-vue-i18n/issues/32
     ],
     languageOptions: {
@@ -50,11 +54,11 @@ export default defineConfig({
         'import/order': [
             'error', {
                 'newlines-between': 'always',
-                'alphabetize': {
-                    'order': 'asc',
-                    'caseInsensitive': true,
+                alphabetize: {
+                    order: 'asc',
+                    caseInsensitive: true,
                 },
-                'named': true,
+                named: true,
             },
         ],
         'no-control-regex': 'off',
@@ -87,7 +91,7 @@ export default defineConfig({
         'vue/no-duplicate-class-names': 'error',
         'vue/no-empty-component-block': 'error',
         'vue/no-import-compiler-macros': 'error',
-        'vue/no-irregular-whitespace': ['error', { 'skipHTMLTextContents': true }],
+        'vue/no-irregular-whitespace': ['error', { skipHTMLTextContents: true }],
         // vue/no-literals-in-template
         'vue/no-multiple-objects-in-class': 'error',
         // vue/no-negated-v-if-condition
@@ -162,68 +166,49 @@ export default defineConfig({
         'vue/slot-name-casing': 'error',
         'vue/sort-keys': 'off',
         'vue/static-class-names-order': 'error',
-        '@stylistic/array-bracket-newline': 'error',
-        '@stylistic/array-bracket-spacing': 'error',
-        // @stylistic/array-element-newline
-        '@stylistic/arrow-parens': 'error',
-        '@stylistic/arrow-spacing': 'error',
-        '@stylistic/block-spacing': 'error',
-        '@stylistic/brace-style': ['error', '1tbs', { 'allowSingleLine': true }],
+        '@stylistic/array-bracket-newline': ['error', 'consistent'],
+        '@stylistic/array-element-newline': 'off',
         '@stylistic/comma-dangle': ['error', 'always-multiline'],
-        '@stylistic/comma-spacing': 'error',
-        '@stylistic/comma-style': 'error',
-        '@stylistic/computed-property-spacing': 'error',
-        '@stylistic/curly-newline': ['error', { 'consistent': true }],
-        '@stylistic/dot-location': 'error',
-        '@stylistic/eol-last': 'error',
-        '@stylistic/function-call-spacing': 'error',
-        '@stylistic/generator-star-spacing': 'error',
-        '@stylistic/implicit-arrow-linebreak': 'error',
-        '@stylistic/indent': ['error', 4],
+        '@stylistic/function-call-argument-newline': ['error', 'consistent'],
+        '@stylistic/function-paren-newline': ['error', 'consistent'],
         '@stylistic/indent-binary-ops': ['error', 4],
-        '@stylistic/key-spacing': 'error',
-        '@stylistic/keyword-spacing': 'error',
-        '@stylistic/member-delimiter-style': 'error',
-        '@stylistic/new-parens': 'error',
-        '@stylistic/newline-per-chained-call': 'off', // 不兼容代码风格
-        '@stylistic/no-extra-parens': 'off', // 有些一元运算符需要括号保持可读性
-        '@stylistic/no-extra-semi': 'error',
-        '@stylistic/no-floating-decimal': 'error',
-        '@stylistic/no-mixed-operators': 'off', // 加法和乘法还是不需要括号的
-        '@stylistic/no-mixed-spaces-and-tabs': 'error',
-        '@stylistic/no-multi-spaces': ['error', { 'ignoreEOLComments': true }],
-        '@stylistic/no-trailing-spaces': 'error',
-        '@stylistic/no-whitespace-before-property': 'error',
-        '@stylistic/nonblock-statement-body-position': 'error',
-        '@stylistic/object-curly-newline': ['error', { 'consistent': true }],
+        '@stylistic/linebreak-style': 'off',
+        '@stylistic/lines-around-comment': ['error', {
+            beforeBlockComment: true,
+            allowClassStart: true,
+            allowInterfaceStart: true,
+            allowTypeStart: true,
+        }],
+        '@stylistic/lines-between-class-members': ['error', {
+            enforce: [
+                { blankLine: 'never', prev: 'field', next: 'field' },
+                { blankLine: 'always', prev: 'method', next: 'method' },
+            ],
+        }],
+        '@stylistic/multiline-comment-style': 'off',
+        '@stylistic/multiline-ternary': ['error', 'always-multiline'],
+        '@stylistic/newline-per-chained-call': 'off',
+        '@stylistic/no-extra-parens': ['error', 'all', {
+            enforceForArrowConditionals: false,
+        }],
+        '@stylistic/no-multiple-empty-lines': ['error', { max: 1 }],
         '@stylistic/object-curly-spacing': ['error', 'always'],
+        '@stylistic/object-property-newline': ['error', { allowAllPropertiesOnSameLine: true }],
+        '@stylistic/operator-linebreak': ['error', 'before'],
         '@stylistic/padded-blocks': ['error', 'never'],
+        '@stylistic/quote-props': ['error', 'as-needed'],
         '@stylistic/quotes': ['error', 'single'],
-        '@stylistic/rest-spread-spacing': 'error',
-        '@stylistic/semi': 'error',
-        '@stylistic/semi-spacing': 'error',
-        '@stylistic/semi-style': 'error',
-        '@stylistic/space-before-blocks': 'error',
-        '@stylistic/space-before-function-paren': ['error', { 'named': 'never' }],
-        '@stylistic/space-in-parens': 'error',
-        '@stylistic/space-infix-ops': 'error',
-        '@stylistic/space-unary-ops': 'error',
-        '@stylistic/spaced-comment': 'error',
-        '@stylistic/switch-colon-spacing': 'error',
-        '@stylistic/template-curly-spacing': 'error',
-        '@stylistic/template-tag-spacing': 'error',
-        '@stylistic/type-annotation-spacing': 'error',
-        '@stylistic/type-generic-spacing': 'error',
-        '@stylistic/type-named-tuple-spacing': 'error',
-        '@stylistic/wrap-regex': 'error',
-        '@stylistic/yield-star-spacing': 'error',
+        '@stylistic/space-before-function-paren': ['error', {
+            anonymous: 'always',
+            named: 'never',
+        }],
         '@typescript-eslint/ban-ts-comment': 'off',
         '@typescript-eslint/no-empty-object-type': 'off',
         '@typescript-eslint/no-explicit-any': 'off',
         '@typescript-eslint/no-namespace': 'off',
         '@typescript-eslint/no-unsafe-function-type': 'off',
         '@typescript-eslint/no-unused-expressions': 'off',
-        '@typescript-eslint/no-unused-vars': ['error', { 'argsIgnorePattern': '^_', 'caughtErrorsIgnorePattern': '^_' }],
+        '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
     },
     settings: {
         'vue-i18n': {
@@ -233,8 +218,8 @@ export default defineConfig({
         'import/resolver': {
             // You will also need to install and configure the TypeScript resolver
             // See also https://github.com/import-js/eslint-import-resolver-typescript#configuration
-            'typescript': true,
-            'node': true,
+            typescript: true,
+            node: true,
         },
     },
 });

@@ -155,13 +155,11 @@ async function pop_show() {
     if (props.userId === 0) return;
     is_loading.value = true;
 
-    await proxy.$axios.get('/msuser/info_abstract/',
-        {
-            params: {
-                id: props.userId,
-            },
+    await proxy.$axios.get('/msuser/info_abstract/', {
+        params: {
+            id: props.userId,
         },
-    ).then(function (response) {
+    }).then(function (response) {
         const response_data = response.data;
 
         const records = JSON.parse(response_data.record_abstract);
@@ -208,11 +206,11 @@ const i18nMessages = {
         user: '用户',
         visitMe: '我的空间',
     } },
-    'en': { local: {
+    en: { local: {
         user: 'User',
         visitMe: 'My space',
     } },
-    'fr': { local: {
+    fr: { local: {
         visitMe: 'Mon espace',
     } },
 };

@@ -15,10 +15,10 @@ defineProps({
 });
 
 const statusToClass = {
-    'READY': 'text-primary',
-    'RUNNING': 'text-warning',
-    'SUCCESSFUL': 'text-success',
-    'FAILED': 'text-danger',
-    'NULL': 'text-info',
+    READY: 'text-primary',
+    RUNNING: 'text-warning',
+    SUCCESSFUL: 'text-success',
+    FAILED: 'text-danger',
+    NULL: 'text-info',
 } as const;
 </script>

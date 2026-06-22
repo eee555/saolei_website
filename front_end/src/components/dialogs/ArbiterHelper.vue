@@ -107,7 +107,7 @@ const i18nMessages = {
     'zh-cn': { local: {
         description: 'Minesweeper Arbiter 是最流行的专业扫雷软件。',
     } },
-    'en': { local: {
+    en: { local: {
         description: 'Minesweeper Arbiter is the most popular authoritative minesweeper clone.',
     } },
 };

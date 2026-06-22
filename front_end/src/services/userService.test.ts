@@ -40,12 +40,19 @@ vi.mock('./store', () => ({ serviceConfig }));
 
 function createUser(id: number, realname: string): GetUserInfoResponse {
     return {
-        id, username: `user${id}`,
-        firstname: '', lastname: '', realname,
-        is_banned: false, is_staff: false,
-        country: '', signature: '',
-        last_change_avatar: '', last_change_signature: '',
-        left_avatar_n: 0, left_signature_n: 0,
+        id,
+        username: `user${id}`,
+        firstname: '',
+        lastname: '',
+        realname,
+        is_banned: false,
+        is_staff: false,
+        country: '',
+        signature: '',
+        last_change_avatar: '',
+        last_change_signature: '',
+        left_avatar_n: 0,
+        left_signature_n: 0,
     };
 }
 

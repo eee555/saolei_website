@@ -43,18 +43,8 @@ const { t } = useI18n();
 const centerDialogVisible = ref(false);
 </script>
 
-
 <style scoped>
 a {
     color: blue;
 }
 </style>
-
-
-
-
-
-
-
-
-

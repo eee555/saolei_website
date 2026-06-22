@@ -12,19 +12,19 @@ const USER = {
     password: 'userPassword',
 } as const;
 const LINKS = {
-    'wom': {
+    wom: {
         platform: 'Minesweeper.Online',
         identifier: '1782682',
     },
-    'saolei': {
+    saolei: {
         platform: '扫雷网',
         identifier: '18290',
     },
-    'msgames': {
+    msgames: {
         platform: 'Authoritative Minesweeper',
         identifier: '7872',
     },
-    'qq': {
+    qq: {
         platform: '腾讯QQ',
         identifier: '123456789',
     },
