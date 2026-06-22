@@ -21,7 +21,7 @@ export default defineConfig({
     extends: [
         eslint.configs.recommended,
         importPlugin.flatConfigs.recommended,
-        tseslint.configs.recommended,
+        tseslint.configs.all,
         ...pluginVue.configs['flat/recommended'],
         pluginCypress.configs.recommended,
         stylistic.configs.all,
@@ -34,6 +34,8 @@ export default defineConfig({
         },
         parserOptions: {
             parser: tseslint.parser,
+            projectService: true,
+            extraFileExtensions: ['.vue'],
         },
     },
     rules: {
@@ -202,13 +204,6 @@ export default defineConfig({
             anonymous: 'always',
             named: 'never',
         }],
-        '@typescript-eslint/ban-ts-comment': 'off',
-        '@typescript-eslint/no-empty-object-type': 'off',
-        '@typescript-eslint/no-explicit-any': 'off',
-        '@typescript-eslint/no-namespace': 'off',
-        '@typescript-eslint/no-unsafe-function-type': 'off',
-        '@typescript-eslint/no-unused-expressions': 'off',
-        '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
     },
     settings: {
         'vue-i18n': {
