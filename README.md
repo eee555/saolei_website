@@ -4,6 +4,8 @@
 [![stars](https://img.shields.io/github/stars/eee555/saolei_website)](https://github.com/eee555/saolei_website/stargazers)
 [![forks](https://img.shields.io/github/forks/eee555/saolei_website)](https://github.com/eee555/saolei_website/forks)
 
+[![Dependabot Updates](https://github.com/eee555/saolei_website/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/eee555/saolei_website/actions/workflows/dependabot/dependabot-updates)
+
 [English](Readme_en.md)
 
 开源扫雷网（Open Minesweeper）成立于2023年12月3日，是一个由资深扫雷玩家志愿开发与维护的​​非营利性扫雷录像排名网站​​。与传统的中心化网站相比，开源扫雷网秉承​​社区驱动​​的核心理念，构建的是一个开放的协作生态。欢迎​​开发者、赞助者、赛事主办方​​乃至​​每一位用户​​的加入。
