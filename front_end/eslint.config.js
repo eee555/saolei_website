@@ -204,6 +204,15 @@ export default defineConfig({
             anonymous: 'always',
             named: 'never',
         }],
+
+        '@typescript-eslint/naming-convention': 'off', // TODO：涉及到前后端标准不一致的问题，很复杂
+        '@typescript-eslint/no-explicit-any': 'off', // TODO
+        '@typescript-eslint/no-magic-numbers': 'off', // TODO
+        '@typescript-eslint/no-unsafe-argument': 'off', // TODO：牵扯到的内容很多，包括后端API重构等
+        '@typescript-eslint/no-unsafe-assignment': 'off', // TODO：牵扯到的内容很多，包括后端API重构等
+        '@typescript-eslint/no-unsafe-member-access': 'off', // TODO：牵扯到的内容很多，包括后端API重构等
+        '@typescript-eslint/no-use-before-define': 'off', // 为了代码可读性，有的函数需要放在最后
+        '@typescript-eslint/prefer-readonly-parameter-types': 'off',
     },
     settings: {
         'vue-i18n': {
