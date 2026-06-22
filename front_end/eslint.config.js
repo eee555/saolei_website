@@ -229,4 +229,9 @@ export default defineConfig({
             node: true,
         },
     },
+}, {
+    files: ['**/*.cy.ts'],
+    rules: {
+        '@typescript-eslint/no-unused-expressions': 'off',
+    },
 });

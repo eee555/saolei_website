@@ -17,6 +17,7 @@
 import './commands';
 import '../../src/setup';
 
+import type { VueWrapper } from '@vue/test-utils';
 import { mount } from 'cypress/vue';
 import 'cypress-real-events';
 
@@ -25,6 +26,8 @@ import 'cypress-real-events';
 // Alternatively, can be defined in cypress/support/component.d.ts
 // with a <reference path="./component" /> at the top of your spec.
 declare global {
+    type ComponentWrapper<C> = VueWrapper<InstanceType<C>>;
+
     namespace Cypress {
         interface Chainable {
             mount: typeof mount;
