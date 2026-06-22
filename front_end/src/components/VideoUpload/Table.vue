@@ -127,7 +127,7 @@ const selectedRows = defineModel<UploadEntry[]>(
 );
 
 const filters = ref({
-    'status': { value: null, matchMode: FilterMatchMode.EQUALS },
+    status: { value: null, matchMode: FilterMatchMode.EQUALS },
     'stat.level': { value: null, matchMode: FilterMatchMode.EQUALS },
     // 'mode': { value: Object.values(MS_Mode), matchMode: FilterMatchMode.IN },
 });
@@ -180,7 +180,7 @@ const i18nMessages = {
         success: '上传成功',
         upload: '上传失败',
     } },
-    'en': { local: {
+    en: { local: {
         censorship: 'Identifier blocked',
         collision: 'Video already exists',
         custom: 'Custom level is currently not supported',

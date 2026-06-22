@@ -40,16 +40,16 @@ const { proxy } = useCurrentInstance();
 
 const data = ref([] as any[]);
 
-watch(props, () => { data.value = []; });
+watch(props, () => {
+    data.value = [];
+});
 
 async function fetchData(id: number) {
-    await proxy.$axios.get('video/query_by_id',
-        {
-            params: {
-                id: id,
-            },
+    await proxy.$axios.get('video/query_by_id', {
+        params: {
+            id: id,
         },
-    ).then(function (response) {
+    }).then(function (response) {
         data.value = response.data;
     }).catch(httpErrorNotification);
 }

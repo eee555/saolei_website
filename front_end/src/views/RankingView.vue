@@ -128,33 +128,28 @@ interface TagsReverse {
 }
 
 const mode_tags: Tags = {
-    'STD': { key: 'std' },
-    'NF': { key: 'nf' },
-    'JSW': { key: 'ng' },
+    STD: { key: 'std' },
+    NF: { key: 'nf' },
+    JSW: { key: 'ng' },
     // "BZD": { key: "dg" }
 };
 
-
 // reverse: true从小到大
 const index_tags: TagsReverse = {
-    'timems': { key: 'timems', reverse: false, to_fixed: 3 },
-    'bbbv_s': { key: 'bvs', reverse: true, to_fixed: 3 },
-    'path': { key: 'path', reverse: false, to_fixed: 2 },
-    'stnb': { key: 'stnb', reverse: true, to_fixed: 2 },
-    'ioe': { key: 'ioe', reverse: true, to_fixed: 3 },
+    timems: { key: 'timems', reverse: false, to_fixed: 3 },
+    bbbv_s: { key: 'bvs', reverse: true, to_fixed: 3 },
+    path: { key: 'path', reverse: false, to_fixed: 2 },
+    stnb: { key: 'stnb', reverse: true, to_fixed: 2 },
+    ioe: { key: 'ioe', reverse: true, to_fixed: 3 },
 };
 
 onMounted(() => {
     document.getElementsByClassName('el-pagination__goto')[0].childNodes[0].nodeValue = '转到';
     // 把分页器的go to改成中文。
 
-
     mod_style();
     get_player_rank(1);
 });
-
-
-
 
 const mod_style = () => {
     // 调整列宽样式
@@ -169,17 +164,15 @@ const get_player_rank = (page: number) => {
     const iv = index_tags[index_tag_selected.value];
     const mv = mode_tags[mode_tag_selected.value];
     const piv = `player_${iv.key}_${mv.key}_`;
-    proxy.$axios.get('/msuser/player_rank/',
-        {
-            params: {
-                ids: `${piv}ids`,
-                sort_by: `${piv}*->${level_selected.value}`,
-                reverse: iv.reverse,
-                indexes: `["#","${piv}*->name","${piv}*->b","${piv}*->b_id","${piv}*->i","${piv}*->i_id","${piv}*->e","${piv}*->e_id","${piv}*->sum"]`,
-                page: page,
-            },
+    proxy.$axios.get('/msuser/player_rank/', {
+        params: {
+            ids: `${piv}ids`,
+            sort_by: `${piv}*->${level_selected.value}`,
+            reverse: iv.reverse,
+            indexes: `["#","${piv}*->name","${piv}*->b","${piv}*->b_id","${piv}*->i","${piv}*->i_id","${piv}*->e","${piv}*->e_id","${piv}*->sum"]`,
+            page: page,
         },
-    ).then(function (response) {
+    }).then(function (response) {
         // console.log(response.data);
         const data = response.data;
         state.Total = data.total_page;
@@ -234,7 +227,6 @@ const setSortDirect = (level_tag: string) => {
     get_player_rank(state.CurrentPage);
 };
 </script>
-
 
 <style lang="less" scoped>
 .rank {

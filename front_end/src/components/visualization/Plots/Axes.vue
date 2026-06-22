@@ -112,8 +112,8 @@ const props = defineProps({
 });
 
 defineSlots<{
-    'xTick': (props: { tick: number; x: number; y: number }) => unknown;
-    'yTick': (props: { tick: number; x: number; y: number }) => unknown;
+    xTick: (props: { tick: number; x: number; y: number }) => unknown;
+    yTick: (props: { tick: number; x: number; y: number }) => unknown;
 }>();
 
 const area = computed(() => getPlotArea(props.size, props.padding));

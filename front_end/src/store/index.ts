@@ -13,7 +13,7 @@ import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 
 export const store = defineStore('user', {
     state: () => ({
-        user: new UserProfile(),   // 真正的用户
+        user: new UserProfile(), // 真正的用户
         // 访问谁的地盘不再具有记忆性。即点“我的地盘”，将永远是“我”的地盘
         // 想要访问特定用户，可以用url
         // 访问谁的地盘
@@ -65,7 +65,7 @@ export const local = useLocalStorage(
     {
         darkmode: matchMedia('(prefers-color-scheme: dark)').matches,
         experimental: false,
-        language: (navigator.language).toLocaleLowerCase(),
+        language: navigator.language.toLocaleLowerCase(),
         language_show: true,
         menu_font_size: 18,
         menu_height: 60,
@@ -95,9 +95,9 @@ export const videofilter = useLocalStorage('videofilter', {
     level: 'e',
     filter_state: ['a', 'b', 'c', 'd'],
     bbbv_range: {
-        'b': [2, 54],
-        'i': [30, 216],
-        'e': [100, 381],
+        b: [2, 54],
+        i: [30, 216],
+        e: [100, 381],
     },
 });
 

@@ -33,9 +33,9 @@ export default createI18n({
     legacy: false,
     fallbackLocale: {
         'zh-cn': ['dev'],
-        'en': ['dev'],
-        'de': ['en'],
-        'pl': ['en'],
+        en: ['dev'],
+        de: ['en'],
+        pl: ['en'],
         'zh-tw': ['zh-cn'],
     },
     fallbackWarn: false,

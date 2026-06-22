@@ -79,13 +79,11 @@ const refresh = async () => {
 };
 
 const verify = () => {
-    proxy.$axios.post('accountlink/verify/',
-        {
-            id: form.id,
-            platform: form.platform,
-            identifier: form.identifier,
-        },
-    ).then(function (_response) {
+    proxy.$axios.post('accountlink/verify/', {
+        id: form.id,
+        platform: form.platform,
+        identifier: form.identifier,
+    }).then(function (_response) {
         form.id = 0;
         form.platform = '';
         form.identifier = '';
@@ -94,13 +92,11 @@ const verify = () => {
 };
 
 const unverify = () => {
-    proxy.$axios.post('accountlink/unverify/',
-        {
-            id: form.id,
-            platform: form.platform,
-            identifier: form.identifier,
-        },
-    ).then(function (_response) {
+    proxy.$axios.post('accountlink/unverify/', {
+        id: form.id,
+        platform: form.platform,
+        identifier: form.identifier,
+    }).then(function (_response) {
         form.id = 0;
         form.platform = '';
         form.identifier = '';

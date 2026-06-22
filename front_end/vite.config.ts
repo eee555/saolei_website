@@ -13,7 +13,6 @@ export default defineConfig(({ mode }) => {
     // 真**坑爹。vite的依赖open，10.0.1修复了这个问题。但目前vite还未更新其版本
     process.env.SYSTEMROOT = process.env.SystemRoot || 'C://Windows';
 
-
     return {
         plugins: [
             vue(),
@@ -24,10 +23,12 @@ export default defineConfig(({ mode }) => {
                 ext: '.gz', // Add a .gz extension to the compressed files
                 threshold: 1024, // Minimum file size in bytes to compress
             }),
-            process.env.NODE_ENV === 'production' ? removeAttr({
-                extensions: ['vue'],
-                attributes: ['data-cy'],
-            }) : null,
+            process.env.NODE_ENV === 'production'
+                ? removeAttr({
+                    extensions: ['vue'],
+                    attributes: ['data-cy'],
+                })
+                : null,
         ],
         resolve: {
             alias: {

@@ -83,7 +83,8 @@ const disabled = computed(() => !props.isSelf || props.expTimeMs >= 200000 || av
 async function updateAvatar(a: File) {
     const formData = new FormData();
     formData.append('avatar', a);
-    await proxy.$axios.post('/api/userprofile/update_avatar',
+    await proxy.$axios.post(
+        '/api/userprofile/update_avatar',
         formData,
     ).then(function (response) {
         const data = response.data;
@@ -114,7 +115,7 @@ const i18nMessages = {
         tooltipCooldown: '头像每年可修改一次。下次可修改：',
         tooltipExpTime: '高级sub200后才可以修改头像',
     } },
-    'en': { local: {
+    en: { local: {
         errorTitle: 'Avatar Update Failed',
         errorMsg: {
             avatar: {

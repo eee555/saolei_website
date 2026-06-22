@@ -145,12 +145,12 @@ const i18nMessages = {
         agreeTAC2: '开源扫雷网用户协议',
         confirm: '注册',
     } },
-    'en': { local: {
+    en: { local: {
         agreeTAC1: 'Agree to',
         agreeTAC2: 'Terms & Conditions',
         confirm: 'Register',
     } },
-    'de': { local: {
+    de: { local: {
         confirm: 'bestätigen',
         agreeTAC1: 'Zustimmen',
         agreeTAC2: 'Nutzungsbedingungen',

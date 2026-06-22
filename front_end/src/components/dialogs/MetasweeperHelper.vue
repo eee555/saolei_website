@@ -183,7 +183,7 @@ const i18nMessages = {
     'zh-cn': { local: {
         description: '元扫雷是一款开源扫雷软件，正处于活跃更新中。',
     } },
-    'en': { local: {
+    en: { local: {
         description: 'Metasweeper is an open-source minesweeper clone under active development.',
     } },
 };

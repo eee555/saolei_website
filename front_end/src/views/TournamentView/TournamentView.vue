@@ -64,7 +64,7 @@ watch(() => route.params.id, async (newId) => {
         }).then((response) => {
             store.tournamentTabs.push(new Tournament(response.data.data));
         }).catch(httpErrorNotification);
-        currentTab.value = (store.tournamentTabs.length).toString();
+        currentTab.value = store.tournamentTabs.length.toString();
     } else {
         currentTab.value = (tabIndex + 1).toString();
     }

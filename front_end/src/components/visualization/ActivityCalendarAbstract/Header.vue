@@ -76,7 +76,7 @@ const i18nMessages = {
         totalNBytes: '占用{0}字节',
         totalNVideos: '共{0}个录像',
     } },
-    'en': { local: {
+    en: { local: {
         totalNBytes: '{0} bytes',
         totalNVideos: '{0} videos in total',
     } },

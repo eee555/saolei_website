@@ -134,7 +134,7 @@ const i18nMessages = {
         keepMeLoggedIn: '记住我',
         keepMeLoggedInTooltip: '连续多天不上线则自动退出登录',
     } },
-    'en': { local: {
+    en: { local: {
         confirm: 'Log in',
         forDays1: 'for',
         forDays2: 'days',
@@ -142,17 +142,17 @@ const i18nMessages = {
         keepMeLoggedIn: 'Keep me logged in',
         keepMeLoggedInTooltip: 'Automatically log out after a few days of inactivity',
     } },
-    'de': { local: {
+    de: { local: {
         confirm: 'Login',
         forgetPassword: 'Passwort vergessen?',
         keepMeLoggedIn: 'eingeloggt bleiben',
     } },
-    'fr': { local: {
+    fr: { local: {
         confirm: 'Se connecter',
         forgetPassword: 'Mot de passe oublié ?',
         keepMeLoggedIn: 'Se souvenir de moi',
     } },
-    'pl': { local: {
+    pl: { local: {
         confirm: 'zaloguj',
         forgetPassword: 'zapomniałeś hasła?',
         keepMeLoggedIn: 'utrzym',

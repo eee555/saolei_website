@@ -73,7 +73,9 @@ const captchaFormRef = useTemplateRef('captchaFormRef');
 const emailCodeFormRef = useTemplateRef('emailCodeFormRef');
 
 // 获取验证状态
-const validateState = computed(() => { return emailCodeFormRef.value!.validateState; });
+const validateState = computed(() => {
+    return emailCodeFormRef.value!.validateState;
+});
 
 // 由外部验证后，若不正确则传入修改验证状态
 const errorCode = () => {

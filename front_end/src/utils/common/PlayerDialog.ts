@@ -4,9 +4,7 @@ import { MS_Software } from '@/utils/ms_const';
 import { getSoftwareExtension } from '@/utils/strings';
 
 async function fetchSoftware(id: number) {
-    const response = await $axios.get('/video/get_software/',
-        { params: { id } },
-    );
+    const response = await $axios.get('/video/get_software/', { params: { id } });
     return response.data.msg as MS_Software;
 }
 

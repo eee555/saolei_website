@@ -67,9 +67,7 @@ const login = (user: any) => {
 };
 
 const logout = async () => {
-    proxy.$axios.post('/userprofile/logout/',
-        {},
-    ).then(function (_response) {
+    proxy.$axios.post('/userprofile/logout/', {}).then(function (_response) {
         store.logout();
         ElMessage.success({ message: t('common.msg.logoutSuccess'), offset: 68 });
         dialogVisible.value = false;
@@ -89,7 +87,7 @@ const i18nMessages = {
             retrieve: '修改密码',
         },
     } },
-    'en': { local: {
+    en: { local: {
         menu: {
             login: 'Login',
             logout: 'Logout',
@@ -101,14 +99,14 @@ const i18nMessages = {
             retrieve: 'Reset Password',
         },
     } },
-    'de': { local: {
+    de: { local: {
         menu: {
             login: 'Login',
             logout: 'Abmeldem',
             register: 'Registrieren',
         },
     } },
-    'fr': { local: {
+    fr: { local: {
         menu: {
             login: 'Connexion',
         },
@@ -116,7 +114,7 @@ const i18nMessages = {
             register: 'Créer un compte',
         },
     } },
-    'pl': { local: {
+    pl: { local: {
         menu: {
             login: 'login',
             logout: 'wyloguj',
@@ -131,7 +129,6 @@ const i18nMessages = {
 
 const { t } = useI18n({ messages: i18nMessages });
 </script>
-
 
 <style lang="less" scoped>
 .fakemenuitem {

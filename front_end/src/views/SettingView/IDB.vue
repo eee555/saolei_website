@@ -64,7 +64,7 @@ const i18nMessages = {
         userInfoTooltip: '不包含头像、标识、账号绑定、纪录、录像数据',
         tooltip: "网页使用Indexed Database缓存部分数据，提升页面加载速度。当服务器数据更新时网页也需要更新，“@:{'local.updateInterval'}”就是网页向服务器请求更新数据的间隔，单位毫秒。如果一次需要更新大量数据，受到URL长度限制，只能分批次更新，“@:{'local.batchSize'}”是每批更新的条目数量，“@:{'local.batchDelay'}”是相邻批次之间的时间间隔，单位毫秒。", // eslint-disable-line @stylistic/quotes
     } },
-    'en': { local: {
+    en: { local: {
         batchDelay: 'Batch Delay',
         batchSize: 'Batch Size',
         lastUpdate: 'Last Update',

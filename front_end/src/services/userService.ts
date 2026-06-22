@@ -196,7 +196,6 @@ export async function fetchUserIdentifiers(userId: number) {
     return response.data as string[];
 }
 
-
 const userVideosPendingRequests = new Map<number, Promise<VideoAbstract[]>>();
 export function fetchUserVideos(userId: number) {
     const pendingRequest = userVideosPendingRequests.get(userId);

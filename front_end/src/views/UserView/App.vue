@@ -95,7 +95,7 @@ const i18nMessages = {
         videos: '录像',
         upload: '上传',
     } },
-    'en': { local: {
+    en: { local: {
         accountlink: 'Account Link',
         summary: 'Summary',
         record: 'Record',

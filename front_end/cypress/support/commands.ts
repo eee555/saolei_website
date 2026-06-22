@@ -139,22 +139,22 @@ Cypress.Commands.add('mockLogin', () => {
         const captcha = params.get('captcha');
         if (captcha !== 'test') {
             req.reply({
-                'type': 'error',
-                'object': 'login',
-                'category': 'captcha',
+                type: 'error',
+                object: 'login',
+                category: 'captcha',
             });
             return;
         }
         if (username === 'test' && password === 'test') {
             req.reply({
-                'type': 'success',
-                'user': {},
+                type: 'success',
+                user: {},
             });
         } else {
             req.reply({
-                'type': 'error',
-                'object': 'login',
-                'category': 'password',
+                type: 'error',
+                object: 'login',
+                category: 'password',
             });
         }
     });

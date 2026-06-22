@@ -26,7 +26,6 @@ import { defaultCounts, defaultVideos } from './utils';
 import { MS_Level, MS_State } from '@/utils/ms_const';
 import { VideoAbstract } from '@/utils/videoabstract';
 
-
 const props = defineProps({
     videos: {
         type: Array as PropType<VideoAbstract[]>,

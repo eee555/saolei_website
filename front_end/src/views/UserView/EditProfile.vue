@@ -150,8 +150,7 @@ onMounted(refresh);
 
 const signatureDisabled = computed(() => user.value.nextSignatureAvailable > globalNow.value || props.expTimeMs >= 200000);
 
-type UpdateProfileResponseSingle =
-    | null
+type UpdateProfileResponseSingle = null
     | { type: 'success' }
     | { type: 'error'; object: string; category: string };
 
@@ -223,7 +222,7 @@ const i18nMessages = {
             },
         },
     } },
-    'en': { local: {
+    en: { local: {
         englishName: 'International Name',
         englishNameTooltip: 'Fill in your given name and family name in English to let minesweepers around the world know you.',
         firstname: 'Given Name',

@@ -19,7 +19,7 @@ const i18nMessages = {
         dark: '深色',
         light: '浅色',
     } },
-    'en': { local: {
+    en: { local: {
         auto: 'auto',
         dark: 'dark',
         light: 'light',

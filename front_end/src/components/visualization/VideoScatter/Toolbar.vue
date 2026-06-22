@@ -123,7 +123,7 @@ const i18nMessages = {
         intersect: '交集',
         union: '并集',
     } },
-    'en': { local: {
+    en: { local: {
         assign: 'New',
         select: 'Select points',
         colorBy: 'Color by',

@@ -111,12 +111,12 @@ const update_review_queue = async () => {
 
 const update_newest_queue = async () => {
     newest_queue_status.value = 1;
-    setTimeout(() => { newest_queue_status.value = 0; }, 5000);
-    await proxy.$axios.get('/video/newest_queue/',
-        {
-            params: {},
-        },
-    ).then(function (response) {
+    setTimeout(() => {
+        newest_queue_status.value = 0;
+    }, 5000);
+    await proxy.$axios.get('/video/newest_queue/', {
+        params: {},
+    }).then(function (response) {
         newest_queue.value.splice(0, newest_queue.value.length);
         for (const key in response.data) {
             const videoid = Number.parseInt(key);
@@ -131,13 +131,13 @@ const update_newest_queue = async () => {
 
 const update_news_queue = async () => {
     news_queue_status.value = 1;
-    setTimeout(() => { news_queue_status.value = 0; }, 5000);
-    await proxy.$axios.get('/video/news_queue/',
-        {
-            params: {},
-        },
-    ).then(function (response) {
-        news_queue.value = response.data.map((v: string) => { return JSON.parse(v); });
+    setTimeout(() => {
+        news_queue_status.value = 0;
+    }, 5000);
+    await proxy.$axios.get('/video/news_queue/', {
+        params: {},
+    }).then(function (response) {
+        news_queue.value = response.data.map((v: string) => JSON.parse(v));
     });
     if (news_queue_status.value == 1) {
         news_queue_status.value = 2;

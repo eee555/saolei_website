@@ -4,9 +4,9 @@ describe('language setting', () => {
         'zh-TW': '教程', // fallback to zh-cn
         'en-GB': 'Guides', // fallback to en
         'en-US': 'Guides', // fallback to en
-        'de': 'Hilfe',
-        'pl': 'poradniki',
-        'fr': 'Guides', // fallback to en
+        de: 'Hilfe',
+        pl: 'poradniki',
+        fr: 'Guides', // fallback to en
     };
 
     for (const lang in languages) {

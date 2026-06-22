@@ -40,7 +40,7 @@ const i18nMessages = {
         playerTooltip1: '此播放器来自',
         playerTooltip2: '制作的第三方网站',
     } },
-    'en': { local: {
+    en: { local: {
         ITrustIt: 'I trust the website',
         playerTooltip1: 'This video player originated from a third-party website created by ',
         playerTooltip2: ',',

@@ -18,9 +18,9 @@ export function getBest(videos: Array<VideoAbstract>, option: SortOption) {
             bestIndex: -1,
         };
         if (
-            isNaN(bestValue) ||
-            thisValue > bestValue && option.sortDesc ||
-            thisValue < bestValue && !option.sortDesc
+            isNaN(bestValue)
+            || thisValue > bestValue && option.sortDesc
+            || thisValue < bestValue && !option.sortDesc
         ) {
             bestValue = thisValue;
             bestIndex = index;

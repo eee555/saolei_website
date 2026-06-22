@@ -58,7 +58,6 @@ declare global {
              * */
             login(username: string, password: string): void;
 
-
             /**
              * 访问指定用户的个人主页
              * @param {number} userId - 用户ID

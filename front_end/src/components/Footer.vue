@@ -119,7 +119,7 @@ const i18nMessage = {
         links: '友链',
         about: '关于我们',
     } },
-    'en': { local: {
+    en: { local: {
         contact: 'Contact',
         donate: 'Donate',
         team: 'Team',

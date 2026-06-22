@@ -36,7 +36,7 @@ const i18nMessages = {
         video: '录像',
         player: '播放器：',
     } },
-    'en': { local: {
+    en: { local: {
         video: 'Video',
         player: 'Video Player: ',
     } },

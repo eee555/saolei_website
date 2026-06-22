@@ -24,7 +24,6 @@ import { ElButton, ElForm, ElFormItem, ElNotification, FormInstance } from 'elem
 import { computed, onUnmounted, reactive, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-
 import EmailCodeBlock from '@/components/formItems/EmailCodeBlock.vue';
 import EmailFormItem from '@/components/formItems/EmailFormItem.vue';
 import PasswordConfirmBlock from '@/components/formItems/PasswordConfirmBlock.vue';
@@ -96,13 +95,13 @@ const i18nMessages = {
     'zh-cn': { local: {
         confirm: '更新密码',
     } },
-    'en': { local: {
+    en: { local: {
         confirm: 'Update password',
     } },
-    'de': { local: {
+    de: { local: {
         confirm: 'bestätigen',
     } },
-    'pl': { local: {
+    pl: { local: {
         confirm: 'Potwierdź',
     } },
 };

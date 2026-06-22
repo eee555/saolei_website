@@ -1,10 +1,10 @@
 import { ComponentCustomProperties } from 'vue';
 
 type DeepMutable<T> = T extends readonly (infer U)[]
-    ? DeepMutable<U>[]                     // 数组递归
+    ? DeepMutable<U>[] // 数组递归
     : T extends object
-        ? { -readonly [K in keyof T]: DeepMutable<T[K]> }  // 对象递归移除 readonly
-        : T;                                  // 基础类型原样
+        ? { -readonly [K in keyof T]: DeepMutable<T[K]> } // 对象递归移除 readonly
+        : T; // 基础类型原样
 
 /**
  * 创建对象的深拷贝副本，确保返回的对象是完全可变的
@@ -40,7 +40,7 @@ export function to_fixed_n(input: string | number | undefined, to_fixed: number)
     if (to_fixed <= 0) {
         return input;
     }
-    if (typeof (input) == 'string') {
+    if (typeof input == 'string') {
         return parseFloat(input).toFixed(to_fixed);
     }
     return (input as number).toFixed(to_fixed);

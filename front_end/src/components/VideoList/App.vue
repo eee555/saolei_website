@@ -117,9 +117,9 @@ function componentConfig(choice: ColumnChoice) {
 }
 
 const filters = ref({
-    'state': { value: Object.values(MS_State), matchMode: FilterMatchMode.IN },
-    'software': { value: [...MS_Softwares], matchMode: FilterMatchMode.IN },
-    'level': { value: null, matchMode: FilterMatchMode.EQUALS },
-    'mode': { value: Object.values(MS_Mode), matchMode: FilterMatchMode.IN },
+    state: { value: Object.values(MS_State), matchMode: FilterMatchMode.IN },
+    software: { value: [...MS_Softwares], matchMode: FilterMatchMode.IN },
+    level: { value: null, matchMode: FilterMatchMode.EQUALS },
+    mode: { value: Object.values(MS_Mode), matchMode: FilterMatchMode.IN },
 });
 </script>

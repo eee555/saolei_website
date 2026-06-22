@@ -84,7 +84,7 @@ const i18nMessages = {
         shape: '形状',
         strokeWidth: '描边宽度',
     } },
-    'en': { local: {
+    en: { local: {
         opacity: 'Opacity',
         radius: 'Radius',
         shape: 'Shape',

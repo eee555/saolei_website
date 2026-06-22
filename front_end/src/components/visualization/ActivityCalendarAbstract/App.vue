@@ -128,7 +128,9 @@ const startDate = computed(() => {
 const dateRange = computed(() => Array.from(generateDateRange(startDate.value, endDate, 1)));
 
 function getColor(videos: VideoAbstract[]) {
-    let red = 0, green = 0, blue = 0;
+    let red = 0;
+    let green = 0;
+    let blue = 0;
     for (const video of videos) {
         if (video.level === 'b') red++;
         else if (video.level === 'i') green++;
