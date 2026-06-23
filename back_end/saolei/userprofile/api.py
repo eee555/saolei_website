@@ -68,7 +68,7 @@ def get_user_info_updated(request, since: int):
     """
     Get the ids of users that have been updated since the given timestamp.
     """
-    since_datetime = datetime.fromtimestamp(since, tz=timezone.utc)
+    since_datetime = datetime.fromtimestamp(since / 1000, tz=timezone.utc)
     return UserProfile.objects.filter(date_updated__gte=since_datetime).values_list('id', flat=True)
 
 
