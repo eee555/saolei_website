@@ -1,9 +1,10 @@
-import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
+import type { RouteRecordRaw } from 'vue-router';
+import { createRouter, createWebHashHistory } from 'vue-router';
 
 import { staffRoutes } from '@/views/StaffView/routes';
 import { userRoutes } from '@/views/UserView/routes';
 
-const routes: Array<RouteRecordRaw> = [
+const routes: RouteRecordRaw[] = [
     {
         path: '/',
         name: 'home',
@@ -38,11 +39,6 @@ const routes: Array<RouteRecordRaw> = [
         path: '/guide/:name/:paragraph',
         name: 'guide_name_paragraph',
         component: () => import('../views/GuideView.vue'),
-    },
-    {
-        path: '/score',
-        name: 'score',
-        component: () => import('../views/ScoreRankView.vue'),
     },
     {
         path: '/server',
