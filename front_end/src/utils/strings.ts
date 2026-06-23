@@ -8,7 +8,7 @@ export { default as SpaceSeparatorRegex } from '@unicode/unicode-16.0.0/General_
 
 // credit: ChatGPT
 export function stringifyWithLineWrap(
-    obj: any,
+    obj: unknown,
     maxLineLength = 80,
     indent = 2,
 ): string {
@@ -71,7 +71,7 @@ export function formatNumberSmart(
     maxDecimalPlaces = Infinity,
 ): string {
     // 分离整数和小数部分
-    const integerPart = num.toString().split('.')[0];
+    const [integerPart] = num.toString().split('.');
 
     // 如果整数部分已经超过或等于总长度
     if (integerPart.length >= totalLength) {

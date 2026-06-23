@@ -1,5 +1,3 @@
-import type { ComponentCustomProperties } from 'vue';
-
 type DeepMutable<T> = T extends readonly (infer U)[]
     ? DeepMutable<U>[] // 数组递归
     : T extends object
@@ -53,10 +51,6 @@ export function cs_to_s(cs: number): string {
     return `${Math.floor(cs / 100)}.${(cs % 100 + '').padStart(2, '0')}`;
 }
 
-export function simple_formatter(f: Function) {
-    return (row: any, col: any, value: any, _index: any) => f(value);
-}
-
 // Credit: ChatGPT
 export function deepCopy<T>(obj: T): T {
     if (obj === null || typeof obj !== 'object') {
@@ -82,10 +76,6 @@ export function deepCopy<T>(obj: T): T {
     }
 
     throw new Error('Unable to copy object! Its type isn\'t supported.');
-}
-
-export function defaultFilterMethod(value: any, row: any, column: any): boolean {
-    return row[column.property] === value;
 }
 
 export function sleep(ms: number): Promise<unknown> {
