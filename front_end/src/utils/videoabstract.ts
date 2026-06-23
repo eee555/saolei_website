@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/member-ordering */
 import { toISODateString } from './datetime';
-import type { MS_Level, MS_Software, MS_State} from './ms_const';
-import { STNB_const } from './ms_const';
+import type { MS_Level, MS_Software } from './ms_const';
+import { MS_State, STNB_const } from './ms_const';
 import { formatBytes } from './strings';
 
-function undefinedOrToString(value: any): string | undefined {
+function undefinedOrToString(value: { toString: () => string } | undefined): string | undefined {
     return value === undefined ? undefined : value.toString();
 }
 
-function undefinedOrToFixed(value: any, digits: number): string | undefined {
+function undefinedOrToFixed(value: number | undefined, digits: number): string | undefined {
     return value === undefined ? undefined : value.toFixed(digits);
 }
 
@@ -44,7 +44,6 @@ interface VideoRedisInfo {
     state: string;
     software: string;
     time: string;
-    player: string;
     player_id: number;
     level: MS_Level;
     mode: string;
@@ -55,55 +54,70 @@ interface VideoRedisInfo {
     ce?: number;
 }
 
+interface VideoAbstractMinimum {
+    [key: string]: unknown;
+    id?: number;
+    upload_time?: string | Date;
+    time?: string | Date;
+    end_time?: string | Date | null;
+    level: string;
+    mode: string;
+    timems: number;
+    bv: number;
+    state?: string;
+    software: string;
+    cl?: number | null;
+    ce?: number | null;
+    path?: number | null;
+    player_id?: number;
+    player?: number;
+    file_size?: number;
+    ongoing_tournament?: boolean;
+}
+
 export const getStat_keys = ['time', 'bvs', 'timems', 'bv', 'qg', 'rqp', 'stnb', 'ce', 'ces', 'cl', 'cls', 'ioe', 'thrp', 'corr', 'path', 'npath', 'mov', 'iome', 'file_size'] as const;
 export type getStat_stat = typeof getStat_keys[number];
 
 export class VideoAbstract {
-    public id: number;
-    public upload_time: Date;
+    public id = 0;
+    public upload_time = new Date();
     public end_time?: Date;
     public level: MS_Level;
     public mode: string;
     public timems: number;
     public bv: number;
-    public state: MS_State;
+    public state: MS_State = MS_State.Plain;
     public software: MS_Software;
     public cl?: number;
     public ce?: number;
     public path?: number;
     public player_id?: number;
-    public file_size: number;
+    public file_size = 0;
     public ongoing_tournament?: boolean;
 
-    public constructor(info: any) {
-        if (info.id) this.id = info.id;
-        else this.id = 0;
+    public constructor(info: VideoAbstractMinimum) {
+        this.id = info.id ?? this.id;
 
-        if (info.upload_time) this.upload_time = new Date(info.upload_time);
-        else if (info.time) this.upload_time = new Date(info.time); // newest_queue等返回的
-        else this.upload_time = new Date();
+        const uploadTime = info.upload_time ?? info.time;
+        if (uploadTime !== undefined) this.upload_time = new Date(uploadTime);
 
-        if (info.end_time) this.end_time = new Date(info.end_time);
+        if (info.end_time !== undefined && info.end_time !== null) this.end_time = new Date(info.end_time);
 
-        this.level = info.level;
+        this.level = info.level as MS_Level;
         this.mode = info.mode;
         this.timems = info.timems;
         this.bv = info.bv;
-        this.state = info.state;
-        this.software = info.software;
+        if (info.state !== undefined) this.state = info.state as MS_State;
+        this.software = info.software as MS_Software;
 
-        this.cl = info.cl;
-        this.ce = info.ce;
-        this.path = info.path;
+        this.cl = info.cl ?? undefined;
+        this.ce = info.ce ?? undefined;
+        this.path = info.path ?? undefined;
         this.player_id = info.player_id ?? info.player;
 
-        this.file_size = info.file_size ?? 0;
+        this.file_size = info.file_size ?? this.file_size;
 
-        this.ongoing_tournament = info.ongoing_tournament;
-    }
-
-    public static fromVideoAbstractInfo(info: VideoAbstractInfo): VideoAbstract {
-        return new VideoAbstract(info);
+        this.ongoing_tournament = info.ongoing_tournament ?? undefined;
     }
 
     public static fromVideoRedisInfo(key: number, info: VideoRedisInfo): VideoAbstract {
@@ -200,6 +214,7 @@ export class VideoAbstract {
             case 'iome': return undefinedOrToFixed(this.iome, 3);
             case 'file_size': return formatBytes(this.file_size);
         }
+        return undefined;
     }
 }
 
