@@ -7,12 +7,16 @@ export const fullMonth = 2592000000 as const;
 export const fullYear = 31536000000 as const;
 export const monthNameShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
 
+export function toDate(value: Date | string | number | null | undefined): Date | undefined {
+    return value === null || value === undefined ? undefined : new Date(value);
+}
+
 /**
  * 获取指定日期所在周的起始时间
  * @param {Date} date - 需要计算周起始时间的日期
  * @returns {number} - 返回指定日期所在周的起始时间的时间戳
  */
-export function getWeekTime(date: Date) {
+export function getWeekTime(date: Date): number {
     return date.getTime() - date.getDay() * fullDay;
 }
 
@@ -21,7 +25,7 @@ export function getWeekTime(date: Date) {
  * @param {Date} date - 日期对象
  * @returns {string} - ISO格式的本地日期字符串，例如 "2022-01-01"
  */
-export function toISODateString(date: Date) {
+export function toISODateString(date: Date): string {
     return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, '0') + '-' + date.getDate().toString().padStart(2, '0');
 }
 
@@ -35,7 +39,7 @@ export function toISODateString(date: Date) {
  * const date = new Date('2023-10-05T14:30:00');
  * const isoString = toISODateTimeString(date); // "2023-10-05 14:30:00"
  */
-export function toISODateTimeString(date: Date) {
+export function toISODateTimeString(date: Date): string {
     return date.getFullYear() + '-'
         + (date.getMonth() + 1).toString().padStart(2, '0') + '-'
         + date.getDate().toString().padStart(2, '0') + ' '
@@ -44,7 +48,7 @@ export function toISODateTimeString(date: Date) {
         + date.getSeconds().toString().padStart(2, '0');
 }
 
-export function *generateDateRange(startDate: Date, endDate: Date, step: number = 1) {
+export function *generateDateRange(startDate: Date, endDate: Date, step = 1) {
     const currentDate = new Date(startDate);
     while (currentDate <= endDate) {
         yield new Date(currentDate);
@@ -52,12 +56,12 @@ export function *generateDateRange(startDate: Date, endDate: Date, step: number 
     }
 }
 
-export function arbiterTimeStampToDate(timestamp: bigint) {
+export function arbiterTimeStampToDate(timestamp: bigint): Date {
     const date = new Date();
     return new Date(Number(timestamp / BigInt(1000)) + date.getTimezoneOffset() * 60000);
 }
 
-export function generalTimeStampToDate(timestamp: bigint) {
+export function generalTimeStampToDate(timestamp: bigint): Date {
     return new Date(Number(timestamp / BigInt(1000)));
 }
 

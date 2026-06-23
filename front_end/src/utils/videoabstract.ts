@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/member-ordering */
-import { toISODateString } from './datetime';
+import { toDate, toISODateString } from './datetime';
 import type { MS_Level, MS_Software } from './ms_const';
 import { MS_State, STNB_const } from './ms_const';
 import { formatBytes } from './strings';
@@ -101,7 +101,7 @@ export class VideoAbstract {
         const uploadTime = info.upload_time ?? info.time;
         if (uploadTime !== undefined) this.upload_time = new Date(uploadTime);
 
-        if (info.end_time !== undefined && info.end_time !== null) this.end_time = new Date(info.end_time);
+        this.end_time = toDate(info.end_time);
 
         this.level = info.level as MS_Level;
         this.mode = info.mode;
