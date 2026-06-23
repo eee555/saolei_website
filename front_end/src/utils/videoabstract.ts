@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/member-ordering */
 import { toISODateString } from './datetime';
-import { MS_Level, MS_Software, MS_State, STNB_const } from './ms_const';
+import type { MS_Level, MS_Software, MS_State} from './ms_const';
+import { STNB_const } from './ms_const';
 import { formatBytes } from './strings';
 
 function undefinedOrToString(value: any): string | undefined {
@@ -73,7 +75,7 @@ export class VideoAbstract {
     public file_size: number;
     public ongoing_tournament?: boolean;
 
-    constructor(info: any) {
+    public constructor(info: any) {
         if (info.id) this.id = info.id;
         else this.id = 0;
 
@@ -100,11 +102,11 @@ export class VideoAbstract {
         this.ongoing_tournament = info.ongoing_tournament;
     }
 
-    static fromVideoAbstractInfo(info: VideoAbstractInfo): VideoAbstract {
+    public static fromVideoAbstractInfo(info: VideoAbstractInfo): VideoAbstract {
         return new VideoAbstract(info);
     }
 
-    static fromVideoRedisInfo(key: number, info: VideoRedisInfo): VideoAbstract {
+    public static fromVideoRedisInfo(key: number, info: VideoRedisInfo): VideoAbstract {
         return new VideoAbstract({
             id: key,
             upload_time: new Date(info.time),
@@ -120,64 +122,65 @@ export class VideoAbstract {
         });
     }
 
-    get time() {
+    public get time(): number {
         return this.timems / 1000;
     }
 
-    get bvs() {
+    public get bvs(): number {
         return this.bv / this.time;
     }
 
-    get qg() {
+    public get qg(): number {
         return Math.pow(this.time, 1.7) / this.bv;
     }
 
-    get rqp() {
+    public get rqp(): number {
         return this.time * (this.time - 1) / this.bv;
     }
 
-    get stnb() {
+    public get stnb(): number {
         return STNB_const.value[this.level] / this.qg;
     }
 
-    get ioe() {
+    public get ioe(): number | undefined {
         return numberDivideUndefined(this.bv, this.cl);
     }
 
-    get thrp() {
+    public get thrp(): number | undefined {
         return numberDivideUndefined(this.bv, this.ce);
     }
 
-    get corr() {
+    public get corr(): number | undefined {
         return undefinedDivideUndefined(this.ce, this.cl);
     }
 
-    get cls() {
+    public get cls(): number | undefined {
         return undefinedDivideNumber(this.cl, this.time);
     }
 
-    get ces() {
+    public get ces(): number | undefined {
         return undefinedDivideNumber(this.ce, this.time);
     }
 
-    get npath() {
+    public get npath(): number | undefined {
         return undefinedDivideNumber(this.path, 16);
     }
 
-    get mov() {
+    public get mov(): number | undefined {
         return undefinedDivideNumber(this.npath, this.time);
     }
 
-    get iome() {
+    public get iome(): number | undefined {
         return numberDivideUndefined(this.bv, this.npath);
     }
 
-    public getStat(stat: getStat_stat) {
+    public getStat(stat: getStat_stat): number | undefined {
         return this[stat];
     }
 
-    public displayStat(stat: getStat_stat) {
+    public displayStat(stat: getStat_stat): string | undefined {
         switch (stat) {
+            case 'timems':
             case 'time': return this.time.toFixed(3);
             case 'bvs': return this.bvs.toFixed(3);
             case 'bv': return this.bv.toString();
@@ -198,12 +201,6 @@ export class VideoAbstract {
             case 'file_size': return formatBytes(this.file_size);
         }
     }
-
-    public tooltipFormatter(t: any) {
-        // t is the localization API from i18n
-        return `${t('common.prop.upload_time')}: ${this.upload_time} <br>
-        ${t('common.level.' + this.level)} ${this.bv}Bv = ${this.time.toFixed(3)} * ${this.bvs.toFixed(3)}`;
-    }
 }
 
 export function groupVideosByDate(videos: VideoAbstract[], attr: 'upload_time' | 'end_time' = 'upload_time'): Map<string, VideoAbstract[]> {
@@ -211,7 +208,7 @@ export function groupVideosByDate(videos: VideoAbstract[], attr: 'upload_time' |
 
     videos.forEach((video) => {
         let date = video[attr];
-        if (!date) date = video.upload_time; // fallback to upload_time if end_time is not available
+        date ??= video.upload_time; // fallback to upload_time if end_time is not available
         const dateKey = toISODateString(date); // Extract date part as string (YYYY-MM-DD)
         if (!result.has(dateKey)) {
             result.set(dateKey, []);

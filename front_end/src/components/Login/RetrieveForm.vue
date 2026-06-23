@@ -20,7 +20,8 @@
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElForm, ElFormItem, ElNotification, FormInstance } from 'element-plus';
+import type { FormInstance } from 'element-plus';
+import { ElButton, ElForm, ElFormItem, ElNotification } from 'element-plus';
 import { computed, onUnmounted, reactive, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 
