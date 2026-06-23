@@ -19,7 +19,7 @@ import CardAdd from './CardAdd.vue';
 import CardMsgames from './CardMsgames.vue';
 import CardSaolei from './CardSaolei.vue';
 import CardWoM from './CardWoM.vue';
-import { AccountLink, AccountMSGames, AccountSaolei, AccountWoM } from './utils';
+import type { AccountLink, AccountMSGames, AccountSaolei, AccountWoM } from './utils';
 
 import { httpErrorNotification } from '@/components/Notifications';
 import { store } from '@/store';
@@ -58,12 +58,15 @@ async function refresh() {
 }
 
 async function addLink(platform: string, identifier: string) {
-    await proxy.$axios.post('accountlink/add/', {
-        platform: platform,
-        identifier: identifier,
-    }).then(function (_response) {
-        refresh();
-    }).catch(httpErrorNotification);
+    try {
+        await proxy.$axios.post('accountlink/add/', {
+            platform: platform,
+            identifier: identifier,
+        });
+        await refresh();
+    } catch (error) {
+        httpErrorNotification(error);
+    }
 }
 
 function refreshAccount(account: AccountLink) {
