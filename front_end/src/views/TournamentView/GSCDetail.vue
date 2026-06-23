@@ -107,10 +107,10 @@ async function refresh() {
 
         if (tournament.value.state === TournamentState.Ongoing && store.login_status === LoginStatus.IsLogin) {
             result.value = [];
-            personaltoken.value = response.data.identifier ? response.data.identifier : '';
+            personaltoken.value = response.data.identifier ?? '';
         } else {
             personaltoken.value = '';
-            result.value = (response.data.results as Array<object>).map((value) => new GSCParticipant(value));
+            result.value = (response.data.results as object[]).map((value) => new GSCParticipant(value));
         }
     }).catch(httpErrorNotification);
     loading.value = false;
@@ -134,14 +134,14 @@ function handleAllSummaryTabClose(index: number) {
     }
 }
 
-function downloadAll() {
-    proxy.$axios.get('tournament/download/', {
+async function downloadAll() {
+    await proxy.$axios.get('tournament/download/', {
         params: {
             tournament_id: tournament.value.id,
         },
         responseType: 'arraybuffer',
-    }).then((response) => {
-        streamToZip(new Uint8Array(response.data), 'gsc.zip');
+    }).then(async (response) => {
+        await streamToZip(new Uint8Array(response.data), 'gsc.zip');
     }).catch(httpErrorNotification);
 }
 </script>

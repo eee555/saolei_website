@@ -54,7 +54,7 @@ const activeTab = computed(() => {
 const handleTabClick = (tab: any) => {
     const tabName = tab.paneName;
     if (tabName) {
-        router.replace(`${tabName}`);
+        void router.replace(`${tabName}`);
     }
 };
 

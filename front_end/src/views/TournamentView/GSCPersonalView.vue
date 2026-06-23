@@ -63,21 +63,21 @@ function refresh() {
             tournament_id: props.tournamentId,
         },
     }).then((response) => {
-        videos.value = response.data.data.map((v: any) => new VideoAbstract(v));
+        videos.value = (response.data.data as any[]).map((v) => new VideoAbstract(v));
     }).catch(httpErrorNotification);
 }
 
 watch(props, refresh, { immediate: true });
 
-function handleDownload() {
-    proxy.$axios.get('tournament/download/participant/', {
+async function handleDownload() {
+    await proxy.$axios.get('tournament/download/participant/', {
         params: {
             user_id: props.userId,
             tournament_id: props.tournamentId,
         },
         responseType: 'arraybuffer',
-    }).then((response) => {
-        streamToZip(new Uint8Array(response.data), `gsc_${props.userId}.zip`);
+    }).then(async (response) => {
+        await streamToZip(new Uint8Array(response.data), `gsc_${props.userId}.zip`);
     }).catch(httpErrorNotification);
 }
 </script>
