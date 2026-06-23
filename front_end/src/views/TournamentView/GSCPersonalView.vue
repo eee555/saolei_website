@@ -69,15 +69,15 @@ function refresh() {
 
 watch(props, refresh, { immediate: true });
 
-async function handleDownload() {
-    await proxy.$axios.get('tournament/download/participant/', {
+function handleDownload() {
+    void proxy.$axios.get('tournament/download/participant/', {
         params: {
             user_id: props.userId,
             tournament_id: props.tournamentId,
         },
         responseType: 'arraybuffer',
-    }).then(async (response) => {
-        await streamToZip(new Uint8Array(response.data), `gsc_${props.userId}.zip`);
+    }).then((response) => {
+        void streamToZip(new Uint8Array(response.data), `gsc_${props.userId}.zip`);
     }).catch(httpErrorNotification);
 }
 </script>

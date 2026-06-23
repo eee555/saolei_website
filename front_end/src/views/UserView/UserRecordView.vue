@@ -47,7 +47,6 @@ import { nextTick, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import BaseCardLarge from '@/components/common/BaseCardLarge.vue';
-import { httpErrorNotification } from '@/components/Notifications';
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import { store } from '@/store';
 import { ms_to_s } from '@/utils';
@@ -72,9 +71,9 @@ function indexMethod(index: number): string {
 }
 
 // 此处和父组件配合，等一下从store里获取用户的id
-void nextTick(async () => {
+void nextTick(() => {
     // 把左侧的头像、姓名、个性签名、记录请求过来
-    await proxy.$axios.get('/msuser/records/', {
+    void proxy.$axios.get('/msuser/records/', {
         params: {
             id: store.player.id,
         },
@@ -91,7 +90,7 @@ void nextTick(async () => {
             records.value.push(trans_record(JSON.parse(data.dg_record)));
             loading.value = false;
         }
-    }).catch(httpErrorNotification);
+    });
 
     // 再把个人纪录请求过来
     // std_record

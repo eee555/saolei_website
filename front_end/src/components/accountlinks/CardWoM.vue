@@ -102,19 +102,21 @@
 <script setup lang="ts">
 import { ElButton, ElCarousel, ElCarouselItem, ElDescriptions, ElDescriptionsItem, ElImage } from 'element-plus';
 import PrToolbar from 'primevue/toolbar';
-import { computed, PropType, ref, useTemplateRef } from 'vue';
+import type { PropType } from 'vue';
+import { computed, ref, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import CarouselControl from './CarouselControl.vue';
 import UnverifiedNotice from './UnverifiedNotice.vue';
-import { AccountWoM, AccountWoMDefault } from './utils';
+import type { AccountWoM } from './utils';
+import { AccountWoMDefault } from './utils';
 
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
 import IconTaskStatus from '@/components/common/IconTaskStatus.vue';
 import { httpErrorNotification } from '@/components/Notifications';
 import { store } from '@/store';
 import { ms_to_s } from '@/utils';
-import { TaskStatus } from '@/utils/common/structInterface';
+import type { TaskStatus } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { utc_to_local_format } from '@/utils/system/tools';
 
@@ -136,11 +138,11 @@ const errorMsg = ref('');
 const taskStatus = ref<TaskStatus>('');
 const carouselLength = computed(() => (store.player.id == store.user.id ? 3 : 2));
 
-function maybeUndefined(value: any) {
-    return value === undefined ? '-' : value;
+function maybeUndefined(value?: number) {
+    return value ?? '-';
 }
 
-function maybeUndefinedToFixed(value: number | undefined, fractionDigits?: number) {
+function maybeUndefinedToFixed(value?: number, fractionDigits?: number) {
     return value === undefined ? '-' : value.toFixed(fractionDigits);
 }
 
@@ -148,14 +150,13 @@ async function updateLink() {
     taskStatus.value = 'loading';
     await proxy.$axios.post('accountlink/update/', {
         platform: 'w',
-    }).then(function (response) {
-        const data = response.data;
+    }).then(function ({ data }) {
         errorMsg.value = '';
         taskStatus.value = data.type;
         if (data.type == 'error') {
             errorMsg.value = t(`errorMsg.${data.object}.title`) + t('common.punct.colon') + t(`errorMsg.${data.object}.${data.category}`);
         }
-    }).catch(function (error) {
+    }).catch(function (error: unknown) {
         errorMsg.value = '';
         taskStatus.value = 'error';
         httpErrorNotification(error);

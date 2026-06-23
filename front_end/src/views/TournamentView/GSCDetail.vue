@@ -134,14 +134,14 @@ function handleAllSummaryTabClose(index: number) {
     }
 }
 
-async function downloadAll() {
-    await proxy.$axios.get('tournament/download/', {
+function downloadAll() {
+    proxy.$axios.get('tournament/download/', {
         params: {
             tournament_id: tournament.value.id,
         },
         responseType: 'arraybuffer',
-    }).then(async (response) => {
-        await streamToZip(new Uint8Array(response.data), 'gsc.zip');
+    }).then((response) => {
+        void streamToZip(new Uint8Array(response.data), 'gsc.zip');
     }).catch(httpErrorNotification);
 }
 </script>

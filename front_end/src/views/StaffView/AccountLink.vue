@@ -79,29 +79,29 @@ const refresh = async () => {
     loading.value = false;
 };
 
-async function verify() {
-    await proxy.$axios.post('accountlink/verify/', {
+function verify() {
+    proxy.$axios.post('accountlink/verify/', {
         id: form.id,
         platform: form.platform,
         identifier: form.identifier,
-    }).then(async function () {
+    }).then(function () {
         form.id = 0;
         form.platform = '';
         form.identifier = '';
-        await refresh();
+        void refresh();
     }).catch(httpErrorNotification);
 }
 
-async function unverify() {
-    await proxy.$axios.post('accountlink/unverify/', {
+function unverify() {
+    proxy.$axios.post('accountlink/unverify/', {
         id: form.id,
         platform: form.platform,
         identifier: form.identifier,
-    }).then(async function () {
+    }).then(function () {
         form.id = 0;
         form.platform = '';
         form.identifier = '';
-        await refresh();
+        void refresh();
     }).catch(httpErrorNotification);
 }
 

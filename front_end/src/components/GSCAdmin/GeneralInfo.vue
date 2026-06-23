@@ -43,7 +43,7 @@ import { httpErrorNotification, successNotification } from '../Notifications';
 
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { toISODateTimeString } from '@/utils/datetime';
-import { GSCInfo } from '@/utils/gsc';
+import type { GSCInfo } from '@/utils/gsc';
 
 const props = defineProps({
     id: { type: Number, default: 0 },
@@ -51,7 +51,7 @@ const props = defineProps({
 
 watch(() => props.id, (newId) => {
     if (newId > 0) {
-        getGSCInfo(newId);
+        void getGSCInfo(newId);
     }
 }, { immediate: true });
 
@@ -72,17 +72,16 @@ async function getGSCInfo(id: number | undefined) {
     loadingGSCInfo.value = true;
     notFound.value = false;
     await proxy.$axios.get('tournament/get_gsc_tournament/', { params: { id: id } }).then(
-        function (response: any) {
-            const data = response.data;
+        function ({ data }) {
             if (data.type === 'error') {
                 notFound.value = true;
             } else {
-                if (data.data.start_time) {
+                if (data.data.start_time !== undefined) {
                     gscInfo.value.start_time = new Date(data.data.start_time);
                 } else {
                     gscInfo.value.start_time = undefined;
                 }
-                if (data.data.end_time) {
+                if (data.data.end_time !== undefined) {
                     gscInfo.value.end_time = new Date(data.data.end_time);
                 } else {
                     gscInfo.value.end_time = undefined;
@@ -99,7 +98,7 @@ function createGSC() {
     proxy.$axios.post('tournament/new_gsc/', { id: props.id }).then(
         function (response: any) {
             successNotification(response);
-            getGSCInfo(props.id);
+            void getGSCInfo(props.id);
         },
     ).catch(httpErrorNotification);
 }
@@ -127,7 +126,7 @@ function setEndTime(time: Date | undefined) {
 }
 
 function setToken(token: string) {
-    if ((token === undefined || token.trim() === '') && !allowEmptyToken.value) return;
+    if (token.trim() === '' && !allowEmptyToken.value) return;
     proxy.$axios.post('tournament/set/', { id: gscInfo.value.id, token: token }).then(
         function (response: any) {
             gscInfo.value.token = token;

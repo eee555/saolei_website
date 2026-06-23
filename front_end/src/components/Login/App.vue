@@ -66,13 +66,13 @@ const login = (user: any) => {
     dialogVisible.value = false;
 };
 
-const logout = async () => {
-    proxy.$axios.post('/userprofile/logout/', {}).then(function (_response) {
+async function logout() {
+    await proxy.$axios.post('/userprofile/logout/', {}).then(function () {
         store.logout();
         ElMessage.success({ message: t('common.msg.logoutSuccess'), offset: 68 });
         dialogVisible.value = false;
     }).catch(httpErrorNotification);
-};
+}
 
 const i18nMessages = {
     'zh-cn': { local: {
