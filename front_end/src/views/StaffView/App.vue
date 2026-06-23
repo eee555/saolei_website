@@ -10,6 +10,7 @@
 </template>
 
 <script lang="ts" setup>
+import type { TabsPaneContext } from 'element-plus';
 import { ElTabPane, ElTabs } from 'element-plus';
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -31,15 +32,13 @@ const validTabs = tabItems.map((item) => item.name);
 
 // 根据当前路由路径计算激活的选项卡 name
 const activeTab = computed(() => {
-    const lastSegment = route.path.split('/').pop();
-    return (validTabs as string[]).includes(lastSegment!) ? lastSegment! : 'userprofile';
+    const lastSegment = route.path.split('/').pop() ?? '';
+    return (validTabs as string[]).includes(lastSegment) ? lastSegment : 'userprofile';
 });
 
 // 点击选项卡时跳转到对应子路由
-const handleTabClick = (tab: any) => {
+const handleTabClick = (tab: TabsPaneContext) => {
     const tabName = tab.paneName;
-    if (tabName) {
-        void router.replace(`${tabName}`);
-    }
+    if (tabName !== undefined) void router.replace(String(tabName));
 };
 </script>

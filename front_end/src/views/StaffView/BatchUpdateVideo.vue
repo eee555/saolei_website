@@ -40,7 +40,7 @@ async function startBatchUpdate() {
         const end = Math.min(i + batchsize.value - 1, endid.value);
         logList.value.push(`${new Date().toISOString()} 正在处理${start}至${end}`);
         await proxy.$axios.post('video/update/batch/', { startid: start, endid: end }).then(
-            function ({ data }: { data: { successCount: number; errorList: number[] }}) {
+            function ({ data }: { data: { successCount: number; errorList: number[] } }) {
                 logList.value.push(`${start}至${end}已处理完成，成功${data.successCount}个，失败${data.errorList.length}个`);
                 if (data.errorList.length > 0) {
                     logList.value.push(`失败的录像为：${data.errorList.join('、')}`);

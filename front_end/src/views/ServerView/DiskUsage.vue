@@ -6,7 +6,8 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { VueUiDonut, VueUiDonutConfig } from 'vue-data-ui';
+import type { VueUiDonutConfig } from 'vue-data-ui';
+import { VueUiDonut } from 'vue-data-ui';
 import { useI18n } from 'vue-i18n';
 
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
@@ -49,7 +50,7 @@ async function refresh() {
 
 onMounted(refresh);
 
-const config = computed(() => {
+const config = computed<VueUiDonutConfig>(() => {
     return {
         loading: loading.value,
         theme: local.value.darkmode ? 'dark' : '',
@@ -78,7 +79,7 @@ const config = computed(() => {
                 },
             },
         },
-    } as VueUiDonutConfig;
+    };
 });
 
 const i18nMessages = {
