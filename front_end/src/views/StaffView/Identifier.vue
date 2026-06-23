@@ -38,7 +38,7 @@ const newUserid = ref(0);
 function handleGet() {
     proxy.$axios.get('identifier/get/staff/', { params: { identifier: identifier.value } }).then(
         function (response) {
-            safe.value = response.data.safe.toString();
+            safe.value = (response.data.safe as boolean).toString();
             userid.value = response.data.user;
         },
     ).catch(httpErrorNotification);

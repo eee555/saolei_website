@@ -73,7 +73,8 @@ import PrToolbar from 'primevue/toolbar';
 import { onMounted, ref } from 'vue';
 
 import { httpErrorNotification } from '@/components/Notifications';
-import { DjangoTaskResultStatus, DjangoTaskResultStatusOptions } from '@/utils/common/structInterface';
+import type { DjangoTaskResultStatus } from '@/utils/common/structInterface';
+import { DjangoTaskResultStatusOptions } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { utc_to_local_format } from '@/utils/system/tools';
 
@@ -126,7 +127,7 @@ async function deleteSelected() {
         });
     }
     selectedTasks.value.splice(0, selectedTasks.value.length);
-    refresh();
+    await refresh();
 }
 </script>
 
