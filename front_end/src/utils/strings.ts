@@ -1,4 +1,4 @@
-import { MS_Software } from './ms_const';
+import type { MS_Software } from './ms_const';
 
 export { default as ControlRegex } from '@unicode/unicode-16.0.0/General_Category/Control/regex';
 export { default as MarkRegex } from '@unicode/unicode-16.0.0/General_Category/Mark/regex';
@@ -9,8 +9,8 @@ export { default as SpaceSeparatorRegex } from '@unicode/unicode-16.0.0/General_
 // credit: ChatGPT
 export function stringifyWithLineWrap(
     obj: any,
-    maxLineLength: number = 80,
-    indent: number = 2,
+    maxLineLength = 80,
+    indent = 2,
 ): string {
     const INDENTATION = ' '.repeat(indent);
 
@@ -18,8 +18,8 @@ export function stringifyWithLineWrap(
         if (Array.isArray(value)) {
             let line = '[';
             const lines: string[] = [];
-            for (let i = 0; i < value.length; i++) {
-                const itemStr = JSON.stringify(value[i]);
+            for (const v of value) {
+                const itemStr = JSON.stringify(v);
                 if (line.length + itemStr.length + 2 > maxLineLength) {
                     lines.push(line.trimEnd() + ',');
                     line = currentIndent + INDENTATION + itemStr;
@@ -51,7 +51,7 @@ export function countRows(str: string): number {
     return str.split('\n').length;
 }
 
-export function formatBytes(bytes: number, significant: number = 3): string {
+export function formatBytes(bytes: number, significant = 3): string {
     if (bytes === 0) return '0 B';
 
     const k = 1024;
@@ -68,7 +68,7 @@ export function formatBytes(bytes: number, significant: number = 3): string {
 export function formatNumberSmart(
     num: number,
     totalLength: number,
-    maxDecimalPlaces: number = Infinity,
+    maxDecimalPlaces = Infinity,
 ): string {
     // 分离整数和小数部分
     const integerPart = num.toString().split('.')[0];
@@ -86,19 +86,9 @@ export function formatNumberSmart(
     }
 
     // 确定实际使用的小数位数
-    let actualDecimalPlaces: number;
+    const actualDecimalPlaces = Math.min(availableDecimalLength, maxDecimalPlaces); // 同时受总长度和最大小数位数限制
 
-    if (maxDecimalPlaces !== undefined) {
-        // 同时受总长度和最大小数位数限制
-        actualDecimalPlaces = Math.min(availableDecimalLength, maxDecimalPlaces);
-    } else {
-        // 只受总长度限制
-        actualDecimalPlaces = availableDecimalLength;
-    }
-
-    if (actualDecimalPlaces <= 0) {
-        return integerPart;
-    }
+    if (actualDecimalPlaces <= 0) return integerPart;
 
     // 使用 toFixed 并确保不超过实际小数位数
     const rounded = num.toFixed(actualDecimalPlaces);
@@ -139,11 +129,12 @@ export function getFileExtension(filename: string): string {
     return filename.slice(lastDotIndex + 1).toLowerCase();
 }
 
-export function getSoftwareExtension(software: MS_Software) {
+export function getSoftwareExtension(software: MS_Software): '.avf' | '.evf' | '.rmv' | '.mvf' {
     switch (software) {
         case 'a': return '.avf';
         case 'e': return '.evf';
         case 'r': return '.rmv';
         case 'm': return '.mvf';
+        default: throw new Error('Unexpected branch');
     }
 }
