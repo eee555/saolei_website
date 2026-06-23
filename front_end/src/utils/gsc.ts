@@ -8,32 +8,32 @@ export interface GSCInfo {
 }
 
 export class GSCParticipant {
-    id: number = 0;
-    user__id: number = 0;
-    user__realname: string = '';
-    bt1st: number = GSCDefaults.bt;
-    bt20th: number = GSCDefaults.bt;
-    bt20sum: number = GSCDefaults.bt * 20;
-    it1st: number = GSCDefaults.it;
-    it12th: number = GSCDefaults.it;
-    it12sum: number = GSCDefaults.it * 12;
-    et1st: number = GSCDefaults.et;
-    et5th: number = GSCDefaults.et;
-    et5sum: number = GSCDefaults.et * 5;
+    public id = 0;
+    public user__id = 0;
+    public user__realname = '';
+    public bt1st: number = GSCDefaults.bt;
+    public bt20th: number = GSCDefaults.bt;
+    public bt20sum: number = GSCDefaults.bt * 20;
+    public it1st: number = GSCDefaults.it;
+    public it12th: number = GSCDefaults.it;
+    public it12sum: number = GSCDefaults.it * 12;
+    public et1st: number = GSCDefaults.et;
+    public et5th: number = GSCDefaults.et;
+    public et5sum: number = GSCDefaults.et * 5;
 
-    constructor(init?: Partial<GSCParticipant>) {
+    public constructor(init?: Partial<GSCParticipant>) {
         Object.assign(this, init);
     }
 
-    get sum_tbest() {
+    public get sum_tbest(): number {
         return this.bt1st + this.it1st + this.et1st;
     }
 
-    get sum_tedge() {
+    public get sum_tedge(): number {
         return this.bt20th + this.it12th + this.et5th;
     }
 
-    get sum_tsum() {
+    public get sum_tsum(): number {
         return this.bt20sum + this.it12sum + this.et5sum;
     }
 }
