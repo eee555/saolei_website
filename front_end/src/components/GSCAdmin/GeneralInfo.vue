@@ -42,7 +42,7 @@ import { ref, watch } from 'vue';
 import { httpErrorNotification, successNotification } from '../Notifications';
 
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { toISODateTimeString } from '@/utils/datetime';
+import { toDate, toISODateTimeString } from '@/utils/datetime';
 import type { GSCInfo } from '@/utils/gsc';
 
 const props = defineProps({
@@ -76,16 +76,8 @@ async function getGSCInfo(id: number | undefined) {
             if (data.type === 'error') {
                 notFound.value = true;
             } else {
-                if (data.data.start_time !== undefined) {
-                    gscInfo.value.start_time = new Date(data.data.start_time);
-                } else {
-                    gscInfo.value.start_time = undefined;
-                }
-                if (data.data.end_time !== undefined) {
-                    gscInfo.value.end_time = new Date(data.data.end_time);
-                } else {
-                    gscInfo.value.end_time = undefined;
-                }
+                gscInfo.value.start_time = toDate(data.data.start_time);
+                gscInfo.value.end_time = toDate(data.data.end_time);
                 gscInfo.value.token = data.data.token;
                 gscInfo.value.id = data.data.id;
             }

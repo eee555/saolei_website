@@ -52,6 +52,11 @@ const route = useRoute();
 const currentTab = ref<TabPaneName>('0');
 
 watch(() => route.params.id, async (newId) => {
+    if (typeof newId !== 'string') {
+        currentTab.value = '0';
+        return;
+    }
+
     const tabIndex = store.tournamentTabs.findIndex((tab) => tab.id === Number(newId));
     if (tabIndex === -1) {
         await proxy.$axios.get('tournament/get/', {
