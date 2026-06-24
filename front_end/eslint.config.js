@@ -207,6 +207,7 @@ export default defineConfig({
 
         '@typescript-eslint/explicit-function-return-type': 'off', // 和i18n冲突
         '@typescript-eslint/promise-function-async': 'off', // 和Vue Router、defineAsyncComponent冲突
+        '@typescript-eslint/max-params': 'off',
         '@typescript-eslint/naming-convention': 'off', // TODO：涉及到前后端标准不一致的问题，很复杂
         '@typescript-eslint/no-redeclare': 'off',
         '@typescript-eslint/no-explicit-any': 'off', // TODO
