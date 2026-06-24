@@ -1,7 +1,7 @@
 <template>
-    <base-card-normal>
+    <BaseCardNormal>
         <VueUiDonut :dataset="diskUsageData" :config="config" />
-    </base-card-normal>
+    </BaseCardNormal>
 </template>
 
 <script setup lang="ts">
@@ -13,7 +13,6 @@ import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
 import { local } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { formatBytes } from '@/utils/strings';
-
 
 const { proxy } = useCurrentInstance();
 const loading = ref(false);
@@ -82,7 +81,6 @@ const config = computed(() => {
     } as VueUiDonutConfig;
 });
 
-
 const i18nMessages = {
     'zh-cn': { local: {
         title: '磁盘使用情况',
@@ -91,7 +89,7 @@ const i18nMessages = {
         other: '其他文件',
         free: '可用空间',
     } },
-    'en': { local: {
+    en: { local: {
         title: 'Disk Usage',
         video: 'Videos',
         db: 'Database',
@@ -103,5 +101,4 @@ const i18nMessages = {
 const { t } = useI18n({
     messages: i18nMessages,
 });
-
 </script>

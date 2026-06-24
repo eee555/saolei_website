@@ -4,9 +4,9 @@ describe('language setting', () => {
         'zh-TW': '教程', // fallback to zh-cn
         'en-GB': 'Guides', // fallback to en
         'en-US': 'Guides', // fallback to en
-        'de': 'Hilfe',
-        'pl': 'poradniki',
-        'fr': 'Guides', // fallback to en
+        de: 'Hilfe',
+        pl: 'poradniki',
+        fr: 'Guides', // fallback to en
     };
 
     for (const lang in languages) {
@@ -19,6 +19,7 @@ describe('language setting', () => {
                     });
                 },
             });
+            // @ts-expect-error ts有毛病，认为lang可能不是languages的key
             cy.contains(languages[lang]);
         });
     }

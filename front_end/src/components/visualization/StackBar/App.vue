@@ -1,12 +1,12 @@
 <template>
     <div style="height: 0.3em; display: flex; align-items: center;">
-        <base-tooltip v-for="(item, index) in data" :key="item.name" :data-cy="item.name" :show-delay="200" :style="{ width: `${(item.value / sumValue * 100)}%`, height: '100%', background: item.color, borderTopLeftRadius: index === 0 ? '0.1em' : '0', borderBottomLeftRadius: index === 0 ? '0.1em' : '0', borderTopRightRadius: index === prop.data.length - 1 ? '0.1em' : '0', borderBottomRightRadius: index === prop.data.length - 1 ? '0.1em' : '0'}">
+        <BaseTooltip v-for="(item, index) in data" :key="item.name" :data-cy="item.name" :show-delay="200" :style="{ width: `${(item.value / sumValue * 100)}%`, height: '100%', background: item.color, borderTopLeftRadius: index === 0 ? '0.1em' : '0', borderBottomLeftRadius: index === 0 ? '0.1em' : '0', borderTopRightRadius: index === props.data.length - 1 ? '0.1em' : '0', borderBottomRightRadius: index === props.data.length - 1 ? '0.1em' : '0'}">
             <template #content>
                 <span class="text">
                     {{ item.name }}: {{ (item.value / sumValue * 100).toFixed(0) }}%({{ item.value }})
                 </span>
             </template>
-        </base-tooltip>
+        </BaseTooltip>
     </div>
     <div v-if="legend">
         <span v-for="item in data" :key="item.name" style="margin: 0 0.2em">
@@ -34,7 +34,7 @@ interface DataItem {
     color: string;
 }
 
-const prop = defineProps({
+const props = defineProps({
     data: {
         type: Array<DataItem>,
         default: () => [],
@@ -42,8 +42,7 @@ const prop = defineProps({
     legend: { type: Boolean, default: false },
 });
 
-const sumValue = computed(() => sum(prop.data, (item) => item.value));
-
+const sumValue = computed(() => sum(props.data, (item) => item.value));
 </script>
 
 <style lang="less" scoped>

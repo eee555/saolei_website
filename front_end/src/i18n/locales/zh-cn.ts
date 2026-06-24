@@ -1,3 +1,5 @@
+import { MessageContext } from 'vue-i18n';
+
 export default {
     local: 'zh-cn',
     name: '简体中文',
@@ -163,7 +165,7 @@ export default {
         verified: '已验证',
     },
     BBBvSummary: {
-        bbbvInTotal: ({ linked, list }) => `共${list(0)}个${linked('common.prop.bv')}`,
+        bbbvInTotal: (ctx: MessageContext) => `共${ctx.list(0)}个${ctx.linked('common.prop.bv')}`,
     },
     errorMsg: {
         file: {
@@ -198,6 +200,7 @@ export default {
             panic: '录像解析器发生未知错误，请联系开发者',
         },
     },
+    experimentalFeature: '实验功能',
     form: {
         captcha: '验证码',
         captchaLoading: '加载中',
@@ -210,7 +213,7 @@ export default {
         username: '用户名',
     },
     gsc: {
-        title: ({ named }) => `第${named('order')}届金羊杯`,
+        title: (ctx: MessageContext) => `第${ctx.named('order')}届金羊杯`,
         description: {
             line1: '比赛期间上传（以服务器接收时间为准）的所有录像中，取成绩最好的20局初级（bv>=10）、12局中级（bv>=30）、5局高级（bv>=100），计算总成绩。',
             line2: '局数不够的，初级按照10秒，中级按照60秒，高级按照240秒补全。',

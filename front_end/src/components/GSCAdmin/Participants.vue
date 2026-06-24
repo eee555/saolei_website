@@ -1,29 +1,29 @@
 <template>
-    <el-row style="height: 100%">
-        <el-col :span="15">
-            <el-table :data="data" table-layout="auto" sortable>
-                <el-table-column v-for="prop in columns" :key="prop" :prop="prop" :label="prop" />
-            </el-table>
-        </el-col>
-        <el-col :span="1" />
-        <el-col :span="8">
-            <el-button @click="calculate">
+    <ElRow style="height: 100%">
+        <ElCol :span="15">
+            <ElTable :data="data" table-layout="auto" sortable>
+                <ElTableColumn v-for="prop in columns" :key="prop" :prop="prop" :label="prop" />
+            </ElTable>
+        </ElCol>
+        <ElCol :span="1" />
+        <ElCol :span="8">
+            <ElButton @click="calculate">
                 计算所有选手成绩
-            </el-button>
+            </ElButton>
             <br>
-            <el-button @click="logList = []">
+            <ElButton @click="logList = []">
                 清空日志
-            </el-button>
+            </ElButton>
             <br>
-            <el-button @click="award">
+            <ElButton @click="award">
                 计算排行并结束比赛
-            </el-button>
+            </ElButton>
             <br>
             <span v-for="(log, index) in logList" :key="index" class="text" :style="{ display: 'block' }">
                 {{ log }}
             </span>
-        </el-col>
-    </el-row>
+        </ElCol>
+    </ElRow>
 </template>
 
 <script setup lang="ts">
@@ -36,14 +36,14 @@ import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { GSCParticipant } from '@/utils/gsc';
 import { TournamentParticipant } from '@/utils/tournaments';
 
-const { proxy } = useCurrentInstance();
-
 const props = defineProps({
     id: {
         type: Number,
         default: 0,
     },
 });
+
+const { proxy } = useCurrentInstance();
 
 const columns = ['user__id', 'user__realname', 'bt1st', 'bt20th', 'bt20sum', 'it1st', 'it12th', 'it12sum', 'et1st', 'et5th', 'et5sum', 't37'];
 
@@ -83,5 +83,4 @@ function award() {
     if (props.id === 0) return;
     proxy.$axios.post('tournament/gsc/award/', { order: props.id }).then(successNotification).catch(httpErrorNotification);
 }
-
 </script>

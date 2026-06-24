@@ -1,25 +1,25 @@
 <template>
-    <el-form :model="form">
-        <el-form-item label="ID">
-            <el-input v-model="form.id" type="number" />
-        </el-form-item>
-        <el-form-item label="平台">
-            <el-select v-model="form.platform">
-                <el-option v-for="(item, key) of platformlist" :key="key" :label="item.name" :value="key" />
-            </el-select>
-        </el-form-item>
-        <el-form-item label="平台ID">
-            <el-input v-model="form.identifier" />
-        </el-form-item>
-        <el-form-item>
-            <el-button @click="verify">
+    <ElForm :model="form">
+        <ElFormItem label="ID">
+            <ElInput v-model="form.id" type="number" />
+        </ElFormItem>
+        <ElFormItem label="平台">
+            <ElSelect v-model="form.platform">
+                <ElOption v-for="(item, key) of platformlist" :key="key" :label="item.name" :value="key" />
+            </ElSelect>
+        </ElFormItem>
+        <ElFormItem label="平台ID">
+            <ElInput v-model="form.identifier" />
+        </ElFormItem>
+        <ElFormItem>
+            <ElButton @click="verify">
                 绑定
-            </el-button>
-            <el-button @click="unverify">
+            </ElButton>
+            <ElButton @click="unverify">
                 解绑
-            </el-button>
-        </el-form-item>
-    </el-form>
+            </ElButton>
+        </ElFormItem>
+    </ElForm>
     <PrDataTable
         v-loading="loading"
         :value="accountLinks"
@@ -79,13 +79,11 @@ const refresh = async () => {
 };
 
 const verify = () => {
-    proxy.$axios.post('accountlink/verify/',
-        {
-            id: form.id,
-            platform: form.platform,
-            identifier: form.identifier,
-        },
-    ).then(function (_response) {
+    proxy.$axios.post('accountlink/verify/', {
+        id: form.id,
+        platform: form.platform,
+        identifier: form.identifier,
+    }).then(function (_response) {
         form.id = 0;
         form.platform = '';
         form.identifier = '';
@@ -94,13 +92,11 @@ const verify = () => {
 };
 
 const unverify = () => {
-    proxy.$axios.post('accountlink/unverify/',
-        {
-            id: form.id,
-            platform: form.platform,
-            identifier: form.identifier,
-        },
-    ).then(function (_response) {
+    proxy.$axios.post('accountlink/unverify/', {
+        id: form.id,
+        platform: form.platform,
+        identifier: form.identifier,
+    }).then(function (_response) {
         form.id = 0;
         form.platform = '';
         form.identifier = '';

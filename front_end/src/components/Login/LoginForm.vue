@@ -1,24 +1,24 @@
 <template>
-    <el-form ref="ruleFormRef" :rules="rules" :model="loginForm">
+    <ElForm ref="ruleFormRef" :rules="rules" :model="loginForm">
         <!-- 用户名 -->
-        <el-form-item prop="username" :label="t('form.username')">
-            <el-input v-model="loginForm.username" prefix-icon="User" maxlength="20" show-word-limit />
-        </el-form-item>
+        <ElFormItem prop="username" :label="t('form.username')">
+            <ElInput v-model="loginForm.username" prefix-icon="User" maxlength="20" show-word-limit />
+        </ElFormItem>
         <!-- 密码 -->
-        <el-form-item prop="password" :label="t('form.password')" :error="passwordError">
-            <el-input v-model="loginForm.password" maxlength="20" show-password prefix-icon="Lock" />
-        </el-form-item>
+        <ElFormItem prop="password" :label="t('form.password')" :error="passwordError">
+            <ElInput v-model="loginForm.password" maxlength="20" show-password prefix-icon="Lock" />
+        </ElFormItem>
         <!-- 验证码 -->
-        <el-form-item prop="captcha" :label="t('form.captcha')" :error="captchaError">
+        <ElFormItem prop="captcha" :label="t('form.captcha')" :error="captchaError">
             <div style="display: flex;">
-                <el-input v-model.trim="loginForm.captcha" prefix-icon="Key" class="code" maxlength="4" />
+                <ElInput v-model.trim="loginForm.captcha" prefix-icon="Key" class="code" maxlength="4" />
                     &nbsp;
                 <ValidCode ref="refValidCode" />
             </div>
-        </el-form-item>
+        </ElFormItem>
         <!-- 记住我 -->
-        <el-form-item>
-            <el-checkbox v-model="remember_me" :label="t('local.keepMeLoggedIn')" class="rememberMe" />
+        <ElFormItem>
+            <ElCheckbox v-model="remember_me" :label="t('local.keepMeLoggedIn')" class="rememberMe" />
             <span :title="t('local.keepMeLoggedInTooltip')">
                 <BaseIconInfo class="text" style="margin-left: 0.2rem" />
             </span>
@@ -26,31 +26,31 @@
                 <span class="text">
                     {{ t('local.forDays1') }}
                 </span>
-                <el-radio-group v-model="setExpiry" size="small" style="vertical-align: middle; padding: 0 5px">
-                    <el-radio-button label="1" :value="1" />
-                    <el-radio-button label="7" :value="7" />
-                    <el-radio-button label="30" :value="30" />
-                    <el-radio-button label="90" :value="90" />
-                </el-radio-group>
+                <ElRadioGroup v-model="setExpiry" size="small" style="vertical-align: middle; padding: 0 5px">
+                    <ElRadioButton label="1" :value="1" />
+                    <ElRadioButton label="7" :value="7" />
+                    <ElRadioButton label="30" :value="30" />
+                    <ElRadioButton label="90" :value="90" />
+                </ElRadioGroup>
                 <span class="text">
                     {{ t('local.forDays2') }}
                 </span>
             </div>
-        </el-form-item>
-        <el-form-item>
+        </ElFormItem>
+        <ElFormItem>
             <!-- 确认 -->
-            <el-button type="primary" @click="submitForm(ruleFormRef)">
+            <ElButton type="primary" @click="submitForm(ruleFormRef!)">
                 {{ t('local.confirm') }}
-            </el-button>
+            </ElButton>
             <!-- 忘记密码 -->
-            <el-link
+            <ElLink
                 underline="never" type="primary"
                 style="vertical-align: bottom; margin-left: auto" @click="emit('forgetPassword')"
             >
                 {{ t('local.forgetPassword') }}
-            </el-link>
-        </el-form-item>
-    </el-form>
+            </ElLink>
+        </ElFormItem>
+    </ElForm>
 </template>
 
 <script setup lang="ts">
@@ -58,7 +58,7 @@ import '@/styles/text.css';
 import '@/styles/cards.css';
 
 import { ElButton, ElCheckbox, ElForm, ElFormItem, ElInput, ElLink, ElRadioButton, ElRadioGroup, FormInstance, FormRules } from 'element-plus';
-import { onUnmounted, reactive, ref } from 'vue';
+import { onUnmounted, reactive, ref, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import BaseIconInfo from '../common/icons/BaseIconInfo.vue';
@@ -71,7 +71,7 @@ const emit = defineEmits(['forgetPassword', 'login']);
 
 const { proxy } = useCurrentInstance();
 
-const refValidCode = ref<typeof ValidCode>();
+const refValidCode = useTemplateRef('refValidCode');
 const remember_me = ref(false);
 const setExpiry = ref(7);
 const captchaError = ref('');
@@ -89,7 +89,7 @@ const loginForm = reactive<LoginForm>({
     captcha: '',
 });
 
-const ruleFormRef = ref<FormInstance>();
+const ruleFormRef = useTemplateRef('ruleFormRef');
 
 const submitForm = async (formEl: FormInstance | undefined) => {
     if (!formEl) return;
@@ -114,7 +114,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
                     loginForm.captcha = '';
                     passwordError.value = t('msg.usernamePasswordInvalid');
                 }
-                if (refValidCode.value !== undefined) refValidCode.value.refreshPic();
+                if (refValidCode.value) refValidCode.value.refreshPic();
             }
         }).catch(httpErrorNotification);
     });
@@ -134,7 +134,7 @@ const i18nMessages = {
         keepMeLoggedIn: '记住我',
         keepMeLoggedInTooltip: '连续多天不上线则自动退出登录',
     } },
-    'en': { local: {
+    en: { local: {
         confirm: 'Log in',
         forDays1: 'for',
         forDays2: 'days',
@@ -142,17 +142,17 @@ const i18nMessages = {
         keepMeLoggedIn: 'Keep me logged in',
         keepMeLoggedInTooltip: 'Automatically log out after a few days of inactivity',
     } },
-    'de': { local: {
+    de: { local: {
         confirm: 'Login',
         forgetPassword: 'Passwort vergessen?',
         keepMeLoggedIn: 'eingeloggt bleiben',
     } },
-    'fr': { local: {
+    fr: { local: {
         confirm: 'Se connecter',
         forgetPassword: 'Mot de passe oublié ?',
         keepMeLoggedIn: 'Se souvenir de moi',
     } },
-    'pl': { local: {
+    pl: { local: {
         confirm: 'zaloguj',
         forgetPassword: 'zapomniałeś hasła?',
         keepMeLoggedIn: 'utrzym',
@@ -167,5 +167,4 @@ const rules = reactive<FormRules<LoginForm>>({
     password: [{ required: true, message: t('msg.passwordRequired') }],
     captcha: [{ required: true, message: t('msg.captchaRequired') }],
 });
-
 </script>

@@ -1,18 +1,16 @@
 <template>
     <div class="slider-demo-block">
         <div>
-            <el-slider v-model="range" range :min="props.min" :max="props.max" @change="$emit('change', range)" />
+            <ElSlider v-model="range" range :min="props.min" :max="props.max" @change="$emit('change', range)" />
         </div>
         <div>
-            <!-- @vue-expect-error -->
-            <el-input-number
-                v-model="range[0]" size="small" :step-strictly="true" :min="props.min" :max="range[1]"
+            <ElInputNumber
+                v-model="range[0]" size="small" step-strictly :min="props.min" :max="range[1]"
                 :value-on-clear="props.min" @change="$emit('change', range)"
             />
             {{ text }}
-            <!-- @vue-expect-error -->
-            <el-input-number
-                v-model="range[1]" size="small" :step-strictly="true" :min="range[0]" :max="props.max"
+            <ElInputNumber
+                v-model="range[1]" size="small" step-strictly :min="range[0]" :max="props.max"
                 :value-on-clear="props.max" @change="$emit('change', range)"
             />
         </div>
@@ -20,8 +18,8 @@
 </template>
 
 <script setup lang="ts" name="RangeSlider">
-
 import { ElInputNumber, ElSlider } from 'element-plus';
+import { PropType } from 'vue';
 
 const props = defineProps({
     min: {
@@ -38,9 +36,9 @@ const props = defineProps({
     },
 });
 
-const range = defineModel({ type: Array, required: true });
-
 defineEmits(['change']);
+
+const range = defineModel({ type: Array as PropType<number[]>, required: true });
 </script>
 
 <style scoped>

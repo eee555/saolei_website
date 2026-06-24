@@ -1,7 +1,7 @@
 <template>
-    <base-card-normal style="max-width: 40em">
-        <vue-ui-donut :dataset="dataset" :config="config" />
-    </base-card-normal>
+    <BaseCardNormal style="max-width: 40em">
+        <VueUiDonut :dataset="dataset" :config="config" />
+    </BaseCardNormal>
 </template>
 
 <script setup lang="ts">
@@ -80,7 +80,7 @@ const i18nMessages = {
         SUCCESSFUL: '已完成',
         FAILED: '失败',
     } },
-    'en': { local: {
+    en: { local: {
         title: 'Background tasks',
         READY: 'Ready',
         RUNNING: 'Running',

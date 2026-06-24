@@ -1,56 +1,56 @@
 <template>
-    <el-row class="mb-4" style="margin-bottom: 10px;">
-        <el-button
-            v-for="(tag, key) in level_tags" :key="key" type="warning" :plain="!(level_tag_selected == key)" :size="'small'"
+    <ElRow class="mb-4" style="margin-bottom: 10px;">
+        <ElButton
+            v-for="(tag, key) in level_tags" :key="key" type="warning" :plain="!(level_tag_selected == key)" size="small"
             @click="level_tag_selected = key as string; request_videos();"
         >
             {{ t(`common.level.${tag.key}`) }}
-        </el-button>
-    </el-row>
+        </ElButton>
+    </ElRow>
 
-    <el-row class="mb-4" style="margin-bottom: 10px;">
-        <el-button
+    <ElRow class="mb-4" style="margin-bottom: 10px;">
+        <ElButton
             v-for="(tag, key) in mode_tags" :key="key" type="success" :plain="!(mode_tag_selected == key)" size="small"
             @click="mode_tag_selected = key as string; request_videos();"
         >
             {{ tag.name }}
-        </el-button>
-    </el-row>
+        </ElButton>
+    </ElRow>
 
-    <el-row class="mb-4" style="margin-bottom: 10px;">
-        <el-button
+    <ElRow class="mb-4" style="margin-bottom: 10px;">
+        <ElButton
             v-for="(value, key) in index_tags" :key="key" type="primary" :plain="!value.selected" size="small"
             @click="index_select(key, value)"
         >
             {{ t(`common.prop.${key}`) }}
-        </el-button>
-    </el-row>
+        </ElButton>
+    </ElRow>
 
-    <el-descriptions :title="t('common.filter')">
-        <el-descriptions-item :label="t('common.prop.state')">
+    <ElDescriptions :title="t('common.filter')">
+        <ElDescriptionsItem :label="t('common.prop.state')">
             <VideoStateFilter v-model="videofilter.filter_state" @change="request_videos" />
-        </el-descriptions-item>
-        <el-descriptions-item :label="t('common.prop.bbbv')">
+        </ElDescriptionsItem>
+        <ElDescriptionsItem :label="t('common.prop.bbbv')">
             <BBBVFilter :level="level_tags[level_tag_selected].key" @change="request_videos" />
-        </el-descriptions-item>
-    </el-descriptions>
+        </ElDescriptionsItem>
+    </ElDescriptions>
     <div style="font-size:20px;margin: auto;margin-top: 10px;">
-        <el-table :data="videoList" border table-layout="auto" @sort-change="handleSortChange" @row-click="(row: any) => preview(row.id)">
+        <ElTable :data="videoList" border table-layout="auto" @sort-change="handleSortChange" @row-click="(row: any) => preview(row.id)">
             <VideoViewState />
-            <el-table-column type="index" :index="offsetIndex" fixed />
+            <ElTableColumn type="index" :index="offsetIndex" fixed />
             <VideoViewRealname />
-            <el-table-column
+            <ElTableColumn
                 v-for="key in selected_index()" :key="key" v-slot="scope" :prop="index_tags[key].key"
                 :label="t(`common.prop.${key}`)" sortable="custom"
                 :sort-orders="index_tags[key].reverse ? (['descending', 'ascending']) : (['ascending', 'descending'])"
             >
                 <span class="nobr">{{ columnFormatter(key, scope.row[index_tags[key].key]) }}</span>
-            </el-table-column>
-        </el-table>
+            </ElTableColumn>
+        </ElTable>
     </div>
 
     <div style="margin-top: 16px;">
-        <el-pagination :current-page="state.CurrentPage" :page-sizes="[20, 50, 100]" :page-size="videofilter.pagesize" layout="total, sizes, prev, pager, next, jumper" :total="state.VideoCount" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
+        <ElPagination :current-page="state.CurrentPage" :page-sizes="[20, 50, 100]" :page-size="videofilter.pagesize" layout="total, sizes, prev, pager, next, jumper" :total="state.VideoCount" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
     </div>
 </template>
 
@@ -120,52 +120,51 @@ interface LevelTag {
 }
 
 const level_tags: LevelTag = reactive({
-    'BEGINNER': { key: 'b', min: 1, max: 54 },
-    'INTERMEDIATE': { key: 'i', min: 30, max: 216 },
-    'EXPERT': { key: 'e', min: 100, max: 381 },
+    BEGINNER: { key: 'b', min: 1, max: 54 },
+    INTERMEDIATE: { key: 'i', min: 30, max: 216 },
+    EXPERT: { key: 'e', min: 100, max: 381 },
 });
 
 const mode_tags: Tags = {
-    'STD': { name: '标准', key: '00' },
-    'NF': { name: '盲扫', key: '12' },
+    STD: { name: '标准', key: '00' },
+    NF: { name: '盲扫', key: '12' },
     // "UPK": { name: "UPK", key: "01" },
-    'WQI': { name: 'Win7', key: '04' },
-    'JSW': { name: '竞速无猜', key: '05' },
-    'QWC': { name: '强无猜', key: '06' },
-    'RWC': { name: '弱无猜', key: '07' },
+    WQI: { name: 'Win7', key: '04' },
+    JSW: { name: '竞速无猜', key: '05' },
+    QWC: { name: '强无猜', key: '06' },
+    RWC: { name: '弱无猜', key: '07' },
     // "ZWC": { name: "准无猜", key: "08" },
     // "QKC": { name: "强可猜", key: "09" },
     // "RKC": { name: "弱可猜", key: "10" },
     // "BZD": { name: "递归", key: "11" }
 };
 
-
 // reverse: true从小到大
 const index_tags: TagsReverse = reactive({
-    'upload_time': { key: 'upload_time', reverse: true, to_fixed: -1, selected: true },
+    upload_time: { key: 'upload_time', reverse: true, to_fixed: -1, selected: true },
     // "name": { name: "姓名", key: "player__realname", reverse: false, to_fixed: 0, selected: true},
-    'timems': { key: 'timems', reverse: false, to_fixed: 3, selected: true },
-    'bbbv': { key: 'bv', reverse: false, to_fixed: 0, selected: true },
-    'bbbv_s': { key: 'bvs', reverse: true, to_fixed: 3, selected: true },
-    'left_s': { key: 'left_s', reverse: true, to_fixed: 3, selected: false },
-    'right_s': { key: 'right_s', reverse: true, to_fixed: 3, selected: false },
-    'double_s': { key: 'double_s', reverse: true, to_fixed: 3, selected: false },
-    'cl_s': { key: 'cl_s', reverse: true, to_fixed: 3, selected: false },
-    'path': { key: 'path', reverse: false, to_fixed: 2, selected: false },
-    'stnb': { key: 'video__stnb', reverse: true, to_fixed: 2, selected: true },
-    'ioe': { key: 'ioe', reverse: true, to_fixed: 3, selected: false },
-    'thrp': { key: 'thrp', reverse: true, to_fixed: 3, selected: false },
-    'ce_s': { key: 'ce_s', reverse: true, to_fixed: 3, selected: false },
-    'op': { key: 'op', reverse: false, to_fixed: 0, selected: false },
-    'is': { key: 'isl', reverse: false, to_fixed: 0, selected: false },
-    'cell1': { key: 'cell1', reverse: false, to_fixed: 0, selected: false },
-    'cell2': { key: 'cell2', reverse: false, to_fixed: 0, selected: false },
-    'cell3': { key: 'cell3', reverse: false, to_fixed: 0, selected: false },
-    'cell4': { key: 'cell4', reverse: false, to_fixed: 0, selected: false },
-    'cell5': { key: 'cell5', reverse: false, to_fixed: 0, selected: false },
-    'cell6': { key: 'cell6', reverse: false, to_fixed: 0, selected: false },
-    'cell7': { key: 'cell7', reverse: false, to_fixed: 0, selected: false },
-    'cell8': { key: 'cell8', reverse: false, to_fixed: 0, selected: false },
+    timems: { key: 'timems', reverse: false, to_fixed: 3, selected: true },
+    bbbv: { key: 'bv', reverse: false, to_fixed: 0, selected: true },
+    bbbv_s: { key: 'bvs', reverse: true, to_fixed: 3, selected: true },
+    left_s: { key: 'left_s', reverse: true, to_fixed: 3, selected: false },
+    right_s: { key: 'right_s', reverse: true, to_fixed: 3, selected: false },
+    double_s: { key: 'double_s', reverse: true, to_fixed: 3, selected: false },
+    cl_s: { key: 'cl_s', reverse: true, to_fixed: 3, selected: false },
+    path: { key: 'path', reverse: false, to_fixed: 2, selected: false },
+    stnb: { key: 'video__stnb', reverse: true, to_fixed: 2, selected: true },
+    ioe: { key: 'ioe', reverse: true, to_fixed: 3, selected: false },
+    thrp: { key: 'thrp', reverse: true, to_fixed: 3, selected: false },
+    ce_s: { key: 'ce_s', reverse: true, to_fixed: 3, selected: false },
+    op: { key: 'op', reverse: false, to_fixed: 0, selected: false },
+    is: { key: 'isl', reverse: false, to_fixed: 0, selected: false },
+    cell1: { key: 'cell1', reverse: false, to_fixed: 0, selected: false },
+    cell2: { key: 'cell2', reverse: false, to_fixed: 0, selected: false },
+    cell3: { key: 'cell3', reverse: false, to_fixed: 0, selected: false },
+    cell4: { key: 'cell4', reverse: false, to_fixed: 0, selected: false },
+    cell5: { key: 'cell5', reverse: false, to_fixed: 0, selected: false },
+    cell6: { key: 'cell6', reverse: false, to_fixed: 0, selected: false },
+    cell7: { key: 'cell7', reverse: false, to_fixed: 0, selected: false },
+    cell8: { key: 'cell8', reverse: false, to_fixed: 0, selected: false },
 });
 
 const selected_index = () => {
@@ -205,7 +204,7 @@ function to_fixed_n(input: string | number | undefined, to_fixed: number): strin
     if (to_fixed <= 0) {
         return input;
     }
-    if (typeof (input) == 'string') {
+    if (typeof input == 'string') {
         return parseFloat(input).toFixed(to_fixed);
     }
     return (input as number).toFixed(to_fixed);
@@ -270,11 +269,9 @@ const request_videos = () => {
     if (![0, 4].includes(videofilter.value.filter_state.length)) {
         params['s'] = videofilter.value.filter_state;
     }
-    proxy.$axios.get('/video/query/',
-        {
-            params: params,
-        },
-    ).then(function (response) {
+    proxy.$axios.get('/video/query/', {
+        params: params,
+    }).then(function (response) {
         const data = JSON.parse(response.data);
         videoList.splice(0, videoList.length);
         videoList.push(...data.videos);
@@ -285,9 +282,7 @@ const request_videos = () => {
 const index_select = (key: string | number, value: NameKeyReverse) => {
     index_tags[key].selected = !value.selected;
 };
-
 </script>
-
 
 <style lang="less" scoped>
 .rank {
@@ -323,7 +318,6 @@ const index_select = (key: string | number, value: NameKeyReverse) => {
     text-align: center;
     // cursor: pointer;
 }
-
 
 .hoverable:hover {
     // color: rgb(64, 158, 255);

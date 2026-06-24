@@ -17,9 +17,9 @@
     <div>
         <PlayerName :user-id="82" />
     </div>
-    <el-divider />
-    <el-row>
-        <el-col :span="8">
+    <ElDivider />
+    <ElRow>
+        <ElCol :span="8">
             <div style="padding-bottom: 5px">
                 <strong>{{ t('local.software') }}</strong>
             </div>
@@ -38,8 +38,8 @@
             <div>
                 <GitHubUser username="hgraceb" />
             </div>
-        </el-col>
-        <el-col :span="8">
+        </ElCol>
+        <ElCol :span="8">
             <div style="padding-bottom: 5px">
                 <strong>{{ t('local.localization') }}</strong>
             </div>
@@ -59,8 +59,8 @@
                 {{ t('local.pl') }}
                 <GitHubUser username="kiraa96" />
             </div>
-        </el-col>
-        <el-col :span="8">
+        </ElCol>
+        <ElCol :span="8">
             <div style="padding-bottom: 5px">
                 <strong>{{ t('local.designer') }}</strong>
             </div>
@@ -70,9 +70,9 @@
             <div>
                 <GitHubUser username="putianyi889" />
             </div>
-        </el-col>
-    </el-row>
-    <el-divider />
+        </ElCol>
+    </ElRow>
+    <ElDivider />
     <div style="padding-bottom: 5px">
         <strong>{{ t('local.acknowledgement') }}</strong>
     </div>
@@ -114,7 +114,7 @@ const i18nMessage = {
         designer: '外观设计',
         acknowledgement: '致谢',
     } },
-    'en': { local: {
+    en: { local: {
         owner: 'Owner',
         moderator: 'Moderators',
         software: 'Developers',

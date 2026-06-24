@@ -135,7 +135,6 @@ export function getFileExtension(filename: string): string {
         return '';
     }
 
-
     // 返回点号后的部分，并转为小写
     return filename.slice(lastDotIndex + 1).toLowerCase();
 }

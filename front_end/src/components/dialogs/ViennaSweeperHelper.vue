@@ -8,15 +8,15 @@
             {{ t('software.officialSite') }}{{ t('common.punct.colon') }}
             https://sweeper.wien
         </span>
-        <el-row style="height: 1em" />
-        <el-descriptions border>
-            <el-descriptions-item :label="t('software.operatingSystem')" :span="2">
+        <ElRow style="height: 1em" />
+        <ElDescriptions border>
+            <ElDescriptionsItem :label="t('software.operatingSystem')" :span="2">
                 Windows
-            </el-descriptions-item>
-            <el-descriptions-item :label="t('software.supportedLanguages')">
+            </ElDescriptionsItem>
+            <ElDescriptionsItem :label="t('software.supportedLanguages')">
                 <BaseFlagUK />
-            </el-descriptions-item>
-            <el-descriptions-item :label="t('software.feature')" :span="3">
+            </ElDescriptionsItem>
+            <ElDescriptionsItem :label="t('software.feature')" :span="3">
                 <BaseTagSupport>
                     {{ t('software.features.customMode') }}
                 </BaseTagSupport>
@@ -40,8 +40,8 @@
                 <BaseTagSupport :support="false">
                     {{ t('software.features.mouseLock') }}
                 </BaseTagSupport>
-            </el-descriptions-item>
-            <el-descriptions-item :label="t('software.platform')">
+            </ElDescriptionsItem>
+            <ElDescriptionsItem :label="t('software.platform')">
                 <BaseTagSupport>
                     <BaseBadgeOpenms />
                 </BaseTagSupport>
@@ -57,24 +57,24 @@
                 <BaseTagSupport>
                     <BaseBadgeScoreganizer />
                 </BaseTagSupport>
-            </el-descriptions-item>
-        </el-descriptions>
-        <el-row style="height: 1em" />
-        <el-table :data="tableData" table-layout="auto">
-            <el-table-column prop="version" :label="t('software.version')" />
-            <el-table-column prop="date" :label="t('software.releaseDate')" />
-            <el-table-column prop="expire" :label="t('software.expireDate')" />
-            <el-table-column :label="t('software.download')">
+            </ElDescriptionsItem>
+        </ElDescriptions>
+        <ElRow style="height: 1em" />
+        <ElTable :data="tableData" table-layout="auto">
+            <ElTableColumn prop="version" :label="t('software.version')" />
+            <ElTableColumn prop="date" :label="t('software.releaseDate')" />
+            <ElTableColumn prop="expire" :label="t('software.expireDate')" />
+            <ElTableColumn :label="t('software.download')">
                 <template #default="{ row }">
                     <template v-for="link in row.links" :key="link.url">
-                        <el-link :href="link.url" target="_blank">
+                        <ElLink :href="link.url" target="_blank" rel="noopener noreferrer">
                             {{ link.label }}
-                        </el-link>
+                        </ElLink>
                         &nbsp;
                     </template>
                 </template>
-            </el-table-column>
-        </el-table>
+            </ElTableColumn>
+        </ElTable>
     </div>
 </template>
 
@@ -128,7 +128,7 @@ const i18nMessages = {
         description1: 'Viennasweeper 是一款专业扫雷软件，它和Scoreganizer的兼容性最好。',
         description2: '从v5.0.0版本开始，Viennasweeper使用了新的录像格式，该格式目前仅被开源扫雷网和Scoreganizer支持。',
     } },
-    'en': { local: {
+    en: { local: {
         description1: 'Viennasweeper is an official minesweeper clone. It has the best compatibility with Scoreganizer.',
         description2: 'From v5.0.0, Viennasweeper moves to a new replay format that is only currently supported by Open Minesweeper and Scoreganizer.',
     } },
@@ -137,5 +137,4 @@ const i18nMessages = {
 const { t } = useI18n({
     messages: i18nMessages,
 });
-
 </script>

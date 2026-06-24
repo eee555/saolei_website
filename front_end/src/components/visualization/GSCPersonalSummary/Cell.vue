@@ -1,14 +1,14 @@
 <template>
-    <tippy v-if="video" class="cell" :style="{ backgroundColor: color }" :duration="0" sticky>
-        <el-link underline="never" @click="preview(video.id)">
+    <Tippy v-if="video" class="cell" :style="{ backgroundColor: color }" :duration="0" sticky>
+        <ElLink underline="never" @click="preview(video.id)">
             {{ video.displayStat(displayBy) }}
-        </el-link>
+        </ElLink>
         <template #content>
-            <el-card v-if="video" class="card-small">
-                <video-abstract-display :video="video" />
-            </el-card>
+            <ElCard v-if="video" class="card-small">
+                <VideoAbstractDisplay :video="video" />
+            </ElCard>
         </template>
-    </tippy>
+    </Tippy>
     <div v-else class="cell" :style="{ backgroundColor: color }">
         <span class="text" :style="{ color: fontColor }">
             {{ defaultVideos[level][displayBy] }}
@@ -35,7 +35,7 @@ import { VideoAbstract } from '@/utils/videoabstract';
 
 type sortByOption = 'time' | 'bvs' | 'stnb';
 
-const prop = defineProps({
+const props = defineProps({
     level: { type: String as PropType<MS_Level>, required: true },
     video: { type: Object as PropType<VideoAbstract | undefined>, default: undefined },
     displayBy: { type: String as PropType<sortByOption>, default: 'time' },
@@ -43,23 +43,20 @@ const prop = defineProps({
 });
 
 const color = computed(() => {
-    if (!prop.video) return prop.colorTheme.getColor(defaultVideos[prop.level][prop.displayBy]);
-    return prop.colorTheme.getColor(prop.video.getStat(prop.displayBy) as number);
+    if (!props.video) return props.colorTheme.getColor(defaultVideos[props.level][props.displayBy]);
+    return props.colorTheme.getColor(props.video.getStat(props.displayBy) as number);
 });
 
 const fontColor = computed(() => {
     const tc = tinycolor(color.value);
     return tc.getAlpha() == 0 ? getTextColor() : tc.isDark() ? 'white' : 'black';
 });
-
 </script>
 
 <style lang="less" scoped>
-
 @import './cell.less';
 
 .el-link {
     --el-link-text-color: v-bind(fontColor);
 }
-
 </style>

@@ -1,9 +1,9 @@
 <template>
-    <el-checkbox-group v-model="checkboxGroup" size="small" style="display:inline-block">
-        <el-checkbox-button v-for="item of statelist" :key="item.state" :value="item.state">
+    <ElCheckboxGroup v-model="checkboxGroup" size="small" style="display:inline-block">
+        <ElCheckboxButton v-for="item of statelist" :key="item.state" :value="item.state">
             {{ t(`common.state.${item.state}`) }}
-        </el-checkbox-button>
-    </el-checkbox-group>
+        </ElCheckboxButton>
+    </ElCheckboxGroup>
 </template>
 
 <script setup lang="ts">
@@ -20,5 +20,4 @@ const statelist = [
 ];
 
 const { t } = useI18n();
-
 </script>

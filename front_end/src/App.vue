@@ -1,39 +1,36 @@
 <template>
-    <el-container style="height: 100%">
-        <el-header>
-            <el-scrollbar :height="100">
-                <!-- 给一个足够的高度就可以不显示纵向滚动条 -->
-                <Menu />
-            </el-scrollbar>
-        </el-header>
+    <ElContainer style="height: 100%">
+        <ElHeader height="fit-content">
+            <Menu />
+        </ElHeader>
 
-        <el-container class="mainheight">
-            <el-main class="common-layout">
+        <ElContainer class="mainheight">
+            <ElMain class="common-layout">
                 <VideoPlayer />
                 <VideoListDialog />
                 <router-view />
                 <Footer />
-            </el-main>
-        </el-container>
-    </el-container>
+            </ElMain>
+        </ElContainer>
+    </ElContainer>
 
-    <el-dialog
+    <ElDialog
         v-if="false" v-model="notice_visible" draggable :lock-scroll="false" title="站长通知"
         :before-close="handle_notice_close" style="white-space: pre-wrap;" width="min(max(50%, 400px), 90vw)"
     >
         <span>{{ notice }}</span>
         <template #footer>
             <span class="dialog-footer">
-                <el-checkbox v-model="never_show_notice">不再显示此对话框&nbsp;&nbsp;&nbsp;</el-checkbox>
-                <base-button-confirm @click="handle_notice_close()" />
+                <ElCheckbox v-model="never_show_notice">不再显示此对话框&nbsp;&nbsp;&nbsp;</ElCheckbox>
+                <BaseButtonConfirm @click="handle_notice_close()" />
             </span>
         </template>
-    </el-dialog>
+    </ElDialog>
 </template>
 
 <script setup lang="ts">
 import { useDark, useToggle } from '@vueuse/core';
-import { ElCheckbox, ElContainer, ElDialog, ElHeader, ElMain, ElScrollbar } from 'element-plus';
+import { ElCheckbox, ElContainer, ElDialog, ElHeader, ElMain } from 'element-plus';
 import { onMounted, ref, watch } from 'vue';
 
 import BaseButtonConfirm from './components/common/BaseButtonConfirm.vue';
@@ -121,7 +118,6 @@ body {
     /* 这里设置只在大屏幕（电脑端）上生效的样式 */
   }
 }
-
 </style>
 
 <style lang="less">

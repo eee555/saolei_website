@@ -1,6 +1,6 @@
 <template>
-    <el-tabs>
-        <el-tab-pane>
+    <ElTabs>
+        <ElTabPane>
             <template #label>
                 <SoftwareIcon software="e" />
             </template>
@@ -13,8 +13,8 @@
                 <IconCopy :text="token" />
                 {{ t('gsc.identifierGuide.metasweeper.ongoing_2') }}
             </span>
-        </el-tab-pane>
-        <el-tab-pane>
+        </ElTabPane>
+        <ElTabPane>
             <template #label>
                 <SoftwareIcon software="a" />
             </template>
@@ -27,10 +27,10 @@
                 <IconCopy :text="token" />
                 {{ t('gsc.identifierGuide.arbiter.ongoing_pre2') }}
                 <span class="ttfamily">Guo Jin Yang {{ token }}</span>
-                <el-input v-model="newIdentifier" placeholder="参赛标识" />
-                <el-button @click="registerToken">
+                <ElInput v-model="newIdentifier" placeholder="参赛标识" />
+                <ElButton @click="registerToken">
                     {{ t('common.button.register') }}
-                </el-button>
+                </ElButton>
                 <span v-if="errorText !== ''" class="text text-danger">
                     {{ errorText }}
                 </span>
@@ -42,12 +42,11 @@
                 <IconCopy :text="identifier" />
                 {{ t('gsc.identifierGuide.arbiter.ongoing_post2') }}
             </span>
-        </el-tab-pane>
-    </el-tabs>
+        </ElTabPane>
+    </ElTabs>
 </template>
 
 <script setup lang="ts">
-
 import { ElButton, ElInput, ElTabPane, ElTabs } from 'element-plus';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -105,13 +104,10 @@ function registerToken() {
         }
     }).catch(httpErrorNotification);
 }
-
 </script>
 
 <style scoped>
-
 .ttfamily {
     font-family: 'Courier New', Courier, monospace;
 }
-
 </style>

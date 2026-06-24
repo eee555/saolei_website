@@ -4,9 +4,9 @@
     </span>
     <span v-else-if="notFound" class="text">
         未找到该届信息
-        <el-button @click="createGSC">
+        <ElButton @click="createGSC">
             创建比赛
-        </el-button>
+        </ElButton>
     </span>
     <span v-else-if="loadingGSCInfo" class="text">
         正在加载信息...
@@ -15,22 +15,22 @@
         <span>开始时间：{{ gscInfo.start_time ? toISODateTimeString(gscInfo.start_time) : '未设置' }}</span>
         &nbsp;
         <span>设置开始时间：</span>
-        <el-date-picker v-model="newStartTime" type="datetime" @change="setStartTime" />
+        <ElDatePicker v-model="newStartTime" type="datetime" @change="setStartTime" />
         <br>
         <span>结束时间：{{ gscInfo.end_time ? toISODateTimeString(gscInfo.end_time) : '未设置' }}</span>
         &nbsp;
         <span>设置结束时间：</span>
-        <el-date-picker v-model="newEndTime" type="datetime" @change="setEndTime" />
+        <ElDatePicker v-model="newEndTime" type="datetime" @change="setEndTime" />
         <br>
         <span>标识：{{ gscInfo.token || '未设置' }}</span>
         &nbsp;
         <span>设置标识：</span>
-        <el-input v-model="newToken" style="width: 300px;" />
-        <el-button @click="setToken(newToken)">
+        <ElInput v-model="newToken" style="width: 300px;" />
+        <ElButton @click="setToken(newToken)">
             修改！
-        </el-button>
+        </ElButton>
         <br>
-        <span>想设置空标识需打开此开关</span><el-switch v-model="allowEmptyToken" />
+        <span>想设置空标识需打开此开关</span><ElSwitch v-model="allowEmptyToken" />
     </span>
 </template>
 
@@ -44,7 +44,6 @@ import { httpErrorNotification, successNotification } from '../Notifications';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { toISODateTimeString } from '@/utils/datetime';
 import { GSCInfo } from '@/utils/gsc';
-
 
 const props = defineProps({
     id: { type: Number, default: 0 },
@@ -136,5 +135,4 @@ function setToken(token: string) {
         },
     ).catch(httpErrorNotification);
 }
-
 </script>

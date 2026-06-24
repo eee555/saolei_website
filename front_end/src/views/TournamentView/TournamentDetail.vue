@@ -3,9 +3,9 @@
     <h1 v-if="tournament.name" class="text" v-html="tournament.name" />
     <!-- eslint-disable-next-line vue/no-v-html, vue/no-v-text-v-html-on-component -->
     <h1 v-if="tournament.description" class="text" v-html="tournament.getLocalDescription(local.language)" />
-    <el-table v-if="data" :data="data" sortable>
-        <el-table-column v-for="(value, key) in data[0]" :key="key" :label="key" :prop="key" />
-    </el-table>
+    <ElTable v-if="data" :data="data" sortable>
+        <ElTableColumn v-for="(value, key) in data[0]" :key="key" :label="key" :prop="key" />
+    </ElTable>
 </template>
 
 <script setup lang="ts">
@@ -26,5 +26,4 @@ defineProps({
         default: () => [],
     },
 });
-
 </script>

@@ -1,43 +1,43 @@
 <template>
-    <base-card-large>
-        <el-skeleton v-show="loading" animated style="margin-top: 0px;" :rows="8" />
+    <BaseCardLarge>
+        <ElSkeleton v-show="loading" animated style="margin-top: 0px;" :rows="8" />
         <div v-for="(d, idx) in records" style="margin-top: -10px;">
             <h4>{{ t(table_title[idx]) }}{{ t('profile.records.modeRecord') }}</h4>
-            <el-table :data="d" style="width: 100%;" :header-cell-style="{ 'text-align': 'center' }">
-                <el-table-column type="index" :index="indexMethod" width="100" align="center" />
+            <ElTable :data="d" style="width: 100%;" :header-cell-style="{ 'text-align': 'center' }">
+                <ElTableColumn type="index" :index="indexMethod" width="100" align="center" />
 
-                <el-table-column label="time" align="center">
+                <ElTableColumn label="time" align="center">
                     <template #default="scope">
                         <PreviewNumber :id="scope.row.timems_id" :text="ms_to_s(scope.row.timems)" />
                     </template>
-                </el-table-column>
+                </ElTableColumn>
 
-                <el-table-column label="3BV/s" align="center">
+                <ElTableColumn label="3BV/s" align="center">
                     <template #default="scope">
                         <PreviewNumber :id="scope.row.bvs_id" :text="scope.row.bvs.toFixed(3)" />
                     </template>
-                </el-table-column>
+                </ElTableColumn>
 
-                <el-table-column label="STNB" align="center">
+                <ElTableColumn label="STNB" align="center">
                     <template #default="scope">
                         <PreviewNumber :id="scope.row.stnb_id" :text="scope.row.stnb.toFixed(3)" />
                     </template>
-                </el-table-column>
+                </ElTableColumn>
 
-                <el-table-column label="IOE" align="center">
+                <ElTableColumn label="IOE" align="center">
                     <template #default="scope">
                         <PreviewNumber :id="scope.row.ioe_id" :text="scope.row.ioe.toFixed(3)" />
                     </template>
-                </el-table-column>
+                </ElTableColumn>
 
-                <el-table-column label="path" align="center">
+                <ElTableColumn label="path" align="center">
                     <template #default="scope">
                         <PreviewNumber :id="scope.row.path_id" :text="scope.row.path.toFixed(3)" />
                     </template>
-                </el-table-column>
-            </el-table>
+                </ElTableColumn>
+            </ElTable>
         </div>
-    </base-card-large>
+    </BaseCardLarge>
 </template>
 
 <script lang="ts" setup>
@@ -45,7 +45,6 @@
 import { ElMessage, ElSkeleton, ElTable, ElTableColumn } from 'element-plus';
 import { nextTick, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-
 
 import BaseCardLarge from '@/components/common/BaseCardLarge.vue';
 import PreviewNumber from '@/components/PreviewNumber.vue';
@@ -74,13 +73,11 @@ const indexMethod = (index: number) => {
 // 此处和父组件配合，等一下从store里获取用户的id
 nextTick(() => {
     // 把左侧的头像、姓名、个性签名、记录请求过来
-    proxy.$axios.get('/msuser/records/',
-        {
-            params: {
-                id: store.player.id,
-            },
+    proxy.$axios.get('/msuser/records/', {
+        params: {
+            id: store.player.id,
         },
-    ).then(function (response) {
+    }).then(function (response) {
         const data = response.data;
         if (data.status > 100) {
             loading.value = false;
@@ -119,16 +116,7 @@ function trans_record(r: RecordBIE): Record[] {
     }
     return record;
 }
-
-
-
-
-
-
-
-
 </script>
-
 
 <style>
 .avatar-uploader {

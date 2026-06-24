@@ -1,35 +1,35 @@
 <template>
-    <el-form-item ref="emailFormRef" prop="email" :label="t('form.email')">
-        <el-input
+    <ElFormItem ref="emailFormRef" prop="email" :label="t('form.email')">
+        <ElInput
             v-model="email" prefix-icon="Message" type="email" @input="emailInputHandler"
             @change="emailChangeHandler"
         />
-    </el-form-item>
+    </ElFormItem>
 </template>
 
 <script setup lang="ts">
 import { ElFormItem, ElInput } from 'element-plus';
 import isEmail from 'validator/lib/isEmail';
-import { computed, ref } from 'vue';
-// @ts-ignore
+import { computed, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { validateError, validateSuccess } from '@/utils/common/elFormValidate';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
-const email = defineModel({ type: String, required: true });
-const prop = defineProps({
+const props = defineProps({
     checkCollision: {
         type: String,
         default: '',
     },
 });
-
+const email = defineModel({ type: String, required: true });
 const { proxy } = useCurrentInstance();
 const { t } = useI18n();
 
-const emailFormRef = ref<typeof ElFormItem>();
-const validateState = computed(() => { return emailFormRef.value!.validateState; });
+const emailFormRef = useTemplateRef('emailFormRef');
+const validateState = computed(() => {
+    return emailFormRef.value!.validateState;
+});
 
 defineExpose({ validateState });
 
@@ -41,10 +41,10 @@ const emailInputHandler = (value: string) => {
 const emailChangeHandler = (value: string) => {
     if (value.length == 0) validateError(emailFormRef, t('msg.emailRequired'));
     else if (!isEmail(value)) validateError(emailFormRef, t('msg.emailInvalid'));
-    else if (prop.checkCollision !== '') {
+    else if (props.checkCollision !== '') {
         proxy.$axios.get('userprofile/checkcollision/', { params: { email: value } }).then(function (response) {
-            if (response.data === 'True' && prop.checkCollision === 'true') validateError(emailFormRef, t('msg.emailCollision'));
-            else if (response.data === 'False' && prop.checkCollision === 'false') validateError(emailFormRef, t('msg.emailNoCollision'));
+            if (response.data === 'True' && props.checkCollision === 'true') validateError(emailFormRef, t('msg.emailCollision'));
+            else if (response.data === 'False' && props.checkCollision === 'false') validateError(emailFormRef, t('msg.emailNoCollision'));
             else validateSuccess(emailFormRef);
         }).catch(function (error) {
             if (error.code === 'ERR_NETWORK') validateError(emailFormRef, t('msg.connectionFail'));
@@ -52,5 +52,4 @@ const emailChangeHandler = (value: string) => {
         });
     }
 };
-
 </script>

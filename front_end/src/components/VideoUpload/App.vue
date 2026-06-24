@@ -1,8 +1,8 @@
 <template>
     <div style="text-align: center;">
-        <base-file-input :accept="'.avf,.evf,.rmv,.mvf'" :disabled="isUserAnonymous || isParsing || isUploading" :style="{ height: uploadQueue.length > 0 ? 'auto' : '300px' }" @add="handleFileChange">
+        <BaseFileInput accept=".avf,.evf,.rmv,.mvf" :disabled="isUserAnonymous || isParsing || isUploading" :style="{ height: uploadQueue.length > 0 ? 'auto' : '300px' }" @add="handleFileChange">
             <FileInputContent :is-user-anonymous="isUserAnonymous" />
-        </base-file-input>
+        </BaseFileInput>
     </div>
     <ToolBar v-if="uploadQueue.length > 0" v-model:stopping="pleaseStopUploading" :selected="selectedQueue.length" :total="uploadQueue.length" :processing="isWaiting" @upload="uploadSelected" @remove="removeSelected" />
     <Progress :parser-progress="parserProgress" :upload-progress="uploadProgress" />
@@ -28,8 +28,6 @@ import { Dict2FormData } from '@/utils/forms';
 import { getFileExtension } from '@/utils/strings';
 import { VideoAbstract } from '@/utils/videoabstract';
 
-const { proxy } = useCurrentInstance();
-
 const props = defineProps({
     isUserAnonymous: { type: Boolean, default: true },
     identifiers: { type: Array as PropType<string[]>, default: () => [] },
@@ -38,6 +36,8 @@ const props = defineProps({
 const emit = defineEmits<{
     (e: 'onUpload', video: VideoAbstract): void;
 }>();
+
+const { proxy } = useCurrentInstance();
 
 const uploadQueue = ref<UploadEntry[]>([]);
 const selectedQueue = ref<UploadEntry[]>([]);

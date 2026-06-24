@@ -1,9 +1,9 @@
 <template>
     <!-- @vue-expect-error -->
-    <el-link :href="platformlist[platform].url" target="_blank" style="vertical-align: bottom;">
+    <ElLink :href="platformlist[platform].url" target="_blank" rel="noopener noreferrer" style="vertical-align: bottom;">
         <!-- @vue-expect-error -->
         {{ platformlist[platform].name }}
-    </el-link>
+    </ElLink>
 </template>
 
 <script setup lang="ts">

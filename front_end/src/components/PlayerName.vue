@@ -7,19 +7,19 @@
             :max-width="298"
             :append-to="getAppendTarget"
             placement="bottom"
-            :on-show="pop_show"
+            :on-shown="pop_show"
             :on-hide="pop_hide"
         >
-            <el-link underline="never">
+            <ElLink underline="never">
                 <PlayerBadge :user-id="userId" :name="nameShown" />
-            </el-link>
+            </ElLink>
             <template #content>
-                <el-card class="card-small">
+                <ElCard class="card-small">
                     <div style="width: 80px;float: left;line-height: 200%;">
                         <UserAvatar :user-id="userId" />
-                        <el-button tag="a" :href="playerProfileHref" style="width: 72px; height: 24px; text-decoration: none;">
+                        <ElButton tag="a" :href="playerProfileHref" style="width: 72px; height: 24px; text-decoration: none;">
                             {{ t('local.visitMe') }}
-                        </el-button>
+                        </ElButton>
                     </div>
                     <div style="width: 188px; float: right; text-align: center;line-height: 180%;">
                         <div>
@@ -75,7 +75,7 @@
                             </div>
                         </div>
                     </div>
-                </el-card>
+                </ElCard>
             </template>
         </Tippy>
     </span>
@@ -100,35 +100,34 @@ import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { formatName } from '@/utils/strings';
 import { UserProfile } from '@/utils/userprofile';
 
-const { proxy } = useCurrentInstance();
-
-const data = defineProps({
+const props = defineProps({
     userId: {
         type: Number,
         default: 0,
     },
 });
 
+const { proxy } = useCurrentInstance();
+
 const user = ref(new UserProfile());
 const loading = ref(false);
 const nameShown = computed(() => {
     if (loading.value) {
-        return `${t('local.user')}#${data.userId}`;
+        return `${t('local.user')}#${props.userId}`;
     } else {
         return user.value.realname;
     }
 });
-const playerProfileHref = computed(() => `#/player/${data.userId}`);
+const playerProfileHref = computed(() => `#/player/${props.userId}`);
 const getAppendTarget = () => document.body;
 
-watch(() => data.userId, async (newVal) => {
+watch(() => props.userId, async (newVal) => {
     user.value = new UserProfile();
     if (newVal === 0) return;
     else {
         loading.value = true;
         try {
-            const response = await fetchUserInfo(data.userId);
-            user.value = new UserProfile(response);
+            user.value = await fetchUserInfo(props.userId);
             loading.value = false;
         } catch (error) {
             user.value = new UserProfile();
@@ -153,16 +152,14 @@ const e_t_id = ref('');
 const e_bvs_id = ref('');
 
 async function pop_show() {
-    if (data.userId === 0) return;
+    if (props.userId === 0) return;
     is_loading.value = true;
 
-    await proxy.$axios.get('/msuser/info_abstract/',
-        {
-            params: {
-                id: data.userId,
-            },
+    await proxy.$axios.get('/msuser/info_abstract/', {
+        params: {
+            id: props.userId,
         },
-    ).then(function (response) {
+    }).then(function (response) {
         const response_data = response.data;
 
         const records = JSON.parse(response_data.record_abstract);
@@ -209,24 +206,21 @@ const i18nMessages = {
         user: '用户',
         visitMe: '我的空间',
     } },
-    'en': { local: {
+    en: { local: {
         user: 'User',
         visitMe: 'My space',
     } },
-    'fr': { local: {
+    fr: { local: {
         visitMe: 'Mon espace',
     } },
 };
 
 const { t } = useI18n({ messages: i18nMessages });
-
 </script>
 
 <style lang="less" scoped>
-
 .record-table {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
 }
-
 </style>

@@ -1,11 +1,11 @@
 <template>
     比赛ID
     &nbsp;
-    <el-input-number v-model="tournamentId" :min="0" :controls="false" />
+    <ElInputNumber v-model="tournamentId" :min="0" :controls="false" />
     &nbsp;
-    <el-button @click="refreshTournamentInfo">
+    <ElButton @click="refreshTournamentInfo">
         查询
-    </el-button>
+    </ElButton>
     <br>
     <template v-if="tournament">
         状态
@@ -21,22 +21,21 @@
         {{ tournament.endDate }}
         <br>
         审核
-        <el-button type="success" circle size="small" :disabled="!canValidate" @click="validateTournament(true)">
+        <ElButton type="success" circle size="small" :disabled="!canValidate" @click="validateTournament(true)">
             <BaseIconTick />
-        </el-button>
-        <el-button type="danger" circle size="small" :disabled="!canInvalidate" @click="validateTournament(false)">
+        </ElButton>
+        <ElButton type="danger" circle size="small" :disabled="!canInvalidate" @click="validateTournament(false)">
             <BaseIconClose />
-        </el-button>
+        </ElButton>
         <br>
         名称
-        <v-code-block v-if="tournament" :code="JSON.stringify(tournament.name)" lang="json" highlightjs />
+        <VCodeBlock v-if="tournament" :code="JSON.stringify(tournament.name)" lang="json" highlightjs />
         描述
-        <v-code-block v-if="tournament.description" :code="JSON.stringify(tournament.description)" lang="json" highlightjs />
+        <VCodeBlock v-if="tournament.description" :code="JSON.stringify(tournament.description)" lang="json" highlightjs />
     </template>
 </template>
 
 <script setup lang="ts">
-
 import { VCodeBlock } from '@wdns/vue-code-block';
 import { ElButton, ElInputNumber } from 'element-plus';
 import { computed, ref } from 'vue';
@@ -89,5 +88,4 @@ function validateTournament(valid: boolean) {
         successNotification(response);
     }).catch(httpErrorNotification);
 }
-
 </script>

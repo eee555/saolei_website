@@ -1,35 +1,34 @@
 <template>
-    <el-table :data="tournamentList" table-layout="auto" :default-sort="{ prop: 'startDate', order: 'descending' }" @row-click="rowClick">
-        <el-table-column :label="t('common.prop.state')">
+    <ElTable :data="tournamentList" table-layout="auto" :default-sort="{ prop: 'startDate', order: 'descending' }" @row-click="rowClick">
+        <ElTableColumn :label="t('common.prop.state')">
             <template #default="{row}">
                 <TournamentStateIcon :state="row.state" />
             </template>
-        </el-table-column>
-        <el-table-column :label="t('tournament.tournament')">
+        </ElTableColumn>
+        <ElTableColumn :label="t('tournament.tournament')">
             <template #default="{row}: {row: Tournament}">
                 {{ row.getLocalName(local.language) }}
             </template>
-        </el-table-column>
-        <el-table-column :label="t('tournament.host')">
+        </ElTableColumn>
+        <ElTableColumn :label="t('tournament.host')">
             <template #default="{row}">
                 <PlayerName :user-id="row.hostId" />
             </template>
-        </el-table-column>
-        <el-table-column prop="startDate" :label="t('tournament.startsFrom')" sortable>
+        </ElTableColumn>
+        <ElTableColumn prop="startDate" :label="t('tournament.startsFrom')" sortable>
             <template #default="{row}">
                 {{ row.startDate === undefined ? t('tournament.undecided') : toISODateTimeString(row.startDate) }}
             </template>
-        </el-table-column>
-        <el-table-column prop="endDate" :label="t('tournament.endsBy')" sortable>
+        </ElTableColumn>
+        <ElTableColumn prop="endDate" :label="t('tournament.endsBy')" sortable>
             <template #default="{row}">
                 {{ row.endDate === undefined ? t('tournament.undecided') : toISODateTimeString(row.endDate) }}
             </template>
-        </el-table-column>
-    </el-table>
+        </ElTableColumn>
+    </ElTable>
 </template>
 
 <script setup lang="ts">
-
 import { ElTable, ElTableColumn } from 'element-plus';
 import { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -41,15 +40,14 @@ import { local, store } from '@/store';
 import { toISODateTimeString } from '@/utils/datetime';
 import { Tournament } from '@/utils/tournaments';
 
-const router = useRouter();
-const { t } = useI18n();
-
 defineProps({
     tournamentList: {
         type: Array as PropType<Tournament[]>,
         default: () => [],
     },
 });
+const router = useRouter();
+const { t } = useI18n();
 
 function rowClick(row: Tournament) {
     if (store.tournamentTabs.length === 0) {
@@ -57,5 +55,4 @@ function rowClick(row: Tournament) {
     }
     router.push({ name: 'tournament_id', params: { id: row.id } });
 }
-
 </script>

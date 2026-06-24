@@ -27,5 +27,4 @@ watch(() => props.userId, (newId) => {
         avatarSrc.value = DefaultAvatar;
     }
 }, { immediate: true });
-
 </script>

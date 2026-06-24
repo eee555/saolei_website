@@ -13,7 +13,7 @@ import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 
 export const store = defineStore('user', {
     state: () => ({
-        user: new UserProfile(),   // 真正的用户
+        user: new UserProfile(), // 真正的用户
         // 访问谁的地盘不再具有记忆性。即点“我的地盘”，将永远是“我”的地盘
         // 想要访问特定用户，可以用url
         // 访问谁的地盘
@@ -54,6 +54,9 @@ export const videoplayerstore = defineStore('videoplayer', {
     state: () => ({
         visible: false,
         id: 0,
+        software: 'a' as MS_Software,
+        url: '',
+        error: null as any,
     }),
 })(pinia);
 
@@ -62,7 +65,7 @@ export const local = useLocalStorage(
     {
         darkmode: matchMedia('(prefers-color-scheme: dark)').matches,
         experimental: false,
-        language: (navigator.language).toLocaleLowerCase(),
+        language: navigator.language.toLocaleLowerCase(),
         language_show: true,
         menu_font_size: 18,
         menu_height: 60,
@@ -92,13 +95,24 @@ export const videofilter = useLocalStorage('videofilter', {
     level: 'e',
     filter_state: ['a', 'b', 'c', 'd'],
     bbbv_range: {
-        'b': [2, 54],
-        'i': [30, 216],
-        'e': [100, 381],
+        b: [2, 54],
+        i: [30, 216],
+        e: [100, 381],
     },
 });
 
-export const colorTheme = useLocalStorage('colorTheme', deepMutableCopy(colorSchemeTemplates.ArbiterStatsAuto));
+export const colorTheme = useLocalStorage(
+    'colorTheme',
+    {
+        ...deepMutableCopy(colorSchemeTemplates.ArbiterStatsAuto),
+        level: {
+            b: '#dc2626',
+            i: '#16a34a',
+            e: '#2563eb',
+        },
+    },
+    { mergeDefaults: true },
+);
 
 export const activityCalendarConfig = useLocalStorage(
     'activity-calendar-config',
@@ -123,6 +137,25 @@ export const BBBvSummaryConfig = useLocalStorage(
         zoom: 1,
         tooltipMode: 'fast' as 'fast' | 'advanced',
         showIcon: 'software' as '' | 'software' | 'state',
+        newThresh: 1,
+        newDateField: 'upload_time' as 'upload_time' | 'end_time',
+    },
+    { mergeDefaults: true },
+);
+
+export const VideoScatterAxisChoice = ['time', 'bv', 'bvs', 'stnb', 'ioe', 'thrp', 'corr', 'ces', 'cls', 'cl', 'ce', 'rqp'] as const;
+export type VideoScatterAxisChoice = typeof VideoScatterAxisChoice[number];
+export const VideoScatterColorByChoice = ['level', 'time', 'bvs', 'stnb', 'ioe', 'thrp', 'ces', 'cls'] as const;
+export type VideoScatterColorByChoice = typeof VideoScatterColorByChoice[number];
+export const VideoScatterConfig = useLocalStorage(
+    'video-scatter-config',
+    {
+        radius: 3,
+        x: 'bv' as VideoScatterAxisChoice,
+        y: 'time' as VideoScatterAxisChoice,
+        colorBy: 'level' as VideoScatterColorByChoice,
+        highlightSelected: false,
+        showOnlySelected: false,
     },
     { mergeDefaults: true },
 );

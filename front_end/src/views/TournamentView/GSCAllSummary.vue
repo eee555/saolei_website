@@ -1,83 +1,82 @@
 <template>
-    <el-table :data="data" :default-sort="{ prop: 'sum_tsum', order: 'ascending' }" @row-click="handleRowClick">
-        <el-table-column prop="user__realname" sortable>
+    <ElTable :data="data" :default-sort="{ prop: 'sum_tsum', order: 'ascending' }" @row-click="handleRowClick">
+        <ElTableColumn prop="user__realname" sortable>
             <template #default="{ row }: { row: GSCParticipant }">
                 <PlayerName :user-id="row.user__id" />
             </template>
-        </el-table-column>
-        <el-table-column :label="t('common.level.b')">
-            <el-table-column prop="bt1st" :label="t('common.score.best')" sortable>
+        </ElTableColumn>
+        <ElTableColumn :label="t('common.level.b')">
+            <ElTableColumn prop="bt1st" :label="t('common.score.best')" sortable>
                 <template #default="{ row }: { row: GSCParticipant }">
                     {{ ms_to_s(row.bt1st) }}
                 </template>
-            </el-table-column>
-            <el-table-column prop="bt20th" :label="t('common.score.edge')" sortable>
+            </ElTableColumn>
+            <ElTableColumn prop="bt20th" :label="t('common.score.edge')" sortable>
                 <template #default="{ row }: { row: GSCParticipant }">
                     {{ ms_to_s(row.bt20th) }}
                 </template>
-            </el-table-column>
-            <el-table-column prop="bt20sum" :label="t('common.score.sum')" sortable>
+            </ElTableColumn>
+            <ElTableColumn prop="bt20sum" :label="t('common.score.sum')" sortable>
                 <template #default="{ row }: { row: GSCParticipant }">
                     {{ ms_to_s(row.bt20sum) }}
                 </template>
-            </el-table-column>
-        </el-table-column>
-        <el-table-column :label="t('common.level.i')">
-            <el-table-column prop="it1st" :label="t('common.score.best')" sortable>
+            </ElTableColumn>
+        </ElTableColumn>
+        <ElTableColumn :label="t('common.level.i')">
+            <ElTableColumn prop="it1st" :label="t('common.score.best')" sortable>
                 <template #default="{ row }: { row: GSCParticipant }">
                     {{ ms_to_s(row.it1st) }}
                 </template>
-            </el-table-column>
-            <el-table-column prop="it12th" :label="t('common.score.edge')" sortable>
+            </ElTableColumn>
+            <ElTableColumn prop="it12th" :label="t('common.score.edge')" sortable>
                 <template #default="{ row }: { row: GSCParticipant }">
                     {{ ms_to_s(row.it12th) }}
                 </template>
-            </el-table-column>
-            <el-table-column prop="it12sum" :label="t('common.score.sum')" sortable>
+            </ElTableColumn>
+            <ElTableColumn prop="it12sum" :label="t('common.score.sum')" sortable>
                 <template #default="{ row }: { row: GSCParticipant }">
                     {{ ms_to_s(row.it12sum) }}
                 </template>
-            </el-table-column>
-        </el-table-column>
-        <el-table-column :label="t('common.level.e')">
-            <el-table-column prop="et1st" :label="t('common.score.best')" sortable>
+            </ElTableColumn>
+        </ElTableColumn>
+        <ElTableColumn :label="t('common.level.e')">
+            <ElTableColumn prop="et1st" :label="t('common.score.best')" sortable>
                 <template #default="{ row }: { row: GSCParticipant }">
                     {{ ms_to_s(row.et1st) }}
                 </template>
-            </el-table-column>
-            <el-table-column prop="et5th" :label="t('common.score.edge')" sortable>
+            </ElTableColumn>
+            <ElTableColumn prop="et5th" :label="t('common.score.edge')" sortable>
                 <template #default="{ row }: { row: GSCParticipant }">
                     {{ ms_to_s(row.et5th) }}
                 </template>
-            </el-table-column>
-            <el-table-column prop="et5sum" :label="t('common.score.sum')" sortable>
+            </ElTableColumn>
+            <ElTableColumn prop="et5sum" :label="t('common.score.sum')" sortable>
                 <template #default="{ row }: { row: GSCParticipant }">
                     {{ ms_to_s(row.et5sum) }}
                 </template>
-            </el-table-column>
-        </el-table-column>
-        <el-table-column :label="t('common.level.sum')">
-            <el-table-column prop="sum_tbest" :label="t('common.score.best')" sortable>
+            </ElTableColumn>
+        </ElTableColumn>
+        <ElTableColumn :label="t('common.level.sum')">
+            <ElTableColumn prop="sum_tbest" :label="t('common.score.best')" sortable>
                 <template #default="{ row }: { row: GSCParticipant }">
                     {{ ms_to_s(row.sum_tbest) }}
                 </template>
-            </el-table-column>
-            <el-table-column prop="sum_tedge" :label="t('common.score.edge')" sortable>
+            </ElTableColumn>
+            <ElTableColumn prop="sum_tedge" :label="t('common.score.edge')" sortable>
                 <template #default="{ row }: { row: GSCParticipant }">
                     {{ ms_to_s(row.sum_tedge) }}
                 </template>
-            </el-table-column>
-            <el-table-column prop="sum_tsum" :label="t('common.score.sum')" sortable>
+            </ElTableColumn>
+            <ElTableColumn prop="sum_tsum" :label="t('common.score.sum')" sortable>
                 <template #default="{ row }: { row: GSCParticipant }">
                     {{ ms_to_s(row.sum_tsum) }}
                 </template>
-            </el-table-column>
-        </el-table-column>
-    </el-table>
+            </ElTableColumn>
+        </ElTableColumn>
+    </ElTable>
 </template>
 
 <script setup lang="ts">
-
 import { ElTable, ElTableColumn } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
@@ -92,12 +91,11 @@ defineProps({
     },
 });
 
-const { t } = useI18n();
-
 const emit = defineEmits(['row-click']);
+
+const { t } = useI18n();
 
 function handleRowClick(row: GSCParticipant) {
     emit('row-click', row);
 }
-
 </script>

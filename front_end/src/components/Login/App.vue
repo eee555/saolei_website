@@ -1,29 +1,29 @@
 <template>
-    <el-button
+    <ElButton
         v-if="store.login_status != LoginStatus.IsLogin" class="fakemenuitem"
         text size="small" @click.stop="activeDialog = 'login'; dialogVisible = true"
     >
         {{ t('local.menu.login') }}
-    </el-button>
-    <el-button
+    </ElButton>
+    <ElButton
         v-if="store.login_status != LoginStatus.IsLogin"
         style="margin-left: 0px;" class="fakemenuitem" text size="small" @click.stop="activeDialog = 'register'; dialogVisible = true"
     >
         {{ t('local.menu.register') }}
-    </el-button>
-    <el-button
+    </ElButton>
+    <ElButton
         v-if="store.login_status == LoginStatus.IsLogin" class="fakemenuitem" text
         size="small" @click.stop="logout();"
     >
         {{ t('local.menu.logout') }}
-    </el-button>
+    </ElButton>
     <!-- 以下的所有表单的输入项都需要@keydown.stop，解决horizontal菜单截留空格操作的问题。 -->
     <!-- https://github.com/element-plus/element-plus/issues/10172#issuecomment-1295794523 -->
-    <el-dialog v-model="dialogVisible" style="min-width: 24rem;" :title="t(`local.title.${activeDialog}`)">
+    <ElDialog v-model="dialogVisible" style="min-width: 24rem;" :title="t(`local.title.${activeDialog}`)">
         <LoginForm v-if="activeDialog === 'login'" @forget-password="activeDialog = 'retrieve'" @login="login" />
         <RegisterForm v-else-if="activeDialog === 'register'" @login="login" />
         <RetrieveForm v-else @login="login" />
-    </el-dialog>
+    </ElDialog>
 </template>
 
 <script lang="ts" setup>
@@ -67,9 +67,7 @@ const login = (user: any) => {
 };
 
 const logout = async () => {
-    proxy.$axios.post('/userprofile/logout/',
-        {},
-    ).then(function (_response) {
+    proxy.$axios.post('/userprofile/logout/', {}).then(function (_response) {
         store.logout();
         ElMessage.success({ message: t('common.msg.logoutSuccess'), offset: 68 });
         dialogVisible.value = false;
@@ -89,7 +87,7 @@ const i18nMessages = {
             retrieve: '修改密码',
         },
     } },
-    'en': { local: {
+    en: { local: {
         menu: {
             login: 'Login',
             logout: 'Logout',
@@ -101,14 +99,14 @@ const i18nMessages = {
             retrieve: 'Reset Password',
         },
     } },
-    'de': { local: {
+    de: { local: {
         menu: {
             login: 'Login',
             logout: 'Abmeldem',
             register: 'Registrieren',
         },
     } },
-    'fr': { local: {
+    fr: { local: {
         menu: {
             login: 'Connexion',
         },
@@ -116,7 +114,7 @@ const i18nMessages = {
             register: 'Créer un compte',
         },
     } },
-    'pl': { local: {
+    pl: { local: {
         menu: {
             login: 'login',
             logout: 'wyloguj',
@@ -130,9 +128,7 @@ const i18nMessages = {
 };
 
 const { t } = useI18n({ messages: i18nMessages });
-
 </script>
-
 
 <style lang="less" scoped>
 .fakemenuitem {

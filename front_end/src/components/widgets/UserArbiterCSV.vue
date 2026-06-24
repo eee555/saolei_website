@@ -1,20 +1,20 @@
 <template>
-    <el-button :disabled="id == 0" @click="clickExportJSON">
+    <ElButton :disabled="id == 0" @click="clickExportJSON">
         {{ t('profile.exportJSON') }}&nbsp;
-        <el-tooltip :content="t('profile.exportJSONTooltip')" raw-content>
-            <el-icon v-if="local.tooltip_show">
+        <ElTooltip :content="t('profile.exportJSONTooltip')" raw-content>
+            <ElIcon v-if="local.tooltip_show">
                 <QuestionFilled />
-            </el-icon>
-        </el-tooltip>
-    </el-button>
-    <el-button :disabled="id == 0" @click="clickExportCSV">
+            </ElIcon>
+        </ElTooltip>
+    </ElButton>
+    <ElButton :disabled="id == 0" @click="clickExportCSV">
         {{ t('profile.exportArbiterCSV') }}&nbsp;
-        <el-tooltip :content="t('profile.exportArbiterCSVTooltip')" raw-content>
-            <el-icon v-if="local.tooltip_show">
+        <ElTooltip :content="t('profile.exportArbiterCSVTooltip')" raw-content>
+            <ElIcon v-if="local.tooltip_show">
                 <QuestionFilled />
-            </el-icon>
-        </el-tooltip>
-    </el-button>
+            </ElIcon>
+        </ElTooltip>
+    </ElButton>
 </template>
 
 <script setup lang="ts">
@@ -27,29 +27,29 @@ import { httpErrorNotification } from '../Notifications';
 import { local } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
-const { t } = useI18n();
-
-const { proxy } = useCurrentInstance();
-
-const data = ref([] as any[]);
-
-const prop = defineProps({
+const props = defineProps({
     id: {
         type: Number,
         default: 0,
     },
 });
 
-watch(prop, () => { data.value = []; });
+const { t } = useI18n();
+
+const { proxy } = useCurrentInstance();
+
+const data = ref([] as any[]);
+
+watch(props, () => {
+    data.value = [];
+});
 
 async function fetchData(id: number) {
-    await proxy.$axios.get('video/query_by_id',
-        {
-            params: {
-                id: id,
-            },
+    await proxy.$axios.get('video/query_by_id', {
+        params: {
+            id: id,
         },
-    ).then(function (response) {
+    }).then(function (response) {
         data.value = response.data;
     }).catch(httpErrorNotification);
 }
@@ -126,13 +126,13 @@ function downloadJSON(json: string) {
 }
 
 async function clickExportCSV() {
-    if (data.value.length === 0) await fetchData(prop.id);
+    if (data.value.length === 0) await fetchData(props.id);
     if (data.value.length === 0) return;
     downloadCSV(generateArbiterCSV(data.value));
 }
 
 async function clickExportJSON() {
-    if (data.value.length === 0) await fetchData(prop.id);
+    if (data.value.length === 0) await fetchData(props.id);
     if (data.value.length === 0) return;
     downloadJSON(JSON.stringify(data.value));
 }

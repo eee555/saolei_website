@@ -78,9 +78,9 @@
         </PrColumn>
         <PrColumn>
             <template #body="{ data }: { data: SaoleiVideo }">
-                <el-link v-if="data.import_video__id != 0" underline="never" @click="preview(data.import_video__id)">
+                <ElLink v-if="data.import_video__id != 0" underline="never" @click="preview(data.import_video__id)">
                     <i class="pi pi-play-circle" />
-                </el-link>
+                </ElLink>
             </template>
         </PrColumn>
     </PrDataTable>
@@ -110,10 +110,16 @@ import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { MS_Levels } from '@/utils/ms_const';
 import { utc_to_local_format } from '@/utils/system/tools';
 
+const props = defineProps({
+    saoleiId: {
+        type: Number,
+        required: true,
+    },
+});
 
 const filters = ref({
-    'import_task__status': { value: null, matchMode: FilterMatchMode.EQUALS },
-    'level': { value: null, matchMode: FilterMatchMode.EQUALS },
+    import_task__status: { value: null, matchMode: FilterMatchMode.EQUALS },
+    level: { value: null, matchMode: FilterMatchMode.EQUALS },
 });
 
 const { proxy } = useCurrentInstance();
@@ -121,13 +127,6 @@ const { t } = useI18n();
 
 const tableData = ref<SaoleiVideo[]>([]);
 const importing = ref(false);
-
-const props = defineProps({
-    saoleiId: {
-        type: Number,
-        required: true,
-    },
-});
 
 function refresh() {
     tableData.value.splice(0, tableData.value.length);
@@ -144,19 +143,16 @@ function refresh() {
 watch(() => props.saoleiId, refresh, { immediate: true });
 
 function preprocessTable(data: any) {
-    data.forEach(((video: any) => {
+    data.forEach((video: any) => {
         if (video.import_video__id === null) video.import_video__id = 0;
         if (video.import_task__status === null) video.import_task__status = 'NULL';
-    }));
+    });
     return data;
 }
-
-defineEmits(['back', 'enterAuto', 'enterHelp']);
 </script>
 
 <style lang="less" scoped>
 .el-overlay .p-select-overlay {
     z-index: 3000 !important;
 }
-
 </style>

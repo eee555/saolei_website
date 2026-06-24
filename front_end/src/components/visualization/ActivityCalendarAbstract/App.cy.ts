@@ -7,13 +7,13 @@ describe('<ActivityCalendarAbstract />', () => {
     before(() => {
         cy.fixture('videoAbstractList.json').then((data) => {
             cy.log(data.data);
-            Cypress.env('videoList', data.data.map((video: any) => new VideoAbstract(video)));
+            Cypress.expose('videoList', data.data.map((video: any) => new VideoAbstract(video)));
         });
         cy.clock(new Date('2025-12-15T00:00:00Z'));
     });
     it('renders', () => {
         // see: https://on.cypress.io/mounting-vue
-        const videoList = Cypress.env('videoList');
+        const videoList = Cypress.expose('videoList');
         cy.mount(ActivityCalendarAbstract, {
             props: {
                 videoList: videoList,
@@ -22,11 +22,11 @@ describe('<ActivityCalendarAbstract />', () => {
                 plugins: [i18n],
             },
         });
-        cy.get('[data-cy=count] > :nth-child(1)').should('contain', '2 videos in total');
-        cy.get('[data-cy=size] > :nth-child(1)').should('contain', '56574 bytes');
+        cy.get('[data-cy=count] > :nth-child(1)').should('contain', '5 videos in total');
+        cy.get('[data-cy=size] > :nth-child(1)').should('contain', '63742 bytes');
 
         cy.get('[data-cy=cell-2025-01-15]').should('have.css', 'background-color', 'rgb(0, 0, 51)');
-        cy.get('[data-cy=cell-2025-01-16]').should('have.css', 'background-color', 'rgb(0, 0, 51)');
+        cy.get('[data-cy=cell-2025-01-16]').should('have.css', 'background-color', 'rgb(0, 51, 102)');
 
         cy.get('[data-cy=cell-2025-01-15]').realHover();
         cy.get('[id^=tippy-]').should('contain', '1 videos on 2025-01-15');

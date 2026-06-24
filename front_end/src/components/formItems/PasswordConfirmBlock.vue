@@ -1,23 +1,23 @@
 <template>
     <!-- 密码 -->
-    <el-form-item ref="passwordFormRef" :label="t('form.password')">
-        <el-input
+    <ElFormItem ref="passwordFormRef" :label="t('form.password')">
+        <ElInput
             v-model="password" show-password prefix-icon="Lock" minlength="6" maxlength="20" show-word-limit
             @change="passwordHandler"
         />
-    </el-form-item>
+    </ElFormItem>
     <!-- 确认密码 -->
-    <el-form-item ref="confirmPasswordFormRef" prop="password" :label="t('form.confirmPassword')">
-        <el-input
+    <ElFormItem ref="confirmPasswordFormRef" prop="password" :label="t('form.confirmPassword')">
+        <ElInput
             v-model="confirmPassword" show-password prefix-icon="Lock" minlength="6" maxlength="20"
             @change="confirmPasswordHandler"
         />
-    </el-form-item>
+    </ElFormItem>
 </template>
 
 <script setup lang="ts">
 import { ElFormItem, ElInput } from 'element-plus';
-import { computed, ref } from 'vue';
+import { computed, ref, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { validateError, validateSuccess } from '@/utils/common/elFormValidate';
@@ -28,10 +28,12 @@ const { t } = useI18n();
 
 const confirmPassword = ref('');
 
-const passwordFormRef = ref<typeof ElFormItem>();
-const confirmPasswordFormRef = ref<typeof ElFormItem>();
+const passwordFormRef = useTemplateRef('passwordFormRef');
+const confirmPasswordFormRef = useTemplateRef('confirmPasswordFormRef');
 
-const validateState = computed(() => { return confirmPasswordFormRef.value!.validateState; });
+const validateState = computed(() => {
+    return confirmPasswordFormRef.value!.validateState;
+});
 defineExpose({ validateState });
 
 const passwordHandler = (value: string) => {
@@ -48,5 +50,4 @@ const confirmPasswordHandler = (value: any) => {
     if (value !== password.value) validateError(confirmPasswordFormRef, t('msg.confirmPasswordMismatch'));
     else validateSuccess(confirmPasswordFormRef);
 };
-
 </script>

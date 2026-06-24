@@ -7,19 +7,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue';
 
 import { videoplayerstore } from '@/store';
 
+interface FlopPlayer {
+    playVideo: (src: string, options: any) => void;
+}
+
+interface FlopPlaceholder {
+    onload: () => void;
+}
+
 declare global {
-    interface FlopPlayer {
-        playVideo: (src: string, options: any) => void;
-    }
-
-    interface FlopPlaceholder {
-        onload: () => void;
-    }
-
     interface Window {
         flop: FlopPlayer | FlopPlaceholder | null;
     }
@@ -57,7 +57,7 @@ function playVideo() {
     });
 }
 
-const iframeRef = ref<HTMLIFrameElement | null>(null);
+const iframeRef = useTemplateRef('iframeRef');
 const iframeWidth = ref(0);
 const iframeHeight = ref(0);
 const backgroundColor = computed(() => getComputedStyle(document.documentElement).getPropertyValue('--el-bg-color'));
@@ -85,14 +85,8 @@ const getContentSize = (iframe: HTMLIFrameElement) => {
     const html = doc.documentElement;
 
     // 确保取到完整的内容尺寸（滚动尺寸优先）
-    const width = Math.max(
-        body.scrollWidth, body.offsetWidth,
-        html.scrollWidth, html.offsetWidth, html.clientWidth,
-    );
-    const height = Math.max(
-        body.scrollHeight, body.offsetHeight,
-        html.scrollHeight, html.offsetHeight, html.clientHeight,
-    );
+    const width = Math.max(body.scrollWidth, body.offsetWidth, html.scrollWidth, html.offsetWidth, html.clientWidth);
+    const height = Math.max(body.scrollHeight, body.offsetHeight, html.scrollHeight, html.offsetHeight, html.clientHeight);
     return { width, height };
 };
 
@@ -164,5 +158,4 @@ onUnmounted(() => {
         mutationObserver = null;
     }
 });
-
 </script>

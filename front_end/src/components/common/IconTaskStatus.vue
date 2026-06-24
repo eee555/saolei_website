@@ -23,5 +23,4 @@ defineProps({
         default: '',
     },
 });
-
 </script>

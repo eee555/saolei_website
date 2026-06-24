@@ -30,7 +30,7 @@ const fixtures = {
     expMvf: {
         filename: 'Lin_Jin_Fan_Exp_60.623bv207.mvf',
         identifier: 'Lin Jinfan',
-        tableData: { '': '', Bv: '207', Bvs: '3.472', Status: 'Need manual approval', Time: '59.620', Level: 'Expert', 'End Time': '1970-01-01 08:00:00' },
+        tableData: { '': '', Bv: '207', Bvs: '3.472', Status: 'Need manual approval', Time: '59.620', Level: 'Expert', 'End Time': '2011-08-03 06:49:03' },
         response: {
             type: 'error',
             object: 'file',

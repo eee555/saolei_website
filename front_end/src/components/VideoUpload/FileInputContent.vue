@@ -6,12 +6,12 @@
         <div class="text text-large" style="padding: 0.1em; color: inherit;">
             {{ t('local.dragOrClick') }}
         </div>
-        <el-checkbox v-model="local.autoUploadAfterParse" @click.stop>
+        <ElCheckbox v-model="local.autoUploadAfterParse" @click.stop>
             {{ t('local.autoUploadAfterParse') }}
-        </el-checkbox>
-        <el-checkbox v-model="local.autoRemoveAfterUpload" @click.stop>
+        </ElCheckbox>
+        <ElCheckbox v-model="local.autoRemoveAfterUpload" @click.stop>
             {{ t('local.autoRemoveAfterUpload') }}
-        </el-checkbox>
+        </ElCheckbox>
         <div class="text text-small" style="padding: 0.1em;">
             {{ t('local.constraintSize') }}
         </div>
@@ -36,7 +36,7 @@ const i18nMessages = {
         autoRemoveAfterUpload: '上传完成自动移除',
         constraintSize: '*单个文件大小不能超过5MB',
     } },
-    'en': { local: {
+    en: { local: {
         dragOrClick: 'Drag files here or click here to select',
         autoUploadAfterParse: 'Auto-upload after parsing',
         autoRemoveAfterUpload: 'Auto-remove after uploading',

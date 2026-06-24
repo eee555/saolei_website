@@ -1,9 +1,9 @@
 <template>
-    <el-checkbox-group v-model="level" size="small">
-        <el-checkbox-button v-for="l in MS_Levels" :key="l" :value="l">
+    <ElCheckboxGroup v-model="level" size="small">
+        <ElCheckboxButton v-for="l in MS_Levels" :key="l" :value="l">
             {{ t(`common.level.${l}`) }}
-        </el-checkbox-button>
-    </el-checkbox-group>
+        </ElCheckboxButton>
+    </ElCheckboxGroup>
 </template>
 
 <script setup lang="ts">
@@ -18,7 +18,6 @@ const level = defineModel({
     type: Array<MS_Level>,
     default: MS_Levels,
 });
-
 </script>
 
 <style scoped lang="less">

@@ -1,10 +1,10 @@
 <template>
-    <el-button :size="'small'" plain icon="View" @click="preview(id);">
+    <ElButton size="small" plain icon="View" @click="preview(id);">
         预览
-    </el-button>
-    <el-button :size="'small'" plain icon="Download" @click="download($event, id)">
+    </ElButton>
+    <ElButton size="small" plain icon="Download" @click="download($event, id)">
         下载
-    </el-button>
+    </ElButton>
 </template>
 
 <script setup lang="ts" name="PreviewDownload">
@@ -15,13 +15,12 @@ import { onMounted } from 'vue';
 
 import { preview } from '@/utils/common/PlayerDialog';
 
-const { id } = defineProps({
+defineProps({
     id: {
         type: Number,
         required: true,
     },
 });
-
 
 // // 1. 用户点击播放录像 0
 // const id = 0
@@ -49,7 +48,6 @@ const { id } = defineProps({
 //   // 录像播放地址
 //   onSuccess(`https://example.com/${id}.avf`)
 // }
-
 
 const download = (event: MouseEvent, id: number | undefined) => {
     if (!id) {
@@ -92,8 +90,4 @@ onMounted(() => {
     // },
     // };
 });
-
-
 </script>
-
-<style></style>

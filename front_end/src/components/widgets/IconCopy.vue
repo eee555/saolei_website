@@ -1,11 +1,10 @@
 <template>
-    <el-link underline="never" @click="copyToClipboard(text)">
-        <base-icon-copy />
-    </el-link>
+    <ElLink underline="never" @click="copyToClipboard(text)">
+        <BaseIconCopy />
+    </ElLink>
 </template>
 
 <script setup lang="ts">
-
 import { ElLink } from 'element-plus';
 
 import { copyToClipboard } from './CopyToClipboard';
@@ -18,5 +17,4 @@ defineProps({
         default: '',
     },
 });
-
 </script>

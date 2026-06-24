@@ -1,7 +1,7 @@
 <template>
-    <el-card v-if="bestIndex > -1" class="card-small">
-        <video-abstract-display :video="videos[bestIndex]" />
-    </el-card>
+    <ElCard v-if="bestIndex > -1" class="card-small">
+        <VideoAbstractDisplay :video="videos[bestIndex]" />
+    </ElCard>
 </template>
 
 <script setup lang="ts">
@@ -15,26 +15,24 @@ import VideoAbstractDisplay from '@/components/widgets/VideoAbstractDisplay.vue'
 import { MS_Software, MS_Softwares } from '@/utils/ms_const';
 import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 
-const bestValue = ref<number>(NaN);
-const bestIndex = ref(-1);
-
-const prop = defineProps({
+const props = defineProps({
     videos: { type: Array<VideoAbstract>, default: [] },
     sortBy: { type: String as PropType<getStat_stat>, default: 'timems' },
     sortDesc: { type: Boolean, default: false },
     softwareFilter: { type: Array<MS_Software>, default: () => [...MS_Softwares] },
 });
+const bestValue = ref<number>(NaN);
+const bestIndex = ref(-1);
 
 function refresh() {
-    const bests = getBest(prop.videos, {
-        sortBy: prop.sortBy,
-        sortDesc: prop.sortDesc,
-        softwareFilter: prop.softwareFilter,
+    const bests = getBest(props.videos, {
+        sortBy: props.sortBy,
+        sortDesc: props.sortDesc,
+        softwareFilter: props.softwareFilter,
     });
     bestValue.value = bests.bestValue;
     bestIndex.value = bests.bestIndex;
 }
 
-watch(prop, refresh, { immediate: true });
-
+watch(props, refresh, { immediate: true });
 </script>

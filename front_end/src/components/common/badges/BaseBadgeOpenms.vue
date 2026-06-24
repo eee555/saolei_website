@@ -12,5 +12,4 @@ import { useI18n } from 'vue-i18n';
 import { MetasweeperIcon } from '@/utils/assets';
 
 const { t } = useI18n();
-
 </script>

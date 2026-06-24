@@ -1,5 +1,5 @@
 <template>
-    <pr-data-table
+    <PrDataTable
         v-if="data.length > 0"
         v-model:filters="filters"
         v-model:expanded-rows="expandedRows"
@@ -18,16 +18,16 @@
         :rows-per-page-options="[5, 10, 25, 50, 100]"
         @filter="onFilter"
     >
-        <pr-column expander />
-        <pr-column>
+        <PrColumn expander />
+        <PrColumn>
             <template #header>
-                <el-checkbox :model-value="!selectedNone && selectedAll" :indeterminate="!selectedAll && !selectedNone" @click="handleSelectAllClick" />
+                <ElCheckbox :model-value="!selectedNone && selectedAll" :indeterminate="!selectedAll && !selectedNone" @click="handleSelectAllClick" />
             </template>
             <template #body="{data}: {data: UploadEntry}">
-                <el-checkbox :model-value="selectedRows.includes(data)" @change="(value) => handleSelectOneChange(value, data)" />
+                <ElCheckbox :model-value="selectedRows.includes(data)" @change="(value) => handleSelectOneChange(value, data)" />
             </template>
-        </pr-column>
-        <pr-column field="status" :header="t('common.prop.status')" :show-filter-match-modes="false" :show-filter-operator="false">
+        </PrColumn>
+        <PrColumn field="status" :header="t('common.prop.status')" :show-filter-match-modes="false" :show-filter-operator="false">
             <template #body="{data}: {data: UploadEntry}">
                 {{ t(`local.${data.status}`) }}
             </template>
@@ -38,13 +38,13 @@
                     </template>
                 </PrListbox>
             </template>
-        </pr-column>
-        <pr-column field="stat.end_time" :header="t('common.prop.end_time')" sortable>
+        </PrColumn>
+        <PrColumn field="stat.end_time" :header="t('common.prop.end_time')" sortable>
             <template #body="{data}: {data: UploadEntry}">
                 {{ data.stat ? toISODateTimeString(data.stat.end_time!) : '' }}
             </template>
-        </pr-column>
-        <pr-column field="stat.level" :header="t('common.prop.level')" :show-filter-match-modes="false" :show-filter-operator="false">
+        </PrColumn>
+        <PrColumn field="stat.level" :header="t('common.prop.level')" :show-filter-match-modes="false" :show-filter-operator="false">
             <template #body="{data}: {data: UploadEntry}">
                 {{ data.stat ? t(`common.level.${data.stat.level}`) : '' }}
             </template>
@@ -55,49 +55,49 @@
                     </template>
                 </PrListbox>
             </template>
-        </pr-column>
-        <pr-column field="stat.timems" :header="t('common.prop.time')" sortable>
+        </PrColumn>
+        <PrColumn field="stat.timems" :header="t('common.prop.time')" sortable>
             <template #body="{data}: {data: UploadEntry}">
                 {{ data.stat ? data.stat.displayStat('time') : '' }}
             </template>
-        </pr-column>
-        <pr-column field="stat.bv" :header="t('common.prop.bv')" sortable />
-        <pr-column field="stat.bvs" :header="t('common.prop.bvs')" sortable>
+        </PrColumn>
+        <PrColumn field="stat.bv" :header="t('common.prop.bv')" sortable />
+        <PrColumn field="stat.bvs" :header="t('common.prop.bvs')" sortable>
             <template #body="{data}: {data: UploadEntry}">
                 {{ data.stat ? data.stat.displayStat('bvs') : '' }}
             </template>
-        </pr-column>
+        </PrColumn>
         <template #expansion="{data}: {data: UploadEntry}">
-            <el-descriptions>
-                <el-descriptions-item :label="t('common.prop.fileName')" :span="3">
+            <ElDescriptions>
+                <ElDescriptionsItem :label="t('common.prop.fileName')" :span="3">
                     {{ data.file.name }}
-                </el-descriptions-item>
+                </ElDescriptionsItem>
                 <template v-if="data.stat">
-                    <el-descriptions-item :label="t('common.prop.cl')">
+                    <ElDescriptionsItem :label="t('common.prop.cl')">
                         {{ data.stat.displayStat('cl') }}
-                    </el-descriptions-item>
-                    <el-descriptions-item :label="t('common.prop.ce')" :span="2">
+                    </ElDescriptionsItem>
+                    <ElDescriptionsItem :label="t('common.prop.ce')" :span="2">
                         {{ data.stat.displayStat('ce') }}
-                    </el-descriptions-item>
-                    <el-descriptions-item :label="t('common.prop.cl_s')">
+                    </ElDescriptionsItem>
+                    <ElDescriptionsItem :label="t('common.prop.cl_s')">
                         {{ data.stat.displayStat('cls') }}
-                    </el-descriptions-item>
-                    <el-descriptions-item :label="t('common.prop.ce_s')" :span="2">
+                    </ElDescriptionsItem>
+                    <ElDescriptionsItem :label="t('common.prop.ce_s')" :span="2">
                         {{ data.stat.displayStat('ces') }}
-                    </el-descriptions-item>
-                    <el-descriptions-item :label="t('common.prop.ioe')">
+                    </ElDescriptionsItem>
+                    <ElDescriptionsItem :label="t('common.prop.ioe')">
                         {{ data.stat.displayStat('ioe') }}
-                    </el-descriptions-item>
-                    <el-descriptions-item :label="t('common.prop.thrp')">
+                    </ElDescriptionsItem>
+                    <ElDescriptionsItem :label="t('common.prop.thrp')">
                         {{ data.stat.displayStat('thrp') }}
-                    </el-descriptions-item>
-                    <el-descriptions-item :label="t('common.prop.corr')">
+                    </ElDescriptionsItem>
+                    <ElDescriptionsItem :label="t('common.prop.corr')">
                         {{ data.stat.displayStat('corr') }}
-                    </el-descriptions-item>
+                    </ElDescriptionsItem>
                 </template>
-            </el-descriptions>
+            </ElDescriptions>
         </template>
-    </pr-data-table>
+    </PrDataTable>
 </template>
 
 <script setup lang="ts">
@@ -127,7 +127,7 @@ const selectedRows = defineModel<UploadEntry[]>(
 );
 
 const filters = ref({
-    'status': { value: null, matchMode: FilterMatchMode.EQUALS },
+    status: { value: null, matchMode: FilterMatchMode.EQUALS },
     'stat.level': { value: null, matchMode: FilterMatchMode.EQUALS },
     // 'mode': { value: Object.values(MS_Mode), matchMode: FilterMatchMode.IN },
 });
@@ -180,7 +180,7 @@ const i18nMessages = {
         success: '上传成功',
         upload: '上传失败',
     } },
-    'en': { local: {
+    en: { local: {
         censorship: 'Identifier blocked',
         collision: 'Video already exists',
         custom: 'Custom level is currently not supported',

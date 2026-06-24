@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
 import { vLoading } from 'element-plus';
-import { computed, ref, watch } from 'vue';
+import { computed, ref, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { baseErrorNotification, httpErrorNotification } from '@/components/Notifications';
@@ -23,14 +23,14 @@ import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { globalNow, toISODateTimeString } from '@/utils/datetime';
 import { UserProfile } from '@/utils/userprofile';
 
-const { proxy } = useCurrentInstance();
-
-const user = defineModel('user', { type: UserProfile, default: () => new UserProfile() });
-
 const props = defineProps({
     isSelf: { type: Boolean, default: false },
     expTimeMs: { type: Number, default: 999999 },
 });
+
+const { proxy } = useCurrentInstance();
+
+const user = defineModel('user', { type: UserProfile, default: () => new UserProfile() });
 
 const avatarVersion = ref(0);
 const avatarSrc = ref(DefaultAvatar);
@@ -45,7 +45,7 @@ function refresh(newId: number) {
 
 watch(() => user.value.id, refresh, { immediate: true });
 
-const fileInputRef = ref<HTMLInputElement>();
+const fileInputRef = useTemplateRef('fileInputRef');
 function triggerFileDialog() {
     if (disabled.value) return;
     fileInputRef.value!.click();
@@ -83,7 +83,8 @@ const disabled = computed(() => !props.isSelf || props.expTimeMs >= 200000 || av
 async function updateAvatar(a: File) {
     const formData = new FormData();
     formData.append('avatar', a);
-    await proxy.$axios.post('/api/userprofile/update_avatar',
+    await proxy.$axios.post(
+        '/api/userprofile/update_avatar',
         formData,
     ).then(function (response) {
         const data = response.data;
@@ -114,7 +115,7 @@ const i18nMessages = {
         tooltipCooldown: '头像每年可修改一次。下次可修改：',
         tooltipExpTime: '高级sub200后才可以修改头像',
     } },
-    'en': { local: {
+    en: { local: {
         errorTitle: 'Avatar Update Failed',
         errorMsg: {
             avatar: {
@@ -133,5 +134,4 @@ const i18nMessages = {
 };
 
 const { t } = useI18n({ messages: i18nMessages });
-
 </script>

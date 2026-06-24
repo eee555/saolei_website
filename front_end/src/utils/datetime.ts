@@ -3,6 +3,8 @@ import type { Ref } from 'vue';
 
 export const fullDay = 86400000 as const;
 export const fullWeek = 604800000 as const;
+export const fullMonth = 2592000000 as const;
+export const fullYear = 31536000000 as const;
 export const monthNameShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
 
 /**
@@ -34,9 +36,12 @@ export function toISODateString(date: Date) {
  * const isoString = toISODateTimeString(date); // "2023-10-05 14:30:00"
  */
 export function toISODateTimeString(date: Date) {
-    return date.getFullYear() + '-' + (date.getMonth() + 1).toString().padStart(2, '0') + '-' + date.getDate().toString().padStart(2, '0') + ' ' +
-        date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0') + ':' +
-        date.getSeconds().toString().padStart(2, '0');
+    return date.getFullYear() + '-'
+        + (date.getMonth() + 1).toString().padStart(2, '0') + '-'
+        + date.getDate().toString().padStart(2, '0') + ' '
+        + date.getHours().toString().padStart(2, '0') + ':'
+        + date.getMinutes().toString().padStart(2, '0') + ':'
+        + date.getSeconds().toString().padStart(2, '0');
 }
 
 export function *generateDateRange(startDate: Date, endDate: Date, step: number = 1) {
@@ -63,8 +68,8 @@ function scheduleUpdate() {
     // 计算到下一整秒的剩余毫秒数
     const delay = 1000 - nowDate.getMilliseconds();
     setTimeout(() => {
-        now.value = new Date();  // 更新时间
-        scheduleUpdate();        // 递归调度下一次
+        now.value = new Date(); // 更新时间
+        scheduleUpdate(); // 递归调度下一次
     }, delay);
 }
 scheduleUpdate();

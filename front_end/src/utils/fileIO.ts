@@ -45,7 +45,7 @@ export function extract_stat(video: AnyVideo | null): VideoAbstract | null {
         bv: video.bbbv,
         ce: video.ce,
         cl: video.cl,
-        end_time: (video instanceof AvfVideo) ? arbiterTimeStampToDate(video.end_time) : generalTimeStampToDate(video.end_time),
+        end_time: video instanceof AvfVideo ? arbiterTimeStampToDate(video.end_time) : generalTimeStampToDate(video.end_time),
     });
 }
 

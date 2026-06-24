@@ -1,13 +1,15 @@
 <template>
-    <span class="cell">
+    <span class="cell" :class="isNew ? 'cell-new' : ''">
         <template v-if="bestIndex == -1">
             &nbsp;
         </template>
-        <el-link v-else underline="never" @click="handleClick">
-            <software-icon v-if="prop.showIcon === 'software'" :software="videos[bestIndex].software" />
-            <video-state-icon v-else-if="prop.showIcon === 'state'" :state="videos[bestIndex].state" />
-            {{ videos[bestIndex].displayStat(displayBy) }}
-        </el-link>
+        <template v-else>
+            <SoftwareIcon v-if="props.showIcon === 'software'" :software="videos[bestIndex].software" />
+            <VideoStateIcon v-else-if="props.showIcon === 'state'" :state="videos[bestIndex].state" />
+            <ElLink underline="never" style="font-weight: inherit" @click="handleClick">
+                {{ videos[bestIndex].displayStat(displayBy) }}
+            </ElLink>
+        </template>
     </span>
 </template>
 
@@ -23,14 +25,11 @@ import VideoStateIcon from '@/components/widgets/VideoStateIcon.vue';
 import { store } from '@/store';
 import { getTextColor, PiecewiseColorScheme } from '@/utils/colors';
 import { preview } from '@/utils/common/PlayerDialog';
-import { MS_Level, MS_Software, MS_Softwares } from '@/utils/ms_const';
+import { fullDay, globalNow } from '@/utils/datetime';
+import { MS_Software, MS_Softwares } from '@/utils/ms_const';
 import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 
-const bestIndex = ref(-1);
-
-const prop = defineProps({
-    level: { type: String as PropType<MS_Level>, required: true },
-    bv: { type: Number, required: true },
+const props = defineProps({
     videos: { type: Array<VideoAbstract>, default: [] },
     sortBy: { type: String as PropType<getStat_stat>, default: 'timems' },
     sortDesc: { type: Boolean, default: false },
@@ -39,22 +38,26 @@ const prop = defineProps({
     softwareFilter: { type: Array<MS_Software>, default: () => [...MS_Softwares] },
     tooltipMode: { type: String as PropType<'fast' | 'advanced'>, default: 'fast' },
     showIcon: { type: String as PropType<'' | 'software' | 'state'>, default: '' },
+    newThresh: { type: Number, default: 1 },
+    newDateField: { type: String as PropType<'upload_time' | 'end_time'>, default: 'upload_time' },
 });
 
+const bestIndex = ref(-1);
+
 function refresh() {
-    const bests = getBest(prop.videos, {
-        sortBy: prop.sortBy,
-        sortDesc: prop.sortDesc,
-        softwareFilter: prop.softwareFilter,
+    const bests = getBest(props.videos, {
+        sortBy: props.sortBy,
+        sortDesc: props.sortDesc,
+        softwareFilter: props.softwareFilter,
     });
     bestIndex.value = bests.bestIndex;
 }
 
-watch(prop, refresh, { immediate: true });
+watch(props, refresh, { immediate: true });
 
 const color = computed(() => {
     if (bestIndex.value === -1) return 'rgba(0,0,0,0)';
-    return prop.colorTheme.getColor(prop.videos[bestIndex.value].getStat(prop.displayBy) as number);
+    return props.colorTheme.getColor(props.videos[bestIndex.value].getStat(props.displayBy) as number);
 });
 
 const fontColor = computed(() => {
@@ -62,19 +65,24 @@ const fontColor = computed(() => {
     return tc.getAlpha() == 0 ? getTextColor() : tc.isDark() ? 'white' : 'black';
 });
 
+const isNew = computed(() => {
+    if (bestIndex.value === -1) return false;
+    const time = props.videos[bestIndex.value][props.newDateField];
+    if (!time) return false;
+    return globalNow.value.getTime() - time.getTime() < props.newThresh * fullDay;
+});
+
 function handleClick() {
-    if (prop.tooltipMode === 'fast') {
-        preview(prop.videos[bestIndex.value].id);
+    if (props.tooltipMode === 'fast') {
+        preview(props.videos[bestIndex.value].id);
     } else {
-        store.video_list = prop.videos;
+        store.video_list = props.videos;
         store.video_list_show = true;
     }
 }
-
 </script>
 
 <style lang="less" scoped>
-
 .cell {
     background-color: v-bind(color);
     outline-style: solid;
@@ -85,8 +93,11 @@ function handleClick() {
     box-sizing: border-box;
 }
 
+.cell-new {
+    font-weight: 1000;
+}
+
 .el-link {
     --el-link-text-color: v-bind(fontColor);
 }
-
 </style>
