@@ -13,6 +13,7 @@ export default defineConfig({
     ignores: [
         '**/node_modules/**', '**/dist/**', '**/build/**', '**/public/**',
         '**/GuideView.vue', '**/WorldView.vue',
+        '**/src/components/visualization/Plots/**', // 将迁移至 @putianyi888/vue3-plots
     ],
     plugins: {
         '@stylistic': stylistic,
@@ -219,6 +220,7 @@ export default defineConfig({
         '@typescript-eslint/no-use-before-define': 'off', // 为了代码可读性，有的函数需要放在最后
         '@typescript-eslint/prefer-enum-initializers': 'off',
         '@typescript-eslint/prefer-readonly-parameter-types': 'off',
+        '@typescript-eslint/unified-signatures': 'off', // TODO
     },
     settings: {
         'vue-i18n': {

@@ -57,8 +57,8 @@ describe('<StackBar />', () => {
                 style: 'width: 600px;',
             },
         });
-        cy.get('@vue').then((wrapper: any) => {
-            wrapper.setProps({
+        cy.get('@vue').then((wrapper: ComponentWrapper<typeof StackBar>) => {
+            void wrapper.setProps({
                 data: [
                     { name: 'A', value: 30, color: '#FF0000' },
                     { name: 'B', value: 20, color: '#00FF00' },

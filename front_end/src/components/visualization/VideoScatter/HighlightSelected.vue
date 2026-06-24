@@ -14,8 +14,9 @@ import { computed } from 'vue';
 
 import { VideoScatterStore } from './store';
 
-import { PlotPoint, Scatter } from '@/components/visualization/Plots';
-import { VideoAbstract } from '@/utils/videoabstract';
+import type { PlotPoint } from '@/components/visualization/Plots';
+import { Scatter } from '@/components/visualization/Plots';
+import type { VideoAbstract } from '@/utils/videoabstract';
 
 const selectedSeries = computed(() => {
     const points = [] as PlotPoint<VideoAbstract>[];
