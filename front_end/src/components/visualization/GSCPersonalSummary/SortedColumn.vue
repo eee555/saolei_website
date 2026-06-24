@@ -17,7 +17,8 @@
 import '@/styles/text.css';
 import { sum } from 'd3-array';
 import tinycolor from 'tinycolor2';
-import { computed, PropType } from 'vue';
+import type { PropType } from 'vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import Cell from './Cell.vue';
@@ -25,9 +26,9 @@ import { defaultVideos } from './utils';
 
 import { colorTheme } from '@/store';
 import { getTextColor, PiecewiseColorScheme } from '@/utils/colors';
-import { MS_Level } from '@/utils/ms_const';
+import type { MS_Level } from '@/utils/ms_const';
 import { formatNumberSmart } from '@/utils/strings';
-import { VideoAbstract } from '@/utils/videoabstract';
+import type { VideoAbstract } from '@/utils/videoabstract';
 
 type sortByOptions = 'time' | 'bvs' | 'stnb';
 
@@ -65,8 +66,11 @@ const colorScheme = computed(() => {
     }
 });
 
+const _videos = computed(() => props.videos.filter((video) => video.getStat(props.sortBy) !== undefined));
+
 const sortedVideos = computed(() => {
-    const sorted = Array.from(props.videos).sort((v1, v2) => v1.getStat(props.sortBy)! - v2.getStat(props.sortBy)!);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const sorted = Array.from(_videos.value).sort((v1, v2) => v1.getStat(props.sortBy)! - v2.getStat(props.sortBy)!);
     if (props.sortBy === 'time') {
         return sorted.slice(0, props.count);
     } else {
@@ -75,6 +79,7 @@ const sortedVideos = computed(() => {
 });
 
 const sumStat = computed(() => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return sum(sortedVideos.value, (video) => video.getStat(props.sortBy)!) + (props.count - sortedVideos.value.length) * defaultVideos[props.level][props.sortBy];
 });
 
