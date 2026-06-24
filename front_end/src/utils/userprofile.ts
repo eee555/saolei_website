@@ -1,7 +1,6 @@
 import { VideoAbstract } from './videoabstract';
 
 interface UserProfileData {
-    [key: string]: unknown;
     id?: number;
     username?: string;
     realname?: string;

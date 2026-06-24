@@ -55,6 +55,7 @@ export const videoplayerstore = defineStore('videoplayer', {
     state: () => ({
         visible: false,
         id: 0,
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
         software: 'a' as MS_Software,
         url: '',
         error: null as any,

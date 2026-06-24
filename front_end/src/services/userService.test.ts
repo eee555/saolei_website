@@ -3,27 +3,21 @@ import 'fake-indexeddb/auto';
 import { openDB } from 'idb';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-    CACHE_DB_NAME,
-    CACHE_DB_VERSION,
-    CACHE_STORE_SCHEMA_VERSIONS,
-    META_STORE_NAME,
-    SaoleiCacheDB,
-    USER_INFO_STORE_NAME,
-} from './database';
+import type { SaoleiCacheDB } from './database';
+import { CACHE_DB_NAME, CACHE_DB_VERSION, CACHE_STORE_SCHEMA_VERSIONS, META_STORE_NAME, USER_INFO_STORE_NAME } from './database';
 
-import { GetUserInfoResponse } from '@/utils/common/structInterface';
+import type { GetUserInfoResponse } from '@/utils/common/structInterface';
 
 const STORE_NAME = USER_INFO_STORE_NAME;
 const STORE_VERSIONS_KEY = 'storeVersions';
 const ROW_SCHEMAS_KEY = 'rowSchemas';
 
-type ServiceConfigValue = {
+interface ServiceConfigValue {
     userInfoUpdateInterval: number;
     userInfoLastUpdate: number;
     userInfoBatchDelay: number;
     userInfoBatchSize: number;
-};
+}
 
 const axiosGet = vi.fn();
 const serviceConfig = {
@@ -32,7 +26,7 @@ const serviceConfig = {
         userInfoLastUpdate: Date.now(),
         userInfoBatchDelay: 1,
         userInfoBatchSize: 100,
-    } as ServiceConfigValue,
+    },
 };
 
 vi.mock('@/http', () => ({ default: { get: axiosGet } }));
@@ -112,7 +106,7 @@ async function clearUserInfoDB() {
 }
 
 async function waitForBatch() {
-    await new Promise((resolve) => setTimeout(resolve, serviceConfig.value.userInfoBatchDelay + 10));
+    await new Promise((resolve) => void setTimeout(resolve, serviceConfig.value.userInfoBatchDelay + 10));
 }
 
 describe('fetchUserInfo', () => {
@@ -216,8 +210,8 @@ describe('fetchUserInfo', () => {
             userInfoLastUpdate: 100,
             userInfoUpdateInterval: 0,
         });
-        axiosGet.mockImplementationOnce(async () => ({ data: [1] }));
-        axiosGet.mockImplementationOnce(async () => ({ data: [createUser(1, 'Fresh User')] }));
+        axiosGet.mockImplementationOnce(() => ({ data: [1] }));
+        axiosGet.mockImplementationOnce(() => ({ data: [createUser(1, 'Fresh User')] }));
 
         const promise = fetchUserInfo(1);
         await waitForBatch();

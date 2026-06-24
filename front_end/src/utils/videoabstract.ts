@@ -54,8 +54,7 @@ interface VideoRedisInfo {
     ce?: number;
 }
 
-interface VideoAbstractMinimum {
-    [key: string]: unknown;
+interface VideoAbstractData {
     id?: number;
     upload_time?: string | Date;
     time?: string | Date;
@@ -95,7 +94,7 @@ export class VideoAbstract {
     public file_size = 0;
     public ongoing_tournament?: boolean;
 
-    public constructor(info: VideoAbstractMinimum) {
+    public constructor(info: VideoAbstractData) {
         this.id = info.id ?? this.id;
 
         const uploadTime = info.upload_time ?? info.time;
