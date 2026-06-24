@@ -63,7 +63,8 @@
 import '@/styles/text.css';
 
 import { ElRow, ElScrollbar } from 'element-plus';
-import { computed, PropType, ref } from 'vue';
+import type { PropType } from 'vue';
+import { computed, ref } from 'vue';
 import { Tippy } from 'vue-tippy';
 
 import DayLabel from './DayLabel.vue';
@@ -73,7 +74,8 @@ import Tooltip from './Tooltip.vue';
 
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
 import { generateDateRange, toISODateString } from '@/utils/datetime';
-import { groupVideosByDate, VideoAbstract } from '@/utils/videoabstract';
+import type { VideoAbstract } from '@/utils/videoabstract';
+import { groupVideosByDate } from '@/utils/videoabstract';
 
 interface Options {
     cellSize: number;
@@ -134,7 +136,7 @@ function getColor(videos: VideoAbstract[]) {
     for (const video of videos) {
         if (video.level === 'b') red++;
         else if (video.level === 'i') green++;
-        else if (video.level === 'e') blue++;
+        else blue++;
     }
     return `rgb(${Math.min(255, red * 51)}, ${Math.min(255, green * 51)}, ${Math.min(255, blue * 51)})`;
 }

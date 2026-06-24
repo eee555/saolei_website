@@ -4,12 +4,13 @@ import 'cypress-table';
 import 'cypress-intercept-formdata';
 
 declare global {
+    // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace Cypress {
         interface Chainable {
             /**
              * cypress-get-table 插件，用于获取表格数据
              */
-            getTable(): Chainable<Array<Record<string, string>>>;
+            getTable(): Chainable<Record<string, string>[]>;
 
             /**
              * 关闭所有通知

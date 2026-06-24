@@ -25,7 +25,7 @@ import { useI18n } from 'vue-i18n';
 
 import StackBar from '@/components/visualization/StackBar/App.vue';
 import { colorTheme } from '@/store';
-import { VideoAbstract } from '@/utils/videoabstract';
+import type { VideoAbstract } from '@/utils/videoabstract';
 
 const props = defineProps({
     videoList: {

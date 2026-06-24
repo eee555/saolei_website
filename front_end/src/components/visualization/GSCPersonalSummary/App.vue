@@ -46,18 +46,21 @@ const IBlockRef = useTemplateRef<LevelBlockInstance>('IBlockRef');
 const EBlockRef = useTemplateRef<LevelBlockInstance>('EBlockRef');
 
 const bStat = computed(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return BBlockRef.value === null
         ? { time: 0, bvs: 0, stnb: 0 }
         : BBlockRef.value.sumAll;
 });
 
 const iStat = computed(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return IBlockRef.value === null
         ? { time: 0, bvs: 0, stnb: 0 }
         : IBlockRef.value.sumAll;
 });
 
 const eStat = computed(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return EBlockRef.value === null
         ? { time: 0, bvs: 0, stnb: 0 }
         : EBlockRef.value.sumAll;

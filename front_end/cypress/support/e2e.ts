@@ -18,6 +18,7 @@ import './commands';
 import 'cypress-real-events';
 
 declare global {
+    // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace Cypress {
         interface Chainable {
             /**

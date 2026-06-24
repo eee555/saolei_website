@@ -1,6 +1,6 @@
-import { Platform } from '@/utils/common/accountLinkPlatforms';
-import { DjangoTaskResultStatus } from '@/utils/common/structInterface';
-import { MS_Level } from '@/utils/ms_const';
+import type { Platform } from '@/utils/common/accountLinkPlatforms';
+import type { DjangoTaskResultStatus } from '@/utils/common/structInterface';
+import type { MS_Level } from '@/utils/ms_const';
 
 export interface AccountSaolei {
     id: number;

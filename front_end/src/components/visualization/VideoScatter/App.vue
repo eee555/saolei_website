@@ -24,7 +24,9 @@ const props = defineProps({
 const scatterRef = useTemplateRef('scatterRef');
 const { isFullscreen, toggle } = useFullscreen(scatterRef);
 
-watch(() => props.videos, VideoScatterStore.setRawData, { immediate: true });
+watch(() => props.videos, (videos) => {
+    VideoScatterStore.setRawData(videos);
+}, { immediate: true });
 </script>
 
 <style lang="less" scoped>

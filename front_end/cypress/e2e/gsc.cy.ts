@@ -50,7 +50,7 @@ function setEndDateTime(dateStr: string, timeStr: string) {
     cy.closeElNotifications();
 }
 
-function assertTableData(expected: Array<Record<string, any>>) {
+function assertTableData(expected: Record<string, any>[]) {
     cy.get('table:visible').getTable().should((tableData) => {
         expected.forEach((exp, i) => {
             Object.keys(exp).forEach((key) => {
@@ -253,7 +253,7 @@ describe('GSC', () => {
         cy.contains('如何参赛').next().within(() => {
             cy.get(`img[src="${MetasweeperIcon}"]`).click();
             cy.contains('在元扫雷中将比赛标识设置为');
-            cy.contains(`${GSC_TOKEN}`);
+            cy.contains(GSC_TOKEN);
 
             cy.get(`img[src="${ArbiterIcon}"]`).click();
             cy.contains('请在这里注册参赛标识。');

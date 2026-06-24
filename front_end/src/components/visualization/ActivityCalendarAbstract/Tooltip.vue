@@ -24,7 +24,7 @@ import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { toISODateString } from '@/utils/datetime';
-import { VideoAbstract } from '@/utils/videoabstract';
+import type { VideoAbstract } from '@/utils/videoabstract';
 
 const props = defineProps({
     date: { type: Date, required: true },

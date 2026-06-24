@@ -11,11 +11,11 @@
 </template>
 
 <script setup lang="ts">
-import { PropType } from 'vue';
+import type { PropType } from 'vue';
 
 import '@/styles/text.css';
 import 'primeicons/primeicons.css';
-import { TaskStatus } from '@/utils/common/structInterface';
+import type { TaskStatus } from '@/utils/common/structInterface';
 
 defineProps({
     status: {

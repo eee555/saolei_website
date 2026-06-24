@@ -99,7 +99,7 @@ import PrListbox from 'primevue/listbox';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { SaoleiVideo } from './utils';
+import type { SaoleiVideo } from './utils';
 
 import { httpErrorNotification } from '@/components/Notifications';
 import DjangoTaskResultStatusBadge from '@/components/widgets/DjangoTaskResultStatusBadge.vue';

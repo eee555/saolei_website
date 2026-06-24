@@ -10,12 +10,12 @@ interface SortOption {
 export function getBest(videos: VideoAbstract[], option: SortOption): {
     bestValue: number;
     bestIndex: number;
-} | undefined {
+} {
     let bestValue = NaN;
     let bestIndex = -1;
     for (let i = 0; i < videos.length; i++) {
         const video = videos[i];
-        if (!option.softwareFilter.includes(video.software)) return;
+        if (!option.softwareFilter.includes(video.software)) break;
         const thisValue = video.getStat(option.sortBy);
         if (thisValue === undefined) {
             bestValue = NaN;

@@ -14,7 +14,8 @@
 
 <script lang="ts" setup>
 import { ElDialog, ElLink } from 'element-plus';
-import { PropType, ref } from 'vue';
+import type { PropType } from 'vue';
+import { ref } from 'vue';
 
 defineProps({
     zIndex: {

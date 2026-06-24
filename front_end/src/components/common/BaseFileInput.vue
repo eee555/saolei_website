@@ -43,7 +43,8 @@ const isDragover = ref(false);
 // 触发原生文件选择框
 const triggerFileDialog = () => {
     if (props.disabled) return;
-    fileInputRef.value!.click();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    fileInputRef.value?.click();
 };
 
 // 处理 input 的 change 事件（点击选择后）
@@ -54,6 +55,7 @@ function onFileSelect(event: Event) {
     if (files.length) {
         emit('add', files);
     }
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     fileInputRef.value!.value = '';
 }
 

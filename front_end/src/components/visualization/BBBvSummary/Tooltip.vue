@@ -7,13 +7,15 @@
 <script setup lang="ts">
 import '@/styles/cards.css';
 import { ElCard } from 'element-plus';
-import { PropType, ref, watch } from 'vue';
+import type { PropType } from 'vue';
+import { ref, watch } from 'vue';
 
 import { getBest } from './utils';
 
 import VideoAbstractDisplay from '@/components/widgets/VideoAbstractDisplay.vue';
-import { MS_Software, MS_Softwares } from '@/utils/ms_const';
-import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
+import type { MS_Software } from '@/utils/ms_const';
+import { MS_Softwares } from '@/utils/ms_const';
+import type { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 
 const props = defineProps({
     videos: { type: Array<VideoAbstract>, default: [] },

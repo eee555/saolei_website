@@ -74,7 +74,8 @@ const emailCodeFormRef = useTemplateRef('emailCodeFormRef');
 
 // 获取验证状态
 const validateState = computed(() => {
-    return emailCodeFormRef.value!.validateState;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return emailCodeFormRef.value?.validateState;
 });
 
 // 由外部验证后，若不正确则传入修改验证状态
@@ -102,7 +103,7 @@ const emailCodeHandler = (value: string) => {
     else validateSuccess(emailCodeFormRef);
 };
 
-const getEmailCaptcha = (type: string) => {
+async function getEmailCaptcha(type: string) {
     if (props.emailState !== 'success') return;
     if (email_success.value) {
         refreshCaptcha();
@@ -112,14 +113,14 @@ const getEmailCaptcha = (type: string) => {
     }
     email_handling.value = true;
     counting.value = true;
-    proxy.$axios.post('/userprofile/get_email_captcha/', {
+    await proxy.$axios.post('/userprofile/get_email_captcha/', {
         captcha: captcha.value,
-        hashkey: refValidCode.value!.hashkey,
+        hashkey: refValidCode.value?.hashkey,
         email: props.email,
         type: type,
-    }).then(function (response) {
-        const data = response.data;
+    }).then(function ({ data }) {
         if (data.type == 'success') {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             captchaFormRef.value!.validateState = 'success';
             hashkey.value = data.hashkey;
             email_success.value = true;
@@ -146,10 +147,11 @@ const getEmailCaptcha = (type: string) => {
         }
     });
     email_handling.value = false;
-};
+}
 
 const refreshCaptcha = () => {
-    refValidCode.value!.refreshPic();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    refValidCode.value?.refreshPic();
     captcha.value = '';
 };
 </script>

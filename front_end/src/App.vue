@@ -59,7 +59,7 @@ const notice = ref(`
 `);
 
 onMounted(() => {
-    const notice_hash = localStorage.getItem('notice') as string;
+    const notice_hash = localStorage.getItem('notice');
     if (hash_code(notice.value) + '' != notice_hash) {
         notice_visible.value = true;
     }
@@ -83,12 +83,10 @@ const handle_notice_close = () => {
 };
 
 function hash_code(t: string) {
-    let hash = 0,
-        i,
-        chr;
+    let hash = 0;
     if (t.length === 0) return hash;
-    for (i = 0; i < t.length; i++) {
-        chr = t.charCodeAt(i);
+    for (let i = 0; i < t.length; i++) {
+        const chr = t.charCodeAt(i);
         hash = (hash << 5) - hash + chr;
         hash |= 0; // 32bit integer
     }
