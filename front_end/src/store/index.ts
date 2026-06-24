@@ -6,10 +6,11 @@ import { pinia } from './create';
 import { deepMutableCopy } from '@/utils';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { colorSchemeTemplates } from '@/utils/config';
-import { CellChoice, ColorTemplateName, ColumnChoice, MS_Software, MS_Softwares, MS_State } from '@/utils/ms_const';
-import { Tournament } from '@/utils/tournaments';
+import type { CellChoice, ColorTemplateName, ColumnChoice, MS_Software } from '@/utils/ms_const';
+import { MS_Softwares, MS_State } from '@/utils/ms_const';
+import type { Tournament } from '@/utils/tournaments';
 import { UserProfile } from '@/utils/userprofile';
-import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
+import type { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 
 export const store = defineStore('user', {
     state: () => ({

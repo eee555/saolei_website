@@ -107,7 +107,7 @@ const falsemine = `<svg class="ms_cell" width="160" height="160" xmlns="http://w
 </svg>`;
 
 // 摆雷语法，原则上致敬tikz-minesweeper，兼顾已有的svg资源、修改部分不合理的设计
-export const cells: { [key: string]: string } = {
+export const cells: Record<string, string> = {
     1: cell1,
     2: cell2,
     3: cell3,

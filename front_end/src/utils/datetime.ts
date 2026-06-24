@@ -48,7 +48,7 @@ export function toISODateTimeString(date: Date): string {
         + date.getSeconds().toString().padStart(2, '0');
 }
 
-export function *generateDateRange(startDate: Date, endDate: Date, step = 1) {
+export function *generateDateRange(startDate: Date, endDate: Date, step = 1): Generator<Date, void, unknown> {
     const currentDate = new Date(startDate);
     while (currentDate <= endDate) {
         yield new Date(currentDate);
