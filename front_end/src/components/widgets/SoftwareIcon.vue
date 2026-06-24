@@ -6,12 +6,13 @@
 <script setup lang="ts">
 import '@/styles/text.css';
 
-import { computed, PropType } from 'vue';
+import type { PropType } from 'vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { local } from '@/store';
 import { ArbiterIcon, Clone07Icon, MetasweeperIcon, ViennaIconLegacy, ViennaIconNew } from '@/utils/assets';
-import { MS_Software } from '@/utils/ms_const';
+import type { MS_Software } from '@/utils/ms_const';
 
 const props = defineProps({
     software: {

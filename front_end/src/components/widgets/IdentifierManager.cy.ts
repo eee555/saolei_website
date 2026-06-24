@@ -31,21 +31,21 @@ function mountOption(user: UserProfile) {
     };
 }
 
-function mockGetIdentifiers(body: string[] = [], as: string = 'getIdentifiers') {
+function mockGetIdentifiers(body: string[] = [], as = 'getIdentifiers') {
     cy.intercept('GET', '/api/userprofile/identifier*', {
         statusCode: 200,
         body: body,
     }).as(as);
 }
 
-function mockDelIdentifier(body: object, as: string = 'delIdentifier') {
+function mockDelIdentifier(body: object, as = 'delIdentifier') {
     cy.intercept('POST', '/identifier/del/', {
         statusCode: 200,
         body: body,
     }).as(as);
 }
 
-function mockAddIdentifier(body: object, as: string = 'addIdentifier') {
+function mockAddIdentifier(body: object, as = 'addIdentifier') {
     cy.intercept('POST', '/identifier/add/', {
         statusCode: 200,
         body: body,
@@ -158,8 +158,8 @@ describe('IdentifierManager.vue', () => {
 
             mockGetIdentifiers(['new-b']);
 
-            cy.get('@vue').then((wrapper: any) => {
-                wrapper.setProps({
+            cy.get('@vue').then((wrapper: ComponentWrapper<typeof IdentifierManager>) => {
+                void wrapper.setProps({
                     user: createMockUser(3),
                 });
             });

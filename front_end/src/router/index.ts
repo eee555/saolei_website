@@ -54,7 +54,12 @@ const routes: RouteRecordRaw[] = [
         path: '/player/:id',
         name: 'player_id',
         component: () => import('../views/UserView/App.vue'),
-        redirect: (to) => `/player/${to.params.id}/summary`,
+        redirect: (to) => {
+            const { id } = to.params;
+            if (typeof id !== 'string') return '/player/0/summary';
+
+            return `/player/${id}/summary`;
+        },
         children: userRoutes,
     },
     {
