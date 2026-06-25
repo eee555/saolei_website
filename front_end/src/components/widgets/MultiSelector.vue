@@ -25,7 +25,7 @@ const props = defineProps({
     },
 });
 
-const selected = defineModel({
+const selected = defineModel<string[]>({
     type: Array as PropType<string[]>,
     default: () => [],
 });

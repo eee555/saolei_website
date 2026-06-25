@@ -114,7 +114,7 @@ describe('UserProfile', () => {
         });
 
         it('lastname not set', () => {
-            const profile = new UserProfile({ realname: 'a', first: 'b' });
+            const profile = new UserProfile({ realname: 'a', firstname: 'b' });
             expect(profile.canSetName).toBe(true);
         });
 
