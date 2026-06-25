@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/method-signature-style */
 /// <reference types="cypress" />
 
 import 'cypress-table';
@@ -68,8 +69,8 @@ Cypress.Commands.add('getLocalStorage', (key: string) => {
     return cy.window().then((win) => {
         const value = win.localStorage.getItem(key);
         try {
-            return value ? JSON.parse(value) : null;
-        } catch (_e) {
+            return value === null ? null : JSON.parse(value) as unknown;
+        } catch {
             // If not valid JSON, return the raw string
             return value;
         }
@@ -187,7 +188,7 @@ Cypress.Commands.add('extractTableData', { prevSubject: 'element' }, (subject) =
 Cypress.Commands.add(
     'shouldHaveState',
     { prevSubject: true },
-    (subject: JQuery<HTMLElement>, expectedStates: (boolean | null)[]) => {
+    (subject: JQuery, expectedStates: (boolean | null)[]) => {
     // 验证长度是否匹配
         expect(subject.length).to.equal(
             expectedStates.length,

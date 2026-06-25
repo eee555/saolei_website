@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/method-signature-style */
 // ***********************************************************
 // This example support/e2e.ts is processed and
 // loaded automatically before your test files.
@@ -70,7 +71,7 @@ declare global {
     }
 }
 
-Cypress.on('uncaught:exception', (err, _runnable) => {
+Cypress.on('uncaught:exception', (err) => {
     console.error('Unhandled exception:', err.message);
     return false; // prevents the test from failing
 });
@@ -137,7 +138,7 @@ Cypress.Commands.add('flushDatabase', () => {
 });
 
 Cypress.Commands.add('visitUser', (userId: number, tab?: string) => {
-    if (tab) {
+    if (tab === undefined) {
         cy.visit(`/#/player/${userId}/${tab}`);
     } else {
         cy.visit(`/#/player/${userId}`);

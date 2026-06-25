@@ -1,4 +1,5 @@
-import type { AxiosError, AxiosResponse } from 'axios';
+import type { AxiosResponse } from 'axios';
+import { isAxiosError } from 'axios';
 import { ElNotification } from 'element-plus';
 
 import i18n from '@/i18n';
@@ -26,8 +27,8 @@ export function baseErrorNotification(title: string, message: string): void {
     });
 }
 
-export function httpErrorNotification(error: AxiosError): void {
-    const status = error.response?.status;
+export function httpErrorNotification(error: unknown): void {
+    const status = isAxiosError(error) ? error.response?.status : undefined;
     if (status !== undefined && status in notificationMessage) {
         baseErrorNotification(t('msg.actionFail'), t(notificationMessage[status]));
     } else {

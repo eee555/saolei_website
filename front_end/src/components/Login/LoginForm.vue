@@ -57,7 +57,8 @@
 import '@/styles/text.css';
 import '@/styles/cards.css';
 
-import { ElButton, ElCheckbox, ElForm, ElFormItem, ElInput, ElLink, ElRadioButton, ElRadioGroup, FormInstance, FormRules } from 'element-plus';
+import type { FormInstance, FormRules } from 'element-plus';
+import { ElButton, ElCheckbox, ElForm, ElFormItem, ElInput, ElLink, ElRadioButton, ElRadioGroup } from 'element-plus';
 import { onUnmounted, reactive, ref, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -93,7 +94,7 @@ const ruleFormRef = useTemplateRef('ruleFormRef');
 
 const submitForm = async (formEl: FormInstance | undefined) => {
     if (!formEl) return;
-    await formEl.validate((valid, _fields) => {
+    await formEl.validate((valid) => {
         if (!valid) return;
         const user_id = localStorage.getItem('history_user_id');
         proxy.$axios.post('userprofile/login/', {
@@ -103,8 +104,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
             captcha: loginForm.captcha,
             hashkey: refValidCode.value?.hashkey,
             set_expiry: remember_me.value ? setExpiry.value : 0,
-        }).then(function (response) {
-            const data = response.data;
+        }).then(function ({ data }) {
             if (data.type == 'success') {
                 emit('login', data.user);
             } else if (data.type == 'error') {
@@ -114,14 +114,14 @@ const submitForm = async (formEl: FormInstance | undefined) => {
                     loginForm.captcha = '';
                     passwordError.value = t('msg.usernamePasswordInvalid');
                 }
-                if (refValidCode.value) refValidCode.value.refreshPic();
+                if (refValidCode.value !== null) refValidCode.value.refreshPic();
             }
         }).catch(httpErrorNotification);
     });
 };
 
 onUnmounted(() => {
-    if (!ruleFormRef.value) return;
+    if (ruleFormRef.value === null) return;
     ruleFormRef.value.resetFields();
 });
 

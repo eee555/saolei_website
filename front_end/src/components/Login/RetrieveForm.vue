@@ -68,7 +68,7 @@ const submitForm = async (formEl?: FormInstance) => {
     await proxy.$axios.post('userprofile/retrieve/', {
         password: retrieveForm.password,
         email: retrieveForm.email,
-        email_key: emailCodeFormRef.value!.hashkey,
+        email_key: emailCodeFormRef.value?.hashkey,
         email_captcha: retrieveForm.emailCode,
     }).then(function ({ data }) {
         if (data.type == 'success') {
@@ -80,7 +80,7 @@ const submitForm = async (formEl?: FormInstance) => {
             });
         } else if (data.type === 'error') {
             if (data.object === 'emailcode') {
-                emailCodeFormRef.value!.errorCode();
+                emailCodeFormRef.value?.errorCode();
             }
         }
     });
