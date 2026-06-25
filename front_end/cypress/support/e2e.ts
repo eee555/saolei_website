@@ -138,7 +138,7 @@ Cypress.Commands.add('flushDatabase', () => {
 });
 
 Cypress.Commands.add('visitUser', (userId: number, tab?: string) => {
-    if (tab === undefined) {
+    if (tab !== undefined) {
         cy.visit(`/#/player/${userId}/${tab}`);
     } else {
         cy.visit(`/#/player/${userId}`);
