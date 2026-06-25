@@ -1,18 +1,20 @@
-import { CacheRowSchema, getDatabase, getTransaction, registerStoreRowSchema, USER_INFO_STORE_NAME } from './database';
+import type { CacheRowSchema } from './database';
+import { getDatabase, getTransaction, registerStoreRowSchema, USER_INFO_STORE_NAME } from './database';
 import { serviceConfig } from './store';
 
 import $axios from '@/http';
-import { GetUserInfoResponse } from '@/utils/common/structInterface';
+import type { GetUserInfoResponse } from '@/utils/common/structInterface';
 import { UserProfile } from '@/utils/userprofile';
-import { VideoAbstract, VideoAbstractInfo } from '@/utils/videoabstract';
+import type { VideoAbstractInfo } from '@/utils/videoabstract';
+import { VideoAbstract } from '@/utils/videoabstract';
 
 type RequestStatus = 'pending' | 'inFlight';
-type UserInfoRequest = {
+interface UserInfoRequest {
     promise: Promise<GetUserInfoResponse>;
     resolve: (value: GetUserInfoResponse) => void;
     reject: (reason?: unknown) => void;
     status: RequestStatus;
-};
+}
 
 const userInfoRequests = new Map<number, UserInfoRequest>();
 
@@ -55,12 +57,7 @@ function enqueueRequest(userId: number): Promise<GetUserInfoResponse> {
     if (existing) return existing.promise;
 
     // 定义Promise的resolve和reject函数，创建一个新的Promise
-    let resolve!: (value: GetUserInfoResponse) => void;
-    let reject!: (reason?: unknown) => void;
-    const promise = new Promise<GetUserInfoResponse>((res, rej) => {
-        resolve = res;
-        reject = rej;
-    });
+    const { promise, resolve, reject } = Promise.withResolvers<GetUserInfoResponse>();
 
     const request = { promise, resolve, reject, status: 'pending' as const };
     userInfoRequests.set(userId, request);
@@ -88,8 +85,7 @@ async function refreshUpdatedUsers() {
         const requestTime = Date.now();
         const lastUpdate = serviceConfig.value.userInfoLastUpdate;
         const tx = await getTransaction(USER_INFO_STORE_NAME, 'readwrite');
-        const store = tx.store;
-        if (!store) throw new Error(`Store ${USER_INFO_STORE_NAME} is not available`);
+        const { store } = tx;
 
         // 如果是首次更新（lastUpdate为0），则清空整个存储
         if (lastUpdate === 0) {
@@ -139,7 +135,9 @@ async function processUserInfoBatch() {
     }
 
     // 将所有选中的请求状态设置为'inFlight'（正在处理）
-    entries.forEach(([, request]) => request.status = 'inFlight');
+    entries.forEach(([, request]) => {
+        request.status = 'inFlight';
+    });
 
     // 提取用户ID数组，用于批量请求
     const userIds = entries.map(([id]) => id);
@@ -151,8 +149,7 @@ async function processUserInfoBatch() {
         // 将所有用户信息存储到数据库
         const infoMap = new Map(userInfos.map((u) => [u.id, u]));
         const tx = await getTransaction(USER_INFO_STORE_NAME, 'readwrite');
-        const store = tx.store;
-        if (!store) throw new Error(`Store ${USER_INFO_STORE_NAME} is not available`);
+        const { store } = tx;
 
         await Promise.all(userInfos.map((userInfo) => store.put(userInfo)));
         await tx.done;
@@ -161,14 +158,19 @@ async function processUserInfoBatch() {
         for (const [userId, { resolve, reject }] of entries) {
             const info = infoMap.get(userId);
             // 如果找到用户信息，则解决Promise；否则拒绝
-            info ? resolve(info) : reject(new Error(`User ${userId} not returned by batch API`));
+            if (info) resolve(info);
+            else reject(new Error(`User ${userId} not returned by batch API`));
         }
     } catch (err) {
         // 如果发生错误，拒绝所有请求
-        entries.forEach(([, { reject }]) => reject(err));
+        entries.forEach(([, { reject }]) => {
+            reject(err);
+        });
     } finally {
         // 清理已处理的请求
-        entries.forEach(([userId]) => userInfoRequests.delete(userId));
+        entries.forEach(([userId]) => {
+            userInfoRequests.delete(userId);
+        });
 
         // 如果还有待处理的请求，检查是否需要安排刷新缓冲区
         if ([...userInfoRequests.values()].some((request) => request.status === 'pending')) {
@@ -177,7 +179,7 @@ async function processUserInfoBatch() {
     }
 }
 
-export async function fetchUserInfo(userId: number) {
+export async function fetchUserInfo(userId: number): Promise<UserProfile> {
     try {
         await refreshUpdatedUsers().catch(() => undefined);
         const db = await getDatabase();
@@ -189,7 +191,7 @@ export async function fetchUserInfo(userId: number) {
     return new UserProfile(await enqueueRequest(userId));
 }
 
-export async function fetchUserIdentifiers(userId: number) {
+export async function fetchUserIdentifiers(userId: number): Promise<string[]> {
     const response = await $axios.get('/api/userprofile/identifier', {
         params: { user_id: userId },
     });
@@ -197,14 +199,14 @@ export async function fetchUserIdentifiers(userId: number) {
 }
 
 const userVideosPendingRequests = new Map<number, Promise<VideoAbstract[]>>();
-export function fetchUserVideos(userId: number) {
+export function fetchUserVideos(userId: number): Promise<VideoAbstract[]> {
     const pendingRequest = userVideosPendingRequests.get(userId);
 
     if (pendingRequest) return pendingRequest;
 
     const promise = $axios.get('/api/userprofile/videolist', {
         params: { user_id: userId },
-    }).then((response) => response.data.map((video: VideoAbstractInfo) => new VideoAbstract(video))).finally(() => {
+    }).then(({ data }) => (data as VideoAbstractInfo[]).map((video) => new VideoAbstract(video))).finally(() => {
         userVideosPendingRequests.delete(userId);
     });
 

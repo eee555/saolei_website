@@ -30,6 +30,7 @@
 // 注册、登录、找回密码的弹框及右上方按钮
 import '@/styles/text.css';
 
+import { isAxiosError } from 'axios';
 import { ElButton, ElDialog, ElMessage } from 'element-plus';
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -51,9 +52,9 @@ const activeDialog = ref<'login' | 'register' | 'retrieve'>('login');
 onMounted(async () => {
     await proxy.$axios.get('api/userprofile/info/0').then(function (response) {
         store.login(response.data);
-    }).catch((err) => {
+    }).catch((err: unknown) => {
         store.logout();
-        if (err.status == 401) {
+        if (isAxiosError(err) && err.response?.status === 401) {
             console.log('401 is normal, indicating that the user is not logged in.');
             return;
         }
@@ -66,13 +67,13 @@ const login = (user: any) => {
     dialogVisible.value = false;
 };
 
-const logout = async () => {
-    proxy.$axios.post('/userprofile/logout/', {}).then(function (_response) {
+async function logout() {
+    await proxy.$axios.post('/userprofile/logout/', {}).then(function () {
         store.logout();
         ElMessage.success({ message: t('common.msg.logoutSuccess'), offset: 68 });
         dialogVisible.value = false;
     }).catch(httpErrorNotification);
-};
+}
 
 const i18nMessages = {
     'zh-cn': { local: {

@@ -48,7 +48,8 @@
 <script setup lang="ts">
 import '@/styles/text.css';
 import { ElDivider, ElRow } from 'element-plus';
-import { computed, PropType, ref } from 'vue';
+import type { PropType } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Tippy } from 'vue-tippy';
 
@@ -60,8 +61,10 @@ import { BBBvSummaryConfig, colorTheme } from '@/store';
 import { ArrayUtils } from '@/utils/arrays';
 import { PiecewiseColorScheme } from '@/utils/colors';
 import { setLastDigit } from '@/utils/math';
-import { CellChoice, ColorTemplateName, getPiecewiseColorSchemeName, MS_Level, PiecewiseColorSchemeName } from '@/utils/ms_const';
-import { getStat_stat, groupVideosByBBBv, VideoAbstract } from '@/utils/videoabstract';
+import type { CellChoice, ColorTemplateName, MS_Level } from '@/utils/ms_const';
+import { getPiecewiseColorSchemeName, PiecewiseColorSchemeName } from '@/utils/ms_const';
+import type { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
+import { groupVideosByBBBv } from '@/utils/videoabstract';
 
 const props = defineProps({
     header: { type: Boolean, default: false },

@@ -10,5 +10,5 @@
 import PrColumn from 'primevue/column';
 
 import PlayerName from '@/components/PlayerName.vue';
-import { VideoAbstract } from '@/utils/videoabstract';
+import type { VideoAbstract } from '@/utils/videoabstract';
 </script>

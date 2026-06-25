@@ -10,7 +10,8 @@
 import { ElCheckboxButton, ElCheckboxGroup } from 'element-plus';
 
 import SoftwareIcon from '@/components/widgets/SoftwareIcon.vue';
-import { MS_Software, MS_Softwares } from '@/utils/ms_const';
+import type { MS_Software } from '@/utils/ms_const';
+import { MS_Softwares } from '@/utils/ms_const';
 
 const level = defineModel({
     type: Array<MS_Software>,

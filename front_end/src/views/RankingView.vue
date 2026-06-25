@@ -76,6 +76,7 @@ import { ElButton, ElPagination, ElRow } from 'element-plus';
 import { onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import { httpErrorNotification } from '@/components/Notifications';
 import PlayerName from '@/components/PlayerName.vue';
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import { ms_to_s, to_fixed_n } from '@/utils';
@@ -112,20 +113,14 @@ interface Player {
     sum: string;
 }
 
-interface NameKey {
-    [index: string]: string;
-}
-interface Tags {
-    [index: string]: NameKey;
-}
+type NameKey = Record<string, string>;
+type Tags = Record<string, NameKey>;
 interface NameKeyReverse {
     key: string;
     reverse: boolean;
     to_fixed: number;
 }
-interface TagsReverse {
-    [index: string]: NameKeyReverse;
-}
+type TagsReverse = Record<string, NameKeyReverse>;
 
 const mode_tags: Tags = {
     STD: { key: 'std' },
@@ -172,12 +167,11 @@ const get_player_rank = (page: number) => {
             indexes: `["#","${piv}*->name","${piv}*->b","${piv}*->b_id","${piv}*->i","${piv}*->i_id","${piv}*->e","${piv}*->e_id","${piv}*->sum"]`,
             page: page,
         },
-    }).then(function (response) {
+    }).then(function ({ data }) {
         // console.log(response.data);
-        const data = response.data;
         state.Total = data.total_page;
 
-        const players = data.players;
+        const { players } = data;
         playerData.splice(0, playerData.length);
         for (let i = 0; i < players.length / 9; i++) {
             playerData.push({
@@ -193,7 +187,7 @@ const get_player_rank = (page: number) => {
             });
         }
         // console.log(playerData);
-    });
+    }).catch(httpErrorNotification);
 };
 
 const currentChange = (val: number) => {

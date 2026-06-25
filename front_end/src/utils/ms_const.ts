@@ -63,10 +63,11 @@ export type CellChoice = typeof CellChoices[number];
 export const PiecewiseColorSchemeName = ['time', 'ioe', 'bvs', 'stnb', 'thrp', 'corr', 'ces', 'cls', 'iome'] as const;
 export type PiecewiseColorSchemeName = typeof PiecewiseColorSchemeName[number];
 
-export function getPiecewiseColorSchemeName(stat: PiecewiseColorSchemeName, level?: MS_Level) {
+export function getPiecewiseColorSchemeName(stat: PiecewiseColorSchemeName, level?: MS_Level): 'bvs' | 'stnb' | 'ioe' | 'btime' | 'itime' | 'etime' {
     switch (stat) {
         case 'time':
             if (!level) throw new Error('Level must be specified for time');
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
             return `${level}time` as 'btime' | 'itime' | 'etime';
         case 'bvs':
         case 'ces':

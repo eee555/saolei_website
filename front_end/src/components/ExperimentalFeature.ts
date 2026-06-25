@@ -1,5 +1,6 @@
 import { ElWatermark } from 'element-plus';
-import { Directive, h, render, watchEffect } from 'vue';
+import type { Directive } from 'vue';
+import { h, render, watchEffect } from 'vue';
 
 import i18n from '@/i18n';
 import { local } from '@/store';

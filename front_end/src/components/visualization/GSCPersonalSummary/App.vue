@@ -1,6 +1,6 @@
 <template>
     <ElRow>
-        <AllSums :sum-time="sumTime" :sum-bvs="sumBvs" :sum-stnb="sumStnb" />
+        <AllSums :sum-time="bStat.time + iStat.time + eStat.time" :sum-bvs="bStat.bvs + iStat.bvs + eStat.bvs" :sum-stnb="bStat.stnb + iStat.stnb + eStat.stnb" />
     </ElRow>
     <ElRow style="height: 20px" />
     <ElRow>
@@ -18,18 +18,19 @@
     </ElRow>
     <ElRow style="height: 20px" />
     <ElRow>
-        <AllSums :sum-time="sumTime" :sum-bvs="sumBvs" :sum-stnb="sumStnb" />
+        <AllSums :sum-time="bStat.time + iStat.time + eStat.time" :sum-bvs="bStat.bvs + iStat.bvs + eStat.bvs" :sum-stnb="bStat.stnb + iStat.stnb + eStat.stnb" />
     </ElRow>
 </template>
 
 <script setup lang="ts">
 import { ElCol, ElRow } from 'element-plus';
-import { computed, PropType, useTemplateRef } from 'vue';
+import type { PropType } from 'vue';
+import { computed, useTemplateRef } from 'vue';
 
 import AllSums from './AllSums.vue';
 import LevelBlock from './LevelBlock.vue';
 
-import { VideoAbstract } from '@/utils/videoabstract';
+import type { VideoAbstract } from '@/utils/videoabstract';
 
 defineProps({
     videos: {
@@ -38,19 +39,27 @@ defineProps({
     },
 });
 
-const BBlockRef = useTemplateRef('BBlockRef');
-const IBlockRef = useTemplateRef('IBlockRef');
-const EBlockRef = useTemplateRef('EBlockRef');
+type LevelBlockInstance = InstanceType<typeof LevelBlock>;
 
-const sumTime = computed(() => {
-    return (BBlockRef.value ? BBlockRef.value.sumAll.time : 0) + (IBlockRef.value ? IBlockRef.value.sumAll.time : 0) + (EBlockRef.value ? EBlockRef.value.sumAll.time : 0);
+const BBlockRef = useTemplateRef<LevelBlockInstance>('BBlockRef');
+const IBlockRef = useTemplateRef<LevelBlockInstance>('IBlockRef');
+const EBlockRef = useTemplateRef<LevelBlockInstance>('EBlockRef');
+
+const bStat = computed(() => {
+    return BBlockRef.value === null
+        ? { time: 0, bvs: 0, stnb: 0 }
+        : BBlockRef.value.sumAll;
 });
 
-const sumBvs = computed(() => {
-    return (BBlockRef.value ? BBlockRef.value.sumAll.bvs : 0) + (IBlockRef.value ? IBlockRef.value.sumAll.bvs : 0) + (EBlockRef.value ? EBlockRef.value.sumAll.bvs : 0);
+const iStat = computed(() => {
+    return IBlockRef.value === null
+        ? { time: 0, bvs: 0, stnb: 0 }
+        : IBlockRef.value.sumAll;
 });
 
-const sumStnb = computed(() => {
-    return (BBlockRef.value ? BBlockRef.value.sumAll.stnb : 0) + (IBlockRef.value ? IBlockRef.value.sumAll.stnb : 0) + (EBlockRef.value ? EBlockRef.value.sumAll.stnb : 0);
+const eStat = computed(() => {
+    return EBlockRef.value === null
+        ? { time: 0, bvs: 0, stnb: 0 }
+        : EBlockRef.value.sumAll;
 });
 </script>

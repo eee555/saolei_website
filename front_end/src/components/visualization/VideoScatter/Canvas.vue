@@ -65,9 +65,9 @@ import { getTextColor } from '@/utils/colors';
 import { preview } from '@/utils/common/PlayerDialog';
 import type { VideoAbstract } from '@/utils/videoabstract';
 
-const plotRef = useTemplateRef('plotRef');
+const plotRef = useTemplateRef<HTMLDivElement>('plotRef');
 const activePoint = ref<PlotPoint<VideoAbstract> | null>(null);
-let resizeObserver: ResizeObserver | undefined;
+let resizeObserver: ResizeObserver | undefined = undefined;
 
 const xTicks = computed(() => getNiceTicks(VideoScatterStore.plotDomain.xMin, VideoScatterStore.plotDomain.xMax, 5));
 const yTicks = computed(() => getNiceTicks(VideoScatterStore.plotDomain.yMin, VideoScatterStore.plotDomain.yMax, 5));
@@ -77,7 +77,7 @@ const labelColor = computed(() => getTextColor('regular'));
 const gridColor = computed(() => getComputedStyle(document.documentElement).getPropertyValue('--el-border-color-lighter'));
 
 function handlePointClick(point: PlotPoint<VideoAbstract>) {
-    preview(point.data.id);
+    void preview(point.data.id);
 }
 
 function handlePointEnter(point: PlotPoint<VideoAbstract>) {
@@ -134,7 +134,7 @@ function createSvgToDataYScale() {
 }
 
 function updatePlotSize() {
-    if (!plotRef.value) return;
+    if (plotRef.value === null) return;
 
     const rect = plotRef.value.getBoundingClientRect();
     VideoScatterStore.plotSize = {
@@ -146,7 +146,7 @@ function updatePlotSize() {
 onMounted(() => {
     updatePlotSize();
     resizeObserver = new ResizeObserver(updatePlotSize);
-    if (plotRef.value) resizeObserver.observe(plotRef.value);
+    if (plotRef.value !== null) resizeObserver.observe(plotRef.value);
 });
 
 onUnmounted(() => {

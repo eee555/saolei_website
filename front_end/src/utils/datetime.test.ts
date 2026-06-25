@@ -6,6 +6,7 @@ import {
     generalTimeStampToDate,
     generateDateRange,
     getWeekTime,
+    toDate,
     toISODateString,
     toISODateTimeString,
 } from './datetime';
@@ -20,6 +21,22 @@ describe('datetime', () => {
             const date = new Date(2025, 5, 18, 12, 30, 0);
 
             expect(getWeekTime(date)).toBe(date.getTime() - date.getDay() * fullDay);
+        });
+    });
+
+    describe('toDate', () => {
+        it('Creates dates from supported Date constructor inputs', () => {
+            const date = new Date('2025-01-05T08:09:10Z');
+
+            expect(toDate('2025-01-05T08:09:10Z')).toEqual(date);
+            expect(toDate(date.getTime())).toEqual(date);
+            expect(toDate(date)).toEqual(date);
+            expect(toDate(date)).not.toBe(date);
+        });
+
+        it('Returns undefined for nullish inputs', () => {
+            expect(toDate(null)).toBeUndefined();
+            expect(toDate(undefined)).toBeUndefined();
         });
     });
 

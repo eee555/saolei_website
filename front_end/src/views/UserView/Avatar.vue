@@ -45,10 +45,10 @@ function refresh(newId: number) {
 
 watch(() => user.value.id, refresh, { immediate: true });
 
-const fileInputRef = useTemplateRef('fileInputRef');
+const fileInputRef = useTemplateRef<HTMLInputElement>('fileInputRef');
 function triggerFileDialog() {
     if (disabled.value) return;
-    fileInputRef.value!.click();
+    fileInputRef.value?.click();
 }
 
 async function handleFileChange(event: Event) {
@@ -86,8 +86,7 @@ async function updateAvatar(a: File) {
     await proxy.$axios.post(
         '/api/userprofile/update_avatar',
         formData,
-    ).then(function (response) {
-        const data = response.data;
+    ).then(function ({ data }) {
         if (data.type === 'success') {
             avatarVersion.value += 1;
             user.value.left_avatar_n -= 1;

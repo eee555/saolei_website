@@ -72,7 +72,7 @@ function expectAccountLinkTableRow(platform: string, identifier: string, verifie
     });
 }
 
-function expectAccountLinkTableData(expected: Array<{ platform: string; identifier: string; verified: boolean }>) {
+function expectAccountLinkTableData(expected: { platform: string; identifier: string; verified: boolean }[]) {
     cy.get('table:visible').getTable().should((tableData) => {
         expect(tableData.length).to.equal(expected.length);
         expected.forEach((item) => {

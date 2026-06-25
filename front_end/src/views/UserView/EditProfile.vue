@@ -101,7 +101,8 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { httpErrorNotification } from '@/components/Notifications';
-import { createEnumMap, EnumMap } from '@/utils';
+import type { EnumMap } from '@/utils';
+import { createEnumMap } from '@/utils';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { globalNow, toISODateTimeString } from '@/utils/datetime';
 import { UserProfile } from '@/utils/userprofile';
@@ -125,15 +126,14 @@ const isEditing = defineModel('isEditing', { type: Boolean, default: false });
 
 const updating = ref(false);
 
+const defaultFormStatus: formStatusSingle = {
+    new: '',
+    status: '',
+    errorMsg: '',
+};
+
 const formStatus = ref<EnumMap<UpdateProfileField, formStatusSingle>>(
-    createEnumMap(
-        UpdateProfileFields,
-        {
-            new: '',
-            status: '' as '' | 'success' | 'error',
-            errorMsg: '',
-        },
-    ),
+    createEnumMap(UpdateProfileFields, defaultFormStatus),
 );
 
 function refresh() {
@@ -166,7 +166,7 @@ function processUpdateResponse(field: UpdateProfileField, data: UpdateProfileRes
             user.value.left_signature_n -= 1;
             user.value.last_change_signature = new Date(Date.now());
         }
-    } else if (data.type === 'error') {
+    } else {
         formStatus.value[field].status = 'error';
         formStatus.value[field].errorMsg = t(`local.error.${data.object}.${data.category}`);
     }
@@ -180,7 +180,8 @@ async function updateProfile() {
             params.append(field, formStatus.value[field].new);
         }
     }
-    if (!params.keys().next().done) {
+
+    if (params.keys().next().done !== true) {
         await proxy.$axios.post(
             '/api/userprofile/update_profile',
             params,
@@ -208,7 +209,7 @@ const i18nMessages = {
         signature: '个性签名',
         tooltipExpTime: '高级sub200后才可以修改个性签名',
         updateSuccess: '修改成功',
-        signatureTooltip: ({ named }: { named: any }) => {
+        signatureTooltip: ({ named }: { named: { (key: 'left'): number; (key: 'next'): string } }) => {
             if (named('left') > 0) {
                 return `您每月可获得一次签名修改次数。当前剩余${named('left')}次。`;
             } else {
@@ -234,7 +235,7 @@ const i18nMessages = {
         signature: 'Signature',
         tooltipExpTime: 'Achieve expert sub200 to change signature',
         updateSuccess: 'Update successful',
-        signatureTooltip: ({ named }: { named: any }) => {
+        signatureTooltip: ({ named }: { named: { (key: 'left'): number; (key: 'next'): string } }) => {
             if (named('left') > 0) {
                 return `You gain one chance to modify your signature each month. You have ${named('left')} chances remaining.`;
             } else {

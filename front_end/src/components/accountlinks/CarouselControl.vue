@@ -8,8 +8,9 @@
 </template>
 
 <script setup lang="ts">
-import { ElCarousel, ElLink } from 'element-plus';
-import { PropType } from 'vue';
+import type { ElCarousel } from 'element-plus';
+import { ElLink } from 'element-plus';
+import type { PropType } from 'vue';
 
 import { BaseIconNext, BaseIconPrev } from '@/components/common/icon';
 

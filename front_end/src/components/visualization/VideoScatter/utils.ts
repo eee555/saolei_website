@@ -1,5 +1,5 @@
-import { PlotPoint } from '@/components/visualization/Plots';
-import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
+import type { PlotPoint } from '@/components/visualization/Plots';
+import type { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 
 export function videoToPlotPoint(video: VideoAbstract, statX: getStat_stat, statY: getStat_stat): PlotPoint<VideoAbstract> | undefined {
     const point = {

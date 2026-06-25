@@ -30,11 +30,12 @@
 <script setup lang="ts">
 import { ElDescriptions, ElDescriptionsItem } from 'element-plus';
 import PrToolbar from 'primevue/toolbar';
-import { PropType } from 'vue';
+import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import UnverifiedNotice from './UnverifiedNotice.vue';
-import { AccountMSGames, AccountMSGamesDefault } from './utils';
+import type { AccountMSGames } from './utils';
+import { AccountMSGamesDefault } from './utils';
 
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
 import { utc_to_local_format } from '@/utils/system/tools';

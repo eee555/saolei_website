@@ -1,9 +1,15 @@
+import type { FormItemInstance } from 'element-plus';
+import type { ShallowRef } from 'vue';
 
-export function validateSuccess(elFormItemRef: any) {
-    elFormItemRef.value!.validateMessage = '';
-    elFormItemRef.value!.validateState = 'success';
+type FormItemRef = Readonly<ShallowRef<FormItemInstance | null>>;
+
+export function validateSuccess(elFormItemRef: FormItemRef): void {
+    if (elFormItemRef.value === null) return;
+    elFormItemRef.value.validateMessage = '';
+    elFormItemRef.value.validateState = 'success';
 }
-export function validateError(elFormItemRef: any, msg: string) {
-    elFormItemRef.value!.validateMessage = msg;
-    elFormItemRef.value!.validateState = 'error';
+export function validateError(elFormItemRef: FormItemRef, msg: string): void {
+    if (elFormItemRef.value === null) return;
+    elFormItemRef.value.validateMessage = msg;
+    elFormItemRef.value.validateState = 'error';
 }

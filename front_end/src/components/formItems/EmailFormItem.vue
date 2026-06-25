@@ -8,8 +8,9 @@
 </template>
 
 <script setup lang="ts">
+import { isAxiosError } from 'axios';
 import { ElFormItem, ElInput } from 'element-plus';
-import isEmail from 'validator/lib/isEmail';
+import isEmail from 'validator/es/lib/isEmail';
 import { computed, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -26,16 +27,16 @@ const email = defineModel({ type: String, required: true });
 const { proxy } = useCurrentInstance();
 const { t } = useI18n();
 
-const emailFormRef = useTemplateRef('emailFormRef');
+const emailFormRef = useTemplateRef<InstanceType<typeof ElFormItem>>('emailFormRef');
 const validateState = computed(() => {
-    return emailFormRef.value!.validateState;
+    return emailFormRef.value?.validateState;
 });
 
 defineExpose({ validateState });
 
 const emailInputHandler = (value: string) => {
     if (value.length == 0) validateError(emailFormRef, t('msg.emailRequired'));
-    else emailFormRef.value!.clearValidate();
+    else emailFormRef.value?.clearValidate();
 };
 
 const emailChangeHandler = (value: string) => {
@@ -46,9 +47,9 @@ const emailChangeHandler = (value: string) => {
             if (response.data === 'True' && props.checkCollision === 'true') validateError(emailFormRef, t('msg.emailCollision'));
             else if (response.data === 'False' && props.checkCollision === 'false') validateError(emailFormRef, t('msg.emailNoCollision'));
             else validateSuccess(emailFormRef);
-        }).catch(function (error) {
-            if (error.code === 'ERR_NETWORK') validateError(emailFormRef, t('msg.connectionFail'));
-            else validateError(emailFormRef, t('msg.unknownError') + error);
+        }).catch(function (error: unknown) {
+            if (isAxiosError(error) && error.code === 'ERR_NETWORK') validateError(emailFormRef, t('msg.connectionFail'));
+            else validateError(emailFormRef, t('msg.unknownError') + String(error));
         });
     }
 };

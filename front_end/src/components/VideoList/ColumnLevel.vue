@@ -19,7 +19,7 @@ import PrListbox from 'primevue/listbox';
 
 import GameLevelIcon from '@/components/widgets/GameLevelIcon.vue';
 import { MS_Levels } from '@/utils/ms_const';
-import { VideoAbstract } from '@/utils/videoabstract';
+import type { VideoAbstract } from '@/utils/videoabstract';
 </script>
 
 <style lang="less">

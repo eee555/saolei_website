@@ -9,11 +9,13 @@ import tseslint from 'typescript-eslint';
 // import vueI18n from '@intlify/eslint-plugin-vue-i18n'; // 不兼容ts。https://github.com/intlify/eslint-plugin-vue-i18n/issues/32
 
 export default defineConfig({
-    files: ['**/*.{js,ts,vue}'],
     ignores: [
         '**/node_modules/**', '**/dist/**', '**/build/**', '**/public/**',
         '**/GuideView.vue', '**/WorldView.vue',
+        '**/src/components/visualization/Plots/**', // 将迁移至 @putianyi888/vue3-plots
     ],
+}, {
+    files: ['**/*.{js,ts,vue}'],
     plugins: {
         '@stylistic': stylistic,
         cypress: pluginCypress,
@@ -21,7 +23,7 @@ export default defineConfig({
     extends: [
         eslint.configs.recommended,
         importPlugin.flatConfigs.recommended,
-        tseslint.configs.recommended,
+        tseslint.configs.all,
         ...pluginVue.configs['flat/recommended'],
         pluginCypress.configs.recommended,
         stylistic.configs.all,
@@ -34,6 +36,25 @@ export default defineConfig({
         },
         parserOptions: {
             parser: tseslint.parser,
+            projectService: {
+                allowDefaultProject: [
+                    'cypress.config.ts',
+                    'eslint.config.js',
+                ],
+            },
+            extraFileExtensions: ['.vue'],
+        },
+    },
+    settings: {
+        'vue-i18n': {
+            localeDir: 'src/i18n/locales/*.ts',
+            messageSyntaxVersion: '^11.0.0',
+        },
+        'import/resolver': {
+            // You will also need to install and configure the TypeScript resolver
+            // See also https://github.com/import-js/eslint-import-resolver-typescript#configuration
+            typescript: true,
+            node: true,
         },
     },
     rules: {
@@ -189,7 +210,7 @@ export default defineConfig({
         '@stylistic/multiline-ternary': ['error', 'always-multiline'],
         '@stylistic/newline-per-chained-call': 'off',
         '@stylistic/no-extra-parens': ['error', 'all', {
-            enforceForArrowConditionals: false,
+            ignoredNodes: ['ArrowFunctionExpression[body.type=ConditionalExpression]'],
         }],
         '@stylistic/no-multiple-empty-lines': ['error', { max: 1 }],
         '@stylistic/object-curly-spacing': ['error', 'always'],
@@ -202,24 +223,40 @@ export default defineConfig({
             anonymous: 'always',
             named: 'never',
         }],
-        '@typescript-eslint/ban-ts-comment': 'off',
-        '@typescript-eslint/no-empty-object-type': 'off',
-        '@typescript-eslint/no-explicit-any': 'off',
-        '@typescript-eslint/no-namespace': 'off',
-        '@typescript-eslint/no-unsafe-function-type': 'off',
-        '@typescript-eslint/no-unused-expressions': 'off',
-        '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
+
+        '@typescript-eslint/consistent-return': 'off', // 官方建议关闭
+        '@typescript-eslint/explicit-function-return-type': 'off', // 和i18n冲突
+        '@typescript-eslint/prefer-function-type': 'off', // TODO: emit定义格式需要修改
+        '@typescript-eslint/promise-function-async': 'off', // 和Vue Router、defineAsyncComponent冲突
+        '@typescript-eslint/max-params': 'off',
+        '@typescript-eslint/naming-convention': 'off', // TODO：涉及到前后端标准不一致的问题，很复杂
+        '@typescript-eslint/no-redeclare': 'off',
+        '@typescript-eslint/no-explicit-any': 'off', // TODO
+        '@typescript-eslint/no-magic-numbers': 'off', // TODO
+        '@typescript-eslint/no-unsafe-argument': 'off', // TODO：牵扯到的内容很多，包括后端API重构等
+        '@typescript-eslint/no-unsafe-assignment': 'off', // TODO：牵扯到的内容很多，包括后端API重构等
+        '@typescript-eslint/no-unsafe-member-access': 'off', // TODO：牵扯到的内容很多，包括后端API重构等
+        '@typescript-eslint/no-unsafe-type-assertion': 'off', // 和Vue的PropType冲突
+        '@typescript-eslint/no-use-before-define': 'off', // 为了代码可读性，有的函数需要放在最后
+        '@typescript-eslint/prefer-enum-initializers': 'off',
+        '@typescript-eslint/prefer-readonly-parameter-types': 'off',
+        '@typescript-eslint/switch-exhaustiveness-check': ['error', {
+            allowDefaultCaseForExhaustiveSwitch: false,
+            considerDefaultExhaustiveForUnions: true,
+        }],
+        '@typescript-eslint/unified-signatures': 'off', // TODO
     },
-    settings: {
-        'vue-i18n': {
-            localeDir: 'src/i18n/locales/*.ts',
-            messageSyntaxVersion: '^11.0.0',
-        },
-        'import/resolver': {
-            // You will also need to install and configure the TypeScript resolver
-            // See also https://github.com/import-js/eslint-import-resolver-typescript#configuration
-            typescript: true,
-            node: true,
-        },
+}, {
+    files: ['**/*.cy.ts'],
+    rules: {
+        '@typescript-eslint/no-unused-expressions': 'off',
+    },
+}, {
+    // eslint无法正确判断Vue组件类型
+    files: ['**/*.vue'],
+    rules: {
+        '@typescript-eslint/no-unsafe-call': 'off',
+        '@typescript-eslint/no-unsafe-return': 'off',
+        '@typescript-eslint/no-unsafe-member-access': 'off',
     },
 });

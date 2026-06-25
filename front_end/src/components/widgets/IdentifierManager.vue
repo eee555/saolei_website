@@ -88,7 +88,9 @@ function delIdentifier(identifier: string) {
     proxy.$axios.post('identifier/del/', {
         identifier: identifier,
     }).then(function (response) {
-        user.value.identifiers = removeItem(user.value.identifiers!, identifier);
+        if (user.value.identifiers !== undefined) {
+            user.value.identifiers = removeItem(user.value.identifiers, identifier);
+        }
         ElNotification({
             title: t('identifierManager.delIdentifierSuccess'),
             message: t('identifierManager.processedNVideos', [response.data.value]),
@@ -102,7 +104,7 @@ function addIdentifier(identifier: string) {
         identifier: identifier,
     }).then(function (response) {
         if (response.data.type === 'success') {
-            user.value.identifiers!.push(new_identifiers.value);
+            user.value.identifiers?.push(new_identifiers.value);
             ElNotification({
                 title: t('identifierManager.addIdentifierSuccess'),
                 message: t('identifierManager.processedNVideos', [response.data.value]),

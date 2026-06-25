@@ -84,7 +84,7 @@ function registerToken() {
         identifier: newIdentifier.value,
         order: props.order,
     }).then((response) => {
-        const data = response.data;
+        const { data } = response;
         switch (data.type) {
             case 'success':
                 successNotification(response);

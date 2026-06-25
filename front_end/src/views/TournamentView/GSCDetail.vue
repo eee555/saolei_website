@@ -107,10 +107,10 @@ async function refresh() {
 
         if (tournament.value.state === TournamentState.Ongoing && store.login_status === LoginStatus.IsLogin) {
             result.value = [];
-            personaltoken.value = response.data.identifier ? response.data.identifier : '';
+            personaltoken.value = response.data.identifier ?? '';
         } else {
             personaltoken.value = '';
-            result.value = (response.data.results as Array<object>).map((value) => new GSCParticipant(value));
+            result.value = (response.data.results as object[]).map((value) => new GSCParticipant(value));
         }
     }).catch(httpErrorNotification);
     loading.value = false;
@@ -141,7 +141,7 @@ function downloadAll() {
         },
         responseType: 'arraybuffer',
     }).then((response) => {
-        streamToZip(new Uint8Array(response.data), 'gsc.zip');
+        void streamToZip(new Uint8Array(response.data), 'gsc.zip');
     }).catch(httpErrorNotification);
 }
 </script>

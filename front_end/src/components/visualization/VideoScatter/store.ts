@@ -2,12 +2,14 @@ import { defineStore } from 'pinia';
 
 import { videoToPlotPoint } from './utils';
 
-import { AnyShape, getDataDomain, PlotDomain, PlotPadding, PlotPoint, PlotSize } from '@/components/visualization/Plots';
+import type { AnyShape, PlotDomain, PlotPadding, PlotPoint, PlotSize } from '@/components/visualization/Plots';
+import { getDataDomain } from '@/components/visualization/Plots';
 import { colorTheme, VideoScatterConfig } from '@/store';
 import { pinia } from '@/store/create';
 import { PiecewiseColorScheme } from '@/utils/colors';
-import { getPiecewiseColorSchemeName, MS_Level } from '@/utils/ms_const';
-import { VideoAbstract } from '@/utils/videoabstract';
+import type { MS_Level } from '@/utils/ms_const';
+import { getPiecewiseColorSchemeName } from '@/utils/ms_const';
+import type { VideoAbstract } from '@/utils/videoabstract';
 
 function inShape(video: VideoAbstract, shape: AnyShape) {
     const point = videoToPlotPoint(video, VideoScatterConfig.value.x, VideoScatterConfig.value.y);
@@ -21,6 +23,7 @@ function getTimeColorScheme(level: MS_Level) {
 }
 
 export const VideoScatterStore = defineStore('video-scatter-store', {
+    /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
     state: () => ({
         rawData: [] as VideoAbstract[],
         canvasMode: '' as '' | 'select',
@@ -29,9 +32,10 @@ export const VideoScatterStore = defineStore('video-scatter-store', {
         plotSize: { width: 640, height: 360 } as PlotSize,
         plotPadding: { top: 12, right: 16, bottom: 42, left: 52 } as PlotPadding,
     }),
+    /* eslint-enable @typescript-eslint/no-unnecessary-type-assertion */
     getters: {
         colorHandle() {
-            const colorBy = VideoScatterConfig.value.colorBy;
+            const { colorBy } = VideoScatterConfig.value;
 
             if (colorBy === 'level') {
                 return (video: VideoAbstract) => colorTheme.value.level[video.level];
@@ -45,7 +49,7 @@ export const VideoScatterStore = defineStore('video-scatter-store', {
             } else {
                 const name = getPiecewiseColorSchemeName(colorBy);
                 const scheme = new PiecewiseColorScheme(colorTheme.value[name].colors, colorTheme.value[name].thresholds);
-                return (video: VideoAbstract) => scheme.getColor(video.getStat(colorBy)!);
+                return (video: VideoAbstract) => scheme.getColor(video.getStat(colorBy));
             }
         },
         scatterData() {

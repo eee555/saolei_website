@@ -39,7 +39,7 @@ import BaseOverlay from '@/components/common/BaseOverlay.vue';
 import SoftwareIcon from '@/components/widgets/SoftwareIcon.vue';
 import { ArbiterIcon, MetasweeperIcon } from '@/utils/assets';
 import { MS_Softwares } from '@/utils/ms_const';
-import { VideoAbstract } from '@/utils/videoabstract';
+import type { VideoAbstract } from '@/utils/videoabstract';
 
 const MetasweeperHelper = defineAsyncComponent(() => import('@/components/dialogs/MetasweeperHelper.vue'));
 const ArbiterHelper = defineAsyncComponent(() => import('@/components/dialogs/ArbiterHelper.vue'));

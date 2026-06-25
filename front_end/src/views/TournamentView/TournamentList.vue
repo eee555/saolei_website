@@ -1,4 +1,5 @@
 <template>
+    <!-- @vue-generic {Tournament} -->
     <ElTable :data="tournamentList" table-layout="auto" :default-sort="{ prop: 'startDate', order: 'descending' }" @row-click="rowClick">
         <ElTableColumn :label="t('common.prop.state')">
             <template #default="{row}">
@@ -6,7 +7,7 @@
             </template>
         </ElTableColumn>
         <ElTableColumn :label="t('tournament.tournament')">
-            <template #default="{row}: {row: Tournament}">
+            <template #default="{row}">
                 {{ row.getLocalName(local.language) }}
             </template>
         </ElTableColumn>
@@ -30,7 +31,7 @@
 
 <script setup lang="ts">
 import { ElTable, ElTableColumn } from 'element-plus';
-import { PropType } from 'vue';
+import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
@@ -38,7 +39,7 @@ import PlayerName from '@/components/PlayerName.vue';
 import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
 import { local, store } from '@/store';
 import { toISODateTimeString } from '@/utils/datetime';
-import { Tournament } from '@/utils/tournaments';
+import type { Tournament } from '@/utils/tournaments';
 
 defineProps({
     tournamentList: {
@@ -53,6 +54,6 @@ function rowClick(row: Tournament) {
     if (store.tournamentTabs.length === 0) {
         store.tournamentTabs.push(row);
     }
-    router.push({ name: 'tournament_id', params: { id: row.id } });
+    void router.push({ name: 'tournament_id', params: { id: row.id } });
 }
 </script>

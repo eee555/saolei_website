@@ -45,7 +45,7 @@ function mountMenu(width: number) {
         routes,
     });
 
-    router.push('/');
+    void router.push('/');
     cy.wrap(router.isReady()).then(() => {
         cy.mount(Menu, {
             global: {

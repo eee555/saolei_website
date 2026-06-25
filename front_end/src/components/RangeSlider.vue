@@ -19,7 +19,7 @@
 
 <script setup lang="ts" name="RangeSlider">
 import { ElInputNumber, ElSlider } from 'element-plus';
-import { PropType } from 'vue';
+import type { PropType } from 'vue';
 
 const props = defineProps({
     min: {

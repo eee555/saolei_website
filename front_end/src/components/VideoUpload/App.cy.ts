@@ -11,7 +11,7 @@ import { local } from '@/store';
 import { MS_State } from '@/utils/ms_const';
 
 function tableRowError(status: string) {
-    return { '': '', Bv: '', Bvs: '', Status: `${status}`, Time: '', Level: '', 'End Time': '' };
+    return { '': '', Bv: '', Bvs: '', Status: status, Time: '', Level: '', 'End Time': '' };
 }
 
 const fixtures = {

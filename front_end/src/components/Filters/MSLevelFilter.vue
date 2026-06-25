@@ -10,7 +10,8 @@
 import { ElCheckboxButton, ElCheckboxGroup } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
-import { MS_Level, MS_Levels } from '@/utils/ms_const';
+import type { MS_Level } from '@/utils/ms_const';
+import { MS_Levels } from '@/utils/ms_const';
 
 const { t } = useI18n();
 

@@ -12,6 +12,7 @@ const USER_INFO_STORE_NAME = 'user-info';
 const STORE_VERSIONS_KEY = 'storeVersions';
 const ROW_SCHEMAS_KEY = 'rowSchemas';
 
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 type DatabaseModule = typeof import('./database');
 
 let activeDb: Awaited<ReturnType<DatabaseModule['getDatabase']>> | null = null;
@@ -19,9 +20,15 @@ let activeDb: Awaited<ReturnType<DatabaseModule['getDatabase']>> | null = null;
 function deleteDatabase(name: string) {
     return new Promise<void>((resolve, reject) => {
         const request = indexedDB.deleteDatabase(name);
-        request.onsuccess = () => resolve();
-        request.onerror = () => reject(request.error);
-        request.onblocked = () => reject(new Error(`Deleting IndexedDB "${name}" was blocked`));
+        request.onsuccess = () => {
+            resolve();
+        };
+        request.onerror = () => {
+            reject(new Error(request.error?.message ?? `Deleting IndexedDB "${name}" failed`));
+        };
+        request.onblocked = () => {
+            reject(new Error(`Deleting IndexedDB "${name}" was blocked`));
+        };
     });
 }
 
@@ -266,7 +273,7 @@ describe('database service', () => {
 
         const tx = await database.getTransaction(database.USER_INFO_STORE_NAME, 'readwrite');
         expect(tx.store).toBeDefined();
-        await tx.store?.put({ id: 7, label: 'written through transaction' });
+        await tx.store.put({ id: 7, label: 'written through transaction' });
         await tx.done;
 
         const db = await openDatabase(database);

@@ -33,8 +33,8 @@ import { ref, watch } from 'vue';
 
 import { httpErrorNotification, successNotification } from '@/components/Notifications';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { GSCParticipant } from '@/utils/gsc';
-import { TournamentParticipant } from '@/utils/tournaments';
+import type { GSCParticipant } from '@/utils/gsc';
+import type { TournamentParticipant } from '@/utils/tournaments';
 
 const props = defineProps({
     id: {
@@ -63,17 +63,16 @@ async function calculate() {
     await proxy.$axios.get('tournament/gsc/participants/', { params: { order: props.id } }).then((response) => {
         data.value = response.data.data;
         logList.value.push(`选手列表获取完成，共${data.value.length}位选手`);
-    }).catch((_error) => {
+    }).catch(() => {
         logList.value.push('选手列表获取失败！');
     });
-    for (const index in data.value) {
-        const participant = data.value[index];
+    for (const [index, participant] of data.value.entries()) {
         if (participant.id === 0) continue;
         logList.value.push(`正在计算 ${participant.user__realname}#${participant.user__id} 的成绩...`);
         await proxy.$axios.post('tournament/gsc/refresh/', { id: participant.id }).then((response) => {
             data.value[index] = response.data;
             logList.value.push('计算完成！');
-        }).catch((_error) => {
+        }).catch(() => {
             logList.value.push('计算失败！');
         });
     }

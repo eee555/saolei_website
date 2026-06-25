@@ -47,14 +47,15 @@
 
 <script setup lang="ts">
 import { ElCheckbox, ElColorPicker, ElIcon, ElInput, ElInputNumber, ElLink, ElTooltip } from 'element-plus';
-import { PropType, ref, watch } from 'vue';
+import type { PropType } from 'vue';
+import { ref, watch } from 'vue';
 
 import { BaseIconAdd } from '@/components/common/icon';
 import { countRows, stringifyWithLineWrap } from '@/utils/strings';
 
 interface ColorScheme {
-    colors: Array<string>;
-    thresholds: Array<number>;
+    colors: string[];
+    thresholds: number[];
 }
 
 const colorScheme = defineModel({

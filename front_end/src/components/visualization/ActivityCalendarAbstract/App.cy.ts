@@ -1,13 +1,14 @@
 import ActivityCalendarAbstract from './App.vue';
 
 import i18n from '@/i18n';
+import type { VideoAbstractInfo } from '@/utils/videoabstract';
 import { VideoAbstract } from '@/utils/videoabstract';
 
 describe('<ActivityCalendarAbstract />', () => {
     before(() => {
         cy.fixture('videoAbstractList.json').then((data) => {
             cy.log(data.data);
-            Cypress.expose('videoList', data.data.map((video: any) => new VideoAbstract(video)));
+            Cypress.expose('videoList', (data.data as VideoAbstractInfo[]).map((video) => new VideoAbstract(video)));
         });
         cy.clock(new Date('2025-12-15T00:00:00Z'));
     });

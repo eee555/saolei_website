@@ -2,7 +2,7 @@ import './setup.js';
 import * as ELIcons from '@element-plus/icons-vue';
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
-import { AxiosInstance } from 'axios';
+import type { AxiosInstance } from 'axios';
 import PrimeVue from 'primevue/config';
 import { createApp } from 'vue';
 

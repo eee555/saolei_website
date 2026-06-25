@@ -1,13 +1,3 @@
-export interface DbSchema {
-    sys: {};
-    database: {};
-}
-export interface dbAcceptParma {
-    dbName: string;
-    path: string;
-    value: boolean | string;
-    user: boolean;
-}
 export enum LoginStatus {
     // 首次打开页面，还没有做判断，判断是否需要尝试登录，主要是防抖用
     Undefined,

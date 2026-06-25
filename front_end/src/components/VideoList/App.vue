@@ -31,8 +31,9 @@ import { DataTable } from 'primevue';
 import { defineAsyncComponent, ref } from 'vue';
 
 import { preview } from '@/utils/common/PlayerDialog';
-import { ColumnChoice, MS_Mode, MS_Softwares, MS_State } from '@/utils/ms_const';
-import { VideoAbstract } from '@/utils/videoabstract';
+import type { ColumnChoice } from '@/utils/ms_const';
+import { MS_Mode, MS_Softwares, MS_State } from '@/utils/ms_const';
+import type { VideoAbstract } from '@/utils/videoabstract';
 
 defineProps({
     videos: {

@@ -33,7 +33,7 @@
                             &nbsp;
                             <PreviewNumber :id="news.video_id" :text="to_fixed_n(news.value, 3)" />
                             <span class="text">
-                                {{ news.delta == "新" ? "" : news.delta > 0 ? "↑" : "↓" }}{{ news.delta }}
+                                {{ news.delta == "新" ? "" : Number(news.delta) > 0 ? "↑" : "↓" }}{{ news.delta }}
                             </span>
                         </div>
                     </ElTabPane>
@@ -79,14 +79,26 @@ import VideoList from '@/components/VideoList/App.vue';
 import { to_fixed_n } from '@/utils';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { utc_to_local_format } from '@/utils/system/tools';
+import type { VideoAbstractInfo } from '@/utils/videoabstract';
 import { VideoAbstract } from '@/utils/videoabstract';
 
 const { proxy } = useCurrentInstance();
 const { t } = useI18n();
 
+interface NewsItem {
+    time: string;
+    player_id: number;
+    video_id: number;
+    index: string;
+    mode: string;
+    level: string;
+    value: string;
+    delta: string;
+}
+
 const review_queue = ref<VideoAbstract[]>([]);
 const newest_queue = ref<VideoAbstract[]>([]);
-const news_queue = ref<any[]>([]);
+const news_queue = ref<NewsItem[]>([]);
 const active_tab = ref('newest');
 
 const review_queue_updating = ref(true);
@@ -96,15 +108,15 @@ const newest_queue_status = ref(1);
 const news_queue_status = ref(1);
 
 onMounted(() => {
-    update_review_queue();
-    update_newest_queue();
-    update_news_queue();
+    void update_review_queue();
+    void update_newest_queue();
+    void update_news_queue();
 });
 
 const update_review_queue = async () => {
     review_queue_updating.value = true;
-    await proxy.$axios.get('/api/video/review_queue').then(function (response) {
-        review_queue.value = response.data.map((v: any) => new VideoAbstract(v));
+    await proxy.$axios.get('/api/video/review_queue').then(function ({ data }) {
+        review_queue.value = (data as VideoAbstractInfo[]).map((v) => new VideoAbstract(v));
     });
     review_queue_updating.value = false;
 };
@@ -136,8 +148,8 @@ const update_news_queue = async () => {
     }, 5000);
     await proxy.$axios.get('/video/news_queue/', {
         params: {},
-    }).then(function (response) {
-        news_queue.value = response.data.map((v: string) => JSON.parse(v));
+    }).then(function ({ data }) {
+        news_queue.value = (data as string[]).map((v) => JSON.parse(v) as NewsItem);
     });
     if (news_queue_status.value == 1) {
         news_queue_status.value = 2;

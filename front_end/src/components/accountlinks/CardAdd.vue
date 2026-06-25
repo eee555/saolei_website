@@ -35,7 +35,7 @@ import { ElButton, ElDialog, ElForm, ElFormItem, ElInput, ElOption, ElSelect } f
 import { computed, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { AccountLink } from './utils';
+import type { AccountLink } from './utils';
 
 import BaseButtonCancel from '@/components/common/BaseButtonCancel.vue';
 import BaseButtonConfirm from '@/components/common/BaseButtonConfirm.vue';

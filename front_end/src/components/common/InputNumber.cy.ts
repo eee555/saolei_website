@@ -2,11 +2,11 @@ import InputNumber from './InputNumber.vue';
 
 function expectModelChange(index: number, value?: number) {
     if (value === undefined) {
-        cy.get('@vue').then((wrapper: any) => {
+        cy.get('@vue').then((wrapper: ComponentWrapper<typeof InputNumber>) => {
             expect(wrapper.emitted('update:modelValue')?.[index]).to.equal(undefined);
         });
     } else {
-        cy.get('@vue').then((wrapper: any) => {
+        cy.get('@vue').then((wrapper: ComponentWrapper<typeof InputNumber>) => {
             expect(wrapper.emitted('update:modelValue')?.[index]).to.deep.equal([value]);
         });
     }
@@ -79,8 +79,8 @@ describe('<InputNumber />', () => {
     it('reflects modelValue prop updates from the parent', () => {
         mountInputNumber(5, { min: 1, max: 10 });
 
-        cy.get('@vue').then((wrapper) => {
-            return (wrapper as any).setProps({ modelValue: 8 });
+        cy.get('@vue').then((wrapper: ComponentWrapper<typeof InputNumber>) => {
+            return wrapper.setProps({ modelValue: 8 });
         });
 
         cy.get('input').should('have.value', '8');

@@ -10,10 +10,10 @@
 import '@/styles/text.css';
 
 import PrColumn from 'primevue/column';
-import { PropType } from 'vue';
+import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
+import type { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 
 defineProps({
     sortable: { type: Boolean, default: false },

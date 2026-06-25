@@ -63,8 +63,8 @@ describe('<BBBvSummary Cell />', () => {
         mountCell({ videos, sortBy: 'timems', sortDesc: false, displayBy: 'time' });
         cy.get('.cell').should('contain', '25.000');
 
-        cy.get('@vue').then((wrapper: any) => {
-            wrapper.setProps({ sortDesc: true });
+        cy.get('@vue').then((wrapper: ComponentWrapper<typeof Cell>) => {
+            void wrapper.setProps({ sortDesc: true });
         });
         cy.get('.cell').should('contain', '40.000');
     });
@@ -87,8 +87,8 @@ describe('<BBBvSummary Cell />', () => {
         cy.get('.cell').should('contain', '2.000');
         cy.get('.cell img').should('exist');
 
-        cy.get('@vue').then((wrapper: any) => {
-            wrapper.setProps({ softwareFilter: ['e'], showIcon: 'state' });
+        cy.get('@vue').then((wrapper: ComponentWrapper<typeof Cell>) => {
+            void wrapper.setProps({ softwareFilter: ['e'], showIcon: 'state' });
         });
         cy.get('.cell').should('contain', '0.500');
         cy.get('.cell .el-icon').should('exist');

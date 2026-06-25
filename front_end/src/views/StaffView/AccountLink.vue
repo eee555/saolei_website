@@ -48,7 +48,8 @@ import PrDataTable from 'primevue/datatable';
 import { onMounted, reactive, ref } from 'vue';
 
 import { httpErrorNotification } from '@/components/Notifications';
-import { Platform, platformlist } from '@/utils/common/accountLinkPlatforms';
+import type { Platform } from '@/utils/common/accountLinkPlatforms';
+import { platformlist } from '@/utils/common/accountLinkPlatforms';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const { proxy } = useCurrentInstance();
@@ -78,31 +79,31 @@ const refresh = async () => {
     loading.value = false;
 };
 
-const verify = () => {
+function verify() {
     proxy.$axios.post('accountlink/verify/', {
         id: form.id,
         platform: form.platform,
         identifier: form.identifier,
-    }).then(function (_response) {
+    }).then(function () {
         form.id = 0;
         form.platform = '';
         form.identifier = '';
-        refresh();
+        void refresh();
     }).catch(httpErrorNotification);
-};
+}
 
-const unverify = () => {
+function unverify() {
     proxy.$axios.post('accountlink/unverify/', {
         id: form.id,
         platform: form.platform,
         identifier: form.identifier,
-    }).then(function (_response) {
+    }).then(function () {
         form.id = 0;
         form.platform = '';
         form.identifier = '';
-        refresh();
+        void refresh();
     }).catch(httpErrorNotification);
-};
+}
 
 onMounted(refresh);
 </script>

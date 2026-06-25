@@ -54,7 +54,7 @@ const menu_items = [
 const player_url = computed(() => `/player/${store.user.id}`);
 
 onMounted(() => {
-    router.isReady().then(() => {
+    void router.isReady().then(() => {
         menu_index.value = router.currentRoute.value.fullPath;
     });
 });
