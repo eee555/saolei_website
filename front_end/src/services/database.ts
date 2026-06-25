@@ -239,7 +239,7 @@ function hasObjectKey(row: unknown, key: string) {
         && Object.prototype.hasOwnProperty.call(row, key);
 }
 
-function migrateRow(row: unknown, previousSchema: CacheRowSchema, currentSchema: CacheRowSchema) {
+function migrateRow(row: unknown, previousSchema: Partial<CacheRowSchema>, currentSchema: CacheRowSchema) {
     const migrated: Record<string, unknown> = {};
 
     Object.entries(currentSchema).forEach(([columnName, columnDefinition]) => {
@@ -253,7 +253,7 @@ function migrateRow(row: unknown, previousSchema: CacheRowSchema, currentSchema:
 
         const value = getObjectValue(row, columnName);
         const previousColumn = previousSchema[columnName];
-        migrated[columnName] = previousColumn.type === columnDefinition.type
+        migrated[columnName] = previousColumn?.type === columnDefinition.type
             ? value
             : convertValue(value, columnDefinition.type);
     });

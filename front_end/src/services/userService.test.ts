@@ -106,7 +106,9 @@ async function clearUserInfoDB() {
 }
 
 async function waitForBatch() {
-    await new Promise((resolve) => void setTimeout(resolve, serviceConfig.value.userInfoBatchDelay + 10));
+    await new Promise((resolve) => {
+        setTimeout(resolve, serviceConfig.value.userInfoBatchDelay + 10);
+    });
 }
 
 describe('fetchUserInfo', () => {
