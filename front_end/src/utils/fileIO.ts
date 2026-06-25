@@ -6,16 +6,18 @@ import { VideoAbstract } from './videoabstract';
 
 export type AnyVideo = AvfVideo | EvfVideo | RmvVideo | MvfVideo;
 
-export function get_software(video: AnyVideo) {
+export function get_software(video: AnyVideo): 'e' | 'a' | 'r' | 'm' {
     if (video instanceof AvfVideo) return 'a';
     else if (video instanceof EvfVideo) return 'e';
     else if (video instanceof RmvVideo) return 'r';
     else return 'm';
 }
 
-export function load_video_file(buffer: ArrayBuffer, filename: string) {
+export function load_video_file(buffer: ArrayBuffer, filename: string): AnyVideo {
     const u8 = new Uint8Array(buffer);
     const ext = filename.slice(-3);
+
+    // eslint-disable-next-line @typescript-eslint/init-declarations
     let video: AnyVideo;
     if (ext === 'avf') {
         video = new AvfVideo(u8, filename);
@@ -45,11 +47,11 @@ export function extract_stat(video: AnyVideo | null): VideoAbstract | null {
         bv: video.bbbv,
         ce: video.ce,
         cl: video.cl,
-        end_time: (video instanceof AvfVideo) ? arbiterTimeStampToDate(video.end_time) : generalTimeStampToDate(video.end_time),
+        end_time: video instanceof AvfVideo ? arbiterTimeStampToDate(video.end_time) : generalTimeStampToDate(video.end_time),
     });
 }
 
-export async function streamToZip(data: Uint8Array, filename: string) {
+export async function streamToZip(data: Uint8Array, filename: string): Promise<void> {
     const zip = new JSZip();
     let offset = 0;
 
@@ -60,7 +62,7 @@ export async function streamToZip(data: Uint8Array, filename: string) {
 
         // Read filename
         const filenameBytes = data.slice(offset, offset + filenameLen);
-        const filename = new TextDecoder().decode(filenameBytes);
+        const entryFilename = new TextDecoder().decode(filenameBytes);
         offset += filenameLen;
 
         // Read 8-byte file size
@@ -71,7 +73,7 @@ export async function streamToZip(data: Uint8Array, filename: string) {
         const fileData = data.slice(offset, offset + fileSize);
         offset += fileSize;
 
-        zip.file(filename, fileData);
+        zip.file(entryFilename, fileData);
     }
 
     const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
@@ -83,7 +85,7 @@ export async function streamToZip(data: Uint8Array, filename: string) {
     URL.revokeObjectURL(url);
 }
 
-export async function fileHash(buffer: ArrayBuffer) {
+export async function fileHash(buffer: ArrayBuffer): Promise<string> {
     const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');

@@ -4,9 +4,9 @@ describe('language setting', () => {
         'zh-TW': '教程', // fallback to zh-cn
         'en-GB': 'Guides', // fallback to en
         'en-US': 'Guides', // fallback to en
-        'de': 'Hilfe',
-        'pl': 'poradniki',
-        'fr': 'Guides', // fallback to en
+        de: 'Hilfe',
+        pl: 'poradniki',
+        fr: 'Guides', // fallback to en
     };
 
     for (const lang in languages) {
@@ -50,8 +50,8 @@ describe('Color Theme', () => {
             onBeforeLoad: (win) => {
                 cy.stub(win, 'matchMedia').withArgs('(prefers-color-scheme: dark)').returns({
                     matches: true,
-                    addEventListener: () => {},
-                    addListener: () => {},
+                    addEventListener: () => undefined,
+                    addListener: () => undefined,
                 });
             },
         });
@@ -67,8 +67,8 @@ describe('Color Theme', () => {
             onBeforeLoad: (win) => {
                 cy.stub(win, 'matchMedia').withArgs('(prefers-color-scheme: dark)').returns({
                     matches: false,
-                    addEventListener: () => {},
-                    addListener: () => {},
+                    addEventListener: () => undefined,
+                    addListener: () => undefined,
                 });
             },
         });

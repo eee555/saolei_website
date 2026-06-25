@@ -58,8 +58,8 @@ describe('Progress Component', () => {
         cy.contains('Uploading: 5 / 10').should('be.visible');
 
         // Update props to complete state
-        cy.get('@vue').then((wrapper: any) => {
-            wrapper.setProps({
+        cy.get('@vue').then((wrapper: ComponentWrapper<typeof Progress>) => {
+            void wrapper.setProps({
                 parserProgress: { total: 5, parsed: 5 },
                 uploadProgress: { total: 10, uploaded: 10, failed: 0 },
             });

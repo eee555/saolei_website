@@ -1,4 +1,4 @@
-import { toISODateTimeString } from './datetime';
+import { toDate, toISODateTimeString } from './datetime';
 import { TournamentSeries, TournamentState } from './ms_const';
 
 export interface TournamentParticipant {
@@ -7,10 +7,29 @@ export interface TournamentParticipant {
     user__realname: string;
 }
 
+type LocalizedString = string | Partial<Record<string, string>>;
+
+interface TournamentInfo {
+    [key: string]: unknown;
+    id?: number;
+    name?: LocalizedString;
+    description?: LocalizedString;
+    startDate?: string | Date | null;
+    start_time?: string | Date | null;
+    endDate?: string | Date | null;
+    end_time?: string | Date | null;
+    hostId?: number;
+    host_id?: number;
+    hostName?: string;
+    host_realname?: string;
+    state?: TournamentState;
+    series?: TournamentSeries;
+}
+
 export class Tournament {
     public id: number;
-    public name: string;
-    public description?: string | Record<string, string>;
+    public name: LocalizedString;
+    public description?: LocalizedString;
     public startDate?: Date;
     public endDate?: Date;
     public hostId: number;
@@ -18,34 +37,37 @@ export class Tournament {
     public state: TournamentState;
     public series: TournamentSeries;
 
-    constructor(info: any) {
-        if (info.id) this.id = info.id;
-        else this.id = 0;
-
-        if (info.name) this.name = info.name;
-        else this.name = '';
-
+    public constructor(info: TournamentInfo) {
+        this.id = info.id ?? 0;
+        this.name = info.name ?? '';
         this.description = info.description;
 
-        if (info.startDate) this.startDate = new Date(info.startDate);
-        else if (info.start_time) this.startDate = new Date(info.start_time);
+        this.startDate = toDate(info.startDate) ?? toDate(info.start_time);
+        this.endDate = toDate(info.endDate) ?? toDate(info.end_time);
 
-        if (info.endDate) this.endDate = new Date(info.endDate);
-        else if (info.end_time) this.endDate = new Date(info.end_time);
+        this.hostId = info.hostId ?? info.host_id ?? 0;
+        this.hostName = info.hostName ?? info.host_realname ?? '';
+        this.state = info.state ?? TournamentState.Pending;
+        this.series = info.series ?? TournamentSeries.Unknown;
+    }
 
-        if (info.hostId) this.hostId = info.hostId;
-        else if (info.host_id) this.hostId = info.host_id;
-        else this.hostId = 0;
+    public static localFallback(local: string | undefined): 'zh' | 'en' | undefined {
+        if (local === undefined) return undefined;
+        if (local === 'zh') return undefined;
+        if (local.startsWith('zh')) return 'zh';
+        if (local === 'en') return undefined;
+        return 'en';
+    }
 
-        if (info.hostName) this.hostName = info.hostName;
-        else if (info.host_realname) this.hostName = info.host_realname;
-        else this.hostName = '';
-
-        if (info.state) this.state = info.state;
-        else this.state = TournamentState.Pending;
-
-        if (info.series) this.series = info.series;
-        else this.series = TournamentSeries.Unknown;
+    public static getLocalString(message: LocalizedString, local?: string): string {
+        if (typeof message === 'string') return message;
+        let _local = local;
+        while (_local !== undefined) {
+            const nextMessage = message[_local];
+            if (nextMessage !== undefined) return nextMessage;
+            _local = Tournament.localFallback(_local);
+        }
+        return '';
     }
 
     /**
@@ -62,42 +84,21 @@ export class Tournament {
      *
      * @example
      */
-    public getLocalDescription(local: string) {
-        if (!this.description) return '';
-        if (typeof this.description === 'string') return this.description;
-        let _local = local as string | undefined;
-        while (_local && !this.description[_local]) {
-            _local = Tournament.localFallback(_local);
-        }
-        if (_local === undefined) return '';
-        return this.description[_local];
+    public getLocalDescription(local: string): string {
+        if (this.description === undefined) return '';
+        return Tournament.getLocalString(this.description, local);
     }
 
-    public getLocalName(local: string) {
-        if (!this.name) return '';
-        if (typeof this.name === 'string') return this.name;
-        let _local = local as string | undefined;
-        while (_local && !this.name[_local]) {
-            _local = Tournament.localFallback(_local);
-        }
-        if (_local === undefined) return '';
-        return this.name[_local];
+    public getLocalName(local?: string): string {
+        return Tournament.getLocalString(this.name, local);
     }
 
-    public static localFallback(local: string | undefined) {
-        if (local === undefined) return undefined;
-        if (local === 'zh') return undefined;
-        if (local.startsWith('zh')) return 'zh';
-        if (local === 'en') return undefined;
-        return 'en';
-    }
-
-    public displayStartTime() {
+    public displayStartTime(): string {
         if (!this.startDate) return '';
         return toISODateTimeString(this.startDate);
     }
 
-    public displayEndTime() {
+    public displayEndTime(): string {
         if (!this.endDate) return '';
         return toISODateTimeString(this.endDate);
     }

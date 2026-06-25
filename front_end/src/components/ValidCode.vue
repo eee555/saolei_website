@@ -39,7 +39,7 @@ const refreshPic = () => {
             captchaUrl.value = '';
         }
         loading.value = false;
-    }).catch((error) => {
+    }).catch((error: unknown) => {
         httpErrorNotification(error);
         captchaUrl.value = '';
         loading.value = false;

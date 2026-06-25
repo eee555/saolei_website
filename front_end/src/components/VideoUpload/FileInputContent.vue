@@ -36,7 +36,7 @@ const i18nMessages = {
         autoRemoveAfterUpload: '上传完成自动移除',
         constraintSize: '*单个文件大小不能超过5MB',
     } },
-    'en': { local: {
+    en: { local: {
         dragOrClick: 'Drag files here or click here to select',
         autoUploadAfterParse: 'Auto-upload after parsing',
         autoRemoveAfterUpload: 'Auto-remove after uploading',

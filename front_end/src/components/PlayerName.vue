@@ -155,35 +155,25 @@ async function pop_show() {
     if (props.userId === 0) return;
     is_loading.value = true;
 
-    await proxy.$axios.get('/msuser/info_abstract/',
-        {
-            params: {
-                id: props.userId,
-            },
+    const response = await proxy.$axios.get('/msuser/info_abstract/', {
+        params: {
+            id: props.userId,
         },
-    ).then(function (response) {
-        const response_data = response.data;
-
-        const records = JSON.parse(response_data.record_abstract);
-
-        b_t.value = records.timems[0];
-        i_t.value = records.timems[1];
-        e_t.value = records.timems[2];
-
-        b_t_id.value = records.timems_id[0];
-        i_t_id.value = records.timems_id[1];
-        e_t_id.value = records.timems_id[2];
-        b_bvs.value = records.bvs[0];
-        i_bvs.value = records.bvs[1];
-        e_bvs.value = records.bvs[2];
-        b_bvs_id.value = records.bvs_id[0];
-        i_bvs_id.value = records.bvs_id[1];
-        e_bvs_id.value = records.bvs_id[2];
-
-        is_loading.value = false;
-    }).catch(() => {
-        // is_loading.value = false;
     });
+
+    const records = JSON.parse(response.data.record_abstract) as {
+        timems: number[];
+        timems_id: string[];
+        bvs: string[];
+        bvs_id: string[];
+    };
+
+    [b_t.value, i_t.value, e_t.value] = records.timems;
+    [b_t_id.value, i_t_id.value, e_t_id.value] = records.timems_id;
+    [b_bvs.value, i_bvs.value, e_bvs.value] = records.bvs;
+    [b_bvs_id.value, i_bvs_id.value, e_bvs_id.value] = records.bvs_id;
+
+    is_loading.value = false;
 }
 
 // 用户记录小弹窗关闭后，删除其中的数据
@@ -208,11 +198,11 @@ const i18nMessages = {
         user: '用户',
         visitMe: '我的空间',
     } },
-    'en': { local: {
+    en: { local: {
         user: 'User',
         visitMe: 'My space',
     } },
-    'fr': { local: {
+    fr: { local: {
         visitMe: 'Mon espace',
     } },
 };

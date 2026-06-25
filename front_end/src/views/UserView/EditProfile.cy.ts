@@ -95,10 +95,10 @@ describe('EditProfile', () => {
             cy.get('button').contains('Save').click();
 
             cy.wait('@updateProfile').interceptFormData((formData) => {
-                expect(formData['realname']).to.equal('realname');
-                expect(formData['signature']).to.be.undefined;
-                expect(formData['firstname']).to.be.undefined;
-                expect(formData['lastname']).to.be.undefined;
+                expect(formData.realname).to.equal('realname');
+                expect(formData.signature).to.be.undefined;
+                expect(formData.firstname).to.be.undefined;
+                expect(formData.lastname).to.be.undefined;
             });
 
             cy.then(() => {
@@ -140,10 +140,10 @@ describe('EditProfile', () => {
             cy.get('button').contains('Save').click();
 
             cy.wait('@updateProfile').interceptFormData((formData) => {
-                expect(formData['firstname']).to.equal('firstname');
-                expect(formData['realname']).to.be.undefined;
-                expect(formData['signature']).to.be.undefined;
-                expect(formData['lastname']).to.be.undefined;
+                expect(formData.firstname).to.equal('firstname');
+                expect(formData.realname).to.be.undefined;
+                expect(formData.signature).to.be.undefined;
+                expect(formData.lastname).to.be.undefined;
             });
 
             cy.then(() => {
@@ -183,10 +183,10 @@ describe('EditProfile', () => {
             cy.get('button').contains('Save').click();
 
             cy.wait('@updateProfile').interceptFormData((formData) => {
-                expect(formData['lastname']).to.equal('lastname');
-                expect(formData['realname']).to.be.undefined;
-                expect(formData['signature']).to.be.undefined;
-                expect(formData['firstname']).to.be.undefined;
+                expect(formData.lastname).to.equal('lastname');
+                expect(formData.realname).to.be.undefined;
+                expect(formData.signature).to.be.undefined;
+                expect(formData.firstname).to.be.undefined;
             });
 
             cy.then(() => {
@@ -245,10 +245,10 @@ describe('EditProfile', () => {
             cy.get('button').contains('Save').click();
 
             cy.wait('@updateProfile').interceptFormData((formData) => {
-                expect(formData['signature']).to.equal('Updated signature');
-                expect(formData['realname']).to.be.undefined;
-                expect(formData['firstname']).to.be.undefined;
-                expect(formData['lastname']).to.be.undefined;
+                expect(formData.signature).to.equal('Updated signature');
+                expect(formData.realname).to.be.undefined;
+                expect(formData.firstname).to.be.undefined;
+                expect(formData.lastname).to.be.undefined;
             });
 
             cy.then(() => {
@@ -313,7 +313,7 @@ describe('EditProfile', () => {
             }));
 
             cy.get('button').contains('Cancel').click();
-            cy.get('@vue').should((wrapper: any) => {
+            cy.get('@vue').should((wrapper: ComponentWrapper<typeof EditProfile>) => {
                 expect(wrapper.emitted('update:isEditing')).to.deep.equal([[false]]);
             });
         });
@@ -329,7 +329,7 @@ describe('EditProfile', () => {
             }));
 
             cy.get('button').contains('Save').click();
-            cy.get('@vue').then((wrapper: any) => {
+            cy.get('@vue').then((wrapper: ComponentWrapper<typeof EditProfile>) => {
                 expect(wrapper.emitted('update:isEditing')).to.deep.equal([[false]]);
             });
         });

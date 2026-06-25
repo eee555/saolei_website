@@ -38,7 +38,9 @@
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElCheckbox, ElForm, ElFormItem, ElInput, ElNotification, FormInstance } from 'element-plus';
+import { isAxiosError } from 'axios';
+import type { FormInstance } from 'element-plus';
+import { ElButton, ElCheckbox, ElForm, ElFormItem, ElInput, ElNotification } from 'element-plus';
 import { computed, onUnmounted, reactive, ref, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -83,16 +85,16 @@ const registerForm = reactive<RegisterForm>({
 const ruleFormRef = useTemplateRef('ruleFormRef');
 
 const email_state = computed(() => {
-    if (!emailFormRef.value) return '';
+    if (emailFormRef.value === null) return '';
     else return emailFormRef.value.validateState;
 });
 const confirm_disabled = computed(() => {
-    return !(agree_TAC.value && usernameFormRef.value!.validateState === 'success' && emailFormRef.value!.validateState === 'success' && emailCodeFormRef.value!.validateState === 'success' && passwordFormRef.value!.validateState === 'success');
+    return !(agree_TAC.value && usernameFormRef.value?.validateState === 'success' && emailFormRef.value?.validateState === 'success' && emailCodeFormRef.value?.validateState === 'success' && passwordFormRef.value?.validateState === 'success');
 });
 
 const usernameInputHandler = (value: string) => {
     if (usernameCharacterValidation(value)) return;
-    else usernameFormRef.value!.clearValidate();
+    else usernameFormRef.value?.clearValidate();
 };
 
 const usernameChangeHandler = (value: string) => {
@@ -101,24 +103,23 @@ const usernameChangeHandler = (value: string) => {
         proxy.$axios.get('userprofile/checkcollision/', { params: { username: value } }).then(function (response) {
             if (response.data === 'False') validateSuccess(usernameFormRef);
             else validateError(usernameFormRef, t('msg.usernameCollision'));
-        }).catch(function (error) {
-            if (error.code === 'ERR_NETWORK') validateError(usernameFormRef, t('msg.connectionFail'));
-            else validateError(usernameFormRef, t('msg.unknownError') + error);
+        }).catch(function (error: unknown) {
+            if (isAxiosError(error) && error.code === 'ERR_NETWORK') validateError(usernameFormRef, t('msg.connectionFail'));
+            else validateError(usernameFormRef, `${t('msg.unknownError')}${error instanceof Error ? error.message : String(error)}`);
         });
     }
 };
 
-const submitForm = async (formEl: FormInstance | undefined) => {
+const submitForm = async (formEl?: FormInstance) => {
     if (!formEl) return;
     if (confirm_disabled.value) return;
     await proxy.$axios.post('userprofile/register/', {
         username: registerForm.username,
         password: registerForm.password,
         email: registerForm.email,
-        email_key: emailCodeFormRef.value!.hashkey,
+        email_key: emailCodeFormRef.value?.hashkey,
         email_captcha: registerForm.emailCode,
-    }).then(function (response) {
-        const data = response.data;
+    }).then(function ({ data }) {
         if (data.type === 'success') {
             emit('login', data.user);
             ElNotification({
@@ -128,14 +129,14 @@ const submitForm = async (formEl: FormInstance | undefined) => {
             });
         } else if (data.type === 'error') {
             if (data.object === 'emailcode') {
-                emailCodeFormRef.value!.errorCode();
+                emailCodeFormRef.value?.errorCode();
             }
         }
     });
 };
 
 onUnmounted(() => {
-    if (!ruleFormRef.value) return;
+    if (ruleFormRef.value === null) return;
     ruleFormRef.value.resetFields();
 });
 
@@ -145,12 +146,12 @@ const i18nMessages = {
         agreeTAC2: '开源扫雷网用户协议',
         confirm: '注册',
     } },
-    'en': { local: {
+    en: { local: {
         agreeTAC1: 'Agree to',
         agreeTAC2: 'Terms & Conditions',
         confirm: 'Register',
     } },
-    'de': { local: {
+    de: { local: {
         confirm: 'bestätigen',
         agreeTAC1: 'Zustimmen',
         agreeTAC2: 'Nutzungsbedingungen',

@@ -39,7 +39,6 @@ import { streamToZip } from '@/utils/fileIO';
 import { ColumnChoices } from '@/utils/ms_const';
 import { VideoAbstract } from '@/utils/videoabstract';
 
-
 const props = defineProps({
     userId: {
         type: Number,
@@ -64,21 +63,21 @@ function refresh() {
             tournament_id: props.tournamentId,
         },
     }).then((response) => {
-        videos.value = response.data.data.map((v: any) => new VideoAbstract(v));
+        videos.value = (response.data.data as any[]).map((v) => new VideoAbstract(v));
     }).catch(httpErrorNotification);
 }
 
 watch(props, refresh, { immediate: true });
 
 function handleDownload() {
-    proxy.$axios.get('tournament/download/participant/', {
+    void proxy.$axios.get('tournament/download/participant/', {
         params: {
             user_id: props.userId,
             tournament_id: props.tournamentId,
         },
         responseType: 'arraybuffer',
     }).then((response) => {
-        streamToZip(new Uint8Array(response.data), `gsc_${props.userId}.zip`);
+        void streamToZip(new Uint8Array(response.data), `gsc_${props.userId}.zip`);
     }).catch(httpErrorNotification);
 }
 </script>

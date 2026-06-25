@@ -18,6 +18,7 @@
 
 <script lang="ts" setup>
 import { useElementSize } from '@vueuse/core';
+import type { TabsPaneContext } from 'element-plus';
 import { ElTabPane, ElTabs, vLoading } from 'element-plus';
 import { computed, ref, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -47,15 +48,13 @@ const tabItems = computed(() => {
 const validTabs = computed(() => tabItems.value.map((item) => item.name));
 
 const activeTab = computed(() => {
-    const lastSegment = route.path.split('/').pop();
-    return validTabs.value.includes(lastSegment!) ? lastSegment! : 'summary';
+    const lastSegment = route.path.split('/').pop() ?? '';
+    return validTabs.value.includes(lastSegment) ? lastSegment : 'summary';
 });
 
-const handleTabClick = (tab: any) => {
+const handleTabClick = (tab: TabsPaneContext) => {
     const tabName = tab.paneName;
-    if (tabName) {
-        router.replace(`${tabName}`);
-    }
+    if (tabName !== undefined) void router.replace(String(tabName));
 };
 
 const playerLoading = ref(false);
@@ -65,7 +64,7 @@ const { width } = useElementSize(containerRef);
 const isWide = computed(() => width.value >= 960);
 
 async function refresh() {
-    const idStr = route.params.id;
+    const idStr = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id;
     const newId = Number(idStr);
     if (!Number.isInteger(newId) || newId <= 0) {
         console.log(`Invalid user id: ${idStr}`);
@@ -95,7 +94,7 @@ const i18nMessages = {
         videos: '录像',
         upload: '上传',
     } },
-    'en': { local: {
+    en: { local: {
         accountlink: 'Account Link',
         summary: 'Summary',
         record: 'Record',

@@ -1,10 +1,8 @@
-import { ComponentCustomProperties } from 'vue';
-
 type DeepMutable<T> = T extends readonly (infer U)[]
-    ? DeepMutable<U>[]                     // 数组递归
+    ? DeepMutable<U>[] // 数组递归
     : T extends object
-        ? { -readonly [K in keyof T]: DeepMutable<T[K]> }  // 对象递归移除 readonly
-        : T;                                  // 基础类型原样
+        ? { -readonly [K in keyof T]: DeepMutable<T[K]> } // 对象递归移除 readonly
+        : T; // 基础类型原样
 
 /**
  * 创建对象的深拷贝副本，确保返回的对象是完全可变的
@@ -17,7 +15,7 @@ export function deepMutableCopy<T>(obj: T): DeepMutable<T> {
     return structuredClone(obj) as DeepMutable<T>;
 }
 
-export type EnumMap<T extends string | number | symbol, V> = { [K in T]: V; };
+export type EnumMap<T extends string | number | symbol, V> = Record<T, V>;
 
 /**
  * 根据键数组和默认值，创建一个包含所有键且值均为默认值的对象。
@@ -26,10 +24,8 @@ export type EnumMap<T extends string | number | symbol, V> = { [K in T]: V; };
 export function createEnumMap<T extends readonly string[], V>(
     keys: T,
     defaultValue: V,
-): { [K in T[number]]: V } {
-    return Object.fromEntries(keys.map((key) => [key, structuredClone(defaultValue)])) as {
-        [K in T[number]]: V;
-    };
+): Record<T[number], V> {
+    return Object.fromEntries(keys.map((key) => [key, structuredClone(defaultValue)])) as Record<T[number], V>;
 }
 
 export function to_fixed_n(input: string | number | undefined, to_fixed: number): string | number | undefined {
@@ -40,10 +36,10 @@ export function to_fixed_n(input: string | number | undefined, to_fixed: number)
     if (to_fixed <= 0) {
         return input;
     }
-    if (typeof (input) == 'string') {
+    if (typeof input == 'string') {
         return parseFloat(input).toFixed(to_fixed);
     }
-    return (input as number).toFixed(to_fixed);
+    return input.toFixed(to_fixed);
 }
 
 // 毫秒的整数到字符串秒的小数
@@ -53,35 +49,6 @@ export function ms_to_s(ms: number | undefined): string {
 }
 export function cs_to_s(cs: number): string {
     return `${Math.floor(cs / 100)}.${(cs % 100 + '').padStart(2, '0')}`;
-}
-
-export function simple_formatter(f: Function) {
-    return (row: any, col: any, value: any, _index: any) => f(value);
-}
-export async function approve(proxy: ComponentCustomProperties & Record<string, any>, id: number) {
-    let status;
-    await proxy.$axios.get('video/approve?ids=[' + id + ']').then(function (response: any) {
-        const data = response.data;
-        if (data.length != 1) {
-            console.log(data);
-            throw new Error('Unexpected error');
-        }
-        status = data[0];
-    }).catch();
-    return status;
-}
-
-export async function freeze(proxy: ComponentCustomProperties & Record<string, any>, id: number) {
-    let status;
-    await proxy.$axios.get('video/freeze?ids=[' + id + ']').then(function (response: any) {
-        const data = response.data;
-        if (data.length != 1) {
-            console.log(data);
-            throw new Error('Unexpected error');
-        }
-        status = data[0];
-    }).catch();
-    return status;
 }
 
 // Credit: ChatGPT
@@ -99,7 +66,7 @@ export function deepCopy<T>(obj: T): T {
     }
 
     if (obj instanceof Object) {
-        const copy: { [key: string]: any } = {};
+        const copy: Record<string, any> = {};
         for (const key in obj) {
             if (obj.hasOwnProperty(key)) {
                 copy[key] = deepCopy(obj[key]);
@@ -111,10 +78,8 @@ export function deepCopy<T>(obj: T): T {
     throw new Error('Unable to copy object! Its type isn\'t supported.');
 }
 
-export function defaultFilterMethod(value: any, row: any, column: any) {
-    return row[column.property] === value;
-}
-
-export function sleep(ms: number) {
-    return new Promise((resolve) => setTimeout(() => resolve(ms), ms));
+export function sleep(ms: number): Promise<unknown> {
+    return new Promise((resolve) => void setTimeout(() => {
+        resolve(ms);
+    }, ms));
 }

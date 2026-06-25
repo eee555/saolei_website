@@ -7,7 +7,6 @@ const USERNAME = 'testUser' as const;
 const PASSWORD = 'testPassword' as const;
 const REALNAME = 'testName' as const;
 
-
 describe('Personal Profile', () => {
     it('Before All', () => {
         // 初始化数据库

@@ -26,21 +26,22 @@
 </template>
 
 <script setup lang="ts">
-import { computed, PropType } from 'vue';
+import type { PropType } from 'vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { ParserProgress, UploadProgress } from './utils';
+import type { ParserProgress, UploadProgress } from './utils';
 
 import StackBar from '@/components/visualization/StackBar/App.vue';
 
 const props = defineProps({
     parserProgress: {
         type: Object as PropType<ParserProgress>,
-        default: () => { return { total: 0, parsed: 0 }; },
+        default: () => ({ total: 0, parsed: 0 }),
     },
     uploadProgress: {
         type: Object as PropType<UploadProgress>,
-        default: () => { return { total: 0, uploaded: 0, failed: 0 }; },
+        default: () => ({ total: 0, uploaded: 0, failed: 0 }),
     },
 });
 
@@ -58,7 +59,7 @@ const i18nMessages = {
         uploadFailed: '上传失败',
         toUpload: '待上传',
     } },
-    'en': { local: {
+    en: { local: {
         parsing: 'Parsing files: {0} / {1}',
         parsed: 'Parsed',
         toParse: 'Not parsed',

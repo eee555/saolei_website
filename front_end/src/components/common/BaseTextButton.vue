@@ -6,7 +6,8 @@
 
 <script setup lang="ts">
 import '@/styles/text.css';
-import { computed, PropType, ref } from 'vue';
+import type { PropType } from 'vue';
+import { computed, ref } from 'vue';
 
 const props = defineProps({
     size: { type: String as PropType<'small' | 'default' | 'large'>, default: 'default' },

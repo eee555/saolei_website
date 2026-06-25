@@ -16,14 +16,14 @@ defineProps({
 });
 
 const minbvlim = {
-    'b': 1,
-    'i': 1,
-    'e': 1,
+    b: 1,
+    i: 1,
+    e: 1,
 };
 
 const maxbvlim = {
-    'b': 54,
-    'i': 216,
-    'e': 381,
+    b: 54,
+    i: 216,
+    e: 381,
 };
 </script>

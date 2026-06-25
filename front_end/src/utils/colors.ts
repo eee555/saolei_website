@@ -28,16 +28,16 @@ interface Theme {
  * - 如果输入值不在阈值范围内，将返回最后一个颜色。
  */
 export class PiecewiseColorScheme {
-    private colors: string[];
-    private thresholds: number[];
-    private ascending: boolean;
+    private readonly colors: string[];
+    private readonly thresholds: number[];
+    private readonly ascending: boolean;
 
     /**
      * 构造函数，初始化颜色和阈值数组，并检查阈值是否为升序或降序。
      * @param colors - 颜色数组
      * @param thresholds - 阈值数组
      */
-    constructor(colors: string[], thresholds: number[]) {
+    public constructor(colors: string[], thresholds: number[]) {
         this.colors = colors;
         this.thresholds = thresholds;
         if (ArrayUtils.isAscending(thresholds)) {
@@ -49,7 +49,7 @@ export class PiecewiseColorScheme {
         }
     }
 
-    static createFromTheme(theme: Theme) {
+    public static createFromTheme(theme: Theme): PiecewiseColorScheme {
         return new PiecewiseColorScheme(theme.colors, theme.thresholds);
     }
 
@@ -59,13 +59,14 @@ export class PiecewiseColorScheme {
      * @param value - 需要获取颜色的数值。
      * @returns 返回对应的颜色字符串。
      */
-    public getColor(value: number): string {
-        if (!this.colors) return 'rgba(0,0,0,0)';
+    public getColor(value?: number): string {
+        if (value === undefined) return 'rgba(0,0,0,0)';
+        if (this.colors.length === 0) return 'rgba(0,0,0,0)';
         const index = ArrayUtils.getInsertIndex(this.thresholds, value, this.ascending);
         return this.colors[index];
     }
 }
 
-export function getTextColor(style: string = 'regular') {
+export function getTextColor(style = 'regular'): string {
     return getComputedStyle(document.documentElement).getPropertyValue('--el-text-color-' + style);
 }

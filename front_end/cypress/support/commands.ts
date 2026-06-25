@@ -1,15 +1,17 @@
+/* eslint-disable @typescript-eslint/method-signature-style */
 /// <reference types="cypress" />
 
 import 'cypress-table';
 import 'cypress-intercept-formdata';
 
 declare global {
+    // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace Cypress {
         interface Chainable {
             /**
              * cypress-get-table 插件，用于获取表格数据
              */
-            getTable(): Chainable<Array<Record<string, string>>>;
+            getTable(): Chainable<Record<string, string>[]>;
 
             /**
              * 关闭所有通知
@@ -67,8 +69,8 @@ Cypress.Commands.add('getLocalStorage', (key: string) => {
     return cy.window().then((win) => {
         const value = win.localStorage.getItem(key);
         try {
-            return value ? JSON.parse(value) : null;
-        } catch (_e) {
+            return value === null ? null : JSON.parse(value) as unknown;
+        } catch {
             // If not valid JSON, return the raw string
             return value;
         }
@@ -139,22 +141,22 @@ Cypress.Commands.add('mockLogin', () => {
         const captcha = params.get('captcha');
         if (captcha !== 'test') {
             req.reply({
-                'type': 'error',
-                'object': 'login',
-                'category': 'captcha',
+                type: 'error',
+                object: 'login',
+                category: 'captcha',
             });
             return;
         }
         if (username === 'test' && password === 'test') {
             req.reply({
-                'type': 'success',
-                'user': {},
+                type: 'success',
+                user: {},
             });
         } else {
             req.reply({
-                'type': 'error',
-                'object': 'login',
-                'category': 'password',
+                type: 'error',
+                object: 'login',
+                category: 'password',
             });
         }
     });
@@ -186,7 +188,7 @@ Cypress.Commands.add('extractTableData', { prevSubject: 'element' }, (subject) =
 Cypress.Commands.add(
     'shouldHaveState',
     { prevSubject: true },
-    (subject: JQuery<HTMLElement>, expectedStates: (boolean | null)[]) => {
+    (subject: JQuery, expectedStates: (boolean | null)[]) => {
     // 验证长度是否匹配
         expect(subject.length).to.equal(
             expectedStates.length,
@@ -213,5 +215,3 @@ Cypress.Commands.add(
         });
     },
 );
-
-export {};

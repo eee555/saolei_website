@@ -1,4 +1,5 @@
-import { DBSchema, IDBPDatabase, openDB } from 'idb';
+import type { DBSchema, IDBPDatabase, IDBPTransaction } from 'idb';
+import { openDB } from 'idb';
 
 export const CACHE_DB_NAME = 'saolei-cache';
 export const CACHE_DB_VERSION = 1;
@@ -9,7 +10,7 @@ export const USER_INFO_STORE_NAME = 'user-info';
 const STORE_VERSIONS_KEY = 'storeVersions';
 const ROW_SCHEMAS_KEY = 'rowSchemas';
 
-type CacheStoreDefinition = {
+interface CacheStoreDefinition {
     name: string;
     keyPath: string | string[];
     version: number;
@@ -18,14 +19,14 @@ type CacheStoreDefinition = {
         keyPath: string | string[];
         options?: IDBIndexParameters;
     }[];
-};
+}
 
 type CacheRowColumnType = 'array' | 'boolean' | 'number' | 'object' | 'string' | 'unknown';
 
-type CacheRowColumnDefinition = {
+interface CacheRowColumnDefinition {
     type: CacheRowColumnType;
     default?: unknown;
-};
+}
 
 export type CacheRowSchema = Record<string, CacheRowColumnDefinition>;
 
@@ -136,22 +137,22 @@ function syncStoreIndexes(store: IDBObjectStore, definition: CacheStoreDefinitio
 export async function getTransaction<StoreName extends CacheStoreName, Mode extends CacheTransactionMode>(
     storeName: StoreName,
     mode: Mode,
-) {
+): Promise<IDBPTransaction<SaoleiCacheDB, [StoreName], Mode>> {
     const db = await getDatabase();
     return db.transaction(storeName, mode);
 }
 
-export function registerStoreRowSchema(storeName: CacheStoreName, rowSchema: CacheRowSchema) {
+export function registerStoreRowSchema(storeName: CacheStoreName, rowSchema: CacheRowSchema): void {
     registeredRowSchemas[storeName] = rowSchema;
     rowSchemaRevision += 1;
 }
 
-export async function getStoreMeta<Value = unknown>(key: string) {
+export async function getStoreMeta<Value = unknown>(key: string): Promise<Value | undefined> {
     const db = await getDatabase();
     return db.get(META_STORE_NAME, key) as Promise<Value | undefined>;
 }
 
-export async function setStoreMeta(key: string, value: unknown) {
+export async function setStoreMeta(key: string, value: unknown): Promise<void> {
     const db = await getDatabase();
     await db.put(META_STORE_NAME, value, key);
 }
@@ -170,8 +171,7 @@ async function clearVersionChangedStores(
 
     await Promise.all(storesToClear.map(async ([storeName]) => {
         const tx = db.transaction(storeName as CacheStoreName, 'readwrite');
-        const store = tx.store;
-        if (!store) throw new Error(`Store ${storeName} is not available`);
+        const { store } = tx;
 
         await store.clear();
         await tx.done;
@@ -186,7 +186,7 @@ function cloneDefaultValue(value: unknown) {
     return JSON.parse(JSON.stringify(value)) as unknown;
 }
 
-function convertValue(value: unknown, type: CacheRowColumnType) {
+function convertValue(value: unknown, type: CacheRowColumnType): unknown {
     switch (type) {
         case 'array':
             if (Array.isArray(value)) return value;
@@ -219,8 +219,6 @@ function convertValue(value: unknown, type: CacheRowColumnType) {
             return String(value);
         case 'unknown':
             return value;
-        default:
-            throw new Error(`Unsupported row column type: ${String(type)}`);
     }
 }
 
@@ -239,7 +237,7 @@ function hasObjectKey(row: unknown, key: string) {
         && Object.prototype.hasOwnProperty.call(row, key);
 }
 
-function migrateRow(row: unknown, previousSchema: CacheRowSchema, currentSchema: CacheRowSchema) {
+function migrateRow(row: unknown, previousSchema: Partial<CacheRowSchema>, currentSchema: CacheRowSchema) {
     const migrated: Record<string, unknown> = {};
 
     Object.entries(currentSchema).forEach(([columnName, columnDefinition]) => {
@@ -275,8 +273,7 @@ async function migrateStoreRows(
         const rows = await db.getAll(storeName);
         const migratedRows = rows.map((row) => migrateRow(row, previousSchema, currentSchema));
         const tx = db.transaction(storeName, 'readwrite');
-        const store = tx.store;
-        if (!store) throw new Error(`Store ${storeName} is not available`);
+        const { store } = tx;
 
         await store.clear();
         await Promise.all(migratedRows.map((row) => store.put(row)));
@@ -284,8 +281,7 @@ async function migrateStoreRows(
     } catch (err) {
         console.warn(`Failed to migrate IndexedDB store "${storeName}", clearing it instead.`, err);
         const clearTx = db.transaction(storeName, 'readwrite');
-        const store = clearTx.store;
-        if (!store) throw new Error(`Store ${storeName} is not available`);
+        const { store } = clearTx;
 
         await store.clear();
         await clearTx.done;
@@ -327,7 +323,7 @@ async function ensureStoreVersions(db: IDBPDatabase<SaoleiCacheDB>) {
 
         await ensureRowSchemas(db);
         ensuredRowSchemaRevision = targetRowSchemaRevision;
-    })().catch((err) => {
+    })().catch((err: unknown) => {
         throw err;
     }).finally(() => {
         storeVersionPromise = null;
@@ -336,7 +332,7 @@ async function ensureStoreVersions(db: IDBPDatabase<SaoleiCacheDB>) {
     return storeVersionPromise;
 }
 
-export async function getDatabase() {
+export async function getDatabase(): Promise<IDBPDatabase<SaoleiCacheDB>> {
     const db = await databasePromise;
     await ensureStoreVersions(db);
     return db;

@@ -24,7 +24,7 @@ import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { toISODateString } from '@/utils/datetime';
-import { VideoAbstract } from '@/utils/videoabstract';
+import type { VideoAbstract } from '@/utils/videoabstract';
 
 const props = defineProps({
     date: { type: Date, required: true },
@@ -48,7 +48,7 @@ const i18nMessages = {
         noVideoOnDate: '{0} 无录像',
         uploadedNVideosOnDate: '{0} 共 {1} 个录像',
     } },
-    'en': { local: {
+    en: { local: {
         noVideoOnDate: 'No video on {0}',
         uploadedNVideosOnDate: '{1} videos on {0}',
     } },

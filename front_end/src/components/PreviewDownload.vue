@@ -22,7 +22,6 @@ defineProps({
     },
 });
 
-
 // // 1. 用户点击播放录像 0
 // const id = 0
 
@@ -50,11 +49,9 @@ defineProps({
 //   onSuccess(`https://example.com/${id}.avf`)
 // }
 
-
 const download = (event: MouseEvent, id: number | undefined) => {
-    if (!id) {
-        return;
-    }
+    if (id === undefined) return;
+    if (id <= 0) return;
     const down = document.createElement('a');
     down.style.display = 'none';
     down.href = import.meta.env.VITE_BASE_API + '/video/download/?id=' + id;

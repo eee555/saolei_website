@@ -1,12 +1,14 @@
-import { toISODateString } from './datetime';
-import { MS_Level, MS_Software, MS_State, STNB_const } from './ms_const';
+/* eslint-disable @typescript-eslint/member-ordering */
+import { toDate, toISODateString } from './datetime';
+import type { MS_Level, MS_Software } from './ms_const';
+import { MS_State, STNB_const } from './ms_const';
 import { formatBytes } from './strings';
 
-function undefinedOrToString(value: any): string | undefined {
+function undefinedOrToString(value: { toString: () => string } | undefined): string | undefined {
     return value === undefined ? undefined : value.toString();
 }
 
-function undefinedOrToFixed(value: any, digits: number): string | undefined {
+function undefinedOrToFixed(value: number | undefined, digits: number): string | undefined {
     return value === undefined ? undefined : value.toFixed(digits);
 }
 
@@ -42,7 +44,6 @@ interface VideoRedisInfo {
     state: string;
     software: string;
     time: string;
-    player: string;
     player_id: number;
     level: MS_Level;
     mode: string;
@@ -53,58 +54,72 @@ interface VideoRedisInfo {
     ce?: number;
 }
 
+interface VideoAbstractData {
+    id?: number;
+    upload_time?: string | Date;
+    time?: string | Date;
+    end_time?: string | Date | null;
+    level: string;
+    mode: string;
+    timems: number;
+    bv: number;
+    state?: string;
+    software: string;
+    cl?: number | null;
+    ce?: number | null;
+    path?: number | null;
+    player_id?: number;
+    player?: number;
+    file_size?: number;
+    ongoing_tournament?: boolean;
+}
+
 export const getStat_keys = ['time', 'bvs', 'timems', 'bv', 'qg', 'rqp', 'stnb', 'ce', 'ces', 'cl', 'cls', 'ioe', 'thrp', 'corr', 'path', 'npath', 'mov', 'iome', 'file_size'] as const;
 export type getStat_stat = typeof getStat_keys[number];
 
 export class VideoAbstract {
-    public id: number;
-    public upload_time: Date;
+    public id = 0;
+    public upload_time = new Date();
     public end_time?: Date;
     public level: MS_Level;
     public mode: string;
     public timems: number;
     public bv: number;
-    public state: MS_State;
+    public state: MS_State = MS_State.Plain;
     public software: MS_Software;
     public cl?: number;
     public ce?: number;
     public path?: number;
     public player_id?: number;
-    public file_size: number;
+    public file_size = 0;
     public ongoing_tournament?: boolean;
 
-    constructor(info: any) {
-        if (info.id) this.id = info.id;
-        else this.id = 0;
+    public constructor(info: VideoAbstractData) {
+        this.id = info.id ?? this.id;
 
-        if (info.upload_time) this.upload_time = new Date(info.upload_time);
-        else if (info.time) this.upload_time = new Date(info.time); // newest_queue等返回的
-        else this.upload_time = new Date();
+        const uploadTime = info.upload_time ?? info.time;
+        if (uploadTime !== undefined) this.upload_time = new Date(uploadTime);
 
-        if (info.end_time) this.end_time = new Date(info.end_time);
+        this.end_time = toDate(info.end_time);
 
-        this.level = info.level;
+        this.level = info.level as MS_Level;
         this.mode = info.mode;
         this.timems = info.timems;
         this.bv = info.bv;
-        this.state = info.state;
-        this.software = info.software;
+        if (info.state !== undefined) this.state = info.state as MS_State;
+        this.software = info.software as MS_Software;
 
-        this.cl = info.cl;
-        this.ce = info.ce;
-        this.path = info.path;
+        this.cl = info.cl ?? undefined;
+        this.ce = info.ce ?? undefined;
+        this.path = info.path ?? undefined;
         this.player_id = info.player_id ?? info.player;
 
-        this.file_size = info.file_size ?? 0;
+        this.file_size = info.file_size ?? this.file_size;
 
-        this.ongoing_tournament = info.ongoing_tournament;
+        this.ongoing_tournament = info.ongoing_tournament ?? undefined;
     }
 
-    static fromVideoAbstractInfo(info: VideoAbstractInfo): VideoAbstract {
-        return new VideoAbstract(info);
-    }
-
-    static fromVideoRedisInfo(key: number, info: VideoRedisInfo): VideoAbstract {
+    public static fromVideoRedisInfo(key: number, info: VideoRedisInfo): VideoAbstract {
         return new VideoAbstract({
             id: key,
             upload_time: new Date(info.time),
@@ -120,64 +135,65 @@ export class VideoAbstract {
         });
     }
 
-    get time() {
+    public get time(): number {
         return this.timems / 1000;
     }
 
-    get bvs() {
+    public get bvs(): number {
         return this.bv / this.time;
     }
 
-    get qg() {
+    public get qg(): number {
         return Math.pow(this.time, 1.7) / this.bv;
     }
 
-    get rqp() {
+    public get rqp(): number {
         return this.time * (this.time - 1) / this.bv;
     }
 
-    get stnb() {
+    public get stnb(): number {
         return STNB_const.value[this.level] / this.qg;
     }
 
-    get ioe() {
+    public get ioe(): number | undefined {
         return numberDivideUndefined(this.bv, this.cl);
     }
 
-    get thrp() {
+    public get thrp(): number | undefined {
         return numberDivideUndefined(this.bv, this.ce);
     }
 
-    get corr() {
+    public get corr(): number | undefined {
         return undefinedDivideUndefined(this.ce, this.cl);
     }
 
-    get cls() {
+    public get cls(): number | undefined {
         return undefinedDivideNumber(this.cl, this.time);
     }
 
-    get ces() {
+    public get ces(): number | undefined {
         return undefinedDivideNumber(this.ce, this.time);
     }
 
-    get npath() {
+    public get npath(): number | undefined {
         return undefinedDivideNumber(this.path, 16);
     }
 
-    get mov() {
+    public get mov(): number | undefined {
         return undefinedDivideNumber(this.npath, this.time);
     }
 
-    get iome() {
+    public get iome(): number | undefined {
         return numberDivideUndefined(this.bv, this.npath);
     }
 
-    public getStat(stat: getStat_stat) {
+    public getStat(stat: getStat_stat): number | undefined {
         return this[stat];
     }
 
-    public displayStat(stat: getStat_stat) {
+    public displayStat(stat: getStat_stat): string | undefined {
         switch (stat) {
+            case 'timems':
             case 'time': return this.time.toFixed(3);
             case 'bvs': return this.bvs.toFixed(3);
             case 'bv': return this.bv.toString();
@@ -197,12 +213,7 @@ export class VideoAbstract {
             case 'iome': return undefinedOrToFixed(this.iome, 3);
             case 'file_size': return formatBytes(this.file_size);
         }
-    }
-
-    public tooltipFormatter(t: any) {
-        // t is the localization API from i18n
-        return `${t('common.prop.upload_time')}: ${this.upload_time} <br>
-        ${t('common.level.' + this.level)} ${this.bv}Bv = ${this.time.toFixed(3)} * ${this.bvs.toFixed(3)}`;
+        return undefined;
     }
 }
 
@@ -211,7 +222,7 @@ export function groupVideosByDate(videos: VideoAbstract[], attr: 'upload_time' |
 
     videos.forEach((video) => {
         let date = video[attr];
-        if (!date) date = video.upload_time; // fallback to upload_time if end_time is not available
+        date ??= video.upload_time; // fallback to upload_time if end_time is not available
         const dateKey = toISODateString(date); // Extract date part as string (YYYY-MM-DD)
         if (!result.has(dateKey)) {
             result.set(dateKey, []);

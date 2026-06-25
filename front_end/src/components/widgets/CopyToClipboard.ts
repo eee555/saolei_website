@@ -5,7 +5,7 @@ import { local } from '@/store';
 
 const { t } = i18n.global;
 
-export const copyToClipboard = async (str: string) => {
+export async function copyToClipboard(str: string): Promise<void> {
     try {
         await navigator.clipboard.writeText(str);
         ElNotification({
@@ -17,8 +17,8 @@ export const copyToClipboard = async (str: string) => {
         ElNotification({
             title: t('msg.copyToClipboardFail'),
             type: 'error',
-            message: err + '',
             duration: local.value.notification_duration,
         });
+        throw err;
     }
-};
+}

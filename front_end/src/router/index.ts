@@ -1,9 +1,10 @@
-import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
+import type { RouteRecordRaw } from 'vue-router';
+import { createRouter, createWebHashHistory } from 'vue-router';
 
 import { staffRoutes } from '@/views/StaffView/routes';
 import { userRoutes } from '@/views/UserView/routes';
 
-const routes: Array<RouteRecordRaw> = [
+const routes: RouteRecordRaw[] = [
     {
         path: '/',
         name: 'home',
@@ -40,11 +41,6 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('../views/GuideView.vue'),
     },
     {
-        path: '/score',
-        name: 'score',
-        component: () => import('../views/ScoreRankView.vue'),
-    },
-    {
         path: '/server',
         name: 'server',
         component: () => import('../views/ServerView/App.vue'),
@@ -58,7 +54,12 @@ const routes: Array<RouteRecordRaw> = [
         path: '/player/:id',
         name: 'player_id',
         component: () => import('../views/UserView/App.vue'),
-        redirect: (to) => `/player/${to.params.id}/summary`,
+        redirect: (to) => {
+            const { id } = to.params;
+            if (typeof id !== 'string') return '/player/0/summary';
+
+            return `/player/${id}/summary`;
+        },
         children: userRoutes,
     },
     {

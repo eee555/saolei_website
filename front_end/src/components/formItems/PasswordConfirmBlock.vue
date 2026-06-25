@@ -31,14 +31,16 @@ const confirmPassword = ref('');
 const passwordFormRef = useTemplateRef('passwordFormRef');
 const confirmPasswordFormRef = useTemplateRef('confirmPasswordFormRef');
 
-const validateState = computed(() => { return confirmPasswordFormRef.value!.validateState; });
+const validateState = computed(() => {
+    return confirmPasswordFormRef.value?.validateState;
+});
 defineExpose({ validateState });
 
 const passwordHandler = (value: string) => {
     if (value.length == 0) validateError(passwordFormRef, t('msg.passwordRequired'));
     else if (value.length < 6) validateError(passwordFormRef, t('msg.passwordMinimum'));
     else validateSuccess(passwordFormRef);
-    if (confirmPasswordFormRef.value!.validateState !== '') {
+    if (confirmPasswordFormRef.value?.validateState !== '') {
         if (value !== confirmPassword.value) validateError(confirmPasswordFormRef, t('msg.confirmPasswordMismatch'));
         else validateSuccess(confirmPasswordFormRef);
     }

@@ -34,7 +34,7 @@ describe('<GSCAllSummary />', () => {
     before(() => {
         cy.fixture('gscAllSummary.json').then((data) => {
             cy.log(data.data);
-            Cypress.expose('gscParticipantList', data.data.map((value: any) => new GSCParticipant(value)));
+            Cypress.expose('gscParticipantList', (data.data as object[]).map((value) => new GSCParticipant(value)));
         });
     });
     it('renders', () => {

@@ -24,7 +24,7 @@
 <script setup lang="ts">
 import '@/styles/text.css';
 import { ElIcon } from 'element-plus';
-import { PropType } from 'vue';
+import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import BaseIconIdentifier from '@/components/common/BaseIconIdentifier.vue';

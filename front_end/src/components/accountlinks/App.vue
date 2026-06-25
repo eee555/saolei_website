@@ -19,7 +19,7 @@ import CardAdd from './CardAdd.vue';
 import CardMsgames from './CardMsgames.vue';
 import CardSaolei from './CardSaolei.vue';
 import CardWoM from './CardWoM.vue';
-import { AccountLink, AccountMSGames, AccountSaolei, AccountWoM } from './utils';
+import type { AccountLink, AccountMSGames, AccountSaolei, AccountWoM } from './utils';
 
 import { httpErrorNotification } from '@/components/Notifications';
 import { store } from '@/store';
@@ -42,13 +42,11 @@ watch(() => props.userId, refresh, { immediate: true });
 async function refresh() {
     if (props.userId == 0) return;
     loading.value = true;
-    await proxy.$axios.get('accountlink/get/',
-        {
-            params: {
-                id: props.userId,
-            },
+    await proxy.$axios.get('accountlink/get/', {
+        params: {
+            id: props.userId,
         },
-    ).then(function (response) {
+    }).then(function (response) {
         accountlinks.value = response.data;
         loading.value = false;
     }).catch(httpErrorNotification);
@@ -59,16 +57,16 @@ async function refresh() {
     }
 }
 
-
 async function addLink(platform: string, identifier: string) {
-    await proxy.$axios.post('accountlink/add/',
-        {
+    try {
+        await proxy.$axios.post('accountlink/add/', {
             platform: platform,
             identifier: identifier,
-        },
-    ).then(function (_response) {
-        refresh();
-    }).catch(httpErrorNotification);
+        });
+        await refresh();
+    } catch (error) {
+        httpErrorNotification(error);
+    }
 }
 
 function refreshAccount(account: AccountLink) {

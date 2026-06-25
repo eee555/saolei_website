@@ -33,7 +33,8 @@
 
 <script setup lang="ts">
 import { ElButton, ElDialog } from 'element-plus';
-import { defineAsyncComponent, PropType, ref } from 'vue';
+import { defineAsyncComponent, ref } from 'vue';
+import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import Avatar from './Avatar.vue';
@@ -61,7 +62,7 @@ const i18nMessages = {
     'zh-cn': { local: {
         editButton: '编辑信息',
     } },
-    'en': { local: {
+    en: { local: {
         editButton: 'Edit Profile',
     } },
 };

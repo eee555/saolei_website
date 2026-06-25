@@ -22,7 +22,8 @@ import '@/styles/cards.css';
 
 import { ElCard, ElLink } from 'element-plus';
 import tinycolor from 'tinycolor2';
-import { computed, PropType } from 'vue';
+import type { PropType } from 'vue';
+import { computed } from 'vue';
 import { Tippy } from 'vue-tippy';
 
 import { defaultVideos } from './utils';
@@ -30,8 +31,8 @@ import { defaultVideos } from './utils';
 import VideoAbstractDisplay from '@/components/widgets/VideoAbstractDisplay.vue';
 import { getTextColor, PiecewiseColorScheme } from '@/utils/colors';
 import { preview } from '@/utils/common/PlayerDialog';
-import { MS_Level } from '@/utils/ms_const';
-import { VideoAbstract } from '@/utils/videoabstract';
+import type { MS_Level } from '@/utils/ms_const';
+import type { VideoAbstract } from '@/utils/videoabstract';
 
 type sortByOption = 'time' | 'bvs' | 'stnb';
 
@@ -44,7 +45,7 @@ const props = defineProps({
 
 const color = computed(() => {
     if (!props.video) return props.colorTheme.getColor(defaultVideos[props.level][props.displayBy]);
-    return props.colorTheme.getColor(props.video.getStat(props.displayBy) as number);
+    return props.colorTheme.getColor(props.video.getStat(props.displayBy));
 });
 
 const fontColor = computed(() => {

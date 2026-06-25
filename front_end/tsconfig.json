@@ -37,7 +37,8 @@
     "src/**/*.tsx",
     "src/**/*.vue",
     "cypress/**/*.ts",
-    "src/setup.ts"
+    "src/setup.ts",
+    "vite.config.ts"
   ],
   "exclude": [
     "node_modules"

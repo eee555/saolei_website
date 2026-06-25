@@ -11,15 +11,15 @@ import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vu
 
 import { videoplayerstore } from '@/store';
 
+interface FlopPlayer {
+    playVideo: (src: string, options: any) => void;
+}
+
+interface FlopPlaceholder {
+    onload: () => void;
+}
+
 declare global {
-    interface FlopPlayer {
-        playVideo: (src: string, options: any) => void;
-    }
-
-    interface FlopPlaceholder {
-        onload: () => void;
-    }
-
     interface Window {
         flop: FlopPlayer | FlopPlaceholder | null;
     }
@@ -32,7 +32,7 @@ const props = defineProps({
 watch(() => props.src, () => {
     if (props.src === '') return;
     window.flop = {
-        onload: async function () {
+        onload: function () {
             playVideo();
         },
     };
@@ -63,9 +63,11 @@ const iframeHeight = ref(0);
 const backgroundColor = computed(() => getComputedStyle(document.documentElement).getPropertyValue('--el-bg-color'));
 
 onMounted(() => {
-    iframeRef.value!.onload = function () {
+    if (iframeRef.value === null) return;
+    iframeRef.value.onload = function () {
         // 获取 iframe 内部的 document 对象
-        const iframeDoc = iframeRef.value!.contentDocument || iframeRef.value!.contentWindow!.document;
+        const iframeDoc = iframeRef.value?.contentDocument ?? iframeRef.value?.contentWindow?.document;
+        if (iframeDoc === undefined) return;
         // 修改 body 背景色
         // iframeDoc.body.style.backgroundColor = '#000000';
         // 或者添加一个全局样式
@@ -81,18 +83,12 @@ const getContentSize = (iframe: HTMLIFrameElement) => {
     const doc = iframe.contentDocument;
     if (!doc) return { width: 0, height: 0 };
 
-    const body = doc.body;
+    const { body } = doc;
     const html = doc.documentElement;
 
     // 确保取到完整的内容尺寸（滚动尺寸优先）
-    const width = Math.max(
-        body.scrollWidth, body.offsetWidth,
-        html.scrollWidth, html.offsetWidth, html.clientWidth,
-    );
-    const height = Math.max(
-        body.scrollHeight, body.offsetHeight,
-        html.scrollHeight, html.offsetHeight, html.clientHeight,
-    );
+    const width = Math.max(body.scrollWidth, body.offsetWidth, html.scrollWidth, html.offsetWidth, html.clientWidth);
+    const height = Math.max(body.scrollHeight, body.offsetHeight, html.scrollHeight, html.offsetHeight, html.clientHeight);
     return { width, height };
 };
 
@@ -100,7 +96,7 @@ const getContentSize = (iframe: HTMLIFrameElement) => {
 let updating = false;
 const updateSize = () => {
     const iframe = iframeRef.value;
-    if (!iframe || !iframe.contentDocument || updating) return;
+    if (updating || iframe === null || iframe.contentDocument === null) return;
 
     updating = true;
     const { width, height } = getContentSize(iframe);
@@ -129,18 +125,24 @@ const setupIframe = async (iframe: HTMLIFrameElement) => {
     doc.head.appendChild(style);
 
     // 等待一帧，确保样式被浏览器应用
-    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await new Promise((resolve) => {
+        requestAnimationFrame(resolve);
+    });
 
     // 初次获取尺寸
     updateSize();
 
     // 使用 ResizeObserver 监听 body/html 尺寸变化（内容增减、图片加载等）
-    resizeObserver = new ResizeObserver(() => updateSize());
+    resizeObserver = new ResizeObserver(() => {
+        updateSize();
+    });
     resizeObserver.observe(doc.body);
     resizeObserver.observe(doc.documentElement);
 
     // 额外使用 MutationObserver 监听子树变化，防止某些 DOM 变化未触发 ResizeObserver
-    mutationObserver = new MutationObserver(() => updateSize());
+    mutationObserver = new MutationObserver(() => {
+        updateSize();
+    });
     mutationObserver.observe(doc.body, { childList: true, subtree: true, attributes: true });
     mutationObserver.observe(doc.documentElement, { childList: true, subtree: true, attributes: true });
 };
@@ -148,9 +150,9 @@ const setupIframe = async (iframe: HTMLIFrameElement) => {
 // iframe 加载完成
 const onIframeLoad = () => {
     const iframe = iframeRef.value;
-    if (iframe && iframe.contentDocument) {
-        setupIframe(iframe);
-    }
+    if (iframe === null) return;
+    if (iframe.contentDocument === null) return;
+    void setupIframe(iframe);
 };
 
 // 清理

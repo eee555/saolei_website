@@ -25,6 +25,7 @@ import { useI18n } from 'vue-i18n';
 import { httpErrorNotification } from '../Notifications';
 
 import { local } from '@/store';
+import { ArrayUtils } from '@/utils/arrays';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const props = defineProps({
@@ -38,26 +39,51 @@ const { t } = useI18n();
 
 const { proxy } = useCurrentInstance();
 
-const data = ref([] as any[]);
+interface DataEntry {
+    mode: string;
+    level: string;
+    timems: number;
+    bv: number;
+    bvs: number;
+    upload_time: string;
+    video__flag: number;
+    video__cell0: number;
+    video__cell1: number;
+    video__cell2: number;
+    video__cell3: number;
+    video__cell4: number;
+    video__cell5: number;
+    video__cell6: number;
+    video__cell7: number;
+    video__cell8: number;
+    video__left: number;
+    video__right: number;
+    video__double: number;
+    video__op: number;
+    video__isl: number;
+    video__path: number;
+}
 
-watch(props, () => { data.value = []; });
+const data = ref([] as DataEntry[]);
+
+watch(props, () => {
+    data.value = [];
+});
 
 async function fetchData(id: number) {
-    await proxy.$axios.get('video/query_by_id',
-        {
-            params: {
-                id: id,
-            },
+    await proxy.$axios.get('video/query_by_id', {
+        params: {
+            id: id,
         },
-    ).then(function (response) {
-        data.value = response.data;
+    }).then(function (response) {
+        data.value = response.data as DataEntry[];
     }).catch(httpErrorNotification);
 }
 
-function generateArbiterCSV(data: any) {
-    if (!data) return '';
+function generateArbiterCSV(raw: DataEntry[]) {
+    if (ArrayUtils.isEmpty(raw)) return '';
     const csvdata = ['Day,Month,Year,Hour,Min,Sec,mode,Time,BBBV,BBBVs,style,cell0,cell1,cell2,cell3,cell4,cell5,cell6,cell7,cell8,Lcl,Rcl,Dcl,Leff,Reff,Deff,Openings,Islands,Path,GZiNi,HZiNi'];
-    for (const v of data) {
+    for (const v of raw) {
         if (v.mode != '00' && v.mode != '12') continue;
         const date = new Date(v.upload_time);
         const row: any[] = [date.getUTCDate(), date.getUTCMonth() + 1, date.getUTCFullYear(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds()];

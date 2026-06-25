@@ -102,14 +102,18 @@
 
 <script setup lang="ts">
 import { FilterMatchMode } from '@primevue/core/api';
-import { CheckboxValueType, ElCheckbox, ElDescriptions, ElDescriptionsItem } from 'element-plus';
+import type { CheckboxValueType } from 'element-plus';
+import { ElCheckbox, ElDescriptions, ElDescriptionsItem } from 'element-plus';
 import PrColumn from 'primevue/column';
-import PrDataTable, { DataTableFilterEvent } from 'primevue/datatable';
+import type { DataTableFilterEvent } from 'primevue/datatable';
+import PrDataTable from 'primevue/datatable';
 import PrListbox from 'primevue/listbox';
-import { computed, PropType, ref, watch } from 'vue';
+import type { PropType } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { UploadEntry, UploadStatus } from './utils';
+import type { UploadEntry } from './utils';
+import { UploadStatus } from './utils';
 
 import { toISODateTimeString } from '@/utils/datetime';
 import { MS_Levels } from '@/utils/ms_const';
@@ -127,7 +131,7 @@ const selectedRows = defineModel<UploadEntry[]>(
 );
 
 const filters = ref({
-    'status': { value: null, matchMode: FilterMatchMode.EQUALS },
+    status: { value: null, matchMode: FilterMatchMode.EQUALS },
     'stat.level': { value: null, matchMode: FilterMatchMode.EQUALS },
     // 'mode': { value: Object.values(MS_Mode), matchMode: FilterMatchMode.IN },
 });
@@ -153,6 +157,7 @@ watch(filteredData, (newVal) => {
 });
 
 function handleSelectOneChange(value: CheckboxValueType, entry: UploadEntry) {
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (value) {
         selectedRows.value.push(entry);
     } else {
@@ -180,7 +185,7 @@ const i18nMessages = {
         success: '上传成功',
         upload: '上传失败',
     } },
-    'en': { local: {
+    en: { local: {
         censorship: 'Identifier blocked',
         collision: 'Video already exists',
         custom: 'Custom level is currently not supported',

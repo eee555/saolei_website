@@ -20,10 +20,10 @@
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElForm, ElFormItem, ElNotification, FormInstance } from 'element-plus';
+import type { FormInstance } from 'element-plus';
+import { ElButton, ElForm, ElFormItem, ElNotification } from 'element-plus';
 import { computed, onUnmounted, reactive, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
-
 
 import EmailCodeBlock from '@/components/formItems/EmailCodeBlock.vue';
 import EmailFormItem from '@/components/formItems/EmailFormItem.vue';
@@ -54,24 +54,23 @@ const retrieveForm = reactive<RetrieveForm>({
 const ruleFormRef = useTemplateRef('ruleFormRef');
 
 const email_state = computed(() => {
-    if (!emailFormRef.value) return '';
+    if (emailFormRef.value === null) return '';
     else return emailFormRef.value.validateState;
 });
 const confirm_disabled = computed(() => {
-    if (!emailFormRef.value || !emailCodeFormRef.value || !passwordFormRef.value) return true;
+    if (emailFormRef.value === null || emailCodeFormRef.value === null || passwordFormRef.value === null) return true;
     return emailFormRef.value.validateState !== 'success' || emailCodeFormRef.value.validateState !== 'success' || passwordFormRef.value.validateState !== 'success';
 });
 
-const submitForm = async (formEl: FormInstance | undefined) => {
+const submitForm = async (formEl?: FormInstance) => {
     if (!formEl) return;
     if (confirm_disabled.value) return;
     await proxy.$axios.post('userprofile/retrieve/', {
         password: retrieveForm.password,
         email: retrieveForm.email,
-        email_key: emailCodeFormRef.value!.hashkey,
+        email_key: emailCodeFormRef.value?.hashkey,
         email_captcha: retrieveForm.emailCode,
-    }).then(function (response) {
-        const data = response.data;
+    }).then(function ({ data }) {
         if (data.type == 'success') {
             emit('login', data.user);
             ElNotification({
@@ -81,14 +80,14 @@ const submitForm = async (formEl: FormInstance | undefined) => {
             });
         } else if (data.type === 'error') {
             if (data.object === 'emailcode') {
-                emailCodeFormRef.value!.errorCode();
+                emailCodeFormRef.value?.errorCode();
             }
         }
     });
 };
 
 onUnmounted(() => {
-    if (!ruleFormRef.value) return;
+    if (ruleFormRef.value === null) return;
     ruleFormRef.value.resetFields();
 });
 
@@ -96,13 +95,13 @@ const i18nMessages = {
     'zh-cn': { local: {
         confirm: '更新密码',
     } },
-    'en': { local: {
+    en: { local: {
         confirm: 'Update password',
     } },
-    'de': { local: {
+    de: { local: {
         confirm: 'bestätigen',
     } },
-    'pl': { local: {
+    pl: { local: {
         confirm: 'Potwierdź',
     } },
 };

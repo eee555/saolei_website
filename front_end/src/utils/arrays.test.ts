@@ -93,6 +93,7 @@ describe('ArrayUtils', () => {
 
         it('last', () => {
             expect(ArrayUtils.last(['a', 'b'])).toBe('b');
+            // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
             expect(ArrayUtils.last([])).toBeUndefined();
         });
 

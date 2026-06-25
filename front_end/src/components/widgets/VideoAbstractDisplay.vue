@@ -54,14 +54,14 @@
 <script setup lang="ts">
 import '@/styles/text.css';
 import { ElDescriptions, ElDescriptionsItem, ElRow } from 'element-plus';
-import { PropType } from 'vue';
+import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import SoftwareIcon from './SoftwareIcon.vue';
 import VideoStateIcon from './VideoStateIcon.vue';
 
 import { toISODateTimeString } from '@/utils/datetime';
-import { VideoAbstract } from '@/utils/videoabstract';
+import type { VideoAbstract } from '@/utils/videoabstract';
 
 defineProps({
     video: {

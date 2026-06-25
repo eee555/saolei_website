@@ -25,7 +25,7 @@ import { useI18n } from 'vue-i18n';
 
 import StackBar from '@/components/visualization/StackBar/App.vue';
 import { colorTheme } from '@/store';
-import { VideoAbstract } from '@/utils/videoabstract';
+import type { VideoAbstract } from '@/utils/videoabstract';
 
 const props = defineProps({
     videoList: {
@@ -76,7 +76,7 @@ const i18nMessages = {
         totalNBytes: '占用{0}字节',
         totalNVideos: '共{0}个录像',
     } },
-    'en': { local: {
+    en: { local: {
         totalNBytes: '{0} bytes',
         totalNVideos: '{0} videos in total',
     } },

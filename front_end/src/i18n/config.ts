@@ -1,4 +1,4 @@
-import { LocaleMessage } from '@intlify/core-base';
+import type { LocaleMessage } from '@intlify/core-base';
 import type { VueMessageType } from 'vue-i18n';
 
 /**

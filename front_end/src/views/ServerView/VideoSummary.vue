@@ -14,14 +14,17 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { VueUiSparkStackbar, VueUiSparkStackbarConfig } from 'vue-data-ui';
+import type { VueUiSparkStackbarConfig } from 'vue-data-ui';
+import { VueUiSparkStackbar } from 'vue-data-ui';
 import { useI18n } from 'vue-i18n';
 
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
 import { local } from '@/store';
-import { createEnumMap, EnumMap } from '@/utils';
+import type { EnumMap } from '@/utils';
+import { createEnumMap } from '@/utils';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { MS_Level, MS_Levels, MS_Mode, MS_Software, MS_Softwares, MS_State } from '@/utils/ms_const';
+import type { MS_Level, MS_Software } from '@/utils/ms_const';
+import { MS_Levels, MS_Mode, MS_Softwares, MS_State } from '@/utils/ms_const';
 
 const { proxy } = useCurrentInstance();
 const { t } = useI18n();
@@ -44,12 +47,11 @@ const videoSummaryData = ref<VideoSummary>({
 
 const loading = ref(false);
 
-function refresh() {
+async function refresh() {
     loading.value = true;
-    proxy.$axios.get('/api/common/videosummary').then((response) => {
-        Object.assign(videoSummaryData.value, response.data);
-        loading.value = false;
-    });
+    const response = await proxy.$axios.get('/api/common/videosummary');
+    Object.assign(videoSummaryData.value, response.data);
+    loading.value = false;
 }
 
 onMounted(refresh);

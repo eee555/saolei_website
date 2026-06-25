@@ -30,14 +30,12 @@ import { useI18n } from 'vue-i18n';
 
 import PlatformIcon from '@/components/widgets/PlatformIcon.vue';
 
-
 defineProps({
     platform: {
         type: String,
         default: '',
     },
 });
-
 
 const i18nMessages = {
     'zh-cn': { local: {
@@ -51,7 +49,7 @@ const i18nMessages = {
         wom1: '在',
         wom2: '进入你的个人主页，网址结尾的数字就是你的ID。',
     } },
-    'en': { local: {
+    en: { local: {
         msgames1: 'Find yourself on the ',
         msgames2: ' ranking:',
         msgames3: 'Click the link next to your name (see image above) to get to your profile (see image below). The number at the end of the url is your ID.',

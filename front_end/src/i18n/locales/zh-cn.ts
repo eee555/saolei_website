@@ -1,4 +1,7 @@
-import { MessageContext } from 'vue-i18n';
+/* eslint-disable @typescript-eslint/unbound-method */
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+import type { MessageContext } from 'vue-i18n';
 
 export default {
     local: 'zh-cn',
@@ -165,7 +168,7 @@ export default {
         verified: '已验证',
     },
     BBBvSummary: {
-        bbbvInTotal: (ctx: MessageContext) => `共${ctx.list(0)}个${ctx.linked('common.prop.bv')}`,
+        bbbvInTotal: ({ list, linked }: MessageContext) => `共${list(0)}个${linked('common.prop.bv')}`,
     },
     errorMsg: {
         file: {
@@ -213,7 +216,7 @@ export default {
         username: '用户名',
     },
     gsc: {
-        title: (ctx: MessageContext) => `第${ctx.named('order')}届金羊杯`,
+        title: ({ named }: MessageContext) => `第${named('order')}届金羊杯`,
         description: {
             line1: '比赛期间上传（以服务器接收时间为准）的所有录像中，取成绩最好的20局初级（bv>=10）、12局中级（bv>=30）、5局高级（bv>=100），计算总成绩。',
             line2: '局数不够的，初级按照10秒，中级按照60秒，高级按照240秒补全。',

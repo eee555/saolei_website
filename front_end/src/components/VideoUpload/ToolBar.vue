@@ -47,7 +47,7 @@ const i18nMessages = {
         remove: '移除',
         stop: '停止上传',
     } },
-    'en': { local: {
+    en: { local: {
         selected: 'Selected: {0} / {1}',
         upload: 'Upload',
         remove: 'Remove',

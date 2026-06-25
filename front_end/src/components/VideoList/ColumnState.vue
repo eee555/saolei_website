@@ -22,7 +22,7 @@ import { useI18n } from 'vue-i18n';
 
 import VideoStateIcon from '@/components/widgets/VideoStateIcon.vue';
 import { MS_State } from '@/utils/ms_const';
-import { VideoAbstract } from '@/utils/videoabstract';
+import type { VideoAbstract } from '@/utils/videoabstract';
 
 const { t } = useI18n();
 </script>

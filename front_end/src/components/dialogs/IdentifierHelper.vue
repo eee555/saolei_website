@@ -47,7 +47,7 @@ const componentMessages = {
         line_4_3: '其次保护先使用该标识的用户。“使用”是指在任何地方（需要可查证）公开发表该标识的录像。',
         line_4_4: '管理员裁决后可能会删除某些用户的对应标识，这会导致用户成绩受损。',
     } },
-    'en': { local: {
+    en: { local: {
         line_1_1: 'An identifier is a string signature attached to the video file by the player. It is referred to as "Player Identification Text" in the settings of ',
         line_1_2: ' and "Identifier" in the settings of ',
         line_1_3: '.',

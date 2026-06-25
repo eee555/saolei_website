@@ -17,15 +17,16 @@
 
 <script setup lang="ts">
 import { ElCol } from 'element-plus';
-import { computed, PropType, useTemplateRef } from 'vue';
+import type { PropType } from 'vue';
+import { computed, useTemplateRef } from 'vue';
 
 import HeadColumn from './HeadColumn.vue';
 import SortedColumn from './SortedColumn.vue';
 import { defaultCounts, defaultVideos } from './utils';
 
-import { MS_Level, MS_State } from '@/utils/ms_const';
-import { VideoAbstract } from '@/utils/videoabstract';
-
+import type { MS_Level } from '@/utils/ms_const';
+import { MS_State } from '@/utils/ms_const';
+import type { VideoAbstract } from '@/utils/videoabstract';
 
 const props = defineProps({
     videos: {
@@ -54,9 +55,9 @@ const filteredVideos = computed(() => {
 
 const sumAll = computed(() => {
     return {
-        time: timeColumnRef.value?.sumStat || defaultVideos[props.level].time * defaultCounts[props.level],
-        bvs: bvsColumnRef.value?.sumStat || defaultVideos[props.level].bvs * defaultCounts[props.level],
-        stnb: stnbColumnRef.value?.sumStat || defaultVideos[props.level].stnb * defaultCounts[props.level],
+        time: timeColumnRef.value?.sumStat ?? defaultVideos[props.level].time * defaultCounts[props.level],
+        bvs: bvsColumnRef.value?.sumStat ?? defaultVideos[props.level].bvs * defaultCounts[props.level],
+        stnb: stnbColumnRef.value?.sumStat ?? defaultVideos[props.level].stnb * defaultCounts[props.level],
     };
 });
 

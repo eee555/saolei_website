@@ -135,14 +135,17 @@
 import 'vue-data-ui/style.css';
 import '@/styles/button.css';
 
+import { useIntervalFn } from '@vueuse/core';
 import { ElButton, ElCarousel, ElCarouselItem, ElDescriptions, ElDescriptionsItem, ElDialog, ElInput, ElLink, vLoading } from 'element-plus';
 import PrToolbar from 'primevue/toolbar';
-import { computed, onMounted, onUnmounted, PropType, ref, useTemplateRef, watch } from 'vue';
+import type { PropType } from 'vue';
+import { computed, ref, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import CarouselControl from './CarouselControl.vue';
 import UnverifiedNotice from './UnverifiedNotice.vue';
-import { AccountSaolei, AccountSaoleiDefault, SaoleiImportSummary, SaoleiImportSummaryDefault } from './utils';
+import type { AccountSaolei, SaoleiImportSummary } from './utils';
+import { AccountSaoleiDefault, SaoleiImportSummaryDefault } from './utils';
 import VideoImportQueue from './VideoImportQueue.vue';
 
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
@@ -152,8 +155,8 @@ import SaoleiImportHelper from '@/components/dialogs/SaoleiImportHelper.vue';
 import { httpErrorNotification } from '@/components/Notifications';
 import StackBar from '@/components/visualization/StackBar/App.vue';
 import { store } from '@/store';
-import { cs_to_s, sleep } from '@/utils';
-import { TaskStatus } from '@/utils/common/structInterface';
+import { cs_to_s } from '@/utils';
+import type { TaskStatus } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { utc_to_local_format } from '@/utils/system/tools';
 
@@ -174,20 +177,19 @@ const deleteDialogVisible = ref(false);
 const importQueueVisible = ref(false);
 const confirmSaoleiId = ref('');
 const syncModeAll = ref(false);
-const carouselLength = computed(() => store.player.id == store.user.id ? 2 : 1);
+const carouselLength = computed(() => (store.player.id == store.user.id ? 2 : 1));
 
 async function updateLink() {
     taskStatus.value = 'loading';
     await proxy.$axios.post('accountlink/update/', {
         platform: 'c',
-    }).then(function (response) {
-        const data = response.data;
+    }).then(function ({ data }) {
         errorMsg.value = '';
         taskStatus.value = data.type;
         if (data.type == 'error') {
             errorMsg.value = t(`errorMsg.${data.object}.title`) + t('common.punct.colon') + t(`errorMsg.${data.object}.${data.category}`);
         }
-    }).catch(function (error) {
+    }).catch(function (error: unknown) {
         errorMsg.value = '';
         taskStatus.value = 'error';
         httpErrorNotification(error);
@@ -204,13 +206,12 @@ function deleteAccountLink() {
 function createSyncTask(mode: 'all' | 'new') {
     proxy.$axios.post('/accountlink/saolei_import_videos/', {
         mode: mode,
-    }).then(getImportSummary);
+    }).then(getImportSummary).catch(httpErrorNotification);
 }
 
 const importSummary = ref<SaoleiImportSummary>(SaoleiImportSummaryDefault);
 const importSummaryLoading = ref(false);
 let importSummarySaoleiId = 0;
-let isActive = true;
 const videoImporting = computed(() => importSummary.value.new_connection + importSummary.value.new_failed + importSummary.value.new_success != importSummary.value.new_total);
 const videoListImporting = computed(() => ['READY', 'RUNNING'].includes(importSummary.value.bulk_task_status));
 const stackBarData = computed(() => [
@@ -236,31 +237,25 @@ async function getImportSummary() {
             saolei_id: props.info.id,
         },
     }).then((response) => {
-        if (!isActive) return;
         importSummary.value = response.data;
-    }).finally(() => {
-        if (!isActive) return;
+    }).catch(httpErrorNotification).finally(() => {
         importSummaryLoading.value = false;
     });
 }
 
 watch(() => props.info.id, getImportSummary, { immediate: true });
 
-onMounted(async () => {
-    while (isActive) {
-        await sleep(30000);
-        if (!isActive) return;
-        if (props.info.id != importSummarySaoleiId) {
-            importSummarySaoleiId = props.info.id;
-        } else if (videoImporting.value || videoListImporting.value) {
-            await getImportSummary();
-        }
+async function pollImportSummary() {
+    if (props.info.id != importSummarySaoleiId) {
+        importSummarySaoleiId = props.info.id;
+    } else if (!importSummaryLoading.value && (videoImporting.value || videoListImporting.value)) {
+        await getImportSummary();
     }
-});
+}
 
-onUnmounted(() => {
-    isActive = false;
-});
+useIntervalFn(() => {
+    void pollImportSummary();
+}, 30000);
 
 /* 本地化 Localization */
 const i18nMessage = {
@@ -269,7 +264,7 @@ const i18nMessage = {
         totalViews: '综合人气',
         videoCount: '录像数量',
     } },
-    'en': { local: {
+    en: { local: {
         name: 'Name',
         totalViews: 'Total Views',
         videoCount: 'Video Count',

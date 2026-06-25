@@ -114,7 +114,7 @@ const i18nMessage = {
         designer: '外观设计',
         acknowledgement: '致谢',
     } },
-    'en': { local: {
+    en: { local: {
         owner: 'Owner',
         moderator: 'Moderators',
         software: 'Developers',

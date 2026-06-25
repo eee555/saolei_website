@@ -7,7 +7,8 @@
 <script setup lang="ts">
 import 'vue-data-ui/style.css';
 import { computed, onMounted, ref } from 'vue';
-import { VueUiDonut, VueUiDonutConfig, VueUiDonutDatasetItem } from 'vue-data-ui';
+import type { VueUiDonutConfig, VueUiDonutDatasetItem } from 'vue-data-ui';
+import { VueUiDonut } from 'vue-data-ui';
 import { useI18n } from 'vue-i18n';
 
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
@@ -18,28 +19,27 @@ const { proxy } = useCurrentInstance();
 const dataset = ref<VueUiDonutDatasetItem[]>([]);
 const loading = ref(false);
 
-function refresh() {
+async function refresh() {
     loading.value = true;
-    proxy.$axios.get('/api/common/tasksummary').then((response) => {
-        dataset.value = [
-            {
-                name: t('local.READY'),
-                values: [response.data.status.READY],
-            },
-            {
-                name: t('local.RUNNING'),
-                values: [response.data.status.RUNNING],
-            },
-            {
-                name: t('local.SUCCESSFUL'),
-                values: [response.data.status.SUCCESSFUL],
-            },
-            {
-                name: t('local.FAILED'),
-                values: [response.data.status.FAILED],
-            },
-        ];
-    });
+    const response = await proxy.$axios.get('/api/common/tasksummary');
+    dataset.value = [
+        {
+            name: t('local.READY'),
+            values: [response.data.status.READY],
+        },
+        {
+            name: t('local.RUNNING'),
+            values: [response.data.status.RUNNING],
+        },
+        {
+            name: t('local.SUCCESSFUL'),
+            values: [response.data.status.SUCCESSFUL],
+        },
+        {
+            name: t('local.FAILED'),
+            values: [response.data.status.FAILED],
+        },
+    ];
     loading.value = false;
 }
 
@@ -68,7 +68,7 @@ const config = computed<VueUiDonutConfig>(() => {
                 },
             },
         },
-    } as VueUiDonutConfig;
+    };
 });
 
 /* 本地化 Localization */
@@ -80,7 +80,7 @@ const i18nMessages = {
         SUCCESSFUL: '已完成',
         FAILED: '失败',
     } },
-    'en': { local: {
+    en: { local: {
         title: 'Background tasks',
         READY: 'Ready',
         RUNNING: 'Running',

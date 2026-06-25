@@ -43,7 +43,6 @@ import { httpErrorNotification, successNotification } from '@/components/Notific
 import { preview } from '@/utils/common/PlayerDialog';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
-
 const { proxy } = useCurrentInstance();
 
 const videoid = ref(0);

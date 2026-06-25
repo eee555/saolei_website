@@ -16,7 +16,6 @@ import { ElButton, ElRow, vLoading } from 'element-plus';
 import { onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-
 import { BaseIconSetting } from '@/components/common/icon';
 import VideoList from '@/components/VideoList/App.vue';
 import MultiSelector from '@/components/widgets/MultiSelector.vue';
@@ -26,7 +25,6 @@ import { VideoListConfig } from '@/store';
 import { ArrayUtils } from '@/utils/arrays';
 import { ColumnChoices } from '@/utils/ms_const';
 import { UserProfile } from '@/utils/userprofile';
-
 
 const { t } = useI18n();
 

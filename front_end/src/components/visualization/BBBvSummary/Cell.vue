@@ -16,7 +16,8 @@
 <script setup lang="ts">
 import { ElLink } from 'element-plus';
 import tinycolor from 'tinycolor2';
-import { computed, PropType, ref, watch } from 'vue';
+import type { PropType } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import { getBest } from './utils';
 
@@ -26,8 +27,9 @@ import { store } from '@/store';
 import { getTextColor, PiecewiseColorScheme } from '@/utils/colors';
 import { preview } from '@/utils/common/PlayerDialog';
 import { fullDay, globalNow } from '@/utils/datetime';
-import { MS_Software, MS_Softwares } from '@/utils/ms_const';
-import { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
+import type { MS_Software } from '@/utils/ms_const';
+import { MS_Softwares } from '@/utils/ms_const';
+import type { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 
 const props = defineProps({
     videos: { type: Array<VideoAbstract>, default: [] },
@@ -57,7 +59,7 @@ watch(props, refresh, { immediate: true });
 
 const color = computed(() => {
     if (bestIndex.value === -1) return 'rgba(0,0,0,0)';
-    return props.colorTheme.getColor(props.videos[bestIndex.value].getStat(props.displayBy) as number);
+    return props.colorTheme.getColor(props.videos[bestIndex.value].getStat(props.displayBy));
 });
 
 const fontColor = computed(() => {
@@ -74,7 +76,7 @@ const isNew = computed(() => {
 
 function handleClick() {
     if (props.tooltipMode === 'fast') {
-        preview(props.videos[bestIndex.value].id);
+        void preview(props.videos[bestIndex.value].id);
     } else {
         store.video_list = props.videos;
         store.video_list_show = true;

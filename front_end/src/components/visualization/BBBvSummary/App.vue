@@ -48,7 +48,8 @@
 <script setup lang="ts">
 import '@/styles/text.css';
 import { ElDivider, ElRow } from 'element-plus';
-import { computed, PropType, ref } from 'vue';
+import type { PropType } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Tippy } from 'vue-tippy';
 
@@ -60,8 +61,10 @@ import { BBBvSummaryConfig, colorTheme } from '@/store';
 import { ArrayUtils } from '@/utils/arrays';
 import { PiecewiseColorScheme } from '@/utils/colors';
 import { setLastDigit } from '@/utils/math';
-import { CellChoice, ColorTemplateName, getPiecewiseColorSchemeName, MS_Level, PiecewiseColorSchemeName } from '@/utils/ms_const';
-import { getStat_stat, groupVideosByBBBv, VideoAbstract } from '@/utils/videoabstract';
+import type { CellChoice, ColorTemplateName, MS_Level } from '@/utils/ms_const';
+import { getPiecewiseColorSchemeName, PiecewiseColorSchemeName } from '@/utils/ms_const';
+import type { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
+import { groupVideosByBBBv } from '@/utils/videoabstract';
 
 const props = defineProps({
     header: { type: Boolean, default: false },
@@ -81,14 +84,14 @@ interface Option {
 
 const options = computed(() => {
     return {
-        'bvs': { value: 'bvs', sortBy: 'timems', displayBy: 'bvs', label: 'bvs', sortDesc: false },
-        'time': { value: 'time', sortBy: 'timems', displayBy: 'time', label: 'time', sortDesc: false },
-        'stnb': { value: 'stnb', sortBy: 'timems', displayBy: 'stnb', label: 'stnb', sortDesc: false },
-        'ioe': { value: 'ioe', sortBy: 'ioe', displayBy: 'ioe', label: 'ioe', sortDesc: true },
-        'thrp': { value: 'thrp', sortBy: 'thrp', displayBy: 'thrp', label: 'thrp', sortDesc: true },
-        'ces': { value: 'ces', sortBy: 'ces', displayBy: 'ces', label: 'ces', sortDesc: true },
-        'cls': { value: 'cls', sortBy: 'cls', displayBy: 'cls', label: 'cls', sortDesc: true },
-        'custom': { value: 'custom', sortBy: BBBvSummaryConfig.value.sortBy, displayBy: BBBvSummaryConfig.value.displayBy, label: 'custom', sortDesc: BBBvSummaryConfig.value.sortDesc },
+        bvs: { value: 'bvs', sortBy: 'timems', displayBy: 'bvs', label: 'bvs', sortDesc: false },
+        time: { value: 'time', sortBy: 'timems', displayBy: 'time', label: 'time', sortDesc: false },
+        stnb: { value: 'stnb', sortBy: 'timems', displayBy: 'stnb', label: 'stnb', sortDesc: false },
+        ioe: { value: 'ioe', sortBy: 'ioe', displayBy: 'ioe', label: 'ioe', sortDesc: true },
+        thrp: { value: 'thrp', sortBy: 'thrp', displayBy: 'thrp', label: 'thrp', sortDesc: true },
+        ces: { value: 'ces', sortBy: 'ces', displayBy: 'ces', label: 'ces', sortDesc: true },
+        cls: { value: 'cls', sortBy: 'cls', displayBy: 'cls', label: 'cls', sortDesc: true },
+        custom: { value: 'custom', sortBy: BBBvSummaryConfig.value.sortBy, displayBy: BBBvSummaryConfig.value.displayBy, label: 'custom', sortDesc: BBBvSummaryConfig.value.sortDesc },
     } as Record<ColorTemplateName, Option>;
 });
 
@@ -106,7 +109,7 @@ const theme = computed(() => {
 
 const gridStyle = computed(() => {
     return {
-        'display': 'grid',
+        display: 'grid',
         width: '89%',
         minWidth: BBBvSummaryConfig.value.showIcon === '' ? '37em' : '48em',
         gridTemplateColumns: 'repeat(10, 1fr)',

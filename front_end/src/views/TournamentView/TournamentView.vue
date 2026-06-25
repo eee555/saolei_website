@@ -15,7 +15,8 @@
 </template>
 
 <script setup lang="ts">
-import { ElTabPane, ElTabs, TabPaneName } from 'element-plus';
+import type { TabPaneName } from 'element-plus';
+import { ElTabPane, ElTabs } from 'element-plus';
 import { onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
@@ -51,11 +52,12 @@ const route = useRoute();
 const currentTab = ref<TabPaneName>('0');
 
 watch(() => route.params.id, async (newId) => {
-    if (newId === undefined) {
+    if (typeof newId !== 'string') {
         currentTab.value = '0';
         return;
     }
-    const tabIndex = store.tournamentTabs.findIndex((t) => t.id === Number(newId));
+
+    const tabIndex = store.tournamentTabs.findIndex((tab) => tab.id === Number(newId));
     if (tabIndex === -1) {
         await proxy.$axios.get('tournament/get/', {
             params: {
@@ -64,7 +66,7 @@ watch(() => route.params.id, async (newId) => {
         }).then((response) => {
             store.tournamentTabs.push(new Tournament(response.data.data));
         }).catch(httpErrorNotification);
-        currentTab.value = (store.tournamentTabs.length).toString();
+        currentTab.value = store.tournamentTabs.length.toString();
     } else {
         currentTab.value = (tabIndex + 1).toString();
     }
@@ -76,19 +78,19 @@ watch(() => route.params.id, async (newId) => {
 
 function tabRemoveHandler(tabIndex: TabPaneName) {
     tabIndex = Number(tabIndex) - 1;
-    store.tournamentTabs.splice(tabIndex as number, 1);
+    store.tournamentTabs.splice(tabIndex, 1);
     if (tabIndex === 0) {
-        router.push({ name: 'tournament' });
+        void router.push({ name: 'tournament' });
     } else {
-        router.push({ name: 'tournament_id', params: { id: store.tournamentTabs[tabIndex - 1].id } });
+        void router.push({ name: 'tournament_id', params: { id: store.tournamentTabs[tabIndex - 1].id } });
     }
 }
 
 function tabChangeHandler(tabIndex: TabPaneName) {
     if (tabIndex === '0') {
-        router.push({ name: 'tournament' });
+        void router.push({ name: 'tournament' });
         return;
     }
-    router.push({ name: 'tournament_id', params: { id: store.tournamentTabs[tabIndex as number - 1].id } });
+    void router.push({ name: 'tournament_id', params: { id: store.tournamentTabs[tabIndex as number - 1].id } });
 }
 </script>

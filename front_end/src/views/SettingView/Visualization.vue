@@ -48,7 +48,7 @@ const i18nMessages = {
         piecewise: '分段色阶',
         visualizationColorScheme: '数据可视化 - 配色方案',
     } },
-    'en': { local: {
+    en: { local: {
         level: 'Primary Colors for Levels',
         piecewise: 'Piecewise Palette',
         visualizationColorScheme: 'Visualization - Color Scheme',
