@@ -36,7 +36,12 @@ export default defineConfig({
         },
         parserOptions: {
             parser: tseslint.parser,
-            projectService: true,
+            projectService: {
+                allowDefaultProject: [
+                    'cypress.config.ts',
+                    'eslint.config.js',
+                ],
+            },
             extraFileExtensions: ['.vue'],
         },
     },
@@ -205,7 +210,7 @@ export default defineConfig({
         '@stylistic/multiline-ternary': ['error', 'always-multiline'],
         '@stylistic/newline-per-chained-call': 'off',
         '@stylistic/no-extra-parens': ['error', 'all', {
-            enforceForArrowConditionals: false,
+            ignoredNodes: ['ArrowFunctionExpression[body.type=ConditionalExpression]'],
         }],
         '@stylistic/no-multiple-empty-lines': ['error', { max: 1 }],
         '@stylistic/object-curly-spacing': ['error', 'always'],

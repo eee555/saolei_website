@@ -11,7 +11,7 @@ export default defineConfig({
     e2e: {
         baseUrl: 'http://localhost:8080',
         defaultBrowser: 'chrome',
-        setupNodeEvents(on, _config) {
+        setupNodeEvents(on) {
             on('before:browser:launch', (browser, launchOptions) => {
                 if (browser.name === 'chrome') {
                     launchOptions.args.push('--accept-lang=zh-CN');
