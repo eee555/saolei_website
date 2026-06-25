@@ -61,8 +61,6 @@ const colorScheme = computed(() => {
             return PiecewiseColorScheme.createFromTheme(colorTheme.value.bvs);
         case 'stnb':
             return PiecewiseColorScheme.createFromTheme(colorTheme.value.stnb);
-        default:
-            throw new Error('Invalid sortBy option');
     }
 });
 

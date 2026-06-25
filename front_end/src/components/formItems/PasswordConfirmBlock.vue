@@ -32,7 +32,6 @@ const passwordFormRef = useTemplateRef('passwordFormRef');
 const confirmPasswordFormRef = useTemplateRef('confirmPasswordFormRef');
 
 const validateState = computed(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return confirmPasswordFormRef.value?.validateState;
 });
 defineExpose({ validateState });

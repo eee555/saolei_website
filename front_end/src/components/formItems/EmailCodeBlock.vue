@@ -74,7 +74,6 @@ const emailCodeFormRef = useTemplateRef('emailCodeFormRef');
 
 // 获取验证状态
 const validateState = computed(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return emailCodeFormRef.value?.validateState;
 });
 
@@ -150,7 +149,6 @@ async function getEmailCaptcha(type: string) {
 }
 
 const refreshCaptcha = () => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     refValidCode.value?.refreshPic();
     captcha.value = '';
 };

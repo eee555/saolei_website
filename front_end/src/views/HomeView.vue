@@ -79,6 +79,7 @@ import VideoList from '@/components/VideoList/App.vue';
 import { to_fixed_n } from '@/utils';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { utc_to_local_format } from '@/utils/system/tools';
+import type { VideoAbstractInfo } from '@/utils/videoabstract';
 import { VideoAbstract } from '@/utils/videoabstract';
 
 const { proxy } = useCurrentInstance();
@@ -115,7 +116,7 @@ onMounted(() => {
 const update_review_queue = async () => {
     review_queue_updating.value = true;
     await proxy.$axios.get('/api/video/review_queue').then(function ({ data }) {
-        review_queue.value = (data as object[]).map((v) => new VideoAbstract(v));
+        review_queue.value = (data as VideoAbstractInfo[]).map((v) => new VideoAbstract(v));
     });
     review_queue_updating.value = false;
 };

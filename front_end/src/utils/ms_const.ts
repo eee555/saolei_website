@@ -80,6 +80,5 @@ export function getPiecewiseColorSchemeName(stat: PiecewiseColorSchemeName, leve
             return 'ioe';
         case 'stnb':
             return 'stnb';
-        default: throw new Error('Unexpected branch');
     }
 }

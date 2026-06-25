@@ -1,12 +1,12 @@
+import type { AxiosError, AxiosResponse } from 'axios';
 import { ElNotification } from 'element-plus';
 
 import i18n from '@/i18n';
 import { local } from '@/store';
 
-// @ts-ignore
 const { t } = i18n.global;
 
-const notificationMessage: { [code: number]: string } = {
+const notificationMessage: Record<number, string> = {
     200: 'common.response.OK',
     400: 'common.response.BadRequest',
     403: 'common.response.Forbidden',
@@ -17,7 +17,7 @@ const notificationMessage: { [code: number]: string } = {
     500: 'common.response.InternalServerError',
 };
 
-export function baseErrorNotification(title: string, message: string) {
+export function baseErrorNotification(title: string, message: string): void {
     ElNotification({
         title: title,
         message: message,
@@ -26,17 +26,17 @@ export function baseErrorNotification(title: string, message: string) {
     });
 }
 
-export function httpErrorNotification(error: any) {
-    const status = error.response.status;
-    if (status in notificationMessage) {
+export function httpErrorNotification(error: AxiosError): void {
+    const status = error.response?.status;
+    if (status !== undefined && status in notificationMessage) {
         baseErrorNotification(t('msg.actionFail'), t(notificationMessage[status]));
     } else {
         unknownErrorNotification(error);
     }
 }
 
-export function successNotification(response: any) {
-    if (response.status == 200) {
+export function successNotification(response: AxiosResponse): void {
+    if (response.status === 200) {
         ElNotification({
             title: t('msg.actionSuccess'),
             type: 'success',
@@ -47,10 +47,10 @@ export function successNotification(response: any) {
     }
 }
 
-export function unknownErrorNotification(error: any) {
-    baseErrorNotification(t('msg.unknownError'), error);
+export function unknownErrorNotification(error: unknown): void {
+    baseErrorNotification(t('msg.unknownError'), String(error));
 }
 
-export function generalErrorNotification(object: string, category: string) {
+export function generalErrorNotification(object: string, category: string): void {
     baseErrorNotification(t(`errorMsg.${object}.title`), t(`errorMsg.${object}.${category}`));
 }

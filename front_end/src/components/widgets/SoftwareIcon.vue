@@ -29,7 +29,6 @@ const iconSrc = computed(() => {
         case 'e': return MetasweeperIcon;
         case 'r': return local.value.vienna_logo_legacy ? ViennaIconLegacy : ViennaIconNew;
         case 'm': return Clone07Icon;
-        default: return '';
     }
 });
 </script>

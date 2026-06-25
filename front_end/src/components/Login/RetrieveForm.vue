@@ -54,15 +54,15 @@ const retrieveForm = reactive<RetrieveForm>({
 const ruleFormRef = useTemplateRef('ruleFormRef');
 
 const email_state = computed(() => {
-    if (!emailFormRef.value) return '';
+    if (emailFormRef.value === null) return '';
     else return emailFormRef.value.validateState;
 });
 const confirm_disabled = computed(() => {
-    if (!emailFormRef.value || !emailCodeFormRef.value || !passwordFormRef.value) return true;
+    if (emailFormRef.value === null || emailCodeFormRef.value === null || passwordFormRef.value === null) return true;
     return emailFormRef.value.validateState !== 'success' || emailCodeFormRef.value.validateState !== 'success' || passwordFormRef.value.validateState !== 'success';
 });
 
-const submitForm = async (formEl: FormInstance | undefined) => {
+const submitForm = async (formEl?: FormInstance) => {
     if (!formEl) return;
     if (confirm_disabled.value) return;
     await proxy.$axios.post('userprofile/retrieve/', {
@@ -70,8 +70,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
         email: retrieveForm.email,
         email_key: emailCodeFormRef.value!.hashkey,
         email_captcha: retrieveForm.emailCode,
-    }).then(function (response) {
-        const data = response.data;
+    }).then(function ({ data }) {
         if (data.type == 'success') {
             emit('login', data.user);
             ElNotification({
@@ -88,7 +87,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 };
 
 onUnmounted(() => {
-    if (!ruleFormRef.value) return;
+    if (ruleFormRef.value === null) return;
     ruleFormRef.value.resetFields();
 });
 

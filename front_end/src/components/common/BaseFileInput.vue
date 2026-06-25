@@ -43,7 +43,6 @@ const isDragover = ref(false);
 // 触发原生文件选择框
 const triggerFileDialog = () => {
     if (props.disabled) return;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     fileInputRef.value?.click();
 };
 

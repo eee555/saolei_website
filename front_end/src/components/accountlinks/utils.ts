@@ -107,6 +107,18 @@ export interface AccountLink {
     data?: AccountSaolei | AccountMSGames | AccountWoM;
 }
 
+export interface SaoleiVideoRaw {
+    id: number;
+    user__id: number;
+    level: MS_Level;
+    timems: number;
+    bv: number;
+    nf: boolean;
+    upload_time: string;
+    import_video__id: number | null;
+    import_task__status: DjangoTaskResultStatus | null;
+}
+
 export interface SaoleiVideo {
     id: number;
     user__id: number;

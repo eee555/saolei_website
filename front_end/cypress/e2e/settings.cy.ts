@@ -50,8 +50,8 @@ describe('Color Theme', () => {
             onBeforeLoad: (win) => {
                 cy.stub(win, 'matchMedia').withArgs('(prefers-color-scheme: dark)').returns({
                     matches: true,
-                    addEventListener: () => {},
-                    addListener: () => {},
+                    addEventListener: () => undefined,
+                    addListener: () => undefined,
                 });
             },
         });
@@ -67,8 +67,8 @@ describe('Color Theme', () => {
             onBeforeLoad: (win) => {
                 cy.stub(win, 'matchMedia').withArgs('(prefers-color-scheme: dark)').returns({
                     matches: false,
-                    addEventListener: () => {},
-                    addListener: () => {},
+                    addEventListener: () => undefined,
+                    addListener: () => undefined,
                 });
             },
         });

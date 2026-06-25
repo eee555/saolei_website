@@ -1,5 +1,5 @@
 import { getFileExtension } from '@/utils/strings';
-import { VideoAbstract } from '@/utils/videoabstract';
+import type { VideoAbstract } from '@/utils/videoabstract';
 
 export const UploadStatus = ['parse', 'pass', 'filename', 'filesize', 'fileext', 'custom', 'invalid', 'identifier', 'needApprove', 'censorship', 'collision', 'upload', 'process', 'success'] as const;
 export type UploadStatus = typeof UploadStatus[number];
@@ -22,6 +22,6 @@ export interface UploadProgress {
     failed: number;
 }
 
-export function fileCollide(e1: UploadEntry, e2: UploadEntry) {
+export function fileCollide(e1: UploadEntry, e2: UploadEntry): boolean {
     return e1.hash === e2.hash && getFileExtension(e1.file.name) === getFileExtension(e2.file.name);
 }

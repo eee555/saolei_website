@@ -11,7 +11,7 @@ import PrColumn from 'primevue/column';
 import { useI18n } from 'vue-i18n';
 
 import { formatBytes } from '@/utils/strings';
-import { VideoAbstract } from '@/utils/videoabstract';
+import type { VideoAbstract } from '@/utils/videoabstract';
 
 defineProps({
     sortable: { type: Boolean, default: false },

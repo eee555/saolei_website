@@ -50,9 +50,8 @@ defineProps({
 // }
 
 const download = (event: MouseEvent, id: number | undefined) => {
-    if (!id) {
-        return;
-    }
+    if (id === undefined) return;
+    if (id <= 0) return;
     const down = document.createElement('a');
     down.style.display = 'none';
     down.href = import.meta.env.VITE_BASE_API + '/video/download/?id=' + id;

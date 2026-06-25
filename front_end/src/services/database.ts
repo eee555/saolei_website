@@ -219,8 +219,6 @@ function convertValue(value: unknown, type: CacheRowColumnType): unknown {
             return String(value);
         case 'unknown':
             return value;
-        default:
-            throw new Error(`Unsupported row column type: ${String(type)}`);
     }
 }
 

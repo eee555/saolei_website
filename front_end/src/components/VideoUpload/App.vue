@@ -11,22 +11,26 @@
 
 <script setup lang="ts">
 import { vLoading } from 'element-plus';
-import { computed, PropType, ref } from 'vue';
+import type { PropType } from 'vue';
+import { computed, ref } from 'vue';
 
 import FileInputContent from './FileInputContent.vue';
 import Progress from './Progress.vue';
 import Table from './Table.vue';
 import ToolBar from './ToolBar.vue';
-import { fileCollide, UploadEntry, UploadStatus } from './utils';
+import type { UploadEntry, UploadStatus } from './utils';
+import { fileCollide } from './utils';
 
 import BaseFileInput from '@/components/common/BaseFileInput.vue';
 import { local } from '@/store';
 import { sleep } from '@/utils';
+import { ArrayUtils } from '@/utils/arrays';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { AnyVideo, extract_stat, fileHash, load_video_file } from '@/utils/fileIO';
+import type { AnyVideo } from '@/utils/fileIO';
+import { extract_stat, fileHash, load_video_file } from '@/utils/fileIO';
 import { Dict2FormData } from '@/utils/forms';
 import { getFileExtension } from '@/utils/strings';
-import { VideoAbstract } from '@/utils/videoabstract';
+import type { VideoAbstract } from '@/utils/videoabstract';
 
 const props = defineProps({
     isUserAnonymous: { type: Boolean, default: true },
@@ -60,15 +64,15 @@ const isWaiting = computed(() => isParsing.value || isUploading.value);
 const pleaseStopUploading = ref(false);
 
 async function handleFileChange(files: File[]) {
-    if (!files) return;
+    if (ArrayUtils.isEmpty(files)) return;
 
     parserProgress.value.total = files.length;
     parserProgress.value.parsed = 0;
 
     const uploadQueueTemp: UploadEntry[] = [];
 
-    for (let i = 0; i < files.length; i++) {
-        const entry = await upload_prepare(files[i]);
+    for (const file of files) {
+        const entry = await upload_prepare(file);
         const exists = uploadQueue.value.some((e) => fileCollide(e, entry)) || uploadQueueTemp.some((e) => fileCollide(e, entry));
         if (!exists) {
             if (local.value.autoUploadAfterParse) {
@@ -134,10 +138,11 @@ async function upload_prepare(file: File): Promise<UploadEntry> {
             stat: null,
         };
     }
+    // eslint-disable-next-line @typescript-eslint/init-declarations
     let video: AnyVideo;
     try {
         video = load_video_file(buffer, file.name);
-    } catch (_e) {
+    } catch {
         return {
             hash: hash,
             file: file,
@@ -168,6 +173,7 @@ async function uploadSelected() {
     const selectedQueueTemp = [...selectedQueue.value];
     const uploadQueueTemp = [...uploadQueue.value];
     for (const entry of selectedQueue.value) {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (pleaseStopUploading.value) {
             uploadProgress.value.total = uploadProgress.value.uploaded + uploadProgress.value.failed;
             break;
