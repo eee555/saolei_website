@@ -20,12 +20,12 @@
                     @point-enter="handlePointEnter"
                     @point-leave="activePoint = null;"
                 />
-                <XAxis :ticks="xTicks" :stroke-color="axisColor" />
-                <YAxis :ticks="yTicks" :stroke-color="axisColor" text-anchor="end" />
-                <XLabel :style="{ color: labelColor }">
+                <Axis direction="horizontal" :ticks="xTicks" :stroke-color="axisColor" />
+                <Axis direction="vertical" :ticks="yTicks" :stroke-color="axisColor" text-anchor="end" />
+                <XLabel class="text" :style="{ fill: axisColor }">
                     {{ t(`common.prop.${VideoScatterConfig.x}`) }}
                 </XLabel>
-                <YLabel :style="{ color: labelColor }">
+                <YLabel class="text" :style="{ fill: axisColor }">
                     {{ t(`common.prop.${VideoScatterConfig.y}`) }}
                 </YLabel>
                 <MouseDraw
@@ -45,9 +45,10 @@
 
 <script setup lang="ts">
 import '@/styles/cards.css';
+import '@/styles/text.css';
 import '@putianyi888/vue3-plots/style.css';
 
-import { createLinearScale, Ellipse, getNiceTicks, getPlotArea, Grid, MouseDraw, Rect, Scatter, TransformGroup, XAxis, XLabel, YAxis, YLabel } from '@putianyi888/vue3-plots';
+import { Axis, createLinearScale, Ellipse, getNiceTicks, getPlotArea, Grid, MouseDraw, Rect, Scatter, TransformGroup, XLabel, YLabel } from '@putianyi888/vue3-plots';
 import type { AnyShape, PlotPoint } from '@putianyi888/vue3-plots';
 import { ElCard } from 'element-plus';
 import { computed, onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
