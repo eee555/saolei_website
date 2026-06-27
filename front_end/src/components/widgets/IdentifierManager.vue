@@ -108,7 +108,7 @@ async function addIdentifier(identifier: string) {
         if (response.data.type === 'success') {
             const identifiers = user.value.identifiers ?? [];
             user.value.identifiers = [...identifiers, identifier];
-            user.value.videos = await fetchUserVideos(user.value.id, true);
+            user.value.videos = await fetchUserVideos(user.value.id);
             ElNotification({
                 title: t('identifierManager.addIdentifierSuccess'),
                 message: t('identifierManager.processedNVideos', [response.data.value]),
