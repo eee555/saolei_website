@@ -5,9 +5,9 @@ from django.test import TestCase
 import requests
 
 from userprofile.models import UserProfile
-from .models import AccountMinesweeperGames, AccountSaolei, AccountWorldOfMinesweeper
+from .models import AccountBilibili, AccountMinesweeperGames, AccountSaolei, AccountWorldOfMinesweeper, Platform
 from .services import update_saolei_account_info
-from .utils import update_msgames_account, update_wom_account
+from .utils import isPrivate, private_platforms, update_bilibili_account, update_msgames_account, update_wom_account
 
 
 class AccountLinkTestCase(TestCase):
@@ -17,6 +17,7 @@ class AccountLinkTestCase(TestCase):
         AccountSaolei.objects.create(id=1, parent=user)
         AccountMinesweeperGames.objects.create(id=7872, parent=user)
         AccountWorldOfMinesweeper.objects.create(id=1783173, parent=user)
+        AccountBilibili.objects.create(id=208259, parent=user)
 
     def test_update_saolei(self):
         account = AccountSaolei.objects.filter(id=1).first()
@@ -44,6 +45,35 @@ class AccountLinkTestCase(TestCase):
         self.assertEqual(account.name, 'Ze-En JU')
         self.assertEqual(account.local_name, '鞠泽恩')
         self.assertEqual(account.joined, datetime.date(2019, 5, 28))
+
+    def test_update_bilibili(self):
+        account = AccountBilibili.objects.filter(id=208259).first()
+        update_bilibili_account(account)
+        account = AccountBilibili.objects.filter(id=208259).first()
+
+        self.assertEqual(account.id, 208259)
+        self.assertEqual(account.name, '陈睿')
+        self.assertEqual(account.level, 6)
+        self.assertIn('bilibili', account.official_title)
+        self.assertTrue(account.face.startswith(('http://', 'https://')))
+        self.assertTrue(account.sign)
+
+        self.assertGreater(account.following, 100)
+        self.assertLess(account.following, 5000)
+        self.assertGreater(account.follower, 1000000)
+        self.assertLess(account.follower, 5000000)
+        self.assertGreaterEqual(account.video_count, 10)
+        self.assertLess(account.video_count, 100)
+        self.assertGreaterEqual(account.article_count, 0)
+        self.assertLess(account.article_count, 100)
+        self.assertGreaterEqual(account.opus_count, 100)
+        self.assertLess(account.opus_count, 1000)
+
+    def test_private_platforms(self):
+        self.assertIn(Platform.QQ, private_platforms)
+        self.assertTrue(isPrivate(Platform.QQ))
+        self.assertFalse(isPrivate(Platform.BILIBILI))
+        self.assertFalse(isPrivate(Platform.SAOLEI))
 
     @expectedFailure
     def test_update_wom(self):

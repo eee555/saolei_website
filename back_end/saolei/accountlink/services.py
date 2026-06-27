@@ -14,7 +14,7 @@ from utils.parser import MSVideoParser
 from utils.saolei import SaoleiUserInfo, SaoleiUtils
 from videomanager.models import VideoModel
 from .models import AccountSaolei, Platform, VideoSaolei
-from .utils import fetch_saolei_profile, fetch_saolei_video_download_and_state, update_msgames_account, update_wom_account
+from .utils import fetch_saolei_profile, fetch_saolei_video_download_and_state, update_bilibili_account, update_msgames_account, update_wom_account
 
 logger = logging.getLogger('accountlink')
 
@@ -26,6 +26,8 @@ def update_account(platform: Platform, user: UserProfile):
         update_msgames_account(user.account_msgames)
     elif platform == Platform.WOM:
         update_wom_account(user.account_wom)
+    elif platform == Platform.BILIBILI:
+        update_bilibili_account(user.account_bilibili)
 
 
 def update_saolei_account_info(account: AccountSaolei):

@@ -8,6 +8,7 @@ from videomanager.models import VideoModel
 
 
 class Platform(models.TextChoices):
+    BILIBILI = 'B', ('Bilibili')
     MSGAMES = 'a', ('Authoritative Minesweeper')
     QQ = 'q', ('腾讯QQ')
     SAOLEI = 'c', ('扫雷网')
@@ -20,25 +21,6 @@ class AccountLinkQueue(models.Model):
     identifier = models.CharField(max_length=128, null=False)
     userprofile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     verified = models.BooleanField(default=False)
-
-# 网站编码 website code
-# a - Authoritative Minesweeper
-# c - China ranking (saolei.wang)
-# g - Minesweeper GO
-# l - League of Minesweeper
-# s - Scoreganizer
-# w - World of Minesweeper
-# B - Bilibili
-# D - Discord
-# F - Facebook
-# G - GitHub
-# R - Reddit
-# S - Speedrun.com
-# T - Tieba
-# W - Weibo
-# X - X
-# Y - YouTube
-# Z - Zhihu
 
 
 # 扫雷网账号信息
@@ -101,6 +83,23 @@ class AccountMinesweeperGames(models.Model):
     # mouse_model = models.CharField() # 用户自己随便填的，需要审查
 
 
+class AccountBilibili(models.Model):
+    id = models.PositiveBigIntegerField(primary_key=True, verbose_name='Bilibili UID', help_text='Numeric Bilibili user ID from space.bilibili.com/{uid}.')
+    parent = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='account_bilibili', verbose_name='OpenMS user', help_text='OpenMS user linked to this Bilibili account.')
+    update_time = models.DateTimeField(auto_now=True, verbose_name='Update time', help_text='Time when public Bilibili profile data was last synchronized.')
+
+    name = models.CharField(max_length=128, default='', verbose_name='Display name', help_text='Public Bilibili display name.')
+    face = models.URLField(max_length=500, default='', verbose_name='Avatar URL', help_text='Public Bilibili avatar URL.')
+    sign = models.TextField(default='', verbose_name='Signature', help_text='Public Bilibili profile signature.')
+    level = models.PositiveSmallIntegerField(default=0, help_text='Bilibili user level.')
+    following = models.PositiveIntegerField(default=0, verbose_name='Following count')
+    follower = models.PositiveIntegerField(default=0, verbose_name='Follower count')
+    video_count = models.PositiveIntegerField(default=0, help_text='Number of public video submissions by this Bilibili account.')
+    article_count = models.PositiveIntegerField(default=0, help_text='Number of public article submissions by this Bilibili account.')
+    opus_count = models.PositiveIntegerField(default=0, help_text='Number of public opus/dynamic posts by this Bilibili account.')
+    official_title = models.CharField(max_length=128, default='', verbose_name='Official title', help_text='Bilibili official verification title, or an empty string when unverified.')
+
+
 class AccountWorldOfMinesweeper(models.Model):
     id = models.PositiveIntegerField(primary_key=True)
     parent = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='account_wom')
@@ -154,6 +153,10 @@ class AccountQQ(models.Model):
 
 
 PLATFORM_CONFIG = {
+    Platform.BILIBILI: {
+        'model': AccountBilibili,
+        'related_name': 'account_bilibili',
+    },
     Platform.MSGAMES: {
         'model': AccountMinesweeperGames,
         'related_name': 'account_msgames',
