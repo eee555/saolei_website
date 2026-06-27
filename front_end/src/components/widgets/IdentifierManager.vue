@@ -48,11 +48,15 @@ import IconCopy from './IconCopy.vue';
 
 import { BaseIconAdd, BaseIconDelete } from '@/components/common/icon';
 import { httpErrorNotification, unknownErrorNotification } from '@/components/Notifications';
-import { fetchUserIdentifiers, fetchUserVideos } from '@/services/userService';
+import { fetchUserIdentifiers } from '@/services/userService';
 import { store } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { removeItem } from '@/utils/system/tools';
 import { UserProfile } from '@/utils/userprofile';
+
+const emit = defineEmits<{
+    (event: 'identifiersChanged'): void;
+}>();
 
 const { proxy } = useCurrentInstance();
 const new_identifiers = ref('');
@@ -108,7 +112,7 @@ async function addIdentifier(identifier: string) {
         if (response.data.type === 'success') {
             const identifiers = user.value.identifiers ?? [];
             user.value.identifiers = [...identifiers, identifier];
-            user.value.videos = await fetchUserVideos(user.value.id);
+            emit('identifiersChanged');
             ElNotification({
                 title: t('identifierManager.addIdentifierSuccess'),
                 message: t('identifierManager.processedNVideos', [response.data.value]),

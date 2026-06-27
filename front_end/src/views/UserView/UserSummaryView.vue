@@ -23,7 +23,7 @@
                     <IdentifierHelper style="width: 60%; min-width: 400px; max-width: 100%; margin: auto; display: block" />
                 </template>
             </BaseOverlay>
-            <IdentifierManager v-model:user="user" />
+            <IdentifierManager v-model:user="user" @identifiers-changed="refreshVideos" />
         </div>
     </div>
 </template>
@@ -58,11 +58,17 @@ async function refresh() {
     if (loading.value) return;
     if (user.value.id < 1) return;
     if (user.value.videos === undefined) {
-        loading.value = true;
-        user.value.videos = await fetchUserVideos(user.value.id);
-        loading.value = false;
+        await refreshVideos();
     }
 }
 
 watch(user, refresh, { immediate: true });
+
+async function refreshVideos() {
+    if (loading.value) return;
+    if (user.value.id < 1) return;
+    loading.value = true;
+    user.value.videos = await fetchUserVideos(user.value.id);
+    loading.value = false;
+}
 </script>
