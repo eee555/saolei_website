@@ -30,7 +30,9 @@ VideoFullOut = create_schema(
         'left', 'right', 'double', 'cl',
         'left_ce', 'right_ce', 'double_ce', 'ce',
         'cell0', 'cell1', 'cell2', 'cell3', 'cell4', 'cell5', 'cell6', 'cell7', 'cell8',
-        'video__identifier',
+    ],
+    custom_fields=[
+        ('video__identifier', str, ''),
     ],
 )
 
