@@ -12,6 +12,10 @@ const USER = {
     password: 'userPassword',
 } as const;
 const LINKS = {
+    bilibili: {
+        platform: 'Bilibili',
+        identifier: '208259',
+    },
     wom: {
         platform: 'Minesweeper.Online',
         identifier: '1782682',
@@ -37,6 +41,10 @@ function linkNewAccount(platform: string, identifier: string) {
         cy.contains('平台').next().contains('Select').click();
     });
     cy.get('li').contains(platform).click();
+    if (platform === LINKS.bilibili.platform) {
+        cy.contains('隐私提醒');
+        cy.contains('关联 Bilibili 后');
+    }
     cy.get('.el-dialog__body').within(() => {
         cy.contains('ID').next().find('input').type(identifier);
         cy.contains('确认').click();
@@ -129,6 +137,9 @@ describe('Account Link', () => {
 
         linkNewAccount(LINKS.msgames.platform, LINKS.msgames.identifier);
         expectUnverifiedAccount(2, LINKS.msgames.platform, LINKS.msgames.identifier);
+
+        linkNewAccount(LINKS.bilibili.platform, LINKS.bilibili.identifier);
+        expectUnverifiedAccount(3, LINKS.bilibili.platform, LINKS.bilibili.identifier);
     });
 
     it('Guest View - Should Not See Unverified Accounts', () => {
@@ -158,6 +169,7 @@ describe('Account Link', () => {
             { platform: LINKS.wom.platform, identifier: LINKS.wom.identifier, verified: false },
             { platform: LINKS.saolei.platform, identifier: LINKS.saolei.identifier, verified: false },
             { platform: LINKS.msgames.platform, identifier: LINKS.msgames.identifier, verified: false },
+            { platform: LINKS.bilibili.platform, identifier: LINKS.bilibili.identifier, verified: false },
             { platform: LINKS.qq.platform, identifier: LINKS.qq.identifier, verified: false },
         ]);
     });
@@ -174,9 +186,13 @@ describe('Account Link', () => {
         staffVerifyAccount(LINKS.msgames.platform, LINKS.msgames.identifier);
     });
 
+    it('Verify Bilibili Account', () => {
+        staffVerifyAccount(LINKS.bilibili.platform, LINKS.bilibili.identifier);
+    });
+
     it('Guest View - Should Not See Private Accounts', () => {
         cy.visitUser(USER.id, 'accountlink');
-        cy.get('.account-link-main').children().filter(':visible').should('have.length', 3);
+        cy.get('.account-link-main').children().filter(':visible').should('have.length', 4);
     });
 });
 

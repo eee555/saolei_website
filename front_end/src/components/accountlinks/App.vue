@@ -1,11 +1,12 @@
 <template>
     <div v-loading="loading" class="account-link-main">
         <template v-for="account in accountlinks" :key="account.platform">
-            <CardSaolei v-if="account.platform == 'c'" :id="account.identifier" :verified="account.verified" :info="account.data as AccountSaolei" @refresh="refreshAccount(account)" />
+            <CardBilibili v-if="account.platform == 'B'" :id="account.identifier" :verified="account.verified" :info="account.data as AccountBilibili" @refresh="refreshAccount(account)" />
+            <CardSaolei v-else-if="account.platform == 'c'" :id="account.identifier" :verified="account.verified" :info="account.data as AccountSaolei" @refresh="refreshAccount(account)" />
             <CardMsgames v-else-if="account.platform == 'a'" :id="account.identifier" :verified="account.verified" :info="account.data as AccountMSGames" />
             <CardWoM v-else-if="account.platform == 'w'" :id="account.identifier" :verified="account.verified" :info="account.data as AccountWoM" @refresh="refreshAccount(account)" />
         </template>
-        <CardAdd v-if="store.player.id == store.user.id && accountlinks.length < 4" :accountlinks="accountlinks" @add-link="addLink" />
+        <CardAdd v-if="store.player.id == store.user.id && accountlinks.length < platformCount" :accountlinks="accountlinks" @add-link="addLink" />
     </div>
 </template>
 
@@ -16,13 +17,15 @@ import { vLoading } from 'element-plus';
 import { ref, watch } from 'vue';
 
 import CardAdd from './CardAdd.vue';
+import CardBilibili from './CardBilibili.vue';
 import CardMsgames from './CardMsgames.vue';
 import CardSaolei from './CardSaolei.vue';
 import CardWoM from './CardWoM.vue';
-import type { AccountLink, AccountMSGames, AccountSaolei, AccountWoM } from './utils';
+import type { AccountBilibili, AccountLink, AccountMSGames, AccountSaolei, AccountWoM } from './utils';
 
 import { httpErrorNotification } from '@/components/Notifications';
 import { store } from '@/store';
+import { platformlist } from '@/utils/common/accountLinkPlatforms';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const props = defineProps({
@@ -36,6 +39,7 @@ const { proxy } = useCurrentInstance();
 
 const loading = ref(false);
 const accountlinks = ref<AccountLink[]>([]);
+const platformCount = Object.keys(platformlist).length;
 
 watch(() => props.userId, refresh, { immediate: true });
 
