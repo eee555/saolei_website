@@ -1,9 +1,9 @@
 import re
 
 from lxml import etree
-import requests
 from bilibili_api import sync
 from bilibili_api.user import User
+import requests
 
 from config.text_choices import Saolei_TextChoices
 from userprofile.models import UserProfile
