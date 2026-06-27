@@ -59,7 +59,9 @@ const new_identifiers = ref('');
 const { t } = useI18n();
 const loading = ref(false);
 
-const user = defineModel('user', { type: UserProfile, default: () => new UserProfile() });
+const user = defineModel<UserProfile>('user', {
+    type: UserProfile, default: () => new UserProfile(),
+});
 
 async function refresh() {
     if (loading.value) return;
