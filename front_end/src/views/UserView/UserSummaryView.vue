@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
 import { ElScrollbar } from 'element-plus';
-import { defineAsyncComponent, onMounted, ref, watch } from 'vue';
+import { defineAsyncComponent, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import '@/styles/text.css';
@@ -64,7 +64,5 @@ async function refresh() {
     }
 }
 
-watch(() => user.value.id, refresh, { immediate: true });
-
-onMounted(refresh);
+watch(user, refresh, { immediate: true });
 </script>

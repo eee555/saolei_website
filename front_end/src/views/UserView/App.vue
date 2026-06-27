@@ -83,8 +83,7 @@ async function refresh() {
     playerLoading.value = false;
 }
 
-watch(() => route.params.id, refresh, { immediate: true });
-// onMounted(refresh);
+watch([() => route.params.id, () => store.user.id], refresh, { immediate: true });
 
 const i18nMessages = {
     'zh-cn': { local: {

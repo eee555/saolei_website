@@ -199,10 +199,10 @@ export async function fetchUserIdentifiers(userId: number): Promise<string[]> {
 }
 
 const userVideosPendingRequests = new Map<number, Promise<VideoAbstract[]>>();
-export function fetchUserVideos(userId: number): Promise<VideoAbstract[]> {
+export function fetchUserVideos(userId: number, force = false): Promise<VideoAbstract[]> {
     const pendingRequest = userVideosPendingRequests.get(userId);
 
-    if (pendingRequest) return pendingRequest;
+    if (pendingRequest && !force) return pendingRequest;
 
     const promise = $axios.get('/api/userprofile/videolist', {
         params: { user_id: userId },
