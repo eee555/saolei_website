@@ -100,11 +100,43 @@ export const AccountWoMDefault: AccountWoM = {
     update_time: '1970-01-01T00:00:00.000Z',
 };
 
+export interface AccountBilibili {
+    id: number;
+    update_time: string;
+
+    name: string;
+    face: string;
+    sign: string;
+    level: number;
+    following: number;
+    follower: number;
+    video_count: number;
+    article_count: number;
+    opus_count: number;
+    official_title: string;
+}
+
+export const AccountBilibiliDefault: AccountBilibili = {
+    id: 0,
+    update_time: '1970-01-01T00:00:00.000Z',
+
+    name: '',
+    face: '',
+    sign: '',
+    level: 0,
+    following: 0,
+    follower: 0,
+    video_count: 0,
+    article_count: 0,
+    opus_count: 0,
+    official_title: '',
+};
+
 export interface AccountLink {
     platform: Platform;
     identifier: string;
     verified: boolean;
-    data?: AccountSaolei | AccountMSGames | AccountWoM;
+    data?: AccountBilibili | AccountSaolei | AccountMSGames | AccountWoM;
 }
 
 export interface SaoleiVideoRaw {

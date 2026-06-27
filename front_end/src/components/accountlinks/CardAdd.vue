@@ -65,6 +65,7 @@ const form = reactive({
 
 const formValid = computed(() => {
     switch (form.platform) {
+        case 'B':
         case 'a':
         case 'c':
         case 'q':
