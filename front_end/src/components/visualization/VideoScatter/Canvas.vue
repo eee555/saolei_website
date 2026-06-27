@@ -24,7 +24,7 @@
                     @point-leave="activePoint = null;"
                 />
                 <Axis direction="horizontal" :ticks="xTicks" :style="{ color: axisColor }" />
-                <Axis direction="vertical" :ticks="yTicks" text-anchor="end" :style="{ color: axisColor }" />
+                <Axis direction="vertical" :ticks="yTicks" :style="{ color: axisColor }" />
                 <MouseDraw
                     :mode="VideoScatterStore.canvasMode == 'select' ? 'rect' : ''"
                     @draw="handleDraw"
@@ -51,8 +51,9 @@ import '@putianyi888/vue3-plots/style.css';
 
 import { Axis, createLinearScale, Ellipse, getNiceTicks, getPlotArea, Grid, MouseDraw, Rect, Scatter, TransformGroup, XLabel, YLabel } from '@putianyi888/vue3-plots';
 import type { AnyShape, PlotPoint } from '@putianyi888/vue3-plots';
+import { useResizeObserver } from '@vueuse/core';
 import { ElCard } from 'element-plus';
-import { computed, onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
+import { computed, ref, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Tippy } from 'vue-tippy';
 
@@ -67,7 +68,6 @@ import type { VideoAbstract } from '@/utils/videoabstract';
 
 const plotRef = useTemplateRef<HTMLDivElement>('plotRef');
 const activePoint = ref<PlotPoint<VideoAbstract> | null>(null);
-let resizeObserver: ResizeObserver | undefined = undefined;
 
 const xTicks = computed(() => getNiceTicks(VideoScatterStore.plotDomain.xMin, VideoScatterStore.plotDomain.xMax, 5));
 const yTicks = computed(() => getNiceTicks(VideoScatterStore.plotDomain.yMin, VideoScatterStore.plotDomain.yMax, 5));
@@ -133,24 +133,11 @@ function createSvgToDataYScale() {
     return createLinearScale(area.y + area.height, area.y, VideoScatterStore.plotDomain.yMin, VideoScatterStore.plotDomain.yMax);
 }
 
-function updatePlotSize() {
-    if (plotRef.value === null) return;
-
-    const rect = plotRef.value.getBoundingClientRect();
+useResizeObserver(plotRef, ([entry]) => {
     VideoScatterStore.plotSize = {
-        width: Math.max(1, rect.width),
-        height: Math.max(1, rect.height),
+        width: entry.contentRect.width,
+        height: entry.contentRect.height,
     };
-}
-
-onMounted(() => {
-    updatePlotSize();
-    resizeObserver = new ResizeObserver(updatePlotSize);
-    if (plotRef.value !== null) resizeObserver.observe(plotRef.value);
-});
-
-onUnmounted(() => {
-    resizeObserver?.disconnect();
 });
 
 const { t } = useI18n();
