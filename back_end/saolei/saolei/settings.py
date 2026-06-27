@@ -239,12 +239,18 @@ else:
 
     # allow CORS for public video and user profile endpoints
     CORS_ALLOW_ALL_ORIGINS = True
-    CORS_URLS_REGEX = (
-        r'^/('
-        r'video/(preview|download)/.*'
-        r'|api/userprofile/(videolist/?|info/.*|identifier/?|avatar/.*)'
-        r')$'
-    )
+    CORS_PATHS = [
+        r'video/(preview|download)/.*',
+        r'api/userprofile/avatar/.*',
+        r'api/userprofile/identifier/?',
+        r'api/userprofile/info/.*',
+        r'api/userprofile/infobulk/?',
+        r'api/userprofile/infoupdated/?',
+        r'api/userprofile/videolist/?',
+        r'api/video/infobulk/?',
+        r'api/video/detailbulk/?',
+    ]
+    CORS_URLS_REGEX = rf'^/({"|".join(CORS_PATHS)})$'
 
 # 发送邮箱验证码
 EMAIL_HOST = 'smtp.88.com'     # 服务器
