@@ -1,16 +1,23 @@
 import re
 
+from bilibili_api import sync
+from bilibili_api.user import User
 from lxml import etree
 import requests
 
 from config.text_choices import Saolei_TextChoices
 from userprofile.models import UserProfile
 from utils.exceptions import ExceptionToResponse
-from .models import AccountMinesweeperGames, AccountWorldOfMinesweeper, Platform, PLATFORM_CONFIG
+from .models import AccountBilibili, AccountMinesweeperGames, AccountWorldOfMinesweeper, Platform, PLATFORM_CONFIG
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 Edg/132.0.0.0',
 }
+private_platforms = [Platform.QQ]
+
+
+def isPrivate(platform) -> bool:
+    return platform in private_platforms
 
 
 def link_account(platform: Platform, linkid, user: UserProfile):
@@ -30,6 +37,8 @@ def delete_account(user: UserProfile, platform: Platform):
         user.account_msgames.delete()
     elif platform == Platform.WOM:
         user.account_wom.delete()
+    elif platform == Platform.BILIBILI:
+        user.account_bilibili.delete()
 
 
 def fetch_saolei_profile(saolei_id: int):
@@ -153,6 +162,31 @@ def update_msgames_account(account: AccountMinesweeperGames):
     account.name = str(getValue('Name'))
     account.local_name = str(getValue('Local Name'))
     account.joined = getValue('Joined')
+    account.save()
+
+
+def update_bilibili_account(account: AccountBilibili):
+    bili_user = User(uid=account.id)
+    try:
+        info = sync(bili_user.get_user_info())
+        relation = sync(bili_user.get_relation_info())
+        overview = sync(bili_user.get_overview_stat())
+    except TimeoutError:
+        raise ExceptionToResponse(obj='import', category='timeout')
+    except Exception:
+        raise ExceptionToResponse(obj='import', category='requestexception')
+
+    official = info.get('official', {})
+    account.name = info.get('name', '') or ''
+    account.face = info.get('face', '') or ''
+    account.sign = info.get('sign', '') or ''
+    account.level = info.get('level', 0) or 0
+    account.following = relation.get('following', 0) or 0
+    account.follower = relation.get('follower', 0) or 0
+    account.video_count = overview.get('video', 0) or 0
+    account.article_count = overview.get('article', 0) or 0
+    account.opus_count = overview.get('opus', 0) or 0
+    account.official_title = official.get('title', '') or ''
     account.save()
 
 

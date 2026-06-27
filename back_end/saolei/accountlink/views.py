@@ -13,10 +13,9 @@ from utils.response import HttpResponseConflict
 from .models import AccountLinkQueue, AccountSaolei, Platform, PLATFORM_CONFIG, VideoSaolei
 from .services import saolei_video_import_one, update_account
 from .tasks import helper_saolei_video_import_bulk
-from .utils import delete_account, link_account
+from .utils import delete_account, isPrivate, link_account, private_platforms
 
 logger = logging.getLogger('accountlink')
-private_platforms = ['q']  # 私人账号平台
 
 
 # 为自己绑定账号，需要指定平台和ID
@@ -58,7 +57,7 @@ def get_link(request):
     if not (user := UserProfile.objects.filter(id=userid).first()):
         return HttpResponseNotFound()
     if platform := request.GET.get('platform'):
-        if platform in private_platforms and not request.user.is_staff and user != request.user:
+        if isPrivate(platform) and not request.user.is_staff and user != request.user:
             return HttpResponseForbidden()
         account = getattr(user, PLATFORM_CONFIG[platform]['related_name'])
         data = model_to_dict(account)
