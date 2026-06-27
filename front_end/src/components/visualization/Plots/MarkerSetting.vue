@@ -55,8 +55,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Tippy } from 'vue-tippy';
 
-import type { MarkerShape } from './utils';
-
+type MarkerShape = 'circle';
 type MarkerSettingOption = 'shape' | 'radius' | 'opacity' | 'strokeWidth';
 
 const props = defineProps({

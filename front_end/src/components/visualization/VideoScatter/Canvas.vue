@@ -1,41 +1,40 @@
 <template>
     <Tippy class="video-scatter-tippy" :duration="0" sticky follow-cursor>
+        <YLabel class="text">
+            {{ t(`common.prop.${VideoScatterConfig.y}`) }}
+        </YLabel>
         <div ref="plotRef" class="plot-stage">
-            <Grid
-                :domain="VideoScatterStore.plotDomain"
-                :padding="VideoScatterStore.plotPadding" :size="VideoScatterStore.plotSize"
-                :stroke="gridColor" :x-ticks="xTicks" :y-ticks="yTicks"
-            />
-            <HighlightSelected v-if="VideoScatterConfig.highlightSelected" />
-            <Scatter
+            <TransformGroup
                 :domain="VideoScatterStore.plotDomain"
                 :padding="VideoScatterStore.plotPadding"
                 :size="VideoScatterStore.plotSize"
-                :points="VideoScatterStore.scatterData.points"
-                :fill-color="VideoScatterStore.fillColor"
-                :radius="VideoScatterConfig.radius"
-                :stroke-color="VideoScatterStore.fillColor"
-                :stroke-width="VideoScatterStore.strokeWidth"
-                :stroke-opacity="0.5"
-                @point-click="handlePointClick"
-                @point-enter="handlePointEnter"
-                @point-leave="activePoint = null;"
-            />
-            <Axes
-                :domain="VideoScatterStore.plotDomain"
-                :padding="VideoScatterStore.plotPadding"
-                :size="VideoScatterStore.plotSize"
-                :label-color="labelColor" :stroke="axisColor"
-                :x-ticks="xTicks" :y-ticks="yTicks"
-                :x-label="t(`common.prop.${VideoScatterConfig.x}`)"
-                :y-label="t(`common.prop.${VideoScatterConfig.y}`)"
-            />
-            <MouseDraw
-                :mode="VideoScatterStore.canvasMode == 'select' ? 'rect' : ''"
-                :size="VideoScatterStore.plotSize"
-                @draw="handleDraw"
-            />
+            >
+                <Grid :stroke-color="gridColor" :x-ticks="xTicks" :y-ticks="yTicks" />
+                <HighlightSelected v-if="VideoScatterConfig.highlightSelected" />
+                <Scatter
+                    :points="VideoScatterStore.scatterData.points"
+                    :fill-color="VideoScatterStore.fillColor"
+                    :radius="VideoScatterConfig.radius"
+                    :stroke-color="VideoScatterStore.fillColor"
+                    :stroke-width="VideoScatterStore.strokeWidth"
+                    :stroke-opacity="0.5"
+                    interactive
+                    @point-click="handlePointClick"
+                    @point-enter="handlePointEnter"
+                    @point-leave="activePoint = null;"
+                />
+                <Axis direction="horizontal" :ticks="xTicks" :style="{ color: axisColor }" />
+                <Axis direction="vertical" :ticks="yTicks" text-anchor="end" :style="{ color: axisColor }" />
+                <MouseDraw
+                    :mode="VideoScatterStore.canvasMode == 'select' ? 'rect' : ''"
+                    @draw="handleDraw"
+                />
+            </TransformGroup>
         </div>
+        <span />
+        <XLabel class="text">
+            {{ t(`common.prop.${VideoScatterConfig.x}`) }}
+        </XLabel>
 
         <template #content>
             <ElCard v-if="activePoint" class="card-small">
@@ -47,7 +46,11 @@
 
 <script setup lang="ts">
 import '@/styles/cards.css';
+import '@/styles/text.css';
+import '@putianyi888/vue3-plots/style.css';
 
+import { Axis, createLinearScale, Ellipse, getNiceTicks, getPlotArea, Grid, MouseDraw, Rect, Scatter, TransformGroup, XLabel, YLabel } from '@putianyi888/vue3-plots';
+import type { AnyShape, PlotPoint } from '@putianyi888/vue3-plots';
 import { ElCard } from 'element-plus';
 import { computed, onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -56,9 +59,6 @@ import { Tippy } from 'vue-tippy';
 import HighlightSelected from './HighlightSelected.vue';
 import { VideoScatterStore } from './store';
 
-import { Axes, createLinearScale, Ellipse, getNiceTicks, getPlotArea, Grid, MouseDraw, Rect, Scatter } from '@/components/visualization/Plots';
-import type { AnyShape } from '@/components/visualization/Plots';
-import type { PlotPoint } from '@/components/visualization/Plots/utils';
 import VideoAbstractDisplay from '@/components/widgets/VideoAbstractDisplay.vue';
 import { VideoScatterConfig } from '@/store';
 import { getTextColor } from '@/utils/colors';
@@ -73,7 +73,6 @@ const xTicks = computed(() => getNiceTicks(VideoScatterStore.plotDomain.xMin, Vi
 const yTicks = computed(() => getNiceTicks(VideoScatterStore.plotDomain.yMin, VideoScatterStore.plotDomain.yMax, 5));
 
 const axisColor = computed(() => getTextColor('regular'));
-const labelColor = computed(() => getTextColor('regular'));
 const gridColor = computed(() => getComputedStyle(document.documentElement).getPropertyValue('--el-border-color-lighter'));
 
 function handlePointClick(point: PlotPoint<VideoAbstract>) {
@@ -90,7 +89,8 @@ function handleDraw(shape: AnyShape) {
 
 function shapeToData(shape: AnyShape): AnyShape {
     if (shape.type === 'ellipse') return ellipseToData(shape);
-    return rectToData(shape);
+    if (shape.type === 'rect') return rectToData(shape);
+    return shape;
 }
 
 function rectToData(shape: Rect): Rect {
@@ -160,6 +160,9 @@ const { t } = useI18n();
 .video-scatter-tippy {
     flex: 1 1 auto;
     min-height: 0;
+    display: grid;
+    grid-template-columns: auto minmax(220px, 1fr);
+    grid-template-rows: minmax(180px, 1fr) auto;
 }
 
 .plot-stage {

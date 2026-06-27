@@ -1,8 +1,5 @@
 <template>
     <Scatter
-        :domain="VideoScatterStore.plotDomain"
-        :size="VideoScatterStore.plotSize"
-        :padding="VideoScatterStore.plotPadding"
         :points="selectedSeries.points"
         :fill-color="selectedSeries.colors"
         :opacity="0.3" :radius="10"
@@ -10,12 +7,12 @@
 </template>
 
 <script setup lang="ts">
+import type { PlotPoint } from '@putianyi888/vue3-plots';
+import { Scatter } from '@putianyi888/vue3-plots';
 import { computed } from 'vue';
 
 import { VideoScatterStore } from './store';
 
-import type { PlotPoint } from '@/components/visualization/Plots';
-import { Scatter } from '@/components/visualization/Plots';
 import type { VideoAbstract } from '@/utils/videoabstract';
 
 const selectedSeries = computed(() => {
