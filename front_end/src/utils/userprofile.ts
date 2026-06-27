@@ -82,8 +82,8 @@ export class UserProfile {
 
     public get nextSignatureAvailable(): Date {
         if (this.left_signature_n > 0) return this.last_change_signature;
-        const year = this.last_change_avatar.getUTCFullYear();
-        const month = this.last_change_avatar.getUTCMonth();
+        const year = this.last_change_signature.getUTCFullYear();
+        const month = this.last_change_signature.getUTCMonth();
         const targetTimestamp = Date.UTC(year, month + 1, 1, 0, 0, 0, 0);
         return new Date(targetTimestamp);
     }
@@ -93,6 +93,6 @@ export class UserProfile {
     }
 
     public newSignatureBudget(newDate: Date): number {
-        return this.left_signature_n + 12 * (newDate.getUTCFullYear() - this.last_change_avatar.getUTCFullYear()) + (newDate.getUTCMonth() - this.last_change_avatar.getUTCMonth());
+        return this.left_signature_n + 12 * (newDate.getUTCFullYear() - this.last_change_signature.getUTCFullYear()) + (newDate.getUTCMonth() - this.last_change_signature.getUTCMonth());
     }
 }

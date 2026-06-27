@@ -41,7 +41,7 @@
 
 <script setup lang="ts">
 import { ElInput, ElLink, ElNotification, ElTable, ElTableColumn } from 'element-plus';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import IconCopy from './IconCopy.vue';
@@ -53,6 +53,10 @@ import { store } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { removeItem } from '@/utils/system/tools';
 import { UserProfile } from '@/utils/userprofile';
+
+const emit = defineEmits<{
+    (event: 'identifiersChanged'): void;
+}>();
 
 const { proxy } = useCurrentInstance();
 const new_identifiers = ref('');
@@ -77,8 +81,7 @@ async function refresh() {
     }
 }
 
-onMounted(refresh);
-watch(() => user.value.id, refresh, { immediate: true });
+watch(user, refresh, { immediate: true });
 
 const identifierdata = computed(() => {
     const data = user.value.identifiers ? user.value.identifiers.map((value) => ({ data: value })) : [];
@@ -101,12 +104,15 @@ function delIdentifier(identifier: string) {
     }).catch(httpErrorNotification);
 }
 
-function addIdentifier(identifier: string) {
-    proxy.$axios.post('identifier/add/', {
-        identifier: identifier,
-    }).then(function (response) {
+async function addIdentifier(identifier: string) {
+    try {
+        const response = await proxy.$axios.post('identifier/add/', {
+            identifier: identifier,
+        });
         if (response.data.type === 'success') {
-            user.value.identifiers?.push(new_identifiers.value);
+            const identifiers = user.value.identifiers ?? [];
+            user.value.identifiers = [...identifiers, identifier];
+            emit('identifiersChanged');
             ElNotification({
                 title: t('identifierManager.addIdentifierSuccess'),
                 message: t('identifierManager.processedNVideos', [response.data.value]),
@@ -128,7 +134,9 @@ function addIdentifier(identifier: string) {
             unknownErrorNotification(response.data);
         }
         new_identifiers.value = '';
-    }).catch(httpErrorNotification);
+    } catch (error) {
+        httpErrorNotification(error);
+    }
 }
 </script>
 
