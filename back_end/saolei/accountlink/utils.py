@@ -1,8 +1,8 @@
 import re
 
-from lxml import etree
 from bilibili_api import sync
 from bilibili_api.user import User
+from lxml import etree
 import requests
 
 from config.text_choices import Saolei_TextChoices
