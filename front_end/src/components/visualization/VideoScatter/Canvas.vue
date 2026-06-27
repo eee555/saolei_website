@@ -1,5 +1,8 @@
 <template>
     <Tippy class="video-scatter-tippy" :duration="0" sticky follow-cursor>
+        <YLabel class="text">
+            {{ t(`common.prop.${VideoScatterConfig.y}`) }}
+        </YLabel>
         <div ref="plotRef" class="plot-stage">
             <TransformGroup
                 :domain="VideoScatterStore.plotDomain"
@@ -20,20 +23,18 @@
                     @point-enter="handlePointEnter"
                     @point-leave="activePoint = null;"
                 />
-                <Axis direction="horizontal" :ticks="xTicks" :stroke-color="axisColor" />
-                <Axis direction="vertical" :ticks="yTicks" :stroke-color="axisColor" text-anchor="end" />
-                <XLabel class="text" :style="{ fill: axisColor }">
-                    {{ t(`common.prop.${VideoScatterConfig.x}`) }}
-                </XLabel>
-                <YLabel class="text" :style="{ fill: axisColor }">
-                    {{ t(`common.prop.${VideoScatterConfig.y}`) }}
-                </YLabel>
+                <Axis direction="horizontal" :ticks="xTicks" :style="{ color: axisColor }" />
+                <Axis direction="vertical" :ticks="yTicks" text-anchor="end" :style="{ color: axisColor }" />
                 <MouseDraw
                     :mode="VideoScatterStore.canvasMode == 'select' ? 'rect' : ''"
                     @draw="handleDraw"
                 />
             </TransformGroup>
         </div>
+        <span />
+        <XLabel class="text">
+            {{ t(`common.prop.${VideoScatterConfig.x}`) }}
+        </XLabel>
 
         <template #content>
             <ElCard v-if="activePoint" class="card-small">
@@ -72,7 +73,6 @@ const xTicks = computed(() => getNiceTicks(VideoScatterStore.plotDomain.xMin, Vi
 const yTicks = computed(() => getNiceTicks(VideoScatterStore.plotDomain.yMin, VideoScatterStore.plotDomain.yMax, 5));
 
 const axisColor = computed(() => getTextColor('regular'));
-const labelColor = computed(() => getTextColor('regular'));
 const gridColor = computed(() => getComputedStyle(document.documentElement).getPropertyValue('--el-border-color-lighter'));
 
 function handlePointClick(point: PlotPoint<VideoAbstract>) {
@@ -160,6 +160,9 @@ const { t } = useI18n();
 .video-scatter-tippy {
     flex: 1 1 auto;
     min-height: 0;
+    display: grid;
+    grid-template-columns: auto minmax(220px, 1fr);
+    grid-template-rows: minmax(180px, 1fr) auto;
 }
 
 .plot-stage {
