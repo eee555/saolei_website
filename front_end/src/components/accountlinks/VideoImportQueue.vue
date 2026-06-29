@@ -99,11 +99,10 @@ import PrListbox from 'primevue/listbox';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import type { SaoleiVideo, SaoleiVideoRaw } from './utils';
-
 import { httpErrorNotification } from '@/components/Notifications';
 import DjangoTaskResultStatusBadge from '@/components/widgets/DjangoTaskResultStatusBadge.vue';
 import GameLevelIcon from '@/components/widgets/GameLevelIcon.vue';
+import type { SaoleiVideo, SaoleiVideoRaw } from '@/utils/accountlinks';
 import { preview } from '@/utils/common/PlayerDialog';
 import { DjangoTaskResultStatusOptions } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';

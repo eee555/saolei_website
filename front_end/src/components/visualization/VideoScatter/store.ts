@@ -1,9 +1,9 @@
+import type { AnyShape, PlotDomain, PlotPadding, PlotPoint, PlotSize } from '@putianyi888/vue3-plots';
+import { getDataDomain } from '@putianyi888/vue3-plots';
 import { defineStore } from 'pinia';
 
 import { videoToPlotPoint } from './utils';
 
-import type { AnyShape, PlotDomain, PlotPadding, PlotPoint, PlotSize } from '@/components/visualization/Plots';
-import { getDataDomain } from '@/components/visualization/Plots';
 import { colorTheme, VideoScatterConfig } from '@/store';
 import { pinia } from '@/store/create';
 import { PiecewiseColorScheme } from '@/utils/colors';

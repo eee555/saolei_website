@@ -12,9 +12,7 @@
 |---|---|---|---|---|
 |`common/uploadvideo/`|POST|是|否|5/s|
 |`common/tasksummary/`|GET|否|否|1/5s|
-|`accountlink/add/`|POST|是|否|10/d|
 |`accountlink/delete/`|POST|是|否|-|
-|`accountlink/get/`|GET|否|否|-|
 |`accountlink/update/`|POST|是|否|6/h|
 |`accountlink/verify/`|POST|是|是|-|
 |`accountlink/unverify/`|POST|是|是|-|
@@ -37,15 +35,6 @@
 - `"q"` - QQ，隐私
 - `"w"` - wom
 
-### `add`：添加账号关联
-- POST|需要登录|每个用户每天最多10次
-- `platform`：`Platform`，必选
-- `identifier`：平台ID，必选
-
-- 返回`HttpResponseBadRequest`：参数缺失
-- 返回`HttpResponseConflict`：已绑定账号
-- 返回`HttpResponse`：操作成功
-
 ### `delete`：删除账号关联
 - POST|需要登录
 - `platform`：`Platform`，必选
@@ -53,20 +42,6 @@
 - 返回`HttpResponseBadRequest`：参数缺失
 - 返回`HttpResponseNotFound`：未关联账号
 - 返回`HttpResponse`：操作成功
-
-### `get`：查询账号关联数据
-- GET
-- `id`：用户ID，必选
-- `platform`：`Platform`，可选。若有该参数，查询对应的关联账号的详细数据。若无该参数，查询用户所有关联账号的平台和ID。
-
-普通用户不能查询其他用户的隐私/未审核账号。管理员可以查询所有用户的隐私/未审核账号，普通用户可以查询自己的隐私/未审核账号。
-
-- 返回`HttpResponseBadRequest`：参数缺失
-- 返回`HttpResponseNotFound`：未找到用户
-- 返回`HttpResponseForbidden`：试图越权查询隐私账号
-- 返回`JsonResponse`：
-  - 有`platform`参数时，返回一个instance的Dict
-  - 无`platform`参数时，返回一个`list[{platform, identifier}]`。如果有权限访问未审核账号，则还加一个`verified`。
 
 ### `update`：同步账号数据
 - POST|需要登录|每个用户每小时最多6次

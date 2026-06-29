@@ -178,10 +178,10 @@ describe('UserProfile', () => {
         });
 
         it('left_signature_n == 0', () => {
-            const lastAvatarChange = new Date('2023-05-01T00:00:00Z');
+            const lastSigChange = new Date('2023-05-01T00:00:00Z');
             const profile = new UserProfile({
                 left_signature_n: 0,
-                last_change_avatar: lastAvatarChange.toISOString(),
+                last_change_signature: lastSigChange.toISOString(),
             });
             // 下一次应为 2023-06-01T00:00:00Z
             const expected = new Date(Date.UTC(2023, 5, 1, 0, 0, 0));
@@ -214,10 +214,10 @@ describe('UserProfile', () => {
 
     describe('newSignatureBudget', () => {
         it('Normal', () => {
-            const lastAvatarChange = new Date('2023-01-15T00:00:00Z');
+            const lastSigChange = new Date('2023-01-15T00:00:00Z');
             const profile = new UserProfile({
                 left_signature_n: 4,
-                last_change_avatar: lastAvatarChange.toISOString(),
+                last_change_signature: lastSigChange.toISOString(),
             });
             const newDate = new Date('2024-03-10T00:00:00Z');
             expect(profile.newSignatureBudget(newDate)).toBe(18);

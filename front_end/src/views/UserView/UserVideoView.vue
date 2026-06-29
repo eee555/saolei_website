@@ -7,13 +7,13 @@
         </ElButton>
     </ElRow>
     <MultiSelector v-if="showSetting" v-model="VideoListConfig.profile" :options="thisColumnChoices" :labels="thisColumnChoices.map((s) => t(`common.prop.${s}`))" />
-    <VideoList v-loading="loading" :videos="user.videos" :columns="VideoListConfig.profile" sortable paginator />
+    <VideoList v-if="user.id > 0 && user.videos !== undefined" v-loading="loading" :videos="user.videos" :columns="VideoListConfig.profile" sortable paginator />
 </template>
 
 <script lang="ts" setup>
 // 个人主页的个人所有录像部分
 import { ElButton, ElRow, vLoading } from 'element-plus';
-import { onMounted, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { BaseIconSetting } from '@/components/common/icon';
@@ -45,7 +45,5 @@ async function refresh() {
     }
 }
 
-watch(() => user.value.id, refresh, { immediate: true });
-
-onMounted(refresh);
+watch(user, refresh, { immediate: true });
 </script>

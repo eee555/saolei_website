@@ -1,4 +1,5 @@
-import type { PlotPoint } from '@/components/visualization/Plots';
+import type { PlotPoint } from '@putianyi888/vue3-plots';
+
 import type { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 
 export function videoToPlotPoint(video: VideoAbstract, statX: getStat_stat, statY: getStat_stat): PlotPoint<VideoAbstract> | undefined {

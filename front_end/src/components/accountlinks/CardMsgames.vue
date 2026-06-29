@@ -11,7 +11,7 @@
         </div>
         <ElDescriptions v-if="verified" border>
             <ElDescriptionsItem :label="t('common.prop.update_time')" :span="3">
-                {{ utc_to_local_format(info.update_time) }}
+                {{ toISODateTimeString(info.update_time) }}
             </ElDescriptionsItem>
             <ElDescriptionsItem :label="t('accountlink.msgamesName')" :span="3">
                 {{ info.name }}
@@ -30,23 +30,18 @@
 <script setup lang="ts">
 import { ElDescriptions, ElDescriptionsItem } from 'element-plus';
 import PrToolbar from 'primevue/toolbar';
-import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import UnverifiedNotice from './UnverifiedNotice.vue';
-import type { AccountMSGames } from './utils';
-import { AccountMSGamesDefault } from './utils';
 
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
-import { utc_to_local_format } from '@/utils/system/tools';
+import { AccountMSGames } from '@/utils/accountlinks';
+import { toISODateTimeString } from '@/utils/datetime';
 
 defineProps({
     id: { type: String, default: '' },
     verified: { type: Boolean, default: false },
-    info: {
-        type: Object as PropType<AccountMSGames>,
-        default: () => AccountMSGamesDefault,
-    },
+    info: { type: AccountMSGames, default: () => new AccountMSGames() },
 });
 
 const { t } = useI18n();

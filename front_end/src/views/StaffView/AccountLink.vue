@@ -48,15 +48,15 @@ import PrDataTable from 'primevue/datatable';
 import { onMounted, reactive, ref } from 'vue';
 
 import { httpErrorNotification } from '@/components/Notifications';
-import type { Platform } from '@/utils/common/accountLinkPlatforms';
-import { platformlist } from '@/utils/common/accountLinkPlatforms';
+import type { AccountLinkPlatform } from '@/utils/accountlinks';
+import { platformlist } from '@/utils/accountlinks';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const { proxy } = useCurrentInstance();
 
 interface AccountLinkQueueItem {
     id: number | null;
-    platform: Platform;
+    platform: AccountLinkPlatform;
     identifier: string;
     userprofile: number;
     verified: boolean;

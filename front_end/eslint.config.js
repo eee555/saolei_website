@@ -12,7 +12,6 @@ export default defineConfig({
     ignores: [
         '**/node_modules/**', '**/dist/**', '**/build/**', '**/public/**',
         '**/GuideView.vue', '**/WorldView.vue',
-        '**/src/components/visualization/Plots/**', // 将迁移至 @putianyi888/vue3-plots
     ],
 }, {
     files: ['**/*.{js,ts,vue}'],

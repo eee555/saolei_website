@@ -1,11 +1,16 @@
 <template>
     <div v-loading="loading" class="account-link-main">
-        <template v-for="account in accountlinks" :key="account.platform">
-            <CardSaolei v-if="account.platform == 'c'" :id="account.identifier" :verified="account.verified" :info="account.data as AccountSaolei" @refresh="refreshAccount(account)" />
-            <CardMsgames v-else-if="account.platform == 'a'" :id="account.identifier" :verified="account.verified" :info="account.data as AccountMSGames" />
-            <CardWoM v-else-if="account.platform == 'w'" :id="account.identifier" :verified="account.verified" :info="account.data as AccountWoM" @refresh="refreshAccount(account)" />
+        <template v-for="item in accountCardConfigs" :key="item.platform">
+            <component
+                :is="item.component"
+                v-if="accountlinks.has(item.platform)"
+                :id="accountlinks.getSummary(item.platform)!.identifier"
+                :verified="accountlinks.getSummary(item.platform)!.verified"
+                :info="accountlinks[item.platform]"
+                @refresh="refresh"
+            />
         </template>
-        <CardAdd v-if="store.player.id == store.user.id && accountlinks.length < 4" :accountlinks="accountlinks" @add-link="addLink" />
+        <CardAdd v-if="store.player.id == store.user.id && accountLinkCount < platformCount" :accountlinks="accountlinks" @add-link="addLink" />
     </div>
 </template>
 
@@ -13,17 +18,20 @@
 import '@/styles/text.css';
 
 import { vLoading } from 'element-plus';
-import { ref, watch } from 'vue';
+import type { Component } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import CardAdd from './CardAdd.vue';
+import CardBilibili from './CardBilibili.vue';
 import CardMsgames from './CardMsgames.vue';
 import CardSaolei from './CardSaolei.vue';
 import CardWoM from './CardWoM.vue';
-import type { AccountLink, AccountMSGames, AccountSaolei, AccountWoM } from './utils';
 
 import { httpErrorNotification } from '@/components/Notifications';
+import { addAccountLink, fetchAccountLinks } from '@/services/accountLinkService';
 import { store } from '@/store';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import { AccountLinkPlatform, AccountLinks, platformlist } from '@/utils/accountlinks';
+import type { AccountLinkPlatform as AccountLinkPlatformType } from '@/utils/accountlinks';
 
 const props = defineProps({
     userId: {
@@ -32,53 +40,37 @@ const props = defineProps({
     },
 });
 
-const { proxy } = useCurrentInstance();
-
 const loading = ref(false);
-const accountlinks = ref<AccountLink[]>([]);
+const accountlinks = ref(new AccountLinks());
+const platformCount = Object.keys(platformlist).length;
+const accountLinkCount = computed(() => accountlinks.value.count);
+const accountCardConfigs: { platform: AccountLinkPlatformType; component: Component }[] = [
+    { platform: AccountLinkPlatform.Saolei, component: CardSaolei },
+    { platform: AccountLinkPlatform.MSGames, component: CardMsgames },
+    { platform: AccountLinkPlatform.WoM, component: CardWoM },
+    { platform: AccountLinkPlatform.Bilibili, component: CardBilibili },
+];
 
 watch(() => props.userId, refresh, { immediate: true });
 
 async function refresh() {
     if (props.userId == 0) return;
     loading.value = true;
-    await proxy.$axios.get('accountlink/get/', {
-        params: {
-            id: props.userId,
-        },
-    }).then(function (response) {
-        accountlinks.value = response.data;
-        loading.value = false;
-    }).catch(httpErrorNotification);
-    for (const account of accountlinks.value) {
-        if (account.verified) {
-            refreshAccount(account);
-        }
-    }
-}
-
-async function addLink(platform: string, identifier: string) {
     try {
-        await proxy.$axios.post('accountlink/add/', {
-            platform: platform,
-            identifier: identifier,
-        });
-        await refresh();
+        accountlinks.value = await fetchAccountLinks(props.userId);
     } catch (error) {
         httpErrorNotification(error);
+    } finally {
+        loading.value = false;
     }
 }
 
-function refreshAccount(account: AccountLink) {
-    if (account.verified) {
-        proxy.$axios.get('accountlink/get/', {
-            params: {
-                id: props.userId,
-                platform: account.platform,
-            },
-        }).then(function (response) {
-            account.data = response.data;
-        }).catch(httpErrorNotification);
+async function addLink(platform: AccountLinkPlatformType, identifier: string) {
+    try {
+        const accountlink = await addAccountLink(platform, identifier);
+        accountlinks.value.addSummary(accountlink);
+    } catch (error) {
+        httpErrorNotification(error);
     }
 }
 </script>

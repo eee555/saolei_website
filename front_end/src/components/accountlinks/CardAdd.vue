@@ -3,10 +3,7 @@
         <BaseIconAdd />
     </ElButton>
 
-    <ElDialog
-        v-model="formvisible" :title="t('accountlink.addLink')" width="25rem"
-        @closed="form.platform = ''; form.identifier = '';"
-    >
+    <ElDialog v-model="formvisible" :title="t('accountlink.addLink')" width="25rem">
         <ElForm :model="form">
             <ElFormItem :label="t('accountlink.platform')">
                 <ElSelect v-model="form.platform">
@@ -22,65 +19,74 @@
             <ElFormItem v-if="local.tooltip_show">
                 <AccountLinkGuide :platform="form.platform" />
             </ElFormItem>
-            <ElFormItem>
-                <BaseButtonConfirm :disabled="!formValid" @click.prevent="$emit('addLink', form.platform, form.identifier); formvisible=false" />
-                <BaseButtonCancel @click.prevent="formvisible = false" />
-            </ElFormItem>
         </ElForm>
+        <template #footer>
+            <BaseButtonCancel @click="formvisible = false" />
+            <BaseButtonConfirm :disabled="!formValid" @click="submit" />
+        </template>
     </ElDialog>
 </template>
 
 <script setup lang="ts">
 import { ElButton, ElDialog, ElForm, ElFormItem, ElInput, ElOption, ElSelect } from 'element-plus';
-import { computed, reactive, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-
-import type { AccountLink } from './utils';
 
 import BaseButtonCancel from '@/components/common/BaseButtonCancel.vue';
 import BaseButtonConfirm from '@/components/common/BaseButtonConfirm.vue';
 import { BaseIconAdd } from '@/components/common/icon';
 import AccountLinkGuide from '@/components/dialogs/AccountLinkGuide.vue';
 import { local } from '@/store';
-import { platformlist } from '@/utils/common/accountLinkPlatforms';
+import { AccountLinks, platformlist } from '@/utils/accountlinks';
+import type { AccountLinkPlatform } from '@/utils/accountlinks';
 
 const props = defineProps({
-    accountlinks: {
-        type: Array<AccountLink>,
-        default: () => [],
-    },
+    accountlinks: { type: AccountLinks, default: () => new AccountLinks() },
 });
 
-defineEmits<{
-    (e: 'addLink', platform: string, identifier: string): void;
+const emit = defineEmits<{
+    (e: 'addLink', platform: AccountLinkPlatform, identifier: string): void;
 }>();
 
 const { t } = useI18n();
 
 const formvisible = ref(false);
-const form = reactive({
+const form = ref<{ platform: '' | AccountLinkPlatform; identifier: string }>({
     platform: '',
     identifier: '',
 });
 
+watch(formvisible, (visible) => {
+    if (!visible) resetForm();
+});
+
 const formValid = computed(() => {
-    switch (form.platform) {
+    switch (form.value.platform) {
+        case 'B':
         case 'a':
         case 'c':
         case 'q':
         case 'w': {
-            const num = parseInt(form.identifier, 10);
-            return !isNaN(num) && num.toString() === form.identifier && num > 0;
+            const num = parseInt(form.value.identifier, 10);
+            return !isNaN(num) && num.toString() === form.value.identifier && num > 0;
         }
         default:
             return false;
     }
 });
 
-function userHasPlatform(platform: string) {
-    for (const item of props.accountlinks) {
-        if (item.platform == platform) return true;
-    }
-    return false;
+function userHasPlatform(platform: AccountLinkPlatform) {
+    return props.accountlinks.has(platform);
+}
+
+function resetForm() {
+    form.value.platform = '';
+    form.value.identifier = '';
+}
+
+function submit() {
+    if (form.value.platform === '') return;
+    emit('addLink', form.value.platform, form.value.identifier);
+    formvisible.value = false;
 }
 </script>
