@@ -35,6 +35,7 @@ const LINKS = {
 } as const;
 
 function linkNewAccount(platform: string, identifier: string) {
+    cy.intercept('POST', '/api/accountlink/create/').as('addAccountLink');
     cy.get('.account-link-main').find('.pi-plus').click();
     cy.contains('添加关联账号');
     cy.get('.el-dialog__body').within(() => {
@@ -45,15 +46,14 @@ function linkNewAccount(platform: string, identifier: string) {
         cy.contains('隐私提醒');
         cy.contains('关联 Bilibili 后');
     }
-    cy.get('.el-dialog__body').within(() => {
-        cy.contains('ID').next().find('input').type(identifier);
-        cy.contains('确认').click();
-    });
+    cy.get('.el-dialog__body').contains('ID').next().find('input').type(identifier);
+    cy.get('.el-dialog__footer').contains('确认').click();
+    cy.wait('@addAccountLink').its('response.statusCode').should('eq', 200);
     cy.get('.el-dialog__body:visible').should('not.exist');
 }
 
-function expectUnverifiedAccount(index: number, platform: string, identifier: string) {
-    cy.get('.account-link-main').children().filter(':visible').eq(index).within(() => {
+function expectUnverifiedAccount(platform: string, identifier: string) {
+    cy.contains('.account-link-main > :visible', `#${identifier}`).within(() => {
         cy.contains(platform);
         cy.contains(`#${identifier}`);
         cy.contains('账号未验证');
@@ -130,16 +130,16 @@ describe('Account Link', () => {
         cy.visitUser(USER.id, 'accountlink');
 
         linkNewAccount(LINKS.wom.platform, LINKS.wom.identifier);
-        expectUnverifiedAccount(0, LINKS.wom.platform, LINKS.wom.identifier);
+        expectUnverifiedAccount(LINKS.wom.platform, LINKS.wom.identifier);
 
         linkNewAccount(LINKS.saolei.platform, LINKS.saolei.identifier);
-        expectUnverifiedAccount(1, LINKS.saolei.platform, LINKS.saolei.identifier);
+        expectUnverifiedAccount(LINKS.saolei.platform, LINKS.saolei.identifier);
 
         linkNewAccount(LINKS.msgames.platform, LINKS.msgames.identifier);
-        expectUnverifiedAccount(2, LINKS.msgames.platform, LINKS.msgames.identifier);
+        expectUnverifiedAccount(LINKS.msgames.platform, LINKS.msgames.identifier);
 
         linkNewAccount(LINKS.bilibili.platform, LINKS.bilibili.identifier);
-        expectUnverifiedAccount(3, LINKS.bilibili.platform, LINKS.bilibili.identifier);
+        expectUnverifiedAccount(LINKS.bilibili.platform, LINKS.bilibili.identifier);
     });
 
     it('Guest View - Should Not See Unverified Accounts', () => {
@@ -193,6 +193,14 @@ describe('Account Link', () => {
     it('Guest View - Should Not See Private Accounts', () => {
         cy.visitUser(USER.id, 'accountlink');
         cy.get('.account-link-main').children().filter(':visible').should('have.length', 4);
+        cy.get('.account-link-main').children().filter(':visible').should(($cards) => {
+            const cardTexts = [...$cards].map((card) => card.textContent);
+
+            expect(cardTexts[0]).to.contain(`${LINKS.saolei.platform}\u00a0#${LINKS.saolei.identifier}`);
+            expect(cardTexts[1]).to.contain(`${LINKS.msgames.platform}\u00a0#${LINKS.msgames.identifier}`);
+            expect(cardTexts[2]).to.contain(`${LINKS.wom.platform}\u00a0#${LINKS.wom.identifier}`);
+            expect(cardTexts[3]).to.contain(`Bilibili\u00a0#${LINKS.bilibili.identifier}`);
+        });
     });
 });
 

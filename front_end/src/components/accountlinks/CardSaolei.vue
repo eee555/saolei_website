@@ -16,7 +16,7 @@
             <ElCarouselItem>
                 <ElDescriptions border>
                     <ElDescriptionsItem :label="t('common.prop.update_time')" :span="3">
-                        {{ utc_to_local_format(info.update_time!) }}
+                        {{ toISODateTimeString(info.update_time) }}
                     </ElDescriptionsItem>
                     <ElDescriptionsItem :label="t('local.name')" :span="3">
                         {{ info.name }}
@@ -138,14 +138,11 @@ import '@/styles/button.css';
 import { useIntervalFn } from '@vueuse/core';
 import { ElButton, ElCarousel, ElCarouselItem, ElDescriptions, ElDescriptionsItem, ElDialog, ElInput, ElLink, vLoading } from 'element-plus';
 import PrToolbar from 'primevue/toolbar';
-import type { PropType } from 'vue';
 import { computed, ref, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import CarouselControl from './CarouselControl.vue';
 import UnverifiedNotice from './UnverifiedNotice.vue';
-import type { AccountSaolei, SaoleiImportSummary } from './utils';
-import { AccountSaoleiDefault, SaoleiImportSummaryDefault } from './utils';
 import VideoImportQueue from './VideoImportQueue.vue';
 
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
@@ -156,14 +153,16 @@ import { httpErrorNotification } from '@/components/Notifications';
 import StackBar from '@/components/visualization/StackBar/App.vue';
 import { store } from '@/store';
 import { cs_to_s } from '@/utils';
+import { AccountSaolei, SaoleiImportSummaryDefault } from '@/utils/accountlinks';
+import type { SaoleiImportSummary } from '@/utils/accountlinks';
 import type { TaskStatus } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { utc_to_local_format } from '@/utils/system/tools';
+import { toISODateTimeString } from '@/utils/datetime';
 
 const props = defineProps({
     id: { type: String, default: '0' },
     verified: { type: Boolean, default: false },
-    info: { type: Object as PropType<AccountSaolei>, default: () => AccountSaoleiDefault },
+    info: { type: AccountSaolei, default: () => new AccountSaolei() },
 });
 
 defineEmits(['refresh']);

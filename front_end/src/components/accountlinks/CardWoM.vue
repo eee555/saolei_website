@@ -16,7 +16,7 @@
             <ElCarouselItem>
                 <ElDescriptions border>
                     <ElDescriptionsItem :label="t('common.prop.update_time')" :span="3">
-                        {{ utc_to_local_format(info.update_time) }}
+                        {{ toISODateTimeString(info.update_time) }}
                     </ElDescriptionsItem>
                     <ElDescriptionsItem :label="t('local.trophy')" :span="3">
                         {{ info.trophy }}
@@ -102,31 +102,26 @@
 <script setup lang="ts">
 import { ElButton, ElCarousel, ElCarouselItem, ElDescriptions, ElDescriptionsItem, ElImage } from 'element-plus';
 import PrToolbar from 'primevue/toolbar';
-import type { PropType } from 'vue';
 import { computed, ref, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import CarouselControl from './CarouselControl.vue';
 import UnverifiedNotice from './UnverifiedNotice.vue';
-import type { AccountWoM } from './utils';
-import { AccountWoMDefault } from './utils';
 
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
 import IconTaskStatus from '@/components/common/IconTaskStatus.vue';
 import { httpErrorNotification } from '@/components/Notifications';
 import { store } from '@/store';
 import { ms_to_s } from '@/utils';
+import { AccountWoM } from '@/utils/accountlinks';
 import type { TaskStatus } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { utc_to_local_format } from '@/utils/system/tools';
+import { toISODateTimeString } from '@/utils/datetime';
 
 defineProps({
     id: { type: String, default: '0' },
     verified: { type: Boolean, default: false },
-    info: {
-        type: Object as PropType<AccountWoM>,
-        default: () => AccountWoMDefault,
-    },
+    info: { type: AccountWoM, default: () => new AccountWoM() },
 });
 
 defineEmits(['refresh']);

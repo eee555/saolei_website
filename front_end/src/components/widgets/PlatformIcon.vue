@@ -9,7 +9,7 @@
 <script setup lang="ts">
 import { ElLink } from 'element-plus';
 
-import { platformlist } from '@/utils/common/accountLinkPlatforms';
+import { platformlist } from '@/utils/accountlinks';
 
 defineProps({
     platform: {
