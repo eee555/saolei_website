@@ -64,6 +64,12 @@ export default {
         },
         new: '新',
         old: '旧',
+        platform: {
+            a: '国际网',
+            B: '哔哩哔哩',
+            c: '扫雷网',
+            q: '腾讯QQ',
+        },
         prop: {
             action: '操作',
             identifier: '标识',
@@ -127,6 +133,7 @@ export default {
         },
         toDo: '敬请期待',
         website: {
+            bilibili: '哔哩哔哩',
             msgames: '国际网',
             openms: '开源扫雷网',
             saolei: '扫雷网',

@@ -4,7 +4,7 @@
             <PrToolbar>
                 <template #start>
                     <span class="text text-medium">
-                        {{ t('common.website.saolei') }}&nbsp;#{{ id }}
+                        {{ t('common.platform.c') }}&nbsp;#{{ id }}
                     </span>
                 </template>
                 <template #end>
@@ -40,9 +40,9 @@
                         {{ cs_to_s(info.e_b_cent!) }}
                     </ElDescriptionsItem>
                     <ElDescriptionsItem :label="t('common.level.sum')">
-                        {{ cs_to_s((info.b_t_ms! + info.i_t_ms! + info.e_t_ms!) / 10) }}
+                        {{ cs_to_s(info.sum_t_ms / 10) }}
                         &nbsp;|&nbsp;
-                        {{ cs_to_s(info.b_b_cent! + info.i_b_cent! + info.e_b_cent!) }}
+                        {{ cs_to_s(info.sum_b_cent) }}
                     </ElDescriptionsItem>
                 </ElDescriptions>
             </ElCarouselItem>

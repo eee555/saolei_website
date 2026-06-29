@@ -13,7 +13,7 @@ const USER = {
 } as const;
 const LINKS = {
     bilibili: {
-        platform: 'Bilibili',
+        platform: '哔哩哔哩',
         identifier: '208259',
     },
     wom: {
@@ -25,7 +25,7 @@ const LINKS = {
         identifier: '18290',
     },
     msgames: {
-        platform: 'Authoritative Minesweeper',
+        platform: '国际网',
         identifier: '7872',
     },
     qq: {
@@ -199,7 +199,7 @@ describe('Account Link', () => {
             expect(cardTexts[0]).to.contain(`${LINKS.saolei.platform}\u00a0#${LINKS.saolei.identifier}`);
             expect(cardTexts[1]).to.contain(`${LINKS.msgames.platform}\u00a0#${LINKS.msgames.identifier}`);
             expect(cardTexts[2]).to.contain(`${LINKS.wom.platform}\u00a0#${LINKS.wom.identifier}`);
-            expect(cardTexts[3]).to.contain(`Bilibili\u00a0#${LINKS.bilibili.identifier}`);
+            expect(cardTexts[3]).to.contain(`${LINKS.bilibili.platform}\u00a0#${LINKS.bilibili.identifier}`);
         });
     });
 });

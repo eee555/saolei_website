@@ -65,6 +65,12 @@ export default {
         },
         new: 'New',
         old: 'Old',
+        platform: {
+            a: 'Authoritative Minesweeper',
+            B: 'Bilibili',
+            c: 'Saolei.wang',
+            q: 'Tencent QQ',
+        },
         prop: {
             action: 'Action',
             identifier: 'Identifier',
@@ -128,6 +134,7 @@ export default {
         },
         toDo: 'TODO',
         website: {
+            bilibili: 'Bilibili',
             msgames: 'Authoritative Minesweeper',
             openms: 'Open Minesweeper',
             saolei: 'Saolei.wang',

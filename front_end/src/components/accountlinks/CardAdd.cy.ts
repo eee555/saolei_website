@@ -24,7 +24,7 @@ describe('<CardAdd />', () => {
 
         cy.get('.el-button').first().click();
         cy.get('.el-select').click();
-        cy.contains('.el-select-dropdown__item', '扫雷网').should('have.class', 'is-disabled');
+        cy.contains('.el-select-dropdown__item', 'Saolei.wang').should('have.class', 'is-disabled');
         cy.contains('.el-select-dropdown__item', 'Bilibili').click();
 
         cy.contains('button', 'Confirm').should('be.disabled');
@@ -47,5 +47,34 @@ describe('<CardAdd />', () => {
 
         cy.get('.el-button').first().click();
         cy.get('.el-input input').should('have.value', '');
+    });
+
+    it('renders the account link guide for each platform', () => {
+        mountAccountLink(CardAdd);
+
+        cy.get('.el-button').first().click();
+        cy.get('.el-select').click();
+        cy.contains('.el-select-dropdown__item', 'Saolei.wang').click();
+        cy.contains('How to locate the ID');
+        cy.contains('Go to your profile page on');
+
+        cy.get('.el-select').click();
+        cy.contains('.el-select-dropdown__item', 'Authoritative Minesweeper').click();
+        cy.contains('Find yourself on the');
+        cy.contains('The number at the end of the url is your ID');
+
+        cy.get('.el-select').click();
+        cy.contains('.el-select-dropdown__item', 'Minesweeper.Online').click();
+        cy.contains('Go to your profile page on');
+
+        cy.get('.el-select').click();
+        cy.contains('.el-select-dropdown__item', 'Tencent QQ').click();
+        cy.contains('The QQ number is accessible from site moderators');
+
+        cy.get('.el-select').click();
+        cy.contains('.el-select-dropdown__item', 'Bilibili').click();
+        cy.contains('space.bilibili.com');
+        cy.contains('Privacy notice');
+        cy.contains('Linking Bilibili may allow others');
     });
 });
