@@ -24,7 +24,7 @@ describe('<CardAdd />', () => {
 
         cy.get('.el-button').first().click();
         cy.get('.el-select').click();
-        cy.contains('.el-select-dropdown__item', '扫雷网').should('have.class', 'is-disabled');
+        cy.contains('.el-select-dropdown__item', 'Saolei.wang').should('have.class', 'is-disabled');
         cy.contains('.el-select-dropdown__item', 'Bilibili').click();
 
         cy.contains('button', 'Confirm').should('be.disabled');
@@ -54,7 +54,7 @@ describe('<CardAdd />', () => {
 
         cy.get('.el-button').first().click();
         cy.get('.el-select').click();
-        cy.contains('.el-select-dropdown__item', '扫雷网').click();
+        cy.contains('.el-select-dropdown__item', 'Saolei.wang').click();
         cy.contains('How to locate the ID');
         cy.contains('Go to your profile page on');
 
@@ -68,7 +68,7 @@ describe('<CardAdd />', () => {
         cy.contains('Go to your profile page on');
 
         cy.get('.el-select').click();
-        cy.contains('.el-select-dropdown__item', '腾讯QQ').click();
+        cy.contains('.el-select-dropdown__item', 'Tencent QQ').click();
         cy.contains('The QQ number is accessible from site moderators');
 
         cy.get('.el-select').click();

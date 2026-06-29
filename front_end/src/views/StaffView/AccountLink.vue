@@ -5,7 +5,7 @@
         </ElFormItem>
         <ElFormItem label="平台">
             <ElSelect v-model="form.platform">
-                <ElOption v-for="(item, key) of platformlist" :key="key" :label="item.name" :value="key" />
+                <ElOption v-for="(_, key) of platformlist" :key="key" :label="t(`common.platform.${key}`)" :value="key" />
             </ElSelect>
         </ElFormItem>
         <ElFormItem label="平台ID">
@@ -33,7 +33,7 @@
         <PrColumn field="userprofile" header="User ID" sortable />
         <PrColumn field="platform" header="Platform" sortable>
             <template #body="{ data }: { data: AccountLinkQueueItem }">
-                {{ platformlist[data.platform]?.name ?? data.platform }}
+                {{ t(`common.platform.${data.platform}`) }}
             </template>
         </PrColumn>
         <PrColumn field="identifier" header="Platform ID" sortable />
@@ -46,6 +46,7 @@ import { ElButton, ElForm, ElFormItem, ElInput, ElOption, ElSelect, vLoading } f
 import PrColumn from 'primevue/column';
 import PrDataTable from 'primevue/datatable';
 import { onMounted, reactive, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 import { httpErrorNotification } from '@/components/Notifications';
 import type { AccountLinkPlatform } from '@/utils/accountlinks';
@@ -53,6 +54,7 @@ import { platformlist } from '@/utils/accountlinks';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const { proxy } = useCurrentInstance();
+const { t } = useI18n();
 
 interface AccountLinkQueueItem {
     id: number | null;
