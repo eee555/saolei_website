@@ -53,6 +53,14 @@ export class AccountSaolei {
         this.i_b_cent = data.i_b_cent ?? this.i_b_cent;
         this.e_b_cent = data.e_b_cent ?? this.e_b_cent;
     }
+
+    public get sum_t_ms(): number {
+        return this.b_t_ms + this.i_t_ms + this.e_t_ms;
+    }
+
+    public get sum_b_cent(): number {
+        return this.b_b_cent + this.i_b_cent + this.e_b_cent;
+    }
 }
 
 export interface SaoleiVideoRaw {
