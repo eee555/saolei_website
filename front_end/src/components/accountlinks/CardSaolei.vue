@@ -4,7 +4,7 @@
             <PrToolbar>
                 <template #start>
                     <span class="text text-medium">
-                        {{ t('common.website.saolei') }}&nbsp;#{{ id }}
+                        {{ t('common.platform.c') }}&nbsp;#{{ id }}
                     </span>
                 </template>
                 <template #end>

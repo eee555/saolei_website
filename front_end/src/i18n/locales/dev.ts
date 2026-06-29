@@ -1,6 +1,9 @@
 export default {
     local: 'dev',
     common: {
+        platform: {
+            w: 'Minesweeper.Online',
+        },
         prop: {
             bv: 'Bv',
             bbbv: 'Bv',

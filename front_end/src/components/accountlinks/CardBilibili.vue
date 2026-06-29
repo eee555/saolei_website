@@ -4,7 +4,7 @@
             <PrToolbar>
                 <template #start>
                     <span class="text text-medium">
-                        Bilibili&nbsp;#{{ id }}
+                        {{ t('common.platform.B') }}&nbsp;#{{ id }}
                     </span>
                 </template>
                 <template #end>
