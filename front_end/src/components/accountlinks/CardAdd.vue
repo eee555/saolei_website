@@ -16,7 +16,7 @@
             <ElFormItem label="ID">
                 <ElInput v-model="form.identifier" maxlength="128" />
             </ElFormItem>
-            <ElFormItem v-if="local.tooltip_show">
+            <ElFormItem v-if="local.tooltip_show && form.platform">
                 <AccountLinkGuide :platform="form.platform" />
             </ElFormItem>
         </ElForm>
@@ -32,10 +32,11 @@ import { ElButton, ElDialog, ElForm, ElFormItem, ElInput, ElOption, ElSelect } f
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import AccountLinkGuide from './Guide.vue';
+
 import BaseButtonCancel from '@/components/common/BaseButtonCancel.vue';
 import BaseButtonConfirm from '@/components/common/BaseButtonConfirm.vue';
 import { BaseIconAdd } from '@/components/common/icon';
-import AccountLinkGuide from '@/components/dialogs/AccountLinkGuide.vue';
 import { local } from '@/store';
 import { AccountLinks, platformlist } from '@/utils/accountlinks';
 import type { AccountLinkPlatform } from '@/utils/accountlinks';

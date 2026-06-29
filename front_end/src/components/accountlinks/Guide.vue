@@ -1,11 +1,11 @@
 <template>
-    <span v-if="platform == 'c'" class="text">
+    <span v-if="platform == AccountLinkPlatform.Saolei" class="text">
         <b>{{ t('local.title') }}</b><br>
         {{ t('local.saolei1') }}
         <PlatformIcon platform="c" />{{ t('local.saolei2') }}<br>
         <img src="../../assets/IdGuideSaolei.png" width="100%">
     </span>
-    <span v-else-if="platform == 'a'" class="text">
+    <span v-else-if="platform == AccountLinkPlatform.MSGames" class="text">
         <b>{{ t('local.title') }}</b><br>
         {{ t('local.msgames1') }}
         <PlatformIcon platform="a" />{{ t('local.msgames2') }}<br>
@@ -13,16 +13,16 @@
         {{ t('local.msgames3') }}
         <img src="../../assets/IdGuideMsgames2.png" width="100%">
     </span>
-    <span v-else-if="platform == 'w'" class="text">
+    <span v-else-if="platform == AccountLinkPlatform.WoM" class="text">
         <b>{{ t('local.title') }}</b><br>
         {{ t('local.wom1') }}
         <PlatformIcon platform="w" />{{ t('local.wom2') }}
         <img src="../../assets/IdGuideWom.png" width="100%">
     </span>
-    <span v-else-if="platform == 'q'" class="text">
+    <span v-else-if="platform == AccountLinkPlatform.QQ" class="text">
         {{ t('local.QQ') }}
     </span>
-    <span v-else-if="platform == 'B'" class="text">
+    <span v-else-if="platform == AccountLinkPlatform.Bilibili" class="text">
         <b>{{ t('local.title') }}</b><br>
         {{ t('local.bilibili1') }}
         <PlatformIcon platform="B" />{{ t('local.bilibili2') }}<br>
@@ -34,14 +34,17 @@
 
 <script setup lang="ts">
 import '@/styles/text.css';
+import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import PlatformIcon from '@/components/widgets/PlatformIcon.vue';
+import { AccountLinkPlatform } from '@/utils/accountlinks';
+import type { AccountLinkPlatform as AccountLinkPlatformType } from '@/utils/accountlinks';
 
 defineProps({
     platform: {
-        type: String,
-        default: '',
+        type: String as PropType<AccountLinkPlatformType>,
+        required: true,
     },
 });
 
