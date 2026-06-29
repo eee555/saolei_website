@@ -14,7 +14,7 @@ describe('<CardMsgames />', () => {
         cy.contains('Authoritative Minesweeper #202');
         cy.contains('AM Player');
         cy.contains('Local AM');
-        cy.contains('2024-01-01 01:00:00');
+        cy.contains('2024-01-01 08:00:00');
     });
 
     it('renders the unverified state', () => {
