@@ -20,7 +20,7 @@
                 {{ info.local_name }}
             </ElDescriptionsItem>
             <ElDescriptionsItem :label="t('accountlink.msgamesJoined')" :span="3">
-                {{ info.joined }}
+                {{ toISODateTimeString(info.joined) }}
             </ElDescriptionsItem>
         </ElDescriptions>
         <UnverifiedNotice v-else />
