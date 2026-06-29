@@ -9,8 +9,8 @@ from ninja.orm import create_schema
 
 from userprofile.decorators import login_required_error, staff_required
 from userprofile.models import UserProfile
-from .models import AccountBilibili, AccountLinkQueue, AccountMinesweeperGames, AccountQQ, AccountSaolei, AccountWorldOfMinesweeper, Platform, PLATFORM_CONFIG
 from utils.response import HttpResponseConflict
+from .models import AccountBilibili, AccountLinkQueue, AccountMinesweeperGames, AccountQQ, AccountSaolei, AccountWorldOfMinesweeper, Platform, PLATFORM_CONFIG
 from .utils import private_platforms
 
 router = Router()
