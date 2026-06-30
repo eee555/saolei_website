@@ -120,6 +120,7 @@ class VideoModel(models.Model):
         models.F('ce')), output_field=models.FloatField(), db_persist=True)
 
     path = models.FloatField(null=True)
+    pluck = models.FloatField(null=True, default=None)
     flag = models.PositiveSmallIntegerField(null=True)
     op = models.PositiveSmallIntegerField(null=True)
     isl = models.PositiveSmallIntegerField(null=True)
@@ -196,6 +197,7 @@ class VideoModel(models.Model):
             right_ce=parser.right_ce,
             double_ce=parser.double_ce,
             path=parser.path,
+            pluck=None,
             flag=parser.flag,
             op=parser.op,
             isl=parser.isl,
@@ -345,4 +347,6 @@ class VideoModel(models.Model):
             if not self.ongoing_tournament:
                 self.push_redis('newest_queue')
                 self.update_personal_record()
+                from customranking.tasks import helper_custom_pluck
+                helper_custom_pluck(self)
             self.update_video_num()

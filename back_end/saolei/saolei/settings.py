@@ -57,7 +57,7 @@ INSTALLED_APPS = [
     'videomanager',
     'msuser',
     'article',
-    # 'ranking',
+    'customranking',
     'identifier',
     'accountlink',
     'tournament',

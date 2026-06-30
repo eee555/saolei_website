@@ -13,7 +13,7 @@ class MaxSizes:
     EMAIL = 255
     EMAILCODE = 6  # 邮箱验证码
     FIRSTNAME = 255
-    GAMELEVEL = 1  # 级别（初中高）
+    GAMELEVEL = 10  # 级别（初中高、自定义配置）
     GAMEMODE = 2  # 模式（无猜）
     IDENTIFIER = 80  # 标识
     LASTNAME = 255
