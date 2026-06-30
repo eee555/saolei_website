@@ -154,7 +154,9 @@ class MSVideoParser:
             rows = getattr(v, 'row', None)
             columns = getattr(v, 'column', None)
             mines = getattr(v, 'mine_num', None)
-            return CUSTOM_LEVELS_BY_BOARD.get((rows, columns, mines), MS_TextChoices.Level.CUSTOM)
+            if level := CUSTOM_LEVELS_BY_BOARD.get((rows, columns, mines)):
+                return level
+            raise ExceptionToResponse(obj='file', category='level')
         else:
             raise ExceptionToResponse(obj='file', category='level')
 

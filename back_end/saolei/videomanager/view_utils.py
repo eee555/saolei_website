@@ -91,10 +91,12 @@ def refresh_video(video: VideoModel):
     elif v.level == 5:
         video.level = 'e'
     elif v.level == 6:
-        video.level = CUSTOM_LEVELS_BY_BOARD.get(
+        level = CUSTOM_LEVELS_BY_BOARD.get(
             (getattr(v, 'row', None), getattr(v, 'column', None), getattr(v, 'mine_num', None)),
-            MS_TextChoices.Level.CUSTOM,
         )
+        if level is None:
+            return
+        video.level = level
     else:
         return
 

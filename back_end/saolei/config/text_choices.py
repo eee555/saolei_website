@@ -19,7 +19,6 @@ class MS_TextChoices:
         BEGINNER = 'b', ('初级')
         INTERMEDIATE = 'i', ('中级')
         EXPERT = 'e', ('高级')
-        CUSTOM = 'c', ('自定义')
         CUSTOM_8_8_20 = 'c8_8_20', ('8x8 20雷')
         CUSTOM_8_8_24 = 'c8_8_24', ('8x8 24雷')
         CUSTOM_8_8_28 = 'c8_8_28', ('8x8 28雷')
