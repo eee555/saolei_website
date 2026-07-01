@@ -6,7 +6,7 @@ from ninja.errors import HttpError
 from ninja.throttling import AnonRateThrottle
 
 from userprofile.decorators import staff_required
-from .config import CUSTOM_PLUCK_CONFIGS, CUSTOM_PLUCK_MODES
+from .config import CUSTOM_PLUCK_CONFIGS
 from .models import CustomPluckRecord
 from .services import (
     CUSTOM_PLUCK_CACHE_SIZE,
@@ -29,6 +29,7 @@ class CustomPluckPlayerOut(Schema):
     player_id: int
     player_name: str
     video_id: int
+    mode: str
     pluck: float
     timems: int
     bv: int
@@ -48,26 +49,26 @@ class RefreshCustomPluckRankOut(Schema):
 
 
 @router.get('/pluck', response=CustomPluckRankOut, throttle=[AnonRateThrottle('60/m')])
-def pluck_rank(request, level: str, mode: str, page: int = 1, page_size: int = 20):
+def pluck_rank(request, level: str, page: int = 1, page_size: int = 20):
     """
     - Throttle: AnonRateThrottle('60/m')
     """
-    if level not in CUSTOM_PLUCK_CONFIGS or mode not in CUSTOM_PLUCK_MODES:
-        raise HttpError(400, 'Invalid custom pluck ranking level or mode')
+    if level not in CUSTOM_PLUCK_CONFIGS:
+        raise HttpError(400, 'Invalid custom pluck ranking level')
 
     page_size = min(max(page_size, 1), 100)
-    count = CustomPluckRecord.objects.filter(level=level, mode=mode).count()
+    count = CustomPluckRecord.objects.filter(level=level).count()
     total_page = (count + page_size - 1) // page_size
     page = min(max(page, 1), max(total_page, 1))
     start_rank = (page - 1) * page_size
     end_rank = start_rank + page_size
 
     if end_rank <= CUSTOM_PLUCK_CACHE_SIZE:
-        players = get_custom_pluck_top_cache(level, mode)[start_rank:end_rank]
+        players = get_custom_pluck_top_cache(level)[start_rank:end_rank]
     else:
         records = (
             CustomPluckRecord.objects
-            .filter(level=level, mode=mode)
+            .filter(level=level)
             .select_related('player', 'video')
             .order_by('pluck', 'video__timems', 'video__id')[start_rank:end_rank]
         )

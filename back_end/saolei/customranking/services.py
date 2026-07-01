@@ -30,8 +30,8 @@ def normalize_pluck(value) -> float | None:
     return value
 
 
-def get_custom_pluck_cache_key(level: str, mode: str) -> str:
-    return f'customranking:pluck:{level}:{mode}:top{CUSTOM_PLUCK_CACHE_SIZE}'
+def get_custom_pluck_cache_key(level: str) -> str:
+    return f'customranking:pluck:{level}:top{CUSTOM_PLUCK_CACHE_SIZE}'
 
 
 def serialize_custom_pluck_record(record: CustomPluckRecord, rank: int):
@@ -40,6 +40,7 @@ def serialize_custom_pluck_record(record: CustomPluckRecord, rank: int):
         'player_id': record.player_id,
         'player_name': record.player.realname,
         'video_id': record.video_id,
+        'mode': record.mode,
         'pluck': record.pluck,
         'timems': record.video.timems,
         'bv': record.video.bv,
@@ -47,10 +48,10 @@ def serialize_custom_pluck_record(record: CustomPluckRecord, rank: int):
     }
 
 
-def build_custom_pluck_top_cache(level: str, mode: str):
+def build_custom_pluck_top_cache(level: str):
     records = (
         CustomPluckRecord.objects
-        .filter(level=level, mode=mode)
+        .filter(level=level)
         .select_related('player', 'video')
         .order_by('pluck', 'video__timems', 'video__id')[:CUSTOM_PLUCK_CACHE_SIZE]
     )
@@ -58,20 +59,20 @@ def build_custom_pluck_top_cache(level: str, mode: str):
         serialize_custom_pluck_record(record, rank)
         for rank, record in enumerate(records, start=1)
     ]
-    cache.set(get_custom_pluck_cache_key(level, mode), players, None)
+    cache.set(get_custom_pluck_cache_key(level), players, None)
     return players
 
 
-def get_custom_pluck_top_cache(level: str, mode: str):
-    key = get_custom_pluck_cache_key(level, mode)
+def get_custom_pluck_top_cache(level: str):
+    key = get_custom_pluck_cache_key(level)
     players = cache.get(key)
     if players is None:
-        players = build_custom_pluck_top_cache(level, mode)
+        players = build_custom_pluck_top_cache(level)
     return players
 
 
-def update_custom_pluck_top_cache(record: CustomPluckRecord | None, level: str, mode: str, player_id: int):
-    key = get_custom_pluck_cache_key(level, mode)
+def update_custom_pluck_top_cache(record: CustomPluckRecord | None, level: str, player_id: int):
+    key = get_custom_pluck_cache_key(level)
     players = cache.get(key)
     if players is None:
         return
@@ -91,13 +92,13 @@ def update_custom_pluck_top_cache(record: CustomPluckRecord | None, level: str, 
     cache.set(key, players, None)
 
 
-def refresh_custom_pluck_rank(player, level: str, mode: str):
+def refresh_custom_pluck_rank(player, level: str):
     best_video = (
         VideoModel.objects
         .filter(
             player=player,
             level=level,
-            mode=mode,
+            mode__in=CUSTOM_PLUCK_MODES,
             state=MS_TextChoices.State.OFFICIAL,
             ongoing_tournament=False,
             pluck__isnull=False,
@@ -106,20 +107,20 @@ def refresh_custom_pluck_rank(player, level: str, mode: str):
         .first()
     )
     if best_video is None:
-        CustomPluckRecord.objects.filter(player=player, level=level, mode=mode).delete()
-        update_custom_pluck_top_cache(None, level, mode, player.id)
+        CustomPluckRecord.objects.filter(player=player, level=level).delete()
+        update_custom_pluck_top_cache(None, level, player.id)
         return None
 
     record, _ = CustomPluckRecord.objects.update_or_create(
         player=player,
         level=level,
-        mode=mode,
         defaults={
             'video': best_video,
+            'mode': best_video.mode,
             'pluck': best_video.pluck,
         },
     )
-    update_custom_pluck_top_cache(record, level, mode, player.id)
+    update_custom_pluck_top_cache(record, level, player.id)
     return record
 
 
@@ -127,7 +128,7 @@ def update_custom_pluck_rank_for_video(video: VideoModel):
     if not is_custom_pluck_video(video) or video.pluck is None:
         return refresh_custom_pluck_rank_for_video(video)
 
-    record = CustomPluckRecord.objects.filter(player=video.player, level=video.level, mode=video.mode).first()
+    record = CustomPluckRecord.objects.filter(player=video.player, level=video.level).first()
     if record is not None and (
         record.pluck < video.pluck
         or (record.pluck == video.pluck and record.video.timems <= video.timems)
@@ -137,20 +138,20 @@ def update_custom_pluck_rank_for_video(video: VideoModel):
     record, _ = CustomPluckRecord.objects.update_or_create(
         player=video.player,
         level=video.level,
-        mode=video.mode,
         defaults={
             'video': video,
+            'mode': video.mode,
             'pluck': video.pluck,
         },
     )
-    update_custom_pluck_top_cache(record, video.level, video.mode, video.player_id)
+    update_custom_pluck_top_cache(record, video.level, video.player_id)
     return record
 
 
 def refresh_custom_pluck_rank_for_video(video: VideoModel):
-    if video.level not in CUSTOM_PLUCK_LEVELS or video.mode not in CUSTOM_PLUCK_MODES:
+    if video.level not in CUSTOM_PLUCK_LEVELS:
         return None
-    return refresh_custom_pluck_rank(video.player, video.level, video.mode)
+    return refresh_custom_pluck_rank(video.player, video.level)
 
 
 def refresh_all_custom_pluck_ranks():
@@ -164,7 +165,7 @@ def refresh_all_custom_pluck_ranks():
             ongoing_tournament=False,
             pluck__isnull=False,
         )
-        .values('player_id', 'level', 'mode')
+        .values('player_id', 'level')
         .annotate(best_pluck=Min('pluck'))
     )
     records = []
@@ -174,7 +175,7 @@ def refresh_all_custom_pluck_ranks():
             .filter(
                 player_id=group['player_id'],
                 level=group['level'],
-                mode=group['mode'],
+                mode__in=CUSTOM_PLUCK_MODES,
                 state=MS_TextChoices.State.OFFICIAL,
                 ongoing_tournament=False,
                 pluck=group['best_pluck'],
@@ -193,6 +194,5 @@ def refresh_all_custom_pluck_ranks():
         ))
     CustomPluckRecord.objects.bulk_create(records)
     for level in CUSTOM_PLUCK_CONFIGS:
-        for mode in CUSTOM_PLUCK_MODES:
-            build_custom_pluck_top_cache(level, mode)
+        build_custom_pluck_top_cache(level)
     return len(records)

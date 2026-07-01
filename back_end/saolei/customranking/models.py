@@ -16,9 +16,9 @@ class CustomPluckRecord(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['player', 'level', 'mode'], name='custom_pluck_player_board_mode_uniq'),
+            models.UniqueConstraint(fields=['player', 'level'], name='custom_pluck_player_board_uniq'),
         ]
         indexes = [
-            models.Index(fields=['level', 'mode', 'pluck'], name='custom_pluck_rank_idx'),
+            models.Index(fields=['level', 'pluck'], name='custom_pluck_rank_idx'),
             models.Index(fields=['video'], name='custom_pluck_video_idx'),
         ]
