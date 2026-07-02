@@ -46,10 +46,22 @@
         </PrColumn>
         <PrColumn field="stat.level" :header="t('common.prop.level')" :show-filter-match-modes="false" :show-filter-operator="false">
             <template #body="{data}: {data: UploadEntry}">
-                {{ data.stat ? t(`common.level.${data.stat.level}`) : '' }}
+                {{ data.stat ? formatLevel(data.stat.level) : '' }}
             </template>
             <template #filter="{ filterModel, applyFilter }">
                 <PrListbox v-model="filterModel.value" :options="[...MS_Levels]" @change="applyFilter()">
+                    <template #option="slotProps">
+                        {{ formatLevel(slotProps.option) }}
+                    </template>
+                </PrListbox>
+            </template>
+        </PrColumn>
+        <PrColumn field="stat.mode" :header="t('common.prop.mode')" :show-filter-match-modes="false" :show-filter-operator="false">
+            <template #body="{data}: {data: UploadEntry}">
+                {{ data.stat ? t(`common.mode.code${data.stat.mode}`) : '' }}
+            </template>
+            <template #filter="{ filterModel, applyFilter }">
+                <PrListbox v-model="filterModel.value" :options="Object.keys(MS_Mode)" @change="applyFilter()">
                     <template #option="slotProps">
                         {{ t(`common.level.${slotProps.option}`) }}
                     </template>
@@ -115,8 +127,9 @@ import { useI18n } from 'vue-i18n';
 import type { UploadEntry } from './utils';
 import { UploadStatus } from './utils';
 
+import { CustomLevel } from '@/utils/customlevel';
 import { toISODateTimeString } from '@/utils/datetime';
-import { MS_Levels } from '@/utils/ms_const';
+import { MS_Levels, MS_Mode } from '@/utils/ms_const';
 
 defineProps({
     data: {
@@ -133,7 +146,7 @@ const selectedRows = defineModel<UploadEntry[]>(
 const filters = ref({
     status: { value: null, matchMode: FilterMatchMode.EQUALS },
     'stat.level': { value: null, matchMode: FilterMatchMode.EQUALS },
-    // 'mode': { value: Object.values(MS_Mode), matchMode: FilterMatchMode.IN },
+    'stat.mode': { value: null, matchMode: FilterMatchMode.EQUALS },
 });
 
 const filteredData = ref<UploadEntry[]>([]);
@@ -171,7 +184,7 @@ const i18nMessages = {
     'zh-cn': { local: {
         censorship: '标识未通过',
         collision: '录像已存在',
-        custom: '暂不支持自定义级别',
+        custom: '暂不支持此自定义配置',
         fail: '不通过',
         fileext: '无法识别的文件类型',
         filename: '文件名超过了100字节',
@@ -188,7 +201,7 @@ const i18nMessages = {
     en: { local: {
         censorship: 'Identifier blocked',
         collision: 'Video already exists',
-        custom: 'Custom level is currently not supported',
+        custom: 'This custom board is currently not supported',
         fail: 'Fail',
         fileext: 'Invalid file extension',
         filename: 'File name exceeds 100 bytes',
@@ -205,4 +218,15 @@ const i18nMessages = {
 };
 
 const { t } = useI18n({ messages: i18nMessages });
+
+function formatLevel(level: string | CustomLevel): string {
+    if (level instanceof CustomLevel) {
+        return t('common.level.c', {
+            column: level.column,
+            mine: level.mine,
+            row: level.row,
+        });
+    }
+    return t(`common.level.${level}`);
+}
 </script>

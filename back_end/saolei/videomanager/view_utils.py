@@ -7,13 +7,15 @@ import ms_toollib as ms
 
 from config.text_choices import MS_TextChoices
 from userprofile.models import UserProfile
+from utils.exceptions import ExceptionToResponse
+from utils.parser import pack_custom_level
 from .models import ExpandVideoModel, VideoModel
 
 logger = logging.getLogger('videomanager')
 cache = get_redis_connection('saolei_website')
 
 video_all_fields = [
-    'id', 'upload_time', 'player__id', 'player__realname', 'timems', 'bv', 'bvs', 'state', 'level', 'mode', 'software', 'flag', 'op', 'isl', 'path', 'left', 'right', 'double', 'left_ce', 'right_ce',
+    'id', 'upload_time', 'player__id', 'player__realname', 'timems', 'bv', 'bvs', 'state', 'level', 'mode', 'software', 'flag', 'op', 'isl', 'path', 'pluck', 'left', 'right', 'double', 'left_ce', 'right_ce',
     'double_ce', 'cell0', 'cell1', 'cell2', 'cell3', 'cell4', 'cell5', 'cell6', 'cell7', 'cell8', 'left_s', 'right_s', 'double_s', 'left_ces', 'right_ces', 'double_ces', 'flag_s', 'ioe', 'thrp', 'cl_s', 'ce_s',
 ]
 for name in [field.name for field in ExpandVideoModel._meta.get_fields()]:
@@ -51,6 +53,8 @@ def update_state(video: VideoModel, state: MS_TextChoices.State, update_ranking=
     logger.info(f'录像#{video.id} 状态 从 {prevstate} 到 {state}')
     if state == MS_TextChoices.State.OFFICIAL:
         video.update_personal_record()
+        from .tasks import helper_video_pluck
+        helper_video_pluck(video)
     elif update_ranking and prevstate == MS_TextChoices.State.OFFICIAL:
         update_personal_record_stock(video.player)
 
@@ -84,7 +88,14 @@ def refresh_video(video: VideoModel):
     elif v.level == 5:
         video.level = 'e'
     elif v.level == 6:
-        video.level = 'c'
+        try:
+            video.level = pack_custom_level(
+                getattr(v, 'row', None),
+                getattr(v, 'column', None),
+                getattr(v, 'mine_num', None),
+            )
+        except ExceptionToResponse:
+            return
     else:
         return
 
@@ -101,6 +112,7 @@ def refresh_video(video: VideoModel):
     video.double_ce = v.dce
 
     video.path = v.path
+    video.pluck = None
     video.flag = v.flag
     video.op = v.op
     video.isl = v.isl
@@ -126,6 +138,9 @@ def refresh_video(video: VideoModel):
     if video.state == MS_TextChoices.State.IDENTIFIER and (e_video.identifier in video.player.userms.identifiers):
         video.state = MS_TextChoices.State.OFFICIAL
         video.save()
+
+    from .tasks import helper_video_pluck
+    helper_video_pluck(video)
 
 
 def generate_file_stream(queryset):

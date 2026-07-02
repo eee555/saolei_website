@@ -7,6 +7,25 @@ from config.text_choices import MS_TextChoices
 from .exceptions import ExceptionToResponse
 
 
+def pack_custom_level(rows, columns, mines) -> str:
+    if rows is None or columns is None or mines is None:
+        raise ExceptionToResponse(obj='file', category='level')
+    return f'c{rows}_{columns}_{mines}'
+
+
+def create_video_from_data(file_name: str, data: bytes):
+    if file_name.endswith('.avf'):
+        return ms.AvfVideo(raw_data=data), MS_TextChoices.Software.AVF
+    elif file_name.endswith('.evf'):
+        return ms.EvfVideo(raw_data=data), MS_TextChoices.Software.EVF
+    elif file_name.endswith('.rmv'):
+        return ms.RmvVideo(raw_data=data), MS_TextChoices.Software.RMV
+    elif file_name.endswith('.mvf'):
+        return ms.MvfVideo(raw_data=data), MS_TextChoices.Software.MVF
+    else:
+        raise ExceptionToResponse(obj='file', category='type')
+
+
 class MSVideoParser:
     file: File
 
@@ -105,22 +124,7 @@ class MSVideoParser:
     def read_file(file: File):
         data = file.read()
         file.seek(0)
-        if file.name.endswith('.avf'):
-            v = ms.AvfVideo(raw_data=data)
-            software = MS_TextChoices.Software.AVF
-        elif file.name.endswith('.evf'):
-            v = ms.EvfVideo(raw_data=data)
-            software = MS_TextChoices.Software.EVF
-        elif file.name.endswith('.rmv'):
-            v = ms.RmvVideo(raw_data=data)
-            software = MS_TextChoices.Software.RMV
-        elif file.name.endswith('.mvf'):
-            v = ms.MvfVideo(raw_data=data)
-            software = MS_TextChoices.Software.MVF
-        else:
-            raise ExceptionToResponse(obj='file', category='type')
-
-        return v, software
+        return create_video_from_data(file.name, data)
 
     @staticmethod
     def get_level_from_BaseVideo(v: ms.BaseVideo):
@@ -130,6 +134,11 @@ class MSVideoParser:
             return MS_TextChoices.Level.INTERMEDIATE
         elif v.level == 5:
             return MS_TextChoices.Level.EXPERT
+        elif v.level == 6:
+            rows = getattr(v, 'row', None)
+            columns = getattr(v, 'column', None)
+            mines = getattr(v, 'mine_num', None)
+            return pack_custom_level(rows, columns, mines)
         else:
             raise ExceptionToResponse(obj='file', category='level')
 
@@ -147,20 +156,7 @@ class MSVideoParser:
     @staticmethod
     def parse_video_metadata(file: File):
         data = file.read()
-        if file.name.endswith('.avf'):
-            v = ms.AvfVideo(raw_data=data)
-            software = MS_TextChoices.Software.AVF
-        elif file.name.endswith('.evf'):
-            v = ms.EvfVideo(raw_data=data)
-            software = MS_TextChoices.Software.EVF
-        elif file.name.endswith('.rmv'):
-            v = ms.RmvVideo(raw_data=data)
-            software = MS_TextChoices.Software.RMV
-        elif file.name.endswith('.mvf'):
-            v = ms.MvfVideo(raw_data=data)
-            software = MS_TextChoices.Software.MVF
-        else:
-            raise ExceptionToResponse(obj='file', category='type')
+        v, software = create_video_from_data(file.name, data)
 
         v.parse()
         v.analyse()

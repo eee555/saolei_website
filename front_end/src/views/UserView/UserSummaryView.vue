@@ -1,6 +1,6 @@
 <template>
     <div style="display: flex; flex-direction: column; gap: 1rem">
-        <ActivityCalendarAbstract :video-list="user.videos" :options="activityCalendarConfig" :dark-mode="local.darkmode" />
+        <ActivityCalendarAbstract :video-list="user.videos" :options="activityCalendarConfig" />
         <BaseCardNormal v-if="user.videos">
             <BBBvSummaryHeader />
             <ElScrollbar aria-orientation="horizontal" :style="{ zoom: BBBvSummaryConfig.zoom }">
@@ -40,7 +40,7 @@ import { BaseIconInfo } from '@/components/common/icon';
 import { vExperimental } from '@/components/ExperimentalFeature';
 import IdentifierManager from '@/components/widgets/IdentifierManager.vue';
 import { fetchUserVideos } from '@/services/userService';
-import { activityCalendarConfig, BBBvSummaryConfig, local } from '@/store';
+import { activityCalendarConfig, BBBvSummaryConfig } from '@/store';
 import { UserProfile } from '@/utils/userprofile';
 
 const { t } = useI18n();

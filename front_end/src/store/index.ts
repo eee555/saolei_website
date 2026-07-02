@@ -77,7 +77,6 @@ export const local = useLocalStorage(
         vienna_logo_legacy: false,
         autoUploadAfterParse: false,
         autoRemoveAfterUpload: false,
-        folderMonitorPollingInterval: 3000,
         nameFormat: 'first-last' as 'first-last' | 'last-first',
     },
     { mergeDefaults: true },
@@ -111,6 +110,7 @@ export const colorTheme = useLocalStorage(
             b: '#dc2626',
             i: '#16a34a',
             e: '#2563eb',
+            c: '#d97706',
         },
     },
     { mergeDefaults: true },
@@ -121,7 +121,6 @@ export const activityCalendarConfig = useLocalStorage(
     {
         cellSize: 14,
         cellMargin: 3,
-        cornerRadius: 20,
         showDate: false,
         useEndTime: false,
     },

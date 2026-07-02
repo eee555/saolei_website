@@ -140,7 +140,7 @@ def video_query_by_id(request: HttpRequest):
         videos = videos.filter(ongoing_tournament=False)
     videos = videos.values(
         'id', 'upload_time', 'end_time', 'level', 'mode', 'timems', 'bv', 'bvs', 'state', 'video__identifier',
-        'software', 'flag', 'cell0', 'cell1', 'cell2', 'cell3', 'cell4', 'cell5', 'cell6', 'cell7', 'cell8', 'left', 'right', 'double', 'op', 'isl', 'path',
+        'software', 'flag', 'cell0', 'cell1', 'cell2', 'cell3', 'cell4', 'cell5', 'cell6', 'cell7', 'cell8', 'left', 'right', 'double', 'op', 'isl', 'path', 'pluck',
     )
 
     return JsonResponse(list(videos), safe=False)
@@ -199,6 +199,8 @@ def approve_single(videoid, check_identifier=True):
     video.save()
     video.push_redis('newest_queue')
     video.update_personal_record()
+    from .tasks import helper_video_pluck
+    helper_video_pluck(video)
     video.update_video_num()
     identifier = video.video.identifier
     if check_identifier and identifier not in userms.identifiers:
