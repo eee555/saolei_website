@@ -151,10 +151,9 @@ async function upload_prepare(file: File): Promise<UploadEntry> {
         };
     }
 
-    if (video.level == 6) status = 'custom';
-    else if (video.is_valid() == 1) status = 'invalid';
-    else if (video.is_valid() == 3) status = 'needApprove';
-    else if (!props.identifiers.includes(video.player_identifier)) status = 'identifier';
+    // if (video.is_valid() == 1) status = 'invalid';
+    // else if (video.is_valid() == 3) status = 'needApprove';
+    if (!props.identifiers.includes(video.player_identifier)) status = 'identifier';
 
     return {
         hash: hash,

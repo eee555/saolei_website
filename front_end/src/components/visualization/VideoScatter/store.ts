@@ -8,7 +8,7 @@ import { colorTheme, VideoScatterConfig } from '@/store';
 import { pinia } from '@/store/create';
 import { PiecewiseColorScheme } from '@/utils/colors';
 import type { MS_Level } from '@/utils/ms_const';
-import { getPiecewiseColorSchemeName } from '@/utils/ms_const';
+import { getPiecewiseColorSchemeName, isStandardLevel } from '@/utils/ms_const';
 import type { VideoAbstract } from '@/utils/videoabstract';
 
 function inShape(video: VideoAbstract, shape: AnyShape) {
@@ -38,14 +38,14 @@ export const VideoScatterStore = defineStore('video-scatter-store', {
             const { colorBy } = VideoScatterConfig.value;
 
             if (colorBy === 'level') {
-                return (video: VideoAbstract) => colorTheme.value.level[video.level];
+                return (video: VideoAbstract) => isStandardLevel(video.level) ? colorTheme.value.level[video.level] : colorTheme.value.level.e;
             } else if (colorBy === 'time') {
                 const schemes = {
                     b: getTimeColorScheme('b'),
                     i: getTimeColorScheme('i'),
                     e: getTimeColorScheme('e'),
                 };
-                return (video: VideoAbstract) => schemes[video.level].getColor(video.time);
+                return (video: VideoAbstract) => isStandardLevel(video.level) ? schemes[video.level].getColor(video.time) : colorTheme.value.level.e;
             } else {
                 const name = getPiecewiseColorSchemeName(colorBy);
                 const scheme = new PiecewiseColorScheme(colorTheme.value[name].colors, colorTheme.value[name].thresholds);

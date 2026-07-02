@@ -39,7 +39,11 @@ const fixtures = {
     cusAvf: {
         filename: '4376-Custom-FL-30x24-860.360-357-226m-20220522.avf',
         identifier: 'Nathanael Kozinski',
-        tableData: { '': '', Bv: '357', Bvs: '0.415', Status: 'Custom level is currently not supported', Time: '860.360', Level: 'Custom', 'End Time': '2022-05-22 23:30:49' },
+        tableData: { '': '', Bv: '357', Bvs: '0.415', Status: 'This custom board is currently not supported', Time: '860.360', Level: 'Custom', 'End Time': '2022-05-22 23:30:49' },
+    },
+    custom8Evf: {
+        filename: 'c_10_129.073_24_0.186_Pu Tian Yi(Hu Bei).evf',
+        identifier: 'Pu Tian Yi(Hu Bei)',
     },
     intRmv: {
         filename: '3819-Time-1616-NF-9469-32-20151031.rmv',
@@ -215,6 +219,30 @@ describe('VideoUpload Component', () => {
         });
     });
 
+    it('accepts configured custom levels', () => {
+        cy.mount(App, mountOptions({
+            isUserAnonymous: false,
+            identifiers: [fixtures.custom8Evf.identifier],
+        }));
+
+        loadFixture('custom8Evf', 'videoFileCustom8Evf');
+
+        cy.get('input[type=file]').selectFile([
+            { contents: '@videoFileCustom8Evf', fileName: 'custom8.evf' },
+        ], { force: true });
+
+        cy.get('table:visible').getTable().should((tableData) => {
+            expect(tableData.length).to.equal(1);
+            expect(tableData[0]).to.include({
+                Bv: '24',
+                Bvs: '0.186',
+                Level: '8x8/40',
+                Status: 'Pass',
+                Time: '129.073',
+            });
+        });
+    });
+
     it('Response status', () => {
         mockUploadResponse();
         cy.mount(App, mountOptions({ isUserAnonymous: false }));
@@ -243,7 +271,7 @@ describe('VideoUpload Component', () => {
             expect(tableData.length).to.equal(4);
             expect(tableData[0]).to.deep.equal({ ...fixtures.expAvf.tableData, Status: 'Success' });
             expect(tableData[1]).to.deep.equal({ ...fixtures.intRmv.tableData, Status: 'Identifier blocked' });
-            expect(tableData[2]).to.deep.equal({ ...fixtures.cusAvf.tableData, Status: 'Custom level is currently not supported' });
+            expect(tableData[2]).to.deep.equal(fixtures.cusAvf.tableData);
             expect(tableData[3]).to.deep.equal({ ...fixtures.expMvf.tableData, Status: 'Video already exists' });
         });
     });

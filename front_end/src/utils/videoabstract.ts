@@ -1,8 +1,12 @@
 /* eslint-disable @typescript-eslint/member-ordering */
 import { toDate, toISODateString } from './datetime';
+import { CustomLevel } from './customlevel';
 import type { MS_Level, MS_Software } from './ms_const';
-import { MS_State, STNB_const } from './ms_const';
+import { isStandardLevel, MS_State, STNB_const } from './ms_const';
 import { formatBytes } from './strings';
+
+type VideoLevel = MS_Level | CustomLevel;
+export type StandardVideoAbstract = VideoAbstract & { level: MS_Level };
 
 function undefinedOrToString(value: { toString: () => string } | undefined): string | undefined {
     return value === undefined ? undefined : value.toString();
@@ -29,7 +33,7 @@ export interface VideoAbstractInfo {
     id: number;
     upload_time: string | Date;
     end_time: Date | null;
-    level: MS_Level;
+    level: VideoLevel;
     mode: string;
     timems: number;
     bv: number;
@@ -45,7 +49,7 @@ interface VideoRedisInfo {
     software: string;
     time: string;
     player_id: number;
-    level: MS_Level;
+    level: VideoLevel;
     mode: string;
     timems: number;
     bv: number;
@@ -59,7 +63,7 @@ interface VideoAbstractData {
     upload_time?: string | Date;
     time?: string | Date;
     end_time?: string | Date | null;
-    level: string;
+    level: string | VideoLevel;
     mode: string;
     timems: number;
     bv: number;
@@ -81,7 +85,7 @@ export class VideoAbstract {
     public id = 0;
     public upload_time = new Date();
     public end_time?: Date;
-    public level: MS_Level;
+    public level: VideoLevel;
     public mode: string;
     public timems: number;
     public bv: number;
@@ -102,7 +106,7 @@ export class VideoAbstract {
 
         this.end_time = toDate(info.end_time);
 
-        this.level = info.level as MS_Level;
+        this.level = parseLevel(info.level);
         this.mode = info.mode;
         this.timems = info.timems;
         this.bv = info.bv;
@@ -152,6 +156,7 @@ export class VideoAbstract {
     }
 
     public get stnb(): number {
+        if (!isStandardLevel(this.level)) return NaN;
         return STNB_const.value[this.level] / this.qg;
     }
 
@@ -217,6 +222,12 @@ export class VideoAbstract {
     }
 }
 
+function parseLevel(level: string | VideoLevel): VideoLevel {
+    if (typeof level !== 'string') return level;
+    const customLevel = CustomLevel.fromCode(level);
+    return customLevel ?? level as MS_Level;
+}
+
 export function groupVideosByDate(videos: VideoAbstract[], attr: 'upload_time' | 'end_time' = 'upload_time'): Map<string, VideoAbstract[]> {
     const result = new Map<string, VideoAbstract[]>();
 
@@ -248,4 +259,8 @@ export function groupVideosByBBBv(videos: VideoAbstract[], level: MS_Level): Map
     });
 
     return result;
+}
+
+export function isStandardVideo(video: VideoAbstract): video is StandardVideoAbstract {
+    return isStandardLevel(video.level);
 }

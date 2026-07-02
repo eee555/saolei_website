@@ -38,8 +38,6 @@ class CustomPluckPlayerOut(Schema):
 
 class CustomPluckRankOut(Schema):
     count: int
-    total_page: int
-    page: int
     configs: dict[str, CustomPluckConfigOut]
     players: list[CustomPluckPlayerOut]
 
@@ -49,38 +47,33 @@ class RefreshCustomPluckRankOut(Schema):
 
 
 @router.get('/pluck', response=CustomPluckRankOut, throttle=[AnonRateThrottle('60/m')])
-def pluck_rank(request, level: str, page: int = 1, page_size: int = 20):
+def pluck_rank(request, level: str, start: int = 0, end: int = 20):
     """
     - Throttle: AnonRateThrottle('60/m')
     """
     if level not in CUSTOM_PLUCK_CONFIGS:
         raise HttpError(400, 'Invalid custom pluck ranking level')
 
-    page_size = min(max(page_size, 1), 100)
+    start = max(start, 0)
+    end = min(max(end, start), start + 100)
     count = CustomPluckRecord.objects.filter(level=level).count()
-    total_page = (count + page_size - 1) // page_size
-    page = min(max(page, 1), max(total_page, 1))
-    start_rank = (page - 1) * page_size
-    end_rank = start_rank + page_size
 
-    if end_rank <= CUSTOM_PLUCK_CACHE_SIZE:
-        players = get_custom_pluck_top_cache(level)[start_rank:end_rank]
+    if end <= CUSTOM_PLUCK_CACHE_SIZE:
+        players = get_custom_pluck_top_cache(level)[start:end]
     else:
         records = (
             CustomPluckRecord.objects
             .filter(level=level)
             .select_related('player', 'video')
-            .order_by('pluck', 'video__timems', 'video__id')[start_rank:end_rank]
+            .order_by('pluck', 'video__timems', 'video__id')[start:end]
         )
         players = [
             serialize_custom_pluck_record(record, rank)
-            for rank, record in enumerate(records, start=start_rank + 1)
+            for rank, record in enumerate(records, start=start + 1)
         ]
 
     return {
         'count': count,
-        'total_page': total_page,
-        'page': page,
         'configs': {
             level_value: {
                 'row': config[0],

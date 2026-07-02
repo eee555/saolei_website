@@ -1,7 +1,9 @@
 import JSZip from 'jszip';
 import { AvfVideo, EvfVideo, MvfVideo, RmvVideo } from 'ms-toollib';
 
+import { CustomLevel } from './customlevel';
 import { arbiterTimeStampToDate, generalTimeStampToDate } from './datetime';
+import type { MS_Level } from './ms_const';
 import { VideoAbstract } from './videoabstract';
 
 export type AnyVideo = AvfVideo | EvfVideo | RmvVideo | MvfVideo;
@@ -22,6 +24,7 @@ export function load_video_file(buffer: ArrayBuffer, filename: string): AnyVideo
     if (ext === 'avf') {
         video = new AvfVideo(u8, filename);
     } else if (ext === 'evf') {
+        console.log('parsing');
         video = new EvfVideo(u8, filename);
     } else if (ext === 'rmv') {
         video = new RmvVideo(u8, filename);
@@ -32,6 +35,8 @@ export function load_video_file(buffer: ArrayBuffer, filename: string): AnyVideo
     }
     video.parse();
     video.analyse();
+    // video.analyse_for_features(['pluck']);
+    console.log('parsed');
     return video;
 }
 
@@ -40,7 +45,7 @@ export function extract_stat(video: AnyVideo | null): VideoAbstract | null {
     video.current_time = 1e8;
     return new VideoAbstract({
         id: 0,
-        level: ['b', 'i', 'e', 'c'][video.level - 3],
+        level: get_video_level(video),
         mode: String(video.mode).padStart(2, '0'),
         software: get_software(video),
         timems: video.rtime_ms,
@@ -49,6 +54,13 @@ export function extract_stat(video: AnyVideo | null): VideoAbstract | null {
         cl: video.cl,
         end_time: video instanceof AvfVideo ? arbiterTimeStampToDate(video.end_time) : generalTimeStampToDate(video.end_time),
     });
+}
+
+export function get_video_level(video: AnyVideo): MS_Level | CustomLevel {
+    if (video.level === 6) {
+        return new CustomLevel(video.row, video.column, video.mine_num);
+    }
+    return ['b', 'i', 'e'][video.level - 3] as MS_Level;
 }
 
 export async function streamToZip(data: Uint8Array, filename: string): Promise<void> {

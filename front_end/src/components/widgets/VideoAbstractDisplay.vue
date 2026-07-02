@@ -5,7 +5,7 @@
             &nbsp;
             <SoftwareIcon :software="video.software" />
             &nbsp;
-            {{ t(`common.level.${video.level}`) }}
+            {{ levelLabel }}
             &nbsp;
             {{ t(`common.mode.code${video.mode}`) }}
         </span>
@@ -55,15 +55,17 @@
 import '@/styles/text.css';
 import { ElDescriptions, ElDescriptionsItem, ElRow } from 'element-plus';
 import type { PropType } from 'vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import SoftwareIcon from './SoftwareIcon.vue';
 import VideoStateIcon from './VideoStateIcon.vue';
 
+import { CustomLevel } from '@/utils/customlevel';
 import { toISODateTimeString } from '@/utils/datetime';
 import type { VideoAbstract } from '@/utils/videoabstract';
 
-defineProps({
+const props = defineProps({
     video: {
         type: Object as PropType<VideoAbstract>,
         required: true,
@@ -71,4 +73,15 @@ defineProps({
 });
 
 const { t } = useI18n();
+
+const levelLabel = computed(() => {
+    if (props.video.level instanceof CustomLevel) {
+        return t('common.level.c', {
+            column: props.video.level.column,
+            mine: props.video.level.mine,
+            row: props.video.level.row,
+        });
+    }
+    return t(`common.level.${props.video.level}`);
+});
 </script>
