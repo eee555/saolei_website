@@ -19,7 +19,7 @@
     "@element-plus/icons-vue": "2.3.2",
     "@mdit/plugin-abbr": "0.23.2",
     "@mdit/plugin-align": "1.0.0",
-    "@mdit/plugin-img-lazyload": "1.0.0",
+    "@mdit/plugin-img-lazyload": "1.0.1",
     "@mdit/plugin-mathjax": "1.0.0",
     "@primeuix/themes": "2.0.3",
     "@putianyi888/vue3-plots": "0.4.0",
