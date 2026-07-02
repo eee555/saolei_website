@@ -347,6 +347,6 @@ class VideoModel(models.Model):
             if not self.ongoing_tournament:
                 self.push_redis('newest_queue')
                 self.update_personal_record()
-                from customranking.tasks import helper_custom_pluck
-                helper_custom_pluck(self)
+                from .tasks import helper_video_pluck
+                helper_video_pluck(self)
             self.update_video_num()

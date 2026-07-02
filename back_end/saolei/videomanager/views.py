@@ -199,8 +199,8 @@ def approve_single(videoid, check_identifier=True):
     video.save()
     video.push_redis('newest_queue')
     video.update_personal_record()
-    from customranking.tasks import helper_custom_pluck
-    helper_custom_pluck(video)
+    from .tasks import helper_video_pluck
+    helper_video_pluck(video)
     video.update_video_num()
     identifier = video.video.identifier
     if check_identifier and identifier not in userms.identifiers:

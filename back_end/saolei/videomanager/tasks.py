@@ -1,20 +1,28 @@
+import math
+
 from django.tasks import task
 from timeout_decorator import timeout
 
 from utils.parser import create_video_from_data
-from videomanager.models import VideoModel
-
-from .services import is_custom_pluck_video, refresh_custom_pluck_rank_for_video, update_custom_pluck_rank_for_video
-from .utils import normalize_pluck
+from .models import VideoModel
 
 PLUCK_TIMEOUT_SECONDS = 60
 
 
-def helper_custom_pluck(video: VideoModel):
-    if is_custom_pluck_video(video):
-        task_custom_pluck.enqueue(video.id)
-    else:
-        refresh_custom_pluck_rank_for_video(video)
+def normalize_pluck(value) -> float | None:
+    if value is None:
+        return None
+    value = float(value)
+    if not math.isfinite(value) or value <= 0:
+        return None
+    return value
+
+
+def helper_video_pluck(video: VideoModel):
+    from customranking.services import is_custom_pluck_video
+
+    if is_custom_pluck_video(video) and video.pluck is None:
+        task_video_pluck.enqueue(video.id)
 
 
 @timeout(PLUCK_TIMEOUT_SECONDS, use_signals=False, timeout_exception=TimeoutError)
@@ -31,13 +39,13 @@ def calculate_pluck(file_path: str):
 
 
 @task(priority=-1)
-def task_custom_pluck(video_id: int):
+def task_video_pluck(video_id: int):
+    from customranking.services import is_custom_pluck_video
+
     video = VideoModel.objects.get(id=video_id)
     if not is_custom_pluck_video(video):
-        refresh_custom_pluck_rank_for_video(video)
         return
 
     pluck = normalize_pluck(calculate_pluck(video.file.path))
     video.pluck = pluck
     video.save(update_fields=['pluck'])
-    update_custom_pluck_rank_for_video(video)

@@ -53,14 +53,10 @@ def update_state(video: VideoModel, state: MS_TextChoices.State, update_ranking=
     logger.info(f'录像#{video.id} 状态 从 {prevstate} 到 {state}')
     if state == MS_TextChoices.State.OFFICIAL:
         video.update_personal_record()
+        from .tasks import helper_video_pluck
+        helper_video_pluck(video)
     elif update_ranking and prevstate == MS_TextChoices.State.OFFICIAL:
         update_personal_record_stock(video.player)
-    from customranking.services import refresh_custom_pluck_rank_for_video
-    from customranking.tasks import helper_custom_pluck
-    if state == MS_TextChoices.State.OFFICIAL:
-        helper_custom_pluck(video)
-    elif prevstate == MS_TextChoices.State.OFFICIAL:
-        refresh_custom_pluck_rank_for_video(video)
 
 
 def refresh_video(video: VideoModel):
@@ -143,8 +139,8 @@ def refresh_video(video: VideoModel):
         video.state = MS_TextChoices.State.OFFICIAL
         video.save()
 
-    from customranking.tasks import helper_custom_pluck
-    helper_custom_pluck(video)
+    from .tasks import helper_video_pluck
+    helper_video_pluck(video)
 
 
 def generate_file_stream(queryset):
