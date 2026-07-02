@@ -1,9 +1,9 @@
 from datetime import datetime
 
+from django_ratelimit.decorators import ratelimit
 from ninja import Router, Schema
 from ninja.decorators import decorate_view
 from ninja.errors import HttpError
-from ninja.throttling import AnonRateThrottle
 
 from userprofile.decorators import staff_required
 from .config import CUSTOM_PLUCK_CONFIGS
@@ -46,10 +46,11 @@ class RefreshCustomPluckRankOut(Schema):
     records: int
 
 
-@router.get('/pluck', response=CustomPluckRankOut, throttle=[AnonRateThrottle('60/m')])
+@router.get('/pluck', response=CustomPluckRankOut)
+@decorate_view(ratelimit(key='ip', rate='1/s'))
 def pluck_rank(request, level: str, start: int = 0, end: int = 20):
     """
-    - Throttle: AnonRateThrottle('60/m')
+    - ratelimit(key='ip', rate='1/s')
     """
     if level not in CUSTOM_PLUCK_CONFIGS:
         raise HttpError(400, 'Invalid custom pluck ranking level')
