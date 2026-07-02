@@ -1,11 +1,9 @@
-from multiprocessing import get_context
-from queue import Empty
-
 from django.tasks import task
+from timeout_decorator import timeout
 
+from utils.parser import create_video_from_data
 from videomanager.models import VideoModel
 
-from .pluck_worker import calculate_pluck_worker
 from .services import is_custom_pluck_video, refresh_custom_pluck_rank_for_video, update_custom_pluck_rank_for_video
 from .utils import normalize_pluck
 
@@ -19,30 +17,17 @@ def helper_custom_pluck(video: VideoModel):
         refresh_custom_pluck_rank_for_video(video)
 
 
-def calculate_pluck_with_timeout(file_path: str, timeout_seconds: int = PLUCK_TIMEOUT_SECONDS):
-    context = get_context('spawn')
-    queue = context.Queue()
-    process = context.Process(target=calculate_pluck_worker, args=(file_path, queue))
-    process.start()
-    process.join(timeout_seconds)
+@timeout(PLUCK_TIMEOUT_SECONDS, use_signals=False, timeout_exception=TimeoutError)
+def calculate_pluck(file_path: str):
+    with open(file_path, 'rb') as file:
+        data = file.read()
 
-    if process.is_alive():
-        process.terminate()
-        process.join(5)
-        if process.is_alive():
-            process.kill()
-            process.join()
-        raise TimeoutError(f'Pluck calculation exceeded {timeout_seconds} seconds')
-
-    try:
-        status, payload = queue.get_nowait()
-    except Empty as exc:
-        raise RuntimeError(f'Pluck calculation failed with exit code {process.exitcode}') from exc
-
-    if status == 'error':
-        raise RuntimeError(payload)
-
-    return payload
+    parsed_video, _ = create_video_from_data(file_path, data)
+    parsed_video.parse()
+    parsed_video.analyse()
+    parsed_video.analyse_for_features(['pluck'])
+    parsed_video.current_time = 1e8
+    return parsed_video.pluck
 
 
 @task(priority=-1)
@@ -52,7 +37,7 @@ def task_custom_pluck(video_id: int):
         refresh_custom_pluck_rank_for_video(video)
         return
 
-    pluck = normalize_pluck(calculate_pluck_with_timeout(video.file.path))
+    pluck = normalize_pluck(calculate_pluck(video.file.path))
     video.pluck = pluck
     video.save(update_fields=['pluck'])
     update_custom_pluck_rank_for_video(video)
