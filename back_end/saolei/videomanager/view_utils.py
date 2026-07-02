@@ -7,7 +7,8 @@ import ms_toollib as ms
 
 from config.text_choices import MS_TextChoices
 from userprofile.models import UserProfile
-from utils.parser import CUSTOM_LEVELS_BY_BOARD
+from utils.exceptions import ExceptionToResponse
+from utils.parser import pack_custom_level
 from .models import ExpandVideoModel, VideoModel
 
 logger = logging.getLogger('videomanager')
@@ -91,12 +92,14 @@ def refresh_video(video: VideoModel):
     elif v.level == 5:
         video.level = 'e'
     elif v.level == 6:
-        level = CUSTOM_LEVELS_BY_BOARD.get(
-            (getattr(v, 'row', None), getattr(v, 'column', None), getattr(v, 'mine_num', None)),
-        )
-        if level is None:
+        try:
+            video.level = pack_custom_level(
+                getattr(v, 'row', None),
+                getattr(v, 'column', None),
+                getattr(v, 'mine_num', None),
+            )
+        except ExceptionToResponse:
             return
-        video.level = level
     else:
         return
 
