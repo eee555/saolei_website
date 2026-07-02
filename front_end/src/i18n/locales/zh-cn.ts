@@ -32,7 +32,7 @@ export default {
             b: '初级',
             i: '中级',
             e: '高级',
-            c: ({ named }: MessageContext) => (named('row') ? `${named('row')}x${named('column')}/${named('mine')}` : '自定义'),
+            c: ({ named }: MessageContext) => (named('row') === undefined ? '自定义' : `${named('row')}x${named('column')}/${named('mine')}`),
             sum: '总计',
             shortb: '初',
             shorti: '中',

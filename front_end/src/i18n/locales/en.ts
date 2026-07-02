@@ -33,7 +33,7 @@ export default {
             b: 'Beginner',
             i: 'Intermediate',
             e: 'Expert',
-            c: ({ named }: MessageContext) => (named ? `${named('row')}x${named('column')}/${named('mine')}` : 'Custom'),
+            c: ({ named }: MessageContext) => (named('row') === undefined ? 'Custom' : `${named('row')}x${named('column')}/${named('mine')}`),
             sum: 'Sum',
             shortb: 'Beg',
             shorti: 'Int',
