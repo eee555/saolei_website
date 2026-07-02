@@ -4,10 +4,10 @@
             <div class="board-buttons" :aria-label="t('local.board')">
                 <ElButton
                     v-for="option in boardOptions"
-                    :key="option.value"
+                    :key="option.code"
                     size="small"
-                    :type="selectedLevel.value === option.value ? 'primary' : 'default'"
-                    :plain="selectedLevel.value !== option.value"
+                    :type="selectedLevel.code === option.code ? 'primary' : 'default'"
+                    :plain="selectedLevel.code !== option.code"
                     @click="selectLevel(option)"
                 >
                     {{ t('common.level.c', { row: option.row, column: option.column, mine: option.mine }) }}
@@ -130,7 +130,7 @@ async function fetchRanking() {
     try {
         const { data } = await $axios.get<RankResponse>('/api/customranking/pluck', {
             params: {
-                level: selectedLevel.value.value,
+                level: selectedLevel.value.code,
                 start,
                 end,
             },
@@ -145,7 +145,7 @@ async function fetchRanking() {
 }
 
 function selectLevel(level: CustomLevel) {
-    if (selectedLevel.value.value === level.value) return;
+    if (selectedLevel.value.code === level.code) return;
     selectedLevel.value = level;
     currentPage.value = 1;
     void fetchRanking();

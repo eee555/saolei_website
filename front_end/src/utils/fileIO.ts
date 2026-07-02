@@ -24,7 +24,6 @@ export function load_video_file(buffer: ArrayBuffer, filename: string): AnyVideo
     if (ext === 'avf') {
         video = new AvfVideo(u8, filename);
     } else if (ext === 'evf') {
-        console.log('parsing');
         video = new EvfVideo(u8, filename);
     } else if (ext === 'rmv') {
         video = new RmvVideo(u8, filename);
@@ -36,7 +35,6 @@ export function load_video_file(buffer: ArrayBuffer, filename: string): AnyVideo
     video.parse();
     video.analyse();
     // video.analyse_for_features(['pluck']);
-    console.log('parsed');
     return video;
 }
 

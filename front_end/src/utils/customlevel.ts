@@ -4,17 +4,28 @@ export class CustomLevel {
     public readonly row: number;
     public readonly column: number;
     public readonly mine: number;
-    public readonly value: CustomLevelCode;
 
-    public constructor(row: number, column: number, mine: number) {
+    public constructor(row: number, column: number, mine: number);
+    public constructor(value: string);
+    public constructor(rowOrValue: number | string, column?: number, mine?: number) {
+        if (typeof rowOrValue === 'string') {
+            const parsed = CustomLevel.parse(rowOrValue);
+            if (!parsed) throw new Error(`Invalid custom level: ${rowOrValue}`);
+            this.row = parsed.row;
+            this.column = parsed.column;
+            this.mine = parsed.mine;
+            return;
+        }
+
+        if (column === undefined || mine === undefined) throw new Error('Custom level requires row, column and mine');
+        const row = rowOrValue;
         this.row = row;
         this.column = column;
         this.mine = mine;
-        this.value = `c${row}_${column}_${mine}`;
     }
 
     public get code(): CustomLevelCode {
-        return this.value;
+        return `c${this.row}_${this.column}_${this.mine}`;
     }
 
     public get density(): number {
@@ -29,9 +40,17 @@ export class CustomLevel {
      * 将后端返回的`level`字符串转换为`CustomLevel`，形式为`c{h}_{w}_{m}`
      */
     public static fromCode(code: string): CustomLevel | undefined {
-        const match = (/^c(\d+)_(\d+)_(\d+)$/).exec(code);
+        return CustomLevel.parse(code) ? new CustomLevel(code) : undefined;
+    }
+
+    private static parse(value: string): { row: number; column: number; mine: number } | undefined {
+        const match = (/^(?:c(\d+)_(\d+)_(\d+)|(\d+)x(\d+)\/(\d+))$/).exec(value);
         if (!match) return undefined;
-        return new CustomLevel(Number(match[1]), Number(match[2]), Number(match[3]));
+        return {
+            row: Number(match[1] ?? match[4]),
+            column: Number(match[2] ?? match[5]),
+            mine: Number(match[3] ?? match[6]),
+        };
     }
 
     public compare(other: CustomLevel): number {
