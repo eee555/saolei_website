@@ -1,15 +1,12 @@
-import math
-
 from django.core.cache import cache
 from django.db.models import Min
 
 from config.text_choices import MS_TextChoices
 from videomanager.models import VideoModel
 
-from .config import CUSTOM_PLUCK_CONFIGS, CUSTOM_PLUCK_LEVELS, CUSTOM_PLUCK_MODES
+from .config import CUSTOM_PLUCK_CACHE_SIZE, CUSTOM_PLUCK_CONFIGS, CUSTOM_PLUCK_LEVELS, CUSTOM_PLUCK_MODES
 from .models import CustomPluckRecord
-
-CUSTOM_PLUCK_CACHE_SIZE = 100
+from .utils import get_custom_pluck_cache_key
 
 
 def is_custom_pluck_video(video: VideoModel) -> bool:
@@ -19,19 +16,6 @@ def is_custom_pluck_video(video: VideoModel) -> bool:
         and video.state == MS_TextChoices.State.OFFICIAL
         and not video.ongoing_tournament
     )
-
-
-def normalize_pluck(value) -> float | None:
-    if value is None:
-        return None
-    value = float(value)
-    if not math.isfinite(value) or value <= 0:
-        return None
-    return value
-
-
-def get_custom_pluck_cache_key(level: str) -> str:
-    return f'customranking:pluck:{level}:top{CUSTOM_PLUCK_CACHE_SIZE}'
 
 
 def serialize_custom_pluck_record(record: CustomPluckRecord, rank: int):

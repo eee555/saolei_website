@@ -6,7 +6,8 @@ from django.tasks import task
 from videomanager.models import VideoModel
 
 from .pluck_worker import calculate_pluck_worker
-from .services import is_custom_pluck_video, normalize_pluck, refresh_custom_pluck_rank_for_video, update_custom_pluck_rank_for_video
+from .services import is_custom_pluck_video, refresh_custom_pluck_rank_for_video, update_custom_pluck_rank_for_video
+from .utils import normalize_pluck
 
 PLUCK_TIMEOUT_SECONDS = 60
 

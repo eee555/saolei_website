@@ -6,10 +6,9 @@ from ninja.decorators import decorate_view
 from ninja.errors import HttpError
 
 from userprofile.decorators import staff_required
-from .config import CUSTOM_PLUCK_CONFIGS
+from .config import CUSTOM_PLUCK_CACHE_SIZE, CUSTOM_PLUCK_CONFIGS
 from .models import CustomPluckRecord
 from .services import (
-    CUSTOM_PLUCK_CACHE_SIZE,
     get_custom_pluck_top_cache,
     refresh_all_custom_pluck_ranks,
     serialize_custom_pluck_record,
