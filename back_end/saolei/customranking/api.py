@@ -17,12 +17,6 @@ from .services import (
 router = Router()
 
 
-class CustomPluckConfigOut(Schema):
-    row: int
-    column: int
-    mine: int
-
-
 class CustomPluckPlayerOut(Schema):
     rank: int
     player_id: int
@@ -37,7 +31,6 @@ class CustomPluckPlayerOut(Schema):
 
 class CustomPluckRankOut(Schema):
     count: int
-    configs: dict[str, CustomPluckConfigOut]
     players: list[CustomPluckPlayerOut]
 
 
@@ -74,14 +67,6 @@ def pluck_rank(request, level: str, start: int = 0, end: int = 20):
 
     return {
         'count': count,
-        'configs': {
-            level_value: {
-                'row': config[0],
-                'column': config[1],
-                'mine': config[2],
-            }
-            for level_value, config in CUSTOM_PLUCK_CONFIGS.items()
-        },
         'players': players,
     }
 

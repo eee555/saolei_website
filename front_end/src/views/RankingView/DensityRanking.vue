@@ -92,14 +92,7 @@ interface RankPlayer {
 
 interface RankResponse {
     count: number;
-    configs: Record<string, BoardOptionFromApi>;
     players: RankPlayer[];
-}
-
-interface BoardOptionFromApi {
-    row: number;
-    column: number;
-    mine: number;
 }
 
 const i18nMessages = {
@@ -130,13 +123,6 @@ const totalCount = ref(0);
 const players = ref<RankPlayer[]>([]);
 const loading = ref(false);
 
-function applyConfigFromApi(configs: Record<string, BoardOptionFromApi>) {
-    if (!configs || Object.keys(configs).length === 0) return;
-    boardOptions.value = Object.entries(configs).
-        map(([, config]) => new CustomLevel(config.row, config.column, config.mine)).
-        sort((a, b) => a.compare(b));
-}
-
 async function fetchRanking() {
     loading.value = true;
     const start = (currentPage.value - 1) * pageSize.value;
@@ -149,7 +135,6 @@ async function fetchRanking() {
                 end,
             },
         });
-        applyConfigFromApi(data.configs);
         players.value = data.players;
         totalCount.value = data.count;
     } catch (error) {
