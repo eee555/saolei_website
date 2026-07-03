@@ -18,11 +18,9 @@ def is_custom_pluck_video(video: VideoModel) -> bool:
     )
 
 
-def serialize_custom_pluck_record(record: CustomPluckRecord, rank: int):
+def serialize_custom_pluck_record(record: CustomPluckRecord):
     return {
-        'rank': rank,
         'player_id': record.player_id,
-        'player_name': record.player.realname,
         'video_id': record.video_id,
         'mode': record.mode,
         'pluck': record.pluck,
@@ -36,12 +34,12 @@ def build_custom_pluck_top_cache(level: str):
     records = (
         CustomPluckRecord.objects
         .filter(level=level)
-        .select_related('player', 'video')
+        .select_related('video')
         .order_by('pluck', 'video__timems', 'video__id')[:CUSTOM_PLUCK_CACHE_SIZE]
     )
     players = [
-        serialize_custom_pluck_record(record, rank)
-        for rank, record in enumerate(records, start=1)
+        serialize_custom_pluck_record(record)
+        for record in records
     ]
     cache.set(get_custom_pluck_cache_key(level), players, None)
     return players
@@ -63,7 +61,7 @@ def update_custom_pluck_top_cache(record: CustomPluckRecord | None, level: str, 
 
     players = [player for player in players if player['player_id'] != player_id]
     if record is not None:
-        player = serialize_custom_pluck_record(record, 0)
+        player = serialize_custom_pluck_record(record)
         player_key = (player['pluck'], player['timems'], player['video_id'])
         last_key = (players[-1]['pluck'], players[-1]['timems'], players[-1]['video_id']) if players else None
         if len(players) < CUSTOM_PLUCK_CACHE_SIZE or player_key < last_key:
@@ -71,8 +69,6 @@ def update_custom_pluck_top_cache(record: CustomPluckRecord | None, level: str, 
 
     players.sort(key=lambda player: (player['pluck'], player['timems'], player['video_id']))
     players = players[:CUSTOM_PLUCK_CACHE_SIZE]
-    for rank, player in enumerate(players, start=1):
-        player['rank'] = rank
     cache.set(key, players, None)
 
 

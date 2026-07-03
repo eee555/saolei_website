@@ -18,9 +18,7 @@ router = Router()
 
 
 class CustomPluckPlayerOut(Schema):
-    rank: int
     player_id: int
-    player_name: str
     video_id: int
     mode: str
     pluck: float
@@ -57,12 +55,12 @@ def pluck_rank(request, level: str, start: int = 0, end: int = 20):
         records = (
             CustomPluckRecord.objects
             .filter(level=level)
-            .select_related('player', 'video')
+            .select_related('video')
             .order_by('pluck', 'video__timems', 'video__id')[start:end]
         )
         players = [
-            serialize_custom_pluck_record(record, rank)
-            for rank, record in enumerate(records, start=start + 1)
+            serialize_custom_pluck_record(record)
+            for record in records
         ]
 
     return {

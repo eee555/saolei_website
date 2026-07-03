@@ -23,7 +23,11 @@
             class="ranking-table"
             :empty-text="t('local.empty')"
         >
-            <ElTableColumn prop="rank" width="90" align="center" />
+            <ElTableColumn :label="t('local.rank')" width="90" align="center">
+                <template #default="{ $index }">
+                    {{ getRank($index) }}
+                </template>
+            </ElTableColumn>
             <ElTableColumn :label="t('common.prop.realName')" min-width="180">
                 <template #default="{ row }">
                     <PlayerName :user-id="row.player_id" />
@@ -79,9 +83,7 @@ import { CustomLevel, DensityCustomLevelConfigs } from '@/utils/customlevel';
 import { toISODateTimeString } from '@/utils/datetime';
 
 interface RankPlayer {
-    rank: number;
     player_id: number;
-    player_name: string;
     video_id: number;
     mode: string;
     pluck: number;
@@ -154,6 +156,10 @@ function selectLevel(level: CustomLevel) {
 function handlePageSizeChange() {
     currentPage.value = 1;
     void fetchRanking();
+}
+
+function getRank(index: number): number {
+    return (currentPage.value - 1) * pageSize.value + index + 1;
 }
 
 function formatPluck(value: number): string {
