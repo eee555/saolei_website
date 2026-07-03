@@ -13,4 +13,3 @@ CUSTOM_PLUCK_MODES = {
     MS_TextChoices.Mode.NF,
     MS_TextChoices.Mode.RKC,
 }
-CUSTOM_PLUCK_CACHE_SIZE = 100

@@ -5,14 +5,15 @@ from ninja import Router, Schema
 from ninja.decorators import decorate_view
 from ninja.errors import HttpError
 
+from config.customranking import CUSTOM_PLUCK_CONFIGS
 from userprofile.decorators import staff_required
-from .config import CUSTOM_PLUCK_CACHE_SIZE, CUSTOM_PLUCK_CONFIGS
 from .models import CustomPluckRecord
 from .services import (
     get_custom_pluck_top_cache,
     serialize_custom_pluck_record,
 )
 from .tasks import task_refresh_all_custom_pluck_ranks
+from .utils import CUSTOM_PLUCK_CACHE_SIZE
 
 router = Router()
 

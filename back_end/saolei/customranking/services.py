@@ -1,21 +1,13 @@
 from django.core.cache import cache
 from django.db.models import Min
 
+from config.customranking import CUSTOM_PLUCK_CONFIGS, CUSTOM_PLUCK_LEVELS, CUSTOM_PLUCK_MODES
 from config.text_choices import MS_TextChoices
 from videomanager.models import VideoModel
+from videomanager.utils import is_custom_pluck_video
 
-from .config import CUSTOM_PLUCK_CACHE_SIZE, CUSTOM_PLUCK_CONFIGS, CUSTOM_PLUCK_LEVELS, CUSTOM_PLUCK_MODES
 from .models import CustomPluckRecord
-from .utils import get_custom_pluck_cache_key
-
-
-def is_custom_pluck_video(video: VideoModel) -> bool:
-    return (
-        video.level in CUSTOM_PLUCK_LEVELS
-        and video.mode in CUSTOM_PLUCK_MODES
-        and video.state == MS_TextChoices.State.OFFICIAL
-        and not video.ongoing_tournament
-    )
+from .utils import CUSTOM_PLUCK_CACHE_SIZE, get_custom_pluck_cache_key
 
 
 def serialize_custom_pluck_record(record: CustomPluckRecord):
