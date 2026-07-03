@@ -56,7 +56,7 @@ def pluck_rank(request, level: str, start: int = 0, end: int = 20):
             CustomPluckRecord.objects
             .filter(level=level)
             .select_related('video')
-            .order_by('pluck', 'video__timems', 'video__id')[start:end]
+            .order_by('pluck', 'video__timems', 'video__upload_time')[start:end]
         )
         players = [
             serialize_custom_pluck_record(record)
