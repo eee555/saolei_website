@@ -10,9 +10,9 @@ from .config import CUSTOM_PLUCK_CACHE_SIZE, CUSTOM_PLUCK_CONFIGS
 from .models import CustomPluckRecord
 from .services import (
     get_custom_pluck_top_cache,
-    refresh_all_custom_pluck_ranks,
     serialize_custom_pluck_record,
 )
+from .tasks import task_refresh_all_custom_pluck_ranks
 
 router = Router()
 
@@ -33,7 +33,7 @@ class CustomPluckRankOut(Schema):
 
 
 class RefreshCustomPluckRankOut(Schema):
-    records: int
+    task_id: int
 
 
 @router.get('/pluck', response=CustomPluckRankOut)
@@ -72,4 +72,5 @@ def pluck_rank(request, level: str, start: int = 0, end: int = 20):
 @router.post('/pluck/refresh', response=RefreshCustomPluckRankOut)
 @decorate_view(staff_required)
 def refresh_pluck_rank(request):
-    return {'records': refresh_all_custom_pluck_ranks()}
+    task_result = task_refresh_all_custom_pluck_ranks.enqueue().db_result
+    return {'task_id': task_result.id}
