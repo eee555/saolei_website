@@ -67,25 +67,10 @@ export class CustomLevel {
 }
 
 export const DensityCustomLevelConfigs = [
-    new CustomLevel(8, 8, 20),
-    new CustomLevel(8, 8, 24),
-    new CustomLevel(8, 8, 28),
-    new CustomLevel(8, 8, 32),
-    new CustomLevel(8, 8, 36),
     new CustomLevel(8, 8, 40),
-    new CustomLevel(16, 16, 64),
-    new CustomLevel(16, 16, 80),
-    new CustomLevel(16, 16, 96),
-    new CustomLevel(16, 16, 112),
-    new CustomLevel(16, 16, 128),
-    new CustomLevel(16, 30, 120),
-    new CustomLevel(16, 30, 144),
-    new CustomLevel(16, 30, 168),
-    new CustomLevel(16, 30, 192),
-    new CustomLevel(24, 30, 180),
-    new CustomLevel(24, 30, 216),
-    new CustomLevel(24, 30, 252),
-    new CustomLevel(48, 64, 777),
+    new CustomLevel(16, 16, 100),
+    new CustomLevel(16, 30, 150),
+    new CustomLevel(24, 30, 200),
 ] as const;
 
 const DensityCustomLevelByBoard = new Map<string, CustomLevel>(
