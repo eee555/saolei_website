@@ -2,6 +2,7 @@
 
 from django.core.cache import cache
 from django.db.models import Sum
+from django.utils import timezone
 from django_tasks import TaskResultStatus
 from django_tasks_db.models import DBTaskResult
 from ninja import Router, Schema
@@ -9,7 +10,9 @@ from ninja.throttling import AnonRateThrottle
 import psutil
 
 from common.utils import get_db_size
+from config.common import TASK_CLEANUP_CONFIGS
 from config.text_choices import MS_TextChoices
+from userprofile.decorators import staff_required
 from utils.db import get_choice_counts_filtered
 from videomanager.models import VideoModel
 
@@ -64,6 +67,28 @@ def task_summary(request):
     cache.set('api:common/tasksummary', result, 300)
 
     return result
+
+
+@router.post('/tasks/cleanup', response=int)
+@staff_required
+def cleanup_tasks(request):
+    deleted_count = 0
+    now = timezone.now()
+
+    for config in TASK_CLEANUP_CONFIGS:
+        deadline = now - config['expires']
+        count, _ = (
+            DBTaskResult.objects
+            .filter(
+                task_path=config['task_path'],
+                status=TaskResultStatus.SUCCESSFUL,
+                finished_at__lt=deadline,
+            )
+            .delete()
+        )
+        deleted_count += count
+
+    return deleted_count
 
 
 @router.get('/diskusage', throttle=[AnonRateThrottle('30/m')])
