@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/member-ordering */
-import { toDate, toISODateString } from './datetime';
 import { CustomLevel } from './customlevel';
+import { toDate, toISODateString } from './datetime';
 import type { MS_Level, MS_Software } from './ms_const';
 import { isStandardLevel, MS_State, STNB_const } from './ms_const';
 import { formatBytes } from './strings';
@@ -63,7 +63,7 @@ interface VideoAbstractData {
     upload_time?: string | Date;
     time?: string | Date;
     end_time?: string | Date | null;
-    level: string | VideoLevel;
+    level: string | CustomLevel;
     mode: string;
     timems: number;
     bv: number;
@@ -222,7 +222,7 @@ export class VideoAbstract {
     }
 }
 
-function parseLevel(level: string | VideoLevel): VideoLevel {
+function parseLevel(level: string | CustomLevel): VideoLevel {
     if (typeof level !== 'string') return level;
     const customLevel = CustomLevel.fromCode(level);
     return customLevel ?? level as MS_Level;

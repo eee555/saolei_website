@@ -1,8 +1,8 @@
 import type { RouteRecordRaw } from 'vue-router';
 import { createRouter, createWebHashHistory } from 'vue-router';
 
-import { staffRoutes } from '@/views/StaffView/routes';
 import { rankingRoutes } from '@/views/RankingView/routes';
+import { staffRoutes } from '@/views/StaffView/routes';
 import { userRoutes } from '@/views/UserView/routes';
 
 const routes: RouteRecordRaw[] = [

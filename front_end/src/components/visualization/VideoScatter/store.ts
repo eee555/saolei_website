@@ -38,14 +38,14 @@ export const VideoScatterStore = defineStore('video-scatter-store', {
             const { colorBy } = VideoScatterConfig.value;
 
             if (colorBy === 'level') {
-                return (video: VideoAbstract) => isStandardLevel(video.level) ? colorTheme.value.level[video.level] : colorTheme.value.level.e;
+                return (video: VideoAbstract) => (isStandardLevel(video.level) ? colorTheme.value.level[video.level] : colorTheme.value.level.c);
             } else if (colorBy === 'time') {
                 const schemes = {
                     b: getTimeColorScheme('b'),
                     i: getTimeColorScheme('i'),
                     e: getTimeColorScheme('e'),
                 };
-                return (video: VideoAbstract) => isStandardLevel(video.level) ? schemes[video.level].getColor(video.time) : colorTheme.value.level.e;
+                return (video: VideoAbstract) => (isStandardLevel(video.level) ? schemes[video.level].getColor(video.time) : colorTheme.value.level.e);
             } else {
                 const name = getPiecewiseColorSchemeName(colorBy);
                 const scheme = new PiecewiseColorScheme(colorTheme.value[name].colors, colorTheme.value[name].thresholds);

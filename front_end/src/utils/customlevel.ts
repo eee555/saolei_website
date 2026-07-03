@@ -44,12 +44,16 @@ export class CustomLevel {
     }
 
     private static parse(value: string): { row: number; column: number; mine: number } | undefined {
-        const match = (/^(?:c(\d+)_(\d+)_(\d+)|(\d+)x(\d+)\/(\d+))$/).exec(value);
+        const match = value.startsWith('c')
+            ? (/^c(\d+)_(\d+)_(\d+)$/).exec(value)
+            : (/^(\d+)x(\d+)\/(\d+)$/).exec(value);
+
         if (!match) return undefined;
+
         return {
-            row: Number(match[1] ?? match[4]),
-            column: Number(match[2] ?? match[5]),
-            mine: Number(match[3] ?? match[6]),
+            row: Number(match[1]),
+            column: Number(match[2]),
+            mine: Number(match[3]),
         };
     }
 
