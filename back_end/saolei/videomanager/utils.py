@@ -3,7 +3,6 @@ import math
 from timeout_decorator import timeout
 
 from config.customranking import CUSTOM_PLUCK_LEVELS, CUSTOM_PLUCK_MODES
-from config.text_choices import MS_TextChoices
 from utils.parser import create_video_from_data
 from .config import PLUCK_TIMEOUT_SECONDS
 
@@ -12,8 +11,6 @@ def is_custom_pluck_video(video) -> bool:
     return (
         video.level in CUSTOM_PLUCK_LEVELS
         and video.mode in CUSTOM_PLUCK_MODES
-        and video.state == MS_TextChoices.State.OFFICIAL
-        and not video.ongoing_tournament
     )
 
 

@@ -13,6 +13,7 @@ from userprofile.models import UserProfile
 from utils.exceptions import ExceptionToResponse
 from utils.parser import MSVideoParser
 from videomanager.models import VideoModel
+from videomanager.tasks import helper_video_pluck
 
 logger = logging.getLogger('videomanager')
 
@@ -43,6 +44,8 @@ def new_video_by_file(user: UserProfile, file: File, check_tournament: bool = Tr
 
     video.save()
     video.update_redis()
+
+    helper_video_pluck(video)
 
     return video
 

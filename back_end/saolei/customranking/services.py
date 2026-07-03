@@ -4,7 +4,6 @@ from django.db.models import Min
 from config.customranking import CUSTOM_PLUCK_CONFIGS, CUSTOM_PLUCK_LEVELS, CUSTOM_PLUCK_MODES
 from config.text_choices import MS_TextChoices
 from videomanager.models import VideoModel
-from videomanager.utils import is_custom_pluck_video
 
 from .models import CustomPluckRecord
 from .utils import CUSTOM_PLUCK_CACHE_SIZE, get_custom_pluck_cache_key
@@ -100,10 +99,18 @@ def refresh_custom_pluck_rank(player, level: str):
     return record
 
 
-def update_custom_pluck_rank_for_video(video: VideoModel):
-    if not is_custom_pluck_video(video) or video.pluck is None:
-        return refresh_custom_pluck_rank_for_video(video)
+def add_to_custom_pluck_rank(video: VideoModel):
+    """
+    将录像添加或更新到自定义pLuck排行榜中。
 
+    该函数会检查指定玩家在指定级别是否已有pLuck纪录。如果已有纪录，则将现有纪录
+    与录像进行比较（依次比较pLuck、time、upload_time）。
+    如果录像记录未优于现有记录，则保留旧纪录；否则，更新或创建新纪录，
+    并刷新对应的排行榜缓存。
+
+    Returns:
+        CustomPluckRecord: 返回对应参数的纪录。
+    """
     record = CustomPluckRecord.objects.filter(player=video.player, level=video.level).first()
     if record is not None:
         record_key = (record.pluck, record.video.timems, record.video.upload_time)
@@ -124,7 +131,7 @@ def update_custom_pluck_rank_for_video(video: VideoModel):
     return record
 
 
-def refresh_custom_pluck_rank_for_video(video: VideoModel):
+def remove_from_custom_pluck_rank(video: VideoModel):
     if video.level not in CUSTOM_PLUCK_LEVELS:
         return None
     return refresh_custom_pluck_rank(video.player, video.level)
