@@ -1,10 +1,11 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
 from config.text_choices import MS_TextChoices
 from videomanager.models import VideoModel
 from videomanager.utils import is_custom_pluck_video
-from .services import add_to_custom_pluck_rank, remove_from_custom_pluck_rank
+from .models import CustomPluckRecord
+from .services import add_to_custom_pluck_rank, remove_from_custom_pluck_rank, update_custom_pluck_top_cache
 
 
 def can_join_custom_pluck_rank(video: VideoModel) -> bool:
@@ -36,3 +37,13 @@ def refresh_custom_pluck_rank_on_video_save(sender, instance: VideoModel, update
         add_to_custom_pluck_rank(instance)
     else:
         remove_from_custom_pluck_rank(instance)
+
+
+@receiver(post_save, sender=CustomPluckRecord, dispatch_uid='customranking.update_custom_pluck_cache_on_record_save')
+def update_custom_pluck_cache_on_record_save(sender, instance: CustomPluckRecord, **kwargs):
+    update_custom_pluck_top_cache(instance, instance.level, instance.player_id)
+
+
+@receiver(post_delete, sender=CustomPluckRecord, dispatch_uid='customranking.update_custom_pluck_cache_on_record_delete')
+def update_custom_pluck_cache_on_record_delete(sender, instance: CustomPluckRecord, **kwargs):
+    update_custom_pluck_top_cache(None, instance.level, instance.player_id)
