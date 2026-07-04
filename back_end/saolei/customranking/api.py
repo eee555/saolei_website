@@ -8,10 +8,7 @@ from ninja.errors import HttpError
 from config.customranking import CUSTOM_PLUCK_CONFIGS
 from userprofile.decorators import staff_required
 from .models import CustomPluckRecord
-from .services import (
-    get_custom_pluck_top_cache,
-    serialize_custom_pluck_record,
-)
+from .services import get_custom_pluck_cache_range
 from .tasks import task_refresh_all_custom_pluck_ranks
 from .utils import CUSTOM_PLUCK_CACHE_SIZE
 
@@ -50,19 +47,7 @@ def pluck_rank(request, level: str, start: int = 0, end: int = 20):
     end = min(max(end, start), start + 100)
     count = CustomPluckRecord.objects.filter(level=level).count()
 
-    if end <= CUSTOM_PLUCK_CACHE_SIZE:
-        players = get_custom_pluck_top_cache(level)[start:end]
-    else:
-        records = (
-            CustomPluckRecord.objects
-            .filter(level=level)
-            .select_related('video')
-            .order_by('pluck', 'video__timems', 'video__upload_time')[start:end]
-        )
-        players = [
-            serialize_custom_pluck_record(record)
-            for record in records
-        ]
+    players = get_custom_pluck_cache_range(level, start, end)
 
     return {
         'count': count,
