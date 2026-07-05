@@ -41,8 +41,9 @@ const fixtures = {
         identifier: 'Nathanael Kozinski',
         tableData: { '': '', Bv: '357', Bvs: '0.415', Status: 'This custom board is currently not supported', Time: '860.360', Level: '24x30/226', Mode: 'Standard', 'End Time': '2022-05-22 23:30:49' },
     },
-    custom8Evf: {
+    cusEvf8_8_40: {
         filename: 'c_10_129.073_24_0.186_Pu Tian Yi(Hu Bei).evf',
+        tableData: { '': '', Bv: '24', Bvs: '0.186', Status: 'Pass', Time: '129.073', Level: '8x8/40', Mode: 'Lucky', 'End Time': '2026-06-30 19:25:04' },
         identifier: 'Pu Tian Yi(Hu Bei)',
     },
     failed: {
@@ -139,6 +140,7 @@ describe('VideoUpload Component', () => {
         loadFixture('expAvf', 'videoFileExpAvf');
         loadFixture('expMvf', 'videoFileExpMvf');
         loadFixture('cusAvf', 'videoFileCusAvf');
+        loadFixture('cusEvf8_8_40', 'videoFileCusEvf8_8_40');
         loadFixture('intRmv', 'videoFileIntRmv');
         loadFixture('failed', 'videoFileFailed');
         loadFixture('json', 'fileJson');
@@ -147,6 +149,7 @@ describe('VideoUpload Component', () => {
             { contents: '@videoFileExpAvf', fileName: 'exp.avf' }, // 高级, pass
             { contents: '@videoFileIntRmv', fileName: 'int.rmv' }, // 中级, identifier
             { contents: '@videoFileCusAvf', fileName: 'cus.avf' }, // custom
+            { contents: '@videoFileCusEvf8_8_40', fileName: 'cus.evf' }, // custom
             { contents: '@videoFileFailed', fileName: 'failed.evf' }, // 炸局
             { contents: '@fileJson', fileName: 'json.avf' }, // parse
             { contents: '@fileJson', fileName: 'json.json' }, // fileext
@@ -164,39 +167,16 @@ describe('VideoUpload Component', () => {
         cy.get('table:visible');
         cy.contains('Parsing files').should('not.exist');
         cy.get('table:visible').getTable().should((tableData) => {
-            expect(tableData.length).to.equal(8);
+            expect(tableData.length).to.equal(9);
             expect(tableData[0]).to.deep.equal(fixtures.expAvf.tableData);
             expect(tableData[1]).to.deep.equal(fixtures.intRmv.tableData);
             expect(tableData[2]).to.deep.equal(fixtures.cusAvf.tableData);
-            expect(tableData[3]).to.deep.equal(fixtures.failed.tableData);
-            expect(tableData[4]).to.deep.equal(tableRowError('Cannot parse the file'));
-            expect(tableData[5]).to.deep.equal(tableRowError('Invalid file extension'));
-            expect(tableData[6]).to.deep.equal(tableRowError('File name exceeds 100 bytes'));
-            expect(tableData[7]).to.deep.equal(fixtures.expMvf.tableData);
-        });
-    });
-
-    it('accepts configured custom levels', () => {
-        cy.mount(App, mountOptions({
-            isUserAnonymous: false,
-            identifiers: [fixtures.custom8Evf.identifier],
-        }));
-
-        loadFixture('custom8Evf', 'videoFileCustom8Evf');
-
-        cy.get('input[type=file]').selectFile([
-            { contents: '@videoFileCustom8Evf', fileName: 'custom8.evf' },
-        ], { force: true });
-
-        cy.get('table:visible').getTable().should((tableData) => {
-            expect(tableData.length).to.equal(1);
-            expect(tableData[0]).to.include({
-                Bv: '24',
-                Bvs: '0.186',
-                Level: '8x8/40',
-                Status: 'Pass',
-                Time: '129.073',
-            });
+            expect(tableData[3]).to.deep.equal(fixtures.cusEvf8_8_40.tableData);
+            expect(tableData[4]).to.deep.equal(fixtures.failed.tableData);
+            expect(tableData[5]).to.deep.equal(tableRowError('Cannot parse the file'));
+            expect(tableData[6]).to.deep.equal(tableRowError('Invalid file extension'));
+            expect(tableData[7]).to.deep.equal(tableRowError('File name exceeds 100 bytes'));
+            expect(tableData[8]).to.deep.equal(fixtures.expMvf.tableData);
         });
     });
 

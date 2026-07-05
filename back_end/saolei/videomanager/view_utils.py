@@ -1,14 +1,11 @@
-from datetime import datetime, timezone
 import logging
 import struct
 
 from django_redis import get_redis_connection
-import ms_toollib as ms
 
 from config.text_choices import MS_TextChoices
 from userprofile.models import UserProfile
-from utils.exceptions import ExceptionToResponse
-from utils.parser import MSVideoParser, calculate_pluck_from_video, pack_custom_level
+from utils.parser import MSVideoParser
 from .models import ExpandVideoModel, VideoModel
 
 logger = logging.getLogger('videomanager')
@@ -70,7 +67,6 @@ def refresh_video(video: VideoModel):
         'cell0', 'cell1', 'cell2', 'cell3', 'cell4',
         'cell5', 'cell6', 'cell7', 'cell8',
     ]
-    print(parser.pluck)
 
     updated_fields = []
 
@@ -79,7 +75,6 @@ def refresh_video(video: VideoModel):
         new_value = getattr(parser, field)
         old_value = getattr(video, field)
         if new_value != old_value:
-            print('old_value: ', old_value, ', new_value: ', new_value)
             setattr(video, field, new_value)
             updated_fields.append(field)
 
