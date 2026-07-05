@@ -3,6 +3,7 @@ import json
 import logging
 
 from django.db import models
+from django.core.validators import MaxValueValidator
 from django_redis import get_redis_connection
 
 from config.global_settings import DefaultRankingScores, MaxSizes, RankingGameStats, record_update_fields
@@ -16,6 +17,7 @@ from .fields import RestrictedFileField
 
 cache = get_redis_connection('saolei_website')
 logger = logging.getLogger('videomanager')
+MAX_TIMEMS = 99_999_999
 
 
 class ExpandVideoModel(models.Model):
@@ -82,7 +84,9 @@ class VideoModel(models.Model):
         max_length=MaxSizes.GAMEMODE, choices=MS_TextChoices.Mode.choices, default=MS_TextChoices.Mode.STD)
     # 0.000-999.999
     timems = models.PositiveIntegerField(
-        default=DefaultRankingScores.timems)  # 整数形式存储的毫秒数。
+        default=DefaultRankingScores.timems,
+        validators=[MaxValueValidator(MAX_TIMEMS)],
+    )  # 整数形式存储的毫秒数。
     # 0-32767
     bv = models.PositiveSmallIntegerField(null=True)
     bvs = models.GeneratedField(expression=models.Case(models.When(timems=0, then=models.Value(0.0)), default=models.F(
@@ -153,6 +157,12 @@ class VideoModel(models.Model):
         return f'level: {self.level}, timems: {self.timems}, 3BV: {self.bv}'
 
     class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(timems__lte=MAX_TIMEMS),
+                name='videomodel_timems_max',
+            ),
+        ]
         indexes = [
             models.Index(fields=['level'], name='level_idx'),
             models.Index(fields=['mode'], name='mode_idx'),
@@ -160,6 +170,7 @@ class VideoModel(models.Model):
             models.Index(fields=['bvs'], name='bvs_idx'),
             models.Index(fields=['timems'], name='timems_idx'),
             models.Index(fields=['state'], name='state_idx'),
+            models.Index(fields=['level', 'mode', 'player', 'pluck'], name='video_lmp_pluck_idx'),
         ]
 
     @staticmethod

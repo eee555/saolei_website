@@ -76,6 +76,23 @@ class PLuckRankingCache:
             return member.decode()
         return member
 
+    def tail_score_and_member(self):
+        """读取缓存尾端纪录的排序键。"""
+        rows = self.range(-1, -1, withscores=True)
+        if not rows:
+            return None
+        member, score = rows[0]
+        if isinstance(member, bytes):
+            member = member.decode()
+        return score, member
+
+    def can_insert_record(self, record: CustomPluckRecord):
+        """判断纪录是否有机会进入当前缓存窗口。"""
+        tail = self.tail_score_and_member()
+        if tail is None:
+            return False
+        return (record.pluck, record_to_member(record)) <= tail
+
     def add_record(self, record: CustomPluckRecord):
         member = record_to_member(record)
         self.client.zadd(self.rank_key, {member: record.pluck})
@@ -154,7 +171,7 @@ class PLuckRankingCache:
 
 def get_custom_pluck_rank_key(level: str) -> str:
     """
-    有序集zset，排序键`score`是`pluck`。同`pluck`时，再比较`time`，同`time`时比较`upload_time`。为了解决后面两个比较，`timems`和`upload_time`分别以7位整数和13位整数连接起来作为zset的主键`member`。为了彻底解决主键冲突，`member`的结尾还加上了`player_id`。
+    有序集zset，排序键`score`是`pluck`。同`pluck`时，再比较`time`，同`time`时比较`upload_time`。为了解决后面两个比较，`timems`和`upload_time`分别以8位整数和13位整数连接起来作为zset的主键`member`。为了彻底解决主键冲突，`member`的结尾还加上了`player_id`。
     """
     return f'customranking:pluck:{level}:rank'
 
@@ -179,7 +196,7 @@ def get_custom_pluck_player_key(level: str) -> str:
 
 def record_to_member(record: CustomPluckRecord) -> str:
     upload_time_ms = int(record.upload_time.timestamp() * 1000)
-    return f'{record.timems:07d}:{upload_time_ms:013d}:{record.player_id}'
+    return f'{record.timems:08d}:{upload_time_ms:013d}:{record.player_id}'
 
 
 def member_to_player_id(member: str) -> int:

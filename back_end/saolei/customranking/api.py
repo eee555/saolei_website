@@ -1,15 +1,14 @@
 from datetime import datetime
 
 from django_ratelimit.decorators import ratelimit
-from ninja import Router, Schema
+from ninja import Form, Router, Schema
 from ninja.decorators import decorate_view
 from ninja.errors import HttpError
 
 from config.customranking import CUSTOM_PLUCK_CONFIGS
 from userprofile.decorators import staff_required
 from .models import CustomPluckRecord
-from .services import get_pluck_rank_range
-from .tasks import task_refresh_all_custom_pluck_ranks
+from .services import get_pluck_rank_range, refresh_custom_pluck_rank_range
 
 router = Router()
 
@@ -29,8 +28,14 @@ class CustomPluckRankOut(Schema):
     players: list[CustomPluckPlayerOut]
 
 
+class RefreshCustomPluckRankIn(Schema):
+    startid: int
+    endid: int
+
+
 class RefreshCustomPluckRankOut(Schema):
-    task_id: int
+    errorList: list[int]
+    successCount: int
 
 
 @router.get('/pluck', response=CustomPluckRankOut)
@@ -56,6 +61,7 @@ def pluck_rank(request, level: str, start: int = 0, end: int = 20):
 
 @router.post('/pluck/refresh', response=RefreshCustomPluckRankOut)
 @decorate_view(staff_required)
-def refresh_pluck_rank(request):
-    task_result = task_refresh_all_custom_pluck_ranks.enqueue().db_result
-    return {'task_id': task_result.id}
+def refresh_pluck_rank(request, data: RefreshCustomPluckRankIn = Form(...)):  # noqa: B008
+    startid = min(data.startid, data.endid)
+    endid = max(data.startid, data.endid)
+    return refresh_custom_pluck_rank_range(startid, endid)

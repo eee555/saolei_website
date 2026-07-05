@@ -1,6 +1,6 @@
 <template>
-    录像开始ID<ElInputNumber v-model="startid" />&nbsp;
-    录像结束ID<ElInputNumber v-model="endid" />&nbsp;
+    用户开始ID<ElInputNumber v-model="startid" />&nbsp;
+    用户结束ID<ElInputNumber v-model="endid" />&nbsp;
     批处理数量<ElInputNumber v-model="batchsize" />&nbsp;
     <ElButton :disabled="working" @click="startBatchUpdate">
         开始！
@@ -9,9 +9,9 @@
         停止！
     </ElButton><br>
     客户端会将需要处理的ID段按照批处理数量发送到服务器进行批处理。批处理数量越大，服务器处理效率越高，但是如果批处理数量过大，会导致连接超时。
-    <span v-for="(log, index) in logList" :key="index" class="text" :style="{ display: 'block' }">
+    <div v-for="(log, index) in logList" :key="index" class="text">
         {{ log }}
-    </span>
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -25,7 +25,7 @@ const { proxy } = useCurrentInstance();
 
 const startid = ref(1);
 const endid = ref(1000);
-const batchsize = ref(100);
+const batchsize = ref(10);
 
 const working = ref(false);
 const logList = ref<string[]>([]);
@@ -38,11 +38,11 @@ async function startBatchUpdate() {
         const start = i;
         const end = Math.min(i + batchsize.value - 1, endid.value);
         logList.value.push(`${new Date().toISOString()} 正在处理${start}至${end}`);
-        await proxy.$axios.post('video/update/batch/', { startid: start, endid: end }).then(
+        await proxy.$axios.post('api/customranking/pluck/refresh', { startid: start, endid: end }).then(
             function ({ data }: { data: { successCount: number; errorList: number[] } }) {
                 logList.value.push(`${start}至${end}已处理完成，成功${data.successCount}个，失败${data.errorList.length}个`);
                 if (data.errorList.length > 0) {
-                    logList.value.push(`失败的录像为：${data.errorList.join('、')}`);
+                    logList.value.push(`失败的用户为：${data.errorList.join('、')}`);
                 }
             },
         ).catch(function (error: unknown) {
