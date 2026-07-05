@@ -14,27 +14,14 @@ PLAYER是hset，存储`player_id`到`member`的映射。
 
 ### 数据结构转换
 来自于数据库的`CustomPluckRecord`和来自于缓存的`member`、`DETAIL`需要相互转换。
-- `CustomPluckRecord`转`member`：`record_to_member`
-- `CustomPluckRecord`转`DETAIL`：`record_to_detail`
-- `member`提取`player_id`：`member_to_player_id`
-- 缓存转API字典：`cache_to_dict`
 
-### 缓存刷新
-- 清空缓存：`flush_custom_pluck_cache`
-- 读取排行榜区间，缓存不足时回源数据库并自动补齐缓存：`get_pluck_rank_range`
-- 将一个新纪录加入缓存：`update_custom_pluck_top_cache`
-- 从缓存中移除一个纪录：`update_custom_pluck_top_cache`
+### 信号机制实现数据同步
+当`VideoModel`更新时，会尝试更新`CustomPluckRecord`。当`CustomPluckRecord`更新时，会将变化同步到缓存。
+
+### 缓存接口
+- 缓存不同步时，管理员可以操作清空缓存
+- 用户请求排行榜区间时，先取缓存，缓存不足时回源数据库并自动补充缓存，最多补到缓存上限（当前100）。这个机制可以自动处理缓存不足的情况。
+- 缓存超额时，`PLuckRankingCache.clamp`直接裁剪到上限。这个机制在缓存增加时自动执行。
 
 ### 数据库刷新
-
-数据库刷新时需要触发缓存刷新
-
-- 刷新一个用户一个级别的纪录：`refresh_custom_pluck_rank`
-- 刷新一个玩家 id 区间内的纪录：`refresh_custom_pluck_rank_range`
-- 接收到新录像时判断并加入纪录：`add_to_custom_pluck_rank`
-- 将一个录像移出排行榜：`remove_from_custom_pluck_rank`
-- 按玩家 id 分段刷新全库：`refresh_all_custom_pluck_ranks`
-
-### 被动缓存刷新
-
-单条`CustomPluckRecord`保存或删除时，通过`signal`刷新对应玩家的缓存。数据库刷新逐条保存纪录，不主动重建缓存；缓存为空或长度不足时，由用户请求通过`get_pluck_rank_range`自动回源并补齐。
+`refresh_custom_pluck_rank_range`可以批量刷新指定用户的`CustomPluckRecord`

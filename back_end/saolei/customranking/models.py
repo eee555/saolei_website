@@ -26,11 +26,10 @@ class CustomPluckRecord(models.Model):
 
     def add_video(self, video: VideoModel):
         """如果录像优于当前纪录，则替换当前纪录并返回 True。"""
-        if (video.pluck is None or video.pluck > self.pluck):
+        if video.pluck is None:
             return False
-        if (video.pluck == self.pluck):
-            if ((video.timems, video.upload_time) >= (self.timems, self.upload_time)):
-                return False
+        if (video.pluck, video.timems, video.upload_time) >= (self.pluck, self.timems, self.upload_time):
+            return False
 
         self.video = video
         self.pluck = video.pluck

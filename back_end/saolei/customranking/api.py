@@ -6,6 +6,7 @@ from ninja.decorators import decorate_view
 from ninja.errors import HttpError
 
 from config.customranking import CUSTOM_PLUCK_CONFIGS
+from customranking.cache import PLuckRankingCache
 from userprofile.decorators import staff_required
 from .models import CustomPluckRecord
 from .services import get_pluck_rank_range, refresh_custom_pluck_rank_range
@@ -38,6 +39,10 @@ class RefreshCustomPluckRankOut(Schema):
     successCount: int
 
 
+class CustomPluckLevel(Schema):
+    level: str
+
+
 @router.get('/pluck', response=CustomPluckRankOut)
 @decorate_view(ratelimit(key='ip', rate='1/s'))
 def pluck_rank(request, level: str, start: int = 0, end: int = 20):
@@ -62,6 +67,18 @@ def pluck_rank(request, level: str, start: int = 0, end: int = 20):
 @router.post('/pluck/refresh', response=RefreshCustomPluckRankOut)
 @decorate_view(staff_required)
 def refresh_pluck_rank(request, data: RefreshCustomPluckRankIn = Form(...)):  # noqa: B008
+    """
+    - staff_required
+    """
     startid = min(data.startid, data.endid)
     endid = max(data.startid, data.endid)
     return refresh_custom_pluck_rank_range(startid, endid)
+
+
+@router.post('pluck/cache/flush')
+@decorate_view(staff_required)
+def flush_pluck_cache(request, data: CustomPluckLevel = Form(...)):  # noqa: B008
+    """
+    - staff_required
+    """
+    PLuckRankingCache(data.level).flush()
