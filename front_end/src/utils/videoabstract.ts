@@ -42,6 +42,7 @@ export interface VideoAbstractInfo {
     cl: number | null;
     ce: number | null;
     file_size: number;
+    pluck: number | null;
 }
 
 interface VideoRedisInfo {
@@ -72,13 +73,14 @@ interface VideoAbstractData {
     cl?: number | null;
     ce?: number | null;
     path?: number | null;
+    pluck?: number | null;
     player_id?: number;
     player?: number;
     file_size?: number;
     ongoing_tournament?: boolean;
 }
 
-export const getStat_keys = ['time', 'bvs', 'timems', 'bv', 'qg', 'rqp', 'stnb', 'ce', 'ces', 'cl', 'cls', 'ioe', 'thrp', 'corr', 'path', 'npath', 'mov', 'iome', 'file_size'] as const;
+export const getStat_keys = ['time', 'bvs', 'timems', 'bv', 'qg', 'rqp', 'stnb', 'ce', 'ces', 'cl', 'cls', 'ioe', 'thrp', 'corr', 'path', 'pluck', 'npath', 'mov', 'iome', 'file_size'] as const;
 export type getStat_stat = typeof getStat_keys[number];
 
 export class VideoAbstract {
@@ -94,6 +96,7 @@ export class VideoAbstract {
     public cl?: number;
     public ce?: number;
     public path?: number;
+    public pluck?: number;
     public player_id?: number;
     public file_size = 0;
     public ongoing_tournament?: boolean;
@@ -116,6 +119,7 @@ export class VideoAbstract {
         this.cl = info.cl ?? undefined;
         this.ce = info.ce ?? undefined;
         this.path = info.path ?? undefined;
+        this.pluck = info.pluck ?? undefined;
         this.player_id = info.player_id ?? info.player;
 
         this.file_size = info.file_size ?? this.file_size;
@@ -213,6 +217,7 @@ export class VideoAbstract {
             case 'thrp': return undefinedOrToFixed(this.thrp, 3);
             case 'corr': return undefinedOrToFixed(this.corr, 3);
             case 'path': return undefinedOrToFixed(this.path, 0);
+            case 'pluck': return undefinedOrToFixed(this.pluck, 3);
             case 'npath': return undefinedOrToFixed(this.npath, 1);
             case 'mov': return undefinedOrToFixed(this.mov, 3);
             case 'iome': return undefinedOrToFixed(this.iome, 3);

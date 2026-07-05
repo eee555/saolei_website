@@ -10,11 +10,6 @@ def helper_video_pluck(video: VideoModel):
 
     if is_custom_pluck_video(video):
         task_video_pluck.enqueue(video.id)
-        return
-
-    pluck = normalize_pluck(calculate_pluck(video.file.path))
-    video.pluck = pluck
-    video.save(update_fields=['pluck'])
 
 
 @task(priority=-1)

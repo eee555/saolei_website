@@ -38,12 +38,12 @@ export const staffRoutes: RouteRecordRaw[] = [
     },
     {
         path: 'batchvideo',
-        name: 'staff-batchupdate',
+        name: 'staff-batchvideo',
         component: () => import('./BatchUpdateVideo.vue'),
     },
     {
         path: 'batchpluck',
-        name: 'staff-batchupdate',
+        name: 'staff-batchpluck',
         component: () => import('./BatchRefreshPLuck.vue'),
     },
 ];

@@ -8,7 +8,7 @@ import ms_toollib as ms
 from config.text_choices import MS_TextChoices
 from userprofile.models import UserProfile
 from utils.exceptions import ExceptionToResponse
-from utils.parser import pack_custom_level
+from utils.parser import MSVideoParser, calculate_pluck_from_video, pack_custom_level
 from .models import ExpandVideoModel, VideoModel
 
 logger = logging.getLogger('videomanager')
@@ -60,87 +60,52 @@ def update_state(video: VideoModel, state: MS_TextChoices.State, update_ranking=
 
 
 def refresh_video(video: VideoModel):
-    if video.file.path.endswith('.avf'):
-        v = ms.AvfVideo(video.file.path)
-        video.software = 'a'
-    elif video.file.path.endswith('.evf'):
-        v = ms.EvfVideo(video.file.path)
-        video.software = 'e'
-    elif video.file.path.endswith('.rmv'):
-        v = ms.RmvVideo(video.file.path)
-        video.software = 'r'
-    elif video.file.path.endswith('.mvf'):
-        v = ms.MvfVideo(video.file.path)
-        video.software = 'm'
-    else:
-        return
+    parser = MSVideoParser(video.file)
 
-    video.file_size = video.file.size
+    parser_fields = [
+        'level', 'end_time', 'timems', 'bv',
+        'left', 'right', 'double',
+        'left_ce', 'right_ce', 'double_ce',
+        'path', 'pluck', 'flag', 'op', 'isl',
+        'cell0', 'cell1', 'cell2', 'cell3', 'cell4',
+        'cell5', 'cell6', 'cell7', 'cell8',
+    ]
+    print(parser.pluck)
 
-    v.parse()
-    v.analyse()
-    v.current_time = 1e8
+    updated_fields = []
 
-    if v.level == 3:
-        video.level = 'b'
-    elif v.level == 4:
-        video.level = 'i'
-    elif v.level == 5:
-        video.level = 'e'
-    elif v.level == 6:
-        try:
-            video.level = pack_custom_level(
-                getattr(v, 'row', None),
-                getattr(v, 'column', None),
-                getattr(v, 'mine_num', None),
-            )
-        except ExceptionToResponse:
-            return
-    else:
-        return
+    # 1. 处理 parser 字段
+    for field in parser_fields:
+        new_value = getattr(parser, field)
+        old_value = getattr(video, field)
+        if new_value != old_value:
+            print('old_value: ', old_value, ', new_value: ', new_value)
+            setattr(video, field, new_value)
+            updated_fields.append(field)
 
-    video.end_time = datetime.fromtimestamp(v.end_time / 1000000, tz=timezone.utc)
-    video.timems = v.rtime_ms
-    video.bv = v.bbbv
+    # 2. 处理 file_size（独立来源）
+    new_size = video.file.size
+    if new_size != video.file_size:
+        video.file_size = new_size
+        updated_fields.append('file_size')
 
-    video.left = v.left
-    video.right = v.right
-    video.double = v.double
-
-    video.left_ce = v.lce
-    video.right_ce = v.rce
-    video.double_ce = v.dce
-
-    video.path = v.path
-    video.pluck = None
-    video.flag = v.flag
-    video.op = v.op
-    video.isl = v.isl
-
-    video.cell0 = v.cell0
-    video.cell1 = v.cell1
-    video.cell2 = v.cell2
-    video.cell3 = v.cell3
-    video.cell4 = v.cell4
-    video.cell5 = v.cell5
-    video.cell6 = v.cell6
-    video.cell7 = v.cell7
-    video.cell8 = v.cell8
-
-    video.save()
+    # 3. 仅当有字段变更时才保存
+    if updated_fields:
+        video.save(update_fields=updated_fields)
 
     e_video = video.video
-    e_video.identifier = v.player_identifier
-    e_video.stnb = v.stnb
+    e_video.identifier = parser.identifier
+    e_video.stnb = parser.stnb
 
     e_video.save()
 
     if video.state == MS_TextChoices.State.IDENTIFIER and (e_video.identifier in video.player.userms.identifiers):
         video.state = MS_TextChoices.State.OFFICIAL
-        video.save()
+        video.save(update_fields=['state'])
 
-    from .tasks import helper_video_pluck
-    helper_video_pluck(video)
+    if video.pluck is None:
+        from .tasks import helper_video_pluck
+        helper_video_pluck(video)
 
 
 def generate_file_stream(queryset):

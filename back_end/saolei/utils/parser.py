@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import math
 
 from django.core.files import File
 import ms_toollib as ms
@@ -24,6 +25,30 @@ def create_video_from_data(file_name: str, data: bytes):
         return ms.MvfVideo(raw_data=data), MS_TextChoices.Software.MVF
     else:
         raise ExceptionToResponse(obj='file', category='type')
+
+
+def normalize_pluck(value) -> float | None:
+    if value is None:
+        return None
+    value = float(value)
+    if not math.isfinite(value) or value < 0:
+        return None
+    return value
+
+
+def is_standard_level(level: str) -> bool:
+    return level in [
+        MS_TextChoices.Level.BEGINNER,
+        MS_TextChoices.Level.INTERMEDIATE,
+        MS_TextChoices.Level.EXPERT,
+    ]
+
+
+def calculate_pluck_from_video(v: ms.BaseVideo, level: str) -> float | None:
+    if not is_standard_level(level):
+        return None
+    v.analyse_for_features(['pluck'])
+    return normalize_pluck(v.pluck)
 
 
 class MSVideoParser:
@@ -65,6 +90,7 @@ class MSVideoParser:
     cell8: int
 
     stnb: float
+    pluck: float | None
 
     def __init__(self, file: File):
         self.file = file
@@ -76,6 +102,7 @@ class MSVideoParser:
         v.current_time = 1e8
 
         self.level = MSVideoParser.get_level_from_BaseVideo(v)
+        self.pluck = calculate_pluck_from_video(v, self.level)
 
         try:
             self.state = MSVideoParser.get_state_from_review_code(v.is_valid())
@@ -163,6 +190,7 @@ class MSVideoParser:
         v.current_time = 1e8
 
         level = MSVideoParser.get_level_from_BaseVideo(v)
+        pluck = calculate_pluck_from_video(v, level)
 
         review_code = v.is_valid()
         state = MSVideoParser.get_state_from_review_code(review_code)
@@ -189,6 +217,7 @@ class MSVideoParser:
             'right_ce': v.rce,
             'double_ce': v.dce,
             'path': v.path,
+            'pluck': pluck,
             'flag': v.flag,
             'op': v.op,
             'isl': v.isl,

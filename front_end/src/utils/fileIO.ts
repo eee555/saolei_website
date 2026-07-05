@@ -38,8 +38,7 @@ export function load_video_file(buffer: ArrayBuffer, filename: string): AnyVideo
     return video;
 }
 
-export function extract_stat(video: AnyVideo | null): VideoAbstract | null {
-    if (video === null) return null;
+export function extract_stat(video: AnyVideo): VideoAbstract {
     video.current_time = 1e8;
     return new VideoAbstract({
         id: 0,
@@ -47,9 +46,10 @@ export function extract_stat(video: AnyVideo | null): VideoAbstract | null {
         mode: String(video.mode).padStart(2, '0'),
         software: get_software(video),
         timems: video.rtime_ms,
-        bv: video.bbbv,
+        bv: video.bbbv_solved,
         ce: video.ce,
         cl: video.cl,
+        path: video.path,
         end_time: video instanceof AvfVideo ? arbiterTimeStampToDate(video.end_time) : generalTimeStampToDate(video.end_time),
     });
 }

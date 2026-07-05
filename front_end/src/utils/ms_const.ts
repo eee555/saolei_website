@@ -20,6 +20,7 @@ export const MS_Mode = {
     Standard: '00',
     SpeedNG: '05',
     HardcoreNG: '06',
+    Lucky: '10',
     Recursive: '11',
     NoFlag: '12',
 } as const;

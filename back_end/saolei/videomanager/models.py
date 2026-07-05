@@ -208,7 +208,7 @@ class VideoModel(models.Model):
             right_ce=parser.right_ce,
             double_ce=parser.double_ce,
             path=parser.path,
-            pluck=None,
+            pluck=parser.pluck,
             flag=parser.flag,
             op=parser.op,
             isl=parser.isl,

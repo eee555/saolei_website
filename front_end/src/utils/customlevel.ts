@@ -36,6 +36,10 @@ export class CustomLevel {
         return `${this.row}x${this.column}x${this.mine}`;
     }
 
+    public get isSupported(): boolean {
+        return isSupported(this);
+    }
+
     /**
      * 将后端返回的`level`字符串转换为`CustomLevel`，形式为`c{h}_{w}_{m}`
      */
@@ -80,6 +84,10 @@ export const DensityCustomLevelConfigs = [
 const DensityCustomLevelByBoard = new Map<string, CustomLevel>(
     DensityCustomLevelConfigs.map((config) => [config.boardKey, config]),
 );
+
+function isSupported(level: CustomLevel): boolean {
+    return DensityCustomLevelConfigs.some((config) => config.matches(level.row, level.column, level.mine));
+}
 
 export function getDensityCustomLevelByBoard(row: number, column: number, mine: number): CustomLevel | undefined {
     return DensityCustomLevelByBoard.get(`${row}x${column}x${mine}`);

@@ -23,8 +23,7 @@ def normalize_pluck(value) -> float | None:
     return value
 
 
-@timeout(PLUCK_TIMEOUT_SECONDS, use_signals=False, timeout_exception=TimeoutError)
-def calculate_pluck(file_path: str):
+def _calculate_pluck(file_path: str):
     with open(file_path, 'rb') as file:
         data = file.read()
 
@@ -34,3 +33,10 @@ def calculate_pluck(file_path: str):
     parsed_video.analyse_for_features(['pluck'])
     parsed_video.current_time = 1e8
     return parsed_video.pluck
+
+
+calculate_pluck = timeout(
+    PLUCK_TIMEOUT_SECONDS,
+    use_signals=False,
+    timeout_exception=TimeoutError,
+)(_calculate_pluck)
