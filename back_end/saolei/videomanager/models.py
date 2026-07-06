@@ -172,7 +172,7 @@ class VideoModel(models.Model):
         ]
 
     @staticmethod
-    def create_from_parser(parser: MSVideoParser, user: UserProfile):
+    def create_from_parser(parser: MSVideoParser, user: UserProfile, check_tournament: bool = True):
         """
         注意：
         - 执行之前：
@@ -187,7 +187,7 @@ class VideoModel(models.Model):
             identifier=parser.identifier,
             stnb=parser.stnb,
         )
-        return VideoModel.objects.create(
+        video = VideoModel(
             player=user,
             file=parser.file,
             file_size=parser.file.size,
@@ -220,6 +220,12 @@ class VideoModel(models.Model):
             cell7=parser.cell7,
             cell8=parser.cell8,
         )
+        if check_tournament:
+            video._tournament_identifiers = parser.tournament_identifiers
+        else:
+            video._skip_tournament_checkin = True
+        video.save()
+        return video
 
     def push_redis(self, name: str):
         if self.ongoing_tournament and name == 'newest_queue':

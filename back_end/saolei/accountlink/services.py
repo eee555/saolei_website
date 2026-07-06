@@ -7,7 +7,6 @@ import requests
 from config.text_choices import MS_TextChoices, Saolei_TextChoices
 from identifier.models import Identifier
 from msuser.models import UserMS
-from tournament.utils import video_checkin
 from userprofile.models import UserProfile
 from utils.exceptions import ExceptionToResponse
 from utils.parser import MSVideoParser
@@ -129,7 +128,6 @@ def saolei_video_import_one(saolei_video: VideoSaolei):
 
         video = VideoModel.create_from_parser(parser, user)
         video.upload_time = saolei_video.upload_time
-        video_checkin(video, parser.tournament_identifiers)
         video.update_redis()
         video.save(update_fields=['upload_time', 'ongoing_tournament'])
         saolei_video.import_video = video

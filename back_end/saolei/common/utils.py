@@ -8,7 +8,6 @@ from config.text_choices import MS_TextChoices
 from identifier.models import Identifier
 from identifier.utils import verify_identifier
 from msuser.models import UserMS
-from tournament.utils import video_checkin
 from userprofile.models import UserProfile
 from utils.exceptions import ExceptionToResponse
 from utils.parser import MSVideoParser
@@ -37,10 +36,7 @@ def new_video_by_file(user: UserProfile, file: File, check_tournament: bool = Tr
             if v_collision.file.read() == file_binary:
                 raise ExceptionToResponse(obj='file', category='collision')
 
-    video = VideoModel.create_from_parser(parser, user)
-
-    if check_tournament:
-        video_checkin(video, parser.tournament_identifiers)
+    video = VideoModel.create_from_parser(parser, user, check_tournament=check_tournament)
 
     video.save(update_fields=['ongoing_tournament'])
     video.update_redis()

@@ -1,11 +1,13 @@
 from typing import Type
 
-from django.db.models.signals import pre_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
 from config.text_choices import Tournament_TextChoices
+from videomanager.models import VideoModel
 from .models import GSCTournament, Tournament
 from .tasks import task_gsc_finish
+from .utils import add_video_to_checked_tournaments, video_checkin
 
 
 def handle_tournament_pre_save(sender: Type[Tournament], instance: Tournament, **kwargs):
@@ -27,3 +29,17 @@ def handle_tournament_pre_save(sender: Type[Tournament], instance: Tournament, *
 # 为 Tournament 及其所有子类注册接收器
 receiver(pre_save, sender=Tournament)(handle_tournament_pre_save)
 receiver(pre_save, sender=GSCTournament)(handle_tournament_pre_save)
+
+
+@receiver(pre_save, sender=VideoModel, dispatch_uid='tournament.checkin_video_before_create')
+def checkin_video_before_create(sender, instance: VideoModel, **kwargs):
+    if instance.pk is not None or getattr(instance, '_skip_tournament_checkin', False):
+        return
+    video_checkin(instance, getattr(instance, '_tournament_identifiers', []))
+
+
+@receiver(post_save, sender=VideoModel, dispatch_uid='tournament.add_created_video_to_checked_tournaments')
+def add_created_video_to_checked_tournaments(sender, instance: VideoModel, created: bool, **kwargs):
+    if not created:
+        return
+    add_video_to_checked_tournaments(instance)
