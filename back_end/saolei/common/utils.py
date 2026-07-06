@@ -42,7 +42,7 @@ def new_video_by_file(user: UserProfile, file: File, check_tournament: bool = Tr
     if check_tournament:
         video_checkin(video, parser.tournament_identifiers)
 
-    video.save()
+    video.save(update_fields=['ongoing_tournament'])
     video.update_redis()
 
     helper_video_pluck(video)

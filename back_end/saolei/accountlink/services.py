@@ -114,7 +114,7 @@ def saolei_video_import_one(saolei_video: VideoSaolei):
             if collision.file.read() == response.content:
                 if collision.upload_time > saolei_video.upload_time:
                     collision.upload_time = saolei_video.upload_time
-                collision.save()
+                    collision.save(update_fields=['upload_time'])
                 saolei_video.import_video = collision
                 saolei_video.save()
                 return
@@ -131,7 +131,7 @@ def saolei_video_import_one(saolei_video: VideoSaolei):
         video.upload_time = saolei_video.upload_time
         video_checkin(video, parser.tournament_identifiers)
         video.update_redis()
-        video.save()
+        video.save(update_fields=['upload_time', 'ongoing_tournament'])
         saolei_video.import_video = video
         saolei_video.save()
     except requests.exceptions.ConnectionError:
