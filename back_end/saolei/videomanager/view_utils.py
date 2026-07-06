@@ -4,6 +4,7 @@ import struct
 from django_redis import get_redis_connection
 
 from config.text_choices import MS_TextChoices
+from msuser.services import update_personal_record_stock as refresh_user_personal_records
 from userprofile.models import UserProfile
 from utils.parser import MSVideoParser
 from .models import ExpandVideoModel, VideoModel
@@ -29,14 +30,7 @@ state2redis = {
 
 # 存量式更新用户的记录。删录像后用，恢复用户的记录。
 def update_personal_record_stock(user: UserProfile):
-    # e_video: ExpandVideoModel = video.video
-    # user: UserProfile = video.player
-    # ms_user: UserMS = user.userms
-    user.userms.del_user_record_sql()
-    user.userms.del_user_record_redis()
-    videos = VideoModel.objects.filter(player=user, ongoing_tournament=False)
-    for v in videos:
-        v.update_personal_record()
+    refresh_user_personal_records(user)
 
 
 def update_state(video: VideoModel, state: MS_TextChoices.State, update_ranking=True):
@@ -46,14 +40,17 @@ def update_state(video: VideoModel, state: MS_TextChoices.State, update_ranking=
     video.pop_redis(state2redis[prevstate])
     video.state = state
     video.push_redis(state2redis[state])
-    video.save()
+    if not update_ranking:
+        video._skip_msuser_ranking_signal = True
+    try:
+        video.save(update_fields=['state'])
+    finally:
+        if not update_ranking:
+            del video._skip_msuser_ranking_signal
     logger.info(f'录像#{video.id} 状态 从 {prevstate} 到 {state}')
     if state == MS_TextChoices.State.OFFICIAL:
-        video.update_personal_record()
         from .tasks import helper_video_pluck
         helper_video_pluck(video)
-    elif update_ranking and prevstate == MS_TextChoices.State.OFFICIAL:
-        update_personal_record_stock(video.player)
 
 
 def refresh_video(video: VideoModel):

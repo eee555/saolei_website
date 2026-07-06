@@ -196,9 +196,8 @@ def approve_single(videoid, check_identifier=True):
         return False
     userms: UserMS = video.player.userms
     video.state = MS_TextChoices.State.OFFICIAL
-    video.save()
+    video.save(update_fields=['state'])
     video.push_redis('newest_queue')
-    video.update_personal_record()
     from .tasks import helper_video_pluck
     helper_video_pluck(video)
     video.update_video_num()
@@ -303,7 +302,7 @@ def set_videoModel(request):
     logger.info(
         f'管理员 {request.user.username}#{request.user.id} 修改录像#{videoid} 域 {field} 从 {getattr(video, field)} 到 {value}')
     setattr(video, field, value)
-    video.save()
+    video.save(update_fields=[field])
     return HttpResponse()
 
 
