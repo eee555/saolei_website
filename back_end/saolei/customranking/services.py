@@ -5,7 +5,6 @@ from django.utils import timezone
 from config.customranking import CUSTOM_PLUCK_LEVELS, CUSTOM_PLUCK_MODES
 from config.text_choices import MS_TextChoices
 from videomanager.models import VideoModel
-
 from .cache import CUSTOM_PLUCK_CACHE_SIZE, PLuckRankingCache
 from .models import CustomPluckRecord
 

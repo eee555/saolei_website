@@ -2,8 +2,8 @@
 import json
 import logging
 
-from django.db import models
 from django.core.validators import MaxValueValidator
+from django.db import models
 from django_redis import get_redis_connection
 
 from config.global_settings import DefaultRankingScores, MaxSizes

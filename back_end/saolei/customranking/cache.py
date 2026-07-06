@@ -222,5 +222,3 @@ def cache_to_dict(member: str, score: float, detail: dict):
         'timems': int(timems),
         'upload_time': datetime.fromtimestamp(int(upload_time_ms) / 1000, tz=timezone.utc),
     }
-
-

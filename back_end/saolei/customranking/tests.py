@@ -6,8 +6,7 @@ from django.utils import timezone
 from config.text_choices import MS_TextChoices
 from userprofile.models import UserProfile
 from videomanager.models import ExpandVideoModel, VideoModel
-
-from .cache import PLuckRankingCache, cache_to_dict, record_to_member
+from .cache import cache_to_dict, PLuckRankingCache, record_to_member
 from .models import CustomPluckRecord
 from .services import get_pluck_rank_range, refresh_all_custom_pluck_ranks, refresh_custom_pluck_rank_range, update_custom_pluck_top_cache
 
