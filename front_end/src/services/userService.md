@@ -10,7 +10,8 @@
 
 ## 需求解析
 - 用一个IndexedDB表缓存用户信息，主键是id，当前字段和`GetUserInfoResponse`一致。
-- 接口`fetchUserInfo(userId: number): Promise<UserProfile>`用于获取用户数据。
+- 接口`fetchUserInfo(userId: number, immediate = false): Promise<UserProfile>`用于获取用户数据。
+- 当`immediate`为`true`时，直接请求单个用户接口`/api/userprofile/info/{userId}`并更新缓存。这个模式适合用户主页等单个用户加载场景，不进入批量队列。
 - 接收到如上请求时，首先去缓存里找用户数据，如果找到了直接返回。如果没找到则需要向后端请求数据。
 - 为降低请求频率，后端设置了批量请求用户数据的接口`/api/userprofile/infobulk?ids=1,2,3,...`。
 - `fetchUserInfo`的调用方包括`PlayerName.vue`，这个组件在各种表格中会批量出现，因此会频繁遇到批量的`fetchUserInfo`调用，需要解决两个问题：
@@ -27,6 +28,7 @@
 
 ## 实际流程
 - `fetchUserInfo(id)`被调用
+  - 如果`immediate`为`true`，直接请求`info/{id}`，写入缓存并**返回**
   - 查看是否需要更新缓存，若需要则先请求`infoupdated`并清空对应的用户缓存
   - 从缓存中查找id，若找到了则直接**返回**
   - 进入函数`enqueueRequest(id)`
