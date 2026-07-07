@@ -14,15 +14,14 @@ export const AccountLinkPlatform = {
 export type AccountLinkPlatform = typeof AccountLinkPlatform[keyof typeof AccountLinkPlatform];
 
 interface AccountLinkPlatformProfile {
-    name: string;
     url: string;
     profile: (id: string | number) => string;
 }
 
 export const platformlist: Record<AccountLinkPlatform, AccountLinkPlatformProfile> = {
-    [AccountLinkPlatform.Bilibili]: { name: 'Bilibili', url: 'https://www.bilibili.com/', profile: bilibiliProfile },
-    [AccountLinkPlatform.MSGames]: { name: 'Authoritative Minesweeper', url: 'https://minesweepergame.com/', profile: msgamesProfile },
-    [AccountLinkPlatform.Saolei]: { name: '扫雷网', url: 'http://saolei.wang/', profile: saoleiProfile },
-    [AccountLinkPlatform.QQ]: { name: '腾讯QQ', url: 'https://im.qq.com/index/', profile: qqProfile },
-    [AccountLinkPlatform.WoM]: { name: 'Minesweeper.Online', url: 'https://minesweeper.online/', profile: womProfile },
+    [AccountLinkPlatform.Bilibili]: { url: 'https://www.bilibili.com/', profile: bilibiliProfile },
+    [AccountLinkPlatform.MSGames]: { url: 'https://minesweepergame.com/', profile: msgamesProfile },
+    [AccountLinkPlatform.Saolei]: { url: 'http://saolei.wang/', profile: saoleiProfile },
+    [AccountLinkPlatform.QQ]: { url: 'https://im.qq.com/index/', profile: qqProfile },
+    [AccountLinkPlatform.WoM]: { url: 'https://minesweeper.online/', profile: womProfile },
 };

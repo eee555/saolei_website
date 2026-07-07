@@ -4,7 +4,7 @@
             <PrToolbar>
                 <template #start>
                     <span class="text text-medium">
-                        Minesweeper.Online&nbsp;#{{ id }}
+                        {{ t('common.platform.w') }}&nbsp;#{{ id }}
                     </span>
                 </template>
                 <template #end>
