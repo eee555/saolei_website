@@ -41,7 +41,7 @@
     "markdown-it-anchor": "9.2.0",
     "markdown-it-highlightjs": "4.3.0",
     "markdown-it-mathjax3": "5.2.0",
-    "ms-toollib": "1.5.13",
+    "ms-toollib": "1.5.14",
     "ordinal": "1.0.3",
     "pinia": "3.0.4",
     "pinia-plugin-persistedstate": "4.7.1",
