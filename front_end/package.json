@@ -20,7 +20,7 @@
     "@mdit/plugin-abbr": "1.0.1",
     "@mdit/plugin-align": "1.0.1",
     "@mdit/plugin-img-lazyload": "1.0.1",
-    "@mdit/plugin-mathjax": "1.0.1",
+    "@mdit/plugin-mathjax": "1.1.0",
     "@primeuix/themes": "2.0.3",
     "@putianyi888/vue3-plots": "0.5.2",
     "@unicode/unicode-16.0.0": "1.6.17",
