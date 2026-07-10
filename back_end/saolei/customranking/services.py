@@ -114,6 +114,8 @@ def add_to_custom_pluck_rank(video: VideoModel):
         },
     )
     if not created:
+        if record.video_id == video.id:
+            return refresh_custom_pluck_rank(video.player, video.level)
         record.add_video(video)
     return record
 

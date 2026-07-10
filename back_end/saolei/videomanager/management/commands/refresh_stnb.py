@@ -17,7 +17,7 @@ logger = logging.getLogger('videomanager.management.refresh_stnb')
 
 
 class Command(BaseCommand):
-    help = '根据录像文件全量更新录像数据和所有用户纪录（timems/bvs/stnb/ioe/path）及排行榜'
+    help = '根据录像文件全量更新录像数据，并重建由 iqg 派生的 stnb 个人纪录及相关排行缓存'
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -39,8 +39,8 @@ class Command(BaseCommand):
 
         if not options['yes']:
             self.stdout.write(self.style.WARNING(
-                '警告：此命令将根据录像文件全量重写所有录像数据和用户纪录（timems/bvs/stnb/ioe/path），'
-                '并重建 Redis 排行榜。\n'
+                '警告：此命令将根据录像文件全量重写录像基础数据，并重建用户纪录（timems/bvs/stnb/ioe/path）'
+                '及 Redis 排行榜。\n'
                 '执行前建议备份 msuser_userms 表及 Redis，且期间不应有用户上传录像。\n',
             ))
             answer = input('确认执行？(yes/no): ')
@@ -49,7 +49,7 @@ class Command(BaseCommand):
                 return
 
         # ---------------------------------------------------------------
-        # Phase 1: 用 refresh_video() 重解析录像文件，刷新 ExpandVideoModel.stnb
+        # Phase 1: 用 refresh_video() 重解析录像文件，数据库自动刷新 iqg
         # ---------------------------------------------------------------
         self.stdout.write(self.style.NOTICE('=== Phase 1: 重解析所有官方录像文件 ==='))
 
@@ -83,7 +83,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f'Phase 1 完成，处理 {total} 个录像'))
 
         # ---------------------------------------------------------------
-        # Phase 2: 用 update_personal_record_stock() 全量重算个人纪录 + Redis
+        # Phase 2: 用 update_personal_record_stock() 重算个人纪录 + Redis
         # ---------------------------------------------------------------
         self.stdout.write(self.style.NOTICE('\n=== Phase 2: 重算个人纪录与排行榜 ==='))
 

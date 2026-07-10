@@ -415,7 +415,7 @@ TEMPLATE_DIRS = (
     os.path.join(SETTINGS_PATH, 'templates'),
 )
 
-E2E_TEST = False or os.environ.get('E2E_TEST') == 'True'  # 是否为端到端测试模式。 End-to-end test mode.
+E2E_TEST = True or os.environ.get('E2E_TEST') == 'True'  # 是否为端到端测试模式。 End-to-end test mode.
 
 if E2E_TEST:
     INSTALLED_APPS.append('dangerzone')

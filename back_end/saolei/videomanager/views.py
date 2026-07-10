@@ -17,7 +17,7 @@ from userprofile.decorators import staff_required
 from userprofile.models import UserProfile
 from utils import ComplexEncoder
 from .models import ExpandVideoModel, VideoModel
-from .view_utils import refresh_video, update_personal_record_stock, update_state, video_all_fields
+from .view_utils import refresh_video, video_all_fields
 
 logger = logging.getLogger('videomanager')
 cache = get_redis_connection('saolei_website')
@@ -197,9 +197,6 @@ def approve_single(videoid, check_identifier=True):
     userms: UserMS = video.player.userms
     video.state = MS_TextChoices.State.OFFICIAL
     video.save(update_fields=['state'])
-    video.push_redis('newest_queue')
-    from .tasks import helper_video_pluck
-    helper_video_pluck(video)
     video.update_video_num()
     identifier = video.video.identifier
     if check_identifier and identifier not in userms.identifiers:
@@ -251,7 +248,8 @@ def freeze(request):
             if not (v := VideoModel.objects.filter(id=video_id).first()):
                 res.append('Null')
             else:
-                update_state(v, MS_TextChoices.State.FROZEN)
+                v.state = MS_TextChoices.State.FROZEN
+                v.save(update_fields=['state'])
                 logger.info(
                     f'管理员 {request.user.username}#{request.user.id} 冻结录像#{id}')
         return JsonResponse(res)
@@ -259,8 +257,8 @@ def freeze(request):
         if not (user := UserProfile.objects.filter(id=user_id).first()):
             return HttpResponseNotFound()
         for v in VideoModel.objects.filter(player=user):
-            update_state(v, MS_TextChoices.State.FROZEN, update_ranking=False)
-        update_personal_record_stock(user)
+            v.state = MS_TextChoices.State.FROZEN
+            v.save(update_fields=['state'])
         return HttpResponse()
     else:
         return HttpResponseBadRequest()

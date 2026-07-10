@@ -89,7 +89,6 @@ class MSVideoParser:
     cell7: int
     cell8: int
 
-    stnb: float
     pluck: float | None
 
     def __init__(self, file: File):
@@ -144,8 +143,6 @@ class MSVideoParser:
         self.cell6 = v.cell6
         self.cell7 = v.cell7
         self.cell8 = v.cell8
-
-        self.stnb = v.stnb
 
     @staticmethod
     def read_file(file: File):

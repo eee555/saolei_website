@@ -12,12 +12,11 @@ from userprofile.models import UserProfile
 from utils.exceptions import ExceptionToResponse
 from utils.parser import MSVideoParser
 from videomanager.models import VideoModel
-from videomanager.tasks import helper_video_pluck
 
 logger = logging.getLogger('videomanager')
 
 
-def new_video_by_file(user: UserProfile, file: File, check_tournament: bool = True, upload_time: datetime = None) -> VideoModel:
+def new_video_by_file(user: UserProfile, file: File, upload_time: datetime = None) -> VideoModel:
     parser = MSVideoParser(file)
 
     if not user.userms:
@@ -36,12 +35,10 @@ def new_video_by_file(user: UserProfile, file: File, check_tournament: bool = Tr
             if v_collision.file.read() == file_binary:
                 raise ExceptionToResponse(obj='file', category='collision')
 
-    video = VideoModel.create_from_parser(parser, user, check_tournament=check_tournament)
+    video = VideoModel.create_from_parser(parser, user)
 
     video.save(update_fields=['ongoing_tournament'])
     video.update_redis()
-
-    helper_video_pluck(video)
 
     return video
 

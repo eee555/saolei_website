@@ -1,16 +1,10 @@
-import logging
 import struct
-
-from django_redis import get_redis_connection
 
 from config.text_choices import MS_TextChoices
 from msuser.services import update_personal_record_stock as refresh_user_personal_records
 from userprofile.models import UserProfile
 from utils.parser import MSVideoParser
 from .models import ExpandVideoModel, VideoModel
-
-logger = logging.getLogger('videomanager')
-cache = get_redis_connection('saolei_website')
 
 video_all_fields = [
     'id', 'upload_time', 'player__id', 'player__realname', 'timems', 'bv', 'bvs', 'state', 'level', 'mode', 'software', 'flag', 'op', 'isl', 'path', 'pluck', 'left', 'right', 'double', 'left_ce', 'right_ce',
@@ -19,45 +13,17 @@ video_all_fields = [
 for name in [field.name for field in ExpandVideoModel._meta.get_fields()]:
     video_all_fields.append('video__' + name)
 
-# 状态到redis表名的映射
-state2redis = {
-    MS_TextChoices.State.PLAIN: 'review_queue',
-    MS_TextChoices.State.FROZEN: 'freeze_queue',
-    MS_TextChoices.State.IDENTIFIER: 'newest_queue',
-    MS_TextChoices.State.OFFICIAL: 'newest_queue',
-}
-
 
 # 存量式更新用户的记录。删录像后用，恢复用户的记录。
 def update_personal_record_stock(user: UserProfile):
     refresh_user_personal_records(user)
 
 
-def update_state(video: VideoModel, state: MS_TextChoices.State, update_ranking=True):
-    prevstate = video.state
-    if prevstate == state:
-        return
-    video.pop_redis(state2redis[prevstate])
-    video.state = state
-    video.push_redis(state2redis[state])
-    if not update_ranking:
-        video._skip_msuser_ranking_signal = True
-    try:
-        video.save(update_fields=['state'])
-    finally:
-        if not update_ranking:
-            del video._skip_msuser_ranking_signal
-    logger.info(f'录像#{video.id} 状态 从 {prevstate} 到 {state}')
-    if state == MS_TextChoices.State.OFFICIAL:
-        from .tasks import helper_video_pluck
-        helper_video_pluck(video)
-
-
 def refresh_video(video: VideoModel):
     parser = MSVideoParser(video.file)
 
     parser_fields = [
-        'level', 'end_time', 'timems', 'bv',
+        'level', 'software', 'end_time', 'timems', 'bv',
         'left', 'right', 'double',
         'left_ce', 'right_ce', 'double_ce',
         'path', 'pluck', 'flag', 'op', 'isl',
@@ -86,10 +52,13 @@ def refresh_video(video: VideoModel):
         video.save(update_fields=updated_fields)
 
     e_video = video.video
-    e_video.identifier = parser.identifier
-    e_video.stnb = parser.stnb
+    e_updated_fields = []
+    if e_video.identifier != parser.identifier:
+        e_video.identifier = parser.identifier
+        e_updated_fields.append('identifier')
 
-    e_video.save()
+    if e_updated_fields:
+        e_video.save(update_fields=e_updated_fields)
 
     if video.state == MS_TextChoices.State.IDENTIFIER and (e_video.identifier in video.player.userms.identifiers):
         video.state = MS_TextChoices.State.OFFICIAL

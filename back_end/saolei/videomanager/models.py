@@ -4,6 +4,7 @@ import logging
 
 from django.core.validators import MaxValueValidator
 from django.db import models
+from django.db.models.functions import Power
 from django_redis import get_redis_connection
 
 from config.global_settings import DefaultRankingScores, MaxSizes
@@ -16,12 +17,16 @@ from .fields import RestrictedFileField
 cache = get_redis_connection('saolei_website')
 logger = logging.getLogger('videomanager')
 MAX_TIMEMS = 99_999_999
+STNB_COEFFICIENTS = {
+    MS_TextChoices.Level.BEGINNER: 36,
+    MS_TextChoices.Level.INTERMEDIATE: 162,
+    MS_TextChoices.Level.EXPERT: 435,
+}
 
 
 class ExpandVideoModel(models.Model):
     # video = models.OneToOneField(VideoModel, on_delete=models.CASCADE)
     identifier = models.CharField(max_length=MaxSizes.IDENTIFIER, default='')
-    stnb = models.FloatField(default=0.0)
 
 
 # 其他类：checksum_ok, mode
@@ -89,6 +94,8 @@ class VideoModel(models.Model):
     bv = models.PositiveSmallIntegerField(null=True)
     bvs = models.GeneratedField(expression=models.Case(models.When(timems=0, then=models.Value(0.0)), default=models.F(
         'bv') / models.F('timems') * models.Value(1000), output_field=models.FloatField()), output_field=models.FloatField(), db_persist=True)
+    iqg = models.GeneratedField(expression=models.Case(models.When(timems=0, then=models.Value(0.0)), default=models.F(
+        'bv') / Power(models.F('timems') / models.Value(1000.0), models.Value(1.7)), output_field=models.FloatField()), output_field=models.FloatField(), db_persist=True)
 
     left = models.PositiveSmallIntegerField(null=True)
     right = models.PositiveSmallIntegerField(null=True)
@@ -146,10 +153,12 @@ class VideoModel(models.Model):
     cell7 = models.PositiveSmallIntegerField(null=True)
     cell8 = models.PositiveSmallIntegerField(null=True)
 
-    # 暂时的解决方案
     @property
     def stnb(self):
-        return self.video.stnb
+        coefficient = STNB_COEFFICIENTS.get(self.level)
+        if coefficient is None or self.iqg is None:
+            return None
+        return coefficient * self.iqg
 
     def __str__(self):
         return f'level: {self.level}, timems: {self.timems}, 3BV: {self.bv}'
@@ -172,7 +181,7 @@ class VideoModel(models.Model):
         ]
 
     @staticmethod
-    def create_from_parser(parser: MSVideoParser, user: UserProfile, check_tournament: bool = True):
+    def create_from_parser(parser: MSVideoParser, user: UserProfile):
         """
         注意：
         - 执行之前：
@@ -185,7 +194,6 @@ class VideoModel(models.Model):
         """
         e_video = ExpandVideoModel.objects.create(
             identifier=parser.identifier,
-            stnb=parser.stnb,
         )
         video = VideoModel(
             player=user,
@@ -220,10 +228,7 @@ class VideoModel(models.Model):
             cell7=parser.cell7,
             cell8=parser.cell8,
         )
-        if check_tournament:
-            video._tournament_identifiers = parser.tournament_identifiers
-        else:
-            video._skip_tournament_checkin = True
+        video._tournament_identifiers = parser.tournament_identifiers
         video.save()
         return video
 
@@ -292,16 +297,12 @@ class VideoModel(models.Model):
             self.update_video_num()
         elif self.state == MS_TextChoices.State.IDENTIFIER:
             logger.info(f'用户 {user.username}#{user.id} 录像#{self.id} 标识不匹配')
-            if not self.ongoing_tournament:
-                self.push_redis('newest_queue')
             self.update_video_num()
         elif self.state == MS_TextChoices.State.FROZEN:
             logger.info(f'用户 {user.username}#{user.id} 录像#{self.id} 不合法')
-            self.push_redis('freeze_queue')
         elif self.state == MS_TextChoices.State.OFFICIAL:  # 合法
             logger.info(f'用户 {user.username}#{user.id} 录像#{self.id} 机审成功')
             if not self.ongoing_tournament:
-                self.push_redis('newest_queue')
                 from .tasks import helper_video_pluck
                 helper_video_pluck(self)
             self.update_video_num()

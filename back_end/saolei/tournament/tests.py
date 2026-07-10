@@ -33,7 +33,7 @@ class TournamentTestCase(TestCase):
         # TODO: add tests
         pass
 
-    def create_video(self, *, skip_tournament_checkin=False):
+    def create_video(self, *, tournament_identifiers=None):
         expand_video = ExpandVideoModel.objects.create(identifier='gsc-video', stnb=0)
         video = VideoModel(
             player=self.user,
@@ -57,9 +57,7 @@ class TournamentTestCase(TestCase):
             op=1,
             isl=1,
         )
-        video._tournament_identifiers = [self.tournament.token]
-        if skip_tournament_checkin:
-            video._skip_tournament_checkin = True
+        video._tournament_identifiers = tournament_identifiers if tournament_identifiers is not None else [self.tournament.token]
         video.save()
         return video
 
@@ -75,8 +73,8 @@ class TournamentTestCase(TestCase):
             token=self.tournament.token,
         ).exists())
 
-    def test_video_checkin_can_be_skipped_before_video_create(self):
-        video = self.create_video(skip_tournament_checkin=True)
+    def test_video_without_tournament_identifier_does_not_checkin(self):
+        video = self.create_video(tournament_identifiers=[])
 
         video.refresh_from_db()
         self.assertFalse(video.ongoing_tournament)

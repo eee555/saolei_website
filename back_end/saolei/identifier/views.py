@@ -8,7 +8,6 @@ from userprofile.decorators import login_required_error, staff_required
 from userprofile.models import UserProfile
 from utils.response import HttpResponseConflict
 from videomanager.models import VideoModel
-from videomanager.view_utils import update_personal_record_stock, update_state
 from .models import Identifier
 
 logger = logging.getLogger('userprofile')
@@ -32,9 +31,6 @@ def add_identifier(request):
     video_list = VideoModel.objects.filter(player=user, video__identifier=identifier_text)
     if not video_list:
         return JsonResponse({'type': 'error', 'object': 'identifier', 'category': 'notFound'})
-    for video in video_list:
-        if video.state == MS_TextChoices.State.IDENTIFIER:
-            update_state(video, MS_TextChoices.State.OFFICIAL)
     identifier.userms = user.userms
     identifier.save()
     user.userms.identifiers.append(identifier_text)
@@ -60,11 +56,6 @@ def del_identifier(request):
     user.userms.save()
     logger.info(f'用户 {user.username}#{user.id} 解绑标识 "{identifier_text}"')
     video_list = VideoModel.objects.filter(player=user, video__identifier=identifier_text)
-    for video in video_list:
-        if video.state == MS_TextChoices.State.OFFICIAL:
-            update_state(video, MS_TextChoices.State.IDENTIFIER, update_ranking=False)
-    if video_list:
-        update_personal_record_stock(user)
     return JsonResponse({'type': 'success', 'object': 'identifier', 'category': 'add', 'value': len(video_list)})
 
 
@@ -90,8 +81,6 @@ def staff_add_identifier(request: HttpRequest):
         userms.save()
     logger.info(f'管理员 #{request.user.id} 为用户 {user.realname}#{user.id} 添加标识 "{identifier_text}"')
     video_list = VideoModel.objects.filter(player=user, video__identifier=identifier_text, state=MS_TextChoices.State.IDENTIFIER)
-    for video in video_list:
-        update_state(video, MS_TextChoices.State.OFFICIAL)
     logger.info(f'修改了 {len(video_list)} 个录像状态')
     return HttpResponse()
 
@@ -118,8 +107,6 @@ def staff_del_identifier(request):
         identifier.userms = None
         identifier.save()
         logger.info(f'管理员 #{request.user.id} 解绑标识 "{identifier_text}"')
-        for video in videos:
-            update_state(video, MS_TextChoices.State.IDENTIFIER)
         logger.info(f'修改了 {len(videos)} 个录像状态')
     return HttpResponse()
 

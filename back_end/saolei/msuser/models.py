@@ -1,7 +1,8 @@
 from django.db import models
 from django_redis import get_redis_connection
 
-from config.global_settings import DefaultRankingScores, GameLevels, GameModes, RankingGameStats, record_update_fields
+from config.global_settings import DefaultRankingScores, GameLevels, GameModes, RankingGameStats
+from .utils import RankingField
 
 cache = get_redis_connection('saolei_website')
 
@@ -185,49 +186,20 @@ class UserMS(models.Model):
     def __str__(self):
         return 'identifiers: {}'.format(self.identifiers)
 
-    def getrecord(self, level, stat, mode):
-        return getattr(self, f'{level}_{stat}_{mode}')
-
-    def getrecordID(self, level, stat, mode):
-        return getattr(self, f'{level}_{stat}_id_{mode}')
-
-    def setrecord(self, level, stat, mode, score):
-        setattr(self, f'{level}_{stat}_{mode}', score)
-
-    def setrecordID(self, level, stat, mode, recordid):
-        setattr(self, f'{level}_{stat}_id_{mode}', recordid)
-
-    def getrecords_level(self, stat, mode):
-        return [self.getrecord(level, stat, mode) for level in GameLevels]
-
-    def getrecordIDs_level(self, stat, mode):
-        return [self.getrecordID(level, stat, mode) for level in GameLevels]
-
     def update_3_level_cache_record(self, index: str, mode: str):
         key = f'player_{index}_{mode}_{self.id}'
         for level in GameLevels:
-            cache.hset(key, level, self.getrecord(level, index, mode))
-            recordid = self.getrecordID(level, index, mode)
+            ranking_field = RankingField(level, index, mode)
+            cache.hset(key, level, getattr(self, ranking_field.name))
+            recordid = getattr(self, ranking_field.id_name)
             cache.hset(key, f'{level}_id', 'None' if recordid is None else recordid)
         s = float(
-            self.getrecord('b', index, mode)
-            + self.getrecord('i', index, mode)
-            + self.getrecord('e', index, mode),
+            getattr(self, RankingField('b', index, mode).name)
+            + getattr(self, RankingField('i', index, mode).name)
+            + getattr(self, RankingField('e', index, mode).name),
         )
         cache.hset(key, 'sum', s)
         cache.zadd(f'player_{index}_{mode}_ids', {self.id: s})
-
-    # 删除mysql中该用户所有的记录。删录像时用
-    def del_user_record_sql(self):
-        for mode in GameModes:
-            for stat in RankingGameStats:
-                for level in GameLevels:
-                    self.setrecord(
-                        level, stat, mode,
-                        getattr(DefaultRankingScores, stat),
-                    )
-                    self.setrecordID(level, stat, mode, None)
-        self.save(update_fields=record_update_fields)
 
     # 删除redis中该用户所有的记录。删录像、删用户时用
     def del_user_record_redis(self):

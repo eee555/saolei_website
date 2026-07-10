@@ -33,7 +33,7 @@ receiver(pre_save, sender=GSCTournament)(handle_tournament_pre_save)
 
 @receiver(pre_save, sender=VideoModel, dispatch_uid='tournament.checkin_video_before_create')
 def checkin_video_before_create(sender, instance: VideoModel, **kwargs):
-    if instance.pk is not None or getattr(instance, '_skip_tournament_checkin', False):
+    if instance.pk is not None:
         return
     video_checkin(instance, getattr(instance, '_tournament_identifiers', []))
 
