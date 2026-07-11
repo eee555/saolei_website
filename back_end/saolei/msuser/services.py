@@ -32,6 +32,68 @@ def can_update_personal_record(video: VideoModel) -> bool:
     )
 
 
+def increment_video_count(userms: UserMS, level: MS_TextChoices.Level, mode: MS_TextChoices.Mode):
+    """增加用户录像计数。"""
+    userms.video_num_total += 1
+    update_fields = ['video_num_total']
+
+    if mode == MS_TextChoices.Mode.STD:
+        userms.video_num_std += 1
+        update_fields.append('video_num_std')
+    elif mode == MS_TextChoices.Mode.NF:
+        userms.video_num_nf += 1
+        update_fields.append('video_num_nf')
+    elif mode == MS_TextChoices.Mode.JSW:
+        userms.video_num_ng += 1
+        update_fields.append('video_num_ng')
+    elif mode == MS_TextChoices.Mode.BZD:
+        userms.video_num_dg += 1
+        update_fields.append('video_num_dg')
+
+    if level == MS_TextChoices.Level.BEGINNER:
+        userms.video_num_beg += 1
+        update_fields.append('video_num_beg')
+    elif level == MS_TextChoices.Level.INTERMEDIATE:
+        userms.video_num_int += 1
+        update_fields.append('video_num_int')
+    elif level == MS_TextChoices.Level.EXPERT:
+        userms.video_num_exp += 1
+        update_fields.append('video_num_exp')
+
+    userms.save(update_fields=update_fields)
+
+
+def decrement_video_count(userms: UserMS, level: MS_TextChoices.Level, mode: MS_TextChoices.Mode):
+    """减少用户录像计数。"""
+    userms.video_num_total -= 1
+    update_fields = ['video_num_total']
+
+    if mode == MS_TextChoices.Mode.STD:
+        userms.video_num_std -= 1
+        update_fields.append('video_num_std')
+    elif mode == MS_TextChoices.Mode.NF:
+        userms.video_num_nf -= 1
+        update_fields.append('video_num_nf')
+    elif mode == MS_TextChoices.Mode.JSW:
+        userms.video_num_ng -= 1
+        update_fields.append('video_num_ng')
+    elif mode == MS_TextChoices.Mode.BZD:
+        userms.video_num_dg -= 1
+        update_fields.append('video_num_dg')
+
+    if level == MS_TextChoices.Level.BEGINNER:
+        userms.video_num_beg -= 1
+        update_fields.append('video_num_beg')
+    elif level == MS_TextChoices.Level.INTERMEDIATE:
+        userms.video_num_int -= 1
+        update_fields.append('video_num_int')
+    elif level == MS_TextChoices.Level.EXPERT:
+        userms.video_num_exp -= 1
+        update_fields.append('video_num_exp')
+
+    userms.save(update_fields=update_fields)
+
+
 def update_news_queue(video: VideoModel, userms: UserMS, index: RankingStat, mode: RankingMode):
     """确定用户破某个纪录后，更新 Redis 破纪录消息。"""
     user = video.player

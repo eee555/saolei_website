@@ -7,8 +7,8 @@ from config.text_choices import MS_TextChoices
 from userprofile.models import UserProfile
 from utils import calculator
 from videomanager.models import VideoModel
-from .services import can_update_personal_record, get_current_record_keys_for_stats, rebuild_personal_records, update_personal_record_stats
-from .utils import RankingCategory, RankingField, VIDEO_RECORD_STATS, RankingStat, get_record_modes, is_valid_ranking_level, is_valid_ranking_mode
+from .services import can_update_personal_record, decrement_video_count, get_current_record_keys_for_stats, increment_video_count, rebuild_personal_records, update_personal_record_stats
+from .utils import RankingCategory, RankingField, VIDEO_RECORD_STATS, RankingStat, get_record_modes, get_video_num_limit, is_valid_ranking_level, is_valid_ranking_mode
 
 PERSONAL_RECORD_RELATED_VIDEO_FIELDS = {
     'state',
@@ -25,6 +25,28 @@ PERSONAL_RECORD_RELATED_VIDEO_FIELDS = {
     'double',
     'path',
 }
+
+
+@receiver(post_save, sender=VideoModel, dispatch_uid='msuser.update_video_count_on_video_save')
+def update_video_count_on_video_save(sender, instance: VideoModel, created: bool, update_fields=None, **kwargs):
+    if created and (userms := instance.player.userms) is not None:
+        increment_video_count(userms, instance.level, instance.mode)
+
+
+@receiver(post_save, sender=VideoModel, dispatch_uid='msuser.update_video_count_limit_on_video_save')
+def update_video_count_limit_on_video_save(sender, instance: VideoModel, created: bool, update_fields=None, **kwargs):
+    if instance.mode == MS_TextChoices.Mode.STD and instance.level == MS_TextChoices.Level.EXPERT and instance.state == MS_TextChoices.State.OFFICIAL:
+        userms = instance.player.userms
+        video_num_limit = get_video_num_limit(instance.timems)
+        if video_num_limit > userms.video_num_limit:
+            userms.video_num_limit = video_num_limit
+            userms.save(update_fields=['video_num_limit'])
+
+
+@receiver(post_delete, sender=VideoModel, dispatch_uid='msuser.update_video_count_on_video_delete')
+def update_video_count_on_video_delete(sender, instance: VideoModel, **kwargs):
+    if (userms := instance.player.userms) is not None:
+        decrement_video_count(userms, instance.level, instance.mode)
 
 
 def get_stats_update_set(video: VideoModel, old_values: dict[str, Any]) -> tuple[set[RankingStat], set[RankingStat]]:

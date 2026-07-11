@@ -197,7 +197,6 @@ def approve_single(videoid, check_identifier=True):
     userms: UserMS = video.player.userms
     video.state = MS_TextChoices.State.OFFICIAL
     video.save(update_fields=['state'])
-    video.update_video_num()
     identifier = video.video.identifier
     if check_identifier and identifier not in userms.identifiers:
         userms.identifiers.append(identifier)

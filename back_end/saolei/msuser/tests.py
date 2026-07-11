@@ -61,6 +61,57 @@ class PersonalRecordSignalTests(TestCase):
         self.assertAlmostEqual(self.userms.b_stnb_std, video.stnb)
         self.assertEqual(self.userms.b_stnb_id_std, video.id)
 
+    def test_create_updates_video_count(self):
+        self.create_video()
+
+        self.userms.refresh_from_db()
+        self.assertEqual(self.userms.video_num_total, 1)
+        self.assertEqual(self.userms.video_num_beg, 1)
+        self.assertEqual(self.userms.video_num_std, 1)
+
+    def test_frozen_video_updates_video_count(self):
+        self.create_video(state=MS_TextChoices.State.FROZEN)
+
+        self.userms.refresh_from_db()
+        self.assertEqual(self.userms.video_num_total, 1)
+        self.assertEqual(self.userms.video_num_beg, 1)
+        self.assertEqual(self.userms.video_num_std, 1)
+
+    def test_state_to_official_does_not_update_video_count_again(self):
+        video = self.create_video(state=MS_TextChoices.State.FROZEN)
+
+        video.state = MS_TextChoices.State.OFFICIAL
+        video.save(update_fields=['state'])
+
+        self.userms.refresh_from_db()
+        self.assertEqual(self.userms.video_num_total, 1)
+        self.assertEqual(self.userms.video_num_beg, 1)
+        self.assertEqual(self.userms.video_num_std, 1)
+
+    def test_delete_video_decrements_video_count(self):
+        video = self.create_video()
+
+        video.delete()
+
+        self.userms.refresh_from_db()
+        self.assertEqual(self.userms.video_num_total, 0)
+        self.assertEqual(self.userms.video_num_beg, 0)
+        self.assertEqual(self.userms.video_num_std, 0)
+
+    def test_expert_std_official_video_expands_video_count_limit(self):
+        self.create_video(level=MS_TextChoices.Level.EXPERT, timems=59000)
+
+        self.userms.refresh_from_db()
+        self.assertEqual(self.userms.video_num_limit, 3000)
+
+    def test_delete_video_does_not_reduce_video_count_limit(self):
+        video = self.create_video(level=MS_TextChoices.Level.EXPERT, timems=59000)
+
+        video.delete()
+
+        self.userms.refresh_from_db()
+        self.assertEqual(self.userms.video_num_limit, 3000)
+
     def test_leaving_official_rebuilds_personal_record(self):
         video = self.create_video()
         self.userms.refresh_from_db()

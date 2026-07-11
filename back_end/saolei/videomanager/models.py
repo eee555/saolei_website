@@ -252,57 +252,13 @@ class VideoModel(models.Model):
     def pop_redis(self, name: str):
         cache.hdel(name, self.id)
 
-    def update_video_num(self, add=True):
-        userms = self.player.userms
-        # add = True：新增录像；add = False：删除录像
-        if self.mode == MS_TextChoices.Mode.STD:
-            userms.video_num_std += 1 if add else -1
-        elif self.mode == MS_TextChoices.Mode.NF:
-            userms.video_num_nf += 1 if add else -1
-        elif self.mode == MS_TextChoices.Mode.JSW:
-            userms.video_num_ng += 1 if add else -1
-        elif self.mode == MS_TextChoices.Mode.BZD:
-            userms.video_num_dg += 1 if add else -1
-
-        if self.level == MS_TextChoices.Level.BEGINNER:
-            userms.video_num_beg += 1 if add else -1
-        elif self.level == MS_TextChoices.Level.INTERMEDIATE:
-            userms.video_num_int += 1 if add else -1
-        elif self.level == MS_TextChoices.Level.EXPERT:
-            userms.video_num_exp += 1 if add else -1
-
-        if add:
-            # 给高玩自动扩容
-            if self.mode == MS_TextChoices.Mode.STD and self.level == MS_TextChoices.Level.EXPERT:
-                if self.timems < 100000 and userms.video_num_limit < 1000:
-                    userms.video_num_limit = 1000
-                if self.timems < 60000 and userms.video_num_limit < 3000:
-                    userms.video_num_limit = 3000
-                if self.timems < 50000 and userms.video_num_limit < 5000:
-                    userms.video_num_limit = 5000
-                if self.timems < 40000 and userms.video_num_limit < 8000:
-                    userms.video_num_limit = 8000
-                if self.timems < 30000 and userms.video_num_limit < 10000:
-                    userms.video_num_limit = 10000
-
-        userms.save(update_fields=[
-            'video_num_limit', 'video_num_total', 'video_num_beg', 'video_num_int',
-            'video_num_exp', 'video_num_std', 'video_num_nf', 'video_num_ng', 'video_num_dg',
-        ])
-
     def update_redis(self):
         user: UserProfile = self.player
         if self.state == MS_TextChoices.State.PLAIN:
             logger.info(f'用户 {user.username}#{user.id} 录像#{self.id} 机审失败')
-            self.update_video_num()
         elif self.state == MS_TextChoices.State.IDENTIFIER:
             logger.info(f'用户 {user.username}#{user.id} 录像#{self.id} 标识不匹配')
-            self.update_video_num()
         elif self.state == MS_TextChoices.State.FROZEN:
             logger.info(f'用户 {user.username}#{user.id} 录像#{self.id} 不合法')
         elif self.state == MS_TextChoices.State.OFFICIAL:  # 合法
             logger.info(f'用户 {user.username}#{user.id} 录像#{self.id} 机审成功')
-            if not self.ongoing_tournament:
-                from .tasks import helper_video_pluck
-                helper_video_pluck(self)
-            self.update_video_num()
