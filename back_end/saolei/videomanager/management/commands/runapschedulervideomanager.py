@@ -53,42 +53,6 @@ def delete_freezed_video():
     VideoModel.objects.filter(upload_time__lt=ddl, state='b').delete()
 
 
-# 定时清除新闻
-@util.close_old_connections
-def delete_news_queue():
-    # 此处经常只能执行一次后任务消失。尝试在线上环境捕获问题。
-    logger.info('Starting delete_news_queue task')
-    try:
-        if cache.llen('news_queue') <= 100:
-            logger.info('news_queue length <= 100, skipping cleanup')
-            return
-        news_queue_list = cache.lrange('news_queue', 0, -1)
-        news_queue_list = [x for x in news_queue_list if not n_days_ago(json.loads(x)['time'])]
-        cache.delete('news_queue')
-        if news_queue_list:
-            cache.rpush('news_queue', *news_queue_list)
-        logger.info('delete_news_queue task completed successfully')
-    except Exception as e:
-        logger.error(f'Error in delete_news_queue: {e}')
-    finally:
-        logger.info('Finished delete_news_queue task')
-
-    # if cache.llen("news_queue") <= 100:
-    #     return
-    # news_queue_list = cache.lrange("news_queue", 0, -1)
-    # # news_queue的示例：
-    # # [b'{"time": "2024-08-09T17:58:06Z", "player": "\\u7530\\u94ed\\u626c",
-    # #  "player_id": 5, "video_id": 6, "index": "timems", "mode": "std",
-    # # "level": "e", "value": "54.760", "delta": "-8.130"}', b'{"time":
-    # # "2024-08-09T17:48:38Z", "player": "\\u7530\\u94ed\\u626c", "player_id":
-    # #  5, "video_id": 5, "index": "timems", "mode": "nf", "level": "e", "value":
-    # #  "65.370", "delta": "\\u65b0"}']
-    # news_queue_list = [x for x in news_queue_list if not n_days_ago(json.loads(x))]
-    # cache.delete("news_queue")
-    # if news_queue_list:
-    #     cache.rpush("news_queue", *news_queue_list)
-
-
 # The `close_old_connections` decorator ensures that database connections, that have become
 # unusable or are obsolete, are closed before and after your job has run. You should use it
 # to wrap any jobs that you schedule that access the Django database in any way.
@@ -135,18 +99,6 @@ class Command(BaseCommand):
             replace_existing=True,
         )
         logger.info("Added job 'delete_freezed_video'.")
-
-        scheduler.add_job(
-            delete_news_queue,
-            trigger=CronTrigger(
-                day_of_week='*', hour='17', minute='03',
-            ),
-            id='delete_news_queue',
-            misfire_grace_time=300,
-            max_instances=1,
-            replace_existing=True,
-        )
-        logger.info("Added job 'delete_news_queue'.")
 
         scheduler.add_job(
             delete_old_job_executions,

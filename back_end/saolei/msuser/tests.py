@@ -1,4 +1,7 @@
+import json
+
 from django.test import TestCase
+from django_redis import get_redis_connection
 
 from config.global_settings import DefaultRankingScores
 from config.text_choices import MS_TextChoices
@@ -6,10 +9,13 @@ from userprofile.models import UserProfile
 from videomanager.models import ExpandVideoModel, VideoModel
 from .models import UserMS
 from .signals import get_stats_update_set
+from .utils import RankingField, RankingValue
 
 
 class PersonalRecordSignalTests(TestCase):
     def setUp(self):
+        self.cache = get_redis_connection('saolei_website')
+        self.cache.delete('news_queue')
         self.userms = UserMS.objects.create()
         self.user = UserProfile.objects.create_user(
             username='player',
@@ -17,6 +23,33 @@ class PersonalRecordSignalTests(TestCase):
             password='password',
             userms=self.userms,
         )
+
+    def test_ranking_field_constructs_from_record_name(self):
+        ranking_field = RankingField('b_timems_std')
+
+        self.assertEqual(ranking_field.level, 'b')
+        self.assertEqual(ranking_field.stat, 'timems')
+        self.assertEqual(ranking_field.mode, 'std')
+        self.assertEqual(ranking_field.name, 'b_timems_std')
+        self.assertEqual(ranking_field.id_name, 'b_timems_id_std')
+
+    def test_ranking_field_constructs_from_record_id_name(self):
+        ranking_field = RankingField('e_stnb_id_nf')
+
+        self.assertEqual(ranking_field.level, 'e')
+        self.assertEqual(ranking_field.stat, 'stnb')
+        self.assertEqual(ranking_field.mode, 'nf')
+        self.assertEqual(ranking_field.name, 'e_stnb_nf')
+        self.assertEqual(ranking_field.id_name, 'e_stnb_id_nf')
+
+    def test_userms_gets_and_sets_record_by_ranking_field(self):
+        ranking_field = RankingField('b_timems_std')
+
+        self.userms.set_record(ranking_field, RankingValue(1234, 56))
+
+        self.assertEqual(self.userms.b_timems_std, 1234)
+        self.assertEqual(self.userms.b_timems_id_std, 56)
+        self.assertEqual(self.userms.get_record(ranking_field), RankingValue(1234, 56))
 
     def create_video(self, *, state=MS_TextChoices.State.OFFICIAL, level=MS_TextChoices.Level.BEGINNER, timems=1000, bv=10):
         expand = ExpandVideoModel.objects.create(identifier='identifier')
@@ -60,6 +93,68 @@ class PersonalRecordSignalTests(TestCase):
         self.assertEqual(self.userms.b_timems_id_std, video.id)
         self.assertAlmostEqual(self.userms.b_stnb_std, video.stnb)
         self.assertEqual(self.userms.b_stnb_id_std, video.id)
+
+    def test_personal_record_update_pushes_news_queue_from_userms_signal(self):
+        UserMS.objects.filter(pk=self.userms.pk).update(e_timems_std=50000)
+
+        video = self.create_video()
+
+        news_items = [json.loads(item) for item in self.cache.zrevrange('news_queue', 0, -1)]
+        self.assertTrue(any(
+            item['video_id'] == video.id
+            and item['index'] == 'timems'
+            and item['mode'] == 'std'
+            and item['level'] == MS_TextChoices.Level.BEGINNER
+            and item['old_value'] is None
+            and 'delta' not in item
+            for item in news_items
+        ))
+
+    def test_news_queue_old_timems_value_uses_display_unit(self):
+        UserMS.objects.filter(pk=self.userms.pk).update(e_timems_std=50000)
+        self.create_video(timems=2000)
+        self.cache.delete('news_queue')
+
+        video = self.create_video(timems=1000)
+
+        news_items = [json.loads(item) for item in self.cache.zrevrange('news_queue', 0, -1)]
+        self.assertTrue(any(
+            item['video_id'] == video.id
+            and item['index'] == 'timems'
+            and item['level'] == MS_TextChoices.Level.BEGINNER
+            and item['old_value'] == 2000
+            for item in news_items
+        ))
+
+    def test_news_queue_skips_incomplete_record_update_fields(self):
+        UserMS.objects.filter(pk=self.userms.pk).update(e_timems_std=50000)
+        self.create_video(timems=2000)
+        self.cache.delete('news_queue')
+        self.userms.refresh_from_db()
+
+        self.userms.b_timems_std = 1000
+        self.userms.save(update_fields=['b_timems_std'])
+
+        self.assertEqual(self.cache.zcard('news_queue'), 0)
+
+    def test_rebuild_personal_record_does_not_push_news_queue(self):
+        fast_video = self.create_video(timems=1000)
+        self.create_video(timems=2000)
+        self.cache.delete('news_queue')
+
+        fast_video.delete()
+
+        self.assertEqual(self.cache.zcard('news_queue'), 0)
+
+    def test_news_queue_keeps_latest_200_items(self):
+        for i in range(205):
+            self.cache.zadd('news_queue', {json.dumps({'time': i}): i})
+            news_count = self.cache.zcard('news_queue')
+            if news_count > 200:
+                self.cache.zremrangebyrank('news_queue', 0, news_count - 201)
+
+        self.assertEqual(self.cache.zcard('news_queue'), 200)
+        self.assertEqual(json.loads(self.cache.zrange('news_queue', 0, 0)[0])['time'], 5)
 
     def test_create_updates_video_count(self):
         self.create_video()

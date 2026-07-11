@@ -1,18 +1,12 @@
-import json
 from typing import Iterable
-
-from django_redis import get_redis_connection
 
 from config.global_settings import DefaultRankingScores, GameLevels, GameModes, RankingGameStats
 from config.text_choices import MS_TextChoices
 from msuser.models import UserMS
 from userprofile.models import UserProfile
-from utils import ComplexEncoder
 from utils.cmp import isbetter
 from videomanager.models import VideoModel
-from .utils import RankingField, RankingMode, RankingStat, get_record_modes, is_valid_ranking_level, is_valid_ranking_mode
-
-cache = get_redis_connection('saolei_website')
+from .utils import RankingField, RankingMode, RankingStat, RankingValue, get_record_modes, is_valid_ranking_level, is_valid_ranking_mode
 
 STOCK_RECORD_QUERY_FIELDS = {
     'timems': 'timems',
@@ -94,43 +88,15 @@ def decrement_video_count(userms: UserMS, level: MS_TextChoices.Level, mode: MS_
     userms.save(update_fields=update_fields)
 
 
-def update_news_queue(video: VideoModel, userms: UserMS, index: RankingStat, mode: RankingMode):
-    """确定用户破某个纪录后，更新 Redis 破纪录消息。"""
-    user = video.player
-    ranking_field = RankingField(video.level, index, mode)
-    if userms.e_timems_std >= 60000 and (index != 'timems' or video.level != MS_TextChoices.Level.EXPERT):
-        return
-    value = f'{getattr(video, index) / 1000:.3f}' if index == 'timems' else f'{getattr(video, index):.3f}'
-    delta_number = getattr(video, index) - getattr(userms, ranking_field.name)
-    if index == 'timems':
-        delta_number /= 1000
-    if getattr(userms, ranking_field.id_name):
-        delta = f'{delta_number:.3f}'
-    else:
-        delta = '新'
-    cache.lpush('news_queue', json.dumps({
-        'time': video.upload_time,
-        'player_id': user.id,
-        'video_id': video.id,
-        'index': index,
-        'mode': mode,
-        'level': video.level,
-        'value': value,
-        'delta': delta,
-    }, cls=ComplexEncoder))
-
-
 def check_personal_best_stats(video: VideoModel, userms: UserMS, mode: RankingMode, stats: Iterable[RankingStat]):
     """检查录像是否打破某个模式下的指定个人纪录。"""
     update_fields = []
     for statname in stats:
         stat = getattr(video, statname)
         ranking_field = RankingField(video.level, statname, mode)
-        if stat is not None and isbetter(statname, stat, getattr(userms, ranking_field.name)):
-            update_news_queue(video, userms, statname, mode)
-            setattr(userms, ranking_field.name, stat)
-            setattr(userms, ranking_field.id_name, video.id)
-            update_fields.extend([ranking_field.name, ranking_field.id_name])
+        if stat is not None and isbetter(statname, stat, userms.get_record(ranking_field).value):
+            userms.set_record(ranking_field, RankingValue(stat, video.id))
+            update_fields.extend(ranking_field.update_names)
             video.player.check_ms_ranking(statname, mode)
     return update_fields
 
@@ -157,7 +123,7 @@ def get_current_record_keys_for_stats(video: VideoModel, stats: set[RankingStat]
     for stat in stats:
         for mode in get_record_modes(video.mode):
             ranking_field = RankingField(video.level, stat, mode)
-            if getattr(userms, ranking_field.id_name) == video.id:
+            if userms.get_record(ranking_field).video_id == video.id:
                 record_keys.add(ranking_field)
     return record_keys
 
@@ -203,15 +169,17 @@ def rebuild_personal_records(user: UserProfile, record_keys: set[RankingField]):
     for ranking_field in record_keys:
         video = get_best_video_for_field(user, ranking_field)
         if video is None:
-            setattr(userms, ranking_field.name, getattr(DefaultRankingScores, ranking_field.stat))
-            setattr(userms, ranking_field.id_name, None)
+            userms.set_record(ranking_field, RankingValue(getattr(DefaultRankingScores, ranking_field.stat), None))
         else:
-            setattr(userms, ranking_field.name, getattr(video, ranking_field.stat))
-            setattr(userms, ranking_field.id_name, video.id)
-        update_fields.extend([ranking_field.name, ranking_field.id_name])
+            userms.set_record(ranking_field, RankingValue(getattr(video, ranking_field.stat), video.id))
+        update_fields.extend(ranking_field.update_names)
         cache_keys.add((ranking_field.stat, ranking_field.mode))
 
-    userms.save(update_fields=update_fields)
+    userms._skip_msuser_news_signal = True
+    try:
+        userms.save(update_fields=update_fields)
+    finally:
+        userms._skip_msuser_news_signal = False
     for stat, mode in cache_keys:
         userms.update_3_level_cache_record(stat, mode)
 

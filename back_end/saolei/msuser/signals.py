@@ -1,14 +1,21 @@
+import json
 from typing import Any
 
-from django.db.models.signals import post_delete, post_save
+from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
+from django.utils import timezone
+from django_redis import get_redis_connection
 
+from config.global_settings import DefaultRankingScores, GameLevels, GameModes, RankingGameStats
 from config.text_choices import MS_TextChoices
 from userprofile.models import UserProfile
-from utils import calculator
+from utils import ComplexEncoder, calculator
 from videomanager.models import VideoModel
+from .models import UserMS
 from .services import can_update_personal_record, decrement_video_count, get_current_record_keys_for_stats, increment_video_count, rebuild_personal_records, update_personal_record_stats
-from .utils import RankingCategory, RankingField, VIDEO_RECORD_STATS, RankingStat, get_record_modes, get_video_num_limit, is_valid_ranking_level, is_valid_ranking_mode
+from .utils import RankingCategory, RankingField, RankingValue, VIDEO_RECORD_STATS, RankingStat, get_record_modes, get_video_num_limit, is_valid_ranking_level, is_valid_ranking_mode
+
+cache = get_redis_connection('saolei_website')
 
 PERSONAL_RECORD_RELATED_VIDEO_FIELDS = {
     'state',
@@ -25,6 +32,18 @@ PERSONAL_RECORD_RELATED_VIDEO_FIELDS = {
     'double',
     'path',
 }
+
+NEWS_RECORD_FIELDS = {
+    field
+    for level in GameLevels
+    for mode in GameModes
+    for stat in RankingGameStats
+    for field in (
+        RankingField(level, stat, mode).name,
+        RankingField(level, stat, mode).id_name,
+    )
+}
+NEWS_QUEUE_MAX_SIZE = 200
 
 
 @receiver(post_save, sender=VideoModel, dispatch_uid='msuser.update_video_count_on_video_save')
@@ -47,6 +66,66 @@ def update_video_count_limit_on_video_save(sender, instance: VideoModel, created
 def update_video_count_on_video_delete(sender, instance: VideoModel, **kwargs):
     if (userms := instance.player.userms) is not None:
         decrement_video_count(userms, instance.level, instance.mode)
+
+
+@receiver(pre_save, sender=UserMS, dispatch_uid='msuser.capture_previous_records_for_news_queue')
+def capture_previous_records_for_news_queue(sender, instance: UserMS, update_fields=None, **kwargs):
+    if instance.pk is None or getattr(instance, '_skip_msuser_news_signal', False):
+        instance._previous_news_records = {}
+        return
+    if update_fields is None:
+        fields = NEWS_RECORD_FIELDS
+    else:
+        fields = set(update_fields) & NEWS_RECORD_FIELDS
+    if not fields:
+        instance._previous_news_records = {}
+        return
+    previous = UserMS.objects.filter(pk=instance.pk).values(*fields).first() or {}
+    old_records = {}
+    handled_fields = set()
+    for field_name in previous:
+        ranking_field = RankingField(field_name)
+        if ranking_field in handled_fields or any(name not in previous for name in ranking_field.update_names):
+            continue
+        handled_fields.add(ranking_field)
+        old_records[ranking_field] = RankingValue(previous[ranking_field.name], previous[ranking_field.id_name])
+    instance._previous_news_records = old_records
+
+
+def push_record_news(userms: UserMS, ranking_field: RankingField, old_record: RankingValue):
+    current_record = userms.get_record(ranking_field)
+    if current_record.video_id is None:
+        return
+    default_value = getattr(DefaultRankingScores, ranking_field.stat)
+    old_value = None if old_record.value == default_value else old_record.value
+    news_time = timezone.now()
+    news = json.dumps({
+        'time': news_time,
+        'player_id': userms.parent.id,
+        'video_id': current_record.video_id,
+        'index': ranking_field.stat,
+        'mode': ranking_field.mode,
+        'level': ranking_field.level,
+        'value': current_record.value,
+        'old_value': old_value,
+    }, cls=ComplexEncoder)
+    cache.zadd('news_queue', {news: news_time.timestamp()})
+    news_count = cache.zcard('news_queue')
+    if news_count > NEWS_QUEUE_MAX_SIZE:
+        cache.zremrangebyrank('news_queue', 0, news_count - NEWS_QUEUE_MAX_SIZE - 1)
+
+
+@receiver(post_save, sender=UserMS, dispatch_uid='msuser.push_news_queue_on_record_save')
+def push_news_queue_on_record_save(sender, instance: UserMS, created: bool, update_fields=None, **kwargs):
+    if created or getattr(instance, '_skip_msuser_news_signal', False):
+        return
+    previous = getattr(instance, '_previous_news_records', {})
+    if not previous:
+        return
+    for ranking_field, old_record in previous.items():
+        if instance.get_record(ranking_field).value == old_record.value:
+            continue
+        push_record_news(instance, ranking_field, old_record)
 
 
 def get_stats_update_set(video: VideoModel, old_values: dict[str, Any]) -> tuple[set[RankingStat], set[RankingStat]]:
@@ -201,7 +280,7 @@ def rebuild_records_for_category(video: VideoModel, category: RankingCategory, s
     for record_mode in get_record_modes(category.mode):
         for stat in stats:
             ranking_field = RankingField(category.level, stat, record_mode)
-            if getattr(userms, ranking_field.id_name) == video.id:
+            if userms.get_record(ranking_field).video_id == video.id:
                 record_keys.add(ranking_field)
     rebuild_personal_records(user, record_keys)
 

@@ -2,7 +2,7 @@ from django.db import models
 from django_redis import get_redis_connection
 
 from config.global_settings import DefaultRankingScores, GameLevels, GameModes, RankingGameStats
-from .utils import RankingField
+from .utils import RankingField, RankingValue
 
 cache = get_redis_connection('saolei_website')
 
@@ -185,17 +185,27 @@ class UserMS(models.Model):
     def __str__(self):
         return 'identifiers: {}'.format(self.identifiers)
 
+    def get_record(self, field: RankingField):
+        return RankingValue(
+            getattr(self, field.name),
+            getattr(self, field.id_name),
+        )
+
+    def set_record(self, field: RankingField, value: RankingValue):
+        setattr(self, field.name, value.value)
+        setattr(self, field.id_name, value.video_id)
+
     def update_3_level_cache_record(self, index: str, mode: str):
         key = f'player_{index}_{mode}_{self.id}'
         for level in GameLevels:
             ranking_field = RankingField(level, index, mode)
-            cache.hset(key, level, getattr(self, ranking_field.name))
-            recordid = getattr(self, ranking_field.id_name)
-            cache.hset(key, f'{level}_id', 'None' if recordid is None else recordid)
+            record = self.get_record(ranking_field)
+            cache.hset(key, level, record.value)
+            cache.hset(key, f'{level}_id', 'None' if record.video_id is None else record.video_id)
         s = float(
-            getattr(self, RankingField('b', index, mode).name)
-            + getattr(self, RankingField('i', index, mode).name)
-            + getattr(self, RankingField('e', index, mode).name),
+            self.get_record(RankingField('b', index, mode)).value
+            + self.get_record(RankingField('i', index, mode)).value
+            + self.get_record(RankingField('e', index, mode)).value,
         )
         cache.hset(key, 'sum', s)
         cache.zadd(f'player_{index}_{mode}_ids', {self.id: s})

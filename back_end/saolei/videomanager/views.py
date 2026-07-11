@@ -171,7 +171,7 @@ def remove_from_newest_queue(request: HttpRequest):
 # http://127.0.0.1:8000/video/news_queue
 @require_GET
 def news_queue(request):
-    news_queue = cache.lrange('news_queue', 0, -1)
+    news_queue = cache.zrevrange('news_queue', 0, 199)
     return JsonResponse(news_queue, encoder=ComplexEncoder, safe=False)
 
 

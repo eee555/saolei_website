@@ -27,11 +27,36 @@ class RankingCategory:
     mode: RankingVideoMode
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, init=False)
 class RankingField:
     level: RankingLevel
     stat: RankingStat
     mode: RankingMode
+
+    def __init__(self, level_or_name: RankingLevel | str, stat: RankingStat | None = None, mode: RankingMode | None = None):
+        if stat is None and mode is None:
+            level, parsed_stat, parsed_mode = self.parse_name(level_or_name)
+        elif stat is not None and mode is not None:
+            level = level_or_name
+            parsed_stat = stat
+            parsed_mode = mode
+        else:
+            raise TypeError('RankingField expects either a name string or level, stat, mode')
+
+        object.__setattr__(self, 'level', level)
+        object.__setattr__(self, 'stat', parsed_stat)
+        object.__setattr__(self, 'mode', parsed_mode)
+
+    @staticmethod
+    def parse_name(name: str) -> tuple[RankingLevel, RankingStat, RankingMode]:
+        parts = name.split('_')
+        if len(parts) == 3:
+            level, stat, mode = parts
+        elif len(parts) == 4 and parts[2] == 'id':
+            level, stat, _, mode = parts
+        else:
+            raise ValueError(f'Invalid ranking field name: {name}')
+        return level, stat, mode
 
     @property
     def name(self):
@@ -40,6 +65,16 @@ class RankingField:
     @property
     def id_name(self):
         return f'{self.level}_{self.stat}_id_{self.mode}'
+
+    @property
+    def update_names(self):
+        return [self.name, self.id_name]
+
+
+@dataclass(frozen=True)
+class RankingValue:
+    value: int | float
+    video_id: int | None
 
 
 def get_record_modes(video_mode: RankingVideoMode | str) -> tuple[RankingMode, ...]:

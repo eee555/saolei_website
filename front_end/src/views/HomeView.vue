@@ -31,9 +31,9 @@
                                 {{ t('news.breakRecordTo', {mode: t(`common.mode.${news.mode}`), level: t(`common.level.${news.level}`), stat: t(`common.prop.${news.index}`)}) }}
                             </span>
                             &nbsp;
-                            <PreviewNumber :id="news.video_id" :text="to_fixed_n(news.value, 3)" />
+                            <PreviewNumber :id="news.video_id" :text="formatNewsValue(news)" />
                             <span class="text">
-                                {{ news.delta == "新" ? "" : Number(news.delta) > 0 ? "↑" : "↓" }}{{ news.delta }}
+                                {{ formatNewsDelta(news) }}
                             </span>
                         </div>
                     </ElTabPane>
@@ -76,7 +76,7 @@ import { BaseIconRefresh } from '@/components/common/icon';
 import PlayerName from '@/components/PlayerName.vue';
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import VideoList from '@/components/VideoList/App.vue';
-import { to_fixed_n } from '@/utils';
+import { ms_to_s, to_fixed_n } from '@/utils';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { utc_to_local_format } from '@/utils/system/tools';
 import type { VideoAbstractInfo } from '@/utils/videoabstract';
@@ -92,8 +92,8 @@ interface NewsItem {
     index: string;
     mode: string;
     level: string;
-    value: string;
-    delta: string;
+    value: number;
+    old_value: number | null;
 }
 
 const review_queue = ref<VideoAbstract[]>([]);
@@ -149,12 +149,55 @@ const update_news_queue = async () => {
     await proxy.$axios.get('/video/news_queue/', {
         params: {},
     }).then(function ({ data }) {
-        news_queue.value = (data as string[]).map((v) => JSON.parse(v) as NewsItem);
+        news_queue.value = (data as string[]).map(parseNewsItem).filter((item): item is NewsItem => item !== null);
     });
     if (news_queue_status.value == 1) {
         news_queue_status.value = 2;
     }
 };
+
+function parseNewsItem(raw: string): NewsItem | null {
+    try {
+        const item = JSON.parse(raw) as Partial<NewsItem> & { delta?: unknown };
+        if (
+            typeof item.time !== 'string'
+            || typeof item.player_id !== 'number'
+            || typeof item.video_id !== 'number'
+            || typeof item.index !== 'string'
+            || typeof item.mode !== 'string'
+            || typeof item.level !== 'string'
+            || typeof item.value !== 'number'
+            || item.old_value === undefined
+            || (item.old_value !== null && typeof item.old_value !== 'number')
+            || item.delta !== undefined
+        ) {
+            return null;
+        }
+        return item as NewsItem;
+    } catch {
+        return null;
+    }
+}
+
+function formatNewsDelta(news: NewsItem): string {
+    if (news.old_value === null) {
+        return '';
+    }
+    const delta = news.value - news.old_value;
+    const arrow = delta > 0 ? '↑' : '↓';
+    return `${arrow}${formatNewsStat(news.index, delta)}`;
+}
+
+function formatNewsValue(news: NewsItem): string {
+    return formatNewsStat(news.index, news.value);
+}
+
+function formatNewsStat(stat: string, value: number): string {
+    if (stat === 'timems') {
+        return ms_to_s(value);
+    }
+    return String(to_fixed_n(value, 3));
+}
 </script>
 
 <style lang='less'>
