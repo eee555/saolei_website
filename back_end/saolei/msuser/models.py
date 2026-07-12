@@ -2,6 +2,7 @@ from django.db import models
 from django_redis import get_redis_connection
 
 from config.global_settings import DefaultRankingScores, GameLevels, GameModes, RankingGameStats
+from utils.cmp import isbetter
 from .utils import RankingField, RankingValue
 
 cache = get_redis_connection('saolei_website')
@@ -216,3 +217,14 @@ class UserMS(models.Model):
             for stat in RankingGameStats:
                 cache.delete(f'player_{stat}_{mode}_{self.id}')
                 cache.zrem(f'player_{stat}_{mode}_ids', self.id)
+
+    def check_ms_ranking(self, statname: str, mode: str):
+        """
+        检查用户是否可以加入排行，并更新排行榜
+        TODO: 移动到signals
+        """
+        for level in GameLevels:
+            ranking_field = RankingField(level, statname, mode)
+            if not isbetter(statname, getattr(self, ranking_field.name), getattr(DefaultRankingScores, statname)):
+                return
+        self.update_3_level_cache_record(statname, mode)

@@ -15,6 +15,8 @@ from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from customranking.cache import PLuckRankingCache
 from customranking.models import CustomPluckRecord
 from identifier.models import Identifier
+from identifier.services import bind_identifier as bind_identifier_service
+from identifier.services import unbind_identifier
 from msuser.models import UserMS
 from tournament.models import GSCTournament
 from userprofile.models import UserProfile
@@ -135,8 +137,7 @@ class VideoUploadRankingIntegrationTest(TestCase):
         self.assertEqual(video.state, MS_TextChoices.State.IDENTIFIER)
         self.assert_no_personal_record()
 
-        identifier.userms = self.userms
-        identifier.save(update_fields=['userms'])
+        bind_identifier_service(identifier, self.userms)
 
         video.refresh_from_db()
         self.userms.refresh_from_db()
@@ -144,8 +145,7 @@ class VideoUploadRankingIntegrationTest(TestCase):
         self.assertEqual(getattr(self.userms, f'{parser.level}_timems_std'), parser.timems)
         self.assertEqual(getattr(self.userms, f'{parser.level}_timems_id_std'), video.id)
 
-        identifier.userms = None
-        identifier.save(update_fields=['userms'])
+        unbind_identifier(identifier, self.userms)
 
         video.refresh_from_db()
         self.assertEqual(video.state, MS_TextChoices.State.IDENTIFIER)
@@ -181,16 +181,14 @@ class VideoUploadRankingIntegrationTest(TestCase):
         self.assertEqual(video.state, MS_TextChoices.State.IDENTIFIER)
         self.assertFalse(CustomPluckRecord.objects.filter(player=self.user, level=parser.level).exists())
 
-        identifier.userms = self.userms
-        identifier.save(update_fields=['userms'])
+        bind_identifier_service(identifier, self.userms)
 
         video.refresh_from_db()
         self.assertEqual(video.state, MS_TextChoices.State.OFFICIAL)
         record = CustomPluckRecord.objects.get(player=self.user, level=parser.level)
         self.assertEqual(record.video_id, video.id)
 
-        identifier.userms = None
-        identifier.save(update_fields=['userms'])
+        unbind_identifier(identifier, self.userms)
 
         video.refresh_from_db()
         self.assertEqual(video.state, MS_TextChoices.State.IDENTIFIER)

@@ -6,10 +6,8 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_cleanup import cleanup
 
-from config.global_settings import DefaultChances, DefaultRankingScores, GameLevels, MaxSizes
+from config.global_settings import DefaultChances, MaxSizes
 from msuser.models import UserMS
-from msuser.utils import RankingField
-from utils.cmp import isbetter
 from .fields import RestrictedImageField
 
 username_validator = UnicodeUsernameValidator()
@@ -97,14 +95,6 @@ class UserProfile(AbstractUser):
 
     def has_realname(self) -> bool:
         return self.realname != '匿名'
-
-    # 检查用户是否可以加入排行，并更新排行榜
-    def check_ms_ranking(self, statname: str, mode: str):
-        for level in GameLevels:
-            ranking_field = RankingField(level, statname, mode)
-            if not isbetter(statname, getattr(self.userms, ranking_field.name), getattr(DefaultRankingScores, statname)):
-                return
-        self.userms.update_3_level_cache_record(statname, mode)
 
 
 # 邮箱验证

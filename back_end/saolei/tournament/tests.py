@@ -34,7 +34,7 @@ class TournamentTestCase(TestCase):
         pass
 
     def create_video(self, *, tournament_identifiers=None):
-        expand_video = ExpandVideoModel.objects.create(identifier='gsc-video', stnb=0)
+        expand_video = ExpandVideoModel.objects.create(identifier='gsc-video')
         video = VideoModel(
             player=self.user,
             file='videos/test.evf',

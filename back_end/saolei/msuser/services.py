@@ -1,12 +1,14 @@
 from typing import Iterable
 
+from django.db.models import QuerySet
+
 from config.global_settings import DefaultRankingScores, GameLevels, GameModes, RankingGameStats
 from config.text_choices import MS_TextChoices
 from msuser.models import UserMS
 from userprofile.models import UserProfile
 from utils.cmp import isbetter
 from videomanager.models import VideoModel
-from .utils import RankingField, RankingMode, RankingStat, RankingValue, get_record_modes, is_valid_ranking_level, is_valid_ranking_mode
+from .utils import LEVELS, VIDEO_RECORD_STATS, RankingField, RankingMode, RankingStat, RankingValue, get_record_modes, is_valid_ranking_level, is_valid_ranking_mode
 
 STOCK_RECORD_QUERY_FIELDS = {
     'timems': 'timems',
@@ -97,7 +99,7 @@ def check_personal_best_stats(video: VideoModel, userms: UserMS, mode: RankingMo
         if stat is not None and isbetter(statname, stat, userms.get_record(ranking_field).value):
             userms.set_record(ranking_field, RankingValue(stat, video.id))
             update_fields.extend(ranking_field.update_names)
-            video.player.check_ms_ranking(statname, mode)
+            userms.check_ms_ranking(statname, mode)
     return update_fields
 
 
@@ -128,11 +130,24 @@ def get_current_record_keys_for_stats(video: VideoModel, stats: set[RankingStat]
     return record_keys
 
 
-def get_best_video_for_field(user: UserProfile, field: RankingField):
-    from videomanager.models import VideoModel
+def get_current_record_keys_for_video_ids(userms: UserMS, video_ids: set[int]):
+    """找出当前个人纪录中指向指定录像 id 的字段。"""
+    if not video_ids:
+        return set[RankingField]()
 
-    videos = VideoModel.objects.filter(
-        player=user,
+    record_keys = set[RankingField]()
+    for level in LEVELS:
+        for stat in VIDEO_RECORD_STATS:
+            for mode in GameModes:
+                ranking_field = RankingField(level, stat, mode)
+                if userms.get_record(ranking_field).video_id in video_ids:
+                    record_keys.add(ranking_field)
+    return record_keys
+
+
+def get_best_video_from_queryset(videos: QuerySet[VideoModel], field: RankingField):
+    """从给定录像 queryset 中找出某个经典纪录字段的最佳录像。"""
+    videos = videos.filter(
         level=field.level,
         state=MS_TextChoices.State.OFFICIAL,
         ongoing_tournament=False,
@@ -157,6 +172,33 @@ def get_best_video_for_field(user: UserProfile, field: RankingField):
     return videos.exclude(**{f'{query_field}__isnull': True}).order_by(*order_by).first()
 
 
+def update_personal_records_from_videos(userms: UserMS, videos: QuerySet[VideoModel]):
+    """将同一用户的一批新有效录像吸收到经典个人纪录中。"""
+    update_fields = []
+    cache_keys = set()
+
+    for level in LEVELS:
+        for stat in VIDEO_RECORD_STATS:
+            for mode in GameModes:
+                ranking_field = RankingField(level, stat, mode)
+                video = get_best_video_from_queryset(videos, ranking_field)
+                if video is None:
+                    continue
+
+                stat_value = getattr(video, stat)
+                if stat_value is not None and isbetter(stat, stat_value, userms.get_record(ranking_field).value):
+                    userms.set_record(ranking_field, RankingValue(stat_value, video.id))
+                    update_fields.extend(ranking_field.update_names)
+                    cache_keys.add((ranking_field.stat, ranking_field.mode))
+
+    if not update_fields:
+        return
+
+    userms.save(update_fields=list(dict.fromkeys(update_fields)))
+    for stat, mode in cache_keys:
+        userms.check_ms_ranking(stat, mode)
+
+
 def rebuild_personal_records(user: UserProfile, record_keys: set[RankingField]):
     """只重算指定的经典个人纪录。"""
     if not record_keys:
@@ -166,8 +208,9 @@ def rebuild_personal_records(user: UserProfile, record_keys: set[RankingField]):
     update_fields = []
     cache_keys = set()
 
+    videos = VideoModel.objects.filter(player=user)
     for ranking_field in record_keys:
-        video = get_best_video_for_field(user, ranking_field)
+        video = get_best_video_from_queryset(videos, ranking_field)
         if video is None:
             userms.set_record(ranking_field, RankingValue(getattr(DefaultRankingScores, ranking_field.stat), None))
         else:

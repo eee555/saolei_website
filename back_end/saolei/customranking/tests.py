@@ -40,7 +40,7 @@ class CustomRankingTestCase(TestCase):
         mode=MS_TextChoices.Mode.STD,
         state=MS_TextChoices.State.PLAIN,
     ):
-        expand = ExpandVideoModel.objects.create(identifier=f'id-{player.id}-{timems}', stnb=0)
+        expand = ExpandVideoModel.objects.create(identifier=f'id-{player.id}-{timems}')
         video = VideoModel.objects.create(
             player=player,
             file=f'videos/test-{player.id}-{timems}.avf',

@@ -9,6 +9,7 @@ from userprofile.models import UserProfile
 from utils.response import HttpResponseConflict
 from videomanager.models import VideoModel
 from .models import Identifier
+from .services import bind_identifier, set_safe, unbind_identifier
 
 logger = logging.getLogger('userprofile')
 
@@ -31,10 +32,7 @@ def add_identifier(request):
     video_list = VideoModel.objects.filter(player=user, video__identifier=identifier_text)
     if not video_list:
         return JsonResponse({'type': 'error', 'object': 'identifier', 'category': 'notFound'})
-    identifier.userms = user.userms
-    identifier.save()
-    user.userms.identifiers.append(identifier_text)
-    user.userms.save()
+    bind_identifier(identifier, user.userms)
     logger.info(f'用户 {user.username}#{user.id} 绑定标识 "{identifier_text}"')
     return JsonResponse({'type': 'success', 'object': 'identifier', 'category': 'add', 'value': len(video_list)})
 
@@ -50,11 +48,9 @@ def del_identifier(request):
         return HttpResponseNotFound()
     if identifier.userms.parent.id != user.id:
         return HttpResponseForbidden()
-    identifier.userms = None
-    identifier.save()
-    user.userms.identifiers.remove(identifier_text)
-    user.userms.save()
+    changed_count = unbind_identifier(identifier, user.userms)
     logger.info(f'用户 {user.username}#{user.id} 解绑标识 "{identifier_text}"')
+    logger.info(f'修改了 {changed_count} 个录像状态')
     video_list = VideoModel.objects.filter(player=user, video__identifier=identifier_text)
     return JsonResponse({'type': 'success', 'object': 'identifier', 'category': 'add', 'value': len(video_list)})
 
@@ -70,18 +66,12 @@ def staff_add_identifier(request: HttpRequest):
     if not (user := UserProfile.objects.filter(id=userid).first()):
         return HttpResponseNotFound('user')
     if not (identifier := Identifier.objects.filter(identifier=identifier_text).first()):
-        identifier = Identifier.objects.create(identifier=identifier_text, safe=True, userms=user.userms)
+        identifier = Identifier.objects.create(identifier=identifier_text, safe=True)
     if identifier.userms and identifier.userms.parent != user:
         return HttpResponseForbidden()
-    identifier.userms = user.userms
-    identifier.save()
-    userms = user.userms
-    if identifier_text not in userms.identifiers:
-        userms.identifiers.append(identifier_text)
-        userms.save()
+    changed_count = bind_identifier(identifier, user.userms)
     logger.info(f'管理员 #{request.user.id} 为用户 {user.realname}#{user.id} 添加标识 "{identifier_text}"')
-    video_list = VideoModel.objects.filter(player=user, video__identifier=identifier_text, state=MS_TextChoices.State.IDENTIFIER)
-    logger.info(f'修改了 {len(video_list)} 个录像状态')
+    logger.info(f'修改了 {changed_count} 个录像状态')
     return HttpResponse()
 
 
@@ -97,17 +87,14 @@ def staff_del_identifier(request):
         return HttpResponseNotFound()
     videos = VideoModel.objects.filter(video__identifier=identifier_text, state=MS_TextChoices.State.OFFICIAL)
     if not videos:
+        if identifier.userms_id is not None:
+            unbind_identifier(identifier)
         identifier.delete()
         logger.info(f'管理员 #{request.user.id} 删除标识 "{identifier_text}"')
     else:
-        userms = identifier.userms
-        if userms and identifier_text in userms.identifiers:
-            userms.identifiers.remove(identifier_text)
-            userms.save()
-        identifier.userms = None
-        identifier.save()
+        changed_count = unbind_identifier(identifier)
         logger.info(f'管理员 #{request.user.id} 解绑标识 "{identifier_text}"')
-        logger.info(f'修改了 {len(videos)} 个录像状态')
+        logger.info(f'修改了 {changed_count} 个录像状态')
     return HttpResponse()
 
 
@@ -121,8 +108,7 @@ def staff_approve_identifier(request):
     identifier = Identifier.objects.filter(identifier=identifier_text).first()
     if not identifier:
         return HttpResponseNotFound()
-    identifier.safe = True
-    identifier.save()
+    set_safe(identifier, True)
     logger.info(f'管理员 #{request.user.id} 过审标识 "{identifier_text}"')
     return HttpResponse()
 

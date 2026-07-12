@@ -37,8 +37,37 @@ class VideoQueueCache:
             return
         cache.hset(self.key, video.id, json.dumps(serialize_video_to_queue(video), cls=ComplexEncoder))
 
+    def add_bulk(self, videos):
+        mapping = {
+            video.id: json.dumps(serialize_video_to_queue(video), cls=ComplexEncoder)
+            for video in videos
+            if not video.ongoing_tournament
+        }
+        if mapping:
+            cache.hset(self.key, mapping=mapping)
+
+    def update_bulk(self, videos):
+        videos = [video for video in videos if not video.ongoing_tournament]
+        video_ids = [video.id for video in videos]
+        if not video_ids:
+            return
+
+        cached_values = cache.hmget(self.key, video_ids)
+        mapping = {
+            video.id: json.dumps(serialize_video_to_queue(video), cls=ComplexEncoder)
+            for video, cached_value in zip(videos, cached_values)
+            if cached_value is not None
+        }
+        if mapping:
+            cache.hset(self.key, mapping=mapping)
+
     def remove(self, video: VideoModel):
         cache.hdel(self.key, video.id)
+
+    def remove_bulk(self, videos):
+        video_ids = [video.id for video in videos]
+        if video_ids:
+            cache.hdel(self.key, *video_ids)
 
 
 newest_cache = VideoQueueCache('newest_queue')

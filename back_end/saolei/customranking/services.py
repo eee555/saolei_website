@@ -1,4 +1,5 @@
 from django.db.models import F, Max, Min, Window
+from django.db.models.query import QuerySet
 from django.db.models.functions import RowNumber
 from django.utils import timezone
 
@@ -118,6 +119,51 @@ def add_to_custom_pluck_rank(video: VideoModel):
             return refresh_custom_pluck_rank(video.player, video.level)
         record.add_video(video)
     return record
+
+
+def add_videos_to_custom_pluck_ranks(videos: QuerySet[VideoModel]):
+    """将一批录像按 (player, level) 分组后，把每组最佳录像吸收到 pluck 个人纪录。"""
+    best_videos = (
+        videos
+        .filter(
+            level__in=CUSTOM_PLUCK_LEVELS,
+            mode__in=CUSTOM_PLUCK_MODES,
+            state=MS_TextChoices.State.OFFICIAL,
+            ongoing_tournament=False,
+            pluck__isnull=False,
+        )
+        .annotate(
+            rn=Window(
+                expression=RowNumber(),
+                partition_by=[F('player_id'), F('level')],
+                order_by=[F('pluck').asc(), F('timems').asc(), F('upload_time').asc()],
+            ),
+        )
+        .filter(rn=1)
+    )
+
+    count = 0
+    for video in best_videos.iterator(chunk_size=1000):
+        add_to_custom_pluck_rank(video)
+        count += 1
+
+    return count
+
+
+def remove_videos_from_custom_pluck_ranks(video_ids: set[int]):
+    """移除一批录像对 pluck 个人纪录的影响，并刷新受影响的 (player, level)。"""
+    if not video_ids:
+        return 0
+
+    records = list(
+        CustomPluckRecord.objects
+        .filter(video_id__in=video_ids)
+        .select_related('player')
+    )
+    for record in records:
+        refresh_custom_pluck_rank(record.player, record.level)
+
+    return len(records)
 
 
 def remove_from_custom_pluck_rank(video: VideoModel):
