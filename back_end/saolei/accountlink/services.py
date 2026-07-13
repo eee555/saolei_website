@@ -60,7 +60,13 @@ def update_saolei_account_info(account: AccountSaolei):
 
     account.update_time = datetime.now(tz=timezone.utc)
 
-    account.save()
+    account.save(update_fields=[
+        'name', 'total_views',
+        'b_t_ms', 'i_t_ms', 'e_t_ms', 's_t_ms',
+        'b_b_cent', 'i_b_cent', 'e_b_cent', 's_b_cent',
+        'beg_count', 'int_count', 'exp_count',
+        'update_time',
+    ])
 
 
 # 扫描一页扫雷网用户录像，返回新录像列表
@@ -115,7 +121,7 @@ def saolei_video_import_one(saolei_video: VideoSaolei):
                     collision.upload_time = saolei_video.upload_time
                     collision.save(update_fields=['upload_time'])
                 saolei_video.import_video = collision
-                saolei_video.save()
+                saolei_video.save(update_fields=['import_video'])
                 return
 
         parser = MSVideoParser(ContentFile(response.content, file_name))
@@ -131,7 +137,7 @@ def saolei_video_import_one(saolei_video: VideoSaolei):
         video.update_redis()
         video.save(update_fields=['upload_time', 'ongoing_tournament'])
         saolei_video.import_video = video
-        saolei_video.save()
+        saolei_video.save(update_fields=['import_video'])
     except requests.exceptions.ConnectionError:
         logger.error(f'雷网 录像#{saolei_video.id} 下载失败：连接错误')
         raise ExceptionToResponse(obj='import', category='connection')

@@ -8,7 +8,7 @@ from msuser.models import UserMS
 from userprofile.models import UserProfile
 from utils.cmp import isbetter
 from videomanager.models import VideoModel
-from .utils import LEVELS, VIDEO_RECORD_STATS, RankingField, RankingMode, RankingStat, RankingValue, get_record_modes, is_valid_ranking_level, is_valid_ranking_mode
+from .utils import get_record_modes, is_valid_ranking_level, is_valid_ranking_mode, LEVELS, RankingField, RankingMode, RankingStat, RankingValue, VIDEO_RECORD_STATS
 
 STOCK_RECORD_QUERY_FIELDS = {
     'timems': 'timems',

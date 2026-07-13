@@ -1,20 +1,16 @@
 # -*- coding: utf-8 -*-
-import json
 import logging
 
 from django.core.validators import MaxValueValidator
 from django.db import models
 from django.db.models.functions import Power
-from django_redis import get_redis_connection
 
 from config.global_settings import DefaultRankingScores, MaxSizes
 from config.text_choices import MS_TextChoices
 from userprofile.models import UserProfile
-from utils import ComplexEncoder
 from utils.parser import MSVideoParser
 from .fields import RestrictedFileField
 
-cache = get_redis_connection('saolei_website')
 logger = logging.getLogger('videomanager')
 MAX_TIMEMS = 99_999_999
 STNB_COEFFICIENTS = {
@@ -197,60 +193,23 @@ class VideoModel(models.Model):
         )
         video = VideoModel(
             player=user,
-            file=parser.file,
-            file_size=parser.file.size,
+            file=parser.file, file_size=parser.file.size,
             video=e_video,
             end_time=parser.end_time,
-            state=parser.state,
-            software=parser.software,
-            level=parser.level,
-            mode=parser.mode,
-            timems=parser.timems,
-            bv=parser.bv,
-            left=parser.left,
-            right=parser.right,
-            double=parser.double,
-            left_ce=parser.left_ce,
-            right_ce=parser.right_ce,
-            double_ce=parser.double_ce,
-            path=parser.path,
-            pluck=parser.pluck,
-            flag=parser.flag,
-            op=parser.op,
-            isl=parser.isl,
-            cell0=parser.cell0,
-            cell1=parser.cell1,
-            cell2=parser.cell2,
-            cell3=parser.cell3,
-            cell4=parser.cell4,
-            cell5=parser.cell5,
-            cell6=parser.cell6,
-            cell7=parser.cell7,
-            cell8=parser.cell8,
+            state=parser.state, software=parser.software,
+            level=parser.level, mode=parser.mode,
+            timems=parser.timems, bv=parser.bv,
+            left=parser.left, right=parser.right, double=parser.double,
+            left_ce=parser.left_ce, right_ce=parser.right_ce, double_ce=parser.double_ce,
+            path=parser.path, pluck=parser.pluck, flag=parser.flag,
+            op=parser.op, isl=parser.isl,
+            cell0=parser.cell0, cell1=parser.cell1, cell2=parser.cell2,
+            cell3=parser.cell3, cell4=parser.cell4, cell5=parser.cell5,
+            cell6=parser.cell6, cell7=parser.cell7, cell8=parser.cell8,
         )
         video._tournament_identifiers = parser.tournament_identifiers
-        video.save()
+        video.save()  # noqa: DJM100
         return video
-
-    def push_redis(self, name: str):
-        if self.ongoing_tournament and name == 'newest_queue':
-            return
-        cache.hset(name, self.id, json.dumps({
-            'state': self.state,
-            'tournament': self.ongoing_tournament,
-            'software': self.software,
-            'time': self.upload_time,
-            'player_id': self.player.id,
-            'level': self.level,
-            'mode': self.mode,
-            'timems': self.timems,
-            'bv': self.bv,
-            'cl': self.cl,
-            'ce': self.ce,
-        }, cls=ComplexEncoder))
-
-    def pop_redis(self, name: str):
-        cache.hdel(name, self.id)
 
     def update_redis(self):
         user: UserProfile = self.player

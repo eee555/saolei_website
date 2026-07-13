@@ -162,7 +162,7 @@ def update_msgames_account(account: AccountMinesweeperGames):
     account.name = str(getValue('Name'))
     account.local_name = str(getValue('Local Name'))
     account.joined = getValue('Joined')
-    account.save()
+    account.save(update_fields=['name', 'local_name', 'joined'])
 
 
 def update_bilibili_account(account: AccountBilibili):
@@ -187,7 +187,12 @@ def update_bilibili_account(account: AccountBilibili):
     account.article_count = overview.get('article', 0) or 0
     account.opus_count = overview.get('opus', 0) or 0
     account.official_title = official.get('title', '') or ''
-    account.save()
+    account.save(update_fields=[
+        'name', 'face', 'sign', 'level',
+        'following', 'follower',
+        'video_count', 'article_count', 'opus_count',
+        'official_title',
+    ])
 
 
 def update_wom_account(account: AccountWorldOfMinesweeper):
@@ -356,4 +361,14 @@ def update_wom_account(account: AccountWorldOfMinesweeper):
         'Win streak:', 'fa fa-crosshairs ws-icon ws3', '/../text()'))
     account.e_winstreak = stringToInt(values)
 
-    account.save()
+    account.save(update_fields=[
+        'trophy', 'experience', 'honour',
+        'minecoin', 'gem', 'coin',
+        'arena_ticket', 'part', 'equipment',
+        'arena_point', 'max_difficulty', 'win',
+        'last_season',
+        'b_t_ms', 'i_t_ms', 'e_t_ms',
+        'b_ioe', 'i_ioe', 'e_ioe',
+        'b_mastery', 'i_mastery', 'e_mastery',
+        'b_winstreak', 'i_winstreak', 'e_winstreak',
+    ])

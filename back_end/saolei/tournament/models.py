@@ -142,7 +142,7 @@ class GSCTournament(Tournament):
         rank = 1
         for participant in GSCParticipant.objects.filter(tournament=self).order_by('t37'):
             participant.rank = rank
-            participant.save()
+            participant.save(update_fields=['rank'])
             rank += 1
 
     def refresh_score(self):
@@ -243,4 +243,8 @@ class GSCParticipant(TournamentParticipant):
         self.et5th = videos_et[4] if len(videos_et) >= 5 else GSC_Defaults.ET
         self.et5sum = sum(videos_et) + (5 - len(videos_et)) * GSC_Defaults.ET
 
-        self.save()
+        self.save(update_fields=[
+            'bt1st', 'bt20th', 'bt20sum',
+            'it1st', 'it12th', 'it12sum',
+            'et1st', 'et5th', 'et5sum',
+        ])

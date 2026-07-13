@@ -1,11 +1,11 @@
+from datetime import timedelta
 import json
 import tempfile
-from datetime import timedelta
 from pathlib import Path
 
 from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import RequestFactory, TestCase, override_settings
+from django.test import override_settings, RequestFactory, TestCase
 from django.utils import timezone
 from django_redis import get_redis_connection
 

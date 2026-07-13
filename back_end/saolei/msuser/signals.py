@@ -9,11 +9,11 @@ from django_redis import get_redis_connection
 from config.global_settings import DefaultRankingScores, GameLevels, GameModes, RankingGameStats
 from config.text_choices import MS_TextChoices
 from userprofile.models import UserProfile
-from utils import ComplexEncoder, calculator
+from utils import calculator, ComplexEncoder
 from videomanager.models import VideoModel
 from .models import UserMS
 from .services import can_update_personal_record, decrement_video_count, get_current_record_keys_for_stats, increment_video_count, rebuild_personal_records, update_personal_record_stats
-from .utils import RankingCategory, RankingField, RankingValue, VIDEO_RECORD_STATS, RankingStat, get_record_modes, get_video_num_limit, is_valid_ranking_level, is_valid_ranking_mode
+from .utils import get_record_modes, get_video_num_limit, is_valid_ranking_level, is_valid_ranking_mode, RankingCategory, RankingField, RankingStat, RankingValue, VIDEO_RECORD_STATS
 
 cache = get_redis_connection('saolei_website')
 

@@ -1,6 +1,6 @@
 from django.db.models import F, Max, Min, Window
-from django.db.models.query import QuerySet
 from django.db.models.functions import RowNumber
+from django.db.models.query import QuerySet
 from django.utils import timezone
 
 from config.customranking import CUSTOM_PLUCK_LEVELS, CUSTOM_PLUCK_MODES
@@ -158,7 +158,7 @@ def remove_videos_from_custom_pluck_ranks(video_ids: set[int]):
     records = list(
         CustomPluckRecord.objects
         .filter(video_id__in=video_ids)
-        .select_related('player')
+        .select_related('player'),
     )
     for record in records:
         refresh_custom_pluck_rank(record.player, record.level)

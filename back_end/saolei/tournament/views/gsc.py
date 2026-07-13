@@ -176,7 +176,7 @@ def register_GSCParticipant(request: HttpRequest):
         if participant.arbiter_identifier:
             return JsonResponse({'type': 'error', 'object': 'participant', 'category': 'registered'})
         participant.arbiter_identifier = identifier
-        participant.save()
+        participant.save(update_fields=['arbiter_identifier'])
     else:
         GSCParticipant.objects.create(tournament=tournament, user=user, arbiter_identifier=identifier)
     if not identifier.userms:

@@ -5,7 +5,6 @@ from django_redis import get_redis_connection
 
 from config.text_choices import MS_TextChoices
 from utils import ComplexEncoder
-
 from .models import VideoModel
 
 cache = get_redis_connection('saolei_website')

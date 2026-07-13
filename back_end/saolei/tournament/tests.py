@@ -59,7 +59,7 @@ class TournamentTestCase(TestCase):
             isl=1,
         )
         video._tournament_identifiers = tournament_identifiers if tournament_identifiers is not None else [self.tournament.token]
-        video.save()
+        video.save()  # noqa: DJM100
         return video
 
     def test_video_checkin_runs_before_video_create(self):
