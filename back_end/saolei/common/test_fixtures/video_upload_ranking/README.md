@@ -11,12 +11,17 @@
    - 录像内需要包含一个非空 GSC token，例如 `G12345`。
    - 测试会创建同 token 的进行中 GSC 比赛，并断言上传后录像进入比赛、`ongoing_tournament=True`，且不会刷新经典个人纪录。
 
-2. `standard_personal.evf`
-   - 普通三等级录像，不应包含比赛 token。
+2. `beginner_personal.evf`
+   - 普通三等级初级录像，不应包含比赛 token。
    - 录像需要可以通过审核。
    - 测试会断言上传后经典个人纪录由 `msuser` 信号刷新。
 
-3. `custom_pluck.evf`
+3. `expert_personal.evf`
+   - 普通三等级高级标准录像，不应包含比赛 token。
+   - 录像需要可以通过审核。
+   - 成绩应低于 `100000ms`，用于验证绑定标识后录像从 `IDENTIFIER` 变为 `OFFICIAL` 时会刷新 `video_num_limit`。
+
+4. `custom_pluck.evf`
    - Density 排行支持的自定义级别录像，目前可用配置为：
      - `8x8/40`
      - `16x16/100`

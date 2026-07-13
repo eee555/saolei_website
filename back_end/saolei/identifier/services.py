@@ -3,7 +3,7 @@ from django.db import transaction
 from config.text_choices import MS_TextChoices
 from customranking.services import add_videos_to_custom_pluck_ranks, remove_videos_from_custom_pluck_ranks
 from msuser.models import UserMS
-from msuser.services import get_current_record_keys_for_video_ids, rebuild_personal_records, update_personal_records_from_videos
+from msuser.services import get_current_record_keys_for_video_ids, rebuild_personal_records, update_personal_records_from_videos, update_video_count_limit_from_videos
 from videomanager.cache import newest_cache
 from videomanager.models import VideoModel
 from .models import Identifier
@@ -37,6 +37,7 @@ def bind_identifier(identifier: Identifier, userms: UserMS):
 
         refreshed_videos = VideoModel.objects.filter(id__in=video_ids)
         newest_cache.update_bulk(refreshed_videos)
+        update_video_count_limit_from_videos(userms, refreshed_videos)
         update_personal_records_from_videos(userms, refreshed_videos)
         add_videos_to_custom_pluck_ranks(refreshed_videos)
 
