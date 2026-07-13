@@ -199,6 +199,18 @@ def update_personal_records_from_videos(userms: UserMS, videos: QuerySet[VideoMo
         userms.check_ms_ranking(stat, mode)
 
 
+def update_personal_records_from_video_queryset(videos: QuerySet[VideoModel]):
+    """将多用户的一批新有效录像按玩家分组吸收到经典个人纪录中。"""
+    player_ids = (
+        videos
+        .values_list('player_id', flat=True)
+        .distinct()
+    )
+    users = UserProfile.objects.filter(id__in=player_ids).select_related('userms')
+    for user in users.iterator(chunk_size=1000):
+        update_personal_records_from_videos(user.userms, videos.filter(player_id=user.id))
+
+
 def rebuild_personal_records(user: UserProfile, record_keys: set[RankingField]):
     """只重算指定的经典个人纪录。"""
     if not record_keys:

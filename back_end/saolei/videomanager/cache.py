@@ -1,7 +1,9 @@
 import json
 
+from django.db.models import QuerySet
 from django_redis import get_redis_connection
 
+from config.text_choices import MS_TextChoices
 from utils import ComplexEncoder
 
 from .models import VideoModel
@@ -73,3 +75,10 @@ class VideoQueueCache:
 newest_cache = VideoQueueCache('newest_queue')
 freeze_cache = VideoQueueCache('freeze_queue')
 review_cache = VideoQueueCache('review_queue')
+
+
+def add_videos_to_state_queues_bulk(videos: QuerySet[VideoModel]):
+    """按录像状态批量恢复普通队列。"""
+    newest_cache.add_bulk(videos.filter(state__in=[MS_TextChoices.State.OFFICIAL, MS_TextChoices.State.IDENTIFIER]))
+    freeze_cache.add_bulk(videos.filter(state=MS_TextChoices.State.FROZEN))
+    review_cache.add_bulk(videos.filter(state=MS_TextChoices.State.PLAIN))

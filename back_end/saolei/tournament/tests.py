@@ -9,6 +9,7 @@ from msuser.models import UserMS
 from userprofile.models import UserProfile
 from videomanager.models import ExpandVideoModel, VideoModel
 from .models import GSCParticipant, GSCTournament
+from .services import reveal_videos_for_tournament
 
 
 class TournamentTestCase(TestCase):
@@ -79,3 +80,37 @@ class TournamentTestCase(TestCase):
         video.refresh_from_db()
         self.assertFalse(video.ongoing_tournament)
         self.assertFalse(self.tournament.videos.filter(pk=video.pk).exists())
+
+    def test_reveal_videos_for_tournament_restores_personal_record(self):
+        video = self.create_video()
+        GSCTournament.objects.filter(pk=self.tournament.pk).update(state=Tournament_TextChoices.State.FINISHED)
+        self.tournament.refresh_from_db()
+
+        changed_count = reveal_videos_for_tournament(self.tournament)
+
+        video.refresh_from_db()
+        self.user.userms.refresh_from_db()
+        self.assertEqual(changed_count, 1)
+        self.assertFalse(video.ongoing_tournament)
+        self.assertEqual(self.user.userms.b_timems_std, video.timems)
+        self.assertEqual(self.user.userms.b_timems_id_std, video.id)
+
+    def test_reveal_videos_for_tournament_keeps_videos_in_other_ongoing_tournament(self):
+        video = self.create_video()
+        now = timezone.now()
+        other_tournament = GSCTournament.objects.create(
+            order=2,
+            token='G67890',
+            start_time=now - timedelta(hours=1),
+            end_time=now + timedelta(hours=1),
+            state=Tournament_TextChoices.State.ONGOING,
+        )
+        other_tournament.videos.add(video)
+        GSCTournament.objects.filter(pk=self.tournament.pk).update(state=Tournament_TextChoices.State.FINISHED)
+        self.tournament.refresh_from_db()
+
+        changed_count = reveal_videos_for_tournament(self.tournament)
+
+        video.refresh_from_db()
+        self.assertEqual(changed_count, 0)
+        self.assertTrue(video.ongoing_tournament)
