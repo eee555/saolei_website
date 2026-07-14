@@ -1,0 +1,59 @@
+<template>
+    用户开始ID<ElInputNumber v-model="startid" />&nbsp;
+    用户结束ID<ElInputNumber v-model="endid" />&nbsp;
+    批处理数量<ElInputNumber v-model="batchsize" />&nbsp;
+    <ElButton :disabled="working" @click="startBatchUpdate">
+        开始！
+    </ElButton>
+    <ElButton :disabled="!working" @click="stopBatchUpdate">
+        停止！
+    </ElButton><br>
+    客户端会将需要处理的ID段按照批处理数量发送到服务器进行批处理。批处理数量越大，服务器处理效率越高，但是如果批处理数量过大，会导致连接超时。
+    <div v-for="(log, index) in logList" :key="index" class="text">
+        {{ log }}
+    </div>
+</template>
+
+<script setup lang="ts">
+import { ElButton, ElInputNumber } from 'element-plus';
+import { ref } from 'vue';
+
+import '@/styles/text.css';
+import useCurrentInstance from '@/utils/common/useCurrentInstance';
+
+const { proxy } = useCurrentInstance();
+
+const startid = ref(1);
+const endid = ref(1000);
+const batchsize = ref(10);
+
+const working = ref(false);
+const logList = ref<string[]>([]);
+
+async function startBatchUpdate() {
+    working.value = true;
+    for (let i = startid.value; i <= endid.value; i += batchsize.value) {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (!working.value) break;
+        const start = i;
+        const end = Math.min(i + batchsize.value - 1, endid.value);
+        logList.value.push(`${new Date().toISOString()} 正在处理${start}至${end}`);
+        await proxy.$axios.post('api/customranking/pluck/refresh', { startid: start, endid: end }).then(
+            function ({ data }: { data: { successCount: number; errorList: number[] } }) {
+                logList.value.push(`${start}至${end}已处理完成，成功${data.successCount}个，失败${data.errorList.length}个`);
+                if (data.errorList.length > 0) {
+                    logList.value.push(`失败的用户为：${data.errorList.join('、')}`);
+                }
+            },
+        ).catch(function (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            logList.value.push(`${start}至${end}未处理完成，服务器返回错误：${errorMessage}`);
+        });
+    }
+    working.value = false;
+}
+
+function stopBatchUpdate() {
+    working.value = false;
+}
+</script>

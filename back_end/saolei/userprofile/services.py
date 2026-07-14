@@ -92,7 +92,7 @@ def send_email(email: str, send_type='register'):
     email_record.hashkey = hashkey
     email_record.email = email
     # email_record.send_type = send_type
-    email_record.save()
+    email_record.save()  # noqa: DJM100
 
     # 验证码保存之后，我们就要把带有验证码的链接发送到注册时的邮箱！
     if settings.E2E_TEST:

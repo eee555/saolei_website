@@ -55,7 +55,14 @@ class VideoSaolei(models.Model):
     id = models.PositiveIntegerField(primary_key=True)
     user = models.ForeignKey(AccountSaolei, on_delete=models.DO_NOTHING, related_name='videos')
     upload_time = models.DateTimeField()
-    level = models.CharField(max_length=1, choices=MS_TextChoices.Level.choices)
+    level = models.CharField(
+        max_length=1,
+        choices=[
+            (MS_TextChoices.Level.BEGINNER, MS_TextChoices.Level.BEGINNER.label),
+            (MS_TextChoices.Level.INTERMEDIATE, MS_TextChoices.Level.INTERMEDIATE.label),
+            (MS_TextChoices.Level.EXPERT, MS_TextChoices.Level.EXPERT.label),
+        ],
+    )
     bv = models.PositiveSmallIntegerField(default=0)
     timems = models.PositiveIntegerField(default=0)
     nf = models.BooleanField(default=False)

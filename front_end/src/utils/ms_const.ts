@@ -3,6 +3,10 @@ import { useLocalStorage } from '@vueuse/core';
 export const MS_Levels = ['b', 'i', 'e'] as const;
 export type MS_Level = typeof MS_Levels[number];
 
+export function isStandardLevel(level: unknown): level is MS_Level {
+    return typeof level === 'string' && (MS_Levels as readonly string[]).includes(level);
+}
+
 export const MS_Softwares = ['e', 'a', 'r', 'm'] as const;
 export type MS_Software = typeof MS_Softwares[number];
 
@@ -16,6 +20,7 @@ export const MS_Mode = {
     Standard: '00',
     SpeedNG: '05',
     HardcoreNG: '06',
+    Lucky: '10',
     Recursive: '11',
     NoFlag: '12',
 } as const;

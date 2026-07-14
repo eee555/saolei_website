@@ -39,4 +39,4 @@ def register(request, data: RegisterSchema):
 def set_staff(request, data: UserIdSchema):
     user = UserProfile.objects.get(id=data.id)
     user.is_staff = True
-    user.save()
+    user.save(update_fields=['is_staff'])

@@ -23,10 +23,11 @@ const tabItems = [
     { name: 'videomodel', label: '录像信息' },
     { name: 'accountlink', label: '账号绑定' },
     { name: 'identifier', label: '标识管理' },
-    { name: 'batchupdate', label: '录像批量更新' },
     { name: 'logs', label: '后台日志' },
     { name: 'tournament', label: '比赛管理' },
     { name: 'task', label: '后台任务' },
+    { name: 'batchvideo', label: '批量刷新录像' },
+    { name: 'batchpluck', label: '批量刷新pLuck纪录' },
 ] as const;
 const validTabs = tabItems.map((item) => item.name);
 

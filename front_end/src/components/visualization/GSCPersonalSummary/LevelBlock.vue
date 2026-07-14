@@ -26,7 +26,7 @@ import { defaultCounts, defaultVideos } from './utils';
 
 import type { MS_Level } from '@/utils/ms_const';
 import { MS_State } from '@/utils/ms_const';
-import type { VideoAbstract } from '@/utils/videoabstract';
+import type { StandardVideoAbstract, VideoAbstract } from '@/utils/videoabstract';
 
 const props = defineProps({
     videos: {
@@ -43,7 +43,7 @@ const timeColumnRef = useTemplateRef('timeColumnRef');
 const bvsColumnRef = useTemplateRef('bvsColumnRef');
 const stnbColumnRef = useTemplateRef('stnbColumnRef');
 
-function isValid(video: VideoAbstract) {
+function isValid(video: VideoAbstract): video is StandardVideoAbstract {
     if (video.level != props.level || video.state != MS_State.Official) return false;
     if (video.level === 'b' && video.bv < 10) return false;
     return true;

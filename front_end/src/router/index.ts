@@ -1,6 +1,7 @@
 import type { RouteRecordRaw } from 'vue-router';
 import { createRouter, createWebHashHistory } from 'vue-router';
 
+import { rankingRoutes } from '@/views/RankingView/routes';
 import { staffRoutes } from '@/views/StaffView/routes';
 import { userRoutes } from '@/views/UserView/routes';
 
@@ -13,7 +14,9 @@ const routes: RouteRecordRaw[] = [
     {
         path: '/ranking',
         name: 'ranking',
-        component: () => import('../views/RankingView.vue'),
+        component: () => import('../views/RankingView/App.vue'),
+        redirect: '/ranking/speed',
+        children: rankingRoutes,
     },
     {
         path: '/video',

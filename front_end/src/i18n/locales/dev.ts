@@ -39,6 +39,7 @@ export default {
             rqp: 'RQP',
             stnb: 'STNB',
             thrp: 'ThrP',
+            pluck: 'pLuck',
         },
         software: {
             a: 'Avf',

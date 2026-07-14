@@ -1,7 +1,9 @@
 from django.db import models
 from django_redis import get_redis_connection
 
-from config.global_settings import DefaultRankingScores, GameLevels, GameModes, RankingGameStats, record_update_fields
+from config.global_settings import DefaultRankingScores, GameLevels, GameModes, RankingGameStats
+from utils.cmp import isbetter
+from .utils import RankingField, RankingValue
 
 cache = get_redis_connection('saolei_website')
 
@@ -44,7 +46,6 @@ class UserMS(models.Model):
     # 用户的标识。管理员审核通过后可以自由使用该标识。
     identifiers = models.JSONField(default=get_default_identifiers)
     # 总录像数限制默认100，计划管理员可以修改。高水平玩家也可以增多。
-    # 高级标准sub100是200；sub60是500；sub50是600；sub40是800；sub30是1000；vip是1000。
     video_num_limit = models.IntegerField(null=False, default=100)
 
     # 录像计数
@@ -185,49 +186,30 @@ class UserMS(models.Model):
     def __str__(self):
         return 'identifiers: {}'.format(self.identifiers)
 
-    def getrecord(self, level, stat, mode):
-        return getattr(self, f'{level}_{stat}_{mode}')
+    def get_record(self, field: RankingField):
+        return RankingValue(
+            getattr(self, field.name),
+            getattr(self, field.id_name),
+        )
 
-    def getrecordID(self, level, stat, mode):
-        return getattr(self, f'{level}_{stat}_id_{mode}')
-
-    def setrecord(self, level, stat, mode, score):
-        setattr(self, f'{level}_{stat}_{mode}', score)
-
-    def setrecordID(self, level, stat, mode, recordid):
-        setattr(self, f'{level}_{stat}_id_{mode}', recordid)
-
-    def getrecords_level(self, stat, mode):
-        return [self.getrecord(level, stat, mode) for level in GameLevels]
-
-    def getrecordIDs_level(self, stat, mode):
-        return [self.getrecordID(level, stat, mode) for level in GameLevels]
+    def set_record(self, field: RankingField, value: RankingValue):
+        setattr(self, field.name, value.value)
+        setattr(self, field.id_name, value.video_id)
 
     def update_3_level_cache_record(self, index: str, mode: str):
         key = f'player_{index}_{mode}_{self.id}'
         for level in GameLevels:
-            cache.hset(key, level, self.getrecord(level, index, mode))
-            recordid = self.getrecordID(level, index, mode)
-            cache.hset(key, f'{level}_id', 'None' if recordid is None else recordid)
+            ranking_field = RankingField(level, index, mode)
+            record = self.get_record(ranking_field)
+            cache.hset(key, level, record.value)
+            cache.hset(key, f'{level}_id', 'None' if record.video_id is None else record.video_id)
         s = float(
-            self.getrecord('b', index, mode)
-            + self.getrecord('i', index, mode)
-            + self.getrecord('e', index, mode),
+            self.get_record(RankingField('b', index, mode)).value
+            + self.get_record(RankingField('i', index, mode)).value
+            + self.get_record(RankingField('e', index, mode)).value,
         )
         cache.hset(key, 'sum', s)
         cache.zadd(f'player_{index}_{mode}_ids', {self.id: s})
-
-    # 删除mysql中该用户所有的记录。删录像时用
-    def del_user_record_sql(self):
-        for mode in GameModes:
-            for stat in RankingGameStats:
-                for level in GameLevels:
-                    self.setrecord(
-                        level, stat, mode,
-                        getattr(DefaultRankingScores, stat),
-                    )
-                    self.setrecordID(level, stat, mode, None)
-        self.save(update_fields=record_update_fields)
 
     # 删除redis中该用户所有的记录。删录像、删用户时用
     def del_user_record_redis(self):
@@ -235,3 +217,14 @@ class UserMS(models.Model):
             for stat in RankingGameStats:
                 cache.delete(f'player_{stat}_{mode}_{self.id}')
                 cache.zrem(f'player_{stat}_{mode}_ids', self.id)
+
+    def check_ms_ranking(self, statname: str, mode: str):
+        """
+        检查用户是否可以加入排行，并更新排行榜
+        TODO: 移动到signals
+        """
+        for level in GameLevels:
+            ranking_field = RankingField(level, statname, mode)
+            if not isbetter(statname, getattr(self, ranking_field.name), getattr(DefaultRankingScores, statname)):
+                return
+        self.update_3_level_cache_record(statname, mode)

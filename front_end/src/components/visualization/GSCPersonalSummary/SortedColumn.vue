@@ -28,13 +28,13 @@ import { colorTheme } from '@/store';
 import { getTextColor, PiecewiseColorScheme } from '@/utils/colors';
 import type { MS_Level } from '@/utils/ms_const';
 import { formatNumberSmart } from '@/utils/strings';
-import type { VideoAbstract } from '@/utils/videoabstract';
+import type { StandardVideoAbstract } from '@/utils/videoabstract';
 
 type sortByOptions = 'time' | 'bvs' | 'stnb';
 
 const props = defineProps({
     videos: {
-        type: Array as PropType<VideoAbstract[]>,
+        type: Array as PropType<StandardVideoAbstract[]>,
         default: () => [],
     },
     level: {

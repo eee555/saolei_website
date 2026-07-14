@@ -9,22 +9,22 @@
     </div>
     <div data-cy="size" style="display: flex; width: 100%; align-items: center">
         <span class="text text-small" style="margin-right: 0.5em">
-            {{ t('local.totalNBytes', [begSize + intSize + expSize]) }}
+            {{ t('local.totalNBytes', [totalSize]) }}
         </span>
         <div style="flex-grow: 1;">
-            <StackBar :data="videoFileSizeDate" />
+            <StackBar :data="videoFileSizeData" />
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
 import '@/styles/text.css';
-import Lazy from 'lazy.js';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import StackBar from '@/components/visualization/StackBar/App.vue';
 import { colorTheme } from '@/store';
+import { CustomLevel } from '@/utils/customlevel';
 import type { VideoAbstract } from '@/utils/videoabstract';
 
 const props = defineProps({
@@ -34,43 +34,42 @@ const props = defineProps({
     },
 });
 
-const begCount = computed(() => {
-    return Lazy(props.videoList).filter((v) => v.level == 'b').size();
-});
-const intCount = computed(() => {
-    return Lazy(props.videoList).filter((v) => v.level == 'i').size();
-});
-const expCount = computed(() => {
-    return Lazy(props.videoList).filter((v) => v.level == 'e').size();
+const levelGroups = ['b', 'i', 'e', 'c'] as const;
+type LevelGroup = typeof levelGroups[number];
+
+function getLevelGroup(video: VideoAbstract): LevelGroup {
+    return video.level instanceof CustomLevel ? 'c' : video.level;
+}
+
+const levelStats = computed(() => {
+    const stats = Object.fromEntries(levelGroups.map((level) => [
+        level,
+        { count: 0, size: 0 },
+    ])) as Record<LevelGroup, { count: number; size: number }>;
+
+    for (const video of props.videoList) {
+        const level = getLevelGroup(video);
+        stats[level].count++;
+        stats[level].size += video.file_size;
+    }
+
+    return stats;
 });
 
-const begSize = computed(() => {
-    return Lazy(props.videoList).filter((v) => v.level == 'b').sum((v) => v.file_size);
-});
-const intSize = computed(() => {
-    return Lazy(props.videoList).filter((v) => v.level == 'i').sum((v) => v.file_size);
-});
-const expSize = computed(() => {
-    return Lazy(props.videoList).filter((v) => v.level == 'e').sum((v) => v.file_size);
-});
+const totalSize = computed(() => levelStats.value.b.size + levelStats.value.i.size + levelStats.value.e.size + levelStats.value.c.size);
 
-const videoCountData = computed(() => {
-    return [
-        { name: t('common.level.b'), value: begCount.value, color: colorTheme.value.level.b },
-        { name: t('common.level.i'), value: intCount.value, color: colorTheme.value.level.i },
-        { name: t('common.level.e'), value: expCount.value, color: colorTheme.value.level.e },
-    ];
-});
+const videoCountData = computed(() => levelGroups.map((level) => ({
+    name: t(`common.level.${level}`),
+    value: levelStats.value[level].count,
+    color: colorTheme.value.level[level],
+})));
 
-const videoFileSizeDate = computed(() => {
-    return [
-        { name: t('common.level.b'), value: begSize.value, color: colorTheme.value.level.b },
-        { name: t('common.level.i'), value: intSize.value, color: colorTheme.value.level.i },
-        { name: t('common.level.e'), value: expSize.value, color: colorTheme.value.level.e },
-    ];
-});
+const videoFileSizeData = computed(() => levelGroups.map((level) => ({
+    name: t(`common.level.${level}`),
+    value: levelStats.value[level].size,
+    color: colorTheme.value.level[level],
+})));
 
-/* 本地化 Localization */
 const i18nMessages = {
     'zh-cn': { local: {
         totalNBytes: '占用{0}字节',

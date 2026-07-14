@@ -1,7 +1,7 @@
 import { getFileExtension } from '@/utils/strings';
 import type { VideoAbstract } from '@/utils/videoabstract';
 
-export const UploadStatus = ['parse', 'pass', 'filename', 'filesize', 'fileext', 'custom', 'invalid', 'identifier', 'needApprove', 'censorship', 'collision', 'upload', 'process', 'success'] as const;
+export const UploadStatus = ['parse', 'pass', 'filename', 'filesize', 'fileext', 'custom', 'invalid', 'identifier', 'needApprove', 'censorship', 'collision', 'upload', 'process', 'success', 'incomplete'] as const;
 export type UploadStatus = typeof UploadStatus[number];
 
 export interface UploadEntry {

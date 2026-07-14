@@ -8,16 +8,16 @@ from config.text_choices import MS_TextChoices
 from identifier.models import Identifier
 from identifier.utils import verify_identifier
 from msuser.models import UserMS
-from tournament.utils import video_checkin
 from userprofile.models import UserProfile
 from utils.exceptions import ExceptionToResponse
 from utils.parser import MSVideoParser
 from videomanager.models import VideoModel
+from videomanager.tasks import helper_video_pluck
 
 logger = logging.getLogger('videomanager')
 
 
-def new_video_by_file(user: UserProfile, file: File, check_tournament: bool = True, upload_time: datetime = None) -> VideoModel:
+def new_video_by_file(user: UserProfile, file: File, upload_time: datetime = None) -> VideoModel:
     parser = MSVideoParser(file)
 
     if not user.userms:
@@ -38,11 +38,9 @@ def new_video_by_file(user: UserProfile, file: File, check_tournament: bool = Tr
 
     video = VideoModel.create_from_parser(parser, user)
 
-    if check_tournament:
-        video_checkin(video, parser.tournament_identifiers)
-
-    video.save()
+    video.save(update_fields=['ongoing_tournament'])
     video.update_redis()
+    helper_video_pluck(video)
 
     return video
 

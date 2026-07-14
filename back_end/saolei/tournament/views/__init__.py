@@ -51,7 +51,7 @@ def allow_tournament(request: HttpRequest):
         tournament.state = Tournament_TextChoices.State.CANCELLED
         return JsonResponse({'type': 'error', 'object': 'tournament', 'category': 'missed_start_time'})
     tournament.state = Tournament_TextChoices.State.PREPARING
-    tournament.save()
+    tournament.save(update_fields=['state'])
     return HttpResponse()
 
 
@@ -67,7 +67,7 @@ def cancel_tournament(request: HttpRequest):
     if not request.user.is_staff and tournament.host != request.user:
         return HttpResponseForbidden()
     tournament.state = Tournament_TextChoices.State.CANCELLED
-    tournament.save()
+    tournament.save(update_fields=['state'])
     return HttpResponse()
 
 
@@ -202,14 +202,17 @@ def set_tournament_staff(request: HttpRequest):
     if not (tournament := Tournament.objects.filter(id=tournament_id).first()):
         return HttpResponseNotFound()
 
+    update_fields = []
     if (weight := request.POST.get('weight')):
         tournament.weight = weight
+        update_fields.append('weight')
     if (host_id := request.POST.get('host_id')):
         if not (host := UserProfile.objects.filter(id=host_id).first()):
             return HttpResponseNotFound()
         tournament.host = host
+        update_fields.append('host')
 
-    tournament.save()
+    tournament.save(update_fields=update_fields)
     return JsonResponse({'type': 'success', 'data': tournament})
 
 

@@ -5,7 +5,7 @@
                 <div class="text">
                     {{ t('local.level') }}
                 </div>
-                <span v-for="level in ['b', 'i', 'e']" style="display: flex; gap: 0.5em">
+                <span v-for="level in ['b', 'i', 'e', 'c']" style="display: flex; gap: 0.5em">
                     <span class="text">
                         {{ t(`common.level.${level}`) }}
                     </span>
