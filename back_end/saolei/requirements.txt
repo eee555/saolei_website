@@ -1,7 +1,7 @@
 beautifulsoup4==4.15.0
 bilibili-api-python==17.4.2
 curl_cffi==0.15.0
-Django==6.0.6
+Django==6.0.7
 django-apscheduler==0.7.0
 django-cleanup==9.0.0
 django-cors-headers==4.9.0
