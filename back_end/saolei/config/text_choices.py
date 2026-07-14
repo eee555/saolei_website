@@ -19,7 +19,10 @@ class MS_TextChoices:
         BEGINNER = 'b', ('初级')
         INTERMEDIATE = 'i', ('中级')
         EXPERT = 'e', ('高级')
-        CUSTOM = 'c', ('自定义')
+        CUSTOM_8_8_40 = 'c8_8_40', ('8x8 40雷')
+        CUSTOM_16_16_100 = 'c16_16_100', ('16x16 100雷')
+        CUSTOM_16_30_150 = 'c16_30_150', ('16x30 150雷')
+        CUSTOM_24_30_200 = 'c24_30_200', ('24x30 200雷')
 
     class State(TextChoices):
         PLAIN = 'a', ('已上传但未审核')

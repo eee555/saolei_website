@@ -22,11 +22,6 @@ export const staffRoutes: RouteRecordRaw[] = [
         component: () => import('./Identifier.vue'),
     },
     {
-        path: 'batchupdate',
-        name: 'staff-batchupdate',
-        component: () => import('./BatchUpdateVideo.vue'),
-    },
-    {
         path: 'logs',
         name: 'staff-logs',
         component: () => import('./Logs.vue'),
@@ -40,5 +35,15 @@ export const staffRoutes: RouteRecordRaw[] = [
         path: 'task',
         name: 'staff-task',
         component: () => import('./Task.vue'),
+    },
+    {
+        path: 'batchvideo',
+        name: 'staff-batchvideo',
+        component: () => import('./BatchUpdateVideo.vue'),
+    },
+    {
+        path: 'batchpluck',
+        name: 'staff-batchpluck',
+        component: () => import('./BatchRefreshPLuck.vue'),
     },
 ];

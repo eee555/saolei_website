@@ -1,27 +1,28 @@
 # -*- coding: utf-8 -*-
-import json
 import logging
 
+from django.core.validators import MaxValueValidator
 from django.db import models
-from django_redis import get_redis_connection
+from django.db.models.functions import Power
 
-from config.global_settings import DefaultRankingScores, MaxSizes, RankingGameStats, record_update_fields
+from config.global_settings import DefaultRankingScores, MaxSizes
 from config.text_choices import MS_TextChoices
-from msuser.models import UserMS
 from userprofile.models import UserProfile
-from utils import ComplexEncoder
-from utils.cmp import isbetter
 from utils.parser import MSVideoParser
 from .fields import RestrictedFileField
 
-cache = get_redis_connection('saolei_website')
 logger = logging.getLogger('videomanager')
+MAX_TIMEMS = 99_999_999
+STNB_COEFFICIENTS = {
+    MS_TextChoices.Level.BEGINNER: 36,
+    MS_TextChoices.Level.INTERMEDIATE: 162,
+    MS_TextChoices.Level.EXPERT: 435,
+}
 
 
 class ExpandVideoModel(models.Model):
     # video = models.OneToOneField(VideoModel, on_delete=models.CASCADE)
     identifier = models.CharField(max_length=MaxSizes.IDENTIFIER, default='')
-    stnb = models.FloatField(default=0.0)
 
 
 # 其他类：checksum_ok, mode
@@ -82,11 +83,15 @@ class VideoModel(models.Model):
         max_length=MaxSizes.GAMEMODE, choices=MS_TextChoices.Mode.choices, default=MS_TextChoices.Mode.STD)
     # 0.000-999.999
     timems = models.PositiveIntegerField(
-        default=DefaultRankingScores.timems)  # 整数形式存储的毫秒数。
+        default=DefaultRankingScores.timems,
+        validators=[MaxValueValidator(MAX_TIMEMS)],
+    )  # 整数形式存储的毫秒数。
     # 0-32767
     bv = models.PositiveSmallIntegerField(null=True)
     bvs = models.GeneratedField(expression=models.Case(models.When(timems=0, then=models.Value(0.0)), default=models.F(
         'bv') / models.F('timems') * models.Value(1000), output_field=models.FloatField()), output_field=models.FloatField(), db_persist=True)
+    iqg = models.GeneratedField(expression=models.Case(models.When(timems=0, then=models.Value(0.0)), default=models.F(
+        'bv') / Power(models.F('timems') / models.Value(1000.0), models.Value(1.7)), output_field=models.FloatField()), output_field=models.FloatField(), db_persist=True)
 
     left = models.PositiveSmallIntegerField(null=True)
     right = models.PositiveSmallIntegerField(null=True)
@@ -120,6 +125,7 @@ class VideoModel(models.Model):
         models.F('ce')), output_field=models.FloatField(), db_persist=True)
 
     path = models.FloatField(null=True)
+    pluck = models.FloatField(null=True, default=None)
     flag = models.PositiveSmallIntegerField(null=True)
     op = models.PositiveSmallIntegerField(null=True)
     isl = models.PositiveSmallIntegerField(null=True)
@@ -143,15 +149,23 @@ class VideoModel(models.Model):
     cell7 = models.PositiveSmallIntegerField(null=True)
     cell8 = models.PositiveSmallIntegerField(null=True)
 
-    # 暂时的解决方案
     @property
     def stnb(self):
-        return self.video.stnb
+        coefficient = STNB_COEFFICIENTS.get(self.level)
+        if coefficient is None or self.iqg is None:
+            return None
+        return coefficient * self.iqg
 
     def __str__(self):
         return f'level: {self.level}, timems: {self.timems}, 3BV: {self.bv}'
 
     class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(timems__lte=MAX_TIMEMS),
+                name='videomodel_timems_max',
+            ),
+        ]
         indexes = [
             models.Index(fields=['level'], name='level_idx'),
             models.Index(fields=['mode'], name='mode_idx'),
@@ -159,6 +173,7 @@ class VideoModel(models.Model):
             models.Index(fields=['bvs'], name='bvs_idx'),
             models.Index(fields=['timems'], name='timems_idx'),
             models.Index(fields=['state'], name='state_idx'),
+            models.Index(fields=['level', 'mode', 'player', 'pluck'], name='video_lmp_pluck_idx'),
         ]
 
     @staticmethod
@@ -175,174 +190,34 @@ class VideoModel(models.Model):
         """
         e_video = ExpandVideoModel.objects.create(
             identifier=parser.identifier,
-            stnb=parser.stnb,
         )
-        return VideoModel.objects.create(
+        video = VideoModel(
             player=user,
-            file=parser.file,
-            file_size=parser.file.size,
+            file=parser.file, file_size=parser.file.size,
             video=e_video,
             end_time=parser.end_time,
-            state=parser.state,
-            software=parser.software,
-            level=parser.level,
-            mode=parser.mode,
-            timems=parser.timems,
-            bv=parser.bv,
-            left=parser.left,
-            right=parser.right,
-            double=parser.double,
-            left_ce=parser.left_ce,
-            right_ce=parser.right_ce,
-            double_ce=parser.double_ce,
-            path=parser.path,
-            flag=parser.flag,
-            op=parser.op,
-            isl=parser.isl,
-            cell0=parser.cell0,
-            cell1=parser.cell1,
-            cell2=parser.cell2,
-            cell3=parser.cell3,
-            cell4=parser.cell4,
-            cell5=parser.cell5,
-            cell6=parser.cell6,
-            cell7=parser.cell7,
-            cell8=parser.cell8,
+            state=parser.state, software=parser.software,
+            level=parser.level, mode=parser.mode,
+            timems=parser.timems, bv=parser.bv,
+            left=parser.left, right=parser.right, double=parser.double,
+            left_ce=parser.left_ce, right_ce=parser.right_ce, double_ce=parser.double_ce,
+            path=parser.path, pluck=parser.pluck, flag=parser.flag,
+            op=parser.op, isl=parser.isl,
+            cell0=parser.cell0, cell1=parser.cell1, cell2=parser.cell2,
+            cell3=parser.cell3, cell4=parser.cell4, cell5=parser.cell5,
+            cell6=parser.cell6, cell7=parser.cell7, cell8=parser.cell8,
         )
-
-    def push_redis(self, name: str):
-        if self.ongoing_tournament and name == 'newest_queue':
-            return
-        cache.hset(name, self.id, json.dumps({
-            'state': self.state,
-            'tournament': self.ongoing_tournament,
-            'software': self.software,
-            'time': self.upload_time,
-            'player_id': self.player.id,
-            'level': self.level,
-            'mode': self.mode,
-            'timems': self.timems,
-            'bv': self.bv,
-            'cl': self.cl,
-            'ce': self.ce,
-        }, cls=ComplexEncoder))
-
-    def pop_redis(self, name: str):
-        cache.hdel(name, self.id)
-
-    def update_video_num(self, add=True):
-        userms = self.player.userms
-        # add = True：新增录像；add = False：删除录像
-        if self.mode == MS_TextChoices.Mode.STD:
-            userms.video_num_std += 1 if add else -1
-        elif self.mode == MS_TextChoices.Mode.NF:
-            userms.video_num_nf += 1 if add else -1
-        elif self.mode == MS_TextChoices.Mode.JSW:
-            userms.video_num_ng += 1 if add else -1
-        elif self.mode == MS_TextChoices.Mode.BZD:
-            userms.video_num_dg += 1 if add else -1
-
-        if self.level == MS_TextChoices.Level.BEGINNER:
-            userms.video_num_beg += 1 if add else -1
-        elif self.level == MS_TextChoices.Level.INTERMEDIATE:
-            userms.video_num_int += 1 if add else -1
-        elif self.level == MS_TextChoices.Level.EXPERT:
-            userms.video_num_exp += 1 if add else -1
-
-        if add:
-            # 给高玩自动扩容
-            if self.mode == MS_TextChoices.Mode.STD and self.level == MS_TextChoices.Level.EXPERT:
-                if self.timems < 100000 and userms.video_num_limit < 1000:
-                    userms.video_num_limit = 1000
-                if self.timems < 60000 and userms.video_num_limit < 3000:
-                    userms.video_num_limit = 3000
-                if self.timems < 50000 and userms.video_num_limit < 5000:
-                    userms.video_num_limit = 5000
-                if self.timems < 40000 and userms.video_num_limit < 8000:
-                    userms.video_num_limit = 8000
-                if self.timems < 30000 and userms.video_num_limit < 10000:
-                    userms.video_num_limit = 10000
-
-        userms.save(update_fields=[
-            'video_num_limit', 'video_num_total', 'video_num_beg', 'video_num_int',
-            'video_num_exp', 'video_num_std', 'video_num_nf', 'video_num_ng', 'video_num_dg',
-        ])
-
-    # 检查某录像是否打破个人纪录
-    def checkPB(self, mode):
-        user: UserProfile = self.player
-        userms: UserMS = user.userms
-        for statname in RankingGameStats:
-            stat = getattr(self, statname)
-            if stat is not None and isbetter(statname, stat, userms.getrecord(self.level, statname, mode)):
-                self.update_news_queue(statname, mode)
-                userms.setrecord(self.level, statname, mode, stat)
-                userms.setrecordID(self.level, statname, mode, self.video.id)
-                user.check_ms_ranking(statname, mode)
-
-    # 增量式地更新用户的记录
-    def update_personal_record(self):
-        if self.state != MS_TextChoices.State.OFFICIAL or self.ongoing_tournament:
-            return
-
-        if self.mode == MS_TextChoices.Mode.NF or self.mode == MS_TextChoices.Mode.STD:
-            self.checkPB('std')
-
-        if self.mode == MS_TextChoices.Mode.NF:
-            self.checkPB('nf')
-
-        if self.mode == MS_TextChoices.Mode.JSW:
-            self.checkPB('ng')
-
-        if self.mode == MS_TextChoices.Mode.BZD:
-            self.checkPB('dg')
-
-        # 改完记录，存回数据库
-        self.player.userms.save(update_fields=record_update_fields)
-
-    # 确定用户破某个纪录后，更新redis破纪录的记录，显示在首页用
-    def update_news_queue(self, index: str, mode: str):
-        user: UserProfile = self.player
-        ms_user: UserMS = user.userms
-        if ms_user.e_timems_std >= 60000 and (index != 'timems' or self.level != 'e'):
-            return
-        value = f'{getattr(self, index) / 1000:.3f}' if index == 'timems' else f'{getattr(self, index):.3f}'
-        delta_number = getattr(self, index) - \
-            ms_user.getrecord(self.level, index, mode)
-        if index == 'timems':
-            delta_number /= 1000
-        # 看有没有存纪录录像的id，间接判断有没有纪录
-        if ms_user.getrecordID(self.level, index, mode):
-            delta = f'{delta_number:.3f}'
-        else:
-            delta = '新'
-        cache.lpush('news_queue', json.dumps({
-            'time': self.upload_time,
-            'player_id': self.player.id,
-            'video_id': self.id,
-            'index': index,
-            'mode': mode,
-            'level': self.level,
-            'value': value,
-            'delta': delta,
-        }, cls=ComplexEncoder))
+        video._tournament_identifiers = parser.tournament_identifiers
+        video.save()  # noqa: DJM100
+        return video
 
     def update_redis(self):
         user: UserProfile = self.player
         if self.state == MS_TextChoices.State.PLAIN:
             logger.info(f'用户 {user.username}#{user.id} 录像#{self.id} 机审失败')
-            self.update_video_num()
         elif self.state == MS_TextChoices.State.IDENTIFIER:
             logger.info(f'用户 {user.username}#{user.id} 录像#{self.id} 标识不匹配')
-            if not self.ongoing_tournament:
-                self.push_redis('newest_queue')
-            self.update_video_num()
         elif self.state == MS_TextChoices.State.FROZEN:
             logger.info(f'用户 {user.username}#{user.id} 录像#{self.id} 不合法')
-            self.push_redis('freeze_queue')
         elif self.state == MS_TextChoices.State.OFFICIAL:  # 合法
             logger.info(f'用户 {user.username}#{user.id} 录像#{self.id} 机审成功')
-            if not self.ongoing_tournament:
-                self.push_redis('newest_queue')
-                self.update_personal_record()
-            self.update_video_num()

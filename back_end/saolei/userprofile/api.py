@@ -102,7 +102,7 @@ UserVideoOut = create_schema(
         'id',
         'upload_time', 'level', 'mode', 'timems', 'bv',
         'state', 'software', 'cl', 'ce', 'file_size',
-        'end_time', 'ongoing_tournament', 'path',
+        'end_time', 'ongoing_tournament', 'path', 'pluck',
     ],
 )
 
@@ -117,7 +117,7 @@ def get_user_videos(request, user_id: int):
     queryset = VideoModel.objects.filter(player=user)
     if user != request.user:
         queryset = queryset.filter(ongoing_tournament=False)
-    videos = queryset.values('id', 'upload_time', 'level', 'mode', 'timems', 'bv', 'state', 'software', 'cl', 'ce', 'file_size', 'end_time', 'ongoing_tournament', 'path')
+    videos = queryset.values('id', 'upload_time', 'level', 'mode', 'timems', 'bv', 'state', 'software', 'cl', 'ce', 'file_size', 'end_time', 'ongoing_tournament', 'path', 'pluck')
     return list(videos)
 
 

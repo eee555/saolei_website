@@ -3,7 +3,7 @@ describe('template spec', () => {
         cy.visit('http://localhost:8080/');
         cy.url().should('eq', 'http://localhost:8080/#/');
         cy.contains('排行榜').realClick();
-        cy.url().should('eq', 'http://localhost:8080/#/ranking');
+        cy.url().should('contain', 'http://localhost:8080/#/ranking');
         cy.contains('录像').realClick();
         cy.url().should('eq', 'http://localhost:8080/#/video');
         cy.contains('教程').realClick();

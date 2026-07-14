@@ -31,7 +31,7 @@ const { t } = useI18n();
 const user = defineModel('user', { type: UserProfile, required: true });
 
 const showSetting = ref(false);
-const thisColumnChoices = ArrayUtils.sortByReferenceOrder(['bv', 'bvs', 'stnb', 'ces', 'cls', 'corr', 'end_time', 'ioe', 'level', 'state', 'software', 'thrp', 'time', 'upload_time', 'path', 'file_size', 'mode'], ColumnChoices);
+const thisColumnChoices = ArrayUtils.sortByReferenceOrder(['bv', 'bvs', 'stnb', 'ces', 'cls', 'corr', 'end_time', 'ioe', 'level', 'state', 'software', 'thrp', 'time', 'upload_time', 'path', 'pluck', 'file_size', 'mode'], ColumnChoices);
 
 const loading = ref(false);
 

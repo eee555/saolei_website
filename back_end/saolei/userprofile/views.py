@@ -68,7 +68,7 @@ def user_retrieve(request):
         return HttpResponseNotFound()  # 前端已经查过重了，理论上不应该进到这里
     # 设置密码(哈希)
     user.set_password(user_retrieve_form.cleaned_data['password'])
-    user.save()
+    user.save(update_fields=['password'])
     # 保存好数据后立即登录
     login(request, user)
     logger.info(f'用户 {user.username}#{user.id} 邮箱找回密码')
@@ -94,8 +94,8 @@ def user_register(request):
             new_user.is_active = True  # 自动激活
             user_ms = UserMS.objects.create()
             new_user.userms = user_ms
-            user_ms.save()
-            new_user.save()
+            user_ms.save()  # noqa: DJM100
+            new_user.save()  # noqa: DJM100
             # 保存好数据后立即登录
             login(request, new_user)
             logger.info(f'用户 {new_user.username}#{new_user.id} 注册')
@@ -140,12 +140,12 @@ def set_staff(request: HttpRequest):
     logger.info(f"{request.user.id} set_staff {request.GET['id']} {request.GET['is_staff']}")
     if request.GET['is_staff'] == 'True':
         user.is_staff = True
-        user.save()
+        user.save(update_fields=['is_staff'])
         logger.info(f'用户 {user.username}#{user.id} 成为管理员')
         return HttpResponse(f'设置"{user.realname}"为管理员成功！')
     elif request.GET['is_staff'] == 'False':
         user.is_staff = False
-        user.save()
+        user.save(update_fields=['is_staff'])
         logger.info(f'用户 {user.username}#{user.id} 卸任管理员')
         return HttpResponse(f'解除"{user.realname}"的管理员权限！')
     else:
@@ -242,5 +242,5 @@ def set_userProfile(request):
     value = request.POST.get('value')
     logger.warning(f'管理员 {request.user.username}#{request.user.id} 修改用户 {user.username}#{user.id} 域 {field} 从 {getattr(user, field)} 到 {value}')
     setattr(user, field, value)
-    user.save()
+    user.save(update_fields=[field])
     return HttpResponse()
