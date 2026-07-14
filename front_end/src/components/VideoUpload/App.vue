@@ -26,6 +26,7 @@ import { local } from '@/store';
 import { sleep } from '@/utils';
 import { ArrayUtils } from '@/utils/arrays';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import type { CustomLevel } from '@/utils/customlevel';
 import type { AnyVideo } from '@/utils/fileIO';
 import { extract_stat, fileHash, load_video_file } from '@/utils/fileIO';
 import { Dict2FormData } from '@/utils/forms';
@@ -151,7 +152,10 @@ async function upload_prepare(file: File): Promise<UploadEntry> {
         };
     }
 
-    if (video.level == 6) status = 'custom';
+    const stat = extract_stat(video);
+
+    if (!video.is_completed) status = 'incomplete';
+    else if (video.level === 6 && !(stat.level as CustomLevel).isSupported) status = 'custom';
     else if (video.is_valid() == 1) status = 'invalid';
     else if (video.is_valid() == 3) status = 'needApprove';
     else if (!props.identifiers.includes(video.player_identifier)) status = 'identifier';
@@ -160,7 +164,7 @@ async function upload_prepare(file: File): Promise<UploadEntry> {
         hash: hash,
         file: file,
         status: status,
-        stat: extract_stat(video),
+        stat: stat,
     };
 }
 

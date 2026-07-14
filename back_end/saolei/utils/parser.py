@@ -1,10 +1,54 @@
 from datetime import datetime, timezone
+import math
 
 from django.core.files import File
 import ms_toollib as ms
 
 from config.text_choices import MS_TextChoices
 from .exceptions import ExceptionToResponse
+
+
+def pack_custom_level(rows, columns, mines) -> str:
+    if rows is None or columns is None or mines is None:
+        raise ExceptionToResponse(obj='file', category='level')
+    return f'c{rows}_{columns}_{mines}'
+
+
+def create_video_from_data(file_name: str, data: bytes):
+    if file_name.endswith('.avf'):
+        return ms.AvfVideo(raw_data=data), MS_TextChoices.Software.AVF
+    elif file_name.endswith('.evf'):
+        return ms.EvfVideo(raw_data=data), MS_TextChoices.Software.EVF
+    elif file_name.endswith('.rmv'):
+        return ms.RmvVideo(raw_data=data), MS_TextChoices.Software.RMV
+    elif file_name.endswith('.mvf'):
+        return ms.MvfVideo(raw_data=data), MS_TextChoices.Software.MVF
+    else:
+        raise ExceptionToResponse(obj='file', category='type')
+
+
+def normalize_pluck(value) -> float | None:
+    if value is None:
+        return None
+    value = float(value)
+    if not math.isfinite(value) or value < 0:
+        return None
+    return value
+
+
+def is_standard_level(level: str) -> bool:
+    return level in [
+        MS_TextChoices.Level.BEGINNER,
+        MS_TextChoices.Level.INTERMEDIATE,
+        MS_TextChoices.Level.EXPERT,
+    ]
+
+
+def calculate_pluck_from_video(v: ms.BaseVideo, level: str) -> float | None:
+    if not is_standard_level(level):
+        return None
+    v.analyse_for_features(['pluck'])
+    return normalize_pluck(v.pluck)
 
 
 class MSVideoParser:
@@ -45,7 +89,7 @@ class MSVideoParser:
     cell7: int
     cell8: int
 
-    stnb: float
+    pluck: float | None
 
     def __init__(self, file: File):
         self.file = file
@@ -57,6 +101,7 @@ class MSVideoParser:
         v.current_time = 1e8
 
         self.level = MSVideoParser.get_level_from_BaseVideo(v)
+        self.pluck = calculate_pluck_from_video(v, self.level)
 
         try:
             self.state = MSVideoParser.get_state_from_review_code(v.is_valid())
@@ -99,28 +144,11 @@ class MSVideoParser:
         self.cell7 = v.cell7
         self.cell8 = v.cell8
 
-        self.stnb = v.stnb
-
     @staticmethod
     def read_file(file: File):
         data = file.read()
         file.seek(0)
-        if file.name.endswith('.avf'):
-            v = ms.AvfVideo(raw_data=data)
-            software = MS_TextChoices.Software.AVF
-        elif file.name.endswith('.evf'):
-            v = ms.EvfVideo(raw_data=data)
-            software = MS_TextChoices.Software.EVF
-        elif file.name.endswith('.rmv'):
-            v = ms.RmvVideo(raw_data=data)
-            software = MS_TextChoices.Software.RMV
-        elif file.name.endswith('.mvf'):
-            v = ms.MvfVideo(raw_data=data)
-            software = MS_TextChoices.Software.MVF
-        else:
-            raise ExceptionToResponse(obj='file', category='type')
-
-        return v, software
+        return create_video_from_data(file.name, data)
 
     @staticmethod
     def get_level_from_BaseVideo(v: ms.BaseVideo):
@@ -130,6 +158,11 @@ class MSVideoParser:
             return MS_TextChoices.Level.INTERMEDIATE
         elif v.level == 5:
             return MS_TextChoices.Level.EXPERT
+        elif v.level == 6:
+            rows = getattr(v, 'row', None)
+            columns = getattr(v, 'column', None)
+            mines = getattr(v, 'mine_num', None)
+            return pack_custom_level(rows, columns, mines)
         else:
             raise ExceptionToResponse(obj='file', category='level')
 
@@ -147,26 +180,14 @@ class MSVideoParser:
     @staticmethod
     def parse_video_metadata(file: File):
         data = file.read()
-        if file.name.endswith('.avf'):
-            v = ms.AvfVideo(raw_data=data)
-            software = MS_TextChoices.Software.AVF
-        elif file.name.endswith('.evf'):
-            v = ms.EvfVideo(raw_data=data)
-            software = MS_TextChoices.Software.EVF
-        elif file.name.endswith('.rmv'):
-            v = ms.RmvVideo(raw_data=data)
-            software = MS_TextChoices.Software.RMV
-        elif file.name.endswith('.mvf'):
-            v = ms.MvfVideo(raw_data=data)
-            software = MS_TextChoices.Software.MVF
-        else:
-            raise ExceptionToResponse(obj='file', category='type')
+        v, software = create_video_from_data(file.name, data)
 
         v.parse()
         v.analyse()
         v.current_time = 1e8
 
         level = MSVideoParser.get_level_from_BaseVideo(v)
+        pluck = calculate_pluck_from_video(v, level)
 
         review_code = v.is_valid()
         state = MSVideoParser.get_state_from_review_code(review_code)
@@ -193,6 +214,7 @@ class MSVideoParser:
             'right_ce': v.rce,
             'double_ce': v.dce,
             'path': v.path,
+            'pluck': pluck,
             'flag': v.flag,
             'op': v.op,
             'isl': v.isl,

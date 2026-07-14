@@ -5,6 +5,7 @@ from django.test import override_settings, TestCase
 import requests
 
 from common.utils import new_video_by_file
+from msuser.models import UserMS
 from userprofile.models import UserProfile
 from .models import ExpandVideoModel, VideoModel
 from .view_utils import refresh_video
@@ -13,8 +14,9 @@ from .view_utils import refresh_video
 
 class VideoManagerTestCase(TestCase):
     def setUp(self):
+        self.userms = UserMS.objects.create()
         self.user = UserProfile.objects.create(
-            username='setUp', email='setUp@test.com')
+            username='setUp', email='setUp@test.com', userms=self.userms)
 
         try:
             self.testfile_exp = requests.get(
@@ -38,7 +40,6 @@ class VideoManagerTestCase(TestCase):
         }
         self.testfile_exp_values_extended = {
             'identifier': 'Pu Tian Yi(Hu Bei)',
-            'stnb': 135.59743119854784,
         }
 
     def multiple_values_test(self, obj, expected_values):
@@ -48,7 +49,7 @@ class VideoManagerTestCase(TestCase):
 
     def test_zero_time(self):
         expandvideo = ExpandVideoModel.objects.create(
-            identifier='test', stnb=0)
+            identifier='test')
         video = VideoModel.objects.create(player=self.user, file='test.evf', video=expandvideo, state='a', software='e', level='b', mode='00', timems=0, bv=1, left=1, right=0,
                                           double=0, path=0, flag=0, left_ce=1, right_ce=0, double_ce=0, op=1, isl=0, cell0=0, cell1=0, cell2=0, cell3=0, cell4=0, cell5=0, cell6=0, cell7=0, cell8=0)
 
@@ -69,6 +70,7 @@ class VideoManagerTestCase(TestCase):
         }
 
         self.multiple_values_test(video, expected_values)
+        self.assertEqual(video.stnb, 0)
 
     @override_settings(BAIDU_VERIFY_SKIP=True)
     def test_new_video_by_file(self):
@@ -76,11 +78,12 @@ class VideoManagerTestCase(TestCase):
             self.testfile_exp.content, name='Exp_FL_35.09_3BV=132_3BVs=3.76_Pu Tian Yi(Hu Bei).avf'))
         self.multiple_values_test(video, self.testfile_exp_values)
         self.multiple_values_test(video.video, self.testfile_exp_values_extended)
+        self.assertAlmostEqual(video.stnb, 135.59743119854784)
         video.delete()
 
     def test_refresh(self):
         expandvideo = ExpandVideoModel.objects.create(
-            identifier='test', stnb=0)
+            identifier='test')
         video = VideoModel.objects.create(player=self.user, file=ContentFile(
             self.testfile_exp.content, name='Exp_FL_35.09_3BV=132_3BVs=3.76_Pu Tian Yi(Hu Bei).avf'), video=expandvideo, state='a')
         refresh_video(video)
@@ -88,4 +91,22 @@ class VideoManagerTestCase(TestCase):
         video = VideoModel.objects.get(id=video.id)
         self.multiple_values_test(video, self.testfile_exp_values)
         self.multiple_values_test(video.video, self.testfile_exp_values_extended)
+        self.assertAlmostEqual(video.stnb, 135.59743119854784)
         video.delete()
+
+    def test_stnb_depends_on_standard_level(self):
+        expandvideo = ExpandVideoModel.objects.create(identifier='test')
+        video = VideoModel.objects.create(player=self.user, file='test.evf', video=expandvideo, state='a', software='e', level='b', mode='00', timems=1000, bv=10, left=1, right=0,
+                                          double=0, path=0, flag=0, left_ce=1, right_ce=0, double_ce=0, op=1, isl=0, cell0=0, cell1=0, cell2=0, cell3=0, cell4=0, cell5=0, cell6=0, cell7=0, cell8=0)
+
+        self.assertAlmostEqual(video.iqg, 10)
+        self.assertAlmostEqual(video.stnb, 360)
+
+        video.level = 'i'
+        self.assertAlmostEqual(video.stnb, 1620)
+
+        video.level = 'e'
+        self.assertAlmostEqual(video.stnb, 4350)
+
+        video.level = 'c8_8_40'
+        self.assertIsNone(video.stnb)

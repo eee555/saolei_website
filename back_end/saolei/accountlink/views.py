@@ -52,7 +52,7 @@ def verify_link(request):
         return HttpResponseNotFound()
     link_account(platform, identifier, user)
     accountlink.verified = True
-    accountlink.save()
+    accountlink.save(update_fields=['verified'])
     try:
         update_account(platform, user)
     except ExceptionToResponse as e:
@@ -75,7 +75,7 @@ def unverify_link(request):
         return HttpResponseNotFound()
     delete_account(user, platform)
     accountlink.verified = False
-    accountlink.save()
+    accountlink.save(update_fields=['verified'])
     return HttpResponse()
 
 

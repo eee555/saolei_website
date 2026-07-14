@@ -75,7 +75,7 @@ async function refresh() {
         store.player = store.user;
     } else {
         try {
-            store.player = await fetchUserInfo(newId);
+            store.player = await fetchUserInfo(newId, true);
         } catch (error) {
             httpErrorNotification(error);
         }

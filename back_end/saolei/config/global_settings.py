@@ -13,7 +13,7 @@ class MaxSizes:
     EMAIL = 255
     EMAILCODE = 6  # 邮箱验证码
     FIRSTNAME = 255
-    GAMELEVEL = 1  # 级别（初中高）
+    GAMELEVEL = 10  # 级别（初中高、自定义配置）
     GAMEMODE = 2  # 模式（无猜）
     IDENTIFIER = 80  # 标识
     LASTNAME = 255
@@ -46,10 +46,3 @@ GameLevels = ['b', 'i', 'e']
 GameModes = ['std', 'nf', 'ng', 'dg']
 RankingGameStats = ['timems', 'bvs', 'stnb', 'ioe', 'path']
 VideoModeToName = {'00': 'std', '12': 'std'}
-
-record_update_fields = []
-for mode in GameModes:
-    for stat in RankingGameStats:
-        for level in GameLevels:
-            record_update_fields.append(f'{level}_{stat}_{mode}')
-            record_update_fields.append(f'{level}_{stat}_id_{mode}')

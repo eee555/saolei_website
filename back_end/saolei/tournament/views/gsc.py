@@ -6,6 +6,7 @@ from django.views.decorators.http import require_GET, require_POST
 from config.text_choices import Tournament_TextChoices
 from config.tournaments import GSC_Defaults, TournamentWeights
 from identifier.models import Identifier
+from identifier.services import bind_identifier
 from identifier.utils import verify_identifier
 from userprofile.decorators import login_required_error
 from utils.response import HttpResponseConflict
@@ -175,14 +176,11 @@ def register_GSCParticipant(request: HttpRequest):
         if participant.arbiter_identifier:
             return JsonResponse({'type': 'error', 'object': 'participant', 'category': 'registered'})
         participant.arbiter_identifier = identifier
-        participant.save()
+        participant.save(update_fields=['arbiter_identifier'])
     else:
         GSCParticipant.objects.create(tournament=tournament, user=user, arbiter_identifier=identifier)
     if not identifier.userms:
-        identifier.userms = userms
-        userms.identifiers.append(identifier_text)
-        identifier.save()
-        userms.save()
+        bind_identifier(identifier, userms)
     return JsonResponse({'type': 'success'})
 
 

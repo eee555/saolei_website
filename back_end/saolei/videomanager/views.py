@@ -17,7 +17,7 @@ from userprofile.decorators import staff_required
 from userprofile.models import UserProfile
 from utils import ComplexEncoder
 from .models import ExpandVideoModel, VideoModel
-from .view_utils import refresh_video, update_personal_record_stock, update_state, video_all_fields
+from .view_utils import refresh_video, video_all_fields
 
 logger = logging.getLogger('videomanager')
 cache = get_redis_connection('saolei_website')
@@ -140,7 +140,7 @@ def video_query_by_id(request: HttpRequest):
         videos = videos.filter(ongoing_tournament=False)
     videos = videos.values(
         'id', 'upload_time', 'end_time', 'level', 'mode', 'timems', 'bv', 'bvs', 'state', 'video__identifier',
-        'software', 'flag', 'cell0', 'cell1', 'cell2', 'cell3', 'cell4', 'cell5', 'cell6', 'cell7', 'cell8', 'left', 'right', 'double', 'op', 'isl', 'path',
+        'software', 'flag', 'cell0', 'cell1', 'cell2', 'cell3', 'cell4', 'cell5', 'cell6', 'cell7', 'cell8', 'left', 'right', 'double', 'op', 'isl', 'path', 'pluck',
     )
 
     return JsonResponse(list(videos), safe=False)
@@ -171,7 +171,7 @@ def remove_from_newest_queue(request: HttpRequest):
 # http://127.0.0.1:8000/video/news_queue
 @require_GET
 def news_queue(request):
-    news_queue = cache.lrange('news_queue', 0, -1)
+    news_queue = cache.zrevrange('news_queue', 0, 199)
     return JsonResponse(news_queue, encoder=ComplexEncoder, safe=False)
 
 
@@ -196,10 +196,7 @@ def approve_single(videoid, check_identifier=True):
         return False
     userms: UserMS = video.player.userms
     video.state = MS_TextChoices.State.OFFICIAL
-    video.save()
-    video.push_redis('newest_queue')
-    video.update_personal_record()
-    video.update_video_num()
+    video.save(update_fields=['state'])
     identifier = video.video.identifier
     if check_identifier and identifier not in userms.identifiers:
         userms.identifiers.append(identifier)
@@ -250,7 +247,8 @@ def freeze(request):
             if not (v := VideoModel.objects.filter(id=video_id).first()):
                 res.append('Null')
             else:
-                update_state(v, MS_TextChoices.State.FROZEN)
+                v.state = MS_TextChoices.State.FROZEN
+                v.save(update_fields=['state'])
                 logger.info(
                     f'管理员 {request.user.username}#{request.user.id} 冻结录像#{id}')
         return JsonResponse(res)
@@ -258,8 +256,8 @@ def freeze(request):
         if not (user := UserProfile.objects.filter(id=user_id).first()):
             return HttpResponseNotFound()
         for v in VideoModel.objects.filter(player=user):
-            update_state(v, MS_TextChoices.State.FROZEN, update_ranking=False)
-        update_personal_record_stock(user)
+            v.state = MS_TextChoices.State.FROZEN
+            v.save(update_fields=['state'])
         return HttpResponse()
     else:
         return HttpResponseBadRequest()
@@ -301,7 +299,7 @@ def set_videoModel(request):
     logger.info(
         f'管理员 {request.user.username}#{request.user.id} 修改录像#{videoid} 域 {field} 从 {getattr(video, field)} 到 {value}')
     setattr(video, field, value)
-    video.save()
+    video.save(update_fields=[field])
     return HttpResponse()
 
 

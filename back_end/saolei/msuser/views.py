@@ -7,7 +7,9 @@ from django.views.decorators.http import require_GET
 from django_ratelimit.decorators import ratelimit
 from django_redis import get_redis_connection
 
-from config.global_settings import GameModes, RankingGameStats
+from config.global_settings import GameLevels, GameModes, RankingGameStats
+from msuser.models import UserMS
+from msuser.utils import RankingField
 from userprofile.models import UserProfile
 from utils import ComplexEncoder
 
@@ -25,6 +27,14 @@ class DecimalEncoder(json.JSONEncoder):
         super(DecimalEncoder, self).default(o)
 
 
+def get_records_level(ms_user: UserMS, stat: str, mode: str):
+    return [getattr(ms_user, RankingField(level, stat, mode).name) for level in GameLevels]
+
+
+def get_record_ids_level(ms_user: UserMS, stat: str, mode: str):
+    return [getattr(ms_user, RankingField(level, stat, mode).id_name) for level in GameLevels]
+
+
 # 获取我的地盘里的姓名、全部纪录
 @ratelimit(key='ip', rate='15/m')
 @require_GET
@@ -39,8 +49,8 @@ def get_records(request):
     for mode in GameModes:
         value = {}
         for stat in RankingGameStats:
-            value[stat] = ms_user.getrecords_level(stat, mode)
-            value[f'{stat}_id'] = ms_user.getrecordIDs_level(stat, mode)
+            value[stat] = get_records_level(ms_user, stat, mode)
+            value[f'{stat}_id'] = get_record_ids_level(ms_user, stat, mode)
         response[f'{mode}_record'] = json.dumps(value, cls=DecimalEncoder)
     return JsonResponse(response)
 
@@ -59,10 +69,10 @@ def get_info_abstract(request):
     response = {
         'record_abstract': json.dumps(
             {
-                'timems': ms_user.getrecords_level('timems', 'std'),
-                'bvs': ms_user.getrecords_level('bvs', 'std'),
-                'timems_id': ms_user.getrecordIDs_level('timems', 'std'),
-                'bvs_id': ms_user.getrecordIDs_level('bvs', 'std'),
+                'timems': get_records_level(ms_user, 'timems', 'std'),
+                'bvs': get_records_level(ms_user, 'bvs', 'std'),
+                'timems_id': get_record_ids_level(ms_user, 'timems', 'std'),
+                'bvs_id': get_record_ids_level(ms_user, 'bvs', 'std'),
             },
             cls=DecimalEncoder,
         ),

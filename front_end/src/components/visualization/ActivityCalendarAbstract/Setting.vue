@@ -9,13 +9,7 @@
     <span class="text">{{ t('local.cellSize') }}</span>&nbsp;
     <ElInputNumber v-model="activityCalendarConfig.cellSize" :min="1" :max="20" size="small" controls-position="right" /><br>
     <span class="text">{{ t('local.cellGap') }}</span>&nbsp;
-    <ElInputNumber v-model="activityCalendarConfig.cellMargin" :min="0" :max="10" size="small" controls-position="right" /><br>
-    <span class="text">{{ t('local.cornerRadius') }}</span>&nbsp;
-    <ElInputNumber v-model="activityCalendarConfig.cornerRadius" :min="0" :max="50" size="small" controls-position="right">
-        <template #suffix>
-            %
-        </template>
-    </ElInputNumber>
+    <ElInputNumber v-model="activityCalendarConfig.cellMargin" :min="0" :max="10" size="small" controls-position="right" />
 </template>
 
 <script setup lang="ts">
@@ -31,7 +25,6 @@ const i18nMessages = {
     'zh-cn': { local: {
         cellGap: '方格间距',
         cellSize: '方格边长',
-        cornerRadius: '圆角半径',
         showDate: '显示日期',
         useEndTime: '结束时间',
         useEndTimeTooltip: '依录像结束时间显示，关闭此项将使用录像上传时间。结束时间为用户的系统时间，可能不准确。',
@@ -39,7 +32,6 @@ const i18nMessages = {
     en: { local: {
         cellGap: 'Cell Gap',
         cellSize: 'Cell Size',
-        cornerRadius: 'Corner Radius',
         showDate: 'Show Date',
         useEndTime: 'Display by finishing time',
         useEndTimeTooltip: 'Display by the time of finishing games when switching on, and the time of uploading when switching off. The finishing time represents the user\'s system time and can be incorrect.',

@@ -8,9 +8,10 @@
                 {{ t('local.uploadedNVideosOnDate', [toISODateString(date), videos.length]) }}
             </span>
             <br>
-            <span v-for="i in count.b" :key="i" class="dot" style="background-color: #f00;" />
-            <span v-for="i in count.i" :key="i" class="dot" style="background-color: #080;" />
-            <span v-for="i in count.e" :key="i" class="dot" style="background-color: #00f;" />
+            <span v-for="i in count.b" :key="`b-${i}`" class="dot" :style="{ backgroundColor: colorTheme.level.b }" />
+            <span v-for="i in count.i" :key="`i-${i}`" class="dot" :style="{ backgroundColor: colorTheme.level.i }" />
+            <span v-for="i in count.e" :key="`e-${i}`" class="dot" :style="{ backgroundColor: colorTheme.level.e }" />
+            <span v-for="i in count.c" :key="`c-${i}`" class="dot" :style="{ backgroundColor: colorTheme.level.c }" />
         </template>
     </ElCard>
 </template>
@@ -23,7 +24,9 @@ import { ElCard } from 'element-plus';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import { colorTheme } from '@/store';
 import { toISODateString } from '@/utils/datetime';
+import { isStandardLevel } from '@/utils/ms_const';
 import type { VideoAbstract } from '@/utils/videoabstract';
 
 const props = defineProps({
@@ -31,14 +34,16 @@ const props = defineProps({
     videos: { type: Array<VideoAbstract>, default: () => [] },
 });
 
-const count = ref({ b: 0, i: 0, e: 0 });
+const count = ref({ b: 0, i: 0, e: 0, c: 0 });
 
 watch(() => props.videos, () => {
     count.value.b = 0;
     count.value.i = 0;
     count.value.e = 0;
+    count.value.c = 0;
     for (const video of props.videos) {
-        count.value[video.level]++;
+        if (isStandardLevel(video.level)) count.value[video.level]++;
+        else count.value.c++;
     }
 }, { immediate: true });
 

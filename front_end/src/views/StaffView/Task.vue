@@ -1,8 +1,26 @@
 <template>
+    <ElDescriptions v-loading="summaryLoading" title="概览" border :column="5">
+        <ElDescriptionsItem label="total">
+            {{ taskSummary.total }}
+        </ElDescriptionsItem>
+        <ElDescriptionsItem
+            v-for="status in DjangoTaskResultStatusOptions"
+            :key="status"
+            :label="status"
+        >
+            {{ taskSummary.status[status] ?? 0 }}
+        </ElDescriptionsItem>
+    </ElDescriptions>
     <PrToolbar>
         对于失败的任务，点击“FAILED”按钮可以在控制台输出报错。
         <template #start>
-            <ElButton @click="deleteSelected">
+            <ElButton :loading="loading" @click="refresh">
+                加载任务
+            </ElButton>
+            <ElButton :loading="cleanupLoading" @click="cleanupExpiredTasks">
+                删除过期任务
+            </ElButton>
+            <ElButton :disabled="selectedTasks.length === 0" @click="deleteSelected">
                 删除选中任务
             </ElButton>
         </template>
@@ -65,7 +83,7 @@
 
 <script setup lang="ts">
 import { FilterMatchMode } from '@primevue/core/api';
-import { ElButton, vLoading } from 'element-plus';
+import { ElButton, ElDescriptions, ElDescriptionsItem, vLoading } from 'element-plus';
 import PrColumn from 'primevue/column';
 import PrDataTable from 'primevue/datatable';
 import PrSelect from 'primevue/select';
@@ -73,6 +91,8 @@ import PrToolbar from 'primevue/toolbar';
 import { onMounted, ref } from 'vue';
 
 import { httpErrorNotification } from '@/components/Notifications';
+import { createEnumMap } from '@/utils';
+import type { EnumMap } from '@/utils';
 import type { DjangoTaskResultStatus } from '@/utils/common/structInterface';
 import { DjangoTaskResultStatusOptions } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
@@ -99,15 +119,34 @@ interface TaskDetail {
     traceback: string;
 }
 
+interface TaskSummary {
+    total: number;
+    status: EnumMap<DjangoTaskResultStatus, number>;
+}
+
 const { proxy } = useCurrentInstance();
 
 const taskData = ref<TaskDetail[]>([]);
 const selectedTasks = ref<TaskDetail[]>([]);
 const loading = ref(false);
+const summaryLoading = ref(false);
+const cleanupLoading = ref(false);
+const taskSummary = ref<TaskSummary>({
+    total: 0,
+    status: createEnumMap(DjangoTaskResultStatusOptions, 0),
+});
 
 const filters = ref({
     status: { value: null, matchMode: FilterMatchMode.EQUALS },
 });
+
+async function refreshSummary() {
+    summaryLoading.value = true;
+    await proxy.$axios.get('/api/common/tasksummary').then((response) => {
+        taskSummary.value = response.data;
+    }).catch(httpErrorNotification);
+    summaryLoading.value = false;
+}
 
 async function refresh() {
     loading.value = true;
@@ -117,7 +156,15 @@ async function refresh() {
     loading.value = false;
 }
 
-onMounted(refresh);
+onMounted(refreshSummary);
+
+async function cleanupExpiredTasks() {
+    cleanupLoading.value = true;
+    await proxy.$axios.post('/api/common/tasks/cleanup').then(async () => {
+        await refreshSummary();
+    }).catch(httpErrorNotification);
+    cleanupLoading.value = false;
+}
 
 async function deleteSelected() {
     if (selectedTasks.value.length === 0) return;
@@ -128,11 +175,6 @@ async function deleteSelected() {
     }
     selectedTasks.value.splice(0, selectedTasks.value.length);
     await refresh();
+    await refreshSummary();
 }
 </script>
-
-<style lang="less" scoped>
-.card {
-    background-color: black;
-}
-</style>
