@@ -13,6 +13,7 @@ from django.utils import timezone as django_timezone
 from django_tasks import TaskResultStatus
 from django_tasks_db.models import DBTaskResult
 from ninja import Router, Schema
+from ninja.decorators import decorate_view
 from ninja.throttling import AnonRateThrottle
 import psutil
 
@@ -118,8 +119,11 @@ def task_summary(request):
 
 
 @router.post('/tasks/cleanup', response=int)
-@staff_required
+@decorate_view(staff_required)
 def cleanup_tasks(request):
+    """
+    - staff_required
+    """
     deleted_count = 0
     now = django_timezone.now()
 
@@ -140,8 +144,11 @@ def cleanup_tasks(request):
 
 
 @router.get('/staff/logs', response=list[LogFileOut])
-@staff_required
+@decorate_view(staff_required)
 def list_logs(request):
+    """
+    - staff_required
+    """
     file_stats = []
     for file in os.listdir(LOG_DIR):
         file_path = os.path.join(LOG_DIR, file)
@@ -155,14 +162,24 @@ def list_logs(request):
 
 
 @router.get('/staff/logview')
-@staff_required
+@decorate_view(staff_required)
 def download_log(request, filename: str):
+    """
+    - staff_required
+
+    Download the full log file.
+    """
     return FileResponse(_get_log_path(filename).open('rb'), content_type='text/plain')
 
 
 @router.get('/staff/logtail', response=LogTailOut)
-@staff_required
+@decorate_view(staff_required)
 def get_log_tail(request, filename: str, tail_bytes: int = DEFAULT_TAIL_BYTES):
+    """
+    - staff_required
+
+    Return only the tail of the log file instead of loading the full file.
+    """
     log_path = _get_log_path(filename)
     clamped_tail_bytes = _clamp_tail_bytes(tail_bytes)
     file_size = log_path.stat().st_size
@@ -177,8 +194,13 @@ def get_log_tail(request, filename: str, tail_bytes: int = DEFAULT_TAIL_BYTES):
 
 
 @router.get('/staff/logstream')
-@staff_required
+@decorate_view(staff_required)
 def stream_log_tail(request, filename: str, offset: int = 0, tail_bytes: int = DEFAULT_TAIL_BYTES):
+    """
+    - staff_required
+
+    Stream appended log content as Server-Sent Events from the given byte offset.
+    """
     log_path = _get_log_path(filename)
     clamped_tail_bytes = _clamp_tail_bytes(tail_bytes)
 
