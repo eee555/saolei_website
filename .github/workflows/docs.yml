@@ -1,10 +1,15 @@
 name: Build and Deploy Docs
 
 on:
-  push:
+  pull_request:
     paths:
       - 'vitepress_doc/**'
       - '.github/workflows/docs.yml'
+  push:
+    branches:
+      - dev
+    tags:
+      - '*'
 
 permissions:
   contents: read
@@ -12,16 +17,70 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: docs-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  build-docs:
+  build-pr:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v7
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: '24'
+
+    - name: Build VitePress docs
+      run: |
+        cd vitepress_doc
+        npm install
+        npm run build
+
+  deploy-pages:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
 
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v7
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: '24'
+
+    - name: Configure GitHub Pages
+      uses: actions/configure-pages@v5
+
+    - name: Build VitePress docs for GitHub Pages
+      env:
+        VITEPRESS_BASE: /${{ github.event.repository.name }}/
+        VITEPRESS_MAIN_SITE_URL: https://openms.top/
+      run: |
+        cd vitepress_doc
+        npm install
+        npm run build
+
+    - name: Upload GitHub Pages artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: vitepress_doc/.vitepress/dist
+
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
+
+  deploy-server:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
@@ -33,7 +92,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v6
       with:
-        node-version: '22.13.0'
+        node-version: '24'
 
     - name: Build VitePress docs
       run: |
@@ -50,23 +109,3 @@ jobs:
         echo Uploading docs files to server...
         sshpass -p "${SERVER_PASSWORD}" ssh -o StrictHostKeyChecking=no ${{ env.SERVER_USER }}@${{ env.SERVER_HOST }} "mkdir -p /root/saolei/docs"
         sshpass -p "${SERVER_PASSWORD}" scp -o StrictHostKeyChecking=no -r vitepress_doc/.vitepress/dist/* ${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}:/root/saolei/docs/
-
-    - name: Configure GitHub Pages
-      uses: actions/configure-pages@v5
-
-    - name: Build VitePress docs for GitHub Pages
-      env:
-        VITEPRESS_BASE: /${{ github.event.repository.name }}/
-        VITEPRESS_MAIN_SITE_URL: https://openms.top/
-      run: |
-        cd vitepress_doc
-        npm run build
-
-    - name: Upload GitHub Pages artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: vitepress_doc/.vitepress/dist
-
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
