@@ -271,9 +271,10 @@ describe('GSC', () => {
         cy.login(STAFF.username, STAFF.password);
         cy.visit('/#/staff/task');
 
+        cy.intercept('GET', '**/common/staff/taskdetail/').as('taskDetail');
         cy.contains('加载任务').click();
 
-        cy.contains('status');
+        cy.wait('@taskDetail').its('response.statusCode').should('eq', 200);
         cy.get('table:visible').eq(1).getTable().should((tableData) => {
             expect(tableData[0].status).to.equal('READY');
             expect(tableData[0].args_kwargs.replace(/\s/g, '')).to.equal('{"args":[4],"kwargs":{}}');
