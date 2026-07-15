@@ -57,6 +57,7 @@ jobs:
     - name: Build VitePress docs for GitHub Pages
       env:
         VITEPRESS_BASE: /${{ github.event.repository.name }}/
+        VITEPRESS_MAIN_SITE_URL: https://openms.top/
       run: |
         cd vitepress_doc
         npm run build

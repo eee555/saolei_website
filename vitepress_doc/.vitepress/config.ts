@@ -1,5 +1,8 @@
 import { defineConfig } from 'vitepress';
 
+const mainSiteLink = process.env.VITEPRESS_MAIN_SITE_URL
+    ?? (process.env.NODE_ENV === 'development' ? 'http://localhost:8080/' : '/');
+
 export default defineConfig({
     title: '开源扫雷网使用指南',
     description: '开源扫雷网用户指南',
@@ -30,7 +33,7 @@ export default defineConfig({
                 },
                 nav: [
                     { text: '使用指南', link: '/guide/' },
-                    { text: '返回主站', link: '/' },
+                    { text: '返回主站', link: mainSiteLink },
                 ],
                 sidebar: {
                     '/guide/': [
@@ -70,7 +73,7 @@ export default defineConfig({
                 },
                 nav: [
                     { text: 'Guide', link: '/en/guide/' },
-                    { text: 'Main Site', link: '/' },
+                    { text: 'Main Site', link: mainSiteLink },
                 ],
                 sidebar: {
                     '/en/guide/': [

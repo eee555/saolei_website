@@ -72,6 +72,7 @@ function getMenuRects() {
             server: getRect('.el-menu-item:contains("Server")'),
             profile: getRect(`.el-menu-item:contains("${user.username}")`),
             staff: getRect('.el-menu-item:contains("Moderate")'),
+            docs: getRect('.el-menu-item:contains("Docs")'),
             settings: getRect('.el-menu-item:contains("Settings")'),
             language: getRect('.el-dropdown'),
             logout: getRect('.fakemenuitem:contains("Logout")'),
@@ -89,6 +90,7 @@ describe('<Menu /> layout', () => {
                 rects.server.top,
                 rects.profile.top,
                 rects.staff.top,
+                rects.docs.top,
                 rects.settings.top,
                 rects.language.top,
                 rects.logout.top,
@@ -106,6 +108,7 @@ describe('<Menu /> layout', () => {
             const rightItems = [
                 rects.profile,
                 rects.staff,
+                rects.docs,
                 rects.settings,
                 rects.language,
                 rects.logout,
