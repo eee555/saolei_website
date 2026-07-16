@@ -45,6 +45,8 @@ export default defineConfig({
                                 { text: '扫雷软件', link: '/guide/software' },
                                 { text: '扫雷数据', link: '/guide/terminology' },
                                 { text: '扫雷标识', link: '/guide/identifier' },
+                                { text: '比赛功能', link: '/guide/tournament' },
+                                { text: '金羊杯', link: '/guide/gsc' },
                             ],
                         },
                     ],
