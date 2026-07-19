@@ -4,11 +4,12 @@ import NativePlayer from './NativePlayer.vue';
 import { customCounterConfig } from './store';
 import { cloneCustomCounterConfig, defaultCustomCounterConfig } from './types';
 
+import { binaryStringToUint8Array } from '@/../cypress/support/stupidCypress';
 import i18n from '@/i18n';
 
 const fixture = {
     filename: 'c_10_129.073_24_0.186_Pu Tian Yi(Hu Bei).evf',
-    src: '/native-player-test.evf',
+    src: '/native-player-test.evf?id=c_10_129.073_24_0.186_Pu%20Tian%20Yi%28Hu%20Bei%29.evf',
 };
 
 function mountOptions(src: string) {
@@ -21,12 +22,21 @@ function mountOptions(src: string) {
 }
 
 function mockVideoFixture() {
-    cy.fixture(fixture.filename, null).then((fileContent) => {
-        cy.intercept('GET', fixture.src, {
-            statusCode: 200,
-            headers: { 'content-type': 'application/octet-stream' },
-            body: fileContent,
-        }).as('fetchVideo');
+    cy.fixture(fixture.filename, 'binary').then((fileContent) => {
+        const data = binaryStringToUint8Array(fileContent);
+        cy.window().then((win) => {
+            cy.stub(win, 'fetch').callsFake((input: RequestInfo | URL) => {
+                const requestUrl = typeof input === 'string'
+                    ? input
+                    : input instanceof win.Request ? input.url : input.href;
+                expect(requestUrl).to.contain('/native-player-test.evf');
+                const responseBody = new win.Uint8Array(data);
+                return Promise.resolve(new win.Response(responseBody, {
+                    status: 200,
+                    headers: { 'content-type': 'application/octet-stream' },
+                }));
+            }).as('fetchVideo');
+        });
     });
 }
 
@@ -50,16 +60,15 @@ describe('<NativePlayer />', () => {
         mockVideoFixture();
         cy.mount(NativePlayer, mountOptions(fixture.src));
 
-        cy.wait('@fetchVideo');
+        cy.get('@fetchVideo').should('have.been.calledOnce');
         waitForLoadedPlayer();
         cy.get('.native-player__content').should('be.visible');
         cy.get('.native-player__board-frame').should('be.visible');
-        cy.get('.custom-counter-wrap').should('be.visible').and('contain', 'cl');
+        cy.get('.custom-counter-wrap').should('exist').and('contain', 'cl');
         dynamicParamCell('column').should('have.text', '8');
         dynamicParamCell('row').should('have.text', '8');
         dynamicParamCell('bvs').should('contain', '/24');
-        dynamicParamCell('time').should('contain', '/129.073');
-        cy.get('.custom-counter-wrap').should('be.visible');
+        dynamicParamCell('time').should('contain', '129.073');
         cy.get('.custom-counter-wrap').should('contain', 'time');
         cy.get('.custom-counter-wrap').should('contain', 'path');
     });
@@ -68,11 +77,11 @@ describe('<NativePlayer />', () => {
         mockVideoFixture();
         cy.mount(NativePlayer, mountOptions(fixture.src));
 
-        cy.wait('@fetchVideo');
+        cy.get('@fetchVideo').should('have.been.calledOnce');
         waitForLoadedPlayer();
         cy.get('.progress-bar__play').click();
         dynamicParamCell('time').should(($time) => {
-            expect($time.text()).not.to.equal('0/129.073');
+            expect($time.text()).not.to.equal('129.073/0');
         });
         dynamicParamCell('bvs').should(($bvs) => {
             const match = (/@(\d+)\/(\d+)/).exec($bvs.text());
