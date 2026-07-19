@@ -1,0 +1,65 @@
+import { nextTick } from 'vue';
+
+import CustomCounter from './CustomCounter.vue';
+import type { CustomCounterConfig } from './types';
+
+import type { AnyVideo } from '@/utils/fileIO';
+
+function createVideo(values: Record<string, unknown>) {
+    return values as unknown as AnyVideo;
+}
+
+function counterCell(label: string) {
+    return cy.contains('.custom-counter-wrap th', new RegExp(`^${label}$`)).parents('tr').find('td');
+}
+
+function mountCustomCounter(video: AnyVideo, config: CustomCounterConfig, currentMs = 0) {
+    cy.mount(CustomCounter, {
+        props: {
+            video,
+            currentMs,
+            config,
+        },
+    });
+}
+
+describe('<CustomCounter />', () => {
+    it('renders custom expression rows', () => {
+        mountCustomCounter(createVideo({
+            bbbv: 24,
+            bbbv_s: 3.456,
+            bbbv_solved: 12,
+            cl: 4,
+            double: 1,
+            left: 2,
+            right: 1,
+        }), [
+            ['bvs', 'roundTo(bbbv_s, 2) || "@" || bbbv_solved || "/" || bbbv'],
+            ['cl', 'cl || "=" || left || "+" || right || "+" || double'],
+        ]);
+
+        cy.get('.custom-counter-wrap').should('be.visible');
+        counterCell('bvs').should('have.text', '3.46@12/24');
+        counterCell('cl').should('have.text', '4=2+1+1');
+    });
+
+    it('shows expression errors directly in the value cell', () => {
+        mountCustomCounter(createVideo({ bbbv: 24 }), [
+            ['bad', 'unknown_key + 1'],
+        ]);
+
+        counterCell('bad').should('have.class', 'custom-counter__value--error').and('contain', 'Unknown variable: unknown_key');
+    });
+
+    it('refreshes when currentMs changes', () => {
+        const videoValues = { bbbv_solved: 1 };
+        mountCustomCounter(createVideo(videoValues), [['solved', 'bbbv_solved']], 0);
+
+        counterCell('solved').should('have.text', '1');
+        cy.get('@vue').then((wrapper: ComponentWrapper<typeof CustomCounter>) => {
+            videoValues.bbbv_solved = 2;
+            return wrapper.setProps({ currentMs: 100 }).then(() => nextTick());
+        });
+        counterCell('solved').should('have.text', '2');
+    });
+});

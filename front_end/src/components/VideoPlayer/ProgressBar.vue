@@ -1,6 +1,6 @@
 <template>
     <div class="progress-bar">
-        <ElButton circle :icon="RefreshLeft" :title="t('local.restart')" @click="restart" />
+        <ElButton class="progress-bar__restart" circle :icon="RefreshLeft" :title="t('local.restart')" @click="restart" />
         <ElButton
             class="progress-bar__play"
             circle
@@ -8,7 +8,7 @@
             :title="isPlaying ? t('local.pause') : t('local.play')"
             @click="togglePlay"
         />
-        <ElButton :title="t('local.step')" @click="stepForward">
+        <ElButton class="progress-bar__step" :title="t('local.step')" @click="stepForward">
             +0.1s
         </ElButton>
         <ElSlider
