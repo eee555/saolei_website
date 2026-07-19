@@ -1,54 +1,54 @@
-import { defineComponent, ref } from 'vue';
-
 import ProgressBar from './ProgressBar.vue';
 
 import i18n from '@/i18n';
 
 function mountProgressBar(current = 0, duration = 1000) {
-    const TestHarness = defineComponent({
-        components: { ProgressBar },
-        expose: [],
-        setup() {
-            const currentMs = ref(current);
-            const durationMs = ref(duration);
-            return { currentMs, durationMs };
+    cy.mount(ProgressBar, {
+        props: {
+            modelValue: current,
+            durationMs: duration,
         },
-        template: `
-            <div>
-                <ProgressBar v-model="currentMs" :duration-ms="durationMs" />
-                <span class="progress-bar-test-value">{{ currentMs }}</span>
-                <button class="progress-bar-test-shrink-duration" @click="durationMs = 50">shrink</button>
-            </div>
-        `,
-    });
-
-    cy.mount(TestHarness, {
         global: {
             plugins: [i18n],
         },
     });
 }
 
+function modelUpdate(index: number) {
+    return cy.get('@vue').then((wrapper: ComponentWrapper<typeof ProgressBar>) => {
+        return wrapper.emitted('update:modelValue')?.[index]?.[0];
+    });
+}
+
+function lastModelUpdate() {
+    return cy.get('@vue').then((wrapper: ComponentWrapper<typeof ProgressBar>) => {
+        const events = wrapper.emitted('update:modelValue') ?? [];
+        return events.at(-1)?.[0];
+    });
+}
+
 describe('<ProgressBar />', () => {
-    it('steps forward and restarts within duration bounds', () => {
+    it('emits bounded step and restart updates', () => {
         mountProgressBar(950, 1000);
 
         cy.get('.progress-bar__step').click();
-        cy.get('.progress-bar-test-value').should('have.text', '1000');
+        modelUpdate(0).should('eq', 1000);
 
         cy.get('.progress-bar__restart').click();
-        cy.get('.progress-bar-test-value').should('have.text', '0');
+        modelUpdate(1).should('eq', 0);
     });
 
-    it('clamps current time when duration shrinks', () => {
+    it('emits a clamped update when duration shrinks', () => {
         mountProgressBar(100, 1000);
 
-        cy.get('.progress-bar-test-shrink-duration').click();
+        cy.get('@vue').then((wrapper: ComponentWrapper<typeof ProgressBar>) => {
+            return wrapper.setProps({ durationMs: 50 });
+        });
 
-        cy.get('.progress-bar-test-value').should('have.text', '50');
+        modelUpdate(0).should('eq', 50);
     });
 
-    it('advances current time while playing', () => {
+    it('emits current time updates while playing', () => {
         let animationCallback: FrameRequestCallback | undefined = undefined;
         let testWindow: Window | undefined = undefined;
 
@@ -69,7 +69,7 @@ describe('<ProgressBar />', () => {
             animationCallback?.((testWindow?.performance.now() ?? 0) + 250);
         });
 
-        cy.get('.progress-bar-test-value').invoke('text').then((value) => {
+        lastModelUpdate().then((value) => {
             expect(Number(value)).to.be.greaterThan(0);
             expect(Number(value)).to.be.lessThan(1000);
         });
