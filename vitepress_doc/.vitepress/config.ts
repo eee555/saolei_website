@@ -1,7 +1,25 @@
 import { defineConfig } from 'vitepress';
+import type MarkdownIt from 'markdown-it';
 
 const mainSiteLink = process.env.VITEPRESS_MAIN_SITE_URL
     ?? (process.env.NODE_ENV === 'development' ? 'http://localhost:8080/' : '/');
+
+function configureDiagramFences(md: MarkdownIt) {
+    const defaultFence = md.renderer.rules.fence;
+
+    md.renderer.rules.fence = (tokens, idx, options, env, self) => {
+        const token = tokens[idx];
+        const info = token.info.trim().split(/\s+/)[0];
+
+        if (info === 'automaton' || info === 'mermaid') {
+            return `<MermaidDiagram encoded-source="${encodeURIComponent(token.content)}" />`;
+        }
+
+        return defaultFence
+            ? defaultFence(tokens, idx, options, env, self)
+            : self.renderToken(tokens, idx, options);
+    };
+}
 
 export default defineConfig({
     title: '开源扫雷网使用指南',
@@ -9,6 +27,9 @@ export default defineConfig({
     base: process.env.VITEPRESS_BASE ?? '/docs/',
     cleanUrls: true,
     lastUpdated: true,
+    markdown: {
+        config: configureDiagramFences,
+    },
     locales: {
         root: {
             label: '简体中文',
@@ -45,9 +66,17 @@ export default defineConfig({
                                 { text: '扫雷软件', link: '/guide/software' },
                                 { text: '扫雷数据', link: '/guide/terminology' },
                                 { text: '扫雷标识', link: '/guide/identifier' },
+                                { text: '数据统计', link: '/guide/stat' },
                                 { text: '比赛功能', link: '/guide/tournament' },
                                 { text: '金羊杯', link: '/guide/gsc' },
                                 { text: '参与贡献', link: '/guide/contribute' },
+                            ],
+                        },
+                        {
+                            text: '扫雷教程',
+                            items: [
+                                { text: '概览', link: '/guide/minesweeper/' },
+                                { text: '操作方式和规则', link: '/guide/minesweeper/mouse-event' },
                             ],
                         },
                     ],

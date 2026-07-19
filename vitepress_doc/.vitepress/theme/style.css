@@ -75,3 +75,28 @@
 .vp-doc details > :last-child {
     margin-bottom: 20px;
 }
+
+.vp-doc .mermaid-diagram {
+    margin: 24px 0;
+    overflow-x: auto;
+    border: 1px solid var(--vp-c-divider);
+    border-radius: 8px;
+    background: var(--vp-c-bg-soft);
+}
+
+.vp-doc .mermaid-diagram__body {
+    min-width: max-content;
+    padding: 16px;
+    text-align: center;
+}
+
+.vp-doc .mermaid-diagram__body svg {
+    max-width: 100%;
+    height: auto;
+}
+
+.vp-doc .mermaid-diagram__error {
+    padding: 16px;
+    color: var(--vp-c-danger-1);
+    white-space: pre-wrap;
+}
