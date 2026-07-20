@@ -52,8 +52,8 @@ describe('<CustomCounterJsonEditor />', () => {
             ['time', 'etime'],
             ['bvs', 'bbbv'],
         ]);
-        cy.contains('JSON 解析失败').should('not.exist');
-        cy.contains('二维字符串数组').should('not.exist');
+        cy.contains('Failed to parse JSON').should('not.exist');
+        cy.contains('Config must be a two-dimensional string array').should('not.exist');
     });
 
     it('keeps invalid JSON text and shows the parse error', () => {
@@ -62,7 +62,7 @@ describe('<CustomCounterJsonEditor />', () => {
         setJson('[,["time","rtime"]]');
 
         cy.get(textareaSelector).should('have.value', '[,["time","rtime"]]');
-        cy.contains('JSON 解析失败').should('be.visible');
+        cy.contains('Failed to parse JSON').should('be.visible');
         cy.get('@vue').then((wrapper: ComponentWrapper<typeof CustomCounterJsonEditor>) => {
             expect(wrapper.emitted('update:modelValue')).to.equal(undefined);
         });
