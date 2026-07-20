@@ -11,8 +11,8 @@
                 <span style="margin-left: auto;">
                     {{ t('local.player') }}
                     <ElSelect v-model="videoPlayerConfig.backend" style="width: 10rem">
+                        <ElOption key="native" value="native" :label="t('local.native')" />
                         <ElOption key="flop" value="flop" label="flop-player" />
-                        <ElOption key="native" value="native" label="native" />
                         <ElOption key="StrangeDust" value="StrangeDust" label="strange-dust.github.io" />
                     </ElSelect>
                 </span>
@@ -38,10 +38,12 @@ const i18nMessages = {
     'zh-cn': { local: {
         video: '录像',
         player: '播放器：',
+        native: '原生',
     } },
     en: { local: {
         video: 'Video',
         player: 'Video Player: ',
+        native: 'Native',
     } },
 };
 

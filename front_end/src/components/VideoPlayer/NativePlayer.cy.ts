@@ -6,10 +6,11 @@ import { cloneCustomCounterTable, defaultCustomCounterTable } from './types';
 
 import { binaryStringToUint8Array } from '@/../cypress/support/stupidCypress';
 import i18n from '@/i18n';
+import { videoPlayerConfig } from '@/store';
 
 const fixture = {
     filename: 'c_10_129.073_24_0.186_Pu Tian Yi(Hu Bei).evf',
-    src: '/native-player-test.evf?id=c_10_129.073_24_0.186_Pu%20Tian%20Yi%28Hu%20Bei%29.evf',
+    src: '/video/preview/?id=c_10_129.073_24_0.186_Pu%20Tian%20Yi%28Hu%20Bei%29.evf',
 };
 
 function mountOptions(src: string) {
@@ -24,19 +25,15 @@ function mountOptions(src: string) {
 function mockVideoFixture() {
     cy.fixture(fixture.filename, 'binary').then((fileContent) => {
         const data = binaryStringToUint8Array(fileContent);
-        cy.window().then((win) => {
-            cy.stub(win, 'fetch').callsFake((input: RequestInfo | URL) => {
-                const requestUrl = typeof input === 'string'
-                    ? input
-                    : input instanceof win.Request ? input.url : input.href;
-                expect(requestUrl).to.contain('/native-player-test.evf');
-                const responseBody = new win.Uint8Array(data);
-                return Promise.resolve(new win.Response(responseBody, {
-                    status: 200,
-                    headers: { 'content-type': 'application/octet-stream' },
-                }));
-            }).as('fetchVideo');
-        });
+        const responseBody = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
+        cy.intercept('GET', '**/video/preview/**', (request) => {
+            expect(request.url).to.contain('/video/preview/');
+            request.reply({
+                statusCode: 200,
+                headers: { 'content-type': 'application/octet-stream' },
+                body: responseBody,
+            });
+        }).as('getVideo');
     });
 }
 
@@ -53,11 +50,17 @@ function waitForLoadedPlayer() {
 describe('<NativePlayer />', () => {
     beforeEach(() => {
         cy.clearLocalStorage('custom-counter-config');
+        cy.clearLocalStorage('video-player-config');
         customCounterConfig.value = {
             table: cloneCustomCounterTable(defaultCustomCounterTable),
             thWidth: 90,
             tdWidth: 130,
             fontSize: 12,
+        };
+        videoPlayerConfig.value = {
+            backend: 'native',
+            cellSize: 16,
+            strangeDustTrust: false,
         };
     });
 
@@ -65,10 +68,10 @@ describe('<NativePlayer />', () => {
         mockVideoFixture();
         cy.mount(NativePlayer, mountOptions(fixture.src));
 
-        cy.get('@fetchVideo').should('have.been.calledOnce');
+        cy.wait('@getVideo');
         waitForLoadedPlayer();
         cy.get('.native-player__content').should('be.visible');
-        cy.get('.native-player__board-frame').should('be.visible');
+        cy.get('.player-main').should('be.visible');
         cy.get('.custom-counter-wrap').should('exist').and('contain', 'cl');
         dynamicParamCell('bvs').should('contain', '/24');
         cy.get('.custom-counter-wrap').should('contain', 'time');
@@ -79,7 +82,7 @@ describe('<NativePlayer />', () => {
         mockVideoFixture();
         cy.mount(NativePlayer, mountOptions(fixture.src));
 
-        cy.get('@fetchVideo').should('have.been.calledOnce');
+        cy.wait('@getVideo');
         waitForLoadedPlayer();
         cy.get('.progress-bar__play').click();
         dynamicParamCell('time').should(($time) => {
@@ -91,5 +94,17 @@ describe('<NativePlayer />', () => {
             if (match === null) return;
             expect(Number(match[1])).to.be.lessThan(Number(match[2]));
         });
+    });
+
+    it('reports fetch response errors from the backend', () => {
+        cy.intercept('GET', '**/videos/**', {
+            statusCode: 404,
+            statusMessage: 'Not Found',
+            body: '',
+        }).as('getVideo');
+        cy.mount(NativePlayer, mountOptions('/videos/'));
+
+        cy.wait('@getVideo');
+        cy.get('.native-player').should('contain', '404');
     });
 });

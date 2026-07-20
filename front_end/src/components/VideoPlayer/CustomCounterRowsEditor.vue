@@ -9,7 +9,7 @@
         >
             <div
                 v-for="(row, index) in draggableRows"
-                :key="`${index}-${row[0]}`"
+                :key="index"
                 class="custom-counter-rows-editor__row"
             >
                 <i class="custom-counter-rows-editor__drag-handle pi pi-ellipsis-v" />

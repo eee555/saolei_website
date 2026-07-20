@@ -1,12 +1,17 @@
 import CustomCounterJsonEditor from './CustomCounterJsonEditor.vue';
 import type { CustomCounterTableRow } from './types';
 
+import i18n from '@/i18n';
+
 const textareaSelector = '.custom-counter-json-editor__input textarea';
 
 function mountJsonEditor(config: CustomCounterTableRow[] = [['time', 'rtime']]) {
     cy.mount(CustomCounterJsonEditor, {
         props: {
             modelValue: config,
+        },
+        global: {
+            plugins: [i18n],
         },
     });
 }
@@ -47,7 +52,8 @@ describe('<CustomCounterJsonEditor />', () => {
             ['time', 'etime'],
             ['bvs', 'bbbv'],
         ]);
-        cy.get('.custom-counter-json-editor__error').should('not.exist');
+        cy.contains('JSON 解析失败').should('not.exist');
+        cy.contains('二维字符串数组').should('not.exist');
     });
 
     it('keeps invalid JSON text and shows the parse error', () => {
@@ -56,7 +62,7 @@ describe('<CustomCounterJsonEditor />', () => {
         setJson('[,["time","rtime"]]');
 
         cy.get(textareaSelector).should('have.value', '[,["time","rtime"]]');
-        cy.get('.custom-counter-json-editor__error').should('contain', 'JSON 解析失败');
+        cy.contains('JSON 解析失败').should('be.visible');
         cy.get('@vue').then((wrapper: ComponentWrapper<typeof CustomCounterJsonEditor>) => {
             expect(wrapper.emitted('update:modelValue')).to.equal(undefined);
         });
@@ -68,7 +74,7 @@ describe('<CustomCounterJsonEditor />', () => {
         setJson('{"time":"rtime"}');
 
         cy.get(textareaSelector).should('have.value', '{"time":"rtime"}');
-        cy.get('.custom-counter-json-editor__error').should('contain', '二维字符串数组');
+        cy.contains('二维字符串数组').should('be.visible');
         cy.get('@vue').then((wrapper: ComponentWrapper<typeof CustomCounterJsonEditor>) => {
             expect(wrapper.emitted('update:modelValue')).to.equal(undefined);
         });

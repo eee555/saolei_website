@@ -19,6 +19,7 @@ import '@/styles/text.css';
 import { ElInput } from 'element-plus';
 import type { PropType } from 'vue';
 import { ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 import { cloneCustomCounterTable, isCustomCounterTable } from './types';
 import type { CustomCounterTableRow } from './types';
@@ -29,6 +30,19 @@ const config = defineModel({
     type: Array as PropType<CustomCounterTableRow[]>,
     required: true,
 });
+
+const i18nMessages = {
+    'zh-cn': { local: {
+        invalidConfig: '配置必须是形如 [["label", "expression"]] 的二维字符串数组。',
+        jsonParseFailed: 'JSON 解析失败：{message}',
+    } },
+    en: { local: {
+        invalidConfig: 'Config must be a two-dimensional string array like [["label", "expression"]].',
+        jsonParseFailed: 'Failed to parse JSON: {message}',
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
 
 const configString = ref('');
 const configErrorMessage = ref('');
@@ -42,13 +56,13 @@ function applyConfigString(value: string) {
     try {
         const parsed = JSON.parse(value) as unknown;
         if (!isCustomCounterTable(parsed)) {
-            configErrorMessage.value = '配置必须是形如 [["label", "expression"]] 的二维字符串数组。';
+            configErrorMessage.value = t('local.invalidConfig');
             return;
         }
         config.value = cloneCustomCounterTable(parsed);
         configErrorMessage.value = '';
     } catch (error) {
-        configErrorMessage.value = `JSON 解析失败：${formatConfigError(error)}`;
+        configErrorMessage.value = t('local.jsonParseFailed', { message: formatConfigError(error) });
     }
 }
 
