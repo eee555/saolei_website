@@ -147,7 +147,7 @@ function updateConfigFromRows(rows: CustomCounterTableRow[]) {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    min-height: 0;
+    min-height: 20em;
     overflow: auto;
 }
 

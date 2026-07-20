@@ -2,6 +2,8 @@ import CustomCounterSettings from './CustomCounterSettings.vue';
 import { cloneCustomCounterTable } from './types';
 import type { CustomCounterConfig, CustomCounterTableRow } from './types';
 
+import i18n from '@/i18n';
+
 function createSettings(table: CustomCounterTableRow[] = [['time', 'rtime']]): CustomCounterConfig {
     return {
         table: cloneCustomCounterTable(table),
@@ -15,6 +17,9 @@ function mountSettings(settings: CustomCounterConfig = createSettings()) {
     cy.mount(CustomCounterSettings, {
         props: {
             modelValue: settings,
+        },
+        global: {
+            plugins: [i18n],
         },
     });
 }

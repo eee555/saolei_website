@@ -7,13 +7,15 @@
             @input="clearConfigError"
             @change="applyConfigString"
         />
-        <div v-if="configErrorMessage !== ''" class="custom-counter-json-editor__error">
+        <div v-if="configErrorMessage !== ''" class="text text-danger text-small">
             {{ configErrorMessage }}
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
+import '@/styles/text.css';
+
 import { ElInput } from 'element-plus';
 import type { PropType } from 'vue';
 import { ref, watch } from 'vue';
@@ -62,7 +64,7 @@ function formatConfigError(error: unknown) {
 
 <style scoped>
 .custom-counter-json-editor {
-    flex: 1 1 auto;
+    flex: 1 1 20em;
     display: flex;
     flex-direction: column;
     min-height: 0;
@@ -80,14 +82,5 @@ function formatConfigError(error: unknown) {
     min-height: 0 !important;
     overflow: auto;
     resize: none;
-}
-
-.custom-counter-json-editor__error {
-    flex: 0 0 auto;
-    margin-top: 6px;
-    color: var(--el-color-danger);
-    font-size: 12px;
-    line-height: 1.35;
-    overflow-wrap: anywhere;
 }
 </style>

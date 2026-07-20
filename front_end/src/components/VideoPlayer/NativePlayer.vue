@@ -5,6 +5,7 @@
         <div v-else-if="video !== null" class="native-player__content">
             <div class="native-player__stage" :class="{ 'native-player__stage--editing': isEditingCustomCounterConfig }">
                 <CustomCounter
+                    class="native-player__custom-counter"
                     :video="video"
                     :current-ms="currentMs"
                     :config="customCounterConfig"
@@ -242,6 +243,10 @@ onBeforeUnmount(() => {
 .native-player__stage--editing {
     align-items: stretch;
     justify-content: flex-start;
+}
+
+.native-player__stage--editing .native-player__custom-counter {
+    align-self: center;
 }
 
 .native-player__config-editor {

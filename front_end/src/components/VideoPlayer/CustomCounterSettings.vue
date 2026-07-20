@@ -1,5 +1,5 @@
 <template>
-    <div class="custom-counter-settings">
+    <div class="custom-counter-settings" :class="{ 'custom-counter-settings--developer-mode': developerMode }">
         <div class="custom-counter-settings__toolbar">
             <label class="custom-counter-settings__number-setting">
                 <span class="text text-small">{{ t('local.width') }}</span>
@@ -11,7 +11,9 @@
                 <InputNumber v-model="config.fontSize" :min="1" class="base-input" />
             </label>
             <ElCheckbox v-model="developerMode">
-                Developer Mode
+                <span class="text text-small">
+                    {{ t('local.developerMode') }}
+                </span>
             </ElCheckbox>
         </div>
 
@@ -43,10 +45,12 @@ const developerMode = ref(false);
 
 const i18nMessages = {
     'zh-cn': { local: {
+        developerMode: '开发者模式',
         fontSize: '字号',
         width: '列宽',
     } },
     en: { local: {
+        developerMode: 'Developer Mode',
         fontSize: 'Font Size',
         width: 'Column Widths',
     } },
@@ -63,6 +67,10 @@ const { t } = useI18n({ messages: i18nMessages });
     min-width: min(100%, 40rem);
     max-height: calc(100vh - 290px);
     overflow: hidden;
+}
+
+.custom-counter-settings--developer-mode {
+    height: calc(100vh - 290px);
 }
 
 .custom-counter-settings__toolbar {
