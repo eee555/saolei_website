@@ -18,13 +18,13 @@ import { ElInput } from 'element-plus';
 import type { PropType } from 'vue';
 import { ref, watch } from 'vue';
 
-import { cloneCustomCounterConfig, isCustomCounterConfig } from './types';
-import type { CustomCounterConfig } from './types';
+import { cloneCustomCounterTable, isCustomCounterTable } from './types';
+import type { CustomCounterTableRow } from './types';
 
 import { stringifyWithLineWrap } from '@/utils/strings';
 
 const config = defineModel({
-    type: Array as PropType<CustomCounterConfig>,
+    type: Array as PropType<CustomCounterTableRow[]>,
     required: true,
 });
 
@@ -39,11 +39,11 @@ watch(config, (value) => {
 function applyConfigString(value: string) {
     try {
         const parsed = JSON.parse(value) as unknown;
-        if (!isCustomCounterConfig(parsed)) {
+        if (!isCustomCounterTable(parsed)) {
             configErrorMessage.value = '配置必须是形如 [["label", "expression"]] 的二维字符串数组。';
             return;
         }
-        config.value = cloneCustomCounterConfig(parsed);
+        config.value = cloneCustomCounterTable(parsed);
         configErrorMessage.value = '';
     } catch (error) {
         configErrorMessage.value = `JSON 解析失败：${formatConfigError(error)}`;

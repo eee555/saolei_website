@@ -1,16 +1,17 @@
 import { useLocalStorage } from '@vueuse/core';
-import type { Ref } from 'vue';
 
-import { cloneCustomCounterConfig, defaultCustomCounterConfig, isCustomCounterConfig } from './types';
+import {
+    cloneCustomCounterTable,
+    defaultCustomCounterTable,
+} from './types';
 import type { CustomCounterConfig } from './types';
 
-const storedCustomCounterConfig = useLocalStorage<unknown>(
+export const customCounterConfig = useLocalStorage<CustomCounterConfig>(
     'custom-counter-config',
-    cloneCustomCounterConfig(defaultCustomCounterConfig),
+    {
+        table: cloneCustomCounterTable(defaultCustomCounterTable),
+        thWidth: 90,
+        tdWidth: 130,
+        fontSize: 12,
+    },
 );
-
-if (!isCustomCounterConfig(storedCustomCounterConfig.value)) {
-    storedCustomCounterConfig.value = cloneCustomCounterConfig(defaultCustomCounterConfig);
-}
-
-export const customCounterConfig = storedCustomCounterConfig as Ref<CustomCounterConfig>;

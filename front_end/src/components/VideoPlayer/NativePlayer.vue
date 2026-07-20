@@ -4,23 +4,25 @@
         <ElResult v-else-if="errorMessage" icon="error" :title="t('local.loadFailed')" :sub-title="errorMessage" />
         <div v-else-if="video !== null" class="native-player__content">
             <div class="native-player__stage" :class="{ 'native-player__stage--editing': isEditingCustomCounterConfig }">
-                <CustomCounter :video="video" :current-ms="currentMs" :config="customCounterConfig" />
+                <CustomCounter
+                    :video="video"
+                    :current-ms="currentMs"
+                    :config="customCounterConfig"
+                />
 
-                <CustomCounterConfigEditor
+                <CustomCounterSettings
                     v-if="isEditingCustomCounterConfig"
                     v-model="customCounterConfig"
                     class="native-player__config-editor"
                 />
-                <div v-else class="native-player__board-frame" :class="outerBorderClass">
-                    <div class="native-player__counter-bar" :class="innerBorderClass">
-                        <Counter :value="video.mine_num - video.flag" :digits="3" :size="18" />
-                        <span style="flex-grow: 1" />
-                        <Counter :value="currentMs / 1000" :fixed="3" :digits="3" :size="18" />
-                    </div>
-                    <div class="native-player__board-wrap" :class="innerBorderClass" :style="boardWrapStyle">
-                        <MinesweeperBoard :board="board" :size="boardSize" :cursor-position="cursorPosition" />
-                    </div>
-                </div>
+                <PlayerMain
+                    v-else
+                    :video="video"
+                    :board="board"
+                    :board-size="boardSize"
+                    :current-ms="currentMs"
+                    :cursor-position="cursorPosition"
+                />
             </div>
 
             <div class="native-player__controls">
@@ -39,15 +41,13 @@
 </template>
 
 <script setup lang="ts">
-import '@putianyi888/vue3-minesweeper-board/style.css';
-
-import { Counter, innerBorderClass, MinesweeperBoard, outerBorderClass } from '@putianyi888/vue3-minesweeper-board';
 import { ElCheckbox, ElResult } from 'element-plus';
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import CustomCounter from './CustomCounter.vue';
-import CustomCounterConfigEditor from './CustomCounterConfigEditor.vue';
+import CustomCounterSettings from './CustomCounterSettings.vue';
+import PlayerMain from './PlayerMain.vue';
 import ProgressBar from './ProgressBar.vue';
 import { customCounterConfig } from './store';
 
@@ -85,11 +85,16 @@ const isEditingCustomCounterConfig = ref(false);
 const cursor = ref({ x: 0, y: 0 });
 const viewport = ref(readViewportSize());
 
+const counterWidth = computed(() => {
+    return Math.max(1, customCounterConfig.value.thWidth)
+        + Math.max(1, customCounterConfig.value.tdWidth);
+});
+
 const boardSize = computed(() => {
     const column = Math.max(1, video.value?.column ?? 1);
     const row = Math.max(1, video.value?.row ?? 1);
     const isStacked = viewport.value.width <= 720;
-    const tableWidth = isStacked ? 0 : 260;
+    const tableWidth = isStacked ? 0 : counterWidth.value;
     const stageGap = isStacked ? 0 : 12;
     const horizontalChrome = 50 + tableWidth + stageGap + 28;
     const verticalChrome = 290;
@@ -97,11 +102,6 @@ const boardSize = computed(() => {
     const availableHeight = Math.max(1, viewport.value.height - verticalChrome);
     return Math.max(1, Math.floor(Math.min(28, availableWidth / column, availableHeight / row)));
 });
-
-const boardWrapStyle = computed(() => ({
-    height: `${Math.max(1, video.value?.row ?? 1) * boardSize.value}px`,
-    width: `${Math.max(1, video.value?.column ?? 1) * boardSize.value}px`,
-}));
 
 const cursorPosition = computed(() => {
     const pixSize = video.value?.pix_size ?? 0;
@@ -242,24 +242,6 @@ onBeforeUnmount(() => {
 .native-player__stage--editing {
     align-items: stretch;
     justify-content: flex-start;
-}
-
-.native-player__board-frame {
-    display: flex;
-    flex: 0 0 auto;
-    flex-direction: column;
-}
-
-.native-player__counter-bar {
-    display: flex;
-    flex-direction: row;
-    align-self: stretch;
-}
-
-.native-player__board-wrap {
-    position: relative;
-    overflow: hidden;
-    flex: 0 0 auto;
 }
 
 .native-player__config-editor {

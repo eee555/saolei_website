@@ -1,10 +1,10 @@
 import CustomCounterRowsEditor from './CustomCounterRowsEditor.vue';
-import type { CustomCounterConfig } from './types';
+import type { CustomCounterTableRow } from './types';
 
 const labelInputSelector = '.custom-counter-rows-editor__label input';
 const expressionInputSelector = '.custom-counter-rows-editor__expression textarea';
 
-function mountRowsEditor(config: CustomCounterConfig = [
+function mountRowsEditor(config: CustomCounterTableRow[] = [
     ['time', 'rtime'],
     ['bvs', 'bbbv_s || "/" || bbbv'],
 ]) {
@@ -33,7 +33,7 @@ function setExpression(index: number, value: string) {
     });
 }
 
-function expectLastModelUpdate(expected: CustomCounterConfig) {
+function expectLastModelUpdate(expected: CustomCounterTableRow[]) {
     cy.get('@vue').then((wrapper: ComponentWrapper<typeof CustomCounterRowsEditor>) => {
         const events = wrapper.emitted('update:modelValue') ?? [];
         expect(events.at(-1)).to.deep.equal([expected]);

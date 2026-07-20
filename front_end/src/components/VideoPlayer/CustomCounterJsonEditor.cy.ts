@@ -1,9 +1,9 @@
 import CustomCounterJsonEditor from './CustomCounterJsonEditor.vue';
-import type { CustomCounterConfig } from './types';
+import type { CustomCounterTableRow } from './types';
 
 const textareaSelector = '.custom-counter-json-editor__input textarea';
 
-function mountJsonEditor(config: CustomCounterConfig = [['time', 'rtime']]) {
+function mountJsonEditor(config: CustomCounterTableRow[] = [['time', 'rtime']]) {
     cy.mount(CustomCounterJsonEditor, {
         props: {
             modelValue: config,
@@ -20,7 +20,7 @@ function setJson(value: string) {
     });
 }
 
-function expectLastModelUpdate(expected: CustomCounterConfig) {
+function expectLastModelUpdate(expected: CustomCounterTableRow[]) {
     cy.get('@vue').then((wrapper: ComponentWrapper<typeof CustomCounterJsonEditor>) => {
         const events = wrapper.emitted('update:modelValue') ?? [];
         expect(events.at(-1)).to.deep.equal([expected]);

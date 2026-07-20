@@ -58,21 +58,21 @@ import type { PropType } from 'vue';
 import { computed, ref, watch } from 'vue';
 import { VueDraggable } from 'vue-draggable-plus';
 
-import { cloneCustomCounterConfig } from './types';
-import type { CustomCounterConfig, CustomCounterConfigRow } from './types';
+import { cloneCustomCounterTable } from './types';
+import type { CustomCounterTableRow } from './types';
 
 const config = defineModel({
-    type: Array as PropType<CustomCounterConfig>,
+    type: Array as PropType<CustomCounterTableRow[]>,
     required: true,
 });
 
 const newRowLabel = ref('');
 const newRowExpression = ref('');
-const editableRows = ref<CustomCounterConfigRow[]>([]);
+const editableRows = ref<CustomCounterTableRow[]>([]);
 const expressionAutosize = { minRows: 1, maxRows: 4 };
 let skipNextEditableRowsSync = false;
 
-const draggableRows = computed<CustomCounterConfigRow[]>({
+const draggableRows = computed<CustomCounterTableRow[]>({
     get: () => editableRows.value,
     set: (nextRows) => {
         editableRows.value = nextRows;
@@ -85,7 +85,7 @@ watch(config, (value) => {
         skipNextEditableRowsSync = false;
         return;
     }
-    editableRows.value = cloneCustomCounterConfig(value);
+    editableRows.value = cloneCustomCounterTable(value);
 }, { deep: true, immediate: true });
 
 function addNewRow() {
@@ -94,7 +94,7 @@ function addNewRow() {
 
     const nextRows = [
         ...editableRows.value,
-        [label, newRowExpression.value === '' ? '0' : newRowExpression.value] satisfies CustomCounterConfigRow,
+        [label, newRowExpression.value === '' ? '0' : newRowExpression.value] satisfies CustomCounterTableRow,
     ];
     editableRows.value = nextRows;
     updateConfigFromRows(nextRows);
@@ -103,7 +103,7 @@ function addNewRow() {
 }
 
 function updateLabel(index: number, label: string) {
-    editableRows.value = editableRows.value.map((row, rowIndex): CustomCounterConfigRow => {
+    editableRows.value = editableRows.value.map((row, rowIndex): CustomCounterTableRow => {
         return rowIndex === index ? [label, row[1]] : row;
     });
 }
@@ -122,7 +122,7 @@ function commitRowLabel(index: number) {
 }
 
 function updateExpression(index: number, expression: string) {
-    const nextRows = editableRows.value.map((row, rowIndex): CustomCounterConfigRow => {
+    const nextRows = editableRows.value.map((row, rowIndex): CustomCounterTableRow => {
         return rowIndex === index ? [row[0], expression] : row;
     });
     editableRows.value = nextRows;
@@ -135,9 +135,9 @@ function removeRow(index: number) {
     updateConfigFromRows(nextRows);
 }
 
-function updateConfigFromRows(rows: CustomCounterConfigRow[]) {
+function updateConfigFromRows(rows: CustomCounterTableRow[]) {
     skipNextEditableRowsSync = true;
-    config.value = cloneCustomCounterConfig(rows);
+    config.value = cloneCustomCounterTable(rows);
 }
 </script>
 

@@ -1,7 +1,7 @@
 import { nextTick } from 'vue';
 
 import CustomCounter from './CustomCounter.vue';
-import type { CustomCounterConfig } from './types';
+import type { CustomCounterConfig, CustomCounterTableRow } from './types';
 
 import type { AnyVideo } from '@/utils/fileIO';
 
@@ -13,12 +13,21 @@ function counterCell(label: string) {
     return cy.contains('.custom-counter-wrap th', new RegExp(`^${label}$`)).parents('tr').find('td');
 }
 
-function mountCustomCounter(video: AnyVideo, config: CustomCounterConfig, currentMs = 0) {
+function createConfig(table: CustomCounterTableRow[]): CustomCounterConfig {
+    return {
+        table,
+        thWidth: 90,
+        tdWidth: 130,
+        fontSize: 12,
+    };
+}
+
+function mountCustomCounter(video: AnyVideo, table: CustomCounterTableRow[], currentMs = 0) {
     cy.mount(CustomCounter, {
         props: {
             video,
             currentMs,
-            config,
+            config: createConfig(table),
         },
     });
 }
@@ -49,6 +58,18 @@ describe('<CustomCounter />', () => {
         ]);
 
         counterCell('bad').should('have.class', 'custom-counter__value--error').and('contain', 'Unknown variable: unknown_key');
+    });
+
+    it('keeps long rendered values constrained by cell overflow styles', () => {
+        mountCustomCounter(createVideo({}), [
+            ['long', '"*" || roundTo'],
+        ]);
+
+        counterCell('long').should('contain', 'function');
+        counterCell('long').should('have.css', 'overflow', 'hidden');
+        counterCell('long').should('have.css', 'text-overflow', 'ellipsis');
+        counterCell('long').should('have.css', 'white-space', 'nowrap');
+        counterCell('long').invoke('outerWidth').should('be.lte', 130);
     });
 
     it('refreshes when currentMs changes', () => {

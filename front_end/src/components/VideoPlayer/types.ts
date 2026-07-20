@@ -57,55 +57,38 @@ export const videoNumericParamKeys = [
 
 export type VideoNumericParamKey = typeof videoNumericParamKeys[number];
 
-export type CustomCounterConfigRow = [label: string, expression: string];
+export type CustomCounterTableRow = [label: string, expression: string];
 
-export type CustomCounterConfig = CustomCounterConfigRow[];
+export interface CustomCounterConfig {
+    table: CustomCounterTableRow[];
+    thWidth: number;
+    tdWidth: number;
+    fontSize: number;
+}
 
-export const defaultCustomCounterConfig: CustomCounterConfig = [
-    ['time', 'roundTo(rtime, 3) || "/" || roundTo(etime, 3)'],
-    ['bvs', 'roundTo(bbbv_s, 3) || "@" || bbbv_solved || "/" || bbbv'],
-    ['cl', 'cl || "=" || left || "+" || right || "+" || double'],
-    ['cls', 'roundTo(cl_s, 3) || "=" || roundTo(left_s, 3) || "+" || roundTo(right_s, 3) || "+" || roundTo(double_s, 3)'],
-    ['ce', 'ce || "=" || lce || "+" || rce || "+" || dce'],
+export const defaultCustomCounterTable: CustomCounterTableRow[] = [
+    ['time', 'roundTo(bbbv_solved / bbbv_s, 3) || "@" || roundTo(etime, 3) || "/" || roundTo(rtime, 3)'],
+    ['bvs', 'bbbv_solved || "/" || bbbv || "~" || roundTo(bbbv_s, 3)'],
+    ['ce', 'ce || "@" || roundTo(ce_s,3)'],
+    ['cl', 'cl || "@" || roundTo(cl_s,3)'],
+    ['stnb', 'roundTo(stnb, 3)'],
+    ['opis', 'op || "op " || isl || "is"'],
+    ['ioe', 'roundTo(corr, 3) || "*" || roundTo(thrp, 3) || "=" || roundTo(ioe, 3)'],
+    ['mov', 'roundTo(path / 16, 3) || "@" || roundTo(path / 16 / bbbv_solved * bbbv_s, 3)'],
     ['cell0-2', 'cell0 || "/" || cell1 || "/" || cell2'],
     ['cell3-5', 'cell3 || "/" || cell4 || "/" || cell5'],
     ['cell6-8', 'cell6 || "/" || cell7 || "/" || cell8'],
-    ['column', 'column'],
-    ['corr', 'corr'],
-    ['current_event_id', 'current_event_id'],
-    ['flag', 'flag'],
-    ['flag_s', 'flag_s'],
-    ['game_board_state', 'game_board_state'],
-    ['hzini', 'hzini'],
-    ['ioe', 'ioe'],
-    ['isl', 'isl'],
-    ['level', 'level'],
-    ['mine_num', 'mine_num'],
-    ['mode', 'mode'],
-    ['mouse_state', 'mouse_state'],
-    ['op', 'op'],
-    ['path', 'path'],
-    ['pix_size', 'pix_size'],
-    ['pluck', 'pluck'],
-    ['row', 'row'],
-    ['rqp', 'rqp'],
-    ['rtime_ms', 'rtime_ms'],
-    ['stnb', 'stnb'],
-    ['thrp', 'thrp'],
-    ['video_end_time', 'video_end_time'],
-    ['video_start_time', 'video_start_time'],
-    ['zini', 'zini'],
 ];
 
-export function cloneCustomCounterConfig(config: CustomCounterConfig): CustomCounterConfig {
+export function cloneCustomCounterTable(config: CustomCounterTableRow[]): CustomCounterTableRow[] {
     return config.map(([label, expression]) => [label, expression]);
 }
 
-export function isCustomCounterConfig(value: unknown): value is CustomCounterConfig {
-    return Array.isArray(value) && value.every((row) => isCustomCounterConfigRow(row));
+export function isCustomCounterTable(value: unknown): value is CustomCounterTableRow[] {
+    return Array.isArray(value) && value.every((row) => isCustomCounterTableRow(row));
 }
 
-export function isCustomCounterConfigRow(value: unknown): value is CustomCounterConfigRow {
+export function isCustomCounterTableRow(value: unknown): value is CustomCounterTableRow {
     return Array.isArray(value)
         && value.length === 2
         && typeof value[0] === 'string'

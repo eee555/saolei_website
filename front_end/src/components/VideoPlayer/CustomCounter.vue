@@ -1,6 +1,10 @@
 <template>
     <div class="custom-counter-wrap">
-        <table class="custom-counter">
+        <table class="custom-counter" :style="tableStyle">
+            <colgroup>
+                <col :style="thColStyle">
+                <col :style="tdColStyle">
+            </colgroup>
             <tbody>
                 <tr v-for="(row, index) in rows" :key="index">
                     <th>{{ row.label }}</th>
@@ -26,7 +30,7 @@ import type { AnyVideo } from '@/utils/fileIO';
 const props = defineProps({
     video: { type: Object as PropType<AnyVideo>, required: true },
     currentMs: { type: Number, required: true },
-    config: { type: Array as PropType<CustomCounterConfig>, required: true },
+    config: { type: Object as PropType<CustomCounterConfig>, required: true },
 });
 
 type DynamicParamValues = Record<string, unknown>;
@@ -41,7 +45,7 @@ const parser = new Parser({
 const rows = computed(() => {
     void props.currentMs;
     const values = createEvaluationContext(props.video);
-    return props.config.map(([label, expression]) => {
+    return props.config.table.map(([label, expression]) => {
         const result = evaluateExpression(expression, values);
         return {
             label,
@@ -49,6 +53,19 @@ const rows = computed(() => {
         };
     });
 });
+
+const tableStyle = computed(() => ({
+    fontSize: `${Math.max(1, props.config.fontSize)}px`,
+    width: `${Math.max(1, props.config.thWidth) + Math.max(1, props.config.tdWidth)}px`,
+}));
+
+const thColStyle = computed(() => ({
+    width: `${Math.max(1, props.config.thWidth)}px`,
+}));
+
+const tdColStyle = computed(() => ({
+    width: `${Math.max(1, props.config.tdWidth)}px`,
+}));
 
 function evaluateExpression(expression: string, values: DynamicParamValues) {
     try {
@@ -88,18 +105,17 @@ function createEvaluationContext(video: AnyVideo) {
     table-layout: fixed;
     border-collapse: collapse;
     color: var(--el-text-color-regular);
-    font-size: 12px;
     line-height: 1.25;
 }
 
 .custom-counter th,
 .custom-counter td {
+    box-sizing: border-box;
     border: 1px solid var(--el-border-color);
     padding: 3px 6px;
 }
 
 .custom-counter th {
-    width: 90px;
     color: var(--el-text-color-secondary);
     font-weight: 500;
     text-align: left;
@@ -109,12 +125,11 @@ function createEvaluationContext(video: AnyVideo) {
 }
 
 .custom-counter td {
-    width: 130px;
     overflow: hidden;
     font-variant-numeric: tabular-nums;
     text-align: right;
-    text-overflow: clip;
-    white-space: pre;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .custom-counter__value--error {

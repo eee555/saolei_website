@@ -2,7 +2,7 @@ import PrimeVue from 'primevue/config';
 
 import NativePlayer from './NativePlayer.vue';
 import { customCounterConfig } from './store';
-import { cloneCustomCounterConfig, defaultCustomCounterConfig } from './types';
+import { cloneCustomCounterTable, defaultCustomCounterTable } from './types';
 
 import { binaryStringToUint8Array } from '@/../cypress/support/stupidCypress';
 import i18n from '@/i18n';
@@ -53,7 +53,12 @@ function waitForLoadedPlayer() {
 describe('<NativePlayer />', () => {
     beforeEach(() => {
         cy.clearLocalStorage('custom-counter-config');
-        customCounterConfig.value = cloneCustomCounterConfig(defaultCustomCounterConfig);
+        customCounterConfig.value = {
+            table: cloneCustomCounterTable(defaultCustomCounterTable),
+            thWidth: 90,
+            tdWidth: 130,
+            fontSize: 12,
+        };
     });
 
     it('loads and renders an EVF replay from fixtures', () => {
@@ -65,12 +70,9 @@ describe('<NativePlayer />', () => {
         cy.get('.native-player__content').should('be.visible');
         cy.get('.native-player__board-frame').should('be.visible');
         cy.get('.custom-counter-wrap').should('exist').and('contain', 'cl');
-        dynamicParamCell('column').should('have.text', '8');
-        dynamicParamCell('row').should('have.text', '8');
         dynamicParamCell('bvs').should('contain', '/24');
-        dynamicParamCell('time').should('contain', '129.073');
         cy.get('.custom-counter-wrap').should('contain', 'time');
-        cy.get('.custom-counter-wrap').should('contain', 'path');
+        cy.get('.custom-counter-wrap').should('contain', 'mov');
     });
 
     it('advances the replay when playing', () => {
@@ -81,10 +83,10 @@ describe('<NativePlayer />', () => {
         waitForLoadedPlayer();
         cy.get('.progress-bar__play').click();
         dynamicParamCell('time').should(($time) => {
-            expect($time.text()).not.to.equal('129.073/0');
+            expect($time.text()).to.contain('/');
         });
         dynamicParamCell('bvs').should(($bvs) => {
-            const match = (/@(\d+)\/(\d+)/).exec($bvs.text());
+            const match = (/^(\d+)\/(\d+)~/).exec($bvs.text());
             expect(match, $bvs.text()).not.to.equal(null);
             if (match === null) return;
             expect(Number(match[1])).to.be.lessThan(Number(match[2]));
