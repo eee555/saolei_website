@@ -53,7 +53,7 @@
     "vue": "3.5.40",
     "vue-data-ui": "3.22.13",
     "vue-echarts": "8.0.1",
-    "vue-i18n": "11.4.6",
+    "vue-i18n": "11.4.7",
     "vue-router": "5.2.0",
     "vue-tippy": "6.7.1"
   },
