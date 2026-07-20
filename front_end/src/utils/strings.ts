@@ -16,11 +16,13 @@ export function stringifyWithLineWrap(
 
     function processValue(value: any, currentIndent: string): string {
         if (Array.isArray(value)) {
+            if (value.length === 0) return '[]';
+
             let line = '[';
             const lines: string[] = [];
             for (const v of value) {
                 const itemStr = JSON.stringify(v);
-                if (line.length + itemStr.length + 2 > maxLineLength) {
+                if (line !== '[' && line.length + itemStr.length + 2 > maxLineLength) {
                     lines.push(line.trimEnd() + ',');
                     line = currentIndent + INDENTATION + itemStr;
                 } else {
