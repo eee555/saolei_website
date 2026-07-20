@@ -24,6 +24,14 @@ describe('strings', () => {
     "gamma"]
 }`);
         });
+
+        it('Keeps long first array item valid', () => {
+            expect(stringifyWithLineWrap([['long-label', 'long-expression']], 16, 2)).toBe('[["long-label","long-expression"]]');
+        });
+
+        it('Keeps empty arrays valid', () => {
+            expect(stringifyWithLineWrap([], 16, 2)).toBe('[]');
+        });
     });
 
     describe('countRows', () => {
