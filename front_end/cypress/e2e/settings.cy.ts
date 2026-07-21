@@ -1,12 +1,12 @@
 describe('language setting', () => {
     const languages = {
-        'zh-CN': '教程',
-        'zh-TW': '教程', // fallback to zh-cn
-        'en-GB': 'Guides', // fallback to en
-        'en-US': 'Guides', // fallback to en
+        'zh-CN': '帮助',
+        'zh-TW': '帮助', // fallback to zh-cn
+        'en-GB': 'Help', // fallback to en
+        'en-US': 'Help', // fallback to en
         de: 'Hilfe',
-        pl: 'poradniki',
-        fr: 'Guides', // fallback to en
+        pl: 'pomoc',
+        fr: 'Help', // fallback to en
     };
 
     for (const lang in languages) {
@@ -28,19 +28,19 @@ describe('language setting', () => {
         cy.visit('/#/settings');
         cy.get('[data-cy=languagePicker]').realClick();
         cy.contains('dev').filter(':visible').click();
-        cy.contains('local.guide');
+        cy.contains('local.docs');
         cy.get('[data-cy=languagePicker]').realClick();
         cy.contains('简体中文').filter(':visible').click();
-        cy.contains('教程');
+        cy.contains('帮助');
         cy.get('[data-cy=languagePicker]').realClick();
         cy.contains('English').filter(':visible').click();
-        cy.contains('Guides');
+        cy.contains('Help');
         cy.get('[data-cy=languagePicker]').realClick();
         cy.contains('Deutsch').filter(':visible').click();
         cy.contains('Hilfe');
         cy.get('[data-cy=languagePicker]').realClick();
         cy.contains('Polski').filter(':visible').click();
-        cy.contains('poradniki');
+        cy.contains('pomoc');
     });
 });
 
