@@ -2,7 +2,7 @@ import { defineConfig } from 'vitepress';
 import type MarkdownIt from 'markdown-it';
 
 const mainSiteLink = process.env.VITEPRESS_MAIN_SITE_URL
-    ?? (process.env.NODE_ENV === 'development' ? 'http://localhost:8080/' : '/');
+    ?? (process.env.NODE_ENV === 'development' ? 'http://localhost:8080/' : 'https://openms.top/');
 
 function configureDiagramFences(md: MarkdownIt) {
     const defaultFence = md.renderer.rules.fence;
