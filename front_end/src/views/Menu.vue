@@ -48,7 +48,6 @@ const menu_items = [
     { index: 'ranking', icon: 'Trophy' },
     { index: 'video', icon: 'VideoCameraFilled' },
     // { index: "world", icon: "Odometer" },
-    { index: 'guide', icon: 'Document' },
     // { index: "score", icon: "Histogram" },
     { index: 'tournament', icon: 'Medal' },
     { index: 'server', icon: 'Cpu' },
@@ -89,7 +88,7 @@ const i18nMessages = {
         score: '积分',
         staff: '管理',
         profile: '我的地盘',
-        docs: '文档',
+        docs: '帮助',
         server: '服务器',
         setting: '设置',
         tournament: '比赛',
@@ -101,7 +100,7 @@ const i18nMessages = {
         guide: 'Guides',
         score: 'Scores',
         profile: 'Profile',
-        docs: 'Docs',
+        docs: 'Help',
         server: 'Server',
         setting: 'Settings',
         staff: 'Moderate',
@@ -114,7 +113,7 @@ const i18nMessages = {
         guide: 'Hilfe',
         score: 'Ergebnisse',
         profile: 'Profil',
-        docs: 'Dokumente',
+        docs: 'Hilfe',
     } },
     pl: { local: {
         ranking: 'ranking',
@@ -123,7 +122,7 @@ const i18nMessages = {
         guide: 'poradniki',
         score: 'wyniki',
         profile: 'profil',
-        docs: 'dokumenty',
+        docs: 'pomoc',
     } },
 };
 

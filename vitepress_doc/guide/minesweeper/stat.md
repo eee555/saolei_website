@@ -50,7 +50,9 @@ _______
 
 `gzini`是“Greedy ZiNi”的缩写，当存在多个收益最大且相等的格子时，它总是选择最上面的最左边的一格操作。`rzini`是“Random Zini”的缩写，当存在多个收益最大且相等的格子时，它随机取一格操作。用随机的方式反复扫这张图，直到连续n把没有刷新最低操作数纪录为止。`hzini`是“Human ZiNi”的缩写。它开局会首先把所有`op`用左键打开，然后和`gzini`一样。
 
-显然`rzini`仍然是有运气成分，是不稳定的，所以一般不用这个数据。`gzini`和`hzini`不一定谁大谁小，也都不是不能战胜。目前初级和中级都有人打败过`gzini`和`hzini`（即使用更少的操作数完成），但是高级仍未有人达成这项成就。Minesweeper Arbiter中统计了`gzini`和`hzini`，元扫雷统计了`gzini`，其中`gzini`就写作`zini`。
+显然`rzini`仍然是有运气成分，是不稳定的，所以一般不用这个数据。`gzini`和`hzini`不一定谁大谁小，也都不是不能战胜。目前初级和中级都有人打败过`gzini`和`hzini`（即使用更少的操作数完成），但是高级仍未有人达成这项成就。Minesweeper Arbiter和元扫雷都统计了`gzini`和`hzini`。
+
+近年来，还出现了其他变种zini算法，其中比较突出的是[Pttazini（PTTACGfans's ZiNi）](https://github.com/PTTACGfans/Minesweeper-ZiNi-Calculator)。
 
 ### cellx
 cellx代表数字x的数量。x取值为0到8。
@@ -66,10 +68,12 @@ cellx代表数字x的数量。x取值为0到8。
 
 无论使用何种计时习惯，`rtime`（Real Time）是没有歧义的，一律指从0秒开始计时的时间。本页面接下来提到的`time`均指`rtime`。
 
-### `path`, `cpath`
+### `path`, `cpath`, `epath`
 `path`是完成一局过程中光标经过的距离。`path`的单位是像素或格，1格=16像素。
 
 `cpath`全称Click Path，只考虑点击事件发生的位置之间的距离，不计鼠标移动时弯曲轨迹的损耗。
+
+`epath`全称Effective Path，只考虑有效点击事件发生格子中心之间的距离，不考虑鼠标在一个格子内点击位置的差别。
 
 ### `cl`, `ce`
 `cl`是“Clicks”的缩写，意思是鼠标点击数。`ce`是“Efficient Cl”的缩写，意思是有效点击数。细分到不同的点击操作，又有`lcl`、`rcl`、`dcl`、`lce`、`rce`、`dce`，其中前缀`l`是Left缩写，表示左键；前缀`r`是Right缩写，表示右键；前缀`d`是Double缩写，表示双击。
@@ -83,6 +87,9 @@ cellx代表数字x的数量。x取值为0到8。
 
 ### `bvdone`, `opdone`
 bvdone意思是已完成bv，opdone意思是已完成op。
+
+### `luck`, `pluck`
+这两个参数都是基于概率计算引擎。对于每一个打开格子的操作，基于当前的局面计算安全的概率（0-1），将所有操作的安全概率相乘得到`luck`，表示一局的理论胜率。`pluck`定义为`-log10(luck)`。
 
 ________________
 # 导出数据

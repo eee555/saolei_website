@@ -65,7 +65,6 @@ export default defineConfig({
                                 { text: '账号关联', link: '/guide/account-links' },
                                 { text: '扫雷软件', link: '/guide/software' },
                                 { text: '录像播放器', link: '/guide/video-player' },
-                                { text: '扫雷数据', link: '/guide/terminology' },
                                 { text: '扫雷标识', link: '/guide/identifier' },
                                 { text: '比赛功能', link: '/guide/tournament' },
                                 { text: '金羊杯', link: '/guide/gsc' },
@@ -75,9 +74,9 @@ export default defineConfig({
                         {
                             text: '扫雷教程',
                             items: [
-                                { text: '概览', link: '/guide/minesweeper/' },
                                 { text: '操作方式和规则', link: '/guide/minesweeper/mouse-event' },
-                                { text: '数据统计', link: '/guide/minesweeper/stat' },
+                                { text: '术语', link: '/guide/minesweeper/terminology' },
+                                { text: '数据', link: '/guide/minesweeper/stat' },
                             ],
                         },
                     ],
@@ -115,7 +114,19 @@ export default defineConfig({
                             items: [
                                 { text: 'Overview', link: '/en/guide/' },
                                 { text: 'Account Links', link: '/en/guide/account-links' },
-                                { text: 'Minesweeper Terminologies', link: '/en/guide/terminology' },
+                                { text: 'Minesweeper Software', link: '/en/guide/software' },
+                                { text: 'Video Player', link: '/en/guide/video-player' },
+                                { text: 'Player Identifiers', link: '/en/guide/identifier' },
+                                { text: 'Tournaments', link: '/en/guide/tournament' },
+                                { text: 'Golden Sheep Cup', link: '/en/guide/gsc' },
+                                { text: 'Contributing', link: '/en/guide/contribute' },
+                            ],
+                        },
+                        {
+                            text: 'Minesweeper Tutorials',
+                            items: [
+                                { text: 'Controls and Rules', link: '/en/guide/minesweeper/mouse-event' },
+                                { text: 'Terminology', link: '/en/guide/minesweeper/terminology' },
                             ],
                         },
                     ],

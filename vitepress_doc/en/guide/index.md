@@ -1,7 +1,9 @@
-# User Guide
+# Open Minesweeper User Guide
 
-This is the entry point for the Saolei website user guide.
+This guide is still under construction. Contributions are welcome: see [Contributing](./contribute.md).
 
-## Current Pages
+The guide covers three kinds of content:
 
-- [Account Links](./account-links.md)
+- Minesweeper knowledge and tutorials
+- How to use website features
+- Introductions to other Minesweeper projects
