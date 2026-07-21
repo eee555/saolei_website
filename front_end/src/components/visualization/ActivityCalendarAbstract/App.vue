@@ -9,12 +9,7 @@
                 <ElRow :style="{ height: `${cellFullSize}px` }">
                     <MonthLabel :start-date="startDate" :end-date="endDate" :cell-size="options.cellSize" :cell-margin="options.cellMargin" />
                 </ElRow>
-                <ElRow
-                    :style="{
-                        height: `${cellFullSize * 7 + options.cellMargin}px`,
-                        filter: `invert(${darkMode ? 0 : 1})`,
-                    }"
-                >
+                <ElRow :style="{ height: `${cellFullSize * 7 + options.cellMargin}px` }">
                     <Tippy
                         :duration="0"
                         sticky
@@ -30,24 +25,27 @@
                         <!-- 为每个日期生成一个单元格 -->
                         <div :style="{gridRowStart: `${startDate.getDay()}`}" />
                         <div
-                            v-for="date of dateRange"
-                            :key="date.toISOString()"
-                            class="text"
+                            v-for="cell of dateCells"
+                            :key="cell.dateKey"
+                            class="calendar-cell text"
                             :style="{
                                 width: `${options.cellSize}px`,
                                 height: `${options.cellSize}px`,
-                                borderRadius: `${options.cornerRadius}%`,
-                                backgroundColor: getColor(groupedVideoAbstract.get(toISODateString(date)) || []),
-                                display: 'flex',
-                                justifyContent: 'center',
                                 fontSize: `${options.cellSize * 0.6}px`,
                             }"
-                            :data-cy="`cell-${toISODateString(date)}`"
-                            @mouseover="tooltipVideos = groupedVideoAbstract.get(toISODateString(date)) || []; tooltipDate = date"
+                            :data-cy="`cell-${cell.dateKey}`"
+                            @mouseover="tooltipVideos = cell.videos; tooltipDate = cell.date"
                         >
-                            <template v-if="options.showDate">
-                                {{ date.getDate() }}
-                            </template>
+                            <MiniPie
+                                v-if="cell.pieData.length > 0"
+                                class="mini-pie"
+                                :data="cell.pieData"
+                                :radius="options.cellSize / 2"
+                                :stroke-width="0"
+                            />
+                            <span v-if="options.showDate" class="date-label">
+                                {{ cell.date.getDate() }}
+                            </span>
                         </div>
                         <template #content>
                             <Tooltip :date="tooltipDate" :videos="tooltipVideos" />
@@ -62,6 +60,8 @@
 <script setup lang="ts">
 import '@/styles/text.css';
 
+import { MiniPie } from '@putianyi888/vue3-plots';
+import type { PieDatum } from '@putianyi888/vue3-plots';
 import { ElRow, ElScrollbar } from 'element-plus';
 import type { PropType } from 'vue';
 import { computed, ref } from 'vue';
@@ -73,7 +73,9 @@ import MonthLabel from './MonthLabel.vue';
 import Tooltip from './Tooltip.vue';
 
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
+import { colorTheme } from '@/store';
 import { generateDateRange, toISODateString } from '@/utils/datetime';
+import { isStandardLevel } from '@/utils/ms_const';
 import type { VideoAbstract } from '@/utils/videoabstract';
 import { groupVideosByDate } from '@/utils/videoabstract';
 
@@ -81,7 +83,6 @@ interface Options {
     cellSize: number;
     cellMargin: number;
     showDate: boolean;
-    cornerRadius: number;
     useEndTime: boolean;
 }
 
@@ -97,14 +98,9 @@ const props = defineProps({
                 cellSize: 14,
                 cellMargin: 3,
                 showDate: true,
-                cornerRadius: 20,
                 useEndTime: false,
             };
         },
-    },
-    darkMode: {
-        type: Boolean,
-        default: true,
     },
 });
 
@@ -128,16 +124,47 @@ const startDate = computed(() => {
 });
 
 const dateRange = computed(() => Array.from(generateDateRange(startDate.value, endDate, 1)));
+const dateCells = computed(() => dateRange.value.map((date) => {
+    const dateKey = toISODateString(date);
+    const videos = groupedVideoAbstract.value.get(dateKey) ?? [];
+    return {
+        date,
+        dateKey,
+        videos,
+        pieData: getPieData(videos),
+    };
+}));
 
-function getColor(videos: VideoAbstract[]) {
-    let red = 0;
-    let green = 0;
-    let blue = 0;
+function getPieData(videos: VideoAbstract[]): PieDatum[] {
+    const count = { b: 0, i: 0, e: 0, c: 0 };
     for (const video of videos) {
-        if (video.level === 'b') red++;
-        else if (video.level === 'i') green++;
-        else blue++;
+        if (isStandardLevel(video.level)) count[video.level]++;
+        else count.c++;
     }
-    return `rgb(${Math.min(255, red * 51)}, ${Math.min(255, green * 51)}, ${Math.min(255, blue * 51)})`;
+    return [
+        { value: count.b, color: colorTheme.value.level.b },
+        { value: count.i, color: colorTheme.value.level.i },
+        { value: count.e, color: colorTheme.value.level.e },
+        { value: count.c, color: colorTheme.value.level.c },
+    ].filter((data) => data.value > 0);
 }
 </script>
+
+<style scoped>
+.calendar-cell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mini-pie {
+    position: absolute;
+    inset: 0;
+}
+
+.date-label {
+    position: relative;
+    z-index: 1;
+}
+</style>

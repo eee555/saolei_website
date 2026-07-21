@@ -20,7 +20,7 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import TemplateView
 
-from . import api, views
+from . import api
 
 
 urlpatterns = [
@@ -37,8 +37,6 @@ urlpatterns = [
     path('accountlink/', include('accountlink.urls')),
     path('tournament/', include('tournament.urls')),
     path(r'', TemplateView.as_view(template_name='index.html')),
-    path('logs/', views.get_log_dir),
-    path('log_view/', views.get_log_file),
 ]
 
 

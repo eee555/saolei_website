@@ -70,6 +70,27 @@ function shouldRefreshUpdatedUsers() {
     return Date.now() - serviceConfig.value.userInfoLastUpdate >= serviceConfig.value.userInfoUpdateInterval;
 }
 
+async function writeUserInfoCache(userInfos: GetUserInfoResponse[]) {
+    const tx = await getTransaction(USER_INFO_STORE_NAME, 'readwrite');
+    const { store } = tx;
+
+    await Promise.all(userInfos.map((userInfo) => store.put(userInfo)));
+    await tx.done;
+}
+
+async function fetchUserInfoImmediately(userId: number) {
+    const { data } = await $axios.get(`/api/userprofile/info/${userId}`);
+    const userInfo = data as GetUserInfoResponse;
+
+    try {
+        await writeUserInfoCache([userInfo]);
+    } catch {
+        // 忽略 IndexedDB 错误（如隐私模式）
+    }
+
+    return userInfo;
+}
+
 /**
  * 刷新已更新用户信息的异步函数
  * 该函数会检查是否需要刷新用户信息，并更新本地缓存
@@ -148,11 +169,7 @@ async function processUserInfoBatch() {
 
         // 将所有用户信息存储到数据库
         const infoMap = new Map(userInfos.map((u) => [u.id, u]));
-        const tx = await getTransaction(USER_INFO_STORE_NAME, 'readwrite');
-        const { store } = tx;
-
-        await Promise.all(userInfos.map((userInfo) => store.put(userInfo)));
-        await tx.done;
+        await writeUserInfoCache(userInfos);
 
         // 遍历所有请求，解决或拒绝相应的Promise
         for (const [userId, { resolve, reject }] of entries) {
@@ -179,7 +196,9 @@ async function processUserInfoBatch() {
     }
 }
 
-export async function fetchUserInfo(userId: number): Promise<UserProfile> {
+export async function fetchUserInfo(userId: number, immediate = false): Promise<UserProfile> {
+    if (immediate) return new UserProfile(await fetchUserInfoImmediately(userId));
+
     try {
         await refreshUpdatedUsers().catch(() => undefined);
         const db = await getDatabase();

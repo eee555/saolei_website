@@ -1,8 +1,12 @@
 /* eslint-disable @typescript-eslint/member-ordering */
+import { CustomLevel } from './customlevel';
 import { toDate, toISODateString } from './datetime';
 import type { MS_Level, MS_Software } from './ms_const';
-import { MS_State, STNB_const } from './ms_const';
+import { isStandardLevel, MS_State, STNB_const } from './ms_const';
 import { formatBytes } from './strings';
+
+type VideoLevel = MS_Level | CustomLevel;
+export type StandardVideoAbstract = VideoAbstract & { level: MS_Level };
 
 function undefinedOrToString(value: { toString: () => string } | undefined): string | undefined {
     return value === undefined ? undefined : value.toString();
@@ -29,7 +33,7 @@ export interface VideoAbstractInfo {
     id: number;
     upload_time: string | Date;
     end_time: Date | null;
-    level: MS_Level;
+    level: VideoLevel;
     mode: string;
     timems: number;
     bv: number;
@@ -38,6 +42,7 @@ export interface VideoAbstractInfo {
     cl: number | null;
     ce: number | null;
     file_size: number;
+    pluck: number | null;
 }
 
 interface VideoRedisInfo {
@@ -45,7 +50,7 @@ interface VideoRedisInfo {
     software: string;
     time: string;
     player_id: number;
-    level: MS_Level;
+    level: VideoLevel;
     mode: string;
     timems: number;
     bv: number;
@@ -59,7 +64,7 @@ interface VideoAbstractData {
     upload_time?: string | Date;
     time?: string | Date;
     end_time?: string | Date | null;
-    level: string;
+    level: string | CustomLevel;
     mode: string;
     timems: number;
     bv: number;
@@ -68,20 +73,21 @@ interface VideoAbstractData {
     cl?: number | null;
     ce?: number | null;
     path?: number | null;
+    pluck?: number | null;
     player_id?: number;
     player?: number;
     file_size?: number;
     ongoing_tournament?: boolean;
 }
 
-export const getStat_keys = ['time', 'bvs', 'timems', 'bv', 'qg', 'rqp', 'stnb', 'ce', 'ces', 'cl', 'cls', 'ioe', 'thrp', 'corr', 'path', 'npath', 'mov', 'iome', 'file_size'] as const;
+export const getStat_keys = ['time', 'bvs', 'timems', 'bv', 'qg', 'rqp', 'stnb', 'ce', 'ces', 'cl', 'cls', 'ioe', 'thrp', 'corr', 'path', 'pluck', 'npath', 'mov', 'iome', 'file_size'] as const;
 export type getStat_stat = typeof getStat_keys[number];
 
 export class VideoAbstract {
     public id = 0;
     public upload_time = new Date();
     public end_time?: Date;
-    public level: MS_Level;
+    public level: VideoLevel;
     public mode: string;
     public timems: number;
     public bv: number;
@@ -90,6 +96,7 @@ export class VideoAbstract {
     public cl?: number;
     public ce?: number;
     public path?: number;
+    public pluck?: number;
     public player_id?: number;
     public file_size = 0;
     public ongoing_tournament?: boolean;
@@ -102,7 +109,7 @@ export class VideoAbstract {
 
         this.end_time = toDate(info.end_time);
 
-        this.level = info.level as MS_Level;
+        this.level = parseLevel(info.level);
         this.mode = info.mode;
         this.timems = info.timems;
         this.bv = info.bv;
@@ -112,6 +119,7 @@ export class VideoAbstract {
         this.cl = info.cl ?? undefined;
         this.ce = info.ce ?? undefined;
         this.path = info.path ?? undefined;
+        this.pluck = info.pluck ?? undefined;
         this.player_id = info.player_id ?? info.player;
 
         this.file_size = info.file_size ?? this.file_size;
@@ -152,6 +160,7 @@ export class VideoAbstract {
     }
 
     public get stnb(): number {
+        if (!isStandardLevel(this.level)) return NaN;
         return STNB_const.value[this.level] / this.qg;
     }
 
@@ -208,6 +217,7 @@ export class VideoAbstract {
             case 'thrp': return undefinedOrToFixed(this.thrp, 3);
             case 'corr': return undefinedOrToFixed(this.corr, 3);
             case 'path': return undefinedOrToFixed(this.path, 0);
+            case 'pluck': return undefinedOrToFixed(this.pluck, 3);
             case 'npath': return undefinedOrToFixed(this.npath, 1);
             case 'mov': return undefinedOrToFixed(this.mov, 3);
             case 'iome': return undefinedOrToFixed(this.iome, 3);
@@ -215,6 +225,12 @@ export class VideoAbstract {
         }
         return undefined;
     }
+}
+
+function parseLevel(level: string | CustomLevel): VideoLevel {
+    if (typeof level !== 'string') return level;
+    const customLevel = CustomLevel.fromCode(level);
+    return customLevel ?? level as MS_Level;
 }
 
 export function groupVideosByDate(videos: VideoAbstract[], attr: 'upload_time' | 'end_time' = 'upload_time'): Map<string, VideoAbstract[]> {
@@ -248,4 +264,8 @@ export function groupVideosByBBBv(videos: VideoAbstract[], level: MS_Level): Map
     });
 
     return result;
+}
+
+export function isStandardVideo(video: VideoAbstract): video is StandardVideoAbstract {
+    return isStandardLevel(video.level);
 }

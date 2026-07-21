@@ -128,6 +128,22 @@ describe('fetchUserInfo', () => {
         expect(axiosGet).not.toHaveBeenCalled();
     });
 
+    it('immediately requests single user info and updates cache', async () => {
+        await putCachedUser(createUser(1, 'Cached User'));
+        const fetchUserInfo = await loadFetchUserInfo({
+            userInfoLastUpdate: 0,
+            userInfoUpdateInterval: 0,
+        });
+        axiosGet.mockResolvedValueOnce({ data: createUser(1, 'Immediate User') });
+
+        const user = await fetchUserInfo(1, true);
+
+        expect(user.realname).toBe('Immediate User');
+        expect((await getCachedUser(1))?.realname).toBe('Immediate User');
+        expect(axiosGet).toHaveBeenCalledTimes(1);
+        expect(axiosGet).toHaveBeenCalledWith('/api/userprofile/info/1');
+    });
+
     it('migrates cached user rows when row schema changes', async () => {
         await putRawCachedUser(
             {

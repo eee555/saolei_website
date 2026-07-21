@@ -1,6 +1,6 @@
 <template>
-    开始ID<ElInputNumber v-model="startid" />&nbsp;
-    结束ID<ElInputNumber v-model="endid" />&nbsp;
+    录像开始ID<ElInputNumber v-model="startid" />&nbsp;
+    录像结束ID<ElInputNumber v-model="endid" />&nbsp;
     批处理数量<ElInputNumber v-model="batchsize" />&nbsp;
     <ElButton :disabled="working" @click="startBatchUpdate">
         开始！

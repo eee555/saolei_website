@@ -1,0 +1,16 @@
+{
+  "name": "vitepress_doc",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress --host 0.0.0.0",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "mermaid": "^11.16.0",
+    "vitepress": "^1.6.4"
+  }
+}

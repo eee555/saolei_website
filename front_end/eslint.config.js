@@ -209,6 +209,7 @@ export default defineConfig({
         '@stylistic/multiline-ternary': ['error', 'always-multiline'],
         '@stylistic/newline-per-chained-call': 'off',
         '@stylistic/no-extra-parens': ['error', 'all', {
+            nestedBinaryExpressions: false,
             ignoredNodes: ['ArrowFunctionExpression[body.type=ConditionalExpression]'],
         }],
         '@stylistic/no-multiple-empty-lines': ['error', { max: 1 }],

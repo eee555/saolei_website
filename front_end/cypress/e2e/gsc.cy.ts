@@ -271,8 +271,11 @@ describe('GSC', () => {
         cy.login(STAFF.username, STAFF.password);
         cy.visit('/#/staff/task');
 
-        cy.contains('READY');
-        cy.get('table:visible').getTable().should((tableData) => {
+        cy.intercept('GET', '**/common/staff/taskdetail/').as('taskDetail');
+        cy.contains('加载任务').click();
+
+        cy.wait('@taskDetail').its('response.statusCode').should('eq', 200);
+        cy.get('table:visible').eq(1).getTable().should((tableData) => {
             expect(tableData[0].status).to.equal('READY');
             expect(tableData[0].args_kwargs.replace(/\s/g, '')).to.equal('{"args":[4],"kwargs":{}}');
             expect(tableData[0].task_path).to.equal('tournament.tasks.task_gsc_finish');

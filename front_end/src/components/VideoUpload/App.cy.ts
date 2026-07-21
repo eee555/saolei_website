@@ -11,14 +11,14 @@ import { local } from '@/store';
 import { MS_State } from '@/utils/ms_const';
 
 function tableRowError(status: string) {
-    return { '': '', Bv: '', Bvs: '', Status: status, Time: '', Level: '', 'End Time': '' };
+    return { '': '', Bv: '', Bvs: '', Status: status, Time: '', Level: '', 'End Time': '', Mode: '' };
 }
 
 const fixtures = {
     expAvf: {
         filename: 'Exp_FL_35.09_3BV=132_3BVs=3.76_Pu Tian Yi(Hu Bei).avf',
         identifier: 'Pu Tian Yi(Hu Bei)',
-        tableData: { '': '', Bv: '132', Bvs: '3.762', Status: 'Pass', Time: '35.090', Level: 'Expert', 'End Time': '2023-10-05 21:25:57' },
+        tableData: { '': '', Bv: '132', Bvs: '3.762', Status: 'Pass', Time: '35.090', Level: 'Expert', Mode: 'Standard', 'End Time': '2023-10-05 21:25:57' },
         response: {
             type: 'success',
             data: {
@@ -30,7 +30,7 @@ const fixtures = {
     expMvf: {
         filename: 'Lin_Jin_Fan_Exp_60.623bv207.mvf',
         identifier: 'Lin Jinfan',
-        tableData: { '': '', Bv: '207', Bvs: '3.472', Status: 'Need manual approval', Time: '59.620', Level: 'Expert', 'End Time': '2011-08-03 06:49:03' },
+        tableData: { '': '', Bv: '207', Bvs: '3.472', Status: 'Need manual approval', Time: '59.620', Level: 'Expert', Mode: 'Standard', 'End Time': '2011-08-03 06:49:03' },
         response: {
             type: 'error',
             object: 'file',
@@ -39,12 +39,21 @@ const fixtures = {
     cusAvf: {
         filename: '4376-Custom-FL-30x24-860.360-357-226m-20220522.avf',
         identifier: 'Nathanael Kozinski',
-        tableData: { '': '', Bv: '357', Bvs: '0.415', Status: 'Custom level is currently not supported', Time: '860.360', Level: 'Custom', 'End Time': '2022-05-22 23:30:49' },
+        tableData: { '': '', Bv: '357', Bvs: '0.415', Status: 'This custom board is currently not supported', Time: '860.360', Level: '24x30/226', Mode: 'Standard', 'End Time': '2022-05-22 23:30:49' },
+    },
+    cusEvf8_8_40: {
+        filename: 'c_10_129.073_24_0.186_Pu Tian Yi(Hu Bei).evf',
+        tableData: { '': '', Bv: '24', Bvs: '0.186', Status: 'Pass', Time: '129.073', Level: '8x8/40', Mode: 'Lucky', 'End Time': '2026-06-30 19:25:04' },
+        identifier: 'Pu Tian Yi(Hu Bei)',
+    },
+    failed: {
+        filename: 'c_10_39.832_24_0.477_Pu Tian Yi(Hu Bei)_fail.evf',
+        tableData: { '': '', Bv: '19', Bvs: '0.477', Status: 'Game not finished', Time: '39.832', Level: '8x8/40', Mode: 'Lucky', 'End Time': '2026-07-01 00:34:41' },
     },
     intRmv: {
         filename: '3819-Time-1616-NF-9469-32-20151031.rmv',
         identifier: 'lj22f',
-        tableData: { '': '', Bv: '32', Bvs: '3.379', Status: 'New identifier', Time: '9.469', Level: 'Intermediate', 'End Time': '2015-10-31 22:53:35' },
+        tableData: { '': '', Bv: '32', Bvs: '3.379', Status: 'New identifier', Time: '9.469', Level: 'Intermediate', Mode: 'Standard', 'End Time': '2015-10-31 22:53:35' },
         response: {
             type: 'error',
             object: 'identifier',
@@ -131,13 +140,17 @@ describe('VideoUpload Component', () => {
         loadFixture('expAvf', 'videoFileExpAvf');
         loadFixture('expMvf', 'videoFileExpMvf');
         loadFixture('cusAvf', 'videoFileCusAvf');
+        loadFixture('cusEvf8_8_40', 'videoFileCusEvf8_8_40');
         loadFixture('intRmv', 'videoFileIntRmv');
+        loadFixture('failed', 'videoFileFailed');
         loadFixture('json', 'fileJson');
 
         cy.get('input[type=file]').selectFile([
             { contents: '@videoFileExpAvf', fileName: 'exp.avf' }, // 高级, pass
             { contents: '@videoFileIntRmv', fileName: 'int.rmv' }, // 中级, identifier
             { contents: '@videoFileCusAvf', fileName: 'cus.avf' }, // custom
+            { contents: '@videoFileCusEvf8_8_40', fileName: 'cus.evf' }, // custom
+            { contents: '@videoFileFailed', fileName: 'failed.evf' }, // 炸局
             { contents: '@fileJson', fileName: 'json.avf' }, // parse
             { contents: '@fileJson', fileName: 'json.json' }, // fileext
             {
@@ -154,14 +167,16 @@ describe('VideoUpload Component', () => {
         cy.get('table:visible');
         cy.contains('Parsing files').should('not.exist');
         cy.get('table:visible').getTable().should((tableData) => {
-            expect(tableData.length).to.equal(7);
+            expect(tableData.length).to.equal(9);
             expect(tableData[0]).to.deep.equal(fixtures.expAvf.tableData);
             expect(tableData[1]).to.deep.equal(fixtures.intRmv.tableData);
             expect(tableData[2]).to.deep.equal(fixtures.cusAvf.tableData);
-            expect(tableData[3]).to.deep.equal(tableRowError('Cannot parse the file'));
-            expect(tableData[4]).to.deep.equal(tableRowError('Invalid file extension'));
-            expect(tableData[5]).to.deep.equal(tableRowError('File name exceeds 100 bytes'));
-            expect(tableData[6]).to.deep.equal(fixtures.expMvf.tableData);
+            expect(tableData[3]).to.deep.equal(fixtures.cusEvf8_8_40.tableData);
+            expect(tableData[4]).to.deep.equal(fixtures.failed.tableData);
+            expect(tableData[5]).to.deep.equal(tableRowError('Cannot parse the file'));
+            expect(tableData[6]).to.deep.equal(tableRowError('Invalid file extension'));
+            expect(tableData[7]).to.deep.equal(tableRowError('File name exceeds 100 bytes'));
+            expect(tableData[8]).to.deep.equal(fixtures.expMvf.tableData);
         });
     });
 
@@ -243,7 +258,7 @@ describe('VideoUpload Component', () => {
             expect(tableData.length).to.equal(4);
             expect(tableData[0]).to.deep.equal({ ...fixtures.expAvf.tableData, Status: 'Success' });
             expect(tableData[1]).to.deep.equal({ ...fixtures.intRmv.tableData, Status: 'Identifier blocked' });
-            expect(tableData[2]).to.deep.equal({ ...fixtures.cusAvf.tableData, Status: 'Custom level is currently not supported' });
+            expect(tableData[2]).to.deep.equal(fixtures.cusAvf.tableData);
             expect(tableData[3]).to.deep.equal({ ...fixtures.expMvf.tableData, Status: 'Video already exists' });
         });
     });
