@@ -1,7 +1,7 @@
 <template>
     <ElMenu
-        mode="horizontal" router :default-active="menu_index" :ellipsis="false"
-        menu-trigger="click"
+        mode="horizontal" :default-active="menu_index" :ellipsis="false"
+        menu-trigger="click" @select="handleMenuSelect"
     >
         <ElMenuItem index="/" class="logo">
             <ElImage class="logo1" :src="logo_1" fit="cover" />
@@ -16,6 +16,9 @@
         </ElMenuItem>
         <ElMenuItem v-if="store.user.is_staff" key="staff" index="/staff">
             <IconMenuItem :text="t('local.staff')" icon="Key" />
+        </ElMenuItem>
+        <ElMenuItem :index="docsUrl">
+            <IconMenuItem :text="t('local.docs')" icon="Reading" />
         </ElMenuItem>
         <ElMenuItem index="/settings" style="padding-left: 8px; padding-right: 5px">
             <IconMenuItem :text="t('local.setting')" icon="Setting" />
@@ -45,19 +48,34 @@ const menu_items = [
     { index: 'ranking', icon: 'Trophy' },
     { index: 'video', icon: 'VideoCameraFilled' },
     // { index: "world", icon: "Odometer" },
-    { index: 'guide', icon: 'Document' },
     // { index: "score", icon: "Histogram" },
     { index: 'tournament', icon: 'Medal' },
     { index: 'server', icon: 'Cpu' },
 ] as const;
 
 const player_url = computed(() => `/player/${store.user.id}`);
+const docsUrl = computed(() => {
+    if (typeof import.meta.env.VITE_DOCS_URL === 'string' && import.meta.env.VITE_DOCS_URL.length > 0) {
+        return import.meta.env.VITE_DOCS_URL;
+    }
+
+    return import.meta.env.DEV ? 'http://localhost:5173/docs/' : '/docs/';
+});
 
 onMounted(() => {
     void router.isReady().then(() => {
         menu_index.value = router.currentRoute.value.fullPath;
     });
 });
+
+const handleMenuSelect = (index: string) => {
+    if (index === docsUrl.value) {
+        window.location.assign(index);
+        return;
+    }
+
+    void router.push(index);
+};
 
 const menuHeight = computed(() => `${local.value.menu_height}px`);
 
@@ -70,6 +88,7 @@ const i18nMessages = {
         score: '积分',
         staff: '管理',
         profile: '我的地盘',
+        docs: '帮助',
         server: '服务器',
         setting: '设置',
         tournament: '比赛',
@@ -81,6 +100,7 @@ const i18nMessages = {
         guide: 'Guides',
         score: 'Scores',
         profile: 'Profile',
+        docs: 'Help',
         server: 'Server',
         setting: 'Settings',
         staff: 'Moderate',
@@ -93,6 +113,7 @@ const i18nMessages = {
         guide: 'Hilfe',
         score: 'Ergebnisse',
         profile: 'Profil',
+        docs: 'Hilfe',
     } },
     pl: { local: {
         ranking: 'ranking',
@@ -101,6 +122,7 @@ const i18nMessages = {
         guide: 'poradniki',
         score: 'wyniki',
         profile: 'profil',
+        docs: 'pomoc',
     } },
 };
 

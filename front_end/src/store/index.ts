@@ -85,7 +85,8 @@ export const local = useLocalStorage(
 export const videoPlayerConfig = useLocalStorage(
     'video-player-config',
     {
-        backend: 'flop' as 'flop' | 'StrangeDust',
+        backend: 'native' as 'native' | 'flop' | 'StrangeDust',
+        cellSize: 24,
         strangeDustTrust: false,
     },
     { mergeDefaults: true },
