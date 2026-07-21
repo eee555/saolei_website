@@ -24,6 +24,8 @@ from videomanager.models import VideoModel
 
 
 FIXTURE_DIR = Path(__file__).resolve().parent / 'test_fixtures' / 'video_upload_ranking'
+EXPERT_PERSONAL_PLUCK = 0.16342814596696364
+CUSTOM_PLUCK_FIXTURE_PLUCK = 6.493148642054213
 
 
 class VideoUploadRankingIntegrationTest(TestCase):
@@ -97,16 +99,6 @@ class VideoUploadRankingIntegrationTest(TestCase):
         )
         self.assertEqual(response.status_code, 200, response.content)
         return response.json()
-
-    def assert_pluck_task_enqueued(self, video: VideoModel):
-        task_args = [
-            task.args_kwargs
-            for task in DBTaskResult.objects.filter(task_path='videomanager.tasks.task_video_pluck')
-        ]
-        self.assertIn(
-            {'args': [video.id], 'kwargs': {}},
-            task_args,
-        )
 
     def assert_pluck_task_not_enqueued(self, video: VideoModel):
         self.assertFalse(
@@ -207,7 +199,7 @@ class VideoUploadRankingIntegrationTest(TestCase):
         video.refresh_from_db()
         self.userms.refresh_from_db()
         self.assertEqual(video.state, MS_TextChoices.State.IDENTIFIER)
-        self.assertIsNotNone(video.pluck)
+        self.assertAlmostEqual(video.pluck, EXPERT_PERSONAL_PLUCK, places=12)
         self.assert_pluck_task_not_enqueued(video)
         self.assertEqual(self.userms.video_num_limit, 100)
 
@@ -218,23 +210,18 @@ class VideoUploadRankingIntegrationTest(TestCase):
         self.assertEqual(video.state, MS_TextChoices.State.OFFICIAL)
         self.assertEqual(self.userms.video_num_limit, get_video_num_limit(parser.timems))
 
-    def test_upload_custom_video_refreshes_custom_pluck_record_after_pluck_save(self):
+    def test_upload_custom_video_calculates_pluck_and_refreshes_custom_pluck_record(self):
         video, parser = self.upload_fixture('custom_pluck.evf')
         if parser.level not in CUSTOM_PLUCK_LEVELS or parser.mode not in CUSTOM_PLUCK_MODES:
             self.skipTest('custom_pluck.evf 需要是 Density 排行支持的自定义级别和模式')
 
-        self.assert_pluck_task_enqueued(video)
-        self.assertIsNone(video.pluck)
-        rank = self.get_pluck_rank_by_request(parser.level)
-        self.assertEqual(rank['count'], 0)
-
-        video.pluck = 0.25
-        video.save(update_fields=['pluck'])
-
+        video.refresh_from_db()
+        self.assertAlmostEqual(video.pluck, CUSTOM_PLUCK_FIXTURE_PLUCK, places=12)
+        self.assert_pluck_task_not_enqueued(video)
         rank = self.get_pluck_rank_by_request(parser.level)
         self.assertEqual(rank['count'], 1)
         self.assertEqual(rank['players'][0]['video_id'], video.id)
-        self.assertEqual(rank['players'][0]['pluck'], video.pluck)
+        self.assertAlmostEqual(rank['players'][0]['pluck'], CUSTOM_PLUCK_FIXTURE_PLUCK, places=12)
         self.assertEqual(rank['players'][0]['timems'], video.timems)
 
     def test_identifier_bind_and_unbind_refreshes_custom_pluck_record(self):
@@ -244,11 +231,11 @@ class VideoUploadRankingIntegrationTest(TestCase):
         identifier = Identifier.objects.create(identifier=parser.identifier, safe=True)
 
         video, parser = self.upload_fixture('custom_pluck.evf', bind_identifier=False)
-        video.pluck = 0.25
-        video.save(update_fields=['pluck'])
 
         video.refresh_from_db()
         self.assertEqual(video.state, MS_TextChoices.State.IDENTIFIER)
+        self.assertAlmostEqual(video.pluck, CUSTOM_PLUCK_FIXTURE_PLUCK, places=12)
+        self.assert_pluck_task_not_enqueued(video)
         rank = self.get_pluck_rank_by_request(parser.level)
         self.assertEqual(rank['count'], 0)
 
@@ -259,6 +246,7 @@ class VideoUploadRankingIntegrationTest(TestCase):
         rank = self.get_pluck_rank_by_request(parser.level)
         self.assertEqual(rank['count'], 1)
         self.assertEqual(rank['players'][0]['video_id'], video.id)
+        self.assertAlmostEqual(rank['players'][0]['pluck'], CUSTOM_PLUCK_FIXTURE_PLUCK, places=12)
 
         self.delete_identifier_by_request(identifier.identifier)
 
