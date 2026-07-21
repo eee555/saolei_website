@@ -53,15 +53,13 @@ export default defineConfig({
                     },
                 },
                 nav: [
-                    { text: '使用指南', link: '/guide/' },
-                    { text: '返回主站', link: mainSiteLink },
+                    { text: '返回主站', link: mainSiteLink, target: '_self', rel: '' },
                 ],
                 sidebar: {
-                    '/guide/': [
+                    '/': [
                         {
                             text: '使用指南',
                             items: [
-                                { text: '概览', link: '/guide/' },
                                 { text: '账号关联', link: '/guide/account-links' },
                                 { text: '扫雷软件', link: '/guide/software' },
                                 { text: '录像播放器', link: '/guide/video-player' },
@@ -104,15 +102,13 @@ export default defineConfig({
                     },
                 },
                 nav: [
-                    { text: 'Guide', link: '/en/guide/' },
-                    { text: 'Main Site', link: mainSiteLink },
+                    { text: 'Main Site', link: mainSiteLink, target: '_self', rel: '' },
                 ],
                 sidebar: {
-                    '/en/guide/': [
+                    '/en/': [
                         {
                             text: 'User Guide',
                             items: [
-                                { text: 'Overview', link: '/en/guide/' },
                                 { text: 'Account Links', link: '/en/guide/account-links' },
                                 { text: 'Minesweeper Software', link: '/en/guide/software' },
                                 { text: 'Video Player', link: '/en/guide/video-player' },
