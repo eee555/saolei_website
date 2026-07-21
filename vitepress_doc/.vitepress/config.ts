@@ -64,9 +64,9 @@ export default defineConfig({
                                 { text: '概览', link: '/guide/' },
                                 { text: '账号关联', link: '/guide/account-links' },
                                 { text: '扫雷软件', link: '/guide/software' },
+                                { text: '录像播放器', link: '/guide/video-player' },
                                 { text: '扫雷数据', link: '/guide/terminology' },
                                 { text: '扫雷标识', link: '/guide/identifier' },
-                                { text: '数据统计', link: '/guide/stat' },
                                 { text: '比赛功能', link: '/guide/tournament' },
                                 { text: '金羊杯', link: '/guide/gsc' },
                                 { text: '参与贡献', link: '/guide/contribute' },
@@ -77,6 +77,7 @@ export default defineConfig({
                             items: [
                                 { text: '概览', link: '/guide/minesweeper/' },
                                 { text: '操作方式和规则', link: '/guide/minesweeper/mouse-event' },
+                                { text: '数据统计', link: '/guide/minesweeper/stat' },
                             ],
                         },
                     ],
