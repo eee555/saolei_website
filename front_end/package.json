@@ -83,7 +83,7 @@
     "eslint-import-resolver-typescript": "4.4.5",
     "eslint-plugin-cypress": "6.4.3",
     "eslint-plugin-import": "2.32.0",
-    "eslint-plugin-vue": "10.9.2",
+    "eslint-plugin-vue": "10.10.0",
     "fake-indexeddb": "6.2.5",
     "globals": "17.7.0",
     "less": "4.7.0",
