@@ -10,6 +10,13 @@ updates:
     directory: "/front_end"
     schedule:
       interval: "daily"
+    ignore:
+      - dependency-name: "@primeuix/themes"
+        versions: [">= 3.0.0"]
+      - dependency-name: "primeicons"
+        versions: [">= 8.0.0"]
+      - dependency-name: "primevue"
+        versions: [">= 5.0.0"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
