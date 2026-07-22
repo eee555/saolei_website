@@ -233,6 +233,7 @@ export default defineConfig({
         '@typescript-eslint/no-redeclare': 'off',
         '@typescript-eslint/no-explicit-any': 'off', // TODO
         '@typescript-eslint/no-magic-numbers': 'off', // TODO
+        '@typescript-eslint/no-unnecessary-condition': 'off', // false positive很多，参考https://typescript-eslint.io/rules/no-unnecessary-condition/#values-modified-within-function-calls
         '@typescript-eslint/no-unsafe-argument': 'off', // TODO：牵扯到的内容很多，包括后端API重构等
         '@typescript-eslint/no-unsafe-assignment': 'off', // TODO：牵扯到的内容很多，包括后端API重构等
         '@typescript-eslint/no-unsafe-member-access': 'off', // TODO：牵扯到的内容很多，包括后端API重构等
