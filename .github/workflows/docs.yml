@@ -60,7 +60,7 @@ jobs:
         node-version: '24'
 
     - name: Configure GitHub Pages
-      uses: actions/configure-pages@v5
+      uses: actions/configure-pages@v6
 
     - name: Build VitePress docs for GitHub Pages
       env:
