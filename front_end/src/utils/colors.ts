@@ -1,6 +1,6 @@
 import { ArrayUtils } from './arrays';
 
-interface Theme {
+export interface PiecewiseColorSchemeInterface {
     thresholds: number[];
     colors: string[];
 }
@@ -49,7 +49,7 @@ export class PiecewiseColorScheme {
         }
     }
 
-    public static createFromTheme(theme: Theme): PiecewiseColorScheme {
+    public static createFromTheme(theme: PiecewiseColorSchemeInterface): PiecewiseColorScheme {
         return new PiecewiseColorScheme(theme.colors, theme.thresholds);
     }
 

@@ -87,6 +87,11 @@ export const videoPlayerConfig = useLocalStorage(
     {
         backend: 'native' as 'native' | 'flop' | 'StrangeDust',
         cellSize: 24,
+        showProbability: true,
+        probabilityColorScheme: {
+            colors: ['#15803d', '#0f766e', '#2563eb', '#b45309', '#dc2626', '#7f1d1d'],
+            thresholds: [10, 25, 50, 75, 90],
+        },
         strangeDustTrust: false,
     },
     { mergeDefaults: true },

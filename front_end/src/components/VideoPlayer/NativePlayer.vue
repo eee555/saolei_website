@@ -3,8 +3,14 @@
         <ElResult v-if="loading" icon="info" :title="t('local.loading')" />
         <ElResult v-else-if="errorMessage" icon="error" :title="t('local.loadFailed')" :sub-title="errorMessage" />
         <div v-else-if="video !== null" class="native-player__content">
-            <div class="native-player__stage" :class="{ 'native-player__stage--editing': isEditingCustomCounterConfig }">
+            <div class="native-player__stage" :class="{ 'native-player__stage--editing': isEditingConfig }">
+                <PlayerMainSettings
+                    v-if="isEditingPlayerMainConfig"
+                    v-model="videoPlayerConfig"
+                    class="native-player__player-main-settings"
+                />
                 <CustomCounter
+                    v-else
                     class="native-player__custom-counter"
                     :video="video"
                     :current-ms="currentMs"
@@ -18,10 +24,12 @@
                 />
                 <PlayerMain
                     v-else
-                    v-model:board-size="videoPlayerConfig.cellSize"
                     :video="video"
                     :current-ms="currentMs"
                     :cursor-position="cursorPosition"
+                    :show-probability="videoPlayerConfig.showProbability"
+                    :size="videoPlayerConfig.cellSize"
+                    :probability-color-scheme-config="PiecewiseColorScheme.createFromTheme(videoPlayerConfig.probabilityColorScheme)"
                 />
             </div>
 
@@ -33,6 +41,9 @@
                 />
                 <ElCheckbox v-model="isEditingCustomCounterConfig">
                     {{ t('local.editCounter') }}
+                </ElCheckbox>
+                <ElCheckbox v-model="isEditingPlayerMainConfig">
+                    {{ t('local.editPlayerMain') }}
                 </ElCheckbox>
             </div>
         </div>
@@ -49,11 +60,13 @@ import { useI18n } from 'vue-i18n';
 import CustomCounter from './CustomCounter.vue';
 import CustomCounterSettings from './CustomCounterSettings.vue';
 import PlayerMain from './PlayerMain.vue';
+import PlayerMainSettings from './PlayerMainSettings.vue';
 import ProgressBar from './ProgressBar.vue';
 import { customCounterConfig } from './store';
 
 import $axios from '@/http';
 import { videoPlayerConfig } from '@/store';
+import { PiecewiseColorScheme } from '@/utils/colors';
 import type { AnyVideo } from '@/utils/fileIO';
 import { load_video_file } from '@/utils/fileIO';
 
@@ -64,12 +77,14 @@ const props = defineProps({
 const i18nMessages = {
     'zh-cn': { local: {
         editCounter: '编辑计数器',
+        editPlayerMain: '主面板设置',
         loadFailed: '录像加载失败',
         loading: '正在加载录像',
         noVideo: '没有录像',
     } },
     en: { local: {
         editCounter: 'Edit counter',
+        editPlayerMain: 'Main settings',
         loadFailed: 'Failed to load video',
         loading: 'Loading video',
         noVideo: 'No video',
@@ -84,7 +99,10 @@ const video = shallowRef<AnyVideo | null>(null);
 const currentMs = ref(0);
 const durationMs = ref(0);
 const isEditingCustomCounterConfig = ref(false);
+const isEditingPlayerMainConfig = ref(false);
 const cursor = ref({ x: 0, y: 0 });
+
+const isEditingConfig = computed(() => isEditingCustomCounterConfig.value || isEditingPlayerMainConfig.value);
 
 const cursorPosition = computed(() => {
     const pixSize = video.value?.pix_size ?? 0;
@@ -217,6 +235,10 @@ onBeforeUnmount(() => {
 }
 
 .native-player__stage--editing .native-player__custom-counter {
+    align-self: center;
+}
+
+.native-player__player-main-settings {
     align-self: center;
 }
 
