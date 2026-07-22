@@ -35,6 +35,8 @@ jobs:
         node-version: '24'
 
     - name: Build VitePress docs
+      env:
+        VITEPRESS_MAIN_SITE_URL: https://openms.top/
       run: |
         cd vitepress_doc
         npm install

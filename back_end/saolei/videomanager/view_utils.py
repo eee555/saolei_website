@@ -64,10 +64,6 @@ def refresh_video(video: VideoModel):
         video.state = MS_TextChoices.State.OFFICIAL
         video.save(update_fields=['state'])
 
-    if video.pluck is None:
-        from .tasks import helper_video_pluck
-        helper_video_pluck(video)
-
 
 def generate_file_stream(queryset):
     def file_iterator():

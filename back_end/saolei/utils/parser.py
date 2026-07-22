@@ -4,6 +4,7 @@ import math
 from django.core.files import File
 import ms_toollib as ms
 
+from config.customranking import CUSTOM_PLUCK_LEVELS, CUSTOM_PLUCK_MODES
 from config.text_choices import MS_TextChoices
 from .exceptions import ExceptionToResponse
 
@@ -44,8 +45,15 @@ def is_standard_level(level: str) -> bool:
     ]
 
 
-def calculate_pluck_from_video(v: ms.BaseVideo, level: str) -> float | None:
-    if not is_standard_level(level):
+def supports_pluck(level: str, mode: str) -> bool:
+    return (
+        is_standard_level(level)
+        or (level in CUSTOM_PLUCK_LEVELS and mode in CUSTOM_PLUCK_MODES)
+    )
+
+
+def calculate_pluck_from_video(v: ms.BaseVideo, level: str, mode: str) -> float | None:
+    if not supports_pluck(level, mode):
         return None
     v.analyse_for_features(['pluck'])
     return normalize_pluck(v.pluck)
@@ -101,7 +109,8 @@ class MSVideoParser:
         v.current_time = 1e8
 
         self.level = MSVideoParser.get_level_from_BaseVideo(v)
-        self.pluck = calculate_pluck_from_video(v, self.level)
+        self.mode = MSVideoParser.get_mode_from_BaseVideo(v)
+        self.pluck = calculate_pluck_from_video(v, self.level, self.mode)
 
         try:
             self.state = MSVideoParser.get_state_from_review_code(v.is_valid())
@@ -113,10 +122,6 @@ class MSVideoParser:
         self.identifier = v.player_identifier
         self.tournament_identifiers = v.race_identifier.split(',')
         self.end_time = datetime.fromtimestamp(v.end_time / 1000000, tz=timezone.utc)
-
-        self.mode = str(v.mode).rjust(2, '0')
-        if self.mode == '00' and v.flag == 0:
-            self.mode = '12'
 
         self.timems = v.rtime_ms
         self.bv = v.bbbv
@@ -167,6 +172,13 @@ class MSVideoParser:
             raise ExceptionToResponse(obj='file', category='level')
 
     @staticmethod
+    def get_mode_from_BaseVideo(v: ms.BaseVideo):
+        mode = str(v.mode).rjust(2, '0')
+        if mode == '00' and v.flag == 0:
+            return MS_TextChoices.Mode.NF
+        return mode
+
+    @staticmethod
     def get_state_from_review_code(review_code: int):
         if review_code == 0:
             return MS_TextChoices.State.OFFICIAL
@@ -187,15 +199,12 @@ class MSVideoParser:
         v.current_time = 1e8
 
         level = MSVideoParser.get_level_from_BaseVideo(v)
-        pluck = calculate_pluck_from_video(v, level)
+        mode = MSVideoParser.get_mode_from_BaseVideo(v)
+        pluck = calculate_pluck_from_video(v, level, mode)
 
         review_code = v.is_valid()
         state = MSVideoParser.get_state_from_review_code(review_code)
         identifier = v.player_identifier
-
-        mode = str(v.mode).rjust(2, '0')
-        if mode == '00' and v.flag == 0:
-            mode = '12'
 
         return {
             'identifier': identifier,
