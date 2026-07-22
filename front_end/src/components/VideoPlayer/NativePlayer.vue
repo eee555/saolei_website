@@ -29,7 +29,7 @@
                     :cursor-position="cursorPosition"
                     :show-probability="videoPlayerConfig.showProbability"
                     :size="videoPlayerConfig.cellSize"
-                    :probability-color-scheme-config="PiecewiseColorScheme.createFromTheme(videoPlayerConfig.probabilityColorScheme)"
+                    :probability-color-scheme="PiecewiseColorScheme.createFromTheme(videoPlayerConfig.probabilityColorScheme)"
                 />
             </div>
 
