@@ -1,8 +1,8 @@
 const USER = {
     id: 36987,
-    username: 'repeatVisitor',
-    email: 'repeatVisitor@email.com',
-    password: 'repeatVisitorPassword',
+    username: 'user',
+    email: 'user@email.com',
+    password: 'userPassword',
 } as const;
 
 function createVideo(timems: number) {
