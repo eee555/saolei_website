@@ -2,7 +2,7 @@
     <span class="text text-medium">
         <ul>
             <li>
-                {{ t('local.line_1_1') }}<SoftwareIcon software="a" />{{ t('local.line_1_2') }}<SoftwareIcon software="m" />{{ t('local.line_1_3') }}
+                {{ t('local.line_1_1') }}<SoftwareIcon software="a" />{{ t('local.line_1_2') }}<SoftwareIcon software="e" />{{ t('local.line_1_3') }}
             </li>
             <li>
                 {{ t('local.line_2_1') }}
