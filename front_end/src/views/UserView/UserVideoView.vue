@@ -7,7 +7,10 @@
         </ElButton>
     </ElRow>
     <MultiSelector v-if="showSetting" v-model="VideoListConfig.profile" :options="thisColumnChoices" :labels="thisColumnChoices.map((s) => t(`common.prop.${s}`))" />
-    <VideoList v-if="user.id > 0 && user.videos !== undefined" v-loading="loading" :videos="user.videos" :columns="VideoListConfig.profile" sortable paginator />
+    <VideoList
+        v-if="loadedUserId === user.id && user.videos !== undefined"
+        v-loading="loading" :videos="user.videos" :columns="VideoListConfig.profile" sortable paginator
+    />
 </template>
 
 <script lang="ts" setup>
@@ -34,13 +37,21 @@ const showSetting = ref(false);
 const thisColumnChoices = ArrayUtils.sortByReferenceOrder(['bv', 'bvs', 'stnb', 'ces', 'cls', 'corr', 'end_time', 'ioe', 'level', 'state', 'software', 'thrp', 'time', 'upload_time', 'path', 'pluck', 'file_size', 'mode'], ColumnChoices);
 
 const loading = ref(false);
+const loadedUserId = ref(0);
 
 async function refresh() {
     if (loading.value) return;
     if (user.value.id < 1) return;
-    if (user.value.videos === undefined) {
-        loading.value = true;
-        user.value.videos = await fetchUserVideos(user.value.id);
+    const userId = user.value.id;
+    loadedUserId.value = 0;
+    loading.value = true;
+    try {
+        const videos = await fetchUserVideos(userId);
+        if (user.value.id === userId) {
+            user.value.videos = videos;
+            loadedUserId.value = userId;
+        }
+    } finally {
         loading.value = false;
     }
 }
