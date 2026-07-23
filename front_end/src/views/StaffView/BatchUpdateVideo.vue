@@ -33,7 +33,6 @@ const logList = ref<string[]>([]);
 async function startBatchUpdate() {
     working.value = true;
     for (let i = startid.value; i <= endid.value; i += batchsize.value) {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!working.value) break;
         const start = i;
         const end = Math.min(i + batchsize.value - 1, endid.value);

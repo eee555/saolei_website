@@ -139,7 +139,6 @@ async function upload_prepare(file: File): Promise<UploadEntry> {
             stat: null,
         };
     }
-    // eslint-disable-next-line @typescript-eslint/init-declarations
     let video: AnyVideo;
     try {
         video = load_video_file(buffer, file.name);
@@ -177,7 +176,6 @@ async function uploadSelected() {
     const selectedQueueTemp = [...selectedQueue.value];
     const uploadQueueTemp = [...uploadQueue.value];
     for (const entry of selectedQueue.value) {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (pleaseStopUploading.value) {
             uploadProgress.value.total = uploadProgress.value.uploaded + uploadProgress.value.failed;
             break;
