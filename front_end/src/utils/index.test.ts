@@ -96,7 +96,7 @@ describe('utils index', () => {
             const source = {
                 id: 1,
                 nested: {
-                    values: [1, { label: 'one' }],
+                    values: [1, { label: 'one' }] as [number, { label: string }],
                 },
             };
 

@@ -32,8 +32,8 @@ const io_cpus = ref({
     r: ['0'],
     c: ['0'],
 });
-let timer_1: number;
-let timer_2: number;
+let timer_1: ReturnType<typeof setInterval>;
+let timer_2: ReturnType<typeof setInterval>;
 
 
 onMounted(() => {

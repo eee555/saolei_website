@@ -121,7 +121,7 @@ interface formStatusSingle {
     errorMsg: string;
 }
 
-const user = defineModel('user', { type: UserProfile, default: () => new UserProfile() });
+const user = defineModel<UserProfile>('user', { type: UserProfile, default: () => new UserProfile() });
 const isEditing = defineModel('isEditing', { type: Boolean, default: false });
 
 const updating = ref(false);

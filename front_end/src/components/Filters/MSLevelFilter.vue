@@ -8,6 +8,7 @@
 
 <script setup lang="ts">
 import { ElCheckboxButton, ElCheckboxGroup } from 'element-plus';
+import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import type { MS_Level } from '@/utils/ms_const';
@@ -15,9 +16,9 @@ import { MS_Levels } from '@/utils/ms_const';
 
 const { t } = useI18n();
 
-const level = defineModel({
-    type: Array<MS_Level>,
-    default: MS_Levels,
+const level = defineModel<MS_Level[]>({
+    type: Array as PropType<MS_Level[]>,
+    default: () => [...MS_Levels],
 });
 </script>
 

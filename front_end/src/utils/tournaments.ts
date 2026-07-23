@@ -27,6 +27,16 @@ interface TournamentInfo {
 }
 
 export class Tournament {
+    private static readonly cannotValidateStates: readonly TournamentState[] = [
+        TournamentState.Awarded,
+        TournamentState.Finished,
+        TournamentState.Ongoing,
+        TournamentState.Preparing,
+    ];
+    private static readonly cannotInvalidateStates: readonly TournamentState[] = [
+        TournamentState.Awarded,
+        TournamentState.Cancelled,
+    ];
     public id: number;
     public name: LocalizedString;
     public description?: LocalizedString;
@@ -49,6 +59,16 @@ export class Tournament {
         this.hostName = info.hostName ?? info.host_realname ?? '';
         this.state = info.state ?? TournamentState.Pending;
         this.series = info.series ?? TournamentSeries.Unknown;
+    }
+
+    public get canValidate(): boolean {
+        if (Tournament.cannotValidateStates.includes(this.state)) return false;
+        if (!this.startDate || !this.endDate || this.startDate >= this.endDate) return false;
+        return true;
+    }
+
+    public get canInvalidate(): boolean {
+        return !Tournament.cannotInvalidateStates.includes(this.state);
     }
 
     public static localFallback(local: string | undefined): 'zh' | 'en' | undefined {
