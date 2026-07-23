@@ -36,8 +36,9 @@ describe('User Videos', () => {
     it('Reloads videos created outside the current page when revisiting the same own user page', () => {
         cy.login(USER.username, USER.password);
 
-        navigateHash(`#/player/${USER.id}/videos`);
-        cy.get('.p-datatable').should('contain', '31.000');
+        cy.visitUser(USER.id, 'videos');
+        cy.contains(USER.username).should('be.visible');
+        cy.get('table:visible').should('contain', '31.000');
         cy.get('table:visible').getTable().should((tableData) => {
             expect(tableData.length).to.equal(1);
         });
@@ -48,7 +49,7 @@ describe('User Videos', () => {
         createVideo(22000);
 
         navigateHash(`#/player/${USER.id}/videos`);
-        cy.get('.p-datatable').should('contain', '22.000');
+        cy.get('table:visible').should('contain', '22.000');
         cy.get('table:visible').getTable().should((tableData) => {
             expect(tableData.length).to.equal(2);
         });
