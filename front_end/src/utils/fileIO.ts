@@ -19,7 +19,6 @@ export function load_video_file(buffer: ArrayBuffer, filename: string): AnyVideo
     const u8 = new Uint8Array(buffer);
     const ext = filename.slice(-3);
 
-    // eslint-disable-next-line @typescript-eslint/init-declarations
     let video: AnyVideo;
     if (ext === 'avf') {
         video = new AvfVideo(u8, filename);
