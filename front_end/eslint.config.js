@@ -1,8 +1,9 @@
 import eslint from '@eslint/js';
 import stylistic from '@stylistic/eslint-plugin';
 import { defineConfig } from 'eslint/config';
+import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript';
 import pluginCypress from 'eslint-plugin-cypress';
-import importPlugin from 'eslint-plugin-import';
+import importPlugin from 'eslint-plugin-import-x';
 import pluginVue from 'eslint-plugin-vue';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
@@ -49,29 +50,26 @@ export default defineConfig({
             localeDir: 'src/i18n/locales/*.ts',
             messageSyntaxVersion: '^11.0.0',
         },
-        'import/resolver': {
-            // You will also need to install and configure the TypeScript resolver
-            // See also https://github.com/import-js/eslint-import-resolver-typescript#configuration
-            typescript: true,
-            node: true,
-        },
+        'import-x/resolver-next': [
+            createTypeScriptImportResolver(),
+        ],
     },
     rules: {
-        'import/consistent-type-specifier-style': 'error',
-        'import/extensions': 'error',
-        'import/first': 'error',
-        'import/newline-after-import': 'error',
-        'import/no-absolute-path': 'error',
-        'import/no-cycle': 'error',
-        'import/no-duplicates': 'error',
-        'import/no-dynamic-require': 'error',
-        'import/no-relative-packages': 'error',
-        'import/no-restricted-paths': 'error',
-        'import/no-self-import': 'error',
-        'import/no-unused-modules': 'error',
-        'import/no-useless-path-segments': 'error',
-        'import/no-webpack-loader-syntax': 'error',
-        'import/order': [
+        'import-x/consistent-type-specifier-style': 'error',
+        'import-x/extensions': 'error',
+        'import-x/first': 'error',
+        'import-x/newline-after-import': 'error',
+        'import-x/no-absolute-path': 'error',
+        'import-x/no-cycle': 'error',
+        'import-x/no-duplicates': 'error',
+        'import-x/no-dynamic-require': 'error',
+        'import-x/no-relative-packages': 'error',
+        'import-x/no-restricted-paths': 'error',
+        'import-x/no-self-import': 'error',
+        'import-x/no-unused-modules': 'off', // ESLint 10 removed the FileEnumerator API this rule relies on.
+        'import-x/no-useless-path-segments': 'error',
+        'import-x/no-webpack-loader-syntax': 'error',
+        'import-x/order': [
             'error', {
                 'newlines-between': 'always',
                 alphabetize: {
@@ -233,6 +231,7 @@ export default defineConfig({
         '@typescript-eslint/no-redeclare': 'off',
         '@typescript-eslint/no-explicit-any': 'off', // TODO
         '@typescript-eslint/no-magic-numbers': 'off', // TODO
+        '@typescript-eslint/no-unnecessary-condition': 'off', // false positive很多，参考https://typescript-eslint.io/rules/no-unnecessary-condition/#values-modified-within-function-calls
         '@typescript-eslint/no-unsafe-argument': 'off', // TODO：牵扯到的内容很多，包括后端API重构等
         '@typescript-eslint/no-unsafe-assignment': 'off', // TODO：牵扯到的内容很多，包括后端API重构等
         '@typescript-eslint/no-unsafe-member-access': 'off', // TODO：牵扯到的内容很多，包括后端API重构等

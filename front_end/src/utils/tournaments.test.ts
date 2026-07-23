@@ -135,4 +135,52 @@ describe('Tournament', () => {
             expect(tournament.displayEndTime()).toBe('');
         });
     });
+
+    describe('validation state', () => {
+        it('can validate pending tournaments with a valid time range', () => {
+            const tournament = new Tournament({
+                state: TournamentState.Pending,
+                startDate: '2025-01-01T00:00:00Z',
+                endDate: '2025-01-02T00:00:00Z',
+            });
+
+            expect(tournament.canValidate).toBe(true);
+        });
+
+        it('cannot validate tournaments with invalid time ranges', () => {
+            const missingDates = new Tournament({ state: TournamentState.Pending });
+            const reversedDates = new Tournament({
+                state: TournamentState.Pending,
+                startDate: '2025-01-02T00:00:00Z',
+                endDate: '2025-01-01T00:00:00Z',
+            });
+
+            expect(missingDates.canValidate).toBe(false);
+            expect(reversedDates.canValidate).toBe(false);
+        });
+
+        it('cannot validate tournaments that are already active or finalized', () => {
+            const states = [
+                TournamentState.Awarded,
+                TournamentState.Finished,
+                TournamentState.Ongoing,
+                TournamentState.Preparing,
+            ];
+
+            for (const state of states) {
+                expect(new Tournament({
+                    state,
+                    startDate: '2025-01-01T00:00:00Z',
+                    endDate: '2025-01-02T00:00:00Z',
+                }).canValidate).toBe(false);
+            }
+        });
+
+        it('can invalidate every state except awarded and cancelled', () => {
+            expect(new Tournament({ state: TournamentState.Awarded }).canInvalidate).toBe(false);
+            expect(new Tournament({ state: TournamentState.Cancelled }).canInvalidate).toBe(false);
+            expect(new Tournament({ state: TournamentState.Pending }).canInvalidate).toBe(true);
+            expect(new Tournament({ state: TournamentState.Ongoing }).canInvalidate).toBe(true);
+        });
+    });
 });

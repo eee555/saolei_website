@@ -318,9 +318,6 @@ export default {
         breakRecordTo: ' breaks their {mode} {level} {stat} record with ',
     },
     profile: {
-        records: {
-            modeRecord: ' mode record: ',
-        },
         exportJSON: 'Export as JSON',
         exportJSONTooltip: 'Raw data fetched from the server.',
         exportArbiterCSV: 'Export as CSV',

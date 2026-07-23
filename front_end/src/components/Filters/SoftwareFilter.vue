@@ -8,13 +8,14 @@
 
 <script setup lang="ts">
 import { ElCheckboxButton, ElCheckboxGroup } from 'element-plus';
+import type { PropType } from 'vue';
 
 import SoftwareIcon from '@/components/widgets/SoftwareIcon.vue';
 import type { MS_Software } from '@/utils/ms_const';
 import { MS_Softwares } from '@/utils/ms_const';
 
-const level = defineModel({
-    type: Array<MS_Software>,
+const level = defineModel<MS_Software[]>({
+    type: Array as PropType<MS_Software[]>,
     default: () => [...MS_Softwares],
 });
 </script>

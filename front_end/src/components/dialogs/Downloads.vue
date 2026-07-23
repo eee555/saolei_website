@@ -8,7 +8,7 @@
             <ElTabs tab-position="left" style="height: 350px; width: 700px; justify-self: center;">
                 <ElTabPane>
                     <template #label>
-                        <SoftwareIcon software="m" />
+                        <SoftwareIcon software="e" />
                     </template>
                     <MetasweeperHelper />
                 </ElTabPane>
