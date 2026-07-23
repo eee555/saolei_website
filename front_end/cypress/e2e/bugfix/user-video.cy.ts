@@ -33,10 +33,8 @@ describe('User Videos', () => {
         createVideo(31000);
     });
 
-    it('Reloads the video list when revisiting the same own user page', () => {
+    it('Reloads videos created outside the current page when revisiting the same own user page', () => {
         cy.login(USER.username, USER.password);
-        cy.visit('/#/settings');
-        cy.contains(USER.username).should('be.visible');
 
         navigateHash(`#/player/${USER.id}/videos`);
         cy.get('.p-datatable').should('contain', '31.000');
@@ -44,9 +42,11 @@ describe('User Videos', () => {
             expect(tableData.length).to.equal(1);
         });
 
+        navigateHash('#/settings');
+
+        // Simulate a video created outside this frontend page. UI uploads update user.videos directly.
         createVideo(22000);
 
-        navigateHash('#/settings');
         navigateHash(`#/player/${USER.id}/videos`);
         cy.get('.p-datatable').should('contain', '22.000');
         cy.get('table:visible').getTable().should((tableData) => {
