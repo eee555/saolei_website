@@ -45,7 +45,7 @@ export function to_fixed_n(input: string | number | undefined, to_fixed: number)
 // 毫秒的整数到字符串秒的小数
 export function ms_to_s(ms: number | undefined): string {
     if (ms === undefined) return '-';
-    return `${Math.floor(ms / 1000)}.${(ms % 1000 + '').padStart(3, '0')}`;
+    return (ms / 1000).toFixed(3);
 }
 export function cs_to_s(cs: number): string {
     return `${Math.floor(cs / 100)}.${(cs % 100 + '').padStart(2, '0')}`;
