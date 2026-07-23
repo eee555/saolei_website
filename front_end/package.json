@@ -88,7 +88,7 @@
     "eslint-plugin-vue": "10.10.0",
     "fake-indexeddb": "6.2.5",
     "globals": "17.7.0",
-    "less": "4.7.0",
+    "less": "4.8.0",
     "path": "^0.12.7",
     "remove-attr": "0.0.15",
     "rollup": "4.62.2",
