@@ -1,56 +1,41 @@
 <template>
-    <BaseCardLarge>
+    <div style="display: flex; flex-direction: column; gap: 1rem">
         <ElSkeleton v-show="loading" animated style="margin-top: 0px;" :rows="8" />
-        <div v-for="(d, idx) in records" style="margin-top: -10px;">
-            <h4>{{ t(table_title[idx]) }}{{ t('profile.records.modeRecord') }}</h4>
-            <ElTable :data="d" style="width: 100%;" :header-cell-style="{ 'text-align': 'center' }">
-                <ElTableColumn width="100" align="center">
-                    <template #default="scope">
-                        {{ levelLabel(scope.$index) }}
-                    </template>
-                </ElTableColumn>
-
-                <ElTableColumn label="time" align="center">
-                    <template #default="scope">
-                        <PreviewNumber :id="scope.row.timems_id" :text="ms_to_s(scope.row.timems)" />
-                    </template>
-                </ElTableColumn>
-
-                <ElTableColumn label="3BV/s" align="center">
-                    <template #default="scope">
-                        <PreviewNumber :id="scope.row.bvs_id" :text="scope.row.bvs.toFixed(3)" />
-                    </template>
-                </ElTableColumn>
-
-                <ElTableColumn label="STNB" align="center">
-                    <template #default="scope">
-                        <PreviewNumber :id="scope.row.stnb_id" :text="scope.row.stnb.toFixed(3)" />
-                    </template>
-                </ElTableColumn>
-
-                <ElTableColumn label="IOE" align="center">
-                    <template #default="scope">
-                        <PreviewNumber :id="scope.row.ioe_id" :text="scope.row.ioe.toFixed(3)" />
-                    </template>
-                </ElTableColumn>
-
-                <ElTableColumn label="path" align="center">
-                    <template #default="scope">
-                        <PreviewNumber :id="scope.row.path_id" :text="scope.row.path.toFixed(3)" />
-                    </template>
-                </ElTableColumn>
-            </ElTable>
-        </div>
-    </BaseCardLarge>
+        <BaseCardNormal v-for="(d, idx) in records" :key="idx">
+            <table class="record-table" cellspacing="0" cellpadding="0">
+                <thead>
+                    <tr>
+                        <th class="text text-large" scope="col">
+                            {{ t(`common.mode.${table_title[idx]}`) }}
+                        </th>
+                        <th v-for="column in recordColumns" :key="column.key" class="text text-info" scope="col">
+                            {{ t(`common.prop.${column.label}`) }}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(row, rowIndex) in d" :key="rowIndex">
+                        <th class="text text-info" scope="row">
+                            {{ levelLabel(rowIndex) }}
+                        </th>
+                        <td v-for="column in recordColumns" :key="column.key" class="text">
+                            <PreviewNumber :id="row[column.idKey]" :text="column.format(row)" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </BaseCardNormal>
+    </div>
 </template>
 
 <script lang="ts" setup>
-// 个人主页的个人纪录部分
-import { ElMessage, ElSkeleton, ElTable, ElTableColumn } from 'element-plus';
+import '@/styles/text.css';
+
+import { ElMessage, ElSkeleton } from 'element-plus';
 import { nextTick, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import BaseCardLarge from '@/components/common/BaseCardLarge.vue';
+import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import { store } from '@/store';
 import { ms_to_s } from '@/utils';
@@ -68,7 +53,14 @@ const username = ref('');
 
 // 个人纪录表格
 const records = ref<Record[][]>([]);
-const table_title = ['common.mode.std', 'common.mode.nf', 'common.mode.ng', 'common.mode.dg'];
+const table_title = ['std', 'nf', 'ng', 'dg'];
+const recordColumns = [
+    { key: 'timems', idKey: 'timems_id', label: 'time', format: (row: Record) => ms_to_s(row.timems) },
+    { key: 'bvs', idKey: 'bvs_id', label: 'bvs', format: (row: Record) => row.bvs.toFixed(3) },
+    { key: 'stnb', idKey: 'stnb_id', label: 'stnb', format: (row: Record) => row.stnb.toFixed(3) },
+    { key: 'ioe', idKey: 'ioe_id', label: 'ioe', format: (row: Record) => row.ioe.toFixed(3) },
+    { key: 'path', idKey: 'path_id', label: 'path', format: (row: Record) => row.path.toFixed(3) },
+] as const;
 
 function levelLabel(index: number): string {
     return ['', t('common.level.b'), t('common.level.i'), t('common.level.e')][index + 1];
@@ -95,9 +87,6 @@ void nextTick(() => {
             loading.value = false;
         }
     });
-
-    // 再把个人纪录请求过来
-    // std_record
 });
 
 // 把记录数据转一下嵌套的结构，做数据格式的适配
@@ -121,11 +110,18 @@ function trans_record(r: RecordBIE): Record[] {
 }
 </script>
 
-<style>
-.avatar-uploader {
-    margin: auto;
-    text-align: center;
-    margin-top: 30px;
+<style scoped>
+.record-table {
+    width: 100%;
+    table-layout: auto;
+}
 
+.record-table th,
+.record-table td {
+    box-sizing: border-box;
+    border-bottom: 1px solid var(--el-table-border-color, var(--el-border-color-lighter));
+    padding: 8px 12px;
+    text-align: center;
+    width: 16.66%;
 }
 </style>

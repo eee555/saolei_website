@@ -317,9 +317,6 @@ export default {
         breakRecordTo: '将{mode}{level}{stat}纪录刷新为',
     },
     profile: {
-        records: {
-            modeRecord: '模式纪录：',
-        },
         exportJSON: '导出JSON',
         exportJSONTooltip: '从服务器获取的源数据',
         exportArbiterCSV: '导出CSV',

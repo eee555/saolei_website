@@ -77,7 +77,6 @@ export const local = useLocalStorage(
         vienna_logo_legacy: false,
         autoUploadAfterParse: false,
         autoRemoveAfterUpload: false,
-        folderMonitorPollingInterval: 5000,
         nameFormat: 'first-last' as 'first-last' | 'last-first',
     },
     { mergeDefaults: true },

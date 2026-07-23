@@ -21,10 +21,10 @@
         {{ tournament.endDate }}
         <br>
         审核
-        <ElButton type="success" circle size="small" :disabled="!canValidate" @click="validateTournament(true)">
+        <ElButton type="success" circle size="small" :disabled="!tournament.canValidate" @click="validateTournament(true)">
             <BaseIconTick />
         </ElButton>
-        <ElButton type="danger" circle size="small" :disabled="!canInvalidate" @click="validateTournament(false)">
+        <ElButton type="danger" circle size="small" :disabled="!tournament.canInvalidate" @click="validateTournament(false)">
             <BaseIconClose />
         </ElButton>
         <br>
@@ -38,42 +38,18 @@
 <script setup lang="ts">
 import { VCodeBlock } from '@wdns/vue-code-block';
 import { ElButton, ElInputNumber } from 'element-plus';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 
 import { BaseIconClose, BaseIconTick } from '@/components/common/icon';
 import { httpErrorNotification, successNotification } from '@/components/Notifications';
 import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { TournamentState } from '@/utils/ms_const';
 import { Tournament } from '@/utils/tournaments';
 
 const { proxy } = useCurrentInstance();
 
 const tournamentId = ref<number>(0);
 const tournament = ref<Tournament | null>(null);
-const cannotValidateStates: readonly TournamentState[] = [
-    TournamentState.Awarded,
-    TournamentState.Finished,
-    TournamentState.Ongoing,
-    TournamentState.Preparing,
-];
-const cannotInvalidateStates: readonly TournamentState[] = [
-    TournamentState.Awarded,
-    TournamentState.Cancelled,
-];
-
-const canValidate = computed(() => {
-    if (!tournament.value) return false;
-    if (cannotValidateStates.includes(tournament.value.state)) return false;
-    if (!tournament.value.startDate || !tournament.value.endDate || tournament.value.startDate >= tournament.value.endDate) return false;
-    return true;
-});
-
-const canInvalidate = computed(() => {
-    if (!tournament.value) return false;
-    if (cannotInvalidateStates.includes(tournament.value.state)) return false;
-    return true;
-});
 
 function refreshTournamentInfo() {
     if (!tournamentId.value) {
