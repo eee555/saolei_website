@@ -55,9 +55,21 @@ const validBvsNews = {
     old_value: 3.1,
 };
 
+const validSecondsTimeNews = {
+    time: '2026-07-22T10:00:00Z',
+    player_id: 9,
+    video_id: 203,
+    index: 'timems',
+    mode: 'ng',
+    level: 'b',
+    value: 48321,
+    old_value: 49123,
+};
+
 const newsQueueResponse = [
     JSON.stringify(validTimeNews),
     JSON.stringify(validBvsNews),
+    JSON.stringify(validSecondsTimeNews),
     '{not json',
     JSON.stringify({ ...validTimeNews, player_id: 999, delta: 1 }),
     JSON.stringify({ ...validBvsNews, player_id: 1000, old_value: '3.1' }),
@@ -221,6 +233,8 @@ describe('HomeView components', () => {
         cy.contains('Player Eight').should('be.visible');
         cy.contains('.clickable', '3.235').should('be.visible');
         cy.contains('↑0.135').should('be.visible');
+        cy.contains('.clickable', '48.321').should('be.visible');
+        cy.contains('↓-0.802').should('be.visible');
         cy.contains('Player 999').should('not.exist');
         cy.contains('Player 1000').should('not.exist');
         cy.then(() => {
