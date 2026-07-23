@@ -4,7 +4,11 @@
         <div v-for="(d, idx) in records" style="margin-top: -10px;">
             <h4>{{ t(table_title[idx]) }}{{ t('profile.records.modeRecord') }}</h4>
             <ElTable :data="d" style="width: 100%;" :header-cell-style="{ 'text-align': 'center' }">
-                <ElTableColumn type="index" :index="indexMethod" width="100" align="center" />
+                <ElTableColumn width="100" align="center">
+                    <template #default="scope">
+                        {{ levelLabel(scope.$index) }}
+                    </template>
+                </ElTableColumn>
 
                 <ElTableColumn label="time" align="center">
                     <template #default="scope">
@@ -66,7 +70,7 @@ const username = ref('');
 const records = ref<Record[][]>([]);
 const table_title = ['common.mode.std', 'common.mode.nf', 'common.mode.ng', 'common.mode.dg'];
 
-function indexMethod(index: number): string {
+function levelLabel(index: number): string {
     return ['', t('common.level.b'), t('common.level.i'), t('common.level.e')][index + 1];
 }
 

@@ -1,7 +1,7 @@
 <template>
     <ElTableColumn prop="software" width="40">
         <template #default="scope">
-            <SoftwareIcon :state="scope.row.software" />
+            <SoftwareIcon :software="scope.row.software" />
         </template>
     </ElTableColumn>
 </template>

@@ -49,7 +49,8 @@ describe('<BBBvSummary />', () => {
         cy.get('[data-cy=bv-160]').should('not.exist');
 
         cy.get('[data-cy=bv-100]').parent().should('have.css', 'display', 'grid').invoke('css', 'grid-template-columns').then((columns) => {
-            expect(columns.split(' ')).to.have.length(10);
+            const gridTemplateColumns = columns as unknown as string;
+            expect(gridTemplateColumns.split(' ').length).to.equal(10);
         });
     });
 

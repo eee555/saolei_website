@@ -30,7 +30,7 @@ const props = defineProps({
 
 const { proxy } = useCurrentInstance();
 
-const user = defineModel('user', { type: UserProfile, default: () => new UserProfile() });
+const user = defineModel<UserProfile>('user', { type: UserProfile, default: () => new UserProfile() });
 
 const avatarVersion = ref(0);
 const avatarSrc = ref(DefaultAvatar);

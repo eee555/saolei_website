@@ -51,17 +51,27 @@ const { proxy } = useCurrentInstance();
 
 const tournamentId = ref<number>(0);
 const tournament = ref<Tournament | null>(null);
+const cannotValidateStates: readonly TournamentState[] = [
+    TournamentState.Awarded,
+    TournamentState.Finished,
+    TournamentState.Ongoing,
+    TournamentState.Preparing,
+];
+const cannotInvalidateStates: readonly TournamentState[] = [
+    TournamentState.Awarded,
+    TournamentState.Cancelled,
+];
 
 const canValidate = computed(() => {
     if (!tournament.value) return false;
-    if ([TournamentState.Awarded, TournamentState.Finished, TournamentState.Ongoing, TournamentState.Preparing].includes(tournament.value.state)) return false;
+    if (cannotValidateStates.includes(tournament.value.state)) return false;
     if (!tournament.value.startDate || !tournament.value.endDate || tournament.value.startDate >= tournament.value.endDate) return false;
     return true;
 });
 
 const canInvalidate = computed(() => {
     if (!tournament.value) return false;
-    if ([TournamentState.Awarded, TournamentState.Cancelled].includes(tournament.value.state)) return false;
+    if (cannotInvalidateStates.includes(tournament.value.state)) return false;
     return true;
 });
 

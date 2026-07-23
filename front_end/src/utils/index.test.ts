@@ -93,7 +93,12 @@ describe('utils index', () => {
 
     describe('deepCopy', () => {
         it('deep copies plain objects and arrays without sharing nested references', () => {
-            const source = {
+            const source: {
+                id: number;
+                nested: {
+                    values: [number, { label: string }];
+                };
+            } = {
                 id: 1,
                 nested: {
                     values: [1, { label: 'one' }],
