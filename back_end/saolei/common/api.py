@@ -224,6 +224,7 @@ def stream_log_tail(request, filename: str, offset: int = 0, tail_bytes: int = D
 
     response = StreamingHttpResponse(event_stream(), content_type='text/event-stream')
     response['Cache-Control'] = 'no-cache'
+    response['Content-Encoding'] = 'identity'
     response['X-Accel-Buffering'] = 'no'
     return response
 

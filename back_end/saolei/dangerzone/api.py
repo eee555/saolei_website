@@ -1,7 +1,9 @@
 from django.core.management import call_command
 from django_redis import get_redis_connection
 from ninja import NinjaAPI, Schema
+from ninja.errors import HttpError
 
+from common.api import LOG_DIR
 from msuser.models import UserMS
 from userprofile.models import UserProfile
 from videomanager.models import ExpandVideoModel, VideoModel
@@ -32,6 +34,12 @@ class CreateVideoSchema(Schema):
     double_ce: int = 25
     path: float = 1000
     pluck: float | None = None
+
+
+class WriteLogSchema(Schema):
+    filename: str
+    content: str
+    append: bool = False
 
 
 @api.post('/flush_database')
@@ -89,3 +97,17 @@ def set_staff(request, data: UserIdSchema):
     user = UserProfile.objects.get(id=data.id)
     user.is_staff = True
     user.save(update_fields=['is_staff'])
+
+
+@api.post('/write_log')
+@local_only
+def write_log(request, data: WriteLogSchema):
+    if data.filename != data.filename.split('/')[-1].split('\\')[-1]:
+        raise HttpError(400, 'Invalid filename')
+
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
+    log_path = LOG_DIR / data.filename
+    mode = 'a' if data.append else 'w'
+    with log_path.open(mode, encoding='utf-8') as file:
+        file.write(data.content)
+    return {'name': data.filename, 'size': log_path.stat().st_size}
