@@ -1,4 +1,5 @@
 import './setup.js';
+import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
 import type { AxiosInstance } from 'axios';
@@ -26,6 +27,10 @@ if (import.meta.env.DEV) {
 }
 
 app.config.globalProperties.$axios = $axios;
+
+for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+    app.component(key, component);
+}
 
 const myTheme = definePreset(Aura, {
     components: {
