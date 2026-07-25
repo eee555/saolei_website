@@ -1,5 +1,4 @@
 import './setup.js';
-import * as ELIcons from '@element-plus/icons-vue';
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
 import type { AxiosInstance } from 'axios';
@@ -28,10 +27,6 @@ if (import.meta.env.DEV) {
 
 app.config.globalProperties.$axios = $axios;
 
-for (const name in ELIcons) {
-    app.component(name, (ELIcons as any)[name]);
-}
-
 const myTheme = definePreset(Aura, {
     components: {
         datatable: {
@@ -56,13 +51,6 @@ app.use(PrimeVue, {
 });
 app.use(pinia).use(router).use(i18n);
 app.mount('#app');
-
-const win: any = window;
-if (import.meta.env.NODE_ENV === 'development') {
-    if ('__VUE_DEVTOOLS_GLOBAL_HOOK__' in win) {
-        win.__VUE_DEVTOOLS_GLOBAL_HOOK__.Vue = app;
-    }
-}
 
 declare module '@vue/runtime-core' {
     interface ComponentCustomProperties {
