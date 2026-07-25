@@ -10,6 +10,7 @@ import type { CellChoice, ColorTemplateName, ColumnChoice, MS_Software } from '@
 import { MS_Softwares, MS_State } from '@/utils/ms_const';
 import type { Tournament } from '@/utils/tournaments';
 import { UserProfile } from '@/utils/userprofile';
+import type { UserProfileData } from '@/utils/userprofile';
 import type { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 
 export const store = defineStore('user', {
@@ -40,7 +41,7 @@ export const store = defineStore('user', {
         },
     },
     actions: {
-        login(userdata: any) {
+        login(userdata: UserProfileData) {
             this.user = new UserProfile(userdata);
             this.login_status = LoginStatus.IsLogin;
         },
@@ -58,7 +59,8 @@ export const videoplayerstore = defineStore('videoplayer', {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
         software: 'a' as MS_Software,
         url: '',
-        error: null as any,
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+        error: null as unknown,
     }),
 })(pinia);
 

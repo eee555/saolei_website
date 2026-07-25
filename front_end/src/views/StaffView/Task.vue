@@ -105,8 +105,8 @@ interface TaskDetail {
     started_at: string;
     finished_at: string;
     args_kwargs: {
-        args: any[];
-        kwargs: any;
+        args: unknown[];
+        kwargs: Record<string, unknown>;
     };
     priority: number;
     task_path: string;
@@ -114,7 +114,7 @@ interface TaskDetail {
     queue_name: string;
     backend_name: string;
     run_after: string;
-    return_value: any;
+    return_value: unknown;
     exception_class_path: string;
     traceback: string;
 }
@@ -142,7 +142,7 @@ const filters = ref({
 
 async function refreshSummary() {
     summaryLoading.value = true;
-    await proxy.$axios.get('/api/common/tasksummary').then((response) => {
+    await proxy.$axios.get<TaskSummary>('/api/common/tasksummary').then((response) => {
         taskSummary.value = response.data;
     }).catch(httpErrorNotification);
     summaryLoading.value = false;
@@ -150,7 +150,7 @@ async function refreshSummary() {
 
 async function refresh() {
     loading.value = true;
-    await proxy.$axios.get('/common/staff/taskdetail/').then((response) => {
+    await proxy.$axios.get<TaskDetail[]>('/common/staff/taskdetail/').then((response) => {
         taskData.value = response.data;
     }).catch(httpErrorNotification);
     loading.value = false;
@@ -160,7 +160,7 @@ onMounted(refreshSummary);
 
 async function cleanupExpiredTasks() {
     cleanupLoading.value = true;
-    await proxy.$axios.post('/api/common/tasks/cleanup').then(async () => {
+    await proxy.$axios.post<number>('/api/common/tasks/cleanup').then(async () => {
         await refreshSummary();
     }).catch(httpErrorNotification);
     cleanupLoading.value = false;

@@ -36,6 +36,7 @@
 </template>
 
 <script lang="ts" setup>
+import type { AxiosResponse } from 'axios';
 import { ElButton, ElDescriptions, ElDescriptionsItem, ElInput, ElInputNumber, ElOption, ElSelect } from 'element-plus';
 import { ref } from 'vue';
 
@@ -49,30 +50,30 @@ const videoid = ref(0);
 const videofield = ref('');
 const videovalue = ref('');
 const videofieldlist = ['player', 'upload_time', 'state']; // 可以修改的域列表
-const videomodel = ref({});
+const videomodel = ref<Record<string, unknown>>({});
 
 const getVideo = () => {
-    proxy.$axios.get('video/get', { params: { id: videoid.value } }).then(
-        function (response: any) {
+    proxy.$axios.get<Record<string, unknown>>('video/get', { params: { id: videoid.value } }).then(
+        function (response) {
             videomodel.value = response.data;
         },
     ).catch(httpErrorNotification);
 };
 
-function setVideoResponse(response: any) {
+function setVideoResponse(response: AxiosResponse<unknown>) {
     successNotification(response);
     getVideo();
 }
 
 const setVideo = (id: number, field: string, value: string) => {
-    proxy.$axios.post('video/set/', { id: id, field: field, value: value }).then(setVideoResponse).catch(httpErrorNotification);
+    proxy.$axios.post<unknown>('video/set/', { id: id, field: field, value: value }).then(setVideoResponse).catch(httpErrorNotification);
 };
 
 const updateVideo = (id: number) => {
-    proxy.$axios.post('video/update/', { id: id }).then(setVideoResponse).catch(httpErrorNotification);
+    proxy.$axios.post<unknown>('video/update/', { id: id }).then(setVideoResponse).catch(httpErrorNotification);
 };
 
 const removeNewest = (id: number) => {
-    proxy.$axios.post('video/newest_queue/remove/', { id: id }).then(setVideoResponse).catch(httpErrorNotification);
+    proxy.$axios.post<unknown>('video/newest_queue/remove/', { id: id }).then(setVideoResponse).catch(httpErrorNotification);
 };
 </script>

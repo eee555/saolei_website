@@ -58,7 +58,7 @@ export function deepCopy<T>(obj: T): T {
     }
 
     if (obj instanceof Array) {
-        const copy: any[] = [];
+        const copy: unknown[] = [];
         for (let i = 0; i < obj.length; i++) {
             copy[i] = deepCopy(obj[i]);
         }
@@ -66,9 +66,9 @@ export function deepCopy<T>(obj: T): T {
     }
 
     if (obj instanceof Object) {
-        const copy: Record<string, any> = {};
+        const copy: Record<string, unknown> = {};
         for (const key in obj) {
-            if (obj.hasOwnProperty(key)) {
+            if (Object.prototype.hasOwnProperty.call(obj, key)) {
                 copy[key] = deepCopy(obj[key]);
             }
         }

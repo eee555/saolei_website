@@ -11,8 +11,22 @@ import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vu
 
 import { videoplayerstore } from '@/store';
 
+interface FlopPlayOptions {
+    share: {
+        uri: string;
+        pathname: string;
+        anonymous: boolean;
+        background: string;
+        title: string;
+        favicon: string;
+    };
+    anonymous: boolean;
+    background: string;
+    listener: () => void;
+}
+
 interface FlopPlayer {
-    playVideo: (src: string, options: any) => void;
+    playVideo: (src: string, options: FlopPlayOptions) => void;
 }
 
 interface FlopPlaceholder {

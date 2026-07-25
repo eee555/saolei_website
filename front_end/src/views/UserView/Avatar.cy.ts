@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'vue-component-type-helpers';
 
 import Avatar from './Avatar.vue';
 
@@ -6,7 +7,7 @@ import i18n from '@/i18n';
 import { pinia } from '@/store/create';
 import { UserProfile } from '@/utils/userprofile';
 
-function mountOptions(props: any) {
+function mountOptions(props: ComponentProps<typeof Avatar>) {
     return {
         props: props,
         global: {

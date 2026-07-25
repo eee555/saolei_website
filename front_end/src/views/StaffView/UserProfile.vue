@@ -39,19 +39,19 @@ const userid = ref(0);
 const userfield = ref('');
 const uservalue = ref('');
 const userfieldlist = ['username', 'first_name', 'last_name', 'email', 'realname', 'country', 'is_banned', 'left_realname_n', 'left_avatar_n', 'left_signature_n', 'userms__video_num_limit']; // 可以修改的域列表
-const userprofile = ref({});
+const userprofile = ref<Record<string, unknown>>({});
 
 const getUser = () => {
-    proxy.$axios.get('userprofile/get', { params: { id: userid.value } }).then(
-        function (response: any) {
+    proxy.$axios.get<Record<string, unknown>>('userprofile/get', { params: { id: userid.value } }).then(
+        function (response) {
             userprofile.value = response.data;
         },
     ).catch(httpErrorNotification);
 };
 
 const setUser = (id: number, field: string, value: string) => {
-    proxy.$axios.post('userprofile/set/', { id: id, field: field, value: value }).then(
-        function (response: any) {
+    proxy.$axios.post<unknown>('userprofile/set/', { id: id, field: field, value: value }).then(
+        function (response) {
             successNotification(response);
             getUser();
         },

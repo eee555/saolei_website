@@ -41,6 +41,20 @@ export interface Record {
 
 export type TaskStatus = '' | 'loading' | 'success' | 'error';
 
+export interface ApiSuccessResponse<T> {
+    type: 'success';
+    data: T;
+}
+
+export interface ApiErrorResponse {
+    type: 'error';
+    object?: string;
+    category?: string;
+    msg?: string;
+}
+
+export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse;
+
 export const DjangoTaskResultStatusOptions = ['READY', 'RUNNING', 'FAILED', 'SUCCESSFUL', 'NULL'] as const;
 export type DjangoTaskResultStatus = typeof DjangoTaskResultStatusOptions[number];
 

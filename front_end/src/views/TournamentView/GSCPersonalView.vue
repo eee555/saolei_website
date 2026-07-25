@@ -34,10 +34,12 @@ import GSCPersonalSummary from '@/components/visualization/GSCPersonalSummary/Ap
 import MultiSelector from '@/components/widgets/MultiSelector.vue';
 import { VideoListConfig } from '@/store';
 import { ArrayUtils } from '@/utils/arrays';
+import type { ApiResponse } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { streamToZip } from '@/utils/fileIO';
 import { ColumnChoices } from '@/utils/ms_const';
 import { VideoAbstract } from '@/utils/videoabstract';
+import type { VideoAbstractData } from '@/utils/videoabstract';
 
 const props = defineProps({
     userId: {
@@ -57,13 +59,15 @@ const videos = ref<VideoAbstract[]>([]);
 
 function refresh() {
     if (!props.userId || !props.tournamentId) return;
-    proxy.$axios.get('tournament/get_videos/participant/', {
+    proxy.$axios.get<ApiResponse<VideoAbstractData[]>>('tournament/get_videos/participant/', {
         params: {
             user_id: props.userId,
             tournament_id: props.tournamentId,
         },
     }).then((response) => {
-        videos.value = (response.data.data as any[]).map((v) => new VideoAbstract(v));
+        if (response.data.type === 'success') {
+            videos.value = response.data.data.map((v) => new VideoAbstract(v));
+        }
     }).catch(httpErrorNotification);
 }
 

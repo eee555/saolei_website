@@ -1,8 +1,9 @@
 import * as ELIcons from '@element-plus/icons-vue';
 import PrimeVue from 'primevue/config';
 
-import HomeApp from './App.vue';
+import App from './App.vue';
 
+import $axios from '@/http';
 import i18n from '@/i18n';
 import { serviceConfig } from '@/services/store';
 
@@ -106,12 +107,6 @@ const reviewQueueResponse = [
     },
 ];
 
-const routeResponses = {
-    '/video/newest_queue/': newestQueueResponse,
-    '/video/news_queue/': newsQueueResponse,
-    '/api/video/review_queue': reviewQueueResponse,
-};
-
 const users = new Map([
     [7, { id: 7, username: 'player7', realname: 'Player Seven', firstname: 'Player', lastname: 'Seven' }],
     [8, { id: 8, username: 'player8', realname: 'Player Eight', firstname: 'Player', lastname: 'Eight' }],
@@ -119,30 +114,20 @@ const users = new Map([
     [10, { id: 10, username: 'player10', realname: 'Player Ten', firstname: 'Player', lastname: 'Ten' }],
 ]);
 
-function createAxiosGetMock(routes: Record<string, unknown> = routeResponses): sinon.SinonStub {
-    const axiosGet = Cypress.sinon.stub();
-    axiosGet.callsFake((url: string) => {
-        if (!(url in routes)) {
-            throw new Error(`Unexpected HomeView API request: ${url}`);
-        }
-        return Promise.resolve({ data: routes[url] });
-    });
-    return axiosGet;
-}
-
-function mountGlobal(axiosGet: sinon.SinonStub): any {
-    return {
-        plugins: [i18n, PrimeVue],
-        components: ELIcons,
-        config: {
-            globalProperties: {
-                $axios: {
-                    defaults: { baseURL: '' },
-                    get: axiosGet,
-                },
-            },
+const mountGlobal = {
+    plugins: [i18n, PrimeVue],
+    components: ELIcons,
+    config: {
+        globalProperties: {
+            $axios,
         },
-    };
+    },
+};
+
+function mockHomeQueueRequests() {
+    cy.intercept({ method: 'GET', pathname: '/video/newest_queue/' }, { body: newestQueueResponse }).as('newestQueue');
+    cy.intercept({ method: 'GET', pathname: '/video/news_queue/' }, { body: newsQueueResponse }).as('newsQueue');
+    cy.intercept({ method: 'GET', pathname: '/api/video/review_queue' }, { body: reviewQueueResponse }).as('reviewQueue');
 }
 
 function mockUserProfileRequests() {
@@ -168,65 +153,41 @@ function configureUserInfoService() {
     serviceConfig.value.userInfoLastUpdate = 0;
 }
 
-function mountHomeApp(axiosGet: sinon.SinonStub) {
-    cy.mount(HomeApp, { global: mountGlobal(axiosGet) });
-}
-
-function getRouteCalls(axiosGet: sinon.SinonStub, url: string) {
-    return axiosGet.getCalls().filter((call) => String(call.args[0]) === url);
-}
-
-function expectUrlRequested(axiosGet: sinon.SinonStub, url: string, params?: unknown) {
-    const routeCalls = getRouteCalls(axiosGet, url);
-    expect(routeCalls.length, `${url} calls`).to.be.greaterThan(0);
-    if (params !== undefined) {
-        expect(routeCalls[0].args[1]).to.deep.equal(params);
-    }
-}
-
 describe('HomeView components', () => {
     beforeEach(() => {
         configureUserInfoService();
+        mockHomeQueueRequests();
         mockUserProfileRequests();
     });
 
     it('renders the real home queue components in the expected tab layout', () => {
-        const axiosGet = createAxiosGetMock();
-
-        mountHomeApp(axiosGet);
+        cy.mount(App, { global: mountGlobal });
 
         cy.contains('.el-tabs__item', 'News').should('be.visible');
         cy.contains('.el-tabs__item', 'Latest').should('have.class', 'is-active');
+        cy.wait('@newsQueue');
+        cy.wait('@newestQueue');
         cy.contains('.el-tabs__item', 'Pending').should('be.visible').click();
+        cy.wait('@reviewQueue');
         cy.contains('table:visible', '9.876').should('be.visible');
-        cy.then(() => {
-            expectUrlRequested(axiosGet, '/video/news_queue/');
-            expectUrlRequested(axiosGet, '/video/newest_queue/');
-            expectUrlRequested(axiosGet, '/api/video/review_queue');
-        });
     });
 
     it('loads newest videos from the videomanager newest_queue endpoint', () => {
-        const axiosGet = createAxiosGetMock();
+        cy.mount(App, { global: mountGlobal });
 
-        mountHomeApp(axiosGet);
-
+        cy.wait('@newestQueue').its('request.query').should('deep.equal', {});
         cy.contains('.el-tabs__item', 'Latest').should('be.visible');
         cy.contains('table:visible', '59.987').should('be.visible');
         cy.contains('table:visible', '151').should('be.visible');
         cy.contains('table:visible', '2.517').should('be.visible');
         cy.contains('table:visible', '40.234').should('be.visible');
         cy.contains('table:visible', '2.038').should('be.visible');
-        cy.then(() => {
-            expectUrlRequested(axiosGet, '/video/newest_queue/', { params: {} });
-        });
     });
 
     it('loads and filters record news from the videomanager news_queue endpoint', () => {
-        const axiosGet = createAxiosGetMock();
+        cy.mount(App, { global: mountGlobal });
 
-        mountHomeApp(axiosGet);
-
+        cy.wait('@newsQueue').its('request.query').should('deep.equal', {});
         cy.contains('.el-tabs__item', 'News').should('be.visible');
         cy.contains('Player Seven').should('be.visible');
         cy.contains('.clickable', '59.987').should('be.visible');
@@ -237,25 +198,18 @@ describe('HomeView components', () => {
         cy.contains('↓-0.802').should('be.visible');
         cy.contains('Player 999').should('not.exist');
         cy.contains('Player 1000').should('not.exist');
-        cy.then(() => {
-            expectUrlRequested(axiosGet, '/video/news_queue/', { params: {} });
-        });
     });
 
     it('loads pending review videos from the video API review_queue endpoint', () => {
-        const axiosGet = createAxiosGetMock();
-
-        mountHomeApp(axiosGet);
+        cy.mount(App, { global: mountGlobal });
 
         cy.contains('.el-tabs__item', 'Pending').should('be.visible');
         cy.contains('.el-tabs__item', 'Pending').click();
+        cy.wait('@reviewQueue');
         cy.contains('table:visible', '9.876').should('be.visible');
         cy.contains('table:visible', '31').should('be.visible');
         cy.contains('table:visible', '3.139').should('be.visible');
         cy.contains('table:visible', '65.432').should('be.visible');
         cy.contains('table:visible', '2.308').should('be.visible');
-        cy.then(() => {
-            expectUrlRequested(axiosGet, '/api/video/review_queue');
-        });
     });
 });

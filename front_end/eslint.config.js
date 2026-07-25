@@ -229,7 +229,6 @@ export default defineConfig({
         '@typescript-eslint/max-params': 'off',
         '@typescript-eslint/naming-convention': 'off', // TODO：涉及到前后端标准不一致的问题，很复杂
         '@typescript-eslint/no-redeclare': 'off',
-        '@typescript-eslint/no-explicit-any': 'off', // TODO
         '@typescript-eslint/no-magic-numbers': 'off', // TODO
         '@typescript-eslint/no-unnecessary-condition': 'off', // false positive很多，参考https://typescript-eslint.io/rules/no-unnecessary-condition/#values-modified-within-function-calls
         '@typescript-eslint/no-unsafe-argument': 'off', // TODO：牵扯到的内容很多，包括后端API重构等

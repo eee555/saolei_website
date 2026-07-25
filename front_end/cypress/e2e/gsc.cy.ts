@@ -50,7 +50,7 @@ function setEndDateTime(dateStr: string, timeStr: string) {
     cy.closeElNotifications();
 }
 
-function assertTableData(expected: Record<string, any>[]) {
+function assertTableData(expected: Record<string, unknown>[]) {
     cy.get('table:visible').getTable().should((tableData) => {
         expected.forEach((exp, i) => {
             Object.keys(exp).forEach((key) => {
