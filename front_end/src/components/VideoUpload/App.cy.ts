@@ -1,6 +1,7 @@
 
 import { interceptFormData } from 'cypress-intercept-formdata';
 import PrimeVue from 'primevue/config';
+import type { ComponentProps } from 'vue-component-type-helpers';
 
 import App from './App.vue';
 
@@ -95,7 +96,7 @@ function mockUploadResponse() {
     }).as('uploadRequest');
 }
 
-function mountOptions(props: any) {
+function mountOptions(props: ComponentProps<typeof App>) {
     return {
         props: props,
         global: {

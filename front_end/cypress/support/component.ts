@@ -26,6 +26,7 @@ import 'cypress-real-events';
 // Alternatively, can be defined in cypress/support/component.d.ts
 // with a <reference path="./component" /> at the top of your spec.
 declare global {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Vue SFC constructor helpers must accept arbitrary constructor args and instance shapes.
     type ComponentWrapper<C extends abstract new (...args: any) => any> = VueWrapper<InstanceType<C>>;
 
     // eslint-disable-next-line @typescript-eslint/no-namespace
