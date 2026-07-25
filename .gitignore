@@ -181,3 +181,4 @@ front_end/yarn.lock
 /vitepress_doc/.vitepress/.temp
 /vitepress_doc/.vitepress/cache
 /vitepress_doc/node_modules
+.vscode/settings.json
