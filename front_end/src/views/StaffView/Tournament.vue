@@ -43,6 +43,7 @@ import { ref } from 'vue';
 import { BaseIconClose, BaseIconTick } from '@/components/common/icon';
 import { httpErrorNotification, successNotification } from '@/components/Notifications';
 import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
+import type { ApiResponse } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { Tournament } from '@/utils/tournaments';
 
@@ -51,13 +52,29 @@ const { proxy } = useCurrentInstance();
 const tournamentId = ref<number>(0);
 const tournament = ref<Tournament | null>(null);
 
+type LocalizedString = string | Partial<Record<string, string>>;
+
+interface TournamentResponseData {
+    [key: string]: unknown;
+    id?: number;
+    name?: LocalizedString;
+    description?: LocalizedString;
+    start_time?: string | Date | null;
+    end_time?: string | Date | null;
+    series?: ConstructorParameters<typeof Tournament>[0]['series'];
+    host_id?: number;
+    state?: ConstructorParameters<typeof Tournament>[0]['state'];
+}
+
 function refreshTournamentInfo() {
     if (!tournamentId.value) {
         tournament.value = null;
         return;
     }
-    proxy.$axios.get('tournament/get/', { params: { id: tournamentId.value } }).then((response: any) => {
-        tournament.value = new Tournament(response.data.data);
+    proxy.$axios.get<ApiResponse<TournamentResponseData>>('tournament/get/', { params: { id: tournamentId.value } }).then(({ data }) => {
+        if (data.type === 'success') {
+            tournament.value = new Tournament(data.data);
+        }
     }).catch((e: unknown) => {
         tournament.value = null;
         httpErrorNotification(e);
