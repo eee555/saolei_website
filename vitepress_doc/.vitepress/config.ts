@@ -67,6 +67,7 @@ export default defineConfig({
                                 { text: '比赛功能', link: '/guide/tournament' },
                                 { text: '金羊杯', link: '/guide/gsc' },
                                 { text: '参与贡献', link: '/guide/contribute' },
+                                { text: '网站收支', link: '/guide/balance' },
                             ],
                         },
                         {
@@ -116,6 +117,7 @@ export default defineConfig({
                                 { text: 'Tournaments', link: '/en/guide/tournament' },
                                 { text: 'Golden Sheep Cup', link: '/en/guide/gsc' },
                                 { text: 'Contributing', link: '/en/guide/contribute' },
+                                { text: 'Website Finances', link: '/en/guide/balance' },
                             ],
                         },
                         {
