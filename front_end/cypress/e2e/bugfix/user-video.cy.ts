@@ -26,6 +26,12 @@ function navigateHash(hash: string) {
     cy.location('hash').should('eq', hash);
 }
 
+function waitForVideoList(count: number) {
+    cy.wait('@getUserVideos').its('response.body').should((videos) => {
+        expect(videos).to.have.length(count);
+    });
+}
+
 describe('User Videos', () => {
     it('Before All', () => {
         cy.flushDatabase();
@@ -34,9 +40,11 @@ describe('User Videos', () => {
     });
 
     it('Reloads videos created outside the current page when revisiting the same own user page', () => {
+        cy.intercept({ method: 'GET', pathname: '/api/userprofile/videolist' }).as('getUserVideos');
         cy.login(USER.username, USER.password);
 
         cy.visitUser(USER.id, 'videos');
+        waitForVideoList(1);
         cy.contains(USER.username).should('be.visible');
         cy.get('table:visible').should('contain', '31.000');
         cy.get('table:visible').getTable().should((tableData) => {
@@ -49,6 +57,7 @@ describe('User Videos', () => {
         createVideo(22000);
 
         navigateHash(`#/player/${USER.id}/videos`);
+        waitForVideoList(2);
         cy.get('table:visible').should('contain', '22.000');
         cy.get('table:visible').getTable().should((tableData) => {
             expect(tableData.length).to.equal(2);
