@@ -12,6 +12,7 @@ from .services import get_pluck_rank_range, refresh_all_custom_pluck_ranks, refr
 
 
 LEVEL = MS_TextChoices.Level.CUSTOM_8_8_40
+SECOND_LEVEL = MS_TextChoices.Level.CUSTOM_16_16_100
 
 
 class CustomRankingTestCase(TestCase):
@@ -26,9 +27,11 @@ class CustomRankingTestCase(TestCase):
             ))
         self.cache = PLuckRankingCache(LEVEL)
         self.cache.flush()
+        PLuckRankingCache(SECOND_LEVEL).flush()
 
     def tearDown(self):
         self.cache.flush()
+        PLuckRankingCache(SECOND_LEVEL).flush()
 
     def create_video(
         self,
@@ -37,18 +40,19 @@ class CustomRankingTestCase(TestCase):
         pluck: float,
         timems: int,
         seconds: int = 0,
+        level=LEVEL,
         mode=MS_TextChoices.Mode.STD,
         state=MS_TextChoices.State.PLAIN,
     ):
-        expand = ExpandVideoModel.objects.create(identifier=f'id-{player.id}-{timems}')
+        expand = ExpandVideoModel.objects.create(identifier=f'id-{player.id}-{level}-{timems}')
         video = VideoModel.objects.create(
             player=player,
-            file=f'videos/test-{player.id}-{timems}.avf',
+            file=f'videos/test-{player.id}-{level}-{timems}.avf',
             file_size=1,
             video=expand,
             state=MS_TextChoices.State.PLAIN,
             software=MS_TextChoices.Software.AVF,
-            level=LEVEL,
+            level=level,
             mode=mode,
             timems=timems,
             bv=40,
@@ -59,12 +63,12 @@ class CustomRankingTestCase(TestCase):
         video.refresh_from_db()
         return video
 
-    def create_record(self, player, *, pluck: float, timems: int, seconds: int = 0):
-        video = self.create_video(player, pluck=pluck, timems=timems, seconds=seconds)
+    def create_record(self, player, *, pluck: float, timems: int, seconds: int = 0, level=LEVEL):
+        video = self.create_video(player, pluck=pluck, timems=timems, seconds=seconds, level=level)
         return CustomPluckRecord.objects.create(
             player=player,
             video=video,
-            level=LEVEL,
+            level=level,
             pluck=pluck,
             timems=timems,
             upload_time=video.upload_time,
@@ -147,6 +151,37 @@ class PLuckRankingCacheTests(CustomRankingTestCase):
 
         self.assertEqual(data['player_id'], record.player_id)
         self.assertEqual(data['video_id'], record.video_id)
+
+
+class PluckRankingApiTests(CustomRankingTestCase):
+    def get_player_records(self, player):
+        response = self.client.get('/api/customranking/pluck/player', {'player_id': player.id})
+        self.assertEqual(response.status_code, 200, response.content)
+        return response.json()
+
+    def test_player_records_prefers_redis_and_falls_back_to_database(self):
+        cached_record = self.create_record(self.players[0], pluck=1, timems=1000)
+        db_record = self.create_record(
+            self.players[0],
+            pluck=2,
+            timems=2000,
+            level=SECOND_LEVEL,
+        )
+        self.cache.add_record(cached_record)
+        CustomPluckRecord.objects.filter(id=cached_record.id).update(pluck=9)
+
+        rows = self.get_player_records(self.players[0])
+
+        rows_by_level = {row['level']: row for row in rows}
+        self.assertEqual(rows_by_level[LEVEL]['video_id'], cached_record.video_id)
+        self.assertEqual(rows_by_level[LEVEL]['pluck'], cached_record.pluck)
+        self.assertEqual(rows_by_level[SECOND_LEVEL]['video_id'], db_record.video_id)
+        self.assertEqual(rows_by_level[SECOND_LEVEL]['pluck'], db_record.pluck)
+
+    def test_player_records_returns_empty_list_for_player_without_records(self):
+        rows = self.get_player_records(self.players[4])
+
+        self.assertEqual(rows, [])
 
 
 class PluckRankingServiceTests(CustomRankingTestCase):
