@@ -41,8 +41,10 @@ import RetrieveForm from './RetrieveForm.vue';
 
 import { httpErrorNotification } from '@/components/Notifications';
 import { local, store } from '@/store';
+import type { GetUserInfoResponse } from '@/utils/common/structInterface';
 import { LoginStatus } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import type { UserProfileData } from '@/utils/userprofile';
 
 const { proxy } = useCurrentInstance();
 
@@ -50,7 +52,7 @@ const dialogVisible = ref(false);
 const activeDialog = ref<'login' | 'register' | 'retrieve'>('login');
 
 onMounted(async () => {
-    await proxy.$axios.get('api/userprofile/info/0').then(function (response) {
+    await proxy.$axios.get<GetUserInfoResponse>('api/userprofile/info/0').then(function (response) {
         store.login(response.data);
     }).catch((err: unknown) => {
         store.logout();
@@ -62,7 +64,7 @@ onMounted(async () => {
     });
 });
 
-const login = (user: any) => {
+const login = (user: UserProfileData) => {
     store.login(user);
     dialogVisible.value = false;
 };

@@ -71,12 +71,12 @@ watch(props, () => {
 });
 
 async function fetchData(id: number) {
-    await proxy.$axios.get('video/query_by_id', {
+    await proxy.$axios.get<DataEntry[]>('video/query_by_id', {
         params: {
             id: id,
         },
     }).then(function (response) {
-        data.value = response.data as DataEntry[];
+        data.value = response.data;
     }).catch(httpErrorNotification);
 }
 
@@ -86,7 +86,7 @@ function generateArbiterCSV(raw: DataEntry[]) {
     for (const v of raw) {
         if (v.mode != '00' && v.mode != '12') continue;
         const date = new Date(v.upload_time);
-        const row: any[] = [date.getUTCDate(), date.getUTCMonth() + 1, date.getUTCFullYear(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds()];
+        const row: (string | number)[] = [date.getUTCDate(), date.getUTCMonth() + 1, date.getUTCFullYear(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds()];
         switch (v.level) {
             case 'e': row.push(3); break;
             case 'i': row.push(2); break;

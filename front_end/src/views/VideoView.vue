@@ -32,7 +32,7 @@
         </ElDescriptionsItem>
     </ElDescriptions>
     <div style="font-size:20px;margin: auto;margin-top: 10px;">
-        <ElTable :data="videoList" border table-layout="auto" @sort-change="handleSortChange" @row-click="(row: any) => preview(row.id)">
+        <ElTable :data="videoList" border table-layout="auto" @sort-change="handleSortChange" @row-click="previewVideo">
             <VideoViewState />
             <ElTableColumn type="index" :index="offsetIndex" fixed />
             <VideoViewRealname />
@@ -53,6 +53,7 @@
 
 <script lang="ts" setup>
 // 全网录像的检索器，根据三个维度排序
+import type { TableColumnCtx } from 'element-plus';
 import { ElButton, ElDescriptions, ElDescriptionsItem, ElPagination, ElRow, ElTable, ElTableColumn } from 'element-plus';
 import { onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -90,9 +91,11 @@ const state = reactive({
 // const test  = reactive({v: 5});
 const videoList = reactive<Video[]>([]);
 // 带下划线与不带的至少存在一个
-type Video = Record<string, string | number>;
+type VideoFieldValue = string | number | boolean | null;
+type Video = Record<string, VideoFieldValue> & { id: number };
 type NameKey = Record<string, string>;
 type Tags = Record<string, NameKey>;
+type TableSortOrder = 'ascending' | 'descending';
 interface NameKeyReverse {
     key: string;
     reverse: boolean;
@@ -100,6 +103,29 @@ interface NameKeyReverse {
     selected: boolean;
 }
 type TagsReverse = Record<string, NameKeyReverse>;
+
+interface VideoQueryResponse {
+    count: number;
+    videos: Video[];
+}
+
+interface VideoQueryParams {
+    level: MS_Level;
+    mode: string;
+    o: string;
+    r: boolean;
+    ps: number;
+    page: number;
+    bmin: number;
+    bmax: number;
+    s?: string[];
+}
+
+interface SortChange {
+    column: TableColumnCtx<Video>;
+    prop: string | null;
+    order: TableSortOrder | null;
+}
 
 const modeTags: Tags = {
     STD: { name: '标准', key: '00' },
@@ -153,12 +179,20 @@ function selected_index(): string[] {
     return list;
 }
 
-function columnFormatter(key: string, value: any): any {
+function previewVideo(row: Video): void {
+    void preview(row.id);
+}
+
+function columnFormatter(key: string, value: VideoFieldValue | undefined): string | number | boolean | null | undefined {
     if (key == 'upload_time') {
-        return utc_to_local_format(value);
+        if (value === null || value === undefined) return value;
+        return utc_to_local_format(String(value));
     } else if (key == 'timems') {
+        if (typeof value !== 'number') return '-';
         return ms_to_s(value);
     } else if (key == 'name') {
+        return value;
+    } else if (value === null || typeof value === 'boolean') {
         return value;
     } else {
         return to_fixed_n(value, indexTags[key].to_fixed);
@@ -188,8 +222,8 @@ function mod_style(): void {
         includes(indexTagSelected.value);
 }
 
-const prevColumn = ref<any>(null); // 上一个排序列
-function handleSortChange(sort: any): void {
+const prevColumn = ref<TableColumnCtx<Video> | null>(null); // 上一个排序列
+function handleSortChange(sort: SortChange): void {
     for (const key of Object.keys(indexTags)) { // 找到对应的key。很丑陋，but it works
         if (indexTags[key].key == sort.prop) {
             if (key != indexTagSelected.value) { // 改变了排序列，清除之前列的排序
@@ -225,21 +259,24 @@ function offsetIndex(index: number): number {
 
 // 根据配置，刷新当前页面的录像表
 function request_videos(): void {
-    const params: Record<string, any> = {};
-    params.level = levelTagSelected.value;
-    params.mode = modeTags[modeTagSelected.value].key;
-    params.o = indexTags[indexTagSelected.value].key;
-    params.r = state.ReverseOrder;
-    params.ps = videofilter.value.pagesize;
-    params.page = state.CurrentPage;
-    [params.bmin, params.bmax] = videofilter.value.bbbv_range[levelTagSelected.value];
+    const [bmin, bmax] = videofilter.value.bbbv_range[levelTagSelected.value];
+    const params: VideoQueryParams = {
+        level: levelTagSelected.value,
+        mode: modeTags[modeTagSelected.value].key,
+        o: indexTags[indexTagSelected.value].key,
+        r: state.ReverseOrder,
+        ps: videofilter.value.pagesize,
+        page: state.CurrentPage,
+        bmin: bmin,
+        bmax: bmax,
+    };
     if (![0, 4].includes(videofilter.value.filter_state.length)) {
         params.s = videofilter.value.filter_state;
     }
-    proxy.$axios.get('/video/query/', {
+    void proxy.$axios.get<string>('/video/query/', {
         params: params,
     }).then(function (response) {
-        const data = JSON.parse(response.data);
+        const data = JSON.parse(response.data) as VideoQueryResponse;
         videoList.length = 0;
         videoList.push(...data.videos);
         state.VideoCount = data.count;

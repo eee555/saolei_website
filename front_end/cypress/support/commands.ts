@@ -3,6 +3,7 @@
 
 import 'cypress-table';
 import 'cypress-intercept-formdata';
+import type { StaticResponse } from 'cypress/types/net-stubbing';
 
 declare global {
     // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -38,14 +39,14 @@ declare global {
              * @param options - 请求选项
              * @example cy.mockCaptchaRefresh({})
              */
-            mockCaptchaRefresh(options?: any): void;
+            mockCaptchaRefresh(options?: Partial<StaticResponse>): void;
 
             /**
              * 模拟获取邮件验证码
              * @param options - 请求选项
              * @example cy.mockGetEmailCode({})
              */
-            mockGetEmailCode(options?: any): void;
+            mockGetEmailCode(options?: Partial<StaticResponse>): void;
 
             /**
              * 模拟登录

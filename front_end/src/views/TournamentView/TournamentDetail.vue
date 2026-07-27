@@ -22,7 +22,7 @@ defineProps({
         default: () => new Tournament({}),
     },
     data: {
-        type: Array as () => Record<string, any>[],
+        type: Array as () => Record<string, unknown>[],
         default: () => [],
     },
 });

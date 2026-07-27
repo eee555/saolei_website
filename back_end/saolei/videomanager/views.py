@@ -318,12 +318,18 @@ def update_videoModel(request):
 def batch_update_videoModel(request):
     startid = request.POST.get('startid')
     endid = request.POST.get('endid')
+    logger.info(f'管理员#{request.user.id}批量刷新录像#{startid}-{endid} 开始')
     errorList = []
     successCount = 0
     for video in VideoModel.objects.filter(id__gte=startid, id__lte=endid):
+        logger.info(f'刷新录像#{video.id} 开始')
         try:
             refresh_video(video)
             successCount += 1
         except Exception:
+            logger.exception(f'刷新录像#{video.id} 失败')
             errorList.append(video.id)
+        else:
+            logger.info(f'刷新录像#{video.id} 成功')
+    logger.info(f'批量刷新录像#{startid}-{endid} 完成{successCount}/{endid - startid + 1}')
     return JsonResponse({'errorList': errorList, 'successCount': successCount})

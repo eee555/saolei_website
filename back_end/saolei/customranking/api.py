@@ -6,7 +6,7 @@ from ninja.decorators import decorate_view
 from ninja.errors import HttpError
 
 from config.customranking import CUSTOM_PLUCK_CONFIGS
-from customranking.cache import PLuckRankingCache
+from customranking.cache import get_player_pluck_records, PLuckRankingCache
 from userprofile.decorators import staff_required
 from .models import CustomPluckRecord
 from .services import get_pluck_rank_range, refresh_custom_pluck_rank_range
@@ -27,6 +27,12 @@ class CustomPluckPlayerOut(Schema):
 class CustomPluckRankOut(Schema):
     count: int
     players: list[CustomPluckPlayerOut]
+
+
+class CustomPluckRecordOut(Schema):
+    level: str
+    video_id: int
+    pluck: float
 
 
 class RefreshCustomPluckRankIn(Schema):
@@ -62,6 +68,48 @@ def pluck_rank(request, level: str, start: int = 0, end: int = 20):
         'count': count,
         'players': players,
     }
+
+
+@router.get('/pluck/player', response=list[CustomPluckRecordOut])
+@decorate_view(ratelimit(key='ip', rate='1/s'))
+def player_pluck_records(request, player_id: int):
+    """
+    - ratelimit(key='ip', rate='1/s')
+    """
+    rows_by_level = {}
+    cached_records = get_player_pluck_records(
+        player_id,
+        CUSTOM_PLUCK_CONFIGS,
+    )
+    missing_levels = []
+    for level in CUSTOM_PLUCK_CONFIGS:
+        cached_record = cached_records.get(level)
+        if cached_record is None:
+            missing_levels.append(level)
+            continue
+        rows_by_level[level] = {
+            'level': level,
+            'video_id': cached_record['video_id'],
+            'pluck': cached_record['pluck'],
+        }
+
+    if missing_levels:
+        db_records = (
+            CustomPluckRecord.objects
+            .filter(player_id=player_id, level__in=missing_levels)
+        )
+        for record in db_records:
+            rows_by_level[record.level] = {
+                'level': record.level,
+                'video_id': record.video_id,
+                'pluck': record.pluck,
+            }
+
+    return [
+        rows_by_level[level]
+        for level in CUSTOM_PLUCK_CONFIGS
+        if level in rows_by_level
+    ]
 
 
 @router.post('/pluck/refresh', response=RefreshCustomPluckRankOut)

@@ -59,7 +59,7 @@ interface VideoRedisInfo {
     ce?: number;
 }
 
-interface VideoAbstractData {
+export interface VideoAbstractData {
     id?: number;
     upload_time?: string | Date;
     time?: string | Date;

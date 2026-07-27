@@ -1,6 +1,7 @@
 import { VideoAbstract } from './videoabstract';
+import type { VideoAbstractData } from './videoabstract';
 
-interface UserProfileData {
+export interface UserProfileData {
     id?: number;
     username?: string;
     realname?: string;
@@ -15,7 +16,7 @@ interface UserProfileData {
     left_avatar_n?: number;
     left_signature_n?: number;
     identifiers?: string[];
-    videos?: ConstructorParameters<typeof VideoAbstract>[0][];
+    videos?: VideoAbstractData[];
 }
 
 export class UserProfile {
@@ -32,7 +33,7 @@ export class UserProfile {
     public last_change_signature: Date = new Date();
     public left_avatar_n = 0;
     public left_signature_n = 0;
-    public accountlink: any[] = [];
+    public accountlink: unknown[] = [];
     public identifiers?: string[];
     public videos?: VideoAbstract[];
 

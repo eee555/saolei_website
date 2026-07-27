@@ -1,8 +1,10 @@
+import type { ComponentProps } from 'vue-component-type-helpers';
+
 import Progress from './Progress.vue';
 
 import i18n from '@/i18n';
 
-function mountOptions(props: any) {
+function mountOptions(props: ComponentProps<typeof Progress>) {
     return {
         props: props,
         global: {

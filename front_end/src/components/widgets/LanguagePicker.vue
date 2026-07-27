@@ -32,7 +32,13 @@ const options = [
     { lang: 'de', text: 'Deutsch (7%)' },
     { lang: 'pl', text: 'Polski (10%)' },
     { lang: 'dev', text: 'dev' },
-];
+] as const;
+
+type Language = typeof options[number]['lang'];
+
+function isLanguage(value: unknown): value is Language {
+    return typeof value === 'string' && options.some((option) => option.lang === value);
+}
 
 onBeforeMount(() => {
     switch (local.value.language) {
@@ -51,7 +57,8 @@ onBeforeMount(() => {
     i18n.global.locale.value = local.value.language;
 });
 
-const changeLanguage = (value: any) => {
+const changeLanguage = (value: unknown) => {
+    if (!isLanguage(value)) return;
     i18n.global.locale.value = value;
     local.value.language = value;
 };

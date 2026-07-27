@@ -40,7 +40,7 @@ describe('<GSCAllSummary />', () => {
     it('renders', () => {
         // see: https://on.cypress.io/mounting-vue
         const participantList = Cypress.expose('gscParticipantList');
-        cy.mount(GSCAllSummary as any, {
+        cy.mount(GSCAllSummary, {
             props: {
                 data: participantList,
             },

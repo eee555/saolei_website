@@ -41,6 +41,7 @@ import { ref, watch } from 'vue';
 
 import { httpErrorNotification, successNotification } from '../Notifications';
 
+import type { ApiResponse } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { toDate, toISODateTimeString } from '@/utils/datetime';
 import type { GSCInfo } from '@/utils/gsc';
@@ -64,6 +65,14 @@ const loadingGSCInfo = ref(false);
 const notFound = ref(false);
 const allowEmptyToken = ref(false);
 
+interface GSCInfoResponseData {
+    id: number;
+    start_time: string | Date | null;
+    end_time: string | Date | null;
+    state: string;
+    token: string | null;
+}
+
 async function getGSCInfo(id: number | undefined) {
     if (id === undefined || id < 1) {
         gscInfo.value = { id: 0 };
@@ -71,15 +80,16 @@ async function getGSCInfo(id: number | undefined) {
     }
     loadingGSCInfo.value = true;
     notFound.value = false;
-    await proxy.$axios.get('tournament/get_gsc_tournament/', { params: { id: id } }).then(
+    await proxy.$axios.get<ApiResponse<GSCInfoResponseData>>('tournament/get_gsc_tournament/', { params: { id: id } }).then(
         function ({ data }) {
             if (data.type === 'error') {
                 notFound.value = true;
             } else {
-                gscInfo.value.start_time = toDate(data.data.start_time);
-                gscInfo.value.end_time = toDate(data.data.end_time);
-                gscInfo.value.token = data.data.token;
-                gscInfo.value.id = data.data.id;
+                const tournament = data.data;
+                gscInfo.value.start_time = toDate(tournament.start_time);
+                gscInfo.value.end_time = toDate(tournament.end_time);
+                gscInfo.value.token = tournament.token ?? undefined;
+                gscInfo.value.id = tournament.id;
             }
         },
     ).catch(httpErrorNotification);
@@ -87,8 +97,8 @@ async function getGSCInfo(id: number | undefined) {
 }
 
 function createGSC() {
-    proxy.$axios.post('tournament/new_gsc/', { id: props.id }).then(
-        function (response: any) {
+    proxy.$axios.post<unknown>('tournament/new_gsc/', { id: props.id }).then(
+        function (response) {
             successNotification(response);
             void getGSCInfo(props.id);
         },
@@ -97,8 +107,8 @@ function createGSC() {
 
 function setStartTime(time: Date | undefined) {
     if (time === undefined) return;
-    proxy.$axios.post('tournament/set/', { id: gscInfo.value.id, start_time: time }).then(
-        function (response: any) {
+    proxy.$axios.post<unknown>('tournament/set/', { id: gscInfo.value.id, start_time: time }).then(
+        function (response) {
             gscInfo.value.start_time = time;
             newStartTime.value = undefined;
             successNotification(response);
@@ -108,8 +118,8 @@ function setStartTime(time: Date | undefined) {
 
 function setEndTime(time: Date | undefined) {
     if (time === undefined) return;
-    proxy.$axios.post('tournament/set/', { id: gscInfo.value.id, end_time: time }).then(
-        function (response: any) {
+    proxy.$axios.post<unknown>('tournament/set/', { id: gscInfo.value.id, end_time: time }).then(
+        function (response) {
             gscInfo.value.end_time = time;
             newEndTime.value = undefined;
             successNotification(response);
@@ -119,8 +129,8 @@ function setEndTime(time: Date | undefined) {
 
 function setToken(token: string) {
     if (token.trim() === '' && !allowEmptyToken.value) return;
-    proxy.$axios.post('tournament/set/', { id: gscInfo.value.id, token: token }).then(
-        function (response: any) {
+    proxy.$axios.post<unknown>('tournament/set/', { id: gscInfo.value.id, token: token }).then(
+        function (response) {
             gscInfo.value.token = token;
             successNotification(response);
         },
