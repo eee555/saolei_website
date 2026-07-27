@@ -1,14 +1,12 @@
 
 
 from datetime import datetime, timezone
-import json
 import os
 from pathlib import Path
-import time
 
 from django.core.cache import cache
 from django.db.models import Sum
-from django.http import FileResponse, Http404, StreamingHttpResponse
+from django.http import FileResponse, Http404
 from django.utils import timezone as django_timezone
 from django_tasks import TaskResultStatus
 from django_tasks_db.models import DBTaskResult
@@ -29,7 +27,6 @@ router = Router()
 LOG_DIR = Path('logs')
 DEFAULT_TAIL_BYTES = 64 * 1024
 MAX_TAIL_BYTES = 1024 * 1024
-LOG_STREAM_POLL_INTERVAL = 1
 
 
 class LogFileOut(Schema):
@@ -43,6 +40,13 @@ class LogTailOut(Schema):
     offset: int
     size: int
     truncated: bool
+
+
+class LogPollOut(Schema):
+    content: str
+    offset: int
+    size: int
+    status: str
 
 
 def _get_log_path(filename: str) -> Path:
@@ -156,7 +160,7 @@ def list_logs(request):
         file_stats.append({
             'name': file,
             'size': file_stat.st_size,
-            'mtime': datetime.fromtimestamp(file_stat.st_ctime, tz=timezone.utc),
+            'mtime': datetime.fromtimestamp(file_stat.st_mtime, tz=timezone.utc),
         })
     return file_stats
 
@@ -193,40 +197,56 @@ def get_log_tail(request, filename: str, tail_bytes: int = DEFAULT_TAIL_BYTES):
     }
 
 
-@router.get('/staff/logstream')
+@router.get('/staff/logpoll', response=LogPollOut)
 @decorate_view(staff_required)
-def stream_log_tail(request, filename: str, offset: int = 0, tail_bytes: int = DEFAULT_TAIL_BYTES):
+def poll_log_tail(request, filename: str, offset: int = 0, tail_bytes: int = DEFAULT_TAIL_BYTES):
     """
     - staff_required
 
-    Stream appended log content as Server-Sent Events from the given byte offset.
+    Return appended log content from the given byte offset without holding a long-lived connection.
     """
-    log_path = _get_log_path(filename)
+    if Path(filename).name != filename:
+        raise Http404()
+
+    log_dir = LOG_DIR.resolve()
+    log_path = (log_dir / filename).resolve()
+    if log_path.parent != log_dir:
+        raise Http404()
+
     clamped_tail_bytes = _clamp_tail_bytes(tail_bytes)
-
-    def event_stream():
-        current_offset = max(offset, 0)
-        while True:
-            try:
-                file_size = log_path.stat().st_size
-                if file_size < current_offset:
-                    current_offset = max(file_size - clamped_tail_bytes, 0)
-                    yield 'event: reset\ndata: {}\n\n'
-                if file_size > current_offset:
-                    content, current_offset = _read_from_offset(log_path, current_offset)
-                    yield f'data: {json.dumps({"content": content, "offset": current_offset})}\n\n'
-                else:
-                    yield ': keep-alive\n\n'
-            except FileNotFoundError:
-                yield 'event: deleted\ndata: {}\n\n'
-                return
-            time.sleep(LOG_STREAM_POLL_INTERVAL)
-
-    response = StreamingHttpResponse(event_stream(), content_type='text/event-stream')
-    response['Cache-Control'] = 'no-cache'
-    response['Content-Encoding'] = 'identity'
-    response['X-Accel-Buffering'] = 'no'
-    return response
+    current_offset = max(offset, 0)
+    try:
+        file_size = log_path.stat().st_size
+        if file_size < current_offset:
+            current_offset = max(file_size - clamped_tail_bytes, 0)
+            content, current_offset = _read_from_offset(log_path, current_offset)
+            return {
+                'content': content,
+                'offset': current_offset,
+                'size': file_size,
+                'status': 'reset',
+            }
+        if file_size > current_offset:
+            content, current_offset = _read_from_offset(log_path, current_offset)
+            return {
+                'content': content,
+                'offset': current_offset,
+                'size': file_size,
+                'status': 'ok',
+            }
+        return {
+            'content': '',
+            'offset': current_offset,
+            'size': file_size,
+            'status': 'ok',
+        }
+    except FileNotFoundError:
+        return {
+            'content': '',
+            'offset': 0,
+            'size': 0,
+            'status': 'deleted',
+        }
 
 
 @router.get('/diskusage', throttle=[AnonRateThrottle('30/m')])
