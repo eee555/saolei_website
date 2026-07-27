@@ -36,7 +36,7 @@ export default defineConfig(({ mode }) => {
             },
         },
         server: {
-            open: true,
+            open: false,
             port: 8080,
             host: process.env.Host ?? 'localhost',
         },

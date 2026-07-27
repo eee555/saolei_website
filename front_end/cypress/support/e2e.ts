@@ -85,6 +85,12 @@ Cypress.on('test:before:run', () => {
     });
 });
 
+beforeEach(() => {
+    cy.intercept('GET', /^https?:\/\/(avatars\.githubusercontent\.com|minesweeper\.online|i2\.hdslb\.com)\/.*/, {
+        fixture: 'test.png',
+    });
+});
+
 Cypress.Commands.add('register', (id: number, username: string, email: string, password: string) => {
     cy.request({
         method: 'POST',
