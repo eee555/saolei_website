@@ -14,6 +14,7 @@ CUSTOM_PLUCK_CACHE_SIZE = 100
 
 
 class PLuckRankingCache:
+    level: str
     pipe: Pipeline | None
     rank_key: str
     detail_key: str
@@ -21,6 +22,7 @@ class PLuckRankingCache:
 
     def __init__(self, level: str):
         self.pipe = None
+        self.level = level
         self.rank_key = get_custom_pluck_rank_key(level)
         self.detail_key = get_custom_pluck_detail_key(level)
         self.player_key = get_custom_pluck_player_key(level)
@@ -222,3 +224,45 @@ def cache_to_dict(member: str, score: float, detail: dict):
         'timems': int(timems),
         'upload_time': datetime.fromtimestamp(int(upload_time_ms) / 1000, tz=timezone.utc),
     }
+
+
+def get_player_pluck_records(player_id: int, levels: Iterable[str]):
+    """用 Redis pipeline 批量读取玩家在多个配置下的当前纪录。"""
+    ranking_caches = [
+        PLuckRankingCache(level)
+        for level in levels
+    ]
+    if not ranking_caches:
+        return {}
+
+    pipe = cache.pipeline()
+    for ranking_cache in ranking_caches:
+        pipe.hget(ranking_cache.player_key, player_id)
+    members = pipe.execute()
+
+    cached_members = []
+    pipe = cache.pipeline()
+    for ranking_cache, member in zip(ranking_caches, members):
+        if isinstance(member, bytes):
+            member = member.decode()
+        if member is None:
+            continue
+        cached_members.append((ranking_cache, member))
+        pipe.zscore(ranking_cache.rank_key, member)
+        pipe.hget(ranking_cache.detail_key, member)
+
+    results = pipe.execute() if cached_members else []
+    records_by_level = {}
+    for index, (ranking_cache, member) in enumerate(cached_members):
+        score = results[index * 2]
+        detail = results[index * 2 + 1]
+        if score is None or detail is None:
+            continue
+        if isinstance(detail, bytes):
+            detail = detail.decode()
+        records_by_level[ranking_cache.level] = cache_to_dict(
+            member,
+            score,
+            json.loads(detail),
+        )
+    return records_by_level

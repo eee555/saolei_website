@@ -9,7 +9,7 @@ export const userRoutes: RouteRecordRaw[] = [
     {
         path: 'record',
         name: 'user-record',
-        component: () => import('./UserRecordView.vue'),
+        component: () => import('./UserRecordView/App.vue'),
     },
     {
         path: 'summary',
