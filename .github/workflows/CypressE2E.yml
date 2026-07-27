@@ -52,7 +52,7 @@ jobs:
           cd back_end/saolei
           python manage.py makemigrations
           python manage.py migrate
-          E2E_TEST=True python manage.py runserver > backend.log 2>&1 &
+          E2E_TEST=True python manage.py runserver 127.0.0.1:8000 --noreload > backend.log 2>&1 &
           echo "Backend started in background"
 
       - name: Install frontend dependencies
@@ -66,9 +66,9 @@ jobs:
       - name: Run Cypress
         uses: cypress-io/github-action@v7
         with:
-          start: npm run dev
+          start: npm run dev -- --host 127.0.0.1 --strictPort
           working-directory: front_end
-          wait-on: 'http://localhost:8000'
+          wait-on: 'http://localhost:8000,http://localhost:8080'
 
       - name: Upload Cypress screenshots
         if: failure()
@@ -83,5 +83,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: backend-logs
-          path: back_end/saolei/logs
+          path: |
+            back_end/saolei/backend.log
+            back_end/saolei/logs
           if-no-files-found: ignore
