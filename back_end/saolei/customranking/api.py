@@ -6,7 +6,7 @@ from ninja.decorators import decorate_view
 from ninja.errors import HttpError
 
 from config.customranking import CUSTOM_PLUCK_CONFIGS
-from customranking.cache import PLuckRankingCache, get_player_pluck_records
+from customranking.cache import get_player_pluck_records, PLuckRankingCache
 from userprofile.decorators import staff_required
 from .models import CustomPluckRecord
 from .services import get_pluck_rank_range, refresh_custom_pluck_rank_range
