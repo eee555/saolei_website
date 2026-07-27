@@ -71,7 +71,7 @@ function expectAccountLinkTableRow(platform: string, identifier: string, verifie
     cy.get('table:visible').getTable().should((tableData) => {
         const row = tableData.find((item) => item['Platform ID'] === identifier);
 
-        expect(row).to.deep.equal({
+        expect(row, `account link row for ${platform} #${identifier}`).to.deep.equal({
             'User ID': `${USER.id}`,
             Platform: platform,
             'Platform ID': identifier,
@@ -99,11 +99,13 @@ function staffVerifyAccount(platform: string, identifier: string) {
     visitStaffAccountLink();
     expectAccountLinkTableRow(platform, identifier, false);
 
+    cy.intercept('POST', '**/accountlink/verify/').as('verifyAccountLink');
     cy.contains(':visible', 'ID').first().next().find('input').type(`${USER.id}{enter}`);
     cy.contains('平台').next().contains('Select').click();
     cy.get('li').contains(platform).click();
     cy.contains('平台ID').next().find('input').type(`${identifier}{enter}`);
     cy.contains(/^\s*绑定\s*$/).click();
+    cy.wait('@verifyAccountLink').its('response.statusCode').should('eq', 200);
     cy.wait('@accountLinkQueue');
 
     expectAccountLinkTableRow(platform, identifier, true);
