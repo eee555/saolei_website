@@ -64,11 +64,10 @@ const colorScheme = computed(() => {
     }
 });
 
-const _videos = computed(() => props.videos.filter((video) => video.getStat(props.sortBy) !== undefined));
+const _videos = computed(() => props.videos.filter((video) => !isNaN(video[props.sortBy])));
 
 const sortedVideos = computed(() => {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const sorted = Array.from(_videos.value).sort((v1, v2) => v1.getStat(props.sortBy)! - v2.getStat(props.sortBy)!);
+    const sorted = Array.from(_videos.value).sort((v1, v2) => v1[props.sortBy] - v2[props.sortBy]);
     if (props.sortBy === 'time') {
         return sorted.slice(0, props.count);
     } else {
@@ -77,8 +76,7 @@ const sortedVideos = computed(() => {
 });
 
 const sumStat = computed(() => {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return sum(sortedVideos.value, (video) => video.getStat(props.sortBy)!) + (props.count - sortedVideos.value.length) * defaultVideos[props.level][props.sortBy];
+    return sum(sortedVideos.value, (video) => video[props.sortBy]) + (props.count - sortedVideos.value.length) * defaultVideos[props.level][props.sortBy];
 });
 
 const avgStat = computed(() => {

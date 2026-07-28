@@ -38,5 +38,11 @@ describe('PiecewiseColorScheme', () => {
             expect(scheme.getColor(15)).toBe('normal');
             expect(scheme.getColor(5)).toBe('slow');
         });
+
+        it('Returns transparent color for NaN', () => {
+            const scheme = new PiecewiseColorScheme(['low', 'high'], [10]);
+
+            expect(scheme.getColor(NaN)).toBe('rgba(0,0,0,0)');
+        });
     });
 });
