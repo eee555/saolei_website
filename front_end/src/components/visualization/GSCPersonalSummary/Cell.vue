@@ -45,7 +45,7 @@ const props = defineProps({
 
 const color = computed(() => {
     if (!props.video) return props.colorTheme.getColor(defaultVideos[props.level][props.displayBy]);
-    return props.colorTheme.getColor(props.video.getStat(props.displayBy));
+    return props.colorTheme.getColor(props.video[props.displayBy]);
 });
 
 const fontColor = computed(() => {

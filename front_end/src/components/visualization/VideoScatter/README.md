@@ -52,7 +52,7 @@ App.vue
 
 - `level`：直接使用 `colorTheme.value.level[video.level]`。
 - `time`：按视频所属的 `MS_Level` 获取对应的分段时间配色方案。
-- 其他统计字段：通过 `getPiecewiseColorSchemeName(colorBy)` 获取分段配色方案，再用 `video.getStat(colorBy)` 映射颜色。
+- 其他统计字段：通过 `getPiecewiseColorSchemeName(colorBy)` 获取分段配色方案，再用 `video[colorBy]` 映射颜色。
 
 `scatterData` 会逐个处理 `rawData`：
 

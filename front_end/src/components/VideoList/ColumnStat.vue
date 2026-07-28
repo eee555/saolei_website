@@ -1,5 +1,5 @@
 <template>
-    <PrColumn :header="t(`common.prop.${ stat}`)" :sortable="sortable" :sort-field="(data) => data.getStat(stat)">
+    <PrColumn :header="t(`common.prop.${ stat}`)" :sortable="sortable" :sort-field="stat">
         <template #body="{data}: {data: VideoAbstract}">
             <span class="text">{{ data.displayStat(stat) }}</span>
         </template>

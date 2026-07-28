@@ -60,7 +60,7 @@ export class PiecewiseColorScheme {
      * @returns 返回对应的颜色字符串。
      */
     public getColor(value?: number): string {
-        if (value === undefined) return 'rgba(0,0,0,0)';
+        if (value === undefined || isNaN(value)) return 'rgba(0,0,0,0)';
         if (this.colors.length === 0) return 'rgba(0,0,0,0)';
         const index = ArrayUtils.getInsertIndex(this.thresholds, value, this.ascending);
         return this.colors[index];

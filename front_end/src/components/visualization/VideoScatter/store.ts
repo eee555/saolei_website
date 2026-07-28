@@ -49,7 +49,7 @@ export const VideoScatterStore = defineStore('video-scatter-store', {
             } else {
                 const name = getPiecewiseColorSchemeName(colorBy);
                 const scheme = new PiecewiseColorScheme(colorTheme.value[name].colors, colorTheme.value[name].thresholds);
-                return (video: VideoAbstract) => scheme.getColor(video.getStat(colorBy));
+                return (video: VideoAbstract) => scheme.getColor(video[colorBy]);
             }
         },
         scatterData() {
