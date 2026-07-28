@@ -31,7 +31,7 @@ describe('Staff logs', () => {
     beforeEach(() => {
         void Cypress.session.clearAllSavedSessions();
         cy.flushDatabase();
-        cy.register(STAFF.id, STAFF.username, STAFF.email, STAFF.password);
+        cy.registerUser(STAFF);
         cy.setStaff(STAFF.id);
         writeLog(LOG_FILE, LOG_CONTENT);
     });

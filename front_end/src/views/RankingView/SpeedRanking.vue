@@ -46,7 +46,7 @@
         <div v-for="(player, key) in playerData" style="margin-top: 10px;">
             <span class="rank">{{ key - 19 + (state.CurrentPage) * 20 }}</span>
             <!-- <span class="name">{{ player.name }}</span> -->
-            <PlayerName class="name" :user-id="player.name_id" />
+            <PlayerName class="name" :user-id="player.id" />
             <!-- <span class="beginner">{{ to_fixed_n(player.beginner, 3) }}</span> -->
             <span class="number_wid">
                 <PreviewNumber :id="player.beginner_id" :text="to_fixed_n(player.beginner, 3)" />
@@ -101,8 +101,7 @@ const state = reactive({
 // const test  = reactive({v: 5});
 const playerData = reactive<Player[]>([]);
 interface Player {
-    name_id: number;
-    name: string;
+    id: number;
     beginner: string;
     beginner_id: number;
     intermediate: string;
@@ -162,24 +161,23 @@ const get_player_rank = (page: number) => {
         ids: `${piv}ids`,
         sortBy: `${piv}*->${level_selected.value}`,
         reverse: iv.reverse,
-        indexes: `["#","${piv}*->name","${piv}*->b","${piv}*->b_id","${piv}*->i","${piv}*->i_id","${piv}*->e","${piv}*->e_id","${piv}*->sum"]`,
+        indexes: `["#","${piv}*->b","${piv}*->b_id","${piv}*->i","${piv}*->i_id","${piv}*->e","${piv}*->e_id","${piv}*->sum"]`,
         page: page,
     }).then(function ({ total_page, players }) {
         // console.log(response.data);
         state.Total = total_page;
 
         playerData.splice(0, playerData.length);
-        for (let i = 0; i < players.length / 9; i++) {
+        for (let i = 0; i < players.length / 8; i++) {
             playerData.push({
-                name_id: Number(players[i * 9]),
-                name: String(players[i * 9 + 1]),
-                beginner: formatRankValue(players[i * 9 + 2]),
-                beginner_id: Number(players[i * 9 + 3]),
-                intermediate: formatRankValue(players[i * 9 + 4]),
-                intermediate_id: Number(players[i * 9 + 5]),
-                expert: formatRankValue(players[i * 9 + 6]),
-                expert_id: Number(players[i * 9 + 7]),
-                sum: formatRankValue(players[i * 9 + 8]),
+                id: Number(players[i * 8]),
+                beginner: formatRankValue(players[i * 8 + 1]),
+                beginner_id: Number(players[i * 8 + 2]),
+                intermediate: formatRankValue(players[i * 8 + 3]),
+                intermediate_id: Number(players[i * 8 + 4]),
+                expert: formatRankValue(players[i * 8 + 5]),
+                expert_id: Number(players[i * 8 + 6]),
+                sum: formatRankValue(players[i * 8 + 7]),
             });
         }
         // console.log(playerData);

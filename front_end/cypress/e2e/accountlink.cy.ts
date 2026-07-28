@@ -131,9 +131,9 @@ describe('Account Link', () => {
         cy.flushDatabase();
 
         // 注册用户
-        cy.register(STAFF.id, STAFF.username, STAFF.email, STAFF.password);
+        cy.registerUser(STAFF);
         cy.setStaff(STAFF.id);
-        cy.register(USER.id, USER.username, USER.email, USER.password);
+        cy.registerUser(USER);
     });
 
     it('Guest View - No Account Links', () => {

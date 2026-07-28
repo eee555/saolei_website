@@ -46,7 +46,7 @@ function waitForVideoList(count: number) {
 describe('User Videos', () => {
     it('Before All', () => {
         cy.flushDatabase();
-        cy.register(USER.id, USER.username, USER.email, USER.password);
+        cy.registerUser(USER);
         createVideo(31000);
     });
 
