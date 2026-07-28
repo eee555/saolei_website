@@ -13,7 +13,12 @@ describe('Personal Profile', () => {
         cy.flushDatabase();
 
         // 注册并登录用户
-        cy.register(USER_ID, USERNAME, 'test@email.com', PASSWORD);
+        cy.registerUser({
+            id: USER_ID,
+            username: USERNAME,
+            email: 'test@email.com',
+            password: PASSWORD,
+        });
         cy.login(USERNAME, PASSWORD);
     });
 

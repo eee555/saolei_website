@@ -26,19 +26,18 @@ import TournamentDetail from './TournamentDetail.vue';
 import TournamentList from './TournamentList.vue';
 
 import { httpErrorNotification } from '@/components/Notifications';
+import { fetchTournament, fetchTournamentList } from '@/services/tournamentService';
 import { local, store } from '@/store';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { TournamentSeries } from '@/utils/ms_const';
 import { Tournament } from '@/utils/tournaments';
 
-const { proxy } = useCurrentInstance();
 const { t } = useI18n();
 
 const tournamentList = ref<Tournament[]>([]);
 
 function getTournaments() {
-    proxy.$axios.get('tournament/get_list/').then((response) => {
-        for (const tournament of response.data.data) {
+    fetchTournamentList().then((data) => {
+        for (const tournament of data) {
             tournamentList.value.push(new Tournament(tournament));
         }
     }).catch(httpErrorNotification);
@@ -59,12 +58,8 @@ watch(() => route.params.id, async (newId) => {
 
     const tabIndex = store.tournamentTabs.findIndex((tab) => tab.id === Number(newId));
     if (tabIndex === -1) {
-        await proxy.$axios.get('tournament/get/', {
-            params: {
-                id: newId,
-            },
-        }).then((response) => {
-            store.tournamentTabs.push(new Tournament(response.data.data));
+        await fetchTournament(newId).then((data) => {
+            store.tournamentTabs.push(new Tournament(data));
         }).catch(httpErrorNotification);
         currentTab.value = store.tournamentTabs.length.toString();
     } else {

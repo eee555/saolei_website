@@ -164,13 +164,23 @@ class VideoUploadRankingIntegrationTest(TestCase):
         return json.loads(response.content)
 
     def get_records_by_request(self):
-        response = self.client.get('/msuser/records/', {'id': self.user.id})
+        response = self.client.get('/api/msuser/records', {'user_id': self.user.id})
         self.assertEqual(response.status_code, 200, response.content)
         return response.json()
 
     def get_record_group_by_request(self, mode: str):
         records = self.get_records_by_request()
-        return json.loads(records[f'{mode}_record'])
+        grouped_records = {}
+        for stat in RankingGameStats:
+            grouped_records[stat] = [
+                records[f'{level}_{stat}_{mode}']
+                for level in GameLevels
+            ]
+            grouped_records[f'{stat}_id'] = [
+                records[f'{level}_{stat}_id_{mode}']
+                for level in GameLevels
+            ]
+        return grouped_records
 
     def get_pluck_rank_by_request(self, level: str):
         response = self.client.get(

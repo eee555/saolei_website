@@ -24,7 +24,7 @@ export interface VideoAbstractInfo {
     pluck: number | null;
 }
 
-interface VideoRedisInfo {
+export interface VideoRedisInfo {
     state: string;
     software: string;
     time: string;

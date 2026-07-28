@@ -4,6 +4,8 @@ from ninja import NinjaAPI, Schema
 from ninja.errors import HttpError
 
 from common.api import LOG_DIR
+from identifier.models import Identifier
+from identifier.services import bind_identifier, set_safe, unbind_identifier
 from msuser.models import UserMS
 from userprofile.models import UserProfile
 from videomanager.models import ExpandVideoModel, VideoModel
@@ -36,6 +38,17 @@ class CreateVideoSchema(Schema):
     pluck: float | None = None
 
 
+class IdentifierSchema(Schema):
+    identifier: str
+    safe: bool = True
+
+
+class UserIdentifierSchema(Schema):
+    user_id: int
+    identifier: str
+    safe: bool = True
+
+
 class WriteLogSchema(Schema):
     filename: str
     content: str
@@ -54,13 +67,21 @@ class RegisterSchema(Schema):
     email: str
     password: str
     id: int
+    realname: str = '匿名'
 
 
 @api.post('/register')
 @local_only
 def register(request, data: RegisterSchema):
     userms = UserMS.objects.create()
-    UserProfile.objects.create_user(username=data.username, password=data.password, id=data.id, email=data.email, userms=userms)
+    UserProfile.objects.create_user(
+        username=data.username,
+        password=data.password,
+        id=data.id,
+        email=data.email,
+        realname=data.realname,
+        userms=userms,
+    )
 
 
 @api.post('/create_video')
@@ -89,6 +110,91 @@ def create_video(request, data: CreateVideoSchema):
         pluck=data.pluck,
     )
     return {'id': video.id}
+
+
+@api.post('/create_identifier')
+@local_only
+def create_identifier(request, data: IdentifierSchema):
+    identifier, _ = Identifier.objects.get_or_create(
+        identifier=data.identifier,
+        defaults={'safe': data.safe},
+    )
+    try:
+        set_safe(identifier, data.safe)
+    except ValueError as error:
+        raise HttpError(400, str(error)) from error
+
+    return {
+        'identifier': identifier.identifier,
+        'safe': identifier.safe,
+        'userms_id': identifier.userms_id,
+    }
+
+
+@api.post('/bind_identifier')
+@local_only
+def bind_identifier_to_user(request, data: UserIdentifierSchema):
+    user = UserProfile.objects.select_related('userms').get(id=data.user_id)
+    identifier, _ = Identifier.objects.get_or_create(
+        identifier=data.identifier,
+        defaults={'safe': data.safe},
+    )
+    if data.safe and not identifier.safe:
+        set_safe(identifier, True)
+
+    try:
+        changed_count = bind_identifier(identifier, user.userms)
+    except ValueError as error:
+        raise HttpError(400, str(error)) from error
+
+    return {
+        'identifier': identifier.identifier,
+        'safe': identifier.safe,
+        'user_id': user.id,
+        'changed_count': changed_count,
+    }
+
+
+@api.post('/unbind_identifier')
+@local_only
+def unbind_identifier_from_user(request, data: UserIdentifierSchema):
+    user = UserProfile.objects.select_related('userms').get(id=data.user_id)
+    try:
+        identifier = Identifier.objects.get(identifier=data.identifier)
+        changed_count = unbind_identifier(identifier, user.userms)
+    except Identifier.DoesNotExist as error:
+        raise HttpError(404, 'Identifier not found') from error
+    except ValueError as error:
+        raise HttpError(400, str(error)) from error
+
+    return {
+        'identifier': identifier.identifier,
+        'user_id': user.id,
+        'changed_count': changed_count,
+    }
+
+
+@api.post('/delete_identifier')
+@local_only
+def delete_identifier(request, data: IdentifierSchema):
+    try:
+        identifier = Identifier.objects.get(identifier=data.identifier)
+    except Identifier.DoesNotExist:
+        return {
+            'identifier': data.identifier,
+            'deleted': False,
+            'changed_count': 0,
+        }
+
+    changed_count = 0
+    if identifier.userms_id is not None:
+        changed_count = unbind_identifier(identifier)
+    identifier.delete()
+    return {
+        'identifier': data.identifier,
+        'deleted': True,
+        'changed_count': changed_count,
+    }
 
 
 @api.post('/setstaff')

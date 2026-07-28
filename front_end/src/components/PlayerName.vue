@@ -37,41 +37,25 @@
                             </span>
                         </div>
                         <div v-loading="is_loading" class="record-table">
-                            <div>
-                                {{ t('common.level.shortb') }}
-                            </div>
-                            <div>
-                                <PreviewNumber :id="+b_t_id" :text="ms_to_s(b_t)" />
-                            </div>
-                            <div>
-                                <PreviewNumber :id="+b_bvs_id" :text="to_fixed_n(b_bvs, 3)" />
-                            </div>
-                            <div>
-                                {{ t('common.level.shorti') }}
-                            </div>
-                            <div>
-                                <PreviewNumber :id="+i_t_id" :text="ms_to_s(i_t)" />
-                            </div>
-                            <div>
-                                <PreviewNumber :id="+i_bvs_id" :text="to_fixed_n(i_bvs, 3)" />
-                            </div>
-                            <div>
-                                {{ t('common.level.shorte') }}
-                            </div>
-                            <div>
-                                <PreviewNumber :id="+e_t_id" :text="ms_to_s(e_t)" />
-                            </div>
-                            <div>
-                                <PreviewNumber :id="+e_bvs_id" :text="to_fixed_n(e_bvs, 3)" />
-                            </div>
+                            <template v-for="(record, level) in records">
+                                <div>
+                                    {{ t(`common.level.short${level}`) }}
+                                </div>
+                                <div>
+                                    <PreviewNumber :id="record.timems_id ?? 0" :text="ms_to_s(record.timems)" />
+                                </div>
+                                <div>
+                                    <PreviewNumber :id="record.bvs_id ?? 0" :text="to_fixed_n(record.bvs, 3)" />
+                                </div>
+                            </template>
                             <div>
                                 {{ t('common.level.sum') }}
                             </div>
                             <div style="color: #BF9000;font-weight: bold;">
-                                {{ ms_to_s(b_t + i_t + e_t) }}
+                                {{ ms_to_s(records.b.timems + records.i.timems + records.e.timems) }}
                             </div>
                             <div style="color: #BF9000;font-weight: bold;">
-                                {{ to_fixed_n(b_bvs + i_bvs + e_bvs, 3) }}
+                                {{ to_fixed_n(records.b.bvs + records.i.bvs + records.e.bvs, 3) }}
                             </div>
                         </div>
                     </div>
@@ -93,10 +77,11 @@ import { Tippy } from 'vue-tippy';
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import PlayerBadge from '@/components/widgets/PlayerBadge.vue';
 import UserAvatar from '@/components/widgets/UserAvatar.vue';
+import type { UserRecordLevel, UserRecordsAbstractResponse } from '@/services/msuserService';
+import { fetchPlayerRecordsAbstract } from '@/services/msuserService';
 import { fetchUserInfo } from '@/services/userService';
 import { local } from '@/store';
-import { ms_to_s, to_fixed_n } from '@/utils';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import { createEnumMap, ms_to_s, to_fixed_n } from '@/utils';
 import { formatName } from '@/utils/strings';
 import { UserProfile } from '@/utils/userprofile';
 
@@ -106,8 +91,6 @@ const props = defineProps({
         default: 0,
     },
 });
-
-const { proxy } = useCurrentInstance();
 
 const user = ref(new UserProfile());
 const loading = ref(false);
@@ -138,58 +121,54 @@ watch(() => props.userId, async (newVal) => {
 
 const is_loading = ref(true);
 
-const b_t = ref(999999);
-const b_bvs = ref('');
-const b_t_id = ref('');
-const b_bvs_id = ref('');
-const i_t = ref(999999);
-const i_bvs = ref('');
-const i_t_id = ref('');
-const i_bvs_id = ref('');
-const e_t = ref(999999);
-const e_bvs = ref('');
-const e_t_id = ref('');
-const e_bvs_id = ref('');
+interface PlayerNameRecord {
+    timems: number;
+    bvs: number;
+    timems_id: number | null;
+    bvs_id: number | null;
+}
+
+const recordLevels = ['b', 'i', 'e'] as const;
+
+const defaultRecord: PlayerNameRecord = {
+    timems: 999999,
+    bvs: 0,
+    timems_id: null,
+    bvs_id: null,
+};
+
+const records = ref(createEnumMap(recordLevels, defaultRecord));
+
+function createRecord(data: UserRecordsAbstractResponse, level: UserRecordLevel): PlayerNameRecord {
+    return {
+        timems: data[`${level}_timems_std`],
+        bvs: data[`${level}_bvs_std`],
+        timems_id: data[`${level}_timems_id_std`],
+        bvs_id: data[`${level}_bvs_id_std`],
+    };
+}
+
+function setRecords(data: UserRecordsAbstractResponse) {
+    records.value = {
+        b: createRecord(data, 'b'),
+        i: createRecord(data, 'i'),
+        e: createRecord(data, 'e'),
+    };
+}
 
 async function pop_show() {
     if (props.userId === 0) return;
     is_loading.value = true;
 
-    const response = await proxy.$axios.get('/msuser/info_abstract/', {
-        params: {
-            id: props.userId,
-        },
-    });
-
-    const records = JSON.parse(response.data.record_abstract) as {
-        timems: number[];
-        timems_id: string[];
-        bvs: string[];
-        bvs_id: string[];
-    };
-
-    [b_t.value, i_t.value, e_t.value] = records.timems;
-    [b_t_id.value, i_t_id.value, e_t_id.value] = records.timems_id;
-    [b_bvs.value, i_bvs.value, e_bvs.value] = records.bvs;
-    [b_bvs_id.value, i_bvs_id.value, e_bvs_id.value] = records.bvs_id;
+    const data = await fetchPlayerRecordsAbstract(props.userId);
+    setRecords(data);
 
     is_loading.value = false;
 }
 
 // 用户记录小弹窗关闭后，删除其中的数据
 function pop_hide() {
-    i_t.value = 999999;
-    b_t.value = 999999;
-    e_t.value = 999999;
-    b_t_id.value = '';
-    i_t_id.value = '';
-    e_t_id.value = '';
-    b_bvs.value = '';
-    i_bvs.value = '';
-    e_bvs.value = '';
-    b_bvs_id.value = '';
-    i_bvs_id.value = '';
-    e_bvs_id.value = '';
+    records.value = createEnumMap(recordLevels, defaultRecord);
     is_loading.value = true;
 }
 
