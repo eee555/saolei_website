@@ -41,17 +41,17 @@ UserMSRecordsAbstractOut = create_schema(
 
 @router.get('/records', response=UserMSRecordsOut)
 @decorate_view(ratelimit(key='ip', rate='15/m'))
-def get_records(request, id: int):
+def get_records(request, user_id: int):
     """
     - ratelimit(key='ip', rate='15/m')
     """
-    return get_object_or_404(UserMS, parent__id=id)
+    return get_object_or_404(UserMS, parent__id=user_id)
 
 
 @router.get('/records_abstract', response=UserMSRecordsAbstractOut)
 @decorate_view(ratelimit(key='ip', rate='5/s'))
-def get_records_abstract(request, id: int):
+def get_records_abstract(request, user_id: int):
     """
     - ratelimit(key='ip', rate='5/s')
     """
-    return get_object_or_404(UserMS, parent__id=id)
+    return get_object_or_404(UserMS, parent__id=user_id)

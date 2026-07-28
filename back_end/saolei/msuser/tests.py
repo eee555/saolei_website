@@ -23,7 +23,7 @@ class UserMSRecordApiTests(TestCase):
         )
 
         with self.assertNumQueries(1):
-            response = self.client.get('/api/msuser/records', {'id': user.id})
+            response = self.client.get('/api/msuser/records', {'user_id': user.id})
 
         self.assertEqual(response.status_code, 200, response.content)
         data = response.json()
@@ -53,7 +53,7 @@ class UserMSRecordApiTests(TestCase):
         )
 
         with self.assertNumQueries(1):
-            response = self.client.get('/api/msuser/records_abstract', {'id': user.id})
+            response = self.client.get('/api/msuser/records_abstract', {'user_id': user.id})
 
         self.assertEqual(response.status_code, 200, response.content)
         data = response.json()

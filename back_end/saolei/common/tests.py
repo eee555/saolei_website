@@ -164,7 +164,7 @@ class VideoUploadRankingIntegrationTest(TestCase):
         return json.loads(response.content)
 
     def get_records_by_request(self):
-        response = self.client.get('/api/msuser/records', {'id': self.user.id})
+        response = self.client.get('/api/msuser/records', {'user_id': self.user.id})
         self.assertEqual(response.status_code, 200, response.content)
         return response.json()
 

@@ -87,7 +87,7 @@ describe('<UserRecordViewApp />', () => {
     it('loads and renders classical records plus a complete pluck record table', () => {
         cy.mount(App, mountOptions);
 
-        cy.wait('@classicRecords').its('request.query').should('deep.equal', { id: '42' });
+        cy.wait('@classicRecords').its('request.query').should('deep.equal', { user_id: '42' });
         cy.wait('@pluckRecords').its('request.query').should('deep.equal', { player_id: '42' });
 
         cy.contains('Standard').should('be.visible');

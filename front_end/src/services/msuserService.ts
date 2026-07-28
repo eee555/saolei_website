@@ -37,14 +37,14 @@ export interface FetchPlayerRankParams {
 
 export async function fetchPlayerRecordsAbstract(userId: number): Promise<UserRecordsAbstractResponse> {
     const { data } = await $axios.get<UserRecordsAbstractResponse>('/api/msuser/records_abstract', {
-        params: { id: userId },
+        params: { user_id: userId },
     });
     return data;
 }
 
 export async function fetchUserRecords(userId: number): Promise<UserRecordsResponse> {
     const { data } = await $axios.get<UserRecordsResponse>('/api/msuser/records', {
-        params: { id: userId },
+        params: { user_id: userId },
     });
     return data;
 }
