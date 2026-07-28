@@ -6,10 +6,18 @@ import $axios from '@/http';
 import i18n from '@/i18n';
 
 const recordAbstract = {
-    timems: [12345, 45678, 78901],
-    timems_id: [101, 102, 103],
-    bvs: [1.2345, 2.3456, 3.4567],
-    bvs_id: [201, 202, 203],
+    b_timems_std: 12345,
+    i_timems_std: 45678,
+    e_timems_std: 78901,
+    b_timems_id_std: 101,
+    i_timems_id_std: 102,
+    e_timems_id_std: 103,
+    b_bvs_std: 1.2345,
+    i_bvs_std: 2.3456,
+    e_bvs_std: 3.4567,
+    b_bvs_id_std: 201,
+    i_bvs_id_std: 202,
+    e_bvs_id_std: 203,
 };
 const user = {
     id: 42,
@@ -37,8 +45,8 @@ function mockUserInfo(response: StaticResponse = { body: [user] }) {
 }
 
 function mockRecordAbstract() {
-    cy.intercept('GET', '/msuser/info_abstract/**', {
-        body: { record_abstract: JSON.stringify(recordAbstract) },
+    cy.intercept({ method: 'GET', pathname: '/api/msuser/records_abstract' }, {
+        body: recordAbstract,
     }).as('fetchAbstract');
 }
 

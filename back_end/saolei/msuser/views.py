@@ -1,64 +1,14 @@
-import decimal
 import json
 import logging
 
-from django.http import HttpResponseBadRequest, HttpResponseNotFound, JsonResponse
+from django.http import JsonResponse
 from django.views.decorators.http import require_GET
-from django_ratelimit.decorators import ratelimit
 from django_redis import get_redis_connection
 
-from config.global_settings import GameLevels
-from msuser.models import UserMS
-from msuser.utils import RankingField
-from userprofile.models import UserProfile
 from utils import ComplexEncoder
 
 logger = logging.getLogger('userprofile')
 cache = get_redis_connection('saolei_website')
-
-# 根据id获取用户的基本资料、扫雷记录
-# 无需登录就可获取
-
-
-class DecimalEncoder(json.JSONEncoder):
-    def default(self, o):
-        if isinstance(o, decimal.Decimal):
-            return float(o)
-        super(DecimalEncoder, self).default(o)
-
-
-def get_records_level(ms_user: UserMS, stat: str, mode: str):
-    return [getattr(ms_user, RankingField(level, stat, mode).name) for level in GameLevels]
-
-
-def get_record_ids_level(ms_user: UserMS, stat: str, mode: str):
-    return [getattr(ms_user, RankingField(level, stat, mode).id_name) for level in GameLevels]
-
-
-# 鼠标移到人名上时，展现头像、姓名、id、记录
-@ratelimit(key='ip', rate='5/s')
-@require_GET
-def get_info_abstract(request):
-    # 此处要防攻击
-    if not (user_id := request.GET.get('id')):
-        return HttpResponseBadRequest()
-    if not (user := UserProfile.objects.filter(id=user_id).first()):
-        return HttpResponseNotFound()
-    ms_user = user.userms
-
-    response = {
-        'record_abstract': json.dumps(
-            {
-                'timems': get_records_level(ms_user, 'timems', 'std'),
-                'bvs': get_records_level(ms_user, 'bvs', 'std'),
-                'timems_id': get_record_ids_level(ms_user, 'timems', 'std'),
-                'bvs_id': get_record_ids_level(ms_user, 'bvs', 'std'),
-            },
-            cls=DecimalEncoder,
-        ),
-    }
-
-    return JsonResponse(response)
 
 
 # 从redis获取用户排行榜

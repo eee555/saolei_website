@@ -30,6 +30,48 @@ class UserMSRecordApiTests(TestCase):
         self.assertNotIn('id', data)
         self.assertEqual(data['b_timems_std'], 1234)
 
+    def test_records_abstract_response_serializes_std_time_and_bvs_fields(self):
+        userms = UserMS.objects.create(
+            b_timems_std=12345,
+            i_timems_std=45678,
+            e_timems_std=78901,
+            b_timems_id_std=101,
+            i_timems_id_std=102,
+            e_timems_id_std=103,
+            b_bvs_std=1.2345,
+            i_bvs_std=2.3456,
+            e_bvs_std=3.4567,
+            b_bvs_id_std=201,
+            i_bvs_id_std=202,
+            e_bvs_id_std=203,
+        )
+        user = UserProfile.objects.create_user(
+            username='api_abstract_player',
+            email='api_abstract_player@example.com',
+            password='password',
+            userms=userms,
+        )
+
+        with self.assertNumQueries(1):
+            response = self.client.get('/api/msuser/records_abstract', {'id': user.id})
+
+        self.assertEqual(response.status_code, 200, response.content)
+        data = response.json()
+        self.assertNotIn('record_abstract', data)
+        self.assertNotIn('b_stnb_std', data)
+        self.assertEqual(data['b_timems_std'], 12345)
+        self.assertEqual(data['i_timems_std'], 45678)
+        self.assertEqual(data['e_timems_std'], 78901)
+        self.assertEqual(data['b_timems_id_std'], 101)
+        self.assertEqual(data['i_timems_id_std'], 102)
+        self.assertEqual(data['e_timems_id_std'], 103)
+        self.assertAlmostEqual(data['b_bvs_std'], 1.2345)
+        self.assertAlmostEqual(data['i_bvs_std'], 2.3456)
+        self.assertAlmostEqual(data['e_bvs_std'], 3.4567)
+        self.assertEqual(data['b_bvs_id_std'], 201)
+        self.assertEqual(data['i_bvs_id_std'], 202)
+        self.assertEqual(data['e_bvs_id_std'], 203)
+
 
 class PersonalRecordSignalTests(TestCase):
     def setUp(self):

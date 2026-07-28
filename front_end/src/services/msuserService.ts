@@ -2,23 +2,17 @@ import $axios from '@/http';
 
 type RecordId = number | null;
 
-export interface PlayerRecordAbstract {
-    timems: number[];
-    timems_id: RecordId[];
-    bvs: number[];
-    bvs_id: RecordId[];
-}
-
-interface PlayerRecordAbstractResponse {
-    record_abstract: string;
-}
-
 export type UserRecordLevel = 'b' | 'e' | 'i';
 export type UserRecordMode = 'dg' | 'nf' | 'ng' | 'std';
 export type UserRecordStat = 'bvs' | 'ioe' | 'path' | 'stnb' | 'timems';
+export type UserRecordsAbstractStat = Extract<UserRecordStat, 'bvs' | 'timems'>;
 type UserRecordValueField = `${UserRecordLevel}_${UserRecordStat}_${UserRecordMode}`;
 type UserRecordIdField = `${UserRecordLevel}_${UserRecordStat}_id_${UserRecordMode}`;
+type UserRecordAbstractValueField = `${UserRecordLevel}_${UserRecordsAbstractStat}_std`;
+type UserRecordAbstractIdField = `${UserRecordLevel}_${UserRecordsAbstractStat}_id_std`;
 export type UserRecordsResponse = Record<UserRecordValueField, number> & Record<UserRecordIdField, number | null>;
+export type UserRecordsAbstractResponse
+    = Record<UserRecordAbstractValueField, number> & Record<UserRecordAbstractIdField, RecordId>;
 
 export interface CustomPluckRecord {
     level: string;
@@ -41,11 +35,11 @@ export interface FetchPlayerRankParams {
     page: number;
 }
 
-export async function fetchPlayerRecordAbstract(userId: number): Promise<PlayerRecordAbstract> {
-    const { data } = await $axios.get<PlayerRecordAbstractResponse>('/msuser/info_abstract/', {
+export async function fetchPlayerRecordsAbstract(userId: number): Promise<UserRecordsAbstractResponse> {
+    const { data } = await $axios.get<UserRecordsAbstractResponse>('/api/msuser/records_abstract', {
         params: { id: userId },
     });
-    return JSON.parse(data.record_abstract) as PlayerRecordAbstract;
+    return data;
 }
 
 export async function fetchUserRecords(userId: number): Promise<UserRecordsResponse> {

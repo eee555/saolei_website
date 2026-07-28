@@ -9,6 +9,8 @@ from .models import UserMS
 
 router = Router()
 
+RECORD_ABSTRACT_STATS = ('timems', 'bvs')
+
 UserMSRecordsOut = create_schema(
     UserMS,
     fields=[
@@ -23,11 +25,33 @@ UserMSRecordsOut = create_schema(
     ],
 )
 
+UserMSRecordsAbstractOut = create_schema(
+    UserMS,
+    fields=[
+        field
+        for stat in RECORD_ABSTRACT_STATS
+        for level in GameLevels
+        for field in (
+            f'{level}_{stat}_std',
+            f'{level}_{stat}_id_std',
+        )
+    ],
+)
+
 
 @router.get('/records', response=UserMSRecordsOut)
 @decorate_view(ratelimit(key='ip', rate='15/m'))
 def get_records(request, id: int):
     """
     - ratelimit(key='ip', rate='15/m')
+    """
+    return get_object_or_404(UserMS, parent__id=id)
+
+
+@router.get('/records_abstract', response=UserMSRecordsAbstractOut)
+@decorate_view(ratelimit(key='ip', rate='5/s'))
+def get_records_abstract(request, id: int):
+    """
+    - ratelimit(key='ip', rate='5/s')
     """
     return get_object_or_404(UserMS, parent__id=id)

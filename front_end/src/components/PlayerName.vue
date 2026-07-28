@@ -93,7 +93,7 @@ import { Tippy } from 'vue-tippy';
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import PlayerBadge from '@/components/widgets/PlayerBadge.vue';
 import UserAvatar from '@/components/widgets/UserAvatar.vue';
-import { fetchPlayerRecordAbstract } from '@/services/msuserService';
+import { fetchPlayerRecordsAbstract } from '@/services/msuserService';
 import { fetchUserInfo } from '@/services/userService';
 import { local } from '@/store';
 import { ms_to_s, to_fixed_n } from '@/utils';
@@ -153,12 +153,20 @@ async function pop_show() {
     if (props.userId === 0) return;
     is_loading.value = true;
 
-    const records = await fetchPlayerRecordAbstract(props.userId);
+    const records = await fetchPlayerRecordsAbstract(props.userId);
 
-    [b_t.value, i_t.value, e_t.value] = records.timems;
-    [b_t_id.value, i_t_id.value, e_t_id.value] = records.timems_id;
-    [b_bvs.value, i_bvs.value, e_bvs.value] = records.bvs;
-    [b_bvs_id.value, i_bvs_id.value, e_bvs_id.value] = records.bvs_id;
+    b_t.value = records.b_timems_std;
+    i_t.value = records.i_timems_std;
+    e_t.value = records.e_timems_std;
+    b_t_id.value = records.b_timems_id_std;
+    i_t_id.value = records.i_timems_id_std;
+    e_t_id.value = records.e_timems_id_std;
+    b_bvs.value = records.b_bvs_std;
+    i_bvs.value = records.i_bvs_std;
+    e_bvs.value = records.e_bvs_std;
+    b_bvs_id.value = records.b_bvs_id_std;
+    i_bvs_id.value = records.i_bvs_id_std;
+    e_bvs_id.value = records.e_bvs_id_std;
 
     is_loading.value = false;
 }
