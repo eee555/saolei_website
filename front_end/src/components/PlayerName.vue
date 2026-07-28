@@ -41,28 +41,28 @@
                                 {{ t('common.level.shortb') }}
                             </div>
                             <div>
-                                <PreviewNumber :id="+b_t_id" :text="ms_to_s(b_t)" />
+                                <PreviewNumber :id="recordIdValue(b_t_id)" :text="ms_to_s(b_t)" />
                             </div>
                             <div>
-                                <PreviewNumber :id="+b_bvs_id" :text="to_fixed_n(b_bvs, 3)" />
+                                <PreviewNumber :id="recordIdValue(b_bvs_id)" :text="to_fixed_n(b_bvs, 3)" />
                             </div>
                             <div>
                                 {{ t('common.level.shorti') }}
                             </div>
                             <div>
-                                <PreviewNumber :id="+i_t_id" :text="ms_to_s(i_t)" />
+                                <PreviewNumber :id="recordIdValue(i_t_id)" :text="ms_to_s(i_t)" />
                             </div>
                             <div>
-                                <PreviewNumber :id="+i_bvs_id" :text="to_fixed_n(i_bvs, 3)" />
+                                <PreviewNumber :id="recordIdValue(i_bvs_id)" :text="to_fixed_n(i_bvs, 3)" />
                             </div>
                             <div>
                                 {{ t('common.level.shorte') }}
                             </div>
                             <div>
-                                <PreviewNumber :id="+e_t_id" :text="ms_to_s(e_t)" />
+                                <PreviewNumber :id="recordIdValue(e_t_id)" :text="ms_to_s(e_t)" />
                             </div>
                             <div>
-                                <PreviewNumber :id="+e_bvs_id" :text="to_fixed_n(e_bvs, 3)" />
+                                <PreviewNumber :id="recordIdValue(e_bvs_id)" :text="to_fixed_n(e_bvs, 3)" />
                             </div>
                             <div>
                                 {{ t('common.level.sum') }}
@@ -93,10 +93,10 @@ import { Tippy } from 'vue-tippy';
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import PlayerBadge from '@/components/widgets/PlayerBadge.vue';
 import UserAvatar from '@/components/widgets/UserAvatar.vue';
+import { fetchPlayerRecordAbstract } from '@/services/msuserService';
 import { fetchUserInfo } from '@/services/userService';
 import { local } from '@/store';
 import { ms_to_s, to_fixed_n } from '@/utils';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { formatName } from '@/utils/strings';
 import { UserProfile } from '@/utils/userprofile';
 
@@ -106,8 +106,6 @@ const props = defineProps({
         default: 0,
     },
 });
-
-const { proxy } = useCurrentInstance();
 
 const user = ref(new UserProfile());
 const loading = ref(false);
@@ -139,34 +137,23 @@ watch(() => props.userId, async (newVal) => {
 const is_loading = ref(true);
 
 const b_t = ref(999999);
-const b_bvs = ref('');
-const b_t_id = ref('');
-const b_bvs_id = ref('');
+const b_bvs = ref(0);
+const b_t_id = ref<number | null>(null);
+const b_bvs_id = ref<number | null>(null);
 const i_t = ref(999999);
-const i_bvs = ref('');
-const i_t_id = ref('');
-const i_bvs_id = ref('');
+const i_bvs = ref(0);
+const i_t_id = ref<number | null>(null);
+const i_bvs_id = ref<number | null>(null);
 const e_t = ref(999999);
-const e_bvs = ref('');
-const e_t_id = ref('');
-const e_bvs_id = ref('');
+const e_bvs = ref(0);
+const e_t_id = ref<number | null>(null);
+const e_bvs_id = ref<number | null>(null);
 
 async function pop_show() {
     if (props.userId === 0) return;
     is_loading.value = true;
 
-    const response = await proxy.$axios.get('/msuser/info_abstract/', {
-        params: {
-            id: props.userId,
-        },
-    });
-
-    const records = JSON.parse(response.data.record_abstract) as {
-        timems: number[];
-        timems_id: string[];
-        bvs: string[];
-        bvs_id: string[];
-    };
+    const records = await fetchPlayerRecordAbstract(props.userId);
 
     [b_t.value, i_t.value, e_t.value] = records.timems;
     [b_t_id.value, i_t_id.value, e_t_id.value] = records.timems_id;
@@ -181,16 +168,20 @@ function pop_hide() {
     i_t.value = 999999;
     b_t.value = 999999;
     e_t.value = 999999;
-    b_t_id.value = '';
-    i_t_id.value = '';
-    e_t_id.value = '';
-    b_bvs.value = '';
-    i_bvs.value = '';
-    e_bvs.value = '';
-    b_bvs_id.value = '';
-    i_bvs_id.value = '';
-    e_bvs_id.value = '';
+    b_t_id.value = null;
+    i_t_id.value = null;
+    e_t_id.value = null;
+    b_bvs.value = 0;
+    i_bvs.value = 0;
+    e_bvs.value = 0;
+    b_bvs_id.value = null;
+    i_bvs_id.value = null;
+    e_bvs_id.value = null;
     is_loading.value = true;
+}
+
+function recordIdValue(id: number | null): number {
+    return id ?? 0;
 }
 
 const i18nMessages = {

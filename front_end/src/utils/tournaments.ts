@@ -9,7 +9,7 @@ export interface TournamentParticipant {
 
 type LocalizedString = string | Partial<Record<string, string>>;
 
-interface TournamentInfo {
+export interface TournamentInfo {
     [key: string]: unknown;
     id?: number;
     name?: LocalizedString;

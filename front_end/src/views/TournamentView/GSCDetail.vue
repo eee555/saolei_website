@@ -67,9 +67,9 @@ import GSCTokenGuide from './GSCTokenGuide.vue';
 import { BaseIconClose, BaseIconRefresh } from '@/components/common/icon';
 import { httpErrorNotification } from '@/components/Notifications';
 import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
+import { downloadTournamentVideos, fetchGSCInfo } from '@/services/tournamentService';
 import { store } from '@/store';
 import { LoginStatus } from '@/utils/common/structInterface';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { streamToZip } from '@/utils/fileIO';
 import { GSCParticipant } from '@/utils/gsc';
 import { TournamentState } from '@/utils/ms_const';
@@ -82,7 +82,6 @@ const props = defineProps({
     },
 });
 
-const { proxy } = useCurrentInstance();
 const { t } = useI18n();
 
 const tournament = ref<Tournament>(new Tournament({}));
@@ -96,21 +95,17 @@ const loading = ref(false);
 
 async function refresh() {
     loading.value = true;
-    await proxy.$axios.get('tournament/gscinfo/', {
-        params: {
-            id: props.id,
-        },
-    }).then((response) => {
-        tournament.value = new Tournament(response.data.data);
-        order.value = response.data.data.order;
-        token.value = response.data.data.token;
+    await fetchGSCInfo(props.id).then((response) => {
+        tournament.value = new Tournament(response.data);
+        order.value = response.data.order;
+        token.value = response.data.token;
 
         if (tournament.value.state === TournamentState.Ongoing && store.login_status === LoginStatus.IsLogin) {
             result.value = [];
-            personaltoken.value = response.data.identifier ?? '';
+            personaltoken.value = response.identifier ?? '';
         } else {
             personaltoken.value = '';
-            result.value = (response.data.results as object[]).map((value) => new GSCParticipant(value));
+            result.value = (response.results ?? []).map((value) => new GSCParticipant(value));
         }
     }).catch(httpErrorNotification);
     loading.value = false;
@@ -135,13 +130,8 @@ function handleAllSummaryTabClose(index: number) {
 }
 
 function downloadAll() {
-    proxy.$axios.get('tournament/download/', {
-        params: {
-            tournament_id: tournament.value.id,
-        },
-        responseType: 'arraybuffer',
-    }).then((response) => {
-        void streamToZip(new Uint8Array(response.data), 'gsc.zip');
+    downloadTournamentVideos(tournament.value.id).then((data) => {
+        void streamToZip(new Uint8Array(data), 'gsc.zip');
     }).catch(httpErrorNotification);
 }
 </script>

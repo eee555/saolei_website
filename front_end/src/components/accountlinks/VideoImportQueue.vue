@@ -102,10 +102,10 @@ import { useI18n } from 'vue-i18n';
 import { httpErrorNotification } from '@/components/Notifications';
 import DjangoTaskResultStatusBadge from '@/components/widgets/DjangoTaskResultStatusBadge.vue';
 import GameLevelIcon from '@/components/widgets/GameLevelIcon.vue';
-import type { SaoleiVideo, SaoleiVideoRaw } from '@/utils/accountlinks';
+import { fetchSaoleiImportVideos } from '@/services/accountLinkService';
+import type { SaoleiVideo } from '@/utils/accountlinks';
 import { preview } from '@/utils/common/PlayerDialog';
 import { DjangoTaskResultStatusOptions } from '@/utils/common/structInterface';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { MS_Levels } from '@/utils/ms_const';
 import { utc_to_local_format } from '@/utils/system/tools';
 
@@ -121,7 +121,6 @@ const filters = ref({
     level: { value: null, matchMode: FilterMatchMode.EQUALS },
 });
 
-const { proxy } = useCurrentInstance();
 const { t } = useI18n();
 
 const tableData = ref<SaoleiVideo[]>([]);
@@ -130,24 +129,12 @@ const importing = ref(false);
 function refresh() {
     tableData.value.splice(0, tableData.value.length);
     if (!props.saoleiId) return;
-    proxy.$axios.get('accountlink/saolei/videolist/get/', {
-        params: {
-            saolei_id: props.saoleiId,
-        },
-    }).then((response) => {
-        tableData.value = preprocessTable(response.data);
+    fetchSaoleiImportVideos(props.saoleiId).then((data) => {
+        tableData.value = data;
     }).catch(httpErrorNotification);
 }
 
 watch(() => props.saoleiId, refresh, { immediate: true });
-
-function preprocessTable(data: SaoleiVideoRaw[]): SaoleiVideo[] {
-    data.forEach((video) => {
-        video.import_video__id ??= 0;
-        video.import_task__status ??= 'NULL';
-    });
-    return data as SaoleiVideo[];
-}
 </script>
 
 <style lang="less" scoped>

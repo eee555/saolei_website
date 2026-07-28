@@ -15,46 +15,28 @@ import { nextTick, ref } from 'vue';
 import ClassicalCard from './ClassicalCard.vue';
 import PLuckCard from './PLuckCard.vue';
 
+import type { CustomPluckRecord } from '@/services/msuserService';
+import { fetchCustomPluckPlayerRecords, fetchUserRecords } from '@/services/msuserService';
 import { store } from '@/store';
 import type { Record, RecordBIE } from '@/utils/common/structInterface';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
-
-interface PluckRecord {
-    level: string;
-    video_id: number;
-    pluck: number;
-}
-
-const { proxy } = useCurrentInstance();
 
 const loading = ref(true);
 const records = ref<Record[][]>([]);
-const pluckRecords = ref<PluckRecord[]>([]);
+const pluckRecords = ref<CustomPluckRecord[]>([]);
 
 // 此处和父组件配合，等一下从store里获取用户的id
 void nextTick(() => {
-    void proxy.$axios.get('/msuser/records/', {
-        params: {
-            id: store.player.id,
-        },
-    }).then(function ({ data }) {
-        if (data.status > 100) {
+    void fetchUserRecords(store.player.id).then((result) => {
+        if (result.type === 'error') {
             loading.value = false;
             ElMessage.error({ message: '不知哪里出现了问题', offset: 68 });
         } else {
-            records.value.push(trans_record(JSON.parse(data.std_record)));
-            records.value.push(trans_record(JSON.parse(data.nf_record)));
-            records.value.push(trans_record(JSON.parse(data.ng_record)));
-            records.value.push(trans_record(JSON.parse(data.dg_record)));
+            records.value = result.records.map(trans_record);
             loading.value = false;
         }
     });
 
-    void proxy.$axios.get<PluckRecord[]>('/api/customranking/pluck/player', {
-        params: {
-            player_id: store.player.id,
-        },
-    }).then(({ data }) => {
+    void fetchCustomPluckPlayerRecords(store.player.id).then((data) => {
         pluckRecords.value = data;
     }).catch(() => {
         ElMessage.error({ message: '自定义密度纪录加载失败', offset: 68 });

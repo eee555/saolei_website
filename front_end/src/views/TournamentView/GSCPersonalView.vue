@@ -32,14 +32,12 @@ import BBBvSummary from '@/components/visualization/BBBvSummary/App.vue';
 import BBBvSummaryHeader from '@/components/visualization/BBBvSummary/Header.vue';
 import GSCPersonalSummary from '@/components/visualization/GSCPersonalSummary/App.vue';
 import MultiSelector from '@/components/widgets/MultiSelector.vue';
+import { downloadParticipantTournamentVideos, fetchParticipantVideos } from '@/services/tournamentService';
 import { VideoListConfig } from '@/store';
 import { ArrayUtils } from '@/utils/arrays';
-import type { ApiResponse } from '@/utils/common/structInterface';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { streamToZip } from '@/utils/fileIO';
 import { ColumnChoices } from '@/utils/ms_const';
 import { VideoAbstract } from '@/utils/videoabstract';
-import type { VideoAbstractData } from '@/utils/videoabstract';
 
 const props = defineProps({
     userId: {
@@ -51,7 +49,6 @@ const props = defineProps({
         required: true,
     },
 });
-const { proxy } = useCurrentInstance();
 const { t } = useI18n();
 const thisColumnChoices = ArrayUtils.sortByReferenceOrder(['bv', 'bvs', 'stnb', 'ces', 'cls', 'corr', 'end_time', 'ioe', 'level', 'state', 'software', 'thrp', 'time', 'upload_time', 'path', 'file_size'], ColumnChoices);
 
@@ -59,29 +56,22 @@ const videos = ref<VideoAbstract[]>([]);
 
 function refresh() {
     if (!props.userId || !props.tournamentId) return;
-    proxy.$axios.get<ApiResponse<VideoAbstractData[]>>('tournament/get_videos/participant/', {
-        params: {
-            user_id: props.userId,
-            tournament_id: props.tournamentId,
-        },
-    }).then((response) => {
-        if (response.data.type === 'success') {
-            videos.value = response.data.data.map((v) => new VideoAbstract(v));
-        }
+    fetchParticipantVideos({
+        userId: props.userId,
+        tournamentId: props.tournamentId,
+    }).then((data) => {
+        videos.value = data.map((video) => new VideoAbstract(video));
     }).catch(httpErrorNotification);
 }
 
 watch(props, refresh, { immediate: true });
 
 function handleDownload() {
-    void proxy.$axios.get('tournament/download/participant/', {
-        params: {
-            user_id: props.userId,
-            tournament_id: props.tournamentId,
-        },
-        responseType: 'arraybuffer',
-    }).then((response) => {
-        void streamToZip(new Uint8Array(response.data), `gsc_${props.userId}.zip`);
+    void downloadParticipantTournamentVideos({
+        userId: props.userId,
+        tournamentId: props.tournamentId,
+    }).then((data) => {
+        void streamToZip(new Uint8Array(data), `gsc_${props.userId}.zip`);
     }).catch(httpErrorNotification);
 }
 </script>

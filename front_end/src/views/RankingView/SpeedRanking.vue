@@ -79,10 +79,9 @@ import { useI18n } from 'vue-i18n';
 import { httpErrorNotification } from '@/components/Notifications';
 import PlayerName from '@/components/PlayerName.vue';
 import PreviewNumber from '@/components/PreviewNumber.vue';
+import { fetchPlayerRank } from '@/services/msuserService';
 import { ms_to_s, to_fixed_n } from '@/utils';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
-const { proxy } = useCurrentInstance();
 const { t } = useI18n();
 
 // const level_tag_selected = ref("EXPERT");
@@ -159,31 +158,28 @@ const get_player_rank = (page: number) => {
     const iv = index_tags[index_tag_selected.value];
     const mv = mode_tags[mode_tag_selected.value];
     const piv = `player_${iv.key}_${mv.key}_`;
-    proxy.$axios.get('/msuser/player_rank/', {
-        params: {
-            ids: `${piv}ids`,
-            sort_by: `${piv}*->${level_selected.value}`,
-            reverse: iv.reverse,
-            indexes: `["#","${piv}*->name","${piv}*->b","${piv}*->b_id","${piv}*->i","${piv}*->i_id","${piv}*->e","${piv}*->e_id","${piv}*->sum"]`,
-            page: page,
-        },
-    }).then(function ({ data }) {
+    fetchPlayerRank({
+        ids: `${piv}ids`,
+        sortBy: `${piv}*->${level_selected.value}`,
+        reverse: iv.reverse,
+        indexes: `["#","${piv}*->name","${piv}*->b","${piv}*->b_id","${piv}*->i","${piv}*->i_id","${piv}*->e","${piv}*->e_id","${piv}*->sum"]`,
+        page: page,
+    }).then(function ({ total_page, players }) {
         // console.log(response.data);
-        state.Total = data.total_page;
+        state.Total = total_page;
 
-        const { players } = data;
         playerData.splice(0, playerData.length);
         for (let i = 0; i < players.length / 9; i++) {
             playerData.push({
-                name_id: +players[i * 9],
-                name: players[i * 9 + 1],
-                beginner: index_tag_selected.value == 'timems' ? ms_to_s(players[i * 9 + 2]) : players[i * 9 + 2],
-                beginner_id: +players[i * 9 + 3],
-                intermediate: index_tag_selected.value == 'timems' ? ms_to_s(players[i * 9 + 4]) : players[i * 9 + 4],
-                intermediate_id: +players[i * 9 + 5],
-                expert: index_tag_selected.value == 'timems' ? ms_to_s(players[i * 9 + 6]) : players[i * 9 + 6],
-                expert_id: +players[i * 9 + 7],
-                sum: index_tag_selected.value == 'timems' ? ms_to_s(players[i * 9 + 8]) : players[i * 9 + 8],
+                name_id: Number(players[i * 9]),
+                name: String(players[i * 9 + 1]),
+                beginner: formatRankValue(players[i * 9 + 2]),
+                beginner_id: Number(players[i * 9 + 3]),
+                intermediate: formatRankValue(players[i * 9 + 4]),
+                intermediate_id: Number(players[i * 9 + 5]),
+                expert: formatRankValue(players[i * 9 + 6]),
+                expert_id: Number(players[i * 9 + 7]),
+                sum: formatRankValue(players[i * 9 + 8]),
             });
         }
         // console.log(playerData);
@@ -220,6 +216,10 @@ const setSortDirect = (level_tag: string) => {
     }
     get_player_rank(state.CurrentPage);
 };
+
+function formatRankValue(value: number | string): string {
+    return index_tag_selected.value == 'timems' ? ms_to_s(Number(value)) : String(value);
+}
 </script>
 
 <style lang="less" scoped>
