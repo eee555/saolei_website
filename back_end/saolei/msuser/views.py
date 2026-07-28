@@ -7,7 +7,7 @@ from django.views.decorators.http import require_GET
 from django_ratelimit.decorators import ratelimit
 from django_redis import get_redis_connection
 
-from config.global_settings import GameLevels, GameModes, RankingGameStats
+from config.global_settings import GameLevels
 from msuser.models import UserMS
 from msuser.utils import RankingField
 from userprofile.models import UserProfile
@@ -33,26 +33,6 @@ def get_records_level(ms_user: UserMS, stat: str, mode: str):
 
 def get_record_ids_level(ms_user: UserMS, stat: str, mode: str):
     return [getattr(ms_user, RankingField(level, stat, mode).id_name) for level in GameLevels]
-
-
-# 获取我的地盘里的姓名、全部纪录
-@ratelimit(key='ip', rate='15/m')
-@require_GET
-def get_records(request):
-    if not (user_id := request.GET.get('id')):
-        return HttpResponseBadRequest()
-    if not (user := UserProfile.objects.filter(id=user_id).first()):
-        return HttpResponseNotFound()
-    ms_user = user.userms
-
-    response = {'id': user_id}
-    for mode in GameModes:
-        value = {}
-        for stat in RankingGameStats:
-            value[stat] = get_records_level(ms_user, stat, mode)
-            value[f'{stat}_id'] = get_record_ids_level(ms_user, stat, mode)
-        response[f'{mode}_record'] = json.dumps(value, cls=DecimalEncoder)
-    return JsonResponse(response)
 
 
 # 鼠标移到人名上时，展现头像、姓名、id、记录

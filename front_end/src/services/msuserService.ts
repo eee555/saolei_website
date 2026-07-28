@@ -1,5 +1,4 @@
 import $axios from '@/http';
-import type { RecordBIE } from '@/utils/common/structInterface';
 
 type RecordId = number | null;
 
@@ -14,31 +13,12 @@ interface PlayerRecordAbstractResponse {
     record_abstract: string;
 }
 
-interface UserRecordsSuccessResponse {
-    id: string;
-    std_record: string;
-    nf_record: string;
-    ng_record: string;
-    dg_record: string;
-}
-
-interface UserRecordsErrorResponse {
-    status: number;
-    msg?: string;
-}
-
-type UserRecordsResponse = UserRecordsSuccessResponse | UserRecordsErrorResponse;
-
-export type UserRecordsResult
-    = {
-        type: 'success';
-        records: RecordBIE[];
-    }
-    | {
-        type: 'error';
-        status: number;
-        msg?: string;
-    };
+export type UserRecordLevel = 'b' | 'e' | 'i';
+export type UserRecordMode = 'dg' | 'nf' | 'ng' | 'std';
+export type UserRecordStat = 'bvs' | 'ioe' | 'path' | 'stnb' | 'timems';
+type UserRecordValueField = `${UserRecordLevel}_${UserRecordStat}_${UserRecordMode}`;
+type UserRecordIdField = `${UserRecordLevel}_${UserRecordStat}_id_${UserRecordMode}`;
+export type UserRecordsResponse = Record<UserRecordValueField, number> & Record<UserRecordIdField, number | null>;
 
 export interface CustomPluckRecord {
     level: string;
@@ -68,28 +48,11 @@ export async function fetchPlayerRecordAbstract(userId: number): Promise<PlayerR
     return JSON.parse(data.record_abstract) as PlayerRecordAbstract;
 }
 
-export async function fetchUserRecords(userId: number): Promise<UserRecordsResult> {
-    const { data } = await $axios.get<UserRecordsResponse>('/msuser/records/', {
+export async function fetchUserRecords(userId: number): Promise<UserRecordsResponse> {
+    const { data } = await $axios.get<UserRecordsResponse>('/api/msuser/records', {
         params: { id: userId },
     });
-
-    if (!('std_record' in data)) {
-        return {
-            type: 'error',
-            status: data.status,
-            msg: data.msg,
-        };
-    }
-
-    return {
-        type: 'success',
-        records: [
-            parseRecord(data.std_record),
-            parseRecord(data.nf_record),
-            parseRecord(data.ng_record),
-            parseRecord(data.dg_record),
-        ],
-    };
+    return data;
 }
 
 export async function fetchCustomPluckPlayerRecords(userId: number): Promise<CustomPluckRecord[]> {
@@ -110,8 +73,4 @@ export async function fetchPlayerRank(params: FetchPlayerRankParams): Promise<Pl
         },
     });
     return data;
-}
-
-function parseRecord(record: string): RecordBIE {
-    return JSON.parse(record) as RecordBIE;
 }

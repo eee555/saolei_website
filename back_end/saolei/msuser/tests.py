@@ -12,6 +12,25 @@ from .signals import get_stats_update_set
 from .utils import RankingField, RankingValue
 
 
+class UserMSRecordApiTests(TestCase):
+    def test_records_response_serializes_records_without_parent_lookup(self):
+        userms = UserMS.objects.create(b_timems_std=1234)
+        user = UserProfile.objects.create_user(
+            username='api_player',
+            email='api_player@example.com',
+            password='password',
+            userms=userms,
+        )
+
+        with self.assertNumQueries(1):
+            response = self.client.get('/api/msuser/records', {'id': user.id})
+
+        self.assertEqual(response.status_code, 200, response.content)
+        data = response.json()
+        self.assertNotIn('id', data)
+        self.assertEqual(data['b_timems_std'], 1234)
+
+
 class PersonalRecordSignalTests(TestCase):
     def setUp(self):
         self.cache = get_redis_connection('saolei_website')

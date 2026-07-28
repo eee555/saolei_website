@@ -13,19 +13,6 @@ export enum LoginStatus {
     IsRetrieve,
 }
 
-export interface RecordBIE {
-    timems: number[];
-    bvs: number[];
-    stnb: number[];
-    ioe: number[];
-    path: number[];
-    timems_id: number[];
-    bvs_id: number[];
-    stnb_id: number[];
-    ioe_id: number[];
-    path_id: number[];
-}
-
 export interface Record {
     timems: number;
     bvs: number;
