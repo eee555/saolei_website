@@ -146,7 +146,6 @@ class PLuckRankingCacheTests(CustomRankingTestCase):
         data = cache_to_dict(str(record.player_id), record.pluck, {
             'video_id': record.video_id,
             'mode': record.video.mode,
-            'pluck': record.pluck,
             'timems': record.timems,
             'bv': record.video.bv,
             'upload_time': record.upload_time.isoformat(),
@@ -154,6 +153,20 @@ class PLuckRankingCacheTests(CustomRankingTestCase):
 
         self.assertEqual(data['player_id'], record.player_id)
         self.assertEqual(data['video_id'], record.video_id)
+        self.assertEqual(data['pluck'], record.pluck)
+
+    def test_cache_to_dict_restores_zero_pluck_from_negative_score(self):
+        record = self.create_record(self.players[0], pluck=0, timems=1000, seconds=0)
+
+        data = cache_to_dict(str(record.player_id), record_to_score(record), {
+            'video_id': record.video_id,
+            'mode': record.video.mode,
+            'timems': record.timems,
+            'bv': record.video.bv,
+            'upload_time': record.upload_time.isoformat(),
+        })
+
+        self.assertEqual(data['pluck'], 0)
 
     def test_get_player_pluck_records_reads_multiple_levels_from_cache(self):
         first = self.create_record(self.players[0], pluck=1, timems=1000, level=LEVEL)

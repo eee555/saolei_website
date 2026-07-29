@@ -154,7 +154,6 @@ def record_to_detail(record: CustomPluckRecord):
     return {
         'video_id': record.video_id,
         'mode': record.video.mode,
-        'pluck': record.pluck,
         'timems': record.timems,
         'bv': record.video.bv,
         'upload_time': record.upload_time.isoformat(),
@@ -168,6 +167,7 @@ def cache_to_dict(member: str, score: float, detail: dict):
     return {
         **data,
         'player_id': int(member),
+        'pluck': max(0, score),
         'upload_time': datetime.fromisoformat(upload_time),
     }
 
