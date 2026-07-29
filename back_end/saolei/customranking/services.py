@@ -6,67 +6,22 @@ from django.utils import timezone
 from config.customranking import CUSTOM_PLUCK_LEVELS, CUSTOM_PLUCK_MODES
 from config.text_choices import MS_TextChoices
 from videomanager.models import VideoModel
-from .cache import CUSTOM_PLUCK_CACHE_SIZE, PLuckRankingCache
+from .cache import PLuckRankingCache
 from .models import CustomPluckRecord
 
 
-def record_to_rank_dict(record: CustomPluckRecord):
-    """将数据库纪录转换为 API 返回的玩家排行字典。"""
-    return {
-        'player_id': record.player_id,
-        'video_id': record.video_id,
-        'mode': record.video.mode,
-        'pluck': record.pluck,
-        'timems': record.timems,
-        'bv': record.video.bv,
-        'upload_time': record.upload_time,
-    }
-
-
 def get_pluck_rank_range(level: str, start: int, end: int):
-    """读取某个自定义级别在指定排名区间内的 pluck 排行，缓存外部分回源数据库。"""
-    ranking_cache = PLuckRankingCache(level)
-    cache_size = len(ranking_cache)
-    cache_end = min(end, cache_size)
-    players = ranking_cache.get_rank_range(start, cache_end) if start < cache_end else []
-
-    if end <= cache_end:
-        return players
-
-    db_start = min(cache_size, end)
-    records = (
-        CustomPluckRecord.objects
-        .filter(level=level)
-        .select_related('video')
-        .order_by('pluck', 'timems', 'upload_time')[db_start:end]
-    )
-    records = list(records)
-
-    cache_fill_count = max(min(end, CUSTOM_PLUCK_CACHE_SIZE) - cache_size, 0)
-    if cache_fill_count:
-        ranking_cache = PLuckRankingCache(level).open()
-        ranking_cache.add_record_batch(records[:cache_fill_count])
-        ranking_cache.close()
-
-    result_start = max(start, db_start) - db_start
-    players.extend(record_to_rank_dict(record) for record in records[result_start:])
-    return players
+    """从 Redis 缓存读取某个自定义级别在指定排名区间内的 pluck 排行。"""
+    return PLuckRankingCache(level).get_rank_range(start, end)
 
 
 def update_custom_pluck_top_cache(record: CustomPluckRecord | None, level: str, player_id: int):
-    """在 Redis 缓存已存在时，更新或移除单个玩家的 pluck 排行缓存。"""
-
+    """更新或移除单个玩家的 pluck 排行缓存。"""
     ranking_cache = PLuckRankingCache(level)
-    if len(ranking_cache) == 0:
-        return
-
     if record is not None:
-        if not ranking_cache.can_insert_record(record):
-            return
-        ranking_cache.update_record(record, player_id)
+        ranking_cache.update_record(record)
     else:
         ranking_cache.delete_record(player_id)
-    ranking_cache.clamp(CUSTOM_PLUCK_CACHE_SIZE)
 
 
 def refresh_custom_pluck_rank(player, level: str):
@@ -263,3 +218,39 @@ def refresh_all_custom_pluck_ranks(player_batch_size: int = 1000):
             player_id_start = player_id_end + 1
 
     return count
+
+
+def rebuild_custom_pluck_cache(levels=None, batch_size: int = 1000):
+    """用数据库中的 CustomPluckRecord 全量重建 Redis 排行缓存。"""
+    if batch_size <= 0:
+        raise ValueError('batch_size must be positive')
+
+    levels = CUSTOM_PLUCK_LEVELS if levels is None else levels
+    counts = {}
+    for level in levels:
+        ranking_cache = PLuckRankingCache(level)
+        ranking_cache.flush()
+
+        batch = []
+        count = 0
+        records = (
+            CustomPluckRecord.objects
+            .filter(level=level)
+            .select_related('video')
+            .order_by('pluck', 'timems', 'upload_time')
+            .iterator(chunk_size=batch_size)
+        )
+        for record in records:
+            batch.append(record)
+            if len(batch) < batch_size:
+                continue
+            ranking_cache.add_record_batch(batch)
+            count += len(batch)
+            batch = []
+
+        if batch:
+            ranking_cache.add_record_batch(batch)
+            count += len(batch)
+        counts[level] = count
+
+    return counts
