@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 import json
 from typing import Iterable
 
@@ -7,10 +7,9 @@ from django_redis import get_redis_connection
 from redis.client import Pipeline, Redis
 
 from customranking.models import CustomPluckRecord
+from videomanager.models import MAX_TIMEMS
 
 cache = get_redis_connection('saolei_website')
-
-CUSTOM_PLUCK_CACHE_SIZE = 100
 
 
 class PLuckRankingCache:
@@ -18,14 +17,12 @@ class PLuckRankingCache:
     pipe: Pipeline | None
     rank_key: str
     detail_key: str
-    player_key: str
 
     def __init__(self, level: str):
         self.pipe = None
         self.level = level
         self.rank_key = get_custom_pluck_rank_key(level)
         self.detail_key = get_custom_pluck_detail_key(level)
-        self.player_key = get_custom_pluck_player_key(level)
 
     @property
     def client(self) -> Redis | Pipeline:
@@ -71,59 +68,20 @@ class PLuckRankingCache:
             players.append(cache_to_dict(member, score, json.loads(detail)))
         return players
 
-    def get_member(self, player_id: int):
-        """从玩家索引缓存中读取玩家当前对应的 zset member。"""
-        member = cache.hget(self.player_key, player_id)
-        if isinstance(member, bytes):
-            return member.decode()
-        return member
-
-    def tail_score_and_member(self):
-        """读取缓存尾端纪录的排序键。"""
-        rows = self.range(-1, -1, withscores=True)
-        if not rows:
-            return None
-        member, score = rows[0]
-        if isinstance(member, bytes):
-            member = member.decode()
-        return score, member
-
-    def can_insert_record(self, record: CustomPluckRecord):
-        """判断纪录是否有机会进入当前缓存窗口。"""
-        tail = self.tail_score_and_member()
-        if tail is None:
-            return False
-        return (record.pluck, record_to_member(record)) <= tail
-
     def add_record(self, record: CustomPluckRecord):
-        member = record_to_member(record)
-        self.client.zadd(self.rank_key, {member: record.pluck})
+        member = str(record.player_id)
+        self.client.zadd(self.rank_key, {member: record_to_score(record)})
         self.client.hset(self.detail_key, member, json.dumps(record_to_detail(record)))
-        self.client.hset(self.player_key, record.player_id, member)
 
-    def remove_record(self, member: str | None, player_id: int):
-        if member is not None:
-            self.client.zrem(self.rank_key, member)
-            self.client.hdel(self.detail_key, member)
-        self.client.hdel(self.player_key, player_id)
-
-    def update_record(self, record: CustomPluckRecord, player_id: int):
-        """更新 Redis 排行缓存中某个玩家的纪录。"""
-        member = self.get_member(player_id)
-        if member is not None:
-            self.remove_record(member, player_id)
-        self.add_record(record)
-
-    def delete_record(self, player_id: int):
-        """删除 Redis 排行缓存中某个玩家的纪录。"""
-        member = self.get_member(player_id)
-        self.remove_record(member, player_id)
+    def remove_record(self, player_id: int):
+        member = str(player_id)
+        self.client.zrem(self.rank_key, member)
+        self.client.hdel(self.detail_key, member)
 
     def add_record_batch(self, records: Iterable[CustomPluckRecord]):
         # 准备批量数据
         rank_mapping = {}  # {member: score}
         detail_mapping = {}  # {member: detail_json}
-        player_mapping = {}  # {player_id: member} 用于 player_key
 
         if isinstance(records, Manager):
             _records = list(records.all())
@@ -133,38 +91,20 @@ class PLuckRankingCache:
             _records = records
 
         for record in _records:
-            member = record_to_member(record)
-            rank_mapping[member] = record.pluck
+            member = str(record.player_id)
+            rank_mapping[member] = record_to_score(record)
             detail_mapping[member] = json.dumps(record_to_detail(record))
-            player_mapping[record.player_id] = member
 
         if rank_mapping:
             self.client.zadd(self.rank_key, rank_mapping)  # 批量ZADD
             self.client.hset(self.detail_key, mapping=detail_mapping)  # 批量HSET (某些客户端库支持)
-            self.client.hset(self.player_key, mapping=player_mapping)
 
     def flush(self):
-        self.client.delete(self.rank_key, self.detail_key, self.player_key)
-
-    def clamp(self, target: int):
-        """将排行缓存截断到指定数量，不负责补齐。"""
-        target = max(target, 0)
-        if len(self) <= target:
-            return
-
-        members = cache.zrange(self.rank_key, target, -1)
-        members = [
-            member.decode() if isinstance(member, bytes) else member
-            for member in members
-        ]
-        player_ids = [
-            member_to_player_id(member)
-            for member in members
-        ]
-
-        self.client.zremrangebyrank(self.rank_key, target, -1)
-        self.client.hdel(self.detail_key, *members)
-        self.client.hdel(self.player_key, *player_ids)
+        self.client.delete(
+            self.rank_key,
+            self.detail_key,
+            get_legacy_custom_pluck_player_key(self.level),
+        )
 
 
 ##############
@@ -173,22 +113,20 @@ class PLuckRankingCache:
 
 def get_custom_pluck_rank_key(level: str) -> str:
     """
-    有序集zset，排序键`score`是`pluck`。同`pluck`时，再比较`time`，同`time`时比较`upload_time`。为了解决后面两个比较，`timems`和`upload_time`分别以8位整数和13位整数连接起来作为zset的主键`member`。为了彻底解决主键冲突，`member`的结尾还加上了`player_id`。
+    有序集zset，排序键`score`通常是`pluck`；当`pluck == 0`时使用`timems - MAX_TIMEMS`降低 0 碰撞风险。`member`是`player_id`。
     """
     return f'customranking:pluck:{level}:rank'
 
 
 def get_custom_pluck_detail_key(level: str) -> str:
     """
-    查找表hset，主键是RANK的`member`，字段是`video_id`、`mode`、`bv`。其中`mode`和`bv`来自入榜录像。
+    查找表hset，主键是RANK的`member`，存储 API 展示需要的录像信息。
     """
     return f'customranking:pluck:{level}:detail'
 
 
-def get_custom_pluck_player_key(level: str) -> str:
-    """
-    hset，存储`player_id`到`member`的映射。
-    """
+def get_legacy_custom_pluck_player_key(level: str) -> str:
+    """旧缓存结构中的玩家索引，flush时顺便清理。"""
     return f'customranking:pluck:{level}:player'
 
 
@@ -196,13 +134,11 @@ def get_custom_pluck_player_key(level: str) -> str:
 # Data Conversion #
 ###################
 
-def record_to_member(record: CustomPluckRecord) -> str:
-    upload_time_ms = int(record.upload_time.timestamp() * 1000)
-    return f'{record.timems:08d}:{upload_time_ms:013d}:{record.player_id}'
-
-
-def member_to_player_id(member: str) -> int:
-    return int(member.rsplit(':', 1)[1])
+def record_to_score(record: CustomPluckRecord):
+    """将数据库纪录转换为 Redis zset score。"""
+    if record.pluck > 0:
+        return record.pluck
+    return record.timems - MAX_TIMEMS
 
 
 def record_to_detail(record: CustomPluckRecord):
@@ -210,19 +146,21 @@ def record_to_detail(record: CustomPluckRecord):
     return {
         'video_id': record.video_id,
         'mode': record.video.mode,
+        'timems': record.timems,
         'bv': record.video.bv,
+        'upload_time': record.upload_time.isoformat(),
     }
 
 
 def cache_to_dict(member: str, score: float, detail: dict):
     """将 Redis 排行缓存中的数据转换为字典。"""
-    timems, upload_time_ms, player_id = member.split(':', 2)
+    data = {**detail}
+    upload_time = data.pop('upload_time')
     return {
-        **detail,
-        'player_id': int(player_id),
-        'pluck': score,
-        'timems': int(timems),
-        'upload_time': datetime.fromtimestamp(int(upload_time_ms) / 1000, tz=timezone.utc),
+        **data,
+        'player_id': int(member),
+        'pluck': max(0, score),
+        'upload_time': datetime.fromisoformat(upload_time),
     }
 
 
@@ -235,25 +173,15 @@ def get_player_pluck_records(player_id: int, levels: Iterable[str]):
     if not ranking_caches:
         return {}
 
+    member = str(player_id)
     pipe = cache.pipeline()
     for ranking_cache in ranking_caches:
-        pipe.hget(ranking_cache.player_key, player_id)
-    members = pipe.execute()
-
-    cached_members = []
-    pipe = cache.pipeline()
-    for ranking_cache, member in zip(ranking_caches, members):
-        if isinstance(member, bytes):
-            member = member.decode()
-        if member is None:
-            continue
-        cached_members.append((ranking_cache, member))
         pipe.zscore(ranking_cache.rank_key, member)
         pipe.hget(ranking_cache.detail_key, member)
 
-    results = pipe.execute() if cached_members else []
+    results = pipe.execute()
     records_by_level = {}
-    for index, (ranking_cache, member) in enumerate(cached_members):
+    for index, ranking_cache in enumerate(ranking_caches):
         score = results[index * 2]
         detail = results[index * 2 + 1]
         if score is None or detail is None:

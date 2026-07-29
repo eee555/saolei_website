@@ -1,14 +1,16 @@
 from datetime import timedelta
+from io import StringIO
 
+from django.core.management import call_command
 from django.test import TestCase
 from django.utils import timezone
 
 from config.text_choices import MS_TextChoices
 from userprofile.models import UserProfile
-from videomanager.models import ExpandVideoModel, VideoModel
-from .cache import cache_to_dict, PLuckRankingCache, record_to_member
+from videomanager.models import ExpandVideoModel, MAX_TIMEMS, VideoModel
+from .cache import get_player_pluck_records, PLuckRankingCache, record_to_score
 from .models import CustomPluckRecord
-from .services import get_pluck_rank_range, refresh_all_custom_pluck_ranks, refresh_custom_pluck_rank_range, update_custom_pluck_top_cache
+from .services import refresh_all_custom_pluck_ranks, refresh_custom_pluck_rank_range
 
 
 LEVEL = MS_TextChoices.Level.CUSTOM_8_8_40
@@ -105,13 +107,9 @@ class CustomPluckRecordTests(CustomRankingTestCase):
 class PLuckRankingCacheTests(CustomRankingTestCase):
     def test_record_member_uses_player_id_and_cache_range_returns_rank_dicts(self):
         record = self.create_record(self.players[0], pluck=2.5, timems=1234, seconds=3)
-        member = record_to_member(record)
+        member = str(record.player_id)
 
-        self.assertTrue(member.startswith('00001234:'))
-        self.assertTrue(member.endswith(f':{record.player_id}'))
-        self.assertNotIn(f':{record.video_id}', member)
-
-        self.cache.add_record(record)
+        self.assertEqual(member, str(record.player_id))
         self.assertEqual(len(self.cache), 1)
         rows = self.cache.get_rank_range(0, 1)
 
@@ -120,37 +118,39 @@ class PLuckRankingCacheTests(CustomRankingTestCase):
         self.assertEqual(rows[0]['pluck'], record.pluck)
         self.assertEqual(rows[0]['timems'], record.timems)
 
-    def test_clamp_truncates_rank_detail_and_player_indexes(self):
+    def test_zero_pluck_uses_timems_score(self):
         records = [
-            self.create_record(self.players[0], pluck=1, timems=1000, seconds=0),
-            self.create_record(self.players[1], pluck=2, timems=1000, seconds=0),
-            self.create_record(self.players[2], pluck=3, timems=1000, seconds=0),
+            self.create_record(self.players[0], pluck=0, timems=2000, seconds=0),
+            self.create_record(self.players[1], pluck=0, timems=1000, seconds=0),
+            self.create_record(self.players[2], pluck=0.001, timems=1, seconds=0),
         ]
-        ranking_cache = PLuckRankingCache(LEVEL).open()
-        ranking_cache.add_record_batch(records)
-        ranking_cache.close()
 
-        self.cache.clamp(2)
-
-        self.assertEqual(len(self.cache), 2)
-        self.assertIsNotNone(self.cache.get_member(records[0].player_id))
-        self.assertIsNotNone(self.cache.get_member(records[1].player_id))
-        self.assertIsNone(self.cache.get_member(records[2].player_id))
-        self.assertEqual([row['player_id'] for row in self.cache.get_rank_range(0, 2)], [
-            records[0].player_id,
+        self.assertEqual(record_to_score(records[0]), records[0].timems - MAX_TIMEMS)
+        self.assertEqual(record_to_score(records[2]), records[2].pluck)
+        rows = self.cache.get_rank_range(0, 3)
+        self.assertEqual([row['player_id'] for row in rows], [
             records[1].player_id,
+            records[0].player_id,
+            records[2].player_id,
         ])
+        self.assertEqual(rows[0]['pluck'], 0)
 
-    def test_cache_to_dict_decodes_player_id_from_member_and_video_id_from_detail(self):
-        record = self.create_record(self.players[0], pluck=1.5, timems=1000, seconds=0)
-        data = cache_to_dict(record_to_member(record), record.pluck, {
-            'video_id': record.video_id,
-            'mode': record.video.mode,
-            'bv': record.video.bv,
-        })
+    def test_remove_record_removes_rank_and_detail(self):
+        record = self.create_record(self.players[0], pluck=1, timems=1000, seconds=0)
 
-        self.assertEqual(data['player_id'], record.player_id)
-        self.assertEqual(data['video_id'], record.video_id)
+        self.cache.remove_record(record.player_id)
+
+        self.assertEqual(len(self.cache), 0)
+        self.assertEqual(self.cache.get_rank_range(0, 1), [])
+
+    def test_get_player_pluck_records_reads_multiple_levels_from_cache(self):
+        first = self.create_record(self.players[0], pluck=1, timems=1000, level=LEVEL)
+        second = self.create_record(self.players[0], pluck=2, timems=2000, level=SECOND_LEVEL)
+
+        rows_by_level = get_player_pluck_records(self.players[0].id, [LEVEL, SECOND_LEVEL])
+
+        self.assertEqual(rows_by_level[LEVEL]['video_id'], first.video_id)
+        self.assertEqual(rows_by_level[SECOND_LEVEL]['video_id'], second.video_id)
 
 
 class PluckRankingApiTests(CustomRankingTestCase):
@@ -159,7 +159,7 @@ class PluckRankingApiTests(CustomRankingTestCase):
         self.assertEqual(response.status_code, 200, response.content)
         return response.json()
 
-    def test_player_records_prefers_redis_and_falls_back_to_database(self):
+    def test_player_records_reads_cache_without_database_fallback(self):
         cached_record = self.create_record(self.players[0], pluck=1, timems=1000)
         db_record = self.create_record(
             self.players[0],
@@ -167,7 +167,7 @@ class PluckRankingApiTests(CustomRankingTestCase):
             timems=2000,
             level=SECOND_LEVEL,
         )
-        self.cache.add_record(cached_record)
+        PLuckRankingCache(SECOND_LEVEL).flush()
         CustomPluckRecord.objects.filter(id=cached_record.id).update(pluck=9)
 
         rows = self.get_player_records(self.players[0])
@@ -175,8 +175,8 @@ class PluckRankingApiTests(CustomRankingTestCase):
         rows_by_level = {row['level']: row for row in rows}
         self.assertEqual(rows_by_level[LEVEL]['video_id'], cached_record.video_id)
         self.assertEqual(rows_by_level[LEVEL]['pluck'], cached_record.pluck)
-        self.assertEqual(rows_by_level[SECOND_LEVEL]['video_id'], db_record.video_id)
-        self.assertEqual(rows_by_level[SECOND_LEVEL]['pluck'], db_record.pluck)
+        self.assertNotIn(SECOND_LEVEL, rows_by_level)
+        self.assertTrue(CustomPluckRecord.objects.filter(id=db_record.id).exists())
 
     def test_player_records_returns_empty_list_for_player_without_records(self):
         rows = self.get_player_records(self.players[4])
@@ -290,92 +290,18 @@ class PluckRankingServiceTests(CustomRankingTestCase):
         self.assertFalse(CustomPluckRecord.objects.filter(id=inside_stale.id).exists())
         self.assertTrue(CustomPluckRecord.objects.filter(id=outside_stale.id).exists())
 
-    def test_get_pluck_rank_range_uses_database_for_range_beyond_cache(self):
+    def test_rebuild_custom_pluck_cache_command_loads_database_records(self):
         records = [
             self.create_record(self.players[0], pluck=1, timems=1000, seconds=0),
             self.create_record(self.players[1], pluck=2, timems=1000, seconds=0),
             self.create_record(self.players[2], pluck=3, timems=1000, seconds=0),
         ]
-        self.cache.add_record(records[0])
+        self.cache.flush()
 
-        rows = get_pluck_rank_range(LEVEL, 0, 3)
+        call_command('rebuild_custom_pluck_cache', level=LEVEL, stdout=StringIO())
 
-        self.assertEqual([row['player_id'] for row in rows], [
-            records[0].player_id,
-            records[1].player_id,
-            records[2].player_id,
-        ])
-        self.assertEqual(len(self.cache), 3)
-
-    def test_get_pluck_rank_range_can_start_outside_cache(self):
-        records = [
-            self.create_record(self.players[0], pluck=1, timems=1000, seconds=0),
-            self.create_record(self.players[1], pluck=2, timems=1000, seconds=0),
-            self.create_record(self.players[2], pluck=3, timems=1000, seconds=0),
-        ]
-        self.cache.add_record(records[0])
-
-        rows = get_pluck_rank_range(LEVEL, 1, 3)
-
-        self.assertEqual([row['player_id'] for row in rows], [
-            records[1].player_id,
-            records[2].player_id,
-        ])
-        self.assertEqual(len(self.cache), 3)
         self.assertEqual([row['player_id'] for row in self.cache.get_rank_range(0, 3)], [
             records[0].player_id,
             records[1].player_id,
             records[2].player_id,
         ])
-        self.assertEqual(len(self.cache), 3)
-
-    def test_get_pluck_rank_range_rebuilds_prefix_when_cache_is_empty(self):
-        records = [
-            self.create_record(self.players[0], pluck=1, timems=1000, seconds=0),
-            self.create_record(self.players[1], pluck=2, timems=1000, seconds=0),
-            self.create_record(self.players[2], pluck=3, timems=1000, seconds=0),
-        ]
-
-        rows = get_pluck_rank_range(LEVEL, 1, 3)
-
-        self.assertEqual([row['player_id'] for row in rows], [
-            records[1].player_id,
-            records[2].player_id,
-        ])
-
-    def test_update_cache_skips_record_weaker_than_cache_tail(self):
-        records = [
-            self.create_record(self.players[0], pluck=1, timems=1000, seconds=0),
-            self.create_record(self.players[1], pluck=2, timems=1000, seconds=0),
-        ]
-        weaker = self.create_record(self.players[2], pluck=3, timems=1000, seconds=0)
-        ranking_cache = PLuckRankingCache(LEVEL).open()
-        ranking_cache.add_record_batch(records)
-        ranking_cache.close()
-
-        update_custom_pluck_top_cache(weaker, LEVEL, weaker.player_id)
-
-        self.assertEqual([row['player_id'] for row in self.cache.get_rank_range(0, 2)], [
-            records[0].player_id,
-            records[1].player_id,
-        ])
-        self.assertIsNone(self.cache.get_member(weaker.player_id))
-
-    def test_update_cache_inserts_record_that_can_enter_cache_window(self):
-        records = [
-            self.create_record(self.players[0], pluck=2, timems=1000, seconds=0),
-            self.create_record(self.players[1], pluck=3, timems=1000, seconds=0),
-        ]
-        better = self.create_record(self.players[2], pluck=1, timems=1000, seconds=0)
-        ranking_cache = PLuckRankingCache(LEVEL).open()
-        ranking_cache.add_record_batch(records)
-        ranking_cache.close()
-
-        update_custom_pluck_top_cache(better, LEVEL, better.player_id)
-
-        self.assertEqual([row['player_id'] for row in self.cache.get_rank_range(0, 3)], [
-            better.player_id,
-            records[0].player_id,
-            records[1].player_id,
-        ])
-        self.assertIsNotNone(self.cache.get_member(better.player_id))
