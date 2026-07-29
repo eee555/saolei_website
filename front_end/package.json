@@ -21,7 +21,7 @@
     "@mdit/plugin-abbr": "1.0.1",
     "@mdit/plugin-align": "1.0.1",
     "@mdit/plugin-img-lazyload": "1.0.1",
-    "@mdit/plugin-mathjax": "1.1.0",
+    "@mdit/plugin-mathjax": "1.1.1",
     "@primeuix/themes": "2.0.3",
     "@putianyi888/vue3-minesweeper-board": "0.4.0",
     "@putianyi888/vue3-plots": "0.6.0",
