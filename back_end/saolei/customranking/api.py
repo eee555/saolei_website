@@ -44,10 +44,6 @@ class RefreshCustomPluckRankOut(Schema):
     successCount: int
 
 
-class CustomPluckLevel(Schema):
-    level: str
-
-
 @router.get('/pluck', response=CustomPluckRankOut)
 @decorate_view(ratelimit(key='ip', rate='1/s'))
 def pluck_rank(request, level: str, start: int = 0, end: int = 20):
@@ -106,12 +102,3 @@ def refresh_pluck_rank(request, data: RefreshCustomPluckRankIn = Form(...)):  # 
     startid = min(data.startid, data.endid)
     endid = max(data.startid, data.endid)
     return refresh_custom_pluck_rank_range(startid, endid)
-
-
-@router.post('/pluck/cache/flush')
-@decorate_view(staff_required)
-def flush_pluck_cache(request, data: CustomPluckLevel = Form(...)):  # noqa: B008
-    """
-    - staff_required
-    """
-    PLuckRankingCache(data.level).flush()

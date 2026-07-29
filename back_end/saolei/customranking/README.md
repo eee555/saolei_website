@@ -17,10 +17,9 @@ DETAIL是查找表hset，主键是RANK的`member`，字段是API展示所需的`
 当`VideoModel`更新时，会尝试更新`CustomPluckRecord`。当`CustomPluckRecord`更新时，会将变化同步到缓存。
 
 ### 缓存接口
-- 缓存不同步时，管理员可以操作清空缓存
 - 用户请求排行榜区间时只读取缓存，不回源数据库。
 - 缓存不再限制长度，原则上缓存所有用户的`CustomPluckRecord`。
-- 缓存需要重建时，使用管理命令`rebuild_custom_pluck_cache`从数据库全量灌入Redis。
+- 缓存需要重建时，使用管理命令`rebuild_custom_pluck_cache`从数据库全量灌入Redis；命令内部会先清空对应缓存再重建。
 
 ### 数据库刷新
 `refresh_custom_pluck_rank_range`可以批量刷新指定用户的`CustomPluckRecord`
