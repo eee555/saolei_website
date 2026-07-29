@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 import json
 from typing import Iterable
 
@@ -69,12 +69,12 @@ class PLuckRankingCache:
         return players
 
     def add_record(self, record: CustomPluckRecord):
-        member = record_to_member(record)
+        member = str(record.player_id)
         self.client.zadd(self.rank_key, {member: record_to_score(record)})
         self.client.hset(self.detail_key, member, json.dumps(record_to_detail(record)))
 
     def remove_record(self, player_id: int):
-        member = player_id_to_member(player_id)
+        member = str(player_id)
         self.client.zrem(self.rank_key, member)
         self.client.hdel(self.detail_key, member)
 
@@ -99,7 +99,7 @@ class PLuckRankingCache:
             _records = records
 
         for record in _records:
-            member = record_to_member(record)
+            member = str(record.player_id)
             rank_mapping[member] = record_to_score(record)
             detail_mapping[member] = json.dumps(record_to_detail(record))
 
@@ -142,14 +142,6 @@ def get_legacy_custom_pluck_player_key(level: str) -> str:
 # Data Conversion #
 ###################
 
-def record_to_member(record: CustomPluckRecord) -> str:
-    return player_id_to_member(record.player_id)
-
-
-def player_id_to_member(player_id: int) -> str:
-    return str(player_id)
-
-
 def record_to_score(record: CustomPluckRecord):
     """将数据库纪录转换为 Redis zset score。"""
     if record.pluck > 0:
@@ -165,18 +157,18 @@ def record_to_detail(record: CustomPluckRecord):
         'pluck': record.pluck,
         'timems': record.timems,
         'bv': record.video.bv,
-        'upload_time_ms': int(record.upload_time.timestamp() * 1000),
+        'upload_time': record.upload_time.isoformat(),
     }
 
 
 def cache_to_dict(member: str, score: float, detail: dict):
     """将 Redis 排行缓存中的数据转换为字典。"""
     data = {**detail}
-    upload_time_ms = data.pop('upload_time_ms')
+    upload_time = data.pop('upload_time')
     return {
         **data,
         'player_id': int(member),
-        'upload_time': datetime.fromtimestamp(int(upload_time_ms) / 1000, tz=timezone.utc),
+        'upload_time': datetime.fromisoformat(upload_time),
     }
 
 
@@ -189,7 +181,7 @@ def get_player_pluck_records(player_id: int, levels: Iterable[str]):
     if not ranking_caches:
         return {}
 
-    member = player_id_to_member(player_id)
+    member = str(player_id)
     pipe = cache.pipeline()
     for ranking_cache in ranking_caches:
         pipe.zscore(ranking_cache.rank_key, member)

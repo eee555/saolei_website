@@ -6,7 +6,7 @@
 
 RANK是有序集zset，`member`直接使用`player_id`，因此同一用户天然去重。排序键`score`通常是`pluck`；当`pluck > 0`时`score = pluck`，当`pluck == 0`时`score = timems - MAX_TIMEMS`。这个规则放弃正数`pluck`碰撞时的严格 tie-breaker，但能处理最主要的`pluck == 0`碰撞风险。
 
-DETAIL是查找表hset，主键是RANK的`member`，字段是API展示所需的`video_id`、`mode`、`pluck`、`timems`、`bv`、`upload_time_ms`。
+DETAIL是查找表hset，主键是RANK的`member`，字段是API展示所需的`video_id`、`mode`、`pluck`、`timems`、`bv`、`upload_time`。
 
 ## 功能支持
 

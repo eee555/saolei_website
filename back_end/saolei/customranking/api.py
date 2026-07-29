@@ -8,7 +8,7 @@ from ninja.errors import HttpError
 from config.customranking import CUSTOM_PLUCK_CONFIGS
 from customranking.cache import get_player_pluck_records, PLuckRankingCache
 from userprofile.decorators import staff_required
-from .services import get_pluck_rank_range, refresh_custom_pluck_rank_range
+from .services import refresh_custom_pluck_rank_range
 
 router = Router()
 
@@ -55,9 +55,9 @@ def pluck_rank(request, level: str, start: int = 0, end: int = 20):
 
     start = max(start, 0)
     end = min(max(end, start), start + 100)
-    count = len(PLuckRankingCache(level))
-
-    players = get_pluck_rank_range(level, start, end)
+    ranking_cache = PLuckRankingCache(level)
+    count = len(ranking_cache)
+    players = ranking_cache.get_rank_range(start, end)
 
     return {
         'count': count,

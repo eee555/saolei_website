@@ -10,11 +10,6 @@ from .cache import PLuckRankingCache
 from .models import CustomPluckRecord
 
 
-def get_pluck_rank_range(level: str, start: int, end: int):
-    """从 Redis 缓存读取某个自定义级别在指定排名区间内的 pluck 排行。"""
-    return PLuckRankingCache(level).get_rank_range(start, end)
-
-
 def update_custom_pluck_top_cache(record: CustomPluckRecord | None, level: str, player_id: int):
     """更新或移除单个玩家的 pluck 排行缓存。"""
     ranking_cache = PLuckRankingCache(level)
