@@ -3,7 +3,7 @@
     <ElTable :data="tournamentList" table-layout="auto" :default-sort="{ prop: 'startDate', order: 'descending' }" @row-click="rowClick">
         <ElTableColumn :label="t('common.prop.state')">
             <template #default="{row}">
-                <TournamentStateIcon :state="row.state" />
+                <TournamentStateIcon :state="row.displayState" />
             </template>
         </ElTableColumn>
         <ElTableColumn :label="t('tournament.tournament')">

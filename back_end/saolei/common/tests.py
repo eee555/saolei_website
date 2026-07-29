@@ -238,7 +238,7 @@ class VideoUploadRankingIntegrationTest(TestCase):
             token=token,
             start_time=now - timedelta(hours=1),
             end_time=now + timedelta(hours=1),
-            state=Tournament_TextChoices.State.ONGOING,
+            state=Tournament_TextChoices.State.NORMAL,
         )
 
         video, _ = self.upload_fixture('standard_gsc.evf')

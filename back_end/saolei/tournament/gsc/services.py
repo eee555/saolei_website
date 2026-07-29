@@ -3,8 +3,9 @@ from collections import defaultdict
 from django.db.models import F, Q, Window
 from django.db.models.functions import RowNumber
 
-from config.text_choices import MS_TextChoices
+from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from config.tournaments import GSC_Defaults
+from tournament.services import reveal_videos_for_tournament
 from tournament.models import GSCParticipant, GSCTournament
 
 GSC_SCORE_FIELDS = [
@@ -164,5 +165,32 @@ def refresh_gsc_ranks(tournament: GSCTournament, *, batch_size=1000):
     return len(changed_participants)
 
 
+def refresh_gsc_scores_and_ranks(tournament: GSCTournament):
+    score_changed = refresh_gsc_scores(tournament)
+    rank_changed = refresh_gsc_ranks(tournament)
+    return {
+        'score_changed': score_changed,
+        'rank_changed': rank_changed,
+    }
+
+
+def finish_gsc_tournament(tournament: GSCTournament):
+    result = refresh_gsc_scores_and_ranks(tournament)
+    if tournament.state != Tournament_TextChoices.State.AWARDED:
+        tournament.state = Tournament_TextChoices.State.AWARDED
+        tournament.save(update_fields=['state'])
+    result['revealed_videos'] = reveal_videos_for_tournament(tournament)
+    return result
+
+
 def get_gsc_scores(tournament: GSCTournament):
     return GSCParticipant.objects.filter(tournament=tournament).values(*GSC_SCORE_VALUE_FIELDS)
+
+
+def ensure_gsc_token_after_start(tournament: GSCTournament):
+    if tournament.token or tournament.start_time is None:
+        return
+    from django.utils import timezone
+
+    if timezone.now() >= tournament.start_time:
+        tournament.new_token()

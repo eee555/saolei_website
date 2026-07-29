@@ -12,7 +12,7 @@ from utils.response import HttpResponseConflict
 from videomanager.view_utils import generate_file_stream
 from ..forms import TournamentForm
 from ..models import GSCTournament, Tournament, TournamentParticipant
-from ..utils import participant_videos
+from ..utils import participant_videos, tournament_accepts_checkin
 
 
 @require_POST
@@ -50,7 +50,7 @@ def allow_tournament(request: HttpRequest):
     if datetime.now(tz=timezone.utc) > tournament.start_time:
         tournament.state = Tournament_TextChoices.State.CANCELLED
         return JsonResponse({'type': 'error', 'object': 'tournament', 'category': 'missed_start_time'})
-    tournament.state = Tournament_TextChoices.State.PREPARING
+    tournament.state = Tournament_TextChoices.State.NORMAL
     tournament.save(update_fields=['state'])
     return HttpResponse()
 
@@ -76,7 +76,6 @@ def get_tournament_list(request: HttpRequest):
     tournament_list = Tournament.objects.all().select_subclasses()
     data = []
     for tournament in tournament_list:
-        tournament.refresh_state()
         data.append({
             'id': tournament.id,
             'series': tournament.series,
@@ -122,7 +121,7 @@ def tournament_checkin(request):
     tournament = Tournament.objects.filter(id=tournament_id).first()
     if not tournament:
         return HttpResponseNotFound()
-    if tournament.state != Tournament_TextChoices.State.ONGOING:
+    if not tournament_accepts_checkin(tournament):
         return JsonResponse({'type': 'error', 'object': 'tournament', 'msg': 'not_ongoing'})
     participant = TournamentParticipant.objects.filter(tournament=tournament, user=request.user).first()
     if participant:
@@ -182,7 +181,6 @@ def set_tournament(request: HttpRequest):
             update_fields.append('token')
 
     tournament.save(update_fields=update_fields)
-    tournament.refresh_state()
     return HttpResponse()
 
 
@@ -252,7 +250,7 @@ def get_participant_videos(request: HttpRequest):
         return HttpResponseBadRequest()
     if not (user := UserProfile.objects.filter(id=user_id).first()):
         return HttpResponseNotFound()
-    if tournament.state == Tournament_TextChoices.State.ONGOING and request.user != user:
+    if tournament.state != Tournament_TextChoices.State.AWARDED and request.user != user:
         return HttpResponseForbidden()
     participant = TournamentParticipant.objects.filter(user=user, tournament=tournament).first()
     if not participant:
@@ -262,8 +260,16 @@ def get_participant_videos(request: HttpRequest):
 
 @require_GET
 def get_tournament_news(request: HttpRequest):
-    preparing_tournaments = Tournament.objects.filter(state=Tournament_TextChoices.State.PREPARING)
-    ongoing_tournaments = Tournament.objects.filter(state=Tournament_TextChoices.State.ONGOING)
+    now = datetime.now(tz=timezone.utc)
+    preparing_tournaments = Tournament.objects.filter(
+        state=Tournament_TextChoices.State.NORMAL,
+        start_time__gt=now,
+    )
+    ongoing_tournaments = Tournament.objects.filter(
+        state=Tournament_TextChoices.State.NORMAL,
+        start_time__lte=now,
+        end_time__gt=now,
+    )
     return JsonResponse({
         'type': 'success',
         'preparing': list(preparing_tournaments.values('id', 'start_time')),
@@ -278,7 +284,7 @@ def download_all_videos(request: HttpRequest):
         return HttpResponseBadRequest()
     if not (tournament := Tournament.objects.filter(id=tournament_id).first()):
         return HttpResponseNotFound()
-    if tournament.state not in [Tournament_TextChoices.State.FINISHED, Tournament_TextChoices.State.AWARDED]:
+    if tournament.state != Tournament_TextChoices.State.AWARDED:
         return HttpResponseForbidden()
     response = StreamingHttpResponse(generate_file_stream(tournament.videos.all()), content_type='application/octet-stream')
     response['Content-Disposition'] = 'attachment; filename="all_files_stream.bin"'
@@ -296,7 +302,7 @@ def download_videos_participant(request: HttpRequest):
         return HttpResponseBadRequest()
     if not (user := UserProfile.objects.filter(id=user_id).first()):
         return HttpResponseNotFound()
-    if tournament.state == Tournament_TextChoices.State.ONGOING and request.user != user:
+    if tournament.state != Tournament_TextChoices.State.AWARDED and request.user != user:
         return HttpResponseForbidden()
     response = StreamingHttpResponse(generate_file_stream(tournament.videos.filter(player=user)), content_type='application/octet-stream')
     response['Content-Disposition'] = 'attachment; filename="all_files_stream.bin"'

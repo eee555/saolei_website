@@ -16,6 +16,7 @@ describe('Tournament', () => {
             expect(tournament.hostId).toBe(0);
             expect(tournament.hostName).toBe('');
             expect(tournament.state).toBe(TournamentState.Pending);
+            expect(tournament.displayState).toBe(TournamentState.Pending);
             expect(tournament.series).toBe(TournamentSeries.Unknown);
         });
 
@@ -136,6 +137,56 @@ describe('Tournament', () => {
         });
     });
 
+    describe('display state', () => {
+        const now = new Date('2025-01-02T00:00:00Z');
+
+        it('keeps explicit non-normal states', () => {
+            const tournament = new Tournament({
+                state: TournamentState.Awarded,
+                startDate: '2025-01-01T00:00:00Z',
+                endDate: '2025-01-03T00:00:00Z',
+            });
+
+            expect(tournament.getDisplayState(now)).toBe(TournamentState.Awarded);
+        });
+
+        it('derives preparing from normal tournaments before start time', () => {
+            const tournament = new Tournament({
+                state: TournamentState.Normal,
+                startDate: '2025-01-03T00:00:00Z',
+                endDate: '2025-01-04T00:00:00Z',
+            });
+
+            expect(tournament.getDisplayState(now)).toBe(TournamentState.Preparing);
+        });
+
+        it('derives ongoing from normal tournaments within the time window', () => {
+            const tournament = new Tournament({
+                state: TournamentState.Normal,
+                startDate: '2025-01-01T00:00:00Z',
+                endDate: '2025-01-03T00:00:00Z',
+            });
+
+            expect(tournament.getDisplayState(now)).toBe(TournamentState.Ongoing);
+        });
+
+        it('derives finished from normal tournaments after end time', () => {
+            const tournament = new Tournament({
+                state: TournamentState.Normal,
+                startDate: '2025-01-01T00:00:00Z',
+                endDate: '2025-01-02T00:00:00Z',
+            });
+
+            expect(tournament.getDisplayState(now)).toBe(TournamentState.Finished);
+        });
+
+        it('keeps normal when dates are incomplete', () => {
+            const tournament = new Tournament({ state: TournamentState.Normal });
+
+            expect(tournament.getDisplayState(now)).toBe(TournamentState.Normal);
+        });
+    });
+
     describe('validation state', () => {
         it('can validate pending tournaments with a valid time range', () => {
             const tournament = new Tournament({
@@ -162,6 +213,7 @@ describe('Tournament', () => {
         it('cannot validate tournaments that are already active or finalized', () => {
             const states = [
                 TournamentState.Awarded,
+                TournamentState.Normal,
                 TournamentState.Finished,
                 TournamentState.Ongoing,
                 TournamentState.Preparing,

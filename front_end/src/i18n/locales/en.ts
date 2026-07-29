@@ -356,6 +356,7 @@ export default {
         startsFrom: 'Starts From',
         state: {
             p: 'Pending',
+            n: 'Normal',
             r: 'Preparing',
             o: 'Ongoing',
             f: 'Finished',

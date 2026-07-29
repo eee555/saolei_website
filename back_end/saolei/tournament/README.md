@@ -21,11 +21,11 @@
 - `VideoModel.ongoing_tournament` 是一个冗余布尔字段，用于快速屏蔽普通录像队列、个人纪录和排行榜刷新。
 - 当前 `tournament.services.reveal_videos_for_tournament` 使用批量逻辑：
   - 先取当前比赛仍标记为 `ongoing_tournament=True` 的录像。
-  - 再取所有 `ONGOING` 比赛关联的录像。
-  - 使用集合差集排除仍属于其他进行中比赛的录像。
+  - 再取所有未公开比赛关联的录像。
+  - 使用集合差集排除仍属于其他未颁奖且未取消比赛的录像。
   - 对剩余录像执行 `queryset.update(ongoing_tournament=False)`，再显式补偿相关缓存和排行副作用。
 
-这条路径在比赛结束、重算、数据修复时可能触发大量数据库查询、信号、Redis 操作，容易成为性能瓶颈。
+这条路径在比赛颁奖、重算、数据修复时可能触发大量数据库查询、信号、Redis 操作，容易成为性能瓶颈。
 
 ## 关键副作用
 
@@ -57,12 +57,12 @@
 
 ### `reveal_videos_for_tournament(tournament)`
 
-用于比赛结束或取消后，将不再属于任何进行中比赛的录像恢复为普通录像。
+用于比赛颁奖后，将不再属于任何未颁奖且未取消比赛的录像恢复为普通录像。
 
 当前流程：
 
 1. 从 `tournament.videos` 中找候选录像。
-2. 排除仍属于其他 `ONGOING` 比赛的录像。
+2. 排除仍属于其他未颁奖且未取消比赛的录像。
 3. 只处理 `ongoing_tournament=True` 的录像。
 4. 固化受影响录像 id。
 5. 批量执行：
@@ -120,8 +120,8 @@
 
 ## 待处理问题
 
-- 明确比赛结束、取消、状态回滚时应在哪些入口调用 `reveal_videos_for_tournament`。
+- 明确比赛取消、状态回滚时应在哪些入口调用 `reveal_videos_for_tournament`。
 - 补充测试：
-  - 比赛结束后，上万条录像不逐条触发 `VideoModel.save()`。
+  - 比赛颁奖后，上万条录像不逐条触发 `VideoModel.save()`。
   - 录像从比赛恢复普通后，队列缓存恢复。
   - 录像从比赛恢复普通后，经典个人纪录和 pluck 纪录刷新。

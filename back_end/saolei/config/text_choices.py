@@ -61,8 +61,6 @@ class Tournament_TextChoices:
 
     class State(TextChoices):
         PENDING = 'p', ('审核中')
-        ONGOING = 'o', ('进行中')
-        FINISHED = 'f', ('已结束')
-        PREPARING = 'r', ('准备中')
+        NORMAL = 'n', ('正常')
         CANCELLED = 'c', ('已取消')
         AWARDED = 'a', ('已颁奖')

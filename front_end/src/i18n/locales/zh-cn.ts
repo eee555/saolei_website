@@ -355,6 +355,7 @@ export default {
         startsFrom: '开始时间',
         state: {
             p: '审核中',
+            n: '正常',
             r: '即将开始',
             o: '进行中',
             f: '结算中',

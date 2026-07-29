@@ -1,7 +1,7 @@
 <template>
     <h1>
         {{ t('gsc.title', { order: order }) }}
-        <TournamentStateIcon :state="tournament.state" />
+        <TournamentStateIcon :state="tournament.displayState" />
     </h1>
     {{ t('gsc.schedule') }}{{ t('common.punct.colon') }}
     <span class="text">
@@ -15,11 +15,11 @@
     <br>
     {{ t('gsc.description.line2') }}
     <br>
-    <template v-if="([TournamentState.Preparing, TournamentState.Ongoing] as TournamentState[]).includes(tournament.state)">
+    <template v-if="([TournamentState.Preparing, TournamentState.Ongoing] as TournamentState[]).includes(tournament.displayState)">
         <h3>{{ t('gsc.howToParticipate') }}</h3>
         <GSCTokenGuide v-model="personaltoken" :order="order" :token="token" />
     </template>
-    <template v-if="tournament.state === TournamentState.Ongoing">
+    <template v-if="tournament.displayState === TournamentState.Ongoing">
         <h3>
             {{ t('gsc.realTimeScore') }}&nbsp;
             <ElLink underline="never" :disabled="loading">
@@ -28,13 +28,13 @@
         </h3>
         <GSCPersonalView v-loading="loading" :user-id="store.user.id" :tournament-id="tournament.id" />
     </template>
-    <template v-if="([TournamentState.Finished, TournamentState.Awarded] as TournamentState[]).includes(tournament.state)">
+    <template v-if="([TournamentState.Finished, TournamentState.Awarded] as TournamentState[]).includes(tournament.displayState)">
         <h3>
             {{ t('gsc.finalResults') }}
         </h3>
         <ElTabs v-model="allSummaryTabPosition">
             <ElTabPane :label="t('tournament.ranking')" lazy :name="-1">
-                <ElButton size="small" @click="downloadAll">
+                <ElButton v-if="tournament.state === TournamentState.Awarded" size="small" @click="downloadAll">
                     {{ t('tournament.downloadAll') }}{{ t('common.punct.lparen') }}{{ t('common.ratelimit.oncePerHour') }}{{ t('common.punct.rparen') }}
                 </ElButton>
                 <ElRow style="height: 0.5em" />
@@ -100,7 +100,7 @@ async function refresh() {
         order.value = response.data.order;
         token.value = response.data.token;
 
-        if (tournament.value.state === TournamentState.Ongoing && store.login_status === LoginStatus.IsLogin) {
+        if (tournament.value.displayState === TournamentState.Ongoing && store.login_status === LoginStatus.IsLogin) {
             result.value = [];
             personaltoken.value = response.identifier ?? '';
         } else {
@@ -114,6 +114,7 @@ async function refresh() {
 watch(() => props.id, refresh, { immediate: true });
 
 function handleAllSummaryRowClick(row: GSCParticipant) {
+    if (tournament.value.state !== TournamentState.Awarded) return;
     const index = viewedParticipants.value.findIndex((item) => item.id === row.id);
     if (index === -1) {
         viewedParticipants.value.push(row);

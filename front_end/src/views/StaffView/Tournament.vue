@@ -10,7 +10,7 @@
     <template v-if="tournament">
         状态
         &nbsp;
-        <TournamentStateIcon :state="tournament.state" />
+        <TournamentStateIcon :state="tournament.displayState" />
         <br>
         开始时间
         &nbsp;

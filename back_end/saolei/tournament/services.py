@@ -7,8 +7,8 @@ from .models import Tournament
 
 
 def reveal_videos_for_tournament(tournament: Tournament):
-    """批量恢复不再属于任何进行中比赛的录像。"""
-    if tournament.state == Tournament_TextChoices.State.ONGOING:
+    """批量恢复已颁奖比赛中不再属于其他未颁奖且未取消比赛的录像。"""
+    if tournament.state != Tournament_TextChoices.State.AWARDED:
         return 0
 
     current_video_ids = set(
@@ -16,13 +16,14 @@ def reveal_videos_for_tournament(tournament: Tournament):
         .filter(ongoing_tournament=True)
         .values_list('id', flat=True),
     )
-    ongoing_video_ids = set(
+    unrevealed_video_ids = set(
         Tournament.objects
-        .filter(state=Tournament_TextChoices.State.ONGOING, videos__ongoing_tournament=True)
+        .exclude(state__in=[Tournament_TextChoices.State.AWARDED, Tournament_TextChoices.State.CANCELLED])
+        .filter(videos__ongoing_tournament=True)
         .values_list('videos__id', flat=True)
         .distinct(),
     )
-    video_ids = list(current_video_ids - ongoing_video_ids)
+    video_ids = list(current_video_ids - unrevealed_video_ids)
 
     if not video_ids:
         return 0

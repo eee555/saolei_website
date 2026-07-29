@@ -1,6 +1,8 @@
-from config.text_choices import MS_TextChoices, Tournament_TextChoices
+from django.utils import timezone
+
+from config.text_choices import MS_TextChoices
 from videomanager.models import VideoModel
-from .models import GSCParticipant, GSCTournament, TournamentParticipant
+from .models import GSCParticipant, GSCTournament, Tournament, TournamentParticipant
 
 
 def participant_videos(participant: TournamentParticipant):
@@ -12,14 +14,26 @@ def add_video_to_checked_tournaments(video: VideoModel):
         tournament.videos.add(video)
 
 
+def tournament_accepts_checkin(tournament: Tournament):
+    now = timezone.now()
+    return (
+        tournament.start_time is not None
+        and tournament.end_time is not None
+        and tournament.start_time <= now < tournament.end_time
+    )
+
+
+def tournament_has_ended(tournament: Tournament):
+    return tournament.end_time is not None and timezone.now() >= tournament.end_time
+
+
 def video_checkin(video: VideoModel, tournament_identifiers: list[str]):
     user = video.player
     checked_in_tournaments = []
     if video.software == MS_TextChoices.Software.AVF:
         if participant := TournamentParticipant.objects.filter(user=user, arbiter_identifier__identifier=video.video.identifier).first():
             tournament = participant.tournament
-            tournament.refresh_state()
-            if tournament.state == Tournament_TextChoices.State.ONGOING:
+            if tournament_accepts_checkin(tournament):
                 video.ongoing_tournament = True
                 checked_in_tournaments.append(tournament)
     elif video.software == MS_TextChoices.Software.EVF:
@@ -31,8 +45,7 @@ def video_checkin(video: VideoModel, tournament_identifiers: list[str]):
             if not gsc_tournament:  # 暂时只支持gsc
                 continue
             participant = TournamentParticipant.objects.filter(user=user, tournament=gsc_tournament).first()
-            gsc_tournament.refresh_state()
-            if gsc_tournament.state == Tournament_TextChoices.State.ONGOING:
+            if tournament_accepts_checkin(gsc_tournament):
                 video.ongoing_tournament = True
                 checked_in_tournaments.append(gsc_tournament)
                 if not participant:

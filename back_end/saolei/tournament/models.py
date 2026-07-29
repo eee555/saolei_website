@@ -48,44 +48,12 @@ class Tournament(models.Model):
     def participants(self):
         return TournamentParticipant.objects.filter(tournament=self)
 
-    def start(self):
-        self.state = Tournament_TextChoices.State.ONGOING
-        self.save(update_fields=['state'])
-
-    def end(self):
-        self.state = Tournament_TextChoices.State.FINISHED
-        self.save(update_fields=['state'])
-
-    def refresh_state(self):
-        current_state = self.state
-        if current_state == Tournament_TextChoices.State.PREPARING:
-            if datetime.now(timezone.utc) > self.end_time:
-                self.start()
-                self.end()
-            elif datetime.now(timezone.utc) >= self.start_time:
-                self.start()
-        elif current_state == Tournament_TextChoices.State.ONGOING:
-            if datetime.now(timezone.utc) >= self.end_time:
-                self.end()
-            elif datetime.now(timezone.utc) < self.start_time:
-                self.state = Tournament_TextChoices.State.PREPARING
-                self.save(update_fields=['state'])
-        elif current_state == Tournament_TextChoices.State.FINISHED:
-            if datetime.now(timezone.utc) < self.start_time:
-                self.state = Tournament_TextChoices.State.PREPARING
-                self.save(update_fields=['state'])
-            elif datetime.now(timezone.utc) < self.end_time:
-                self.state = Tournament_TextChoices.State.ONGOING
-                self.save(update_fields=['state'])
-        return
-
     def validate(self):
         if not self.start_time or not self.end_time or self.start_time >= self.end_time:
             return
         if self.state == Tournament_TextChoices.State.PENDING or self.state == Tournament_TextChoices.State.CANCELLED:
-            self.state = Tournament_TextChoices.State.PREPARING
+            self.state = Tournament_TextChoices.State.NORMAL
             self.save(update_fields=['state'])
-            self.refresh_state()
 
     def invalidate(self):
         if self.state != Tournament_TextChoices.State.AWARDED:
@@ -125,14 +93,6 @@ class GSCTournament(Tournament):
             token = generate_GSC_token()
         self.token = token
         self.save(update_fields=['token'])
-
-    def start(self):
-        if self.token == '':
-            self.new_token()
-        super().start()
-
-    def end(self):
-        super().end()
 
     def add_participant(self, user: UserProfile):
         if not GSCParticipant.objects.filter(user=user, tournament=self).exists():

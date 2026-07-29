@@ -29,7 +29,7 @@ class TournamentTestCase(TestCase):
             token='G12345',
             start_time=now - timedelta(hours=1),
             end_time=now + timedelta(hours=1),
-            state=Tournament_TextChoices.State.ONGOING,
+            state=Tournament_TextChoices.State.NORMAL,
         )
 
     def create_user(self, username):
@@ -92,9 +92,39 @@ class TournamentTestCase(TestCase):
         self.assertFalse(video.ongoing_tournament)
         self.assertFalse(self.tournament.videos.filter(pk=video.pk).exists())
 
+    def test_video_checkin_accepts_by_time_window_when_state_is_stale(self):
+        GSCTournament.objects.filter(pk=self.tournament.pk).update(state=Tournament_TextChoices.State.PENDING)
+
+        video = self.create_video()
+
+        video.refresh_from_db()
+        self.tournament.refresh_from_db()
+        self.assertEqual(self.tournament.state, Tournament_TextChoices.State.PENDING)
+        self.assertTrue(video.ongoing_tournament)
+        self.assertTrue(self.tournament.videos.filter(pk=video.pk).exists())
+
+    def test_video_checkin_rejects_by_time_window_after_end_time(self):
+        now = timezone.now()
+        GSCTournament.objects.filter(pk=self.tournament.pk).update(
+            start_time=now - timedelta(hours=2),
+            end_time=now - timedelta(hours=1),
+            state=Tournament_TextChoices.State.NORMAL,
+        )
+
+        video = self.create_video()
+
+        video.refresh_from_db()
+        self.tournament.refresh_from_db()
+        self.assertEqual(self.tournament.state, Tournament_TextChoices.State.NORMAL)
+        self.assertFalse(video.ongoing_tournament)
+        self.assertFalse(self.tournament.videos.filter(pk=video.pk).exists())
+
     def test_reveal_videos_for_tournament_restores_personal_record(self):
         video = self.create_video()
-        GSCTournament.objects.filter(pk=self.tournament.pk).update(state=Tournament_TextChoices.State.FINISHED)
+        GSCTournament.objects.filter(pk=self.tournament.pk).update(
+            end_time=timezone.now() - timedelta(hours=1),
+            state=Tournament_TextChoices.State.AWARDED,
+        )
         self.tournament.refresh_from_db()
 
         changed_count = reveal_videos_for_tournament(self.tournament)
@@ -106,7 +136,21 @@ class TournamentTestCase(TestCase):
         self.assertEqual(self.user.userms.b_timems_std, video.timems)
         self.assertEqual(self.user.userms.b_timems_id_std, video.id)
 
-    def test_reveal_videos_for_tournament_keeps_videos_in_other_ongoing_tournament(self):
+    def test_reveal_videos_for_tournament_waits_until_awarded(self):
+        video = self.create_video()
+        GSCTournament.objects.filter(pk=self.tournament.pk).update(
+            end_time=timezone.now() - timedelta(hours=1),
+            state=Tournament_TextChoices.State.NORMAL,
+        )
+        self.tournament.refresh_from_db()
+
+        changed_count = reveal_videos_for_tournament(self.tournament)
+
+        video.refresh_from_db()
+        self.assertEqual(changed_count, 0)
+        self.assertTrue(video.ongoing_tournament)
+
+    def test_reveal_videos_for_tournament_keeps_videos_in_other_unawarded_tournament(self):
         video = self.create_video()
         now = timezone.now()
         other_tournament = GSCTournament.objects.create(
@@ -114,10 +158,13 @@ class TournamentTestCase(TestCase):
             token='G67890',
             start_time=now - timedelta(hours=1),
             end_time=now + timedelta(hours=1),
-            state=Tournament_TextChoices.State.ONGOING,
+            state=Tournament_TextChoices.State.PENDING,
         )
         other_tournament.videos.add(video)
-        GSCTournament.objects.filter(pk=self.tournament.pk).update(state=Tournament_TextChoices.State.FINISHED)
+        GSCTournament.objects.filter(pk=self.tournament.pk).update(
+            end_time=now - timedelta(minutes=1),
+            state=Tournament_TextChoices.State.AWARDED,
+        )
         self.tournament.refresh_from_db()
 
         changed_count = reveal_videos_for_tournament(self.tournament)

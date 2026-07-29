@@ -29,6 +29,7 @@ export interface TournamentInfo {
 export class Tournament {
     private static readonly cannotValidateStates: readonly TournamentState[] = [
         TournamentState.Awarded,
+        TournamentState.Normal,
         TournamentState.Finished,
         TournamentState.Ongoing,
         TournamentState.Preparing,
@@ -71,6 +72,10 @@ export class Tournament {
         return !Tournament.cannotInvalidateStates.includes(this.state);
     }
 
+    public get displayState(): TournamentState {
+        return this.getDisplayState();
+    }
+
     public static localFallback(local: string | undefined): 'zh' | 'en' | undefined {
         if (local === undefined) return undefined;
         if (local === 'zh') return undefined;
@@ -88,6 +93,14 @@ export class Tournament {
             _local = Tournament.localFallback(_local);
         }
         return '';
+    }
+
+    public getDisplayState(now = new Date()): TournamentState {
+        if (this.state !== TournamentState.Normal) return this.state;
+        if (!this.startDate || !this.endDate) return TournamentState.Normal;
+        if (now < this.startDate) return TournamentState.Preparing;
+        if (now < this.endDate) return TournamentState.Ongoing;
+        return TournamentState.Finished;
     }
 
     /**

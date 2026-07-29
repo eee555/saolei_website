@@ -36,6 +36,7 @@ export type MS_State = typeof MS_State[keyof typeof MS_State];
 
 export const TournamentState = {
     Pending: 'p',
+    Normal: 'n',
     Ongoing: 'o',
     Finished: 'f',
     Preparing: 'r',

@@ -13,7 +13,8 @@ from tournament.decorators import GSC_admin_required
 from tournament.models import GSCParticipant, GSCTournament, Tournament
 from userprofile.decorators import login_required_error
 from utils.response import HttpResponseConflict
-from .services import get_gsc_scores, refresh_gsc_participant_score
+from tournament.utils import tournament_accepts_checkin, tournament_has_ended
+from .services import ensure_gsc_token_after_start, get_gsc_scores, refresh_gsc_participant_score
 from .tasks import task_gsc_finish, task_gsc_refresh
 
 router = Router()
@@ -66,7 +67,7 @@ def new_GSC_tournament(request: HttpRequest, data: NewGSCTournamentIn = Form(...
     if start_time is None or end_time is None:
         state = Tournament_TextChoices.State.PENDING
     elif datetime.now(tz=timezone.utc) < start_time:
-        state = Tournament_TextChoices.State.PREPARING
+        state = Tournament_TextChoices.State.NORMAL
     else:
         return {'type': 'error', 'msg': 'invalid_start_time'}
 
@@ -118,9 +119,9 @@ def get_gscinfo(request: HttpRequest, id: int | None = None, order: int | None =
     if not tournament:
         return HttpResponseNotFound()
 
-    tournament.refresh_state()
+    ensure_gsc_token_after_start(tournament)
     results = None
-    if tournament.state in [Tournament_TextChoices.State.FINISHED, Tournament_TextChoices.State.AWARDED]:
+    if tournament.state == Tournament_TextChoices.State.AWARDED or tournament_has_ended(tournament):
         results = list(get_gsc_scores(tournament))
         identifier = None
     elif request.user.is_authenticated:
@@ -151,7 +152,8 @@ def register_GSCParticipant(request: HttpRequest, data: RegisterGSCParticipantIn
     userms = user.userms
     if not (tournament := GSCTournament.objects.filter(order=data.order).first()):
         return HttpResponseNotFound()
-    if tournament.state != Tournament_TextChoices.State.ONGOING:
+    ensure_gsc_token_after_start(tournament)
+    if not tournament_accepts_checkin(tournament):
         return HttpResponseForbidden()
     if not data.identifier.endswith(tournament.token):
         return {'type': 'error', 'object': 'identifier', 'category': 'suffix'}
@@ -232,7 +234,7 @@ def award_GSC(request: HttpRequest, data: GSCOrderIn = Form(...)):  # noqa: B008
         return HttpResponseForbidden()
     if not (tournament := GSCTournament.objects.filter(order=data.order).first()):
         return HttpResponseNotFound()
-    if tournament.state not in [Tournament_TextChoices.State.FINISHED, Tournament_TextChoices.State.AWARDED]:
+    if tournament.state != Tournament_TextChoices.State.AWARDED and not tournament_has_ended(tournament):
         return HttpResponseForbidden()
 
     return task_response(task_gsc_finish.enqueue(data.order))
