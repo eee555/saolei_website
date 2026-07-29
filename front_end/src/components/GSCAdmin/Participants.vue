@@ -50,36 +50,41 @@ const columns = ['user__id', 'user__realname', 'bt1st', 'bt20th', 'bt20sum', 'it
 const data = ref<(GSCParticipant | TournamentParticipant)[]>([]);
 const logList = ref<string[]>([]);
 
+interface TaskResponse {
+    type: 'success';
+    data: {
+        task_id: string;
+    };
+}
+
 watch(() => props.id, () => {
     if (props.id === 0) return;
-    proxy.$axios.get('tournament/gsc/participants/', { params: { order: props.id } }).then((response) => {
+    proxy.$axios.get('/api/tournament/gsc/participants', { params: { order: props.id } }).then((response) => {
         data.value = response.data.data;
     }).catch(httpErrorNotification);
 });
 
-async function calculate() {
+function calculate() {
     if (props.id === 0) return;
-    logList.value.push('获取选手列表...');
-    await proxy.$axios.get('tournament/gsc/participants/', { params: { order: props.id } }).then((response) => {
-        data.value = response.data.data;
-        logList.value.push(`选手列表获取完成，共${data.value.length}位选手`);
-    }).catch(() => {
-        logList.value.push('选手列表获取失败！');
+    logList.value.push('正在创建成绩刷新后台任务...');
+    proxy.$axios.post<TaskResponse>('/api/tournament/gsc/refreshscore', { order: props.id }).then((response) => {
+        successNotification(response);
+        logList.value.push(`后台任务已创建：${response.data.data.task_id}`);
+    }).catch((error: unknown) => {
+        logList.value.push('后台任务创建失败！');
+        httpErrorNotification(error);
     });
-    for (const [index, participant] of data.value.entries()) {
-        if (participant.id === 0) continue;
-        logList.value.push(`正在计算 ${participant.user__realname}#${participant.user__id} 的成绩...`);
-        await proxy.$axios.post('tournament/gsc/refresh/', { id: participant.id }).then((response) => {
-            data.value[index] = response.data;
-            logList.value.push('计算完成！');
-        }).catch(() => {
-            logList.value.push('计算失败！');
-        });
-    }
 }
 
 function award() {
     if (props.id === 0) return;
-    proxy.$axios.post('tournament/gsc/award/', { order: props.id }).then(successNotification).catch(httpErrorNotification);
+    logList.value.push('正在创建比赛结束后台任务...');
+    proxy.$axios.post<TaskResponse>('/api/tournament/gsc/award', { order: props.id }).then((response) => {
+        successNotification(response);
+        logList.value.push(`后台任务已创建：${response.data.data.task_id}`);
+    }).catch((error: unknown) => {
+        logList.value.push('后台任务创建失败！');
+        httpErrorNotification(error);
+    });
 }
 </script>

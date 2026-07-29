@@ -5,8 +5,8 @@ from django.dispatch import receiver
 
 from config.text_choices import Tournament_TextChoices
 from videomanager.models import VideoModel
+from .gsc.tasks import task_gsc_finish
 from .models import GSCTournament, Tournament
-from .tasks import task_gsc_finish
 from .utils import add_video_to_checked_tournaments, video_checkin
 
 

@@ -5,9 +5,11 @@ from django.test import TestCase
 from django.utils import timezone
 
 from config.text_choices import MS_TextChoices, Tournament_TextChoices
+from config.tournaments import GSC_Defaults
 from msuser.models import UserMS
 from userprofile.models import UserProfile
 from videomanager.models import ExpandVideoModel, VideoModel
+from .gsc.services import refresh_gsc_ranks, refresh_gsc_scores
 from .models import GSCParticipant, GSCTournament
 from .services import reveal_videos_for_tournament
 
@@ -30,23 +32,32 @@ class TournamentTestCase(TestCase):
             state=Tournament_TextChoices.State.ONGOING,
         )
 
+    def create_user(self, username):
+        return UserProfile.objects.create_user(
+            username=username,
+            email=f'{username}@example.com',
+            password='password',
+            userms=UserMS.objects.create(),
+        )
+
     def test_create_tournament(self):
         # TODO: add tests
         pass
 
-    def create_video(self, *, tournament_identifiers=None):
-        expand_video = ExpandVideoModel.objects.create(identifier='gsc-video')
+    def create_video(self, *, user=None, tournament_identifiers=None, level=MS_TextChoices.Level.BEGINNER, timems=1000, bv=10):
+        video_index = ExpandVideoModel.objects.count() + 1
+        expand_video = ExpandVideoModel.objects.create(identifier=f'gsc-video-{video_index}')
         video = VideoModel(
-            player=self.user,
-            file='videos/test.evf',
+            player=user or self.user,
+            file=f'videos/test-{video_index}.evf',
             file_size=1,
             video=expand_video,
             state=MS_TextChoices.State.OFFICIAL,
             software=MS_TextChoices.Software.EVF,
-            level=MS_TextChoices.Level.BEGINNER,
+            level=level,
             mode=MS_TextChoices.Mode.STD,
-            timems=1000,
-            bv=10,
+            timems=timems,
+            bv=bv,
             left=1,
             right=1,
             double=1,
@@ -114,3 +125,66 @@ class TournamentTestCase(TestCase):
         video.refresh_from_db()
         self.assertEqual(changed_count, 0)
         self.assertTrue(video.ongoing_tournament)
+
+    def test_refresh_gsc_score_and_rank_uses_batch_rules(self):
+        user_without_valid_score = self.create_user('gsc_default_user')
+        participant_without_valid_score = GSCParticipant.objects.create(
+            user=user_without_valid_score,
+            tournament=self.tournament,
+            token=self.tournament.token,
+        )
+        participant_without_valid_score.bt1st = 1
+        participant_without_valid_score.bt20th = 1
+        participant_without_valid_score.bt20sum = 1
+        participant_without_valid_score.it1st = 1
+        participant_without_valid_score.it12th = 1
+        participant_without_valid_score.it12sum = 1
+        participant_without_valid_score.et1st = 1
+        participant_without_valid_score.et5th = 1
+        participant_without_valid_score.et5sum = 1
+        participant_without_valid_score.save(update_fields=[
+            'bt1st', 'bt20th', 'bt20sum',
+            'it1st', 'it12th', 'it12sum',
+            'et1st', 'et5th', 'et5sum',
+        ])
+
+        beginner_times = [1000 + index * 100 for index in range(21)]
+        intermediate_times = [10000 + index * 1000 for index in range(13)]
+        expert_times = [40000 + index * 10000 for index in range(6)]
+        for timems in beginner_times:
+            self.create_video(level=MS_TextChoices.Level.BEGINNER, timems=timems, bv=GSC_Defaults.B_BV_MIN)
+        for timems in intermediate_times:
+            self.create_video(level=MS_TextChoices.Level.INTERMEDIATE, timems=timems, bv=GSC_Defaults.I_BV_MIN)
+        for timems in expert_times:
+            self.create_video(level=MS_TextChoices.Level.EXPERT, timems=timems, bv=GSC_Defaults.E_BV_MIN)
+
+        self.create_video(level=MS_TextChoices.Level.BEGINNER, timems=999, bv=GSC_Defaults.B_BV_MIN - 1)
+        self.create_video(level=MS_TextChoices.Level.INTERMEDIATE, timems=GSC_Defaults.IT, bv=GSC_Defaults.I_BV_MIN)
+        self.create_video(level=MS_TextChoices.Level.EXPERT, timems=1, bv=GSC_Defaults.E_BV_MIN - 1)
+
+        score_changed = refresh_gsc_scores(self.tournament)
+        rank_changed = refresh_gsc_ranks(self.tournament)
+
+        participant = GSCParticipant.objects.get(tournament=self.tournament, user=self.user)
+        participant_without_valid_score.refresh_from_db()
+
+        beginner_top = beginner_times[:20]
+        intermediate_top = intermediate_times[:12]
+        expert_top = expert_times[:5]
+        self.assertEqual(score_changed, 2)
+        self.assertEqual(rank_changed, 2)
+        self.assertEqual(participant.bt1st, beginner_top[0])
+        self.assertEqual(participant.bt20th, beginner_top[-1])
+        self.assertEqual(participant.bt20sum, sum(beginner_top))
+        self.assertEqual(participant.it1st, intermediate_top[0])
+        self.assertEqual(participant.it12th, intermediate_top[-1])
+        self.assertEqual(participant.it12sum, sum(intermediate_top))
+        self.assertEqual(participant.et1st, expert_top[0])
+        self.assertEqual(participant.et5th, expert_top[-1])
+        self.assertEqual(participant.et5sum, sum(expert_top))
+        self.assertEqual(participant.rank, 1)
+        self.assertEqual(participant_without_valid_score.bt1st, GSC_Defaults.BT)
+        self.assertEqual(participant_without_valid_score.bt20sum, GSC_Defaults.BT * 20)
+        self.assertEqual(participant_without_valid_score.it12sum, GSC_Defaults.IT * 12)
+        self.assertEqual(participant_without_valid_score.et5sum, GSC_Defaults.ET * 5)
+        self.assertEqual(participant_without_valid_score.rank, 2)

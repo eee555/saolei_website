@@ -80,7 +80,7 @@ async function getGSCInfo(id: number | undefined) {
     }
     loadingGSCInfo.value = true;
     notFound.value = false;
-    await proxy.$axios.get<ApiResponse<GSCInfoResponseData>>('tournament/get_gsc_tournament/', { params: { id: id } }).then(
+    await proxy.$axios.get<ApiResponse<GSCInfoResponseData>>('/api/tournament/gsc/admin-info', { params: { id: id } }).then(
         function ({ data }) {
             if (data.type === 'error') {
                 notFound.value = true;
@@ -97,7 +97,7 @@ async function getGSCInfo(id: number | undefined) {
 }
 
 function createGSC() {
-    proxy.$axios.post<unknown>('tournament/new_gsc/', { id: props.id }).then(
+    proxy.$axios.post<unknown>('/api/tournament/gsc/new', { id: props.id }).then(
         function (response) {
             successNotification(response);
             void getGSCInfo(props.id);

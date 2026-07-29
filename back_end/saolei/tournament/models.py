@@ -6,7 +6,7 @@ from django.db import models
 from model_utils.managers import InheritanceManager
 
 from config.global_settings import MaxSizes
-from config.text_choices import MS_TextChoices, Tournament_TextChoices
+from config.text_choices import Tournament_TextChoices
 from config.tournaments import GSC_Defaults
 from identifier.models import Identifier
 from userprofile.models import UserProfile
@@ -138,28 +138,6 @@ class GSCTournament(Tournament):
         if not GSCParticipant.objects.filter(user=user, tournament=self).exists():
             GSCParticipant.objects.create(user=user, tournament=self, token=self.token, start_time=datetime.now(tz=timezone.utc))
 
-    def refresh_rank(self):
-        rank = 1
-        for participant in GSCParticipant.objects.filter(tournament=self).order_by('t37'):
-            participant.rank = rank
-            participant.save(update_fields=['rank'])
-            rank += 1
-
-    def refresh_score(self):
-        for participant in GSCParticipant.objects.filter(tournament=self):
-            participant.refresh()
-
-    def get_scores(self):
-        return GSCParticipant.objects.filter(tournament=self).values(
-            'id',
-            'user__id',
-            'start_time', 'end_time',
-            'rank', 'rank_score',
-            'bt1st', 'bt20th', 'bt20sum',
-            'it1st', 'it12th', 'it12sum',
-            'et1st', 'et5th', 'et5sum',
-        )
-
 
 class GeneralTournament(Tournament):
     name = models.JSONField()
@@ -221,30 +199,3 @@ class GSCParticipant(TournamentParticipant):
         output_field=models.PositiveIntegerField(),
         db_persist=True,
     )
-
-    def refresh(self):
-        videos = self.tournament.videos.filter(player=self.user)
-
-        videos_b = videos.filter(level=MS_TextChoices.Level.BEGINNER, bv__gte=GSC_Defaults.B_BV_MIN)
-        videos_bt = videos_b.filter(timems__lt=GSC_Defaults.BT).order_by('timems')[:20].values_list('timems', flat=True)
-        self.bt1st = videos_bt[0] if len(videos_bt) >= 1 else GSC_Defaults.BT
-        self.bt20th = videos_bt[19] if len(videos_bt) >= 20 else GSC_Defaults.BT
-        self.bt20sum = sum(videos_bt) + (20 - len(videos_bt)) * GSC_Defaults.BT
-
-        videos_i = videos.filter(level=MS_TextChoices.Level.INTERMEDIATE, bv__gte=GSC_Defaults.I_BV_MIN)
-        videos_it = videos_i.filter(timems__lt=GSC_Defaults.IT).order_by('timems')[:12].values_list('timems', flat=True)
-        self.it1st = videos_it[0] if len(videos_it) >= 1 else GSC_Defaults.IT
-        self.it12th = videos_it[11] if len(videos_it) >= 12 else GSC_Defaults.IT
-        self.it12sum = sum(videos_it) + (12 - len(videos_it)) * GSC_Defaults.IT
-
-        videos_e = videos.filter(level=MS_TextChoices.Level.EXPERT, bv__gte=GSC_Defaults.E_BV_MIN)
-        videos_et = videos_e.filter(timems__lt=GSC_Defaults.ET).order_by('timems')[:5].values_list('timems', flat=True)
-        self.et1st = videos_et[0] if len(videos_et) >= 1 else GSC_Defaults.ET
-        self.et5th = videos_et[4] if len(videos_et) >= 5 else GSC_Defaults.ET
-        self.et5sum = sum(videos_et) + (5 - len(videos_et)) * GSC_Defaults.ET
-
-        self.save(update_fields=[
-            'bt1st', 'bt20th', 'bt20sum',
-            'it1st', 'it12th', 'it12sum',
-            'et1st', 'et5th', 'et5sum',
-        ])

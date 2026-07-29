@@ -48,7 +48,7 @@ export async function fetchTournament(tournamentId: number | string): Promise<To
 }
 
 export async function fetchGSCInfo(tournamentId: number): Promise<GSCInfoResponse> {
-    const { data } = await $axios.get<GSCInfoResponse>('tournament/gscinfo/', {
+    const { data } = await $axios.get<GSCInfoResponse>('/api/tournament/gsc/info', {
         params: { id: tournamentId },
     });
     return data;

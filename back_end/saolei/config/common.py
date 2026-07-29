@@ -14,4 +14,12 @@ TASK_CLEANUP_CONFIGS = [
         'task_path': 'accountlink.tasks.task_saolei_video_import_bulk',
         'expires': timedelta(days=7),
     },
+    {
+        'task_path': 'tournament.gsc.tasks.task_gsc_refresh',
+        'expires': timedelta(days=7),
+    },
+    {
+        'task_path': 'tournament.gsc.tasks.task_gsc_finish',
+        'expires': timedelta(days=30),
+    },
 ]

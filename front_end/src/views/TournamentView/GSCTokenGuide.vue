@@ -80,7 +80,7 @@ const errorText = ref<string>('');
 const newIdentifier = ref<string>('');
 
 function registerToken() {
-    proxy.$axios.post('tournament/gscregister/', {
+    proxy.$axios.post('/api/tournament/gsc/register', {
         identifier: newIdentifier.value,
         order: props.order,
     }).then((response) => {
