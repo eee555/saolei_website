@@ -14,9 +14,9 @@ def update_custom_pluck_top_cache(record: CustomPluckRecord | None, level: str, 
     """更新或移除单个玩家的 pluck 排行缓存。"""
     ranking_cache = PLuckRankingCache(level)
     if record is not None:
-        ranking_cache.update_record(record)
+        ranking_cache.add_record(record)
     else:
-        ranking_cache.delete_record(player_id)
+        ranking_cache.remove_record(player_id)
 
 
 def refresh_custom_pluck_rank(player, level: str):

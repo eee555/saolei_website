@@ -78,14 +78,6 @@ class PLuckRankingCache:
         self.client.zrem(self.rank_key, member)
         self.client.hdel(self.detail_key, member)
 
-    def update_record(self, record: CustomPluckRecord):
-        """更新 Redis 排行缓存中某个玩家的纪录。"""
-        self.add_record(record)
-
-    def delete_record(self, player_id: int):
-        """删除 Redis 排行缓存中某个玩家的纪录。"""
-        self.remove_record(player_id)
-
     def add_record_batch(self, records: Iterable[CustomPluckRecord]):
         # 准备批量数据
         rank_mapping = {}  # {member: score}

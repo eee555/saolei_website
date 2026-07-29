@@ -133,10 +133,10 @@ class PLuckRankingCacheTests(CustomRankingTestCase):
             records[2].player_id,
         ])
 
-    def test_delete_record_removes_rank_and_detail(self):
+    def test_remove_record_removes_rank_and_detail(self):
         record = self.create_record(self.players[0], pluck=1, timems=1000, seconds=0)
 
-        self.cache.delete_record(record.player_id)
+        self.cache.remove_record(record.player_id)
 
         self.assertEqual(len(self.cache), 0)
         self.assertEqual(self.cache.get_rank_range(0, 1), [])
