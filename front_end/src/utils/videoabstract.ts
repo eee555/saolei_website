@@ -8,27 +8,6 @@ import { formatBytes } from './strings';
 type VideoLevel = MS_Level | CustomLevel;
 export type StandardVideoAbstract = VideoAbstract & { level: MS_Level };
 
-function undefinedOrToString(value: { toString: () => string } | undefined): string | undefined {
-    return value === undefined ? undefined : value.toString();
-}
-
-function undefinedOrToFixed(value: number | undefined, digits: number): string | undefined {
-    return value === undefined ? undefined : value.toFixed(digits);
-}
-
-function undefinedDivideNumber(a: number | undefined, b: number): number | undefined {
-    if (a === undefined) return undefined;
-    return a / b;
-}
-function numberDivideUndefined(a: number, b: number | undefined): number | undefined {
-    if (b === undefined) return undefined;
-    return a / b;
-}
-function undefinedDivideUndefined(a: number | undefined, b: number | undefined): number | undefined {
-    if (a === undefined || b === undefined) return undefined;
-    return a / b;
-}
-
 export interface VideoAbstractInfo {
     id: number;
     upload_time: string | Date;
@@ -45,7 +24,7 @@ export interface VideoAbstractInfo {
     pluck: number | null;
 }
 
-interface VideoRedisInfo {
+export interface VideoRedisInfo {
     state: string;
     software: string;
     time: string;
@@ -93,10 +72,10 @@ export class VideoAbstract {
     public bv: number;
     public state: MS_State = MS_State.Plain;
     public software: MS_Software;
-    public cl?: number;
-    public ce?: number;
-    public path?: number;
-    public pluck?: number;
+    public cl = NaN;
+    public ce = NaN;
+    public path = NaN;
+    public pluck = NaN;
     public player_id?: number;
     public file_size = 0;
     public ongoing_tournament?: boolean;
@@ -116,10 +95,10 @@ export class VideoAbstract {
         if (info.state !== undefined) this.state = info.state as MS_State;
         this.software = info.software as MS_Software;
 
-        this.cl = info.cl ?? undefined;
-        this.ce = info.ce ?? undefined;
-        this.path = info.path ?? undefined;
-        this.pluck = info.pluck ?? undefined;
+        this.cl = info.cl ?? NaN;
+        this.ce = info.ce ?? NaN;
+        this.path = info.path ?? NaN;
+        this.pluck = info.pluck ?? NaN;
         this.player_id = info.player_id ?? info.player;
 
         this.file_size = info.file_size ?? this.file_size;
@@ -164,43 +143,39 @@ export class VideoAbstract {
         return STNB_const.value[this.level] / this.qg;
     }
 
-    public get ioe(): number | undefined {
-        return numberDivideUndefined(this.bv, this.cl);
+    public get ioe(): number {
+        return this.bv / this.cl;
     }
 
-    public get thrp(): number | undefined {
-        return numberDivideUndefined(this.bv, this.ce);
+    public get thrp(): number {
+        return this.bv / this.ce;
     }
 
-    public get corr(): number | undefined {
-        return undefinedDivideUndefined(this.ce, this.cl);
+    public get corr(): number {
+        return this.ce / this.cl;
     }
 
-    public get cls(): number | undefined {
-        return undefinedDivideNumber(this.cl, this.time);
+    public get cls(): number {
+        return this.cl / this.time;
     }
 
-    public get ces(): number | undefined {
-        return undefinedDivideNumber(this.ce, this.time);
+    public get ces(): number {
+        return this.ce / this.time;
     }
 
-    public get npath(): number | undefined {
-        return undefinedDivideNumber(this.path, 16);
+    public get npath(): number {
+        return this.path / 16;
     }
 
-    public get mov(): number | undefined {
-        return undefinedDivideNumber(this.npath, this.time);
+    public get mov(): number {
+        return this.npath / this.time;
     }
 
-    public get iome(): number | undefined {
-        return numberDivideUndefined(this.bv, this.npath);
+    public get iome(): number {
+        return this.bv / this.npath;
     }
 
-    public getStat(stat: getStat_stat): number | undefined {
-        return this[stat];
-    }
-
-    public displayStat(stat: getStat_stat): string | undefined {
+    public displayStat(stat: getStat_stat): string {
         switch (stat) {
             case 'timems':
             case 'time': return this.time.toFixed(3);
@@ -209,21 +184,20 @@ export class VideoAbstract {
             case 'qg': return this.qg.toFixed(3);
             case 'rqp': return this.rqp.toFixed(3);
             case 'stnb': return this.stnb.toFixed(1);
-            case 'ce': return undefinedOrToString(this.ce);
-            case 'ces': return undefinedOrToFixed(this.ces, 3);
-            case 'cl': return undefinedOrToString(this.cl);
-            case 'cls': return undefinedOrToFixed(this.cls, 3);
-            case 'ioe': return undefinedOrToFixed(this.ioe, 3);
-            case 'thrp': return undefinedOrToFixed(this.thrp, 3);
-            case 'corr': return undefinedOrToFixed(this.corr, 3);
-            case 'path': return undefinedOrToFixed(this.path, 0);
-            case 'pluck': return undefinedOrToFixed(this.pluck, 3);
-            case 'npath': return undefinedOrToFixed(this.npath, 1);
-            case 'mov': return undefinedOrToFixed(this.mov, 3);
-            case 'iome': return undefinedOrToFixed(this.iome, 3);
+            case 'ce': return this.ce.toString();
+            case 'ces': return this.ces.toFixed(3);
+            case 'cl': return this.cl.toString();
+            case 'cls': return this.cls.toFixed(3);
+            case 'ioe': return this.ioe.toFixed(3);
+            case 'thrp': return this.thrp.toFixed(3);
+            case 'corr': return this.corr.toFixed(3);
+            case 'path': return this.path.toFixed(0);
+            case 'pluck': return this.pluck.toFixed(3);
+            case 'npath': return this.npath.toFixed(1);
+            case 'mov': return this.mov.toFixed(3);
+            case 'iome': return this.iome.toFixed(3);
             case 'file_size': return formatBytes(this.file_size);
         }
-        return undefined;
     }
 }
 

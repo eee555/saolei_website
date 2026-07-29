@@ -31,7 +31,7 @@ describe('Staff logs', () => {
     beforeEach(() => {
         void Cypress.session.clearAllSavedSessions();
         cy.flushDatabase();
-        cy.register(STAFF.id, STAFF.username, STAFF.email, STAFF.password);
+        cy.registerUser(STAFF);
         cy.setStaff(STAFF.id);
         writeLog(LOG_FILE, LOG_CONTENT);
     });
@@ -43,17 +43,24 @@ describe('Staff logs', () => {
 
         cy.visit('/#/staff/logs');
         cy.wait('@listLogs');
+        cy.get('.log-tail-bytes input').clear();
+        cy.get('.log-tail-bytes input').type('1024');
+        cy.get('.log-tail-bytes input').blur();
 
-        cy.contains('.el-table__row', LOG_FILE).within(() => {
-            cy.contains('button', '查看').click();
-        });
+        cy.get('.log-file-select').click();
+        cy.contains('.el-select-dropdown__item', LOG_FILE).click();
         cy.wait('@logTail').its('response.statusCode').should('eq', 200);
 
         cy.contains('.log-toolbar', LOG_FILE);
         cy.get('.log-viewer').should('contain', 'cypress staff log start');
         cy.get('.log-viewer').should('contain', 'admin can read log tail');
         cy.get('.log-viewer').should('contain', 'cypress staff log end');
-        cy.contains('.log-toolbar', '实时更新中', { timeout: 10000 });
+        cy.contains('.log-toolbar', '已加载，轮询未启动');
+        cy.get('.log-poll-start').click();
+        cy.contains('.log-toolbar', '轮询更新中', { timeout: 10000 });
+        cy.get('.log-poll-ms input').clear();
+        cy.get('.log-poll-ms input').type('500');
+        cy.get('.log-poll-ms input').blur();
 
         writeLog(LOG_FILE, TAIL_UPDATE, true);
         cy.get('.log-viewer', { timeout: 15000 }).should('contain', TAIL_UPDATE.trim());

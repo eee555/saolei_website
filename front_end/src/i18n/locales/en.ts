@@ -252,12 +252,6 @@ export default {
         summary: 'Summary',
         videos: 'Videos',
     },
-    guide: {
-        announcement: 'Announcements',
-        other: 'Others',
-        skill: 'Skills',
-        tutorial: 'Tutorials',
-    },
     home: {
         news: 'News',
         latestScore: 'Latest',

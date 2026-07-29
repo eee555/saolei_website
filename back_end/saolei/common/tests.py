@@ -1,7 +1,9 @@
 from datetime import timedelta
 import json
+import os
 from pathlib import Path
 import tempfile
+from unittest.mock import patch
 
 from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -21,11 +23,89 @@ from tournament.models import GSCTournament
 from userprofile.models import UserProfile
 from utils.parser import MSVideoParser
 from videomanager.models import VideoModel
+from . import api as common_api
 
 
 FIXTURE_DIR = Path(__file__).resolve().parent / 'test_fixtures' / 'video_upload_ranking'
 EXPERT_PERSONAL_PLUCK = 0.16342814596696364
 CUSTOM_PLUCK_FIXTURE_PLUCK = 6.493148642054213
+
+
+class LogPollTests(TestCase):
+    def setUp(self):
+        self.log_dir_context = tempfile.TemporaryDirectory()
+        self.log_dir = Path(self.log_dir_context.name)
+        self.log_dir_patch = patch.object(common_api, 'LOG_DIR', self.log_dir)
+        self.log_dir_patch.start()
+
+    def tearDown(self):
+        self.log_dir_patch.stop()
+        self.log_dir_context.cleanup()
+
+    def write_log(self, filename: str, content: str):
+        path = self.log_dir / filename
+        path.write_bytes(content.encode())
+        return path
+
+    def test_poll_returns_content_from_offset(self):
+        content = 'first\nsecond\n'
+        offset = len('first\n'.encode())
+        self.write_log('app.log', content)
+
+        response = common_api.poll_log_tail(None, 'app.log', offset=offset)
+
+        self.assertEqual(response, {
+            'content': 'second\n',
+            'offset': len(content.encode()),
+            'size': len(content.encode()),
+            'status': 'ok',
+        })
+
+    def test_poll_returns_empty_content_when_offset_matches_file_size(self):
+        content = 'ready\n'
+        self.write_log('app.log', content)
+
+        response = common_api.poll_log_tail(None, 'app.log', offset=len(content.encode()))
+
+        self.assertEqual(response, {
+            'content': '',
+            'offset': len(content.encode()),
+            'size': len(content.encode()),
+            'status': 'ok',
+        })
+
+    def test_poll_returns_reset_and_tail_when_file_shrinks(self):
+        content = 'new-tail'
+        self.write_log('app.log', content)
+
+        response = common_api.poll_log_tail(None, 'app.log', offset=20, tail_bytes=4)
+
+        self.assertEqual(response, {
+            'content': 'tail',
+            'offset': len(content.encode()),
+            'size': len(content.encode()),
+            'status': 'reset',
+        })
+
+    def test_poll_returns_deleted_when_file_disappears(self):
+        response = common_api.poll_log_tail(None, 'app.log')
+
+        self.assertEqual(response, {
+            'content': '',
+            'offset': 0,
+            'size': 0,
+            'status': 'deleted',
+        })
+
+    def test_list_logs_uses_file_modified_time(self):
+        log_path = self.write_log('app.log', 'ready\n')
+        modified_at = 1710979200
+        os.utime(log_path, (modified_at - 3600, modified_at))
+
+        [response] = common_api.list_logs(None)
+
+        self.assertEqual(response['name'], 'app.log')
+        self.assertEqual(response['mtime'].timestamp(), modified_at)
 
 
 class VideoUploadRankingIntegrationTest(TestCase):
@@ -84,13 +164,23 @@ class VideoUploadRankingIntegrationTest(TestCase):
         return json.loads(response.content)
 
     def get_records_by_request(self):
-        response = self.client.get('/msuser/records/', {'id': self.user.id})
+        response = self.client.get('/api/msuser/records', {'user_id': self.user.id})
         self.assertEqual(response.status_code, 200, response.content)
         return response.json()
 
     def get_record_group_by_request(self, mode: str):
         records = self.get_records_by_request()
-        return json.loads(records[f'{mode}_record'])
+        grouped_records = {}
+        for stat in RankingGameStats:
+            grouped_records[stat] = [
+                records[f'{level}_{stat}_{mode}']
+                for level in GameLevels
+            ]
+            grouped_records[f'{stat}_id'] = [
+                records[f'{level}_{stat}_id_{mode}']
+                for level in GameLevels
+            ]
+        return grouped_records
 
     def get_pluck_rank_by_request(self, level: str):
         response = self.client.get(

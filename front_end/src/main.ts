@@ -14,6 +14,7 @@ import { pinia } from './store/create';
 
 import i18n from '@/i18n';
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- 根 .vue 组件在 typescript-eslint 中可能被解析为 error type；vue-tsc 已负责 SFC 类型校验。
 const app = createApp(App);
 
 if (import.meta.env.DEV) {

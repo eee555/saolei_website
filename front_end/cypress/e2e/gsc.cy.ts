@@ -66,10 +66,10 @@ describe('GSC', () => {
         cy.flushDatabase();
 
         // 注册用户
-        cy.register(HOST.id, HOST.username, HOST.email, HOST.password);
-        cy.register(STAFF.id, STAFF.username, STAFF.email, STAFF.password);
+        cy.registerUser(HOST);
+        cy.registerUser(STAFF);
         cy.setStaff(STAFF.id);
-        cy.register(USER.id, USER.username, USER.email, USER.password);
+        cy.registerUser(USER);
     });
 
     it('Create GSC', () => {

@@ -48,7 +48,14 @@ function linkNewAccount(platform: string, identifier: string) {
     }
     cy.get('.el-dialog__body').contains('ID').next().find('input').type(identifier);
     cy.get('.el-dialog__footer').contains('确认').click();
-    cy.wait('@addAccountLink').its('response.statusCode').should('eq', 200);
+    cy.wait('@addAccountLink').then(({ response }) => {
+        expect(response?.statusCode).to.equal(200);
+        expect(response?.body).to.include({
+            identifier,
+            userprofile: USER.id,
+            verified: false,
+        });
+    });
     cy.get('.el-dialog__body:visible').should('not.exist');
 }
 
@@ -60,14 +67,20 @@ function expectUnverifiedAccount(platform: string, identifier: string) {
     });
 }
 
+function waitForLoading() {
+    cy.get('.el-loading-mask:visible').should('not.exist');
+}
+
 function visitStaffAccountLink() {
     cy.login(STAFF.username, STAFF.password);
     cy.intercept('GET', '/api/accountlink/admin/queue').as('accountLinkQueue');
     cy.visit('/#/staff/accountlink');
-    cy.wait('@accountLinkQueue');
+    cy.wait('@accountLinkQueue').its('response.statusCode').should('eq', 200);
+    waitForLoading();
 }
 
 function expectAccountLinkTableRow(platform: string, identifier: string, verified: boolean) {
+    cy.contains('table:visible tbody tr', identifier, { timeout: 10000 }).should('be.visible');
     cy.get('table:visible').getTable().should((tableData) => {
         const row = tableData.find((item) => item['Platform ID'] === identifier);
 
@@ -106,7 +119,8 @@ function staffVerifyAccount(platform: string, identifier: string) {
     cy.contains('平台ID').next().find('input').type(`${identifier}{enter}`);
     cy.contains(/^\s*绑定\s*$/).click();
     cy.wait('@verifyAccountLink').its('response.statusCode').should('eq', 200);
-    cy.wait('@accountLinkQueue');
+    cy.wait('@accountLinkQueue').its('response.statusCode').should('eq', 200);
+    waitForLoading();
 
     expectAccountLinkTableRow(platform, identifier, true);
 }
@@ -117,9 +131,9 @@ describe('Account Link', () => {
         cy.flushDatabase();
 
         // 注册用户
-        cy.register(STAFF.id, STAFF.username, STAFF.email, STAFF.password);
+        cy.registerUser(STAFF);
         cy.setStaff(STAFF.id);
-        cy.register(USER.id, USER.username, USER.email, USER.password);
+        cy.registerUser(USER);
     });
 
     it('Guest View - No Account Links', () => {
@@ -193,7 +207,10 @@ describe('Account Link', () => {
     });
 
     it('Guest View - Should Not See Private Accounts', () => {
+        cy.intercept('GET', `/api/accountlink/${USER.id}`).as('fetchAccountLinks');
         cy.visitUser(USER.id, 'accountlink');
+        cy.wait('@fetchAccountLinks').its('response.statusCode').should('eq', 200);
+        waitForLoading();
         cy.get('.account-link-main').children().filter(':visible').should('have.length', 4);
         cy.get('.account-link-main').children().filter(':visible').should(($cards) => {
             const cardTexts = [...$cards].map((card) => card.textContent);

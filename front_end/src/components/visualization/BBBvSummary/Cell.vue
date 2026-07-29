@@ -59,7 +59,7 @@ watch(props, refresh, { immediate: true });
 
 const color = computed(() => {
     if (bestIndex.value === -1) return 'rgba(0,0,0,0)';
-    return props.colorTheme.getColor(props.videos[bestIndex.value].getStat(props.displayBy));
+    return props.colorTheme.getColor(props.videos[bestIndex.value][props.displayBy]);
 });
 
 const fontColor = computed(() => {

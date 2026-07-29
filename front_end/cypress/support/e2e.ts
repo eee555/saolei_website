@@ -18,6 +18,36 @@
 import './commands';
 import 'cypress-real-events';
 
+const DANGERZONE_URL = 'http://127.0.0.1:8000/dangerzone';
+
+interface DangerzoneUser {
+    id: number;
+    username: string;
+    email?: string;
+    password?: string;
+    realname?: string;
+}
+
+interface DangerzoneVideo {
+    user_id: number;
+    identifier: string;
+    level: string;
+    timems: number;
+    bv: number;
+    state?: string;
+    software?: string;
+    mode?: string;
+    file_size?: number;
+    left?: number;
+    right?: number;
+    double?: number;
+    left_ce?: number;
+    right_ce?: number;
+    double_ce?: number;
+    path?: number;
+    pluck?: number;
+}
+
 declare global {
     // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace Cypress {
@@ -35,14 +65,29 @@ declare global {
             flushDatabase(): void;
 
             /**
-             * 注册一个账号。如果该账号已存在，则报错。
-             * @param {number} id - 用户ID
-             * @param {string} username - 用户名
-             * @param {string} email - 邮箱
-             * @param {string} password - 密码
-             * @example cy.register('user', 'user@example.com', 'password');
-             * */
-            register(id: number, username: string, email: string, password: string): void;
+             * 调用 dangerzone API。仅在后端 E2E_TEST 模式可用。
+             */
+            dangerzonePost<T = unknown>(path: string, body?: object): Chainable<Response<T>>;
+
+            /**
+             * 注册测试用户。
+             */
+            registerUser(user: DangerzoneUser): Chainable<Response<unknown>>;
+
+            /**
+             * 创建测试录像。
+             */
+            createVideo(video: DangerzoneVideo): Chainable<Response<{ id: number }>>;
+
+            /**
+             * 创建测试标识。
+             */
+            createIdentifier(identifier: string, safe?: boolean): Chainable<Response<unknown>>;
+
+            /**
+             * 将测试标识绑定到指定用户，可选断言受影响录像数。
+             */
+            bindIdentifier(userId: number, identifier: string, expectedChangedCount?: number): Chainable<Response<{ changed_count: number }>>;
 
             /**
              * 将指定用户设为管理员。
@@ -91,23 +136,65 @@ beforeEach(() => {
     });
 });
 
-Cypress.Commands.add('register', (id: number, username: string, email: string, password: string) => {
-    cy.request({
+Cypress.Commands.add('dangerzonePost', <T = unknown>(path: string, body: object = {}) => {
+    return cy.request<T>({
         method: 'POST',
-        url: 'http://127.0.0.1:8000/dangerzone/register',
-        body: {
-            id: id,
-            username: username,
-            email: email,
-            password: password,
-        },
+        url: `${DANGERZONE_URL}/${path}`,
+        body,
+    });
+});
+
+Cypress.Commands.add('registerUser', (user: DangerzoneUser) => {
+    return cy.dangerzonePost('register', {
+        id: user.id,
+        username: user.username,
+        email: user.email ?? `${user.username}@example.com`,
+        password: user.password ?? 'password',
+        realname: user.realname,
+    });
+});
+
+Cypress.Commands.add('createVideo', (video: DangerzoneVideo) => {
+    return cy.dangerzonePost<{ id: number }>('create_video', {
+        state: 'd',
+        software: 'e',
+        mode: '00',
+        file_size: 1024,
+        left: 100,
+        right: 50,
+        double: 25,
+        left_ce: 100,
+        right_ce: 50,
+        double_ce: 25,
+        path: 1000,
+        ...video,
+    });
+});
+
+Cypress.Commands.add('createIdentifier', (identifier: string, safe = true) => {
+    return cy.dangerzonePost('create_identifier', {
+        identifier,
+        safe,
+    });
+});
+
+Cypress.Commands.add('bindIdentifier', (userId: number, identifier: string, expectedChangedCount?: number) => {
+    return cy.dangerzonePost<{ changed_count: number }>('bind_identifier', {
+        user_id: userId,
+        identifier,
+        safe: true,
+    }).then((response) => {
+        if (expectedChangedCount !== undefined) {
+            expect(response.body.changed_count).to.eq(expectedChangedCount);
+        }
+        return response;
     });
 });
 
 Cypress.Commands.add('setStaff', (id: number) => {
     cy.request({
         method: 'POST',
-        url: 'http://127.0.0.1:8000/dangerzone/setstaff',
+        url: `${DANGERZONE_URL}/setstaff`,
         body: {
             id: id,
         },
@@ -132,13 +219,13 @@ Cypress.Commands.add('login', (username: string, password: string) => {
 });
 
 Cypress.Commands.add('deleteUser', () => {
-    cy.request('POST', 'http://127.0.0.1:8000/dangerzone/delete_user').then((response) => {
+    cy.request('POST', `${DANGERZONE_URL}/delete_user`).then((response) => {
         expect(response.status).to.eq(200);
     });
 });
 
 Cypress.Commands.add('flushDatabase', () => {
-    cy.request('POST', 'http://127.0.0.1:8000/dangerzone/flush_database').then((response) => {
+    cy.request('POST', `${DANGERZONE_URL}/flush_database`).then((response) => {
         expect(response.status).to.eq(200);
     });
 });

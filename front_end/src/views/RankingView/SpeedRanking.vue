@@ -46,7 +46,7 @@
         <div v-for="(player, key) in playerData" style="margin-top: 10px;">
             <span class="rank">{{ key - 19 + (state.CurrentPage) * 20 }}</span>
             <!-- <span class="name">{{ player.name }}</span> -->
-            <PlayerName class="name" :user-id="player.name_id" />
+            <PlayerName class="name" :user-id="player.id" />
             <!-- <span class="beginner">{{ to_fixed_n(player.beginner, 3) }}</span> -->
             <span class="number_wid">
                 <PreviewNumber :id="player.beginner_id" :text="to_fixed_n(player.beginner, 3)" />
@@ -79,10 +79,9 @@ import { useI18n } from 'vue-i18n';
 import { httpErrorNotification } from '@/components/Notifications';
 import PlayerName from '@/components/PlayerName.vue';
 import PreviewNumber from '@/components/PreviewNumber.vue';
+import { fetchPlayerRank } from '@/services/msuserService';
 import { ms_to_s, to_fixed_n } from '@/utils';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
-const { proxy } = useCurrentInstance();
 const { t } = useI18n();
 
 // const level_tag_selected = ref("EXPERT");
@@ -102,8 +101,7 @@ const state = reactive({
 // const test  = reactive({v: 5});
 const playerData = reactive<Player[]>([]);
 interface Player {
-    name_id: number;
-    name: string;
+    id: number;
     beginner: string;
     beginner_id: number;
     intermediate: string;
@@ -159,31 +157,27 @@ const get_player_rank = (page: number) => {
     const iv = index_tags[index_tag_selected.value];
     const mv = mode_tags[mode_tag_selected.value];
     const piv = `player_${iv.key}_${mv.key}_`;
-    proxy.$axios.get('/msuser/player_rank/', {
-        params: {
-            ids: `${piv}ids`,
-            sort_by: `${piv}*->${level_selected.value}`,
-            reverse: iv.reverse,
-            indexes: `["#","${piv}*->name","${piv}*->b","${piv}*->b_id","${piv}*->i","${piv}*->i_id","${piv}*->e","${piv}*->e_id","${piv}*->sum"]`,
-            page: page,
-        },
-    }).then(function ({ data }) {
+    fetchPlayerRank({
+        ids: `${piv}ids`,
+        sortBy: `${piv}*->${level_selected.value}`,
+        reverse: iv.reverse,
+        indexes: `["#","${piv}*->b","${piv}*->b_id","${piv}*->i","${piv}*->i_id","${piv}*->e","${piv}*->e_id","${piv}*->sum"]`,
+        page: page,
+    }).then(function ({ total_page, players }) {
         // console.log(response.data);
-        state.Total = data.total_page;
+        state.Total = total_page;
 
-        const { players } = data;
         playerData.splice(0, playerData.length);
-        for (let i = 0; i < players.length / 9; i++) {
+        for (let i = 0; i < players.length / 8; i++) {
             playerData.push({
-                name_id: +players[i * 9],
-                name: players[i * 9 + 1],
-                beginner: index_tag_selected.value == 'timems' ? ms_to_s(players[i * 9 + 2]) : players[i * 9 + 2],
-                beginner_id: +players[i * 9 + 3],
-                intermediate: index_tag_selected.value == 'timems' ? ms_to_s(players[i * 9 + 4]) : players[i * 9 + 4],
-                intermediate_id: +players[i * 9 + 5],
-                expert: index_tag_selected.value == 'timems' ? ms_to_s(players[i * 9 + 6]) : players[i * 9 + 6],
-                expert_id: +players[i * 9 + 7],
-                sum: index_tag_selected.value == 'timems' ? ms_to_s(players[i * 9 + 8]) : players[i * 9 + 8],
+                id: Number(players[i * 8]),
+                beginner: formatRankValue(players[i * 8 + 1]),
+                beginner_id: Number(players[i * 8 + 2]),
+                intermediate: formatRankValue(players[i * 8 + 3]),
+                intermediate_id: Number(players[i * 8 + 4]),
+                expert: formatRankValue(players[i * 8 + 5]),
+                expert_id: Number(players[i * 8 + 6]),
+                sum: formatRankValue(players[i * 8 + 7]),
             });
         }
         // console.log(playerData);
@@ -220,6 +214,10 @@ const setSortDirect = (level_tag: string) => {
     }
     get_player_rank(state.CurrentPage);
 };
+
+function formatRankValue(value: number | string): string {
+    return index_tag_selected.value == 'timems' ? ms_to_s(Number(value)) : String(value);
+}
 </script>
 
 <style lang="less" scoped>
