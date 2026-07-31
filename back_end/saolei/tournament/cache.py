@@ -13,6 +13,48 @@ NORMAL_TOURNAMENT_CACHE_KEY = 'tournament:normal'
 NORMAL_PARTICIPANT_CACHE_KEY = 'tournament:normal:participants'
 
 
+class TournamentCache:
+    def update_tournament(self, tournament: Tournament):
+        tournament = self.select_subclass(tournament)
+        if tournament is None:
+            return
+        if tournament.state == Tournament_TextChoices.State.NORMAL:
+            cache.hset(
+                NORMAL_TOURNAMENT_CACHE_KEY,
+                tournament.id,
+                json.dumps(serialize_normal_tournament(tournament), cls=ComplexEncoder),
+            )
+        else:
+            self.remove_tournament(tournament)
+
+    def remove_tournament(self, tournament: Tournament):
+        cache.hdel(NORMAL_TOURNAMENT_CACHE_KEY, tournament.id)
+        self.remove_tournament_participants(tournament.id)
+
+    def select_subclass(self, tournament: Tournament):
+        if type(tournament) is not Tournament:
+            return tournament
+        return Tournament.objects.filter(id=tournament.id).select_subclasses().first()
+
+    def remove_tournament_participants(self, tournament_id: int):
+        pipe = cache.pipeline()
+        for user_id, value in cache.hscan_iter(NORMAL_PARTICIPANT_CACHE_KEY):
+            participants = [
+                participant
+                for participant in json.loads(value)
+                if participant['tournament'] != tournament_id
+            ]
+            if participants:
+                pipe.hset(
+                    NORMAL_PARTICIPANT_CACHE_KEY,
+                    user_id,
+                    json.dumps(participants, cls=ComplexEncoder),
+                )
+            else:
+                pipe.hdel(NORMAL_PARTICIPANT_CACHE_KEY, user_id)
+        pipe.execute()
+
+
 def _deserialize_datetime(value):
     if value is None:
         return None
@@ -46,59 +88,56 @@ def deserialize_normal_tournament(data):
     return data
 
 
-def invalidate_normal_tournament_cache():
-    cache.delete(NORMAL_TOURNAMENT_CACHE_KEY, NORMAL_PARTICIPANT_CACHE_KEY)
-
-
 def invalidate_normal_participant_cache():
     cache.delete(NORMAL_PARTICIPANT_CACHE_KEY)
 
 
-def rebuild_normal_tournament_cache():
-    tournaments = Tournament.objects.filter(state=Tournament_TextChoices.State.NORMAL).select_subclasses()
-    data = [serialize_normal_tournament(tournament) for tournament in tournaments]
-    mapping = {
-        tournament['id']: json.dumps(tournament, cls=ComplexEncoder)
-        for tournament in data
-    }
-
-    cache.delete(NORMAL_TOURNAMENT_CACHE_KEY)
-    if mapping:
-        cache.hset(NORMAL_TOURNAMENT_CACHE_KEY, mapping=mapping)
-
-    return data
-
-
 def get_normal_tournament_infos():
     cached_data = cache.hgetall(NORMAL_TOURNAMENT_CACHE_KEY)
-    if not cached_data:
-        return rebuild_normal_tournament_cache()
-
     return [
         deserialize_normal_tournament(json.loads(value))
         for value in cached_data.values()
     ]
 
 
-def rebuild_normal_participants_for_user(user_id: int):
-    participants = (
-        TournamentParticipant.objects
-        .filter(user_id=user_id, tournament__state=Tournament_TextChoices.State.NORMAL)
-        .select_related('arbiter_identifier')
-    )
-    data = [
-        serialize_normal_participant(participant)
-        for participant in participants
-    ]
-    cache.hset(NORMAL_PARTICIPANT_CACHE_KEY, user_id, json.dumps(data, cls=ComplexEncoder))
-    return data
-
-
 def get_normal_participant_infos_for_user(user_id: int):
     cached_data = cache.hget(NORMAL_PARTICIPANT_CACHE_KEY, user_id)
     if cached_data is None:
-        return rebuild_normal_participants_for_user(user_id)
+        return []
     return json.loads(cached_data)
+
+
+def set_normal_participant_infos_for_user(user_id: int, participants):
+    if participants:
+        cache.hset(NORMAL_PARTICIPANT_CACHE_KEY, user_id, json.dumps(participants, cls=ComplexEncoder))
+    else:
+        cache.hdel(NORMAL_PARTICIPANT_CACHE_KEY, user_id)
+
+
+def upsert_normal_participant_cache(participant: TournamentParticipant):
+    if participant.user_id is None:
+        return
+
+    participants = [
+        cached_participant
+        for cached_participant in get_normal_participant_infos_for_user(participant.user_id)
+        if cached_participant['tournament'] != participant.tournament_id
+    ]
+    if participant.tournament.state == Tournament_TextChoices.State.NORMAL:
+        participants.append(serialize_normal_participant(participant))
+    set_normal_participant_infos_for_user(participant.user_id, participants)
+
+
+def delete_normal_participant_cache(participant: TournamentParticipant):
+    if participant.user_id is None:
+        return
+
+    participants = [
+        cached_participant
+        for cached_participant in get_normal_participant_infos_for_user(participant.user_id)
+        if cached_participant['tournament'] != participant.tournament_id
+    ]
+    set_normal_participant_infos_for_user(participant.user_id, participants)
 
 
 def get_normal_participant_info_by_arbiter_identifier(user_id: int, arbiter_identifier: str):

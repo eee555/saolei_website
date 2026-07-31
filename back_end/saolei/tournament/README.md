@@ -84,7 +84,9 @@ HSET tournament:normal 123 '{"id":123,"series":"gsc","start_time":"...","end_tim
 
 但当前阶段不实现这部分。
 
-`tournament:normal` 应在比赛基础信息或状态变化后失效，包括创建比赛、修改 `start_time/end_time/order/token`、验证、取消和颁奖。失效应尽量放在事务提交后执行，避免缓存先于数据库状态变化对外可见。
+`tournament:normal` 应由写路径维护同步。比赛创建、修改 `start_time/end_time/order/token`、验证、取消和颁奖时，在事务提交后对对应比赛执行 `TournamentCache.update_tournament` 或 `TournamentCache.remove_tournament`。读取路径只读取缓存，不在未命中时查询 DB 或重建缓存；缓存与 DB 不同步属于写路径维护 bug。
+
+如果服务器故障、Redis 数据丢失或缓存被手动清空，可以使用 `manage.py rebuild_tournament_cache` 从数据库重建 `tournament:normal` 和 `tournament:normal:participants`。
 
 ## `TournamentParticipant` checkin 缓存计划
 
@@ -113,8 +115,9 @@ GSC/EVF 路径优先使用 `tournament:normal` 找到唯一 `NORMAL` GSC 比赛�
 
 缓存失效或更新策略：
 
-- `TournamentParticipant` / `GSCParticipant` 创建、修改、删除后重建对应用户的 participant 列表缓存。
-- `tournament:normal` 失效时，对应的 participant 缓存也应一起失效，避免已结束或已取消比赛的参赛关系继续参与 checkin。
+- `TournamentParticipant` / `GSCParticipant` 创建、修改、删除后，在对应用户的列表缓存中同步 upsert 或 delete 该参赛关系。
+- checkin 读路径只读取缓存，不在未命中时查询 DB 或重建缓存；缓存与 DB 不同步属于写路径维护 bug。
+- `TournamentCache.remove_tournament` 移除 `tournament:normal` 中的比赛时，也会从 `tournament:normal:participants` 的所有用户列表中精确移除对应比赛的参赛关系，避免已结束或已取消比赛继续参与 checkin。
 - 失效应尽量在事务提交后执行。
 
 ## 当前必要接口

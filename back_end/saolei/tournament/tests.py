@@ -1,6 +1,8 @@
 import json
 from datetime import timedelta
+from io import StringIO
 
+from django.core.management import call_command
 from django.test import TestCase
 from django.utils import timezone
 
@@ -13,20 +15,22 @@ from videomanager.models import ExpandVideoModel, VideoModel
 from .cache import (
     NORMAL_PARTICIPANT_CACHE_KEY,
     NORMAL_TOURNAMENT_CACHE_KEY,
+    TournamentCache,
     cache,
     get_normal_participant_infos_for_user,
     get_normal_tournament_infos,
-    invalidate_normal_tournament_cache,
-    rebuild_normal_participants_for_user,
+    set_normal_participant_infos_for_user,
+    upsert_normal_participant_cache,
 )
 from .gsc.services import refresh_gsc_ranks, refresh_gsc_scores, visible_gsc_token
-from .models import GSCParticipant, GSCTournament
+from .models import GSCParticipant, GSCTournament, Tournament
 from .services import reveal_videos_for_tournament
 
 
 class TournamentTestCase(TestCase):
     def setUp(self):
-        invalidate_normal_tournament_cache()
+        cache.delete(NORMAL_TOURNAMENT_CACHE_KEY, NORMAL_PARTICIPANT_CACHE_KEY)
+        self.tournament_cache = TournamentCache()
         userms = UserMS.objects.create()
         self.user = UserProfile.objects.create_user(
             username='tournament_user',
@@ -42,6 +46,7 @@ class TournamentTestCase(TestCase):
             end_time=now + timedelta(hours=1),
             state=Tournament_TextChoices.State.NORMAL,
         )
+        self.tournament_cache.update_tournament(self.tournament)
 
     def create_user(self, username):
         return UserProfile.objects.create_user(
@@ -85,7 +90,7 @@ class TournamentTestCase(TestCase):
         return video
 
     def test_video_checkin_runs_before_video_create(self):
-        get_normal_tournament_infos()
+        self.tournament_cache.update_tournament(self.tournament)
         video = self.create_video()
 
         video.refresh_from_db()
@@ -106,7 +111,7 @@ class TournamentTestCase(TestCase):
 
     def test_video_checkin_does_not_fallback_to_db_when_normal_cache_misses(self):
         GSCTournament.objects.filter(pk=self.tournament.pk).update(state=Tournament_TextChoices.State.PENDING)
-        invalidate_normal_tournament_cache()
+        cache.delete(NORMAL_TOURNAMENT_CACHE_KEY, NORMAL_PARTICIPANT_CACHE_KEY)
 
         video = self.create_video()
 
@@ -123,16 +128,19 @@ class TournamentTestCase(TestCase):
             end_time=now - timedelta(hours=1),
             state=Tournament_TextChoices.State.NORMAL,
         )
+        self.tournament.refresh_from_db()
+        self.tournament_cache.update_tournament(self.tournament)
 
         video = self.create_video()
 
         video.refresh_from_db()
-        self.tournament.refresh_from_db()
         self.assertEqual(self.tournament.state, Tournament_TextChoices.State.NORMAL)
         self.assertFalse(video.ongoing_tournament)
         self.assertFalse(self.tournament.videos.filter(pk=video.pk).exists())
 
-    def test_normal_tournament_cache_rebuilds_redis_hash(self):
+    def test_normal_tournament_cache_reads_redis_hash(self):
+        self.tournament_cache.update_tournament(self.tournament)
+
         tournaments = get_normal_tournament_infos()
 
         self.assertEqual(len(tournaments), 1)
@@ -141,14 +149,24 @@ class TournamentTestCase(TestCase):
         self.assertEqual(tournaments[0]['token'], self.tournament.token)
         self.assertIsNotNone(cache.hget(NORMAL_TOURNAMENT_CACHE_KEY, self.tournament.id))
 
+    def test_normal_tournament_cache_accepts_parent_tournament_instance(self):
+        parent_tournament = Tournament.objects.get(id=self.tournament.id)
+
+        self.tournament_cache.update_tournament(parent_tournament)
+
+        tournaments = get_normal_tournament_infos()
+        self.assertEqual(tournaments[0]['id'], self.tournament.id)
+        self.assertEqual(tournaments[0]['order'], self.tournament.order)
+
     def test_normal_participant_cache_rebuilds_user_field(self):
         identifier = Identifier.objects.create(identifier='cached-arbiter')
-        GSCParticipant.objects.create(
+        participant = GSCParticipant.objects.create(
             user=self.user,
             tournament=self.tournament,
             token=self.tournament.token,
             arbiter_identifier=identifier,
         )
+        upsert_normal_participant_cache(participant)
 
         participants = get_normal_participant_infos_for_user(self.user.id)
         cached_data = json.loads(cache.hget(NORMAL_PARTICIPANT_CACHE_KEY, self.user.id))
@@ -162,20 +180,77 @@ class TournamentTestCase(TestCase):
             },
         ])
 
+    def test_remove_tournament_removes_matching_participants_from_cache(self):
+        set_normal_participant_infos_for_user(self.user.id, [
+            {
+                'token': self.tournament.token,
+                'arbiter_identifier': None,
+                'tournament': self.tournament.id,
+            },
+            {
+                'token': 'OTHER',
+                'arbiter_identifier': None,
+                'tournament': 999,
+            },
+        ])
+        other_user = self.create_user('other_cached_user')
+        set_normal_participant_infos_for_user(other_user.id, [
+            {
+                'token': self.tournament.token,
+                'arbiter_identifier': None,
+                'tournament': self.tournament.id,
+            },
+        ])
+
+        self.tournament_cache.remove_tournament(self.tournament)
+
+        self.assertEqual(get_normal_participant_infos_for_user(self.user.id), [
+            {
+                'token': 'OTHER',
+                'arbiter_identifier': None,
+                'tournament': 999,
+            },
+        ])
+        self.assertEqual(get_normal_participant_infos_for_user(other_user.id), [])
+
     def test_video_checkin_uses_cached_participant_to_avoid_duplicate(self):
-        GSCParticipant.objects.create(
+        participant = GSCParticipant.objects.create(
             user=self.user,
             tournament=self.tournament,
             token=self.tournament.token,
         )
-        get_normal_tournament_infos()
-        rebuild_normal_participants_for_user(self.user.id)
+        self.tournament_cache.update_tournament(self.tournament)
+        upsert_normal_participant_cache(participant)
 
         video = self.create_video()
 
         video.refresh_from_db()
         self.assertTrue(video.ongoing_tournament)
         self.assertEqual(GSCParticipant.objects.filter(user=self.user, tournament=self.tournament).count(), 1)
+
+    def test_rebuild_tournament_cache_command_rebuilds_both_hashes(self):
+        participant = GSCParticipant.objects.create(
+            user=self.user,
+            tournament=self.tournament,
+            token=self.tournament.token,
+        )
+        cache.delete(NORMAL_TOURNAMENT_CACHE_KEY, NORMAL_PARTICIPANT_CACHE_KEY)
+
+        stdout = StringIO()
+        call_command('rebuild_tournament_cache', stdout=stdout)
+
+        tournaments = get_normal_tournament_infos()
+        participants = get_normal_participant_infos_for_user(self.user.id)
+        self.assertEqual(tournaments[0]['id'], self.tournament.id)
+        self.assertEqual(participants, [
+            {
+                'token': participant.token,
+                'arbiter_identifier': None,
+                'tournament': self.tournament.id,
+            },
+        ])
+        self.assertIn('rebuilt 1 normal tournaments', stdout.getvalue())
+        self.assertIn('rebuilt 1 normal participants', stdout.getvalue())
 
     def test_gsc_validate_generates_token_before_start(self):
         now = timezone.now()
@@ -262,12 +337,12 @@ class TournamentTestCase(TestCase):
         self.assertTrue(video.ongoing_tournament)
 
     def test_refresh_gsc_score_and_rank_uses_batch_rules(self):
-        GSCParticipant.objects.create(
+        participant = GSCParticipant.objects.create(
             user=self.user,
             tournament=self.tournament,
             token=self.tournament.token,
         )
-        rebuild_normal_participants_for_user(self.user.id)
+        upsert_normal_participant_cache(participant)
         user_without_valid_score = self.create_user('gsc_default_user')
         participant_without_valid_score = GSCParticipant.objects.create(
             user=user_without_valid_score,
