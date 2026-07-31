@@ -1,4 +1,4 @@
-
+import json
 from datetime import timedelta
 
 from django.test import TestCase
@@ -6,10 +6,19 @@ from django.utils import timezone
 
 from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from config.tournaments import GSC_Defaults
+from identifier.models import Identifier
 from msuser.models import UserMS
 from userprofile.models import UserProfile
 from videomanager.models import ExpandVideoModel, VideoModel
-from .cache import NORMAL_TOURNAMENT_CACHE_KEY, cache, get_normal_tournament_infos, invalidate_normal_tournament_cache
+from .cache import (
+    NORMAL_PARTICIPANT_CACHE_KEY,
+    NORMAL_TOURNAMENT_CACHE_KEY,
+    cache,
+    get_normal_participant_infos_for_user,
+    get_normal_tournament_infos,
+    invalidate_normal_tournament_cache,
+    rebuild_normal_participants_for_user,
+)
 from .gsc.services import refresh_gsc_ranks, refresh_gsc_scores, visible_gsc_token
 from .models import GSCParticipant, GSCTournament
 from .services import reveal_videos_for_tournament
@@ -76,6 +85,7 @@ class TournamentTestCase(TestCase):
         return video
 
     def test_video_checkin_runs_before_video_create(self):
+        get_normal_tournament_infos()
         video = self.create_video()
 
         video.refresh_from_db()
@@ -94,16 +104,17 @@ class TournamentTestCase(TestCase):
         self.assertFalse(video.ongoing_tournament)
         self.assertFalse(self.tournament.videos.filter(pk=video.pk).exists())
 
-    def test_video_checkin_accepts_by_time_window_when_state_is_stale(self):
+    def test_video_checkin_does_not_fallback_to_db_when_normal_cache_misses(self):
         GSCTournament.objects.filter(pk=self.tournament.pk).update(state=Tournament_TextChoices.State.PENDING)
+        invalidate_normal_tournament_cache()
 
         video = self.create_video()
 
         video.refresh_from_db()
         self.tournament.refresh_from_db()
         self.assertEqual(self.tournament.state, Tournament_TextChoices.State.PENDING)
-        self.assertTrue(video.ongoing_tournament)
-        self.assertTrue(self.tournament.videos.filter(pk=video.pk).exists())
+        self.assertFalse(video.ongoing_tournament)
+        self.assertFalse(self.tournament.videos.filter(pk=video.pk).exists())
 
     def test_video_checkin_rejects_by_time_window_after_end_time(self):
         now = timezone.now()
@@ -129,6 +140,42 @@ class TournamentTestCase(TestCase):
         self.assertEqual(tournaments[0]['order'], self.tournament.order)
         self.assertEqual(tournaments[0]['token'], self.tournament.token)
         self.assertIsNotNone(cache.hget(NORMAL_TOURNAMENT_CACHE_KEY, self.tournament.id))
+
+    def test_normal_participant_cache_rebuilds_user_field(self):
+        identifier = Identifier.objects.create(identifier='cached-arbiter')
+        GSCParticipant.objects.create(
+            user=self.user,
+            tournament=self.tournament,
+            token=self.tournament.token,
+            arbiter_identifier=identifier,
+        )
+
+        participants = get_normal_participant_infos_for_user(self.user.id)
+        cached_data = json.loads(cache.hget(NORMAL_PARTICIPANT_CACHE_KEY, self.user.id))
+
+        self.assertEqual(participants, cached_data)
+        self.assertEqual(participants, [
+            {
+                'token': self.tournament.token,
+                'arbiter_identifier': identifier.identifier,
+                'tournament': self.tournament.id,
+            },
+        ])
+
+    def test_video_checkin_uses_cached_participant_to_avoid_duplicate(self):
+        GSCParticipant.objects.create(
+            user=self.user,
+            tournament=self.tournament,
+            token=self.tournament.token,
+        )
+        get_normal_tournament_infos()
+        rebuild_normal_participants_for_user(self.user.id)
+
+        video = self.create_video()
+
+        video.refresh_from_db()
+        self.assertTrue(video.ongoing_tournament)
+        self.assertEqual(GSCParticipant.objects.filter(user=self.user, tournament=self.tournament).count(), 1)
 
     def test_gsc_validate_generates_token_before_start(self):
         now = timezone.now()
@@ -215,6 +262,12 @@ class TournamentTestCase(TestCase):
         self.assertTrue(video.ongoing_tournament)
 
     def test_refresh_gsc_score_and_rank_uses_batch_rules(self):
+        GSCParticipant.objects.create(
+            user=self.user,
+            tournament=self.tournament,
+            token=self.tournament.token,
+        )
+        rebuild_normal_participants_for_user(self.user.id)
         user_without_valid_score = self.create_user('gsc_default_user')
         participant_without_valid_score = GSCParticipant.objects.create(
             user=user_without_valid_score,

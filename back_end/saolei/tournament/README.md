@@ -86,6 +86,37 @@ HSET tournament:normal 123 '{"id":123,"series":"gsc","start_time":"...","end_tim
 
 `tournament:normal` 应在比赛基础信息或状态变化后失效，包括创建比赛、修改 `start_time/end_time/order/token`、验证、取消和颁奖。失效应尽量放在事务提交后执行，避免缓存先于数据库状态变化对外可见。
 
+## `TournamentParticipant` checkin 缓存计划
+
+录像 checkin 还会频繁查询 `TournamentParticipant`，尤其是：
+
+- AVF：根据 `user` 和 `arbiter_identifier` 找到参赛关系。
+- GSC/EVF：根据 `user` 和当前 `NORMAL` GSC 比赛判断是否已有参赛关系。
+
+后续可以为当前 `NORMAL` 比赛维护参赛关系缓存，用于快速 checkin。缓存只保存 checkin 需要的最小字段：
+
+- `token`
+- `arbiter_identifier`
+- `tournament`
+
+不缓存选手成绩、排名、用户展示信息、录像列表。
+
+根据 checkin 查询需求，使用单个 Redis hash 保存所有用户的参赛关系列表。hash key 固定，hash field 为 `user_id`，hash value 为该用户名下所有当前 `NORMAL` 比赛参赛关系的列表，列表项只包含上述三个字段：
+
+```text
+HSET tournament:normal:participants {user_id} '[{"token":"G12345","arbiter_identifier":"arbiter-id","tournament":123}]'
+```
+
+因为 `NORMAL` 比赛数量较少，单个用户名下的当前参赛关系列表也会很短。AVF checkin 可以读取该用户的列表后按 `arbiter_identifier` 匹配；GSC/EVF checkin 可以读取同一列表后按 `tournament` 判断是否已有参赛关系。
+
+GSC/EVF 路径优先使用 `tournament:normal` 找到唯一 `NORMAL` GSC 比赛，再从 `tournament:normal:participants` 的 `{user_id}` field 判断该用户是否已经存在该比赛的参赛关系。未命中时再创建 `GSCParticipant` 并更新缓存。
+
+缓存失效或更新策略：
+
+- `TournamentParticipant` / `GSCParticipant` 创建、修改、删除后重建对应用户的 participant 列表缓存。
+- `tournament:normal` 失效时，对应的 participant 缓存也应一起失效，避免已结束或已取消比赛的参赛关系继续参与 checkin。
+- 失效应尽量在事务提交后执行。
+
 ## 当前必要接口
 
 ### `reveal_videos_for_tournament(tournament)`

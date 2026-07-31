@@ -5,11 +5,12 @@ from django_redis import get_redis_connection
 
 from config.text_choices import Tournament_TextChoices
 from utils import ComplexEncoder
-from .models import GSCTournament, Tournament
+from .models import GSCTournament, Tournament, TournamentParticipant
 
 cache = get_redis_connection('saolei_website')
 
 NORMAL_TOURNAMENT_CACHE_KEY = 'tournament:normal'
+NORMAL_PARTICIPANT_CACHE_KEY = 'tournament:normal:participants'
 
 
 def _deserialize_datetime(value):
@@ -31,6 +32,14 @@ def serialize_normal_tournament(tournament: Tournament):
     return data
 
 
+def serialize_normal_participant(participant: TournamentParticipant):
+    return {
+        'token': participant.token,
+        'arbiter_identifier': participant.arbiter_identifier.identifier if participant.arbiter_identifier else None,
+        'tournament': participant.tournament_id,
+    }
+
+
 def deserialize_normal_tournament(data):
     data['start_time'] = _deserialize_datetime(data['start_time'])
     data['end_time'] = _deserialize_datetime(data['end_time'])
@@ -38,7 +47,11 @@ def deserialize_normal_tournament(data):
 
 
 def invalidate_normal_tournament_cache():
-    cache.delete(NORMAL_TOURNAMENT_CACHE_KEY)
+    cache.delete(NORMAL_TOURNAMENT_CACHE_KEY, NORMAL_PARTICIPANT_CACHE_KEY)
+
+
+def invalidate_normal_participant_cache():
+    cache.delete(NORMAL_PARTICIPANT_CACHE_KEY)
 
 
 def rebuild_normal_tournament_cache():
@@ -65,6 +78,41 @@ def get_normal_tournament_infos():
         deserialize_normal_tournament(json.loads(value))
         for value in cached_data.values()
     ]
+
+
+def rebuild_normal_participants_for_user(user_id: int):
+    participants = (
+        TournamentParticipant.objects
+        .filter(user_id=user_id, tournament__state=Tournament_TextChoices.State.NORMAL)
+        .select_related('arbiter_identifier')
+    )
+    data = [
+        serialize_normal_participant(participant)
+        for participant in participants
+    ]
+    cache.hset(NORMAL_PARTICIPANT_CACHE_KEY, user_id, json.dumps(data, cls=ComplexEncoder))
+    return data
+
+
+def get_normal_participant_infos_for_user(user_id: int):
+    cached_data = cache.hget(NORMAL_PARTICIPANT_CACHE_KEY, user_id)
+    if cached_data is None:
+        return rebuild_normal_participants_for_user(user_id)
+    return json.loads(cached_data)
+
+
+def get_normal_participant_info_by_arbiter_identifier(user_id: int, arbiter_identifier: str):
+    for participant in get_normal_participant_infos_for_user(user_id):
+        if participant['arbiter_identifier'] == arbiter_identifier:
+            return participant
+    return None
+
+
+def get_normal_participant_info_by_tournament(user_id: int, tournament_id: int):
+    for participant in get_normal_participant_infos_for_user(user_id):
+        if participant['tournament'] == tournament_id:
+            return participant
+    return None
 
 
 def get_normal_gsc_tournament_info():

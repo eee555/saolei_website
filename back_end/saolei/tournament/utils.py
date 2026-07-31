@@ -2,8 +2,12 @@ from django.utils import timezone
 
 from config.text_choices import MS_TextChoices
 from videomanager.models import VideoModel
-from .cache import get_normal_gsc_tournament_by_token
-from .models import GSCParticipant, GSCTournament, Tournament, TournamentParticipant
+from .cache import (
+    get_normal_gsc_tournament_by_token,
+    get_normal_participant_info_by_arbiter_identifier,
+    get_normal_participant_info_by_tournament,
+)
+from .models import GSCParticipant, Tournament, TournamentParticipant
 
 
 def participant_videos(participant: TournamentParticipant):
@@ -32,8 +36,12 @@ def video_checkin(video: VideoModel, tournament_identifiers: list[str]):
     user = video.player
     checked_in_tournaments = []
     if video.software == MS_TextChoices.Software.AVF:
-        if participant := TournamentParticipant.objects.filter(user=user, arbiter_identifier__identifier=video.video.identifier).first():
-            tournament = participant.tournament
+        participant_info = get_normal_participant_info_by_arbiter_identifier(user.id, video.video.identifier)
+        if participant_info is not None:
+            tournament = Tournament.objects.filter(id=participant_info['tournament']).first()
+        else:
+            tournament = None
+        if tournament is not None:
             if tournament_accepts_checkin(tournament):
                 video.ongoing_tournament = True
                 checked_in_tournaments.append(tournament)
@@ -43,15 +51,14 @@ def video_checkin(video: VideoModel, tournament_identifiers: list[str]):
             if token == '':
                 continue
             gsc_tournament = get_normal_gsc_tournament_by_token(token)
-            if gsc_tournament is None:
-                gsc_tournament = GSCTournament.objects.filter(token=token).first()
             if not gsc_tournament:  # 暂时只支持gsc
                 continue
-            participant = TournamentParticipant.objects.filter(user=user, tournament=gsc_tournament).first()
+            participant_info = get_normal_participant_info_by_tournament(user.id, gsc_tournament.id)
+            participant_exists = participant_info is not None
             if tournament_accepts_checkin(gsc_tournament):
                 video.ongoing_tournament = True
                 checked_in_tournaments.append(gsc_tournament)
-                if not participant:
+                if not participant_exists:
                     GSCParticipant.objects.create(user=user, tournament=gsc_tournament, token=token)
     video._checked_in_tournaments = checked_in_tournaments
     if video.pk is not None:
