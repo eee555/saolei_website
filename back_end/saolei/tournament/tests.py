@@ -9,6 +9,7 @@ from config.tournaments import GSC_Defaults
 from msuser.models import UserMS
 from userprofile.models import UserProfile
 from videomanager.models import ExpandVideoModel, VideoModel
+from .cache import NORMAL_TOURNAMENT_CACHE_KEY, cache, get_normal_tournament_infos, invalidate_normal_tournament_cache
 from .gsc.services import refresh_gsc_ranks, refresh_gsc_scores, visible_gsc_token
 from .models import GSCParticipant, GSCTournament
 from .services import reveal_videos_for_tournament
@@ -16,6 +17,7 @@ from .services import reveal_videos_for_tournament
 
 class TournamentTestCase(TestCase):
     def setUp(self):
+        invalidate_normal_tournament_cache()
         userms = UserMS.objects.create()
         self.user = UserProfile.objects.create_user(
             username='tournament_user',
@@ -118,6 +120,15 @@ class TournamentTestCase(TestCase):
         self.assertEqual(self.tournament.state, Tournament_TextChoices.State.NORMAL)
         self.assertFalse(video.ongoing_tournament)
         self.assertFalse(self.tournament.videos.filter(pk=video.pk).exists())
+
+    def test_normal_tournament_cache_rebuilds_redis_hash(self):
+        tournaments = get_normal_tournament_infos()
+
+        self.assertEqual(len(tournaments), 1)
+        self.assertEqual(tournaments[0]['id'], self.tournament.id)
+        self.assertEqual(tournaments[0]['order'], self.tournament.order)
+        self.assertEqual(tournaments[0]['token'], self.tournament.token)
+        self.assertIsNotNone(cache.hget(NORMAL_TOURNAMENT_CACHE_KEY, self.tournament.id))
 
     def test_gsc_validate_generates_token_before_start(self):
         now = timezone.now()

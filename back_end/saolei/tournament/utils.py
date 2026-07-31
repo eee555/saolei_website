@@ -2,6 +2,7 @@ from django.utils import timezone
 
 from config.text_choices import MS_TextChoices
 from videomanager.models import VideoModel
+from .cache import get_normal_gsc_tournament_by_token
 from .models import GSCParticipant, GSCTournament, Tournament, TournamentParticipant
 
 
@@ -41,7 +42,9 @@ def video_checkin(video: VideoModel, tournament_identifiers: list[str]):
         for token in tournament_tokens:
             if token == '':
                 continue
-            gsc_tournament = GSCTournament.objects.filter(token=token).first()
+            gsc_tournament = get_normal_gsc_tournament_by_token(token)
+            if gsc_tournament is None:
+                gsc_tournament = GSCTournament.objects.filter(token=token).first()
             if not gsc_tournament:  # 暂时只支持gsc
                 continue
             participant = TournamentParticipant.objects.filter(user=user, tournament=gsc_tournament).first()

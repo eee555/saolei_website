@@ -10,6 +10,7 @@ from userprofile.models import UserProfile
 from utils import verify_text
 from utils.response import HttpResponseConflict
 from videomanager.view_utils import generate_file_stream
+from ..cache import get_normal_tournament_infos
 from ..forms import TournamentForm
 from ..models import GSCTournament, Tournament, TournamentParticipant
 from ..utils import participant_videos, tournament_accepts_checkin
@@ -261,19 +262,31 @@ def get_participant_videos(request: HttpRequest):
 @require_GET
 def get_tournament_news(request: HttpRequest):
     now = datetime.now(tz=timezone.utc)
-    preparing_tournaments = Tournament.objects.filter(
-        state=Tournament_TextChoices.State.NORMAL,
-        start_time__gt=now,
-    )
-    ongoing_tournaments = Tournament.objects.filter(
-        state=Tournament_TextChoices.State.NORMAL,
-        start_time__lte=now,
-        end_time__gt=now,
-    )
+    normal_tournaments = get_normal_tournament_infos()
+    preparing_tournaments = [
+        {
+            'id': tournament['id'],
+            'start_time': tournament['start_time'],
+        }
+        for tournament in normal_tournaments
+        if tournament['start_time'] is not None and tournament['start_time'] > now
+    ]
+    ongoing_tournaments = [
+        {
+            'id': tournament['id'],
+            'end_time': tournament['end_time'],
+        }
+        for tournament in normal_tournaments
+        if (
+            tournament['start_time'] is not None
+            and tournament['end_time'] is not None
+            and tournament['start_time'] <= now < tournament['end_time']
+        )
+    ]
     return JsonResponse({
         'type': 'success',
-        'preparing': list(preparing_tournaments.values('id', 'start_time')),
-        'ongoing': list(ongoing_tournaments.values('id', 'end_time')),
+        'preparing': preparing_tournaments,
+        'ongoing': ongoing_tournaments,
     })
 
 
