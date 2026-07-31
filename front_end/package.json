@@ -23,7 +23,7 @@
     "@putianyi888/vue3-plots": "0.6.0",
     "@unicode/unicode-16.0.0": "1.6.17",
     "@vueuse/components": "14.3.0",
-    "@vueuse/core": "14.3.0",
+    "@vueuse/core": "14.4.0",
     "@wdns/vue-code-block": "2.3.5",
     "axios": "1.18.1",
     "d3-array": "3.2.4",
