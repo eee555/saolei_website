@@ -9,7 +9,7 @@ from config.tournaments import GSC_Defaults
 from msuser.models import UserMS
 from userprofile.models import UserProfile
 from videomanager.models import ExpandVideoModel, VideoModel
-from .gsc.services import refresh_gsc_ranks, refresh_gsc_scores
+from .gsc.services import refresh_gsc_ranks, refresh_gsc_scores, visible_gsc_token
 from .models import GSCParticipant, GSCTournament
 from .services import reveal_videos_for_tournament
 
@@ -118,6 +118,36 @@ class TournamentTestCase(TestCase):
         self.assertEqual(self.tournament.state, Tournament_TextChoices.State.NORMAL)
         self.assertFalse(video.ongoing_tournament)
         self.assertFalse(self.tournament.videos.filter(pk=video.pk).exists())
+
+    def test_gsc_validate_generates_token_before_start(self):
+        now = timezone.now()
+        tournament = GSCTournament.objects.create(
+            order=3,
+            start_time=now + timedelta(hours=1),
+            end_time=now + timedelta(hours=2),
+            state=Tournament_TextChoices.State.PENDING,
+        )
+
+        tournament.validate()
+
+        tournament.refresh_from_db()
+        self.assertEqual(tournament.state, Tournament_TextChoices.State.NORMAL)
+        self.assertTrue(tournament.token.startswith('G'))
+
+    def test_gsc_token_is_hidden_until_start_time(self):
+        now = timezone.now()
+        tournament = GSCTournament.objects.create(
+            order=4,
+            token='G54321',
+            start_time=now + timedelta(hours=1),
+            end_time=now + timedelta(hours=2),
+            state=Tournament_TextChoices.State.NORMAL,
+        )
+
+        self.assertEqual(visible_gsc_token(tournament), '')
+
+        tournament.start_time = now - timedelta(minutes=1)
+        self.assertEqual(visible_gsc_token(tournament), tournament.token)
 
     def test_reveal_videos_for_tournament_restores_personal_record(self):
         video = self.create_video()

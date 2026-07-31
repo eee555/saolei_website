@@ -53,6 +53,39 @@
 - 对 Redis 队列、经典纪录、自定义 pluck 纪录使用批处理 service 显式刷新。
 - 单条上传路径可以继续使用现有信号，但批量路径必须绕开逐条信号。
 
+## `NORMAL` 比赛缓存
+
+`NORMAL` 比赛数量较少，但列表、新闻、录像 checkin 等入口访问频繁，可以使用 Redis 缓存降低数据库查询压力。
+
+缓存 key 固定为：
+
+- `tournament:normal`
+
+缓存使用一个 Redis hash 保存所有 `NORMAL` 比赛的基础信息。hash key 为比赛 id，hash value 为序列化后的比赛信息，例如：
+
+```text
+HSET tournament:normal 123 '{"id":123,"series":"gsc","start_time":"...","end_time":"...","order":8,"token":"G12345"}'
+```
+
+同一时间只会存在一个 `NORMAL` GSC 比赛，因此不需要额外维护 `order -> tournament_id` 或 `token -> tournament_id` 索引。GSC 录像 checkin 可以直接读取 `tournament:normal` 中的 GSC 项，再比较 token 和时间窗口。
+
+缓存中不存 `PREPARING`、`ONGOING`、`FINISHED` 的拆分结果。它们由调用方根据 `start_time`、`end_time` 和当前时间从 `NORMAL` 比赛动态推导，避免比赛跨过开始或结束时间时依赖定时任务刷新缓存。
+
+缓存中暂不保存参赛选手成绩：
+
+- 比赛期间成绩不公开，运行期维护每个选手的 37 个成绩没有直接用户价值。
+- 比赛结束时已有后台任务刷新 GSC 成绩和排名，可以在结束流程中统一落库。
+- 不在比赛期间维护成绩缓存，可以避免每次录像 checkin、录像更新、成绩变化时同步更新 Redis hash/zset，降低写路径复杂度。
+
+如果未来需要比赛期间展示实时榜，可以再单独设计每个比赛的成绩缓存，例如使用 hash 存三组成绩数组、zset 存总成绩：
+
+- `tournament:normal:gsc:{tournament_id}:scores`
+- `tournament:normal:gsc:{tournament_id}:rank`
+
+但当前阶段不实现这部分。
+
+`tournament:normal` 应在比赛基础信息或状态变化后失效，包括创建比赛、修改 `start_time/end_time/order/token`、验证、取消和颁奖。失效应尽量放在事务提交后执行，避免缓存先于数据库状态变化对外可见。
+
 ## 当前必要接口
 
 ### `reveal_videos_for_tournament(tournament)`

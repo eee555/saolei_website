@@ -88,11 +88,26 @@ class GSCTournament(Tournament):
         return ''
 
     def new_token(self):
+        self.token = self.generate_unique_token()
+        self.save(update_fields=['token'])
+
+    @staticmethod
+    def generate_unique_token():
         token = generate_GSC_token()
         while GSCTournament.objects.filter(token=token).exists() or TournamentParticipant.objects.filter(token=token).exists():
             token = generate_GSC_token()
-        self.token = token
-        self.save(update_fields=['token'])
+        return token
+
+    def validate(self):
+        if not self.start_time or not self.end_time or self.start_time >= self.end_time:
+            return
+        if self.state == Tournament_TextChoices.State.PENDING or self.state == Tournament_TextChoices.State.CANCELLED:
+            self.state = Tournament_TextChoices.State.NORMAL
+            update_fields = ['state']
+            if not self.token:
+                self.token = self.generate_unique_token()
+                update_fields.append('token')
+            self.save(update_fields=update_fields)
 
     def add_participant(self, user: UserProfile):
         if not GSCParticipant.objects.filter(user=user, tournament=self).exists():

@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound
+from django.shortcuts import get_object_or_404
 from ninja import Form, Router, Schema
 from ninja.decorators import decorate_view
 
@@ -14,7 +15,7 @@ from tournament.models import GSCParticipant, GSCTournament, Tournament
 from userprofile.decorators import login_required_error
 from utils.response import HttpResponseConflict
 from tournament.utils import tournament_accepts_checkin, tournament_has_ended
-from .services import ensure_gsc_token_after_start, get_gsc_scores, refresh_gsc_participant_score
+from .services import get_gsc_scores, refresh_gsc_participant_score, visible_gsc_token
 from .tasks import task_gsc_finish, task_gsc_refresh
 
 router = Router()
@@ -39,14 +40,17 @@ class GSCParticipantRefreshIn(Schema):
     id: int
 
 
+class GSCInfoOut(Schema):
+    id: int
+    order: int
+    start_time: datetime | None
+    end_time: datetime | None
+    state: str
+    token: str
+
+
 def can_manage_GSC(request: HttpRequest):
     return request.user.is_authenticated and (request.user.is_staff or request.user.id == GSC_Defaults.HOST_ID)
-
-
-def _aware_datetime(value: datetime | None):
-    if value is None or value.tzinfo is not None:
-        return value
-    return value.replace(tzinfo=timezone.utc)
 
 
 def task_response(enqueued_task):
@@ -58,11 +62,22 @@ def task_response(enqueued_task):
     }
 
 
+def serialize_gsc_info(tournament: GSCTournament):
+    return {
+        'id': tournament.tournament_ptr_id,
+        'order': tournament.order,
+        'start_time': tournament.start_time,
+        'end_time': tournament.end_time,
+        'state': tournament.state,
+        'token': visible_gsc_token(tournament),
+    }
+
+
 @router.post('/new')
 @decorate_view(GSC_admin_required)
 def new_GSC_tournament(request: HttpRequest, data: NewGSCTournamentIn = Form(...)):  # noqa: B008
-    start_time = _aware_datetime(data.start_time)
-    end_time = _aware_datetime(data.end_time)
+    start_time = data.start_time
+    end_time = data.end_time
 
     if start_time is None or end_time is None:
         state = Tournament_TextChoices.State.PENDING
@@ -74,6 +89,7 @@ def new_GSC_tournament(request: HttpRequest, data: NewGSCTournamentIn = Form(...
     if GSCTournament.objects.filter(order=data.id).exists():
         return HttpResponseConflict()
 
+    token = GSCTournament.generate_unique_token() if state == Tournament_TextChoices.State.NORMAL else ''
     GSCTournament.objects.create(
         start_time=start_time,
         end_time=end_time,
@@ -81,26 +97,16 @@ def new_GSC_tournament(request: HttpRequest, data: NewGSCTournamentIn = Form(...
         host=request.user,
         weight=TournamentWeights.GSC,
         order=data.id,
+        token=token,
     )
 
     return HttpResponse()
 
 
-@router.get('/admin-info')
-def get_GSC_tournament(request: HttpRequest, id: int):
-    tournament = GSCTournament.objects.filter(order=id).first()
-    if not tournament:
-        return {'type': 'error'}
-    return {
-        'type': 'success',
-        'data': {
-            'id': tournament.id,
-            'start_time': tournament.start_time,
-            'end_time': tournament.end_time,
-            'state': tournament.state,
-            'token': tournament.token,
-        },
-    }
+@router.get('/admin-info', response=GSCInfoOut)
+def get_GSC_tournament(request: HttpRequest, order: int):
+    tournament = get_object_or_404(GSCTournament, order=order)
+    return serialize_gsc_info(tournament)
 
 
 @router.get('/info')
@@ -109,17 +115,12 @@ def get_gscinfo(request: HttpRequest, id: int | None = None, order: int | None =
         return HttpResponseBadRequest()
 
     if id is not None:
-        tournament = Tournament.objects.select_subclasses().filter(id=id).first()
-        if not isinstance(tournament, GSCTournament):
-            return HttpResponseNotFound()
+        tournament = get_object_or_404(Tournament, id=id)
+        tournament = get_object_or_404(GSCTournament, tournament_ptr=tournament)
         order = tournament.order
     else:
-        tournament = GSCTournament.objects.filter(order=order).first()
+        tournament = get_object_or_404(GSCTournament, order=order)
 
-    if not tournament:
-        return HttpResponseNotFound()
-
-    ensure_gsc_token_after_start(tournament)
     results = None
     if tournament.state == Tournament_TextChoices.State.AWARDED or tournament_has_ended(tournament):
         results = list(get_gsc_scores(tournament))
@@ -132,14 +133,7 @@ def get_gscinfo(request: HttpRequest, id: int | None = None, order: int | None =
 
     return {
         'type': 'success',
-        'data': {
-            'id': tournament.tournament_ptr_id,
-            'start_time': tournament.start_time,
-            'end_time': tournament.end_time,
-            'state': tournament.state,
-            'order': order,
-            'token': tournament.token,
-        },
+        'data': serialize_gsc_info(tournament),
         'results': results,
         'identifier': identifier,
     }
@@ -152,8 +146,9 @@ def register_GSCParticipant(request: HttpRequest, data: RegisterGSCParticipantIn
     userms = user.userms
     if not (tournament := GSCTournament.objects.filter(order=data.order).first()):
         return HttpResponseNotFound()
-    ensure_gsc_token_after_start(tournament)
     if not tournament_accepts_checkin(tournament):
+        return HttpResponseForbidden()
+    if not tournament.token:
         return HttpResponseForbidden()
     if not data.identifier.endswith(tournament.token):
         return {'type': 'error', 'object': 'identifier', 'category': 'suffix'}

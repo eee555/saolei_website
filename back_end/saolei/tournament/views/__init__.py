@@ -42,16 +42,16 @@ def create_tournament(request: HttpRequest):
 @staff_required
 def allow_tournament(request: HttpRequest):
     tournament_id = request.POST.get('id')
-    if not id:
+    if not tournament_id:
         return HttpResponseBadRequest()
-    tournament = Tournament.objects.filter(id=tournament_id).first()
+    tournament = Tournament.objects.select_subclasses().filter(id=tournament_id).first()
     if not tournament:
         return HttpResponseNotFound()
-    if datetime.now(tz=timezone.utc) > tournament.start_time:
+    if not tournament.start_time or datetime.now(tz=timezone.utc) > tournament.start_time:
         tournament.state = Tournament_TextChoices.State.CANCELLED
+        tournament.save(update_fields=['state'])
         return JsonResponse({'type': 'error', 'object': 'tournament', 'category': 'missed_start_time'})
-    tournament.state = Tournament_TextChoices.State.NORMAL
-    tournament.save(update_fields=['state'])
+    tournament.validate()
     return HttpResponse()
 
 

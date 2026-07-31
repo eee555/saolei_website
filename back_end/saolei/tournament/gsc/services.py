@@ -1,5 +1,6 @@
 from collections import defaultdict
 
+from django.utils import timezone
 from django.db.models import F, Q, Window
 from django.db.models.functions import RowNumber
 
@@ -187,10 +188,7 @@ def get_gsc_scores(tournament: GSCTournament):
     return GSCParticipant.objects.filter(tournament=tournament).values(*GSC_SCORE_VALUE_FIELDS)
 
 
-def ensure_gsc_token_after_start(tournament: GSCTournament):
-    if tournament.token or tournament.start_time is None:
-        return
-    from django.utils import timezone
-
-    if timezone.now() >= tournament.start_time:
-        tournament.new_token()
+def visible_gsc_token(tournament: GSCTournament):
+    if tournament.start_time is None or timezone.now() < tournament.start_time:
+        return ''
+    return tournament.token

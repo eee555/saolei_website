@@ -36,12 +36,12 @@
 
 <script setup lang="ts">
 import '@/styles/text.css';
+import { isAxiosError } from 'axios';
 import { ElButton, ElDatePicker, ElInput, ElSwitch } from 'element-plus';
 import { ref, watch } from 'vue';
 
 import { httpErrorNotification, successNotification } from '../Notifications';
 
-import type { ApiResponse } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { toDate, toISODateTimeString } from '@/utils/datetime';
 import type { GSCInfo } from '@/utils/gsc';
@@ -67,6 +67,7 @@ const allowEmptyToken = ref(false);
 
 interface GSCInfoResponseData {
     id: number;
+    order: number;
     start_time: string | Date | null;
     end_time: string | Date | null;
     state: string;
@@ -80,20 +81,22 @@ async function getGSCInfo(id: number | undefined) {
     }
     loadingGSCInfo.value = true;
     notFound.value = false;
-    await proxy.$axios.get<ApiResponse<GSCInfoResponseData>>('/api/tournament/gsc/admin-info', { params: { id: id } }).then(
-        function ({ data }) {
-            if (data.type === 'error') {
-                notFound.value = true;
-            } else {
-                const tournament = data.data;
-                gscInfo.value.start_time = toDate(tournament.start_time);
-                gscInfo.value.end_time = toDate(tournament.end_time);
-                gscInfo.value.token = tournament.token ?? undefined;
-                gscInfo.value.id = tournament.id;
-            }
-        },
-    ).catch(httpErrorNotification);
-    loadingGSCInfo.value = false;
+    try {
+        const { data: tournament } = await proxy.$axios.get<GSCInfoResponseData>('/api/tournament/gsc/admin-info', { params: { order: id } });
+        gscInfo.value.start_time = toDate(tournament.start_time);
+        gscInfo.value.end_time = toDate(tournament.end_time);
+        gscInfo.value.token = tournament.token ?? undefined;
+        gscInfo.value.id = tournament.id;
+    } catch (error: unknown) {
+        if (isAxiosError(error) && error.response?.status === 404) {
+            gscInfo.value = { id: 0 };
+            notFound.value = true;
+        } else {
+            httpErrorNotification(error);
+        }
+    } finally {
+        loadingGSCInfo.value = false;
+    }
 }
 
 function createGSC() {
@@ -107,7 +110,7 @@ function createGSC() {
 
 function setStartTime(time: Date | undefined) {
     if (time === undefined) return;
-    proxy.$axios.post<unknown>('tournament/set/', { id: gscInfo.value.id, start_time: time }).then(
+    proxy.$axios.post<unknown>('tournament/set/', { id: gscInfo.value.id, start_time: time.toISOString() }).then(
         function (response) {
             gscInfo.value.start_time = time;
             newStartTime.value = undefined;
@@ -118,7 +121,7 @@ function setStartTime(time: Date | undefined) {
 
 function setEndTime(time: Date | undefined) {
     if (time === undefined) return;
-    proxy.$axios.post<unknown>('tournament/set/', { id: gscInfo.value.id, end_time: time }).then(
+    proxy.$axios.post<unknown>('tournament/set/', { id: gscInfo.value.id, end_time: time.toISOString() }).then(
         function (response) {
             gscInfo.value.end_time = time;
             newEndTime.value = undefined;
