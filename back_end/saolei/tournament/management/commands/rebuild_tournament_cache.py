@@ -3,7 +3,6 @@ from collections import defaultdict
 
 from django.core.management.base import BaseCommand
 
-from config.text_choices import Tournament_TextChoices
 from tournament.cache import (
     NORMAL_PARTICIPANT_CACHE_KEY,
     NORMAL_TOURNAMENT_CACHE_KEY,
@@ -11,7 +10,7 @@ from tournament.cache import (
     serialize_normal_participant,
     serialize_normal_tournament,
 )
-from tournament.models import Tournament, TournamentParticipant
+from tournament.models import TournamentParticipant, normal_tournament_subclasses
 from utils import ComplexEncoder
 
 
@@ -19,15 +18,12 @@ class Command(BaseCommand):
     help = '重建比赛 Redis 缓存，包括 NORMAL 比赛和当前 NORMAL 比赛参赛关系'
 
     def handle(self, *args, **options):
-        tournaments = list(
-            Tournament.objects
-            .filter(state=Tournament_TextChoices.State.NORMAL)
-            .select_subclasses(),
-        )
+        tournaments = normal_tournament_subclasses()
         tournament_mapping = {
             tournament.id: json.dumps(serialize_normal_tournament(tournament), cls=ComplexEncoder)
             for tournament in tournaments
         }
+        tournament_ids = [tournament.id for tournament in tournaments]
 
         cache.delete(NORMAL_TOURNAMENT_CACHE_KEY, NORMAL_PARTICIPANT_CACHE_KEY)
         if tournament_mapping:
@@ -36,7 +32,7 @@ class Command(BaseCommand):
         participant_infos_by_user_id = defaultdict(list)
         participants = (
             TournamentParticipant.objects
-            .filter(tournament__state=Tournament_TextChoices.State.NORMAL)
+            .filter(tournament_id__in=tournament_ids)
             .select_related('arbiter_identifier')
         )
         participant_count = 0

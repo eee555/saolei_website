@@ -59,6 +59,9 @@ class Tournament_TextChoices:
         WEEKLY = 'w', ('周赛')
         GSC = 'g', ('GSC')
 
+    class Subclass(TextChoices):
+        GSC = 'g', ('GSC比赛')
+
     class State(TextChoices):
         PENDING = 'p', ('审核中')
         NORMAL = 'n', ('正常')

@@ -56,6 +56,9 @@ def refresh_video(video: VideoModel):
     if e_video.identifier != parser.identifier:
         e_video.identifier = parser.identifier
         e_updated_fields.append('identifier')
+    if e_video.tournament_identifier != parser.tournament_identifier:
+        e_video.tournament_identifier = parser.tournament_identifier
+        e_updated_fields.append('tournament_identifier')
 
     if e_updated_fields:
         e_video.save(update_fields=e_updated_fields)

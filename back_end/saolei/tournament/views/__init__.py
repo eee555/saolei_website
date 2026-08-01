@@ -12,7 +12,7 @@ from utils.response import HttpResponseConflict
 from videomanager.view_utils import generate_file_stream
 from ..cache import get_normal_tournament_infos
 from ..forms import TournamentForm
-from ..models import GSCTournament, Tournament, TournamentParticipant
+from ..models import GSCTournament, Tournament, TournamentParticipant, get_tournament_subclass_by_id, select_tournament_subclass
 from ..utils import participant_videos, tournament_accepts_checkin
 
 
@@ -45,14 +45,17 @@ def allow_tournament(request: HttpRequest):
     tournament_id = request.POST.get('id')
     if not tournament_id:
         return HttpResponseBadRequest()
-    tournament = Tournament.objects.select_subclasses().filter(id=tournament_id).first()
+    tournament = get_tournament_subclass_by_id(tournament_id)
     if not tournament:
         return HttpResponseNotFound()
-    if not tournament.start_time or datetime.now(tz=timezone.utc) > tournament.start_time:
+    if not tournament.can_validate():
+        return JsonResponse({'type': 'error', 'object': 'tournament', 'category': 'invalid_time'})
+    if datetime.now(tz=timezone.utc) > tournament.start_time:
         tournament.state = Tournament_TextChoices.State.CANCELLED
         tournament.save(update_fields=['state'])
         return JsonResponse({'type': 'error', 'object': 'tournament', 'category': 'missed_start_time'})
-    tournament.validate()
+    if not tournament.validate():
+        return JsonResponse({'type': 'error', 'object': 'tournament', 'category': 'invalid_time'})
     return HttpResponse()
 
 
@@ -74,9 +77,14 @@ def cancel_tournament(request: HttpRequest):
 
 @require_GET
 def get_tournament_list(request: HttpRequest):
-    tournament_list = Tournament.objects.all().select_subclasses()
+    tournament_list = [
+        select_tournament_subclass(tournament)
+        for tournament in Tournament.objects.all()
+    ]
     data = []
     for tournament in tournament_list:
+        if tournament is None:
+            continue
         data.append({
             'id': tournament.id,
             'series': tournament.series,
@@ -97,7 +105,7 @@ def get_tournament(request):
     tournament_id = request.GET.get('id')
     if not tournament_id:
         return HttpResponseBadRequest()
-    tournament: Tournament = Tournament.objects.select_subclasses().filter(id=tournament_id).first()
+    tournament: Tournament = get_tournament_subclass_by_id(tournament_id)
     if not tournament:
         return HttpResponseNotFound()
     data = {
@@ -149,7 +157,7 @@ def set_tournament(request: HttpRequest):
     """
     if not (tournament_id := request.POST.get('id')):
         return HttpResponseBadRequest()
-    if not (tournament := Tournament.objects.select_subclasses().filter(id=tournament_id).first()):
+    if not (tournament := get_tournament_subclass_by_id(tournament_id)):
         return HttpResponseNotFound()
     if tournament.host != request.user:
         return HttpResponseForbidden()
@@ -220,11 +228,12 @@ def set_tournament_staff(request: HttpRequest):
 def validate_tournament(request: HttpRequest):
     if not (tournament_id := request.POST.get('id')):
         return HttpResponseBadRequest()
-    if not (tournament := Tournament.objects.filter(id=tournament_id).select_subclasses().first()):
+    if not (tournament := get_tournament_subclass_by_id(tournament_id)):
         return HttpResponseNotFound()
     valid = request.POST.get('valid')
     if valid == 'true':
-        tournament.validate()
+        if not tournament.validate():
+            return JsonResponse({'type': 'error', 'object': 'tournament', 'category': 'invalid_time'})
         return HttpResponse()
     elif valid == 'false':
         tournament.invalidate()
@@ -265,22 +274,22 @@ def get_tournament_news(request: HttpRequest):
     normal_tournaments = get_normal_tournament_infos()
     preparing_tournaments = [
         {
-            'id': tournament['id'],
-            'start_time': tournament['start_time'],
+            'id': tournament.id,
+            'start_time': tournament.start_time,
         }
         for tournament in normal_tournaments
-        if tournament['start_time'] is not None and tournament['start_time'] > now
+        if tournament.start_time is not None and tournament.start_time > now
     ]
     ongoing_tournaments = [
         {
-            'id': tournament['id'],
-            'end_time': tournament['end_time'],
+            'id': tournament.id,
+            'end_time': tournament.end_time,
         }
         for tournament in normal_tournaments
         if (
-            tournament['start_time'] is not None
-            and tournament['end_time'] is not None
-            and tournament['start_time'] <= now < tournament['end_time']
+            tournament.start_time is not None
+            and tournament.end_time is not None
+            and tournament.start_time <= now < tournament.end_time
         )
     ]
     return JsonResponse({

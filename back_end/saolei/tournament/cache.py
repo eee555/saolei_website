@@ -1,10 +1,12 @@
 import json
+from dataclasses import asdict, dataclass, is_dataclass
 from datetime import datetime
 
 from django_redis import get_redis_connection
 
 from config.text_choices import Tournament_TextChoices
 from utils import ComplexEncoder
+from videomanager.models import VideoModel
 from .models import GSCTournament, Tournament, TournamentParticipant
 
 cache = get_redis_connection('saolei_website')
@@ -13,11 +15,28 @@ NORMAL_TOURNAMENT_CACHE_KEY = 'tournament:normal'
 NORMAL_PARTICIPANT_CACHE_KEY = 'tournament:normal:participants'
 
 
+@dataclass
+class CachedNormalTournament:
+    id: int
+    series: str
+    start_time: datetime
+    end_time: datetime
+    order: int | None = None
+    token: str = ''
+
+
+@dataclass
+class CachedNormalParticipant:
+    id: int
+    token: str
+    arbiter_identifier: str | None
+    tournament: int
+    start_time: datetime
+    end_time: datetime
+
+
 class TournamentCache:
     def update_tournament(self, tournament: Tournament):
-        tournament = self.select_subclass(tournament)
-        if tournament is None:
-            return
         if tournament.state == Tournament_TextChoices.State.NORMAL:
             cache.hset(
                 NORMAL_TOURNAMENT_CACHE_KEY,
@@ -30,11 +49,6 @@ class TournamentCache:
     def remove_tournament(self, tournament: Tournament):
         cache.hdel(NORMAL_TOURNAMENT_CACHE_KEY, tournament.id)
         self.remove_tournament_participants(tournament.id)
-
-    def select_subclass(self, tournament: Tournament):
-        if type(tournament) is not Tournament:
-            return tournament
-        return Tournament.objects.filter(id=tournament.id).select_subclasses().first()
 
     def remove_tournament_participants(self, tournament_id: int):
         pipe = cache.pipeline()
@@ -53,6 +67,71 @@ class TournamentCache:
             else:
                 pipe.hdel(NORMAL_PARTICIPANT_CACHE_KEY, user_id)
         pipe.execute()
+
+    def get_tournament(self, tournament_id: int):
+        data = cache.hget(NORMAL_TOURNAMENT_CACHE_KEY, tournament_id)
+        if data is None:
+            return None
+        return deserialize_normal_tournament(json.loads(data))
+
+    def get_token_tournament(self, token: str):
+        data = self.get_tournament_all()
+        return [tournament for tournament in data if tournament.token == token]
+
+    def get_tournament_all(self):
+        data = cache.hgetall(NORMAL_TOURNAMENT_CACHE_KEY)
+        return [
+            deserialize_normal_tournament(json.loads(value))
+            for value in data.values()
+        ]
+
+    def get_gsc(self):
+        data = self.get_tournament_all()
+        for tournament in data:
+            if tournament.series == Tournament_TextChoices.Series.GSC:
+                return tournament
+        return None
+
+    def get_participant(self, user_id: int):
+        data = cache.hget(NORMAL_PARTICIPANT_CACHE_KEY, user_id)
+        if data is None:
+            return []
+        return [
+            deserialize_normal_participant(participant)
+            for participant in json.loads(data)
+        ]
+
+    def get_arbiter_participant(self, user_id: int, arbiter_identifier: str):
+        candidates = self.get_participant(user_id)
+        participants = []
+        for candidate in candidates:
+            if candidate.arbiter_identifier == arbiter_identifier:
+                participants.append(candidate)
+        return participants
+
+    def get_token_participant(self, user_id: int, tokens: list[str]):
+        candidates = self.get_participant(user_id)
+        participants = []
+        for candidate in candidates:
+            if candidate.token in tokens:
+                participants.append(candidate)
+        return participants
+
+    def checkin_arbiter(self, video: VideoModel, arbiter_identifier: str):
+        candidates = self.get_arbiter_participant(video.player_id, arbiter_identifier)
+        participants = []
+        for candidate in candidates:
+            if candidate.start_time <= video.upload_time <= candidate.end_time:
+                participants.append(candidate)
+        return participants
+
+    def checkin_token(self, video: VideoModel, tokens: list[str]):
+        candidates = self.get_token_participant(video.player_id, tokens)
+        participants = []
+        for candidate in candidates:
+            if candidate.start_time <= video.upload_time <= candidate.end_time:
+                participants.append(candidate)
+        return participants
 
 
 def _deserialize_datetime(value):
@@ -76,16 +155,31 @@ def serialize_normal_tournament(tournament: Tournament):
 
 def serialize_normal_participant(participant: TournamentParticipant):
     return {
+        'id': participant.id,
         'token': participant.token,
         'arbiter_identifier': participant.arbiter_identifier.identifier if participant.arbiter_identifier else None,
         'tournament': participant.tournament_id,
+        'start_time': participant.start_time,
+        'end_time': participant.end_time,
     }
 
 
 def deserialize_normal_tournament(data):
     data['start_time'] = _deserialize_datetime(data['start_time'])
     data['end_time'] = _deserialize_datetime(data['end_time'])
-    return data
+    return CachedNormalTournament(**data)
+
+
+def deserialize_normal_participant(data):
+    data['start_time'] = _deserialize_datetime(data['start_time'])
+    data['end_time'] = _deserialize_datetime(data['end_time'])
+    return CachedNormalParticipant(**data)
+
+
+def serialize_cached_participant(participant):
+    if is_dataclass(participant):
+        return asdict(participant)
+    return participant
 
 
 def invalidate_normal_participant_cache():
@@ -104,12 +198,16 @@ def get_normal_participant_infos_for_user(user_id: int):
     cached_data = cache.hget(NORMAL_PARTICIPANT_CACHE_KEY, user_id)
     if cached_data is None:
         return []
-    return json.loads(cached_data)
+    return [
+        deserialize_normal_participant(participant)
+        for participant in json.loads(cached_data)
+    ]
 
 
 def set_normal_participant_infos_for_user(user_id: int, participants):
     if participants:
-        cache.hset(NORMAL_PARTICIPANT_CACHE_KEY, user_id, json.dumps(participants, cls=ComplexEncoder))
+        data = [serialize_cached_participant(participant) for participant in participants]
+        cache.hset(NORMAL_PARTICIPANT_CACHE_KEY, user_id, json.dumps(data, cls=ComplexEncoder))
     else:
         cache.hdel(NORMAL_PARTICIPANT_CACHE_KEY, user_id)
 
@@ -121,7 +219,7 @@ def upsert_normal_participant_cache(participant: TournamentParticipant):
     participants = [
         cached_participant
         for cached_participant in get_normal_participant_infos_for_user(participant.user_id)
-        if cached_participant['tournament'] != participant.tournament_id
+        if cached_participant.tournament != participant.tournament_id
     ]
     if participant.tournament.state == Tournament_TextChoices.State.NORMAL:
         participants.append(serialize_normal_participant(participant))
@@ -135,47 +233,6 @@ def delete_normal_participant_cache(participant: TournamentParticipant):
     participants = [
         cached_participant
         for cached_participant in get_normal_participant_infos_for_user(participant.user_id)
-        if cached_participant['tournament'] != participant.tournament_id
+        if cached_participant.tournament != participant.tournament_id
     ]
     set_normal_participant_infos_for_user(participant.user_id, participants)
-
-
-def get_normal_participant_info_by_arbiter_identifier(user_id: int, arbiter_identifier: str):
-    for participant in get_normal_participant_infos_for_user(user_id):
-        if participant['arbiter_identifier'] == arbiter_identifier:
-            return participant
-    return None
-
-
-def get_normal_participant_info_by_tournament(user_id: int, tournament_id: int):
-    for participant in get_normal_participant_infos_for_user(user_id):
-        if participant['tournament'] == tournament_id:
-            return participant
-    return None
-
-
-def get_normal_gsc_tournament_info():
-    for tournament in get_normal_tournament_infos():
-        if tournament['series'] == Tournament_TextChoices.Series.GSC:
-            return tournament
-    return None
-
-
-def normal_tournament_accepts_checkin(tournament):
-    from django.utils import timezone
-
-    now = timezone.now()
-    return (
-        tournament['start_time'] is not None
-        and tournament['end_time'] is not None
-        and tournament['start_time'] <= now < tournament['end_time']
-    )
-
-
-def get_normal_gsc_tournament_by_token(token: str):
-    tournament = get_normal_gsc_tournament_info()
-    if tournament is None:
-        return None
-    if tournament.get('token') != token or not normal_tournament_accepts_checkin(tournament):
-        return None
-    return GSCTournament.objects.filter(order=tournament['order'], token=token).first()

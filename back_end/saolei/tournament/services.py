@@ -1,9 +1,61 @@
-from config.text_choices import Tournament_TextChoices
+from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from customranking.services import add_videos_to_custom_pluck_ranks
+from django.db.models import Q
 from msuser.services import update_personal_records_from_video_queryset
+from tournament.cache import TournamentCache
 from videomanager.cache import add_videos_to_state_queues_bulk
 from videomanager.models import VideoModel
-from .models import Tournament
+from .models import Tournament, TournamentParticipant
+
+cache = TournamentCache()
+
+
+def checkin_with_arbiter(video: VideoModel, arbiter_identifier: str):
+    participants = cache.checkin_arbiter(video, arbiter_identifier)
+    tournament_ids = set(participant.tournament for participant in participants)
+    if tournament_ids:
+        video.ongoing_tournament = True
+    return list(Tournament.objects.filter(id__in=tournament_ids))
+
+
+def checkin_with_token(video: VideoModel, tokens: list[str]):
+    participants = cache.checkin_token(video, tokens)
+    tournament_ids = set(participant.tournament for participant in participants)
+    if tournament_ids:
+        video.ongoing_tournament = True
+    return list(Tournament.objects.filter(id__in=tournament_ids))
+
+
+def add_existing_videos_to_participant_tournament(participant: TournamentParticipant):
+    if participant.user_id is None or participant.start_time is None or participant.end_time is None:
+        return 0
+
+    identifier_filter = Q()
+    if participant.arbiter_identifier is not None:
+        identifier_filter = Q(
+            software=MS_TextChoices.Software.AVF,
+            video__identifier=participant.arbiter_identifier.identifier,
+        )
+    token_filter = (
+        ~Q(software=MS_TextChoices.Software.AVF)
+        & Q(video__tournament_identifier__contains=[participant.token])
+    )
+
+    video_ids = list(
+        VideoModel.objects
+        .filter(
+            player_id=participant.user_id,
+            upload_time__gte=participant.start_time,
+            upload_time__lte=participant.end_time,
+        )
+        .filter(identifier_filter | token_filter)
+        .values_list('id', flat=True),
+    )
+    if not video_ids:
+        return 0
+
+    participant.tournament.videos.add(*video_ids)
+    return len(video_ids)
 
 
 def reveal_videos_for_tournament(tournament: Tournament):

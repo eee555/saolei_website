@@ -81,6 +81,8 @@ def new_GSC_tournament(request: HttpRequest, data: NewGSCTournamentIn = Form(...
 
     if start_time is None or end_time is None:
         state = Tournament_TextChoices.State.PENDING
+    elif start_time >= end_time:
+        return {'type': 'error', 'msg': 'invalid_time'}
     elif datetime.now(tz=timezone.utc) < start_time:
         state = Tournament_TextChoices.State.NORMAL
     else:
@@ -164,7 +166,14 @@ def register_GSCParticipant(request: HttpRequest, data: RegisterGSCParticipantIn
         participant.arbiter_identifier = identifier
         participant.save(update_fields=['arbiter_identifier'])
     else:
-        GSCParticipant.objects.create(tournament=tournament, user=user, arbiter_identifier=identifier)
+        GSCParticipant.objects.create(
+            tournament=tournament,
+            user=user,
+            token=tournament.token,
+            arbiter_identifier=identifier,
+            start_time=tournament.start_time,
+            end_time=tournament.end_time,
+        )
     if not identifier.userms:
         bind_identifier(identifier, userms)
     return {'type': 'success'}

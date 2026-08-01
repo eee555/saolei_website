@@ -8,10 +8,17 @@ from .cache import (
     delete_normal_participant_cache,
     upsert_normal_participant_cache,
 )
-from .models import GSCParticipant, GSCTournament, Tournament, TournamentParticipant
+from .models import GSCParticipant, GSCTournament, Tournament, TournamentParticipant, select_tournament_subclass
+from .services import add_existing_videos_to_participant_tournament
 from .utils import add_video_to_checked_tournaments, video_checkin
 
 cache = TournamentCache()
+
+
+def update_tournament_cache(instance: Tournament):
+    tournament = select_tournament_subclass(instance)
+    if tournament is not None:
+        cache.update_tournament(tournament)
 
 
 @receiver(pre_save, sender=VideoModel, dispatch_uid='tournament.checkin_video_before_create')
@@ -30,12 +37,12 @@ def add_created_video_to_checked_tournaments(sender, instance: VideoModel, creat
 
 @receiver(post_save, sender=Tournament, dispatch_uid='tournament.invalidate_normal_cache_on_tournament_save')
 def invalidate_normal_cache_on_tournament_save(sender, instance: Tournament, **kwargs):
-    transaction.on_commit(lambda: cache.update_tournament(instance))
+    transaction.on_commit(lambda: update_tournament_cache(instance))
 
 
 @receiver(post_delete, sender=Tournament, dispatch_uid='tournament.invalidate_normal_cache_on_tournament_delete')
 def invalidate_normal_cache_on_tournament_delete(sender, instance: Tournament, **kwargs):
-    transaction.on_commit(lambda: cache.remove_tournament(instance))
+    transaction.on_commit(lambda: cache.remove_tournament(select_tournament_subclass(instance) or instance))
 
 
 @receiver(post_save, sender=GSCTournament, dispatch_uid='tournament.invalidate_normal_cache_on_gsc_save')
@@ -49,8 +56,10 @@ def invalidate_normal_cache_on_gsc_delete(sender, instance: GSCTournament, **kwa
 
 
 @receiver(post_save, sender=TournamentParticipant, dispatch_uid='tournament.rebuild_normal_participant_cache_on_save')
-def rebuild_normal_participant_cache_on_save(sender, instance: TournamentParticipant, **kwargs):
+def rebuild_normal_participant_cache_on_save(sender, instance: TournamentParticipant, created: bool, **kwargs):
     transaction.on_commit(lambda: upsert_normal_participant_cache(instance))
+    if created:
+        transaction.on_commit(lambda: add_existing_videos_to_participant_tournament(instance))
 
 
 @receiver(post_delete, sender=TournamentParticipant, dispatch_uid='tournament.rebuild_normal_participant_cache_on_delete')
@@ -59,8 +68,10 @@ def rebuild_normal_participant_cache_on_delete(sender, instance: TournamentParti
 
 
 @receiver(post_save, sender=GSCParticipant, dispatch_uid='tournament.rebuild_normal_gsc_participant_cache_on_save')
-def rebuild_normal_gsc_participant_cache_on_save(sender, instance: GSCParticipant, **kwargs):
+def rebuild_normal_gsc_participant_cache_on_save(sender, instance: GSCParticipant, created: bool, **kwargs):
     transaction.on_commit(lambda: upsert_normal_participant_cache(instance))
+    if created:
+        transaction.on_commit(lambda: add_existing_videos_to_participant_tournament(instance))
 
 
 @receiver(post_delete, sender=GSCParticipant, dispatch_uid='tournament.rebuild_normal_gsc_participant_cache_on_delete')

@@ -1,8 +1,8 @@
-from datetime import datetime, timezone
 import secrets
 import string
 
 from django.db import models
+from django.utils import timezone
 from model_utils.managers import InheritanceManager
 
 from config.global_settings import MaxSizes
@@ -25,6 +25,7 @@ def generate_GSC_token(length=GSC_Defaults.TOKEN_LENGTH):
 
 class Tournament(models.Model):
     objects = InheritanceManager()
+    subclass = models.CharField(max_length=1, choices=Tournament_TextChoices.Subclass.choices, default=Tournament_TextChoices.Subclass.GSC)  # 比赛子类
     start_time = models.DateTimeField(null=True)  # 比赛开始时间
     end_time = models.DateTimeField(null=True)  # 比赛结束时间
     state = models.CharField(max_length=1, choices=Tournament_TextChoices.State.choices, default=Tournament_TextChoices.State.PENDING)  # 比赛状态
@@ -48,12 +49,16 @@ class Tournament(models.Model):
     def participants(self):
         return TournamentParticipant.objects.filter(tournament=self)
 
+    def can_validate(self):
+        return self.start_time is not None and self.end_time is not None and self.start_time < self.end_time
+
     def validate(self):
-        if not self.start_time or not self.end_time or self.start_time >= self.end_time:
-            return
+        if not self.can_validate():
+            return False
         if self.state == Tournament_TextChoices.State.PENDING or self.state == Tournament_TextChoices.State.CANCELLED:
             self.state = Tournament_TextChoices.State.NORMAL
             self.save(update_fields=['state'])
+        return True
 
     def invalidate(self):
         if self.state != Tournament_TextChoices.State.AWARDED:
@@ -99,8 +104,8 @@ class GSCTournament(Tournament):
         return token
 
     def validate(self):
-        if not self.start_time or not self.end_time or self.start_time >= self.end_time:
-            return
+        if not self.can_validate():
+            return False
         if self.state == Tournament_TextChoices.State.PENDING or self.state == Tournament_TextChoices.State.CANCELLED:
             self.state = Tournament_TextChoices.State.NORMAL
             update_fields = ['state']
@@ -108,10 +113,17 @@ class GSCTournament(Tournament):
                 self.token = self.generate_unique_token()
                 update_fields.append('token')
             self.save(update_fields=update_fields)
+        return True
 
     def add_participant(self, user: UserProfile):
         if not GSCParticipant.objects.filter(user=user, tournament=self).exists():
-            GSCParticipant.objects.create(user=user, tournament=self, token=self.token, start_time=datetime.now(tz=timezone.utc))
+            GSCParticipant.objects.create(
+                user=user,
+                tournament=self,
+                token=self.token,
+                start_time=self.start_time,
+                end_time=self.end_time,
+            )
 
 
 class GeneralTournament(Tournament):
@@ -129,7 +141,7 @@ class TournamentParticipant(models.Model):
     arbiter_identifier = models.ForeignKey(Identifier, null=True, on_delete=models.PROTECT)  # 阿比特标识
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)  # 比赛
     user = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True)  # 用户
-    start_time = models.DateTimeField(auto_now_add=True)  # 参赛时间
+    start_time = models.DateTimeField(default=timezone.now)  # 参赛时间
     end_time = models.DateTimeField(null=True, blank=True)  # 结束时间
     rank = models.PositiveIntegerField(null=True, blank=True)  # 排名
     rank_score = models.PositiveSmallIntegerField(default=0)  # 比赛积分
@@ -174,3 +186,20 @@ class GSCParticipant(TournamentParticipant):
         output_field=models.PositiveIntegerField(),
         db_persist=True,
     )
+
+
+def select_tournament_subclass(tournament: Tournament):
+    if tournament is None or type(tournament) is not Tournament:
+        return tournament
+    if tournament.subclass == Tournament_TextChoices.Subclass.GSC:
+        return GSCTournament.objects.filter(tournament_ptr_id=tournament.id).first()
+    return None
+
+
+def get_tournament_subclass_by_id(tournament_id):
+    tournament = Tournament.objects.filter(id=tournament_id).first()
+    return select_tournament_subclass(tournament)
+
+
+def normal_tournament_subclasses():
+    return list(GSCTournament.objects.filter(state=Tournament_TextChoices.State.NORMAL))

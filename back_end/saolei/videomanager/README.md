@@ -5,7 +5,7 @@
 ## 核心模型
 
 - `VideoModel`：录像主表，保存玩家、文件、审核状态、级别、模式、成绩、`pluck`、比赛标记等信息。
-- `ExpandVideoModel`：录像扩展信息，目前主要保存录像内标识 `identifier`。
+- `ExpandVideoModel`：录像扩展信息，目前主要保存录像内标识 `identifier` 和比赛标识列表 `tournament_identifier`。
 
 `VideoModel` 是多个 app 的事实事件源。任何保存 `VideoModel` 的代码都应尽量使用 `save(update_fields=[...])`，让信号接收器能判断本次修改的影响范围。
 
@@ -100,6 +100,8 @@ Tie-Breaker依赖：timems相同时比较`upload_time`（越小越好），其�
 
 `refresh_video(video)` 会重新解析文件并刷新所有文件包含的数据。
 
+重新解析时需要同步刷新 `ExpandVideoModel.identifier` 和 `ExpandVideoModel.tournament_identifier`。其中 `tournament_identifier` 使用 `JSONField` 保存 parser 提供的比赛标识列表。
+
 如果重新解析后 `IDENTIFIER` 录像的标识已经属于玩家，可将状态改为 `OFFICIAL`，并通过状态保存触发后续事件。
 
 ## 互动 app
@@ -127,7 +129,7 @@ Tie-Breaker依赖：timems相同时比较`upload_time`（越小越好），其�
 
 互动方式：
 
-- `VideoModel.create_from_parser` 在实例上暂存 `_tournament_identifiers`。
+- `VideoModel.create_from_parser` 将 parser 的 `tournament_identifier` 列表写入 `ExpandVideoModel`，并在 `VideoModel` 实例上暂存 `_tournament_identifiers` 供创建时 check-in 使用。
 - `tournament.signals` 在 `pre_save` / `post_save` 中完成 check-in。
 
 ### `msuser`
