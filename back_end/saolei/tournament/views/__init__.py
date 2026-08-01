@@ -182,12 +182,12 @@ def set_tournament(request: HttpRequest):
             tournament.order = order
             update_fields.append('order')
         if token := request.POST.get('token'):
-            if GSCTournament.objects.filter(token=token).first():
+            if GSCTournament.objects.filter(_token=token).first():
                 return HttpResponseConflict()
             if TournamentParticipant.objects.filter(token=token).first():
                 return HttpResponseConflict()
-            tournament.token = token
-            update_fields.append('token')
+            tournament._token = token
+            update_fields.append('_token')
 
     tournament.save(update_fields=update_fields)
     return HttpResponse()

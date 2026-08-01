@@ -32,9 +32,8 @@ import { ElButton, ElCol, ElRow, ElTable, ElTableColumn } from 'element-plus';
 import { ref, watch } from 'vue';
 
 import { httpErrorNotification, successNotification } from '@/components/Notifications';
+import type { GSCParticipantResponse } from '@/services/tournamentService';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import type { GSCParticipant } from '@/utils/gsc';
-import type { TournamentParticipant } from '@/utils/tournaments';
 
 const props = defineProps({
     id: {
@@ -45,9 +44,9 @@ const props = defineProps({
 
 const { proxy } = useCurrentInstance();
 
-const columns = ['user__id', 'user__realname', 'bt1st', 'bt20th', 'bt20sum', 'it1st', 'it12th', 'it12sum', 'et1st', 'et5th', 'et5sum', 't37'];
+const columns = ['user__id', 'user__realname', 'bt1st', 'bt20th', 'bt20sum', 'it1st', 'it12th', 'it12sum', 'et1st', 'et5th', 'et5sum'];
 
-const data = ref<(GSCParticipant | TournamentParticipant)[]>([]);
+const data = ref<GSCParticipantResponse[]>([]);
 const logList = ref<string[]>([]);
 
 interface TaskResponse {
@@ -59,8 +58,8 @@ interface TaskResponse {
 
 watch(() => props.id, () => {
     if (props.id === 0) return;
-    proxy.$axios.get('/api/tournament/gsc/participants', { params: { order: props.id } }).then((response) => {
-        data.value = response.data.data;
+    proxy.$axios.get<GSCParticipantResponse[]>('/api/tournament/gsc/participants', { params: { order: props.id } }).then((response) => {
+        data.value = response.data;
     }).catch(httpErrorNotification);
 });
 

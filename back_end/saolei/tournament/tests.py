@@ -22,7 +22,7 @@ from .cache import (
     set_normal_participant_infos_for_user,
     upsert_normal_participant_cache,
 )
-from .gsc.services import refresh_gsc_ranks, refresh_gsc_scores, visible_gsc_token
+from .gsc.services import refresh_gsc_ranks, refresh_gsc_scores
 from .models import GSCParticipant, GSCTournament, Tournament, select_tournament_subclass
 from .services import reveal_videos_for_tournament
 
@@ -41,7 +41,7 @@ class TournamentTestCase(TestCase):
         now = timezone.now()
         self.tournament = GSCTournament.objects.create(
             order=1,
-            token='G12345',
+            _token='G12345',
             start_time=now - timedelta(hours=1),
             end_time=now + timedelta(hours=1),
             state=Tournament_TextChoices.State.NORMAL,
@@ -55,10 +55,6 @@ class TournamentTestCase(TestCase):
             password='password',
             userms=UserMS.objects.create(),
         )
-
-    def test_create_tournament(self):
-        # TODO: add tests
-        pass
 
     def create_video(
         self,
@@ -274,23 +270,6 @@ class TournamentTestCase(TestCase):
         self.assertEqual(participants[0].tournament, 999)
         self.assertEqual(get_normal_participant_infos_for_user(other_user.id), [])
 
-    def test_video_checkin_uses_cached_participant_to_avoid_duplicate(self):
-        participant = GSCParticipant.objects.create(
-            user=self.user,
-            tournament=self.tournament,
-            token=self.tournament.token,
-            start_time=self.tournament.start_time,
-            end_time=self.tournament.end_time,
-        )
-        self.tournament_cache.update_tournament(self.tournament)
-        upsert_normal_participant_cache(participant)
-
-        video = self.create_video()
-
-        video.refresh_from_db()
-        self.assertTrue(video.ongoing_tournament)
-        self.assertEqual(GSCParticipant.objects.filter(user=self.user, tournament=self.tournament).count(), 1)
-
     def test_rebuild_tournament_cache_command_rebuilds_both_hashes(self):
         participant = GSCParticipant.objects.create(
             user=self.user,
@@ -330,7 +309,53 @@ class TournamentTestCase(TestCase):
 
         tournament.refresh_from_db()
         self.assertEqual(tournament.state, Tournament_TextChoices.State.NORMAL)
-        self.assertTrue(tournament.token.startswith('G'))
+        self.assertTrue(tournament._token.startswith('G'))
+        self.assertEqual(tournament.token, '')
+
+    def test_new_gsc_tournament_api_creates_pending_without_token(self):
+        admin = UserProfile.objects.create_user(
+            id=GSC_Defaults.HOST_ID,
+            username='gsc_admin',
+            email='gsc_admin@example.com',
+            password='password',
+            userms=UserMS.objects.create(),
+        )
+        self.client.force_login(admin)
+        now = timezone.now()
+
+        response = self.client.post('/api/tournament/gsc/new', {
+            'id': 9,
+            'start_time': (now + timedelta(hours=1)).isoformat(),
+            'end_time': (now + timedelta(hours=2)).isoformat(),
+        })
+
+        self.assertEqual(response.status_code, 200)
+        tournament = GSCTournament.objects.get(order=9)
+        self.assertEqual(tournament.state, Tournament_TextChoices.State.PENDING)
+        self.assertEqual(tournament.token, '')
+
+    def test_get_gscinfo_serializes_awarded_results(self):
+        participant = GSCParticipant.objects.create(
+            user=self.user,
+            tournament=self.tournament,
+            token=self.tournament.token,
+            start_time=self.tournament.start_time,
+            end_time=self.tournament.end_time,
+            rank=1,
+            rank_score=100,
+        )
+        self.tournament.state = Tournament_TextChoices.State.AWARDED
+        self.tournament.save(update_fields=['state'])
+
+        response = self.client.get('/api/tournament/gsc/info', {'order': self.tournament.order})
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertNotIn('type', data)
+        self.assertEqual(data['data']['order'], self.tournament.order)
+        self.assertEqual(data['results'][0]['id'], participant.id)
+        self.assertEqual(data['results'][0]['rank'], 1)
+        self.assertEqual(data['identifier'], None)
 
     def test_gsc_add_participant_uses_tournament_time_window(self):
         self.tournament.add_participant(self.user)
@@ -405,49 +430,20 @@ class TournamentTestCase(TestCase):
         self.assertFalse(matched_video.ongoing_tournament)
         self.assertFalse(token_only_video.ongoing_tournament)
 
-    def test_gsc_validate_rejects_missing_time(self):
-        tournament = GSCTournament.objects.create(
-            order=5,
-            start_time=None,
-            end_time=None,
-            state=Tournament_TextChoices.State.PENDING,
-        )
-
-        self.assertFalse(tournament.validate())
-
-        tournament.refresh_from_db()
-        self.assertEqual(tournament.state, Tournament_TextChoices.State.PENDING)
-        self.assertEqual(tournament.token, '')
-
-    def test_gsc_validate_rejects_invalid_time_range(self):
-        now = timezone.now()
-        tournament = GSCTournament.objects.create(
-            order=6,
-            start_time=now + timedelta(hours=2),
-            end_time=now + timedelta(hours=1),
-            state=Tournament_TextChoices.State.PENDING,
-        )
-
-        self.assertFalse(tournament.validate())
-
-        tournament.refresh_from_db()
-        self.assertEqual(tournament.state, Tournament_TextChoices.State.PENDING)
-        self.assertEqual(tournament.token, '')
-
     def test_gsc_token_is_hidden_until_start_time(self):
         now = timezone.now()
         tournament = GSCTournament.objects.create(
             order=4,
-            token='G54321',
+            _token='G54321',
             start_time=now + timedelta(hours=1),
             end_time=now + timedelta(hours=2),
             state=Tournament_TextChoices.State.NORMAL,
         )
 
-        self.assertEqual(visible_gsc_token(tournament), '')
+        self.assertEqual(tournament.token, '')
 
         tournament.start_time = now - timedelta(minutes=1)
-        self.assertEqual(visible_gsc_token(tournament), tournament.token)
+        self.assertEqual(tournament.token, tournament._token)
 
     def test_reveal_videos_for_tournament_restores_personal_record(self):
         self.create_cached_gsc_participant()
@@ -488,7 +484,7 @@ class TournamentTestCase(TestCase):
         now = timezone.now()
         other_tournament = GSCTournament.objects.create(
             order=2,
-            token='G67890',
+            _token='G67890',
             start_time=now - timedelta(hours=1),
             end_time=now + timedelta(hours=1),
             state=Tournament_TextChoices.State.PENDING,

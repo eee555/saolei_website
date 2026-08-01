@@ -12,6 +12,8 @@ export interface GSCParticipantResponse {
     id: number;
     user__id: number;
     user__realname: string;
+    rank: number | null;
+    rank_score: number;
     bt1st: number;
     bt20th: number;
     bt20sum: number;
@@ -21,10 +23,10 @@ export interface GSCParticipantResponse {
     et1st: number;
     et5th: number;
     et5sum: number;
+    t37?: number;
 }
 
 export interface GSCInfoResponse {
-    type: 'success';
     data: GSCTournamentInfo;
     results: GSCParticipantResponse[] | null;
     identifier: string | null;

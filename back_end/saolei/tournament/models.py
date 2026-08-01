@@ -75,7 +75,7 @@ class Tournament(models.Model):
 
 class GSCTournament(Tournament):
     order = models.PositiveSmallIntegerField(primary_key=True)  # 届数
-    token = models.CharField(max_length=6, default='', db_collation='utf8mb4_0900_as_cs')  # 比赛标识
+    _token = models.CharField(max_length=6, default='', db_column='token', db_collation='utf8mb4_0900_as_cs')  # 比赛标识
 
     @property
     def series(self):
@@ -92,14 +92,24 @@ class GSCTournament(Tournament):
     def description(self):
         return ''
 
+    @property
+    def token(self):
+        if self.start_time is None or timezone.now() < self.start_time:
+            return ''
+        return self._token
+
+    @token.setter
+    def token(self, value):
+        self._token = value
+
     def new_token(self):
-        self.token = self.generate_unique_token()
-        self.save(update_fields=['token'])
+        self._token = self.generate_unique_token()
+        self.save(update_fields=['_token'])
 
     @staticmethod
     def generate_unique_token():
         token = generate_GSC_token()
-        while GSCTournament.objects.filter(token=token).exists() or TournamentParticipant.objects.filter(token=token).exists():
+        while GSCTournament.objects.filter(_token=token).exists() or TournamentParticipant.objects.filter(token=token).exists():
             token = generate_GSC_token()
         return token
 
@@ -109,9 +119,9 @@ class GSCTournament(Tournament):
         if self.state == Tournament_TextChoices.State.PENDING or self.state == Tournament_TextChoices.State.CANCELLED:
             self.state = Tournament_TextChoices.State.NORMAL
             update_fields = ['state']
-            if not self.token:
-                self.token = self.generate_unique_token()
-                update_fields.append('token')
+            if not self._token:
+                self._token = self.generate_unique_token()
+                update_fields.append('_token')
             self.save(update_fields=update_fields)
         return True
 
@@ -120,7 +130,7 @@ class GSCTournament(Tournament):
             GSCParticipant.objects.create(
                 user=user,
                 tournament=self,
-                token=self.token,
+                token=self._token,
                 start_time=self.start_time,
                 end_time=self.end_time,
             )
@@ -186,6 +196,14 @@ class GSCParticipant(TournamentParticipant):
         output_field=models.PositiveIntegerField(),
         db_persist=True,
     )
+
+    @property
+    def user__id(self):
+        return self.user_id
+
+    @property
+    def user__realname(self):
+        return self.user.realname if self.user else None
 
 
 def select_tournament_subclass(tournament: Tournament):

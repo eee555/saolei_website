@@ -149,7 +149,7 @@ def serialize_normal_tournament(tournament: Tournament):
     }
     if isinstance(tournament, GSCTournament):
         data['order'] = tournament.order
-        data['token'] = tournament.token
+        data['token'] = tournament._token
     return data
 
 
