@@ -10,10 +10,12 @@ from userprofile.models import UserProfile
 from utils import verify_text
 from utils.response import HttpResponseConflict
 from videomanager.view_utils import generate_file_stream
-from ..cache import get_normal_tournament_infos
+from ..cache import TournamentCache
 from ..forms import TournamentForm
 from ..models import GSCTournament, Tournament, TournamentParticipant, get_tournament_subclass_by_id, select_tournament_subclass
 from ..utils import participant_videos, tournament_accepts_checkin
+
+cache = TournamentCache()
 
 
 @require_POST
@@ -271,7 +273,7 @@ def get_participant_videos(request: HttpRequest):
 @require_GET
 def get_tournament_news(request: HttpRequest):
     now = datetime.now(tz=timezone.utc)
-    normal_tournaments = get_normal_tournament_infos()
+    normal_tournaments = cache.get_tournament_all()
     preparing_tournaments = [
         {
             'id': tournament.id,

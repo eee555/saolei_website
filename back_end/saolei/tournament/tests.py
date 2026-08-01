@@ -17,10 +17,6 @@ from .cache import (
     NORMAL_TOURNAMENT_CACHE_KEY,
     TournamentCache,
     cache,
-    get_normal_participant_infos_for_user,
-    get_normal_tournament_infos,
-    set_normal_participant_infos_for_user,
-    upsert_normal_participant_cache,
 )
 from .gsc.services import refresh_gsc_ranks, refresh_gsc_scores
 from .models import GSCParticipant, GSCTournament, Tournament, select_tournament_subclass
@@ -108,7 +104,7 @@ class TournamentTestCase(TestCase):
             start_time=tournament.start_time,
             end_time=tournament.end_time,
         )
-        upsert_normal_participant_cache(participant)
+        self.tournament_cache.update_participant(participant)
         return participant
 
     def test_video_checkin_requires_explicit_participant(self):
@@ -186,7 +182,7 @@ class TournamentTestCase(TestCase):
     def test_normal_tournament_cache_reads_redis_hash(self):
         self.tournament_cache.update_tournament(self.tournament)
 
-        tournaments = get_normal_tournament_infos()
+        tournaments = self.tournament_cache.get_tournament_all()
 
         self.assertEqual(len(tournaments), 1)
         self.assertEqual(tournaments[0].id, self.tournament.id)
@@ -201,7 +197,7 @@ class TournamentTestCase(TestCase):
         tournament = select_tournament_subclass(parent_tournament)
         self.tournament_cache.update_tournament(tournament)
 
-        tournaments = get_normal_tournament_infos()
+        tournaments = self.tournament_cache.get_tournament_all()
         self.assertEqual(tournaments[0].id, self.tournament.id)
         self.assertEqual(tournaments[0].order, self.tournament.order)
 
@@ -215,9 +211,9 @@ class TournamentTestCase(TestCase):
             start_time=self.tournament.start_time,
             end_time=self.tournament.end_time,
         )
-        upsert_normal_participant_cache(participant)
+        self.tournament_cache.update_participant(participant)
 
-        participants = get_normal_participant_infos_for_user(self.user.id)
+        participants = self.tournament_cache.get_participant_list(self.user.id)
         cached_data = json.loads(cache.hget(NORMAL_PARTICIPANT_CACHE_KEY, self.user.id))
 
         self.assertEqual(len(participants), 1)
@@ -226,11 +222,11 @@ class TournamentTestCase(TestCase):
         self.assertEqual(participants[0].token, self.tournament.token)
         self.assertEqual(participants[0].arbiter_identifier, identifier.identifier)
         self.assertEqual(participants[0].tournament, self.tournament.id)
-        self.assertEqual(participants[0].start_time, participant.start_time.replace(microsecond=0))
-        self.assertEqual(participants[0].end_time, participant.end_time.replace(microsecond=0))
+        self.assertEqual(participants[0].start_time, participant.start_time)
+        self.assertEqual(participants[0].end_time, participant.end_time)
 
     def test_remove_tournament_removes_matching_participants_from_cache(self):
-        set_normal_participant_infos_for_user(self.user.id, [
+        self.tournament_cache.set_participant_list(self.user.id, [
             {
                 'id': 1,
                 'token': self.tournament.token,
@@ -249,7 +245,7 @@ class TournamentTestCase(TestCase):
             },
         ])
         other_user = self.create_user('other_cached_user')
-        set_normal_participant_infos_for_user(other_user.id, [
+        self.tournament_cache.set_participant_list(other_user.id, [
             {
                 'id': 3,
                 'token': self.tournament.token,
@@ -262,13 +258,13 @@ class TournamentTestCase(TestCase):
 
         self.tournament_cache.remove_tournament(self.tournament)
 
-        participants = get_normal_participant_infos_for_user(self.user.id)
+        participants = self.tournament_cache.get_participant_list(self.user.id)
         self.assertEqual(len(participants), 1)
         self.assertEqual(participants[0].id, 2)
         self.assertEqual(participants[0].token, 'OTHER')
         self.assertIsNone(participants[0].arbiter_identifier)
         self.assertEqual(participants[0].tournament, 999)
-        self.assertEqual(get_normal_participant_infos_for_user(other_user.id), [])
+        self.assertEqual(self.tournament_cache.get_participant_list(other_user.id), [])
 
     def test_rebuild_tournament_cache_command_rebuilds_both_hashes(self):
         participant = GSCParticipant.objects.create(
@@ -283,16 +279,16 @@ class TournamentTestCase(TestCase):
         stdout = StringIO()
         call_command('rebuild_tournament_cache', stdout=stdout)
 
-        tournaments = get_normal_tournament_infos()
-        participants = get_normal_participant_infos_for_user(self.user.id)
+        tournaments = self.tournament_cache.get_tournament_all()
+        participants = self.tournament_cache.get_participant_list(self.user.id)
         self.assertEqual(tournaments[0].id, self.tournament.id)
         self.assertEqual(len(participants), 1)
         self.assertEqual(participants[0].id, participant.id)
         self.assertEqual(participants[0].token, participant.token)
         self.assertIsNone(participants[0].arbiter_identifier)
         self.assertEqual(participants[0].tournament, self.tournament.id)
-        self.assertEqual(participants[0].start_time, participant.start_time.replace(microsecond=0))
-        self.assertEqual(participants[0].end_time, participant.end_time.replace(microsecond=0))
+        self.assertEqual(participants[0].start_time, participant.start_time)
+        self.assertEqual(participants[0].end_time, participant.end_time)
         self.assertIn('rebuilt 1 normal tournaments', stdout.getvalue())
         self.assertIn('rebuilt 1 normal participants', stdout.getvalue())
 
@@ -510,7 +506,7 @@ class TournamentTestCase(TestCase):
             start_time=self.tournament.start_time,
             end_time=self.tournament.end_time,
         )
-        upsert_normal_participant_cache(participant)
+        self.tournament_cache.update_participant(participant)
         user_without_valid_score = self.create_user('gsc_default_user')
         participant_without_valid_score = GSCParticipant.objects.create(
             user=user_without_valid_score,

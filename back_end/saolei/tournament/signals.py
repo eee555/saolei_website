@@ -3,11 +3,7 @@ from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 
 from videomanager.models import VideoModel
-from .cache import (
-    TournamentCache,
-    delete_normal_participant_cache,
-    upsert_normal_participant_cache,
-)
+from .cache import TournamentCache
 from .models import GSCParticipant, GSCTournament, Tournament, TournamentParticipant, select_tournament_subclass
 from .services import add_existing_videos_to_participant_tournament
 from .utils import add_video_to_checked_tournaments, video_checkin
@@ -57,23 +53,23 @@ def invalidate_normal_cache_on_gsc_delete(sender, instance: GSCTournament, **kwa
 
 @receiver(post_save, sender=TournamentParticipant, dispatch_uid='tournament.rebuild_normal_participant_cache_on_save')
 def rebuild_normal_participant_cache_on_save(sender, instance: TournamentParticipant, created: bool, **kwargs):
-    transaction.on_commit(lambda: upsert_normal_participant_cache(instance))
+    transaction.on_commit(lambda: cache.update_participant(instance))
     if created:
         transaction.on_commit(lambda: add_existing_videos_to_participant_tournament(instance))
 
 
 @receiver(post_delete, sender=TournamentParticipant, dispatch_uid='tournament.rebuild_normal_participant_cache_on_delete')
 def rebuild_normal_participant_cache_on_delete(sender, instance: TournamentParticipant, **kwargs):
-    transaction.on_commit(lambda: delete_normal_participant_cache(instance))
+    transaction.on_commit(lambda: cache.remove_participant(instance.user_id, instance.tournament_id))
 
 
 @receiver(post_save, sender=GSCParticipant, dispatch_uid='tournament.rebuild_normal_gsc_participant_cache_on_save')
 def rebuild_normal_gsc_participant_cache_on_save(sender, instance: GSCParticipant, created: bool, **kwargs):
-    transaction.on_commit(lambda: upsert_normal_participant_cache(instance))
+    transaction.on_commit(lambda: cache.update_participant(instance))
     if created:
         transaction.on_commit(lambda: add_existing_videos_to_participant_tournament(instance))
 
 
 @receiver(post_delete, sender=GSCParticipant, dispatch_uid='tournament.rebuild_normal_gsc_participant_cache_on_delete')
 def rebuild_normal_gsc_participant_cache_on_delete(sender, instance: GSCParticipant, **kwargs):
-    transaction.on_commit(lambda: delete_normal_participant_cache(instance))
+    transaction.on_commit(lambda: cache.remove_participant(instance.user_id, instance.tournament_id))

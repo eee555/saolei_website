@@ -79,6 +79,8 @@ HSET tournament:normal 123 '{"id":123,"series":"gsc","start_time":"...","end_tim
 - 比赛结束时已有后台任务刷新 GSC 成绩和排名，可以在结束流程中统一落库。
 - 不在比赛期间维护成绩缓存，可以避免每次录像 checkin、录像更新、成绩变化时同步更新 Redis hash/zset，降低写路径复杂度。
 
+GSC 成绩刷新由 `tournament.gsc.services.refresh_gsc_scores` 负责。当前实现按初级、中级、高级分别执行查询，每个级别只取每个玩家按 `timems` 排序的前 N 条有效录像；三个级别的结果先在内存中按用户合并，最后统一计算 participant 的完整成绩并使用一次 `bulk_update` 分批落库。这样避免单个大查询同时处理所有级别，也避免每个级别分别保存 participant。
+
 如果未来需要比赛期间展示实时榜，可以再单独设计每个比赛的成绩缓存，例如使用 hash 存三组成绩数组、zset 存总成绩：
 
 - `tournament:normal:gsc:{tournament_id}:scores`
@@ -88,7 +90,7 @@ HSET tournament:normal 123 '{"id":123,"series":"gsc","start_time":"...","end_tim
 
 `tournament:normal` 应由写路径维护同步。比赛创建、修改 `start_time/end_time/order/token`、验证、取消和颁奖时，在事务提交后对对应比赛执行 `TournamentCache.update_tournament` 或 `TournamentCache.remove_tournament`。读取路径只读取缓存，不在未命中时查询 DB 或重建缓存；缓存与 DB 不同步属于写路径维护 bug。
 
-Redis 中仍保存 JSON object/list；Python 读取后应统一反序列化为 dataclass，例如 `CachedNormalTournament` 和 `CachedNormalParticipant`，调用方使用属性访问以获得类型提示，不再在业务代码中传递裸 dict。
+Redis 中仍保存 JSON object/list，由 `dataclass-json` 负责序列化和反序列化；时间字段使用该库默认的 timestamp 表示。Python 读取后应统一反序列化为 dataclass，例如 `CachedNormalTournament` 和 `CachedNormalParticipant`，调用方使用属性访问以获得类型提示，不再在业务代码中传递裸 dict。
 
 比赛审核通过的前置条件是 `start_time` 和 `end_time` 都已经确定，且 `start_time < end_time`。时间缺失或时间范围非法时，`Tournament.validate()` 应返回失败，入口不能把比赛切换到 `NORMAL`，GSC 也不能生成 token。
 
@@ -136,13 +138,13 @@ HSET tournament:normal:participants {user_id} '[{"id":456,"token":"G12345","arbi
 
 当前重构状态：
 
-- `TournamentCache` 已开始封装比赛和参赛关系缓存读写，包括 `get_tournament`、`get_tournament_all`、`get_gsc`、`get_participant`、`checkin_arbiter` 和 `checkin_token`，读取结果已改为 dataclass。
+- `TournamentCache` 已开始封装比赛和参赛关系缓存读写，包括 `get_tournament`、`get_tournament_all`、`get_gsc`、`get_participant_list`、`set_participant_list`、`update_participant`、`remove_participant`、`checkin_arbiter` 和 `checkin_token`，读取结果已改为 dataclass。
 - `tournament.services.checkin_with_arbiter` / `checkin_with_token` 正在接管 `tournament.utils.video_checkin` 中的 checkin 判定。
 - `video_checkin` 在 `VideoModel.pre_save` 阶段运行，此时新录像还没有主键；service 层只返回命中的比赛列表，由 `video_checkin` 暂存到 `_checked_in_tournaments`，再由 `post_save` 写入 `Tournament.videos` 多对多关系。
 - EVF 路径在没有参赛缓存时直接跳过 checkin；用户需要先通过 GSC 注册接口显式创建 participant。
 - `serialize_normal_participant` 应继续兼容 `arbiter_identifier=None` 的参赛关系，因为 GSC participant 只依赖固定 token。
 
-当前未重新运行检查。上次检查发生在 dataclass 和缓存时间字段收紧之前，结果已部分过期；完成 checkin service 收口后需要重新运行 `python -m flake8 tournament` 和 `manage.py test tournament --keepdb`。
+当前已重新运行 `python -m flake8 tournament` 和 `manage.py test tournament --keepdb`。后端检查通过，测试套件 22 个用例通过。
 
 ## 当前必要接口
 

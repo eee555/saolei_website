@@ -41,8 +41,6 @@ GSC_LEVEL_RULES = {
     },
 }
 
-GSC_MAX_COUNT = max(rule['count'] for rule in GSC_LEVEL_RULES.values())
-
 GSC_SCORE_VALUE_FIELDS = [
     'id',
     'user__id',
@@ -100,8 +98,8 @@ def refresh_gsc_scores(tournament: GSCTournament, *, batch_size=1000):
     """
     批量刷新 GSC 参赛者成绩。
 
-    一次取出每个 (玩家, 级别) 的前若干条有效录像，在内存中按 GSC 规则
-    补足默认成绩，最后用 bulk_update 分批写回。
+    三个级别分别查询每个玩家的前若干条有效录像，在内存中合并为完整
+    GSC 成绩，最后用 bulk_update 分批写回。
     """
     participants = list(GSCParticipant.objects.filter(tournament=tournament))
     if not participants:
@@ -114,27 +112,25 @@ def refresh_gsc_scores(tournament: GSCTournament, *, batch_size=1000):
     }
     times_by_user_id = defaultdict(lambda: defaultdict(list))
 
-    ranked_videos = (
-        tournament.videos
-        .filter(_gsc_video_score_filter())
-        .annotate(
-            gsc_row_number=Window(
-                expression=RowNumber(),
-                partition_by=[F('player_id'), F('level')],
-                order_by=[F('timems').asc(), F('upload_time').asc(), F('id').asc()],
-            ),
+    for level, rule in GSC_LEVEL_RULES.items():
+        ranked_videos = (
+            tournament.videos
+            .filter(level=level, bv__gte=rule['bv_min'], timems__lt=rule['default'])
+            .annotate(
+                gsc_row_number=Window(
+                    expression=RowNumber(),
+                    partition_by=[F('player_id')],
+                    order_by=[F('timems').asc()],
+                ),
+            )
+            .filter(gsc_row_number__lte=rule['count'])
+            .values_list('player_id', 'timems')
         )
-        .filter(gsc_row_number__lte=GSC_MAX_COUNT)
-        .values_list('player_id', 'level', 'timems', 'gsc_row_number')
-    )
 
-    for player_id, level, timems, row_number in ranked_videos.iterator(chunk_size=batch_size):
-        if player_id not in participants_by_user_id:
-            continue
-        rule = GSC_LEVEL_RULES.get(level)
-        if rule is None or row_number > rule['count']:
-            continue
-        times_by_user_id[player_id][level].append(timems)
+        for player_id, timems in ranked_videos.iterator(chunk_size=batch_size):
+            if player_id not in participants_by_user_id:
+                continue
+            times_by_user_id[player_id][level].append(timems)
 
     changed_participants = []
     for participant in participants:

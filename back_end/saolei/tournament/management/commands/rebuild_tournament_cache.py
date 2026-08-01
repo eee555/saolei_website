@@ -1,4 +1,3 @@
-import json
 from collections import defaultdict
 
 from django.core.management.base import BaseCommand
@@ -7,11 +6,11 @@ from tournament.cache import (
     NORMAL_PARTICIPANT_CACHE_KEY,
     NORMAL_TOURNAMENT_CACHE_KEY,
     cache,
+    serialize_participant_list,
     serialize_normal_participant,
     serialize_normal_tournament,
 )
 from tournament.models import TournamentParticipant, normal_tournament_subclasses
-from utils import ComplexEncoder
 
 
 class Command(BaseCommand):
@@ -20,7 +19,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         tournaments = normal_tournament_subclasses()
         tournament_mapping = {
-            tournament.id: json.dumps(serialize_normal_tournament(tournament), cls=ComplexEncoder)
+            tournament.id: serialize_normal_tournament(tournament).to_json()
             for tournament in tournaments
         }
         tournament_ids = [tournament.id for tournament in tournaments]
@@ -43,7 +42,7 @@ class Command(BaseCommand):
             participant_count += 1
 
         participant_mapping = {
-            user_id: json.dumps(participant_infos, cls=ComplexEncoder)
+            user_id: serialize_participant_list(participant_infos)
             for user_id, participant_infos in participant_infos_by_user_id.items()
         }
         if participant_mapping:
