@@ -14,12 +14,6 @@ NORMAL_TOURNAMENT_CACHE_KEY = 'tournament:normal'
 NORMAL_PARTICIPANT_CACHE_KEY = 'tournament:normal:participants'
 
 
-def _cache_value_to_str(value):
-    if isinstance(value, bytes):
-        return value.decode()
-    return value
-
-
 @dataclass_json
 @dataclass
 class CachedNormalTournament:
@@ -79,7 +73,7 @@ class TournamentCache:
         data = cache.hget(NORMAL_TOURNAMENT_CACHE_KEY, tournament_id)
         if data is None:
             return None
-        return CachedNormalTournament.from_json(_cache_value_to_str(data))
+        return CachedNormalTournament.from_json(data)
 
     def get_token_tournament(self, token: str):
         data = self.get_tournament_all()
@@ -88,7 +82,7 @@ class TournamentCache:
     def get_tournament_all(self):
         data = cache.hgetall(NORMAL_TOURNAMENT_CACHE_KEY)
         return [
-            CachedNormalTournament.from_json(_cache_value_to_str(value))
+            CachedNormalTournament.from_json(value)
             for value in data.values()
         ]
 
@@ -182,7 +176,7 @@ def serialize_participant_list(participants: list[CachedNormalParticipant]):
 
 
 def deserialize_participant_list(data):
-    return CachedNormalParticipant.schema().loads(_cache_value_to_str(data), many=True)
+    return CachedNormalParticipant.schema().loads(data, many=True)
 
 
 def invalidate_normal_participant_cache():
