@@ -3,6 +3,7 @@ import string
 
 from django.db import models
 from django.utils import timezone
+from django_tasks_db.models import DBTaskResult
 from model_utils.managers import InheritanceManager
 
 from config.global_settings import MaxSizes
@@ -76,6 +77,7 @@ class Tournament(models.Model):
 class GSCTournament(Tournament):
     order = models.PositiveSmallIntegerField(primary_key=True)  # 届数
     _token = models.CharField(max_length=6, default='', db_column='token', db_collation='utf8mb4_0900_as_cs')  # 比赛标识
+    task = models.ForeignKey(DBTaskResult, on_delete=models.SET_NULL, null=True)
 
     @property
     def series(self):

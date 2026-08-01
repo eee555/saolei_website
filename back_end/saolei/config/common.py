@@ -15,10 +15,6 @@ TASK_CLEANUP_CONFIGS = [
         'expires': timedelta(days=7),
     },
     {
-        'task_path': 'tournament.gsc.tasks.task_gsc_refresh',
-        'expires': timedelta(days=7),
-    },
-    {
         'task_path': 'tournament.gsc.tasks.task_gsc_finish',
         'expires': timedelta(days=30),
     },

@@ -31,20 +31,54 @@
         </ElButton>
         <br>
         <span>想设置空标识需打开此开关</span><ElSwitch v-model="allowEmptyToken" />
+        <br>
+        <br>
+        <ElDescriptions title="结算后台任务" border :column="2">
+            <ElDescriptionsItem label="任务 ID">
+                {{ taskInfo?.id ?? '无' }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="状态">
+                <DjangoTaskResultStatusBadge :status="taskInfo?.status ?? 'NULL'" />
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="创建时间">
+                {{ formatTaskTime(taskInfo?.enqueued_at) }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="开始时间">
+                {{ formatTaskTime(taskInfo?.started_at) }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="结束时间">
+                {{ formatTaskTime(taskInfo?.finished_at) }}
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="异常">
+                {{ taskInfo?.exception_class_path || '无' }}
+            </ElDescriptionsItem>
+        </ElDescriptions>
+        <ElButton :loading="loadingTaskInfo" @click="refreshTaskInfo">
+            刷新任务
+        </ElButton>
+        <ElButton :loading="creatingFinishTask" @click="createFinishTask">
+            计算排行并结束比赛
+        </ElButton>
+        <ElButton v-if="taskInfo?.status === 'FAILED'" @click="console.log(taskInfo.traceback)">
+            输出错误
+        </ElButton>
     </span>
 </template>
 
 <script setup lang="ts">
 import '@/styles/text.css';
 import { isAxiosError } from 'axios';
-import { ElButton, ElDatePicker, ElInput, ElSwitch } from 'element-plus';
+import { ElButton, ElDatePicker, ElDescriptions, ElDescriptionsItem, ElInput, ElSwitch } from 'element-plus';
 import { ref, watch } from 'vue';
 
 import { httpErrorNotification, successNotification } from '../Notifications';
 
+import DjangoTaskResultStatusBadge from '@/components/widgets/DjangoTaskResultStatusBadge.vue';
+import type { DjangoTaskResultStatus } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { toDate, toISODateTimeString } from '@/utils/datetime';
 import type { GSCInfo } from '@/utils/gsc';
+import { utc_to_local_format } from '@/utils/system/tools';
 
 const props = defineProps({
     id: { type: Number, default: 0 },
@@ -64,6 +98,9 @@ const newToken = ref<string>('');
 const loadingGSCInfo = ref(false);
 const notFound = ref(false);
 const allowEmptyToken = ref(false);
+const taskInfo = ref<GSCTaskInfo | null>(null);
+const loadingTaskInfo = ref(false);
+const creatingFinishTask = ref(false);
 
 interface GSCInfoResponseData {
     id: number;
@@ -74,9 +111,28 @@ interface GSCInfoResponseData {
     token: string | null;
 }
 
+interface GSCTaskInfo {
+    id: string;
+    status: DjangoTaskResultStatus;
+    enqueued_at: string;
+    started_at: string | null;
+    finished_at: string | null;
+    return_value: unknown;
+    exception_class_path: string;
+    traceback: string;
+}
+
+interface TaskResponse {
+    type: 'success';
+    data: {
+        task_id: string;
+    };
+}
+
 async function getGSCInfo(id: number | undefined) {
     if (id === undefined || id < 1) {
         gscInfo.value = { id: 0 };
+        taskInfo.value = null;
         return;
     }
     loadingGSCInfo.value = true;
@@ -87,9 +143,11 @@ async function getGSCInfo(id: number | undefined) {
         gscInfo.value.end_time = toDate(tournament.end_time);
         gscInfo.value.token = tournament.token ?? undefined;
         gscInfo.value.id = tournament.id;
+        await refreshTaskInfo();
     } catch (error: unknown) {
         if (isAxiosError(error) && error.response?.status === 404) {
             gscInfo.value = { id: 0 };
+            taskInfo.value = null;
             notFound.value = true;
         } else {
             httpErrorNotification(error);
@@ -97,6 +155,30 @@ async function getGSCInfo(id: number | undefined) {
     } finally {
         loadingGSCInfo.value = false;
     }
+}
+
+async function refreshTaskInfo() {
+    if (props.id < 1) return;
+    loadingTaskInfo.value = true;
+    await proxy.$axios.get<GSCTaskInfo | null>('/api/tournament/gsc/task', { params: { order: props.id } }).then((response) => {
+        taskInfo.value = response.data;
+    }).catch(httpErrorNotification);
+    loadingTaskInfo.value = false;
+}
+
+async function createFinishTask() {
+    if (props.id < 1) return;
+    creatingFinishTask.value = true;
+    await proxy.$axios.post<TaskResponse>('/api/tournament/gsc/task/finish', { order: props.id }).then(async (response) => {
+        successNotification(response);
+        await refreshTaskInfo();
+    }).catch(httpErrorNotification);
+    creatingFinishTask.value = false;
+}
+
+function formatTaskTime(time: string | null | undefined) {
+    if (time === null || time === undefined || time === '') return '无';
+    return utc_to_local_format(time);
 }
 
 function createGSC() {

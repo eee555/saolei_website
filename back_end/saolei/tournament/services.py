@@ -58,6 +58,18 @@ def add_existing_videos_to_participant_tournament(participant: TournamentPartici
     return len(video_ids)
 
 
+def delete_participants_without_videos(tournament: Tournament):
+    video_player_ids = tournament.videos.values('player_id')
+    participants = (
+        TournamentParticipant.objects
+        .filter(tournament=tournament, user_id__isnull=False)
+        .exclude(user_id__in=video_player_ids)
+    )
+    deleted_count = participants.count()
+    participants.delete()
+    return deleted_count
+
+
 def reveal_videos_for_tournament(tournament: Tournament):
     """批量恢复已颁奖比赛中不再属于其他未颁奖且未取消比赛的录像。"""
     if tournament.state != Tournament_TextChoices.State.AWARDED:

@@ -76,10 +76,12 @@ HSET tournament:normal 123 '{"id":123,"series":"gsc","start_time":"...","end_tim
 缓存中暂不保存参赛选手成绩：
 
 - 比赛期间成绩不公开，运行期维护每个选手的 37 个成绩没有直接用户价值。
-- 比赛结束时已有后台任务刷新 GSC 成绩和排名，可以在结束流程中统一落库。
+- 比赛结算后台任务会统一刷新 GSC 成绩和排名，并在结束流程中落库。
 - 不在比赛期间维护成绩缓存，可以避免每次录像 checkin、录像更新、成绩变化时同步更新 Redis hash/zset，降低写路径复杂度。
 
 GSC 成绩刷新由 `tournament.gsc.services.refresh_gsc_scores` 负责。当前实现按初级、中级、高级分别执行查询，每个级别只取每个玩家按 `timems` 排序的前 N 条有效录像；三个级别的结果先在内存中按用户合并，最后统一计算 participant 的完整成绩并使用一次 `bulk_update` 分批落库。这样避免单个大查询同时处理所有级别，也避免每个级别分别保存 participant。
+
+GSC 只保留比赛结算后台任务，不再提供单独的刷新成绩后台任务。`GSCTournament.task` 指向当前结算任务；创建新结算任务前会复用仍处于 READY/RUNNING 的任务，避免管理员重复点击时产生重复结算任务。
 
 如果未来需要比赛期间展示实时榜，可以再单独设计每个比赛的成绩缓存，例如使用 hash 存三组成绩数组、zset 存总成绩：
 
@@ -132,6 +134,7 @@ HSET tournament:normal:participants {user_id} '[{"id":456,"token":"G12345","arbi
 
 - `TournamentParticipant` / `GSCParticipant` 创建、修改、删除后，在对应用户的列表缓存中同步 upsert 或 delete 该参赛关系。
 - `TournamentParticipant` / `GSCParticipant` 创建后，在事务提交后扫描同一用户 `upload_time` 落在 participant `start_time/end_time` 窗口内的既有录像，并补充写入 `Tournament.videos` 多对多关系。AVF 录像要求 `ExpandVideoModel.identifier == participant.arbiter_identifier`；其他录像要求 `ExpandVideoModel.tournament_identifier` 包含 participant token。这个补偿只维护比赛-录像关系，不修改 `VideoModel.ongoing_tournament`。
+- `finish_gsc_tournament` 开头会调用通用服务 `delete_participants_without_videos` 删除没有任何本比赛录像的站内 participant；当前只有 GSC 结束流程使用这个通用服务。
 - checkin 读路径只读取缓存，不在未命中时查询 DB 或重建缓存；缓存与 DB 不同步属于写路径维护 bug。
 - `TournamentCache.remove_tournament` 移除 `tournament:normal` 中的比赛时，也会从 `tournament:normal:participants` 的所有用户列表中精确移除对应比赛的参赛关系，避免已结束或已取消比赛继续参与 checkin。
 - 失效应尽量在事务提交后执行。
@@ -144,7 +147,7 @@ HSET tournament:normal:participants {user_id} '[{"id":456,"token":"G12345","arbi
 - EVF 路径在没有参赛缓存时直接跳过 checkin；用户需要先通过 GSC 注册接口显式创建 participant。
 - `serialize_normal_participant` 应继续兼容 `arbiter_identifier=None` 的参赛关系，因为 GSC participant 只依赖固定 token。
 
-当前已重新运行 `python -m flake8 tournament` 和 `manage.py test tournament --keepdb`。后端检查通过，测试套件 22 个用例通过。
+当前已重新运行 `python -m flake8 tournament` 和 `manage.py test tournament --keepdb`。后端检查通过，测试套件 24 个用例通过。
 
 ## 当前必要接口
 

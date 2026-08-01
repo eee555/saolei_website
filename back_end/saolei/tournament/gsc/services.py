@@ -1,11 +1,11 @@
 from collections import defaultdict
 
-from django.db.models import F, Q, Window
+from django.db.models import F, Window
 from django.db.models.functions import RowNumber
 
 from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from config.tournaments import GSC_Defaults
-from tournament.services import reveal_videos_for_tournament
+from tournament.services import delete_participants_without_videos, reveal_videos_for_tournament
 from tournament.models import GSCParticipant, GSCTournament
 
 GSC_SCORE_FIELDS = [
@@ -53,17 +53,6 @@ GSC_SCORE_VALUE_FIELDS = [
 ]
 
 
-def _gsc_video_score_filter():
-    filters = Q()
-    for level, rule in GSC_LEVEL_RULES.items():
-        filters |= Q(
-            level=level,
-            bv__gte=rule['bv_min'],
-            timems__lt=rule['default'],
-        )
-    return filters
-
-
 def _apply_gsc_scores(participant: GSCParticipant, times_by_level):
     for level, rule in GSC_LEVEL_RULES.items():
         times = sorted(times_by_level.get(level, []))[:rule['count']]
@@ -73,25 +62,6 @@ def _apply_gsc_scores(participant: GSCParticipant, times_by_level):
         setattr(participant, rule['first'], times[0] if times else default)
         setattr(participant, rule['edge'], times[count - 1] if len(times) >= count else default)
         setattr(participant, rule['total'], sum(times) + (count - len(times)) * default)
-
-
-def refresh_gsc_participant_score(participant: GSCParticipant):
-    times_by_level = defaultdict(list)
-    videos = (
-        participant.videos
-        .filter(_gsc_video_score_filter())
-        .order_by('level', 'timems', 'upload_time', 'id')
-        .values_list('level', 'timems')
-    )
-    for level, timems in videos:
-        rule = GSC_LEVEL_RULES.get(level)
-        if rule is None or len(times_by_level[level]) >= rule['count']:
-            continue
-        times_by_level[level].append(timems)
-
-    _apply_gsc_scores(participant, times_by_level)
-    participant.save(update_fields=GSC_SCORE_FIELDS)
-    return participant
 
 
 def refresh_gsc_scores(tournament: GSCTournament, *, batch_size=1000):
@@ -171,7 +141,9 @@ def refresh_gsc_scores_and_ranks(tournament: GSCTournament):
 
 
 def finish_gsc_tournament(tournament: GSCTournament):
+    deleted_participants = delete_participants_without_videos(tournament)
     result = refresh_gsc_scores_and_ranks(tournament)
+    result['deleted_participants'] = deleted_participants
     if tournament.state != Tournament_TextChoices.State.AWARDED:
         tournament.state = Tournament_TextChoices.State.AWARDED
         tournament.save(update_fields=['state'])

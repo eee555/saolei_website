@@ -5,6 +5,7 @@ from io import StringIO
 from django.core.management import call_command
 from django.test import TestCase
 from django.utils import timezone
+from django_tasks_db.models import DBTaskResult
 
 from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from config.tournaments import GSC_Defaults
@@ -18,7 +19,7 @@ from .cache import (
     TournamentCache,
     cache,
 )
-from .gsc.services import refresh_gsc_ranks, refresh_gsc_scores
+from .gsc.services import finish_gsc_tournament, refresh_gsc_ranks, refresh_gsc_scores
 from .models import GSCParticipant, GSCTournament, Tournament, select_tournament_subclass
 from .services import reveal_videos_for_tournament
 
@@ -330,6 +331,43 @@ class TournamentTestCase(TestCase):
         self.assertEqual(tournament.state, Tournament_TextChoices.State.PENDING)
         self.assertEqual(tournament.token, '')
 
+    def test_award_gsc_api_reuses_existing_finish_task(self):
+        admin = UserProfile.objects.create_user(
+            id=GSC_Defaults.HOST_ID,
+            username='gsc_admin',
+            email='gsc_admin@example.com',
+            password='password',
+            userms=UserMS.objects.create(),
+        )
+        self.client.force_login(admin)
+        GSCTournament.objects.filter(pk=self.tournament.pk).update(
+            end_time=timezone.now() - timedelta(minutes=1),
+        )
+
+        no_task_response = self.client.get('/api/tournament/gsc/task', {'order': self.tournament.order})
+        first_response = self.client.post('/api/tournament/gsc/task/finish', {'order': self.tournament.order})
+        second_response = self.client.post('/api/tournament/gsc/task/finish', {'order': self.tournament.order})
+
+        self.assertEqual(no_task_response.status_code, 200)
+        self.assertIsNone(no_task_response.json())
+        self.assertEqual(first_response.status_code, 200)
+        self.assertEqual(second_response.status_code, 200)
+        first_task_id = first_response.json()['data']['task_id']
+        second_task_id = second_response.json()['data']['task_id']
+        self.assertEqual(first_task_id, second_task_id)
+        self.tournament.refresh_from_db()
+        self.assertEqual(str(self.tournament.task_id), first_task_id)
+        self.assertEqual(
+            DBTaskResult.objects.filter(
+                task_path='tournament.gsc.tasks.task_gsc_finish',
+            ).count(),
+            1,
+        )
+        task_response = self.client.get('/api/tournament/gsc/task', {'order': self.tournament.order})
+        self.assertEqual(task_response.status_code, 200)
+        self.assertEqual(task_response.json()['id'], first_task_id)
+        self.assertEqual(task_response.json()['status'], 'READY')
+
     def test_get_gscinfo_serializes_awarded_results(self):
         participant = GSCParticipant.objects.create(
             user=self.user,
@@ -340,6 +378,8 @@ class TournamentTestCase(TestCase):
             rank=1,
             rank_score=100,
         )
+        video = self.create_video()
+        self.tournament.videos.add(video)
         self.tournament.state = Tournament_TextChoices.State.AWARDED
         self.tournament.save(update_fields=['state'])
 
@@ -497,6 +537,30 @@ class TournamentTestCase(TestCase):
         video.refresh_from_db()
         self.assertEqual(changed_count, 0)
         self.assertTrue(video.ongoing_tournament)
+
+    def test_finish_gsc_tournament_deletes_participants_without_videos(self):
+        participant_with_video = self.create_cached_gsc_participant()
+        user_without_video = self.create_user('gsc_without_video')
+        participant_without_video = GSCParticipant.objects.create(
+            user=user_without_video,
+            tournament=self.tournament,
+            token=self.tournament.token,
+            start_time=self.tournament.start_time,
+            end_time=self.tournament.end_time,
+        )
+        video = self.create_video()
+        self.tournament.videos.add(video)
+        self.tournament.end_time = timezone.now() - timedelta(minutes=1)
+        self.tournament.save(update_fields=['end_time'])
+
+        result = finish_gsc_tournament(self.tournament)
+
+        self.tournament.refresh_from_db()
+        participant_with_video.refresh_from_db()
+        self.assertEqual(result['deleted_participants'], 1)
+        self.assertEqual(self.tournament.state, Tournament_TextChoices.State.AWARDED)
+        self.assertTrue(GSCParticipant.objects.filter(pk=participant_with_video.pk).exists())
+        self.assertFalse(GSCParticipant.objects.filter(pk=participant_without_video.pk).exists())
 
     def test_refresh_gsc_score_and_rank_uses_batch_rules(self):
         participant = GSCParticipant.objects.create(
