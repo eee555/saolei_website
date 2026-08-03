@@ -34,6 +34,10 @@ class RegisterGSCParticipantIn(Schema):
     order: int
 
 
+class GSCParticipantIn(Schema):
+    order: int
+
+
 class GSCOrderIn(Schema):
     order: int
 
@@ -76,6 +80,7 @@ GSCScoreOut = create_schema(
 class GSCDetailOut(Schema):
     data: GSCInfoOut
     results: list[GSCScoreOut] | None
+    participant: bool
     identifier: str | None
 
 
@@ -106,15 +111,12 @@ def task_out(task):
 @router.post('/new')
 @decorate_view(GSC_admin_required)
 def new_GSC_tournament(request: HttpRequest, data: NewGSCTournamentIn = Form(...)):  # noqa: B008
-    start_time = data.start_time
-    end_time = data.end_time
-
     if GSCTournament.objects.filter(order=data.id).exists():
         return HttpResponseConflict()
 
     GSCTournament.objects.create(
-        start_time=start_time,
-        end_time=end_time,
+        start_time=data.start_time,
+        end_time=data.end_time,
         state=Tournament_TextChoices.State.PENDING,
         host=request.user,
         weight=TournamentWeights.GSC,
@@ -143,25 +145,52 @@ def get_gscinfo(request: HttpRequest, id: int | None = None, order: int | None =
 
     if tournament.state == Tournament_TextChoices.State.AWARDED:
         results = list(get_gsc_scores(tournament))
+        participant_exists = False
         identifier = None
     elif request.user.is_authenticated:
         results = None
         participant = GSCParticipant.objects.filter(tournament=tournament, user=request.user).first()
+        participant_exists = participant is not None
         identifier = participant.arbiter_identifier.identifier if participant and participant.arbiter_identifier else None
     else:
         results = None
+        participant_exists = False
         identifier = None
 
     return {
         'data': tournament,
         'results': results,
+        'participant': participant_exists,
         'identifier': identifier,
     }
 
 
-@router.post('/register')
+@router.post('/participant')
 @decorate_view(login_required_error)
-def register_GSCParticipant(request: HttpRequest, data: RegisterGSCParticipantIn = Form(...)):  # noqa: B008
+def create_gsc_participant(request: HttpRequest, data: GSCParticipantIn = Form(...)):  # noqa: B008
+    user = request.user
+    if not (tournament := GSCTournament.objects.filter(order=data.order).first()):
+        return HttpResponseNotFound()
+    if not tournament_accepts_checkin(tournament):
+        return HttpResponseForbidden()
+    if not tournament.token:
+        return HttpResponseForbidden()
+
+    GSCParticipant.objects.get_or_create(
+        tournament=tournament,
+        user=user,
+        defaults={
+            'token': tournament._token,
+            'start_time': tournament.start_time,
+            'end_time': tournament.end_time,
+        },
+    )
+    return {'type': 'success'}
+
+
+@router.post('/participant/identifier')
+@decorate_view(login_required_error)
+def register_gsc_participant_identifier(request: HttpRequest, data: RegisterGSCParticipantIn = Form(...)):  # noqa: B008
     user = request.user
     userms = user.userms
     if not (tournament := GSCTournament.objects.filter(order=data.order).first()):
@@ -170,6 +199,8 @@ def register_GSCParticipant(request: HttpRequest, data: RegisterGSCParticipantIn
         return HttpResponseForbidden()
     if not tournament.token:
         return HttpResponseForbidden()
+    if not (participant := GSCParticipant.objects.filter(tournament=tournament, user=user).first()):
+        return HttpResponseNotFound()
     if not data.identifier.endswith(tournament.token):
         return {'type': 'error', 'object': 'identifier', 'category': 'suffix'}
 
@@ -178,20 +209,10 @@ def register_GSCParticipant(request: HttpRequest, data: RegisterGSCParticipantIn
     identifier = Identifier.objects.get(identifier=data.identifier)
     if identifier.userms and identifier.userms != userms:
         return {'type': 'error', 'object': 'identifier', 'category': 'collision'}
-    if participant := GSCParticipant.objects.filter(tournament=tournament, user=request.user).first():
-        if participant.arbiter_identifier:
-            return {'type': 'error', 'object': 'participant', 'category': 'registered'}
-        participant.arbiter_identifier = identifier
-        participant.save(update_fields=['arbiter_identifier'])
-    else:
-        GSCParticipant.objects.create(
-            tournament=tournament,
-            user=user,
-            token=tournament._token,
-            arbiter_identifier=identifier,
-            start_time=tournament.start_time,
-            end_time=tournament.end_time,
-        )
+    if participant.arbiter_identifier:
+        return {'type': 'error', 'object': 'participant', 'category': 'registered'}
+    participant.arbiter_identifier = identifier
+    participant.save(update_fields=['arbiter_identifier'])
     if not identifier.userms:
         bind_identifier(identifier, userms)
     return {'type': 'success'}

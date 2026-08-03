@@ -234,18 +234,10 @@ export default {
         finalResults: 'Final Results',
         howToParticipate: 'How to Participate',
         identifierGuide: {
-            arbiter: {
-                preparing: 'Register your tournament identifier here after the tournament begins.',
-                ongoing_pre1: 'Please register your tournament identifier below. The identifier should end with ',
-                ongoing_pre2: ', for example, ',
-                ongoing_post1: 'Your tournament identifier is ',
-                ongoing_post2: '. Arbiter videos with the identifier will be automatically added to the tournament.',
-            },
-            metasweeper: {
-                preparing: 'After the tournament begins, a tournament token will be announced. Set the tournament token on Metasweeper and any video with that token will be automatically added to the tournament.',
-                ongoing_1: 'Assign ',
-                ongoing_2: ' to the tournament token on Metasweeper. Metasweeper videos with the token will be automatically added to the tournament.',
-            },
+            guideLink: 'View participation guide',
+            preparing: 'Registration opens after the tournament starts.',
+            token: 'Tournament token: ',
+            identifier: 'Arbiter tournament identifier: ',
         },
         realTimeScore: 'Real-Time Score',
         schedule: 'Schedule',

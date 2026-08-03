@@ -1,5 +1,4 @@
 import $axios from '@/http';
-import type { ApiResponse } from '@/utils/common/structInterface';
 import type { TournamentInfo } from '@/utils/tournaments';
 import type { VideoAbstractData } from '@/utils/videoabstract';
 
@@ -29,6 +28,7 @@ export interface GSCParticipantResponse {
 export interface GSCInfoResponse {
     data: GSCTournamentInfo;
     results: GSCParticipantResponse[] | null;
+    participant: boolean;
     identifier: string | null;
 }
 
@@ -38,15 +38,15 @@ interface ParticipantVideosParams {
 }
 
 export async function fetchTournamentList(): Promise<TournamentInfo[]> {
-    const { data } = await $axios.get<ApiResponse<TournamentInfo[]>>('tournament/get_list/');
-    return expectApiSuccess(data, 'tournament/get_list/');
+    const { data } = await $axios.get<TournamentInfo[]>('/api/tournament/get_list');
+    return data;
 }
 
 export async function fetchTournament(tournamentId: number | string): Promise<TournamentInfo> {
-    const { data } = await $axios.get<ApiResponse<TournamentInfo>>('tournament/get/', {
+    const { data } = await $axios.get<TournamentInfo>('/api/tournament/get', {
         params: { id: tournamentId },
     });
-    return expectApiSuccess(data, 'tournament/get/');
+    return data;
 }
 
 export async function fetchGSCInfo(tournamentId: number): Promise<GSCInfoResponse> {
@@ -57,17 +57,17 @@ export async function fetchGSCInfo(tournamentId: number): Promise<GSCInfoRespons
 }
 
 export async function fetchParticipantVideos(params: ParticipantVideosParams): Promise<VideoAbstractData[]> {
-    const { data } = await $axios.get<ApiResponse<VideoAbstractData[]>>('tournament/get_videos/participant/', {
+    const { data } = await $axios.get<VideoAbstractData[]>('/api/tournament/get_videos/participant', {
         params: {
             user_id: params.userId,
             tournament_id: params.tournamentId,
         },
     });
-    return expectApiSuccess(data, 'tournament/get_videos/participant/');
+    return data;
 }
 
 export async function downloadTournamentVideos(tournamentId: number): Promise<ArrayBuffer> {
-    const { data } = await $axios.get<ArrayBuffer>('tournament/download/', {
+    const { data } = await $axios.get<ArrayBuffer>('/api/tournament/download', {
         params: { tournament_id: tournamentId },
         responseType: 'arraybuffer',
     });
@@ -75,7 +75,7 @@ export async function downloadTournamentVideos(tournamentId: number): Promise<Ar
 }
 
 export async function downloadParticipantTournamentVideos(params: ParticipantVideosParams): Promise<ArrayBuffer> {
-    const { data } = await $axios.get<ArrayBuffer>('tournament/download/participant/', {
+    const { data } = await $axios.get<ArrayBuffer>('/api/tournament/download/participant', {
         params: {
             user_id: params.userId,
             tournament_id: params.tournamentId,
@@ -83,9 +83,4 @@ export async function downloadParticipantTournamentVideos(params: ParticipantVid
         responseType: 'arraybuffer',
     });
     return data;
-}
-
-function expectApiSuccess<T>(response: ApiResponse<T>, endpoint: string): T {
-    if (response.type === 'success') return response.data;
-    throw new Error(response.msg ?? `${endpoint} failed`);
 }

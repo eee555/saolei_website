@@ -73,6 +73,13 @@ class Tournament(models.Model):
         self.videos.add(video)
         self.add_participant(video.player)
 
+    def select_subclass(self):
+        if type(self) is not Tournament:
+            return self
+        if self.subclass == Tournament_TextChoices.Subclass.GSC:
+            return GSCTournament.objects.filter(tournament_ptr_id=self.id).first() or self
+        return self
+
 
 class GSCTournament(Tournament):
     order = models.PositiveSmallIntegerField(primary_key=True)  # 届数
@@ -106,7 +113,6 @@ class GSCTournament(Tournament):
 
     def new_token(self):
         self._token = self.generate_unique_token()
-        self.save(update_fields=['_token'])
 
     @staticmethod
     def generate_unique_token():
@@ -115,17 +121,17 @@ class GSCTournament(Tournament):
             token = generate_GSC_token()
         return token
 
-    def validate(self):
+    def validate(self) -> list[str]:
         if not self.can_validate():
-            return False
+            return []
         if self.state == Tournament_TextChoices.State.PENDING or self.state == Tournament_TextChoices.State.CANCELLED:
             self.state = Tournament_TextChoices.State.NORMAL
             update_fields = ['state']
             if not self._token:
                 self._token = self.generate_unique_token()
                 update_fields.append('_token')
-            self.save(update_fields=update_fields)
-        return True
+            return update_fields
+        return []
 
     def add_participant(self, user: UserProfile):
         if not GSCParticipant.objects.filter(user=user, tournament=self).exists():
@@ -206,19 +212,6 @@ class GSCParticipant(TournamentParticipant):
     @property
     def user__realname(self):
         return self.user.realname if self.user else None
-
-
-def select_tournament_subclass(tournament: Tournament):
-    if tournament is None or type(tournament) is not Tournament:
-        return tournament
-    if tournament.subclass == Tournament_TextChoices.Subclass.GSC:
-        return GSCTournament.objects.filter(tournament_ptr_id=tournament.id).first()
-    return None
-
-
-def get_tournament_subclass_by_id(tournament_id):
-    tournament = Tournament.objects.filter(id=tournament_id).first()
-    return select_tournament_subclass(tournament)
 
 
 def normal_tournament_subclasses():

@@ -56,14 +56,14 @@ class TournamentCache:
         for user_id, value in cache.hscan_iter(NORMAL_PARTICIPANT_CACHE_KEY):
             participants = [
                 participant
-                for participant in deserialize_participant_list(value)
+                for participant in CachedNormalParticipant.schema().loads(value, many=True)
                 if participant.tournament != tournament_id
             ]
             if participants:
                 pipe.hset(
                     NORMAL_PARTICIPANT_CACHE_KEY,
                     user_id,
-                    serialize_participant_list(participants),
+                    CachedNormalParticipant.schema().dumps(participants, many=True),
                 )
             else:
                 pipe.hdel(NORMAL_PARTICIPANT_CACHE_KEY, user_id)
@@ -74,10 +74,6 @@ class TournamentCache:
         if data is None:
             return None
         return CachedNormalTournament.from_json(data)
-
-    def get_token_tournament(self, token: str):
-        data = self.get_tournament_all()
-        return [tournament for tournament in data if tournament.token == token]
 
     def get_tournament_all(self):
         data = cache.hgetall(NORMAL_TOURNAMENT_CACHE_KEY)
@@ -97,11 +93,11 @@ class TournamentCache:
         data = cache.hget(NORMAL_PARTICIPANT_CACHE_KEY, user_id)
         if data is None:
             return []
-        return deserialize_participant_list(data)
+        return CachedNormalParticipant.schema().loads(data, many=True)
 
     def set_participant_list(self, user_id: int, participants: list[CachedNormalParticipant]):
         if participants:
-            cache.hset(NORMAL_PARTICIPANT_CACHE_KEY, user_id, serialize_participant_list(participants))
+            cache.hset(NORMAL_PARTICIPANT_CACHE_KEY, user_id, CachedNormalParticipant.schema().dumps(participants, many=True))
         else:
             cache.hdel(NORMAL_PARTICIPANT_CACHE_KEY, user_id)
 
@@ -169,14 +165,6 @@ def serialize_normal_participant(participant: TournamentParticipant):
         start_time=participant.start_time,
         end_time=participant.end_time,
     )
-
-
-def serialize_participant_list(participants: list[CachedNormalParticipant]):
-    return CachedNormalParticipant.schema().dumps(participants, many=True)
-
-
-def deserialize_participant_list(data):
-    return CachedNormalParticipant.schema().loads(data, many=True)
 
 
 def invalidate_normal_participant_cache():

@@ -4,7 +4,7 @@ from django.dispatch import receiver
 
 from videomanager.models import VideoModel
 from .cache import TournamentCache
-from .models import GSCParticipant, GSCTournament, Tournament, TournamentParticipant, select_tournament_subclass
+from .models import GSCParticipant, GSCTournament, Tournament, TournamentParticipant
 from .services import add_existing_videos_to_participant_tournament
 from .utils import add_video_to_checked_tournaments, video_checkin
 
@@ -12,7 +12,7 @@ cache = TournamentCache()
 
 
 def update_tournament_cache(instance: Tournament):
-    tournament = select_tournament_subclass(instance)
+    tournament = instance.select_subclass()
     if tournament is not None:
         cache.update_tournament(tournament)
 
@@ -38,7 +38,7 @@ def invalidate_normal_cache_on_tournament_save(sender, instance: Tournament, **k
 
 @receiver(post_delete, sender=Tournament, dispatch_uid='tournament.invalidate_normal_cache_on_tournament_delete')
 def invalidate_normal_cache_on_tournament_delete(sender, instance: Tournament, **kwargs):
-    transaction.on_commit(lambda: cache.remove_tournament(select_tournament_subclass(instance) or instance))
+    transaction.on_commit(lambda: cache.remove_tournament(instance.select_subclass()))
 
 
 @receiver(post_save, sender=GSCTournament, dispatch_uid='tournament.invalidate_normal_cache_on_gsc_save')

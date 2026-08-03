@@ -16,11 +16,12 @@ from videomanager.models import ExpandVideoModel, VideoModel
 from .cache import (
     NORMAL_PARTICIPANT_CACHE_KEY,
     NORMAL_TOURNAMENT_CACHE_KEY,
+    CachedNormalParticipant,
     TournamentCache,
     cache,
 )
 from .gsc.services import finish_gsc_tournament, refresh_gsc_ranks, refresh_gsc_scores
-from .models import GSCParticipant, GSCTournament, Tournament, select_tournament_subclass
+from .models import GSCParticipant, GSCTournament, Tournament
 from .services import reveal_videos_for_tournament
 
 
@@ -195,7 +196,7 @@ class TournamentTestCase(TestCase):
         parent_tournament = Tournament.objects.get(id=self.tournament.id)
 
         self.assertEqual(parent_tournament.subclass, Tournament_TextChoices.Subclass.GSC)
-        tournament = select_tournament_subclass(parent_tournament)
+        tournament = parent_tournament.select_subclass()
         self.tournament_cache.update_tournament(tournament)
 
         tournaments = self.tournament_cache.get_tournament_all()
@@ -228,33 +229,33 @@ class TournamentTestCase(TestCase):
 
     def test_remove_tournament_removes_matching_participants_from_cache(self):
         self.tournament_cache.set_participant_list(self.user.id, [
-            {
-                'id': 1,
-                'token': self.tournament.token,
-                'arbiter_identifier': None,
-                'tournament': self.tournament.id,
-                'start_time': self.tournament.start_time,
-                'end_time': self.tournament.end_time,
-            },
-            {
-                'id': 2,
-                'token': 'OTHER',
-                'arbiter_identifier': None,
-                'tournament': 999,
-                'start_time': self.tournament.start_time,
-                'end_time': self.tournament.end_time,
-            },
+            CachedNormalParticipant(
+                id=1,
+                token=self.tournament.token,
+                arbiter_identifier=None,
+                tournament=self.tournament.id,
+                start_time=self.tournament.start_time,
+                end_time=self.tournament.end_time,
+            ),
+            CachedNormalParticipant(
+                id=2,
+                token='OTHER',
+                arbiter_identifier=None,
+                tournament=999,
+                start_time=self.tournament.start_time,
+                end_time=self.tournament.end_time,
+            ),
         ])
         other_user = self.create_user('other_cached_user')
         self.tournament_cache.set_participant_list(other_user.id, [
-            {
-                'id': 3,
-                'token': self.tournament.token,
-                'arbiter_identifier': None,
-                'tournament': self.tournament.id,
-                'start_time': self.tournament.start_time,
-                'end_time': self.tournament.end_time,
-            },
+            CachedNormalParticipant(
+                id=3,
+                token=self.tournament.token,
+                arbiter_identifier=None,
+                tournament=self.tournament.id,
+                start_time=self.tournament.start_time,
+                end_time=self.tournament.end_time,
+            ),
         ])
 
         self.tournament_cache.remove_tournament(self.tournament)
@@ -302,12 +303,46 @@ class TournamentTestCase(TestCase):
             state=Tournament_TextChoices.State.PENDING,
         )
 
-        tournament.validate()
+        update_fields = tournament.validate()
+        tournament.save(update_fields=update_fields)
 
         tournament.refresh_from_db()
         self.assertEqual(tournament.state, Tournament_TextChoices.State.NORMAL)
         self.assertTrue(tournament._token.startswith('G'))
         self.assertEqual(tournament.token, '')
+
+    def test_tournament_ninja_api_serializes_gsc_tournament(self):
+        list_response = self.client.get('/api/tournament/get_list')
+        detail_response = self.client.get('/api/tournament/get', {'id': self.tournament.id})
+
+        self.assertEqual(list_response.status_code, 200)
+        self.assertEqual(detail_response.status_code, 200)
+        self.assertEqual(list_response.json()[0]['id'], self.tournament.id)
+        self.assertEqual(detail_response.json()['id'], self.tournament.id)
+        self.assertEqual(detail_response.json()['description'], '')
+        self.assertIsNone(detail_response.json()['host_id'])
+
+    def test_tournament_ninja_validate_saves_gsc_changes(self):
+        now = timezone.now()
+        tournament = GSCTournament.objects.create(
+            order=3,
+            start_time=now + timedelta(hours=1),
+            end_time=now + timedelta(hours=2),
+            state=Tournament_TextChoices.State.PENDING,
+        )
+        self.user.is_staff = True
+        self.user.save(update_fields=['is_staff'])
+        self.client.force_login(self.user)
+
+        response = self.client.post('/api/tournament/validate', {
+            'id': tournament.id,
+            'valid': 'true',
+        })
+
+        self.assertEqual(response.status_code, 200)
+        tournament.refresh_from_db()
+        self.assertEqual(tournament.state, Tournament_TextChoices.State.NORMAL)
+        self.assertTrue(tournament._token.startswith('G'))
 
     def test_new_gsc_tournament_api_creates_pending_without_token(self):
         admin = UserProfile.objects.create_user(
@@ -392,6 +427,45 @@ class TournamentTestCase(TestCase):
         self.assertEqual(data['results'][0]['id'], participant.id)
         self.assertEqual(data['results'][0]['rank'], 1)
         self.assertEqual(data['identifier'], None)
+
+    def test_gsc_participant_registration_uses_two_steps(self):
+        self.client.force_login(self.user)
+
+        participant_response = self.client.post('/api/tournament/gsc/participant', {
+            'order': self.tournament.order,
+        })
+
+        self.assertEqual(participant_response.status_code, 200)
+        participant = GSCParticipant.objects.get(tournament=self.tournament, user=self.user)
+        self.assertEqual(participant.token, self.tournament.token)
+        self.assertIsNone(participant.arbiter_identifier)
+        info_response = self.client.get('/api/tournament/gsc/info', {'id': self.tournament.id})
+        self.assertTrue(info_response.json()['participant'])
+        self.assertIsNone(info_response.json()['identifier'])
+
+        identifier_response = self.client.post('/api/tournament/gsc/participant/identifier', {
+            'order': self.tournament.order,
+            'identifier': f'Player {self.tournament.token}',
+        })
+
+        self.assertEqual(identifier_response.status_code, 200)
+        participant.refresh_from_db()
+        self.assertEqual(participant.arbiter_identifier.identifier, f'Player {self.tournament.token}')
+        info_response = self.client.get('/api/tournament/gsc/info', {'id': self.tournament.id})
+        self.assertTrue(info_response.json()['participant'])
+        self.assertEqual(info_response.json()['identifier'], f'Player {self.tournament.token}')
+        self.assertEqual(self.client.post('/api/tournament/gsc/register', {}).status_code, 404)
+
+    def test_gsc_participant_identifier_requires_existing_participant(self):
+        self.client.force_login(self.user)
+
+        response = self.client.post('/api/tournament/gsc/participant/identifier', {
+            'order': self.tournament.order,
+            'identifier': f'Player {self.tournament.token}',
+        })
+
+        self.assertEqual(response.status_code, 404)
+        self.assertFalse(GSCParticipant.objects.filter(tournament=self.tournament, user=self.user).exists())
 
     def test_gsc_add_participant_uses_tournament_time_window(self):
         self.tournament.add_participant(self.user)

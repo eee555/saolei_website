@@ -17,7 +17,13 @@
     <br>
     <template v-if="([TournamentState.Preparing, TournamentState.Ongoing] as TournamentState[]).includes(tournament.displayState)">
         <h3>{{ t('gsc.howToParticipate') }}</h3>
-        <GSCTokenGuide v-model="personaltoken" :order="order" :token="token" />
+        <GSCTokenGuide
+            v-model:identifier="personaltoken"
+            v-model:participant="participant"
+            :order="order"
+            :token="token"
+            @refresh="refresh"
+        />
     </template>
     <template v-if="tournament.displayState === TournamentState.Ongoing">
         <h3>
@@ -89,6 +95,7 @@ const order = ref<number>(0);
 const token = ref<string>('');
 const result = ref<GSCParticipant[]>([]);
 const personaltoken = ref<string>('');
+const participant = ref(false);
 const viewedParticipants = ref<GSCParticipant[]>([]);
 const allSummaryTabPosition = ref(-1);
 const loading = ref(false);
@@ -102,8 +109,10 @@ async function refresh() {
 
         if (tournament.value.displayState === TournamentState.Ongoing && store.login_status === LoginStatus.IsLogin) {
             result.value = [];
+            participant.value = response.participant;
             personaltoken.value = response.identifier ?? '';
         } else {
+            participant.value = false;
             personaltoken.value = '';
             result.value = (response.results ?? []).map((value) => new GSCParticipant(value));
         }

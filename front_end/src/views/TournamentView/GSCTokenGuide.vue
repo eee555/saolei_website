@@ -1,60 +1,51 @@
 <template>
-    <ElTabs>
-        <ElTabPane>
-            <template #label>
-                <SoftwareIcon software="e" />
-            </template>
-            <span v-if="token === ''" class="text">
-                {{ t('gsc.identifierGuide.metasweeper.preparing') }}
-            </span>
-            <span v-else class="text">
-                {{ t('gsc.identifierGuide.metasweeper.ongoing_1') }}
-                <span class="ttfamily">{{ token }}</span>
-                <IconCopy :text="token" />
-                {{ t('gsc.identifierGuide.metasweeper.ongoing_2') }}
-            </span>
-        </ElTabPane>
-        <ElTabPane>
-            <template #label>
-                <SoftwareIcon software="a" />
-            </template>
-            <span v-if="token === ''" class="text">
-                {{ t('gsc.identifierGuide.arbiter.preparing') }}
-            </span>
-            <span v-else-if="identifier === ''" class="text">
-                {{ t('gsc.identifierGuide.arbiter.ongoing_pre1') }}
-                <span class="ttfamily">{{ token }}</span>
-                <IconCopy :text="token" />
-                {{ t('gsc.identifierGuide.arbiter.ongoing_pre2') }}
-                <span class="ttfamily">Guo Jin Yang {{ token }}</span>
-                <ElInput v-model="newIdentifier" placeholder="参赛标识" />
-                <ElButton @click="registerToken">
+    <span class="text">
+        <ElLink :href="gscGuideUrl" target="_blank" rel="noopener noreferrer">
+            {{ t('gsc.identifierGuide.guideLink') }}
+        </ElLink>
+        <template v-if="token === ''">
+            <br>
+            {{ t('gsc.identifierGuide.preparing') }}
+        </template>
+        <template v-else-if="!participant">
+            <br>
+            <ElButton :loading="registeringParticipant" @click="registerParticipant">
+                {{ t('common.button.register') }}
+            </ElButton>
+        </template>
+        <template v-else>
+            <br>
+            {{ t('gsc.identifierGuide.token') }}
+            <span class="ttfamily">{{ token }}</span>
+            <IconCopy :text="token" />
+            <br>
+            <template v-if="identifier === ''">
+                <ElInput v-model="newIdentifier" :placeholder="t('common.prop.identifier')" style="width: 260px" />
+                <ElButton :loading="registeringIdentifier" @click="registerIdentifier">
                     {{ t('common.button.register') }}
                 </ElButton>
                 <span v-if="errorText !== ''" class="text text-danger">
                     {{ errorText }}
                 </span>
-            </span>
-            <span v-else class="text">
-                {{ t('gsc.identifierGuide.arbiter.ongoing_post1') }}
+            </template>
+            <template v-else>
+                {{ t('gsc.identifierGuide.identifier') }}
                 <span class="ttfamily">{{ identifier }}</span>
-                &nbsp;
                 <IconCopy :text="identifier" />
-                {{ t('gsc.identifierGuide.arbiter.ongoing_post2') }}
-            </span>
-        </ElTabPane>
-    </ElTabs>
+            </template>
+        </template>
+    </span>
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElInput, ElTabPane, ElTabs } from 'element-plus';
-import { ref } from 'vue';
+import { ElButton, ElInput, ElLink } from 'element-plus';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import '@/styles/text.css';
 import { httpErrorNotification, successNotification, unknownErrorNotification } from '@/components/Notifications';
 import IconCopy from '@/components/widgets/IconCopy.vue';
-import SoftwareIcon from '@/components/widgets/SoftwareIcon.vue';
+import { local } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const props = defineProps({
@@ -67,10 +58,17 @@ const props = defineProps({
         default: '',
     },
 });
+const emit = defineEmits<{
+    (event: 'refresh'): void;
+}>();
 
-const identifier = defineModel({
+const identifier = defineModel('identifier', {
     type: String,
     default: '',
+});
+const participant = defineModel('participant', {
+    type: Boolean,
+    default: false,
 });
 
 const { proxy } = useCurrentInstance();
@@ -78,9 +76,33 @@ const { t } = useI18n();
 
 const errorText = ref<string>('');
 const newIdentifier = ref<string>('');
+const registeringParticipant = ref(false);
+const registeringIdentifier = ref(false);
 
-function registerToken() {
-    proxy.$axios.post('/api/tournament/gsc/register', {
+const gscGuideUrl = computed(() => {
+    const base = typeof import.meta.env.VITE_DOCS_URL === 'string' && import.meta.env.VITE_DOCS_URL.length > 0
+        ? import.meta.env.VITE_DOCS_URL
+        : import.meta.env.DEV ? 'http://localhost:5173/docs/' : '/docs/';
+    const normalizedBase = base.endsWith('/') ? base : `${base}/`;
+    const path = local.value.language.startsWith('en') ? 'en/guide/gsc' : 'guide/gsc';
+    return `${normalizedBase}${path}`;
+});
+
+async function registerParticipant() {
+    registeringParticipant.value = true;
+    await proxy.$axios.post('/api/tournament/gsc/participant', {
+        order: props.order,
+    }).then((response) => {
+        successNotification(response);
+        participant.value = true;
+        emit('refresh');
+    }).catch(httpErrorNotification);
+    registeringParticipant.value = false;
+}
+
+async function registerIdentifier() {
+    registeringIdentifier.value = true;
+    await proxy.$axios.post('/api/tournament/gsc/participant/identifier', {
         identifier: newIdentifier.value,
         order: props.order,
     }).then((response) => {
@@ -90,6 +112,7 @@ function registerToken() {
                 successNotification(response);
                 identifier.value = newIdentifier.value;
                 newIdentifier.value = '';
+                emit('refresh');
                 break;
             case 'error':
                 switch (data.category) {
@@ -103,6 +126,7 @@ function registerToken() {
                 unknownErrorNotification(response);
         }
     }).catch(httpErrorNotification);
+    registeringIdentifier.value = false;
 }
 </script>
 

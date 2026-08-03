@@ -57,7 +57,7 @@
 
 `NORMAL` 比赛数量较少，但列表、新闻、录像 checkin 等入口访问频繁，可以使用 Redis 缓存降低数据库查询压力。
 
-`Tournament` 父表增加了 `subclass` 字段，用于快速定位具体子类。当前线上只有 `GSCTournament`，所以字段默认值暂时为 `g`，迁移后既有比赛都会被视为 GSC。后续新增比赛类型时，应先扩展 `Tournament_TextChoices.Subclass`，再在模型层的子类定向 helper 中补充查询逻辑，避免依赖泛化的 `select_subclasses()`。缓存层不负责父类到子类的定向，只接收已经定向完成的具体比赛对象。
+`Tournament` 父表增加了 `subclass` 字段，用于快速定位具体子类。当前线上只有 `GSCTournament`，所以字段默认值暂时为 `g`，迁移后既有比赛都会被视为 GSC。TODO: 后续新增比赛类型时，应先扩展 `Tournament_TextChoices.Subclass`，再在模型层的子类定向 helper 中补充查询逻辑。缓存层不负责父类到子类的定向，只接收已经定向完成的具体比赛对象。
 
 缓存 key 固定为：
 
@@ -83,7 +83,7 @@ GSC 成绩刷新由 `tournament.gsc.services.refresh_gsc_scores` 负责。当前
 
 GSC 只保留比赛结算后台任务，不再提供单独的刷新成绩后台任务。`GSCTournament.task` 指向当前结算任务；创建新结算任务前会复用仍处于 READY/RUNNING 的任务，避免管理员重复点击时产生重复结算任务。
 
-如果未来需要比赛期间展示实时榜，可以再单独设计每个比赛的成绩缓存，例如使用 hash 存三组成绩数组、zset 存总成绩：
+TODO: 如果未来需要比赛期间展示实时榜，可以再单独设计每个比赛的成绩缓存，例如使用 hash 存三组成绩数组、zset 存总成绩：
 
 - `tournament:normal:gsc:{tournament_id}:scores`
 - `tournament:normal:gsc:{tournament_id}:rank`
@@ -101,6 +101,38 @@ Redis 中仍保存 JSON object/list，由 `dataclass-json` 负责序列化和反
 GSC 创建 `GSCParticipant` 时，participant 自身的 `start_time/end_time` 应与对应 `GSCTournament.start_time/end_time` 完全一致。`TournamentParticipant.start_time` 使用 `default=timezone.now` 仅服务于非 GSC 或未显式传值的普通创建路径；GSC 写路径必须显式传入比赛时间窗口。
 
 如果服务器故障、Redis 数据丢失或缓存被手动清空，可以使用 `manage.py rebuild_tournament_cache` 从数据库重建 `tournament:normal` 和 `tournament:normal:participants`。
+
+## TODO: 历史比赛列表同步计划
+
+当前通用接口 `get_tournament_list` 会尝试返回所有比赛的完整信息。随着历史比赛数量增加，这个接口会同时遇到两个问题：
+
+- 返回全量历史比赛本身不适合作为长期接口形态。
+- 完整比赛信息需要根据 `Tournament.subclass` 组装具体子类数据，直接逐条定向会造成 N+1 查询。
+
+TODO: 这类列表展示问题优先参考 `userprofile` app 的缓存同步方式解决，而不是优先重构 Django 多表继承实现。前端应把比赛基础信息缓存在 IndexedDB 中，后端提供列表索引、批量详情和更新检查接口。
+
+推荐接口形态：
+
+- TODO: `GET /api/tournament/list`
+  - 返回用于当前列表页的轻量索引，长期应支持分页、状态过滤、系列过滤和排序。
+  - 响应只包含 `id`、必要排序字段和可选的 `date_updated`，不负责返回完整 `TournamentInfo`。
+- TODO: `GET /api/tournament/infobulk?ids=1,2,3`
+  - 按 id 批量返回完整 `TournamentInfo`。
+  - 后端可以在这个小批量范围内处理子类定向；短期即使仍使用单条定向，压力也远小于全量列表。
+- TODO: `GET /api/tournament/infoupdated?since=123456789`
+  - 返回自指定时间戳以来发生变化的比赛 id，用于前端删除 IndexedDB 中的过期缓存。
+
+TODO: 为支持更新检查，`Tournament` 父表需要增加类似 `UserProfile.date_updated` 的 `DateTimeField(auto_now=True)`。如果 GSC 子表字段变化会影响 `TournamentInfo`，写路径必须同步触发父表更新时间更新。例如 `order`、`token`、`start_time`、`end_time`、`state`、`host` 等字段变化后，前端缓存应能通过 `infoupdated` 感知。
+
+TODO: 前端实现可以复用 `userService.ts` 的设计：
+
+- 新增 IndexedDB store，例如 `tournament-info`，主键为 `id`，row schema 与 `TournamentInfo` 保持一致。
+- `fetchTournament(id)` 优先读取 IndexedDB，缓存缺失时进入批量请求队列。
+- 同一 tick 或短延迟窗口内的多个缺失 id 合并为一次 `infobulk` 请求。
+- 按配置周期请求 `infoupdated`，删除已更新比赛的本地缓存；首次 `lastUpdate=0` 时直接清空本地比赛缓存，避免请求全量更新 id。
+- IndexedDB 不可用时降级为网络请求。
+
+TODO: 迁移后，`get_tournament_list` 可以逐步退化为轻量索引接口，或由新的 `/list` 接口替代。完整比赛信息只在用户实际需要展示对应比赛时通过 `infobulk` 获取。模型层的子类定向问题因此被限制在小批量详情接口内部，不再成为全量列表的性能瓶颈。
 
 ## `TournamentParticipant` checkin 缓存计划
 
@@ -168,12 +200,12 @@ HSET tournament:normal:participants {user_id} '[{"id":456,"token":"G12345","arbi
    - `msuser` 尝试将这些录像吸收到经典个人纪录。
    - `customranking` 尝试将这些录像吸收到自定义 pluck 纪录。
 
-## 暂不实现的接口
+## TODO: 暂不实现的接口
 
-- `hide_videos_for_tournament(tournament)` 暂非必要。
+- TODO: `hide_videos_for_tournament(tournament)` 暂非必要。
   - 新上传录像仍由当前单条 `video_checkin` 路径处理。
   - 如果未来需要补录或批量隐藏比赛录像，再按同样原则设计批处理。
-- `refresh_ongoing_tournament_for_range(start_id, end_id)` 暂非必要。
+- TODO: `refresh_ongoing_tournament_for_range(start_id, end_id)` 暂非必要。
   - 数据修复需求出现后再实现分段重算。
 
 ## videomanager 批量缓存需求
@@ -216,8 +248,8 @@ HSET tournament:normal:participants {user_id} '[{"id":456,"token":"G12345","arbi
 
 ## 待处理问题
 
-- 明确比赛取消、状态回滚时应在哪些入口调用 `reveal_videos_for_tournament`。
-- 补充测试：
+- TODO: 明确比赛取消、状态回滚时应在哪些入口调用 `reveal_videos_for_tournament`。
+- TODO: 补充测试：
   - 比赛颁奖后，上万条录像不逐条触发 `VideoModel.save()`。
   - 录像从比赛恢复普通后，队列缓存恢复。
   - 录像从比赛恢复普通后，经典个人纪录和 pluck 纪录刷新。

@@ -233,18 +233,10 @@ export default {
         finalResults: '比赛结果',
         howToParticipate: '如何参赛',
         identifierGuide: {
-            arbiter: {
-                preparing: '比赛开始后在这里注册标识。',
-                ongoing_pre1: '请在这里注册参赛标识。参赛标识必须以',
-                ongoing_pre2: '结尾。例如',
-                ongoing_post1: '您的参赛标识为',
-                ongoing_post2: '，现在上传的拥有该参赛标识的Arbiter录像会被自动识别为比赛录像。',
-            },
-            metasweeper: {
-                preparing: '比赛开始后会公布比赛标识。在元扫雷中设置该比赛标识。比赛期间拥有该比赛标识的元扫雷录像会被自动识别为比赛录像。',
-                ongoing_1: '在元扫雷中将比赛标识设置为',
-                ongoing_2: '，上传的拥有该比赛标识的元扫雷录像会被自动识别为比赛录像。',
-            },
+            guideLink: '查看参赛说明',
+            preparing: '比赛开始后可以报名参赛。',
+            token: '比赛标识：',
+            identifier: 'Arbiter参赛标识：',
         },
         realTimeScore: '即时成绩',
         schedule: '赛程',

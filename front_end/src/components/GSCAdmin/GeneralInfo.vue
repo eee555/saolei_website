@@ -192,7 +192,7 @@ function createGSC() {
 
 function setStartTime(time: Date | undefined) {
     if (time === undefined) return;
-    proxy.$axios.post<unknown>('tournament/set/', { id: gscInfo.value.id, start_time: time.toISOString() }).then(
+    proxy.$axios.post<unknown>('/api/tournament/set', { id: gscInfo.value.id, start_time: time.toISOString() }).then(
         function (response) {
             gscInfo.value.start_time = time;
             newStartTime.value = undefined;
@@ -203,7 +203,7 @@ function setStartTime(time: Date | undefined) {
 
 function setEndTime(time: Date | undefined) {
     if (time === undefined) return;
-    proxy.$axios.post<unknown>('tournament/set/', { id: gscInfo.value.id, end_time: time.toISOString() }).then(
+    proxy.$axios.post<unknown>('/api/tournament/set', { id: gscInfo.value.id, end_time: time.toISOString() }).then(
         function (response) {
             gscInfo.value.end_time = time;
             newEndTime.value = undefined;
@@ -214,7 +214,7 @@ function setEndTime(time: Date | undefined) {
 
 function setToken(token: string) {
     if (token.trim() === '' && !allowEmptyToken.value) return;
-    proxy.$axios.post<unknown>('tournament/set/', { id: gscInfo.value.id, token: token }).then(
+    proxy.$axios.post<unknown>('/api/tournament/set', { id: gscInfo.value.id, token: token }).then(
         function (response) {
             gscInfo.value.token = token;
             successNotification(response);

@@ -147,7 +147,7 @@ describe('<GeneralInfo />', () => {
                 token: 'G11111',
             }),
         }).as('getGSCInfo');
-        cy.intercept({ method: 'POST', url: '**/tournament/set/' }, (req) => {
+        cy.intercept({ method: 'POST', url: '**/api/tournament/set' }, (req) => {
             expect(bodyParam(req.body, 'id')).to.equal('321');
             expect(bodyParam(req.body, 'token')).to.equal('G22222');
             req.reply({ statusCode: 200 });
@@ -175,7 +175,7 @@ describe('<GeneralInfo />', () => {
                 token: 'G33333',
             }),
         }).as('getGSCInfo');
-        cy.intercept({ method: 'POST', url: '**/tournament/set/' }, (req) => {
+        cy.intercept({ method: 'POST', url: '**/api/tournament/set' }, (req) => {
             setTournamentRequests += 1;
             expect(bodyParam(req.body, 'id')).to.equal('654');
             expect(bodyParam(req.body, 'token')).to.equal('');

@@ -5,8 +5,8 @@ from django.core.management.base import BaseCommand
 from tournament.cache import (
     NORMAL_PARTICIPANT_CACHE_KEY,
     NORMAL_TOURNAMENT_CACHE_KEY,
+    CachedNormalParticipant,
     cache,
-    serialize_participant_list,
     serialize_normal_participant,
     serialize_normal_tournament,
 )
@@ -42,7 +42,7 @@ class Command(BaseCommand):
             participant_count += 1
 
         participant_mapping = {
-            user_id: serialize_participant_list(participant_infos)
+            user_id: CachedNormalParticipant.schema().dumps(participant_infos, many=True)
             for user_id, participant_infos in participant_infos_by_user_id.items()
         }
         if participant_mapping:
