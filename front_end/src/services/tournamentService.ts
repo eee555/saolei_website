@@ -48,14 +48,14 @@ export async function fetchTournamentList(category: TournamentListCategory = 'al
 
 export async function fetchTournament(tournamentId: number | string): Promise<TournamentInfo> {
     const { data } = await $axios.get<TournamentInfo>('/api/tournament/get', {
-        params: { id: tournamentId },
+        params: { tournament_id: tournamentId },
     });
     return data;
 }
 
 export async function fetchGSCInfo(tournamentId: number): Promise<GSCInfoResponse> {
     const { data } = await $axios.get<GSCInfoResponse>('/api/tournament/gsc/info', {
-        params: { id: tournamentId },
+        params: { tournament_id: tournamentId },
     });
     return data;
 }

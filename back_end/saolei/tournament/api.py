@@ -98,8 +98,8 @@ def get_tournament_list(
 
 
 @router.get('/get', response=TournamentOut)
-def get_tournament(request: HttpRequest, id: int):
-    return get_object_or_404(Tournament, id=id).select_subclass()
+def get_tournament(request: HttpRequest, tournament_id: int):
+    return get_object_or_404(Tournament, id=tournament_id).select_subclass()
 
 
 @router.post('/set')
@@ -199,8 +199,8 @@ def set_tournament_staff(request: HttpRequest, data: TournamentStaffSetIn = Form
 
 
 @router.get('/participants', response=list[TournamentParticipantOut])
-def get_participant_list(request: HttpRequest, id: int):
-    return get_object_or_404(Tournament, id=id).participants
+def get_participant_list(request: HttpRequest, tournament_id: int):
+    return get_object_or_404(Tournament, id=tournament_id).participants
 
 
 @router.get('/get_videos/participant', response=list[VideoBaseOut])

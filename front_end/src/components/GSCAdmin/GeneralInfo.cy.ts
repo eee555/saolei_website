@@ -20,15 +20,7 @@ function mountOptions(props: GeneralInfoProps) {
 }
 
 function mountGeneralInfo(id: number) {
-    cy.mount({
-        props: {
-            id: { type: Number, required: true },
-        },
-        emits: [],
-        expose: [],
-        components: { GeneralInfo },
-        template: '<GeneralInfo :id="id" />',
-    }, mountOptions({ id }));
+    cy.mount(GeneralInfo, mountOptions({ id }));
 }
 
 function adminInfoBody(data: {
@@ -66,6 +58,12 @@ function bodyParam(body: unknown, key: string): string | null {
     return null;
 }
 
+function mockEmptyTaskInfo() {
+    cy.intercept({ method: 'GET', pathname: '/api/tournament/gsc/task' }, {
+        body: null,
+    }).as('getGSCTask');
+}
+
 describe('<GeneralInfo />', () => {
     it('asks for a non-zero GSC order without loading data', () => {
         let adminInfoRequests = 0;
@@ -83,6 +81,7 @@ describe('<GeneralInfo />', () => {
     });
 
     it('loads and renders existing GSC admin info', () => {
+        mockEmptyTaskInfo();
         cy.intercept({ method: 'GET', pathname: '/api/tournament/gsc/admin-info' }, {
             body: adminInfoBody({
                 id: 456,
@@ -96,13 +95,17 @@ describe('<GeneralInfo />', () => {
         mountGeneralInfo(7);
 
         cy.wait('@getGSCInfo').its('request.query').should('deep.equal', { order: '7' });
+        cy.wait('@getGSCTask').its('request.query').should('deep.equal', { order: '7' });
         cy.contains('开始时间：2026-07-30 08:00:00').should('be.visible');
         cy.contains('结束时间：2026-08-03 20:30:45').should('be.visible');
         cy.contains('标识：G12345').should('be.visible');
+        cy.contains('结算后台任务').should('be.visible');
+        cy.contains('NULL').should('be.visible');
     });
 
     it('creates a missing GSC tournament and reloads the admin info', () => {
         let adminInfoRequests = 0;
+        mockEmptyTaskInfo();
         cy.intercept({ method: 'GET', pathname: '/api/tournament/gsc/admin-info' }, (req) => {
             adminInfoRequests += 1;
             if (adminInfoRequests === 1) {
@@ -131,6 +134,7 @@ describe('<GeneralInfo />', () => {
         cy.contains('button', '创建比赛').click();
         cy.wait('@createGSC');
         cy.wait('@getGSCInfo');
+        cy.wait('@getGSCTask');
         cy.then(() => {
             expect(adminInfoRequests).to.equal(2);
         });
@@ -138,6 +142,7 @@ describe('<GeneralInfo />', () => {
     });
 
     it('updates the token after user input', () => {
+        mockEmptyTaskInfo();
         cy.intercept({ method: 'GET', pathname: '/api/tournament/gsc/admin-info' }, {
             body: adminInfoBody({
                 id: 321,
@@ -156,6 +161,7 @@ describe('<GeneralInfo />', () => {
         mountGeneralInfo(9);
 
         cy.wait('@getGSCInfo');
+        cy.wait('@getGSCTask');
         cy.contains('标识：G11111').should('be.visible');
         cy.contains('span', '设置标识：').next().find('input').type('G22222');
         cy.contains('button', '修改！').click();
@@ -166,6 +172,7 @@ describe('<GeneralInfo />', () => {
 
     it('blocks empty token updates until the explicit switch is enabled', () => {
         let setTournamentRequests = 0;
+        mockEmptyTaskInfo();
         cy.intercept({ method: 'GET', pathname: '/api/tournament/gsc/admin-info' }, {
             body: adminInfoBody({
                 id: 654,
@@ -185,6 +192,7 @@ describe('<GeneralInfo />', () => {
         mountGeneralInfo(10);
 
         cy.wait('@getGSCInfo');
+        cy.wait('@getGSCTask');
         cy.contains('标识：G33333').should('be.visible');
         cy.contains('button', '修改！').click();
         cy.then(() => {

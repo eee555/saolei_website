@@ -1,6 +1,7 @@
+from django.db.models import Q
+
 from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from customranking.services import add_videos_to_custom_pluck_ranks
-from django.db.models import Q
 from msuser.services import update_personal_records_from_video_queryset
 from tournament.cache import TournamentCache
 from videomanager.cache import add_videos_to_state_queues_bulk
@@ -12,7 +13,7 @@ cache = TournamentCache()
 
 def checkin_with_arbiter(video: VideoModel, arbiter_identifier: str):
     participants = cache.checkin_arbiter(video, arbiter_identifier)
-    tournament_ids = set(participant.tournament for participant in participants)
+    tournament_ids = {participant.tournament for participant in participants}
     if tournament_ids:
         video.ongoing_tournament = True
     return list(Tournament.objects.filter(id__in=tournament_ids))
@@ -20,7 +21,7 @@ def checkin_with_arbiter(video: VideoModel, arbiter_identifier: str):
 
 def checkin_with_token(video: VideoModel, tokens: list[str]):
     participants = cache.checkin_token(video, tokens)
-    tournament_ids = set(participant.tournament for participant in participants)
+    tournament_ids = {participant.tournament for participant in participants}
     if tournament_ids:
         video.ongoing_tournament = True
     return list(Tournament.objects.filter(id__in=tournament_ids))

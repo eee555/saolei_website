@@ -3,14 +3,14 @@ from collections import defaultdict
 from django.core.management.base import BaseCommand
 
 from tournament.cache import (
+    cache,
+    CachedNormalParticipant,
     NORMAL_PARTICIPANT_CACHE_KEY,
     NORMAL_TOURNAMENT_CACHE_KEY,
-    CachedNormalParticipant,
-    cache,
     serialize_normal_participant,
     serialize_normal_tournament,
 )
-from tournament.models import TournamentParticipant, normal_tournament_subclasses
+from tournament.models import normal_tournament_subclasses, TournamentParticipant
 
 
 class Command(BaseCommand):

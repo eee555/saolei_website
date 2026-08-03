@@ -70,7 +70,7 @@ function refreshTournamentInfo() {
         tournament.value = null;
         return;
     }
-    proxy.$axios.get<TournamentResponseData>('/api/tournament/get', { params: { id: tournamentId.value } }).then(({ data }) => {
+    proxy.$axios.get<TournamentResponseData>('/api/tournament/get', { params: { tournament_id: tournamentId.value } }).then(({ data }) => {
         tournament.value = new Tournament(data);
     }).catch((e: unknown) => {
         tournament.value = null;

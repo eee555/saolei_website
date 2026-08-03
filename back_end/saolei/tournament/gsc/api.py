@@ -14,9 +14,9 @@ from identifier.services import bind_identifier
 from identifier.utils import verify_identifier
 from tournament.gsc.decorators import GSC_admin_required
 from tournament.models import GSCParticipant, GSCTournament, Tournament
+from tournament.utils import tournament_accepts_checkin, tournament_has_ended
 from userprofile.decorators import login_required_error
 from utils.response import HttpResponseConflict
-from tournament.utils import tournament_accepts_checkin, tournament_has_ended
 from .services import get_gsc_scores
 from .tasks import helper_gsc_finish_tournament
 
@@ -108,12 +108,12 @@ def get_GSC_tournament(request: HttpRequest, order: int):
 
 
 @router.get('/info', response=GSCDetailOut)
-def get_gscinfo(request: HttpRequest, id: int | None = None, order: int | None = None):
-    if id is None and order is None:
+def get_gscinfo(request: HttpRequest, tournament_id: int | None = None, order: int | None = None):
+    if tournament_id is None and order is None:
         return HttpResponseBadRequest()
 
-    if id is not None:
-        tournament = get_object_or_404(Tournament, id=id)
+    if tournament_id is not None:
+        tournament = get_object_or_404(Tournament, id=tournament_id)
         tournament = get_object_or_404(GSCTournament, tournament_ptr=tournament)
         order = tournament.order
     else:

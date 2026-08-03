@@ -5,8 +5,8 @@ from django.db.models.functions import RowNumber
 
 from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from config.tournaments import GSC_Defaults
-from tournament.services import delete_participants_without_videos, reveal_videos_for_tournament
 from tournament.models import GSCParticipant, GSCTournament
+from tournament.services import delete_participants_without_videos, reveal_videos_for_tournament
 
 GSC_SCORE_FIELDS = [
     'bt1st', 'bt20th', 'bt20sum',

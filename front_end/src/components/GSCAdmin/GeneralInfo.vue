@@ -84,12 +84,6 @@ const props = defineProps({
     id: { type: Number, default: 0 },
 });
 
-watch(() => props.id, (newId) => {
-    if (newId > 0) {
-        void getGSCInfo(newId);
-    }
-}, { immediate: true });
-
 const { proxy } = useCurrentInstance();
 const gscInfo = ref<GSCInfo>({ id: 0 });
 const newStartTime = ref<Date | undefined>(undefined);
@@ -221,4 +215,10 @@ function setToken(token: string) {
         },
     ).catch(httpErrorNotification);
 }
+
+watch(() => props.id, (newId) => {
+    if (newId > 0) {
+        void getGSCInfo(newId);
+    }
+}, { immediate: true });
 </script>
