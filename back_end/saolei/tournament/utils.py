@@ -3,11 +3,7 @@ from django.utils import timezone
 from config.text_choices import MS_TextChoices
 from tournament.services import checkin_with_arbiter, checkin_with_token
 from videomanager.models import VideoModel
-from .models import Tournament, TournamentParticipant
-
-
-def participant_videos(participant: TournamentParticipant):
-    return list(participant.videos.values('id', 'upload_time', 'level', 'mode', 'timems', 'bv', 'state', 'software', 'cl', 'ce', 'file_size', 'end_time', 'path'))
+from .models import Tournament
 
 
 def add_video_to_checked_tournaments(video: VideoModel):

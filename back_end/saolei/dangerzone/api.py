@@ -1,12 +1,16 @@
+from datetime import datetime
+
 from django.core.management import call_command
 from django_redis import get_redis_connection
 from ninja import NinjaAPI, Schema
 from ninja.errors import HttpError
 
 from common.api import LOG_DIR
+from config.tournaments import TournamentWeights
 from identifier.models import Identifier
 from identifier.services import bind_identifier, set_safe, unbind_identifier
 from msuser.models import UserMS
+from tournament.models import GSCTournament
 from userprofile.models import UserProfile
 from videomanager.models import ExpandVideoModel, VideoModel
 from .decorators import local_only
@@ -53,6 +57,15 @@ class WriteLogSchema(Schema):
     filename: str
     content: str
     append: bool = False
+
+
+class CreateGSCTournamentSchema(Schema):
+    order: int
+    state: str = 'n'
+    start_time: datetime | None = None
+    end_time: datetime | None = None
+    token: str = ''
+    host_id: int | None = None
 
 
 @api.post('/flush_database')
@@ -110,6 +123,28 @@ def create_video(request, data: CreateVideoSchema):
         pluck=data.pluck,
     )
     return {'id': video.id}
+
+
+@api.post('/create_gsc_tournament')
+@local_only
+def create_gsc_tournament(request, data: CreateGSCTournamentSchema):
+    host = UserProfile.objects.filter(id=data.host_id).first() if data.host_id is not None else None
+    tournament, _ = GSCTournament.objects.update_or_create(
+        order=data.order,
+        defaults={
+            'state': data.state,
+            'start_time': data.start_time,
+            'end_time': data.end_time,
+            '_token': data.token,
+            'host': host,
+            'weight': TournamentWeights.GSC,
+        },
+    )
+    return {
+        'id': tournament.id,
+        'order': tournament.order,
+        'state': tournament.state,
+    }
 
 
 @api.post('/create_identifier')

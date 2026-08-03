@@ -3,8 +3,7 @@ import { TournamentSeries, TournamentState } from './ms_const';
 
 export interface TournamentParticipant {
     id: number;
-    user__id: number;
-    user__realname: string;
+    user_id: number | null;
 }
 
 type LocalizedString = string | Partial<Record<string, string>>;

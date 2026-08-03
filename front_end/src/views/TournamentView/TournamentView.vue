@@ -1,8 +1,16 @@
 <template>
-    <TournamentList v-if="store.tournamentTabs.length === 0" :tournament-list="tournamentList" />
+    <ElTabs v-if="store.tournamentTabs.length === 0" v-model="currentListTab" @tab-change="loadTournamentList">
+        <ElTabPane v-for="tab in listTabs" :key="tab.name" :label="t(tab.label)" :name="tab.name" lazy>
+            <TournamentList :tournament-list="tournamentLists[tab.name]" />
+        </ElTabPane>
+    </ElTabs>
     <ElTabs v-else v-model="currentTab" tab-position="left" @tab-remove="tabRemoveHandler" @tab-change="tabChangeHandler">
         <ElTabPane :label="t('tournament.index')" lazy>
-            <TournamentList :tournament-list="tournamentList" />
+            <ElTabs v-model="currentListTab" @tab-change="loadTournamentList">
+                <ElTabPane v-for="tab in listTabs" :key="tab.name" :label="t(tab.label)" :name="tab.name" lazy>
+                    <TournamentList :tournament-list="tournamentLists[tab.name]" />
+                </ElTabPane>
+            </ElTabs>
         </ElTabPane>
         <ElTabPane v-for="tournament in store.tournamentTabs" :key="tournament.id">
             <template #label>
@@ -27,23 +35,43 @@ import TournamentList from './TournamentList.vue';
 
 import { httpErrorNotification } from '@/components/Notifications';
 import { fetchTournament, fetchTournamentList } from '@/services/tournamentService';
+import type { TournamentListCategory } from '@/services/tournamentService';
 import { local, store } from '@/store';
 import { TournamentSeries } from '@/utils/ms_const';
 import { Tournament } from '@/utils/tournaments';
 
 const { t } = useI18n();
 
-const tournamentList = ref<Tournament[]>([]);
+const listTabs: { name: TournamentListCategory; label: string }[] = [
+    { name: 'normal', label: 'tournament.listTabs.normal' },
+    { name: 'awarded', label: 'tournament.listTabs.awarded' },
+    { name: 'other', label: 'tournament.listTabs.other' },
+    { name: 'all', label: 'tournament.listTabs.all' },
+];
+const currentListTab = ref<TournamentListCategory>('normal');
+const tournamentLists = ref<Record<TournamentListCategory, Tournament[]>>({
+    normal: [],
+    awarded: [],
+    other: [],
+    all: [],
+});
+const loadedListTabs = ref<Set<TournamentListCategory>>(new Set());
 
-function getTournaments() {
-    fetchTournamentList().then((data) => {
-        for (const tournament of data) {
-            tournamentList.value.push(new Tournament(tournament));
-        }
+function isTournamentListCategory(value: TabPaneName): value is TournamentListCategory {
+    return typeof value === 'string' && listTabs.some((tab) => tab.name === value);
+}
+
+function loadTournamentList(tab: TabPaneName = currentListTab.value) {
+    if (!isTournamentListCategory(tab)) return;
+    if (loadedListTabs.value.has(tab)) return;
+
+    fetchTournamentList(tab).then((data) => {
+        tournamentLists.value[tab] = data.map((tournament) => new Tournament(tournament));
+        loadedListTabs.value.add(tab);
     }).catch(httpErrorNotification);
 }
 
-onMounted(getTournaments);
+onMounted(loadTournamentList);
 
 const router = useRouter();
 const route = useRoute();

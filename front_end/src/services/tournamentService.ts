@@ -37,8 +37,12 @@ interface ParticipantVideosParams {
     tournamentId: number;
 }
 
-export async function fetchTournamentList(): Promise<TournamentInfo[]> {
-    const { data } = await $axios.get<TournamentInfo[]>('/api/tournament/get_list');
+export type TournamentListCategory = 'normal' | 'awarded' | 'other' | 'all';
+
+export async function fetchTournamentList(category: TournamentListCategory = 'all'): Promise<TournamentInfo[]> {
+    const { data } = await $axios.get<TournamentInfo[]>('/api/tournament/get_list', {
+        params: { category },
+    });
     return data;
 }
 

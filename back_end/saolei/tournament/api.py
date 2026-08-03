@@ -1,18 +1,20 @@
 from datetime import datetime, timezone
+from typing import Literal
 
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, HttpResponseNotFound, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django_ratelimit.decorators import ratelimit
 from ninja import Form, Router, Schema
 from ninja.decorators import decorate_view
+from ninja.orm import create_schema
 
 from config.text_choices import Tournament_TextChoices
 from tournament.cache import TournamentCache
 from tournament.models import GSCTournament, Tournament, TournamentParticipant
-from tournament.utils import participant_videos
 from userprofile.decorators import login_required_error, staff_required
 from userprofile.models import UserProfile
 from utils.response import HttpResponseConflict
+from videomanager.schema import VideoBaseOut
 from videomanager.view_utils import generate_file_stream
 
 router = Router()
@@ -45,20 +47,24 @@ class ParticipantListIn(Schema):
     user_id: int
 
 
-class TournamentOut(Schema):
-    id: int
-    name: dict[str, str]
-    description: dict[str, str] | str
-    start_time: datetime | None
-    end_time: datetime | None
-    series: str
-    host_id: int | None
-    state: str
+TournamentOut = create_schema(
+    Tournament,
+    fields=['id', 'start_time', 'end_time', 'state'],
+    custom_fields=[
+        ('name', dict[str, str] | str, ''),
+        ('description', dict[str, str] | str, ''),
+        ('series', str, ''),
+        ('host_id', int | None, None),
+    ],
+)
 
-
-class TournamentParticipantOut(Schema):
-    id: int
-    user__id: int | None
+TournamentParticipantOut = create_schema(
+    TournamentParticipant,
+    fields=['id'],
+    custom_fields=[
+        ('user_id', int | None, None),
+    ],
+)
 
 
 class TournamentNewsItemOut(Schema):
@@ -72,32 +78,28 @@ class TournamentNewsOut(Schema):
     ongoing: list[TournamentNewsItemOut]
 
 
-def tournament_out(tournament: Tournament) -> dict:
-    return {
-        'id': tournament.id,
-        'name': tournament.name,
-        'description': tournament.description,
-        'start_time': tournament.start_time,
-        'end_time': tournament.end_time,
-        'series': tournament.series,
-        'host_id': tournament.host_id,
-        'state': tournament.state,
-    }
-
-
 @router.get('/get_list', response=list[TournamentOut])
-def get_tournament_list(request: HttpRequest):
-    return [
-        tournament_out(tournament)
-        for tournament in (item.select_subclass() for item in Tournament.objects.all())
-        if tournament is not None
-    ]
+def get_tournament_list(
+    request: HttpRequest,
+    category: Literal['normal', 'awarded', 'other', 'all'] = 'all',
+):
+    queryset = Tournament.objects.all()
+    if category == 'normal':
+        queryset = queryset.filter(state=Tournament_TextChoices.State.NORMAL)
+    elif category == 'awarded':
+        queryset = queryset.filter(state=Tournament_TextChoices.State.AWARDED)
+    elif category == 'other':
+        queryset = queryset.exclude(state__in=[
+            Tournament_TextChoices.State.NORMAL,
+            Tournament_TextChoices.State.AWARDED,
+        ])
+
+    return list(queryset.select_subclasses())
 
 
 @router.get('/get', response=TournamentOut)
 def get_tournament(request: HttpRequest, id: int):
-    tournament = get_object_or_404(Tournament, id=id).select_subclass()
-    return tournament_out(tournament)
+    return get_object_or_404(Tournament, id=id).select_subclass()
 
 
 @router.post('/set')
@@ -189,32 +191,26 @@ def set_tournament_staff(request: HttpRequest, data: TournamentStaffSetIn = Form
         tournament.weight = data.weight
         update_fields.append('weight')
     if data.host_id is not None:
-        if not (host := UserProfile.objects.filter(id=data.host_id).first()):
-            return HttpResponseNotFound()
-        tournament.host = host
+        tournament.host = get_object_or_404(UserProfile, id=data.host_id)
         update_fields.append('host')
     if update_fields:
         tournament.save(update_fields=update_fields)
-    return tournament_out(tournament)
+    return tournament
 
 
 @router.get('/participants', response=list[TournamentParticipantOut])
 def get_participant_list(request: HttpRequest, id: int):
-    if not (tournament := Tournament.objects.filter(id=id).first()):
-        return HttpResponseNotFound()
-    return tournament.participants.values('id', 'user__id')
+    return get_object_or_404(Tournament, id=id).participants
 
 
-@router.get('/get_videos/participant')
+@router.get('/get_videos/participant', response=list[VideoBaseOut])
 def get_participant_videos(request: HttpRequest, tournament_id: int, user_id: int):
-    if not (tournament := Tournament.objects.filter(id=tournament_id).first()):
-        return HttpResponseNotFound()
-    if not (user := UserProfile.objects.filter(id=user_id).first()):
-        return HttpResponseNotFound()
+    tournament = get_object_or_404(Tournament, id=tournament_id)
+    user = get_object_or_404(UserProfile, id=user_id)
     if tournament.state != Tournament_TextChoices.State.AWARDED and request.user != user:
         return HttpResponseForbidden()
     participant = TournamentParticipant.objects.filter(user=user, tournament=tournament).first()
-    return participant_videos(participant) if participant else []
+    return participant.videos if participant else []
 
 
 @router.get('/get_news', response=TournamentNewsOut)
@@ -240,8 +236,7 @@ def get_tournament_news(request: HttpRequest):
 @router.get('/download')
 @decorate_view(ratelimit(key='ip', rate='1/h'))
 def download_all_videos(request: HttpRequest, tournament_id: int):
-    if not (tournament := Tournament.objects.filter(id=tournament_id).first()):
-        return HttpResponseNotFound()
+    tournament = get_object_or_404(Tournament, id=tournament_id)
     if tournament.state != Tournament_TextChoices.State.AWARDED:
         return HttpResponseForbidden()
     response = StreamingHttpResponse(generate_file_stream(tournament.videos.all()), content_type='application/octet-stream')
@@ -252,10 +247,8 @@ def download_all_videos(request: HttpRequest, tournament_id: int):
 @router.get('/download/participant')
 @decorate_view(ratelimit(key='ip', rate='1/m'))
 def download_videos_participant(request: HttpRequest, tournament_id: int, user_id: int):
-    if not (tournament := Tournament.objects.filter(id=tournament_id).first()):
-        return HttpResponseNotFound()
-    if not (user := UserProfile.objects.filter(id=user_id).first()):
-        return HttpResponseNotFound()
+    tournament = get_object_or_404(Tournament, id=tournament_id)
+    user = get_object_or_404(UserProfile, id=user_id)
     if tournament.state != Tournament_TextChoices.State.AWARDED and request.user != user:
         return HttpResponseForbidden()
     response = StreamingHttpResponse(generate_file_stream(tournament.videos.filter(player=user)), content_type='application/octet-stream')

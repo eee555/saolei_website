@@ -342,6 +342,12 @@ export default {
         endsBy: '结束时间',
         host: '主办方',
         index: '比赛首页',
+        listTabs: {
+            normal: '正常',
+            awarded: '已颁奖',
+            other: '其他',
+            all: '全部',
+        },
         management: '管理',
         ranking: '排行',
         startsFrom: '开始时间',

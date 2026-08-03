@@ -312,7 +312,7 @@ class TournamentTestCase(TestCase):
         self.assertEqual(tournament.token, '')
 
     def test_tournament_ninja_api_serializes_gsc_tournament(self):
-        list_response = self.client.get('/api/tournament/get_list')
+        list_response = self.client.get('/api/tournament/get_list', {'category': 'normal'})
         detail_response = self.client.get('/api/tournament/get', {'id': self.tournament.id})
 
         self.assertEqual(list_response.status_code, 200)
@@ -321,6 +321,39 @@ class TournamentTestCase(TestCase):
         self.assertEqual(detail_response.json()['id'], self.tournament.id)
         self.assertEqual(detail_response.json()['description'], '')
         self.assertIsNone(detail_response.json()['host_id'])
+
+    def test_tournament_ninja_list_filters_by_category(self):
+        now = timezone.now()
+        awarded_tournament = GSCTournament.objects.create(
+            order=3,
+            _token='G33333',
+            start_time=now - timedelta(hours=3),
+            end_time=now - timedelta(hours=2),
+            state=Tournament_TextChoices.State.AWARDED,
+        )
+        pending_tournament = GSCTournament.objects.create(
+            order=4,
+            start_time=now + timedelta(hours=1),
+            end_time=now + timedelta(hours=2),
+            state=Tournament_TextChoices.State.PENDING,
+        )
+
+        normal_response = self.client.get('/api/tournament/get_list', {'category': 'normal'})
+        awarded_response = self.client.get('/api/tournament/get_list', {'category': 'awarded'})
+        other_response = self.client.get('/api/tournament/get_list', {'category': 'other'})
+        all_response = self.client.get('/api/tournament/get_list', {'category': 'all'})
+
+        self.assertEqual(normal_response.status_code, 200)
+        self.assertEqual(awarded_response.status_code, 200)
+        self.assertEqual(other_response.status_code, 200)
+        self.assertEqual(all_response.status_code, 200)
+        self.assertEqual({item['id'] for item in normal_response.json()}, {self.tournament.id})
+        self.assertEqual({item['id'] for item in awarded_response.json()}, {awarded_tournament.id})
+        self.assertEqual({item['id'] for item in other_response.json()}, {pending_tournament.id})
+        self.assertEqual(
+            {item['id'] for item in all_response.json()},
+            {self.tournament.id, awarded_tournament.id, pending_tournament.id},
+        )
 
     def test_tournament_ninja_validate_saves_gsc_changes(self):
         now = timezone.now()

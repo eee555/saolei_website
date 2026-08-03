@@ -1,7 +1,3 @@
-// 金羊杯
-const ArbiterIcon = '/img/ms_arbiter_MAINICON.ico';
-const MetasweeperIcon = '/src/assets/img/img_meta.png';
-
 const HOST = {
     id: 48,
     username: 'gscHost',
@@ -22,6 +18,7 @@ const USER = {
 } as const;
 
 const GSC_TOKEN = 'G1234' as const;
+const ARBITER_IDENTIFIER = `Guo Jin Yang ${GSC_TOKEN}` as const;
 
 function visitGSCAdmin(gscID: number) {
     cy.visit('/#/gsc/admin/');
@@ -52,12 +49,34 @@ function setEndDateTime(dateStr: string, timeStr: string) {
 
 function assertTableData(expected: Record<string, unknown>[]) {
     cy.get('table:visible').getTable().should((tableData) => {
-        expected.forEach((exp, i) => {
+        expect(tableData).to.have.length(expected.length);
+        expected.forEach((exp) => {
+            const row = tableData.find((item) => item.比赛 === exp.比赛);
+            expect(row, `row for ${String(exp.比赛)}`).to.not.equal(undefined);
             Object.keys(exp).forEach((key) => {
-                expect(tableData[i][key]).to.equal(exp[key]);
+                expect(row?.[key]).to.equal(exp[key]);
             });
         });
     });
+}
+
+function assertVisibleTournamentNames(expectedNames: string[]) {
+    cy.get('.el-table:visible').first().within(() => {
+        expectedNames.forEach((name) => {
+            cy.contains('.el-table__row', name).should('be.visible');
+        });
+        cy.get('.el-table__row').should((rows) => {
+            const names = [...rows].map((row) => row.textContent ?? '');
+            expect(names).to.have.length(expectedNames.length);
+            expectedNames.forEach((name) => {
+                expect(names.some((rowText) => rowText.includes(name))).to.equal(true);
+            });
+        });
+    });
+}
+
+function selectHomepageListTab(name: string) {
+    cy.contains('.el-tabs__item', name).click();
 }
 
 describe('GSC', () => {
@@ -87,6 +106,8 @@ describe('GSC', () => {
         cy.contains('开始时间：未设置');
         cy.contains('结束时间：未设置');
         cy.contains('标识：未设置');
+        cy.contains('结算后台任务');
+        cy.contains('NULL');
     });
 
     it('Set start time', () => {
@@ -98,9 +119,11 @@ describe('GSC', () => {
         cy.contains('开始时间：2100-01-01 00:00:00');
 
         cy.visit('/#/tournament/');
-        cy.contains('第2届金羊杯');
+        selectHomepageListTab('其他');
+        cy.contains('第2届金羊杯').should('be.visible');
         cy.get('table:visible').getTable().should((tableData) => {
-            expect(tableData[0].开始时间).to.equal('2100-01-01 00:00:00');
+            const tournament = tableData.find((row) => row.比赛 === '第2届金羊杯');
+            expect(tournament?.开始时间).to.equal('2100-01-01 00:00:00');
         });
     });
 
@@ -113,9 +136,11 @@ describe('GSC', () => {
         cy.contains('结束时间：2100-01-02 00:00:00');
 
         cy.visit('/#/tournament/');
-        cy.contains('第2届金羊杯');
+        selectHomepageListTab('其他');
+        cy.contains('第2届金羊杯').should('be.visible');
         cy.get('table:visible').getTable().should((tableData) => {
-            expect(tableData[0].结束时间).to.equal('2100-01-02 00:00:00');
+            const tournament = tableData.find((row) => row.比赛 === '第2届金羊杯');
+            expect(tournament?.结束时间).to.equal('2100-01-02 00:00:00');
         });
     });
 
@@ -128,9 +153,11 @@ describe('GSC', () => {
         cy.contains('开始时间：2099-12-31 00:00:00');
 
         cy.visit('/#/tournament/');
-        cy.contains('第2届金羊杯');
+        selectHomepageListTab('其他');
+        cy.contains('第2届金羊杯').should('be.visible');
         cy.get('table:visible').getTable().should((tableData) => {
-            expect(tableData[0].开始时间).to.equal('2099-12-31 00:00:00');
+            const tournament = tableData.find((row) => row.比赛 === '第2届金羊杯');
+            expect(tournament?.开始时间).to.equal('2099-12-31 00:00:00');
         });
     });
 
@@ -142,9 +169,11 @@ describe('GSC', () => {
         cy.contains('结束时间：2100-01-03 00:00:00');
 
         cy.visit('/#/tournament/');
-        cy.contains('第2届金羊杯');
+        selectHomepageListTab('其他');
+        cy.contains('第2届金羊杯').should('be.visible');
         cy.get('table:visible').getTable().should((tableData) => {
-            expect(tableData[0].结束时间).to.equal('2100-01-03 00:00:00');
+            const tournament = tableData.find((row) => row.比赛 === '第2届金羊杯');
+            expect(tournament?.结束时间).to.equal('2100-01-03 00:00:00');
         });
     });
 
@@ -169,6 +198,7 @@ describe('GSC', () => {
 
         // 比赛页
         cy.visit('/#/tournament/');
+        selectHomepageListTab('其他');
         cy.contains('匿名');
 
         assertTableData([
@@ -214,6 +244,13 @@ describe('GSC', () => {
         cy.visit('/#/tournament/');
         cy.contains('匿名');
 
+        cy.contains('.el-tabs__item.is-active', '正常').should('be.visible');
+        assertVisibleTournamentNames(['第2届金羊杯', '第3届金羊杯', '第4届金羊杯']);
+
+        selectHomepageListTab('已颁奖');
+        cy.get('.el-table:visible').first().find('.el-table__row').should('have.length', 0);
+
+        selectHomepageListTab('全部');
         assertTableData([
             { 状态: '即将开始', 比赛: '第2届金羊杯', 主办方: '匿名', 开始时间: '2099-12-31 00:00:00', 结束时间: '2100-01-03 00:00:00' },
             { 状态: '结算中', 比赛: '第4届金羊杯', 主办方: '匿名', 开始时间: '2000-01-01 00:00:00', 结束时间: '2000-01-02 00:00:00' },
@@ -221,7 +258,7 @@ describe('GSC', () => {
         ]);
     });
 
-    it('Generate and Modify Token', () => {
+    it('Modify visible token for ongoing GSC', () => {
         cy.login(HOST.username, HOST.password);
         visitGSCAdmin(3);
         cy.contains('span', /^标识：G\d{5}$/).should('exist');
@@ -236,50 +273,55 @@ describe('GSC', () => {
         cy.visit('/#/tournament/1');
         cy.contains('即将开始');
         cy.contains('如何参赛').next().within(() => {
-            cy.get(`img[src="${MetasweeperIcon}"]`).click();
-            cy.contains('比赛开始后会公布比赛标识。');
-
-            cy.get(`img[src="${ArbiterIcon}"]`).click();
-            cy.contains('比赛开始后在这里注册标识。');
+            cy.contains('查看参赛说明').should('have.attr', 'href').and('include', '/docs/guide/gsc');
+            cy.contains('比赛开始后可以报名参赛。');
+            cy.contains(GSC_TOKEN).should('not.exist');
         });
 
         cy.visit('/#/tournament/2');
         cy.contains('进行中');
     });
 
-    it('Ongoing Tournament', () => {
+    it('Ongoing Tournament registration', () => {
+        cy.login(USER.username, USER.password);
         cy.visit('/#/tournament/2');
         cy.contains('进行中');
         cy.contains('如何参赛').next().within(() => {
-            cy.get(`img[src="${MetasweeperIcon}"]`).click();
-            cy.contains('在元扫雷中将比赛标识设置为');
-            cy.contains(GSC_TOKEN);
+            cy.contains('button', '注册').click();
+        });
+        cy.contains('操作成功');
+        cy.closeElNotifications();
 
-            cy.get(`img[src="${ArbiterIcon}"]`).click();
-            cy.contains('请在这里注册参赛标识。');
-            cy.contains(`Guo Jin Yang ${GSC_TOKEN}`);
+        cy.contains('如何参赛').next().within(() => {
+            cy.contains('比赛标识：');
+            cy.contains(GSC_TOKEN);
+            cy.get('input[placeholder="标识"]').type(ARBITER_IDENTIFIER);
+            cy.contains('button', '注册').click();
+        });
+        cy.contains('操作成功');
+        cy.closeElNotifications();
+
+        cy.contains('如何参赛').next().within(() => {
+            cy.contains('Arbiter参赛标识：');
+            cy.contains(ARBITER_IDENTIFIER);
         });
         cy.contains('即时成绩');
     });
 
-    it('Finished Tournament', () => {
+    it('Finished Tournament and finish task', () => {
         cy.visit('/#/tournament/3');
         cy.contains('结算中');
         cy.contains('如何参赛').should('not.exist');
         cy.contains('比赛结果');
 
-        cy.login(STAFF.username, STAFF.password);
-        cy.visit('/#/staff/task');
-
-        cy.intercept('GET', '**/common/staff/taskdetail/').as('taskDetail');
-        cy.contains('加载任务').click();
-
-        cy.wait('@taskDetail').its('response.statusCode').should('eq', 200);
-        cy.get('table:visible').eq(1).getTable().should((tableData) => {
-            expect(tableData[0].status).to.equal('READY');
-            expect(tableData[0].args_kwargs.replace(/\s/g, '')).to.equal('{"args":[4],"kwargs":{}}');
-            expect(tableData[0].task_path).to.equal('tournament.tasks.task_gsc_finish');
-        });
+        cy.login(HOST.username, HOST.password);
+        visitGSCAdmin(4);
+        cy.contains('结算后台任务');
+        cy.contains('NULL');
+        cy.contains('button', '计算排行并结束比赛').click();
+        cy.contains('操作成功');
+        cy.closeElNotifications();
+        cy.contains('READY');
     });
 });
 

@@ -1,8 +1,8 @@
 from datetime import datetime
-from uuid import UUID
 
-from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
+from django_tasks_db.models import DBTaskResult
 from ninja import Form, Router, Schema
 from ninja.decorators import decorate_view
 from ninja.orm import create_schema
@@ -34,24 +34,14 @@ class RegisterGSCParticipantIn(Schema):
     order: int
 
 
-class GSCParticipantIn(Schema):
-    order: int
-
-
 class GSCOrderIn(Schema):
     order: int
 
 
-class GSCTaskOut(Schema):
-    id: UUID
-    status: str
-    enqueued_at: datetime
-    started_at: datetime | None
-    finished_at: datetime | None
-    return_value: object | None
-    exception_class_path: str
-    traceback: str
-
+GSCTaskOut = create_schema(
+    DBTaskResult,
+    fields=['id', 'status', 'enqueued_at', 'started_at', 'finished_at', 'return_value', 'exception_class_path', 'traceback'],
+)
 
 GSCInfoOut = create_schema(
     GSCTournament,
@@ -60,6 +50,7 @@ GSCInfoOut = create_schema(
         ('token', str, ''),
     ],
 )
+
 GSCScoreOut = create_schema(
     GSCParticipant,
     fields=[
@@ -90,21 +81,6 @@ def task_response(task):
         'data': {
             'task_id': str(task.id),
         },
-    }
-
-
-def task_out(task):
-    if task is None:
-        return None
-    return {
-        'id': task.id,
-        'status': task.status,
-        'enqueued_at': task.enqueued_at,
-        'started_at': task.started_at,
-        'finished_at': task.finished_at,
-        'return_value': task.return_value,
-        'exception_class_path': task.exception_class_path,
-        'traceback': task.traceback,
     }
 
 
@@ -167,10 +143,9 @@ def get_gscinfo(request: HttpRequest, id: int | None = None, order: int | None =
 
 @router.post('/participant')
 @decorate_view(login_required_error)
-def create_gsc_participant(request: HttpRequest, data: GSCParticipantIn = Form(...)):  # noqa: B008
+def create_gsc_participant(request: HttpRequest, data: GSCOrderIn = Form(...)):  # noqa: B008
     user = request.user
-    if not (tournament := GSCTournament.objects.filter(order=data.order).first()):
-        return HttpResponseNotFound()
+    tournament = get_object_or_404(GSCTournament, order=data.order)
     if not tournament_accepts_checkin(tournament):
         return HttpResponseForbidden()
     if not tournament.token:
@@ -193,14 +168,12 @@ def create_gsc_participant(request: HttpRequest, data: GSCParticipantIn = Form(.
 def register_gsc_participant_identifier(request: HttpRequest, data: RegisterGSCParticipantIn = Form(...)):  # noqa: B008
     user = request.user
     userms = user.userms
-    if not (tournament := GSCTournament.objects.filter(order=data.order).first()):
-        return HttpResponseNotFound()
+    tournament = get_object_or_404(GSCTournament, order=data.order)
     if not tournament_accepts_checkin(tournament):
         return HttpResponseForbidden()
     if not tournament.token:
         return HttpResponseForbidden()
-    if not (participant := GSCParticipant.objects.filter(tournament=tournament, user=user).first()):
-        return HttpResponseNotFound()
+    participant = get_object_or_404(GSCParticipant, tournament=tournament, user=user)
     if not data.identifier.endswith(tournament.token):
         return {'type': 'error', 'object': 'identifier', 'category': 'suffix'}
 
@@ -221,15 +194,13 @@ def register_gsc_participant_identifier(request: HttpRequest, data: RegisterGSCP
 @router.get('/task', response=GSCTaskOut | None)
 @decorate_view(GSC_admin_required)
 def get_gsc_task(request: HttpRequest, order: int):
-    tournament = get_object_or_404(GSCTournament, order=order)
-    return task_out(tournament.task)
+    return get_object_or_404(GSCTournament, order=order).task
 
 
 @router.post('/task/finish')
 @decorate_view(GSC_admin_required)
 def finish_gsc_task(request: HttpRequest, data: GSCOrderIn = Form(...)):  # noqa: B008
-    if not (tournament := GSCTournament.objects.filter(order=data.order).first()):
-        return HttpResponseNotFound()
+    tournament = get_object_or_404(GSCTournament, order=data.order)
     if tournament.state != Tournament_TextChoices.State.AWARDED and not tournament_has_ended(tournament):
         return HttpResponseForbidden()
 

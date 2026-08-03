@@ -343,6 +343,12 @@ export default {
         endsBy: 'Ends By',
         host: 'Host',
         index: 'Index',
+        listTabs: {
+            normal: 'Normal',
+            awarded: 'Awarded',
+            other: 'Other',
+            all: 'All',
+        },
         management: 'Management',
         ranking: 'Ranking',
         startsFrom: 'Starts From',
