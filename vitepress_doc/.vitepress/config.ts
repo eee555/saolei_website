@@ -78,6 +78,12 @@ export default defineConfig({
                                 { text: '数据', link: '/guide/minesweeper/stat' },
                             ],
                         },
+                        {
+                            text: '开发文档',
+                            items: [
+                                { text: '信号触发关系', link: '/guide/development/signals' },
+                            ],
+                        },
                     ],
                 },
             },
