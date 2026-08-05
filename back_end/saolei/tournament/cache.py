@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Any
 
 from dataclasses_json import dataclass_json
 from django_redis import get_redis_connection
@@ -18,7 +19,11 @@ NORMAL_PARTICIPANT_CACHE_KEY = 'tournament:normal:participants'
 @dataclass
 class CachedNormalTournament:
     id: int
+    state: str
+    name: Any
+    description: Any
     series: str
+    host_id: int | None
     start_time: datetime
     end_time: datetime
     order: int | None = None
@@ -38,6 +43,7 @@ class CachedNormalParticipant:
 
 class TournamentCache:
     def update_tournament(self, tournament: Tournament):
+        tournament = tournament.select_subclass()
         if tournament.state == Tournament_TextChoices.State.NORMAL:
             cache.hset(
                 NORMAL_TOURNAMENT_CACHE_KEY,
@@ -45,11 +51,11 @@ class TournamentCache:
                 serialize_normal_tournament(tournament).to_json(),
             )
         else:
-            self.remove_tournament(tournament)
+            self.remove_tournament(tournament.id)
 
-    def remove_tournament(self, tournament: Tournament):
-        cache.hdel(NORMAL_TOURNAMENT_CACHE_KEY, tournament.id)
-        self.remove_tournament_participants(tournament.id)
+    def remove_tournament(self, tournament_id: int):
+        cache.hdel(NORMAL_TOURNAMENT_CACHE_KEY, tournament_id)
+        self.remove_tournament_participants(tournament_id)
 
     def remove_tournament_participants(self, tournament_id: int):
         pipe = cache.pipeline()
@@ -148,7 +154,11 @@ def serialize_normal_tournament(tournament: Tournament):
         token = tournament._token
     return CachedNormalTournament(
         id=tournament.id,
+        state=tournament.state,
+        name=tournament.name,
+        description=tournament.description,
         series=tournament.series,
+        host_id=tournament.host_id,
         start_time=tournament.start_time,
         end_time=tournament.end_time,
         order=order,

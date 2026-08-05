@@ -21,7 +21,7 @@ from .cache import (
     TournamentCache,
 )
 from .gsc.services import finish_gsc_tournament, refresh_gsc_ranks, refresh_gsc_scores
-from .models import GSCParticipant, GSCTournament, Tournament
+from .models import GSCParticipant, GSCTournament, Tournament, TournamentParticipant
 from .services import reveal_videos_for_tournament
 
 
@@ -58,7 +58,7 @@ class TournamentTestCase(TestCase):
         self,
         *,
         user=None,
-        tournament_identifiers=None,
+        tournament_identifier=None,
         identifier=None,
         software=MS_TextChoices.Software.EVF,
         level=MS_TextChoices.Level.BEGINNER,
@@ -66,10 +66,10 @@ class TournamentTestCase(TestCase):
         bv=10,
     ):
         video_index = ExpandVideoModel.objects.count() + 1
-        tournament_identifiers = tournament_identifiers if tournament_identifiers is not None else [self.tournament.token]
+        tournament_identifier = tournament_identifier if tournament_identifier is not None else [self.tournament.token]
         expand_video = ExpandVideoModel.objects.create(
             identifier=identifier or f'gsc-video-{video_index}',
-            tournament_identifier=tournament_identifiers,
+            tournament_identifier=tournament_identifier,
         )
         video = VideoModel(
             player=user or self.user,
@@ -93,7 +93,6 @@ class TournamentTestCase(TestCase):
             op=1,
             isl=1,
         )
-        video._tournament_identifiers = tournament_identifiers
         video.save()  # noqa: DJM100
         return video
 
@@ -109,7 +108,7 @@ class TournamentTestCase(TestCase):
         self.tournament_cache.update_participant(participant)
         return participant
 
-    def test_video_checkin_requires_explicit_participant(self):
+    def test_video_create_checkin_requires_explicit_participant(self):
         self.tournament_cache.update_tournament(self.tournament)
 
         video = self.create_video()
@@ -123,7 +122,7 @@ class TournamentTestCase(TestCase):
             token=self.tournament.token,
         ).exists())
 
-    def test_video_checkin_runs_before_video_create_with_cached_participant(self):
+    def test_video_create_checkin_uses_cached_participant(self):
         self.create_cached_gsc_participant()
         self.tournament_cache.update_tournament(self.tournament)
 
@@ -134,7 +133,7 @@ class TournamentTestCase(TestCase):
         self.assertTrue(self.tournament.videos.filter(pk=video.pk).exists())
         self.assertEqual(GSCParticipant.objects.filter(user=self.user, tournament=self.tournament).count(), 1)
 
-    def test_non_avf_video_checkin_uses_tournament_identifier(self):
+    def test_non_avf_video_create_checkin_uses_tournament_identifier(self):
         self.create_cached_gsc_participant()
         self.tournament_cache.update_tournament(self.tournament)
 
@@ -145,13 +144,13 @@ class TournamentTestCase(TestCase):
         self.assertTrue(self.tournament.videos.filter(pk=video.pk).exists())
 
     def test_video_without_tournament_identifier_does_not_checkin(self):
-        video = self.create_video(tournament_identifiers=[])
+        video = self.create_video(tournament_identifier=[])
 
         video.refresh_from_db()
         self.assertFalse(video.ongoing_tournament)
         self.assertFalse(self.tournament.videos.filter(pk=video.pk).exists())
 
-    def test_video_checkin_does_not_fallback_to_db_when_normal_cache_misses(self):
+    def test_video_create_checkin_does_not_fallback_to_db_when_normal_cache_misses(self):
         GSCTournament.objects.filter(pk=self.tournament.pk).update(state=Tournament_TextChoices.State.PENDING)
         cache.delete(NORMAL_TOURNAMENT_CACHE_KEY, NORMAL_PARTICIPANT_CACHE_KEY)
 
@@ -163,7 +162,7 @@ class TournamentTestCase(TestCase):
         self.assertFalse(video.ongoing_tournament)
         self.assertFalse(self.tournament.videos.filter(pk=video.pk).exists())
 
-    def test_video_checkin_rejects_by_time_window_after_end_time(self):
+    def test_video_create_checkin_rejects_by_time_window_after_end_time(self):
         now = timezone.now()
         GSCTournament.objects.filter(pk=self.tournament.pk).update(
             start_time=now - timedelta(hours=2),
@@ -188,6 +187,11 @@ class TournamentTestCase(TestCase):
 
         self.assertEqual(len(tournaments), 1)
         self.assertEqual(tournaments[0].id, self.tournament.id)
+        self.assertEqual(tournaments[0].state, Tournament_TextChoices.State.NORMAL)
+        self.assertEqual(tournaments[0].name, self.tournament.name)
+        self.assertEqual(tournaments[0].description, self.tournament.description)
+        self.assertEqual(tournaments[0].series, Tournament_TextChoices.Series.GSC)
+        self.assertIsNone(tournaments[0].host_id)
         self.assertEqual(tournaments[0].order, self.tournament.order)
         self.assertEqual(tournaments[0].token, self.tournament.token)
         self.assertIsNotNone(cache.hget(NORMAL_TOURNAMENT_CACHE_KEY, self.tournament.id))
@@ -196,8 +200,7 @@ class TournamentTestCase(TestCase):
         parent_tournament = Tournament.objects.get(id=self.tournament.id)
 
         self.assertEqual(parent_tournament.subclass, Tournament_TextChoices.Subclass.GSC)
-        tournament = parent_tournament.select_subclass()
-        self.tournament_cache.update_tournament(tournament)
+        self.tournament_cache.update_tournament(parent_tournament)
 
         tournaments = self.tournament_cache.get_tournament_all()
         self.assertEqual(tournaments[0].id, self.tournament.id)
@@ -226,6 +229,21 @@ class TournamentTestCase(TestCase):
         self.assertEqual(participants[0].tournament, self.tournament.id)
         self.assertEqual(participants[0].start_time, participant.start_time)
         self.assertEqual(participants[0].end_time, participant.end_time)
+
+    def test_tournament_participant_create_updates_cache_through_participant_save(self):
+        with self.captureOnCommitCallbacks(execute=True):
+            participant = TournamentParticipant.objects.create(
+                user=self.user,
+                tournament=self.tournament,
+                token=self.tournament.token,
+                start_time=self.tournament.start_time,
+                end_time=self.tournament.end_time,
+            )
+
+        participants = self.tournament_cache.get_participant_list(self.user.id)
+        self.assertEqual(len(participants), 1)
+        self.assertEqual(participants[0].id, participant.id)
+        self.assertEqual(participants[0].tournament, self.tournament.id)
 
     def test_remove_tournament_removes_matching_participants_from_cache(self):
         self.tournament_cache.set_participant_list(self.user.id, [
@@ -258,7 +276,7 @@ class TournamentTestCase(TestCase):
             ),
         ])
 
-        self.tournament_cache.remove_tournament(self.tournament)
+        self.tournament_cache.remove_tournament(self.tournament.id)
 
         participants = self.tournament_cache.get_participant_list(self.user.id)
         self.assertEqual(len(participants), 1)
@@ -267,6 +285,81 @@ class TournamentTestCase(TestCase):
         self.assertIsNone(participants[0].arbiter_identifier)
         self.assertEqual(participants[0].tournament, 999)
         self.assertEqual(self.tournament_cache.get_participant_list(other_user.id), [])
+
+    def test_gsc_delete_updates_cache_through_parent_tournament_delete(self):
+        participant = GSCParticipant.objects.create(
+            user=self.user,
+            tournament=self.tournament,
+            token=self.tournament.token,
+            start_time=self.tournament.start_time,
+            end_time=self.tournament.end_time,
+        )
+        self.tournament_cache.update_tournament(self.tournament)
+        self.tournament_cache.update_participant(participant)
+        tournament_id = self.tournament.id
+
+        with self.captureOnCommitCallbacks(execute=True):
+            self.tournament.delete()
+
+        self.assertIsNone(self.tournament_cache.get_tournament(tournament_id))
+        self.assertEqual(self.tournament_cache.get_participant_list(self.user.id), [])
+
+    def test_gsc_participant_delete_updates_cache_through_parent_participant_delete(self):
+        participant = GSCParticipant.objects.create(
+            user=self.user,
+            tournament=self.tournament,
+            token=self.tournament.token,
+            start_time=self.tournament.start_time,
+            end_time=self.tournament.end_time,
+        )
+        self.tournament_cache.update_participant(participant)
+
+        with self.captureOnCommitCallbacks(execute=True):
+            participant.delete()
+
+        self.assertEqual(self.tournament_cache.get_participant_list(self.user.id), [])
+
+    def test_gsc_participant_create_updates_cache_through_gsc_participant_save(self):
+        with self.captureOnCommitCallbacks(execute=True):
+            participant = GSCParticipant.objects.create(
+                user=self.user,
+                tournament=self.tournament,
+                token=self.tournament.token,
+                start_time=self.tournament.start_time,
+                end_time=self.tournament.end_time,
+            )
+
+        participants = self.tournament_cache.get_participant_list(self.user.id)
+        self.assertEqual(len(participants), 1)
+        self.assertEqual(participants[0].id, participant.id)
+        self.assertEqual(participants[0].tournament, self.tournament.id)
+
+    def test_gsc_participant_child_field_save_does_not_update_participant_cache(self):
+        participant = GSCParticipant.objects.create(
+            user=self.user,
+            tournament=self.tournament,
+            token=self.tournament.token,
+            start_time=self.tournament.start_time,
+            end_time=self.tournament.end_time,
+        )
+        self.tournament_cache.set_participant_list(self.user.id, [
+            CachedNormalParticipant(
+                id=participant.id,
+                token='STALE',
+                arbiter_identifier=None,
+                tournament=self.tournament.id,
+                start_time=self.tournament.start_time,
+                end_time=self.tournament.end_time,
+            ),
+        ])
+
+        participant.bt1st += 1
+        with self.captureOnCommitCallbacks(execute=True):
+            participant.save(update_fields=['bt1st'])
+
+        participants = self.tournament_cache.get_participant_list(self.user.id)
+        self.assertEqual(len(participants), 1)
+        self.assertEqual(participants[0].token, 'STALE')
 
     def test_rebuild_tournament_cache_command_rebuilds_both_hashes(self):
         participant = GSCParticipant.objects.create(
@@ -318,9 +411,22 @@ class TournamentTestCase(TestCase):
         self.assertEqual(list_response.status_code, 200)
         self.assertEqual(detail_response.status_code, 200)
         self.assertEqual(list_response.json()[0]['id'], self.tournament.id)
+        self.assertEqual(list_response.json()[0]['state'], Tournament_TextChoices.State.NORMAL)
+        self.assertEqual(list_response.json()[0]['name'], self.tournament.name)
+        self.assertEqual(list_response.json()[0]['description'], '')
+        self.assertEqual(list_response.json()[0]['series'], Tournament_TextChoices.Series.GSC)
+        self.assertIsNone(list_response.json()[0]['host_id'])
         self.assertEqual(detail_response.json()['id'], self.tournament.id)
         self.assertEqual(detail_response.json()['description'], '')
         self.assertIsNone(detail_response.json()['host_id'])
+
+    def test_tournament_ninja_normal_list_uses_cache_without_db_fallback(self):
+        cache.delete(NORMAL_TOURNAMENT_CACHE_KEY)
+
+        response = self.client.get('/api/tournament/get_list', {'category': 'normal'})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), [])
 
     def test_tournament_ninja_list_filters_by_category(self):
         now = timezone.now()
@@ -514,23 +620,22 @@ class TournamentTestCase(TestCase):
         matched_video = self.create_video()
         other_software_video = self.create_video(software=MS_TextChoices.Software.MVF)
         outside_video = self.create_video()
-        missing_identifier_video = self.create_video(tournament_identifiers=[])
+        missing_identifier_video = self.create_video(tournament_identifier=[])
         avf_with_token_video = self.create_video(
             software=MS_TextChoices.Software.AVF,
-            tournament_identifiers=[self.tournament.token],
+            tournament_identifier=[self.tournament.token],
         )
         VideoModel.objects.filter(pk=outside_video.pk).update(
             upload_time=self.tournament.end_time + timedelta(minutes=1),
         )
 
-        with self.captureOnCommitCallbacks(execute=True):
-            GSCParticipant.objects.create(
-                user=self.user,
-                tournament=self.tournament,
-                token=self.tournament.token,
-                start_time=self.tournament.start_time,
-                end_time=self.tournament.end_time,
-            )
+        GSCParticipant.objects.create(
+            user=self.user,
+            tournament=self.tournament,
+            token=self.tournament.token,
+            start_time=self.tournament.start_time,
+            end_time=self.tournament.end_time,
+        )
 
         matched_video.refresh_from_db()
         other_software_video.refresh_from_db()
@@ -552,22 +657,21 @@ class TournamentTestCase(TestCase):
         matched_video = self.create_video(
             identifier=identifier.identifier,
             software=MS_TextChoices.Software.AVF,
-            tournament_identifiers=[],
+            tournament_identifier=[],
         )
         token_only_video = self.create_video(
             software=MS_TextChoices.Software.AVF,
-            tournament_identifiers=[self.tournament.token],
+            tournament_identifier=[self.tournament.token],
         )
 
-        with self.captureOnCommitCallbacks(execute=True):
-            GSCParticipant.objects.create(
-                user=self.user,
-                tournament=self.tournament,
-                token=self.tournament.token,
-                arbiter_identifier=identifier,
-                start_time=self.tournament.start_time,
-                end_time=self.tournament.end_time,
-            )
+        GSCParticipant.objects.create(
+            user=self.user,
+            tournament=self.tournament,
+            token=self.tournament.token,
+            arbiter_identifier=identifier,
+            start_time=self.tournament.start_time,
+            end_time=self.tournament.end_time,
+        )
 
         matched_video.refresh_from_db()
         token_only_video.refresh_from_db()

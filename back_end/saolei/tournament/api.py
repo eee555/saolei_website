@@ -83,10 +83,11 @@ def get_tournament_list(
     request: HttpRequest,
     category: Literal['normal', 'awarded', 'other', 'all'] = 'all',
 ):
-    queryset = Tournament.objects.all()
     if category == 'normal':
-        queryset = queryset.filter(state=Tournament_TextChoices.State.NORMAL)
-    elif category == 'awarded':
+        return cache.get_tournament_all()
+
+    queryset = Tournament.objects.all()
+    if category == 'awarded':
         queryset = queryset.filter(state=Tournament_TextChoices.State.AWARDED)
     elif category == 'other':
         queryset = queryset.exclude(state__in=[

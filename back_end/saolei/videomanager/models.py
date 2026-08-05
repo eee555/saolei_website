@@ -209,7 +209,6 @@ class VideoModel(models.Model):
             cell3=parser.cell3, cell4=parser.cell4, cell5=parser.cell5,
             cell6=parser.cell6, cell7=parser.cell7, cell8=parser.cell8,
         )
-        video._tournament_identifiers = parser.tournament_identifiers
         video.save()  # noqa: DJM100
         return video
 

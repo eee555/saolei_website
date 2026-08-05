@@ -6,12 +6,11 @@
 
 ### 录像创建时
 
-- `tournament.signals.checkin_video_before_create` 在 `VideoModel` 创建前调用 `tournament.utils.video_checkin`。
-- `video_checkin` 根据录像内比赛标识判断是否属于正在进行的比赛。
+- `tournament.signals.checkin_video_before_create` 在 `VideoModel` 创建前根据 `video.video.identifier` 或 `video.video.tournament_identifier` 判断是否属于正在进行的比赛。
 - 如果命中比赛：
   - 设置 `video.ongoing_tournament = True`。
-  - 暂存 `_checked_in_tournaments`。
-- `tournament.signals.add_created_video_to_checked_tournaments` 在 `VideoModel` 创建后将录像加入对应 `Tournament.videos` 多对多关系。
+  - 暂存 `_checked_in_tournaments`，供创建后写入 M2M 使用。
+- `tournament.signals.add_created_video_to_checked_tournaments` 在 `VideoModel` 创建后消费 `_checked_in_tournaments`，将录像加入对应 `Tournament.videos` 多对多关系。
 
 这个路径只处理单条新上传录像，当前性能风险较低。
 
@@ -57,16 +56,16 @@
 
 `NORMAL` 比赛数量较少，但列表、新闻、录像 checkin 等入口访问频繁，可以使用 Redis 缓存降低数据库查询压力。
 
-`Tournament` 父表增加了 `subclass` 字段，用于快速定位具体子类。当前线上只有 `GSCTournament`，所以字段默认值暂时为 `g`，迁移后既有比赛都会被视为 GSC。TODO: 后续新增比赛类型时，应先扩展 `Tournament_TextChoices.Subclass`，再在模型层的子类定向 helper 中补充查询逻辑。缓存层不负责父类到子类的定向，只接收已经定向完成的具体比赛对象。
+`Tournament` 父表增加了 `subclass` 字段，用于快速定位具体子类。当前线上只有 `GSCTournament`，所以字段默认值暂时为 `g`，迁移后既有比赛都会被视为 GSC。TODO: 后续新增比赛类型时，应先扩展 `Tournament_TextChoices.Subclass`，再在模型层的子类定向 helper 中补充查询逻辑。信号层不负责父类到子类的定向，`TournamentCache.update_tournament` 内部会先调用 `select_subclass()`，再序列化具体比赛对象。
 
 缓存 key 固定为：
 
 - `tournament:normal`
 
-缓存使用一个 Redis hash 保存所有 `NORMAL` 比赛的基础信息。hash key 为比赛 id，hash value 为序列化后的比赛信息，例如：
+缓存使用一个 Redis hash 保存所有 `NORMAL` 比赛的基础信息。hash key 为比赛 id，hash value 为序列化后的比赛信息。字段需要覆盖 `TournamentOut` 的列表展示需求，并保留 GSC checkin / 注册需要的专属字段，例如：
 
 ```text
-HSET tournament:normal 123 '{"id":123,"series":"gsc","start_time":"...","end_time":"...","order":8,"token":"G12345"}'
+HSET tournament:normal 123 '{"id":123,"state":"n","name":{"zh":"第8届金羊杯","en":"GSC#8"},"description":"","series":"gsc","host_id":null,"start_time":...,"end_time":...,"order":8,"token":"G12345"}'
 ```
 
 同一时间只会存在一个 `NORMAL` GSC 比赛，因此不需要额外维护 `order -> tournament_id` 或 `token -> tournament_id` 索引。录像 checkin 不通过 `tournament:normal` 判断时间窗口；它只使用 participant 缓存中的参赛关系窗口。
@@ -90,7 +89,9 @@ TODO: 如果未来需要比赛期间展示实时榜，可以再单独设计每�
 
 但当前阶段不实现这部分。
 
-`tournament:normal` 应由写路径维护同步。比赛创建、修改 `start_time/end_time/order/token`、验证、取消和颁奖时，在事务提交后对对应比赛执行 `TournamentCache.update_tournament` 或 `TournamentCache.remove_tournament`。读取路径只读取缓存，不在未命中时查询 DB 或重建缓存；缓存与 DB 不同步属于写路径维护 bug。
+`tournament:normal` 应由写路径维护同步。比赛创建、修改 `start_time/end_time/order/token`、验证、取消和颁奖时，在事务提交后对对应比赛执行 `TournamentCache.update_tournament` 或 `TournamentCache.remove_tournament`。读取路径只读取缓存，不在未命中时查询 DB 或重建缓存；缓存与 DB 不同步属于写路径维护 bug。`get_tournament_list(category="normal")` 已直接返回 `TournamentCache.get_tournament_all()`，因此 NORMAL 首页列表不会触发子类查询。
+
+删除 GSC 时不需要监听 `GSCTournament.post_delete`；Django 多表继承删除子表时会级联删除父表，缓存清理由 `Tournament.post_delete` 统一处理。`TournamentCache.remove_tournament` 固定接收 `tournament_id: int`。由于 `post_delete` 的 `on_commit` 回调执行时 model instance 的主键可能已经被清空，信号里应先捕获 `tournament_id`，再传给 `TournamentCache.remove_tournament`。
 
 Redis 中仍保存 JSON object/list，由 `dataclass-json` 负责序列化和反序列化；时间字段使用该库默认的 timestamp 表示。Python 读取后应统一反序列化为 dataclass，例如 `CachedNormalTournament` 和 `CachedNormalParticipant`，调用方使用属性访问以获得类型提示，不再在业务代码中传递裸 dict。
 
@@ -164,22 +165,23 @@ HSET tournament:normal:participants {user_id} '[{"id":456,"token":"G12345","arbi
 
 缓存失效或更新策略：
 
-- `TournamentParticipant` / `GSCParticipant` 创建、修改、删除后，在对应用户的列表缓存中同步 upsert 或 delete 该参赛关系。
-- `TournamentParticipant` / `GSCParticipant` 创建后，在事务提交后扫描同一用户 `upload_time` 落在 participant `start_time/end_time` 窗口内的既有录像，并补充写入 `Tournament.videos` 多对多关系。AVF 录像要求 `ExpandVideoModel.identifier == participant.arbiter_identifier`；其他录像要求 `ExpandVideoModel.tournament_identifier` 包含 participant token。这个补偿只维护比赛-录像关系，不修改 `VideoModel.ongoing_tournament`。
+- `TournamentParticipant` / `GSCParticipant` 创建、修改后，在对应用户的列表缓存中同步 upsert 该参赛关系。participant 保存信号用两个 `post_save` 装饰器绑定到同一个 `update_cache_on_participant_save` 接收器；父类和 GSC 子类保存都进入同一套逻辑，只在缓存相关字段变化时更新缓存，GSC 子类成绩字段变化不会刷新 participant 缓存。
+- `TournamentParticipant` 创建后，立即扫描同一用户 `upload_time` 落在 participant `start_time/end_time` 窗口内的既有录像，并补充写入 `Tournament.videos` 多对多关系。AVF 录像要求 `ExpandVideoModel.identifier == participant.arbiter_identifier`；其他录像要求 `ExpandVideoModel.tournament_identifier` 包含 participant token。这个补偿只维护比赛-录像关系，不修改 `VideoModel.ongoing_tournament`。这里不能延迟到 `transaction.on_commit`，因为创建 participant 的调用方可能需要在同一事务内继续依赖补录后的比赛-录像关系。
 - `finish_gsc_tournament` 开头会调用通用服务 `delete_participants_without_videos` 删除没有任何本比赛录像的站内 participant；当前只有 GSC 结束流程使用这个通用服务。
 - checkin 读路径只读取缓存，不在未命中时查询 DB 或重建缓存；缓存与 DB 不同步属于写路径维护 bug。
 - `TournamentCache.remove_tournament` 移除 `tournament:normal` 中的比赛时，也会从 `tournament:normal:participants` 的所有用户列表中精确移除对应比赛的参赛关系，避免已结束或已取消比赛继续参与 checkin。
-- 失效应尽量在事务提交后执行。
+- 删除 participant 只监听 `TournamentParticipant.post_delete`；删除 GSC participant 时，多表继承会级联删除父表，参赛关系缓存清理由父类 `post_delete` 的 `remove_participant_cache_on_delete` 统一处理。`post_delete` 中应先捕获 `user_id` 和 `tournament_id`，再在 `transaction.on_commit` 回调中调用 `TournamentCache.remove_participant`。
+- 缓存更新和删除应尽量在事务提交后执行；创建 participant 后补录既有录像是关系维护，不属于缓存失效，按上面的规则立即执行。
 
 当前重构状态：
 
 - `TournamentCache` 已开始封装比赛和参赛关系缓存读写，包括 `get_tournament`、`get_tournament_all`、`get_gsc`、`get_participant_list`、`set_participant_list`、`update_participant`、`remove_participant`、`checkin_arbiter` 和 `checkin_token`，读取结果已改为 dataclass。
-- `tournament.services.checkin_with_arbiter` / `checkin_with_token` 正在接管 `tournament.utils.video_checkin` 中的 checkin 判定。
-- `video_checkin` 在 `VideoModel.pre_save` 阶段运行，此时新录像还没有主键；service 层只返回命中的比赛列表，由 `video_checkin` 暂存到 `_checked_in_tournaments`，再由 `post_save` 写入 `Tournament.videos` 多对多关系。
+- `tournament.services.checkin_with_arbiter` / `checkin_with_token` 负责 checkin 判定，返回命中的比赛列表。
+- `checkin_video_before_create` 只在 `VideoModel.pre_save` 创建前阶段运行，此时新录像还没有主键；信号局部暂存命中的比赛列表到 `_checked_in_tournaments`，并设置 `ongoing_tournament=True` 阻止普通个人纪录和排行刷新；`post_save(created=True)` 的 `add_created_video_to_checked_tournaments` 再消费 `_checked_in_tournaments` 写入 `Tournament.videos` 多对多关系。比赛 token 来源直接读取 `ExpandVideoModel.tournament_identifier`，不再通过创建 `VideoModel` 时的临时 token 属性传入。
 - EVF 路径在没有参赛缓存时直接跳过 checkin；用户需要先通过 GSC 注册接口显式创建 participant。
 - `serialize_normal_participant` 应继续兼容 `arbiter_identifier=None` 的参赛关系，因为 GSC participant 只依赖固定 token。
 
-当前已重新运行 `python -m flake8 tournament` 和 `manage.py test tournament --keepdb`。后端检查通过，测试套件 24 个用例通过。
+当前已重新运行 `python -m flake8 tournament` 和 `manage.py test tournament --keepdb`。后端检查通过，测试套件 35 个用例通过。
 
 ## 当前必要接口
 
@@ -203,7 +205,7 @@ HSET tournament:normal:participants {user_id} '[{"id":456,"token":"G12345","arbi
 ## TODO: 暂不实现的接口
 
 - TODO: `hide_videos_for_tournament(tournament)` 暂非必要。
-  - 新上传录像仍由当前单条 `video_checkin` 路径处理。
+  - 新上传录像仍由当前单条 `VideoModel` 创建信号路径处理。
   - 如果未来需要补录或批量隐藏比赛录像，再按同样原则设计批处理。
 - TODO: `refresh_ongoing_tournament_for_range(start_id, end_id)` 暂非必要。
   - 数据修复需求出现后再实现分段重算。
