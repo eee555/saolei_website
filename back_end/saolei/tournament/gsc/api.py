@@ -111,6 +111,8 @@ def get_GSC_tournament(request: HttpRequest, order: int):
 def get_gscinfo(request: HttpRequest, tournament_id: int | None = None, order: int | None = None):
     if tournament_id is None and order is None:
         return HttpResponseBadRequest()
+    if tournament_id is not None and order is not None:
+        return HttpResponseBadRequest()
 
     if tournament_id is not None:
         tournament = get_object_or_404(Tournament, id=tournament_id)
