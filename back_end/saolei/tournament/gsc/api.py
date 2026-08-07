@@ -16,6 +16,8 @@ from tournament.gsc.decorators import GSC_admin_required
 from tournament.models import GSCParticipant, GSCTournament, Tournament
 from tournament.utils import tournament_accepts_checkin, tournament_has_ended
 from userprofile.decorators import login_required_error
+from userprofile.models import UserProfile
+from utils.exceptions import ExceptionToResponse
 from utils.response import HttpResponseConflict
 from .services import get_gsc_scores
 from .tasks import helper_gsc_finish_tournament
@@ -167,8 +169,7 @@ def create_gsc_participant(request: HttpRequest, data: GSCOrderIn = Form(...)): 
 @router.post('/participant/identifier')
 @decorate_view(login_required_error)
 def register_gsc_participant_identifier(request: HttpRequest, data: RegisterGSCParticipantIn = Form(...)):  # noqa: B008
-    user = request.user
-    userms = user.userms
+    user: UserProfile = request.user
     tournament = get_object_or_404(GSCTournament, order=data.order)
     if not tournament_accepts_checkin(tournament):
         return HttpResponseForbidden()
@@ -188,7 +189,7 @@ def register_gsc_participant_identifier(request: HttpRequest, data: RegisterGSCP
     participant.arbiter_identifier = identifier
     participant.save(update_fields=['arbiter_identifier'])
     if not identifier.userms:
-        bind_identifier(identifier, userms)
+        bind_identifier(identifier, user.userms)
     return {'type': 'success'}
 
 
