@@ -248,9 +248,8 @@ def download_all_videos(request: HttpRequest, tournament_id: int):
 @decorate_view(ratelimit(key='ip', rate='1/m'))
 def download_videos_participant(request: HttpRequest, tournament_id: int, user_id: int):
     tournament = get_object_or_404(Tournament, id=tournament_id)
-    user = get_object_or_404(UserProfile, id=user_id)
-    if tournament.state != Tournament_TextChoices.State.AWARDED and request.user != user:
+    if tournament.state != Tournament_TextChoices.State.AWARDED and request.user.id != user_id:
         return HttpResponseForbidden()
-    response = StreamingHttpResponse(generate_file_stream(tournament.videos.filter(player=user)), content_type='application/octet-stream')
+    response = StreamingHttpResponse(generate_file_stream(tournament.videos.filter(player_id=user_id)), content_type='application/octet-stream')
     response['Content-Disposition'] = 'attachment; filename="all_files_stream.bin"'
     return response
