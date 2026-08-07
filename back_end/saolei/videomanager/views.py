@@ -47,7 +47,7 @@ def video_preview(request: HttpRequest):
         return HttpResponseBadRequest()
     if not (video := VideoModel.objects.filter(id=videoid).first()):
         return HttpResponseNotFound()
-    if video.ongoing_tournament and request.user != video.player:
+    if video.ongoing_tournament and request.user.id != video.player_id:
         return HttpResponseForbidden()
     # video.file.name是相对路径(含upload_to)，video.file.path是绝对路径
     file_path = settings.MEDIA_ROOT / video.file.name
@@ -70,7 +70,7 @@ def video_download(request):
         return HttpResponseBadRequest()
     if not (video := VideoModel.objects.filter(id=videoid).first()):
         return HttpResponseNotFound()
-    if video.ongoing_tournament and request.user != video.player:
+    if video.ongoing_tournament and request.user.id != video.player_id:
         return HttpResponseForbidden()
     response = FileResponse(open(video.file.path, 'rb'))
     response['Content-Type'] = 'application/octet-stream'
