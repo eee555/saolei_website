@@ -19,12 +19,12 @@ def update_custom_pluck_top_cache(record: CustomPluckRecord | None, level: str, 
         ranking_cache.remove_record(player_id)
 
 
-def refresh_custom_pluck_rank(player, level: str):
+def refresh_custom_pluck_rank(player_id: int, level: str):
     """重新计算单个玩家在某个自定义级别下的最佳 pluck 纪录。"""
     video = (
         VideoModel.objects
         .filter(
-            player=player,
+            player_id=player_id,
             level=level,
             mode__in=CUSTOM_PLUCK_MODES,
             state=MS_TextChoices.State.OFFICIAL,
@@ -36,7 +36,7 @@ def refresh_custom_pluck_rank(player, level: str):
     )
 
     if video is None:
-        CustomPluckRecord.objects.filter(player=player, level=level).delete()
+        CustomPluckRecord.objects.filter(player_id=player_id, level=level).delete()
         return None
 
     record, _ = CustomPluckRecord.objects.update_or_create(
@@ -66,7 +66,7 @@ def add_to_custom_pluck_rank(video: VideoModel):
     )
     if not created:
         if record.video_id == video.id:
-            return refresh_custom_pluck_rank(video.player, video.level)
+            return refresh_custom_pluck_rank(video.player_id, video.level)
         record.add_video(video)
     return record
 
@@ -108,10 +108,9 @@ def remove_videos_from_custom_pluck_ranks(video_ids: set[int]):
     records = list(
         CustomPluckRecord.objects
         .filter(video_id__in=video_ids)
-        .select_related('player'),
     )
     for record in records:
-        refresh_custom_pluck_rank(record.player, record.level)
+        refresh_custom_pluck_rank(record.player_id, record.level)
 
     return len(records)
 
@@ -120,7 +119,7 @@ def remove_from_custom_pluck_rank(video: VideoModel):
     """从 pluck 排行中移除录像影响，并用该玩家剩余录像重新计算纪录。"""
     if video.level not in CUSTOM_PLUCK_LEVELS:
         return None
-    return refresh_custom_pluck_rank(video.player, video.level)
+    return refresh_custom_pluck_rank(video.player_id, video.level)
 
 
 def refresh_custom_pluck_rank_range(startid: int, endid: int):
