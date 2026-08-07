@@ -31,7 +31,7 @@ def get_software(request):
         return HttpResponseBadRequest()
     if not (video := VideoModel.objects.filter(id=videoid).first()):
         return HttpResponseNotFound()
-    if video.ongoing_tournament and request.user != video.player:
+    if video.ongoing_tournament and request.user.id != video.player_id:
         return HttpResponseForbidden()
     return JsonResponse({'msg': video.software})
 
