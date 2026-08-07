@@ -207,10 +207,9 @@ def get_participant_list(request: HttpRequest, tournament_id: int):
 @router.get('/get_videos/participant', response=list[VideoBaseOut])
 def get_participant_videos(request: HttpRequest, tournament_id: int, user_id: int):
     tournament = get_object_or_404(Tournament, id=tournament_id)
-    user = get_object_or_404(UserProfile, id=user_id)
-    if tournament.state != Tournament_TextChoices.State.AWARDED and request.user != user:
+    if tournament.state != Tournament_TextChoices.State.AWARDED and request.user.id != user_id:
         return HttpResponseForbidden()
-    participant = TournamentParticipant.objects.filter(user=user, tournament=tournament).first()
+    participant = TournamentParticipant.objects.filter(user_id=user_id, tournament=tournament).first()
     return participant.videos if participant else []
 
 
