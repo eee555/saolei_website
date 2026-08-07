@@ -114,6 +114,7 @@ def staff_approve_identifier(request):
 
 # 管理员查询标识
 @require_GET
+@staff_required
 def staff_get_identifier(request):
     identifier_text = request.GET.get('identifier')
     if not identifier_text:
