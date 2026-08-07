@@ -51,8 +51,7 @@ def del_identifier(request):
     changed_count = unbind_identifier(identifier, user.userms)
     logger.info(f'用户 {user.username}#{user.id} 解绑标识 "{identifier_text}"')
     logger.info(f'修改了 {changed_count} 个录像状态')
-    video_list = VideoModel.objects.filter(player=user, video__identifier=identifier_text)
-    return JsonResponse({'type': 'success', 'object': 'identifier', 'category': 'add', 'value': len(video_list)})
+    return JsonResponse({'type': 'success', 'object': 'identifier', 'category': 'add', 'value': changed_count})
 
 
 # 管理员添加标识
