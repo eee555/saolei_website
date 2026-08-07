@@ -176,15 +176,15 @@ def register_gsc_participant_identifier(request: HttpRequest, data: RegisterGSCP
         return HttpResponseForbidden()
     participant = get_object_or_404(GSCParticipant, tournament=tournament, user=user)
     if not data.identifier.endswith(tournament.token):
-        return {'type': 'error', 'object': 'identifier', 'category': 'suffix'}
+        raise ExceptionToResponse('identifier', 'suffix')
 
     if not verify_identifier(data.identifier):
-        return {'type': 'error', 'object': 'identifier', 'category': 'invalid'}
+        raise ExceptionToResponse('identifier', 'invalid')
     identifier = Identifier.objects.get(identifier=data.identifier)
-    if identifier.userms and identifier.userms != userms:
-        return {'type': 'error', 'object': 'identifier', 'category': 'collision'}
+    if identifier.userms_id and identifier.userms_id != user.userms_id:
+        raise ExceptionToResponse('identifier', 'collision')
     if participant.arbiter_identifier:
-        return {'type': 'error', 'object': 'participant', 'category': 'registered'}
+        raise ExceptionToResponse('participant', 'registered')
     participant.arbiter_identifier = identifier
     participant.save(update_fields=['arbiter_identifier'])
     if not identifier.userms:
