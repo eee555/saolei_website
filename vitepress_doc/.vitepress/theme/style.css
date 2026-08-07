@@ -116,9 +116,17 @@
 }
 
 .mermaidTooltip {
+    position: absolute !important;
+    z-index: 10020 !important;
+    max-width: min(320px, calc(100vw - 32px)) !important;
+    padding: 6px 8px !important;
     border: 1px solid var(--vp-c-divider) !important;
     border-radius: 6px !important;
     background: var(--vp-c-bg-soft) !important;
     box-shadow: var(--vp-shadow-2) !important;
     color: var(--vp-c-text-1) !important;
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+    pointer-events: none !important;
+    text-align: left !important;
 }

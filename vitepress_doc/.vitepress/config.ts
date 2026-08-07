@@ -1,10 +1,11 @@
 import { defineConfig } from 'vitepress';
 import type MarkdownIt from 'markdown-it';
+import { graphvizMarkdownPlugin } from 'vitepress-plugin-graphviz';
 
 const mainSiteLink = process.env.VITEPRESS_MAIN_SITE_URL
     ?? (process.env.NODE_ENV === 'development' ? 'http://localhost:8080/' : 'https://openms.top/');
 
-function configureDiagramFences(md: MarkdownIt) {
+async function configureDiagramFences(md: MarkdownIt) {
     const defaultFence = md.renderer.rules.fence;
 
     md.renderer.rules.fence = (tokens, idx, options, env, self) => {
@@ -19,6 +20,14 @@ function configureDiagramFences(md: MarkdownIt) {
             ? defaultFence(tokens, idx, options, env, self)
             : self.renderToken(tokens, idx, options);
     };
+
+    await graphvizMarkdownPlugin(md, {
+        processors: {
+            neato: {
+                preprocess: (content) => content,
+            },
+        },
+    });
 }
 
 export default defineConfig({
@@ -82,6 +91,7 @@ export default defineConfig({
                             text: '开发文档',
                             items: [
                                 { text: '信号触发关系', link: '/guide/development/signals' },
+                                { text: '缓存结构', link: '/guide/development/cache' },
                             ],
                         },
                     ],
