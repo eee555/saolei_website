@@ -36,6 +36,12 @@ digraph cache {
     subgraph api_nodes {
         get_account_links [label="/api/accountlink/{user_id}"];
         create_account_link [label="/api/accountlink/create/"];
+        delete_link [label="/accountlink/delete/"];
+        update_link [label="/accountlink/update/"];
+        view_saolei_import_one_video [label="/accountlink/saolei_import_video/"];
+        view_saolei_import_videos [label="/accountlink/saolei_import_videos/"];
+        view_saolei_get_import_list [label="/accountlink/saolei/videolist/get/"];
+        view_saolei_get_import_summary [label="/accountlink/saolei/videoimport/stat/"];
         task_summary [label="/api/common/tasksummary"];
         disk_usage [label="/api/common/diskusage"];
         video_summary [label="/api/common/videosummary"];
@@ -84,7 +90,6 @@ digraph cache {
         newest_queue [label="/video/newest_queue/"];
         news_queue [label="/video/news_queue/"];
         freeze_queue [label="/video/freeze_queue/"];
-        video_api [label="video GET APIs"];
     }
 
     subgraph db_nodes {
@@ -128,10 +133,92 @@ digraph cache {
         avatar_files [label="avatar files"];
     }
 
+    subgraph signal_nodes {
+        node [
+            shape=box,
+            fillcolor="${#fef3c7|#713f12}",
+            color="${#f59e0b|#d97706}"
+        ];
+        capture_video_update [label="capture_video_update"];
+        refresh_state_queue_on_video_save [label="refresh_state_queue_on_video_save"];
+        update_video_count_on_video_save [label="update_video_count_on_video_save"];
+        update_video_count_limit_on_video_save [label="update_video_count_limit_on_video_save"];
+        update_video_count_on_video_delete [label="update_video_count_on_video_delete"];
+        capture_previous_records_for_news_queue [label="capture_previous_records_for_news_queue"];
+        push_news_queue_on_record_save [label="push_news_queue_on_record_save"];
+        refresh_personal_record_on_video_save [label="refresh_personal_record_on_video_save"];
+        refresh_personal_record_on_video_delete [label="refresh_personal_record_on_video_delete"];
+        refresh_custom_pluck_rank_on_video_save [label="refresh_custom_pluck_rank_on_video_save"];
+        update_custom_pluck_cache_on_record_save [label="update_custom_pluck_cache_on_record_save"];
+        update_custom_pluck_cache_on_record_delete [label="update_custom_pluck_cache_on_record_delete"];
+        checkin_video_before_create [label="checkin_video_before_create"];
+        add_created_video_to_checked_tournaments [label="add_created_video_to_checked_tournaments"];
+        update_cache_on_tournament_delete [label="update_cache_on_tournament_delete"];
+        update_cache_on_tournament_save [label="update_cache_on_tournament_save"];
+        update_cache_on_participant_save [label="update_cache_on_participant_save"];
+        remove_participant_cache_on_delete [label="remove_participant_cache_on_delete"];
+    }
+
+    subgraph task_nodes {
+        node [
+            shape=box,
+            fillcolor="${#ede9fe|#4c1d95}",
+            color="${#8b5cf6|#a78bfa}"
+        ];
+        task_saolei_video_import_bulk [label="task_saolei_video_import_bulk"];
+        task_saolei_video_import [label="task_saolei_video_import"];
+    }
+
     // accountlink API
     accountlinkqueue_db -> get_account_links;
     accountlinkplatform_db -> get_account_links;
     create_account_link -> accountlinkqueue_db;
+    accountlinkqueue_db -> delete_link;
+    delete_link -> accountlinkqueue_db;
+    delete_link -> accountlinkplatform_db;
+    accountlinkplatform_db -> update_link;
+    update_link -> accountlinkplatform_db;
+    videosaolei_db -> view_saolei_import_one_video;
+    accountlinkplatform_db -> view_saolei_import_one_video;
+    task_db -> view_saolei_import_one_video;
+    video_db -> view_saolei_import_one_video;
+    video_files -> view_saolei_import_one_video;
+    view_saolei_import_one_video -> task_db;
+    view_saolei_import_one_video -> videosaolei_db;
+    view_saolei_import_one_video -> video_db;
+    view_saolei_import_one_video -> video_files;
+    accountlinkplatform_db -> view_saolei_import_videos;
+    videosaolei_db -> view_saolei_import_videos;
+    task_db -> view_saolei_import_videos;
+    view_saolei_import_videos -> task_db [label="enqueue/delete"];
+    view_saolei_import_videos -> accountlinkplatform_db;
+    view_saolei_import_videos -> task_saolei_video_import_bulk [label="enqueue"];
+    task_db -> task_saolei_video_import_bulk [label="read/delete"];
+    accountlinkplatform_db -> task_saolei_video_import_bulk [label="read"];
+    videosaolei_db -> task_saolei_video_import_bulk [label="read/write"];
+    task_saolei_video_import_bulk -> videosaolei_db [label="write"];
+    task_saolei_video_import_bulk -> task_db [label="enqueue/delete"];
+    task_saolei_video_import_bulk -> task_saolei_video_import [label="enqueue each"];
+    task_db -> task_saolei_video_import [label="status/read"];
+    videosaolei_db -> task_saolei_video_import [label="read"];
+    accountlinkplatform_db -> task_saolei_video_import [label="FK read"];
+    userprofile_db -> task_saolei_video_import [label="O2O read"];
+    userms_db -> task_saolei_video_import [label="O2O read"];
+    identifier_db -> task_saolei_video_import [label="read"];
+    video_db -> task_saolei_video_import [label="collision/read"];
+    video_files -> task_saolei_video_import [label="read"];
+    task_saolei_video_import -> task_db [label="status write"];
+    task_saolei_video_import -> videosaolei_db [label="write"];
+    task_saolei_video_import -> userms_db [label="create"];
+    task_saolei_video_import -> video_db [label="write"];
+    task_saolei_video_import -> video_files [label="write"];
+    userprofile_db -> view_saolei_get_import_list;
+    accountlinkplatform_db -> view_saolei_get_import_list;
+    videosaolei_db -> view_saolei_get_import_list;
+    task_db -> view_saolei_get_import_list;
+    accountlinkplatform_db -> view_saolei_get_import_summary;
+    videosaolei_db -> view_saolei_get_import_summary;
+    task_db -> view_saolei_get_import_summary;
 
     // common API
     task_db -> task_summary_cache -> task_summary;
@@ -265,7 +352,104 @@ digraph cache {
     news_cache -> news_queue;
     freeze_cache -> freeze_queue;
 
+    // videomanager signals
+    video_db -> capture_video_update [label="pre_save"];
+    video_db -> capture_video_update [label="read"];
+    video_db -> refresh_state_queue_on_video_save [label="post_save"];
+    video_db -> refresh_state_queue_on_video_save [label="O2O read"];
+    userprofile_db -> refresh_state_queue_on_video_save [label="FK read"];
+    refresh_state_queue_on_video_save -> newest_cache [label="write/delete"];
+    refresh_state_queue_on_video_save -> freeze_cache [label="write/delete"];
+    refresh_state_queue_on_video_save -> review_cache [label="write/delete"];
+
+    // msuser signals
+    video_db -> update_video_count_on_video_save [label="post_save"];
+    userprofile_db -> update_video_count_on_video_save [label="FK read"];
+    userms_db -> update_video_count_on_video_save [label="O2O read"];
+    update_video_count_on_video_save -> userms_db [label="write"];
+
+    video_db -> update_video_count_limit_on_video_save [label="post_save"];
+    userprofile_db -> update_video_count_limit_on_video_save [label="FK read"];
+    userms_db -> update_video_count_limit_on_video_save [label="O2O read"];
+    update_video_count_limit_on_video_save -> userms_db [label="write"];
+
+    video_db -> update_video_count_on_video_delete [label="post_delete"];
+    userprofile_db -> update_video_count_on_video_delete [label="FK read"];
+    userms_db -> update_video_count_on_video_delete [label="O2O read"];
+    update_video_count_on_video_delete -> userms_db [label="write"];
+
+    userms_db -> capture_previous_records_for_news_queue [label="pre_save"];
+    userms_db -> capture_previous_records_for_news_queue [label="read"];
+
+    userms_db -> push_news_queue_on_record_save [label="post_save"];
+    userprofile_db -> push_news_queue_on_record_save [label="reverse O2O read"];
+    news_cache -> push_news_queue_on_record_save [label="read size"];
+    push_news_queue_on_record_save -> news_cache [label="write/trim"];
+
+    video_db -> refresh_personal_record_on_video_save [label="post_save"];
+    video_db -> refresh_personal_record_on_video_save [label="read/refresh"];
+    userprofile_db -> refresh_personal_record_on_video_save [label="FK/query read"];
+    userms_db -> refresh_personal_record_on_video_save [label="O2O read"];
+    refresh_personal_record_on_video_save -> userms_db [label="write"];
+    refresh_personal_record_on_video_save -> player_record_cache [label="write"];
+    refresh_personal_record_on_video_save -> player_rank_cache [label="write"];
+
+    video_db -> refresh_personal_record_on_video_delete [label="post_delete"];
+    video_db -> refresh_personal_record_on_video_delete [label="read best"];
+    userprofile_db -> refresh_personal_record_on_video_delete [label="FK read"];
+    userms_db -> refresh_personal_record_on_video_delete [label="O2O read"];
+    refresh_personal_record_on_video_delete -> userms_db [label="write"];
+    refresh_personal_record_on_video_delete -> player_record_cache [label="write"];
+    refresh_personal_record_on_video_delete -> player_rank_cache [label="write"];
+
     // customranking signals
+    video_db -> refresh_custom_pluck_rank_on_video_save [label="post_save"];
+    video_db -> refresh_custom_pluck_rank_on_video_save [label="read best"];
+    userprofile_db -> refresh_custom_pluck_rank_on_video_save [label="FK read"];
+    custom_pluck_db -> refresh_custom_pluck_rank_on_video_save [label="read"];
+    refresh_custom_pluck_rank_on_video_save -> custom_pluck_db [label="write/delete"];
+
+    custom_pluck_db -> update_custom_pluck_cache_on_record_save [label="post_save"];
+    video_db -> update_custom_pluck_cache_on_record_save [label="FK read"];
+    update_custom_pluck_cache_on_record_save -> pluck_rank_cache [label="write"];
+    update_custom_pluck_cache_on_record_save -> pluck_detail_cache [label="write"];
+
+    custom_pluck_db -> update_custom_pluck_cache_on_record_delete [label="post_delete"];
+    update_custom_pluck_cache_on_record_delete -> pluck_rank_cache [label="delete"];
+    update_custom_pluck_cache_on_record_delete -> pluck_detail_cache [label="delete"];
+
+    // tournament signals
+    video_db -> checkin_video_before_create [label="pre_save"];
+    video_db -> checkin_video_before_create [label="O2O read"];
+    participant_cache -> checkin_video_before_create [label="read"];
+    tournament_db -> checkin_video_before_create [label="query read"];
+    checkin_video_before_create -> video_db [label="write field"];
+
+    video_db -> add_created_video_to_checked_tournaments [label="post_save"];
+    add_created_video_to_checked_tournaments -> tournament_db [label="m2m write"];
+
+    tournament_db -> update_cache_on_tournament_delete [label="post_delete"];
+    update_cache_on_tournament_delete -> tournament_cache [label="delete"];
+    participant_cache -> update_cache_on_tournament_delete [label="scan/read"];
+    update_cache_on_tournament_delete -> participant_cache [label="write/delete"];
+
+    tournament_db -> update_cache_on_tournament_save [label="post_save"];
+    tournament_db -> update_cache_on_tournament_save [label="subclass read"];
+    update_cache_on_tournament_save -> tournament_cache [label="write/delete"];
+    participant_cache -> update_cache_on_tournament_save [label="scan/read"];
+    update_cache_on_tournament_save -> participant_cache [label="write/delete"];
+
+    participant_db -> update_cache_on_participant_save [label="post_save"];
+    participant_cache -> update_cache_on_participant_save [label="read"];
+    tournament_db -> update_cache_on_participant_save [label="FK/m2m read"];
+    identifier_db -> update_cache_on_participant_save [label="FK read"];
+    video_db -> update_cache_on_participant_save [label="query read"];
+    update_cache_on_participant_save -> participant_cache [label="write/delete"];
+    update_cache_on_participant_save -> tournament_db [label="m2m write"];
+
+    participant_db -> remove_participant_cache_on_delete [label="post_delete"];
+    participant_cache -> remove_participant_cache_on_delete [label="read"];
+    remove_participant_cache_on_delete -> participant_cache [label="write/delete"];
 }
 ```
 
