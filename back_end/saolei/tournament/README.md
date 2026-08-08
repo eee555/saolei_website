@@ -105,32 +105,21 @@ GSC 创建 `GSCParticipant` 时，participant 自身的 `start_time/end_time` �
 - 模型：`WeeklyTournament` 保存 `year`、`week`、`task`、`tournament_format`，`series` 返回 `Tournament_TextChoices.Series.WEEKLY`，名称由年份和周数动态生成。
 - 模型：`WeeklyParticipant` 保存 `classic_et`、`classic_it` 和 `classic_score`，并在 `classic_score` 上建索引用于排名查询。
 - 服务：`refresh_weekly_classic_scores` 从 `Tournament.videos` 中按用户分别取 2 条高级、5 条中级有效录像，合并后批量更新 `WeeklyParticipant` 的成绩字段。
-- 服务：`refresh_weekly_classic_ranks` 按 `classic_score` 排名，批量写入 `rank` 和 `rank_score`。
+- 服务：`refresh_weekly_classic_ranks` 按 `classic_score` 排名，`rank_score` 使用 `round(50 / rank)` 转成整数后批量写入。
 - 服务：`finish_weekly_tournament` 已串联删除无录像 participant、刷新成绩、刷新排名、切换 `AWARDED`、公开录像。
-- API 草稿：`tournament.weekly.api` 已定义 `GET /info` 和 `POST /participant`，但尚未挂载到主 Ninja API，且入参与 `WeeklyTournament` 当前字段还未对齐。
+- API：`tournament.weekly.api` 已挂载到 `/api/tournament/weekly/`，当前已有 `POST /new`、`POST /set`、`GET /info` 和 `POST /participant`。
+- API：`POST /api/tournament/weekly/new` 由 staff 创建下周周赛，参数只包含 `tournament_format`；服务端计算下周 `year/week/start_time/end_time`，`weight=50`，`host=request.user`，禁止重复创建，并在创建后直接 `validate()` 切换到 `NORMAL`。
+- API：`POST /api/tournament/weekly/set` 只允许主办方或管理员修改周赛状态，不修改 `year/week/tournament_format`。
 
 TODO: 周赛接口：
 
-- TODO: 在 `saolei.api` 中挂载 `tournament.weekly.api.router`，建议前缀为 `/api/tournament/weekly/`。
-- TODO: `POST /api/tournament/weekly/new`：创建周赛，写入 `year`、`week`、`start_time`、`end_time`、`tournament_format`、`host`、`weight`，状态一律为 `PENDING`，`subclass` 一律为 `WEEKLY`。
-- TODO: `POST /api/tournament/weekly/set`：允许主办方或管理员修改周赛专属字段。通用 `set_tournament` 只覆盖父类字段和 GSC 专属字段，不能更新 `year/week/tournament_format`。
-- TODO: `GET /api/tournament/weekly/info`：确定稳定查询参数。当前草稿同时接受 `tournament_id` 和 `order`，但 `WeeklyTournament` 没有 `order` 字段；建议保留 `tournament_id`，或改为 `year + week`。
-- TODO: `POST /api/tournament/weekly/participant`：创建当前用户的 `WeeklyParticipant`，返回该 participant 的 token。当前草稿复用了 `TournamentIdIn`，但代码读取 `data.order`；同时还检查了不存在的 `WeeklyTournament.token`，需要改成周赛自己的 token 规则。
-- TODO: `GET /api/tournament/weekly/results`：如果 `GET /info` 不承担完整成绩列表，单独提供已颁奖后的成绩接口；响应可以基于 `WeeklyScoreOut`。
 - TODO: `POST /api/tournament/weekly/task/finish` 和 `GET /api/tournament/weekly/task`：如果周赛也使用后台结算，接口应复用 `WeeklyTournament.task`，行为参考 GSC 的结算任务管理。
 
 TODO: 周赛后端补齐：
 
-- TODO: 为 `WeeklyTournament` 实现 `validate()`，返回 `update_fields` 列表，避免沿用父类当前直接 `save()` 且返回 `bool` 的实现。
 - TODO: 为 `WeeklyTournament` 实现 `add_participant()`，否则通用 `Tournament.add_video()` 命中周赛时会调用未实现方法。
 - TODO: 明确周赛 token 规则。当前 `TournamentParticipant.create()` 不是 Django 创建路径会自动调用的方法；如果周赛依赖每个 participant 的独立 token，应在创建 participant 时显式生成并保存。
-- TODO: 为 `WeeklyTournament` / `WeeklyParticipant` 补充 `post_save` 信号绑定，使 `NORMAL` 周赛和周赛 participant 也能进入 `TournamentCache`；删除仍只依赖父类 `post_delete`。
-- TODO: `normal_tournament_subclasses()` 目前只返回 `GSCTournament`，`manage.py rebuild_tournament_cache` 因此不会重建 `NORMAL` 周赛缓存；周赛可进入 `NORMAL` 后需要把它纳入重建范围。
 - TODO: 评估 `CachedNormalTournament` 是否需要保存 `year/week/tournament_format`。如果首页列表只依赖 `TournamentOut` 的基础字段，当前缓存结构可以覆盖；如果周赛入口要从缓存直接跳转或展示期数格式，需要扩展 dataclass 和序列化逻辑。
-- TODO: `weekly.services.refresh_weekly_classic_scores` 当前对 `values_list()` 结果按对象属性访问，应改为元组解包或改用 `values()`。
-- TODO: `refresh_weekly_classic_ranks` 需要确认 `rank_score = 50 / rank` 与 `PositiveSmallIntegerField` 的整数语义是否一致。
-- TODO: `finish_weekly_tournament` 当前返回集合，应改为带字段名的 dict，便于后台任务结果和 API 序列化。
-- TODO: 为新模型生成 Django 自动迁移，不手写迁移文件。
 - TODO: 补充测试：周赛创建、审核、缓存同步、创建 participant、补录既有录像、录像 checkin、成绩刷新、排名刷新、结算公开录像。
 
 ## TODO: 历史比赛列表同步计划

@@ -6,7 +6,7 @@ from django.utils import timezone
 from config.text_choices import MS_TextChoices
 from videomanager.models import VideoModel
 from .cache import TournamentCache
-from .models import GSCParticipant, GSCTournament, Tournament, TournamentParticipant
+from .models import GSCParticipant, GSCTournament, Tournament, TournamentParticipant, WeeklyParticipant, WeeklyTournament
 from .services import add_existing_videos_to_participant_tournament, checkin_with_arbiter, checkin_with_token
 
 cache = TournamentCache()
@@ -57,12 +57,14 @@ def update_cache_on_tournament_delete(sender, instance: Tournament, **kwargs):
 
 
 @receiver(post_save, sender=GSCTournament, dispatch_uid='tournament.update_cache_on_gsc_save')
+@receiver(post_save, sender=WeeklyTournament, dispatch_uid='tournament.update_cache_on_weekly_save')
 @receiver(post_save, sender=Tournament, dispatch_uid='tournament.update_cache_on_tournament_save')
 def update_cache_on_tournament_save(sender, instance: Tournament, **kwargs):
     transaction.on_commit(lambda: cache.update_tournament(instance))
 
 
 @receiver(post_save, sender=GSCParticipant, dispatch_uid='tournament.update_cache_on_gsc_participant_save')
+@receiver(post_save, sender=WeeklyParticipant, dispatch_uid='tournament.update_cache_on_weekly_participant_save')
 @receiver(post_save, sender=TournamentParticipant, dispatch_uid='tournament.update_cache_on_participant_save')
 def update_cache_on_participant_save(sender, instance, created: bool, update_fields=None, **kwargs):
     if not participant_cache_fields_changed(update_fields):

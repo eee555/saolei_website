@@ -2,6 +2,7 @@ from collections import defaultdict
 
 from django.core.management.base import BaseCommand
 
+from config.text_choices import Tournament_TextChoices
 from tournament.cache import (
     cache,
     CachedNormalParticipant,
@@ -10,14 +11,17 @@ from tournament.cache import (
     serialize_normal_participant,
     serialize_normal_tournament,
 )
-from tournament.models import normal_tournament_subclasses, TournamentParticipant
+from tournament.models import GSCTournament, TournamentParticipant, WeeklyTournament
 
 
 class Command(BaseCommand):
     help = '重建比赛 Redis 缓存，包括 NORMAL 比赛和当前 NORMAL 比赛参赛关系'
 
     def handle(self, *args, **options):
-        tournaments = normal_tournament_subclasses()
+        tournaments = [
+            *GSCTournament.objects.filter(state=Tournament_TextChoices.State.NORMAL),
+            *WeeklyTournament.objects.filter(state=Tournament_TextChoices.State.NORMAL),
+        ]
         tournament_mapping = {
             tournament.id: serialize_normal_tournament(tournament).to_json()
             for tournament in tournaments

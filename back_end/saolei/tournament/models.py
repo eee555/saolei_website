@@ -7,7 +7,7 @@ from django_tasks_db.models import DBTaskResult
 from model_utils.managers import InheritanceManager
 
 from config.global_settings import MaxSizes
-from config.text_choices import MS_TextChoices, Tournament_TextChoices
+from config.text_choices import Tournament_TextChoices
 from config.tournaments import GSC_Defaults
 from identifier.models import Identifier
 from tournament.utils import generate_random_token, insert_to_id_value_list_asc
@@ -17,6 +17,14 @@ from videomanager.models import VideoModel
 
 def generate_GSC_token(length=GSC_Defaults.TOKEN_LENGTH):
     return 'G' + ''.join(secrets.choice(string.digits) for _ in range(length))
+
+
+def default_weekly_classic_et():
+    return [(0, 240000), (0, 240000)]
+
+
+def default_weekly_classic_it():
+    return [(0, 60000), (0, 60000), (0, 60000), (0, 60000), (0, 60000)]
 
 
 class Tournament(models.Model):
@@ -60,13 +68,13 @@ class Tournament(models.Model):
     def is_ended(self):
         return self.state == Tournament_TextChoices.State.AWARDED or (self.end_time is not None and self.end_time < timezone.now())
 
-    def validate(self):
+    def validate(self) -> list[str]:
         if not self.can_validate():
-            return False
+            return []
         if self.state == Tournament_TextChoices.State.PENDING or self.state == Tournament_TextChoices.State.CANCELLED:
             self.state = Tournament_TextChoices.State.NORMAL
-            self.save(update_fields=['state'])
-        return True
+            return ['state']
+        return []
 
     def invalidate(self):
         if self.state != Tournament_TextChoices.State.AWARDED:
@@ -152,7 +160,7 @@ class GSCTournament(Tournament):
                 end_time=self.end_time,
             )
 
-    
+
 class WeeklyTournament(Tournament):
     year = models.PositiveSmallIntegerField()  # 年份
     week = models.PositiveSmallIntegerField()  # 期数
@@ -246,13 +254,13 @@ class GSCParticipant(TournamentParticipant):
 
 
 class WeeklyParticipant(TournamentParticipant):
-    classic_et = models.JSONField(default=[(0, 240000), (0, 240000)])
-    classic_it = models.JSONField(default=[(0, 60000), (0, 60000), (0, 60000), (0, 60000), (0, 60000)])
+    classic_et = models.JSONField(default=default_weekly_classic_et)
+    classic_it = models.JSONField(default=default_weekly_classic_it)
     classic_score = models.PositiveIntegerField(default=780000)
 
     class Meta:
         indexes = [
-            models.Index(fields=['classic_score'], name='classic_score_idx')
+            models.Index(fields=['classic_score'], name='classic_score_idx'),
         ]
 
     def classic_add_e(self, video_id: int, timems: int):
@@ -272,7 +280,3 @@ class WeeklyParticipant(TournamentParticipant):
             self.classic_score -= diff
             insert_to_id_value_list_asc(self.classic_it, (video_id, timems))
         return diff
-
-
-def normal_tournament_subclasses():
-    return list(GSCTournament.objects.filter(state=Tournament_TextChoices.State.NORMAL))

@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import Literal
 
-from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, HttpResponseNotFound, StreamingHttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django_ratelimit.decorators import ratelimit
 from ninja import Form, Router, Schema
@@ -11,10 +11,10 @@ from ninja.orm import create_schema
 from config.text_choices import Tournament_TextChoices
 from tournament.cache import TournamentCache
 from tournament.models import GSCTournament, Tournament, TournamentParticipant
-from tournament.schema import TournamentIdIn
 from userprofile.decorators import login_required_error, staff_required
 from userprofile.models import UserProfile
 from utils.response import HttpResponseConflict
+from utils.schema import IdIn
 from videomanager.schema import VideoBaseOut
 from videomanager.view_utils import generate_file_stream
 
@@ -22,7 +22,7 @@ router = Router()
 cache = TournamentCache()
 
 
-class TournamentValidationIn(TournamentIdIn):
+class TournamentValidationIn(IdIn):
     valid: bool
 
 
@@ -32,7 +32,7 @@ class TournamentStaffSetIn(Schema):
     host_id: int | None = None
 
 
-class TournamentSetIn(TournamentIdIn):
+class TournamentSetIn(IdIn):
     start_time: datetime | None = None
     end_time: datetime | None = None
     order: int | None = None
@@ -152,7 +152,7 @@ def validate_tournament(request: HttpRequest, data: TournamentValidationIn = For
 
 @router.post('/allow')
 @decorate_view(staff_required)
-def allow_tournament(request: HttpRequest, data: TournamentIdIn = Form(...)):  # noqa: B008
+def allow_tournament(request: HttpRequest, data: IdIn = Form(...)):  # noqa: B008
     tournament = get_object_or_404(Tournament, id=data.id).select_subclass()
     if not tournament.can_validate():
         return {'type': 'error', 'object': 'tournament', 'category': 'invalid_time'}
@@ -169,7 +169,7 @@ def allow_tournament(request: HttpRequest, data: TournamentIdIn = Form(...)):  #
 
 @router.post('/cancel')
 @decorate_view(login_required_error)
-def cancel_tournament(request: HttpRequest, data: TournamentIdIn = Form(...)):  # noqa: B008
+def cancel_tournament(request: HttpRequest, data: IdIn = Form(...)):  # noqa: B008
     tournament = get_object_or_404(Tournament, id=data.id)
     if not request.user.is_staff and tournament.host != request.user:
         return HttpResponseForbidden()

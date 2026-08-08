@@ -2,7 +2,6 @@ from datetime import datetime
 
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
-from django_tasks_db.models import DBTaskResult
 from ninja import Form, Router, Schema
 from ninja.decorators import decorate_view
 from ninja.orm import create_schema
@@ -13,12 +12,12 @@ from identifier.models import Identifier
 from identifier.services import bind_identifier
 from identifier.utils import verify_identifier
 from tournament.gsc.decorators import GSC_admin_required
-from tournament.models import GSCParticipant, GSCTournament, Tournament
+from tournament.models import GSCParticipant, GSCTournament
 from userprofile.decorators import login_required_error
 from userprofile.models import UserProfile
-from utils.db_task import DBTaskOut
 from utils.exceptions import ExceptionToResponse
 from utils.response import HttpResponseConflict
+from utils.schema import DBTaskOut
 from .services import get_gsc_scores
 from .tasks import helper_gsc_finish_tournament
 
@@ -38,6 +37,7 @@ class RegisterGSCParticipantIn(Schema):
 
 class GSCOrderIn(Schema):
     order: int
+
 
 GSCInfoOut = create_schema(
     GSCTournament,
@@ -59,7 +59,7 @@ GSCScoreOut = create_schema(
     ],
     custom_fields=[
         ('user__id', int | None, None),
-        ('user__realname', str | None, None), # 用于前端排序
+        ('user__realname', str | None, None),  # 用于前端排序
     ],
 )
 
