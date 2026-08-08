@@ -102,33 +102,22 @@ def refresh_gsc_scores(tournament: GSCTournament, *, batch_size=1000):
                 continue
             times_by_user_id[player_id][level].append(timems)
 
-    changed_participants = []
     for participant in participants:
-        old_scores = tuple(getattr(participant, field) for field in GSC_SCORE_FIELDS)
         _apply_gsc_scores(participant, times_by_user_id.get(participant.user_id, {}))
-        new_scores = tuple(getattr(participant, field) for field in GSC_SCORE_FIELDS)
-        if new_scores != old_scores:
-            changed_participants.append(participant)
 
-    if changed_participants:
-        GSCParticipant.objects.bulk_update(changed_participants, GSC_SCORE_FIELDS, batch_size=batch_size)
+    GSCParticipant.objects.bulk_update(participants, GSC_SCORE_FIELDS, batch_size=batch_size)
 
-    return len(changed_participants)
+    return len(participants)
 
 
 def refresh_gsc_ranks(tournament: GSCTournament, *, batch_size=1000):
-    participants = list(GSCParticipant.objects.filter(tournament=tournament).order_by('t37', 'id'))
-    changed_participants = []
+    participants = list(GSCParticipant.objects.filter(tournament=tournament).order_by('t37'))
     for rank, participant in enumerate(participants, start=1):
-        if participant.rank == rank:
-            continue
         participant.rank = rank
-        changed_participants.append(participant)
 
-    if changed_participants:
-        GSCParticipant.objects.bulk_update(changed_participants, ['rank'], batch_size=batch_size)
+    GSCParticipant.objects.bulk_update(participants, ['rank'], batch_size=batch_size)
 
-    return len(changed_participants)
+    return len(participants)
 
 
 def refresh_gsc_scores_and_ranks(tournament: GSCTournament):

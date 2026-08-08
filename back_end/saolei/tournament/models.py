@@ -7,17 +7,12 @@ from django_tasks_db.models import DBTaskResult
 from model_utils.managers import InheritanceManager
 
 from config.global_settings import MaxSizes
-from config.text_choices import Tournament_TextChoices
+from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from config.tournaments import GSC_Defaults
 from identifier.models import Identifier
+from tournament.utils import generate_random_token, insert_to_id_value_list_asc
 from userprofile.models import UserProfile
 from videomanager.models import VideoModel
-
-
-def generate_random_token(length=4):
-    """生成指定位数的随机字母数字混合码"""
-    alphabet = string.ascii_letters + string.digits  # 大小写字母+数字
-    return ''.join(secrets.choice(alphabet) for _ in range(length))
 
 
 def generate_GSC_token(length=GSC_Defaults.TOKEN_LENGTH):
@@ -53,6 +48,18 @@ class Tournament(models.Model):
     def can_validate(self):
         return self.start_time is not None and self.end_time is not None and self.start_time < self.end_time
 
+    def accept_checkin(self):
+        now = timezone.now()
+        return (
+            self.state == Tournament_TextChoices.State.NORMAL
+            and self.start_time is not None
+            and self.end_time is not None
+            and self.start_time <= now < self.end_time
+        )
+
+    def is_ended(self):
+        return self.state == Tournament_TextChoices.State.AWARDED or (self.end_time is not None and self.end_time < timezone.now())
+
     def validate(self):
         if not self.can_validate():
             return False
@@ -76,7 +83,9 @@ class Tournament(models.Model):
     def select_subclass(self):
         if type(self) is not Tournament:
             return self
-        if self.subclass == Tournament_TextChoices.Subclass.GSC:
+        if self.subclass == Tournament_TextChoices.Subclass.WEEKLY:
+            return WeeklyTournament.objects.filter(tournament_ptr_id=self.id).first() or self
+        elif self.subclass == Tournament_TextChoices.Subclass.GSC:
             return GSCTournament.objects.filter(tournament_ptr_id=self.id).first() or self
         return self
 
@@ -142,6 +151,28 @@ class GSCTournament(Tournament):
                 start_time=self.start_time,
                 end_time=self.end_time,
             )
+
+    
+class WeeklyTournament(Tournament):
+    year = models.PositiveSmallIntegerField()  # 年份
+    week = models.PositiveSmallIntegerField()  # 期数
+    task = models.ForeignKey(DBTaskResult, on_delete=models.SET_NULL, null=True)
+    tournament_format = models.CharField(max_length=1, choices=Tournament_TextChoices.WeeklyFormat.choices, default=Tournament_TextChoices.WeeklyFormat.CLASSIC)
+
+    @property
+    def series(self):
+        return Tournament_TextChoices.Series.WEEKLY
+
+    @property
+    def name(self):
+        return {
+            'zh': f'{self.year}年第{self.week}周打卡赛',
+            'en': f'Weekly {self.year}#{self.week}',
+        }
+
+    @property
+    def description(self):
+        return ''
 
 
 class GeneralTournament(Tournament):
@@ -212,6 +243,35 @@ class GSCParticipant(TournamentParticipant):
     @property
     def user__realname(self):
         return self.user.realname if self.user else None
+
+
+class WeeklyParticipant(TournamentParticipant):
+    classic_et = models.JSONField(default=[(0, 240000), (0, 240000)])
+    classic_it = models.JSONField(default=[(0, 60000), (0, 60000), (0, 60000), (0, 60000), (0, 60000)])
+    classic_score = models.PositiveIntegerField(default=780000)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['classic_score'], name='classic_score_idx')
+        ]
+
+    def classic_add_e(self, video_id: int, timems: int):
+        diff = self.classic_et[1][1] - timems
+        if diff > 0:
+            self.classic_score -= diff
+            if timems < self.classic_et[0][1]:
+                self.classic_et[1] = self.classic_et[0]
+                self.classic_et[0] = (video_id, timems)
+            else:
+                self.classic_et[1] = (video_id, timems)
+        return diff
+
+    def classic_add_i(self, video_id: int, timems: int):
+        diff = self.classic_it[4][1] - timems
+        if diff > 0:
+            self.classic_score -= diff
+            insert_to_id_value_list_asc(self.classic_it, (video_id, timems))
+        return diff
 
 
 def normal_tournament_subclasses():

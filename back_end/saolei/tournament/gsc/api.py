@@ -14,9 +14,9 @@ from identifier.services import bind_identifier
 from identifier.utils import verify_identifier
 from tournament.gsc.decorators import GSC_admin_required
 from tournament.models import GSCParticipant, GSCTournament, Tournament
-from tournament.utils import tournament_accepts_checkin, tournament_has_ended
 from userprofile.decorators import login_required_error
 from userprofile.models import UserProfile
+from utils.db_task import DBTaskOut
 from utils.exceptions import ExceptionToResponse
 from utils.response import HttpResponseConflict
 from .services import get_gsc_scores
@@ -39,12 +39,6 @@ class RegisterGSCParticipantIn(Schema):
 class GSCOrderIn(Schema):
     order: int
 
-
-GSCTaskOut = create_schema(
-    DBTaskResult,
-    fields=['id', 'status', 'enqueued_at', 'started_at', 'finished_at', 'return_value', 'exception_class_path', 'traceback'],
-)
-
 GSCInfoOut = create_schema(
     GSCTournament,
     fields=['id', 'order', 'start_time', 'end_time', 'state'],
@@ -65,7 +59,7 @@ GSCScoreOut = create_schema(
     ],
     custom_fields=[
         ('user__id', int | None, None),
-        ('user__realname', str | None, None),
+        ('user__realname', str | None, None), # 用于前端排序
     ],
 )
 
@@ -149,7 +143,7 @@ def get_gscinfo(request: HttpRequest, tournament_id: int | None = None, order: i
 def create_gsc_participant(request: HttpRequest, data: GSCOrderIn = Form(...)):  # noqa: B008
     user = request.user
     tournament = get_object_or_404(GSCTournament, order=data.order)
-    if not tournament_accepts_checkin(tournament):
+    if not tournament.accept_checkin():
         return HttpResponseForbidden()
     if not tournament.token:
         return HttpResponseForbidden()
@@ -171,7 +165,7 @@ def create_gsc_participant(request: HttpRequest, data: GSCOrderIn = Form(...)): 
 def register_gsc_participant_identifier(request: HttpRequest, data: RegisterGSCParticipantIn = Form(...)):  # noqa: B008
     user: UserProfile = request.user
     tournament = get_object_or_404(GSCTournament, order=data.order)
-    if not tournament_accepts_checkin(tournament):
+    if not tournament.accept_checkin():
         return HttpResponseForbidden()
     if not tournament.token:
         return HttpResponseForbidden()
@@ -193,7 +187,7 @@ def register_gsc_participant_identifier(request: HttpRequest, data: RegisterGSCP
     return {'type': 'success'}
 
 
-@router.get('/task', response=GSCTaskOut | None)
+@router.get('/task', response=DBTaskOut | None)
 @decorate_view(GSC_admin_required)
 def get_gsc_task(request: HttpRequest, order: int):
     return get_object_or_404(GSCTournament, order=order).task
@@ -203,7 +197,7 @@ def get_gsc_task(request: HttpRequest, order: int):
 @decorate_view(GSC_admin_required)
 def finish_gsc_task(request: HttpRequest, data: GSCOrderIn = Form(...)):  # noqa: B008
     tournament = get_object_or_404(GSCTournament, order=data.order)
-    if tournament.state != Tournament_TextChoices.State.AWARDED and not tournament_has_ended(tournament):
+    if not tournament.is_ended():
         return HttpResponseForbidden()
 
     return task_response(helper_gsc_finish_tournament(tournament))

@@ -61,9 +61,13 @@ class Tournament_TextChoices:
 
     class Subclass(TextChoices):
         GSC = 'g', ('GSC比赛')
+        WEEKLY = 'w', ('周赛')
 
     class State(TextChoices):
         PENDING = 'p', ('审核中')
         NORMAL = 'n', ('正常')
         CANCELLED = 'c', ('已取消')
         AWARDED = 'a', ('已颁奖')
+
+    class WeeklyFormat(TextChoices):
+        CLASSIC = 'c', ('2高5中')

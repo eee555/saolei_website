@@ -11,6 +11,7 @@ from ninja.orm import create_schema
 from config.text_choices import Tournament_TextChoices
 from tournament.cache import TournamentCache
 from tournament.models import GSCTournament, Tournament, TournamentParticipant
+from tournament.schema import TournamentIdIn
 from userprofile.decorators import login_required_error, staff_required
 from userprofile.models import UserProfile
 from utils.response import HttpResponseConflict
@@ -19,10 +20,6 @@ from videomanager.view_utils import generate_file_stream
 
 router = Router()
 cache = TournamentCache()
-
-
-class TournamentIdIn(Schema):
-    id: int
 
 
 class TournamentValidationIn(TournamentIdIn):
@@ -173,8 +170,7 @@ def allow_tournament(request: HttpRequest, data: TournamentIdIn = Form(...)):  #
 @router.post('/cancel')
 @decorate_view(login_required_error)
 def cancel_tournament(request: HttpRequest, data: TournamentIdIn = Form(...)):  # noqa: B008
-    if not (tournament := Tournament.objects.filter(id=data.id).first()):
-        return HttpResponseNotFound()
+    tournament = get_object_or_404(Tournament, id=data.id)
     if not request.user.is_staff and tournament.host != request.user:
         return HttpResponseForbidden()
     tournament.state = Tournament_TextChoices.State.CANCELLED
