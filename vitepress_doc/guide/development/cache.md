@@ -8,12 +8,11 @@
 digraph cache {
     graph [
         layout=neato,
-        overlap=false,
+        model=subset,
+        overlap=prism,
         splines=true,
         outputorder=edgesfirst,
         bgcolor="transparent",
-        sep="+24",
-        K=1.2,
         start=7
     ];
 
@@ -32,6 +31,8 @@ digraph cache {
         fontsize=9,
         arrowsize=0.7
     ];
+
+    // Degree 较大的节点增大最小尺寸，减少 neato 布局中高密度连边贴边重叠。
 
     subgraph api_nodes {
         get_account_links [label="/api/accountlink/{user_id}"];
@@ -65,6 +66,8 @@ digraph cache {
         get_gscinfo [label="/api/tournament/gsc/info"];
         create_gsc_participant [label="/api/tournament/gsc/participant"];
         register_gsc_participant_identifier [label="/api/tournament/gsc/participant/identifier"];
+        get_weeklyinfo [label="/api/tournament/weekly/info"];
+        create_weekly_participant [label="/api/tournament/weekly/participant"];
         get_user_info [label="/api/userprofile/info/{user_id}"];
         get_user_info_bulk [label="/api/userprofile/infobulk"];
         get_user_info_updated [label="/api/userprofile/infoupdated"];
@@ -95,18 +98,18 @@ digraph cache {
     subgraph db_nodes {
         node [shape=cylinder, fillcolor="${#e0f2fe|#0f172a}"];
         captcha_db [label="CaptchaStore"];
-        task_db [label="DBTaskResult"];
+        task_db [label="DBTaskResult", width=2.0, height=0.8];
         accountlinkqueue_db [label="AccountLinkQueue\nplatform accounts"];
-        accountlinkplatform_db [label="AccountSaolei\nAccountMinesweeperGames\nAccountBilibili\nAccountWorldOfMinesweeper\nAccountQQ"];
+        accountlinkplatform_db [label="AccountSaolei\nAccountMinesweeperGames\nAccountBilibili\nAccountWorldOfMinesweeper\nAccountQQ", width=3.0, height=1.4];
         videosaolei_db [label="VideoSaolei"];
         custom_pluck_db [label="CustomPluckRecord"];
         identifier_db [label="Identifier"];
-        userms_db [label="UserMS"];
-        tournament_db [label="Tournament\nGSCTournament"];
-        participant_db [label="TournamentParticipant\nGSCParticipant"];
-        userprofile_db [label="UserProfile"];
+        userms_db [label="UserMS", width=3, height=3, fontsize=30];
+        tournament_db [label="Tournament\nGSCTournament\nWeeklyTournament", width=2.5, height=1.1];
+        participant_db [label="TournamentParticipant\nGSCParticipant\nWeeklyParticipant", width=2.8, height=1.1];
+        userprofile_db [label="UserProfile", width=4, height=4, fontsize=40];
         email_otp_db [label="EmailVerifyRecord"]
-        video_db [label="VideoModel\nExpandVideoModel"];
+        video_db [label="VideoModel\nExpandVideoModel", width=4, height=4, fontsize=30];
     }
 
     subgraph cache_nodes {
@@ -119,11 +122,11 @@ digraph cache {
         newest_cache [label="newest_queue\nhash"];
         freeze_cache [label="freeze_queue\nhash"];
         review_cache [label="review_queue\nhash"];
-        news_cache [label="news_queue\nzset"];
-        player_record_cache [label="player_{stat}_{mode}_{user_id}\nhash"];
-        player_rank_cache [label="player_{stat}_{mode}_ids\nzset"];
-        tournament_cache [label="tournament:normal\nhash"];
-        participant_cache [label="tournament:normal:participants\nhash"];
+        news_cache [label="news_queue\nzset", width=1.8, height=0.8];
+        player_record_cache [label="player_{stat}_{mode}_{user_id}\nhash", width=2.8, height=0.9];
+        player_rank_cache [label="player_{stat}_{mode}_ids\nzset", width=2.5, height=0.9];
+        tournament_cache [label="tournament:normal\nhash\nsubclass + data", width=2.6, height=1.0];
+        participant_cache [label="tournament:normal:participants\nhash", width=3.2, height=0.9];
         common_summary_cache [label="api:common/*\nTTL 300s"];
     }
 
@@ -292,6 +295,13 @@ digraph cache {
     register_gsc_participant_identifier -> participant_db;
     register_gsc_participant_identifier -> userms_db;
     register_gsc_participant_identifier -> video_db;
+
+    // tournament weekly API
+    tournament_db -> get_weeklyinfo;
+    participant_db -> get_weeklyinfo;
+    tournament_db -> create_weekly_participant;
+    userprofile_db -> create_weekly_participant;
+    create_weekly_participant -> participant_db;
 
     // userprofile API
     userprofile_db -> get_user_info;
@@ -467,7 +477,7 @@ digraph cache {
 | `msuser` | `player_{stat}_{mode}_ids` | zset | `member = user_id`；`score = 三关 sum`。`player_rank` 使用它作为排序入口，并通过 Redis `SORT GET` 读取详情 hash。 |
 | `customranking` | `customranking:pluck:{level}:rank` | zset | `member = player_id`；`score = pluck`，当 `pluck == 0` 时使用 `timems - MAX_TIMEMS` 降低 0 碰撞风险。 |
 | `customranking` | `customranking:pluck:{level}:detail` | hash | `field = player_id`；`value = detail JSON`，包含 `video_id`、`mode`、`timems`、`bv`、`upload_time`。 |
-| `tournament` | `tournament:normal` | hash | `field = tournament_id`；`value = CachedNormalTournament JSON`，包含 NORMAL 首页和 GSC 入口需要的概要信息。 |
+| `tournament` | `tournament:normal` | hash | `field = tournament_id`；`value = CachedNormalTournament JSON`，包含 `id`、`state`、`subclass`、`host_id`、`start_time`、`end_time`、`data`。`data` 保存子类独占字段：GSC 为 `order`、`token`；周赛为 `year`、`week`、`tournament_format`。 |
 | `tournament` | `tournament:normal:participants` | hash | `field = user_id`；`value = list[CachedNormalParticipant] JSON`，每项包含 `id`、`token`、`arbiter_identifier`、`tournament`、`start_time`、`end_time`。 |
 | `common` | `api:common/videosummary` | Django cache | `video_summary` 返回体，TTL 300 秒。 |
 | `common` | `api:common/tasksummary` | Django cache | `task_summary` 返回体，TTL 300 秒。 |
@@ -482,7 +492,7 @@ digraph cache {
 | 纪录新闻 | `msuser.signals.push_news_queue_on_record_save` | `videomanager.management.commands.refresh_stnb` 会清理 `news_queue`。 |
 | 经典三关排行 | `UserMS.update_3_level_cache_record` | `UserMS.del_user_record_redis` 删除单个用户所有排行缓存；个人纪录重建后会重新写入。 |
 | 自定义 pluck 排行 | `customranking.services.update_custom_pluck_top_cache` | `manage.py rebuild_custom_pluck_cache` 从 `CustomPluckRecord` 全量重建。 |
-| NORMAL 比赛 | `TournamentCache.update_tournament` | `manage.py rebuild_tournament_cache` 从 `Tournament.objects.filter(state=NORMAL).select_subclasses()` 重建。 |
+| NORMAL 比赛 | `TournamentCache.update_tournament` | `manage.py rebuild_tournament_cache` 显式查询 `NORMAL` GSC 与周赛并重建。 |
 | NORMAL 参赛关系 | `TournamentCache.update_participant` / `remove_participant` | `manage.py rebuild_tournament_cache` 按 `user_id` 分组重建。 |
 | common 摘要 | 对应 API 内部 `cache.set` | TTL 到期自动失效。 |
 | 文章目录 | `article.views.update_list` | 管理员手动调用 `update_list` 全量刷新。 |
