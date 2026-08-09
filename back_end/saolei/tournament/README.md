@@ -55,10 +55,11 @@
 
 - `tournament:normal`
 
-缓存使用一个 Redis hash 保存所有 `NORMAL` 比赛的基础信息。hash key 为比赛 id，hash value 为序列化后的比赛信息。字段需要覆盖 `TournamentOut` 的列表展示需求，并保留 GSC checkin / 注册需要的专属字段，例如：
+缓存使用一个 Redis hash 保存所有 `NORMAL` 比赛的基础信息。hash key 为比赛 id，hash value 为序列化后的比赛信息。缓存只保存父类通用字段、`subclass` 和一个 `data` 字段；子类独占字段统一放入 `data`，前端根据 `subclass/data` 转换出展示用的 `series`、`name`、`description` 等字段。例如：
 
 ```text
-HSET tournament:normal 123 '{"id":123,"state":"n","name":{"zh":"第8届金羊杯","en":"GSC#8"},"description":"","series":"gsc","host_id":null,"start_time":...,"end_time":...,"order":8,"token":"G12345"}'
+HSET tournament:normal 123 '{"id":123,"state":"n","subclass":"g","host_id":null,"start_time":...,"end_time":...,"data":{"order":8,"token":"G12345"}}'
+HSET tournament:normal 456 '{"id":456,"state":"n","subclass":"w","host_id":null,"start_time":...,"end_time":...,"data":{"year":2026,"week":12,"tournament_format":"c"}}'
 ```
 
 同一时间只会存在一个 `NORMAL` GSC 比赛，因此不需要额外维护 `order -> tournament_id` 或 `token -> tournament_id` 索引。录像 checkin 不通过 `tournament:normal` 判断时间窗口；它只使用 participant 缓存中的参赛关系窗口。
@@ -107,20 +108,15 @@ GSC 创建 `GSCParticipant` 时，participant 自身的 `start_time/end_time` �
 - 服务：`refresh_weekly_classic_scores` 从 `Tournament.videos` 中按用户分别取 2 条高级、5 条中级有效录像，合并后批量更新 `WeeklyParticipant` 的成绩字段。
 - 服务：`refresh_weekly_classic_ranks` 按 `classic_score` 排名，`rank_score` 使用 `round(50 / rank)` 转成整数后批量写入。
 - 服务：`finish_weekly_tournament` 已串联删除无录像 participant、刷新成绩、刷新排名、切换 `AWARDED`、公开录像。
-- API：`tournament.weekly.api` 已挂载到 `/api/tournament/weekly/`，当前已有 `POST /new`、`POST /set`、`GET /info` 和 `POST /participant`。
+- API：`tournament.weekly.api` 已挂载到 `/api/tournament/weekly/`，当前已有 `POST /new`、`POST /set`、`GET /info`、`POST /participant`、`GET /task` 和 `POST /task/finish`。
 - API：`POST /api/tournament/weekly/new` 由 staff 创建下周周赛，参数只包含 `tournament_format`；服务端计算下周 `year/week/start_time/end_time`，`weight=50`，`host=request.user`，禁止重复创建，并在创建后直接 `validate()` 切换到 `NORMAL`。
 - API：`POST /api/tournament/weekly/set` 只允许主办方或管理员修改周赛状态，不修改 `year/week/tournament_format`。
-
-TODO: 周赛接口：
-
-- TODO: `POST /api/tournament/weekly/task/finish` 和 `GET /api/tournament/weekly/task`：如果周赛也使用后台结算，接口应复用 `WeeklyTournament.task`，行为参考 GSC 的结算任务管理。
+- API：`GET /api/tournament/weekly/task` 和 `POST /api/tournament/weekly/task/finish` 复用 `WeeklyTournament.task` 管理后台结算任务，行为与 GSC 结算任务一致。
 
 TODO: 周赛后端补齐：
 
-- TODO: 为 `WeeklyTournament` 实现 `add_participant()`，否则通用 `Tournament.add_video()` 命中周赛时会调用未实现方法。
-- TODO: 明确周赛 token 规则。当前 `TournamentParticipant.create()` 不是 Django 创建路径会自动调用的方法；如果周赛依赖每个 participant 的独立 token，应在创建 participant 时显式生成并保存。
-- TODO: 评估 `CachedNormalTournament` 是否需要保存 `year/week/tournament_format`。如果首页列表只依赖 `TournamentOut` 的基础字段，当前缓存结构可以覆盖；如果周赛入口要从缓存直接跳转或展示期数格式，需要扩展 dataclass 和序列化逻辑。
-- TODO: 补充测试：周赛创建、审核、缓存同步、创建 participant、补录既有录像、录像 checkin、成绩刷新、排名刷新、结算公开录像。
+- TODO: 将 `CachedNormalTournament` 重命名为 `CachedTournament`，并为不同比赛子类定义 dataclass 子类或独立 `data` dataclass，使 `data` 的类型从 `dict[str, Any]` 收敛为明确的 GSC / Weekly 结构。
+- TODO: 彻底移除前后端对 `series` 属性的兼容支持，所有比赛类型判断统一使用 `subclass`。
 
 ## TODO: 历史比赛列表同步计划
 
@@ -200,7 +196,7 @@ HSET tournament:normal:participants {user_id} '[{"id":456,"token":"G12345","arbi
 - EVF 路径在没有参赛缓存时直接跳过 checkin；用户需要先通过 GSC 注册接口显式创建 participant。
 - `serialize_normal_participant` 应继续兼容 `arbiter_identifier=None` 的参赛关系，因为 GSC participant 只依赖固定 token。
 
-当前已重新运行 `python -m flake8 tournament` 和 `manage.py test tournament --keepdb`。后端检查通过，测试套件 35 个用例通过。
+当前已重新运行 `python -m flake8 tournament` 和 `manage.py test tournament --keepdb`。后端检查通过，测试套件 42 个用例通过。
 
 ## 当前必要接口
 

@@ -7,7 +7,7 @@ from django_redis import get_redis_connection
 
 from config.text_choices import Tournament_TextChoices
 from videomanager.models import VideoModel
-from .models import GSCTournament, Tournament, TournamentParticipant
+from .models import Tournament, TournamentParticipant
 
 cache = get_redis_connection('saolei_website')
 
@@ -20,14 +20,11 @@ NORMAL_PARTICIPANT_CACHE_KEY = 'tournament:normal:participants'
 class CachedNormalTournament:
     id: int
     state: str
-    name: Any
-    description: Any
-    series: str
+    subclass: str
     host_id: int | None
     start_time: datetime
     end_time: datetime
-    order: int | None = None
-    token: str = ''
+    data: dict[str, Any]
 
 
 @dataclass_json
@@ -91,7 +88,7 @@ class TournamentCache:
     def get_gsc(self):
         data = self.get_tournament_all()
         for tournament in data:
-            if tournament.series == Tournament_TextChoices.Series.GSC:
+            if tournament.subclass == Tournament_TextChoices.Subclass.GSC:
                 return tournament
         return None
 
@@ -147,22 +144,14 @@ class TournamentCache:
 
 
 def serialize_normal_tournament(tournament: Tournament):
-    order = None
-    token = ''
-    if isinstance(tournament, GSCTournament):
-        order = tournament.order
-        token = tournament._token
     return CachedNormalTournament(
         id=tournament.id,
         state=tournament.state,
-        name=tournament.name,
-        description=tournament.description,
-        series=tournament.series,
+        subclass=tournament.subclass,
         host_id=tournament.host_id,
         start_time=tournament.start_time,
         end_time=tournament.end_time,
-        order=order,
-        token=token,
+        data=tournament.data,
     )
 
 

@@ -10,8 +10,10 @@ def generate_random_token(length=5):
 
 
 def insert_to_id_value_list_asc(list_asc: list[tuple[int, Any]], video_id: int, value: Any):
-    for i in range(len(list_asc) - 1, -1, -1):
-        if list_asc[i][1] < value:
+    insert_index = len(list_asc)
+    for i, item in enumerate(list_asc):
+        if value < item[1]:
+            insert_index = i
             break
-    list_asc.insert(i, (video_id, value))
+    list_asc.insert(insert_index, (video_id, value))
     list_asc.pop()

@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Literal
+from typing import Any, Literal
 
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
@@ -46,12 +46,10 @@ class ParticipantListIn(Schema):
 
 TournamentOut = create_schema(
     Tournament,
-    fields=['id', 'start_time', 'end_time', 'state'],
+    fields=['id', 'start_time', 'end_time', 'state', 'subclass'],
     custom_fields=[
-        ('name', dict[str, str] | str, ''),
-        ('description', dict[str, str] | str, ''),
-        ('series', str, ''),
         ('host_id', int | None, None),
+        ('data', dict[str, Any], {}),
     ],
 )
 

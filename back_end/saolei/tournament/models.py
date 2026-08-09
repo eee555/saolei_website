@@ -84,9 +84,9 @@ class Tournament(models.Model):
     def add_participant(self, user: UserProfile):
         raise NotImplementedError("Subclasses of Tournament must implement the 'add_participant' method.")
 
-    def add_video(self, video: VideoModel):
-        self.videos.add(video)
-        self.add_participant(video.player)
+    @property
+    def data(self):
+        return {}
 
     def select_subclass(self):
         if type(self) is not Tournament:
@@ -117,6 +117,13 @@ class GSCTournament(Tournament):
     @property
     def description(self):
         return ''
+
+    @property
+    def data(self):
+        return {
+            'order': self.order,
+            'token': self.token,
+        }
 
     @property
     def token(self):
@@ -182,6 +189,14 @@ class WeeklyTournament(Tournament):
     def description(self):
         return ''
 
+    @property
+    def data(self):
+        return {
+            'year': self.year,
+            'week': self.week,
+            'tournament_format': self.tournament_format,
+        }
+
 
 class GeneralTournament(Tournament):
     name = models.JSONField()
@@ -206,15 +221,15 @@ class TournamentParticipant(models.Model):
     class Meta:
         unique_together = ('tournament', 'user')
 
-    def create(self, *args, **kwargs):
+    def save(self, *args, **kwargs):
         """创建参赛者时生成唯一的token"""
-        if not self.token:
+        if self._state.adding and not self.token:
             while True:
                 token = generate_random_token()
                 if not TournamentParticipant.objects.filter(token=token).exists():
                     self.token = token
                     break
-        super().create(*args, **kwargs)
+        super().save(*args, **kwargs)  # noqa: DJM100
 
     @property
     def videos(self):
@@ -278,5 +293,5 @@ class WeeklyParticipant(TournamentParticipant):
         diff = self.classic_it[4][1] - timems
         if diff > 0:
             self.classic_score -= diff
-            insert_to_id_value_list_asc(self.classic_it, (video_id, timems))
+            insert_to_id_value_list_asc(self.classic_it, video_id, timems)
         return diff

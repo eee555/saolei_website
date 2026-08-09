@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { TournamentSeries, TournamentState } from './ms_const';
+import { TournamentSeries, TournamentState, TournamentSubclass } from './ms_const';
 import { Tournament } from './tournaments';
 
 describe('Tournament', () => {
@@ -56,6 +56,37 @@ describe('Tournament', () => {
             expect(tournament.endDate).toEqual(new Date('2025-02-03T04:05:06Z'));
             expect(tournament.hostId).toBe(11);
             expect(tournament.hostName).toBe('Fallback Host');
+        });
+
+        it('Derives GSC display fields from subclass data', () => {
+            const tournament = new Tournament({
+                subclass: TournamentSubclass.GSC,
+                data: {
+                    order: 8,
+                    token: 'G12345',
+                },
+            });
+
+            expect(tournament.series).toBe(TournamentSeries.GSC);
+            expect(tournament.getLocalName('zh-CN')).toBe('第8届金羊杯');
+            expect(tournament.getLocalName('en')).toBe('GSC#8');
+            expect(tournament.description).toBe('');
+        });
+
+        it('Derives weekly display fields from subclass data', () => {
+            const tournament = new Tournament({
+                subclass: TournamentSubclass.Weekly,
+                data: {
+                    year: 2026,
+                    week: 12,
+                    tournament_format: 'c',
+                },
+            });
+
+            expect(tournament.series).toBe(TournamentSeries.Weekly);
+            expect(tournament.getLocalName('zh-CN')).toBe('2026年第12周打卡赛');
+            expect(tournament.getLocalName('en')).toBe('Weekly 2026#12');
+            expect(tournament.description).toBe('');
         });
     });
 

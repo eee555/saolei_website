@@ -21,8 +21,9 @@ from .cache import (
     TournamentCache,
 )
 from .gsc.services import finish_gsc_tournament, refresh_gsc_ranks, refresh_gsc_scores
-from .models import GSCParticipant, GSCTournament, Tournament, TournamentParticipant
+from .models import GSCParticipant, GSCTournament, Tournament, TournamentParticipant, WeeklyParticipant, WeeklyTournament
 from .services import reveal_videos_for_tournament
+from .weekly.services import finish_weekly_tournament, refresh_weekly_classic_ranks, refresh_weekly_classic_scores
 
 
 class TournamentTestCase(TestCase):
@@ -108,6 +109,22 @@ class TournamentTestCase(TestCase):
         self.tournament_cache.update_participant(participant)
         return participant
 
+    def create_weekly_tournament(self, **kwargs):
+        now = timezone.now()
+        defaults = {
+            'year': 2026,
+            'week': 1,
+            'subclass': Tournament_TextChoices.Subclass.WEEKLY,
+            'start_time': now - timedelta(hours=1),
+            'end_time': now + timedelta(hours=1),
+            'state': Tournament_TextChoices.State.NORMAL,
+            'host': self.user,
+            'weight': 50,
+            'tournament_format': Tournament_TextChoices.WeeklyFormat.CLASSIC,
+        }
+        defaults.update(kwargs)
+        return WeeklyTournament.objects.create(**defaults)
+
     def test_video_create_checkin_requires_explicit_participant(self):
         self.tournament_cache.update_tournament(self.tournament)
 
@@ -188,12 +205,10 @@ class TournamentTestCase(TestCase):
         self.assertEqual(len(tournaments), 1)
         self.assertEqual(tournaments[0].id, self.tournament.id)
         self.assertEqual(tournaments[0].state, Tournament_TextChoices.State.NORMAL)
-        self.assertEqual(tournaments[0].name, self.tournament.name)
-        self.assertEqual(tournaments[0].description, self.tournament.description)
-        self.assertEqual(tournaments[0].series, Tournament_TextChoices.Series.GSC)
+        self.assertEqual(tournaments[0].subclass, Tournament_TextChoices.Subclass.GSC)
         self.assertIsNone(tournaments[0].host_id)
-        self.assertEqual(tournaments[0].order, self.tournament.order)
-        self.assertEqual(tournaments[0].token, self.tournament.token)
+        self.assertEqual(tournaments[0].data['order'], self.tournament.order)
+        self.assertEqual(tournaments[0].data['token'], self.tournament.token)
         self.assertIsNotNone(cache.hget(NORMAL_TOURNAMENT_CACHE_KEY, self.tournament.id))
 
     def test_parent_tournament_can_select_subclass_before_cache_update(self):
@@ -204,7 +219,7 @@ class TournamentTestCase(TestCase):
 
         tournaments = self.tournament_cache.get_tournament_all()
         self.assertEqual(tournaments[0].id, self.tournament.id)
-        self.assertEqual(tournaments[0].order, self.tournament.order)
+        self.assertEqual(tournaments[0].data['order'], self.tournament.order)
 
     def test_normal_participant_cache_rebuilds_user_field(self):
         identifier = Identifier.objects.create(identifier='cached-arbiter')
@@ -244,6 +259,20 @@ class TournamentTestCase(TestCase):
         self.assertEqual(len(participants), 1)
         self.assertEqual(participants[0].id, participant.id)
         self.assertEqual(participants[0].tournament, self.tournament.id)
+
+    def test_tournament_participant_create_generates_token_on_save(self):
+        with self.captureOnCommitCallbacks(execute=True):
+            participant = TournamentParticipant.objects.create(
+                user=self.user,
+                tournament=self.tournament,
+                start_time=self.tournament.start_time,
+                end_time=self.tournament.end_time,
+            )
+
+        self.assertTrue(participant.token)
+        self.assertEqual(TournamentParticipant.objects.get(id=participant.id).token, participant.token)
+        participants = self.tournament_cache.get_participant_list(self.user.id)
+        self.assertEqual(participants[0].token, participant.token)
 
     def test_remove_tournament_removes_matching_participants_from_cache(self):
         self.tournament_cache.set_participant_list(self.user.id, [
@@ -412,12 +441,12 @@ class TournamentTestCase(TestCase):
         self.assertEqual(detail_response.status_code, 200)
         self.assertEqual(list_response.json()[0]['id'], self.tournament.id)
         self.assertEqual(list_response.json()[0]['state'], Tournament_TextChoices.State.NORMAL)
-        self.assertEqual(list_response.json()[0]['name'], self.tournament.name)
-        self.assertEqual(list_response.json()[0]['description'], '')
-        self.assertEqual(list_response.json()[0]['series'], Tournament_TextChoices.Series.GSC)
+        self.assertEqual(list_response.json()[0]['subclass'], Tournament_TextChoices.Subclass.GSC)
+        self.assertEqual(list_response.json()[0]['data']['order'], self.tournament.order)
         self.assertIsNone(list_response.json()[0]['host_id'])
         self.assertEqual(detail_response.json()['id'], self.tournament.id)
-        self.assertEqual(detail_response.json()['description'], '')
+        self.assertEqual(detail_response.json()['subclass'], Tournament_TextChoices.Subclass.GSC)
+        self.assertEqual(detail_response.json()['data']['order'], self.tournament.order)
         self.assertIsNone(detail_response.json()['host_id'])
 
     def test_tournament_ninja_normal_list_uses_cache_without_db_fallback(self):
@@ -541,6 +570,155 @@ class TournamentTestCase(TestCase):
         self.assertEqual(task_response.status_code, 200)
         self.assertEqual(task_response.json()['id'], first_task_id)
         self.assertEqual(task_response.json()['status'], 'READY')
+
+    def test_new_weekly_tournament_api_creates_next_week_normal_tournament(self):
+        self.user.is_staff = True
+        self.user.save(update_fields=['is_staff'])
+        self.client.force_login(self.user)
+
+        response = self.client.post('/api/tournament/weekly/new', {
+            'tournament_format': Tournament_TextChoices.WeeklyFormat.CLASSIC,
+        })
+        duplicate_response = self.client.post('/api/tournament/weekly/new', {
+            'tournament_format': Tournament_TextChoices.WeeklyFormat.CLASSIC,
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(duplicate_response.status_code, 409)
+        tournament = WeeklyTournament.objects.get()
+        self.assertEqual(tournament.state, Tournament_TextChoices.State.NORMAL)
+        self.assertEqual(tournament.subclass, Tournament_TextChoices.Subclass.WEEKLY)
+        self.assertEqual(tournament.host, self.user)
+        self.assertEqual(tournament.weight, 50)
+        self.assertEqual(tournament.start_time.weekday(), 0)
+        self.assertEqual(tournament.end_time - tournament.start_time, timedelta(days=7))
+
+    def test_weekly_set_api_only_updates_state(self):
+        tournament = self.create_weekly_tournament(state=Tournament_TextChoices.State.CANCELLED)
+        self.client.force_login(self.user)
+
+        response = self.client.post('/api/tournament/weekly/set', {
+            'id': tournament.id,
+            'state': Tournament_TextChoices.State.NORMAL,
+        })
+
+        self.assertEqual(response.status_code, 200)
+        tournament.refresh_from_db()
+        self.assertEqual(tournament.state, Tournament_TextChoices.State.NORMAL)
+        self.assertEqual(tournament.year, 2026)
+        self.assertEqual(tournament.week, 1)
+
+    def test_weekly_tournament_cache_and_rebuild_use_subclass_data(self):
+        tournament = self.create_weekly_tournament(year=2027, week=3)
+        self.tournament_cache.update_tournament(tournament)
+
+        cached_tournament = self.tournament_cache.get_tournament(tournament.id)
+        self.assertEqual(cached_tournament.subclass, Tournament_TextChoices.Subclass.WEEKLY)
+        self.assertEqual(cached_tournament.data['year'], 2027)
+        self.assertEqual(cached_tournament.data['week'], 3)
+
+        cache.delete(NORMAL_TOURNAMENT_CACHE_KEY)
+        call_command('rebuild_tournament_cache', stdout=StringIO())
+
+        rebuilt_tournament = self.tournament_cache.get_tournament(tournament.id)
+        self.assertEqual(rebuilt_tournament.subclass, Tournament_TextChoices.Subclass.WEEKLY)
+        self.assertEqual(rebuilt_tournament.data['tournament_format'], Tournament_TextChoices.WeeklyFormat.CLASSIC)
+
+    def test_weekly_participant_create_backfills_and_checkin_uses_token(self):
+        tournament = self.create_weekly_tournament()
+        existing_video = self.create_video(tournament_identifier=['WEEKLY_TOKEN'])
+        WeeklyParticipant.objects.create(
+            user=self.user,
+            tournament=tournament,
+            token='WEEKLY_TOKEN',
+            start_time=tournament.start_time,
+            end_time=tournament.end_time,
+        )
+        self.assertTrue(tournament.videos.filter(pk=existing_video.pk).exists())
+
+        other_user = self.create_user('weekly_checkin_user')
+        self.client.force_login(other_user)
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.client.post('/api/tournament/weekly/participant', {'id': tournament.id})
+        participant = WeeklyParticipant.objects.get(tournament=tournament, user=other_user)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['token'], participant.token)
+        video = self.create_video(user=other_user, tournament_identifier=[participant.token])
+        video.refresh_from_db()
+        self.assertTrue(video.ongoing_tournament)
+        self.assertTrue(tournament.videos.filter(pk=video.pk).exists())
+
+    def test_refresh_weekly_score_rank_and_finish_tournament(self):
+        tournament = self.create_weekly_tournament()
+        participant = WeeklyParticipant.objects.create(
+            user=self.user,
+            tournament=tournament,
+            start_time=tournament.start_time,
+            end_time=tournament.end_time,
+        )
+        user_without_video = self.create_user('weekly_without_video')
+        participant_without_video = WeeklyParticipant.objects.create(
+            user=user_without_video,
+            tournament=tournament,
+            start_time=tournament.start_time,
+            end_time=tournament.end_time,
+        )
+
+        expert_times = [100000, 120000, 130000]
+        intermediate_times = [20000, 21000, 22000, 23000, 24000, 25000]
+        for timems in expert_times:
+            tournament.videos.add(self.create_video(tournament_identifier=[], level=MS_TextChoices.Level.EXPERT, timems=timems))
+        for timems in intermediate_times:
+            tournament.videos.add(self.create_video(tournament_identifier=[], level=MS_TextChoices.Level.INTERMEDIATE, timems=timems))
+
+        score_count = refresh_weekly_classic_scores(tournament)
+        rank_count = refresh_weekly_classic_ranks(tournament)
+
+        participant.refresh_from_db()
+        participant_without_video.refresh_from_db()
+        self.assertEqual(score_count, 2)
+        self.assertEqual(rank_count, 2)
+        self.assertEqual(participant.classic_score, sum(expert_times[:2]) + sum(intermediate_times[:5]))
+        self.assertEqual(participant.rank, 1)
+        self.assertEqual(participant.rank_score, 50)
+        self.assertEqual(participant_without_video.rank, 2)
+
+        tournament.end_time = timezone.now() - timedelta(minutes=1)
+        tournament.save(update_fields=['end_time'])
+        result = finish_weekly_tournament(tournament)
+
+        tournament.refresh_from_db()
+        self.assertEqual(result['deleted_participants'], 1)
+        self.assertEqual(tournament.state, Tournament_TextChoices.State.AWARDED)
+        self.assertTrue(WeeklyParticipant.objects.filter(pk=participant.pk).exists())
+        self.assertFalse(WeeklyParticipant.objects.filter(pk=participant_without_video.pk).exists())
+
+    def test_weekly_finish_task_api_reuses_existing_task(self):
+        tournament = self.create_weekly_tournament(end_time=timezone.now() - timedelta(minutes=1))
+        self.user.is_staff = True
+        self.user.save(update_fields=['is_staff'])
+        self.client.force_login(self.user)
+
+        no_task_response = self.client.get('/api/tournament/weekly/task', {'tournament_id': tournament.id})
+        first_response = self.client.post('/api/tournament/weekly/task/finish', {'id': tournament.id})
+        second_response = self.client.post('/api/tournament/weekly/task/finish', {'id': tournament.id})
+
+        self.assertEqual(no_task_response.status_code, 200)
+        self.assertIsNone(no_task_response.json())
+        self.assertEqual(first_response.status_code, 200)
+        self.assertEqual(second_response.status_code, 200)
+        first_task_id = first_response.json()['data']['task_id']
+        second_task_id = second_response.json()['data']['task_id']
+        self.assertEqual(first_task_id, second_task_id)
+        tournament.refresh_from_db()
+        self.assertEqual(str(tournament.task_id), first_task_id)
+        self.assertEqual(
+            DBTaskResult.objects.filter(
+                task_path='tournament.weekly.tasks.task_weekly_finish',
+            ).count(),
+            1,
+        )
 
     def test_get_gscinfo_serializes_awarded_results(self):
         participant = GSCParticipant.objects.create(
