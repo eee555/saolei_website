@@ -477,7 +477,7 @@ digraph cache {
 | `msuser` | `player_{stat}_{mode}_ids` | zset | `member = user_id`；`score = 三关 sum`。`player_rank` 使用它作为排序入口，并通过 Redis `SORT GET` 读取详情 hash。 |
 | `customranking` | `customranking:pluck:{level}:rank` | zset | `member = player_id`；`score = pluck`，当 `pluck == 0` 时使用 `timems - MAX_TIMEMS` 降低 0 碰撞风险。 |
 | `customranking` | `customranking:pluck:{level}:detail` | hash | `field = player_id`；`value = detail JSON`，包含 `video_id`、`mode`、`timems`、`bv`、`upload_time`。 |
-| `tournament` | `tournament:normal` | hash | `field = tournament_id`；`value = CachedNormalTournament JSON`，包含 `id`、`state`、`subclass`、`host_id`、`start_time`、`end_time`、`data`。`data` 保存子类独占字段：GSC 为 `order`、`token`；周赛为 `year`、`week`、`tournament_format`。 |
+| `tournament` | `tournament:normal` | hash | `field = tournament_id`；`value = CachedTournament JSON`，包含 `id`、`state`、`subclass`、`host_id`、`start_time`、`end_time`、`data`。`data` 保存子类独占字段：GSC 为 `order`、`token`；周赛为 `year`、`week`、`tournament_format`。 |
 | `tournament` | `tournament:normal:participants` | hash | `field = user_id`；`value = list[CachedNormalParticipant] JSON`，每项包含 `id`、`token`、`arbiter_identifier`、`tournament`、`start_time`、`end_time`。 |
 | `common` | `api:common/videosummary` | Django cache | `video_summary` 返回体，TTL 300 秒。 |
 | `common` | `api:common/tasksummary` | Django cache | `task_summary` 返回体，TTL 300 秒。 |

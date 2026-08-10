@@ -49,7 +49,7 @@ TournamentOut = create_schema(
     fields=['id', 'start_time', 'end_time', 'state', 'subclass'],
     custom_fields=[
         ('host_id', int | None, None),
-        ('data', dict[str, Any], {}),
+        ('data', Any, {}),
     ],
 )
 

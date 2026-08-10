@@ -4,8 +4,21 @@ const HOST = {
     realname: 'Tournament Host',
 } as const;
 
+interface DangerzoneTournament {
+    id: number;
+    subclass: 'g';
+    state: string;
+    start_time: string;
+    end_time: string;
+    host_id: number;
+    data: {
+        order: number;
+        token: string;
+    };
+}
+
 function createTournament(order: number, state: string) {
-    return cy.dangerzonePost<{ id: number; order: number; state: string }>('create_gsc_tournament', {
+    return cy.dangerzonePost<DangerzoneTournament>('create_gsc_tournament', {
         order,
         state,
         start_time: '2000-01-01T00:00:00+08:00',
@@ -58,19 +71,19 @@ describe('Tournament page tabs backed by real API data', () => {
     });
 
     it('keeps tournament detail tabs and the router in sync', () => {
-        cy.get<Cypress.Response<{ id: number }>>('@normalTournament').then((response) => {
-            const { id } = response.body;
+        cy.get<Cypress.Response<DangerzoneTournament>>('@normalTournament').then((response) => {
+            const { id, data } = response.body;
             cy.visit('/#/tournament/');
-            cy.contains('.el-table__row', '第21届金羊杯').click();
+            cy.contains('.el-table__row', `第${data.order}届金羊杯`).click();
 
             cy.location('hash').should('eq', `#/tournament/${id}`);
-            cy.contains('h1', '第21届金羊杯').should('be.visible');
+            cy.contains('h1', `第${data.order}届金羊杯`).should('be.visible');
             cy.contains('.el-tabs__item', '比赛首页').should('be.visible');
 
             cy.contains('.el-tabs__item', '比赛首页').click();
             cy.location('hash').should('eq', '#/tournament');
 
-            cy.contains('.el-tabs__item', '第21届金羊杯').click();
+            cy.contains('.el-tabs__item', `第${data.order}届金羊杯`).click();
             cy.location('hash').should('eq', `#/tournament/${id}`);
         });
     });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { TournamentSeries, TournamentState, TournamentSubclass } from './ms_const';
+import { TournamentState, TournamentSubclass } from './ms_const';
 import { Tournament } from './tournaments';
 
 describe('Tournament', () => {
@@ -17,7 +17,7 @@ describe('Tournament', () => {
             expect(tournament.hostName).toBe('');
             expect(tournament.state).toBe(TournamentState.Pending);
             expect(tournament.displayState).toBe(TournamentState.Pending);
-            expect(tournament.series).toBe(TournamentSeries.Unknown);
+            expect(tournament.subclass).toBe(TournamentSubclass.Unknown);
         });
 
         it('Uses camelCase fields', () => {
@@ -30,7 +30,7 @@ describe('Tournament', () => {
                 hostId: 9,
                 hostName: 'Host',
                 state: TournamentState.Ongoing,
-                series: TournamentSeries.General,
+                subclass: TournamentSubclass.Weekly,
             });
 
             expect(tournament.id).toBe(1);
@@ -41,7 +41,7 @@ describe('Tournament', () => {
             expect(tournament.hostId).toBe(9);
             expect(tournament.hostName).toBe('Host');
             expect(tournament.state).toBe(TournamentState.Ongoing);
-            expect(tournament.series).toBe(TournamentSeries.General);
+            expect(tournament.subclass).toBe(TournamentSubclass.Weekly);
         });
 
         it('Uses snake_case fallback fields', () => {
@@ -67,7 +67,6 @@ describe('Tournament', () => {
                 },
             });
 
-            expect(tournament.series).toBe(TournamentSeries.GSC);
             expect(tournament.getLocalName('zh-CN')).toBe('第8届金羊杯');
             expect(tournament.getLocalName('en')).toBe('GSC#8');
             expect(tournament.description).toBe('');
@@ -83,7 +82,6 @@ describe('Tournament', () => {
                 },
             });
 
-            expect(tournament.series).toBe(TournamentSeries.Weekly);
             expect(tournament.getLocalName('zh-CN')).toBe('2026年第12周打卡赛');
             expect(tournament.getLocalName('en')).toBe('Weekly 2026#12');
             expect(tournament.description).toBe('');

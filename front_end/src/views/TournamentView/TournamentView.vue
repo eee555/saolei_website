@@ -16,7 +16,7 @@
             <template #label>
                 <span>{{ tournament.getLocalName(local.language) }}</span>
             </template>
-            <GSCDetail v-if="tournament.series === TournamentSeries.GSC" :id="tournament.id" />
+            <GSCDetail v-if="tournament.subclass === TournamentSubclass.GSC" :id="tournament.id" />
             <TournamentDetail v-else :tournament="tournament" />
         </ElTabPane>
     </ElTabs>
@@ -37,7 +37,7 @@ import { httpErrorNotification } from '@/components/Notifications';
 import { fetchTournament, fetchTournamentList } from '@/services/tournamentService';
 import type { TournamentListCategory } from '@/services/tournamentService';
 import { local, store } from '@/store';
-import { TournamentSeries } from '@/utils/ms_const';
+import { TournamentSubclass } from '@/utils/ms_const';
 import { Tournament } from '@/utils/tournaments';
 
 const { t } = useI18n();

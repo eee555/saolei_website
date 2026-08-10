@@ -1,13 +1,15 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any
+import json
+from typing import Literal
 
 from dataclasses_json import dataclass_json
 from django_redis import get_redis_connection
 
 from config.text_choices import Tournament_TextChoices
+from utils.cache import maybe_bytes_to_str
 from videomanager.models import VideoModel
-from .models import Tournament, TournamentParticipant
+from .models import GSCTournament, Tournament, TournamentParticipant, WeeklyTournament
 
 cache = get_redis_connection('saolei_website')
 
@@ -17,14 +19,42 @@ NORMAL_PARTICIPANT_CACHE_KEY = 'tournament:normal:participants'
 
 @dataclass_json
 @dataclass
-class CachedNormalTournament:
+class CachedTournament:
     id: int
-    state: str
-    subclass: str
+    state: Tournament_TextChoices.State
+    subclass: Tournament_TextChoices.Subclass
     host_id: int | None
     start_time: datetime
     end_time: datetime
-    data: dict[str, Any]
+
+
+@dataclass_json
+@dataclass
+class CachedGSCTournamentData:
+    order: int
+    token: str
+
+
+@dataclass_json
+@dataclass
+class CachedWeeklyTournamentData:
+    year: int
+    week: int
+    tournament_format: str
+
+
+@dataclass_json
+@dataclass
+class CachedGSCTournament(CachedTournament):
+    subclass: Literal[Tournament_TextChoices.Subclass.GSC]
+    data: CachedGSCTournamentData
+
+
+@dataclass_json
+@dataclass
+class CachedWeeklyTournament(CachedTournament):
+    subclass: Literal[Tournament_TextChoices.Subclass.WEEKLY]
+    data: CachedWeeklyTournamentData
 
 
 @dataclass_json
@@ -76,12 +106,12 @@ class TournamentCache:
         data = cache.hget(NORMAL_TOURNAMENT_CACHE_KEY, tournament_id)
         if data is None:
             return None
-        return CachedNormalTournament.from_json(data)
+        return deserialize_cached_tournament(data)
 
     def get_tournament_all(self):
         data = cache.hgetall(NORMAL_TOURNAMENT_CACHE_KEY)
         return [
-            CachedNormalTournament.from_json(value)
+            deserialize_cached_tournament(value)
             for value in data.values()
         ]
 
@@ -144,15 +174,51 @@ class TournamentCache:
 
 
 def serialize_normal_tournament(tournament: Tournament):
-    return CachedNormalTournament(
+    if isinstance(tournament, GSCTournament):
+        return CachedGSCTournament(
+            id=tournament.id,
+            state=tournament.state,
+            subclass=Tournament_TextChoices.Subclass.GSC,
+            host_id=tournament.host_id,
+            start_time=tournament.start_time,
+            end_time=tournament.end_time,
+            data=CachedGSCTournamentData(
+                order=tournament.order,
+                token=tournament.token,
+            ),
+        )
+    if isinstance(tournament, WeeklyTournament):
+        return CachedWeeklyTournament(
+            id=tournament.id,
+            state=tournament.state,
+            subclass=Tournament_TextChoices.Subclass.WEEKLY,
+            host_id=tournament.host_id,
+            start_time=tournament.start_time,
+            end_time=tournament.end_time,
+            data=CachedWeeklyTournamentData(
+                year=tournament.year,
+                week=tournament.week,
+                tournament_format=tournament.tournament_format,
+            ),
+        )
+    return CachedTournament(
         id=tournament.id,
         state=tournament.state,
         subclass=tournament.subclass,
         host_id=tournament.host_id,
         start_time=tournament.start_time,
         end_time=tournament.end_time,
-        data=tournament.data,
     )
+
+
+def deserialize_cached_tournament(value):
+    json_value = maybe_bytes_to_str(value)
+    raw_value = json.loads(json_value)
+    if raw_value['subclass'] == Tournament_TextChoices.Subclass.GSC:
+        return CachedGSCTournament.from_json(json_value)
+    if raw_value['subclass'] == Tournament_TextChoices.Subclass.WEEKLY:
+        return CachedWeeklyTournament.from_json(json_value)
+    return CachedTournament.from_json(json_value)
 
 
 def serialize_normal_participant(participant: TournamentParticipant):

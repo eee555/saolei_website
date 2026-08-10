@@ -3,7 +3,7 @@ from django.db.models.functions import RowNumber
 
 from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from tournament.models import WeeklyParticipant, WeeklyTournament
-from tournament.services import delete_participants_without_videos, reveal_videos_for_tournament
+from tournament.services import award_tournament_rank_scores, delete_participants_without_videos, reveal_videos_for_tournament
 
 
 def refresh_weekly_classic_scores(tournament: WeeklyTournament, *, batch_size=1000):
@@ -53,9 +53,8 @@ def refresh_weekly_classic_ranks(tournament: WeeklyTournament, *, batch_size=100
     participants = list(WeeklyParticipant.objects.filter(tournament=tournament).order_by('classic_score'))
     for rank, participant in enumerate(participants, start=1):
         participant.rank = rank
-        participant.rank_score = round(50 / rank)
 
-    WeeklyParticipant.objects.bulk_update(participants, ['rank', 'rank_score'], batch_size=batch_size)
+    WeeklyParticipant.objects.bulk_update(participants, ['rank'], batch_size=batch_size)
 
     return len(participants)
 
@@ -64,6 +63,7 @@ def finish_weekly_tournament(tournament: WeeklyTournament):
     deleted_participants = delete_participants_without_videos(tournament)
     score_count = refresh_weekly_classic_scores(tournament)
     rank_count = refresh_weekly_classic_ranks(tournament)
+    award_count = award_tournament_rank_scores(tournament)
     if tournament.state != Tournament_TextChoices.State.AWARDED:
         tournament.state = Tournament_TextChoices.State.AWARDED
         tournament.save(update_fields=['state'])
@@ -72,5 +72,6 @@ def finish_weekly_tournament(tournament: WeeklyTournament):
         'deleted_participants': deleted_participants,
         'score_count': score_count,
         'rank_count': rank_count,
+        'award_count': award_count,
         'video_count': video_count,
     }

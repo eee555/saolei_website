@@ -1,4 +1,7 @@
+from datetime import timedelta
+
 from django.db.models import Q
+from django.utils import timezone
 
 from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from customranking.services import add_videos_to_custom_pluck_ranks
@@ -6,9 +9,20 @@ from msuser.services import update_personal_records_from_video_queryset
 from tournament.cache import TournamentCache
 from videomanager.cache import add_videos_to_state_queues_bulk
 from videomanager.models import VideoModel
-from .models import Tournament, TournamentParticipant
+from .models import (
+    encode_tournament_best,
+    GSC_BEST_TOURNAMENT_BITS,
+    GSCTournament,
+    is_better_tournament_best,
+    Tournament,
+    TournamentParticipant,
+    TournamentUser,
+    WEEKLY_BEST_TOURNAMENT_BITS,
+    WeeklyTournament,
+)
 
 cache = TournamentCache()
+TOURNAMENT_SCORE_HALF_LIFE = timedelta(days=365 * 2)
 
 
 def checkin_with_arbiter(video: VideoModel, arbiter_identifier: str):
@@ -69,6 +83,116 @@ def delete_participants_without_videos(tournament: Tournament):
     deleted_count = participants.count()
     participants.delete()
     return deleted_count
+
+
+def tournament_score_decay_factor(start_time, end_time):
+    if end_time <= start_time:
+        return 1
+    elapsed_seconds = (end_time - start_time).total_seconds()
+    half_life_seconds = TOURNAMENT_SCORE_HALF_LIFE.total_seconds()
+    return 1 / (2 ** (elapsed_seconds / half_life_seconds))
+
+
+def decay_tournament_user_scores(now=None, *, batch_size=1000):
+    now = now or timezone.now()
+    tournament_users = list(TournamentUser.objects.all())
+    for tournament_user in tournament_users:
+        tournament_user.score_current *= tournament_score_decay_factor(tournament_user.last_updated, now)
+        tournament_user.last_updated = now
+    if tournament_users:
+        TournamentUser.objects.bulk_update(tournament_users, ['score_current', 'last_updated'], batch_size=batch_size)
+    return len(tournament_users)
+
+
+def _get_tournament_best(tournament: Tournament, participant: TournamentParticipant):
+    if isinstance(tournament, GSCTournament):
+        return (
+            'gsc_best',
+            participant.gscparticipant.t37,
+            tournament.order,
+            GSC_BEST_TOURNAMENT_BITS,
+        )
+    if isinstance(tournament, WeeklyTournament):
+        return (
+            'weekly_best',
+            participant.weeklyparticipant.classic_score,
+            (tournament.year % 100) * 100 + tournament.week,
+            WEEKLY_BEST_TOURNAMENT_BITS,
+        )
+    return None
+
+
+def award_tournament_rank_scores(tournament: Tournament, *, batch_size=1000):
+    award_time = tournament.end_time or timezone.now()
+    decay_tournament_user_scores(award_time, batch_size=batch_size)
+
+    participants = list(
+        TournamentParticipant.objects
+        .filter(tournament=tournament, user_id__isnull=False, rank__isnull=False)
+        .select_related('user', 'gscparticipant', 'weeklyparticipant')
+        .order_by('rank'),
+    )
+    if not participants:
+        return 0
+
+    tournament_users_by_user_id = {
+        tournament_user.user_id: tournament_user
+        for tournament_user in TournamentUser.objects.filter(user_id__in=[participant.user_id for participant in participants])
+    }
+    tournament_users_to_create = []
+    for participant in participants:
+        if participant.user_id not in tournament_users_by_user_id:
+            tournament_user = TournamentUser(user_id=participant.user_id, last_updated=award_time)
+            tournament_users_by_user_id[participant.user_id] = tournament_user
+            tournament_users_to_create.append(tournament_user)
+    if tournament_users_to_create:
+        TournamentUser.objects.bulk_create(tournament_users_to_create, batch_size=batch_size)
+
+    changed_participants = []
+    changed_tournament_users = []
+    for participant in participants:
+        target_rank_score = round(tournament.weight / participant.rank)
+        score_delta = target_rank_score - participant.rank_score
+        if score_delta == 0:
+            continue
+
+        tournament_user = tournament_users_by_user_id[participant.user_id]
+        tournament_user.score_current = max(tournament_user.score_current + score_delta, 0)
+        tournament_user.score_total = max(tournament_user.score_total + score_delta, 0)
+
+        best = _get_tournament_best(tournament, participant)
+        if isinstance(tournament, GSCTournament):
+            tournament_user.gsc_total = max(tournament_user.gsc_total + score_delta, 0)
+        elif isinstance(tournament, WeeklyTournament):
+            tournament_user.weekly_total = max(tournament_user.weekly_total + score_delta, 0)
+        if best is not None:
+            best_field, score, tournament_number, tournament_digits = best
+            if is_better_tournament_best(
+                getattr(tournament_user, best_field),
+                score,
+                tournament_number,
+                tournament_digits=tournament_digits,
+            ):
+                setattr(
+                    tournament_user,
+                    best_field,
+                    encode_tournament_best(score, tournament_number, tournament_digits=tournament_digits),
+                )
+
+        participant.rank_score = target_rank_score
+        changed_participants.append(participant)
+        changed_tournament_users.append(tournament_user)
+
+    if changed_tournament_users:
+        TournamentUser.objects.bulk_update(
+            changed_tournament_users,
+            ['score_current', 'score_total', 'gsc_total', 'gsc_best', 'weekly_total', 'weekly_best'],
+            batch_size=batch_size,
+        )
+    if changed_participants:
+        TournamentParticipant.objects.bulk_update(changed_participants, ['rank_score'], batch_size=batch_size)
+
+    return len(changed_participants)
 
 
 def reveal_videos_for_tournament(tournament: Tournament):

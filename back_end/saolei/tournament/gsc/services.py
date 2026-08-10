@@ -6,7 +6,7 @@ from django.db.models.functions import RowNumber
 from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from config.tournaments import GSC_Defaults
 from tournament.models import GSCParticipant, GSCTournament
-from tournament.services import delete_participants_without_videos, reveal_videos_for_tournament
+from tournament.services import award_tournament_rank_scores, delete_participants_without_videos, reveal_videos_for_tournament
 
 GSC_SCORE_FIELDS = [
     'bt1st', 'bt20th', 'bt20sum',
@@ -133,6 +133,7 @@ def finish_gsc_tournament(tournament: GSCTournament):
     deleted_participants = delete_participants_without_videos(tournament)
     result = refresh_gsc_scores_and_ranks(tournament)
     result['deleted_participants'] = deleted_participants
+    result['awarded_participants'] = award_tournament_rank_scores(tournament)
     if tournament.state != Tournament_TextChoices.State.AWARDED:
         tournament.state = Tournament_TextChoices.State.AWARDED
         tournament.save(update_fields=['state'])

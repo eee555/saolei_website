@@ -55,7 +55,7 @@
 
 - `tournament:normal`
 
-缓存使用一个 Redis hash 保存所有 `NORMAL` 比赛的基础信息。hash key 为比赛 id，hash value 为序列化后的比赛信息。缓存只保存父类通用字段、`subclass` 和一个 `data` 字段；子类独占字段统一放入 `data`，前端根据 `subclass/data` 转换出展示用的 `series`、`name`、`description` 等字段。例如：
+缓存使用一个 Redis hash 保存所有 `NORMAL` 比赛的基础信息。hash key 为比赛 id，hash value 为序列化后的比赛信息。缓存只保存父类通用字段、`subclass` 和一个 `data` 字段；子类独占字段统一放入 `data`，前后端都根据 `subclass/data` 转换出展示用的 `name`、`description` 等字段。例如：
 
 ```text
 HSET tournament:normal 123 '{"id":123,"state":"n","subclass":"g","host_id":null,"start_time":...,"end_time":...,"data":{"order":8,"token":"G12345"}}'
@@ -87,7 +87,7 @@ TODO: 如果未来需要比赛期间展示实时榜，可以再单独设计每�
 
 删除 GSC 时不需要监听 `GSCTournament.post_delete`；Django 多表继承删除子表时会级联删除父表，缓存清理由 `Tournament.post_delete` 统一处理。`TournamentCache.remove_tournament` 固定接收 `tournament_id: int`。由于 `post_delete` 的 `on_commit` 回调执行时 model instance 的主键可能已经被清空，信号里应先捕获 `tournament_id`，再传给 `TournamentCache.remove_tournament`。
 
-Redis 中仍保存 JSON object/list，由 `dataclass-json` 负责序列化和反序列化；时间字段使用该库默认的 timestamp 表示。Python 读取后应统一反序列化为 dataclass，例如 `CachedNormalTournament` 和 `CachedNormalParticipant`，调用方使用属性访问以获得类型提示，不再在业务代码中传递裸 dict。
+Redis 中仍保存 JSON object/list，由 `dataclass-json` 负责序列化和反序列化；时间字段使用该库默认的 timestamp 表示。Python 读取后应统一反序列化为 dataclass，例如 `CachedTournament`、`CachedGSCTournament`、`CachedWeeklyTournament` 和 `CachedNormalParticipant`，调用方使用属性访问以获得类型提示，不再在业务代码中传递裸 dict。
 
 比赛审核通过的前置条件是 `start_time` 和 `end_time` 都已经确定，且 `start_time < end_time`。时间缺失或时间范围非法时，`Tournament.validate()` 应返回失败，入口不能把比赛切换到 `NORMAL`，GSC 也不能生成 token。
 
@@ -103,20 +103,62 @@ GSC 创建 `GSCParticipant` 时，participant 自身的 `start_time/end_time` �
 
 当前已有：
 
-- 模型：`WeeklyTournament` 保存 `year`、`week`、`task`、`tournament_format`，`series` 返回 `Tournament_TextChoices.Series.WEEKLY`，名称由年份和周数动态生成。
+- 模型：`WeeklyTournament` 保存 `year`、`week`、`task`、`tournament_format`，`subclass` 为 `Tournament_TextChoices.Subclass.WEEKLY`，名称由年份和周数动态生成。
 - 模型：`WeeklyParticipant` 保存 `classic_et`、`classic_it` 和 `classic_score`，并在 `classic_score` 上建索引用于排名查询。
 - 服务：`refresh_weekly_classic_scores` 从 `Tournament.videos` 中按用户分别取 2 条高级、5 条中级有效录像，合并后批量更新 `WeeklyParticipant` 的成绩字段。
-- 服务：`refresh_weekly_classic_ranks` 按 `classic_score` 排名，`rank_score` 使用 `round(50 / rank)` 转成整数后批量写入。
-- 服务：`finish_weekly_tournament` 已串联删除无录像 participant、刷新成绩、刷新排名、切换 `AWARDED`、公开录像。
+- 服务：`refresh_weekly_classic_ranks` 按 `classic_score` 排名，只写入 `rank`；`rank_score` 由统一积分发放服务根据 `Tournament.weight / rank` 写入。
+- 服务：`finish_weekly_tournament` 已串联删除无录像 participant、刷新成绩、刷新排名、发放积分、切换 `AWARDED`、公开录像。
 - API：`tournament.weekly.api` 已挂载到 `/api/tournament/weekly/`，当前已有 `POST /new`、`POST /set`、`GET /info`、`POST /participant`、`GET /task` 和 `POST /task/finish`。
 - API：`POST /api/tournament/weekly/new` 由 staff 创建下周周赛，参数只包含 `tournament_format`；服务端计算下周 `year/week/start_time/end_time`，`weight=50`，`host=request.user`，禁止重复创建，并在创建后直接 `validate()` 切换到 `NORMAL`。
 - API：`POST /api/tournament/weekly/set` 只允许主办方或管理员修改周赛状态，不修改 `year/week/tournament_format`。
 - API：`GET /api/tournament/weekly/task` 和 `POST /api/tournament/weekly/task/finish` 复用 `WeeklyTournament.task` 管理后台结算任务，行为与 GSC 结算任务一致。
 
-TODO: 周赛后端补齐：
+周赛后端缓存已经使用 `CachedTournament` 作为基础 dataclass，并通过 `CachedGSCTournament` / `CachedWeeklyTournament` 子类收敛 `data` 的类型。dataclass 子类新增字段时仍需要单独加 `@dataclass`，实际执行 JSON 序列化/反序列化的子类也单独加 `@dataclass_json`。
 
-- TODO: 将 `CachedNormalTournament` 重命名为 `CachedTournament`，并为不同比赛子类定义 dataclass 子类或独立 `data` dataclass，使 `data` 的类型从 `dict[str, Any]` 收敛为明确的 GSC / Weekly 结构。
-- TODO: 彻底移除前后端对 `series` 属性的兼容支持，所有比赛类型判断统一使用 `subclass`。
+前后端不再使用比赛 `series` 属性做兼容判断；比赛类型统一由 `subclass` 决定。
+
+## 比赛积分系统
+
+`vitepress_doc/guide/tournament.md` 已定义比赛积分的用户侧规则：比赛结束后发放排名积分和奖金积分；排名积分按 `比赛权重 / 排名` 计算；用户当前积分按 2 年半衰期衰减。`TournamentUser` 已有模型草稿，用于保存用户比赛积分汇总。
+
+当前实现：
+
+- `TournamentUser.score_current` 使用 `FloatField` 保存带时间衰减的当前积分。
+- `TournamentUser.last_updated` 表示上次完成积分衰减并写回的时间。
+- `score_total`：所有比赛历史累计积分，不参与衰减，用于展示历史贡献。
+- `gsc_total` / `weekly_total`：按比赛类型拆分的历史累计积分，不参与衰减。
+- `gsc_best` / `weekly_best` 使用整数打包“最好成绩 + 比赛届数/期数”。GSC 后三位保存届数；周赛后五位保存 `year % 100 * 100 + week`。GSC 和周赛都按“成绩越小越好，同成绩比赛编号越小越好”比较。
+- `encode_tournament_best` / `decode_tournament_best` / `is_better_tournament_best` 统一维护 best 编码和比较逻辑。
+- `tournament.services.award_tournament_rank_scores` 是统一发放入口。它先按比赛 `end_time` 衰减所有已有 `TournamentUser.score_current`，再读取本场有站内用户且有 `rank` 的 participant，按 `round(tournament.weight / participant.rank)` 计算目标排名积分。
+- `TournamentParticipant.rank_score` 记录该 participant 已发放的排名积分。重复结算或重算时只应用 `target_rank_score - participant.rank_score` 的增量，避免重复累加。
+- GSC / 周赛结算流程在刷新成绩和排名后调用统一积分发放服务，再切换 `AWARDED` 并公开录像。
+- 无站内用户的 participant 不会创建 `TournamentUser`。
+
+已生成迁移：
+
+- `0017_tournamentuser_alter_tournamentparticipant_rank.py`
+
+当前测试覆盖：
+
+- `TournamentUser` 默认值和 best 编码/比较 helper。
+- 积分衰减公式、按 `rank_score` 计算增量、`last_updated` 写回。
+- GSC / 周赛结算后正确写入 `TournamentUser`。
+- 重复执行结算流程不会重复发放积分。
+- 无录像 participant 在结算开头被删除后不会获得积分。
+
+TODO: 奖金积分暂不实现，但需要预留设计：
+
+- 奖金积分以后使用单独字段或单独发放记录，不进入 `rank_score`。
+- 奖金金额与积分的换算规则、币种和管理员录入入口仍是争议核心，暂无结论。
+- 在用户文档中继续标记“暂不支持”，直到后端和前端都完成。
+
+TODO: 补充积分展示 API 与前端：
+
+先不急着做，等结构继续设计。
+
+- 用户资料页需要展示当前比赛积分、历史总积分、GSC/周赛拆分积分和最好成绩。
+- 比赛积分排行榜需要分页 API；如果访问频繁，应设计 Redis 缓存或类似 `userprofile` 的 IndexedDB 同步方案。
+- `TournamentUser` 更新后如果影响用户资料摘要，需要同步考虑 `userprofile` 缓存/批量接口的失效策略。
 
 ## TODO: 历史比赛列表同步计划
 

@@ -6,6 +6,7 @@ from ninja import NinjaAPI, Schema
 from ninja.errors import HttpError
 
 from common.api import LOG_DIR
+from config.text_choices import Tournament_TextChoices
 from config.tournaments import TournamentWeights
 from identifier.models import Identifier
 from identifier.services import bind_identifier, set_safe, unbind_identifier
@@ -142,8 +143,12 @@ def create_gsc_tournament(request, data: CreateGSCTournamentSchema):
     )
     return {
         'id': tournament.id,
-        'order': tournament.order,
+        'subclass': Tournament_TextChoices.Subclass.GSC,
         'state': tournament.state,
+        'start_time': tournament.start_time,
+        'end_time': tournament.end_time,
+        'host_id': tournament.host_id,
+        'data': tournament.data,
     }
 
 

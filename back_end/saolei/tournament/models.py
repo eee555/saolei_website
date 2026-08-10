@@ -14,6 +14,9 @@ from tournament.utils import generate_random_token, insert_to_id_value_list_asc
 from userprofile.models import UserProfile
 from videomanager.models import VideoModel
 
+GSC_BEST_TOURNAMENT_BITS = 3
+WEEKLY_BEST_TOURNAMENT_BITS = 5
+
 
 def generate_GSC_token(length=GSC_Defaults.TOKEN_LENGTH):
     return 'G' + ''.join(secrets.choice(string.digits) for _ in range(length))
@@ -27,6 +30,22 @@ def default_weekly_classic_it():
     return [(0, 60000), (0, 60000), (0, 60000), (0, 60000), (0, 60000)]
 
 
+def encode_tournament_best(score: int, tournament_number: int, *, tournament_digits: int):
+    return score * (10 ** tournament_digits) + tournament_number
+
+
+def decode_tournament_best(value: int, *, tournament_digits: int):
+    divisor = 10 ** tournament_digits
+    return divmod(value, divisor)
+
+
+def is_better_tournament_best(best: int, score: int, tournament_number: int, *, tournament_digits: int):
+    if best == 0:
+        return True
+    current_score, current_tournament_number = decode_tournament_best(best, tournament_digits=tournament_digits)
+    return (score, tournament_number) < (current_score, current_tournament_number)
+
+
 class Tournament(models.Model):
     objects = InheritanceManager()
     subclass = models.CharField(max_length=1, choices=Tournament_TextChoices.Subclass.choices, default=Tournament_TextChoices.Subclass.GSC)  # 比赛子类
@@ -36,10 +55,6 @@ class Tournament(models.Model):
     host = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, related_name='owned_tournaments')  # 主办方
     weight = models.PositiveIntegerField(default=0)  # 比赛总积分
     videos = models.ManyToManyField(VideoModel, related_name='tournaments')
-
-    @property
-    def series(self):
-        raise NotImplementedError("Subclasses of Tournament must implement the 'series' property.")
 
     @property
     def name(self):
@@ -102,10 +117,6 @@ class GSCTournament(Tournament):
     order = models.PositiveSmallIntegerField(primary_key=True)  # 届数
     _token = models.CharField(max_length=6, default='', db_column='token', db_collation='utf8mb4_0900_as_cs')  # 比赛标识
     task = models.ForeignKey(DBTaskResult, on_delete=models.SET_NULL, null=True)
-
-    @property
-    def series(self):
-        return Tournament_TextChoices.Series.GSC
 
     @property
     def name(self):
@@ -175,10 +186,6 @@ class WeeklyTournament(Tournament):
     tournament_format = models.CharField(max_length=1, choices=Tournament_TextChoices.WeeklyFormat.choices, default=Tournament_TextChoices.WeeklyFormat.CLASSIC)
 
     @property
-    def series(self):
-        return Tournament_TextChoices.Series.WEEKLY
-
-    @property
     def name(self):
         return {
             'zh': f'{self.year}年第{self.week}周打卡赛',
@@ -203,10 +210,6 @@ class GeneralTournament(Tournament):
     description = models.JSONField()
     csv_head = models.JSONField()
 
-    @property
-    def series(self):
-        return ''
-
 
 class TournamentParticipant(models.Model):
     token = models.CharField(max_length=MaxSizes.IDENTIFIER, db_collation='utf8mb4_0900_as_cs')  # 比赛标识
@@ -215,7 +218,7 @@ class TournamentParticipant(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True)  # 用户
     start_time = models.DateTimeField(default=timezone.now)  # 参赛时间
     end_time = models.DateTimeField(null=True, blank=True)  # 结束时间
-    rank = models.PositiveIntegerField(null=True, blank=True)  # 排名
+    rank = models.PositiveSmallIntegerField(null=True, blank=True)  # 排名
     rank_score = models.PositiveSmallIntegerField(default=0)  # 比赛积分
 
     class Meta:
@@ -295,3 +298,14 @@ class WeeklyParticipant(TournamentParticipant):
             self.classic_score -= diff
             insert_to_id_value_list_asc(self.classic_it, video_id, timems)
         return diff
+
+
+class TournamentUser(models.Model):
+    user = models.OneToOneField(UserProfile, on_delete=models.CASCADE, primary_key=True)
+    score_current = models.FloatField(default=0)  # 当前积分
+    last_updated = models.DateTimeField(default=timezone.now)  # 最后更新时间
+    score_total = models.PositiveIntegerField(default=0)  # 所有比赛历史总积分
+    gsc_total = models.PositiveIntegerField(default=0)  # gsc历史总积分
+    gsc_best = models.PositiveBigIntegerField(default=0)  # gsc历史最好成绩及届数（后三位）
+    weekly_total = models.PositiveIntegerField(default=0)  # 历史周赛总积分
+    weekly_best = models.PositiveBigIntegerField(default=0)  # 历史周赛最好成绩及届数（后五位）

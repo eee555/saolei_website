@@ -55,10 +55,6 @@ class Saolei_TextChoices:
 
 
 class Tournament_TextChoices:
-    class Series(TextChoices):
-        WEEKLY = 'w', ('周赛')
-        GSC = 'g', ('GSC')
-
     class Subclass(TextChoices):
         GSC = 'g', ('GSC比赛')
         WEEKLY = 'w', ('周赛')

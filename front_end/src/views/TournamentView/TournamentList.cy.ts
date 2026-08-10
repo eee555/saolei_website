@@ -7,7 +7,7 @@ import i18n from '@/i18n';
 import { serviceConfig } from '@/services/store';
 import { local, store } from '@/store';
 import { pinia } from '@/store/create';
-import { TournamentSeries, TournamentState } from '@/utils/ms_const';
+import { TournamentState, TournamentSubclass } from '@/utils/ms_const';
 import { Tournament } from '@/utils/tournaments';
 
 const routes = [
@@ -96,7 +96,8 @@ describe('<TournamentList />', () => {
                 endDate: new Date(2099, 0, 1, 8, 0, 0),
                 host_id: 101,
                 state: TournamentState.Normal,
-                series: TournamentSeries.GSC,
+                subclass: TournamentSubclass.GSC,
+                data: { order: 1, token: 'G00001' },
             }),
             new Tournament({
                 id: 2,
@@ -105,7 +106,8 @@ describe('<TournamentList />', () => {
                 endDate: new Date(2026, 0, 2, 8, 0, 0),
                 host_id: 102,
                 state: TournamentState.Awarded,
-                series: TournamentSeries.GSC,
+                subclass: TournamentSubclass.GSC,
+                data: { order: 2, token: 'G00002' },
             }),
         ]);
 
@@ -128,7 +130,8 @@ describe('<TournamentList />', () => {
                 name: { zh: '点击打开比赛' },
                 host_id: 101,
                 state: TournamentState.Normal,
-                series: TournamentSeries.GSC,
+                subclass: TournamentSubclass.GSC,
+                data: { order: 7, token: 'G00007' },
             }),
         ]).then((router) => {
             cy.contains('.el-table__cell', '点击打开比赛').click();

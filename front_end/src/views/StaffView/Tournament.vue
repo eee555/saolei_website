@@ -60,7 +60,8 @@ interface TournamentResponseData {
     description?: LocalizedString;
     start_time?: string | Date | null;
     end_time?: string | Date | null;
-    series?: ConstructorParameters<typeof Tournament>[0]['series'];
+    subclass?: ConstructorParameters<typeof Tournament>[0]['subclass'];
+    data?: ConstructorParameters<typeof Tournament>[0]['data'];
     host_id?: number;
     state?: ConstructorParameters<typeof Tournament>[0]['state'];
 }
