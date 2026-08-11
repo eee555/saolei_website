@@ -90,6 +90,25 @@ import { BaseFlagCN, BaseFlagDE, BaseFlagPL, BaseFlagUK } from '@/components/com
 
 const tableData = [
     {
+        version: 'v3.3.4',
+        date: '2026-8-11',
+        expire: '-',
+        links: [
+            {
+                label: 'OpenMS',
+                url: 'https://openms.top/download/Metasweeper-3.3.4.exe',
+            },
+            {
+                label: 'Gitee',
+                url: 'https://gitee.com/ee55/Metasweeper/releases/download/3.3.4/Metasweeper-3.3.4.exe',
+            },
+            {
+                label: 'GitHub',
+                url: 'https://github.com/eee555/Metasweeper/releases/download/3.3.4/Metasweeper-3.3.4.exe',
+            },
+        ],
+    },
+    {
         version: 'v3.3.3',
         date: '2026-7-10',
         expire: '-',

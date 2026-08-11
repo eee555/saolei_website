@@ -36,7 +36,7 @@
     "js-cookie": "3.0.8",
     "jszip": "3.10.1",
     "lazy.js": "0.5.1",
-    "ms-toollib": "1.5.16",
+    "ms-toollib": "1.5.17",
     "ordinal": "1.0.3",
     "pinia": "4.0.2",
     "pinia-plugin-persistedstate": "4.7.1",
