@@ -11,6 +11,8 @@ from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from config.tournaments import GSC_Defaults
 from identifier.models import Identifier
 from msuser.models import UserMS
+from tournament.utils import GSC_BEST_TOURNAMENT_BITS, decode_tournament_best, encode_tournament_best
+from tournament.weekly.utils import WEEKLY_BEST_TOURNAMENT_BITS
 from userprofile.models import UserProfile
 from videomanager.models import ExpandVideoModel, VideoModel
 from .cache import (
@@ -22,16 +24,11 @@ from .cache import (
 )
 from .gsc.services import finish_gsc_tournament, refresh_gsc_ranks, refresh_gsc_scores
 from .models import (
-    decode_tournament_best,
-    encode_tournament_best,
-    GSC_BEST_TOURNAMENT_BITS,
     GSCParticipant,
     GSCTournament,
-    is_better_tournament_best,
     Tournament,
     TournamentParticipant,
     TournamentUser,
-    WEEKLY_BEST_TOURNAMENT_BITS,
     WeeklyParticipant,
     WeeklyTournament,
 )
@@ -637,7 +634,7 @@ class TournamentTestCase(TestCase):
         self.assertEqual(rebuilt_tournament.subclass, Tournament_TextChoices.Subclass.WEEKLY)
         self.assertEqual(rebuilt_tournament.data.tournament_format, Tournament_TextChoices.WeeklyFormat.CLASSIC)
 
-    def test_tournament_user_defaults_and_best_score_helpers(self):
+    def test_tournament_user_defaults_and_best_score_encoding_helpers(self):
         tournament_user = TournamentUser.objects.create(user=self.user)
 
         self.assertEqual(tournament_user.score_current, 0)
@@ -652,13 +649,17 @@ class TournamentTestCase(TestCase):
 
         self.assertEqual(decode_tournament_best(gsc_best, tournament_digits=GSC_BEST_TOURNAMENT_BITS), (123456, 7))
         self.assertEqual(decode_tournament_best(weekly_best, tournament_digits=WEEKLY_BEST_TOURNAMENT_BITS), (345678, 2612))
-        self.assertTrue(is_better_tournament_best(gsc_best, 123455, 99, tournament_digits=GSC_BEST_TOURNAMENT_BITS))
-        self.assertTrue(is_better_tournament_best(gsc_best, 123456, 6, tournament_digits=GSC_BEST_TOURNAMENT_BITS))
-        self.assertFalse(is_better_tournament_best(gsc_best, 123456, 8, tournament_digits=GSC_BEST_TOURNAMENT_BITS))
 
     def test_award_tournament_rank_scores_decays_and_uses_delta(self):
         award_time = timezone.now()
         tournament = self.create_weekly_tournament(end_time=award_time, weight=50)
+        tournament_user = TournamentUser.objects.create(
+            user=self.user,
+            score_current=100,
+            last_updated=award_time - timedelta(days=365 * 2),
+            score_total=100,
+            weekly_total=100,
+        )
         participant = WeeklyParticipant.objects.create(
             user=self.user,
             tournament=tournament,
@@ -667,12 +668,12 @@ class TournamentTestCase(TestCase):
             rank=1,
             rank_score=20,
         )
-        tournament_user = TournamentUser.objects.create(
-            user=self.user,
-            score_current=100,
-            last_updated=award_time - timedelta(days=365 * 2),
-            score_total=100,
-            weekly_total=100,
+        WeeklyParticipant.objects.create(
+            user=None,
+            tournament=tournament,
+            start_time=tournament.start_time,
+            end_time=tournament.end_time,
+            rank=2,
         )
 
         award_count = award_tournament_rank_scores(tournament)
@@ -685,21 +686,181 @@ class TournamentTestCase(TestCase):
         self.assertEqual(tournament_user.score_total, 130)
         self.assertEqual(tournament_user.weekly_total, 130)
         self.assertEqual(tournament_user.last_updated, award_time)
+        self.assertEqual(TournamentUser.objects.count(), 1)
 
-    def test_award_tournament_rank_scores_skips_non_site_participants(self):
-        tournament = self.create_weekly_tournament(weight=50)
+    def test_weekly_participant_save_signal_refreshes_best_score(self):
+        tournament = self.create_weekly_tournament(year=2026, week=2)
+
         WeeklyParticipant.objects.create(
-            user=None,
+            user=self.user,
             tournament=tournament,
             start_time=tournament.start_time,
             end_time=tournament.end_time,
             rank=1,
+            rank_score=50,
+            classic_score=123456,
         )
 
-        award_count = award_tournament_rank_scores(tournament)
+        tournament_user = TournamentUser.objects.get(user=self.user)
+        self.assertEqual(
+            tournament_user.weekly_best,
+            encode_tournament_best(123456, 2602, tournament_digits=WEEKLY_BEST_TOURNAMENT_BITS),
+        )
 
-        self.assertEqual(award_count, 0)
-        self.assertEqual(TournamentUser.objects.count(), 0)
+    def test_gsc_participant_delete_signal_rebuilds_best_score(self):
+        better_tournament = GSCTournament.objects.create(
+            order=2,
+            _token='G22222',
+            start_time=self.tournament.start_time,
+            end_time=self.tournament.end_time,
+            state=Tournament_TextChoices.State.AWARDED,
+        )
+        worse_tournament = GSCTournament.objects.create(
+            order=3,
+            _token='G33333',
+            start_time=self.tournament.start_time,
+            end_time=self.tournament.end_time,
+            state=Tournament_TextChoices.State.AWARDED,
+        )
+        better_participant = GSCParticipant.objects.create(
+            user=self.user,
+            tournament=better_tournament,
+            token=better_tournament.token,
+            start_time=better_tournament.start_time,
+            end_time=better_tournament.end_time,
+            rank=1,
+            rank_score=1000,
+            bt20sum=1000,
+            it12sum=1000,
+            et5sum=1000,
+        )
+        worse_participant = GSCParticipant.objects.create(
+            user=self.user,
+            tournament=worse_tournament,
+            token=worse_tournament.token,
+            start_time=worse_tournament.start_time,
+            end_time=worse_tournament.end_time,
+            rank=2,
+            rank_score=500,
+            bt20sum=2000,
+            it12sum=2000,
+            et5sum=2000,
+        )
+
+        tournament_user = TournamentUser.objects.get(user=self.user)
+        self.assertEqual(
+            tournament_user.gsc_best,
+            encode_tournament_best(better_participant.t37, better_tournament.order, tournament_digits=GSC_BEST_TOURNAMENT_BITS),
+        )
+
+        better_participant.delete()
+
+        tournament_user.refresh_from_db()
+        worse_participant.refresh_from_db()
+        self.assertEqual(
+            tournament_user.gsc_best,
+            encode_tournament_best(worse_participant.t37, worse_tournament.order, tournament_digits=GSC_BEST_TOURNAMENT_BITS),
+        )
+
+    def test_refresh_tournament_user_stats_command_rebuilds_total_and_best_only(self):
+        other_user = self.create_user('stats_other')
+        stale_user = self.create_user('stats_stale')
+        weekly_tournament = self.create_weekly_tournament(year=2026, week=3)
+        last_updated = timezone.now() - timedelta(days=10)
+        TournamentUser.objects.create(
+            user=self.user,
+            score_current=42,
+            last_updated=last_updated,
+            score_total=999,
+            gsc_total=999,
+            gsc_best=999,
+            weekly_total=999,
+            weekly_best=999,
+        )
+
+        gsc_participant = GSCParticipant.objects.create(
+            user=self.user,
+            tournament=self.tournament,
+            token=self.tournament.token,
+            start_time=self.tournament.start_time,
+            end_time=self.tournament.end_time,
+            rank=1,
+            rank_score=10,
+            bt20sum=1000,
+            it12sum=2000,
+            et5sum=3000,
+        )
+        weekly_participant = WeeklyParticipant.objects.create(
+            user=self.user,
+            tournament=weekly_tournament,
+            start_time=weekly_tournament.start_time,
+            end_time=weekly_tournament.end_time,
+            rank=1,
+            rank_score=20,
+            classic_score=123456,
+        )
+        GSCParticipant.objects.create(
+            user=other_user,
+            tournament=self.tournament,
+            token='other-token',
+            start_time=self.tournament.start_time,
+            end_time=self.tournament.end_time,
+            rank=2,
+            rank_score=5,
+            bt20sum=2000,
+            it12sum=3000,
+            et5sum=4000,
+        )
+        TournamentUser.objects.filter(user=self.user).update(
+            score_current=42,
+            last_updated=last_updated,
+            score_total=999,
+            gsc_total=999,
+            gsc_best=999,
+            weekly_total=999,
+            weekly_best=999,
+        )
+        TournamentUser.objects.create(
+            user=stale_user,
+            score_current=24,
+            score_total=888,
+            gsc_total=888,
+            gsc_best=888,
+            weekly_total=888,
+            weekly_best=888,
+        )
+
+        stdout = StringIO()
+        call_command('refresh_tournament_user_stats', stdout=stdout)
+
+        tournament_user = TournamentUser.objects.get(user=self.user)
+        self.assertEqual(tournament_user.score_current, 42)
+        self.assertEqual(tournament_user.last_updated, last_updated)
+        self.assertEqual(tournament_user.score_total, 30)
+        self.assertEqual(tournament_user.gsc_total, 10)
+        self.assertEqual(tournament_user.weekly_total, 20)
+        self.assertEqual(
+            tournament_user.gsc_best,
+            encode_tournament_best(gsc_participant.t37, self.tournament.order, tournament_digits=GSC_BEST_TOURNAMENT_BITS),
+        )
+        self.assertEqual(
+            tournament_user.weekly_best,
+            encode_tournament_best(weekly_participant.classic_score, 2603, tournament_digits=WEEKLY_BEST_TOURNAMENT_BITS),
+        )
+
+        other_tournament_user = TournamentUser.objects.get(user=other_user)
+        self.assertEqual(other_tournament_user.score_total, 5)
+        self.assertEqual(other_tournament_user.gsc_total, 5)
+        self.assertEqual(other_tournament_user.weekly_total, 0)
+
+        stale_tournament_user = TournamentUser.objects.get(user=stale_user)
+        self.assertEqual(stale_tournament_user.score_current, 24)
+        self.assertEqual(stale_tournament_user.score_total, 0)
+        self.assertEqual(stale_tournament_user.gsc_total, 0)
+        self.assertEqual(stale_tournament_user.gsc_best, 0)
+        self.assertEqual(stale_tournament_user.weekly_total, 0)
+        self.assertEqual(stale_tournament_user.weekly_best, 0)
+        self.assertIn('refreshed 3 tournament users', stdout.getvalue())
 
     def test_weekly_participant_create_backfills_and_checkin_uses_token(self):
         tournament = self.create_weekly_tournament()
@@ -781,11 +942,6 @@ class TournamentTestCase(TestCase):
         )
         self.assertTrue(WeeklyParticipant.objects.filter(pk=participant.pk).exists())
         self.assertFalse(WeeklyParticipant.objects.filter(pk=participant_without_video.pk).exists())
-
-        finish_weekly_tournament(tournament)
-        tournament_user.refresh_from_db()
-        self.assertEqual(tournament_user.score_current, 50)
-        self.assertEqual(tournament_user.score_total, 50)
 
     def test_weekly_finish_task_api_reuses_existing_task(self):
         tournament = self.create_weekly_tournament(end_time=timezone.now() - timedelta(minutes=1))
@@ -1057,11 +1213,6 @@ class TournamentTestCase(TestCase):
         )
         self.assertTrue(GSCParticipant.objects.filter(pk=participant_with_video.pk).exists())
         self.assertFalse(GSCParticipant.objects.filter(pk=participant_without_video.pk).exists())
-
-        finish_gsc_tournament(self.tournament)
-        tournament_user.refresh_from_db()
-        self.assertEqual(tournament_user.score_current, 1000)
-        self.assertEqual(tournament_user.score_total, 1000)
 
     def test_refresh_gsc_score_and_rank_uses_batch_rules(self):
         participant = GSCParticipant.objects.create(

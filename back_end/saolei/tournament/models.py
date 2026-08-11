@@ -10,40 +10,13 @@ from config.global_settings import MaxSizes
 from config.text_choices import Tournament_TextChoices
 from config.tournaments import GSC_Defaults
 from identifier.models import Identifier
-from tournament.utils import generate_random_token, insert_to_id_value_list_asc
+from tournament.utils import default_weekly_classic_et, default_weekly_classic_it, generate_random_token, insert_to_id_value_list_asc
 from userprofile.models import UserProfile
 from videomanager.models import VideoModel
-
-GSC_BEST_TOURNAMENT_BITS = 3
-WEEKLY_BEST_TOURNAMENT_BITS = 5
 
 
 def generate_GSC_token(length=GSC_Defaults.TOKEN_LENGTH):
     return 'G' + ''.join(secrets.choice(string.digits) for _ in range(length))
-
-
-def default_weekly_classic_et():
-    return [(0, 240000), (0, 240000)]
-
-
-def default_weekly_classic_it():
-    return [(0, 60000), (0, 60000), (0, 60000), (0, 60000), (0, 60000)]
-
-
-def encode_tournament_best(score: int, tournament_number: int, *, tournament_digits: int):
-    return score * (10 ** tournament_digits) + tournament_number
-
-
-def decode_tournament_best(value: int, *, tournament_digits: int):
-    divisor = 10 ** tournament_digits
-    return divmod(value, divisor)
-
-
-def is_better_tournament_best(best: int, score: int, tournament_number: int, *, tournament_digits: int):
-    if best == 0:
-        return True
-    current_score, current_tournament_number = decode_tournament_best(best, tournament_digits=tournament_digits)
-    return (score, tournament_number) < (current_score, current_tournament_number)
 
 
 class Tournament(models.Model):
@@ -261,6 +234,21 @@ class GSCParticipant(TournamentParticipant):
         output_field=models.PositiveIntegerField(),
         db_persist=True,
     )
+
+    @bt20sum.setter
+    def bt20sum(self, value):
+        self.t37 = value + self.it12sum + self.et5sum
+        self.__dict__['bt20sum'] = value
+
+    @it12sum.setter
+    def it12sum(self, value):
+        self.t37 = value + self.bt20sum + self.et5sum
+        self.__dict__['it12sum'] = value
+
+    @et5sum.setter
+    def et5sum(self, value):
+        self.t37 = value + self.bt20sum + self.it12sum
+        self.__dict__['et5sum'] = value
 
     @property
     def user__id(self):

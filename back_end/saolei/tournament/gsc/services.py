@@ -5,7 +5,8 @@ from django.db.models.functions import RowNumber
 
 from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from config.tournaments import GSC_Defaults
-from tournament.models import GSCParticipant, GSCTournament
+from tournament.gsc.utils import gsc_encode_best
+from tournament.models import GSCParticipant, GSCTournament, TournamentUser
 from tournament.services import award_tournament_rank_scores, delete_participants_without_videos, reveal_videos_for_tournament
 
 GSC_SCORE_FIELDS = [
@@ -143,3 +144,29 @@ def finish_gsc_tournament(tournament: GSCTournament):
 
 def get_gsc_scores(tournament: GSCTournament):
     return GSCParticipant.objects.filter(tournament=tournament).select_related('user')
+
+
+def update_gsc_best_score_from_participant(tournament_user: TournamentUser, participant: GSCParticipant):
+    if participant.user_id is None or participant.rank_score <= 0:
+        return []
+
+    tournament = participant.tournament.gsctournament
+    new_best = gsc_encode_best(participant.t37, tournament.order)
+    if tournament_user.gsc_best != 0 and tournament_user.gsc_best <= new_best:
+        return []
+
+    tournament_user.gsc_best = new_best
+    return ['gsc_best']
+
+
+def calculate_gsc_best_score(user_id: int):
+    best_participant = (
+        GSCParticipant.objects
+        .filter(user_id=user_id, rank_score__gt=0)
+        .select_related('tournament__gsctournament')
+        .order_by('t37', 'tournament__gsctournament__order')
+        .first()
+    )
+    if best_participant is None:
+        return 0
+    return gsc_encode_best(best_participant.t37, best_participant.tournament.gsctournament.order)

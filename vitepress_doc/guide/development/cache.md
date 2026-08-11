@@ -107,6 +107,7 @@ digraph cache {
         userms_db [label="UserMS", width=3, height=3, fontsize=30];
         tournament_db [label="Tournament\nGSCTournament\nWeeklyTournament", width=2.5, height=1.1];
         participant_db [label="TournamentParticipant\nGSCParticipant\nWeeklyParticipant", width=2.8, height=1.1];
+        tournament_user_db [label="TournamentUser", width=2.2, height=0.8];
         userprofile_db [label="UserProfile", width=4, height=4, fontsize=40];
         email_otp_db [label="EmailVerifyRecord"]
         video_db [label="VideoModel\nExpandVideoModel", width=4, height=4, fontsize=30];
@@ -159,6 +160,10 @@ digraph cache {
         update_cache_on_tournament_delete [label="update_cache_on_tournament_delete"];
         update_cache_on_tournament_save [label="update_cache_on_tournament_save"];
         update_cache_on_participant_save [label="update_cache_on_participant_save"];
+        update_best_score_on_gsc_participant_save [label="update_best_score_on_gsc_participant_save", width=3.4, height=0.8];
+        update_best_score_on_weekly_participant_save [label="update_best_score_on_weekly_participant_save", width=3.7, height=0.8];
+        update_best_score_on_gsc_participant_delete [label="update_best_score_on_gsc_participant_delete", width=3.5, height=0.8];
+        update_best_score_on_weekly_participant_delete [label="update_best_score_on_weekly_participant_delete", width=3.8, height=0.8];
         remove_participant_cache_on_delete [label="remove_participant_cache_on_delete"];
     }
 
@@ -170,6 +175,8 @@ digraph cache {
         ];
         task_saolei_video_import_bulk [label="task_saolei_video_import_bulk"];
         task_saolei_video_import [label="task_saolei_video_import"];
+        task_gsc_finish [label="task_gsc_finish"];
+        task_weekly_finish [label="task_weekly_finish"];
     }
 
     // accountlink API
@@ -342,6 +349,39 @@ digraph cache {
     captcha_db -> get_email_captcha;
     get_email_captcha -> captcha_db;
 
+    // tournament finish tasks
+    task_db -> task_gsc_finish [label="status/read"];
+    tournament_db -> task_gsc_finish [label="read/write"];
+    participant_db -> task_gsc_finish [label="read/write/delete"];
+    video_db -> task_gsc_finish [label="read/write"];
+    tournament_user_db -> task_gsc_finish [label="read/decay"];
+    task_gsc_finish -> participant_db [label="score/rank/award"];
+    task_gsc_finish -> tournament_db [label="state write"];
+    task_gsc_finish -> tournament_user_db [label="award/decay"];
+    task_gsc_finish -> newest_cache [label="restore queues"];
+    task_gsc_finish -> freeze_cache [label="restore queues"];
+    task_gsc_finish -> review_cache [label="restore queues"];
+    task_gsc_finish -> player_record_cache [label="restore records"];
+    task_gsc_finish -> player_rank_cache [label="restore records"];
+    task_gsc_finish -> pluck_rank_cache [label="restore pluck"];
+    task_gsc_finish -> pluck_detail_cache [label="restore pluck"];
+
+    task_db -> task_weekly_finish [label="status/read"];
+    tournament_db -> task_weekly_finish [label="read/write"];
+    participant_db -> task_weekly_finish [label="read/write/delete"];
+    video_db -> task_weekly_finish [label="read/write"];
+    tournament_user_db -> task_weekly_finish [label="read/decay"];
+    task_weekly_finish -> participant_db [label="score/rank/award"];
+    task_weekly_finish -> tournament_db [label="state write"];
+    task_weekly_finish -> tournament_user_db [label="award/decay"];
+    task_weekly_finish -> newest_cache [label="restore queues"];
+    task_weekly_finish -> freeze_cache [label="restore queues"];
+    task_weekly_finish -> review_cache [label="restore queues"];
+    task_weekly_finish -> player_record_cache [label="restore records"];
+    task_weekly_finish -> player_rank_cache [label="restore records"];
+    task_weekly_finish -> pluck_rank_cache [label="restore pluck"];
+    task_weekly_finish -> pluck_detail_cache [label="restore pluck"];
+
     // videomanager API
     video_db -> get_review_queue;
     video_db -> get_video_info_bulk;
@@ -457,6 +497,28 @@ digraph cache {
     update_cache_on_participant_save -> participant_cache [label="write/delete"];
     update_cache_on_participant_save -> tournament_db [label="m2m write"];
 
+    participant_db -> update_best_score_on_gsc_participant_save [label="post_save"];
+    tournament_db -> update_best_score_on_gsc_participant_save [label="FK/subclass read"];
+    tournament_user_db -> update_best_score_on_gsc_participant_save [label="read/create"];
+    update_best_score_on_gsc_participant_save -> tournament_user_db [label="write best"];
+
+    participant_db -> update_best_score_on_weekly_participant_save [label="post_save"];
+    tournament_db -> update_best_score_on_weekly_participant_save [label="FK/subclass read"];
+    tournament_user_db -> update_best_score_on_weekly_participant_save [label="read/create"];
+    update_best_score_on_weekly_participant_save -> tournament_user_db [label="write best"];
+
+    participant_db -> update_best_score_on_gsc_participant_delete [label="post_delete"];
+    participant_db -> update_best_score_on_gsc_participant_delete [label="query best"];
+    tournament_db -> update_best_score_on_gsc_participant_delete [label="FK/subclass read"];
+    tournament_user_db -> update_best_score_on_gsc_participant_delete [label="read"];
+    update_best_score_on_gsc_participant_delete -> tournament_user_db [label="write best"];
+
+    participant_db -> update_best_score_on_weekly_participant_delete [label="post_delete"];
+    participant_db -> update_best_score_on_weekly_participant_delete [label="query best"];
+    tournament_db -> update_best_score_on_weekly_participant_delete [label="FK/subclass read"];
+    tournament_user_db -> update_best_score_on_weekly_participant_delete [label="read"];
+    update_best_score_on_weekly_participant_delete -> tournament_user_db [label="write best"];
+
     participant_db -> remove_participant_cache_on_delete [label="post_delete"];
     participant_cache -> remove_participant_cache_on_delete [label="read"];
     remove_participant_cache_on_delete -> participant_cache [label="write/delete"];
@@ -483,6 +545,8 @@ digraph cache {
 | `common` | `api:common/tasksummary` | Django cache | `task_summary` 返回体，TTL 300 秒。 |
 | `common` | `api:common/diskusage` | Django cache | `disk_usage` 返回体，TTL 300 秒。 |
 | `article` | `articles` | list | 文章目录项字符串，来自 `assets/article` 或静态目录下的文章文件。 |
+
+`TournamentUser` 是比赛积分的持久化汇总表，不是缓存。GSC / 周赛结算任务会读取并衰减既有 `TournamentUser.score_current`，再根据本场 participant 的 `rank_score` 增量写回 `TournamentUser` 和 `TournamentParticipant.rank_score`。历史最好成绩在 participant 保存后只读取当前 participant 和对应比赛子表，并与 `TournamentUser.gsc_best` / `weekly_best` 直接比较；只有当前成绩更好时才写回。participant 删除或历史修复路径仍使用 `refresh_tournament_user_best_scores` 扫描同一用户已发放积分的 participant 并重算 best。由于 `TournamentUser` 是数据库汇总数据，participant 信号触发的 best 更新必须在当前事务内立即执行，不使用 `transaction.on_commit`。如果需要修复历史汇总数据，可以运行 `manage.py refresh_tournament_user_stats` 从 participant 重建 `score_total`、`gsc_total`、`weekly_total` 和 best 字段；`score_current` 依赖实时衰减，不由该命令刷新。
 
 ## 写入与重建入口
 

@@ -2,8 +2,10 @@ from django.db.models import F, Window
 from django.db.models.functions import RowNumber
 
 from config.text_choices import MS_TextChoices, Tournament_TextChoices
-from tournament.models import WeeklyParticipant, WeeklyTournament
+from tournament.models import TournamentUser, WeeklyParticipant, WeeklyTournament
 from tournament.services import award_tournament_rank_scores, delete_participants_without_videos, reveal_videos_for_tournament
+from tournament.utils import encode_tournament_best
+from .utils import weekly_encode_best
 
 
 def refresh_weekly_classic_scores(tournament: WeeklyTournament, *, batch_size=1000):
@@ -75,3 +77,30 @@ def finish_weekly_tournament(tournament: WeeklyTournament):
         'award_count': award_count,
         'video_count': video_count,
     }
+
+
+def update_weekly_best_score_from_participant(tournament_user: TournamentUser, participant: WeeklyParticipant) -> list[str]:
+    if participant.user_id is None or participant.rank_score <= 0:
+        return []
+
+    tournament = participant.tournament.weeklytournament
+    new_best = weekly_encode_best(participant.classic_score, tournament.year, tournament.week)
+    if tournament_user.weekly_best != 0 and tournament_user.weekly_best <= new_best:
+        return []
+
+    tournament_user.weekly_best = new_best
+    return ['weekly_best']
+
+
+def calculate_weekly_best_score(user_id: int):
+    best_participant = (
+        WeeklyParticipant.objects
+        .filter(user_id=user_id, rank_score__gt=0)
+        .select_related('tournament__weeklytournament')
+        .order_by('classic_score', 'tournament__weeklytournament__year', 'tournament__weeklytournament__week')
+        .first()
+    )
+    if best_participant is None:
+        return 0
+    tournament = best_participant.tournament.weeklytournament
+    return weekly_encode_best(best_participant.classic_score, tournament.year, tournament.week)

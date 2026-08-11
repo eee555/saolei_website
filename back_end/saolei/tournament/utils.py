@@ -17,3 +17,20 @@ def insert_to_id_value_list_asc(list_asc: list[tuple[int, Any]], video_id: int, 
             break
     list_asc.insert(insert_index, (video_id, value))
     list_asc.pop()
+
+
+def default_weekly_classic_et():
+    return [(0, 240000), (0, 240000)]
+
+
+def default_weekly_classic_it():
+    return [(0, 60000), (0, 60000), (0, 60000), (0, 60000), (0, 60000)]
+
+
+def encode_tournament_best(score: int, tournament_number: int, *, tournament_digits: int):
+    return score * (10 ** tournament_digits) + tournament_number
+
+
+def decode_tournament_best(value: int, *, tournament_digits: int):
+    divisor = 10 ** tournament_digits
+    return divmod(value, divisor)

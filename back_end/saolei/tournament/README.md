@@ -128,21 +128,23 @@ GSC 创建 `GSCParticipant` 时，participant 自身的 `start_time/end_time` �
 - `score_total`：所有比赛历史累计积分，不参与衰减，用于展示历史贡献。
 - `gsc_total` / `weekly_total`：按比赛类型拆分的历史累计积分，不参与衰减。
 - `gsc_best` / `weekly_best` 使用整数打包“最好成绩 + 比赛届数/期数”。GSC 后三位保存届数；周赛后五位保存 `year % 100 * 100 + week`。GSC 和周赛都按“成绩越小越好，同成绩比赛编号越小越好”比较。
-- `encode_tournament_best` / `decode_tournament_best` / `is_better_tournament_best` 统一维护 best 编码和比较逻辑。
+- `tournament.utils.encode_tournament_best` / `decode_tournament_best` 统一维护 best 编码和解码逻辑。
 - `tournament.services.award_tournament_rank_scores` 是统一发放入口。它先按比赛 `end_time` 衰减所有已有 `TournamentUser.score_current`，再读取本场有站内用户且有 `rank` 的 participant，按 `round(tournament.weight / participant.rank)` 计算目标排名积分。
 - `TournamentParticipant.rank_score` 记录该 participant 已发放的排名积分。重复结算或重算时只应用 `target_rank_score - participant.rank_score` 的增量，避免重复累加。
+- `tournament.services.update_gsc_best_score_from_participant` / `update_weekly_best_score_from_participant` 在 `GSCParticipant` / `WeeklyParticipant` 保存后，只把当前 participant 成绩与原 best 比较，只有更好时才写入 best，不扫描用户所有历史成绩。
+- `tournament.services.refresh_tournament_user_best_scores` 统一重算某个用户的 GSC / 周赛历史最好成绩，主要用于 participant 删除、管理命令和其他需要修复历史数据的路径。结算流程使用 `bulk_update` 写入成绩和 `rank_score` 后，也会显式调用它，避免批量更新不触发信号导致 best 漏刷新。
+- `TournamentUser` 是数据库持久化汇总，不是缓存。participant 信号触发的 `TournamentUser` 更新必须在当前数据库事务内立即执行，不能延迟到 `transaction.on_commit`，从而保证 participant 与汇总字段一起提交或一起回滚。
+- `manage.py refresh_tournament_user_stats` 可从所有已发放 `rank_score` 的 participant 重建 `score_total`、`gsc_total`、`weekly_total`、`gsc_best` 和 `weekly_best`。`score_current` 依赖时间衰减，是实时值，命令不会刷新它。
 - GSC / 周赛结算流程在刷新成绩和排名后调用统一积分发放服务，再切换 `AWARDED` 并公开录像。
 - 无站内用户的 participant 不会创建 `TournamentUser`。
 
-已生成迁移：
-
-- `0017_tournamentuser_alter_tournamentparticipant_rank.py`
-
 当前测试覆盖：
 
-- `TournamentUser` 默认值和 best 编码/比较 helper。
+- `TournamentUser` 默认值和 best 编码/解码 helper。
 - 积分衰减公式、按 `rank_score` 计算增量、`last_updated` 写回。
 - GSC / 周赛结算后正确写入 `TournamentUser`。
+- GSC / 周赛 participant 保存或删除后，信号刷新历史最好成绩。
+- 管理命令可重建历史 total/best 字段，且不会修改 `score_current` / `last_updated`。
 - 重复执行结算流程不会重复发放积分。
 - 无录像 participant 在结算开头被删除后不会获得积分。
 
@@ -228,7 +230,7 @@ HSET tournament:normal:participants {user_id} '[{"id":456,"token":"G12345","arbi
 - checkin 读路径只读取缓存，不在未命中时查询 DB 或重建缓存；缓存与 DB 不同步属于写路径维护 bug。
 - `TournamentCache.remove_tournament` 移除 `tournament:normal` 中的比赛时，也会从 `tournament:normal:participants` 的所有用户列表中精确移除对应比赛的参赛关系，避免已结束或已取消比赛继续参与 checkin。
 - 删除 participant 只监听 `TournamentParticipant.post_delete`；删除 GSC participant 时，多表继承会级联删除父表，参赛关系缓存清理由父类 `post_delete` 的 `remove_participant_cache_on_delete` 统一处理。`post_delete` 中应先捕获 `user_id` 和 `tournament_id`，再在 `transaction.on_commit` 回调中调用 `TournamentCache.remove_participant`。
-- 缓存更新和删除应尽量在事务提交后执行；创建 participant 后补录既有录像是关系维护，不属于缓存失效，按上面的规则立即执行。
+- 缓存更新和删除应尽量在事务提交后执行；创建 participant 后补录既有录像是关系维护，不属于缓存失效，按上面的规则立即执行。`TournamentUser` 的 total/best 更新属于数据库数据完整性维护，不适用缓存的 `on_commit` 规则。
 
 当前重构状态：
 

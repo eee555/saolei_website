@@ -13,9 +13,13 @@ flowchart LR
     tournament_post_save[Tournament post_save]
     tournament_post_delete[Tournament post_delete]
     gsc_post_save[GSCTournament post_save]
+    weekly_post_save[WeeklyTournament post_save]
     participant_post_save[TournamentParticipant post_save]
     gsc_participant_post_save[GSCParticipant post_save]
+    weekly_participant_post_save[WeeklyParticipant post_save]
     participant_post_delete[TournamentParticipant post_delete]
+    gsc_participant_post_delete[GSCParticipant post_delete]
+    weekly_participant_post_delete[WeeklyParticipant post_delete]
 
     video_pre_save --> capture_video_update[捕获字段旧值]
     capture_video_update --> video_post_save
@@ -50,10 +54,16 @@ flowchart LR
 
     tournament_post_save --> update_cache_on_tournament_save[更新比赛缓存]
     gsc_post_save --> update_cache_on_tournament_save
+    weekly_post_save --> update_cache_on_tournament_save
     tournament_post_delete --> update_cache_on_tournament_delete[删除比赛缓存]
 
     participant_post_save --> update_cache_on_participant_save[更新参赛缓存]
     gsc_participant_post_save --> update_cache_on_participant_save
+    weekly_participant_post_save --> update_cache_on_participant_save
+    gsc_participant_post_save --> update_best_score_on_gsc_participant_save[刷新GSC历史最好]
+    weekly_participant_post_save --> update_best_score_on_weekly_participant_save[刷新周赛历史最好]
+    gsc_participant_post_delete --> update_best_score_on_gsc_participant_delete[重算GSC历史最好]
+    weekly_participant_post_delete --> update_best_score_on_weekly_participant_delete[重算周赛历史最好]
     participant_post_delete --> remove_participant_cache_on_delete[删除参赛缓存]
     update_cache_on_participant_save -->|created| add_existing_videos_to_participant_tournament[补录比赛录像]
 
@@ -70,9 +80,13 @@ flowchart LR
     click tournament_post_save "#signal-function-map" "Tournament 保存后触发"
     click tournament_post_delete "#signal-function-map" "Tournament 删除后触发"
     click gsc_post_save "#signal-function-map" "GSCTournament 保存后触发"
+    click weekly_post_save "#signal-function-map" "WeeklyTournament 保存后触发"
     click participant_post_save "#signal-function-map" "TournamentParticipant 保存后触发"
     click gsc_participant_post_save "#signal-function-map" "GSCParticipant 保存后触发"
+    click weekly_participant_post_save "#signal-function-map" "WeeklyParticipant 保存后触发"
     click participant_post_delete "#signal-function-map" "TournamentParticipant 删除后触发"
+    click gsc_participant_post_delete "#signal-function-map" "GSCParticipant 删除后触发"
+    click weekly_participant_post_delete "#signal-function-map" "WeeklyParticipant 删除后触发"
 
     click capture_video_update "#signal-function-map" "保存前记录录像旧状态，用于保存后判断副作用"
     click checkin_video_before_create "#signal-function-map" "录像创建前，根据用户参赛缓存判断是否属于比赛录像"
@@ -91,6 +105,10 @@ flowchart LR
     click update_cache_on_tournament_save "#signal-function-map" "比赛保存后同步 NORMAL 比赛缓存"
     click update_cache_on_tournament_delete "#signal-function-map" "比赛删除后移除比赛缓存和相关参赛缓存"
     click update_cache_on_participant_save "#signal-function-map" "参赛关系保存后同步用户参赛缓存"
+    click update_best_score_on_gsc_participant_save "#signal-function-map" "GSC 参赛成绩保存后刷新用户历史最好"
+    click update_best_score_on_weekly_participant_save "#signal-function-map" "周赛参赛成绩保存后刷新用户历史最好"
+    click update_best_score_on_gsc_participant_delete "#signal-function-map" "GSC 参赛成绩删除后重算用户历史最好"
+    click update_best_score_on_weekly_participant_delete "#signal-function-map" "周赛参赛成绩删除后重算用户历史最好"
     click remove_participant_cache_on_delete "#signal-function-map" "参赛关系删除后移除用户参赛缓存"
     click add_existing_videos_to_participant_tournament "#signal-function-map" "创建参赛关系后扫描并补录既有比赛录像"
 ```
@@ -114,7 +132,11 @@ flowchart LR
 | 更新比赛缓存 | `update_cache_on_tournament_save` |
 | 删除比赛缓存 | `update_cache_on_tournament_delete` |
 | 更新参赛缓存 | `update_cache_on_participant_save` |
+| 刷新GSC历史最好 | `update_best_score_on_gsc_participant_save` |
+| 刷新周赛历史最好 | `update_best_score_on_weekly_participant_save` |
+| 重算GSC历史最好 | `update_best_score_on_gsc_participant_delete` |
+| 重算周赛历史最好 | `update_best_score_on_weekly_participant_delete` |
 | 删除参赛缓存 | `remove_participant_cache_on_delete` |
 | 补录比赛录像 | `add_existing_videos_to_participant_tournament` |
 
-`Tournament` / `GSCTournament` 的保存信号分别绑定到同一个 `update_cache_on_tournament_save` 接收器。`TournamentParticipant` / `GSCParticipant` 的保存信号分别绑定到同一个 `update_cache_on_participant_save` 接收器。删除信号只保留父类接收器；多表继承删除子类时会继续触发父表删除。
+`Tournament` / `GSCTournament` / `WeeklyTournament` 的保存信号分别绑定到同一个 `update_cache_on_tournament_save` 接收器。`TournamentParticipant` / `GSCParticipant` / `WeeklyParticipant` 的保存信号分别绑定到同一个 `update_cache_on_participant_save` 接收器。缓存删除信号只保留父类接收器；多表继承删除子类时会继续触发父表删除。历史最好成绩依赖子类 participant 的成绩字段，因此由 `GSCParticipant` / `WeeklyParticipant` 的保存和删除信号单独处理：保存时只比较当前 participant 与原 best，删除时才重算该用户历史 best。best 信号更新的是 `TournamentUser` 数据库汇总字段，需要和 participant 变更保持事务一致，因此不使用 `transaction.on_commit`。
