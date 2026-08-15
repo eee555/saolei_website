@@ -1,7 +1,6 @@
 import logging
 
 from django.tasks import task
-from django_tasks import TaskResultStatus
 
 from config.text_choices import Tournament_TextChoices
 from tournament.models import WeeklyTournament
@@ -10,31 +9,6 @@ from tournament.tasks import task_award_tournament
 from .services import refresh_weekly_best_scores, refresh_weekly_classic_ranks, refresh_weekly_classic_scores
 
 logger = logging.getLogger('tournament')
-
-
-def helper_weekly_finish_tournament(tournament: WeeklyTournament):
-    existing_task = tournament.task
-    if existing_task:
-        if existing_task.status == TaskResultStatus.SUCCESSFUL:
-            logger.info(
-                f'周赛#{tournament.id} 删除已完成的旧结算任务，'
-                f'任务#{tournament.task_id}',
-            )
-            existing_task.delete()
-        elif existing_task.status in [TaskResultStatus.READY, TaskResultStatus.RUNNING]:
-            logger.info(
-                f'周赛#{tournament.id} 复用进行中的结算任务，'
-                f'任务#{tournament.task_id}，状态 {existing_task.status}',
-            )
-            return existing_task
-
-    tournament.task = task_weekly_finish.enqueue(tournament.id).db_result
-    tournament.save(update_fields=['task'])
-    logger.info(
-        f'周赛#{tournament.id} 创建结算任务完成，任务#{tournament.task_id}，'
-        f'状态 {tournament.task.status}',
-    )
-    return tournament.task
 
 
 def _task_weekly_finish_impl(tournament_id: int):

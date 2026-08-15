@@ -105,15 +105,15 @@ GSC 创建 `GSCParticipant` 时，participant 自身的 `start_time/end_time` �
 
 当前已有：
 
-- 模型：`WeeklyTournament` 保存 `year`、`week`、`task`、`tournament_format`，`subclass` 为 `Tournament_TextChoices.Subclass.WEEKLY`，名称由年份和周数动态生成。
+- 模型：`WeeklyTournament` 保存 `year`、`week`、`tournament_format`，`subclass` 为 `Tournament_TextChoices.Subclass.WEEKLY`，名称由年份和周数动态生成。
 - 模型：`WeeklyParticipant` 保存 `classic_et`、`classic_it` 和 `classic_score`，并在 `classic_score` 上建索引用于排名查询。
 - 服务：`refresh_weekly_classic_scores` 从 `Tournament.videos` 中按用户分别取 2 条高级、5 条中级有效录像，合并后批量更新 `WeeklyParticipant` 的成绩字段。
 - 服务：`refresh_weekly_classic_ranks` 按 `classic_score` 排名，只写入 `rank`；`rank_score` 由统一积分发放服务根据 `Tournament.weight / rank` 写入。
 - 任务：`task_weekly_finish` 已串联删除无录像 participant、读取本场 `TournamentUser`、刷新成绩、刷新排名、切换 `AWARDED`、公开录像；排名积分发放和 best 刷新作为非关键后台任务单独派发。
-- API：`tournament.weekly.api` 已挂载到 `/api/tournament/weekly/`，当前已有 `POST /new`、`POST /set`、`GET /info`、`POST /participant`、`GET /task` 和 `POST /task/finish`。
+- API：`tournament.weekly.api` 已挂载到 `/api/tournament/weekly/`，当前已有 `POST /new`、`POST /set`、`GET /info` 和 `POST /participant`。
 - API：`POST /api/tournament/weekly/new` 由 staff 创建下周周赛，参数只包含 `tournament_format`；服务端计算下周 `year/week/start_time/end_time`，`weight=50`，`host=request.user`，禁止重复创建，并在创建后直接 `validate()` 切换到 `NORMAL`。
 - API：`POST /api/tournament/weekly/set` 只允许主办方或管理员修改周赛状态，不修改 `year/week/tournament_format`。
-- API：`GET /api/tournament/weekly/task` 和 `POST /api/tournament/weekly/task/finish` 复用 `WeeklyTournament.task` 管理后台结算任务，行为与 GSC 结算任务一致。
+- 周赛由网站管理员主办，不在 `WeeklyTournament` 上保存任务引用；管理员通过通用后台任务系统直接管理 `task_weekly_finish`。
 
 周赛后端缓存已经使用 `CachedTournament` 作为基础 dataclass，并通过 `CachedGSCTournament` / `CachedWeeklyTournament` 子类收敛 `data` 的类型。dataclass 子类新增字段时仍需要单独加 `@dataclass`，实际执行 JSON 序列化/反序列化的子类也单独加 `@dataclass_json`。
 

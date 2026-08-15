@@ -2,7 +2,6 @@ from .base import (
     _task_award_tournament_impl,
     _task_weekly_finish_impl,
     _task_weekly_refresh_best_impl,
-    DBTaskResult,
     MS_TextChoices,
     refresh_weekly_classic_ranks,
     refresh_weekly_classic_scores,
@@ -106,30 +105,4 @@ class TestWeekly(TournamentTestCaseBase):
         self.assertEqual(
             tournament_user.weekly_classic_best,
             weekly_encode_best(participant.classic_score, 2026, 1),
-        )
-
-    def test_weekly_finish_task_api_reuses_existing_task(self):
-        tournament = self.create_weekly_tournament(end_time=timezone.now() - timedelta(minutes=1))
-        self.user.is_staff = True
-        self.user.save(update_fields=['is_staff'])
-        self.client.force_login(self.user)
-
-        no_task_response = self.client.get('/api/tournament/weekly/task', {'tournament_id': tournament.id})
-        first_response = self.client.post('/api/tournament/weekly/task/finish', {'id': tournament.id})
-        second_response = self.client.post('/api/tournament/weekly/task/finish', {'id': tournament.id})
-
-        self.assertEqual(no_task_response.status_code, 200)
-        self.assertIsNone(no_task_response.json())
-        self.assertEqual(first_response.status_code, 200)
-        self.assertEqual(second_response.status_code, 200)
-        first_task_id = first_response.json()['data']['task_id']
-        second_task_id = second_response.json()['data']['task_id']
-        self.assertEqual(first_task_id, second_task_id)
-        tournament.refresh_from_db()
-        self.assertEqual(str(tournament.task_id), first_task_id)
-        self.assertEqual(
-            DBTaskResult.objects.filter(
-                task_path='tournament.weekly.tasks.task_weekly_finish',
-            ).count(),
-            1,
         )

@@ -161,7 +161,6 @@ class GSCTournament(Tournament):
 class WeeklyTournament(Tournament):
     year = models.PositiveSmallIntegerField()  # 年份
     week = models.PositiveSmallIntegerField()  # 期数
-    task = models.ForeignKey(DBTaskResult, on_delete=models.SET_NULL, null=True)
     tournament_format = models.CharField(max_length=1, choices=Tournament_TextChoices.WeeklyFormat.choices, default=Tournament_TextChoices.WeeklyFormat.CLASSIC)
 
     @property

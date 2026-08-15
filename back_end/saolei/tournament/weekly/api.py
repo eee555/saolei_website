@@ -13,8 +13,7 @@ from config.tournaments import TournamentWeights
 from tournament.models import WeeklyParticipant, WeeklyTournament
 from userprofile.decorators import login_required_error, staff_required
 from utils.response import HttpResponseConflict
-from utils.schema import DBTaskOut, IdIn
-from .tasks import helper_weekly_finish_tournament
+from utils.schema import IdIn
 
 router = Router()
 
@@ -43,15 +42,6 @@ class WeeklyDetailOut(Schema):
     data: WeeklyInfoOut
     results: list[WeeklyScoreOut] | None
     token: str | None
-
-
-def task_response(task):
-    return {
-        'type': 'success',
-        'data': {
-            'task_id': str(task.id),
-        },
-    }
 
 
 def get_next_week_window():
@@ -163,19 +153,3 @@ def create_weekly_participant(request: HttpRequest, data: IdIn = Form(...)):  # 
         },
     )
     return {'type': 'success', 'token': participant[0].token}
-
-
-@router.get('/task', response=DBTaskOut | None)
-@decorate_view(staff_required)
-def get_weekly_task(request: HttpRequest, tournament_id: int):
-    return get_object_or_404(WeeklyTournament, id=tournament_id).task
-
-
-@router.post('/task/finish')
-@decorate_view(staff_required)
-def finish_weekly_task(request: HttpRequest, data: IdIn = Form(...)):  # noqa: B008
-    tournament = get_object_or_404(WeeklyTournament, id=data.id)
-    if not tournament.is_ended():
-        return HttpResponseForbidden()
-
-    return task_response(helper_weekly_finish_tournament(tournament))
