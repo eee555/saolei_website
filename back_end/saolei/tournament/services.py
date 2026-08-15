@@ -199,56 +199,20 @@ def get_ranked_participants_for_award(tournament: Tournament):
     return WeeklyParticipant.objects.filter(**filters)
 
 
-def create_tournament_users_for_tournament(tournament: Tournament, *, batch_size=1000):
-    logger.info(f'比赛#{tournament.id} 创建 TournamentUser 开始')
-    user_ids = set(
-        TournamentParticipant.objects
-        .filter(tournament=tournament, user_id__isnull=False)
-        .values_list('user_id', flat=True),
-    )
-    logger.info(f'比赛#{tournament.id} 创建 TournamentUser 读取站内参赛用户 {len(user_ids)} 个')
-    if not user_ids:
-        return []
-
-    existing_user_ids = set(
-        TournamentUser.objects
-        .filter(user_id__in=user_ids)
-        .values_list('user_id', flat=True),
-    )
-    missing_user_ids = user_ids - existing_user_ids
-    if missing_user_ids:
-        award_time = tournament.end_time or timezone.now()
-        TournamentUser.objects.bulk_create(
-            [
-                TournamentUser(user_id=user_id, last_updated=award_time)
-                for user_id in missing_user_ids
-            ],
-            batch_size=batch_size,
-            ignore_conflicts=True,
-        )
-    tournament_users = list(TournamentUser.objects.filter(user_id__in=user_ids))
-    logger.info(
-        f'比赛#{tournament.id} 创建 TournamentUser 完成，'
-        f'创建 {len(missing_user_ids)} 个，返回 {len(tournament_users)} 个',
-    )
-    return tournament_users
-
-
-def award_tournament_rank_scores(tournament: Tournament, *, tournament_users: list[TournamentUser], batch_size=1000):
+def award_tournament_rank_scores(tournament: Tournament, *, batch_size=1000):
     award_time = tournament.end_time or timezone.now()
     logger.info(f'比赛#{tournament.id} 排名积分发放 开始 类型{tournament.subclass} 结算时间 {award_time}')
 
     logger.info(f'比赛#{tournament.id} 排名积分发放 获取选手列表')
-    participants = list(get_ranked_participants_for_award(tournament))
+    participants = list(get_ranked_participants_for_award(tournament).select_related('user__tournamentuser'))
     logger.info(f'比赛#{tournament.id} 排名积分发放 人数 {len(participants)}')
     if not participants:
         logger.info(f'比赛#{tournament.id} 排名积分发放 结束')
         return 0
 
-    tournament_users_by_user_id: dict[int, TournamentUser] = {tournament_user.user_id: tournament_user for tournament_user in tournament_users}
-
     logger.info(f'比赛#{tournament.id} 排名积分发放 数据整理 开始')
 
+    tournament_users = []
     changed_tournament_user_fields = ['score_current', 'last_updated', 'score_total']
     if tournament.subclass == Tournament_TextChoices.Subclass.GSC:
         add_score_category = 'gsc'
@@ -264,8 +228,9 @@ def award_tournament_rank_scores(tournament: Tournament, *, tournament_users: li
         target_rank_score = round(tournament.weight / participant.rank)
         score_delta = target_rank_score - participant.rank_score
 
-        tournament_user = tournament_users_by_user_id[participant.user_id]
+        tournament_user = participant.user.tournamentuser
         tournament_user.add_score(score_delta, award_time, category=add_score_category)
+        tournament_users.append(tournament_user)
 
         participant.rank_score = target_rank_score
 

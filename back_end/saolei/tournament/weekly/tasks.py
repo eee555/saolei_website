@@ -5,7 +5,7 @@ from django_tasks import TaskResultStatus
 
 from config.text_choices import Tournament_TextChoices
 from tournament.models import WeeklyTournament
-from tournament.services import create_tournament_users_for_tournament, delete_participants_without_videos, reveal_videos_for_tournament
+from tournament.services import delete_participants_without_videos, reveal_videos_for_tournament
 from tournament.tasks import task_award_tournament
 from .services import refresh_weekly_best_scores, refresh_weekly_classic_ranks, refresh_weekly_classic_scores
 
@@ -47,8 +47,8 @@ def _task_weekly_finish_impl(tournament_id: int):
         )
         deleted_participants = delete_participants_without_videos(tournament)
         logger.info(f'周赛#{tournament.id} 删除无录像参赛者完成，数量 {deleted_participants}')
-        tournament_users = create_tournament_users_for_tournament(tournament)
-        logger.info(f'周赛#{tournament.id} TournamentUser 准备完成，数量 {len(tournament_users)}')
+        tournament_user_count = tournament.participants.filter(user_id__isnull=False).count()
+        logger.info(f'周赛#{tournament.id} TournamentUser 可用数量 {tournament_user_count}')
         score_count = refresh_weekly_classic_scores(tournament)
         logger.info(f'周赛#{tournament.id} 成绩刷新完成，数量 {score_count}')
         rank_count = refresh_weekly_classic_ranks(tournament)
@@ -62,7 +62,7 @@ def _task_weekly_finish_impl(tournament_id: int):
         video_count = reveal_videos_for_tournament(tournament)
         logger.info(f'周赛#{tournament.id} 录像公开完成，数量 {video_count}')
         result = {
-            'tournament_users': len(tournament_users),
+            'tournament_users': tournament_user_count,
             'deleted_participants': deleted_participants,
             'score_count': score_count,
             'rank_count': rank_count,
@@ -85,8 +85,7 @@ def task_weekly_finish(tournament_id: int):
 
 def _task_weekly_refresh_best_impl(tournament_id: int):
     tournament = WeeklyTournament.objects.get(id=tournament_id)
-    tournament_users = create_tournament_users_for_tournament(tournament)
-    return refresh_weekly_best_scores(tournament, tournament_users=tournament_users)
+    return refresh_weekly_best_scores(tournament)
 
 
 @task

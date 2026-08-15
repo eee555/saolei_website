@@ -5,7 +5,7 @@ from django_tasks import TaskResultStatus
 
 from config.text_choices import Tournament_TextChoices
 from tournament.models import GSCTournament
-from tournament.services import create_tournament_users_for_tournament, delete_participants_without_videos, reveal_videos_for_tournament
+from tournament.services import delete_participants_without_videos, reveal_videos_for_tournament
 from tournament.tasks import task_award_tournament
 from .services import refresh_gsc_best_scores, refresh_gsc_scores_and_ranks
 
@@ -47,10 +47,10 @@ def _task_gsc_finish_impl(gsc_order: int):
         )
         deleted_participants = delete_participants_without_videos(tournament)
         logger.info(f'GSC#{tournament.order} 删除无录像参赛者完成，数量 {deleted_participants}')
-        tournament_users = create_tournament_users_for_tournament(tournament)
-        logger.info(f'GSC#{tournament.order} TournamentUser 准备完成，数量 {len(tournament_users)}')
+        tournament_user_count = tournament.participants.filter(user_id__isnull=False).count()
+        logger.info(f'GSC#{tournament.order} TournamentUser 可用数量 {tournament_user_count}')
         result = refresh_gsc_scores_and_ranks(tournament)
-        result['tournament_users'] = len(tournament_users)
+        result['tournament_users'] = tournament_user_count
         result['deleted_participants'] = deleted_participants
         if tournament.state != Tournament_TextChoices.State.AWARDED:
             tournament.state = Tournament_TextChoices.State.AWARDED
@@ -77,8 +77,7 @@ def task_gsc_finish(gsc_order: int):
 
 def _task_gsc_refresh_best_impl(order: int):
     tournament = GSCTournament.objects.get(order=order)
-    tournament_users = create_tournament_users_for_tournament(tournament)
-    return refresh_gsc_best_scores(tournament, tournament_users=tournament_users)
+    return refresh_gsc_best_scores(tournament)
 
 
 @task

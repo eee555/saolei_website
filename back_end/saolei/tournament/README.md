@@ -109,7 +109,7 @@ GSC 创建 `GSCParticipant` 时，participant 自身的 `start_time/end_time` �
 - 模型：`WeeklyParticipant` 保存 `classic_et`、`classic_it` 和 `classic_score`，并在 `classic_score` 上建索引用于排名查询。
 - 服务：`refresh_weekly_classic_scores` 从 `Tournament.videos` 中按用户分别取 2 条高级、5 条中级有效录像，合并后批量更新 `WeeklyParticipant` 的成绩字段。
 - 服务：`refresh_weekly_classic_ranks` 按 `classic_score` 排名，只写入 `rank`；`rank_score` 由统一积分发放服务根据 `Tournament.weight / rank` 写入。
-- 任务：`task_weekly_finish` 已串联删除无录像 participant、创建 `TournamentUser`、刷新成绩、刷新排名、切换 `AWARDED`、公开录像；排名积分发放和 best 刷新作为非关键后台任务单独派发。
+- 任务：`task_weekly_finish` 已串联删除无录像 participant、读取本场 `TournamentUser`、刷新成绩、刷新排名、切换 `AWARDED`、公开录像；排名积分发放和 best 刷新作为非关键后台任务单独派发。
 - API：`tournament.weekly.api` 已挂载到 `/api/tournament/weekly/`，当前已有 `POST /new`、`POST /set`、`GET /info`、`POST /participant`、`GET /task` 和 `POST /task/finish`。
 - API：`POST /api/tournament/weekly/new` 由 staff 创建下周周赛，参数只包含 `tournament_format`；服务端计算下周 `year/week/start_time/end_time`，`weight=50`，`host=request.user`，禁止重复创建，并在创建后直接 `validate()` 切换到 `NORMAL`。
 - API：`POST /api/tournament/weekly/set` 只允许主办方或管理员修改周赛状态，不修改 `year/week/tournament_format`。
@@ -131,7 +131,8 @@ GSC 创建 `GSCParticipant` 时，participant 自身的 `start_time/end_time` �
 - `gsc_total` / `weekly_total`：按比赛类型拆分的历史累计积分，不参与衰减；`weekly_classic_total` 是周赛经典模式的累计积分。
 - `gsc_best` / `weekly_classic_best` 使用整数打包“最好成绩 + 比赛届数/期数”。GSC 后三位保存届数；周赛经典模式后五位保存 `year % 1000 * 100 + week`。GSC 和周赛经典模式都按“成绩越小越好，同成绩比赛编号越小越好”比较；没有有效历史成绩时使用 `MAX_TOURNAMENT_BEST` 作为哨兵值。
 - `tournament.gsc.utils.gsc_encode_best` 和 `tournament.weekly.utils.weekly_encode_best` 分别维护 GSC / 周赛 best 编码。
-- 结束结算的第一步是删除无录像 participant，随后 `tournament.services.create_tournament_users_for_tournament` 为剩余站内 participant 创建缺失的 `TournamentUser`，并返回本场相关的 `TournamentUser` 列表。排名积分发放和 best 刷新任务会各自重新调用这个 service，保证单独重跑时不依赖 finish 任务的内存状态。
+- 站内用户创建 `TournamentParticipant` / `GSCParticipant` / `WeeklyParticipant` 时，保存信号会在当前数据库事务内立即创建缺失的 `TournamentUser`。删除 participant 不会跟随删除 `TournamentUser`。
+- 结束结算的第一步是删除无录像 participant。排名积分发放和 best 刷新任务会从本场剩余站内 participant 出发，通过 `participant.user.tournamentuser` 取得对应的 `TournamentUser`；查询时使用 `select_related('user__tournamentuser')` 避免 N+1。
 - `tournament.services.award_tournament_rank_scores` 是统一排名积分发放入口。它先按比赛 `end_time` 衰减所有已有 `TournamentUser.score_current`，再根据 `Tournament.subclass` 读取本场有站内用户且有 `rank` 的具体 participant，按 `round(tournament.weight / participant.rank)` 计算目标排名积分。这个步骤只更新 `score_current`、total 字段和 `TournamentParticipant.rank_score`，不刷新 best，也不隐式创建 `TournamentUser`。
 - `TournamentParticipant.rank_score` 记录该 participant 已发放的排名积分。重复结算或重算时按 `target_rank_score - participant.rank_score` 计算增量，避免重复累加；落库时不筛选字段是否发生变化，候选 participant 和对应 `TournamentUser` 会统一 `bulk_update`。
 - `tournament.gsc.services.update_gsc_best` / `tournament.weekly.services.update_weekly_best` 在 `GSCParticipant` / `WeeklyParticipant` 保存后，只把当前 participant 成绩与原 best 比较，只有更好时才写入 best，不扫描用户所有历史成绩。
@@ -140,7 +141,7 @@ GSC 创建 `GSCParticipant` 时，participant 自身的 `start_time/end_time` �
 - `TournamentUser` 是数据库持久化汇总，不是缓存。participant 信号触发的 `TournamentUser` 更新必须在当前数据库事务内立即执行，不能延迟到 `transaction.on_commit`，从而保证 participant 与汇总字段一起提交或一起回滚。
 - `manage.py refresh_tournament_user_stats` 可从所有已发放 `rank_score` 的 participant 重建 `score_total`、`gsc_total`、`weekly_total`、`weekly_classic_total`、`gsc_best` 和 `weekly_classic_best`。命令内部先执行 `refresh_tournament_user_total_fields`，再执行 `refresh_tournament_user_best_fields`，total 与 best 是两个独立刷新步骤。`score_current` 依赖时间衰减，是实时值，命令不会刷新它。`gsc_best` / `weekly_classic_best` 默认值从 `0` 改为 `MAX_TOURNAMENT_BEST` 后，既有历史行需要通过这个命令修复。
 - GSC / 周赛 finish 任务在刷新成绩和排名后切换 `AWARDED` 并公开录像；随后派发 `task_award_tournament` 和对应的 best 刷新任务。排名积分发放和 best 刷新都属于非关键后台任务，失败后可以单独重跑。
-- GSC / 周赛结算链路使用 `tournament` logger 写入 `logs/tournament.log`。日志覆盖后台任务创建/复用、任务开始/失败/完成、删除无录像 participant、创建 `TournamentUser`、刷新成绩、刷新排名、发放 `rank_score`、刷新 best、状态切换和公开录像等阶段，并记录每个阶段的处理数量。
+- GSC / 周赛结算链路使用 `tournament` logger 写入 `logs/tournament.log`。日志覆盖后台任务创建/复用、任务开始/失败/完成、删除无录像 participant、读取 `TournamentUser`、刷新成绩、刷新排名、发放 `rank_score`、刷新 best、状态切换和公开录像等阶段，并记录每个阶段的处理数量。
 - 无站内用户的 participant 不会创建 `TournamentUser`。
 
 当前测试覆盖：
@@ -231,11 +232,11 @@ HSET tournament:normal:participants {user_id} '[{"id":456,"token":"G12345","arbi
 
 - `TournamentParticipant` / `GSCParticipant` 创建、修改后，在对应用户的列表缓存中同步 upsert 该参赛关系。participant 保存信号用两个 `post_save` 装饰器绑定到同一个 `update_cache_on_participant_save` 接收器；父类和 GSC 子类保存都进入同一套逻辑，只在缓存相关字段变化时更新缓存，GSC 子类成绩字段变化不会刷新 participant 缓存。
 - `TournamentParticipant` 创建后，立即扫描同一用户 `upload_time` 落在 participant `start_time/end_time` 窗口内的既有录像，并补充写入 `Tournament.videos` 多对多关系。AVF 录像要求 `ExpandVideoModel.identifier == participant.arbiter_identifier`；其他录像要求 `ExpandVideoModel.tournament_identifier` 包含 participant token。这个补偿只维护比赛-录像关系，不修改 `VideoModel.ongoing_tournament`。这里不能延迟到 `transaction.on_commit`，因为创建 participant 的调用方可能需要在同一事务内继续依赖补录后的比赛-录像关系。
-- GSC / 周赛 finish 任务开头会调用通用服务 `delete_participants_without_videos` 删除没有任何本比赛录像的站内 participant，并且这个步骤必须早于 `create_tournament_users_for_tournament`，避免为本场会被删除的 participant 创建 `TournamentUser`。
+- GSC / 周赛 finish 任务开头会调用通用服务 `delete_participants_without_videos` 删除没有任何本比赛录像的站内 participant；这些 participant 创建时可能已经创建过 `TournamentUser`，删除时不会回收用户汇总行。
 - checkin 读路径只读取缓存，不在未命中时查询 DB 或重建缓存；缓存与 DB 不同步属于写路径维护 bug。
 - `TournamentCache.remove_tournament` 移除 `tournament:normal` 中的比赛时，也会从 `tournament:normal:participants` 的所有用户列表中精确移除对应比赛的参赛关系，避免已结束或已取消比赛继续参与 checkin。
 - 删除 participant 只监听 `TournamentParticipant.post_delete`；删除 GSC participant 时，多表继承会级联删除父表，参赛关系缓存清理由父类 `post_delete` 的 `remove_participant_cache_on_delete` 统一处理。`post_delete` 中应先捕获 `user_id` 和 `tournament_id`，再在 `transaction.on_commit` 回调中调用 `TournamentCache.remove_participant`。
-- 缓存更新和删除应尽量在事务提交后执行；创建 participant 后补录既有录像是关系维护，不属于缓存失效，按上面的规则立即执行。`TournamentUser` 的 total/best 更新属于数据库数据完整性维护，不适用缓存的 `on_commit` 规则。
+- 缓存更新和删除应尽量在事务提交后执行；创建 participant 后补录既有录像、创建 `TournamentUser` 是关系/汇总数据维护，不属于缓存失效，按上面的规则立即执行。`TournamentUser` 的创建和 total/best 更新属于数据库数据完整性维护，不适用缓存的 `on_commit` 规则。
 
 当前重构状态：
 

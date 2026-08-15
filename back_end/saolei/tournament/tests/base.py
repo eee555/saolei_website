@@ -36,7 +36,6 @@ from ..models import (
 )
 from ..services import (
     award_tournament_rank_scores,
-    create_tournament_users_for_tournament,
     reveal_videos_for_tournament,
 )
 from ..tasks import _task_award_tournament_impl
@@ -180,7 +179,6 @@ __all__ = (
     'WeeklyParticipant',
     'WeeklyTournament',
     'award_tournament_rank_scores',
-    'create_tournament_users_for_tournament',
     'reveal_videos_for_tournament',
     '_task_award_tournament_impl',
     'refresh_weekly_best_scores',

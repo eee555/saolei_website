@@ -105,6 +105,15 @@ def update_cache_on_participant_save(sender, instance, created: bool, update_fie
         add_existing_videos_to_participant_tournament(instance)
 
 
+@receiver(post_save, sender=GSCParticipant, dispatch_uid='tournament.ensure_tournament_user_on_gsc_participant_create')
+@receiver(post_save, sender=WeeklyParticipant, dispatch_uid='tournament.ensure_tournament_user_on_weekly_participant_create')
+@receiver(post_save, sender=TournamentParticipant, dispatch_uid='tournament.ensure_tournament_user_on_participant_create')
+def ensure_tournament_user_on_participant_create(sender, instance: TournamentParticipant, created: bool, **kwargs):
+    if not created or instance.user_id is None:
+        return
+    TournamentUser.objects.get_or_create(user_id=instance.user_id)
+
+
 @receiver(post_save, sender=GSCParticipant, dispatch_uid='tournament.update_best_score_on_gsc_participant_save')
 def update_best_score_on_gsc_participant_save(sender, instance: GSCParticipant, created: bool, update_fields=None, **kwargs):
     if instance.user_id is None or not best_score_fields_changed(update_fields, GSC_BEST_SCORE_FIELDS):

@@ -1,7 +1,6 @@
 from .base import (
     award_tournament_rank_scores,
     call_command,
-    create_tournament_users_for_tournament,
     gsc_encode_best,
     GSCParticipant,
     GSCTournament,
@@ -33,7 +32,7 @@ class TestScore(TournamentTestCaseBase):
         self.assertEqual(gsc_encode_best(123456, 7), 123456007)
         self.assertEqual(weekly_encode_best(345678, 2026, 12), 34567802612)
 
-    def test_create_tournament_users_for_tournament_returns_all_site_users(self):
+    def test_participant_create_signal_creates_tournament_user(self):
         other_user = self.create_user('tournament_user_prepare_other')
         tournament = self.create_weekly_tournament()
         TournamentUser.objects.create(user=self.user)
@@ -56,9 +55,6 @@ class TestScore(TournamentTestCaseBase):
             end_time=tournament.end_time,
         )
 
-        tournament_users = create_tournament_users_for_tournament(tournament)
-
-        self.assertCountEqual([item.user_id for item in tournament_users], [self.user.id, other_user.id])
         self.assertEqual(TournamentUser.objects.filter(user__in=[self.user, other_user]).count(), 2)
 
     def test_award_tournament_rank_scores_decays_and_uses_delta(self):
@@ -89,8 +85,7 @@ class TestScore(TournamentTestCaseBase):
         )
         TournamentUser.objects.filter(user=self.user).update(weekly_classic_best=MAX_TOURNAMENT_BEST)
 
-        tournament_users = create_tournament_users_for_tournament(tournament)
-        award_count = award_tournament_rank_scores(tournament, tournament_users=tournament_users)
+        award_count = award_tournament_rank_scores(tournament)
 
         participant.refresh_from_db()
         tournament_user.refresh_from_db()
@@ -106,7 +101,7 @@ class TestScore(TournamentTestCaseBase):
 
         tournament.state = Tournament_TextChoices.State.AWARDED
         tournament.save(update_fields=['state'])
-        best_count = refresh_weekly_best_scores(tournament, tournament_users=tournament_users)
+        best_count = refresh_weekly_best_scores(tournament)
 
         tournament_user.refresh_from_db()
         self.assertEqual(best_count, 1)

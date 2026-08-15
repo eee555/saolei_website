@@ -177,22 +177,25 @@ def calculate_gsc_best_score(user_id: int):
     return gsc_encode_best(best_participant.t37, best_participant.tournament.gsctournament.order)
 
 
-def refresh_gsc_best_scores(tournament: GSCTournament, *, tournament_users: list[TournamentUser], batch_size=1000):
+def refresh_gsc_best_scores(tournament: GSCTournament, *, batch_size=1000):
     logger.info(f'GSC#{tournament.order} 个人纪录刷新 开始 类型{tournament.subclass}')
     logger.info(f'GSC#{tournament.order} 个人纪录刷新 获取选手列表')
-    participants = list(GSCParticipant.objects.filter(tournament_id=tournament.id, user_id__isnull=False))
+    participants = list(
+        GSCParticipant.objects
+        .filter(tournament_id=tournament.id, user_id__isnull=False)
+        .select_related('user__tournamentuser'),
+    )
     logger.info(f'GSC#{tournament.order} 个人纪录刷新 人数 {len(participants)}')
     if not participants:
         logger.info(f'GSC#{tournament.order} 个人纪录刷新 结束')
         return 0
 
-    tournament_users_by_user_id: dict[int, TournamentUser] = {tournament_user.user_id: tournament_user for tournament_user in tournament_users}
+    tournament_users = []
     updated_count = 0
     for participant in participants:
-        tournament_user = tournament_users_by_user_id.get(participant.user_id)
-        if tournament_user is None:
-            continue
+        tournament_user = participant.user.tournamentuser
         updated_count += update_gsc_best(tournament_user, tournament, participant)
+        tournament_users.append(tournament_user)
 
     TournamentUser.objects.bulk_update(tournament_users, ['gsc_best'], batch_size=batch_size)
     logger.info(f'GSC#{tournament.order} 个人纪录刷新 完成 人数{updated_count}')

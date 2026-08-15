@@ -102,22 +102,25 @@ def calculate_weekly_best_score(user_id: int):
     return weekly_encode_best(best_participant.classic_score, tournament.year, tournament.week)
 
 
-def refresh_weekly_best_scores(tournament: WeeklyTournament, *, tournament_users: list[TournamentUser], batch_size=1000):
+def refresh_weekly_best_scores(tournament: WeeklyTournament, *, batch_size=1000):
     logger.info(f'周赛#{tournament.id} 个人纪录刷新 开始 类型{tournament.subclass}')
     logger.info(f'周赛#{tournament.id} 个人纪录刷新 获取选手列表')
-    participants = list(WeeklyParticipant.objects.filter(tournament_id=tournament.id, user_id__isnull=False))
+    participants = list(
+        WeeklyParticipant.objects
+        .filter(tournament_id=tournament.id, user_id__isnull=False)
+        .select_related('user__tournamentuser'),
+    )
     logger.info(f'周赛#{tournament.id} 个人纪录刷新 人数 {len(participants)}')
     if not participants:
         logger.info(f'周赛#{tournament.id} 个人纪录刷新 结束')
         return 0
 
-    tournament_users_by_user_id: dict[int, TournamentUser] = {tournament_user.user_id: tournament_user for tournament_user in tournament_users}
+    tournament_users = []
     updated_count = 0
     for participant in participants:
-        tournament_user = tournament_users_by_user_id.get(participant.user_id)
-        if tournament_user is None:
-            continue
+        tournament_user = participant.user.tournamentuser
         updated_count += update_weekly_best(tournament_user, tournament, participant)
+        tournament_users.append(tournament_user)
 
     TournamentUser.objects.bulk_update(tournament_users, ['weekly_classic_best'], batch_size=batch_size)
     logger.info(f'周赛#{tournament.id} 个人纪录刷新 完成 人数{updated_count}')
