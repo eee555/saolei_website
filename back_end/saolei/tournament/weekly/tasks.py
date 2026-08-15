@@ -4,9 +4,9 @@ from django.tasks import task
 
 from config.text_choices import Tournament_TextChoices
 from tournament.models import WeeklyTournament
-from tournament.services import delete_participants_without_videos, reveal_videos_for_tournament
+from tournament.services import delete_participants_without_videos, refresh_tournament_ranks, reveal_videos_for_tournament
 from tournament.tasks import task_award_tournament
-from .services import refresh_weekly_best_scores, refresh_weekly_classic_ranks, refresh_weekly_classic_scores
+from .services import refresh_weekly_best_scores, refresh_weekly_classic_scores
 
 logger = logging.getLogger('tournament')
 
@@ -25,7 +25,7 @@ def _task_weekly_finish_impl(tournament_id: int):
         logger.info(f'周赛#{tournament.id} TournamentUser 可用数量 {tournament_user_count}')
         score_count = refresh_weekly_classic_scores(tournament)
         logger.info(f'周赛#{tournament.id} 成绩刷新完成，数量 {score_count}')
-        rank_count = refresh_weekly_classic_ranks(tournament)
+        rank_count = refresh_tournament_ranks(tournament)
         logger.info(f'周赛#{tournament.id} 排名刷新完成，数量 {rank_count}')
         if tournament.state != Tournament_TextChoices.State.AWARDED:
             tournament.state = Tournament_TextChoices.State.AWARDED

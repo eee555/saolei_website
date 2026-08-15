@@ -8,8 +8,8 @@ from .base import (
     GSCTournament,
     Identifier,
     MS_TextChoices,
-    refresh_gsc_ranks,
     refresh_gsc_scores,
+    refresh_tournament_ranks,
     reveal_videos_for_tournament,
     timedelta,
     timezone,
@@ -320,7 +320,7 @@ class TestGsc(TournamentTestCaseBase):
         self.create_video(level=MS_TextChoices.Level.EXPERT, timems=1, bv=GSC_Defaults.E_BV_MIN - 1)
 
         score_changed = refresh_gsc_scores(self.tournament)
-        rank_changed = refresh_gsc_ranks(self.tournament)
+        rank_changed = refresh_tournament_ranks(self.tournament)
 
         participant = GSCParticipant.objects.get(tournament=self.tournament, user=self.user)
         participant_without_valid_score.refresh_from_db()

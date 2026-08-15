@@ -199,6 +199,26 @@ def get_ranked_participants_for_award(tournament: Tournament):
     return WeeklyParticipant.objects.filter(**filters)
 
 
+def get_participants_for_rank(tournament: Tournament):
+    if tournament.subclass == Tournament_TextChoices.Subclass.GSC:
+        return GSCParticipant.objects.filter(tournament=tournament)
+    return WeeklyParticipant.objects.filter(tournament=tournament)
+
+
+def refresh_tournament_ranks(tournament: Tournament, *, batch_size=1000):
+    order_by = tournament.order_by
+    logger.info(f'比赛#{tournament.id} 排名刷新开始，类型 {tournament.subclass}，排序 {order_by}')
+
+    participants = list(get_participants_for_rank(tournament).order_by(order_by))
+    for rank, participant in enumerate(participants, start=1):
+        participant.rank = rank
+
+    TournamentParticipant.objects.bulk_update(participants, ['rank'], batch_size=batch_size)
+
+    logger.info(f'比赛#{tournament.id} 排名刷新完成，更新参赛者 {len(participants)} 个')
+    return len(participants)
+
+
 def award_tournament_rank_scores(tournament: Tournament, *, batch_size=1000):
     award_time = tournament.end_time or timezone.now()
     logger.info(f'比赛#{tournament.id} 排名积分发放 开始 类型{tournament.subclass} 结算时间 {award_time}')

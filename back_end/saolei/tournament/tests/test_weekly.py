@@ -3,7 +3,7 @@ from .base import (
     _task_weekly_finish_impl,
     _task_weekly_refresh_best_impl,
     MS_TextChoices,
-    refresh_weekly_classic_ranks,
+    refresh_tournament_ranks,
     refresh_weekly_classic_scores,
     timedelta,
     timezone,
@@ -65,7 +65,7 @@ class TestWeekly(TournamentTestCaseBase):
             tournament.videos.add(self.create_video(tournament_identifier=[], level=MS_TextChoices.Level.INTERMEDIATE, timems=timems))
 
         score_count = refresh_weekly_classic_scores(tournament)
-        rank_count = refresh_weekly_classic_ranks(tournament)
+        rank_count = refresh_tournament_ranks(tournament)
 
         participant.refresh_from_db()
         participant_without_video.refresh_from_db()

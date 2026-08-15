@@ -23,7 +23,7 @@ from ..cache import (
     NORMAL_TOURNAMENT_CACHE_KEY,
     TournamentCache,
 )
-from ..gsc.services import refresh_gsc_ranks, refresh_gsc_scores
+from ..gsc.services import refresh_gsc_scores
 from ..gsc.tasks import _task_gsc_finish_impl, _task_gsc_refresh_best_impl
 from ..models import (
     GSCParticipant,
@@ -36,10 +36,11 @@ from ..models import (
 )
 from ..services import (
     award_tournament_rank_scores,
+    refresh_tournament_ranks,
     reveal_videos_for_tournament,
 )
 from ..tasks import _task_award_tournament_impl
-from ..weekly.services import refresh_weekly_best_scores, refresh_weekly_classic_ranks, refresh_weekly_classic_scores
+from ..weekly.services import refresh_weekly_best_scores, refresh_weekly_classic_scores
 from ..weekly.tasks import _task_weekly_finish_impl, _task_weekly_refresh_best_impl
 
 
@@ -167,7 +168,6 @@ __all__ = (
     'NORMAL_PARTICIPANT_CACHE_KEY',
     'NORMAL_TOURNAMENT_CACHE_KEY',
     'TournamentCache',
-    'refresh_gsc_ranks',
     'refresh_gsc_scores',
     '_task_gsc_finish_impl',
     '_task_gsc_refresh_best_impl',
@@ -179,10 +179,10 @@ __all__ = (
     'WeeklyParticipant',
     'WeeklyTournament',
     'award_tournament_rank_scores',
+    'refresh_tournament_ranks',
     'reveal_videos_for_tournament',
     '_task_award_tournament_impl',
     'refresh_weekly_best_scores',
-    'refresh_weekly_classic_ranks',
     'refresh_weekly_classic_scores',
     '_task_weekly_finish_impl',
     '_task_weekly_refresh_best_impl',

@@ -8,6 +8,7 @@ from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from config.tournaments import GSC_Defaults
 from tournament.gsc.utils import gsc_encode_best
 from tournament.models import GSCParticipant, GSCTournament, TournamentUser
+from tournament.services import refresh_tournament_ranks
 from tournament.utils import MAX_TOURNAMENT_BEST
 
 GSC_SCORE_FIELDS = [
@@ -124,22 +125,10 @@ def refresh_gsc_scores(tournament: GSCTournament, *, batch_size=1000):
     return len(participants)
 
 
-def refresh_gsc_ranks(tournament: GSCTournament, *, batch_size=1000):
-    logger.info(f'GSC#{tournament.order} 排名刷新开始，比赛#{tournament.id}')
-    participants = list(GSCParticipant.objects.filter(tournament=tournament).order_by('t37'))
-    for rank, participant in enumerate(participants, start=1):
-        participant.rank = rank
-
-    GSCParticipant.objects.bulk_update(participants, ['rank'], batch_size=batch_size)
-
-    logger.info(f'GSC#{tournament.order} 排名刷新完成，更新参赛者 {len(participants)} 个')
-    return len(participants)
-
-
 def refresh_gsc_scores_and_ranks(tournament: GSCTournament):
     logger.info(f'GSC#{tournament.order} 成绩与排名刷新开始，比赛#{tournament.id}')
     score_changed = refresh_gsc_scores(tournament)
-    rank_changed = refresh_gsc_ranks(tournament)
+    rank_changed = refresh_tournament_ranks(tournament)
     result = {
         'score_changed': score_changed,
         'rank_changed': rank_changed,

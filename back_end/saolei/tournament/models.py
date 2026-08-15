@@ -128,6 +128,10 @@ class GSCTournament(Tournament):
     def new_token(self):
         self._token = self.generate_unique_token()
 
+    @property
+    def order_by(self):
+        return 't37'
+
     @staticmethod
     def generate_unique_token():
         token = generate_GSC_token()
@@ -181,6 +185,11 @@ class WeeklyTournament(Tournament):
             'week': self.week,
             'tournament_format': self.tournament_format,
         }
+
+    @property
+    def order_by(self):
+        if self.tournament_format == Tournament_TextChoices.WeeklyFormat.CLASSIC:
+            return 'classic_score'
 
 
 class GeneralTournament(Tournament):

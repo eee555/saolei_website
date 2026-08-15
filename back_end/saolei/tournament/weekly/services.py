@@ -64,18 +64,6 @@ def refresh_weekly_classic_scores(tournament: WeeklyTournament, *, batch_size=10
     return len(participants)
 
 
-def refresh_weekly_classic_ranks(tournament: WeeklyTournament, *, batch_size=1000):
-    logger.info(f'周赛#{tournament.id} classic 排名刷新开始，{tournament.year}W{tournament.week}')
-    participants = list(WeeklyParticipant.objects.filter(tournament=tournament).order_by('classic_score'))
-    for rank, participant in enumerate(participants, start=1):
-        participant.rank = rank
-
-    WeeklyParticipant.objects.bulk_update(participants, ['rank'], batch_size=batch_size)
-
-    logger.info(f'周赛#{tournament.id} classic 排名刷新完成，更新参赛者 {len(participants)} 个')
-    return len(participants)
-
-
 def update_weekly_best(tournament_user: TournamentUser, tournament: WeeklyTournament, participant: WeeklyParticipant):
     if participant.user_id is None or tournament.state != Tournament_TextChoices.State.AWARDED:
         return False
