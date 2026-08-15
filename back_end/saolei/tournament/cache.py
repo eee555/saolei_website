@@ -9,7 +9,7 @@ from django_redis import get_redis_connection
 from config.text_choices import Tournament_TextChoices
 from utils.cache import maybe_bytes_to_str
 from videomanager.models import VideoModel
-from .models import GSCTournament, Tournament, TournamentParticipant, WeeklyTournament
+from .models import GSCTournament, Tournament, TournamentParticipant
 
 cache = get_redis_connection('saolei_website')
 
@@ -187,27 +187,18 @@ def serialize_normal_tournament(tournament: Tournament):
                 token=tournament.token,
             ),
         )
-    if isinstance(tournament, WeeklyTournament):
-        return CachedWeeklyTournament(
-            id=tournament.id,
-            state=tournament.state,
-            subclass=Tournament_TextChoices.Subclass.WEEKLY,
-            host_id=tournament.host_id,
-            start_time=tournament.start_time,
-            end_time=tournament.end_time,
-            data=CachedWeeklyTournamentData(
-                year=tournament.year,
-                week=tournament.week,
-                tournament_format=tournament.tournament_format,
-            ),
-        )
-    return CachedTournament(
+    return CachedWeeklyTournament(
         id=tournament.id,
         state=tournament.state,
-        subclass=tournament.subclass,
+        subclass=Tournament_TextChoices.Subclass.WEEKLY,
         host_id=tournament.host_id,
         start_time=tournament.start_time,
         end_time=tournament.end_time,
+        data=CachedWeeklyTournamentData(
+            year=tournament.year,
+            week=tournament.week,
+            tournament_format=tournament.tournament_format,
+        ),
     )
 
 
@@ -216,9 +207,7 @@ def deserialize_cached_tournament(value):
     raw_value = json.loads(json_value)
     if raw_value['subclass'] == Tournament_TextChoices.Subclass.GSC:
         return CachedGSCTournament.from_json(json_value)
-    if raw_value['subclass'] == Tournament_TextChoices.Subclass.WEEKLY:
-        return CachedWeeklyTournament.from_json(json_value)
-    return CachedTournament.from_json(json_value)
+    return CachedWeeklyTournament.from_json(json_value)
 
 
 def serialize_normal_participant(participant: TournamentParticipant):

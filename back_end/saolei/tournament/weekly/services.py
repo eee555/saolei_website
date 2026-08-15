@@ -1,20 +1,26 @@
+import logging
+
 from django.db.models import F, Window
 from django.db.models.functions import RowNumber
 
 from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from tournament.models import TournamentUser, WeeklyParticipant, WeeklyTournament
-from tournament.services import award_tournament_rank_scores, delete_participants_without_videos, reveal_videos_for_tournament
-from tournament.utils import encode_tournament_best
+from tournament.utils import MAX_TOURNAMENT_BEST
 from .utils import weekly_encode_best
+
+logger = logging.getLogger('tournament')
 
 
 def refresh_weekly_classic_scores(tournament: WeeklyTournament, *, batch_size=1000):
     """
     批量刷新 周赛-2高5中 成绩。
     """
+    logger.info(f'周赛#{tournament.id} classic 成绩刷新开始，{tournament.year}W{tournament.week}')
     participants = list(WeeklyParticipant.objects.filter(tournament=tournament))
     if not participants:
+        logger.info(f'周赛#{tournament.id} classic 成绩刷新跳过，没有参赛者')
         return 0
+    logger.info(f'周赛#{tournament.id} classic 成绩刷新参赛者读取完成，数量 {len(participants)}')
 
     participants_by_user_id = {
         participant.user_id: participant
@@ -29,10 +35,13 @@ def refresh_weekly_classic_scores(tournament: WeeklyTournament, *, batch_size=10
             order_by='timems',
         ),
     ).filter(row_number__lte=2).values_list('id', 'player_id', 'timems')
+    expert_video_count = 0
     for video_id, player_id, timems in ranked_exp.iterator(chunk_size=batch_size):
         if player_id not in participants_by_user_id:
             continue
         participants_by_user_id[player_id].classic_add_e(video_id, timems)
+        expert_video_count += 1
+    logger.info(f'周赛#{tournament.id} classic 高级录像读取完成，匹配录像 {expert_video_count} 条')
 
     ranked_int = tournament.videos.filter(level=MS_TextChoices.Level.INTERMEDIATE, timems__lt=60000).annotate(
         row_number=Window(
@@ -41,66 +50,75 @@ def refresh_weekly_classic_scores(tournament: WeeklyTournament, *, batch_size=10
             order_by='timems',
         ),
     ).filter(row_number__lte=5).values_list('id', 'player_id', 'timems')
+    intermediate_video_count = 0
     for video_id, player_id, timems in ranked_int.iterator(chunk_size=batch_size):
         if player_id not in participants_by_user_id:
             continue
         participants_by_user_id[player_id].classic_add_i(video_id, timems)
+        intermediate_video_count += 1
+    logger.info(f'周赛#{tournament.id} classic 中级录像读取完成，匹配录像 {intermediate_video_count} 条')
 
     WeeklyParticipant.objects.bulk_update(participants, ['classic_et', 'classic_it', 'classic_score'], batch_size=batch_size)
 
+    logger.info(f'周赛#{tournament.id} classic 成绩刷新完成，更新参赛者 {len(participants)} 个')
     return len(participants)
 
 
 def refresh_weekly_classic_ranks(tournament: WeeklyTournament, *, batch_size=1000):
+    logger.info(f'周赛#{tournament.id} classic 排名刷新开始，{tournament.year}W{tournament.week}')
     participants = list(WeeklyParticipant.objects.filter(tournament=tournament).order_by('classic_score'))
     for rank, participant in enumerate(participants, start=1):
         participant.rank = rank
 
     WeeklyParticipant.objects.bulk_update(participants, ['rank'], batch_size=batch_size)
 
+    logger.info(f'周赛#{tournament.id} classic 排名刷新完成，更新参赛者 {len(participants)} 个')
     return len(participants)
 
 
-def finish_weekly_tournament(tournament: WeeklyTournament):
-    deleted_participants = delete_participants_without_videos(tournament)
-    score_count = refresh_weekly_classic_scores(tournament)
-    rank_count = refresh_weekly_classic_ranks(tournament)
-    award_count = award_tournament_rank_scores(tournament)
-    if tournament.state != Tournament_TextChoices.State.AWARDED:
-        tournament.state = Tournament_TextChoices.State.AWARDED
-        tournament.save(update_fields=['state'])
-    video_count = reveal_videos_for_tournament(tournament)
-    return {
-        'deleted_participants': deleted_participants,
-        'score_count': score_count,
-        'rank_count': rank_count,
-        'award_count': award_count,
-        'video_count': video_count,
-    }
+def update_weekly_best(tournament_user: TournamentUser, tournament: WeeklyTournament, participant: WeeklyParticipant):
+    if participant.user_id is None or tournament.state != Tournament_TextChoices.State.AWARDED:
+        return False
 
-
-def update_weekly_best_score_from_participant(tournament_user: TournamentUser, participant: WeeklyParticipant) -> list[str]:
-    if participant.user_id is None or participant.rank_score <= 0:
-        return []
-
-    tournament = participant.tournament.weeklytournament
     new_best = weekly_encode_best(participant.classic_score, tournament.year, tournament.week)
-    if tournament_user.weekly_best != 0 and tournament_user.weekly_best <= new_best:
-        return []
+    if tournament_user.weekly_classic_best <= new_best:
+        return False
 
-    tournament_user.weekly_best = new_best
-    return ['weekly_best']
+    tournament_user.weekly_classic_best = new_best
+    return True
 
 
 def calculate_weekly_best_score(user_id: int):
     best_participant = (
         WeeklyParticipant.objects
-        .filter(user_id=user_id, rank_score__gt=0)
+        .filter(user_id=user_id, tournament__state=Tournament_TextChoices.State.AWARDED)
         .select_related('tournament__weeklytournament')
         .order_by('classic_score', 'tournament__weeklytournament__year', 'tournament__weeklytournament__week')
         .first()
     )
     if best_participant is None:
-        return 0
+        return MAX_TOURNAMENT_BEST
     tournament = best_participant.tournament.weeklytournament
     return weekly_encode_best(best_participant.classic_score, tournament.year, tournament.week)
+
+
+def refresh_weekly_best_scores(tournament: WeeklyTournament, *, tournament_users: list[TournamentUser], batch_size=1000):
+    logger.info(f'周赛#{tournament.id} 个人纪录刷新 开始 类型{tournament.subclass}')
+    logger.info(f'周赛#{tournament.id} 个人纪录刷新 获取选手列表')
+    participants = list(WeeklyParticipant.objects.filter(tournament_id=tournament.id, user_id__isnull=False))
+    logger.info(f'周赛#{tournament.id} 个人纪录刷新 人数 {len(participants)}')
+    if not participants:
+        logger.info(f'周赛#{tournament.id} 个人纪录刷新 结束')
+        return 0
+
+    tournament_users_by_user_id: dict[int, TournamentUser] = {tournament_user.user_id: tournament_user for tournament_user in tournament_users}
+    updated_count = 0
+    for participant in participants:
+        tournament_user = tournament_users_by_user_id.get(participant.user_id)
+        if tournament_user is None:
+            continue
+        updated_count += update_weekly_best(tournament_user, tournament, participant)
+
+    TournamentUser.objects.bulk_update(tournament_users, ['weekly_classic_best'], batch_size=batch_size)
+    logger.info(f'周赛#{tournament.id} 个人纪录刷新 完成 人数{updated_count}')
+    return updated_count

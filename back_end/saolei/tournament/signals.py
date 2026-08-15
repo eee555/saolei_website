@@ -4,8 +4,8 @@ from django.dispatch import receiver
 from django.utils import timezone
 
 from config.text_choices import MS_TextChoices
-from tournament.gsc.services import update_gsc_best_score_from_participant
-from tournament.weekly.services import update_weekly_best_score_from_participant
+from tournament.gsc.services import update_gsc_best
+from tournament.weekly.services import update_weekly_best
 from videomanager.models import VideoModel
 from .cache import TournamentCache
 from .models import GSCParticipant, GSCTournament, Tournament, TournamentParticipant, TournamentUser, WeeklyParticipant, WeeklyTournament
@@ -110,9 +110,8 @@ def update_best_score_on_gsc_participant_save(sender, instance: GSCParticipant, 
     if instance.user_id is None or not best_score_fields_changed(update_fields, GSC_BEST_SCORE_FIELDS):
         return
     tournament_user, _ = TournamentUser.objects.get_or_create(user_id=instance.user_id)
-    update_fields = update_gsc_best_score_from_participant(tournament_user, instance)
-    if update_fields:
-        tournament_user.save(update_fields=update_fields)
+    if update_gsc_best(tournament_user, instance.tournament.gsctournament, instance):
+        tournament_user.save(update_fields=['gsc_best'])
 
 
 @receiver(post_save, sender=WeeklyParticipant, dispatch_uid='tournament.update_best_score_on_weekly_participant_save')
@@ -120,9 +119,8 @@ def update_best_score_on_weekly_participant_save(sender, instance: WeeklyPartici
     if instance.user_id is None or not best_score_fields_changed(update_fields, WEEKLY_BEST_SCORE_FIELDS):
         return
     tournament_user, _ = TournamentUser.objects.get_or_create(user_id=instance.user_id)
-    update_fields = update_weekly_best_score_from_participant(tournament_user, instance)
-    if update_fields:
-        tournament_user.save(update_fields=update_fields)
+    if update_weekly_best(tournament_user, instance.tournament.weeklytournament, instance):
+        tournament_user.save(update_fields=['weekly_classic_best'])
 
 
 @receiver(post_delete, sender=GSCParticipant, dispatch_uid='tournament.update_best_score_on_gsc_participant_delete')

@@ -1,6 +1,10 @@
+from datetime import timedelta
 import secrets
 import string
 from typing import Any
+
+MAX_TOURNAMENT_BEST = 9223372036854775807
+TOURNAMENT_SCORE_HALF_LIFE = timedelta(days=365 * 2)
 
 
 def generate_random_token(length=5):
@@ -27,10 +31,9 @@ def default_weekly_classic_it():
     return [(0, 60000), (0, 60000), (0, 60000), (0, 60000), (0, 60000)]
 
 
-def encode_tournament_best(score: int, tournament_number: int, *, tournament_digits: int):
-    return score * (10 ** tournament_digits) + tournament_number
-
-
-def decode_tournament_best(value: int, *, tournament_digits: int):
-    divisor = 10 ** tournament_digits
-    return divmod(value, divisor)
+def tournament_score_decay_factor(start_time, end_time):
+    if end_time <= start_time:
+        return 1
+    elapsed_seconds = (end_time - start_time).total_seconds()
+    half_life_seconds = TOURNAMENT_SCORE_HALF_LIFE.total_seconds()
+    return 1 / (2 ** (elapsed_seconds / half_life_seconds))

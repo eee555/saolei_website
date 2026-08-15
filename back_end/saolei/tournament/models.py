@@ -1,5 +1,6 @@
 import secrets
 import string
+from typing import Literal
 
 from django.db import models
 from django.utils import timezone
@@ -10,7 +11,14 @@ from config.global_settings import MaxSizes
 from config.text_choices import Tournament_TextChoices
 from config.tournaments import GSC_Defaults
 from identifier.models import Identifier
-from tournament.utils import default_weekly_classic_et, default_weekly_classic_it, generate_random_token, insert_to_id_value_list_asc
+from tournament.utils import (
+    default_weekly_classic_et,
+    default_weekly_classic_it,
+    generate_random_token,
+    insert_to_id_value_list_asc,
+    MAX_TOURNAMENT_BEST,
+    tournament_score_decay_factor,
+)
 from userprofile.models import UserProfile
 from videomanager.models import VideoModel
 
@@ -81,9 +89,7 @@ class Tournament(models.Model):
             return self
         if self.subclass == Tournament_TextChoices.Subclass.WEEKLY:
             return WeeklyTournament.objects.filter(tournament_ptr_id=self.id).first() or self
-        elif self.subclass == Tournament_TextChoices.Subclass.GSC:
-            return GSCTournament.objects.filter(tournament_ptr_id=self.id).first() or self
-        return self
+        return GSCTournament.objects.filter(tournament_ptr_id=self.id).first() or self
 
 
 class GSCTournament(Tournament):
@@ -235,20 +241,18 @@ class GSCParticipant(TournamentParticipant):
         db_persist=True,
     )
 
-    @bt20sum.setter
-    def bt20sum(self, value):
-        self.t37 = value + self.it12sum + self.et5sum
-        self.__dict__['bt20sum'] = value
+    class Meta:
+        indexes = [
+            models.Index(fields=['t37'], name='gsc_t37_idx'),
+        ]
 
-    @it12sum.setter
-    def it12sum(self, value):
-        self.t37 = value + self.bt20sum + self.et5sum
-        self.__dict__['it12sum'] = value
-
-    @et5sum.setter
-    def et5sum(self, value):
-        self.t37 = value + self.bt20sum + self.it12sum
-        self.__dict__['et5sum'] = value
+    def __setattr__(self, name, value):
+        super().__setattr__(name, value)
+        if name in {'bt20sum', 'it12sum', 'et5sum'}:
+            bt20sum = self.__dict__.get('bt20sum', GSC_Defaults.BT * 20)
+            it12sum = self.__dict__.get('it12sum', GSC_Defaults.IT * 12)
+            et5sum = self.__dict__.get('et5sum', GSC_Defaults.ET * 5)
+            self.t37 = bt20sum + it12sum + et5sum
 
     @property
     def user__id(self):
@@ -294,6 +298,18 @@ class TournamentUser(models.Model):
     last_updated = models.DateTimeField(default=timezone.now)  # 最后更新时间
     score_total = models.PositiveIntegerField(default=0)  # 所有比赛历史总积分
     gsc_total = models.PositiveIntegerField(default=0)  # gsc历史总积分
-    gsc_best = models.PositiveBigIntegerField(default=0)  # gsc历史最好成绩及届数（后三位）
+    gsc_best = models.PositiveBigIntegerField(default=MAX_TOURNAMENT_BEST)  # gsc历史最好成绩及届数（后三位）
     weekly_total = models.PositiveIntegerField(default=0)  # 历史周赛总积分
-    weekly_best = models.PositiveBigIntegerField(default=0)  # 历史周赛最好成绩及届数（后五位）
+    weekly_classic_total = models.PositiveIntegerField(default=0)  # 历史周赛经典模式总积分
+    weekly_classic_best = models.PositiveBigIntegerField(default=MAX_TOURNAMENT_BEST)  # 历史周赛经典模式最好成绩及届数（后五位）
+
+    def add_score(self, score: float | int, updated=None, *, category: Literal['gsc', 'weekly_classic']):
+        updated = updated or timezone.now()
+        self.score_current = self.score_current * tournament_score_decay_factor(self.last_updated, updated) + score
+        self.last_updated = updated
+        self.score_total += score
+        if category == 'gsc':
+            self.gsc_total += score
+        elif category == 'weekly_classic':
+            self.weekly_classic_total += score
+            self.weekly_total += score
