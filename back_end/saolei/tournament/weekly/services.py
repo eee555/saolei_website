@@ -76,7 +76,7 @@ def update_weekly_best(tournament_user: TournamentUser, tournament: WeeklyTourna
     return True
 
 
-def calculate_weekly_best_score(user_id: int):
+def calculate_weekly_classic_best(user_id: int):
     best_participant = (
         WeeklyParticipant.objects
         .filter(user_id=user_id, tournament__state=Tournament_TextChoices.State.AWARDED)

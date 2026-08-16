@@ -82,30 +82,6 @@ def delete_participants_without_videos(tournament: Tournament):
     return deleted_count
 
 
-def refresh_tournament_user_best_scores(user_id: int, *, update_gsc=True, update_weekly=True):
-    update_fields = []
-    tournament_user = TournamentUser.objects.filter(user_id=user_id).first()
-    if tournament_user is None:
-        if not TournamentParticipant.objects.filter(user_id=user_id, tournament__state=Tournament_TextChoices.State.AWARDED).exists():
-            return 0
-        tournament_user = TournamentUser.objects.create(user_id=user_id)
-
-    if update_gsc:
-        from tournament.gsc.services import calculate_gsc_best_score
-
-        tournament_user.gsc_best = calculate_gsc_best_score(user_id)
-        update_fields.append('gsc_best')
-    if update_weekly:
-        from tournament.weekly.services import calculate_weekly_best_score
-
-        tournament_user.weekly_classic_best = calculate_weekly_best_score(user_id)
-        update_fields.append('weekly_classic_best')
-    if not update_fields:
-        return 0
-    tournament_user.save(update_fields=update_fields)
-    return 1
-
-
 def _get_score_total_by_user(queryset):
     return {
         item['user_id']: item['score_total'] or 0
@@ -158,7 +134,7 @@ def refresh_tournament_user_total_fields(*, batch_size=1000):
 
 def refresh_tournament_user_best_fields(*, batch_size=1000):
     from tournament.gsc.services import calculate_gsc_best_score
-    from tournament.weekly.services import calculate_weekly_best_score
+    from tournament.weekly.services import calculate_weekly_classic_best
 
     user_ids = (
         set(TournamentUser.objects.values_list('user_id', flat=True))
@@ -176,7 +152,7 @@ def refresh_tournament_user_best_fields(*, batch_size=1000):
     for tournament_user in tournament_users:
         user_id = tournament_user.user_id
         tournament_user.gsc_best = calculate_gsc_best_score(user_id)
-        tournament_user.weekly_classic_best = calculate_weekly_best_score(user_id)
+        tournament_user.weekly_classic_best = calculate_weekly_classic_best(user_id)
 
     if tournament_users:
         TournamentUser.objects.bulk_update(

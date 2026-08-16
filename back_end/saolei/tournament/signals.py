@@ -4,8 +4,6 @@ from django.dispatch import receiver
 from django.utils import timezone
 
 from config.text_choices import MS_TextChoices
-from tournament.gsc.services import update_gsc_best
-from tournament.weekly.services import update_weekly_best
 from videomanager.models import VideoModel
 from .cache import TournamentCache
 from .models import GSCParticipant, GSCTournament, Tournament, TournamentParticipant, TournamentUser, WeeklyParticipant, WeeklyTournament
@@ -13,7 +11,6 @@ from .services import (
     add_existing_videos_to_participant_tournament,
     checkin_with_arbiter,
     checkin_with_token,
-    refresh_tournament_user_best_scores,
 )
 
 cache = TournamentCache()
@@ -28,34 +25,10 @@ PARTICIPANT_CACHE_FIELDS = {
     'start_time',
     'end_time',
 }
-GSC_BEST_SCORE_FIELDS = {
-    'user',
-    'user_id',
-    'tournament',
-    'tournament_id',
-    'rank_score',
-    'bt20sum',
-    'it12sum',
-    'et5sum',
-}
-WEEKLY_BEST_SCORE_FIELDS = {
-    'user',
-    'user_id',
-    'tournament',
-    'tournament_id',
-    'rank_score',
-    'classic_score',
-    'classic_et',
-    'classic_it',
-}
 
 
 def participant_cache_fields_changed(update_fields):
     return update_fields is None or bool(PARTICIPANT_CACHE_FIELDS.intersection(update_fields))
-
-
-def best_score_fields_changed(update_fields, fields):
-    return update_fields is None or bool(fields.intersection(update_fields))
 
 
 @receiver(pre_save, sender=VideoModel, dispatch_uid='tournament.checkin_video_before_create')
@@ -112,38 +85,6 @@ def ensure_tournament_user_on_participant_create(sender, instance: TournamentPar
     if not created or instance.user_id is None:
         return
     TournamentUser.objects.get_or_create(user_id=instance.user_id)
-
-
-@receiver(post_save, sender=GSCParticipant, dispatch_uid='tournament.update_best_score_on_gsc_participant_save')
-def update_best_score_on_gsc_participant_save(sender, instance: GSCParticipant, created: bool, update_fields=None, **kwargs):
-    if instance.user_id is None or not best_score_fields_changed(update_fields, GSC_BEST_SCORE_FIELDS):
-        return
-    tournament_user, _ = TournamentUser.objects.get_or_create(user_id=instance.user_id)
-    if update_gsc_best(tournament_user, instance.tournament.gsctournament, instance):
-        tournament_user.save(update_fields=['gsc_best'])
-
-
-@receiver(post_save, sender=WeeklyParticipant, dispatch_uid='tournament.update_best_score_on_weekly_participant_save')
-def update_best_score_on_weekly_participant_save(sender, instance: WeeklyParticipant, created: bool, update_fields=None, **kwargs):
-    if instance.user_id is None or not best_score_fields_changed(update_fields, WEEKLY_BEST_SCORE_FIELDS):
-        return
-    tournament_user, _ = TournamentUser.objects.get_or_create(user_id=instance.user_id)
-    if update_weekly_best(tournament_user, instance.tournament.weeklytournament, instance):
-        tournament_user.save(update_fields=['weekly_classic_best'])
-
-
-@receiver(post_delete, sender=GSCParticipant, dispatch_uid='tournament.update_best_score_on_gsc_participant_delete')
-def update_best_score_on_gsc_participant_delete(sender, instance: GSCParticipant, **kwargs):
-    if instance.user_id is None:
-        return
-    refresh_tournament_user_best_scores(instance.user_id, update_gsc=True, update_weekly=False)
-
-
-@receiver(post_delete, sender=WeeklyParticipant, dispatch_uid='tournament.update_best_score_on_weekly_participant_delete')
-def update_best_score_on_weekly_participant_delete(sender, instance: WeeklyParticipant, **kwargs):
-    if instance.user_id is None:
-        return
-    refresh_tournament_user_best_scores(instance.user_id, update_gsc=False, update_weekly=True)
 
 
 @receiver(post_delete, sender=TournamentParticipant, dispatch_uid='tournament.remove_participant_cache_on_delete')

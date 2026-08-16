@@ -137,7 +137,7 @@ GSC 创建 `GSCParticipant` 时，participant 自身的 `start_time/end_time` �
 - `TournamentParticipant.rank_score` 记录该 participant 已发放的排名积分。重复结算或重算时按 `target_rank_score - participant.rank_score` 计算增量，避免重复累加；落库时不筛选字段是否发生变化，候选 participant 和对应 `TournamentUser` 会统一 `bulk_update`。
 - `tournament.gsc.services.update_gsc_best` / `tournament.weekly.services.update_weekly_best` 在 `GSCParticipant` / `WeeklyParticipant` 保存后，只把当前 participant 成绩与原 best 比较，只有更好时才写入 best，不扫描用户所有历史成绩。
 - `tournament.gsc.services.refresh_gsc_best_scores` / `tournament.weekly.services.refresh_weekly_best_scores` 是单场比赛的 best 刷新入口。结算流程使用 `bulk_update` 写入 `rank_score`，不会触发 participant 保存信号，因此 best 刷新作为非关键后台任务显式执行；刷新时同样不筛选字段是否发生变化，统一写回候选用户的 best 字段。best 与排名积分发放没有顺序依赖。
-- `tournament.services.refresh_tournament_user_best_scores` 统一重算某个用户的 GSC / 周赛历史最好成绩，主要用于 participant 删除、管理命令和其他需要修复历史数据的路径。
+- `tournament.gsc.signals` / `tournament.weekly.signals` 分别处理 GSC / 周赛 participant 保存与删除后的 best 更新；保存时只比较当前 participant，删除时调用 `calculate_gsc_best_score` / `calculate_weekly_classic_best` 重算该类型历史最好成绩。
 - `TournamentUser` 是数据库持久化汇总，不是缓存。participant 信号触发的 `TournamentUser` 更新必须在当前数据库事务内立即执行，不能延迟到 `transaction.on_commit`，从而保证 participant 与汇总字段一起提交或一起回滚。
 - `manage.py refresh_tournament_user_stats` 可从所有已发放 `rank_score` 的 participant 重建 `score_total`、`gsc_total`、`weekly_total`、`weekly_classic_total`、`gsc_best` 和 `weekly_classic_best`。命令内部先执行 `refresh_tournament_user_total_fields`，再执行 `refresh_tournament_user_best_fields`，total 与 best 是两个独立刷新步骤。`score_current` 依赖时间衰减，是实时值，命令不会刷新它。`gsc_best` / `weekly_classic_best` 默认值从 `0` 改为 `MAX_TOURNAMENT_BEST` 后，既有历史行需要通过这个命令修复。
 - GSC / 周赛 finish 任务在刷新成绩和排名后切换 `AWARDED` 并公开录像；随后派发 `task_award_tournament` 和对应的 best 刷新任务。排名积分发放和 best 刷新都属于非关键后台任务，失败后可以单独重跑。
