@@ -1,6 +1,40 @@
 from django.core.management.base import BaseCommand
 
-from tournament.services import refresh_tournament_user_best_fields, refresh_tournament_user_total_fields
+from config.text_choices import Tournament_TextChoices
+from tournament.gsc.services import calculate_gsc_best_score
+from tournament.models import TournamentParticipant, TournamentUser
+from tournament.services import refresh_tournament_user_total_fields
+from tournament.weekly.services import calculate_weekly_classic_best
+
+
+def refresh_tournament_user_best_fields(*, batch_size=1000):
+
+    user_ids = (
+        set(TournamentUser.objects.values_list('user_id', flat=True))
+        | set(TournamentParticipant.objects.filter(user_id__isnull=False, tournament__state=Tournament_TextChoices.State.AWARDED).values_list('user_id', flat=True))
+    )
+    existing_user_ids = set(TournamentUser.objects.filter(user_id__in=user_ids).values_list('user_id', flat=True))
+    missing_user_ids = user_ids - existing_user_ids
+    if missing_user_ids:
+        TournamentUser.objects.bulk_create(
+            [TournamentUser(user_id=user_id) for user_id in missing_user_ids],
+            batch_size=batch_size,
+        )
+
+    tournament_users = list(TournamentUser.objects.filter(user_id__in=user_ids))
+    for tournament_user in tournament_users:
+        user_id = tournament_user.user_id
+        tournament_user.gsc_best = calculate_gsc_best_score(user_id)
+        tournament_user.weekly_classic_best = calculate_weekly_classic_best(user_id)
+
+    if tournament_users:
+        TournamentUser.objects.bulk_update(
+            tournament_users,
+            ['gsc_best', 'weekly_classic_best'],
+            batch_size=batch_size,
+        )
+
+    return len(tournament_users)
 
 
 class Command(BaseCommand):
