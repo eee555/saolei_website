@@ -32,6 +32,30 @@ export interface GSCInfoResponse {
     identifier: string | null;
 }
 
+export interface WeeklyTournamentInfo extends TournamentInfo {
+    year: number;
+    week: number;
+    tournament_format: string;
+}
+
+export interface WeeklyScoreResponse {
+    id: number;
+    user_id: number | null;
+    start_time: string;
+    end_time: string | null;
+    rank: number | null;
+    rank_score: number;
+    classic_et: [number, number][];
+    classic_it: [number, number][];
+    classic_score: number;
+}
+
+export interface WeeklyInfoResponse {
+    data: WeeklyTournamentInfo;
+    results: WeeklyScoreResponse[] | null;
+    token: string | null;
+}
+
 interface ParticipantVideosParams {
     userId: number;
     tournamentId: number;
@@ -55,6 +79,13 @@ export async function fetchTournament(tournamentId: number | string): Promise<To
 
 export async function fetchGSCInfo(tournamentId: number): Promise<GSCInfoResponse> {
     const { data } = await $axios.get<GSCInfoResponse>('/api/tournament/gsc/info', {
+        params: { tournament_id: tournamentId },
+    });
+    return data;
+}
+
+export async function fetchWeeklyInfo(tournamentId: number): Promise<WeeklyInfoResponse> {
+    const { data } = await $axios.get<WeeklyInfoResponse>('/api/tournament/weekly/info', {
         params: { tournament_id: tournamentId },
     });
     return data;

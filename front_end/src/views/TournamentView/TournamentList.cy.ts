@@ -5,7 +5,7 @@ import TournamentList from './TournamentList.vue';
 import $axios from '@/http';
 import i18n from '@/i18n';
 import { serviceConfig } from '@/services/store';
-import { local, store } from '@/store';
+import { local } from '@/store';
 import { pinia } from '@/store/create';
 import { TournamentState, TournamentSubclass } from '@/utils/ms_const';
 import { Tournament } from '@/utils/tournaments';
@@ -47,7 +47,6 @@ describe('<TournamentList />', () => {
         serviceConfig.value.userInfoBatchDelay = 0;
         serviceConfig.value.userInfoBatchSize = 100;
         serviceConfig.value.userInfoLastUpdate = 0;
-        store.tournamentTabs = [];
         cy.intercept('GET', '**/api/userprofile/avatar/**', { statusCode: 404 });
         cy.intercept('GET', '**/api/userprofile/infobulk*', (req) => {
             const ids = new URL(req.url).searchParams.get('ids')?.split(',').map(Number) ?? [];
@@ -123,7 +122,7 @@ describe('<TournamentList />', () => {
         });
     });
 
-    it('opens a tournament tab and pushes the tournament route when a row is clicked', () => {
+    it('pushes the tournament route when a row is clicked', () => {
         mountTournamentList([
             new Tournament({
                 id: 7,
@@ -138,10 +137,6 @@ describe('<TournamentList />', () => {
             cy.then(() => router.currentRoute.value).should((route) => {
                 expect(route.name).to.equal('tournament_id');
                 expect(route.params.id).to.equal('7');
-            });
-            cy.wrap(store.tournamentTabs).should((tabs) => {
-                expect(tabs).to.have.length(1);
-                expect(tabs[0].id).to.equal(7);
             });
         });
     });

@@ -37,7 +37,7 @@ import { useRouter } from 'vue-router';
 
 import PlayerName from '@/components/PlayerName.vue';
 import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
-import { local, store } from '@/store';
+import { local } from '@/store';
 import { toISODateTimeString } from '@/utils/datetime';
 import type { Tournament } from '@/utils/tournaments';
 
@@ -51,9 +51,6 @@ const router = useRouter();
 const { t } = useI18n();
 
 function rowClick(row: Tournament) {
-    if (store.tournamentTabs.length === 0) {
-        store.tournamentTabs.push(row);
-    }
     void router.push({ name: 'tournament_id', params: { id: row.id } });
 }
 </script>
