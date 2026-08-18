@@ -18,6 +18,13 @@
             {{ t('gsc.identifierGuide.token') }}
             <span class="ttfamily">{{ token }}</span>
             <IconCopy :text="token" />
+            <br>
+            <span data-cy="weekly-participant-window">
+                有效时间{{ t('common.punct.colon') }}
+                {{ displayTime(participant?.start_time) }}
+                &nbsp;~&nbsp;
+                {{ displayTime(participant?.end_time) }}
+            </span>
         </template>
     </span>
 </template>
@@ -32,6 +39,8 @@ import { httpErrorNotification, successNotification } from '@/components/Notific
 import IconCopy from '@/components/widgets/IconCopy.vue';
 import { local } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import { toDate, toISODateTimeString } from '@/utils/datetime';
+import type { WeeklyParticipant } from '@/utils/weekly';
 
 const props = defineProps({
     tournamentId: {
@@ -41,6 +50,10 @@ const props = defineProps({
     registrationOpen: {
         type: Boolean,
         default: false,
+    },
+    participant: {
+        type: Object as () => WeeklyParticipant | null,
+        default: null,
     },
 });
 const emit = defineEmits<{
@@ -76,6 +89,11 @@ async function registerParticipant() {
         emit('refresh');
     }).catch(httpErrorNotification);
     registeringParticipant.value = false;
+}
+
+function displayTime(time: string | Date | null | undefined) {
+    const date = toDate(time);
+    return date ? toISODateTimeString(date) : '';
 }
 </script>
 

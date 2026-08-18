@@ -14,6 +14,7 @@
         <h3>{{ t('gsc.howToParticipate') }}</h3>
         <TokenGuide
             v-model:token="token"
+            :participant="participant"
             :registration-open="tournament.displayState === TournamentState.Ongoing"
             :tournament-id="tournament.id"
             @refresh="refresh"
@@ -22,11 +23,11 @@
     <template v-if="tournament.displayState === TournamentState.Ongoing && store.login_status === LoginStatus.IsLogin">
         <h3>
             {{ t('gsc.realTimeScore') }}&nbsp;
-            <ElLink underline="never" :disabled="loading">
+            <ElLink data-cy="weekly-score-refresh" underline="never" :disabled="loading">
                 <BaseIconRefresh @click="refresh" />
             </ElLink>
         </h3>
-        <PersonalView v-loading="loading" :user-id="store.user.id" :tournament-id="tournament.id" />
+        <PersonalView :key="personalViewKey" v-loading="loading" :user-id="store.user.id" :tournament-id="tournament.id" />
     </template>
     <template v-if="([TournamentState.Finished, TournamentState.Awarded] as TournamentState[]).includes(tournament.displayState)">
         <h3>
@@ -87,10 +88,12 @@ const { t } = useI18n();
 
 const tournament = ref<Tournament>(new Tournament({}));
 const token = ref<string>('');
+const participant = ref<WeeklyParticipant | null>(null);
 const result = ref<WeeklyParticipant[]>([]);
 const viewedParticipants = ref<WeeklyParticipant[]>([]);
 const allSummaryTabPosition = ref(-1);
 const loading = ref(false);
+const personalViewKey = ref(0);
 
 async function refresh() {
     loading.value = true;
@@ -105,9 +108,11 @@ async function refresh() {
             },
         });
         token.value = response.token ?? '';
+        participant.value = response.participant === null ? null : new WeeklyParticipant(response.participant);
 
         if (tournament.value.displayState === TournamentState.Ongoing && store.login_status === LoginStatus.IsLogin) {
             result.value = [];
+            personalViewKey.value += 1;
         } else {
             result.value = (response.results ?? []).map((value) => new WeeklyParticipant(value));
         }

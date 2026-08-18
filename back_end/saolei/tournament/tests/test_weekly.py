@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from .base import (
     _task_award_tournament_impl,
     _task_weekly_finish_impl,
@@ -16,6 +18,36 @@ from .base import (
 
 
 class TestWeekly(TournamentTestCaseBase):
+    def test_weekly_participant_api_limits_window_to_two_hours_or_tournament_end(self):
+        now = timezone.now()
+        full_window_tournament = self.create_weekly_tournament(
+            year=2026,
+            week=2,
+            start_time=now - timedelta(hours=1),
+            end_time=now + timedelta(days=1),
+        )
+        truncated_tournament = self.create_weekly_tournament(
+            year=2026,
+            week=3,
+            start_time=now - timedelta(hours=1),
+            end_time=now + timedelta(minutes=30),
+        )
+        other_user = self.create_user('weekly_window_user')
+        self.client.force_login(other_user)
+
+        with patch('django.utils.timezone.now', return_value=now), self.captureOnCommitCallbacks(execute=True):
+            full_response = self.client.post('/api/tournament/weekly/participant', {'id': full_window_tournament.id})
+            truncated_response = self.client.post('/api/tournament/weekly/participant', {'id': truncated_tournament.id})
+
+        full_participant = WeeklyParticipant.objects.get(tournament=full_window_tournament, user=other_user)
+        truncated_participant = WeeklyParticipant.objects.get(tournament=truncated_tournament, user=other_user)
+        self.assertEqual(full_response.status_code, 200)
+        self.assertEqual(truncated_response.status_code, 200)
+        self.assertEqual(full_participant.start_time, now)
+        self.assertEqual(full_participant.end_time, now + timedelta(hours=2))
+        self.assertEqual(truncated_participant.start_time, now)
+        self.assertEqual(truncated_participant.end_time, truncated_tournament.end_time)
+
     def test_weekly_participant_create_backfills_and_checkin_uses_token(self):
         tournament = self.create_weekly_tournament()
         existing_video = self.create_video(tournament_identifier=['WEEKLY_TOKEN'])

@@ -32,6 +32,11 @@ export const staffRoutes: RouteRecordRaw[] = [
         component: () => import('./Tournament.vue'),
     },
     {
+        path: 'weekly-tournament',
+        name: 'staff-weekly-tournament',
+        component: () => import('./WeeklyTournament.vue'),
+    },
+    {
         path: 'task',
         name: 'staff-task',
         component: () => import('./Task.vue'),

@@ -54,6 +54,7 @@ export interface WeeklyInfoResponse {
     data: WeeklyTournamentInfo;
     results: WeeklyScoreResponse[] | null;
     token: string | null;
+    participant: WeeklyScoreResponse | null;
 }
 
 interface ParticipantVideosParams {

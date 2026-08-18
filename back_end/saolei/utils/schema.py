@@ -9,5 +9,5 @@ class IdIn(Schema):
 
 DBTaskOut = create_schema(
     DBTaskResult,
-    fields=['id', 'status', 'enqueued_at', 'started_at', 'finished_at', 'return_value', 'exception_class_path', 'traceback'],
+    fields=['id', 'status', 'enqueued_at', 'started_at', 'finished_at', 'run_after', 'return_value', 'exception_class_path', 'traceback'],
 )

@@ -10,6 +10,8 @@ function makeDefaultScores(count: number, timems: number): WeeklyVideoScore[] {
 export class WeeklyParticipant {
     public id = 0;
     public user_id: number | null = null;
+    public start_time: string | Date | null = null;
+    public end_time: string | Date | null = null;
     public rank: number | null = null;
     public rank_score = 0;
     public classic_et: WeeklyVideoScore[] = makeDefaultScores(2, DEFAULT_WEEKLY_EXPERT_TIME);

@@ -14,6 +14,7 @@ from tournament.models import WeeklyParticipant, WeeklyTournament
 from userprofile.decorators import login_required_error, staff_required
 from utils.response import HttpResponseConflict
 from utils.schema import IdIn
+from .tasks import task_weekly_finish
 
 router = Router()
 
@@ -42,6 +43,11 @@ class WeeklyDetailOut(Schema):
     data: WeeklyInfoOut
     results: list[WeeklyScoreOut] | None
     token: str | None
+    participant: WeeklyScoreOut | None
+
+
+class NewWeeklyTournamentOut(Schema):
+    data: WeeklyInfoOut
 
 
 def get_next_week_window():
@@ -56,7 +62,7 @@ def get_next_week_window():
     return year, week, start_time, end_time
 
 
-@router.post('/new')
+@router.post('/new', response=NewWeeklyTournamentOut)
 @decorate_view(staff_required)
 def new_weekly_tournament(request: HttpRequest, data: NewWeeklyTournamentIn = Form(...)):  # noqa: B008
     year, week, start_time, end_time = get_next_week_window()
@@ -77,7 +83,10 @@ def new_weekly_tournament(request: HttpRequest, data: NewWeeklyTournamentIn = Fo
     update_fields = tournament.validate()
     if update_fields:
         tournament.save(update_fields=update_fields)
-    return HttpResponse()
+    task_weekly_finish.using(run_after=end_time).enqueue(tournament.id)
+    return {
+        'data': tournament,
+    }
 
 
 @router.post('/set')
@@ -112,6 +121,7 @@ def get_weeklyinfo(request: HttpRequest, tournament_id: int):
             'data': tournament,
             'results': WeeklyParticipant.objects.filter(tournament=tournament),
             'token': None,
+            'participant': None,
         }
 
     if not request.user.is_authenticated:
@@ -119,6 +129,7 @@ def get_weeklyinfo(request: HttpRequest, tournament_id: int):
             'data': tournament,
             'results': None,
             'token': None,
+            'participant': None,
         }
 
     participant = WeeklyParticipant.objects.filter(tournament=tournament, user=request.user).first()
@@ -127,11 +138,13 @@ def get_weeklyinfo(request: HttpRequest, tournament_id: int):
             'data': tournament,
             'results': None,
             'token': None,
+            'participant': None,
         }
     return {
         'data': tournament,
         'results': None,
         'token': participant.token,
+        'participant': participant,
     }
 
 
@@ -149,7 +162,7 @@ def create_weekly_participant(request: HttpRequest, data: IdIn = Form(...)):  # 
         user=user,
         defaults={
             'start_time': now,
-            'end_time': now + timedelta(hours=2),
+            'end_time': min(now + timedelta(hours=2), tournament.end_time),
         },
     )
     return {'type': 'success', 'token': participant[0].token}
