@@ -105,10 +105,7 @@ def remove_videos_from_custom_pluck_ranks(video_ids: set[int]):
     if not video_ids:
         return 0
 
-    records = list(
-        CustomPluckRecord.objects
-        .filter(video_id__in=video_ids)
-    )
+    records = list(CustomPluckRecord.objects.filter(video_id__in=video_ids))
     for record in records:
         refresh_custom_pluck_rank(record.player_id, record.level)
 
