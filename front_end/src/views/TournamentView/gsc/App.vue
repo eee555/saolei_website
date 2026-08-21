@@ -25,7 +25,7 @@
             @refresh="refresh"
         />
     </template>
-    <template v-if="tournament.displayState === TournamentState.Ongoing">
+    <template v-if="tournament.displayState === TournamentState.Ongoing && store.login_status === LoginStatus.IsLogin && participant">
         <h3>
             {{ t('gsc.realTimeScore') }}&nbsp;
             <ElLink underline="never" :disabled="loading">

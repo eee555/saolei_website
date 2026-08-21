@@ -57,12 +57,12 @@
         </PrColumn>
         <PrColumn field="started_at" header="started_at" sortable>
             <template #body="{ data }">
-                {{ toISODateTimeString(toDate(data.started_at)!) }}
+                {{ data.started_at ? toISODateTimeString(toDate(data.started_at)!) : 'N/A' }}
             </template>
         </PrColumn>
         <PrColumn field="finished_at" header="finished_at" sortable>
             <template #body="{ data }">
-                {{ toISODateTimeString(toDate(data.finished_at)!) }}
+                {{ data.finished_at ? toISODateTimeString(toDate(data.finished_at)!) : 'N/A' }}
             </template>
         </PrColumn>
         <PrColumn field="args_kwargs" header="args_kwargs" />
@@ -102,8 +102,8 @@ interface TaskDetail {
     id: string;
     status: DjangoTaskResultStatus;
     enqueued_at: string;
-    started_at: string;
-    finished_at: string;
+    started_at: string | null;
+    finished_at: string | null;
     args_kwargs: {
         args: unknown[];
         kwargs: Record<string, unknown>;

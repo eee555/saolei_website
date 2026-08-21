@@ -20,7 +20,7 @@
             @refresh="refresh"
         />
     </template>
-    <template v-if="tournament.displayState === TournamentState.Ongoing && store.login_status === LoginStatus.IsLogin">
+    <template v-if="tournament.displayState === TournamentState.Ongoing && store.login_status === LoginStatus.IsLogin && participant !== null">
         <h3>
             {{ t('gsc.realTimeScore') }}&nbsp;
             <ElLink data-cy="weekly-score-refresh" underline="never" :disabled="loading">
