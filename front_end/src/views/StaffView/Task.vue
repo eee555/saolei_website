@@ -52,17 +52,17 @@
         </PrColumn>
         <PrColumn field="enqueued_at" header="enqueued_at" sortable>
             <template #body="{ data }">
-                {{ utc_to_local_format(data.enqueued_at) }}
+                {{ toISODateTimeString(toDate(data.enqueued_at)!) }}
             </template>
         </PrColumn>
         <PrColumn field="started_at" header="started_at" sortable>
             <template #body="{ data }">
-                {{ utc_to_local_format(data.started_at) }}
+                {{ toISODateTimeString(toDate(data.started_at)!) }}
             </template>
         </PrColumn>
         <PrColumn field="finished_at" header="finished_at" sortable>
             <template #body="{ data }">
-                {{ utc_to_local_format(data.finished_at) }}
+                {{ toISODateTimeString(toDate(data.finished_at)!) }}
             </template>
         </PrColumn>
         <PrColumn field="args_kwargs" header="args_kwargs" />
@@ -73,7 +73,7 @@
         <PrColumn field="backend_name" header="backend_name" />
         <PrColumn field="run_after" header="run_after" sortable>
             <template #body="{ data }">
-                {{ utc_to_local_format(data.run_after) }}
+                {{ toISODateTimeString(toDate(data.run_after)!) }}
             </template>
         </PrColumn>
         <PrColumn field="return_value" header="return_value" />
@@ -96,7 +96,7 @@ import type { EnumMap } from '@/utils';
 import type { DjangoTaskResultStatus } from '@/utils/common/structInterface';
 import { DjangoTaskResultStatusOptions } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { utc_to_local_format } from '@/utils/system/tools';
+import { toDate, toISODateTimeString } from '@/utils/datetime';
 
 interface TaskDetail {
     id: string;
