@@ -55,7 +55,7 @@ class PLuckRankingCache:
             return []
 
         members = [
-            member.decode() if isinstance(member, bytes) else member
+            member
             for member, _ in members_with_scores
         ]
         details = self.details(members)
@@ -63,8 +63,6 @@ class PLuckRankingCache:
         for member, (_, score), detail in zip(members, members_with_scores, details):
             if detail is None:
                 continue
-            if isinstance(detail, bytes):
-                detail = detail.decode()
             players.append(cache_to_dict(member, score, json.loads(detail)))
         return players
 
@@ -186,8 +184,6 @@ def get_player_pluck_records(player_id: int, levels: Iterable[str]):
         detail = results[index * 2 + 1]
         if score is None or detail is None:
             continue
-        if isinstance(detail, bytes):
-            detail = detail.decode()
         records_by_level[ranking_cache.level] = cache_to_dict(
             member,
             score,

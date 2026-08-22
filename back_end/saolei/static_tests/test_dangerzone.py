@@ -51,17 +51,25 @@ def _scan_dynamic_imports():
     real_import = builtins.__import__
     real_import_module = importlib.import_module
 
+    def is_forbidden_caller(caller_file):
+        try:
+            caller_path = pathlib.Path(caller_file).resolve()
+            caller_path.relative_to(PROJECT_ROOT)
+        except ValueError:
+            return False
+        return DANGERZONE_APP not in caller_path.parts
+
     def tracking_import(name, *args, **kwargs):
         if name == DANGERZONE_APP or name.startswith(f'{DANGERZONE_APP}.'):
             caller_file = sys._getframe(1).f_code.co_filename
-            if DANGERZONE_APP not in caller_file:  # block if not inside app
+            if is_forbidden_caller(caller_file):  # block if not inside app
                 violations.append(f'Dynamic import of dangerzone in {caller_file}')
         return real_import(name, *args, **kwargs)
 
     def tracking_import_module(name, *args, **kwargs):
         if name == DANGERZONE_APP or name.startswith(f'{DANGERZONE_APP}.'):
             caller_file = sys._getframe(1).f_code.co_filename
-            if DANGERZONE_APP not in caller_file:
+            if is_forbidden_caller(caller_file):
                 violations.append(f'Dynamic import_module of dangerzone in {caller_file}')
         return real_import_module(name, *args, **kwargs)
 

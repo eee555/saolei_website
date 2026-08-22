@@ -34,6 +34,8 @@ interface DangerzoneVideo {
     level: string;
     timems: number;
     bv: number;
+    upload_time?: string;
+    tournament_identifier?: string[];
     state?: string;
     software?: string;
     mode?: string;
@@ -46,6 +48,14 @@ interface DangerzoneVideo {
     double_ce?: number;
     path?: number;
     pluck?: number;
+}
+
+interface DangerzoneVideoResponse {
+    id: number;
+    ongoing_tournament: boolean;
+    tournament_ids: number[];
+    upload_time: string;
+    tournament_identifier: string[];
 }
 
 declare global {
@@ -77,7 +87,7 @@ declare global {
             /**
              * 创建测试录像。
              */
-            createVideo(video: DangerzoneVideo): Chainable<Response<{ id: number }>>;
+            createVideo(video: DangerzoneVideo): Chainable<Response<DangerzoneVideoResponse>>;
 
             /**
              * 创建测试标识。
@@ -155,7 +165,7 @@ Cypress.Commands.add('registerUser', (user: DangerzoneUser) => {
 });
 
 Cypress.Commands.add('createVideo', (video: DangerzoneVideo) => {
-    return cy.dangerzonePost<{ id: number }>('create_video', {
+    return cy.dangerzonePost<DangerzoneVideoResponse>('create_video', {
         state: 'd',
         software: 'e',
         mode: '00',
