@@ -22,15 +22,19 @@ If a player does not have enough games, default times are used to fill the missi
 
 Final rankings are based on the total time of these replays. Lower total time ranks higher.
 
+## Participation
+
+During the tournament, click "Register" on the tournament detail page. After registration, the page shows the tournament identifier for that edition.
+
 ## Accepted Software
 
 ### MetaSweeper
 
-You can join directly by using MetaSweeper's tournament identifier feature.
+After registration, use MetaSweeper's tournament identifier feature with the identifier shown on the page. MetaSweeper replays uploaded during the tournament with that identifier will be recognized as tournament replays.
 
 ### Minesweeper Arbiter
 
-During the tournament, you need to register an Arbiter tournament identifier on the tournament detail page.
+After registration, you can additionally register an Arbiter tournament identifier on the tournament detail page.
 
 The identifier must end with the tournament identifier shown on the tournament page. For example, if the page gives `G12345`, then your Arbiter identifier must contain that ending.
 

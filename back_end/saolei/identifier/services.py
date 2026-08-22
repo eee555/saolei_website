@@ -4,6 +4,7 @@ from config.text_choices import MS_TextChoices
 from customranking.services import add_videos_to_custom_pluck_ranks, remove_videos_from_custom_pluck_ranks
 from msuser.models import UserMS
 from msuser.services import get_current_record_keys_for_video_ids, rebuild_personal_records, update_personal_records_from_videos, update_video_count_limit_from_videos
+from utils.exceptions import ExceptionToResponse
 from videomanager.cache import newest_cache
 from videomanager.models import VideoModel
 from .models import Identifier
@@ -12,9 +13,9 @@ from .models import Identifier
 def bind_identifier(identifier: Identifier, userms: UserMS):
     """绑定标识，并批量吸收因此转为 OFFICIAL 的录像。"""
     if not identifier.safe:
-        raise ValueError('Unsafe identifier cannot be bound')
+        raise ExceptionToResponse('identifier', 'invalid')
     if identifier.userms_id is not None and identifier.userms_id != userms.id:
-        raise ValueError('Identifier is already bound to another user')
+        raise ExceptionToResponse('identifier', 'collision')
 
     with transaction.atomic():
         if identifier.identifier not in userms.identifiers:

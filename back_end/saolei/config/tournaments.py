@@ -14,3 +14,4 @@ class GSC_Defaults:
 
 class TournamentWeights:
     GSC = 1000
+    WEEKLY = 50

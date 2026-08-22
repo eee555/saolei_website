@@ -1,22 +1,26 @@
-from datetime import datetime, timezone
 import secrets
 import string
+from typing import Literal
 
 from django.db import models
+from django.utils import timezone
+from django_tasks_db.models import DBTaskResult
 from model_utils.managers import InheritanceManager
 
 from config.global_settings import MaxSizes
-from config.text_choices import MS_TextChoices, Tournament_TextChoices
+from config.text_choices import Tournament_TextChoices
 from config.tournaments import GSC_Defaults
 from identifier.models import Identifier
+from tournament.utils import (
+    default_weekly_classic_et,
+    default_weekly_classic_it,
+    generate_random_token,
+    insert_to_id_value_list_asc,
+    MAX_TOURNAMENT_BEST,
+    tournament_score_decay_factor,
+)
 from userprofile.models import UserProfile
 from videomanager.models import VideoModel
-
-
-def generate_random_token(length=4):
-    """生成指定位数的随机字母数字混合码"""
-    alphabet = string.ascii_letters + string.digits  # 大小写字母+数字
-    return ''.join(secrets.choice(alphabet) for _ in range(length))
 
 
 def generate_GSC_token(length=GSC_Defaults.TOKEN_LENGTH):
@@ -25,16 +29,13 @@ def generate_GSC_token(length=GSC_Defaults.TOKEN_LENGTH):
 
 class Tournament(models.Model):
     objects = InheritanceManager()
+    subclass = models.CharField(max_length=1, choices=Tournament_TextChoices.Subclass.choices, default=Tournament_TextChoices.Subclass.GSC)  # 比赛子类
     start_time = models.DateTimeField(null=True)  # 比赛开始时间
     end_time = models.DateTimeField(null=True)  # 比赛结束时间
     state = models.CharField(max_length=1, choices=Tournament_TextChoices.State.choices, default=Tournament_TextChoices.State.PENDING)  # 比赛状态
     host = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, related_name='owned_tournaments')  # 主办方
     weight = models.PositiveIntegerField(default=0)  # 比赛总积分
     videos = models.ManyToManyField(VideoModel, related_name='tournaments')
-
-    @property
-    def series(self):
-        raise NotImplementedError("Subclasses of Tournament must implement the 'series' property.")
 
     @property
     def name(self):
@@ -48,44 +49,28 @@ class Tournament(models.Model):
     def participants(self):
         return TournamentParticipant.objects.filter(tournament=self)
 
-    def start(self):
-        self.state = Tournament_TextChoices.State.ONGOING
-        self.save(update_fields=['state'])
+    def can_validate(self):
+        return self.start_time is not None and self.end_time is not None and self.start_time < self.end_time
 
-    def end(self):
-        self.state = Tournament_TextChoices.State.FINISHED
-        self.save(update_fields=['state'])
+    def accept_checkin(self):
+        now = timezone.now()
+        return (
+            self.state == Tournament_TextChoices.State.NORMAL
+            and self.start_time is not None
+            and self.end_time is not None
+            and self.start_time <= now < self.end_time
+        )
 
-    def refresh_state(self):
-        current_state = self.state
-        if current_state == Tournament_TextChoices.State.PREPARING:
-            if datetime.now(timezone.utc) > self.end_time:
-                self.start()
-                self.end()
-            elif datetime.now(timezone.utc) >= self.start_time:
-                self.start()
-        elif current_state == Tournament_TextChoices.State.ONGOING:
-            if datetime.now(timezone.utc) >= self.end_time:
-                self.end()
-            elif datetime.now(timezone.utc) < self.start_time:
-                self.state = Tournament_TextChoices.State.PREPARING
-                self.save(update_fields=['state'])
-        elif current_state == Tournament_TextChoices.State.FINISHED:
-            if datetime.now(timezone.utc) < self.start_time:
-                self.state = Tournament_TextChoices.State.PREPARING
-                self.save(update_fields=['state'])
-            elif datetime.now(timezone.utc) < self.end_time:
-                self.state = Tournament_TextChoices.State.ONGOING
-                self.save(update_fields=['state'])
-        return
+    def is_ended(self):
+        return self.state == Tournament_TextChoices.State.AWARDED or (self.end_time is not None and self.end_time < timezone.now())
 
-    def validate(self):
-        if not self.start_time or not self.end_time or self.start_time >= self.end_time:
-            return
+    def validate(self) -> list[str]:
+        if not self.can_validate():
+            return []
         if self.state == Tournament_TextChoices.State.PENDING or self.state == Tournament_TextChoices.State.CANCELLED:
-            self.state = Tournament_TextChoices.State.PREPARING
-            self.save(update_fields=['state'])
-            self.refresh_state()
+            self.state = Tournament_TextChoices.State.NORMAL
+            return ['state']
+        return []
 
     def invalidate(self):
         if self.state != Tournament_TextChoices.State.AWARDED:
@@ -95,18 +80,22 @@ class Tournament(models.Model):
     def add_participant(self, user: UserProfile):
         raise NotImplementedError("Subclasses of Tournament must implement the 'add_participant' method.")
 
-    def add_video(self, video: VideoModel):
-        self.videos.add(video)
-        self.add_participant(video.player)
+    @property
+    def data(self):
+        return {}
+
+    def select_subclass(self):
+        if type(self) is not Tournament:
+            return self
+        if self.subclass == Tournament_TextChoices.Subclass.WEEKLY:
+            return WeeklyTournament.objects.filter(tournament_ptr_id=self.id).first() or self
+        return GSCTournament.objects.filter(tournament_ptr_id=self.id).first() or self
 
 
 class GSCTournament(Tournament):
     order = models.PositiveSmallIntegerField(primary_key=True)  # 届数
-    token = models.CharField(max_length=6, default='', db_collation='utf8mb4_0900_as_cs')  # 比赛标识
-
-    @property
-    def series(self):
-        return Tournament_TextChoices.Series.GSC
+    _token = models.CharField(max_length=6, default='', db_column='token', db_collation='utf8mb4_0900_as_cs')  # 比赛标识
+    task = models.ForeignKey(DBTaskResult, on_delete=models.SET_NULL, null=True)
 
     @property
     def name(self):
@@ -119,46 +108,88 @@ class GSCTournament(Tournament):
     def description(self):
         return ''
 
+    @property
+    def data(self):
+        return {
+            'order': self.order,
+            'token': self.token,
+        }
+
+    @property
+    def token(self):
+        if self.start_time is None or timezone.now() < self.start_time:
+            return ''
+        return self._token
+
+    @token.setter
+    def token(self, value):
+        self._token = value
+
     def new_token(self):
+        self._token = self.generate_unique_token()
+
+    @property
+    def order_by(self):
+        return 't37'
+
+    @staticmethod
+    def generate_unique_token():
         token = generate_GSC_token()
-        while GSCTournament.objects.filter(token=token).exists() or TournamentParticipant.objects.filter(token=token).exists():
+        while GSCTournament.objects.filter(_token=token).exists() or TournamentParticipant.objects.filter(token=token).exists():
             token = generate_GSC_token()
-        self.token = token
-        self.save(update_fields=['token'])
+        return token
 
-    def start(self):
-        if self.token == '':
-            self.new_token()
-        super().start()
-
-    def end(self):
-        super().end()
+    def validate(self) -> list[str]:
+        if not self.can_validate():
+            return []
+        if self.state == Tournament_TextChoices.State.PENDING or self.state == Tournament_TextChoices.State.CANCELLED:
+            self.state = Tournament_TextChoices.State.NORMAL
+            update_fields = ['state']
+            if not self._token:
+                self._token = self.generate_unique_token()
+                update_fields.append('_token')
+            return update_fields
+        return []
 
     def add_participant(self, user: UserProfile):
         if not GSCParticipant.objects.filter(user=user, tournament=self).exists():
-            GSCParticipant.objects.create(user=user, tournament=self, token=self.token, start_time=datetime.now(tz=timezone.utc))
+            GSCParticipant.objects.create(
+                user=user,
+                tournament=self,
+                token=self._token,
+                start_time=self.start_time,
+                end_time=self.end_time,
+            )
 
-    def refresh_rank(self):
-        rank = 1
-        for participant in GSCParticipant.objects.filter(tournament=self).order_by('t37'):
-            participant.rank = rank
-            participant.save(update_fields=['rank'])
-            rank += 1
 
-    def refresh_score(self):
-        for participant in GSCParticipant.objects.filter(tournament=self):
-            participant.refresh()
+class WeeklyTournament(Tournament):
+    year = models.PositiveSmallIntegerField()  # 年份
+    week = models.PositiveSmallIntegerField()  # 期数
+    tournament_format = models.CharField(max_length=1, choices=Tournament_TextChoices.WeeklyFormat.choices, default=Tournament_TextChoices.WeeklyFormat.CLASSIC)
 
-    def get_scores(self):
-        return GSCParticipant.objects.filter(tournament=self).values(
-            'id',
-            'user__id',
-            'start_time', 'end_time',
-            'rank', 'rank_score',
-            'bt1st', 'bt20th', 'bt20sum',
-            'it1st', 'it12th', 'it12sum',
-            'et1st', 'et5th', 'et5sum',
-        )
+    @property
+    def name(self):
+        return {
+            'zh': f'{self.year}年第{self.week}周打卡赛',
+            'en': f'Weekly {self.year}#{self.week}',
+        }
+
+    @property
+    def description(self):
+        return ''
+
+    @property
+    def data(self):
+        return {
+            'year': self.year,
+            'week': self.week,
+            'tournament_format': self.tournament_format,
+        }
+
+    @property
+    def order_by(self):
+        if self.tournament_format == Tournament_TextChoices.WeeklyFormat.CLASSIC:
+            return 'classic_score'
 
 
 class GeneralTournament(Tournament):
@@ -166,33 +197,29 @@ class GeneralTournament(Tournament):
     description = models.JSONField()
     csv_head = models.JSONField()
 
-    @property
-    def series(self):
-        return ''
-
 
 class TournamentParticipant(models.Model):
     token = models.CharField(max_length=MaxSizes.IDENTIFIER, db_collation='utf8mb4_0900_as_cs')  # 比赛标识
     arbiter_identifier = models.ForeignKey(Identifier, null=True, on_delete=models.PROTECT)  # 阿比特标识
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)  # 比赛
     user = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True)  # 用户
-    start_time = models.DateTimeField(auto_now_add=True)  # 参赛时间
+    start_time = models.DateTimeField(default=timezone.now)  # 参赛时间
     end_time = models.DateTimeField(null=True, blank=True)  # 结束时间
-    rank = models.PositiveIntegerField(null=True, blank=True)  # 排名
+    rank = models.PositiveSmallIntegerField(null=True, blank=True)  # 排名
     rank_score = models.PositiveSmallIntegerField(default=0)  # 比赛积分
 
     class Meta:
         unique_together = ('tournament', 'user')
 
-    def create(self, *args, **kwargs):
+    def save(self, *args, **kwargs):
         """创建参赛者时生成唯一的token"""
-        if not self.token:
+        if self._state.adding and not self.token:
             while True:
                 token = generate_random_token()
                 if not TournamentParticipant.objects.filter(token=token).exists():
                     self.token = token
                     break
-        super().create(*args, **kwargs)
+        super().save(*args, **kwargs)  # noqa: DJM100
 
     @property
     def videos(self):
@@ -222,29 +249,75 @@ class GSCParticipant(TournamentParticipant):
         db_persist=True,
     )
 
-    def refresh(self):
-        videos = self.tournament.videos.filter(player=self.user)
+    class Meta:
+        indexes = [
+            models.Index(fields=['t37'], name='gsc_t37_idx'),
+        ]
 
-        videos_b = videos.filter(level=MS_TextChoices.Level.BEGINNER, bv__gte=GSC_Defaults.B_BV_MIN)
-        videos_bt = videos_b.filter(timems__lt=GSC_Defaults.BT).order_by('timems')[:20].values_list('timems', flat=True)
-        self.bt1st = videos_bt[0] if len(videos_bt) >= 1 else GSC_Defaults.BT
-        self.bt20th = videos_bt[19] if len(videos_bt) >= 20 else GSC_Defaults.BT
-        self.bt20sum = sum(videos_bt) + (20 - len(videos_bt)) * GSC_Defaults.BT
+    def __setattr__(self, name, value):
+        super().__setattr__(name, value)
+        if name in {'bt20sum', 'it12sum', 'et5sum'}:
+            bt20sum = self.__dict__.get('bt20sum', GSC_Defaults.BT * 20)
+            it12sum = self.__dict__.get('it12sum', GSC_Defaults.IT * 12)
+            et5sum = self.__dict__.get('et5sum', GSC_Defaults.ET * 5)
+            self.t37 = bt20sum + it12sum + et5sum
 
-        videos_i = videos.filter(level=MS_TextChoices.Level.INTERMEDIATE, bv__gte=GSC_Defaults.I_BV_MIN)
-        videos_it = videos_i.filter(timems__lt=GSC_Defaults.IT).order_by('timems')[:12].values_list('timems', flat=True)
-        self.it1st = videos_it[0] if len(videos_it) >= 1 else GSC_Defaults.IT
-        self.it12th = videos_it[11] if len(videos_it) >= 12 else GSC_Defaults.IT
-        self.it12sum = sum(videos_it) + (12 - len(videos_it)) * GSC_Defaults.IT
+    @property
+    def user__id(self):
+        return self.user_id
 
-        videos_e = videos.filter(level=MS_TextChoices.Level.EXPERT, bv__gte=GSC_Defaults.E_BV_MIN)
-        videos_et = videos_e.filter(timems__lt=GSC_Defaults.ET).order_by('timems')[:5].values_list('timems', flat=True)
-        self.et1st = videos_et[0] if len(videos_et) >= 1 else GSC_Defaults.ET
-        self.et5th = videos_et[4] if len(videos_et) >= 5 else GSC_Defaults.ET
-        self.et5sum = sum(videos_et) + (5 - len(videos_et)) * GSC_Defaults.ET
+    @property
+    def user__realname(self):
+        return self.user.realname if self.user else None
 
-        self.save(update_fields=[
-            'bt1st', 'bt20th', 'bt20sum',
-            'it1st', 'it12th', 'it12sum',
-            'et1st', 'et5th', 'et5sum',
-        ])
+
+class WeeklyParticipant(TournamentParticipant):
+    classic_et = models.JSONField(default=default_weekly_classic_et)
+    classic_it = models.JSONField(default=default_weekly_classic_it)
+    classic_score = models.PositiveIntegerField(default=780000)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['classic_score'], name='classic_score_idx'),
+        ]
+
+    def classic_add_e(self, video_id: int, timems: int):
+        diff = self.classic_et[1][1] - timems
+        if diff > 0:
+            self.classic_score -= diff
+            if timems < self.classic_et[0][1]:
+                self.classic_et[1] = self.classic_et[0]
+                self.classic_et[0] = (video_id, timems)
+            else:
+                self.classic_et[1] = (video_id, timems)
+        return diff
+
+    def classic_add_i(self, video_id: int, timems: int):
+        diff = self.classic_it[4][1] - timems
+        if diff > 0:
+            self.classic_score -= diff
+            insert_to_id_value_list_asc(self.classic_it, video_id, timems)
+        return diff
+
+
+class TournamentUser(models.Model):
+    user = models.OneToOneField(UserProfile, on_delete=models.CASCADE, primary_key=True)
+    score_current = models.FloatField(default=0)  # 当前积分
+    last_updated = models.DateTimeField(default=timezone.now)  # 最后更新时间
+    score_total = models.PositiveIntegerField(default=0)  # 所有比赛历史总积分
+    gsc_total = models.PositiveIntegerField(default=0)  # gsc历史总积分
+    gsc_best = models.PositiveBigIntegerField(default=MAX_TOURNAMENT_BEST)  # gsc历史最好成绩及届数（后三位）
+    weekly_total = models.PositiveIntegerField(default=0)  # 历史周赛总积分
+    weekly_classic_total = models.PositiveIntegerField(default=0)  # 历史周赛经典模式总积分
+    weekly_classic_best = models.PositiveBigIntegerField(default=MAX_TOURNAMENT_BEST)  # 历史周赛经典模式最好成绩及届数（后五位）
+
+    def add_score(self, score: float | int, updated=None, *, category: Literal['gsc', 'weekly_classic']):
+        updated = updated or timezone.now()
+        self.score_current = self.score_current * tournament_score_decay_factor(self.last_updated, updated) + score
+        self.last_updated = updated
+        self.score_total += score
+        if category == 'gsc':
+            self.gsc_total += score
+        elif category == 'weekly_classic':
+            self.weekly_classic_total += score
+            self.weekly_total += score

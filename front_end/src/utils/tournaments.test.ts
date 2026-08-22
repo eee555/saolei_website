@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { TournamentSeries, TournamentState } from './ms_const';
+import { TournamentState, TournamentSubclass } from './ms_const';
 import { Tournament } from './tournaments';
 
 describe('Tournament', () => {
@@ -16,7 +16,8 @@ describe('Tournament', () => {
             expect(tournament.hostId).toBe(0);
             expect(tournament.hostName).toBe('');
             expect(tournament.state).toBe(TournamentState.Pending);
-            expect(tournament.series).toBe(TournamentSeries.Unknown);
+            expect(tournament.displayState).toBe(TournamentState.Pending);
+            expect(tournament.subclass).toBe(TournamentSubclass.Unknown);
         });
 
         it('Uses camelCase fields', () => {
@@ -29,7 +30,7 @@ describe('Tournament', () => {
                 hostId: 9,
                 hostName: 'Host',
                 state: TournamentState.Ongoing,
-                series: TournamentSeries.General,
+                subclass: TournamentSubclass.Weekly,
             });
 
             expect(tournament.id).toBe(1);
@@ -40,7 +41,7 @@ describe('Tournament', () => {
             expect(tournament.hostId).toBe(9);
             expect(tournament.hostName).toBe('Host');
             expect(tournament.state).toBe(TournamentState.Ongoing);
-            expect(tournament.series).toBe(TournamentSeries.General);
+            expect(tournament.subclass).toBe(TournamentSubclass.Weekly);
         });
 
         it('Uses snake_case fallback fields', () => {
@@ -55,6 +56,35 @@ describe('Tournament', () => {
             expect(tournament.endDate).toEqual(new Date('2025-02-03T04:05:06Z'));
             expect(tournament.hostId).toBe(11);
             expect(tournament.hostName).toBe('Fallback Host');
+        });
+
+        it('Derives GSC display fields from subclass data', () => {
+            const tournament = new Tournament({
+                subclass: TournamentSubclass.GSC,
+                data: {
+                    order: 8,
+                    token: 'G12345',
+                },
+            });
+
+            expect(tournament.getLocalName('zh-CN')).toBe('第8届金羊杯');
+            expect(tournament.getLocalName('en')).toBe('GSC#8');
+            expect(tournament.description).toBe('');
+        });
+
+        it('Derives weekly display fields from subclass data', () => {
+            const tournament = new Tournament({
+                subclass: TournamentSubclass.Weekly,
+                data: {
+                    year: 2026,
+                    week: 12,
+                    tournament_format: 'c',
+                },
+            });
+
+            expect(tournament.getLocalName('zh-CN')).toBe('2026年第12周打卡赛');
+            expect(tournament.getLocalName('en')).toBe('Weekly 2026#12');
+            expect(tournament.description).toBe('');
         });
     });
 
@@ -136,6 +166,56 @@ describe('Tournament', () => {
         });
     });
 
+    describe('display state', () => {
+        const now = new Date('2025-01-02T00:00:00Z');
+
+        it('keeps explicit non-normal states', () => {
+            const tournament = new Tournament({
+                state: TournamentState.Awarded,
+                startDate: '2025-01-01T00:00:00Z',
+                endDate: '2025-01-03T00:00:00Z',
+            });
+
+            expect(tournament.getDisplayState(now)).toBe(TournamentState.Awarded);
+        });
+
+        it('derives preparing from normal tournaments before start time', () => {
+            const tournament = new Tournament({
+                state: TournamentState.Normal,
+                startDate: '2025-01-03T00:00:00Z',
+                endDate: '2025-01-04T00:00:00Z',
+            });
+
+            expect(tournament.getDisplayState(now)).toBe(TournamentState.Preparing);
+        });
+
+        it('derives ongoing from normal tournaments within the time window', () => {
+            const tournament = new Tournament({
+                state: TournamentState.Normal,
+                startDate: '2025-01-01T00:00:00Z',
+                endDate: '2025-01-03T00:00:00Z',
+            });
+
+            expect(tournament.getDisplayState(now)).toBe(TournamentState.Ongoing);
+        });
+
+        it('derives finished from normal tournaments after end time', () => {
+            const tournament = new Tournament({
+                state: TournamentState.Normal,
+                startDate: '2025-01-01T00:00:00Z',
+                endDate: '2025-01-02T00:00:00Z',
+            });
+
+            expect(tournament.getDisplayState(now)).toBe(TournamentState.Finished);
+        });
+
+        it('keeps normal when dates are incomplete', () => {
+            const tournament = new Tournament({ state: TournamentState.Normal });
+
+            expect(tournament.getDisplayState(now)).toBe(TournamentState.Normal);
+        });
+    });
+
     describe('validation state', () => {
         it('can validate pending tournaments with a valid time range', () => {
             const tournament = new Tournament({
@@ -162,6 +242,7 @@ describe('Tournament', () => {
         it('cannot validate tournaments that are already active or finalized', () => {
             const states = [
                 TournamentState.Awarded,
+                TournamentState.Normal,
                 TournamentState.Finished,
                 TournamentState.Ongoing,
                 TournamentState.Preparing,

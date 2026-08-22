@@ -1,19 +1,33 @@
 import { toDate, toISODateTimeString } from './datetime';
-import { TournamentSeries, TournamentState } from './ms_const';
+import { TournamentState, TournamentSubclass } from './ms_const';
 
 export interface TournamentParticipant {
     id: number;
-    user__id: number;
-    user__realname: string;
+    user_id: number | null;
 }
 
 type LocalizedString = string | Partial<Record<string, string>>;
+
+interface GSCTournamentData {
+    order: number;
+    token: string;
+}
+
+interface WeeklyTournamentData {
+    year: number;
+    week: number;
+    tournament_format: string;
+}
+
+type TournamentData = GSCTournamentData | WeeklyTournamentData | Record<string, never>;
 
 export interface TournamentInfo {
     [key: string]: unknown;
     id?: number;
     name?: LocalizedString;
     description?: LocalizedString;
+    subclass?: TournamentSubclass;
+    data?: TournamentData;
     startDate?: string | Date | null;
     start_time?: string | Date | null;
     endDate?: string | Date | null;
@@ -23,12 +37,12 @@ export interface TournamentInfo {
     hostName?: string;
     host_realname?: string;
     state?: TournamentState;
-    series?: TournamentSeries;
 }
 
 export class Tournament {
     private static readonly cannotValidateStates: readonly TournamentState[] = [
         TournamentState.Awarded,
+        TournamentState.Normal,
         TournamentState.Finished,
         TournamentState.Ongoing,
         TournamentState.Preparing,
@@ -45,12 +59,15 @@ export class Tournament {
     public hostId: number;
     public hostName: string;
     public state: TournamentState;
-    public series: TournamentSeries;
+    public subclass: TournamentSubclass;
+    public data: TournamentData;
 
     public constructor(info: TournamentInfo) {
         this.id = info.id ?? 0;
-        this.name = info.name ?? '';
-        this.description = info.description;
+        this.subclass = info.subclass ?? TournamentSubclass.Unknown;
+        this.data = info.data ?? {};
+        this.name = info.name ?? this.buildName();
+        this.description = info.description ?? this.buildDescription();
 
         this.startDate = toDate(info.startDate) ?? toDate(info.start_time);
         this.endDate = toDate(info.endDate) ?? toDate(info.end_time);
@@ -58,7 +75,6 @@ export class Tournament {
         this.hostId = info.hostId ?? info.host_id ?? 0;
         this.hostName = info.hostName ?? info.host_realname ?? '';
         this.state = info.state ?? TournamentState.Pending;
-        this.series = info.series ?? TournamentSeries.Unknown;
     }
 
     public get canValidate(): boolean {
@@ -69,6 +85,20 @@ export class Tournament {
 
     public get canInvalidate(): boolean {
         return !Tournament.cannotInvalidateStates.includes(this.state);
+    }
+
+    public get displayState(): TournamentState {
+        return this.getDisplayState();
+    }
+
+    public get gscData(): GSCTournamentData | undefined {
+        if (this.subclass !== TournamentSubclass.GSC) return undefined;
+        return this.data as GSCTournamentData;
+    }
+
+    public get weeklyData(): WeeklyTournamentData | undefined {
+        if (this.subclass !== TournamentSubclass.Weekly) return undefined;
+        return this.data as WeeklyTournamentData;
     }
 
     public static localFallback(local: string | undefined): 'zh' | 'en' | undefined {
@@ -88,6 +118,14 @@ export class Tournament {
             _local = Tournament.localFallback(_local);
         }
         return '';
+    }
+
+    public getDisplayState(now = new Date()): TournamentState {
+        if (this.state !== TournamentState.Normal) return this.state;
+        if (!this.startDate || !this.endDate) return TournamentState.Normal;
+        if (now < this.startDate) return TournamentState.Preparing;
+        if (now < this.endDate) return TournamentState.Ongoing;
+        return TournamentState.Finished;
     }
 
     /**
@@ -111,6 +149,28 @@ export class Tournament {
 
     public getLocalName(local?: string): string {
         return Tournament.getLocalString(this.name, local);
+    }
+
+    public buildName(): LocalizedString {
+        switch (this.subclass) {
+            case TournamentSubclass.GSC:
+                return {
+                    zh: `第${this.gscData?.order ?? ''}届金羊杯`,
+                    en: `GSC#${this.gscData?.order ?? ''}`,
+                };
+            case TournamentSubclass.Weekly:
+                return {
+                    zh: `${this.weeklyData?.year ?? ''}年第${this.weeklyData?.week ?? ''}周打卡赛`,
+                    en: `Weekly ${this.weeklyData?.year ?? ''}#${this.weeklyData?.week ?? ''}`,
+                };
+            default:
+                return '';
+        }
+    }
+
+    public buildDescription(): LocalizedString | undefined {
+        if (this.subclass === TournamentSubclass.Unknown) return undefined;
+        return '';
     }
 
     public displayStartTime(): string {

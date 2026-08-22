@@ -22,6 +22,7 @@ const { t } = useI18n();
 
 const classes = {
     [TournamentState.Pending]: 'text-primary',
+    [TournamentState.Normal]: 'text-info',
     [TournamentState.Preparing]: 'text-warning',
     [TournamentState.Ongoing]: 'text-danger',
     [TournamentState.Finished]: 'text-success',
