@@ -16,6 +16,7 @@ from msuser.models import UserMS
 from userprofile.decorators import staff_required
 from userprofile.models import UserProfile
 from utils import ComplexEncoder
+from utils.cache import maybe_bytes_to_str
 from .models import ExpandVideoModel, VideoModel
 from .view_utils import refresh_video, video_all_fields
 
@@ -30,7 +31,7 @@ def get_software(request):
         return HttpResponseBadRequest()
     if not (video := VideoModel.objects.filter(id=videoid).first()):
         return HttpResponseNotFound()
-    if video.ongoing_tournament and request.user != video.player:
+    if video.ongoing_tournament and request.user.id != video.player_id:
         return HttpResponseForbidden()
     return JsonResponse({'msg': video.software})
 
@@ -46,7 +47,7 @@ def video_preview(request: HttpRequest):
         return HttpResponseBadRequest()
     if not (video := VideoModel.objects.filter(id=videoid).first()):
         return HttpResponseNotFound()
-    if video.ongoing_tournament and request.user != video.player:
+    if video.ongoing_tournament and request.user.id != video.player_id:
         return HttpResponseForbidden()
     # video.file.name是相对路径(含upload_to)，video.file.path是绝对路径
     file_path = settings.MEDIA_ROOT / video.file.name
@@ -69,7 +70,7 @@ def video_download(request):
         return HttpResponseBadRequest()
     if not (video := VideoModel.objects.filter(id=videoid).first()):
         return HttpResponseNotFound()
-    if video.ongoing_tournament and request.user != video.player:
+    if video.ongoing_tournament and request.user.id != video.player_id:
         return HttpResponseForbidden()
     response = FileResponse(open(video.file.path, 'rb'))
     response['Content-Type'] = 'application/octet-stream'
@@ -153,7 +154,7 @@ def newest_queue(request: HttpRequest):
     newest_queue_ids = cache.hgetall('newest_queue')
     for key in list(newest_queue_ids.keys()):
         newest_queue_ids.update({
-            str(key, encoding='utf-8'): newest_queue_ids.pop(key),
+            maybe_bytes_to_str(key): newest_queue_ids.pop(key),
         })
     return JsonResponse(newest_queue_ids, encoder=ComplexEncoder)
 
@@ -182,7 +183,7 @@ def freeze_queue(request):
     freeze_queue_ids = cache.hgetall('freeze_queue')
     for key in list(freeze_queue_ids.keys()):
         freeze_queue_ids.update({
-            str(key, encoding='utf-8'): freeze_queue_ids.pop(key),
+            maybe_bytes_to_str(key): freeze_queue_ids.pop(key),
         })
     return JsonResponse(freeze_queue_ids, encoder=ComplexEncoder)
 

@@ -5,7 +5,7 @@
 ## 核心模型
 
 - `VideoModel`：录像主表，保存玩家、文件、审核状态、级别、模式、成绩、`pluck`、比赛标记等信息。
-- `ExpandVideoModel`：录像扩展信息，目前主要保存录像内标识 `identifier`。
+- `ExpandVideoModel`：录像扩展信息，目前主要保存录像内标识 `identifier` 和比赛标识列表 `tournament_identifier`。
 
 `VideoModel` 是多个 app 的事实事件源。任何保存 `VideoModel` 的代码都应尽量使用 `save(update_fields=[...])`，让信号接收器能判断本次修改的影响范围。
 
@@ -26,7 +26,7 @@
 
 创建时需要触发：
 
-- `tournament`：`pre_save(VideoModel)` 根据 `_tournament_identifiers` 执行比赛 check-in，并可能设置 `ongoing_tournament=True`；`post_save(VideoModel)` 在录像获得主键后写入比赛的 `videos` 多对多关系。
+- `tournament`：`pre_save(VideoModel)` 根据 `ExpandVideoModel.identifier` / `ExpandVideoModel.tournament_identifier` 执行比赛 check-in，并可能设置 `ongoing_tournament=True`，同时暂存命中的比赛；`post_save(VideoModel)` 在录像获得主键后消费该临时结果，写入比赛的 `videos` 多对多关系。
 - `videomanager`：创建后需要进入对应审核队列或最新队列；队列副作用应由 `videomanager.signals` 统一处理。
 - `msuser`：如果录像满足经典排行条件，`post_save(VideoModel)` 会在创建时尝试更新经典个人纪录。
 - `customranking`：自定义 pluck 排行需要录像满足 `OFFICIAL`、非比赛、合法自定义配置、`pluck is not None`。当前通过 `VideoModel` 保存后的信号维护 `CustomPluckRecord`。
@@ -100,6 +100,8 @@ Tie-Breaker依赖：timems相同时比较`upload_time`（越小越好），其�
 
 `refresh_video(video)` 会重新解析文件并刷新所有文件包含的数据。
 
+重新解析时需要同步刷新 `ExpandVideoModel.identifier` 和 `ExpandVideoModel.tournament_identifier`。其中 `tournament_identifier` 使用 `JSONField` 保存 parser 提供的比赛标识列表。
+
 如果重新解析后 `IDENTIFIER` 录像的标识已经属于玩家，可将状态改为 `OFFICIAL`，并通过状态保存触发后续事件。
 
 ## 互动 app
@@ -127,7 +129,7 @@ Tie-Breaker依赖：timems相同时比较`upload_time`（越小越好），其�
 
 互动方式：
 
-- `VideoModel.create_from_parser` 在实例上暂存 `_tournament_identifiers`。
+- `VideoModel.create_from_parser` 将 parser 的 `tournament_identifier` 列表写入 `ExpandVideoModel`。比赛 check-in 直接读取 `video.video.tournament_identifier`，不再在 `VideoModel` 实例上暂存比赛 token 临时状态；`tournament` 仍会在 `pre_save` 到 `post_save` 之间短暂保存已命中的比赛对象，用于创建后写入 M2M。
 - `tournament.signals` 在 `pre_save` / `post_save` 中完成 check-in。
 
 ### `msuser`

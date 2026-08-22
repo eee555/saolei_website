@@ -8,7 +8,6 @@ import { LoginStatus } from '@/utils/common/structInterface';
 import { colorSchemeTemplates } from '@/utils/config';
 import type { CellChoice, ColorTemplateName, ColumnChoice, MS_Software } from '@/utils/ms_const';
 import { MS_Softwares, MS_State } from '@/utils/ms_const';
-import type { Tournament } from '@/utils/tournaments';
 import { UserProfile } from '@/utils/userprofile';
 import type { UserProfileData } from '@/utils/userprofile';
 import type { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
@@ -24,7 +23,6 @@ export const store = defineStore('user', {
         new_identifier: false, // 是否有新标识录像
         video_list: [] as VideoAbstract[],
         video_list_show: false,
-        tournamentTabs: [] as Tournament[],
     }),
     getters: {
         isSelf: (state) => state.user.id === state.player.id && state.user.id !== 0,

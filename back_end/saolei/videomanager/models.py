@@ -23,6 +23,7 @@ STNB_COEFFICIENTS = {
 class ExpandVideoModel(models.Model):
     # video = models.OneToOneField(VideoModel, on_delete=models.CASCADE)
     identifier = models.CharField(max_length=MaxSizes.IDENTIFIER, default='')
+    tournament_identifier = models.JSONField(default=list)
 
 
 # 其他类：checksum_ok, mode
@@ -190,6 +191,7 @@ class VideoModel(models.Model):
         """
         e_video = ExpandVideoModel.objects.create(
             identifier=parser.identifier,
+            tournament_identifier=parser.tournament_identifier,
         )
         video = VideoModel(
             player=user,
@@ -207,7 +209,6 @@ class VideoModel(models.Model):
             cell3=parser.cell3, cell4=parser.cell4, cell5=parser.cell5,
             cell6=parser.cell6, cell7=parser.cell7, cell8=parser.cell8,
         )
-        video._tournament_identifiers = parser.tournament_identifiers
         video.save()  # noqa: DJM100
         return video
 

@@ -10,7 +10,7 @@
     <template v-if="tournament">
         状态
         &nbsp;
-        <TournamentStateIcon :state="tournament.state" />
+        <TournamentStateIcon :state="tournament.displayState" />
         <br>
         开始时间
         &nbsp;
@@ -43,7 +43,6 @@ import { ref } from 'vue';
 import { BaseIconClose, BaseIconTick } from '@/components/common/icon';
 import { httpErrorNotification, successNotification } from '@/components/Notifications';
 import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
-import type { ApiResponse } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { Tournament } from '@/utils/tournaments';
 
@@ -61,7 +60,8 @@ interface TournamentResponseData {
     description?: LocalizedString;
     start_time?: string | Date | null;
     end_time?: string | Date | null;
-    series?: ConstructorParameters<typeof Tournament>[0]['series'];
+    subclass?: ConstructorParameters<typeof Tournament>[0]['subclass'];
+    data?: ConstructorParameters<typeof Tournament>[0]['data'];
     host_id?: number;
     state?: ConstructorParameters<typeof Tournament>[0]['state'];
 }
@@ -71,10 +71,8 @@ function refreshTournamentInfo() {
         tournament.value = null;
         return;
     }
-    proxy.$axios.get<ApiResponse<TournamentResponseData>>('tournament/get/', { params: { id: tournamentId.value } }).then(({ data }) => {
-        if (data.type === 'success') {
-            tournament.value = new Tournament(data.data);
-        }
+    proxy.$axios.get<TournamentResponseData>('/api/tournament/get', { params: { tournament_id: tournamentId.value } }).then(({ data }) => {
+        tournament.value = new Tournament(data);
     }).catch((e: unknown) => {
         tournament.value = null;
         httpErrorNotification(e);
@@ -83,7 +81,7 @@ function refreshTournamentInfo() {
 
 function validateTournament(valid: boolean) {
     if (!tournamentId.value) return;
-    proxy.$axios.post('tournament/validate/', {
+    proxy.$axios.post('/api/tournament/validate', {
         id: tournamentId.value,
         valid: valid,
     }).then((response) => {

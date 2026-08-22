@@ -81,7 +81,7 @@
 - 管理员绑定：`identifier.views.staff_add_identifier`
 - 管理员解绑或删除：`identifier.views.staff_del_identifier`
 - 管理员过审：`identifier.views.staff_approve_identifier`
-- GSC 报名自动绑定：`tournament.views.gsc.register_GSCParticipant`
+- GSC 报名自动绑定：`tournament.gsc.api.register_GSCParticipant`
 
 这些入口应调用 `bind_identifier` / `unbind_identifier` / `set_safe`，不应直接写 `identifier.userms` 或 `identifier.safe`。
 

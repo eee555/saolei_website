@@ -36,6 +36,7 @@ export type MS_State = typeof MS_State[keyof typeof MS_State];
 
 export const TournamentState = {
     Pending: 'p',
+    Normal: 'n',
     Ongoing: 'o',
     Finished: 'f',
     Preparing: 'r',
@@ -44,9 +45,9 @@ export const TournamentState = {
 } as const;
 export type TournamentState = typeof TournamentState[keyof typeof TournamentState];
 
-export enum TournamentSeries {
-    General = 'a',
+export enum TournamentSubclass {
     GSC = 'g',
+    Weekly = 'w',
     Unknown = 'u',
 }
 
