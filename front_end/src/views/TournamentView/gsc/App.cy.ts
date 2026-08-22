@@ -64,21 +64,21 @@ describe('<GSC App />', () => {
     it('hides real-time score for anonymous users during ongoing tournament', () => {
         mountGSC({ loginStatus: LoginStatus.NotLogin, participant: false });
 
-        cy.contains('进行中').should('be.visible');
-        cy.contains('即时成绩').should('not.exist');
+        cy.contains('Ongoing').should('be.visible');
+        cy.contains('Real-Time Score').should('not.exist');
     });
 
     it('hides real-time score for logged-in users before registration', () => {
         mountGSC({ loginStatus: LoginStatus.IsLogin, participant: false });
 
-        cy.contains('进行中').should('be.visible');
-        cy.contains('即时成绩').should('not.exist');
+        cy.contains('Ongoing').should('be.visible');
+        cy.contains('Real-Time Score').should('not.exist');
     });
 
     it('shows real-time score for registered users', () => {
         mountGSC({ loginStatus: LoginStatus.IsLogin, participant: true });
 
-        cy.contains('即时成绩').should('be.visible');
+        cy.contains('Real-Time Score').should('be.visible');
         cy.wait('@participantVideos').its('response.statusCode').should('eq', 200);
     });
 });
