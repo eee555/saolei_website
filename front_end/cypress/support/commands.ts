@@ -60,6 +60,11 @@ declare global {
              */
             mockRegister(): void;
 
+            /**
+             * 让 PlayerName 始终显示 fallback 名称（用户#id），避免表格测试触发用户信息批量缓存和战绩弹窗请求。
+             */
+            mockPlayerNameFallback(): void;
+
             extractTableData(): Chainable<string[][]>;
             shouldHaveState(expectedStates: (boolean | null)[]): void;
         }
@@ -132,6 +137,27 @@ Cypress.Commands.add('mockRegister', () => {
             type: 'success',
             user: {},
         });
+    });
+});
+
+Cypress.Commands.add('mockPlayerNameFallback', () => {
+    cy.intercept('GET', '**/api/userprofile/avatar/**', { statusCode: 404 });
+    cy.intercept('GET', '**/api/userprofile/infobulk*', { body: [] }).as('playerNameFallbackUserInfo');
+    cy.intercept({ method: 'GET', pathname: '/api/msuser/records_abstract' }, {
+        body: {
+            b_timems_std: 999999,
+            b_bvs_std: 0,
+            b_timems_id_std: null,
+            b_bvs_id_std: null,
+            i_timems_std: 999999,
+            i_bvs_std: 0,
+            i_timems_id_std: null,
+            i_bvs_id_std: null,
+            e_timems_std: 999999,
+            e_bvs_std: 0,
+            e_timems_id_std: null,
+            e_bvs_id_std: null,
+        },
     });
 });
 

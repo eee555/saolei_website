@@ -40,6 +40,7 @@ class VideoManagerTestCase(TestCase):
         }
         self.testfile_exp_values_extended = {
             'identifier': 'Pu Tian Yi(Hu Bei)',
+            'tournament_identifier': [],
         }
 
     def multiple_values_test(self, obj, expected_values):

@@ -5,20 +5,9 @@ from ninja.orm import create_schema
 
 from config.text_choices import MS_TextChoices
 from .models import VideoModel
+from .schema import VideoBaseOut
 
 router = Router()
-
-
-VideoBaseOut = create_schema(
-    VideoModel,
-    fields=[
-        'id', 'player',
-        'software', 'level', 'mode', 'state',
-        'cl', 'ce', 'timems', 'bv',
-        'upload_time', 'end_time',
-    ],
-)
-
 
 VideoFullOut = create_schema(
     VideoModel,
