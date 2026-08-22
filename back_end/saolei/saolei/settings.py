@@ -385,6 +385,15 @@ LOGGING = {
             'maxBytes': 5242880,  # 1M
             'backupCount': 10,
         },
+        'tournament': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/tournament.log'),
+            'formatter': 'modulehistory',
+            'encoding': 'utf-8',
+            'maxBytes': 5242880,  # 1M
+            'backupCount': 10,
+        },
     },
     'loggers': {
         # 应用中自定义日志记录器
@@ -401,6 +410,11 @@ LOGGING = {
         'userprofile': {
             'level': 'INFO',
             'handlers': ['userprofile'],
+            'propagate': False,
+        },
+        'tournament': {
+            'level': 'INFO',
+            'handlers': ['tournament'],
             'propagate': False,
         },
     },

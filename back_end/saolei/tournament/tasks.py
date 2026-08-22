@@ -1,15 +1,14 @@
 from django.tasks import task
 
-from config.text_choices import Tournament_TextChoices
-from .models import GSCTournament
-from .services import reveal_videos_for_tournament
+from .models import Tournament
+from .services import award_tournament_rank_scores
+
+
+def _task_award_tournament_impl(tournament_id: int):
+    tournament = Tournament.objects.get(id=tournament_id)
+    return award_tournament_rank_scores(tournament)
 
 
 @task
-def task_gsc_finish(gsc_order: int):
-    tournament = GSCTournament.objects.get(order=gsc_order)
-    tournament.refresh_score()
-    tournament.refresh_rank()
-    reveal_videos_for_tournament(tournament)
-    tournament.state = Tournament_TextChoices.State.AWARDED
-    tournament.save(update_fields=['state'])
+def task_award_tournament(tournament_id: int):
+    return _task_award_tournament_impl(tournament_id)

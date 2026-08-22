@@ -7,3 +7,5 @@ class TournamentConfig(AppConfig):
 
     def ready(self):
         import tournament.signals  # noqa: F401 - 信号注册需要
+        import tournament.gsc.signals  # noqa: F401 - 信号注册需要
+        import tournament.weekly.signals  # noqa: F401 - 信号注册需要

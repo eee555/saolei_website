@@ -68,6 +68,7 @@ class MSVideoParser:
 
     state: MS_TextChoices.State
     identifier: str
+    tournament_identifier: list[str]
     tournament_identifiers: list[str]
     end_time: datetime
 
@@ -120,7 +121,12 @@ class MSVideoParser:
             else:
                 raise e
         self.identifier = v.player_identifier
-        self.tournament_identifiers = v.race_identifier.split(',')
+        self.tournament_identifiers = [
+            identifier
+            for identifier in v.race_identifier.split(',')
+            if identifier
+        ]
+        self.tournament_identifier = self.tournament_identifiers
         self.end_time = datetime.fromtimestamp(v.end_time / 1000000, tz=timezone.utc)
 
         self.timems = v.rtime_ms
@@ -206,9 +212,15 @@ class MSVideoParser:
         state = MSVideoParser.get_state_from_review_code(review_code)
         identifier = v.player_identifier
 
+        tournament_identifiers = [
+            tournament_identifier
+            for tournament_identifier in v.race_identifier.split(',')
+            if tournament_identifier
+        ]
+
         return {
             'identifier': identifier,
-            'tournament_identifier': v.race_identifier,
+            'tournament_identifier': tournament_identifiers,
             'end_time': datetime.fromtimestamp(v.end_time / 1000000, tz=timezone.utc),
             'software': software,
             'level': level,

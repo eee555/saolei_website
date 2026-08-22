@@ -19,7 +19,8 @@ from customranking.cache import PLuckRankingCache
 from identifier.models import Identifier
 from msuser.models import UserMS
 from msuser.utils import get_video_num_limit
-from tournament.models import GSCTournament
+from tournament.cache import TournamentCache
+from tournament.models import GSCParticipant, GSCTournament
 from userprofile.models import UserProfile
 from utils.parser import MSVideoParser
 from videomanager.models import VideoModel
@@ -228,7 +229,7 @@ class VideoUploadRankingIntegrationTest(TestCase):
 
     def test_upload_tournament_video_checkin_blocks_personal_record_refresh(self):
         parser = self.parse_fixture(self.fixture_path('standard_gsc.evf'))
-        token = next((identifier for identifier in parser.tournament_identifiers if identifier), None)
+        token = next((identifier for identifier in parser.tournament_identifier if identifier), None)
         if token is None:
             self.skipTest('standard_gsc.evf 需要包含非空 GSC token')
 
@@ -238,8 +239,18 @@ class VideoUploadRankingIntegrationTest(TestCase):
             token=token,
             start_time=now - timedelta(hours=1),
             end_time=now + timedelta(hours=1),
-            state=Tournament_TextChoices.State.ONGOING,
+            state=Tournament_TextChoices.State.NORMAL,
         )
+        participant = GSCParticipant.objects.create(
+            tournament=tournament,
+            user=self.user,
+            token=token,
+            start_time=tournament.start_time,
+            end_time=tournament.end_time,
+        )
+        tournament_cache = TournamentCache()
+        tournament_cache.update_tournament(tournament)
+        tournament_cache.update_participant(participant)
 
         video, _ = self.upload_fixture('standard_gsc.evf')
 

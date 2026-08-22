@@ -55,14 +55,15 @@ class Saolei_TextChoices:
 
 
 class Tournament_TextChoices:
-    class Series(TextChoices):
+    class Subclass(TextChoices):
+        GSC = 'g', ('GSC比赛')
         WEEKLY = 'w', ('周赛')
-        GSC = 'g', ('GSC')
 
     class State(TextChoices):
         PENDING = 'p', ('审核中')
-        ONGOING = 'o', ('进行中')
-        FINISHED = 'f', ('已结束')
-        PREPARING = 'r', ('准备中')
+        NORMAL = 'n', ('正常')
         CANCELLED = 'c', ('已取消')
         AWARDED = 'a', ('已颁奖')
+
+    class WeeklyFormat(TextChoices):
+        CLASSIC = 'c', ('2高5中')
