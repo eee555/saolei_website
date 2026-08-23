@@ -626,7 +626,7 @@ describe('Weekly tournament', () => {
         cy.visit('/#/staff/weekly-tournament');
         cy.contains('比赛类型');
         cy.contains('.el-select', '2高5中').should('be.visible');
-        cy.contains('button', '创建下周周赛').click();
+        cy.contains('button', '创建下周打卡赛').click();
         cy.wait('@createWeeklyTournament').its('response.statusCode').should('eq', 200);
         cy.contains('操作成功');
         cy.closeElNotifications();
