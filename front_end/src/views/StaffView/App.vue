@@ -25,7 +25,7 @@ const tabItems = [
     { name: 'identifier', label: '标识管理' },
     { name: 'logs', label: '后台日志' },
     { name: 'tournament', label: '比赛管理' },
-    { name: 'weekly-tournament', label: '创建周赛' },
+    { name: 'weekly-tournament', label: '创建打卡赛' },
     { name: 'task', label: '后台任务' },
     { name: 'batchvideo', label: '批量刷新录像' },
     { name: 'batchpluck', label: '批量刷新pLuck纪录' },
