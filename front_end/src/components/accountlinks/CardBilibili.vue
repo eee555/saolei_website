@@ -83,10 +83,10 @@ import UnverifiedNotice from './UnverifiedNotice.vue';
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
 import IconTaskStatus from '@/components/common/IconTaskStatus.vue';
 import { httpErrorNotification } from '@/components/Notifications';
+import { getAccountLinkUpdateErrorMessageKey, updateAccountLink } from '@/services/accountLinkService';
 import { store } from '@/store';
-import { AccountBilibili } from '@/utils/accountlinks';
+import { AccountBilibili, AccountLinkPlatform } from '@/utils/accountlinks';
 import type { TaskStatus } from '@/utils/common/structInterface';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { toISODateTimeString } from '@/utils/datetime';
 
 defineProps({
@@ -97,8 +97,6 @@ defineProps({
 
 defineEmits(['refresh']);
 
-const { proxy } = useCurrentInstance();
-
 const refCarousel = useTemplateRef<typeof ElCarousel>('refCarousel');
 const errorMsg = ref('');
 const taskStatus = ref<TaskStatus>('');
@@ -106,13 +104,11 @@ const carouselLength = computed(() => (store.player.id == store.user.id ? 2 : 1)
 
 async function updateLink() {
     taskStatus.value = 'loading';
-    await proxy.$axios.post('accountlink/update/', {
-        platform: 'B',
-    }).then(function ({ data }) {
+    await updateAccountLink(AccountLinkPlatform.Bilibili).then(function (data) {
         errorMsg.value = '';
         taskStatus.value = data.type;
         if (data.type == 'error') {
-            errorMsg.value = t(`errorMsg.${data.object}.title`) + t('common.punct.colon') + t(`errorMsg.${data.object}.${data.category}`);
+            errorMsg.value = t('accountlink.updateError.title') + t('common.punct.colon') + t(getAccountLinkUpdateErrorMessageKey(data.category));
         }
     }).catch(function (error: unknown) {
         errorMsg.value = '';

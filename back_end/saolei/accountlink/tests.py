@@ -1,10 +1,13 @@
 import datetime
+from types import SimpleNamespace
 from unittest import expectedFailure
+from unittest.mock import patch
 
 from django.test import TestCase
 import requests
 
 from userprofile.models import UserProfile
+from utils.exceptions import ExceptionToResponse
 from .models import AccountBilibili, AccountMinesweeperGames, AccountSaolei, AccountWorldOfMinesweeper, Platform
 from .services import update_saolei_account_info
 from .utils import isPrivate, private_platforms, update_bilibili_account, update_msgames_account, update_wom_account
@@ -114,6 +117,17 @@ class AccountLinkTestCase(TestCase):
         self.assertEqual(account.b_winstreak, 92)
         self.assertEqual(account.i_winstreak, 21)
         self.assertEqual(account.e_winstreak, 9)
+
+    def test_update_wom_missing_profile_container_returns_indexerror(self):
+        account = AccountWorldOfMinesweeper.objects.filter(id=1783173).first()
+        response = SimpleNamespace(text='<html><body>unexpected page</body></html>')
+
+        with patch('accountlink.utils.requests.get', return_value=response):
+            with self.assertRaises(ExceptionToResponse) as context:
+                update_wom_account(account)
+
+        self.assertEqual(context.exception.obj, 'import')
+        self.assertEqual(context.exception.category, 'indexerror')
 
     def test_msgames_private_name(self):
         user = UserProfile.objects.create(

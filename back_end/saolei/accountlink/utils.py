@@ -209,8 +209,12 @@ def update_wom_account(account: AccountWorldOfMinesweeper):
     if not htmlStr:
         raise ExceptionToResponse(obj='import', category='pageempty')  # 没有爬取到信息
     tree = etree.HTML(htmlStr)
-    tree = tree.xpath(
-        '/html/body/div[3]/div[2]/div/div[1]/div[2]/div/div[4]/div/div[1]')[0]
+    profile_nodes = tree.xpath(
+        '/html/body/div[3]/div[2]/div/div[1]/div[2]/div/div[4]/div/div[1]',
+    ) if tree is not None else []
+    if not profile_nodes:
+        raise ExceptionToResponse(obj='import', category='indexerror')
+    tree = profile_nodes[0]
 
     def formatXpath(text):
         return f'//strong[text()="{text}"]/../following-sibling::div/span/text()'
