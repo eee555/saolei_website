@@ -2,6 +2,7 @@ import type { Component } from 'vue';
 
 import $axios from '@/http';
 import i18n from '@/i18n';
+import type { AccountLinkUpdateResponse } from '@/services/accountLinkService';
 import { store } from '@/store';
 import { pinia } from '@/store/create';
 import type {
@@ -159,9 +160,9 @@ export function mockSaoleiImportSummary(): void {
     }).as('importSummary');
 }
 
-export function mockUpdateAccountLink(): void {
+export function mockUpdateAccountLink(body: AccountLinkUpdateResponse = { type: 'success' }): void {
     cy.intercept('POST', '**/accountlink/update/', {
         statusCode: 200,
-        body: { type: 'success' },
+        body,
     }).as('updateAccountLink');
 }

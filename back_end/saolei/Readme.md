@@ -30,10 +30,11 @@
 ## `accountlink`：第三方平台账号关联
 
 ### `Platform`：平台枚举
+- `"B"` - Bilibili
 - `"a"` - 国际网
 - `"c"` - 扫雷网
 - `"q"` - QQ，隐私
-- `"w"` - wom
+- `"w"` - Minesweeper.Online
 
 ### `delete`：删除账号关联
 - POST|需要登录
@@ -48,12 +49,12 @@
 - `platform`：`Platform`，必选
 
 - 返回`HttpResponseBadRequest`：参数缺失
+- 返回`HttpResponse(status=429)`：同步请求过于频繁（`6/h`）
 - 返回`JsonResponse`
   - `{type: 'success'}`：操作成功
   - `{type: 'error', object: 'import', category: 'timeout'}`：第三方网站响应超时
-  - `{type: 'error', object: 'import', category: 'indexerror'}`：HTML解析错误
+  - `{type: 'error', object: 'import', category: 'indexerror'}`：第三方页面结构与解析规则不匹配，例如Minesweeper.Online返回异常页面或个人主页结构变化
   - `{type: 'error', object: 'import', category: 'requestexception'}`：请求返回`RequestException`
-  - `{type: 'error', object: 'import', category: 'cooldown'}`：还在冷却中（12小时）
   - `{type: 'error', object: 'import', category: 'pageempty'}`：页面为空
 
 ### `saolei_import_video`：导入一个扫雷网录像
