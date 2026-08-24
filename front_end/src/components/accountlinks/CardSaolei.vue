@@ -59,6 +59,9 @@
                 <div class="text text-small" style="margin-bottom: auto; margin-top: 0.25em;">
                     {{ t('accountlink.statSummaryTooltip') }}
                 </div>
+                <div v-if="errorMsg" class="text text-danger text-small" style="margin-top: 0.25em;">
+                    {{ errorMsg }}
+                </div>
                 <div style="margin-bottom: 0.25em">
                     <span class="text text-medium">
                         {{ t('accountlink.synchronizeVideos') }}
@@ -151,9 +154,10 @@ import { BaseIconInfo } from '@/components/common/icon';
 import SaoleiImportHelper from '@/components/dialogs/SaoleiImportHelper.vue';
 import { httpErrorNotification } from '@/components/Notifications';
 import StackBar from '@/components/visualization/StackBar/App.vue';
+import { getAccountLinkUpdateErrorMessageKey, updateAccountLink } from '@/services/accountLinkService';
 import { store } from '@/store';
 import { cs_to_s } from '@/utils';
-import { AccountSaolei, SaoleiImportSummaryDefault } from '@/utils/accountlinks';
+import { AccountLinkPlatform, AccountSaolei, SaoleiImportSummaryDefault } from '@/utils/accountlinks';
 import type { SaoleiImportSummary } from '@/utils/accountlinks';
 import type { TaskStatus } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
@@ -180,13 +184,11 @@ const carouselLength = computed(() => (store.player.id == store.user.id ? 2 : 1)
 
 async function updateLink() {
     taskStatus.value = 'loading';
-    await proxy.$axios.post('accountlink/update/', {
-        platform: 'c',
-    }).then(function ({ data }) {
+    await updateAccountLink(AccountLinkPlatform.Saolei).then(function (data) {
         errorMsg.value = '';
         taskStatus.value = data.type;
         if (data.type == 'error') {
-            errorMsg.value = t(`errorMsg.${data.object}.title`) + t('common.punct.colon') + t(`errorMsg.${data.object}.${data.category}`);
+            errorMsg.value = t('accountlink.updateError.title') + t('common.punct.colon') + t(getAccountLinkUpdateErrorMessageKey(data.category));
         }
     }).catch(function (error: unknown) {
         errorMsg.value = '';

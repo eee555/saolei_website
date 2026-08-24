@@ -37,7 +37,6 @@ import { useI18n } from 'vue-i18n';
 import '@/styles/text.css';
 import { httpErrorNotification, successNotification } from '@/components/Notifications';
 import IconCopy from '@/components/widgets/IconCopy.vue';
-import { local } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { toDate, toISODateTimeString } from '@/utils/datetime';
 import type { WeeklyParticipant } from '@/utils/weekly';
@@ -75,7 +74,7 @@ const weeklyGuideUrl = computed(() => {
         ? import.meta.env.VITE_DOCS_URL
         : import.meta.env.DEV ? 'http://localhost:5173/docs/' : '/docs/';
     const normalizedBase = base.endsWith('/') ? base : `${base}/`;
-    const path = local.value.language.startsWith('en') ? 'en/guide/tournament' : 'guide/tournament';
+    const path = 'guide/weekly-tournament';
     return `${normalizedBase}${path}`;
 });
 

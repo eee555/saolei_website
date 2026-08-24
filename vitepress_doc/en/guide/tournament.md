@@ -1,6 +1,31 @@
 # Minesweeper Tournaments
 
-The website currently mainly supports the [Golden Sheep Cup](./gsc.md). If you want to host a tournament, you can contact the developers to add a new tournament mode.
+The website currently mainly supports two tournament formats: the Golden Sheep Cup and the Weekly Tournament. If you want to host a tournament, you can contact the developers to add a new tournament mode.
+
+Please check each tournament page for its rules, schedule, registration method, and other details.
+
+## Tournament Points
+
+After each tournament ends, tournament points are awarded to each participating user. Tournament points consist of two parts: ranking points and prize points. Points decay automatically over time, halving every 2 years.
+
+The system records each user's historical best result in the Golden Sheep Cup and the Weekly Tournament separately. Historical best results are updated only from tournaments that have already been awarded.
+
+### Ranking Points
+
+Ranking points are calculated automatically based on a user's rank in the tournament. The formula is `1/rank`. For example, if a user finishes 5th, their ranking points are `1/5=0.2`. Each tournament has a ranking point coefficient, and this coefficient is multiplied into the ranking points. For example, if a points tournament has a ranking point coefficient of 50, the user receives `0.2*50=10` ranking points.
+
+| Tournament | Coefficient |
+| --- | --- |
+| Golden Sheep Cup | 1000 |
+| Weekly Tournament | 50 |
+
+### Prize Points
+
+If the organizer awards prize money to players, points are calculated from the prize amount. This is not supported yet.
+
+### Point Decay
+
+Point decay is calculated after each tournament ends and before new points are awarded. Each user's existing points are multiplied by a decay coefficient. The formula is `1/2^((current time - last update time)/2 years)`.
 
 ## Tournament Identifiers
 
@@ -25,5 +50,3 @@ A replay can contain multiple tournament identifiers, separated by commas.
 ## Tournament Replays
 
 After a replay is recognized as belonging to an ongoing tournament, it is hidden and only the replay owner can see it. This means all leaderboards on the website ignore tournament replays. After the tournament ends, the system makes replays that no longer belong to an ongoing tournament publicly visible again and refreshes the leaderboards.
-
-## FAQ

@@ -73,8 +73,14 @@ export default defineConfig({
                                 { text: '扫雷软件', link: '/guide/software' },
                                 { text: '录像播放器', link: '/guide/video-player' },
                                 { text: '扫雷标识', link: '/guide/identifier' },
-                                { text: '比赛功能', link: '/guide/tournament' },
-                                { text: '金羊杯', link: '/guide/gsc' },
+                                {
+                                    text: '比赛功能',
+                                    link: '/guide/tournament',
+                                    items: [
+                                        { text: '金羊杯', link: '/guide/gsc' },
+                                        { text: '打卡赛', link: '/guide/weekly-tournament' },
+                                    ],
+                                },
                                 { text: '参与贡献', link: '/guide/contribute' },
                                 { text: '网站收支', link: '/guide/balance' },
                             ],
@@ -130,8 +136,14 @@ export default defineConfig({
                                 { text: 'Minesweeper Software', link: '/en/guide/software' },
                                 { text: 'Video Player', link: '/en/guide/video-player' },
                                 { text: 'Player Identifiers', link: '/en/guide/identifier' },
-                                { text: 'Tournaments', link: '/en/guide/tournament' },
-                                { text: 'Golden Sheep Cup', link: '/en/guide/gsc' },
+                                {
+                                    text: 'Tournaments',
+                                    link: '/en/guide/tournament',
+                                    items: [
+                                        { text: 'Golden Sheep Cup', link: '/en/guide/gsc' },
+                                        { text: 'Weekly Tournament', link: '/en/guide/weekly-tournament' },
+                                    ],
+                                },
                                 { text: 'Contributing', link: '/en/guide/contribute' },
                                 { text: 'Website Finances', link: '/en/guide/balance' },
                             ],

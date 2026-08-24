@@ -12,7 +12,7 @@
         </ElFormItem>
         <ElFormItem>
             <ElButton type="primary" :loading="creating" @click="createWeeklyTournament">
-                创建下周周赛
+                创建下周打卡赛
             </ElButton>
         </ElFormItem>
     </ElForm>
@@ -20,7 +20,7 @@
         <ElDescriptionsItem label="比赛 ID">
             {{ createdWeekly.data.id }}
         </ElDescriptionsItem>
-        <ElDescriptionsItem label="周赛">
+        <ElDescriptionsItem label="打卡赛">
             {{ createdWeekly.data.year }}W{{ createdWeekly.data.week }}
         </ElDescriptionsItem>
         <ElDescriptionsItem label="开始时间">
