@@ -121,7 +121,13 @@ DATABASES = {
         'HOST': '127.0.0.1',
         # 'HOST': 'mysql',   # docker-compose 中的服务名称
         'PORT': '3306',
-        'CONN_MAX_AGE': None,
+        'CONN_MAX_AGE': 60,
+        'CONN_HEALTH_CHECKS': True,
+        'OPTIONS': {
+            'connect_timeout': 5,
+            'read_timeout': 15,
+            'write_timeout': 15,
+        },
     },
 }
 

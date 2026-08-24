@@ -8,9 +8,20 @@ echo "静态文件搜集完成。"
 python3 manage.py makemigrations
 python3 manage.py migrate
 
-echo "Starting db_worker..."
-nohup python3 manage.py db_worker & 
-echo "db_worker started."
+if [ "${START_DB_WORKER:-1}" = "1" ]; then
+    mkdir -p logs
+    echo "Starting db_worker after ${DB_WORKER_START_DELAY:-10}s..."
+    (
+        sleep "${DB_WORKER_START_DELAY:-10}"
+        if command -v ionice >/dev/null 2>&1; then
+            exec nice -n "${DB_WORKER_NICE:-10}" ionice -c2 -n7 python3 manage.py db_worker --skip-checks --no-reload --interval "${DB_WORKER_INTERVAL:-2}"
+        fi
+        exec nice -n "${DB_WORKER_NICE:-10}" python3 manage.py db_worker --skip-checks --no-reload --interval "${DB_WORKER_INTERVAL:-2}"
+    ) >> logs/db_worker.log 2>&1 &
+    echo "db_worker scheduled."
+else
+    echo "Skipping db_worker because START_DB_WORKER=${START_DB_WORKER}."
+fi
 
 cp -f default.conf /etc/nginx/conf.d/default.conf
 sudo nginx -s reload
