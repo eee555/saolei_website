@@ -1,3 +1,8 @@
+---
+title: Contributing - Open Minesweeper
+description: How to contribute to Open Minesweeper development, including environment setup, code setup, documentation and pull request workflow.
+---
+
 # Contributing
 
 This page is for students who are just starting to learn programming and may only have experience from school programming classes. You do not need to understand the whole website at first. If you can complete one small change and submit it to us, you are already contributing to open source.

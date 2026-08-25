@@ -1,3 +1,8 @@
+---
+title: Minesweeper Terminology - Open Minesweeper
+description: Minesweeper terminology glossary, including operation terms, play styles (FL, NF), board terms and historical concepts.
+---
+
 # Minesweeper Terminology
 
 ## Operation Terms

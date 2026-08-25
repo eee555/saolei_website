@@ -1,3 +1,8 @@
+---
+title: Golden Sheep Cup - Open Minesweeper
+description: Golden Sheep Cup tournament rules, scoring, participation guide and software setup for MetaSweeper and Minesweeper Arbiter.
+---
+
 # Golden Sheep Cup
 
 The Golden Sheep Cup is a long-running tournament hosted by [Guo Jinyang](https://openms.top/#/player/48). It is held every April and October and lasts for 6 days.

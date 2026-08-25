@@ -1,3 +1,8 @@
+---
+title: Account Links - Open Minesweeper
+description: How to link different platform accounts on Open Minesweeper, including minesweeper.com, Minesweeper.Online, Bilibili and more.
+---
+
 # Account Links
 
 Account links connect your identity on different platforms to your Open Minesweeper account. You can use this feature to help other players recognize you across communities. The feature is available in the **Account Links** tab on your profile page.

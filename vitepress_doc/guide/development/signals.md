@@ -1,3 +1,8 @@
+---
+title: 信号触发关系 - 开源扫雷网
+description: 开源扫雷网后端Django信号触发关系详解，包括录像、用户、比赛等模型的pre_save和post_save信号流程。
+---
+
 # 信号触发关系
 
 ```automaton
