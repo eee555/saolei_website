@@ -3,8 +3,10 @@
 from datetime import datetime, timezone
 import os
 from pathlib import Path
+import socket
 
 from django.core.cache import cache
+from django.db import transaction
 from django.db.models import Sum
 from django.http import FileResponse, Http404
 from django.utils import timezone as django_timezone
@@ -27,6 +29,12 @@ router = Router()
 LOG_DIR = Path('logs')
 DEFAULT_TAIL_BYTES = 64 * 1024
 MAX_TAIL_BYTES = 1024 * 1024
+TASK_CLEANUP_BATCH_SIZE = 200
+RUNNING_TASK_STALE_AFTER_SECONDS = 60 * 60
+WORKER_STARTED_TOLERANCE_SECONDS = 120
+WORKER_STATE_ALIVE = 'alive'
+WORKER_STATE_DEAD = 'dead'
+WORKER_STATE_UNKNOWN = 'unknown'
 
 
 class LogFileOut(Schema):
@@ -105,6 +113,63 @@ class TaskSummaryOut(Schema):
     status: dict[str, int]
 
 
+class RunningTaskHealthOut(Schema):
+    id: str
+    task_path: str
+    started_at: datetime | None
+    age_seconds: int | None
+    worker_id: str | None
+    worker_state: str
+    stale_by_age: bool
+    probably_orphaned: bool
+
+
+def _local_hostname_aliases() -> set[str]:
+    hostname = socket.gethostname()
+    aliases = {hostname, hostname.split('.')[0]}
+    fqdn = socket.getfqdn()
+    aliases.add(fqdn)
+    aliases.add(fqdn.split('.')[0])
+    return {alias for alias in aliases if alias}
+
+
+def _inspect_worker_id(worker_id: str | None) -> str:
+    if not worker_id:
+        return WORKER_STATE_UNKNOWN
+
+    try:
+        worker_host, worker_pid, worker_started = worker_id.rsplit('-', 2)
+    except ValueError:
+        return WORKER_STATE_UNKNOWN
+
+    if not worker_pid.isdigit() or not worker_started.isdigit():
+        return WORKER_STATE_UNKNOWN
+    if worker_host not in _local_hostname_aliases():
+        return WORKER_STATE_UNKNOWN
+
+    pid = int(worker_pid)
+    started_at = int(worker_started)
+    try:
+        process = psutil.Process(pid)
+        process_started_at = int(process.create_time())
+    except psutil.NoSuchProcess:
+        return WORKER_STATE_DEAD
+    except psutil.Error:
+        return WORKER_STATE_UNKNOWN
+
+    if abs(process_started_at - started_at) > WORKER_STARTED_TOLERANCE_SECONDS:
+        return WORKER_STATE_DEAD
+
+    try:
+        cmdline = ' '.join(process.cmdline())
+    except psutil.Error:
+        return WORKER_STATE_ALIVE
+
+    if 'db_worker' not in cmdline:
+        return WORKER_STATE_DEAD
+    return WORKER_STATE_ALIVE
+
+
 @router.get('/tasksummary', throttle=[AnonRateThrottle('30/m')])
 def task_summary(request):
     """
@@ -122,6 +187,33 @@ def task_summary(request):
     return result
 
 
+@router.get('/tasks/running/health', response=list[RunningTaskHealthOut])
+@decorate_view(staff_required)
+def running_task_health(request, stale_after_seconds: int = RUNNING_TASK_STALE_AFTER_SECONDS):
+    now = django_timezone.now()
+    result = []
+
+    for task in DBTaskResult.objects.filter(status=TaskResultStatus.RUNNING).order_by('started_at'):
+        worker_id = (task.worker_ids or [None])[-1]
+        worker_state = _inspect_worker_id(worker_id)
+        age_seconds = int((now - task.started_at).total_seconds()) if task.started_at else None
+        stale_by_age = age_seconds is not None and age_seconds >= stale_after_seconds
+        result.append({
+            'id': str(task.id),
+            'task_path': task.task_path,
+            'started_at': task.started_at,
+            'age_seconds': age_seconds,
+            'worker_id': worker_id,
+            'worker_state': worker_state,
+            'stale_by_age': stale_by_age,
+            'probably_orphaned': worker_state == WORKER_STATE_DEAD or (
+                worker_state == WORKER_STATE_UNKNOWN and stale_by_age
+            ),
+        })
+
+    return result
+
+
 @router.post('/tasks/cleanup', response=int)
 @decorate_view(staff_required)
 def cleanup_tasks(request):
@@ -133,15 +225,20 @@ def cleanup_tasks(request):
 
     for config in TASK_CLEANUP_CONFIGS:
         deadline = now - config['expires']
-        count, _ = (
-            DBTaskResult.objects
-            .filter(
-                task_path=config['task_path'],
-                status=TaskResultStatus.SUCCESSFUL,
-                finished_at__lt=deadline,
-            )
-            .delete()
+        queryset = DBTaskResult.objects.filter(
+            task_path=config['task_path'],
+            status=TaskResultStatus.SUCCESSFUL,
+            finished_at__lt=deadline,
         )
+
+        with transaction.atomic():
+            task_ids = list(
+                queryset
+                .select_for_update(skip_locked=True)
+                .values_list('id', flat=True)[:TASK_CLEANUP_BATCH_SIZE]
+            )
+            count, _ = DBTaskResult.objects.filter(id__in=task_ids).delete()
+
         deleted_count += count
 
     return deleted_count
