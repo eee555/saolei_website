@@ -58,7 +58,7 @@ def _process_matches_pidfile(pid: int, started_at: int) -> bool:
 def _read_pidfile(path: Path) -> dict[str, Any] | None:
     try:
         return json.loads(path.read_text(encoding='utf-8'))
-    except (FileNotFoundError, json.JSONDecodeError, OSError):
+    except (json.JSONDecodeError, OSError):
         return None
 
 
@@ -165,7 +165,7 @@ class Command(BaseCommand):
             '--no-startup-delay',
             action='store_false',
             dest='startup_delay',
-            help="Pass --no-startup-delay to db_worker.",
+            help='Pass --no-startup-delay to db_worker.',
         )
         parser.add_argument(
             '--max-tasks',

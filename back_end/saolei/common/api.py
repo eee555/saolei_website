@@ -235,7 +235,7 @@ def cleanup_tasks(request):
             task_ids = list(
                 queryset
                 .select_for_update(skip_locked=True)
-                .values_list('id', flat=True)[:TASK_CLEANUP_BATCH_SIZE]
+                .values_list('id', flat=True)[:TASK_CLEANUP_BATCH_SIZE],
             )
             count, _ = DBTaskResult.objects.filter(id__in=task_ids).delete()
 

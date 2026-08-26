@@ -14,11 +14,11 @@ from django_redis import get_redis_connection
 from django_tasks import TaskResultStatus
 from django_tasks_db.models import DBTaskResult, get_date_max
 
-from config.customranking import CUSTOM_PLUCK_LEVELS, CUSTOM_PLUCK_MODES
+from common.management.commands import db_worker_robust
 from config.common import TASK_CLEANUP_CONFIGS
+from config.customranking import CUSTOM_PLUCK_LEVELS, CUSTOM_PLUCK_MODES
 from config.global_settings import GameLevels, GameModes, RankingGameStats
 from config.text_choices import MS_TextChoices, Tournament_TextChoices
-from common.management.commands import db_worker_robust
 from customranking.cache import PLuckRankingCache
 from identifier.models import Identifier
 from msuser.models import UserMS
