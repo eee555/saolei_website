@@ -23,7 +23,11 @@
                 <BaseIconRefresh @click="refresh" />
             </ElLink>
         </h3>
-        <PersonalView v-loading="loading" :user-id="store.user.id" :tournament-id="tournament.id" />
+        <PersonalView v-loading="loading" :user-id="store.user.id" :tournament-id="tournament.id">
+            <template #personalSummary="{ videos }">
+                <GSCPersonalSummary :videos="videos" />
+            </template>
+        </PersonalView>
     </template>
     <template v-if="([TournamentState.Finished, TournamentState.Awarded] as TournamentState[]).includes(tournament.displayState)">
         <h3>
@@ -45,7 +49,11 @@
                         <BaseIconClose style="scale: 65%" />
                     </ElLink>
                 </template>
-                <PersonalView :user-id="participant.user__id" :tournament-id="tournament.id" />
+                <PersonalView :user-id="participant.user__id" :tournament-id="tournament.id">
+                    <template #personalSummary="{ videos }">
+                        <GSCPersonalSummary :videos="videos" />
+                    </template>
+                </PersonalView>
             </ElTabPane>
         </ElTabs>
     </template>
@@ -53,38 +61,40 @@
 
 <script setup lang="ts">
 import { ElButton, ElLink, ElRow, ElTabPane, ElTabs, vLoading } from 'element-plus';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
+import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import '@/styles/text.css';
+import PersonalView from '../common/PersonalView.vue';
 import Title from '../common/Title.vue';
 
 import AllSummary from './AllSummary.vue';
-import PersonalView from './PersonalView.vue';
 import TokenGuide from './TokenGuide.vue';
 
 import { BaseIconClose, BaseIconRefresh } from '@/components/common/icon';
 import { httpErrorNotification } from '@/components/Notifications';
-import { downloadTournamentVideos, fetchGSCInfo } from '@/services/tournamentService';
+import GSCPersonalSummary from '@/components/visualization/GSCPersonalSummary/App.vue';
+import { downloadTournamentVideos, fetchGSCResults, fetchParticipantList } from '@/services/tournamentService';
 import { store } from '@/store';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { streamToZip } from '@/utils/fileIO';
 import { GSCParticipant } from '@/utils/gsc';
 import { TournamentState } from '@/utils/ms_const';
-import { Tournament } from '@/utils/tournaments';
+import type { Tournament } from '@/utils/tournaments';
 
 const props = defineProps({
-    id: {
-        type: Number,
+    tournament: {
+        type: Object as PropType<Tournament>,
         required: true,
     },
 });
 
 const { t } = useI18n();
 
-const tournament = ref<Tournament>(new Tournament({}));
-const order = ref<number>(0);
-const token = ref<string>('');
+const tournament = computed(() => props.tournament);
+const order = computed(() => tournament.value.gscData?.order ?? 0);
+const token = computed(() => tournament.value.gscData?.token ?? '');
 const result = ref<GSCParticipant[]>([]);
 const personaltoken = ref<string>('');
 const participant = ref(false);
@@ -94,25 +104,35 @@ const loading = ref(false);
 
 async function refresh() {
     loading.value = true;
-    await fetchGSCInfo(props.id).then((response) => {
-        tournament.value = new Tournament(response.data);
-        order.value = response.data.order;
-        token.value = response.data.token;
-
-        if (tournament.value.displayState === TournamentState.Ongoing && store.login_status === LoginStatus.IsLogin) {
+    try {
+        if (tournament.value.displayState === TournamentState.Ongoing) {
             result.value = [];
-            participant.value = response.participant;
-            personaltoken.value = response.identifier ?? '';
+            const participants = await fetchParticipantList(tournament.value.id);
+            const currentParticipant = store.login_status === LoginStatus.IsLogin
+                ? participants.find((item) => item.user_id === store.user.id)
+                : undefined;
+            participant.value = currentParticipant !== undefined;
+            personaltoken.value = currentParticipant?.arbiter_identifier__identifier ?? '';
         } else {
             participant.value = false;
             personaltoken.value = '';
-            result.value = (response.results ?? []).map((value) => new GSCParticipant(value));
+            result.value = tournament.value.state === TournamentState.Awarded
+                ? (await fetchGSCResults(tournament.value.id)).map((value) => new GSCParticipant(value))
+                : [];
         }
-    }).catch(httpErrorNotification);
+    } catch (error) {
+        httpErrorNotification(error);
+    }
     loading.value = false;
 }
 
-watch(() => props.id, refresh, { immediate: true });
+watch(() => [
+    props.tournament.id,
+    props.tournament.state,
+    props.tournament.startDate?.getTime(),
+    props.tournament.endDate?.getTime(),
+    store.login_status,
+], refresh, { immediate: true });
 
 function handleAllSummaryRowClick(row: GSCParticipant) {
     if (tournament.value.state !== TournamentState.Awarded) return;

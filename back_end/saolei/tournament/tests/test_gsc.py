@@ -21,7 +21,7 @@ from .base import (
 
 
 class TestGsc(TournamentTestCaseBase):
-    def test_get_gscinfo_serializes_awarded_results(self):
+    def test_get_results_serializes_awarded_gsc_results(self):
         participant = GSCParticipant.objects.create(
             user=self.user,
             tournament=self.tournament,
@@ -33,18 +33,20 @@ class TestGsc(TournamentTestCaseBase):
         )
         video = self.create_video()
         self.tournament.videos.add(video)
+
+        normal_response = self.client.get('/api/tournament/gsc/results', {'tournament_id': self.tournament.id})
+        self.assertEqual(normal_response.status_code, 403)
+
         self.tournament.state = Tournament_TextChoices.State.AWARDED
         self.tournament.save(update_fields=['state'])
 
-        response = self.client.get('/api/tournament/gsc/info', {'order': self.tournament.order})
+        response = self.client.get('/api/tournament/gsc/results', {'tournament_id': self.tournament.id})
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertNotIn('type', data)
-        self.assertEqual(data['data']['order'], self.tournament.order)
-        self.assertEqual(data['results'][0]['id'], participant.id)
-        self.assertEqual(data['results'][0]['rank'], 1)
-        self.assertEqual(data['identifier'], None)
+        self.assertEqual(data[0]['id'], participant.id)
+        self.assertEqual(data[0]['rank'], 1)
+        self.assertEqual(data[0]['user__id'], self.user.id)
 
     def test_gsc_participant_registration_uses_two_steps(self):
         self.client.force_login(self.user)
@@ -57,9 +59,13 @@ class TestGsc(TournamentTestCaseBase):
         participant = GSCParticipant.objects.get(tournament=self.tournament, user=self.user)
         self.assertEqual(participant.token, self.tournament.token)
         self.assertIsNone(participant.arbiter_identifier)
-        info_response = self.client.get('/api/tournament/gsc/info', {'tournament_id': self.tournament.id})
-        self.assertTrue(info_response.json()['participant'])
-        self.assertIsNone(info_response.json()['identifier'])
+        participants_response = self.client.get('/api/tournament/participants', {'tournament_id': self.tournament.id})
+        participants_data = participants_response.json()
+        self.assertEqual(participants_response.status_code, 200)
+        self.assertEqual(participants_data[0]['id'], participant.id)
+        self.assertEqual(participants_data[0]['user_id'], self.user.id)
+        self.assertEqual(participants_data[0]['token'], self.tournament.token)
+        self.assertIsNone(participants_data[0]['arbiter_identifier__identifier'])
 
         identifier_text = f'Player {self.tournament.token}'
         Identifier.objects.create(identifier=identifier_text, safe=True)
@@ -72,9 +78,10 @@ class TestGsc(TournamentTestCaseBase):
         self.assertEqual(identifier_response.json()['type'], 'success')
         participant.refresh_from_db()
         self.assertEqual(participant.arbiter_identifier.identifier, identifier_text)
-        info_response = self.client.get('/api/tournament/gsc/info', {'tournament_id': self.tournament.id})
-        self.assertTrue(info_response.json()['participant'])
-        self.assertEqual(info_response.json()['identifier'], identifier_text)
+        participants_response = self.client.get('/api/tournament/participants', {'tournament_id': self.tournament.id})
+        participants_data = participants_response.json()
+        self.assertEqual(participants_data[0]['id'], participant.id)
+        self.assertEqual(participants_data[0]['arbiter_identifier__identifier'], identifier_text)
         self.assertEqual(self.client.post('/api/tournament/gsc/register', {}).status_code, 404)
 
     def test_gsc_participant_identifier_requires_existing_participant(self):

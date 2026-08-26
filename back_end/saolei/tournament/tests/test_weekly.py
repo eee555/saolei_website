@@ -18,6 +18,39 @@ from .base import (
 
 
 class TestWeekly(TournamentTestCaseBase):
+    def test_participants_and_results_serialize_weekly_data(self):
+        tournament = self.create_weekly_tournament()
+
+        anonymous_response = self.client.get('/api/tournament/participants', {'tournament_id': tournament.id})
+        self.assertEqual(anonymous_response.status_code, 200)
+        self.assertEqual(anonymous_response.json(), [])
+
+        participant = WeeklyParticipant.objects.create(
+            user=self.user,
+            tournament=tournament,
+            start_time=tournament.start_time,
+            end_time=tournament.end_time,
+        )
+        self.client.force_login(self.user)
+        registered_response = self.client.get('/api/tournament/participants', {'tournament_id': tournament.id})
+        registered_data = registered_response.json()
+        self.assertEqual(registered_response.status_code, 200)
+        self.assertEqual(registered_data[0]['id'], participant.id)
+        self.assertEqual(registered_data[0]['user_id'], self.user.id)
+        self.assertEqual(registered_data[0]['token'], participant.token)
+        self.assertIsNone(registered_data[0]['arbiter_identifier__identifier'])
+
+        normal_results_response = self.client.get('/api/tournament/weekly/results', {'tournament_id': tournament.id})
+        self.assertEqual(normal_results_response.status_code, 403)
+
+        tournament.state = Tournament_TextChoices.State.AWARDED
+        tournament.save(update_fields=['state'])
+        awarded_response = self.client.get('/api/tournament/weekly/results', {'tournament_id': tournament.id})
+        awarded_data = awarded_response.json()
+        self.assertEqual(awarded_response.status_code, 200)
+        self.assertEqual(awarded_data[0]['id'], participant.id)
+        self.assertEqual(awarded_data[0]['user_id'], self.user.id)
+
     def test_weekly_participant_api_limits_window_to_two_hours_or_tournament_end(self):
         now = timezone.now()
         full_window_tournament = self.create_weekly_tournament(
