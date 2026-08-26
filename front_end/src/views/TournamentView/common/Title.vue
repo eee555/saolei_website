@@ -3,7 +3,7 @@
         {{ tournament.getLocalName(local.language) }}
         <TournamentStateIcon :state="tournament.displayState" />
     </h1>
-    {{ t('gsc.schedule') }}{{ t('common.punct.colon') }}
+    {{ t('local.schedule') }}{{ t('common.punct.colon') }}
     <span class="text">
         {{ tournament.displayStartTime() }}
         &nbsp;~&nbsp;
@@ -25,6 +25,9 @@ defineProps({
 const i18nMessages = {
     'zh-cn': { local: {
         schedule: '赛程',
+    } },
+    en: { local: {
+        schedule: 'Schedule',
     } },
 };
 

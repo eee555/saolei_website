@@ -241,7 +241,6 @@ export default {
             identifier: 'Arbiter参赛标识：',
         },
         realTimeScore: '即时成绩',
-        schedule: '赛程',
         summary: '概览',
         videos: '录像',
     },
