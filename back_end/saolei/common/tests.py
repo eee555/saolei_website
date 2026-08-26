@@ -3,6 +3,7 @@ import json
 import os
 from pathlib import Path
 import tempfile
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from django.core.files import File
@@ -10,8 +11,11 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings, TestCase
 from django.utils import timezone
 from django_redis import get_redis_connection
-from django_tasks_db.models import DBTaskResult
+from django_tasks import TaskResultStatus
+from django_tasks_db.models import DBTaskResult, get_date_max
 
+from common.management.commands import db_worker_robust
+from config.common import TASK_CLEANUP_CONFIGS
 from config.customranking import CUSTOM_PLUCK_LEVELS, CUSTOM_PLUCK_MODES
 from config.global_settings import GameLevels, GameModes, RankingGameStats
 from config.text_choices import MS_TextChoices, Tournament_TextChoices
@@ -107,6 +111,174 @@ class LogPollTests(TestCase):
 
         self.assertEqual(response['name'], 'app.log')
         self.assertEqual(response['mtime'].timestamp(), modified_at)
+
+
+class TaskDeletionTests(TestCase):
+    def setUp(self):
+        self.staff = UserProfile.objects.create_user(
+            username='task_delete_staff',
+            email='task_delete_staff@example.com',
+            password='password',
+            is_staff=True,
+        )
+        self.client.force_login(self.staff)
+
+    def create_task(
+        self,
+        *,
+        status: TaskResultStatus = TaskResultStatus.READY,
+        task_path: str = 'videomanager.tasks.task_video_pluck',
+        finished_at=None,
+        started_at=None,
+        worker_ids=None,
+    ):
+        task = DBTaskResult.objects.create(
+            status=status,
+            args_kwargs={'args': [], 'kwargs': {}},
+            priority=0,
+            task_path=task_path,
+            worker_ids=worker_ids or [],
+            queue_name='default',
+            backend_name='default',
+            run_after=get_date_max(),
+        )
+        if started_at is not None:
+            DBTaskResult.objects.filter(id=task.id).update(started_at=started_at)
+            task.refresh_from_db()
+        if finished_at is not None:
+            DBTaskResult.objects.filter(id=task.id).update(finished_at=finished_at)
+            task.refresh_from_db()
+        return task
+
+    def test_delete_ready_task(self):
+        task = self.create_task()
+
+        response = self.client.post('/common/staff/taskdelete/', {'task_id': task.id})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(DBTaskResult.objects.filter(id=task.id).exists())
+
+    def test_delete_running_task_returns_conflict(self):
+        task = self.create_task(status=TaskResultStatus.RUNNING)
+
+        response = self.client.post('/common/staff/taskdelete/', {'task_id': task.id})
+
+        self.assertEqual(response.status_code, 409)
+        self.assertTrue(DBTaskResult.objects.filter(id=task.id).exists())
+
+    def test_cleanup_tasks_deletes_only_one_batch_per_config(self):
+        old_finished_at = timezone.now() - TASK_CLEANUP_CONFIGS[0]['expires'] - timedelta(days=1)
+        for _ in range(3):
+            self.create_task(
+                status=TaskResultStatus.SUCCESSFUL,
+                task_path=TASK_CLEANUP_CONFIGS[0]['task_path'],
+                finished_at=old_finished_at,
+            )
+
+        with patch.object(common_api, 'TASK_CLEANUP_BATCH_SIZE', 2):
+            deleted_count = common_api.cleanup_tasks(SimpleNamespace(user=self.staff))
+
+        self.assertEqual(deleted_count, 2)
+        self.assertEqual(
+            DBTaskResult.objects.filter(
+                status=TaskResultStatus.SUCCESSFUL,
+                task_path=TASK_CLEANUP_CONFIGS[0]['task_path'],
+            ).count(),
+            1,
+        )
+
+    def test_running_task_health_marks_stale_unknown_worker_as_probably_orphaned(self):
+        started_at = timezone.now() - timedelta(minutes=10)
+        task = self.create_task(
+            status=TaskResultStatus.RUNNING,
+            started_at=started_at,
+            worker_ids=['legacy-random-worker-id'],
+        )
+
+        result = common_api.running_task_health(SimpleNamespace(user=self.staff), stale_after_seconds=60)
+
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]['id'], str(task.id))
+        self.assertEqual(result[0]['worker_state'], common_api.WORKER_STATE_UNKNOWN)
+        self.assertTrue(result[0]['stale_by_age'])
+        self.assertTrue(result[0]['probably_orphaned'])
+
+    def test_running_task_health_marks_dead_pid_worker_as_orphaned(self):
+        started_at = timezone.now()
+        task = self.create_task(
+            status=TaskResultStatus.RUNNING,
+            started_at=started_at,
+            worker_ids=['testhost-12345-1700000000'],
+        )
+
+        with (
+            patch.object(common_api, '_local_hostname_aliases', return_value={'testhost'}),
+            patch.object(common_api.psutil, 'Process', side_effect=common_api.psutil.NoSuchProcess(12345)),
+        ):
+            result = common_api.running_task_health(SimpleNamespace(user=self.staff))
+
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]['id'], str(task.id))
+        self.assertEqual(result[0]['worker_state'], common_api.WORKER_STATE_DEAD)
+        self.assertFalse(result[0]['stale_by_age'])
+        self.assertTrue(result[0]['probably_orphaned'])
+
+    def robust_command_options(self, pidfile: Path):
+        return {
+            'queue_name': 'default',
+            'interval': 2,
+            'batch': False,
+            'backend_name': 'default',
+            'startup_delay': False,
+            'max_tasks': None,
+            'worker_id': 'testhost-12345-1700000000',
+            'pidfile': str(pidfile),
+            'verbosity': 1,
+        }
+
+    def test_db_worker_robust_exits_when_worker_is_already_running(self):
+        task = self.create_task(status=TaskResultStatus.RUNNING, started_at=timezone.now())
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            pidfile = Path(temp_dir) / 'worker.pid'
+            with (
+                patch.object(
+                    db_worker_robust,
+                    'iter_running_worker_processes',
+                    return_value=[SimpleNamespace(info={'pid': 98765})],
+                ),
+                patch.object(db_worker_robust, 'call_command') as call_mock,
+            ):
+                db_worker_robust.Command().handle(**self.robust_command_options(pidfile))
+
+        task.refresh_from_db()
+        self.assertEqual(task.status, TaskResultStatus.RUNNING)
+        call_mock.assert_not_called()
+
+    def test_db_worker_robust_fails_orphans_then_starts_safe_worker(self):
+        task = self.create_task(
+            status=TaskResultStatus.RUNNING,
+            started_at=timezone.now() - timedelta(minutes=1),
+            worker_ids=['legacy-worker-id'],
+        )
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            pidfile = Path(temp_dir) / 'worker.pid'
+            with (
+                patch.object(db_worker_robust, 'iter_running_worker_processes', return_value=[]),
+                patch.object(db_worker_robust, 'call_command') as call_mock,
+            ):
+                db_worker_robust.Command().handle(**self.robust_command_options(pidfile))
+
+        task.refresh_from_db()
+        self.assertEqual(task.status, TaskResultStatus.FAILED)
+        self.assertEqual(task.exception_class_path, 'builtins.RuntimeError')
+        self.assertIn('db_worker_robust', task.traceback)
+        call_mock.assert_called_once()
+        self.assertEqual(call_mock.call_args.args, ('db_worker',))
+        self.assertFalse(call_mock.call_args.kwargs['reload'])
+        self.assertTrue(call_mock.call_args.kwargs['skip_checks'])
+        self.assertEqual(call_mock.call_args.kwargs['worker_id'], 'testhost-12345-1700000000')
 
 
 class VideoUploadRankingIntegrationTest(TestCase):

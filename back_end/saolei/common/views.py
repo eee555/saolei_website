@@ -1,10 +1,13 @@
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseNotFound, JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 from django_ratelimit.decorators import ratelimit
+from django_tasks import TaskResultStatus
 from django_tasks_db.models import DBTaskResult
 
 from userprofile.decorators import banned_blocked, login_required_error, staff_required
 from utils.exceptions import ExceptionToResponse
+from utils.response import HttpResponseConflict
 from .forms import UploadVideoForm
 from .utils import new_video_by_file
 
@@ -41,9 +44,20 @@ def view_delete_task(request: HttpRequest):
     if not task_id:
         return HttpResponseBadRequest()
 
-    db_task = DBTaskResult.objects.filter(id=task_id).first()
-    if not db_task:
-        return HttpResponseNotFound()
+    with transaction.atomic():
+        db_task = (
+            DBTaskResult.objects
+            .select_for_update(skip_locked=True)
+            .filter(id=task_id)
+            .first()
+        )
+        if not db_task:
+            if DBTaskResult.objects.filter(id=task_id).exists():
+                return HttpResponseConflict()
+            return HttpResponseNotFound()
+        if db_task.status == TaskResultStatus.RUNNING:
+            return HttpResponseConflict()
 
-    db_task.delete()
+        db_task.delete()
+
     return HttpResponse()
