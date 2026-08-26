@@ -1,14 +1,5 @@
 <template>
-    <h1>
-        {{ tournament.getLocalName(local.language) }}
-        <TournamentStateIcon :state="tournament.displayState" />
-    </h1>
-    {{ t('gsc.schedule') }}{{ t('common.punct.colon') }}
-    <span class="text">
-        {{ tournament.displayStartTime() }}
-        &nbsp;~&nbsp;
-        {{ tournament.displayEndTime() }}
-    </span>
+    <Title :tournament="tournament" />
     <br>
     <template v-if="([TournamentState.Preparing, TournamentState.Ongoing] as TournamentState[]).includes(tournament.displayState)">
         <h3>{{ t('gsc.howToParticipate') }}</h3>
@@ -61,6 +52,8 @@ import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import '@/styles/text.css';
+import Title from '../common/Title.vue';
+
 import AllSummary from './AllSummary.vue';
 import PersonalView from './PersonalView.vue';
 import TokenGuide from './TokenGuide.vue';
@@ -68,9 +61,8 @@ import TokenGuide from './TokenGuide.vue';
 import { BaseIconClose, BaseIconRefresh } from '@/components/common/icon';
 import { httpErrorNotification } from '@/components/Notifications';
 import PlayerName from '@/components/PlayerName.vue';
-import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
 import { downloadTournamentVideos, fetchWeeklyInfo } from '@/services/tournamentService';
-import { local, store } from '@/store';
+import { store } from '@/store';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { streamToZip } from '@/utils/fileIO';
 import { TournamentState, TournamentSubclass } from '@/utils/ms_const';

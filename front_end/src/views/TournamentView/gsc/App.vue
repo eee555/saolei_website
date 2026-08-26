@@ -1,14 +1,5 @@
 <template>
-    <h1>
-        {{ t('gsc.title', { order: order }) }}
-        <TournamentStateIcon :state="tournament.displayState" />
-    </h1>
-    {{ t('gsc.schedule') }}{{ t('common.punct.colon') }}
-    <span class="text">
-        {{ tournament.displayStartTime() }}
-        &nbsp;~&nbsp;
-        {{ tournament.displayEndTime() }}
-    </span>
+    <Title :tournament="tournament" />
     &nbsp;
     <br>
     {{ t('gsc.description.line1') }}
@@ -17,7 +8,7 @@
     <br>
     <template v-if="([TournamentState.Preparing, TournamentState.Ongoing] as TournamentState[]).includes(tournament.displayState)">
         <h3>{{ t('gsc.howToParticipate') }}</h3>
-        <GSCTokenGuide
+        <TokenGuide
             v-model:identifier="personaltoken"
             v-model:participant="participant"
             :order="order"
@@ -32,7 +23,7 @@
                 <BaseIconRefresh @click="refresh" />
             </ElLink>
         </h3>
-        <GSCPersonalView v-loading="loading" :user-id="store.user.id" :tournament-id="tournament.id" />
+        <PersonalView v-loading="loading" :user-id="store.user.id" :tournament-id="tournament.id" />
     </template>
     <template v-if="([TournamentState.Finished, TournamentState.Awarded] as TournamentState[]).includes(tournament.displayState)">
         <h3>
@@ -44,7 +35,7 @@
                     {{ t('tournament.downloadAll') }}{{ t('common.punct.lparen') }}{{ t('common.ratelimit.oncePerHour') }}{{ t('common.punct.rparen') }}
                 </ElButton>
                 <ElRow style="height: 0.5em" />
-                <GSCAllSummary :data="result" @row-click="handleAllSummaryRowClick" />
+                <AllSummary :data="result" @row-click="handleAllSummaryRowClick" />
             </ElTabPane>
             <ElTabPane v-for="(participant, index) in viewedParticipants" :key="participant.id" lazy :name="index">
                 <template #label>
@@ -54,7 +45,7 @@
                         <BaseIconClose style="scale: 65%" />
                     </ElLink>
                 </template>
-                <GSCPersonalView :user-id="participant.user__id" :tournament-id="tournament.id" />
+                <PersonalView :user-id="participant.user__id" :tournament-id="tournament.id" />
             </ElTabPane>
         </ElTabs>
     </template>
@@ -66,13 +57,14 @@ import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import '@/styles/text.css';
-import GSCAllSummary from './GSCAllSummary.vue';
-import GSCPersonalView from './GSCPersonalView.vue';
-import GSCTokenGuide from './GSCTokenGuide.vue';
+import Title from '../common/Title.vue';
+
+import AllSummary from './AllSummary.vue';
+import PersonalView from './PersonalView.vue';
+import TokenGuide from './TokenGuide.vue';
 
 import { BaseIconClose, BaseIconRefresh } from '@/components/common/icon';
 import { httpErrorNotification } from '@/components/Notifications';
-import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
 import { downloadTournamentVideos, fetchGSCInfo } from '@/services/tournamentService';
 import { store } from '@/store';
 import { LoginStatus } from '@/utils/common/structInterface';
