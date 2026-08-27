@@ -262,14 +262,6 @@ class GSCParticipant(TournamentParticipant):
             et5sum = self.__dict__.get('et5sum', GSC_Defaults.ET * 5)
             self.t37 = bt20sum + it12sum + et5sum
 
-    @property
-    def user__id(self):
-        return self.user_id
-
-    @property
-    def user__realname(self):
-        return self.user.realname if self.user else None
-
 
 class WeeklyParticipant(TournamentParticipant):
     classic_et = models.JSONField(default=default_weekly_classic_et)

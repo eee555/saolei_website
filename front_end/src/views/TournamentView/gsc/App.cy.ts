@@ -29,7 +29,6 @@ function gscParticipantList(participant: boolean) {
     return [{
         id: 701,
         token: 'G00007',
-        arbiter_identifier_id: 701,
         arbiter_identifier__identifier: 'Player G00007',
         tournament_id: tournamentId,
         user_id: 99,

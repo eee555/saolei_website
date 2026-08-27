@@ -30,7 +30,6 @@ function weeklyParticipantList(registered: boolean) {
     return [{
         id: 801,
         token: 'WEEKLY-TOKEN',
-        arbiter_identifier_id: null,
         arbiter_identifier__identifier: null,
         tournament_id: tournamentId,
         user_id: 99,

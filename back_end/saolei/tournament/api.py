@@ -4,7 +4,7 @@ from typing import Any, Literal
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django_ratelimit.decorators import ratelimit
-from ninja import Form, Router, Schema
+from ninja import Field, Form, Router, Schema
 from ninja.decorators import decorate_view
 from ninja.orm import create_schema
 
@@ -59,8 +59,7 @@ TournamentParticipantOut = create_schema(
     custom_fields=[
         ('user_id', int | None, None),
         ('tournament_id', int, 0),
-        ('arbiter_identifier_id', int | None, None),
-        ('arbiter_identifier__identifier', str | None, None),
+        ('arbiter_identifier__identifier', str | None, Field(None, alias='arbiter_identifier.identifier')),
     ],
 )
 

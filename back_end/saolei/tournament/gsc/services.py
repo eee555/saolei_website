@@ -46,17 +46,6 @@ GSC_LEVEL_RULES = {
     },
 }
 
-GSC_SCORE_VALUE_FIELDS = [
-    'id',
-    'user__id',
-    'user__realname',
-    'start_time', 'end_time',
-    'rank', 'rank_score',
-    'bt1st', 'bt20th', 'bt20sum',
-    'it1st', 'it12th', 'it12sum',
-    'et1st', 'et5th', 'et5sum',
-]
-
 
 def _apply_gsc_scores(participant: GSCParticipant, times_by_level):
     for level, rule in GSC_LEVEL_RULES.items():

@@ -4,7 +4,6 @@ import { TournamentState, TournamentSubclass } from './ms_const';
 export interface TournamentParticipant {
     id: number;
     token: string;
-    arbiter_identifier_id: number | null;
     arbiter_identifier__identifier: string | null;
     tournament_id: number;
     user_id: number | null;
