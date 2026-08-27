@@ -3,7 +3,14 @@ import { TournamentState, TournamentSubclass } from './ms_const';
 
 export interface TournamentParticipant {
     id: number;
+    token: string;
+    arbiter_identifier__identifier: string | null;
+    tournament_id: number;
     user_id: number | null;
+    start_time: string | Date;
+    end_time: string | Date | null;
+    rank: number | null;
+    rank_score: number;
 }
 
 type LocalizedString = string | Partial<Record<string, string>>;

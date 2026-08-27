@@ -1,7 +1,7 @@
 <template>
     <ElTabs>
         <ElTabPane :label="t('gsc.summary')" lazy>
-            <PersonalSummary :videos="videos" />
+            <slot name="personalSummary" :videos="videos" />
         </ElTabPane>
         <ElTabPane :label="t('gsc.videos')" lazy>
             <MultiSelector v-model="VideoListConfig.tournament" :options="thisColumnChoices" :labels="thisColumnChoices.map((s) => t(`common.prop.${s}`))" />
@@ -19,8 +19,6 @@
 import { ElButton, ElTabPane, ElTabs } from 'element-plus';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-
-import PersonalSummary from './PersonalSummary.vue';
 
 import { httpErrorNotification } from '@/components/Notifications';
 import VideoList from '@/components/VideoList/App.vue';

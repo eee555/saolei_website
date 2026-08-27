@@ -1,6 +1,6 @@
 ---
 title: Video Player - Open Minesweeper
-description: Three replay players available on Open Minesweeper: native player, flop-player and MSRA, with custom counter support.
+description: "Three replay players available on Open Minesweeper: native player, flop-player and MSRA, with custom counter support."
 ---
 
 # Video Player

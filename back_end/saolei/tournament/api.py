@@ -4,7 +4,7 @@ from typing import Any, Literal
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django_ratelimit.decorators import ratelimit
-from ninja import Form, Router, Schema
+from ninja import Field, Form, Router, Schema
 from ninja.decorators import decorate_view
 from ninja.orm import create_schema
 
@@ -55,9 +55,11 @@ TournamentOut = create_schema(
 
 TournamentParticipantOut = create_schema(
     TournamentParticipant,
-    fields=['id'],
+    fields=['id', 'token', 'start_time', 'end_time', 'rank', 'rank_score'],
     custom_fields=[
         ('user_id', int | None, None),
+        ('tournament_id', int, 0),
+        ('arbiter_identifier__identifier', str | None, Field(None, alias='arbiter_identifier.identifier')),
     ],
 )
 
@@ -195,7 +197,8 @@ def set_tournament_staff(request: HttpRequest, data: TournamentStaffSetIn = Form
 
 @router.get('/participants', response=list[TournamentParticipantOut])
 def get_participant_list(request: HttpRequest, tournament_id: int):
-    return get_object_or_404(Tournament, id=tournament_id).participants
+    get_object_or_404(Tournament, id=tournament_id)
+    return TournamentParticipant.objects.filter(tournament_id=tournament_id).select_related('arbiter_identifier')
 
 
 @router.get('/get_videos/participant', response=list[VideoBaseOut])

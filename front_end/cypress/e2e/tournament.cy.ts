@@ -161,12 +161,12 @@ function selectHomepageListTab(name: string) {
 }
 
 function registerOnWeeklyTournamentPage(tournamentId: number) {
-    cy.intercept('GET', '**/api/tournament/weekly/info*').as('weeklyInfo');
+    cy.intercept('GET', '**/api/tournament/participants*').as('weeklyParticipants');
     cy.intercept('POST', '**/api/tournament/weekly/participant').as('createWeeklyParticipant');
 
     cy.login(USER.username, USER.password);
     cy.visit(`/#/tournament/${tournamentId}`);
-    cy.wait('@weeklyInfo').its('response.statusCode').should('eq', 200);
+    cy.wait('@weeklyParticipants').its('response.statusCode').should('eq', 200);
 
     cy.contains('进行中');
     cy.contains('即时成绩').should('not.exist');
@@ -174,7 +174,7 @@ function registerOnWeeklyTournamentPage(tournamentId: number) {
         cy.contains('button', '注册').click();
     });
     cy.wait('@createWeeklyParticipant').its('response.statusCode').should('eq', 200);
-    cy.wait('@weeklyInfo').its('response.statusCode').should('eq', 200);
+    cy.wait('@weeklyParticipants').its('response.statusCode').should('eq', 200);
 
     cy.contains('操作成功');
     cy.closeElNotifications();
@@ -604,10 +604,10 @@ describe('Weekly tournament', () => {
             expect(response.body.tournament_ids).to.not.include(tournamentId);
         });
 
-        cy.intercept('GET', '**/api/tournament/weekly/info*').as('weeklyInfoAfterVideos');
+        cy.intercept('GET', '**/api/tournament/participants*').as('weeklyParticipantsAfterVideos');
         cy.intercept('GET', '**/api/tournament/get_videos/participant*').as('participantVideos');
         cy.get('[data-cy=weekly-score-refresh]').click();
-        cy.wait('@weeklyInfoAfterVideos').its('response.statusCode').should('eq', 200);
+        cy.wait('@weeklyParticipantsAfterVideos').its('response.statusCode').should('eq', 200);
         cy.wait('@participantVideos').its('response.statusCode').should('eq', 200);
         cy.contains('.el-tabs__item', '录像').click();
         cy.get('.el-tab-pane:visible').last().within(() => {

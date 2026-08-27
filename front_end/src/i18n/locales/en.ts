@@ -242,7 +242,6 @@ export default {
             identifier: 'Arbiter tournament identifier: ',
         },
         realTimeScore: 'Real-Time Score',
-        schedule: 'Schedule',
         summary: 'Summary',
         videos: 'Videos',
     },

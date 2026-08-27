@@ -5,39 +5,39 @@ import i18n from '@/i18n';
 import { local, store } from '@/store';
 import { pinia } from '@/store/create';
 import { LoginStatus } from '@/utils/common/structInterface';
-import { TournamentState } from '@/utils/ms_const';
+import { TournamentState, TournamentSubclass } from '@/utils/ms_const';
+import { Tournament } from '@/utils/tournaments';
 
 const tournamentId = 8;
 
-function weeklyParticipant() {
-    return {
+function weeklyTournament() {
+    return new Tournament({
+        id: tournamentId,
+        subclass: TournamentSubclass.Weekly,
+        data: {
+            year: 2099,
+            week: 8,
+            tournament_format: 'c',
+        },
+        start_time: '2000-01-01T00:00:00+08:00',
+        end_time: '2099-01-01T00:00:00+08:00',
+        state: TournamentState.Normal,
+    });
+}
+
+function weeklyParticipantList(registered: boolean) {
+    if (!registered) return [];
+    return [{
         id: 801,
+        token: 'WEEKLY-TOKEN',
+        arbiter_identifier__identifier: null,
+        tournament_id: tournamentId,
         user_id: 99,
         start_time: '2026-01-01T08:00:00+08:00',
         end_time: '2026-01-01T10:00:00+08:00',
         rank: null,
         rank_score: 0,
-        classic_et: [],
-        classic_it: [],
-        classic_score: 0,
-    };
-}
-
-function weeklyInfo(registered: boolean) {
-    return {
-        data: {
-            id: tournamentId,
-            year: 2099,
-            week: 8,
-            tournament_format: 'c',
-            start_time: '2000-01-01T00:00:00+08:00',
-            end_time: '2099-01-01T00:00:00+08:00',
-            state: TournamentState.Normal,
-        },
-        results: null,
-        token: registered ? 'WEEKLY-TOKEN' : null,
-        participant: registered ? weeklyParticipant() : null,
-    };
+    }];
 }
 
 function mountWeekly(options: {
@@ -54,16 +54,16 @@ function mountWeekly(options: {
         store.login_status = options.loginStatus;
     }
 
-    cy.intercept('GET', '**/api/tournament/weekly/info*', {
-        body: weeklyInfo(options.registered),
-    }).as('weeklyInfo');
+    cy.intercept('GET', '**/api/tournament/participants*', {
+        body: weeklyParticipantList(options.registered),
+    }).as('participantList');
     cy.intercept('GET', '**/api/tournament/get_videos/participant*', {
         body: [],
     }).as('participantVideos');
 
     cy.mount(App, {
         props: {
-            id: tournamentId,
+            tournament: weeklyTournament(),
         },
         global: {
             plugins: [pinia, i18n],
@@ -74,7 +74,7 @@ function mountWeekly(options: {
             },
         },
     });
-    cy.wait('@weeklyInfo').its('response.statusCode').should('eq', 200);
+    cy.wait('@participantList').its('response.statusCode').should('eq', 200);
 }
 
 describe('<Weekly App />', () => {

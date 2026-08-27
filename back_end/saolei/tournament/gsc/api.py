@@ -1,8 +1,8 @@
 from datetime import datetime
 
-from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
+from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
-from ninja import Form, Router, Schema
+from ninja import Field, Form, Router, Schema
 from ninja.decorators import decorate_view
 from ninja.orm import create_schema
 
@@ -47,6 +47,7 @@ GSCInfoOut = create_schema(
     ],
 )
 
+
 GSCScoreOut = create_schema(
     GSCParticipant,
     fields=[
@@ -58,17 +59,10 @@ GSCScoreOut = create_schema(
         'et1st', 'et5th', 'et5sum',
     ],
     custom_fields=[
-        ('user__id', int | None, None),
-        ('user__realname', str | None, None),  # 用于前端排序
+        ('user__id', int | None, Field(None, alias='user.id')),
+        ('user__realname', str | None, Field(None, alias='user.realname')),
     ],
 )
-
-
-class GSCDetailOut(Schema):
-    data: GSCInfoOut
-    results: list[GSCScoreOut] | None
-    participant: bool
-    identifier: str | None
 
 
 def task_response(task):
@@ -103,39 +97,12 @@ def get_GSC_tournament(request: HttpRequest, order: int):
     return get_object_or_404(GSCTournament, order=order)
 
 
-@router.get('/info', response=GSCDetailOut)
-def get_gscinfo(request: HttpRequest, tournament_id: int | None = None, order: int | None = None):
-    if tournament_id is None and order is None:
-        return HttpResponseBadRequest()
-    if tournament_id is not None and order is not None:
-        return HttpResponseBadRequest()
-
-    if tournament_id is not None:
-        tournament = get_object_or_404(GSCTournament, tournament_ptr_id=tournament_id)
-        order = tournament.order
-    else:
-        tournament = get_object_or_404(GSCTournament, order=order)
-
-    if tournament.state == Tournament_TextChoices.State.AWARDED:
-        results = list(get_gsc_scores(tournament))
-        participant_exists = False
-        identifier = None
-    elif request.user.is_authenticated:
-        results = None
-        participant = GSCParticipant.objects.filter(tournament=tournament, user=request.user).first()
-        participant_exists = participant is not None
-        identifier = participant.arbiter_identifier.identifier if participant and participant.arbiter_identifier else None
-    else:
-        results = None
-        participant_exists = False
-        identifier = None
-
-    return {
-        'data': tournament,
-        'results': results,
-        'participant': participant_exists,
-        'identifier': identifier,
-    }
+@router.get('/results', response=list[GSCScoreOut])
+def get_results(request: HttpRequest, tournament_id: int):
+    tournament = get_object_or_404(GSCTournament, tournament_ptr_id=tournament_id)
+    if tournament.state != Tournament_TextChoices.State.AWARDED:
+        return HttpResponseForbidden()
+    return list(get_gsc_scores(tournament))
 
 
 @router.post('/participant')
