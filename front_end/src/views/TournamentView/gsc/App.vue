@@ -1,11 +1,6 @@
 <template>
     <Title :tournament="tournament" />
-    &nbsp;
-    <br>
-    {{ t('gsc.description.line1') }}
-    <br>
-    {{ t('gsc.description.line2') }}
-    <br>
+    <Description />
     <template v-if="([TournamentState.Preparing, TournamentState.Ongoing] as TournamentState[]).includes(tournament.displayState)">
         <h3>{{ t('gsc.howToParticipate') }}</h3>
         <TokenGuide
@@ -70,6 +65,7 @@ import PersonalView from '../common/PersonalView.vue';
 import Title from '../common/Title.vue';
 
 import AllSummary from './AllSummary.vue';
+import Description from './Description.vue';
 import TokenGuide from './TokenGuide.vue';
 
 import { BaseIconClose, BaseIconRefresh } from '@/components/common/icon';
