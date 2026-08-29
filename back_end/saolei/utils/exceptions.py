@@ -24,14 +24,15 @@ class ExceptionToResponse(Exception):
     - 该类主要用于Web应用中处理需要返回JSON格式错误信息的场景
     - response()方法返回的JsonResponse需要Django框架支持
     """
-    def __init__(self, obj: str, category: str):
-        super().__init__(obj, category)
+    def __init__(self, obj: str, category: str, status_code: int = 200):
+        super().__init__(obj, category, status_code)
         self.obj = obj
         self.category = category
+        self.status_code = status_code
 
     @property
     def body(self):
         return {'type': 'error', 'object': self.obj, 'category': self.category}
 
     def response(self):
-        return JsonResponse(self.body)
+        return JsonResponse(self.body, status=self.status_code)

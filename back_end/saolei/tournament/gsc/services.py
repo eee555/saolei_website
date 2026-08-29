@@ -3,6 +3,7 @@ import logging
 
 from django.db.models import F, Window
 from django.db.models.functions import RowNumber
+from django_tasks_db.models import DBTaskResult
 
 from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from config.tournaments import GSC_Defaults
@@ -10,6 +11,7 @@ from tournament.gsc.utils import gsc_encode_best
 from tournament.models import GSCParticipant, GSCTournament, TournamentUser
 from tournament.services import refresh_tournament_ranks
 from tournament.utils import MAX_TOURNAMENT_BEST
+from utils.exceptions import ExceptionToResponse
 
 GSC_SCORE_FIELDS = [
     'bt1st', 'bt20th', 'bt20sum',
@@ -18,6 +20,7 @@ GSC_SCORE_FIELDS = [
 ]
 
 logger = logging.getLogger('tournament')
+GSC_FINISH_TASK_PATH = 'tournament.gsc.tasks.task_gsc_finish'
 
 GSC_LEVEL_RULES = {
     MS_TextChoices.Level.BEGINNER: {
@@ -45,6 +48,34 @@ GSC_LEVEL_RULES = {
         'count': 5,
     },
 }
+
+
+def restart_gsc_task(db_task: DBTaskResult, args: list, kwargs: dict):
+    if db_task.task_path != GSC_FINISH_TASK_PATH:
+        return None
+
+    gsc_order = kwargs.get('gsc_order', args[0] if args else None)
+    if gsc_order is None:
+        raise ExceptionToResponse('task_restart', 'invalid_args', status_code=400)
+
+    current_reference = (
+        GSCTournament.objects
+        .select_for_update()
+        .filter(order=gsc_order, task_id=db_task.id)
+        .first()
+    )
+    if current_reference is None:
+        raise ExceptionToResponse('task_restart', 'stale_reference', status_code=409)
+
+    new_db_task = db_task.task.enqueue(*args, **kwargs).db_result
+    updated_count = (
+        GSCTournament.objects
+        .filter(order=gsc_order, task_id=db_task.id)
+        .update(task_id=new_db_task.id)
+    )
+    if not updated_count:
+        raise ExceptionToResponse('task_restart', 'stale_reference', status_code=409)
+    return new_db_task
 
 
 def _apply_gsc_scores(participant: GSCParticipant, times_by_level):
