@@ -669,7 +669,7 @@ describe('Tournament background tasks', () => {
     it('shows the scheduled finish tasks at the end', () => {
         let expectedTasks: BackgroundTaskRow[] = [];
 
-        cy.intercept('GET', '**/common/staff/taskdetail/').as('taskDetail');
+        cy.intercept('GET', '**/api/common/tasks/detail').as('taskDetail');
         cy.login(STAFF.username, STAFF.password);
         cy.visit('/#/staff/task');
         cy.contains('button', '加载任务').click();
@@ -678,6 +678,7 @@ describe('Tournament background tasks', () => {
             expectedTasks = (response?.body ?? []) as BackgroundTaskRow[];
             expect(expectedTasks).to.have.length.greaterThan(0);
         });
+        cy.get('.p-datatable').find('.el-loading-mask:visible').should('not.exist');
         cy.get('.p-datatable table:visible').getTable().should((tableData) => {
             expect(tableData).to.have.length(expectedTasks.length);
 

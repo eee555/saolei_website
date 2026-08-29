@@ -1,25 +1,30 @@
 
-
 from datetime import datetime, timezone
 import os
 from pathlib import Path
 import socket
+from uuid import UUID
 
 from django.core.cache import cache
+from django.core.exceptions import SuspiciousOperation
 from django.db import transaction
 from django.db.models import Sum
-from django.http import FileResponse, Http404
+from django.http import FileResponse
 from django.utils import timezone as django_timezone
 from django_tasks import TaskResultStatus
 from django_tasks_db.models import DBTaskResult
 from ninja import Router, Schema
 from ninja.decorators import decorate_view
+from ninja.errors import HttpError
+from ninja.orm import create_schema
 from ninja.throttling import AnonRateThrottle
 import psutil
 
+from accountlink.services import restart_accountlink_task
 from common.utils import get_db_size
 from config.common import TASK_CLEANUP_CONFIGS
 from config.text_choices import MS_TextChoices
+from tournament.gsc.services import restart_gsc_task
 from userprofile.decorators import staff_required
 from utils.db import get_choice_counts_filtered
 from videomanager.models import VideoModel
@@ -35,6 +40,10 @@ WORKER_STARTED_TOLERANCE_SECONDS = 120
 WORKER_STATE_ALIVE = 'alive'
 WORKER_STATE_DEAD = 'dead'
 WORKER_STATE_UNKNOWN = 'unknown'
+TASK_RESTART_SERVICES = [
+    restart_accountlink_task,
+    restart_gsc_task,
+]
 
 
 class LogFileOut(Schema):
@@ -59,12 +68,12 @@ class LogPollOut(Schema):
 
 def _get_log_path(filename: str) -> Path:
     if Path(filename).name != filename:
-        raise Http404()
+        raise HttpError(404, 'Log file not found.')
 
     log_dir = LOG_DIR.resolve()
     log_path = (log_dir / filename).resolve()
     if log_path.parent != log_dir or not log_path.is_file():
-        raise Http404()
+        raise HttpError(404, 'Log file not found.')
     return log_path
 
 
@@ -78,6 +87,12 @@ def _read_from_offset(log_path: Path, offset: int) -> tuple[str, int]:
         content = f.read()
         next_offset = f.tell()
     return content.decode('utf-8', errors='replace'), next_offset
+
+
+def _raise_task_not_found_or_locked(task_id: UUID):
+    if DBTaskResult.objects.filter(id=task_id).exists():
+        raise HttpError(409, 'Task is locked.')
+    raise HttpError(404, 'Task not found.')
 
 
 class VideoSummaryOut(Schema):
@@ -113,6 +128,18 @@ class TaskSummaryOut(Schema):
     status: dict[str, int]
 
 
+TaskDetailOut = create_schema(
+    DBTaskResult,
+    fields=[
+        'id', 'status',
+        'enqueued_at', 'started_at', 'finished_at',
+        'args_kwargs', 'priority', 'task_path',
+        'worker_ids', 'queue_name', 'backend_name', 'run_after',
+        'return_value', 'exception_class_path', 'traceback',
+    ],
+)
+
+
 class RunningTaskHealthOut(Schema):
     id: str
     task_path: str
@@ -122,6 +149,10 @@ class RunningTaskHealthOut(Schema):
     worker_state: str
     stale_by_age: bool
     probably_orphaned: bool
+
+
+class TaskIdIn(Schema):
+    task_id: UUID
 
 
 def _local_hostname_aliases() -> set[str]:
@@ -187,6 +218,15 @@ def task_summary(request):
     return result
 
 
+@router.get('/tasks/detail', response=list[TaskDetailOut])
+@decorate_view(staff_required)
+def task_detail(request):
+    """
+    - staff_required
+    """
+    return DBTaskResult.objects.all()
+
+
 @router.get('/tasks/running/health', response=list[RunningTaskHealthOut])
 @decorate_view(staff_required)
 def running_task_health(request, stale_after_seconds: int = RUNNING_TASK_STALE_AFTER_SECONDS):
@@ -212,6 +252,70 @@ def running_task_health(request, stale_after_seconds: int = RUNNING_TASK_STALE_A
         })
 
     return result
+
+
+@router.post('/tasks/delete')
+@decorate_view(staff_required)
+def delete_task(request, data: TaskIdIn):
+    """
+    - staff_required
+    """
+    with transaction.atomic():
+        db_task = (
+            DBTaskResult.objects
+            .select_for_update(skip_locked=True)
+            .filter(id=data.task_id)
+            .first()
+        )
+        if not db_task:
+            _raise_task_not_found_or_locked(data.task_id)
+        if db_task.status == TaskResultStatus.RUNNING:
+            raise HttpError(409, 'Running task cannot be deleted.')
+        db_task.delete()
+
+    cache.delete('api:common/tasksummary')
+    return
+
+
+@router.post('/tasks/restart', response=TaskDetailOut)
+@decorate_view(staff_required)
+def restart_task(request, data: TaskIdIn):
+    """
+    - staff_required
+    """
+    try:
+        with transaction.atomic():
+            db_task = (
+                DBTaskResult.objects
+                .select_for_update(skip_locked=True)
+                .filter(id=data.task_id)
+                .first()
+            )
+            if not db_task:
+                _raise_task_not_found_or_locked(data.task_id)
+            if db_task.status != TaskResultStatus.FAILED:
+                raise HttpError(409, 'Only failed task can be restarted.')
+
+            args_kwargs = db_task.args_kwargs
+            if not isinstance(args_kwargs, dict):
+                raise HttpError(400, 'Invalid task arguments.')
+            args = args_kwargs.get('args', [])
+            kwargs = args_kwargs.get('kwargs', {})
+            if not isinstance(args, list) or not isinstance(kwargs, dict):
+                raise HttpError(400, 'Invalid task arguments.')
+
+            new_db_task = None
+            for restart_service in TASK_RESTART_SERVICES:
+                new_db_task = restart_service(db_task, args, kwargs)
+                if new_db_task is not None:
+                    break
+            if new_db_task is None:
+                new_db_task = db_task.task.enqueue(*args, **kwargs).db_result
+    except (ImportError, SuspiciousOperation, TypeError, ValueError):
+        raise HttpError(400, 'Invalid task restart request.')
+
+    cache.delete('api:common/tasksummary')
+    return new_db_task
 
 
 @router.post('/tasks/cleanup', response=int)
@@ -303,12 +407,12 @@ def poll_log_tail(request, filename: str, offset: int = 0, tail_bytes: int = DEF
     Return appended log content from the given byte offset without holding a long-lived connection.
     """
     if Path(filename).name != filename:
-        raise Http404()
+        raise HttpError(404, 'Log file not found.')
 
     log_dir = LOG_DIR.resolve()
     log_path = (log_dir / filename).resolve()
     if log_path.parent != log_dir:
-        raise Http404()
+        raise HttpError(404, 'Log file not found.')
 
     clamped_tail_bytes = _clamp_tail_bytes(tail_bytes)
     current_offset = max(offset, 0)

@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 import logging
 
 from django.core.files.base import ContentFile
+from django_tasks_db.models import DBTaskResult
 import requests
 
 from config.text_choices import MS_TextChoices, Saolei_TextChoices
@@ -17,6 +18,9 @@ from .utils import fetch_saolei_profile, fetch_saolei_video_download_and_state, 
 
 logger = logging.getLogger('accountlink')
 
+SAOLEI_VIDEO_IMPORT_TASK_PATH = 'accountlink.tasks.task_saolei_video_import'
+SAOLEI_VIDEO_IMPORT_BULK_TASK_PATH = 'accountlink.tasks.task_saolei_video_import_bulk'
+
 
 def update_account(platform: Platform, user: UserProfile):
     if platform == Platform.SAOLEI:
@@ -27,6 +31,68 @@ def update_account(platform: Platform, user: UserProfile):
         update_wom_account(user.account_wom)
     elif platform == Platform.BILIBILI:
         update_bilibili_account(user.account_bilibili)
+
+
+def _get_task_identity(args: list, kwargs: dict, key: str):
+    return kwargs.get(key, args[0] if args else None)
+
+
+def restart_accountlink_task(db_task: DBTaskResult, args: list, kwargs: dict):
+    if db_task.task_path == SAOLEI_VIDEO_IMPORT_TASK_PATH:
+        return restart_saolei_video_import_task(db_task, args, kwargs)
+    if db_task.task_path == SAOLEI_VIDEO_IMPORT_BULK_TASK_PATH:
+        return restart_saolei_video_import_bulk_task(db_task, args, kwargs)
+    return None
+
+
+def restart_saolei_video_import_task(db_task: DBTaskResult, args: list, kwargs: dict):
+    saolei_video_id = _get_task_identity(args, kwargs, 'video_id')
+    if saolei_video_id is None:
+        raise ExceptionToResponse('task_restart', 'invalid_args', status_code=400)
+
+    current_reference = (
+        VideoSaolei.objects
+        .select_for_update()
+        .filter(id=saolei_video_id, import_task_id=db_task.id)
+        .first()
+    )
+    if current_reference is None:
+        raise ExceptionToResponse('task_restart', 'stale_reference', status_code=409)
+
+    new_db_task = db_task.task.enqueue(*args, **kwargs).db_result
+    updated_count = (
+        VideoSaolei.objects
+        .filter(id=saolei_video_id, import_task_id=db_task.id)
+        .update(import_task_id=new_db_task.id)
+    )
+    if not updated_count:
+        raise ExceptionToResponse('task_restart', 'stale_reference', status_code=409)
+    return new_db_task
+
+
+def restart_saolei_video_import_bulk_task(db_task: DBTaskResult, args: list, kwargs: dict):
+    saolei_account_id = _get_task_identity(args, kwargs, 'saolei_id')
+    if saolei_account_id is None:
+        raise ExceptionToResponse('task_restart', 'invalid_args', status_code=400)
+
+    current_reference = (
+        AccountSaolei.objects
+        .select_for_update()
+        .filter(id=saolei_account_id, video_import_task_id=db_task.id)
+        .first()
+    )
+    if current_reference is None:
+        raise ExceptionToResponse('task_restart', 'stale_reference', status_code=409)
+
+    new_db_task = db_task.task.enqueue(*args, **kwargs).db_result
+    updated_count = (
+        AccountSaolei.objects
+        .filter(id=saolei_account_id, video_import_task_id=db_task.id)
+        .update(video_import_task_id=new_db_task.id)
+    )
+    if not updated_count:
+        raise ExceptionToResponse('task_restart', 'stale_reference', status_code=409)
+    return new_db_task
 
 
 def update_saolei_account_info(account: AccountSaolei):

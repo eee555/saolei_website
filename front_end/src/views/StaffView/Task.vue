@@ -78,6 +78,17 @@
         </PrColumn>
         <PrColumn field="return_value" header="return_value" />
         <PrColumn field="exception_class_path" header="exception_class_path" />
+        <PrColumn header="actions">
+            <template #body="{ data }">
+                <ElButton
+                    v-if="data.status === 'FAILED'"
+                    :loading="restartingTaskId === data.id"
+                    @click="restartTask(data)"
+                >
+                    重启
+                </ElButton>
+            </template>
+        </PrColumn>
     </PrDataTable>
 </template>
 
@@ -124,6 +135,10 @@ interface TaskSummary {
     status: EnumMap<DjangoTaskResultStatus, number>;
 }
 
+interface TaskDeleteResponse {
+    task_id: string;
+}
+
 const { proxy } = useCurrentInstance();
 
 const taskData = ref<TaskDetail[]>([]);
@@ -131,6 +146,7 @@ const selectedTasks = ref<TaskDetail[]>([]);
 const loading = ref(false);
 const summaryLoading = ref(false);
 const cleanupLoading = ref(false);
+const restartingTaskId = ref<string | null>(null);
 const taskSummary = ref<TaskSummary>({
     total: 0,
     status: createEnumMap(DjangoTaskResultStatusOptions, 0),
@@ -150,7 +166,7 @@ async function refreshSummary() {
 
 async function refresh() {
     loading.value = true;
-    await proxy.$axios.get<TaskDetail[]>('/common/staff/taskdetail/').then((response) => {
+    await proxy.$axios.get<TaskDetail[]>('/api/common/tasks/detail').then((response) => {
         taskData.value = response.data;
     }).catch(httpErrorNotification);
     loading.value = false;
@@ -166,15 +182,50 @@ async function cleanupExpiredTasks() {
     cleanupLoading.value = false;
 }
 
-async function deleteSelected() {
-    if (selectedTasks.value.length === 0) return;
-    for (const task of selectedTasks.value) {
-        await proxy.$axios.post('/common/staff/taskdelete/', {
+function updateTaskSummary(status: DjangoTaskResultStatus, delta: number) {
+    taskSummary.value.status[status] = Math.max(0, (taskSummary.value.status[status] ?? 0) + delta);
+}
+
+function addTask(task: TaskDetail) {
+    taskData.value.unshift(task);
+    taskSummary.value.total += 1;
+    updateTaskSummary(task.status, 1);
+}
+
+function removeTask(taskId: string) {
+    const index = taskData.value.findIndex((task) => task.id === taskId);
+    if (index === -1) return;
+
+    const [task] = taskData.value.splice(index, 1);
+    selectedTasks.value = selectedTasks.value.filter((selectedTask) => selectedTask.id !== taskId);
+    taskSummary.value.total = Math.max(0, taskSummary.value.total - 1);
+    updateTaskSummary(task.status, -1);
+}
+
+async function restartTask(task: TaskDetail) {
+    restartingTaskId.value = task.id;
+    try {
+        const response = await proxy.$axios.post<TaskDetail>('/api/common/tasks/restart', {
             task_id: task.id,
         });
+        addTask(response.data);
+    } catch (error) {
+        httpErrorNotification(error);
     }
-    selectedTasks.value.splice(0, selectedTasks.value.length);
-    await refresh();
-    await refreshSummary();
+    restartingTaskId.value = null;
+}
+
+async function deleteSelected() {
+    if (selectedTasks.value.length === 0) return;
+    try {
+        for (const task of selectedTasks.value) {
+            const response = await proxy.$axios.post<TaskDeleteResponse>('/api/common/tasks/delete', {
+                task_id: task.id,
+            });
+            removeTask(response.data.task_id);
+        }
+    } catch (error) {
+        httpErrorNotification(error);
+    }
 }
 </script>

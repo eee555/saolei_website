@@ -14,11 +14,12 @@ from django_redis import get_redis_connection
 from django_tasks import TaskResultStatus
 from django_tasks_db.models import DBTaskResult, get_date_max
 
+from accountlink.models import AccountSaolei, VideoSaolei
 from common.management.commands import db_worker_robust
 from config.common import TASK_CLEANUP_CONFIGS
 from config.customranking import CUSTOM_PLUCK_LEVELS, CUSTOM_PLUCK_MODES
 from config.global_settings import GameLevels, GameModes, RankingGameStats
-from config.text_choices import MS_TextChoices, Tournament_TextChoices
+from config.text_choices import MS_TextChoices, Saolei_TextChoices, Tournament_TextChoices
 from customranking.cache import PLuckRankingCache
 from identifier.models import Identifier
 from msuser.models import UserMS
@@ -128,19 +129,23 @@ class TaskDeletionTests(TestCase):
         *,
         status: TaskResultStatus = TaskResultStatus.READY,
         task_path: str = 'videomanager.tasks.task_video_pluck',
+        args=None,
+        kwargs=None,
+        priority: int = 0,
+        run_after=None,
         finished_at=None,
         started_at=None,
         worker_ids=None,
     ):
         task = DBTaskResult.objects.create(
             status=status,
-            args_kwargs={'args': [], 'kwargs': {}},
-            priority=0,
+            args_kwargs={'args': [] if args is None else args, 'kwargs': {} if kwargs is None else kwargs},
+            priority=priority,
             task_path=task_path,
             worker_ids=worker_ids or [],
             queue_name='default',
             backend_name='default',
-            run_after=get_date_max(),
+            run_after=get_date_max() if run_after is None else run_after,
         )
         if started_at is not None:
             DBTaskResult.objects.filter(id=task.id).update(started_at=started_at)
@@ -153,18 +158,52 @@ class TaskDeletionTests(TestCase):
     def test_delete_ready_task(self):
         task = self.create_task()
 
-        response = self.client.post('/common/staff/taskdelete/', {'task_id': task.id})
+        response = self.client.post(
+            '/api/common/tasks/delete',
+            json.dumps({'task_id': str(task.id)}),
+            content_type='application/json',
+        )
 
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['task_id'], str(task.id))
         self.assertFalse(DBTaskResult.objects.filter(id=task.id).exists())
 
     def test_delete_running_task_returns_conflict(self):
         task = self.create_task(status=TaskResultStatus.RUNNING)
 
-        response = self.client.post('/common/staff/taskdelete/', {'task_id': task.id})
+        response = self.client.post(
+            '/api/common/tasks/delete',
+            json.dumps({'task_id': str(task.id)}),
+            content_type='application/json',
+        )
 
         self.assertEqual(response.status_code, 409)
         self.assertTrue(DBTaskResult.objects.filter(id=task.id).exists())
+
+    def test_task_detail_api_returns_db_task_schema(self):
+        task = self.create_task(
+            status=TaskResultStatus.FAILED,
+            task_path='accountlink.tasks.task_saolei_video_import_bulk',
+            args=[100001, 'new'],
+            kwargs={'source': 'test'},
+            priority=2,
+            finished_at=timezone.now(),
+            worker_ids=['test-worker'],
+        )
+
+        response = self.client.get('/api/common/tasks/detail')
+
+        self.assertEqual(response.status_code, 200)
+        data = next(item for item in response.json() if item['id'] == str(task.id))
+        self.assertEqual(data['id'], str(task.id))
+        self.assertEqual(data['status'], TaskResultStatus.FAILED)
+        self.assertEqual(data['args_kwargs'], {'args': [100001, 'new'], 'kwargs': {'source': 'test'}})
+        self.assertEqual(data['priority'], 2)
+        self.assertEqual(data['task_path'], 'accountlink.tasks.task_saolei_video_import_bulk')
+        self.assertEqual(data['worker_ids'], ['test-worker'])
+        self.assertEqual(data['queue_name'], 'default')
+        self.assertEqual(data['backend_name'], 'default')
+        self.assertIn('traceback', data)
 
     def test_cleanup_tasks_deletes_only_one_batch_per_config(self):
         old_finished_at = timezone.now() - TASK_CLEANUP_CONFIGS[0]['expires'] - timedelta(days=1)
@@ -222,6 +261,172 @@ class TaskDeletionTests(TestCase):
         self.assertEqual(result[0]['worker_state'], common_api.WORKER_STATE_DEAD)
         self.assertFalse(result[0]['stale_by_age'])
         self.assertTrue(result[0]['probably_orphaned'])
+
+    def test_restart_failed_task_reenqueues_same_task_and_updates_task_path_reference(self):
+        run_after = timezone.now() - timedelta(minutes=1)
+        account_task = self.create_task(
+            status=TaskResultStatus.FAILED,
+            task_path='accountlink.tasks.task_saolei_video_import_bulk',
+            args=[100001, 'new'],
+            priority=2,
+            run_after=run_after,
+            finished_at=timezone.now(),
+        )
+        video_task = self.create_task(
+            status=TaskResultStatus.FAILED,
+            task_path='accountlink.tasks.task_saolei_video_import',
+            kwargs={'video_id': 100002},
+            priority=-1,
+            run_after=run_after,
+            finished_at=timezone.now(),
+        )
+        gsc_task = self.create_task(
+            status=TaskResultStatus.FAILED,
+            task_path='tournament.gsc.tasks.task_gsc_finish',
+            kwargs={'gsc_order': 100},
+            run_after=run_after,
+            finished_at=timezone.now(),
+        )
+        account = AccountSaolei.objects.create(
+            id=100001,
+            parent=self.staff,
+            video_import_task=account_task,
+        )
+        video = VideoSaolei.objects.create(
+            id=100002,
+            user=account,
+            upload_time=timezone.now(),
+            level=MS_TextChoices.Level.BEGINNER,
+            bv=1,
+            timems=1000,
+            nf=False,
+            state=Saolei_TextChoices.SaoleiVideoState.PENDING,
+            import_task=video_task,
+        )
+        tournament = GSCTournament.objects.create(
+            order=100,
+            start_time=timezone.now() - timedelta(days=1),
+            end_time=timezone.now() - timedelta(hours=1),
+            state=Tournament_TextChoices.State.AWARDED,
+            host=self.staff,
+            task=gsc_task,
+        )
+
+        cases = [
+            (
+                account_task,
+                account,
+                'video_import_task_id',
+            ),
+            (
+                video_task,
+                video,
+                'import_task_id',
+            ),
+            (
+                gsc_task,
+                tournament,
+                'task_id',
+            ),
+        ]
+        for old_task, obj, task_field_id in cases:
+            response = self.client.post(
+                '/api/common/tasks/restart',
+                json.dumps({'task_id': str(old_task.id)}),
+                content_type='application/json',
+            )
+
+            self.assertEqual(response.status_code, 200, response.content)
+            response_data = response.json()
+            new_task = DBTaskResult.objects.get(id=response_data['id'])
+            self.assertNotEqual(old_task.id, new_task.id)
+            self.assertEqual(new_task.status, TaskResultStatus.READY)
+            self.assertEqual(new_task.task_path, old_task.task_path)
+            self.assertEqual(new_task.args_kwargs, old_task.args_kwargs)
+            self.assertEqual(new_task.priority, old_task.priority)
+            self.assertEqual(new_task.queue_name, old_task.queue_name)
+            self.assertEqual(new_task.backend_name, old_task.backend_name)
+            self.assertEqual(new_task.run_after, old_task.run_after)
+
+            obj.refresh_from_db()
+            self.assertEqual(getattr(obj, task_field_id), new_task.id)
+            self.assertEqual(response_data['task_path'], old_task.task_path)
+            self.assertEqual(response_data['args_kwargs'], old_task.args_kwargs)
+
+    def test_restart_task_with_stale_business_reference_returns_conflict(self):
+        failed_task = self.create_task(
+            status=TaskResultStatus.FAILED,
+            task_path='accountlink.tasks.task_saolei_video_import',
+            args=[100003],
+            finished_at=timezone.now(),
+        )
+        current_task = self.create_task(
+            status=TaskResultStatus.READY,
+            task_path='accountlink.tasks.task_saolei_video_import',
+            args=[100003],
+        )
+        account = AccountSaolei.objects.create(
+            id=100003,
+            parent=self.staff,
+        )
+        VideoSaolei.objects.create(
+            id=100003,
+            user=account,
+            upload_time=timezone.now(),
+            level=MS_TextChoices.Level.BEGINNER,
+            bv=1,
+            timems=1000,
+            nf=False,
+            state=Saolei_TextChoices.SaoleiVideoState.PENDING,
+            import_task=current_task,
+        )
+
+        response = self.client.post(
+            '/api/common/tasks/restart',
+            json.dumps({'task_id': str(failed_task.id)}),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.json(), {
+            'type': 'error',
+            'object': 'task_restart',
+            'category': 'stale_reference',
+        })
+        self.assertEqual(DBTaskResult.objects.count(), 2)
+
+    def test_restart_task_with_invalid_business_arguments_returns_error_body(self):
+        failed_task = self.create_task(
+            status=TaskResultStatus.FAILED,
+            task_path='accountlink.tasks.task_saolei_video_import',
+            finished_at=timezone.now(),
+        )
+
+        response = self.client.post(
+            '/api/common/tasks/restart',
+            json.dumps({'task_id': str(failed_task.id)}),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(), {
+            'type': 'error',
+            'object': 'task_restart',
+            'category': 'invalid_args',
+        })
+        self.assertEqual(DBTaskResult.objects.count(), 1)
+
+    def test_restart_non_failed_task_returns_conflict(self):
+        task = self.create_task(status=TaskResultStatus.READY)
+
+        response = self.client.post(
+            '/api/common/tasks/restart',
+            json.dumps({'task_id': str(task.id)}),
+            content_type='application/json',
+        )
+
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(DBTaskResult.objects.count(), 1)
 
     def robust_command_options(self, pidfile: Path):
         return {
