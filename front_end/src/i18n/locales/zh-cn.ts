@@ -237,8 +237,6 @@ export default {
             identifier: 'Arbiter参赛标识：',
         },
         realTimeScore: '即时成绩',
-        summary: '概览',
-        videos: '录像',
     },
     home: {
         news: '新闻',
@@ -335,7 +333,6 @@ export default {
     },
     tournament: {
         downloadAll: '下载全部录像',
-        downloadParticipant: '下载录像包',
         endsBy: '结束时间',
         host: '主办方',
         index: '比赛首页',
@@ -345,7 +342,6 @@ export default {
             other: '其他',
             all: '全部',
         },
-        management: '管理',
         ranking: '排行',
         startsFrom: '开始时间',
         state: {

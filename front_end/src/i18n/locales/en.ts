@@ -238,8 +238,6 @@ export default {
             identifier: 'Arbiter tournament identifier: ',
         },
         realTimeScore: 'Real-Time Score',
-        summary: 'Summary',
-        videos: 'Videos',
     },
     home: {
         news: 'News',
@@ -336,7 +334,6 @@ export default {
     },
     tournament: {
         downloadAll: 'Download all videos',
-        downloadParticipant: 'Download videos',
         endsBy: 'Ends By',
         host: 'Host',
         index: 'Index',
@@ -346,7 +343,6 @@ export default {
             other: 'Other',
             all: 'All',
         },
-        management: 'Management',
         ranking: 'Ranking',
         startsFrom: 'Starts From',
         state: {
