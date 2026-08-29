@@ -135,10 +135,6 @@ interface TaskSummary {
     status: EnumMap<DjangoTaskResultStatus, number>;
 }
 
-interface TaskDeleteResponse {
-    task_id: string;
-}
-
 const { proxy } = useCurrentInstance();
 
 const taskData = ref<TaskDetail[]>([]);
@@ -219,10 +215,10 @@ async function deleteSelected() {
     if (selectedTasks.value.length === 0) return;
     try {
         for (const task of selectedTasks.value) {
-            const response = await proxy.$axios.post<TaskDeleteResponse>('/api/common/tasks/delete', {
+            await proxy.$axios.post('/api/common/tasks/delete', {
                 task_id: task.id,
             });
-            removeTask(response.data.task_id);
+            removeTask(task.id);
         }
     } catch (error) {
         httpErrorNotification(error);

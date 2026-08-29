@@ -165,7 +165,7 @@ class TaskDeletionTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()['task_id'], str(task.id))
+        self.assertIsNone(response.json())
         self.assertFalse(DBTaskResult.objects.filter(id=task.id).exists())
 
     def test_delete_running_task_returns_conflict(self):
