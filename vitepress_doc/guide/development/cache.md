@@ -592,7 +592,7 @@ digraph cache {
 | 自定义 pluck 排行 | `customranking.services.update_custom_pluck_top_cache` | `manage.py rebuild_custom_pluck_cache` 从 `CustomPluckRecord` 全量重建。 |
 | NORMAL 比赛 | `TournamentCache.update_tournament` | `manage.py rebuild_tournament_cache` 显式查询 `NORMAL` GSC 与周赛并重建。 |
 | NORMAL 参赛关系 | `TournamentCache.update_participant` / `remove_participant` | `manage.py rebuild_tournament_cache` 按 `user_id` 分组重建。 |
-| 比赛积分排行 | `TournamentUserCache.update_user` / `update_users` | `manage.py rebuild_tournament_user_cache` 从 `TournamentUser` 全量重建 7 个 zset。 |
+| 比赛积分排行 | `TournamentCache.update_tournament_user` / `update_tournament_users` | `manage.py rebuild_tournament_user_cache` 从 `TournamentUser` 全量重建 7 个 zset。 |
 | common 摘要 | 对应 API 内部 `cache.set` | TTL 到期自动失效。 |
 | 文章目录 | `article.views.update_list` | 管理员手动调用 `update_list` 全量刷新。 |
 

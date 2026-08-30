@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from tournament.cache import TournamentUserCache
+from tournament.cache import TournamentCache
 
 
 class Command(BaseCommand):
@@ -10,7 +10,7 @@ class Command(BaseCommand):
         parser.add_argument('--batch-size', type=int, default=1000)
 
     def handle(self, *args, **options):
-        count = TournamentUserCache().rebuild(batch_size=options['batch_size'])
+        count = TournamentCache().rebuild_tournament_user_cache(batch_size=options['batch_size'])
         self.stdout.write(self.style.SUCCESS(
             f'rebuilt {count} tournament user cache rows',
         ))

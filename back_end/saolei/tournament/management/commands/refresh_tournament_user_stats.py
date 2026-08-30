@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 
 from config.text_choices import Tournament_TextChoices
-from tournament.cache import TournamentUserCache
+from tournament.cache import TournamentCache
 from tournament.gsc.services import calculate_gsc_best_score
 from tournament.models import TournamentParticipant, TournamentUser
 from tournament.services import refresh_tournament_user_total_fields
@@ -34,7 +34,7 @@ def refresh_tournament_user_best_fields(*, batch_size=1000):
             ['gsc_best', 'weekly_classic_best'],
             batch_size=batch_size,
         )
-        TournamentUserCache().update_users(tournament_users, fields=['gsc_best', 'weekly_classic_best'])
+        TournamentCache().update_tournament_users(tournament_users, fields=['gsc_best', 'weekly_classic_best'])
 
     return len(tournament_users)
 

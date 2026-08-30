@@ -26,6 +26,20 @@ TOURNAMENT_USER_CACHE_KEYS = {
     'weekly_classic_total': 'tournament:user:weekly_classic_total',
     'weekly_classic_best': 'tournament:user:weekly_classic_best',
 }
+TOURNAMENT_USER_RANK_FIELDS = (
+    'score_current', 'score_total',
+    'gsc_total', 'gsc_best',
+    'weekly_total', 'weekly_classic_total', 'weekly_classic_best',
+)
+TOURNAMENT_USER_DEFAULT_VALUES = {
+    'score_current': 0,
+    'score_total': 0,
+    'gsc_total': 0,
+    'gsc_best': MAX_TOURNAMENT_BEST,
+    'weekly_total': 0,
+    'weekly_classic_total': 0,
+    'weekly_classic_best': MAX_TOURNAMENT_BEST,
+}
 
 
 @dataclass_json
@@ -183,46 +197,28 @@ class TournamentCache:
             )
         ]
 
+    def clear_tournament_user_cache(self):
+        cache.delete(*TOURNAMENT_USER_CACHE_KEYS.values())
 
-class TournamentUserCache:
-    RANK_FIELDS = (
-        'score_current', 'score_total',
-        'gsc_total', 'gsc_best',
-        'weekly_total', 'weekly_classic_total', 'weekly_classic_best',
-    )
-    CACHE_KEYS = TOURNAMENT_USER_CACHE_KEYS
-    DEFAULT_VALUES = {
-        'score_current': 0,
-        'score_total': 0,
-        'gsc_total': 0,
-        'gsc_best': MAX_TOURNAMENT_BEST,
-        'weekly_total': 0,
-        'weekly_classic_total': 0,
-        'weekly_classic_best': MAX_TOURNAMENT_BEST,
-    }
+    def update_tournament_user(self, tournament_user: TournamentUser, fields=None):
+        self.update_tournament_users([tournament_user], fields=fields)
 
-    def clear(self):
-        cache.delete(*self.CACHE_KEYS.values())
-
-    def update_user(self, tournament_user: TournamentUser, fields=None):
-        self.update_users([tournament_user], fields=fields)
-
-    def update_users(self, tournament_users: Iterable[TournamentUser], fields=None):
-        fields = self._normalize_fields(fields)
+    def update_tournament_users(self, tournament_users: Iterable[TournamentUser], fields=None):
+        fields = self._normalize_tournament_user_fields(fields)
         if not fields:
             return
 
         pipe = cache.pipeline()
         for tournament_user in tournament_users:
-            self._update_user_in_pipeline(pipe, tournament_user, fields)
+            self._update_tournament_user_in_pipeline(pipe, tournament_user, fields)
         pipe.execute()
 
-    def rebuild(self, *, batch_size=1000):
-        self.clear()
+    def rebuild_tournament_user_cache(self, *, batch_size=1000):
+        self.clear_tournament_user_cache()
         pipe = cache.pipeline()
         count = 0
         for tournament_user in TournamentUser.objects.iterator(chunk_size=batch_size):
-            self._update_user_in_pipeline(pipe, tournament_user, self.RANK_FIELDS)
+            self._update_tournament_user_in_pipeline(pipe, tournament_user, TOURNAMENT_USER_RANK_FIELDS)
             count += 1
             if count % batch_size == 0:
                 pipe.execute()
@@ -230,15 +226,15 @@ class TournamentUserCache:
         pipe.execute()
         return count
 
-    def _normalize_fields(self, fields):
+    def _normalize_tournament_user_fields(self, fields):
         if fields is None:
-            return self.RANK_FIELDS
-        return tuple(field for field in fields if field in self.CACHE_KEYS)
+            return TOURNAMENT_USER_RANK_FIELDS
+        return tuple(field for field in fields if field in TOURNAMENT_USER_CACHE_KEYS)
 
-    def _update_user_in_pipeline(self, pipe, tournament_user: TournamentUser, fields):
+    def _update_tournament_user_in_pipeline(self, pipe, tournament_user: TournamentUser, fields):
         for field in fields:
-            key = self.CACHE_KEYS[field]
-            if getattr(tournament_user, field) == self.DEFAULT_VALUES[field]:
+            key = TOURNAMENT_USER_CACHE_KEYS[field]
+            if getattr(tournament_user, field) == TOURNAMENT_USER_DEFAULT_VALUES[field]:
                 pipe.zrem(key, tournament_user.user_id)
             else:
                 pipe.zadd(key, {tournament_user.user_id: getattr(tournament_user, field)})

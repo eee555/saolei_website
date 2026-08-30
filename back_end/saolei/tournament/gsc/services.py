@@ -7,7 +7,7 @@ from django_tasks_db.models import DBTaskResult
 
 from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from config.tournaments import GSC_Defaults
-from tournament.cache import TournamentUserCache
+from tournament.cache import TournamentCache
 from tournament.gsc.utils import gsc_encode_best
 from tournament.models import GSCParticipant, GSCTournament, TournamentUser
 from tournament.services import refresh_tournament_ranks
@@ -21,7 +21,7 @@ GSC_SCORE_FIELDS = [
 ]
 
 logger = logging.getLogger('tournament')
-tournament_user_cache = TournamentUserCache()
+tournament_cache = TournamentCache()
 GSC_FINISH_TASK_PATH = 'tournament.gsc.tasks.task_gsc_finish'
 
 GSC_LEVEL_RULES = {
@@ -209,6 +209,6 @@ def refresh_gsc_best_scores(tournament: GSCTournament, *, batch_size=1000):
         tournament_users.append(tournament_user)
 
     TournamentUser.objects.bulk_update(tournament_users, ['gsc_best'], batch_size=batch_size)
-    tournament_user_cache.update_users(tournament_users, fields=['gsc_best'])
+    tournament_cache.update_tournament_users(tournament_users, fields=['gsc_best'])
     logger.info(f'GSC#{tournament.order} 个人纪录刷新 完成 人数{updated_count}')
     return updated_count

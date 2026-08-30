@@ -14,7 +14,6 @@ from .base import (
     TOURNAMENT_USER_CACHE_KEYS,
     TournamentTestCaseBase,
     TournamentUser,
-    TournamentUserCache,
     weekly_encode_best,
     WeeklyParticipant,
 )
@@ -94,7 +93,7 @@ class TestScore(TournamentTestCaseBase):
 
         tournament_user.score_total = 0
         tournament_user.gsc_best = MAX_TOURNAMENT_BEST
-        TournamentUserCache().update_user(tournament_user, fields=['score_total', 'gsc_best'])
+        self.tournament_cache.update_tournament_user(tournament_user, fields=['score_total', 'gsc_best'])
 
         self.assertIsNone(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['score_total'], tournament_user.user_id))
         self.assertIsNone(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['gsc_best'], tournament_user.user_id))

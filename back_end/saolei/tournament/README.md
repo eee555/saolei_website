@@ -131,7 +131,7 @@ GSC 创建 `GSCParticipant` 时，participant 自身的 `start_time/end_time` �
 - `gsc_total` / `weekly_total`：按比赛类型拆分的历史累计积分，不参与衰减；`weekly_classic_total` 是周赛经典模式的累计积分。
 - `gsc_best` / `weekly_classic_best` 使用整数打包“最好成绩 + 比赛届数/期数”。GSC 后三位保存届数；周赛经典模式后五位保存 `year % 1000 * 100 + week`。GSC 和周赛经典模式都按“成绩越小越好，同成绩比赛编号越小越好”比较；没有有效历史成绩时使用 `MAX_TOURNAMENT_BEST` 作为哨兵值。
 - `tournament.gsc.utils.gsc_encode_best` 和 `tournament.weekly.utils.weekly_encode_best` 分别维护 GSC / 周赛 best 编码。
-- `TournamentUserCache` 使用 Redis sorted set 维护 7 个用户积分排行榜，member 统一为 `user_id`：`tournament:user:score_current`、`tournament:user:score_total`、`tournament:user:gsc_total`、`tournament:user:gsc_best`、`tournament:user:weekly_total`、`tournament:user:weekly_classic_total` 和 `tournament:user:weekly_classic_best`。
+- `TournamentCache` 使用 Redis sorted set 维护 7 个用户积分排行榜，member 统一为 `user_id`：`tournament:user:score_current`、`tournament:user:score_total`、`tournament:user:gsc_total`、`tournament:user:gsc_best`、`tournament:user:weekly_total`、`tournament:user:weekly_classic_total` 和 `tournament:user:weekly_classic_best`。
 - Redis zset 的 score 直接使用对应 `TournamentUser` 字段值。积分字段越大排名越靠前，读取方应使用倒序；best 字段越小成绩越好，读取方应使用正序。
 - 默认值不写入排行榜：`score_current`、`score_total`、`gsc_total`、`weekly_total`、`weekly_classic_total` 为 `0` 时从对应 zset 删除；`gsc_best`、`weekly_classic_best` 为 `MAX_TOURNAMENT_BEST` 时从对应 zset 删除。
 - 站内用户创建 `TournamentParticipant` / `GSCParticipant` / `WeeklyParticipant` 时，保存信号会在当前数据库事务内立即创建缺失的 `TournamentUser`。删除 participant 不会跟随删除 `TournamentUser`。
