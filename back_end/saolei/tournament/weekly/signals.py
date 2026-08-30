@@ -1,8 +1,11 @@
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
+from tournament.cache import TournamentUserCache
 from .services import calculate_weekly_classic_best, update_weekly_best
 from ..models import TournamentUser, WeeklyParticipant
+
+tournament_user_cache = TournamentUserCache()
 
 WEEKLY_BEST_SCORE_FIELDS = {
     'classic_score',
@@ -20,6 +23,7 @@ def update_best_score_on_weekly_participant_save(sender, instance: WeeklyPartici
     tournament_user, _ = TournamentUser.objects.get_or_create(user_id=instance.user_id)
     if update_weekly_best(tournament_user, instance.tournament.weeklytournament, instance):
         tournament_user.save(update_fields=['weekly_classic_best'])
+        tournament_user_cache.update_user(tournament_user, fields=['weekly_classic_best'])
 
 
 @receiver(post_delete, sender=WeeklyParticipant, dispatch_uid='tournament.update_best_score_on_weekly_participant_delete')
@@ -29,3 +33,4 @@ def update_best_score_on_weekly_participant_delete(sender, instance: WeeklyParti
     tournament_user: TournamentUser = instance.user.tournamentuser
     tournament_user.weekly_classic_best = calculate_weekly_classic_best(instance.user_id)
     tournament_user.save(update_fields=['weekly_classic_best'])
+    tournament_user_cache.update_user(tournament_user, fields=['weekly_classic_best'])

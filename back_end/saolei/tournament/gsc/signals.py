@@ -2,8 +2,11 @@
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
+from tournament.cache import TournamentUserCache
 from .services import calculate_gsc_best_score, update_gsc_best
 from ..models import GSCParticipant, TournamentUser
+
+tournament_user_cache = TournamentUserCache()
 
 GSC_BEST_SCORE_FIELDS = {
     'bt20sum',
@@ -23,6 +26,7 @@ def update_best_score_on_gsc_participant_save(sender, instance: GSCParticipant, 
     tournament_user, _ = TournamentUser.objects.get_or_create(user_id=instance.user_id)
     if update_gsc_best(tournament_user, instance.tournament.gsctournament, instance):
         tournament_user.save(update_fields=['gsc_best'])
+        tournament_user_cache.update_user(tournament_user, fields=['gsc_best'])
 
 
 @receiver(post_delete, sender=GSCParticipant, dispatch_uid='tournament.update_best_score_on_gsc_participant_delete')
@@ -32,3 +36,4 @@ def update_best_score_on_gsc_participant_delete(sender, instance: GSCParticipant
     tournament_user: TournamentUser = instance.user.tournamentuser
     tournament_user.gsc_best = calculate_gsc_best_score(instance.user_id)
     tournament_user.save(update_fields=['gsc_best'])
+    tournament_user_cache.update_user(tournament_user, fields=['gsc_best'])

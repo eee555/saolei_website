@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 import json
-from typing import Literal
+from typing import Iterable, Literal
 
 from dataclasses_json import dataclass_json
 from django_redis import get_redis_connection
@@ -9,12 +9,23 @@ from django_redis import get_redis_connection
 from config.text_choices import Tournament_TextChoices
 from utils.cache import maybe_bytes_to_str
 from videomanager.models import VideoModel
-from .models import GSCTournament, Tournament, TournamentParticipant
+from .models import GSCTournament, Tournament, TournamentParticipant, TournamentUser
+from .utils import MAX_TOURNAMENT_BEST
 
 cache = get_redis_connection('saolei_website')
 
 NORMAL_TOURNAMENT_CACHE_KEY = 'tournament:normal'
 NORMAL_PARTICIPANT_CACHE_KEY = 'tournament:normal:participants'
+
+TOURNAMENT_USER_CACHE_KEYS = {
+    'score_current': 'tournament:user:score_current',
+    'score_total': 'tournament:user:score_total',
+    'gsc_total': 'tournament:user:gsc_total',
+    'gsc_best': 'tournament:user:gsc_best',
+    'weekly_total': 'tournament:user:weekly_total',
+    'weekly_classic_total': 'tournament:user:weekly_classic_total',
+    'weekly_classic_best': 'tournament:user:weekly_classic_best',
+}
 
 
 @dataclass_json
@@ -171,6 +182,66 @@ class TournamentCache:
                 and participant.start_time <= video.upload_time <= participant.end_time
             )
         ]
+
+
+class TournamentUserCache:
+    RANK_FIELDS = (
+        'score_current', 'score_total',
+        'gsc_total', 'gsc_best',
+        'weekly_total', 'weekly_classic_total', 'weekly_classic_best',
+    )
+    CACHE_KEYS = TOURNAMENT_USER_CACHE_KEYS
+    DEFAULT_VALUES = {
+        'score_current': 0,
+        'score_total': 0,
+        'gsc_total': 0,
+        'gsc_best': MAX_TOURNAMENT_BEST,
+        'weekly_total': 0,
+        'weekly_classic_total': 0,
+        'weekly_classic_best': MAX_TOURNAMENT_BEST,
+    }
+
+    def clear(self):
+        cache.delete(*self.CACHE_KEYS.values())
+
+    def update_user(self, tournament_user: TournamentUser, fields=None):
+        self.update_users([tournament_user], fields=fields)
+
+    def update_users(self, tournament_users: Iterable[TournamentUser], fields=None):
+        fields = self._normalize_fields(fields)
+        if not fields:
+            return
+
+        pipe = cache.pipeline()
+        for tournament_user in tournament_users:
+            self._update_user_in_pipeline(pipe, tournament_user, fields)
+        pipe.execute()
+
+    def rebuild(self, *, batch_size=1000):
+        self.clear()
+        pipe = cache.pipeline()
+        count = 0
+        for tournament_user in TournamentUser.objects.iterator(chunk_size=batch_size):
+            self._update_user_in_pipeline(pipe, tournament_user, self.RANK_FIELDS)
+            count += 1
+            if count % batch_size == 0:
+                pipe.execute()
+                pipe = cache.pipeline()
+        pipe.execute()
+        return count
+
+    def _normalize_fields(self, fields):
+        if fields is None:
+            return self.RANK_FIELDS
+        return tuple(field for field in fields if field in self.CACHE_KEYS)
+
+    def _update_user_in_pipeline(self, pipe, tournament_user: TournamentUser, fields):
+        for field in fields:
+            key = self.CACHE_KEYS[field]
+            if getattr(tournament_user, field) == self.DEFAULT_VALUES[field]:
+                pipe.zrem(key, tournament_user.user_id)
+            else:
+                pipe.zadd(key, {tournament_user.user_id: getattr(tournament_user, field)})
 
 
 def serialize_normal_tournament(tournament: Tournament):

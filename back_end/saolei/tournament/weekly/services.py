@@ -4,11 +4,13 @@ from django.db.models import F, Window
 from django.db.models.functions import RowNumber
 
 from config.text_choices import MS_TextChoices, Tournament_TextChoices
+from tournament.cache import TournamentUserCache
 from tournament.models import TournamentUser, WeeklyParticipant, WeeklyTournament
 from tournament.utils import MAX_TOURNAMENT_BEST
 from .utils import weekly_encode_best
 
 logger = logging.getLogger('tournament')
+tournament_user_cache = TournamentUserCache()
 
 
 def refresh_weekly_classic_scores(tournament: WeeklyTournament, *, batch_size=1000):
@@ -111,5 +113,6 @@ def refresh_weekly_best_scores(tournament: WeeklyTournament, *, batch_size=1000)
         tournament_users.append(tournament_user)
 
     TournamentUser.objects.bulk_update(tournament_users, ['weekly_classic_best'], batch_size=batch_size)
+    tournament_user_cache.update_users(tournament_users, fields=['weekly_classic_best'])
     logger.info(f'周赛#{tournament.id} 个人纪录刷新 完成 人数{updated_count}')
     return updated_count
