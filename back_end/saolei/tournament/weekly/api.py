@@ -36,7 +36,7 @@ WeeklyInfoOut = create_schema(
 WeeklyScoreOut = create_schema(
     WeeklyParticipant,
     fields=['id', 'start_time', 'end_time', 'rank', 'rank_score', 'classic_et', 'classic_it', 'classic_score'],
-    custom_fields=[('user_id', int | None, None)],
+    custom_fields=[('user_id', int, 0)],
 )
 
 

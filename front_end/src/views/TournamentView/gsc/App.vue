@@ -38,13 +38,13 @@
             </ElTabPane>
             <ElTabPane v-for="(participant, index) in viewedParticipants" :key="participant.id" lazy :name="index">
                 <template #label>
-                    <span class="text">{{ participant.user__realname }}</span>
+                    <PlayerName :user-id="participant.user_id" />
                     &nbsp;
                     <ElLink underline="never" @click="handleAllSummaryTabClose(index)">
                         <BaseIconClose style="scale: 65%" />
                     </ElLink>
                 </template>
-                <PersonalView :user-id="participant.user__id" :tournament-id="tournament.id">
+                <PersonalView :user-id="participant.user_id" :tournament-id="tournament.id">
                     <template #personalSummary="{ videos }">
                         <GSCPersonalSummary :videos="videos" />
                     </template>
@@ -70,12 +70,13 @@ import TokenGuide from './TokenGuide.vue';
 
 import { BaseIconClose, BaseIconRefresh } from '@/components/common/icon';
 import { httpErrorNotification } from '@/components/Notifications';
+import PlayerName from '@/components/PlayerName.vue';
 import GSCPersonalSummary from '@/components/visualization/GSCPersonalSummary/App.vue';
 import { downloadTournamentVideos, fetchGSCResults, fetchParticipantList } from '@/services/tournamentService';
 import { store } from '@/store';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { streamToZip } from '@/utils/fileIO';
-import { GSCParticipant } from '@/utils/gsc';
+import type { GSCParticipant } from '@/utils/gsc';
 import { TournamentState } from '@/utils/ms_const';
 import type { Tournament } from '@/utils/tournaments';
 
@@ -113,7 +114,7 @@ async function refresh() {
             participant.value = false;
             personaltoken.value = '';
             result.value = tournament.value.state === TournamentState.Awarded
-                ? (await fetchGSCResults(tournament.value.id)).map((value) => new GSCParticipant(value))
+                ? await fetchGSCResults(tournament.value.id)
                 : [];
         }
     } catch (error) {
@@ -131,7 +132,7 @@ watch(() => [
 ], refresh, { immediate: true });
 
 function handleAllSummaryRowClick(row: GSCParticipant) {
-    if (tournament.value.state !== TournamentState.Awarded) return;
+    if (tournament.value.state !== TournamentState.Awarded || row.user_id === 0) return;
     const index = viewedParticipants.value.findIndex((item) => item.id === row.id);
     if (index === -1) {
         viewedParticipants.value.push(row);
