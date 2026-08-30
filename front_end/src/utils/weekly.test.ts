@@ -10,7 +10,7 @@ describe('WeeklyParticipant', () => {
 
             expect(participant).toBeInstanceOf(TournamentParticipant);
             expect(participant.id).toBe(0);
-            expect(participant.user_id).toBeNull();
+            expect(participant.user_id).toBe(0);
             expect(participant.classic_et).toEqual([[0, 240000], [0, 240000]]);
             expect(participant.classic_it).toEqual([
                 [0, 60000],

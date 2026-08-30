@@ -12,7 +12,7 @@ describe('TournamentParticipant', () => {
             expect(participant.token).toBe('');
             expect(participant.arbiter_identifier__identifier).toBeNull();
             expect(participant.tournament_id).toBe(0);
-            expect(participant.user_id).toBeNull();
+            expect(participant.user_id).toBe(0);
             expect(participant.start_time).toBeNull();
             expect(participant.end_time).toBeNull();
             expect(participant.rank).toBeNull();

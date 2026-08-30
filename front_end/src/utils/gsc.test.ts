@@ -11,7 +11,7 @@ describe('GSCParticipant', () => {
 
             expect(participant).toBeInstanceOf(TournamentParticipant);
             expect(participant.id).toBe(0);
-            expect(participant.user_id).toBeNull();
+            expect(participant.user_id).toBe(0);
             expect(participant.bt1st).toBe(GSCDefaults.bt);
             expect(participant.it1st).toBe(GSCDefaults.it);
             expect(participant.et1st).toBe(GSCDefaults.et);
