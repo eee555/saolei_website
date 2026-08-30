@@ -2,25 +2,26 @@ import { describe, expect, it } from 'vitest';
 
 import { GSCParticipant } from './gsc';
 import { GSCDefaults } from './ms_const';
+import { TournamentParticipant } from './tournaments';
 
 describe('GSCParticipant', () => {
     describe('constructor', () => {
         it('Default initialization', () => {
             const participant = new GSCParticipant();
 
+            expect(participant).toBeInstanceOf(TournamentParticipant);
             expect(participant.id).toBe(0);
-            expect(participant.user__id).toBe(0);
-            expect(participant.user__realname).toBe('');
+            expect(participant.user_id).toBeNull();
             expect(participant.bt1st).toBe(GSCDefaults.bt);
             expect(participant.it1st).toBe(GSCDefaults.it);
             expect(participant.et1st).toBe(GSCDefaults.et);
         });
 
         it('Partial initialization', () => {
-            const participant = new GSCParticipant({ id: 7, user__realname: 'Alice', bt1st: 12.34 });
+            const participant = new GSCParticipant({ id: 7, user_id: 1, bt1st: 12.34 });
 
             expect(participant.id).toBe(7);
-            expect(participant.user__realname).toBe('Alice');
+            expect(participant.user_id).toBe(1);
             expect(participant.bt1st).toBe(12.34);
             expect(participant.it1st).toBe(GSCDefaults.it);
         });

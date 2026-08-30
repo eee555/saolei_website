@@ -46,7 +46,7 @@ class TestGsc(TournamentTestCaseBase):
         data = response.json()
         self.assertEqual(data[0]['id'], participant.id)
         self.assertEqual(data[0]['rank'], 1)
-        self.assertEqual(data[0]['user__id'], self.user.id)
+        self.assertEqual(data[0]['user_id'], self.user.id)
 
     def test_gsc_participant_registration_uses_two_steps(self):
         self.client.force_login(self.user)
