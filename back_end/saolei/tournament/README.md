@@ -170,7 +170,7 @@ TODO: 补充积分展示 API 与前端：
 先不急着做，等结构继续设计。
 
 - 用户资料页需要展示当前比赛积分、历史总积分、GSC/周赛拆分积分和最好成绩。
-- 比赛积分排行榜需要分页 API；如果访问频繁，应设计 Redis 缓存或类似 `userprofile` 的 IndexedDB 同步方案。
+- 比赛积分排行榜已提供 `start` / `end` 左闭右开区间 API，按 `TournamentCache` 中的 Redis zset 选择排序字段；`gsc_best` / `weekly_classic_best` 的接口输出原始打包值，由前端解码为实际成绩和比赛届数。
 - `TournamentUser` 更新后如果影响用户资料摘要，需要同步考虑 `userprofile` 缓存/批量接口的失效策略。
 
 ## TODO: 历史比赛列表同步计划

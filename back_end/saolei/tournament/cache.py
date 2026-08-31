@@ -31,6 +31,7 @@ TOURNAMENT_USER_RANK_FIELDS = (
     'gsc_total', 'gsc_best',
     'weekly_total', 'weekly_classic_total', 'weekly_classic_best',
 )
+TOURNAMENT_USER_ASC_FIELDS = ('gsc_best', 'weekly_classic_best')
 TOURNAMENT_USER_DEFAULT_VALUES = {
     'score_current': 0,
     'score_total': 0,
@@ -225,6 +226,21 @@ class TournamentCache:
                 pipe = cache.pipeline()
         pipe.execute()
         return count
+
+    def get_tournament_user_ranking(self, field: str, *, start=0, end=20) -> tuple[list[TournamentUser], int]:
+        """读取缓存内的左闭右开排行区间。"""
+        key = TOURNAMENT_USER_CACHE_KEYS[field]
+        total = cache.zcard(key)
+        if total == 0 or start >= end:
+            return [], total
+
+        if field in TOURNAMENT_USER_ASC_FIELDS:
+            user_ids = [int(user_id) for user_id in cache.zrange(key, start, end - 1)]
+        else:
+            user_ids = [int(user_id) for user_id in cache.zrevrange(key, start, end - 1)]
+
+        tournament_users_by_id: dict[int, TournamentUser] = TournamentUser.objects.in_bulk(user_ids, field_name='user_id')
+        return [tournament_users_by_id[user_id] for user_id in user_ids], total
 
     def _normalize_tournament_user_fields(self, fields):
         if fields is None:
