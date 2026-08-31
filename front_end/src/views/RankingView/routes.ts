@@ -11,4 +11,9 @@ export const rankingRoutes: RouteRecordRaw[] = [
         name: 'ranking_density',
         component: () => import('./DensityRanking.vue'),
     },
+    {
+        path: 'tournament',
+        name: 'ranking_tournament',
+        component: () => import('./TournamentRanking.vue'),
+    },
 ];
