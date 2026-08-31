@@ -63,7 +63,7 @@ declare global {
             mockRegister(): void;
 
             /**
-             * 让 PlayerName 始终显示 fallback 名称（用户#id），避免表格测试触发用户信息批量缓存和战绩弹窗请求。
+             * 让 PlayerName 始终显示 fallback 名称，避免表格测试触发用户信息批量缓存和战绩弹窗请求。
              */
             mockPlayerNameFallback(): void;
 

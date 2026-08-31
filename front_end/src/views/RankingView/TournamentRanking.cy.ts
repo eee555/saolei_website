@@ -3,7 +3,6 @@ import TournamentRanking from './TournamentRanking.vue';
 import $axios from '@/http';
 import i18n from '@/i18n';
 import type { TournamentUserRankField, TournamentUserRankingRow } from '@/services/tournamentService';
-import { local } from '@/store';
 
 function rankingRow(userId: number, init: Partial<TournamentUserRankingRow> = {}): TournamentUserRankingRow {
     return {
@@ -21,8 +20,6 @@ function rankingRow(userId: number, init: Partial<TournamentUserRankingRow> = {}
 }
 
 function mountTournamentRanking() {
-    local.value.language = 'zh-cn';
-    i18n.global.locale.value = 'zh-cn';
     cy.mount(TournamentRanking, {
         global: {
             plugins: [i18n],
@@ -67,14 +64,14 @@ describe('<TournamentRanking />', () => {
         cy.get('body').should(($body) => {
             expect($body.find('.el-loading-mask:visible')).to.have.length(0);
         });
-        cy.contains('.el-table__cell', '总分').should('be.visible');
-        cy.contains('.el-table__cell', '金羊杯').should('be.visible');
-        cy.contains('.el-table__cell', '积分赛').should('be.visible');
-        cy.contains('用户#101').should('be.visible');
+        cy.contains('.el-table__cell', 'Overall').should('be.visible');
+        cy.contains('.el-table__cell', 'GSC').should('be.visible');
+        cy.contains('.el-table__cell', 'Weekly').should('be.visible');
+        cy.contains('User#101').should('be.visible');
         cy.get('.el-table__body').extractTableData().should('deep.equal', [
-            ['', '', '总分', '金羊杯', '积分赛'],
-            ['当前积分', '历史总积分', '总积分', '最佳', '总积分', '经典模式总积分', '经典模式最佳'],
-            ['1', '用户#101', '12.50', '100', '60', '123.456 / GSC#7', '40', '30', '345.678 / 2026-W12'],
+            ['', '', 'Overall', 'GSC', 'Weekly'],
+            ['Current', 'History Total', 'Total', 'Best', 'Total', 'Classic Total', 'Classic Best'],
+            ['1', 'User#101', '12.50', '100', '60', '123.456 / GSC#7', '40', '30', '345.678 / 2026-W12'],
         ]);
     });
 
@@ -100,7 +97,7 @@ describe('<TournamentRanking />', () => {
         cy.wait('@ranking');
         cy.contains('.el-pager li', '2').click();
         cy.wait('@ranking');
-        cy.contains('.el-table__cell', '经典模式总积分').click();
+        cy.contains('.el-table__cell', 'Classic Total').click();
         cy.wait('@ranking');
 
         cy.then(() => {
