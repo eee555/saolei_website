@@ -5,6 +5,8 @@ import 'cypress-table';
 import 'cypress-intercept-formdata';
 import type { StaticResponse } from 'cypress/types/net-stubbing';
 
+import { serviceConfig } from '@/services/store';
+
 declare global {
     // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace Cypress {
@@ -141,8 +143,16 @@ Cypress.Commands.add('mockRegister', () => {
 });
 
 Cypress.Commands.add('mockPlayerNameFallback', () => {
-    cy.intercept('GET', '**/api/userprofile/avatar/**', { statusCode: 404 });
-    cy.intercept('GET', '**/api/userprofile/infobulk*', { body: [] }).as('playerNameFallbackUserInfo');
+    serviceConfig.value.userInfoBatchDelay = 0;
+    serviceConfig.value.userInfoBatchSize = 100;
+    serviceConfig.value.userInfoLastUpdate = 0;
+    cy.on('uncaught:exception', (error) => {
+        if (error.message.includes('Request failed with status code 500')) return false;
+        return undefined;
+    });
+    cy.intercept('GET', '**/api/userprofile/avatar/**', { statusCode: 500, body: {} }).as('playerNameFallbackAvatar');
+    cy.intercept('GET', '**/api/userprofile/info/**', { statusCode: 500, body: {} }).as('playerNameFallbackUserInfo');
+    cy.intercept('GET', '**/api/userprofile/infobulk*', { statusCode: 500, body: {} }).as('playerNameFallbackUserInfoBulk');
     cy.intercept({ method: 'GET', pathname: '/api/msuser/records_abstract' }, {
         body: {
             b_timems_std: 999999,

@@ -7,8 +7,8 @@
             :empty-text="t('local.empty')"
             @sort-change="handleSortChange"
         >
-            <ElTableColumn type="index" :index="(index) => first + index + 1" :label="t('local.rank')" />
-            <ElTableColumn :label="t('local.user')">
+            <ElTableColumn type="index" :index="(index) => first + index + 1" />
+            <ElTableColumn>
                 <template #default="{ row }">
                     <PlayerName :user-id="row.user_id" />
                 </template>
