@@ -1,3 +1,8 @@
+---
+title: Player Identifiers - Open Minesweeper
+description: How to set player identifiers and tournament tokens in minesweeper software and manage them on Open Minesweeper.
+---
+
 # Player Identifiers
 
 An identifier is a string signature filled in by the player and stored in the replay. In Minesweeper Arbiter, it is called "player identity". In MetaSweeper settings, it is called "identifier".

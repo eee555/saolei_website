@@ -5,24 +5,38 @@ import i18n from '@/i18n';
 import { store } from '@/store';
 import { pinia } from '@/store/create';
 import { LoginStatus } from '@/utils/common/structInterface';
-import { TournamentState } from '@/utils/ms_const';
+import { TournamentState, TournamentSubclass } from '@/utils/ms_const';
+import { Tournament } from '@/utils/tournaments';
 
 const tournamentId = 7;
 
-function gscInfo(participant: boolean) {
-    return {
+function gscTournament() {
+    return new Tournament({
+        id: tournamentId,
+        subclass: TournamentSubclass.GSC,
         data: {
-            id: tournamentId,
             order: 7,
             token: 'G00007',
-            start_time: '2000-01-01T00:00:00+08:00',
-            end_time: '2099-01-01T00:00:00+08:00',
-            state: TournamentState.Normal,
         },
-        results: null,
-        participant,
-        identifier: participant ? 'Player G00007' : null,
-    };
+        start_time: '2000-01-01T00:00:00+08:00',
+        end_time: '2099-01-01T00:00:00+08:00',
+        state: TournamentState.Normal,
+    });
+}
+
+function gscParticipantList(participant: boolean) {
+    if (!participant) return [];
+    return [{
+        id: 701,
+        token: 'G00007',
+        arbiter_identifier__identifier: 'Player G00007',
+        tournament_id: tournamentId,
+        user_id: 99,
+        start_time: '2000-01-01T00:00:00+08:00',
+        end_time: '2099-01-01T00:00:00+08:00',
+        rank: null,
+        rank_score: 0,
+    }];
 }
 
 function mountGSC(options: {
@@ -37,16 +51,16 @@ function mountGSC(options: {
         store.login_status = options.loginStatus;
     }
 
-    cy.intercept('GET', '**/api/tournament/gsc/info*', {
-        body: gscInfo(options.participant),
-    }).as('gscInfo');
+    cy.intercept('GET', '**/api/tournament/participants*', {
+        body: gscParticipantList(options.participant),
+    }).as('participantList');
     cy.intercept('GET', '**/api/tournament/get_videos/participant*', {
         body: [],
     }).as('participantVideos');
 
     cy.mount(App, {
         props: {
-            id: tournamentId,
+            tournament: gscTournament(),
         },
         global: {
             plugins: [pinia, i18n],
@@ -57,7 +71,7 @@ function mountGSC(options: {
             },
         },
     });
-    cy.wait('@gscInfo').its('response.statusCode').should('eq', 200);
+    cy.wait('@participantList').its('response.statusCode').should('eq', 200);
 }
 
 describe('<GSC App />', () => {

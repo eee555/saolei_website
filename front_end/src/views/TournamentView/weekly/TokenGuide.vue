@@ -39,7 +39,7 @@ import { httpErrorNotification, successNotification } from '@/components/Notific
 import IconCopy from '@/components/widgets/IconCopy.vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { toDate, toISODateTimeString } from '@/utils/datetime';
-import type { WeeklyParticipant } from '@/utils/weekly';
+import type { TournamentParticipant } from '@/utils/tournaments';
 
 const props = defineProps({
     tournamentId: {
@@ -51,7 +51,7 @@ const props = defineProps({
         default: false,
     },
     participant: {
-        type: Object as () => WeeklyParticipant | null,
+        type: Object as () => TournamentParticipant | null,
         default: null,
     },
 });

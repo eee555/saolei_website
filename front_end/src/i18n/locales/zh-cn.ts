@@ -227,10 +227,6 @@ export default {
     },
     gsc: {
         title: ({ named }: MessageContext) => `第${named('order')}届金羊杯`,
-        description: {
-            line1: '比赛期间上传（以服务器接收时间为准）的所有录像中，取成绩最好的20局初级（bv>=10）、12局中级（bv>=30）、5局高级（bv>=100），计算总成绩。',
-            line2: '局数不够的，初级按照10秒，中级按照60秒，高级按照240秒补全。',
-        },
         bbbvSummary: 'Bv表',
         finalResults: '比赛结果',
         howToParticipate: '如何参赛',
@@ -241,9 +237,6 @@ export default {
             identifier: 'Arbiter参赛标识：',
         },
         realTimeScore: '即时成绩',
-        schedule: '赛程',
-        summary: '概览',
-        videos: '录像',
     },
     home: {
         news: '新闻',
@@ -340,7 +333,6 @@ export default {
     },
     tournament: {
         downloadAll: '下载全部录像',
-        downloadParticipant: '下载录像包',
         endsBy: '结束时间',
         host: '主办方',
         index: '比赛首页',
@@ -350,7 +342,6 @@ export default {
             other: '其他',
             all: '全部',
         },
-        management: '管理',
         ranking: '排行',
         startsFrom: '开始时间',
         state: {

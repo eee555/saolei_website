@@ -32,18 +32,12 @@ WeeklyInfoOut = create_schema(
     fields=['id', 'year', 'week', 'start_time', 'end_time', 'state', 'tournament_format'],
 )
 
+
 WeeklyScoreOut = create_schema(
     WeeklyParticipant,
     fields=['id', 'start_time', 'end_time', 'rank', 'rank_score', 'classic_et', 'classic_it', 'classic_score'],
-    custom_fields=[('user_id', int | None, None)],
+    custom_fields=[('user_id', int, 0)],
 )
-
-
-class WeeklyDetailOut(Schema):
-    data: WeeklyInfoOut
-    results: list[WeeklyScoreOut] | None
-    token: str | None
-    participant: WeeklyScoreOut | None
 
 
 class NewWeeklyTournamentOut(Schema):
@@ -111,41 +105,12 @@ def set_weekly_tournament(request: HttpRequest, data: WeeklySetIn = Form(...)): 
     return HttpResponse()
 
 
-@router.get('/info', response=WeeklyDetailOut)
-def get_weeklyinfo(request: HttpRequest, tournament_id: int):
-
+@router.get('/results', response=list[WeeklyScoreOut])
+def get_results(request: HttpRequest, tournament_id: int):
     tournament = get_object_or_404(WeeklyTournament, tournament_ptr_id=tournament_id)
-
-    if tournament.state == Tournament_TextChoices.State.AWARDED:
-        return {
-            'data': tournament,
-            'results': WeeklyParticipant.objects.filter(tournament=tournament),
-            'token': None,
-            'participant': None,
-        }
-
-    if not request.user.is_authenticated:
-        return {
-            'data': tournament,
-            'results': None,
-            'token': None,
-            'participant': None,
-        }
-
-    participant = WeeklyParticipant.objects.filter(tournament=tournament, user=request.user).first()
-    if participant is None:
-        return {
-            'data': tournament,
-            'results': None,
-            'token': None,
-            'participant': None,
-        }
-    return {
-        'data': tournament,
-        'results': None,
-        'token': participant.token,
-        'participant': participant,
-    }
+    if tournament.state != Tournament_TextChoices.State.AWARDED:
+        return HttpResponseForbidden()
+    return WeeklyParticipant.objects.filter(tournament=tournament)
 
 
 @router.post('/participant')

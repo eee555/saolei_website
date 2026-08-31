@@ -1,3 +1,8 @@
+---
+title: 录像播放器 - 开源扫雷网
+description: 开源扫雷网的三种录像播放器：网站原生播放器、flop-player和MSRA，支持自定义计数器和丰富的扫雷数据字段。
+---
+
 # 录像播放器
 
 开源扫雷网有三种录像播放器供选择：网站原生、[flop-player](https://github.com/hgraceb/flop-player)和[MSRA by StrangeDust](https://strange-dust.github.io/minesweeper-replay-analyzer/)。

@@ -1,4 +1,4 @@
-import GSCAllSummary from './GSCAllSummary.vue';
+import AllSummary from './AllSummary.vue';
 
 import $axios from '@/http';
 import i18n from '@/i18n';
@@ -10,7 +10,7 @@ const realnames = {
     82: 'UserNoScore',
 };
 
-describe('<GSCAllSummary />', () => {
+describe('<AllSummary />', () => {
     beforeEach(() => {
         cy.intercept('GET', '/api/userprofile/avatar/**', {
             statusCode: 404,
@@ -40,7 +40,7 @@ describe('<GSCAllSummary />', () => {
     it('renders', () => {
         // see: https://on.cypress.io/mounting-vue
         const participantList = Cypress.expose('gscParticipantList');
-        cy.mount(GSCAllSummary, {
+        cy.mount(AllSummary, {
             props: {
                 data: participantList,
             },

@@ -110,7 +110,7 @@ GSC 创建 `GSCParticipant` 时，participant 自身的 `start_time/end_time` �
 - 服务：`refresh_weekly_classic_scores` 从 `Tournament.videos` 中按用户分别取 2 条高级、5 条中级有效录像，合并后批量更新 `WeeklyParticipant` 的成绩字段。
 - 服务：通用 `refresh_tournament_ranks` 按具体比赛的 `order_by` 字段刷新排名，只写入 `rank`；`rank_score` 由统一积分发放服务根据 `Tournament.weight / rank` 写入。
 - 任务：`task_weekly_finish` 已串联删除无录像 participant、读取本场 `TournamentUser`、刷新成绩、刷新排名、切换 `AWARDED`、公开录像；排名积分发放和 best 刷新作为非关键后台任务单独派发。
-- API：`tournament.weekly.api` 已挂载到 `/api/tournament/weekly/`，当前已有 `POST /new`、`POST /set`、`GET /info` 和 `POST /participant`。
+- API：`tournament.weekly.api` 已挂载到 `/api/tournament/weekly/`，当前已有 `POST /new`、`POST /set`、`GET /results` 和 `POST /participant`；进行中比赛的参赛者信息通过通用 `GET /api/tournament/participants` 获取。
 - API：`POST /api/tournament/weekly/new` 由 staff 创建下周周赛，参数只包含 `tournament_format`；服务端计算下周 `year/week/start_time/end_time`，`weight=50`，`host=request.user`，禁止重复创建，并在创建后直接 `validate()` 切换到 `NORMAL`。
 - API：`POST /api/tournament/weekly/set` 只允许主办方或管理员修改周赛状态，不修改 `year/week/tournament_format`。
 - 周赛由网站管理员主办，不在 `WeeklyTournament` 上保存任务引用；管理员通过通用后台任务系统直接管理 `task_weekly_finish`。

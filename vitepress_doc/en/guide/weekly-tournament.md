@@ -1,3 +1,8 @@
+---
+title: Weekly Tournament - Open Minesweeper
+description: Weekly minesweeper tournament rules held by Open Minesweeper, including schedule, scoring and participation guide.
+---
+
 # Weekly Tournament
 
 The Weekly Tournament is a small official tournament hosted by Open Minesweeper. It is held once a week and pauses when another tournament is taking place.

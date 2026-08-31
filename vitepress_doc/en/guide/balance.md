@@ -1,3 +1,8 @@
+---
+title: Website Finances - Open Minesweeper
+description: Open Minesweeper donation income and server expense details, showing operational costs and donation methods.
+---
+
 # Website Finances
 
 ## Sponsorship Income

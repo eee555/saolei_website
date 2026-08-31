@@ -1,3 +1,8 @@
+---
+title: 缓存结构 - 开源扫雷网
+description: 开源扫雷网Redis/Django缓存结构详解，包括录像队列、玩家排行、比赛缓存等数据结构和读写流向。
+---
+
 # 缓存结构
 
 本文记录项目当前使用的 Redis / Django cache 结构，以及缓存与数据库、API 之间的读写流向。数据库字段结构以各 app 的 `models.py` 为准，这里只记录缓存中实际保存的数据结构。
@@ -63,10 +68,10 @@ digraph cache {
         get_tournament_news [label="/api/tournament/get_news"];
         download_all_videos [label="/api/tournament/download"];
         download_videos_participant [label="/api/tournament/download/participant"];
-        get_gscinfo [label="/api/tournament/gsc/info"];
+        get_gsc_results [label="/api/tournament/gsc/results"];
         create_gsc_participant [label="/api/tournament/gsc/participant"];
         register_gsc_participant_identifier [label="/api/tournament/gsc/participant/identifier"];
-        get_weeklyinfo [label="/api/tournament/weekly/info"];
+        get_weekly_results [label="/api/tournament/weekly/results"];
         create_weekly_participant [label="/api/tournament/weekly/participant"];
         get_user_info [label="/api/userprofile/info/{user_id}"];
         get_user_info_bulk [label="/api/userprofile/infobulk"];
@@ -273,6 +278,7 @@ digraph cache {
     cancel_tournament -> tournament_db;
     tournament_db -> get_participant_list;
     participant_db -> get_participant_list;
+    identifier_db -> get_participant_list;
     userprofile_db -> get_participant_videos;
     tournament_db -> get_participant_videos;
     participant_db -> get_participant_videos;
@@ -287,10 +293,9 @@ digraph cache {
     video_files -> download_videos_participant;
 
     // tournament gsc API
-    tournament_db -> get_gscinfo;
-    participant_db -> get_gscinfo;
-    identifier_db -> get_gscinfo;
-    userprofile_db -> get_gscinfo;
+    tournament_db -> get_gsc_results;
+    participant_db -> get_gsc_results;
+    userprofile_db -> get_gsc_results;
     tournament_db -> create_gsc_participant;
     userprofile_db -> create_gsc_participant;
     create_gsc_participant -> participant_db;
@@ -304,8 +309,8 @@ digraph cache {
     register_gsc_participant_identifier -> video_db;
 
     // tournament weekly API
-    tournament_db -> get_weeklyinfo;
-    participant_db -> get_weeklyinfo;
+    tournament_db -> get_weekly_results;
+    participant_db -> get_weekly_results;
     tournament_db -> create_weekly_participant;
     userprofile_db -> create_weekly_participant;
     create_weekly_participant -> participant_db;

@@ -1,7 +1,47 @@
 import { describe, expect, it } from 'vitest';
 
 import { TournamentState, TournamentSubclass } from './ms_const';
-import { Tournament } from './tournaments';
+import { Tournament, TournamentParticipant } from './tournaments';
+
+describe('TournamentParticipant', () => {
+    describe('constructor', () => {
+        it('Default initialization', () => {
+            const participant = new TournamentParticipant();
+
+            expect(participant.id).toBe(0);
+            expect(participant.token).toBe('');
+            expect(participant.arbiter_identifier__identifier).toBeNull();
+            expect(participant.tournament_id).toBe(0);
+            expect(participant.user_id).toBe(0);
+            expect(participant.start_time).toBeNull();
+            expect(participant.end_time).toBeNull();
+            expect(participant.rank).toBeNull();
+            expect(participant.rank_score).toBe(0);
+        });
+
+        it('Partial initialization', () => {
+            const participant = new TournamentParticipant({
+                id: 7,
+                token: 'TOKEN',
+                tournament_id: 3,
+                user_id: 11,
+                start_time: '2026-01-01T08:00:00+08:00',
+                end_time: '2026-01-01T10:00:00+08:00',
+                rank: 2,
+                rank_score: 32,
+            });
+
+            expect(participant.id).toBe(7);
+            expect(participant.token).toBe('TOKEN');
+            expect(participant.tournament_id).toBe(3);
+            expect(participant.user_id).toBe(11);
+            expect(participant.start_time).toBe('2026-01-01T08:00:00+08:00');
+            expect(participant.end_time).toBe('2026-01-01T10:00:00+08:00');
+            expect(participant.rank).toBe(2);
+            expect(participant.rank_score).toBe(32);
+        });
+    });
+});
 
 describe('Tournament', () => {
     describe('constructor', () => {

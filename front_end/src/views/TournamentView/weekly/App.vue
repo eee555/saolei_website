@@ -1,15 +1,6 @@
 <template>
-    <h1>
-        {{ tournament.getLocalName(local.language) }}
-        <TournamentStateIcon :state="tournament.displayState" />
-    </h1>
-    {{ t('gsc.schedule') }}{{ t('common.punct.colon') }}
-    <span class="text">
-        {{ tournament.displayStartTime() }}
-        &nbsp;~&nbsp;
-        {{ tournament.displayEndTime() }}
-    </span>
-    <br>
+    <Title :tournament="tournament" />
+    <Description />
     <template v-if="([TournamentState.Preparing, TournamentState.Ongoing] as TournamentState[]).includes(tournament.displayState)">
         <h3>{{ t('gsc.howToParticipate') }}</h3>
         <TokenGuide
@@ -27,7 +18,11 @@
                 <BaseIconRefresh @click="refresh" />
             </ElLink>
         </h3>
-        <PersonalView :key="personalViewKey" v-loading="loading" :user-id="store.user.id" :tournament-id="tournament.id" />
+        <PersonalView :key="personalViewKey" v-loading="loading" :user-id="store.user.id" :tournament-id="tournament.id">
+            <template #personalSummary="{ videos }">
+                <PersonalSummary :videos="videos" />
+            </template>
+        </PersonalView>
     </template>
     <template v-if="([TournamentState.Finished, TournamentState.Awarded] as TournamentState[]).includes(tournament.displayState)">
         <h3>
@@ -49,7 +44,11 @@
                         <BaseIconClose style="scale: 65%" />
                     </ElLink>
                 </template>
-                <PersonalView v-if="participant.user_id !== null" :user-id="participant.user_id" :tournament-id="tournament.id" />
+                <PersonalView v-if="participant.user_id !== null" :user-id="participant.user_id" :tournament-id="tournament.id">
+                    <template #personalSummary="{ videos }">
+                        <PersonalSummary :videos="videos" />
+                    </template>
+                </PersonalView>
             </ElTabPane>
         </ElTabs>
     </template>
@@ -57,38 +56,42 @@
 
 <script setup lang="ts">
 import { ElButton, ElLink, ElRow, ElTabPane, ElTabs, vLoading } from 'element-plus';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
+import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import '@/styles/text.css';
+import PersonalView from '../common/PersonalView.vue';
+import Title from '../common/Title.vue';
+
 import AllSummary from './AllSummary.vue';
-import PersonalView from './PersonalView.vue';
+import Description from './Description.vue';
+import PersonalSummary from './PersonalSummary.vue';
 import TokenGuide from './TokenGuide.vue';
 
 import { BaseIconClose, BaseIconRefresh } from '@/components/common/icon';
 import { httpErrorNotification } from '@/components/Notifications';
 import PlayerName from '@/components/PlayerName.vue';
-import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
-import { downloadTournamentVideos, fetchWeeklyInfo } from '@/services/tournamentService';
-import { local, store } from '@/store';
+import { downloadTournamentVideos, fetchParticipantList, fetchWeeklyResults } from '@/services/tournamentService';
+import { store } from '@/store';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { streamToZip } from '@/utils/fileIO';
-import { TournamentState, TournamentSubclass } from '@/utils/ms_const';
-import { Tournament } from '@/utils/tournaments';
-import { WeeklyParticipant } from '@/utils/weekly';
+import { TournamentState } from '@/utils/ms_const';
+import type { Tournament, TournamentParticipant } from '@/utils/tournaments';
+import type { WeeklyParticipant } from '@/utils/weekly';
 
 const props = defineProps({
-    id: {
-        type: Number,
+    tournament: {
+        type: Object as PropType<Tournament>,
         required: true,
     },
 });
 
 const { t } = useI18n();
 
-const tournament = ref<Tournament>(new Tournament({}));
+const tournament = computed(() => props.tournament);
 const token = ref<string>('');
-const participant = ref<WeeklyParticipant | null>(null);
+const participant = ref<TournamentParticipant | null>(null);
 const result = ref<WeeklyParticipant[]>([]);
 const viewedParticipants = ref<WeeklyParticipant[]>([]);
 const allSummaryTabPosition = ref(-1);
@@ -97,30 +100,35 @@ const personalViewKey = ref(0);
 
 async function refresh() {
     loading.value = true;
-    await fetchWeeklyInfo(props.id).then((response) => {
-        tournament.value = new Tournament({
-            ...response.data,
-            subclass: TournamentSubclass.Weekly,
-            data: {
-                year: response.data.year,
-                week: response.data.week,
-                tournament_format: response.data.tournament_format,
-            },
-        });
-        token.value = response.token ?? '';
-        participant.value = response.participant === null ? null : new WeeklyParticipant(response.participant);
-
-        if (tournament.value.displayState === TournamentState.Ongoing && store.login_status === LoginStatus.IsLogin) {
+    try {
+        if (tournament.value.displayState === TournamentState.Ongoing) {
             result.value = [];
+            const participants = await fetchParticipantList(tournament.value.id);
+            participant.value = store.login_status === LoginStatus.IsLogin
+                ? participants.find((item) => item.user_id === store.user.id) ?? null
+                : null;
+            token.value = participant.value?.token ?? '';
             personalViewKey.value += 1;
         } else {
-            result.value = (response.results ?? []).map((value) => new WeeklyParticipant(value));
+            participant.value = null;
+            token.value = '';
+            result.value = tournament.value.state === TournamentState.Awarded
+                ? await fetchWeeklyResults(tournament.value.id)
+                : [];
         }
-    }).catch(httpErrorNotification);
+    } catch (error) {
+        httpErrorNotification(error);
+    }
     loading.value = false;
 }
 
-watch(() => props.id, refresh, { immediate: true });
+watch(() => [
+    props.tournament.id,
+    props.tournament.state,
+    props.tournament.startDate?.getTime(),
+    props.tournament.endDate?.getTime(),
+    store.login_status,
+], refresh, { immediate: true });
 
 function handleAllSummaryRowClick(row: WeeklyParticipant) {
     if (tournament.value.state !== TournamentState.Awarded || row.user_id === null) return;

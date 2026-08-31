@@ -36,6 +36,17 @@ export default defineConfig({
     base: process.env.VITEPRESS_BASE ?? '/docs/',
     cleanUrls: true,
     lastUpdated: true,
+    sitemap: {
+        hostname: 'https://openms.top',
+        outFilename: 'sitemap.xml',
+    },
+    head: [
+        ['meta', { property: 'og:type', content: 'website' }],
+        ['meta', { property: 'og:site_name', content: '开源扫雷网' }],
+        ['meta', { property: 'og:url', content: 'https://openms.top/docs/' }],
+        ['meta', { name: 'robots', content: 'index, follow' }],
+        ['link', { rel: 'canonical', href: 'https://openms.top/docs/' }],
+    ],
     markdown: {
         config: configureDiagramFences,
     },

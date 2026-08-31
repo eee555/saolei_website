@@ -14,9 +14,9 @@ if [ "${START_DB_WORKER:-1}" = "1" ]; then
     (
         sleep "${DB_WORKER_START_DELAY:-10}"
         if command -v ionice >/dev/null 2>&1; then
-            exec nice -n "${DB_WORKER_NICE:-10}" ionice -c2 -n7 python3 manage.py db_worker --skip-checks --no-reload --interval "${DB_WORKER_INTERVAL:-2}"
+            exec nice -n "${DB_WORKER_NICE:-10}" ionice -c2 -n7 python3 manage.py db_worker_robust --interval "${DB_WORKER_INTERVAL:-2}"
         fi
-        exec nice -n "${DB_WORKER_NICE:-10}" python3 manage.py db_worker --skip-checks --no-reload --interval "${DB_WORKER_INTERVAL:-2}"
+        exec nice -n "${DB_WORKER_NICE:-10}" python3 manage.py db_worker_robust --interval "${DB_WORKER_INTERVAL:-2}"
     ) >> logs/db_worker.log 2>&1 &
     echo "db_worker scheduled."
 else

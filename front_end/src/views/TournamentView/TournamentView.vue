@@ -4,8 +4,8 @@
             <TournamentList :tournament-list="tournamentLists[tab.name]" />
         </ElTabPane>
     </ElTabs>
-    <GSCApp v-else-if="tournament?.subclass === TournamentSubclass.GSC" :id="tournament.id" />
-    <WeeklyApp v-else-if="tournament?.subclass === TournamentSubclass.Weekly" :id="tournament.id" />
+    <GSCApp v-else-if="tournament?.subclass === TournamentSubclass.GSC" :tournament="tournament" />
+    <WeeklyApp v-else-if="tournament?.subclass === TournamentSubclass.Weekly" :tournament="tournament" />
     <TournamentDetail v-else-if="tournament" :tournament="tournament" />
 </template>
 

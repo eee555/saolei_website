@@ -1,16 +1,13 @@
 import $axios from '@/http';
+import { GSCParticipant } from '@/utils/gsc';
 import type { TournamentInfo } from '@/utils/tournaments';
+import { TournamentParticipant } from '@/utils/tournaments';
 import type { VideoAbstractData } from '@/utils/videoabstract';
-
-export interface GSCTournamentInfo extends TournamentInfo {
-    order: number;
-    token: string;
-}
+import { WeeklyParticipant } from '@/utils/weekly';
 
 export interface GSCParticipantResponse {
     id: number;
-    user__id: number;
-    user__realname: string;
+    user_id: number;
     rank: number | null;
     rank_score: number;
     bt1st: number;
@@ -25,22 +22,9 @@ export interface GSCParticipantResponse {
     t37?: number;
 }
 
-export interface GSCInfoResponse {
-    data: GSCTournamentInfo;
-    results: GSCParticipantResponse[] | null;
-    participant: boolean;
-    identifier: string | null;
-}
-
-export interface WeeklyTournamentInfo extends TournamentInfo {
-    year: number;
-    week: number;
-    tournament_format: string;
-}
-
 export interface WeeklyScoreResponse {
     id: number;
-    user_id: number | null;
+    user_id: number;
     start_time: string;
     end_time: string | null;
     rank: number | null;
@@ -48,13 +32,6 @@ export interface WeeklyScoreResponse {
     classic_et: [number, number][];
     classic_it: [number, number][];
     classic_score: number;
-}
-
-export interface WeeklyInfoResponse {
-    data: WeeklyTournamentInfo;
-    results: WeeklyScoreResponse[] | null;
-    token: string | null;
-    participant: WeeklyScoreResponse | null;
 }
 
 interface ParticipantVideosParams {
@@ -78,18 +55,25 @@ export async function fetchTournament(tournamentId: number | string): Promise<To
     return data;
 }
 
-export async function fetchGSCInfo(tournamentId: number): Promise<GSCInfoResponse> {
-    const { data } = await $axios.get<GSCInfoResponse>('/api/tournament/gsc/info', {
+export async function fetchParticipantList(tournamentId: number): Promise<TournamentParticipant[]> {
+    const { data } = await $axios.get<TournamentParticipant[]>('/api/tournament/participants', {
         params: { tournament_id: tournamentId },
     });
-    return data;
+    return data.map((value) => new TournamentParticipant(value));
 }
 
-export async function fetchWeeklyInfo(tournamentId: number): Promise<WeeklyInfoResponse> {
-    const { data } = await $axios.get<WeeklyInfoResponse>('/api/tournament/weekly/info', {
+export async function fetchGSCResults(tournamentId: number): Promise<GSCParticipant[]> {
+    const { data } = await $axios.get<GSCParticipantResponse[]>('/api/tournament/gsc/results', {
         params: { tournament_id: tournamentId },
     });
-    return data;
+    return data.map((value) => new GSCParticipant(value));
+}
+
+export async function fetchWeeklyResults(tournamentId: number): Promise<WeeklyParticipant[]> {
+    const { data } = await $axios.get<WeeklyScoreResponse[]>('/api/tournament/weekly/results', {
+        params: { tournament_id: tournamentId },
+    });
+    return data.map((value) => new WeeklyParticipant(value));
 }
 
 export async function fetchParticipantVideos(params: ParticipantVideosParams): Promise<VideoAbstractData[]> {

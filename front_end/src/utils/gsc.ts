@@ -1,4 +1,5 @@
 import { GSCDefaults } from './ms_const';
+import { TournamentParticipant } from './tournaments';
 
 export interface GSCInfo {
     id: number;
@@ -7,10 +8,7 @@ export interface GSCInfo {
     token?: string;
 }
 
-export class GSCParticipant {
-    public id = 0;
-    public user__id = 0;
-    public user__realname = '';
+export class GSCParticipant extends TournamentParticipant {
     public bt1st: number = GSCDefaults.bt;
     public bt20th: number = GSCDefaults.bt;
     public bt20sum: number = GSCDefaults.bt * 20;
@@ -22,6 +20,7 @@ export class GSCParticipant {
     public et5sum: number = GSCDefaults.et * 5;
 
     public constructor(init?: Partial<GSCParticipant>) {
+        super(init);
         Object.assign(this, init);
     }
 

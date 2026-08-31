@@ -1,9 +1,9 @@
 <template>
     <!-- @vue-generic {GSCParticipant} -->
     <ElTable :data="data" :default-sort="{ prop: 'sum_tsum', order: 'ascending' }" @row-click="handleRowClick">
-        <ElTableColumn prop="user__realname" sortable>
+        <ElTableColumn prop="user_id" sortable>
             <template #default="{row}">
-                <PlayerName :user-id="row.user__id" />
+                <PlayerName :user-id="row.user_id" />
             </template>
         </ElTableColumn>
         <ElTableColumn :label="t('common.level.b')">

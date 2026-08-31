@@ -1,3 +1,8 @@
+---
+title: Tournaments - Open Minesweeper
+description: Tournament features on Open Minesweeper, including scoring system, ranking points, tournament tokens and participation guide.
+---
+
 # Minesweeper Tournaments
 
 The website currently mainly supports two tournament formats: the Golden Sheep Cup and the Weekly Tournament. If you want to host a tournament, you can contact the developers to add a new tournament mode.

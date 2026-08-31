@@ -1,15 +1,15 @@
 <template>
     <ElTabs>
-        <ElTabPane :label="t('gsc.summary')" lazy>
-            <PersonalSummary :videos="videos" />
+        <ElTabPane :label="t('local.summary')" lazy>
+            <slot name="personalSummary" :videos="videos" />
         </ElTabPane>
-        <ElTabPane :label="t('gsc.videos')" lazy>
+        <ElTabPane :label="t('local.videos')" lazy>
             <MultiSelector v-model="VideoListConfig.tournament" :options="thisColumnChoices" :labels="thisColumnChoices.map((s) => t(`common.prop.${s}`))" />
             <VideoList :videos="videos" :columns="VideoListConfig.tournament" sortable paginator />
         </ElTabPane>
-        <ElTabPane :label="t('tournament.management')" lazy>
+        <ElTabPane :label="t('local.management')" lazy>
             <ElButton @click="handleDownload">
-                {{ t('tournament.downloadParticipant') }}{{ t('common.punct.lparen') }}{{ t('common.ratelimit.oncePerMinute') }}{{ t('common.punct.rparen') }}
+                {{ t('local.downloadParticipant') }}{{ t('common.punct.lparen') }}{{ t('common.ratelimit.oncePerMinute') }}{{ t('common.punct.rparen') }}
             </ElButton>
         </ElTabPane>
     </ElTabs>
@@ -19,8 +19,6 @@
 import { ElButton, ElTabPane, ElTabs } from 'element-plus';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-
-import PersonalSummary from './PersonalSummary.vue';
 
 import { httpErrorNotification } from '@/components/Notifications';
 import VideoList from '@/components/VideoList/App.vue';
@@ -42,7 +40,7 @@ const props = defineProps({
         required: true,
     },
 });
-const { t } = useI18n();
+
 const thisColumnChoices = ArrayUtils.sortByReferenceOrder(['upload_time', 'software', 'level', 'time', 'bv', 'bvs', 'stnb', 'ioe', 'thrp', 'path', 'file_size'], ColumnChoices);
 
 const videos = ref<VideoAbstract[]>([]);
@@ -67,4 +65,21 @@ function handleDownload() {
         void streamToZip(new Uint8Array(data), `weekly_${props.userId}.zip`);
     }).catch(httpErrorNotification);
 }
+
+const i18nMessages = {
+    'zh-cn': { local: {
+        downloadParticipant: '下载录像包',
+        management: '管理',
+        summary: '概览',
+        videos: '录像',
+    } },
+    en: { local: {
+        downloadParticipant: 'Download videos',
+        management: 'Management',
+        summary: 'Summary',
+        videos: 'Videos',
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
 </script>
