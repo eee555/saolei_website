@@ -170,7 +170,7 @@ def update_gsc_best(tournament_user: TournamentUser, tournament: GSCTournament, 
 
 
 def get_gsc_scores(tournament: GSCTournament):
-    return GSCParticipant.objects.filter(tournament=tournament).select_related('user')
+    return GSCParticipant.objects.filter(tournament=tournament)
 
 
 def calculate_gsc_best_score(user_id: int):

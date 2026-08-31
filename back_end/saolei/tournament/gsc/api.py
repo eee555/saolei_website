@@ -2,7 +2,7 @@ from datetime import datetime
 
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
-from ninja import Field, Form, Router, Schema
+from ninja import Form, Router, Schema
 from ninja.decorators import decorate_view
 from ninja.orm import create_schema
 
@@ -59,8 +59,7 @@ GSCScoreOut = create_schema(
         'et1st', 'et5th', 'et5sum',
     ],
     custom_fields=[
-        ('user__id', int | None, Field(None, alias='user.id')),
-        ('user__realname', str | None, Field(None, alias='user.realname')),
+        ('user_id', int, 0),
     ],
 )
 

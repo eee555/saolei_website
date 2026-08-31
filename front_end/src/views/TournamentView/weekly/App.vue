@@ -78,7 +78,7 @@ import { LoginStatus } from '@/utils/common/structInterface';
 import { streamToZip } from '@/utils/fileIO';
 import { TournamentState } from '@/utils/ms_const';
 import type { Tournament, TournamentParticipant } from '@/utils/tournaments';
-import { WeeklyParticipant } from '@/utils/weekly';
+import type { WeeklyParticipant } from '@/utils/weekly';
 
 const props = defineProps({
     tournament: {
@@ -113,7 +113,7 @@ async function refresh() {
             participant.value = null;
             token.value = '';
             result.value = tournament.value.state === TournamentState.Awarded
-                ? (await fetchWeeklyResults(tournament.value.id)).map((value) => new WeeklyParticipant(value))
+                ? await fetchWeeklyResults(tournament.value.id)
                 : [];
         }
     } catch (error) {
