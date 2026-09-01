@@ -13,7 +13,7 @@ export interface VideoAbstractInfo {
     upload_time: string | Date;
     end_time: Date | null;
     level: VideoLevel;
-    mode: string;
+    mode: MS_Mode;
     timems: number;
     bv: number;
     state: string;
