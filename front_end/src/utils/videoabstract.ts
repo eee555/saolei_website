@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/member-ordering */
 import { CustomLevel } from './customlevel';
 import { toDate, toISODateString } from './datetime';
-import type { MS_Level, MS_Software } from './ms_const';
+import type { MS_Level, MS_Mode, MS_Software } from './ms_const';
 import { isStandardLevel, MS_State, STNB_const } from './ms_const';
 import { formatBytes } from './strings';
 
@@ -13,7 +13,7 @@ export interface VideoAbstractInfo {
     upload_time: string | Date;
     end_time: Date | null;
     level: VideoLevel;
-    mode: string;
+    mode: MS_Mode;
     timems: number;
     bv: number;
     state: string;
@@ -30,7 +30,7 @@ export interface VideoRedisInfo {
     time: string;
     player_id: number;
     level: VideoLevel;
-    mode: string;
+    mode: MS_Mode;
     timems: number;
     bv: number;
     identifier: string;
@@ -44,7 +44,7 @@ export interface VideoAbstractData {
     time?: string | Date;
     end_time?: string | Date | null;
     level: string | CustomLevel;
-    mode: string;
+    mode: MS_Mode;
     timems: number;
     bv: number;
     state?: string;
@@ -67,7 +67,7 @@ export class VideoAbstract {
     public upload_time = new Date();
     public end_time?: Date;
     public level: VideoLevel;
-    public mode: string;
+    public mode: MS_Mode;
     public timems: number;
     public bv: number;
     public state: MS_State = MS_State.Plain;

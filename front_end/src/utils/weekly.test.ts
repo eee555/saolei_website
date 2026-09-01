@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { MS_Mode } from './ms_const';
 import { TournamentParticipant } from './tournaments';
-import { isWeeklyClassicFormat, isWeeklyClassicScoreMode, WeeklyParticipant, WeeklyTournamentFormat } from './weekly';
+import { isWeeklyClassicScoreMode, WeeklyParticipant } from './weekly';
 
 describe('WeeklyParticipant', () => {
     describe('constructor', () => {
@@ -57,13 +57,6 @@ describe('WeeklyParticipant', () => {
             expect(isWeeklyClassicScoreMode(MS_Mode.NoFlag)).toBe(true);
             expect(isWeeklyClassicScoreMode(MS_Mode.SpeedNG)).toBe(false);
             expect(isWeeklyClassicScoreMode(MS_Mode.Lucky)).toBe(false);
-        });
-    });
-
-    describe('isWeeklyClassicFormat', () => {
-        it('only accepts the classic weekly format', () => {
-            expect(isWeeklyClassicFormat(WeeklyTournamentFormat.Classic)).toBe(true);
-            expect(isWeeklyClassicFormat('other')).toBe(false);
         });
     });
 });

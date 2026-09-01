@@ -3,7 +3,7 @@ import { AvfVideo, EvfVideo, MvfVideo, RmvVideo } from 'ms-toollib';
 
 import { CustomLevel } from './customlevel';
 import { arbiterTimeStampToDate, generalTimeStampToDate } from './datetime';
-import type { MS_Level } from './ms_const';
+import type { MS_Level, MS_Mode } from './ms_const';
 import { VideoAbstract } from './videoabstract';
 
 export type AnyVideo = AvfVideo | EvfVideo | RmvVideo | MvfVideo;
@@ -42,7 +42,7 @@ export function extract_stat(video: AnyVideo): VideoAbstract {
     return new VideoAbstract({
         id: 0,
         level: get_video_level(video),
-        mode: String(video.mode).padStart(2, '0'),
+        mode: String(video.mode).padStart(2, '0') as MS_Mode,
         software: get_software(video),
         timems: video.rtime_ms,
         bv: video.bbbv_solved,

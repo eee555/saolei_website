@@ -11,7 +11,7 @@ The Weekly Tournament is a small official tournament hosted by Open Minesweeper.
 
 The tournament starts at 00:00 UTC on Monday and ends at 24:00 UTC on Sunday. You may choose any two-hour window within that interval to play. During the tournament, you can register on the tournament page and receive a unique tournament identifier. After registration, you have two hours to upload tournament replays. If you register after 22:00 UTC on Sunday, your tournament end time is still 24:00 UTC on Sunday, so please pay attention to the time.
 
-The score uses the best 2 expert Time games plus the best 5 intermediate Time games. The mode is standard mode, and the software must support tournament token. If there are not enough games, missing intermediate games are filled with 60 seconds, and missing expert games are filled with 240 seconds.
+For the classic 2E+5I format, the score uses the best 2 expert Time games plus the best 5 intermediate Time games. Only standard mode and no-flag (NF) games count, and the software must support tournament token. If there are not enough games, missing intermediate games are filled with 60 seconds, and missing expert games are filled with 240 seconds.
 
 ## Point Rewards
 
