@@ -131,15 +131,20 @@ GSC 创建 `GSCParticipant` 时，participant 自身的 `start_time/end_time` �
 - `gsc_total` / `weekly_total`：按比赛类型拆分的历史累计积分，不参与衰减；`weekly_classic_total` 是周赛经典模式的累计积分。
 - `gsc_best` / `weekly_classic_best` 使用整数打包“最好成绩 + 比赛届数/期数”。GSC 后三位保存届数；周赛经典模式后五位保存 `year % 1000 * 100 + week`。GSC 和周赛经典模式都按“成绩越小越好，同成绩比赛编号越小越好”比较；没有有效历史成绩时使用 `MAX_TOURNAMENT_BEST` 作为哨兵值。
 - `tournament.gsc.utils.gsc_encode_best` 和 `tournament.weekly.utils.weekly_encode_best` 分别维护 GSC / 周赛 best 编码。
+- `TournamentCache` 使用 Redis sorted set 维护 7 个用户积分排行榜，member 统一为 `user_id`：`tournament:user:score_current`、`tournament:user:score_total`、`tournament:user:gsc_total`、`tournament:user:gsc_best`、`tournament:user:weekly_total`、`tournament:user:weekly_classic_total` 和 `tournament:user:weekly_classic_best`。
+- Redis zset 的 score 直接使用对应 `TournamentUser` 字段值。积分字段越大排名越靠前，读取方应使用倒序；best 字段越小成绩越好，读取方应使用正序。
+- 默认值不写入排行榜：`score_current`、`score_total`、`gsc_total`、`weekly_total`、`weekly_classic_total` 为 `0` 时从对应 zset 删除；`gsc_best`、`weekly_classic_best` 为 `MAX_TOURNAMENT_BEST` 时从对应 zset 删除。
 - 站内用户创建 `TournamentParticipant` / `GSCParticipant` / `WeeklyParticipant` 时，保存信号会在当前数据库事务内立即创建缺失的 `TournamentUser`。删除 participant 不会跟随删除 `TournamentUser`。
 - 结束结算的第一步是删除无录像 participant。排名积分发放和 best 刷新任务会从本场剩余站内 participant 出发，通过 `participant.user.tournamentuser` 取得对应的 `TournamentUser`；查询时使用 `select_related('user__tournamentuser')` 避免 N+1。
 - `tournament.services.award_tournament_rank_scores` 是统一排名积分发放入口。它先按比赛 `end_time` 衰减所有已有 `TournamentUser.score_current`，再根据 `Tournament.subclass` 读取本场有站内用户且有 `rank` 的具体 participant，按 `round(tournament.weight / participant.rank)` 计算目标排名积分。这个步骤只更新 `score_current`、total 字段和 `TournamentParticipant.rank_score`，不刷新 best，也不隐式创建 `TournamentUser`。
 - `TournamentParticipant.rank_score` 记录该 participant 已发放的排名积分。重复结算或重算时按 `target_rank_score - participant.rank_score` 计算增量，避免重复累加；落库时不筛选字段是否发生变化，候选 participant 和对应 `TournamentUser` 会统一 `bulk_update`。
 - `tournament.gsc.services.update_gsc_best` / `tournament.weekly.services.update_weekly_best` 在 `GSCParticipant` / `WeeklyParticipant` 保存后，只把当前 participant 成绩与原 best 比较，只有更好时才写入 best，不扫描用户所有历史成绩。
 - `tournament.gsc.services.refresh_gsc_best_scores` / `tournament.weekly.services.refresh_weekly_best_scores` 是单场比赛的 best 刷新入口。结算流程使用 `bulk_update` 写入 `rank_score`，不会触发 participant 保存信号，因此 best 刷新作为非关键后台任务显式执行；刷新时同样不筛选字段是否发生变化，统一写回候选用户的 best 字段。best 与排名积分发放没有顺序依赖。
+- `award_tournament_rank_scores`、`refresh_gsc_best_scores`、`refresh_weekly_best_scores` 和 `refresh_tournament_user_stats` 在 `TournamentUser` 写库后会同步刷新相应的 Redis zset。participant 保存/删除信号触发的单条 best 更新也会同步刷新对应 best zset。
 - `tournament.gsc.signals` / `tournament.weekly.signals` 分别处理 GSC / 周赛 participant 保存与删除后的 best 更新；保存时只比较当前 participant，删除时调用 `calculate_gsc_best_score` / `calculate_weekly_classic_best` 重算该类型历史最好成绩。
 - `TournamentUser` 是数据库持久化汇总，不是缓存。participant 信号触发的 `TournamentUser` 更新必须在当前数据库事务内立即执行，不能延迟到 `transaction.on_commit`，从而保证 participant 与汇总字段一起提交或一起回滚。
 - `manage.py refresh_tournament_user_stats` 可从所有已发放 `rank_score` 的 participant 重建 `score_total`、`gsc_total`、`weekly_total`、`weekly_classic_total`、`gsc_best` 和 `weekly_classic_best`。命令内部先调用 `tournament.services.refresh_tournament_user_total_fields`，再执行命令内的 best 重建步骤，total 与 best 是两个独立刷新步骤。`score_current` 依赖时间衰减，是实时值，命令不会刷新它。`gsc_best` / `weekly_classic_best` 默认值从 `0` 改为 `MAX_TOURNAMENT_BEST` 后，既有历史行需要通过这个命令修复。
+- `manage.py rebuild_tournament_user_cache` 只重建 Redis 排行缓存，不修改数据库；它会从当前 `TournamentUser` 表读取所有字段，包括不由 `refresh_tournament_user_stats` 重算的 `score_current`。
 - GSC / 周赛 finish 任务在刷新成绩和排名后切换 `AWARDED` 并公开录像；随后派发 `task_award_tournament` 和对应的 best 刷新任务。排名积分发放和 best 刷新都属于非关键后台任务，失败后可以单独重跑。
 - GSC / 周赛结算链路使用 `tournament` logger 写入 `logs/tournament.log`。日志覆盖后台任务创建/复用、任务开始/失败/完成、删除无录像 participant、读取 `TournamentUser`、刷新成绩、刷新排名、发放 `rank_score`、刷新 best、状态切换和公开录像等阶段，并记录每个阶段的处理数量。
 - 无站内用户的 participant 不会创建 `TournamentUser`。
@@ -165,7 +170,7 @@ TODO: 补充积分展示 API 与前端：
 先不急着做，等结构继续设计。
 
 - 用户资料页需要展示当前比赛积分、历史总积分、GSC/周赛拆分积分和最好成绩。
-- 比赛积分排行榜需要分页 API；如果访问频繁，应设计 Redis 缓存或类似 `userprofile` 的 IndexedDB 同步方案。
+- 比赛积分排行榜已提供 `start` / `end` 左闭右开区间 API，按 `TournamentCache` 中的 Redis zset 选择排序字段；`gsc_best` / `weekly_classic_best` 的接口输出原始打包值，由前端解码为实际成绩和比赛届数。
 - `TournamentUser` 更新后如果影响用户资料摘要，需要同步考虑 `userprofile` 缓存/批量接口的失效策略。
 
 ## TODO: 历史比赛列表同步计划

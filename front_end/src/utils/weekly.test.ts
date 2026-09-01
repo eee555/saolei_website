@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
+import { MS_Mode } from './ms_const';
 import { TournamentParticipant } from './tournaments';
-import { WeeklyParticipant } from './weekly';
+import { isWeeklyClassicFormat, isWeeklyClassicScoreMode, WeeklyParticipant, WeeklyTournamentFormat } from './weekly';
 
 describe('WeeklyParticipant', () => {
     describe('constructor', () => {
@@ -47,6 +48,22 @@ describe('WeeklyParticipant', () => {
             first.classic_et[0][1] = 1;
 
             expect(second.classic_et[0][1]).toBe(240000);
+        });
+    });
+
+    describe('isWeeklyClassicScoreMode', () => {
+        it('only accepts standard and no-flag modes', () => {
+            expect(isWeeklyClassicScoreMode(MS_Mode.Standard)).toBe(true);
+            expect(isWeeklyClassicScoreMode(MS_Mode.NoFlag)).toBe(true);
+            expect(isWeeklyClassicScoreMode(MS_Mode.SpeedNG)).toBe(false);
+            expect(isWeeklyClassicScoreMode(MS_Mode.Lucky)).toBe(false);
+        });
+    });
+
+    describe('isWeeklyClassicFormat', () => {
+        it('only accepts the classic weekly format', () => {
+            expect(isWeeklyClassicFormat(WeeklyTournamentFormat.Classic)).toBe(true);
+            expect(isWeeklyClassicFormat('other')).toBe(false);
         });
     });
 });

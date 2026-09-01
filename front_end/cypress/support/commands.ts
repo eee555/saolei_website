@@ -61,7 +61,7 @@ declare global {
             mockRegister(): void;
 
             /**
-             * 让 PlayerName 始终显示 fallback 名称（用户#id），避免表格测试触发用户信息批量缓存和战绩弹窗请求。
+             * 让 PlayerName 始终显示 fallback 名称，避免表格测试触发用户信息批量缓存和战绩弹窗请求。
              */
             mockPlayerNameFallback(): void;
 
@@ -141,8 +141,8 @@ Cypress.Commands.add('mockRegister', () => {
 });
 
 Cypress.Commands.add('mockPlayerNameFallback', () => {
-    cy.intercept('GET', '**/api/userprofile/avatar/**', { statusCode: 404 });
-    cy.intercept('GET', '**/api/userprofile/infobulk*', { body: [] }).as('playerNameFallbackUserInfo');
+    cy.intercept('GET', '**/api/userprofile/avatar/**', { statusCode: 404 }).as('playerNameFallbackAvatar');
+    cy.intercept('GET', '**/api/userprofile/infobulk*', { body: [] }).as('playerNameFallbackUserInfoBulk');
     cy.intercept({ method: 'GET', pathname: '/api/msuser/records_abstract' }, {
         body: {
             b_timems_std: 999999,
