@@ -11,6 +11,14 @@ from .utils import weekly_encode_best
 
 logger = logging.getLogger('tournament')
 tournament_cache = TournamentCache()
+WEEKLY_CLASSIC_SCORE_MODES = (MS_TextChoices.Mode.STD, MS_TextChoices.Mode.NF)
+
+
+def _weekly_score_videos(tournament: WeeklyTournament, *, level: str, timems_lt: int):
+    videos = tournament.videos.filter(level=level, timems__lt=timems_lt)
+    if tournament.tournament_format == Tournament_TextChoices.WeeklyFormat.CLASSIC:
+        videos = videos.filter(mode__in=WEEKLY_CLASSIC_SCORE_MODES)
+    return videos
 
 
 def refresh_weekly_classic_scores(tournament: WeeklyTournament, *, batch_size=1000):
@@ -30,7 +38,7 @@ def refresh_weekly_classic_scores(tournament: WeeklyTournament, *, batch_size=10
         if participant.user_id is not None
     }
 
-    ranked_exp = tournament.videos.filter(level=MS_TextChoices.Level.EXPERT, timems__lt=240000).annotate(
+    ranked_exp = _weekly_score_videos(tournament, level=MS_TextChoices.Level.EXPERT, timems_lt=240000).annotate(
         row_number=Window(
             expression=RowNumber(),
             partition_by=[F('player_id')],
@@ -45,7 +53,7 @@ def refresh_weekly_classic_scores(tournament: WeeklyTournament, *, batch_size=10
         expert_video_count += 1
     logger.info(f'周赛#{tournament.id} classic 高级录像读取完成，匹配录像 {expert_video_count} 条')
 
-    ranked_int = tournament.videos.filter(level=MS_TextChoices.Level.INTERMEDIATE, timems__lt=60000).annotate(
+    ranked_int = _weekly_score_videos(tournament, level=MS_TextChoices.Level.INTERMEDIATE, timems_lt=60000).annotate(
         row_number=Window(
             expression=RowNumber(),
             partition_by=[F('player_id')],

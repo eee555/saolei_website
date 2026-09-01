@@ -86,6 +86,7 @@ class TournamentTestCaseBase(TestCase):
         identifier=None,
         software=MS_TextChoices.Software.EVF,
         level=MS_TextChoices.Level.BEGINNER,
+        mode=MS_TextChoices.Mode.STD,
         timems=1000,
         bv=10,
     ):
@@ -103,7 +104,7 @@ class TournamentTestCaseBase(TestCase):
             state=MS_TextChoices.State.OFFICIAL,
             software=software,
             level=level,
-            mode=MS_TextChoices.Mode.STD,
+            mode=mode,
             timems=timems,
             bv=bv,
             left=1,
