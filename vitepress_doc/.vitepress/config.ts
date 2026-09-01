@@ -109,6 +109,7 @@ export default defineConfig({
                             items: [
                                 { text: '信号触发关系', link: '/guide/development/signals' },
                                 { text: '缓存结构', link: '/guide/development/cache' },
+                                { text: '后端管理命令', link: '/guide/development/management-commands' },
                             ],
                         },
                     ],
