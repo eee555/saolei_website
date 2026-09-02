@@ -1,9 +1,9 @@
 import logging
 
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
+from django.tasks import TaskResultStatus
 from django.views.decorators.http import require_GET, require_POST
 from django_ratelimit.decorators import ratelimit
-from django_tasks import TaskResultStatus
 
 from userprofile.decorators import login_required_error, staff_required
 from userprofile.models import UserProfile
