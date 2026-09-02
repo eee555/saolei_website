@@ -8,10 +8,10 @@ from unittest.mock import patch
 
 from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.tasks import TaskResultStatus
 from django.test import override_settings, TestCase
 from django.utils import timezone
 from django_redis import get_redis_connection
-from django_tasks import TaskResultStatus
 from django_tasks_db.models import DBTaskResult, get_date_max
 
 from accountlink.models import AccountSaolei, VideoSaolei
