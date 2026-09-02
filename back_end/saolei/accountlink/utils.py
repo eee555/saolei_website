@@ -331,15 +331,18 @@ def update_wom_account(account: AccountWorldOfMinesweeper):
 
     values = tree.xpath(formatIXpath(
         'Efficiency:', 'fa fa-dot-circle-o eff-icon level1', '/../text()'))
-    account.b_ioe = stringToFloat(values) / 100
+    if values:
+        account.b_ioe = stringToFloat(values) / 100
 
     values = tree.xpath(formatIXpath(
         'Efficiency:', 'fa fa-dot-circle-o eff-icon level2', '/../text()'))
-    account.i_ioe = stringToFloat(values) / 100
+    if values:
+        account.i_ioe = stringToFloat(values) / 100
 
     values = tree.xpath(formatIXpath(
         'Efficiency:', 'fa fa-dot-circle-o eff-icon level3', '/../text()'))
-    account.e_ioe = stringToFloat(values) / 100
+    if values:
+        account.e_ioe = stringToFloat(values) / 100
 
     values = tree.xpath(formatIXpath(
         'Mastery:', 'glyphicon glyphicon-flash mastery-icon mastery1', '/../text()'))
