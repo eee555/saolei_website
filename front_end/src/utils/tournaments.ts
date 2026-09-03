@@ -27,7 +27,7 @@ interface GSCTournamentData {
 interface WeeklyTournamentData {
     year: number;
     week: number;
-    tournament_format: string;
+    tournament_format: 'c';
 }
 
 type TournamentData = GSCTournamentData | WeeklyTournamentData | Record<string, never>;

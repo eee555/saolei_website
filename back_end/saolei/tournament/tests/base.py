@@ -21,6 +21,7 @@ from ..cache import (
     CachedNormalParticipant,
     NORMAL_PARTICIPANT_CACHE_KEY,
     NORMAL_TOURNAMENT_CACHE_KEY,
+    TOURNAMENT_USER_CACHE_KEYS,
     TournamentCache,
 )
 from ..gsc.services import refresh_gsc_scores
@@ -46,7 +47,11 @@ from ..weekly.tasks import _task_weekly_finish_impl, _task_weekly_refresh_best_i
 
 class TournamentTestCaseBase(TestCase):
     def setUp(self):
-        cache.delete(NORMAL_TOURNAMENT_CACHE_KEY, NORMAL_PARTICIPANT_CACHE_KEY)
+        cache.delete(
+            NORMAL_TOURNAMENT_CACHE_KEY,
+            NORMAL_PARTICIPANT_CACHE_KEY,
+            *TOURNAMENT_USER_CACHE_KEYS.values(),
+        )
         self.tournament_cache = TournamentCache()
         userms = UserMS.objects.create()
         self.user = UserProfile.objects.create_user(
@@ -81,6 +86,7 @@ class TournamentTestCaseBase(TestCase):
         identifier=None,
         software=MS_TextChoices.Software.EVF,
         level=MS_TextChoices.Level.BEGINNER,
+        mode=MS_TextChoices.Mode.STD,
         timems=1000,
         bv=10,
     ):
@@ -98,7 +104,7 @@ class TournamentTestCaseBase(TestCase):
             state=MS_TextChoices.State.OFFICIAL,
             software=software,
             level=level,
-            mode=MS_TextChoices.Mode.STD,
+            mode=mode,
             timems=timems,
             bv=bv,
             left=1,
@@ -167,6 +173,7 @@ __all__ = (
     'CachedNormalParticipant',
     'NORMAL_PARTICIPANT_CACHE_KEY',
     'NORMAL_TOURNAMENT_CACHE_KEY',
+    'TOURNAMENT_USER_CACHE_KEYS',
     'TournamentCache',
     'refresh_gsc_scores',
     '_task_gsc_finish_impl',

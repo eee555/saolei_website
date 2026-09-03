@@ -40,6 +40,35 @@ interface ParticipantVideosParams {
 }
 
 export type TournamentListCategory = 'normal' | 'awarded' | 'other' | 'all';
+export const TournamentUserRankFields = [
+    'score_current', 'score_total',
+    'gsc_total', 'gsc_best',
+    'weekly_total', 'weekly_classic_total', 'weekly_classic_best',
+] as const;
+export type TournamentUserRankField = typeof TournamentUserRankFields[number];
+
+export interface TournamentUserRankingRow {
+    user_id: number;
+    score_current: number;
+    last_updated: string;
+    score_total: number;
+    gsc_total: number;
+    gsc_best: number;
+    weekly_total: number;
+    weekly_classic_total: number;
+    weekly_classic_best: number;
+}
+
+export interface TournamentUserRankingResponse {
+    total: number;
+    data: TournamentUserRankingRow[];
+}
+
+interface TournamentUserRankingParams {
+    sortBy: TournamentUserRankField;
+    start: number;
+    end: number;
+}
 
 export async function fetchTournamentList(category: TournamentListCategory = 'all'): Promise<TournamentInfo[]> {
     const { data } = await $axios.get<TournamentInfo[]>('/api/tournament/get_list', {
@@ -60,6 +89,17 @@ export async function fetchParticipantList(tournamentId: number): Promise<Tourna
         params: { tournament_id: tournamentId },
     });
     return data.map((value) => new TournamentParticipant(value));
+}
+
+export async function fetchTournamentUserRanking(params: TournamentUserRankingParams): Promise<TournamentUserRankingResponse> {
+    const { data } = await $axios.get<TournamentUserRankingResponse>('/api/tournament/user-ranking', {
+        params: {
+            sort_by: params.sortBy,
+            start: params.start,
+            end: params.end,
+        },
+    });
+    return data;
 }
 
 export async function fetchGSCResults(tournamentId: number): Promise<GSCParticipant[]> {

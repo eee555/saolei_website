@@ -1,7 +1,6 @@
 import logging
 
-from django.tasks import task
-from django_tasks import TaskResultStatus
+from django.tasks import task, TaskResultStatus
 
 from config.text_choices import Tournament_TextChoices
 from tournament.models import GSCTournament

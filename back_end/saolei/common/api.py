@@ -10,8 +10,8 @@ from django.core.exceptions import SuspiciousOperation
 from django.db import transaction
 from django.db.models import Sum
 from django.http import FileResponse
+from django.tasks import TaskResultStatus
 from django.utils import timezone as django_timezone
-from django_tasks import TaskResultStatus
 from django_tasks_db.models import DBTaskResult
 from ninja import Router, Schema
 from ninja.decorators import decorate_view

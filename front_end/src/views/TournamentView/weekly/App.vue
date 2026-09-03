@@ -20,7 +20,7 @@
         </h3>
         <PersonalView :key="personalViewKey" v-loading="loading" :user-id="store.user.id" :tournament-id="tournament.id">
             <template #personalSummary="{ videos }">
-                <PersonalSummary :videos="videos" />
+                <PersonalSummary :tournament-format="tournament.weeklyData?.tournament_format" :videos="videos" />
             </template>
         </PersonalView>
     </template>
@@ -46,7 +46,7 @@
                 </template>
                 <PersonalView v-if="participant.user_id !== null" :user-id="participant.user_id" :tournament-id="tournament.id">
                     <template #personalSummary="{ videos }">
-                        <PersonalSummary :videos="videos" />
+                        <PersonalSummary :tournament-format="tournament.weeklyData?.tournament_format" :videos="videos" />
                     </template>
                 </PersonalView>
             </ElTabPane>

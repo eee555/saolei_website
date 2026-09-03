@@ -128,6 +128,10 @@ def refresh_tournament_user_total_fields(*, batch_size=1000):
             ['score_total', 'gsc_total', 'weekly_total', 'weekly_classic_total'],
             batch_size=batch_size,
         )
+        cache.update_tournament_users(
+            tournament_users,
+            fields=['score_total', 'gsc_total', 'weekly_total', 'weekly_classic_total'],
+        )
 
     return len(tournament_users)
 
@@ -203,6 +207,7 @@ def award_tournament_rank_scores(tournament: Tournament, *, batch_size=1000):
 
     logger.info(f'比赛#{tournament.id} 排名积分发放 更新用户总分 {len(tournament_users)}')
     TournamentUser.objects.bulk_update(tournament_users, changed_tournament_user_fields, batch_size=batch_size)
+    cache.update_tournament_users(tournament_users, fields=changed_tournament_user_fields)
 
     logger.info(f'比赛#{tournament.id} 排名积分发放 完成')
     return len(participants)

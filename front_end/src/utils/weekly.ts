@@ -1,3 +1,4 @@
+import { MS_Mode } from './ms_const';
 import { TournamentParticipant } from './tournaments';
 
 export type WeeklyVideoScore = [number, number];
@@ -5,8 +6,18 @@ export type WeeklyVideoScore = [number, number];
 const DEFAULT_WEEKLY_EXPERT_TIME = 240000;
 const DEFAULT_WEEKLY_INTERMEDIATE_TIME = 60000;
 
-function makeDefaultScores(count: number, timems: number): WeeklyVideoScore[] {
-    return Array.from({ length: count }, () => [0, timems]);
+export const WeeklyTournamentFormat = {
+    Classic: 'c',
+} as const;
+
+export type WeeklyTournamentFormat = typeof WeeklyTournamentFormat[keyof typeof WeeklyTournamentFormat];
+
+export function isWeeklyClassicScoreMode(mode: MS_Mode): boolean {
+    return ([MS_Mode.Standard, MS_Mode.NoFlag] as readonly MS_Mode[]).includes(mode);
+}
+
+function makeDefaultScores(count: number, score: number): WeeklyVideoScore[] {
+    return Array.from({ length: count }, () => [0, score]);
 }
 
 export class WeeklyParticipant extends TournamentParticipant {

@@ -3,15 +3,19 @@ from .base import (
     call_command,
     DBTaskResult,
     GSC_Defaults,
+    gsc_encode_best,
     GSCTournament,
+    MAX_TOURNAMENT_BEST,
     NORMAL_TOURNAMENT_CACHE_KEY,
     StringIO,
     timedelta,
     timezone,
     Tournament_TextChoices,
     TournamentTestCaseBase,
+    TournamentUser,
     UserMS,
     UserProfile,
+    weekly_encode_best,
     WeeklyTournament,
 )
 
@@ -90,6 +94,73 @@ class TestApi(TournamentTestCaseBase):
             {item['id'] for item in all_response.json()},
             {self.tournament.id, awarded_tournament.id, pending_tournament.id},
         )
+
+    def test_tournament_user_ranking_api_pages_score_fields_from_cache(self):
+        low_user = self.create_user('tournament_rank_low')
+        high_user = self.create_user('tournament_rank_high')
+        default_user = self.create_user('tournament_rank_default')
+        low_score = TournamentUser.objects.create(user=low_user, score_current=7.5, score_total=10)
+        high_score = TournamentUser.objects.create(user=high_user, score_current=12.5, score_total=20)
+        default_score = TournamentUser.objects.create(user=default_user)
+        self.tournament_cache.update_tournament_users([low_score, high_score, default_score])
+
+        first_page_response = self.client.get('/api/tournament/user-ranking', {
+            'sort_by': 'score_current',
+            'start': 0,
+            'end': 1,
+        })
+        second_page_response = self.client.get('/api/tournament/user-ranking', {
+            'sort_by': 'score_current',
+            'start': 1,
+            'end': 2,
+        })
+
+        self.assertEqual(first_page_response.status_code, 200)
+        self.assertEqual(second_page_response.status_code, 200)
+        self.assertEqual(first_page_response.json()['total'], 2)
+        self.assertEqual([item['user_id'] for item in first_page_response.json()['data']], [high_user.id])
+        self.assertEqual(first_page_response.json()['data'][0]['score_total'], 20)
+        self.assertEqual([item['user_id'] for item in second_page_response.json()['data']], [low_user.id])
+
+    def test_tournament_user_ranking_api_sorts_best_fields_ascending(self):
+        better_user = self.create_user('tournament_rank_best_better')
+        worse_user = self.create_user('tournament_rank_best_worse')
+        default_user = self.create_user('tournament_rank_best_default')
+        better_score = TournamentUser.objects.create(
+            user=better_user,
+            gsc_best=gsc_encode_best(1000, 2),
+            weekly_classic_best=weekly_encode_best(3000, 2026, 1),
+        )
+        worse_score = TournamentUser.objects.create(
+            user=worse_user,
+            gsc_best=gsc_encode_best(2000, 1),
+            weekly_classic_best=weekly_encode_best(4000, 2026, 1),
+        )
+        default_score = TournamentUser.objects.create(
+            user=default_user,
+            gsc_best=MAX_TOURNAMENT_BEST,
+            weekly_classic_best=MAX_TOURNAMENT_BEST,
+        )
+        self.tournament_cache.update_tournament_users([better_score, worse_score, default_score])
+
+        response = self.client.get('/api/tournament/user-ranking', {
+            'sort_by': 'gsc_best',
+            'start': 0,
+            'end': 20,
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['total'], 2)
+        self.assertEqual([item['user_id'] for item in response.json()['data']], [better_user.id, worse_user.id])
+        self.assertEqual(response.json()['data'][0]['gsc_best'], gsc_encode_best(1000, 2))
+        self.assertEqual(response.json()['data'][0]['weekly_classic_best'], weekly_encode_best(3000, 2026, 1))
+
+    def test_tournament_user_ranking_api_rejects_invalid_sort_field(self):
+        response = self.client.get('/api/tournament/user-ranking', {
+            'sort_by': 'invalid',
+        })
+
+        self.assertEqual(response.status_code, 400)
 
     def test_tournament_ninja_validate_saves_gsc_changes(self):
         now = timezone.now()

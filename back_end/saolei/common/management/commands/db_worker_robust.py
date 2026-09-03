@@ -7,9 +7,9 @@ from typing import Any
 
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
+from django.tasks import DEFAULT_TASK_BACKEND_ALIAS, TaskResultStatus
+from django.tasks.base import DEFAULT_TASK_QUEUE_NAME
 from django.utils import timezone
-from django_tasks import DEFAULT_TASK_BACKEND_ALIAS, TaskResultStatus
-from django_tasks.base import DEFAULT_TASK_QUEUE_NAME
 from django_tasks_db.models import DBTaskResult
 import psutil
 

@@ -1,5 +1,6 @@
 from .base import (
     award_tournament_rank_scores,
+    cache,
     call_command,
     gsc_encode_best,
     GSCParticipant,
@@ -10,6 +11,7 @@ from .base import (
     timedelta,
     timezone,
     Tournament_TextChoices,
+    TOURNAMENT_USER_CACHE_KEYS,
     TournamentTestCaseBase,
     TournamentUser,
     weekly_encode_best,
@@ -57,6 +59,45 @@ class TestScore(TournamentTestCaseBase):
 
         self.assertEqual(TournamentUser.objects.filter(user__in=[self.user, other_user]).count(), 2)
 
+    def test_tournament_user_cache_rebuilds_sorted_sets_without_defaults(self):
+        other_user = self.create_user('tournament_user_cache_other')
+        default_user = self.create_user('tournament_user_cache_default')
+        tournament_user = TournamentUser.objects.create(
+            user=other_user,
+            score_current=12.5,
+            score_total=100,
+            gsc_total=60,
+            gsc_best=gsc_encode_best(123456, 2),
+            weekly_total=40,
+            weekly_classic_total=30,
+            weekly_classic_best=weekly_encode_best(345678, 2026, 4),
+        )
+        default_tournament_user = TournamentUser.objects.create(user=default_user)
+
+        stdout = StringIO()
+        call_command('rebuild_tournament_user_cache', stdout=stdout)
+
+        self.assertIn('rebuilt 2 tournament user cache rows', stdout.getvalue())
+        self.assertEqual(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['score_current'], tournament_user.user_id), 12.5)
+        self.assertEqual(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['score_total'], tournament_user.user_id), 100)
+        self.assertEqual(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['gsc_total'], tournament_user.user_id), 60)
+        self.assertEqual(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['gsc_best'], tournament_user.user_id), tournament_user.gsc_best)
+        self.assertEqual(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['weekly_total'], tournament_user.user_id), 40)
+        self.assertEqual(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['weekly_classic_total'], tournament_user.user_id), 30)
+        self.assertEqual(
+            cache.zscore(TOURNAMENT_USER_CACHE_KEYS['weekly_classic_best'], tournament_user.user_id),
+            tournament_user.weekly_classic_best,
+        )
+        for key in TOURNAMENT_USER_CACHE_KEYS.values():
+            self.assertIsNone(cache.zscore(key, default_tournament_user.user_id))
+
+        tournament_user.score_total = 0
+        tournament_user.gsc_best = MAX_TOURNAMENT_BEST
+        self.tournament_cache.update_tournament_user(tournament_user, fields=['score_total', 'gsc_best'])
+
+        self.assertIsNone(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['score_total'], tournament_user.user_id))
+        self.assertIsNone(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['gsc_best'], tournament_user.user_id))
+
     def test_award_tournament_rank_scores_decays_and_uses_delta(self):
         award_time = timezone.now()
         tournament = self.create_weekly_tournament(end_time=award_time, weight=50)
@@ -98,6 +139,11 @@ class TestScore(TournamentTestCaseBase):
         self.assertEqual(tournament_user.last_updated, award_time)
         self.assertEqual(tournament_user.weekly_classic_best, MAX_TOURNAMENT_BEST)
         self.assertEqual(TournamentUser.objects.count(), 1)
+        self.assertAlmostEqual(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['score_current'], self.user.id), 80)
+        self.assertEqual(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['score_total'], self.user.id), 130)
+        self.assertEqual(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['weekly_total'], self.user.id), 130)
+        self.assertEqual(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['weekly_classic_total'], self.user.id), 130)
+        self.assertIsNone(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['weekly_classic_best'], self.user.id))
 
         tournament.state = Tournament_TextChoices.State.AWARDED
         tournament.save(update_fields=['state'])
@@ -108,6 +154,10 @@ class TestScore(TournamentTestCaseBase):
         self.assertEqual(
             tournament_user.weekly_classic_best,
             weekly_encode_best(participant.classic_score, 2026, 1),
+        )
+        self.assertEqual(
+            cache.zscore(TOURNAMENT_USER_CACHE_KEYS['weekly_classic_best'], self.user.id),
+            tournament_user.weekly_classic_best,
         )
 
     def test_weekly_participant_save_signal_refreshes_best_score(self):
@@ -129,6 +179,10 @@ class TestScore(TournamentTestCaseBase):
         self.assertEqual(
             tournament_user.weekly_classic_best,
             weekly_encode_best(123456, 2026, 2),
+        )
+        self.assertEqual(
+            cache.zscore(TOURNAMENT_USER_CACHE_KEYS['weekly_classic_best'], self.user.id),
+            tournament_user.weekly_classic_best,
         )
 
     def test_gsc_participant_delete_signal_rebuilds_best_score(self):
@@ -176,6 +230,10 @@ class TestScore(TournamentTestCaseBase):
             tournament_user.gsc_best,
             gsc_encode_best(better_participant.t37, better_tournament.order),
         )
+        self.assertEqual(
+            cache.zscore(TOURNAMENT_USER_CACHE_KEYS['gsc_best'], self.user.id),
+            tournament_user.gsc_best,
+        )
 
         better_participant.delete()
 
@@ -184,6 +242,10 @@ class TestScore(TournamentTestCaseBase):
         self.assertEqual(
             tournament_user.gsc_best,
             gsc_encode_best(worse_participant.t37, worse_tournament.order),
+        )
+        self.assertEqual(
+            cache.zscore(TOURNAMENT_USER_CACHE_KEYS['gsc_best'], self.user.id),
+            tournament_user.gsc_best,
         )
 
     def test_refresh_tournament_user_stats_command_rebuilds_total_and_best_only(self):
@@ -279,12 +341,25 @@ class TestScore(TournamentTestCaseBase):
             tournament_user.weekly_classic_best,
             weekly_encode_best(weekly_participant.classic_score, 2026, 3),
         )
+        self.assertEqual(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['score_total'], self.user.id), 30)
+        self.assertEqual(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['gsc_total'], self.user.id), 10)
+        self.assertEqual(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['weekly_total'], self.user.id), 20)
+        self.assertEqual(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['weekly_classic_total'], self.user.id), 20)
+        self.assertEqual(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['gsc_best'], self.user.id), tournament_user.gsc_best)
+        self.assertEqual(
+            cache.zscore(TOURNAMENT_USER_CACHE_KEYS['weekly_classic_best'], self.user.id),
+            tournament_user.weekly_classic_best,
+        )
 
         other_tournament_user = TournamentUser.objects.get(user=other_user)
         self.assertEqual(other_tournament_user.score_total, 5)
         self.assertEqual(other_tournament_user.gsc_total, 5)
         self.assertEqual(other_tournament_user.weekly_total, 0)
         self.assertEqual(other_tournament_user.weekly_classic_total, 0)
+        self.assertEqual(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['score_total'], other_user.id), 5)
+        self.assertEqual(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['gsc_total'], other_user.id), 5)
+        self.assertIsNone(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['weekly_total'], other_user.id))
+        self.assertIsNone(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['weekly_classic_total'], other_user.id))
 
         stale_tournament_user = TournamentUser.objects.get(user=stale_user)
         self.assertEqual(stale_tournament_user.score_current, 24)
@@ -294,5 +369,11 @@ class TestScore(TournamentTestCaseBase):
         self.assertEqual(stale_tournament_user.weekly_total, 0)
         self.assertEqual(stale_tournament_user.weekly_classic_total, 0)
         self.assertEqual(stale_tournament_user.weekly_classic_best, MAX_TOURNAMENT_BEST)
+        self.assertIsNone(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['score_total'], stale_user.id))
+        self.assertIsNone(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['gsc_total'], stale_user.id))
+        self.assertIsNone(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['gsc_best'], stale_user.id))
+        self.assertIsNone(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['weekly_total'], stale_user.id))
+        self.assertIsNone(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['weekly_classic_total'], stale_user.id))
+        self.assertIsNone(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['weekly_classic_best'], stale_user.id))
         self.assertIn('refreshed 3 tournament user totals', stdout.getvalue())
         self.assertIn('refreshed 3 tournament user bests', stdout.getvalue())

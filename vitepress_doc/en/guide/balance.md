@@ -9,6 +9,7 @@ description: Open Minesweeper donation income and server expense details, showin
 
 | Sponsor | Amount | Date | Channel | Sponsored object | Allocation |
 | :------: | :-----: | :----------: | :------: | :------: | :------: |
+| 26225 | ¥200.00 | 2026-8-31 | WeChat | Website | -- |
 | AUGUSTE | ¥36.66 | 2026-7-21 | QQ | Website | -- |
 | 毛毛虫 | ¥100.00 | 2026-7-21 | QQ | Website | -- |
 | 用剑的人 | ¥1000.00 | 2025-11-18 | WeChat | Website | -- |
@@ -29,6 +30,7 @@ description: Open Minesweeper donation income and server expense details, showin
 
 | Item | Amount | Date | Provider | Note |
 | :------: | :-----: | :----------: | :----------: | :----------: |
+| 26225  | ¥200.00 | 2026-8-31 | 微信 | 网站 | -- |
 | Domain | ¥31.00 | 2026-5-25 | West.cn | openms.top |
 | Prepaid balance | ¥50.00 | 2025-12-14 | Huawei Cloud | Mainly used for temporary server backups. Current remaining balance: ¥49.51 |
 | Server | ¥1100.00 | 2025-11-18 | Huawei Cloud | East China-Shanghai 1, 2 vCPU, 2 GiB memory, 40 GiB system disk, 400 GB traffic package, 3 Mbit/s peak bandwidth |
@@ -39,7 +41,7 @@ description: Open Minesweeper donation income and server expense details, showin
 | Domain | ¥1.00 | 2023-12-11 | Huawei Cloud | fff666.top |
 | Server | ¥89.14 | 2023-12-03 | Huawei Cloud | East China-Shanghai 1, 2 vCPU, 2 GiB memory, 40 GiB system disk, 400 GB traffic package, 3 Mbit/s peak bandwidth |
 
-Current account balance: ¥61.18
+Current account balance: ¥261.18
 
 Resource expiration dates and next renewal amounts:
 

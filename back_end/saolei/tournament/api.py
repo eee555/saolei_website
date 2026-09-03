@@ -6,11 +6,12 @@ from django.shortcuts import get_object_or_404
 from django_ratelimit.decorators import ratelimit
 from ninja import Field, Form, Router, Schema
 from ninja.decorators import decorate_view
+from ninja.errors import HttpError
 from ninja.orm import create_schema
 
 from config.text_choices import Tournament_TextChoices
-from tournament.cache import TournamentCache
-from tournament.models import GSCTournament, Tournament, TournamentParticipant
+from tournament.cache import TOURNAMENT_USER_CACHE_KEYS, TournamentCache
+from tournament.models import GSCTournament, Tournament, TournamentParticipant, TournamentUser
 from userprofile.decorators import login_required_error, staff_required
 from userprofile.models import UserProfile
 from utils.response import HttpResponseConflict
@@ -62,6 +63,22 @@ TournamentParticipantOut = create_schema(
         ('arbiter_identifier__identifier', str | None, Field(None, alias='arbiter_identifier.identifier')),
     ],
 )
+
+
+TournamentUserOut = create_schema(
+    TournamentUser,
+    fields=[
+        'score_current', 'last_updated', 'score_total',
+        'gsc_total', 'gsc_best',
+        'weekly_total', 'weekly_classic_total', 'weekly_classic_best',
+    ],
+    custom_fields=[('user_id', int, 0)],
+)
+
+
+class TournamentUserRankingOut(Schema):
+    total: int
+    data: list[TournamentUserOut]
 
 
 class TournamentNewsItemOut(Schema):
@@ -199,6 +216,20 @@ def set_tournament_staff(request: HttpRequest, data: TournamentStaffSetIn = Form
 def get_participant_list(request: HttpRequest, tournament_id: int):
     get_object_or_404(Tournament, id=tournament_id)
     return TournamentParticipant.objects.filter(tournament_id=tournament_id).select_related('arbiter_identifier')
+
+
+@router.get('/user-ranking', response=TournamentUserRankingOut)
+def get_tournament_user_ranking(
+    request: HttpRequest,
+    sort_by: str = 'score_current',
+    start: int = 0, end: int = 20,
+):
+    if sort_by not in TOURNAMENT_USER_CACHE_KEYS:
+        raise HttpError(400, 'Invalid tournament user ranking field.')
+    start = max(start, 0)
+    end = min(max(end, start), start + 100)
+    data, total = cache.get_tournament_user_ranking(sort_by, start=start, end=end)
+    return {'total': total, 'data': data}
 
 
 @router.get('/get_videos/participant', response=list[VideoBaseOut])

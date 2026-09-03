@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 import json
-from typing import Literal
+from typing import Iterable, Literal
 
 from dataclasses_json import dataclass_json
 from django_redis import get_redis_connection
@@ -9,12 +9,38 @@ from django_redis import get_redis_connection
 from config.text_choices import Tournament_TextChoices
 from utils.cache import maybe_bytes_to_str
 from videomanager.models import VideoModel
-from .models import GSCTournament, Tournament, TournamentParticipant
+from .models import GSCTournament, Tournament, TournamentParticipant, TournamentUser
+from .utils import MAX_TOURNAMENT_BEST
 
 cache = get_redis_connection('saolei_website')
 
 NORMAL_TOURNAMENT_CACHE_KEY = 'tournament:normal'
 NORMAL_PARTICIPANT_CACHE_KEY = 'tournament:normal:participants'
+
+TOURNAMENT_USER_CACHE_KEYS = {
+    'score_current': 'tournament:user:score_current',
+    'score_total': 'tournament:user:score_total',
+    'gsc_total': 'tournament:user:gsc_total',
+    'gsc_best': 'tournament:user:gsc_best',
+    'weekly_total': 'tournament:user:weekly_total',
+    'weekly_classic_total': 'tournament:user:weekly_classic_total',
+    'weekly_classic_best': 'tournament:user:weekly_classic_best',
+}
+TOURNAMENT_USER_RANK_FIELDS = (
+    'score_current', 'score_total',
+    'gsc_total', 'gsc_best',
+    'weekly_total', 'weekly_classic_total', 'weekly_classic_best',
+)
+TOURNAMENT_USER_ASC_FIELDS = ('gsc_best', 'weekly_classic_best')
+TOURNAMENT_USER_DEFAULT_VALUES = {
+    'score_current': 0,
+    'score_total': 0,
+    'gsc_total': 0,
+    'gsc_best': MAX_TOURNAMENT_BEST,
+    'weekly_total': 0,
+    'weekly_classic_total': 0,
+    'weekly_classic_best': MAX_TOURNAMENT_BEST,
+}
 
 
 @dataclass_json
@@ -171,6 +197,63 @@ class TournamentCache:
                 and participant.start_time <= video.upload_time <= participant.end_time
             )
         ]
+
+    def clear_tournament_user_cache(self):
+        cache.delete(*TOURNAMENT_USER_CACHE_KEYS.values())
+
+    def update_tournament_user(self, tournament_user: TournamentUser, fields=None):
+        self.update_tournament_users([tournament_user], fields=fields)
+
+    def update_tournament_users(self, tournament_users: Iterable[TournamentUser], fields=None):
+        fields = self._normalize_tournament_user_fields(fields)
+        if not fields:
+            return
+
+        pipe = cache.pipeline()
+        for tournament_user in tournament_users:
+            self._update_tournament_user_in_pipeline(pipe, tournament_user, fields)
+        pipe.execute()
+
+    def rebuild_tournament_user_cache(self, *, batch_size=1000):
+        self.clear_tournament_user_cache()
+        pipe = cache.pipeline()
+        count = 0
+        for tournament_user in TournamentUser.objects.iterator(chunk_size=batch_size):
+            self._update_tournament_user_in_pipeline(pipe, tournament_user, TOURNAMENT_USER_RANK_FIELDS)
+            count += 1
+            if count % batch_size == 0:
+                pipe.execute()
+                pipe = cache.pipeline()
+        pipe.execute()
+        return count
+
+    def get_tournament_user_ranking(self, field: str, *, start=0, end=20) -> tuple[list[TournamentUser], int]:
+        """读取缓存内的左闭右开排行区间。"""
+        key = TOURNAMENT_USER_CACHE_KEYS[field]
+        total = cache.zcard(key)
+        if total == 0 or start >= end:
+            return [], total
+
+        if field in TOURNAMENT_USER_ASC_FIELDS:
+            user_ids = [int(user_id) for user_id in cache.zrange(key, start, end - 1)]
+        else:
+            user_ids = [int(user_id) for user_id in cache.zrevrange(key, start, end - 1)]
+
+        tournament_users_by_id: dict[int, TournamentUser] = TournamentUser.objects.in_bulk(user_ids, field_name='user_id')
+        return [tournament_users_by_id[user_id] for user_id in user_ids], total
+
+    def _normalize_tournament_user_fields(self, fields):
+        if fields is None:
+            return TOURNAMENT_USER_RANK_FIELDS
+        return tuple(field for field in fields if field in TOURNAMENT_USER_CACHE_KEYS)
+
+    def _update_tournament_user_in_pipeline(self, pipe, tournament_user: TournamentUser, fields):
+        for field in fields:
+            key = TOURNAMENT_USER_CACHE_KEYS[field]
+            if getattr(tournament_user, field) == TOURNAMENT_USER_DEFAULT_VALUES[field]:
+                pipe.zrem(key, tournament_user.user_id)
+            else:
+                pipe.zadd(key, {tournament_user.user_id: getattr(tournament_user, field)})
 
 
 def serialize_normal_tournament(tournament: Tournament):
