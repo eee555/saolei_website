@@ -126,6 +126,13 @@ export async function fetchParticipantVideos(params: ParticipantVideosParams): P
     return data;
 }
 
+export async function fetchTournamentVideos(tournamentId: number): Promise<VideoAbstractData[]> {
+    const { data } = await $axios.get<VideoAbstractData[]>('/api/tournament/get_videos/tournament', {
+        params: { tournament_id: tournamentId },
+    });
+    return data;
+}
+
 export async function downloadTournamentVideos(tournamentId: number): Promise<ArrayBuffer> {
     const { data } = await $axios.get<ArrayBuffer>('/api/tournament/download', {
         params: { tournament_id: tournamentId },
