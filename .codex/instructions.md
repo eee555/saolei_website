@@ -74,6 +74,9 @@ APP内引用链条：`utils -> models -> services -> api`
 ### 组件`PlayerName`
 该组件用于渲染用户名字，其涉及到复杂的缓存逻辑，因此如果不需要测试其具体内容，应当用`cy.mockPlayerNameFallback()` stub相应的API。
 
+### 临时组件
+创建临时测试组件时，用`render`语法，不要用`template`。
+
 # 前后端协调原则
 这部分用于辅助思考，不属于强制规范。
 
