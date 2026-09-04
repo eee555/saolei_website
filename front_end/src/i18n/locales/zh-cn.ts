@@ -102,6 +102,7 @@ export default {
         ratelimit: {
             oncePerHour: '每小时限一次',
             oncePerMinute: '每分钟限一次',
+            oncePerSeconds: ({ list }: MessageContext) => `每${list(0)}秒限一次`,
         },
         response: {
             OK: '',
@@ -342,7 +343,6 @@ export default {
             other: '其他',
             all: '全部',
         },
-        ranking: '排行',
         startsFrom: '开始时间',
         state: {
             p: '审核中',

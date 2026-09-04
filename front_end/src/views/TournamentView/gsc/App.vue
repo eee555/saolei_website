@@ -24,43 +24,30 @@
             </template>
         </PersonalView>
     </template>
-    <template v-if="([TournamentState.Finished, TournamentState.Awarded] as TournamentState[]).includes(tournament.displayState)">
+    <template v-if="tournament.displayState === TournamentState.Awarded">
         <h3>
             {{ t('gsc.finalResults') }}
         </h3>
-        <ElTabs v-model="allSummaryTabPosition">
-            <ElTabPane :label="t('tournament.ranking')" lazy :name="-1">
-                <ElButton v-if="tournament.state === TournamentState.Awarded" size="small" @click="downloadAll">
-                    {{ t('tournament.downloadAll') }}{{ t('common.punct.lparen') }}{{ t('common.ratelimit.oncePerHour') }}{{ t('common.punct.rparen') }}
-                </ElButton>
-                <ElRow style="height: 0.5em" />
-                <AllSummary :data="result" @row-click="handleAllSummaryRowClick" />
-            </ElTabPane>
-            <ElTabPane v-for="(participant, index) in viewedParticipants" :key="participant.id" lazy :name="index">
-                <template #label>
-                    <PlayerName :user-id="participant.user_id" />
-                    &nbsp;
-                    <ElLink underline="never" @click="handleAllSummaryTabClose(index)">
-                        <BaseIconClose style="scale: 65%" />
-                    </ElLink>
-                </template>
-                <PersonalView :user-id="participant.user_id" :tournament-id="tournament.id">
-                    <template #personalSummary="{ videos }">
-                        <GSCPersonalSummary :videos="videos" />
-                    </template>
-                </PersonalView>
-            </ElTabPane>
-        </ElTabs>
+        <!-- @vue-generic {GSCParticipant} -->
+        <AllParticipants :tournament="tournament" :result="result">
+            <template #allSummary="{ data, onParticipantSelect }">
+                <AllSummary :data="data" @row-click="onParticipantSelect" />
+            </template>
+            <template #personalSummary="{ videos }">
+                <GSCPersonalSummary :videos="videos" />
+            </template>
+        </AllParticipants>
     </template>
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElLink, ElRow, ElTabPane, ElTabs, vLoading } from 'element-plus';
+import { ElLink, vLoading } from 'element-plus';
 import { computed, ref, watch } from 'vue';
 import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import '@/styles/text.css';
+import AllParticipants from '../common/AllParticipants.vue';
 import PersonalView from '../common/PersonalView.vue';
 import Title from '../common/Title.vue';
 
@@ -68,14 +55,12 @@ import AllSummary from './AllSummary.vue';
 import Description from './Description.vue';
 import TokenGuide from './TokenGuide.vue';
 
-import { BaseIconClose, BaseIconRefresh } from '@/components/common/icon';
+import { BaseIconRefresh } from '@/components/common/icon';
 import { httpErrorNotification } from '@/components/Notifications';
-import PlayerName from '@/components/PlayerName.vue';
 import GSCPersonalSummary from '@/components/visualization/GSCPersonalSummary/App.vue';
-import { downloadTournamentVideos, fetchGSCResults, fetchParticipantList } from '@/services/tournamentService';
+import { fetchGSCResults, fetchParticipantList } from '@/services/tournamentService';
 import { store } from '@/store';
 import { LoginStatus } from '@/utils/common/structInterface';
-import { streamToZip } from '@/utils/fileIO';
 import type { GSCParticipant } from '@/utils/gsc';
 import { TournamentState } from '@/utils/ms_const';
 import type { Tournament } from '@/utils/tournaments';
@@ -95,8 +80,6 @@ const token = computed(() => tournament.value.gscData?.token ?? '');
 const result = ref<GSCParticipant[]>([]);
 const personaltoken = ref<string>('');
 const participant = ref(false);
-const viewedParticipants = ref<GSCParticipant[]>([]);
-const allSummaryTabPosition = ref(-1);
 const loading = ref(false);
 
 async function refresh() {
@@ -130,27 +113,4 @@ watch(() => [
     props.tournament.endDate?.getTime(),
     store.login_status,
 ], refresh, { immediate: true });
-
-function handleAllSummaryRowClick(row: GSCParticipant) {
-    if (tournament.value.state !== TournamentState.Awarded || row.user_id === 0) return;
-    const index = viewedParticipants.value.findIndex((item) => item.id === row.id);
-    if (index === -1) {
-        viewedParticipants.value.push(row);
-        allSummaryTabPosition.value = viewedParticipants.value.length - 1;
-    } else {
-        allSummaryTabPosition.value = index;
-    }
-}
-function handleAllSummaryTabClose(index: number) {
-    viewedParticipants.value.splice(index, 1);
-    if (allSummaryTabPosition.value === index) {
-        allSummaryTabPosition.value = -1;
-    }
-}
-
-function downloadAll() {
-    downloadTournamentVideos(tournament.value.id).then((data) => {
-        void streamToZip(new Uint8Array(data), 'gsc.zip');
-    }).catch(httpErrorNotification);
-}
 </script>

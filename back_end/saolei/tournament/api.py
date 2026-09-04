@@ -241,6 +241,18 @@ def get_participant_videos(request: HttpRequest, tournament_id: int, user_id: in
     return participant.videos if participant else []
 
 
+@router.get('/get_videos/tournament', response=list[VideoBaseOut])
+@decorate_view(ratelimit(key='ip', rate='1/5s'))
+def get_tournament_videos(request: HttpRequest, tournament_id: int):
+    """
+    - `ratelimit(key='ip', rate='1/5s')`
+    """
+    tournament = get_object_or_404(Tournament, id=tournament_id)
+    if tournament.state != Tournament_TextChoices.State.AWARDED:
+        return HttpResponseForbidden()
+    return tournament.videos.all()
+
+
 @router.get('/get_news', response=TournamentNewsOut)
 def get_tournament_news(request: HttpRequest):
     now = datetime.now(tz=timezone.utc)
