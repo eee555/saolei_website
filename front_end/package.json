@@ -70,7 +70,7 @@
     "cypress-intercept-formdata": "1.0.0",
     "cypress-real-events": "1.15.0",
     "cypress-table": "1.0.2",
-    "cypress-vite": "1.10.0",
+    "cypress-vite": "1.10.2",
     "esbuild": "0.28.2",
     "eslint": "10.8.1",
     "eslint-import-resolver-typescript": "4.4.5",
