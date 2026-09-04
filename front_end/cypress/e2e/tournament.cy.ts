@@ -653,7 +653,7 @@ describe('GSC tournament finish task', () => {
         cy.visit('/#/tournament/7');
         cy.contains('结算中');
         cy.contains('如何参赛').should('not.exist');
-        cy.contains('比赛结果');
+        cy.contains('比赛结果').should('not.exist');
 
         cy.login(HOST.username, HOST.password);
         visitGSCAdmin(4);
