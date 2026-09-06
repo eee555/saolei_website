@@ -3,7 +3,7 @@
     <ElTable :data="data" :default-sort="{ prop: 'classic_score', order: 'ascending' }" @row-click="handleRowClick">
         <ElTableColumn :label="t('common.prop.realName')" sortable>
             <template #default="{row}">
-                <PlayerName v-if="row.user_id !== null" :user-id="row.user_id" />
+                <PlayerName v-if="row.user_id !== 0" :user-id="row.user_id" />
                 <span v-else>{{ t('common.anonymous') }}</span>
             </template>
         </ElTableColumn>

@@ -9,13 +9,13 @@
         </ElTabPane>
         <ElTabPane v-for="participant in viewedParticipants" :key="participant.id" lazy :name="participant.id">
             <template #label>
-                <PlayerName v-if="participant.user_id !== null" :user-id="participant.user_id" />
+                <PlayerName v-if="participant.user_id !== 0" :user-id="participant.user_id" />
                 &nbsp;
                 <ElLink data-cy="all-participants-tab-close" underline="never" @click.stop="handleAllSummaryTabClose(participant.id)">
                     <BaseIconClose style="scale: 65%" />
                 </ElLink>
             </template>
-            <PersonalView v-if="participant.user_id !== null" :user-id="participant.user_id" :tournament-id="tournament.id">
+            <PersonalView v-if="participant.user_id !== 0" :user-id="participant.user_id" :tournament-id="tournament.id">
                 <template #personalSummary="{ videos }">
                     <slot name="personalSummary" :videos="videos" />
                 </template>
@@ -24,7 +24,7 @@
     </ElTabs>
 </template>
 
-<script setup lang="ts" generic="TParticipant extends { id: number; user_id: number | null }">
+<script setup lang="ts" generic="TParticipant extends { id: number; user_id: number }">
 import { ElLink, ElRow, ElTabPane, ElTabs } from 'element-plus';
 import { ref, shallowRef } from 'vue';
 import type { PropType } from 'vue';
@@ -55,7 +55,7 @@ const viewedParticipants = shallowRef<TParticipant[]>([]);
 const allVideos = ref<VideoAbstractData[]>([]);
 
 function handleAllSummaryRowClick(row: TParticipant) {
-    if (row.user_id === null || row.user_id === 0) return;
+    if (row.user_id === 0) return;
     const index = viewedParticipants.value.findIndex((item) => item.id === row.id);
     if (index === -1) {
         viewedParticipants.value = [...viewedParticipants.value, row];

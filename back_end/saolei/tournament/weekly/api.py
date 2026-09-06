@@ -11,6 +11,7 @@ from ninja.orm import create_schema
 from config.text_choices import Tournament_TextChoices
 from config.tournaments import TournamentWeights
 from tournament.models import WeeklyParticipant, WeeklyTournament
+from tournament.schema import ParticipantUserIdOutBase
 from userprofile.decorators import login_required_error, staff_required
 from utils.response import HttpResponseConflict
 from utils.schema import IdIn
@@ -37,6 +38,7 @@ WeeklyScoreOut = create_schema(
     WeeklyParticipant,
     fields=['id', 'start_time', 'end_time', 'rank', 'rank_score', 'classic_et', 'classic_it', 'classic_score'],
     custom_fields=[('user_id', int, 0)],
+    base_class=ParticipantUserIdOutBase,
 )
 
 
@@ -113,7 +115,18 @@ def get_results(request: HttpRequest, tournament_id: int):
     return WeeklyParticipant.objects.filter(tournament=tournament)
 
 
-@router.post('/participant')
+WeeklyRegisterOut = create_schema(
+    WeeklyParticipant,
+    fields=['id', 'token', 'start_time', 'end_time', 'rank', 'rank_score'],
+    custom_fields=[
+        ('user_id', int, 0),
+        ('tournament_id', int, 0),
+    ],
+    base_class=ParticipantUserIdOutBase,
+)
+
+
+@router.post('/participant', response=WeeklyRegisterOut)
 @decorate_view(login_required_error)
 def create_weekly_participant(request: HttpRequest, data: IdIn = Form(...)):  # noqa: B008
     user = request.user
@@ -130,4 +143,4 @@ def create_weekly_participant(request: HttpRequest, data: IdIn = Form(...)):  # 
             'end_time': min(now + timedelta(hours=2), tournament.end_time),
         },
     )
-    return {'type': 'success', 'token': participant[0].token}
+    return participant[0]

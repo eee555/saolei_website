@@ -13,14 +13,13 @@ import type { VideoAbstract } from '@/utils/videoabstract';
 
 interface TestParticipant {
     id: number;
-    user_id: number | null;
+    user_id: number;
     name: string;
 }
 
 const participants: TestParticipant[] = [
     { id: 11, user_id: 101, name: 'Alpha' },
     { id: 22, user_id: 202, name: 'Bravo' },
-    { id: 33, user_id: null, name: 'Anonymous' },
     { id: 44, user_id: 0, name: 'Zero' },
 ];
 
@@ -164,8 +163,6 @@ describe('<AllParticipants />', () => {
     it('does not open tabs for invalid participants', () => {
         mountAllParticipants();
 
-        cy.get('[data-cy=participant-33]').click();
-        topLevelTabItems().should('have.length', 1);
         cy.get('[data-cy=participant-44]').click();
         topLevelTabItems().should('have.length', 1);
 

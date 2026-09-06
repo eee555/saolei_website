@@ -3,71 +3,69 @@
         <ElLink :href="weeklyGuideUrl" target="_blank" rel="noopener noreferrer">
             {{ t('gsc.identifierGuide.guideLink') }}
         </ElLink>
-        <template v-if="token === '' && !registrationOpen">
-            <br>
+        <div v-if="token === '' && !registrationOpen">
             {{ t('gsc.identifierGuide.preparing') }}
-        </template>
-        <template v-else-if="token === ''">
-            <br>
-            <ElButton :loading="registeringParticipant" @click="registerParticipant">
-                {{ t('common.button.register') }}
+        </div>
+        <div v-else-if="token === ''">
+            <ElButton :loading="registeringParticipant" @click="registerDialogVisible = true">
+                {{ t('local.register') }}
             </ElButton>
-        </template>
-        <template v-else>
-            <br>
+            <ElDialog v-model="registerDialogVisible">
+                <template #header>
+                    {{ t('local.registerHeader') }}
+                </template>
+                {{ t('local.registerConfirm') }}
+                <template #footer>
+                    <ElButton @click="registerDialogVisible = false">
+                        {{ t('local.registerCancel') }}
+                    </ElButton>
+                    <BaseButtonConfirm @click="registerParticipant" />
+                </template>
+            </ElDialog>
+        </div>
+        <div v-else>
             {{ t('gsc.identifierGuide.token') }}
             <span class="ttfamily">{{ token }}</span>
             <IconCopy :text="token" />
-            <br>
-            <span data-cy="weekly-participant-window">
-                有效时间{{ t('common.punct.colon') }}
+            <div data-cy="weekly-participant-window">
+                {{ t('local.deadline') }}{{ t('common.punct.colon') }}
                 {{ displayTime(participant?.start_time) }}
                 &nbsp;~&nbsp;
                 {{ displayTime(participant?.end_time) }}
-            </span>
-        </template>
+            </div>
+        </div>
     </span>
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElLink } from 'element-plus';
+import { ElButton, ElDialog, ElLink } from 'element-plus';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import '@/styles/text.css';
-import { httpErrorNotification, successNotification } from '@/components/Notifications';
+import BaseButtonConfirm from '@/components/common/BaseButtonConfirm.vue';
+import { actionSuccessNotification, httpErrorNotification } from '@/components/Notifications';
 import IconCopy from '@/components/widgets/IconCopy.vue';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import { createWeeklyParticipant } from '@/services/tournamentService';
 import { toDate, toISODateTimeString } from '@/utils/datetime';
 import type { TournamentParticipant } from '@/utils/tournaments';
 
 const props = defineProps({
-    tournamentId: {
-        type: Number,
-        required: true,
-    },
-    registrationOpen: {
-        type: Boolean,
-        default: false,
-    },
+    tournamentId: { type: Number, required: true },
+    registrationOpen: { type: Boolean },
     participant: {
         type: Object as () => TournamentParticipant | null,
         default: null,
     },
 });
 const emit = defineEmits<{
-    (event: 'refresh'): void;
+    (event: 'registered', participant: TournamentParticipant): void;
 }>();
 
-const token = defineModel('token', {
-    type: String,
-    default: '',
-});
-
-const { proxy } = useCurrentInstance();
-const { t } = useI18n();
+const token = defineModel('token', { type: String, default: '' });
 
 const registeringParticipant = ref(false);
+const registerDialogVisible = ref(false);
 
 const weeklyGuideUrl = computed(() => {
     const base = typeof import.meta.env.VITE_DOCS_URL === 'string' && import.meta.env.VITE_DOCS_URL.length > 0
@@ -80,13 +78,12 @@ const weeklyGuideUrl = computed(() => {
 
 async function registerParticipant() {
     registeringParticipant.value = true;
-    await proxy.$axios.post('/api/tournament/weekly/participant', {
-        id: props.tournamentId,
-    }).then((response) => {
-        successNotification(response);
-        token.value = response.data.token;
-        emit('refresh');
+    await createWeeklyParticipant(props.tournamentId).then((participant) => {
+        actionSuccessNotification();
+        token.value = participant.token;
+        emit('registered', participant);
     }).catch(httpErrorNotification);
+    registerDialogVisible.value = false;
     registeringParticipant.value = false;
 }
 
@@ -94,6 +91,25 @@ function displayTime(time: string | Date | null | undefined) {
     const date = toDate(time);
     return date ? toISODateTimeString(date) : '';
 }
+
+const i18nMessages = {
+    'zh-cn': { local: {
+        deadline: '有效时间',
+        register: '开始打卡',
+        registerCancel: '我还没准备好',
+        registerConfirm: '操作不可撤回，确定开始参赛吗？你从现在开始将有两小时上传比赛录像。',
+        registerHeader: '准备好了吗？',
+    } },
+    en: { local: {
+        deadline: 'Session interval',
+        register: 'Start my session',
+        registerCancel: 'I am not ready',
+        registerConfirm: 'This action is irreversible. Are you sure you want to start your session? You will have 2 hours to upload your videos.',
+        registerHeader: 'Are you ready?',
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
 </script>
 
 <style scoped>
