@@ -8,7 +8,7 @@
             :participant="participant"
             :registration-open="tournament.displayState === TournamentState.Ongoing"
             :tournament-id="tournament.id"
-            @refresh="refresh"
+            @registered="handleParticipantRegistered"
         />
     </template>
     <template v-if="tournament.displayState === TournamentState.Ongoing && store.login_status === LoginStatus.IsLogin && participant !== null">
@@ -102,6 +102,12 @@ async function refresh() {
         httpErrorNotification(error);
     }
     loading.value = false;
+}
+
+function handleParticipantRegistered(registeredParticipant: TournamentParticipant) {
+    participant.value = registeredParticipant;
+    token.value = registeredParticipant.token;
+    personalViewKey.value += 1;
 }
 
 watch(() => [

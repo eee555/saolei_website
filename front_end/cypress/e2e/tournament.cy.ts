@@ -163,6 +163,7 @@ function selectHomepageListTab(name: string) {
 function registerOnWeeklyTournamentPage(tournamentId: number) {
     cy.intercept('GET', '**/api/tournament/participants*').as('weeklyParticipants');
     cy.intercept('POST', '**/api/tournament/weekly/participant').as('createWeeklyParticipant');
+    cy.intercept('GET', '**/api/tournament/get_videos/participant*').as('weeklyParticipantVideosAfterRegister');
 
     cy.login(USER.username, USER.password);
     cy.visit(`/#/tournament/${tournamentId}`);
@@ -171,10 +172,14 @@ function registerOnWeeklyTournamentPage(tournamentId: number) {
     cy.contains('进行中');
     cy.contains('即时成绩').should('not.exist');
     cy.contains('如何参赛').next().within(() => {
-        cy.contains('button', '注册').click();
+        cy.contains('button', '开始打卡').click();
+    });
+    cy.contains('.el-dialog', '准备好了吗？').within(() => {
+        cy.contains('操作不可撤回');
+        cy.contains('button', '确认').click();
     });
     cy.wait('@createWeeklyParticipant').its('response.statusCode').should('eq', 200);
-    cy.wait('@weeklyParticipants').its('response.statusCode').should('eq', 200);
+    cy.wait('@weeklyParticipantVideosAfterRegister').its('response.statusCode').should('eq', 200);
 
     cy.contains('操作成功');
     cy.closeElNotifications();

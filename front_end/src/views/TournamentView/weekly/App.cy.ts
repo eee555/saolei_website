@@ -2,7 +2,8 @@ import App from './App.vue';
 
 import $axios from '@/http';
 import i18n from '@/i18n';
-import { local, store } from '@/store';
+import type { TournamentParticipantResponse } from '@/services/tournamentService';
+import { store } from '@/store';
 import { pinia } from '@/store/create';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { TournamentState, TournamentSubclass } from '@/utils/ms_const';
@@ -25,9 +26,8 @@ function weeklyTournament() {
     });
 }
 
-function weeklyParticipantList(registered: boolean) {
-    if (!registered) return [];
-    return [{
+function weeklyParticipant(init: Partial<TournamentParticipantResponse> = {}): TournamentParticipantResponse {
+    return {
         id: 801,
         token: 'WEEKLY-TOKEN',
         arbiter_identifier__identifier: null,
@@ -37,15 +37,22 @@ function weeklyParticipantList(registered: boolean) {
         end_time: '2026-01-01T10:00:00+08:00',
         rank: null,
         rank_score: 0,
-    }];
+        ...init,
+    };
+}
+
+function weeklyParticipantList(registered: boolean) {
+    if (!registered) return [];
+    return [weeklyParticipant()];
 }
 
 function mountWeekly(options: {
     loginStatus: LoginStatus;
     registered: boolean;
 }) {
-    local.value.language = 'zh-cn';
-    i18n.global.locale.value = 'zh-cn';
+    const requestCounts = {
+        participantList: 0,
+    };
     store.login_status = options.loginStatus;
     if (options.loginStatus === LoginStatus.IsLogin) {
         store.login({ id: 99, username: 'player', realname: 'Player' });
@@ -54,8 +61,11 @@ function mountWeekly(options: {
         store.login_status = options.loginStatus;
     }
 
-    cy.intercept('GET', '**/api/tournament/participants*', {
-        body: weeklyParticipantList(options.registered),
+    cy.intercept('GET', '**/api/tournament/participants*', (req) => {
+        requestCounts.participantList += 1;
+        req.reply({
+            body: weeklyParticipantList(options.registered),
+        });
     }).as('participantList');
     cy.intercept('GET', '**/api/tournament/get_videos/participant*', {
         body: [],
@@ -75,27 +85,52 @@ function mountWeekly(options: {
         },
     });
     cy.wait('@participantList').its('response.statusCode').should('eq', 200);
+    return requestCounts;
 }
 
 describe('<Weekly App />', () => {
     it('hides real-time score for anonymous users during ongoing tournament', () => {
         mountWeekly({ loginStatus: LoginStatus.NotLogin, registered: false });
 
-        cy.contains('进行中').should('be.visible');
-        cy.contains('即时成绩').should('not.exist');
+        cy.contains('Ongoing').should('be.visible');
+        cy.contains('Real-Time Score').should('not.exist');
     });
 
     it('hides real-time score for logged-in users before registration', () => {
         mountWeekly({ loginStatus: LoginStatus.IsLogin, registered: false });
 
-        cy.contains('进行中').should('be.visible');
-        cy.contains('即时成绩').should('not.exist');
+        cy.contains('Ongoing').should('be.visible');
+        cy.contains('Real-Time Score').should('not.exist');
     });
 
     it('shows real-time score for registered users', () => {
         mountWeekly({ loginStatus: LoginStatus.IsLogin, registered: true });
 
-        cy.contains('即时成绩').should('be.visible');
+        cy.contains('Real-Time Score').should('be.visible');
         cy.wait('@participantVideos').its('response.statusCode').should('eq', 200);
+    });
+
+    it('uses the registration response without fetching participants again', () => {
+        const requestCounts = mountWeekly({ loginStatus: LoginStatus.IsLogin, registered: false });
+        cy.intercept('POST', '**/api/tournament/weekly/participant', {
+            body: weeklyParticipant({
+                id: 802,
+                token: 'NEW-WEEKLY-TOKEN',
+            }),
+        }).as('createWeeklyParticipant');
+
+        cy.contains('button', 'Start my session').click();
+        cy.contains('.el-dialog', 'Are you ready?').should('be.visible');
+        cy.contains('.el-dialog', 'This action is irreversible').should('be.visible');
+        cy.contains('.el-dialog button', 'Confirm').click();
+
+        cy.wait('@createWeeklyParticipant').its('request.body').should('deep.equal', 'id=8');
+        cy.contains('NEW-WEEKLY-TOKEN').should('be.visible');
+        cy.get('[data-cy=weekly-participant-window]').should('contain', '2026-01-01 08:00:00').and('contain', '2026-01-01 10:00:00');
+        cy.contains('Real-Time Score').should('be.visible');
+        cy.wait('@participantVideos').its('response.statusCode').should('eq', 200);
+        cy.then(() => {
+            expect(requestCounts.participantList).to.equal(1);
+        });
     });
 });

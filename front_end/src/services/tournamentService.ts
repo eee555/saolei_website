@@ -34,6 +34,18 @@ export interface WeeklyScoreResponse {
     classic_score: number;
 }
 
+export interface TournamentParticipantResponse {
+    id: number;
+    token: string;
+    start_time: string;
+    end_time: string | null;
+    rank: number | null;
+    rank_score: number;
+    user_id: number;
+    tournament_id: number;
+    arbiter_identifier__identifier?: string | null;
+}
+
 interface ParticipantVideosParams {
     userId: number;
     tournamentId: number;
@@ -85,10 +97,17 @@ export async function fetchTournament(tournamentId: number | string): Promise<To
 }
 
 export async function fetchParticipantList(tournamentId: number): Promise<TournamentParticipant[]> {
-    const { data } = await $axios.get<TournamentParticipant[]>('/api/tournament/participants', {
+    const { data } = await $axios.get<TournamentParticipantResponse[]>('/api/tournament/participants', {
         params: { tournament_id: tournamentId },
     });
     return data.map((value) => new TournamentParticipant(value));
+}
+
+export async function createWeeklyParticipant(tournamentId: number): Promise<TournamentParticipant> {
+    const { data } = await $axios.post<TournamentParticipantResponse>('/api/tournament/weekly/participant', {
+        id: tournamentId,
+    });
+    return new TournamentParticipant(data);
 }
 
 export async function fetchTournamentUserRanking(params: TournamentUserRankingParams): Promise<TournamentUserRankingResponse> {

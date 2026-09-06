@@ -13,6 +13,7 @@ from identifier.services import bind_identifier
 from identifier.utils import verify_identifier
 from tournament.gsc.decorators import GSC_admin_required
 from tournament.models import GSCParticipant, GSCTournament
+from tournament.schema import ParticipantUserIdOutBase
 from userprofile.decorators import login_required_error
 from userprofile.models import UserProfile
 from utils.exceptions import ExceptionToResponse
@@ -61,6 +62,7 @@ GSCScoreOut = create_schema(
     custom_fields=[
         ('user_id', int, 0),
     ],
+    base_class=ParticipantUserIdOutBase,
 )
 
 

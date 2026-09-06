@@ -12,6 +12,7 @@ from ninja.orm import create_schema
 from config.text_choices import Tournament_TextChoices
 from tournament.cache import TOURNAMENT_USER_CACHE_KEYS, TournamentCache
 from tournament.models import GSCTournament, Tournament, TournamentParticipant, TournamentUser
+from tournament.schema import ParticipantUserIdOutBase
 from userprofile.decorators import login_required_error, staff_required
 from userprofile.models import UserProfile
 from utils.response import HttpResponseConflict
@@ -58,10 +59,11 @@ TournamentParticipantOut = create_schema(
     TournamentParticipant,
     fields=['id', 'token', 'start_time', 'end_time', 'rank', 'rank_score'],
     custom_fields=[
-        ('user_id', int | None, None),
+        ('user_id', int, 0),
         ('tournament_id', int, 0),
         ('arbiter_identifier__identifier', str | None, Field(None, alias='arbiter_identifier.identifier')),
     ],
+    base_class=ParticipantUserIdOutBase,
 )
 
 
