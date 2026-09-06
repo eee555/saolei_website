@@ -82,7 +82,7 @@
     "less": "4.9.0",
     "path": "0.12.7",
     "remove-attr": "0.0.15",
-    "rollup": "4.62.5",
+    "rollup": "4.63.1",
     "tslib": "2.8.1",
     "typescript": "6.0.3",
     "typescript-eslint": "8.67.0",
