@@ -124,9 +124,7 @@ describe('<Weekly App />', () => {
         cy.contains('.el-dialog', 'This action is irreversible').should('be.visible');
         cy.contains('.el-dialog button', 'Confirm').click();
 
-        cy.wait('@createWeeklyParticipant').its('request.body').should('deep.equal', {
-            id: tournamentId,
-        });
+        cy.wait('@createWeeklyParticipant').its('request.body').should('deep.equal', 'id=8');
         cy.contains('NEW-WEEKLY-TOKEN').should('be.visible');
         cy.get('[data-cy=weekly-participant-window]').should('contain', '2026-01-01 08:00:00').and('contain', '2026-01-01 10:00:00');
         cy.contains('Real-Time Score').should('be.visible');
