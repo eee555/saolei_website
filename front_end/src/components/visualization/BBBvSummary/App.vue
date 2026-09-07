@@ -57,7 +57,8 @@ import Cell from './Cell.vue';
 import Tooltip from './Tooltip.vue';
 import YLabel from './YLabel.vue';
 
-import { BBBvSummaryConfig, colorTheme } from '@/store';
+import { BBBvSummaryConfig } from '@/store';
+import { colorThemes } from '@/store/color';
 import { ArrayUtils } from '@/utils/arrays';
 import { PiecewiseColorScheme } from '@/utils/colors';
 import { setLastDigit } from '@/utils/math';
@@ -104,7 +105,7 @@ const displayBy = computed(() => options.value[BBBvSummaryConfig.value.template]
 const theme = computed(() => {
     if (!(PiecewiseColorSchemeName as readonly string[]).includes(displayBy.value)) return new PiecewiseColorScheme([], []);
     const themeName = getPiecewiseColorSchemeName(displayBy.value as PiecewiseColorSchemeName, props.level);
-    return new PiecewiseColorScheme(colorTheme.value[themeName].colors, colorTheme.value[themeName].thresholds);
+    return colorThemes[themeName].value;
 });
 
 const gridStyle = computed(() => {

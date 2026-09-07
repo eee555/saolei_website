@@ -24,8 +24,8 @@ import { useI18n } from 'vue-i18n';
 import Cell from './Cell.vue';
 import { defaultVideos } from './utils';
 
-import { colorTheme } from '@/store';
-import { getTextColor, PiecewiseColorScheme } from '@/utils/colors';
+import { colorThemes } from '@/store/color';
+import { getTextColor } from '@/utils/colors';
 import type { MS_Level } from '@/utils/ms_const';
 import { formatNumberSmart } from '@/utils/strings';
 import type { StandardVideoAbstract } from '@/utils/videoabstract';
@@ -56,11 +56,11 @@ const { t } = useI18n();
 const colorScheme = computed(() => {
     switch (props.sortBy) {
         case 'time':
-            return PiecewiseColorScheme.createFromTheme(colorTheme.value[`${props.level}time`]);
+            return colorThemes[`${props.level}time`].value;
         case 'bvs':
-            return PiecewiseColorScheme.createFromTheme(colorTheme.value.bvs);
+            return colorThemes.bvs.value;
         case 'stnb':
-            return PiecewiseColorScheme.createFromTheme(colorTheme.value.stnb);
+            return colorThemes.stnb.value;
     }
 });
 
