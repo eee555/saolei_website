@@ -6,18 +6,13 @@
         {{ t('common.level.e') }}{{ t('common.punct.colon') }}{{ ms_to_s(eSum) }}
     </div>
     <div class="cell-list">
-        <Cell :video="bestE[0]" :color-theme="colorSchemeE" :default-time="240" />
-        <Cell :video="bestE[1]" :color-theme="colorSchemeE" :default-time="240" />
+        <Cell v-for="i in 2" :key="`e${i}`" :video="bestE[i-1]" :color-theme="colorThemes.etime.value" :default-time="240" />
     </div>
     <div class="text text-large" style="margin-top: 0.5em">
         {{ t('common.level.i') }}{{ t('common.punct.colon') }}{{ ms_to_s(iSum) }}
     </div>
     <div class="cell-list">
-        <Cell :video="bestI[0]" :color-theme="colorSchemeI" :default-time="60" />
-        <Cell :video="bestI[1]" :color-theme="colorSchemeI" :default-time="60" />
-        <Cell :video="bestI[2]" :color-theme="colorSchemeI" :default-time="60" />
-        <Cell :video="bestI[3]" :color-theme="colorSchemeI" :default-time="60" />
-        <Cell :video="bestI[4]" :color-theme="colorSchemeI" :default-time="60" />
+        <Cell v-for="i in 5" :key="`i${i}`" :video="bestI[i-1]" :color-theme="colorThemes.itime.value" :default-time="60" />
     </div>
 </template>
 
@@ -29,9 +24,8 @@ import { useI18n } from 'vue-i18n';
 
 import Cell from './Cell.vue';
 
-import { colorTheme } from '@/store';
+import { colorThemes } from '@/store/color';
 import { ms_to_s } from '@/utils';
-import { PiecewiseColorScheme } from '@/utils/colors';
 import type { VideoAbstract } from '@/utils/videoabstract';
 import { isWeeklyClassicScoreMode } from '@/utils/weekly';
 
@@ -40,9 +34,6 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
-
-const colorSchemeI = computed(() => PiecewiseColorScheme.createFromTheme(colorTheme.value.itime));
-const colorSchemeE = computed(() => PiecewiseColorScheme.createFromTheme(colorTheme.value.etime));
 
 function bestVideos(videos: VideoAbstract[], level: 'i' | 'e') {
     const filtered = videos.filter((video) => video.level === level && isWeeklyClassicScoreMode(video.mode));

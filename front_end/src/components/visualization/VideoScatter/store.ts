@@ -5,9 +5,9 @@ import { defineStore } from 'pinia';
 import { videoToPlotPoint } from './utils';
 
 import { colorTheme, VideoScatterConfig } from '@/store';
+import { colorThemes } from '@/store/color';
 import { pinia } from '@/store/create';
 import { PiecewiseColorScheme } from '@/utils/colors';
-import type { MS_Level } from '@/utils/ms_const';
 import { getPiecewiseColorSchemeName, isStandardLevel } from '@/utils/ms_const';
 import type { VideoAbstract } from '@/utils/videoabstract';
 
@@ -15,11 +15,6 @@ function inShape(video: VideoAbstract, shape: AnyShape) {
     const point = videoToPlotPoint(video, VideoScatterConfig.value.x, VideoScatterConfig.value.y);
     if (point === undefined) return false;
     return shape.contains(point);
-}
-
-function getTimeColorScheme(level: MS_Level) {
-    const name = getPiecewiseColorSchemeName('time', level);
-    return new PiecewiseColorScheme(colorTheme.value[name].colors, colorTheme.value[name].thresholds);
 }
 
 export const VideoScatterStore = defineStore('video-scatter-store', {
@@ -41,9 +36,9 @@ export const VideoScatterStore = defineStore('video-scatter-store', {
                 return (video: VideoAbstract) => (isStandardLevel(video.level) ? colorTheme.value.level[video.level] : colorTheme.value.level.c);
             } else if (colorBy === 'time') {
                 const schemes = {
-                    b: getTimeColorScheme('b'),
-                    i: getTimeColorScheme('i'),
-                    e: getTimeColorScheme('e'),
+                    b: colorThemes.btime.value,
+                    i: colorThemes.itime.value,
+                    e: colorThemes.etime.value,
                 };
                 return (video: VideoAbstract) => (isStandardLevel(video.level) ? schemes[video.level].getColor(video.time) : colorTheme.value.level.e);
             } else {
