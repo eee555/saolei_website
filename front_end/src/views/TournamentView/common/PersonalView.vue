@@ -41,6 +41,10 @@ const props = defineProps({
     },
 });
 
+defineSlots<{
+    personalSummary?: (props: { videos: VideoAbstract[] }) => unknown;
+}>();
+
 const thisColumnChoices = ArrayUtils.sortByReferenceOrder(['upload_time', 'software', 'level', 'mode', 'time', 'bv', 'bvs', 'stnb', 'ioe', 'thrp', 'path', 'file_size'], ColumnChoices);
 
 const videos = ref<VideoAbstract[]>([]);
