@@ -73,7 +73,7 @@
     "cypress-table": "1.0.2",
     "cypress-vite": "1.10.2",
     "esbuild": "0.28.2",
-    "eslint": "10.8.1",
+    "eslint": "10.9.1",
     "eslint-import-resolver-typescript": "4.4.5",
     "eslint-plugin-cypress": "7.0.0",
     "eslint-plugin-import-x": "4.16.2",
