@@ -20,6 +20,11 @@ defineProps({
     hideAnimation: { type: Number, default: 250 },
     followCursor: { type: Boolean, default: false },
 });
+
+defineSlots<{
+    default?: () => unknown;
+    content?: () => unknown;
+}>();
 </script>
 
 <style lang="less" scoped>

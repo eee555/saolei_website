@@ -171,7 +171,7 @@ export default defineConfig({
         // vue/require-default-export
         // vue/require-direct-export
         // vue/require-emit-validator
-        // 'vue/require-explicit-slots': 'error',  // TODO
+        'vue/require-explicit-slots': 'error',
         'vue/require-expose': 'error',
         'vue/require-macro-variable-name': 'error',
         // vue/require-name-property

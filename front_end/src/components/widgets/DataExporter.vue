@@ -34,6 +34,10 @@ const props = defineProps({
     },
 });
 
+defineSlots<{
+    default?: () => unknown;
+}>();
+
 const data = defineModel<TData[]>({ default: () => [] });
 
 const format = ref<DataExportFormat>('csv');
