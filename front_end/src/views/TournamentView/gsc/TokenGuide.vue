@@ -49,7 +49,7 @@ const props = defineProps({
     token: { type: String, default: '' },
 });
 const emit = defineEmits<{
-    (event: 'refresh'): void;
+    refresh: [];
 }>();
 
 const identifier = defineModel('identifier', { type: String, default: '' });

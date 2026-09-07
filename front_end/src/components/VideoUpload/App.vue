@@ -39,7 +39,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits<{
-    (e: 'onUpload', video: VideoAbstract): void;
+    onUpload: [video: VideoAbstract];
 }>();
 
 const { proxy } = useCurrentInstance();

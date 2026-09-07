@@ -224,7 +224,7 @@ export default defineConfig({
 
         '@typescript-eslint/consistent-return': 'off', // 官方建议关闭
         '@typescript-eslint/explicit-function-return-type': 'off', // 和i18n冲突
-        '@typescript-eslint/prefer-function-type': 'off', // TODO: emit定义格式需要修改
+        // '@typescript-eslint/prefer-function-type': 'off', // TODO: emit定义格式需要修改
         '@typescript-eslint/promise-function-async': 'off', // 和Vue Router、defineAsyncComponent冲突
         '@typescript-eslint/max-params': 'off',
         '@typescript-eslint/naming-convention': 'off', // TODO：涉及到前后端标准不一致的问题，很复杂
