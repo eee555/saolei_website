@@ -31,6 +31,14 @@ class TestGsc(TournamentTestCaseBase):
             rank=1,
             rank_score=100,
         )
+        external_participant = GSCParticipant.objects.create(
+            tournament=self.tournament,
+            token=self.tournament.token,
+            start_time=self.tournament.start_time,
+            end_time=self.tournament.end_time,
+            rank=2,
+            rank_score=50,
+        )
         video = self.create_video()
         self.tournament.videos.add(video)
 
@@ -44,9 +52,10 @@ class TestGsc(TournamentTestCaseBase):
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data[0]['id'], participant.id)
-        self.assertEqual(data[0]['rank'], 1)
-        self.assertEqual(data[0]['user_id'], self.user.id)
+        data_by_id = {item['id']: item for item in data}
+        self.assertEqual(data_by_id[participant.id]['rank'], 1)
+        self.assertEqual(data_by_id[participant.id]['user_id'], self.user.id)
+        self.assertEqual(data_by_id[external_participant.id]['user_id'], 0)
 
     def test_gsc_participant_registration_uses_two_steps(self):
         self.client.force_login(self.user)

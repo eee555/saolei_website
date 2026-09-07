@@ -103,6 +103,7 @@ export default {
         ratelimit: {
             oncePerHour: 'once per hour',
             oncePerMinute: 'once per minute',
+            oncePerSeconds: ({ list }: MessageContext) => `once per ${list(0)} seconds`,
         },
         response: {
             OK: '',
@@ -343,7 +344,6 @@ export default {
             other: 'Other',
             all: 'All',
         },
-        ranking: 'Ranking',
         startsFrom: 'Starts From',
         state: {
             p: 'Pending',

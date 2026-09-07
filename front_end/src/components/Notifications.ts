@@ -36,13 +36,17 @@ export function httpErrorNotification(error: unknown): void {
     }
 }
 
+export function actionSuccessNotification(): void {
+    ElNotification({
+        title: t('msg.actionSuccess'),
+        type: 'success',
+        duration: local.value.notification_duration,
+    });
+}
+
 export function successNotification(response: AxiosResponse): void {
     if (response.status === 200) {
-        ElNotification({
-            title: t('msg.actionSuccess'),
-            type: 'success',
-            duration: local.value.notification_duration,
-        });
+        actionSuccessNotification();
     } else {
         unknownErrorNotification(response);
     }

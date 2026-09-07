@@ -3,23 +3,19 @@
         <ElLink :href="gscGuideUrl" target="_blank" rel="noopener noreferrer">
             {{ t('gsc.identifierGuide.guideLink') }}
         </ElLink>
-        <template v-if="token === ''">
-            <br>
+        <div v-if="token === ''">
             {{ t('gsc.identifierGuide.preparing') }}
-        </template>
-        <template v-else-if="!participant">
-            <br>
+        </div>
+        <div v-else-if="!participant">
             <ElButton :loading="registeringParticipant" @click="registerParticipant">
                 {{ t('common.button.register') }}
             </ElButton>
-        </template>
-        <template v-else>
-            <br>
+        </div>
+        <div v-else>
             {{ t('gsc.identifierGuide.token') }}
             <span class="ttfamily">{{ token }}</span>
             <IconCopy :text="token" />
-            <br>
-            <template v-if="identifier === ''">
+            <div v-if="identifier === ''">
                 <ElInput v-model="newIdentifier" :placeholder="t('common.prop.identifier')" style="width: 260px" />
                 <ElButton :loading="registeringIdentifier" @click="registerIdentifier">
                     {{ t('common.button.register') }}
@@ -27,13 +23,13 @@
                 <span v-if="errorText !== ''" class="text text-danger">
                     {{ errorText }}
                 </span>
-            </template>
-            <template v-else>
+            </div>
+            <div v-else>
                 {{ t('gsc.identifierGuide.identifier') }}
                 <span class="ttfamily">{{ identifier }}</span>
                 <IconCopy :text="identifier" />
-            </template>
-        </template>
+            </div>
+        </div>
     </span>
 </template>
 
@@ -49,27 +45,15 @@ import { local } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const props = defineProps({
-    order: {
-        type: Number,
-        default: 0,
-    },
-    token: {
-        type: String,
-        default: '',
-    },
+    order: { type: Number, default: 0 },
+    token: { type: String, default: '' },
 });
 const emit = defineEmits<{
     (event: 'refresh'): void;
 }>();
 
-const identifier = defineModel('identifier', {
-    type: String,
-    default: '',
-});
-const participant = defineModel('participant', {
-    type: Boolean,
-    default: false,
-});
+const identifier = defineModel('identifier', { type: String, default: '' });
+const participant = defineModel('participant', { type: Boolean, default: false });
 
 const { proxy } = useCurrentInstance();
 const { t } = useI18n();

@@ -31,14 +31,20 @@ class TestWeekly(TournamentTestCaseBase):
             start_time=tournament.start_time,
             end_time=tournament.end_time,
         )
+        external_participant = WeeklyParticipant.objects.create(
+            tournament=tournament,
+            start_time=tournament.start_time,
+            end_time=tournament.end_time,
+        )
         self.client.force_login(self.user)
         registered_response = self.client.get('/api/tournament/participants', {'tournament_id': tournament.id})
         registered_data = registered_response.json()
         self.assertEqual(registered_response.status_code, 200)
-        self.assertEqual(registered_data[0]['id'], participant.id)
-        self.assertEqual(registered_data[0]['user_id'], self.user.id)
-        self.assertEqual(registered_data[0]['token'], participant.token)
-        self.assertIsNone(registered_data[0]['arbiter_identifier__identifier'])
+        registered_data_by_id = {item['id']: item for item in registered_data}
+        self.assertEqual(registered_data_by_id[participant.id]['user_id'], self.user.id)
+        self.assertEqual(registered_data_by_id[participant.id]['token'], participant.token)
+        self.assertIsNone(registered_data_by_id[participant.id]['arbiter_identifier__identifier'])
+        self.assertEqual(registered_data_by_id[external_participant.id]['user_id'], 0)
 
         normal_results_response = self.client.get('/api/tournament/weekly/results', {'tournament_id': tournament.id})
         self.assertEqual(normal_results_response.status_code, 403)
@@ -48,8 +54,9 @@ class TestWeekly(TournamentTestCaseBase):
         awarded_response = self.client.get('/api/tournament/weekly/results', {'tournament_id': tournament.id})
         awarded_data = awarded_response.json()
         self.assertEqual(awarded_response.status_code, 200)
-        self.assertEqual(awarded_data[0]['id'], participant.id)
-        self.assertEqual(awarded_data[0]['user_id'], self.user.id)
+        awarded_data_by_id = {item['id']: item for item in awarded_data}
+        self.assertEqual(awarded_data_by_id[participant.id]['user_id'], self.user.id)
+        self.assertEqual(awarded_data_by_id[external_participant.id]['user_id'], 0)
 
     def test_weekly_participant_api_limits_window_to_two_hours_or_tournament_end(self):
         now = timezone.now()
@@ -76,6 +83,14 @@ class TestWeekly(TournamentTestCaseBase):
         truncated_participant = WeeklyParticipant.objects.get(tournament=truncated_tournament, user=other_user)
         self.assertEqual(full_response.status_code, 200)
         self.assertEqual(truncated_response.status_code, 200)
+        self.assertEqual(full_response.json()['id'], full_participant.id)
+        self.assertEqual(full_response.json()['user_id'], other_user.id)
+        self.assertEqual(full_response.json()['tournament_id'], full_window_tournament.id)
+        self.assertIsNone(full_response.json()['rank'])
+        self.assertEqual(full_response.json()['rank_score'], 0)
+        self.assertEqual(truncated_response.json()['id'], truncated_participant.id)
+        self.assertEqual(truncated_response.json()['user_id'], other_user.id)
+        self.assertEqual(truncated_response.json()['tournament_id'], truncated_tournament.id)
         self.assertEqual(full_participant.start_time, now)
         self.assertEqual(full_participant.end_time, now + timedelta(hours=2))
         self.assertEqual(truncated_participant.start_time, now)
@@ -101,6 +116,8 @@ class TestWeekly(TournamentTestCaseBase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['token'], participant.token)
+        self.assertEqual(response.json()['user_id'], other_user.id)
+        self.assertEqual(response.json()['tournament_id'], tournament.id)
         video = self.create_video(user=other_user, tournament_identifier=[participant.token])
         video.refresh_from_db()
         self.assertTrue(video.ongoing_tournament)

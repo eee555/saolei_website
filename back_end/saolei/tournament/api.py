@@ -12,6 +12,7 @@ from ninja.orm import create_schema
 from config.text_choices import Tournament_TextChoices
 from tournament.cache import TOURNAMENT_USER_CACHE_KEYS, TournamentCache
 from tournament.models import GSCTournament, Tournament, TournamentParticipant, TournamentUser
+from tournament.schema import ParticipantUserIdOutBase
 from userprofile.decorators import login_required_error, staff_required
 from userprofile.models import UserProfile
 from utils.response import HttpResponseConflict
@@ -58,10 +59,11 @@ TournamentParticipantOut = create_schema(
     TournamentParticipant,
     fields=['id', 'token', 'start_time', 'end_time', 'rank', 'rank_score'],
     custom_fields=[
-        ('user_id', int | None, None),
+        ('user_id', int, 0),
         ('tournament_id', int, 0),
         ('arbiter_identifier__identifier', str | None, Field(None, alias='arbiter_identifier.identifier')),
     ],
+    base_class=ParticipantUserIdOutBase,
 )
 
 
@@ -239,6 +241,18 @@ def get_participant_videos(request: HttpRequest, tournament_id: int, user_id: in
         return HttpResponseForbidden()
     participant = TournamentParticipant.objects.filter(user_id=user_id, tournament=tournament).first()
     return participant.videos if participant else []
+
+
+@router.get('/get_videos/tournament', response=list[VideoBaseOut])
+@decorate_view(ratelimit(key='ip', rate='1/5s'))
+def get_tournament_videos(request: HttpRequest, tournament_id: int):
+    """
+    - `ratelimit(key='ip', rate='1/5s')`
+    """
+    tournament = get_object_or_404(Tournament, id=tournament_id)
+    if tournament.state != Tournament_TextChoices.State.AWARDED:
+        return HttpResponseForbidden()
+    return tournament.videos.all()
 
 
 @router.get('/get_news', response=TournamentNewsOut)
