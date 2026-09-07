@@ -231,8 +231,7 @@ export default defineConfig({
         '@typescript-eslint/no-redeclare': 'off',
         '@typescript-eslint/no-magic-numbers': 'off', // TODO
         '@typescript-eslint/no-unnecessary-condition': 'off', // false positive很多，参考https://typescript-eslint.io/rules/no-unnecessary-condition/#values-modified-within-function-calls
-        '@typescript-eslint/no-unsafe-assignment': 'off', // TODO：牵扯到的内容很多，包括后端API重构等
-        '@typescript-eslint/no-unsafe-member-access': 'off', // TODO：牵扯到的内容很多，包括后端API重构等
+        '@typescript-eslint/no-unsafe-assignment': 'off', // 和defineAsyncComponent冲突
         '@typescript-eslint/no-unsafe-type-assertion': 'off', // 和Vue的PropType冲突
         '@typescript-eslint/no-use-before-define': 'off', // 为了代码可读性，有的函数需要放在最后
         '@typescript-eslint/prefer-enum-initializers': 'off',

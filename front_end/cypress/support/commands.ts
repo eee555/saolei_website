@@ -5,9 +5,19 @@ import 'cypress-table';
 import 'cypress-intercept-formdata';
 import type { StaticResponse } from 'cypress/types/net-stubbing';
 
+import type { LocalSettings } from '../../src/store';
+
 declare global {
+    interface Fixture<T> {
+        data: T;
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace Cypress {
+        interface LocalStorageTypes {
+            local: LocalSettings;
+        }
+
         interface Chainable {
             /**
              * cypress-get-table 插件，用于获取表格数据
@@ -24,7 +34,8 @@ declare global {
              * @param key - 本地存储的键
              * @example cy.getLocalStorage('authToken')
              */
-            getLocalStorage(key: string): Chainable;
+            getLocalStorage<K extends keyof LocalStorageTypes>(key: K): Chainable<LocalStorageTypes[K] | null>;
+            getLocalStorage<T = unknown>(key: string): Chainable<T | null>;
 
             /**
              * 设置本地存储的值
