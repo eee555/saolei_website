@@ -6,13 +6,13 @@
         {{ t('common.level.e') }}{{ t('common.punct.colon') }}{{ ms_to_s(eSum) }}
     </div>
     <div class="cell-list">
-        <Cell v-for="i in 2" :key="`e${i}`" :video="bestE[i]" :color-theme="colorThemes.etime.value" :default-time="240" />
+        <Cell v-for="i in 2" :key="`e${i}`" :video="bestE[i-1]" :color-theme="colorThemes.etime.value" :default-time="240" />
     </div>
     <div class="text text-large" style="margin-top: 0.5em">
         {{ t('common.level.i') }}{{ t('common.punct.colon') }}{{ ms_to_s(iSum) }}
     </div>
     <div class="cell-list">
-        <Cell v-for="i in 5" :key="`i${i}`" :video="bestI[i]" :color-theme="colorThemes.itime.value" :default-time="60" />
+        <Cell v-for="i in 5" :key="`i${i}`" :video="bestI[i-1]" :color-theme="colorThemes.itime.value" :default-time="60" />
     </div>
 </template>
 
