@@ -22,14 +22,13 @@ import type { UploadEntry, UploadStatus } from './utils';
 import { fileCollide } from './utils';
 
 import BaseFileInput from '@/components/common/BaseFileInput.vue';
+import { uploadVideoFile } from '@/services/videoUploadService';
 import { local } from '@/store';
 import { sleep } from '@/utils';
 import { ArrayUtils } from '@/utils/arrays';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import type { CustomLevel } from '@/utils/customlevel';
 import type { AnyVideo } from '@/utils/fileIO';
 import { extract_stat, fileHash, load_video_file } from '@/utils/fileIO';
-import { Dict2FormData } from '@/utils/forms';
 import { getFileExtension } from '@/utils/strings';
 import type { VideoAbstract } from '@/utils/videoabstract';
 
@@ -41,8 +40,6 @@ const props = defineProps({
 const emit = defineEmits<{
     onUpload: [video: VideoAbstract];
 }>();
-
-const { proxy } = useCurrentInstance();
 
 const uploadQueue = ref<UploadEntry[]>([]);
 const selectedQueue = ref<UploadEntry[]>([]);
@@ -100,22 +97,15 @@ const forceUpload = async (entry: UploadEntry) => {
     }
     await sleep(200);
     try {
-        const response = await proxy.$axios.post('/common/uploadvideo/', Dict2FormData({
-            file: entry.file,
-        }));
-        if (response.data.type === 'success') {
-            entry.stat.id = response.data.data.id;
-            entry.stat.state = response.data.data.state;
+        const result = await uploadVideoFile(entry.file);
+        if (result.type === 'success') {
+            entry.stat.id = result.id;
+            entry.stat.state = result.state;
             entry.stat.upload_time = new Date(Date.now());
             emit('onUpload', entry.stat);
             entry.status = 'success';
-        } else if (response.data.type === 'error' && response.data.object === 'file') {
-            entry.status = 'collision';
-        } else if (response.data.type === 'error' && response.data.object === 'identifier') {
-            entry.status = 'censorship';
         } else {
-            // 正常使用不会到这里
-            entry.status = 'upload';
+            entry.status = result.status;
         }
     } catch (_error) {
         console.error(_error);
