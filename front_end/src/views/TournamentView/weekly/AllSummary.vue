@@ -55,7 +55,7 @@ defineProps({
 });
 
 const emit = defineEmits<{
-    (event: 'row-click', row: WeeklyParticipant): void;
+    'row-click': [row: WeeklyParticipant];
 }>();
 
 const { t } = useI18n();

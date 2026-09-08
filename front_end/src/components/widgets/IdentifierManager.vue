@@ -55,7 +55,7 @@ import { removeItem } from '@/utils/system/tools';
 import { UserProfile } from '@/utils/userprofile';
 
 const emit = defineEmits<{
-    (event: 'identifiersChanged'): void;
+    identifiersChanged: [];
 }>();
 
 const { proxy } = useCurrentInstance();

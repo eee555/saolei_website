@@ -46,7 +46,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits<{
-    (e: 'addLink', platform: AccountLinkPlatform, identifier: string): void;
+    addLink: [platform: AccountLinkPlatform, identifier: string];
 }>();
 
 const { t } = useI18n();

@@ -59,7 +59,7 @@ const props = defineProps({
     },
 });
 const emit = defineEmits<{
-    (event: 'registered', participant: TournamentParticipant): void;
+    registered: [participant: TournamentParticipant];
 }>();
 
 const token = defineModel('token', { type: String, default: '' });
