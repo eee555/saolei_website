@@ -26,11 +26,9 @@
             {{ statusText }}
             <span v-if="scannedCount > 0">
                 {{ t('common.punct.comma') }}
-                {{ t('local.stat', { scanned: scannedCount, uploaded: uploadProgress.uploaded, skipped: skippedCount, failed: uploadProgress.failed }) }}
+                {{ t('local.stat', { scanned: scannedCount, uploaded: uploadedCount, skipped: skippedCount, failed: failedCount }) }}
             </span>
         </div>
-
-        <Progress :parser-progress="parserProgress" :upload-progress="uploadProgress" />
     </div>
 </template>
 
@@ -40,7 +38,6 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { BaseIconUpload } from '@/components/common/icon';
-import Progress from '@/components/VideoUpload/Progress.vue';
 import type { UploadEntry } from '@/components/VideoUpload/utils';
 import { fileCollide, isUploadableStatus, prepareUploadEntry, uploadEntry } from '@/components/VideoUpload/utils';
 import { globalNow } from '@/utils/datetime';
@@ -78,17 +75,10 @@ const pollIntervalSeconds = ref(3);
 const pendingFiles: File[] = [];
 const processedEntries: UploadEntry[] = [];
 const processingQueue = ref(false);
+const uploadedCount = ref(0);
+const failedCount = ref(0);
 const skippedCount = ref(0);
 const scannedCount = ref(0);
-const parserProgress = ref({
-    total: 0,
-    parsed: 0,
-});
-const uploadProgress = ref({
-    total: 0,
-    uploaded: 0,
-    failed: 0,
-});
 
 const filterOptions = [
     { value: WeeklyAutoUploadFilter.Tournament, labelKey: 'local.filterTournament' },
@@ -161,7 +151,6 @@ async function drainQueue() {
 
 async function processFile(file: File) {
     scannedCount.value += 1;
-    parserProgress.value.total += 1;
     let entry: UploadEntry;
     try {
         entry = await prepareUploadEntry(file);
@@ -173,7 +162,6 @@ async function processFile(file: File) {
             status: 'parse',
         };
     }
-    parserProgress.value.parsed += 1;
 
     if (processedEntries.some((oldEntry) => fileCollide(oldEntry, entry))) {
         skippedCount.value += 1;
@@ -194,21 +182,20 @@ async function processFile(file: File) {
         return;
     }
 
-    uploadProgress.value.total += 1;
     logUpload('upload start', entry);
     try {
         await uploadEntry(entry);
         if (entry.status === 'success' && entry.stat !== undefined) {
-            uploadProgress.value.uploaded += 1;
+            uploadedCount.value += 1;
             emit('uploaded', entry.stat);
             logUpload('upload success', entry);
         } else {
-            uploadProgress.value.failed += 1;
+            failedCount.value += 1;
             logUpload('upload failed', entry);
         }
     } catch (error) {
         console.error(error);
-        uploadProgress.value.failed += 1;
+        failedCount.value += 1;
         logUpload('upload error', entry);
     }
 }
