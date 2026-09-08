@@ -20,6 +20,7 @@
         </h3>
         <PersonalView :key="personalViewKey" v-loading="loading" :user-id="store.user.id" :tournament-id="tournament.id">
             <template #personalSummary="{ videos }">
+                <AutoUploader :tournament="tournament" :participant="participant" :videos="videos" @uploaded="(video) => handleAutoUploaded(video, videos)" />
                 <PersonalSummary :tournament-format="tournament.weeklyData?.tournament_format" :videos="videos" />
             </template>
         </PersonalView>
@@ -52,6 +53,7 @@ import PersonalView from '../common/PersonalView.vue';
 import Title from '../common/Title.vue';
 
 import AllSummary from './AllSummary.vue';
+import AutoUploader from './AutoUploader.vue';
 import Description from './Description.vue';
 import PersonalSummary from './PersonalSummary.vue';
 import TokenGuide from './TokenGuide.vue';
@@ -63,6 +65,7 @@ import { store } from '@/store';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { TournamentState } from '@/utils/ms_const';
 import type { Tournament, TournamentParticipant } from '@/utils/tournaments';
+import type { VideoAbstract } from '@/utils/videoabstract';
 import type { WeeklyParticipant } from '@/utils/weekly';
 
 const props = defineProps({
@@ -108,6 +111,15 @@ function handleParticipantRegistered(registeredParticipant: TournamentParticipan
     participant.value = registeredParticipant;
     token.value = registeredParticipant.token;
     personalViewKey.value += 1;
+}
+
+function handleAutoUploaded(video: VideoAbstract, videos: VideoAbstract[]) {
+    const oldIndex = videos.findIndex((item) => item.id === video.id);
+    if (oldIndex === -1) {
+        videos.unshift(video);
+    } else {
+        videos[oldIndex] = video;
+    }
 }
 
 watch(() => [

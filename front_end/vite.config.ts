@@ -33,6 +33,7 @@ export default defineConfig(({ mode }) => {
         resolve: {
             alias: {
                 '@': fileURLToPath(new URL('./src', import.meta.url)),
+                '@cy': fileURLToPath(new URL('./cypress', import.meta.url)),
             },
         },
         server: {
