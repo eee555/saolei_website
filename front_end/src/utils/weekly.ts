@@ -25,7 +25,7 @@ export class WeeklyParticipant extends TournamentParticipant {
     public classic_it: WeeklyVideoScore[] = makeDefaultScores(5, DEFAULT_WEEKLY_INTERMEDIATE_TIME);
     public classic_score = DEFAULT_WEEKLY_EXPERT_TIME * 2 + DEFAULT_WEEKLY_INTERMEDIATE_TIME * 5;
 
-    public constructor(init?: Partial<WeeklyParticipant>) {
+    public constructor(init: Partial<WeeklyParticipant> = {}) {
         super(init);
         Object.assign(this, init);
     }

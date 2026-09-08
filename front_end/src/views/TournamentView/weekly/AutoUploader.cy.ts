@@ -2,12 +2,12 @@ import { interceptFormData } from 'cypress-intercept-formdata';
 
 import AutoUploader from './AutoUploader.vue';
 
-import { binaryStringToUint8Array } from '@cy/support/stupidCypress';
 import i18n from '@/i18n';
 import { MS_State, TournamentState, TournamentSubclass } from '@/utils/ms_const';
 import { Tournament, TournamentParticipant } from '@/utils/tournaments';
 import type { VideoAbstract } from '@/utils/videoabstract';
 import { WeeklyTournamentFormat } from '@/utils/weekly';
+import { binaryStringToUint8Array } from '@cy/support/stupidCypress';
 
 const weeklyToken = 'G11479';
 
@@ -66,9 +66,8 @@ function weeklyParticipant(init: Partial<TournamentParticipant> = {}) {
         token: weeklyToken,
         tournament_id: 11479,
         user_id: 101,
-        start_time: '2000-01-01T00:00:00+08:00',
-        end_time: '2099-01-01T00:00:00+08:00',
-        rank: null,
+        start_time: new Date('2000-01-01T00:00:00+08:00'),
+        end_time: new Date('2099-01-01T00:00:00+08:00'),
         rank_score: 0,
         ...init,
     });

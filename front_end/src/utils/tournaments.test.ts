@@ -10,12 +10,12 @@ describe('TournamentParticipant', () => {
 
             expect(participant.id).toBe(0);
             expect(participant.token).toBe('');
-            expect(participant.arbiter_identifier__identifier).toBeNull();
+            expect(participant.arbiter_identifier__identifier).toBeUndefined();
             expect(participant.tournament_id).toBe(0);
             expect(participant.user_id).toBe(0);
-            expect(participant.start_time).toBeNull();
-            expect(participant.end_time).toBeNull();
-            expect(participant.rank).toBeNull();
+            expect(participant.start_time).toBeUndefined();
+            expect(participant.end_time).toBeUndefined();
+            expect(participant.rank).toBeUndefined();
             expect(participant.rank_score).toBe(0);
         });
 
@@ -25,8 +25,8 @@ describe('TournamentParticipant', () => {
                 token: 'TOKEN',
                 tournament_id: 3,
                 user_id: 11,
-                start_time: '2026-01-01T08:00:00+08:00',
-                end_time: '2026-01-01T10:00:00+08:00',
+                start_time: new Date('2026-01-01T08:00:00+08:00'),
+                end_time: new Date('2026-01-01T10:00:00+08:00'),
                 rank: 2,
                 rank_score: 32,
             });
@@ -35,8 +35,8 @@ describe('TournamentParticipant', () => {
             expect(participant.token).toBe('TOKEN');
             expect(participant.tournament_id).toBe(3);
             expect(participant.user_id).toBe(11);
-            expect(participant.start_time).toBe('2026-01-01T08:00:00+08:00');
-            expect(participant.end_time).toBe('2026-01-01T10:00:00+08:00');
+            expect(participant.start_time).toEqual(new Date('2026-01-01T08:00:00+08:00'));
+            expect(participant.end_time).toEqual(new Date('2026-01-01T10:00:00+08:00'));
             expect(participant.rank).toBe(2);
             expect(participant.rank_score).toBe(32);
         });

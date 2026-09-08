@@ -1,7 +1,8 @@
 import $axios from '@/http';
+import { toDate } from '@/utils/datetime';
 import { GSCParticipant } from '@/utils/gsc';
-import type { TournamentInfo } from '@/utils/tournaments';
 import { TournamentParticipant } from '@/utils/tournaments';
+import type { TournamentInfo } from '@/utils/tournaments';
 import type { VideoAbstractData } from '@/utils/videoabstract';
 import { WeeklyParticipant } from '@/utils/weekly';
 
@@ -19,7 +20,6 @@ export interface GSCParticipantResponse {
     et1st: number;
     et5th: number;
     et5sum: number;
-    t37?: number;
 }
 
 export interface WeeklyScoreResponse {
@@ -100,14 +100,14 @@ export async function fetchParticipantList(tournamentId: number): Promise<Tourna
     const { data } = await $axios.get<TournamentParticipantResponse[]>('/api/tournament/participants', {
         params: { tournament_id: tournamentId },
     });
-    return data.map((value) => new TournamentParticipant(value));
+    return data.map(tournamentParticipantFromResponse);
 }
 
 export async function createWeeklyParticipant(tournamentId: number): Promise<TournamentParticipant> {
     const { data } = await $axios.post<TournamentParticipantResponse>('/api/tournament/weekly/participant', {
         id: tournamentId,
     });
-    return new TournamentParticipant(data);
+    return tournamentParticipantFromResponse(data);
 }
 
 export async function fetchTournamentUserRanking(params: TournamentUserRankingParams): Promise<TournamentUserRankingResponse> {
@@ -125,14 +125,14 @@ export async function fetchGSCResults(tournamentId: number): Promise<GSCParticip
     const { data } = await $axios.get<GSCParticipantResponse[]>('/api/tournament/gsc/results', {
         params: { tournament_id: tournamentId },
     });
-    return data.map((value) => new GSCParticipant(value));
+    return data.map(gscParticipantFromResponse);
 }
 
 export async function fetchWeeklyResults(tournamentId: number): Promise<WeeklyParticipant[]> {
     const { data } = await $axios.get<WeeklyScoreResponse[]>('/api/tournament/weekly/results', {
         params: { tournament_id: tournamentId },
     });
-    return data.map((value) => new WeeklyParticipant(value));
+    return data.map(weeklyParticipantFromResponse);
 }
 
 export async function fetchParticipantVideos(params: ParticipantVideosParams): Promise<VideoAbstractData[]> {
@@ -169,4 +169,50 @@ export async function downloadParticipantTournamentVideos(params: ParticipantVid
         responseType: 'arraybuffer',
     });
     return data;
+}
+
+function tournamentParticipantFromResponse(data: TournamentParticipantResponse): TournamentParticipant {
+    return new TournamentParticipant({
+        id: data.id,
+        token: data.token,
+        arbiter_identifier__identifier: data.arbiter_identifier__identifier ?? undefined,
+        tournament_id: data.tournament_id,
+        user_id: data.user_id,
+        start_time: toDate(data.start_time),
+        end_time: toDate(data.end_time),
+        rank: data.rank ?? undefined,
+        rank_score: data.rank_score,
+    });
+}
+
+function gscParticipantFromResponse(data: GSCParticipantResponse): GSCParticipant {
+    return new GSCParticipant({
+        id: data.id,
+        user_id: data.user_id,
+        rank: data.rank ?? undefined,
+        rank_score: data.rank_score,
+        bt1st: data.bt1st,
+        bt20th: data.bt20th,
+        bt20sum: data.bt20sum,
+        it1st: data.it1st,
+        it12th: data.it12th,
+        it12sum: data.it12sum,
+        et1st: data.et1st,
+        et5th: data.et5th,
+        et5sum: data.et5sum,
+    });
+}
+
+function weeklyParticipantFromResponse(data: WeeklyScoreResponse): WeeklyParticipant {
+    return new WeeklyParticipant({
+        id: data.id,
+        user_id: data.user_id,
+        start_time: toDate(data.start_time),
+        end_time: toDate(data.end_time),
+        rank: data.rank ?? undefined,
+        rank_score: data.rank_score,
+        classic_et: data.classic_et,
+        classic_it: data.classic_it,
+        classic_score: data.classic_score,
+    });
 }
