@@ -4,7 +4,7 @@
             <div class="auto-uploader__control">
                 <span class="auto-uploader__label">{{ t('local.folder') }}</span>
                 <ElButton type="primary" :disabled="!canSelectDirectory" :loading="selectingDirectory" @click="selectDirectory">
-                    <BaseIconUpload />&nbsp;{{ directoryName || t('local.selectFolder') }}
+                    {{ directoryName || t('local.selectFolder') }}
                 </ElButton>
                 <ElButton v-if="running" :disabled="processingQueue" @click="stopWatching">
                     {{ t('local.stop') }}
@@ -17,7 +17,9 @@
             <div class="auto-uploader__control">
                 <span class="auto-uploader__label">{{ t('local.filter') }}</span>
                 <ElSelect v-model="filterLevel" size="small" style="width: 180px">
-                    <ElOption v-for="option in filterOptions" :key="option.value" :label="t(option.labelKey)" :value="option.value" />
+                    <ElOption :label="t('local.filterTournament')" value="tournament" />
+                    <ElOption :label="t('local.filterSupported')" value="supported" />
+                    <ElOption :label="t('local.filterScoreRefreshing')" value="scoreRefreshing" />
                 </ElSelect>
             </div>
         </div>
@@ -37,7 +39,6 @@ import { ElButton, ElInputNumber, ElMessage, ElOption, ElSelect } from 'element-
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { BaseIconUpload } from '@/components/common/icon';
 import type { UploadEntry } from '@/components/VideoUpload/utils';
 import { fileCollide, isUploadableStatus, prepareUploadEntry, uploadEntry } from '@/components/VideoUpload/utils';
 import { globalNow } from '@/utils/datetime';
@@ -79,12 +80,6 @@ const uploadedCount = ref(0);
 const failedCount = ref(0);
 const skippedCount = ref(0);
 const scannedCount = ref(0);
-
-const filterOptions = [
-    { value: WeeklyAutoUploadFilter.Tournament, labelKey: 'local.filterTournament' },
-    { value: WeeklyAutoUploadFilter.Supported, labelKey: 'local.filterSupported' },
-    { value: WeeklyAutoUploadFilter.ScoreRefreshing, labelKey: 'local.filterScoreRefreshing' },
-] as const;
 
 const directoryPickerSupported = computed(() => typeof window !== 'undefined' && typeof (window as DirectoryPickerWindow).showDirectoryPicker === 'function');
 const participantWindowOpen = computed(() => {
