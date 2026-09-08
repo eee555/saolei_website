@@ -43,7 +43,7 @@ import { BaseIconUpload } from '@/components/common/icon';
 import Progress from '@/components/VideoUpload/Progress.vue';
 import type { UploadEntry } from '@/components/VideoUpload/utils';
 import { fileCollide, isUploadableStatus, prepareUploadEntry, uploadEntry } from '@/components/VideoUpload/utils';
-import { globalNow, toDate } from '@/utils/datetime';
+import { globalNow } from '@/utils/datetime';
 import { createDirectoryNewFileEmitter } from '@/utils/fileIO';
 import type { DirectoryNewFileEmitter, DirectoryNewFileEvent } from '@/utils/fileIO';
 import { Tournament, TournamentParticipant } from '@/utils/tournaments';
@@ -52,7 +52,7 @@ import { isWeeklyClassicScoreMode, WeeklyTournamentFormat } from '@/utils/weekly
 
 const props = defineProps({
     tournament: { type: Tournament, required: true },
-    participant: { type: TournamentParticipant, required: false, default: undefined },
+    participant: { type: TournamentParticipant, required: true },
     videos: { type: Array<VideoAbstract>, default: () => [] },
 });
 const emit = defineEmits<{
@@ -97,18 +97,14 @@ const filterOptions = [
 ] as const;
 
 const directoryPickerSupported = computed(() => typeof window !== 'undefined' && typeof (window as DirectoryPickerWindow).showDirectoryPicker === 'function');
-const participantToken = computed(() => props.participant?.token ?? '');
-const participantStart = computed(() => toDate(props.participant?.start_time));
-const participantEnd = computed(() => toDate(props.participant?.end_time));
 const participantWindowOpen = computed(() => {
-    if (!participantStart.value || !participantEnd.value) return false;
-    return participantStart.value <= globalNow.value && globalNow.value < participantEnd.value;
+    if (!props.participant.start_time || !props.participant.end_time) return false;
+    return props.participant.start_time <= globalNow.value && globalNow.value < props.participant.end_time;
 });
 const running = computed(() => emitter.value?.running ?? false);
-const canSelectDirectory = computed(() => directoryPickerSupported.value && participantToken.value !== '' && participantWindowOpen.value);
+const canSelectDirectory = computed(() => directoryPickerSupported.value && participantWindowOpen.value);
 const statusText = computed(() => {
     if (!directoryPickerSupported.value) return t('local.unsupported');
-    if (participantToken.value === '') return t('local.unregistered');
     if (!participantWindowOpen.value) return t('local.outsideWindow');
     if (running.value) return t('local.running', { folder: directoryName.value });
     if (directoryName.value !== '') return t('local.stopped', { folder: directoryName.value });
@@ -227,7 +223,7 @@ function matchesFilter(entry: UploadEntry): boolean {
 
 function isTournamentVideo(entry: UploadEntry): boolean {
     if (entry.video === undefined) return false;
-    return entry.video.race_identifier.split(',').map((identifier) => identifier.trim()).includes(participantToken.value);
+    return entry.video.race_identifier.split(',').map((identifier) => identifier.trim()).includes(props.participant.token);
 }
 
 function isWeeklySupportedVideo(entry: UploadEntry | VideoAbstract): boolean {
@@ -287,7 +283,6 @@ const i18nMessages = {
         selectFolder: '选择文件夹',
         stat: '已扫描 {scanned}，已上传 {uploaded}，已跳过 {skipped}，失败 {failed}',
         stop: '停止',
-        unregistered: '未注册',
         unsupported: '当前浏览器不支持目录监听',
     } },
     en: { local: {
@@ -304,7 +299,6 @@ const i18nMessages = {
         selectFolder: 'Select folder',
         stat: 'Scanned {scanned}, uploaded {uploaded}, skipped {skipped}, failed {failed}',
         stop: 'Stop',
-        unregistered: 'Not registered',
         unsupported: 'Directory watching is not supported by this browser',
     } },
 };

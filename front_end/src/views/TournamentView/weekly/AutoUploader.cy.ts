@@ -77,7 +77,7 @@ function mountAutoUploader(options: { participant?: TournamentParticipant; video
     return cy.mount(AutoUploader, {
         props: {
             tournament: weeklyTournament(),
-            participant: options.participant,
+            participant: options.participant ?? weeklyParticipant(),
             videos: options.videos ?? [],
         },
         global: {
@@ -120,19 +120,22 @@ describe('<AutoUploader />', () => {
 
     it('disables directory selection when the browser does not support directory handles', () => {
         setDirectoryPicker();
-        mountAutoUploader({
-            participant: weeklyParticipant(),
-        });
+        mountAutoUploader();
 
         cy.contains('Directory watching is not supported').should('be.visible');
         cy.contains('button', 'Select folder').should('be.disabled');
     });
 
-    it('disables directory selection before the user registers', () => {
+    it('disables directory selection outside the participant window', () => {
         setDirectoryPicker(new FakeDirectoryHandle());
-        mountAutoUploader();
+        mountAutoUploader({
+            participant: weeklyParticipant({
+                start_time: new Date('2000-01-01T00:00:00+08:00'),
+                end_time: new Date('2001-01-01T00:00:00+08:00'),
+            }),
+        });
 
-        cy.contains('Not registered').should('be.visible');
+        cy.contains('Outside session window').should('be.visible');
         cy.contains('button', 'Select folder').should('be.disabled');
     });
 
