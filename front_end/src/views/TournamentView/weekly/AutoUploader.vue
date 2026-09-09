@@ -339,8 +339,4 @@ const { t } = useI18n({ messages: i18nMessages });
     color: var(--el-text-color-regular);
     font-size: 0.875rem;
 }
-
-.auto-uploader__status {
-    margin-bottom: 0.5rem;
-}
 </style>
