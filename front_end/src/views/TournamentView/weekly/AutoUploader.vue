@@ -44,10 +44,10 @@
         <div v-if="scannedCount > 0">
             <StackBar
                 legend :data="[
-                    { name: t('local.uploaded'), value: uploadedCount, color: 'red' },
-                    { name: t('local.processing'), value: scannedCount - uploadedCount - skippedCount - failedCount, color: 'orange' },
-                    { name: t('local.skipped'), value: skippedCount, color: 'green' },
-                    { name: t('local.failed'), value: failedCount, color: 'blue' },
+                    { name: t('local.uploaded'), value: uploadedCount, color: 'var(--el-color-success)' },
+                    { name: t('local.processing'), value: scannedCount - uploadedCount - skippedCount - failedCount, color: 'var(--el-color-warning)' },
+                    { name: t('local.skipped'), value: skippedCount, color: 'var(--el-color-info)' },
+                    { name: t('local.failed'), value: failedCount, color: 'var(--el-color-danger)' },
                 ]"
             />
         </div>
