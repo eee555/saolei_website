@@ -3,6 +3,7 @@ import { interceptFormData } from 'cypress-intercept-formdata';
 import AutoUploader from './AutoUploader.vue';
 
 import i18n from '@/i18n';
+import type { VideoUploadResponse } from '@/services/videoUploadService';
 import { MS_State } from '@/utils/ms_const';
 import { WeeklyParticipant, WeeklyTournamentFormat } from '@/utils/weekly';
 import { binaryStringToUint8Array } from '@cy/support/stupidCypress';
@@ -41,6 +42,11 @@ class FakeDirectoryHandle {
 
 interface DirectoryPickerWindow extends Window {
     showDirectoryPicker?: (options?: { mode?: 'read' | 'readwrite' }) => Promise<FileSystemDirectoryHandle>;
+}
+
+interface UploadResponseCase {
+    label: string;
+    responseBody: VideoUploadResponse;
 }
 
 function weeklyParticipant(init: Partial<WeeklyParticipant> = {}) {
@@ -95,6 +101,99 @@ function loadStandardGSCFile() {
     });
 }
 
+function interceptStandardGSCUpload(responseBody: VideoUploadResponse) {
+    cy.intercept('POST', '/common/uploadvideo/', (req) => {
+        expect(interceptFormData(req).file).to.equal('standard_gsc.evf');
+        req.reply({
+            statusCode: 200,
+            body: responseBody,
+        });
+    }).as('uploadRequest');
+}
+
+function interceptStandardGSCUploadHttpError(statusCode: number) {
+    cy.intercept('POST', '/common/uploadvideo/', (req) => {
+        expect(interceptFormData(req).file).to.equal('standard_gsc.evf');
+        req.reply({
+            statusCode,
+            body: {
+                detail: 'upload rejected',
+            },
+        });
+    }).as('uploadRequest');
+}
+
+function interceptDelayedStandardGSCUpload(responseBody: VideoUploadResponse, gate: Promise<void>) {
+    cy.intercept('POST', '/common/uploadvideo/', (req) => {
+        expect(interceptFormData(req).file).to.equal('standard_gsc.evf');
+        return gate.then(() => {
+            req.reply({
+                statusCode: 200,
+                body: responseBody,
+            });
+        });
+    }).as('uploadRequest');
+}
+
+function startWatchingDirectory(directory: FakeDirectoryHandle, participant: WeeklyParticipant) {
+    setDirectoryPicker(directory);
+    cy.window().then((win) => {
+        cy.stub(win.console, 'info').as('consoleInfo');
+    });
+    mountAutoUploader({
+        participant,
+    });
+    setPollInterval(1);
+
+    cy.contains('button', 'Select folder').should('not.be.disabled').click();
+    cy.get('@showDirectoryPicker').should('have.been.calledOnce');
+    cy.contains('Watching videos').should('be.visible');
+}
+
+function addStandardGSCFile(directory: FakeDirectoryHandle) {
+    loadStandardGSCFile().then((file) => {
+        directory.addFile(file);
+    });
+}
+
+function expectUploadFailure(participant: WeeklyParticipant, action: 'upload failed' | 'upload error') {
+    cy.contains('Failed: 100%(1)').should('be.visible');
+    cy.contains('Uploaded:').should('not.exist');
+    cy.contains('Processing:').should('not.exist');
+    cy.contains('Skipped:').should('not.exist');
+    cy.get('@consoleInfo').should('have.been.calledWithMatch', '[WeeklyAutoUploader]', action);
+    cy.then(() => {
+        expect(participant.videos).to.be.undefined;
+        expect(participant.classic_et).to.deep.equal([[0, 240000], [0, 240000]]);
+        expect(participant.classic_score).to.equal(780000);
+    });
+}
+
+const uploadErrorResponseCases: UploadResponseCase[] = [
+    {
+        label: 'file collision',
+        responseBody: {
+            type: 'error',
+            object: 'file',
+        },
+    },
+    {
+        label: 'identifier censorship',
+        responseBody: {
+            type: 'error',
+            object: 'identifier',
+        },
+    },
+    {
+        label: 'generic upload failure',
+        responseBody: {
+            type: 'error',
+            obj: 'userprofile',
+            category: 'realname_required',
+        },
+    },
+];
+
 describe('<AutoUploader />', () => {
     afterEach(() => {
         setDirectoryPicker();
@@ -104,7 +203,7 @@ describe('<AutoUploader />', () => {
         setDirectoryPicker();
         mountAutoUploader();
 
-        cy.contains('Directory watching is not supported').should('be.visible');
+        cy.contains('FileSystemDirectoryHandle is not supported by this browser').should('be.visible');
         cy.contains('button', 'Select folder').should('be.disabled');
     });
 
@@ -124,43 +223,22 @@ describe('<AutoUploader />', () => {
     it('uploads a new supported tournament video and adds it to the participant', () => {
         const directory = new FakeDirectoryHandle();
         const participant = weeklyParticipant();
+        const responseBody: VideoUploadResponse = {
+            type: 'success',
+            object: 'videomodel',
+            category: 'upload',
+            data: {
+                id: 114790101,
+                state: MS_State.Official,
+            },
+        };
         let finishUpload: (() => void) | undefined;
         const uploadGate = new Promise<void>((resolve) => {
             finishUpload = resolve;
         });
-        setDirectoryPicker(directory);
-        cy.window().then((win) => {
-            cy.stub(win.console, 'info').as('consoleInfo');
-        });
-        cy.intercept('POST', '/common/uploadvideo/', (req) => {
-            expect(interceptFormData(req).file).to.equal('standard_gsc.evf');
-            return uploadGate.then(() => {
-                req.reply({
-                    statusCode: 200,
-                    body: {
-                        type: 'success',
-                        object: 'videomodel',
-                        category: 'upload',
-                        data: {
-                            id: 114790101,
-                            state: MS_State.Official,
-                        },
-                    },
-                });
-            });
-        }).as('uploadRequest');
-        mountAutoUploader({
-            participant,
-        });
-        setPollInterval(1);
-
-        cy.contains('button', 'Select folder').should('not.be.disabled').click();
-        cy.get('@showDirectoryPicker').should('have.been.calledOnce');
-        cy.contains('Watching videos').should('be.visible');
-
-        loadStandardGSCFile().then((file) => {
-            directory.addFile(file);
-        });
+        interceptDelayedStandardGSCUpload(responseBody, uploadGate);
+        startWatchingDirectory(directory, participant);
+        addStandardGSCFile(directory);
 
         cy.contains('Processing: 100%(1)').should('be.visible').then(() => {
             if (finishUpload === undefined) throw new Error('Upload request was not captured.');
@@ -184,5 +262,64 @@ describe('<AutoUploader />', () => {
             expect(participant.classic_et).to.deep.equal([[114790101, 41021], [0, 240000]]);
             expect(participant.classic_score).to.equal(581021);
         });
+    });
+
+    it('adds a successful identifier-state upload to the participant', () => {
+        const directory = new FakeDirectoryHandle();
+        const participant = weeklyParticipant();
+        interceptStandardGSCUpload({
+            type: 'success',
+            object: 'videomodel',
+            category: 'upload',
+            data: {
+                id: 114790102,
+                state: MS_State.Identifier,
+            },
+        });
+        startWatchingDirectory(directory, participant);
+        addStandardGSCFile(directory);
+
+        cy.wait('@uploadRequest').its('response.statusCode').should('eq', 200);
+        cy.contains('Uploaded: 100%(1)').should('be.visible');
+        cy.contains('Processing:').should('not.exist');
+        cy.contains('Skipped:').should('not.exist');
+        cy.contains('Failed:').should('not.exist');
+        cy.get('@consoleInfo').should('have.been.calledWithMatch', '[WeeklyAutoUploader]', 'upload success');
+        cy.then(() => {
+            expect(participant.videos).to.have.length(1);
+            expect(participant.videos?.[0]).to.include({
+                id: 114790102,
+                state: MS_State.Identifier,
+                level: 'e',
+                mode: '00',
+                timems: 41021,
+            });
+            expect(participant.classic_et).to.deep.equal([[114790102, 41021], [0, 240000]]);
+            expect(participant.classic_score).to.equal(581021);
+        });
+    });
+
+    uploadErrorResponseCases.forEach(({ label, responseBody }) => {
+        it(`marks ${label} responses as failed without adding the video`, () => {
+            const directory = new FakeDirectoryHandle();
+            const participant = weeklyParticipant();
+            interceptStandardGSCUpload(responseBody);
+            startWatchingDirectory(directory, participant);
+            addStandardGSCFile(directory);
+
+            cy.wait('@uploadRequest').its('response.statusCode').should('eq', 200);
+            expectUploadFailure(participant, 'upload failed');
+        });
+    });
+
+    it('marks non-200 upload responses as failed without adding the video', () => {
+        const directory = new FakeDirectoryHandle();
+        const participant = weeklyParticipant();
+        interceptStandardGSCUploadHttpError(402);
+        startWatchingDirectory(directory, participant);
+        addStandardGSCFile(directory);
+
+        cy.wait('@uploadRequest').its('response.statusCode').should('eq', 402);
+        expectUploadFailure(participant, 'upload error');
     });
 });

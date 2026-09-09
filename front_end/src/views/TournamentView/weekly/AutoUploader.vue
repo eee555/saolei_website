@@ -3,10 +3,10 @@
         <div class="auto-uploader__controls">
             <div class="auto-uploader__control">
                 <span class="auto-uploader__label">{{ t('local.folder') }}</span>
-                <ElButton type="primary" :disabled="!canSelectDirectory" :loading="selectingDirectory" @click="selectDirectory">
+                <ElButton type="primary" size="small" :disabled="!canSelectDirectory" :loading="selectingDirectory" @click="selectDirectory">
                     {{ directoryName || t('local.selectFolder') }}
                 </ElButton>
-                <ElButton v-if="running" :disabled="processingQueue" @click="stopWatching">
+                <ElButton v-if="running" size="small" :disabled="processingQueue" @click="stopWatching">
                     {{ t('local.stop') }}
                 </ElButton>
             </div>
@@ -24,13 +24,15 @@
             </div>
         </div>
 
-        <div class="auto-uploader__status text">
+        <div class="auto-uploader__control text">
             <BaseTagSupport v-if="!directoryPickerSupported" :support="false">
                 {{ t('local.unsupported') }}
             </BaseTagSupport>
             <BaseTagSupport v-if="!participantWindowOpen" :support="false">
                 {{ t('local.outsideWindow') }}
             </BaseTagSupport>
+        </div>
+        <div class="auto-uploader__control text">
             <span v-if="running">
                 {{ t('local.running', { folder: directoryName }) }}
             </span>
@@ -274,9 +276,9 @@ const i18nMessages = {
     'zh-cn': { local: {
         failed: '失败',
         filter: '筛选级别',
-        filterScoreRefreshing: '刷新成绩的录像',
-        filterSupported: '比赛支持的录像',
-        filterTournament: '比赛录像',
+        filterScoreRefreshing: '刷新成绩的比赛录像',
+        filterSupported: '有效的比赛录像',
+        filterTournament: '所有比赛录像',
         folder: '文件夹',
         idle: '未选择文件夹',
         outsideWindow: '不在参赛时间内',
@@ -288,14 +290,14 @@ const i18nMessages = {
         skipped: '已跳过',
         stop: '停止',
         uploaded: '已上传',
-        unsupported: '当前浏览器不支持目录监听',
+        unsupported: '当前浏览器不支持 FileSystemDirectoryHandle',
     } },
     en: { local: {
         failed: 'Failed',
         filter: 'Filter',
         filterScoreRefreshing: 'Score-improving videos',
         filterSupported: 'Supported tournament videos',
-        filterTournament: 'Tournament videos',
+        filterTournament: 'All tournament videos',
         folder: 'Folder',
         idle: 'No folder selected',
         outsideWindow: 'Outside session window',
@@ -307,7 +309,7 @@ const i18nMessages = {
         skipped: 'Skipped',
         stop: 'Stop',
         uploaded: 'Uploaded',
-        unsupported: 'Directory watching is not supported by this browser',
+        unsupported: 'FileSystemDirectoryHandle is not supported by this browser',
     } },
 };
 
