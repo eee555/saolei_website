@@ -12,7 +12,7 @@
             </div>
             <div class="auto-uploader__control">
                 <span class="auto-uploader__label">{{ t('local.pollInterval') }}</span>
-                <ElInputNumber v-model="pollIntervalSeconds" :min="1" :max="300" :step="1" :disabled="running" size="small" controls-position="right" />
+                <InputNumber v-model="pollIntervalSeconds" :min="1" :max="300" :disabled="running" />
             </div>
             <div class="auto-uploader__control">
                 <span class="auto-uploader__label">{{ t('local.filter') }}</span>
@@ -55,12 +55,13 @@
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElInputNumber, ElMessage, ElOption, ElSelect } from 'element-plus';
+import { ElButton, ElMessage, ElOption, ElSelect } from 'element-plus';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import BaseTagSupport from '@/components/common/BaseTagSupport.vue';
+import InputNumber from '@/components/common/InputNumber.vue';
 import StackBar from '@/components/visualization/StackBar/App.vue';
 import { uploadVideoFile } from '@/services/videoUploadService';
 import type { VideoUploadResult } from '@/services/videoUploadService';

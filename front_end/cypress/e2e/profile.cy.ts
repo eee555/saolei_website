@@ -96,8 +96,8 @@ describe('Personal Profile', () => {
         ], { force: true });
 
         const expectedData = {
-            ExpAvf: { '': '', Bv: '132', Bvs: '3.762', 状态: '新标识', 用时: '35.090', 级别: '高级', 模式: '标准', 结束时间: '2023-10-05 21:25:57' },
-            IntRmv: { '': '', Bv: '32', Bvs: '3.379', 状态: '新标识', 用时: '9.469', 级别: '中级', 模式: '标准', 结束时间: '2015-10-31 22:53:35' },
+            ExpAvf: { '': '', Bv: '132', Bvs: '3.762', 状态: '通过', 用时: '35.090', 级别: '高级', 模式: '标准', 结束时间: '2023-10-05 21:25:57' },
+            IntRmv: { '': '', Bv: '32', Bvs: '3.379', 状态: '通过', 用时: '9.469', 级别: '中级', 模式: '标准', 结束时间: '2015-10-31 22:53:35' },
         };
 
         cy.get('table:visible').getTable().should((tableData) => {
@@ -113,8 +113,8 @@ describe('Personal Profile', () => {
 
         cy.get('table:visible').getTable().should((tableData) => {
             expect(tableData.length).to.equal(2);
-            expect(tableData[0]).to.deep.equal({ ...expectedData.ExpAvf, 状态: '上传成功' });
-            expect(tableData[1]).to.deep.equal({ ...expectedData.IntRmv, 状态: '上传成功' });
+            expect(tableData[0]).to.deep.equal({ ...expectedData.ExpAvf, 状态: '新标识' });
+            expect(tableData[1]).to.deep.equal({ ...expectedData.IntRmv, 状态: '新标识' });
         });
     });
 
