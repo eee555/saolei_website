@@ -141,23 +141,29 @@ describe('<AutoUploader />', () => {
 
     it('uploads a new supported tournament video and emits the uploaded video', () => {
         const directory = new FakeDirectoryHandle();
+        let finishUpload: (() => void) | undefined;
+        const uploadGate = new Promise<void>((resolve) => {
+            finishUpload = resolve;
+        });
         setDirectoryPicker(directory);
         cy.window().then((win) => {
             cy.stub(win.console, 'info').as('consoleInfo');
         });
         cy.intercept('POST', '/common/uploadvideo/', (req) => {
             expect(interceptFormData(req).file).to.equal('standard_gsc.evf');
-            req.reply({
-                statusCode: 200,
-                body: {
-                    type: 'success',
-                    object: 'videomodel',
-                    category: 'upload',
-                    data: {
-                        id: 114790101,
-                        state: MS_State.Official,
+            return uploadGate.then(() => {
+                req.reply({
+                    statusCode: 200,
+                    body: {
+                        type: 'success',
+                        object: 'videomodel',
+                        category: 'upload',
+                        data: {
+                            id: 114790101,
+                            state: MS_State.Official,
+                        },
                     },
-                },
+                });
             });
         }).as('uploadRequest');
         mountAutoUploader({
@@ -173,8 +179,15 @@ describe('<AutoUploader />', () => {
             directory.addFile(file);
         });
 
+        cy.contains('Processing: 100%(1)').should('be.visible').then(() => {
+            if (finishUpload === undefined) throw new Error('Upload request was not captured.');
+            finishUpload();
+        });
         cy.wait('@uploadRequest').its('response.statusCode').should('eq', 200);
-        cy.contains('Scanned 1, uploaded 1, skipped 0, failed 0').should('be.visible');
+        cy.contains('Uploaded: 100%(1)').should('be.visible');
+        cy.contains('Processing:').should('not.exist');
+        cy.contains('Skipped:').should('not.exist');
+        cy.contains('Failed:').should('not.exist');
         cy.get('@consoleInfo').should('have.been.calledWithMatch', '[WeeklyAutoUploader]', 'upload success');
         cy.get('@vue').then((wrapper: ComponentWrapper<typeof AutoUploader>) => {
             const emitted = wrapper.emitted('uploaded') ?? [];

@@ -25,11 +25,31 @@
         </div>
 
         <div class="auto-uploader__status text">
-            {{ statusText }}
-            <span v-if="scannedCount > 0">
-                {{ t('common.punct.comma') }}
-                {{ t('local.stat', { scanned: scannedCount, uploaded: uploadedCount, skipped: skippedCount, failed: failedCount }) }}
+            <BaseTagSupport v-if="!directoryPickerSupported" :support="false">
+                {{ t('local.unsupported') }}
+            </BaseTagSupport>
+            <BaseTagSupport v-if="!participantWindowOpen" :support="false">
+                {{ t('local.outsideWindow') }}
+            </BaseTagSupport>
+            <span v-if="running">
+                {{ t('local.running', { folder: directoryName }) }}
             </span>
+            <span v-else-if="directoryName !== ''">
+                {{ t('local.stopped', { folder: directoryName }) }}
+            </span>
+            <span v-else>
+                {{ t('local.idle') }}
+            </span>
+        </div>
+        <div v-if="scannedCount > 0">
+            <StackBar
+                legend :data="[
+                    { name: t('local.uploaded'), value: uploadedCount, color: 'red' },
+                    { name: t('local.processing'), value: scannedCount - uploadedCount - skippedCount - failedCount, color: 'orange' },
+                    { name: t('local.skipped'), value: skippedCount, color: 'green' },
+                    { name: t('local.failed'), value: failedCount, color: 'blue' },
+                ]"
+            />
         </div>
     </div>
 </template>
@@ -39,11 +59,14 @@ import { ElButton, ElInputNumber, ElMessage, ElOption, ElSelect } from 'element-
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import type { UploadEntry } from '@/components/VideoUpload/utils';
-import { fileCollide, isUploadableStatus, prepareUploadEntry, uploadEntry } from '@/components/VideoUpload/utils';
+import BaseTagSupport from '@/components/common/BaseTagSupport.vue';
+import StackBar from '@/components/visualization/StackBar/App.vue';
+import { uploadVideoFile } from '@/services/videoUploadService';
+import type { VideoUploadResult } from '@/services/videoUploadService';
+import { sleep } from '@/utils';
 import { globalNow } from '@/utils/datetime';
-import { createDirectoryNewFileEmitter } from '@/utils/fileIO';
-import type { DirectoryNewFileEmitter, DirectoryNewFileEvent } from '@/utils/fileIO';
+import { createDirectoryNewFileEmitter, extract_stat, load_video_file } from '@/utils/fileIO';
+import type { AnyVideo, DirectoryNewFileEmitter, DirectoryNewFileEvent } from '@/utils/fileIO';
 import { Tournament, TournamentParticipant } from '@/utils/tournaments';
 import type { VideoAbstract } from '@/utils/videoabstract';
 import { isWeeklyClassicScoreMode, WeeklyTournamentFormat } from '@/utils/weekly';
@@ -67,6 +90,12 @@ interface DirectoryPickerWindow extends Window {
     showDirectoryPicker?: (options?: { mode?: 'read' | 'readwrite' }) => Promise<FileSystemDirectoryHandle>;
 }
 
+interface AutoUploadVideo {
+    filename: string;
+    video: AnyVideo;
+    stat: VideoAbstract;
+}
+
 const directory = ref<FileSystemDirectoryHandle | null>(null);
 const directoryName = ref('');
 const emitter = ref<DirectoryNewFileEmitter | null>(null);
@@ -74,7 +103,6 @@ const selectingDirectory = ref(false);
 const filterLevel = ref<WeeklyAutoUploadFilter>(WeeklyAutoUploadFilter.Supported);
 const pollIntervalSeconds = ref(3);
 const pendingFiles: File[] = [];
-const processedEntries: UploadEntry[] = [];
 const processingQueue = ref(false);
 const uploadedCount = ref(0);
 const failedCount = ref(0);
@@ -88,13 +116,6 @@ const participantWindowOpen = computed(() => {
 });
 const running = computed(() => emitter.value?.running ?? false);
 const canSelectDirectory = computed(() => directoryPickerSupported.value && participantWindowOpen.value);
-const statusText = computed(() => {
-    if (!directoryPickerSupported.value) return t('local.unsupported');
-    if (!participantWindowOpen.value) return t('local.outsideWindow');
-    if (running.value) return t('local.running', { folder: directoryName.value });
-    if (directoryName.value !== '') return t('local.stopped', { folder: directoryName.value });
-    return t('local.idle');
-});
 
 async function selectDirectory() {
     const picker = (window as DirectoryPickerWindow).showDirectoryPicker;
@@ -139,108 +160,114 @@ async function drainQueue() {
     processingQueue.value = true;
     while (pendingFiles.length > 0) {
         const file = pendingFiles.shift();
-        if (file) await processFile(file);
+        if (file) {
+            await processFile(file);
+            await sleep(200);
+        }
     }
     processingQueue.value = false;
 }
 
 async function processFile(file: File) {
     scannedCount.value += 1;
-    let entry: UploadEntry;
+    const video = await loadAutoUploadVideo(file);
+    if (video === undefined) {
+        skippedCount.value += 1;
+        logFile('skip parse', file.name);
+        return;
+    }
+
+    if (!matchesFilter(video)) {
+        skippedCount.value += 1;
+        logUpload('skip filter', video);
+        return;
+    }
+
+    logUpload('upload start', video);
     try {
-        entry = await prepareUploadEntry(file);
-    } catch (error) {
-        console.error(error);
-        entry = {
-            hash: `${file.name}-${Date.now()}`,
-            file,
-            status: 'parse',
-        };
-    }
-
-    if (processedEntries.some((oldEntry) => fileCollide(oldEntry, entry))) {
-        skippedCount.value += 1;
-        logUpload('skip duplicate', entry);
-        return;
-    }
-    processedEntries.push(entry);
-
-    if (!isUploadableStatus(entry.status)) {
-        skippedCount.value += 1;
-        logUpload('skip invalid status', entry);
-        return;
-    }
-
-    if (!matchesFilter(entry)) {
-        skippedCount.value += 1;
-        logUpload('skip filter', entry);
-        return;
-    }
-
-    logUpload('upload start', entry);
-    try {
-        await uploadEntry(entry);
-        if (entry.status === 'success' && entry.stat !== undefined) {
+        const result = await uploadVideoFile(file);
+        if (result.type === 'success') {
+            video.stat.id = result.id;
+            video.stat.state = result.state;
+            video.stat.upload_time = new Date();
             uploadedCount.value += 1;
-            emit('uploaded', entry.stat);
-            logUpload('upload success', entry);
+            emit('uploaded', video.stat);
+            logUpload('upload success', video, result);
         } else {
             failedCount.value += 1;
-            logUpload('upload failed', entry);
+            logUpload('upload failed', video, result);
         }
     } catch (error) {
         console.error(error);
         failedCount.value += 1;
-        logUpload('upload error', entry);
+        logUpload('upload error', video);
     }
 }
 
-function matchesFilter(entry: UploadEntry): boolean {
-    if (!isTournamentVideo(entry)) return false;
+async function loadAutoUploadVideo(file: File): Promise<AutoUploadVideo | undefined> {
+    try {
+        const buffer = await file.arrayBuffer();
+        const video = load_video_file(buffer, file.name);
+        return {
+            filename: file.name,
+            video,
+            stat: extract_stat(video),
+        };
+    } catch (error) {
+        console.error(error);
+        return undefined;
+    }
+}
+
+function matchesFilter(video: AutoUploadVideo): boolean {
+    if (!isTournamentVideo(video)) return false;
     if (filterLevel.value === WeeklyAutoUploadFilter.Tournament) return true;
-    if (!isWeeklySupportedVideo(entry)) return false;
+    if (!isWeeklySupportedVideo(video)) return false;
     if (filterLevel.value === WeeklyAutoUploadFilter.Supported) return true;
-    return canRefreshWeeklyScore(entry);
+    return canRefreshWeeklyScore(video);
 }
 
-function isTournamentVideo(entry: UploadEntry): boolean {
-    if (entry.video === undefined) return false;
-    return entry.video.race_identifier.split(',').map((identifier) => identifier.trim()).includes(props.participant.token);
+function isTournamentVideo(video: AutoUploadVideo): boolean {
+    return video.video.race_identifier.split(',').map((identifier) => identifier.trim()).includes(props.participant.token);
 }
 
-function isWeeklySupportedVideo(entry: UploadEntry | VideoAbstract): boolean {
-    const stat = getStat(entry);
-    if (stat === undefined) return false;
+function isWeeklySupportedVideo(video: AutoUploadVideo | VideoAbstract): boolean {
+    const stat = getStat(video);
     if (props.tournament.weeklyData?.tournament_format !== WeeklyTournamentFormat.Classic) return false;
     return (stat.level === 'i' || stat.level === 'e') && isWeeklyClassicScoreMode(stat.mode);
 }
 
-function canRefreshWeeklyScore(entry: UploadEntry): boolean {
-    if (entry.stat === undefined || !isWeeklySupportedVideo(entry)) return false;
-    const { level } = entry.stat;
+function canRefreshWeeklyScore(video: AutoUploadVideo): boolean {
+    if (!isWeeklySupportedVideo(video)) return false;
+    const { level } = video.stat;
     if (level !== 'i' && level !== 'e') return false;
     const count = level === 'i' ? 5 : 2;
     const defaultTime = level === 'i' ? 60000 : 240000;
     const currentTimes = props.videos.
-        filter((video) => video.level === level && isWeeklySupportedVideo(video)).
-        map((video) => video.timems).
+        filter((oldVideo) => oldVideo.level === level && isWeeklySupportedVideo(oldVideo)).
+        map((oldVideo) => oldVideo.timems).
         sort((left, right) => left - right);
     const currentBoundary = currentTimes.length >= count ? currentTimes[count - 1] : defaultTime;
-    return entry.stat.timems < currentBoundary;
+    return video.stat.timems < currentBoundary;
 }
 
-function getStat(entry: UploadEntry | VideoAbstract): VideoAbstract | undefined {
-    return 'file' in entry ? entry.stat : entry;
+function getStat(video: AutoUploadVideo | VideoAbstract): VideoAbstract {
+    return 'stat' in video ? video.stat : video;
 }
 
-function logUpload(action: string, entry: UploadEntry) {
+function logFile(action: string, filename: string) {
+    console.info('[WeeklyAutoUploader]', action, { filename });
+}
+
+function logUpload(action: string, video: AutoUploadVideo, result?: VideoUploadResult) {
     console.info('[WeeklyAutoUploader]', action, {
-        file: entry.file.name,
-        status: entry.status,
-        level: entry.stat?.level,
-        mode: entry.stat?.mode,
-        timems: entry.stat?.timems,
-        raceIdentifier: entry.video?.race_identifier,
+        filename: video.filename,
+        level: video.stat.level,
+        mode: video.stat.mode,
+        timems: video.stat.timems,
+        state: video.stat.state,
+        result: result?.type,
+        raceIdentifier: video.video.race_identifier,
     });
 }
 
@@ -252,6 +279,7 @@ onBeforeUnmount(stopWatching);
 
 const i18nMessages = {
     'zh-cn': { local: {
+        failed: '失败',
         filter: '筛选级别',
         filterScoreRefreshing: '刷新成绩的录像',
         filterSupported: '比赛支持的录像',
@@ -260,14 +288,17 @@ const i18nMessages = {
         idle: '未选择文件夹',
         outsideWindow: '不在参赛时间内',
         pollInterval: '轮询周期（秒）',
+        processing: '处理中',
         running: '正在监听 {folder}',
         selectFailed: '无法读取该文件夹',
         selectFolder: '选择文件夹',
-        stat: '已扫描 {scanned}，已上传 {uploaded}，已跳过 {skipped}，失败 {failed}',
+        skipped: '已跳过',
         stop: '停止',
+        uploaded: '已上传',
         unsupported: '当前浏览器不支持目录监听',
     } },
     en: { local: {
+        failed: 'Failed',
         filter: 'Filter',
         filterScoreRefreshing: 'Score-improving videos',
         filterSupported: 'Supported tournament videos',
@@ -276,11 +307,13 @@ const i18nMessages = {
         idle: 'No folder selected',
         outsideWindow: 'Outside session window',
         pollInterval: 'Poll interval (s)',
+        processing: 'Processing',
         running: 'Watching {folder}',
         selectFailed: 'Cannot read this folder',
         selectFolder: 'Select folder',
-        stat: 'Scanned {scanned}, uploaded {uploaded}, skipped {skipped}, failed {failed}',
+        skipped: 'Skipped',
         stop: 'Stop',
+        uploaded: 'Uploaded',
         unsupported: 'Directory watching is not supported by this browser',
     } },
 };
