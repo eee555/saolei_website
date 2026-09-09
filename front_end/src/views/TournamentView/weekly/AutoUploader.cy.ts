@@ -3,10 +3,8 @@ import { interceptFormData } from 'cypress-intercept-formdata';
 import AutoUploader from './AutoUploader.vue';
 
 import i18n from '@/i18n';
-import { MS_State, TournamentState, TournamentSubclass } from '@/utils/ms_const';
-import { Tournament, TournamentParticipant } from '@/utils/tournaments';
-import type { VideoAbstract } from '@/utils/videoabstract';
-import { WeeklyTournamentFormat } from '@/utils/weekly';
+import { MS_State } from '@/utils/ms_const';
+import { WeeklyParticipant, WeeklyTournamentFormat } from '@/utils/weekly';
 import { binaryStringToUint8Array } from '@cy/support/stupidCypress';
 
 const weeklyToken = 'G11479';
@@ -45,23 +43,8 @@ interface DirectoryPickerWindow extends Window {
     showDirectoryPicker?: (options?: { mode?: 'read' | 'readwrite' }) => Promise<FileSystemDirectoryHandle>;
 }
 
-function weeklyTournament() {
-    return new Tournament({
-        id: 11479,
-        subclass: TournamentSubclass.Weekly,
-        data: {
-            year: 2099,
-            week: 1,
-            tournament_format: WeeklyTournamentFormat.Classic,
-        },
-        start_time: '2000-01-01T00:00:00+08:00',
-        end_time: '2099-01-01T00:00:00+08:00',
-        state: TournamentState.Normal,
-    });
-}
-
-function weeklyParticipant(init: Partial<TournamentParticipant> = {}) {
-    return new TournamentParticipant({
+function weeklyParticipant(init: Partial<WeeklyParticipant> = {}) {
+    return new WeeklyParticipant({
         id: 1147901,
         token: weeklyToken,
         tournament_id: 11479,
@@ -73,12 +56,11 @@ function weeklyParticipant(init: Partial<TournamentParticipant> = {}) {
     });
 }
 
-function mountAutoUploader(options: { participant?: TournamentParticipant; videos?: VideoAbstract[] } = {}) {
+function mountAutoUploader(options: { participant?: WeeklyParticipant } = {}) {
     return cy.mount(AutoUploader, {
         props: {
-            tournament: weeklyTournament(),
+            format: WeeklyTournamentFormat.Classic,
             participant: options.participant ?? weeklyParticipant(),
-            videos: options.videos ?? [],
         },
         global: {
             plugins: [i18n],
@@ -139,8 +121,9 @@ describe('<AutoUploader />', () => {
         cy.contains('button', 'Select folder').should('be.disabled');
     });
 
-    it('uploads a new supported tournament video and emits the uploaded video', () => {
+    it('uploads a new supported tournament video and adds it to the participant', () => {
         const directory = new FakeDirectoryHandle();
+        const participant = weeklyParticipant();
         let finishUpload: (() => void) | undefined;
         const uploadGate = new Promise<void>((resolve) => {
             finishUpload = resolve;
@@ -167,7 +150,7 @@ describe('<AutoUploader />', () => {
             });
         }).as('uploadRequest');
         mountAutoUploader({
-            participant: weeklyParticipant(),
+            participant,
         });
         setPollInterval(1);
 
@@ -189,16 +172,17 @@ describe('<AutoUploader />', () => {
         cy.contains('Skipped:').should('not.exist');
         cy.contains('Failed:').should('not.exist');
         cy.get('@consoleInfo').should('have.been.calledWithMatch', '[WeeklyAutoUploader]', 'upload success');
-        cy.get('@vue').then((wrapper: ComponentWrapper<typeof AutoUploader>) => {
-            const emitted = wrapper.emitted('uploaded') ?? [];
-            expect(emitted).to.have.length(1);
-            expect(emitted[0][0]).to.include({
+        cy.then(() => {
+            expect(participant.videos).to.have.length(1);
+            expect(participant.videos?.[0]).to.include({
                 id: 114790101,
                 state: MS_State.Official,
                 level: 'e',
                 mode: '00',
                 timems: 41021,
             });
+            expect(participant.classic_et).to.deep.equal([[114790101, 41021], [0, 240000]]);
+            expect(participant.classic_score).to.equal(581021);
         });
     });
 });

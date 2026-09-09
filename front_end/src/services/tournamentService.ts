@@ -103,11 +103,11 @@ export async function fetchParticipantList(tournamentId: number): Promise<Tourna
     return data.map(tournamentParticipantFromResponse);
 }
 
-export async function createWeeklyParticipant(tournamentId: number): Promise<TournamentParticipant> {
+export async function createWeeklyParticipant(tournamentId: number): Promise<WeeklyParticipant> {
     const { data } = await $axios.post<TournamentParticipantResponse>('/api/tournament/weekly/participant', {
         id: tournamentId,
     });
-    return tournamentParticipantFromResponse(data);
+    return weeklyParticipantFromParticipantResponse(data);
 }
 
 export async function fetchTournamentUserRanking(params: TournamentUserRankingParams): Promise<TournamentUserRankingResponse> {
@@ -125,14 +125,14 @@ export async function fetchGSCResults(tournamentId: number): Promise<GSCParticip
     const { data } = await $axios.get<GSCParticipantResponse[]>('/api/tournament/gsc/results', {
         params: { tournament_id: tournamentId },
     });
-    return data.map(gscParticipantFromResponse);
+    return data.map((participant) => gscParticipantFromResponse(participant, tournamentId));
 }
 
 export async function fetchWeeklyResults(tournamentId: number): Promise<WeeklyParticipant[]> {
     const { data } = await $axios.get<WeeklyScoreResponse[]>('/api/tournament/weekly/results', {
         params: { tournament_id: tournamentId },
     });
-    return data.map(weeklyParticipantFromResponse);
+    return data.map((participant) => weeklyParticipantFromResponse(participant, tournamentId));
 }
 
 export async function fetchParticipantVideos(params: ParticipantVideosParams): Promise<VideoAbstractData[]> {
@@ -185,10 +185,15 @@ function tournamentParticipantFromResponse(data: TournamentParticipantResponse):
     });
 }
 
-function gscParticipantFromResponse(data: GSCParticipantResponse): GSCParticipant {
+function weeklyParticipantFromParticipantResponse(data: TournamentParticipantResponse): WeeklyParticipant {
+    return new WeeklyParticipant(tournamentParticipantFromResponse(data));
+}
+
+function gscParticipantFromResponse(data: GSCParticipantResponse, tournamentId: number): GSCParticipant {
     return new GSCParticipant({
         id: data.id,
         user_id: data.user_id,
+        tournament_id: tournamentId,
         rank: data.rank ?? undefined,
         rank_score: data.rank_score,
         bt1st: data.bt1st,
@@ -203,10 +208,11 @@ function gscParticipantFromResponse(data: GSCParticipantResponse): GSCParticipan
     });
 }
 
-function weeklyParticipantFromResponse(data: WeeklyScoreResponse): WeeklyParticipant {
+function weeklyParticipantFromResponse(data: WeeklyScoreResponse, tournamentId: number): WeeklyParticipant {
     return new WeeklyParticipant({
         id: data.id,
         user_id: data.user_id,
+        tournament_id: tournamentId,
         start_time: toDate(data.start_time),
         end_time: toDate(data.end_time),
         rank: data.rank ?? undefined,

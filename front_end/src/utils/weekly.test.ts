@@ -2,7 +2,20 @@ import { describe, expect, it } from 'vitest';
 
 import { MS_Mode } from './ms_const';
 import { TournamentParticipant } from './tournaments';
+import { VideoAbstract } from './videoabstract';
 import { isWeeklyClassicScoreMode, WeeklyParticipant } from './weekly';
+
+function video(level: 'i' | 'e', mode: MS_Mode, timems: number): VideoAbstract {
+    return new VideoAbstract({
+        id: timems,
+        upload_time: '2026-01-01T00:00:00Z',
+        level,
+        mode,
+        timems,
+        bv: 100,
+        software: 'e',
+    });
+}
 
 describe('WeeklyParticipant', () => {
     describe('constructor', () => {
@@ -48,6 +61,41 @@ describe('WeeklyParticipant', () => {
             first.classic_et[0][1] = 1;
 
             expect(second.classic_et[0][1]).toBe(240000);
+        });
+    });
+
+    describe('classic score cache', () => {
+        it('refreshes classic score fields from assigned videos without duplicating them', () => {
+            const videos = [
+                video('e', MS_Mode.Standard, 110000),
+                video('e', MS_Mode.SpeedNG, 90000),
+                video('i', MS_Mode.NoFlag, 20000),
+            ];
+            const participant = new WeeklyParticipant();
+
+            participant.videos = videos;
+
+            expect(participant.videos).toHaveLength(3);
+            expect(participant.classic_et).toEqual([[110000, 110000], [0, 240000]]);
+            expect(participant.classic_it).toEqual([
+                [20000, 20000],
+                [0, 60000],
+                [0, 60000],
+                [0, 60000],
+                [0, 60000],
+            ]);
+            expect(participant.classic_score).toBe(610000);
+        });
+
+        it('appends a video and updates classic score fields using milliseconds', () => {
+            const participant = new WeeklyParticipant();
+
+            participant.addVideo(video('i', MS_Mode.Standard, 20000));
+
+            expect(participant.videos).toHaveLength(1);
+            expect(participant.classic_it[0]).toEqual([20000, 20000]);
+            expect(participant.classic_i_sum).toBe(260000);
+            expect(participant.classic_score).toBe(740000);
         });
     });
 

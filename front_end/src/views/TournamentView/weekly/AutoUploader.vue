@@ -57,6 +57,7 @@
 <script setup lang="ts">
 import { ElButton, ElInputNumber, ElMessage, ElOption, ElSelect } from 'element-plus';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import BaseTagSupport from '@/components/common/BaseTagSupport.vue';
@@ -67,18 +68,13 @@ import { sleep } from '@/utils';
 import { globalNow } from '@/utils/datetime';
 import { createDirectoryNewFileEmitter, extract_stat, load_video_file } from '@/utils/fileIO';
 import type { AnyVideo, DirectoryNewFileEmitter, DirectoryNewFileEvent } from '@/utils/fileIO';
-import { Tournament, TournamentParticipant } from '@/utils/tournaments';
 import type { VideoAbstract } from '@/utils/videoabstract';
-import { isWeeklyClassicScoreMode, WeeklyTournamentFormat } from '@/utils/weekly';
+import { isWeeklyClassicScoreMode, WeeklyParticipant, WeeklyTournamentFormat } from '@/utils/weekly';
 
 const props = defineProps({
-    tournament: { type: Tournament, required: true },
-    participant: { type: TournamentParticipant, required: true },
-    videos: { type: Array<VideoAbstract>, default: () => [] },
+    format: { type: String as PropType<WeeklyTournamentFormat>, required: true },
+    participant: { type: WeeklyParticipant, required: true },
 });
-const emit = defineEmits<{
-    uploaded: [video: VideoAbstract];
-}>();
 const WeeklyAutoUploadFilter = {
     Tournament: 'tournament',
     Supported: 'supported',
@@ -190,8 +186,8 @@ async function processFile(file: File) {
             video.stat.id = result.id;
             video.stat.state = result.state;
             video.stat.upload_time = new Date();
+            props.participant.addVideo(video.stat);
             uploadedCount.value += 1;
-            emit('uploaded', video.stat);
             logUpload('upload success', video, result);
         } else {
             failedCount.value += 1;
@@ -233,7 +229,7 @@ function isTournamentVideo(video: AutoUploadVideo): boolean {
 
 function isWeeklySupportedVideo(video: AutoUploadVideo | VideoAbstract): boolean {
     const stat = getStat(video);
-    if (props.tournament.weeklyData?.tournament_format !== WeeklyTournamentFormat.Classic) return false;
+    if (props.format !== WeeklyTournamentFormat.Classic) return false;
     return (stat.level === 'i' || stat.level === 'e') && isWeeklyClassicScoreMode(stat.mode);
 }
 
@@ -241,13 +237,9 @@ function canRefreshWeeklyScore(video: AutoUploadVideo): boolean {
     if (!isWeeklySupportedVideo(video)) return false;
     const { level } = video.stat;
     if (level !== 'i' && level !== 'e') return false;
-    const count = level === 'i' ? 5 : 2;
-    const defaultTime = level === 'i' ? 60000 : 240000;
-    const currentTimes = props.videos.
-        filter((oldVideo) => oldVideo.level === level && isWeeklySupportedVideo(oldVideo)).
-        map((oldVideo) => oldVideo.timems).
-        sort((left, right) => left - right);
-    const currentBoundary = currentTimes.length >= count ? currentTimes[count - 1] : defaultTime;
+    const currentBoundary = level === 'i'
+        ? props.participant.classic_it[4][1]
+        : props.participant.classic_et[1][1];
     return video.stat.timems < currentBoundary;
 }
 
