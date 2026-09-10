@@ -99,3 +99,109 @@ export async function fileHash(buffer: ArrayBuffer): Promise<string> {
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 }
+
+export interface DirectoryNewFileEvent {
+    file: File;
+    handle: FileSystemFileHandle;
+    directory: FileSystemDirectoryHandle;
+}
+
+export type DirectoryNewFileListener = (event: DirectoryNewFileEvent) => void | Promise<void>;
+
+export interface DirectoryNewFileEmitterOptions {
+    pollIntervalMs?: number;
+    emitExisting?: boolean;
+}
+
+export interface DirectoryNewFileEmitter {
+    readonly running: boolean;
+    start: () => Promise<void>;
+    stop: () => void;
+    scan: () => Promise<DirectoryNewFileEvent[]>;
+    onFile: (listener: DirectoryNewFileListener) => () => void;
+}
+
+class PollingDirectoryNewFileEmitter implements DirectoryNewFileEmitter {
+    private readonly directory: FileSystemDirectoryHandle;
+    private readonly knownFiles = new Set<string>();
+    private readonly listeners = new Set<DirectoryNewFileListener>();
+    private readonly pollIntervalMs: number;
+    private readonly emitExisting: boolean;
+    private timer: ReturnType<typeof setInterval> | undefined;
+    private scanning = false;
+
+    public constructor(directory: FileSystemDirectoryHandle, options: DirectoryNewFileEmitterOptions = {}) {
+        this.directory = directory;
+        this.pollIntervalMs = options.pollIntervalMs ?? 1000;
+        this.emitExisting = options.emitExisting ?? false;
+    }
+
+    public get running() {
+        return this.timer !== undefined;
+    }
+
+    public async start() {
+        if (this.running) return;
+        if (this.emitExisting) {
+            await this.scan();
+        } else {
+            await this.rememberCurrentFiles();
+        }
+        this.timer = setInterval(() => {
+            void this.scan().catch(console.error);
+        }, this.pollIntervalMs);
+    }
+
+    public stop() {
+        if (this.timer === undefined) return;
+        clearInterval(this.timer);
+        this.timer = undefined;
+    }
+
+    public async scan() {
+        if (this.scanning) return [];
+        this.scanning = true;
+        try {
+            const events: DirectoryNewFileEvent[] = [];
+            for await (const handle of this.directory.values()) {
+                if (handle.kind !== 'file') continue;
+                const fileHandle = handle;
+                if (this.knownFiles.has(fileHandle.name)) continue;
+                const file = await fileHandle.getFile();
+                this.knownFiles.add(fileHandle.name);
+                events.push({ file, handle: fileHandle, directory: this.directory });
+            }
+            this.emit(events);
+            return events;
+        } finally {
+            this.scanning = false;
+        }
+    }
+
+    public onFile(listener: DirectoryNewFileListener) {
+        this.listeners.add(listener);
+        return () => {
+            this.listeners.delete(listener);
+        };
+    }
+
+    private async rememberCurrentFiles() {
+        for await (const handle of this.directory.values()) {
+            if (handle.kind === 'file') {
+                this.knownFiles.add(handle.name);
+            }
+        }
+    }
+
+    private emit(events: DirectoryNewFileEvent[]) {
+        for (const event of events) {
+            for (const listener of this.listeners) {
+                void Promise.resolve(listener(event)).catch(console.error);
+            }
+        }
+    }
+}
+
+export function createDirectoryNewFileEmitter(directory: FileSystemDirectoryHandle, options: DirectoryNewFileEmitterOptions = {}): DirectoryNewFileEmitter {
+    return new PollingDirectoryNewFileEmitter(directory, options);
+}

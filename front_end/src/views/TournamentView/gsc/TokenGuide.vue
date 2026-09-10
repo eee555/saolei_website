@@ -43,6 +43,7 @@ import { httpErrorNotification, successNotification, unknownErrorNotification } 
 import IconCopy from '@/components/widgets/IconCopy.vue';
 import { local } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import type { TournamentParticipant } from '@/utils/tournaments';
 
 const props = defineProps({
     order: { type: Number, default: 0 },
@@ -53,7 +54,7 @@ const emit = defineEmits<{
 }>();
 
 const identifier = defineModel('identifier', { type: String, default: '' });
-const participant = defineModel('participant', { type: Boolean, default: false });
+const participant = defineModel<TournamentParticipant | null>('participant', { default: null });
 
 const { proxy } = useCurrentInstance();
 const { t } = useI18n();
@@ -78,7 +79,6 @@ async function registerParticipant() {
         order: props.order,
     }).then((response) => {
         successNotification(response);
-        participant.value = true;
         emit('refresh');
     }).catch(httpErrorNotification);
     registeringParticipant.value = false;

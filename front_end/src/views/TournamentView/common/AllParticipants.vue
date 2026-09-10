@@ -15,7 +15,7 @@
                     <BaseIconClose style="scale: 65%" />
                 </ElLink>
             </template>
-            <PersonalView v-if="participant.user_id !== 0" :user-id="participant.user_id" :tournament-id="tournament.id">
+            <PersonalView v-if="participant.user_id !== 0" :model-value="participant">
                 <template #personalSummary="{ videos }">
                     <slot name="personalSummary" :videos="videos" />
                 </template>
@@ -24,7 +24,7 @@
     </ElTabs>
 </template>
 
-<script setup lang="ts" generic="TParticipant extends { id: number; user_id: number }">
+<script setup lang="ts" generic="TParticipant extends TournamentParticipant">
 import { ElLink, ElRow, ElTabPane, ElTabs } from 'element-plus';
 import { ref, shallowRef } from 'vue';
 import type { PropType } from 'vue';
@@ -36,7 +36,7 @@ import { BaseIconClose } from '@/components/common/icon';
 import PlayerName from '@/components/PlayerName.vue';
 import DataExporter from '@/components/widgets/DataExporter.vue';
 import { fetchTournamentVideos } from '@/services/tournamentService';
-import type { Tournament } from '@/utils/tournaments';
+import type { Tournament, TournamentParticipant } from '@/utils/tournaments';
 import type { VideoAbstract, VideoAbstractData } from '@/utils/videoabstract';
 
 const props = defineProps({

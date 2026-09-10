@@ -11,14 +11,14 @@
             @refresh="refresh"
         />
     </template>
-    <template v-if="tournament.displayState === TournamentState.Ongoing && store.login_status === LoginStatus.IsLogin && participant">
+    <template v-if="tournament.displayState === TournamentState.Ongoing && store.login_status === LoginStatus.IsLogin && participant !== null">
         <h3>
             {{ t('gsc.realTimeScore') }}&nbsp;
             <ElLink underline="never" :disabled="loading">
                 <BaseIconRefresh @click="refresh" />
             </ElLink>
         </h3>
-        <PersonalView v-loading="loading" :user-id="store.user.id" :tournament-id="tournament.id">
+        <PersonalView v-model="participant" v-loading="loading">
             <template #personalSummary="{ videos }">
                 <GSCPersonalSummary :videos="videos" />
             </template>
@@ -63,7 +63,7 @@ import { store } from '@/store';
 import { LoginStatus } from '@/utils/common/structInterface';
 import type { GSCParticipant } from '@/utils/gsc';
 import { TournamentState } from '@/utils/ms_const';
-import type { Tournament } from '@/utils/tournaments';
+import type { Tournament, TournamentParticipant } from '@/utils/tournaments';
 
 const props = defineProps({
     tournament: {
@@ -79,7 +79,7 @@ const order = computed(() => tournament.value.gscData?.order ?? 0);
 const token = computed(() => tournament.value.gscData?.token ?? '');
 const result = ref<GSCParticipant[]>([]);
 const personaltoken = ref<string>('');
-const participant = ref(false);
+const participant = ref<TournamentParticipant | null>(null);
 const loading = ref(false);
 
 async function refresh() {
@@ -91,10 +91,10 @@ async function refresh() {
             const currentParticipant = store.login_status === LoginStatus.IsLogin
                 ? participants.find((item) => item.user_id === store.user.id)
                 : undefined;
-            participant.value = currentParticipant !== undefined;
+            participant.value = currentParticipant ?? null;
             personaltoken.value = currentParticipant?.arbiter_identifier__identifier ?? '';
         } else {
-            participant.value = false;
+            participant.value = null;
             personaltoken.value = '';
             result.value = tournament.value.state === TournamentState.Awarded
                 ? await fetchGSCResults(tournament.value.id)
