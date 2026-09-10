@@ -7,9 +7,12 @@
             {{ t('gsc.identifierGuide.preparing') }}
         </div>
         <div v-else-if="token === ''">
-            <ElButton :loading="registeringParticipant" @click="registerDialogVisible = true">
+            <ElButton :disabled="store.isUserAnonymous" :loading="registeringParticipant" @click="registerDialogVisible = true">
                 {{ t('local.register') }}
             </ElButton>
+            <span v-if="store.isUserAnonymous" class="text text-danger">
+                {{ t('common.msg.realNameRequired') }}
+            </span>
             <ElDialog v-model="registerDialogVisible">
                 <template #header>
                     {{ t('local.registerHeader') }}
@@ -47,6 +50,7 @@ import BaseButtonConfirm from '@/components/common/BaseButtonConfirm.vue';
 import { actionSuccessNotification, httpErrorNotification } from '@/components/Notifications';
 import IconCopy from '@/components/widgets/IconCopy.vue';
 import { createWeeklyParticipant } from '@/services/tournamentService';
+import { store } from '@/store';
 import { toDate, toISODateTimeString } from '@/utils/datetime';
 import type { WeeklyParticipant } from '@/utils/weekly';
 

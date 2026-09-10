@@ -49,13 +49,14 @@ function weeklyParticipantList(registered: boolean) {
 function mountWeekly(options: {
     loginStatus: LoginStatus;
     registered: boolean;
+    realname?: string;
 }) {
     const requestCounts = {
         participantList: 0,
     };
     store.login_status = options.loginStatus;
     if (options.loginStatus === LoginStatus.IsLogin) {
-        store.login({ id: 99, username: 'player', realname: 'Player' });
+        store.login({ id: 99, username: 'player', realname: options.realname ?? 'Player' });
     } else {
         store.logout();
         store.login_status = options.loginStatus;
@@ -129,6 +130,21 @@ describe('<Weekly App />', () => {
         cy.get('[data-cy=weekly-participant-window]').should('contain', '2026-01-01 08:00:00').and('contain', '2026-01-01 10:00:00');
         cy.contains('Real-Time Score').should('be.visible');
         cy.wait('@participantVideos').its('response.statusCode').should('eq', 200);
+        cy.then(() => {
+            expect(requestCounts.participantList).to.equal(1);
+        });
+    });
+
+    it('disables registration for logged-in users without real name', () => {
+        const requestCounts = mountWeekly({ loginStatus: LoginStatus.IsLogin, registered: false, realname: '' });
+        cy.intercept('POST', '**/api/tournament/weekly/participant', { statusCode: 200, body: {} }).as('createWeeklyParticipant');
+
+        cy.contains('button', 'Start my session').should('be.disabled');
+        cy.contains('.el-dialog', 'Are you ready?').should('not.exist');
+        cy.contains('Real name required').should('be.visible');
+        cy.contains('WEEKLY-TOKEN').should('not.exist');
+        cy.contains('Real-Time Score').should('not.exist');
+        cy.get('@createWeeklyParticipant.all').should('have.length', 0);
         cy.then(() => {
             expect(requestCounts.participantList).to.equal(1);
         });
