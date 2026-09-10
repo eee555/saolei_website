@@ -1,5 +1,3 @@
-import type {} from '@cy/support/component';
-
 import LoginForm from './LoginForm.vue';
 
 import $axios from '@/http';

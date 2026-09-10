@@ -3,9 +3,7 @@
         <template #label>
             {{ t('home.latestScore') }}&nbsp;
             <span v-if="loadingStatus == QueueRefreshStatus.CoolingDown" class="text text-success">
-                <ElIcon>
-                    <Check />
-                </ElIcon>
+                <BaseIconTick />
             </span>
             <ElLink
                 v-else-if="isActive" underline="never"
@@ -19,13 +17,13 @@
 </template>
 
 <script setup lang='ts'>
-import { ElIcon, ElLink, ElTabPane, vLoading } from 'element-plus';
+import { ElLink, ElTabPane, vLoading } from 'element-plus';
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { QueueRefreshStatus } from './utils';
 
-import { BaseIconRefresh } from '@/components/common/icon';
+import { BaseIconRefresh, BaseIconTick } from '@/components/common/icon';
 import VideoList from '@/components/VideoList/App.vue';
 import { fetchNewestQueue } from '@/services/videoService';
 import type { ColumnChoice } from '@/utils/ms_const';
