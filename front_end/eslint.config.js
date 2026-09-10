@@ -171,7 +171,7 @@ export default defineConfig({
         // vue/require-default-export
         // vue/require-direct-export
         // vue/require-emit-validator
-        // 'vue/require-explicit-slots': 'error',  // TODO
+        'vue/require-explicit-slots': 'error',
         'vue/require-expose': 'error',
         'vue/require-macro-variable-name': 'error',
         // vue/require-name-property
@@ -224,15 +224,13 @@ export default defineConfig({
 
         '@typescript-eslint/consistent-return': 'off', // 官方建议关闭
         '@typescript-eslint/explicit-function-return-type': 'off', // 和i18n冲突
-        '@typescript-eslint/prefer-function-type': 'off', // TODO: emit定义格式需要修改
         '@typescript-eslint/promise-function-async': 'off', // 和Vue Router、defineAsyncComponent冲突
         '@typescript-eslint/max-params': 'off',
         '@typescript-eslint/naming-convention': 'off', // TODO：涉及到前后端标准不一致的问题，很复杂
         '@typescript-eslint/no-redeclare': 'off',
         '@typescript-eslint/no-magic-numbers': 'off', // TODO
         '@typescript-eslint/no-unnecessary-condition': 'off', // false positive很多，参考https://typescript-eslint.io/rules/no-unnecessary-condition/#values-modified-within-function-calls
-        '@typescript-eslint/no-unsafe-assignment': 'off', // TODO：牵扯到的内容很多，包括后端API重构等
-        '@typescript-eslint/no-unsafe-member-access': 'off', // TODO：牵扯到的内容很多，包括后端API重构等
+        '@typescript-eslint/no-unsafe-assignment': 'off', // 和defineAsyncComponent冲突
         '@typescript-eslint/no-unsafe-type-assertion': 'off', // 和Vue的PropType冲突
         '@typescript-eslint/no-use-before-define': 'off', // 为了代码可读性，有的函数需要放在最后
         '@typescript-eslint/prefer-enum-initializers': 'off',

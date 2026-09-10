@@ -28,6 +28,12 @@ defineProps({
     },
 });
 
+defineSlots<{
+    default?: () => unknown;
+    overlay?: () => unknown;
+    header?: () => unknown;
+}>();
+
 const visible = ref(false);
 </script>
 

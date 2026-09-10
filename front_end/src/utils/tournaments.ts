@@ -1,19 +1,29 @@
 import { toDate, toISODateTimeString } from './datetime';
 import { TournamentState, TournamentSubclass } from './ms_const';
+import type { VideoAbstract } from './videoabstract';
 
 export class TournamentParticipant {
     public id = 0;
     public token = '';
-    public arbiter_identifier__identifier: string | null = null;
+    public arbiter_identifier__identifier?: string;
     public tournament_id = 0;
     public user_id = 0;
-    public start_time: string | Date | null = null;
-    public end_time: string | Date | null = null;
-    public rank: number | null = null;
+    public start_time?: Date;
+    public end_time?: Date;
+    public rank?: number;
     public rank_score = 0;
+    protected _videos?: VideoAbstract[];
 
-    public constructor(init?: Partial<TournamentParticipant>) {
+    public constructor(init: Partial<TournamentParticipant> = {}) {
         Object.assign(this, init);
+    }
+
+    public get videos(): VideoAbstract[] | undefined {
+        return this._videos;
+    }
+
+    public set videos(videos: VideoAbstract[] | undefined) {
+        this._videos = videos;
     }
 }
 

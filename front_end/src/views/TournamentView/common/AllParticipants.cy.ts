@@ -8,19 +8,17 @@ import $axios from '@/http';
 import i18n from '@/i18n';
 import { pinia } from '@/store/create';
 import { TournamentState, TournamentSubclass } from '@/utils/ms_const';
-import { Tournament } from '@/utils/tournaments';
+import { Tournament, TournamentParticipant } from '@/utils/tournaments';
 import type { VideoAbstract } from '@/utils/videoabstract';
 
-interface TestParticipant {
-    id: number;
-    user_id: number;
+type TestParticipant = TournamentParticipant & {
     name: string;
-}
+};
 
 const participants: TestParticipant[] = [
-    { id: 11, user_id: 101, name: 'Alpha' },
-    { id: 22, user_id: 202, name: 'Bravo' },
-    { id: 44, user_id: 0, name: 'Zero' },
+    Object.assign(new TournamentParticipant({ id: 11, user_id: 101, tournament_id: 9001 }), { name: 'Alpha' }),
+    Object.assign(new TournamentParticipant({ id: 22, user_id: 202, tournament_id: 9001 }), { name: 'Bravo' }),
+    Object.assign(new TournamentParticipant({ id: 44, user_id: 0, tournament_id: 9001 }), { name: 'Zero' }),
 ];
 
 const TypedAllParticipants = AllParticipants as unknown as Component;
@@ -80,8 +78,7 @@ const PlayerNameStub = defineComponent({
 
 const PersonalViewStub = defineComponent({
     props: {
-        userId: { type: Number, required: true },
-        tournamentId: { type: Number, required: true },
+        modelValue: { type: Object as PropType<TournamentParticipant>, required: true },
     },
     expose: [],
     render() {

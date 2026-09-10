@@ -37,6 +37,11 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['add']);
+
+defineSlots<{
+    default?: () => unknown;
+}>();
+
 const fileInputRef = useTemplateRef('fileInputRef');
 const isDragover = ref(false);
 

@@ -48,18 +48,18 @@ import { actionSuccessNotification, httpErrorNotification } from '@/components/N
 import IconCopy from '@/components/widgets/IconCopy.vue';
 import { createWeeklyParticipant } from '@/services/tournamentService';
 import { toDate, toISODateTimeString } from '@/utils/datetime';
-import type { TournamentParticipant } from '@/utils/tournaments';
+import type { WeeklyParticipant } from '@/utils/weekly';
 
 const props = defineProps({
     tournamentId: { type: Number, required: true },
     registrationOpen: { type: Boolean },
     participant: {
-        type: Object as () => TournamentParticipant | null,
+        type: Object as () => WeeklyParticipant | null,
         default: null,
     },
 });
 const emit = defineEmits<{
-    (event: 'registered', participant: TournamentParticipant): void;
+    registered: [participant: WeeklyParticipant];
 }>();
 
 const token = defineModel('token', { type: String, default: '' });

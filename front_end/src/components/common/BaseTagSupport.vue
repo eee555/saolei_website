@@ -17,4 +17,8 @@ defineProps({
         default: true,
     },
 });
+
+defineSlots<{
+    default?: () => unknown;
+}>();
 </script>

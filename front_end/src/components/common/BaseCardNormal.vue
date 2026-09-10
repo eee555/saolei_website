@@ -7,4 +7,7 @@
 <script setup lang="ts">
 import { ElCard } from 'element-plus';
 
+defineSlots<{
+    default?: () => unknown;
+}>();
 </script>

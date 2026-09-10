@@ -1,5 +1,5 @@
 <template>
-    <VideoUpload :is-user-anonymous="user.isAnonymous" :identifiers="user.identifiers" @on-upload="handleUpload" />
+    <VideoUpload :is-user-anonymous="user.isAnonymous" @on-upload="handleUpload" />
 </template>
 
 <script setup lang="ts">

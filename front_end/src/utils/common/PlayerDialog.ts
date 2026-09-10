@@ -3,9 +3,13 @@ import { videoplayerstore } from '@/store';
 import type { MS_Software } from '@/utils/ms_const';
 import { getSoftwareExtension } from '@/utils/strings';
 
+interface SoftwareResponse {
+    msg: MS_Software;
+}
+
 async function fetchSoftware(id: number) {
-    const response = await $axios.get('/video/get_software/', { params: { id } });
-    return response.data.msg as MS_Software;
+    const response = await $axios.get<SoftwareResponse>('/video/get_software/', { params: { id } });
+    return response.data.msg;
 }
 
 function generateURL(id: number, software: MS_Software) {

@@ -19,7 +19,7 @@ export class GSCParticipant extends TournamentParticipant {
     public et5th: number = GSCDefaults.et;
     public et5sum: number = GSCDefaults.et * 5;
 
-    public constructor(init?: Partial<GSCParticipant>) {
+    public constructor(init: Partial<GSCParticipant> = {}) {
         super(init);
         Object.assign(this, init);
     }

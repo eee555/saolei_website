@@ -56,7 +56,7 @@ describe('Color Theme', () => {
             },
         });
         cy.getLocalStorage('local').then((value) => {
-            expect(value.darkmode).to.be.true;
+            expect(value?.darkmode).to.be.true;
         });
         cy.getLocalStorage('vueuse-color-scheme').then((value) => {
             expect(value).to.eq('auto');
@@ -73,7 +73,7 @@ describe('Color Theme', () => {
             },
         });
         cy.getLocalStorage('local').then((value) => {
-            expect(value.darkmode).to.be.false;
+            expect(value?.darkmode).to.be.false;
         });
         cy.getLocalStorage('vueuse-color-scheme').then((value) => {
             expect(value).to.eq('auto');

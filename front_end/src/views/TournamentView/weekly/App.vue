@@ -18,7 +18,10 @@
                 <BaseIconRefresh @click="refresh" />
             </ElLink>
         </h3>
-        <PersonalView :key="personalViewKey" v-loading="loading" :user-id="store.user.id" :tournament-id="tournament.id">
+        <PersonalView :key="personalViewKey" v-model="participant" v-loading="loading">
+            <template #autoUploader="{ participant: currentParticipant }">
+                <AutoUploader :format="tournament.weeklyData?.tournament_format ?? WeeklyTournamentFormat.Classic" :participant="currentParticipant" />
+            </template>
             <template #personalSummary="{ videos }">
                 <PersonalSummary :tournament-format="tournament.weeklyData?.tournament_format" :videos="videos" />
             </template>
@@ -52,6 +55,7 @@ import PersonalView from '../common/PersonalView.vue';
 import Title from '../common/Title.vue';
 
 import AllSummary from './AllSummary.vue';
+import AutoUploader from './AutoUploader.vue';
 import Description from './Description.vue';
 import PersonalSummary from './PersonalSummary.vue';
 import TokenGuide from './TokenGuide.vue';
@@ -62,8 +66,8 @@ import { fetchParticipantList, fetchWeeklyResults } from '@/services/tournamentS
 import { store } from '@/store';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { TournamentState } from '@/utils/ms_const';
-import type { Tournament, TournamentParticipant } from '@/utils/tournaments';
-import type { WeeklyParticipant } from '@/utils/weekly';
+import type { Tournament } from '@/utils/tournaments';
+import { WeeklyParticipant, WeeklyTournamentFormat } from '@/utils/weekly';
 
 const props = defineProps({
     tournament: {
@@ -75,7 +79,7 @@ const props = defineProps({
 const { t } = useI18n();
 
 const token = ref<string>('');
-const participant = ref<TournamentParticipant | null>(null);
+const participant = ref<WeeklyParticipant | null>(null);
 const result = ref<WeeklyParticipant[]>([]);
 const loading = ref(false);
 const personalViewKey = ref(0);
@@ -86,9 +90,10 @@ async function refresh() {
         if (props.tournament.displayState === TournamentState.Ongoing) {
             result.value = [];
             const participants = await fetchParticipantList(props.tournament.id);
-            participant.value = store.login_status === LoginStatus.IsLogin
-                ? participants.find((item) => item.user_id === store.user.id) ?? null
-                : null;
+            const currentParticipant = store.login_status === LoginStatus.IsLogin
+                ? participants.find((item) => item.user_id === store.user.id)
+                : undefined;
+            participant.value = currentParticipant ? new WeeklyParticipant(currentParticipant) : null;
             token.value = participant.value?.token ?? '';
             personalViewKey.value += 1;
         } else {
@@ -104,7 +109,7 @@ async function refresh() {
     loading.value = false;
 }
 
-function handleParticipantRegistered(registeredParticipant: TournamentParticipant) {
+function handleParticipantRegistered(registeredParticipant: WeeklyParticipant) {
     participant.value = registeredParticipant;
     token.value = registeredParticipant.token;
     personalViewKey.value += 1;

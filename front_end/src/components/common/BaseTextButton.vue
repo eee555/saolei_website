@@ -13,6 +13,10 @@ const props = defineProps({
     size: { type: String as PropType<'small' | 'default' | 'large'>, default: 'default' },
 });
 
+defineSlots<{
+    default?: () => unknown;
+}>();
+
 const hovering = ref(false);
 
 const sizeClass = computed(() => {

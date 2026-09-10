@@ -54,7 +54,7 @@ APP内引用链条：`utils -> models -> services -> api`
 # 前端代码规范
 
 前端位置：`front_end`。测试参考
-- linter：`.github\workflows\eslint.yml`
+- linter：`.github\workflows\eslint.yml`。由于eslint的插件使用了类型解析，运行用时较长，请耐心等待。
 - ts模块：`.github\workflows\vitest.yml`
 - vue组件：`.github\workflows\cypress.yml`
 - e2e：`.github\workflows\CypressE2E.yml`

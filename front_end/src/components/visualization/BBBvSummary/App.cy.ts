@@ -3,15 +3,15 @@ import BBBvSummary from './App.vue';
 import i18n from '@/i18n';
 import { BBBvSummaryConfig } from '@/store';
 import { pinia } from '@/store/create';
-import type { VideoAbstractInfo } from '@/utils/videoabstract';
+import type { VideoAbstractData } from '@/utils/videoabstract';
 import { VideoAbstract } from '@/utils/videoabstract';
 
 describe('<BBBvSummary />', () => {
     beforeEach(() => {
         cy.clearLocalStorage('bbbv-summary-config');
         cy.clock(new Date('2025-12-15T00:00:00Z'));
-        cy.fixture('videoAbstractList.json').then((data) => {
-            Cypress.expose('videoList', (data.data as VideoAbstractInfo[]).map((video) => new VideoAbstract(video)));
+        cy.fixture<Fixture<VideoAbstractData[]>>('videoAbstractList.json').then((data) => {
+            Cypress.expose('videoList', data.data.map((video) => new VideoAbstract(video)));
         });
     });
 
