@@ -1,4 +1,3 @@
-import * as ELIcons from '@element-plus/icons-vue';
 import PrimeVue from 'primevue/config';
 
 import App from './App.vue';
@@ -116,7 +115,6 @@ const users = new Map([
 
 const mountGlobal = {
     plugins: [i18n, PrimeVue],
-    components: ELIcons,
     config: {
         globalProperties: {
             $axios,

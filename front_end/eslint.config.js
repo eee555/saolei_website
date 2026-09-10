@@ -1,3 +1,4 @@
+/* eslint-disable import-x/no-named-as-default-member */
 import eslint from '@eslint/js';
 import stylistic from '@stylistic/eslint-plugin';
 import { defineConfig } from 'eslint/config';
@@ -23,6 +24,7 @@ export default defineConfig({
     extends: [
         eslint.configs.recommended,
         importPlugin.flatConfigs.recommended,
+        importPlugin.flatConfigs.typescript,
         tseslint.configs.all,
         ...pluginVue.configs['flat/recommended'],
         pluginCypress.configs.recommended,
@@ -56,16 +58,45 @@ export default defineConfig({
     },
     rules: {
         'import-x/consistent-type-specifier-style': 'error',
+        'import-x/dynamic-import-chunkname': 'off', // webpack项目用的，不适用vite
+        'import-x/exports-last': 'off', // 和group-exports一致
         'import-x/extensions': 'error',
         'import-x/first': 'error',
+        'import-x/group-exports': 'off',
+        'import-x/max-dependencies': 'off',
         'import-x/newline-after-import': 'error',
         'import-x/no-absolute-path': 'error',
+        'import-x/no-anonymous-default-export': 'off',
         'import-x/no-cycle': 'error',
+        'import-x/no-default-export': 'off',
+        'import-x/no-deprecated': 'error',
         'import-x/no-duplicates': 'error',
         'import-x/no-dynamic-require': 'error',
+        'import-x/no-empty-named-blocks': 'error',
+        'import-x/no-extraneous-dependencies': ['error', {
+            devDependencies: [
+                '**/*.test.ts',
+                '**/*.cy.ts',
+                '**/cypress/**',
+                'cypress.config.ts',
+                'eslint.config.js',
+                'vite.config.ts',
+            ],
+            optionalDependencies: false,
+            peerDependencies: false,
+            includeTypes: true,
+        }],
+        'import-x/no-internal-modules': 'off',
+        'import-x/no-mutable-exports': 'error',
+        'import-x/no-named-default': 'error',
+        'import-x/no-named-export': 'off',
+        'import-x/no-namespace': 'error',
         'import-x/no-relative-packages': 'error',
+        // 'import-x/no-relative-parent-imports', 'error',
+        // 'import-x/no-rename-default': 'error',
         'import-x/no-restricted-paths': 'error',
         'import-x/no-self-import': 'error',
+        'import-x/no-unassigned-import': 'off', // 和CSS导入冲突
         'import-x/no-unused-modules': 'off', // ESLint 10 removed the FileEnumerator API this rule relies on.
         'import-x/no-useless-path-segments': 'error',
         'import-x/no-webpack-loader-syntax': 'error',
@@ -79,6 +110,9 @@ export default defineConfig({
                 named: true,
             },
         ],
+        'import-x/prefer-default-export': 'off',
+        'import-x/prefer-namespace-import': 'error',
+
         'no-control-regex': 'off',
         'no-irregular-whitespace': 'off',
         'no-prototype-builtins': 'off',
