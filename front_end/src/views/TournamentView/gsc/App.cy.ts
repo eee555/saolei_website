@@ -42,10 +42,11 @@ function gscParticipantList(participant: boolean) {
 function mountGSC(options: {
     loginStatus: LoginStatus;
     participant: boolean;
+    realname?: string;
 }) {
     store.login_status = options.loginStatus;
     if (options.loginStatus === LoginStatus.IsLogin) {
-        store.login({ id: 99, username: 'player', realname: 'Player' });
+        store.login({ id: 99, username: 'player', realname: options.realname ?? 'Player' });
     } else {
         store.logout();
         store.login_status = options.loginStatus;
@@ -87,6 +88,16 @@ describe('<GSC App />', () => {
 
         cy.contains('Ongoing').should('be.visible');
         cy.contains('Real-Time Score').should('not.exist');
+    });
+
+    it('disables registration for logged-in users without real name', () => {
+        mountGSC({ loginStatus: LoginStatus.IsLogin, participant: false, realname: '' });
+        cy.intercept('POST', '**/api/tournament/gsc/participant', { statusCode: 200, body: {} }).as('createGSCParticipant');
+
+        cy.contains('button', 'Register').should('be.disabled');
+        cy.contains('Real name required').should('be.visible');
+        cy.contains('Real-Time Score').should('not.exist');
+        cy.get('@createGSCParticipant.all').should('have.length', 0);
     });
 
     it('shows real-time score for registered users', () => {

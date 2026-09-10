@@ -4,6 +4,7 @@ from django_ratelimit.decorators import ratelimit
 
 from userprofile.decorators import banned_blocked, login_required_error
 from utils.exceptions import ExceptionToResponse
+from utils.response import realname_required_response
 from .forms import UploadVideoForm
 from .utils import new_video_by_file
 
@@ -16,7 +17,7 @@ def video_upload(request: HttpRequest):
     if request.user.userms.video_num_total >= request.user.userms.video_num_limit:
         return HttpResponse(status=402)  # 录像仓库已满
     if not request.user.has_realname():
-        return JsonResponse({'type': 'error', 'obj': 'userprofile', 'category': 'realname_required'})
+        return realname_required_response()
     video_form = UploadVideoForm(data=request.POST, files=request.FILES)
     if not video_form.is_valid():
         return HttpResponseBadRequest(video_form.errors)
