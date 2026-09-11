@@ -11,6 +11,12 @@
 ### Ninja API Schema
 输出的Schema如果涉及到模型，优先使用`create_schema`生成。
 
+### 装饰器
+装饰器用Ninja提供的`decorate_view`打包。所有的装饰器都需要在API的docstrings开头用无序列表注明。
+
+### 限流
+限流用Django的ratelimit装饰器。所有API都需要限流。
+
 ## 换行约定
 - 倾向不换行。一定不换行的场景：`import`。
 - 一行的长度（除去开头的空格）至少达到80字符才需要考虑换行。例外：Python的后缀条件表达式中，如果有链式表达的嵌套逻辑，例如`[x for x in y if z]`或者`x = y if a else z`，则每层逻辑都需要换行。
