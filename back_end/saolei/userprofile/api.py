@@ -1,11 +1,12 @@
 from datetime import datetime, timezone
 import logging
-import mimetypes
-import os
 from typing import List
+from urllib.parse import quote
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.http import FileResponse, HttpRequest, HttpResponseForbidden, HttpResponseNotFound
+from django.core.files.storage import default_storage
+from django.http import FileResponse, HttpRequest, HttpResponse, HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import get_object_or_404
 from django.views.decorators.cache import cache_control
 from django_ratelimit.decorators import ratelimit
@@ -23,6 +24,7 @@ from .services import refresh_avatar_chance, try_update_user_name_fields, try_up
 
 router = Router()
 logger = logging.getLogger('userprofile')
+AVATAR_ACCEL_REDIRECT_PREFIX = '/internal-media/'
 
 
 UserInfoOut = create_schema(
@@ -83,17 +85,22 @@ def get_user_identifier(request, user_id: int):
 
 
 @router.get('/avatar/{user_id}')
-@decorate_view(cache_control(max_age=5))
 def get_user_avatar(request, user_id: int):
     """
     - Rate limited by nginx
-    - cache_control(max_age=5)
     """
-    user = get_object_or_404(UserProfile, id=user_id)
-    if not user.avatar or not os.path.exists(user.avatar.path):
+    avatar_name = UserProfile.objects.filter(id=user_id).values_list('avatar', flat=True).first()
+    if not avatar_name:
         return HttpResponseNotFound()
-    content_type, _ = mimetypes.guess_type(user.avatar.path)
-    return FileResponse(open(user.avatar.path, 'rb'), content_type=content_type or 'image/jpeg')
+    if settings.DEBUG:
+        try:
+            return FileResponse(default_storage.open(avatar_name, 'rb'), filename=avatar_name)
+        except FileNotFoundError:
+            return HttpResponseNotFound()
+    response = HttpResponse()
+    del response['Content-Type']
+    response['X-Accel-Redirect'] = f'{AVATAR_ACCEL_REDIRECT_PREFIX}{quote(avatar_name, safe="/")}'
+    return response
 
 
 UserVideoOut = create_schema(
