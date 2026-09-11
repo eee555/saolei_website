@@ -1,7 +1,10 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone as datetime_timezone
 import logging
+from math import ceil
 
 from django.core.files.base import ContentFile
+from django.db import transaction
+from django.utils import timezone
 from django_tasks_db.models import DBTaskResult
 import requests
 
@@ -13,13 +16,15 @@ from utils.exceptions import ExceptionToResponse
 from utils.parser import MSVideoParser
 from utils.saolei import SaoleiUserInfo, SaoleiUtils
 from videomanager.models import VideoModel
-from .models import AccountSaolei, Platform, VideoSaolei
+from .mineracer import get_mineracer_account_link_poll_interval_ms, MINERACER_STATUS_CONFIRMED, MINERACER_STATUS_EXPIRED, MINERACER_STATUS_FAILED, MINERACER_STATUS_PENDING, poll_mineracer_account_link, request_mineracer_account_link
+from .models import AccountLinkQueue, AccountMineracer, AccountSaolei, MineracerAccountLinkSession, MineracerAccountLinkSessionStatus, Platform, VideoSaolei
 from .utils import fetch_saolei_profile, fetch_saolei_video_download_and_state, update_bilibili_account, update_msgames_account, update_wom_account
 
 logger = logging.getLogger('accountlink')
 
 SAOLEI_VIDEO_IMPORT_TASK_PATH = 'accountlink.tasks.task_saolei_video_import'
 SAOLEI_VIDEO_IMPORT_BULK_TASK_PATH = 'accountlink.tasks.task_saolei_video_import_bulk'
+MINERACER_USERID_LENGTHS = {9, 17}
 
 
 def update_account(platform: Platform, user: UserProfile):
@@ -31,6 +36,202 @@ def update_account(platform: Platform, user: UserProfile):
         update_wom_account(user.account_wom)
     elif platform == Platform.BILIBILI:
         update_bilibili_account(user.account_bilibili)
+    elif platform == Platform.MINERACER:
+        return None
+
+
+def start_mineracer_account_link(user: UserProfile) -> MineracerAccountLinkSession:
+    now = timezone.now()
+    _expire_stale_mineracer_sessions(user, now)
+    if _user_has_mineracer_link(user):
+        raise ExceptionToResponse('mineracer', 'already_linked', status_code=409)
+
+    session = MineracerAccountLinkSession.objects.filter(
+        userprofile=user,
+        status=MineracerAccountLinkSessionStatus.PENDING,
+        expires_at__gt=now,
+    ).order_by('-created_at').first()
+    if session:
+        return session
+
+    remote_session = request_mineracer_account_link()
+    if remote_session.expires_at <= now:
+        raise ExceptionToResponse('mineracer', 'expired')
+
+    return MineracerAccountLinkSession.objects.create(
+        userprofile=user,
+        device_code=remote_session.device_code,
+        user_code=remote_session.user_code,
+        verification_uri=remote_session.verification_uri,
+        verification_uri_complete=remote_session.verification_uri_complete,
+        expires_at=remote_session.expires_at,
+        next_poll_at=now + timedelta(milliseconds=remote_session.poll_interval_ms),
+    )
+
+
+def poll_mineracer_account_link_session(user: UserProfile, session_id: int) -> MineracerAccountLinkSession | None:
+    session, device_code = _prepare_mineracer_poll(user, session_id)
+    if session is None or device_code == '':
+        return session
+
+    try:
+        poll_result = poll_mineracer_account_link(device_code)
+    except ExceptionToResponse as exc:
+        if exc.category in ['requestexception', 'timeout']:
+            return _mark_mineracer_session_poll_error(session.id, exc.category)
+        raise
+
+    if poll_result.status == MINERACER_STATUS_PENDING:
+        return _update_pending_mineracer_session(session.id, poll_result.retry_after_ms)
+    if poll_result.status == MINERACER_STATUS_CONFIRMED:
+        return complete_mineracer_account_link(user, session.id, poll_result.userid)
+    if poll_result.status == MINERACER_STATUS_EXPIRED:
+        return _mark_mineracer_session_expired(session.id)
+    if poll_result.status == MINERACER_STATUS_FAILED:
+        return _mark_mineracer_session_failed(session.id, poll_result.error_category or 'remote_failed')
+    raise ExceptionToResponse('mineracer', 'response')
+
+
+def get_mineracer_session_retry_after_ms(session: MineracerAccountLinkSession) -> int:
+    if session.status != MineracerAccountLinkSessionStatus.PENDING or session.next_poll_at is None:
+        return 0
+    return max(0, ceil((session.next_poll_at - timezone.now()).total_seconds() * 1000))
+
+
+def complete_mineracer_account_link(user: UserProfile, session_id: int, userid: str) -> MineracerAccountLinkSession | None:
+    userid = str(userid).strip()
+    if not _is_valid_mineracer_userid(userid):
+        return _mark_mineracer_session_failed(session_id, 'invalid_userid', remote_userid=userid)
+
+    identifier_conflict = False
+    with transaction.atomic():
+        session = MineracerAccountLinkSession.objects.select_for_update().filter(
+            id=session_id,
+            userprofile=user,
+        ).first()
+        if session is None:
+            return None
+        if session.status != MineracerAccountLinkSessionStatus.PENDING:
+            return session
+
+        now = timezone.now()
+        if now >= session.expires_at:
+            session.status = MineracerAccountLinkSessionStatus.EXPIRED
+            session.save(update_fields=['status', 'updated_at'])
+            return session
+
+        collision = AccountLinkQueue.objects.select_for_update().filter(
+            platform=Platform.MINERACER,
+            identifier=userid,
+            verified=True,
+        ).exclude(userprofile=user).first()
+        account_collision = AccountMineracer.objects.select_for_update().filter(id=userid).exclude(parent=user).first()
+        existing_user_account = AccountMineracer.objects.select_for_update().filter(parent=user).exclude(id=userid).first()
+        if collision or account_collision or existing_user_account:
+            session.status = MineracerAccountLinkSessionStatus.FAILED
+            session.remote_userid = userid
+            session.error_category = 'identifier_conflict'
+            session.save(update_fields=['status', 'remote_userid', 'error_category', 'updated_at'])
+            identifier_conflict = True
+        else:
+            AccountMineracer.objects.update_or_create(id=userid, defaults={'parent': user})
+            AccountLinkQueue.objects.update_or_create(
+                platform=Platform.MINERACER,
+                userprofile=user,
+                defaults={'identifier': userid, 'verified': True},
+            )
+            session.status = MineracerAccountLinkSessionStatus.CONFIRMED
+            session.remote_userid = userid
+            session.error_category = ''
+            session.save(update_fields=['status', 'remote_userid', 'error_category', 'updated_at'])
+
+    if identifier_conflict:
+        raise ExceptionToResponse('mineracer', 'identifier_conflict', status_code=409)
+    return session
+
+
+def _prepare_mineracer_poll(user: UserProfile, session_id: int) -> tuple[MineracerAccountLinkSession | None, str]:
+    with transaction.atomic():
+        session = MineracerAccountLinkSession.objects.select_for_update().filter(
+            id=session_id,
+            userprofile=user,
+        ).first()
+        if session is None:
+            return None, ''
+        if session.status != MineracerAccountLinkSessionStatus.PENDING:
+            return session, ''
+
+        now = timezone.now()
+        if now >= session.expires_at:
+            session.status = MineracerAccountLinkSessionStatus.EXPIRED
+            session.save(update_fields=['status', 'updated_at'])
+            return session, ''
+        if session.next_poll_at and now < session.next_poll_at:
+            return session, ''
+
+        session.last_polled_at = now
+        session.next_poll_at = now + timedelta(milliseconds=get_mineracer_account_link_poll_interval_ms())
+        session.error_category = ''
+        session.save(update_fields=['last_polled_at', 'next_poll_at', 'error_category', 'updated_at'])
+        return session, session.device_code
+
+
+def _update_pending_mineracer_session(session_id: int, retry_after_ms: int | None = None) -> MineracerAccountLinkSession:
+    with transaction.atomic():
+        session = MineracerAccountLinkSession.objects.select_for_update().get(id=session_id)
+        if session.status == MineracerAccountLinkSessionStatus.PENDING and retry_after_ms is not None:
+            session.next_poll_at = timezone.now() + timedelta(milliseconds=retry_after_ms)
+            session.save(update_fields=['next_poll_at', 'updated_at'])
+        return session
+
+
+def _mark_mineracer_session_poll_error(session_id: int, category: str) -> MineracerAccountLinkSession:
+    with transaction.atomic():
+        session = MineracerAccountLinkSession.objects.select_for_update().get(id=session_id)
+        if session.status == MineracerAccountLinkSessionStatus.PENDING:
+            session.error_category = category
+            session.next_poll_at = timezone.now() + timedelta(milliseconds=get_mineracer_account_link_poll_interval_ms())
+            session.save(update_fields=['error_category', 'next_poll_at', 'updated_at'])
+        return session
+
+
+def _mark_mineracer_session_expired(session_id: int) -> MineracerAccountLinkSession:
+    with transaction.atomic():
+        session = MineracerAccountLinkSession.objects.select_for_update().get(id=session_id)
+        if session.status == MineracerAccountLinkSessionStatus.PENDING:
+            session.status = MineracerAccountLinkSessionStatus.EXPIRED
+            session.save(update_fields=['status', 'updated_at'])
+        return session
+
+
+def _mark_mineracer_session_failed(session_id: int, category: str, remote_userid: str = '') -> MineracerAccountLinkSession:
+    with transaction.atomic():
+        session = MineracerAccountLinkSession.objects.select_for_update().get(id=session_id)
+        if session.status == MineracerAccountLinkSessionStatus.PENDING:
+            session.status = MineracerAccountLinkSessionStatus.FAILED
+            session.error_category = category
+            session.remote_userid = remote_userid
+            session.save(update_fields=['status', 'error_category', 'remote_userid', 'updated_at'])
+        return session
+
+
+def _expire_stale_mineracer_sessions(user: UserProfile, now: datetime):
+    MineracerAccountLinkSession.objects.filter(
+        userprofile=user,
+        status=MineracerAccountLinkSessionStatus.PENDING,
+        expires_at__lte=now,
+    ).update(status=MineracerAccountLinkSessionStatus.EXPIRED)
+
+
+def _user_has_mineracer_link(user: UserProfile) -> bool:
+    return (
+        AccountLinkQueue.objects.filter(platform=Platform.MINERACER, userprofile=user).exists()
+        or AccountMineracer.objects.filter(parent=user).exists()
+    )
+
+
+def _is_valid_mineracer_userid(userid: str) -> bool:
+    return len(userid) in MINERACER_USERID_LENGTHS
 
 
 def _get_task_identity(args: list, kwargs: dict, key: str):
@@ -124,7 +325,7 @@ def update_saolei_account_info(account: AccountSaolei):
     account.int_count = profile['count']['i']
     account.exp_count = profile['count']['e']
 
-    account.update_time = datetime.now(tz=timezone.utc)
+    account.update_time = datetime.now(tz=datetime_timezone.utc)
 
     account.save(update_fields=[
         'name', 'total_views',

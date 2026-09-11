@@ -10,9 +10,17 @@ from videomanager.models import VideoModel
 class Platform(models.TextChoices):
     BILIBILI = 'B', ('Bilibili')
     MSGAMES = 'a', ('Authoritative Minesweeper')
+    MINERACER = 'm', ('Mineracer')
     QQ = 'q', ('腾讯QQ')
     SAOLEI = 'c', ('扫雷网')
     WOM = 'w', ('Minesweeper.Online')
+
+
+class MineracerAccountLinkSessionStatus(models.TextChoices):
+    PENDING = 'pending', ('Pending')
+    CONFIRMED = 'confirmed', ('Confirmed')
+    EXPIRED = 'expired', ('Expired')
+    FAILED = 'failed', ('Failed')
 
 
 # 用于验证的队列
@@ -153,6 +161,34 @@ class AccountWorldOfMinesweeper(models.Model):
     # e_endurance = models.TimeField()
 
 
+class AccountMineracer(models.Model):
+    id = models.CharField(max_length=17, primary_key=True, verbose_name='Mineracer Userid', help_text='9-character or 17-character Mineracer Userid.')
+    parent = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='account_mineracer', verbose_name='OpenMS user', help_text='OpenMS user linked to this Mineracer account.')
+    update_time = models.DateTimeField(auto_now=True, verbose_name='Update time', help_text='Time when this Mineracer account link was last updated.')
+
+
+class MineracerAccountLinkSession(models.Model):
+    userprofile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='mineracer_link_sessions')
+    device_code = models.CharField(max_length=128)
+    user_code = models.CharField(max_length=32)
+    verification_uri = models.URLField(max_length=500)
+    verification_uri_complete = models.URLField(max_length=500)
+    expires_at = models.DateTimeField()
+    status = models.CharField(max_length=9, choices=MineracerAccountLinkSessionStatus.choices, default=MineracerAccountLinkSessionStatus.PENDING)
+    remote_userid = models.CharField(max_length=17, blank=True, default='')
+    last_polled_at = models.DateTimeField(null=True, blank=True)
+    next_poll_at = models.DateTimeField(null=True, blank=True)
+    error_category = models.CharField(max_length=64, blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['userprofile', 'status', 'expires_at'], name='mineracer_session_lookup_idx'),
+            models.Index(fields=['device_code'], name='mineracer_session_device_idx'),
+        ]
+
+
 # 使用QQ互联提供的登录接口需要开发者注册，步骤繁琐，不利于去中心化
 class AccountQQ(models.Model):
     id = models.PositiveBigIntegerField(primary_key=True)
@@ -167,6 +203,10 @@ PLATFORM_CONFIG = {
     Platform.MSGAMES: {
         'model': AccountMinesweeperGames,
         'related_name': 'account_msgames',
+    },
+    Platform.MINERACER: {
+        'model': AccountMineracer,
+        'related_name': 'account_mineracer',
     },
     Platform.SAOLEI: {
         'model': AccountSaolei,

@@ -39,6 +39,8 @@ def delete_account(user: UserProfile, platform: Platform):
         user.account_wom.delete()
     elif platform == Platform.BILIBILI:
         user.account_bilibili.delete()
+    elif platform == Platform.MINERACER:
+        user.account_mineracer.delete()
 
 
 def fetch_saolei_profile(saolei_id: int):
