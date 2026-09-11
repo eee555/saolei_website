@@ -37,6 +37,27 @@ EXPERT_PERSONAL_PLUCK = 0.16342814596696364
 CUSTOM_PLUCK_FIXTURE_PLUCK = 6.493148642054213
 
 
+class APSchedulerRegistrationTests(TestCase):
+    def test_combined_scheduler_registers_all_jobs(self):
+        from apscheduler.schedulers.background import BackgroundScheduler
+        from common.apscheduler import register_jobs
+
+        scheduler = BackgroundScheduler()
+        register_jobs(scheduler)
+
+        self.assertEqual(
+            {job.id for job in scheduler.get_jobs()},
+            {
+                'delete_freezed_video',
+                'delete_newest_queue',
+                'delete_old_job_executions',
+                'delete_overdue_captcha',
+                'delete_overdue_emailverifyrecord',
+                'refresh_state_always',
+            },
+        )
+
+
 class LogPollTests(TestCase):
     def setUp(self):
         self.log_dir_context = tempfile.TemporaryDirectory()

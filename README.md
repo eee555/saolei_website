@@ -32,9 +32,7 @@
 1. python manage.py runserver --nostatic
 1. （可选，假如要启动定时任务，不做相关功能时可以不启动）
    ```
-   python manage.py runapschedulermonitor
-   python manage.py runapscheduleruserprofile
-   python manage.py runapschedulervideomanager
+   python manage.py runapscheduler
    ```
 
 前端：
