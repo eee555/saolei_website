@@ -28,12 +28,12 @@ MINERACER_SESSION_GRACE_SECONDS = 60
 def start_mineracer_account_link(user: UserProfile) -> MineracerAccountLinkSession:
     now = timezone.now()
     if _user_has_mineracer_link(user):
-        logger.info('Mineracer link start rejected user_id=%s reason=already_linked', user.id)
+        logger.info(f'Mineracer link start rejected user_id={user.id} reason=already_linked')
         raise ExceptionToResponse('mineracer', 'already_linked', status_code=409)
 
     session = _get_pending_mineracer_session_for_user(user.id, now)
     if session:
-        logger.info('Mineracer link start reused user_id=%s session_id=%s', user.id, session.session_id)
+        logger.info(f'Mineracer link start reused user_id={user.id} session_id={session.session_id}')
         return session
 
     lock_key = _mineracer_start_lock_key(user.id)
@@ -41,21 +41,21 @@ def start_mineracer_account_link(user: UserProfile) -> MineracerAccountLinkSessi
     if not cache.add(lock_key, '1', timeout=MINERACER_START_LOCK_SECONDS):
         session = _get_pending_mineracer_session_for_user(user.id, timezone.now())
         if session:
-            logger.info('Mineracer link start reused user_id=%s session_id=%s reason=start_lock', user.id, session.session_id)
+            logger.info(f'Mineracer link start reused user_id={user.id} session_id={session.session_id} reason=start_lock')
             return session
-        logger.warning('Mineracer link start rejected user_id=%s reason=pending_start', user.id)
+        logger.warning(f'Mineracer link start rejected user_id={user.id} reason=pending_start')
         raise ExceptionToResponse('mineracer', 'pending_start', status_code=409)
 
     try:
         session = _get_pending_mineracer_session_for_user(user.id, timezone.now())
         if session:
-            logger.info('Mineracer link start reused user_id=%s session_id=%s reason=start_lock_recheck', user.id, session.session_id)
+            logger.info(f'Mineracer link start reused user_id={user.id} session_id={session.session_id} reason=start_lock_recheck')
             return session
 
         remote_session = request_mineracer_account_link()
         now = timezone.now()
         if remote_session.expires_at <= now:
-            logger.warning('Mineracer link start rejected user_id=%s reason=remote_expired', user.id)
+            logger.warning(f'Mineracer link start rejected user_id={user.id} reason=remote_expired')
             raise ExceptionToResponse('mineracer', 'expired')
 
         session = MineracerAccountLinkSession(
@@ -72,12 +72,7 @@ def start_mineracer_account_link(user: UserProfile) -> MineracerAccountLinkSessi
         )
         _save_mineracer_session(session)
         _save_user_pending_mineracer_session(session)
-        logger.info(
-            'Mineracer link started user_id=%s session_id=%s expires_at=%s',
-            user.id,
-            session.session_id,
-            session.expires_at.isoformat(),
-        )
+        logger.info(f'Mineracer link started user_id={user.id} session_id={session.session_id} expires_at={session.expires_at.isoformat()}')
         return session
     finally:
         cache.delete(lock_key)
@@ -112,7 +107,7 @@ def poll_mineracer_account_link_session(user: UserProfile, session_id: str) -> M
         session.next_poll_at = session.last_polled_at + timedelta(milliseconds=get_mineracer_account_link_poll_interval_ms())
         session.error_category = ''
         _save_mineracer_session(session)
-        logger.info('Mineracer link poll sent user_id=%s session_id=%s', user.id, session.session_id)
+        logger.info(f'Mineracer link poll sent user_id={user.id} session_id={session.session_id}')
         poll_result = poll_mineracer_account_link(session.device_code)
         if poll_result.status == MINERACER_STATUS_PENDING:
             return _update_pending_mineracer_session(session, poll_result.retry_after_ms)
@@ -126,7 +121,7 @@ def poll_mineracer_account_link_session(user: UserProfile, session_id: str) -> M
     except ExceptionToResponse as exc:
         if exc.category in ['requestexception', 'timeout']:
             return _mark_mineracer_session_poll_error(session, exc.category)
-        logger.warning('Mineracer link poll failed user_id=%s session_id=%s category=%s', user.id, session.session_id, exc.category)
+        logger.warning(f'Mineracer link poll failed user_id={user.id} session_id={session.session_id} category={exc.category}')
         raise
     finally:
         cache.delete(lock_key)
@@ -181,12 +176,7 @@ def _update_pending_mineracer_session(session: MineracerAccountLinkSession, retr
     session.error_category = ''
     _save_mineracer_session(session)
     _save_user_pending_mineracer_session(session)
-    logger.info(
-        'Mineracer link poll pending user_id=%s session_id=%s next_poll_at=%s',
-        session.user_id,
-        session.session_id,
-        _format_optional_datetime(session.next_poll_at),
-    )
+    logger.info(f'Mineracer link poll pending user_id={session.user_id} session_id={session.session_id} next_poll_at={_format_optional_datetime(session.next_poll_at)}')
     return session
 
 
@@ -196,7 +186,7 @@ def _mark_mineracer_session_poll_error(session: MineracerAccountLinkSession, cat
         session.next_poll_at = timezone.now() + timedelta(milliseconds=get_mineracer_account_link_poll_interval_ms())
         _save_mineracer_session(session)
         _save_user_pending_mineracer_session(session)
-    logger.warning('Mineracer link poll transient_error user_id=%s session_id=%s category=%s', session.user_id, session.session_id, category)
+    logger.warning(f'Mineracer link poll transient_error user_id={session.user_id} session_id={session.session_id} category={category}')
     return session
 
 
@@ -206,7 +196,7 @@ def _mark_mineracer_session_confirmed(session: MineracerAccountLinkSession, user
     session.error_category = ''
     _delete_user_pending_mineracer_session(session.user_id)
     _save_mineracer_session(session, timeout=_get_mineracer_session_grace_seconds())
-    logger.info('Mineracer link confirmed user_id=%s session_id=%s mineracer_userid=%s', session.user_id, session.session_id, userid)
+    logger.info(f'Mineracer link confirmed user_id={session.user_id} session_id={session.session_id} mineracer_userid={userid}')
     return session
 
 
@@ -215,7 +205,7 @@ def _mark_mineracer_session_expired(session: MineracerAccountLinkSession) -> Min
         session.status = MINERACER_STATUS_EXPIRED
     _delete_user_pending_mineracer_session(session.user_id)
     _save_mineracer_session(session, timeout=_get_mineracer_session_grace_seconds())
-    logger.info('Mineracer link expired user_id=%s session_id=%s', session.user_id, session.session_id)
+    logger.info(f'Mineracer link expired user_id={session.user_id} session_id={session.session_id}')
     return session
 
 
@@ -226,7 +216,7 @@ def _mark_mineracer_session_failed(session: MineracerAccountLinkSession, categor
     session.remote_userid = remote_userid
     _delete_user_pending_mineracer_session(session.user_id)
     _save_mineracer_session(session, timeout=_get_mineracer_session_grace_seconds())
-    logger.warning('Mineracer link failed user_id=%s session_id=%s category=%s mineracer_userid=%s', session.user_id, session.session_id, category, remote_userid)
+    logger.warning(f'Mineracer link failed user_id={session.user_id} session_id={session.session_id} category={category} mineracer_userid={remote_userid}')
     return session
 
 
