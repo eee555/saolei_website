@@ -66,7 +66,7 @@ Mineracer 提供的账号关联方式不是现有的“用户手填平台 ID，�
 
 4. 新增 Ninja API
 
-   按项目约定，新 API 放在 `accountlink/api.py`。
+   按项目约定，新 API 放在 `accountlink/api.py`。Mineracer 独占逻辑集中在 `accountlink/mineracer/`，API 层只做登录、限流后的入口转发和响应组装。
 
    - `POST /api/accountlink/mineracer/start/`
      - 登录用户调用。
@@ -84,13 +84,13 @@ Mineracer 提供的账号关联方式不是现有的“用户手填平台 ID，�
 
 5. 新增 Mineracer HTTP 客户端封装
 
-   建议在 `accountlink/utils.py` 或拆分出的 Mineracer 专用模块中封装：
+   在 `accountlink/mineracer/client.py` 中封装：
 
    - 请求 `deviceCode` 和确认链接。
    - 轮询关联状态。
    - 将 Mineracer 错误码映射为本项目已有的 `ExceptionToResponse` 风格分类。
 
-   partner key、API base URL、timeout、轮询间隔等配置不能进入前端，需放在服务端配置中。
+   `accountlink/mineracer/dtos.py` 放 Mineracer 状态常量和 dataclass；`accountlink/mineracer/sessions.py` 放 Redis 会话、轮询状态机、最终绑定和审计日志。partner key、API base URL、timeout、轮询间隔等配置不能进入前端，需放在服务端配置中。
 
    Mineracer 当前接口约定：
 

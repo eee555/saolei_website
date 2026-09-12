@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone as datetime_timezone
 from typing import Any
 
@@ -7,32 +6,10 @@ from django.utils import timezone
 import requests
 
 from utils.exceptions import ExceptionToResponse
+from .dtos import MINERACER_STATUS_CONFIRMED, MINERACER_STATUS_EXPIRED, MINERACER_STATUS_FAILED, MINERACER_STATUS_PENDING, MineracerAccountLinkPollResponse, MineracerAccountLinkStartResponse
 
 MINERACER_START_URL = 'https://mineracer.com/api/partner/link/start'
 MINERACER_POLL_URL = 'https://mineracer.com/api/partner/link/poll'
-
-MINERACER_STATUS_PENDING = 'pending'
-MINERACER_STATUS_CONFIRMED = 'confirmed'
-MINERACER_STATUS_EXPIRED = 'expired'
-MINERACER_STATUS_FAILED = 'failed'
-
-
-@dataclass(frozen=True)
-class MineracerAccountLinkStartResponse:
-    device_code: str
-    user_code: str
-    verification_uri: str
-    verification_uri_complete: str
-    expires_at: datetime
-    poll_interval_ms: int
-
-
-@dataclass(frozen=True)
-class MineracerAccountLinkPollResponse:
-    status: str
-    userid: str = ''
-    error_category: str = ''
-    retry_after_ms: int | None = None
 
 
 def get_mineracer_account_link_poll_interval_ms() -> int:

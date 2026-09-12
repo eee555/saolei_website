@@ -11,8 +11,9 @@ from ninja.orm import create_schema
 from userprofile.decorators import login_required_error, staff_required
 from userprofile.models import UserProfile
 from utils.response import HttpResponseConflict
+from .mineracer.dtos import MineracerAccountLinkSession
+from .mineracer.sessions import get_mineracer_session_retry_after_ms, poll_mineracer_account_link_session, start_mineracer_account_link
 from .models import AccountBilibili, AccountLinkQueue, AccountMineracer, AccountMinesweeperGames, AccountQQ, AccountSaolei, AccountWorldOfMinesweeper, Platform, PLATFORM_CONFIG
-from .services import get_mineracer_session_retry_after_ms, MineracerAccountLinkSession, poll_mineracer_account_link_session, start_mineracer_account_link
 from .utils import private_platforms
 
 router = Router()
