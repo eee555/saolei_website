@@ -55,3 +55,13 @@ A replay can contain multiple tournament identifiers, separated by commas.
 ## Tournament Replays
 
 After a replay is recognized as belonging to an ongoing tournament, it is hidden and only the replay owner can see it. This means all leaderboards on the website ignore tournament replays. After the tournament ends, the system makes replays that no longer belong to an ongoing tournament publicly visible again and refreshes the leaderboards.
+
+## Automatically Uploading Tournament Replays
+
+If your browser supports [`showDirectoryPicker`](https://developer.mozilla.org/docs/Web/API/Window/showDirectoryPicker), you can use automatic uploading in Weekly Tournaments. This feature watches a folder, scans newly added files, filters eligible replays, and uploads them automatically. There are three filter levels:
+
+- Tournament identifier matches.
+- Tournament identifier matches, and the replay mode, level, and other properties meet the tournament requirements.
+- Supported by some tournaments: tournament identifier matches, and the replay may be included in final scoring, meaning it is currently one of your best replays.
+
+Only files added after polling starts will be scanned. Please upload older replays manually.
