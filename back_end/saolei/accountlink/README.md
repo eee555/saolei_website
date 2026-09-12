@@ -72,7 +72,7 @@ Mineracer 提供的账号关联方式不是现有的“用户手填平台 ID，�
      - 登录用户调用。
      - 检查当前用户是否已有关联中的 Mineracer 会话或已绑定 Mineracer 账号。
      - 使用服务端 partner key 请求 Mineracer。
-     - 保存 Redis 临时会话，返回 `session_id`、`verification_uri_complete`、`expires_at`、`retry_after_ms`。
+     - 保存 Redis 临时会话，返回 `session_id`、`verification_uri_complete`、`expires_at`、`next_poll_at`。
 
    - `GET /api/accountlink/mineracer/status/{session_id}`
      - 登录用户调用，只允许读取自己的会话。

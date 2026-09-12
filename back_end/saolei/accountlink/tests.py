@@ -277,7 +277,7 @@ class MineracerAccountLinkTestCase(TestCase):
 
         self.assertEqual(response.status_code, 200, response.content)
         self.assertEqual(response.json()['status'], MINERACER_STATUS_PENDING)
-        self.assertGreater(response.json()['retry_after_ms'], 0)
+        self.assertIsNotNone(response.json()['next_poll_at'])
         poll_mineracer_account_link.assert_not_called()
 
     @patch('accountlink.mineracer.sessions.poll_mineracer_account_link')

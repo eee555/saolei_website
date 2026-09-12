@@ -132,12 +132,6 @@ def poll_mineracer_account_link_session(user: UserProfile, session_id: str) -> M
         cache.delete(lock_key)
 
 
-def get_mineracer_session_retry_after_ms(session: MineracerAccountLinkSession) -> int:
-    if session.status != MINERACER_STATUS_PENDING or session.next_poll_at is None:
-        return 0
-    return max(0, ceil((session.next_poll_at - timezone.now()).total_seconds() * 1000))
-
-
 def complete_mineracer_account_link(user: UserProfile, session: MineracerAccountLinkSession, userid: str) -> MineracerAccountLinkSession | None:
     userid = str(userid).strip()
     if not _is_valid_mineracer_userid(userid):
@@ -187,7 +181,12 @@ def _update_pending_mineracer_session(session: MineracerAccountLinkSession, retr
     session.error_category = ''
     _save_mineracer_session(session)
     _save_user_pending_mineracer_session(session)
-    logger.info('Mineracer link poll pending user_id=%s session_id=%s retry_after_ms=%s', session.user_id, session.id, get_mineracer_session_retry_after_ms(session))
+    logger.info(
+        'Mineracer link poll pending user_id=%s session_id=%s next_poll_at=%s',
+        session.user_id,
+        session.id,
+        _format_optional_datetime(session.next_poll_at),
+    )
     return session
 
 
@@ -330,6 +329,10 @@ def _get_mineracer_user_pending_timeout_seconds(session: MineracerAccountLinkSes
 def _get_mineracer_session_grace_seconds() -> int:
     config = getattr(settings, 'MINERACER_ACCOUNT_LINK', {})
     return max(1, int(config.get('SESSION_GRACE_SECONDS', MINERACER_SESSION_GRACE_SECONDS)))
+
+
+def _format_optional_datetime(value: datetime | None) -> str:
+    return value.isoformat() if value else ''
 
 
 def _is_mineracer_session_expired(session: MineracerAccountLinkSession, now: datetime) -> bool:

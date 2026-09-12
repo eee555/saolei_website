@@ -12,7 +12,7 @@ from userprofile.decorators import login_required_error, staff_required
 from userprofile.models import UserProfile
 from utils.response import HttpResponseConflict
 from .mineracer.dtos import MineracerAccountLinkSession
-from .mineracer.sessions import get_mineracer_session_retry_after_ms, poll_mineracer_account_link_session, start_mineracer_account_link
+from .mineracer.sessions import poll_mineracer_account_link_session, start_mineracer_account_link
 from .models import AccountBilibili, AccountLinkQueue, AccountMineracer, AccountMinesweeperGames, AccountQQ, AccountSaolei, AccountWorldOfMinesweeper, Platform, PLATFORM_CONFIG
 from .utils import private_platforms
 
@@ -60,7 +60,7 @@ class MineracerAccountLinkSessionOut(Schema):
     verification_uri: str
     verification_uri_complete: str
     expires_at: datetime
-    retry_after_ms: int
+    next_poll_at: datetime | None = None
     remote_userid: str | None = None
     error_category: str | None = None
 
@@ -182,7 +182,7 @@ def mineracer_session_response(session: MineracerAccountLinkSession):
         'verification_uri': session.verification_uri,
         'verification_uri_complete': session.verification_uri_complete,
         'expires_at': session.expires_at,
-        'retry_after_ms': get_mineracer_session_retry_after_ms(session),
+        'next_poll_at': session.next_poll_at,
         'remote_userid': remote_userid,
         'error_category': error_category,
     }
