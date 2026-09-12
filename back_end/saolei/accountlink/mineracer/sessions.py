@@ -256,11 +256,9 @@ def _save_mineracer_session(session: MineracerAccountLinkSession, timeout: int |
     if session.created_at is None:
         session.created_at = now
     session.updated_at = now
-    _mineracer_cache().set(
-        _mineracer_session_key(session.session_id),
-        session,
-        timeout=timeout if timeout is not None else _get_mineracer_session_timeout_seconds(session, now),
-    )
+    if timeout is None:
+        timeout = _get_mineracer_session_timeout_seconds(session, now)
+    _mineracer_cache().set(_mineracer_session_key(session.session_id), session, timeout=timeout),
     return session
 
 
