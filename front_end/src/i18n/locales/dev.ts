@@ -2,6 +2,7 @@ export default {
     local: 'dev',
     common: {
         platform: {
+            m: 'Mineracer',
             w: 'Minesweeper.Online',
         },
         prop: {

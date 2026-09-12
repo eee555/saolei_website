@@ -10,7 +10,8 @@
                 @refresh="refresh"
             />
         </template>
-        <CardAdd v-if="store.player.id == store.user.id && accountLinkCount < platformCount" :accountlinks="accountlinks" @add-link="addLink" />
+        <CardAdd v-if="showManualAdd" :accountlinks="accountlinks" @add-link="addLink" />
+        <CardAddMineracer v-if="showMineracerAdd" @refresh="refresh" />
     </div>
 </template>
 
@@ -22,7 +23,9 @@ import type { Component } from 'vue';
 import { computed, ref, watch } from 'vue';
 
 import CardAdd from './CardAdd.vue';
+import CardAddMineracer from './CardAddMineracer.vue';
 import CardBilibili from './CardBilibili.vue';
+import CardMineracer from './CardMineracer.vue';
 import CardMsgames from './CardMsgames.vue';
 import CardSaolei from './CardSaolei.vue';
 import CardWoM from './CardWoM.vue';
@@ -30,7 +33,7 @@ import CardWoM from './CardWoM.vue';
 import { httpErrorNotification } from '@/components/Notifications';
 import { addAccountLink, fetchAccountLinks } from '@/services/accountLinkService';
 import { store } from '@/store';
-import { AccountLinkPlatform, AccountLinks, platformlist } from '@/utils/accountlinks';
+import { AccountLinkPlatform, AccountLinks, manualAccountLinkPlatforms } from '@/utils/accountlinks';
 import type { AccountLinkPlatform as AccountLinkPlatformType } from '@/utils/accountlinks';
 
 const props = defineProps({
@@ -42,13 +45,15 @@ const props = defineProps({
 
 const loading = ref(false);
 const accountlinks = ref(new AccountLinks());
-const platformCount = Object.keys(platformlist).length;
-const accountLinkCount = computed(() => accountlinks.value.count);
+const isOwnAccountLinkPage = computed(() => store.player.id == store.user.id);
+const showManualAdd = computed(() => isOwnAccountLinkPage.value && manualAccountLinkPlatforms.some((platform) => !accountlinks.value.has(platform)));
+const showMineracerAdd = computed(() => isOwnAccountLinkPage.value && !accountlinks.value.has(AccountLinkPlatform.Mineracer));
 const accountCardConfigs: { platform: AccountLinkPlatformType; component: Component }[] = [
     { platform: AccountLinkPlatform.Saolei, component: CardSaolei },
     { platform: AccountLinkPlatform.MSGames, component: CardMsgames },
     { platform: AccountLinkPlatform.WoM, component: CardWoM },
     { platform: AccountLinkPlatform.Bilibili, component: CardBilibili },
+    { platform: AccountLinkPlatform.Mineracer, component: CardMineracer },
 ];
 
 watch(() => props.userId, refresh, { immediate: true });
