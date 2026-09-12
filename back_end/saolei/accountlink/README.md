@@ -19,7 +19,7 @@ Mineracer 提供的账号关联方式不是现有的“用户手填平台 ID，�
 
    在 `models.py` 增加 `Platform.MINERACER`。现有 `AccountLinkQueue.platform` 是 `max_length=1`，因此建议使用单字符平台码，例如 `m`。同时新增 `AccountMineracer`，最小字段包括：
 
-   - `id`：Mineracer 返回的 `userId`，这是 9 位或 17 位字符串。
+   - `id`：Mineracer 返回的 `userId`，这是至多64位字符串。
    - `parent`：指向 `UserProfile` 的一对一关联，`related_name` 可命名为 `account_mineracer`。
    - `update_time`：本地同步或绑定更新时间。
 
@@ -34,10 +34,10 @@ Mineracer 提供的账号关联方式不是现有的“用户手填平台 ID，�
    Redis session 内容包括：
 
    - `user_id`：OpenMS 当前登录用户 ID。
-   - `device_code`：Mineracer 返回的 `deviceCode`，只在服务端保存。
-   - `user_code`：Mineracer 返回的 `userCode`。
-   - `verification_uri`
-   - `verification_uri_complete`：提供给用户打开的完整确认链接。
+   - `device_code`：Mineracer 返回的 `deviceCode`，只在服务端保存。当前长度43
+   - `user_code`：Mineracer 返回的 `userCode`。长度9（`XXXX-XXXX`）
+   - `verification_uri`：常量`https://mineracer.com/link`。Mineracer提供该字段的原因是它未来有可能变化。
+   - `verification_uri_complete`：提供给用户打开的完整确认链接。它总是`verification_uri`加上`?code={user_code}`。Mineracer提供该字段的原因是它未来有可能变化。
    - `expires_at`
    - `status`：`pending`、`confirmed`、`expired`、`failed`
    - `remote_userid`
@@ -164,9 +164,8 @@ Mineracer 提供的账号关联方式不是现有的“用户手填平台 ID，�
 
 3. 添加账号交互
 
-   当前 `CardAdd.vue` 对所有平台都要求用户输入数字 ID。Mineracer 需要单独分支：
+   Mineracer和当前其他平台流程都不同，不使用`CardAdd.vue`实现。在账号关联页面，新增Mineracer关联按钮，点击按钮后进入Mineracer关联流程，推荐使用`ElSteps`。
 
-   - 用户选择 Mineracer 后，不显示 ID 输入框。
    - 显示“生成关联链接”按钮。
    - 成功后显示外链按钮、过期倒计时和当前状态。
    - 前端定时请求本项目的 status API。
@@ -200,13 +199,27 @@ Mineracer 提供的账号关联方式不是现有的“用户手填平台 ID，�
 7. 前端打开 Mineracer 链接时使用新窗口，并使用 `rel="noopener noreferrer"`。
 8. 审计记录使用 `accountlink` 日志；日志中不要记录 partner key，也不要完整记录可复用的 `deviceCode`。
 
-### 需要向 Mineracer 确认的问题
+### 已向 Mineracer 确认的信息
 
-1. 一个 Mineracer 账号是否允许绑定多个 OpenMS 账号；如果不允许，是否由 Mineracer 拒绝还是由 OpenMS 拒绝。
-2. 用户取消、`deviceCode` 过期、重复确认时的返回状态与错误响应格式。
-3. 是否支持确认后 redirect 回 OpenMS 账号关联页。
-4. 是否提供测试环境或测试账号。
-5. 解绑时是否需要 OpenMS 通知 Mineracer。
+1. 一个 Mineracer 账号不允许绑定多个 OpenMS 账号，双方均进行检查并拒绝。
+2. 用户取消或拒绝时没有独立错误码，玩家不确认时会让 10 分钟有效期自然过期。
+3. Mineracer poll 接口的已知返回状态与错误响应格式：
+
+   ```
+   202 - {status: "pending", intervalMs}  - not yet approved
+   200 - {status: "linked", userId} - approved
+   400 - {error: "invalid-device-code"} - missing or incorrect deviceCode
+   404 - {error: "invalid-device-code"} - same error lol
+   404 - {error: "account-not-found"} - edge case, account row missing (rare)
+   409 - {error: "link-superseded"} - newer overlapping flow created (rare)
+   410 - {error: "code-expired"} - past the 10-minute TTL
+   ```
+
+### 仍需向 Mineracer 确认的问题
+
+1. 是否支持确认后 redirect 回 OpenMS 账号关联页。
+2. 是否提供测试环境或测试账号。
+3. 解绑时是否需要 OpenMS 通知 Mineracer。
 
 ### 推荐实施顺序
 

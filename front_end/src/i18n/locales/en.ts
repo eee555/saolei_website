@@ -160,10 +160,13 @@ export default {
         msgamesName: 'Name',
         mineracer: {
             error: {
+                account_not_found: 'Mineracer could not find the account for this link.',
                 already_linked: 'A Mineracer account is already linked.',
                 expired: 'The link has expired.',
                 identifier_conflict: 'This Mineracer account is already linked to another user.',
+                invalid_device_code: 'Mineracer no longer recognises this link. Please generate a new one.',
                 invalid_userid: 'Mineracer returned an invalid user ID.',
+                link_superseded: 'This Mineracer link was replaced by a newer one. Please generate a new link.',
                 not_configured: 'Mineracer linking is not configured.',
                 pending_start: 'A Mineracer link is already being created. Please try again shortly.',
                 remote_failed: 'Mineracer could not confirm the link.',

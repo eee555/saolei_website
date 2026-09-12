@@ -27,10 +27,13 @@ describe('getAccountLinkUpdateErrorMessageKey', () => {
 describe('getMineracerAccountLinkErrorMessageKey', () => {
     it('maps known backend Mineracer categories to link error messages', () => {
         const cases = [
+            ['account_not_found', 'accountlink.mineracer.error.account_not_found'],
             ['already_linked', 'accountlink.mineracer.error.already_linked'],
             ['expired', 'accountlink.mineracer.error.expired'],
             ['identifier_conflict', 'accountlink.mineracer.error.identifier_conflict'],
+            ['invalid_device_code', 'accountlink.mineracer.error.invalid_device_code'],
             ['invalid_userid', 'accountlink.mineracer.error.invalid_userid'],
+            ['link_superseded', 'accountlink.mineracer.error.link_superseded'],
             ['not_configured', 'accountlink.mineracer.error.not_configured'],
             ['pending_start', 'accountlink.mineracer.error.pending_start'],
             ['remote_failed', 'accountlink.mineracer.error.remote_failed'],

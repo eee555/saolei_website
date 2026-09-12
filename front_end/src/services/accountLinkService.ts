@@ -4,7 +4,7 @@ import $axios from '@/http';
 import { AccountLinks, MineracerAccountLinkSession } from '@/utils/accountlinks';
 import type { AccountLinkPlatform, AccountLinkQueueResponse, AccountLinksResponse, MineracerAccountLinkSessionResponse, SaoleiVideo, SaoleiVideoRaw } from '@/utils/accountlinks';
 
-type MineracerAccountLinkErrorMessageCategory = 'already_linked' | 'expired' | 'identifier_conflict' | 'invalid_userid' | 'not_configured' | 'pending_start' | 'remote_failed' | 'requestexception' | 'response' | 'timeout' | 'unknown';
+type MineracerAccountLinkErrorMessageCategory = 'account_not_found' | 'already_linked' | 'expired' | 'identifier_conflict' | 'invalid_device_code' | 'invalid_userid' | 'link_superseded' | 'not_configured' | 'pending_start' | 'remote_failed' | 'requestexception' | 'response' | 'timeout' | 'unknown';
 
 type AccountLinkUpdateErrorMessageCategory = 'cooldown' | 'empty' | 'indexerror' | 'pageempty' | 'requestexception' | 'timeout' | 'unknown';
 
@@ -18,10 +18,13 @@ const accountLinkUpdateErrorCategories = new Set<string>([
 ]);
 
 const mineracerAccountLinkErrorCategories = new Set<string>([
+    'account_not_found',
     'already_linked',
     'expired',
     'identifier_conflict',
+    'invalid_device_code',
     'invalid_userid',
+    'link_superseded',
     'not_configured',
     'pending_start',
     'remote_failed',

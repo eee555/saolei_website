@@ -13,8 +13,8 @@ from userprofile.models import UserProfile
 from utils.exceptions import ExceptionToResponse
 from .api import MineracerAccountLinkSessionOut
 from .mineracer.client import poll_mineracer_account_link, request_mineracer_account_link
-from .mineracer.dtos import MINERACER_STATUS_CONFIRMED, MINERACER_STATUS_FAILED, MINERACER_STATUS_PENDING, MineracerAccountLinkPollResponse, MineracerAccountLinkSession, MineracerAccountLinkStartResponse
-from .mineracer.sessions import _get_mineracer_session, _save_mineracer_session, _save_user_pending_mineracer_session
+from .mineracer.dtos import MINERACER_ERROR_ACCOUNT_NOT_FOUND, MINERACER_ERROR_INVALID_DEVICE_CODE, MINERACER_ERROR_LINK_SUPERSEDED, MINERACER_STATUS_CONFIRMED, MINERACER_STATUS_EXPIRED, MINERACER_STATUS_FAILED, MINERACER_STATUS_PENDING, MineracerAccountLinkPollResponse, MineracerAccountLinkSession, MineracerAccountLinkStartResponse
+from .mineracer.sessions import _get_mineracer_session, _is_valid_mineracer_userid, _save_mineracer_session, _save_user_pending_mineracer_session
 from .models import AccountBilibili, AccountLinkQueue, AccountMineracer, AccountMinesweeperGames, AccountSaolei, AccountWorldOfMinesweeper, Platform
 from .services import update_saolei_account_info
 from .utils import isPrivate, private_platforms, update_bilibili_account, update_msgames_account, update_wom_account
@@ -234,7 +234,7 @@ class MineracerHttpClientTestCase(SimpleTestCase):
 
     @patch('accountlink.mineracer.client.requests.post')
     def test_poll_mineracer_account_link_returns_pending_on_202(self, requests_post):
-        requests_post.return_value = MineracerFakeResponse(status_code=202)
+        requests_post.return_value = MineracerFakeResponse(status_code=202, data={'status': 'pending', 'intervalMs': 3000})
 
         response = poll_mineracer_account_link('device-code-1')
 
@@ -242,6 +242,7 @@ class MineracerHttpClientTestCase(SimpleTestCase):
         self.assertEqual(kwargs['headers']['Authorization'], 'Bearer test-partner-key')
         self.assertEqual(kwargs['json'], {'deviceCode': 'device-code-1'})
         self.assertEqual(response.status, MINERACER_STATUS_PENDING)
+        self.assertEqual(response.retry_after_ms, 3000)
 
     @patch('accountlink.mineracer.client.requests.post')
     def test_poll_mineracer_account_link_returns_linked_userid_on_200(self, requests_post):
@@ -254,6 +255,32 @@ class MineracerHttpClientTestCase(SimpleTestCase):
 
         self.assertEqual(response.status, MINERACER_STATUS_CONFIRMED)
         self.assertEqual(response.userid, '12345678901234567')
+
+    @patch('accountlink.mineracer.client.requests.post')
+    def test_poll_mineracer_account_link_maps_remote_errors(self, requests_post):
+        cases = [
+            (400, {'error': 'invalid-device-code'}, MINERACER_STATUS_FAILED, MINERACER_ERROR_INVALID_DEVICE_CODE),
+            (404, {'error': 'invalid-device-code'}, MINERACER_STATUS_FAILED, MINERACER_ERROR_INVALID_DEVICE_CODE),
+            (404, {'error': 'account-not-found'}, MINERACER_STATUS_FAILED, MINERACER_ERROR_ACCOUNT_NOT_FOUND),
+            (409, {'error': 'link-superseded'}, MINERACER_STATUS_FAILED, MINERACER_ERROR_LINK_SUPERSEDED),
+            (410, {'error': 'code-expired'}, MINERACER_STATUS_EXPIRED, ''),
+        ]
+
+        for status_code, data, expected_status, expected_category in cases:
+            with self.subTest(status_code=status_code, data=data):
+                requests_post.return_value = MineracerFakeResponse(status_code=status_code, data=data)
+
+                response = poll_mineracer_account_link('device-code-1')
+
+                self.assertEqual(response.status, expected_status)
+                self.assertEqual(response.error_category, expected_category)
+
+    def test_mineracer_userid_accepts_up_to_64_characters(self):
+        self.assertFalse(_is_valid_mineracer_userid(''))
+        self.assertTrue(_is_valid_mineracer_userid('x' * 9))
+        self.assertTrue(_is_valid_mineracer_userid('x' * 17))
+        self.assertTrue(_is_valid_mineracer_userid('x' * 64))
+        self.assertFalse(_is_valid_mineracer_userid('x' * 65))
 
 
 @override_settings(MINERACER_ACCOUNT_LINK=MINERACER_TEST_ACCOUNT_LINK, CACHES=MINERACER_TEST_CACHES)
@@ -339,6 +366,21 @@ class MineracerAccountLinkTestCase(TestCase):
         self.assertEqual(response.json()['status'], MINERACER_STATUS_FAILED)
         self.assertEqual(response.json()['error_category'], 'invalid_userid')
         self.assertFalse(AccountMineracer.objects.filter(id='short').exists())
+
+    @patch('accountlink.mineracer.sessions.poll_mineracer_account_link')
+    def test_status_rejects_too_long_mineracer_userid(self, poll_mineracer_account_link):
+        session = self.create_session(next_poll_at=timezone.now() - datetime.timedelta(seconds=1))
+        poll_mineracer_account_link.return_value = MineracerAccountLinkPollResponse(
+            status=MINERACER_STATUS_CONFIRMED,
+            userid='x' * 65,
+        )
+
+        response = self.client.get(f'/api/accountlink/mineracer/status/{session.session_id}')
+
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.json()['status'], MINERACER_STATUS_FAILED)
+        self.assertEqual(response.json()['error_category'], 'invalid_userid')
+        self.assertFalse(AccountMineracer.objects.filter(id='x' * 65).exists())
 
     @patch('accountlink.mineracer.sessions.poll_mineracer_account_link')
     def test_status_conflict_does_not_reassign_existing_mineracer_userid(self, poll_mineracer_account_link):

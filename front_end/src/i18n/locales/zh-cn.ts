@@ -159,10 +159,13 @@ export default {
         msgamesName: '英文名',
         mineracer: {
             error: {
+                account_not_found: 'Mineracer 找不到该关联链接对应的账号。',
                 already_linked: '已经关联了 Mineracer 账号。',
                 expired: '关联链接已过期。',
                 identifier_conflict: '该 Mineracer 账号已被其他用户绑定。',
+                invalid_device_code: 'Mineracer 已无法识别该关联链接，请重新生成。',
                 invalid_userid: 'Mineracer 返回了无效的用户 ID。',
+                link_superseded: '该 Mineracer 关联链接已被新的流程替代，请重新生成链接。',
                 not_configured: 'Mineracer 关联尚未配置。',
                 pending_start: '正在创建 Mineracer 关联链接，请稍后再试。',
                 remote_failed: 'Mineracer 未能完成确认。',

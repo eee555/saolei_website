@@ -6,10 +6,15 @@ from django.utils import timezone
 import requests
 
 from utils.exceptions import ExceptionToResponse
-from .dtos import MINERACER_STATUS_CONFIRMED, MINERACER_STATUS_EXPIRED, MINERACER_STATUS_FAILED, MINERACER_STATUS_PENDING, MineracerAccountLinkPollResponse, MineracerAccountLinkStartResponse
+from .dtos import MINERACER_ERROR_ACCOUNT_NOT_FOUND, MINERACER_ERROR_INVALID_DEVICE_CODE, MINERACER_ERROR_LINK_SUPERSEDED, MINERACER_STATUS_CONFIRMED, MINERACER_STATUS_EXPIRED, MINERACER_STATUS_FAILED, MINERACER_STATUS_PENDING, MineracerAccountLinkPollResponse, MineracerAccountLinkStartResponse
 
 MINERACER_START_URL = 'https://mineracer.com/api/partner/link/start'
 MINERACER_POLL_URL = 'https://mineracer.com/api/partner/link/poll'
+MINERACER_POLL_ERROR_CATEGORIES = {
+    'account-not-found': MINERACER_ERROR_ACCOUNT_NOT_FOUND,
+    'invalid-device-code': MINERACER_ERROR_INVALID_DEVICE_CODE,
+    'link-superseded': MINERACER_ERROR_LINK_SUPERSEDED,
+}
 
 
 def get_mineracer_account_link_poll_interval_ms() -> int:
@@ -69,6 +74,9 @@ def poll_mineracer_account_link(device_code: str) -> MineracerAccountLinkPollRes
         )
         if response.status_code == 202:
             return MineracerAccountLinkPollResponse(status=MINERACER_STATUS_PENDING, retry_after_ms=_get_response_interval_ms(response))
+        poll_error = _get_poll_error_response(response)
+        if poll_error is not None:
+            return poll_error
         response.raise_for_status()
         data = response.json()
     except requests.exceptions.Timeout:
@@ -156,6 +164,25 @@ def _get_response_interval_ms(response: requests.Response) -> int | None:
     except ValueError:
         return None
     return _get_interval_ms(data)
+
+
+def _get_poll_error_response(response: requests.Response) -> MineracerAccountLinkPollResponse | None:
+    if response.status_code < 400:
+        return None
+    try:
+        value = response.json()
+    except ValueError:
+        data = {}
+    else:
+        data = value if isinstance(value, dict) else {}
+
+    error = _get_optional_string(data, ['error', 'error_category', 'category'])
+    retry_after_ms = _get_interval_ms(data) if data else None
+    if response.status_code == 410 or error == 'code-expired':
+        return MineracerAccountLinkPollResponse(status=MINERACER_STATUS_EXPIRED, retry_after_ms=retry_after_ms)
+    if error in MINERACER_POLL_ERROR_CATEGORIES:
+        return MineracerAccountLinkPollResponse(status=MINERACER_STATUS_FAILED, error_category=MINERACER_POLL_ERROR_CATEGORIES[error], retry_after_ms=retry_after_ms)
+    return None
 
 
 def _get_interval_ms(data: dict[str, Any]) -> int | None:

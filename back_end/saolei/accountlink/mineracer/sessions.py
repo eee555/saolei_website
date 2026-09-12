@@ -12,7 +12,7 @@ from userprofile.models import UserProfile
 from utils.exceptions import ExceptionToResponse
 from .client import get_mineracer_account_link_poll_interval_ms, poll_mineracer_account_link, request_mineracer_account_link
 from .dtos import MINERACER_STATUS_CONFIRMED, MINERACER_STATUS_EXPIRED, MINERACER_STATUS_FAILED, MINERACER_STATUS_PENDING, MineracerAccountLinkSession
-from ..models import AccountLinkQueue, AccountMineracer, Platform
+from ..models import AccountLinkQueue, AccountMineracer, MINERACER_USERID_MAX_LENGTH, Platform
 
 logger = logging.getLogger('accountlink')
 
@@ -129,7 +129,7 @@ def poll_mineracer_account_link_session(user: UserProfile, session_id: str) -> M
 
 def complete_mineracer_account_link(user: UserProfile, session: MineracerAccountLinkSession, userid: str) -> MineracerAccountLinkSession | None:
     userid = str(userid).strip()
-    if userid not in {9, 17}:
+    if not _is_valid_mineracer_userid(userid):
         return _mark_mineracer_session_failed(session, 'invalid_userid', remote_userid=userid)
     if timezone.now() > session.expires_at:
         return _mark_mineracer_session_expired(session)
@@ -157,6 +157,10 @@ def complete_mineracer_account_link(user: UserProfile, session: MineracerAccount
         _mark_mineracer_session_failed(session, 'identifier_conflict', remote_userid=userid)
         raise ExceptionToResponse('mineracer', 'identifier_conflict', status_code=409)
     return _mark_mineracer_session_confirmed(session, userid)
+
+
+def _is_valid_mineracer_userid(userid: str) -> bool:
+    return 0 < len(userid) <= MINERACER_USERID_MAX_LENGTH
 
 
 def _prepare_mineracer_poll(user: UserProfile, session_id: str) -> MineracerAccountLinkSession | None:
@@ -258,7 +262,7 @@ def _save_mineracer_session(session: MineracerAccountLinkSession, timeout: int |
     session.updated_at = now
     if timeout is None:
         timeout = _get_mineracer_session_timeout_seconds(session, now)
-    _mineracer_cache().set(_mineracer_session_key(session.session_id), session, timeout=timeout),
+    _mineracer_cache().set(_mineracer_session_key(session.session_id), session, timeout=timeout)
     return session
 
 

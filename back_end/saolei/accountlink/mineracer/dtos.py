@@ -6,6 +6,10 @@ MINERACER_STATUS_CONFIRMED = 'confirmed'
 MINERACER_STATUS_EXPIRED = 'expired'
 MINERACER_STATUS_FAILED = 'failed'
 
+MINERACER_ERROR_ACCOUNT_NOT_FOUND = 'account_not_found'
+MINERACER_ERROR_INVALID_DEVICE_CODE = 'invalid_device_code'
+MINERACER_ERROR_LINK_SUPERSEDED = 'link_superseded'
+
 
 @dataclass(frozen=True)
 class MineracerAccountLinkStartResponse:

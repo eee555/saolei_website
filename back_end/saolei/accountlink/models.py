@@ -16,6 +16,9 @@ class Platform(models.TextChoices):
     WOM = 'w', ('Minesweeper.Online')
 
 
+MINERACER_USERID_MAX_LENGTH = 64
+
+
 # 用于验证的队列
 class AccountLinkQueue(models.Model):
     platform = models.CharField(max_length=1, null=False, choices=Platform.choices)
@@ -155,7 +158,7 @@ class AccountWorldOfMinesweeper(models.Model):
 
 
 class AccountMineracer(models.Model):
-    id = models.CharField(max_length=17, primary_key=True, verbose_name='Mineracer Userid', help_text='9-character or 17-character Mineracer Userid.')
+    id = models.CharField(max_length=MINERACER_USERID_MAX_LENGTH, primary_key=True, verbose_name='Mineracer Userid', help_text='Up to 64-character Mineracer Userid.')
     parent = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='account_mineracer', verbose_name='OpenMS user', help_text='OpenMS user linked to this Mineracer account.')
     update_time = models.DateTimeField(auto_now=True, verbose_name='Update time', help_text='Time when this Mineracer account link was last updated.')
 
