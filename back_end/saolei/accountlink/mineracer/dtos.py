@@ -6,8 +6,6 @@ MINERACER_STATUS_CONFIRMED = 'confirmed'
 MINERACER_STATUS_EXPIRED = 'expired'
 MINERACER_STATUS_FAILED = 'failed'
 
-MINERACER_USERID_LENGTHS = {9, 17}
-
 
 @dataclass(frozen=True)
 class MineracerAccountLinkStartResponse:

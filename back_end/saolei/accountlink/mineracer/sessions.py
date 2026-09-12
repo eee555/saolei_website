@@ -11,7 +11,7 @@ from django.utils import timezone
 from userprofile.models import UserProfile
 from utils.exceptions import ExceptionToResponse
 from .client import get_mineracer_account_link_poll_interval_ms, poll_mineracer_account_link, request_mineracer_account_link
-from .dtos import MINERACER_STATUS_CONFIRMED, MINERACER_STATUS_EXPIRED, MINERACER_STATUS_FAILED, MINERACER_STATUS_PENDING, MINERACER_USERID_LENGTHS, MineracerAccountLinkSession
+from .dtos import MINERACER_STATUS_CONFIRMED, MINERACER_STATUS_EXPIRED, MINERACER_STATUS_FAILED, MINERACER_STATUS_PENDING, MineracerAccountLinkSession
 from ..models import AccountLinkQueue, AccountMineracer, Platform
 
 logger = logging.getLogger('accountlink')
@@ -27,7 +27,7 @@ MINERACER_SESSION_GRACE_SECONDS = 60
 
 def start_mineracer_account_link(user: UserProfile) -> MineracerAccountLinkSession:
     now = timezone.now()
-    if _user_has_mineracer_link(user):
+    if AccountMineracer.objects.filter(parent=user).exists():
         logger.info(f'Mineracer link start rejected user_id={user.id} reason=already_linked')
         raise ExceptionToResponse('mineracer', 'already_linked', status_code=409)
 
@@ -86,7 +86,7 @@ def poll_mineracer_account_link_session(user: UserProfile, session_id: str) -> M
         return session
 
     now = timezone.now()
-    if _is_mineracer_session_expired(session, now):
+    if now > session.expires_at:
         return _mark_mineracer_session_expired(session)
     if session.next_poll_at and now < session.next_poll_at:
         return session
@@ -129,9 +129,9 @@ def poll_mineracer_account_link_session(user: UserProfile, session_id: str) -> M
 
 def complete_mineracer_account_link(user: UserProfile, session: MineracerAccountLinkSession, userid: str) -> MineracerAccountLinkSession | None:
     userid = str(userid).strip()
-    if not _is_valid_mineracer_userid(userid):
+    if userid not in {9, 17}:
         return _mark_mineracer_session_failed(session, 'invalid_userid', remote_userid=userid)
-    if _is_mineracer_session_expired(session, timezone.now()):
+    if timezone.now() > session.expires_at:
         return _mark_mineracer_session_expired(session)
 
     identifier_conflict = False
@@ -165,7 +165,7 @@ def _prepare_mineracer_poll(user: UserProfile, session_id: str) -> MineracerAcco
         return None
     if session.status != MINERACER_STATUS_PENDING:
         return session
-    if _is_mineracer_session_expired(session, timezone.now()):
+    if timezone.now() > session.expires_at:
         return _mark_mineracer_session_expired(session)
     return session
 
@@ -176,7 +176,7 @@ def _update_pending_mineracer_session(session: MineracerAccountLinkSession, retr
     session.error_category = ''
     _save_mineracer_session(session)
     _save_user_pending_mineracer_session(session)
-    logger.info(f'Mineracer link poll pending user_id={session.user_id} session_id={session.session_id} next_poll_at={_format_optional_datetime(session.next_poll_at)}')
+    logger.info(f'Mineracer link poll pending user_id={session.user_id} session_id={session.session_id} next_poll_at={session.next_poll_at}')
     return session
 
 
@@ -231,7 +231,7 @@ def _get_pending_mineracer_session_for_user(user_id: int, now: datetime) -> Mine
     if session.status != MINERACER_STATUS_PENDING:
         _delete_user_pending_mineracer_session(user_id)
         return None
-    if _is_mineracer_session_expired(session, now):
+    if now > session.expires_at:
         _mark_mineracer_session_expired(session)
         return None
     return session
@@ -319,22 +319,3 @@ def _get_mineracer_user_pending_timeout_seconds(session: MineracerAccountLinkSes
 def _get_mineracer_session_grace_seconds() -> int:
     config = getattr(settings, 'MINERACER_ACCOUNT_LINK', {})
     return max(1, int(config.get('SESSION_GRACE_SECONDS', MINERACER_SESSION_GRACE_SECONDS)))
-
-
-def _format_optional_datetime(value: datetime | None) -> str:
-    return value.isoformat() if value else ''
-
-
-def _is_mineracer_session_expired(session: MineracerAccountLinkSession, now: datetime) -> bool:
-    return now >= session.expires_at
-
-
-def _user_has_mineracer_link(user: UserProfile) -> bool:
-    return (
-        AccountLinkQueue.objects.filter(platform=Platform.MINERACER, userprofile=user).exists()
-        or AccountMineracer.objects.filter(parent=user).exists()
-    )
-
-
-def _is_valid_mineracer_userid(userid: str) -> bool:
-    return len(userid) in MINERACER_USERID_LENGTHS
