@@ -81,6 +81,7 @@ Mineracer 提供的账号关联方式不是现有的“用户手填平台 ID，�
      - 如果 Mineracer 返回 `userId`，则在事务中完成绑定。
 
    绑定成功时需要检查冲突：同一个 Mineracer `userId` 如果已经被其他 OpenMS 用户验证绑定，应返回 409。
+   API 响应中的 `remote_userid` 和 `error_category` 直接返回当前 Redis 会话内保存的值，用于前端按状态展示结果。
 
 5. 新增 Mineracer HTTP 客户端封装
 

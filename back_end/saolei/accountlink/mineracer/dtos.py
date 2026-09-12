@@ -29,7 +29,7 @@ class MineracerAccountLinkPollResponse:
 
 @dataclass
 class MineracerAccountLinkSession:
-    id: str
+    session_id: str
     user_id: int
     device_code: str
     user_code: str

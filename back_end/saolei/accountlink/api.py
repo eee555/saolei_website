@@ -11,7 +11,6 @@ from ninja.orm import create_schema
 from userprofile.decorators import login_required_error, staff_required
 from userprofile.models import UserProfile
 from utils.response import HttpResponseConflict
-from .mineracer.dtos import MineracerAccountLinkSession
 from .mineracer.sessions import poll_mineracer_account_link_session, start_mineracer_account_link
 from .models import AccountBilibili, AccountLinkQueue, AccountMineracer, AccountMinesweeperGames, AccountQQ, AccountSaolei, AccountWorldOfMinesweeper, Platform, PLATFORM_CONFIG
 from .utils import private_platforms
@@ -61,8 +60,8 @@ class MineracerAccountLinkSessionOut(Schema):
     verification_uri_complete: str
     expires_at: datetime
     next_poll_at: datetime | None = None
-    remote_userid: str | None = None
-    error_category: str | None = None
+    remote_userid: str = ''
+    error_category: str = ''
 
 
 def get_account_data(user: UserProfile, platform: Platform):
@@ -151,7 +150,7 @@ def create_mineracer_account_link_session(request):
 
     Create or reuse a pending Mineracer account-link session for the current user.
     """
-    return mineracer_session_response(start_mineracer_account_link(request.user))
+    return start_mineracer_account_link(request.user)
 
 
 @router.get('/mineracer/status/{session_id}', response=MineracerAccountLinkSessionOut)
@@ -169,23 +168,7 @@ def get_mineracer_account_link_session(request, session_id: str):
     session = poll_mineracer_account_link_session(request.user, session_id)
     if session is None:
         return HttpResponseNotFound()
-    return mineracer_session_response(session)
-
-
-def mineracer_session_response(session: MineracerAccountLinkSession):
-    remote_userid = session.remote_userid or None
-    error_category = session.error_category or None
-    return {
-        'session_id': session.id,
-        'status': session.status,
-        'user_code': session.user_code,
-        'verification_uri': session.verification_uri,
-        'verification_uri_complete': session.verification_uri_complete,
-        'expires_at': session.expires_at,
-        'next_poll_at': session.next_poll_at,
-        'remote_userid': remote_userid,
-        'error_category': error_category,
-    }
+    return session
 
 
 @router.get('/admin/queue', response=List[AccountLinkOut])

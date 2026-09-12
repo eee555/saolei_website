@@ -11,6 +11,7 @@ import requests
 
 from userprofile.models import UserProfile
 from utils.exceptions import ExceptionToResponse
+from .api import MineracerAccountLinkSessionOut
 from .mineracer.client import poll_mineracer_account_link, request_mineracer_account_link
 from .mineracer.dtos import MINERACER_STATUS_CONFIRMED, MINERACER_STATUS_FAILED, MINERACER_STATUS_PENDING, MineracerAccountLinkPollResponse, MineracerAccountLinkSession, MineracerAccountLinkStartResponse
 from .mineracer.sessions import _get_mineracer_session, _save_mineracer_session, _save_user_pending_mineracer_session
@@ -162,6 +163,29 @@ class MineracerFakeResponse:
             raise requests.exceptions.HTTPError()
 
 
+class MineracerApiResponseTestCase(SimpleTestCase):
+    def test_session_schema_serializes_dataclass_fields(self):
+        now = timezone.now()
+        session = MineracerAccountLinkSession(
+            session_id='session-1',
+            user_id=1,
+            device_code='device-code-1',
+            user_code='ABCD-EFGH',
+            verification_uri='https://mineracer.example.test/link',
+            verification_uri_complete='https://mineracer.example.test/link?code=ABCD-EFGH',
+            expires_at=now + datetime.timedelta(minutes=10),
+            next_poll_at=now + datetime.timedelta(seconds=2),
+            remote_userid='abcDEF123',
+            error_category='invalid_userid',
+        )
+
+        response = MineracerAccountLinkSessionOut.model_validate(session).model_dump()
+
+        self.assertEqual(response['session_id'], 'session-1')
+        self.assertEqual(response['remote_userid'], 'abcDEF123')
+        self.assertEqual(response['error_category'], 'invalid_userid')
+
+
 MINERACER_TEST_ACCOUNT_LINK = {
     'START_URL': 'https://mineracer.example.test/api/partner/link/start',
     'POLL_URL': 'https://mineracer.example.test/api/partner/link/poll',
@@ -273,7 +297,7 @@ class MineracerAccountLinkTestCase(TestCase):
     def test_status_uses_local_pending_state_before_next_poll_time(self, poll_mineracer_account_link):
         session = self.create_session(next_poll_at=timezone.now() + datetime.timedelta(seconds=30))
 
-        response = self.client.get(f'/api/accountlink/mineracer/status/{session.id}')
+        response = self.client.get(f'/api/accountlink/mineracer/status/{session.session_id}')
 
         self.assertEqual(response.status_code, 200, response.content)
         self.assertEqual(response.json()['status'], MINERACER_STATUS_PENDING)
@@ -288,7 +312,7 @@ class MineracerAccountLinkTestCase(TestCase):
             userid='abcDEF123',
         )
 
-        response = self.client.get(f'/api/accountlink/mineracer/status/{session.id}')
+        response = self.client.get(f'/api/accountlink/mineracer/status/{session.session_id}')
 
         self.assertEqual(response.status_code, 200, response.content)
         self.assertEqual(response.json()['status'], MINERACER_STATUS_CONFIRMED)
@@ -309,7 +333,7 @@ class MineracerAccountLinkTestCase(TestCase):
             userid='short',
         )
 
-        response = self.client.get(f'/api/accountlink/mineracer/status/{session.id}')
+        response = self.client.get(f'/api/accountlink/mineracer/status/{session.session_id}')
 
         self.assertEqual(response.status_code, 200, response.content)
         self.assertEqual(response.json()['status'], MINERACER_STATUS_FAILED)
@@ -336,10 +360,10 @@ class MineracerAccountLinkTestCase(TestCase):
             userid='12345678901234567',
         )
 
-        response = self.client.get(f'/api/accountlink/mineracer/status/{session.id}')
+        response = self.client.get(f'/api/accountlink/mineracer/status/{session.session_id}')
 
         self.assertEqual(response.status_code, 409, response.content)
-        session = _get_mineracer_session(session.id)
+        session = _get_mineracer_session(session.session_id)
         self.assertEqual(session.status, MINERACER_STATUS_FAILED)
         self.assertEqual(session.error_category, 'identifier_conflict')
         self.assertEqual(AccountMineracer.objects.get(id='12345678901234567').parent, other_user)
@@ -356,7 +380,7 @@ class MineracerAccountLinkTestCase(TestCase):
 
     def create_session(self, next_poll_at):
         session = MineracerAccountLinkSession(
-            id='session-1',
+            session_id='session-1',
             user_id=self.user.id,
             device_code='device-code-1',
             user_code='ABCD-EFGH',
