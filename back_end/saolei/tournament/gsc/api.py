@@ -17,7 +17,7 @@ from tournament.schema import ParticipantUserIdOutBase
 from userprofile.decorators import login_required_error
 from userprofile.models import UserProfile
 from utils.exceptions import ExceptionToResponse
-from utils.response import HttpResponseConflict
+from utils.response import HttpResponseConflict, realname_required_response
 from utils.schema import DBTaskOut
 from .services import get_gsc_scores
 from .tasks import helper_gsc_finish_tournament
@@ -110,6 +110,8 @@ def get_results(request: HttpRequest, tournament_id: int):
 @decorate_view(login_required_error)
 def create_gsc_participant(request: HttpRequest, data: GSCOrderIn = Form(...)):  # noqa: B008
     user = request.user
+    if not user.has_realname():
+        return realname_required_response()
     tournament = get_object_or_404(GSCTournament, order=data.order)
     if not tournament.accept_checkin():
         return HttpResponseForbidden()

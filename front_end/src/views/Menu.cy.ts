@@ -1,3 +1,4 @@
+// eslint-disable-next-line import-x/no-namespace
 import * as ELIcons from '@element-plus/icons-vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 

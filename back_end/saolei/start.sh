@@ -8,11 +8,26 @@ echo "静态文件搜集完成。"
 python3 manage.py makemigrations
 python3 manage.py migrate
 
-if [ "${START_DB_WORKER:-1}" = "1" ]; then
-    mkdir -p logs
-    echo "Starting db_worker after ${DB_WORKER_START_DELAY:-10}s..."
+mkdir -p logs
+
+if [ "${START_APSCHEDULER:-1}" = "1" ]; then
+    echo "Starting apscheduler after ${APSCHEDULER_START_DELAY:-10}s..."
     (
-        sleep "${DB_WORKER_START_DELAY:-10}"
+        sleep "${APSCHEDULER_START_DELAY:-10}"
+        if command -v ionice >/dev/null 2>&1; then
+            exec nice -n "${APSCHEDULER_NICE:-10}" ionice -c2 -n7 python3 manage.py runapscheduler
+        fi
+        exec nice -n "${APSCHEDULER_NICE:-10}" python3 manage.py runapscheduler
+    ) >> logs/apscheduler.log 2>&1 &
+    echo "apscheduler scheduled."
+else
+    echo "Skipping apscheduler because START_APSCHEDULER=${START_APSCHEDULER}."
+fi
+
+if [ "${START_DB_WORKER:-1}" = "1" ]; then
+    echo "Starting db_worker after ${DB_WORKER_START_DELAY:-20}s..."
+    (
+        sleep "${DB_WORKER_START_DELAY:-20}"
         if command -v ionice >/dev/null 2>&1; then
             exec nice -n "${DB_WORKER_NICE:-10}" ionice -c2 -n7 python3 manage.py db_worker_robust --interval "${DB_WORKER_INTERVAL:-2}"
         fi

@@ -3,9 +3,7 @@
         <template #label>
             {{ t('home.news') }}&nbsp;
             <span v-if="loadingStatus == QueueRefreshStatus.CoolingDown" class="text text-success">
-                <ElIcon>
-                    <Check />
-                </ElIcon>
+                <BaseIconTick />
             </span>
             <ElLink
                 v-else underline="never"
@@ -36,13 +34,13 @@
 </template>
 
 <script setup lang='ts'>
-import { ElIcon, ElLink, ElTabPane, vLoading } from 'element-plus';
+import { ElLink, ElTabPane, vLoading } from 'element-plus';
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { QueueRefreshStatus } from './utils';
 
-import { BaseIconRefresh } from '@/components/common/icon';
+import { BaseIconRefresh, BaseIconTick } from '@/components/common/icon';
 import PlayerName from '@/components/PlayerName.vue';
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import { ms_to_s, to_fixed_n } from '@/utils';
