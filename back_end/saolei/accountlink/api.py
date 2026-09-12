@@ -11,8 +11,8 @@ from ninja.orm import create_schema
 from userprofile.decorators import login_required_error, staff_required
 from userprofile.models import UserProfile
 from utils.response import HttpResponseConflict
-from .models import AccountBilibili, AccountLinkQueue, AccountMineracer, AccountMinesweeperGames, AccountQQ, AccountSaolei, AccountWorldOfMinesweeper, MineracerAccountLinkSession, Platform, PLATFORM_CONFIG
-from .services import get_mineracer_session_retry_after_ms, poll_mineracer_account_link_session, start_mineracer_account_link
+from .models import AccountBilibili, AccountLinkQueue, AccountMineracer, AccountMinesweeperGames, AccountQQ, AccountSaolei, AccountWorldOfMinesweeper, Platform, PLATFORM_CONFIG
+from .services import get_mineracer_session_retry_after_ms, MineracerAccountLinkSession, poll_mineracer_account_link_session, start_mineracer_account_link
 from .utils import private_platforms
 
 router = Router()
@@ -53,7 +53,7 @@ class AccountLinkCreateIn(Schema):
 
 
 class MineracerAccountLinkSessionOut(Schema):
-    session_id: int
+    session_id: str
     status: str
     user_code: str
     verification_uri: str
@@ -158,7 +158,7 @@ def create_mineracer_account_link_session(request):
     login_required_error,
     ratelimit(key='user', rate='30/m'),
 )
-def get_mineracer_account_link_session(request, session_id: int):
+def get_mineracer_account_link_session(request, session_id: str):
     """
     - login_required_error
     - ratelimit(key='user', rate='30/m')

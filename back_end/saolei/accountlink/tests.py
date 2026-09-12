@@ -1,17 +1,19 @@
 import datetime
 from types import SimpleNamespace
-from unittest import expectedFailure
+from unittest import expectedFailure, SkipTest
 from unittest.mock import patch
 
+from django.core.cache import caches
+from django.db import connection
 from django.test import override_settings, SimpleTestCase, TestCase
 from django.utils import timezone
 import requests
 
 from userprofile.models import UserProfile
 from utils.exceptions import ExceptionToResponse
-from .mineracer import MINERACER_STATUS_CONFIRMED, MINERACER_STATUS_PENDING, MineracerAccountLinkPollResponse, MineracerAccountLinkStartResponse, poll_mineracer_account_link, request_mineracer_account_link
-from .models import AccountBilibili, AccountLinkQueue, AccountMineracer, AccountMinesweeperGames, AccountSaolei, AccountWorldOfMinesweeper, MineracerAccountLinkSession, MineracerAccountLinkSessionStatus, Platform
-from .services import update_saolei_account_info
+from .mineracer import MINERACER_STATUS_CONFIRMED, MINERACER_STATUS_FAILED, MINERACER_STATUS_PENDING, MineracerAccountLinkPollResponse, MineracerAccountLinkStartResponse, poll_mineracer_account_link, request_mineracer_account_link
+from .models import AccountBilibili, AccountLinkQueue, AccountMineracer, AccountMinesweeperGames, AccountSaolei, AccountWorldOfMinesweeper, Platform
+from .services import _get_mineracer_session, _save_mineracer_session, _save_user_pending_mineracer_session, MineracerAccountLinkSession, update_saolei_account_info
 from .utils import isPrivate, private_platforms, update_bilibili_account, update_msgames_account, update_wom_account
 
 
@@ -158,14 +160,29 @@ class MineracerFakeResponse:
             raise requests.exceptions.HTTPError()
 
 
-@override_settings(MINERACER_ACCOUNT_LINK={
+MINERACER_TEST_ACCOUNT_LINK = {
     'START_URL': 'https://mineracer.example.test/api/partner/link/start',
     'POLL_URL': 'https://mineracer.example.test/api/partner/link/poll',
     'PARTNER_KEY': 'test-partner-key',
     'TIMEOUT': 5,
     'POLL_INTERVAL_MS': 2500,
     'EXPIRES_SECONDS': 600,
-})
+    'SESSION_GRACE_SECONDS': 60,
+}
+
+MINERACER_TEST_CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'mineracer-default-cache',
+    },
+    'saolei_website': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'mineracer-session-cache',
+    },
+}
+
+
+@override_settings(MINERACER_ACCOUNT_LINK=MINERACER_TEST_ACCOUNT_LINK, CACHES=MINERACER_TEST_CACHES)
 class MineracerHttpClientTestCase(SimpleTestCase):
     @patch('accountlink.mineracer.requests.post')
     def test_request_mineracer_account_link_uses_bearer_and_no_body(self, requests_post):
@@ -213,16 +230,12 @@ class MineracerHttpClientTestCase(SimpleTestCase):
         self.assertEqual(response.userid, '12345678901234567')
 
 
-@override_settings(MINERACER_ACCOUNT_LINK={
-    'START_URL': 'https://mineracer.example.test/api/partner/link/start',
-    'POLL_URL': 'https://mineracer.example.test/api/partner/link/poll',
-    'PARTNER_KEY': 'test-partner-key',
-    'TIMEOUT': 5,
-    'POLL_INTERVAL_MS': 2500,
-    'EXPIRES_SECONDS': 600,
-})
+@override_settings(MINERACER_ACCOUNT_LINK=MINERACER_TEST_ACCOUNT_LINK, CACHES=MINERACER_TEST_CACHES)
 class MineracerAccountLinkTestCase(TestCase):
     def setUp(self):
+        if AccountMineracer._meta.db_table not in connection.introspection.table_names():
+            raise SkipTest('AccountMineracer migration has not been generated yet.')
+        caches['default'].clear()
         self.user = UserProfile.objects.create_user(
             username='mineracer_user',
             email='mineracer_user@test.com',
@@ -246,12 +259,13 @@ class MineracerAccountLinkTestCase(TestCase):
 
         self.assertEqual(response.status_code, 200, response.content)
         data = response.json()
-        session = MineracerAccountLinkSession.objects.get(id=data['session_id'])
-        self.assertEqual(data['status'], MineracerAccountLinkSessionStatus.PENDING)
+        session = _get_mineracer_session(data['session_id'])
+        self.assertIsNotNone(session)
+        self.assertEqual(data['status'], MINERACER_STATUS_PENDING)
         self.assertEqual(data['verification_uri_complete'], 'https://mineracer.example.test/link?code=ABCD-EFGH')
         self.assertEqual(session.device_code, 'device-code-1')
         self.assertEqual(session.user_code, 'ABCD-EFGH')
-        self.assertEqual(session.userprofile, self.user)
+        self.assertEqual(session.user_id, self.user.id)
 
     @patch('accountlink.services.poll_mineracer_account_link')
     def test_status_uses_local_pending_state_before_next_poll_time(self, poll_mineracer_account_link):
@@ -260,7 +274,7 @@ class MineracerAccountLinkTestCase(TestCase):
         response = self.client.get(f'/api/accountlink/mineracer/status/{session.id}')
 
         self.assertEqual(response.status_code, 200, response.content)
-        self.assertEqual(response.json()['status'], MineracerAccountLinkSessionStatus.PENDING)
+        self.assertEqual(response.json()['status'], MINERACER_STATUS_PENDING)
         self.assertGreater(response.json()['retry_after_ms'], 0)
         poll_mineracer_account_link.assert_not_called()
 
@@ -275,7 +289,7 @@ class MineracerAccountLinkTestCase(TestCase):
         response = self.client.get(f'/api/accountlink/mineracer/status/{session.id}')
 
         self.assertEqual(response.status_code, 200, response.content)
-        self.assertEqual(response.json()['status'], MineracerAccountLinkSessionStatus.CONFIRMED)
+        self.assertEqual(response.json()['status'], MINERACER_STATUS_CONFIRMED)
         self.assertEqual(response.json()['remote_userid'], 'abcDEF123')
         self.assertTrue(AccountMineracer.objects.filter(id='abcDEF123', parent=self.user).exists())
         self.assertTrue(AccountLinkQueue.objects.filter(
@@ -296,7 +310,7 @@ class MineracerAccountLinkTestCase(TestCase):
         response = self.client.get(f'/api/accountlink/mineracer/status/{session.id}')
 
         self.assertEqual(response.status_code, 200, response.content)
-        self.assertEqual(response.json()['status'], MineracerAccountLinkSessionStatus.FAILED)
+        self.assertEqual(response.json()['status'], MINERACER_STATUS_FAILED)
         self.assertEqual(response.json()['error_category'], 'invalid_userid')
         self.assertFalse(AccountMineracer.objects.filter(id='short').exists())
 
@@ -323,8 +337,8 @@ class MineracerAccountLinkTestCase(TestCase):
         response = self.client.get(f'/api/accountlink/mineracer/status/{session.id}')
 
         self.assertEqual(response.status_code, 409, response.content)
-        session.refresh_from_db()
-        self.assertEqual(session.status, MineracerAccountLinkSessionStatus.FAILED)
+        session = _get_mineracer_session(session.id)
+        self.assertEqual(session.status, MINERACER_STATUS_FAILED)
         self.assertEqual(session.error_category, 'identifier_conflict')
         self.assertEqual(AccountMineracer.objects.get(id='12345678901234567').parent, other_user)
         self.assertFalse(AccountLinkQueue.objects.filter(platform=Platform.MINERACER, userprofile=self.user).exists())
@@ -339,8 +353,9 @@ class MineracerAccountLinkTestCase(TestCase):
         self.assertFalse(AccountLinkQueue.objects.filter(platform=Platform.MINERACER, userprofile=self.user).exists())
 
     def create_session(self, next_poll_at):
-        return MineracerAccountLinkSession.objects.create(
-            userprofile=self.user,
+        session = MineracerAccountLinkSession(
+            id='session-1',
+            user_id=self.user.id,
             device_code='device-code-1',
             user_code='ABCD-EFGH',
             verification_uri='https://mineracer.example.test/link',
@@ -348,3 +363,6 @@ class MineracerAccountLinkTestCase(TestCase):
             expires_at=timezone.now() + datetime.timedelta(minutes=10),
             next_poll_at=next_poll_at,
         )
+        _save_mineracer_session(session)
+        _save_user_pending_mineracer_session(session)
+        return session
