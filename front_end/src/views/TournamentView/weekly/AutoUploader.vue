@@ -290,7 +290,7 @@ const i18nMessages = {
         skipped: '已跳过',
         stop: '停止',
         uploaded: '已上传',
-        unsupported: '当前浏览器不支持 FileSystemDirectoryHandle',
+        unsupported: '当前浏览器不支持 showDirectoryPicker',
     } },
     en: { local: {
         failed: 'Failed',
@@ -309,7 +309,7 @@ const i18nMessages = {
         skipped: 'Skipped',
         stop: 'Stop',
         uploaded: 'Uploaded',
-        unsupported: 'FileSystemDirectoryHandle is not supported by this browser',
+        unsupported: 'showDirectoryPicker is not supported by this browser',
     } },
 };
 
