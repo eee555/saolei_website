@@ -10,6 +10,7 @@
                 @refresh="refresh"
             />
         </template>
+        <CardMineracer v-if="accountlinks.m" :id="accountlinks.m.id" :info="accountlinks.m" />
         <CardAdd v-if="showManualAdd" :accountlinks="accountlinks" @add-link="addLink" />
         <CardAddMineracer v-if="showMineracerAdd" @refresh="refresh" />
     </div>
@@ -47,13 +48,12 @@ const loading = ref(false);
 const accountlinks = ref(new AccountLinks());
 const isOwnAccountLinkPage = computed(() => store.player.id == store.user.id);
 const showManualAdd = computed(() => isOwnAccountLinkPage.value && manualAccountLinkPlatforms.some((platform) => !accountlinks.value.has(platform)));
-const showMineracerAdd = computed(() => isOwnAccountLinkPage.value && !accountlinks.value.has(AccountLinkPlatform.Mineracer));
+const showMineracerAdd = computed(() => isOwnAccountLinkPage.value && accountlinks.value.m === undefined);
 const accountCardConfigs: { platform: AccountLinkPlatformType; component: Component }[] = [
     { platform: AccountLinkPlatform.Saolei, component: CardSaolei },
     { platform: AccountLinkPlatform.MSGames, component: CardMsgames },
     { platform: AccountLinkPlatform.WoM, component: CardWoM },
     { platform: AccountLinkPlatform.Bilibili, component: CardBilibili },
-    { platform: AccountLinkPlatform.Mineracer, component: CardMineracer },
 ];
 
 watch(() => props.userId, refresh, { immediate: true });
