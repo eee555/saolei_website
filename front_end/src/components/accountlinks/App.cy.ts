@@ -23,12 +23,14 @@ describe('<AccountLinksApp />', () => {
         cy.contains('Authoritative Minesweeper #202');
         cy.contains('Minesweeper.Online #303');
         cy.contains('Bilibili #404');
+        cy.contains('Mineracer #123456789');
 
         cy.get('.account-link-main > *').then(($cards) => {
             const text = [...$cards].map((card) => card.textContent.replace(/\u00a0/g, ' ')).join('\n');
             expect(text.indexOf('Saolei.wang #101')).to.be.lessThan(text.indexOf('Authoritative Minesweeper #202'));
             expect(text.indexOf('Authoritative Minesweeper #202')).to.be.lessThan(text.indexOf('Minesweeper.Online #303'));
             expect(text.indexOf('Minesweeper.Online #303')).to.be.lessThan(text.indexOf('Bilibili #404'));
+            expect(text.indexOf('Bilibili #404')).to.be.lessThan(text.indexOf('Mineracer #123456789'));
         });
     });
 
@@ -38,6 +40,7 @@ describe('<AccountLinksApp />', () => {
             body: {
                 summary: [],
                 B: null,
+                m: null,
                 c: null,
                 a: null,
                 w: null,
@@ -87,6 +90,7 @@ describe('<AccountLinksApp />', () => {
             body: {
                 summary: [],
                 B: null,
+                m: null,
                 c: null,
                 a: null,
                 w: null,

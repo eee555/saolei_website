@@ -1,6 +1,10 @@
+import { isAxiosError } from 'axios';
+
 import $axios from '@/http';
-import { AccountLinks } from '@/utils/accountlinks';
-import type { AccountLinkPlatform, AccountLinkQueueResponse, AccountLinksResponse, SaoleiVideo, SaoleiVideoRaw } from '@/utils/accountlinks';
+import { AccountLinks, MineracerAccountLinkSession } from '@/utils/accountlinks';
+import type { AccountLinkPlatform, AccountLinkQueueResponse, AccountLinksResponse, MineracerAccountLinkSessionResponse, SaoleiVideo, SaoleiVideoRaw } from '@/utils/accountlinks';
+
+type MineracerAccountLinkErrorMessageCategory = 'account_not_found' | 'already_linked' | 'expired' | 'identifier_conflict' | 'invalid_device_code' | 'invalid_userid' | 'link_superseded' | 'not_configured' | 'pending_start' | 'remote_failed' | 'requestexception' | 'response' | 'timeout' | 'unknown';
 
 type AccountLinkUpdateErrorMessageCategory = 'cooldown' | 'empty' | 'indexerror' | 'pageempty' | 'requestexception' | 'timeout' | 'unknown';
 
@@ -10,6 +14,22 @@ const accountLinkUpdateErrorCategories = new Set<string>([
     'indexerror',
     'pageempty',
     'requestexception',
+    'timeout',
+]);
+
+const mineracerAccountLinkErrorCategories = new Set<string>([
+    'account_not_found',
+    'already_linked',
+    'expired',
+    'identifier_conflict',
+    'invalid_device_code',
+    'invalid_userid',
+    'link_superseded',
+    'not_configured',
+    'pending_start',
+    'remote_failed',
+    'requestexception',
+    'response',
     'timeout',
 ]);
 
@@ -24,6 +44,12 @@ interface AccountLinkUpdateErrorResponse {
 }
 
 export type AccountLinkUpdateResponse = AccountLinkUpdateSuccessResponse | AccountLinkUpdateErrorResponse;
+
+interface AccountLinkBackendErrorResponse {
+    type?: string;
+    object?: string;
+    category?: string;
+}
 
 export async function fetchAccountLinks(userId: number): Promise<AccountLinks> {
     const { data } = await $axios.get<AccountLinksResponse>(`/api/accountlink/${userId}`);
@@ -45,8 +71,29 @@ export async function updateAccountLink(platform: AccountLinkPlatform): Promise<
     return data;
 }
 
+export async function startMineracerAccountLinkSession(): Promise<MineracerAccountLinkSession> {
+    const { data } = await $axios.post<MineracerAccountLinkSessionResponse>('/api/accountlink/mineracer/start/');
+    return new MineracerAccountLinkSession(data);
+}
+
+export async function fetchMineracerAccountLinkSession(sessionId: string): Promise<MineracerAccountLinkSession> {
+    const { data } = await $axios.get<MineracerAccountLinkSessionResponse>(`/api/accountlink/mineracer/status/${sessionId}`);
+    return new MineracerAccountLinkSession(data);
+}
+
 export function getAccountLinkUpdateErrorMessageKey(category?: string): string {
     return `accountlink.updateError.${getAccountLinkUpdateErrorMessageCategory(category)}`;
+}
+
+export function getMineracerAccountLinkErrorMessageKey(category?: string): string {
+    return `accountlink.mineracer.error.${getMineracerAccountLinkErrorMessageCategory(category)}`;
+}
+
+export function getMineracerAccountLinkHttpErrorCategory(error: unknown): string | undefined {
+    if (!isAxiosError(error)) return undefined;
+    const data: unknown = error.response?.data;
+    if (!isAccountLinkBackendErrorResponse(data) || data.object !== 'mineracer') return undefined;
+    return data.category;
 }
 
 function getAccountLinkUpdateErrorMessageCategory(category?: string): AccountLinkUpdateErrorMessageCategory {
@@ -54,6 +101,17 @@ function getAccountLinkUpdateErrorMessageCategory(category?: string): AccountLin
         return category as AccountLinkUpdateErrorMessageCategory;
     }
     return 'unknown';
+}
+
+function getMineracerAccountLinkErrorMessageCategory(category?: string): MineracerAccountLinkErrorMessageCategory {
+    if (category !== undefined && mineracerAccountLinkErrorCategories.has(category)) {
+        return category as MineracerAccountLinkErrorMessageCategory;
+    }
+    return 'unknown';
+}
+
+function isAccountLinkBackendErrorResponse(value: unknown): value is AccountLinkBackendErrorResponse {
+    return typeof value === 'object' && value !== null;
 }
 
 export async function fetchSaoleiImportVideos(saoleiId: number): Promise<SaoleiVideo[]> {

@@ -9,7 +9,7 @@ from userprofile.decorators import login_required_error, staff_required
 from userprofile.models import UserProfile
 from utils.exceptions import ExceptionToResponse
 from utils.response import HttpResponseConflict
-from .models import AccountLinkQueue, AccountSaolei, VideoSaolei
+from .models import AccountLinkQueue, AccountSaolei, Platform, VideoSaolei
 from .services import saolei_video_import_one, update_account
 from .tasks import helper_saolei_video_import_bulk
 from .utils import delete_account, link_account
@@ -23,6 +23,8 @@ logger = logging.getLogger('accountlink')
 def delete_link(request):
     if not (platform := request.POST.get('platform')):
         return HttpResponseBadRequest()
+    if platform == Platform.MINERACER:
+        return ExceptionToResponse('mineracer', 'unlink_not_supported', status_code=409).response()
     if accountlink := AccountLinkQueue.objects.filter(platform=platform, userprofile=request.user).first():
         if accountlink.verified:
             delete_account(request.user, platform)
@@ -41,6 +43,8 @@ def verify_link(request):
         return HttpResponseBadRequest()
     if not (identifier := request.POST.get('identifier')):
         return HttpResponseBadRequest()
+    if platform == Platform.MINERACER:
+        return ExceptionToResponse('mineracer', 'manual_link_not_supported', status_code=400).response()
     collision = AccountLinkQueue.objects.filter(platform=platform, identifier=identifier, verified=True).first()
     if collision:  # 该平台该ID已被绑定
         if collision.userprofile == user:
@@ -63,13 +67,15 @@ def verify_link(request):
 @require_POST
 @staff_required
 def unverify_link(request):
-    userid = request.GET.get('id')
+    userid = request.GET.get('id') or request.POST.get('id')
     if not (user := UserProfile.objects.filter(id=userid).first()):
         return HttpResponseNotFound()
     if not (platform := request.POST.get('platform')):
         return HttpResponseBadRequest()
     if not (identifier := request.POST.get('identifier')):
         return HttpResponseBadRequest()
+    if platform == Platform.MINERACER:
+        return ExceptionToResponse('mineracer', 'unlink_not_supported', status_code=409).response()
     accountlink = AccountLinkQueue.objects.filter(userprofile=user, platform=platform, identifier=identifier).first()
     if not accountlink:
         return HttpResponseNotFound()

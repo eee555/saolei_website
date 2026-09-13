@@ -5,7 +5,7 @@
         </ElFormItem>
         <ElFormItem label="平台">
             <ElSelect v-model="form.platform">
-                <ElOption v-for="(_, key) of platformlist" :key="key" :label="t(`common.platform.${key}`)" :value="key" />
+                <ElOption v-for="platform of manualAccountLinkPlatforms" :key="platform" :label="t(`common.platform.${platform}`)" :value="platform" />
             </ElSelect>
         </ElFormItem>
         <ElFormItem label="平台ID">
@@ -50,7 +50,7 @@ import { useI18n } from 'vue-i18n';
 
 import { httpErrorNotification } from '@/components/Notifications';
 import type { AccountLinkPlatform } from '@/utils/accountlinks';
-import { platformlist } from '@/utils/accountlinks';
+import { manualAccountLinkPlatforms } from '@/utils/accountlinks';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const { proxy } = useCurrentInstance();

@@ -3,15 +3,25 @@ const msgamesProfile = (id: string | number): string => 'https://minesweepergame
 const womProfile = (id: string | number): string => 'https://minesweeper.online/player/' + id;
 const qqProfile = (id: string | number): string => 'https://user.qzone.qq.com/' + id;
 const bilibiliProfile = (id: string | number): string => 'https://space.bilibili.com/' + id;
+const mineracerProfile = (): string => 'https://mineracer.com/';
 
 export const AccountLinkPlatform = {
     Bilibili: 'B',
+    Mineracer: 'm',
     MSGames: 'a',
     QQ: 'q',
     Saolei: 'c',
     WoM: 'w',
 } as const;
 export type AccountLinkPlatform = typeof AccountLinkPlatform[keyof typeof AccountLinkPlatform];
+
+export const manualAccountLinkPlatforms = [
+    AccountLinkPlatform.Bilibili,
+    AccountLinkPlatform.MSGames,
+    AccountLinkPlatform.QQ,
+    AccountLinkPlatform.Saolei,
+    AccountLinkPlatform.WoM,
+] as const;
 
 interface AccountLinkPlatformProfile {
     url: string;
@@ -20,6 +30,7 @@ interface AccountLinkPlatformProfile {
 
 export const platformlist: Record<AccountLinkPlatform, AccountLinkPlatformProfile> = {
     [AccountLinkPlatform.Bilibili]: { url: 'https://www.bilibili.com/', profile: bilibiliProfile },
+    [AccountLinkPlatform.Mineracer]: { url: 'https://mineracer.com/', profile: mineracerProfile },
     [AccountLinkPlatform.MSGames]: { url: 'https://minesweepergame.com/', profile: msgamesProfile },
     [AccountLinkPlatform.Saolei]: { url: 'http://saolei.wang/', profile: saoleiProfile },
     [AccountLinkPlatform.QQ]: { url: 'https://im.qq.com/index/', profile: qqProfile },

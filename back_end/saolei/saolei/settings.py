@@ -307,6 +307,15 @@ SESSION_CACHE_ALIAS = 'saolei_website'
 APSCHEDULER_DATETIME_FORMAT = 'N j, Y, f:s a'  # 定时任务格式
 APSCHEDULER_RUN_NOW_TIMEOUT = 25  # 定时任务最大执行时间，秒
 
+MINERACER_ACCOUNT_LINK = {
+    'START_URL': os.environ.get('MINERACER_ACCOUNT_LINK_START_URL', 'https://mineracer.com/api/partner/link/start'),
+    'POLL_URL': os.environ.get('MINERACER_ACCOUNT_LINK_POLL_URL', 'https://mineracer.com/api/partner/link/poll'),
+    'PARTNER_KEY': os.environ.get('MINERACER_ACCOUNT_LINK_PARTNER_KEY', ''),
+    'TIMEOUT': float(os.environ.get('MINERACER_ACCOUNT_LINK_TIMEOUT', '5')),
+    'POLL_INTERVAL_MS': int(os.environ.get('MINERACER_ACCOUNT_LINK_POLL_INTERVAL_MS', '2500')),
+    'EXPIRES_SECONDS': int(os.environ.get('MINERACER_ACCOUNT_LINK_EXPIRES_SECONDS', '600')),
+}
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

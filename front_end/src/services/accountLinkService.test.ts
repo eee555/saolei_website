@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getAccountLinkUpdateErrorMessageKey } from './accountLinkService';
+import { getAccountLinkUpdateErrorMessageKey, getMineracerAccountLinkErrorMessageKey } from './accountLinkService';
 
 describe('getAccountLinkUpdateErrorMessageKey', () => {
     it('maps known backend account update categories to update error messages', () => {
@@ -21,5 +21,34 @@ describe('getAccountLinkUpdateErrorMessageKey', () => {
     it('falls back to the unknown message for missing or unexpected categories', () => {
         expect(getAccountLinkUpdateErrorMessageKey()).toBe('accountlink.updateError.unknown');
         expect(getAccountLinkUpdateErrorMessageKey('new-backend-category')).toBe('accountlink.updateError.unknown');
+    });
+});
+
+describe('getMineracerAccountLinkErrorMessageKey', () => {
+    it('maps known backend Mineracer categories to link error messages', () => {
+        const cases = [
+            ['account_not_found', 'accountlink.mineracer.error.account_not_found'],
+            ['already_linked', 'accountlink.mineracer.error.already_linked'],
+            ['expired', 'accountlink.mineracer.error.expired'],
+            ['identifier_conflict', 'accountlink.mineracer.error.identifier_conflict'],
+            ['invalid_device_code', 'accountlink.mineracer.error.invalid_device_code'],
+            ['invalid_userid', 'accountlink.mineracer.error.invalid_userid'],
+            ['link_superseded', 'accountlink.mineracer.error.link_superseded'],
+            ['not_configured', 'accountlink.mineracer.error.not_configured'],
+            ['pending_start', 'accountlink.mineracer.error.pending_start'],
+            ['remote_failed', 'accountlink.mineracer.error.remote_failed'],
+            ['requestexception', 'accountlink.mineracer.error.requestexception'],
+            ['response', 'accountlink.mineracer.error.response'],
+            ['timeout', 'accountlink.mineracer.error.timeout'],
+        ] as const;
+
+        for (const [category, messageKey] of cases) {
+            expect(getMineracerAccountLinkErrorMessageKey(category)).toBe(messageKey);
+        }
+    });
+
+    it('falls back to the unknown Mineracer message for missing or unexpected categories', () => {
+        expect(getMineracerAccountLinkErrorMessageKey()).toBe('accountlink.mineracer.error.unknown');
+        expect(getMineracerAccountLinkErrorMessageKey('new-backend-category')).toBe('accountlink.mineracer.error.unknown');
     });
 });
