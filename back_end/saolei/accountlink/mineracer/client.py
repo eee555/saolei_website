@@ -8,8 +8,8 @@ import requests
 from utils.exceptions import ExceptionToResponse
 from .dtos import MINERACER_ERROR_ACCOUNT_NOT_FOUND, MINERACER_ERROR_INVALID_DEVICE_CODE, MINERACER_ERROR_LINK_SUPERSEDED, MINERACER_STATUS_CONFIRMED, MINERACER_STATUS_EXPIRED, MINERACER_STATUS_FAILED, MINERACER_STATUS_PENDING, MineracerAccountLinkPollResponse, MineracerAccountLinkStartResponse
 
-MINERACER_START_URL = 'https://mineracer.com/api/partner/link/start'
-MINERACER_POLL_URL = 'https://mineracer.com/api/partner/link/poll'
+CONFIG = settings.MINERACER_ACCOUNT_LINK
+
 MINERACER_POLL_ERROR_CATEGORIES = {
     'account-not-found': MINERACER_ERROR_ACCOUNT_NOT_FOUND,
     'invalid-device-code': MINERACER_ERROR_INVALID_DEVICE_CODE,
@@ -17,21 +17,16 @@ MINERACER_POLL_ERROR_CATEGORIES = {
 }
 
 
-def get_mineracer_account_link_poll_interval_ms() -> int:
-    return max(1, int(_get_config_value('POLL_INTERVAL_MS', 2500)))
-
-
 def request_mineracer_account_link() -> MineracerAccountLinkStartResponse:
-    config = _get_config()
-    partner_key = _get_partner_key(config)
+    partner_key = CONFIG['PARTNER_KEY']
     if not partner_key:
         raise ExceptionToResponse('mineracer', 'not_configured', status_code=503)
 
     try:
         response = requests.post(
-            config.get('START_URL') or MINERACER_START_URL,
+            CONFIG['START_URL'],
             headers=_get_authorization_headers(partner_key),
-            timeout=_get_timeout(config),
+            timeout=CONFIG['TIMEOUT'],
         )
         response.raise_for_status()
         data = response.json()
@@ -48,7 +43,7 @@ def request_mineracer_account_link() -> MineracerAccountLinkStartResponse:
     verification_uri = _get_required_string(data, ['verificationUri'])
     verification_uri_complete = _get_required_string(data, ['verificationUriComplete'])
     expires_at = _parse_expires_at(data, now)
-    poll_interval_ms = _get_interval_ms(data) or get_mineracer_account_link_poll_interval_ms()
+    poll_interval_ms = _get_interval_ms(data) or CONFIG['POLL_INTERVAL_MS']
     return MineracerAccountLinkStartResponse(
         device_code=device_code,
         user_code=user_code,
@@ -60,17 +55,16 @@ def request_mineracer_account_link() -> MineracerAccountLinkStartResponse:
 
 
 def poll_mineracer_account_link(device_code: str) -> MineracerAccountLinkPollResponse:
-    config = _get_config()
-    partner_key = _get_partner_key(config)
+    partner_key = CONFIG['PARTNER_KEY']
     if not partner_key:
         raise ExceptionToResponse('mineracer', 'not_configured', status_code=503)
 
     try:
         response = requests.post(
-            config.get('POLL_URL') or config.get('STATUS_URL') or MINERACER_POLL_URL,
+            CONFIG['POLL_URL'],
             headers=_get_authorization_headers(partner_key),
             json={'deviceCode': device_code},
-            timeout=_get_timeout(config),
+            timeout=CONFIG['TIMEOUT'],
         )
         if response.status_code == 202:
             return MineracerAccountLinkPollResponse(status=MINERACER_STATUS_PENDING, retry_after_ms=_get_response_interval_ms(response))
@@ -95,22 +89,6 @@ def poll_mineracer_account_link(device_code: str) -> MineracerAccountLinkPollRes
     if status == '':
         raise ExceptionToResponse('mineracer', 'response')
     return MineracerAccountLinkPollResponse(status=status, error_category=_get_optional_string(data, ['error_category', 'error', 'category']), retry_after_ms=_get_interval_ms(data))
-
-
-def _get_config() -> dict[str, Any]:
-    return getattr(settings, 'MINERACER_ACCOUNT_LINK', {})
-
-
-def _get_config_value(key: str, default: Any) -> Any:
-    return _get_config().get(key, default)
-
-
-def _get_timeout(config: dict[str, Any]) -> float:
-    return float(config.get('TIMEOUT', 5))
-
-
-def _get_partner_key(config: dict[str, Any]) -> str:
-    return str(config.get('PARTNER_KEY') or config.get('PRIVATE_KEY') or '').strip()
 
 
 def _get_authorization_headers(partner_key: str) -> dict[str, str]:
@@ -155,7 +133,7 @@ def _parse_expires_at(data: dict[str, Any], now: datetime) -> datetime:
         except (TypeError, ValueError):
             raise ExceptionToResponse('mineracer', 'response')
 
-    return now + timedelta(seconds=int(_get_config_value('EXPIRES_SECONDS', 600)))
+    return now + timedelta(seconds=CONFIG['EXPIRES_SECONDS'])
 
 
 def _get_response_interval_ms(response: requests.Response) -> int | None:
