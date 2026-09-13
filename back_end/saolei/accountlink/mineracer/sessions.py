@@ -10,7 +10,7 @@ from django.utils import timezone
 
 from userprofile.models import UserProfile
 from utils.exceptions import ExceptionToResponse
-from .client import CONFIG, poll_mineracer_account_link, request_mineracer_account_link
+from .client import poll_mineracer_account_link, request_mineracer_account_link
 from .dtos import MINERACER_STATUS_CONFIRMED, MINERACER_STATUS_EXPIRED, MINERACER_STATUS_FAILED, MINERACER_STATUS_PENDING, MineracerAccountLinkSession
 from ..models import AccountLinkQueue, AccountMineracer, MINERACER_USERID_MAX_LENGTH, Platform
 
@@ -104,7 +104,7 @@ def poll_mineracer_account_link_session(user: UserProfile, session_id: str) -> M
             return session
 
         session.last_polled_at = timezone.now()
-        session.next_poll_at = session.last_polled_at + timedelta(milliseconds=CONFIG['POLL_INTERVAL_MS'])
+        session.next_poll_at = session.last_polled_at + timedelta(milliseconds=settings.MINERACER_POLL_INTERVAL_MS)
         session.error_category = ''
         _save_mineracer_session(session)
         logger.info(f'Mineracer link poll sent user_id={user.id} session_id={session.session_id}')
@@ -187,7 +187,7 @@ def _update_pending_mineracer_session(session: MineracerAccountLinkSession, retr
 def _mark_mineracer_session_poll_error(session: MineracerAccountLinkSession, category: str) -> MineracerAccountLinkSession:
     if session.status == MINERACER_STATUS_PENDING:
         session.error_category = category
-        session.next_poll_at = timezone.now() + timedelta(milliseconds=CONFIG['POLL_INTERVAL_MS'])
+        session.next_poll_at = timezone.now() + timedelta(milliseconds=settings.MINERACER_POLL_INTERVAL_MS)
         _save_mineracer_session(session)
         _save_user_pending_mineracer_session(session)
     logger.warning(f'Mineracer link poll transient_error user_id={session.user_id} session_id={session.session_id} category={category}')
@@ -319,5 +319,4 @@ def _get_mineracer_user_pending_timeout_seconds(session: MineracerAccountLinkSes
 
 
 def _get_mineracer_session_grace_seconds() -> int:
-    config = getattr(settings, 'MINERACER_ACCOUNT_LINK', {})
-    return max(1, int(config.get('SESSION_GRACE_SECONDS', MINERACER_SESSION_GRACE_SECONDS)))
+    return max(1, int(getattr(settings, 'MINERACER_SESSION_GRACE_SECONDS', MINERACER_SESSION_GRACE_SECONDS)))

@@ -79,6 +79,8 @@ Content-Type: application/json
 
 OpenMS 使用 `intervalMs` 控制本地 `next_poll_at`，避免前端每次 status 请求都触发第三方 poll。
 
+第三方响应只按上述已确认字段解析；不兼容历史猜测字段名或大小写变体，例如 `device_code`、`userid`、`interval_ms`、`retry_after_ms`、`expires_in`、`error_category`。
+
 ### 后端实现
 
 平台和账号模型：

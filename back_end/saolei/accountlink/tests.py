@@ -238,16 +238,6 @@ class MineracerLegacyViewTestCase(TestCase):
         self.assertEqual(response.json()['category'], 'update_not_supported')
 
 
-MINERACER_TEST_ACCOUNT_LINK = {
-    'START_URL': 'https://mineracer.example.test/api/partner/link/start',
-    'POLL_URL': 'https://mineracer.example.test/api/partner/link/poll',
-    'PARTNER_KEY': 'test-partner-key',
-    'TIMEOUT': 5,
-    'POLL_INTERVAL_MS': 2500,
-    'EXPIRES_SECONDS': 600,
-    'SESSION_GRACE_SECONDS': 60,
-}
-
 MINERACER_TEST_CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
@@ -259,8 +249,18 @@ MINERACER_TEST_CACHES = {
     },
 }
 
+MINERACER_TEST_SETTINGS = {
+    'MINERACER_START_URL': 'https://mineracer.example.test/api/partner/link/start',
+    'MINERACER_POLL_URL': 'https://mineracer.example.test/api/partner/link/poll',
+    'MINERACER_PARTNER_KEY': 'test-partner-key',
+    'MINERACER_TIMEOUT': 5,
+    'MINERACER_POLL_INTERVAL_MS': 2500,
+    'MINERACER_SESSION_GRACE_SECONDS': 60,
+    'CACHES': MINERACER_TEST_CACHES,
+}
 
-@override_settings(MINERACER_ACCOUNT_LINK=MINERACER_TEST_ACCOUNT_LINK, CACHES=MINERACER_TEST_CACHES)
+
+@override_settings(**MINERACER_TEST_SETTINGS)
 class MineracerHttpClientTestCase(SimpleTestCase):
     @patch('accountlink.mineracer.client.requests.post')
     def test_request_mineracer_account_link_uses_bearer_and_no_body(self, requests_post):
@@ -335,7 +335,7 @@ class MineracerHttpClientTestCase(SimpleTestCase):
         self.assertFalse(_is_valid_mineracer_userid('x' * 65))
 
 
-@override_settings(MINERACER_ACCOUNT_LINK=MINERACER_TEST_ACCOUNT_LINK, CACHES=MINERACER_TEST_CACHES)
+@override_settings(**MINERACER_TEST_SETTINGS)
 class MineracerAccountLinkTestCase(TestCase):
     def setUp(self):
         if AccountMineracer._meta.db_table not in connection.introspection.table_names():

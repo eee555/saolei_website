@@ -1,14 +1,11 @@
-from datetime import datetime, timedelta, timezone as datetime_timezone
+from datetime import datetime, timezone as datetime_timezone
 from typing import Any
 
 from django.conf import settings
-from django.utils import timezone
 import requests
 
 from utils.exceptions import ExceptionToResponse
 from .dtos import MINERACER_ERROR_ACCOUNT_NOT_FOUND, MINERACER_ERROR_INVALID_DEVICE_CODE, MINERACER_ERROR_LINK_SUPERSEDED, MINERACER_STATUS_CONFIRMED, MINERACER_STATUS_EXPIRED, MINERACER_STATUS_FAILED, MINERACER_STATUS_PENDING, MineracerAccountLinkPollResponse, MineracerAccountLinkStartResponse
-
-CONFIG = settings.MINERACER_ACCOUNT_LINK
 
 MINERACER_POLL_ERROR_CATEGORIES = {
     'account-not-found': MINERACER_ERROR_ACCOUNT_NOT_FOUND,
@@ -18,18 +15,18 @@ MINERACER_POLL_ERROR_CATEGORIES = {
 
 
 def request_mineracer_account_link() -> MineracerAccountLinkStartResponse:
-    partner_key = CONFIG['PARTNER_KEY']
+    partner_key = settings.MINERACER_PARTNER_KEY
     if not partner_key:
         raise ExceptionToResponse('mineracer', 'not_configured', status_code=503)
 
     try:
         response = requests.post(
-            CONFIG['START_URL'],
+            settings.MINERACER_START_URL,
             headers=_get_authorization_headers(partner_key),
-            timeout=CONFIG['TIMEOUT'],
+            timeout=settings.MINERACER_TIMEOUT,
         )
         response.raise_for_status()
-        data = response.json()
+        data = _get_response_data(response)
     except requests.exceptions.Timeout:
         raise ExceptionToResponse('mineracer', 'timeout')
     except requests.exceptions.RequestException:
@@ -37,150 +34,108 @@ def request_mineracer_account_link() -> MineracerAccountLinkStartResponse:
     except ValueError:
         raise ExceptionToResponse('mineracer', 'response')
 
-    now = timezone.now()
-    device_code = _get_required_string(data, ['deviceCode'])
-    user_code = _get_required_string(data, ['userCode'])
-    verification_uri = _get_required_string(data, ['verificationUri'])
-    verification_uri_complete = _get_required_string(data, ['verificationUriComplete'])
-    expires_at = _parse_expires_at(data, now)
-    poll_interval_ms = _get_interval_ms(data) or CONFIG['POLL_INTERVAL_MS']
     return MineracerAccountLinkStartResponse(
-        device_code=device_code,
-        user_code=user_code,
-        verification_uri=verification_uri,
-        verification_uri_complete=verification_uri_complete,
-        expires_at=expires_at,
-        poll_interval_ms=poll_interval_ms,
+        device_code=_get_required_string(data, 'deviceCode'),
+        user_code=_get_required_string(data, 'userCode'),
+        verification_uri=_get_required_string(data, 'verificationUri'),
+        verification_uri_complete=_get_required_string(data, 'verificationUriComplete'),
+        expires_at=_parse_expires_at(data),
+        poll_interval_ms=_get_required_interval_ms(data),
     )
 
 
 def poll_mineracer_account_link(device_code: str) -> MineracerAccountLinkPollResponse:
-    partner_key = CONFIG['PARTNER_KEY']
+    partner_key = settings.MINERACER_PARTNER_KEY
     if not partner_key:
         raise ExceptionToResponse('mineracer', 'not_configured', status_code=503)
 
     try:
         response = requests.post(
-            CONFIG['POLL_URL'],
+            settings.MINERACER_POLL_URL,
             headers=_get_authorization_headers(partner_key),
             json={'deviceCode': device_code},
-            timeout=CONFIG['TIMEOUT'],
+            timeout=settings.MINERACER_TIMEOUT,
         )
         if response.status_code == 202:
-            return MineracerAccountLinkPollResponse(status=MINERACER_STATUS_PENDING, retry_after_ms=_get_response_interval_ms(response))
-        poll_error = _get_poll_error_response(response)
-        if poll_error is not None:
-            return poll_error
-        response.raise_for_status()
-        data = response.json()
+            return _get_pending_poll_response(response)
+        if response.status_code == 200:
+            return _get_linked_poll_response(response)
+        if response.status_code >= 400:
+            return _get_poll_error_response(response)
+        raise ExceptionToResponse('mineracer', 'response')
     except requests.exceptions.Timeout:
         raise ExceptionToResponse('mineracer', 'timeout')
     except requests.exceptions.RequestException:
         raise ExceptionToResponse('mineracer', 'requestexception')
     except ValueError:
         raise ExceptionToResponse('mineracer', 'response')
-
-    status = _normalize_status(_get_optional_string(data, ['status', 'state']))
-    userid = _get_optional_string(data, ['userId', 'Userid', 'userid', 'user_id', 'remote_userid'])
-    if status == MINERACER_STATUS_CONFIRMED or userid:
-        if not userid:
-            raise ExceptionToResponse('mineracer', 'response')
-        return MineracerAccountLinkPollResponse(status=MINERACER_STATUS_CONFIRMED, userid=userid, retry_after_ms=_get_interval_ms(data))
-    if status == '':
-        raise ExceptionToResponse('mineracer', 'response')
-    return MineracerAccountLinkPollResponse(status=status, error_category=_get_optional_string(data, ['error_category', 'error', 'category']), retry_after_ms=_get_interval_ms(data))
 
 
 def _get_authorization_headers(partner_key: str) -> dict[str, str]:
     return {'Authorization': f'Bearer {partner_key}'}
 
 
-def _get_required_string(data: dict[str, Any], keys: list[str]) -> str:
-    value = _get_optional_string(data, keys)
+def _get_response_data(response: requests.Response) -> dict[str, Any]:
+    data = response.json()
+    if not isinstance(data, dict):
+        raise ExceptionToResponse('mineracer', 'response')
+    return data
+
+
+def _get_required_string(data: dict[str, Any], key: str) -> str:
+    value = data.get(key)
+    if not isinstance(value, str):
+        raise ExceptionToResponse('mineracer', 'response')
+    value = value.strip()
     if not value:
         raise ExceptionToResponse('mineracer', 'response')
     return value
 
 
-def _get_optional_string(data: dict[str, Any], keys: list[str]) -> str:
-    for key in keys:
-        value = data.get(key)
-        if value is not None:
-            return str(value).strip()
-    return ''
-
-
-def _parse_expires_at(data: dict[str, Any], now: datetime) -> datetime:
-    expires_at_timestamp_ms = data.get('expiresAt')
-    if expires_at_timestamp_ms is not None:
-        try:
-            return datetime.fromtimestamp(int(expires_at_timestamp_ms) / 1000, tz=datetime_timezone.utc)
-        except (TypeError, ValueError, OSError):
-            raise ExceptionToResponse('mineracer', 'response')
-
-    expires_at = _get_optional_string(data, ['expires_at', 'expires'])
-    if expires_at:
-        try:
-            parsed = datetime.fromisoformat(expires_at.replace('Z', '+00:00'))
-        except ValueError:
-            raise ExceptionToResponse('mineracer', 'response')
-        return parsed if timezone.is_aware(parsed) else timezone.make_aware(parsed, datetime_timezone.utc)
-
-    expires_in = data.get('expires_in')
-    if expires_in is not None:
-        try:
-            return now + timedelta(seconds=int(expires_in))
-        except (TypeError, ValueError):
-            raise ExceptionToResponse('mineracer', 'response')
-
-    return now + timedelta(seconds=CONFIG['EXPIRES_SECONDS'])
-
-
-def _get_response_interval_ms(response: requests.Response) -> int | None:
+def _parse_expires_at(data: dict[str, Any]) -> datetime:
     try:
-        data = response.json()
-    except ValueError:
-        return None
-    return _get_interval_ms(data)
-
-
-def _get_poll_error_response(response: requests.Response) -> MineracerAccountLinkPollResponse | None:
-    if response.status_code < 400:
-        return None
-    try:
-        value = response.json()
-    except ValueError:
-        data = {}
-    else:
-        data = value if isinstance(value, dict) else {}
-
-    error = _get_optional_string(data, ['error', 'error_category', 'category'])
-    retry_after_ms = _get_interval_ms(data) if data else None
-    if response.status_code == 410 or error == 'code-expired':
-        return MineracerAccountLinkPollResponse(status=MINERACER_STATUS_EXPIRED, retry_after_ms=retry_after_ms)
-    if error in MINERACER_POLL_ERROR_CATEGORIES:
-        return MineracerAccountLinkPollResponse(status=MINERACER_STATUS_FAILED, error_category=MINERACER_POLL_ERROR_CATEGORIES[error], retry_after_ms=retry_after_ms)
-    return None
-
-
-def _get_interval_ms(data: dict[str, Any]) -> int | None:
-    value = data.get('intervalMs') or data.get('interval_ms') or data.get('retry_after_ms')
-    if value is None:
-        return None
-    try:
-        return max(1, int(value))
-    except (TypeError, ValueError):
+        return datetime.fromtimestamp(int(data['expiresAt']) / 1000, tz=datetime_timezone.utc)
+    except (KeyError, TypeError, ValueError, OSError):
         raise ExceptionToResponse('mineracer', 'response')
 
 
-def _normalize_status(status: str) -> str:
-    value = status.lower()
-    if value in ['pending', 'wait', 'waiting', 'authorization_pending']:
-        return MINERACER_STATUS_PENDING
-    if value in ['confirmed', 'linked', 'success', 'successful', 'complete', 'completed', 'authorized']:
-        return MINERACER_STATUS_CONFIRMED
-    if value in ['expired', 'expired_token']:
-        return MINERACER_STATUS_EXPIRED
-    if value in ['failed', 'error', 'denied', 'rejected', 'cancelled', 'canceled']:
-        return MINERACER_STATUS_FAILED
-    return ''
+def _get_pending_poll_response(response: requests.Response) -> MineracerAccountLinkPollResponse:
+    data = _get_response_data(response)
+    if _get_required_string(data, 'status') != 'pending':
+        raise ExceptionToResponse('mineracer', 'response')
+    return MineracerAccountLinkPollResponse(status=MINERACER_STATUS_PENDING, retry_after_ms=_get_required_interval_ms(data))
+
+
+def _get_linked_poll_response(response: requests.Response) -> MineracerAccountLinkPollResponse:
+    data = _get_response_data(response)
+    if _get_required_string(data, 'status') != 'linked':
+        raise ExceptionToResponse('mineracer', 'response')
+    return MineracerAccountLinkPollResponse(status=MINERACER_STATUS_CONFIRMED, userid=_get_required_string(data, 'userId'))
+
+
+def _get_poll_error_response(response: requests.Response) -> MineracerAccountLinkPollResponse:
+    if response.status_code not in [400, 404, 409, 410]:
+        response.raise_for_status()
+        raise ExceptionToResponse('mineracer', 'response')
+
+    data = _get_response_data(response)
+    error = _get_required_string(data, 'error')
+    if response.status_code == 410 and error == 'code-expired':
+        return MineracerAccountLinkPollResponse(status=MINERACER_STATUS_EXPIRED)
+    if error in MINERACER_POLL_ERROR_CATEGORIES and (
+        (response.status_code in [400, 404] and error == 'invalid-device-code')
+        or (response.status_code == 404 and error == 'account-not-found')
+        or (response.status_code == 409 and error == 'link-superseded')
+    ):
+        return MineracerAccountLinkPollResponse(status=MINERACER_STATUS_FAILED, error_category=MINERACER_POLL_ERROR_CATEGORIES[error])
+    raise ExceptionToResponse('mineracer', 'response')
+
+
+def _get_required_interval_ms(data: dict[str, Any]) -> int:
+    try:
+        value = int(data['intervalMs'])
+    except (KeyError, TypeError, ValueError):
+        raise ExceptionToResponse('mineracer', 'response')
+    if value < 1:
+        raise ExceptionToResponse('mineracer', 'response')
+    return value
