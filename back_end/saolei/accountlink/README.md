@@ -1,8 +1,14 @@
 # Account Link
 
-## Mineracer 接入计划
+## Mineracer 接入现状
 
-Mineracer 提供的账号关联方式不是现有的“用户手填平台 ID，管理员人工验证”流程，而是更接近 OAuth 2.0 Device Authorization Grant 的确认模型：
+Mineracer 提供的账号关联方式不是现有的“用户手填平台 ID，管理员人工验证”流程，而是更接近 OAuth 2.0 Device Authorization Grant 的确认模型。
+
+参考标准模型：[OAuth 2.0 Device Authorization Grant](https://www.rfc-editor.org/rfc/rfc8628.html)。
+
+### 已确认协议
+
+关联流程：
 
 1. OpenMS 服务端使用 Mineracer 提供的 partner key 请求一次性 `deviceCode`。
 2. Mineracer 返回一个 10 分钟有效的账号关联链接。
@@ -11,222 +17,167 @@ Mineracer 提供的账号关联方式不是现有的“用户手填平台 ID，�
 5. OpenMS 服务端使用 `deviceCode` 轮询 Mineracer，直到 Mineracer 确认并返回该用户的 `userId`。
 6. OpenMS 使用返回的 `userId` 完成本地账号绑定。
 
-参考标准模型：[OAuth 2.0 Device Authorization Grant](https://www.rfc-editor.org/rfc/rfc8628.html)。
-
-### 后端工作
-
-1. 新增平台枚举与账号模型
-
-   在 `models.py` 增加 `Platform.MINERACER`。现有 `AccountLinkQueue.platform` 是 `max_length=1`，因此建议使用单字符平台码，例如 `m`。同时新增 `AccountMineracer`，最小字段包括：
-
-   - `id`：Mineracer 返回的 `userId`，这是至多64位字符串。
-   - `parent`：指向 `UserProfile` 的一对一关联，`related_name` 可命名为 `account_mineracer`。
-   - `update_time`：本地同步或绑定更新时间。
-
-   新模型需要加入 `PLATFORM_CONFIG`。等模型结构稳定后，再通过 Django 命令自动生成迁移脚本。
-
-2. 使用 Redis 保存 Mineracer 临时会话
-
-   现有 `AccountLinkQueue` 只能表达 `platform + identifier + verified`，无法表达第三方确认中的临时状态。但 Mineracer 关联会话只有 10 分钟有效，且只是服务端轮询所需的临时状态，因此不新增数据库会话模型，改用 Redis cache 保存一次关联尝试。
-
-   项目里已有两个 Redis cache alias：`saolei_website` 用于 Django session，`default` 使用 `redis://127.0.0.1:6379/1`。Mineracer 关联会话固定使用 `caches['default']`，避免和登录 session 共用 alias。
-
-   Redis session 内容包括：
-
-   - `user_id`：OpenMS 当前登录用户 ID。
-   - `device_code`：Mineracer 返回的 `deviceCode`，只在服务端保存。当前长度43
-   - `user_code`：Mineracer 返回的 `userCode`。长度9（`XXXX-XXXX`）
-   - `verification_uri`：常量`https://mineracer.com/link`。Mineracer提供该字段的原因是它未来有可能变化。
-   - `verification_uri_complete`：提供给用户打开的完整确认链接。它总是`verification_uri`加上`?code={user_code}`。Mineracer提供该字段的原因是它未来有可能变化。
-   - `expires_at`
-   - `status`：`pending`、`confirmed`、`expired`、`failed`
-   - `remote_userid`
-   - `last_polled_at`
-   - `next_poll_at`
-   - `error_category`
-
-   推荐 key 设计：
-
-   - `accountlink:mineracer:session:{session_id}`：保存完整临时会话，TTL 为 Mineracer `expiresAt` 到期时间加少量 grace 时间，用于前端在刚过期或刚完成后还能读到终态。
-   - `accountlink:mineracer:user:{user_id}:pending`：保存当前用户的 pending `session_id`，TTL 到 `expiresAt`，用于重复点击 start 时复用同一个会话。
-   - `accountlink:mineracer:user:{user_id}:start_lock`：短 TTL 锁，避免并发创建多个 Mineracer 链接。
-   - `accountlink:mineracer:session:{session_id}:poll_lock`：短 TTL 锁，避免多个 OpenMS 进程同时拿同一个 `deviceCode` 去 Mineracer poll。
-
-   绑定成功后再写入数据库：`AccountMineracer.id` 和 `AccountLinkQueue.identifier` 都保存 Mineracer `userId`，`AccountLinkQueue.verified=True`。临时会话不需要迁移。
-
-3. 使用日志做审计记录
-
-   不新增审计表。Mineracer 关联流程的审计记录写入现有 `accountlink` logger，对应 `logs/accountlink.log`。建议记录：
-
-   - start 创建、start 复用、start 拒绝。
-   - poll 发送、poll pending、第三方请求临时失败。
-   - confirmed、expired、failed、identifier_conflict。
-
-   日志字段应包含 OpenMS `user_id`、Redis `session_id`、状态、错误分类和确认后的 Mineracer `userId`。不要记录 partner key，也不要完整记录 `deviceCode`。
-
-4. 新增 Ninja API
-
-   按项目约定，新 API 放在 `accountlink/api.py`。Mineracer 独占逻辑集中在 `accountlink/mineracer/`，API 层只做登录、限流后的入口转发和响应组装。
-
-   - `POST /api/accountlink/mineracer/start/`
-     - 登录用户调用。
-     - 检查当前用户是否已有关联中的 Mineracer 会话或已绑定 Mineracer 账号。
-     - 使用服务端 partner key 请求 Mineracer。
-     - 保存 Redis 临时会话，返回 `session_id`、`verification_uri_complete`、`expires_at`、`next_poll_at`。
-
-   - `GET /api/accountlink/mineracer/status/{session_id}`
-     - 登录用户调用，只允许读取自己的会话。
-     - 如果未到 `next_poll_at`，直接返回本地状态，避免每次前端轮询都请求 Mineracer。
-     - 到达轮询时间后请求 Mineracer 状态接口。
-     - 如果 Mineracer 返回 `userId`，则在事务中完成绑定。
-
-   绑定成功时需要检查冲突：同一个 Mineracer `userId` 如果已经被其他 OpenMS 用户验证绑定，应返回 409。
-   API 响应中的 `remote_userid` 和 `error_category` 直接返回当前 Redis 会话内保存的值，用于前端按状态展示结果。
-
-5. 新增 Mineracer HTTP 客户端封装
-
-   在 `accountlink/mineracer/client.py` 中封装：
-
-   - 请求 `deviceCode` 和确认链接。
-   - 轮询关联状态。
-   - 将 Mineracer 错误码映射为本项目已有的 `ExceptionToResponse` 风格分类。
-
-   `accountlink/mineracer/dtos.py` 放 Mineracer 状态常量和 dataclass；`accountlink/mineracer/sessions.py` 放 Redis 会话、轮询状态机、最终绑定和审计日志。partner key、API base URL、timeout、轮询间隔等配置不能进入前端，需放在服务端配置中。
-
-   Mineracer 当前接口约定：
-
-   ```http
-   POST https://mineracer.com/api/partner/link/start
-   Authorization: Bearer MINERACER_ACCOUNT_LINK_PARTNER_KEY
-   ```
-
-   start 请求不需要 request body。成功响应：
-
-   ```json
-   {
-     "deviceCode": "PRIVATE_REQUEST_CODE",
-     "userCode": "ABCD-EFGH",
-     "verificationUri": "https://mineracer.com/link",
-     "verificationUriComplete": "https://mineracer.com/link?code=ABCD-EFGH",
-     "intervalMs": 2500,
-     "expiresAt": 1780000000000
-   }
-   ```
-
-   `deviceCode` 只保存在 OpenMS 服务端；前端使用 `verificationUriComplete`，不需要单独展示 `userCode`。
-
-   ```http
-   POST https://mineracer.com/api/partner/link/poll
-   Authorization: Bearer MINERACER_ACCOUNT_LINK_PARTNER_KEY
-   Content-Type: application/json
-   ```
-
-   请求体：
-
-   ```json
-   {
-     "deviceCode": "PRIVATE_REQUEST_CODE"
-   }
-   ```
-
-   Mineracer 在等待用户确认时返回 HTTP 202；用户确认后返回 HTTP 200：
-
-   ```json
-   {
-     "status": "linked",
-     "userId": "STABLE_MINERACER_USER_ID"
-   }
-   ```
-
-   OpenMS 应使用 `intervalMs` 控制本地 `next_poll_at`，不要让前端每次 status 请求都触发第三方 poll。
-
-6. 兼容现有通用逻辑
-
-   - `delete_account` 需要支持删除 Mineracer 账号关联。
-   - `link_account` 可以继续复用，但要确认 `AccountMineracer.id` 类型和 Mineracer `userId` 类型一致。
-   - `update_account` 是否支持 Mineracer 取决于对方是否提供资料或统计 API。若暂时没有资料 API，可以先不提供同步按钮。
-   - `get_account_links` 的输出 schema 需要包含 Mineracer 账号详情字段。
-
-### 前端工作
-
-1. 平台基础信息
-
-   更新 `front_end/src/utils/accountlinks/platforms.ts`：
-
-   - 增加 `AccountLinkPlatform.Mineracer`。
-   - 增加 Mineracer 官网地址与 profile URL 生成函数。
-
-   同时更新中英文 `common.platform` 翻译。
-
-2. 数据类型
-
-   新增 `mineracer.ts`，定义 `AccountMineracerResponse` 和 `AccountMineracer`。更新 `collection.ts` 的 `AccountLinksResponse` 与 `AccountLinks`，使账号页能承载 Mineracer 数据。
-
-3. 添加账号交互
-
-   Mineracer和当前其他平台流程都不同，不使用`CardAdd.vue`实现。在账号关联页面，新增Mineracer关联按钮，点击按钮后进入Mineracer关联流程，推荐使用`ElSteps`。
-
-   - 显示“生成关联链接”按钮。
-   - 成功后显示外链按钮、过期倒计时和当前状态。
-   - 前端定时请求本项目的 status API。
-   - 后端确认成功后刷新账号关联列表。
-
-4. 展示卡片
-
-   新增 `CardMineracer.vue`，并加入 `App.vue` 的 `accountCardConfigs`。最小版本只需显示 Mineracer `userId`、验证状态和绑定时间。若 Mineracer 后续提供公开资料或统计接口，再补摘要数据和同步功能。
-
-5. 文案与错误处理
-
-   在中英文 locale 中增加：
-
-   - 生成关联链接
-   - 链接已过期
-   - 等待 Mineracer 确认
-   - 关联成功
-   - 第三方确认失败
-   - 账号已被其他用户绑定
-
-   Mineracer 状态接口的错误分类应在 `accountLinkService.ts` 中集中映射，延续现有账号同步错误处理方式。
-
-### 安全与一致性要求
-
-1. partner key 只在服务端使用，通过 `MINERACER_ACCOUNT_LINK_PARTNER_KEY` 配置，不进入构建产物和接口响应。
-2. start/status API 都需要登录校验与限流。
-3. status API 必须校验会话归属，不能让用户查询或完成他人的会话。
-4. Redis 临时会话必须使用 `default` cache alias，不能放进 `saolei_website` session cache。
-5. 绑定成功逻辑应放在数据库事务中，并锁定相关记录，避免并发重复绑定。
-6. 过期会话不能继续绑定；如果 Mineracer 返回过期状态，本地也应标记为 expired。
-7. 前端打开 Mineracer 链接时使用新窗口，并使用 `rel="noopener noreferrer"`。
-8. 审计记录使用 `accountlink` 日志；日志中不要记录 partner key，也不要完整记录可复用的 `deviceCode`。
-
-### 已向 Mineracer 确认的信息
-
-1. 一个 Mineracer 账号不允许绑定多个 OpenMS 账号，双方均进行检查并拒绝。
-2. 用户取消或拒绝时没有独立错误码，玩家不确认时会让 10 分钟有效期自然过期。
-3. Mineracer poll 接口的已知返回状态与错误响应格式：
-
-   ```
-   202 - {status: "pending", intervalMs}  - not yet approved
-   200 - {status: "linked", userId} - approved
-   400 - {error: "invalid-device-code"} - missing or incorrect deviceCode
-   404 - {error: "invalid-device-code"} - same error lol
-   404 - {error: "account-not-found"} - edge case, account row missing (rare)
-   409 - {error: "link-superseded"} - newer overlapping flow created (rare)
-   410 - {error: "code-expired"} - past the 10-minute TTL
-   ```
-
-### 仍需向 Mineracer 确认的问题
-
-1. 是否支持确认后 redirect 回 OpenMS 账号关联页。
-2. 是否提供测试环境或测试账号。
-3. 解绑时是否需要 OpenMS 通知 Mineracer。
-
-### 推荐实施顺序
-
-1. 配置 `MINERACER_ACCOUNT_LINK_PARTNER_KEY`，确认测试环境或生产环境联调策略。
-2. 后端实现 `AccountMineracer`、Redis 临时会话和 Mineracer HTTP 客户端；迁移等模型结构稳定后再生成。
-3. 后端实现 start/status API，并覆盖成功、过期、冲突、重复发起、会话越权、Redis TTL/锁等测试。
-4. 前端实现 Mineracer 添加流程、轮询状态和最小展示卡片。
-5. 更新中英文文案和组件测试。
-6. 与 Mineracer 联调测试环境，确认 10 分钟过期、确认成功、冲突账号、取消/失败路径。
-7. 部署后观察日志、第三方请求失败率和用户绑定成功率。
+限制和约定：
+
+- 一个 Mineracer 账号不允许绑定多个 OpenMS 账号，双方均进行检查并拒绝。
+- 用户取消或拒绝时没有独立错误码；玩家不确认时会让 10 分钟有效期自然过期。
+- Mineracer 不支持确认后 redirect 回 OpenMS 账号关联页。
+- Mineracer 不提供测试环境或测试账号，需要使用生产接口联调。
+- Mineracer 当前不支持解绑，因此 OpenMS 不提供 Mineracer 解绑能力。
+
+### Mineracer 接口
+
+Start 请求：
+
+```http
+POST https://mineracer.com/api/partner/link/start
+Authorization: Bearer MINERACER_ACCOUNT_LINK_PARTNER_KEY
+```
+
+start 请求不需要 request body。成功响应：
+
+```json
+{
+  "deviceCode": "PRIVATE_REQUEST_CODE",
+  "userCode": "ABCD-EFGH",
+  "verificationUri": "https://mineracer.com/link",
+  "verificationUriComplete": "https://mineracer.com/link?code=ABCD-EFGH",
+  "intervalMs": 2500,
+  "expiresAt": 1780000000000
+}
+```
+
+`deviceCode` 只保存在 OpenMS 服务端；前端使用 `verificationUriComplete`，不需要单独展示 `userCode`。
+
+Poll 请求：
+
+```http
+POST https://mineracer.com/api/partner/link/poll
+Authorization: Bearer MINERACER_ACCOUNT_LINK_PARTNER_KEY
+Content-Type: application/json
+```
+
+请求体：
+
+```json
+{
+  "deviceCode": "PRIVATE_REQUEST_CODE"
+}
+```
+
+已知 poll 响应：
+
+```text
+202 - {status: "pending", intervalMs}  - not yet approved
+200 - {status: "linked", userId} - approved
+400 - {error: "invalid-device-code"} - missing or incorrect deviceCode
+404 - {error: "invalid-device-code"} - same error
+404 - {error: "account-not-found"} - edge case, account row missing (rare)
+409 - {error: "link-superseded"} - newer overlapping flow created (rare)
+410 - {error: "code-expired"} - past the 10-minute TTL
+```
+
+OpenMS 使用 `intervalMs` 控制本地 `next_poll_at`，避免前端每次 status 请求都触发第三方 poll。
+
+### 后端实现
+
+平台和账号模型：
+
+- `Platform.MINERACER` 使用平台码 `m`。
+- `AccountMineracer.id` 保存 Mineracer 返回的 `userId`，最大长度为 64。
+- `AccountMineracer.parent` 使用 `related_name='account_mineracer'` 指向 `UserProfile`。
+- `AccountMineracer.update_time` 记录本地绑定更新时间。
+- `AccountMineracer` 已加入 `PLATFORM_CONFIG` 和 `get_account_links` 输出。
+- 迁移脚本为 `accountlink/migrations/0009_alter_accountlinkqueue_platform_accountmineracer.py`。
+
+Redis 临时会话：
+
+- Mineracer 关联会话保存到 `caches['default']`，不使用 Django session 的 `saolei_website` cache alias。
+- `accountlink:mineracer:session:{session_id}` 保存完整临时会话，TTL 为 Mineracer `expiresAt` 加少量 grace time。
+- `accountlink:mineracer:user:{user_id}:pending` 保存当前用户 pending `session_id`，TTL 到 `expiresAt`。
+- `accountlink:mineracer:user:{user_id}:start_lock` 避免并发创建多个 Mineracer 链接。
+- `accountlink:mineracer:session:{session_id}:poll_lock` 避免多个 OpenMS 进程同时用同一个 `deviceCode` poll。
+
+Redis session 内容：
+
+- `user_id`：OpenMS 当前登录用户 ID。
+- `device_code`：Mineracer 返回的 `deviceCode`，只在服务端保存。当前长度 43。
+- `user_code`：Mineracer 返回的 `userCode`。长度 9，格式为 `XXXX-XXXX`。
+- `verification_uri`：当前为 `https://mineracer.com/link`，仍按 Mineracer 返回值保存以兼容未来变化。
+- `verification_uri_complete`：提供给用户打开的完整确认链接，当前为 `verification_uri + '?code={user_code}'`，仍按 Mineracer 返回值保存以兼容未来变化。
+- `expires_at`
+- `status`：`pending`、`confirmed`、`expired`、`failed`
+- `remote_userid`
+- `last_polled_at`
+- `next_poll_at`
+- `error_category`
+
+API：
+
+- `POST /api/accountlink/mineracer/start/`
+  - 登录用户调用，限流。
+  - 如果当前用户已经绑定 Mineracer，返回 `already_linked`。
+  - 如果当前用户已有 pending 会话，复用同一个会话。
+  - 返回 `session_id`、`status`、`verification_uri_complete`、`expires_at`、`next_poll_at`、`remote_userid`、`error_category`。
+
+- `GET /api/accountlink/mineracer/status/{session_id}`
+  - 登录用户调用，限流。
+  - 只允许读取自己的会话。
+  - 未到 `next_poll_at` 时直接返回本地状态。
+  - 到达轮询时间后请求 Mineracer poll 接口。
+  - Mineracer 返回 `userId` 后，在数据库事务中完成绑定。
+
+绑定成功时，`AccountMineracer.id` 和 `AccountLinkQueue.identifier` 都保存 Mineracer `userId`，`AccountLinkQueue.verified=True`。
+
+旧账号关联接口：
+
+- `create_account_link` 拒绝 Mineracer，不能手动提交 Mineracer ID。
+- staff `verify_link` 拒绝 Mineracer，不能人工验证 Mineracer。
+- `delete_link` 和 staff `unverify_link` 拒绝 Mineracer，返回 `unlink_not_supported`。
+- `update_link` 拒绝 Mineracer，返回 `update_not_supported`。
+- `delete_account` 对 Mineracer 也会拒绝，避免绕过 view 层误删。
+
+错误分类：
+
+- `invalid-device-code` 映射为 `invalid_device_code`。
+- `account-not-found` 映射为 `account_not_found`。
+- `link-superseded` 映射为 `link_superseded`。
+- `code-expired` 映射为本地 `expired` 状态。
+- 未识别响应映射为 `response`。
+- 请求超时映射为 `timeout`。
+- 其他请求异常映射为 `requestexception`。
+
+审计记录：
+
+- 使用现有 `accountlink` logger，写入 `logs/accountlink.log`。
+- 记录 start 创建、start 复用、start 拒绝、poll 发送、poll pending、第三方请求临时失败、confirmed、expired、failed、identifier_conflict。
+- 日志字段包含 OpenMS `user_id`、Redis `session_id`、状态、错误分类和确认后的 Mineracer `userId`。
+- 不记录 partner key，也不完整记录可复用的 `deviceCode`。
+
+### 前端实现
+
+- `front_end/src/utils/accountlinks/platforms.ts` 已加入 `AccountLinkPlatform.Mineracer`、官网地址和 profile URL 函数。
+- 中英文 `common.platform` 已加入 Mineracer。
+- `front_end/src/utils/accountlinks/mineracer.ts` 定义 `AccountMineracerResponse`、`AccountMineracer` 和 Mineracer session 类型。
+- `AccountLinksResponse` 与 `AccountLinks` 已支持 Mineracer 数据。
+- Mineracer 不使用 `CardAdd.vue` 的手动 ID 流程，而是使用 `CardAddMineracer.vue` 的专用流程。
+- `CardAddMineracer.vue` 显示生成链接按钮、外链按钮、过期倒计时、当前状态，并按后端返回的 `next_poll_at` 请求 status API。
+- `CardMineracer.vue` 显示 Mineracer `userId`、验证状态和绑定时间。
+- `accountLinkService.ts` 集中处理 Mineracer start/status API 与错误分类映射。
+- 前端打开 Mineracer 链接使用新窗口，并设置 `rel="noopener noreferrer"`。
+- Mineracer 当前没有资料或统计 API，因此不显示同步按钮。
+- Mineracer 当前不支持解绑，因此前端不显示解绑入口。
+
+### 安全与一致性
+
+- partner key 只在服务端使用，通过 `MINERACER_ACCOUNT_LINK_PARTNER_KEY` 配置，不进入构建产物和接口响应。
+- start/status API 都需要登录校验与限流。
+- status API 必须校验会话归属，不能让用户查询或完成他人的会话。
+- Redis 临时会话必须使用 `default` cache alias，不能放进 `saolei_website` session cache。
+- 绑定成功逻辑放在数据库事务中，并锁定相关记录，避免并发重复绑定。
+- 过期会话不能继续绑定；如果 Mineracer 返回过期状态，本地也会标记为 expired。
+
+### 剩余事项
+
+1. 由于 Mineracer 不提供测试环境或测试账号，联调需要使用生产接口小范围验证。
+2. 部署后观察 `logs/accountlink.log`、第三方请求失败率和用户绑定成功率。

@@ -32,7 +32,7 @@ def update_account(platform: Platform, user: UserProfile):
     elif platform == Platform.BILIBILI:
         update_bilibili_account(user.account_bilibili)
     elif platform == Platform.MINERACER:
-        return None
+        raise ExceptionToResponse('mineracer', 'update_not_supported', status_code=400)
 
 
 def _get_task_identity(args: list, kwargs: dict, key: str):

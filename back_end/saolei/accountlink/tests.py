@@ -186,6 +186,58 @@ class MineracerApiResponseTestCase(SimpleTestCase):
         self.assertEqual(response['error_category'], 'invalid_userid')
 
 
+class MineracerLegacyViewTestCase(TestCase):
+    def setUp(self):
+        self.user = UserProfile.objects.create_user(
+            username='mineracer_legacy_user',
+            email='mineracer_legacy_user@test.com',
+            password='password',
+            is_staff=True,
+        )
+        self.client.force_login(self.user)
+
+    def test_delete_link_rejects_mineracer(self):
+        AccountLinkQueue.objects.create(platform=Platform.MINERACER, identifier='mineracer-userid', userprofile=self.user, verified=True)
+
+        response = self.client.post('/accountlink/delete/', {'platform': Platform.MINERACER})
+
+        self.assertEqual(response.status_code, 409, response.content)
+        self.assertEqual(response.json()['category'], 'unlink_not_supported')
+        self.assertTrue(AccountLinkQueue.objects.filter(platform=Platform.MINERACER, userprofile=self.user, verified=True).exists())
+
+    def test_verify_link_rejects_manual_mineracer_link(self):
+        AccountLinkQueue.objects.create(platform=Platform.MINERACER, identifier='mineracer-userid', userprofile=self.user, verified=False)
+
+        response = self.client.post('/accountlink/verify/', {
+            'id': self.user.id,
+            'platform': Platform.MINERACER,
+            'identifier': 'mineracer-userid',
+        })
+
+        self.assertEqual(response.status_code, 400, response.content)
+        self.assertEqual(response.json()['category'], 'manual_link_not_supported')
+        self.assertFalse(AccountLinkQueue.objects.get(platform=Platform.MINERACER, userprofile=self.user).verified)
+
+    def test_unverify_link_rejects_mineracer(self):
+        AccountLinkQueue.objects.create(platform=Platform.MINERACER, identifier='mineracer-userid', userprofile=self.user, verified=True)
+
+        response = self.client.post('/accountlink/unverify/', {
+            'id': self.user.id,
+            'platform': Platform.MINERACER,
+            'identifier': 'mineracer-userid',
+        })
+
+        self.assertEqual(response.status_code, 409, response.content)
+        self.assertEqual(response.json()['category'], 'unlink_not_supported')
+        self.assertTrue(AccountLinkQueue.objects.get(platform=Platform.MINERACER, userprofile=self.user).verified)
+
+    def test_update_link_rejects_mineracer(self):
+        response = self.client.post('/accountlink/update/', {'platform': Platform.MINERACER})
+
+        self.assertEqual(response.status_code, 400, response.content)
+        self.assertEqual(response.json()['category'], 'update_not_supported')
+
+
 MINERACER_TEST_ACCOUNT_LINK = {
     'START_URL': 'https://mineracer.example.test/api/partner/link/start',
     'POLL_URL': 'https://mineracer.example.test/api/partner/link/poll',
@@ -353,11 +405,11 @@ class MineracerAccountLinkTestCase(TestCase):
         ).exists())
 
     @patch('accountlink.mineracer.sessions.poll_mineracer_account_link')
-    def test_status_rejects_invalid_mineracer_userid(self, poll_mineracer_account_link):
+    def test_status_rejects_blank_mineracer_userid(self, poll_mineracer_account_link):
         session = self.create_session(next_poll_at=timezone.now() - datetime.timedelta(seconds=1))
         poll_mineracer_account_link.return_value = MineracerAccountLinkPollResponse(
             status=MINERACER_STATUS_CONFIRMED,
-            userid='short',
+            userid='   ',
         )
 
         response = self.client.get(f'/api/accountlink/mineracer/status/{session.session_id}')
@@ -365,7 +417,7 @@ class MineracerAccountLinkTestCase(TestCase):
         self.assertEqual(response.status_code, 200, response.content)
         self.assertEqual(response.json()['status'], MINERACER_STATUS_FAILED)
         self.assertEqual(response.json()['error_category'], 'invalid_userid')
-        self.assertFalse(AccountMineracer.objects.filter(id='short').exists())
+        self.assertFalse(AccountMineracer.objects.filter(id='').exists())
 
     @patch('accountlink.mineracer.sessions.poll_mineracer_account_link')
     def test_status_rejects_too_long_mineracer_userid(self, poll_mineracer_account_link):
