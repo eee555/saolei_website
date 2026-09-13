@@ -9,31 +9,31 @@
                 </template>
                 <template v-if="session" #end>
                     <ElTag :type="statusTagType">
-                        {{ t(`accountlink.mineracer.status.${session.status}`) }}
+                        {{ t(`local.status.${session.status}`) }}
                     </ElTag>
                 </template>
             </PrToolbar>
 
             <ElSteps :active="activeStep" :finish-status="finishStatus" :process-status="processStatus" align-center>
-                <ElStep :title="t('accountlink.mineracer.stepCreate')" />
-                <ElStep :title="t('accountlink.mineracer.stepConfirm')" />
-                <ElStep :title="t('accountlink.mineracer.stepComplete')" />
+                <ElStep :title="t('local.stepCreate')" />
+                <ElStep :title="t('local.stepConfirm')" />
+                <ElStep :title="t('local.stepComplete')" />
             </ElSteps>
 
             <div class="mineracer-body">
                 <ElButton v-if="showStartButton" type="primary" :loading="startLoading" @click="startLink">
-                    {{ t(session ? 'accountlink.mineracer.generateNewLink' : 'accountlink.mineracer.generateLink') }}
+                    {{ t(session ? 'local.generateNewLink' : 'local.generateLink') }}
                 </ElButton>
 
                 <template v-if="session">
                     <ElDescriptions border :column="1" size="small">
                         <ElDescriptionsItem :label="t('common.prop.status')">
-                            {{ t(`accountlink.mineracer.status.${session.status}`) }}
+                            {{ t(`local.status.${session.status}`) }}
                         </ElDescriptionsItem>
-                        <ElDescriptionsItem v-if="session.status == 'pending'" :label="t('accountlink.mineracer.expiresIn')">
+                        <ElDescriptionsItem v-if="session.status == 'pending'" :label="t('local.expiresIn')">
                             {{ remainingTimeText }}
                         </ElDescriptionsItem>
-                        <ElDescriptionsItem v-if="session.remote_userid" :label="t('accountlink.mineracer.userId')">
+                        <ElDescriptionsItem v-if="session.remote_userid" :label="t('local.userId')">
                             {{ session.remote_userid }}
                         </ElDescriptionsItem>
                     </ElDescriptions>
@@ -41,11 +41,11 @@
                     <div v-if="session.status == 'pending'" class="mineracer-actions">
                         <ElLink :href="session.verification_uri_complete" target="_blank" rel="noopener noreferrer" type="primary" :underline="false">
                             <BaseIconExternal />
-                            {{ t('accountlink.mineracer.openLink') }}
+                            {{ t('local.openLink') }}
                         </ElLink>
                         <ElButton text :loading="statusLoading" @click="pollSession">
                             <BaseIconRefresh />
-                            {{ t('accountlink.mineracer.refreshStatus') }}
+                            {{ t('local.refreshStatus') }}
                         </ElButton>
                     </div>
                 </template>
@@ -74,8 +74,6 @@ import { globalNow } from '@/utils/datetime';
 const emit = defineEmits<{
     refresh: [];
 }>();
-
-const { t } = useI18n();
 
 const MINERACER_FALLBACK_POLL_DELAY_MS = 2500;
 const MINERACER_MIN_POLL_DELAY_MS = 500;
@@ -198,6 +196,45 @@ function formatRemainingTime(milliseconds: number): string {
 }
 
 onBeforeUnmount(clearPollTimer);
+
+const i18nMessages = {
+    'zh-cn': { local: {
+        expiresIn: '剩余时间',
+        generateLink: '生成关联链接',
+        generateNewLink: '重新生成链接',
+        openLink: '打开链接',
+        refreshStatus: '刷新状态',
+        status: {
+            confirmed: '已关联',
+            expired: '已过期',
+            failed: '关联失败',
+            pending: '等待 Mineracer 确认',
+        },
+        stepComplete: '完成',
+        stepConfirm: '确认',
+        stepCreate: '链接',
+        userId: 'Mineracer 用户 ID',
+    } },
+    en: { local: {
+        expiresIn: 'Expires in',
+        generateLink: 'Generate link',
+        generateNewLink: 'Generate new link',
+        openLink: 'Open link',
+        refreshStatus: 'Refresh status',
+        status: {
+            confirmed: 'Linked',
+            expired: 'Expired',
+            failed: 'Failed',
+            pending: 'Waiting for Mineracer',
+        },
+        stepComplete: 'Linked',
+        stepConfirm: 'Confirm',
+        stepCreate: 'Link',
+        userId: 'Mineracer User ID',
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
 </script>
 
 <style lang="less" scoped>
