@@ -2,6 +2,7 @@
 sudo pkill -9 uwsgi || true
 
 sudo pkill -9 db_worker || true
+sudo pkill -9 runapscheduler || true
 sudo pkill -9 runapschedulermonitor || true
 sudo pkill -9 runapscheduleruserprofile || true
 sudo pkill -9 runapschedulervideomanager || true

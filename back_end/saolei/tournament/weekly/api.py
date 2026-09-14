@@ -13,7 +13,7 @@ from config.tournaments import TournamentWeights
 from tournament.models import WeeklyParticipant, WeeklyTournament
 from tournament.schema import ParticipantUserIdOutBase
 from userprofile.decorators import login_required_error, staff_required
-from utils.response import HttpResponseConflict
+from utils.response import HttpResponseConflict, realname_required_response
 from utils.schema import IdIn
 from .tasks import task_weekly_finish
 
@@ -130,6 +130,8 @@ WeeklyRegisterOut = create_schema(
 @decorate_view(login_required_error)
 def create_weekly_participant(request: HttpRequest, data: IdIn = Form(...)):  # noqa: B008
     user = request.user
+    if not user.has_realname():
+        return realname_required_response()
     tournament = get_object_or_404(WeeklyTournament, id=data.id)
     if not tournament.accept_checkin():
         return HttpResponseForbidden()

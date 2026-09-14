@@ -73,6 +73,8 @@ class TestWeekly(TournamentTestCaseBase):
             end_time=now + timedelta(minutes=30),
         )
         other_user = self.create_user('weekly_window_user')
+        other_user.realname = 'Weekly Window User'
+        other_user.save(update_fields=['realname'])
         self.client.force_login(other_user)
 
         with patch('django.utils.timezone.now', return_value=now), self.captureOnCommitCallbacks(execute=True):
@@ -96,6 +98,20 @@ class TestWeekly(TournamentTestCaseBase):
         self.assertEqual(truncated_participant.start_time, now)
         self.assertEqual(truncated_participant.end_time, truncated_tournament.end_time)
 
+    def test_weekly_participant_api_requires_realname(self):
+        tournament = self.create_weekly_tournament()
+        self.client.force_login(self.user)
+
+        response = self.client.post('/api/tournament/weekly/participant', {'id': tournament.id})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {
+            'type': 'error',
+            'obj': 'userprofile',
+            'category': 'realname_required',
+        })
+        self.assertFalse(WeeklyParticipant.objects.filter(tournament=tournament, user=self.user).exists())
+
     def test_weekly_participant_create_backfills_and_checkin_uses_token(self):
         tournament = self.create_weekly_tournament()
         existing_video = self.create_video(tournament_identifier=['WEEKLY_TOKEN'])
@@ -109,6 +125,8 @@ class TestWeekly(TournamentTestCaseBase):
         self.assertTrue(tournament.videos.filter(pk=existing_video.pk).exists())
 
         other_user = self.create_user('weekly_checkin_user')
+        other_user.realname = 'Weekly Checkin User'
+        other_user.save(update_fields=['realname'])
         self.client.force_login(other_user)
         with self.captureOnCommitCallbacks(execute=True):
             response = self.client.post('/api/tournament/weekly/participant', {'id': tournament.id})

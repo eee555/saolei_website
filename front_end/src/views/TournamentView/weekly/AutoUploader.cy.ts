@@ -203,7 +203,7 @@ describe('<AutoUploader />', () => {
         setDirectoryPicker();
         mountAutoUploader();
 
-        cy.contains('FileSystemDirectoryHandle is not supported by this browser').should('be.visible');
+        cy.contains('showDirectoryPicker is not supported by this browser').should('be.visible');
         cy.contains('button', 'Select folder').should('be.disabled');
     });
 

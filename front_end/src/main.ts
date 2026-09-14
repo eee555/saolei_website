@@ -1,4 +1,5 @@
 import './setup.js';
+// eslint-disable-next-line import-x/no-namespace
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';

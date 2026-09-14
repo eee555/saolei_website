@@ -58,6 +58,8 @@ class TestGsc(TournamentTestCaseBase):
         self.assertEqual(data_by_id[external_participant.id]['user_id'], 0)
 
     def test_gsc_participant_registration_uses_two_steps(self):
+        self.user.realname = 'GSC Player'
+        self.user.save(update_fields=['realname'])
         self.client.force_login(self.user)
 
         participant_response = self.client.post('/api/tournament/gsc/participant', {
@@ -93,7 +95,24 @@ class TestGsc(TournamentTestCaseBase):
         self.assertEqual(participants_data[0]['arbiter_identifier__identifier'], identifier_text)
         self.assertEqual(self.client.post('/api/tournament/gsc/register', {}).status_code, 404)
 
+    def test_gsc_participant_registration_requires_realname(self):
+        self.client.force_login(self.user)
+
+        response = self.client.post('/api/tournament/gsc/participant', {
+            'order': self.tournament.order,
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {
+            'type': 'error',
+            'obj': 'userprofile',
+            'category': 'realname_required',
+        })
+        self.assertFalse(GSCParticipant.objects.filter(tournament=self.tournament, user=self.user).exists())
+
     def test_gsc_participant_identifier_requires_existing_participant(self):
+        self.user.realname = 'GSC Player'
+        self.user.save(update_fields=['realname'])
         self.client.force_login(self.user)
 
         response = self.client.post('/api/tournament/gsc/participant/identifier', {

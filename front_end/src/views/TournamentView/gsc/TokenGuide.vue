@@ -7,9 +7,12 @@
             {{ t('gsc.identifierGuide.preparing') }}
         </div>
         <div v-else-if="!participant">
-            <ElButton :loading="registeringParticipant" @click="registerParticipant">
+            <ElButton :disabled="store.isUserAnonymous" :loading="registeringParticipant" @click="registerParticipant">
                 {{ t('common.button.register') }}
             </ElButton>
+            <span v-if="store.isUserAnonymous" class="text text-danger">
+                {{ t('common.msg.realNameRequired') }}
+            </span>
         </div>
         <div v-else>
             {{ t('gsc.identifierGuide.token') }}
@@ -41,7 +44,7 @@ import { useI18n } from 'vue-i18n';
 import '@/styles/text.css';
 import { httpErrorNotification, successNotification, unknownErrorNotification } from '@/components/Notifications';
 import IconCopy from '@/components/widgets/IconCopy.vue';
-import { local } from '@/store';
+import { local, store } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import type { TournamentParticipant } from '@/utils/tournaments';
 

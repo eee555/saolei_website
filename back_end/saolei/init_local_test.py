@@ -7,6 +7,7 @@ import argparse
 import json
 import sys
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from urllib.error import HTTPError, URLError
 from urllib.parse import urljoin
 from urllib.request import Request, urlopen
@@ -14,6 +15,8 @@ from urllib.request import Request, urlopen
 
 DEFAULT_BASE_URL = 'http://127.0.0.1:8000/dangerzone/'
 DEFAULT_TIMEOUT = 10
+TOURNAMENT_STATE_NORMAL = 'n'
+WEEKLY_TOURNAMENT_FORMAT_CLASSIC = 'c'
 
 
 @dataclass(frozen=True)
@@ -62,9 +65,32 @@ def register(base_url: str, account: Account, timeout: int) -> None:
     )
 
 
+def today_window() -> tuple[datetime, datetime]:
+    start_time = datetime.now().astimezone().replace(hour=0, minute=0, second=0, microsecond=0)
+    end_time = start_time + timedelta(days=1)
+    return start_time, end_time
+
+
+def create_today_weekly_tournament(base_url: str, host_id: int, timeout: int) -> dict:
+    start_time, end_time = today_window()
+    response = post_json(
+        base_url,
+        'create_weekly_tournament',
+        {
+            'state': TOURNAMENT_STATE_NORMAL,
+            'start_time': start_time.isoformat(),
+            'end_time': end_time.isoformat(),
+            'tournament_format': WEEKLY_TOURNAMENT_FORMAT_CLASSIC,
+            'host_id': host_id,
+        },
+        timeout,
+    )
+    return json.loads(response)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description='Flush local database through dangerzone APIs and create default users.',
+        description='Flush local database through dangerzone APIs and create default users/tournaments.',
     )
     parser.add_argument('--base-url', default=DEFAULT_BASE_URL)
     parser.add_argument('--timeout', type=int, default=DEFAULT_TIMEOUT)
@@ -92,6 +118,9 @@ def main() -> int:
 
         print(f'Registering normal user: {user.username} ({user.email})')
         register(base_url, user, args.timeout)
+
+        print('Creating today weekly tournament')
+        weekly_tournament = create_today_weekly_tournament(base_url, admin.user_id, args.timeout)
     except RuntimeError as error:
         print(error, file=sys.stderr)
         return 1
@@ -99,6 +128,10 @@ def main() -> int:
     print('Done.')
     print(f'Admin: id={admin.user_id}, username={admin.username}, password={admin.password}')
     print(f'User: id={user.user_id}, username={user.username}, password={user.password}')
+    print(
+        f"Weekly tournament: id={weekly_tournament['id']}, "
+        f"start_time={weekly_tournament['start_time']}, end_time={weekly_tournament['end_time']}",
+    )
     return 0
 
 
