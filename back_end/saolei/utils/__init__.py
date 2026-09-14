@@ -10,6 +10,7 @@ from django.shortcuts import redirect
 import requests
 
 from .exceptions import ExceptionToResponse
+from .secrets_json import read_secret, write_secret
 
 
 def generate_code(code_len):
@@ -60,23 +61,17 @@ def get_access_token() -> str:
     :return: access_token，或是None(如果错误)
     """
     try:
-        with open('secrets.json', 'r', encoding='utf-8') as f:
-            API_KEY = json.load(f)['client_id']
+        API_KEY = str(read_secret('client_id'))
     except Exception:
         API_KEY = input('请输入client_id：')
     try:
-        with open('secrets.json', 'r', encoding='utf-8') as f:
-            SECRET_KEY = json.load(f)['client_secret']
+        SECRET_KEY = str(read_secret('client_secret'))
     except Exception:
         SECRET_KEY = input('请输入client_secret：')
     url = 'https://aip.baidubce.com/oauth/2.0/token'
     params = {'grant_type': 'client_credentials', 'client_id': API_KEY, 'client_secret': SECRET_KEY}
     token = str(requests.post(url, params=params).json().get('access_token'))
-    with open('secrets.json', 'r', encoding='utf-8') as file:
-        data = json.load(file)
-    data['token'] = token
-    with open('secrets.json', 'w', encoding='utf-8') as file:
-        json.dump(data, file)
+    write_secret('token', token)
 
     if token == 'None':
         return '**********************************************\n\n**  警告！内容审核的鉴权签名获取失败！！！  **\n\n**********************************************'
@@ -85,8 +80,7 @@ def get_access_token() -> str:
 
 def get_ACCESS_TOKEN() -> str:
     try:
-        with open('secrets.json', 'r', encoding='utf-8') as f:
-            return json.load(f)['token']
+        return str(read_secret('token'))
     except KeyError:
         return get_access_token()
     except FileNotFoundError:
