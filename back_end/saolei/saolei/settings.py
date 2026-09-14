@@ -11,9 +11,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
-import json
 import os
 from pathlib import Path
+
+from utils.secrets_json import read_secret
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -24,14 +25,19 @@ PRODUCTION_MARK = BASE_DIR.parent.parent.parent / '.production'
 DEBUG = not PRODUCTION_MARK.exists()
 
 
+def _read_project_secret(key: str, default: str = '') -> str:
+    try:
+        return str(read_secret(key, default)).strip()
+    except Exception:
+        return default
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # 与加密的盐有关！
-try:
-    with open('secrets.json', 'r', encoding='utf-8') as f:
-        SECRET_KEY = json.load(f)['django_secret_key']
-except Exception:
+SECRET_KEY = _read_project_secret('django_secret_key')
+if not SECRET_KEY:
     SECRET_KEY = 'django-insecure-3_(yjnup(rsxz&pd@stz25*meq10bn3m3$lt!n_1+s723#k=ay'
 
 ALLOWED_HOSTS = ['*']
@@ -309,7 +315,7 @@ APSCHEDULER_RUN_NOW_TIMEOUT = 25  # 定时任务最大执行时间，秒
 
 MINERACER_START_URL = os.environ.get('MINERACER_ACCOUNT_LINK_START_URL', 'https://mineracer.com/api/partner/link/start')
 MINERACER_POLL_URL = os.environ.get('MINERACER_ACCOUNT_LINK_POLL_URL', 'https://mineracer.com/api/partner/link/poll')
-MINERACER_PARTNER_KEY = str(os.environ.get('MINERACER_ACCOUNT_LINK_PARTNER_KEY', '')).strip()
+MINERACER_PARTNER_KEY = str(read_secret('mineracer_account_link_partner_key')).strip()
 MINERACER_TIMEOUT = float(os.environ.get('MINERACER_ACCOUNT_LINK_TIMEOUT', '5'))
 MINERACER_POLL_INTERVAL_MS = max(1, int(os.environ.get('MINERACER_ACCOUNT_LINK_POLL_INTERVAL_MS', '2500')))
 
