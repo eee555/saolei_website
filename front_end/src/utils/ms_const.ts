@@ -89,5 +89,5 @@ export function getPiecewiseColorSchemeName(stat: PiecewiseColorSchemeName, leve
     }
 }
 
-export const MineracerAccountLinkErrorMessageCategory = ['account_not_found', 'already_linked', 'expired', 'identifier_conflict', 'invalid_device_code', 'invalid_userid', 'link_superseded', 'not_configured', 'pending_start', 'remote_failed', 'requestexception', 'response', 'timeout'] as const;
+export const MineracerAccountLinkErrorMessageCategory = ['account_not_found', 'already_linked', 'expired', 'identifier_conflict', 'invalid_device_code', 'link_superseded', 'not_configured', 'pending_start', 'remote_failed', 'requestexception', 'response', 'timeout'] as const;
 export type MineracerAccountLinkErrorMessageCategory = typeof MineracerAccountLinkErrorMessageCategory[number];

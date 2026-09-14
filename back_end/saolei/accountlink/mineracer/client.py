@@ -1,5 +1,5 @@
 from datetime import datetime, timezone as datetime_timezone
-from typing import Annotated, Literal, TypeVar
+from typing import Annotated, Literal
 
 from django.conf import settings
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
@@ -7,8 +7,10 @@ import requests
 
 from utils.exceptions import ExceptionToResponse
 from .dtos import MINERACER_ERROR_ACCOUNT_NOT_FOUND, MINERACER_ERROR_INVALID_DEVICE_CODE, MINERACER_ERROR_LINK_SUPERSEDED, MINERACER_STATUS_CONFIRMED, MINERACER_STATUS_EXPIRED, MINERACER_STATUS_FAILED, MINERACER_STATUS_PENDING, MineracerAccountLinkPollResponse, MineracerAccountLinkStartResponse
+from ..models import MINERACER_USERID_MAX_LENGTH
 
 NonEmptyString = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
+MineracerUserIdString = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=MINERACER_USERID_MAX_LENGTH)]
 PositiveInt = Annotated[int, Field(gt=0)]
 
 
@@ -31,7 +33,7 @@ class MineracerPendingPayload(BaseModel):
 class MineracerLinkedPayload(BaseModel):
     model_config = ConfigDict(strict=True, extra='ignore')
     status: Literal['linked']
-    userId: NonEmptyString
+    userId: MineracerUserIdString
 
 
 class MineracerPollErrorPayload(BaseModel):
@@ -96,8 +98,7 @@ def poll_mineracer_account_link(device_code: str) -> MineracerAccountLinkPollRes
             return MineracerAccountLinkPollResponse(status=MINERACER_STATUS_EXPIRED)
 
         if response.status_code == 404 and error == 'account-not-found':
-            return MineracerAccountLinkPollResponse(status=MINERACER_STATUS_FAILED, 
-            error_category=MINERACER_ERROR_ACCOUNT_NOT_FOUND)
+            return MineracerAccountLinkPollResponse(status=MINERACER_STATUS_FAILED, error_category=MINERACER_ERROR_ACCOUNT_NOT_FOUND)
 
         if response.status_code == 409 and error == 'link-superseded':
             return MineracerAccountLinkPollResponse(status=MINERACER_STATUS_FAILED, error_category=MINERACER_ERROR_LINK_SUPERSEDED)
@@ -107,7 +108,7 @@ def poll_mineracer_account_link(device_code: str) -> MineracerAccountLinkPollRes
 
         response.raise_for_status()
         raise ExceptionToResponse('mineracer', 'response')
-    
+
     except requests.exceptions.Timeout:
         raise ExceptionToResponse('mineracer', 'timeout')
     except requests.exceptions.RequestException:
