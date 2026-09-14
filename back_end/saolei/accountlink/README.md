@@ -165,7 +165,7 @@ API：
 - Mineracer 不使用 `CardAdd.vue` 的手动 ID 流程，而是使用 `CardAddMineracer.vue` 的专用流程。
 - `CardAddMineracer.vue` 显示生成链接按钮、外链按钮、过期倒计时、当前状态，并按后端返回的 `next_poll_at` 请求 status API。
 - `CardMineracer.vue` 显示 Mineracer `userId`、验证状态和绑定时间。
-- `accountLinkService.ts` 集中处理 Mineracer start/status API 与错误分类映射。
+- `mineracerService.ts` 集中处理 Mineracer start/status API 与错误分类映射。
 - 前端打开 Mineracer 链接使用新窗口，并设置 `rel="noopener noreferrer"`。
 - Mineracer 当前没有资料或统计 API，因此不显示同步按钮。
 - Mineracer 当前不支持解绑，因此前端不显示解绑入口。

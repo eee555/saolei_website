@@ -67,7 +67,7 @@ import { useI18n } from 'vue-i18n';
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
 import { BaseIconExternal, BaseIconRefresh } from '@/components/common/icon';
 import { httpErrorNotification } from '@/components/Notifications';
-import { fetchMineracerAccountLinkSession, getMineracerAccountLinkErrorMessageKey, getMineracerAccountLinkHttpErrorCategory, startMineracerAccountLinkSession } from '@/services/accountLinkService';
+import { fetchMineracerAccountLinkSession, getMineracerAccountLinkErrorMessageKey, getMineracerAccountLinkHttpErrorCategory, startMineracerAccountLinkSession } from '@/services/mineracerService';
 import type { MineracerAccountLinkSession } from '@/utils/accountlinks';
 import { globalNow } from '@/utils/datetime';
 
