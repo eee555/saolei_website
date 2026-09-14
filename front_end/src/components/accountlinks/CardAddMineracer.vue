@@ -50,7 +50,7 @@
                     </div>
                 </template>
 
-                <ElAlert v-if="messageKey" :title="t(messageKey)" :type="messageType" show-icon :closable="false" />
+                <ElAlert v-if="messageKey" :title="t(`local.msg.${messageKey}`)" :type="messageType" show-icon :closable="false" />
             </div>
         </div>
     </BaseCardNormal>
@@ -67,7 +67,7 @@ import { useI18n } from 'vue-i18n';
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
 import { BaseIconExternal, BaseIconRefresh } from '@/components/common/icon';
 import { httpErrorNotification } from '@/components/Notifications';
-import { fetchMineracerAccountLinkSession, getMineracerAccountLinkErrorMessageKey, getMineracerAccountLinkHttpErrorCategory, startMineracerAccountLinkSession } from '@/services/mineracerService';
+import { fetchMineracerAccountLinkSession, getMineracerAccountLinkHttpErrorCategory, startMineracerAccountLinkSession } from '@/services/mineracerService';
 import type { MineracerAccountLinkSession } from '@/utils/accountlinks';
 import { globalNow } from '@/utils/datetime';
 
@@ -107,10 +107,10 @@ const statusTagType = computed(() => {
 const remainingTimeText = computed(() => formatRemainingTime((session.value?.expires_at.getTime() ?? 0) - globalNow.value.getTime()));
 const messageKey = computed(() => {
     if (httpErrorMessageKey.value) return httpErrorMessageKey.value;
-    if (session.value?.status === 'failed') return getMineracerAccountLinkErrorMessageKey(session.value.error_category);
-    if (session.value?.status === 'expired') return getMineracerAccountLinkErrorMessageKey('expired');
-    if (session.value?.status === 'pending' && session.value.error_category) return getMineracerAccountLinkErrorMessageKey(session.value.error_category);
-    if (session.value?.status === 'confirmed') return 'accountlink.mineracer.linkSuccess';
+    if (session.value?.status === 'failed') return session.value.error_category;
+    if (session.value?.status === 'expired') return 'expired';
+    if (session.value?.status === 'pending' && session.value.error_category) return session.value.error_category;
+    if (session.value?.status === 'confirmed') return 'linkSuccess';
     return '';
 });
 const messageType = computed(() => {
@@ -185,7 +185,7 @@ function handleHttpError(error: unknown) {
         httpErrorNotification(error);
         return;
     }
-    httpErrorMessageKey.value = getMineracerAccountLinkErrorMessageKey(category);
+    httpErrorMessageKey.value = category;
 }
 
 function formatRemainingTime(milliseconds: number): string {
@@ -202,6 +202,23 @@ const i18nMessages = {
         expiresIn: '剩余时间',
         generateLink: '生成关联链接',
         generateNewLink: '重新生成链接',
+        msg: {
+            account_not_found: 'Mineracer 找不到该关联链接对应的账号。',
+            already_linked: '已经关联了 Mineracer 账号。',
+            expired: '关联链接已过期。',
+            identifier_conflict: '该 Mineracer 账号已被其他用户绑定。',
+            invalid_device_code: 'Mineracer 已无法识别该关联链接，请重新生成。',
+            invalid_userid: 'Mineracer 返回了无效的用户 ID。',
+            linkSuccess: 'Mineracer 账号关联成功。',
+            link_superseded: '该 Mineracer 关联链接已被新的流程替代，请重新生成链接。',
+            not_configured: 'Mineracer 关联尚未配置。',
+            pending_start: '正在创建 Mineracer 关联链接，请稍后再试。',
+            remote_failed: 'Mineracer 未能完成确认。',
+            requestexception: '请求 Mineracer 失败。',
+            response: 'Mineracer 返回了无法识别的响应。',
+            timeout: 'Mineracer 响应超时。',
+            unknown: 'Mineracer 关联失败。',
+        },
         openLink: '打开链接',
         refreshStatus: '刷新状态',
         status: {
@@ -219,6 +236,23 @@ const i18nMessages = {
         expiresIn: 'Expires in',
         generateLink: 'Generate link',
         generateNewLink: 'Generate new link',
+        msg: {
+            account_not_found: 'Mineracer could not find the account for this link.',
+            already_linked: 'A Mineracer account is already linked.',
+            expired: 'The link has expired.',
+            identifier_conflict: 'This Mineracer account is already linked to another user.',
+            invalid_device_code: 'Mineracer no longer recognises this link. Please generate a new one.',
+            invalid_userid: 'Mineracer returned an invalid user ID.',
+            linkSuccess: 'Mineracer account linked.',
+            link_superseded: 'This Mineracer link was replaced by a newer one. Please generate a new link.',
+            not_configured: 'Mineracer linking is not configured.',
+            pending_start: 'A Mineracer link is already being created. Please try again shortly.',
+            remote_failed: 'Mineracer could not confirm the link.',
+            requestexception: 'Failed to request Mineracer.',
+            response: 'Mineracer returned an unrecognised response.',
+            timeout: 'Mineracer did not respond in time.',
+            unknown: 'Mineracer linking failed.',
+        },
         openLink: 'Open link',
         refreshStatus: 'Refresh status',
         status: {
