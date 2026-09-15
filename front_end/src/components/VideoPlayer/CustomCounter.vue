@@ -43,6 +43,7 @@ const parser = new Parser({
 });
 
 const rows = computed(() => {
+    // eslint-disable-next-line @typescript-eslint/no-meaningless-void-operator
     void props.currentMs;
     const values = createEvaluationContext(props.video);
     return props.config.table.map(([label, expression]) => {
