@@ -54,6 +54,21 @@ describe('<BBBvSummary Cell />', () => {
         cy.get('.cell').should('have.css', 'background-color', 'rgba(0, 0, 0, 0)');
     });
 
+    it('continues past software-filtered videos when selecting the best video', () => {
+        mountCell({
+            videos: [
+                makeVideo({ id: 1, software: 'e', timems: 20000 }),
+                makeVideo({ id: 2, software: 'a', timems: 30000 }),
+            ],
+            softwareFilter: ['a'],
+            sortBy: 'timems',
+            sortDesc: false,
+            displayBy: 'time',
+        });
+
+        cy.get('.cell').should('contain', '30.000');
+    });
+
     it('selects the minimum and maximum stats', () => {
         const videos = [
             makeVideo({ id: 1, timems: 40000, bv: 100 }),
