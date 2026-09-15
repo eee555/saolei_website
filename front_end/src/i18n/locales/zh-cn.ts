@@ -69,6 +69,7 @@ export default {
             a: '国际网',
             B: '哔哩哔哩',
             c: '扫雷网',
+            m: 'Mineracer',
             q: '腾讯QQ',
         },
         prop: {

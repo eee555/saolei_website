@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone as datetime_timezone
 import logging
 
 from django.core.files.base import ContentFile
@@ -31,6 +31,8 @@ def update_account(platform: Platform, user: UserProfile):
         update_wom_account(user.account_wom)
     elif platform == Platform.BILIBILI:
         update_bilibili_account(user.account_bilibili)
+    elif platform == Platform.MINERACER:
+        raise ExceptionToResponse('mineracer', 'update_not_supported', status_code=400)
 
 
 def _get_task_identity(args: list, kwargs: dict, key: str):
@@ -124,7 +126,7 @@ def update_saolei_account_info(account: AccountSaolei):
     account.int_count = profile['count']['i']
     account.exp_count = profile['count']['e']
 
-    account.update_time = datetime.now(tz=timezone.utc)
+    account.update_time = datetime.now(tz=datetime_timezone.utc)
 
     account.save(update_fields=[
         'name', 'total_views',
