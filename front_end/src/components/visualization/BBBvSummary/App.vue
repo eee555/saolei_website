@@ -90,6 +90,7 @@ const options = computed(() => {
         stnb: { value: 'stnb', sortBy: 'timems', displayBy: 'stnb', label: 'stnb', sortDesc: false },
         ioe: { value: 'ioe', sortBy: 'ioe', displayBy: 'ioe', label: 'ioe', sortDesc: true },
         thrp: { value: 'thrp', sortBy: 'thrp', displayBy: 'thrp', label: 'thrp', sortDesc: true },
+        path: { value: 'path', sortBy: 'path', displayBy: 'path', label: 'path', sortDesc: false },
         ces: { value: 'ces', sortBy: 'ces', displayBy: 'ces', label: 'ces', sortDesc: true },
         cls: { value: 'cls', sortBy: 'cls', displayBy: 'cls', label: 'cls', sortDesc: true },
         custom: { value: 'custom', sortBy: BBBvSummaryConfig.value.sortBy, displayBy: BBBvSummaryConfig.value.displayBy, label: 'custom', sortDesc: BBBvSummaryConfig.value.sortDesc },

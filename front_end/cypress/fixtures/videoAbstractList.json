@@ -25,6 +25,7 @@
             "software": "a",
             "cl": 281,
             "ce": 205,
+            "path": 64,
             "file_size": 12345
         },
         {
@@ -39,6 +40,7 @@
             "software": "r",
             "cl": 100,
             "ce": 40,
+            "path": 32,
             "file_size": 2048
         },
         {
