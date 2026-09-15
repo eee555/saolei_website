@@ -84,10 +84,6 @@ export function getTextColor(style = 'regular'): string {
 function createColorStyle(backgroundColor: string): Readonly<CSSProperties> {
     const tc = tinycolor(backgroundColor);
     if (tc.isValid() && tc.getAlpha() == 0) return {};
-    return Object.freeze({ backgroundColor, color: getReadableTextColor(tc) });
-}
-
-function getReadableTextColor(tc: tinycolor.Instance): string {
-    if (!tc.isValid()) return tc.isDark() ? 'white' : 'black';
-    return tc.isDark() ? 'white' : 'black';
+    const color = tc.isDark() ? 'white' : 'black';
+    return { backgroundColor, color };
 }

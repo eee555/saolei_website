@@ -123,6 +123,6 @@ describe('<BBBvSummary Cell />', () => {
         });
 
         cy.get('.cell').should('have.class', 'cell-new').and('have.css', 'background-color', 'rgba(0, 0, 0, 0)').and('have.css', 'outline-style', 'solid').and('have.css', 'box-sizing', 'border-box');
-        cy.get('.cell .el-link').should('have.css', 'color', 'rgb(255, 255, 255)');
+        cy.get('.cell .el-link').should('have.css', 'color', 'rgb(0, 0, 0)');
     });
 });
