@@ -6,8 +6,8 @@
     </div>
     <Cell v-for="video in sortedVideos" :key="video.id" :video="video" :level="video.level" :color-theme="colorScheme" :display-by="sortBy" />
     <Cell v-for="i in count - sortedVideos.length" :key="i" :level="level" :color-theme="colorScheme" :display-by="sortBy" />
-    <div class="cell" :style="{ backgroundColor: avgColor }">
-        <span class="text" :style="{ color: avgFontColor }">
+    <div class="cell" :style="avgStyle">
+        <span class="text">
             {{ formatNumberSmart(sumStat, 6, 3) }}
         </span>
     </div>
@@ -16,7 +16,6 @@
 <script setup lang="ts">
 import '@/styles/text.css';
 import { sum } from 'd3-array';
-import tinycolor from 'tinycolor2';
 import type { PropType } from 'vue';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -25,7 +24,6 @@ import Cell from './Cell.vue';
 import { defaultVideos } from './utils';
 
 import { colorThemes } from '@/store/color';
-import { getTextColor } from '@/utils/colors';
 import type { MS_Level } from '@/utils/ms_const';
 import { formatNumberSmart } from '@/utils/strings';
 import type { StandardVideoAbstract } from '@/utils/videoabstract';
@@ -83,13 +81,8 @@ const avgStat = computed(() => {
     return sumStat.value / props.count;
 });
 
-const avgColor = computed(() => {
-    return colorScheme.value.getColor(avgStat.value);
-});
-
-const avgFontColor = computed(() => {
-    const tc = tinycolor(avgColor.value);
-    return tc.getAlpha() == 0 ? getTextColor() : tc.isDark() ? 'white' : 'black';
+const avgStyle = computed(() => {
+    return colorScheme.value.getStyle(avgStat.value);
 });
 
 defineExpose({

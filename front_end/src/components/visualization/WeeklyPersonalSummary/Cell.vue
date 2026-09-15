@@ -1,5 +1,5 @@
 <template>
-    <Tippy v-if="video" class="cell" :style="{ backgroundColor: color }" :duration="0" sticky>
+    <Tippy v-if="video" class="cell" :style="cellStyle" :duration="0" sticky>
         <ElLink underline="never" @click="preview(video.id)">
             {{ video.displayStat('time') }}
         </ElLink>
@@ -9,8 +9,8 @@
             </ElCard>
         </template>
     </Tippy>
-    <div v-else class="cell" :style="{ backgroundColor: color }">
-        <span class="text" :style="{ color: fontColor }">
+    <div v-else class="cell" :style="cellStyle">
+        <span class="text">
             {{ defaultTime }}
         </span>
     </div>
@@ -21,13 +21,12 @@ import '@/styles/text.css';
 import '@/styles/cards.css';
 
 import { ElCard, ElLink } from 'element-plus';
-import tinycolor from 'tinycolor2';
 import type { PropType } from 'vue';
 import { computed } from 'vue';
 import { Tippy } from 'vue-tippy';
 
 import VideoAbstractDisplay from '@/components/widgets/VideoAbstractDisplay.vue';
-import { getTextColor, PiecewiseColorScheme } from '@/utils/colors';
+import { PiecewiseColorScheme } from '@/utils/colors';
 import { preview } from '@/utils/common/PlayerDialog';
 import type { VideoAbstract } from '@/utils/videoabstract';
 
@@ -37,14 +36,9 @@ const props = defineProps({
     defaultTime: { type: Number, default: 240 },
 });
 
-const color = computed(() => {
-    if (!props.video) return props.colorTheme.getColor(props.defaultTime);
-    return props.colorTheme.getColor(props.video.time);
-});
-
-const fontColor = computed(() => {
-    const tc = tinycolor(color.value);
-    return tc.getAlpha() == 0 ? getTextColor() : tc.isDark() ? 'white' : 'black';
+const cellStyle = computed(() => {
+    if (!props.video) return props.colorTheme.getStyle(props.defaultTime);
+    return props.colorTheme.getStyle(props.video.time);
 });
 </script>
 
@@ -52,6 +46,6 @@ const fontColor = computed(() => {
 @import './cell.less';
 
 .el-link {
-    --el-link-text-color: v-bind(fontColor);
+    --el-link-text-color: currentColor;
 }
 </style>

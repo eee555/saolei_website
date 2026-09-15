@@ -59,6 +59,16 @@ describe('ArrayUtils', () => {
         it('Duplicate value is inserted before existing matches', () => {
             expect(ArrayUtils.getInsertIndex([1, 3, 3, 5], 3, true)).toBe(1);
         });
+
+        it('NaN returns -1', () => {
+            expect(ArrayUtils.getInsertIndex([1, 3, 5, 7], NaN, true)).toBe(-1);
+            expect(ArrayUtils.getInsertIndex([7, 5, 3, 1], NaN, false)).toBe(-1);
+        });
+
+        it('Empty array returns -1', () => {
+            expect(ArrayUtils.getInsertIndex([], 4, true)).toBe(-1);
+            expect(ArrayUtils.getInsertIndex([], 4, false)).toBe(-1);
+        });
     });
 
     describe('order checks', () => {
