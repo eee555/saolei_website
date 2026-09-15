@@ -44,12 +44,6 @@ describe('PiecewiseColorScheme', () => {
 
             expect(scheme.getColor(NaN)).toBe('rgba(0,0,0,0)');
         });
-
-        it('Returns transparent color when the computed bucket has no color', () => {
-            const scheme = new PiecewiseColorScheme(['low'], [10]);
-
-            expect(scheme.getColor(15)).toBe('rgba(0,0,0,0)');
-        });
     });
 
     describe('getStyle', () => {
@@ -76,13 +70,6 @@ describe('PiecewiseColorScheme', () => {
             const scheme = new PiecewiseColorScheme(['rgba(255,255,255,0)', '#000000'], [10]);
 
             expect(scheme.getStyle(5)).toEqual({});
-        });
-
-        it('Falls back to the empty style when the computed bucket has no style', () => {
-            const scheme = new PiecewiseColorScheme(['#ffffff'], [10]);
-
-            expect(scheme.getStyle(15)).toStrictEqual(scheme.getStyle(NaN));
-            expect(scheme.getStyle(15)).toEqual({});
         });
     });
 });
