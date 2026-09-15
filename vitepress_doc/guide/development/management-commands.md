@@ -171,31 +171,13 @@ python manage.py db_worker_robust
 python manage.py db_worker_robust --queue-name default --interval 2
 ```
 
-### `runapschedulervideomanager`
+### `runapscheduler`
 
-位置：`videomanager/management/commands/runapschedulervideomanager.py`
+位置：`common/management/commands/runapscheduler.py`
 
-用途：启动 `videomanager` 相关 APScheduler 定时任务。
+用途：启动所有 APScheduler 定时任务。当前 APScheduler 已合并为 `common` APP 中的单一常驻进程，避免分别启动监控、用户和录像相关的三个 Django 进程。
 
-定时任务：
-
-| 任务 | 频率 | 说明 |
-| --- | --- | --- |
-| `delete_newest_queue` | 每天 01:08 | 清理 Redis 最新录像队列，保留最近 7 天或至少 100 条 |
-| `delete_freezed_video` | 每天 01:28 | 删除 7 天以前冻结状态的录像 |
-| `delete_old_job_executions` | 每周一 00:03 | 清理旧的 APScheduler job execution 记录 |
-
-常用命令：
-
-```bash
-python manage.py runapschedulervideomanager
-```
-
-### `runapschedulermonitor`
-
-位置：`monitor/management/commands/runapschedulermonitor.py`
-
-用途：启动服务器监控相关 APScheduler 定时任务。
+任务注册位置：`common/apscheduler.py`
 
 定时任务：
 
@@ -203,32 +185,34 @@ python manage.py runapschedulervideomanager
 | --- | --- | --- |
 | `refresh_state_always` | 每 5 秒 | 采集网络 IO 速度和 CPU 使用率，并写入 Redis |
 | `delete_old_job_executions` | 每周一 00:03 | 清理旧的 APScheduler job execution 记录 |
-
-常用命令：
-
-```bash
-python manage.py runapschedulermonitor
-```
-
-### `runapscheduleruserprofile`
-
-位置：`userprofile/management/commands/runapscheduleruserprofile.py`
-
-用途：启动用户相关 APScheduler 定时任务。
-
-定时任务：
-
-| 任务 | 频率 | 说明 |
-| --- | --- | --- |
+| `delete_newest_queue` | 每天 01:08 | 清理 Redis 最新录像队列，保留最近 7 天或至少 100 条 |
+| `delete_freezed_video` | 每天 01:28 | 删除 7 天以前冻结状态的录像 |
 | `delete_overdue_emailverifyrecord` | 每周一 01:03 | 清理 1 小时以前的邮箱验证码 |
 | `delete_overdue_captcha` | 每周一 01:05 | 清理过期图形验证码 |
-| `delete_old_job_executions` | 每周一 00:03 | 清理旧的 APScheduler job execution 记录 |
+
+参数：
+
+| 参数 | 默认值 | 说明 |
+| --- | --- | --- |
+| `--pidfile` | `logs/apscheduler.pid` | 用于防止重复启动 APScheduler 进程的 pidfile 路径 |
 
 常用命令：
 
 ```bash
-python manage.py runapscheduleruserprofile
+python manage.py runapscheduler
+python manage.py runapscheduler --pidfile logs/apscheduler.pid
 ```
+
+生产启动：
+
+- `start.sh` 会在数据库迁移完成后启动该命令，日志写入 `logs/apscheduler.log`。
+- `START_APSCHEDULER=0` 可跳过启动 APScheduler。
+- `APSCHEDULER_START_DELAY` 控制启动延迟，默认 `10` 秒。
+- `APSCHEDULER_NICE` 控制进程 nice 值，默认 `10`。
+
+::: warning
+生产环境只应运行一个 APScheduler 进程。旧的 `runapschedulermonitor`、`runapscheduleruserprofile` 和 `runapschedulervideomanager` 命令已合并到 `runapscheduler`，不应再单独启动。
+:::
 
 ## 维护建议
 
