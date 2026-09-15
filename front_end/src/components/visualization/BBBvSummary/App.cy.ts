@@ -75,6 +75,44 @@ describe('<BBBvSummary />', () => {
         cy.get('[data-cy=bv-101]').should('contain', '2.244');
     });
 
+    it('supports the path template offered by the header', () => {
+        Object.assign(BBBvSummaryConfig.value, { template: 'path', showIcon: '' });
+        mountSummary({
+            videoList: [
+                new VideoAbstract({
+                    id: 101,
+                    upload_time: '2025-01-15T00:00:00.000Z',
+                    end_time: '2025-01-15T00:10:00.000Z',
+                    level: 'e',
+                    mode: '00',
+                    timems: 30000,
+                    bv: 100,
+                    state: 'c',
+                    software: 'e',
+                    cl: 200,
+                    ce: 100,
+                    path: 64,
+                }),
+                new VideoAbstract({
+                    id: 102,
+                    upload_time: '2025-01-15T00:00:00.000Z',
+                    end_time: '2025-01-15T00:20:00.000Z',
+                    level: 'e',
+                    mode: '00',
+                    timems: 40000,
+                    bv: 100,
+                    state: 'c',
+                    software: 'e',
+                    cl: 200,
+                    ce: 100,
+                    path: 32,
+                }),
+            ],
+        });
+
+        cy.get('[data-cy=bv-100]').should('contain', '32');
+    });
+
     it('groups by the requested level only', () => {
         BBBvSummaryConfig.value.showIcon = '';
         BBBvSummaryConfig.value.displayBy = 'time';
