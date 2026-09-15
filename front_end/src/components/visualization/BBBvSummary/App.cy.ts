@@ -3,12 +3,23 @@ import BBBvSummary from './App.vue';
 import i18n from '@/i18n';
 import { BBBvSummaryConfig } from '@/store';
 import { pinia } from '@/store/create';
+import { MS_Softwares } from '@/utils/ms_const';
 import type { VideoAbstractData } from '@/utils/videoabstract';
 import { VideoAbstract } from '@/utils/videoabstract';
 
 describe('<BBBvSummary />', () => {
     beforeEach(() => {
         cy.clearLocalStorage('bbbv-summary-config');
+        BBBvSummaryConfig.value.template = 'time';
+        BBBvSummaryConfig.value.sortBy = 'timems';
+        BBBvSummaryConfig.value.displayBy = 'time';
+        BBBvSummaryConfig.value.sortDesc = false;
+        BBBvSummaryConfig.value.softwareFilter = [...MS_Softwares];
+        BBBvSummaryConfig.value.zoom = 1;
+        BBBvSummaryConfig.value.tooltipMode = 'fast';
+        BBBvSummaryConfig.value.showIcon = 'software';
+        BBBvSummaryConfig.value.newThresh = 1;
+        BBBvSummaryConfig.value.newDateField = 'upload_time';
         cy.clock(new Date('2025-12-15T00:00:00Z'));
         cy.fixture<Fixture<VideoAbstractData[]>>('videoAbstractList.json').then((data) => {
             Cypress.expose('videoList', data.data.map((video) => new VideoAbstract(video)));
@@ -76,7 +87,8 @@ describe('<BBBvSummary />', () => {
     });
 
     it('supports the path template offered by the header', () => {
-        Object.assign(BBBvSummaryConfig.value, { template: 'path', showIcon: '' });
+        BBBvSummaryConfig.value.template = 'path';
+        BBBvSummaryConfig.value.showIcon = '';
         mountSummary({
             videoList: [
                 new VideoAbstract({
