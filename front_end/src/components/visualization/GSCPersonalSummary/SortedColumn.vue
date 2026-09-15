@@ -1,15 +1,11 @@
 <template>
-    <div class="cell">
-        <span class="text">
-            {{ t(`common.prop.${sortBy}`) }}
-        </span>
+    <div class="cell text">
+        {{ t(`common.prop.${sortBy}`) }}
     </div>
-    <Cell v-for="video in sortedVideos" :key="video.id" :video="video" :level="video.level" :color-theme="colorScheme" :display-by="sortBy" />
-    <Cell v-for="i in count - sortedVideos.length" :key="i" :level="level" :color-theme="colorScheme" :display-by="sortBy" />
-    <div class="cell" :style="avgStyle">
-        <span class="text">
-            {{ formatNumberSmart(sumStat, 6, 3) }}
-        </span>
+    <VideoCell v-for="video in sortedVideos" :key="video.id" class="cell" :video="video" :text="video.displayStat(sortBy)" :value="video[sortBy]" :color-theme="colorScheme" />
+    <VideoCell v-for="i in count - sortedVideos.length" :key="`default-${i}`" class="cell" :text="defaultStatText" :value="defaultStat" :color-theme="colorScheme" />
+    <div class="cell text" :style="colorScheme.getStyle(avgStat)">
+        {{ formatNumberSmart(sumStat, 6, 3) }}
     </div>
 </template>
 
@@ -20,9 +16,9 @@ import type { PropType } from 'vue';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import Cell from './Cell.vue';
 import { defaultVideos } from './utils';
 
+import VideoCell from '@/components/visualization/VideoCell.vue';
 import { colorThemes } from '@/store/color';
 import type { MS_Level } from '@/utils/ms_const';
 import { formatNumberSmart } from '@/utils/strings';
@@ -31,22 +27,10 @@ import type { StandardVideoAbstract } from '@/utils/videoabstract';
 type sortByOptions = 'time' | 'bvs' | 'stnb';
 
 const props = defineProps({
-    videos: {
-        type: Array as PropType<StandardVideoAbstract[]>,
-        default: () => [],
-    },
-    level: {
-        type: String as PropType<MS_Level>,
-        required: true,
-    },
-    sortBy: {
-        type: String as PropType<sortByOptions>,
-        required: true,
-    },
-    count: {
-        type: Number,
-        required: true,
-    },
+    videos: { type: Array as PropType<StandardVideoAbstract[]>, default: () => [] },
+    level: { type: String as PropType<MS_Level>, required: true },
+    sortBy: { type: String as PropType<sortByOptions>, required: true },
+    count: { type: Number, required: true },
 });
 
 const { t } = useI18n();
@@ -77,21 +61,13 @@ const sumStat = computed(() => {
     return sum(sortedVideos.value, (video) => video[props.sortBy]) + (props.count - sortedVideos.value.length) * defaultVideos[props.level][props.sortBy];
 });
 
-const avgStat = computed(() => {
-    return sumStat.value / props.count;
-});
+const avgStat = computed(() => sumStat.value / props.count);
+const defaultStat = computed(() => defaultVideos[props.level][props.sortBy]);
+const defaultStatText = computed(() => String(defaultStat.value));
 
-const avgStyle = computed(() => {
-    return colorScheme.value.getStyle(avgStat.value);
-});
-
-defineExpose({
-    sumStat,
-});
+defineExpose({ sumStat });
 </script>
 
 <style lang="less" scoped>
-
 @import './cell.less';
-
 </style>
