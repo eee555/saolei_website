@@ -1,19 +1,17 @@
 <template>
-    <Tippy v-if="video" class="cell" :style="cellStyle" :duration="0" sticky>
+    <Tippy v-if="video" :style="cellStyle" :duration="0" sticky>
         <ElLink underline="never" @click="preview(video.id)">
-            {{ video.displayStat('time') }}
+            {{ text }}
         </ElLink>
         <template #content>
-            <ElCard v-if="video" class="card-small">
+            <ElCard class="card-small">
                 <VideoAbstractDisplay :video="video" />
             </ElCard>
         </template>
     </Tippy>
-    <div v-else class="cell" :style="cellStyle">
-        <span class="text">
-            {{ defaultTime }}
-        </span>
-    </div>
+    <span v-else :style="cellStyle">
+        {{ text }}
+    </span>
 </template>
 
 <script setup lang="ts">
@@ -32,19 +30,15 @@ import type { VideoAbstract } from '@/utils/videoabstract';
 
 const props = defineProps({
     video: { type: Object as PropType<VideoAbstract | undefined>, default: undefined },
+    text: { type: String, default: '' },
+    value: { type: Number, default: NaN },
     colorTheme: { type: Object as PropType<PiecewiseColorScheme>, default: new PiecewiseColorScheme([], []) },
-    defaultTime: { type: Number, default: 240 },
 });
 
-const cellStyle = computed(() => {
-    if (!props.video) return props.colorTheme.getStyle(props.defaultTime);
-    return props.colorTheme.getStyle(props.video.time);
-});
+const cellStyle = computed(() => props.colorTheme.getStyle(props.value));
 </script>
 
 <style lang="less" scoped>
-@import './cell.less';
-
 .el-link {
     --el-link-text-color: currentColor;
 }
