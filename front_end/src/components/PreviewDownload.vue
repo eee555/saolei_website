@@ -54,7 +54,7 @@ const download = (event: MouseEvent, id: number | undefined) => {
     if (id <= 0) return;
     const down = document.createElement('a');
     down.style.display = 'none';
-    down.href = import.meta.env.VITE_BASE_API + '/video/download/?id=' + id;
+    down.href = import.meta.env.VITE_BASE_API + '/api/video/download/' + id;
     document.body.appendChild(down);
     down.click();
     URL.revokeObjectURL(down.href);

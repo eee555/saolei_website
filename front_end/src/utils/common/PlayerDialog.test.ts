@@ -32,7 +32,7 @@ describe('preview', () => {
 
         expect(axiosGet).toHaveBeenCalledWith('/video/get_software/', { params: { id: 12 } });
         expect(videoplayerstore.software).toBe('e');
-        expect(videoplayerstore.url).toContain('/video/preview/?id=12.evf');
+        expect(videoplayerstore.url).toContain('/api/video/preview?id=12.evf');
         expect(videoplayerstore.visible).toBe(true);
     });
 
@@ -43,7 +43,7 @@ describe('preview', () => {
 
         expect(axiosGet).not.toHaveBeenCalled();
         expect(videoplayerstore.software).toBe('r');
-        expect(videoplayerstore.url).toContain('/video/preview/?id=34.rmv');
+        expect(videoplayerstore.url).toContain('/api/video/preview?id=34.rmv');
         expect(videoplayerstore.visible).toBe(true);
     });
 });
