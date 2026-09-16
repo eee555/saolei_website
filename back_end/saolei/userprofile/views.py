@@ -68,7 +68,7 @@ def user_retrieve(request):
         return HttpResponseNotFound()  # 前端已经查过重了，理论上不应该进到这里
     # 设置密码(哈希)
     user.set_password(user_retrieve_form.cleaned_data['password'])
-    user.save(update_fields=['password'])
+    user.save(update_fields=['password', 'date_updated'])
     # 保存好数据后立即登录
     login(request, user)
     logger.info(f'用户 {user.username}#{user.id} 邮箱找回密码')
@@ -140,12 +140,12 @@ def set_staff(request: HttpRequest):
     logger.info(f"{request.user.id} set_staff {request.GET['id']} {request.GET['is_staff']}")
     if request.GET['is_staff'] == 'True':
         user.is_staff = True
-        user.save(update_fields=['is_staff'])
+        user.save(update_fields=['is_staff', 'date_updated'])
         logger.info(f'用户 {user.username}#{user.id} 成为管理员')
         return HttpResponse(f'设置"{user.realname}"为管理员成功！')
     elif request.GET['is_staff'] == 'False':
         user.is_staff = False
-        user.save(update_fields=['is_staff'])
+        user.save(update_fields=['is_staff', 'date_updated'])
         logger.info(f'用户 {user.username}#{user.id} 卸任管理员')
         return HttpResponse(f'解除"{user.realname}"的管理员权限！')
     else:

@@ -171,7 +171,7 @@ class TestApi(TournamentTestCaseBase):
             state=Tournament_TextChoices.State.PENDING,
         )
         self.user.is_staff = True
-        self.user.save(update_fields=['is_staff'])
+        self.user.save(update_fields=['is_staff', 'date_updated'])
         self.client.force_login(self.user)
 
         response = self.client.post('/api/tournament/validate', {
@@ -245,7 +245,7 @@ class TestApi(TournamentTestCaseBase):
 
     def test_new_weekly_tournament_api_creates_next_week_normal_tournament(self):
         self.user.is_staff = True
-        self.user.save(update_fields=['is_staff'])
+        self.user.save(update_fields=['is_staff', 'date_updated'])
         self.client.force_login(self.user)
 
         response = self.client.post('/api/tournament/weekly/new', {
