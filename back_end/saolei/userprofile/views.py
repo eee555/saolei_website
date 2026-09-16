@@ -209,38 +209,3 @@ def get_email_captcha(request):
         return JsonResponse({'type': 'success', 'hashkey': hashkey})
     else:  # 邮件发送失败
         return JsonResponse({'type': 'error', 'object': 'email'})
-
-
-# 管理员使用的操作接口，调用方式见前端的StaffView.vue
-get_userProfile_fields = ['id', 'userms__identifiers', 'userms__video_num_limit', 'username', 'firstname', 'lastname', 'email', 'realname', 'signature', 'country', 'left_realname_n', 'left_avatar_n', 'left_signature_n', 'is_banned']  # 可获取的域列表
-
-
-@require_GET
-@staff_required
-def get_userProfile(request):
-    if userlist := UserProfile.objects.filter(id=request.GET['id']).values(*get_userProfile_fields):
-        return JsonResponse(userlist[0])
-    return HttpResponseNotFound()
-
-
-# 管理员使用的操作接口，调用方式见前端的StaffView.vue
-set_userProfile_fields = ['userms__identifiers', 'userms__video_num_limit', 'username', 'first_name', 'last_name', 'email', 'realname', 'signature', 'country', 'left_realname_n', 'left_avatar_n', 'left_signature_n', 'is_banned']  # 可修改的域列表
-
-
-@require_POST
-@staff_required
-def set_userProfile(request):
-    userid = request.POST.get('id')
-    user = UserProfile.objects.get(id=userid)
-    if user.is_staff and user != request.user:
-        return HttpResponseForbidden()  # 不能修改除自己以外管理员的信息
-    field = request.POST.get('field')
-    if field not in set_userProfile_fields:
-        return HttpResponseForbidden()  # 只能修改特定的域
-    if field == 'is_banned' and user.is_superuser:
-        return HttpResponseForbidden()  # 站长不可被封禁
-    value = request.POST.get('value')
-    logger.warning(f'管理员 {request.user.username}#{request.user.id} 修改用户 {user.username}#{user.id} 域 {field} 从 {getattr(user, field)} 到 {value}')
-    setattr(user, field, value)
-    user.save(update_fields=[field])
-    return HttpResponse()

@@ -1,13 +1,19 @@
+import logging
+
 from django.shortcuts import get_object_or_404
 from django_ratelimit.decorators import ratelimit
-from ninja import Router
+from ninja import PatchDict, Router
 from ninja.decorators import decorate_view
+from ninja.errors import HttpError
 from ninja.orm import create_schema
 
 from config.global_settings import GameLevels, GameModes, RankingGameStats
+from userprofile.decorators import staff_required
+from userprofile.models import UserProfile
 from .models import UserMS
 
 router = Router()
+logger = logging.getLogger('msuser')
 
 RECORD_ABSTRACT_STATS = ('timems', 'bvs')
 
@@ -37,6 +43,36 @@ UserMSRecordsAbstractOut = create_schema(
         )
     ],
 )
+
+AdminUserMSOut = create_schema(
+    UserMS,
+    fields=['identifiers', 'video_num_limit'],
+)
+
+AdminUserMSUpdateIn = create_schema(
+    UserMS,
+    fields=['video_num_limit'],
+)
+
+
+@router.patch('/admin/update/{userms_id}', response=AdminUserMSOut)
+@decorate_view(staff_required)
+def update_user_ms_admin(request, userms_id: int, data: PatchDict[AdminUserMSUpdateIn]):
+    """
+    - staff_required
+    """
+    user: UserProfile = get_object_or_404(UserMS, id=userms_id).parent
+    if user is not None and user.is_staff and user != request.user:
+        raise HttpError(403, 'Cannot update another staff user.')
+
+    for field, value in data.items():
+        setattr(user.userms, field, value)
+
+    if userms_update_fields := list(data.keys()):
+        user.userms.save(update_fields=userms_update_fields)
+        logger.warning(f'管理员 {request.user.username}#{request.user.id} 修改用户 #{user.id} UserMS {", ".join(userms_update_fields)}')
+
+    return user.userms
 
 
 @router.get('/records', response=UserMSRecordsOut)
