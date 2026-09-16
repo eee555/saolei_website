@@ -13,7 +13,7 @@ async function fetchSoftware(id: number) {
 }
 
 function generateURL(id: number, software: MS_Software) {
-    return import.meta.env.VITE_BASE_API + '/video/preview/?id=' + id + getSoftwareExtension(software);
+    return import.meta.env.VITE_BASE_API + '/api/video/preview?id=' + id + getSoftwareExtension(software);
 }
 
 export async function preview(id: number | undefined | null, software?: MS_Software): Promise<void> {

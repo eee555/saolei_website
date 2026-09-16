@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
-import urllib
 
-from django.conf import settings
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.http import FileResponse, HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 from django_ratelimit.decorators import ratelimit
 from django_redis import get_redis_connection
@@ -34,49 +32,6 @@ def get_software(request):
     if video.ongoing_tournament and request.user.id != video.player_id:
         return HttpResponseForbidden()
     return JsonResponse({'msg': video.software})
-
-
-# 给预览用的接口，区别是结尾是文件后缀
-# 坑：如果做成必须登录才能下载，由于Django的某种特性，会重定向资源，
-# 然而flop播放器不能处理此状态码，因此会请求到空文件，导致解码失败
-@ratelimit(key='ip', rate='20/m')
-@require_GET
-def video_preview(request: HttpRequest):
-    # 这里性能可能有问题
-    if not (videoid := request.GET.get('id')[:-4]):
-        return HttpResponseBadRequest()
-    if not (video := VideoModel.objects.filter(id=videoid).first()):
-        return HttpResponseNotFound()
-    if video.ongoing_tournament and request.user.id != video.player_id:
-        return HttpResponseForbidden()
-    # video.file.name是相对路径(含upload_to)，video.file.path是绝对路径
-    file_path = settings.MEDIA_ROOT / video.file.name
-    response = FileResponse(open(file_path, 'rb'))
-    response['Content-Type'] = 'application/octet-stream'
-    # response['Content-Disposition']=f'attachment;filename="{video.file.name.split("/")[2]}"'
-    file_name = video.file.name.split('/')[2]
-    file_name_uri = urllib.parse.quote(file_name)
-    response['Content-Disposition'] = f'attachment; filename="{file_name_uri}"'
-    response['Access-Control-Expose-Headers'] = 'Content-Disposition'
-    return response
-
-
-# 给下载用的接口，区别是结尾没有文件后缀
-# @login_required(login_url='/')
-@ratelimit(key='ip', rate='20/m')
-@require_GET
-def video_download(request):
-    if not (videoid := request.GET.get('id')):
-        return HttpResponseBadRequest()
-    if not (video := VideoModel.objects.filter(id=videoid).first()):
-        return HttpResponseNotFound()
-    if video.ongoing_tournament and request.user.id != video.player_id:
-        return HttpResponseForbidden()
-    response = FileResponse(open(video.file.path, 'rb'))
-    response['Content-Type'] = 'application/octet-stream'
-    response[
-        'Content-Disposition'] = f'attachment;filename="{video.file.name.split("/")[2]}"'
-    return response
 
 
 # 录像查询（无需登录）
