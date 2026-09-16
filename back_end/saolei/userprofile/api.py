@@ -10,7 +10,7 @@ from django.http import FileResponse, HttpRequest, HttpResponse, HttpResponseFor
 from django.shortcuts import get_object_or_404
 from django.views.decorators.cache import cache_control
 from django_ratelimit.decorators import ratelimit
-from ninja import File, Form, Router, Schema, UploadedFile
+from ninja import File, Form, PatchDict, Router, Schema, UploadedFile
 from ninja.decorators import decorate_view
 from ninja.errors import HttpError
 from ninja.orm import create_schema
@@ -18,7 +18,7 @@ from ninja.orm import create_schema
 from utils import verify_image
 from utils.exceptions import ExceptionToResponse
 from videomanager.models import VideoModel
-from .decorators import banned_blocked, login_required_error
+from .decorators import banned_blocked, login_required_error, staff_required
 from .models import UserProfile
 from .services import refresh_avatar_chance, try_update_user_name_fields, try_update_user_signature
 
@@ -38,6 +38,76 @@ UserInfoOut = create_schema(
         'left_avatar_n', 'left_signature_n',
     ],
 )
+
+
+class AdminUserProfileOutBase(Schema):
+    @staticmethod
+    def resolve_userms_identifiers(user: UserProfile) -> list[str]:
+        return user.userms.identifiers if user.userms else []
+
+    @staticmethod
+    def resolve_userms_video_num_limit(user: UserProfile) -> int | None:
+        return user.userms.video_num_limit if user.userms else None
+
+AdminUserProfileOut = create_schema(
+    UserProfile,
+    fields=[
+        'id', 'username', 'email',
+        'firstname', 'lastname', 'realname',
+        'signature', 'country',
+        'is_banned', 'is_staff',
+        'left_realname_n', 'left_avatar_n', 'left_signature_n',
+        'last_change_avatar', 'last_change_signature',
+        'date_updated',
+    ],
+    custom_fields=[
+        ('userms_id', int | None, None),
+        ('userms_identifiers', list[str], []),
+        ('userms_video_num_limit', int | None, None),
+    ],
+    base_class=AdminUserProfileOutBase,
+)
+
+ADMIN_USERPROFILE_FIELDS = (
+    'username', 'email',
+    'firstname', 'lastname', 'realname',
+    'signature', 'country', 'is_banned',
+    'left_realname_n', 'left_avatar_n', 'left_signature_n',
+)
+
+AdminUserProfileUpdateIn = create_schema(
+    UserProfile,
+    fields=list(ADMIN_USERPROFILE_FIELDS),
+)
+
+
+@router.get('/admin/detail/{user_id}', response=AdminUserProfileOut)
+@decorate_view(staff_required)
+def get_user_profile_admin(request, user_id: int):
+    """
+    - staff_required
+    """
+    return get_object_or_404(UserProfile.objects.select_related('userms'), id=user_id)
+
+
+@router.patch('/admin/update/{user_id}', response=AdminUserProfileOut)
+@decorate_view(staff_required)
+def update_user_profile_admin(request, user_id: int, data: PatchDict[AdminUserProfileUpdateIn]):
+    """
+    - staff_required
+    """
+    user = get_object_or_404(UserProfile.objects.select_related('userms'), id=user_id)
+    if user.is_staff and user != request.user:
+        raise HttpError(403, 'Cannot update another staff user.')
+
+    for field, value in data.items():
+        setattr(user, field, value)
+
+    if user_update_fields := list(data.keys()):
+        user.save(update_fields=[*user_update_fields, 'date_updated'])
+        logger.warning(f'管理员 {request.user.username}#{request.user.id} 修改用户 {user.username}#{user.id} 字段 {", ".join(user_update_fields)}')
+
+    return get_object_or_404(UserProfile.objects.select_related('userms'), id=user_id)
 
 
 @router.get('/info/{user_id}', response=UserInfoOut)
