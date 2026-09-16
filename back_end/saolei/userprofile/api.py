@@ -334,7 +334,7 @@ def update_user_avatar(request, avatar: File[UploadedFile]):
     user.left_avatar_n -= 1
     logger.info(f'用户 {user.username}#{user.id} 修改头像')
     try:
-        user.save(update_fields=['avatar', 'left_avatar_n'])
+        user.save(update_fields=['avatar', 'left_avatar_n', 'date_updated'])
     except ValidationError:
         raise ExceptionToResponse('avatar', 'validation')
 

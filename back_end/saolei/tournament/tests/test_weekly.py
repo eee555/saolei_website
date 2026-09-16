@@ -74,7 +74,7 @@ class TestWeekly(TournamentTestCaseBase):
         )
         other_user = self.create_user('weekly_window_user')
         other_user.realname = 'Weekly Window User'
-        other_user.save(update_fields=['realname'])
+        other_user.save(update_fields=['realname', 'date_updated'])
         self.client.force_login(other_user)
 
         with patch('django.utils.timezone.now', return_value=now), self.captureOnCommitCallbacks(execute=True):
@@ -126,7 +126,7 @@ class TestWeekly(TournamentTestCaseBase):
 
         other_user = self.create_user('weekly_checkin_user')
         other_user.realname = 'Weekly Checkin User'
-        other_user.save(update_fields=['realname'])
+        other_user.save(update_fields=['realname', 'date_updated'])
         self.client.force_login(other_user)
         with self.captureOnCommitCallbacks(execute=True):
             response = self.client.post('/api/tournament/weekly/participant', {'id': tournament.id})
