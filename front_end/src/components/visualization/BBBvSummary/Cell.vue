@@ -70,7 +70,8 @@ const isNew = computed(() => {
 
 function handleClick() {
     if (props.tooltipMode === 'fast') {
-        void preview(props.videos[bestIndex.value].id);
+        const video = props.videos[bestIndex.value];
+        void preview(video.id, video.software);
     } else {
         store.video_list = props.videos;
         store.video_list_show = true;

@@ -15,7 +15,7 @@
         :paginator="paginator" :rows="paginatorRows"
         paginator-template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown JumpToPageInput CurrentPageReport"
         :rows-per-page-options="[5, 10, 25, 50, 100]"
-        @row-click="(event: any) => preview(event.data.id)"
+        @row-click="handleRowClick"
     >
         <component
             :is="componentConfig(column).component" v-for="column in columns" :key="column"
@@ -66,6 +66,10 @@ const ColumnStat = defineAsyncComponent(() => import('./ColumnStat.vue'));
 const ColumnState = defineAsyncComponent(() => import('./ColumnState.vue'));
 const ColumnSoftware = defineAsyncComponent(() => import('./ColumnSoftware.vue'));
 const ColumnUploadTime = defineAsyncComponent(() => import('./ColumnUploadTime.vue'));
+
+function handleRowClick(event: { data: VideoAbstract }) {
+    void preview(event.data.id, event.data.software);
+}
 
 function componentConfig(choice: ColumnChoice) {
     switch (choice) {
