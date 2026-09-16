@@ -17,6 +17,7 @@ from .schema import VideoBaseOut
 router = Router()
 VIDEO_ACCEL_REDIRECT_PREFIX = '/internal-media/'
 
+
 def _can_request_video(request: HttpRequest, video: VideoModel):
     if not video.ongoing_tournament:
         return True
