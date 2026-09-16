@@ -49,6 +49,7 @@ class AdminUserProfileOutBase(Schema):
     def resolve_userms_video_num_limit(user: UserProfile) -> int | None:
         return user.userms.video_num_limit if user.userms else None
 
+
 AdminUserProfileOut = create_schema(
     UserProfile,
     fields=[

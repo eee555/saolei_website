@@ -1,5 +1,5 @@
-import json
 from datetime import timedelta
+import json
 
 from django.test import override_settings, TestCase
 from django.utils import timezone
