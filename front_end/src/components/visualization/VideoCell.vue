@@ -1,6 +1,6 @@
 <template>
     <Tippy v-if="video" :style="cellStyle" :duration="0" sticky>
-        <ElLink underline="never" @click="preview(video.id)">
+        <ElLink underline="never" @click="preview(video.id, video.software)">
             {{ text }}
         </ElLink>
         <template #content>

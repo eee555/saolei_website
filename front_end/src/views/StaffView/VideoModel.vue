@@ -5,7 +5,7 @@
         <ElButton @click="getVideo">
             查询
         </ElButton>
-        <ElButton @click="preview(videoid)">
+        <ElButton @click="previewVideo">
             播放
         </ElButton>
         <ElButton @click="updateVideo(videoid)">
@@ -43,6 +43,8 @@ import { ref } from 'vue';
 import { httpErrorNotification, successNotification } from '@/components/Notifications';
 import { preview } from '@/utils/common/PlayerDialog';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import type { MS_Software } from '@/utils/ms_const';
+import { MS_Softwares } from '@/utils/ms_const';
 
 const { proxy } = useCurrentInstance();
 
@@ -51,6 +53,7 @@ const videofield = ref('');
 const videovalue = ref('');
 const videofieldlist = ['player', 'upload_time', 'state']; // 可以修改的域列表
 const videomodel = ref<Record<string, unknown>>({});
+const softwareSet = new Set<unknown>(MS_Softwares);
 
 const getVideo = () => {
     proxy.$axios.get<Record<string, unknown>>('video/get', { params: { id: videoid.value } }).then(
@@ -76,4 +79,9 @@ const updateVideo = (id: number) => {
 const removeNewest = (id: number) => {
     proxy.$axios.post<unknown>('video/newest_queue/remove/', { id: id }).then(setVideoResponse).catch(httpErrorNotification);
 };
+
+function previewVideo() {
+    const { software } = videomodel.value;
+    void preview(videoid.value, softwareSet.has(software) ? software as MS_Software : undefined);
+}
 </script>
