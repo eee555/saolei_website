@@ -70,6 +70,7 @@ export default {
             a: 'Authoritative Minesweeper',
             B: 'Bilibili',
             c: 'Saolei.wang',
+            m: 'Mineracer',
             q: 'Tencent QQ',
         },
         prop: {
