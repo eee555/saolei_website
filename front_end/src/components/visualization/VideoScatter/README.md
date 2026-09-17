@@ -109,7 +109,7 @@ App.vue
 - 根据点数据计算 `domain`、`xTicks` 和 `yTicks`。
 - 使用 `ResizeObserver` 监听容器尺寸变化，动态更新绘图尺寸。
 - 鼠标悬停点时，通过 `Tippy` 和 `VideoAbstractDisplay` 显示视频摘要信息。
-- 点击点时调用 `preview(point.data.id)` 预览视频。
+- 点击点时调用 `preview(point.data.id, point.data.software)` 预览视频。
 - 框选完成后，将 SVG 坐标下的选择形状转换为数据坐标，再交给 `VideoScatterStore.selectionDraw` 更新选择状态。
 
 ## 数据流

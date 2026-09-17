@@ -1,6 +1,8 @@
+from datetime import timedelta
 import json
 
 from django.test import TestCase
+from django.utils import timezone
 from django_redis import get_redis_connection
 
 from config.global_settings import DefaultRankingScores
@@ -71,6 +73,81 @@ class UserMSRecordApiTests(TestCase):
         self.assertEqual(data['b_bvs_id_std'], 201)
         self.assertEqual(data['i_bvs_id_std'], 202)
         self.assertEqual(data['e_bvs_id_std'], 203)
+
+
+class UserMSAdminApiTests(TestCase):
+    def setUp(self):
+        self.staff = UserProfile.objects.create_user(
+            username='msuser_staff',
+            email='msuser_staff@example.com',
+            password='password',
+            is_staff=True,
+            userms=UserMS.objects.create(),
+        )
+        self.userms = UserMS.objects.create(
+            identifiers=['alpha', 'beta'],
+            video_num_limit=100,
+        )
+        self.user = UserProfile.objects.create_user(
+            username='msuser_player',
+            email='msuser_player@example.com',
+            password='password',
+            userms=self.userms,
+        )
+        self.client.force_login(self.staff)
+
+    def patch_update(self, userms_id, payload):
+        return self.client.patch(
+            f'/api/msuser/admin/update/{userms_id}',
+            json.dumps(payload),
+            content_type='application/json',
+        )
+
+    def test_admin_update_user_ms_limit(self):
+        old_updated = timezone.now() - timedelta(days=1)
+        UserProfile.objects.filter(id=self.user.id).update(date_updated=old_updated)
+        self.user.refresh_from_db()
+        old_updated = self.user.date_updated
+
+        response = self.patch_update(self.userms.id, {
+            'video_num_limit': 250,
+        })
+
+        self.assertEqual(response.status_code, 200, response.content)
+        data = response.json()
+        self.assertEqual(data['identifiers'], ['alpha', 'beta'])
+        self.assertEqual(data['video_num_limit'], 250)
+
+        self.user.refresh_from_db()
+        self.userms.refresh_from_db()
+        self.assertEqual(self.user.date_updated, old_updated)
+        self.assertEqual(self.userms.video_num_limit, 250)
+
+    def test_staff_cannot_update_another_staff_user_ms(self):
+        other_staff = UserProfile.objects.create_user(
+            username='msuser_other_staff',
+            email='msuser_other_staff@example.com',
+            password='password',
+            is_staff=True,
+            userms=UserMS.objects.create(video_num_limit=100),
+        )
+
+        response = self.patch_update(other_staff.userms_id, {
+            'video_num_limit': 250,
+        })
+
+        self.assertEqual(response.status_code, 403)
+        other_staff.userms.refresh_from_db()
+        self.assertEqual(other_staff.userms.video_num_limit, 100)
+
+    def test_non_staff_cannot_use_admin_user_ms_api(self):
+        self.client.force_login(self.user)
+
+        response = self.patch_update(self.userms.id, {
+            'video_num_limit': 250,
+        })
+
+        self.assertEqual(response.status_code, 403)
 
 
 class PersonalRecordSignalTests(TestCase):

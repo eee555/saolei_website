@@ -68,7 +68,7 @@ import { ms_to_s } from '@/utils';
 import { preview } from '@/utils/common/PlayerDialog';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { MS_Levels } from '@/utils/ms_const';
-import type { MS_Level } from '@/utils/ms_const';
+import type { MS_Level, MS_Software } from '@/utils/ms_const';
 import { utc_to_local_format } from '@/utils/system/tools';
 
 const { proxy } = useCurrentInstance();
@@ -92,7 +92,7 @@ const state = reactive({
 const videoList = reactive<Video[]>([]);
 // 带下划线与不带的至少存在一个
 type VideoFieldValue = string | number | boolean | null;
-type Video = Record<string, VideoFieldValue> & { id: number };
+type Video = Record<string, VideoFieldValue> & { id: number; software: MS_Software };
 type NameKey = Record<string, string>;
 type Tags = Record<string, NameKey>;
 type TableSortOrder = 'ascending' | 'descending';
@@ -180,7 +180,7 @@ function selected_index(): string[] {
 }
 
 function previewVideo(row: Video): void {
-    void preview(row.id);
+    void preview(row.id, row.software);
 }
 
 function columnFormatter(key: string, value: VideoFieldValue | undefined): string | number | boolean | null | undefined {

@@ -42,7 +42,7 @@ def try_update_user_name_fields(user: UserProfile, field_name: Literal['realname
 
     setattr(user, field_name, field_value)
     try:
-        user.save(update_fields=[field_name])
+        user.save(update_fields=[field_name, 'date_updated'])
     except ValidationError:
         raise ExceptionToResponse('database', 'validation')
 
@@ -72,7 +72,7 @@ def try_update_user_signature(user: UserProfile, signature: str, user_ip: str):
     user.signature = signature
     user.left_signature_n -= 1
     try:
-        user.save(update_fields=['signature', 'left_signature_n'])
+        user.save(update_fields=['signature', 'left_signature_n', 'date_updated'])
     except ValidationError:
         raise ExceptionToResponse('database', 'validation')
 
@@ -152,7 +152,7 @@ def refresh_avatar_chance(user: UserProfile):
     if new_avatar > 0:
         user.left_avatar_n += new_avatar
         user.last_change_avatar = now
-        user.save(update_fields=['left_avatar_n', 'last_change_avatar'])
+        user.save(update_fields=['left_avatar_n', 'last_change_avatar', 'date_updated'])
 
     return
 
@@ -164,6 +164,6 @@ def refresh_signature_chance(user: UserProfile):
     if new_signature > 0:
         user.left_signature_n += new_signature
         user.last_change_signature = now
-        user.save(update_fields=['left_signature_n', 'last_change_signature'])
+        user.save(update_fields=['left_signature_n', 'last_change_signature', 'date_updated'])
 
     return
