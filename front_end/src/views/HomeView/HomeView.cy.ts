@@ -3,6 +3,7 @@ import PrimeVue from 'primevue/config';
 import $axios from '@/http';
 import i18n from '@/i18n';
 import { serviceConfig } from '@/services/store';
+import { local } from '@/store';
 import { TournamentState, TournamentSubclass } from '@/utils/ms_const';
 
 const fixedNow = new Date('2026-07-22T12:00:00Z').getTime();
@@ -143,13 +144,6 @@ function normalTournamentResponse() {
     ];
 }
 
-const users = new Map([
-    [7, { id: 7, username: 'player7', realname: 'Player Seven', firstname: 'Player', lastname: 'Seven' }],
-    [8, { id: 8, username: 'player8', realname: 'Player Eight', firstname: 'Player', lastname: 'Eight' }],
-    [9, { id: 9, username: 'player9', realname: 'Player Nine', firstname: 'Player', lastname: 'Nine' }],
-    [10, { id: 10, username: 'player10', realname: 'Player Ten', firstname: 'Player', lastname: 'Ten' }],
-]);
-
 const mountGlobal = {
     plugins: [i18n, PrimeVue],
     config: {
@@ -164,23 +158,6 @@ function mockHomeQueueRequests() {
     cy.intercept({ method: 'GET', pathname: '/video/news_queue/' }, { body: newsQueueResponse }).as('newsQueue');
     cy.intercept({ method: 'GET', pathname: '/api/video/review_queue' }, { body: reviewQueueResponse }).as('reviewQueue');
     cy.intercept({ method: 'GET', pathname: '/api/tournament/get_list' }, { body: normalTournamentResponse() }).as('normalTournaments');
-}
-
-function mockUserProfileRequests() {
-    cy.intercept('GET', '**/api/userprofile/avatar/**', { statusCode: 404 });
-    cy.intercept('GET', '**/api/userprofile/infoupdated*', { body: [] });
-    cy.intercept('GET', '**/api/userprofile/infobulk*', (req) => {
-        const ids = new URL(req.url).searchParams.get('ids')?.split(',').map(Number) ?? [];
-        req.reply({
-            body: ids.map((id) => users.get(id) ?? {
-                id,
-                username: `player${id}`,
-                realname: `Player ${id}`,
-                firstname: 'Player',
-                lastname: String(id),
-            }),
-        });
-    });
 }
 
 function configureUserInfoService() {
@@ -198,10 +175,11 @@ function mountHomeView() {
 
 describe('HomeView components', () => {
     beforeEach(() => {
+        local.value.language = 'en';
         cy.clock(fixedNow);
         configureUserInfoService();
         mockHomeQueueRequests();
-        mockUserProfileRequests();
+        cy.mockPlayerNameFallback();
     });
 
     it('renders the real home queue components in the expected tab layout', () => {
@@ -235,15 +213,15 @@ describe('HomeView components', () => {
 
         cy.wait('@newsQueue').its('request.query').should('deep.equal', {});
         cy.contains('.el-tabs__item', 'News').should('be.visible');
-        cy.contains('Player Seven').should('be.visible');
+        cy.contains('User#7').should('be.visible');
         cy.contains('.clickable', '59.987').should('be.visible');
-        cy.contains('Player Eight').should('be.visible');
+        cy.contains('User#8').should('be.visible');
         cy.contains('.clickable', '3.235').should('be.visible');
         cy.contains('↑0.135').should('be.visible');
         cy.contains('.clickable', '48.321').should('be.visible');
         cy.contains('↓-0.802').should('be.visible');
-        cy.contains('Player 999').should('not.exist');
-        cy.contains('Player 1000').should('not.exist');
+        cy.contains('User#999').should('not.exist');
+        cy.contains('User#1000').should('not.exist');
     });
 
     it('loads normal tournaments with relative state times beside the news area', () => {
