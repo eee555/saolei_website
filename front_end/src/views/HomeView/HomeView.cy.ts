@@ -1,10 +1,12 @@
 import PrimeVue from 'primevue/config';
 
-import App from './App.vue';
-
 import $axios from '@/http';
 import i18n from '@/i18n';
 import { serviceConfig } from '@/services/store';
+import { TournamentState, TournamentSubclass } from '@/utils/ms_const';
+
+const fixedNow = new Date('2026-07-22T12:00:00Z').getTime();
+const fullDay = 86400000;
 
 const newestQueueResponse = {
     101: JSON.stringify({
@@ -106,6 +108,41 @@ const reviewQueueResponse = [
     },
 ];
 
+function normalTournamentResponse() {
+    return [
+        {
+            id: 401,
+            name: { en: 'Upcoming Cup' },
+            subclass: TournamentSubclass.GSC,
+            data: { order: 401, token: 'G00401' },
+            start_time: new Date(fixedNow + 2 * fullDay + 3 * 3600000 + 4 * 60000 + 5000).toISOString(),
+            end_time: new Date(fixedNow + 3 * fullDay).toISOString(),
+            state: TournamentState.Normal,
+            host_id: 1,
+        },
+        {
+            id: 402,
+            name: { en: 'Ongoing Cup' },
+            subclass: TournamentSubclass.Weekly,
+            data: { year: 2099, week: 42, tournament_format: 'c' },
+            start_time: new Date(fixedNow - fullDay).toISOString(),
+            end_time: new Date(fixedNow + 3 * 3600000 + 4 * 60000 + 5000).toISOString(),
+            state: TournamentState.Normal,
+            host_id: 1,
+        },
+        {
+            id: 403,
+            name: { en: 'Finished Cup' },
+            subclass: TournamentSubclass.GSC,
+            data: { order: 403, token: 'G00403' },
+            start_time: new Date(fixedNow - 3 * fullDay).toISOString(),
+            end_time: new Date(fixedNow - 2 * 3600000 - 3 * 60000 - 4000).toISOString(),
+            state: TournamentState.Normal,
+            host_id: 1,
+        },
+    ];
+}
+
 const users = new Map([
     [7, { id: 7, username: 'player7', realname: 'Player Seven', firstname: 'Player', lastname: 'Seven' }],
     [8, { id: 8, username: 'player8', realname: 'Player Eight', firstname: 'Player', lastname: 'Eight' }],
@@ -126,6 +163,7 @@ function mockHomeQueueRequests() {
     cy.intercept({ method: 'GET', pathname: '/video/newest_queue/' }, { body: newestQueueResponse }).as('newestQueue');
     cy.intercept({ method: 'GET', pathname: '/video/news_queue/' }, { body: newsQueueResponse }).as('newsQueue');
     cy.intercept({ method: 'GET', pathname: '/api/video/review_queue' }, { body: reviewQueueResponse }).as('reviewQueue');
+    cy.intercept({ method: 'GET', pathname: '/api/tournament/get_list' }, { body: normalTournamentResponse() }).as('normalTournaments');
 }
 
 function mockUserProfileRequests() {
@@ -151,18 +189,28 @@ function configureUserInfoService() {
     serviceConfig.value.userInfoLastUpdate = 0;
 }
 
+function mountHomeView() {
+    cy.then(() => import('./App.vue')).then(({ default: App }) => {
+        cy.mount(App, { global: mountGlobal });
+    });
+    cy.tick(0);
+}
+
 describe('HomeView components', () => {
     beforeEach(() => {
+        cy.clock(fixedNow);
         configureUserInfoService();
         mockHomeQueueRequests();
         mockUserProfileRequests();
     });
 
     it('renders the real home queue components in the expected tab layout', () => {
-        cy.mount(App, { global: mountGlobal });
+        mountHomeView();
 
         cy.contains('.el-tabs__item', 'News').should('be.visible');
+        cy.contains('.normal-tournament-card', 'Active Tournaments').should('be.visible');
         cy.contains('.el-tabs__item', 'Latest').should('have.class', 'is-active');
+        cy.wait('@normalTournaments');
         cy.wait('@newsQueue');
         cy.wait('@newestQueue');
         cy.contains('.el-tabs__item', 'Pending').should('be.visible').click();
@@ -171,7 +219,7 @@ describe('HomeView components', () => {
     });
 
     it('loads newest videos from the videomanager newest_queue endpoint', () => {
-        cy.mount(App, { global: mountGlobal });
+        mountHomeView();
 
         cy.wait('@newestQueue').its('request.query').should('deep.equal', {});
         cy.contains('.el-tabs__item', 'Latest').should('be.visible');
@@ -183,7 +231,7 @@ describe('HomeView components', () => {
     });
 
     it('loads and filters record news from the videomanager news_queue endpoint', () => {
-        cy.mount(App, { global: mountGlobal });
+        mountHomeView();
 
         cy.wait('@newsQueue').its('request.query').should('deep.equal', {});
         cy.contains('.el-tabs__item', 'News').should('be.visible');
@@ -198,8 +246,29 @@ describe('HomeView components', () => {
         cy.contains('Player 1000').should('not.exist');
     });
 
+    it('loads normal tournaments with relative state times beside the news area', () => {
+        mountHomeView();
+
+        cy.wait('@normalTournaments').its('request.query').should('deep.equal', { category: 'normal' });
+        cy.get('.normal-tournament-card .el-card__header .el-link').first().should('have.attr', 'href', '/#/tournament');
+        cy.contains('.normal-tournament-name .el-link', 'Upcoming Cup').
+            should('be.visible').
+            and('have.attr', 'href', '/#/tournament/401');
+        cy.contains('.normal-tournament-name .el-link', 'Ongoing Cup').
+            should('be.visible').
+            and('have.attr', 'href', '/#/tournament/402');
+        cy.contains('.normal-tournament-name .el-link', 'Finished Cup').
+            should('be.visible').
+            and('have.attr', 'href', '/#/tournament/403');
+        cy.contains('.normal-tournament-card .text-warning', 'starts in 2d 03:04:05').should('be.visible');
+        cy.contains('.normal-tournament-card .text-danger', 'ends in 03:04:05').should('be.visible');
+        cy.contains('.normal-tournament-card .text-success', 'ended 02:03:04 ago').should('be.visible');
+        cy.get('.normal-tournament-card .el-card__header .el-link').eq(1).click();
+        cy.wait('@normalTournaments').its('request.query').should('deep.equal', { category: 'normal' });
+    });
+
     it('loads pending review videos from the video API review_queue endpoint', () => {
-        cy.mount(App, { global: mountGlobal });
+        mountHomeView();
 
         cy.contains('.el-tabs__item', 'Pending').should('be.visible');
         cy.contains('.el-tabs__item', 'Pending').click();
