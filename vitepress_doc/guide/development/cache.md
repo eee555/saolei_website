@@ -454,7 +454,8 @@ digraph cache {
     userms_db -> update_video_count_limit_on_video_save [label="O2O read"];
     update_video_count_limit_on_video_save -> userms_db [label="write"];
 
-    video_db -> update_video_count_on_video_delete [label="post_delete"];
+    video_db -> update_video_count_on_video_delete [label="pre_delete"];
+    tournament_db -> update_video_count_on_video_delete [label="m2m exists"];
     userprofile_db -> update_video_count_on_video_delete [label="FK read"];
     userms_db -> update_video_count_on_video_delete [label="O2O read"];
     update_video_count_on_video_delete -> userms_db [label="write"];

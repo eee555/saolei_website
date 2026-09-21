@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta, timezone
-import json
 import logging
 
 from apscheduler.triggers.cron import CronTrigger
@@ -12,6 +11,7 @@ import psutil
 
 from userprofile.models import EmailVerifyRecord
 from videomanager.models import VideoModel
+from videomanager.services import delete_newest_queue
 
 logger = logging.getLogger(__name__)
 cache = get_redis_connection('saolei_website')
@@ -50,24 +50,6 @@ def delete_overdue_captcha():
     CaptchaStore.objects.filter(expiration__lt=django_timezone.now()).delete()
 
 
-def n_days_ago(time_str: str, n=7) -> bool:
-    t = datetime.strptime(time_str, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
-    now = datetime.now(timezone.utc)
-    delta = now - t
-    return delta > timedelta(days=n)
-
-
-@util.close_old_connections
-def delete_newest_queue():
-    if cache.hlen('newest_queue') <= 100:
-        return
-    newest_queue_ids = cache.hgetall('newest_queue')
-    for key in newest_queue_ids.keys():
-        video_info = json.loads(newest_queue_ids[key])
-        if n_days_ago(video_info['time']):
-            cache.hdel('newest_queue', key)
-
-
 @util.close_old_connections
 def delete_freezed_video():
     ddl = datetime.now(timezone.utc) - timedelta(days=7)
@@ -92,7 +74,7 @@ def register_jobs(scheduler):
 
     scheduler.add_job(
         delete_old_job_executions,
-        trigger=CronTrigger(day_of_week='mon', hour='00', minute='03'),
+        trigger=CronTrigger(hour='00', minute='03'),
         id='delete_old_job_executions',
         misfire_grace_time=30,
         max_instances=1,

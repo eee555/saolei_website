@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -10,7 +11,8 @@ from ninja.orm import create_schema
 from userprofile.decorators import login_required_error, staff_required
 from userprofile.models import UserProfile
 from utils.response import HttpResponseConflict
-from .models import AccountBilibili, AccountLinkQueue, AccountMinesweeperGames, AccountQQ, AccountSaolei, AccountWorldOfMinesweeper, Platform, PLATFORM_CONFIG
+from .mineracer.sessions import poll_mineracer_account_link_session, start_mineracer_account_link
+from .models import AccountBilibili, AccountLinkQueue, AccountMineracer, AccountMinesweeperGames, AccountQQ, AccountSaolei, AccountWorldOfMinesweeper, Platform, PLATFORM_CONFIG
 from .utils import private_platforms
 
 router = Router()
@@ -31,6 +33,7 @@ AccountSaoleiOut = create_schema(AccountSaolei)
 AccountMSGamesOut = create_schema(AccountMinesweeperGames)
 AccountWoMOut = create_schema(AccountWorldOfMinesweeper)
 AccountBiliOut = create_schema(AccountBilibili)
+AccountMineracerOut = create_schema(AccountMineracer)
 AccountQQOut = create_schema(AccountQQ)
 
 
@@ -39,6 +42,7 @@ class AccountLinkCompleteOut(Schema):
     B: AccountBiliOut | None = None
     c: AccountSaoleiOut | None = None
     a: AccountMSGamesOut | None = None
+    m: AccountMineracerOut | None = None
     w: AccountWoMOut | None = None
     q: AccountQQOut | None = None
 
@@ -46,6 +50,18 @@ class AccountLinkCompleteOut(Schema):
 class AccountLinkCreateIn(Schema):
     platform: str
     identifier: str
+
+
+class MineracerAccountLinkSessionOut(Schema):
+    session_id: str
+    status: str
+    user_code: str
+    verification_uri: str
+    verification_uri_complete: str
+    expires_at: datetime
+    next_poll_at: datetime | None = None
+    remote_userid: str = ''
+    error_category: str = ''
 
 
 def get_account_data(user: UserProfile, platform: Platform):
@@ -83,6 +99,7 @@ def get_account_links(request, user_id: int):
         Platform.BILIBILI.value: None,
         Platform.SAOLEI.value: None,
         Platform.MSGAMES.value: None,
+        Platform.MINERACER.value: None,
         Platform.WOM.value: None,
         Platform.QQ.value: None,
     }
@@ -110,6 +127,8 @@ def create_account_link(request, data: AccountLinkCreateIn = Form(...)):  # noqa
     """
     if data.platform not in Platform.values or not data.identifier:
         return HttpResponseBadRequest()
+    if data.platform == Platform.MINERACER:
+        return HttpResponseBadRequest()
     if AccountLinkQueue.objects.filter(platform=data.platform, userprofile=request.user).exists():
         return HttpResponseConflict()
     return AccountLinkQueue.objects.create(
@@ -117,6 +136,39 @@ def create_account_link(request, data: AccountLinkCreateIn = Form(...)):  # noqa
         identifier=data.identifier,
         userprofile=request.user,
     )
+
+
+@router.post('/mineracer/start/', response=MineracerAccountLinkSessionOut)
+@decorate_view(
+    login_required_error,
+    ratelimit(key='user', rate='6/h'),
+)
+def create_mineracer_account_link_session(request):
+    """
+    - login_required_error
+    - ratelimit(key='user', rate='6/h')
+
+    Create or reuse a pending Mineracer account-link session for the current user.
+    """
+    return start_mineracer_account_link(request.user)
+
+
+@router.get('/mineracer/status/{session_id}', response=MineracerAccountLinkSessionOut)
+@decorate_view(
+    login_required_error,
+    ratelimit(key='user', rate='30/m'),
+)
+def get_mineracer_account_link_session(request, session_id: str):
+    """
+    - login_required_error
+    - ratelimit(key='user', rate='30/m')
+
+    Return the local Mineracer link session status and poll Mineracer when due.
+    """
+    session = poll_mineracer_account_link_session(request.user, session_id)
+    if session is None:
+        return HttpResponseNotFound()
+    return session
 
 
 @router.get('/admin/queue', response=List[AccountLinkOut])

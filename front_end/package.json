@@ -39,7 +39,7 @@
     "jszip": "3.10.2",
     "jtcsv": "4.0.0",
     "lazy.js": "0.5.1",
-    "ms-toollib": "1.5.17",
+    "ms-toollib": "1.5.18",
     "ordinal": "1.0.3",
     "pinia": "4.0.3",
     "pinia-plugin-persistedstate": "4.7.1",

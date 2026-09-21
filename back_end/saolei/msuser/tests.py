@@ -1,12 +1,15 @@
 from datetime import timedelta
+from io import StringIO
 import json
 
+from django.core.management import call_command
 from django.test import TestCase
 from django.utils import timezone
 from django_redis import get_redis_connection
 
 from config.global_settings import DefaultRankingScores
-from config.text_choices import MS_TextChoices
+from config.text_choices import MS_TextChoices, Tournament_TextChoices
+from tournament.models import Tournament
 from userprofile.models import UserProfile
 from videomanager.models import ExpandVideoModel, VideoModel
 from .models import UserMS
@@ -189,7 +192,7 @@ class PersonalRecordSignalTests(TestCase):
         self.assertEqual(self.userms.b_timems_id_std, 56)
         self.assertEqual(self.userms.get_record(ranking_field), RankingValue(1234, 56))
 
-    def create_video(self, *, state=MS_TextChoices.State.OFFICIAL, level=MS_TextChoices.Level.BEGINNER, timems=1000, bv=10):
+    def create_video(self, *, state=MS_TextChoices.State.OFFICIAL, level=MS_TextChoices.Level.BEGINNER, timems=1000, bv=10, mode=MS_TextChoices.Mode.STD, ongoing_tournament=False):
         expand = ExpandVideoModel.objects.create(identifier='identifier')
         return VideoModel.objects.create(
             player=self.user,
@@ -199,7 +202,8 @@ class PersonalRecordSignalTests(TestCase):
             state=state,
             software=MS_TextChoices.Software.AVF,
             level=level,
-            mode=MS_TextChoices.Mode.STD,
+            mode=mode,
+            ongoing_tournament=ongoing_tournament,
             timems=timems,
             bv=bv,
             left=1,
@@ -330,6 +334,82 @@ class PersonalRecordSignalTests(TestCase):
         self.assertEqual(self.userms.video_num_total, 0)
         self.assertEqual(self.userms.video_num_beg, 0)
         self.assertEqual(self.userms.video_num_std, 0)
+
+    def test_tournament_video_is_not_counted_on_create_or_reveal(self):
+        video = self.create_video(ongoing_tournament=True)
+        self.userms.refresh_from_db()
+        self.assertEqual(self.userms.video_num_total, 0)
+        self.assertEqual(self.userms.video_num_beg, 0)
+        self.assertEqual(self.userms.video_num_std, 0)
+
+        video.ongoing_tournament = False
+        video.save(update_fields=['ongoing_tournament'])
+
+        self.userms.refresh_from_db()
+        self.assertEqual(self.userms.video_num_total, 0)
+        self.assertEqual(self.userms.video_num_beg, 0)
+        self.assertEqual(self.userms.video_num_std, 0)
+
+    def test_deleting_tournament_videos_does_not_decrement_counts(self):
+        tournament = Tournament.objects.create(state=Tournament_TextChoices.State.AWARDED)
+        for ongoing in (True, False):
+            with self.subTest(ongoing=ongoing):
+                video = self.create_video(ongoing_tournament=True)
+                tournament.videos.add(video)
+                VideoModel.objects.filter(pk=video.pk).update(ongoing_tournament=ongoing)
+
+                VideoModel.objects.filter(pk=video.pk).delete()
+
+                self.userms.refresh_from_db()
+                self.assertEqual(self.userms.video_num_total, 0)
+                self.assertEqual(self.userms.video_num_beg, 0)
+                self.assertEqual(self.userms.video_num_std, 0)
+
+    def test_refresh_video_counts_excludes_tournaments_and_resets_empty_users(self):
+        empty_userms = UserMS.objects.create(video_num_total=9, video_num_beg=9)
+        UserProfile.objects.create_user(
+            username='empty_player', email='empty_player@example.com', userms=empty_userms,
+        )
+        other_userms = UserMS.objects.create()
+        other_user = UserProfile.objects.create_user(
+            username='other_player', email='other_player@example.com', userms=other_userms,
+        )
+        other_video = self.create_video()
+        VideoModel.objects.filter(pk=other_video.pk).update(player=other_user)
+        self.create_video(state=MS_TextChoices.State.FROZEN)
+        self.create_video(level=MS_TextChoices.Level.INTERMEDIATE, mode=MS_TextChoices.Mode.NF)
+        self.create_video(level=MS_TextChoices.Level.EXPERT, mode=MS_TextChoices.Mode.JSW)
+        self.create_video(level=MS_TextChoices.Level.EXPERT, mode=MS_TextChoices.Mode.BZD)
+        self.create_video(ongoing_tournament=True)
+        tournament = Tournament.objects.create(state=Tournament_TextChoices.State.AWARDED)
+        other_tournament = Tournament.objects.create()
+        revealed = self.create_video()
+        tournament.videos.add(revealed)
+        other_tournament.videos.add(revealed)
+        tournament.videos.add(self.create_video(ongoing_tournament=True))
+        self.userms.refresh_from_db()
+        old_limit = self.userms.video_num_limit
+        old_best = self.userms.b_timems_id_std
+
+        expected = {
+            'video_num_total': 4, 'video_num_beg': 1, 'video_num_int': 1, 'video_num_exp': 2,
+            'video_num_std': 1, 'video_num_nf': 1, 'video_num_ng': 1, 'video_num_dg': 1,
+        }
+        UserMS.objects.filter(pk=self.userms.pk).update(**dict.fromkeys(expected, 99))
+        for _ in range(2):
+            call_command('refresh_video_counts', batch_size=1, stdout=StringIO())
+
+            self.userms.refresh_from_db()
+            empty_userms.refresh_from_db()
+            other_userms.refresh_from_db()
+            for field, count in expected.items():
+                self.assertEqual(getattr(self.userms, field), count, field)
+                self.assertEqual(getattr(empty_userms, field), 0, field)
+            self.assertEqual(other_userms.video_num_total, 1)
+            self.assertEqual(other_userms.video_num_beg, 1)
+            self.assertEqual(other_userms.video_num_std, 1)
+            self.assertEqual(self.userms.video_num_limit, old_limit)
+            self.assertEqual(self.userms.b_timems_id_std, old_best)
 
     def test_expert_std_official_video_expands_video_count_limit(self):
         self.create_video(level=MS_TextChoices.Level.EXPERT, timems=59000)

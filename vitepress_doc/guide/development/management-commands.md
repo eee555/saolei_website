@@ -78,6 +78,26 @@ python manage.py rebuild_custom_pluck_cache --batch-size 500
 
 ## 数据刷新
 
+### `refresh_video_counts`
+
+位置：`msuser/management/commands/refresh_video_counts.py`
+
+用途：刷新全部 `UserMS` 的录像总数，以及各级别、模式的录像计数。
+
+- 排除 `ongoing_tournament=True` 的录像，以及通过 `Tournament.videos` 关联的所有比赛录像（包括已结束比赛）。
+- 普通录像不按审核状态筛选；没有普通录像的用户计数归零。
+- 按用户分批聚合并写入，不修改 `video_num_limit` 或个人纪录，也不更新 Redis。
+- 可重复执行。为避免与上传、删除并发造成计数覆盖，执行时应暂停录像写入。
+
+| 参数 | 默认值 | 说明 |
+| --- | --- | --- |
+| `--batch-size` | `1000` | 每批处理的用户数量，必须为正整数 |
+
+```bash
+python manage.py refresh_video_counts
+python manage.py refresh_video_counts --batch-size 500
+```
+
 ### `refresh_tournament_user_stats`
 
 位置：`tournament/management/commands/refresh_tournament_user_stats.py`
@@ -136,6 +156,22 @@ python manage.py refresh_stnb --video-delay 0 --user-delay 0 --yes
 这是侵入性较强的全量刷新命令。执行前建议备份相关数据库表和 Redis，执行期间不应有用户上传录像。
 :::
 
+## 缓存清理
+
+### `delete_newest_queue`
+
+位置：`videomanager/management/commands/delete_newest_queue.py`
+
+用途：调用 `videomanager.services.delete_newest_queue`，清理 Redis 最新录像队列。
+
+队列不超过 100 条时不处理；超过 100 条时删除所有超过 7 天的记录，因此清理后可能少于 100 条。该逻辑也由 `runapscheduler` 每天 01:08 调用。
+
+常用命令：
+
+```bash
+python manage.py delete_newest_queue
+```
+
 ## 后台任务与定时任务
 
 ### `db_worker_robust`
@@ -185,7 +221,7 @@ python manage.py db_worker_robust --queue-name default --interval 2
 | --- | --- | --- |
 | `refresh_state_always` | 每 5 秒 | 采集网络 IO 速度和 CPU 使用率，并写入 Redis |
 | `delete_old_job_executions` | 每周一 00:03 | 清理旧的 APScheduler job execution 记录 |
-| `delete_newest_queue` | 每天 01:08 | 清理 Redis 最新录像队列，保留最近 7 天或至少 100 条 |
+| `delete_newest_queue` | 每天 01:08 | 队列超过 100 条时删除超过 7 天的记录 |
 | `delete_freezed_video` | 每天 01:28 | 删除 7 天以前冻结状态的录像 |
 | `delete_overdue_emailverifyrecord` | 每周一 01:03 | 清理 1 小时以前的邮箱验证码 |
 | `delete_overdue_captcha` | 每周一 01:05 | 清理过期图形验证码 |

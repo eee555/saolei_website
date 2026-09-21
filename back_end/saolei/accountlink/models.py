@@ -10,9 +10,13 @@ from videomanager.models import VideoModel
 class Platform(models.TextChoices):
     BILIBILI = 'B', ('Bilibili')
     MSGAMES = 'a', ('Authoritative Minesweeper')
+    MINERACER = 'm', ('Mineracer')
     QQ = 'q', ('腾讯QQ')
     SAOLEI = 'c', ('扫雷网')
     WOM = 'w', ('Minesweeper.Online')
+
+
+MINERACER_USERID_MAX_LENGTH = 64
 
 
 # 用于验证的队列
@@ -153,6 +157,12 @@ class AccountWorldOfMinesweeper(models.Model):
     # e_endurance = models.TimeField()
 
 
+class AccountMineracer(models.Model):
+    id = models.CharField(max_length=MINERACER_USERID_MAX_LENGTH, primary_key=True, verbose_name='Mineracer Userid', help_text='Up to 64-character Mineracer Userid.')
+    parent = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='account_mineracer', verbose_name='OpenMS user', help_text='OpenMS user linked to this Mineracer account.')
+    update_time = models.DateTimeField(auto_now=True, verbose_name='Update time', help_text='Time when this Mineracer account link was last updated.')
+
+
 # 使用QQ互联提供的登录接口需要开发者注册，步骤繁琐，不利于去中心化
 class AccountQQ(models.Model):
     id = models.PositiveBigIntegerField(primary_key=True)
@@ -167,6 +177,10 @@ PLATFORM_CONFIG = {
     Platform.MSGAMES: {
         'model': AccountMinesweeperGames,
         'related_name': 'account_msgames',
+    },
+    Platform.MINERACER: {
+        'model': AccountMineracer,
+        'related_name': 'account_mineracer',
     },
     Platform.SAOLEI: {
         'model': AccountSaolei,
