@@ -252,13 +252,14 @@ else:
     # allow CORS for public video and user profile endpoints
     CORS_ALLOW_ALL_ORIGINS = True
     CORS_PATHS = [
-        r'video/(preview|download)/.*',
         r'api/userprofile/avatar/.*',
         r'api/userprofile/identifier/?',
         r'api/userprofile/info/.*',
         r'api/userprofile/infobulk/?',
         r'api/userprofile/infoupdated/?',
         r'api/userprofile/videolist/?',
+        r'api/video/download/[0-9]+/?',
+        r'api/video/preview/?',
         r'api/video/infobulk/?',
         r'api/video/detailbulk/?',
     ]

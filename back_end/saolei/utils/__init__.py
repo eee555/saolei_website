@@ -5,8 +5,6 @@ import json
 import random
 
 from django.conf import settings
-from django.http import JsonResponse
-from django.shortcuts import redirect
 import requests
 
 from .exceptions import ExceptionToResponse
@@ -139,20 +137,3 @@ def verify_image(image_binary, user_id: int, user_ip: str) -> bool:
         url = 'https://aip.baidubce.com/rest/2.0/solution/v1/img_censor/v2/user_defined?access_token=' + get_access_token()
         response = requests.request('POST', url, headers=headers, data=payload)
     return response.json().get('conclusion') == '合规'
-
-
-def ratelimited(request, exception):
-    if '/video/download/' in request.path:
-        return redirect(request.META.get('HTTP_REFERER', '/'))
-    if '/login/' in request.path:
-        return JsonResponse({'status': 120, 'msg': '请稍后再试！'})
-    if '/register/' in request.path:
-        return JsonResponse({'status': 120, 'msg': '请稍后再试！'})
-    if '/retrieve/' in request.path:
-        return JsonResponse({'status': 120, 'msg': '请稍后再试！'})
-    if '/get_email_captcha/' in request.path:
-        return JsonResponse({'status': 120, 'msg': '请稍后再试！'})
-    if '/captcha/' in request.path:
-        return JsonResponse({'status': 120, 'msg': '请稍后再试！'})
-    if '/refresh_captcha/' in request.path:
-        return JsonResponse({'status': 120, 'msg': '请稍后再试！'})

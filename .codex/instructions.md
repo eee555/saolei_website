@@ -15,7 +15,7 @@
 装饰器用Ninja提供的`decorate_view`打包。所有的装饰器都需要在API的docstrings开头用无序列表注明。
 
 ### 限流
-限流用Django的ratelimit装饰器。所有API都需要限流。
+限流用Django的ratelimit装饰器。所有API都需要限流。例外：管理员API不需要限流。
 
 ## 换行约定
 - 倾向不换行。一定不换行的场景：`import`。
@@ -74,6 +74,13 @@ APP内引用链条：`utils -> models -> services -> api`
 
 ## 本地化
 本地化有两种模式：全局本地化位于`front_end\src\i18n`，用于可复用的messages。不可复用的messages放在vue SFC内部，示例`front_end\src\components\ExperimentalFeature.vue`。注意：SFC内部的本地化尽量往`script`块的末尾放。
+
+## 管理员页面
+管理员页面位于`front_end\src\views\StaffView`。这部分页面设计需要考虑到管理员身份与能力的特殊性：
+
+- 不是面向普通用户，不需要关心UI质量与可读性
+- 不需要考虑可复用性与可扩展性
+- 代码维护往往是全量重写，以减少代码复杂度为目标
 
 ## 测试注意事项
 

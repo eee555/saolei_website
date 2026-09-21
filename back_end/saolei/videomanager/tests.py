@@ -1,15 +1,82 @@
 from datetime import datetime, timezone
+import json
+from unittest.mock import call, patch
 
 from django.core.files.base import ContentFile
-from django.test import override_settings, TestCase
+from django.test import override_settings, SimpleTestCase, TestCase
 import requests
 
 from common.utils import new_video_by_file
 from msuser.models import UserMS
 from userprofile.models import UserProfile
 from .models import ExpandVideoModel, VideoModel
+from .services import delete_newest_queue
 from .view_utils import refresh_video
 # Create your tests here.
+
+
+class DeleteNewestQueueTests(SimpleTestCase):
+    def setUp(self):
+        cache_patch = patch('videomanager.services.cache')
+        self.cache = cache_patch.start()
+        self.addCleanup(cache_patch.stop)
+        datetime_patch = patch('videomanager.services.datetime', wraps=datetime)
+        self.mock_datetime = datetime_patch.start()
+        self.addCleanup(datetime_patch.stop)
+        self.mock_datetime.now.return_value = datetime(2026, 9, 21, 12, tzinfo=timezone.utc)
+
+    def set_queue(self, times):
+        queue = {
+            str(index).encode(): json.dumps({'time': time_str}).encode()
+            for index, time_str in enumerate(times)
+        }
+        self.cache.hlen.return_value = len(queue)
+        self.cache.hgetall.return_value = queue
+        return queue
+
+    def test_skips_queues_with_at_most_100_entries(self):
+        for size in (0, 99, 100):
+            with self.subTest(size=size):
+                self.cache.reset_mock()
+                self.set_queue(['2026-09-01T12:00:00Z'] * size)
+
+                delete_newest_queue()
+
+                self.cache.hgetall.assert_not_called()
+                self.cache.hdel.assert_not_called()
+
+    def test_deletes_only_entries_strictly_older_than_seven_days(self):
+        self.set_queue([
+            '2026-09-14T11:59:59Z',
+            '2026-09-14T12:00:00Z',
+            '2026-09-14T12:00:01Z',
+            *['2026-09-21T12:00:00Z'] * 98,
+        ])
+
+        delete_newest_queue()
+
+        self.cache.hlen.assert_called_once_with('newest_queue')
+        self.cache.hgetall.assert_called_once_with('newest_queue')
+        self.cache.hdel.assert_called_once_with('newest_queue', b'0')
+
+    def test_keeps_large_queue_without_expired_entries(self):
+        self.set_queue(['2026-09-21T12:00:00Z'] * 101)
+
+        delete_newest_queue()
+
+        self.cache.hdel.assert_not_called()
+
+    def test_deletes_all_expired_entries_even_if_fewer_than_100_remain(self):
+        queue = self.set_queue(['2026-09-01T12:00:00Z'] * 101)
+        self.cache.hlen.side_effect = lambda key: len(queue)
+        self.cache.hgetall.side_effect = lambda key: queue.copy()
+        self.cache.hdel.side_effect = lambda key, field: queue.pop(field)
+        expected_calls = [call('newest_queue', key) for key in queue]
+
+        delete_newest_queue()
+
+        self.assertCountEqual(self.cache.hdel.call_args_list, expected_calls)
+        self.assertEqual(queue, {})
 
 
 class VideoManagerTestCase(TestCase):

@@ -15,7 +15,7 @@ export function getBest(videos: VideoAbstract[], option: SortOption): {
     let bestIndex = -1;
     for (let i = 0; i < videos.length; i++) {
         const video = videos[i];
-        if (!option.softwareFilter.includes(video.software)) break;
+        if (!option.softwareFilter.includes(video.software)) continue;
         const thisValue = video[option.sortBy];
         if (isNaN(thisValue)) {
             bestValue = NaN;

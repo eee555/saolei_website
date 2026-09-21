@@ -78,6 +78,26 @@ python manage.py rebuild_custom_pluck_cache --batch-size 500
 
 ## 数据刷新
 
+### `refresh_video_counts`
+
+位置：`msuser/management/commands/refresh_video_counts.py`
+
+用途：刷新全部 `UserMS` 的录像总数，以及各级别、模式的录像计数。
+
+- 排除 `ongoing_tournament=True` 的录像，以及通过 `Tournament.videos` 关联的所有比赛录像（包括已结束比赛）。
+- 普通录像不按审核状态筛选；没有普通录像的用户计数归零。
+- 按用户分批聚合并写入，不修改 `video_num_limit` 或个人纪录，也不更新 Redis。
+- 可重复执行。为避免与上传、删除并发造成计数覆盖，执行时应暂停录像写入。
+
+| 参数 | 默认值 | 说明 |
+| --- | --- | --- |
+| `--batch-size` | `1000` | 每批处理的用户数量，必须为正整数 |
+
+```bash
+python manage.py refresh_video_counts
+python manage.py refresh_video_counts --batch-size 500
+```
+
 ### `refresh_tournament_user_stats`
 
 位置：`tournament/management/commands/refresh_tournament_user_stats.py`
@@ -136,6 +156,22 @@ python manage.py refresh_stnb --video-delay 0 --user-delay 0 --yes
 这是侵入性较强的全量刷新命令。执行前建议备份相关数据库表和 Redis，执行期间不应有用户上传录像。
 :::
 
+## 缓存清理
+
+### `delete_newest_queue`
+
+位置：`videomanager/management/commands/delete_newest_queue.py`
+
+用途：调用 `videomanager.services.delete_newest_queue`，清理 Redis 最新录像队列。
+
+队列不超过 100 条时不处理；超过 100 条时删除所有超过 7 天的记录，因此清理后可能少于 100 条。该逻辑也由 `runapscheduler` 每天 01:08 调用。
+
+常用命令：
+
+```bash
+python manage.py delete_newest_queue
+```
+
 ## 后台任务与定时任务
 
 ### `db_worker_robust`
@@ -171,31 +207,13 @@ python manage.py db_worker_robust
 python manage.py db_worker_robust --queue-name default --interval 2
 ```
 
-### `runapschedulervideomanager`
+### `runapscheduler`
 
-位置：`videomanager/management/commands/runapschedulervideomanager.py`
+位置：`common/management/commands/runapscheduler.py`
 
-用途：启动 `videomanager` 相关 APScheduler 定时任务。
+用途：启动所有 APScheduler 定时任务。当前 APScheduler 已合并为 `common` APP 中的单一常驻进程，避免分别启动监控、用户和录像相关的三个 Django 进程。
 
-定时任务：
-
-| 任务 | 频率 | 说明 |
-| --- | --- | --- |
-| `delete_newest_queue` | 每天 01:08 | 清理 Redis 最新录像队列，保留最近 7 天或至少 100 条 |
-| `delete_freezed_video` | 每天 01:28 | 删除 7 天以前冻结状态的录像 |
-| `delete_old_job_executions` | 每周一 00:03 | 清理旧的 APScheduler job execution 记录 |
-
-常用命令：
-
-```bash
-python manage.py runapschedulervideomanager
-```
-
-### `runapschedulermonitor`
-
-位置：`monitor/management/commands/runapschedulermonitor.py`
-
-用途：启动服务器监控相关 APScheduler 定时任务。
+任务注册位置：`common/apscheduler.py`
 
 定时任务：
 
@@ -203,32 +221,34 @@ python manage.py runapschedulervideomanager
 | --- | --- | --- |
 | `refresh_state_always` | 每 5 秒 | 采集网络 IO 速度和 CPU 使用率，并写入 Redis |
 | `delete_old_job_executions` | 每周一 00:03 | 清理旧的 APScheduler job execution 记录 |
-
-常用命令：
-
-```bash
-python manage.py runapschedulermonitor
-```
-
-### `runapscheduleruserprofile`
-
-位置：`userprofile/management/commands/runapscheduleruserprofile.py`
-
-用途：启动用户相关 APScheduler 定时任务。
-
-定时任务：
-
-| 任务 | 频率 | 说明 |
-| --- | --- | --- |
+| `delete_newest_queue` | 每天 01:08 | 队列超过 100 条时删除超过 7 天的记录 |
+| `delete_freezed_video` | 每天 01:28 | 删除 7 天以前冻结状态的录像 |
 | `delete_overdue_emailverifyrecord` | 每周一 01:03 | 清理 1 小时以前的邮箱验证码 |
 | `delete_overdue_captcha` | 每周一 01:05 | 清理过期图形验证码 |
-| `delete_old_job_executions` | 每周一 00:03 | 清理旧的 APScheduler job execution 记录 |
+
+参数：
+
+| 参数 | 默认值 | 说明 |
+| --- | --- | --- |
+| `--pidfile` | `logs/apscheduler.pid` | 用于防止重复启动 APScheduler 进程的 pidfile 路径 |
 
 常用命令：
 
 ```bash
-python manage.py runapscheduleruserprofile
+python manage.py runapscheduler
+python manage.py runapscheduler --pidfile logs/apscheduler.pid
 ```
+
+生产启动：
+
+- `start.sh` 会在数据库迁移完成后启动该命令，日志写入 `logs/apscheduler.log`。
+- `START_APSCHEDULER=0` 可跳过启动 APScheduler。
+- `APSCHEDULER_START_DELAY` 控制启动延迟，默认 `10` 秒。
+- `APSCHEDULER_NICE` 控制进程 nice 值，默认 `10`。
+
+::: warning
+生产环境只应运行一个 APScheduler 进程。旧的 `runapschedulermonitor`、`runapscheduleruserprofile` 和 `runapschedulervideomanager` 命令已合并到 `runapscheduler`，不应再单独启动。
+:::
 
 ## 维护建议
 
