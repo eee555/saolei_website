@@ -136,6 +136,22 @@ python manage.py refresh_stnb --video-delay 0 --user-delay 0 --yes
 这是侵入性较强的全量刷新命令。执行前建议备份相关数据库表和 Redis，执行期间不应有用户上传录像。
 :::
 
+## 缓存清理
+
+### `delete_newest_queue`
+
+位置：`videomanager/management/commands/delete_newest_queue.py`
+
+用途：调用 `videomanager.services.delete_newest_queue`，清理 Redis 最新录像队列。
+
+队列不超过 100 条时不处理；超过 100 条时删除所有超过 7 天的记录，因此清理后可能少于 100 条。该逻辑也由 `runapscheduler` 每天 01:08 调用。
+
+常用命令：
+
+```bash
+python manage.py delete_newest_queue
+```
+
 ## 后台任务与定时任务
 
 ### `db_worker_robust`
@@ -185,7 +201,7 @@ python manage.py db_worker_robust --queue-name default --interval 2
 | --- | --- | --- |
 | `refresh_state_always` | 每 5 秒 | 采集网络 IO 速度和 CPU 使用率，并写入 Redis |
 | `delete_old_job_executions` | 每周一 00:03 | 清理旧的 APScheduler job execution 记录 |
-| `delete_newest_queue` | 每天 01:08 | 清理 Redis 最新录像队列，保留最近 7 天或至少 100 条 |
+| `delete_newest_queue` | 每天 01:08 | 队列超过 100 条时删除超过 7 天的记录 |
 | `delete_freezed_video` | 每天 01:28 | 删除 7 天以前冻结状态的录像 |
 | `delete_overdue_emailverifyrecord` | 每周一 01:03 | 清理 1 小时以前的邮箱验证码 |
 | `delete_overdue_captcha` | 每周一 01:05 | 清理过期图形验证码 |
