@@ -10,7 +10,7 @@ import { videoPlayerConfig } from '@/store';
 
 const fixture = {
     filename: 'c_10_129.073_24_0.186_Pu Tian Yi(Hu Bei).evf',
-    src: '/video/preview/?id=c_10_129.073_24_0.186_Pu%20Tian%20Yi%28Hu%20Bei%29.evf',
+    src: '/api/video/preview?id=c_10_129.073_24_0.186_Pu%20Tian%20Yi%28Hu%20Bei%29.evf',
 };
 
 function mountOptions(src: string) {
@@ -26,8 +26,8 @@ function mockVideoFixture() {
     cy.fixture(fixture.filename, 'binary').then((fileContent) => {
         const data = binaryStringToUint8Array(fileContent);
         const responseBody = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
-        cy.intercept('GET', '**/video/preview/**', (request) => {
-            expect(request.url).to.contain('/video/preview/');
+        cy.intercept('GET', '**/api/video/preview**', (request) => {
+            expect(request.url).to.contain('/api/video/preview');
             request.reply({
                 statusCode: 200,
                 headers: { 'content-type': 'application/octet-stream' },

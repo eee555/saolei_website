@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
     arbiterTimeStampToDate,
+    formatSecondsAsHMS,
     fullDay,
     generalTimeStampToDate,
     generateDateRange,
@@ -49,6 +50,19 @@ describe('datetime', () => {
     describe('toISODateTimeString', () => {
         it('Formats local date and time with padded fields', () => {
             expect(toISODateTimeString(new Date(2025, 0, 5, 8, 9, 10))).toBe('2025-01-05 08:09:10');
+        });
+    });
+
+    describe('formatSecondsAsHMS', () => {
+        it('Formats seconds as zero-padded hours minutes and seconds', () => {
+            expect(formatSecondsAsHMS(0)).toBe('00:00:00');
+            expect(formatSecondsAsHMS(5)).toBe('00:00:05');
+            expect(formatSecondsAsHMS(3 * 3600 + 4 * 60 + 5)).toBe('03:04:05');
+        });
+
+        it('Keeps hours above one day and clamps negative input to zero', () => {
+            expect(formatSecondsAsHMS(27 * 3600 + 4 * 60 + 5)).toBe('27:04:05');
+            expect(formatSecondsAsHMS(-1)).toBe('00:00:00');
         });
     });
 

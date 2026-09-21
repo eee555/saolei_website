@@ -317,7 +317,7 @@ def delete_identifier(request, data: IdentifierSchema):
 def set_staff(request, data: UserIdSchema):
     user = UserProfile.objects.get(id=data.id)
     user.is_staff = True
-    user.save(update_fields=['is_staff'])
+    user.save(update_fields=['is_staff', 'date_updated'])
 
 
 @api.post('/write_log')

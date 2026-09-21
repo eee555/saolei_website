@@ -1,3 +1,6 @@
+import tinycolor from 'tinycolor2';
+import type { CSSProperties } from 'vue';
+
 import { ArrayUtils } from './arrays';
 
 export interface PiecewiseColorSchemeInterface {
@@ -31,6 +34,7 @@ export class PiecewiseColorScheme {
     private readonly colors: string[];
     private readonly thresholds: number[];
     private readonly ascending: boolean;
+    private readonly styles: Readonly<CSSProperties>[];
 
     /**
      * 构造函数，初始化颜色和阈值数组，并检查阈值是否为升序或降序。
@@ -40,6 +44,7 @@ export class PiecewiseColorScheme {
     public constructor(colors: string[], thresholds: number[]) {
         this.colors = colors;
         this.thresholds = thresholds;
+        this.styles = colors.map((color) => createColorStyle(color));
         if (ArrayUtils.isAscending(thresholds)) {
             this.ascending = true;
         } else if (ArrayUtils.isDescending(thresholds)) {
@@ -59,14 +64,26 @@ export class PiecewiseColorScheme {
      * @param value - 需要获取颜色的数值。
      * @returns 返回对应的颜色字符串。
      */
-    public getColor(value?: number): string {
-        if (value === undefined || isNaN(value)) return 'rgba(0,0,0,0)';
-        if (this.colors.length === 0) return 'rgba(0,0,0,0)';
-        const index = ArrayUtils.getInsertIndex(this.thresholds, value, this.ascending);
-        return this.colors[index];
+    public getColor(value: number): string {
+        return this.colors[this.getColorIndex(value)] ?? 'rgba(0,0,0,0)';
+    }
+
+    public getStyle(value: number): Readonly<CSSProperties> {
+        return this.styles[this.getColorIndex(value)] ?? {};
+    }
+
+    private getColorIndex(value: number): number {
+        return ArrayUtils.getInsertIndex(this.thresholds, value, this.ascending);
     }
 }
 
 export function getTextColor(style = 'regular'): string {
     return getComputedStyle(document.documentElement).getPropertyValue('--el-text-color-' + style);
+}
+
+function createColorStyle(backgroundColor: string): Readonly<CSSProperties> {
+    const tc = tinycolor(backgroundColor);
+    if (tc.isValid() && tc.getAlpha() == 0) return {};
+    const color = tc.isDark() ? 'white' : 'black';
+    return { backgroundColor, color };
 }

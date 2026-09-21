@@ -59,7 +59,7 @@ class TestGsc(TournamentTestCaseBase):
 
     def test_gsc_participant_registration_uses_two_steps(self):
         self.user.realname = 'GSC Player'
-        self.user.save(update_fields=['realname'])
+        self.user.save(update_fields=['realname', 'date_updated'])
         self.client.force_login(self.user)
 
         participant_response = self.client.post('/api/tournament/gsc/participant', {
@@ -112,7 +112,7 @@ class TestGsc(TournamentTestCaseBase):
 
     def test_gsc_participant_identifier_requires_existing_participant(self):
         self.user.realname = 'GSC Player'
-        self.user.save(update_fields=['realname'])
+        self.user.save(update_fields=['realname', 'date_updated'])
         self.client.force_login(self.user)
 
         response = self.client.post('/api/tournament/gsc/participant/identifier', {

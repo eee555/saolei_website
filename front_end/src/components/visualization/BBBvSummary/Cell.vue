@@ -1,5 +1,5 @@
 <template>
-    <span class="cell" :class="isNew ? 'cell-new' : ''">
+    <span class="cell" :class="isNew ? 'cell-new' : ''" :style="cellStyle">
         <template v-if="bestIndex == -1">
             &nbsp;
         </template>
@@ -15,7 +15,6 @@
 
 <script setup lang="ts">
 import { ElLink } from 'element-plus';
-import tinycolor from 'tinycolor2';
 import type { PropType } from 'vue';
 import { computed, ref, watch } from 'vue';
 
@@ -24,7 +23,7 @@ import { getBest } from './utils';
 import SoftwareIcon from '@/components/widgets/SoftwareIcon.vue';
 import VideoStateIcon from '@/components/widgets/VideoStateIcon.vue';
 import { store } from '@/store';
-import { getTextColor, PiecewiseColorScheme } from '@/utils/colors';
+import { PiecewiseColorScheme } from '@/utils/colors';
 import { preview } from '@/utils/common/PlayerDialog';
 import { fullDay, globalNow } from '@/utils/datetime';
 import type { MS_Software } from '@/utils/ms_const';
@@ -57,14 +56,9 @@ function refresh() {
 
 watch(props, refresh, { immediate: true });
 
-const color = computed(() => {
-    if (bestIndex.value === -1) return 'rgba(0,0,0,0)';
-    return props.colorTheme.getColor(props.videos[bestIndex.value][props.displayBy]);
-});
-
-const fontColor = computed(() => {
-    const tc = tinycolor(color.value);
-    return tc.getAlpha() == 0 ? getTextColor() : tc.isDark() ? 'white' : 'black';
+const cellStyle = computed(() => {
+    if (bestIndex.value === -1) return props.colorTheme.getStyle(NaN);
+    return props.colorTheme.getStyle(props.videos[bestIndex.value][props.displayBy]);
 });
 
 const isNew = computed(() => {
@@ -76,7 +70,8 @@ const isNew = computed(() => {
 
 function handleClick() {
     if (props.tooltipMode === 'fast') {
-        void preview(props.videos[bestIndex.value].id);
+        const video = props.videos[bestIndex.value];
+        void preview(video.id, video.software);
     } else {
         store.video_list = props.videos;
         store.video_list_show = true;
@@ -86,7 +81,6 @@ function handleClick() {
 
 <style lang="less" scoped>
 .cell {
-    background-color: v-bind(color);
     outline-style: solid;
     outline-width: 1px;
     outline-color: var(--el-border-color-lighter);
@@ -100,6 +94,6 @@ function handleClick() {
 }
 
 .el-link {
-    --el-link-text-color: v-bind(fontColor);
+    --el-link-text-color: currentColor;
 }
 </style>
