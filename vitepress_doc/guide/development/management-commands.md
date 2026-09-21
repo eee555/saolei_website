@@ -78,6 +78,26 @@ python manage.py rebuild_custom_pluck_cache --batch-size 500
 
 ## 数据刷新
 
+### `refresh_video_counts`
+
+位置：`msuser/management/commands/refresh_video_counts.py`
+
+用途：刷新全部 `UserMS` 的录像总数，以及各级别、模式的录像计数。
+
+- 排除 `ongoing_tournament=True` 的录像，以及通过 `Tournament.videos` 关联的所有比赛录像（包括已结束比赛）。
+- 普通录像不按审核状态筛选；没有普通录像的用户计数归零。
+- 按用户分批聚合并写入，不修改 `video_num_limit` 或个人纪录，也不更新 Redis。
+- 可重复执行。为避免与上传、删除并发造成计数覆盖，执行时应暂停录像写入。
+
+| 参数 | 默认值 | 说明 |
+| --- | --- | --- |
+| `--batch-size` | `1000` | 每批处理的用户数量，必须为正整数 |
+
+```bash
+python manage.py refresh_video_counts
+python manage.py refresh_video_counts --batch-size 500
+```
+
 ### `refresh_tournament_user_stats`
 
 位置：`tournament/management/commands/refresh_tournament_user_stats.py`
