@@ -1,7 +1,7 @@
 import json
 from typing import Any
 
-from django.db.models.signals import post_delete, post_save, pre_save
+from django.db.models.signals import post_delete, post_save, pre_delete, pre_save
 from django.dispatch import receiver
 from django.utils import timezone
 from django_redis import get_redis_connection
@@ -48,7 +48,7 @@ NEWS_QUEUE_MAX_SIZE = 200
 
 @receiver(post_save, sender=VideoModel, dispatch_uid='msuser.update_video_count_on_video_save')
 def update_video_count_on_video_save(sender, instance: VideoModel, created: bool, update_fields=None, **kwargs):
-    if created and (userms := instance.player.userms) is not None:
+    if created and not instance.ongoing_tournament and (userms := instance.player.userms) is not None:
         increment_video_count(userms, instance.level, instance.mode)
 
 
@@ -62,8 +62,11 @@ def update_video_count_limit_on_video_save(sender, instance: VideoModel, created
             userms.save(update_fields=['video_num_limit'])
 
 
-@receiver(post_delete, sender=VideoModel, dispatch_uid='msuser.update_video_count_on_video_delete')
+@receiver(pre_delete, sender=VideoModel, dispatch_uid='msuser.update_video_count_on_video_delete')
 def update_video_count_on_video_delete(sender, instance: VideoModel, **kwargs):
+    # Check before cascading deletion removes the tournament-video relations.
+    if instance.ongoing_tournament or instance.tournaments.exists():
+        return
     if (userms := instance.player.userms) is not None:
         decrement_video_count(userms, instance.level, instance.mode)
 

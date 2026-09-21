@@ -9,6 +9,7 @@ description: 开源扫雷网后端Django信号触发关系详解，包括录像�
 flowchart LR
     video_pre_save[VideoModel pre_save]
     video_post_save[VideoModel post_save]
+    video_pre_delete[VideoModel pre_delete]
     video_post_delete[VideoModel post_delete]
     userms_pre_save[UserMS pre_save]
     userms_post_save[UserMS post_save]
@@ -38,10 +39,11 @@ flowchart LR
     video_post_save --> refresh_personal_record_on_video_save[刷新经典纪录]
     video_post_save --> refresh_custom_pluck_rank_on_video_save[刷新pluck纪录]
 
-    video_post_delete --> update_video_count_on_video_delete[更新用户录像计数]
+    video_pre_delete --> update_video_count_on_video_delete[更新用户录像计数]
     video_post_delete --> refresh_personal_record_on_video_delete[刷新个人纪录]
 
     update_video_count_on_video_save --> userms_pre_save
+    update_video_count_on_video_delete --> userms_pre_save
     refresh_personal_record_on_video_save --> userms_pre_save
     refresh_personal_record_on_video_delete --> userms_pre_save
 
@@ -96,12 +98,12 @@ flowchart LR
     click capture_video_update "#signal-function-map" "保存前记录录像旧状态，用于保存后判断副作用"
     click checkin_video_before_create "#signal-function-map" "录像创建前，根据用户参赛缓存判断是否属于比赛录像"
     click refresh_state_queue_on_video_save "#signal-function-map" "根据录像状态同步普通录像队列"
-    click update_video_count_on_video_save "#signal-function-map" "录像保存后同步用户录像计数"
+    click update_video_count_on_video_save "#signal-function-map" "录像创建后增加用户录像计数，跳过 ongoing_tournament=True 的录像"
     click update_video_count_limit_on_video_save "#signal-function-map" "录像保存后同步用户录像数量上限"
     click add_created_video_to_checked_tournaments "#signal-function-map" "录像创建后写入命中的比赛录像关系"
     click refresh_personal_record_on_video_save "#signal-function-map" "录像保存后刷新经典个人纪录"
     click refresh_custom_pluck_rank_on_video_save "#signal-function-map" "录像保存后刷新自定义 pluck 排行"
-    click update_video_count_on_video_delete "#signal-function-map" "录像删除后同步用户录像计数"
+    click update_video_count_on_video_delete "#signal-function-map" "录像删除前减少用户录像计数，跳过 ongoing_tournament=True 或仍关联比赛的录像"
     click refresh_personal_record_on_video_delete "#signal-function-map" "录像删除后刷新经典个人纪录"
     click capture_previous_records_for_news_queue "#signal-function-map" "UserMS 保存前记录旧纪录，用于生成新闻"
     click push_news_queue_on_record_save "#signal-function-map" "UserMS 保存后推送纪录相关新闻"
@@ -143,5 +145,7 @@ flowchart LR
 | 重算周赛历史最好 | `update_best_score_on_weekly_participant_delete` |
 | 删除参赛缓存 | `remove_participant_cache_on_delete` |
 | 补录比赛录像 | `add_existing_videos_to_participant_tournament` |
+
+录像计数排除比赛录像。创建时读取 `ongoing_tournament`；删除时在 `pre_delete` 中检查该标记及 `Tournament.videos` 关联，避免级联删除清除关联后误减计数。比赛公开不增加计数。已有数据可通过 `refresh_video_counts` 命令重算，包括补录到比赛的历史录像；上传数量上限仍由独立的 `update_video_count_limit_on_video_save` 维护。
 
 `Tournament` / `GSCTournament` / `WeeklyTournament` 的保存信号分别绑定到同一个 `update_cache_on_tournament_save` 接收器。`TournamentParticipant` / `GSCParticipant` / `WeeklyParticipant` 的保存信号分别绑定到同一个 `update_cache_on_participant_save` 接收器。缓存删除信号只保留父类接收器；多表继承删除子类时会继续触发父表删除。历史最好成绩依赖子类 participant 的成绩字段，因此由 `GSCParticipant` / `WeeklyParticipant` 的保存和删除信号单独处理：保存时只比较当前 participant 与原 best，删除时才重算该用户历史 best。best 信号更新的是 `TournamentUser` 数据库汇总字段，需要和 participant 变更保持事务一致，因此不使用 `transaction.on_commit`。
