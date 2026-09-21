@@ -252,7 +252,6 @@ MINERACER_TEST_CACHES = {
 MINERACER_TEST_SETTINGS = {
     'MINERACER_START_URL': 'https://mineracer.example.test/api/partner/link/start',
     'MINERACER_POLL_URL': 'https://mineracer.example.test/api/partner/link/poll',
-    'MINERACER_PARTNER_KEY': 'test-partner-key',
     'MINERACER_TIMEOUT': 5,
     'MINERACER_POLL_INTERVAL_MS': 2500,
     'MINERACER_SESSION_GRACE_SECONDS': 60,
@@ -262,6 +261,50 @@ MINERACER_TEST_SETTINGS = {
 
 @override_settings(**MINERACER_TEST_SETTINGS)
 class MineracerHttpClientTestCase(SimpleTestCase):
+    def setUp(self):
+        self.read_secret = self.enterContext(patch('accountlink.mineracer.client.read_secret', return_value='test-partner-key'))
+
+    @patch('accountlink.mineracer.client.requests.post')
+    def test_requests_read_current_partner_key(self, requests_post):
+        requests_post.return_value = MineracerFakeResponse(data={
+            'deviceCode': 'device-code-1',
+            'userCode': 'ABCD-EFGH',
+            'verificationUri': 'https://mineracer.example.test/link',
+            'verificationUriComplete': 'https://mineracer.example.test/link?code=ABCD-EFGH',
+            'intervalMs': 2500,
+            'expiresAt': 1780000000000,
+        })
+        request_mineracer_account_link()
+        self.read_secret.assert_called_once_with('mineracer_account_link_partner_key')
+        self.assertEqual(requests_post.call_args.kwargs['headers']['Authorization'], 'Bearer test-partner-key')
+
+        self.read_secret.return_value = 'rotated-partner-key'
+        requests_post.return_value = MineracerFakeResponse(status_code=202, data={'status': 'pending', 'intervalMs': 2500})
+        poll_mineracer_account_link('device-code-1')
+        self.assertEqual(self.read_secret.call_count, 2)
+        self.assertEqual(requests_post.call_args.kwargs['headers']['Authorization'], 'Bearer rotated-partner-key')
+
+    @patch('accountlink.mineracer.client.requests.post')
+    def test_missing_partner_key_raises_before_http_request(self, requests_post):
+        for error in (FileNotFoundError('secrets.json'), KeyError('mineracer_account_link_partner_key')):
+            for request, args in ((request_mineracer_account_link, ()), (poll_mineracer_account_link, ('device-code-1',))):
+                with self.subTest(error=type(error).__name__, request=request.__name__):
+                    self.read_secret.side_effect = error
+                    with self.assertRaises(type(error)):
+                        request(*args)
+        requests_post.assert_not_called()
+
+    @patch('accountlink.mineracer.client.requests.post')
+    def test_empty_partner_key_raises_before_http_request(self, requests_post):
+        self.read_secret.return_value = '   '
+        for request, args in ((request_mineracer_account_link, ()), (poll_mineracer_account_link, ('device-code-1',))):
+            with self.subTest(request=request.__name__):
+                with self.assertRaises(ExceptionToResponse) as context:
+                    request(*args)
+                self.assertEqual(context.exception.category, 'not_configured')
+                self.assertEqual(context.exception.status_code, 503)
+        requests_post.assert_not_called()
+
     @patch('accountlink.mineracer.client.requests.post')
     def test_request_mineracer_account_link_uses_bearer_and_no_body(self, requests_post):
         requests_post.return_value = MineracerFakeResponse(data={

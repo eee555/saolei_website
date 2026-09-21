@@ -172,7 +172,7 @@ API：
 
 ### 安全与一致性
 
-- partner key 只在服务端使用，默认读取 `secrets.json` 的 `mineracer_account_link_partner_key`，不进入构建产物和接口响应。
+- partner key 只在服务端使用，每次调用 Mineracer start/poll 时读取 `secrets.json` 的 `mineracer_account_link_partner_key`，不在 settings 加载时读取。文件或键缺失时直接抛出读取异常，空字符串返回 `mineracer/not_configured`（503）；更新密钥后无需重启服务。密钥不进入构建产物和接口响应。
 - start/status API 都需要登录校验与限流。
 - status API 必须校验会话归属，不能让用户查询或完成他人的会话。
 - Redis 临时会话必须使用 `default` cache alias，不能放进 `saolei_website` session cache。

@@ -316,7 +316,6 @@ APSCHEDULER_RUN_NOW_TIMEOUT = 25  # 定时任务最大执行时间，秒
 
 MINERACER_START_URL = os.environ.get('MINERACER_ACCOUNT_LINK_START_URL', 'https://mineracer.com/api/partner/link/start')
 MINERACER_POLL_URL = os.environ.get('MINERACER_ACCOUNT_LINK_POLL_URL', 'https://mineracer.com/api/partner/link/poll')
-MINERACER_PARTNER_KEY = str(read_secret('mineracer_account_link_partner_key')).strip()
 MINERACER_TIMEOUT = float(os.environ.get('MINERACER_ACCOUNT_LINK_TIMEOUT', '5'))
 MINERACER_POLL_INTERVAL_MS = max(1, int(os.environ.get('MINERACER_ACCOUNT_LINK_POLL_INTERVAL_MS', '2500')))
 

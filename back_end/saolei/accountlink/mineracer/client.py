@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 import requests
 
 from utils.exceptions import ExceptionToResponse
+from utils.secrets_json import read_secret
 from .dtos import MINERACER_ERROR_ACCOUNT_NOT_FOUND, MINERACER_ERROR_INVALID_DEVICE_CODE, MINERACER_ERROR_LINK_SUPERSEDED, MINERACER_STATUS_CONFIRMED, MINERACER_STATUS_EXPIRED, MINERACER_STATUS_FAILED, MINERACER_STATUS_PENDING, MineracerAccountLinkPollResponse, MineracerAccountLinkStartResponse
 from ..models import MINERACER_USERID_MAX_LENGTH
 
@@ -42,7 +43,7 @@ class MineracerPollErrorPayload(BaseModel):
 
 
 def request_mineracer_account_link() -> MineracerAccountLinkStartResponse:
-    partner_key = settings.MINERACER_PARTNER_KEY
+    partner_key = str(read_secret('mineracer_account_link_partner_key')).strip()
     if not partner_key:
         raise ExceptionToResponse('mineracer', 'not_configured', status_code=503)
 
@@ -72,7 +73,7 @@ def request_mineracer_account_link() -> MineracerAccountLinkStartResponse:
 
 
 def poll_mineracer_account_link(device_code: str) -> MineracerAccountLinkPollResponse:
-    partner_key = settings.MINERACER_PARTNER_KEY
+    partner_key = str(read_secret('mineracer_account_link_partner_key')).strip()
     if not partner_key:
         raise ExceptionToResponse('mineracer', 'not_configured', status_code=503)
 
