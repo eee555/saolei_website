@@ -8,9 +8,11 @@ import { pinia } from '@/store/create';
 import type {
     AccountBilibiliResponse,
     AccountLinksResponse,
+    AccountMineracerResponse,
     AccountMSGamesResponse,
     AccountSaoleiResponse,
     AccountWoMResponse,
+    MineracerAccountLinkSessionResponse,
 } from '@/utils/accountlinks';
 import { AccountLinkPlatform } from '@/utils/accountlinks';
 import { UserProfile } from '@/utils/userprofile';
@@ -128,6 +130,30 @@ export function mockBilibiliResponse(overrides: Partial<AccountBilibiliResponse>
     };
 }
 
+export function mockMineracerResponse(overrides: Partial<AccountMineracerResponse> = {}): AccountMineracerResponse {
+    return {
+        id: '123456789',
+        parent: 5,
+        update_time: '2025-05-09T12:13:14Z',
+        ...overrides,
+    };
+}
+
+export function mockMineracerAccountLinkSessionResponse(overrides: Partial<MineracerAccountLinkSessionResponse> = {}): MineracerAccountLinkSessionResponse {
+    return {
+        session_id: 'mineracer-session-1',
+        status: 'pending',
+        user_code: 'ABCD-EFGH',
+        verification_uri: 'https://mineracer.com/link',
+        verification_uri_complete: 'https://mineracer.com/link?code=ABCD-EFGH',
+        expires_at: '2025-05-09T12:23:14Z',
+        next_poll_at: '2025-05-09T12:13:17Z',
+        remote_userid: '',
+        error_category: '',
+        ...overrides,
+    };
+}
+
 export function mockAccountLinksResponse(): AccountLinksResponse {
     return {
         summary: [
@@ -135,8 +161,10 @@ export function mockAccountLinksResponse(): AccountLinksResponse {
             { id: 2, platform: AccountLinkPlatform.WoM, identifier: '303', userprofile: 1, verified: true },
             { id: 3, platform: AccountLinkPlatform.MSGames, identifier: '202', userprofile: 1, verified: true },
             { id: 4, platform: AccountLinkPlatform.Saolei, identifier: '101', userprofile: 1, verified: true },
+            { id: 5, platform: AccountLinkPlatform.Mineracer, identifier: '123456789', userprofile: 1, verified: true },
         ],
         B: mockBilibiliResponse(),
+        m: mockMineracerResponse(),
         c: mockSaoleiResponse(),
         a: mockMSGamesResponse(),
         w: mockWoMResponse(),

@@ -8,8 +8,8 @@
             <ElFormItem :label="t('accountlink.platform')">
                 <ElSelect v-model="form.platform">
                     <ElOption
-                        v-for="(_, key) of platformlist" :key="key" :value="key" :label="t(`common.platform.${key}`)"
-                        :disabled="userHasPlatform(key)"
+                        v-for="platform of manualAccountLinkPlatforms" :key="platform" :value="platform" :label="t(`common.platform.${platform}`)"
+                        :disabled="userHasPlatform(platform)"
                     />
                 </ElSelect>
             </ElFormItem>
@@ -38,7 +38,7 @@ import BaseButtonCancel from '@/components/common/BaseButtonCancel.vue';
 import BaseButtonConfirm from '@/components/common/BaseButtonConfirm.vue';
 import { BaseIconAdd } from '@/components/common/icon';
 import { local } from '@/store';
-import { AccountLinks, platformlist } from '@/utils/accountlinks';
+import { AccountLinks, manualAccountLinkPlatforms } from '@/utils/accountlinks';
 import type { AccountLinkPlatform } from '@/utils/accountlinks';
 
 const props = defineProps({
