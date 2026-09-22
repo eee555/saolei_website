@@ -263,6 +263,37 @@ describe('VideoUpload Component', () => {
         });
     });
 
+    for (const autoUpload of [false, true]) {
+        for (const statusCode of [402, 500]) {
+            it(`shows the HTTP ${statusCode} failure status with auto-upload ${autoUpload}`, () => {
+                local.value.autoUploadAfterParse = autoUpload;
+                local.value.autoRemoveAfterUpload = true;
+                cy.intercept('POST', '/common/uploadvideo/', { statusCode, body: '' }).as('uploadRequest');
+                const onUpload = cy.spy().as('onUpload');
+                cy.mount(App, mountOptions({ isUserAnonymous: false, onOnUpload: onUpload }));
+
+                loadFixture('expAvf', 'videoFileExpAvf');
+                cy.get('input[type=file]').selectFile([
+                    { contents: '@videoFileExpAvf', fileName: 'exp.avf' },
+                ], { force: true });
+
+                if (!autoUpload) {
+                    cy.contains('Parsing files').should('not.exist');
+                    cy.get('table:visible').find('.el-checkbox__input').first().click();
+                    cy.get('button').contains('Upload').click();
+                }
+
+                cy.wait('@uploadRequest').its('response.statusCode').should('eq', statusCode);
+                cy.get('table:visible').getTable().should('deep.equal', [
+                    { ...fixtures.expAvf.tableData, Status: statusCode === 402 ? 'Video quota reached' : 'Upload fail' },
+                ]);
+                cy.get('input[type=file]').should('not.be.disabled');
+                cy.contains('Uploading').should('not.exist');
+                cy.get('@onUpload').should('not.have.been.called');
+            });
+        }
+    }
+
     it('Auto-remove after upload', () => {
         mockUploadResponse();
         local.value.autoRemoveAfterUpload = true;

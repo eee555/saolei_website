@@ -1,8 +1,41 @@
-import { describe, expect, it } from 'vitest';
+import { AxiosError, AxiosHeaders } from 'axios';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { normalizeVideoUploadResponse } from './videoUploadService';
+import { normalizeVideoUploadResponse, uploadVideoFile } from './videoUploadService';
 
+import $axios from '@/http';
 import { MS_State } from '@/utils/ms_const';
+
+describe('uploadVideoFile', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it.each([402, 403, 500])('handles HTTP %i with an empty response body', async (status) => {
+        const error = new AxiosError('Upload rejected', AxiosError.ERR_BAD_RESPONSE, undefined, undefined, {
+            status,
+            statusText: '',
+            data: '',
+            headers: {},
+            config: { headers: new AxiosHeaders() },
+        });
+        vi.spyOn($axios, 'post').mockRejectedValue(error);
+
+        const result = uploadVideoFile(new File(['video'], 'video.avf'));
+        if (status === 402) {
+            await expect(result).resolves.toEqual({ type: 'error', status: 'quota' });
+        } else {
+            await expect(result).rejects.toBe(error);
+        }
+    });
+
+    it('preserves network errors without a response', async () => {
+        const error = new AxiosError('Network Error', AxiosError.ERR_NETWORK);
+        vi.spyOn($axios, 'post').mockRejectedValue(error);
+
+        await expect(uploadVideoFile(new File(['video'], 'video.avf'))).rejects.toBe(error);
+    });
+});
 
 describe('normalizeVideoUploadResponse', () => {
     it('maps successful upload response to uploaded video data', () => {
