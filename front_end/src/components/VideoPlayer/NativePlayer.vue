@@ -174,7 +174,8 @@ function updateVideoState() {
     const currentVideo = video.value;
     if (currentVideo === null) return;
 
-    currentVideo.current_time = Math.min(currentMs.value, durationMs.value) / 1000;
+    // Let the library clamp to the final event without rounding the time offset below it.
+    currentVideo.current_time = currentMs.value >= durationMs.value ? Infinity : currentMs.value / 1000;
     cursor.value = currentVideo.x_y;
 }
 

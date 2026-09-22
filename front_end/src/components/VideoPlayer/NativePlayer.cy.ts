@@ -22,8 +22,8 @@ function mountOptions(src: string) {
     };
 }
 
-function mockVideoFixture(headers: Record<string, string> = {}) {
-    cy.fixture(fixture.filename, 'binary').then((fileContent) => {
+function mockVideoFixture(headers: Record<string, string> = {}, filename = fixture.filename) {
+    cy.fixture(filename, 'binary').then((fileContent) => {
         const data = binaryStringToUint8Array(fileContent);
         const responseBody = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
         cy.intercept('GET', '**/api/video/preview**', (request) => {
@@ -99,6 +99,40 @@ describe('<NativePlayer />', () => {
             if (match === null) return;
             expect(Number(match[1])).to.be.lessThan(Number(match[2]));
         });
+    });
+
+    it('includes the final click when playing, seeking or stepping to the end of replay 52200', () => {
+        mockVideoFixture({}, '52200.evf');
+        let animationCallback: FrameRequestCallback | undefined;
+        cy.window().then((win) => {
+            cy.stub(win, 'requestAnimationFrame').callsFake((callback: FrameRequestCallback) => {
+                animationCallback = callback;
+                return 1;
+            });
+            cy.stub(win, 'cancelAnimationFrame');
+        });
+        cy.mount(NativePlayer, mountOptions('/api/video/preview?id=52200.evf'));
+        cy.wait('@getVideo');
+        waitForLoadedPlayer();
+
+        cy.get('.native-player .pi-play').closest('button').click();
+        cy.window().then((win) => {
+            if (animationCallback === undefined) throw new Error('Expected playback to start.');
+            animationCallback(win.performance.now() + 10733);
+        });
+        dynamicParamCell('bvs').should('contain', '52/52');
+        dynamicParamCell('cl').invoke('text').should('match', /^63@/);
+        cy.get('.native-player .pi-pause').should('not.exist');
+
+        cy.get('.native-player .pi-replay').closest('button').click();
+        dynamicParamCell('bvs').invoke('text').should('match', /^1\/52~/);
+        cy.get('.progress-bar__slider .el-slider__button-wrapper').trigger('keydown', { code: 'End', key: 'End' });
+        dynamicParamCell('bvs').should('contain', '52/52');
+        cy.get('.progress-bar__slider .el-slider__button-wrapper').trigger('keydown', { code: 'ArrowLeft', key: 'ArrowLeft' });
+        dynamicParamCell('bvs').should('contain', '51/52');
+        cy.get('.progress-bar__step').click();
+        dynamicParamCell('bvs').should('contain', '52/52');
+        dynamicParamCell('cl').invoke('text').should('match', /^63@/);
     });
 
     for (const responseFilename of ['original replay.evf', undefined]) {
