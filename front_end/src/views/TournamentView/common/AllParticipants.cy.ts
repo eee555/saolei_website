@@ -68,14 +68,6 @@ const TestHost = defineComponent({
     },
 });
 
-const PlayerNameStub = defineComponent({
-    props: { userId: { type: Number, required: true } },
-    expose: [],
-    render() {
-        return h('span', { 'data-cy': 'player-name' }, `User ${this.userId}`);
-    },
-});
-
 const PersonalViewStub = defineComponent({
     props: {
         modelValue: { type: Object as PropType<TournamentParticipant>, required: true },
@@ -89,7 +81,7 @@ const PersonalViewStub = defineComponent({
 function mountAllParticipants(options: {
     result?: TestParticipant[];
 } = {}) {
-    i18n.global.locale.value = 'en';
+    cy.mockPlayerNameFallback();
     cy.mount(TestHost as never, {
         props: {
             result: options.result ?? participants,
@@ -99,7 +91,6 @@ function mountAllParticipants(options: {
             config: { globalProperties: { $axios } },
             stubs: {
                 PersonalView: PersonalViewStub,
-                PlayerName: PlayerNameStub,
             },
         },
     } as never);
@@ -136,6 +127,12 @@ describe('<AllParticipants />', () => {
         cy.get('[data-cy=participant-11]').click();
         topLevelTabItems().should('have.length', 3);
         activeTopLevelTabShouldBe(11);
+
+        topLevelTab(22).contains('User#202').click();
+        activeTopLevelTabShouldBe(22);
+        topLevelTab(11).contains('User#101').click();
+        activeTopLevelTabShouldBe(11);
+        cy.get('[id^=tippy-]').should('not.exist');
     });
 
     it('keeps the active participant tab when another tab is closed', () => {
