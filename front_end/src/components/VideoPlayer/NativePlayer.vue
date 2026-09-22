@@ -45,6 +45,12 @@
                 <ElCheckbox v-model="isEditingPlayerMainConfig">
                     {{ t('local.editPlayerMain') }}
                 </ElCheckbox>
+                <ElButton
+                    class="square-button" :disabled="videoFile === null"
+                    :title="t('local.download')" :aria-label="t('local.download')" @click="downloadBlob(videoFile!, videoFile!.name)"
+                >
+                    <i class="pi pi-download" />
+                </ElButton>
             </div>
         </div>
         <ElResult v-else icon="info" :title="t('local.noVideo')" />
@@ -52,8 +58,10 @@
 </template>
 
 <script setup lang="ts">
+import '@/styles/button.css';
+
 import { isAxiosError, isCancel } from 'axios';
-import { ElCheckbox, ElResult } from 'element-plus';
+import { ElButton, ElCheckbox, ElResult } from 'element-plus';
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -68,7 +76,7 @@ import $axios from '@/http';
 import { videoPlayerConfig } from '@/store';
 import { PiecewiseColorScheme } from '@/utils/colors';
 import type { AnyVideo } from '@/utils/fileIO';
-import { load_video_file } from '@/utils/fileIO';
+import { downloadBlob, load_video_file } from '@/utils/fileIO';
 
 const props = defineProps({
     src: { type: String, default: '' },
@@ -76,6 +84,7 @@ const props = defineProps({
 
 const i18nMessages = {
     'zh-cn': { local: {
+        download: '下载录像',
         editCounter: '编辑计数器',
         editPlayerMain: '主面板设置',
         loadFailed: '录像加载失败',
@@ -83,6 +92,7 @@ const i18nMessages = {
         noVideo: '没有录像',
     } },
     en: { local: {
+        download: 'Download video',
         editCounter: 'Edit counter',
         editPlayerMain: 'Main settings',
         loadFailed: 'Failed to load video',
@@ -114,6 +124,7 @@ const cursorPosition = computed(() => {
 });
 
 let abortController: AbortController | null = null;
+const videoFile = ref<File | null>(null);
 watch(() => props.src, (src) => {
     void loadVideo(src);
 }, { immediate: true });
@@ -147,6 +158,9 @@ async function loadVideo(src: string) {
         durationMs.value = Math.max(0, Math.trunc(parsed.rtime_ms));
         currentMs.value = 0;
         updateVideoState();
+        videoFile.value = new File([response.data], downloadFilename(response.headers['content-disposition'], src), {
+            type: 'application/octet-stream',
+        });
     } catch (error) {
         if (!isCancel(error)) {
             reportLoadError(error);
@@ -160,13 +174,29 @@ function updateVideoState() {
     const currentVideo = video.value;
     if (currentVideo === null) return;
 
-    currentVideo.current_time = Math.min(currentMs.value, durationMs.value) / 1000;
+    // Let the library clamp to the final event without rounding the time offset below it.
+    currentVideo.current_time = currentMs.value >= durationMs.value ? Infinity : currentMs.value / 1000;
     cursor.value = currentVideo.x_y;
 }
 
 function filenameFromSrc(src: string) {
     const url = new URL(src, window.location.href);
     return url.searchParams.get('id') ?? '';
+}
+
+function downloadFilename(contentDisposition: unknown, src: string): string {
+    if (typeof contentDisposition === 'string') {
+        // The preview API returns a percent-encoded filename in quotes.
+        const filename = (/filename="([^"]+)"/i).exec(contentDisposition)?.[1];
+        if (filename !== undefined) {
+            try {
+                return decodeURIComponent(filename);
+            } catch {
+                return filename;
+            }
+        }
+    }
+    return filenameFromSrc(src);
 }
 
 function reportLoadError(error: unknown) {
@@ -182,6 +212,7 @@ function formatLoadError(error: unknown) {
 }
 
 function cleanupVideo() {
+    videoFile.value = null;
     video.value?.free();
     video.value = null;
 }
@@ -212,6 +243,7 @@ onBeforeUnmount(() => {
 
 .native-player__controls {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 10px;
     min-width: 0;

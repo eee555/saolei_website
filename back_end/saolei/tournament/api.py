@@ -220,6 +220,23 @@ def get_participant_list(request: HttpRequest, tournament_id: int):
     return TournamentParticipant.objects.filter(tournament_id=tournament_id).select_related('arbiter_identifier')
 
 
+@router.delete('/participant/{participant_id}', response={204: None})
+@decorate_view(login_required_error, ratelimit(key='user', rate='30/m', block=True))
+def delete_participant(request: HttpRequest, participant_id: int):
+    """
+    - `login_required_error`
+    - `ratelimit(key='user', rate='30/m', block=True)`
+
+    Only the tournament host or staff may delete a participant.
+    Videos and their tournament associations are preserved.
+    """
+    participant = get_object_or_404(TournamentParticipant.objects.select_related('tournament'), id=participant_id)
+    if not request.user.is_staff and participant.tournament.host_id != request.user.id:
+        raise HttpError(403, 'Only the tournament host or staff may delete a participant.')
+    participant.delete()
+    return 204, None
+
+
 @router.get('/user-ranking', response=TournamentUserRankingOut)
 def get_tournament_user_ranking(
     request: HttpRequest,

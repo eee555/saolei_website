@@ -9,7 +9,7 @@
         </ElTabPane>
         <ElTabPane v-for="participant in viewedParticipants" :key="participant.id" lazy :name="participant.id">
             <template #label>
-                <PlayerName v-if="participant.user_id !== 0" :user-id="participant.user_id" />
+                <PlayerName v-if="participant.user_id !== 0" :user-id="participant.user_id" :interactive="false" />
                 &nbsp;
                 <ElLink data-cy="all-participants-tab-close" underline="never" @click.stop="handleAllSummaryTabClose(participant.id)">
                     <BaseIconClose style="scale: 65%" />

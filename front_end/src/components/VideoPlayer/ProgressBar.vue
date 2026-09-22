@@ -1,13 +1,16 @@
 <template>
     <div class="progress-bar">
-        <ElButton class="progress-bar__restart" circle :icon="RefreshLeft" :title="t('local.restart')" @click="restart" />
+        <ElButton class="square-button" :title="t('local.restart')" @click="restart">
+            <i class="pi pi-replay" />
+        </ElButton>
         <ElButton
-            class="progress-bar__play"
-            circle
-            :icon="isPlaying ? VideoPause : VideoPlay"
+            class="square-button"
             :title="isPlaying ? t('local.pause') : t('local.play')"
             @click="togglePlay"
-        />
+        >
+            <i v-if="isPlaying" class="pi pi-pause" />
+            <i v-else class="pi pi-play" />
+        </ElButton>
         <ElButton class="progress-bar__step" :title="t('local.step')" @click="stepForward">
             +0.1s
         </ElButton>
@@ -22,7 +25,9 @@
 </template>
 
 <script setup lang="ts">
-import { RefreshLeft, VideoPause, VideoPlay } from '@element-plus/icons-vue';
+import '@/styles/button.css';
+import 'primeicons/primeicons.css';
+
 import { ElButton, ElOption, ElSelect, ElSlider } from 'element-plus';
 import { onBeforeUnmount, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -80,9 +85,12 @@ function togglePlay() {
 
 function startPlayback() {
     if (props.durationMs <= 0) return;
-    if (currentMs.value >= props.durationMs) currentMs.value = 0;
-    isPlaying.value = true;
     syncPlaybackAnchor();
+    if (startedFrom >= props.durationMs) {
+        startedFrom = 0;
+        currentMs.value = 0;
+    }
+    isPlaying.value = true;
     animationFrameId = requestAnimationFrame(tick);
 }
 
@@ -97,8 +105,9 @@ function stopPlayback() {
 function tick(now: number) {
     if (!isPlaying.value) return;
 
-    currentMs.value = clampTime(startedFrom + (now - startedAt) * playbackRate.value, props.durationMs);
-    if (currentMs.value >= props.durationMs) {
+    const nextMs = clampTime(startedFrom + (now - startedAt) * playbackRate.value, props.durationMs);
+    currentMs.value = nextMs;
+    if (nextMs >= props.durationMs) {
         stopPlayback();
         return;
     }

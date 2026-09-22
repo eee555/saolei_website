@@ -82,6 +82,12 @@ APP内引用链条：`utils -> models -> services -> api`
 - 不需要考虑可复用性与可扩展性
 - 代码维护往往是全量重写，以减少代码复杂度为目标
 
+## UI风格偏好
+- 图标首选PrimeVue，其次Element Plus
+- 文本使用`front_end\src\styles\text.css`的样式
+- 一般组件使用Element Plus，若Element Plus不支持则使用PrimeVue。
+- 涉及到分页的表格使用PrimeVue Table
+
 ## 测试注意事项
 
 ### 本地化

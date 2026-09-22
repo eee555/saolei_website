@@ -1,6 +1,13 @@
 <template>
     <Title :tournament="tournament" />
     <Description />
+    <RegisteredParticipants
+        v-if="tournament.displayState === TournamentState.Ongoing"
+        :loading="loading"
+        :participants="participants"
+        :can-manage="canManageParticipants"
+        @deleted="handleParticipantDeleted"
+    />
     <template v-if="([TournamentState.Preparing, TournamentState.Ongoing] as TournamentState[]).includes(tournament.displayState)">
         <h3>{{ t('gsc.howToParticipate') }}</h3>
         <TokenGuide
@@ -45,7 +52,7 @@
 
 <script setup lang="ts">
 import { ElLink, vLoading } from 'element-plus';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -58,6 +65,7 @@ import AllSummary from './AllSummary.vue';
 import AutoUploader from './AutoUploader.vue';
 import Description from './Description.vue';
 import PersonalSummary from './PersonalSummary.vue';
+import RegisteredParticipants from './RegisteredParticipants.vue';
 import TokenGuide from './TokenGuide.vue';
 
 import { BaseIconRefresh } from '@/components/common/icon';
@@ -66,7 +74,7 @@ import { fetchParticipantList, fetchWeeklyResults } from '@/services/tournamentS
 import { store } from '@/store';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { TournamentState } from '@/utils/ms_const';
-import type { Tournament } from '@/utils/tournaments';
+import type { Tournament, TournamentParticipant } from '@/utils/tournaments';
 import { WeeklyParticipant, WeeklyTournamentFormat } from '@/utils/weekly';
 
 const props = defineProps({
@@ -80,23 +88,27 @@ const { t } = useI18n();
 
 const token = ref<string>('');
 const participant = ref<WeeklyParticipant | null>(null);
+const participants = ref<TournamentParticipant[]>([]);
 const result = ref<WeeklyParticipant[]>([]);
 const loading = ref(false);
 const personalViewKey = ref(0);
+const canManageParticipants = computed(() => store.login_status === LoginStatus.IsLogin
+    && (store.user.is_staff || store.user.id === props.tournament.hostId));
 
 async function refresh() {
     loading.value = true;
     try {
         if (props.tournament.displayState === TournamentState.Ongoing) {
             result.value = [];
-            const participants = await fetchParticipantList(props.tournament.id);
+            participants.value = await fetchParticipantList(props.tournament.id);
             const currentParticipant = store.login_status === LoginStatus.IsLogin
-                ? participants.find((item) => item.user_id === store.user.id)
+                ? participants.value.find((item) => item.user_id === store.user.id)
                 : undefined;
             participant.value = currentParticipant ? new WeeklyParticipant(currentParticipant) : null;
             token.value = participant.value?.token ?? '';
             personalViewKey.value += 1;
         } else {
+            participants.value = [];
             participant.value = null;
             token.value = '';
             result.value = props.tournament.state === TournamentState.Awarded
@@ -110,9 +122,20 @@ async function refresh() {
 }
 
 function handleParticipantRegistered(registeredParticipant: WeeklyParticipant) {
+    participants.value = participants.value.filter((item) => item.id !== registeredParticipant.id);
+    participants.value.push(registeredParticipant);
     participant.value = registeredParticipant;
     token.value = registeredParticipant.token;
     personalViewKey.value += 1;
+}
+
+function handleParticipantDeleted(participantId: number) {
+    participants.value = participants.value.filter((item) => item.id !== participantId);
+    if (participant.value?.id === participantId) {
+        participant.value = null;
+        token.value = '';
+        personalViewKey.value += 1;
+    }
 }
 
 watch(() => [

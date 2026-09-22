@@ -312,7 +312,7 @@ describe('<AutoUploader />', () => {
         });
     });
 
-    it('marks non-200 upload responses as failed without adding the video', () => {
+    it('marks quota exhaustion as failed without adding the video', () => {
         const directory = new FakeDirectoryHandle();
         const participant = weeklyParticipant();
         interceptStandardGSCUploadHttpError(402);
@@ -320,6 +320,17 @@ describe('<AutoUploader />', () => {
         addStandardGSCFile(directory);
 
         cy.wait('@uploadRequest').its('response.statusCode').should('eq', 402);
+        expectUploadFailure(participant, 'upload failed');
+    });
+
+    it('marks server errors as failed without adding the video', () => {
+        const directory = new FakeDirectoryHandle();
+        const participant = weeklyParticipant();
+        interceptStandardGSCUploadHttpError(500);
+        startWatchingDirectory(directory, participant);
+        addStandardGSCFile(directory);
+
+        cy.wait('@uploadRequest').its('response.statusCode').should('eq', 500);
         expectUploadFailure(participant, 'upload error');
     });
 });
