@@ -1,3 +1,5 @@
+import { isAxiosError } from 'axios';
+
 import $axios from '@/http';
 import { Dict2FormData } from '@/utils/forms';
 import type { MS_State } from '@/utils/ms_const';
@@ -27,7 +29,7 @@ export interface VideoUploadSuccessResult {
     state: MS_State;
 }
 
-export type VideoUploadErrorStatus = 'collision' | 'censorship' | 'upload';
+export type VideoUploadErrorStatus = 'collision' | 'censorship' | 'quota' | 'upload';
 
 export interface VideoUploadErrorResult {
     type: 'error';
@@ -54,6 +56,13 @@ export function normalizeVideoUploadResponse(response: VideoUploadResponse): Vid
 }
 
 export async function uploadVideoFile(file: File): Promise<VideoUploadResult> {
-    const { data } = await $axios.post<VideoUploadResponse>('/common/uploadvideo/', Dict2FormData({ file }));
-    return normalizeVideoUploadResponse(data);
+    try {
+        const { data } = await $axios.post<VideoUploadResponse>('/common/uploadvideo/', Dict2FormData({ file }));
+        return normalizeVideoUploadResponse(data);
+    } catch (error) {
+        if (isAxiosError(error) && error.response?.status === 402) {
+            return { type: 'error', status: 'quota' };
+        }
+        throw error;
+    }
 }
