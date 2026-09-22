@@ -1,6 +1,6 @@
 ---
 title: Account Links - Open Minesweeper
-description: How to link different platform accounts on Open Minesweeper, including minesweeper.com, Minesweeper.Online, Bilibili and more.
+description: How to link a Mineracer account through authorization, or link accounts from Saolei.wang, Minesweeper.Online, Bilibili and other platforms through moderator verification.
 ---
 
 # Account Links
@@ -11,12 +11,29 @@ You need to sign in before you can manage your own account links.
 
 ## Linking Process
 
-1. On the account links page, if you have not linked every supported platform, you will see a plus button. Click it to open a dialog that guides you through the linking process.
+Mineracer accounts are linked automatically after confirmation on Mineracer. Other platforms require you to enter an ID and have a moderator verify it.
+
+### Mineracer
+
+1. In the **Account Links** tab on your own profile, find the Mineracer section and click **Generate link**. You do not need to enter a Mineracer user ID.
+2. Click **Open link**, sign in to the Mineracer account you want to link in the new window, and confirm the link. Check that you are signed in to the correct account before confirming.
+3. Switch back to the Open Minesweeper account links page manually. Mineracer does not redirect you back. This page checks for confirmation automatically, or you can click **Refresh status**.
+4. Once linked, the page shows your Mineracer user ID and the binding update time. No moderator approval is needed.
+
+The link is valid for 10 minutes, and the page shows the remaining time. If it expires, click **Generate new link**, open it, and confirm again. To stop the process, leave the request unconfirmed and let the link expire.
+
+::: warning Check your account before confirming
+Each Open Minesweeper account can link to only one Mineracer account, and each Mineracer account can link to only one Open Minesweeper account. Mineracer does not currently support unlinking, so Open Minesweeper cannot remove or replace a Mineracer account link.
+:::
+
+### Other platforms
+
+1. On the account links page, if you still have other platforms available to link, you will see a plus button. Click it to open a dialog that guides you through the linking process.
 2. After entering the platform and id, you need a moderator to verify the account so that nobody can claim someone else's account.
 
 ### About ids
 
-The word "id" can be ambiguous. On some websites it may be confused with a username or nickname. For all platforms currently supported by Open Minesweeper, the id should be a string of digits. After you choose a platform, the page should show instructions for finding that platform's id.
+The word "id" can be ambiguous. On some websites it may be confused with a username or nickname. For platforms that require manual ID entry, the id should be a string of digits. After you choose a platform, the page should show instructions for finding that platform's id. Mineracer user IDs are obtained automatically during authorization, so these entry requirements do not apply to Mineracer.
 
 Once confirmed, the link cannot currently be undone directly, so please enter the id carefully. If you entered a wrong id, contact a moderator.
 
@@ -35,7 +52,15 @@ Open Minesweeper uses real names. Once you link an account from another platform
 
 ### Why does it say "account not linked"?
 
-To prevent account impersonation, all account links are manually reviewed by moderators. You need to contact a moderator, usually through the group chat. If the moderator knows you and can confirm that you own the account, they will approve it directly. If they cannot confirm your identity, you also need to contact the moderator's account on the corresponding platform. You can find that information in the moderator's **Account Links** tab.
+For platforms that require manual ID entry, account links are reviewed by moderators to prevent account impersonation. You need to contact a moderator, usually through the group chat. If the moderator knows you and can confirm that you own the account, they will approve it directly. If they cannot confirm your identity, you also need to contact the moderator's account on the corresponding platform. You can find that information in the moderator's **Account Links** tab. Mineracer does not require moderator approval; the account is linked automatically after you confirm on Mineracer.
+
+### Why does Mineracer keep showing "Waiting for Mineracer"?
+
+Make sure you have opened the generated link and confirmed on Mineracer, then return to Open Minesweeper and wait for the status to update, or click **Refresh status**. Generating or opening the link alone does not complete the process. If the link has expired, generate a new one.
+
+### What if my Mineracer account is already linked to another user?
+
+A Mineracer account can link to only one Open Minesweeper account. Check which account you are signed in to on both platforms. You cannot link the same Mineracer account to a second Open Minesweeper account, and transferring a link by unlinking is not currently supported.
 
 ### I entered the wrong id. What should I do?
 
@@ -47,4 +72,4 @@ We plan to develop a creator feature that lets you promote your minesweeper cont
 
 ### How do I remove an account link?
 
-The website currently does not support removing account links directly. Please contact a moderator.
+Mineracer links cannot currently be removed or replaced, including by moderators through the site's account linking tools. For other platforms, the website does not support removing links yourself; please contact a moderator.
