@@ -34,7 +34,7 @@ describe('<ProgressBar />', () => {
         cy.get('.progress-bar__step').click();
         modelUpdate(0).should('eq', 1000);
 
-        cy.get('.progress-bar__restart').click();
+        cy.get('.progress-bar .pi-replay').closest('button').click();
         modelUpdate(1).should('eq', 0);
     });
 
@@ -62,7 +62,7 @@ describe('<ProgressBar />', () => {
         });
         mountProgressBar(0, 1000);
 
-        cy.get('.progress-bar__play').click();
+        cy.get('.progress-bar .pi-play').closest('button').click();
         cy.then(() => {
             expect(animationCallback).not.to.equal(undefined);
             expect(testWindow).not.to.equal(undefined);

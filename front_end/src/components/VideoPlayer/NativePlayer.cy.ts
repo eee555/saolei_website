@@ -22,7 +22,7 @@ function mountOptions(src: string) {
     };
 }
 
-function mockVideoFixture() {
+function mockVideoFixture(headers: Record<string, string> = {}) {
     cy.fixture(fixture.filename, 'binary').then((fileContent) => {
         const data = binaryStringToUint8Array(fileContent);
         const responseBody = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
@@ -30,7 +30,7 @@ function mockVideoFixture() {
             expect(request.url).to.contain('/api/video/preview');
             request.reply({
                 statusCode: 200,
-                headers: { 'content-type': 'application/octet-stream' },
+                headers: { 'content-type': 'application/octet-stream', ...headers },
                 body: responseBody,
             });
         }).as('getVideo');
@@ -89,7 +89,7 @@ describe('<NativePlayer />', () => {
 
         cy.wait('@getVideo');
         waitForLoadedPlayer();
-        cy.get('.progress-bar__play').click();
+        cy.get('.native-player .pi-play').closest('button').click();
         dynamicParamCell('time').should(($time) => {
             expect($time.text()).to.contain('/');
         });
@@ -101,6 +101,44 @@ describe('<NativePlayer />', () => {
         });
     });
 
+    for (const responseFilename of ['original replay.evf', undefined]) {
+        it(`downloads the original bytes with the ${responseFilename === undefined ? 'URL' : 'response'} filename`, () => {
+            mockVideoFixture(responseFilename === undefined
+                ? {}
+                : {
+                    'content-disposition': `attachment; filename="${encodeURIComponent(responseFilename)}"`,
+                });
+            cy.mount(NativePlayer, mountOptions(fixture.src));
+            cy.wait('@getVideo');
+            waitForLoadedPlayer();
+
+            let downloadedBlob: Blob | undefined;
+            const objectUrl = 'blob:http://localhost/native-player-download';
+            cy.window().then((win) => {
+                cy.stub(win.URL, 'createObjectURL').callsFake((blob: Blob) => {
+                    downloadedBlob = blob;
+                    return objectUrl;
+                });
+                cy.stub(win.URL, 'revokeObjectURL').as('revokeDownloadUrl');
+                cy.stub(win.HTMLAnchorElement.prototype, 'click').callsFake(function (this: HTMLAnchorElement) {
+                    expect(this.download).to.equal(responseFilename ?? fixture.filename);
+                    expect(this.href).to.equal(objectUrl);
+                }).as('downloadFile');
+            });
+
+            cy.get('.native-player .pi-download').closest('button').click();
+            cy.get('@downloadFile').should('have.been.calledOnce');
+            cy.get('@revokeDownloadUrl').should('have.been.calledOnceWith', objectUrl);
+            cy.get('@getVideo.all').should('have.length', 1);
+            cy.fixture(fixture.filename, 'binary').then((fileContent) => {
+                if (downloadedBlob === undefined) throw new Error('Expected a downloaded video.');
+                return downloadedBlob.arrayBuffer().then((buffer) => {
+                    expect(new Uint8Array(buffer)).to.deep.equal(binaryStringToUint8Array(fileContent));
+                });
+            });
+        });
+    }
+
     it('reports fetch response errors from the backend', () => {
         cy.intercept('GET', '**/videos/**', {
             statusCode: 404,
@@ -111,5 +149,6 @@ describe('<NativePlayer />', () => {
 
         cy.wait('@getVideo');
         cy.get('.native-player').should('contain', '404');
+        cy.get('.native-player .pi-download').should('not.exist');
     });
 });
