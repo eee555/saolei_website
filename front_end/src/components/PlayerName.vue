@@ -1,6 +1,7 @@
 <template>
-    <span @click.stop>
+    <span @click="interactive && $event.stopPropagation()">
         <Tippy
+            v-if="interactive"
             trigger="click"
             interactive
             :duration="0"
@@ -62,6 +63,7 @@
                 </ElCard>
             </template>
         </Tippy>
+        <PlayerBadge v-else :user-id="userId" :name="nameShown" />
     </span>
 </template>
 
@@ -86,6 +88,7 @@ import { formatName } from '@/utils/strings';
 import { UserProfile } from '@/utils/userprofile';
 
 const props = defineProps({
+    interactive: { type: Boolean, default: true },
     userId: {
         type: Number,
         default: 0,

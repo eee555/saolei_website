@@ -1,4 +1,5 @@
 import type { StaticResponse } from 'cypress/types/net-stubbing';
+import { h } from 'vue';
 
 import PlayerName from './PlayerName.vue';
 
@@ -26,9 +27,12 @@ const user = {
     lastname: 'Mines',
 };
 
-function mountPlayerName(userId: number) {
-    cy.mount(PlayerName, {
-        props: { userId },
+function mountPlayerName(userId: number, options: { interactive?: boolean; onParentClick?: () => void } = {}) {
+    cy.mount({
+        render: () => h('div', { onClick: options.onParentClick }, [
+            h(PlayerName, { userId, interactive: options.interactive }),
+        ]),
+    }, {
         global: {
             plugins: [i18n],
             config: {
@@ -124,5 +128,37 @@ describe('PlayerName', () => {
 
         cy.contains(user.realname).click();
         cy.contains('[id^=tippy-] a', 'My space').should('have.attr', 'href', `#/player/${user.id}`);
+    });
+
+    it('lets clicks bubble without opening a popover when not interactive', () => {
+        cy.mockPlayerNameFallback();
+        mockRecordAbstract();
+        const onParentClick = cy.stub().as('parentClick');
+        mountPlayerName(101, { interactive: false,
+            onParentClick: () => {
+                onParentClick();
+            } });
+
+        cy.contains('User#101').click();
+
+        cy.get('@parentClick').should('have.been.calledOnce');
+        cy.get('[id^=tippy-]').should('not.exist');
+        cy.get('@fetchAbstract.all').should('have.length', 0);
+        cy.get('[data-cy-root] .el-link').should('not.exist');
+    });
+
+    it('stops clicks from reaching the parent by default', () => {
+        cy.mockPlayerNameFallback();
+        mockRecordAbstract();
+        const onParentClick = cy.stub().as('parentClick');
+        mountPlayerName(101, { onParentClick: () => {
+            onParentClick();
+        } });
+
+        cy.contains('User#101').click();
+        cy.wait('@fetchAbstract');
+
+        cy.get('[id^=tippy-]').should('be.visible');
+        cy.get('@parentClick').should('not.have.been.called');
     });
 });
