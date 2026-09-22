@@ -103,6 +103,10 @@ export async function fetchParticipantList(tournamentId: number): Promise<Tourna
     return data.map(tournamentParticipantFromResponse);
 }
 
+export async function deleteParticipant(participantId: number): Promise<void> {
+    await $axios.delete(`/api/tournament/participant/${participantId}`);
+}
+
 export async function createWeeklyParticipant(tournamentId: number): Promise<WeeklyParticipant> {
     const { data } = await $axios.post<TournamentParticipantResponse>('/api/tournament/weekly/participant', {
         id: tournamentId,

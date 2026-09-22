@@ -90,5 +90,7 @@ def ensure_tournament_user_on_participant_create(sender, instance: TournamentPar
 @receiver(post_delete, sender=TournamentParticipant, dispatch_uid='tournament.remove_participant_cache_on_delete')
 def remove_participant_cache_on_delete(sender, instance: TournamentParticipant, **kwargs):
     user_id = instance.user_id
+    if user_id is None:
+        return
     tournament_id = instance.tournament_id
     transaction.on_commit(lambda: cache.remove_participant(user_id, tournament_id))
