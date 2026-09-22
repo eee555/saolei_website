@@ -85,9 +85,12 @@ function togglePlay() {
 
 function startPlayback() {
     if (props.durationMs <= 0) return;
-    if (currentMs.value >= props.durationMs) currentMs.value = 0;
-    isPlaying.value = true;
     syncPlaybackAnchor();
+    if (startedFrom >= props.durationMs) {
+        startedFrom = 0;
+        currentMs.value = 0;
+    }
+    isPlaying.value = true;
     animationFrameId = requestAnimationFrame(tick);
 }
 
@@ -102,8 +105,9 @@ function stopPlayback() {
 function tick(now: number) {
     if (!isPlaying.value) return;
 
-    currentMs.value = clampTime(startedFrom + (now - startedAt) * playbackRate.value, props.durationMs);
-    if (currentMs.value >= props.durationMs) {
+    const nextMs = clampTime(startedFrom + (now - startedAt) * playbackRate.value, props.durationMs);
+    currentMs.value = nextMs;
+    if (nextMs >= props.durationMs) {
         stopPlayback();
         return;
     }

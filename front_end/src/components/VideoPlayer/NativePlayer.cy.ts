@@ -124,6 +124,15 @@ describe('<NativePlayer />', () => {
         dynamicParamCell('cl').invoke('text').should('match', /^63@/);
         cy.get('.native-player .pi-pause').should('not.exist');
 
+        cy.get('.native-player .pi-play').closest('button').click();
+        dynamicParamCell('bvs').invoke('text').should('match', /^1\/52~/);
+        cy.window().then((win) => {
+            if (animationCallback === undefined) throw new Error('Expected playback to restart.');
+            animationCallback(win.performance.now() + 100);
+        });
+        cy.get('.native-player .pi-pause').should('exist');
+        dynamicParamCell('bvs').should('not.contain', '52/52');
+
         cy.get('.native-player .pi-replay').closest('button').click();
         dynamicParamCell('bvs').invoke('text').should('match', /^1\/52~/);
         cy.get('.progress-bar__slider .el-slider__button-wrapper').trigger('keydown', { code: 'End', key: 'End' });
