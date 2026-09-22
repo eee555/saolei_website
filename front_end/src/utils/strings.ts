@@ -1,10 +1,10 @@
 import type { MS_Software } from './ms_const';
 
-export { default as ControlRegex } from '@unicode/unicode-16.0.0/General_Category/Control/regex';
-export { default as MarkRegex } from '@unicode/unicode-16.0.0/General_Category/Mark/regex';
-export { default as LineSeparatorRegex } from '@unicode/unicode-16.0.0/General_Category/Line_Separator/regex';
-export { default as ParagraphSeparatorRegex } from '@unicode/unicode-16.0.0/General_Category/Paragraph_Separator/regex';
-export { default as SpaceSeparatorRegex } from '@unicode/unicode-16.0.0/General_Category/Space_Separator/regex';
+export { default as ControlRegex } from '@unicode/unicode-16.0.0/General_Category/Control/regex.mjs';
+export { default as MarkRegex } from '@unicode/unicode-16.0.0/General_Category/Mark/regex.mjs';
+export { default as LineSeparatorRegex } from '@unicode/unicode-16.0.0/General_Category/Line_Separator/regex.mjs';
+export { default as ParagraphSeparatorRegex } from '@unicode/unicode-16.0.0/General_Category/Paragraph_Separator/regex.mjs';
+export { default as SpaceSeparatorRegex } from '@unicode/unicode-16.0.0/General_Category/Space_Separator/regex.mjs';
 
 // credit: ChatGPT
 export function stringifyWithLineWrap(
