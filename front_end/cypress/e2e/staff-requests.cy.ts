@@ -90,7 +90,8 @@ describe('Staff requests against the backend', () => {
                 expect(restartedTask.task_path).to.eq(failedTask.task_path);
                 expect(restartedTask.args_kwargs).to.deep.eq(failedTask.args_kwargs);
                 expect(restartedTask.run_after).to.eq(failedTask.run_after);
-                cy.contains('td', restartedTask.id).should('be.visible');
+                // Clicking the rightmost action can scroll the ID column out of view.
+                cy.contains('td', restartedTask.id).should('exist');
 
                 cy.contains('button', '加载任务').click();
                 cy.wait<unknown, TaskDetail[]>('@loadTasks').then(({ response: loaded }) => {
@@ -110,7 +111,7 @@ describe('Staff requests against the backend', () => {
                     expect(loaded?.body).to.deep.include(restartedTask);
                 });
                 cy.contains('td', failedTask.id).should('not.exist');
-                cy.contains('td', restartedTask.id).should('be.visible');
+                cy.contains('td', restartedTask.id).should('exist');
             });
         });
     });
