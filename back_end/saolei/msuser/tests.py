@@ -1,6 +1,7 @@
 from datetime import timedelta
 from io import StringIO
 import json
+from urllib.parse import urlencode
 
 from django.core.management import call_command
 from django.test import TestCase
@@ -102,8 +103,8 @@ class UserMSAdminApiTests(TestCase):
     def patch_update(self, userms_id, payload):
         return self.client.patch(
             f'/api/msuser/admin/update/{userms_id}',
-            json.dumps(payload),
-            content_type='application/json',
+            urlencode(payload),
+            content_type='application/x-www-form-urlencoded',
         )
 
     def test_admin_update_user_ms_limit(self):
