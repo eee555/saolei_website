@@ -21,8 +21,7 @@ interface TaskDetail {
 }
 
 describe('Staff requests against the backend', () => {
-    beforeEach(() => {
-        void Cypress.session.clearAllSavedSessions();
+    it('Before All', () => {
         cy.flushDatabase();
         cy.registerUser(STAFF);
         cy.setStaff(STAFF.id);
