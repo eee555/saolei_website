@@ -26,11 +26,11 @@ describe('Staff requests against the backend', () => {
         cy.registerUser(STAFF);
         cy.setStaff(STAFF.id);
         cy.registerUser(USER);
-        cy.login(STAFF.username, STAFF.password);
     });
 
     it('persists UserProfile and UserMS changes submitted from the staff page', () => {
         // Observe real responses; request encoding is validated by the backend.
+        cy.login(STAFF.username, STAFF.password);
         cy.intercept('GET', `**/api/userprofile/admin/detail/${USER.id}`).as('loadUser');
         cy.intercept('PATCH', `**/api/userprofile/admin/update/${USER.id}`).as('updateProfile');
         cy.visit('/#/staff/userprofile');
@@ -72,6 +72,7 @@ describe('Staff requests against the backend', () => {
     });
 
     it('restarts a failed task and deletes it through the staff page', () => {
+        cy.login(STAFF.username, STAFF.password);
         cy.dangerzonePost<TaskDetail>('create_failed_task').then(({ body: failedTask }) => {
             cy.intercept('GET', '**/api/common/tasks/detail').as('loadTasks');
             cy.intercept('POST', '**/api/common/tasks/restart').as('restartTask');
