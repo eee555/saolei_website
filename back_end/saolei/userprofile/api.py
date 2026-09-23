@@ -10,7 +10,7 @@ from django.http import FileResponse, HttpRequest, HttpResponse, HttpResponseFor
 from django.shortcuts import get_object_or_404
 from django.views.decorators.cache import cache_control
 from django_ratelimit.decorators import ratelimit
-from ninja import File, Form, PatchDict, Router, Schema, UploadedFile
+from ninja import File, Form, Router, Schema, UploadedFile
 from ninja.decorators import decorate_view
 from ninja.errors import HttpError
 from ninja.orm import create_schema
@@ -79,6 +79,7 @@ ADMIN_USERPROFILE_FIELDS = (
 AdminUserProfileUpdateIn = create_schema(
     UserProfile,
     fields=list(ADMIN_USERPROFILE_FIELDS),
+    optional_fields='__all__',
 )
 
 
@@ -93,7 +94,7 @@ def get_user_profile_admin(request, user_id: int):
 
 @router.patch('/admin/update/{user_id}', response=AdminUserProfileOut)
 @decorate_view(staff_required)
-def update_user_profile_admin(request, user_id: int, data: PatchDict[AdminUserProfileUpdateIn]):
+def update_user_profile_admin(request, user_id: int, data: AdminUserProfileUpdateIn = Form(...)):  # noqa: B008
     """
     - staff_required
     """
@@ -101,10 +102,11 @@ def update_user_profile_admin(request, user_id: int, data: PatchDict[AdminUserPr
     if user.is_staff and user != request.user:
         raise HttpError(403, 'Cannot update another staff user.')
 
-    for field, value in data.items():
+    updates = data.model_dump(exclude_unset=True)
+    for field, value in updates.items():
         setattr(user, field, value)
 
-    if user_update_fields := list(data.keys()):
+    if user_update_fields := list(updates.keys()):
         user.save(update_fields=[*user_update_fields, 'date_updated'])
         logger.warning(f'管理员 {request.user.username}#{request.user.id} 修改用户 {user.username}#{user.id} 字段 {", ".join(user_update_fields)}')
 

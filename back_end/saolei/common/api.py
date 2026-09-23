@@ -13,7 +13,7 @@ from django.http import FileResponse
 from django.tasks import TaskResultStatus
 from django.utils import timezone as django_timezone
 from django_tasks_db.models import DBTaskResult
-from ninja import Router, Schema
+from ninja import Form, Router, Schema
 from ninja.decorators import decorate_view
 from ninja.errors import HttpError
 from ninja.orm import create_schema
@@ -256,7 +256,7 @@ def running_task_health(request, stale_after_seconds: int = RUNNING_TASK_STALE_A
 
 @router.post('/tasks/delete')
 @decorate_view(staff_required)
-def delete_task(request, data: TaskIdIn):
+def delete_task(request, data: TaskIdIn = Form(...)):  # noqa: B008
     """
     - staff_required
     """
@@ -279,7 +279,7 @@ def delete_task(request, data: TaskIdIn):
 
 @router.post('/tasks/restart', response=TaskDetailOut)
 @decorate_view(staff_required)
-def restart_task(request, data: TaskIdIn):
+def restart_task(request, data: TaskIdIn = Form(...)):  # noqa: B008
     """
     - staff_required
     """
