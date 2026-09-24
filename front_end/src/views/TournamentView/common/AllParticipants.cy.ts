@@ -7,8 +7,7 @@ import AllParticipants from './AllParticipants.vue';
 import $axios from '@/http';
 import i18n from '@/i18n';
 import { pinia } from '@/store/create';
-import { TournamentState, TournamentSubclass } from '@/utils/ms_const';
-import { Tournament, TournamentParticipant } from '@/utils/tournaments';
+import { TournamentParticipant } from '@/utils/tournaments';
 import type { VideoAbstract } from '@/utils/videoabstract';
 
 type TestParticipant = TournamentParticipant & {
@@ -41,19 +40,8 @@ const TestHost = defineComponent({
         },
     },
     expose: [],
-    setup() {
-        const tournament = new Tournament({
-            id: 9001,
-            name: 'Tab Test Tournament',
-            subclass: TournamentSubclass.GSC,
-            state: TournamentState.Awarded,
-            data: { order: 1, token: 'G00001' },
-        });
-        return { tournament };
-    },
     render() {
         return h(TypedAllParticipants, {
-            tournament: this.tournament,
             result: this.result,
         }, {
             allSummary: ({ data, onParticipantSelect }: AllSummarySlotProps) => h('div', {}, data.map((participant) => h('button', {

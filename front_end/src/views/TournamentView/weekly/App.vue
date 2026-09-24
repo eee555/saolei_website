@@ -1,148 +1,52 @@
 <template>
-    <Title :tournament="tournament" />
-    <Description />
-    <RegisteredParticipants
-        v-if="tournament.displayState === TournamentState.Ongoing"
-        :loading="loading"
-        :participants="participants"
-        :can-manage="canManageParticipants"
-        @deleted="handleParticipantDeleted"
-    />
-    <template v-if="([TournamentState.Preparing, TournamentState.Ongoing] as TournamentState[]).includes(tournament.displayState)">
-        <h3>{{ t('gsc.howToParticipate') }}</h3>
-        <TokenGuide
-            v-model:token="token"
-            :participant="participant"
-            :registration-open="tournament.displayState === TournamentState.Ongoing"
-            :tournament-id="tournament.id"
-            @registered="handleParticipantRegistered"
-        />
-    </template>
-    <template v-if="tournament.displayState === TournamentState.Ongoing && store.login_status === LoginStatus.IsLogin && participant !== null">
-        <h3>
-            {{ t('gsc.realTimeScore') }}&nbsp;
-            <ElLink data-cy="weekly-score-refresh" underline="never" :disabled="loading">
-                <BaseIconRefresh @click="refresh" />
-            </ElLink>
-        </h3>
-        <PersonalView :key="personalViewKey" v-model="participant" v-loading="loading">
-            <template #autoUploader="{ participant: currentParticipant }">
-                <AutoUploader :format="tournament.weeklyData?.tournament_format ?? WeeklyTournamentFormat.Classic" :participant="currentParticipant" />
-            </template>
-            <template #personalSummary="{ videos }">
-                <PersonalSummary :tournament-format="tournament.weeklyData?.tournament_format" :videos="videos" />
-            </template>
-        </PersonalView>
-    </template>
-    <template v-if="tournament.displayState === TournamentState.Awarded">
-        <h3>
-            {{ t('gsc.finalResults') }}
-        </h3>
-        <!-- @vue-generic {WeeklyParticipant} -->
-        <AllParticipants :tournament="tournament" :result="result">
-            <template #allSummary="{ data, onParticipantSelect }">
-                <AllSummary :data="data" @row-click="onParticipantSelect" />
-            </template>
-            <template #personalSummary="{ videos }">
-                <PersonalSummary :tournament-format="tournament.weeklyData?.tournament_format" :videos="videos" />
-            </template>
-        </AllParticipants>
-    </template>
+    <PublicTournament :tournament="tournament" :participants="participants" :index="index" :loading="loading" :refresh-participants="refresh" :auto-uploader-enabled="!store.isUserAnonymous" :auto-uploader-filter="matchesFilter">
+        <template #description>
+            <Description />
+        </template>
+        <template #participationGuide>
+            <TokenGuide :token="participant?.token ?? ''" :participant="participant" :registration-open="state === TournamentState.Ongoing" :tournament-id="tournament.id" @registered="registered" />
+        </template>
+        <template #autoUploaderFilter>
+            <AutoUploaderFilter ref="filterControl" :format="format" :participant="participant" />
+        </template>
+        <template #allSummary="{ data, onParticipantSelect }">
+            <AllSummary v-if="state === TournamentState.Awarded" :data="data" @row-click="onParticipantSelect" />
+            <RegisteredParticipants v-else :participants="data" :loading="loading" :can-manage="canManage" @deleted="deleted" />
+        </template>
+        <template #personalSummary="{ videos }">
+            <PersonalSummary :tournament-format="format" :videos="videos" />
+        </template>
+    </PublicTournament>
 </template>
 
 <script setup lang="ts">
-import { ElLink, vLoading } from 'element-plus';
-import { computed, ref, watch } from 'vue';
-import type { PropType } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { computed, useTemplateRef } from 'vue';
 
-import '@/styles/text.css';
-import AllParticipants from '../common/AllParticipants.vue';
-import PersonalView from '../common/PersonalView.vue';
-import Title from '../common/Title.vue';
+import PublicTournament from '../common/PublicTournament.vue';
+import RegisteredParticipants from '../common/RegisteredParticipants.vue';
+import { useParticipants } from '../common/useParticipants';
 
 import AllSummary from './AllSummary.vue';
-import AutoUploader from './AutoUploader.vue';
+import AutoUploaderFilter from './AutoUploaderFilter.vue';
 import Description from './Description.vue';
 import PersonalSummary from './PersonalSummary.vue';
-import RegisteredParticipants from './RegisteredParticipants.vue';
 import TokenGuide from './TokenGuide.vue';
 
-import { BaseIconRefresh } from '@/components/common/icon';
-import { httpErrorNotification } from '@/components/Notifications';
-import { fetchParticipantList, fetchWeeklyResults } from '@/services/tournamentService';
+import { fetchWeeklyResults } from '@/services/tournamentService';
 import { store } from '@/store';
 import { LoginStatus } from '@/utils/common/structInterface';
+import type { AnyVideo } from '@/utils/fileIO';
 import { TournamentState } from '@/utils/ms_const';
-import type { Tournament, TournamentParticipant } from '@/utils/tournaments';
+import { Tournament } from '@/utils/tournaments';
+import type { VideoAbstract } from '@/utils/videoabstract';
 import { WeeklyParticipant, WeeklyTournamentFormat } from '@/utils/weekly';
 
-const props = defineProps({
-    tournament: {
-        type: Object as PropType<Tournament>,
-        required: true,
-    },
-});
-
-const { t } = useI18n();
-
-const token = ref<string>('');
-const participant = ref<WeeklyParticipant | null>(null);
-const participants = ref<TournamentParticipant[]>([]);
-const result = ref<WeeklyParticipant[]>([]);
-const loading = ref(false);
-const personalViewKey = ref(0);
-const canManageParticipants = computed(() => store.login_status === LoginStatus.IsLogin
-    && (store.user.is_staff || store.user.id === props.tournament.hostId));
-
-async function refresh() {
-    loading.value = true;
-    try {
-        if (props.tournament.displayState === TournamentState.Ongoing) {
-            result.value = [];
-            participants.value = await fetchParticipantList(props.tournament.id);
-            const currentParticipant = store.login_status === LoginStatus.IsLogin
-                ? participants.value.find((item) => item.user_id === store.user.id)
-                : undefined;
-            participant.value = currentParticipant ? new WeeklyParticipant(currentParticipant) : null;
-            token.value = participant.value?.token ?? '';
-            personalViewKey.value += 1;
-        } else {
-            participants.value = [];
-            participant.value = null;
-            token.value = '';
-            result.value = props.tournament.state === TournamentState.Awarded
-                ? await fetchWeeklyResults(props.tournament.id)
-                : [];
-        }
-    } catch (error) {
-        httpErrorNotification(error);
-    }
-    loading.value = false;
+const props = defineProps({ tournament: { type: Tournament, required: true } });
+const { participants, index, participant, loading, state, refresh, registered, deleted } = useParticipants(() => props.tournament, (item) => new WeeklyParticipant(item), fetchWeeklyResults);
+const format = computed(() => props.tournament.weeklyData?.tournament_format ?? WeeklyTournamentFormat.Classic);
+const canManage = computed(() => store.login_status === LoginStatus.IsLogin && (store.user.is_staff || store.user.id === props.tournament.hostId));
+const filterControl = useTemplateRef<{ matchesFilter: (video: AnyVideo, stat: VideoAbstract) => boolean }>('filterControl');
+function matchesFilter(video: AnyVideo, stat: VideoAbstract) {
+    return filterControl.value?.matchesFilter(video, stat) ?? false;
 }
-
-function handleParticipantRegistered(registeredParticipant: WeeklyParticipant) {
-    participants.value = participants.value.filter((item) => item.id !== registeredParticipant.id);
-    participants.value.push(registeredParticipant);
-    participant.value = registeredParticipant;
-    token.value = registeredParticipant.token;
-    personalViewKey.value += 1;
-}
-
-function handleParticipantDeleted(participantId: number) {
-    participants.value = participants.value.filter((item) => item.id !== participantId);
-    if (participant.value?.id === participantId) {
-        participant.value = null;
-        token.value = '';
-        personalViewKey.value += 1;
-    }
-}
-
-watch(() => [
-    props.tournament.id,
-    props.tournament.state,
-    props.tournament.startDate?.getTime(),
-    props.tournament.endDate?.getTime(),
-    store.login_status,
-], refresh, { immediate: true });
 </script>

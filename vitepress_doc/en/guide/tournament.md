@@ -58,10 +58,26 @@ After a replay is recognized as belonging to an ongoing tournament, it is hidden
 
 ## Automatically Uploading Tournament Replays
 
-If your browser supports [`showDirectoryPicker`](https://developer.mozilla.org/docs/Web/API/Window/showDirectoryPicker), you can use automatic uploading in Weekly Tournaments. This feature watches a folder, scans newly added files, filters eligible replays, and uploads them automatically. There are three filter levels:
+If your browser supports [`showDirectoryPicker`](https://developer.mozilla.org/docs/Web/API/Window/showDirectoryPicker), you can use automatic uploading in Golden Sheep Cups and Weekly Tournaments. After registering, select a replay folder and polling interval during your participation window to scan, filter, and upload new files. Each filter level also applies all preceding conditions.
 
-- Tournament identifier matches.
-- Tournament identifier matches, and the replay mode, level, and other properties meet the tournament requirements.
-- Supported by some tournaments: tournament identifier matches, and the replay may be included in final scoring, meaning it is currently one of your best replays.
+### Weekly Tournaments
 
-Only files added after polling starts will be scanned. Please upload older replays manually.
+1. All tournament videos: the tournament identifiers include your participation token. AVF is not supported.
+2. Supported tournament videos: classic tournaments accept Intermediate and Expert replays in Standard (STD) or NF mode. This is the default filter.
+3. Score-improving videos: the replay improves your total time for the best 5 Intermediate or 2 Expert games.
+
+### Golden Sheep Cup
+
+1. All tournament videos: AVF replays must have a nonempty player identifier that exactly matches your registered Arbiter identifier. For other software, the tournament identifiers must include this tournament's token.
+2. Supported levels and modes: Beginner, Intermediate, or Expert in Standard (STD) or NF mode.
+3. 3BV minimum met: at least 10 for Beginner, 30 for Intermediate, and 100 for Expert. This is the default filter.
+
+GSC automatic uploading does not check whether a replay improves your score. Successful uploads update your personal replays; Weekly Tournaments also update the score-improving filter's thresholds. Filters only determine which files are automatically uploaded. Tournament check-in and final scoring are still decided by the server; GSC settlement also accepts only STD and NF modes and applies the 3BV minimums.
+
+After choosing a folder, you can see how many files it contains and choose to scan all existing files or watch only new files. Full-scan progress includes uploaded, skipped, and failed files. Cancelling stops the scan and monitoring; you must choose a folder again. Upload requests already sent may still complete.
+
+You can pause and resume without choosing the folder again. Files added while paused are scanned on resume, and previously processed files are not uploaded again. Switching tournament data tabs or refreshing the participant list does not interrupt monitoring. Monitoring pauses when your participation window ends, your registration is deleted, or you lose upload eligibility. Leaving the tournament page stops monitoring.
+
+Personal replays cannot be refreshed while monitoring or processing files. Automatic uploading cannot start while personal replays are loading. In installed web apps, supported browsers show an unnumbered app-icon badge while processing files and clear it when idle.
+
+During the tournament and while awaiting settlement, you can refresh the participant list and your own replays separately. After awards, you can view each participant's results and export all replay statistics using the button beside the Tournament data heading.

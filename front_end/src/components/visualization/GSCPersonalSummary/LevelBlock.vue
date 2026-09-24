@@ -24,6 +24,7 @@ import HeadColumn from './HeadColumn.vue';
 import SortedColumn from './SortedColumn.vue';
 import { defaultCounts, defaultVideos } from './utils';
 
+import { isGSCSupportedVideo, meetsGSCBV } from '@/utils/gsc';
 import type { MS_Level } from '@/utils/ms_const';
 import { MS_State } from '@/utils/ms_const';
 import type { StandardVideoAbstract, VideoAbstract } from '@/utils/videoabstract';
@@ -45,8 +46,7 @@ const stnbColumnRef = useTemplateRef('stnbColumnRef');
 
 function isValid(video: VideoAbstract): video is StandardVideoAbstract {
     if (video.level != props.level || video.state != MS_State.Official) return false;
-    if (video.level === 'b' && video.bv < 10) return false;
-    return true;
+    return isGSCSupportedVideo(video) && meetsGSCBV(video);
 }
 
 const filteredVideos = computed(() => {

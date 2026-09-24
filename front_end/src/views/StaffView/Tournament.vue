@@ -10,7 +10,7 @@
     <template v-if="tournament">
         状态
         &nbsp;
-        <TournamentStateIcon :state="tournament.displayState" />
+        <TournamentStateIcon :state="tournament.getDisplayState(globalNow)" />
         <br>
         开始时间
         &nbsp;
@@ -44,6 +44,7 @@ import { BaseIconClose, BaseIconTick } from '@/components/common/icon';
 import { httpErrorNotification, successNotification } from '@/components/Notifications';
 import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import { globalNow } from '@/utils/datetime';
 import { Tournament } from '@/utils/tournaments';
 
 const { proxy } = useCurrentInstance();

@@ -56,7 +56,7 @@ describe('Tournament', () => {
             expect(tournament.hostId).toBe(0);
             expect(tournament.hostName).toBe('');
             expect(tournament.state).toBe(TournamentState.Pending);
-            expect(tournament.displayState).toBe(TournamentState.Pending);
+            expect(tournament.getDisplayState()).toBe(TournamentState.Pending);
             expect(tournament.subclass).toBe(TournamentSubclass.Unknown);
         });
 

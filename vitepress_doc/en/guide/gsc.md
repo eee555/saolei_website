@@ -9,7 +9,7 @@ The Golden Sheep Cup is a long-running tournament hosted by [Guo Jinyang](https:
 
 ## Scoring Rules
 
-The Golden Sheep Cup counts replays uploaded during the tournament.
+The Golden Sheep Cup counts replays uploaded during the tournament, accepting only Standard (STD) and NF modes.
 
 The following replays are used:
 
@@ -30,6 +30,8 @@ Final rankings are based on the total time of these replays. Lower total time ra
 ## Participation
 
 During the tournament, click "Register" on the tournament detail page. After registration, the page shows the tournament identifier for that edition.
+
+After registering, you can [automatically upload tournament replays](./tournament.md#automatically-uploading-tournament-replays), including MetaSweeper replays and AVF replays with your registered Arbiter identifier.
 
 ## Accepted Software
 

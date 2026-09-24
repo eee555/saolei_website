@@ -88,7 +88,7 @@ function mountWeekly(options: {
             },
         },
     });
-    if ((options.tournament ?? weeklyTournament()).displayState === TournamentState.Ongoing) {
+    if ((options.tournament ?? weeklyTournament()).getDisplayState() === TournamentState.Ongoing) {
         cy.wait('@participantList').its('response.statusCode').should('eq', 200);
     }
     return requestCounts;
@@ -173,7 +173,7 @@ describe('<Weekly App />', () => {
             ]);
             cy.get('[data-cy=delete-participant]').should('not.exist');
             cy.contains('[data-cy=weekly-participants] th', 'Actions').should('not.exist');
-            cy.get('[data-cy=weekly-participants]').next('h3').should('contain', 'How to Participate');
+            cy.get('[data-cy=tournament-data-tabs] [id=tab-participants]').should('have.class', 'is-active');
         });
     }
 
@@ -237,7 +237,7 @@ describe('<Weekly App />', () => {
         cy.contains('button', 'Start my session').should('be.enabled');
     });
 
-    it('hides the participant table before and after the tournament window', () => {
+    it('hides participants before the tournament and loads them after the window ends', () => {
         const tournament = weeklyTournament();
         tournament.startDate = new Date('2098-01-01T00:00:00+08:00');
         mountWeekly({ loginStatus: LoginStatus.NotLogin, registered: false, tournament });
@@ -249,7 +249,8 @@ describe('<Weekly App />', () => {
             finishedTournament.endDate = new Date('2001-01-01T00:00:00+08:00');
             return wrapper.setProps({ tournament: finishedTournament });
         });
-        cy.get('[data-cy=weekly-participants]').should('not.exist');
-        cy.get('@participantList.all').should('have.length', 0);
+        cy.wait('@participantList');
+        cy.get('[data-cy=weekly-participants]').should('be.visible');
+        cy.get('@participantList.all').should('have.length', 1);
     });
 });
