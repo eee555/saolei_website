@@ -76,11 +76,15 @@ function mountGSC(options: {
 }
 
 describe('<GSC App />', () => {
+    beforeEach(() => {
+        cy.mockPlayerNameFallback();
+    });
     it('hides real-time score for anonymous users during ongoing tournament', () => {
         mountGSC({ loginStatus: LoginStatus.NotLogin, participant: false });
 
         cy.contains('Ongoing').should('be.visible');
         cy.contains('Real-Time Score').should('not.exist');
+        cy.get('.auto-uploader').should('not.exist');
     });
 
     it('hides real-time score for logged-in users before registration', () => {
@@ -88,6 +92,7 @@ describe('<GSC App />', () => {
 
         cy.contains('Ongoing').should('be.visible');
         cy.contains('Real-Time Score').should('not.exist');
+        cy.get('.auto-uploader').should('not.exist');
     });
 
     it('disables registration for logged-in users without real name', () => {
@@ -105,5 +110,6 @@ describe('<GSC App />', () => {
 
         cy.contains('Real-Time Score').should('be.visible');
         cy.wait('@participantVideos').its('response.statusCode').should('eq', 200);
+        cy.get('.auto-uploader').should('be.visible');
     });
 });

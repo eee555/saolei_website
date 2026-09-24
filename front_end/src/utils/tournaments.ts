@@ -25,6 +25,11 @@ export class TournamentParticipant {
     public set videos(videos: VideoAbstract[] | undefined) {
         this._videos = videos;
     }
+
+    public addVideo(video: VideoAbstract): void {
+        if (this._videos === undefined) this._videos = [video];
+        else this._videos.push(video);
+    }
 }
 
 type LocalizedString = string | Partial<Record<string, string>>;
@@ -106,10 +111,6 @@ export class Tournament {
 
     public get canInvalidate(): boolean {
         return !Tournament.cannotInvalidateStates.includes(this.state);
-    }
-
-    public get displayState(): TournamentState {
-        return this.getDisplayState();
     }
 
     public get gscData(): GSCTournamentData | undefined {

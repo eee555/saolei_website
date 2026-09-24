@@ -1,7 +1,7 @@
 <template>
     <h1>
         {{ tournament.getLocalName(local.language) }}
-        <TournamentStateIcon :state="tournament.displayState" />
+        <TournamentStateIcon :state="tournament.getDisplayState(globalNow)" />
     </h1>
     {{ t('local.schedule') }}{{ t('common.punct.colon') }}
     <span class="text">
@@ -16,6 +16,7 @@ import { useI18n } from 'vue-i18n';
 
 import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
 import { local } from '@/store';
+import { globalNow } from '@/utils/datetime';
 import { Tournament } from '@/utils/tournaments';
 
 defineProps({

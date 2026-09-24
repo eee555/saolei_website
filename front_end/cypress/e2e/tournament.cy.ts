@@ -609,10 +609,9 @@ describe('Weekly tournament', () => {
             expect(response.body.tournament_ids).to.not.include(tournamentId);
         });
 
-        cy.intercept('GET', '**/api/tournament/participants*').as('weeklyParticipantsAfterVideos');
         cy.intercept('GET', '**/api/tournament/get_videos/participant*').as('participantVideos');
-        cy.get('[data-cy=weekly-score-refresh]').click();
-        cy.wait('@weeklyParticipantsAfterVideos').its('response.statusCode').should('eq', 200);
+        cy.contains('[data-cy=tournament-data-tabs] .el-tabs__item', '即时成绩').click();
+        cy.get('[data-cy=personal-score-refresh]').click();
         cy.wait('@participantVideos').its('response.statusCode').should('eq', 200);
         cy.contains('.el-tabs__item', '录像').click();
         cy.get('.el-tab-pane:visible').last().within(() => {

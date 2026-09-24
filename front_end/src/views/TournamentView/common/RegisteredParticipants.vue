@@ -1,5 +1,5 @@
 <template>
-    <ElTable v-loading="loading" :data="participants" row-key="id" data-cy="weekly-participants">
+    <ElTable v-loading="loading" :data="participants" row-key="id" :data-cy="testId">
         <!-- @vue-generic {TournamentParticipant} -->
         <ElTableColumn :label="t('common.prop.realName')" min-width="150">
             <template #default="{ row }">
@@ -66,6 +66,7 @@ const props = defineProps({
     participants: { type: Array<TournamentParticipant>, required: true },
     canManage: { type: Boolean, required: true },
     loading: { type: Boolean, default: false },
+    testId: { type: String, default: 'weekly-participants' },
 });
 const emit = defineEmits<{
     deleted: [participantId: number];

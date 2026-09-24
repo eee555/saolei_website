@@ -1,48 +1,37 @@
 import { interceptFormData } from 'cypress-intercept-formdata';
+import { defineComponent, h, ref } from 'vue';
 
-import AutoUploader from './AutoUploader.vue';
+import CommonAutoUploader from '../common/AutoUploader.vue';
+
+import AutoUploaderFilter from './AutoUploaderFilter.vue';
 
 import i18n from '@/i18n';
 import type { VideoUploadResponse } from '@/services/videoUploadService';
-import { MS_State } from '@/utils/ms_const';
+import { load_video_file } from '@/utils/fileIO';
+import type { AnyVideo } from '@/utils/fileIO';
+import { MS_Mode, MS_State } from '@/utils/ms_const';
+import { VideoAbstract } from '@/utils/videoabstract';
 import { WeeklyParticipant, WeeklyTournamentFormat } from '@/utils/weekly';
+import { FakeDirectoryHandle, setDirectoryPicker, setPollInterval } from '@cy/support/autoUploader';
 import { binaryStringToUint8Array } from '@cy/support/stupidCypress';
 
+const AutoUploader = defineComponent({
+    props: {
+        participant: { type: WeeklyParticipant, required: true },
+        format: { type: String, default: WeeklyTournamentFormat.Classic },
+    },
+    setup(props) {
+        const filter = ref<{ matchesFilter: (video: AnyVideo, stat: VideoAbstract) => boolean }>();
+        return () => h(CommonAutoUploader, {
+            participant: props.participant,
+            filter: (video: AnyVideo, stat: VideoAbstract) => filter.value?.matchesFilter(video, stat) ?? false,
+        }, {
+            filter: () => h(AutoUploaderFilter, { ref: filter, participant: props.participant, format: WeeklyTournamentFormat.Classic }),
+        });
+    },
+});
+
 const weeklyToken = 'G11479';
-
-class FakeFileHandle {
-    public readonly kind = 'file';
-    public readonly name: string;
-    private readonly file: File;
-
-    public constructor(file: File) {
-        this.file = file;
-        this.name = file.name;
-    }
-
-    public getFile() {
-        return Promise.resolve(this.file);
-    }
-}
-
-class FakeDirectoryHandle {
-    public readonly kind = 'directory';
-    public readonly name = 'videos';
-    private readonly handles = new Map<string, FakeFileHandle>();
-
-    public addFile(file: File) {
-        this.handles.set(file.name, new FakeFileHandle(file));
-    }
-
-    public async *values(): AsyncGenerator<FakeFileHandle, void, unknown> {
-        await Promise.resolve();
-        yield* this.handles.values();
-    }
-}
-
-interface DirectoryPickerWindow extends Window {
-    showDirectoryPicker?: (options?: { mode?: 'read' | 'readwrite' }) => Promise<FileSystemDirectoryHandle>;
-}
 
 interface UploadResponseCase {
     label: string;
@@ -72,25 +61,6 @@ function mountAutoUploader(options: { participant?: WeeklyParticipant } = {}) {
             plugins: [i18n],
         },
     });
-}
-
-function setDirectoryPicker(directory?: FakeDirectoryHandle) {
-    cy.window().then((win) => {
-        const pickerWindow = win as DirectoryPickerWindow;
-        if (directory === undefined) {
-            Object.defineProperty(pickerWindow, 'showDirectoryPicker', { configurable: true, value: undefined });
-            return;
-        }
-        const picker = cy.stub().resolves(directory);
-        Object.defineProperty(pickerWindow, 'showDirectoryPicker', { configurable: true, value: picker });
-        cy.wrap(picker).as('showDirectoryPicker');
-    });
-}
-
-function setPollInterval(seconds: number) {
-    cy.contains('.auto-uploader__control', 'Poll interval').find('input').as('pollIntervalInput');
-    cy.get('@pollIntervalInput').clear();
-    cy.get('@pollIntervalInput').type(seconds.toString());
 }
 
 function loadStandardGSCFile() {
@@ -147,6 +117,7 @@ function startWatchingDirectory(directory: FakeDirectoryHandle, participant: Wee
 
     cy.contains('button', 'Select folder').should('not.be.disabled').click();
     cy.get('@showDirectoryPicker').should('have.been.calledOnce');
+    cy.contains('.el-dialog button', 'Watch new files only').click();
     cy.contains('Watching videos').should('be.visible');
 }
 
@@ -161,7 +132,7 @@ function expectUploadFailure(participant: WeeklyParticipant, action: 'upload fai
     cy.contains('Uploaded:').should('not.exist');
     cy.contains('Processing:').should('not.exist');
     cy.contains('Skipped:').should('not.exist');
-    cy.get('@consoleInfo').should('have.been.calledWithMatch', '[WeeklyAutoUploader]', action);
+    cy.get('@consoleInfo').should('have.been.calledWithMatch', '[AutoUploader]', action);
     cy.then(() => {
         expect(participant.videos).to.be.undefined;
         expect(participant.classic_et).to.deep.equal([[0, 240000], [0, 240000]]);
@@ -197,6 +168,38 @@ const uploadErrorResponseCases: UploadResponseCase[] = [
 describe('<AutoUploader />', () => {
     afterEach(() => {
         setDirectoryPicker();
+    });
+
+    it('applies the hardcoded weekly stages selected in the component', () => {
+        const participant = weeklyParticipant();
+        const data = { level: 'e', mode: MS_Mode.Standard, timems: 40000, bv: 100, software: 'e' };
+        const stat = new VideoAbstract(data);
+        participant.addVideo(stat);
+        participant.addVideo(stat);
+        let video: AnyVideo;
+        loadStandardGSCFile().then(async (file) => {
+            video = load_video_file(await file.arrayBuffer(), file.name);
+        });
+        mountAutoUploader({ participant }).then(({ wrapper }) => {
+            const filter: (video: AnyVideo, stat: VideoAbstract) => boolean = wrapper.findComponent(CommonAutoUploader).props('filter');
+            cy.get('.el-select').should('contain.text', 'Supported tournament videos');
+            ['All tournament videos', 'Supported tournament videos', 'Score-improving videos'].forEach((label, stage) => {
+                cy.get('.el-select').click();
+                cy.contains('.el-select-dropdown:visible .el-select-dropdown__item', label).click();
+                cy.then(() => {
+                    for (const token of ['', 'G114', 'G11479X']) {
+                        participant.token = token;
+                        expect(filter(video, stat)).to.equal(false);
+                    }
+                    participant.token = weeklyToken;
+                    expect(filter(video, new VideoAbstract({ ...data, software: 'a' }))).to.equal(false);
+                    expect(filter(video, new VideoAbstract({ ...data, mode: MS_Mode.SpeedNG }))).to.equal(stage === 0);
+                    expect(filter(video, new VideoAbstract({ ...data, level: 'b' }))).to.equal(stage === 0);
+                    expect(filter(video, stat)).to.equal(stage < 2);
+                    expect(filter(video, new VideoAbstract({ ...data, mode: MS_Mode.NoFlag, timems: 39999 }))).to.equal(true);
+                });
+            });
+        });
     });
 
     it('disables directory selection when the browser does not support directory handles', () => {
@@ -249,7 +252,7 @@ describe('<AutoUploader />', () => {
         cy.contains('Processing:').should('not.exist');
         cy.contains('Skipped:').should('not.exist');
         cy.contains('Failed:').should('not.exist');
-        cy.get('@consoleInfo').should('have.been.calledWithMatch', '[WeeklyAutoUploader]', 'upload success');
+        cy.get('@consoleInfo').should('have.been.calledWithMatch', '[AutoUploader]', 'upload success');
         cy.then(() => {
             expect(participant.videos).to.have.length(1);
             expect(participant.videos?.[0]).to.include({
@@ -284,7 +287,7 @@ describe('<AutoUploader />', () => {
         cy.contains('Processing:').should('not.exist');
         cy.contains('Skipped:').should('not.exist');
         cy.contains('Failed:').should('not.exist');
-        cy.get('@consoleInfo').should('have.been.calledWithMatch', '[WeeklyAutoUploader]', 'upload success');
+        cy.get('@consoleInfo').should('have.been.calledWithMatch', '[AutoUploader]', 'upload success');
         cy.then(() => {
             expect(participant.videos).to.have.length(1);
             expect(participant.videos?.[0]).to.include({

@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createDirectoryNewFileEmitter } from './fileIO';
+import type { DirectoryNewFileListener } from './fileIO';
 
 class FakeFileHandle {
     public readonly kind = 'file';
@@ -86,6 +87,68 @@ describe('DirectoryNewFileEmitter', () => {
         expect(emitted).toEqual(['video.avf']);
 
         emitter.stop();
+    });
+
+    it('resumes with only files added while paused and keeps the original baseline', async () => {
+        const directory = new FakeDirectoryHandle([new File(['old'], 'old.evf')]);
+        const emitter = createDirectoryNewFileEmitter(directory as unknown as FileSystemDirectoryHandle);
+        const listener = vi.fn<DirectoryNewFileListener>();
+        emitter.onFile(listener);
+        await emitter.start(false);
+        emitter.stop();
+        directory.addFile(new File(['new'], 'new.evf'));
+        await emitter.start(true);
+        emitter.stop();
+        await emitter.start(true);
+        emitter.stop();
+        expect(listener).toHaveBeenCalledTimes(1);
+        expect(listener.mock.calls[0][0].file.name).toBe('new.evf');
+    });
+
+    it('does not restart polling after cancelling an initial scan', async () => {
+        vi.useFakeTimers();
+        const emitter = createDirectoryNewFileEmitter(directoryHandle([new File(['a'], 'a.evf'), new File(['b'], 'b.evf')]));
+        const listener = vi.fn(() => {
+            emitter.stop();
+        });
+        emitter.onFile(listener);
+        await emitter.start(true);
+        await vi.advanceTimersByTimeAsync(10000);
+        expect(listener).toHaveBeenCalledTimes(1);
+        expect(emitter.running).toBe(false);
+        expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it('waits for processing before dispatching the next file and resumes unprocessed files', async () => {
+        const emitter = createDirectoryNewFileEmitter(directoryHandle([new File(['a'], 'a.evf'), new File(['b'], 'b.evf')]));
+        let release!: () => void;
+        const gate = new Promise<void>((resolve) => {
+            release = resolve;
+        });
+        const listener = vi.fn<DirectoryNewFileListener>().mockImplementationOnce(() => gate);
+        emitter.onFile(listener);
+        const starting = emitter.start(true);
+        await vi.waitFor(() => {
+            expect(listener).toHaveBeenCalledTimes(1);
+        });
+        emitter.stop();
+        release();
+        await starting;
+        expect(listener).toHaveBeenCalledTimes(1);
+        await emitter.start(true);
+        emitter.stop();
+        expect(listener).toHaveBeenCalledTimes(2);
+        expect(listener.mock.calls[1][0].file.name).toBe('b.evf');
+    });
+
+    it('does not create a timer when stopped during baseline enumeration', async () => {
+        vi.useFakeTimers();
+        const emitter = createDirectoryNewFileEmitter(directoryHandle());
+        const starting = emitter.start(false);
+        emitter.stop();
+        await starting;
+        expect(emitter.running).toBe(false);
+        expect(vi.getTimerCount()).toBe(0);
     });
 
     it('ignores child directories', async () => {
