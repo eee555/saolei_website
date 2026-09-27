@@ -126,10 +126,24 @@ function setPersonalLoading(value: boolean, id: number) {
     if (participant.value?.id === id) personalLoading.value = value;
 }
 
-const { t } = useI18n({ messages: {
-    'zh-cn': { local: { data: '比赛数据', participants: '参赛者', export: '导出所有录像数据', refreshParticipants: '刷新参赛者', refreshPersonal: '刷新个人录像' } },
-    en: { local: { data: 'Tournament data', participants: 'Participants', export: 'Export all video stats', refreshParticipants: 'Refresh participants', refreshPersonal: 'Refresh personal videos' } },
-} });
+const i18nMessages = {
+    'zh-cn': { local: {
+        data: '比赛数据',
+        participants: '参赛者',
+        export: '导出所有录像数据',
+        refreshParticipants: '刷新参赛者',
+        refreshPersonal: '刷新个人录像',
+    } },
+    en: { local: {
+        data: 'Tournament data',
+        participants: 'Participants',
+        export: 'Export all video stats',
+        refreshParticipants: 'Refresh participants',
+        refreshPersonal: 'Refresh personal videos',
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
 </script>
 
 <style scoped>

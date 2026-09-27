@@ -11,7 +11,7 @@
                 {{ t('common.msg.realNameRequired') }}
             </span>
         </div>
-        <div v-else-if="!identifierRegistrationOpen || token === ''">
+        <div v-else-if="token === ''">
             {{ t('local.registeredPreparing') }}
         </div>
         <div v-else>
@@ -51,7 +51,6 @@ import type { TournamentParticipant } from '@/utils/tournaments';
 const props = defineProps({
     order: { type: Number, default: 0 },
     token: { type: String, default: '' },
-    identifierRegistrationOpen: { type: Boolean, default: false },
 });
 const emit = defineEmits<{
     refresh: [];
@@ -88,7 +87,7 @@ async function registerParticipant() {
 }
 
 async function registerIdentifier() {
-    if (!props.identifierRegistrationOpen || !props.token) return;
+    if (!props.token) return;
     registeringIdentifier.value = true;
     await proxy.$axios.post('/api/tournament/gsc/participant/identifier', {
         identifier: newIdentifier.value,
@@ -117,10 +116,16 @@ async function registerIdentifier() {
     registeringIdentifier.value = false;
 }
 
-const { t } = useI18n({ messages: {
-    'zh-cn': { local: { registeredPreparing: '已报名，比赛开始后公布比赛标识并开放 Arbiter 标识注册。' } },
-    en: { local: { registeredPreparing: 'Registered. The tournament token and Arbiter identifier registration will be available when the tournament starts.' } },
-} });
+const i18nMessages = {
+    'zh-cn': { local: {
+        registeredPreparing: '已报名，比赛开始后公布比赛标识并开放 Arbiter 标识注册。'
+    } },
+    en: { local: {
+        registeredPreparing: 'Registered. The tournament token and Arbiter identifier registration will be available when the tournament starts.',
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
 </script>
 
 <style scoped>

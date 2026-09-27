@@ -156,6 +156,7 @@ describe('<GSC App />', () => {
     it('applies the inline GSC filters to parsed identifiers, modes, levels and BV', () => {
         mountGSC({ loginStatus: LoginStatus.IsLogin, participant: true });
         cy.wait('@participantVideos');
+        cy.get('.auto-uploader .el-select').should('contain.text', 'Supported levels and modes');
         cy.get<ComponentWrapper<typeof App>>('@vue').then((wrapper) => {
             const filter: (video: AutoUploadVideo) => boolean = wrapper.findComponent(AutoUploader).props('filter');
             ['All tournament videos', 'Supported levels and modes', '3BV minimum met'].forEach((label, stage) => {

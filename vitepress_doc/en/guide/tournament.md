@@ -69,7 +69,7 @@ If your browser supports [`showDirectoryPicker`](https://developer.mozilla.org/d
 ### Golden Sheep Cup
 
 1. All tournament videos: AVF replays must have a nonempty player identifier that exactly matches your registered Arbiter identifier. For other software, the tournament identifiers must include this tournament's token.
-2. Supported levels and modes: Beginner, Intermediate, or Expert in Standard or NF mode.
-3. 3BV minimum met: at least 10 for Beginner, 30 for Intermediate, and 100 for Expert. This is the default filter.
+2. Supported levels and modes: Beginner, Intermediate, or Expert in Standard or NF mode. This is the default filter.
+3. 3BV minimum met: at least 10 for Beginner, 30 for Intermediate, and 100 for Expert.
 
 Personal replays cannot be refreshed while monitoring or processing files. Automatic uploading cannot start while personal replays are loading.

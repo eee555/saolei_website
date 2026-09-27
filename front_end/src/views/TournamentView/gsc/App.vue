@@ -4,7 +4,7 @@
             <Description />
         </template>
         <template #participationGuide>
-            <TokenGuide :identifier="participant?.arbiter_identifier__identifier ?? ''" :participant="participant" :order="tournament.gscData?.order" :token="token" :identifier-registration-open="state === TournamentState.Ongoing" @refresh="refresh" />
+            <TokenGuide :identifier="participant?.arbiter_identifier__identifier ?? ''" :participant="participant" :order="tournament.gscData?.order" :token="token" @refresh="refresh" />
         </template>
         <template #autoUploaderFilter>
             <ElSelect v-model="filterLevel" size="small" style="width: 250px">
@@ -62,7 +62,7 @@ watch(state, async (value, previous) => {
     }
 });
 
-const filterLevel = ref('bv');
+const filterLevel = ref('supported');
 
 function matchesFilter(video: AutoUploadVideo): boolean {
     if (!participant.value) return false;
