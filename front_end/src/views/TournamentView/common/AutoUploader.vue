@@ -78,6 +78,8 @@ import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
 import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import type { AutoUploadVideo } from './utils';
+
 import BaseTagSupport from '@/components/common/BaseTagSupport.vue';
 import InputNumber from '@/components/common/InputNumber.vue';
 import StackBar from '@/components/visualization/StackBar/App.vue';
@@ -86,13 +88,12 @@ import type { VideoUploadResult } from '@/services/videoUploadService';
 import { sleep } from '@/utils';
 import { globalNow } from '@/utils/datetime';
 import { createDirectoryNewFileEmitter, extract_stat, load_video_file } from '@/utils/fileIO';
-import type { AnyVideo, DirectoryNewFileEmitter, DirectoryNewFileEvent } from '@/utils/fileIO';
+import type { DirectoryNewFileEmitter, DirectoryNewFileEvent } from '@/utils/fileIO';
 import { TournamentParticipant } from '@/utils/tournaments';
-import type { VideoAbstract } from '@/utils/videoabstract';
 
 const props = defineProps({
     participant: { type: TournamentParticipant, required: true },
-    filter: { type: Function as PropType<(video: AnyVideo, stat: VideoAbstract) => boolean>, required: true },
+    filter: { type: Function as PropType<(video: AutoUploadVideo) => boolean>, required: true },
     enabled: { type: Boolean, default: true },
     disabled: { type: Boolean, default: false },
 });
@@ -105,12 +106,6 @@ defineSlots<{
 
 interface DirectoryPickerWindow extends Window {
     showDirectoryPicker?: (options?: { mode?: 'read' | 'readwrite' }) => Promise<FileSystemDirectoryHandle>;
-}
-
-interface AutoUploadVideo {
-    filename: string;
-    video: AnyVideo;
-    stat: VideoAbstract;
 }
 
 const directoryName = ref('');
@@ -230,7 +225,7 @@ async function processFile(file: File, owner: TournamentParticipant, currentGene
         return;
     }
 
-    if (currentGeneration !== generation || disposed || !canSelectDirectory.value || owner !== props.participant || !props.filter(video.video, video.stat)) {
+    if (currentGeneration !== generation || disposed || !canSelectDirectory.value || owner !== props.participant || !props.filter(video)) {
         skippedCount.value += 1;
         logUpload('skip filter', video);
         return;
@@ -263,8 +258,9 @@ async function loadAutoUploadVideo(file: File): Promise<AutoUploadVideo | undefi
         const video = load_video_file(buffer, file.name);
         return {
             filename: file.name,
-            video,
             stat: extract_stat(video),
+            identifier: video.player_identifier,
+            tokens: video.race_identifier.split(',').map((s) => s.trim()),
         };
     } catch (error) {
         console.error(error);
@@ -284,7 +280,8 @@ function logUpload(action: string, video: AutoUploadVideo, result?: VideoUploadR
         timems: video.stat.timems,
         state: video.stat.state,
         result: result?.type,
-        raceIdentifier: video.video.race_identifier,
+        identifier: video.identifier,
+        tokens: video.tokens,
     });
 }
 

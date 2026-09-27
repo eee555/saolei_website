@@ -1,3 +1,7 @@
+
+import AutoUploader from '../common/AutoUploader.vue';
+import type { AutoUploadVideo } from '../common/utils';
+
 import App from './App.vue';
 
 import $axios from '@/http';
@@ -6,8 +10,9 @@ import type { TournamentParticipantResponse } from '@/services/tournamentService
 import { store } from '@/store';
 import { pinia } from '@/store/create';
 import { LoginStatus } from '@/utils/common/structInterface';
-import { TournamentState, TournamentSubclass } from '@/utils/ms_const';
+import { MS_Mode, TournamentState, TournamentSubclass } from '@/utils/ms_const';
 import { Tournament } from '@/utils/tournaments';
+import { VideoAbstract } from '@/utils/videoabstract';
 
 const tournamentId = 8;
 
@@ -118,6 +123,39 @@ describe('<Weekly App />', () => {
 
         cy.contains('Real-Time Score').should('be.visible');
         cy.wait('@participantVideos').its('response.statusCode').should('eq', 200);
+    });
+
+    it('applies the inline weekly token, supported and score-improving filters', () => {
+        mountWeekly({ loginStatus: LoginStatus.IsLogin, registered: true });
+        cy.wait('@participantVideos');
+        cy.get<ComponentWrapper<typeof App>>('@vue').then((wrapper) => {
+            const filter: (video: AutoUploadVideo) => boolean = wrapper.findComponent(AutoUploader).props('filter');
+            ['All tournament videos', 'Supported tournament videos', 'Score-improving videos'].forEach((label, stage) => {
+                cy.get('.auto-uploader .el-select').click();
+                cy.contains('.el-select-dropdown:visible .el-select-dropdown__item', label).click();
+                cy.then(() => {
+                    const video: AutoUploadVideo = { filename: 'test.evf', identifier: '', tokens: ['WEEKLY-TOKEN'], stat: new VideoAbstract({ level: 'e', mode: MS_Mode.Standard, timems: 40000, bv: 100, software: 'e' }) };
+                    expect(filter(video)).to.equal(true);
+                    expect(filter({ ...video, tokens: ['WRONG'] })).to.equal(false);
+                    video.stat.software = 'a';
+                    expect(filter(video)).to.equal(false);
+                    video.stat.software = 'e';
+                    video.stat.mode = MS_Mode.SpeedNG;
+                    expect(filter(video)).to.equal(stage === 0);
+                    video.stat.mode = MS_Mode.NoFlag;
+                    video.stat.level = 'b';
+                    expect(filter(video)).to.equal(stage === 0);
+                    video.stat.level = 'e';
+                    video.stat.timems = 240000;
+                    expect(filter(video)).to.equal(stage < 2);
+                    video.stat.level = 'i';
+                    video.stat.timems = 60000;
+                    expect(filter(video)).to.equal(stage < 2);
+                    video.stat.timems = 59999;
+                    expect(filter(video)).to.equal(true);
+                });
+            });
+        });
     });
 
     it('uses the registration response without fetching participants again', () => {

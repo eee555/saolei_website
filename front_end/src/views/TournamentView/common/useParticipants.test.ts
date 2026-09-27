@@ -8,7 +8,7 @@ import { fetchParticipantList } from '@/services/tournamentService';
 import { store } from '@/store';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { globalNow } from '@/utils/datetime';
-import { MS_Mode, TournamentState } from '@/utils/ms_const';
+import { MS_Mode, TournamentState, TournamentSubclass } from '@/utils/ms_const';
 import { Tournament, TournamentParticipant } from '@/utils/tournaments';
 import { VideoAbstract } from '@/utils/videoabstract';
 import { WeeklyParticipant } from '@/utils/weekly';
@@ -27,8 +27,8 @@ vi.mock('@/utils/datetime', async (importOriginal) => {
 
 const scopes: EffectScope[] = [];
 const clock = globalNow as Ref<Date>;
-function setup() {
-    const tournament = reactive(new Tournament({ id: 1, state: TournamentState.Normal, start_time: '2026-01-01T00:00:00Z', end_time: '2026-01-02T00:00:00Z' }));
+function setup(subclass = TournamentSubclass.Weekly) {
+    const tournament = reactive(new Tournament({ id: 1, subclass, state: TournamentState.Normal, start_time: '2026-01-01T00:00:00Z', end_time: '2026-01-02T00:00:00Z' }));
     const fetchResults = vi.fn<(id: number) => Promise<WeeklyParticipant[]>>().mockResolvedValue([]);
     const scope = effectScope();
     scopes.push(scope);
@@ -95,6 +95,22 @@ describe('public tournament participants', () => {
         expect(original.videos).toBe(videos);
         expect(original.classic_score).toBe(score);
         expect(original.token).toBe('new');
+    });
+
+    it('loads GSC registrations before start and refreshes hidden tokens at the start boundary', async () => {
+        clock.value = new Date('2025-12-31T23:59:59Z');
+        vi.mocked(fetchParticipantList).mockResolvedValue([new TournamentParticipant({ id: 10, user_id: 99, token: '' })]);
+        const state = setup(TournamentSubclass.GSC);
+        await vi.waitFor(() => {
+            expect(state.participant.value?.token).toBe('');
+        });
+        expect(state.index.value).toBe(0);
+        vi.mocked(fetchParticipantList).mockResolvedValue([new TournamentParticipant({ id: 10, user_id: 99, token: 'G12345' })]);
+        clock.value = new Date('2026-01-01T00:00:00Z');
+        await vi.waitFor(() => {
+            expect(state.participant.value?.token).toBe('G12345');
+        });
+        expect(fetchParticipantList).toHaveBeenCalledTimes(2);
     });
 
     it('does not let an in-flight list response undo registration or deletion', async () => {

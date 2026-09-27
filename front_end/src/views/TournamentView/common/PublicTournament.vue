@@ -14,7 +14,7 @@
             <slot name="autoUploaderFilter" />
         </template>
     </AutoUploader>
-    <template v-if="state === TournamentState.Awarded || showLiveData">
+    <template v-if="state === TournamentState.Awarded || showLiveData || showPreparingParticipants">
         <h3 class="tournament-data-heading">
             {{ t('local.data') }}
             <DataExporter v-if="state === TournamentState.Awarded" :key="tournament.id" v-model="allVideos" lazy :fetch-data="getVideos">
@@ -39,7 +39,7 @@
                 </template>
                 <slot name="allSummary" :data="participants" :on-participant-select="ignoreSelection" />
             </ElTabPane>
-            <ElTabPane v-if="participant" name="personal">
+            <ElTabPane v-if="participant && showLiveData" name="personal">
                 <template #label>
                     <span>{{ t('gsc.realTimeScore') }}</span>
                     <ElButton text circle :title="t('local.refreshPersonal')" :aria-label="t('local.refreshPersonal')" :disabled="uploadBusy || personalLoading" data-cy="personal-score-refresh" @click.stop="personalView?.refresh()">
@@ -66,13 +66,13 @@ import AllParticipants from './AllParticipants.vue';
 import AutoUploader from './AutoUploader.vue';
 import PersonalView from './PersonalView.vue';
 import Title from './Title.vue';
+import type { AutoUploadVideo } from './utils';
 
 import { BaseIconRefresh } from '@/components/common/icon';
 import DataExporter from '@/components/widgets/DataExporter.vue';
 import { fetchTournamentVideos } from '@/services/tournamentService';
 import { globalNow } from '@/utils/datetime';
-import type { AnyVideo } from '@/utils/fileIO';
-import { TournamentState } from '@/utils/ms_const';
+import { TournamentState, TournamentSubclass } from '@/utils/ms_const';
 import type { Tournament, TournamentParticipant } from '@/utils/tournaments';
 import type { VideoAbstract, VideoAbstractData } from '@/utils/videoabstract';
 
@@ -83,7 +83,7 @@ const props = defineProps({
     loading: { type: Boolean, default: false },
     refreshParticipants: { type: Function as PropType<() => Promise<void>>, required: true },
     autoUploaderEnabled: { type: Boolean, default: false },
-    autoUploaderFilter: { type: Function as PropType<(video: AnyVideo, stat: VideoAbstract) => boolean>, required: true },
+    autoUploaderFilter: { type: Function as PropType<(video: AutoUploadVideo) => boolean>, required: true },
 });
 defineSlots<{
     description: () => unknown;
@@ -94,6 +94,7 @@ defineSlots<{
 }>();
 const state = computed(() => props.tournament.getDisplayState(globalNow.value));
 const showLiveData = computed(() => state.value === TournamentState.Ongoing || state.value === TournamentState.Finished);
+const showPreparingParticipants = computed(() => state.value === TournamentState.Preparing && props.tournament.subclass === TournamentSubclass.GSC);
 const participant = computed<TParticipant | undefined>(() => props.participants[props.index]);
 const uploadParticipant = shallowRef<TParticipant>();
 const uploadBusy = ref(false);

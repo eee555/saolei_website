@@ -3,16 +3,16 @@
         <ElLink :href="gscGuideUrl" target="_blank" rel="noopener noreferrer">
             {{ t('gsc.identifierGuide.guideLink') }}
         </ElLink>
-        <div v-if="token === ''">
-            {{ t('gsc.identifierGuide.preparing') }}
-        </div>
-        <div v-else-if="!participant">
+        <div v-if="!participant">
             <ElButton :disabled="store.isUserAnonymous" :loading="registeringParticipant" @click="registerParticipant">
                 {{ t('common.button.register') }}
             </ElButton>
             <span v-if="store.isUserAnonymous" class="text text-danger">
                 {{ t('common.msg.realNameRequired') }}
             </span>
+        </div>
+        <div v-else-if="!identifierRegistrationOpen || token === ''">
+            {{ t('local.registeredPreparing') }}
         </div>
         <div v-else>
             {{ t('gsc.identifierGuide.token') }}
@@ -51,6 +51,7 @@ import type { TournamentParticipant } from '@/utils/tournaments';
 const props = defineProps({
     order: { type: Number, default: 0 },
     token: { type: String, default: '' },
+    identifierRegistrationOpen: { type: Boolean, default: false },
 });
 const emit = defineEmits<{
     refresh: [];
@@ -60,7 +61,6 @@ const identifier = defineModel('identifier', { type: String, default: '' });
 const participant = defineModel<TournamentParticipant | null>('participant', { default: null });
 
 const { proxy } = useCurrentInstance();
-const { t } = useI18n();
 
 const errorText = ref<string>('');
 const newIdentifier = ref<string>('');
@@ -88,6 +88,7 @@ async function registerParticipant() {
 }
 
 async function registerIdentifier() {
+    if (!props.identifierRegistrationOpen || !props.token) return;
     registeringIdentifier.value = true;
     await proxy.$axios.post('/api/tournament/gsc/participant/identifier', {
         identifier: newIdentifier.value,
@@ -115,6 +116,11 @@ async function registerIdentifier() {
     }).catch(httpErrorNotification);
     registeringIdentifier.value = false;
 }
+
+const { t } = useI18n({ messages: {
+    'zh-cn': { local: { registeredPreparing: '已报名，比赛开始后公布比赛标识并开放 Arbiter 标识注册。' } },
+    en: { local: { registeredPreparing: 'Registered. The tournament token and Arbiter identifier registration will be available when the tournament starts.' } },
+} });
 </script>
 
 <style scoped>

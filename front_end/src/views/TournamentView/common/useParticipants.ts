@@ -6,7 +6,7 @@ import { fetchParticipantList } from '@/services/tournamentService';
 import { store } from '@/store';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { globalNow } from '@/utils/datetime';
-import { TournamentState } from '@/utils/ms_const';
+import { TournamentState, TournamentSubclass } from '@/utils/ms_const';
 import type { Tournament, TournamentParticipant } from '@/utils/tournaments';
 
 interface ParticipantState<T> {
@@ -32,7 +32,8 @@ export function useParticipants<T extends TournamentParticipant>(tournament: () 
         const currentRequest = ++request;
         const { id } = tournament();
         const awarded = state.value === TournamentState.Awarded;
-        if (!awarded && state.value !== TournamentState.Ongoing && state.value !== TournamentState.Finished) {
+        const preparingGSC = state.value === TournamentState.Preparing && tournament().subclass === TournamentSubclass.GSC;
+        if (!awarded && !preparingGSC && state.value !== TournamentState.Ongoing && state.value !== TournamentState.Finished) {
             participants.value = [];
             loading.value = false;
             return;

@@ -2,12 +2,11 @@
 import { defineComponent, h, ref } from 'vue';
 
 import AutoUploader from './AutoUploader.vue';
+import type { AutoUploadVideo } from './utils';
 
 import i18n from '@/i18n';
-import type { AnyVideo } from '@/utils/fileIO';
 import { MS_State } from '@/utils/ms_const';
 import { TournamentParticipant } from '@/utils/tournaments';
-import type { VideoAbstract } from '@/utils/videoabstract';
 import { FakeDirectoryHandle, setDirectoryPicker, setPollInterval } from '@cy/support/autoUploader';
 import { binaryStringToUint8Array } from '@cy/support/stupidCypress';
 
@@ -36,9 +35,10 @@ describe('<Common AutoUploader />', () => {
             end_time: new Date('2099-01-01T00:00:00Z'),
         });
         const enabled = ref(false);
-        const filter = cy.stub().callsFake((video: AnyVideo, stat: VideoAbstract) => {
-            expect(video.race_identifier).to.equal('G11479');
-            expect(stat).to.include({ level: 'e', timems: 41021 });
+        const filter = cy.stub().callsFake((video: AutoUploadVideo) => {
+            expect(video.tokens).to.deep.equal(['G11479']);
+            expect(video.identifier).to.be.a('string');
+            expect(video.stat).to.include({ level: 'e', timems: 41021 });
             return enabled.value;
         }).as('filter');
         const TestHost = defineComponent({
