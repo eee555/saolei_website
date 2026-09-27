@@ -118,7 +118,7 @@ async function registerIdentifier() {
 
 const i18nMessages = {
     'zh-cn': { local: {
-        registeredPreparing: '已报名，比赛开始后公布比赛标识并开放 Arbiter 标识注册。'
+        registeredPreparing: '已报名，比赛开始后公布比赛标识并开放 Arbiter 标识注册。',
     } },
     en: { local: {
         registeredPreparing: 'Registered. The tournament token and Arbiter identifier registration will be available when the tournament starts.',

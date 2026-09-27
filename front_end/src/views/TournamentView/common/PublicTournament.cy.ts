@@ -2,6 +2,7 @@ import { defineComponent, h, reactive } from 'vue';
 
 import PublicTournament from './PublicTournament.vue';
 
+import $axios from '@/http';
 import i18n from '@/i18n';
 import { globalNow } from '@/utils/datetime';
 import { TournamentState } from '@/utils/ms_const';
@@ -29,7 +30,7 @@ function mountTournament(index = 0, state = TournamentState.Normal) {
             personalSummary: ({ videos }: { videos: VideoAbstract[] }) => h('p', { 'data-cy': 'summary-count' }, `Videos: ${videos.length}`),
         }),
     });
-    cy.mount(Host, { global: { plugins: [i18n] } });
+    cy.mount(Host, { global: { plugins: [i18n], config: { globalProperties: { $axios } } } });
     return data;
 }
 
@@ -119,6 +120,7 @@ describe('<PublicTournament />', () => {
         cy.contains('button', 'Export all video stats').should('have.length', 1).click();
         cy.wait('@allVideos');
         cy.contains('button', 'Player row').click();
+        cy.get('[data-cy=all-participants-tabs] #tab-10').should('have.class', 'is-active').and('contain.text', 'User#99');
         cy.get('[data-cy=summary-count]').should('be.visible');
         cy.contains('Download videos').should('not.exist');
     });
