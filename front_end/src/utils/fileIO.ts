@@ -124,7 +124,7 @@ export interface DirectoryNewFileEmitterOptions {
 
 export interface DirectoryNewFileEmitter {
     readonly running: boolean;
-    start: () => Promise<void>;
+    start: (emitExisting?: boolean, pollIntervalMs?: number) => Promise<void>;
     stop: () => void;
     scan: () => Promise<DirectoryNewFileEvent[]>;
     onFile: (listener: DirectoryNewFileListener) => () => void;
@@ -137,7 +137,9 @@ class PollingDirectoryNewFileEmitter implements DirectoryNewFileEmitter {
     private readonly pollIntervalMs: number;
     private readonly emitExisting: boolean;
     private timer: ReturnType<typeof setInterval> | undefined;
-    private scanning = false;
+    private activeScan?: Promise<DirectoryNewFileEvent[]>;
+    private generation = 0;
+    private starting = false;
 
     public constructor(directory: FileSystemDirectoryHandle, options: DirectoryNewFileEmitterOptions = {}) {
         this.directory = directory;
@@ -146,44 +148,41 @@ class PollingDirectoryNewFileEmitter implements DirectoryNewFileEmitter {
     }
 
     public get running() {
-        return this.timer !== undefined;
+        return this.starting || this.timer !== undefined;
     }
 
-    public async start() {
+    public async start(emitExisting = this.emitExisting, pollIntervalMs = this.pollIntervalMs) {
         if (this.running) return;
-        if (this.emitExisting) {
-            await this.scan();
-        } else {
-            await this.rememberCurrentFiles();
+        const generation = ++this.generation;
+        this.starting = true;
+        try {
+            await this.activeScan;
+            if (generation !== this.generation) return;
+            if (emitExisting) await this.scan();
+            else await this.rememberCurrentFiles(generation);
+            if (generation !== this.generation) return;
+            this.timer = setInterval(() => {
+                void this.scan().catch(console.error);
+            }, pollIntervalMs);
+        } finally {
+            if (generation === this.generation) this.starting = false;
         }
-        this.timer = setInterval(() => {
-            void this.scan().catch(console.error);
-        }, this.pollIntervalMs);
     }
 
     public stop() {
-        if (this.timer === undefined) return;
+        this.generation += 1;
+        this.starting = false;
         clearInterval(this.timer);
         this.timer = undefined;
     }
 
     public async scan() {
-        if (this.scanning) return [];
-        this.scanning = true;
+        if (this.activeScan) return this.activeScan;
+        this.activeScan = this.scanFiles(this.generation);
         try {
-            const events: DirectoryNewFileEvent[] = [];
-            for await (const handle of this.directory.values()) {
-                if (handle.kind !== 'file') continue;
-                const fileHandle = handle;
-                if (this.knownFiles.has(fileHandle.name)) continue;
-                const file = await fileHandle.getFile();
-                this.knownFiles.add(fileHandle.name);
-                events.push({ file, handle: fileHandle, directory: this.directory });
-            }
-            this.emit(events);
-            return events;
+            return await this.activeScan;
         } finally {
-            this.scanning = false;
+            this.activeScan = undefined;
         }
     }
 
@@ -194,18 +193,34 @@ class PollingDirectoryNewFileEmitter implements DirectoryNewFileEmitter {
         };
     }
 
-    private async rememberCurrentFiles() {
+    private async scanFiles(generation: number) {
+        const events: DirectoryNewFileEvent[] = [];
         for await (const handle of this.directory.values()) {
-            if (handle.kind === 'file') {
-                this.knownFiles.add(handle.name);
+            if (generation !== this.generation) break;
+            if (handle.kind !== 'file' || this.knownFiles.has(handle.name)) continue;
+            const file = await handle.getFile();
+            if (generation !== this.generation) break;
+            this.knownFiles.add(handle.name);
+            const event = { file, handle, directory: this.directory };
+            events.push(event);
+            // Apply backpressure so cancelling a scan leaves unprocessed files for resume.
+            for (const listener of this.listeners) {
+                if (generation !== this.generation) break;
+                try {
+                    await listener(event);
+                } catch (error) {
+                    console.error(error);
+                }
             }
         }
+        return events;
     }
 
-    private emit(events: DirectoryNewFileEvent[]) {
-        for (const event of events) {
-            for (const listener of this.listeners) {
-                void Promise.resolve(listener(event)).catch(console.error);
+    private async rememberCurrentFiles(generation: number) {
+        for await (const handle of this.directory.values()) {
+            if (generation !== this.generation) break;
+            if (handle.kind === 'file') {
+                this.knownFiles.add(handle.name);
             }
         }
     }

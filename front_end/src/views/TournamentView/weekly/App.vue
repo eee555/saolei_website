@@ -1,148 +1,80 @@
 <template>
-    <Title :tournament="tournament" />
-    <Description />
-    <RegisteredParticipants
-        v-if="tournament.displayState === TournamentState.Ongoing"
-        :loading="loading"
-        :participants="participants"
-        :can-manage="canManageParticipants"
-        @deleted="handleParticipantDeleted"
-    />
-    <template v-if="([TournamentState.Preparing, TournamentState.Ongoing] as TournamentState[]).includes(tournament.displayState)">
-        <h3>{{ t('gsc.howToParticipate') }}</h3>
-        <TokenGuide
-            v-model:token="token"
-            :participant="participant"
-            :registration-open="tournament.displayState === TournamentState.Ongoing"
-            :tournament-id="tournament.id"
-            @registered="handleParticipantRegistered"
-        />
-    </template>
-    <template v-if="tournament.displayState === TournamentState.Ongoing && store.login_status === LoginStatus.IsLogin && participant !== null">
-        <h3>
-            {{ t('gsc.realTimeScore') }}&nbsp;
-            <ElLink data-cy="weekly-score-refresh" underline="never" :disabled="loading">
-                <BaseIconRefresh @click="refresh" />
-            </ElLink>
-        </h3>
-        <PersonalView :key="personalViewKey" v-model="participant" v-loading="loading">
-            <template #autoUploader="{ participant: currentParticipant }">
-                <AutoUploader :format="tournament.weeklyData?.tournament_format ?? WeeklyTournamentFormat.Classic" :participant="currentParticipant" />
-            </template>
-            <template #personalSummary="{ videos }">
-                <PersonalSummary :tournament-format="tournament.weeklyData?.tournament_format" :videos="videos" />
-            </template>
-        </PersonalView>
-    </template>
-    <template v-if="tournament.displayState === TournamentState.Awarded">
-        <h3>
-            {{ t('gsc.finalResults') }}
-        </h3>
-        <!-- @vue-generic {WeeklyParticipant} -->
-        <AllParticipants :tournament="tournament" :result="result">
-            <template #allSummary="{ data, onParticipantSelect }">
-                <AllSummary :data="data" @row-click="onParticipantSelect" />
-            </template>
-            <template #personalSummary="{ videos }">
-                <PersonalSummary :tournament-format="tournament.weeklyData?.tournament_format" :videos="videos" />
-            </template>
-        </AllParticipants>
-    </template>
+    <PublicTournament :tournament="tournament" :participants="participants" :index="index" :loading="loading" :refresh-participants="refresh" :auto-uploader-enabled="!store.isUserAnonymous" :auto-uploader-filter="matchesFilter">
+        <template #description>
+            <Description />
+        </template>
+        <template #participationGuide>
+            <TokenGuide :token="participant?.token ?? ''" :participant="participant" :registration-open="state === TournamentState.Ongoing" :tournament-id="tournament.id" @registered="registered" />
+        </template>
+        <template #autoUploaderFilter>
+            <ElSelect v-model="filterLevel" size="small" style="width: 250px">
+                <ElOption :label="t('local.tournament')" value="tournament" />
+                <ElOption :label="t('local.supported')" value="supported" />
+                <ElOption :label="t('local.scoreRefreshing')" value="scoreRefreshing" />
+            </ElSelect>
+        </template>
+        <template #allSummary="{ data, onParticipantSelect }">
+            <AllSummary v-if="state === TournamentState.Awarded" :data="data" @row-click="onParticipantSelect" />
+            <Registered v-else :participants="data" :loading="loading" :can-manage="canManage" @deleted="deleted" />
+        </template>
+        <template #personalSummary="{ videos }">
+            <PersonalSummary :tournament-format="format" :videos="videos" />
+        </template>
+    </PublicTournament>
 </template>
 
 <script setup lang="ts">
-import { ElLink, vLoading } from 'element-plus';
-import { computed, ref, watch } from 'vue';
-import type { PropType } from 'vue';
+import { ElOption, ElSelect } from 'element-plus';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import '@/styles/text.css';
-import AllParticipants from '../common/AllParticipants.vue';
-import PersonalView from '../common/PersonalView.vue';
-import Title from '../common/Title.vue';
+import PublicTournament from '../common/PublicTournament.vue';
+import { useParticipants } from '../common/useParticipants';
+import type { AutoUploadVideo } from '../common/utils';
 
 import AllSummary from './AllSummary.vue';
-import AutoUploader from './AutoUploader.vue';
 import Description from './Description.vue';
 import PersonalSummary from './PersonalSummary.vue';
-import RegisteredParticipants from './RegisteredParticipants.vue';
+import Registered from './Registered.vue';
 import TokenGuide from './TokenGuide.vue';
 
-import { BaseIconRefresh } from '@/components/common/icon';
-import { httpErrorNotification } from '@/components/Notifications';
-import { fetchParticipantList, fetchWeeklyResults } from '@/services/tournamentService';
+import { fetchWeeklyResults } from '@/services/tournamentService';
 import { store } from '@/store';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { TournamentState } from '@/utils/ms_const';
-import type { Tournament, TournamentParticipant } from '@/utils/tournaments';
-import { WeeklyParticipant, WeeklyTournamentFormat } from '@/utils/weekly';
+import { Tournament } from '@/utils/tournaments';
+import { isWeeklyClassicScoreMode, WeeklyParticipant, WeeklyTournamentFormat } from '@/utils/weekly';
 
-const props = defineProps({
-    tournament: {
-        type: Object as PropType<Tournament>,
-        required: true,
-    },
-});
+const props = defineProps({ tournament: { type: Tournament, required: true } });
+const { participants, index, participant, loading, state, refresh, registered, deleted } = useParticipants(() => props.tournament, (item) => new WeeklyParticipant(item), fetchWeeklyResults);
+const format = computed(() => props.tournament.weeklyData?.tournament_format ?? WeeklyTournamentFormat.Classic);
+const canManage = computed(() => store.login_status === LoginStatus.IsLogin && (store.user.is_staff || store.user.id === props.tournament.hostId));
 
-const { t } = useI18n();
+const filterLevel = ref('supported');
 
-const token = ref<string>('');
-const participant = ref<WeeklyParticipant | null>(null);
-const participants = ref<TournamentParticipant[]>([]);
-const result = ref<WeeklyParticipant[]>([]);
-const loading = ref(false);
-const personalViewKey = ref(0);
-const canManageParticipants = computed(() => store.login_status === LoginStatus.IsLogin
-    && (store.user.is_staff || store.user.id === props.tournament.hostId));
-
-async function refresh() {
-    loading.value = true;
-    try {
-        if (props.tournament.displayState === TournamentState.Ongoing) {
-            result.value = [];
-            participants.value = await fetchParticipantList(props.tournament.id);
-            const currentParticipant = store.login_status === LoginStatus.IsLogin
-                ? participants.value.find((item) => item.user_id === store.user.id)
-                : undefined;
-            participant.value = currentParticipant ? new WeeklyParticipant(currentParticipant) : null;
-            token.value = participant.value?.token ?? '';
-            personalViewKey.value += 1;
-        } else {
-            participants.value = [];
-            participant.value = null;
-            token.value = '';
-            result.value = props.tournament.state === TournamentState.Awarded
-                ? await fetchWeeklyResults(props.tournament.id)
-                : [];
-        }
-    } catch (error) {
-        httpErrorNotification(error);
-    }
-    loading.value = false;
+function matchesFilter(video: AutoUploadVideo): boolean {
+    if (participant.value === null) return false;
+    if (video.stat.software === 'a' || !participant.value.token) return false;
+    if (!video.tokens.includes(participant.value.token)) return false;
+    if (filterLevel.value === 'tournament') return true;
+    if (format.value !== WeeklyTournamentFormat.Classic || !isWeeklyClassicScoreMode(video.stat.mode)) return false;
+    if (video.stat.level !== 'i' && video.stat.level !== 'e') return false;
+    if (filterLevel.value === 'supported') return true;
+    return video.stat.timems < (video.stat.level === 'i' ? participant.value.classic_it[4][1] : participant.value.classic_et[1][1]);
 }
 
-function handleParticipantRegistered(registeredParticipant: WeeklyParticipant) {
-    participants.value = participants.value.filter((item) => item.id !== registeredParticipant.id);
-    participants.value.push(registeredParticipant);
-    participant.value = registeredParticipant;
-    token.value = registeredParticipant.token;
-    personalViewKey.value += 1;
-}
+const i18nMessages = {
+    'zh-cn': { local: {
+        tournament: '所有比赛录像',
+        supported: '有效的比赛录像',
+        scoreRefreshing: '刷新成绩的比赛录像',
+    } },
+    en: { local: {
+        tournament: 'All tournament videos',
+        supported: 'Supported tournament videos',
+        scoreRefreshing: 'Score-improving videos',
+    } },
+};
 
-function handleParticipantDeleted(participantId: number) {
-    participants.value = participants.value.filter((item) => item.id !== participantId);
-    if (participant.value?.id === participantId) {
-        participant.value = null;
-        token.value = '';
-        personalViewKey.value += 1;
-    }
-}
-
-watch(() => [
-    props.tournament.id,
-    props.tournament.state,
-    props.tournament.startDate?.getTime(),
-    props.tournament.endDate?.getTime(),
-    store.login_status,
-], refresh, { immediate: true });
+const { t } = useI18n({ messages: i18nMessages });
 </script>

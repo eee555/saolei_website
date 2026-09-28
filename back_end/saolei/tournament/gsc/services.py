@@ -116,7 +116,7 @@ def refresh_gsc_scores(tournament: GSCTournament, *, batch_size=1000):
         matched_video_count = 0
         ranked_videos = (
             tournament.videos
-            .filter(level=level, bv__gte=rule['bv_min'], timems__lt=rule['default'])
+            .filter(level=level, mode__in=[MS_TextChoices.Mode.STD, MS_TextChoices.Mode.NF], bv__gte=rule['bv_min'], timems__lt=rule['default'])
             .annotate(
                 gsc_row_number=Window(
                     expression=RowNumber(),

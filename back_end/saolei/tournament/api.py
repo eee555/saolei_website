@@ -12,7 +12,7 @@ from ninja.orm import create_schema
 from config.text_choices import Tournament_TextChoices
 from tournament.cache import TOURNAMENT_USER_CACHE_KEYS, TournamentCache
 from tournament.models import GSCTournament, Tournament, TournamentParticipant, TournamentUser
-from tournament.schema import ParticipantUserIdOutBase
+from tournament.schema import ParticipantOutBase
 from userprofile.decorators import login_required_error, staff_required
 from userprofile.models import UserProfile
 from utils.response import HttpResponseConflict
@@ -63,7 +63,7 @@ TournamentParticipantOut = create_schema(
         ('tournament_id', int, 0),
         ('arbiter_identifier__identifier', str | None, Field(None, alias='arbiter_identifier.identifier')),
     ],
-    base_class=ParticipantUserIdOutBase,
+    base_class=ParticipantOutBase,
 )
 
 
@@ -228,11 +228,14 @@ def delete_participant(request: HttpRequest, participant_id: int):
     - `ratelimit(key='user', rate='30/m', block=True)`
 
     Only the tournament host or staff may delete a participant.
+    GSC participants cannot be deleted while the tournament state is NORMAL.
     Videos and their tournament associations are preserved.
     """
     participant = get_object_or_404(TournamentParticipant.objects.select_related('tournament'), id=participant_id)
     if not request.user.is_staff and participant.tournament.host_id != request.user.id:
         raise HttpError(403, 'Only the tournament host or staff may delete a participant.')
+    if participant.tournament.subclass == Tournament_TextChoices.Subclass.GSC and participant.tournament.state == Tournament_TextChoices.State.NORMAL:
+        raise HttpError(403, 'Participants of a NORMAL GSC tournament cannot be deleted.')
     participant.delete()
     return 204, None
 

@@ -75,6 +75,20 @@ APP内引用链条：`utils -> models -> services -> api`
 ## 本地化
 本地化有两种模式：全局本地化位于`front_end\src\i18n`，用于可复用的messages。不可复用的messages放在vue SFC内部，示例`front_end\src\components\ExperimentalFeature.vue`。注意：SFC内部的本地化尽量往`script`块的末尾放。
 
+SFC本地化的messages代码风格示例：
+```ts
+const i18nMessages = {
+    'zh-cn': { local: {
+        // 每条message占一行
+    } },
+    en: { local: {
+        // 每条message占一行
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
+```
+
 ## 管理员页面
 管理员页面位于`front_end\src\views\StaffView`。这部分页面设计需要考虑到管理员身份与能力的特殊性：
 

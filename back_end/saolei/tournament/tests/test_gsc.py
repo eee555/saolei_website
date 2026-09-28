@@ -343,12 +343,17 @@ class TestGsc(TournamentTestCaseBase):
         beginner_times = [1000 + index * 100 for index in range(21)]
         intermediate_times = [10000 + index * 1000 for index in range(13)]
         expert_times = [40000 + index * 10000 for index in range(6)]
-        for timems in beginner_times:
-            self.create_video(level=MS_TextChoices.Level.BEGINNER, timems=timems, bv=GSC_Defaults.B_BV_MIN)
-        for timems in intermediate_times:
-            self.create_video(level=MS_TextChoices.Level.INTERMEDIATE, timems=timems, bv=GSC_Defaults.I_BV_MIN)
-        for timems in expert_times:
-            self.create_video(level=MS_TextChoices.Level.EXPERT, timems=timems, bv=GSC_Defaults.E_BV_MIN)
+        for level, bv, times in [
+            (MS_TextChoices.Level.BEGINNER, GSC_Defaults.B_BV_MIN, beginner_times),
+            (MS_TextChoices.Level.INTERMEDIATE, GSC_Defaults.I_BV_MIN, intermediate_times),
+            (MS_TextChoices.Level.EXPERT, GSC_Defaults.E_BV_MIN, expert_times),
+        ]:
+            for index, timems in enumerate(times):
+                mode = MS_TextChoices.Mode.STD if index % 2 == 0 else MS_TextChoices.Mode.NF
+                self.create_video(level=level, timems=timems, bv=bv, mode=mode)
+            for mode in MS_TextChoices.Mode.values:
+                if mode not in [MS_TextChoices.Mode.STD, MS_TextChoices.Mode.NF]:
+                    self.create_video(level=level, timems=1, bv=bv, mode=mode)
 
         self.create_video(level=MS_TextChoices.Level.BEGINNER, timems=999, bv=GSC_Defaults.B_BV_MIN - 1)
         self.create_video(level=MS_TextChoices.Level.INTERMEDIATE, timems=GSC_Defaults.IT, bv=GSC_Defaults.I_BV_MIN)

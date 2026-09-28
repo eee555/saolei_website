@@ -1,8 +1,32 @@
 import { describe, expect, it } from 'vitest';
 
-import { GSCParticipant } from './gsc';
-import { GSCDefaults } from './ms_const';
+import { GSCBVMin, GSCParticipant, isGSCSupportedVideo, meetsGSCBV } from './gsc';
+import { GSCDefaults, MS_Mode } from './ms_const';
 import { TournamentParticipant } from './tournaments';
+import { VideoAbstract } from './videoabstract';
+import type { VideoAbstractData } from './videoabstract';
+
+function replay(init: Partial<VideoAbstractData> = {}) {
+    return new VideoAbstract({ level: 'e', mode: MS_Mode.Standard, timems: 40000, bv: 100, software: 'e', ...init });
+}
+
+describe('GSC score eligibility', () => {
+    it.each(['b', 'i', 'e'])('accepts only STD and NF for %s', (level) => {
+        for (const mode of Object.values(MS_Mode)) {
+            expect(isGSCSupportedVideo(replay({ level, mode }))).toBe(mode === MS_Mode.Standard || mode === MS_Mode.NoFlag);
+        }
+    });
+
+    it('rejects custom boards', () => {
+        expect(isGSCSupportedVideo(replay({ level: '10x10/10' }))).toBe(false);
+    });
+
+    it.each(['b', 'i', 'e'] as const)('applies the %s BV minimum', (level) => {
+        const bv = GSCBVMin[level];
+        expect(meetsGSCBV(replay({ level, bv: bv - 1 }))).toBe(false);
+        expect(meetsGSCBV(replay({ level, bv }))).toBe(true);
+    });
+});
 
 describe('GSCParticipant', () => {
     describe('constructor', () => {

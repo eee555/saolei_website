@@ -36,7 +36,7 @@ Point decay is calculated after each tournament ends and before new points are a
 
 Only Minesweeper replays created during a tournament can participate in that tournament. For offline Minesweeper software, a tournament identifier is needed to prove that the replay is valid.
 
-When the tournament starts, the server generates a random tournament identifier. You need to set this identifier in your Minesweeper software. Replays created afterward will contain the identifier. When you upload those replays, the server recognizes the tournament identifier and automatically marks them as tournament replays. When the tournament ends, the server stops accepting new tournament replays, ensuring that all tournament replays were created during the tournament.
+The server generates a random tournament identifier, but a participant's identifier is only revealed at their participation start time (`start_time`). Registering early does not reveal it early. You need to set this identifier in your Minesweeper software. Replays created afterward will contain the identifier. When you upload those replays, the server recognizes the tournament identifier and automatically marks them as tournament replays. When the participant's time window ends, the server stops accepting their new tournament replays.
 
 A replay can contain multiple tournament identifiers, separated by commas.
 
@@ -58,10 +58,18 @@ After a replay is recognized as belonging to an ongoing tournament, it is hidden
 
 ## Automatically Uploading Tournament Replays
 
-If your browser supports [`showDirectoryPicker`](https://developer.mozilla.org/docs/Web/API/Window/showDirectoryPicker), you can use automatic uploading in Weekly Tournaments. This feature watches a folder, scans newly added files, filters eligible replays, and uploads them automatically. There are three filter levels:
+If your browser supports [`showDirectoryPicker`](https://developer.mozilla.org/docs/Web/API/Window/showDirectoryPicker), you can use automatic uploading in Golden Sheep Cups and Weekly Tournaments. After registering, select a replay folder and polling interval during your participation window to scan, filter, and upload new files. Each filter level also applies all preceding conditions.
 
-- Tournament identifier matches.
-- Tournament identifier matches, and the replay mode, level, and other properties meet the tournament requirements.
-- Supported by some tournaments: tournament identifier matches, and the replay may be included in final scoring, meaning it is currently one of your best replays.
+### Weekly Tournaments
 
-Only files added after polling starts will be scanned. Please upload older replays manually.
+1. All tournament videos: the tournament identifiers include your participation token. AVF is not supported.
+2. Supported tournament videos: classic tournaments accept Intermediate and Expert replays in Standard or NF mode. This is the default filter.
+3. Score-improving videos: the replay improves your total time for the best 5 Intermediate or 2 Expert games.
+
+### Golden Sheep Cup
+
+1. All tournament videos: AVF replays must have a nonempty player identifier that exactly matches your registered Arbiter identifier. For other software, the tournament identifiers must include this tournament's token.
+2. Supported levels and modes: Beginner, Intermediate, or Expert in Standard or NF mode. This is the default filter.
+3. 3BV minimum met: at least 10 for Beginner, 30 for Intermediate, and 100 for Expert.
+
+Personal replays cannot be refreshed while monitoring or processing files. Automatic uploading cannot start while personal replays are loading.

@@ -1,5 +1,5 @@
 <template>
-    <ElTable v-loading="loading" :data="participants" row-key="id" data-cy="weekly-participants">
+    <ElTable v-loading="loading" :data="participants" row-key="id">
         <!-- @vue-generic {TournamentParticipant} -->
         <ElTableColumn :label="t('common.prop.realName')" min-width="150">
             <template #default="{ row }">
