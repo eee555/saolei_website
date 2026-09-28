@@ -76,6 +76,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',   # 允许跨域请求
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'ninja.compatibility.files.fix_request_files_middleware',  # Parse PATCH/PUT form bodies.
     'django.middleware.common.CommonMiddleware',
     # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',

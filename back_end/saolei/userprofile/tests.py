@@ -1,5 +1,5 @@
 from datetime import timedelta
-import json
+from urllib.parse import urlencode
 
 from django.test import override_settings, TestCase
 from django.utils import timezone
@@ -36,8 +36,8 @@ class UserProfileAdminApiTests(TestCase):
     def patch_update(self, user_id, payload):
         return self.client.patch(
             f'/api/userprofile/admin/update/{user_id}',
-            json.dumps(payload),
-            content_type='application/json',
+            urlencode(payload),
+            content_type='application/x-www-form-urlencoded',
         )
 
     def test_admin_get_user_profile(self):

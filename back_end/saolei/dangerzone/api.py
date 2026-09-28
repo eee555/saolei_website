@@ -1,12 +1,14 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from unittest.mock import patch
 
 from django.core.management import call_command
+from django.tasks import TaskResultStatus
+from django.utils import timezone
 from django_redis import get_redis_connection
 from ninja import NinjaAPI, Schema
 from ninja.errors import HttpError
 
-from common.api import LOG_DIR
+from common.api import LOG_DIR, TaskDetailOut
 from config.text_choices import Tournament_TextChoices
 from config.tournaments import TournamentWeights
 from identifier.models import Identifier
@@ -17,12 +19,27 @@ from tournament.weekly.tasks import _task_weekly_finish_impl
 from userprofile.models import UserProfile
 from videomanager.models import ExpandVideoModel, VideoModel
 from .decorators import local_only
+from .tasks import task_echo
 
 api = NinjaAPI()
 
 
 class UserIdSchema(Schema):
     id: int
+
+
+@api.post('/create_failed_task', response=TaskDetailOut)
+@local_only
+def create_failed_task(request):
+    """
+    - local_only
+    """
+    # Keep the restarted task queued even when an E2E worker is running.
+    db_task = task_echo.using(run_after=timezone.now() + timedelta(days=1)).enqueue('E2E 中文 & + =').db_result
+    db_task.status = TaskResultStatus.FAILED
+    db_task.finished_at = timezone.now()
+    db_task.save(update_fields=['status', 'finished_at'])
+    return db_task
 
 
 class CreateVideoSchema(Schema):

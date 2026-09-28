@@ -5,6 +5,7 @@ from pathlib import Path
 import tempfile
 from types import SimpleNamespace
 from unittest.mock import patch
+from urllib.parse import urlencode
 
 from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -181,8 +182,8 @@ class TaskDeletionTests(TestCase):
 
         response = self.client.post(
             '/api/common/tasks/delete',
-            json.dumps({'task_id': str(task.id)}),
-            content_type='application/json',
+            urlencode({'task_id': str(task.id)}),
+            content_type='application/x-www-form-urlencoded',
         )
 
         self.assertEqual(response.status_code, 200)
@@ -194,8 +195,8 @@ class TaskDeletionTests(TestCase):
 
         response = self.client.post(
             '/api/common/tasks/delete',
-            json.dumps({'task_id': str(task.id)}),
-            content_type='application/json',
+            urlencode({'task_id': str(task.id)}),
+            content_type='application/x-www-form-urlencoded',
         )
 
         self.assertEqual(response.status_code, 409)
@@ -353,8 +354,8 @@ class TaskDeletionTests(TestCase):
         for old_task, obj, task_field_id in cases:
             response = self.client.post(
                 '/api/common/tasks/restart',
-                json.dumps({'task_id': str(old_task.id)}),
-                content_type='application/json',
+                urlencode({'task_id': str(old_task.id)}),
+                content_type='application/x-www-form-urlencoded',
             )
 
             self.assertEqual(response.status_code, 200, response.content)
@@ -404,8 +405,8 @@ class TaskDeletionTests(TestCase):
 
         response = self.client.post(
             '/api/common/tasks/restart',
-            json.dumps({'task_id': str(failed_task.id)}),
-            content_type='application/json',
+            urlencode({'task_id': str(failed_task.id)}),
+            content_type='application/x-www-form-urlencoded',
         )
 
         self.assertEqual(response.status_code, 409)
@@ -425,8 +426,8 @@ class TaskDeletionTests(TestCase):
 
         response = self.client.post(
             '/api/common/tasks/restart',
-            json.dumps({'task_id': str(failed_task.id)}),
-            content_type='application/json',
+            urlencode({'task_id': str(failed_task.id)}),
+            content_type='application/x-www-form-urlencoded',
         )
 
         self.assertEqual(response.status_code, 400)
@@ -442,8 +443,8 @@ class TaskDeletionTests(TestCase):
 
         response = self.client.post(
             '/api/common/tasks/restart',
-            json.dumps({'task_id': str(task.id)}),
-            content_type='application/json',
+            urlencode({'task_id': str(task.id)}),
+            content_type='application/x-www-form-urlencoded',
         )
 
         self.assertEqual(response.status_code, 409)
