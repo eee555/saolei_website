@@ -94,6 +94,6 @@
     "vite-plugin-wasm": "3.6.0",
     "vitest": "5.0.1",
     "vue-component-type-helpers": "3.3.11",
-    "vue-tsc": "3.3.9"
+    "vue-tsc": "3.3.11"
   }
 }
