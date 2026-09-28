@@ -15,6 +15,7 @@ import { Tournament } from '@/utils/tournaments';
 import { VideoAbstract } from '@/utils/videoabstract';
 
 const tournamentId = 8;
+const participantTable = '[data-cy=tournament-data-tabs] #pane-participants .el-table';
 
 function weeklyTournament() {
     return new Tournament({
@@ -173,7 +174,7 @@ describe('<Weekly App />', () => {
         cy.contains('.el-dialog button', 'Confirm').click();
 
         cy.wait('@createWeeklyParticipant').its('request.body').should('deep.equal', 'id=8');
-        cy.get('[data-cy=weekly-participants]').should('contain', 'NEW-WEEKLY-TOKEN');
+        cy.get(participantTable).should('contain', 'NEW-WEEKLY-TOKEN');
         cy.get('[data-cy=weekly-participant-window]').should('contain', '2026-01-01 08:00:00').and('contain', '2026-01-01 10:00:00');
         cy.contains('Real-Time Score').should('be.visible');
         cy.wait('@participantVideos').its('response.statusCode').should('eq', 200);
@@ -205,12 +206,12 @@ describe('<Weekly App />', () => {
                 participants: [weeklyParticipant({ user_id: 101 }), weeklyParticipant({ id: 802, user_id: 102, token: 'OTHER-TOKEN' })],
             });
 
-            cy.get('[data-cy=weekly-participants] tbody').extractTableData().should('deep.equal', [
+            cy.get(`${participantTable} tbody`).extractTableData().should('deep.equal', [
                 ['User#101', '2026-01-01 08:00:00 ~ 2026-01-01 10:00:00', 'WEEKLY-TOKEN'],
                 ['User#102', '2026-01-01 08:00:00 ~ 2026-01-01 10:00:00', 'OTHER-TOKEN'],
             ]);
             cy.get('[data-cy=delete-participant]').should('not.exist');
-            cy.contains('[data-cy=weekly-participants] th', 'Actions').should('not.exist');
+            cy.contains(`${participantTable} th`, 'Actions').should('not.exist');
             cy.get('[data-cy=tournament-data-tabs] [id=tab-participants]').should('have.class', 'is-active');
         });
     }
@@ -233,12 +234,12 @@ describe('<Weekly App />', () => {
             cy.get('@deleteParticipant.all').should('have.length', 0);
             cy.contains('.el-dialog button', 'Cancel').click();
             cy.get('@deleteParticipant.all').should('have.length', 0);
-            cy.get('[data-cy=weekly-participants] tbody tr').should('have.length', 2);
+            cy.get(`${participantTable} tbody tr`).should('have.length', 2);
 
             cy.get('[data-cy=delete-participant]').first().click();
             cy.contains('.el-dialog button', 'Confirm').click();
             cy.wait('@deleteParticipant');
-            cy.get('[data-cy=weekly-participants] tbody').extractTableData().should('deep.equal', [
+            cy.get(`${participantTable} tbody`).extractTableData().should('deep.equal', [
                 ['User#102', '2026-01-01 08:00:00 ~ 2026-01-01 10:00:00', 'OTHER-TOKEN', ''],
             ]);
             cy.contains('.el-dialog', 'Delete this participant?').should('not.be.visible');
@@ -255,7 +256,7 @@ describe('<Weekly App />', () => {
         cy.wait('@deleteParticipant');
 
         cy.get('.el-notification--error').should('be.visible');
-        cy.get('[data-cy=weekly-participants] tbody tr').should('have.length', 1);
+        cy.get(`${participantTable} tbody tr`).should('have.length', 1);
         cy.contains('Real-Time Score').should('be.visible');
         cy.contains('.el-dialog button', 'Confirm').should('not.be.disabled');
     });
@@ -269,7 +270,7 @@ describe('<Weekly App />', () => {
         cy.contains('.el-dialog button', 'Confirm').click();
         cy.wait('@deleteParticipant');
 
-        cy.get('[data-cy=weekly-participants] tbody tr').should('not.exist');
+        cy.get(`${participantTable} tbody tr`).should('not.exist');
         cy.contains('Real-Time Score').should('not.exist');
         cy.get('[data-cy=weekly-participant-window]').should('not.exist');
         cy.contains('button', 'Start my session').should('be.enabled');
@@ -279,7 +280,7 @@ describe('<Weekly App />', () => {
         const tournament = weeklyTournament();
         tournament.startDate = new Date('2098-01-01T00:00:00+08:00');
         mountWeekly({ loginStatus: LoginStatus.NotLogin, registered: false, tournament });
-        cy.get('[data-cy=weekly-participants]').should('not.exist');
+        cy.get(participantTable).should('not.exist');
         cy.get('@participantList.all').should('have.length', 0);
 
         cy.get<ComponentWrapper<typeof App>>('@vue').then((wrapper) => {
@@ -288,7 +289,7 @@ describe('<Weekly App />', () => {
             return wrapper.setProps({ tournament: finishedTournament });
         });
         cy.wait('@participantList');
-        cy.get('[data-cy=weekly-participants]').should('be.visible');
+        cy.get(participantTable).should('be.visible');
         cy.get('@participantList.all').should('have.length', 1);
     });
 });
