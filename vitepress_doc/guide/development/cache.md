@@ -66,6 +66,7 @@ digraph cache {
         get_participant_list [label="/api/tournament/participants"];
         delete_participant [label="DELETE /api/tournament/participant/{participant_id}"];
         get_participant_videos [label="/api/tournament/get_videos/participant"];
+        reveal_video [label="POST /api/tournament/video/{video_id}/reveal"];
         get_tournament_news [label="/api/tournament/get_news"];
         download_all_videos [label="/api/tournament/download"];
         download_videos_participant [label="/api/tournament/download/participant"];
@@ -291,6 +292,8 @@ digraph cache {
     tournament_db -> get_participant_videos;
     participant_db -> get_participant_videos;
     video_db -> get_participant_videos;
+    video_db -> reveal_video [label="read / lock / owner check"];
+    reveal_video -> video_db [label="save ongoing_tournament=False"];
     tournament_cache -> get_tournament_news;
     tournament_db -> download_all_videos;
     video_db -> download_all_videos;

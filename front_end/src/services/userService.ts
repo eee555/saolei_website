@@ -218,6 +218,10 @@ export async function fetchUserIdentifiers(userId: number): Promise<string[]> {
 }
 
 const userVideosPendingRequests = new Map<number, Promise<VideoAbstract[]>>();
+export async function revealUserVideo(videoId: number): Promise<void> {
+    await $axios.post(`/api/tournament/video/${videoId}/reveal`);
+}
+
 export function fetchUserVideos(userId: number): Promise<VideoAbstract[]> {
     const pendingRequest = userVideosPendingRequests.get(userId);
 
