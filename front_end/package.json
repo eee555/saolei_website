@@ -58,7 +58,7 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "@mdit/plugin-img-size": "1.1.0",
+    "@mdit/plugin-img-size": "1.1.1",
     "@stylistic/eslint-plugin": "5.10.0",
     "@types/d3-array": "3.2.2",
     "@types/js-cookie": "3.0.6",
