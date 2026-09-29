@@ -8,6 +8,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 
+from config.text_choices import MS_TextChoices
 from utils import generate_code, verify_text
 from utils.exceptions import ExceptionToResponse
 from videomanager.models import VideoModel
@@ -50,11 +51,23 @@ def try_update_user_name_fields(user: UserProfile, field_name: Literal['realname
     return
 
 
+def has_sub200_expert_video(user: UserProfile) -> bool:
+    # TODO(speedranking): 接回高级标准纪录资格查询，见 msuser/refactor.md。
+    return VideoModel.objects.filter(
+        player=user,
+        level=MS_TextChoices.Level.EXPERT,
+        mode__in=[MS_TextChoices.Mode.STD, MS_TextChoices.Mode.NF],
+        state=MS_TextChoices.State.OFFICIAL,
+        ongoing_tournament=False,
+        timems__lt=200000,
+    ).exists()
+
+
 def try_update_user_signature(user: UserProfile, signature: str, user_ip: str):
     if user.signature == signature:
         return
 
-    if user.userms.e_timems_std >= 200000:
+    if not has_sub200_expert_video(user):
         raise ExceptionToResponse('signature', 'expTime')
 
     refresh_signature_chance(user)

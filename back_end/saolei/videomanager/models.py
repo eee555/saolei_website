@@ -5,7 +5,7 @@ from django.core.validators import MaxValueValidator
 from django.db import models
 from django.db.models.functions import Power
 
-from config.global_settings import DefaultRankingScores, MaxSizes
+from config.global_settings import MaxSizes
 from config.text_choices import MS_TextChoices
 from userprofile.models import UserProfile
 from utils.parser import MSVideoParser
@@ -84,7 +84,7 @@ class VideoModel(models.Model):
         max_length=MaxSizes.GAMEMODE, choices=MS_TextChoices.Mode.choices, default=MS_TextChoices.Mode.STD)
     # 0.000-999.999
     timems = models.PositiveIntegerField(
-        default=DefaultRankingScores.timems,
+        default=999999,
         validators=[MaxValueValidator(MAX_TIMEMS)],
     )  # 整数形式存储的毫秒数。
     # 0-32767

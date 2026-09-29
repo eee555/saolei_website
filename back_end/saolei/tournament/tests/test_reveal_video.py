@@ -13,7 +13,7 @@ class TestRevealVideo(TournamentTestCaseBase):
         self.url = f'/api/tournament/video/{self.video.id}/reveal'
         self.client.force_login(self.user)
 
-    def test_owner_reveal_restores_records_and_queue_without_leaving_tournaments(self):
+    def test_owner_reveal_restores_queue_without_leaving_tournaments(self):
         other = self.create_weekly_tournament()
         other.videos.add(self.video)
         newest_cache.remove(self.video)
@@ -32,8 +32,6 @@ class TestRevealVideo(TournamentTestCaseBase):
         self.assertSetEqual(set(self.video.tournaments.values_list('id', flat=True)), {self.tournament.id, other.id})
         self.assertTrue(cache.hexists(newest_cache.key, self.video.id))
         self.user.userms.refresh_from_db()
-        self.assertEqual(self.user.userms.b_timems_std, self.video.timems)
-        self.assertEqual(self.user.userms.b_timems_id_std, self.video.id)
         self.assertEqual(self.user.userms.video_num_total, before_count)
         refresh_gsc_scores(self.tournament)
         self.assertEqual(GSCParticipant.objects.get(tournament=self.tournament, user=self.user).bt1st, self.video.timems)

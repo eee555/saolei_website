@@ -123,14 +123,6 @@ def remove_from_newest_queue(request: HttpRequest):
     return HttpResponse()
 
 
-# 获取谁破纪录的消息
-# http://127.0.0.1:8000/video/news_queue
-@require_GET
-def news_queue(request):
-    news_queue = cache.zrevrange('news_queue', 0, 199)
-    return JsonResponse(news_queue, encoder=ComplexEncoder, safe=False)
-
-
 # 获取全网被冻结的录像
 # http://127.0.0.1:8000/video/freeze_queue
 @require_GET

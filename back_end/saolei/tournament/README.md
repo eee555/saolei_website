@@ -65,4 +65,5 @@ TODO: 迁移后，`get_tournament_list` 可以逐步退化为轻量索引接口�
 - TODO: 补充测试：
   - 比赛颁奖后，上万条录像不逐条触发 `VideoModel.save()`。
   - 录像从比赛恢复普通后，队列缓存恢复。
-  - 录像从比赛恢复普通后，经典个人纪录和 pluck 纪录刷新。
+  - 录像从比赛恢复普通后，pluck 纪录刷新。
+- TODO(speedranking)：恢复比赛批量公开及用户主动公开录像后的竞速纪录更新，见 `../msuser/refactor.md`。

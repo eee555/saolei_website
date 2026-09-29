@@ -1,8 +1,6 @@
 import struct
 
 from config.text_choices import MS_TextChoices
-from msuser.services import update_personal_record_stock as refresh_user_personal_records
-from userprofile.models import UserProfile
 from utils.parser import MSVideoParser
 from .models import ExpandVideoModel, VideoModel
 
@@ -12,11 +10,6 @@ video_all_fields = [
 ]
 for name in [field.name for field in ExpandVideoModel._meta.get_fields()]:
     video_all_fields.append('video__' + name)
-
-
-# 存量式更新用户的记录。删录像后用，恢复用户的记录。
-def update_personal_record_stock(user: UserProfile):
-    refresh_user_personal_records(user)
 
 
 def refresh_video(video: VideoModel):

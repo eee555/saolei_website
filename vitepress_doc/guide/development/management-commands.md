@@ -124,39 +124,25 @@ python manage.py refresh_tournament_user_stats
 python manage.py refresh_tournament_user_stats --batch-size 500
 ```
 
-### `refresh_stnb`
+## 缓存清理
 
-位置：`videomanager/management/commands/refresh_stnb.py`
+### `delete_legacy_speedranking_cache`
 
-用途：根据录像文件全量更新官方录像数据，并重建由 `iqg` 派生的 `stnb` 个人纪录及相关排行缓存。
+位置：`common/management/commands/delete_legacy_speedranking_cache.py`
 
-主要流程：
+用途：竞速排行榜重构第一步中，清理旧排行榜和新闻的 Redis key。应在停用旧功能的写入逻辑后执行，否则旧代码会重新生成缓存。
 
-1. 重解析所有 `OFFICIAL` 录像文件，刷新录像基础数据。
-2. 重算有官方录像用户的个人纪录和 Redis 排行缓存。
-3. 清空 `news_queue`，避免历史 PB 重新计算后污染首页动态。
-
-参数：
-
-| 参数 | 默认值 | 说明 |
-| --- | --- | --- |
-| `--video-delay` | `0.05` | 每批录像间延时秒数 |
-| `--user-delay` | `0.2` | 每个用户间延时秒数 |
-| `--yes` | `False` | 跳过确认提示，直接执行 |
-
-常用命令：
+- 清理`player_{stat}_{mode}_{用户ID}`和`player_{stat}_{mode}_ids`：指标限于`timems`、`bvs`、`stnb`、`ioe`、`path`，模式限于`std`、`nf`、`ng`、`dg`。
+- 清理`news_queue`，不依赖该key是list还是zset。
+- 保留自定义pluck排行、比赛缓存、录像队列及其他Redis数据，不修改数据库。
+- 使用`saolei_website` Redis连接，通过`SCAN`遍历，每批最多1000个key，用`UNLINK`删除。可重复执行。
 
 ```bash
-python manage.py refresh_stnb
-python manage.py refresh_stnb --yes
-python manage.py refresh_stnb --video-delay 0 --user-delay 0 --yes
+python manage.py delete_legacy_speedranking_cache --dry-run
+python manage.py delete_legacy_speedranking_cache
 ```
 
-::: warning
-这是侵入性较强的全量刷新命令。执行前建议备份相关数据库表和 Redis，执行期间不应有用户上传录像。
-:::
-
-## 缓存清理
+`--dry-run`仅列出匹配的key并统计数量，不删除数据。
 
 ### `delete_newest_queue`
 

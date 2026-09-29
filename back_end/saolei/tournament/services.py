@@ -5,7 +5,6 @@ from django.utils import timezone
 
 from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from customranking.services import add_videos_to_custom_pluck_ranks
-from msuser.services import update_personal_records_from_video_queryset
 from tournament.cache import TournamentCache
 from videomanager.cache import add_videos_to_state_queues_bulk
 from videomanager.models import VideoModel
@@ -250,7 +249,7 @@ def reveal_videos_for_tournament(tournament: Tournament):
         .select_related('player', 'player__userms', 'video')
     )
     add_videos_to_state_queues_bulk(videos)
-    update_personal_records_from_video_queryset(videos)
+    # TODO(speedranking): 按玩家批量吸收公开录像的成绩，见 msuser/refactor.md。
     add_videos_to_custom_pluck_ranks(videos)
 
     logger.info(f'比赛#{tournament.id} 录像公开完成，公开录像 {len(video_ids)} 个')

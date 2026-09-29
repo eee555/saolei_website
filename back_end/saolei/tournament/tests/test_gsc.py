@@ -209,7 +209,7 @@ class TestGsc(TournamentTestCaseBase):
         tournament.start_time = now - timedelta(minutes=1)
         self.assertEqual(tournament.token, tournament._token)
 
-    def test_reveal_videos_for_tournament_restores_personal_record(self):
+    def test_reveal_videos_for_tournament_makes_videos_public(self):
         self.create_cached_gsc_participant()
         video = self.create_video()
         GSCTournament.objects.filter(pk=self.tournament.pk).update(
@@ -224,8 +224,6 @@ class TestGsc(TournamentTestCaseBase):
         self.user.userms.refresh_from_db()
         self.assertEqual(changed_count, 1)
         self.assertFalse(video.ongoing_tournament)
-        self.assertEqual(self.user.userms.b_timems_std, video.timems)
-        self.assertEqual(self.user.userms.b_timems_id_std, video.id)
 
     def test_reveal_videos_for_tournament_waits_until_awarded(self):
         self.create_cached_gsc_participant()

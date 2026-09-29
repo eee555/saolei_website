@@ -271,6 +271,7 @@ def reveal_video(request: HttpRequest, video_id: int):
             raise HttpError(403, 'Only the video owner may reveal it.')
         if video.ongoing_tournament:
             video.ongoing_tournament = False
+            # TODO(speedranking): 公开后由新榜信号尝试加入竞速纪录，见 msuser/refactor.md。
             video.save(update_fields=['ongoing_tournament'])
     return 204, None
 

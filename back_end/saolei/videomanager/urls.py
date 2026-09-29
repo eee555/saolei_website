@@ -8,7 +8,6 @@ urlpatterns = [
     path('query_by_id/', views.video_query_by_id, name='query_by_id'),
     path('newest_queue/', views.newest_queue, name='newest_queue'),
     path('newest_queue/remove/', views.remove_from_newest_queue),
-    path('news_queue/', views.news_queue, name='news_queue'),
     # path('approve/', views.approve, name='approve'),
     # path('freeze/', views.freeze, name='freeze'),
     path('get/', views.get_videoModel),

@@ -20,7 +20,7 @@ from utils.exceptions import ExceptionToResponse
 from videomanager.models import VideoModel
 from .decorators import banned_blocked, login_required_error, staff_required
 from .models import UserProfile
-from .services import refresh_avatar_chance, try_update_user_name_fields, try_update_user_signature
+from .services import has_sub200_expert_video, refresh_avatar_chance, try_update_user_name_fields, try_update_user_signature
 
 router = Router()
 logger = logging.getLogger('userprofile')
@@ -317,8 +317,9 @@ def update_user_avatar(request, avatar: File[UploadedFile]):
     """
     user: UserProfile = request.user
 
-    if user.userms.e_timems_std >= 200000:
-        raise HttpResponseForbidden
+    # TODO(speedranking): 恢复基于新榜的 sub200 资格查询，见 msuser/refactor.md。
+    if not has_sub200_expert_video(user):
+        return HttpResponseForbidden()
 
     refresh_avatar_chance(user)
     if user.left_avatar_n <= 0:

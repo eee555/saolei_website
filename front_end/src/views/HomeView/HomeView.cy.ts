@@ -36,48 +36,6 @@ const newestQueueResponse = {
     }),
 };
 
-const validTimeNews = {
-    time: '2026-07-22T08:00:00Z',
-    player_id: 7,
-    video_id: 201,
-    index: 'timems',
-    mode: 'std',
-    level: 'e',
-    value: 59987,
-    old_value: null,
-};
-
-const validBvsNews = {
-    time: '2026-07-22T09:00:00Z',
-    player_id: 8,
-    video_id: 202,
-    index: 'bvs',
-    mode: 'nf',
-    level: 'i',
-    value: 3.23456,
-    old_value: 3.1,
-};
-
-const validSecondsTimeNews = {
-    time: '2026-07-22T10:00:00Z',
-    player_id: 9,
-    video_id: 203,
-    index: 'timems',
-    mode: 'ng',
-    level: 'b',
-    value: 48321,
-    old_value: 49123,
-};
-
-const newsQueueResponse = [
-    JSON.stringify(validTimeNews),
-    JSON.stringify(validBvsNews),
-    JSON.stringify(validSecondsTimeNews),
-    '{not json',
-    JSON.stringify({ ...validTimeNews, player_id: 999, delta: 1 }),
-    JSON.stringify({ ...validBvsNews, player_id: 1000, old_value: '3.1' }),
-];
-
 const reviewQueueResponse = [
     {
         id: 301,
@@ -155,7 +113,6 @@ const mountGlobal = {
 
 function mockHomeQueueRequests() {
     cy.intercept({ method: 'GET', pathname: '/video/newest_queue/' }, { body: newestQueueResponse }).as('newestQueue');
-    cy.intercept({ method: 'GET', pathname: '/video/news_queue/' }, { body: newsQueueResponse }).as('newsQueue');
     cy.intercept({ method: 'GET', pathname: '/api/video/review_queue' }, { body: reviewQueueResponse }).as('reviewQueue');
     cy.intercept({ method: 'GET', pathname: '/api/tournament/get_list' }, { body: normalTournamentResponse() }).as('normalTournaments');
 }
@@ -185,11 +142,9 @@ describe('HomeView components', () => {
     it('renders the real home queue components in the expected tab layout', () => {
         mountHomeView();
 
-        cy.contains('.el-tabs__item', 'News').should('be.visible');
         cy.contains('.normal-tournament-card', 'Active Tournaments').should('be.visible');
         cy.contains('.el-tabs__item', 'Latest').should('have.class', 'is-active');
         cy.wait('@normalTournaments');
-        cy.wait('@newsQueue');
         cy.wait('@newestQueue');
         cy.contains('.el-tabs__item', 'Pending').should('be.visible').click();
         cy.wait('@reviewQueue');
@@ -208,23 +163,7 @@ describe('HomeView components', () => {
         cy.contains('table:visible', '2.038').should('be.visible');
     });
 
-    it('loads and filters record news from the videomanager news_queue endpoint', () => {
-        mountHomeView();
-
-        cy.wait('@newsQueue').its('request.query').should('deep.equal', {});
-        cy.contains('.el-tabs__item', 'News').should('be.visible');
-        cy.contains('User#7').should('be.visible');
-        cy.contains('.clickable', '59.987').should('be.visible');
-        cy.contains('User#8').should('be.visible');
-        cy.contains('.clickable', '3.235').should('be.visible');
-        cy.contains('↑0.135').should('be.visible');
-        cy.contains('.clickable', '48.321').should('be.visible');
-        cy.contains('↓-0.802').should('be.visible');
-        cy.contains('User#999').should('not.exist');
-        cy.contains('User#1000').should('not.exist');
-    });
-
-    it('loads normal tournaments with relative state times beside the news area', () => {
+    it('loads normal tournaments with relative state times', () => {
         mountHomeView();
 
         cy.wait('@normalTournaments').its('request.query').should('deep.equal', { category: 'normal' });

@@ -15,7 +15,7 @@ const routes: RouteRecordRaw[] = [
         path: '/ranking',
         name: 'ranking',
         component: () => import('../views/RankingView/App.vue'),
-        redirect: '/ranking/speed',
+        redirect: '/ranking/density',
         children: rankingRoutes,
     },
     {

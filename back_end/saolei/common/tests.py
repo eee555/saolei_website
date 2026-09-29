@@ -19,7 +19,6 @@ from accountlink.models import AccountSaolei, VideoSaolei
 from common.management.commands import db_worker_robust
 from config.common import TASK_CLEANUP_CONFIGS
 from config.customranking import CUSTOM_PLUCK_LEVELS, CUSTOM_PLUCK_MODES
-from config.global_settings import GameLevels, GameModes, RankingGameStats
 from config.text_choices import MS_TextChoices, Saolei_TextChoices, Tournament_TextChoices
 from customranking.cache import PLuckRankingCache
 from identifier.models import Identifier
@@ -510,6 +509,8 @@ class TaskDeletionTests(TestCase):
 
 class VideoUploadRankingIntegrationTest(TestCase):
     def setUp(self):
+        for level in CUSTOM_PLUCK_LEVELS:
+            PLuckRankingCache(level).flush()
         self.media_dir = tempfile.TemporaryDirectory()
         self.settings_override = override_settings(
             MEDIA_ROOT=self.media_dir.name,
@@ -528,7 +529,7 @@ class VideoUploadRankingIntegrationTest(TestCase):
 
     def tearDown(self):
         cache = get_redis_connection('saolei_website')
-        cache.delete('newest_queue', 'freeze_queue', 'news_queue')
+        cache.delete('newest_queue', 'freeze_queue')
         for level in CUSTOM_PLUCK_LEVELS:
             PLuckRankingCache(level).flush()
         self.settings_override.disable()
@@ -563,25 +564,6 @@ class VideoUploadRankingIntegrationTest(TestCase):
         self.assertEqual(response.status_code, 200, response.content)
         return json.loads(response.content)
 
-    def get_records_by_request(self):
-        response = self.client.get('/api/msuser/records', {'user_id': self.user.id})
-        self.assertEqual(response.status_code, 200, response.content)
-        return response.json()
-
-    def get_record_group_by_request(self, mode: str):
-        records = self.get_records_by_request()
-        grouped_records = {}
-        for stat in RankingGameStats:
-            grouped_records[stat] = [
-                records[f'{level}_{stat}_{mode}']
-                for level in GameLevels
-            ]
-            grouped_records[f'{stat}_id'] = [
-                records[f'{level}_{stat}_id_{mode}']
-                for level in GameLevels
-            ]
-        return grouped_records
-
     def get_pluck_rank_by_request(self, level: str):
         response = self.client.get(
             '/api/customranking/pluck',
@@ -613,20 +595,7 @@ class VideoUploadRankingIntegrationTest(TestCase):
         video = VideoModel.objects.select_related('video', 'player__userms').get(pk=data['data']['id'])
         return video, parser
 
-    def assert_no_personal_record(self):
-        for mode in GameModes:
-            records = self.get_record_group_by_request(mode)
-            for stat in RankingGameStats:
-                for level_index, _level in enumerate(GameLevels):
-                    self.assertIsNone(records[f'{stat}_id'][level_index])
-
-    def assert_personal_record(self, parser: MSVideoParser, video: VideoModel):
-        records = self.get_record_group_by_request('std')
-        level_index = GameLevels.index(parser.level)
-        self.assertEqual(records['timems'][level_index], parser.timems)
-        self.assertEqual(records['timems_id'][level_index], video.id)
-
-    def test_upload_tournament_video_checkin_blocks_personal_record_refresh(self):
+    def test_upload_tournament_video_checks_in(self):
         parser = self.parse_fixture(self.fixture_path('standard_gsc.evf'))
         token = next((identifier for identifier in parser.tournament_identifier if identifier), None)
         if token is None:
@@ -656,17 +625,8 @@ class VideoUploadRankingIntegrationTest(TestCase):
         video.refresh_from_db()
         self.assertTrue(video.ongoing_tournament)
         self.assertTrue(tournament.videos.filter(pk=video.pk).exists())
-        self.assert_no_personal_record()
 
-    def test_upload_standard_video_refreshes_personal_record(self):
-        video, parser = self.upload_fixture('beginner_personal.evf')
-
-        self.userms.refresh_from_db()
-        self.assertFalse(video.ongoing_tournament)
-        self.assertEqual(parser.state, MS_TextChoices.State.OFFICIAL)
-        self.assert_personal_record(parser, video)
-
-    def test_identifier_bind_and_unbind_refreshes_personal_record(self):
+    def test_identifier_bind_and_unbind_updates_video_state(self):
         parser = self.parse_fixture(self.fixture_path('beginner_personal.evf'))
         identifier = Identifier.objects.create(identifier=parser.identifier, safe=True)
 
@@ -674,19 +634,16 @@ class VideoUploadRankingIntegrationTest(TestCase):
 
         video.refresh_from_db()
         self.assertEqual(video.state, MS_TextChoices.State.IDENTIFIER)
-        self.assert_no_personal_record()
 
         self.add_identifier_by_request(identifier.identifier)
 
         video.refresh_from_db()
         self.assertEqual(video.state, MS_TextChoices.State.OFFICIAL)
-        self.assert_personal_record(parser, video)
 
         self.delete_identifier_by_request(identifier.identifier)
 
         video.refresh_from_db()
         self.assertEqual(video.state, MS_TextChoices.State.IDENTIFIER)
-        self.assert_no_personal_record()
 
     def test_identifier_bind_refreshes_video_num_limit_for_expert_standard_video(self):
         parser = self.parse_fixture(self.fixture_path('expert_personal.evf'))
