@@ -56,6 +56,7 @@ describe('<UserVideoView /> video reveal', () => {
         cy.contains('.el-dialog button', 'Confirm').click();
         cy.wait('@reveal');
         cy.contains('.el-dialog', 'It will still count in all its tournaments.').should('not.be.visible');
+        cy.closeElNotifications();
         openActions(101);
         cy.get('[data-cy=reveal-video]:visible').should('be.disabled');
         cy.get('@videos.all').should('have.length', 1);
@@ -73,6 +74,7 @@ describe('<UserVideoView /> video reveal', () => {
         cy.contains('.el-dialog button', 'Confirm').click();
         cy.wait('@reveal');
         cy.get('.el-notification--error').should('be.visible');
+        cy.closeElNotifications();
         cy.contains('.el-dialog button', 'Confirm').should('be.enabled').and('not.have.class', 'is-loading');
         cy.then(() => {
             expect(user.videos?.[0].ongoing_tournament).to.equal(true);
@@ -94,6 +96,7 @@ describe('<UserVideoView /> video reveal', () => {
         cy.then(() => {
             expect(user.videos?.map((video) => video.ongoing_tournament)).to.deep.equal([true, false]);
         });
+        cy.closeElNotifications();
     });
 
     it('disables revealing an already public video', () => {
