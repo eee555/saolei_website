@@ -32,20 +32,11 @@ function mountUserVideos(userId = 99, hiddenStates = [true, false]) {
     });
     cy.wait('@videos');
     // VideoList loads its data columns asynchronously, after rows may already exist.
-    cy.get('.p-datatable-table').should(($table) => {
-        const headers = $table.find('thead th').toArray().map((cell) => cell.textContent?.trim());
-        expect(headers).to.deep.equal(userId === 99 ? ['Time', 'Action'] : ['Time']);
-        const rows = $table.find('tbody tr');
-        expect(rows).to.have.length(2);
-        rows.each((index, row) => {
-            const cells = Cypress.$(row).children('td');
-            expect(cells).to.have.length(userId === 99 ? 2 : 1);
-            expect(cells.eq(0).text().trim()).to.equal('40.000');
-            if (userId === 99) {
-                expect(cells.eq(1).find(`[data-cy=video-row-actions][data-video-id="${101 + index}"]`)).to.have.length(1);
-            }
-        });
-    });
+    cy.get('.p-datatable-table').contains('Time');
+    if (userId === 99) cy.get('.p-datatable-table').contains('Action');
+    cy.get('.p-datatable-table').extractTableData().should('deep.equal', userId === 99
+        ? [['Time', 'Action'], ['40.000', ''], ['40.000', '']]
+        : [['Time'], ['40.000'], ['40.000']]);
     return user;
 }
 

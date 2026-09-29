@@ -107,7 +107,7 @@ const { t } = useI18n({ messages: i18nMessages });
 ## 测试注意事项
 
 ### 性能
-E2E测试速度较慢，请尽量减少初始化与UI操作次数。
+E2E测试速度较慢，请尽量减少初始化与UI操作次数。测试专注于关键内容的显示，不必要为了追求一次成功使用复杂的robust断言。因为测试由我跑，对于元素定位问题我会手动改或者再反馈。
 
 ### 关闭通知
 有些操作会有[通知弹窗](front_end\src\components\Notifications.ts)，它可能会遮挡页面元素导致测试不稳定。用`cy.closeElNotifications()`关闭所有弹窗。
@@ -117,6 +117,9 @@ E2E测试速度较慢，请尽量减少初始化与UI操作次数。
 
 ### 组件`PlayerName`
 该组件用于渲染用户名字，其涉及到复杂的缓存逻辑，因此如果不需要测试其具体内容，应当用`cy.mockPlayerNameFallback()` stub相应的API。
+
+### 表格内容
+对于表格文本内容，使用`commands.ts`提供的`cy.getTable`或`cy.extractTableData`实现。
 
 ### 临时组件
 创建临时测试组件时，用`render`语法，不要用`template`。
