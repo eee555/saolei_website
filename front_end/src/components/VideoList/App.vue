@@ -19,10 +19,11 @@
     >
         <component
             :is="componentConfig(column).component" v-for="column in columns" :key="column"
+            :column-key="column"
             :sortable="componentConfig(column).sortable ? sortable : undefined"
             :stat="componentConfig(column).isStat ? column : undefined"
         />
-        <Column v-if="$slots.rowActions" :header="t('common.prop.action')" style="width: 5rem">
+        <Column v-if="$slots.rowActions" column-key="rowActions" :header="t('common.prop.action')" style="width: 5rem">
             <template #body="{ data }: { data: VideoAbstract }">
                 <div @click.stop>
                     <Tippy interactive trigger="click" placement="bottom-end" :append-to="appendToBody">
