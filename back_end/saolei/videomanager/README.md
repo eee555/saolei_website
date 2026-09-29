@@ -93,6 +93,8 @@ video.save(update_fields=['pluck'])
 
 `refresh_video(video)` 会重新解析文件并刷新所有文件包含的数据。
 
+`python manage.py refresh_videos` 按主键顺序遍历全部录像并逐条调用此函数，不筛选状态或模式，不使用批量更新。有变化时由实例保存触发信号；无变化时不会强制保存。解析阶段的已知异常包装为 `VideoParseError`，命令报告录像 ID 并跳过；数据库、文件读写及保存链路等其他错误仍停止执行。已完成的刷新保留，正常结束时汇总成功与跳过数量。
+
 重新解析时需要同步刷新 `ExpandVideoModel.identifier` 和 `ExpandVideoModel.tournament_identifier`。其中 `tournament_identifier` 使用 `JSONField` 保存 parser 提供的比赛标识列表。
 
 如果重新解析后 `IDENTIFIER` 录像的标识已经属于玩家，可将状态改为 `OFFICIAL`，并通过状态保存触发后续事件。
@@ -190,7 +192,7 @@ video.save(update_fields=['pluck'])
   - 当前支持的自定义录像也在 parser 中前台即时计算，并通过保存 `pluck` 触发 `customranking`。
   - `task_video_pluck` 仍保留为后台入口；未来如果重新出现耗时过长的场景，可切回任务队列。
   - 如果未来增加新的自定义配置或更昂贵的指标，应先评估是否需要进入后台任务。
-- 旧 `refresh_stnb` 命令及经典纪录全量重建已移除。新榜需要自己的重建命令和批量更新入口，见 `../msuser/refactor.md`。
+- 旧 `refresh_stnb` 的录像重解析入口由 `refresh_videos` 替代；经典纪录全量重建已移除。新榜仍需要自己的重建命令和批量更新入口，见 `../msuser/refactor.md`。
 - `iqg` 使用数据库 `GeneratedField` 和 `Power` 表达式。
   - 本地测试库已经覆盖基本创建和查询路径。
   - 生产部署前仍需要在同版本数据库环境做迁移预演，确认生成列表达式兼容。

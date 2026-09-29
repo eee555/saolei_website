@@ -1,8 +1,10 @@
 import struct
 
 from config.text_choices import MS_TextChoices
+from utils.exceptions import ExceptionToResponse
 from utils.parser import MSVideoParser
 from .models import ExpandVideoModel, VideoModel
+from .utils import VideoParseError
 
 video_all_fields = [
     'id', 'upload_time', 'player__id', 'player__realname', 'timems', 'bv', 'bvs', 'state', 'level', 'mode', 'software', 'flag', 'op', 'isl', 'path', 'pluck', 'left', 'right', 'double', 'left_ce', 'right_ce',
@@ -13,7 +15,10 @@ for name in [field.name for field in ExpandVideoModel._meta.get_fields()]:
 
 
 def refresh_video(video: VideoModel):
-    parser = MSVideoParser(video.file)
+    try:
+        parser = MSVideoParser(video.file)
+    except (ValueError, RuntimeError, EOFError, OverflowError, ExceptionToResponse) as exc:
+        raise VideoParseError(str(exc)) from exc
 
     parser_fields = [
         'level', 'mode', 'software', 'end_time', 'timems', 'bv',

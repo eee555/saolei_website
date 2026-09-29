@@ -78,6 +78,23 @@ python manage.py rebuild_custom_pluck_cache --batch-size 500
 
 ## 数据刷新
 
+### `refresh_videos`
+
+位置：`videomanager/management/commands/refresh_videos.py`
+
+用途：替代旧 `refresh_stnb` 的录像重解析入口，对全部 `VideoModel` 实例逐条调用 `videomanager.view_utils.refresh_video`。
+
+- 按主键顺序遍历，不限制状态、模式、级别或比赛标记。
+- 使用 `iterator()` 避免 QuerySet 缓存所有实例；写入仍逐条执行，不使用 `update()` 或 `bulk_update()`。
+- 沿用 `refresh_video` 的差异保存逻辑，通过 `save(update_fields=...)` 触发信号；没有变化的字段不会强制保存。
+- 已知的录像解析异常会包装为 `VideoParseError`，报告录像 ID 并跳过，继续刷新后续录像；结束时汇总成功和跳过数量。
+- 数据库、文件读写、保存或信号接收器等其他错误会停止命令；此前完成的刷新不会整体回滚。不会把刷新全过程中的 `ValueError` 等异常都视为解析错误。
+- 此命令不是无条件的排行榜或缓存全量重建。刷新模式等字段后如需重算录像计数，仍使用 `refresh_video_counts`。
+
+```bash
+python manage.py refresh_videos
+```
+
 ### `refresh_video_counts`
 
 位置：`msuser/management/commands/refresh_video_counts.py`
