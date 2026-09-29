@@ -104,6 +104,7 @@ describe('<UserVideoView /> video reveal', () => {
         cy.contains('.el-dialog button', 'Cancel').click();
         openActions(102);
         cy.get('[data-cy=reveal-video]:visible').click();
+        cy.get('[data-cy=reveal-video]:visible').should('not.exist');
         cy.get('.el-dialog').should('have.length', 1);
         cy.contains('.el-dialog button', 'Confirm').click();
         cy.wait('@revealSecond');
