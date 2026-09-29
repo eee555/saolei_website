@@ -11,9 +11,9 @@ function replay(init: Partial<VideoAbstractData> = {}) {
 }
 
 describe('GSC score eligibility', () => {
-    it.each(['b', 'i', 'e'])('accepts only STD and NF for %s', (level) => {
+    it.each(['b', 'i', 'e'])('accepts only standard mode for %s', (level) => {
         for (const mode of Object.values(MS_Mode)) {
-            expect(isGSCSupportedVideo(replay({ level, mode }))).toBe(mode === MS_Mode.Standard || mode === MS_Mode.NoFlag);
+            expect(isGSCSupportedVideo(replay({ level, mode }))).toBe(mode === MS_Mode.Standard);
         }
     });
 

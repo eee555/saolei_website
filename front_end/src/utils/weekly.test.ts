@@ -5,13 +5,14 @@ import { TournamentParticipant } from './tournaments';
 import { VideoAbstract } from './videoabstract';
 import { isWeeklyClassicScoreMode, WeeklyParticipant } from './weekly';
 
-function video(level: 'i' | 'e', mode: MS_Mode, timems: number): VideoAbstract {
+function video(level: 'i' | 'e', mode: MS_Mode, timems: number, right_ce = 1): VideoAbstract {
     return new VideoAbstract({
         id: timems,
         upload_time: '2026-01-01T00:00:00Z',
         level,
         mode,
         timems,
+        right_ce,
         bv: 100,
         software: 'e',
     });
@@ -69,7 +70,7 @@ describe('WeeklyParticipant', () => {
             const videos = [
                 video('e', MS_Mode.Standard, 110000),
                 video('e', MS_Mode.SpeedNG, 90000),
-                video('i', MS_Mode.NoFlag, 20000),
+                video('i', MS_Mode.Standard, 20000, 0),
             ];
             const participant = new WeeklyParticipant();
 
@@ -100,9 +101,8 @@ describe('WeeklyParticipant', () => {
     });
 
     describe('isWeeklyClassicScoreMode', () => {
-        it('only accepts standard and no-flag modes', () => {
+        it('only accepts standard mode', () => {
             expect(isWeeklyClassicScoreMode(MS_Mode.Standard)).toBe(true);
-            expect(isWeeklyClassicScoreMode(MS_Mode.NoFlag)).toBe(true);
             expect(isWeeklyClassicScoreMode(MS_Mode.SpeedNG)).toBe(false);
             expect(isWeeklyClassicScoreMode(MS_Mode.Lucky)).toBe(false);
         });

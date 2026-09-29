@@ -5,7 +5,7 @@ import type { VideoAbstract } from './videoabstract';
 export const GSCBVMin = { b: 10, i: 30, e: 100 } as const;
 
 export function isGSCSupportedVideo(video: VideoAbstract): boolean {
-    return isStandardLevel(video.level) && (video.mode === MS_Mode.Standard || video.mode === MS_Mode.NoFlag);
+    return isStandardLevel(video.level) && video.mode === MS_Mode.Standard;
 }
 
 export function meetsGSCBV(video: VideoAbstract): boolean {

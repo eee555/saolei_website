@@ -128,6 +128,7 @@ video.save(update_fields=['pluck'])
 ### `msuser`
 
 - 保留用户标识列表、录像计数和上传额度。
+- NF 独立于 mode，以 `right_ce == 0` 判断；NF 子计数会与模式子计数重叠，空值不视为 NF。
 - `post_save(VideoModel)` 在创建普通录像时增加计数，并在满足条件时提升上传额度。
 - `pre_delete(VideoModel)` 在删除普通录像时减少计数，删除录像不回退额度。
 - 已移除经典纪录字段、纪录刷新信号、UserMS 新闻信号及旧 Redis 排行读写。
@@ -143,7 +144,7 @@ video.save(update_fields=['pluck'])
 
 互动方式：
 
-- `customranking.signals` 监听 `VideoModel` 的 `state`、`ongoing_tournament`、`pluck`、`timems`、`upload_time`。
+- `customranking.signals` 监听 `VideoModel` 的 `state`、`ongoing_tournament`、`pluck`、`timems`、`upload_time`、`right_ce`（同步缓存展示字段）。
 - `CustomPluckRecord` 保存或删除后，同步更新 Redis 排行缓存。
 
 ### `common`
@@ -172,7 +173,7 @@ video.save(update_fields=['pluck'])
   - 完成日志迁移后，应删除 `update_redis()`，上传、导入等入口不再需要显式调用它。
 - 录像数量统计已迁移到 `msuser.signals`。
   - 创建录像会增加总数统计；删除录像会减少总数统计。
-  - 经典级别和模式会同步维护对应子计数；自定义或其他模式只影响总数。
+  - 经典级别和模式会同步维护对应子计数；所有模式/级别的 `right_ce == 0` 录像同时计入 NF。
   - `video_num_limit` 只会在符合条件的高级标准官方录像保存后提升，删除录像不会回退上限。
   - 后续若要处理状态回退、模式/级别变化，应先明确统计口径，再扩展 `msuser.signals`。
 - `videomanager.signals` 是 `_old_values` 的统一来源，新增依赖旧值的 app 时应先扩展 `CAPTURE_FIELDS`。

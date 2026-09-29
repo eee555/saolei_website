@@ -22,7 +22,6 @@ export const MS_Mode = {
     HardcoreNG: '06',
     Lucky: '10',
     Recursive: '11',
-    NoFlag: '12',
 } as const;
 export type MS_Mode = typeof MS_Mode[keyof typeof MS_Mode];
 

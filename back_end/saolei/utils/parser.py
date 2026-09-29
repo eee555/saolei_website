@@ -179,10 +179,7 @@ class MSVideoParser:
 
     @staticmethod
     def get_mode_from_BaseVideo(v: ms.BaseVideo):
-        mode = str(v.mode).rjust(2, '0')
-        if mode == '00' and v.flag == 0:
-            return MS_TextChoices.Mode.NF
-        return mode
+        return str(v.mode).rjust(2, '0')
 
     @staticmethod
     def get_state_from_review_code(review_code: int):

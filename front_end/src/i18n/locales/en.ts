@@ -45,7 +45,6 @@ export default {
             code06: 'Hardcore NG',
             code10: 'Lucky',
             code11: 'Recursive Chord',
-            code12: 'No Flag',
             std: 'Standard',
             nf: 'No Flag',
             ng: 'No Guessing',

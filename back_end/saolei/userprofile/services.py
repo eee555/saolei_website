@@ -56,7 +56,7 @@ def has_sub200_expert_video(user: UserProfile) -> bool:
     return VideoModel.objects.filter(
         player=user,
         level=MS_TextChoices.Level.EXPERT,
-        mode__in=[MS_TextChoices.Mode.STD, MS_TextChoices.Mode.NF],
+        mode=MS_TextChoices.Mode.STD,
         state=MS_TextChoices.State.OFFICIAL,
         ongoing_tournament=False,
         timems__lt=200000,
@@ -143,7 +143,7 @@ def user_metadata(user: UserProfile, client):
     queryset = VideoModel.objects.filter(player=user)
     if client != user:
         queryset = queryset.filter(ongoing_tournament=False)
-    videos = queryset.values('id', 'upload_time', 'level', 'mode', 'timems', 'bv', 'state', 'software', 'cl', 'ce', 'file_size', 'end_time', 'ongoing_tournament', 'path')
+    videos = queryset.values('id', 'upload_time', 'level', 'mode', 'timems', 'bv', 'state', 'software', 'cl', 'ce', 'right_ce', 'file_size', 'end_time', 'ongoing_tournament', 'path')
     return {
         'id': user.id,
         'username': user.username,

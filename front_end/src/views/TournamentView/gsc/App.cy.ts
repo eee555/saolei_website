@@ -168,7 +168,8 @@ describe('<GSC App />', () => {
                     expect(filter({ ...video, tokens: ['G00007X'] })).to.equal(false);
                     video.stat.mode = MS_Mode.SpeedNG;
                     expect(filter(video)).to.equal(stage === 0);
-                    video.stat.mode = MS_Mode.NoFlag;
+                    video.stat.mode = MS_Mode.Standard;
+                    video.stat.right_ce = 0;
                     video.stat.level = new VideoAbstract({ level: 'c10_10_10', mode: MS_Mode.Standard, timems: 1000, bv: 10, software: 'e' }).level;
                     expect(filter(video)).to.equal(stage === 0);
                     video.stat.level = 'e';

@@ -6,17 +6,17 @@ from videomanager.models import VideoModel
 from .utils import get_video_num_limit
 
 
-def increment_video_count(userms: UserMS, level: MS_TextChoices.Level, mode: MS_TextChoices.Mode):
+def increment_video_count(userms: UserMS, level: MS_TextChoices.Level, mode: MS_TextChoices.Mode, right_ce: int | None):
     """增加用户录像计数。"""
     userms.video_num_total += 1
     update_fields = ['video_num_total']
+    if right_ce == 0:
+        userms.video_num_nf += 1
+        update_fields.append('video_num_nf')
 
     if mode == MS_TextChoices.Mode.STD:
         userms.video_num_std += 1
         update_fields.append('video_num_std')
-    elif mode == MS_TextChoices.Mode.NF:
-        userms.video_num_nf += 1
-        update_fields.append('video_num_nf')
     elif mode == MS_TextChoices.Mode.JSW:
         userms.video_num_ng += 1
         update_fields.append('video_num_ng')
@@ -37,17 +37,17 @@ def increment_video_count(userms: UserMS, level: MS_TextChoices.Level, mode: MS_
     userms.save(update_fields=update_fields)
 
 
-def decrement_video_count(userms: UserMS, level: MS_TextChoices.Level, mode: MS_TextChoices.Mode):
+def decrement_video_count(userms: UserMS, level: MS_TextChoices.Level, mode: MS_TextChoices.Mode, right_ce: int | None):
     """减少用户录像计数。"""
     userms.video_num_total -= 1
     update_fields = ['video_num_total']
+    if right_ce == 0:
+        userms.video_num_nf -= 1
+        update_fields.append('video_num_nf')
 
     if mode == MS_TextChoices.Mode.STD:
         userms.video_num_std -= 1
         update_fields.append('video_num_std')
-    elif mode == MS_TextChoices.Mode.NF:
-        userms.video_num_nf -= 1
-        update_fields.append('video_num_nf')
     elif mode == MS_TextChoices.Mode.JSW:
         userms.video_num_ng -= 1
         update_fields.append('video_num_ng')

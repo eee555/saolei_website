@@ -14,7 +14,7 @@ export const WeeklyTournamentFormat = {
 export type WeeklyTournamentFormat = typeof WeeklyTournamentFormat[keyof typeof WeeklyTournamentFormat];
 
 export function isWeeklyClassicScoreMode(mode: MS_Mode): boolean {
-    return ([MS_Mode.Standard, MS_Mode.NoFlag] as readonly MS_Mode[]).includes(mode);
+    return mode === MS_Mode.Standard;
 }
 
 function makeDefaultScores(count: number, score: number): WeeklyVideoScore[] {

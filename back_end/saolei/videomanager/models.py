@@ -80,6 +80,7 @@ class VideoModel(models.Model):
         max_length=MaxSizes.GAMELEVEL, choices=MS_TextChoices.Level.choices)
     # 游戏模式，evf标准
     # https://github.com/eee555/ms_toollib/tree/main/base#readme
+    is_lucky = models.BooleanField(default=False)
     mode = models.CharField(
         max_length=MaxSizes.GAMEMODE, choices=MS_TextChoices.Mode.choices, default=MS_TextChoices.Mode.STD)
     # 0.000-999.999

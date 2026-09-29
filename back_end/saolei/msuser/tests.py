@@ -3,7 +3,7 @@ from io import StringIO
 from urllib.parse import urlencode
 
 from django.core.management import call_command
-from django.test import TestCase
+from django.test import override_settings, TestCase
 from django.utils import timezone
 
 from config.text_choices import MS_TextChoices, Tournament_TextChoices
@@ -99,7 +99,7 @@ class UserMSVideoTests(TestCase):
             userms=self.userms,
         )
 
-    def create_video(self, *, state=MS_TextChoices.State.OFFICIAL, level=MS_TextChoices.Level.BEGINNER, timems=1000, bv=10, mode=MS_TextChoices.Mode.STD, ongoing_tournament=False):
+    def create_video(self, *, state=MS_TextChoices.State.OFFICIAL, level=MS_TextChoices.Level.BEGINNER, timems=1000, bv=10, mode=MS_TextChoices.Mode.STD, right_ce=1, ongoing_tournament=False):
         expand = ExpandVideoModel.objects.create(identifier='identifier')
         return VideoModel.objects.create(
             player=self.user,
@@ -117,7 +117,7 @@ class UserMSVideoTests(TestCase):
             right=1,
             double=1,
             left_ce=1,
-            right_ce=1,
+            right_ce=right_ce,
             double_ce=1,
             path=10,
             flag=1,
@@ -133,6 +133,58 @@ class UserMSVideoTests(TestCase):
             cell7=1,
             cell8=1,
         )
+
+    def test_nf_counts_overlap_modes_and_deletion_reverses_both(self):
+        for mode, field in (
+            (MS_TextChoices.Mode.STD, 'video_num_std'),
+            (MS_TextChoices.Mode.JSW, 'video_num_ng'),
+            (MS_TextChoices.Mode.BZD, 'video_num_dg'),
+        ):
+            with self.subTest(mode=mode):
+                video = self.create_video(mode=mode, right_ce=0)
+                self.userms.refresh_from_db()
+                self.assertEqual(self.userms.video_num_nf, 1)
+                self.assertEqual(getattr(self.userms, field), 1)
+                self.assertFalse(video.is_lucky)
+                video.delete()
+                self.userms.refresh_from_db()
+                self.assertEqual(self.userms.video_num_total, 0)
+                self.assertEqual(self.userms.video_num_nf, 0)
+                self.assertEqual(getattr(self.userms, field), 0)
+        self.create_video(right_ce=None)
+        self.userms.refresh_from_db()
+        self.assertEqual(self.userms.video_num_nf, 0)
+
+    @override_settings(RATELIMIT_ENABLE=False)
+    def test_video_apis_return_right_ce_and_filter_nf_independently(self):
+        nf = self.create_video(mode=MS_TextChoices.Mode.JSW, right_ce=0)
+        self.create_video(mode=MS_TextChoices.Mode.JSW, right_ce=1)
+        unknown = self.create_video(mode=MS_TextChoices.Mode.JSW, right_ce=None)
+        self.create_video(mode=MS_TextChoices.Mode.JSW, right_ce=0, ongoing_tournament=True)
+        self.create_video(right_ce=0)
+        params = {'level': 'b', 'mode': '05', 'nf': True}
+        response = self.client.get('/api/video/query', params)
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.json()['count'], 1)
+        self.assertEqual(response.json()['videos'][0]['id'], nf.id)
+        self.assertEqual(response.json()['videos'][0]['right_ce'], 0)
+        self.assertAlmostEqual(response.json()['videos'][0]['stnb'], nf.stnb)
+        response = self.client.get('/api/video/query', {**params, 'nf': False})
+        self.assertEqual(response.json()['count'], 3)
+        response = self.client.get('/api/video/query_by_id', {'id': self.user.id})
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(len(response.json()), 4)
+        self.assertTrue(all('right_ce' in row for row in response.json()))
+        for endpoint in ('infobulk', 'detailbulk'):
+            response = self.client.get(f'/api/video/{endpoint}', {'first': nf.id, 'count': 1})
+            self.assertEqual(response.status_code, 200, response.content)
+            self.assertEqual(response.json()[0]['right_ce'], 0)
+            response = self.client.get(f'/api/video/{endpoint}', {'first': unknown.id, 'count': 1})
+            self.assertEqual(response.status_code, 200, response.content)
+            self.assertIsNone(response.json()[0]['right_ce'])
+        response = self.client.get('/api/userprofile/videolist', {'user_id': self.user.id})
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertTrue(all('right_ce' in row for row in response.json()))
 
     def test_create_updates_video_count(self):
         self.create_video()
@@ -213,7 +265,7 @@ class UserMSVideoTests(TestCase):
         other_video = self.create_video()
         VideoModel.objects.filter(pk=other_video.pk).update(player=other_user)
         self.create_video(state=MS_TextChoices.State.FROZEN)
-        self.create_video(level=MS_TextChoices.Level.INTERMEDIATE, mode=MS_TextChoices.Mode.NF)
+        self.create_video(level=MS_TextChoices.Level.INTERMEDIATE, right_ce=0)
         self.create_video(level=MS_TextChoices.Level.EXPERT, mode=MS_TextChoices.Mode.JSW)
         self.create_video(level=MS_TextChoices.Level.EXPERT, mode=MS_TextChoices.Mode.BZD)
         self.create_video(ongoing_tournament=True)
@@ -228,7 +280,7 @@ class UserMSVideoTests(TestCase):
 
         expected = {
             'video_num_total': 4, 'video_num_beg': 1, 'video_num_int': 1, 'video_num_exp': 2,
-            'video_num_std': 1, 'video_num_nf': 1, 'video_num_ng': 1, 'video_num_dg': 1,
+            'video_num_std': 2, 'video_num_nf': 1, 'video_num_ng': 1, 'video_num_dg': 1,
         }
         UserMS.objects.filter(pk=self.userms.pk).update(**dict.fromkeys(expected, 99))
         for _ in range(2):
@@ -280,5 +332,5 @@ class UserMSVideoTests(TestCase):
                 VideoModel.objects.filter(pk=video.pk).update(**fields)
                 self.assertFalse(has_sub200_expert_video(self.user))
 
-        VideoModel.objects.filter(pk=video.pk).update(mode=MS_TextChoices.Mode.NF)
+        VideoModel.objects.filter(pk=video.pk).update(mode=MS_TextChoices.Mode.STD, right_ce=0)
         self.assertTrue(has_sub200_expert_video(self.user))

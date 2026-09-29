@@ -143,7 +143,8 @@ describe('<Weekly App />', () => {
                     video.stat.software = 'e';
                     video.stat.mode = MS_Mode.SpeedNG;
                     expect(filter(video)).to.equal(stage === 0);
-                    video.stat.mode = MS_Mode.NoFlag;
+                    video.stat.mode = MS_Mode.Standard;
+                    video.stat.right_ce = 0;
                     video.stat.level = 'b';
                     expect(filter(video)).to.equal(stage === 0);
                     video.stat.level = 'e';

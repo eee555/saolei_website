@@ -4,8 +4,6 @@ from . import views
 app_name = 'video'
 urlpatterns = [
     path('get_software/', views.get_software, name='get_software'),
-    path('query/', views.video_query, name='query'),
-    path('query_by_id/', views.video_query_by_id, name='query_by_id'),
     path('newest_queue/', views.newest_queue, name='newest_queue'),
     path('newest_queue/remove/', views.remove_from_newest_queue),
     # path('approve/', views.approve, name='approve'),

@@ -347,10 +347,9 @@ class TestGsc(TournamentTestCaseBase):
             (MS_TextChoices.Level.EXPERT, GSC_Defaults.E_BV_MIN, expert_times),
         ]:
             for index, timems in enumerate(times):
-                mode = MS_TextChoices.Mode.STD if index % 2 == 0 else MS_TextChoices.Mode.NF
-                self.create_video(level=level, timems=timems, bv=bv, mode=mode)
+                self.create_video(level=level, timems=timems, bv=bv, right_ce=index % 2)
             for mode in MS_TextChoices.Mode.values:
-                if mode not in [MS_TextChoices.Mode.STD, MS_TextChoices.Mode.NF]:
+                if mode != MS_TextChoices.Mode.STD:
                     self.create_video(level=level, timems=1, bv=bv, mode=mode)
 
         self.create_video(level=MS_TextChoices.Level.BEGINNER, timems=999, bv=GSC_Defaults.B_BV_MIN - 1)

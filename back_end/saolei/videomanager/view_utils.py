@@ -16,7 +16,7 @@ def refresh_video(video: VideoModel):
     parser = MSVideoParser(video.file)
 
     parser_fields = [
-        'level', 'software', 'end_time', 'timems', 'bv',
+        'level', 'mode', 'software', 'end_time', 'timems', 'bv',
         'left', 'right', 'double',
         'left_ce', 'right_ce', 'double_ce',
         'path', 'pluck', 'flag', 'op', 'isl',

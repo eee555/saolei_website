@@ -47,6 +47,7 @@ export function extract_stat(video: AnyVideo): VideoAbstract {
         timems: video.rtime_ms,
         bv: video.bbbv_solved,
         ce: video.ce,
+        right_ce: video.rce,
         cl: video.cl,
         path: video.path,
         end_time: video instanceof AvfVideo ? arbiterTimeStampToDate(video.end_time) : generalTimeStampToDate(video.end_time),

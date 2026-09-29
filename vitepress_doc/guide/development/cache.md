@@ -531,11 +531,11 @@ digraph cache {
 
 | 所属 app | key | Redis 类型 | 数据结构 |
 | --- | --- | --- | --- |
-| `videomanager` | `newest_queue` | hash | `field = video_id`；`value = VideoQueue JSON`，包含 `state`、`tournament`、`software`、`time`、`player_id`、`identifier`、`level`、`mode`、`timems`、`bv`、`cl`、`ce`。 |
+| `videomanager` | `newest_queue` | hash | `field = video_id`；`value = VideoQueue JSON`，包含 `state`、`tournament`、`software`、`time`、`player_id`、`identifier`、`level`、`mode`、`timems`、`bv`、`cl`、`ce`、`right_ce`。 |
 | `videomanager` | `freeze_queue` | hash | 同 `newest_queue`，用于冻结录像队列。 |
 | `videomanager` | `review_queue` | hash | 同 `newest_queue`，用于待审核录像队列。 |
 | `customranking` | `customranking:pluck:{level}:rank` | zset | `member = player_id`；`score = pluck`，当 `pluck == 0` 时使用 `timems - MAX_TIMEMS` 降低 0 碰撞风险。 |
-| `customranking` | `customranking:pluck:{level}:detail` | hash | `field = player_id`；`value = detail JSON`，包含 `video_id`、`mode`、`timems`、`bv`、`upload_time`。 |
+| `customranking` | `customranking:pluck:{level}:detail` | hash | `field = player_id`；`value = detail JSON`，包含 `video_id`、`mode`、`right_ce`、`timems`、`bv`、`upload_time`。 |
 | `tournament` | `tournament:normal` | hash | `field = tournament_id`；`value = CachedTournament JSON`，包含 `id`、`state`、`subclass`、`host_id`、`start_time`、`end_time`、`data`。`data` 保存子类独占字段：GSC 为 `order`、`token`；周赛为 `year`、`week`、`tournament_format`。 |
 | `tournament` | `tournament:normal:participants` | hash | `field = user_id`；`value = list[CachedNormalParticipant] JSON`，每项包含 `id`、`token`、`arbiter_identifier`、`tournament`、`start_time`、`end_time`。 |
 | `tournament` | `tournament:user:score_current` / `score_total` / `gsc_total` / `gsc_best` / `weekly_total` / `weekly_classic_total` / `weekly_classic_best` | zset | `member = user_id`；`score = TournamentUser` 对应字段值。`score_current`、各 total 字段为 `0` 时不写入；`gsc_best`、`weekly_classic_best` 为 `MAX_TOURNAMENT_BEST` 时不写入。 |

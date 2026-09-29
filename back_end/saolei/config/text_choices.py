@@ -13,7 +13,6 @@ class MS_TextChoices:
         QKC = '09', ('强可猜')
         RKC = '10', ('弱可猜')
         BZD = '11', ('标准递归')
-        NF = '12', ('标准盲扫')
 
     class Level(TextChoices):
         BEGINNER = 'b', ('初级')

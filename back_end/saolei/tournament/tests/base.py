@@ -89,6 +89,7 @@ class TournamentTestCaseBase(TestCase):
         mode=MS_TextChoices.Mode.STD,
         timems=1000,
         bv=10,
+        right_ce=1,
     ):
         video_index = ExpandVideoModel.objects.count() + 1
         tournament_identifier = tournament_identifier if tournament_identifier is not None else [self.tournament.token]
@@ -111,7 +112,7 @@ class TournamentTestCaseBase(TestCase):
             right=1,
             double=1,
             left_ce=1,
-            right_ce=1,
+            right_ce=right_ce,
             double_ce=1,
             path=1.0,
             flag=1,
