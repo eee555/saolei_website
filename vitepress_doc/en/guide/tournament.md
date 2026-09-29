@@ -1,42 +1,36 @@
 ---
 title: Tournaments - Open Minesweeper
-description: Tournament features on Open Minesweeper, including scoring system, ranking points, tournament tokens and participation guide.
+description: Points, identifiers, replay visibility rules and automatic uploading for Golden Sheep Cups and Weekly Tournaments.
 ---
 
 # Minesweeper Tournaments
 
-The website currently mainly supports two tournament formats: the Golden Sheep Cup and the Weekly Tournament. If you want to host a tournament, you can contact the developers to add a new tournament mode.
-
-Please check each tournament page for its rules, schedule, registration method, and other details.
+The website supports Golden Sheep Cups and Weekly Tournaments. Contact the developers to host other tournament formats.
 
 ## Tournament Points
 
-After each tournament ends, tournament points are awarded to each participating user. Tournament points consist of two parts: ranking points and prize points. Points decay automatically over time, halving every 2 years.
+Ranking points are awarded after tournament results are finalized. Converting prize money into points is not yet supported.
 
-The system records each user's historical best result in the Golden Sheep Cup and the Weekly Tournament separately. Historical best results are updated only from tournaments that have already been awarded.
+Personal bests are tracked separately for Golden Sheep Cups and Weekly Tournaments, counting only awarded tournaments.
 
 ### Ranking Points
 
-Ranking points are calculated automatically based on a user's rank in the tournament. The formula is `1/rank`. For example, if a user finishes 5th, their ranking points are `1/5=0.2`. Each tournament has a ranking point coefficient, and this coefficient is multiplied into the ranking points. For example, if a points tournament has a ranking point coefficient of 50, the user receives `0.2*50=10` ranking points.
+Ranking points = tournament coefficient / rank. For example, 5th place in a Weekly Tournament earns 50 / 5 = 10 points.
 
 | Tournament | Coefficient |
 | --- | --- |
 | Golden Sheep Cup | 1000 |
 | Weekly Tournament | 50 |
 
-### Prize Points
-
-If the organizer awards prize money to players, points are calculated from the prize amount. This is not supported yet.
-
 ### Point Decay
 
-Point decay is calculated after each tournament ends and before new points are awarded. Each user's existing points are multiplied by a decay coefficient. The formula is `1/2^((current time - last update time)/2 years)`.
+Current points decay over time, halving every 2 years. Historical totals are unaffected.
 
 ## Tournament Identifiers
 
-Only Minesweeper replays created during a tournament can participate in that tournament. For offline Minesweeper software, a tournament identifier is needed to prove that the replay is valid.
+A tournament identifier identifies your tournament replays and must be set before playing. It is revealed only when your participation window starts, even if you register early.
 
-The server generates a random tournament identifier, but a participant's identifier is only revealed at their participation start time (`start_time`). Registering early does not reveal it early. You need to set this identifier in your Minesweeper software. Replays created afterward will contain the identifier. When you upload those replays, the server recognizes the tournament identifier and automatically marks them as tournament replays. When the participant's time window ends, the server stops accepting their new tournament replays.
+Replays must be uploaded within your participation window. Late uploads do not count, even if the tournament itself has not ended.
 
 A replay can contain multiple tournament identifiers, separated by commas.
 
@@ -54,22 +48,42 @@ A replay can contain multiple tournament identifiers, separated by commas.
 
 ## Tournament Replays
 
-After a replay is recognized as belonging to an ongoing tournament, it is hidden and only the replay owner can see it. This means all leaderboards on the website ignore tournament replays. After the tournament ends, the system makes replays that no longer belong to an ongoing tournament publicly visible again and refreshes the leaderboards.
+Tournament replays are hidden by default: they are excluded from public replay lists and leaderboards, but you can still view your own. They become public after awards, unless they also belong to another unawarded tournament. Cancelled tournaments do not prevent disclosure.
+
+### Visibility Across Multiple Tournaments
+
+If a replay belongs to multiple tournaments, once one is awarded, other users can see its results through that tournament's complete data export and individual participant pages. They can also obtain the replay file through bulk downloads for the whole tournament or one participant, even if another tournament keeps it hidden.
+
+Other users still cannot play it online or download it individually. **Blocked online playback does not prevent access through tournament bulk downloads.** These exceptions apply only after awards, not simply when the tournament ends.
+
+### Manual Reveal
+
+On your profile's replay list, open a replay row's three-dot menu and choose "Reveal video".
+
+**Revealed replays cannot be hidden again, and disclosure applies to every tournament they belong to.** They still count toward tournament results and do not use your replay quota.
 
 ## Automatically Uploading Tournament Replays
 
-If your browser supports [`showDirectoryPicker`](https://developer.mozilla.org/docs/Web/API/Window/showDirectoryPicker), you can use automatic uploading in Golden Sheep Cups and Weekly Tournaments. After registering, select a replay folder and polling interval during your participation window to scan, filter, and upload new files. Each filter level also applies all preceding conditions.
+Automatic uploading requires a browser that supports folder access. During your participation window, select a replay folder, check interval and filter level to upload matching new replays. Each filter level includes all preceding conditions. Level 2 is the default.
 
 ### Weekly Tournaments
 
-1. All tournament videos: the tournament identifiers include your participation token. AVF is not supported.
-2. Supported tournament videos: classic tournaments accept Intermediate and Expert replays in Standard or NF mode. This is the default filter.
+1. All tournament videos: includes your tournament identifier. AVF is not supported.
+2. Supported tournament videos: classic tournaments accept Intermediate and Expert replays in Standard or NF mode.
 3. Score-improving videos: the replay improves your total time for the best 5 Intermediate or 2 Expert games.
 
 ### Golden Sheep Cup
 
-1. All tournament videos: AVF replays must have a nonempty player identifier that exactly matches your registered Arbiter identifier. For other software, the tournament identifiers must include this tournament's token.
-2. Supported levels and modes: Beginner, Intermediate, or Expert in Standard or NF mode. This is the default filter.
+1. All tournament videos: AVF replays must have a nonempty player identifier that exactly matches your registered Arbiter identifier. Other software must include this tournament's identifier.
+2. Supported levels and modes: Beginner, Intermediate, or Expert in Standard or NF mode.
 3. 3BV minimum met: at least 10 for Beginner, 30 for Intermediate, and 100 for Expert.
 
-Personal replays cannot be refreshed while monitoring or processing files. Automatic uploading cannot start while personal replays are loading.
+Personal replays cannot be refreshed while automatic uploading is running, and must finish loading before it can start. If you have installed the website as an app and your browser supports it, the app icon shows a badge while replays are being processed.
+
+## Frequently Asked Questions
+
+### Why is my uploaded replay missing from my live results?
+
+- Tournament identifiers must match exactly, including capitalization, spaces and invisible characters.
+- In MetaSweeper, use the separate tournament identifier field. Do not append it to your regular identifier.
+- Some tournaments start your participation window as soon as you register. Upload before your own window ends.

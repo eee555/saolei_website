@@ -101,17 +101,25 @@ const { t } = useI18n({ messages: i18nMessages });
 - 文本使用`front_end\src\styles\text.css`的样式
 - 一般组件使用Element Plus，若Element Plus不支持则使用PrimeVue。
 - 涉及到分页的表格使用PrimeVue Table
+- Tooltip使用vue-tippy的Tippy组件搭配ElCard。
+- 注意ElDialog不是lazy的，应尽量减少其数量。
 
 ## 测试注意事项
 
 ### 性能
-E2E测试速度较慢，请尽量减少初始化与UI操作次数。
+E2E测试速度较慢，请尽量减少初始化与UI操作次数。测试专注于关键内容的显示，不必要为了追求一次成功使用复杂的robust断言。因为测试由我跑，对于元素定位问题我会手动改或者再反馈。
+
+### 关闭通知
+有些操作会有[通知弹窗](front_end\src\components\Notifications.ts)，它可能会遮挡页面元素导致测试不稳定。用`cy.closeElNotifications()`关闭所有弹窗。
 
 ### 本地化
 测试不需要设置本地化语言。默认情况下，Cypress组件测试的语言为英文，E2E测试的语言为中文。
 
 ### 组件`PlayerName`
 该组件用于渲染用户名字，其涉及到复杂的缓存逻辑，因此如果不需要测试其具体内容，应当用`cy.mockPlayerNameFallback()` stub相应的API。
+
+### 表格内容
+对于表格文本内容，使用`commands.ts`提供的`cy.getTable`或`cy.extractTableData`实现。
 
 ### 临时组件
 创建临时测试组件时，用`render`语法，不要用`template`。
@@ -122,3 +130,7 @@ E2E测试速度较慢，请尽量减少初始化与UI操作次数。
 - 后端服务器性能较差，带宽较低，单个请求返回体一般不要超过300KB。
 - 前端设计上应该采用批量请求数据+本地计算的方式。
 - 后端需要即时响应的业务逻辑，应当避免对于数据库的低效查询，这包括不必要的多次查询、对非索引列的排序。如需后端排序，考虑两个解决方案：添加索引、添加缓存。
+
+# VitePress文档风格
+
+除了[开发文档](vitepress_doc\guide\development)外，其他文档都至少需要中文和英文版本。除了开发文档外，其他文档面向的是普通用户，应尽量简洁，避免提及技术细节，削减本就符合常理和直觉的内容，侧重于一些特殊、反直觉的规则。
