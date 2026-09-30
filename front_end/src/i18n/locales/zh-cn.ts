@@ -83,6 +83,7 @@ export default {
             mastery: '动态胜率',
             mode: '模式',
             op: '空',
+            player: '玩家',
             realName: '姓名',
             sex: '性别',
             software: '软件',

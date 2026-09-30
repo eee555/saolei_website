@@ -30,9 +30,13 @@ describe('saoleiRanking', () => {
         expect(formatSaoleiValue(record, 'bt')).toBe('1.234');
         expect(formatSaoleiValue(record, 'bb')).toBe('0.000');
         expect(formatSaoleiValue(record, 'et')).toBe('--');
+        expect(formatSaoleiValue(record, 'sumt')).toBe('2001.232');
+        expect(formatSaoleiValue(record, 'sumb')).toBe('0.000');
         expect(formatSaoleiValue(undefined, 'sumt')).toBe('--');
         expect(saoleiVideoId(record, 'bt')).toBe(1);
         expect(saoleiVideoId(record, 'sumt')).toBeUndefined();
+        expect(saoleiVideoId(record, 'sumb')).toBeUndefined();
+        expect(saoleiVideoId(record, 'et')).toBeUndefined();
         expect(isSaoleiTimeStat('sumt')).toBe(true);
         expect(isSaoleiTimeStat('eb')).toBe(false);
     });

@@ -84,6 +84,7 @@ export default {
             mastery: 'Mastery',
             mode: 'Mode',
             op: 'Opening',
+            player: 'Player',
             realName: 'Real Name',
             sex: 'Sex',
             software: 'Software',

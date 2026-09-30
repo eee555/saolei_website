@@ -7,7 +7,7 @@
                     {{ row.board === 'saolei_nf' ? 'NF' : t('local.all') }}
                 </template>
             </ElTableColumn>
-            <ElTableColumn v-for="stat in saoleiStats" :key="stat" :label="t(`local.${stat}`)" min-width="115">
+            <ElTableColumn v-for="stat in saoleiFields" :key="stat" :label="t(`local.${stat}`)" min-width="115">
                 <template #default="{ row }">
                     <PreviewNumber v-if="saoleiVideoId(row.record, stat)" :id="saoleiVideoId(row.record, stat)" :text="formatSaoleiValue(row.record, stat)" />
                     <span v-else>{{ formatSaoleiValue(row.record, stat) }}</span>
@@ -24,7 +24,7 @@ import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import PreviewNumber from '@/components/PreviewNumber.vue';
-import { formatSaoleiValue, saoleiStats, saoleiVideoId } from '@/services/saoleiRankingService';
+import { formatSaoleiValue, saoleiFields, saoleiVideoId } from '@/services/saoleiRankingService';
 import type { SaoleiBoard, SaoleiRecord } from '@/services/saoleiRankingService';
 
 const props = defineProps({
