@@ -101,6 +101,7 @@ VideoFullOut = create_schema(
     ],
     custom_fields=[
         ('video__identifier', str, ''),
+        ('cl', int | None, None),
         ('ce', int | None, None),
     ],
 )

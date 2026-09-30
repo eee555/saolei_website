@@ -10,5 +10,5 @@ VideoBaseOut = create_schema(
         'cl', 'ce', 'right_ce', 'timems', 'bv',
         'upload_time', 'end_time',
     ],
-    custom_fields=[('ce', int | None, None)],
+    custom_fields=[('cl', int | None, None), ('ce', int | None, None)],
 )

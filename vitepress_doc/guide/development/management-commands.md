@@ -6,6 +6,38 @@
 python manage.py <command>
 ```
 
+## 本地公开数据快照
+
+### `init_local_test.py`（独立脚本）
+
+仅用于替换本地测试数据，**会清空本地数据库和 `saolei_website` 对应的 Redis 数据库**。此功能不注册为 Django 管理命令，`manage.py` 不提供 `import_public_data`。执行前停止本地后台 worker、定时任务和其他写入；不需要启动 HTTP 服务。要求不存在项目配置的 `.production` 标记、`DEBUG=True`、`E2E_TEST=True`，数据库及 Redis 均为回环地址。即使误开调试选项，存在生产标记仍会拒绝导入。正式导入前检查快照校验和、引用关系和数据库迁移状态。
+
+```bash
+# 仅 GET 生产公开 API，串行请求间隔至少 1.25 秒；失败后重复执行可续传。
+python download_public_data.py
+# detailbulk 不可用时，使用已有详情及公开录像列表完成快照：
+python download_public_data.py --skip-details
+python manage.py migrate
+# 读取快照，清库、导入，并创建当天经典周赛。
+python init_local_test.py
+# 只导入，不创建周赛：
+python init_local_test.py --no-weekly
+```
+
+默认快照目录是 `back_end/saolei/tmp/public-data`，已由 Git 忽略。下载脚本使用 `--output-dir`，导入脚本使用 `--snapshot-dir` 指定其他目录。已完成的快照不会自动重新下载，获取新快照请换一个目录。
+
+下载通过 `infoupdated` 获取用户 ID，调用 `userprofile/infobulk` 下载用户资料，通过每个用户的 `videolist` 建立公开录像索引，再调用 `video/detailbulk` 下载详情。保留 ID 空洞，不会因空页提前停止。索引后被删除或变成不可见的录像列入 `manifest.json` 的 `unavailable_video_ids`。这不是跨请求一致的数据库备份。TLS 使用 `certifi` 的 CA 包验证，不跳过证书检查；遇到 429 或服务端临时错误会等待重试。
+
+`--skip-details` 不请求 `detailbulk`，已有的详情仍然优先使用，其他录像直接使用 `get_user_videos` 的列表数据；只有列表数据的录像列入 `missing_detail_video_ids`。可空的缺失指标保持 NULL，录像内标识为空字符串。列表里的 `cl`、`ce` 不能直接写入生成列，缺少分项点击数时，相关生成值也为 NULL。旧生产列表不包含 `right_ce`，这类录像不会进入本地 NF 榜；不会仅凭旧模式编码伪造 `right_ce`。快照完成后若需补充详情，使用新目录重新下载。
+
+导入保留原用户/录像 ID、上传时间和公开属性，旧 NF 模式 `12` 转成 STD `00`，不修改 `right_ce`。批量写入不会触发录像信号，随后重建录像计数、上传额度、竞速排行榜、pluck 纪录缓存和录像状态队列，不创建 pluck 计算任务。
+
+- 管理员：ID `2`，密码 `admin123456`；普通账号：ID `48`，密码 `user123456`。用户名保留生产数据；可通过 `--admin-password` / `--user-password` 指定其他密码。
+- 其他用户禁用密码登录，且所有用户中仅 ID `2` 获得本地 `is_staff` 权限；邮箱统一为 `user-{id}@example.invalid`。生产账号不受影响。
+- 这两个公开详情 API 不提供原密码、邮箱、录像文件、头像文件、标识绑定和比赛关联；不会推测这些数据。录像可以用于列表和排行测试，但不能在本地播放或重新解析。录像计数只能基于本次导入的公开录像计算，无法排除缺失比赛关联的已公开比赛录像。
+- `is_lucky` 当前未由这两个详情 API 提供，导入保留模型默认值。已有 `pluck` 从公开录像列表补齐，缺失时保持 NULL，不重新解析录像。
+- 再次初始化会丢弃之前的本地数据；应使用独立的本地数据库及 Redis 数据库。不要对生产配置运行这些命令。
+
 ## 缓存重建
 
 ### `rebuild_speed_ranks`

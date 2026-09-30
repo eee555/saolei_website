@@ -184,7 +184,7 @@ UserVideoOut = create_schema(
         'state', 'software', 'cl', 'ce', 'right_ce', 'file_size',
         'end_time', 'ongoing_tournament', 'path', 'pluck',
     ],
-    custom_fields=[('ce', int | None, None)],
+    custom_fields=[('cl', int | None, None), ('ce', int | None, None)],
 )
 
 
