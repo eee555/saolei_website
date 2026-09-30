@@ -2,7 +2,9 @@
 
 本 app 不新增数据库模型。录像仍以 `VideoModel` 为事实来源，排行和个人纪录查询只读 Redis，不自动回源或重建。
 
-## 规则
+## Saolei.wang 规则
+
+这是竞速排行中的一套规则，并非所有大榜的默认规则。`speedranking` 和 `SpeedRanking.vue` 保留为通用入口；前端该规则使用 `SaoleiRanking.vue`、`SaoleiCard.vue`、`saoleiRankingService.ts` 及 `Saolei*` 类型。未来其他大榜应使用自己的专名，不必沿用下面的指标和纪录结构。
 
 - `saolei` 接收 STD、OFFICIAL、`ongoing_tournament=False` 的普通三等级录像。
 - `saolei_nf` 是独立榜，额外要求 `right_ce == 0`；未知值不属于 NF。标准榜也接收 NF 录像。
@@ -14,7 +16,7 @@
 
 ## 缓存
 
-每个大榜使用一个 `speedranking:{board}:records` hash，field 为玩家 id；JSON 包含八项成绩、六个录像 id 和内部 `_uploads` 排序时间。
+当前两个 Saolei.wang 榜各使用一个 `speedranking:{board}:records` hash，field 为玩家 id；JSON 包含八项成绩、六个录像 id 和内部 `_uploads` 排序时间。
 
 每项使用 `speedranking:{board}:{stat}` zset。Time score 为毫秒，3BV/s score 为负数，统一升序读取。member 为固定 20 位的 UTC 微秒时间戳和玩家 id，保证同分时按上传时间排序。API 不暴露 `_uploads`。
 
@@ -41,6 +43,6 @@ python manage.py rebuild_speed_ranks --board saolei_nf --batch-size 1000
 
 - `GET /api/speedranking/rank?board=saolei&stat=sumt&start=0&end=20`：左闭右开、最多 100 条，返回 `count` 和 `players`。
 - `GET /api/speedranking/player/{player_id}?board=saolei`：无纪录也返回完整字段，单项为空、总项使用缺省值。
-- 前端竞速榜使用 PrimeVue 分页表格、NF checkbox；个人纪录显示标准和 NF 两行完整表格。旧新闻和姓名弹窗不恢复。
+- 前端竞速榜使用 `ElTable` 和 `ElPagination`，通过 `start/end` 请求后端分页，并提供 NF checkbox；个人纪录显示标准和 NF 两行完整表格。旧新闻和姓名弹窗不恢复。
 
 测试：`python manage.py test speedranking common.tests.VideoUploadRankingIntegrationTest identifier tournament --keepdb --noinput`。

@@ -39,7 +39,7 @@ describe('<UserRecordViewApp />', () => {
                 et_id: null,
                 eb_id: null,
             },
-        }).as('speedRecords');
+        }).as('saoleiRecords');
 
         cy.intercept({ method: 'GET', pathname: '/api/customranking/pluck/player' }, {
             body: [
@@ -73,8 +73,8 @@ describe('<UserRecordViewApp />', () => {
         });
         cy.get('.pluck-record-table tbody tr').eq(1).contains('--').should('be.visible');
         cy.get('.pluck-record-table tbody tr').eq(3).contains('--').should('be.visible');
-        cy.get('.speed-record-table tbody tr').should('have.length', 2);
-        cy.get('.speed-record-table').within(() => {
+        cy.get('.saolei-record-table tbody tr').should('have.length', 2);
+        cy.get('.saolei-record-table').within(() => {
             cy.contains('1.234').should('be.visible');
             cy.contains('4.567').should('be.visible');
             cy.contains('--').should('be.visible');
