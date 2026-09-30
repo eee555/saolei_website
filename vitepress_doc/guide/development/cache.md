@@ -11,6 +11,16 @@ description: 开源扫雷网Redis/Django缓存结构详解，包括录像队列�
 
 ## 总览
 
+### 新竞速榜 `speedranking`
+
+每个大榜（`saolei`、`saolei_nf`）有一个 `speedranking:{board}:records` hash，按玩家 id 保存八项成绩、六个录像 id 及内部 `_uploads`。八个 `speedranking:{board}:{stat}` zset 分别排序 `bt/bb/it/ib/et/eb/sumt/sumb`。
+
+Time score 为毫秒，3BV/s score 为负数，统一升序。member 为固定 20 位 UTC 微秒上传时间加 `:` 和玩家 id，同分时上传更早优先；总分使用组成纪录中最晚的上传时间。缺项 sumt 按 999999ms、sumb 按 0 计算。
+
+缓存由 `speedranking.cache.SpeedRankingCache` 管理，WATCH/MULTI/EXEC 同步 hash 和各 zset。写入来自录像保存/删除信号及标识、比赛的显式批处理，均在事务提交后执行。排行、个人纪录、头像及签名资格只读此缓存，不回源数据库。
+
+使用 `python manage.py rebuild_speed_ranks` 初始化或修复缓存；重建期间暂停录像相关写入，临时榜构建成功后按大榜原子替换。详情见[管理命令](./management-commands.md#rebuild-speed-ranks)。
+
 ```dot
 digraph cache {
     graph [

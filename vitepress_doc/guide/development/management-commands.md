@@ -8,6 +8,19 @@ python manage.py <command>
 
 ## 缓存重建
 
+### `rebuild_speed_ranks`
+
+位置：`speedranking/management/commands/rebuild_speed_ranks.py`
+
+从 `VideoModel` 按玩家分段重建竞速排行榜。`--board` 可选 `saolei` 或 `saolei_nf`，省略则重建两者；`--batch-size` 默认 1000，必须为正数。
+
+```bash
+python manage.py rebuild_speed_ranks
+python manage.py rebuild_speed_ranks --board saolei_nf --batch-size 1000
+```
+
+执行前暂停录像上传、修改、删除、标识绑定/解绑及比赛公开等写入。命令先构建临时榜，成功后原子发布单个大榜，最后清理临时缓存。构建失败保留该大榜的原缓存；两个大榜依次替换。排行 API 不自动回源，因此首次部署及缓存丢失后都需要执行此命令。重建不恢复旧新闻。
+
 ### `rebuild_tournament_cache`
 
 位置：`tournament/management/commands/rebuild_tournament_cache.py`

@@ -1,0 +1,46 @@
+# 竞速排行榜
+
+本 app 不新增数据库模型。录像仍以 `VideoModel` 为事实来源，排行和个人纪录查询只读 Redis，不自动回源或重建。
+
+## 规则
+
+- `saolei` 接收 STD、OFFICIAL、`ongoing_tournament=False` 的普通三等级录像。
+- `saolei_nf` 是独立榜，额外要求 `right_ce == 0`；未知值不属于 NF。标准榜也接收 NF 录像。
+- Time 门槛：初级 3BV >= 2，中级 >= 30，高级 >= 100。3BV/s 门槛：初级 >= 4，中级 >= 30，高级 >= 100。
+- 单项先比较成绩，再比较 `upload_time`，上传更早优先；3BV/s 同分不再比较 timems。
+- `sumt` 缺项按 999999 毫秒补齐，`sumb` 缺项按 0 补齐。至少有一项有效纪录才进入总榜。
+- 总分同分时，使用组成该总分的现有纪录中最晚的上传时间，即当前成绩组合的达成时间。
+- `is_lucky` 当前不参与准入判断。头像和签名资格读取标准榜 `et < 200000`，因此包含高级 3BV >= 100 的门槛。
+
+## 缓存
+
+每个大榜使用一个 `speedranking:{board}:records` hash，field 为玩家 id；JSON 包含八项成绩、六个录像 id 和内部 `_uploads` 排序时间。
+
+每项使用 `speedranking:{board}:{stat}` zset。Time score 为毫秒，3BV/s score 为负数，统一升序读取。member 为固定 20 位的 UTC 微秒时间戳和玩家 id，保证同分时按上传时间排序。API 不暴露 `_uploads`。
+
+`SpeedRankingCache.update` 使用 WATCH/MULTI/EXEC 保护个人纪录的读改写及九个 key 的一致性。分页同样检测读取期间是否发生更新。不要在缓存类外直接修改这些 key。
+
+## 写入与补位
+
+- `post_save(VideoModel)` 复用 `videomanager` 的 `_old_values`，只对有关字段变化执行刷新；在事务提交后重新读取持久化的录像及派生 bvs。
+- 成绩提高时直接比较缓存；变差或失去资格时，仅查询由该录像保持的单项并补位。
+- 玩家或等级、模式、NF、审核状态、比赛隐藏状态改变时，旧分类补位，新分类尝试加入。
+- `post_delete(VideoModel)` 仅补位被删除录像保持的单项；没有任何剩余纪录时删除玩家的 hash 和 zset 项。
+- `add_videos_to_speed_ranks(queryset)` 支持标识绑定、比赛批量公开，在数据库按玩家和指标分桶取最佳。按玩家 id 分段以限制内存。
+- `remove_videos_from_speed_ranks(queryset)` 用于批量失效后的补位，传入按录像 id 固定的 queryset，不要继续使用依赖旧状态的过滤条件。录像仍须存在；实际删除由删除信号处理。
+- Redis 更新在 `transaction.on_commit` 执行，不参与数据库回滚。Redis 故障可能导致数据库已提交但榜单未同步，修复后应重建。全量重建期间暂停上传、审核、绑定、删除、比赛公开等写入。
+
+## 重建与接口
+
+```bash
+python manage.py rebuild_speed_ranks
+python manage.py rebuild_speed_ranks --board saolei_nf --batch-size 1000
+```
+
+命令构建独立临时榜，单个大榜构建成功后原子替换正式榜，最后清理临时 key。构建失败不会先清空正式榜；进程被强制终止时可能遗留 `speedranking:rebuild:*` 临时 key。两个大榜依次发布，并非同时切换。
+
+- `GET /api/speedranking/rank?board=saolei&stat=sumt&start=0&end=20`：左闭右开、最多 100 条，返回 `count` 和 `players`。
+- `GET /api/speedranking/player/{player_id}?board=saolei`：无纪录也返回完整字段，单项为空、总项使用缺省值。
+- 前端竞速榜使用 PrimeVue 分页表格、NF checkbox；个人纪录显示标准和 NF 两行完整表格。旧新闻和姓名弹窗不恢复。
+
+测试：`python manage.py test speedranking common.tests.VideoUploadRankingIntegrationTest identifier tournament --keepdb --noinput`。

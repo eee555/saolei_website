@@ -218,12 +218,16 @@ class TestGsc(TournamentTestCaseBase):
         )
         self.tournament.refresh_from_db()
 
-        changed_count = reveal_videos_for_tournament(self.tournament)
+        with self.captureOnCommitCallbacks(execute=True):
+            changed_count = reveal_videos_for_tournament(self.tournament)
 
         video.refresh_from_db()
         self.user.userms.refresh_from_db()
         self.assertEqual(changed_count, 1)
         self.assertFalse(video.ongoing_tournament)
+        response = self.client.get(f'/api/speedranking/player/{self.user.id}')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['bt_id'], video.id)
 
     def test_reveal_videos_for_tournament_waits_until_awarded(self):
         self.create_cached_gsc_participant()

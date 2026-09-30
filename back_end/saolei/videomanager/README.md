@@ -111,7 +111,7 @@ video.save(update_fields=['pluck'])
 互动方式：
 
 - `identifier.services` 批量更新匹配录像状态，并显式更新已有队列项、上传额度和 pluck 纪录。批量更新不触发录像保存信号。
-- 竞速纪录的批量更新与补位暂时移除，调用处已留 TODO。
+- 竞速纪录由 `speedranking` 的批量服务在事务提交后更新或补位，仅处理这些录像保持的单项。
 
 ### `tournament`
 
@@ -134,7 +134,7 @@ video.save(update_fields=['pluck'])
 - `post_save(VideoModel)` 在创建普通录像时增加计数，并在满足条件时提升上传额度。
 - `pre_delete(VideoModel)` 在删除普通录像时减少计数，删除录像不回退额度。
 - 已移除经典纪录字段、纪录刷新信号、UserMS 新闻信号及旧 Redis 排行读写。
-- 新竞速榜信号与跨 app 批处理的恢复要求见 `../msuser/refactor.md`。
+- 新竞速榜的保存/删除信号和跨 app 批处理由 `speedranking` 负责，见 `../speedranking/README.md`。
 
 ### `customranking`
 

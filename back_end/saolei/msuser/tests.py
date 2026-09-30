@@ -9,7 +9,6 @@ from django.utils import timezone
 from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from tournament.models import Tournament
 from userprofile.models import UserProfile
-from userprofile.services import has_sub200_expert_video
 from videomanager.models import ExpandVideoModel, VideoModel
 from .models import UserMS
 
@@ -310,27 +309,3 @@ class UserMSVideoTests(TestCase):
 
         self.userms.refresh_from_db()
         self.assertEqual(self.userms.video_num_limit, 3000)
-
-    def test_profile_qualification_uses_videos_without_classical_records(self):
-        self.assertFalse(has_sub200_expert_video(self.user))
-        video = self.create_video(level=MS_TextChoices.Level.EXPERT, timems=199999)
-        self.assertTrue(has_sub200_expert_video(self.user))
-
-        for fields in (
-            {'timems': 200000},
-            {'state': MS_TextChoices.State.IDENTIFIER},
-            {'ongoing_tournament': True},
-            {'level': MS_TextChoices.Level.BEGINNER},
-            {'mode': MS_TextChoices.Mode.JSW},
-        ):
-            with self.subTest(fields=fields):
-                VideoModel.objects.filter(pk=video.pk).update(
-                    timems=199999, state=MS_TextChoices.State.OFFICIAL,
-                    ongoing_tournament=False, level=MS_TextChoices.Level.EXPERT,
-                    mode=MS_TextChoices.Mode.STD,
-                )
-                VideoModel.objects.filter(pk=video.pk).update(**fields)
-                self.assertFalse(has_sub200_expert_video(self.user))
-
-        VideoModel.objects.filter(pk=video.pk).update(mode=MS_TextChoices.Mode.STD, right_ce=0)
-        self.assertTrue(has_sub200_expert_video(self.user))

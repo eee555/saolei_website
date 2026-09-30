@@ -24,11 +24,14 @@ class TestRevealVideo(TournamentTestCaseBase):
         self.assertEqual(self.client.get('/api/userprofile/videolist', {'user_id': self.user.id}).json(), [])
         self.client.force_login(self.user)
 
-        response = self.client.post(self.url)
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.client.post(self.url)
         self.assertEqual(response.status_code, 204)
         self.assertEqual(response.content, b'')
         self.video.refresh_from_db()
         self.assertFalse(self.video.ongoing_tournament)
+        record = self.client.get(f'/api/speedranking/player/{self.user.id}').json()
+        self.assertEqual(record['bt_id'], self.video.id)
         self.assertSetEqual(set(self.video.tournaments.values_list('id', flat=True)), {self.tournament.id, other.id})
         self.assertTrue(cache.hexists(newest_cache.key, self.video.id))
         self.user.userms.refresh_from_db()

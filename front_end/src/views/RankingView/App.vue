@@ -26,10 +26,12 @@ const handleTabClick = (tab: TabsPaneContext) => {
 
 const i18nMessages = {
     'zh-cn': { local: {
+        speed: '竞速',
         density: '密度',
         tournament: '比赛',
     } },
     en: { local: {
+        speed: 'Speed',
         density: 'Density',
         tournament: 'Tournament',
     } },
@@ -38,6 +40,7 @@ const i18nMessages = {
 const { t } = useI18n({ messages: i18nMessages });
 
 const tabItems = computed(() => [
+    { name: 'speed', label: t('local.speed') },
     { name: 'density', label: t('local.density') },
     { name: 'tournament', label: t('local.tournament') },
 ]);
@@ -45,6 +48,6 @@ const validTabs = computed(() => tabItems.value.map((item) => item.name));
 
 const activeTab = computed(() => {
     const lastSegment = route.path.split('/').pop() ?? '';
-    return validTabs.value.includes(lastSegment) ? lastSegment : 'density';
+    return validTabs.value.includes(lastSegment) ? lastSegment : 'speed';
 });
 </script>

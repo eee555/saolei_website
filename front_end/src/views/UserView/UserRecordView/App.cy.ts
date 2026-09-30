@@ -21,6 +21,25 @@ describe('<UserRecordViewApp />', () => {
     beforeEach(() => {
         store.$reset();
         store.player = new UserProfile({ id: 42, realname: 'Test Player' });
+        cy.intercept({ method: 'GET', pathname: '/api/speedranking/player/42' }, {
+            body: {
+                player_id: 42,
+                bt: 1234,
+                bb: 4.567,
+                it: null,
+                ib: null,
+                et: null,
+                eb: null,
+                sumt: 2001232,
+                sumb: 4.567,
+                bt_id: 8001,
+                bb_id: 8002,
+                it_id: null,
+                ib_id: null,
+                et_id: null,
+                eb_id: null,
+            },
+        }).as('speedRecords');
 
         cy.intercept({ method: 'GET', pathname: '/api/customranking/pluck/player' }, {
             body: [
@@ -54,5 +73,11 @@ describe('<UserRecordViewApp />', () => {
         });
         cy.get('.pluck-record-table tbody tr').eq(1).contains('--').should('be.visible');
         cy.get('.pluck-record-table tbody tr').eq(3).contains('--').should('be.visible');
+        cy.get('.speed-record-table tbody tr').should('have.length', 2);
+        cy.get('.speed-record-table').within(() => {
+            cy.contains('1.234').should('be.visible');
+            cy.contains('4.567').should('be.visible');
+            cy.contains('--').should('be.visible');
+        });
     });
 });

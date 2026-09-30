@@ -68,6 +68,10 @@ APP内引用链条：`utils -> models -> services -> api`
 - vue组件：`.github\workflows\cypress.yml`
 - e2e：`.github\workflows\CypressE2E.yml`
 
+## 预览与开发服务器
+
+除非用户明确要求，不要主动启动预览或开发服务器；完成前端修改后也不需要启动服务供用户预览。
+
 ## 换行约定
 - 数组、字典、html属性，倾向不换行。换行后，倾向于将同类元素（如果顺序不重要）放在同一行。
 - 若eslint报错，则按照eslint的规则修改。

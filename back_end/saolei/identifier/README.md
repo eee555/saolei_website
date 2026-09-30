@@ -46,7 +46,7 @@
 
 - 使用 `newest_cache.update_bulk` 更新已在 `newest_queue` 中的录像项。
 - 调用 `msuser.services.update_video_count_limit_from_videos` 刷新录像上传额度。
-- TODO(speedranking)：恢复新增官方录像的竞速纪录更新，见 `../msuser/refactor.md`。
+- `speedranking.services.add_videos_to_speed_ranks` 在提交后批量吸收新增官方录像的竞速纪录。
 - 调用 `customranking.services.add_videos_to_custom_pluck_ranks` 吸收新增官方录像对自定义 pluck 纪录的影响。
 
 ## 解绑流程
@@ -70,7 +70,7 @@
 
 - 对内存中的录像对象同步设置 `state=IDENTIFIER`，再使用 `newest_cache.update_bulk` 更新已在 `newest_queue` 中的录像项。
 - 调用 `customranking.services.remove_videos_from_custom_pluck_ranks` 刷新受影响的自定义 pluck 纪录。
-- TODO(speedranking)：恢复解绑录像所保持的竞速纪录补位，见 `../msuser/refactor.md`。
+- `speedranking.services.remove_videos_from_speed_ranks` 在提交后仅补位解绑录像当前保持的竞速纪录。
 
 ## 当前入口
 
@@ -98,7 +98,7 @@
 - `newest_queue` 同时包含 `IDENTIFIER` 和 `OFFICIAL` 录像。
   - 绑定/解绑只需要更新已在缓存中的项，因此使用 `newest_cache.update_bulk`，不无条件新增。
 - 如果某条录像没有进入 `newest_queue`，`update_bulk` 不会创建新缓存项。
-- 新竞速榜接入后，解绑时应只重建当前纪录指向被解绑录像的字段。
+- 竞速榜解绑仅重建当前纪录指向被解绑录像的字段，不重建该用户的所有纪录。
 
 ## TODO
 

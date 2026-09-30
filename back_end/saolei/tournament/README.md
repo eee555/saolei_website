@@ -66,4 +66,4 @@ TODO: 迁移后，`get_tournament_list` 可以逐步退化为轻量索引接口�
   - 比赛颁奖后，上万条录像不逐条触发 `VideoModel.save()`。
   - 录像从比赛恢复普通后，队列缓存恢复。
   - 录像从比赛恢复普通后，pluck 纪录刷新。
-- TODO(speedranking)：恢复比赛批量公开及用户主动公开录像后的竞速纪录更新，见 `../msuser/refactor.md`。
+- 比赛批量公开调用 `speedranking.services.add_videos_to_speed_ranks`；用户主动公开走保存信号，两者均在提交后更新竞速纪录，且不移除比赛关联。

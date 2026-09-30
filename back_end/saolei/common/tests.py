@@ -24,6 +24,7 @@ from customranking.cache import PLuckRankingCache
 from identifier.models import Identifier
 from msuser.models import UserMS
 from msuser.utils import get_video_num_limit
+from speedranking.cache import SpeedRankingCache
 from tournament.cache import TournamentCache
 from tournament.models import GSCParticipant, GSCTournament
 from userprofile.models import UserProfile
@@ -509,6 +510,10 @@ class TaskDeletionTests(TestCase):
 
 class VideoUploadRankingIntegrationTest(TestCase):
     def setUp(self):
+        for board in ('saolei', 'saolei_nf'):
+            ranking = SpeedRankingCache(board)
+            ranking.flush()
+            self.addCleanup(ranking.flush)
         for level in CUSTOM_PLUCK_LEVELS:
             PLuckRankingCache(level).flush()
         self.media_dir = tempfile.TemporaryDirectory()
@@ -555,12 +560,14 @@ class VideoUploadRankingIntegrationTest(TestCase):
         )
 
     def add_identifier_by_request(self, identifier: str):
-        response = self.client.post('/identifier/add/', {'identifier': identifier})
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.client.post('/identifier/add/', {'identifier': identifier})
         self.assertEqual(response.status_code, 200, response.content)
         return json.loads(response.content)
 
     def delete_identifier_by_request(self, identifier: str):
-        response = self.client.post('/identifier/del/', {'identifier': identifier})
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.client.post('/identifier/del/', {'identifier': identifier})
         self.assertEqual(response.status_code, 200, response.content)
         return json.loads(response.content)
 
@@ -589,7 +596,8 @@ class VideoUploadRankingIntegrationTest(TestCase):
         with path.open('rb') as file:
             uploaded_file = SimpleUploadedFile(path.name, file.read())
 
-        response = self.client.post('/common/uploadvideo/', {'file': uploaded_file})
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.client.post('/common/uploadvideo/', {'file': uploaded_file})
         self.assertEqual(response.status_code, 200, response.content)
         data = json.loads(response.content)
         video = VideoModel.objects.select_related('video', 'player__userms').get(pk=data['data']['id'])
@@ -634,16 +642,21 @@ class VideoUploadRankingIntegrationTest(TestCase):
 
         video.refresh_from_db()
         self.assertEqual(video.state, MS_TextChoices.State.IDENTIFIER)
+        self.assertEqual(self.client.get('/api/speedranking/rank', {'stat': 'bt'}).json()['count'], 0)
 
         self.add_identifier_by_request(identifier.identifier)
 
         video.refresh_from_db()
         self.assertEqual(video.state, MS_TextChoices.State.OFFICIAL)
+        rank = self.client.get('/api/speedranking/rank', {'stat': 'bt'}).json()
+        self.assertEqual(video.bv, 1)
+        self.assertEqual(rank['count'], 0)
 
         self.delete_identifier_by_request(identifier.identifier)
 
         video.refresh_from_db()
         self.assertEqual(video.state, MS_TextChoices.State.IDENTIFIER)
+        self.assertEqual(self.client.get('/api/speedranking/rank', {'stat': 'bt'}).json()['count'], 0)
 
     def test_identifier_bind_refreshes_video_num_limit_for_expert_standard_video(self):
         parser = self.parse_fixture(self.fixture_path('expert_personal.evf'))
@@ -666,6 +679,11 @@ class VideoUploadRankingIntegrationTest(TestCase):
         self.userms.refresh_from_db()
         self.assertEqual(video.state, MS_TextChoices.State.OFFICIAL)
         self.assertEqual(self.userms.video_num_limit, get_video_num_limit(parser.timems))
+        rank = self.client.get('/api/speedranking/rank', {'stat': 'et'}).json()
+        self.assertEqual(rank['count'], 1)
+        self.assertEqual(rank['players'][0]['et_id'], video.id)
+        self.delete_identifier_by_request(identifier.identifier)
+        self.assertEqual(self.client.get('/api/speedranking/rank', {'stat': 'et'}).json()['count'], 0)
 
     def test_upload_custom_video_calculates_pluck_and_refreshes_custom_pluck_record(self):
         video, parser = self.upload_fixture('custom_pluck.evf')

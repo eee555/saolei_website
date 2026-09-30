@@ -318,7 +318,6 @@ def update_user_avatar(request, avatar: File[UploadedFile]):
     """
     user: UserProfile = request.user
 
-    # TODO(speedranking): 恢复基于新榜的 sub200 资格查询，见 msuser/refactor.md。
     if not has_sub200_expert_video(user):
         return HttpResponseForbidden()
 

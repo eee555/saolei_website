@@ -11,6 +11,7 @@ from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from config.tournaments import GSC_Defaults
 from identifier.models import Identifier
 from msuser.models import UserMS
+from speedranking.cache import SpeedRankingCache
 from tournament.gsc.utils import gsc_encode_best
 from tournament.utils import MAX_TOURNAMENT_BEST
 from tournament.weekly.utils import weekly_encode_best
@@ -47,6 +48,10 @@ from ..weekly.tasks import _task_weekly_finish_impl, _task_weekly_refresh_best_i
 
 class TournamentTestCaseBase(TestCase):
     def setUp(self):
+        for board in ('saolei', 'saolei_nf'):
+            ranking = SpeedRankingCache(board)
+            ranking.flush()
+            self.addCleanup(ranking.flush)
         cache.delete(
             NORMAL_TOURNAMENT_CACHE_KEY,
             NORMAL_PARTICIPANT_CACHE_KEY,

@@ -4,6 +4,7 @@ from config.text_choices import MS_TextChoices
 from customranking.services import add_videos_to_custom_pluck_ranks, remove_videos_from_custom_pluck_ranks
 from msuser.models import UserMS
 from msuser.services import update_video_count_limit_from_videos
+from speedranking.services import add_videos_to_speed_ranks, remove_videos_from_speed_ranks
 from utils.exceptions import ExceptionToResponse
 from videomanager.cache import newest_cache
 from videomanager.models import VideoModel
@@ -39,7 +40,7 @@ def bind_identifier(identifier: Identifier, userms: UserMS):
         refreshed_videos = VideoModel.objects.filter(id__in=video_ids)
         newest_cache.update_bulk(refreshed_videos)
         update_video_count_limit_from_videos(userms, refreshed_videos)
-        # TODO(speedranking): 批量加入绑定标识后转为 OFFICIAL 的录像，见 msuser/refactor.md。
+        add_videos_to_speed_ranks(refreshed_videos)
         add_videos_to_custom_pluck_ranks(refreshed_videos)
 
     return len(video_ids)
@@ -78,7 +79,7 @@ def unbind_identifier(identifier: Identifier, userms: UserMS | None = None):
             newest_cache.update_bulk(videos)
             remove_videos_from_custom_pluck_ranks(video_ids)
 
-        # TODO(speedranking): 重建解绑标识后失效的个人纪录，见 msuser/refactor.md。
+            remove_videos_from_speed_ranks(VideoModel.objects.filter(id__in=video_ids))
 
     return len(video_ids)
 

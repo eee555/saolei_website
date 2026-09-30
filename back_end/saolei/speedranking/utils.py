@@ -1,0 +1,67 @@
+from datetime import datetime, timezone
+from typing import Literal
+
+from config.text_choices import MS_TextChoices
+
+Board = Literal['saolei', 'saolei_nf']
+RankStat = Literal['bt', 'bb', 'it', 'ib', 'et', 'eb', 'sumt', 'sumb']
+BOARDS = ('saolei', 'saolei_nf')
+RULES = {
+    'bt': (MS_TextChoices.Level.BEGINNER, 2, 'timems'),
+    'bb': (MS_TextChoices.Level.BEGINNER, 4, 'bvs'),
+    'it': (MS_TextChoices.Level.INTERMEDIATE, 30, 'timems'),
+    'ib': (MS_TextChoices.Level.INTERMEDIATE, 30, 'bvs'),
+    'et': (MS_TextChoices.Level.EXPERT, 100, 'timems'),
+    'eb': (MS_TextChoices.Level.EXPERT, 100, 'bvs'),
+}
+TOTAL_PARTS = {'sumt': ('bt', 'it', 'et'), 'sumb': ('bb', 'ib', 'eb')}
+RANK_STATS = (*RULES, *TOTAL_PARTS)
+TIME_STATS = {'bt', 'it', 'et', 'sumt'}
+MISSING_TIMEMS = 999999
+
+
+def empty_record():
+    record = {'sumt': MISSING_TIMEMS * 3, 'sumb': 0, '_uploads': {'sumt': 0, 'sumb': 0}}
+    for stat in RULES:
+        record[stat] = None
+        record[f'{stat}_id'] = None
+    return record
+
+
+def update_totals(record):
+    for total, parts in TOTAL_PARTS.items():
+        default = MISSING_TIMEMS if total == 'sumt' else 0
+        record[total] = sum(record[stat] if record[stat] is not None else default for stat in parts)
+        record['_uploads'][total] = max((record['_uploads'][stat] for stat in parts if record[stat] is not None), default=0)
+
+
+def upload_microseconds(upload_time: datetime) -> int:
+    delta = upload_time - datetime(1970, 1, 1, tzinfo=timezone.utc)
+    return (delta.days * 86400 + delta.seconds) * 1000000 + delta.microseconds
+
+
+def score(stat: str, value: float) -> float:
+    return value if stat in TIME_STATS else -value
+
+
+def is_better(stat: str, candidate: dict, record: dict) -> bool:
+    if record[stat] is None:
+        return True
+    return (score(stat, candidate['value']), candidate['upload']) < (score(stat, record[stat]), record['_uploads'][stat])
+
+
+def set_stat(record: dict, stat: str, candidate: dict | None):
+    record[stat] = candidate['value'] if candidate else None
+    record[f'{stat}_id'] = candidate['id'] if candidate else None
+    if candidate:
+        record['_uploads'][stat] = candidate['upload']
+    else:
+        record['_uploads'].pop(stat, None)
+
+
+def rank_member(player_id: int, record: dict, stat: str) -> str:
+    return f'{record["_uploads"][stat]:020d}:{player_id}'
+
+
+def public_record(player_id: int, record: dict):
+    return {'player_id': player_id, **{key: value for key, value in record.items() if key != '_uploads'}}
