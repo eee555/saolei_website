@@ -144,6 +144,8 @@ describe('HomeView components', () => {
     it('renders the real home queue components in the expected tab layout', () => {
         mountHomeView();
 
+        cy.contains('.home-news-tabs .el-tabs__item', 'News').should('be.visible');
+        cy.contains('.news-placeholder', 'News is being rebuilt. Stay tuned.').should('be.visible');
         cy.contains('.normal-tournament-card', 'Active Tournaments').should('be.visible');
         cy.contains('.el-tabs__item', 'Latest').should('have.class', 'is-active');
         cy.wait('@normalTournaments');
