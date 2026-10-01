@@ -13,10 +13,6 @@ export const WeeklyTournamentFormat = {
 
 export type WeeklyTournamentFormat = typeof WeeklyTournamentFormat[keyof typeof WeeklyTournamentFormat];
 
-export function isWeeklyClassicScoreMode(mode: MS_Mode): boolean {
-    return mode === MS_Mode.Standard;
-}
-
 function makeDefaultScores(count: number, score: number): WeeklyVideoScore[] {
     return Array.from({ length: count }, () => [0, score]);
 }
@@ -67,7 +63,7 @@ export class WeeklyParticipant extends TournamentParticipant {
 }
 
 function refreshWithVideo(participant: WeeklyParticipant, video: VideoAbstract): void {
-    if (isWeeklyClassicScoreMode(video.mode)) {
+    if (video.mode === MS_Mode.Standard) {
         if (video.level === 'i') {
             const diff = participant.classic_it[4][1] - video.timems;
             if (diff > 0) {

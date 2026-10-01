@@ -41,9 +41,9 @@ import TokenGuide from './TokenGuide.vue';
 import { fetchWeeklyResults } from '@/services/tournamentService';
 import { store } from '@/store';
 import { LoginStatus } from '@/utils/common/structInterface';
-import { TournamentState } from '@/utils/ms_const';
+import { MS_Mode, TournamentState } from '@/utils/ms_const';
 import { Tournament } from '@/utils/tournaments';
-import { isWeeklyClassicScoreMode, WeeklyParticipant, WeeklyTournamentFormat } from '@/utils/weekly';
+import { WeeklyParticipant, WeeklyTournamentFormat } from '@/utils/weekly';
 
 const props = defineProps({ tournament: { type: Tournament, required: true } });
 const { participants, index, participant, loading, state, refresh, registered, deleted } = useParticipants(() => props.tournament, (item) => new WeeklyParticipant(item), fetchWeeklyResults);
@@ -57,7 +57,7 @@ function matchesFilter(video: AutoUploadVideo): boolean {
     if (video.stat.software === 'a' || !participant.value.token) return false;
     if (!video.tokens.includes(participant.value.token)) return false;
     if (filterLevel.value === 'tournament') return true;
-    if (format.value !== WeeklyTournamentFormat.Classic || !isWeeklyClassicScoreMode(video.stat.mode)) return false;
+    if (format.value !== WeeklyTournamentFormat.Classic || video.stat.mode !== MS_Mode.Standard) return false;
     if (video.stat.level !== 'i' && video.stat.level !== 'e') return false;
     if (filterLevel.value === 'supported') return true;
     return video.stat.timems < (video.stat.level === 'i' ? participant.value.classic_it[4][1] : participant.value.classic_et[1][1]);
