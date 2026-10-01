@@ -1,10 +1,14 @@
 from unittest.mock import patch
 
+from django.test import override_settings
+
 from customranking.models import CustomPluckRecord
 from videomanager.cache import cache, newest_cache
 from .base import GSCParticipant, MS_TextChoices, refresh_gsc_scores, Tournament_TextChoices, TournamentTestCaseBase, VideoModel
 
 
+# These tests make consecutive requests to verify visibility, not rate limits.
+@override_settings(RATELIMIT_ENABLE=False)
 class TestRevealVideo(TournamentTestCaseBase):
     def setUp(self):
         super().setUp()
@@ -19,9 +23,12 @@ class TestRevealVideo(TournamentTestCaseBase):
         newest_cache.remove(self.video)
         before_count = self.user.userms.video_num_total
         response = self.client.get('/api/userprofile/videolist', {'user_id': self.user.id})
+        self.assertEqual(response.status_code, 200, response.content)
         self.assertTrue(response.json()[0]['ongoing_tournament'])
         self.client.logout()
-        self.assertEqual(self.client.get('/api/userprofile/videolist', {'user_id': self.user.id}).json(), [])
+        response = self.client.get('/api/userprofile/videolist', {'user_id': self.user.id})
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.json(), [])
         self.client.force_login(self.user)
 
         with self.captureOnCommitCallbacks(execute=True):
@@ -30,7 +37,9 @@ class TestRevealVideo(TournamentTestCaseBase):
         self.assertEqual(response.content, b'')
         self.video.refresh_from_db()
         self.assertFalse(self.video.ongoing_tournament)
-        record = self.client.get(f'/api/speedranking/player/{self.user.id}').json()
+        response = self.client.get(f'/api/speedranking/player/{self.user.id}')
+        self.assertEqual(response.status_code, 200, response.content)
+        record = response.json()
         self.assertEqual(record['bt_id'], self.video.id)
         self.assertSetEqual(set(self.video.tournaments.values_list('id', flat=True)), {self.tournament.id, other.id})
         self.assertTrue(cache.hexists(newest_cache.key, self.video.id))
@@ -44,6 +53,7 @@ class TestRevealVideo(TournamentTestCaseBase):
         save.assert_not_called()
         self.client.logout()
         response = self.client.get('/api/userprofile/videolist', {'user_id': self.user.id})
+        self.assertEqual(response.status_code, 200, response.content)
         self.assertEqual(response.json()[0]['id'], self.video.id)
         self.assertFalse(response.json()[0]['ongoing_tournament'])
         self.assertEqual(self.client.get('/api/tournament/get_videos/participant', {'tournament_id': self.tournament.id, 'user_id': self.user.id}).status_code, 403)
