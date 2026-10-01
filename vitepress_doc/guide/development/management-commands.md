@@ -8,20 +8,22 @@ python manage.py <command>
 
 ## 本地公开数据快照
 
-### `init_local_test.py`（独立脚本）
+### `dangerzone.init_local_test`（独立脚本）
+
+下载和初始化入口分别位于 `dangerzone/download_public_data.py`、`dangerzone/init_local_test.py`。在 `back_end/saolei` 目录使用 `python -m` 启动，后端根目录不再保留同名入口脚本。
 
 仅用于替换本地测试数据，**会清空本地数据库和 `saolei_website` 对应的 Redis 数据库**。此功能不注册为 Django 管理命令，`manage.py` 不提供 `import_public_data`。执行前停止本地后台 worker、定时任务和其他写入；不需要启动 HTTP 服务。要求不存在项目配置的 `.production` 标记、`DEBUG=True`、`E2E_TEST=True`，数据库及 Redis 均为回环地址。即使误开调试选项，存在生产标记仍会拒绝导入。正式导入前检查快照校验和、引用关系和数据库迁移状态。
 
 ```bash
 # 仅 GET 生产公开 API，串行请求间隔至少 1.25 秒；失败后重复执行可续传。
-python download_public_data.py
+python -m dangerzone.download_public_data
 # detailbulk 不可用时，使用已有详情及公开录像列表完成快照：
-python download_public_data.py --skip-details
+python -m dangerzone.download_public_data --skip-details
 python manage.py migrate
 # 读取快照，清库、导入，并创建当天经典周赛。
-python init_local_test.py
+python -m dangerzone.init_local_test
 # 只导入，不创建周赛：
-python init_local_test.py --no-weekly
+python -m dangerzone.init_local_test --no-weekly
 ```
 
 默认快照目录是 `back_end/saolei/tmp/public-data`，已由 Git 忽略。下载脚本使用 `--output-dir`，导入脚本使用 `--snapshot-dir` 指定其他目录。已完成的快照不会自动重新下载，获取新快照请换一个目录。

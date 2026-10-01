@@ -1,4 +1,7 @@
-"""Download a resumable, public-only metadata snapshot. Never sends writes."""
+"""Download a resumable, public-only metadata snapshot. Never sends writes.
+
+Run from back_end/saolei: python -m dangerzone.download_public_data
+"""
 import argparse
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
@@ -9,7 +12,7 @@ import time
 import certifi
 import requests
 
-from dangerzone.utils import DEFAULT_SNAPSHOT_DIR, file_entry, read_json, validate_snapshot, write_json
+from .utils import DEFAULT_SNAPSHOT_DIR, file_entry, read_json, validate_snapshot, write_json
 
 
 class PublicClient:

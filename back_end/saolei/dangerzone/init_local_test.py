@@ -2,6 +2,7 @@
 
 Admin: id=2, password=admin123456. Normal user: id=48, password=user123456.
 Usernames come from the snapshot. This script needs no running HTTP server.
+Run from back_end/saolei: python -m dangerzone.init_local_test
 """
 import argparse
 import os
@@ -11,7 +12,7 @@ import sys
 import django
 from django.core.management.base import CommandError
 
-from dangerzone.utils import DEFAULT_SNAPSHOT_DIR
+from .utils import DEFAULT_SNAPSHOT_DIR
 
 
 def main():
@@ -24,7 +25,7 @@ def main():
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'saolei.settings')
     django.setup()
     # Models must be imported after Django's app registry is initialized.
-    from dangerzone.public_snapshot import initialize_local_data
+    from .public_snapshot import initialize_local_data
 
     try:
         initialize_local_data(
