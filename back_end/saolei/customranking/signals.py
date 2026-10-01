@@ -13,7 +13,6 @@ CUSTOM_PLUCK_RANK_RELATED_VIDEO_FIELDS = {
     'pluck',
     'timems',
     'upload_time',
-    'right_ce',
 }
 
 

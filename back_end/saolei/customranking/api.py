@@ -17,7 +17,6 @@ class CustomPluckPlayerOut(Schema):
     player_id: int
     video_id: int
     mode: str
-    right_ce: int | None = None
     pluck: float
     timems: int
     bv: int

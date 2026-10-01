@@ -146,7 +146,7 @@ video.save(update_fields=['pluck'])
 
 互动方式：
 
-- `customranking.signals` 监听 `VideoModel` 的 `state`、`ongoing_tournament`、`pluck`、`timems`、`upload_time`、`right_ce`（同步缓存展示字段）。
+- `customranking.signals` 监听 `VideoModel` 的 `state`、`ongoing_tournament`、`pluck`、`timems`、`upload_time`；不监听 `right_ce`，pluck 排行不需要 NF 信息。
 - `CustomPluckRecord` 保存或删除后，同步更新 Redis 排行缓存。
 
 ### `common`
