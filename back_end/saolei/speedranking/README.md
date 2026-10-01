@@ -18,7 +18,11 @@
 
 当前两个 Saolei.wang 榜各使用一个 `speedranking:{board}:records` hash，field 为玩家 id；JSON 包含八项成绩、六个录像 id 和内部 `_uploads` 排序时间。
 
-每项使用 `speedranking:{board}:{stat}` zset。Time score 为毫秒，3BV/s score 为负数，统一升序读取。member 为固定 20 位的 UTC 微秒时间戳和玩家 id，保证同分时按上传时间排序。API 不暴露 `_uploads`。
+每项使用 `speedranking:{board}:{stat}` zset，member 只保存玩家 id。令 `M = 3_000_000_000`、`upload` 为 Unix UTC 分钟数：Time 的 score 为 `timems * M + upload`，3BV/s 为 `-bvs_units * M + upload`，其中 `bvs_units` 是以 0.0001 为单位的整数。统一升序读取，相同玩家由 ZADD 直接覆盖。不同玩家同分同分钟时不再按更细时间区分。
+
+`0 <= upload < M`，约可覆盖 5700 年。单项单位值最多 999999，总项最多 2999997，因此所有 score 都在 double 的精确整数范围内。hash 中的成绩保留原始精度，内部 `_uploads` 保存 UTC 微秒时间戳，API 不暴露 `_uploads`。只在生成 score 时将 Bvs 四舍五入至四位小数、时间截断到分钟，总分在求和后量化。允许 zset 对极接近的成绩给出近似排序；增量选优、补位查询和批量重建仍按原始成绩、上传时间比较。
+
+范围限制仅作用于 zset：Time 单项最多 999999 毫秒，Bvs 单项最多 99.9999；`sumt` 最多 2999997 毫秒，`sumb` 最多 299.9997。编码前按原始值判断，超限不写入对应 zset，并移除已有条目；恢复范围后可重新入榜。超限纪录照常参与个人选优、保存至 hash 和求和，不以较差的录像替代。总榜按总值独立判断，单项超限不一定导致总榜超限。
 
 `SpeedRankingCache.update` 使用 WATCH/MULTI/EXEC 保护个人纪录的读改写及九个 key 的一致性。分页同样检测读取期间是否发生更新。不要在缓存类外直接修改这些 key。
 
@@ -40,6 +44,8 @@ python manage.py rebuild_speed_ranks --board saolei_nf --batch-size 1000
 ```
 
 命令构建独立临时榜，单个大榜构建成功后原子替换正式榜，最后清理临时 key。构建失败不会先清空正式榜；进程被强制终止时可能遗留 `speedranking:rebuild:*` 临时 key。两个大榜依次发布，并非同时切换。
+
+从旧的“微秒时间戳 + 玩家 id” member 格式升级时，暂停相关读写，使用新代码执行 `python manage.py rebuild_speed_ranks`，完成两个大榜的重建后再恢复服务；不能混用新旧格式。无需修改录像数据库。
 
 - `GET /api/speedranking/rank?board=saolei&stat=sumt&start=0&end=20`：左闭右开、最多 100 条，返回 `count` 和 `players`。
 - `GET /api/speedranking/player/{player_id}?board=saolei`：无纪录也返回完整字段，单项为空、总项使用缺省值。

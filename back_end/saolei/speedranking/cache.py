@@ -4,7 +4,7 @@ from typing import Callable
 from django_redis import get_redis_connection
 from redis.exceptions import WatchError
 
-from .utils import empty_record, public_record, rank_member, RANK_STATS, RULES, score, update_totals
+from .utils import empty_record, encode_zset_score, public_record, RANK_STATS, RULES, update_totals
 
 cache = get_redis_connection('saolei_website')
 
@@ -41,10 +41,13 @@ class SpeedRankingCache:
                     present = any(record[f'{stat}_id'] is not None for stat in RULES)
                     pipe.multi()
                     for stat in RANK_STATS:
-                        if raw and previous[stat] is not None:
-                            pipe.zrem(self.rank_key(stat), rank_member(player_id, previous, stat))
+                        encoded = None
                         if present and record[stat] is not None:
-                            pipe.zadd(self.rank_key(stat), {rank_member(player_id, record, stat): score(stat, record[stat])})
+                            encoded = encode_zset_score(stat, record[stat], record['_uploads'][stat])
+                        if encoded is not None:
+                            pipe.zadd(self.rank_key(stat), {str(player_id): encoded})
+                        elif raw and previous[stat] is not None:
+                            pipe.zrem(self.rank_key(stat), player_id)
                     if present:
                         pipe.hset(self.detail_key, player_id, json.dumps(record, allow_nan=False))
                     else:
@@ -62,7 +65,7 @@ class SpeedRankingCache:
                     pipe.watch(self.detail_key, self.rank_key(stat))
                     count = pipe.zcard(self.rank_key(stat))
                     members = pipe.zrange(self.rank_key(stat), start, end - 1) if end > start else []
-                    player_ids = [int(member.rsplit(b':', 1)[1]) for member in members]
+                    player_ids = [int(member) for member in members]
                     records = pipe.hmget(self.detail_key, player_ids) if player_ids else []
                     pipe.multi()
                     pipe.execute()

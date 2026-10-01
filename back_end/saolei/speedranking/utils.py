@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from math import floor
 from typing import Literal
 
 from config.text_choices import MS_TextChoices
@@ -17,7 +18,10 @@ RULES = {
 TOTAL_PARTS = {'sumt': ('bt', 'it', 'et'), 'sumb': ('bb', 'ib', 'eb')}
 RANK_STATS = (*RULES, *TOTAL_PARTS)
 TIME_STATS = {'bt', 'it', 'et', 'sumt'}
-MISSING_TIMEMS = 999999
+MAX_RECORD_UNITS = 999999
+BVS_SCALE = 10000
+MISSING_TIMEMS = MAX_RECORD_UNITS
+SCORE_TIME_FACTOR = 3_000_000_000
 
 
 def empty_record():
@@ -40,6 +44,17 @@ def upload_microseconds(upload_time: datetime) -> int:
     return (delta.days * 86400 + delta.seconds) * 1000000 + delta.microseconds
 
 
+def encode_zset_score(stat: str, value: float, upload: int) -> int | None:
+    """仅 zset 排序量化成绩和微秒时间戳；超限返回 None，不影响个人纪录。"""
+    scale = 1 if stat in TIME_STATS else BVS_SCALE
+    upload //= 60_000_000
+    limit = MAX_RECORD_UNITS * (3 if stat in TOTAL_PARTS else 1)
+    if not 0 <= value <= limit / scale or not 0 <= upload < SCORE_TIME_FACTOR:
+        return None
+    units = floor(value * scale + 0.5)
+    return (units if stat in TIME_STATS else -units) * SCORE_TIME_FACTOR + upload
+
+
 def score(stat: str, value: float) -> float:
     return value if stat in TIME_STATS else -value
 
@@ -57,10 +72,6 @@ def set_stat(record: dict, stat: str, candidate: dict | None):
         record['_uploads'][stat] = candidate['upload']
     else:
         record['_uploads'].pop(stat, None)
-
-
-def rank_member(player_id: int, record: dict, stat: str) -> str:
-    return f'{record["_uploads"][stat]:020d}:{player_id}'
 
 
 def public_record(player_id: int, record: dict):

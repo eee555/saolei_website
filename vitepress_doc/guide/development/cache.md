@@ -17,11 +17,17 @@ description: 开源扫雷网Redis/Django缓存结构详解，包括录像队列�
 
 每个大榜（`saolei`、`saolei_nf`）有一个 `speedranking:{board}:records` hash，按玩家 id 保存八项成绩、六个录像 id 及内部 `_uploads`。八个 `speedranking:{board}:{stat}` zset 分别排序 `bt/bb/it/ib/et/eb/sumt/sumb`。
 
-Time score 为毫秒，3BV/s score 为负数，统一升序。member 为固定 20 位 UTC 微秒上传时间加 `:` 和玩家 id，同分时上传更早优先；总分使用组成纪录中最晚的上传时间。缺项 sumt 按 999999ms、sumb 按 0 计算。
+member 仅保存玩家 id，ZADD 可直接覆盖该玩家的旧成绩。令 `M = 3_000_000_000`，Time score 为 `timems * M + upload`，3BV/s score 为 `-bvs_units * M + upload`；`upload` 是 Unix UTC 分钟数，`bvs_units` 是将 Bvs 四舍五入到四位小数后的万分之一单位整数。统一升序，同分时上传分钟更早优先；总分使用组成纪录中最晚的上传分钟。hash 的 `_uploads` 保留 UTC 微秒时间戳，成绩字段保留原始精度，只在生成 score 时量化，允许 zset 对极接近的成绩给出近似排序。
+
+范围检查仅在写入 zset 时进行：Time 单项最多 999999ms、Bvs 单项最多 99.9999，sumt 最多 2999997ms、sumb 最多 299.9997，且 `0 <= upload < M`。按原始值判断，超限则移除对应 zset 条目，但个人最佳纪录仍以原始值保存在 hash，不改选较差的录像。总榜仅根据总值判断，单项超限不直接排除总榜，保证可编码 score 在 double 的精确整数范围内。
+
+缺项 sumt 按 999999ms、sumb 按 0 计算；sumb 对原始单项求和后再量化 score。个人纪录的增量选优、数据库补位和批量重建保持原有逻辑，不受 zset 范围和精度限制。
 
 缓存由 `speedranking.cache.SpeedRankingCache` 管理，WATCH/MULTI/EXEC 同步 hash 和各 zset。写入来自录像保存/删除信号及标识、比赛的显式批处理，均在事务提交后执行。排行、个人纪录、头像及签名资格只读此缓存，不回源数据库。
 
 使用 `python manage.py rebuild_speed_ranks` 初始化或修复缓存；重建期间暂停录像相关写入，临时榜构建成功后按大榜原子替换。详情见[管理命令](./management-commands.md#rebuild-speed-ranks)。
+
+旧的微秒时间戳 member 与新编码不兼容。升级时须暂停相关读写，以新代码重建两个大榜后恢复服务，不需要录像数据库迁移。
 
 ```dot
 digraph cache {
