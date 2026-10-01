@@ -45,7 +45,6 @@ export default {
             code10: '弱可猜',
             code11: '递归',
             std: '标准',
-            nf: '盲扫',
             ng: '无猜',
             dg: '递归',
             sng: '强无猜',

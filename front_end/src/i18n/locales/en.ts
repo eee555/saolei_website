@@ -46,7 +46,6 @@ export default {
             code10: 'Lucky',
             code11: 'Recursive Chord',
             std: 'Standard',
-            nf: 'No Flag',
             ng: 'No Guessing',
             dg: 'Recursive Chord',
             sng: 'Strict No Guessing',

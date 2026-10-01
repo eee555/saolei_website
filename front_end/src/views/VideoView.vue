@@ -27,10 +27,8 @@
         <ElDescriptionsItem :label="t('common.prop.state')">
             <VideoStateFilter v-model="videofilter.filter_state" @change="request_videos" />
         </ElDescriptionsItem>
-        <ElDescriptionsItem :label="t('common.mode.nf')">
-            <ElCheckbox v-model="nfOnly" @change="state.CurrentPage = 1; request_videos();">
-                NF
-            </ElCheckbox>
+        <ElDescriptionsItem :label="t('common.nf')">
+            <ElSwitch v-model="nfOnly" @change="state.CurrentPage = 1; request_videos();" />
         </ElDescriptionsItem>
         <ElDescriptionsItem :label="t('common.prop.bbbv')">
             <BBBVFilter :level="levelTagSelected" @change="request_videos" />
@@ -59,7 +57,7 @@
 <script lang="ts" setup>
 // 全网录像的检索器，根据三个维度排序
 import type { TableColumnCtx } from 'element-plus';
-import { ElButton, ElCheckbox, ElDescriptions, ElDescriptionsItem, ElPagination, ElRow, ElTable, ElTableColumn } from 'element-plus';
+import { ElButton, ElDescriptions, ElDescriptionsItem, ElPagination, ElRow, ElSwitch, ElTable, ElTableColumn } from 'element-plus';
 import { onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
