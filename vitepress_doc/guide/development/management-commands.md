@@ -44,16 +44,16 @@ python init_local_test.py --no-weekly
 
 位置：`speedranking/management/commands/rebuild_speed_ranks.py`
 
-从 `VideoModel` 按玩家分段重建竞速排行榜。`--board` 可选 `saolei` 或 `saolei_nf`，省略则重建两者；`--batch-size` 默认 1000，必须为正数。
+从 `VideoModel` 按玩家分段重建竞速排行榜。`--ranking-name` 可选 `saolei` 或 `saolei_nf`，省略则重建两者；`--batch-size` 默认 1000，必须为正数。
 
 ```bash
 python manage.py rebuild_speed_ranks
-python manage.py rebuild_speed_ranks --board saolei_nf --batch-size 1000
+python manage.py rebuild_speed_ranks --ranking-name saolei_nf --batch-size 1000
 ```
 
 执行前暂停录像上传、修改、删除、标识绑定/解绑及比赛公开等写入。命令先构建临时榜，成功后原子发布单个大榜，最后清理临时缓存。构建失败保留该大榜的原缓存；两个大榜依次替换。排行 API 不自动回源，因此首次部署及缓存丢失后都需要执行此命令。重建不恢复旧新闻。
 
-从旧的“微秒时间戳 + 玩家 id” member 升级为纯玩家 id、分钟级合成 score 时，应暂停相关读写，以新代码执行不带 `--board` 的重建命令，两个大榜都完成后再恢复服务。超出编码范围的单项或总值仍保存在个人纪录 hash，仅不写入对应 zset；总榜独立判断，不修改录像数据库和个人最佳选取规则。
+从旧的“微秒时间戳 + 玩家 id” member 升级为纯玩家 id、分钟级合成 score 时，应暂停相关读写，以新代码执行不带 `--ranking-name` 的重建命令，两个大榜都完成后再恢复服务。超出编码范围的单项或总值仍保存在个人纪录 hash，仅不写入对应 zset；总榜独立判断，不修改录像数据库和个人最佳选取规则。
 
 ### `rebuild_tournament_cache`
 

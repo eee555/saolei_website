@@ -61,6 +61,9 @@ describe('<UserRecordViewApp />', () => {
         cy.mount(App, mountOptions);
 
         cy.wait('@pluckRecords').its('request.query').should('deep.equal', { player_id: '42' });
+        cy.wait(['@saoleiRecords', '@saoleiRecords']).then((requests) => {
+            expect(requests.map(({ request }) => request.query.ranking_name)).to.have.members(['saolei', 'saolei_nf']);
+        });
 
         cy.get('.pluck-record-table tbody tr').should('have.length', 4);
         cy.get('.pluck-record-table').within(() => {

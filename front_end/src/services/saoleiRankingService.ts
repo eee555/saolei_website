@@ -8,7 +8,7 @@ export const SaoleiStat = {
     b: 'bvs',
 } as const;
 export type SaoleiStat = keyof typeof SaoleiStat;
-export type SaoleiBoard = 'saolei' | 'saolei_nf';
+export type SaoleiRankingName = 'saolei' | 'saolei_nf';
 export type SaoleiField = `${SaoleiLevel | 'sum'}${SaoleiStat}`;
 export const saoleiFields = ['bt', 'bb', 'it', 'ib', 'et', 'eb', 'sumt', 'sumb'] as const satisfies readonly SaoleiField[];
 export type SaoleiRecord = Record<SaoleiField, number | null> & Record<`${SaoleiLevel}${SaoleiStat}_id`, number | null> & { player_id: number };
@@ -28,14 +28,14 @@ export function saoleiVideoId(record: SaoleiRecord | undefined, stat: SaoleiFiel
     return record?.[`${stat}_id`] ?? undefined;
 }
 
-export async function fetchSaoleiRanking(board: SaoleiBoard, stat: SaoleiField, start: number, end: number): Promise<{ count: number; players: SaoleiRecord[] }> {
+export async function fetchSaoleiRanking(rankingName: SaoleiRankingName, stat: SaoleiField, start: number, end: number): Promise<{ count: number; players: SaoleiRecord[] }> {
     const { data } = await $axios.get<{ count: number; players: SaoleiRecord[] }>('/api/speedranking/rank', {
-        params: { board, stat, start, end },
+        params: { ranking_name: rankingName, stat, start, end },
     });
     return data;
 }
 
-export async function fetchSaoleiRecord(playerId: number, board: SaoleiBoard): Promise<SaoleiRecord> {
-    const { data } = await $axios.get<SaoleiRecord>(`/api/speedranking/player/${playerId}`, { params: { board } });
+export async function fetchSaoleiRecord(playerId: number, rankingName: SaoleiRankingName): Promise<SaoleiRecord> {
+    const { data } = await $axios.get<SaoleiRecord>(`/api/speedranking/player/${playerId}`, { params: { ranking_name: rankingName } });
     return data;
 }

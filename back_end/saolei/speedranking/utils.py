@@ -4,9 +4,9 @@ from typing import Literal
 
 from config.text_choices import MS_TextChoices
 
-Board = Literal['saolei', 'saolei_nf']
+RankingName = Literal['saolei', 'saolei_nf']
 RankStat = Literal['bt', 'bb', 'it', 'ib', 'et', 'eb', 'sumt', 'sumb']
-BOARDS = ('saolei', 'saolei_nf')
+RANKING_NAMES = ('saolei', 'saolei_nf')
 RULES = {
     'bt': (MS_TextChoices.Level.BEGINNER, 2, 'timems'),
     'bb': (MS_TextChoices.Level.BEGINNER, 4, 'bvs'),

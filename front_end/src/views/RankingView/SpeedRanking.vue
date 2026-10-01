@@ -1,19 +1,19 @@
 <template>
     <section class="speed-ranking">
         <div class="ranking-toolbar">
-            <ElSelect v-model="selectedBoard" :aria-label="t('local.board')" class="board-selector">
-                <ElOption v-for="board in boards" :key="board" :label="t(`local.label.${board}`)" :value="board" :title="t(`local.tooltip.${board}`)" />
+            <ElSelect v-model="selectedRankingName" :aria-label="t('local.rankingName')" class="ranking-selector">
+                <ElOption v-for="rankingName in rankingNames" :key="rankingName" :label="t(`local.label.${rankingName}`)" :value="rankingName" :title="t(`local.tooltip.${rankingName}`)" />
             </ElSelect>
             <Tippy>
                 <BaseIconInfo />
                 <template #content>
                     <ElCard class="card-small">
-                        {{ t(`local.tooltip.${selectedBoard}`) }}
+                        {{ t(`local.tooltip.${selectedRankingName}`) }}
                     </ElCard>
                 </template>
             </Tippy>
         </div>
-        <SaoleiRanking v-if="selectedBoard === 'saolei'" />
+        <SaoleiRanking v-if="selectedRankingName === 'saolei'" />
     </section>
 </template>
 
@@ -29,12 +29,12 @@ import SaoleiRanking from './SaoleiRanking.vue';
 
 import { BaseIconInfo } from '@/components/common/icon';
 
-const boards = ['saolei'] as const;
-const selectedBoard = ref<typeof boards[number]>('saolei');
+const rankingNames = ['saolei'] as const;
+const selectedRankingName = ref<typeof rankingNames[number]>('saolei');
 
 const i18nMessages = {
     'zh-cn': { local: {
-        board: '大榜',
+        rankingName: '大榜',
         label: {
             // eslint-disable-next-line @stylistic/quotes
             saolei: "@:{'common.website.saolei'}规则",
@@ -45,7 +45,7 @@ const i18nMessages = {
         },
     } },
     en: { local: {
-        board: 'Ranking board',
+        rankingName: 'Ranking',
         label: {
             saolei: '@:common.website.saolei Rule',
         },
@@ -70,7 +70,7 @@ const { t } = useI18n({ messages: i18nMessages });
     margin-bottom: 1rem;
 }
 
-.board-selector {
+.ranking-selector {
     width: 12rem;
     max-width: 100%;
 }

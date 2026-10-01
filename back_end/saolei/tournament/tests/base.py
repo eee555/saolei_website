@@ -48,8 +48,8 @@ from ..weekly.tasks import _task_weekly_finish_impl, _task_weekly_refresh_best_i
 
 class TournamentTestCaseBase(TestCase):
     def setUp(self):
-        for board in ('saolei', 'saolei_nf'):
-            ranking = SpeedRankingCache(board)
+        for ranking_name in ('saolei', 'saolei_nf'):
+            ranking = SpeedRankingCache(ranking_name)
             ranking.flush()
             self.addCleanup(ranking.flush)
         cache.delete(

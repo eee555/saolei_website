@@ -10,8 +10,8 @@ cache = get_redis_connection('saolei_website')
 
 
 class SpeedRankingCache:
-    def __init__(self, board: str, *, namespace: str = 'speedranking'):
-        self.prefix = f'{namespace}:{board}'
+    def __init__(self, ranking_name: str, *, namespace: str = 'speedranking'):
+        self.prefix = f'{namespace}:{ranking_name}'
         self.detail_key = f'{self.prefix}:records'
 
     def rank_key(self, stat: str):

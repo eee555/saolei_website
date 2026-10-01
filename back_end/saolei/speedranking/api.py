@@ -3,7 +3,7 @@ from ninja import Router, Schema
 from ninja.decorators import decorate_view
 
 from .cache import SpeedRankingCache
-from .utils import Board, public_record, RankStat
+from .utils import public_record, RankingName, RankStat
 
 router = Router()
 
@@ -33,19 +33,19 @@ class RankingOut(Schema):
 
 @router.get('/rank', response=RankingOut)
 @decorate_view(ratelimit(key='ip', rate='5/s'))
-def get_ranking(request, board: Board = 'saolei', stat: RankStat = 'sumt', start: int = 0, end: int = 20):
+def get_ranking(request, ranking_name: RankingName = 'saolei', stat: RankStat = 'sumt', start: int = 0, end: int = 20):
     """
     - ratelimit(key='ip', rate='5/s')
     """
     start = max(0, start)
     end = min(max(start, end), start + 100)
-    return SpeedRankingCache(board).get_range(stat, start, end)
+    return SpeedRankingCache(ranking_name).get_range(stat, start, end)
 
 
 @router.get('/player/{player_id}', response=RecordOut)
 @decorate_view(ratelimit(key='ip', rate='5/s'))
-def get_player_record(request, player_id: int, board: Board = 'saolei'):
+def get_player_record(request, player_id: int, ranking_name: RankingName = 'saolei'):
     """
     - ratelimit(key='ip', rate='5/s')
     """
-    return public_record(player_id, SpeedRankingCache(board).get_record(player_id))
+    return public_record(player_id, SpeedRankingCache(ranking_name).get_record(player_id))

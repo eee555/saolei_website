@@ -510,8 +510,8 @@ class TaskDeletionTests(TestCase):
 
 class VideoUploadRankingIntegrationTest(TestCase):
     def setUp(self):
-        for board in ('saolei', 'saolei_nf'):
-            ranking = SpeedRankingCache(board)
+        for ranking_name in ('saolei', 'saolei_nf'):
+            ranking = SpeedRankingCache(ranking_name)
             ranking.flush()
             self.addCleanup(ranking.flush)
         for level in CUSTOM_PLUCK_LEVELS:

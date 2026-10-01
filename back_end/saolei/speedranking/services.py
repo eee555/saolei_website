@@ -8,20 +8,20 @@ from django.db.models.functions import RowNumber
 from config.text_choices import MS_TextChoices
 from videomanager.models import VideoModel
 from .cache import SpeedRankingCache
-from .utils import BOARDS, is_better, RULES, set_stat, upload_microseconds
+from .utils import is_better, RANKING_NAMES, RULES, set_stat, upload_microseconds
 
 VIDEO_FIELDS = ('id', 'player_id', 'level', 'mode', 'state', 'ongoing_tournament', 'bv', 'timems', 'bvs', 'right_ce', 'upload_time')
 
 
-def eligible_videos(videos: QuerySet, board: str, stat: str):
+def eligible_videos(videos: QuerySet, ranking_name: str, stat: str):
     level, minimum_bv, _ = RULES[stat]
     videos = videos.filter(level=level, bv__gte=minimum_bv, mode=MS_TextChoices.Mode.STD, state=MS_TextChoices.State.OFFICIAL, ongoing_tournament=False)
-    if board == 'saolei_nf':
+    if ranking_name == 'saolei_nf':
         videos = videos.filter(right_ce=0)
     return videos
 
 
-def candidate_for_video(video: dict | None, board: str, stat: str):
+def candidate_for_video(video: dict | None, ranking_name: str, stat: str):
     if video is None:
         return None
     level, minimum_bv, field = RULES[stat]
@@ -29,17 +29,17 @@ def candidate_for_video(video: dict | None, board: str, stat: str):
         return None
     if video['mode'] != MS_TextChoices.Mode.STD or video['state'] != MS_TextChoices.State.OFFICIAL or video['ongoing_tournament']:
         return None
-    if board == 'saolei_nf' and video['right_ce'] != 0:
+    if ranking_name == 'saolei_nf' and video['right_ce'] != 0:
         return None
     return {'id': video['id'], 'value': video[field], 'upload': upload_microseconds(video['upload_time'])}
 
 
-def best_candidate(player_id: int, board: str, stat: str):
+def best_candidate(player_id: int, ranking_name: str, stat: str):
     """仅对需要补位的单项查询最佳录像，upload_time 是唯一成绩 tie-breaker。"""
     field = RULES[stat][2]
     order = field if field == 'timems' else f'-{field}'
-    video = eligible_videos(VideoModel.objects.filter(player_id=player_id), board, stat).order_by(order, 'upload_time', 'id').values(*VIDEO_FIELDS).first()
-    return candidate_for_video(video, board, stat)
+    video = eligible_videos(VideoModel.objects.filter(player_id=player_id), ranking_name, stat).order_by(order, 'upload_time', 'id').values(*VIDEO_FIELDS).first()
+    return candidate_for_video(video, ranking_name, stat)
 
 
 def _sync_video(video_id: int, previous_player_id: int):
@@ -48,20 +48,20 @@ def _sync_video(video_id: int, previous_player_id: int):
     if video:
         players.add(video['player_id'])
     for player_id in players:
-        for board in BOARDS:
-            def transform(record, board=board, player_id=player_id):
+        for ranking_name in RANKING_NAMES:
+            def transform(record, ranking_name=ranking_name, player_id=player_id):
                 # WATCH 重试时也重新读取，不能用先于缓存快照的录像覆盖新纪录。
                 current_video = VideoModel.objects.filter(pk=video_id, player_id=player_id).values(*VIDEO_FIELDS).first()
                 for stat in RULES:
-                    candidate = candidate_for_video(current_video, board, stat)
+                    candidate = candidate_for_video(current_video, ranking_name, stat)
                     if record[f'{stat}_id'] == video_id:
                         if candidate is None or (not is_better(stat, candidate, record) and (candidate['value'] != record[stat] or candidate['upload'] != record['_uploads'][stat])):
-                            set_stat(record, stat, best_candidate(player_id, board, stat))
+                            set_stat(record, stat, best_candidate(player_id, ranking_name, stat))
                         else:
                             set_stat(record, stat, candidate)
                     elif candidate and is_better(stat, candidate, record):
                         set_stat(record, stat, candidate)
-            SpeedRankingCache(board).update(player_id, transform)
+            SpeedRankingCache(ranking_name).update(player_id, transform)
 
 
 def sync_video(video_id: int, previous_player_id: int):
@@ -76,20 +76,20 @@ def player_batches(videos: QuerySet, batch_size: int):
         last_player = players[-1]
 
 
-def _add_videos(videos: QuerySet, boards=BOARDS, batch_size: int = 1000, namespace: str = 'speedranking'):
+def _add_videos(videos: QuerySet, ranking_names=RANKING_NAMES, batch_size: int = 1000, namespace: str = 'speedranking'):
     """按玩家分段，在数据库分桶选最佳录像，再合并到 Redis。"""
     for players in player_batches(videos, batch_size):
         subset = videos.filter(player_id__in=players)
-        for board in boards:
+        for ranking_name in ranking_names:
             grouped = {}
             for stat, (_, _, field) in RULES.items():
                 order = F(field).asc() if field == 'timems' else F(field).desc()
-                best = eligible_videos(subset, board, stat).annotate(
+                best = eligible_videos(subset, ranking_name, stat).annotate(
                     rn=Window(RowNumber(), partition_by=[F('player_id')], order_by=[order, F('upload_time').asc(), F('id').asc()]),
                 ).filter(rn=1).values(*VIDEO_FIELDS)
                 for video in best:
-                    grouped.setdefault(video['player_id'], {})[stat] = candidate_for_video(video, board, stat)
-            ranking = SpeedRankingCache(board, namespace=namespace)
+                    grouped.setdefault(video['player_id'], {})[stat] = candidate_for_video(video, ranking_name, stat)
+            ranking = SpeedRankingCache(ranking_name, namespace=namespace)
             for player_id, candidates in grouped.items():
                 def transform(record, candidates=candidates):
                     for stat, candidate in candidates.items():
@@ -108,13 +108,13 @@ def _remove_videos(videos: QuerySet):
         ids_by_player = {}
         for player_id, video_id in videos.filter(player_id__in=players).values_list('player_id', 'id'):
             ids_by_player.setdefault(player_id, set()).add(video_id)
-        for board in BOARDS:
-            ranking = SpeedRankingCache(board)
+        for ranking_name in RANKING_NAMES:
+            ranking = SpeedRankingCache(ranking_name)
             for player_id, video_ids in ids_by_player.items():
-                def transform(record, video_ids=video_ids, player_id=player_id, board=board):
+                def transform(record, video_ids=video_ids, player_id=player_id, ranking_name=ranking_name):
                     for stat in RULES:
                         if record[f'{stat}_id'] in video_ids:
-                            set_stat(record, stat, best_candidate(player_id, board, stat))
+                            set_stat(record, stat, best_candidate(player_id, ranking_name, stat))
                 ranking.update(player_id, transform)
 
 
@@ -123,18 +123,18 @@ def remove_videos_from_speed_ranks(videos: QuerySet):
     transaction.on_commit(partial(_remove_videos, videos.all()))
 
 
-def rebuild_speed_ranks(boards=BOARDS, batch_size: int = 1000):
+def rebuild_speed_ranks(ranking_names=RANKING_NAMES, batch_size: int = 1000):
     """从录像库重建临时榜，完成后原子发布；执行期间应暂停录像写入。"""
     if batch_size <= 0:
         raise ValueError('batch_size must be positive')
     counts = {}
-    for board in boards:
+    for ranking_name in ranking_names:
         namespace = f'speedranking:rebuild:{uuid.uuid4().hex}'
-        temporary = SpeedRankingCache(board, namespace=namespace)
+        temporary = SpeedRankingCache(ranking_name, namespace=namespace)
         try:
-            _add_videos(VideoModel.objects.all(), boards=(board,), batch_size=batch_size, namespace=namespace)
-            counts[board] = temporary.get_range('sumt', 0, 0)['count']
-            temporary.publish_to(SpeedRankingCache(board))
+            _add_videos(VideoModel.objects.all(), ranking_names=(ranking_name,), batch_size=batch_size, namespace=namespace)
+            counts[ranking_name] = temporary.get_range('sumt', 0, 0)['count']
+            temporary.publish_to(SpeedRankingCache(ranking_name))
         finally:
             temporary.flush()
     return counts

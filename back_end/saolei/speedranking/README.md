@@ -16,9 +16,11 @@
 
 ## 缓存
 
-当前两个 Saolei.wang 榜各使用一个 `speedranking:{board}:records` hash，field 为玩家 id；JSON 包含八项成绩、六个录像 id 和内部 `_uploads` 排序时间。
+当前两个 Saolei.wang 榜各使用一个 `speedranking:{ranking_name}:records` hash，field 为玩家 id；JSON 包含八项成绩、六个录像 id 和内部 `_uploads` 排序时间。
 
-每项使用 `speedranking:{board}:{stat}` zset，member 只保存玩家 id。令 `M = 3_000_000_000`、`upload` 为 Unix UTC 分钟数：Time 的 score 为 `timems * M + upload`，3BV/s 为 `-bvs_units * M + upload`，其中 `bvs_units` 是以 0.0001 为单位的整数。统一升序读取，相同玩家由 ZADD 直接覆盖。不同玩家同分同分钟时不再按更细时间区分。
+zset 舍弃部分精度并限制数值范围，是为了简化缓存逻辑：将成绩与上传时间合并进一个 score 后，member 只需使用玩家 id，更新成绩可直接覆盖，无需查找、删除旧的复合 member。zset 仅作为排名和排名区间查询的索引，允许近似排序，不从 score 恢复数据用于纪录比较；hash 仍保存原始纪录，个人选优、补位及求和逻辑不受影响。
+
+每项使用 `speedranking:{ranking_name}:{stat}` zset，member 只保存玩家 id。令 `M = 3_000_000_000`、`upload` 为 Unix UTC 分钟数：Time 的 score 为 `timems * M + upload`，3BV/s 为 `-bvs_units * M + upload`，其中 `bvs_units` 是以 0.0001 为单位的整数。统一升序读取，相同玩家由 ZADD 直接覆盖。不同玩家同分同分钟时不再按更细时间区分。
 
 `0 <= upload < M`，约可覆盖 5700 年。单项单位值最多 999999，总项最多 2999997，因此所有 score 都在 double 的精确整数范围内。hash 中的成绩保留原始精度，内部 `_uploads` 保存 UTC 微秒时间戳，API 不暴露 `_uploads`。只在生成 score 时将 Bvs 四舍五入至四位小数、时间截断到分钟，总分在求和后量化。允许 zset 对极接近的成绩给出近似排序；增量选优、补位查询和批量重建仍按原始成绩、上传时间比较。
 
@@ -40,15 +42,15 @@
 
 ```bash
 python manage.py rebuild_speed_ranks
-python manage.py rebuild_speed_ranks --board saolei_nf --batch-size 1000
+python manage.py rebuild_speed_ranks --ranking-name saolei_nf --batch-size 1000
 ```
 
 命令构建独立临时榜，单个大榜构建成功后原子替换正式榜，最后清理临时 key。构建失败不会先清空正式榜；进程被强制终止时可能遗留 `speedranking:rebuild:*` 临时 key。两个大榜依次发布，并非同时切换。
 
 从旧的“微秒时间戳 + 玩家 id” member 格式升级时，暂停相关读写，使用新代码执行 `python manage.py rebuild_speed_ranks`，完成两个大榜的重建后再恢复服务；不能混用新旧格式。无需修改录像数据库。
 
-- `GET /api/speedranking/rank?board=saolei&stat=sumt&start=0&end=20`：左闭右开、最多 100 条，返回 `count` 和 `players`。
-- `GET /api/speedranking/player/{player_id}?board=saolei`：无纪录也返回完整字段，单项为空、总项使用缺省值。
+- `GET /api/speedranking/rank?ranking_name=saolei&stat=sumt&start=0&end=20`：左闭右开、最多 100 条，返回 `count` 和 `players`。
+- `GET /api/speedranking/player/{player_id}?ranking_name=saolei`：无纪录也返回完整字段，单项为空、总项使用缺省值。
 - 前端竞速榜使用 `ElTable` 和 `ElPagination`，通过 `start/end` 请求后端分页，并提供 NF checkbox；个人纪录显示标准和 NF 两行完整表格。旧新闻和姓名弹窗不恢复。
 
 测试：`python manage.py test speedranking common.tests.VideoUploadRankingIntegrationTest identifier tournament --keepdb --noinput`。

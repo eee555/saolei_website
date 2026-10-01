@@ -4,7 +4,7 @@
         <ElTable :data="rows" border class="saolei-record-table">
             <ElTableColumn label="Saolei.wang" min-width="130">
                 <template #default="{ row }">
-                    {{ row.board === 'saolei_nf' ? 'NF' : t('local.all') }}
+                    {{ row.rankingName === 'saolei_nf' ? 'NF' : t('local.all') }}
                 </template>
             </ElTableColumn>
             <ElTableColumn v-for="stat in saoleiFields" :key="stat" :label="t(`local.${stat}`)" min-width="115">
@@ -25,13 +25,13 @@ import { useI18n } from 'vue-i18n';
 
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import { formatSaoleiValue, saoleiFields, saoleiVideoId } from '@/services/saoleiRankingService';
-import type { SaoleiBoard, SaoleiRecord } from '@/services/saoleiRankingService';
+import type { SaoleiRankingName, SaoleiRecord } from '@/services/saoleiRankingService';
 
 const props = defineProps({
-    records: { type: Object as PropType<Partial<Record<SaoleiBoard, SaoleiRecord>>>, required: true },
+    records: { type: Object as PropType<Partial<Record<SaoleiRankingName, SaoleiRecord>>>, required: true },
 });
-const boards: SaoleiBoard[] = ['saolei', 'saolei_nf'];
-const rows = computed(() => boards.map((board) => ({ board, record: props.records[board] })));
+const rankingNames: SaoleiRankingName[] = ['saolei', 'saolei_nf'];
+const rows = computed(() => rankingNames.map((rankingName) => ({ rankingName, record: props.records[rankingName] })));
 
 const i18nMessages = {
     'zh-cn': { local: {

@@ -14,7 +14,7 @@ from userprofile.services import has_sub200_expert_video
 from videomanager.models import ExpandVideoModel, VideoModel
 from .cache import cache, SpeedRankingCache
 from .services import add_videos_to_speed_ranks, best_candidate, remove_videos_from_speed_ranks
-from .utils import BOARDS, encode_zset_score, is_better, MAX_RECORD_UNITS, RANK_STATS, SCORE_TIME_FACTOR, TIME_STATS, TOTAL_PARTS, upload_microseconds
+from .utils import encode_zset_score, is_better, MAX_RECORD_UNITS, RANK_STATS, RANKING_NAMES, SCORE_TIME_FACTOR, TIME_STATS, TOTAL_PARTS, upload_microseconds
 
 
 class SpeedRankingScoreTests(SimpleTestCase):
@@ -42,8 +42,8 @@ class SpeedRankingScoreTests(SimpleTestCase):
 @override_settings(RATELIMIT_ENABLE=False)
 class SpeedRankingTests(TestCase):
     def setUp(self):
-        for board in BOARDS:
-            ranking = SpeedRankingCache(board)
+        for ranking_name in RANKING_NAMES:
+            ranking = SpeedRankingCache(ranking_name)
             ranking.flush()
             self.addCleanup(ranking.flush)
         self.user = self.create_user('speed')
@@ -63,8 +63,8 @@ class SpeedRankingTests(TestCase):
         with self.captureOnCommitCallbacks(execute=True):
             video.save(update_fields=fields)
 
-    def record(self, board='saolei', player=None):
-        response = self.client.get(f'/api/speedranking/player/{(player or self.user).id}', {'board': board})
+    def record(self, ranking_name='saolei', player=None):
+        response = self.client.get(f'/api/speedranking/player/{(player or self.user).id}', {'ranking_name': ranking_name})
         self.assertEqual(response.status_code, 200, response.content)
         return response.json()
 
@@ -141,14 +141,14 @@ class SpeedRankingTests(TestCase):
                 for rebuild in (False, True):
                     if rebuild:
                         call_command('rebuild_speed_ranks', stdout=StringIO())
-                    for board in BOARDS:
-                        record = self.record(board)
+                    for ranking_name in RANKING_NAMES:
+                        record = self.record(ranking_name)
                         self.assertEqual((record['bt'], record['bb']), (video.timems, video.bvs))
                         self.assertEqual((record['bt_id'], record['bb_id']), (video.id, video.id))
                         self.assertEqual(record['sumt'], video.timems + 1000 + 999999)
                         self.assertEqual(record['sumb'], video.bvs + 30)
                         for stat in ('bt', 'bb', 'sumt', 'sumb'):
-                            response = self.client.get('/api/speedranking/rank', {'board': board, 'stat': stat})
+                            response = self.client.get('/api/speedranking/rank', {'ranking_name': ranking_name, 'stat': stat})
                             self.assertEqual(response.status_code, 200)
                             self.assertEqual(response.json()['count'], int(stat in ranked))
 
@@ -210,7 +210,7 @@ class SpeedRankingTests(TestCase):
         with self.assertNumQueries(0):
             self.assertIsNone(self.record()['bt'])
         cache.zadd(SpeedRankingCache('saolei').rank_key('bt'), {f'00000000000000000000:{self.user.id}': 1000})
-        call_command('rebuild_speed_ranks', batch_size=1, stdout=StringIO())
+        call_command('rebuild_speed_ranks', '--ranking-name', 'saolei', batch_size=1, stdout=StringIO())
         self.assertEqual(self.record()['bt_id'], video.id)
         self.assertEqual(cache.zrange(SpeedRankingCache('saolei').rank_key('bt'), 0, -1), [str(self.user.id).encode()])
         with patch('speedranking.services._add_videos', side_effect=ValueError('failed')):
@@ -220,5 +220,5 @@ class SpeedRankingTests(TestCase):
         VideoModel.objects.filter(pk=video.pk).update(state=MS_TextChoices.State.IDENTIFIER)
         call_command('rebuild_speed_ranks', stdout=StringIO())
         self.assertIsNone(self.record()['bt'])
-        self.assertEqual(self.client.get('/api/speedranking/rank', {'board': 'invalid'}).status_code, 422)
+        self.assertEqual(self.client.get('/api/speedranking/rank', {'ranking_name': 'invalid'}).status_code, 422)
         self.assertEqual(self.client.get('/api/speedranking/rank', {'stat': 'invalid'}).status_code, 422)

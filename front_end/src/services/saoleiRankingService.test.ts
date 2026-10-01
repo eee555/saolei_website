@@ -41,12 +41,12 @@ describe('saoleiRanking', () => {
         expect(isSaoleiTimeStat('eb')).toBe(false);
     });
 
-    it('passes the selected board and exclusive range to the API', async () => {
+    it('passes the selected ranking and exclusive range to the API', async () => {
         const get = vi.spyOn($axios, 'get').mockResolvedValue({ data: { count: 1, players: [record] } });
         expect(await fetchSaoleiRanking('saolei_nf', 'bb', 20, 40)).toEqual({ count: 1, players: [record] });
-        expect(get).toHaveBeenCalledWith('/api/speedranking/rank', { params: { board: 'saolei_nf', stat: 'bb', start: 20, end: 40 } });
+        expect(get).toHaveBeenCalledWith('/api/speedranking/rank', { params: { ranking_name: 'saolei_nf', stat: 'bb', start: 20, end: 40 } });
         get.mockResolvedValue({ data: record });
         expect(await fetchSaoleiRecord(42, 'saolei')).toEqual(record);
-        expect(get).toHaveBeenLastCalledWith('/api/speedranking/player/42', { params: { board: 'saolei' } });
+        expect(get).toHaveBeenLastCalledWith('/api/speedranking/player/42', { params: { ranking_name: 'saolei' } });
     });
 });

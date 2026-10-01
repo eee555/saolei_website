@@ -28,7 +28,7 @@ describe('<SaoleiRanking />', () => {
                 }] },
         }).as('ranking');
         cy.mount(SaoleiRanking, { global: { plugins: [i18n, pinia], config: { globalProperties: { $axios } } } });
-        cy.wait('@ranking').its('request.query').should('include', { board: 'saolei', stat: 'sumt', start: '0', end: '20' });
+        cy.wait('@ranking').its('request.query').should('include', { ranking_name: 'saolei', stat: 'sumt', start: '0', end: '20' });
         cy.get('.saolei-ranking-table .el-table__header').extractTableData().should((data) => {
             expect(data[0]).to.deep.equal(['', 'Player', 'Beginner', 'Intermediate', 'Expert', 'Sum']);
             expect(data[1]).to.deep.equal(['Time', 'Bvs', 'Time', 'Bvs', 'Time', 'Bvs', 'Time', 'Bvs']);
@@ -51,11 +51,11 @@ describe('<SaoleiRanking />', () => {
         cy.get('.el-pagination .btn-next').click();
         cy.wait('@ranking').its('request.query').should('include', { stat: 'bb', start: '20', end: '40' });
         cy.get('.nf-toggle.el-checkbox').click();
-        cy.wait('@ranking').its('request.query').should('include', { board: 'saolei_nf', stat: 'bb', start: '0' });
+        cy.wait('@ranking').its('request.query').should('include', { ranking_name: 'saolei_nf', stat: 'bb', start: '0' });
         cy.get('.el-pagination__sizes .el-select').click();
         cy.get('.el-select-dropdown__item').filter(':visible').contains('50').click();
-        cy.wait('@ranking').its('request.query').should('include', { board: 'saolei_nf', stat: 'bb', start: '0', end: '50' });
+        cy.wait('@ranking').its('request.query').should('include', { ranking_name: 'saolei_nf', stat: 'bb', start: '0', end: '50' });
         cy.get('.stat-header[aria-label="Sum Bvs"]').click();
-        cy.wait('@ranking').its('request.query').should('include', { board: 'saolei_nf', stat: 'sumb', start: '0', end: '50' });
+        cy.wait('@ranking').its('request.query').should('include', { ranking_name: 'saolei_nf', stat: 'sumb', start: '0', end: '50' });
     });
 });
