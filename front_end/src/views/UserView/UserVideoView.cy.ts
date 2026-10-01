@@ -91,6 +91,7 @@ describe('<UserVideoView /> video reveal', () => {
         cy.intercept('POST', '**/api/tournament/video/102/reveal', { statusCode: 204 }).as('revealSecond');
         openActions(101);
         cy.get('[data-cy=reveal-video]:visible').click();
+        cy.get('[data-cy=reveal-video]:visible').should('not.exist');
         cy.get('.el-dialog').should('have.length', 1);
         cy.contains('.el-dialog button', 'Cancel').click();
         openActions(102);
