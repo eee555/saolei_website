@@ -46,7 +46,7 @@ interface DataEntry {
     bv: number;
     bvs: number;
     upload_time: string;
-    video__flag: number;
+    right_ce: number | null;
     video__cell0: number;
     video__cell1: number;
     video__cell2: number;
@@ -71,7 +71,7 @@ watch(props, () => {
 });
 
 async function fetchData(id: number) {
-    await proxy.$axios.get<DataEntry[]>('video/query_by_id', {
+    await proxy.$axios.get<DataEntry[]>('/api/video/query_by_id', {
         params: {
             id: id,
         },
@@ -84,7 +84,7 @@ function generateArbiterCSV(raw: DataEntry[]) {
     if (ArrayUtils.isEmpty(raw)) return '';
     const csvdata = ['Day,Month,Year,Hour,Min,Sec,mode,Time,BBBV,BBBVs,style,cell0,cell1,cell2,cell3,cell4,cell5,cell6,cell7,cell8,Lcl,Rcl,Dcl,Leff,Reff,Deff,Openings,Islands,Path,GZiNi,HZiNi'];
     for (const v of raw) {
-        if (v.mode != '00' && v.mode != '12') continue;
+        if (v.mode != '00') continue;
         const date = new Date(v.upload_time);
         const row: (string | number)[] = [date.getUTCDate(), date.getUTCMonth() + 1, date.getUTCFullYear(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds()];
         switch (v.level) {
@@ -97,7 +97,7 @@ function generateArbiterCSV(raw: DataEntry[]) {
         row.push(v.bv);
         row.push(v.bvs.toFixed(2));
 
-        if (v.video__flag == 0) row.push('NF');
+        if (v.right_ce === 0) row.push('NF');
         else row.push('Flag');
 
         row.push(v.video__cell0, v.video__cell1, v.video__cell2, v.video__cell3, v.video__cell4, v.video__cell5, v.video__cell6, v.video__cell7, v.video__cell8);

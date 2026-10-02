@@ -1,270 +1,77 @@
 <template>
-    <ElRow class="mb-4" style="margin-bottom: 10px;">
-        <ElButton
-            v-for="(tag, key) in mode_tags" :key="key" type="success" :plain="!(mode_tag_selected == key)" size="small"
-            @click="mode_tag_selected = key as string; get_player_rank(1);"
-        >
-            {{ t(`common.mode.${tag.key}`) }}
-        </ElButton>
-    </ElRow>
-
-    <ElRow class="mb-4" style="margin-bottom: 10px;">
-        <ElButton
-            v-for="(tag, key) in index_tags" :key="key" type="primary" :plain="!(index_tag_selected == key)" size="small"
-            @click="index_tag_selected = key as string; mod_style(); get_player_rank(1);"
-        >
-            {{ t(`common.prop.${tag.key}`)
-            }}
-        </ElButton>
-    </ElRow>
-
-    <div style="width: 80%;font-size:20px;margin: auto;margin-top: 10px;user-select: none;">
-        <div style="border-bottom: 1px solid #555555;padding-bottom: 10px;">
-            <span class="rank" />
-            <span class="name">{{ t('common.prop.realName') }}</span>
-            <span
-                class="number_wid" :style="{ color: (level_selected === 'b' ? 'rgb(64, 158, 255)' : '') }"
-                @click="setSortDirect('b')"
-            >{{ t('common.level.b') }}{{
-                level_selected === "b" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
-            <span
-                class="number_wid" :style="{ color: (level_selected === 'i' ? 'rgb(64, 158, 255)' : '') }"
-                @click="setSortDirect('i')"
-            >{{ t('common.level.i') }}{{
-                level_selected === "i" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
-            <span
-                class="number_wid" :style="{ color: (level_selected === 'e' ? 'rgb(64, 158, 255)' : '') }"
-                @click="setSortDirect('e')"
-            >{{ t('common.level.e') }}{{
-                level_selected === "e" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
-            <span
-                class="sum_title" :style="{ color: (level_selected === 'sum' ? 'rgb(64, 158, 255)' : '') }"
-                @click="setSortDirect('sum')"
-            >{{ t('common.level.sum') }}{{
-                level_selected === "sum" ? (index_tags[index_tag_selected].reverse ? "▼" : "▲") : "" }}</span>
+    <section class="speed-ranking">
+        <div class="ranking-toolbar">
+            <ElSelect v-model="selectedRankingName" :aria-label="t('local.rankingName')" class="ranking-selector">
+                <ElOption v-for="rankingName in rankingNames" :key="rankingName" :label="t(`local.label.${rankingName}`)" :value="rankingName" :title="t(`local.tooltip.${rankingName}`)" />
+            </ElSelect>
+            <Tippy>
+                <BaseIconInfo />
+                <template #content>
+                    <ElCard class="card-small">
+                        {{ t(`local.tooltip.${selectedRankingName}`) }}
+                    </ElCard>
+                </template>
+            </Tippy>
         </div>
-        <div v-for="(player, key) in playerData" style="margin-top: 10px;">
-            <span class="rank">{{ key - 19 + (state.CurrentPage) * 20 }}</span>
-            <!-- <span class="name">{{ player.name }}</span> -->
-            <PlayerName class="name" :user-id="player.id" />
-            <!-- <span class="beginner">{{ to_fixed_n(player.beginner, 3) }}</span> -->
-            <span class="number_wid">
-                <PreviewNumber :id="player.beginner_id" :text="to_fixed_n(player.beginner, 3)" />
-            </span>
-            <span class="number_wid">
-                <PreviewNumber :id="player.intermediate_id" :text="to_fixed_n(player.intermediate, 3)" />
-            </span>
-            <span class="number_wid">
-                <PreviewNumber :id="player.expert_id" :text="to_fixed_n(player.expert, 3)" />
-            </span>
-
-            <span class="sum">{{ to_fixed_n(player.sum, 3) }}</span>
-        </div>
-    </div>
-
-    <div style="margin-top: 16px;">
-        <ElPagination
-            v-model:current-page="state.CurrentPage" :next-click="nextClick" :page-size="20" layout="prev, pager, next, jumper" :page-count="state.Total"
-            prev-text="上一页" next-text="下一页" @current-change="currentChange" @prev-click="prevClick"
-        />
-    </div>
+        <SaoleiRanking v-if="selectedRankingName === 'saolei'" />
+    </section>
 </template>
 
-<script lang="ts" setup>
-// 玩家排行榜
-import { ElButton, ElPagination, ElRow } from 'element-plus';
-import { onMounted, reactive, ref } from 'vue';
+<script setup lang="ts">
+import '@/styles/cards.css';
+
+import { ElCard, ElOption, ElSelect } from 'element-plus';
+import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { Tippy } from 'vue-tippy';
 
-import { httpErrorNotification } from '@/components/Notifications';
-import PlayerName from '@/components/PlayerName.vue';
-import PreviewNumber from '@/components/PreviewNumber.vue';
-import { fetchPlayerRank } from '@/services/msuserService';
-import { ms_to_s, to_fixed_n } from '@/utils';
+import SaoleiRanking from './SaoleiRanking.vue';
 
-const { t } = useI18n();
+import { BaseIconInfo } from '@/components/common/icon';
 
-// const level_tag_selected = ref("EXPERT");
-const mode_tag_selected = ref('STD');
-const index_tag_selected = ref('timems');
-const level_selected = ref('sum'); // bie&sum
+const rankingNames = ['saolei'] as const;
+const selectedRankingName = ref<typeof rankingNames[number]>('saolei');
 
-const index_visible = ref(true);
-
-const state = reactive({
-    tableLoading: false,
-    CurrentPage: 1,
-    // PageSize: 20,
-    Total: 3,
-});
-
-// const test  = reactive({v: 5});
-const playerData = reactive<Player[]>([]);
-interface Player {
-    id: number;
-    beginner: string;
-    beginner_id: number;
-    intermediate: string;
-    intermediate_id: number;
-    expert: string;
-    expert_id: number;
-    sum: string;
-}
-
-type NameKey = Record<string, string>;
-type Tags = Record<string, NameKey>;
-interface NameKeyReverse {
-    key: string;
-    reverse: boolean;
-    to_fixed: number;
-}
-type TagsReverse = Record<string, NameKeyReverse>;
-
-const mode_tags: Tags = {
-    STD: { key: 'std' },
-    NF: { key: 'nf' },
-    JSW: { key: 'ng' },
-    // "BZD": { key: "dg" }
+const i18nMessages = {
+    'zh-cn': { local: {
+        rankingName: '大榜',
+        label: {
+            // eslint-disable-next-line @stylistic/quotes
+            saolei: "@:{'common.website.saolei'}规则",
+        },
+        tooltip: {
+            // eslint-disable-next-line @stylistic/quotes
+            saolei: "仅限@:{'common.mode.std'}@:{'common.prop.mode'}。@:{'common.level.b'}@:{'common.prop.time'}要求@:{'common.prop.bv'} ≥ 2，@:{'common.level.b'}@:{'common.prop.bvs'}要求@:{'common.prop.bv'} ≥ 4，@:{'common.level.i'}要求@:{'common.prop.bv'} ≥ 30，@:{'common.level.e'}要求@:{'common.prop.bv'} ≥ 100",
+        },
+    } },
+    en: { local: {
+        rankingName: 'Ranking',
+        label: {
+            saolei: '@:common.website.saolei Rule',
+        },
+        tooltip: {
+            // eslint-disable-next-line @stylistic/quotes
+            saolei: "@:common.mode.std mode only. @:common.level.b @:common.prop.time requires @:common.prop.bv ≥ 2. @:common.level.b @:common.prop.bvs requires @:common.prop.bv ≥ 4. @:common.level.i requires @:common.prop.bv ≥ 30. @:common.level.e requires @:common.prop.bv ≥ 100.",
+        },
+    } },
 };
-
-// reverse: true从小到大
-const index_tags: TagsReverse = {
-    timems: { key: 'timems', reverse: false, to_fixed: 3 },
-    bbbv_s: { key: 'bvs', reverse: true, to_fixed: 3 },
-    path: { key: 'path', reverse: false, to_fixed: 2 },
-    stnb: { key: 'stnb', reverse: true, to_fixed: 2 },
-    ioe: { key: 'ioe', reverse: true, to_fixed: 3 },
-};
-
-onMounted(() => {
-    document.getElementsByClassName('el-pagination__goto')[0].childNodes[0].nodeValue = '转到';
-    // 把分页器的go to改成中文。
-
-    mod_style();
-    get_player_rank(1);
-});
-
-const mod_style = () => {
-    // 调整列宽样式
-    // console.log(index_visible.value);
-
-    index_visible.value = !['upload_time', 'bbbv', 'bbbv_s', 'timems'].
-        includes(index_tag_selected.value);
-};
-
-const get_player_rank = (page: number) => {
-    state.CurrentPage = page;
-    const iv = index_tags[index_tag_selected.value];
-    const mv = mode_tags[mode_tag_selected.value];
-    const piv = `player_${iv.key}_${mv.key}_`;
-    fetchPlayerRank({
-        ids: `${piv}ids`,
-        sortBy: `${piv}*->${level_selected.value}`,
-        reverse: iv.reverse,
-        indexes: `["#","${piv}*->b","${piv}*->b_id","${piv}*->i","${piv}*->i_id","${piv}*->e","${piv}*->e_id","${piv}*->sum"]`,
-        page: page,
-    }).then(function ({ total_page, players }) {
-        // console.log(response.data);
-        state.Total = total_page;
-
-        playerData.splice(0, playerData.length);
-        for (let i = 0; i < players.length / 8; i++) {
-            playerData.push({
-                id: Number(players[i * 8]),
-                beginner: formatRankValue(players[i * 8 + 1]),
-                beginner_id: Number(players[i * 8 + 2]),
-                intermediate: formatRankValue(players[i * 8 + 3]),
-                intermediate_id: Number(players[i * 8 + 4]),
-                expert: formatRankValue(players[i * 8 + 5]),
-                expert_id: Number(players[i * 8 + 6]),
-                sum: formatRankValue(players[i * 8 + 7]),
-            });
-        }
-        // console.log(playerData);
-    }).catch(httpErrorNotification);
-};
-
-const currentChange = (val: number) => {
-    state.CurrentPage = Math.ceil(val);
-    get_player_rank(state.CurrentPage);
-};
-// 上一页
-const prevClick = () => {
-    state.CurrentPage = state.CurrentPage - 1;
-    if (state.CurrentPage < 1) {
-        state.CurrentPage = 1;
-    }
-    get_player_rank(state.CurrentPage);
-};
-// 下一页
-const nextClick = () => {
-    state.CurrentPage = state.CurrentPage + 1;
-    if (state.CurrentPage > state.Total) {
-        state.CurrentPage = state.Total;
-    }
-    get_player_rank(state.CurrentPage);
-};
-
-// 点难度标签右侧排序方向箭头的回调
-const setSortDirect = (level_tag: string) => {
-    if (level_tag === level_selected.value) {
-        index_tags[index_tag_selected.value].reverse = !index_tags[index_tag_selected.value].reverse;
-    } else {
-        level_selected.value = level_tag;
-    }
-    get_player_rank(state.CurrentPage);
-};
-
-function formatRankValue(value: number | string): string {
-    return index_tag_selected.value == 'timems' ? ms_to_s(Number(value)) : String(value);
-}
+const { t } = useI18n({ messages: i18nMessages });
 </script>
 
-<style lang="less" scoped>
-.rank {
-    width: 10%;
-    display: inline-block;
+<style scoped>
+.speed-ranking {
+    min-width: 0;
 }
 
-:deep(.name) {
-    width: 24%;
-    min-width: 150px;
-    display: inline-block;
-    text-align: center;
+.ranking-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
 }
 
-.number_wid {
-    width: 16%;
-    min-width: 100px;
-    display: inline-block;
-    text-align: center;
-}
-
-.number_wid:hover {
-    color: rgb(64, 158, 255);
-    cursor: pointer;
-}
-
-.sum {
-    width: 16%;
-    min-width: 100px;
-    display: inline-block;
-    text-align: center;
-}
-
-.sum_title {
-    width: 16%;
-    min-width: 100px;
-    display: inline-block;
-    text-align: center;
-}
-
-.sum_title:hover {
-    color: rgb(64, 158, 255);
-    cursor: pointer;
-}
-
-.el-pagination {
-    justify-content: center;
+.ranking-selector {
+    width: 12rem;
+    max-width: 100%;
 }
 </style>

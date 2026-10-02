@@ -271,6 +271,7 @@ def reveal_video(request: HttpRequest, video_id: int):
             raise HttpError(403, 'Only the video owner may reveal it.')
         if video.ongoing_tournament:
             video.ongoing_tournament = False
+            # speedranking 的保存信号在事务提交后尝试加入竞速纪录。
             video.save(update_fields=['ongoing_tournament'])
     return 204, None
 

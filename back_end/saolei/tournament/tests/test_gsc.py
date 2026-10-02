@@ -209,7 +209,7 @@ class TestGsc(TournamentTestCaseBase):
         tournament.start_time = now - timedelta(minutes=1)
         self.assertEqual(tournament.token, tournament._token)
 
-    def test_reveal_videos_for_tournament_restores_personal_record(self):
+    def test_reveal_videos_for_tournament_makes_videos_public(self):
         self.create_cached_gsc_participant()
         video = self.create_video()
         GSCTournament.objects.filter(pk=self.tournament.pk).update(
@@ -218,14 +218,16 @@ class TestGsc(TournamentTestCaseBase):
         )
         self.tournament.refresh_from_db()
 
-        changed_count = reveal_videos_for_tournament(self.tournament)
+        with self.captureOnCommitCallbacks(execute=True):
+            changed_count = reveal_videos_for_tournament(self.tournament)
 
         video.refresh_from_db()
         self.user.userms.refresh_from_db()
         self.assertEqual(changed_count, 1)
         self.assertFalse(video.ongoing_tournament)
-        self.assertEqual(self.user.userms.b_timems_std, video.timems)
-        self.assertEqual(self.user.userms.b_timems_id_std, video.id)
+        response = self.client.get(f'/api/speedranking/player/{self.user.id}')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['saolei']['bt_id'], video.id)
 
     def test_reveal_videos_for_tournament_waits_until_awarded(self):
         self.create_cached_gsc_participant()
@@ -349,10 +351,9 @@ class TestGsc(TournamentTestCaseBase):
             (MS_TextChoices.Level.EXPERT, GSC_Defaults.E_BV_MIN, expert_times),
         ]:
             for index, timems in enumerate(times):
-                mode = MS_TextChoices.Mode.STD if index % 2 == 0 else MS_TextChoices.Mode.NF
-                self.create_video(level=level, timems=timems, bv=bv, mode=mode)
+                self.create_video(level=level, timems=timems, bv=bv, right_ce=index % 2)
             for mode in MS_TextChoices.Mode.values:
-                if mode not in [MS_TextChoices.Mode.STD, MS_TextChoices.Mode.NF]:
+                if mode != MS_TextChoices.Mode.STD:
                     self.create_video(level=level, timems=1, bv=bv, mode=mode)
 
         self.create_video(level=MS_TextChoices.Level.BEGINNER, timems=999, bv=GSC_Defaults.B_BV_MIN - 1)

@@ -69,13 +69,13 @@ Automatic uploading requires a browser that supports folder access. During your 
 ### Weekly Tournaments
 
 1. All tournament videos: includes your tournament identifier. AVF is not supported.
-2. Supported tournament videos: classic tournaments accept Intermediate and Expert replays in Standard or NF mode.
+2. Supported tournament videos: classic tournaments accept Intermediate and Expert replays in Standard mode.
 3. Score-improving videos: the replay improves your total time for the best 5 Intermediate or 2 Expert games.
 
 ### Golden Sheep Cup
 
 1. All tournament videos: AVF replays must have a nonempty player identifier that exactly matches your registered Arbiter identifier. Other software must include this tournament's identifier.
-2. Supported levels and modes: Beginner, Intermediate, or Expert in Standard or NF mode.
+2. Supported levels and modes: Beginner, Intermediate, or Expert in Standard mode.
 3. 3BV minimum met: at least 10 for Beginner, 30 for Intermediate, and 100 for Expert.
 
 Personal replays cannot be refreshed while automatic uploading is running, and must finish loading before it can start. If you have installed the website as an app and your browser supports it, the app icon shows a badge while replays are being processed.

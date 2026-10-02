@@ -20,9 +20,7 @@
 
 标识绑定/解绑副作用由 `identifier.services` 显式处理，不再依赖 `Identifier` 的 `pre_save` / `post_save` / `post_delete` receiver。
 
-- `identifier.signals` 只保留说明性空模块。
-  - `IdentifierConfig.ready()` 仍可安全导入该模块。
-  - 不应在这里恢复录像状态或排行刷新逻辑。
+- `identifier.signals` 已移除，绑定/解绑不使用模型信号。
 - 业务代码不应直接修改 `identifier.userms` 或手动维护 `userms.identifiers`。
   - 绑定统一调用 `bind_identifier(identifier, userms)`。
   - 解绑统一调用 `unbind_identifier(identifier, userms=None)`。
@@ -47,7 +45,8 @@
 批量更新后的显式补偿：
 
 - 使用 `newest_cache.update_bulk` 更新已在 `newest_queue` 中的录像项。
-- 调用 `msuser.services.update_personal_records_from_videos` 吸收新增官方录像对经典个人纪录的影响。
+- 调用 `msuser.services.update_video_count_limit_from_videos` 刷新录像上传额度。
+- `speedranking.services.add_videos_to_speed_ranks` 在提交后批量吸收新增官方录像的竞速纪录。
 - 调用 `customranking.services.add_videos_to_custom_pluck_ranks` 吸收新增官方录像对自定义 pluck 纪录的影响。
 
 ## 解绑流程
@@ -63,7 +62,6 @@
 事务内操作：
 
 - 查询该用户、该标识、状态为 `OFFICIAL` 的录像。
-- 在状态更新前，根据这些录像 id 找出当前 `UserMS` 中受影响的经典纪录字段。
 - 将 `identifier.identifier` 从 `userms.identifiers` 移除。
 - 设置 `identifier.userms = None`。
 - 使用 `queryset.update` 批量将这些录像改为 `IDENTIFIER`。
@@ -72,7 +70,7 @@
 
 - 对内存中的录像对象同步设置 `state=IDENTIFIER`，再使用 `newest_cache.update_bulk` 更新已在 `newest_queue` 中的录像项。
 - 调用 `customranking.services.remove_videos_from_custom_pluck_ranks` 刷新受影响的自定义 pluck 纪录。
-- 调用 `msuser.services.rebuild_personal_records` 只重建受影响的经典个人纪录字段。
+- `speedranking.services.remove_videos_from_speed_ranks` 在提交后仅补位解绑录像当前保持的竞速纪录。
 
 ## 当前入口
 
@@ -100,7 +98,7 @@
 - `newest_queue` 同时包含 `IDENTIFIER` 和 `OFFICIAL` 录像。
   - 绑定/解绑只需要更新已在缓存中的项，因此使用 `newest_cache.update_bulk`，不无条件新增。
 - 如果某条录像没有进入 `newest_queue`，`update_bulk` 不会创建新缓存项。
-- 解绑时只重建当前纪录指向被解绑录像的字段，避免全量重建。
+- 竞速榜解绑仅重建当前纪录指向被解绑录像的字段，不重建该用户的所有纪录。
 
 ## TODO
 
@@ -108,5 +106,5 @@
   - 当前模型层没有阻止修改 `identifier` 字段。
   - 可以在 service 层限制，也可以在模型保存时检测旧值并抛错。
 - 补充接口级测试。
-  - 当前已有 service/integration 覆盖绑定、解绑、经典纪录和 pluck 纪录刷新。
+  - 当前已有 service/integration 覆盖绑定、解绑、录像额度和 pluck 纪录刷新。
   - 仍可补充 view 层对冲突、未过审、不存在标识的响应测试。

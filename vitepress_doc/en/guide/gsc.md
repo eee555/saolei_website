@@ -9,7 +9,7 @@ The Golden Sheep Cup is a long-running tournament hosted by [Guo Jinyang](https:
 
 ## Scoring Rules
 
-The Golden Sheep Cup counts replays uploaded during the tournament, accepting only Standard and NF modes.
+The Golden Sheep Cup counts replays uploaded during the tournament, accepting only Standard mode.
 
 The following replays are used:
 

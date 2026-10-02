@@ -44,9 +44,7 @@ export default {
             code06: '强无猜',
             code10: '弱可猜',
             code11: '递归',
-            code12: '盲扫',
             std: '标准',
-            nf: '盲扫',
             ng: '无猜',
             dg: '递归',
             sng: '强无猜',
@@ -84,6 +82,7 @@ export default {
             mastery: '动态胜率',
             mode: '模式',
             op: '空',
+            player: '玩家',
             realName: '姓名',
             sex: '性别',
             software: '软件',
@@ -304,6 +303,11 @@ export default {
         exportJSONTooltip: '从服务器获取的源数据',
         exportArbiterCSV: '导出CSV',
         exportArbiterCSVTooltip: '兼容 Minesweeper Arbiter 生成的 <span style="font-family: \'Courier New\', Courier, monospace;">stats_csv.csv</span>。<br/> 目前不支持 Leff, Reff, Deff, GZiNi, HZiNi。',
+    },
+    ranking: {
+        saolei: {
+            title: '扫雷网规则',
+        },
     },
     server: {
         videoSummary: {

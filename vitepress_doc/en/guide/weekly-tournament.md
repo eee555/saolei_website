@@ -13,7 +13,7 @@ The tournament starts at 00:00 UTC on Monday and ends at 24:00 UTC on Sunday. Yo
 
 Before registration, the page asks for confirmation. Once confirmed, your two-hour session starts immediately and cannot be cancelled or chosen again.
 
-For the classic 2E+5I format, the score uses the best 2 expert Time games plus the best 5 intermediate Time games. Only standard mode and no-flag (NF) games count, and the software must support tournament token. If there are not enough games, missing intermediate games are filled with 60 seconds, and missing expert games are filled with 240 seconds.
+For the classic 2E+5I format, the score uses the best 2 expert Time games plus the best 5 intermediate Time games. Only Standard mode games count, and the software must support tournament token. If there are not enough games, missing intermediate games are filled with 60 seconds, and missing expert games are filled with 240 seconds.
 
 ## Point Rewards
 

@@ -27,6 +27,9 @@
         <ElDescriptionsItem :label="t('common.prop.state')">
             <VideoStateFilter v-model="videofilter.filter_state" @change="request_videos" />
         </ElDescriptionsItem>
+        <ElDescriptionsItem :label="t('common.nf')">
+            <ElSwitch v-model="nfOnly" @change="state.CurrentPage = 1; request_videos();" />
+        </ElDescriptionsItem>
         <ElDescriptionsItem :label="t('common.prop.bbbv')">
             <BBBVFilter :level="levelTagSelected" @change="request_videos" />
         </ElDescriptionsItem>
@@ -54,7 +57,7 @@
 <script lang="ts" setup>
 // 全网录像的检索器，根据三个维度排序
 import type { TableColumnCtx } from 'element-plus';
-import { ElButton, ElDescriptions, ElDescriptionsItem, ElPagination, ElRow, ElTable, ElTableColumn } from 'element-plus';
+import { ElButton, ElDescriptions, ElDescriptionsItem, ElPagination, ElRow, ElSwitch, ElTable, ElTableColumn } from 'element-plus';
 import { onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -76,6 +79,7 @@ const { t } = useI18n();
 
 const levelTagSelected = ref<MS_Level>('e');
 const modeTagSelected = ref('STD');
+const nfOnly = ref(false);
 const indexTagSelected = ref('timems');
 
 const indexVisible = ref(true);
@@ -112,6 +116,7 @@ interface VideoQueryResponse {
 interface VideoQueryParams {
     level: MS_Level;
     mode: string;
+    nf: boolean;
     o: string;
     r: boolean;
     ps: number;
@@ -129,7 +134,6 @@ interface SortChange {
 
 const modeTags: Tags = {
     STD: { name: '标准', key: '00' },
-    NF: { name: '盲扫', key: '12' },
     // "UPK": { name: "UPK", key: "01" },
     WQI: { name: 'Win7', key: '04' },
     JSW: { name: '竞速无猜', key: '05' },
@@ -153,7 +157,7 @@ const indexTags: TagsReverse = reactive({
     double_s: { key: 'double_s', reverse: true, to_fixed: 3, selected: false },
     cl_s: { key: 'cl_s', reverse: true, to_fixed: 3, selected: false },
     path: { key: 'path', reverse: false, to_fixed: 2, selected: false },
-    stnb: { key: 'video__stnb', reverse: true, to_fixed: 2, selected: true },
+    stnb: { key: 'stnb', reverse: true, to_fixed: 2, selected: true },
     ioe: { key: 'ioe', reverse: true, to_fixed: 3, selected: false },
     thrp: { key: 'thrp', reverse: true, to_fixed: 3, selected: false },
     ce_s: { key: 'ce_s', reverse: true, to_fixed: 3, selected: false },
@@ -263,6 +267,7 @@ function request_videos(): void {
     const params: VideoQueryParams = {
         level: levelTagSelected.value,
         mode: modeTags[modeTagSelected.value].key,
+        nf: nfOnly.value,
         o: indexTags[indexTagSelected.value].key,
         r: state.ReverseOrder,
         ps: videofilter.value.pagesize,
@@ -273,10 +278,10 @@ function request_videos(): void {
     if (![0, 4].includes(videofilter.value.filter_state.length)) {
         params.s = videofilter.value.filter_state;
     }
-    void proxy.$axios.get<string>('/video/query/', {
+    void proxy.$axios.get<VideoQueryResponse>('/api/video/query', {
         params: params,
     }).then(function (response) {
-        const data = JSON.parse(response.data) as VideoQueryResponse;
+        const { data } = response;
         videoList.length = 0;
         videoList.push(...data.videos);
         state.VideoCount = data.count;

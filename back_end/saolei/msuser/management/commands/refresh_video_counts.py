@@ -23,7 +23,7 @@ class Command(BaseCommand):
             'video_num_int': Count('id', filter=Q(level=MS_TextChoices.Level.INTERMEDIATE)),
             'video_num_exp': Count('id', filter=Q(level=MS_TextChoices.Level.EXPERT)),
             'video_num_std': Count('id', filter=Q(mode=MS_TextChoices.Mode.STD)),
-            'video_num_nf': Count('id', filter=Q(mode=MS_TextChoices.Mode.NF)),
+            'video_num_nf': Count('id', filter=Q(right_ce=0)),
             'video_num_ng': Count('id', filter=Q(mode=MS_TextChoices.Mode.JSW)),
             'video_num_dg': Count('id', filter=Q(mode=MS_TextChoices.Mode.BZD)),
         }

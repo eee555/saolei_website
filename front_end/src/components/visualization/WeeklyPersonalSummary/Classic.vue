@@ -25,8 +25,8 @@ import { useI18n } from 'vue-i18n';
 import VideoCell from '@/components/visualization/VideoCell.vue';
 import { colorThemes } from '@/store/color';
 import { ms_to_s } from '@/utils';
+import { MS_Mode } from '@/utils/ms_const';
 import type { VideoAbstract } from '@/utils/videoabstract';
-import { isWeeklyClassicScoreMode } from '@/utils/weekly';
 
 const props = defineProps({
     videos: { type: Array<VideoAbstract>, default: () => [] },
@@ -35,7 +35,7 @@ const props = defineProps({
 const { t } = useI18n();
 
 function bestVideos(videos: VideoAbstract[], level: 'i' | 'e') {
-    const filtered = videos.filter((video) => video.level === level && isWeeklyClassicScoreMode(video.mode));
+    const filtered = videos.filter((video) => video.level === level && video.mode === MS_Mode.Standard);
     const sorted = filtered.sort((v1, v2) => v1.timems - v2.timems);
     if (level === 'i') return sorted.slice(0, 5);
     return sorted.slice(0, 2);

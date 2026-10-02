@@ -4,7 +4,11 @@
             <ElMain style="padding: 1%;">
                 <div class="home-top-row">
                     <ElTabs class="home-news-tabs" type="border-card">
-                        <NewsQueue />
+                        <ElTabPane :label="t('home.news')">
+                            <div class="news-placeholder text">
+                                {{ t('local.newsRebuilding') }}
+                            </div>
+                        </ElTabPane>
                     </ElTabs>
                     <NormalTournamentQueue />
                 </div>
@@ -20,15 +24,25 @@
 <script setup lang='ts'>
 import '@/styles/text.css';
 
-import { ElContainer, ElMain, ElTabs } from 'element-plus';
+import { ElContainer, ElMain, ElTabPane, ElTabs } from 'element-plus';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 import NewestQueue from './NewestQueue.vue';
-import NewsQueue from './NewsQueue.vue';
 import NormalTournamentQueue from './NormalTournamentQueue.vue';
 import ReviewQueue from './ReviewQueue.vue';
 
 const active_tab = ref('newest');
+
+const i18nMessages = {
+    'zh-cn': { local: {
+        newsRebuilding: '正在重建中，敬请期待。',
+    } },
+    en: { local: {
+        newsRebuilding: 'News is being rebuilt. Stay tuned.',
+    } },
+};
+const { t } = useI18n({ messages: i18nMessages });
 </script>
 
 <style lang='less'>
@@ -57,6 +71,13 @@ const active_tab = ref('newest');
 .home-news-tabs {
     min-height: 300px;
     min-width: 0;
+}
+
+.news-placeholder {
+    display: grid;
+    min-height: 220px;
+    place-items: center;
+    text-align: center;
 }
 
 @media (max-width: 900px) {

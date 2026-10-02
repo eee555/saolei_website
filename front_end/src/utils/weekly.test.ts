@@ -3,15 +3,16 @@ import { describe, expect, it } from 'vitest';
 import { MS_Mode } from './ms_const';
 import { TournamentParticipant } from './tournaments';
 import { VideoAbstract } from './videoabstract';
-import { isWeeklyClassicScoreMode, WeeklyParticipant } from './weekly';
+import { WeeklyParticipant } from './weekly';
 
-function video(level: 'i' | 'e', mode: MS_Mode, timems: number): VideoAbstract {
+function video(level: 'i' | 'e', mode: MS_Mode, timems: number, right_ce = 1): VideoAbstract {
     return new VideoAbstract({
         id: timems,
         upload_time: '2026-01-01T00:00:00Z',
         level,
         mode,
         timems,
+        right_ce,
         bv: 100,
         software: 'e',
     });
@@ -69,7 +70,7 @@ describe('WeeklyParticipant', () => {
             const videos = [
                 video('e', MS_Mode.Standard, 110000),
                 video('e', MS_Mode.SpeedNG, 90000),
-                video('i', MS_Mode.NoFlag, 20000),
+                video('i', MS_Mode.Standard, 20000, 0),
             ];
             const participant = new WeeklyParticipant();
 
@@ -96,15 +97,6 @@ describe('WeeklyParticipant', () => {
             expect(participant.classic_it[0]).toEqual([20000, 20000]);
             expect(participant.classic_i_sum).toBe(260000);
             expect(participant.classic_score).toBe(740000);
-        });
-    });
-
-    describe('isWeeklyClassicScoreMode', () => {
-        it('only accepts standard and no-flag modes', () => {
-            expect(isWeeklyClassicScoreMode(MS_Mode.Standard)).toBe(true);
-            expect(isWeeklyClassicScoreMode(MS_Mode.NoFlag)).toBe(true);
-            expect(isWeeklyClassicScoreMode(MS_Mode.SpeedNG)).toBe(false);
-            expect(isWeeklyClassicScoreMode(MS_Mode.Lucky)).toBe(false);
         });
     });
 });

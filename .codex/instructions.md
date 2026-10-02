@@ -68,9 +68,15 @@ APP内引用链条：`utils -> models -> services -> api`
 - vue组件：`.github\workflows\cypress.yml`
 - e2e：`.github\workflows\CypressE2E.yml`
 
+## 预览与开发服务器
+
+除非用户明确要求，不要主动启动预览或开发服务器；完成前端修改后也不需要启动服务供用户预览。
+
 ## 换行约定
 - 数组、字典、html属性，倾向不换行。换行后，倾向于将同类元素（如果顺序不重要）放在同一行。
 - 若eslint报错，则按照eslint的规则修改。
+- css应当换行。
+- 空行照常。
 
 ## 本地化
 本地化有两种模式：全局本地化位于`front_end\src\i18n`，用于可复用的messages。不可复用的messages放在vue SFC内部，示例`front_end\src\components\ExperimentalFeature.vue`。注意：SFC内部的本地化尽量往`script`块的末尾放。
@@ -100,7 +106,7 @@ const { t } = useI18n({ messages: i18nMessages });
 - 图标首选PrimeVue，其次Element Plus
 - 文本使用`front_end\src\styles\text.css`的样式
 - 一般组件使用Element Plus，若Element Plus不支持则使用PrimeVue。
-- 涉及到分页的表格使用PrimeVue Table
+- 涉及到前端分页的表格使用PrimeVue Table。利用后端分页的仍然使用ElTable。
 - Tooltip使用vue-tippy的Tippy组件搭配ElCard。
 - 注意ElDialog不是lazy的，应尽量减少其数量。
 
