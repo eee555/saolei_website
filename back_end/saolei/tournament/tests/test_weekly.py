@@ -207,6 +207,7 @@ class TestWeekly(TournamentTestCaseBase):
 
         tournament.end_time = timezone.now() - timedelta(minutes=1)
         tournament.save(update_fields=['end_time'])
+        TournamentUser.objects.filter(user_id__in=[self.user.id, user_without_video.id]).delete()
         result = _task_weekly_finish_impl(tournament.id)
 
         tournament.refresh_from_db()
@@ -219,6 +220,7 @@ class TestWeekly(TournamentTestCaseBase):
         self.assertEqual(participant.rank_score, 0)
         self.assertTrue(WeeklyParticipant.objects.filter(pk=participant.pk).exists())
         self.assertFalse(WeeklyParticipant.objects.filter(pk=participant_without_video.pk).exists())
+        self.assertTrue(TournamentUser.objects.filter(user=user_without_video).exists())
 
         award_count = _task_award_tournament_impl(tournament.id)
         best_count = _task_weekly_refresh_best_impl(tournament.id)

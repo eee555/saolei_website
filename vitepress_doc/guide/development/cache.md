@@ -364,10 +364,10 @@ digraph cache {
     tournament_db -> task_gsc_finish [label="read/write"];
     participant_db -> task_gsc_finish [label="read/write/delete"];
     video_db -> task_gsc_finish [label="read/write"];
-    tournament_user_db -> task_gsc_finish [label="read/decay"];
-    task_gsc_finish -> participant_db [label="score/rank/award"];
+    tournament_user_db -> task_gsc_finish [label="ensure_tournament_users: read"];
+    task_gsc_finish -> participant_db [label="score/rank"];
     task_gsc_finish -> tournament_db [label="state write"];
-    task_gsc_finish -> tournament_user_db [label="award/decay"];
+    task_gsc_finish -> tournament_user_db [label="ensure_tournament_users: create missing"];
     task_gsc_finish -> newest_cache [label="restore queues"];
     task_gsc_finish -> freeze_cache [label="restore queues"];
     task_gsc_finish -> review_cache [label="restore queues"];
@@ -380,22 +380,24 @@ digraph cache {
     tournament_db -> task_award_tournament [label="read"];
     participant_db -> task_award_tournament [label="read/write rank_score"];
     tournament_user_db -> task_award_tournament [label="read/write score"];
+    task_award_tournament -> tournament_user_db [label="ensure_tournament_users / award_tournament_rank_scores"];
     task_award_tournament -> tournament_user_rank_cache [label="write score zsets"];
 
     task_db -> task_gsc_refresh_best [label="status/read"];
     tournament_db -> task_gsc_refresh_best [label="read"];
     participant_db -> task_gsc_refresh_best [label="read"];
     tournament_user_db -> task_gsc_refresh_best [label="read/write best"];
+    task_gsc_refresh_best -> tournament_user_db [label="ensure_tournament_users / refresh_gsc_best_scores"];
     task_gsc_refresh_best -> tournament_user_rank_cache [label="write best zset"];
 
     task_db -> task_weekly_finish [label="status/read"];
     tournament_db -> task_weekly_finish [label="read/write"];
     participant_db -> task_weekly_finish [label="read/write/delete"];
     video_db -> task_weekly_finish [label="read/write"];
-    tournament_user_db -> task_weekly_finish [label="read/decay"];
-    task_weekly_finish -> participant_db [label="score/rank/award"];
+    tournament_user_db -> task_weekly_finish [label="ensure_tournament_users: read"];
+    task_weekly_finish -> participant_db [label="score/rank"];
     task_weekly_finish -> tournament_db [label="state write"];
-    task_weekly_finish -> tournament_user_db [label="award/decay"];
+    task_weekly_finish -> tournament_user_db [label="ensure_tournament_users: create missing"];
     task_weekly_finish -> newest_cache [label="restore queues"];
     task_weekly_finish -> freeze_cache [label="restore queues"];
     task_weekly_finish -> review_cache [label="restore queues"];
@@ -408,6 +410,7 @@ digraph cache {
     tournament_db -> task_weekly_refresh_best [label="read"];
     participant_db -> task_weekly_refresh_best [label="read"];
     tournament_user_db -> task_weekly_refresh_best [label="read/write best"];
+    task_weekly_refresh_best -> tournament_user_db [label="ensure_tournament_users / refresh_weekly_best_scores"];
     task_weekly_refresh_best -> tournament_user_rank_cache [label="write best zset"];
 
     // videomanager API
@@ -552,7 +555,9 @@ digraph cache {
 | `common` | `api:common/diskusage` | Django cache | `disk_usage` 返回体，TTL 300 秒。 |
 | `article` | `articles` | list | 文章目录项字符串，来自 `assets/article` 或静态目录下的文章文件。 |
 
-`TournamentUser` 是比赛积分的持久化汇总表；Redis 中另用 7 个 sorted set 保存排行榜入口。站内用户创建 `TournamentParticipant` / `GSCParticipant` / `WeeklyParticipant` 时，保存信号会在当前数据库事务内立即创建缺失的 `TournamentUser`；删除 participant 不会跟随删除 `TournamentUser`。无站内用户的 participant 在数据库中保留 `user_id = NULL`，但 API 序列化时统一输出 `user_id = 0`，前端只按 `0` 识别非站内用户。GSC / 周赛 finish 任务会先调用 `delete_participants_without_videos` 删除无录像站内 participant。排名积分发放和 best 刷新是独立的非关键后台任务，会各自从本场剩余站内 participant 出发，通过 `participant.user.tournamentuser` 取得对应的 `TournamentUser`，并使用 `select_related('user__tournamentuser')` 避免 N+1。积分发放任务读取并衰减既有 `TournamentUser.score_current`，再根据本场 participant 的 `rank_score` 增量写回 `TournamentUser` 和 `TournamentParticipant.rank_score`，随后同步刷新 `score_current`、`score_total` 和对应分类 total 的 zset。历史最好成绩在 participant 保存后只读取当前 participant 和对应比赛子表，并与 `TournamentUser.gsc_best` / `weekly_classic_best` 直接比较；只有当前成绩更好时才改变内存值。结算流程使用 `bulk_update` 写入 `rank_score`，不会触发保存信号，因此 best 刷新通过 `refresh_gsc_best_scores` / `refresh_weekly_best_scores` 作为独立后台任务执行，并在写库后刷新对应 best zset；best 与排名积分发放没有顺序依赖。为了简化结算代码，积分发放和 best 刷新都不筛选字段是否发生变化，会统一 `bulk_update` 候选 participant 和对应 `TournamentUser`。结算链路通过 `tournament` logger 写入 `logs/tournament.log`，记录后台任务、删除无录像 participant、读取 `TournamentUser`、成绩/排名刷新、积分发放、best 刷新、状态切换和录像公开等阶段的处理数量。没有有效历史成绩时，best 字段使用 `MAX_TOURNAMENT_BEST` 作为哨兵值，并且不写入 Redis。participant 删除时，GSC / 周赛各自的信号会在当前事务内按需调用 `calculate_gsc_best_score` / `calculate_weekly_classic_best` 重算该类型历史最好成绩，并同步更新对应 best zset。由于 `TournamentUser` 是数据库汇总数据，participant 信号触发的创建和 best 更新必须在当前事务内立即执行，不使用 `transaction.on_commit`。如果需要修复历史汇总数据，尤其是把旧的 `0` best 值迁移到新的最大值哨兵，可以运行 `manage.py refresh_tournament_user_stats`。该命令会先调用 `tournament.services.refresh_tournament_user_total_fields` 重建 `score_total`、`gsc_total`、`weekly_total` 和 `weekly_classic_total`，再执行命令内的 best 重建步骤写回 `gsc_best` 和 `weekly_classic_best`；`score_current` 依赖实时衰减，不由该命令刷新。如果 Redis 排行缓存丢失或需要按当前数据库状态重建，可以运行 `manage.py rebuild_tournament_user_cache`。
+`TournamentUser` 是比赛积分的持久化汇总表；Redis 中另用 7 个 sorted set 保存排行榜入口。站内用户创建 `TournamentParticipant` / `GSCParticipant` / `WeeklyParticipant` 时，保存信号会在当前数据库事务内立即创建缺失的 `TournamentUser`；删除 participant 不会跟随删除 `TournamentUser`。无站内用户的 participant 在数据库中保留 `user_id = NULL`，但 API 序列化时统一输出 `user_id = 0`，前端只按 `0` 识别非站内用户。GSC / 周赛 finish 任务先调用 `ensure_tournament_users`，为本场所有站内参赛用户补建缺失的默认 `TournamentUser`，然后才调用 `delete_participants_without_videos` 删除无录像站内 participant。排名积分发放和 best 刷新是独立的非关键后台任务，入口同样先执行 `ensure_tournament_users`，支持独立执行或重跑；随后各自从本场剩余站内 participant 出发，通过 `participant.user.tournamentuser` 取得对应的 `TournamentUser`，并使用 `select_related('user__tournamentuser')` 避免 N+1。积分发放任务读取并衰减既有 `TournamentUser.score_current`，再根据本场 participant 的 `rank_score` 增量写回 `TournamentUser` 和 `TournamentParticipant.rank_score`，随后同步刷新 `score_current`、`score_total` 和对应分类 total 的 zset。历史最好成绩在 participant 保存后只读取当前 participant 和对应比赛子表，并与 `TournamentUser.gsc_best` / `weekly_classic_best` 直接比较；只有当前成绩更好时才改变内存值。结算流程使用 `bulk_update` 写入 `rank_score`，不会触发保存信号，因此 best 刷新通过 `refresh_gsc_best_scores` / `refresh_weekly_best_scores` 作为独立后台任务执行，并在写库后刷新对应 best zset；best 与排名积分发放没有顺序依赖。为了简化结算代码，积分发放和 best 刷新都不筛选字段是否发生变化，会统一 `bulk_update` 候选 participant 和对应 `TournamentUser`。结算链路通过 `tournament` logger 写入 `logs/tournament.log`，记录后台任务、删除无录像 participant、读取 `TournamentUser`、成绩/排名刷新、积分发放、best 刷新、状态切换和录像公开等阶段的处理数量。没有有效历史成绩时，best 字段使用 `MAX_TOURNAMENT_BEST` 作为哨兵值，并且不写入 Redis。participant 删除时，GSC / 周赛各自的信号会在当前事务内按需调用 `calculate_gsc_best_score` / `calculate_weekly_classic_best` 重算该类型历史最好成绩，并同步更新对应 best zset。由于 `TournamentUser` 是数据库汇总数据，participant 信号触发的创建和 best 更新必须在当前事务内立即执行，不使用 `transaction.on_commit`。如果需要修复历史汇总数据，尤其是把旧的 `0` best 值迁移到新的最大值哨兵，可以运行 `manage.py refresh_tournament_user_stats`。该命令会先调用 `tournament.services.refresh_tournament_user_total_fields` 重建 `score_total`、`gsc_total`、`weekly_total` 和 `weekly_classic_total`，再执行命令内的 best 重建步骤写回 `gsc_best` 和 `weekly_classic_best`；`score_current` 依赖实时衰减，不由该命令刷新。如果 Redis 排行缓存丢失或需要按当前数据库状态重建，可以运行 `manage.py rebuild_tournament_user_cache`。
+
+`ensure_tournament_users` 按本场 participant 的非空 `user_id` 去重并执行 `get_or_create`，不覆盖已有记录；默认积分为 0，best 为 `MAX_TOURNAMENT_BEST`，因此补建本身不写入排行 zset。此步骤兼容早期只有 participant、尚无 `TournamentUser` 且未发放积分的历史数据，不负责恢复已丢失的历史积分。新 participant 仍由创建信号保证关联完整；删除信号不容忍缺失关联，也不补建记录。每次任务会记录补建数量，无需额外管理命令。
 
 `GSCParticipant.t37` 是数据库持久化 generated field，并建立 `gsc_t37_idx` 索引，服务于 GSC 排名和历史最好成绩查询。保存信号使用当前 participant 实例上的临时 `t37` 值进行 best 增量比较，因此不会为了读取 generated field 再查询一次 participant。
 
