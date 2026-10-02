@@ -304,6 +304,11 @@ export default {
         exportArbiterCSV: '导出CSV',
         exportArbiterCSVTooltip: '兼容 Minesweeper Arbiter 生成的 <span style="font-family: \'Courier New\', Courier, monospace;">stats_csv.csv</span>。<br/> 目前不支持 Leff, Reff, Deff, GZiNi, HZiNi。',
     },
+    ranking: {
+        saolei: {
+            title: '扫雷网规则',
+        },
+    },
     server: {
         videoSummary: {
             title: '录像总量',

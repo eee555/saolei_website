@@ -64,9 +64,27 @@ class SpeedRankingTests(TestCase):
             video.save(update_fields=fields)
 
     def record(self, ranking_name='saolei', player=None):
-        response = self.client.get(f'/api/speedranking/player/{(player or self.user).id}', {'ranking_name': ranking_name})
+        response = self.client.get(f'/api/speedranking/player/{(player or self.user).id}')
         self.assertEqual(response.status_code, 200, response.content)
-        return response.json()
+        return response.json()[ranking_name]
+
+    def test_player_api_returns_both_rankings_and_ranks_in_one_pipeline(self):
+        for ranking_name in RANKING_NAMES:
+            self.assertEqual(self.record(ranking_name)['ranks'], dict.fromkeys(RANK_STATS))
+        standard = self.create_video(timems=2000, right_ce=1)
+        nf = self.create_video(timems=3000)
+        other = self.create_user('faster')
+        self.create_video(player=other, timems=1000)
+        with self.assertNumQueries(0), patch.object(cache, 'pipeline', wraps=cache.pipeline) as pipeline:
+            response = self.client.get(f'/api/speedranking/player/{self.user.id}')
+            self.assertEqual(response.status_code, 200, response.content)
+            pipeline.assert_called_once_with()
+        records = response.json()
+        self.assertEqual(set(records), set(RANKING_NAMES))
+        for ranking_name, video in (('saolei', standard), ('saolei_nf', nf)):
+            self.assertEqual(records[ranking_name]['bt_id'], video.id)
+            self.assertEqual(records[ranking_name]['bt'], video.timems)
+            self.assertEqual(records[ranking_name]['ranks'], {'bt': 2, 'bb': 2, 'it': None, 'ib': None, 'et': None, 'eb': None, 'sumt': 2, 'sumb': 2})
 
     def test_thresholds_partial_totals_and_independent_nf(self):
         beginner = self.create_video(bv=2, right_ce=None)
@@ -148,6 +166,7 @@ class SpeedRankingTests(TestCase):
                         self.assertEqual(record['sumt'], video.timems + 1000 + 999999)
                         self.assertEqual(record['sumb'], video.bvs + 30)
                         for stat in ('bt', 'bb', 'sumt', 'sumb'):
+                            self.assertEqual(record['ranks'][stat], 1 if stat in ranked else None)
                             response = self.client.get('/api/speedranking/rank', {'ranking_name': ranking_name, 'stat': stat})
                             self.assertEqual(response.status_code, 200)
                             self.assertEqual(response.json()['count'], int(stat in ranked))

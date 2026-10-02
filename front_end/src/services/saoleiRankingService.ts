@@ -12,6 +12,7 @@ export type SaoleiRankingName = 'saolei' | 'saolei_nf';
 export type SaoleiField = `${SaoleiLevel | 'sum'}${SaoleiStat}`;
 export const saoleiFields = ['bt', 'bb', 'it', 'ib', 'et', 'eb', 'sumt', 'sumb'] as const satisfies readonly SaoleiField[];
 export type SaoleiRecord = Record<SaoleiField, number | null> & Record<`${SaoleiLevel}${SaoleiStat}_id`, number | null> & { player_id: number };
+export type SaoleiPlayerRecord = SaoleiRecord & { ranks: Record<SaoleiField, number | null> };
 
 export function isSaoleiTimeStat(stat: SaoleiField): boolean {
     return stat.endsWith('t');
@@ -35,7 +36,7 @@ export async function fetchSaoleiRanking(rankingName: SaoleiRankingName, stat: S
     return data;
 }
 
-export async function fetchSaoleiRecord(playerId: number, rankingName: SaoleiRankingName): Promise<SaoleiRecord> {
-    const { data } = await $axios.get<SaoleiRecord>(`/api/speedranking/player/${playerId}`, { params: { ranking_name: rankingName } });
+export async function fetchSaoleiRecords(playerId: number): Promise<Record<SaoleiRankingName, SaoleiPlayerRecord>> {
+    const { data } = await $axios.get<Record<SaoleiRankingName, SaoleiPlayerRecord>>(`/api/speedranking/player/${playerId}`);
     return data;
 }

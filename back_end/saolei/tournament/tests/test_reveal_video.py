@@ -39,7 +39,7 @@ class TestRevealVideo(TournamentTestCaseBase):
         self.assertFalse(self.video.ongoing_tournament)
         response = self.client.get(f'/api/speedranking/player/{self.user.id}')
         self.assertEqual(response.status_code, 200, response.content)
-        record = response.json()
+        record = response.json()['saolei']
         self.assertEqual(record['bt_id'], self.video.id)
         self.assertSetEqual(set(self.video.tournaments.values_list('id', flat=True)), {self.tournament.id, other.id})
         self.assertTrue(cache.hexists(newest_cache.key, self.video.id))

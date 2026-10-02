@@ -1,70 +1,109 @@
 <template>
-    <section>
-        <h3>{{ t('local.title') }}</h3>
-        <ElTable :data="rows" border class="saolei-record-table">
-            <ElTableColumn label="Saolei.wang" min-width="130">
-                <template #default="{ row }">
-                    {{ row.rankingName === 'saolei_nf' ? 'NF' : t('local.all') }}
+    <section v-loading="loading" class="saolei-record-scroll">
+        <table class="saolei-record-table">
+            <thead>
+                <tr>
+                    <th scope="col">
+                        {{ t('ranking.saolei.title') }}
+                    </th>
+                    <th v-for="level in levels" :key="level" scope="col">
+                        {{ t(`common.level.${level}`) }}
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <template v-for="rankingName in rankingNames" :key="rankingName">
+                    <tr v-for="(label, stat) in SaoleiStat" :key="stat">
+                        <th scope="row">
+                            {{ t(`common.prop.${label}`) }}{{ rankingName === 'saolei_nf' ? ' (NF)' : '' }}
+                        </th>
+                        <td v-for="level in levels" :key="level">
+                            <PreviewNumber
+                                v-if="saoleiVideoId(records[rankingName], `${level}${stat}`)"
+                                :id="saoleiVideoId(records[rankingName], `${level}${stat}`)"
+                                :text="formatScore(records[rankingName], `${level}${stat}`)"
+                            />
+                            <span v-else>{{ formatScore(records[rankingName], `${level}${stat}`) }}</span>
+                        </td>
+                    </tr>
                 </template>
-            </ElTableColumn>
-            <ElTableColumn v-for="stat in saoleiFields" :key="stat" :label="t(`local.${stat}`)" min-width="115">
-                <template #default="{ row }">
-                    <PreviewNumber v-if="saoleiVideoId(row.record, stat)" :id="saoleiVideoId(row.record, stat)" :text="formatSaoleiValue(row.record, stat)" />
-                    <span v-else>{{ formatSaoleiValue(row.record, stat) }}</span>
-                </template>
-            </ElTableColumn>
-        </ElTable>
+            </tbody>
+        </table>
     </section>
 </template>
 
 <script setup lang="ts">
-import { ElTable, ElTableColumn } from 'element-plus';
-import { computed } from 'vue';
-import type { PropType } from 'vue';
+import { ElMessage, vLoading } from 'element-plus';
+import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import PreviewNumber from '@/components/PreviewNumber.vue';
-import { formatSaoleiValue, saoleiFields, saoleiVideoId } from '@/services/saoleiRankingService';
-import type { SaoleiRankingName, SaoleiRecord } from '@/services/saoleiRankingService';
+import { fetchSaoleiRecords, formatSaoleiValue, SaoleiLevels, SaoleiStat, saoleiVideoId } from '@/services/saoleiRankingService';
+import type { SaoleiField, SaoleiPlayerRecord, SaoleiRankingName } from '@/services/saoleiRankingService';
 
 const props = defineProps({
-    records: { type: Object as PropType<Partial<Record<SaoleiRankingName, SaoleiRecord>>>, required: true },
+    userId: { type: Number, required: true },
 });
+const records = ref<Partial<Record<SaoleiRankingName, SaoleiPlayerRecord>>>({});
+const loading = ref(false);
 const rankingNames: SaoleiRankingName[] = ['saolei', 'saolei_nf'];
-const rows = computed(() => rankingNames.map((rankingName) => ({ rankingName, record: props.records[rankingName] })));
+const levels = [...SaoleiLevels, 'sum'] as const;
+const { t } = useI18n();
 
-const i18nMessages = {
-    'zh-cn': { local: {
-        title: 'Saolei.wang 纪录',
-        all: '标准',
-        bt: '初级 Time',
-        bb: '初级 3BV/s',
-        it: '中级 Time',
-        ib: '中级 3BV/s',
-        et: '高级 Time',
-        eb: '高级 3BV/s',
-        sumt: '总 Time',
-        sumb: '总 3BV/s',
-    } },
-    en: { local: {
-        title: 'Saolei.wang records',
-        all: 'Standard',
-        bt: 'Beg Time',
-        bb: 'Beg 3BV/s',
-        it: 'Int Time',
-        ib: 'Int 3BV/s',
-        et: 'Exp Time',
-        eb: 'Exp 3BV/s',
-        sumt: 'Total Time',
-        sumb: 'Total 3BV/s',
-    } },
-};
-const { t } = useI18n({ messages: i18nMessages });
+watch(() => props.userId, async (userId, _, onCleanup) => {
+    let active = true;
+    onCleanup(() => {
+        active = false;
+    });
+    records.value = {};
+    loading.value = false;
+    if (!userId) return;
+    loading.value = true;
+    try {
+        const data = await fetchSaoleiRecords(userId);
+        if (active) records.value = data;
+    } catch {
+        if (active) ElMessage.error({ message: '竞速纪录加载失败', offset: 68 });
+    } finally {
+        if (active) loading.value = false;
+    }
+}, { immediate: true });
+
+function formatScore(record: SaoleiPlayerRecord | undefined, stat: SaoleiField): string {
+    return `${formatSaoleiValue(record, stat)}(${record?.ranks[stat] ?? '--'})`;
+}
 </script>
 
 <style scoped>
-h3 {
-    font-size: 1.1rem;
-    margin: 0 0 1rem;
+.saolei-record-scroll {
+    overflow-x: auto;
+}
+
+.saolei-record-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--el-text-color-regular);
+    background: var(--el-fill-color-blank);
+    font-size: var(--el-font-size-base);
+}
+
+.saolei-record-table th,
+.saolei-record-table td {
+    border: 1px solid var(--el-border-color-lighter);
+    padding: 8px 12px;
+    text-align: center;
+}
+
+.saolei-record-table th {
+    color: var(--el-text-color-secondary);
+    background: var(--el-fill-color-light);
+}
+
+.saolei-record-table td {
+    white-space: nowrap;
+}
+
+.saolei-record-table tbody tr:hover {
+    background: var(--el-fill-color-lighter);
 }
 </style>

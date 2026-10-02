@@ -227,7 +227,7 @@ class TestGsc(TournamentTestCaseBase):
         self.assertFalse(video.ongoing_tournament)
         response = self.client.get(f'/api/speedranking/player/{self.user.id}')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()['bt_id'], video.id)
+        self.assertEqual(response.json()['saolei']['bt_id'], video.id)
 
     def test_reveal_videos_for_tournament_waits_until_awarded(self):
         self.create_cached_gsc_participant()

@@ -4,7 +4,7 @@ from typing import Callable
 from django_redis import get_redis_connection
 from redis.exceptions import WatchError
 
-from .utils import empty_record, encode_zset_score, public_record, RANK_STATS, RULES, update_totals
+from .utils import empty_record, encode_zset_score, public_record, RANK_STATS, RANKING_NAMES, RULES, update_totals
 
 cache = get_redis_connection('saolei_website')
 
@@ -85,3 +85,22 @@ class SpeedRankingCache:
                 else:
                     pipe.delete(destination)
             pipe.execute()
+
+
+def get_player_records(player_id: int):
+    """一次事务读取各榜的个人纪录及从 1 开始的排名，未入榜为 None。"""
+    with cache.pipeline() as pipe:
+        for ranking_name in RANKING_NAMES:
+            ranking = SpeedRankingCache(ranking_name)
+            pipe.hget(ranking.detail_key, player_id)
+            for stat in RANK_STATS:
+                pipe.zrank(ranking.rank_key(stat), player_id)
+        results = iter(pipe.execute())
+    records = {}
+    for ranking_name in RANKING_NAMES:
+        raw = next(results)
+        record = public_record(player_id, json.loads(raw) if raw else empty_record())
+        ranks = [next(results) for stat in RANK_STATS]
+        record['ranks'] = {stat: rank + 1 if rank is not None else None for stat, rank in zip(RANK_STATS, ranks)}
+        records[ranking_name] = record
+    return records

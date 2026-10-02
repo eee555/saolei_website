@@ -2,8 +2,8 @@ from django_ratelimit.decorators import ratelimit
 from ninja import Router, Schema
 from ninja.decorators import decorate_view
 
-from .cache import SpeedRankingCache
-from .utils import public_record, RankingName, RankStat
+from .cache import get_player_records, SpeedRankingCache
+from .utils import RankingName, RankStat
 
 router = Router()
 
@@ -26,6 +26,10 @@ class RecordOut(Schema):
     eb_id: int | None
 
 
+class PlayerRecordOut(RecordOut):
+    ranks: dict[RankStat, int | None]
+
+
 class RankingOut(Schema):
     count: int
     players: list[RecordOut]
@@ -42,10 +46,10 @@ def get_ranking(request, ranking_name: RankingName = 'saolei', stat: RankStat = 
     return SpeedRankingCache(ranking_name).get_range(stat, start, end)
 
 
-@router.get('/player/{player_id}', response=RecordOut)
+@router.get('/player/{player_id}', response=dict[RankingName, PlayerRecordOut])
 @decorate_view(ratelimit(key='ip', rate='5/s'))
-def get_player_record(request, player_id: int, ranking_name: RankingName = 'saolei'):
+def get_player_record(request, player_id: int):
     """
     - ratelimit(key='ip', rate='5/s')
     """
-    return public_record(player_id, SpeedRankingCache(ranking_name).get_record(player_id))
+    return get_player_records(player_id)

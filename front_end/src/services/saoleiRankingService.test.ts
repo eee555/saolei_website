@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { fetchSaoleiRanking, fetchSaoleiRecord, formatSaoleiValue, isSaoleiTimeStat, saoleiVideoId } from './saoleiRankingService';
+import { fetchSaoleiRanking, fetchSaoleiRecords, formatSaoleiValue, isSaoleiTimeStat, saoleiVideoId } from './saoleiRankingService';
 import type { SaoleiRecord } from './saoleiRankingService';
 
 import $axios from '@/http';
@@ -45,8 +45,10 @@ describe('saoleiRanking', () => {
         const get = vi.spyOn($axios, 'get').mockResolvedValue({ data: { count: 1, players: [record] } });
         expect(await fetchSaoleiRanking('saolei_nf', 'bb', 20, 40)).toEqual({ count: 1, players: [record] });
         expect(get).toHaveBeenCalledWith('/api/speedranking/rank', { params: { ranking_name: 'saolei_nf', stat: 'bb', start: 20, end: 40 } });
-        get.mockResolvedValue({ data: record });
-        expect(await fetchSaoleiRecord(42, 'saolei')).toEqual(record);
-        expect(get).toHaveBeenLastCalledWith('/api/speedranking/player/42', { params: { ranking_name: 'saolei' } });
+        const playerRecord = { ...record, ranks: { bt: 2, bb: 3, it: null, ib: null, et: null, eb: null, sumt: 4, sumb: 5 } };
+        const records = { saolei: playerRecord, saolei_nf: playerRecord };
+        get.mockClear().mockResolvedValue({ data: records });
+        expect(await fetchSaoleiRecords(42)).toEqual(records);
+        expect(get).toHaveBeenCalledExactlyOnceWith('/api/speedranking/player/42');
     });
 });

@@ -1,7 +1,7 @@
 <template>
     <div class="user-record-view">
+        <SaoleiCard :user-id="store.player.id" />
         <ElSkeleton v-show="loading" animated style="margin-top: 0px;" :rows="8" />
-        <SaoleiCard :records="saoleiRecords" />
         <PLuckCard :records="pluckRecords" />
     </div>
 </template>
@@ -17,31 +17,19 @@ import SaoleiCard from './SaoleiCard.vue';
 
 import type { CustomPluckRecord } from '@/services/msuserService';
 import { fetchCustomPluckPlayerRecords } from '@/services/msuserService';
-import { fetchSaoleiRecord } from '@/services/saoleiRankingService';
-import type { SaoleiRankingName, SaoleiRecord } from '@/services/saoleiRankingService';
 import { store } from '@/store';
 
 const loading = ref(true);
 const pluckRecords = ref<CustomPluckRecord[]>([]);
-const saoleiRecords = ref<Partial<Record<SaoleiRankingName, SaoleiRecord>>>({});
 
 // 此处和父组件配合，等一下从store里获取用户的id
 void nextTick(() => {
     const playerId = store.player.id;
-    const pluckRequest = fetchCustomPluckPlayerRecords(playerId).then((data) => {
+    void fetchCustomPluckPlayerRecords(playerId).then((data) => {
         pluckRecords.value = data;
     }).catch(() => {
         ElMessage.error({ message: '自定义密度纪录加载失败', offset: 68 });
-    });
-    const rankingNames: SaoleiRankingName[] = ['saolei', 'saolei_nf'];
-    const saoleiRequests = rankingNames.map(async (rankingName) => {
-        try {
-            saoleiRecords.value[rankingName] = await fetchSaoleiRecord(playerId, rankingName);
-        } catch {
-            ElMessage.error({ message: '竞速纪录加载失败', offset: 68 });
-        }
-    });
-    void Promise.all([pluckRequest, ...saoleiRequests]).finally(() => {
+    }).finally(() => {
         loading.value = false;
     });
 });
