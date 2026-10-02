@@ -70,6 +70,17 @@ def add_existing_videos_to_participant_tournament(participant: TournamentPartici
     return len(video_ids)
 
 
+def ensure_tournament_users(tournament: Tournament):
+    logger.info(f'比赛#{tournament.id} 检查 TournamentUser 开始')
+    user_ids = tournament.participants.filter(user_id__isnull=False).values_list('user_id', flat=True).distinct()
+    created_count = 0
+    for user_id in user_ids:
+        _, created = TournamentUser.objects.get_or_create(user_id=user_id)
+        created_count += created
+    logger.info(f'比赛#{tournament.id} 检查 TournamentUser 完成，补建 {created_count} 个')
+    return created_count
+
+
 def delete_participants_without_videos(tournament: Tournament):
     video_player_ids = tournament.videos.values('player_id')
     participants = (

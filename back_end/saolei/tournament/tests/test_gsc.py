@@ -278,6 +278,9 @@ class TestGsc(TournamentTestCaseBase):
             start_time=self.tournament.start_time,
             end_time=self.tournament.end_time,
         )
+        legacy_user = self.create_user('gsc_legacy_without_video')
+        legacy_participant = self.create_cached_gsc_participant(user=legacy_user)
+        TournamentUser.objects.filter(user=legacy_user).delete()
         video = self.create_video()
         self.tournament.videos.add(video)
         self.tournament.end_time = timezone.now() - timedelta(minutes=1)
@@ -289,11 +292,14 @@ class TestGsc(TournamentTestCaseBase):
         self.tournament.refresh_from_db()
         participant_with_video.refresh_from_db()
         self.assertEqual(result['tournament_users'], 1)
-        self.assertEqual(result['deleted_participants'], 1)
+        self.assertEqual(result['deleted_participants'], 2)
         self.assertEqual(self.tournament.state, Tournament_TextChoices.State.AWARDED)
         self.assertEqual(participant_with_video.rank_score, 0)
         self.assertTrue(GSCParticipant.objects.filter(pk=participant_with_video.pk).exists())
         self.assertFalse(GSCParticipant.objects.filter(pk=participant_without_video.pk).exists())
+        self.assertFalse(GSCParticipant.objects.filter(pk=legacy_participant.pk).exists())
+        self.assertTrue(TournamentUser.objects.filter(user=legacy_user).exists())
+        self.assertTrue(TournamentUser.objects.filter(user=user_without_video).exists())
 
         award_count = _task_award_tournament_impl(self.tournament.id)
         best_count = _task_gsc_refresh_best_impl(self.tournament.order)
