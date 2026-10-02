@@ -209,9 +209,7 @@ describe('Personal Profile', () => {
     it('Navigate from homepage', () => {
         cy.visit('/');
 
-        cy.get('.el-tabs').eq(1).contains(REALNAME).click();
-
-        cy.contains('我的空间').click();
+        cy.get('#pane-newest').should('be.visible').contains(`a[href="#/player/${USER_ID}"]`, REALNAME).click();
 
         cy.url().should('eq', `http://localhost:8080/#/player/${USER_ID}/summary`);
 
