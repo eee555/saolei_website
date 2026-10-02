@@ -18,7 +18,8 @@
 import './commands';
 import 'cypress-real-events';
 
-const DANGERZONE_URL = 'http://127.0.0.1:8000/dangerzone';
+const BACKEND_URL = 'http://127.0.0.1:8000';
+const DANGERZONE_URL = `${BACKEND_URL}/dangerzone`;
 
 interface DangerzoneUser {
     id: number;
@@ -107,11 +108,12 @@ declare global {
             setStaff(user_id: number): void;
 
             /**
-             * 创建/加载一个记住登录状态的登录会话
-             * @param {string} username - 用户名也作为会话名称
+             * 通过后端请求创建/恢复登录会话，需要后端开启 E2E_TEST。
+             * 登录后由调用方访问目标页面。
+             * @param {string} username
              * @param {string} password
              * @example cy.login('user', 'password');
-             * cy.session('user);
+             * cy.visitUser(1);
              * */
             login(username: string, password: string): void;
 
@@ -212,19 +214,34 @@ Cypress.Commands.add('setStaff', (id: number) => {
 });
 
 Cypress.Commands.add('login', (username: string, password: string) => {
-    cy.session(username, () => {
-        cy.visit('/#/settings');
-        cy.contains(/^登录$/).click();
-
-        cy.get('.el-dialog').then((dialog) => {
-            cy.wrap(dialog).contains('用户名').next().find('input').type(username);
-            cy.wrap(dialog).contains('密码').next().find('input').type(password);
-            cy.wrap(dialog).contains('验证码').next().find('input').type('test{enter}');
-            cy.wrap(dialog).contains('记住我').click();
-            cy.wrap(dialog).find('button').contains('登录').click();
+    cy.session(['api', username, password], () => {
+        cy.request<{ hashkey: string }>(`${BACKEND_URL}/userprofile/refresh_captcha/`).then(({ body }) => {
+            // E2E_TEST 模式的验证码固定为 test，但仍需获取真实 hashkey。
+            cy.request<{ type: string }>({
+                method: 'POST',
+                url: `${BACKEND_URL}/userprofile/login/`,
+                form: true,
+                log: false,
+                body: {
+                    username,
+                    password,
+                    captcha: 'test',
+                    hashkey: body.hashkey,
+                    set_expiry: 7,
+                },
+            }).its('body.type').should('eq', 'success');
         });
-
-        cy.get('.el-dialog').should('not.be.visible');
+    }, {
+        validate() {
+            // 数据库重置或会话过期后，Cypress 会重新执行登录请求。
+            cy.request<{ username: string }>({
+                url: `${BACKEND_URL}/api/userprofile/info/0`,
+                failOnStatusCode: false,
+            }).then((response) => {
+                expect(response.status).to.eq(200);
+                expect(response.body.username).to.eq(username);
+            });
+        },
     });
 });
 
