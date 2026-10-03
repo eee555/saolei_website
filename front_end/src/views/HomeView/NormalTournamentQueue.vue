@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-restricted-html-elements -->
 <template>
     <ElCard v-loading="loading" class="normal-tournament-card" shadow="never">
         <template #header>
