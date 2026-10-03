@@ -105,12 +105,11 @@ async function refreshUpdatedUsers() {
         // 初始化
         const requestTime = Date.now();
         const lastUpdate = serviceConfig.value.userInfoLastUpdate;
-        const tx = await getTransaction(USER_INFO_STORE_NAME, 'readwrite');
-        const { store } = tx;
 
         // 如果是首次更新（lastUpdate为0），则清空整个存储
         if (lastUpdate === 0) {
-            await store.clear();
+            const tx = await getTransaction(USER_INFO_STORE_NAME, 'readwrite');
+            await tx.store.clear();
             await tx.done;
 
             serviceConfig.value.userInfoLastUpdate = requestTime;
@@ -122,6 +121,9 @@ async function refreshUpdatedUsers() {
             params: { since: lastUpdate },
         });
         const updatedUserIds = data as number[];
+        // 网络响应后再创建事务，避免等待期间事务自动提交。
+        const tx = await getTransaction(USER_INFO_STORE_NAME, 'readwrite');
+        const { store } = tx;
         await Promise.all(updatedUserIds.map((userId) => store.delete(userId)));
         await tx.done;
 
