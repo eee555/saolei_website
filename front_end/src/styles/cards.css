@@ -1,7 +1,26 @@
-.el-card.card-small {
-  --el-card-padding: 5px;
+.card {
+    box-sizing: border-box;
+    min-width: 0;
+    overflow: auto;
+    padding: 10px;
+    border: 1px solid var(--el-border-color-light);
+    border-radius: 0;
+    background-color: var(--el-fill-color-blank);
+    color: var(--el-text-color-primary);
 }
 
-.el-card.card-normal {
-  background-color: var(--el-bg-color-overlay);
+.card-small {
+    padding: 5px;
+}
+
+.card-large {
+    padding: 10px 20px;
+}
+
+.card-title {
+    margin: 0 0 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--el-border-color-light);
+    font-size: var(--el-font-size-medium);
+    font-weight: 600;
 }

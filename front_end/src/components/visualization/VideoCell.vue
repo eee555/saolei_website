@@ -4,9 +4,9 @@
             {{ text }}
         </ElLink>
         <template #content>
-            <ElCard class="card-small">
+            <div class="card card-small">
                 <VideoAbstractDisplay :video="video" />
-            </ElCard>
+            </div>
         </template>
     </Tippy>
     <span v-else :style="cellStyle">
@@ -18,7 +18,7 @@
 import '@/styles/text.css';
 import '@/styles/cards.css';
 
-import { ElCard, ElLink } from 'element-plus';
+import { ElLink } from 'element-plus';
 import type { PropType } from 'vue';
 import { computed } from 'vue';
 import { Tippy } from 'vue-tippy';

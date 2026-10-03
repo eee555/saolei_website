@@ -31,9 +31,9 @@
                             <i class="pi pi-ellipsis-h" />
                         </ElButton>
                         <template #content="{ hide }">
-                            <ElCard class="card-small" @click.stop>
+                            <div class="card card-small" @click.stop>
                                 <slot name="rowActions" :video="data" :close="hide" />
-                            </ElCard>
+                            </div>
                         </template>
                     </Tippy>
                 </div>
@@ -47,7 +47,7 @@ import '@/styles/button.css';
 import '@/styles/cards.css';
 
 import { FilterMatchMode } from '@primevue/core/api';
-import { ElButton, ElCard } from 'element-plus';
+import { ElButton } from 'element-plus';
 import { Column, DataTable } from 'primevue';
 import 'primeicons/primeicons.css';
 import { defineAsyncComponent, ref } from 'vue';
