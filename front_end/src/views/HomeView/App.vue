@@ -1,30 +1,26 @@
 <template>
-    <div>
-        <ElContainer>
-            <ElMain style="padding: 1%;">
-                <div class="home-top-row">
-                    <ElTabs class="home-news-tabs" type="border-card">
-                        <ElTabPane :label="t('home.news')">
-                            <div class="news-placeholder text">
-                                {{ t('local.newsRebuilding') }}
-                            </div>
-                        </ElTabPane>
-                    </ElTabs>
-                    <NormalTournamentQueue />
-                </div>
-                <ElTabs v-model="active_tab" type="border-card" style="margin-top: 2%;">
-                    <NewestQueue :is-active="active_tab === 'newest'" />
-                    <ReviewQueue />
-                </ElTabs>
-            </ElMain>
-        </ElContainer>
+    <div class="home-content">
+        <div class="home-top-row">
+            <ElTabs class="home-news-tabs" type="border-card">
+                <ElTabPane :label="t('home.news')">
+                    <div class="news-placeholder text">
+                        {{ t('local.newsRebuilding') }}
+                    </div>
+                </ElTabPane>
+            </ElTabs>
+            <NormalTournamentQueue />
+        </div>
+        <ElTabs v-model="active_tab" type="border-card" style="margin-top: 2%;">
+            <NewestQueue :is-active="active_tab === 'newest'" />
+            <ReviewQueue />
+        </ElTabs>
     </div>
 </template>
 
 <script setup lang='ts'>
 import '@/styles/text.css';
 
-import { ElContainer, ElMain, ElTabPane, ElTabs } from 'element-plus';
+import { ElTabPane, ElTabs } from 'element-plus';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -46,6 +42,14 @@ const { t } = useI18n({ messages: i18nMessages });
 </script>
 
 <style lang='less'>
+.home-content {
+    box-sizing: border-box;
+    container-type: inline-size;
+    min-width: 0;
+    overflow: auto;
+    padding: 1%;
+}
+
 .bottom_tabs {
     overflow: auto;
 }
@@ -80,7 +84,7 @@ const { t } = useI18n({ messages: i18nMessages });
     text-align: center;
 }
 
-@media (max-width: 900px) {
+@container (max-width: 900px) {
     .home-top-row {
         grid-template-columns: 1fr;
     }

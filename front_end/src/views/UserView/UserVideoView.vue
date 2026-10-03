@@ -1,11 +1,11 @@
 <template>
-    <ElRow>
+    <div class="layout-row">
         <UserArbiterCSV :id="user.id" />
         <span style="flex: 1" />
         <ElButton circle :type="showSetting ? 'primary' : 'default'" @click="showSetting = !showSetting">
             <BaseIconSetting />
         </ElButton>
-    </ElRow>
+    </div>
     <MultiSelector v-if="showSetting" v-model="VideoListConfig.profile" :options="thisColumnChoices" :labels="thisColumnChoices.map((s) => t(`common.prop.${s}`))" />
     <VideoList
         v-if="loadedUserId === user.id && user.videos !== undefined"
@@ -32,8 +32,9 @@
 </template>
 
 <script lang="ts" setup>
+import '@/styles/layout.css';
 // 个人主页的个人所有录像部分
-import { ElButton, ElDialog, ElRow, vLoading } from 'element-plus';
+import { ElButton, ElDialog, vLoading } from 'element-plus';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 

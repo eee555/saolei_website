@@ -1,27 +1,27 @@
 <template>
-    <ElRow class="mb-4" style="margin-bottom: 10px;">
+    <div class="layout-row mb-4" style="margin-bottom: 10px;">
         <ElButton v-for="level in MS_Levels" :key="level" type="warning" :plain="levelTagSelected != level" size="small" @click="levelTagSelected = level; request_videos();">
             {{ t(`common.level.${level}`) }}
         </ElButton>
-    </ElRow>
+    </div>
 
-    <ElRow class="mb-4" style="margin-bottom: 10px;">
+    <div class="layout-row mb-4" style="margin-bottom: 10px;">
         <ElButton
             v-for="(tag, key) in modeTags" :key="key" type="success" :plain="!(modeTagSelected == key)" size="small"
             @click="modeTagSelected = key as string; request_videos();"
         >
             {{ tag.name }}
         </ElButton>
-    </ElRow>
+    </div>
 
-    <ElRow class="mb-4" style="margin-bottom: 10px;">
+    <div class="layout-row mb-4" style="margin-bottom: 10px;">
         <ElButton
             v-for="(value, key) in indexTags" :key="key" type="primary" :plain="!value.selected" size="small"
             @click="indexSelect(key, value)"
         >
             {{ t(`common.prop.${key}`) }}
         </ElButton>
-    </ElRow>
+    </div>
 
     <ElDescriptions :title="t('common.filter')">
         <ElDescriptionsItem :label="t('common.prop.state')">
@@ -55,9 +55,10 @@
 </template>
 
 <script lang="ts" setup>
+import '@/styles/layout.css';
 // 全网录像的检索器，根据三个维度排序
 import type { TableColumnCtx } from 'element-plus';
-import { ElButton, ElDescriptions, ElDescriptionsItem, ElPagination, ElRow, ElSwitch, ElTable, ElTableColumn } from 'element-plus';
+import { ElButton, ElDescriptions, ElDescriptionsItem, ElPagination, ElSwitch, ElTable, ElTableColumn } from 'element-plus';
 import { onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 

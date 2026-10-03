@@ -1,8 +1,8 @@
 <template>
     <ElDivider />
-    <ElFooter>
-        <ElRow style="margin-bottom: 15px">
-            <ElCol :span="8">
+    <footer class="site-footer">
+        <div class="layout-columns" style="margin-bottom: 15px">
+            <div>
                 <div style="padding-bottom: 5px">
                     <strong>
                         {{ t('local.about') }}
@@ -19,8 +19,8 @@
                 </BaseOverlay>
                 <br>
                 <Downloads />
-            </ElCol>
-            <ElCol :span="8">
+            </div>
+            <div>
                 <div style="padding-bottom: 5px">
                     <strong>{{ t('local.contact') }}</strong>
                 </div>
@@ -44,8 +44,8 @@
                         QQ
                     </ElLink>
                 </div>
-            </ElCol>
-            <ElCol :span="8">
+            </div>
+            <div>
                 <div style="padding-bottom: 5px">
                     <strong>{{ t('local.links') }}</strong>
                 </div>
@@ -74,8 +74,8 @@
                         Scoreganizer
                     </ElLink>
                 </div>
-            </ElCol>
-        </ElRow>
+            </div>
+        </div>
         <div style="text-align: center">
             <span class="text">
                 Copyright @ 2023
@@ -97,13 +97,14 @@
                 苏公网安备32020602001691
             </ElLink>
         </div>
-    </ElFooter>
+    </footer>
 </template>
 
 <script setup lang="ts">
+import '@/styles/layout.css';
 import '@/styles/text.css';
 
-import { ElCol, ElDivider, ElFooter, ElLink, ElRow } from 'element-plus';
+import { ElDivider, ElLink } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
 import BaseOverlay from './common/BaseOverlay.vue';
@@ -130,3 +131,10 @@ const i18nMessage = {
 
 const { t } = useI18n({ messages: i18nMessage });
 </script>
+
+<style scoped>
+.site-footer {
+    box-sizing: border-box;
+    padding: 0 1rem;
+}
+</style>

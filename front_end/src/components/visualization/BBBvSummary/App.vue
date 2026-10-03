@@ -1,12 +1,12 @@
 <template>
-    <ElRow v-if="header" :style="{ textAlign: 'center', height: '25px', flexWrap: 'nowrap', marginTop: '10px', marginBottom: '-20px' }">
+    <div v-if="header" class="layout-row" :style="{ textAlign: 'center', height: '25px', flexWrap: 'nowrap', marginTop: '10px', marginBottom: '-20px' }">
         <span style="width: 10%; min-width: 4em" />
         <span :style="gridStyle">
             <span v-for="i in 10" :key="i" class="text text-small">
                 {{ i - 1 }}
             </span>
         </span>
-    </ElRow>
+    </div>
     <ElDivider data-cy="summary" style="margin: 18px 0 12px 0;">
         <span class="text">
             {{ t(`common.level.${level}`) }}
@@ -14,7 +14,7 @@
             {{ t('BBBvSummary.bbbvInTotal', [groupedVideoAbstract.size]) }}
         </span>
     </ElDivider>
-    <ElRow v-if="groupedVideoAbstract.size > 0" style="white-space: nowrap;">
+    <div v-if="groupedVideoAbstract.size > 0" class="layout-row" style="white-space: nowrap;">
         <YLabel :min-bv="minBv" :max-bv="maxBv" />
         <Tippy :duration="0" sticky follow-cursor :style="gridStyle">
             <Cell
@@ -42,12 +42,13 @@
                 />
             </template>
         </Tippy>
-    </ElRow>
+    </div>
 </template>
 
 <script setup lang="ts">
+import '@/styles/layout.css';
 import '@/styles/text.css';
-import { ElDivider, ElRow } from 'element-plus';
+import { ElDivider } from 'element-plus';
 import type { PropType } from 'vue';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -121,7 +122,7 @@ const gridStyle = computed(() => {
 </script>
 
 <style lang="less" scoped>
-.el-row {
+.layout-row {
     flex-wrap: nowrap;
 }
 </style>
