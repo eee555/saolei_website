@@ -21,6 +21,7 @@ export default defineConfig(({ mode }) => {
             viteCompression({
                 algorithm: 'gzip', // Or 'brotliCompress' for Brotli compression
                 ext: '.gz', // Add a .gz extension to the compressed files
+                filter: /\.(js|mjs|json|css|html|wasm)$/i,
                 threshold: 1024, // Minimum file size in bytes to compress
             }),
             process.env.NODE_ENV === 'production'

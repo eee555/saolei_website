@@ -20,14 +20,13 @@
 import { useElementSize } from '@vueuse/core';
 import type { TabsPaneContext } from 'element-plus';
 import { ElTabPane, ElTabs, vLoading } from 'element-plus';
-import { computed, ref, useTemplateRef, watch } from 'vue';
+import { computed, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 
 import Profile from './Profile.vue';
+import { usePlayer } from './usePlayer';
 
-import { httpErrorNotification } from '@/components/Notifications';
-import { fetchUserInfo } from '@/services/userService';
 import { store } from '@/store';
 
 const route = useRoute();
@@ -57,33 +56,11 @@ const handleTabClick = (tab: TabsPaneContext) => {
     if (tabName !== undefined) void router.replace(String(tabName));
 };
 
-const playerLoading = ref(false);
+const playerLoading = usePlayer(() => Number(Array.isArray(route.params.id) ? route.params.id[0] : route.params.id));
 
 const containerRef = useTemplateRef('containerRef');
 const { width } = useElementSize(containerRef);
 const isWide = computed(() => width.value >= 960);
-
-async function refresh() {
-    const idStr = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id;
-    const newId = Number(idStr);
-    if (!Number.isInteger(newId) || newId <= 0) {
-        console.log(`Invalid user id: ${idStr}`);
-        return;
-    }
-    playerLoading.value = true;
-    if (newId === store.user.id) {
-        store.player = store.user;
-    } else {
-        try {
-            store.player = await fetchUserInfo(newId, true);
-        } catch (error) {
-            httpErrorNotification(error);
-        }
-    }
-    playerLoading.value = false;
-}
-
-watch([() => route.params.id, () => store.user.id], refresh, { immediate: true });
 
 const i18nMessages = {
     'zh-cn': { local: {
