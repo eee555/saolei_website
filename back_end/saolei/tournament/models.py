@@ -52,7 +52,7 @@ class Tournament(models.Model):
     def can_validate(self):
         return self.start_time is not None and self.end_time is not None and self.start_time < self.end_time
 
-    def accept_checkin(self):
+    def is_ongoing(self):
         now = timezone.now()
         return (
             self.state == Tournament_TextChoices.State.NORMAL

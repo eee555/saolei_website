@@ -15,6 +15,29 @@ function makeVideo(overrides: Partial<VideoAbstractData> = {}) {
 }
 
 describe('VideoAbstract', () => {
+    it('derives NF from right_ce independently of mode', () => {
+        for (const mode of ['00', '05', '10', '11'] as const) {
+            expect(makeVideo({ mode, right_ce: 0 }).isNF).toBe(true);
+            expect(makeVideo({ mode, right_ce: 1 }).isNF).toBe(false);
+            expect(makeVideo({ mode, right_ce: null }).isNF).toBe(false);
+            expect(makeVideo({ mode }).isNF).toBe(false);
+        }
+        const video = VideoAbstract.fromVideoRedisInfo(1, {
+            state: 'c',
+            software: 'e',
+            time: '2026-01-01T00:00:00Z',
+            player_id: 1,
+            level: 'b',
+            mode: '05',
+            timems: 1000,
+            bv: 10,
+            identifier: '',
+            right_ce: 0,
+        });
+        expect(video.isNF).toBe(true);
+        expect(video.mode).toBe('05');
+    });
+
     it('Normalizes missing optional stats to NaN', () => {
         const video = makeVideo({
             cl: null,

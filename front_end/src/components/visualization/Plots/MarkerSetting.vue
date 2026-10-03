@@ -12,7 +12,7 @@
         </ElButton>
 
         <template #content>
-            <ElCard class="card-small" :body-style="{ overflowX: 'hidden' }">
+            <div class="card card-small" style="overflow-x: hidden;">
                 <div class="marker-setting">
                     <div v-if="hasOption('shape')" class="marker-setting__item">
                         <span class="text text-small">
@@ -41,7 +41,7 @@
                         <ElInputNumber v-model="strokeWidth" :min="0" :step="1" controls-position="right" />
                     </div>
                 </div>
-            </ElCard>
+            </div>
         </template>
     </Tippy>
 </template>
@@ -50,7 +50,7 @@
 import '@/styles/cards.css';
 import '@/styles/text.css';
 
-import { ElButton, ElCard, ElInputNumber, ElOption, ElSelect, ElSlider } from 'element-plus';
+import { ElButton, ElInputNumber, ElOption, ElSelect, ElSlider } from 'element-plus';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Tippy } from 'vue-tippy';

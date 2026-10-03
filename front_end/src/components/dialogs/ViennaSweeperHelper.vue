@@ -8,7 +8,7 @@
             {{ t('software.officialSite') }}{{ t('common.punct.colon') }}
             https://sweeper.wien
         </span>
-        <ElRow style="height: 1em" />
+        <div style="height: 1em" />
         <ElDescriptions border>
             <ElDescriptionsItem :label="t('software.operatingSystem')" :span="2">
                 Windows
@@ -59,7 +59,7 @@
                 </BaseTagSupport>
             </ElDescriptionsItem>
         </ElDescriptions>
-        <ElRow style="height: 1em" />
+        <div style="height: 1em" />
         <ElTable :data="tableData" table-layout="auto">
             <ElTableColumn prop="version" :label="t('software.version')" />
             <ElTableColumn prop="date" :label="t('software.releaseDate')" />
@@ -80,7 +80,7 @@
 
 <script setup lang="ts">
 import '@/styles/text.css';
-import { ElDescriptions, ElDescriptionsItem, ElLink, ElRow, ElTable, ElTableColumn } from 'element-plus';
+import { ElDescriptions, ElDescriptionsItem, ElLink, ElTable, ElTableColumn } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
 import { BaseBadgeMsgames, BaseBadgeOpenms, BaseBadgeSaolei, BaseBadgeScoreganizer } from '@/components/common/badge';

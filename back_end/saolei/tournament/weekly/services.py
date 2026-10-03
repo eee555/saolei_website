@@ -11,13 +11,12 @@ from .utils import weekly_encode_best
 
 logger = logging.getLogger('tournament')
 tournament_cache = TournamentCache()
-WEEKLY_CLASSIC_SCORE_MODES = (MS_TextChoices.Mode.STD, MS_TextChoices.Mode.NF)
 
 
 def _weekly_score_videos(tournament: WeeklyTournament, *, level: str, timems_lt: int):
     videos = tournament.videos.filter(level=level, timems__lt=timems_lt)
     if tournament.tournament_format == Tournament_TextChoices.WeeklyFormat.CLASSIC:
-        videos = videos.filter(mode__in=WEEKLY_CLASSIC_SCORE_MODES)
+        videos = videos.filter(mode=MS_TextChoices.Mode.STD)
     return videos
 
 

@@ -101,14 +101,12 @@ const i18nMessages = {
     'zh-cn': { local: {
         board: '局面',
         empty: '暂无排行数据',
-        nf: '盲扫',
         rank: '排名',
         std: '标准',
     } },
     en: { local: {
         board: 'Board',
         empty: 'No ranking data',
-        nf: 'No Flag',
         rank: 'Rank',
         std: 'Standard',
     } },

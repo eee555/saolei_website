@@ -19,16 +19,40 @@
     >
         <component
             :is="componentConfig(column).component" v-for="column in columns" :key="column"
+            :column-key="column"
             :sortable="componentConfig(column).sortable ? sortable : undefined"
             :stat="componentConfig(column).isStat ? column : undefined"
         />
+        <Column v-if="$slots.rowActions" column-key="rowActions" :header="t('common.prop.action')" style="width: 5rem">
+            <template #body="{ data }: { data: VideoAbstract }">
+                <div @click.stop>
+                    <Tippy interactive trigger="click" placement="bottom-end" :append-to="appendToBody">
+                        <ElButton class="square-button" :aria-label="t('common.prop.action')" data-cy="video-row-actions" :data-video-id="data.id">
+                            <i class="pi pi-ellipsis-h" />
+                        </ElButton>
+                        <template #content="{ hide }">
+                            <div class="card card-small" @click.stop>
+                                <slot name="rowActions" :video="data" :close="hide" />
+                            </div>
+                        </template>
+                    </Tippy>
+                </div>
+            </template>
+        </Column>
     </DataTable>
 </template>
 
 <script setup lang="ts">
+import '@/styles/button.css';
+import '@/styles/cards.css';
+
 import { FilterMatchMode } from '@primevue/core/api';
-import { DataTable } from 'primevue';
+import { ElButton } from 'element-plus';
+import { Column, DataTable } from 'primevue';
+import 'primeicons/primeicons.css';
 import { defineAsyncComponent, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { Tippy } from 'vue-tippy';
 
 import { preview } from '@/utils/common/PlayerDialog';
 import type { ColumnChoice } from '@/utils/ms_const';
@@ -36,27 +60,18 @@ import { MS_Mode, MS_Softwares, MS_State } from '@/utils/ms_const';
 import type { VideoAbstract } from '@/utils/videoabstract';
 
 defineProps({
-    videos: {
-        type: Array<VideoAbstract>,
-        default: () => [],
-    },
-    columns: {
-        type: Array<ColumnChoice>,
-        default: () => [],
-    },
-    paginator: {
-        type: Boolean,
-        default: false,
-    },
-    paginatorRows: {
-        type: Number,
-        default: 25,
-    },
-    sortable: {
-        type: Boolean,
-        default: false,
-    },
+    videos: { type: Array<VideoAbstract>, default: () => [] },
+    columns: { type: Array<ColumnChoice>, default: () => [] },
+    paginator: { type: Boolean, default: false },
+    paginatorRows: { type: Number, default: 25 },
+    sortable: { type: Boolean, default: false },
 });
+defineSlots<{
+    rowActions?: (props: { video: VideoAbstract; close: () => void }) => unknown;
+}>();
+const { t } = useI18n();
+const appendToBody = () => document.body;
+
 const ColumnEndTime = defineAsyncComponent(() => import('./ColumnEndTime.vue'));
 const ColumnFileSize = defineAsyncComponent(() => import('./ColumnFileSize.vue'));
 const ColumnLevel = defineAsyncComponent(() => import('./ColumnLevel.vue'));
@@ -73,51 +88,15 @@ function handleRowClick(event: { data: VideoAbstract }) {
 
 function componentConfig(choice: ColumnChoice) {
     switch (choice) {
-        case 'level': return {
-            component: ColumnLevel,
-            sortable: false,
-            isStat: false,
-        };
-        case 'mode': return {
-            component: ColumnMode,
-            sortable: false,
-            isStat: false,
-        };
-        case 'player': return {
-            component: ColumnPlayerName,
-            sortable: false,
-            isStat: false,
-        };
-        case 'software': return {
-            component: ColumnSoftware,
-            sortable: false,
-            isStat: false,
-        };
-        case 'state': return {
-            component: ColumnState,
-            sortable: false,
-            isStat: false,
-        };
-        case 'upload_time': return {
-            component: ColumnUploadTime,
-            sortable: true,
-            isStat: false,
-        };
-        case 'end_time': return {
-            component: ColumnEndTime,
-            sortable: true,
-            isStat: false,
-        };
-        case 'file_size': return {
-            component: ColumnFileSize,
-            sortable: true,
-            isStat: false,
-        };
-        default: return {
-            component: ColumnStat,
-            sortable: true,
-            isStat: true,
-        };
+        case 'level': return { component: ColumnLevel, sortable: false, isStat: false };
+        case 'mode': return { component: ColumnMode, sortable: false, isStat: false };
+        case 'player': return { component: ColumnPlayerName, sortable: false, isStat: false };
+        case 'software': return { component: ColumnSoftware, sortable: false, isStat: false };
+        case 'state': return { component: ColumnState, sortable: false, isStat: false };
+        case 'upload_time': return { component: ColumnUploadTime, sortable: true, isStat: false };
+        case 'end_time': return { component: ColumnEndTime, sortable: true, isStat: false };
+        case 'file_size': return { component: ColumnFileSize, sortable: true, isStat: false };
+        default: return { component: ColumnStat, sortable: true, isStat: true };
     }
 }
 

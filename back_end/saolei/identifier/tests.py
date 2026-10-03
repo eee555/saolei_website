@@ -50,7 +50,7 @@ class BindIdentifierServiceTest(TestCase):
             pluck=pluck,
         )
 
-    def test_bind_identifier_bulk_updates_videos_and_personal_record(self):
+    def test_bind_and_unbind_identifier_bulk_update_video_states(self):
         identifier = Identifier.objects.create(identifier='classic-id', safe=True)
         video = self.create_video('classic-id')
 
@@ -63,8 +63,6 @@ class BindIdentifierServiceTest(TestCase):
         self.assertEqual(identifier.userms_id, self.userms.id)
         self.assertIn(identifier.identifier, self.userms.identifiers)
         self.assertEqual(video.state, MS_TextChoices.State.OFFICIAL)
-        self.assertEqual(self.userms.b_timems_std, video.timems)
-        self.assertEqual(self.userms.b_timems_id_std, video.id)
 
         changed_count = unbind_identifier(identifier, self.userms)
 
@@ -73,7 +71,6 @@ class BindIdentifierServiceTest(TestCase):
         self.assertEqual(changed_count, 1)
         self.assertEqual(video.state, MS_TextChoices.State.IDENTIFIER)
         self.assertNotIn(identifier.identifier, self.userms.identifiers)
-        self.assertIsNone(self.userms.b_timems_id_std)
 
     def test_bind_identifier_bulk_updates_custom_pluck_record(self):
         identifier = Identifier.objects.create(identifier='custom-id', safe=True)

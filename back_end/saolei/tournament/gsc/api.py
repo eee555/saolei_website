@@ -2,6 +2,7 @@ from datetime import datetime
 
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from ninja import Form, Router, Schema
 from ninja.decorators import decorate_view
 from ninja.orm import create_schema
@@ -13,7 +14,7 @@ from identifier.services import bind_identifier
 from identifier.utils import verify_identifier
 from tournament.gsc.decorators import GSC_admin_required
 from tournament.models import GSCParticipant, GSCTournament
-from tournament.schema import ParticipantUserIdOutBase
+from tournament.schema import ParticipantOutBase
 from userprofile.decorators import login_required_error
 from userprofile.models import UserProfile
 from utils.exceptions import ExceptionToResponse
@@ -62,7 +63,7 @@ GSCScoreOut = create_schema(
     custom_fields=[
         ('user_id', int, 0),
     ],
-    base_class=ParticipantUserIdOutBase,
+    base_class=ParticipantOutBase,
 )
 
 
@@ -113,9 +114,9 @@ def create_gsc_participant(request: HttpRequest, data: GSCOrderIn = Form(...)): 
     if not user.has_realname():
         return realname_required_response()
     tournament = get_object_or_404(GSCTournament, order=data.order)
-    if not tournament.accept_checkin():
+    if tournament.state != Tournament_TextChoices.State.NORMAL or tournament.end_time is None or timezone.now() >= tournament.end_time:
         return HttpResponseForbidden()
-    if not tournament.token:
+    if not tournament._token:
         return HttpResponseForbidden()
 
     GSCParticipant.objects.get_or_create(
@@ -135,7 +136,7 @@ def create_gsc_participant(request: HttpRequest, data: GSCOrderIn = Form(...)): 
 def register_gsc_participant_identifier(request: HttpRequest, data: RegisterGSCParticipantIn = Form(...)):  # noqa: B008
     user: UserProfile = request.user
     tournament = get_object_or_404(GSCTournament, order=data.order)
-    if not tournament.accept_checkin():
+    if not tournament.is_ongoing():
         return HttpResponseForbidden()
     if not tournament.token:
         return HttpResponseForbidden()

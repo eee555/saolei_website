@@ -159,6 +159,12 @@ export default defineConfig({
             'error', {
                 element: ['ElText', 'el-text'],
                 message: 'Use "@/styles/text.css" instead.',
+            }, {
+                element: ['ElContainer', 'el-container', 'ElHeader', 'el-header', 'ElMain', 'el-main', 'ElAside', 'el-aside', 'ElFooter', 'el-footer', 'ElRow', 'el-row', 'ElCol', 'el-col'],
+                message: 'Use native HTML and CSS for layout; reuse "@/styles/layout.css" where appropriate.',
+            }, {
+                element: ['ElCard', 'el-card'],
+                message: 'Use "@/styles/cards.css" instead.',
             },
         ],
         // vue/no-restricted-props

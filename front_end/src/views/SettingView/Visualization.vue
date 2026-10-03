@@ -1,5 +1,8 @@
 <template>
-    <ElCard :header="t('local.visualizationColorScheme')">
+    <section class="card">
+        <h2 class="card-title">
+            {{ t('local.visualizationColorScheme') }}
+        </h2>
         <div style="display: flex; flex-direction: column; gap: 1rem">
             <div style="display: flex; flex-wrap: wrap; gap: 2rem; align-items: center">
                 <div class="text">
@@ -26,13 +29,14 @@
                 <ColorSchemeSetting v-model="colorTheme[colorSchemeName]" />
             </div>
         </div>
-    </ElCard>
+    </section>
 </template>
 
 <script setup lang="ts">
+import '@/styles/cards.css';
 import '@/styles/text.css';
 
-import { ElCard, ElColorPicker, ElOption, ElSelect } from 'element-plus';
+import { ElColorPicker, ElOption, ElSelect } from 'element-plus';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 

@@ -5,7 +5,7 @@ from django.utils import timezone
 
 from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from customranking.services import add_videos_to_custom_pluck_ranks
-from msuser.services import update_personal_records_from_video_queryset
+from speedranking.services import add_videos_to_speed_ranks
 from tournament.cache import TournamentCache
 from videomanager.cache import add_videos_to_state_queues_bulk
 from videomanager.models import VideoModel
@@ -68,6 +68,17 @@ def add_existing_videos_to_participant_tournament(participant: TournamentPartici
 
     participant.tournament.videos.add(*video_ids)
     return len(video_ids)
+
+
+def ensure_tournament_users(tournament: Tournament):
+    logger.info(f'比赛#{tournament.id} 检查 TournamentUser 开始')
+    user_ids = tournament.participants.filter(user_id__isnull=False).values_list('user_id', flat=True).distinct()
+    created_count = 0
+    for user_id in user_ids:
+        _, created = TournamentUser.objects.get_or_create(user_id=user_id)
+        created_count += created
+    logger.info(f'比赛#{tournament.id} 检查 TournamentUser 完成，补建 {created_count} 个')
+    return created_count
 
 
 def delete_participants_without_videos(tournament: Tournament):
@@ -250,7 +261,7 @@ def reveal_videos_for_tournament(tournament: Tournament):
         .select_related('player', 'player__userms', 'video')
     )
     add_videos_to_state_queues_bulk(videos)
-    update_personal_records_from_video_queryset(videos)
+    add_videos_to_speed_ranks(videos)
     add_videos_to_custom_pluck_ranks(videos)
 
     logger.info(f'比赛#{tournament.id} 录像公开完成，公开录像 {len(video_ids)} 个')

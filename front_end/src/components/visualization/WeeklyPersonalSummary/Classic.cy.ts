@@ -5,13 +5,14 @@ import { MS_Mode } from '@/utils/ms_const';
 import type { MS_Mode as MSMode } from '@/utils/ms_const';
 import { VideoAbstract } from '@/utils/videoabstract';
 
-function video(level: 'i' | 'e', mode: MSMode, timems: number): VideoAbstract {
+function video(level: 'i' | 'e', mode: MSMode, timems: number, right_ce = 1): VideoAbstract {
     return new VideoAbstract({
         id: timems,
         upload_time: '2026-01-01T00:00:00Z',
         level,
         mode,
         timems,
+        right_ce,
         bv: 100,
         software: 'e',
     });
@@ -35,18 +36,18 @@ function cellTexts(index: number) {
 }
 
 describe('<WeeklyPersonalSummary Classic />', () => {
-    it('uses the fastest standard and no-flag videos for classic scoring', () => {
+    it('uses the fastest standard videos, including no-flag play, for classic scoring', () => {
         mountClassicSummary([
             video('i', MS_Mode.SpeedNG, 9876),
             video('i', MS_Mode.Standard, 20000),
-            video('i', MS_Mode.NoFlag, 21000),
+            video('i', MS_Mode.Standard, 21000, 0),
             video('i', MS_Mode.Standard, 22000),
-            video('i', MS_Mode.NoFlag, 23000),
+            video('i', MS_Mode.Standard, 23000, 0),
             video('i', MS_Mode.Standard, 24000),
-            video('i', MS_Mode.NoFlag, 25000),
+            video('i', MS_Mode.Standard, 25000, 0),
             video('e', MS_Mode.SpeedNG, 9876),
             video('e', MS_Mode.Standard, 110000),
-            video('e', MS_Mode.NoFlag, 120000),
+            video('e', MS_Mode.Standard, 120000, 0),
             video('e', MS_Mode.Standard, 130000),
         ]);
 
@@ -62,7 +63,7 @@ describe('<WeeklyPersonalSummary Classic />', () => {
     it('fills missing scores with the weekly default times', () => {
         mountClassicSummary([
             video('i', MS_Mode.Standard, 20000),
-            video('e', MS_Mode.NoFlag, 110000),
+            video('e', MS_Mode.Standard, 110000, 0),
         ]);
 
         cy.get('body').should('contain.text', 'Sum: 610.000');

@@ -1,10 +1,10 @@
 import struct
 
 from config.text_choices import MS_TextChoices
-from msuser.services import update_personal_record_stock as refresh_user_personal_records
-from userprofile.models import UserProfile
+from utils.exceptions import ExceptionToResponse
 from utils.parser import MSVideoParser
 from .models import ExpandVideoModel, VideoModel
+from .utils import VideoParseError
 
 video_all_fields = [
     'id', 'upload_time', 'player__id', 'player__realname', 'timems', 'bv', 'bvs', 'state', 'level', 'mode', 'software', 'flag', 'op', 'isl', 'path', 'pluck', 'left', 'right', 'double', 'left_ce', 'right_ce',
@@ -14,16 +14,14 @@ for name in [field.name for field in ExpandVideoModel._meta.get_fields()]:
     video_all_fields.append('video__' + name)
 
 
-# 存量式更新用户的记录。删录像后用，恢复用户的记录。
-def update_personal_record_stock(user: UserProfile):
-    refresh_user_personal_records(user)
-
-
 def refresh_video(video: VideoModel):
-    parser = MSVideoParser(video.file)
+    try:
+        parser = MSVideoParser(video.file)
+    except (ValueError, RuntimeError, EOFError, OverflowError, ExceptionToResponse) as exc:
+        raise VideoParseError(str(exc)) from exc
 
     parser_fields = [
-        'level', 'software', 'end_time', 'timems', 'bv',
+        'level', 'mode', 'software', 'end_time', 'timems', 'bv',
         'left', 'right', 'double',
         'left_ce', 'right_ce', 'double_ce',
         'path', 'pluck', 'flag', 'op', 'isl',

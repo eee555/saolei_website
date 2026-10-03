@@ -1,29 +1,29 @@
 <template>
-    <ElRow>
+    <div class="layout-row">
         <AllSums :sum-time="bStat.time + iStat.time + eStat.time" :sum-bvs="bStat.bvs + iStat.bvs + eStat.bvs" :sum-stnb="bStat.stnb + iStat.stnb + eStat.stnb" />
-    </ElRow>
-    <ElRow style="height: 20px" />
-    <ElRow>
+    </div>
+    <div style="height: 20px" />
+    <div class="layout-row">
         <span style="flex: 1" />
-        <ElCol :span="10" style="min-width: 16em">
+        <div class="summary-level">
             <LevelBlock ref="BBlockRef" level="b" :videos="videos" />
-        </ElCol>
+        </div>
         <span style="flex: 1" />
-        <ElCol :span="10" style="min-width: 16em">
+        <div class="summary-level">
             <LevelBlock ref="IBlockRef" level="i" :videos="videos" />
-            <ElRow style="height: 25px" />
+            <div style="height: 25px" />
             <LevelBlock ref="EBlockRef" level="e" :videos="videos" />
-        </ElCol>
+        </div>
         <span style="flex: 1" />
-    </ElRow>
-    <ElRow style="height: 20px" />
-    <ElRow>
+    </div>
+    <div style="height: 20px" />
+    <div class="layout-row">
         <AllSums :sum-time="bStat.time + iStat.time + eStat.time" :sum-bvs="bStat.bvs + iStat.bvs + eStat.bvs" :sum-stnb="bStat.stnb + iStat.stnb + eStat.stnb" />
-    </ElRow>
+    </div>
 </template>
 
 <script setup lang="ts">
-import { ElCol, ElRow } from 'element-plus';
+import '@/styles/layout.css';
 import type { PropType } from 'vue';
 import { computed, useTemplateRef } from 'vue';
 
@@ -63,3 +63,11 @@ const eStat = computed(() => {
         : EBlockRef.value.sumAll;
 });
 </script>
+
+<style scoped>
+.summary-level {
+    box-sizing: border-box;
+    flex: 0 0 calc(100% * 10 / 24);
+    min-width: 16em;
+}
+</style>

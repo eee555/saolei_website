@@ -1,5 +1,8 @@
 <template>
-    <ElCard :header="t('local.appearance')">
+    <section class="card">
+        <h2 class="card-title">
+            {{ t('local.appearance') }}
+        </h2>
         <ElDescriptions>
             <ElDescriptionsItem :label="t('local.colorscheme')" style="vertical-align: middle;">
                 <DarkMode />
@@ -68,13 +71,14 @@
                 <ElSwitch v-model="local.experimental" />
             </ElDescriptionsItem>
         </ElDescriptions>
-    </ElCard>
+    </section>
 </template>
 
 <script setup lang="ts">
+import '@/styles/cards.css';
 import '@/styles/text.css';
 
-import { ElCard, ElDescriptions, ElDescriptionsItem, ElInputNumber, ElRadioButton, ElRadioGroup, ElSlider, ElSwitch } from 'element-plus';
+import { ElDescriptions, ElDescriptionsItem, ElInputNumber, ElRadioButton, ElRadioGroup, ElSlider, ElSwitch } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
 import BaseTooltip from '@/components/common/BaseTooltip.vue';

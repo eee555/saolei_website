@@ -15,6 +15,8 @@ import { pinia } from './store/create';
 
 import i18n from '@/i18n';
 
+updateStartupStatus('2/3 正在初始化应用…', '2/3 Initializing application…');
+
 // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- 根 .vue 组件在 typescript-eslint 中可能被解析为 error type；vue-tsc 已负责 SFC 类型校验。
 const app = createApp(App);
 
@@ -57,7 +59,24 @@ app.use(PrimeVue, {
     autoImport: false,
 });
 app.use(pinia).use(router).use(i18n);
-app.mount('#app');
+updateStartupStatus('3/3 正在准备页面…', '3/3 Preparing page…');
+
+// Keep the HTML placeholder until the initial route's lazy components are ready.
+void router.isReady().then(() => {
+    app.mount('#app');
+}).catch((error: unknown) => {
+    updateStartupStatus('页面加载失败，请刷新重试。', 'Failed to load the page. Please refresh to try again.');
+    document.querySelector('#startup-loading progress')?.setAttribute('hidden', '');
+    console.error(error);
+});
+
+function updateStartupStatus(zh: string, en: string) {
+    const label = document.getElementById('startup-loading-label');
+    const chinese = label?.querySelector('[lang="zh-CN"]');
+    const english = label?.querySelector('[lang="en"]');
+    if (chinese) chinese.textContent = zh;
+    if (english) english.textContent = en;
+}
 
 declare module '@vue/runtime-core' {
     interface ComponentCustomProperties {

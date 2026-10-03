@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from typing import Any, Literal
 
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django_ratelimit.decorators import ratelimit
@@ -12,11 +13,12 @@ from ninja.orm import create_schema
 from config.text_choices import Tournament_TextChoices
 from tournament.cache import TOURNAMENT_USER_CACHE_KEYS, TournamentCache
 from tournament.models import GSCTournament, Tournament, TournamentParticipant, TournamentUser
-from tournament.schema import ParticipantUserIdOutBase
+from tournament.schema import ParticipantOutBase
 from userprofile.decorators import login_required_error, staff_required
 from userprofile.models import UserProfile
 from utils.response import HttpResponseConflict
 from utils.schema import IdIn
+from videomanager.models import VideoModel
 from videomanager.schema import VideoBaseOut
 from videomanager.view_utils import generate_file_stream
 
@@ -63,7 +65,7 @@ TournamentParticipantOut = create_schema(
         ('tournament_id', int, 0),
         ('arbiter_identifier__identifier', str | None, Field(None, alias='arbiter_identifier.identifier')),
     ],
-    base_class=ParticipantUserIdOutBase,
+    base_class=ParticipantOutBase,
 )
 
 
@@ -228,11 +230,14 @@ def delete_participant(request: HttpRequest, participant_id: int):
     - `ratelimit(key='user', rate='30/m', block=True)`
 
     Only the tournament host or staff may delete a participant.
+    GSC participants cannot be deleted while the tournament state is NORMAL.
     Videos and their tournament associations are preserved.
     """
     participant = get_object_or_404(TournamentParticipant.objects.select_related('tournament'), id=participant_id)
     if not request.user.is_staff and participant.tournament.host_id != request.user.id:
         raise HttpError(403, 'Only the tournament host or staff may delete a participant.')
+    if participant.tournament.subclass == Tournament_TextChoices.Subclass.GSC and participant.tournament.state == Tournament_TextChoices.State.NORMAL:
+        raise HttpError(403, 'Participants of a NORMAL GSC tournament cannot be deleted.')
     participant.delete()
     return 204, None
 
@@ -249,6 +254,26 @@ def get_tournament_user_ranking(
     end = min(max(end, start), start + 100)
     data, total = cache.get_tournament_user_ranking(sort_by, start=start, end=end)
     return {'total': total, 'data': data}
+
+
+@router.post('/video/{video_id}/reveal', response={204: None})
+@decorate_view(login_required_error, ratelimit(key='user', rate='30/m', block=True))
+def reveal_video(request: HttpRequest, video_id: int):
+    """
+    - `login_required_error`
+    - `ratelimit(key='user', rate='30/m', block=True)`
+
+    Permanently reveal an owned video without removing any tournament associations.
+    """
+    with transaction.atomic():
+        video = get_object_or_404(VideoModel.objects.select_for_update(), id=video_id)
+        if video.player_id != request.user.id:
+            raise HttpError(403, 'Only the video owner may reveal it.')
+        if video.ongoing_tournament:
+            video.ongoing_tournament = False
+            # speedranking 的保存信号在事务提交后尝试加入竞速纪录。
+            video.save(update_fields=['ongoing_tournament'])
+    return 204, None
 
 
 @router.get('/get_videos/participant', response=list[VideoBaseOut])

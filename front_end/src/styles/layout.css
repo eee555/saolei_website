@@ -1,0 +1,17 @@
+.layout-row {
+    box-sizing: border-box;
+    display: flex;
+    flex-wrap: wrap;
+    position: relative;
+}
+
+.layout-columns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.layout-columns > * {
+    flex: 1 1 12rem;
+    min-width: 0;
+}

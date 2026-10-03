@@ -11,7 +11,7 @@ from ninja.orm import create_schema
 from config.text_choices import Tournament_TextChoices
 from config.tournaments import TournamentWeights
 from tournament.models import WeeklyParticipant, WeeklyTournament
-from tournament.schema import ParticipantUserIdOutBase
+from tournament.schema import ParticipantOutBase
 from userprofile.decorators import login_required_error, staff_required
 from utils.response import HttpResponseConflict, realname_required_response
 from utils.schema import IdIn
@@ -38,7 +38,7 @@ WeeklyScoreOut = create_schema(
     WeeklyParticipant,
     fields=['id', 'start_time', 'end_time', 'rank', 'rank_score', 'classic_et', 'classic_it', 'classic_score'],
     custom_fields=[('user_id', int, 0)],
-    base_class=ParticipantUserIdOutBase,
+    base_class=ParticipantOutBase,
 )
 
 
@@ -122,7 +122,7 @@ WeeklyRegisterOut = create_schema(
         ('user_id', int, 0),
         ('tournament_id', int, 0),
     ],
-    base_class=ParticipantUserIdOutBase,
+    base_class=ParticipantOutBase,
 )
 
 
@@ -133,7 +133,7 @@ def create_weekly_participant(request: HttpRequest, data: IdIn = Form(...)):  # 
     if not user.has_realname():
         return realname_required_response()
     tournament = get_object_or_404(WeeklyTournament, id=data.id)
-    if not tournament.accept_checkin():
+    if not tournament.is_ongoing():
         return HttpResponseForbidden()
 
     now = timezone.now()

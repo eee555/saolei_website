@@ -209,7 +209,7 @@ class TestGsc(TournamentTestCaseBase):
         tournament.start_time = now - timedelta(minutes=1)
         self.assertEqual(tournament.token, tournament._token)
 
-    def test_reveal_videos_for_tournament_restores_personal_record(self):
+    def test_reveal_videos_for_tournament_makes_videos_public(self):
         self.create_cached_gsc_participant()
         video = self.create_video()
         GSCTournament.objects.filter(pk=self.tournament.pk).update(
@@ -218,14 +218,16 @@ class TestGsc(TournamentTestCaseBase):
         )
         self.tournament.refresh_from_db()
 
-        changed_count = reveal_videos_for_tournament(self.tournament)
+        with self.captureOnCommitCallbacks(execute=True):
+            changed_count = reveal_videos_for_tournament(self.tournament)
 
         video.refresh_from_db()
         self.user.userms.refresh_from_db()
         self.assertEqual(changed_count, 1)
         self.assertFalse(video.ongoing_tournament)
-        self.assertEqual(self.user.userms.b_timems_std, video.timems)
-        self.assertEqual(self.user.userms.b_timems_id_std, video.id)
+        response = self.client.get(f'/api/speedranking/player/{self.user.id}')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['saolei']['bt_id'], video.id)
 
     def test_reveal_videos_for_tournament_waits_until_awarded(self):
         self.create_cached_gsc_participant()
@@ -276,6 +278,9 @@ class TestGsc(TournamentTestCaseBase):
             start_time=self.tournament.start_time,
             end_time=self.tournament.end_time,
         )
+        legacy_user = self.create_user('gsc_legacy_without_video')
+        legacy_participant = self.create_cached_gsc_participant(user=legacy_user)
+        TournamentUser.objects.filter(user=legacy_user).delete()
         video = self.create_video()
         self.tournament.videos.add(video)
         self.tournament.end_time = timezone.now() - timedelta(minutes=1)
@@ -287,11 +292,14 @@ class TestGsc(TournamentTestCaseBase):
         self.tournament.refresh_from_db()
         participant_with_video.refresh_from_db()
         self.assertEqual(result['tournament_users'], 1)
-        self.assertEqual(result['deleted_participants'], 1)
+        self.assertEqual(result['deleted_participants'], 2)
         self.assertEqual(self.tournament.state, Tournament_TextChoices.State.AWARDED)
         self.assertEqual(participant_with_video.rank_score, 0)
         self.assertTrue(GSCParticipant.objects.filter(pk=participant_with_video.pk).exists())
         self.assertFalse(GSCParticipant.objects.filter(pk=participant_without_video.pk).exists())
+        self.assertFalse(GSCParticipant.objects.filter(pk=legacy_participant.pk).exists())
+        self.assertTrue(TournamentUser.objects.filter(user=legacy_user).exists())
+        self.assertTrue(TournamentUser.objects.filter(user=user_without_video).exists())
 
         award_count = _task_award_tournament_impl(self.tournament.id)
         best_count = _task_gsc_refresh_best_impl(self.tournament.order)
@@ -343,12 +351,16 @@ class TestGsc(TournamentTestCaseBase):
         beginner_times = [1000 + index * 100 for index in range(21)]
         intermediate_times = [10000 + index * 1000 for index in range(13)]
         expert_times = [40000 + index * 10000 for index in range(6)]
-        for timems in beginner_times:
-            self.create_video(level=MS_TextChoices.Level.BEGINNER, timems=timems, bv=GSC_Defaults.B_BV_MIN)
-        for timems in intermediate_times:
-            self.create_video(level=MS_TextChoices.Level.INTERMEDIATE, timems=timems, bv=GSC_Defaults.I_BV_MIN)
-        for timems in expert_times:
-            self.create_video(level=MS_TextChoices.Level.EXPERT, timems=timems, bv=GSC_Defaults.E_BV_MIN)
+        for level, bv, times in [
+            (MS_TextChoices.Level.BEGINNER, GSC_Defaults.B_BV_MIN, beginner_times),
+            (MS_TextChoices.Level.INTERMEDIATE, GSC_Defaults.I_BV_MIN, intermediate_times),
+            (MS_TextChoices.Level.EXPERT, GSC_Defaults.E_BV_MIN, expert_times),
+        ]:
+            for index, timems in enumerate(times):
+                self.create_video(level=level, timems=timems, bv=bv, right_ce=index % 2)
+            for mode in MS_TextChoices.Mode.values:
+                if mode != MS_TextChoices.Mode.STD:
+                    self.create_video(level=level, timems=1, bv=bv, mode=mode)
 
         self.create_video(level=MS_TextChoices.Level.BEGINNER, timems=999, bv=GSC_Defaults.B_BV_MIN - 1)
         self.create_video(level=MS_TextChoices.Level.INTERMEDIATE, timems=GSC_Defaults.IT, bv=GSC_Defaults.I_BV_MIN)

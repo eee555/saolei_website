@@ -1,12 +1,11 @@
 <template>
-    <ElCard v-if="bestIndex > -1" class="card-small">
+    <div v-if="bestIndex > -1" class="card card-small">
         <VideoAbstractDisplay :video="videos[bestIndex]" />
-    </ElCard>
+    </div>
 </template>
 
 <script setup lang="ts">
 import '@/styles/cards.css';
-import { ElCard } from 'element-plus';
 import type { PropType } from 'vue';
 import { ref, watch } from 'vue';
 

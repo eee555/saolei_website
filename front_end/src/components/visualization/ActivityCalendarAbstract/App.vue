@@ -1,15 +1,15 @@
 <template>
     <BaseCardNormal style="overflow: auto;">
-        <ElRow style="align-items: center; display: flex; margin-bottom: 5px;">
+        <div class="layout-row" style="align-items: center; display: flex; margin-bottom: 5px;">
             <Header data-cy="header" :video-list="videoList" />
-        </ElRow>
-        <ElRow>
+        </div>
+        <div class="layout-row">
             <DayLabel data-cy="dayLabel" :cell-size="options.cellSize" :cell-margin="options.cellMargin" />
             <ElScrollbar style="flex:1;">
-                <ElRow :style="{ height: `${cellFullSize}px` }">
+                <div class="layout-row" :style="{ height: `${cellFullSize}px` }">
                     <MonthLabel :start-date="startDate" :end-date="endDate" :cell-size="options.cellSize" :cell-margin="options.cellMargin" />
-                </ElRow>
-                <ElRow :style="{ height: `${cellFullSize * 7 + options.cellMargin}px` }">
+                </div>
+                <div class="layout-row" :style="{ height: `${cellFullSize * 7 + options.cellMargin}px` }">
                     <Tippy
                         :duration="0"
                         sticky
@@ -51,18 +51,19 @@
                             <Tooltip :date="tooltipDate" :videos="tooltipVideos" />
                         </template>
                     </Tippy>
-                </ElRow>
+                </div>
             </ElScrollbar>
-        </ElRow>
+        </div>
     </BaseCardNormal>
 </template>
 
 <script setup lang="ts">
+import '@/styles/layout.css';
 import '@/styles/text.css';
 
 import { MiniPie } from '@putianyi888/vue3-plots';
 import type { PieDatum } from '@putianyi888/vue3-plots';
-import { ElRow, ElScrollbar } from 'element-plus';
+import { ElScrollbar } from 'element-plus';
 import type { PropType } from 'vue';
 import { computed, ref } from 'vue';
 import { Tippy } from 'vue-tippy';
