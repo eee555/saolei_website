@@ -1,5 +1,5 @@
 <template>
-    <BaseButton v-bind="$attrs" :size="size" text class="text" :class="sizeClass">
+    <BaseButton v-bind="$attrs" :size="size" text class="text" :class="[sizeClass, `text-button--underline-${underline}`]">
         <slot />
     </BaseButton>
 </template>
@@ -13,6 +13,7 @@ import BaseButton from './BaseButton.vue';
 
 const props = defineProps({
     size: { type: String as PropType<'small' | 'default' | 'large'>, default: 'default' },
+    underline: { type: String as PropType<'hover' | 'always' | 'never'>, default: 'never' },
 });
 
 defineOptions({ inheritAttrs: false });

@@ -129,6 +129,12 @@
     color: var(--el-disabled-text-color);
 }
 
+.text-button--underline-always,
+.text-button--underline-hover:enabled:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+}
+
 :is(.base-button, .el-button) + .base-button,
 .base-button + .el-button {
     margin-inline-start: 4px;

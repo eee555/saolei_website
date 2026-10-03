@@ -1,0 +1,29 @@
+@import './text.css';
+
+.link {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    text-decoration: none;
+    text-underline-offset: 0.15em;
+    vertical-align: middle;
+    overflow-wrap: anywhere;
+}
+
+.link:hover {
+    color: var(--el-color-primary);
+    text-decoration: underline;
+}
+
+.link:active {
+    color: var(--el-color-primary-dark-2);
+}
+
+.link:focus-visible {
+    outline: 2px solid var(--el-color-primary);
+    outline-offset: 2px;
+}
+
+.link.link--no-underline {
+    text-decoration: none;
+}

@@ -17,7 +17,7 @@
 | --- | --- | --- |
 | 视觉参数 | 待细化 | 在已确定的方向与选型规则下，统一字号、间距和组件尺寸 |
 | 项目主题变量与组件库适配 | 待实施 | 尚无 `tokens.css`、统一 `--ui-*` 变量或 `styles/vendors`；原生卡片当前直接使用 Element Plus 颜色变量 |
-| 按钮、链接、分隔线、描述列表等 | 基础按钮已实现，待提交验收；其他待迁移 | ElLink / ElButton 按下文三批推进，分隔线与描述列表单独处理 |
+| 按钮、链接、分隔线、描述列表等 | 第二批公共入口已实现，待提交验收；其他待迁移 | ElLink / ElButton 按下文剩余批次推进，分隔线与描述列表单独处理 |
 | 复杂组件换肤 | 待实施 | 表格、表单、Tabs、弹窗等仍需分别调整直角与紧凑尺寸 |
 | PrimeVue 退出 | 延后独立推进 | 表格、筛选控件及 Toolbar 暂留；账号关联页面等待重做 |
 
@@ -153,25 +153,26 @@
 
 完成条件：调用方不需要成批修改，原有行为得到保留。
 
-#### ElLink / ElButton：分三批实施
+#### ElLink / ElButton：剩余批次（沿用原编号）
 
-1. **完善基础实现。** 扩展 `styles/button.css`，为原生按钮统一直角、紧凑间距、Element Plus 深浅主题配色和键盘焦点样式。新增轻量 `BaseButton`，集中处理 loading、disabled、图标和原生按钮类型；`nativeType` 默认为 `button`，视觉类型与原生类型分开。将现有 `BaseTextButton` 改为原生按钮，hover 使用 CSS；确认、取消、返回按钮改用基础实现，保留文件入口、文案和调用接口。保留尚未迁移的 ElButton 所需辅助样式，不批量修改业务调用方。
 2. **迁移链接和简单操作。** 从页脚外链、录像预览入口、缩放按钮等小范围开始。用于导航的 ElLink 改为原生 `<a>` 与共享链接样式，保留 href、target、rel 和现有导航方式；用于操作的 ElLink 改用文字按钮。保留禁用条件、事件修饰符和测试定位属性，每个组件或模块单独提交。
 3. **逐模块迁移其他按钮。** 根据实际使用能力，将普通 ElButton 改为原生按钮与共享样式，重复的加载、图标等需求复用 BaseButton。逐项核对 ElForm 的禁用/尺寸继承、重置行为及其他隐式依赖；尚未处理的复杂用法暂留 ElButton 并覆盖 CSS。文件选择与拖放入口单独处理；账号关联页面仍随将来重做迁移。
 
 共享按钮的 loading 必须同时提供加载反馈并阻止重复点击，disabled 保留原生禁用语义。透传 class、style、data-cy、ARIA 属性及实际使用的事件，保证键盘操作；仅实现项目需要的接口，不复制 ElButton 全部 API。
 
-ESLint 限制在对应迁移完成后补充，避免提前全局禁用产生大量临时豁免。第一批不新增 ElLink / ElButton 的禁用规则。
+ESLint 限制在对应迁移完成后补充，避免提前全局禁用产生大量临时豁免。其他模块仍有使用方，本批不新增 ElLink / ElButton 的全局禁用规则。
 
-第一批当前实现：新增 `BaseButton.vue`，确认、取消、返回和文字按钮已接入；提供 `type`（视觉类型）、`size`、`nativeType`、`text`、`disabled`、`loading` 以及默认/icon 插槽。图标和加载动画复用 PrimeIcons，原有 ElButton 辅助样式继续保留。BaseButton 不隐式继承 ElForm 状态，`nativeType="reset"` 只执行原生表单重置；后续有 Element Plus 表单依赖的调用方按第三批单独处理。
+现有基础接口：`BaseButton` 提供 `type`（视觉类型）、`size`、`nativeType`、`text`、`disabled`、`loading` 以及默认/icon 插槽；`BaseTextButton` 另提供 `underline`（never/hover/always）。BaseButton 不隐式继承 ElForm 状态，`nativeType="reset"` 只执行原生表单重置；后续有 Element Plus 表单依赖的调用方按第三批单独处理。
 
-第一批浏览器验收由用户运行，提交后按本文约定移除此待办。在 `front_end` 目录执行：
+第二批本次范围：`Footer` 外链和 `PlayerName` 资料链接改为原生 `<a>` 与 `styles/link.css`；`PreviewNumber`、`Zoomer` 和 `BaseOverlay` 的操作入口复用文字按钮，保留预览逻辑、缩放边界、滚轮操作、弹窗插槽和阻止冒泡行为。其他业务模块中的 ElLink 随模块维护继续迁移；首页比赛卡片、账号关联页面自身模板及可视化单元格不在本批改写范围。
+
+第二批浏览器验收由用户运行，提交后按本文约定移除此待办。在 `front_end` 目录执行：
 
 ```powershell
-npx.cmd cypress run --component --spec "src/components/common/BaseButton.cy.ts,src/components/widgets/Zoomer.cy.ts,src/components/accountlinks/CardAdd.cy.ts,src/views/UserView/UserVideoView.cy.ts"
+npx.cmd cypress run --component --spec "src/components/Footer.cy.ts,src/components/PlayerName.cy.ts,src/components/PreviewNumber.cy.ts,src/components/widgets/Zoomer.cy.ts,src/components/common/BaseOverlay.cy.ts,src/views/RankingView/SaoleiRanking.cy.ts"
 ```
 
-同时检查深浅主题下的普通、悬停、焦点、禁用和加载状态，以及弹窗底部相邻按钮的紧凑间距。第一批未安排全站链接和业务按钮替换。
+同时检查深浅主题下链接的悬停与焦点、玩家头像和长名字的排列、缩放控件间距，以及共享弹窗入口在录像表格和账号关联卡片中的显示。
 
 ### 5. 分批给复杂组件换肤
 
@@ -224,6 +225,7 @@ npx.cmd cypress run --component --spec "src/components/common/BaseButton.cy.ts,s
 src/styles/
   text.css                    继续沿用现有文字类
   button.css                  原生按钮样式，兼容尚未迁移的 Element Plus 辅助类
+  link.css                    原生链接样式，复用 text.css 与 Element Plus 配色
   layout.css                  已迁移的原生行列布局
   cards.css                   已迁移的原生卡片、尺寸修饰类和标题
 ```
@@ -323,7 +325,7 @@ E2E 使用项目现有测试环境。每批优先运行受影响的 spec，而�
 
 ## 下一批建议
 
-1. 提交验收按钮第一批后，按第二批迁移链接与简单操作入口；分隔线或简单描述列表可作为独立小批次推进。
+1. 提交验收本批公共链接与操作入口后，按第三批逐模块处理剩余按钮，并迁移所在模块的剩余 ElLink；分隔线或简单描述列表可作为独立小批次推进。
 2. 统一主题变量与复杂组件换肤作为独立批次推进，每批先选择代表实例，再推广。
 
 首页比赛卡片、账号关联页面重做及 PrimeVue 表格退出继续保持暂缓，不作为下一批简单组件迁移的前置条件。

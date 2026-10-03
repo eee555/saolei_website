@@ -98,6 +98,6 @@ describe('PlayerName', () => {
 
         cy.get('@parentClick').should('have.been.calledOnce');
         cy.get('[id^=tippy-]').should('not.exist');
-        cy.get('[data-cy-root] .el-link').should('not.exist');
+        cy.get('[data-cy-root] a').should('not.exist');
     });
 });

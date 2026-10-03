@@ -1,14 +1,14 @@
 <template>
     <span @click="interactive && $event.stopPropagation()">
-        <ElLink v-if="interactive" :href="playerProfileHref" underline="never">
+        <a v-if="interactive" :href="playerProfileHref" class="link link--no-underline text">
             <PlayerBadge :user-id="userId" :name="nameShown" />
-        </ElLink>
+        </a>
         <PlayerBadge v-else :user-id="userId" :name="nameShown" />
     </span>
 </template>
 
 <script setup lang="ts" name="PlayerName">
-import { ElLink } from 'element-plus';
+import '@/styles/link.css';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
