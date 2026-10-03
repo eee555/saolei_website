@@ -7,9 +7,9 @@
             <Tippy>
                 <BaseIconInfo />
                 <template #content>
-                    <ElCard class="card-small">
+                    <div class="card card-small">
                         {{ t(`local.tooltip.${selectedRankingName}`) }}
-                    </ElCard>
+                    </div>
                 </template>
             </Tippy>
         </div>
@@ -20,7 +20,7 @@
 <script setup lang="ts">
 import '@/styles/cards.css';
 
-import { ElCard, ElOption, ElSelect } from 'element-plus';
+import { ElOption, ElSelect } from 'element-plus';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Tippy } from 'vue-tippy';

@@ -1,13 +1,19 @@
 <template>
     <div style="display: flex; flex-direction: column; gap: 1rem;">
         <Appearance />
-        <ElCard :header="t('local.thirdPartyTrust')">
+        <section class="card">
+            <h2 class="card-title">
+                {{ t('local.thirdPartyTrust') }}
+            </h2>
             <ElCheckbox v-model="videoPlayerConfig.strangeDustTrust">
                 https://strange-dust.github.io/minesweeper-replay-analyzer/
             </ElCheckbox>
-        </ElCard>
+        </section>
         <Visualization />
-        <ElCard v-experimental :header="t('local.stnbConst')">
+        <section v-experimental class="card">
+            <h2 class="card-title">
+                {{ t('local.stnbConst') }}
+            </h2>
             <ElDescriptions>
                 <ElDescriptionsItem :label="t('common.level.b')">
                     <ElInputNumber v-model="STNB_const.b" size="small" :controls="false" />
@@ -19,15 +25,19 @@
                     <ElInputNumber v-model="STNB_const.e" size="small" :controls="false" />
                 </ElDescriptionsItem>
             </ElDescriptions>
-        </ElCard>
-        <ElCard :header="t('local.localCache')">
+        </section>
+        <section class="card">
+            <h2 class="card-title">
+                {{ t('local.localCache') }}
+            </h2>
             <IDB />
-        </ElCard>
+        </section>
     </div>
 </template>
 
 <script lang="ts" setup name="UserSettings">
-import { ElCard, ElCheckbox, ElDescriptions, ElDescriptionsItem, ElInputNumber } from 'element-plus';
+import '@/styles/cards.css';
+import { ElCheckbox, ElDescriptions, ElDescriptionsItem, ElInputNumber } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
 import Appearance from './Appearance.vue';
