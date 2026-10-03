@@ -49,6 +49,7 @@
 
 ## 特殊细节
 - `serviceConfig.userInfoLastUpdate`的初始值是0，此时没有必要请求`infoupdated`，强行请求必然会导致返回所有id，添加不必要的负担。因此实现中直接跳过`infoupdated`，清空整个缓存。这个机制也可以用来在其他需要的时候重置缓存。
+- `infoupdated`响应后才创建删除缓存的IndexedDB事务，避免事务在等待网络期间自动提交。事务成功提交后，将`userInfoLastUpdate`设为本次检查开始时的时间；请求或缓存操作失败时保留旧值，以便下次重试。
 
 ## 配置项
 
