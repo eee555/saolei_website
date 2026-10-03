@@ -18,8 +18,8 @@
         <PlayerName :user-id="82" />
     </div>
     <ElDivider />
-    <ElRow>
-        <ElCol :span="8">
+    <div class="layout-columns">
+        <div>
             <div style="padding-bottom: 5px">
                 <strong>{{ t('local.software') }}</strong>
             </div>
@@ -38,8 +38,8 @@
             <div>
                 <GitHubUser username="hgraceb" />
             </div>
-        </ElCol>
-        <ElCol :span="8">
+        </div>
+        <div>
             <div style="padding-bottom: 5px">
                 <strong>{{ t('local.localization') }}</strong>
             </div>
@@ -59,8 +59,8 @@
                 {{ t('local.pl') }}
                 <GitHubUser username="kiraa96" />
             </div>
-        </ElCol>
-        <ElCol :span="8">
+        </div>
+        <div>
             <div style="padding-bottom: 5px">
                 <strong>{{ t('local.designer') }}</strong>
             </div>
@@ -70,8 +70,8 @@
             <div>
                 <GitHubUser username="putianyi889" />
             </div>
-        </ElCol>
-    </ElRow>
+        </div>
+    </div>
     <ElDivider />
     <div style="padding-bottom: 5px">
         <strong>{{ t('local.acknowledgement') }}</strong>
@@ -82,8 +82,9 @@
 </template>
 
 <script lang="ts" setup>
+import '@/styles/layout.css';
 // 注册、登录的弹框及右上方按钮
-import { ElCol, ElDivider, ElRow } from 'element-plus';
+import { ElDivider } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
 import PlayerName from '@/components/PlayerName.vue';

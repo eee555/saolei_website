@@ -1,5 +1,5 @@
 <template>
-    <ElRow style="margin-bottom: 5px;">
+    <div class="layout-row" style="margin-bottom: 5px;">
         <span class="text">
             <VideoStateIcon :state="video.state" />
             &nbsp;
@@ -9,7 +9,7 @@
             &nbsp;
             {{ t(`common.mode.code${video.mode}`) }}
         </span>
-    </ElRow>
+    </div>
     <ElDescriptions size="small" border :column="3">
         <ElDescriptionsItem :label="t('common.prop.upload_time')" :span="3">
             {{ toISODateTimeString(video.upload_time) }}
@@ -52,8 +52,9 @@
 </template>
 
 <script setup lang="ts">
+import '@/styles/layout.css';
 import '@/styles/text.css';
-import { ElDescriptions, ElDescriptionsItem, ElRow } from 'element-plus';
+import { ElDescriptions, ElDescriptionsItem } from 'element-plus';
 import type { PropType } from 'vue';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
