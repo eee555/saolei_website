@@ -163,27 +163,18 @@
     padding: 2px;
 }
 
-/* Keep the helpers used by ElButton until their callers migrate. */
 .button-group {
     display: flex;
     gap: 0.25em;
 
-    .el-button,
     .base-button {
         margin: 0;
     }
 }
 
+/* Retained for the deferred account-link card. */
 .button-compact {
     height: auto;
     padding: 2px 5px;
     vertical-align: baseline;
-}
-
-.el-button.square-button {
-    padding: 8px;
-}
-
-.el-button--small.square-button {
-    padding: 5px;
 }

@@ -17,7 +17,7 @@
 | --- | --- | --- |
 | 视觉参数 | 待细化 | 在已确定的方向与选型规则下，统一字号、间距和组件尺寸 |
 | 项目主题变量与组件库适配 | 按钮直角适配已实现，其余待实施 | `styles/vendors/element-plus.css` 已统一 ElButton 圆角；尚无 `tokens.css` 或统一 `--ui-*` 变量，原生组件继续使用 Element Plus 颜色变量 |
-| 按钮、链接、分隔线、描述列表等 | 第三批 3.3 已实现，待提交验收 | 本轮范围内的 ElLink / ElButton 已迁移；暂留范围见下文，分隔线与描述列表单独处理 |
+| 按钮、链接、分隔线、描述列表等 | 第三批迁移已验收，收尾待提交 | 本轮范围内的 ElLink / ElButton 已迁移；收尾清理与暂留范围见下文，分隔线与描述列表单独处理 |
 | 复杂组件换肤 | 待实施 | 表格、表单、Tabs、弹窗等仍需分别调整直角与紧凑尺寸 |
 | PrimeVue 退出 | 延后独立推进 | 表格、筛选控件及 Toolbar 暂留；账号关联页面等待重做 |
 
@@ -153,32 +153,24 @@
 
 完成条件：调用方不需要成批修改，原有行为得到保留。
 
-#### ElLink / ElButton：剩余批次（沿用原编号）
+#### ElLink / ElButton：第三批收尾与暂留范围
 
-3. **逐模块迁移其他按钮。** 根据实际使用能力，将普通 ElButton 改为原生按钮与共享样式，重复的加载、图标等需求复用 BaseButton。逐项核对 ElForm 的禁用/尺寸继承、重置行为及其他隐式依赖；尚未处理的复杂用法暂留 ElButton 并覆盖 CSS。文件选择与拖放入口单独处理；账号关联页面仍随将来重做迁移。
+第三批 3.1、3.2、3.3 的迁移已提交，按约定视为验收完成，不再保留其实施与测试待办。账号关联页面仍随将来重做迁移，首页比赛卡片继续暂留。
 
 共享按钮的 loading 必须同时提供加载反馈并阻止重复点击，disabled 保留原生禁用语义。透传 class、style、data-cy、ARIA 属性及实际使用的事件，保证键盘操作；仅实现项目需要的接口，不复制 ElButton 全部 API。
 
-ESLint 限制在对应迁移完成后补充，避免提前全局禁用产生大量临时豁免。账号关联卡片、首页比赛卡片和拟弃用的 PreviewDownload 仍有使用方，本批不新增 ElLink / ElButton 的全局禁用规则。
+`vue/no-restricted-html-elements` 在现有参与 lint 的 `src/**/*.vue` 中限制新增 ElLink / ElButton 使用；仅对下述八个暂留文件不增加这两项限制，仍保留现有文字、布局和卡片规则。暂留文件迁移后，应同时移除对应配置例外；不豁免整个账号关联目录。
 
 现有基础接口：`BaseButton` 提供 `type`（视觉类型）、`size`、`nativeType`、`text`、`plain`、`disabled`、`loading` 以及默认/icon 插槽；`BaseTextButton` 另提供 `underline`（never/hover/always）。BaseButton 不隐式继承 ElForm 状态，`nativeType="reset"` 只执行原生表单重置；调用方需要的尺寸和禁用状态显式传入。本次检查的登录/注册/找回密码、管理员账号审核和周赛创建表单没有设置需要按钮继承的 ElForm 尺寸或禁用状态，也没有原生 reset 依赖，原有校验及 resetFields 调用保留。
 
-第三批继续按模块拆分，不做一次全站替换：
+暂留文件：
 
-- **3.3 其他业务模块（已实现，待提交验收）。** 登录菜单、登录/注册/找回密码表单及邮箱验证码、用户资料编辑与录像操作、排行榜、导出工具和管理员页面改用 BaseButton；标识管理、复制、设置浮层和成绩展示设置的操作链接改用 BaseTextButton，软件帮助、GitHub 用户和平台地址改为原生链接。复用既有基础接口，保留 loading、disabled、plain、插槽及事件；原 circle 图标按钮使用直角 square-button 样式，筛选和散点图操作提供选中态。登录菜单及最新成绩页签内按钮隔离键盘事件。表单校验、请求与业务计算保持原有逻辑；Tippy、表格、弹窗、输入和选择控件继续保留。涉及 35 个组件/页面，可按登录与表单、用户与共享工具、排行榜与可视化、管理员页面拆分提交。
+- `views/HomeView/NormalTournamentQueue.vue`：首页比赛卡片整体暂缓。
+- `components/accountlinks/` 中的 `CardAdd.vue`、`CardAddMineracer.vue`、`CardBilibili.vue`、`CardSaolei.vue`、`CardWoM.vue`、`CarouselControl.vue`、`VideoImportQueue.vue`：随账号关联页面重做处理。
 
-本轮范围内的第三批按钮和链接已迁移。首页比赛卡片、账号关联卡片及其 CarouselControl / VideoImportQueue、无调用方且已标注拟弃用的 PreviewDownload 继续暂留；管理员 AccountLink 页的普通操作按钮已迁移。共享组件的必要兼容检查随对应小步进行，不启用全站 ElLink / ElButton 禁用规则。
+本次收尾（待提交）：删除无调用方、已标注拟弃用的 `PreviewDownload.vue`；清理失效的 ElButton `square-button` 样式与按钮组中的旧选择器；补充上述 ESLint 限制。账号关联卡片仍使用的 `button-compact`、新旧按钮相邻间距和 Element Plus 直角适配继续保留。
 
-3.3 已通过 `npm.cmd run lintfix`、`npm.cmd run typecheck` 和 `npm.cmd run build:frontend`。浏览器验收由用户运行，提交后按本文约定移除此待办。在 `front_end` 目录执行：
-
-```powershell
-npx.cmd cypress run --component --browser chrome --spec "src/components/Login/LoginForm.cy.ts,src/components/Login/RegisterForm.cy.ts,src/components/formItems/EmailCodeBlock.cy.ts,src/views/Menu.cy.ts"
-npx.cmd cypress run --component --browser chrome --spec "src/views/UserView/EditProfile.cy.ts,src/views/UserView/UserVideoView.cy.ts,src/components/widgets/IdentifierManager.cy.ts,src/components/widgets/DataExporter.cy.ts,src/components/widgets/GitHubUser.cy.ts"
-npx.cmd cypress run --component --browser chrome --spec "src/views/RankingView/SaoleiRanking.cy.ts,src/components/visualization/BBBvSummary/Header.cy.ts,src/components/visualization/BBBvSummary/App.cy.ts,src/views/HomeView/HomeView.cy.ts"
-npx.cmd cypress run --e2e --browser chrome --spec "cypress/e2e/account.cy.ts,cypress/e2e/profile.cy.ts,cypress/e2e/ranking.cy.ts,cypress/e2e/staff-logs.cy.ts,cypress/e2e/bugfix/staff-requests.cy.ts,cypress/e2e/tournament.cy.ts"
-```
-
-同时检查深浅主题下的菜单按钮、加载/禁用状态、文字按钮和焦点，以及缩窄组件容器后的排列。人工验证图标设置与 MarkerSetting 浮层、散点图全屏/隐藏/高亮选中态、DensityRanking 棋盘切换、用户导出与软件帮助外链，以及管理员审核操作。配色节点添加/合并入口原有未接入操作逻辑，本次只迁移展示。共享 IconSetting、IconCopy、PlatformIcon 等也用于暂缓改版的账号关联页面，需检查其兼容表现。上述 Cypress 未由代理运行，静态检查不代替浏览器验收。
+收尾已通过 `npm.cmd run lintfix`、`npm.cmd run typecheck` 和 `npm.cmd run build:frontend`；另核对规则实际报错、八个文件例外及原有文字/布局/卡片限制均符合预期。本次不改变现有交互，未运行 Cypress，也不重新列入已验收的 3.3 浏览器测试待办。
 
 ### 5. 分批给复杂组件换肤
 
@@ -332,7 +324,7 @@ E2E 使用项目现有测试环境。每批优先运行受影响的 spec，而�
 
 ## 下一批建议
 
-1. 提交验收第三批 3.3 后，分隔线或简单描述列表可作为独立小批次推进；按钮与链接仅剩上述暂留范围，随相关页面维护或清理单独处理。
+1. 提交第三批收尾后，分隔线或简单描述列表可作为独立小批次推进；按钮与链接仅剩上述暂留范围，随相关页面维护单独处理。
 2. 统一主题变量与复杂组件换肤作为独立批次推进，每批先选择代表实例，再推广。
 
 首页比赛卡片、账号关联页面重做及 PrimeVue 表格退出继续保持暂缓，不作为下一批简单组件迁移的前置条件。
