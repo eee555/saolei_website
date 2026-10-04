@@ -6,7 +6,7 @@ from django.db.models.functions import RowNumber
 from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from tournament.cache import TournamentCache
 from tournament.models import TournamentUser, WeeklyParticipant, WeeklyTournament
-from tournament.utils import MAX_TOURNAMENT_BEST
+from tournament.utils import default_weekly_classic_et, default_weekly_classic_it, MAX_TOURNAMENT_BEST
 from .utils import weekly_encode_best
 
 logger = logging.getLogger('tournament')
@@ -14,7 +14,7 @@ tournament_cache = TournamentCache()
 
 
 def _weekly_score_videos(tournament: WeeklyTournament, *, level: str, timems_lt: int):
-    videos = tournament.videos.filter(level=level, timems__lt=timems_lt)
+    videos = tournament.videos.filter(state=MS_TextChoices.State.OFFICIAL, level=level, timems__lt=timems_lt)
     if tournament.tournament_format == Tournament_TextChoices.WeeklyFormat.CLASSIC:
         videos = videos.filter(mode=MS_TextChoices.Mode.STD)
     return videos
@@ -30,6 +30,11 @@ def refresh_weekly_classic_scores(tournament: WeeklyTournament, *, batch_size=10
         logger.info(f'周赛#{tournament.id} classic 成绩刷新跳过，没有参赛者')
         return 0
     logger.info(f'周赛#{tournament.id} classic 成绩刷新参赛者读取完成，数量 {len(participants)}')
+
+    for participant in participants:
+        participant.classic_et = default_weekly_classic_et()
+        participant.classic_it = default_weekly_classic_it()
+        participant.classic_score = 780000
 
     participants_by_user_id = {
         participant.user_id: participant

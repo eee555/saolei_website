@@ -29,7 +29,7 @@ export interface VideoUploadSuccessResult {
     state: MS_State;
 }
 
-export type VideoUploadErrorStatus = 'collision' | 'censorship' | 'quota' | 'upload';
+export type VideoUploadErrorStatus = 'collision' | 'censorship' | 'incomplete' | 'quota' | 'upload';
 
 export interface VideoUploadErrorResult {
     type: 'error';
@@ -47,6 +47,7 @@ export function normalizeVideoUploadResponse(response: VideoUploadResponse): Vid
         };
     }
     if (response.object === 'file') {
+        if (response.category === 'incomplete') return { type: 'error', status: 'incomplete' };
         return { type: 'error', status: 'collision' };
     }
     if (response.object === 'identifier') {
