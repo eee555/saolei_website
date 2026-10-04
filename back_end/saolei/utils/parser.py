@@ -107,6 +107,8 @@ class MSVideoParser:
 
         v.parse()
         v.analyse()
+        if not v.is_completed:
+            raise ExceptionToResponse(obj='file', category='incomplete')
         v.current_time = 1e8
 
         self.level = MSVideoParser.get_level_from_BaseVideo(v)
@@ -199,6 +201,8 @@ class MSVideoParser:
 
         v.parse()
         v.analyse()
+        if not v.is_completed:
+            raise ExceptionToResponse(obj='file', category='incomplete')
         v.current_time = 1e8
 
         level = MSVideoParser.get_level_from_BaseVideo(v)

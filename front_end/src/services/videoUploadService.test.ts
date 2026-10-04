@@ -38,6 +38,10 @@ describe('uploadVideoFile', () => {
 });
 
 describe('normalizeVideoUploadResponse', () => {
+    it('maps incomplete replay errors to the incomplete status', () => {
+        expect(normalizeVideoUploadResponse({ type: 'error', object: 'file', category: 'incomplete' })).toEqual({ type: 'error', status: 'incomplete' });
+    });
+
     it('maps successful upload response to uploaded video data', () => {
         expect(normalizeVideoUploadResponse({
             type: 'success',

@@ -257,6 +257,7 @@ async function loadAutoUploadVideo(file: File): Promise<AutoUploadVideo | undefi
     try {
         const buffer = await file.arrayBuffer();
         const video = load_video_file(buffer, file.name);
+        if (!video.is_completed) return undefined;
         return {
             filename: file.name,
             stat: extract_stat(video),

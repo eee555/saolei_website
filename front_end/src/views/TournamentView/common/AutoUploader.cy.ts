@@ -85,6 +85,34 @@ describe('<Common AutoUploader />', () => {
         });
     });
 
+    it('skips incomplete replays before calling the tournament filter or uploading', () => {
+        const directory = new FakeDirectoryHandle();
+        const participant = new TournamentParticipant({ start_time: new Date('2000-01-01'), end_time: new Date('2099-01-01') });
+        const filter = cy.stub().as('filter');
+        filter.returns(true);
+        const TestHost = defineComponent({ setup: () => () => h(AutoUploader, { participant, filter }) });
+        setDirectoryPicker(directory);
+        cy.intercept('POST', '/common/uploadvideo/', { statusCode: 500 }).as('upload');
+        cy.mount(TestHost, { global: { plugins: [i18n] } });
+        setPollInterval(1);
+        cy.contains('button', 'Select folder').click();
+        cy.contains('.el-dialog button', 'Watch new files only').click();
+        cy.contains('Watching videos').should('be.visible');
+
+        cy.fixture('c_10_39.832_24_0.477_Pu Tian Yi(Hu Bei)_fail.evf', 'binary').then((content) => {
+            const bytes = binaryStringToUint8Array(content);
+            const buffer = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
+            directory.addFile(new File([buffer], 'incomplete.evf'));
+        });
+
+        cy.contains('Skipped: 100%(1)').should('be.visible');
+        cy.get('@filter').should('not.have.been.called');
+        cy.get('@upload.all').should('have.length', 0);
+        cy.then(() => {
+            expect(participant.videos).to.be.undefined;
+        });
+    });
+
     it('resumes with files added while paused, without uploading the baseline or previous files again', () => {
         const directory = new FakeDirectoryHandle();
         const participant = new TournamentParticipant({ start_time: new Date('2000-01-01'), end_time: new Date('2099-01-01') });

@@ -244,8 +244,8 @@ digraph cache {
     task_db -> task_summary_cache -> task_summary;
     video_db -> disk_usage_cache -> disk_usage;
     video_db -> video_summary_cache -> video_summary;
-    video_upload -> video_db;
-    video_upload -> video_files;
+    video_upload -> video_db [label="create after is_completed check"];
+    video_upload -> video_files [label="write after is_completed check"];
 
     // customranking API
     pluck_rank_cache -> pluck_rank
@@ -363,7 +363,7 @@ digraph cache {
     task_db -> task_gsc_finish [label="status/read"];
     tournament_db -> task_gsc_finish [label="read/write"];
     participant_db -> task_gsc_finish [label="read/write/delete"];
-    video_db -> task_gsc_finish [label="read/write"];
+    video_db -> task_gsc_finish [label="score: OFFICIAL only; reveal: read/write"];
     tournament_user_db -> task_gsc_finish [label="ensure_tournament_users: read"];
     task_gsc_finish -> participant_db [label="score/rank"];
     task_gsc_finish -> tournament_db [label="state write"];
@@ -393,7 +393,7 @@ digraph cache {
     task_db -> task_weekly_finish [label="status/read"];
     tournament_db -> task_weekly_finish [label="read/write"];
     participant_db -> task_weekly_finish [label="read/write/delete"];
-    video_db -> task_weekly_finish [label="read/write"];
+    video_db -> task_weekly_finish [label="score: OFFICIAL only; reveal: read/write"];
     tournament_user_db -> task_weekly_finish [label="ensure_tournament_users: read"];
     task_weekly_finish -> participant_db [label="score/rank"];
     task_weekly_finish -> tournament_db [label="state write"];

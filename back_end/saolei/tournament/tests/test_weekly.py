@@ -12,6 +12,7 @@ from .base import (
     Tournament_TextChoices,
     TournamentTestCaseBase,
     TournamentUser,
+    VideoModel,
     weekly_encode_best,
     WeeklyParticipant,
 )
@@ -159,6 +160,12 @@ class TestWeekly(TournamentTestCaseBase):
             for timems in intermediate_times
         ]
         tournament.videos.add(ignored_expert, nf_expert, std_expert, ignored_intermediate, *intermediate_videos)
+        for level in [MS_TextChoices.Level.INTERMEDIATE, MS_TextChoices.Level.EXPERT]:
+            for state in MS_TextChoices.State.values:
+                if state != MS_TextChoices.State.OFFICIAL:
+                    video = self.create_video(tournament_identifier=[], level=level, timems=1)
+                    VideoModel.objects.filter(pk=video.pk).update(state=state)
+                    tournament.videos.add(video)
 
         refresh_weekly_classic_scores(tournament)
 
@@ -169,6 +176,12 @@ class TestWeekly(TournamentTestCaseBase):
         self.assertEqual(participant.classic_score, 110000 + 120000 + sum(intermediate_times))
         self.assertNotIn(ignored_expert.id, used_video_ids)
         self.assertNotIn(ignored_intermediate.id, used_video_ids)
+
+        VideoModel.objects.filter(pk=nf_expert.pk).update(state=MS_TextChoices.State.FROZEN)
+        refresh_weekly_classic_scores(tournament)
+        participant.refresh_from_db()
+        self.assertEqual(participant.classic_et, [[std_expert.id, 120000], [0, 240000]])
+        self.assertEqual(participant.classic_score, 120000 + 240000 + sum(intermediate_times))
 
     def test_refresh_weekly_score_rank_and_finish_tournament(self):
         tournament = self.create_weekly_tournament()

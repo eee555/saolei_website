@@ -29,7 +29,7 @@ from tournament.cache import TournamentCache
 from tournament.models import GSCParticipant, GSCTournament
 from userprofile.models import UserProfile
 from utils.parser import MSVideoParser
-from videomanager.models import VideoModel
+from videomanager.models import ExpandVideoModel, VideoModel
 from . import api as common_api
 
 
@@ -633,6 +633,20 @@ class VideoUploadRankingIntegrationTest(TestCase):
         video.refresh_from_db()
         self.assertTrue(video.ongoing_tournament)
         self.assertTrue(tournament.videos.filter(pk=video.pk).exists())
+
+    def test_upload_incomplete_video_does_not_create_records_or_store_files(self):
+        path = self.fixture_path('incomplete.evf')
+        uploaded_file = SimpleUploadedFile(path.name, path.read_bytes())
+
+        response = self.client.post('/common/uploadvideo/', {'file': uploaded_file})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {'type': 'error', 'object': 'file', 'category': 'incomplete'})
+        self.assertFalse(VideoModel.objects.exists())
+        self.assertFalse(ExpandVideoModel.objects.exists())
+        self.assertEqual(list(Path(self.media_dir.name).rglob('*')), [])
+        self.userms.refresh_from_db()
+        self.assertEqual(self.userms.video_num_total, 0)
 
     def test_identifier_bind_and_unbind_updates_video_state(self):
         parser = self.parse_fixture(self.fixture_path('beginner_personal.evf'))

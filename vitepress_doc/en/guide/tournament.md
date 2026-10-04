@@ -84,6 +84,7 @@ Personal replays cannot be refreshed while automatic uploading is running, and m
 
 ### Why is my uploaded replay missing from my live results?
 
+- Only replays marked "Valid" count toward your score. Pending, frozen and identifier-mismatched replays do not count.
 - Tournament identifiers must match exactly, including capitalization, spaces and invisible characters.
 - In MetaSweeper, use the separate tournament identifier field. Do not append it to your regular identifier.
 - Some tournaments start your participation window as soon as you register. Upload before your own window ends.

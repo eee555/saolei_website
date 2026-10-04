@@ -361,6 +361,10 @@ class TestGsc(TournamentTestCaseBase):
             for mode in MS_TextChoices.Mode.values:
                 if mode != MS_TextChoices.Mode.STD:
                     self.create_video(level=level, timems=1, bv=bv, mode=mode)
+            for state in MS_TextChoices.State.values:
+                if state != MS_TextChoices.State.OFFICIAL:
+                    video = self.create_video(level=level, timems=1, bv=bv)
+                    VideoModel.objects.filter(pk=video.pk).update(state=state)
 
         self.create_video(level=MS_TextChoices.Level.BEGINNER, timems=999, bv=GSC_Defaults.B_BV_MIN - 1)
         self.create_video(level=MS_TextChoices.Level.INTERMEDIATE, timems=GSC_Defaults.IT, bv=GSC_Defaults.I_BV_MIN)

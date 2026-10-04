@@ -2,7 +2,7 @@ import ClassicSummary from './Classic.vue';
 
 import i18n from '@/i18n';
 import { videoplayerstore } from '@/store';
-import { MS_Mode } from '@/utils/ms_const';
+import { MS_Mode, MS_State } from '@/utils/ms_const';
 import type { MS_Mode as MSMode } from '@/utils/ms_const';
 import { VideoAbstract } from '@/utils/videoabstract';
 
@@ -16,6 +16,7 @@ function video(level: 'i' | 'e', mode: MSMode, timems: number, right_ce = 1): Vi
         right_ce,
         bv: 100,
         software: 'e',
+        state: MS_State.Official,
     });
 }
 
@@ -52,7 +53,15 @@ describe('<WeeklyPersonalSummary Classic />', () => {
     });
 
     it('uses the fastest standard videos, including no-flag play, for classic scoring', () => {
+        const nonOfficial = Object.values(MS_State).filter((state) => state !== MS_State.Official).flatMap((state) => {
+            return (['i', 'e'] as const).map((level) => {
+                const replay = video(level, MS_Mode.Standard, 1234);
+                replay.state = state;
+                return replay;
+            });
+        });
         mountClassicSummary([
+            ...nonOfficial,
             video('i', MS_Mode.SpeedNG, 9876),
             video('i', MS_Mode.Standard, 20000),
             video('i', MS_Mode.Standard, 21000, 0),
@@ -72,7 +81,7 @@ describe('<WeeklyPersonalSummary Classic />', () => {
         cy.get('.cell-list').should('have.length', 2);
         cellTexts(0).should('deep.equal', ['110.000', '120.000']);
         cellTexts(1).should('deep.equal', ['20.000', '21.000', '22.000', '23.000', '24.000']);
-        cy.get('body').should('not.contain.text', '9.876').and('not.contain.text', '25.000').and('not.contain.text', '130.000');
+        cy.get('body').should('not.contain.text', '9.876').and('not.contain.text', '25.000').and('not.contain.text', '130.000').and('not.contain.text', '1.234');
     });
 
     it('fills missing scores with the weekly default times', () => {
