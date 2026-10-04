@@ -2,31 +2,32 @@
     <div>
         用户ID
         <ElInputNumber v-model="userId" :controls="false" :min="1" />
-        <ElButton :loading="loading" @click="loadUser">
+        <BaseButton :loading="loading" @click="loadUser">
             查询
-        </ElButton>
+        </BaseButton>
     </div>
 
     <template v-if="profile">
         <VCodeBlock :code="JSON.stringify(profile, null, 2)" lang="json" highlightjs />
         UserProfile
         <ElInput v-model="userProfileRequestBody" type="textarea" :autosize="{ minRows: 8 }" />
-        <ElButton type="primary" :loading="savingUserProfile" @click="saveUserProfile">
+        <BaseButton type="primary" :loading="savingUserProfile" @click="saveUserProfile">
             PATCH UserProfile
-        </ElButton>
+        </BaseButton>
         UserMS
         <ElInput v-model="userMSRequestBody" type="textarea" :autosize="{ minRows: 8 }" />
-        <ElButton type="primary" :loading="savingUserMS" @click="saveUserMS">
+        <BaseButton type="primary" :loading="savingUserMS" @click="saveUserMS">
             PATCH UserMS
-        </ElButton>
+        </BaseButton>
     </template>
 </template>
 
 <script setup lang="ts">
 import { VCodeBlock } from '@wdns/vue-code-block';
-import { ElButton, ElInput, ElInputNumber } from 'element-plus';
+import { ElInput, ElInputNumber } from 'element-plus';
 import { ref } from 'vue';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import { actionSuccessNotification, baseErrorNotification, httpErrorNotification } from '@/components/Notifications';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 

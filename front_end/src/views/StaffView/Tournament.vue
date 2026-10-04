@@ -3,9 +3,9 @@
     &nbsp;
     <ElInputNumber v-model="tournamentId" :min="0" :controls="false" />
     &nbsp;
-    <ElButton @click="refreshTournamentInfo">
+    <BaseButton @click="refreshTournamentInfo">
         查询
-    </ElButton>
+    </BaseButton>
     <br>
     <template v-if="tournament">
         状态
@@ -21,12 +21,12 @@
         {{ tournament.endDate }}
         <br>
         审核
-        <ElButton type="success" circle size="small" :disabled="!tournament.canValidate" @click="validateTournament(true)">
+        <BaseButton class="square-button" type="success" size="small" aria-label="通过审核" :disabled="!tournament.canValidate" @click="validateTournament(true)">
             <BaseIconTick />
-        </ElButton>
-        <ElButton type="danger" circle size="small" :disabled="!tournament.canInvalidate" @click="validateTournament(false)">
+        </BaseButton>
+        <BaseButton class="square-button" type="danger" size="small" aria-label="取消审核" :disabled="!tournament.canInvalidate" @click="validateTournament(false)">
             <BaseIconClose />
-        </ElButton>
+        </BaseButton>
         <br>
         名称
         <VCodeBlock v-if="tournament" :code="JSON.stringify(tournament.name)" lang="json" highlightjs />
@@ -37,9 +37,10 @@
 
 <script setup lang="ts">
 import { VCodeBlock } from '@wdns/vue-code-block';
-import { ElButton, ElInputNumber } from 'element-plus';
+import { ElInputNumber } from 'element-plus';
 import { ref } from 'vue';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import { BaseIconClose, BaseIconTick } from '@/components/common/icon';
 import { httpErrorNotification, successNotification } from '@/components/Notifications';
 import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';

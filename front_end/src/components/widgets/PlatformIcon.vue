@@ -1,11 +1,12 @@
 <template>
-    <ElLink :href="platformlist[platform].url" target="_blank" rel="noopener noreferrer" style="vertical-align: bottom;">
+    <a class="link text" :href="platformlist[platform].url" target="_blank" rel="noopener noreferrer" style="vertical-align: bottom;">
         {{ t(`common.platform.${platform}`) }}
-    </ElLink>
+    </a>
 </template>
 
 <script setup lang="ts">
-import { ElLink } from 'element-plus';
+import '@/styles/link.css';
+
 import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 

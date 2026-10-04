@@ -17,22 +17,22 @@
             <ElTableColumn>
                 <template #default="scope">
                     <!-- 添加标识 -->
-                    <ElLink
-                        v-if="scope.row.data === ''" underline="never"
+                    <BaseTextButton
+                        v-if="scope.row.data === ''" underline="never" :aria-label="t('common.action.addIdentifier')"
                         @click="addIdentifier(new_identifiers)"
                     >
                         <BaseIconAdd />
-                    </ElLink>
+                    </BaseTextButton>
                     <!-- 复制标识 -->
                     <IconCopy v-else :text="scope.row.data" />
                     &nbsp;
                     <!-- 删除标识 -->
-                    <ElLink
+                    <BaseTextButton
                         v-if="user.id == store.user.id && scope.row.data !== ''" underline="never"
-                        type="danger" @click="delIdentifier(scope.row.data)"
+                        type="danger" :aria-label="t('local.remove')" @click="delIdentifier(scope.row.data)"
                     >
                         <BaseIconDelete />
-                    </ElLink>
+                    </BaseTextButton>
                 </template>
             </ElTableColumn>
         </ElTable>
@@ -40,12 +40,13 @@
 </template>
 
 <script setup lang="ts">
-import { ElInput, ElLink, ElNotification, ElTable, ElTableColumn } from 'element-plus';
+import { ElInput, ElNotification, ElTable, ElTableColumn } from 'element-plus';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import IconCopy from './IconCopy.vue';
 
+import BaseTextButton from '@/components/common/BaseTextButton.vue';
 import { BaseIconAdd, BaseIconDelete } from '@/components/common/icon';
 import { httpErrorNotification, unknownErrorNotification } from '@/components/Notifications';
 import { fetchUserIdentifiers } from '@/services/userService';
@@ -60,7 +61,6 @@ const emit = defineEmits<{
 
 const { proxy } = useCurrentInstance();
 const new_identifiers = ref('');
-const { t } = useI18n();
 const loading = ref(false);
 
 const user = defineModel<UserProfile>('user', {
@@ -138,6 +138,13 @@ async function addIdentifier(identifier: string) {
         httpErrorNotification(error);
     }
 }
+
+const i18nMessages = {
+    'zh-cn': { local: { remove: '删除标识' } },
+    en: { local: { remove: 'Delete identifier' } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
 </script>
 
 <style lang="less" scoped>

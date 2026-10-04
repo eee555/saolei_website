@@ -1,29 +1,30 @@
 <template>
-    <ElButton :disabled="id == 0" @click="clickExportJSON">
+    <BaseButton :disabled="id == 0" @click="clickExportJSON">
         {{ t('profile.exportJSON') }}&nbsp;
         <ElTooltip :content="t('profile.exportJSONTooltip')" raw-content>
             <ElIcon v-if="local.tooltip_show">
                 <QuestionFilled />
             </ElIcon>
         </ElTooltip>
-    </ElButton>
-    <ElButton :disabled="id == 0" @click="clickExportCSV">
+    </BaseButton>
+    <BaseButton :disabled="id == 0" @click="clickExportCSV">
         {{ t('profile.exportArbiterCSV') }}&nbsp;
         <ElTooltip :content="t('profile.exportArbiterCSVTooltip')" raw-content>
             <ElIcon v-if="local.tooltip_show">
                 <QuestionFilled />
             </ElIcon>
         </ElTooltip>
-    </ElButton>
+    </BaseButton>
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElIcon, ElTooltip } from 'element-plus';
+import { ElIcon, ElTooltip } from 'element-plus';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { httpErrorNotification } from '../Notifications';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import { local } from '@/store';
 import { ArrayUtils } from '@/utils/arrays';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';

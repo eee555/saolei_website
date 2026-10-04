@@ -27,7 +27,8 @@ describe('<BBBvSummary Header />', () => {
         cy.contains('and display by').should('be.visible');
         cy.wrap(BBBvSummaryConfig).its('value.template').should('eq', 'custom');
 
-        cy.contains('Find min').click();
+        cy.contains('button', 'Find min').focus();
+        cy.realPress('Space');
         cy.contains('Find max').should('be.visible');
         cy.wrap(BBBvSummaryConfig).its('value.sortDesc').should('eq', true);
 

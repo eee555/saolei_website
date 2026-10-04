@@ -11,20 +11,21 @@
         <PasswordConfirmBlock ref="passwordFormRef" v-model="retrieveForm.password" />
         <!-- 确认 -->
         <ElFormItem>
-            <ElButton type="primary" :disabled="confirm_disabled" @click="submitForm(ruleFormRef!)">
+            <BaseButton type="primary" :disabled="confirm_disabled" @click="submitForm(ruleFormRef!)">
                 {{
                     t('local.confirm') }}
-            </ElButton>
+            </BaseButton>
         </ElFormItem>
     </ElForm>
 </template>
 
 <script setup lang="ts">
 import type { FormInstance } from 'element-plus';
-import { ElButton, ElForm, ElFormItem, ElNotification } from 'element-plus';
+import { ElForm, ElFormItem, ElNotification } from 'element-plus';
 import { computed, onUnmounted, reactive, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import EmailCodeBlock from '@/components/formItems/EmailCodeBlock.vue';
 import EmailFormItem from '@/components/formItems/EmailFormItem.vue';
 import PasswordConfirmBlock from '@/components/formItems/PasswordConfirmBlock.vue';

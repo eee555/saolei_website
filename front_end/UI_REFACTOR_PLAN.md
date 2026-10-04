@@ -17,7 +17,7 @@
 | --- | --- | --- |
 | 视觉参数 | 待细化 | 在已确定的方向与选型规则下，统一字号、间距和组件尺寸 |
 | 项目主题变量与组件库适配 | 按钮直角适配已实现，其余待实施 | `styles/vendors/element-plus.css` 已统一 ElButton 圆角；尚无 `tokens.css` 或统一 `--ui-*` 变量，原生组件继续使用 Element Plus 颜色变量 |
-| 按钮、链接、分隔线、描述列表等 | 第三批 3.2 上传和播放器已实现，待提交验收；其他模块待迁移 | ElLink / ElButton 按下文剩余批次推进，分隔线与描述列表单独处理 |
+| 按钮、链接、分隔线、描述列表等 | 第三批 3.3 已实现，待提交验收 | 本轮范围内的 ElLink / ElButton 已迁移；暂留范围见下文，分隔线与描述列表单独处理 |
 | 复杂组件换肤 | 待实施 | 表格、表单、Tabs、弹窗等仍需分别调整直角与紧凑尺寸 |
 | PrimeVue 退出 | 延后独立推进 | 表格、筛选控件及 Toolbar 暂留；账号关联页面等待重做 |
 
@@ -159,25 +159,26 @@
 
 共享按钮的 loading 必须同时提供加载反馈并阻止重复点击，disabled 保留原生禁用语义。透传 class、style、data-cy、ARIA 属性及实际使用的事件，保证键盘操作；仅实现项目需要的接口，不复制 ElButton 全部 API。
 
-ESLint 限制在对应迁移完成后补充，避免提前全局禁用产生大量临时豁免。其他模块仍有使用方，本批不新增 ElLink / ElButton 的全局禁用规则。
+ESLint 限制在对应迁移完成后补充，避免提前全局禁用产生大量临时豁免。账号关联卡片、首页比赛卡片和拟弃用的 PreviewDownload 仍有使用方，本批不新增 ElLink / ElButton 的全局禁用规则。
 
-现有基础接口：`BaseButton` 提供 `type`（视觉类型）、`size`、`nativeType`、`text`、`plain`、`disabled`、`loading` 以及默认/icon 插槽；`BaseTextButton` 另提供 `underline`（never/hover/always）。BaseButton 不隐式继承 ElForm 状态，`nativeType="reset"` 只执行原生表单重置；后续有 Element Plus 表单依赖的调用方按第三批单独处理。
+现有基础接口：`BaseButton` 提供 `type`（视觉类型）、`size`、`nativeType`、`text`、`plain`、`disabled`、`loading` 以及默认/icon 插槽；`BaseTextButton` 另提供 `underline`（never/hover/always）。BaseButton 不隐式继承 ElForm 状态，`nativeType="reset"` 只执行原生表单重置；调用方需要的尺寸和禁用状态显式传入。本次检查的登录/注册/找回密码、管理员账号审核和周赛创建表单没有设置需要按钮继承的 ElForm 尺寸或禁用状态，也没有原生 reset 依赖，原有校验及 resetFields 调用保留。
 
 第三批继续按模块拆分，不做一次全站替换：
 
-- **3.2 上传、文件选择与播放器（已实现，待提交验收）。** VideoUpload 工具栏、AutoUploader 的目录选择与扫描操作、第三方播放器确认按钮以及 VideoView 筛选按钮复用 BaseButton；播放控制、录像下载和 VideoList 行操作入口改用原生 button 与共享 CSS，第三方播放器地址改为原生链接。BaseFileInput 改为原生文件输入与选择按钮，新增 options 插槽，将上传选项移至按钮外；保留整区拖放、空白区点击、禁用、多选和文件重选。由 VideoUpload/App.vue 组合 BaseFileInput，直接传入 accept、disabled、样式和 add 事件；FileInputContent 只展示提示，FileInputOptions 展示上传选项，分别进入 default 和 options 插槽。整区悬停与按下反馈保留，上传选项独立交互。目录扫描、上传请求、播放时序和 Tippy 逻辑保持不变；滑块、速度选择器、复选框、弹窗和表格继续保留。此范围无 ElForm 状态继承或原生 reset 依赖。无调用方且已标注拟弃用的 PreviewDownload 暂留，后续单独确认清理。
-- **3.3 其他业务模块（待实施）。** 登录与表单、用户资料、排行榜、可视化设置及剩余管理页面分别迁移，按实际用法完善基础接口，并核对 ElForm 上下文、图标、选中态等能力。
+- **3.3 其他业务模块（已实现，待提交验收）。** 登录菜单、登录/注册/找回密码表单及邮箱验证码、用户资料编辑与录像操作、排行榜、导出工具和管理员页面改用 BaseButton；标识管理、复制、设置浮层和成绩展示设置的操作链接改用 BaseTextButton，软件帮助、GitHub 用户和平台地址改为原生链接。复用既有基础接口，保留 loading、disabled、plain、插槽及事件；原 circle 图标按钮使用直角 square-button 样式，筛选和散点图操作提供选中态。登录菜单及最新成绩页签内按钮隔离键盘事件。表单校验、请求与业务计算保持原有逻辑；Tippy、表格、弹窗、输入和选择控件继续保留。涉及 35 个组件/页面，可按登录与表单、用户与共享工具、排行榜与可视化、管理员页面拆分提交。
 
-首页比赛卡片和账号关联页面仍按既定范围暂留；共享组件的必要兼容检查随对应小步进行。第三批整体尚未完成，不启用全站 ElLink / ElButton 禁用规则。
+本轮范围内的第三批按钮和链接已迁移。首页比赛卡片、账号关联卡片及其 CarouselControl / VideoImportQueue、无调用方且已标注拟弃用的 PreviewDownload 继续暂留；管理员 AccountLink 页的普通操作按钮已迁移。共享组件的必要兼容检查随对应小步进行，不启用全站 ElLink / ElButton 禁用规则。
 
-3.2 已通过 `npm.cmd run lintfix`、`npm.cmd run typecheck` 和 `npm.cmd run build:frontend`。浏览器验收由用户运行，提交后按本文约定移除此待办。在 `front_end` 目录执行：
+3.3 已通过 `npm.cmd run lintfix`、`npm.cmd run typecheck` 和 `npm.cmd run build:frontend`。浏览器验收由用户运行，提交后按本文约定移除此待办。在 `front_end` 目录执行：
 
 ```powershell
-npx.cmd cypress run --component --browser chrome --spec "src/components/common/BaseFileInput.cy.ts,src/components/VideoUpload/App.cy.ts,src/views/TournamentView/common/AutoUploader.cy.ts"
-npx.cmd cypress run --component --browser chrome --spec "src/components/VideoPlayer/ProgressBar.cy.ts,src/components/VideoPlayer/NativePlayer.cy.ts,src/views/VideoView.cy.ts,src/views/UserView/UserVideoView.cy.ts"
+npx.cmd cypress run --component --browser chrome --spec "src/components/Login/LoginForm.cy.ts,src/components/Login/RegisterForm.cy.ts,src/components/formItems/EmailCodeBlock.cy.ts,src/views/Menu.cy.ts"
+npx.cmd cypress run --component --browser chrome --spec "src/views/UserView/EditProfile.cy.ts,src/views/UserView/UserVideoView.cy.ts,src/components/widgets/IdentifierManager.cy.ts,src/components/widgets/DataExporter.cy.ts,src/components/widgets/GitHubUser.cy.ts"
+npx.cmd cypress run --component --browser chrome --spec "src/views/RankingView/SaoleiRanking.cy.ts,src/components/visualization/BBBvSummary/Header.cy.ts,src/components/visualization/BBBvSummary/App.cy.ts,src/views/HomeView/HomeView.cy.ts"
+npx.cmd cypress run --e2e --browser chrome --spec "cypress/e2e/account.cy.ts,cypress/e2e/profile.cy.ts,cypress/e2e/ranking.cy.ts,cypress/e2e/staff-logs.cy.ts,cypress/e2e/bugfix/staff-requests.cy.ts,cypress/e2e/tournament.cy.ts"
 ```
 
-同时检查深浅主题下的按钮与上传区、拖放提示、键盘焦点、目录选择加载/禁用状态及筛选选中态；缩窄组件容器检查换行与长目录名。人工验证真实目录选择/取消、第三方播放器信任确认与外链、录像下载，以及行操作浮层不触发行预览。上述 Cypress 未由代理运行，静态检查不代替浏览器验收。
+同时检查深浅主题下的菜单按钮、加载/禁用状态、文字按钮和焦点，以及缩窄组件容器后的排列。人工验证图标设置与 MarkerSetting 浮层、散点图全屏/隐藏/高亮选中态、DensityRanking 棋盘切换、用户导出与软件帮助外链，以及管理员审核操作。配色节点添加/合并入口原有未接入操作逻辑，本次只迁移展示。共享 IconSetting、IconCopy、PlatformIcon 等也用于暂缓改版的账号关联页面，需检查其兼容表现。上述 Cypress 未由代理运行，静态检查不代替浏览器验收。
 
 ### 5. 分批给复杂组件换肤
 
@@ -331,7 +332,7 @@ E2E 使用项目现有测试环境。每批优先运行受影响的 spec，而�
 
 ## 下一批建议
 
-1. 提交验收第三批 3.2 后，按模块推进 3.3；分隔线或简单描述列表可作为独立小批次推进。
+1. 提交验收第三批 3.3 后，分隔线或简单描述列表可作为独立小批次推进；按钮与链接仅剩上述暂留范围，随相关页面维护或清理单独处理。
 2. 统一主题变量与复杂组件换肤作为独立批次推进，每批先选择代表实例，再推广。
 
 首页比赛卡片、账号关联页面重做及 PrimeVue 表格退出继续保持暂缓，不作为下一批简单组件迁移的前置条件。

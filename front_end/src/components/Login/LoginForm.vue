@@ -39,16 +39,16 @@
         </ElFormItem>
         <ElFormItem>
             <!-- 确认 -->
-            <ElButton type="primary" @click="submitForm(ruleFormRef!)">
+            <BaseButton type="primary" @click="submitForm(ruleFormRef!)">
                 {{ t('local.confirm') }}
-            </ElButton>
+            </BaseButton>
             <!-- 忘记密码 -->
-            <ElLink
+            <BaseTextButton
                 underline="never" type="primary"
                 style="vertical-align: bottom; margin-left: auto" @click="emit('forgetPassword')"
             >
                 {{ t('local.forgetPassword') }}
-            </ElLink>
+            </BaseTextButton>
         </ElFormItem>
     </ElForm>
 </template>
@@ -58,12 +58,14 @@ import '@/styles/text.css';
 import '@/styles/cards.css';
 
 import type { FormInstance, FormRules } from 'element-plus';
-import { ElButton, ElCheckbox, ElForm, ElFormItem, ElInput, ElLink, ElRadioButton, ElRadioGroup } from 'element-plus';
+import { ElCheckbox, ElForm, ElFormItem, ElInput, ElRadioButton, ElRadioGroup } from 'element-plus';
 import { onUnmounted, reactive, ref, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import BaseIconInfo from '../common/icons/BaseIconInfo.vue';
 
+import BaseButton from '@/components/common/BaseButton.vue';
+import BaseTextButton from '@/components/common/BaseTextButton.vue';
 import { httpErrorNotification } from '@/components/Notifications';
 import ValidCode from '@/components/ValidCode.vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';

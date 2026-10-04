@@ -81,6 +81,15 @@ function getMenuRects() {
 }
 
 describe('<Menu /> layout', () => {
+    it('allows keyboard logout inside the horizontal menu', () => {
+        cy.intercept('POST', '**/userprofile/logout/', {}).as('logout');
+        mountMenu(1280);
+        cy.contains('button', 'Logout').focus();
+        cy.realPress('Space');
+        cy.wait('@logout');
+        cy.contains('button', /^Login$/).should('be.visible');
+    });
+
     it('keeps the menu on one row when there is enough width', () => {
         mountMenu(1280);
 

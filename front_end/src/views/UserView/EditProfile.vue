@@ -84,22 +84,23 @@
     </div>
 
     <div style="margin-top: 1em">
-        <ElButton type="primary" @click="updateProfile">
+        <BaseButton type="primary" @click="updateProfile">
             {{ t('common.button.save') }}
-        </ElButton>
-        <ElButton type="info" @click="isEditing = false">
+        </BaseButton>
+        <BaseButton type="info" @click="isEditing = false">
             {{ t('common.button.cancel') }}
-        </ElButton>
+        </BaseButton>
     </div>
 </template>
 
 <script setup lang="ts">
 import '@/styles/text.css';
 
-import { ElButton, ElInput } from 'element-plus';
+import { ElInput } from 'element-plus';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import { httpErrorNotification } from '@/components/Notifications';
 import type { EnumMap } from '@/utils';
 import { createEnumMap } from '@/utils';

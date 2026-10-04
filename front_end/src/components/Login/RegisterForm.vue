@@ -29,10 +29,10 @@
                 }}</a>
             </ElCheckbox>
             <!-- 确认 -->
-            <ElButton type="primary" :disabled="confirm_disabled" style="margin-left: auto" @click="submitForm(ruleFormRef!)">
+            <BaseButton type="primary" :disabled="confirm_disabled" style="margin-left: auto" @click="submitForm(ruleFormRef!)">
                 {{
                     t('local.confirm') }}
-            </ElButton>
+            </BaseButton>
         </ElFormItem>
     </ElForm>
 </template>
@@ -40,10 +40,11 @@
 <script setup lang="ts">
 import { isAxiosError } from 'axios';
 import type { FormInstance } from 'element-plus';
-import { ElButton, ElCheckbox, ElForm, ElFormItem, ElInput, ElNotification } from 'element-plus';
+import { ElCheckbox, ElForm, ElFormItem, ElInput, ElNotification } from 'element-plus';
 import { computed, onUnmounted, reactive, ref, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import EmailCodeBlock from '@/components/formItems/EmailCodeBlock.vue';
 import EmailFormItem from '@/components/formItems/EmailFormItem.vue';
 import PasswordConfirmBlock from '@/components/formItems/PasswordConfirmBlock.vue';

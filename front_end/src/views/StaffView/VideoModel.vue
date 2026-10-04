@@ -2,18 +2,18 @@
     <div>
         录像ID
         <ElInputNumber v-model="videoid" :controls="false" :min="0" />
-        <ElButton @click="getVideo">
+        <BaseButton @click="getVideo">
             查询
-        </ElButton>
-        <ElButton @click="previewVideo">
+        </BaseButton>
+        <BaseButton @click="previewVideo">
             播放
-        </ElButton>
-        <ElButton @click="updateVideo(videoid)">
+        </BaseButton>
+        <BaseButton @click="updateVideo(videoid)">
             更新
-        </ElButton>
-        <ElButton @click="removeNewest(videoid)">
+        </BaseButton>
+        <BaseButton @click="removeNewest(videoid)">
             从最新录像中移除
-        </ElButton>
+        </BaseButton>
     </div>
     <div>
         域<ElSelect v-model="videofield">
@@ -24,9 +24,9 @@
         值<ElInput v-model="videovalue" />
     </div>
     <div>
-        <ElButton @click="setVideo(videoid, videofield, videovalue)">
+        <BaseButton @click="setVideo(videoid, videofield, videovalue)">
             修改
-        </ElButton>
+        </BaseButton>
     </div>
     <ElDescriptions title="VideoModel">
         <ElDescriptionsItem v-for="(value, field) in videomodel" :key="field" :label="field">
@@ -37,9 +37,10 @@
 
 <script lang="ts" setup>
 import type { AxiosResponse } from 'axios';
-import { ElButton, ElDescriptions, ElDescriptionsItem, ElInput, ElInputNumber, ElOption, ElSelect } from 'element-plus';
+import { ElDescriptions, ElDescriptionsItem, ElInput, ElInputNumber, ElOption, ElSelect } from 'element-plus';
 import { ref } from 'vue';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import { httpErrorNotification, successNotification } from '@/components/Notifications';
 import { preview } from '@/utils/common/PlayerDialog';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';

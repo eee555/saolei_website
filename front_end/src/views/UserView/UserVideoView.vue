@@ -2,9 +2,9 @@
     <div class="layout-row">
         <UserArbiterCSV :id="user.id" />
         <span style="flex: 1" />
-        <ElButton circle :type="showSetting ? 'primary' : 'default'" @click="showSetting = !showSetting">
+        <BaseButton class="square-button" :type="showSetting ? 'primary' : 'default'" :aria-label="t('local.columns')" :aria-pressed="showSetting" @click="showSetting = !showSetting">
             <BaseIconSetting />
-        </ElButton>
+        </BaseButton>
     </div>
     <MultiSelector v-if="showSetting" v-model="VideoListConfig.profile" :options="thisColumnChoices" :labels="thisColumnChoices.map((s) => t(`common.prop.${s}`))" />
     <VideoList
@@ -12,9 +12,9 @@
         v-loading="loading" :videos="user.videos" :columns="VideoListConfig.profile" sortable paginator
     >
         <template v-if="isOwnProfile" #rowActions="{ video, close }">
-            <ElButton text :disabled="!video.ongoing_tournament || revealing" data-cy="reveal-video" @click="requestReveal(video.id); close()">
+            <BaseButton text :disabled="!video.ongoing_tournament || revealing" data-cy="reveal-video" @click="requestReveal(video.id); close()">
                 <BaseIconShow />&nbsp;{{ t('local.reveal') }}
-            </ElButton>
+            </BaseButton>
         </template>
     </VideoList>
     <ElDialog
@@ -23,9 +23,9 @@
     >
         <p>{{ t('local.confirmReveal') }}</p>
         <template #footer>
-            <ElButton :disabled="revealing" @click="dialogVisible = false">
+            <BaseButton :disabled="revealing" @click="dialogVisible = false">
                 {{ t('common.button.cancel') }}
-            </ElButton>
+            </BaseButton>
             <BaseButtonConfirm :loading="revealing" @click="confirmReveal" />
         </template>
     </ElDialog>
@@ -34,10 +34,11 @@
 <script lang="ts" setup>
 import '@/styles/layout.css';
 // 个人主页的个人所有录像部分
-import { ElButton, ElDialog, vLoading } from 'element-plus';
+import { ElDialog, vLoading } from 'element-plus';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import BaseButtonConfirm from '@/components/common/BaseButtonConfirm.vue';
 import { BaseIconSetting, BaseIconShow } from '@/components/common/icon';
 import { actionSuccessNotification, httpErrorNotification } from '@/components/Notifications';
@@ -112,10 +113,12 @@ watch(user, refresh, { immediate: true });
 
 const i18nMessages = {
     'zh-cn': { local: {
+        columns: '选择显示列',
         reveal: '公开录像',
         confirmReveal: '公开后所有人都能观看此录像，且无法重新隐藏。录像仍计入其参加的所有比赛。确定公开吗？',
     } },
     en: { local: {
+        columns: 'Select columns',
         reveal: 'Reveal video',
         confirmReveal: 'Everyone will be able to watch this video, and it cannot be hidden again. It will still count in all its tournaments. Reveal it?',
     } },

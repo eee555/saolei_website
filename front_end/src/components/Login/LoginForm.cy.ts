@@ -32,7 +32,8 @@ describe('<LoginForm />', () => {
         cy.contains('Captcha').next().find('img');
         cy.contains('Keep me logged in').find('input').should('have.attr', 'type', 'checkbox');
         cy.contains('Forget password?');
-        cy.get('button').should('have.text', 'Log in');
+        cy.contains('button', /^Log in$/).should('have.attr', 'type', 'button');
+        cy.contains('button', 'Forget password?').should('have.attr', 'type', 'button');
     });
 
     it('Normal Flow', () => {
@@ -44,6 +45,17 @@ describe('<LoginForm />', () => {
 
         cy.contains('Invalid captcha. Please input again').should('not.exist');
         cy.contains('Invalid username or password').should('not.exist');
+    });
+
+    it('opens password recovery with the keyboard without submitting the form', () => {
+        cy.mount(LoginForm, mountOptions);
+        cy.contains('button', 'Forget password?').focus();
+        cy.realPress('Enter');
+        cy.get('@vue').then((wrapper: ComponentWrapper<typeof LoginForm>) => {
+            expect(wrapper.emitted('forgetPassword')).to.have.length(1);
+            expect(wrapper.emitted('login')).to.equal(undefined);
+        });
+        cy.contains('Username required').should('not.exist');
     });
 
     it('Username Validation', () => {

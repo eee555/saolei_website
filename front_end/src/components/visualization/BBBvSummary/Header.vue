@@ -14,9 +14,9 @@
                 </ElSelect>
                 <template v-if="BBBvSummaryConfig.template === 'custom'">
                     &nbsp;
-                    <ElLink class="text text-small" underline="always" @click="BBBvSummaryConfig.sortDesc = !BBBvSummaryConfig.sortDesc">
+                    <BaseTextButton size="small" underline="always" @click="BBBvSummaryConfig.sortDesc = !BBBvSummaryConfig.sortDesc">
                         {{ BBBvSummaryConfig.sortDesc ? t('local.settingMax') : t('local.settingMin') }}
-                    </ElLink>
+                    </BaseTextButton>
                     <ElSelect v-model="BBBvSummaryConfig.sortBy" size="small" style="width:65px; margin-left: 0.2em; margin-right: 0.2em">
                         <ElOption :label="t('common.prop.time')" value="timems" />
                         <ElOption :label="t('common.prop.ioe')" value="ioe" />
@@ -61,9 +61,9 @@
                 <span class="text text-small">
                     {{ t('local.newHighlight1') }}
                 </span>
-                <ElLink class="text text-small" underline="always" @click="switchNewDateField">
+                <BaseTextButton size="small" underline="always" @click="switchNewDateField">
                     {{ t(`local.newHighlight.${BBBvSummaryConfig.newDateField}`) }}
-                </ElLink>
+                </BaseTextButton>
                 <span class="text text-small">
                     {{ t('local.newHighlight2') }}
                 </span>
@@ -74,12 +74,12 @@
             </div>
             <!-- 点击格子的模式 -->
             <BaseTooltip follow-cursor>
-                <ElLink
+                <BaseTextButton
                     underline="always"
                     @click="BBBvSummaryConfig.tooltipMode === 'fast' ? BBBvSummaryConfig.tooltipMode = 'advanced' : BBBvSummaryConfig.tooltipMode = 'fast'"
                 >
                     {{ t(`local.${BBBvSummaryConfig.tooltipMode}`) }}
-                </ElLink>
+                </BaseTextButton>
                 <template #content>
                     {{ t(`local.${BBBvSummaryConfig.tooltipMode}Tooltip`) }}
                 </template>
@@ -93,9 +93,10 @@
 <script setup lang="ts">
 import '@/styles/text.css';
 
-import { ElInputNumber, ElLink, ElOption, ElSelect } from 'element-plus';
+import { ElInputNumber, ElOption, ElSelect } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
+import BaseTextButton from '@/components/common/BaseTextButton.vue';
 import BaseTooltip from '@/components/common/BaseTooltip.vue';
 import SoftwareFilter from '@/components/Filters/SoftwareFilter.vue';
 import Zoomer from '@/components/widgets/Zoomer.vue';

@@ -11,9 +11,9 @@
             </ElSelect>
         </ElFormItem>
         <ElFormItem>
-            <ElButton type="primary" :loading="creating" @click="createWeeklyTournament">
+            <BaseButton type="primary" :loading="creating" @click="createWeeklyTournament">
                 创建下周打卡赛
-            </ElButton>
+            </BaseButton>
         </ElFormItem>
     </ElForm>
     <ElDescriptions v-if="createdWeekly" title="创建结果" border :column="2">
@@ -33,9 +33,10 @@
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElDescriptions, ElDescriptionsItem, ElForm, ElFormItem, ElOption, ElSelect } from 'element-plus';
+import { ElDescriptions, ElDescriptionsItem, ElForm, ElFormItem, ElOption, ElSelect } from 'element-plus';
 import { ref } from 'vue';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import { httpErrorNotification, successNotification } from '@/components/Notifications';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { toDate, toISODateTimeString } from '@/utils/datetime';

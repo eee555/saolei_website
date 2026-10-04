@@ -2,16 +2,17 @@
     <section class="density-ranking">
         <div class="toolbar">
             <div class="board-buttons" :aria-label="t('local.board')">
-                <ElButton
+                <BaseButton
                     v-for="option in boardOptions"
                     :key="option.code"
                     size="small"
                     :type="selectedLevel.code === option.code ? 'primary' : 'default'"
                     :plain="selectedLevel.code !== option.code"
+                    :aria-pressed="selectedLevel.code === option.code"
                     @click="selectLevel(option)"
                 >
                     {{ t('common.level.c', { row: option.row, column: option.column, mine: option.mine }) }}
-                </ElButton>
+                </BaseButton>
             </div>
         </div>
 
@@ -70,10 +71,11 @@
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElPagination, ElTable, ElTableColumn, vLoading } from 'element-plus';
+import { ElPagination, ElTable, ElTableColumn, vLoading } from 'element-plus';
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import { httpErrorNotification } from '@/components/Notifications';
 import PlayerName from '@/components/PlayerName.vue';
 import PreviewNumber from '@/components/PreviewNumber.vue';
@@ -189,6 +191,10 @@ onMounted(() => {
     gap: 8px;
 }
 
+.board-buttons > .base-button {
+    margin: 0;
+}
+
 .ranking-table {
     width: 100%;
 }
@@ -209,10 +215,6 @@ onMounted(() => {
 
     .board-buttons {
         gap: 6px;
-    }
-
-    .board-buttons :deep(.el-button) {
-        margin-left: 0;
     }
 }
 </style>
