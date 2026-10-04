@@ -45,12 +45,13 @@
                 <ElCheckbox v-model="isEditingPlayerMainConfig">
                     {{ t('local.editPlayerMain') }}
                 </ElCheckbox>
-                <ElButton
-                    class="square-button" :disabled="videoFile === null"
+                <button
+                    type="button"
+                    class="base-button square-button" :disabled="videoFile === null"
                     :title="t('local.download')" :aria-label="t('local.download')" @click="downloadBlob(videoFile!, videoFile!.name)"
                 >
-                    <i class="pi pi-download" />
-                </ElButton>
+                    <i class="pi pi-download" aria-hidden="true" />
+                </button>
             </div>
         </div>
         <ElResult v-else icon="info" :title="t('local.noVideo')" />
@@ -61,7 +62,7 @@
 import '@/styles/button.css';
 
 import { isAxiosError, isCancel } from 'axios';
-import { ElButton, ElCheckbox, ElResult } from 'element-plus';
+import { ElCheckbox, ElResult } from 'element-plus';
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 

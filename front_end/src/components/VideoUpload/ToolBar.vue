@@ -1,26 +1,25 @@
 <template>
-    <div style="margin-top: 1em;">
+    <div class="button-group upload-toolbar">
         <span class="text">
             {{ t('local.selected', [selected, total]) }}
         </span>
-        &nbsp;
-        <ElButton :disabled="processing || selectedNone" @click="emit('upload')">
+        <BaseButton :disabled="processing || selectedNone" @click="emit('upload')">
             <BaseIconUpload />&nbsp;{{ t('local.upload') }}
-        </ElButton>
-        <ElButton :disabled="processing || selectedNone" @click="emit('remove')">
+        </BaseButton>
+        <BaseButton :disabled="processing || selectedNone" @click="emit('remove')">
             <BaseIconDelete />&nbsp;{{ t('local.remove') }}
-        </ElButton>
-        <ElButton v-if="processing" :disabled="stopping" @click="stopping = true">
+        </BaseButton>
+        <BaseButton v-if="processing" :disabled="stopping" @click="stopping = true">
             {{ t('local.stop') }}
-        </ElButton>
+        </BaseButton>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ElButton } from 'element-plus';
 import { computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import { BaseIconDelete, BaseIconUpload } from '@/components/common/icon';
 
 const props = defineProps({
@@ -57,3 +56,11 @@ const i18nMessages = {
 
 const { t } = useI18n({ messages: i18nMessages });
 </script>
+
+<style scoped>
+.upload-toolbar {
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 8px;
+}
+</style>

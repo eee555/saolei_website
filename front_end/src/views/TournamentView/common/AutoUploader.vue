@@ -3,15 +3,15 @@
         <div class="auto-uploader__controls">
             <div class="auto-uploader__control">
                 <span class="auto-uploader__label">{{ t('local.folder') }}</span>
-                <ElButton type="primary" size="small" :disabled="!canSelectDirectory || busy" :loading="selectingDirectory" @click="selectDirectory">
+                <BaseButton type="primary" size="small" :disabled="!canSelectDirectory || busy" :loading="selectingDirectory" @click="selectDirectory">
                     {{ directoryName || t('local.selectFolder') }}
-                </ElButton>
-                <ElButton v-if="running" size="small" @click="pauseWatching">
+                </BaseButton>
+                <BaseButton v-if="running" size="small" @click="pauseWatching">
                     {{ t('local.stop') }}
-                </ElButton>
-                <ElButton v-else-if="emitter" size="small" :disabled="!canSelectDirectory || busy" @click="resumeWatching">
+                </BaseButton>
+                <BaseButton v-else-if="emitter" size="small" :disabled="!canSelectDirectory || busy" @click="resumeWatching">
                     {{ t('local.resume') }}
-                </ElButton>
+                </BaseButton>
             </div>
             <div class="auto-uploader__control">
                 <span class="auto-uploader__label">{{ t('local.pollInterval') }}</span>
@@ -56,16 +56,16 @@
             <p>{{ t('local.existingFiles', { count: existingCount }) }}</p>
             <ElProgress v-if="fullScanning" :percentage="scanProgress" />
             <template #footer>
-                <ElButton @click="cancelScan">
+                <BaseButton @click="cancelScan">
                     {{ t('local.cancel') }}
-                </ElButton>
+                </BaseButton>
                 <template v-if="!fullScanning">
-                    <ElButton @click="beginWatching(false)">
+                    <BaseButton @click="beginWatching(false)">
                         {{ t('local.newOnly') }}
-                    </ElButton>
-                    <ElButton type="primary" @click="beginWatching(true)">
+                    </BaseButton>
+                    <BaseButton type="primary" @click="beginWatching(true)">
                         {{ t('local.scanAll') }}
-                    </ElButton>
+                    </BaseButton>
                 </template>
             </template>
         </ElDialog>
@@ -73,13 +73,14 @@
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElDialog, ElMessage, ElProgress } from 'element-plus';
+import { ElDialog, ElMessage, ElProgress } from 'element-plus';
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
 import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import type { AutoUploadVideo } from './utils';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import BaseTagSupport from '@/components/common/BaseTagSupport.vue';
 import InputNumber from '@/components/common/InputNumber.vue';
 import StackBar from '@/components/visualization/StackBar/App.vue';
@@ -376,8 +377,13 @@ const { t } = useI18n({ messages: i18nMessages });
 
 .auto-uploader__control {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.5rem;
     align-items: center;
+}
+
+.auto-uploader__control > .base-button {
+    margin: 0;
 }
 
 .auto-uploader__label {

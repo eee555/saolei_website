@@ -1,26 +1,26 @@
 <template>
     <div class="layout-row mb-4" style="margin-bottom: 10px;">
-        <ElButton v-for="level in MS_Levels" :key="level" type="warning" :plain="levelTagSelected != level" size="small" @click="levelTagSelected = level; request_videos();">
+        <BaseButton v-for="level in MS_Levels" :key="level" type="warning" :plain="levelTagSelected != level" :aria-pressed="levelTagSelected == level" size="small" @click="levelTagSelected = level; request_videos();">
             {{ t(`common.level.${level}`) }}
-        </ElButton>
+        </BaseButton>
     </div>
 
     <div class="layout-row mb-4" style="margin-bottom: 10px;">
-        <ElButton
-            v-for="(tag, key) in modeTags" :key="key" type="success" :plain="!(modeTagSelected == key)" size="small"
+        <BaseButton
+            v-for="(tag, key) in modeTags" :key="key" type="success" :plain="!(modeTagSelected == key)" :aria-pressed="modeTagSelected == key" size="small"
             @click="modeTagSelected = key as string; request_videos();"
         >
             {{ tag.name }}
-        </ElButton>
+        </BaseButton>
     </div>
 
     <div class="layout-row mb-4" style="margin-bottom: 10px;">
-        <ElButton
-            v-for="(value, key) in indexTags" :key="key" type="primary" :plain="!value.selected" size="small"
+        <BaseButton
+            v-for="(value, key) in indexTags" :key="key" type="primary" :plain="!value.selected" :aria-pressed="value.selected" size="small"
             @click="indexSelect(key, value)"
         >
             {{ t(`common.prop.${key}`) }}
-        </ElButton>
+        </BaseButton>
     </div>
 
     <ElDescriptions :title="t('common.filter')">
@@ -58,10 +58,11 @@
 import '@/styles/layout.css';
 // 全网录像的检索器，根据三个维度排序
 import type { TableColumnCtx } from 'element-plus';
-import { ElButton, ElDescriptions, ElDescriptionsItem, ElPagination, ElSwitch, ElTable, ElTableColumn } from 'element-plus';
+import { ElDescriptions, ElDescriptionsItem, ElPagination, ElSwitch, ElTable, ElTableColumn } from 'element-plus';
 import { onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import BBBVFilter from '@/components/Filters/BBBVFilter.vue';
 import VideoStateFilter from '@/components/Filters/VideoStateFilter.vue';
 import { httpErrorNotification } from '@/components/Notifications';

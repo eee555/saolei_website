@@ -1,19 +1,21 @@
 <template>
     <div class="progress-bar">
-        <ElButton class="square-button" :title="t('local.restart')" @click="restart">
-            <i class="pi pi-replay" />
-        </ElButton>
-        <ElButton
-            class="square-button"
+        <button type="button" class="base-button square-button" :title="t('local.restart')" :aria-label="t('local.restart')" @click="restart">
+            <i class="pi pi-replay" aria-hidden="true" />
+        </button>
+        <button
+            type="button"
+            class="base-button square-button"
             :title="isPlaying ? t('local.pause') : t('local.play')"
+            :aria-label="isPlaying ? t('local.pause') : t('local.play')"
             @click="togglePlay"
         >
-            <i v-if="isPlaying" class="pi pi-pause" />
-            <i v-else class="pi pi-play" />
-        </ElButton>
-        <ElButton class="progress-bar__step" :title="t('local.step')" @click="stepForward">
+            <i v-if="isPlaying" class="pi pi-pause" aria-hidden="true" />
+            <i v-else class="pi pi-play" aria-hidden="true" />
+        </button>
+        <button type="button" class="base-button progress-bar__step" :title="t('local.step')" :aria-label="t('local.step')" @click="stepForward">
             +0.1s
-        </ElButton>
+        </button>
         <ElSlider
             v-model="currentMs" class="progress-bar__slider" :min="0" :max="durationMs"
             :step="step" :format-tooltip="formatSeconds" @change="syncPlaybackAnchor"
@@ -28,7 +30,7 @@
 import '@/styles/button.css';
 import 'primeicons/primeicons.css';
 
-import { ElButton, ElOption, ElSelect, ElSlider } from 'element-plus';
+import { ElOption, ElSelect, ElSlider } from 'element-plus';
 import { onBeforeUnmount, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -142,8 +144,13 @@ onBeforeUnmount(() => {
 .progress-bar {
     display: flex;
     align-items: center;
-    gap: 10px;
+    flex-wrap: wrap;
+    gap: 6px;
     min-width: 0;
+}
+
+.progress-bar > .base-button {
+    margin: 0;
 }
 
 .progress-bar__slider {
