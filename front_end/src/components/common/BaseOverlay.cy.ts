@@ -24,6 +24,6 @@ describe('BaseOverlay trigger', () => {
         cy.get('@parentClick').should('not.have.been.called');
         cy.get('.el-dialog').should('be.visible').and('contain', 'Details').and('contain', 'Detail content');
         cy.get('body').click(0, 0);
-        cy.get('.el-dialog').should('not.exist');
+        cy.shouldBeAbsentOrHidden('.el-dialog');
     });
 });
