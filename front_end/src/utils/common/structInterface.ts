@@ -13,19 +13,6 @@ export enum LoginStatus {
     IsRetrieve,
 }
 
-export interface Record {
-    timems: number;
-    bvs: number;
-    stnb: number;
-    ioe: number;
-    path: number;
-    timems_id: number;
-    bvs_id: number;
-    stnb_id: number;
-    ioe_id: number;
-    path_id: number;
-}
-
 export type TaskStatus = '' | 'loading' | 'success' | 'error';
 
 export interface ApiSuccessResponse<T> {

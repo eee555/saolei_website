@@ -2,11 +2,8 @@
 import json
 import logging
 
-from django.core.paginator import Paginator
-from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
 from django.views.decorators.http import require_GET, require_POST
-from django_ratelimit.decorators import ratelimit
 from django_redis import get_redis_connection
 
 from config.text_choices import MS_TextChoices
@@ -16,7 +13,7 @@ from userprofile.models import UserProfile
 from utils import ComplexEncoder
 from utils.cache import maybe_bytes_to_str
 from .models import ExpandVideoModel, VideoModel
-from .view_utils import refresh_video, video_all_fields
+from .view_utils import refresh_video
 
 logger = logging.getLogger('videomanager')
 cache = get_redis_connection('saolei_website')
@@ -32,74 +29,6 @@ def get_software(request):
     if video.ongoing_tournament and request.user.id != video.player_id:
         return HttpResponseForbidden()
     return JsonResponse({'msg': video.software})
-
-
-# 录像查询（无需登录）
-# 按任何基础指标+难度+模式，排序，分页
-# 每项的定义参见 front_end/src/views/VideoView.vue 的 request_videos 函数
-@ratelimit(key='ip', rate='60/m')
-@require_GET
-def video_query(request: HttpRequest):
-    data = request.GET
-
-    values = video_all_fields
-
-    # 排序
-    if data['r'] == 'true':
-        ob = '-' + data['o']
-    else:
-        ob = data['o']
-    if data['o'] != 'timems':
-        orderby = (ob, 'timems')
-    else:
-        orderby = (ob,)
-
-    if data['mode'] != '00':
-        video_filter = {'level': data['level'], 'mode': data['mode']}
-        videos = VideoModel.objects.filter(**video_filter)
-    else:
-        video_filter = {'level': data['level']}
-        videos = VideoModel.objects.filter(
-            Q(mode='00') | Q(mode='12')).filter(**video_filter)
-
-    videos = videos.filter(bv__range=(data['bmin'], data['bmax']))
-
-    states = data.getlist('s[]')
-    if states:
-        videos = videos.filter(state__in=states)
-
-    videos = videos.order_by(*orderby).values(*values)
-
-    if not request.user.is_staff:
-        videos = videos.filter(ongoing_tournament=False)
-
-    paginator = Paginator(videos, data['ps'])
-    page_number = data['page']
-    page_videos = paginator.get_page(page_number)
-    response = {
-        'count': len(videos),
-        'videos': list(page_videos),
-    }
-    # t=json.dumps(response, cls=ComplexEncoder)
-    return JsonResponse(json.dumps(response, cls=ComplexEncoder), safe=False)
-
-
-# 按id查询这个用户的所有录像
-@require_GET
-def video_query_by_id(request: HttpRequest):
-    if not (userid := request.GET.get('id')):
-        return HttpResponseBadRequest()
-    if not (user := UserProfile.objects.filter(id=userid).first()):
-        return HttpResponseNotFound()
-    videos = VideoModel.objects.filter(player=user)
-    if request.user != user:
-        videos = videos.filter(ongoing_tournament=False)
-    videos = videos.values(
-        'id', 'upload_time', 'end_time', 'level', 'mode', 'timems', 'bv', 'bvs', 'state', 'video__identifier',
-        'software', 'flag', 'cell0', 'cell1', 'cell2', 'cell3', 'cell4', 'cell5', 'cell6', 'cell7', 'cell8', 'left', 'right', 'double', 'op', 'isl', 'path', 'pluck',
-    )
-
-    return JsonResponse(list(videos), safe=False)
 
 
 # 获取最新录像
@@ -121,14 +50,6 @@ def remove_from_newest_queue(request: HttpRequest):
         return HttpResponseBadRequest()
     cache.hdel('newest_queue', video_id)
     return HttpResponse()
-
-
-# 获取谁破纪录的消息
-# http://127.0.0.1:8000/video/news_queue
-@require_GET
-def news_queue(request):
-    news_queue = cache.zrevrange('news_queue', 0, 199)
-    return JsonResponse(news_queue, encoder=ComplexEncoder, safe=False)
 
 
 # 获取全网被冻结的录像
@@ -222,7 +143,7 @@ def freeze(request):
 # 管理员使用的操作接口，调用方式见前端的StaffView.vue
 get_videoModel_fields = [
     'player', 'player__realname', 'upload_time',
-    'state', 'software', 'level', 'mode', 'timems', 'bv', 'bvs', 'ongoing_tournament',
+    'state', 'software', 'level', 'mode', 'right_ce', 'timems', 'bv', 'bvs', 'ongoing_tournament',
 ]  # 可获取的域列表
 for name in [field.name for field in ExpandVideoModel._meta.get_fields()]:
     get_videoModel_fields.append('video__' + name)

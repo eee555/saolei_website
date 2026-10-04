@@ -1,8 +1,8 @@
 <template>
     <Tippy interactive animate-fill arrow trigger="click" append-to="parent">
-        <ElLink underline="never">
+        <BaseTextButton underline="never" :aria-label="t('local.settings')">
             <BaseIconSetting />
-        </ElLink>
+        </BaseTextButton>
         <template #content>
             <BaseCardNormal style="width: auto;">
                 <slot />
@@ -12,14 +12,22 @@
 </template>
 
 <script setup lang="ts">
-import { ElLink } from 'element-plus';
+import { useI18n } from 'vue-i18n';
 import { Tippy } from 'vue-tippy';
 
 import BaseCardNormal from '../common/BaseCardNormal.vue';
 
+import BaseTextButton from '@/components/common/BaseTextButton.vue';
 import { BaseIconSetting } from '@/components/common/icon';
 
 defineSlots<{
     default?: () => unknown;
 }>();
+
+const i18nMessages = {
+    'zh-cn': { local: { settings: '设置' } },
+    en: { local: { settings: 'Settings' } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
 </script>

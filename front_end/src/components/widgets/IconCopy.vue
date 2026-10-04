@@ -1,14 +1,15 @@
 <template>
-    <ElLink underline="never" @click="copyToClipboard(text)">
+    <BaseTextButton underline="never" :aria-label="t('local.copy')" @click="copyToClipboard(text)">
         <BaseIconCopy />
-    </ElLink>
+    </BaseTextButton>
 </template>
 
 <script setup lang="ts">
-import { ElLink } from 'element-plus';
+import { useI18n } from 'vue-i18n';
 
 import { copyToClipboard } from './CopyToClipboard';
 
+import BaseTextButton from '@/components/common/BaseTextButton.vue';
 import { BaseIconCopy } from '@/components/common/icon';
 
 defineProps({
@@ -17,4 +18,11 @@ defineProps({
         default: '',
     },
 });
+
+const i18nMessages = {
+    'zh-cn': { local: { copy: '复制' } },
+    en: { local: { copy: 'Copy' } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
 </script>

@@ -1,26 +1,28 @@
 <template>
-    <ElButton
-        style="width: 100%"
-        size="large"
-        :disabled="disabled"
+    <div
+        class="base-file-input" :class="{ 'base-file-input--dragover': isDragover && !disabled, 'base-file-input--disabled': disabled }"
         @dragover.prevent="onDragOver"
         @dragleave.prevent="onDragLeave"
         @drop.prevent="onDrop"
-        @click="triggerFileDialog()"
+        @click.self="triggerFileDialog"
     >
         <!-- 隐藏的原生 input：用于点击选择文件 -->
         <input ref="fileInputRef" type="file" multiple :accept="accept" :disabled="disabled" style="display: none" @change="onFileSelect">
 
-        <!-- 可自定义的默认区域 -->
-        <slot name="default">
-            <!-- 默认占位内容 -->
-            <span>点击此处或拖拽文件到此区域</span>
-        </slot>
-    </ElButton>
+        <button type="button" class="base-button base-file-input__trigger" :disabled="disabled" @click="triggerFileDialog">
+            <slot name="default">
+                <span>点击此处或拖拽文件到此区域</span>
+            </slot>
+        </button>
+        <!-- 交互选项放在按钮外，避免在 button 中嵌套表单控件。 -->
+        <div v-if="$slots.options" class="base-file-input__options">
+            <slot name="options" />
+        </div>
+    </div>
 </template>
 
 <script setup lang="ts">
-import { ElButton } from 'element-plus';
+import '@/styles/button.css';
 import { ref, useTemplateRef } from 'vue';
 
 const props = defineProps({
@@ -40,6 +42,7 @@ const emit = defineEmits(['add']);
 
 defineSlots<{
     default?: () => unknown;
+    options?: () => unknown;
 }>();
 
 const fileInputRef = useTemplateRef('fileInputRef');
@@ -54,13 +57,13 @@ const triggerFileDialog = () => {
 // 处理 input 的 change 事件（点击选择后）
 function onFileSelect(event: Event) {
     const target = event.target as HTMLInputElement;
-    if (!target.files) return;
-    const files = Array.from(target.files);
+    const files = Array.from(target.files ?? []);
+    // 清空 input，允许再次选择相同文件；禁用期间不接收选择结果。
+    target.value = '';
+    if (props.disabled) return;
     if (files.length) {
         emit('add', files);
     }
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    fileInputRef.value!.value = '';
 }
 
 // 拖拽进入区域
@@ -76,8 +79,8 @@ function onDragLeave() {
 
 // 放下文件
 function onDrop(event: DragEvent) {
-    if (props.disabled) return;
     isDragover.value = false;
+    if (props.disabled) return;
     if (!event.dataTransfer) return;
     const files = Array.from(event.dataTransfer.files);
     if (files.length) {
@@ -88,23 +91,57 @@ function onDrop(event: DragEvent) {
 
 <style scoped>
 .base-file-input {
-    border-radius: 8px;
-    padding: 20px;
+    display: flex;
+    box-sizing: border-box;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    border: 1px solid var(--el-border-color);
+    padding: 8px;
+    background: var(--el-fill-color-blank);
+    color: var(--el-text-color-regular);
     text-align: center;
-    transition: all 0.2s;
     cursor: pointer;
 }
 
-.default-content {
-    user-select: none;
+.base-file-input__trigger {
+    --button-color: inherit;
+    --button-hover-color: inherit;
+    --button-hover-background: transparent;
+    --button-active-background: transparent;
+    --button-disabled-background: transparent;
+
+    flex-direction: column;
+    width: 100%;
+    border: 0;
+    background: transparent;
 }
 
-.sub-hint {
-    font-size: 12px;
-    margin-left: 8px;
+.base-file-input__options {
+    max-width: 100%;
+    cursor: default;
 }
 
-.drag-hint {
-    font-weight: bold;
+.base-file-input:not(.base-file-input--disabled):hover:not(:has(.base-file-input__options:hover)) {
+    border-color: var(--el-color-primary-light-7);
+    background: var(--el-color-primary-light-9);
+    color: var(--el-color-primary);
+}
+
+.base-file-input:not(.base-file-input--disabled):active:not(:has(.base-file-input__options:hover)) {
+    background: var(--el-color-primary-light-8);
+}
+
+.base-file-input--dragover {
+    border-color: var(--el-color-primary);
+    background: var(--el-color-primary-light-9);
+}
+
+.base-file-input--disabled {
+    border-color: var(--el-disabled-border-color);
+    background: var(--el-disabled-bg-color);
+    color: var(--el-disabled-text-color);
+    cursor: not-allowed;
 }
 </style>

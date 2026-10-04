@@ -1,5 +1,5 @@
 <template>
-    <ElTable v-loading="loading" :data="participants" row-key="id" data-cy="weekly-participants">
+    <ElTable v-loading="loading" :data="participants" row-key="id">
         <!-- @vue-generic {TournamentParticipant} -->
         <ElTableColumn :label="t('common.prop.realName')" min-width="150">
             <template #default="{ row }">
@@ -17,12 +17,12 @@
         <!-- @vue-generic {TournamentParticipant} -->
         <ElTableColumn v-if="canManage" :label="t('common.prop.action')" width="90">
             <template #default="{ row }">
-                <ElButton
+                <BaseButton
                     type="danger" plain :aria-label="t('local.deleteParticipant')"
                     :disabled="deleting" data-cy="delete-participant" @click="requestDeletion(row)"
                 >
                     <BaseIconDelete />
-                </ElButton>
+                </BaseButton>
             </template>
         </ElTableColumn>
     </ElTable>
@@ -41,19 +41,20 @@
             </div>
         </template>
         <template #footer>
-            <ElButton :disabled="deleting" @click="dialogVisible = false">
+            <BaseButton :disabled="deleting" @click="dialogVisible = false">
                 {{ t('common.button.cancel') }}
-            </ElButton>
+            </BaseButton>
             <BaseButtonConfirm :loading="deleting" @click="confirmDeletion" />
         </template>
     </ElDialog>
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElDialog, ElTable, ElTableColumn, vLoading } from 'element-plus';
+import { ElDialog, ElTable, ElTableColumn, vLoading } from 'element-plus';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import BaseButtonConfirm from '@/components/common/BaseButtonConfirm.vue';
 import { BaseIconDelete } from '@/components/common/icon';
 import { actionSuccessNotification, httpErrorNotification } from '@/components/Notifications';

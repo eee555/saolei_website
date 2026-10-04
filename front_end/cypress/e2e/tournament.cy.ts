@@ -445,13 +445,23 @@ describe('GSC tournament', () => {
     });
 
     it('Preparing Tournament', () => {
+        cy.login(USER.username, USER.password);
+        cy.intercept('POST', '**/api/tournament/gsc/participant').as('registerPreparingGSC');
+        cy.intercept('GET', '**/api/tournament/participants*').as('preparingParticipants');
         cy.visit('/#/tournament/5');
+        cy.wait('@preparingParticipants');
         cy.contains('即将开始');
         cy.contains('如何参赛').next().within(() => {
             cy.contains('查看参赛说明').should('have.attr', 'href').and('include', '/docs/guide/gsc');
-            cy.contains('比赛开始后可以报名参赛。');
-            cy.contains(GSC_TOKEN).should('not.exist');
+            cy.contains('button', '注册').should('be.enabled').click();
         });
+        cy.wait('@registerPreparingGSC').its('response.statusCode').should('eq', 200);
+        cy.wait('@preparingParticipants').its('response.statusCode').should('eq', 200);
+        cy.closeElNotifications();
+        cy.contains('已报名，比赛开始后公布比赛标识并开放 Arbiter 标识注册。').should('be.visible');
+        cy.contains('[data-cy=gsc-participants] .el-tag', `用户#${USER.id}`).should('be.visible');
+        cy.get('[data-cy=gsc-participants] button').should('not.exist');
+        cy.get('.ttfamily, input[placeholder="标识"], #tab-personal').should('not.exist');
 
         cy.visit('/#/tournament/6');
         cy.contains('进行中');
@@ -609,10 +619,9 @@ describe('Weekly tournament', () => {
             expect(response.body.tournament_ids).to.not.include(tournamentId);
         });
 
-        cy.intercept('GET', '**/api/tournament/participants*').as('weeklyParticipantsAfterVideos');
         cy.intercept('GET', '**/api/tournament/get_videos/participant*').as('participantVideos');
-        cy.get('[data-cy=weekly-score-refresh]').click();
-        cy.wait('@weeklyParticipantsAfterVideos').its('response.statusCode').should('eq', 200);
+        cy.contains('[data-cy=tournament-data-tabs] .el-tabs__item', '即时成绩').click();
+        cy.get('[data-cy=personal-score-refresh]').click();
         cy.wait('@participantVideos').its('response.statusCode').should('eq', 200);
         cy.contains('.el-tabs__item', '录像').click();
         cy.get('.el-tab-pane:visible').last().within(() => {

@@ -9,7 +9,7 @@ The Golden Sheep Cup is a long-running tournament hosted by [Guo Jinyang](https:
 
 ## Scoring Rules
 
-The Golden Sheep Cup counts replays uploaded during the tournament.
+The Golden Sheep Cup counts replays uploaded during the tournament, accepting only Standard mode.
 
 The following replays are used:
 
@@ -29,7 +29,9 @@ Final rankings are based on the total time of these replays. Lower total time ra
 
 ## Participation
 
-During the tournament, click "Register" on the tournament detail page. After registration, the page shows the tournament identifier for that edition.
+Once the tournament is approved, click "Register" on the tournament detail page, even before it starts. The tournament identifier is revealed when the tournament starts.
+
+After registering, you can [automatically upload tournament replays](./tournament.md#automatically-uploading-tournament-replays), including MetaSweeper replays and AVF replays with your registered Arbiter identifier.
 
 ## Accepted Software
 
@@ -39,7 +41,7 @@ After registration, use MetaSweeper's tournament identifier feature with the ide
 
 ### Minesweeper Arbiter
 
-After registration, you can additionally register an Arbiter tournament identifier on the tournament detail page.
+After registering and once the tournament has started, you can additionally register an Arbiter tournament identifier on the tournament detail page.
 
 The identifier must end with the tournament identifier shown on the tournament page. For example, if the page gives `G12345`, then your Arbiter identifier must contain that ending.
 

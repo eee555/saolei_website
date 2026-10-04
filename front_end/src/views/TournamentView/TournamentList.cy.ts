@@ -68,22 +68,6 @@ describe('<TournamentList />', () => {
                 })),
             });
         }).as('getUserInfo');
-        cy.intercept('GET', '**/api/msuser/records_abstract*', {
-            body: {
-                b_timems_std: 999999,
-                b_bvs_std: 0,
-                b_timems_id_std: null,
-                b_bvs_id_std: null,
-                i_timems_std: 999999,
-                i_bvs_std: 0,
-                i_timems_id_std: null,
-                i_bvs_id_std: null,
-                e_timems_std: 999999,
-                e_bvs_std: 0,
-                e_timems_id_std: null,
-                e_bvs_id_std: null,
-            },
-        });
     });
 
     it('renders tournament rows with derived display states', () => {

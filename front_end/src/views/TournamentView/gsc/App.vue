@@ -1,116 +1,94 @@
 <template>
-    <Title :tournament="tournament" />
-    <Description />
-    <template v-if="([TournamentState.Preparing, TournamentState.Ongoing] as TournamentState[]).includes(tournament.displayState)">
-        <h3>{{ t('gsc.howToParticipate') }}</h3>
-        <TokenGuide
-            v-model:identifier="personaltoken"
-            v-model:participant="participant"
-            :order="order"
-            :token="token"
-            @refresh="refresh"
-        />
-    </template>
-    <template v-if="tournament.displayState === TournamentState.Ongoing && store.login_status === LoginStatus.IsLogin && participant !== null">
-        <h3>
-            {{ t('gsc.realTimeScore') }}&nbsp;
-            <ElLink underline="never" :disabled="loading">
-                <BaseIconRefresh @click="refresh" />
-            </ElLink>
-        </h3>
-        <PersonalView v-model="participant" v-loading="loading">
-            <template #personalSummary="{ videos }">
-                <GSCPersonalSummary :videos="videos" />
-            </template>
-        </PersonalView>
-    </template>
-    <template v-if="tournament.displayState === TournamentState.Awarded">
-        <h3>
-            {{ t('gsc.finalResults') }}
-        </h3>
-        <!-- @vue-generic {GSCParticipant} -->
-        <AllParticipants :tournament="tournament" :result="result">
-            <template #allSummary="{ data, onParticipantSelect }">
-                <AllSummary :data="data" @row-click="onParticipantSelect" />
-            </template>
-            <template #personalSummary="{ videos }">
-                <GSCPersonalSummary :videos="videos" />
-            </template>
-        </AllParticipants>
-    </template>
+    <PublicTournament :tournament="tournament" :participants="participants" :index="index" :loading="loading" :refresh-participants="refresh" :auto-uploader-enabled="!store.isUserAnonymous" :auto-uploader-filter="matchesFilter">
+        <template #description>
+            <Description />
+        </template>
+        <template #participationGuide>
+            <TokenGuide :identifier="participant?.arbiter_identifier__identifier ?? ''" :participant="participant" :order="tournament.gscData?.order" :token="token" @refresh="refresh" />
+        </template>
+        <template #autoUploaderFilter>
+            <ElSelect v-model="filterLevel" size="small" style="width: 250px">
+                <ElOption :label="t('local.tournament')" value="tournament" />
+                <ElOption :label="t('local.supported')" value="supported" />
+                <ElOption :label="t('local.bv')" value="bv" />
+            </ElSelect>
+        </template>
+        <template #allSummary="{ data, onParticipantSelect }">
+            <AllSummary v-if="state === TournamentState.Awarded" :data="data" @row-click="onParticipantSelect" />
+            <Registered v-else :loading="loading" :participants="participants" />
+        </template>
+        <template #personalSummary="{ videos }">
+            <GSCPersonalSummary :videos="videos" />
+        </template>
+    </PublicTournament>
 </template>
 
 <script setup lang="ts">
-import { ElLink, vLoading } from 'element-plus';
-import { computed, ref, watch } from 'vue';
-import type { PropType } from 'vue';
+import { ElOption, ElSelect } from 'element-plus';
+import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import '@/styles/text.css';
-import AllParticipants from '../common/AllParticipants.vue';
-import PersonalView from '../common/PersonalView.vue';
-import Title from '../common/Title.vue';
+import PublicTournament from '../common/PublicTournament.vue';
+import { useParticipants } from '../common/useParticipants';
+import type { AutoUploadVideo } from '../common/utils';
 
 import AllSummary from './AllSummary.vue';
 import Description from './Description.vue';
+import Registered from './Registered.vue';
 import TokenGuide from './TokenGuide.vue';
 
-import { BaseIconRefresh } from '@/components/common/icon';
 import { httpErrorNotification } from '@/components/Notifications';
 import GSCPersonalSummary from '@/components/visualization/GSCPersonalSummary/App.vue';
-import { fetchGSCResults, fetchParticipantList } from '@/services/tournamentService';
+import { fetchGSCResults, fetchTournament } from '@/services/tournamentService';
 import { store } from '@/store';
-import { LoginStatus } from '@/utils/common/structInterface';
-import type { GSCParticipant } from '@/utils/gsc';
+import { GSCParticipant, isGSCSupportedVideo, meetsGSCBV } from '@/utils/gsc';
 import { TournamentState } from '@/utils/ms_const';
-import type { Tournament, TournamentParticipant } from '@/utils/tournaments';
+import { Tournament } from '@/utils/tournaments';
 
-const props = defineProps({
-    tournament: {
-        type: Object as PropType<Tournament>,
-        required: true,
-    },
+const props = defineProps({ tournament: { type: Tournament, required: true } });
+const { participants, index, participant, loading, state, refresh } = useParticipants(() => props.tournament, (item) => new GSCParticipant(item), fetchGSCResults);
+const token = ref(props.tournament.gscData?.token ?? '');
+watch(() => props.tournament, (value) => {
+    token.value = value.gscData?.token ?? '';
 });
-
-const { t } = useI18n();
-
-const tournament = computed(() => props.tournament);
-const order = computed(() => tournament.value.gscData?.order ?? 0);
-const token = computed(() => tournament.value.gscData?.token ?? '');
-const result = ref<GSCParticipant[]>([]);
-const personaltoken = ref<string>('');
-const participant = ref<TournamentParticipant | null>(null);
-const loading = ref(false);
-
-async function refresh() {
-    loading.value = true;
+watch(state, async (value, previous) => {
+    if (value !== TournamentState.Ongoing || previous !== TournamentState.Preparing) return;
+    const { id } = props.tournament;
     try {
-        if (tournament.value.displayState === TournamentState.Ongoing) {
-            result.value = [];
-            const participants = await fetchParticipantList(tournament.value.id);
-            const currentParticipant = store.login_status === LoginStatus.IsLogin
-                ? participants.find((item) => item.user_id === store.user.id)
-                : undefined;
-            participant.value = currentParticipant ?? null;
-            personaltoken.value = currentParticipant?.arbiter_identifier__identifier ?? '';
-        } else {
-            participant.value = null;
-            personaltoken.value = '';
-            result.value = tournament.value.state === TournamentState.Awarded
-                ? await fetchGSCResults(tournament.value.id)
-                : [];
-        }
+        const updated = new Tournament(await fetchTournament(id));
+        if (id === props.tournament.id) token.value = updated.gscData?.token ?? '';
     } catch (error) {
         httpErrorNotification(error);
     }
-    loading.value = false;
+});
+
+const filterLevel = ref('supported');
+
+function matchesFilter(video: AutoUploadVideo): boolean {
+    if (!participant.value) return false;
+    if (video.stat.software === 'a') {
+        if (!video.identifier || video.identifier !== participant.value.arbiter_identifier__identifier) return false;
+    } else {
+        if (!participant.value.token || !video.tokens.includes(participant.value.token)) return false;
+    }
+    if (filterLevel.value === 'tournament') return true;
+    if (!isGSCSupportedVideo(video.stat)) return false;
+    if (filterLevel.value === 'supported') return true;
+    return meetsGSCBV(video.stat);
 }
 
-watch(() => [
-    props.tournament.id,
-    props.tournament.state,
-    props.tournament.startDate?.getTime(),
-    props.tournament.endDate?.getTime(),
-    store.login_status,
-], refresh, { immediate: true });
+const i18nMessages = {
+    'zh-cn': { local: {
+        tournament: '所有比赛录像',
+        supported: '级别和模式符合',
+        bv: '3BV 下限符合',
+    } },
+    en: { local: {
+        tournament: 'All tournament videos',
+        supported: 'Supported levels and modes',
+        bv: '3BV minimum met',
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
 </script>

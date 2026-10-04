@@ -14,15 +14,15 @@
     <PrToolbar>
         对于失败的任务，点击“FAILED”按钮可以在控制台输出报错。
         <template #start>
-            <ElButton :loading="loading" @click="refresh">
+            <BaseButton :loading="loading" @click="refresh">
                 加载任务
-            </ElButton>
-            <ElButton :loading="cleanupLoading" @click="cleanupExpiredTasks">
+            </BaseButton>
+            <BaseButton :loading="cleanupLoading" @click="cleanupExpiredTasks">
                 删除过期任务
-            </ElButton>
-            <ElButton :disabled="selectedTasks.length === 0" @click="deleteSelected">
+            </BaseButton>
+            <BaseButton :disabled="selectedTasks.length === 0" @click="deleteSelected">
                 删除选中任务
-            </ElButton>
+            </BaseButton>
         </template>
     </PrToolbar>
     <PrDataTable
@@ -39,9 +39,9 @@
         <PrColumn field="id" header="id" />
         <PrColumn field="status" header="status">
             <template #body="{ data }">
-                <ElButton v-if="data.status === 'FAILED'" @click="console.log(data.traceback)">
+                <BaseButton v-if="data.status === 'FAILED'" @click="console.log(data.traceback)">
                     {{ data.status }}
-                </ElButton>
+                </BaseButton>
                 <template v-else>
                     {{ data.status }}
                 </template>
@@ -80,13 +80,13 @@
         <PrColumn field="exception_class_path" header="exception_class_path" />
         <PrColumn header="actions">
             <template #body="{ data }">
-                <ElButton
+                <BaseButton
                     v-if="data.status === 'FAILED'"
                     :loading="restartingTaskId === data.id"
                     @click="restartTask(data)"
                 >
                     重启
-                </ElButton>
+                </BaseButton>
             </template>
         </PrColumn>
     </PrDataTable>
@@ -94,13 +94,14 @@
 
 <script setup lang="ts">
 import { FilterMatchMode } from '@primevue/core/api';
-import { ElButton, ElDescriptions, ElDescriptionsItem, vLoading } from 'element-plus';
+import { ElDescriptions, ElDescriptionsItem, vLoading } from 'element-plus';
 import PrColumn from 'primevue/column';
 import PrDataTable from 'primevue/datatable';
 import PrSelect from 'primevue/select';
 import PrToolbar from 'primevue/toolbar';
 import { onMounted, ref } from 'vue';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import { httpErrorNotification } from '@/components/Notifications';
 import { createEnumMap } from '@/utils';
 import type { EnumMap } from '@/utils';

@@ -1,18 +1,16 @@
 <template>
-    <ElContainer style="height: 100%">
-        <ElHeader height="fit-content">
+    <div class="app-layout">
+        <header class="app-header" data-cy="app-header">
             <Menu />
-        </ElHeader>
+        </header>
 
-        <ElContainer class="mainheight">
-            <ElMain class="common-layout">
-                <VideoPlayer />
-                <VideoListDialog />
-                <router-view />
-                <Footer />
-            </ElMain>
-        </ElContainer>
-    </ElContainer>
+        <main class="common-layout">
+            <VideoPlayer />
+            <VideoListDialog />
+            <router-view />
+            <Footer />
+        </main>
+    </div>
 
     <ElDialog
         v-if="false" v-model="notice_visible" draggable :lock-scroll="false" title="站长通知"
@@ -30,7 +28,7 @@
 
 <script setup lang="ts">
 import { useDark, useToggle } from '@vueuse/core';
-import { ElCheckbox, ElContainer, ElDialog, ElHeader, ElMain } from 'element-plus';
+import { ElCheckbox, ElDialog } from 'element-plus';
 import { onMounted, ref, watch } from 'vue';
 
 import BaseButtonConfirm from './components/common/BaseButtonConfirm.vue';
@@ -101,20 +99,24 @@ body {
 </style>
 
 <style lang="less" scoped>
-.el-header {
-    --el-header-height: v-bind("`${local.menu_height}px`");
-    padding: 0px;
+.app-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100svh;
+    min-width: 0;
 }
 
-.mainheight {
-    height: calc(100svh - v-bind("`${local.menu_height}px`"))
+.app-header {
+    flex-shrink: 0;
 }
 
-@media (min-width: 1024px) {
-  .common-layout {
-    padding: 1.5em min(15vw, 150px);
-    /* 这里设置只在大屏幕（电脑端）上生效的样式 */
-  }
+.common-layout {
+    box-sizing: border-box;
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    overflow: auto;
+    padding: 1rem;
 }
 </style>
 

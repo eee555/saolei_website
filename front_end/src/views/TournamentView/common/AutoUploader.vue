@@ -3,12 +3,15 @@
         <div class="auto-uploader__controls">
             <div class="auto-uploader__control">
                 <span class="auto-uploader__label">{{ t('local.folder') }}</span>
-                <ElButton type="primary" size="small" :disabled="!canSelectDirectory" :loading="selectingDirectory" @click="selectDirectory">
+                <BaseButton type="primary" size="small" :disabled="!canSelectDirectory || busy" :loading="selectingDirectory" @click="selectDirectory">
                     {{ directoryName || t('local.selectFolder') }}
-                </ElButton>
-                <ElButton v-if="running" size="small" :disabled="processingQueue" @click="stopWatching">
+                </BaseButton>
+                <BaseButton v-if="running" size="small" @click="pauseWatching">
                     {{ t('local.stop') }}
-                </ElButton>
+                </BaseButton>
+                <BaseButton v-else-if="emitter" size="small" :disabled="!canSelectDirectory || busy" @click="resumeWatching">
+                    {{ t('local.resume') }}
+                </BaseButton>
             </div>
             <div class="auto-uploader__control">
                 <span class="auto-uploader__label">{{ t('local.pollInterval') }}</span>
@@ -16,11 +19,7 @@
             </div>
             <div class="auto-uploader__control">
                 <span class="auto-uploader__label">{{ t('local.filter') }}</span>
-                <ElSelect v-model="filterLevel" size="small" style="width: 180px">
-                    <ElOption :label="t('local.filterTournament')" value="tournament" />
-                    <ElOption :label="t('local.filterSupported')" value="supported" />
-                    <ElOption :label="t('local.filterScoreRefreshing')" value="scoreRefreshing" />
-                </ElSelect>
+                <slot name="filter" />
             </div>
         </div>
 
@@ -53,15 +52,35 @@
                 ]"
             />
         </div>
+        <ElDialog :model-value="scanDialog" :title="t('local.scanTitle')" :close-on-click-modal="false" :show-close="false" :close-on-press-escape="false" width="min(460px, 95vw)">
+            <p>{{ t('local.existingFiles', { count: existingCount }) }}</p>
+            <ElProgress v-if="fullScanning" :percentage="scanProgress" />
+            <template #footer>
+                <BaseButton @click="cancelScan">
+                    {{ t('local.cancel') }}
+                </BaseButton>
+                <template v-if="!fullScanning">
+                    <BaseButton @click="beginWatching(false)">
+                        {{ t('local.newOnly') }}
+                    </BaseButton>
+                    <BaseButton type="primary" @click="beginWatching(true)">
+                        {{ t('local.scanAll') }}
+                    </BaseButton>
+                </template>
+            </template>
+        </ElDialog>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElMessage, ElOption, ElSelect } from 'element-plus';
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { ElDialog, ElMessage, ElProgress } from 'element-plus';
+import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
 import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import type { AutoUploadVideo } from './utils';
+
+import BaseButton from '@/components/common/BaseButton.vue';
 import BaseTagSupport from '@/components/common/BaseTagSupport.vue';
 import InputNumber from '@/components/common/InputNumber.vue';
 import StackBar from '@/components/visualization/StackBar/App.vue';
@@ -70,39 +89,38 @@ import type { VideoUploadResult } from '@/services/videoUploadService';
 import { sleep } from '@/utils';
 import { globalNow } from '@/utils/datetime';
 import { createDirectoryNewFileEmitter, extract_stat, load_video_file } from '@/utils/fileIO';
-import type { AnyVideo, DirectoryNewFileEmitter, DirectoryNewFileEvent } from '@/utils/fileIO';
-import type { VideoAbstract } from '@/utils/videoabstract';
-import { isWeeklyClassicScoreMode, WeeklyParticipant, WeeklyTournamentFormat } from '@/utils/weekly';
+import type { DirectoryNewFileEmitter, DirectoryNewFileEvent } from '@/utils/fileIO';
+import { TournamentParticipant } from '@/utils/tournaments';
 
 const props = defineProps({
-    format: { type: String as PropType<WeeklyTournamentFormat>, required: true },
-    participant: { type: WeeklyParticipant, required: true },
+    participant: { type: TournamentParticipant, required: true },
+    filter: { type: Function as PropType<(video: AutoUploadVideo) => boolean>, required: true },
+    enabled: { type: Boolean, default: true },
+    disabled: { type: Boolean, default: false },
 });
-const WeeklyAutoUploadFilter = {
-    Tournament: 'tournament',
-    Supported: 'supported',
-    ScoreRefreshing: 'scoreRefreshing',
-} as const;
-type WeeklyAutoUploadFilter = typeof WeeklyAutoUploadFilter[keyof typeof WeeklyAutoUploadFilter];
+
+const emit = defineEmits<{ busy: [value: boolean] }>();
+
+defineSlots<{
+    filter?: () => unknown;
+}>();
 
 interface DirectoryPickerWindow extends Window {
     showDirectoryPicker?: (options?: { mode?: 'read' | 'readwrite' }) => Promise<FileSystemDirectoryHandle>;
 }
 
-interface AutoUploadVideo {
-    filename: string;
-    video: AnyVideo;
-    stat: VideoAbstract;
-}
-
-const directory = ref<FileSystemDirectoryHandle | null>(null);
 const directoryName = ref('');
-const emitter = ref<DirectoryNewFileEmitter | null>(null);
+const emitter = shallowRef<DirectoryNewFileEmitter | null>(null);
 const selectingDirectory = ref(false);
-const filterLevel = ref<WeeklyAutoUploadFilter>(WeeklyAutoUploadFilter.Supported);
 const pollIntervalSeconds = ref(3);
-const pendingFiles: File[] = [];
 const processingQueue = ref(false);
+const running = ref(false);
+const scanDialog = ref(false);
+const fullScanning = ref(false);
+const existingCount = ref(0);
+const scanCompleted = ref(0);
+let generation = 0;
+let disposed = false;
 const uploadedCount = ref(0);
 const failedCount = ref(0);
 const skippedCount = ref(0);
@@ -113,61 +131,93 @@ const participantWindowOpen = computed(() => {
     if (!props.participant.start_time || !props.participant.end_time) return false;
     return props.participant.start_time <= globalNow.value && globalNow.value < props.participant.end_time;
 });
-const running = computed(() => emitter.value?.running ?? false);
-const canSelectDirectory = computed(() => directoryPickerSupported.value && participantWindowOpen.value);
+const busy = computed(() => running.value || processingQueue.value || selectingDirectory.value || scanDialog.value);
+const canSelectDirectory = computed(() => directoryPickerSupported.value && participantWindowOpen.value && props.enabled && !props.disabled);
+const scanProgress = computed(() => (existingCount.value === 0 ? 100 : Math.min(100, Math.floor(scanCompleted.value / existingCount.value * 100))));
 
 async function selectDirectory() {
     const picker = (window as DirectoryPickerWindow).showDirectoryPicker;
-    if (!picker || !canSelectDirectory.value) return;
+    if (!picker || !canSelectDirectory.value || busy.value) return;
+    const currentGeneration = ++generation;
     selectingDirectory.value = true;
     try {
         const selectedDirectory = await picker({ mode: 'read' });
-        await startWatching(selectedDirectory);
+        if (currentGeneration !== generation || !canSelectDirectory.value) return;
+        directoryName.value = selectedDirectory.name;
+        emitter.value?.stop();
+        emitter.value = createDirectoryNewFileEmitter(selectedDirectory);
+        emitter.value.onFile(processEvent);
+        existingCount.value = 0;
+        for await (const handle of selectedDirectory.values()) {
+            if (currentGeneration !== generation) return;
+            if (handle.kind === 'file') existingCount.value += 1;
+        }
+        scanDialog.value = true;
     } catch (error) {
         if (!(error instanceof DOMException && error.name === 'AbortError')) {
             console.error(error);
             ElMessage.error(t('local.selectFailed'));
         }
+    } finally {
+        selectingDirectory.value = false;
     }
-    selectingDirectory.value = false;
 }
 
-async function startWatching(selectedDirectory: FileSystemDirectoryHandle) {
-    stopWatching();
-    directory.value = selectedDirectory;
-    directoryName.value = selectedDirectory.name;
-    const newEmitter = createDirectoryNewFileEmitter(selectedDirectory, {
-        pollIntervalMs: pollIntervalSeconds.value * 1000,
-    });
-    newEmitter.onFile(enqueueFile);
-    await newEmitter.start();
-    emitter.value = newEmitter;
-}
-
-function stopWatching() {
-    emitter.value?.stop();
-    emitter.value = null;
-}
-
-function enqueueFile(event: DirectoryNewFileEvent) {
-    pendingFiles.push(event.file);
-    void drainQueue();
-}
-
-async function drainQueue() {
-    if (processingQueue.value) return;
-    processingQueue.value = true;
-    while (pendingFiles.length > 0) {
-        const file = pendingFiles.shift();
-        if (file) {
-            await processFile(file);
-            await sleep(200);
+async function beginWatching(scanExisting: boolean) {
+    if (!canSelectDirectory.value || !emitter.value) return;
+    const currentGeneration = generation;
+    fullScanning.value = scanExisting;
+    scanCompleted.value = 0;
+    if (!scanExisting) scanDialog.value = false;
+    running.value = true;
+    try {
+        await emitter.value.start(scanExisting, pollIntervalSeconds.value * 1000);
+    } catch (error) {
+        console.error(error);
+        pauseWatching();
+        ElMessage.error(t('local.selectFailed'));
+    } finally {
+        if (currentGeneration === generation) {
+            fullScanning.value = false;
+            scanDialog.value = false;
         }
     }
-    processingQueue.value = false;
 }
 
-async function processFile(file: File) {
+function pauseWatching() {
+    emitter.value?.stop();
+    running.value = false;
+}
+
+async function resumeWatching() {
+    if (!canSelectDirectory.value || busy.value || !emitter.value) return;
+    await beginWatching(true);
+}
+
+function cancelScan() {
+    generation += 1;
+    pauseWatching();
+    emitter.value = null;
+    directoryName.value = '';
+    scanDialog.value = false;
+    fullScanning.value = false;
+}
+
+async function processEvent(event: DirectoryNewFileEvent) {
+    if (!running.value || !canSelectDirectory.value || disposed) return;
+    const owner = props.participant;
+    const currentGeneration = generation;
+    processingQueue.value = true;
+    try {
+        await processFile(event.file, owner, currentGeneration);
+        if (fullScanning.value) scanCompleted.value += 1;
+        await sleep(200);
+    } finally {
+        processingQueue.value = false;
+    }
+}
+
+async function processFile(file: File, owner: TournamentParticipant, currentGeneration: number) {
     scannedCount.value += 1;
     const video = await loadAutoUploadVideo(file);
     if (video === undefined) {
@@ -176,7 +226,7 @@ async function processFile(file: File) {
         return;
     }
 
-    if (!matchesFilter(video)) {
+    if (currentGeneration !== generation || disposed || !canSelectDirectory.value || owner !== props.participant || !props.filter(video)) {
         skippedCount.value += 1;
         logUpload('skip filter', video);
         return;
@@ -189,7 +239,7 @@ async function processFile(file: File) {
             video.stat.id = result.id;
             video.stat.state = result.state;
             video.stat.upload_time = new Date();
-            props.participant.addVideo(video.stat);
+            owner.addVideo(video.stat);
             uploadedCount.value += 1;
             logUpload('upload success', video, result);
         } else {
@@ -207,10 +257,12 @@ async function loadAutoUploadVideo(file: File): Promise<AutoUploadVideo | undefi
     try {
         const buffer = await file.arrayBuffer();
         const video = load_video_file(buffer, file.name);
+        if (!video.is_completed) return undefined;
         return {
             filename: file.name,
-            video,
             stat: extract_stat(video),
+            identifier: video.player_identifier,
+            tokens: video.race_identifier.split(',').map((s) => s.trim()),
         };
     } catch (error) {
         console.error(error);
@@ -218,67 +270,59 @@ async function loadAutoUploadVideo(file: File): Promise<AutoUploadVideo | undefi
     }
 }
 
-function matchesFilter(video: AutoUploadVideo): boolean {
-    if (!isTournamentVideo(video)) return false;
-    if (filterLevel.value === WeeklyAutoUploadFilter.Tournament) return true;
-    if (!isWeeklySupportedVideo(video)) return false;
-    if (filterLevel.value === WeeklyAutoUploadFilter.Supported) return true;
-    return canRefreshWeeklyScore(video);
-}
-
-function isTournamentVideo(video: AutoUploadVideo): boolean {
-    return video.video.race_identifier.split(',').map((identifier) => identifier.trim()).includes(props.participant.token);
-}
-
-function isWeeklySupportedVideo(video: AutoUploadVideo | VideoAbstract): boolean {
-    const stat = getStat(video);
-    if (props.format !== WeeklyTournamentFormat.Classic) return false;
-    return (stat.level === 'i' || stat.level === 'e') && isWeeklyClassicScoreMode(stat.mode);
-}
-
-function canRefreshWeeklyScore(video: AutoUploadVideo): boolean {
-    if (!isWeeklySupportedVideo(video)) return false;
-    const { level } = video.stat;
-    if (level !== 'i' && level !== 'e') return false;
-    const currentBoundary = level === 'i'
-        ? props.participant.classic_it[4][1]
-        : props.participant.classic_et[1][1];
-    return video.stat.timems < currentBoundary;
-}
-
-function getStat(video: AutoUploadVideo | VideoAbstract): VideoAbstract {
-    return 'stat' in video ? video.stat : video;
-}
-
 function logFile(action: string, filename: string) {
-    console.info('[WeeklyAutoUploader]', action, { filename });
+    console.info('[AutoUploader]', action, { filename });
 }
 
 function logUpload(action: string, video: AutoUploadVideo, result?: VideoUploadResult) {
-    console.info('[WeeklyAutoUploader]', action, {
+    console.info('[AutoUploader]', action, {
         filename: video.filename,
         level: video.stat.level,
         mode: video.stat.mode,
         timems: video.stat.timems,
         state: video.stat.state,
         result: result?.type,
-        raceIdentifier: video.video.race_identifier,
+        identifier: video.identifier,
+        tokens: video.tokens,
     });
 }
 
 watch(canSelectDirectory, (canSelect) => {
-    if (!canSelect) stopWatching();
-});
+    if (!canSelect) {
+        if (scanDialog.value) cancelScan();
+        else pauseWatching();
+    }
+}, { flush: 'sync' });
+watch(() => props.participant.id, cancelScan, { flush: 'sync' });
+watch(busy, (value) => {
+    emit('busy', value);
+}, { immediate: true, flush: 'sync' });
 
-onBeforeUnmount(stopWatching);
+let badgeUpdate = Promise.resolve();
+function updateBadge(active: boolean) {
+    badgeUpdate = badgeUpdate.then(async () => {
+        if (active && !disposed) await navigator.setAppBadge?.();
+        else await navigator.clearAppBadge?.();
+    }).catch(console.debug);
+}
+watch(processingQueue, updateBadge);
+onBeforeUnmount(() => {
+    disposed = true;
+    cancelScan();
+    updateBadge(false);
+});
 
 const i18nMessages = {
     'zh-cn': { local: {
+        cancel: '取消',
+        existingFiles: '文件夹中有 {count} 个文件',
+        scanTitle: '扫描已有文件',
+        scanAll: '扫描全部文件',
+        newOnly: '仅监听新文件',
+        resume: '继续',
+        stopped: '已暂停监听 {folder}',
         failed: '失败',
         filter: '筛选级别',
-        filterScoreRefreshing: '刷新成绩的比赛录像',
-        filterSupported: '有效的比赛录像',
-        filterTournament: '所有比赛录像',
         folder: '文件夹',
         idle: '未选择文件夹',
         outsideWindow: '不在参赛时间内',
@@ -288,16 +332,20 @@ const i18nMessages = {
         selectFailed: '无法读取该文件夹',
         selectFolder: '选择文件夹',
         skipped: '已跳过',
-        stop: '停止',
+        stop: '暂停',
         uploaded: '已上传',
         unsupported: '当前浏览器不支持 showDirectoryPicker',
     } },
     en: { local: {
+        cancel: 'Cancel',
+        existingFiles: '{count} files in this folder',
+        scanTitle: 'Scan existing files',
+        scanAll: 'Scan all files',
+        newOnly: 'Watch new files only',
+        resume: 'Resume',
+        stopped: 'Paused {folder}',
         failed: 'Failed',
         filter: 'Filter',
-        filterScoreRefreshing: 'Score-improving videos',
-        filterSupported: 'Supported tournament videos',
-        filterTournament: 'All tournament videos',
         folder: 'Folder',
         idle: 'No folder selected',
         outsideWindow: 'Outside session window',
@@ -307,7 +355,7 @@ const i18nMessages = {
         selectFailed: 'Cannot read this folder',
         selectFolder: 'Select folder',
         skipped: 'Skipped',
-        stop: 'Stop',
+        stop: 'Pause',
         uploaded: 'Uploaded',
         unsupported: 'showDirectoryPicker is not supported by this browser',
     } },
@@ -330,8 +378,13 @@ const { t } = useI18n({ messages: i18nMessages });
 
 .auto-uploader__control {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.5rem;
     align-items: center;
+}
+
+.auto-uploader__control > .base-button {
+    margin: 0;
 }
 
 .auto-uploader__label {

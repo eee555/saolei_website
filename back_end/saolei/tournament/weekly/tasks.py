@@ -4,7 +4,7 @@ from django.tasks import task
 
 from config.text_choices import Tournament_TextChoices
 from tournament.models import WeeklyTournament
-from tournament.services import delete_participants_without_videos, refresh_tournament_ranks, reveal_videos_for_tournament
+from tournament.services import delete_participants_without_videos, ensure_tournament_users, refresh_tournament_ranks, reveal_videos_for_tournament
 from tournament.tasks import task_award_tournament
 from .services import refresh_weekly_best_scores, refresh_weekly_classic_scores
 
@@ -19,6 +19,7 @@ def _task_weekly_finish_impl(tournament_id: int):
             f'周赛#{tournament.id} 结算开始，{tournament.year}W{tournament.week}，'
             f'当前状态 {tournament.state}',
         )
+        ensure_tournament_users(tournament)
         deleted_participants = delete_participants_without_videos(tournament)
         logger.info(f'周赛#{tournament.id} 删除无录像参赛者完成，数量 {deleted_participants}')
         tournament_user_count = tournament.participants.filter(user_id__isnull=False).count()
@@ -59,6 +60,7 @@ def task_weekly_finish(tournament_id: int):
 
 def _task_weekly_refresh_best_impl(tournament_id: int):
     tournament = WeeklyTournament.objects.get(id=tournament_id)
+    ensure_tournament_users(tournament)
     return refresh_weekly_best_scores(tournament)
 
 

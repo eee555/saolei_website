@@ -1,8 +1,9 @@
 from datetime import timedelta
 from io import StringIO
+import json
 
 from django.core.management import call_command
-from django.test import TestCase
+from django.test import override_settings, TestCase
 from django.utils import timezone
 
 from config.text_choices import MS_TextChoices
@@ -117,6 +118,8 @@ class PLuckRankingCacheTests(CustomRankingTestCase):
         self.assertEqual(rows[0]['video_id'], record.video_id)
         self.assertEqual(rows[0]['pluck'], record.pluck)
         self.assertEqual(rows[0]['timems'], record.timems)
+        self.assertNotIn('right_ce', rows[0])
+        self.assertNotIn('right_ce', json.loads(self.cache.details([member])[0]))
 
     def test_zero_pluck_uses_timems_score(self):
         records = [
@@ -154,6 +157,18 @@ class PLuckRankingCacheTests(CustomRankingTestCase):
 
 
 class PluckRankingApiTests(CustomRankingTestCase):
+    @override_settings(RATELIMIT_ENABLE=False)
+    def test_rank_does_not_return_nf_information(self):
+        record = self.create_record(self.players[0], pluck=1, timems=1000)
+
+        response = self.client.get('/api/customranking/pluck', {'level': LEVEL})
+
+        self.assertEqual(response.status_code, 200, response.content)
+        row = response.json()['players'][0]
+        self.assertEqual(row['video_id'], record.video_id)
+        self.assertEqual(row['mode'], MS_TextChoices.Mode.STD)
+        self.assertNotIn('right_ce', row)
+
     def get_player_records(self, player):
         response = self.client.get('/api/customranking/pluck/player', {'player_id': player.id})
         self.assertEqual(response.status_code, 200, response.content)

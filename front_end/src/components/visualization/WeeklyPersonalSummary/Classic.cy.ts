@@ -1,19 +1,22 @@
 import ClassicSummary from './Classic.vue';
 
 import i18n from '@/i18n';
-import { MS_Mode } from '@/utils/ms_const';
+import { videoplayerstore } from '@/store';
+import { MS_Mode, MS_State } from '@/utils/ms_const';
 import type { MS_Mode as MSMode } from '@/utils/ms_const';
 import { VideoAbstract } from '@/utils/videoabstract';
 
-function video(level: 'i' | 'e', mode: MSMode, timems: number): VideoAbstract {
+function video(level: 'i' | 'e', mode: MSMode, timems: number, right_ce = 1): VideoAbstract {
     return new VideoAbstract({
         id: timems,
         upload_time: '2026-01-01T00:00:00Z',
         level,
         mode,
         timems,
+        right_ce,
         bv: 100,
         software: 'e',
+        state: MS_State.Official,
     });
 }
 
@@ -35,18 +38,40 @@ function cellTexts(index: number) {
 }
 
 describe('<WeeklyPersonalSummary Classic />', () => {
-    it('uses the fastest standard and no-flag videos for classic scoring', () => {
+    afterEach(() => {
+        videoplayerstore.visible = false;
+    });
+
+    it('opens the selected score by keyboard and leaves missing scores non-interactive', () => {
+        mountClassicSummary([video('i', MS_Mode.Standard, 20000)]);
+        cy.get('.cell-list').eq(0).find('[data-cy=video-cell-action]').should('not.exist');
+        cy.get('.cell-list').eq(1).find('[data-cy=video-cell-action]').should('have.length', 1).focus();
+        cy.realPress('Enter');
+        cy.wrap(videoplayerstore).its('visible').should('eq', true);
+        cy.wrap(videoplayerstore).its('id').should('eq', 20000);
+        cy.wrap(videoplayerstore).its('url').should('include', '/api/video/preview?id=20000');
+    });
+
+    it('uses the fastest standard videos, including no-flag play, for classic scoring', () => {
+        const nonOfficial = Object.values(MS_State).filter((state) => state !== MS_State.Official).flatMap((state) => {
+            return (['i', 'e'] as const).map((level) => {
+                const replay = video(level, MS_Mode.Standard, 1234);
+                replay.state = state;
+                return replay;
+            });
+        });
         mountClassicSummary([
+            ...nonOfficial,
             video('i', MS_Mode.SpeedNG, 9876),
             video('i', MS_Mode.Standard, 20000),
-            video('i', MS_Mode.NoFlag, 21000),
+            video('i', MS_Mode.Standard, 21000, 0),
             video('i', MS_Mode.Standard, 22000),
-            video('i', MS_Mode.NoFlag, 23000),
+            video('i', MS_Mode.Standard, 23000, 0),
             video('i', MS_Mode.Standard, 24000),
-            video('i', MS_Mode.NoFlag, 25000),
+            video('i', MS_Mode.Standard, 25000, 0),
             video('e', MS_Mode.SpeedNG, 9876),
             video('e', MS_Mode.Standard, 110000),
-            video('e', MS_Mode.NoFlag, 120000),
+            video('e', MS_Mode.Standard, 120000, 0),
             video('e', MS_Mode.Standard, 130000),
         ]);
 
@@ -56,13 +81,13 @@ describe('<WeeklyPersonalSummary Classic />', () => {
         cy.get('.cell-list').should('have.length', 2);
         cellTexts(0).should('deep.equal', ['110.000', '120.000']);
         cellTexts(1).should('deep.equal', ['20.000', '21.000', '22.000', '23.000', '24.000']);
-        cy.get('body').should('not.contain.text', '9.876').and('not.contain.text', '25.000').and('not.contain.text', '130.000');
+        cy.get('body').should('not.contain.text', '9.876').and('not.contain.text', '25.000').and('not.contain.text', '130.000').and('not.contain.text', '1.234');
     });
 
     it('fills missing scores with the weekly default times', () => {
         mountClassicSummary([
             video('i', MS_Mode.Standard, 20000),
-            video('e', MS_Mode.NoFlag, 110000),
+            video('e', MS_Mode.Standard, 110000, 0),
         ]);
 
         cy.get('body').should('contain.text', 'Sum: 610.000');

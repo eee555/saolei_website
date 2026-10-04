@@ -5,24 +5,26 @@
             <span v-if="loadingStatus == QueueRefreshStatus.CoolingDown" class="text text-success">
                 <BaseIconTick />
             </span>
-            <ElLink
+            <BaseTextButton
                 v-else-if="isActive" underline="never"
-                :disabled="loadingStatus != QueueRefreshStatus.Available" style="vertical-align: baseline;" @click="refresh"
+                :disabled="loadingStatus != QueueRefreshStatus.Available" :aria-label="t('common.action.getVideoModel')"
+                style="vertical-align: baseline;" @keydown.stop @click="refresh"
             >
                 <BaseIconRefresh />
-            </ElLink>
+            </BaseTextButton>
         </template>
         <VideoList :videos="queue" :columns="columnChoices" sortable paginator />
     </ElTabPane>
 </template>
 
 <script setup lang='ts'>
-import { ElLink, ElTabPane, vLoading } from 'element-plus';
+import { ElTabPane, vLoading } from 'element-plus';
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { QueueRefreshStatus } from './utils';
 
+import BaseTextButton from '@/components/common/BaseTextButton.vue';
 import { BaseIconRefresh, BaseIconTick } from '@/components/common/icon';
 import VideoList from '@/components/VideoList/App.vue';
 import { fetchNewestQueue } from '@/services/videoService';

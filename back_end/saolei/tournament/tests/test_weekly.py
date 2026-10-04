@@ -12,6 +12,7 @@ from .base import (
     Tournament_TextChoices,
     TournamentTestCaseBase,
     TournamentUser,
+    VideoModel,
     weekly_encode_best,
     WeeklyParticipant,
 )
@@ -141,7 +142,7 @@ class TestWeekly(TournamentTestCaseBase):
         self.assertTrue(video.ongoing_tournament)
         self.assertTrue(tournament.videos.filter(pk=video.pk).exists())
 
-    def test_refresh_weekly_classic_scores_only_counts_std_and_nf_videos(self):
+    def test_refresh_weekly_classic_scores_only_counts_standard_videos_including_nf(self):
         tournament = self.create_weekly_tournament()
         participant = WeeklyParticipant.objects.create(
             user=self.user,
@@ -150,15 +151,21 @@ class TestWeekly(TournamentTestCaseBase):
             end_time=tournament.end_time,
         )
         ignored_expert = self.create_video(tournament_identifier=[], level=MS_TextChoices.Level.EXPERT, mode=MS_TextChoices.Mode.JSW, timems=1000)
-        nf_expert = self.create_video(tournament_identifier=[], level=MS_TextChoices.Level.EXPERT, mode=MS_TextChoices.Mode.NF, timems=110000)
+        nf_expert = self.create_video(tournament_identifier=[], level=MS_TextChoices.Level.EXPERT, mode=MS_TextChoices.Mode.STD, right_ce=0, timems=110000)
         std_expert = self.create_video(tournament_identifier=[], level=MS_TextChoices.Level.EXPERT, mode=MS_TextChoices.Mode.STD, timems=120000)
         ignored_intermediate = self.create_video(tournament_identifier=[], level=MS_TextChoices.Level.INTERMEDIATE, mode=MS_TextChoices.Mode.JSW, timems=1000)
         intermediate_times = [20000, 21000, 22000, 23000, 24000]
         intermediate_videos = [
-            self.create_video(tournament_identifier=[], level=MS_TextChoices.Level.INTERMEDIATE, mode=mode, timems=timems)
-            for mode, timems in zip([MS_TextChoices.Mode.STD, MS_TextChoices.Mode.NF, MS_TextChoices.Mode.STD, MS_TextChoices.Mode.NF, MS_TextChoices.Mode.STD], intermediate_times)
+            self.create_video(tournament_identifier=[], level=MS_TextChoices.Level.INTERMEDIATE, mode=MS_TextChoices.Mode.STD, timems=timems)
+            for timems in intermediate_times
         ]
         tournament.videos.add(ignored_expert, nf_expert, std_expert, ignored_intermediate, *intermediate_videos)
+        for level in [MS_TextChoices.Level.INTERMEDIATE, MS_TextChoices.Level.EXPERT]:
+            for state in MS_TextChoices.State.values:
+                if state != MS_TextChoices.State.OFFICIAL:
+                    video = self.create_video(tournament_identifier=[], level=level, timems=1)
+                    VideoModel.objects.filter(pk=video.pk).update(state=state)
+                    tournament.videos.add(video)
 
         refresh_weekly_classic_scores(tournament)
 
@@ -169,6 +176,12 @@ class TestWeekly(TournamentTestCaseBase):
         self.assertEqual(participant.classic_score, 110000 + 120000 + sum(intermediate_times))
         self.assertNotIn(ignored_expert.id, used_video_ids)
         self.assertNotIn(ignored_intermediate.id, used_video_ids)
+
+        VideoModel.objects.filter(pk=nf_expert.pk).update(state=MS_TextChoices.State.FROZEN)
+        refresh_weekly_classic_scores(tournament)
+        participant.refresh_from_db()
+        self.assertEqual(participant.classic_et, [[std_expert.id, 120000], [0, 240000]])
+        self.assertEqual(participant.classic_score, 120000 + 240000 + sum(intermediate_times))
 
     def test_refresh_weekly_score_rank_and_finish_tournament(self):
         tournament = self.create_weekly_tournament()
@@ -207,6 +220,7 @@ class TestWeekly(TournamentTestCaseBase):
 
         tournament.end_time = timezone.now() - timedelta(minutes=1)
         tournament.save(update_fields=['end_time'])
+        TournamentUser.objects.filter(user_id__in=[self.user.id, user_without_video.id]).delete()
         result = _task_weekly_finish_impl(tournament.id)
 
         tournament.refresh_from_db()
@@ -219,6 +233,7 @@ class TestWeekly(TournamentTestCaseBase):
         self.assertEqual(participant.rank_score, 0)
         self.assertTrue(WeeklyParticipant.objects.filter(pk=participant.pk).exists())
         self.assertFalse(WeeklyParticipant.objects.filter(pk=participant_without_video.pk).exists())
+        self.assertTrue(TournamentUser.objects.filter(user=user_without_video).exists())
 
         award_count = _task_award_tournament_impl(tournament.id)
         best_count = _task_weekly_refresh_best_impl(tournament.id)

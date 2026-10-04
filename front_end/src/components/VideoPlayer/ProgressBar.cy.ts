@@ -31,10 +31,12 @@ describe('<ProgressBar />', () => {
     it('emits bounded step and restart updates', () => {
         mountProgressBar(950, 1000);
 
-        cy.get('.progress-bar__step').click();
+        cy.get('button[aria-label="Step 0.1 seconds"]').focus();
+        cy.realPress('Enter');
         modelUpdate(0).should('eq', 1000);
 
-        cy.get('.progress-bar .pi-replay').closest('button').click();
+        cy.get('button[aria-label="Restart"]').focus();
+        cy.realPress('Space');
         modelUpdate(1).should('eq', 0);
     });
 

@@ -8,6 +8,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 
+from speedranking.cache import SpeedRankingCache
 from utils import generate_code, verify_text
 from utils.exceptions import ExceptionToResponse
 from videomanager.models import VideoModel
@@ -50,11 +51,17 @@ def try_update_user_name_fields(user: UserProfile, field_name: Literal['realname
     return
 
 
+def has_sub200_expert_video(user: UserProfile) -> bool:
+    """头像和签名资格跟随 Saolei.wang 的 et 纪录（包括 3BV 门槛）。"""
+    et = SpeedRankingCache('saolei').get_record(user.id)['et']
+    return et is not None and et < 200000
+
+
 def try_update_user_signature(user: UserProfile, signature: str, user_ip: str):
     if user.signature == signature:
         return
 
-    if user.userms.e_timems_std >= 200000:
+    if not has_sub200_expert_video(user):
         raise ExceptionToResponse('signature', 'expTime')
 
     refresh_signature_chance(user)
@@ -130,7 +137,7 @@ def user_metadata(user: UserProfile, client):
     queryset = VideoModel.objects.filter(player=user)
     if client != user:
         queryset = queryset.filter(ongoing_tournament=False)
-    videos = queryset.values('id', 'upload_time', 'level', 'mode', 'timems', 'bv', 'state', 'software', 'cl', 'ce', 'file_size', 'end_time', 'ongoing_tournament', 'path')
+    videos = queryset.values('id', 'upload_time', 'level', 'mode', 'timems', 'bv', 'state', 'software', 'cl', 'ce', 'right_ce', 'file_size', 'end_time', 'ongoing_tournament', 'path')
     return {
         'id': user.id,
         'username': user.username,

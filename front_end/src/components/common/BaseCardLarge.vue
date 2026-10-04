@@ -1,11 +1,11 @@
 <template>
-    <ElCard body-style="padding-left: 20px; padding-right: 20px; padding-top: 10px; padding-bottom: 10px;">
+    <div class="card card-large">
         <slot />
-    </ElCard>
+    </div>
 </template>
 
 <script setup lang="ts">
-import { ElCard } from 'element-plus';
+import '@/styles/cards.css';
 
 defineSlots<{
     default?: () => unknown;

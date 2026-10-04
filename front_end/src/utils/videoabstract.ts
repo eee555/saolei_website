@@ -20,6 +20,7 @@ export interface VideoAbstractInfo {
     software: string;
     cl: number | null;
     ce: number | null;
+    right_ce?: number | null;
     file_size: number;
     pluck: number | null;
 }
@@ -36,6 +37,7 @@ export interface VideoRedisInfo {
     identifier: string;
     cl?: number;
     ce?: number;
+    right_ce?: number | null;
 }
 
 export interface VideoAbstractData {
@@ -51,6 +53,7 @@ export interface VideoAbstractData {
     software: string;
     cl?: number | null;
     ce?: number | null;
+    right_ce?: number | null;
     path?: number | null;
     pluck?: number | null;
     player_id?: number;
@@ -74,6 +77,7 @@ export class VideoAbstract {
     public software: MS_Software;
     public cl = NaN;
     public ce = NaN;
+    public right_ce = NaN;
     public path = NaN;
     public pluck = NaN;
     public player_id?: number;
@@ -97,6 +101,7 @@ export class VideoAbstract {
 
         this.cl = info.cl ?? NaN;
         this.ce = info.ce ?? NaN;
+        this.right_ce = info.right_ce ?? NaN;
         this.path = info.path ?? NaN;
         this.pluck = info.pluck ?? NaN;
         this.player_id = info.player_id ?? info.player;
@@ -119,7 +124,12 @@ export class VideoAbstract {
             player_id: info.player_id,
             cl: info.cl,
             ce: info.ce,
+            right_ce: info.right_ce,
         });
+    }
+
+    public get isNF(): boolean {
+        return this.right_ce === 0;
     }
 
     public get time(): number {

@@ -183,3 +183,4 @@ front_end/yarn.lock
 /vitepress_doc/node_modules
 .vscode/settings.json
 /.django-stub-gen
+/back_end/saolei/tmp/

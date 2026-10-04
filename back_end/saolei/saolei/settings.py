@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'msuser',
     'article',
     'customranking',
+    'speedranking',
     'identifier',
     'accountlink',
     'tournament',

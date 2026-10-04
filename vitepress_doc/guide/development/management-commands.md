@@ -6,7 +6,56 @@
 python manage.py <command>
 ```
 
+## 本地公开数据快照
+
+### `dangerzone.init_local_test`（独立脚本）
+
+下载和初始化入口分别位于 `dangerzone/download_public_data.py`、`dangerzone/init_local_test.py`。在 `back_end/saolei` 目录使用 `python -m` 启动，后端根目录不再保留同名入口脚本。
+
+仅用于替换本地测试数据，**会清空本地数据库和 `saolei_website` 对应的 Redis 数据库**。此功能不注册为 Django 管理命令，`manage.py` 不提供 `import_public_data`。执行前停止本地后台 worker、定时任务和其他写入；不需要启动 HTTP 服务。要求不存在项目配置的 `.production` 标记、`DEBUG=True`、`E2E_TEST=True`，数据库及 Redis 均为回环地址。即使误开调试选项，存在生产标记仍会拒绝导入。正式导入前检查快照校验和、引用关系和数据库迁移状态。
+
+```bash
+# 仅 GET 生产公开 API，串行请求间隔至少 1.25 秒；失败后重复执行可续传。
+python -m dangerzone.download_public_data
+# detailbulk 不可用时，使用已有详情及公开录像列表完成快照：
+python -m dangerzone.download_public_data --skip-details
+python manage.py migrate
+# 读取快照，清库、导入，并创建当天经典周赛。
+python -m dangerzone.init_local_test
+# 只导入，不创建周赛：
+python -m dangerzone.init_local_test --no-weekly
+```
+
+默认快照目录是 `back_end/saolei/tmp/public-data`，已由 Git 忽略。下载脚本使用 `--output-dir`，导入脚本使用 `--snapshot-dir` 指定其他目录。已完成的快照不会自动重新下载，获取新快照请换一个目录。
+
+下载通过 `infoupdated` 获取用户 ID，调用 `userprofile/infobulk` 下载用户资料，通过每个用户的 `videolist` 建立公开录像索引，再调用 `video/detailbulk` 下载详情。保留 ID 空洞，不会因空页提前停止。索引后被删除或变成不可见的录像列入 `manifest.json` 的 `unavailable_video_ids`。这不是跨请求一致的数据库备份。TLS 使用 `certifi` 的 CA 包验证，不跳过证书检查；遇到 429 或服务端临时错误会等待重试。
+
+`--skip-details` 不请求 `detailbulk`，已有的详情仍然优先使用，其他录像直接使用 `get_user_videos` 的列表数据；只有列表数据的录像列入 `missing_detail_video_ids`。可空的缺失指标保持 NULL，录像内标识为空字符串。列表里的 `cl`、`ce` 不能直接写入生成列，缺少分项点击数时，相关生成值也为 NULL。旧生产列表不包含 `right_ce`，这类录像不会进入本地 NF 榜；不会仅凭旧模式编码伪造 `right_ce`。快照完成后若需补充详情，使用新目录重新下载。
+
+导入保留原用户/录像 ID、上传时间和公开属性，旧 NF 模式 `12` 转成 STD `00`，不修改 `right_ce`。批量写入不会触发录像信号，随后重建录像计数、上传额度、竞速排行榜、pluck 纪录缓存和录像状态队列，不创建 pluck 计算任务。
+
+- 管理员：ID `2`，密码 `admin123456`；普通账号：ID `48`，密码 `user123456`。用户名保留生产数据；可通过 `--admin-password` / `--user-password` 指定其他密码。
+- 其他用户禁用密码登录，且所有用户中仅 ID `2` 获得本地 `is_staff` 权限；邮箱统一为 `user-{id}@example.invalid`。生产账号不受影响。
+- 这两个公开详情 API 不提供原密码、邮箱、录像文件、头像文件、标识绑定和比赛关联；不会推测这些数据。录像可以用于列表和排行测试，但不能在本地播放或重新解析。录像计数只能基于本次导入的公开录像计算，无法排除缺失比赛关联的已公开比赛录像。
+- `is_lucky` 当前未由这两个详情 API 提供，导入保留模型默认值。已有 `pluck` 从公开录像列表补齐，缺失时保持 NULL，不重新解析录像。
+- 再次初始化会丢弃之前的本地数据；应使用独立的本地数据库及 Redis 数据库。不要对生产配置运行这些命令。
+
 ## 缓存重建
+
+### `rebuild_speed_ranks`
+
+位置：`speedranking/management/commands/rebuild_speed_ranks.py`
+
+从 `VideoModel` 按玩家分段重建竞速排行榜。`--ranking-name` 可选 `saolei` 或 `saolei_nf`，省略则重建两者；`--batch-size` 默认 1000，必须为正数。
+
+```bash
+python manage.py rebuild_speed_ranks
+python manage.py rebuild_speed_ranks --ranking-name saolei_nf --batch-size 1000
+```
+
+执行前暂停录像上传、修改、删除、标识绑定/解绑及比赛公开等写入。命令先构建临时榜，成功后原子发布单个大榜，最后清理临时缓存。构建失败保留该大榜的原缓存；两个大榜依次替换。排行 API 不自动回源，因此首次部署及缓存丢失后都需要执行此命令。重建不恢复旧新闻。
+
+从旧的“微秒时间戳 + 玩家 id” member 升级为纯玩家 id、分钟级合成 score 时，应暂停相关读写，以新代码执行不带 `--ranking-name` 的重建命令，两个大榜都完成后再恢复服务。超出编码范围的单项或总值仍保存在个人纪录 hash，仅不写入对应 zset；总榜独立判断，不修改录像数据库和个人最佳选取规则。
 
 ### `rebuild_tournament_cache`
 
@@ -78,6 +127,23 @@ python manage.py rebuild_custom_pluck_cache --batch-size 500
 
 ## 数据刷新
 
+### `refresh_videos`
+
+位置：`videomanager/management/commands/refresh_videos.py`
+
+用途：替代旧 `refresh_stnb` 的录像重解析入口，对全部 `VideoModel` 实例逐条调用 `videomanager.view_utils.refresh_video`。
+
+- 按主键顺序遍历，不限制状态、模式、级别或比赛标记。
+- 使用 `iterator()` 避免 QuerySet 缓存所有实例；写入仍逐条执行，不使用 `update()` 或 `bulk_update()`。
+- 沿用 `refresh_video` 的差异保存逻辑，通过 `save(update_fields=...)` 触发信号；没有变化的字段不会强制保存。
+- 已知的录像解析异常会包装为 `VideoParseError`，报告录像 ID 并跳过，继续刷新后续录像；结束时汇总成功和跳过数量。
+- 数据库、文件读写、保存或信号接收器等其他错误会停止命令；此前完成的刷新不会整体回滚。不会把刷新全过程中的 `ValueError` 等异常都视为解析错误。
+- 此命令不是无条件的排行榜或缓存全量重建。刷新模式等字段后如需重算录像计数，仍使用 `refresh_video_counts`。
+
+```bash
+python manage.py refresh_videos
+```
+
 ### `refresh_video_counts`
 
 位置：`msuser/management/commands/refresh_video_counts.py`
@@ -124,39 +190,25 @@ python manage.py refresh_tournament_user_stats
 python manage.py refresh_tournament_user_stats --batch-size 500
 ```
 
-### `refresh_stnb`
+## 缓存清理
 
-位置：`videomanager/management/commands/refresh_stnb.py`
+### `delete_legacy_speedranking_cache`
 
-用途：根据录像文件全量更新官方录像数据，并重建由 `iqg` 派生的 `stnb` 个人纪录及相关排行缓存。
+位置：`common/management/commands/delete_legacy_speedranking_cache.py`
 
-主要流程：
+用途：竞速排行榜重构第一步中，清理旧排行榜和新闻的 Redis key。应在停用旧功能的写入逻辑后执行，否则旧代码会重新生成缓存。
 
-1. 重解析所有 `OFFICIAL` 录像文件，刷新录像基础数据。
-2. 重算有官方录像用户的个人纪录和 Redis 排行缓存。
-3. 清空 `news_queue`，避免历史 PB 重新计算后污染首页动态。
-
-参数：
-
-| 参数 | 默认值 | 说明 |
-| --- | --- | --- |
-| `--video-delay` | `0.05` | 每批录像间延时秒数 |
-| `--user-delay` | `0.2` | 每个用户间延时秒数 |
-| `--yes` | `False` | 跳过确认提示，直接执行 |
-
-常用命令：
+- 清理`player_{stat}_{mode}_{用户ID}`和`player_{stat}_{mode}_ids`：指标限于`timems`、`bvs`、`stnb`、`ioe`、`path`，模式限于`std`、`nf`、`ng`、`dg`。
+- 清理`news_queue`，不依赖该key是list还是zset。
+- 保留自定义pluck排行、比赛缓存、录像队列及其他Redis数据，不修改数据库。
+- 使用`saolei_website` Redis连接，通过`SCAN`遍历，每批最多1000个key，用`UNLINK`删除。可重复执行。
 
 ```bash
-python manage.py refresh_stnb
-python manage.py refresh_stnb --yes
-python manage.py refresh_stnb --video-delay 0 --user-delay 0 --yes
+python manage.py delete_legacy_speedranking_cache --dry-run
+python manage.py delete_legacy_speedranking_cache
 ```
 
-::: warning
-这是侵入性较强的全量刷新命令。执行前建议备份相关数据库表和 Redis，执行期间不应有用户上传录像。
-:::
-
-## 缓存清理
+`--dry-run`仅列出匹配的key并统计数量，不删除数据。
 
 ### `delete_newest_queue`
 

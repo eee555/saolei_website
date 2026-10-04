@@ -1,6 +1,9 @@
 from .base import (
     GSCParticipant,
+    timedelta,
+    timezone,
     Tournament,
+    Tournament_TextChoices,
     TournamentParticipant,
     TournamentTestCaseBase,
     TournamentUser,
@@ -17,9 +20,12 @@ class TestDeleteParticipant(TournamentTestCaseBase):
         self.participant = self.create_cached_gsc_participant()
         self.url = f'/api/tournament/participant/{self.participant.pk}'
 
-    def test_host_deletes_gsc_participant_and_cache_but_preserves_videos(self):
+    def test_host_deletes_cancelled_gsc_participant_but_preserves_videos(self):
         video = self.create_video()
         self.assertTrue(self.tournament.videos.filter(pk=video.pk).exists())
+        self.tournament.state = Tournament_TextChoices.State.CANCELLED
+        with self.captureOnCommitCallbacks(execute=True):
+            self.tournament.save(update_fields=['state'])
         self.client.force_login(self.host)
 
         with self.captureOnCommitCallbacks(execute=True):
@@ -69,20 +75,23 @@ class TestDeleteParticipant(TournamentTestCaseBase):
                 self.assertEqual(len(self.tournament_cache.get_participant_list(self.user.id)), 1)
 
     def test_staff_can_delete_participant(self):
+        tournament = self.create_weekly_tournament()
+        participant = WeeklyParticipant.objects.create(tournament=tournament, user=self.user, end_time=tournament.end_time)
         self.user.is_staff = True
         self.user.save(update_fields=['is_staff'])
         self.client.force_login(self.user)
 
         with self.captureOnCommitCallbacks(execute=True):
-            response = self.client.delete(self.url)
+            response = self.client.delete(f'/api/tournament/participant/{participant.pk}')
 
         self.assertEqual(response.status_code, 204)
-        self.assertFalse(TournamentParticipant.objects.filter(pk=self.participant.pk).exists())
+        self.assertFalse(TournamentParticipant.objects.filter(pk=participant.pk).exists())
 
     def test_host_can_delete_non_site_participant(self):
         # Non-site participants are not present in the per-user Redis cache.
+        tournament = self.create_weekly_tournament(host=self.host)
         with self.captureOnCommitCallbacks():
-            participant = GSCParticipant.objects.create(tournament=self.tournament)
+            participant = WeeklyParticipant.objects.create(tournament=tournament)
         self.client.force_login(self.host)
 
         with self.captureOnCommitCallbacks(execute=True):
@@ -91,6 +100,24 @@ class TestDeleteParticipant(TournamentTestCaseBase):
         self.assertEqual(response.status_code, 204)
         self.assertFalse(TournamentParticipant.objects.filter(pk=participant.pk).exists())
         self.assertEqual(len(self.tournament_cache.get_participant_list(self.user.id)), 1)
+
+    def test_normal_gsc_cannot_be_deleted_by_host_or_staff_even_after_end(self):
+        self.user.is_staff = True
+        self.user.save(update_fields=['is_staff'])
+        now = timezone.now()
+        for start_time, end_time in [
+            (now + timedelta(hours=1), now + timedelta(hours=2)),
+            (now - timedelta(hours=1), now + timedelta(hours=1)),
+            (now - timedelta(hours=2), now - timedelta(hours=1)),
+        ]:
+            Tournament.objects.filter(pk=self.tournament.id).update(start_time=start_time, end_time=end_time)
+            for user in (self.host, self.user):
+                with self.subTest(start_time=start_time, user=user):
+                    self.client.force_login(user)
+                    response = self.client.delete(self.url)
+                    self.assertEqual(response.status_code, 403)
+                    self.assertTrue(GSCParticipant.objects.filter(pk=self.participant.pk).exists())
+                    self.assertEqual(len(self.tournament_cache.get_participant_list(self.user.id)), 1)
 
     def test_missing_participant_returns_not_found(self):
         self.client.force_login(self.host)

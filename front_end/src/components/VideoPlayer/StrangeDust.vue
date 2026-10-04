@@ -7,14 +7,14 @@
                 {{ t('local.playerTooltip2') }}
             </template>
             <template #sub-title>
-                <ElLink href="https://strange-dust.github.io/minesweeper-replay-analyzer/" target="_blank" rel="noopener noreferrer">
+                <a class="link text" href="https://strange-dust.github.io/minesweeper-replay-analyzer/" target="_blank" rel="noopener noreferrer">
                     https://strange-dust.github.io/minesweeper-replay-analyzer/
-                </ElLink>
+                </a>
             </template>
             <template #extra>
-                <ElButton size="large" @click="videoPlayerConfig.strangeDustTrust = true">
+                <BaseButton size="large" @click="videoPlayerConfig.strangeDustTrust = true">
                     {{ t('local.ITrustIt') }}
-                </ElButton>
+                </BaseButton>
             </template>
         </ElResult>
     </div>
@@ -22,11 +22,12 @@
 </template>
 
 <script setup lang="ts">
-import '@/styles/text.css';
+import '@/styles/link.css';
 
-import { ElButton, ElLink, ElResult } from 'element-plus';
+import { ElResult } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import PlayerName from '@/components/PlayerName.vue';
 import { videoPlayerConfig } from '@/store';
 

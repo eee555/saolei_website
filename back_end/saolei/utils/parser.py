@@ -107,6 +107,8 @@ class MSVideoParser:
 
         v.parse()
         v.analyse()
+        if not v.is_completed:
+            raise ExceptionToResponse(obj='file', category='incomplete')
         v.current_time = 1e8
 
         self.level = MSVideoParser.get_level_from_BaseVideo(v)
@@ -179,10 +181,7 @@ class MSVideoParser:
 
     @staticmethod
     def get_mode_from_BaseVideo(v: ms.BaseVideo):
-        mode = str(v.mode).rjust(2, '0')
-        if mode == '00' and v.flag == 0:
-            return MS_TextChoices.Mode.NF
-        return mode
+        return str(v.mode).rjust(2, '0')
 
     @staticmethod
     def get_state_from_review_code(review_code: int):
@@ -202,6 +201,8 @@ class MSVideoParser:
 
         v.parse()
         v.analyse()
+        if not v.is_completed:
+            raise ExceptionToResponse(obj='file', category='incomplete')
         v.current_time = 1e8
 
         level = MSVideoParser.get_level_from_BaseVideo(v)

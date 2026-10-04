@@ -2,6 +2,9 @@
     <div style="text-align: center;">
         <BaseFileInput accept=".avf,.evf,.rmv,.mvf" :disabled="isUserAnonymous || isParsing || isUploading" :style="{ height: uploadQueue.length > 0 ? 'auto' : '300px' }" @add="handleFileChange">
             <FileInputContent :is-user-anonymous="isUserAnonymous" />
+            <template v-if="!isUserAnonymous" #options>
+                <FileInputOptions />
+            </template>
         </BaseFileInput>
     </div>
     <ToolBar v-if="uploadQueue.length > 0" v-model:stopping="pleaseStopUploading" :selected="selectedQueue.length" :total="uploadQueue.length" :processing="isWaiting" @upload="uploadSelected" @remove="removeSelected" />
@@ -14,6 +17,7 @@ import { vLoading } from 'element-plus';
 import { computed, ref } from 'vue';
 
 import FileInputContent from './FileInputContent.vue';
+import FileInputOptions from './FileInputOptions.vue';
 import Progress from './Progress.vue';
 import Table from './Table.vue';
 import ToolBar from './ToolBar.vue';

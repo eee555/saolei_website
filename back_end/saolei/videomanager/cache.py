@@ -24,6 +24,7 @@ def serialize_video_to_queue(video: VideoModel):
         'bv': video.bv,
         'cl': video.cl,
         'ce': video.ce,
+        'right_ce': video.right_ce,
     }
 
 

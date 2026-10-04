@@ -27,6 +27,7 @@ CAPTURE_FIELDS = {
     'level',
     'mode',
     'bv',
+    'right_ce',
     'left',
     'right',
     'double',
@@ -41,6 +42,7 @@ QUEUE_PAYLOAD_FIELDS = {
     'mode',
     'timems',
     'bv',
+    'right_ce',
 }
 
 

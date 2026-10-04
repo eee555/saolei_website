@@ -3,7 +3,7 @@
         <span class="text text-medium">
             {{ t('local.description') }}
         </span>
-        <ElRow style="height: 1em" />
+        <div style="height: 1em" />
         <ElDescriptions border style="max-width: 600px">
             <ElDescriptionsItem :label="t('software.operatingSystem')" :span="2">
                 Windows
@@ -54,16 +54,16 @@
                 </BaseTagSupport>
             </ElDescriptionsItem>
         </ElDescriptions>
-        <ElRow style="height: 1em" />
+        <div style="height: 1em" />
         <ElTable :data="tableData" table-layout="auto" style="max-width: 600px">
             <ElTableColumn prop="version" :label="t('software.version')" />
             <ElTableColumn prop="date" :label="t('software.releaseDate')" />
             <ElTableColumn :label="t('software.download')">
                 <template #default="{row}">
                     <template v-for="link in row.links" :key="link.url">
-                        <ElLink :href="link.url" target="_blank" rel="noopener noreferrer">
+                        <a class="link text" :href="link.url" target="_blank" rel="noopener noreferrer">
                             {{ link.label }}
-                        </ElLink>
+                        </a>
                         &nbsp;
                     </template>
                 </template>
@@ -73,8 +73,9 @@
 </template>
 
 <script setup lang="ts">
+import '@/styles/link.css';
 import '@/styles/text.css';
-import { ElDescriptions, ElDescriptionsItem, ElLink, ElRow, ElTable, ElTableColumn } from 'element-plus';
+import { ElDescriptions, ElDescriptionsItem, ElTable, ElTableColumn } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
 import { BaseBadgeMsgames, BaseBadgeOpenms, BaseBadgeSaolei, BaseBadgeScoreganizer } from '@/components/common/badge';

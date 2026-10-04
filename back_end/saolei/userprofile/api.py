@@ -20,7 +20,7 @@ from utils.exceptions import ExceptionToResponse
 from videomanager.models import VideoModel
 from .decorators import banned_blocked, login_required_error, staff_required
 from .models import UserProfile
-from .services import refresh_avatar_chance, try_update_user_name_fields, try_update_user_signature
+from .services import has_sub200_expert_video, refresh_avatar_chance, try_update_user_name_fields, try_update_user_signature
 
 router = Router()
 logger = logging.getLogger('userprofile')
@@ -181,9 +181,10 @@ UserVideoOut = create_schema(
     fields=[
         'id',
         'upload_time', 'level', 'mode', 'timems', 'bv',
-        'state', 'software', 'cl', 'ce', 'file_size',
+        'state', 'software', 'cl', 'ce', 'right_ce', 'file_size',
         'end_time', 'ongoing_tournament', 'path', 'pluck',
     ],
+    custom_fields=[('cl', int | None, None), ('ce', int | None, None)],
 )
 
 
@@ -197,7 +198,7 @@ def get_user_videos(request, user_id: int):
     queryset = VideoModel.objects.filter(player=user)
     if user != request.user:
         queryset = queryset.filter(ongoing_tournament=False)
-    videos = queryset.values('id', 'upload_time', 'level', 'mode', 'timems', 'bv', 'state', 'software', 'cl', 'ce', 'file_size', 'end_time', 'ongoing_tournament', 'path', 'pluck')
+    videos = queryset.values('id', 'upload_time', 'level', 'mode', 'timems', 'bv', 'state', 'software', 'cl', 'ce', 'right_ce', 'file_size', 'end_time', 'ongoing_tournament', 'path', 'pluck')
     return list(videos)
 
 
@@ -317,8 +318,8 @@ def update_user_avatar(request, avatar: File[UploadedFile]):
     """
     user: UserProfile = request.user
 
-    if user.userms.e_timems_std >= 200000:
-        raise HttpResponseForbidden
+    if not has_sub200_expert_video(user):
+        return HttpResponseForbidden()
 
     refresh_avatar_chance(user)
     if user.left_avatar_n <= 0:

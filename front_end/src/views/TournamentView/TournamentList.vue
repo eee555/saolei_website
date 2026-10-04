@@ -3,7 +3,7 @@
         <!-- @vue-generic {Tournament} -->
         <ElTableColumn :label="t('common.prop.state')">
             <template #default="{row}">
-                <TournamentStateIcon :state="row.displayState" />
+                <TournamentStateIcon :state="row.getDisplayState(globalNow)" />
             </template>
         </ElTableColumn>
         <!-- @vue-generic {Tournament} -->
@@ -42,7 +42,7 @@ import { useRouter } from 'vue-router';
 import PlayerName from '@/components/PlayerName.vue';
 import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
 import { local } from '@/store';
-import { toISODateTimeString } from '@/utils/datetime';
+import { globalNow, toISODateTimeString } from '@/utils/datetime';
 import type { Tournament } from '@/utils/tournaments';
 
 defineProps({

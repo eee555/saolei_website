@@ -10,6 +10,17 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 // import vueI18n from '@intlify/eslint-plugin-vue-i18n'; // 不兼容ts。https://github.com/intlify/eslint-plugin-vue-i18n/issues/32
 
+const restrictedHtmlElements = [{
+    element: ['ElText', 'el-text'],
+    message: 'Use "@/styles/text.css" instead.',
+}, {
+    element: ['ElContainer', 'el-container', 'ElHeader', 'el-header', 'ElMain', 'el-main', 'ElAside', 'el-aside', 'ElFooter', 'el-footer', 'ElRow', 'el-row', 'ElCol', 'el-col'],
+    message: 'Use native HTML and CSS for layout; reuse "@/styles/layout.css" where appropriate.',
+}, {
+    element: ['ElCard', 'el-card'],
+    message: 'Use "@/styles/cards.css" instead.',
+}];
+
 export default defineConfig({
     ignores: [
         '**/node_modules/**', '**/dist/**', '**/build/**', '**/public/**',
@@ -155,12 +166,7 @@ export default defineConfig({
         // vue/no-restricted-component-names
         // vue/no-restricted-component-options
         // vue/no-restricted-custom-event
-        'vue/no-restricted-html-elements': [
-            'error', {
-                element: ['ElText', 'el-text'],
-                message: 'Use "@/styles/text.css" instead.',
-            },
-        ],
+        'vue/no-restricted-html-elements': ['error', ...restrictedHtmlElements],
         // vue/no-restricted-props
         // vue/no-restricted-static-attribute
         // vue/no-restricted-v-bind
@@ -274,6 +280,30 @@ export default defineConfig({
             considerDefaultExhaustiveForUnions: true,
         }],
         '@typescript-eslint/unified-signatures': 'off', // TODO
+    },
+}, {
+    files: ['src/**/*.vue'],
+    // Deferred components keep the existing layout, text and card restrictions.
+    ignores: [
+        'src/views/HomeView/NormalTournamentQueue.vue',
+        'src/components/accountlinks/CardAdd.vue',
+        'src/components/accountlinks/CardAddMineracer.vue',
+        'src/components/accountlinks/CardBilibili.vue',
+        'src/components/accountlinks/CardSaolei.vue',
+        'src/components/accountlinks/CardWoM.vue',
+        'src/components/accountlinks/CarouselControl.vue',
+        'src/components/accountlinks/VideoImportQueue.vue',
+    ],
+    rules: {
+        'vue/no-restricted-html-elements': [
+            'error', ...restrictedHtmlElements, {
+                element: ['ElButton', 'el-button'],
+                message: 'Use BaseButton or a native button with "@/styles/button.css" instead.',
+            }, {
+                element: ['ElLink', 'el-link'],
+                message: 'Use a native link with "@/styles/link.css" for navigation, or BaseTextButton for actions.',
+            },
+        ],
     },
 }, {
     files: ['**/*.cy.ts'],

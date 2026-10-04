@@ -11,9 +11,9 @@
             <!-- @vue-generic {WeeklyParticipant} -->
             <ElTableColumn v-for="index in 2" :key="`e-${index}`" :label="`#${index}`" sortable :sort-method="scoreSort(`classic_et`, index - 1)">
                 <template #default="{row}">
-                    <ElLink @click.stop="preview(row.classic_et[index - 1][0])">
+                    <BaseTextButton underline="hover" @click.stop="preview(row.classic_et[index - 1][0])">
                         {{ ms_to_s(row.classic_et[index - 1][1]) }}
-                    </ElLink>
+                    </BaseTextButton>
                 </template>
             </ElTableColumn>
             <!-- @vue-generic {WeeklyParticipant} -->
@@ -27,9 +27,9 @@
             <!-- @vue-generic {WeeklyParticipant} -->
             <ElTableColumn v-for="index in 5" :key="`i-${index}`" :label="`#${index}`" sortable :sort-method="scoreSort(`classic_it`, index - 1)">
                 <template #default="{row}">
-                    <ElLink @click="preview(row.classic_it[index - 1][0])">
+                    <BaseTextButton underline="hover" @click="preview(row.classic_it[index - 1][0])">
                         {{ ms_to_s(row.classic_it[index - 1][1]) }}
-                    </ElLink>
+                    </BaseTextButton>
                 </template>
             </ElTableColumn>
             <!-- @vue-generic {WeeklyParticipant} -->
@@ -49,9 +49,10 @@
 </template>
 
 <script setup lang="ts">
-import { ElLink, ElTable, ElTableColumn } from 'element-plus';
+import { ElTable, ElTableColumn } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
+import BaseTextButton from '@/components/common/BaseTextButton.vue';
 import PlayerName from '@/components/PlayerName.vue';
 import { ms_to_s } from '@/utils';
 import { preview } from '@/utils/common/PlayerDialog';

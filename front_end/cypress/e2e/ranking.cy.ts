@@ -4,36 +4,6 @@ describe('rankings backed by dangerzone fixtures', () => {
         cy.clearLocalStorage();
     });
 
-    it('shows speed ranking only after the user binds the video identifier', () => {
-        const user = {
-            id: 1,
-            username: 'speed_ranker',
-            realname: 'Speed Ranker',
-        };
-        const identifier = 'speed-ranking-e2e';
-
-        cy.registerUser(user);
-        cy.createIdentifier(identifier);
-        cy.createVideo({ user_id: user.id, identifier, level: 'b', timems: 7000, bv: 10 });
-        cy.createVideo({ user_id: user.id, identifier, level: 'i', timems: 12000, bv: 30 });
-        cy.createVideo({ user_id: user.id, identifier, level: 'e', timems: 30000, bv: 100 });
-
-        cy.intercept('GET', '**/msuser/player_rank/**').as('speedRank');
-        cy.visit('/#/ranking/speed');
-        cy.wait('@speedRank').its('response.body.players').should('deep.equal', []);
-        cy.contains('49.000').should('not.exist');
-
-        cy.bindIdentifier(user.id, identifier, 3);
-
-        cy.reload();
-        cy.wait('@speedRank').its('response.body.players').should('have.length', 8);
-        cy.contains('Speed Ranker').should('be.visible');
-        cy.contains('7.000').should('be.visible');
-        cy.contains('12.000').should('be.visible');
-        cy.contains('30.000').should('be.visible');
-        cy.contains('49.000').should('be.visible');
-    });
-
     it('shows pluck ranking only after the user binds the video identifier', () => {
         const user = {
             id: 1,

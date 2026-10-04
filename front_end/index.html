@@ -22,11 +22,38 @@
 </head>
 
 <body>
-  <noscript>
-    <strong>We're sorry but 开源扫雷网 doesn't work properly without JavaScript enabled. Please enable it to
-      continue.</strong>
-  </noscript>
-  <div id="app"></div>
+  <div id="app">
+    <!-- Vue replaces this placeholder when mounting; keep its styles inline for startup. -->
+    <main id="startup-loading" style="
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      overflow: auto;
+      color-scheme: light dark;
+      background: Canvas;
+      color: CanvasText;
+      font-family: system-ui, sans-serif;
+      text-align: center;
+    ">
+      <h1 style="margin: 0 0 16px; font-size: 24px;">
+        <span lang="zh-CN">开源扫雷网</span><br>
+        <span lang="en">Open Minesweeper</span>
+      </h1>
+      <p id="startup-loading-label" role="status" aria-atomic="true" style="margin: 0 0 16px; line-height: 1.6;">
+        <span lang="zh-CN">1/3 正在加载资源…</span><br>
+        <span lang="en">1/3 Loading resources…</span>
+      </p>
+      <progress aria-labelledby="startup-loading-label" style="width: 160px; max-width: 100%;"></progress>
+      <noscript>
+        <p lang="zh-CN">请启用 JavaScript 后刷新页面。</p>
+        <p lang="en">Please enable JavaScript and reload the page to continue.</p>
+      </noscript>
+    </main>
+  </div>
   <!-- built files will be auto injected -->
   <script type="module" src="/src/main.ts"></script>
 </body>
