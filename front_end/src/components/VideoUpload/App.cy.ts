@@ -130,6 +130,21 @@ describe('VideoUpload Component', () => {
         cy.contains('Auto-remove after uploading').should('be.visible');
     });
 
+    it('keeps upload options outside the file picker button', () => {
+        cy.mount(App, mountOptions({ isUserAnonymous: false }));
+        cy.get('input[type=file]').then(($input) => {
+            cy.stub($input[0] as HTMLInputElement, 'click').as('pick');
+        });
+        cy.contains('label', 'Auto-upload after parsing').click();
+        cy.contains('label', 'Auto-upload after parsing').find('input').should('be.checked');
+        cy.contains('label', 'Auto-remove after uploading').click();
+        cy.contains('label', 'Auto-remove after uploading').find('input').should('be.checked');
+        cy.get('.base-file-input button input').should('not.exist');
+        cy.get('@pick').should('not.have.been.called');
+        cy.contains('button', 'Drag files here or click here to select').click();
+        cy.get('@pick').should('have.been.calledOnce');
+    });
+
     it('File parsing and table rendering', () => {
         cy.viewport(500, 1000);
         cy.mount(App, mountOptions({

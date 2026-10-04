@@ -1,15 +1,15 @@
 <template>
     <span class="text">
-        <ElLink :href="weeklyGuideUrl" target="_blank" rel="noopener noreferrer">
+        <a class="link text" :href="weeklyGuideUrl" target="_blank" rel="noopener noreferrer">
             {{ t('gsc.identifierGuide.guideLink') }}
-        </ElLink>
+        </a>
         <div v-if="token === '' && !registrationOpen">
             {{ t('gsc.identifierGuide.preparing') }}
         </div>
         <div v-else-if="token === ''">
-            <ElButton :disabled="store.isUserAnonymous" :loading="registeringParticipant" @click="registerDialogVisible = true">
+            <BaseButton :disabled="store.isUserAnonymous" :loading="registeringParticipant" @click="registerDialogVisible = true">
                 {{ t('local.register') }}
-            </ElButton>
+            </BaseButton>
             <span v-if="store.isUserAnonymous" class="text text-danger">
                 {{ t('common.msg.realNameRequired') }}
             </span>
@@ -19,9 +19,9 @@
                 </template>
                 {{ t('local.registerConfirm') }}
                 <template #footer>
-                    <ElButton @click="registerDialogVisible = false">
+                    <BaseButton @click="registerDialogVisible = false">
                         {{ t('local.registerCancel') }}
-                    </ElButton>
+                    </BaseButton>
                     <BaseButtonConfirm @click="registerParticipant" />
                 </template>
             </ElDialog>
@@ -41,11 +41,13 @@
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElDialog, ElLink } from 'element-plus';
+import '@/styles/link.css';
+import '@/styles/text.css';
+import { ElDialog } from 'element-plus';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import '@/styles/text.css';
+import BaseButton from '@/components/common/BaseButton.vue';
 import BaseButtonConfirm from '@/components/common/BaseButtonConfirm.vue';
 import { actionSuccessNotification, httpErrorNotification } from '@/components/Notifications';
 import IconCopy from '@/components/widgets/IconCopy.vue';

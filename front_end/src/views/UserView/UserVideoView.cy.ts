@@ -80,7 +80,7 @@ describe('<UserVideoView /> video reveal', () => {
         cy.wait('@reveal');
         cy.get('.el-notification--error').should('be.visible');
         cy.closeElNotifications();
-        cy.contains('.el-dialog button', 'Confirm').should('be.enabled').and('not.have.class', 'is-loading');
+        cy.contains('.el-dialog button', 'Confirm').should('be.enabled').and('not.have.attr', 'aria-busy');
         cy.then(() => {
             expect(user.videos?.[0].ongoing_tournament).to.equal(true);
         });

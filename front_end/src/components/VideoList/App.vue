@@ -27,9 +27,9 @@
             <template #body="{ data }: { data: VideoAbstract }">
                 <div @click.stop>
                     <Tippy interactive trigger="click" placement="bottom-end" :append-to="appendToBody">
-                        <ElButton class="square-button" :aria-label="t('common.prop.action')" data-cy="video-row-actions" :data-video-id="data.id">
-                            <i class="pi pi-ellipsis-h" />
-                        </ElButton>
+                        <button type="button" class="base-button square-button" :aria-label="t('common.prop.action')" data-cy="video-row-actions" :data-video-id="data.id">
+                            <i class="pi pi-ellipsis-h" aria-hidden="true" />
+                        </button>
                         <template #content="{ hide }">
                             <div class="card card-small" @click.stop>
                                 <slot name="rowActions" :video="data" :close="hide" />
@@ -47,7 +47,6 @@ import '@/styles/button.css';
 import '@/styles/cards.css';
 
 import { FilterMatchMode } from '@primevue/core/api';
-import { ElButton } from 'element-plus';
 import { Column, DataTable } from 'primevue';
 import 'primeicons/primeicons.css';
 import { defineAsyncComponent, ref } from 'vue';

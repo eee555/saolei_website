@@ -1,0 +1,14 @@
+/* Scope radius variables to buttons, including button-group end caps. */
+.el-button {
+    --el-border-radius-base: 0px;
+    --el-border-radius-round: 0px;
+}
+
+/* Small buttons calculate their radius; circle buttons use a fixed percentage. */
+.el-button,
+.el-button--small,
+.el-button--large,
+.el-button.is-round,
+.el-button.is-circle {
+    border-radius: 0;
+}

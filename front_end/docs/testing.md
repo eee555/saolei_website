@@ -9,7 +9,7 @@
 | 类型 | 文件位置 | 适用场景 |
 | --- | --- | --- |
 | Vitest | `src/**/*.test.ts` | 纯函数、数据转换、工具函数 |
-| Cypress 组件测试 | `src/**/*.cy.ts` | 单个 Vue 组件的渲染、交互、边界状态 |
+| Cypress 组件测试 | `src/**/*.cy.ts`、`cypress/component/**/*.cy.ts` | Vue 组件及共享测试命令的行为 |
 | Cypress e2e | `cypress/e2e/**/*.cy.ts` | 页面流程、路由跳转、登录注册、前后端联调 |
 
 本文档仅提供基本的测试启动和目录结构。对于 Vitest 和 Cypress 的详细用法，请参照各自的官方文档。
@@ -91,6 +91,21 @@ npx cypress open
 ```
 
 e2e 测试的测试时区固定为 +8，测试语言固定为中文。
+
+## 共享 Cypress 命令
+
+组件测试和 e2e 均加载 `cypress/support/commands.ts`。验证弹窗、浮层或加载遮罩已关闭时，如果允许它被移除或保留为隐藏节点，使用：
+
+```ts
+cy.shouldBeAbsentOrHidden('.el-dialog');
+cy.shouldBeAbsentOrHidden('.el-loading-mask', { timeout: 10000 });
+```
+
+该命令在当前文档中重新查询 CSS 选择器，直到没有匹配元素，或全部匹配元素都被 Cypress 判定为不可见。支持默认命令超时及显式 `timeout`，组件关闭动画期间会自动重试。调用前应先确认浮层已打开或加载已开始，避免初始未出现就满足关闭断言。
+
+需要验证 DOM 确实被移除时，仍使用 `should('not.exist')`；需要验证节点保留但隐藏时，使用 `should('not.be.visible')`。
+
+共享命令的回归测试位于 `cypress/component/commands.cy.ts`。
 
 ## 选择测试类型
 

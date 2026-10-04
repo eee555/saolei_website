@@ -7,9 +7,9 @@
             <template #label>
                 <PlayerName v-if="participant.user_id !== 0" :user-id="participant.user_id" :interactive="false" />
                 &nbsp;
-                <ElLink data-cy="all-participants-tab-close" underline="never" @click.stop="handleAllSummaryTabClose(participant.id)">
-                    <BaseIconClose style="scale: 65%" />
-                </ElLink>
+                <BaseTextButton data-cy="all-participants-tab-close" underline="never" :aria-label="t('local.closeTab')" @keydown.stop @click.stop="handleAllSummaryTabClose(participant.id)">
+                    <BaseIconClose style="scale: 65%" aria-hidden="true" />
+                </BaseTextButton>
             </template>
             <PersonalView v-if="participant.user_id !== 0" :model-value="participant">
                 <template #personalSummary="{ videos }">
@@ -21,13 +21,14 @@
 </template>
 
 <script setup lang="ts" generic="TParticipant extends TournamentParticipant">
-import { ElLink, ElTabPane, ElTabs } from 'element-plus';
+import { ElTabPane, ElTabs } from 'element-plus';
 import { ref, shallowRef } from 'vue';
 import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import PersonalView from './PersonalView.vue';
 
+import BaseTextButton from '@/components/common/BaseTextButton.vue';
 import { BaseIconClose } from '@/components/common/icon';
 import PlayerName from '@/components/PlayerName.vue';
 import type { TournamentParticipant } from '@/utils/tournaments';
@@ -65,9 +66,11 @@ function handleAllSummaryTabClose(participantId: number) {
 const i18nMessages = {
     'zh-cn': { local: {
         ranking: '排名',
+        closeTab: '关闭选手页签',
     } },
     en: { local: {
         ranking: 'Ranking',
+        closeTab: 'Close participant tab',
     } },
 };
 

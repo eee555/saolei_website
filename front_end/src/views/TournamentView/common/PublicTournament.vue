@@ -33,18 +33,18 @@
             <ElTabPane name="participants">
                 <template #label>
                     <span>{{ t('local.participants') }}</span>
-                    <ElButton text circle :title="t('local.refreshParticipants')" :aria-label="t('local.refreshParticipants')" :disabled="loading" data-cy="participants-refresh" @click.stop="refreshParticipants">
+                    <BaseButton text :title="t('local.refreshParticipants')" :aria-label="t('local.refreshParticipants')" :disabled="loading" data-cy="participants-refresh" @keydown.stop @click.stop="refreshParticipants">
                         <BaseIconRefresh />
-                    </ElButton>
+                    </BaseButton>
                 </template>
                 <slot name="allSummary" :data="participants" :on-participant-select="ignoreSelection" />
             </ElTabPane>
             <ElTabPane v-if="participant && showLiveData" name="personal">
                 <template #label>
                     <span>{{ t('gsc.realTimeScore') }}</span>
-                    <ElButton text circle :title="t('local.refreshPersonal')" :aria-label="t('local.refreshPersonal')" :disabled="uploadBusy || personalLoading" data-cy="personal-score-refresh" @click.stop="personalView?.refresh()">
+                    <BaseButton text :title="t('local.refreshPersonal')" :aria-label="t('local.refreshPersonal')" :disabled="uploadBusy || personalLoading" data-cy="personal-score-refresh" @keydown.stop @click.stop="personalView?.refresh()">
                         <BaseIconRefresh />
-                    </ElButton>
+                    </BaseButton>
                 </template>
                 <PersonalView :key="participant.id" ref="personalView" v-loading="personalLoading" :model-value="participant" :refresh-disabled="uploadBusy" @loading="setPersonalLoading">
                     <template #personalSummary="slotProps">
@@ -57,7 +57,7 @@
 </template>
 
 <script setup lang="ts" generic="TParticipant extends TournamentParticipant">
-import { ElButton, ElTabPane, ElTabs, vLoading } from 'element-plus';
+import { ElTabPane, ElTabs, vLoading } from 'element-plus';
 import { computed, ref, shallowRef, useTemplateRef, watch } from 'vue';
 import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -68,6 +68,7 @@ import PersonalView from './PersonalView.vue';
 import Title from './Title.vue';
 import type { AutoUploadVideo } from './utils';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import { BaseIconRefresh } from '@/components/common/icon';
 import DataExporter from '@/components/widgets/DataExporter.vue';
 import { fetchTournamentVideos } from '@/services/tournamentService';

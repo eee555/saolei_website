@@ -30,6 +30,13 @@ declare global {
             closeElNotifications(): void;
 
             /**
+             * 等待选择器匹配的元素不存在或全部不可见，支持关闭动画和保留 DOM 的浮层。
+             * 每次重试重新查询当前文档，使用 Cypress 的可见性判断；返回文档，不返回目标元素。
+             * @example cy.shouldBeAbsentOrHidden('.el-dialog', { timeout: 10000 });
+             */
+            shouldBeAbsentOrHidden(selector: string, options?: Partial<Loggable & Timeoutable>): Chainable<Document>;
+
+            /**
              * 获取本地存储的值
              * @param key - 本地存储的键
              * @example cy.getLocalStorage('authToken')
@@ -191,6 +198,13 @@ Cypress.Commands.add('closeElNotifications', () => {
         cy.wrap($el).click();
     });
     cy.get('.el-notification__closeBtn:visible').should('not.exist');
+});
+
+Cypress.Commands.add('shouldBeAbsentOrHidden', (selector, options) => {
+    return cy.document(options).should((doc) => {
+        const $visible = Cypress.$(selector, doc).filter((_, element) => Cypress.dom.isVisible(element));
+        expect($visible, `${selector} should be absent or all hidden`).to.have.length(0);
+    });
 });
 
 Cypress.Commands.add('extractTableData', { prevSubject: 'element' }, (subject) => {

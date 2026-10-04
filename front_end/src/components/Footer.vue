@@ -25,24 +25,24 @@
                     <strong>{{ t('local.contact') }}</strong>
                 </div>
                 <div>
-                    <ElLink href="https://github.com/eee555/saolei_website" target="_blank" rel="noopener noreferrer">
+                    <a class="link text" href="https://github.com/eee555/saolei_website" target="_blank" rel="noopener noreferrer">
                         GitHub
-                    </ElLink>
+                    </a>
                 </div>
                 <div>
-                    <ElLink href="https://gitee.com/ee55/saolei_website" target="_blank" rel="noopener noreferrer">
+                    <a class="link text" href="https://gitee.com/ee55/saolei_website" target="_blank" rel="noopener noreferrer">
                         Gitee
-                    </ElLink>
+                    </a>
                 </div>
                 <div>
-                    <ElLink href="https://discord.gg/ks8ngPX5bT" target="_blank" rel="noopener noreferrer">
+                    <a class="link text" href="https://discord.gg/ks8ngPX5bT" target="_blank" rel="noopener noreferrer">
                         Discord
-                    </ElLink>
+                    </a>
                 </div>
                 <div>
-                    <ElLink href="https://qm.qq.com/q/hNShGUQkJG" target="_blank" rel="noopener noreferrer">
+                    <a class="link text" href="https://qm.qq.com/q/hNShGUQkJG" target="_blank" rel="noopener noreferrer">
                         QQ
-                    </ElLink>
+                    </a>
                 </div>
             </div>
             <div>
@@ -50,29 +50,29 @@
                     <strong>{{ t('local.links') }}</strong>
                 </div>
                 <div>
-                    <ElLink href="http://saolei.wang" target="_blank" rel="noopener noreferrer">
+                    <a class="link text" href="http://saolei.wang" target="_blank" rel="noopener noreferrer">
                         扫雷网 saolei.wang
-                    </ElLink>
+                    </a>
                 </div>
                 <div>
-                    <ElLink href="https://minesweepergame.com" target="_blank" rel="noopener noreferrer">
+                    <a class="link text" href="https://minesweepergame.com" target="_blank" rel="noopener noreferrer">
                         Authoritative Minesweeper
-                    </ElLink>
+                    </a>
                 </div>
                 <div>
-                    <ElLink href="https://minesweeper.online" target="_blank" rel="noopener noreferrer">
+                    <a class="link text" href="https://minesweeper.online" target="_blank" rel="noopener noreferrer">
                         Minesweeper.Online
-                    </ElLink>
+                    </a>
                 </div>
                 <div>
-                    <ElLink href="http://tapsss.com" target="_blank" rel="noopener noreferrer">
+                    <a class="link text" href="http://tapsss.com" target="_blank" rel="noopener noreferrer">
                         扫雷联萌 League of Minesweeper
-                    </ElLink>
+                    </a>
                 </div>
                 <div>
-                    <ElLink href="https://scoreganizer.net" target="_blank" rel="noopener noreferrer">
+                    <a class="link text" href="https://scoreganizer.net" target="_blank" rel="noopener noreferrer">
                         Scoreganizer
-                    </ElLink>
+                    </a>
                 </div>
             </div>
         </div>
@@ -80,22 +80,23 @@
             <span class="text">
                 Copyright @ 2023
             </span>
-            <ElLink href="http://openms.top">
+            <a class="link text" href="http://openms.top">
                 开源扫雷网 openms.top
-            </ElLink>
+            </a>
             <span class="text">
                 　版权所有
             </span>
-            <ElLink href="https://beian.miit.gov.cn/">
+            <a class="link text" href="https://beian.miit.gov.cn/">
                 苏ICP备2023056839号-1
-            </ElLink>
+            </a>
             <span style="width: 12px; display: inline-block" />
-            <ElLink
+            <a
+                class="link text"
                 href="https://beian.mps.gov.cn/#/query/webSearch?code=32020602001691" rel="noopener noreferrer"
                 target="_blank"
             >
                 苏公网安备32020602001691
-            </ElLink>
+            </a>
         </div>
     </footer>
 </template>
@@ -103,8 +104,9 @@
 <script setup lang="ts">
 import '@/styles/layout.css';
 import '@/styles/text.css';
+import '@/styles/link.css';
 
-import { ElDivider, ElLink } from 'element-plus';
+import { ElDivider } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
 import BaseOverlay from './common/BaseOverlay.vue';

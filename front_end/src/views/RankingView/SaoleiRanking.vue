@@ -1,8 +1,8 @@
 <template>
     <div style="display: flex; gap: 1rem">
-        <ElButton class="square-button" :loading="loading" :aria-label="t('local.refresh')" :title="t('local.refresh')" @click="load">
+        <BaseButton class="square-button" :loading="loading" :aria-label="t('local.refresh')" :title="t('local.refresh')" @click="load">
             <BaseIconRefresh />
-        </ElButton>
+        </BaseButton>
         <ElCheckbox v-model="nf" class="nf-toggle">
             NF
         </ElCheckbox>
@@ -36,12 +36,13 @@
 <script setup lang="ts">
 import '@/styles/button.css';
 
-import { ElAlert, ElButton, ElCheckbox, ElPagination, ElTable, ElTableColumn, vLoading } from 'element-plus';
+import { ElAlert, ElCheckbox, ElPagination, ElTable, ElTableColumn, vLoading } from 'element-plus';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import SaoleiRankingColumn from './SaoleiRankingColumn.vue';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import { BaseIconRefresh } from '@/components/common/icon';
 import PlayerName from '@/components/PlayerName.vue';
 import { fetchSaoleiRanking, SaoleiLevels } from '@/services/saoleiRankingService';

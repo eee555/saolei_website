@@ -19,9 +19,9 @@
                 {{ formatName(user.firstname, user.lastname, local.nameFormat) }}
             </div>
         </div>
-        <ElButton v-if="user.id === store.user.id" class="edit-button" @click="isEditing = true">
+        <BaseButton v-if="user.id === store.user.id" class="edit-button" @click="isEditing = true">
             {{ t('local.editButton') }}
-        </ElButton>
+        </BaseButton>
         <div class="signature">
             {{ user.signature }}
         </div>
@@ -32,13 +32,14 @@
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElDialog } from 'element-plus';
+import { ElDialog } from 'element-plus';
 import { defineAsyncComponent, ref } from 'vue';
 import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import Avatar from './Avatar.vue';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import { local, store } from '@/store';
 import { formatName } from '@/utils/strings';
 import { UserProfile } from '@/utils/userprofile';

@@ -1,6 +1,6 @@
 <template>
     <Tippy trigger="click" placement="bottom-start" interactive>
-        <ElButton :aria-label="label" circle>
+        <BaseButton class="square-button" :aria-label="label">
             <svg class="marker-setting__icon" viewBox="0 0 24 24" aria-hidden="true">
                 <circle
                     v-if="shape === 'circle'"
@@ -9,7 +9,7 @@
                     stroke="currentColor" :stroke-width="iconStrokeWidth"
                 />
             </svg>
-        </ElButton>
+        </BaseButton>
 
         <template #content>
             <div class="card card-small" style="overflow-x: hidden;">
@@ -50,10 +50,12 @@
 import '@/styles/cards.css';
 import '@/styles/text.css';
 
-import { ElButton, ElInputNumber, ElOption, ElSelect, ElSlider } from 'element-plus';
+import { ElInputNumber, ElOption, ElSelect, ElSlider } from 'element-plus';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Tippy } from 'vue-tippy';
+
+import BaseButton from '@/components/common/BaseButton.vue';
 
 type MarkerShape = 'circle';
 type MarkerSettingOption = 'shape' | 'radius' | 'opacity' | 'strokeWidth';

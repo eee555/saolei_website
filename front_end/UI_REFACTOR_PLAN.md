@@ -1,7 +1,7 @@
 # 前端 UI 风格渐进重构计划
 
 制定日期：2026-10-03。
-进度更新：2026-10-03。按用户确认，已提交的改动视为验收完成，从待办中移除。
+进度更新：2026-10-04。按用户确认，已提交的改动视为验收完成，从待办中移除。
 
 ## 目标与范围
 
@@ -16,8 +16,8 @@
 | 工作项 | 状态 | 剩余事项 |
 | --- | --- | --- |
 | 视觉参数 | 待细化 | 在已确定的方向与选型规则下，统一字号、间距和组件尺寸 |
-| 项目主题变量与组件库适配 | 待实施 | 尚无 `tokens.css`、统一 `--ui-*` 变量或 `styles/vendors`；原生卡片当前直接使用 Element Plus 颜色变量 |
-| 按钮、链接、分隔线、描述列表等 | 待逐批迁移 | 优先完善已有基础组件，按组件类别拆分提交 |
+| 项目主题变量与组件库适配 | 按钮直角适配已实现，其余待实施 | `styles/vendors/element-plus.css` 已统一 ElButton 圆角；尚无 `tokens.css` 或统一 `--ui-*` 变量，原生组件继续使用 Element Plus 颜色变量 |
+| 按钮、链接、分隔线、描述列表等 | 第三批迁移已验收，收尾待提交 | 本轮范围内的 ElLink / ElButton 已迁移；收尾清理与暂留范围见下文，分隔线与描述列表单独处理 |
 | 复杂组件换肤 | 待实施 | 表格、表单、Tabs、弹窗等仍需分别调整直角与紧凑尺寸 |
 | PrimeVue 退出 | 延后独立推进 | 表格、筛选控件及 Toolbar 暂留；账号关联页面等待重做 |
 
@@ -134,7 +134,7 @@
 
 ### 3. 建立主题适配与 PrimeVue 过渡样式
 
-状态：待实施。原生卡片已采用 Element Plus 配色，但保留组件库的统一换肤尚未完成。
+状态：按钮直角适配已实现，其余待实施。通过 `setup.ts` 统一加载 `vendors/element-plus.css`，使 ElButton 的普通、small/large、round/circle 和按钮组边角均使用直角；应用与 Cypress 组件测试共用入口。原生按钮已使用直角，保留组件库的其他换肤继续分批进行。
 
 - 建立 Element Plus 的主题适配；PrimeVue 仅对暂留表格、分页器及必要的筛选浮层做过渡适配。
 - 基础颜色适配沿用 Element Plus 配色，并与直角、紧凑尺寸调整分开提交；Element Plus 的圆角、内外边距、控件间距、行高是本阶段的主要改造项。
@@ -152,6 +152,25 @@
 - 本阶段不安排 PrimeVue Toolbar 迁移，账号关联卡片留待页面重做。
 
 完成条件：调用方不需要成批修改，原有行为得到保留。
+
+#### ElLink / ElButton：第三批收尾与暂留范围
+
+第三批 3.1、3.2、3.3 的迁移已提交，按约定视为验收完成，不再保留其实施与测试待办。账号关联页面仍随将来重做迁移，首页比赛卡片继续暂留。
+
+共享按钮的 loading 必须同时提供加载反馈并阻止重复点击，disabled 保留原生禁用语义。透传 class、style、data-cy、ARIA 属性及实际使用的事件，保证键盘操作；仅实现项目需要的接口，不复制 ElButton 全部 API。
+
+`vue/no-restricted-html-elements` 在现有参与 lint 的 `src/**/*.vue` 中限制新增 ElLink / ElButton 使用；仅对下述八个暂留文件不增加这两项限制，仍保留现有文字、布局和卡片规则。暂留文件迁移后，应同时移除对应配置例外；不豁免整个账号关联目录。
+
+现有基础接口：`BaseButton` 提供 `type`（视觉类型）、`size`、`nativeType`、`text`、`plain`、`disabled`、`loading` 以及默认/icon 插槽；`BaseTextButton` 另提供 `underline`（never/hover/always）。BaseButton 不隐式继承 ElForm 状态，`nativeType="reset"` 只执行原生表单重置；调用方需要的尺寸和禁用状态显式传入。本次检查的登录/注册/找回密码、管理员账号审核和周赛创建表单没有设置需要按钮继承的 ElForm 尺寸或禁用状态，也没有原生 reset 依赖，原有校验及 resetFields 调用保留。
+
+暂留文件：
+
+- `views/HomeView/NormalTournamentQueue.vue`：首页比赛卡片整体暂缓。
+- `components/accountlinks/` 中的 `CardAdd.vue`、`CardAddMineracer.vue`、`CardBilibili.vue`、`CardSaolei.vue`、`CardWoM.vue`、`CarouselControl.vue`、`VideoImportQueue.vue`：随账号关联页面重做处理。
+
+本次收尾（待提交）：删除无调用方、已标注拟弃用的 `PreviewDownload.vue`；清理失效的 ElButton `square-button` 样式与按钮组中的旧选择器；补充上述 ESLint 限制。账号关联卡片仍使用的 `button-compact`、新旧按钮相邻间距和 Element Plus 直角适配继续保留。
+
+收尾已通过 `npm.cmd run lintfix`、`npm.cmd run typecheck` 和 `npm.cmd run build:frontend`；另核对规则实际报错、八个文件例外及原有文字/布局/卡片限制均符合预期。本次不改变现有交互，未运行 Cypress，也不重新列入已验收的 3.3 浏览器测试待办。
 
 ### 5. 分批给复杂组件换肤
 
@@ -203,14 +222,16 @@
 ```text
 src/styles/
   text.css                    继续沿用现有文字类
-  button.css                  现有按钮辅助样式，仍含 Element Plus 选择器
+  button.css                  原生按钮样式，兼容尚未迁移的 Element Plus 辅助类
+  link.css                    原生链接样式，复用 text.css 与 Element Plus 配色
   layout.css                  已迁移的原生行列布局
   cards.css                   已迁移的原生卡片、尺寸修饰类和标题
+  vendors/element-plus.css     保留的 Element Plus 按钮直角覆盖
 ```
 
 `cards.css` 当前提供 `.card`、`.card-small`、`.card-large`、`.card-title`。基础卡片为直角、无默认阴影、10px 内边距；小卡片为 5px，大卡片为上下 10px、左右 20px。颜色直接使用 `--el-border-color-light`、`--el-fill-color-blank` 和 `--el-text-color-primary`，沿用现有深浅主题。
 
-后续再按需要新增 `tokens.css` 和 `vendors/element-plus.css`、`vendors/primevue.css`，它们目前尚未实现。目标依赖方向为：
+`vendors/element-plus.css` 已提供按钮直角覆盖。后续再按需要新增 `tokens.css`、`vendors/primevue.css`，并扩展 Element Plus 的其他适配。目标依赖方向为：
 
 ```text
 项目样式变量
@@ -303,7 +324,7 @@ E2E 使用项目现有测试环境。每批优先运行受影响的 spec，而�
 
 ## 下一批建议
 
-1. 选择按钮、分隔线或简单描述列表中的一类继续迁移，保持改动范围集中。
+1. 提交第三批收尾后，分隔线或简单描述列表可作为独立小批次推进；按钮与链接仅剩上述暂留范围，随相关页面维护单独处理。
 2. 统一主题变量与复杂组件换肤作为独立批次推进，每批先选择代表实例，再推广。
 
 首页比赛卡片、账号关联页面重做及 PrimeVue 表格退出继续保持暂缓，不作为下一批简单组件迁移的前置条件。

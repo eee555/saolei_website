@@ -1,8 +1,8 @@
 <template>
     <div class="log-selector">
-        <ElButton @click="getLogDir">
+        <BaseButton @click="getLogDir">
             获取日志目录
-        </ElButton>
+        </BaseButton>
         <ElSelect
             v-model="selectedLog"
             class="log-file-select"
@@ -23,9 +23,9 @@
                 </div>
             </ElOption>
         </ElSelect>
-        <ElButton :disabled="selectedLog === ''" @click="downloadLog(selectedLog)">
+        <BaseButton :disabled="selectedLog === ''" @click="downloadLog(selectedLog)">
             下载
-        </ElButton>
+        </BaseButton>
     </div>
     <div class="log-toolbar">
         <span v-if="selectedLog">
@@ -34,20 +34,20 @@
         <span>
             {{ streamStatus }}
         </span>
-        <ElButton
+        <BaseButton
             class="log-poll-start"
             :disabled="selectedLog === '' || loadedLog !== selectedLog || isLogPolling"
             @click="startLogPolling"
         >
             开始轮询
-        </ElButton>
-        <ElButton
+        </BaseButton>
+        <BaseButton
             class="log-poll-stop"
             :disabled="!isLogPolling"
             @click="stopLogPolling"
         >
             停止轮询
-        </ElButton>
+        </BaseButton>
         <label class="log-poll-interval log-poll-ms">
             轮询间隔
             <ElInputNumber
@@ -73,9 +73,10 @@
 </template>
 
 <script lang="ts" setup>
-import { ElButton, ElInputNumber, ElOption, ElSelect } from 'element-plus';
+import { ElInputNumber, ElOption, ElSelect } from 'element-plus';
 import { nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import { httpErrorNotification } from '@/components/Notifications';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { formatBytes } from '@/utils/strings';

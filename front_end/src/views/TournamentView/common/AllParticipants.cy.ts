@@ -131,7 +131,8 @@ describe('<AllParticipants />', () => {
         cy.get('[data-cy=participant-22]').click();
         activeTopLevelTabShouldBe(22);
 
-        topLevelTab(11).find('[data-cy=all-participants-tab-close]').click();
+        topLevelTab(11).find('[data-cy=all-participants-tab-close]').focus();
+        cy.realPress('Enter');
         topLevelTabItems().should('have.length', 2);
         topLevelTab(11).should('not.exist');
         activeTopLevelTabShouldBe(22);

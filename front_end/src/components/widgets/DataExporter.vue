@@ -1,7 +1,7 @@
 <template>
-    <ElButton :loading="isDownloading" @click="handleDownload">
+    <BaseButton :loading="isDownloading" @click="handleDownload">
         <slot />
-    </ElButton>
+    </BaseButton>
     <ElSelect v-model="format" style="width: 5rem">
         <ElOption label="CSV" value="csv" />
         <ElOption label="JSON" value="json" />
@@ -9,10 +9,12 @@
 </template>
 
 <script setup lang="ts" generic="TData extends object">
-import { ElButton, ElOption, ElSelect } from 'element-plus';
+import { ElOption, ElSelect } from 'element-plus';
 import { jsonToCsv } from 'jtcsv/browser';
 import { ref } from 'vue';
 import type { PropType } from 'vue';
+
+import BaseButton from '@/components/common/BaseButton.vue';
 
 type MaybePromise<T> = T | Promise<T>;
 type DataExportFormat = 'csv' | 'json';

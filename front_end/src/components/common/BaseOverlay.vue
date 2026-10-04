@@ -1,7 +1,7 @@
 <template>
-    <ElLink :underline="underline" @click.stop="visible = true">
+    <BaseTextButton :underline="underline" @click.stop="visible = true">
         <slot />
-    </ElLink>
+    </BaseTextButton>
     <ElDialog v-if="visible" model-value width="100%" align-center body-class="center" :show-close="false" append-to-body :z-index="zIndex" @closed="visible=false">
         <slot name="overlay" />
         <template #header>
@@ -13,9 +13,11 @@
 </template>
 
 <script lang="ts" setup>
-import { ElDialog, ElLink } from 'element-plus';
+import { ElDialog } from 'element-plus';
 import type { PropType } from 'vue';
 import { ref } from 'vue';
+
+import BaseTextButton from './BaseTextButton.vue';
 
 defineProps({
     zIndex: {
