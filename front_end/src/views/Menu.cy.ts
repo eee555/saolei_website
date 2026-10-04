@@ -31,7 +31,7 @@ type MenuRects = Record<string, DOMRect>;
 
 function mountMenu(width: number) {
     cy.viewport(width, 300);
-    cy.intercept('GET', '**/api/userprofile/info/0', user).as('fetchUser');
+    cy.intercept({ method: 'GET', pathname: '/api/userprofile/info/0' }, user).as('fetchUser');
 
     local.value.language = 'en';
     local.value.language_show = true;

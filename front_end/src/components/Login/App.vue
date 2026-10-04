@@ -53,7 +53,10 @@ const dialogVisible = ref(false);
 const activeDialog = ref<'login' | 'register' | 'retrieve'>('login');
 
 onMounted(async () => {
-    await proxy.$axios.get<GetUserInfoResponse>('api/userprofile/info/0').then(function (response) {
+    // 恢复登录状态时绕过 HTTP 缓存，避免实名等资料修改后读到旧数据。
+    await proxy.$axios.get<GetUserInfoResponse>('api/userprofile/info/0', {
+        params: { _t: Date.now() },
+    }).then(function (response) {
         store.login(response.data);
     }).catch((err: unknown) => {
         store.logout();
