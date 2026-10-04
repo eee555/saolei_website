@@ -1,6 +1,7 @@
 import ClassicSummary from './Classic.vue';
 
 import i18n from '@/i18n';
+import { videoplayerstore } from '@/store';
 import { MS_Mode } from '@/utils/ms_const';
 import type { MS_Mode as MSMode } from '@/utils/ms_const';
 import { VideoAbstract } from '@/utils/videoabstract';
@@ -36,6 +37,20 @@ function cellTexts(index: number) {
 }
 
 describe('<WeeklyPersonalSummary Classic />', () => {
+    afterEach(() => {
+        videoplayerstore.visible = false;
+    });
+
+    it('opens the selected score by keyboard and leaves missing scores non-interactive', () => {
+        mountClassicSummary([video('i', MS_Mode.Standard, 20000)]);
+        cy.get('.cell-list').eq(0).find('[data-cy=video-cell-action]').should('not.exist');
+        cy.get('.cell-list').eq(1).find('[data-cy=video-cell-action]').should('have.length', 1).focus();
+        cy.realPress('Enter');
+        cy.wrap(videoplayerstore).its('visible').should('eq', true);
+        cy.wrap(videoplayerstore).its('id').should('eq', 20000);
+        cy.wrap(videoplayerstore).its('url').should('include', '/api/video/preview?id=20000');
+    });
+
     it('uses the fastest standard videos, including no-flag play, for classic scoring', () => {
         mountClassicSummary([
             video('i', MS_Mode.SpeedNG, 9876),

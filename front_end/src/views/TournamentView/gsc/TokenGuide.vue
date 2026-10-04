@@ -1,12 +1,12 @@
 <template>
     <span class="text">
-        <ElLink :href="gscGuideUrl" target="_blank" rel="noopener noreferrer">
+        <a class="link text" :href="gscGuideUrl" target="_blank" rel="noopener noreferrer">
             {{ t('gsc.identifierGuide.guideLink') }}
-        </ElLink>
+        </a>
         <div v-if="!participant">
-            <ElButton :disabled="store.isUserAnonymous" :loading="registeringParticipant" @click="registerParticipant">
+            <BaseButton :disabled="store.isUserAnonymous" :loading="registeringParticipant" @click="registerParticipant">
                 {{ t('common.button.register') }}
-            </ElButton>
+            </BaseButton>
             <span v-if="store.isUserAnonymous" class="text text-danger">
                 {{ t('common.msg.realNameRequired') }}
             </span>
@@ -20,9 +20,9 @@
             <IconCopy :text="token" />
             <div v-if="identifier === ''">
                 <ElInput v-model="newIdentifier" :placeholder="t('common.prop.identifier')" style="width: 260px" />
-                <ElButton :loading="registeringIdentifier" @click="registerIdentifier">
+                <BaseButton :loading="registeringIdentifier" @click="registerIdentifier">
                     {{ t('common.button.register') }}
-                </ElButton>
+                </BaseButton>
                 <span v-if="errorText !== ''" class="text text-danger">
                     {{ errorText }}
                 </span>
@@ -37,11 +37,13 @@
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElInput, ElLink } from 'element-plus';
+import '@/styles/link.css';
+import '@/styles/text.css';
+import { ElInput } from 'element-plus';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import '@/styles/text.css';
+import BaseButton from '@/components/common/BaseButton.vue';
 import { httpErrorNotification, successNotification, unknownErrorNotification } from '@/components/Notifications';
 import IconCopy from '@/components/widgets/IconCopy.vue';
 import { local, store } from '@/store';

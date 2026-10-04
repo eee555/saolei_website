@@ -6,20 +6,20 @@
         <template v-else>
             <SoftwareIcon v-if="props.showIcon === 'software'" :software="videos[bestIndex].software" />
             <VideoStateIcon v-else-if="props.showIcon === 'state'" :state="videos[bestIndex].state" />
-            <ElLink underline="never" style="font-weight: inherit" @click="handleClick">
+            <BaseTextButton class="video-cell-action" data-cy="video-cell-action" style="font-weight: inherit" @click="handleClick">
                 {{ videos[bestIndex].displayStat(displayBy) }}
-            </ElLink>
+            </BaseTextButton>
         </template>
     </span>
 </template>
 
 <script setup lang="ts">
-import { ElLink } from 'element-plus';
 import type { PropType } from 'vue';
 import { computed, ref, watch } from 'vue';
 
 import { getBest } from './utils';
 
+import BaseTextButton from '@/components/common/BaseTextButton.vue';
 import SoftwareIcon from '@/components/widgets/SoftwareIcon.vue';
 import VideoStateIcon from '@/components/widgets/VideoStateIcon.vue';
 import { store } from '@/store';
@@ -93,7 +93,7 @@ function handleClick() {
     font-weight: 1000;
 }
 
-.el-link {
-    --el-link-text-color: currentColor;
+.video-cell-action {
+    --button-accent: currentColor;
 }
 </style>

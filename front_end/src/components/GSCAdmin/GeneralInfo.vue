@@ -4,9 +4,9 @@
     </span>
     <span v-else-if="notFound" class="text">
         未找到该届信息
-        <ElButton @click="createGSC">
+        <BaseButton @click="createGSC">
             创建比赛
-        </ElButton>
+        </BaseButton>
     </span>
     <span v-else-if="loadingGSCInfo" class="text">
         正在加载信息...
@@ -26,9 +26,9 @@
         &nbsp;
         <span>设置标识：</span>
         <ElInput v-model="newToken" style="width: 300px;" />
-        <ElButton @click="setToken(newToken)">
+        <BaseButton @click="setToken(newToken)">
             修改！
-        </ElButton>
+        </BaseButton>
         <br>
         <span>想设置空标识需打开此开关</span><ElSwitch v-model="allowEmptyToken" />
         <br>
@@ -53,26 +53,27 @@
                 {{ taskInfo?.exception_class_path || '无' }}
             </ElDescriptionsItem>
         </ElDescriptions>
-        <ElButton :loading="loadingTaskInfo" @click="refreshTaskInfo">
+        <BaseButton :loading="loadingTaskInfo" @click="refreshTaskInfo">
             刷新任务
-        </ElButton>
-        <ElButton :loading="creatingFinishTask" @click="createFinishTask">
+        </BaseButton>
+        <BaseButton :loading="creatingFinishTask" @click="createFinishTask">
             计算排行并结束比赛
-        </ElButton>
-        <ElButton v-if="taskInfo?.status === 'FAILED'" @click="console.log(taskInfo.traceback)">
+        </BaseButton>
+        <BaseButton v-if="taskInfo?.status === 'FAILED'" @click="console.log(taskInfo.traceback)">
             输出错误
-        </ElButton>
+        </BaseButton>
     </span>
 </template>
 
 <script setup lang="ts">
 import '@/styles/text.css';
 import { isAxiosError } from 'axios';
-import { ElButton, ElDatePicker, ElDescriptions, ElDescriptionsItem, ElInput, ElSwitch } from 'element-plus';
+import { ElDatePicker, ElDescriptions, ElDescriptionsItem, ElInput, ElSwitch } from 'element-plus';
 import { ref, watch } from 'vue';
 
 import { httpErrorNotification, successNotification } from '../Notifications';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import DjangoTaskResultStatusBadge from '@/components/widgets/DjangoTaskResultStatusBadge.vue';
 import type { DjangoTaskResultStatus } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';

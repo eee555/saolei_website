@@ -31,6 +31,7 @@
 }
 
 .base-button--primary {
+    --button-accent-background: var(--el-color-primary-light-9);
     --button-accent: var(--el-color-primary);
     --button-accent-hover: var(--el-color-primary-light-3);
     --button-accent-active: var(--el-color-primary-dark-2);
@@ -38,6 +39,7 @@
 }
 
 .base-button--success {
+    --button-accent-background: var(--el-color-success-light-9);
     --button-accent: var(--el-color-success);
     --button-accent-hover: var(--el-color-success-light-3);
     --button-accent-active: var(--el-color-success-dark-2);
@@ -45,6 +47,7 @@
 }
 
 .base-button--warning {
+    --button-accent-background: var(--el-color-warning-light-9);
     --button-accent: var(--el-color-warning);
     --button-accent-hover: var(--el-color-warning-light-3);
     --button-accent-active: var(--el-color-warning-dark-2);
@@ -52,6 +55,7 @@
 }
 
 .base-button--danger {
+    --button-accent-background: var(--el-color-danger-light-9);
     --button-accent: var(--el-color-danger);
     --button-accent-hover: var(--el-color-danger-light-3);
     --button-accent-active: var(--el-color-danger-dark-2);
@@ -59,6 +63,7 @@
 }
 
 .base-button--info {
+    --button-accent-background: var(--el-color-info-light-9);
     --button-accent: var(--el-color-info);
     --button-accent-hover: var(--el-color-info-light-3);
     --button-accent-active: var(--el-color-info-dark-2);
@@ -76,6 +81,16 @@
     --button-disabled-color: var(--el-color-white);
     --button-disabled-background: var(--button-accent-disabled);
     --button-disabled-border: var(--button-accent-disabled);
+}
+
+.base-button--plain:not(.base-button--default):not(.base-button--text) {
+    --button-color: var(--button-accent);
+    --button-background: var(--button-accent-background);
+    --button-border: var(--button-accent-disabled);
+    --button-hover-background: var(--button-accent);
+    --button-hover-border: var(--button-accent);
+    --button-disabled-color: var(--button-accent-disabled);
+    --button-disabled-background: var(--button-accent-background);
 }
 
 .base-button--size-small {

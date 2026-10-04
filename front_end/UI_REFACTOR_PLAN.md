@@ -1,7 +1,7 @@
 # 前端 UI 风格渐进重构计划
 
 制定日期：2026-10-03。
-进度更新：2026-10-03。按用户确认，已提交的改动视为验收完成，从待办中移除。
+进度更新：2026-10-04。按用户确认，已提交的改动视为验收完成，从待办中移除。
 
 ## 目标与范围
 
@@ -16,8 +16,8 @@
 | 工作项 | 状态 | 剩余事项 |
 | --- | --- | --- |
 | 视觉参数 | 待细化 | 在已确定的方向与选型规则下，统一字号、间距和组件尺寸 |
-| 项目主题变量与组件库适配 | 待实施 | 尚无 `tokens.css`、统一 `--ui-*` 变量或 `styles/vendors`；原生卡片当前直接使用 Element Plus 颜色变量 |
-| 按钮、链接、分隔线、描述列表等 | 第二批公共入口已实现，待提交验收；其他待迁移 | ElLink / ElButton 按下文剩余批次推进，分隔线与描述列表单独处理 |
+| 项目主题变量与组件库适配 | 按钮直角适配已实现，其余待实施 | `styles/vendors/element-plus.css` 已统一 ElButton 圆角；尚无 `tokens.css` 或统一 `--ui-*` 变量，原生组件继续使用 Element Plus 颜色变量 |
+| 按钮、链接、分隔线、描述列表等 | 第三批 3.1 比赛模块已实现，待提交验收；其他模块待迁移 | ElLink / ElButton 按下文剩余批次推进，分隔线与描述列表单独处理 |
 | 复杂组件换肤 | 待实施 | 表格、表单、Tabs、弹窗等仍需分别调整直角与紧凑尺寸 |
 | PrimeVue 退出 | 延后独立推进 | 表格、筛选控件及 Toolbar 暂留；账号关联页面等待重做 |
 
@@ -134,7 +134,7 @@
 
 ### 3. 建立主题适配与 PrimeVue 过渡样式
 
-状态：待实施。原生卡片已采用 Element Plus 配色，但保留组件库的统一换肤尚未完成。
+状态：按钮直角适配已实现，其余待实施。通过 `setup.ts` 统一加载 `vendors/element-plus.css`，使 ElButton 的普通、small/large、round/circle 和按钮组边角均使用直角；应用与 Cypress 组件测试共用入口。原生按钮已使用直角，保留组件库的其他换肤继续分批进行。
 
 - 建立 Element Plus 的主题适配；PrimeVue 仅对暂留表格、分页器及必要的筛选浮层做过渡适配。
 - 基础颜色适配沿用 Element Plus 配色，并与直角、紧凑尺寸调整分开提交；Element Plus 的圆角、内外边距、控件间距、行高是本阶段的主要改造项。
@@ -155,24 +155,31 @@
 
 #### ElLink / ElButton：剩余批次（沿用原编号）
 
-2. **迁移链接和简单操作。** 从页脚外链、录像预览入口、缩放按钮等小范围开始。用于导航的 ElLink 改为原生 `<a>` 与共享链接样式，保留 href、target、rel 和现有导航方式；用于操作的 ElLink 改用文字按钮。保留禁用条件、事件修饰符和测试定位属性，每个组件或模块单独提交。
 3. **逐模块迁移其他按钮。** 根据实际使用能力，将普通 ElButton 改为原生按钮与共享样式，重复的加载、图标等需求复用 BaseButton。逐项核对 ElForm 的禁用/尺寸继承、重置行为及其他隐式依赖；尚未处理的复杂用法暂留 ElButton 并覆盖 CSS。文件选择与拖放入口单独处理；账号关联页面仍随将来重做迁移。
 
 共享按钮的 loading 必须同时提供加载反馈并阻止重复点击，disabled 保留原生禁用语义。透传 class、style、data-cy、ARIA 属性及实际使用的事件，保证键盘操作；仅实现项目需要的接口，不复制 ElButton 全部 API。
 
 ESLint 限制在对应迁移完成后补充，避免提前全局禁用产生大量临时豁免。其他模块仍有使用方，本批不新增 ElLink / ElButton 的全局禁用规则。
 
-现有基础接口：`BaseButton` 提供 `type`（视觉类型）、`size`、`nativeType`、`text`、`disabled`、`loading` 以及默认/icon 插槽；`BaseTextButton` 另提供 `underline`（never/hover/always）。BaseButton 不隐式继承 ElForm 状态，`nativeType="reset"` 只执行原生表单重置；后续有 Element Plus 表单依赖的调用方按第三批单独处理。
+现有基础接口：`BaseButton` 提供 `type`（视觉类型）、`size`、`nativeType`、`text`、`plain`、`disabled`、`loading` 以及默认/icon 插槽；`BaseTextButton` 另提供 `underline`（never/hover/always）。BaseButton 不隐式继承 ElForm 状态，`nativeType="reset"` 只执行原生表单重置；后续有 Element Plus 表单依赖的调用方按第三批单独处理。
 
-第二批本次范围：`Footer` 外链和 `PlayerName` 资料链接改为原生 `<a>` 与 `styles/link.css`；`PreviewNumber`、`Zoomer` 和 `BaseOverlay` 的操作入口复用文字按钮，保留预览逻辑、缩放边界、滚轮操作、弹窗插槽和阻止冒泡行为。其他业务模块中的 ElLink 随模块维护继续迁移；首页比赛卡片、账号关联页面自身模板及可视化单元格不在本批改写范围。
+第三批继续按模块拆分，不做一次全站替换：
 
-第二批浏览器验收由用户运行，提交后按本文约定移除此待办。在 `front_end` 目录执行：
+- **3.1 比赛操作与成绩预览（已实现，待提交验收）。** 周赛和 GSC 报名、周赛参赛者删除、比赛数据刷新、选手页签关闭、GSC 管理操作改用基础按钮；指南地址改为原生链接。周赛总榜及共享 `VideoCell` / `BBBvSummary/Cell` 的成绩操作改用文字按钮，保留自定义配色、预览/列表模式与 Tippy。补充 `plain` 样式；页签内按钮隔离键盘事件，保留原有点击冒泡规则。此范围无 ElForm 状态继承或原生 reset 依赖，业务请求与计算逻辑保持不变。
+- **3.2 上传、文件选择与播放器（待实施）。** 单独处理 AutoUploader、BaseFileInput、VideoUpload、VideoPlayer 等，核对目录选择、拖放、禁用、文件重选和播放控制；按子模块进一步拆分。
+- **3.3 其他业务模块（待实施）。** 登录与表单、用户资料、排行榜、可视化设置及剩余管理页面分别迁移，按实际用法完善基础接口，并核对 ElForm 上下文、图标、选中态等能力。
+
+首页比赛卡片和账号关联页面仍按既定范围暂留；共享组件的必要兼容检查随对应小步进行。第三批整体尚未完成，不启用全站 ElLink / ElButton 禁用规则。
+
+3.1 浏览器验收由用户运行，提交后按本文约定移除此待办。在 `front_end` 目录执行：
 
 ```powershell
-npx.cmd cypress run --component --spec "src/components/Footer.cy.ts,src/components/PlayerName.cy.ts,src/components/PreviewNumber.cy.ts,src/components/widgets/Zoomer.cy.ts,src/components/common/BaseOverlay.cy.ts,src/views/RankingView/SaoleiRanking.cy.ts"
+npx.cmd cypress run --component --spec "src/components/common/BaseButton.cy.ts,src/views/TournamentView/common/AllParticipants.cy.ts,src/views/TournamentView/common/PublicTournament.cy.ts,src/views/TournamentView/weekly/App.cy.ts,src/views/TournamentView/gsc/App.cy.ts,src/components/GSCAdmin/GeneralInfo.cy.ts"
+npx.cmd cypress run --component --spec "src/components/visualization/BBBvSummary/Cell.cy.ts,src/components/visualization/GSCPersonalSummary/SortedColumn.cy.ts,src/components/visualization/WeeklyPersonalSummary/Classic.cy.ts"
+npx.cmd cypress run --e2e --spec "cypress/e2e/tournament.cy.ts"
 ```
 
-同时检查深浅主题下链接的悬停与焦点、玩家头像和长名字的排列、缩放控件间距，以及共享弹窗入口在录像表格和账号关联卡片中的显示。
+同时检查深浅主题下的 plain 删除按钮、加载/禁用状态、页签内图标间距及成绩单元格的文字配色；确认表格行点击与预览操作保持原有关系。
 
 ### 5. 分批给复杂组件换肤
 
@@ -228,11 +235,12 @@ src/styles/
   link.css                    原生链接样式，复用 text.css 与 Element Plus 配色
   layout.css                  已迁移的原生行列布局
   cards.css                   已迁移的原生卡片、尺寸修饰类和标题
+  vendors/element-plus.css     保留的 Element Plus 按钮直角覆盖
 ```
 
 `cards.css` 当前提供 `.card`、`.card-small`、`.card-large`、`.card-title`。基础卡片为直角、无默认阴影、10px 内边距；小卡片为 5px，大卡片为上下 10px、左右 20px。颜色直接使用 `--el-border-color-light`、`--el-fill-color-blank` 和 `--el-text-color-primary`，沿用现有深浅主题。
 
-后续再按需要新增 `tokens.css` 和 `vendors/element-plus.css`、`vendors/primevue.css`，它们目前尚未实现。目标依赖方向为：
+`vendors/element-plus.css` 已提供按钮直角覆盖。后续再按需要新增 `tokens.css`、`vendors/primevue.css`，并扩展 Element Plus 的其他适配。目标依赖方向为：
 
 ```text
 项目样式变量
@@ -325,7 +333,7 @@ E2E 使用项目现有测试环境。每批优先运行受影响的 spec，而�
 
 ## 下一批建议
 
-1. 提交验收本批公共链接与操作入口后，按第三批逐模块处理剩余按钮，并迁移所在模块的剩余 ElLink；分隔线或简单描述列表可作为独立小批次推进。
+1. 提交验收第三批 3.1 后，从 3.2 的上传或文件选择中挑选一个子模块继续迁移，再逐步处理 3.3；分隔线或简单描述列表可作为独立小批次推进。
 2. 统一主题变量与复杂组件换肤作为独立批次推进，每批先选择代表实例，再推广。
 
 首页比赛卡片、账号关联页面重做及 PrimeVue 表格退出继续保持暂缓，不作为下一批简单组件迁移的前置条件。

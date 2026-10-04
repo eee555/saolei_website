@@ -51,7 +51,7 @@ function mountSortedColumn(props: {
 }
 
 function linkTexts() {
-    return cy.get('.cell .el-link').then(($links) => {
+    return cy.get('.cell [data-cy=video-cell-action]').then(($links) => {
         return Array.from($links).map((link) => link.textContent?.replace(/\s+/g, ' ').trim() ?? '');
     });
 }

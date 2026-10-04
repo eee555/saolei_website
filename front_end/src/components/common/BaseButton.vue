@@ -1,6 +1,6 @@
 <template>
     <button
-        class="base-button" :class="[`base-button--${type}`, `base-button--size-${size}`, { 'base-button--text': text }]"
+        class="base-button" :class="[`base-button--${type}`, `base-button--size-${size}`, { 'base-button--text': text, 'base-button--plain': plain }]"
         :type="nativeType" :disabled="disabled || loading" :aria-busy="loading || undefined" @click="handleClick"
     >
         <i v-if="loading" class="pi pi-spin pi-spinner" aria-hidden="true" />
@@ -19,6 +19,7 @@ const props = defineProps({
     size: { type: String as PropType<'small' | 'default' | 'large'>, default: 'default' },
     nativeType: { type: String as PropType<'button' | 'submit' | 'reset'>, default: 'button' },
     text: { type: Boolean, default: false },
+    plain: { type: Boolean, default: false },
     disabled: { type: Boolean, default: false },
     loading: { type: Boolean, default: false },
 });
