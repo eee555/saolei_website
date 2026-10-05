@@ -34,6 +34,12 @@ function lastModelUpdate() {
 }
 
 describe('<ProgressBar />', () => {
+    afterEach(() => {
+        // Release window-level drag listeners even when an assertion interrupts the drag.
+        cy.window().trigger('mouseup', { eventConstructor: 'MouseEvent' });
+        cy.get('.progress-bar__slider .el-slider__button-wrapper').should('not.have.class', 'dragging');
+    });
+
     it('emits bounded step and restart updates', () => {
         mountProgressBar(950, 1000);
 
@@ -108,6 +114,7 @@ describe('<ProgressBar />', () => {
                 cy.then(() => animationCallback?.(1100));
                 lastModelUpdate().should('eq', 100);
             }
+            cy.get('.progress-bar__slider .el-slider__button-wrapper').should('have.attr', 'aria-valuenow', playing ? '100' : '0');
 
             cy.get('.progress-bar__slider .el-slider__runway').then(($runway) => {
                 const bounds = $runway[0].getBoundingClientRect();
@@ -117,22 +124,22 @@ describe('<ProgressBar />', () => {
             cy.get(`.progress-bar__slider .${fromTrack ? 'el-slider__runway' : 'el-slider__button-wrapper'}`).then(($handle) => {
                 const bounds = $handle[0].getBoundingClientRect();
                 const position = { button: 0, clientX: bounds.left + bounds.width * (fromTrack ? 0.25 : 0.5), clientY: targetY };
-                cy.wrap($handle).trigger('pointerdown', { ...position, eventConstructor: 'PointerEvent' });
-                cy.wrap($handle).trigger('mousedown', position);
+                cy.wrap($handle).trigger('pointerdown', { ...position, eventConstructor: 'PointerEvent', scrollBehavior: false });
+                cy.wrap($handle).trigger('mousedown', { ...position, eventConstructor: 'MouseEvent', scrollBehavior: false });
             });
             if (playing) {
                 cy.then(() => animationCallback?.(2000));
                 lastModelUpdate().should('eq', fromTrack ? 250 : 100);
             }
-            cy.get('body').then(($body) => {
-                cy.wrap($body).trigger('mousemove', { clientX: targetX, clientY: targetY });
+            cy.window().then((win) => {
+                cy.wrap(win).trigger('mousemove', { clientX: targetX, clientY: targetY, buttons: 1, eventConstructor: 'MouseEvent' });
             });
             lastModelUpdate().should('eq', fraction * 1000);
             if (playing) {
                 cy.then(() => animationCallback?.(3000));
                 lastModelUpdate().should('eq', fraction * 1000);
             }
-            cy.get('body').trigger('mouseup');
+            cy.window().trigger('mouseup', { eventConstructor: 'MouseEvent' });
             cy.get(`.progress-bar .${expected === 850 ? 'pi-pause' : 'pi-play'}`).should('exist');
             cy.get('@vue').should((wrapper: ComponentWrapper<typeof ProgressBar>) => {
                 const slider = wrapper.findComponent({ name: 'ElSlider' });
