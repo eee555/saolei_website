@@ -73,8 +73,11 @@ describe('Personal Profile', () => {
     });
 
     it('Upload video', function () {
+        cy.intercept({ method: 'GET', pathname: '/api/userprofile/info/0' }).as('currentUser');
         cy.login(USERNAME, PASSWORD);
         cy.visitUser(USER_ID, 'upload');
+        cy.wait('@currentUser').its('response.body.realname').should('eq', REALNAME);
+        cy.get('.profile').contains(REALNAME);
 
         // 准备录像文件
         cy.fixture('Exp_FL_35.09_3BV=132_3BVs=3.76_Pu Tian Yi(Hu Bei).avf', 'binary').then((fileContent) => {
@@ -84,7 +87,7 @@ describe('Personal Profile', () => {
             cy.wrap(binaryStringToUint8Array(fileContent)).as('videoFileIntRmv');
         });
 
-        cy.get('.el-tabs__content').find('input[type=file]').selectFile([
+        cy.get('.el-tabs__content').find('input[type=file]').should('not.be.disabled').selectFile([
             {
                 contents: '@videoFileExpAvf',
                 fileName: 'videoFileExp.avf',

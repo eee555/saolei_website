@@ -131,17 +131,29 @@ python manage.py rebuild_custom_pluck_cache --batch-size 500
 
 位置：`videomanager/management/commands/refresh_videos.py`
 
-用途：替代旧 `refresh_stnb` 的录像重解析入口，对全部 `VideoModel` 实例逐条调用 `videomanager.view_utils.refresh_video`。
+用途：替代旧 `refresh_stnb` 的录像重解析入口，对指定 ID 范围内的 `VideoModel` 实例逐条调用 `videomanager.view_utils.refresh_video`，默认刷新全部录像。
 
 - 按主键顺序遍历，不限制状态、模式、级别或比赛标记。
-- 使用 `iterator()` 避免 QuerySet 缓存所有实例；写入仍逐条执行，不使用 `update()` 或 `bulk_update()`。
+- 使用 `iterator()` 遍历录像 ID，避免 QuerySet 缓存所有实例；写入仍逐条执行，不使用 `update()` 或 `bulk_update()`。
+- 每条录像使用独立的 `transaction.atomic()`，通过 `select_for_update()` 加锁并重新读取该条主表记录后执行刷新，不连带锁住查询关联的用户等记录。解析与主表、扩展表保存均在该事务内；完成或失败后释放锁，不对全部录像使用一个长事务。其他事务修改或删除同一主表记录时会等待，因此耗时解析期间仍可能阻塞该条录像的写入。
 - 沿用 `refresh_video` 的差异保存逻辑，通过 `save(update_fields=...)` 触发信号；没有变化的字段不会强制保存。
 - 已知的录像解析异常会包装为 `VideoParseError`，报告录像 ID 并跳过，继续刷新后续录像；结束时汇总成功和跳过数量。
-- 数据库、文件读写、保存或信号接收器等其他错误会停止命令；此前完成的刷新不会整体回滚。不会把刷新全过程中的 `ValueError` 等异常都视为解析错误。
+- 数据库、文件读写、保存或信号接收器等其他错误会停止命令；当前条的数据库写入回滚，此前完成的刷新不会整体回滚。不会把刷新全过程中的 `ValueError` 等异常都视为解析错误。事务不回滚已经直接写入 Redis 的副作用。
 - 此命令不是无条件的排行榜或缓存全量重建。刷新模式等字段后如需重算录像计数，仍使用 `refresh_video_counts`。
+- 每处理 `step` 条录像输出并立即刷新进度，包括已处理数量、成功数量、跳过数量和当前录像 ID。解析失败也计入已处理数量；不足 `step` 的剩余部分在最终汇总中体现。
+
+| 参数 | 默认值 | 说明 |
+| --- | --- | --- |
+| `--start` | `0` | 起始录像 ID，包含，必须非负 |
+| `--end` | 不限制 | 结束录像 ID，不包含，不能小于 `start` |
+| `--step` | `100` | 每处理多少条录像输出一次进度，必须为正整数 |
+
+区间采用 `[start, end)`，按录像 ID 筛选而非列表偏移；ID 存在空缺时，`step` 仍按实际处理条数计数。可以仅指定一个边界，或使用相邻区间连续分段刷新。
 
 ```bash
 python manage.py refresh_videos
+python manage.py refresh_videos --start 10000 --end 20000 --step 50
+python manage.py refresh_videos --start 20000 --end 30000 --step 50
 ```
 
 ### `refresh_video_counts`
