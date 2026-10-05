@@ -5,7 +5,7 @@
     >
         <ElMenuItem index="/" class="logo">
             <ElImage class="logo1" :src="logo_1" fit="cover" />
-            <ElImage v-if="!local.menu_icon" class="logo2" :src="logo_2" fit="cover" />
+            <ElImage v-if="!local.menu_icon" class="logo2" :src="local.darkmode ? logo_2_dark : logo_2" fit="cover" />
         </ElMenuItem>
         <ElMenuItem v-for="item in menu_items" :key="item.index" :index="`/${ item.index}`">
             <IconMenuItem :text="t(`local.${item.index}`)" :icon="item.icon" />
@@ -35,6 +35,7 @@ import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
 import logo_1 from '@/assets/logo.png';
+import logo_2_dark from '@/assets/logo2-dark.svg';
 import logo_2 from '@/assets/logo2.png';
 import Login from '@/components/Login/App.vue';
 import IconMenuItem from '@/components/widgets/IconMenuItem.vue';
