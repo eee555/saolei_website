@@ -26,7 +26,7 @@ zset 舍弃部分精度并限制数值范围，是为了简化缓存逻辑：将
 
 范围限制仅作用于 zset：Time 单项最多 999999 毫秒，Bvs 单项最多 99.9999；`sumt` 最多 2999997 毫秒，`sumb` 最多 299.9997。编码前按原始值判断，超限不写入对应 zset，并移除已有条目；恢复范围后可重新入榜。超限纪录照常参与个人选优、保存至 hash 和求和，不以较差的录像替代。总榜按总值独立判断，单项超限不一定导致总榜超限。
 
-`SpeedRankingCache.update` 使用 WATCH/MULTI/EXEC 保护个人纪录的读改写及九个 key 的一致性。分页同样检测读取期间是否发生更新。不要在缓存类外直接修改这些 key。
+`SpeedRankingCache.update` 使用事务 pipeline 一次性提交个人纪录及各 zset，不使用 WATCH 或重试。并发更新同一用户时可能覆盖彼此的更新，后续破纪录也不保证恢复正确状态；可通过管理员单项重建或全量重建修复。分页读取允许人数、排名顺序和纪录在并发更新时短暂不一致，并跳过已缺失的纪录。不要在缓存类外直接修改这些 key。
 
 ## 写入与补位
 
@@ -51,6 +51,7 @@ python manage.py rebuild_speed_ranks --ranking-name saolei_nf --batch-size 1000
 
 - `GET /api/speedranking/rank?ranking_name=saolei&stat=sumt&start=0&end=20`：左闭右开、最多 100 条，返回 `count` 和 `players`。
 - `GET /api/speedranking/player/{player_id}`：一次返回 `saolei` 和 `saolei_nf`，每组包含原始纪录和八项 `ranks`。通过一次 Redis 事务 pipeline 读取 hash 和各 zset 的 ZRANK，排名从 1 开始，未入榜为 `null`（包括超限但仍保留原始成绩的情况）。无纪录也返回完整字段，单项为空、总项使用缺省值。
+- `POST /api/speedranking/admin/rebuild_record`：仅管理员可用，表单参数为 `player_id`、`ranking_name`、`stat`，返回该用户的大榜纪录。从数据库重建指定单项，并重算总成绩；选择 `sumt` 或 `sumb` 时仅使用缓存中的三个组成项求和，不回源数据库、不重建组成项。没有合格录像则清除对应单项。即使成绩未变也重新写入排序索引，其他单项不回源重建。管理员页面的“排行纪录重建” tab 提供此操作。该操作不锁定录像或缓存，仍可能受并发写入影响。
 - 前端竞速榜使用 `ElTable` 和 `ElPagination`，通过 `start/end` 请求后端分页，并提供 NF checkbox；个人纪录使用原生 HTML table 和 Element Plus 配色，按初级、中级、高级、总和四列及 Time、Bvs、Time (NF)、Bvs (NF) 四行显示 `score(rank)`。旧新闻和姓名弹窗不恢复。
 
 测试：`python manage.py test speedranking common.tests.VideoUploadRankingIntegrationTest identifier tournament --keepdb --noinput`。

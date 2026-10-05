@@ -1,8 +1,12 @@
 from django_ratelimit.decorators import ratelimit
-from ninja import Router, Schema
+from ninja import Form, Router, Schema
 from ninja.decorators import decorate_view
+from ninja.errors import HttpError
 
+from userprofile.decorators import staff_required
+from userprofile.models import UserProfile
 from .cache import get_player_records, SpeedRankingCache
+from .services import rebuild_player_record
 from .utils import RankingName, RankStat
 
 router = Router()
@@ -53,3 +57,16 @@ def get_player_record(request, player_id: int):
     - ratelimit(key='ip', rate='5/s')
     """
     return get_player_records(player_id)
+
+
+@router.post('/admin/rebuild_record', response=RecordOut)
+@decorate_view(staff_required)
+def rebuild_record(request, player_id: Form[int], ranking_name: Form[RankingName], stat: Form[RankStat]):
+    """
+    - staff_required
+
+    从录像库重建用户的小榜纪录；sumt/sumb 仅使用缓存中的组成项重算。
+    """
+    if not UserProfile.objects.filter(pk=player_id).exists():
+        raise HttpError(404, 'User not found')
+    return rebuild_player_record(player_id, ranking_name, stat)

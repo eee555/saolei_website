@@ -115,4 +115,29 @@ describe('Staff requests against the backend', () => {
             });
         });
     });
+
+    it('rebuilds one ranking record through the staff page', () => {
+        cy.login(STAFF.username, STAFF.password);
+        cy.intercept('POST', '**/api/speedranking/admin/rebuild_record').as('rebuildRecord');
+        cy.visit('/#/staff/userprofile');
+        cy.contains('[role="tab"]', '排行纪录重建').click();
+        cy.contains('button', '重建纪录').should('be.disabled');
+        cy.get('.ranking-repair .el-select').eq(0).click();
+        cy.contains('.el-select-dropdown__item:visible', '扫雷网规则（NF）').click();
+        cy.get('.ranking-repair .el-select').eq(1).click();
+        cy.contains('.el-select-dropdown__item:visible', 'Time 总和').click();
+        cy.get('.ranking-repair .el-input-number input').type(String(USER.id));
+        cy.contains('button', '重建纪录').click();
+        cy.wait('@rebuildRecord').then(({ request, response }) => {
+            expect(request.headers['content-type']).to.include('application/x-www-form-urlencoded');
+            const body = new URLSearchParams(String(request.body));
+            expect(body.get('player_id')).to.eq(String(USER.id));
+            expect(body.get('ranking_name')).to.eq('saolei_nf');
+            expect(body.get('stat')).to.eq('sumt');
+            expect(response?.statusCode).to.eq(200);
+            expect(response?.body).to.include({ player_id: USER.id, sumt: 2999997, bt: null, it: null, et: null });
+        });
+        cy.get('output').should('contain.text', '重建完成').and('contain.text', '2999.997');
+        cy.closeElNotifications();
+    });
 });

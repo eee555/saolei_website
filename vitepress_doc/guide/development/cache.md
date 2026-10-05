@@ -19,6 +19,8 @@ description: 开源扫雷网Redis/Django缓存结构详解，包括录像队列�
 
 排序编码、精度与数值范围、纪录更新及缓存升级约定统一维护在仓库的 `back_end/saolei/speedranking/README.md`，此处不再重复。重建命令用法见[管理命令](./management-commands.md#rebuild-speed-ranks)。
 
+管理员页面的“排行纪录重建” tab 可按大榜、小榜和用户 ID 修复单项缓存，对应接口为 `POST /api/speedranking/admin/rebuild_record`；具体更新范围和并发约定见上述 README。
+
 ```dot
 digraph cache {
     graph [

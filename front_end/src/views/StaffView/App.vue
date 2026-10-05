@@ -29,6 +29,7 @@ const tabItems = [
     { name: 'task', label: '后台任务' },
     { name: 'batchvideo', label: '批量刷新录像' },
     { name: 'batchpluck', label: '批量刷新pLuck纪录' },
+    { name: 'ranking-repair', label: '排行纪录重建' },
 ] as const;
 const validTabs = tabItems.map((item) => item.name);
 

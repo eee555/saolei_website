@@ -8,7 +8,7 @@ from django.db.models.functions import RowNumber
 from config.text_choices import MS_TextChoices
 from videomanager.models import VideoModel
 from .cache import SpeedRankingCache
-from .utils import is_better, RANKING_NAMES, RULES, set_stat, upload_microseconds
+from .utils import is_better, public_record, RANKING_NAMES, RankingName, RankStat, RULES, set_stat, TOTAL_PARTS, upload_microseconds
 
 VIDEO_FIELDS = ('id', 'player_id', 'level', 'mode', 'state', 'ongoing_tournament', 'bv', 'timems', 'bvs', 'right_ce', 'upload_time')
 
@@ -42,6 +42,18 @@ def best_candidate(player_id: int, ranking_name: str, stat: str):
     return candidate_for_video(video, ranking_name, stat)
 
 
+def rebuild_player_record(player_id: int, ranking_name: RankingName, stat: RankStat):
+    """单项从数据库重建，总项只由缓存中的组成项重算，同时修复排序索引。"""
+    ranking = SpeedRankingCache(ranking_name)
+
+    def transform(record):
+        if stat not in TOTAL_PARTS:
+            set_stat(record, stat, best_candidate(player_id, ranking_name, stat))
+
+    ranking.update(player_id, transform, force=True)
+    return public_record(player_id, ranking.get_record(player_id))
+
+
 def _sync_video(video_id: int, previous_player_id: int):
     video = VideoModel.objects.filter(pk=video_id).values(*VIDEO_FIELDS).first()
     players = {previous_player_id}
@@ -50,7 +62,6 @@ def _sync_video(video_id: int, previous_player_id: int):
     for player_id in players:
         for ranking_name in RANKING_NAMES:
             def transform(record, ranking_name=ranking_name, player_id=player_id):
-                # WATCH 重试时也重新读取，不能用先于缓存快照的录像覆盖新纪录。
                 current_video = VideoModel.objects.filter(pk=video_id, player_id=player_id).values(*VIDEO_FIELDS).first()
                 for stat in RULES:
                     candidate = candidate_for_video(current_video, ranking_name, stat)
