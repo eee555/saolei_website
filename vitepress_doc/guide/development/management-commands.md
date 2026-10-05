@@ -15,7 +15,7 @@ python manage.py <command>
 仅用于替换本地测试数据，**会清空本地数据库和 `saolei_website` 对应的 Redis 数据库**。此功能不注册为 Django 管理命令，`manage.py` 不提供 `import_public_data`。执行前停止本地后台 worker、定时任务和其他写入；不需要启动 HTTP 服务。要求不存在项目配置的 `.production` 标记、`DEBUG=True`、`E2E_TEST=True`，数据库及 Redis 均为回环地址。即使误开调试选项，存在生产标记仍会拒绝导入。正式导入前检查快照校验和、引用关系和数据库迁移状态。
 
 ```bash
-# 仅 GET 生产公开 API，串行请求间隔至少 1.25 秒；失败后重复执行可续传。
+# 仅 GET 生产公开 API，每次响应完成后至少等待 1.25 秒；失败后重复执行可续传。
 python -m dangerzone.download_public_data
 # detailbulk 不可用时，使用已有详情及公开录像列表完成快照：
 python -m dangerzone.download_public_data --skip-details
@@ -30,9 +30,11 @@ python -m dangerzone.init_local_test --no-weekly
 
 下载通过 `infoupdated` 获取用户 ID，调用 `userprofile/infobulk` 下载用户资料，通过每个用户的 `videolist` 建立公开录像索引，再调用 `video/detailbulk` 下载详情。保留 ID 空洞，不会因空页提前停止。索引后被删除或变成不可见的录像列入 `manifest.json` 的 `unavailable_video_ids`。这不是跨请求一致的数据库备份。TLS 使用 `certifi` 的 CA 包验证，不跳过证书检查；遇到 429 或服务端临时错误会等待重试。
 
-`--skip-details` 不请求 `detailbulk`，已有的详情仍然优先使用，其他录像直接使用 `get_user_videos` 的列表数据；只有列表数据的录像列入 `missing_detail_video_ids`。可空的缺失指标保持 NULL，录像内标识为空字符串。列表里的 `cl`、`ce` 不能直接写入生成列，缺少分项点击数时，相关生成值也为 NULL。旧生产列表不包含 `right_ce`，这类录像不会进入本地 NF 榜；不会仅凭旧模式编码伪造 `right_ce`。快照完成后若需补充详情，使用新目录重新下载。
+请求串行执行，上一响应完成后至少等待 1.25 秒再发送下一请求，主动控制 `videolist` 在每秒一次以内。`--interval` 可增加间隔，不能低于 1.25 秒；慢请求结束后也不会立即发送下一个请求。
 
-导入保留原用户/录像 ID、上传时间和公开属性，旧 NF 模式 `12` 转成 STD `00`，不修改 `right_ce`。批量写入不会触发录像信号，随后重建录像计数、上传额度、竞速排行榜、pluck 纪录缓存和录像状态队列，不创建 pluck 计算任务。
+`--skip-details` 不请求 `detailbulk`，已有的详情仍然优先使用，其他录像直接使用 `get_user_videos` 的列表数据；只有列表数据的录像列入 `missing_detail_video_ids`。可空的缺失指标保持 NULL，录像内标识为空字符串。列表里的 `cl`、`ce` 不能直接写入生成列，缺少分项点击数时，相关生成值也为 NULL。生产列表已返回 `right_ce`，列表回退也可以按 `right_ce == 0` 重建 NF 榜；详情缺少该字段或为 NULL 时保留列表值。旧快照缺失该值时保持 NULL，不凭旧模式编码推测。完成的快照不会重新下载，补充新字段或详情请使用新的 `--output-dir` 下载，再通过 `--snapshot-dir` 导入。
+
+导入保留原用户/录像 ID、上传时间和公开属性，旧 NF 模式 `12` 转成 STD `00`，不修改 `right_ce`。批量写入不会触发录像信号，随后重建录像计数、上传额度、扫雷网普通/NF 榜、PB 普通/NF 榜、pluck 纪录缓存和录像状态队列，不创建 pluck 计算任务。
 
 - 管理员：ID `2`，密码 `admin123456`；普通账号：ID `48`，密码 `user123456`。用户名保留生产数据；可通过 `--admin-password` / `--user-password` 指定其他密码。
 - 其他用户禁用密码登录，且所有用户中仅 ID `2` 获得本地 `is_staff` 权限；邮箱统一为 `user-{id}@example.invalid`。生产账号不受影响。
@@ -56,6 +58,20 @@ python manage.py rebuild_speed_ranks --ranking-name saolei_nf --batch-size 1000
 执行前暂停录像上传、修改、删除、标识绑定/解绑及比赛公开等写入。命令先构建临时榜，成功后原子发布单个大榜，最后清理临时缓存。构建失败保留该大榜的原缓存；两个大榜依次替换。排行 API 不自动回源，因此首次部署及缓存丢失后都需要执行此命令。重建不恢复旧新闻。
 
 从旧的“微秒时间戳 + 玩家 id” member 升级为纯玩家 id、分钟级合成 score 时，应暂停相关读写，以新代码执行不带 `--ranking-name` 的重建命令，两个大榜都完成后再恢复服务。超出编码范围的单项或总值仍保存在个人纪录 hash，仅不写入对应 zset；总榜独立判断，不修改录像数据库和个人最佳选取规则。
+
+### `rebuild_pb_ranks`
+
+位置：`speedranking/management/commands/rebuild_pb_ranks.py`
+
+从录像数据库重建 PB 普通/NF 榜、用户 rank hash 和小榜人数 hash。`--batch-size` 默认 100，必须为正数；按玩家 id 分段，每批输出累计用户数和最后玩家 id，最后逐小榜刷新排名并同步人数。清空 PB 命名空间时也会删除旧人数 hash；重建后未出现的小榜按 0 人处理。
+
+```bash
+python manage.py rebuild_pb_ranks --batch-size 100
+```
+
+首次部署及 PB 缓存丢失后需要手动执行，API 不回源。执行前暂停 PB 相关读写，包括上传、审核、绑定/解绑、删除及比赛公开。命令直接清空 PB 命名空间后重建，不使用临时榜或原子发布；失败会记录日志并中断，可能留下部分缓存，排除错误后重新运行。录像数据库和扫雷网缓存不受影响。`rebuild_speed_ranks` 仍仅重建扫雷网规则。
+
+本地快照初始化 `python -m dangerzone.init_local_test` 已在扫雷网重建后自动调用 PB 重建，使用 `--no-weekly` 时也会执行，无需另外运行上述命令。
 
 ### `rebuild_tournament_cache`
 

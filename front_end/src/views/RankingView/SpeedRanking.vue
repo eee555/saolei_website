@@ -14,6 +14,7 @@
             </Tippy>
         </div>
         <SaoleiRanking v-if="selectedRankingName === 'saolei'" />
+        <PBRanking v-else-if="selectedRankingName === 'pb'" />
     </section>
 </template>
 
@@ -25,21 +26,24 @@ import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Tippy } from 'vue-tippy';
 
+import PBRanking from './PBRanking.vue';
 import SaoleiRanking from './SaoleiRanking.vue';
 
 import { BaseIconInfo } from '@/components/common/icon';
 
-const rankingNames = ['saolei'] as const;
+const rankingNames = ['saolei', 'pb'] as const;
 const selectedRankingName = ref<typeof rankingNames[number]>('saolei');
 
 const i18nMessages = {
     'zh-cn': { local: {
         rankingName: '大榜',
         label: {
+            pb: 'PB 榜',
             // eslint-disable-next-line @stylistic/quotes
             saolei: "@:{'common.website.saolei'}规则",
         },
         tooltip: {
+            pb: '按等级和 3BV 分榜，仅限标准模式。NF 分榜另要求有效右键数为 0。',
             // eslint-disable-next-line @stylistic/quotes
             saolei: "仅限@:{'common.mode.std'}@:{'common.prop.mode'}。@:{'common.level.b'}@:{'common.prop.time'}要求@:{'common.prop.bv'} ≥ 2，@:{'common.level.b'}@:{'common.prop.bvs'}要求@:{'common.prop.bv'} ≥ 4，@:{'common.level.i'}要求@:{'common.prop.bv'} ≥ 30，@:{'common.level.e'}要求@:{'common.prop.bv'} ≥ 100",
         },
@@ -47,9 +51,11 @@ const i18nMessages = {
     en: { local: {
         rankingName: 'Ranking',
         label: {
+            pb: 'PB',
             saolei: '@:common.website.saolei Rule',
         },
         tooltip: {
+            pb: 'Standard mode, grouped by level and 3BV. NF additionally requires zero effective right clicks.',
             // eslint-disable-next-line @stylistic/quotes
             saolei: "@:common.mode.std mode only. @:common.level.b @:common.prop.time requires @:common.prop.bv ≥ 2. @:common.level.b @:common.prop.bvs requires @:common.prop.bv ≥ 4. @:common.level.i requires @:common.prop.bv ≥ 30. @:common.level.e requires @:common.prop.bv ≥ 100.",
         },

@@ -9,6 +9,8 @@ description: 开源扫雷网后端Django信号触发关系详解，包括录像�
 
 `speedranking` 复用 `videomanager` 捕获的旧值。关注 player、level、mode、state、ongoing_tournament、bv、timems、right_ce、upload_time；提高成绩直接比较，变差/失去资格/删除时只重建由该录像保持的单项。类别迁移同时处理原玩家和新玩家，bvs 使用数据库保存的 GeneratedField。标识绑定/解绑与比赛批量公开不触发保存信号，须显式调用 `add_videos_to_speed_ranks` / `remove_videos_from_speed_ranks`。
 
+竞速入口同时协调 `speedranking.saolei` 与 `speedranking.pb`：共用用户纪录读取和主要变更写入 pipeline，各自判断选优与补位。PB 按等级、3BV、普通/NF 分桶，日常比较编码 score；旧 member 的录像 id 来自用户 hash，按变更前、后的 member 排名确定范围，写入后只批量刷新该区间的 rank，加入或移除延伸至榜尾。单录像和批量更新、管理员修复、管理命令重建的错误统一记录上下文与堆栈后继续抛出，不使用 WATCH 或重试。
+
 个人纪录的增量选优、补位查询和批量重建保持原有逻辑；仅在生成 Redis zset score 时使用四位小数 Bvs 和分钟级上传时间，并检查单项或总值的编码范围。超限仅移除对应 zset 条目，不触发个人纪录补位，hash 仍保存原始最佳成绩；总榜按总值独立判断。
 
 NF 是独立维度，由 `VideoModel.right_ce == 0` 判断，不再使用模式 `12`。创建和删除时，NF 子计数与录像原模式的子计数同时增减；`right_ce` 为空不计入 NF。`videomanager` 捕获 `right_ce` 变化并更新队列；`customranking` 不需要 NF 信息，不监听此字段。批量转换旧模式后需显式刷新计数及缓存，步骤见 `back_end/saolei/msuser/refactor.md`。

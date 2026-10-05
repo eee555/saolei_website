@@ -27,8 +27,9 @@ class PublicClient:
     def get(self, path: str, params: dict):
         for attempt in range(5):
             time.sleep(max(0, self.last_request + self.interval - time.monotonic()))
-            self.last_request = time.monotonic()
             response = self.session.get(f'{self.base_url}{path}', params=params, timeout=(10, 90))
+            # Space requests after completion so slow responses cannot cause bursts.
+            self.last_request = time.monotonic()
             if response.status_code not in (429, 500, 502, 503, 504) or attempt == 4:
                 response.raise_for_status()
                 return response.json()
@@ -104,8 +105,10 @@ def download(root: Path, client: PublicClient, *, skip_details: bool = False):
         for video_id in video_ids:
             if video_id not in video_index:
                 continue
-            # The list API exposes pluck, which older detailbulk schemas omit.
+            # Lists provide pluck and right_ce even when cached details lack them.
             video = {**video_index[video_id], **details.get(video_id, {})}
+            if video.get('right_ce') is None:
+                video['right_ce'] = video_index[video_id].get('right_ce')
             if video['player'] not in users or video.get('ongoing_tournament'):
                 continue
             if video_id not in details:
@@ -128,7 +131,7 @@ def main():
     parser.add_argument('--base-url', default='https://openms.top')
     parser.add_argument('--output-dir', type=Path, default=DEFAULT_SNAPSHOT_DIR)
     parser.add_argument('--interval', type=float, default=1.25)
-    parser.add_argument('--skip-details', action='store_true', help='Use cached details when available, otherwise use public video lists; do not request detailbulk')
+    parser.add_argument('--skip-details', action='store_true', help='Use cached details when available, otherwise use public video lists (including right_ce for NF); do not request detailbulk')
     args = parser.parse_args()
     if not args.base_url.startswith('https://'):
         parser.error('Public downloads require HTTPS')

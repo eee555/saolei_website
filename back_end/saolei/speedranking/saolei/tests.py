@@ -13,9 +13,13 @@ from msuser.models import UserMS
 from userprofile.models import UserProfile
 from userprofile.services import has_sub200_expert_video
 from videomanager.models import ExpandVideoModel, VideoModel
-from .cache import cache, SpeedRankingCache
-from .services import add_videos_to_speed_ranks, best_candidate, remove_videos_from_speed_ranks
-from .utils import encode_zset_score, is_better, MAX_RECORD_UNITS, RANK_STATS, RANKING_NAMES, SCORE_TIME_FACTOR, TIME_STATS, TOTAL_PARTS, upload_microseconds
+from .cache import SpeedRankingCache
+from .services import best_candidate
+from .utils import encode_zset_score, is_better, MAX_RECORD_UNITS, RANK_STATS, RANKING_NAMES, SCORE_TIME_FACTOR, TIME_STATS, TOTAL_PARTS
+from ..cache import cache
+from ..pb.cache import PBRankingCache
+from ..services import add_videos_to_speed_ranks, remove_videos_from_speed_ranks
+from ..utils import upload_microseconds
 
 
 class SpeedRankingScoreTests(SimpleTestCase):
@@ -43,8 +47,11 @@ class SpeedRankingScoreTests(SimpleTestCase):
 @override_settings(RATELIMIT_ENABLE=False)
 class SpeedRankingTests(TestCase):
     def setUp(self):
+        pb = PBRankingCache()
+        pb.flush()
+        self.addCleanup(pb.flush)
         for ranking_name in RANKING_NAMES:
-            ranking = SpeedRankingCache(ranking_name)
+            ranking = SpeedRankingCache(ranking_name, stats=RANK_STATS)
             ranking.flush()
             self.addCleanup(ranking.flush)
         self.user = self.create_user('speed')
@@ -173,7 +180,7 @@ class SpeedRankingTests(TestCase):
     def test_worsening_and_deletion_backfill_only_held_records(self):
         first = self.create_video(timems=1000)
         backup = self.create_video(timems=2000)
-        with patch('speedranking.services.best_candidate', wraps=best_candidate) as best:
+        with patch('speedranking.saolei.services.best_candidate', wraps=best_candidate) as best:
             self.save_video(backup, timems=3000)
             best.assert_not_called()
         self.save_video(first, timems=4000)
@@ -210,10 +217,13 @@ class SpeedRankingTests(TestCase):
             videos.update(state=MS_TextChoices.State.OFFICIAL)
             add_videos_to_speed_ranks(videos)
         self.assertEqual(self.record()['bt_id'], video.id)
-        with self.captureOnCommitCallbacks(execute=True):
-            videos.update(state=MS_TextChoices.State.IDENTIFIER)
-            remove_videos_from_speed_ranks(videos)
+        with patch('speedranking.saolei.services.best_candidate', wraps=best_candidate) as best:
+            with self.captureOnCommitCallbacks(execute=True):
+                videos.update(state=MS_TextChoices.State.IDENTIFIER)
+                remove_videos_from_speed_ranks(videos)
+            self.assertEqual(best.call_count, 2)
         self.assertEqual(self.record()['bt_id'], backup.id)
+        self.assertEqual(self.record('saolei_nf')['bt_id'], backup.id)
 
     def test_rollback_does_not_write_cache(self):
         with self.captureOnCommitCallbacks(execute=True):
@@ -224,12 +234,12 @@ class SpeedRankingTests(TestCase):
 
     def test_rebuild_replaces_stale_entries_and_api_reads_only_redis(self):
         video = self.create_video()
-        SpeedRankingCache('saolei').flush()
+        SpeedRankingCache('saolei', stats=RANK_STATS).flush()
         with self.assertNumQueries(0):
             self.assertIsNone(self.record()['bt'])
         call_command('rebuild_speed_ranks', '--ranking-name', 'saolei', batch_size=1, stdout=StringIO())
         self.assertEqual(self.record()['bt_id'], video.id)
-        with patch('speedranking.services._add_videos', side_effect=ValueError('failed')):
+        with patch('speedranking.saolei.services._add_videos', side_effect=ValueError('failed')):
             with self.assertRaises(ValueError):
                 call_command('rebuild_speed_ranks', stdout=StringIO())
         self.assertEqual(self.record()['bt_id'], video.id)
@@ -303,3 +313,26 @@ class SpeedRankingTests(TestCase):
         for invalid in ({'ranking_name': 'invalid'}, {'stat': 'invalid'}, {'player_id': 'invalid'}):
             self.assertEqual(self.client.post(url, {**payload, **invalid}).status_code, 422)
         self.assertEqual(self.client.post(url, {**payload, 'player_id': self.user.id + 1000}).status_code, 404)
+        for ranking_name in RANKING_NAMES:
+            for stat in RANK_STATS:
+                response = self.client.post(url, {**payload, 'ranking_name': ranking_name, 'stat': stat})
+                self.assertEqual(response.status_code, 200, response.content)
+                self.assertEqual(response.json()['player_id'], self.user.id)
+                self.assertEqual(response.json()[stat], {'sumt': 2999997, 'sumb': 0}.get(stat))
+
+    def test_deletion_shares_standard_and_nf_backfill_queries(self):
+        for case, backup_modes, expected_queries in (
+            ('empty', (), 1), ('nf', (0,), 1), ('mixed', (1, 0), 2),
+        ):
+            with self.subTest(case=case):
+                player = self.create_user(f'backfill-{case}')
+                held = self.create_video(player=player, bv=2)
+                backups = [self.create_video(player=player, bv=2, right_ce=right_ce, timems=2000 + index * 1000) for index, right_ce in enumerate(backup_modes)]
+                with patch('speedranking.saolei.services.best_candidate', wraps=best_candidate) as best:
+                    with self.captureOnCommitCallbacks(execute=True):
+                        held.delete()
+                    self.assertEqual(best.call_count, expected_queries)
+                standard = backups[0].id if backups else None
+                nf = next((video.id for video in backups if video.right_ce == 0), None)
+                self.assertEqual(self.record('saolei', player)['bt_id'], standard)
+                self.assertEqual(self.record('saolei_nf', player)['bt_id'], nf)
