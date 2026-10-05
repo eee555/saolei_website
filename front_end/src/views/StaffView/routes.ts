@@ -51,4 +51,9 @@ export const staffRoutes: RouteRecordRaw[] = [
         name: 'staff-batchpluck',
         component: () => import('./BatchRefreshPLuck.vue'),
     },
+    {
+        path: 'ranking-repair',
+        name: 'staff-ranking-repair',
+        component: () => import('./RankingRepair.vue'),
+    },
 ];

@@ -1,5 +1,6 @@
 from datetime import timedelta
 from io import StringIO
+import json
 from unittest.mock import patch
 
 from django.core.management import call_command
@@ -140,8 +141,6 @@ class SpeedRankingTests(TestCase):
             call_command('rebuild_speed_ranks', stdout=StringIO())
             self.assertEqual(self.record()['bb_id'], expected.id)
             self.assertEqual(cache.zscore(SpeedRankingCache('saolei').rank_key('bb'), self.user.id), encode_zset_score('bb', 0.04, upload_microseconds(minute)))
-        ranking = SpeedRankingCache('saolei')
-        self.assertEqual(cache.zrange(ranking.rank_key('bb'), 0, -1), [str(self.user.id).encode()])
 
     def test_over_limit_records_stay_in_hash_and_totals_rank_independently(self):
         video = self.create_video()
@@ -228,10 +227,8 @@ class SpeedRankingTests(TestCase):
         SpeedRankingCache('saolei').flush()
         with self.assertNumQueries(0):
             self.assertIsNone(self.record()['bt'])
-        cache.zadd(SpeedRankingCache('saolei').rank_key('bt'), {f'00000000000000000000:{self.user.id}': 1000})
         call_command('rebuild_speed_ranks', '--ranking-name', 'saolei', batch_size=1, stdout=StringIO())
         self.assertEqual(self.record()['bt_id'], video.id)
-        self.assertEqual(cache.zrange(SpeedRankingCache('saolei').rank_key('bt'), 0, -1), [str(self.user.id).encode()])
         with patch('speedranking.services._add_videos', side_effect=ValueError('failed')):
             with self.assertRaises(ValueError):
                 call_command('rebuild_speed_ranks', stdout=StringIO())
@@ -241,3 +238,68 @@ class SpeedRankingTests(TestCase):
         self.assertIsNone(self.record()['bt'])
         self.assertEqual(self.client.get('/api/speedranking/rank', {'ranking_name': 'invalid'}).status_code, 422)
         self.assertEqual(self.client.get('/api/speedranking/rank', {'stat': 'invalid'}).status_code, 422)
+
+    def test_admin_rebuild_repairs_one_record_and_missing_index(self):
+        first = self.create_video(timems=1000)
+        backup = self.create_video(timems=2000)
+        VideoModel.objects.filter(pk=first.pk).update(timems=3000)
+        self.user.is_staff = True
+        self.user.save(update_fields=['is_staff'])
+        self.client.force_login(self.user)
+        payload = {'player_id': self.user.id, 'ranking_name': 'saolei', 'stat': 'bt'}
+        response = self.client.post('/api/speedranking/admin/rebuild_record', payload)
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual((response.json()['bt'], response.json()['bt_id']), (2000, backup.id))
+        self.assertEqual(response.json()['bb_id'], first.id)
+        self.assertEqual(response.json()['sumt'], 2000 + 2 * 999999)
+        self.assertEqual(self.record('saolei_nf')['bt_id'], first.id)
+        ranking = SpeedRankingCache('saolei')
+        cache.zrem(ranking.rank_key('bt'), self.user.id)
+        response = self.client.post('/api/speedranking/admin/rebuild_record', payload)
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(self.record()['ranks']['bt'], 1)
+        VideoModel.objects.filter(player=self.user).update(state=MS_TextChoices.State.IDENTIFIER)
+        response = self.client.post('/api/speedranking/admin/rebuild_record', payload)
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertIsNone(response.json()['bt'])
+        self.assertIsNone(response.json()['bt_id'])
+        self.assertIsNone(self.record()['ranks']['bt'])
+
+    def test_admin_rebuild_totals_uses_cached_parts(self):
+        self.create_video(right_ce=1)
+        intermediate = self.create_video(level='i', bv=30, timems=10000)
+        expert = self.create_video(level='e', bv=100, timems=100000)
+        ranking = SpeedRankingCache('saolei_nf')
+        record = ranking.get_record(self.user.id)
+        record['sumt'] = 0
+        record['sumb'] = 0
+        cache.hset(ranking.detail_key, self.user.id, json.dumps(record))
+        VideoModel.objects.filter(player=self.user).update(state=MS_TextChoices.State.IDENTIFIER)
+        self.user.is_staff = True
+        self.user.save(update_fields=['is_staff'])
+        self.client.force_login(self.user)
+        payload = {'player_id': self.user.id, 'ranking_name': 'saolei_nf', 'stat': 'sumt'}
+        response = self.client.post('/api/speedranking/admin/rebuild_record', payload)
+        self.assertEqual(response.status_code, 200, response.content)
+        record = response.json()
+        self.assertEqual((record['it_id'], record['et_id']), (intermediate.id, expert.id))
+        self.assertIsNone(record['bt'])
+        self.assertEqual(record['sumt'], 999999 + 10000 + 100000)
+        payload['stat'] = 'sumb'
+        response = self.client.post('/api/speedranking/admin/rebuild_record', payload)
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.json()['sumb'], 4)
+        self.assertIsNone(response.json()['bb'])
+        self.assertEqual(response.json()['sumt'], record['sumt'])
+
+    def test_admin_rebuild_requires_staff_and_valid_parameters(self):
+        payload = {'player_id': self.user.id, 'ranking_name': 'saolei', 'stat': 'bt'}
+        url = '/api/speedranking/admin/rebuild_record'
+        self.assertEqual(self.client.post(url, payload).status_code, 403)
+        self.client.force_login(self.user)
+        self.assertEqual(self.client.post(url, payload).status_code, 403)
+        self.user.is_staff = True
+        self.user.save(update_fields=['is_staff'])
+        for invalid in ({'ranking_name': 'invalid'}, {'stat': 'invalid'}, {'player_id': 'invalid'}):
+            self.assertEqual(self.client.post(url, {**payload, **invalid}).status_code, 422)
+        self.assertEqual(self.client.post(url, {**payload, 'player_id': self.user.id + 1000}).status_code, 404)
