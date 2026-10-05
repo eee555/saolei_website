@@ -27,10 +27,7 @@ function modelUpdate(index: number) {
 }
 
 function lastModelUpdate() {
-    return cy.get('@vue').then((wrapper: ComponentWrapper<typeof ProgressBar>) => {
-        const events = wrapper.emitted('update:modelValue') ?? [];
-        return events.at(-1)?.[0];
-    });
+    return cy.get<ComponentWrapper<typeof ProgressBar>>('@vue').invoke('emitted', 'update:modelValue').invoke('at', -1).its('0');
 }
 
 describe('<ProgressBar />', () => {
@@ -127,6 +124,7 @@ describe('<ProgressBar />', () => {
                 cy.wrap($handle).trigger('pointerdown', { ...position, eventConstructor: 'PointerEvent', scrollBehavior: false });
                 cy.wrap($handle).trigger('mousedown', { ...position, eventConstructor: 'MouseEvent', scrollBehavior: false });
             });
+            cy.get('.progress-bar__slider .el-slider__button-wrapper').should('have.class', 'dragging');
             if (playing) {
                 cy.then(() => animationCallback?.(2000));
                 lastModelUpdate().should('eq', fromTrack ? 250 : 100);
