@@ -55,12 +55,12 @@ describe('Color Theme', () => {
                 });
             },
         });
+        // The load event can precede router readiness and Vue's theme initialization.
+        cy.get('#app[data-v-app]', { timeout: Cypress.config('pageLoadTimeout') }).should('be.visible');
         cy.getLocalStorage('local').then((value) => {
             expect(value?.darkmode).to.be.true;
         });
-        cy.getLocalStorage('vueuse-color-scheme').then((value) => {
-            expect(value).to.eq('auto');
-        });
+        cy.window().its('localStorage').invoke('getItem', 'vueuse-color-scheme').should('eq', 'auto');
     });
     it('Detect Sys Light Mode', () => {
         cy.visit('/#/settings', {
@@ -72,31 +72,23 @@ describe('Color Theme', () => {
                 });
             },
         });
+        cy.get('#app[data-v-app]', { timeout: Cypress.config('pageLoadTimeout') }).should('be.visible');
         cy.getLocalStorage('local').then((value) => {
             expect(value?.darkmode).to.be.false;
         });
-        cy.getLocalStorage('vueuse-color-scheme').then((value) => {
-            expect(value).to.eq('auto');
-        });
+        cy.window().its('localStorage').invoke('getItem', 'vueuse-color-scheme').should('eq', 'auto');
     });
 
     it('Change Theme', () => {
         cy.visit('/#/settings');
-        cy.getLocalStorage('vueuse-color-scheme').then((value) => {
-            expect(value).to.eq('auto');
-        });
+        cy.get('#app[data-v-app]', { timeout: Cypress.config('pageLoadTimeout') }).should('be.visible');
+        cy.window().its('localStorage').invoke('getItem', 'vueuse-color-scheme').should('eq', 'auto');
         cy.contains('浅色').click();
-        cy.getLocalStorage('vueuse-color-scheme').then((value) => {
-            expect(value).to.eq('light');
-        });
+        cy.window().its('localStorage').invoke('getItem', 'vueuse-color-scheme').should('eq', 'light');
         cy.contains('深色').click();
-        cy.getLocalStorage('vueuse-color-scheme').then((value) => {
-            expect(value).to.eq('dark');
-        });
+        cy.window().its('localStorage').invoke('getItem', 'vueuse-color-scheme').should('eq', 'dark');
         cy.contains('自动').click();
-        cy.getLocalStorage('vueuse-color-scheme').then((value) => {
-            expect(value).to.eq('auto');
-        });
+        cy.window().its('localStorage').invoke('getItem', 'vueuse-color-scheme').should('eq', 'auto');
     });
 });
 
