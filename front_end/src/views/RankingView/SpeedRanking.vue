@@ -13,8 +13,7 @@
                 </template>
             </Tippy>
         </div>
-        <SaoleiRanking v-if="selectedRankingName === 'saolei'" />
-        <PBRanking v-else-if="selectedRankingName === 'pb'" />
+        <RouterView />
     </section>
 </template>
 
@@ -22,17 +21,22 @@
 import '@/styles/cards.css';
 
 import { ElOption, ElSelect } from 'element-plus';
-import { ref } from 'vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { RouterView, useRoute, useRouter } from 'vue-router';
 import { Tippy } from 'vue-tippy';
-
-import PBRanking from './PBRanking.vue';
-import SaoleiRanking from './SaoleiRanking.vue';
 
 import { BaseIconInfo } from '@/components/common/icon';
 
 const rankingNames = ['saolei', 'pb'] as const;
-const selectedRankingName = ref<typeof rankingNames[number]>('saolei');
+const route = useRoute();
+const router = useRouter();
+const selectedRankingName = computed<typeof rankingNames[number]>({
+    get: () => rankingNames.find((name) => route.name === `ranking_speed_${name}`) ?? 'saolei',
+    set: (name) => {
+        void router.push({ name: `ranking_speed_${name}` });
+    },
+});
 
 const i18nMessages = {
     'zh-cn': { local: {

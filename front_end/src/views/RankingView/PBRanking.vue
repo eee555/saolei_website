@@ -11,28 +11,7 @@
         </div>
         <ElAlert v-if="failed" :title="t('local.failed')" type="error" :closable="false" />
         <ElAlert v-if="countsFailed" :title="t('local.countsFailed')" type="error" :closable="false" />
-        <ElTable v-loading="loading" :data="rows" row-key="player_id" border class="pb-ranking-table" :empty-text="t('local.empty')">
-            <ElTableColumn type="index" label="#" :index="(index) => first + index + 1" width="60" align="center" />
-            <!-- @vue-generic {PBRankingPlayer} -->
-            <ElTableColumn column-key="player" :label="t('common.prop.player')" min-width="150">
-                <template #default="{ row }">
-                    <PlayerName :user-id="row.player_id" />
-                </template>
-            </ElTableColumn>
-            <!-- @vue-generic {PBRankingPlayer} -->
-            <ElTableColumn v-for="stat in pbStats" :key="stat" :column-key="stat" :label="t(`common.prop.${stat}`)" min-width="100" align="right">
-                <template #default="{ row }">
-                    <PreviewNumber v-if="stat === 'time'" :id="row.video_id" :text="formatPBValue(row.timems, level, bv, stat)" />
-                    <span v-else>{{ formatPBValue(row.timems, level, bv, stat) }}</span>
-                </template>
-            </ElTableColumn>
-            <!-- @vue-generic {PBRankingPlayer} -->
-            <ElTableColumn prop="upload_time" :label="t('common.prop.upload_time')" min-width="170" align="center">
-                <template #default="{ row }">
-                    {{ formatPBUploadTime(row.upload_time) }}
-                </template>
-            </ElTableColumn>
-        </ElTable>
+        <PBRankingTable :rows="rows" :level="level" :bv="bv" :first="first" :loading="loading" />
         <div class="pb-pagination">
             <ElPagination v-model:current-page="currentPage" v-model:page-size="pageSize" layout="total, sizes, prev, pager, next, jumper" :page-sizes="[20, 50, 100]" :total="total" />
         </div>
@@ -40,17 +19,16 @@
 </template>
 
 <script setup lang="ts">
-import { ElAlert, ElCheckbox, ElPagination, ElTable, ElTableColumn, vLoading } from 'element-plus';
+import { ElAlert, ElCheckbox, ElPagination } from 'element-plus';
 import { computed, onMounted, onScopeDispose, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import PBBVButton from './PBBVButton.vue';
+import PBRankingTable from './PBRankingTable.vue';
 
 import BaseButton from '@/components/common/BaseButton.vue';
 import { BaseIconRefresh } from '@/components/common/icon';
-import PlayerName from '@/components/PlayerName.vue';
-import PreviewNumber from '@/components/PreviewNumber.vue';
-import { fetchPBCounts, fetchPBRanking, formatPBUploadTime, formatPBValue, pbLevels, pbStats } from '@/services/pbRankingService';
+import { fetchPBCounts, fetchPBRanking, pbLevels } from '@/services/pbRankingService';
 import type { PBCounts, PBRankingPlayer } from '@/services/pbRankingService';
 import type { MS_Level } from '@/utils/ms_const';
 
@@ -133,13 +111,11 @@ onScopeDispose(() => {
 
 const i18nMessages = {
     'zh-cn': { local: {
-        empty: '暂无纪录',
         failed: '排行榜加载失败',
         countsFailed: '各榜人数加载失败',
         refresh: '刷新',
     } },
     en: { local: {
-        empty: 'No records',
         failed: 'Unable to load ranking',
         countsFailed: 'Unable to load board counts',
         refresh: 'Refresh',

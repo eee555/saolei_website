@@ -19,7 +19,6 @@ const stnbCoefficients = { b: 36, i: 162, e: 435 } as const;
 
 export function formatPBValue(timems: number, level: MS_Level, bv: number, stat: PBStat): string {
     if (stat === 'time') return ms_to_s(timems);
-    if (timems === 0) return 'Infinity';
     const seconds = timems / 1000;
     return (stat === 'bvs' ? bv / seconds : stnbCoefficients[level] * bv / seconds ** 1.7).toFixed(3);
 }
