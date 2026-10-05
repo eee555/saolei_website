@@ -18,7 +18,7 @@
         </button>
         <ElSlider
             v-model="currentMs" class="progress-bar__slider" :min="0" :max="durationMs"
-            :step="step" :format-tooltip="formatSeconds" @change="syncPlaybackAnchor"
+            :step="step" :format-tooltip="formatSeconds" @pointerdown.capture="beginSeek" @change="finishSeek"
         />
         <ElSelect v-model="playbackRate" class="progress-bar__speed" :title="t('local.speed')">
             <ElOption v-for="rate in playbackRates" :key="rate" :value="rate" :label="`${rate}x`" />
@@ -67,6 +67,7 @@ const playbackRate = ref(1);
 let animationFrameId = 0;
 let startedAt = 0;
 let startedFrom = 0;
+let isSeeking = false;
 
 watch(() => props.durationMs, (durationMs) => {
     currentMs.value = clampTime(currentMs.value, durationMs);
@@ -107,13 +108,28 @@ function stopPlayback() {
 function tick(now: number) {
     if (!isPlaying.value) return;
 
-    const nextMs = clampTime(startedFrom + (now - startedAt) * playbackRate.value, props.durationMs);
-    currentMs.value = nextMs;
-    if (nextMs >= props.durationMs) {
-        stopPlayback();
-        return;
+    if (!isSeeking) {
+        const nextMs = clampTime(startedFrom + (now - startedAt) * playbackRate.value, props.durationMs);
+        currentMs.value = nextMs;
+        if (nextMs >= props.durationMs) {
+            stopPlayback();
+            return;
+        }
     }
     animationFrameId = requestAnimationFrame(tick);
+}
+
+function beginSeek(event: PointerEvent) {
+    if (event.button === 0 && event.target instanceof Element && event.target.closest('.el-slider__runway')) {
+        isSeeking = true;
+    }
+}
+
+function finishSeek(value: number | number[]) {
+    if (typeof value !== 'number') return;
+    isSeeking = false;
+    syncPlaybackAnchor(value);
+    if (value >= props.durationMs) stopPlayback();
 }
 
 function restart() {
@@ -126,9 +142,9 @@ function stepForward() {
     currentMs.value = clampTime(currentMs.value + 100, props.durationMs);
 }
 
-function syncPlaybackAnchor() {
+function syncPlaybackAnchor(value = currentMs.value) {
     startedAt = performance.now();
-    startedFrom = currentMs.value;
+    startedFrom = value;
 }
 
 function clampTime(value: number, durationMs: number) {
