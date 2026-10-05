@@ -104,7 +104,8 @@ def calculate_weekly_classic_best(user_id: int):
     return weekly_encode_best(best_participant.classic_score, tournament.year, tournament.week)
 
 
-def refresh_weekly_best_scores(tournament: WeeklyTournament, *, batch_size=1000):
+def refresh_weekly_best_scores(tournament: WeeklyTournament, *, batch_size=1000, rebuild=False):
+    """默认只更新更好的纪录；rebuild=True 时重新查询历史最佳，允许纪录回退。"""
     logger.info(f'周赛#{tournament.id} 个人纪录刷新 开始 类型{tournament.subclass}')
     logger.info(f'周赛#{tournament.id} 个人纪录刷新 获取选手列表')
     participants = list(
@@ -121,7 +122,12 @@ def refresh_weekly_best_scores(tournament: WeeklyTournament, *, batch_size=1000)
     updated_count = 0
     for participant in participants:
         tournament_user = participant.user.tournamentuser
-        updated_count += update_weekly_best(tournament_user, tournament, participant)
+        if rebuild:
+            best = calculate_weekly_classic_best(participant.user_id)
+            updated_count += tournament_user.weekly_classic_best != best
+            tournament_user.weekly_classic_best = best
+        else:
+            updated_count += update_weekly_best(tournament_user, tournament, participant)
         tournament_users.append(tournament_user)
 
     TournamentUser.objects.bulk_update(tournament_users, ['weekly_classic_best'], batch_size=batch_size)
