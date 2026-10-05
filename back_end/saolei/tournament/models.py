@@ -295,7 +295,7 @@ class WeeklyParticipant(TournamentParticipant):
 class TournamentUser(models.Model):
     user = models.OneToOneField(UserProfile, on_delete=models.CASCADE, primary_key=True)
     score_current = models.FloatField(default=0)  # 当前积分
-    last_updated = models.DateTimeField(default=timezone.now)  # 最后更新时间
+    last_updated = models.DateTimeField(default=timezone.now)  # 最后结束的比赛时间
     score_total = models.PositiveIntegerField(default=0)  # 所有比赛历史总积分
     gsc_total = models.PositiveIntegerField(default=0)  # gsc历史总积分
     gsc_best = models.PositiveBigIntegerField(default=MAX_TOURNAMENT_BEST)  # gsc历史最好成绩及届数（后三位）
@@ -305,8 +305,16 @@ class TournamentUser(models.Model):
 
     def add_score(self, score: float | int, updated=None, *, category: Literal['gsc', 'weekly_classic']):
         updated = updated or timezone.now()
-        self.score_current = self.score_current * tournament_score_decay_factor(self.last_updated, updated) + score
-        self.last_updated = updated
+        if self.score_current == 0 and self.score_total == 0:
+            # 无积分时，创建时间不能作为衰减基准；仍须保留已结束的零积分比赛时间。
+            latest_end = TournamentParticipant.objects.filter(user_id=self.user_id, rank__isnull=False, tournament__state=Tournament_TextChoices.State.AWARDED).aggregate(latest=models.Max('tournament__end_time'))['latest']
+            self.last_updated = max(updated, latest_end or updated)
+        if updated < self.last_updated:
+            # 历史比赛的积分修正只衰减差额，不回退最后结束的比赛时间。
+            self.score_current += score * tournament_score_decay_factor(updated, self.last_updated)
+        else:
+            self.score_current = self.score_current * tournament_score_decay_factor(self.last_updated, updated) + score
+            self.last_updated = updated
         self.score_total += score
         if category == 'gsc':
             self.gsc_total += score
