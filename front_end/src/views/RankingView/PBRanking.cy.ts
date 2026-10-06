@@ -21,7 +21,7 @@ describe('<PBRanking />', () => {
         cy.get('.pb-level-button[data-level="b"]').click();
         cy.get('.pb-pagination .btn-next').click();
         cy.wait('@ranking').its('request.query').should('include', { start: '20', end: '40' });
-        cy.get('.pb-ranking-table .el-table__body').extractTableData().should((data) => {
+        cy.get('.pb-ranking-table tbody').extractTableData().should((data) => {
             expect(data[0]?.[0]).to.equal('21');
         });
         cy.get('.nf-toggle.el-checkbox').click();
