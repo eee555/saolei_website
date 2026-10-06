@@ -12,9 +12,15 @@ CSS 与 Less 的选型由实施代理自行决定，根据实际重复程度和�
 
 正式项目变量位于 `theme/`，通过 `setup.ts` 加载 `theme/index.css`，应用与 Cypress 组件测试共用。`colors.css` 定义文字、背景、边框与禁用色，`accents.css` 定义主色及状态色，`metrics.css` 定义当前字号、圆角与过渡参数。初值沿用 Element Plus 2.14.6，深色主题继续由 `html.dark` 切换；此批只替换变量来源，不调整尺寸和密度。
 
-项目代码统一使用 `--ui-*`，包括 JavaScript 中的颜色读取。`InputNumber` 的 `--ui-input-*` 与原生表格的 `--ui-table-border-color` 是可选局部覆盖，未设置时使用项目语义变量作为回退。组件库要求的 `--el-*` 声明仅留在 `vendors/element-plus.css`，由项目变量向库传值，不反向读取库变量。
+项目代码统一使用 `--ui-*`，包括 JavaScript 中的颜色读取。`InputNumber` 的 `--ui-input-*` 与表格的 `--ui-table-*` 支持局部覆盖。组件库要求的 `--el-*` / `--p-*` 声明仅留在 `vendors/` 适配文件，由项目变量向库传值，不反向读取库变量。
 
 `button.css` 保持原有导入路径，按顺序汇总 `buttons/base.css`、`buttons/variants.css`、`buttons/states.css`，分别负责基础布局、类型配色、尺寸与交互状态。
+
+`theme/tables.css` 提供三种表格共用的 `--ui-table-*` 参数，由 `setup.ts` 直接加载，应用与 Cypress 共用。初值保持 BaseTable 现有外观：14px 字号、1.4 行高、4px × 8px 单元格内边距、1px 网格边框及 500 表头字重；颜色引用项目主题，随 `html.dark` 切换。
+
+`vendors/element-plus-table.css` 与 `vendors/primevue-table.css` 将同一参数映射到保留的 ElTable / DataTable，并补齐网格线、表头字重和空状态样式。优先使用安装版本的公开变量，必要规则限定在组件内部，不合并组件库分离的表头/正文表格，不改变滚动、固定列、列宽或业务事件。排序箭头、筛选、选择、展开和焦点反馈保留；选中行与普通悬停行使用不同颜色。缓存设置等已有页面局部尺寸覆盖继续优先。
+
+`vendors/primevue-table-controls.css` 仅紧凑化 DataTable 内的分页及展开按钮，并使用项目颜色和直角；不覆盖独立分页器、表单及传送到表外的筛选弹层。复杂行仍由其输入控件和展开内容决定实际高度，不强制所有表格行等高。适配接口参考 [Element Plus Table](https://element-plus.org/en-US/component/table.html) 与 [PrimeVue DataTable](https://primevue.dev/datatable/)，变量名称以项目安装包为准。
 
 `table.css` 是 BaseTable 的共享展示样式，使用项目变量、紧凑单元格与容器内滚动。单元格默认规则通过 `:where()` 降低优先级，便于文字语义类及局部样式覆盖。独立单元格链接与预览，以及调用方已有的原生表头按钮可以保留；例如扫雷榜由页面维护指标选择和后端排序请求，BaseTable 仅提供表头插槽。简单行点击由调用方直接绑定 `<tr>`，同时处理键盘触发及单元格事件冒泡，例如 PB 榜的录像预览；不向 BaseTable 增加行事件接口。依赖组件库内部排序、选择、展开、编辑或复杂联动等能力的表格继续保留现有实现。
 

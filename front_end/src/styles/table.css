@@ -2,30 +2,30 @@
     min-width: 0;
     max-width: 100%;
     overflow: auto;
-    color: var(--ui-text-color-regular);
-    font-size: var(--ui-font-size-base);
+    color: var(--ui-table-text-color);
+    font-size: var(--ui-table-font-size);
 }
 
 .base-table {
     width: 100%;
     border-collapse: collapse;
-    background: var(--ui-fill-color-blank);
+    background: var(--ui-table-background);
     text-align: left;
-    line-height: 1.4;
+    line-height: var(--ui-table-line-height);
 }
 
 :where(.base-table th),
 :where(.base-table td) {
     box-sizing: border-box;
-    border: 1px solid var(--ui-border-color-lighter);
-    padding: 4px 8px;
+    border: var(--ui-table-border-width) solid var(--ui-table-border-color);
+    padding: var(--ui-table-cell-padding-block) var(--ui-table-cell-padding-inline);
     vertical-align: middle;
 }
 
 :where(.base-table th) {
-    background: var(--ui-fill-color-light);
-    color: var(--ui-text-color-secondary);
-    font-weight: 500;
+    background: var(--ui-table-header-background);
+    color: var(--ui-table-header-text-color);
+    font-weight: var(--ui-table-header-font-weight);
     text-align: inherit;
 }
 
@@ -35,11 +35,11 @@
 
 :where(.base-table > tbody > tr:not(.base-table-empty-row):hover > th),
 :where(.base-table > tbody > tr:not(.base-table-empty-row):hover > td) {
-    background: var(--ui-fill-color-lighter);
+    background: var(--ui-table-hover-background);
 }
 
 .base-table .base-table-empty {
-    padding: 12px 8px;
-    color: var(--ui-text-color-secondary);
+    padding: var(--ui-table-empty-padding-block) var(--ui-table-cell-padding-inline);
+    color: var(--ui-table-header-text-color);
     text-align: center;
 }

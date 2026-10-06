@@ -17,9 +17,9 @@
 | --- | --- | --- |
 | 视觉参数 | 当前参数已保存为本地参考；目标尺寸继续细化 | `styles/parameters/` 已加入 Git 忽略，仅供查阅；实际需要的参数按职责提取到 `styles/` 对应文件 |
 | 项目主题变量与组件库适配 | 项目变量已提交验收；其他换肤待实施 | `styles/theme/` 提供独立 `--ui-*`；项目代码统一读取项目变量，保留库适配中的声明 |
-| 展示表格 | BaseTable 及此前迁移、行悬停高亮与公共列样式已提交验收；比赛积分榜本批待验收 | 比赛积分榜切换排序字段时回到第一页，表头不显示箭头；复杂交互表格保留现有实现 |
+| 展示表格 | BaseTable 及比赛积分榜等此前迁移已提交验收 | 复杂交互表格保留现有实现，共用表格视觉参数 |
 | 按钮、链接、分隔线、描述列表等 | 第三批及收尾已验收 | 本轮范围内的 ElLink / ElButton 已迁移；暂留范围见下文，分隔线与描述列表单独处理 |
-| 复杂组件换肤 | 待实施 | 表格、表单、Tabs、弹窗等仍需分别调整直角与紧凑尺寸 |
+| 复杂组件换肤 | 表格本批待验收，其余待实施 | 保留的 ElTable / DataTable 与 BaseTable 统一视觉；表单、Tabs、弹窗等继续分批处理 |
 | PrimeVue 退出 | 延后独立推进 | 表格、筛选控件及 Toolbar 暂留；账号关联页面等待重做 |
 
 首页比赛卡片 `views/HomeView/NormalTournamentQueue.vue` 按既定范围保留，用户已添加 ESLint disable，不再列为规则冲突待办。账号关联页面重做与 PrimeVue 退出继续延后独立推进。
@@ -189,30 +189,26 @@ BaseTable 使用原生 `<table>`，仅提供滚动容器、共享样式与空状
 
 首批展示表格迁移、扫雷榜、PB 榜、公共行悬停高亮与公共列样式已提交，视为验收完成，不再保留其实施与测试待办。公共列规则继续通过 `styles/table-columns.css` 复用，BaseTable 通过 `@/styles/` 别名直接导入它和表格样式。
 
-本批迁移比赛积分榜 `views/RankingView/TournamentRanking.vue`：
-
-- 使用 BaseTable 与原生两层分组表头，复用排名、玩家、数值与居中列样式；保留玩家链接、积分计算、最佳成绩格式化、加载与空状态。
-- 七个指标表头复用 BaseTextButton，页面维护后端 `sort_by` 请求，继续由后端确定各字段排序方向；BaseTable 不新增排序接口。
-- 切换排序字段时先重置页码为 1，再请求第一页；重复点击当前字段不重置页码或重复请求。表头不显示排序箭头，通过颜色与 `aria-pressed` 标识当前字段，保留键盘触发。
-- 保留 ElPagination 的页大小、总数及跳页行为；更新组件测试覆盖分组与数据、排序切换的分页重置、键盘触发和跨九列的空状态。
+比赛积分榜迁移及页码断言修正已提交验收，不再保留其实施与测试待办。后端排序由页面维护，切换字段回到第一页，表头不显示箭头。
 
 保留范围：比赛成绩汇总的内部客户端排序及相关交互、报名表管理操作、缓存设置的编辑控件，以及 PrimeVue 的现有表格。其他仅有简单行点击或后端排序触发的表格不因该事件继续暂留，按后续批次逐个核对实际能力。首页比赛卡片仍按原范围暂缓。
 
-验收重点：第二页切换指标回到第一页、当前字段重复点击保留页码、七个字段对应正确的后端参数、表头无排序箭头，以及深浅主题、长玩家名与窄容器滚动表现。
-
-在 `front_end` 目录运行本批组件测试：
-
-```powershell
-npx.cmd cypress run --component --spec "src/views/RankingView/TournamentRanking.cy.ts"
-```
-
-本批已通过 `npm.cmd run lintfix`、`npm.cmd run typecheck`、`npm.cmd run build:frontend` 和 `git diff --check`；未修改公共样式文件与积分计算逻辑。
-
-Cypress 由用户运行，本批尚未运行浏览器验证；提交后按约定移除其验收待办。
-
 ### 5. 分批给复杂组件换肤
 
-状态：待实施。
+状态：表格统一样式本批待验收；其他类别待实施。
+
+- `theme/tables.css` 提取 BaseTable 现有参数，原生表格及两种库适配共用 `--ui-table-*`；颜色、表头、边框、字号、字重、行高、内边距、悬停与空状态一致。
+- `vendors/element-plus-table.css`、`vendors/primevue-table.css` 保留组件库结构和交互，仅覆盖样式。通过变量映射和少量 CSS 保留固定列、滚动、排序箭头、筛选、选择、展开和焦点状态；不改页面脚本、列宽及局部特殊样式。
+- `vendors/primevue-table-controls.css` 仅调整 DataTable 内分页与展开按钮的颜色、圆角和密度。独立分页器、表单和表外筛选弹层留待各自批次处理。
+- 由 `setup.ts` 加载，应用与 Cypress 共用。只统一视觉参数，不强制包含输入控件或展开内容的行等高；已存在的页面局部覆盖继续优先。样式组织见[项目样式与参数](src/styles/README.md)。
+
+本批已通过 `npm.cmd run lintfix`、`npm.cmd run typecheck`、`npm.cmd run build:frontend` 和 `git diff --check`，项目样式文件均不超过 100 个非空行。Cypress 不由代理运行，在 `front_end` 目录执行现有代表测试：
+
+```powershell
+npx.cmd cypress run --component --spec "src/views/TournamentView/gsc/AllSummary.cy.ts,src/views/TournamentView/TournamentList.cy.ts,src/components/VideoUpload/App.cy.ts,src/views/UserView/UserVideoView.cy.ts,src/views/RankingView/TournamentRanking.cy.ts"
+```
+
+人工验收：深浅主题下三种表格的网格线、表头、间距、普通行悬停及空状态；同时检查原有排序、筛选、分页、选中、展开和窄容器滚动。未运行浏览器验证；提交后按约定移除本批验收待办。
 
 - Element Plus 的表单控件、Tabs、菜单、弹窗/通知、表格分别组成独立系列，重点压缩多余间距并统一直角；`Menu.vue` 内部菜单样式作为独立任务处理。
 - 每种组件先选择一个代表实例验证，再推广。
@@ -366,7 +362,7 @@ E2E 使用项目现有测试环境。每批优先运行受影响的 spec，而�
 
 ## 下一批建议
 
-1. 验收本批比赛积分榜迁移、排序字段切换后的分页重置及无箭头表头；目标密度和复杂组件换肤分开推进。
+1. 验收本批保留表格与 BaseTable 的统一样式，以及原有表格交互；其他复杂组件继续独立分批推进。
 2. 分隔线或简单描述列表可作为独立小批次推进；按钮与链接仅剩上述暂留范围，随相关页面维护单独处理。
 3. 统一主题语义与复杂组件换肤作为独立批次推进，每批先选择代表实例，再推广。
 
