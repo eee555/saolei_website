@@ -1,5 +1,5 @@
 /* eslint-disable vue/one-component-per-file -- Each test mounts its own render-only fixture. */
-import { defineComponent, h, ref } from 'vue';
+import { defineComponent, h, nextTick, ref } from 'vue';
 
 import BaseTable from './BaseTable.vue';
 
@@ -22,11 +22,14 @@ describe('<BaseTable />', () => {
         cy.get('[data-cy=display-table] tbody').extractTableData().should('deep.equal', [['Player A', '1.234', '4.567']]);
         cy.then(() => {
             empty.value = true;
+            return nextTick();
         });
         cy.get('[data-cy=display-table] tbody td').should('have.length', 1).and('have.attr', 'colspan', '3').and('have.text', 'No records');
         cy.contains('tbody', 'Player A').should('not.exist');
         cy.then(() => {
             empty.value = false;
+            // extractTableData captures a snapshot, so wait for Vue to restore the rows.
+            return nextTick();
         });
         cy.get('[data-cy=display-table] tbody').extractTableData().should('deep.equal', [['Player A', '1.234', '4.567']]);
     });
