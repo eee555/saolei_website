@@ -13,7 +13,7 @@ export default {
             getSoftware: 'fetch video data',
             getUserProfile: 'fetch user data',
             getVideoModel: 'fetch video data',
-            refresh: '刷新',
+            refresh: 'Refresh',
             setUserProfile: 'modify user data',
             setVideoModel: 'modify video data',
             uploadFile: 'upload file',
