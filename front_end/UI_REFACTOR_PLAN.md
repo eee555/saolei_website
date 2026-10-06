@@ -1,7 +1,7 @@
 # 前端 UI 风格渐进重构计划
 
 制定日期：2026-10-03。
-进度更新：2026-10-04。按用户确认，已提交的改动视为验收完成，从待办中移除。
+进度更新：2026-10-06。按用户确认，已提交的改动视为验收完成，从待办中移除。
 
 ## 目标与范围
 
@@ -15,10 +15,11 @@
 
 | 工作项 | 状态 | 剩余事项 |
 | --- | --- | --- |
-| 视觉参数 | 待细化 | 在已确定的方向与选型规则下，统一字号、间距和组件尺寸 |
-| 项目主题变量与组件库适配 | 按钮直角适配已实现，其余待实施 | `styles/vendors/element-plus.css` 已统一 ElButton 圆角；尚无 `tokens.css` 或统一 `--ui-*` 变量，原生组件继续使用 Element Plus 颜色变量 |
-| 按钮、链接、分隔线、描述列表等 | 第三批迁移已验收，收尾待提交 | 本轮范围内的 ElLink / ElButton 已迁移；收尾清理与暂留范围见下文，分隔线与描述列表单独处理 |
-| 复杂组件换肤 | 待实施 | 表格、表单、Tabs、弹窗等仍需分别调整直角与紧凑尺寸 |
+| 视觉参数 | 当前参数已保存为本地参考；目标尺寸继续细化 | `styles/parameters/` 已加入 Git 忽略，仅供查阅；实际需要的参数按职责提取到 `styles/` 对应文件 |
+| 项目主题变量与组件库适配 | 项目变量已提交验收；其他换肤待实施 | `styles/theme/` 提供独立 `--ui-*`；项目代码统一读取项目变量，保留库适配中的声明 |
+| 展示表格 | BaseTable 及比赛积分榜等此前迁移已提交验收 | 复杂交互表格保留现有实现，共用表格视觉参数 |
+| 按钮、链接、分隔线、描述列表等 | 第三批及收尾已验收 | 本轮范围内的 ElLink / ElButton 已迁移；暂留范围见下文，分隔线与描述列表单独处理 |
+| 复杂组件换肤 | 表格本批待验收，其余待实施 | 保留的 ElTable / DataTable 与 BaseTable 统一视觉；表单、Tabs、弹窗等继续分批处理 |
 | PrimeVue 退出 | 延后独立推进 | 表格、筛选控件及 Toolbar 暂留；账号关联页面等待重做 |
 
 首页比赛卡片 `views/HomeView/NormalTournamentQueue.vue` 按既定范围保留，用户已添加 ESLint disable，不再列为规则冲突待办。账号关联页面重做与 PrimeVue 退出继续延后独立推进。
@@ -55,7 +56,8 @@
 | 纯布局、装饰 | 使用原生 HTML + CSS；布局和普通卡片已迁移，其他按批次处理 | `layout.css`、`cards.css`；待处理分隔线、简单描述列表 |
 | 首页比赛卡片 | 暂留 ElCard，不纳入本轮普通卡片替换 | `HomeView/NormalTournamentQueue.vue`，带 header |
 | 简单操作 | 优先完善项目已有基础组件，再逐步替换 | 普通按钮、文字按钮、简单链接 |
-| 复杂行为 | 原则上保留实现，统一样式；PrimeVue 按下文退出计划处理 | 表格、分页、表单校验、弹窗、Tabs、复杂选择器、范围滑块 |
+| 展示表格 | 使用 BaseTable，原生表头及行内容通过插槽提供；允许独立的单元格链接/预览、页面管理的原生表头按钮及简单行点击 | 密度榜、扫雷榜、PB 榜、比赛积分榜、软件版本列表、个人纪录与自定义计数器 |
+| 复杂行为 | 原则上保留实现，统一样式；PrimeVue 按下文退出计划处理 | 依赖库内部排序/选择/展开/编辑或复杂联动能力的表格、分页、表单校验、弹窗、Tabs、复杂选择器、范围滑块 |
 | 通知、加载状态 | 保留行为和调用接口，调整 Element Plus 外观 | `Notifications.ts`、`v-loading` |
 | vue-tippy | 保持现有实现和样式导入方式，不安排迁移或专门换肤 | Tippy、`BaseTooltip` 中的提示行为 |
 | PrimeVue Toolbar | 暂缓迁移，随页面重做或后续维护处理 | 账号关联卡片、管理员任务页 |
@@ -68,7 +70,7 @@
 ## Element Plus 改造重点
 
 1. **简单组件替换为原生 HTML + CSS。** 后续处理分隔线、简单描述列表、链接和普通按钮。优先完善已有基础组件，按实际功能判断是否需要保留组件库实现。
-2. **复杂组件保留行为，统一直角和紧凑尺寸。** 表格、表单校验、弹窗、Tabs 等继续使用现有逻辑，按组件类别调整圆角、内外边距、行高、控件高度和间距。
+2. **复杂组件保留行为，统一直角和紧凑尺寸。** 依赖组件库交互逻辑的表格、表单校验、弹窗、Tabs 等继续使用现有逻辑，按组件类别调整圆角、内外边距、行高、控件高度和间距；展示表格按下文使用 BaseTable。
 3. **通过项目样式变量统一密度。** 明确按钮、输入控件、表格单元格、表单项和面板的尺寸关系；不能仅切换到组件库的 `small` 尺寸就视为完成，也不以缩小所有文字代替间距调整。
 4. **vue-tippy 不变。** `BaseTooltip` 及其他提示内容中的 `ElCard` 已替换为原生容器与共享卡片样式。继续保持 Tippy 的定位、触发、生命周期逻辑和样式导入方式。
 
@@ -116,19 +118,26 @@
 
 ### 1. 细化视觉参数
 
-- 记录 Element Plus 两套主题中采用的颜色及其语义映射，细化字号、间距、直角边框和表格密度。
+当前子步骤：已将项目锁定的 Element Plus 2.14.6、PrimeVue 4.5.5 / Aura 主题包 2.0.3 的在用参数保存到本地 `src/styles/parameters/`，包括浅色、深色、字号、尺寸、状态、组件局部覆盖及内部依赖。该目录加入 `.gitignore`，仅作为查阅存档，不提交，也不供应用、测试、样式或构建脚本直接使用。使用规则见[项目样式与参数](src/styles/README.md)。
+
+本步先固定现值，不接入运行时，也不调整页面密度。已有原生按钮/卡片尺寸和 ElButton 直角覆盖另存于参考目录中的 `project.less`；没有导入的旧 `assets/style.css` 不作为生效基准。正式使用时，将所需值及其依赖提取到 `src/styles` 下对应文件，不整体汇总或导入参考目录。
+
+剩余细化：
+
+- 在上述基准上确定项目语义映射与目标字号、间距、直角边框和表格密度；主要配色沿用 Element Plus，PrimeVue 现有 Aura 配色先保留记录。
 - 确定代表性的数据展示与分析样例、组件保留清单，以及少数需要按自身宽度切换布局策略的组件。
 
 完成条件：在现有选型规则下，有统一的视觉参数和样例，能够据此评审后续改动。
 
 ### 2. 建立项目样式变量
 
-状态：待实施。当前 `cards.css` 直接复用 `--el-*` 颜色变量，尚未建立独立的项目主题变量。
+状态：项目变量迁移已提交验收。本地参考存档不作为运行时依赖。
 
-- 在 `src/styles` 新增项目自己的 `--ui-*` 变量。
-- 颜色变量采用项目当前版本 Element Plus 的对应主题色值，分别定义浅色和深色值。
-- 初始值尽量接近现状，将“接入样式机制”和“改变视觉效果”拆开。
-- 集中接入样式入口，使应用和 Cypress 组件测试使用一致的基础样式。
+- `src/styles/theme/` 按颜色、主色/状态色、字号/圆角/过渡参数分文件，使用独立 `--ui-*`。初值沿用 Element Plus 2.14.6 的实际使用参数，深浅主题保留当前色值，不导入或读取 `parameters/`。
+- 公共文字、按钮、链接、卡片样式与业务组件均已替换 `--el-*` 读取；图表、播放器及工具函数中的 JavaScript 颜色读取也使用项目变量。组件局部可选覆盖继续提供项目语义变量回退。
+- `setup.ts` 加载项目主题，应用和 Cypress 组件测试共用入口；深色主题继续使用 `html.dark`。
+- Element Plus 按钮适配仍声明库所需的 `--el-border-radius-*`，值来自项目按钮圆角变量；项目变量不反向引用组件库变量。其余复杂组件的主题适配在后续步骤推进。
+- `button.css` 已按职责拆分到 `buttons/`，保留原导入路径；项目样式文件均遵守 100 个非空行限制。
 
 完成条件：引入后现有页面外观基本不变。
 
@@ -168,13 +177,38 @@
 - `views/HomeView/NormalTournamentQueue.vue`：首页比赛卡片整体暂缓。
 - `components/accountlinks/` 中的 `CardAdd.vue`、`CardAddMineracer.vue`、`CardBilibili.vue`、`CardSaolei.vue`、`CardWoM.vue`、`CarouselControl.vue`、`VideoImportQueue.vue`：随账号关联页面重做处理。
 
-本次收尾（待提交）：删除无调用方、已标注拟弃用的 `PreviewDownload.vue`；清理失效的 ElButton `square-button` 样式与按钮组中的旧选择器；补充上述 ESLint 限制。账号关联卡片仍使用的 `button-compact`、新旧按钮相邻间距和 Element Plus 直角适配继续保留。
+第三批收尾已提交验收，不再保留待办。账号关联卡片仍使用的 `button-compact`、新旧按钮相邻间距和 Element Plus 直角适配继续保留。
 
-收尾已通过 `npm.cmd run lintfix`、`npm.cmd run typecheck` 和 `npm.cmd run build:frontend`；另核对规则实际报错、八个文件例外及原有文字/布局/卡片限制均符合预期。本次不改变现有交互，未运行 Cypress，也不重新列入已验收的 3.3 浏览器测试待办。
+#### 展示表格：BaseTable
+
+以实际依赖的组件库能力作为边界：单元格可以保留独立的玩家链接、下载链接和录像预览；表头仅选择字段并触发后端排序时，可由页面维护原生表头按钮、状态和请求，通过表头插槽提供。简单行点击可在调用方的 `<tr>` 上绑定原有函数，不作为保留组件库的理由；调用方负责键盘触发及单元格独立操作的事件冒泡，BaseTable 不接管交互。依赖组件库内部客户端排序、选择、展开、编辑或复杂联动能力的表格继续保留现有实现，不删除或重写行为来扩大本批范围。外部分页器与请求由页面维护，后端分页本身不作为保留 ElTable 的理由。
+
+BaseTable 使用原生 `<table>`，仅提供滚动容器、共享样式与空状态。`head`、`columns`、`caption` 及默认插槽分别提供原生表头、列宽、标题与行；不管理请求、排序、筛选、分页或递归列注册。通过 `tableClass` / `tableStyle` 保留必要的局部样式入口，空状态通过 `empty`、`emptyText`、`columnCount` 显式传入。加载反馈继续复用调用方的 `v-loading`。
+
+公共样式已增加正文行悬停高亮，使用项目深浅主题的 `--ui-fill-color-lighter`；排除表头与空状态行，局部特殊背景仍可覆盖。简单行操作的手形光标及键盘焦点样式由调用方提供。
+
+首批展示表格迁移、扫雷榜、PB 榜、公共行悬停高亮与公共列样式已提交，视为验收完成，不再保留其实施与测试待办。公共列规则继续通过 `styles/table-columns.css` 复用，BaseTable 通过 `@/styles/` 别名直接导入它和表格样式。
+
+比赛积分榜迁移及页码断言修正已提交验收，不再保留其实施与测试待办。后端排序由页面维护，切换字段回到第一页，表头不显示箭头。
+
+保留范围：比赛成绩汇总的内部客户端排序及相关交互、报名表管理操作、缓存设置的编辑控件，以及 PrimeVue 的现有表格。其他仅有简单行点击或后端排序触发的表格不因该事件继续暂留，按后续批次逐个核对实际能力。首页比赛卡片仍按原范围暂缓。
 
 ### 5. 分批给复杂组件换肤
 
-状态：待实施。
+状态：表格统一样式本批待验收；其他类别待实施。
+
+- `theme/tables.css` 提取 BaseTable 现有参数，原生表格及两种库适配共用 `--ui-table-*`；颜色、表头、边框、字号、字重、行高、内边距、悬停与空状态一致。
+- `vendors/element-plus-table.css`、`vendors/primevue-table.css` 保留组件库结构和交互，仅覆盖样式。通过变量映射和少量 CSS 保留固定列、滚动、排序箭头、筛选、选择、展开和焦点状态；不改页面脚本、列宽及局部特殊样式。
+- `vendors/primevue-table-controls.css` 仅调整 DataTable 内分页与展开按钮的颜色、圆角和密度。独立分页器、表单和表外筛选弹层留待各自批次处理。
+- 由 `setup.ts` 加载，应用与 Cypress 共用。只统一视觉参数，不强制包含输入控件或展开内容的行等高；已存在的页面局部覆盖继续优先。样式组织见[项目样式与参数](src/styles/README.md)。
+
+本批已通过 `npm.cmd run lintfix`、`npm.cmd run typecheck`、`npm.cmd run build:frontend` 和 `git diff --check`，项目样式文件均不超过 100 个非空行。Cypress 不由代理运行，在 `front_end` 目录执行现有代表测试：
+
+```powershell
+npx.cmd cypress run --component --spec "src/views/TournamentView/gsc/AllSummary.cy.ts,src/views/TournamentView/TournamentList.cy.ts,src/components/VideoUpload/App.cy.ts,src/views/UserView/UserVideoView.cy.ts,src/views/RankingView/TournamentRanking.cy.ts"
+```
+
+人工验收：深浅主题下三种表格的网格线、表头、间距、普通行悬停及空状态；同时检查原有排序、筛选、分页、选中、展开和窄容器滚动。未运行浏览器验证；提交后按约定移除本批验收待办。
 
 - Element Plus 的表单控件、Tabs、菜单、弹窗/通知、表格分别组成独立系列，重点压缩多余间距并统一直角；`Menu.vue` 内部菜单样式作为独立任务处理。
 - 每种组件先选择一个代表实例验证，再推广。
@@ -217,21 +251,25 @@
 
 ## 样式组织
 
+CSS 与 Less 的选型，以及 `src/styles/` 下的文件命名、目录划分和组织方式，由实施代理根据维护需要自行决定，无需逐项征求确认。该目录下的项目文件每个不得超过 100 个非空行；空行及仅含空白字符的行不计入，注释行计入。超过时按职责拆分，不通过压缩多条声明到同一行规避限制。具体规则见[项目样式与参数](src/styles/README.md)。
+
 当前已存在的样式：
 
 ```text
 src/styles/
   text.css                    继续沿用现有文字类
-  button.css                  原生按钮样式，兼容尚未迁移的 Element Plus 辅助类
-  link.css                    原生链接样式，复用 text.css 与 Element Plus 配色
+  theme/                      独立项目参数：colors.css、accents.css、metrics.css
+  button.css                  按顺序导入 buttons/ 下的样式，保持调用路径
+  buttons/                    基础布局、类型配色、尺寸与交互状态
+  link.css                    原生链接样式，复用 text.css 与项目配色
   layout.css                  已迁移的原生行列布局
   cards.css                   已迁移的原生卡片、尺寸修饰类和标题
   vendors/element-plus.css     保留的 Element Plus 按钮直角覆盖
 ```
 
-`cards.css` 当前提供 `.card`、`.card-small`、`.card-large`、`.card-title`。基础卡片为直角、无默认阴影、10px 内边距；小卡片为 5px，大卡片为上下 10px、左右 20px。颜色直接使用 `--el-border-color-light`、`--el-fill-color-blank` 和 `--el-text-color-primary`，沿用现有深浅主题。
+`cards.css` 当前提供 `.card`、`.card-small`、`.card-large`、`.card-title`。基础卡片为直角、无默认阴影、10px 内边距；小卡片为 5px，大卡片为上下 10px、左右 20px。颜色使用 `--ui-border-color-light`、`--ui-fill-color-blank` 和 `--ui-text-color-primary`，沿用现有深浅主题色值。
 
-`vendors/element-plus.css` 已提供按钮直角覆盖。后续再按需要新增 `tokens.css`、`vendors/primevue.css`，并扩展 Element Plus 的其他适配。目标依赖方向为：
+`theme/index.css` 已接入项目变量，`vendors/element-plus.css` 已提供按钮直角覆盖。后续按需要建立 PrimeVue 过渡样式文件，并扩展 Element Plus 的其他适配；文件名和 CSS / Less 选型由实施代理决定。目标依赖方向为：
 
 ```text
 项目样式变量
@@ -240,7 +278,7 @@ src/styles/
     └── PrimeVue 暂留表格的过渡适配
 ```
 
-项目变量建立前，继续复用现有 Element Plus 颜色变量。建立后，新样式优先使用 `--ui-*`，现有 `--el-*` 引用随所在模块逐步迁移，避免两者互相引用形成循环。
+项目样式与 JavaScript 统一读取 `--ui-*`。`--el-*` 声明仅保留在组件库适配文件中，按项目变量到组件库的方向传值，避免反向依赖和循环引用。组件库自身的主题仍由原有入口加载，复杂组件进一步适配单独推进。
 
 覆盖顺序优先采用：
 
@@ -324,8 +362,9 @@ E2E 使用项目现有测试环境。每批优先运行受影响的 spec，而�
 
 ## 下一批建议
 
-1. 提交第三批收尾后，分隔线或简单描述列表可作为独立小批次推进；按钮与链接仅剩上述暂留范围，随相关页面维护单独处理。
-2. 统一主题变量与复杂组件换肤作为独立批次推进，每批先选择代表实例，再推广。
+1. 验收本批保留表格与 BaseTable 的统一样式，以及原有表格交互；其他复杂组件继续独立分批推进。
+2. 分隔线或简单描述列表可作为独立小批次推进；按钮与链接仅剩上述暂留范围，随相关页面维护单独处理。
+3. 统一主题语义与复杂组件换肤作为独立批次推进，每批先选择代表实例，再推广。
 
 首页比赛卡片、账号关联页面重做及 PrimeVue 表格退出继续保持暂缓，不作为下一批简单组件迁移的前置条件。
 

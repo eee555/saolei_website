@@ -1,32 +1,47 @@
 <template>
-    <ElTable v-loading="loading" :data="rows" row-key="player_id" border class="pb-ranking-table" :empty-text="t('ranking.empty')" @row-click="previewVideo">
-        <ElTableColumn type="index" label="#" :index="(index) => first + index + 1" width="60" align="center" />
-        <!-- @vue-generic {PBRankingPlayer} -->
-        <ElTableColumn column-key="player" :label="t('common.prop.player')" min-width="150">
-            <template #default="{ row }">
+    <BaseTable v-loading="loading" class="pb-ranking-table" :table-style="{ width: 'auto', marginInline: 'auto' }" :empty="rows.length === 0" :column-count="3 + pbStats.length" :empty-text="t('ranking.empty')">
+        <template #head>
+            <tr>
+                <th scope="col" class="table-col-rank">
+                    #
+                </th>
+                <th scope="col" class="table-col-player">
+                    {{ t('common.prop.player') }}
+                </th>
+                <th v-for="stat in pbStats" :key="stat" scope="col" class="table-col-number">
+                    {{ t(`common.prop.${stat}`) }}
+                </th>
+                <th scope="col" class="table-col-datetime">
+                    {{ t('common.prop.upload_time') }}
+                </th>
+            </tr>
+        </template>
+        <tr
+            v-for="(row, index) in rows" :key="row.player_id" class="pb-ranking-row" :tabindex="loading ? -1 : 0"
+            @click="previewVideo(row)" @keydown.enter.self.prevent="!loading && previewVideo(row)" @keydown.space.self.prevent="!loading && previewVideo(row)"
+        >
+            <td class="table-col-rank">
+                {{ first + index + 1 }}
+            </td>
+            <td class="table-col-player">
                 <PlayerName :user-id="row.player_id" />
-            </template>
-        </ElTableColumn>
-        <!-- @vue-generic {PBRankingPlayer} -->
-        <ElTableColumn v-for="stat in pbStats" :key="stat" :column-key="stat" :label="t(`common.prop.${stat}`)" min-width="100" align="right">
-            <template #default="{ row }">
+            </td>
+            <td v-for="stat in pbStats" :key="stat" class="table-col-number">
                 {{ formatPBValue(row.timems, level, bv, stat) }}
-            </template>
-        </ElTableColumn>
-        <!-- @vue-generic {PBRankingPlayer} -->
-        <ElTableColumn prop="upload_time" :label="t('common.prop.upload_time')" min-width="170" align="center">
-            <template #default="{ row }">
+            </td>
+            <td class="table-col-datetime">
                 {{ formatPBUploadTime(row.upload_time) }}
-            </template>
-        </ElTableColumn>
-    </ElTable>
+            </td>
+        </tr>
+    </BaseTable>
 </template>
 
 <script setup lang="ts">
-import { ElTable, ElTableColumn, vLoading } from 'element-plus';
+import { vLoading } from 'element-plus';
 import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import BaseTable from '@/components/common/BaseTable.vue';
 import PlayerName from '@/components/PlayerName.vue';
 import { formatPBUploadTime, formatPBValue, pbStats } from '@/services/pbRankingService';
 import type { PBRankingPlayer } from '@/services/pbRankingService';
@@ -49,7 +64,12 @@ const { t } = useI18n();
 </script>
 
 <style scoped>
-:deep(.el-table__row) {
+.pb-ranking-row {
     cursor: pointer;
+}
+
+.pb-ranking-row:focus-visible {
+    outline: 2px solid var(--ui-color-primary);
+    outline-offset: -2px;
 }
 </style>

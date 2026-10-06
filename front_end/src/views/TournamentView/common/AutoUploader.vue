@@ -45,10 +45,10 @@
         <div v-if="scannedCount > 0">
             <StackBar
                 legend :data="[
-                    { name: t('local.uploaded'), value: uploadedCount, color: 'var(--el-color-success)' },
-                    { name: t('local.processing'), value: scannedCount - uploadedCount - skippedCount - failedCount, color: 'var(--el-color-warning)' },
-                    { name: t('local.skipped'), value: skippedCount, color: 'var(--el-color-info)' },
-                    { name: t('local.failed'), value: failedCount, color: 'var(--el-color-danger)' },
+                    { name: t('local.uploaded'), value: uploadedCount, color: 'var(--ui-color-success)' },
+                    { name: t('local.processing'), value: scannedCount - uploadedCount - skippedCount - failedCount, color: 'var(--ui-color-warning)' },
+                    { name: t('local.skipped'), value: skippedCount, color: 'var(--ui-color-info)' },
+                    { name: t('local.failed'), value: failedCount, color: 'var(--ui-color-danger)' },
                 ]"
             />
         </div>
@@ -389,7 +389,7 @@ const { t } = useI18n({ messages: i18nMessages });
 
 .auto-uploader__label {
     flex: none;
-    color: var(--el-text-color-regular);
+    color: var(--ui-text-color-regular);
     font-size: 0.875rem;
 }
 </style>

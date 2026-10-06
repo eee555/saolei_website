@@ -1,0 +1,39 @@
+.table-col-rank {
+    width: 3em;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.table-col-player {
+    width: 10em;
+    text-align: left;
+}
+
+.table-col-mode {
+    width: 5em;
+    text-align: center;
+}
+
+.table-col-bv {
+    width: 3em;
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.table-col-number {
+    width: 5em;
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.table-col-datetime {
+    width: 10em;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.table-col-center {
+    text-align: center;
+}

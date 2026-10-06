@@ -104,7 +104,7 @@ const { t } = useI18n({ messages: i18nMessages });
 }
 
 .normal-tournament-table td {
-    border-bottom: 1px solid var(--el-border-color-lighter);
+    border-bottom: 1px solid var(--ui-border-color-lighter);
     padding: 6px 4px;
 }
 </style>

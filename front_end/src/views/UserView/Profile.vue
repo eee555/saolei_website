@@ -79,8 +79,8 @@ const { t } = useI18n({ messages: i18nMessages });
     row-gap: 0.5rem;
     align-items: center;
     justify-content: space-between;
-    background-color: var(--el-bg-color);
-    border-bottom: 1px solid var(--el-border-color-light);
+    background-color: var(--ui-bg-color);
+    border-bottom: 1px solid var(--ui-border-color-light);
     box-sizing: border-box;
 
     .profile {
@@ -99,31 +99,31 @@ const { t } = useI18n({ messages: i18nMessages });
 
     .username {
         font-weight: 600;
-        font-size: var(--el-font-size-extra-large);
-        color: var(--el-text-color-primary);
+        font-size: var(--ui-font-size-extra-large);
+        color: var(--ui-text-color-primary);
     }
 
     .id {
-        font-size: var(--el-font-size-large);
-        color: var(--el-text-color-secondary);
+        font-size: var(--ui-font-size-large);
+        color: var(--ui-text-color-secondary);
     }
 
     .realname {
         font-weight: 500;
-        font-size: var(--el-font-size-large);
-        color: var(--el-text-color-primary);
+        font-size: var(--ui-font-size-large);
+        color: var(--ui-text-color-primary);
     }
     .fullname {
-        font-size: var(--el-font-size-small);
-        color: var(--el-text-color-regular);
+        font-size: var(--ui-font-size-small);
+        color: var(--ui-text-color-regular);
     }
 
     .signature {
         width: 100%;
         max-height: 64px;
         overflow: auto;
-        font-size: var(--el-font-size-extra-small);
-        color: var(--el-text-color-placeholder);
+        font-size: var(--ui-font-size-extra-small);
+        color: var(--ui-text-color-placeholder);
         padding-left: 12px;
         white-space: pre-wrap;
     }
@@ -141,8 +141,8 @@ const { t } = useI18n({ messages: i18nMessages });
     width: 100%;
     height: 100%;
     padding: 12px 8px;
-    background-color: var(--el-bg-color);
-    border-right: 1px solid var(--el-border-color-light);
+    background-color: var(--ui-bg-color);
+    border-right: 1px solid var(--ui-border-color-light);
     box-sizing: border-box;
 
     .profile {
@@ -163,33 +163,33 @@ const { t } = useI18n({ messages: i18nMessages });
     .username {
         font-size: 18px;
         font-weight: 600;
-        color: var(--el-text-color-primary);
+        color: var(--ui-text-color-primary);
         text-align: center;
     }
 
     .id {
         font-size: 13px;
-        color: var(--el-text-color-secondary);
+        color: var(--ui-text-color-secondary);
         text-align: center;
     }
 
     .realname {
         font-weight: 500;
-        font-size: var(--el-font-size-large);
-        color: var(--el-text-color-regular);
+        font-size: var(--ui-font-size-large);
+        color: var(--ui-text-color-regular);
         text-align: center;
     }
     .fullname {
-        font-size: var(--el-font-size-small);
-        color: var(--el-text-color-regular);
+        font-size: var(--ui-font-size-small);
+        color: var(--ui-text-color-regular);
         text-align: center;
     }
 
     .signature {
         width: 100%;
-        font-size: var(--el-font-size-extra-small);
+        font-size: var(--ui-font-size-extra-small);
         line-height: 1.6;
-        color: var(--el-text-color-placeholder);
+        color: var(--ui-text-color-placeholder);
         overflow: auto;
         word-break: break-word;
         white-space: pre-wrap;

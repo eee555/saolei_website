@@ -1,0 +1,62 @@
+.base-button--primary {
+    --button-accent-background: var(--ui-color-primary-light-9);
+    --button-accent: var(--ui-color-primary);
+    --button-accent-hover: var(--ui-color-primary-light-3);
+    --button-accent-active: var(--ui-color-primary-dark-2);
+    --button-accent-disabled: var(--ui-color-primary-light-5);
+}
+
+.base-button--success {
+    --button-accent-background: var(--ui-color-success-light-9);
+    --button-accent: var(--ui-color-success);
+    --button-accent-hover: var(--ui-color-success-light-3);
+    --button-accent-active: var(--ui-color-success-dark-2);
+    --button-accent-disabled: var(--ui-color-success-light-5);
+}
+
+.base-button--warning {
+    --button-accent-background: var(--ui-color-warning-light-9);
+    --button-accent: var(--ui-color-warning);
+    --button-accent-hover: var(--ui-color-warning-light-3);
+    --button-accent-active: var(--ui-color-warning-dark-2);
+    --button-accent-disabled: var(--ui-color-warning-light-5);
+}
+
+.base-button--danger {
+    --button-accent-background: var(--ui-color-danger-light-9);
+    --button-accent: var(--ui-color-danger);
+    --button-accent-hover: var(--ui-color-danger-light-3);
+    --button-accent-active: var(--ui-color-danger-dark-2);
+    --button-accent-disabled: var(--ui-color-danger-light-5);
+}
+
+.base-button--info {
+    --button-accent-background: var(--ui-color-info-light-9);
+    --button-accent: var(--ui-color-info);
+    --button-accent-hover: var(--ui-color-info-light-3);
+    --button-accent-active: var(--ui-color-info-dark-2);
+    --button-accent-disabled: var(--ui-color-info-light-5);
+}
+
+.base-button:is(.base-button--primary, .base-button--success, .base-button--warning, .base-button--danger, .base-button--info) {
+    --button-color: var(--ui-color-white);
+    --button-background: var(--button-accent);
+    --button-border: var(--button-accent);
+    --button-hover-color: var(--ui-color-white);
+    --button-hover-background: var(--button-accent-hover);
+    --button-hover-border: var(--button-accent-hover);
+    --button-active-background: var(--button-accent-active);
+    --button-disabled-color: var(--ui-color-white);
+    --button-disabled-background: var(--button-accent-disabled);
+    --button-disabled-border: var(--button-accent-disabled);
+}
+
+.base-button--plain:not(.base-button--default):not(.base-button--text) {
+    --button-color: var(--button-accent);
+    --button-background: var(--button-accent-background);
+    --button-border: var(--button-accent-disabled);
+    --button-hover-background: var(--button-accent);
+    --button-hover-border: var(--button-accent);
+    --button-disabled-color: var(--button-accent-disabled);
+    --button-disabled-background: var(--button-accent-background);
+}

@@ -3,20 +3,33 @@
     <h1 v-if="tournament.name" class="text" v-html="tournament.name" />
     <!-- eslint-disable-next-line vue/no-v-html, vue/no-v-text-v-html-on-component -->
     <h1 v-if="tournament.description" class="text" v-html="tournament.getLocalDescription(local.language)" />
-    <ElTable v-if="data" :data="data" sortable>
-        <ElTableColumn v-for="(value, key) in data[0]" :key="key" :label="key" :prop="key" />
-    </ElTable>
+    <BaseTable :empty="data.length === 0" :empty-text="t('ranking.empty')" :column-count="Math.max(1, columns.length)">
+        <template v-if="columns.length > 0" #head>
+            <tr>
+                <th v-for="column in columns" :key="column" scope="col">
+                    {{ column }}
+                </th>
+            </tr>
+        </template>
+        <tr v-for="(row, index) in data" :key="index">
+            <td v-for="column in columns" :key="column">
+                {{ row[column]?.toString() }}
+            </td>
+        </tr>
+    </BaseTable>
 </template>
 
 <script setup lang="ts">
 import '@/styles/text.css';
 
-import { ElTable, ElTableColumn } from 'element-plus';
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 
+import BaseTable from '@/components/common/BaseTable.vue';
 import { local } from '@/store';
 import { Tournament } from '@/utils/tournaments';
 
-defineProps({
+const props = defineProps({
     tournament: {
         type: Tournament,
         default: () => new Tournament({}),
@@ -26,4 +39,7 @@ defineProps({
         default: () => [],
     },
 });
+
+const columns = computed(() => Object.keys(props.data[0] ?? {}));
+const { t } = useI18n();
 </script>

@@ -137,4 +137,9 @@ const { t } = useI18n({ messages: i18nMessages });
     margin-top: 8px;
     overflow-x: auto;
 }
+
+.pb-pagination > :deep(.el-pagination) {
+    width: max-content;
+    margin-inline: auto;
+}
 </style>

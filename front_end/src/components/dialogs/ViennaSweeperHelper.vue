@@ -60,31 +60,48 @@
             </ElDescriptionsItem>
         </ElDescriptions>
         <div style="height: 1em" />
-        <ElTable :data="tableData" table-layout="auto">
-            <ElTableColumn prop="version" :label="t('software.version')" />
-            <ElTableColumn prop="date" :label="t('software.releaseDate')" />
-            <ElTableColumn prop="expire" :label="t('software.expireDate')" />
-            <ElTableColumn :label="t('software.download')">
-                <template #default="{ row }">
+        <BaseTable>
+            <template #head>
+                <tr>
+                    <th scope="col">
+                        {{ t('software.version') }}
+                    </th>
+                    <th scope="col">
+                        {{ t('software.releaseDate') }}
+                    </th>
+                    <th scope="col">
+                        {{ t('software.expireDate') }}
+                    </th>
+                    <th scope="col">
+                        {{ t('software.download') }}
+                    </th>
+                </tr>
+            </template>
+            <tr v-for="row in tableData" :key="row.version">
+                <td>{{ row.version }}</td>
+                <td>{{ row.date }}</td>
+                <td>{{ row.expire }}</td>
+                <td>
                     <template v-for="link in row.links" :key="link.url">
                         <a class="link text" :href="link.url" target="_blank" rel="noopener noreferrer">
                             {{ link.label }}
                         </a>
                         &nbsp;
                     </template>
-                </template>
-            </ElTableColumn>
-        </ElTable>
+                </td>
+            </tr>
+        </BaseTable>
     </div>
 </template>
 
 <script setup lang="ts">
 import '@/styles/link.css';
 import '@/styles/text.css';
-import { ElDescriptions, ElDescriptionsItem, ElTable, ElTableColumn } from 'element-plus';
+import { ElDescriptions, ElDescriptionsItem } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
 import { BaseBadgeMsgames, BaseBadgeOpenms, BaseBadgeSaolei, BaseBadgeScoreganizer } from '@/components/common/badge';
+import BaseTable from '@/components/common/BaseTable.vue';
 import BaseTagSupport from '@/components/common/BaseTagSupport.vue';
 import { BaseFlagUK } from '@/components/common/flag';
 

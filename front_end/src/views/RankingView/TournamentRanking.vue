@@ -1,44 +1,67 @@
 <template>
     <section class="tournament-ranking">
-        <ElTable
-            v-loading="loading" :data="rows" :default-sort="defaultSort"
-            border table-layout="auto"
+        <BaseTable
+            v-loading="loading" :empty="rows.length === 0" :column-count="9"
             class="ranking-table"
             :empty-text="t('local.empty')"
-            @sort-change="handleSortChange"
         >
-            <ElTableColumn type="index" :index="(index) => first + index + 1" />
-            <ElTableColumn>
-                <template #default="{ row }">
+            <template #head>
+                <tr>
+                    <th scope="col" rowspan="2" class="table-col-rank" />
+                    <th scope="col" rowspan="2" class="table-col-player" />
+                    <th scope="colgroup" colspan="2" class="table-col-center">
+                        {{ t('local.scoreGroup') }}
+                    </th>
+                    <th scope="colgroup" colspan="2" class="table-col-center">
+                        {{ t('local.gscGroup') }}
+                    </th>
+                    <th scope="colgroup" colspan="3" class="table-col-center">
+                        {{ t('local.weeklyGroup') }}
+                    </th>
+                </tr>
+                <tr>
+                    <th v-for="column in rankColumns" :key="column.field" scope="col" class="table-col-number">
+                        <BaseTextButton
+                            class="rank-header-button" :data-sort-field="column.field"
+                            :type="sortBy === column.field ? 'primary' : 'default'" :aria-pressed="sortBy === column.field"
+                            :aria-label="`${t(`local.${column.group}`)} ${t(`local.${column.label}`)}`"
+                            @click="selectSort(column.field)"
+                        >
+                            {{ t(`local.${column.label}`) }}
+                        </BaseTextButton>
+                    </th>
+                </tr>
+            </template>
+            <tr v-for="(row, index) in rows" :key="row.user_id">
+                <td class="table-col-rank">
+                    {{ first + index + 1 }}
+                </td>
+                <td class="table-col-player">
                     <PlayerName :user-id="row.user_id" />
-                </template>
-            </ElTableColumn>
-            <ElTableColumn :label="t('local.scoreGroup')">
-                <ElTableColumn prop="score_current" :label="t('local.scoreCurrent')" sortable="custom" :sort-orders="descendingSortOrders">
-                    <template #default="{ row }">
-                        {{ formatScoreCurrent(row.score_current, row.last_updated) }}
-                    </template>
-                </ElTableColumn>
-                <ElTableColumn prop="score_total" :label="t('local.scoreTotal')" sortable="custom" :sort-orders="descendingSortOrders" />
-            </ElTableColumn>
-            <ElTableColumn :label="t('local.gscGroup')">
-                <ElTableColumn prop="gsc_total" :label="t('local.gscTotal')" sortable="custom" :sort-orders="descendingSortOrders" />
-                <ElTableColumn prop="gsc_best" :label="t('local.gscBest')" sortable="custom" :sort-orders="ascendingSortOrders">
-                    <template #default="{ row }">
-                        {{ formatGSCBest(row.gsc_best) }}
-                    </template>
-                </ElTableColumn>
-            </ElTableColumn>
-            <ElTableColumn :label="t('local.weeklyGroup')">
-                <ElTableColumn prop="weekly_total" :label="t('local.weeklyTotal')" sortable="custom" :sort-orders="descendingSortOrders" />
-                <ElTableColumn prop="weekly_classic_total" :label="t('local.weeklyClassicTotal')" sortable="custom" :sort-orders="descendingSortOrders" />
-                <ElTableColumn prop="weekly_classic_best" :label="t('local.weeklyClassicBest')" sortable="custom" :sort-orders="ascendingSortOrders">
-                    <template #default="{ row }">
-                        {{ formatWeeklyClassicBest(row.weekly_classic_best) }}
-                    </template>
-                </ElTableColumn>
-            </ElTableColumn>
-        </ElTable>
+                </td>
+                <td class="table-col-number">
+                    {{ formatScoreCurrent(row.score_current, row.last_updated) }}
+                </td>
+                <td class="table-col-number">
+                    {{ row.score_total }}
+                </td>
+                <td class="table-col-number">
+                    {{ row.gsc_total }}
+                </td>
+                <td class="table-col-number">
+                    {{ formatGSCBest(row.gsc_best) }}
+                </td>
+                <td class="table-col-number">
+                    {{ row.weekly_total }}
+                </td>
+                <td class="table-col-number">
+                    {{ row.weekly_classic_total }}
+                </td>
+                <td class="table-col-number">
+                    {{ formatWeeklyClassicBest(row.weekly_classic_best) }}
+                </td>
+            </tr>
+        </BaseTable>
 
         <ElPagination
             v-model:current-page="currentPage"
@@ -54,13 +77,15 @@
 </template>
 
 <script setup lang="ts">
-import { ElPagination, ElTable, ElTableColumn, vLoading } from 'element-plus';
+import { ElPagination, vLoading } from 'element-plus';
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import BaseTable from '@/components/common/BaseTable.vue';
+import BaseTextButton from '@/components/common/BaseTextButton.vue';
 import { httpErrorNotification } from '@/components/Notifications';
 import PlayerName from '@/components/PlayerName.vue';
-import { fetchTournamentUserRanking, TournamentUserRankFields } from '@/services/tournamentService';
+import { fetchTournamentUserRanking } from '@/services/tournamentService';
 import type { TournamentUserRankField, TournamentUserRankingRow } from '@/services/tournamentService';
 import { ms_to_s } from '@/utils';
 import { globalNow } from '@/utils/datetime';
@@ -73,10 +98,15 @@ const total = ref(0);
 const rows = ref<TournamentUserRankingRow[]>([]);
 const loading = ref(false);
 const first = computed(() => (currentPage.value - 1) * pageSize.value);
-type ElTableSortOrder = 'ascending' | 'descending';
-const ascendingSortOrders: ElTableSortOrder[] = ['ascending'];
-const descendingSortOrders: ElTableSortOrder[] = ['descending'];
-const defaultSort = { prop: 'score_current', order: 'descending' } as const;
+const rankColumns = [
+    { field: 'score_current', group: 'scoreGroup', label: 'scoreCurrent' },
+    { field: 'score_total', group: 'scoreGroup', label: 'scoreTotal' },
+    { field: 'gsc_total', group: 'gscGroup', label: 'gscTotal' },
+    { field: 'gsc_best', group: 'gscGroup', label: 'gscBest' },
+    { field: 'weekly_total', group: 'weeklyGroup', label: 'weeklyTotal' },
+    { field: 'weekly_classic_total', group: 'weeklyGroup', label: 'weeklyClassicTotal' },
+    { field: 'weekly_classic_best', group: 'weeklyGroup', label: 'weeklyClassicBest' },
+] as const satisfies readonly { field: TournamentUserRankField; group: string; label: string }[];
 
 async function fetchRanking() {
     loading.value = true;
@@ -100,13 +130,10 @@ function handlePageSizeChange() {
     void fetchRanking();
 }
 
-function isTournamentUserRankField(value: unknown): value is TournamentUserRankField {
-    return typeof value === 'string' && (TournamentUserRankFields as readonly string[]).includes(value);
-}
-
-function handleSortChange({ prop }: { prop: unknown }) {
-    if (!isTournamentUserRankField(prop) || prop === sortBy.value) return;
-    sortBy.value = prop;
+function selectSort(field: TournamentUserRankField) {
+    if (field === sortBy.value) return;
+    sortBy.value = field;
+    currentPage.value = 1;
     void fetchRanking();
 }
 
@@ -168,6 +195,12 @@ const { t } = useI18n({ messages: i18nMessages });
 
 .ranking-table {
     width: 100%;
+}
+
+.rank-header-button {
+    width: 100%;
+    justify-content: flex-end;
+    font: inherit;
 }
 
 .pagination {

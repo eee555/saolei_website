@@ -39,7 +39,7 @@ watch(() => props.videos, (videos) => {
 }
 
 .video-scatter.is-fullscreen {
-    background: var(--el-bg-color);
+    background: var(--ui-bg-color);
     box-sizing: border-box;
     height: 100vh;
     padding: 1em;
