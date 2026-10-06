@@ -1,5 +1,5 @@
 <template>
-    <ElTable v-loading="loading" :data="rows" row-key="player_id" border class="pb-ranking-table" :empty-text="t('local.empty')">
+    <ElTable v-loading="loading" :data="rows" row-key="player_id" border class="pb-ranking-table" :empty-text="t('ranking.empty')" @row-click="previewVideo">
         <ElTableColumn type="index" label="#" :index="(index) => first + index + 1" width="60" align="center" />
         <!-- @vue-generic {PBRankingPlayer} -->
         <ElTableColumn column-key="player" :label="t('common.prop.player')" min-width="150">
@@ -10,8 +10,7 @@
         <!-- @vue-generic {PBRankingPlayer} -->
         <ElTableColumn v-for="stat in pbStats" :key="stat" :column-key="stat" :label="t(`common.prop.${stat}`)" min-width="100" align="right">
             <template #default="{ row }">
-                <PreviewNumber v-if="stat === 'time'" :id="row.video_id" :text="formatPBValue(row.timems, level, bv, stat)" />
-                <span v-else>{{ formatPBValue(row.timems, level, bv, stat) }}</span>
+                {{ formatPBValue(row.timems, level, bv, stat) }}
             </template>
         </ElTableColumn>
         <!-- @vue-generic {PBRankingPlayer} -->
@@ -29,9 +28,9 @@ import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import PlayerName from '@/components/PlayerName.vue';
-import PreviewNumber from '@/components/PreviewNumber.vue';
 import { formatPBUploadTime, formatPBValue, pbStats } from '@/services/pbRankingService';
 import type { PBRankingPlayer } from '@/services/pbRankingService';
+import { preview } from '@/utils/common/PlayerDialog';
 import type { MS_Level } from '@/utils/ms_const';
 
 defineProps({
@@ -42,9 +41,15 @@ defineProps({
     loading: { type: Boolean, required: true },
 });
 
-const i18nMessages = {
-    'zh-cn': { local: { empty: '暂无纪录' } },
-    en: { local: { empty: 'No records' } },
-};
-const { t } = useI18n({ messages: i18nMessages });
+function previewVideo(row: PBRankingPlayer) {
+    void preview(row.video_id);
+}
+
+const { t } = useI18n();
 </script>
+
+<style scoped>
+:deep(.el-table__row) {
+    cursor: pointer;
+}
+</style>

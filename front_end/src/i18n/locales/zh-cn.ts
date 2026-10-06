@@ -12,6 +12,7 @@ export default {
             getSoftware: '获取录像信息',
             getUserProfile: '查询用户',
             getVideoModel: '查询录像',
+            refresh: '刷新',
             setUserProfile: '修改用户',
             setVideoModel: '修改录像',
             uploadFile: '上传文件',
@@ -308,6 +309,7 @@ export default {
         saolei: {
             title: '扫雷网规则',
         },
+        empty: '暂无纪录',
     },
     server: {
         videoSummary: {

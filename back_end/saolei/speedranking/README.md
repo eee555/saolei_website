@@ -2,7 +2,7 @@
 
 本 app 不新增数据库模型。录像仍以 `VideoModel` 为事实来源，排行和个人纪录查询只读 Redis，不自动回源或重建。
 
-PB 使用每个小榜一个 zset、每个用户一个 hash，是下述一般缓存结构的例外。后端与前端 PB 排行页面已实现；个人 PB 页面等待单独计划。设计依据见 [PB 榜开发计划](PB_PLAN.md)。
+PB 使用每个小榜一个 zset、每个用户一个 hash，并额外维护各小榜人数 hash，是下述一般缓存结构的例外。后端与前端 PB 排行页面已实现；个人 PB 页面等待单独计划。设计依据与后续优化见 [PB 榜开发计划](PB_PLAN.md)。
 
 ## 代码组织
 
@@ -10,6 +10,7 @@ PB 使用每个小榜一个 zset、每个用户一个 hash，是下述一般缓�
 - `pb/`：PB 专用的缓存、选优、补位、API 和测试，不套用扫雷网的成绩结构。
 - 根目录 `cache.py`：共享 Redis 连接与 pipeline；`utils.py`：错误日志、UTC 时间换算和玩家分段工具。
 - 根目录 `services.py`：协调各大榜的共同读取、独立判断、共同写入；`signals.py`：录像事件入口；`api.py`：聚合各大榜的 router。
+- 前端 `RankingView/routes.ts`：各大榜子路由。`SpeedRanking.vue` 只保留大榜选择器、规则提示和 `RouterView`，选择器与路由同步，切换大榜使用 push，支持浏览器返回。`/ranking/speed/saolei` 和 `/ranking/speed/pb` 分别加载对应页面；`/ranking/speed` 默认跳转扫雷网榜。项目使用 hash history，浏览器地址对应 `/#/ranking/speed/...`。
 
 ## Saolei.wang 规则
 
@@ -58,7 +59,7 @@ zset 舍弃部分精度并限制数值范围，是为了简化缓存逻辑：将
 2. **独立判断**：各大榜使用读取结果和录像数据，自行完成准入、选优、补位、总分重算以及 score 编码，确定需要新增、修改或删除的缓存项。需要数据库查询时，由该大榜的业务逻辑决定，不强制所有大榜采用相同查询策略。
 3. **共同写入**：各大榜将确定的 hash 和 zset 变更加入同一个写入 pipeline，最后统一执行一次。普通更新只写入需要刷新的项；强制修复时，由目标大榜决定需要重写的索引范围。
 
-PB 的个人纪录写入后，再读取本次变化小榜中的受影响区间并批量更新 rank hash。rank 刷新是单独的读写阶段，不与前面的个人纪录写入组成一个原子操作。
+PB 写入前通过 `read_previous_ranks` 读取变化 member 的旧排名；共同写入完成后，由 `refresh_changed_ranks` 读取新排名、合并变动范围，再通过 `refresh_ranks` 批量更新区间内的用户 hash 和人数 hash。rank 刷新是单独的读写阶段，不与前面的个人纪录写入组成一个原子操作。
 
 读取 pipeline 和写入 pipeline 是两个独立执行阶段，中间的业务判断不在 Redis 事务内。写入阶段保留事务 pipeline，不使用 WATCH 或重试，也不保证读取到写入之间不会发生并发更新。数据库事务产生的事件仍在 `transaction.on_commit` 后处理，Redis 写入不参与数据库回滚。
 
@@ -138,8 +139,11 @@ python manage.py rebuild_speed_ranks --ranking-name saolei_nf --batch-size 1000
 - 人数 hash：`speedranking:pb:counts`。field 同用户 hash，value 为对应小榜的条目数量；空榜保存 0，未出现的 field 也视为 0。`get_counts()` 通过一次 HGETALL 读取各榜人数。rank 刷新时在现有读取 pipeline 中用 ZCARD 取人数，再与 rank 一起批量写入；单条、批量、管理员修复和全量重建共用此链路。已有缓存需运行 `rebuild_pb_ranks` 补齐所有人数。
 - score 为 `timems * 2**26 + upload_minutes`，分钟从 Unix UTC epoch 起算；用时保留整数毫秒，上传时间截断到分钟。接受模型的完整用时范围，零用时可以入榜。分钟数必须在 `[0, 2**26)`，最后可编码的分钟是 UTC `2097-08-05 09:03`。
 - 正常增量只在新 score 更小时替换，同分保留现有录像；数据库补位和重建按原始 `timems`、完整 `upload_time`、id 选优。
+- `pb.services.prepare_add_videos` 用窗口函数分别查询普通/NF 的 `(player, level, bv)` 桶内最优录像，再与缓存比较；`prepare_remove_videos` 只补位由移除录像保持的纪录。目前 PB 不复用普通/NF 的选优查询，扫雷网的补位复用策略不能当作 PB 已实现的功能。
 - 增量更新只刷新变化的排名范围：替换取旧、新排名之间的闭区间；加入或移除从变动位置刷新至榜尾。同批小榜变动合并范围，人数不变时只刷新旧、新位置覆盖的区间，人数改变时刷新至榜尾。用 pipeline 查询变动 member 的旧、新排名，再读取区间、批量写入从 1 开始的 rank，不逐一查询区间内其他用户的 ZRANK。全量重建仍逐小榜刷新整榜，不引入后台任务。
 - 不使用 WATCH、锁或并发重试。个人纪录写入至 rank 刷新之间可能短暂不一致，失败会记录日志并抛出异常；管理员修复还会扫描目标小榜并删除该用户可能残留的多余 member。
+
+个人纪录写入时 `rank` 暂为 `null`，随后区间刷新填入排名，因此刷新失败可能留下缺失或过期的 rank。人数 hash 用于整体选择界面，小榜分页的 `count` 则直接读取该 zset 的 ZCARD；并发写入期间两者允许短暂不一致。
 
 ### 重建与接口
 
@@ -151,9 +155,47 @@ python manage.py rebuild_pb_ranks --batch-size 100
 
 执行前暂停 PB 相关读取以及上传、审核、绑定、删除、比赛公开等写入。此命令直接清空后重建，不构建临时榜，也不原子切换；失败可能留下部分数据，应排除错误后重新运行。数据库不受影响，扫雷网缓存不会被清空。`rebuild_speed_ranks` 仍仅重建扫雷网规则，不能替代 PB 重建。
 
+本地快照初始化 `python -m dangerzone.init_local_test` 在导入数据后依次调用 `rebuild_speed_ranks` 和 `rebuild_pb_ranks`，无需再手动建立 PB 缓存。
+
 - `GET /api/speedranking/pb/rank?level=b&bv=4&nf=false&start=0&end=20`：左闭右开，最多 100 条，返回人数及用户、录像 id、原始毫秒用时和分钟级 `upload_time`；上传时间直接由 score 解码，不查数据库或用户 hash。区间排名由调用方按起点计算。
 - `GET /api/speedranking/pb/counts`：一次读取人数 hash，返回普通/NF 各小榜人数的 field 到整数映射；未出现的 field 由调用方按 0 处理。
 - `GET /api/speedranking/pb/player/{player_id}`：单次返回该用户全部普通/NF PB 的等级、3BV、毫秒用时、录像 id 和缓存 rank。缓存未命中返回空列表。
 - `POST /api/speedranking/pb/admin/rebuild_record`：管理员表单请求，参数 `player_id`、`level`、`bv`、`nf`。数据库重建这一项、清理残留 member 并刷新该小榜 rank；无候选返回 `null`。
 
-前端 `PBRanking.vue` 从竞速榜入口选择 PB 进入，使用 `ElTable`、`ElPagination` 后端分页，依次显示排名、玩家、Time、Bvs、Stnb、分钟级上传时间。Bvs/Stnb 由当前等级、3BV 和用时计算，零用时显示 `Infinity`。页面加载时一次获取普通/NF 各小榜人数，手动刷新时重新获取。NF checkbox 与三个等级按钮控制分榜，等级按钮的交互式 tooltip 用按钮显示人数，左侧为 `bv // 10`，固定在滚动区域外的顶部为 `bv % 10`（0 到 9）；空榜按钮禁用，整行为空则隐藏，范围外留空。范围为初级 1–54、中级 1–216、高级 1–381。个人 PB 界面与扫雷网规则依赖 PB 的优化留待后续。
+当前管理员“排行纪录重建”页面仅接入扫雷网规则；PB 已提供上述修复 API，但尚无对应前端入口。
+
+### 前端
+
+入口为 `/ranking/speed/pb`，组件职责如下：
+
+| 文件（相对 `front_end/src`） | 职责 |
+| --- | --- |
+| `views/RankingView/PBRanking.vue` | 获取榜单和人数、选择 NF/等级/3BV、分页、加载状态、错误反馈和手动刷新 |
+| `views/RankingView/PBBVButton.vue` | 按等级展示人数网格，接收选择与人数 props，发出 `select(bv)`；不请求数据 |
+| `views/RankingView/PBRankingTable.vue` | 根据 `rows`、`level`、`bv`、`first`、`loading` 渲染 ElTable；不请求数据 |
+| `services/pbRankingService.ts` | API 请求、3BV 选择范围、Time/Bvs/Stnb 及分钟级上传时间格式化 |
+
+页面使用 ElPagination，提供 20、50、100 条每页，将页码转换为 `start/end` 后请求后端分页。NF、等级、3BV 或每页条数变化时回到第一页；过期请求的响应不会覆盖新状态。人数在页面加载和手动刷新时获取，切换筛选复用人数缓存；人数与榜单请求的错误分别显示，刷新按钮可同时重试。
+
+表格依次显示排名、PlayerName、Time、Bvs、Stnb、分钟级上传时间。排名为 `first + index + 1`；点击行通过 `row-click` 预览对应录像，点击玩家名仍跳转资料页，不使用 PreviewNumber。Bvs/Stnb 由当前等级、3BV 和原始用时计算，零用时显示 `Infinity`；上传时间从 API 的 UTC 时间转换为本地时区后显示到分钟。
+
+NF checkbox 与三个等级按钮控制分榜。等级按钮的交互式 tooltip 用按钮显示人数，左侧为 `bv // 10`，固定在滚动区域外的顶部为 `bv % 10`（0 到 9）；空榜按钮禁用，整行为空则隐藏，范围外留空。前端选择范围为初级 1–54、中级 1–216、高级 1–381；后端只验证 `bv > 0`，没有用这些上限限制录像准入。NF、等级、3BV 与页码不写入子路由 URL。
+
+个人 PB 界面与扫雷网规则依赖 PB 的优化留待后续。
+
+### 测试
+
+- `pb/tests.py`：编码、准入与 NF、选优与补位、分类迁移、变动排名区间、人数缓存、批量与全量重建、管理员修复和日志。
+- `pbRankingService.test.ts`：请求参数及 Time/Bvs/Stnb、上传时间格式化。
+- `PBRanking.cy.ts`：页面请求、人数传递、分页、NF/3BV 联动及失败重试，不重复子组件的渲染细节。
+- `PBBVButton.cy.ts`：人数网格、范围、禁用与隐藏、选择事件和 props 更新。
+- `PBRankingTable.cy.ts`：列顺序、排名偏移、三级别派生值、录像预览关联、分钟级时间、空表、加载状态和零用时。
+- `SpeedRanking.cy.ts`：直接访问 PB 子路由、大榜切换、浏览器返回与默认跳转。
+
+后端命令在 `back_end/saolei` 运行；前端命令在 `front_end` 运行。Cypress 由开发者运行，不能以静态检查通过代替组件运行验证。
+
+```bash
+python manage.py test speedranking.pb --keepdb --noinput
+npx vitest run src/services/pbRankingService.test.ts
+npx cypress run --component --spec "src/views/RankingView/PBRanking.cy.ts,src/views/RankingView/PBBVButton.cy.ts,src/views/RankingView/PBRankingTable.cy.ts,src/views/RankingView/SpeedRanking.cy.ts"
+```

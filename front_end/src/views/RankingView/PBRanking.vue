@@ -5,7 +5,7 @@
                 NF
             </ElCheckbox>
             <PBBVButton v-for="optionLevel in pbLevels" :key="optionLevel" :level="optionLevel" :selected-level="level" :selected-bv="bv" :nf="nf" :counts="counts" @select="selectBucket(optionLevel, $event)" />
-            <BaseButton class="square-button" :loading="loading || countsLoading" :aria-label="t('local.refresh')" :title="t('local.refresh')" @click="refresh">
+            <BaseButton class="square-button" :loading="loading || countsLoading" :aria-label="t('local.refresh')" :title="t('common.action.refresh')" @click="refresh">
                 <BaseIconRefresh />
             </BaseButton>
         </div>
@@ -113,12 +113,10 @@ const i18nMessages = {
     'zh-cn': { local: {
         failed: '排行榜加载失败',
         countsFailed: '各榜人数加载失败',
-        refresh: '刷新',
     } },
     en: { local: {
         failed: 'Unable to load ranking',
         countsFailed: 'Unable to load board counts',
-        refresh: 'Refresh',
     } },
 };
 const { t } = useI18n({ messages: i18nMessages });
