@@ -1,7 +1,7 @@
 <template>
     <section v-loading="loading" class="saolei-record-scroll">
-        <table class="saolei-record-table">
-            <thead>
+        <BaseTable table-class="saolei-record-table">
+            <template #head>
                 <tr>
                     <th scope="col">
                         {{ t('ranking.saolei.title') }}
@@ -10,25 +10,23 @@
                         {{ t(`common.level.${level}`) }}
                     </th>
                 </tr>
-            </thead>
-            <tbody>
-                <template v-for="rankingName in rankingNames" :key="rankingName">
-                    <tr v-for="(label, stat) in SaoleiStat" :key="stat">
-                        <th scope="row">
-                            {{ t(`common.prop.${label}`) }}{{ rankingName === 'saolei_nf' ? ' (NF)' : '' }}
-                        </th>
-                        <td v-for="level in levels" :key="level">
-                            <PreviewNumber
-                                v-if="saoleiVideoId(records[rankingName], `${level}${stat}`)"
-                                :id="saoleiVideoId(records[rankingName], `${level}${stat}`)"
-                                :text="formatScore(records[rankingName], `${level}${stat}`)"
-                            />
-                            <span v-else>{{ formatScore(records[rankingName], `${level}${stat}`) }}</span>
-                        </td>
-                    </tr>
-                </template>
-            </tbody>
-        </table>
+            </template>
+            <template v-for="rankingName in rankingNames" :key="rankingName">
+                <tr v-for="(label, stat) in SaoleiStat" :key="stat">
+                    <th scope="row">
+                        {{ t(`common.prop.${label}`) }}{{ rankingName === 'saolei_nf' ? ' (NF)' : '' }}
+                    </th>
+                    <td v-for="level in levels" :key="level">
+                        <PreviewNumber
+                            v-if="saoleiVideoId(records[rankingName], `${level}${stat}`)"
+                            :id="saoleiVideoId(records[rankingName], `${level}${stat}`)"
+                            :text="formatScore(records[rankingName], `${level}${stat}`)"
+                        />
+                        <span v-else>{{ formatScore(records[rankingName], `${level}${stat}`) }}</span>
+                    </td>
+                </tr>
+            </template>
+        </BaseTable>
     </section>
 </template>
 
@@ -37,6 +35,7 @@ import { ElMessage, vLoading } from 'element-plus';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import BaseTable from '@/components/common/BaseTable.vue';
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import { fetchSaoleiRecords, formatSaoleiValue, SaoleiLevels, SaoleiStat, saoleiVideoId } from '@/services/saoleiRankingService';
 import type { SaoleiField, SaoleiPlayerRecord, SaoleiRankingName } from '@/services/saoleiRankingService';
@@ -79,7 +78,7 @@ function formatScore(record: SaoleiPlayerRecord | undefined, stat: SaoleiField):
     overflow-x: auto;
 }
 
-.saolei-record-table {
+:deep(.saolei-record-table) {
     width: 100%;
     border-collapse: collapse;
     color: var(--ui-text-color-regular);
@@ -87,23 +86,23 @@ function formatScore(record: SaoleiPlayerRecord | undefined, stat: SaoleiField):
     font-size: var(--ui-font-size-base);
 }
 
-.saolei-record-table th,
-.saolei-record-table td {
+:deep(.saolei-record-table th),
+:deep(.saolei-record-table td) {
     border: 1px solid var(--ui-border-color-lighter);
     padding: 8px 12px;
     text-align: center;
 }
 
-.saolei-record-table th {
+:deep(.saolei-record-table th) {
     color: var(--ui-text-color-secondary);
     background: var(--ui-fill-color-light);
 }
 
-.saolei-record-table td {
+:deep(.saolei-record-table td) {
     white-space: nowrap;
 }
 
-.saolei-record-table tbody tr:hover {
+:deep(.saolei-record-table tbody tr:hover) {
     background: var(--ui-fill-color-lighter);
 }
 </style>

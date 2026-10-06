@@ -1,20 +1,18 @@
 <template>
-    <div class="custom-counter-wrap">
-        <table class="custom-counter" :style="tableStyle">
-            <colgroup>
-                <col :style="thColStyle">
-                <col :style="tdColStyle">
-            </colgroup>
-            <tbody>
-                <tr v-for="(row, index) in rows" :key="index">
-                    <th>{{ row.label }}</th>
-                    <td :class="{ 'custom-counter__value--error': row.error }">
-                        {{ row.value }}
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+    <BaseTable class="custom-counter-wrap" table-class="custom-counter" :table-style="tableStyle">
+        <template #columns>
+            <col :style="thColStyle">
+            <col :style="tdColStyle">
+        </template>
+        <tr v-for="(row, index) in rows" :key="index">
+            <th scope="row">
+                {{ row.label }}
+            </th>
+            <td :class="{ 'custom-counter__value--error': row.error }">
+                {{ row.value }}
+            </td>
+        </tr>
+    </BaseTable>
 </template>
 
 <script setup lang="ts">
@@ -25,6 +23,7 @@ import { computed } from 'vue';
 import { videoNumericParamKeys } from './types';
 import type { CustomCounterConfig } from './types';
 
+import BaseTable from '@/components/common/BaseTable.vue';
 import type { AnyVideo } from '@/utils/fileIO';
 
 const props = defineProps({
@@ -102,30 +101,32 @@ function createEvaluationContext(video: AnyVideo) {
     overflow-y: auto;
 }
 
-.custom-counter {
+:deep(.custom-counter) {
     table-layout: fixed;
     border-collapse: collapse;
     color: var(--ui-text-color-regular);
     line-height: 1.25;
+    background: transparent;
 }
 
-.custom-counter th,
-.custom-counter td {
+:deep(.custom-counter th),
+:deep(.custom-counter td) {
     box-sizing: border-box;
     border: 1px solid var(--ui-border-color);
     padding: 3px 6px;
 }
 
-.custom-counter th {
+:deep(.custom-counter th) {
     color: var(--ui-text-color-secondary);
     font-weight: 500;
     text-align: left;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    background: transparent;
 }
 
-.custom-counter td {
+:deep(.custom-counter td) {
     overflow: hidden;
     font-variant-numeric: tabular-nums;
     text-align: right;
@@ -133,7 +134,7 @@ function createEvaluationContext(video: AnyVideo) {
     white-space: nowrap;
 }
 
-.custom-counter__value--error {
+:deep(.custom-counter td.custom-counter__value--error) {
     color: var(--ui-color-danger);
     overflow-wrap: anywhere;
     text-align: left;

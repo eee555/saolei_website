@@ -1,0 +1,40 @@
+.base-table-wrap {
+    min-width: 0;
+    max-width: 100%;
+    overflow: auto;
+    color: var(--ui-text-color-regular);
+    font-size: var(--ui-font-size-base);
+}
+
+.base-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--ui-fill-color-blank);
+    text-align: left;
+    line-height: 1.4;
+}
+
+:where(.base-table th),
+:where(.base-table td) {
+    box-sizing: border-box;
+    border: 1px solid var(--ui-border-color-lighter);
+    padding: 4px 8px;
+    vertical-align: middle;
+}
+
+:where(.base-table th) {
+    background: var(--ui-fill-color-light);
+    color: var(--ui-text-color-secondary);
+    font-weight: 500;
+    text-align: inherit;
+}
+
+.base-table td {
+    font-variant-numeric: tabular-nums;
+}
+
+.base-table .base-table-empty {
+    padding: 12px 8px;
+    color: var(--ui-text-color-secondary);
+    text-align: center;
+}

@@ -16,46 +16,42 @@
             </div>
         </div>
 
-        <ElTable
-            v-loading="loading"
-            :data="players"
-            border
-            table-layout="auto"
-            class="ranking-table"
-            :empty-text="t('local.empty')"
-        >
-            <ElTableColumn :label="t('local.rank')" width="90" align="center">
-                <template #default="{ $index }">
-                    {{ getRank($index) }}
-                </template>
-            </ElTableColumn>
-            <ElTableColumn :label="t('common.prop.realName')" min-width="180">
-                <template #default="{ row }">
-                    <PlayerName :user-id="row.player_id" />
-                </template>
-            </ElTableColumn>
-            <ElTableColumn prop="pluck" :label="t('common.prop.pluck')" min-width="130" align="right">
-                <template #default="{ row }">
-                    <PreviewNumber :id="row.video_id" :text="formatPluck(row.pluck)" />
-                </template>
-            </ElTableColumn>
-            <ElTableColumn prop="mode" :label="t('common.prop.mode')" min-width="100" align="center">
-                <template #default="{ row }">
-                    {{ t(`common.mode.code${row.mode}`) }}
-                </template>
-            </ElTableColumn>
-            <ElTableColumn prop="timems" :label="t('common.prop.time')" min-width="110" align="right">
-                <template #default="{ row }">
-                    {{ ms_to_s(row.timems) }}
-                </template>
-            </ElTableColumn>
-            <ElTableColumn prop="bv" label="3BV" min-width="90" align="right" />
-            <ElTableColumn prop="upload_time" :label="t('common.prop.upload_time')" min-width="180" align="center">
-                <template #default="{ row }">
-                    {{ formatDateTime(row.upload_time) }}
-                </template>
-            </ElTableColumn>
-        </ElTable>
+        <BaseTable v-loading="loading" class="ranking-table" :empty="players.length === 0" :empty-text="t('local.empty')" :column-count="7">
+            <template #head>
+                <tr>
+                    <th scope="col">
+                        {{ t('local.rank') }}
+                    </th>
+                    <th scope="col">
+                        {{ t('common.prop.realName') }}
+                    </th>
+                    <th scope="col">
+                        {{ t('common.prop.pluck') }}
+                    </th>
+                    <th scope="col">
+                        {{ t('common.prop.mode') }}
+                    </th>
+                    <th scope="col">
+                        {{ t('common.prop.time') }}
+                    </th>
+                    <th scope="col">
+                        3BV
+                    </th>
+                    <th scope="col">
+                        {{ t('common.prop.upload_time') }}
+                    </th>
+                </tr>
+            </template>
+            <tr v-for="(row, index) in players" :key="row.player_id">
+                <td>{{ getRank(index) }}</td>
+                <td><PlayerName :user-id="row.player_id" /></td>
+                <td><PreviewNumber :id="row.video_id" :text="formatPluck(row.pluck)" /></td>
+                <td>{{ t(`common.mode.code${row.mode}`) }}</td>
+                <td>{{ ms_to_s(row.timems) }}</td>
+                <td>{{ row.bv }}</td>
+                <td>{{ formatDateTime(row.upload_time) }}</td>
+            </tr>
+        </BaseTable>
 
         <ElPagination
             v-model:current-page="currentPage"
@@ -71,11 +67,12 @@
 </template>
 
 <script setup lang="ts">
-import { ElPagination, ElTable, ElTableColumn, vLoading } from 'element-plus';
+import { ElPagination, vLoading } from 'element-plus';
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import BaseButton from '@/components/common/BaseButton.vue';
+import BaseTable from '@/components/common/BaseTable.vue';
 import { httpErrorNotification } from '@/components/Notifications';
 import PlayerName from '@/components/PlayerName.vue';
 import PreviewNumber from '@/components/PreviewNumber.vue';
@@ -197,6 +194,46 @@ onMounted(() => {
 
 .ranking-table {
     width: 100%;
+}
+
+.ranking-table :deep(th:nth-child(1)),
+.ranking-table :deep(td:nth-child(1)),
+.ranking-table :deep(th:nth-child(4)),
+.ranking-table :deep(td:nth-child(4)),
+.ranking-table :deep(th:nth-child(7)),
+.ranking-table :deep(td:nth-child(7)) {
+    text-align: center;
+}
+
+.ranking-table :deep(th:nth-child(3)),
+.ranking-table :deep(td:nth-child(3)),
+.ranking-table :deep(th:nth-child(5)),
+.ranking-table :deep(td:nth-child(5)),
+.ranking-table :deep(th:nth-child(6)),
+.ranking-table :deep(td:nth-child(6)) {
+    text-align: right;
+}
+
+.ranking-table :deep(th:nth-child(1)),
+.ranking-table :deep(th:nth-child(6)) {
+    min-width: 90px;
+}
+
+.ranking-table :deep(th:nth-child(2)),
+.ranking-table :deep(th:nth-child(7)) {
+    min-width: 180px;
+}
+
+.ranking-table :deep(th:nth-child(3)) {
+    min-width: 130px;
+}
+
+.ranking-table :deep(th:nth-child(4)) {
+    min-width: 100px;
+}
+
+.ranking-table :deep(th:nth-child(5)) {
+    min-width: 110px;
 }
 
 .pagination {

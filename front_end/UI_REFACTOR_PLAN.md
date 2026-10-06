@@ -16,7 +16,8 @@
 | 工作项 | 状态 | 剩余事项 |
 | --- | --- | --- |
 | 视觉参数 | 当前参数已保存为本地参考；目标尺寸继续细化 | `styles/parameters/` 已加入 Git 忽略，仅供查阅；实际需要的参数按职责提取到 `styles/` 对应文件 |
-| 项目主题变量与组件库适配 | 项目变量已接入，本批待提交验收；其他换肤待实施 | `styles/theme/` 提供独立 `--ui-*`；现有项目代码的 `--el-*` 读取已替换，保留库适配中的声明 |
+| 项目主题变量与组件库适配 | 项目变量已提交验收；其他换肤待实施 | `styles/theme/` 提供独立 `--ui-*`；项目代码统一读取项目变量，保留库适配中的声明 |
+| 纯展示表格 | BaseTable 与首批迁移已实现，待提交验收 | 允许单元格链接/预览；承担表格自身排序、行点击、选择、展开或编辑的表格保留现有实现 |
 | 按钮、链接、分隔线、描述列表等 | 第三批及收尾已验收 | 本轮范围内的 ElLink / ElButton 已迁移；暂留范围见下文，分隔线与描述列表单独处理 |
 | 复杂组件换肤 | 待实施 | 表格、表单、Tabs、弹窗等仍需分别调整直角与紧凑尺寸 |
 | PrimeVue 退出 | 延后独立推进 | 表格、筛选控件及 Toolbar 暂留；账号关联页面等待重做 |
@@ -55,7 +56,8 @@
 | 纯布局、装饰 | 使用原生 HTML + CSS；布局和普通卡片已迁移，其他按批次处理 | `layout.css`、`cards.css`；待处理分隔线、简单描述列表 |
 | 首页比赛卡片 | 暂留 ElCard，不纳入本轮普通卡片替换 | `HomeView/NormalTournamentQueue.vue`，带 header |
 | 简单操作 | 优先完善项目已有基础组件，再逐步替换 | 普通按钮、文字按钮、简单链接 |
-| 复杂行为 | 原则上保留实现，统一样式；PrimeVue 按下文退出计划处理 | 表格、分页、表单校验、弹窗、Tabs、复杂选择器、范围滑块 |
+| 纯展示表格 | 使用 BaseTable，原生表头及行内容通过插槽提供；允许独立的单元格链接/预览 | 密度榜、软件版本列表、个人纪录与自定义计数器 |
+| 复杂行为 | 原则上保留实现，统一样式；PrimeVue 按下文退出计划处理 | 承担排序/行点击/选择/展开/编辑的表格、分页、表单校验、弹窗、Tabs、复杂选择器、范围滑块 |
 | 通知、加载状态 | 保留行为和调用接口，调整 Element Plus 外观 | `Notifications.ts`、`v-loading` |
 | vue-tippy | 保持现有实现和样式导入方式，不安排迁移或专门换肤 | Tippy、`BaseTooltip` 中的提示行为 |
 | PrimeVue Toolbar | 暂缓迁移，随页面重做或后续维护处理 | 账号关联卡片、管理员任务页 |
@@ -68,7 +70,7 @@
 ## Element Plus 改造重点
 
 1. **简单组件替换为原生 HTML + CSS。** 后续处理分隔线、简单描述列表、链接和普通按钮。优先完善已有基础组件，按实际功能判断是否需要保留组件库实现。
-2. **复杂组件保留行为，统一直角和紧凑尺寸。** 表格、表单校验、弹窗、Tabs 等继续使用现有逻辑，按组件类别调整圆角、内外边距、行高、控件高度和间距。
+2. **复杂组件保留行为，统一直角和紧凑尺寸。** 承担交互的表格、表单校验、弹窗、Tabs 等继续使用现有逻辑，按组件类别调整圆角、内外边距、行高、控件高度和间距；纯展示表格按下文使用 BaseTable。
 3. **通过项目样式变量统一密度。** 明确按钮、输入控件、表格单元格、表单项和面板的尺寸关系；不能仅切换到组件库的 `small` 尺寸就视为完成，也不以缩小所有文字代替间距调整。
 4. **vue-tippy 不变。** `BaseTooltip` 及其他提示内容中的 `ElCard` 已替换为原生容器与共享卡片样式。继续保持 Tippy 的定位、触发、生命周期逻辑和样式导入方式。
 
@@ -129,7 +131,7 @@
 
 ### 2. 建立项目样式变量
 
-状态：本批已提取实际使用的参数并接入运行时，待提交验收。本地参考存档不作为运行时依赖。
+状态：项目变量迁移已提交验收。本地参考存档不作为运行时依赖。
 
 - `src/styles/theme/` 按颜色、主色/状态色、字号/圆角/过渡参数分文件，使用独立 `--ui-*`。初值沿用 Element Plus 2.14.6 的实际使用参数，深浅主题保留当前色值，不导入或读取 `parameters/`。
 - 公共文字、按钮、链接、卡片样式与业务组件均已替换 `--el-*` 读取；图表、播放器及工具函数中的 JavaScript 颜色读取也使用项目变量。组件局部可选覆盖继续提供项目语义变量回退。
@@ -138,14 +140,6 @@
 - `button.css` 已按职责拆分到 `buttons/`，保留原导入路径；项目样式文件均遵守 100 个非空行限制。
 
 完成条件：引入后现有页面外观基本不变。
-
-本批已通过 `npm.cmd run lintfix`、`npm.cmd run typecheck` 和 `npm.cmd run build:frontend`。另核对深浅主题共 114 项参数值与参考存档一致、按钮拆分后的声明及顺序一致、项目源码无 `--el-*` 读取、样式目录每文件不超过 100 个非空行。尚未运行 Cypress；在 `front_end` 目录执行以下命令，检查原生组件在挂载后切换深浅主题，以及不受组件库变量覆盖影响：
-
-```powershell
-npx.cmd cypress run --component --spec "cypress/component/theme.cy.ts"
-```
-
-同时人工检查图表、播放器和上传状态的深浅主题颜色。该批提交后，按既定规则从待办中移除其验收记录。
 
 ### 3. 建立主题适配与 PrimeVue 过渡样式
 
@@ -184,6 +178,40 @@ npx.cmd cypress run --component --spec "cypress/component/theme.cy.ts"
 - `components/accountlinks/` 中的 `CardAdd.vue`、`CardAddMineracer.vue`、`CardBilibili.vue`、`CardSaolei.vue`、`CardWoM.vue`、`CarouselControl.vue`、`VideoImportQueue.vue`：随账号关联页面重做处理。
 
 第三批收尾已提交验收，不再保留待办。账号关联卡片仍使用的 `button-compact`、新旧按钮相邻间距和 Element Plus 直角适配继续保留。
+
+#### 纯展示表格：BaseTable
+
+以表格自身是否承担交互作为边界：单元格可以保留独立的玩家链接、下载链接和录像预览；排序、行点击、选择、展开和编辑等表格交互继续保留现有组件库实现，不删除行为来扩大迁移范围。外部分页器与请求由页面维护，后端分页本身不作为保留 ElTable 的理由。
+
+BaseTable 使用原生 `<table>`，仅提供滚动容器、共享样式与空状态。`head`、`columns`、`caption` 及默认插槽分别提供原生表头、列宽、标题与行；不管理请求、排序、筛选、分页或递归列注册。通过 `tableClass` / `tableStyle` 保留必要的局部样式入口，空状态通过 `empty`、`emptyText`、`columnCount` 显式传入。加载反馈继续复用调用方的 `v-loading`。
+
+本批迁移：
+
+- `RankingView/DensityRanking.vue`：保留玩家链接、录像预览、序号、格式化和原有 ElPagination。
+- `dialogs/ArbiterHelper.vue`、`ViennaSweeperHelper.vue`、`MetasweeperHelper.vue`：保留版本数据与下载链接。
+- `UserView/UserRecordView/SaoleiCard.vue`、`PLuckCard.vue`：保留纪录请求、缺失值展示与录像预览。
+- `VideoPlayer/CustomCounter.vue`：保留表达式计算、动态更新、列宽、字号与长文本截断。
+- `TournamentView/TournamentDetail.vue`：原列未启用排序，迁移动态字段展示与空状态。
+
+保留范围：PB 榜的行点击、扫雷榜的表头指标选择、比赛榜及比赛成绩汇总的排序/行点击、报名表管理操作、缓存设置的编辑控件，以及 PrimeVue 的现有表格。首页比赛卡片仍按原范围暂缓。
+
+验收重点：空状态列跨度、原生多级表头、单元格链接/预览、后端分页与排名序号、组件宽度不足时内部滚动、深浅主题，以及计数器的列宽和错误展示。Cypress 由用户运行，命令按本批实际测试文件提供。
+
+在 `front_end` 目录运行本批组件测试：
+
+```powershell
+npx.cmd cypress run --component --spec "src/components/common/BaseTable.cy.ts,src/views/RankingView/DensityRanking.cy.ts,src/views/UserView/UserRecordView/SaoleiCard.cy.ts,src/components/VideoPlayer/CustomCounter.cy.ts"
+```
+
+密度榜已有真实后端 E2E，可在项目测试环境运行：
+
+```powershell
+npx.cmd cypress run --e2e --spec "cypress/e2e/ranking.cy.ts"
+```
+
+本批已通过 `npm.cmd run lintfix`、`npm.cmd run typecheck`、`npm.cmd run build:frontend` 和 `git diff --check`；样式目录每个项目文件均不超过 100 个非空行。除旧比赛详情的动态列展示计算外，其余七处业务脚本只调整导入，原逻辑保持不变。
+
+软件版本下载链接、个人 Pluck 纪录、旧比赛详情，以及浅色/深色和窄容器下的表格展示需人工检查。本批尚未运行浏览器验证；提交后按约定移除其验收待办。
 
 ### 5. 分批给复杂组件换肤
 
@@ -341,7 +369,7 @@ E2E 使用项目现有测试环境。每批优先运行受影响的 spec，而�
 
 ## 下一批建议
 
-1. 验收本批项目变量迁移，检查深浅主题、按钮状态、数字输入、图表和播放器；目标密度和复杂组件换肤分开推进。
+1. 验收本批 BaseTable 与展示表格迁移；目标密度和复杂组件换肤分开推进。
 2. 分隔线或简单描述列表可作为独立小批次推进；按钮与链接仅剩上述暂留范围，随相关页面维护单独处理。
 3. 统一主题语义与复杂组件换肤作为独立批次推进，每批先选择代表实例，再推广。
 

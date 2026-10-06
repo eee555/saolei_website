@@ -1,7 +1,7 @@
 <template>
     <BaseCardNormal>
-        <table class="pluck-record-table record-table" cellspacing="0" cellpadding="0">
-            <thead>
+        <BaseTable table-class="pluck-record-table record-table">
+            <template #head>
                 <tr>
                     <th class="text text-large" scope="col">
                         {{ t('local.pluckRecord') }}
@@ -10,21 +10,19 @@
                         {{ t('common.prop.pluck') }}
                     </th>
                 </tr>
-            </thead>
-            <tbody>
-                <tr v-for="level in DensityCustomLevelConfigs" :key="level.code">
-                    <th class="text text-info" scope="row">
-                        {{ customLevelLabel(level) }}
-                    </th>
-                    <td class="text">
-                        <PreviewNumber
-                            :id="recordByLevel.get(level.code)?.video_id"
-                            :text="recordByLevel.get(level.code)?.pluck.toFixed(6)"
-                        />
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+            </template>
+            <tr v-for="level in DensityCustomLevelConfigs" :key="level.code">
+                <th class="text text-info" scope="row">
+                    {{ customLevelLabel(level) }}
+                </th>
+                <td class="text">
+                    <PreviewNumber
+                        :id="recordByLevel.get(level.code)?.video_id"
+                        :text="recordByLevel.get(level.code)?.pluck.toFixed(6)"
+                    />
+                </td>
+            </tr>
+        </BaseTable>
     </BaseCardNormal>
 </template>
 
@@ -34,6 +32,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
+import BaseTable from '@/components/common/BaseTable.vue';
 import PreviewNumber from '@/components/PreviewNumber.vue';
 import { DensityCustomLevelConfigs } from '@/utils/customlevel';
 import type { CustomLevel } from '@/utils/customlevel';
@@ -74,21 +73,22 @@ function customLevelLabel(customLevel: CustomLevel): string {
 </script>
 
 <style scoped>
-.record-table {
+:deep(.record-table) {
     width: 100%;
     table-layout: auto;
 }
 
-.record-table th,
-.record-table td {
+:deep(.record-table th),
+:deep(.record-table td) {
     box-sizing: border-box;
+    border: 0;
     border-bottom: 1px solid var(--ui-table-border-color, var(--ui-border-color-lighter));
     padding: 8px 12px;
     text-align: center;
 }
 
-.pluck-record-table th,
-.pluck-record-table td {
+:deep(.pluck-record-table th),
+:deep(.pluck-record-table td) {
     width: 50%;
 }
 </style>
