@@ -1,17 +1,17 @@
 <template>
-    <BaseTable v-loading="loading" class="pb-ranking-table" :empty="rows.length === 0" :column-count="3 + pbStats.length" :empty-text="t('ranking.empty')">
+    <BaseTable v-loading="loading" class="pb-ranking-table" :table-style="{ width: 'auto', marginInline: 'auto' }" :empty="rows.length === 0" :column-count="3 + pbStats.length" :empty-text="t('ranking.empty')">
         <template #head>
             <tr>
-                <th scope="col" class="rank-cell">
+                <th scope="col" class="table-col-rank">
                     #
                 </th>
-                <th scope="col" class="player-cell">
+                <th scope="col" class="table-col-player">
                     {{ t('common.prop.player') }}
                 </th>
-                <th v-for="stat in pbStats" :key="stat" scope="col" class="stat-cell">
+                <th v-for="stat in pbStats" :key="stat" scope="col" class="table-col-number">
                     {{ t(`common.prop.${stat}`) }}
                 </th>
-                <th scope="col" class="upload-cell">
+                <th scope="col" class="table-col-datetime">
                     {{ t('common.prop.upload_time') }}
                 </th>
             </tr>
@@ -20,16 +20,16 @@
             v-for="(row, index) in rows" :key="row.player_id" class="pb-ranking-row" :tabindex="loading ? -1 : 0"
             @click="previewVideo(row)" @keydown.enter.self.prevent="!loading && previewVideo(row)" @keydown.space.self.prevent="!loading && previewVideo(row)"
         >
-            <td class="rank-cell">
+            <td class="table-col-rank">
                 {{ first + index + 1 }}
             </td>
-            <td class="player-cell">
+            <td class="table-col-player">
                 <PlayerName :user-id="row.player_id" />
             </td>
-            <td v-for="stat in pbStats" :key="stat" class="stat-cell">
+            <td v-for="stat in pbStats" :key="stat" class="table-col-number">
                 {{ formatPBValue(row.timems, level, bv, stat) }}
             </td>
-            <td class="upload-cell">
+            <td class="table-col-datetime">
                 {{ formatPBUploadTime(row.upload_time) }}
             </td>
         </tr>
@@ -71,27 +71,5 @@ const { t } = useI18n();
 .pb-ranking-row:focus-visible {
     outline: 2px solid var(--ui-color-primary);
     outline-offset: -2px;
-}
-
-.rank-cell {
-    width: 60px;
-    min-width: 60px;
-    text-align: center;
-}
-
-.player-cell {
-    min-width: 150px;
-}
-
-.stat-cell {
-    min-width: 100px;
-    text-align: right;
-    white-space: nowrap;
-}
-
-.upload-cell {
-    min-width: 170px;
-    text-align: center;
-    white-space: nowrap;
 }
 </style>

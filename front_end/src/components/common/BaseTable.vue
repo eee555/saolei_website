@@ -23,6 +23,7 @@
 </template>
 
 <script setup lang="ts">
+import '@/styles/table-columns.css';
 import '@/styles/table.css';
 
 import type { CSSProperties, PropType } from 'vue';

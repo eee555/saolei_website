@@ -16,40 +16,54 @@
             </div>
         </div>
 
-        <BaseTable v-loading="loading" class="ranking-table" :empty="players.length === 0" :empty-text="t('local.empty')" :column-count="7">
+        <BaseTable v-loading="loading" class="ranking-table" :table-style="{ width: 'auto', marginInline: 'auto' }" :empty="players.length === 0" :empty-text="t('local.empty')" :column-count="7">
             <template #head>
                 <tr>
-                    <th scope="col">
+                    <th scope="col" class="table-col-rank">
                         {{ t('local.rank') }}
                     </th>
-                    <th scope="col">
+                    <th scope="col" class="table-col-player">
                         {{ t('common.prop.realName') }}
                     </th>
-                    <th scope="col">
+                    <th scope="col" class="table-col-number">
                         {{ t('common.prop.pluck') }}
                     </th>
-                    <th scope="col">
+                    <th scope="col" class="table-col-mode">
                         {{ t('common.prop.mode') }}
                     </th>
-                    <th scope="col">
+                    <th scope="col" class="table-col-number">
                         {{ t('common.prop.time') }}
                     </th>
-                    <th scope="col">
+                    <th scope="col" class="table-col-bv">
                         {{ t('common.prop.bv') }}
                     </th>
-                    <th scope="col">
+                    <th scope="col" class="table-col-datetime">
                         {{ t('common.prop.upload_time') }}
                     </th>
                 </tr>
             </template>
             <tr v-for="(row, index) in players" :key="row.player_id">
-                <td>{{ getRank(index) }}</td>
-                <td><PlayerName :user-id="row.player_id" /></td>
-                <td><PreviewNumber :id="row.video_id" :text="formatPluck(row.pluck)" /></td>
-                <td>{{ t(`common.mode.code${row.mode}`) }}</td>
-                <td>{{ ms_to_s(row.timems) }}</td>
-                <td>{{ row.bv }}</td>
-                <td>{{ formatDateTime(row.upload_time) }}</td>
+                <td class="table-col-rank">
+                    {{ getRank(index) }}
+                </td>
+                <td class="table-col-player">
+                    <PlayerName :user-id="row.player_id" />
+                </td>
+                <td class="table-col-number">
+                    <PreviewNumber :id="row.video_id" :text="formatPluck(row.pluck)" />
+                </td>
+                <td class="table-col-mode">
+                    {{ t(`common.mode.code${row.mode}`) }}
+                </td>
+                <td class="table-col-number">
+                    {{ ms_to_s(row.timems) }}
+                </td>
+                <td class="table-col-bv">
+                    {{ row.bv }}
+                </td>
+                <td class="table-col-datetime">
+                    {{ formatDateTime(row.upload_time) }}
+                </td>
             </tr>
         </BaseTable>
 
@@ -192,46 +206,6 @@ onMounted(() => {
 
 .ranking-table {
     width: 100%;
-}
-
-.ranking-table :deep(th:nth-child(1)),
-.ranking-table :deep(td:nth-child(1)),
-.ranking-table :deep(th:nth-child(4)),
-.ranking-table :deep(td:nth-child(4)),
-.ranking-table :deep(th:nth-child(7)),
-.ranking-table :deep(td:nth-child(7)) {
-    text-align: center;
-}
-
-.ranking-table :deep(th:nth-child(3)),
-.ranking-table :deep(td:nth-child(3)),
-.ranking-table :deep(th:nth-child(5)),
-.ranking-table :deep(td:nth-child(5)),
-.ranking-table :deep(th:nth-child(6)),
-.ranking-table :deep(td:nth-child(6)) {
-    text-align: right;
-}
-
-.ranking-table :deep(th:nth-child(1)),
-.ranking-table :deep(th:nth-child(6)) {
-    min-width: 90px;
-}
-
-.ranking-table :deep(th:nth-child(2)),
-.ranking-table :deep(th:nth-child(7)) {
-    min-width: 180px;
-}
-
-.ranking-table :deep(th:nth-child(3)) {
-    min-width: 130px;
-}
-
-.ranking-table :deep(th:nth-child(4)) {
-    min-width: 100px;
-}
-
-.ranking-table :deep(th:nth-child(5)) {
-    min-width: 110px;
 }
 
 .pagination {

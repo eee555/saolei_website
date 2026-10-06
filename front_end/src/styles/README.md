@@ -20,4 +20,16 @@ CSS 与 Less 的选型由实施代理自行决定，根据实际重复程度和�
 
 正文行悬停时默认使用 `--ui-fill-color-lighter` 高亮单元格，自动适配深浅主题；表头及 `.base-table-empty-row` 空状态行不参与。悬停规则也使用 `:where()`，保留局部特殊单元格背景的优先级。公共样式不设置整行手形光标，有行点击操作时由调用方自行设置。
 
+`table-columns.css` 提供按列内容复用的公共类，BaseTable 通过 `@/styles/` 别名依次直接导入它和 `table.css`，避免此处相对 CSS `@import` 被 PostCSS 解析到项目根目录。使用 BaseTable 时自动加载。目前密度榜、扫雷榜和 PB 榜共用这些规则，避免页面重复写对齐、宽度或 `nth-child()` 列序号选择器。
+
+| 类名 | 适用列 | 默认样式 |
+| --- | --- | --- |
+| `table-col-rank` | 排名、序号 | 宽度、最小宽度及最大宽度均为 4em、居中、不换行 |
+| `table-col-player` | PlayerName、玩家名 | 最小宽度 150px、左对齐 |
+| `table-col-number` | Time、Bvs、STNB、3BV、Pluck 等数值 | 最小宽度 100px、右对齐、不换行、等宽数字 |
+| `table-col-datetime` | 上传时间等日期时间 | 最小宽度 170px、居中、不换行 |
+| `table-col-center` | 模式、分组表头等 | 居中，不规定宽度 |
+
+在对应的原生 `<th>` 和 `<td>` 上使用同一个类，例如 `<th class="table-col-number">Bvs</th>` 与 `<td class="table-col-number">{{ value }}</td>`。这些类只定义外观，不负责计算排名、数值格式化或渲染 PlayerName，也不需要新增列组件。最小宽度由公共文件统一维护，玩家、数值和日期时间列可随内容与容器增长；特殊表格按需要局部覆盖，不通过列的位置推断语义。保留组件库的表格后续按其样式接口单独接入。
+
 按实际使用范围小步提取，不整体搬入组件库参数，也不建立依赖本地存档的统一入口。实施进度见[前端 UI 重构计划](../../UI_REFACTOR_PLAN.md)。

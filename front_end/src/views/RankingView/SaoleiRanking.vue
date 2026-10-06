@@ -8,36 +8,36 @@
         </ElCheckbox>
     </div>
     <ElAlert v-if="failed" :title="t('ranking.loadFailed')" type="error" :closable="false" />
-    <BaseTable v-loading="loading" class="saolei-ranking-table" :empty="rows.length === 0" :column-count="2 + saoleiFields.length" :empty-text="t('ranking.empty')">
+    <BaseTable v-loading="loading" class="saolei-ranking-table" :table-style="{ width: 'auto', marginInline: 'auto' }" :empty="rows.length === 0" :column-count="2 + saoleiFields.length" :empty-text="t('ranking.empty')">
         <template #head>
             <tr>
-                <th rowspan="2" scope="col" class="rank-cell" />
-                <th rowspan="2" scope="col" class="player-cell">
+                <th rowspan="2" scope="col" class="table-col-rank" />
+                <th rowspan="2" scope="col" class="table-col-player">
                     {{ t('common.prop.player') }}
                 </th>
-                <th v-for="level in levels" :key="level" colspan="2" scope="colgroup" class="level-header">
+                <th v-for="level in levels" :key="level" colspan="2" scope="colgroup" class="table-col-center">
                     {{ t(`common.level.${level}`) }}
                 </th>
             </tr>
             <tr>
                 <template v-for="level in levels" :key="level">
-                    <th scope="col" class="stat-cell">
+                    <th scope="col" class="table-col-number">
                         <SaoleiRankingColumn :level="level" stat="t" :selected="stat" @select="selectStat" />
                     </th>
-                    <th scope="col" class="stat-cell">
+                    <th scope="col" class="table-col-number">
                         <SaoleiRankingColumn :level="level" stat="b" :selected="stat" @select="selectStat" />
                     </th>
                 </template>
             </tr>
         </template>
         <tr v-for="(row, index) in rows" :key="row.player_id">
-            <td class="rank-cell">
+            <td class="table-col-rank">
                 {{ first + index + 1 }}
             </td>
-            <td class="player-cell">
+            <td class="table-col-player">
                 <PlayerName :user-id="row.player_id" />
             </td>
-            <td v-for="field in saoleiFields" :key="field" class="stat-cell">
+            <td v-for="field in saoleiFields" :key="field" class="table-col-number">
                 <PreviewNumber v-if="saoleiVideoId(row, field)" :id="saoleiVideoId(row, field)" :text="formatSaoleiValue(row, field)" />
                 <span v-else>{{ formatSaoleiValue(row, field) }}</span>
             </td>
@@ -119,25 +119,6 @@ const { t } = useI18n();
 </script>
 
 <style scoped>
-.rank-cell {
-    min-width: 3rem;
-    text-align: center;
-}
-
-.player-cell {
-    min-width: 8rem;
-}
-
-.level-header {
-    text-align: center;
-}
-
-.stat-cell {
-    min-width: 5rem;
-    text-align: right;
-    white-space: nowrap;
-}
-
 .nf-toggle {
     margin-bottom: 1rem;
 }
@@ -145,5 +126,10 @@ const { t } = useI18n();
 .pagination {
     margin-top: 1rem;
     overflow-x: auto;
+}
+
+.pagination > :deep(.el-pagination) {
+    width: max-content;
+    margin-inline: auto;
 }
 </style>
