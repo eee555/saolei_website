@@ -1,13 +1,13 @@
 <template>
     <div style="display: flex; gap: 1rem">
-        <BaseButton class="square-button" :loading="loading" :aria-label="t('local.refresh')" :title="t('common.action.refresh')" @click="load">
+        <BaseButton class="square-button" :loading="loading" :aria-label="t('common.action.refresh')" :title="t('common.action.refresh')" @click="load">
             <BaseIconRefresh />
         </BaseButton>
         <ElCheckbox v-model="nf" class="nf-toggle">
             {{ t('common.nf') }}
         </ElCheckbox>
     </div>
-    <ElAlert v-if="failed" :title="t('local.failed')" type="error" :closable="false" />
+    <ElAlert v-if="failed" :title="t('ranking.loadFailed')" type="error" :closable="false" />
     <ElTable v-loading="loading" :data="rows" row-key="player_id" border class="saolei-ranking-table" :empty-text="t('ranking.empty')">
         <ElTableColumn type="index" :index="(index) => first + index + 1" />
         <!-- @vue-generic {SaoleiRecord} -->
@@ -94,15 +94,7 @@ watch([nf, stat, pageSize, currentPage], () => {
     void load();
 }, { immediate: true });
 
-const i18nMessages = {
-    'zh-cn': { local: {
-        failed: '排行榜加载失败',
-    } },
-    en: { local: {
-        failed: 'Unable to load ranking',
-    } },
-};
-const { t } = useI18n({ messages: i18nMessages });
+const { t } = useI18n();
 </script>
 
 <style scoped>

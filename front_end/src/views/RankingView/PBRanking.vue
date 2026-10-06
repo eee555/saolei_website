@@ -5,11 +5,11 @@
                 NF
             </ElCheckbox>
             <PBBVButton v-for="optionLevel in pbLevels" :key="optionLevel" :level="optionLevel" :selected-level="level" :selected-bv="bv" :nf="nf" :counts="counts" @select="selectBucket(optionLevel, $event)" />
-            <BaseButton class="square-button" :loading="loading || countsLoading" :aria-label="t('local.refresh')" :title="t('common.action.refresh')" @click="refresh">
+            <BaseButton class="square-button" :loading="loading || countsLoading" :aria-label="t('common.action.refresh')" :title="t('common.action.refresh')" @click="refresh">
                 <BaseIconRefresh />
             </BaseButton>
         </div>
-        <ElAlert v-if="failed" :title="t('local.failed')" type="error" :closable="false" />
+        <ElAlert v-if="failed" :title="t('ranking.loadFailed')" type="error" :closable="false" />
         <ElAlert v-if="countsFailed" :title="t('local.countsFailed')" type="error" :closable="false" />
         <PBRankingTable :rows="rows" :level="level" :bv="bv" :first="first" :loading="loading" />
         <div class="pb-pagination">
@@ -111,11 +111,9 @@ onScopeDispose(() => {
 
 const i18nMessages = {
     'zh-cn': { local: {
-        failed: '排行榜加载失败',
         countsFailed: '各榜人数加载失败',
     } },
     en: { local: {
-        failed: 'Unable to load ranking',
         countsFailed: 'Unable to load board counts',
     } },
 };

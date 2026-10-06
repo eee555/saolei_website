@@ -311,6 +311,7 @@ export default {
             title: 'Saolei.wang Rule',
         },
         empty: 'No records',
+        loadFailed: 'Unable to load ranking',
     },
     server: {
         videoSummary: {

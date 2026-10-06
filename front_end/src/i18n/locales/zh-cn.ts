@@ -310,6 +310,7 @@ export default {
             title: '扫雷网规则',
         },
         empty: '暂无纪录',
+        loadFailed: '排行榜加载失败',
     },
     server: {
         videoSummary: {
