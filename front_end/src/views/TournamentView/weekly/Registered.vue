@@ -36,9 +36,7 @@
         <template v-if="selectedParticipant">
             <PlayerName v-if="selectedParticipant.user_id !== 0" :user-id="selectedParticipant.user_id" />
             <span v-else>{{ t('common.anonymous') }}</span>
-            <div class="text">
-                {{ selectedParticipant.token }}
-            </div>
+            <div>{{ selectedParticipant.token }}</div>
         </template>
         <template #footer>
             <BaseButton :disabled="deleting" @click="dialogVisible = false">

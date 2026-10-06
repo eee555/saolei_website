@@ -1,7 +1,7 @@
 <template>
     <a class="link link--no-underline text" :href="`https://github.com/${props.username}`" target="_blank" rel="noopener noreferrer">
         <ElImage :src="`https://avatars.githubusercontent.com/${props.username}`" style="height: 26px; margin: 2px" />
-        <span class="text">{{ props.username }}</span>
+        <span>{{ props.username }}</span>
     </a>
 </template>
 

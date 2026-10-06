@@ -1,5 +1,5 @@
 <template>
-    <span class="text text-medium">
+    <span class="text-medium">
         <ul>
             <li>
                 {{ t('local.line_1_1') }}<SoftwareIcon software="a" />{{ t('local.line_1_2') }}<SoftwareIcon software="e" />{{ t('local.line_1_3') }}

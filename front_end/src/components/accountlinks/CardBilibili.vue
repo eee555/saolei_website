@@ -3,7 +3,7 @@
         <div style="margin-bottom: 0.5em;">
             <PrToolbar>
                 <template #start>
-                    <span class="text text-medium">
+                    <span class="text-medium text-regular">
                         {{ t('common.platform.B') }}&nbsp;#{{ id }}
                     </span>
                 </template>
@@ -49,7 +49,7 @@
             </ElCarouselItem>
             <ElCarouselItem v-if="store.user.id == store.player.id">
                 <div>
-                    <span class="text text-large">
+                    <span class="text-large text-regular">
                         {{ t('accountlink.statSummary') }}
                     </span>
                     &nbsp;
@@ -59,7 +59,7 @@
                     &nbsp;
                     <IconTaskStatus :status="taskStatus" />
                     <br>
-                    <span class="text text-danger text-small">
+                    <span class="text-danger text-small">
                         {{ errorMsg }}
                     </span>
                 </div>

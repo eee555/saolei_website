@@ -1,3 +1,19 @@
+body {
+    color: var(--ui-text-color-regular);
+    font-size: var(--ui-font-size-base);
+    overflow-wrap: break-word;
+}
+
+:where(div, span) {
+    margin: 0;
+    padding: 0;
+}
+
+:where(span) {
+    vertical-align: middle;
+}
+
+/* Use only when inherited defaults are insufficient, e.g. headings or links. */
 .text {
     color: var(--ui-text-color-regular);
     font-size: var(--ui-font-size-base);

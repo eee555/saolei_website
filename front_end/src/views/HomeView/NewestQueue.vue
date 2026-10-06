@@ -2,7 +2,7 @@
     <ElTabPane v-loading="loadingStatus == QueueRefreshStatus.Refreshing" class="bottom_tabs" lazy name="newest">
         <template #label>
             {{ t('home.latestScore') }}&nbsp;
-            <span v-if="loadingStatus == QueueRefreshStatus.CoolingDown" class="text text-success">
+            <span v-if="loadingStatus == QueueRefreshStatus.CoolingDown" class="text-success">
                 <BaseIconTick />
             </span>
             <BaseTextButton

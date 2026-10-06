@@ -2,16 +2,16 @@
     <div class="custom-counter-settings" :class="{ 'custom-counter-settings--developer-mode': developerMode }">
         <div class="custom-counter-settings__toolbar">
             <label class="custom-counter-settings__number-setting">
-                <span class="text text-small">{{ t('local.width') }}</span>
+                <span class="text-regular text-small">{{ t('local.width') }}</span>
                 <InputNumber v-model="config.thWidth" :min="1" class="base-input" />
                 <InputNumber v-model="config.tdWidth" :min="1" class="base-input" />
             </label>
             <label class="custom-counter-settings__number-setting">
-                <span class="text text-small">{{ t('local.fontSize') }}</span>
+                <span class="text-regular text-small">{{ t('local.fontSize') }}</span>
                 <InputNumber v-model="config.fontSize" :min="1" class="base-input" />
             </label>
             <ElCheckbox v-model="developerMode">
-                <span class="text text-small">
+                <span class="text-small">
                     {{ t('local.developerMode') }}
                 </span>
             </ElCheckbox>

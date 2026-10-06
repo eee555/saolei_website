@@ -46,7 +46,7 @@
                 <BaseTooltip>
                     <ElInputNumber v-model="local.notification_duration" size="small" :min="0" :step="1000" />
                     <template #content>
-                        <span class="text">
+                        <span class="text-regular">
                             {{ t('local.notificationDurationTooltip1') }}
                             <br>
                             {{ t('local.notificationDurationTooltip2') }}

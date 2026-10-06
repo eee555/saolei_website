@@ -2,13 +2,13 @@
     <div v-if="header" class="layout-row" :style="{ textAlign: 'center', height: '25px', flexWrap: 'nowrap', marginTop: '10px', marginBottom: '-20px' }">
         <span style="width: 10%; min-width: 4em" />
         <span :style="gridStyle">
-            <span v-for="i in 10" :key="i" class="text text-small">
+            <span v-for="i in 10" :key="i" class="text-regular text-small">
                 {{ i - 1 }}
             </span>
         </span>
     </div>
     <ElDivider data-cy="summary" style="margin: 18px 0 12px 0;">
-        <span class="text">
+        <span class="text-regular">
             {{ t(`common.level.${level}`) }}
             &nbsp;
             {{ t('BBBvSummary.bbbvInTotal', [groupedVideoAbstract.size]) }}

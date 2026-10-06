@@ -1,11 +1,11 @@
 <template>
-    <span v-if="status == 'loading'" class="text text-primary">
+    <span v-if="status == 'loading'" class="text-primary">
         <i class="pi pi-spin pi-spinner-dotted" />
     </span>
-    <span v-else-if="status == 'success'" class="text text-success">
+    <span v-else-if="status == 'success'" class="text-success">
         <i class="pi pi-check-circle" />
     </span>
-    <span v-else-if="status == 'error'" class="text text-danger">
+    <span v-else-if="status == 'error'" class="text-danger">
         <i class="pi pi-times-circle" />
     </span>
 </template>

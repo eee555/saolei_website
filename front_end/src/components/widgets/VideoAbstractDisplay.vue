@@ -1,6 +1,6 @@
 <template>
     <div class="layout-row" style="margin-bottom: 5px;">
-        <span class="text">
+        <span class="text-regular">
             <VideoStateIcon :state="video.state" />
             &nbsp;
             <SoftwareIcon :software="video.software" />

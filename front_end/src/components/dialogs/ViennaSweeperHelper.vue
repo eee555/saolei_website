@@ -1,6 +1,6 @@
 <template>
     <div>
-        <span class="text text-medium">
+        <span class="text-medium">
             {{ t('local.description1') }}
             <br>
             {{ t('local.description2') }}
