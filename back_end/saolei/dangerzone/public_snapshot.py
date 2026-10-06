@@ -38,7 +38,7 @@ def snapshot_datetime(value):
 
 def video_from_snapshot(row):
     values = {name: row[name] for name in VIDEO_FIELDS if name in row}
-    # Production still stores the old NF mode; NF is now determined by right_ce.
+    # Older snapshots may store the legacy NF mode; keep the supplied right_ce.
     if values['mode'] == '12':
         values['mode'] = MS_TextChoices.Mode.STD
     if not 0 <= values['timems'] <= MAX_TIMEMS:
@@ -131,7 +131,7 @@ def initialize_local_data(root, admin_password, user_password, *, stdout, create
 
     stdout.write(f'Validated {len(users)} users and {manifest["video_count"]} videos. Resetting local data.\n')
     if missing := manifest.get('missing_detail_video_ids'):
-        stdout.write(f'{len(missing)} videos use list data only; missing metrics remain NULL and identifiers remain empty. NF rankings require right_ce.\n')
+        stdout.write(f'{len(missing)} videos use list data only; missing metrics remain NULL and identifiers remain empty. Supplied right_ce is preserved for NF rankings.\n')
     call_command('flush', interactive=False, verbosity=0)
     reset_local_snapshot_cache()
     import_snapshot_rows(root, manifest, users, admin_password, user_password)
@@ -140,6 +140,7 @@ def initialize_local_data(root, admin_password, user_password, *, stdout, create
     for user in UserProfile.objects.select_related('userms').iterator(chunk_size=500):
         update_video_count_limit_from_videos(user.userms, VideoModel.objects.filter(player=user))
     call_command('rebuild_speed_ranks', stdout=stdout)
+    call_command('rebuild_pb_ranks', stdout=stdout)
     add_videos_to_custom_pluck_ranks(VideoModel.objects.all())
     for rows in snapshot_pages(root, manifest, 'videos'):
         add_videos_to_state_queues_bulk(VideoModel.objects.filter(id__in=[row['id'] for row in rows]).select_related('player', 'video'))

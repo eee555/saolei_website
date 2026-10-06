@@ -24,7 +24,9 @@ from customranking.cache import PLuckRankingCache
 from identifier.models import Identifier
 from msuser.models import UserMS
 from msuser.utils import get_video_num_limit
-from speedranking.cache import SpeedRankingCache
+from speedranking.pb.cache import PBRankingCache
+from speedranking.saolei.cache import SpeedRankingCache
+from speedranking.saolei.utils import RANK_STATS
 from tournament.cache import TournamentCache
 from tournament.models import GSCParticipant, GSCTournament
 from userprofile.models import UserProfile
@@ -510,8 +512,11 @@ class TaskDeletionTests(TestCase):
 
 class VideoUploadRankingIntegrationTest(TestCase):
     def setUp(self):
+        pb = PBRankingCache()
+        pb.flush()
+        self.addCleanup(pb.flush)
         for ranking_name in ('saolei', 'saolei_nf'):
-            ranking = SpeedRankingCache(ranking_name)
+            ranking = SpeedRankingCache(ranking_name, stats=RANK_STATS)
             ranking.flush()
             self.addCleanup(ranking.flush)
         for level in CUSTOM_PLUCK_LEVELS:
