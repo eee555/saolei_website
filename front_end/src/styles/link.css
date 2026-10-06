@@ -11,16 +11,16 @@
 }
 
 .link:hover {
-    color: var(--el-color-primary);
+    color: var(--ui-color-primary);
     text-decoration: underline;
 }
 
 .link:active {
-    color: var(--el-color-primary-dark-2);
+    color: var(--ui-color-primary-dark-2);
 }
 
 .link:focus-visible {
-    outline: 2px solid var(--el-color-primary);
+    outline: 2px solid var(--ui-color-primary);
     outline-offset: 2px;
 }
 

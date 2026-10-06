@@ -97,10 +97,10 @@ function onDrop(event: DragEvent) {
     align-items: center;
     justify-content: center;
     width: 100%;
-    border: 1px solid var(--el-border-color);
+    border: 1px solid var(--ui-border-color);
     padding: 8px;
-    background: var(--el-fill-color-blank);
-    color: var(--el-text-color-regular);
+    background: var(--ui-fill-color-blank);
+    color: var(--ui-text-color-regular);
     text-align: center;
     cursor: pointer;
 }
@@ -124,24 +124,24 @@ function onDrop(event: DragEvent) {
 }
 
 .base-file-input:not(.base-file-input--disabled):hover:not(:has(.base-file-input__options:hover)) {
-    border-color: var(--el-color-primary-light-7);
-    background: var(--el-color-primary-light-9);
-    color: var(--el-color-primary);
+    border-color: var(--ui-color-primary-light-7);
+    background: var(--ui-color-primary-light-9);
+    color: var(--ui-color-primary);
 }
 
 .base-file-input:not(.base-file-input--disabled):active:not(:has(.base-file-input__options:hover)) {
-    background: var(--el-color-primary-light-8);
+    background: var(--ui-color-primary-light-8);
 }
 
 .base-file-input--dragover {
-    border-color: var(--el-color-primary);
-    background: var(--el-color-primary-light-9);
+    border-color: var(--ui-color-primary);
+    background: var(--ui-color-primary-light-9);
 }
 
 .base-file-input--disabled {
-    border-color: var(--el-disabled-border-color);
-    background: var(--el-disabled-bg-color);
-    color: var(--el-disabled-text-color);
+    border-color: var(--ui-disabled-border-color);
+    background: var(--ui-disabled-bg-color);
+    color: var(--ui-disabled-text-color);
     cursor: not-allowed;
 }
 </style>

@@ -74,7 +74,7 @@ function playVideo() {
 const iframeRef = useTemplateRef('iframeRef');
 const iframeWidth = ref(0);
 const iframeHeight = ref(0);
-const backgroundColor = computed(() => getComputedStyle(document.documentElement).getPropertyValue('--el-bg-color'));
+const backgroundColor = computed(() => getComputedStyle(document.documentElement).getPropertyValue('--ui-bg-color'));
 
 onMounted(() => {
     if (iframeRef.value === null) return;

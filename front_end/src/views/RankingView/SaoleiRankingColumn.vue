@@ -55,7 +55,7 @@ const label = computed(() => t(`common.prop.${SaoleiStat[props.stat]}`));
 }
 
 .stat-header[aria-pressed="true"] {
-    color: var(--el-color-primary);
+    color: var(--ui-color-primary);
 }
 
 .sort-icon {

@@ -1,7 +1,7 @@
 # 前端 UI 风格渐进重构计划
 
 制定日期：2026-10-03。
-进度更新：2026-10-04。按用户确认，已提交的改动视为验收完成，从待办中移除。
+进度更新：2026-10-06。按用户确认，已提交的改动视为验收完成，从待办中移除。
 
 ## 目标与范围
 
@@ -15,9 +15,9 @@
 
 | 工作项 | 状态 | 剩余事项 |
 | --- | --- | --- |
-| 视觉参数 | 待细化 | 在已确定的方向与选型规则下，统一字号、间距和组件尺寸 |
-| 项目主题变量与组件库适配 | 按钮直角适配已实现，其余待实施 | `styles/vendors/element-plus.css` 已统一 ElButton 圆角；尚无 `tokens.css` 或统一 `--ui-*` 变量，原生组件继续使用 Element Plus 颜色变量 |
-| 按钮、链接、分隔线、描述列表等 | 第三批迁移已验收，收尾待提交 | 本轮范围内的 ElLink / ElButton 已迁移；收尾清理与暂留范围见下文，分隔线与描述列表单独处理 |
+| 视觉参数 | 当前参数已保存为本地参考；目标尺寸继续细化 | `styles/parameters/` 已加入 Git 忽略，仅供查阅；实际需要的参数按职责提取到 `styles/` 对应文件 |
+| 项目主题变量与组件库适配 | 项目变量已接入，本批待提交验收；其他换肤待实施 | `styles/theme/` 提供独立 `--ui-*`；现有项目代码的 `--el-*` 读取已替换，保留库适配中的声明 |
+| 按钮、链接、分隔线、描述列表等 | 第三批及收尾已验收 | 本轮范围内的 ElLink / ElButton 已迁移；暂留范围见下文，分隔线与描述列表单独处理 |
 | 复杂组件换肤 | 待实施 | 表格、表单、Tabs、弹窗等仍需分别调整直角与紧凑尺寸 |
 | PrimeVue 退出 | 延后独立推进 | 表格、筛选控件及 Toolbar 暂留；账号关联页面等待重做 |
 
@@ -116,21 +116,36 @@
 
 ### 1. 细化视觉参数
 
-- 记录 Element Plus 两套主题中采用的颜色及其语义映射，细化字号、间距、直角边框和表格密度。
+当前子步骤：已将项目锁定的 Element Plus 2.14.6、PrimeVue 4.5.5 / Aura 主题包 2.0.3 的在用参数保存到本地 `src/styles/parameters/`，包括浅色、深色、字号、尺寸、状态、组件局部覆盖及内部依赖。该目录加入 `.gitignore`，仅作为查阅存档，不提交，也不供应用、测试、样式或构建脚本直接使用。使用规则见[项目样式与参数](src/styles/README.md)。
+
+本步先固定现值，不接入运行时，也不调整页面密度。已有原生按钮/卡片尺寸和 ElButton 直角覆盖另存于参考目录中的 `project.less`；没有导入的旧 `assets/style.css` 不作为生效基准。正式使用时，将所需值及其依赖提取到 `src/styles` 下对应文件，不整体汇总或导入参考目录。
+
+剩余细化：
+
+- 在上述基准上确定项目语义映射与目标字号、间距、直角边框和表格密度；主要配色沿用 Element Plus，PrimeVue 现有 Aura 配色先保留记录。
 - 确定代表性的数据展示与分析样例、组件保留清单，以及少数需要按自身宽度切换布局策略的组件。
 
 完成条件：在现有选型规则下，有统一的视觉参数和样例，能够据此评审后续改动。
 
 ### 2. 建立项目样式变量
 
-状态：待实施。当前 `cards.css` 直接复用 `--el-*` 颜色变量，尚未建立独立的项目主题变量。
+状态：本批已提取实际使用的参数并接入运行时，待提交验收。本地参考存档不作为运行时依赖。
 
-- 在 `src/styles` 新增项目自己的 `--ui-*` 变量。
-- 颜色变量采用项目当前版本 Element Plus 的对应主题色值，分别定义浅色和深色值。
-- 初始值尽量接近现状，将“接入样式机制”和“改变视觉效果”拆开。
-- 集中接入样式入口，使应用和 Cypress 组件测试使用一致的基础样式。
+- `src/styles/theme/` 按颜色、主色/状态色、字号/圆角/过渡参数分文件，使用独立 `--ui-*`。初值沿用 Element Plus 2.14.6 的实际使用参数，深浅主题保留当前色值，不导入或读取 `parameters/`。
+- 公共文字、按钮、链接、卡片样式与业务组件均已替换 `--el-*` 读取；图表、播放器及工具函数中的 JavaScript 颜色读取也使用项目变量。组件局部可选覆盖继续提供项目语义变量回退。
+- `setup.ts` 加载项目主题，应用和 Cypress 组件测试共用入口；深色主题继续使用 `html.dark`。
+- Element Plus 按钮适配仍声明库所需的 `--el-border-radius-*`，值来自项目按钮圆角变量；项目变量不反向引用组件库变量。其余复杂组件的主题适配在后续步骤推进。
+- `button.css` 已按职责拆分到 `buttons/`，保留原导入路径；项目样式文件均遵守 100 个非空行限制。
 
 完成条件：引入后现有页面外观基本不变。
+
+本批已通过 `npm.cmd run lintfix`、`npm.cmd run typecheck` 和 `npm.cmd run build:frontend`。另核对深浅主题共 114 项参数值与参考存档一致、按钮拆分后的声明及顺序一致、项目源码无 `--el-*` 读取、样式目录每文件不超过 100 个非空行。尚未运行 Cypress；在 `front_end` 目录执行以下命令，检查原生组件在挂载后切换深浅主题，以及不受组件库变量覆盖影响：
+
+```powershell
+npx.cmd cypress run --component --spec "cypress/component/theme.cy.ts"
+```
+
+同时人工检查图表、播放器和上传状态的深浅主题颜色。该批提交后，按既定规则从待办中移除其验收记录。
 
 ### 3. 建立主题适配与 PrimeVue 过渡样式
 
@@ -168,9 +183,7 @@
 - `views/HomeView/NormalTournamentQueue.vue`：首页比赛卡片整体暂缓。
 - `components/accountlinks/` 中的 `CardAdd.vue`、`CardAddMineracer.vue`、`CardBilibili.vue`、`CardSaolei.vue`、`CardWoM.vue`、`CarouselControl.vue`、`VideoImportQueue.vue`：随账号关联页面重做处理。
 
-本次收尾（待提交）：删除无调用方、已标注拟弃用的 `PreviewDownload.vue`；清理失效的 ElButton `square-button` 样式与按钮组中的旧选择器；补充上述 ESLint 限制。账号关联卡片仍使用的 `button-compact`、新旧按钮相邻间距和 Element Plus 直角适配继续保留。
-
-收尾已通过 `npm.cmd run lintfix`、`npm.cmd run typecheck` 和 `npm.cmd run build:frontend`；另核对规则实际报错、八个文件例外及原有文字/布局/卡片限制均符合预期。本次不改变现有交互，未运行 Cypress，也不重新列入已验收的 3.3 浏览器测试待办。
+第三批收尾已提交验收，不再保留待办。账号关联卡片仍使用的 `button-compact`、新旧按钮相邻间距和 Element Plus 直角适配继续保留。
 
 ### 5. 分批给复杂组件换肤
 
@@ -217,21 +230,25 @@
 
 ## 样式组织
 
+CSS 与 Less 的选型，以及 `src/styles/` 下的文件命名、目录划分和组织方式，由实施代理根据维护需要自行决定，无需逐项征求确认。该目录下的项目文件每个不得超过 100 个非空行；空行及仅含空白字符的行不计入，注释行计入。超过时按职责拆分，不通过压缩多条声明到同一行规避限制。具体规则见[项目样式与参数](src/styles/README.md)。
+
 当前已存在的样式：
 
 ```text
 src/styles/
   text.css                    继续沿用现有文字类
-  button.css                  原生按钮样式，兼容尚未迁移的 Element Plus 辅助类
-  link.css                    原生链接样式，复用 text.css 与 Element Plus 配色
+  theme/                      独立项目参数：colors.css、accents.css、metrics.css
+  button.css                  按顺序导入 buttons/ 下的样式，保持调用路径
+  buttons/                    基础布局、类型配色、尺寸与交互状态
+  link.css                    原生链接样式，复用 text.css 与项目配色
   layout.css                  已迁移的原生行列布局
   cards.css                   已迁移的原生卡片、尺寸修饰类和标题
   vendors/element-plus.css     保留的 Element Plus 按钮直角覆盖
 ```
 
-`cards.css` 当前提供 `.card`、`.card-small`、`.card-large`、`.card-title`。基础卡片为直角、无默认阴影、10px 内边距；小卡片为 5px，大卡片为上下 10px、左右 20px。颜色直接使用 `--el-border-color-light`、`--el-fill-color-blank` 和 `--el-text-color-primary`，沿用现有深浅主题。
+`cards.css` 当前提供 `.card`、`.card-small`、`.card-large`、`.card-title`。基础卡片为直角、无默认阴影、10px 内边距；小卡片为 5px，大卡片为上下 10px、左右 20px。颜色使用 `--ui-border-color-light`、`--ui-fill-color-blank` 和 `--ui-text-color-primary`，沿用现有深浅主题色值。
 
-`vendors/element-plus.css` 已提供按钮直角覆盖。后续再按需要新增 `tokens.css`、`vendors/primevue.css`，并扩展 Element Plus 的其他适配。目标依赖方向为：
+`theme/index.css` 已接入项目变量，`vendors/element-plus.css` 已提供按钮直角覆盖。后续按需要建立 PrimeVue 过渡样式文件，并扩展 Element Plus 的其他适配；文件名和 CSS / Less 选型由实施代理决定。目标依赖方向为：
 
 ```text
 项目样式变量
@@ -240,7 +257,7 @@ src/styles/
     └── PrimeVue 暂留表格的过渡适配
 ```
 
-项目变量建立前，继续复用现有 Element Plus 颜色变量。建立后，新样式优先使用 `--ui-*`，现有 `--el-*` 引用随所在模块逐步迁移，避免两者互相引用形成循环。
+项目样式与 JavaScript 统一读取 `--ui-*`。`--el-*` 声明仅保留在组件库适配文件中，按项目变量到组件库的方向传值，避免反向依赖和循环引用。组件库自身的主题仍由原有入口加载，复杂组件进一步适配单独推进。
 
 覆盖顺序优先采用：
 
@@ -324,8 +341,9 @@ E2E 使用项目现有测试环境。每批优先运行受影响的 spec，而�
 
 ## 下一批建议
 
-1. 提交第三批收尾后，分隔线或简单描述列表可作为独立小批次推进；按钮与链接仅剩上述暂留范围，随相关页面维护单独处理。
-2. 统一主题变量与复杂组件换肤作为独立批次推进，每批先选择代表实例，再推广。
+1. 验收本批项目变量迁移，检查深浅主题、按钮状态、数字输入、图表和播放器；目标密度和复杂组件换肤分开推进。
+2. 分隔线或简单描述列表可作为独立小批次推进；按钮与链接仅剩上述暂留范围，随相关页面维护单独处理。
+3. 统一主题语义与复杂组件换肤作为独立批次推进，每批先选择代表实例，再推广。
 
 首页比赛卡片、账号关联页面重做及 PrimeVue 表格退出继续保持暂缓，不作为下一批简单组件迁移的前置条件。
 

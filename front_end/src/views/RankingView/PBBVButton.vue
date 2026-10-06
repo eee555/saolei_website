@@ -77,9 +77,9 @@ const rows = computed(() => {
     width: 28rem;
     max-width: calc(100vw - 24px);
     padding: 4px;
-    background: var(--el-bg-color-overlay);
-    color: var(--el-text-color-primary);
-    border: 1px solid var(--el-border-color);
+    background: var(--ui-bg-color-overlay);
+    color: var(--ui-text-color-primary);
+    border: 1px solid var(--ui-border-color);
 }
 
 .pb-bv-columns {
@@ -92,7 +92,7 @@ const rows = computed(() => {
 .pb-bv-header {
     text-align: center;
     min-height: 24px;
-    border-bottom: 1px solid var(--el-border-color);
+    border-bottom: 1px solid var(--ui-border-color);
 }
 
 .pb-bv-header,

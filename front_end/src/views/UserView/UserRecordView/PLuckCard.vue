@@ -82,7 +82,7 @@ function customLevelLabel(customLevel: CustomLevel): string {
 .record-table th,
 .record-table td {
     box-sizing: border-box;
-    border-bottom: 1px solid var(--el-table-border-color, var(--el-border-color-lighter));
+    border-bottom: 1px solid var(--ui-table-border-color, var(--ui-border-color-lighter));
     padding: 8px 12px;
     text-align: center;
 }

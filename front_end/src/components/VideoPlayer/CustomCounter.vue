@@ -105,19 +105,19 @@ function createEvaluationContext(video: AnyVideo) {
 .custom-counter {
     table-layout: fixed;
     border-collapse: collapse;
-    color: var(--el-text-color-regular);
+    color: var(--ui-text-color-regular);
     line-height: 1.25;
 }
 
 .custom-counter th,
 .custom-counter td {
     box-sizing: border-box;
-    border: 1px solid var(--el-border-color);
+    border: 1px solid var(--ui-border-color);
     padding: 3px 6px;
 }
 
 .custom-counter th {
-    color: var(--el-text-color-secondary);
+    color: var(--ui-text-color-secondary);
     font-weight: 500;
     text-align: left;
     white-space: nowrap;
@@ -134,7 +134,7 @@ function createEvaluationContext(video: AnyVideo) {
 }
 
 .custom-counter__value--error {
-    color: var(--el-color-danger);
+    color: var(--ui-color-danger);
     overflow-wrap: anywhere;
     text-align: left;
     white-space: normal;

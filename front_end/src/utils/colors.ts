@@ -78,7 +78,7 @@ export class PiecewiseColorScheme {
 }
 
 export function getTextColor(style = 'regular'): string {
-    return getComputedStyle(document.documentElement).getPropertyValue('--el-text-color-' + style);
+    return getComputedStyle(document.documentElement).getPropertyValue('--ui-text-color-' + style);
 }
 
 function createColorStyle(backgroundColor: string): Readonly<CSSProperties> {

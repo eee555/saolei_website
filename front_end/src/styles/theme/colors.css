@@ -1,0 +1,39 @@
+/* Initial values from Element Plus 2.14.6; see LICENSE.element-plus.txt. */
+:root {
+    color-scheme: light;
+    --ui-color-white: #fff;
+    --ui-bg-color: #fff;
+    --ui-bg-color-overlay: #fff;
+    --ui-text-color-primary: #303133;
+    --ui-text-color-regular: #606266;
+    --ui-text-color-secondary: #909399;
+    --ui-text-color-placeholder: #a8abb2;
+    --ui-text-color-disabled: #c0c4cc;
+    --ui-border-color: #dcdfe6;
+    --ui-border-color-light: #e4e7ed;
+    --ui-border-color-lighter: #ebeef5;
+    --ui-border-color-hover: var(--ui-text-color-disabled);
+    --ui-fill-color-blank: #fff;
+    --ui-fill-color-light: #f5f7fa;
+    --ui-fill-color-lighter: #fafafa;
+    --ui-disabled-bg-color: var(--ui-fill-color-light);
+    --ui-disabled-text-color: var(--ui-text-color-placeholder);
+    --ui-disabled-border-color: var(--ui-border-color-light);
+}
+
+html.dark {
+    color-scheme: dark;
+    --ui-bg-color: #141414;
+    --ui-bg-color-overlay: #1d1e1f;
+    --ui-text-color-primary: #e5eaf3;
+    --ui-text-color-regular: #cfd3dc;
+    --ui-text-color-secondary: #a3a6ad;
+    --ui-text-color-placeholder: #8d9095;
+    --ui-text-color-disabled: #6c6e72;
+    --ui-border-color: #4c4d4f;
+    --ui-border-color-light: #414243;
+    --ui-border-color-lighter: #363637;
+    --ui-fill-color-blank: #141414;
+    --ui-fill-color-light: #262727;
+    --ui-fill-color-lighter: #1d1d1d;
+}

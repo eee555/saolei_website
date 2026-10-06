@@ -82,21 +82,21 @@ function formatScore(record: SaoleiPlayerRecord | undefined, stat: SaoleiField):
 .saolei-record-table {
     width: 100%;
     border-collapse: collapse;
-    color: var(--el-text-color-regular);
-    background: var(--el-fill-color-blank);
-    font-size: var(--el-font-size-base);
+    color: var(--ui-text-color-regular);
+    background: var(--ui-fill-color-blank);
+    font-size: var(--ui-font-size-base);
 }
 
 .saolei-record-table th,
 .saolei-record-table td {
-    border: 1px solid var(--el-border-color-lighter);
+    border: 1px solid var(--ui-border-color-lighter);
     padding: 8px 12px;
     text-align: center;
 }
 
 .saolei-record-table th {
-    color: var(--el-text-color-secondary);
-    background: var(--el-fill-color-light);
+    color: var(--ui-text-color-secondary);
+    background: var(--ui-fill-color-light);
 }
 
 .saolei-record-table td {
@@ -104,6 +104,6 @@ function formatScore(record: SaoleiPlayerRecord | undefined, stat: SaoleiField):
 }
 
 .saolei-record-table tbody tr:hover {
-    background: var(--el-fill-color-lighter);
+    background: var(--ui-fill-color-lighter);
 }
 </style>
