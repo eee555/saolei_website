@@ -2,7 +2,7 @@
     <section class="pb-ranking">
         <div class="pb-toolbar">
             <ElCheckbox v-model="nf" class="nf-toggle">
-                NF
+                {{ t('common.nf') }}
             </ElCheckbox>
             <PBBVButton v-for="optionLevel in pbLevels" :key="optionLevel" :level="optionLevel" :selected-level="level" :selected-bv="bv" :nf="nf" :counts="counts" @select="selectBucket(optionLevel, $event)" />
             <BaseButton class="square-button" :loading="loading || countsLoading" :aria-label="t('common.action.refresh')" :title="t('common.action.refresh')" @click="refresh">

@@ -1,5 +1,6 @@
 import PBRankingTable from './PBRankingTable.vue';
 
+import $axios from '@/http';
 import i18n from '@/i18n';
 import { videoplayerstore } from '@/store';
 import { pinia } from '@/store/create';
@@ -19,7 +20,7 @@ describe('<PBRankingTable />', () => {
         cy.intercept('GET', '**/video/get_software/*', { body: { msg: 'e' } }).as('software');
         cy.mount(PBRankingTable, {
             props: { rows: [{ player_id: 42, video_id: 8001, timems: 1000, upload_time: upload }], level: 'b', bv: 1, first: 20, loading: false },
-            global: { plugins: [i18n, pinia] },
+            global: { plugins: [i18n, pinia], config: { globalProperties: { $axios } } },
         });
         cy.get('.pb-ranking-table .el-table__header').extractTableData().should((data) => {
             expect(data[0]).to.deep.equal(['#', 'Player', 'Time', 'Bvs', 'STNB', 'Upload Time']);
@@ -49,7 +50,7 @@ describe('<PBRankingTable />', () => {
     it('renders the empty and loading states, then displays zero-time metrics as infinity', () => {
         cy.mount(PBRankingTable, {
             props: { rows: [], level: 'b', bv: 1, first: 0, loading: false },
-            global: { plugins: [i18n, pinia] },
+            global: { plugins: [i18n, pinia], config: { globalProperties: { $axios } } },
         });
         cy.get('.pb-ranking-table .el-table__empty-text').should('have.text', 'No records');
         cy.get<ComponentWrapper<typeof PBRankingTable>>('@vue').then((wrapper) => wrapper.setProps({ loading: true }));
