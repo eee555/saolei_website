@@ -101,10 +101,14 @@ describe('<TournamentRanking />', () => {
         cy.contains('.el-pager li', '2').click();
         cy.wait('@ranking');
         cy.get('[data-sort-field="score_current"]').click();
-        cy.get('.el-pager li.is-active').should('have.text', '2');
+        cy.get('.el-pager li.is-active').should(($page) => {
+            expect($page.text().trim()).to.equal('2');
+        });
         cy.get('[data-sort-field="weekly_classic_total"]').click();
         cy.wait('@ranking');
-        cy.get('.el-pager li.is-active').should('have.text', '1');
+        cy.get('.el-pager li.is-active').should(($page) => {
+            expect($page.text().trim()).to.equal('1');
+        });
         cy.get('[data-sort-field="weekly_classic_total"]').should('have.attr', 'aria-pressed', 'true');
         cy.get('[data-sort-field="score_current"]').should('have.attr', 'aria-pressed', 'false');
         cy.get('[data-sort-field="gsc_best"]').focus();
