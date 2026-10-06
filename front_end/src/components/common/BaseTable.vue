@@ -11,7 +11,7 @@
                 <slot name="head" />
             </thead>
             <tbody>
-                <tr v-if="empty">
+                <tr v-if="empty" class="base-table-empty-row">
                     <td class="base-table-empty" :colspan="columnCount">
                         {{ emptyText }}
                     </td>

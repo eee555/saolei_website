@@ -8,23 +8,41 @@
         </ElCheckbox>
     </div>
     <ElAlert v-if="failed" :title="t('ranking.loadFailed')" type="error" :closable="false" />
-    <ElTable v-loading="loading" :data="rows" row-key="player_id" border class="saolei-ranking-table" :empty-text="t('ranking.empty')">
-        <ElTableColumn type="index" :index="(index) => first + index + 1" />
-        <!-- @vue-generic {SaoleiRecord} -->
-        <ElTableColumn column-key="player" :label="t('common.prop.player')">
-            <template #default="{ row }">
+    <BaseTable v-loading="loading" class="saolei-ranking-table" :empty="rows.length === 0" :column-count="2 + saoleiFields.length" :empty-text="t('ranking.empty')">
+        <template #head>
+            <tr>
+                <th rowspan="2" scope="col" class="rank-cell" />
+                <th rowspan="2" scope="col" class="player-cell">
+                    {{ t('common.prop.player') }}
+                </th>
+                <th v-for="level in levels" :key="level" colspan="2" scope="colgroup" class="level-header">
+                    {{ t(`common.level.${level}`) }}
+                </th>
+            </tr>
+            <tr>
+                <template v-for="level in levels" :key="level">
+                    <th scope="col" class="stat-cell">
+                        <SaoleiRankingColumn :level="level" stat="t" :selected="stat" @select="selectStat" />
+                    </th>
+                    <th scope="col" class="stat-cell">
+                        <SaoleiRankingColumn :level="level" stat="b" :selected="stat" @select="selectStat" />
+                    </th>
+                </template>
+            </tr>
+        </template>
+        <tr v-for="(row, index) in rows" :key="row.player_id">
+            <td class="rank-cell">
+                {{ first + index + 1 }}
+            </td>
+            <td class="player-cell">
                 <PlayerName :user-id="row.player_id" />
-            </template>
-        </ElTableColumn>
-        <ElTableColumn v-for="level in SaoleiLevels" :key="level" :column-key="level" :label="t(`common.level.${level}`)" align="center">
-            <SaoleiRankingColumn :level="level" stat="t" :selected="stat" @select="selectStat" />
-            <SaoleiRankingColumn :level="level" stat="b" :selected="stat" @select="selectStat" />
-        </ElTableColumn>
-        <ElTableColumn column-key="sum" :label="t('common.level.sum')" align="center">
-            <SaoleiRankingColumn level="sum" stat="t" :selected="stat" @select="selectStat" />
-            <SaoleiRankingColumn level="sum" stat="b" :selected="stat" @select="selectStat" />
-        </ElTableColumn>
-    </ElTable>
+            </td>
+            <td v-for="field in saoleiFields" :key="field" class="stat-cell">
+                <PreviewNumber v-if="saoleiVideoId(row, field)" :id="saoleiVideoId(row, field)" :text="formatSaoleiValue(row, field)" />
+                <span v-else>{{ formatSaoleiValue(row, field) }}</span>
+            </td>
+        </tr>
+    </BaseTable>
     <div class="pagination">
         <ElPagination
             v-model:current-page="currentPage" v-model:page-size="pageSize"
@@ -36,18 +54,21 @@
 <script setup lang="ts">
 import '@/styles/button.css';
 
-import { ElAlert, ElCheckbox, ElPagination, ElTable, ElTableColumn, vLoading } from 'element-plus';
+import { ElAlert, ElCheckbox, ElPagination, vLoading } from 'element-plus';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import SaoleiRankingColumn from './SaoleiRankingColumn.vue';
 
 import BaseButton from '@/components/common/BaseButton.vue';
+import BaseTable from '@/components/common/BaseTable.vue';
 import { BaseIconRefresh } from '@/components/common/icon';
 import PlayerName from '@/components/PlayerName.vue';
-import { fetchSaoleiRanking, SaoleiLevels } from '@/services/saoleiRankingService';
+import PreviewNumber from '@/components/PreviewNumber.vue';
+import { fetchSaoleiRanking, formatSaoleiValue, saoleiFields, SaoleiLevels, saoleiVideoId } from '@/services/saoleiRankingService';
 import type { SaoleiField, SaoleiRecord } from '@/services/saoleiRankingService';
 
+const levels = [...SaoleiLevels, 'sum'] as const;
 const nf = ref(false);
 const stat = ref<SaoleiField>('sumt');
 const currentPage = ref(1);
@@ -98,6 +119,25 @@ const { t } = useI18n();
 </script>
 
 <style scoped>
+.rank-cell {
+    min-width: 3rem;
+    text-align: center;
+}
+
+.player-cell {
+    min-width: 8rem;
+}
+
+.level-header {
+    text-align: center;
+}
+
+.stat-cell {
+    min-width: 5rem;
+    text-align: right;
+    white-space: nowrap;
+}
+
 .nf-toggle {
     margin-bottom: 1rem;
 }

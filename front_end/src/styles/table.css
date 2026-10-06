@@ -33,6 +33,11 @@
     font-variant-numeric: tabular-nums;
 }
 
+:where(.base-table > tbody > tr:not(.base-table-empty-row):hover > th),
+:where(.base-table > tbody > tr:not(.base-table-empty-row):hover > td) {
+    background: var(--ui-fill-color-lighter);
+}
+
 .base-table .base-table-empty {
     padding: 12px 8px;
     color: var(--ui-text-color-secondary);

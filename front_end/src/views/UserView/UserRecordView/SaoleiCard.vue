@@ -101,8 +101,4 @@ function formatScore(record: SaoleiPlayerRecord | undefined, stat: SaoleiField):
 :deep(.saolei-record-table td) {
     white-space: nowrap;
 }
-
-:deep(.saolei-record-table tbody tr:hover) {
-    background: var(--ui-fill-color-lighter);
-}
 </style>

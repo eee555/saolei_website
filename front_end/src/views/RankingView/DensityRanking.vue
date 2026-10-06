@@ -35,7 +35,7 @@
                         {{ t('common.prop.time') }}
                     </th>
                     <th scope="col">
-                        3BV
+                        {{ t('common.prop.bv') }}
                     </th>
                     <th scope="col">
                         {{ t('common.prop.upload_time') }}
@@ -101,13 +101,11 @@ const i18nMessages = {
         board: '局面',
         empty: '暂无排行数据',
         rank: '排名',
-        std: '标准',
     } },
     en: { local: {
         board: 'Board',
         empty: 'No ranking data',
         rank: 'Rank',
-        std: 'Standard',
     } },
 };
 
