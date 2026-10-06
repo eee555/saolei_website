@@ -1,5 +1,5 @@
 <template>
-    <div style="display: flex; gap: 1rem">
+    <div style="display: flex; gap: 1rem; align-items: center">
         <BaseButton class="square-button" :loading="loading" :aria-label="t('common.action.refresh')" :title="t('common.action.refresh')" @click="load">
             <BaseIconRefresh />
         </BaseButton>
@@ -119,10 +119,6 @@ const { t } = useI18n();
 </script>
 
 <style scoped>
-.nf-toggle {
-    margin-bottom: 1rem;
-}
-
 .pagination {
     margin-top: 1rem;
     overflow-x: auto;

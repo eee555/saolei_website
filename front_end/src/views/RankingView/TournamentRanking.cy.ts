@@ -64,18 +64,21 @@ describe('<TournamentRanking />', () => {
         cy.get('body').should(($body) => {
             expect($body.find('.el-loading-mask:visible')).to.have.length(0);
         });
-        cy.contains('.el-table__cell', 'Overall').should('be.visible');
-        cy.contains('.el-table__cell', 'GSC').should('be.visible');
-        cy.contains('.el-table__cell', 'Weekly').should('be.visible');
+        cy.contains('th', 'Overall').should('have.attr', 'colspan', '2');
+        cy.contains('th', 'GSC').should('have.attr', 'colspan', '2');
+        cy.contains('th', 'Weekly').should('have.attr', 'colspan', '3');
+        cy.get('.ranking-table thead button').should('have.length', 7);
+        cy.get('[data-sort-field="score_current"]').should('have.attr', 'aria-pressed', 'true');
+        cy.get('.ranking-table thead .caret-wrapper, .ranking-table thead i, .ranking-table thead svg').should('not.exist');
         cy.contains('User#101').should('be.visible');
-        cy.get('.el-table__body').extractTableData().should('deep.equal', [
+        cy.get('.ranking-table table').extractTableData().should('deep.equal', [
             ['', '', 'Overall', 'GSC', 'Weekly'],
             ['Current', 'History Total', 'Total', 'Best', 'Total', 'Classic Total', 'Classic Best'],
             ['1', 'User#101', '12.50', '100', '60', '123.456 / GSC#7', '40', '30', '345.678 / 2026-W12'],
         ]);
     });
 
-    it('sorts from table headers without resetting pagination', () => {
+    it('resets pagination when selecting another ranking field', () => {
         cy.mockPlayerNameFallback();
         const requests: ReturnType<typeof requestQuery>[] = [];
         cy.intercept('GET', '**/api/tournament/user-ranking*', (req) => {
@@ -97,15 +100,31 @@ describe('<TournamentRanking />', () => {
         cy.wait('@ranking');
         cy.contains('.el-pager li', '2').click();
         cy.wait('@ranking');
-        cy.contains('.el-table__cell', 'Classic Total').click();
+        cy.get('[data-sort-field="score_current"]').click();
+        cy.get('.el-pager li.is-active').should('have.text', '2');
+        cy.get('[data-sort-field="weekly_classic_total"]').click();
         cy.wait('@ranking');
+        cy.get('.el-pager li.is-active').should('have.text', '1');
+        cy.get('[data-sort-field="weekly_classic_total"]').should('have.attr', 'aria-pressed', 'true');
+        cy.get('[data-sort-field="score_current"]').should('have.attr', 'aria-pressed', 'false');
+        cy.get('[data-sort-field="gsc_best"]').focus();
+        cy.realPress('Enter');
+        cy.wait('@ranking').its('request.query').should('include', { sort_by: 'gsc_best', start: '0', end: '20' });
 
         cy.then(() => {
             expect(requests).to.deep.equal([
                 { sortBy: 'score_current', start: 0, end: 20 },
                 { sortBy: 'score_current', start: 20, end: 40 },
-                { sortBy: 'weekly_classic_total', start: 20, end: 40 },
+                { sortBy: 'weekly_classic_total', start: 0, end: 20 },
+                { sortBy: 'gsc_best', start: 0, end: 20 },
             ]);
         });
+    });
+
+    it('renders an empty state spanning all ranking columns', () => {
+        cy.intercept('GET', '**/api/tournament/user-ranking*', { body: { total: 0, data: [] } }).as('ranking');
+        mountTournamentRanking();
+        cy.wait('@ranking');
+        cy.contains('.base-table-empty', 'No tournament ranking data').should('have.attr', 'colspan', '9');
     });
 });
