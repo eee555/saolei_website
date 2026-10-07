@@ -1,14 +1,14 @@
 <template>
-    <div class="text text-large">
+    <div class="text-large text-regular">
         {{ t('common.level.sum') }}{{ t('common.punct.colon') }}{{ ms_to_s(iSum + eSum) }}
     </div>
-    <div class="text text-large" style="margin-top: 0.5em">
+    <div class="text-large text-regular" style="margin-top: 0.5em">
         {{ t('common.level.e') }}{{ t('common.punct.colon') }}{{ ms_to_s(eSum) }}
     </div>
     <div class="cell-list">
         <VideoCell v-for="i in 2" :key="`e${i}`" class="cell" :video="bestE[i-1]" :text="getCellText(bestE[i-1], 240)" :value="getCellValue(bestE[i-1], 240)" :color-theme="colorThemes.etime.value" />
     </div>
-    <div class="text text-large" style="margin-top: 0.5em">
+    <div class="text-large text-regular" style="margin-top: 0.5em">
         {{ t('common.level.i') }}{{ t('common.punct.colon') }}{{ ms_to_s(iSum) }}
     </div>
     <div class="cell-list">

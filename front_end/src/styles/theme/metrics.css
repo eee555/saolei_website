@@ -1,0 +1,16 @@
+/* Initial values from Element Plus 2.14.6; see LICENSE.element-plus.txt. */
+:root {
+    --ui-font-size-extra-large: 20px;
+    --ui-font-size-large: 18px;
+    --ui-font-size-medium: 16px;
+    --ui-font-size-base: 14px;
+    --ui-font-size-small: 13px;
+    --ui-font-size-extra-small: 12px;
+    --ui-border-radius-base: 4px;
+    --ui-transition-duration: 0.3s;
+    --ui-transition-duration-fast: 0.2s;
+    --ui-transition-function-ease-in-out-bezier: cubic-bezier(0.645, 0.045, 0.355, 1);
+    --ui-transition-box-shadow: box-shadow var(--ui-transition-duration-fast) var(--ui-transition-function-ease-in-out-bezier);
+    /* Retain the project's existing square buttons. Other controls migrate separately. */
+    --ui-button-border-radius: 0px;
+}

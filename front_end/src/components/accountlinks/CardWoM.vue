@@ -3,7 +3,7 @@
         <div style="margin-bottom: 0.5em;">
             <PrToolbar>
                 <template #start>
-                    <span class="text text-medium">
+                    <span class="text-medium text-regular">
                         {{ t('common.platform.w') }}&nbsp;#{{ id }}
                     </span>
                 </template>
@@ -53,33 +53,26 @@
                         {{ info.last_season }}
                     </ElDescriptionsItem>
                     <ElDescriptionsItem :label="t('local.resource')" :span="3">
-                        <ElImage src="https://minesweeper.online/img/other/hp.svg" class="icon" /><span class="text">
-                            {{ info.honour }}
-                        </span>&nbsp;
-                        <ElImage src="https://minesweeper.online/img/other/coin.svg" class="icon" /><span class="text">
-                            {{ info.minecoin }}
-                        </span>&nbsp;
-                        <ElImage src="https://minesweeper.online/img/gems/0.svg" class="icon" /><span class="text">
-                            {{ info.gem }}
-                        </span>&nbsp;
-                        <ElImage src="https://minesweeper.online/img/arena-coins/0.svg" class="icon" /><span class="text">
-                            {{ info.coin }}
-                        </span>&nbsp;
-                        <Ticket class="icon" /><span class="text">
-                            {{ info.arena_ticket }}
-                        </span>&nbsp;
-                        <ElImage src="https://minesweeper.online/img/eq.svg" class="icon" /><span class="text">
-                            {{ info.equipment }}
-                        </span>&nbsp;
-                        <ElImage src="https://minesweeper.online/img/item/parts0.svg" class="icon" /><span class="text">
-                            {{ info.part }}
-                        </span>&nbsp;
+                        <ElImage src="https://minesweeper.online/img/other/hp.svg" class="icon" />
+                        <span>{{ info.honour }}</span>&nbsp;
+                        <ElImage src="https://minesweeper.online/img/other/coin.svg" class="icon" />
+                        <span>{{ info.minecoin }}</span>&nbsp;
+                        <ElImage src="https://minesweeper.online/img/gems/0.svg" class="icon" />
+                        <span>{{ info.gem }}</span>&nbsp;
+                        <ElImage src="https://minesweeper.online/img/arena-coins/0.svg" class="icon" />
+                        <span>{{ info.coin }}</span>&nbsp;
+                        <Ticket class="icon" />
+                        <span>{{ info.arena_ticket }}</span>&nbsp;
+                        <ElImage src="https://minesweeper.online/img/eq.svg" class="icon" />
+                        <span>{{ info.equipment }}</span>&nbsp;
+                        <ElImage src="https://minesweeper.online/img/item/parts0.svg" class="icon" />
+                        <span>{{ info.part }}</span>&nbsp;
                     </ElDescriptionsItem>
                 </ElDescriptions>
             </ElCarouselItem>
             <ElCarouselItem v-if="store.user.id == store.player.id">
                 <div>
-                    <span class="text text-large">
+                    <span class="text-large text-regular">
                         {{ t('accountlink.statSummary') }}
                     </span>
                     &nbsp;
@@ -89,7 +82,7 @@
                     &nbsp;
                     <IconTaskStatus :status="taskStatus" />
                     <br>
-                    <span class="text text-danger text-small">
+                    <span class="text-danger text-small">
                         {{ errorMsg }}
                     </span>
                 </div>

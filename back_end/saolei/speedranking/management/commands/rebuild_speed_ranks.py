@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 
-from speedranking.services import rebuild_speed_ranks
-from speedranking.utils import RANKING_NAMES
+from speedranking.saolei.services import rebuild_speed_ranks
+from speedranking.saolei.utils import RANKING_NAMES
 
 
 class Command(BaseCommand):

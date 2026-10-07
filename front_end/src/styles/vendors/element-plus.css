@@ -1,7 +1,7 @@
-/* Scope radius variables to buttons, including button-group end caps. */
+/* Element Plus consumes these names; values flow from project variables to the library. */
 .el-button {
-    --el-border-radius-base: 0px;
-    --el-border-radius-round: 0px;
+    --el-border-radius-base: var(--ui-button-border-radius);
+    --el-border-radius-round: var(--ui-button-border-radius);
 }
 
 /* Small buttons calculate their radius; circle buttons use a fixed percentage. */
@@ -10,5 +10,5 @@
 .el-button--large,
 .el-button.is-round,
 .el-button.is-circle {
-    border-radius: 0;
+    border-radius: var(--ui-button-border-radius);
 }

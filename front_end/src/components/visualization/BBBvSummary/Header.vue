@@ -26,7 +26,7 @@
                         <ElOption :label="t('common.prop.ces')" value="ces" />
                         <ElOption :label="t('common.prop.iome')" value="iome" />
                     </ElSelect>
-                    <span class="text text-small">
+                    <span class="text-regular text-small">
                         {{ t('local.settingDisplayBy') }}
                     </span>
                     <ElSelect v-model="BBBvSummaryConfig.displayBy" size="small" style="width:6em; margin-left: 0.2em">
@@ -47,7 +47,7 @@
             <SoftwareFilter v-model="BBBvSummaryConfig.softwareFilter" />
             <!-- 是否显示图标 -->
             <div>
-                <span class="text text-small">
+                <span class="text-regular text-small">
                     {{ t('local.iconLabel') }}
                 </span>
                 <ElSelect v-model="BBBvSummaryConfig.showIcon" size="small" placeholder="" style="width: 4em">
@@ -58,17 +58,17 @@
             </div>
             <!-- 高亮新录像 -->
             <div>
-                <span class="text text-small">
+                <span class="text-regular text-small">
                     {{ t('local.newHighlight1') }}
                 </span>
                 <BaseTextButton size="small" underline="always" @click="switchNewDateField">
                     {{ t(`local.newHighlight.${BBBvSummaryConfig.newDateField}`) }}
                 </BaseTextButton>
-                <span class="text text-small">
+                <span class="text-regular text-small">
                     {{ t('local.newHighlight2') }}
                 </span>
                 <ElInputNumber v-model="BBBvSummaryConfig.newThresh" :min="0" :step="1" size="small" style="width: fit-content" />
-                <span class="text text-small">
+                <span class="text-regular text-small">
                     {{ t('local.newHighlight3') }}
                 </span>
             </div>

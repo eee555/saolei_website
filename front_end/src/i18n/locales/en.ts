@@ -13,6 +13,7 @@ export default {
             getSoftware: 'fetch video data',
             getUserProfile: 'fetch user data',
             getVideoModel: 'fetch video data',
+            refresh: 'Refresh',
             setUserProfile: 'modify user data',
             setVideoModel: 'modify video data',
             uploadFile: 'upload file',
@@ -309,6 +310,8 @@ export default {
         saolei: {
             title: 'Saolei.wang Rule',
         },
+        empty: 'No records',
+        loadFailed: 'Unable to load ranking',
     },
     server: {
         videoSummary: {

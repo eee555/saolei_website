@@ -8,7 +8,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 
-from speedranking.cache import SpeedRankingCache
+from speedranking.saolei.cache import SpeedRankingCache
 from utils import generate_code, verify_text
 from utils.exceptions import ExceptionToResponse
 from videomanager.models import VideoModel
@@ -53,7 +53,8 @@ def try_update_user_name_fields(user: UserProfile, field_name: Literal['realname
 
 def has_sub200_expert_video(user: UserProfile) -> bool:
     """头像和签名资格跟随 Saolei.wang 的 et 纪录（包括 3BV 门槛）。"""
-    et = SpeedRankingCache('saolei').get_record(user.id)['et']
+    record = SpeedRankingCache('saolei').get_record(user.id)
+    et = record['et'] if record else None
     return et is not None and et < 200000
 
 

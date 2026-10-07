@@ -78,12 +78,12 @@ export class PiecewiseColorScheme {
 }
 
 export function getTextColor(style = 'regular'): string {
-    return getComputedStyle(document.documentElement).getPropertyValue('--el-text-color-' + style);
+    return getComputedStyle(document.documentElement).getPropertyValue('--ui-text-color-' + style);
 }
 
 function createColorStyle(backgroundColor: string): Readonly<CSSProperties> {
     const tc = tinycolor(backgroundColor);
     if (tc.isValid() && tc.getAlpha() == 0) return {};
-    const color = tc.isDark() ? 'white' : 'black';
+    const color = tc.isDark() ? 'var(--ui-text-color-regular-dark)' : 'var(--ui-text-color-regular-light)';
     return { backgroundColor, color };
 }

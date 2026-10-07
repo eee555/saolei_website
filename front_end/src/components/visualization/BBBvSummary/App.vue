@@ -2,18 +2,18 @@
     <div v-if="header" class="layout-row" :style="{ textAlign: 'center', height: '25px', flexWrap: 'nowrap', marginTop: '10px', marginBottom: '-20px' }">
         <span style="width: 10%; min-width: 4em" />
         <span :style="gridStyle">
-            <span v-for="i in 10" :key="i" class="text text-small">
+            <span v-for="i in 10" :key="i" class="text-regular text-small">
                 {{ i - 1 }}
             </span>
         </span>
     </div>
-    <ElDivider data-cy="summary" style="margin: 18px 0 12px 0;">
-        <span class="text">
+    <div class="summary-heading" data-cy="summary">
+        <span class="text-regular">
             {{ t(`common.level.${level}`) }}
             &nbsp;
             {{ t('BBBvSummary.bbbvInTotal', [groupedVideoAbstract.size]) }}
         </span>
-    </ElDivider>
+    </div>
     <div v-if="groupedVideoAbstract.size > 0" class="layout-row" style="white-space: nowrap;">
         <YLabel :min-bv="minBv" :max-bv="maxBv" />
         <Tippy :duration="0" sticky follow-cursor :style="gridStyle">
@@ -48,7 +48,6 @@
 <script setup lang="ts">
 import '@/styles/layout.css';
 import '@/styles/text.css';
-import { ElDivider } from 'element-plus';
 import type { PropType } from 'vue';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -124,5 +123,26 @@ const gridStyle = computed(() => {
 <style lang="less" scoped>
 .layout-row {
     flex-wrap: nowrap;
+}
+
+.summary-heading {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin: 8px 0 3px;
+    line-height: 20px;
+    font-weight: 500;
+}
+
+.summary-heading::before,
+.summary-heading::after {
+    content: '';
+    flex: 1;
+    border-top: 1px solid var(--ui-border-color);
+}
+
+.summary-heading > span {
+    min-width: 0;
+    text-align: center;
 }
 </style>

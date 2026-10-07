@@ -83,7 +83,7 @@ function handleClick() {
 .cell {
     outline-style: solid;
     outline-width: 1px;
-    outline-color: var(--el-border-color-lighter);
+    outline-color: var(--ui-border-color-lighter);
     text-align: center;
     align-items: center;
     box-sizing: border-box;

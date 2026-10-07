@@ -9,7 +9,7 @@
         停止！
     </BaseButton><br>
     客户端会将需要处理的ID段按照批处理数量发送到服务器进行批处理。批处理数量越大，服务器处理效率越高，但是如果批处理数量过大，会导致连接超时。
-    <div v-for="(log, index) in logList" :key="index" class="text">
+    <div v-for="(log, index) in logList" :key="index">
         {{ log }}
     </div>
 </template>

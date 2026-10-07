@@ -1,3 +1,10 @@
 import 'element-plus/dist/index.css';
 import 'element-plus/theme-chalk/dark/css-vars.css';
+import './styles/theme/index.css';
+import './styles/theme/tables.css';
+import './styles/text.css';
+import './styles/checkbox.css';
 import './styles/vendors/element-plus.css';
+import './styles/vendors/element-plus-table.css';
+import './styles/vendors/primevue-table.css';
+import './styles/vendors/primevue-table-controls.css';

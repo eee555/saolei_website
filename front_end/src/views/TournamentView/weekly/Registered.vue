@@ -1,31 +1,42 @@
 <template>
-    <ElTable v-loading="loading" :data="participants" row-key="id">
-        <!-- @vue-generic {TournamentParticipant} -->
-        <ElTableColumn :label="t('common.prop.realName')" min-width="150">
-            <template #default="{ row }">
+    <BaseTable v-loading="loading" :empty="participants.length === 0" :column-count="canManage ? 4 : 3" :empty-text="t('ranking.empty')" data-cy="weekly-registered-table">
+        <template #head>
+            <tr>
+                <th scope="col" class="table-col-player">
+                    {{ t('common.prop.realName') }}
+                </th>
+                <th scope="col" class="registered-interval">
+                    {{ t('local.interval') }}
+                </th>
+                <th scope="col" class="registered-token">
+                    {{ t('local.token') }}
+                </th>
+                <th v-if="canManage" scope="col" class="registered-actions">
+                    {{ t('common.prop.action') }}
+                </th>
+            </tr>
+        </template>
+        <tr v-for="row in participants" :key="row.id">
+            <td class="table-col-player">
                 <PlayerName v-if="row.user_id !== 0" :user-id="row.user_id" />
                 <span v-else>{{ t('common.anonymous') }}</span>
-            </template>
-        </ElTableColumn>
-        <!-- @vue-generic {TournamentParticipant} -->
-        <ElTableColumn :label="t('local.interval')" min-width="330">
-            <template #default="{ row }">
+            </td>
+            <td class="registered-interval">
                 {{ row.start_time ? toISODateTimeString(row.start_time) : '' }} ~ {{ row.end_time ? toISODateTimeString(row.end_time) : '' }}
-            </template>
-        </ElTableColumn>
-        <ElTableColumn prop="token" :label="t('local.token')" min-width="180" />
-        <!-- @vue-generic {TournamentParticipant} -->
-        <ElTableColumn v-if="canManage" :label="t('common.prop.action')" width="90">
-            <template #default="{ row }">
+            </td>
+            <td class="registered-token">
+                {{ row.token }}
+            </td>
+            <td v-if="canManage" class="registered-actions">
                 <BaseButton
                     type="danger" plain :aria-label="t('local.deleteParticipant')"
                     :disabled="deleting" data-cy="delete-participant" @click="requestDeletion(row)"
                 >
                     <BaseIconDelete />
                 </BaseButton>
-            </template>
-        </ElTableColumn>
-    </ElTable>
+            </td>
+        </tr>
+    </BaseTable>
     <ElDialog
         v-if="canManage" v-model="dialogVisible" :title="t('local.deleteParticipant')"
         width="min(460px, 90vw)" :close-on-click-modal="!deleting" :close-on-press-escape="!deleting" :show-close="!deleting"
@@ -36,9 +47,7 @@
         <template v-if="selectedParticipant">
             <PlayerName v-if="selectedParticipant.user_id !== 0" :user-id="selectedParticipant.user_id" />
             <span v-else>{{ t('common.anonymous') }}</span>
-            <div class="text">
-                {{ selectedParticipant.token }}
-            </div>
+            <div>{{ selectedParticipant.token }}</div>
         </template>
         <template #footer>
             <BaseButton :disabled="deleting" @click="dialogVisible = false">
@@ -50,12 +59,13 @@
 </template>
 
 <script setup lang="ts">
-import { ElDialog, ElTable, ElTableColumn, vLoading } from 'element-plus';
+import { ElDialog, vLoading } from 'element-plus';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import BaseButton from '@/components/common/BaseButton.vue';
 import BaseButtonConfirm from '@/components/common/BaseButtonConfirm.vue';
+import BaseTable from '@/components/common/BaseTable.vue';
 import { BaseIconDelete } from '@/components/common/icon';
 import { actionSuccessNotification, httpErrorNotification } from '@/components/Notifications';
 import PlayerName from '@/components/PlayerName.vue';
@@ -113,3 +123,23 @@ const i18nMessages = {
 
 const { t } = useI18n({ messages: i18nMessages });
 </script>
+
+<style scoped>
+.table-col-player {
+    min-width: 150px;
+}
+
+.registered-interval {
+    min-width: 330px;
+    white-space: nowrap;
+}
+
+.registered-token {
+    min-width: 180px;
+}
+
+.registered-actions {
+    width: 90px;
+    min-width: 90px;
+}
+</style>

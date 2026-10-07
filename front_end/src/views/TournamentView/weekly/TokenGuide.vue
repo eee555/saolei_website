@@ -1,5 +1,5 @@
 <template>
-    <span class="text">
+    <span>
         <a class="link text" :href="weeklyGuideUrl" target="_blank" rel="noopener noreferrer">
             {{ t('gsc.identifierGuide.guideLink') }}
         </a>
@@ -10,7 +10,7 @@
             <BaseButton :disabled="store.isUserAnonymous" :loading="registeringParticipant" @click="registerDialogVisible = true">
                 {{ t('local.register') }}
             </BaseButton>
-            <span v-if="store.isUserAnonymous" class="text text-danger">
+            <span v-if="store.isUserAnonymous" class="text-danger">
                 {{ t('common.msg.realNameRequired') }}
             </span>
             <ElDialog v-model="registerDialogVisible">

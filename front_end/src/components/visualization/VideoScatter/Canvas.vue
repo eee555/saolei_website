@@ -72,7 +72,7 @@ const xTicks = computed(() => getNiceTicks(VideoScatterStore.plotDomain.xMin, Vi
 const yTicks = computed(() => getNiceTicks(VideoScatterStore.plotDomain.yMin, VideoScatterStore.plotDomain.yMax, 5));
 
 const axisColor = computed(() => getTextColor('regular'));
-const gridColor = computed(() => getComputedStyle(document.documentElement).getPropertyValue('--el-border-color-lighter'));
+const gridColor = computed(() => getComputedStyle(document.documentElement).getPropertyValue('--ui-border-color-lighter'));
 
 function handlePointClick(point: PlotPoint<VideoAbstract>) {
     void preview(point.data.id, point.data.software);

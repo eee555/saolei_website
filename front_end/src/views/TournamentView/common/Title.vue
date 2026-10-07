@@ -4,7 +4,7 @@
         <TournamentStateIcon :state="tournament.getDisplayState(globalNow)" />
     </h1>
     {{ t('local.schedule') }}{{ t('common.punct.colon') }}
-    <span class="text">
+    <span>
         {{ tournament.displayStartTime() }}
         &nbsp;~&nbsp;
         {{ tournament.displayEndTime() }}

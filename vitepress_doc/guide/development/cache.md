@@ -11,13 +11,21 @@ description: 开源扫雷网Redis/Django缓存结构详解，包括录像队列�
 
 ## 总览
 
-独立的本地初始化脚本 `dangerzone/init_local_test.py` 会清空本地 `saolei_website` Redis 数据库（包含会话），然后根据导入的公开录像重建竞速榜、pluck 纪录缓存和录像状态队列。在 `back_end/saolei` 目录使用 `python -m dangerzone.init_local_test` 启动。只允许本地测试配置，并拒绝存在 `.production` 标记的环境；不注册 `import_public_data` 管理命令。详情及数据缺失限制见[本地公开数据快照](./management-commands.md#本地公开数据快照)。
+独立的本地初始化脚本 `dangerzone/init_local_test.py` 会清空本地 `saolei_website` Redis 数据库（包含会话），然后根据导入的公开录像重建竞速榜（扫雷网普通/NF 和 PB 普通/NF）、pluck 纪录缓存和录像状态队列。在 `back_end/saolei` 目录使用 `python -m dangerzone.init_local_test` 启动。只允许本地测试配置，并拒绝存在 `.production` 标记的环境；不注册 `import_public_data` 管理命令。详情及数据缺失限制见[本地公开数据快照](./management-commands.md#本地公开数据快照)。
 
 ### 新竞速榜 `speedranking`
 
-每个大榜使用 `speedranking:{ranking_name}:records` hash 保存个人纪录，使用 `speedranking:{ranking_name}:{stat}` zset 保存以玩家 id 为 member 的排序索引，由 `speedranking.cache.SpeedRankingCache` 管理。
+扫雷网规则使用 `speedranking:{ranking_name}:records` hash 保存个人纪录，使用 `speedranking:{ranking_name}:{stat}` zset 保存以玩家 id 为 member 的排序索引，由 `speedranking.saolei.cache.SpeedRankingCache` 管理。PB 是一般约定的例外：每个 `(普通/NF, level, bv)` 一个 zset，每个用户一个包含用时、录像 id 和 rank 的 hash，由 `speedranking.pb.cache.PBRankingCache` 管理。
+
+共享缓存层提供连接及 pipeline，扫雷网和 PB 的业务分别位于对应子目录。一次更新或每个批处理段共同读取用户纪录，独立判断后共同写入；PB 查询旧 score 和刷新变化小榜的 rank 是依赖前序结果的后续批量阶段。必须补位的单项按各榜规则查询。
 
 排序编码、精度与数值范围、纪录更新及缓存升级约定统一维护在仓库的 `back_end/saolei/speedranking/README.md`，此处不再重复。重建命令用法见[管理命令](./management-commands.md#rebuild-speed-ranks)。
+
+PB 只读接口不自动回源，初始化和修复用法见 [PB 重建命令](./management-commands.md#rebuild-pb-ranks)。前端 PB 排行页面已实现，分页上传时间直接由 zset score 解码，不增加查询或 hash 字段。
+
+PB 另使用 `speedranking:pb:counts` hash 汇总各小榜人数，可通过 `GET /api/speedranking/pb/counts` 一次读取，随 rank 刷新同步更新；前端用于筛选网格的人数显示。已有缓存通过 PB 重建命令补齐。具体 field 及空榜约定见 app README。
+
+管理员页面的“排行纪录重建” tab 可按大榜、小榜和用户 ID 修复单项缓存，对应接口为 `POST /api/speedranking/admin/rebuild_record`；具体更新范围和并发约定见上述 README。
 
 ```dot
 digraph cache {

@@ -16,46 +16,56 @@
             </div>
         </div>
 
-        <ElTable
-            v-loading="loading"
-            :data="players"
-            border
-            table-layout="auto"
-            class="ranking-table"
-            :empty-text="t('local.empty')"
-        >
-            <ElTableColumn :label="t('local.rank')" width="90" align="center">
-                <template #default="{ $index }">
-                    {{ getRank($index) }}
-                </template>
-            </ElTableColumn>
-            <ElTableColumn :label="t('common.prop.realName')" min-width="180">
-                <template #default="{ row }">
+        <BaseTable v-loading="loading" class="ranking-table" :table-style="{ width: 'auto', marginInline: 'auto' }" :empty="players.length === 0" :empty-text="t('local.empty')" :column-count="7">
+            <template #head>
+                <tr>
+                    <th scope="col" class="table-col-rank">
+                        {{ t('local.rank') }}
+                    </th>
+                    <th scope="col" class="table-col-player">
+                        {{ t('common.prop.realName') }}
+                    </th>
+                    <th scope="col" class="table-col-number">
+                        {{ t('common.prop.pluck') }}
+                    </th>
+                    <th scope="col" class="table-col-mode">
+                        {{ t('common.prop.mode') }}
+                    </th>
+                    <th scope="col" class="table-col-number">
+                        {{ t('common.prop.time') }}
+                    </th>
+                    <th scope="col" class="table-col-bv">
+                        {{ t('common.prop.bv') }}
+                    </th>
+                    <th scope="col" class="table-col-datetime">
+                        {{ t('common.prop.upload_time') }}
+                    </th>
+                </tr>
+            </template>
+            <tr v-for="(row, index) in players" :key="row.player_id">
+                <td class="table-col-rank">
+                    {{ getRank(index) }}
+                </td>
+                <td class="table-col-player">
                     <PlayerName :user-id="row.player_id" />
-                </template>
-            </ElTableColumn>
-            <ElTableColumn prop="pluck" :label="t('common.prop.pluck')" min-width="130" align="right">
-                <template #default="{ row }">
+                </td>
+                <td class="table-col-number">
                     <PreviewNumber :id="row.video_id" :text="formatPluck(row.pluck)" />
-                </template>
-            </ElTableColumn>
-            <ElTableColumn prop="mode" :label="t('common.prop.mode')" min-width="100" align="center">
-                <template #default="{ row }">
+                </td>
+                <td class="table-col-mode">
                     {{ t(`common.mode.code${row.mode}`) }}
-                </template>
-            </ElTableColumn>
-            <ElTableColumn prop="timems" :label="t('common.prop.time')" min-width="110" align="right">
-                <template #default="{ row }">
+                </td>
+                <td class="table-col-number">
                     {{ ms_to_s(row.timems) }}
-                </template>
-            </ElTableColumn>
-            <ElTableColumn prop="bv" label="3BV" min-width="90" align="right" />
-            <ElTableColumn prop="upload_time" :label="t('common.prop.upload_time')" min-width="180" align="center">
-                <template #default="{ row }">
+                </td>
+                <td class="table-col-bv">
+                    {{ row.bv }}
+                </td>
+                <td class="table-col-datetime">
                     {{ formatDateTime(row.upload_time) }}
-                </template>
-            </ElTableColumn>
-        </ElTable>
+                </td>
+            </tr>
+        </BaseTable>
 
         <ElPagination
             v-model:current-page="currentPage"
@@ -71,11 +81,12 @@
 </template>
 
 <script setup lang="ts">
-import { ElPagination, ElTable, ElTableColumn, vLoading } from 'element-plus';
+import { ElPagination, vLoading } from 'element-plus';
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import BaseButton from '@/components/common/BaseButton.vue';
+import BaseTable from '@/components/common/BaseTable.vue';
 import { httpErrorNotification } from '@/components/Notifications';
 import PlayerName from '@/components/PlayerName.vue';
 import PreviewNumber from '@/components/PreviewNumber.vue';
@@ -104,13 +115,11 @@ const i18nMessages = {
         board: '局面',
         empty: '暂无排行数据',
         rank: '排名',
-        std: '标准',
     } },
     en: { local: {
         board: 'Board',
         empty: 'No ranking data',
         rank: 'Rank',
-        std: 'Standard',
     } },
 };
 

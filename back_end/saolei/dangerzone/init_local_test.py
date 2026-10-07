@@ -2,6 +2,7 @@
 
 Admin: id=2, password=admin123456. Normal user: id=48, password=user123456.
 Usernames come from the snapshot. This script needs no running HTTP server.
+Rebuilds Saolei and PB rankings after importing the snapshot.
 Run from back_end/saolei: python -m dangerzone.init_local_test
 """
 import argparse

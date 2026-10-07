@@ -124,8 +124,13 @@ def get_tournament(request: HttpRequest, tournament_id: int):
 @router.post('/set')
 @decorate_view(login_required_error)
 def set_tournament(request: HttpRequest, data: TournamentSetIn = Form(...)):  # noqa: B008
+    """
+    - `login_required_error`
+
+    主办方可修改比赛；GSC 比赛也允许管理员修改。
+    """
     tournament = get_object_or_404(Tournament, id=data.id).select_subclass()
-    if tournament.host != request.user:
+    if tournament.host != request.user and not (isinstance(tournament, GSCTournament) and request.user.is_staff):
         return HttpResponseForbidden()
 
     update_fields = []

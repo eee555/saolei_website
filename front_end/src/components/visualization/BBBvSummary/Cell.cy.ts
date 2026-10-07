@@ -1,3 +1,5 @@
+import tinycolor from 'tinycolor2';
+
 import Cell from './Cell.vue';
 
 import i18n from '@/i18n';
@@ -36,6 +38,13 @@ const mountCell = (props: Record<string, unknown> = {}) => {
         global: {
             plugins: [i18n, pinia],
         },
+    });
+};
+
+const expectActionTextColor = (mode: 'light' | 'dark') => {
+    cy.get('[data-cy=video-cell-action]').should(($button) => {
+        const expectedColor = tinycolor($button.css(`--ui-text-color-regular-${mode}`)).toRgbString();
+        expect($button.css('color')).to.equal(expectedColor);
     });
 };
 
@@ -119,10 +128,29 @@ describe('<BBBvSummary Cell />', () => {
                 }),
             ],
             displayBy: 'time',
-            colorTheme: new PiecewiseColorScheme(['#000000'], [0]),
+            colorTheme: new PiecewiseColorScheme(['#ffffff', '#000000'], [0]),
         });
 
-        cy.get('.cell').should('have.class', 'cell-new').and('have.css', 'background-color', 'rgba(0, 0, 0, 0)').and('have.css', 'outline-style', 'solid').and('have.css', 'box-sizing', 'border-box');
-        cy.get('[data-cy=video-cell-action]').should('have.css', 'color', 'rgb(0, 0, 0)');
+        cy.get('.cell').should('have.class', 'cell-new').and('have.css', 'background-color', 'rgb(0, 0, 0)').and('have.css', 'outline-style', 'solid').and('have.css', 'box-sizing', 'border-box');
+        expectActionTextColor('dark');
+        cy.get('.cell').invoke('css', '--ui-text-color-regular-dark', '#aabbcc');
+        expectActionTextColor('dark');
+
+        cy.get('@vue').then((wrapper: ComponentWrapper<typeof Cell>) => {
+            void wrapper.setProps({ colorTheme: new PiecewiseColorScheme(['#ffffff', '#000000'], [60]) });
+        });
+        cy.get('.cell').should('have.css', 'background-color', 'rgb(255, 255, 255)');
+        expectActionTextColor('light');
+
+        cy.get('@vue').then((wrapper: ComponentWrapper<typeof Cell>) => {
+            void wrapper.setProps({ colorTheme: new PiecewiseColorScheme(['transparent', '#000000'], [60]) });
+        });
+        cy.get('.cell').should('have.css', 'background-color', 'rgba(0, 0, 0, 0)');
+        cy.get('[data-cy=video-cell-action]').should(($button) => {
+            const $cell = $button.closest('.cell');
+            const inheritedColor = $cell.parent().css('color');
+            expect($cell.css('color')).to.equal(inheritedColor);
+            expect($button.css('color')).to.equal(inheritedColor);
+        });
     });
 });

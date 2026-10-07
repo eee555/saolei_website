@@ -1,302 +1,281 @@
 # 前端 UI 风格渐进重构计划
 
-制定日期：2026-10-03。
-进度更新：2026-10-04。按用户确认，已提交的改动视为验收完成，从待办中移除。
+制定日期：2026-10-03。现状核查与整理：2026-10-07。
 
-## 目标与范围
+本计划以当前代码为实施起点，只列剩余工作和持续适用的约束。按用户约定，已提交或明确验收的改动不再列为实施或测试待办。普通页面描述布局和周赛报名表迁移均已提交；图标迁移 7.1 已验收，7.2 尚未实施；Checkbox 4.1.1 已实施，待验收。批次编号保留，避免后续交流中混淆。
 
-采用“统一样式基础 → 保留复杂组件并换肤 → 分批替换简单组件”的路线。每一步应能单独合并、发布和回退，避免长期重构分支与日常业务维护积累 Git conflict。
+## 目标与固定约束
 
-最终目标是由项目控制视觉风格。本轮重点是 Element Plus：能够用原生 HTML 和 CSS 表达的简单组件逐步替换；涉及复杂内部逻辑的组件保留实现，重点调整圆角、间距和信息密度。vue-tippy 保持不变。PrimeVue 逐步弃用，当前保留提供表内分页器的 DataTable 及其必要依赖；Toolbar 等待相关页面重做或后续维护时再处理。
+- 面向数据展示与分析，以直角、紧凑布局和清晰对齐为主，优先减少多余间距，不以普遍缩小字号代替密度改善。
+- 同时支持浅色与深色主题。主要配色沿用已提取的 Element Plus 基准值，应用代码使用项目 `--ui-*`，不直接读取组件库颜色变量。
+- 组件根据自身可用宽度伸缩、换行或内部滚动；少数确需切换布局的组件单独制定策略，不设置全站宽窄屏布局分界。
+- 简单布局和展示采用原生 HTML + CSS，复用项目已有基础组件。复杂交互保留现有组件逻辑，主要调整样式。
+- vue-tippy 保持现有实现及样式导入方式。PrimeVue 按项目既定决定逐步退出，PrimeIcons 单独保留。
+- 禁止全局注册全量 Element Plus 图标；过渡期仅注册实际依赖全局解析的图标，最终不全局注册任何图标。图标选型继续优先 PrimeIcons，其次 Element Plus。
+- 每批围绕一个可独立审查、合并和回退的结果，避免与业务逻辑修改、文件搬迁或整页重写混在一起。
 
-本文只保留剩余实施任务、必要的现状说明和后续验收规则，不重复列出已提交改动的验收待办。视觉方向遵循下文已确定的基准，主要配色暂时直接沿用 Element Plus，字号、间距等参数继续分批细化。
+新增 UI 和业务维护优先遵守[根目录前端规范](../.codex/instructions.md)。管理员页面只承接必要的功能与主题兼容，不安排专门的精细视觉改版。
 
-## 剩余工作
+## 当前可复用的基础
 
-| 工作项 | 状态 | 剩余事项 |
+以下能力已经落地，后续直接复用，不重新建立同类基础设施。
+
+| 基础 | 当前实现与维护入口 |
+| --- | --- |
+| 主题与参数 | [`theme/`](src/styles/theme/) 提供独立颜色、字号、圆角、过渡和表格参数；[`setup.ts`](src/setup.ts) 为应用与 Cypress 加载主题和库适配 |
+| 全局文字 | [`text.css`](src/styles/text.css) 设置 body 常规文字色、基础字号和换行方式；div / span 默认零 margin、零 padding，span 默认行内居中 |
+| 文字语义 | 普通文本可继承默认样式；需要独立常规文字色时使用 `text-regular`，保留字号与状态色修饰类；标题、链接、控件等仍可使用有实际重置作用的 `text` |
+| 有色数据单元格 | [`PiecewiseColorScheme`](src/utils/colors.ts) 按背景明暗引用浅色 / 深色模式的默认文字色；透明背景继承父容器颜色。两套来源为 `--ui-text-color-regular-light` / `--ui-text-color-regular-dark` |
+| 布局、卡片与操作 | `layout.css`、`cards.css`、`link.css`、`button.css` / `buttons/`；`BaseButton`、`BaseTextButton`、确认/取消按钮、`BaseFileInput` 等已有原生实现 |
+| 描述列表 | [`descriptions.css`](src/styles/descriptions.css) 提供 dl / dt / dd 模板，支持边框、跨列和容器宽度适配，无独立 Vue 组件；普通页面已验收 |
+| 展示表格 | [`BaseTable`](src/components/common/BaseTable.vue) 封装原生表格、滚动容器、空状态和插槽；`table.css` 提供行悬停高亮，`table-columns.css` 提供排名、玩家、数值、时间等公共列样式 |
+| 保留表格的视觉 | `theme/tables.css` 为 BaseTable、ElTable、PrimeVue DataTable 提供统一参数；`vendors/element-plus-table.css`、`primevue-table.css`、`primevue-table-controls.css` 已接入 |
+| Element Plus 按钮兼容 | `vendors/element-plus.css` 已提供直角覆盖；暂留组件继续使用，不重复安排按钮整体迁移 |
+| 图标注册 | [`main.ts`](src/main.ts) 仅显式全局注册实际使用的 14 个图标；组件测试按挂载链分别注册，不在 Cypress 公共入口注入图标；7.1 已验收 |
+| 原生 Checkbox | [`checkbox.css`](src/styles/checkbox.css) 由 setup.ts 为应用与 Cypress 加载；原生 input / label + 共用 class，提供直角、主题、选中、悬停、键盘焦点和禁用样式，无 BaseCheckbox 组件 |
+
+已迁移的表格包括密度榜、扫雷榜、PB 榜、比赛积分榜、软件版本列表、个人纪录、自定义计数器和周赛报名表。比赛积分榜由页面管理后端排序，切换字段重置页码，表头不显示排序箭头。
+
+目前的尺寸是后续评审的起点：基础文字 14px，普通原生按钮内边距 4px × 8px、行高 1.4；表格单元格内边距 4px × 8px、行高 1.4；普通卡片内边距 10px。这些现值已生效，后续按组件类别调整，不再安排“先抄参数但不接入运行时”的步骤。
+
+## 剩余工作与建议顺序
+
+| 批次 | 工作 | 范围与边界 |
 | --- | --- | --- |
-| 视觉参数 | 待细化 | 在已确定的方向与选型规则下，统一字号、间距和组件尺寸 |
-| 项目主题变量与组件库适配 | 按钮直角适配已实现，其余待实施 | `styles/vendors/element-plus.css` 已统一 ElButton 圆角；尚无 `tokens.css` 或统一 `--ui-*` 变量，原生组件继续使用 Element Plus 颜色变量 |
-| 按钮、链接、分隔线、描述列表等 | 第三批迁移已验收，收尾待提交 | 本轮范围内的 ElLink / ElButton 已迁移；收尾清理与暂留范围见下文，分隔线与描述列表单独处理 |
-| 复杂组件换肤 | 待实施 | 表格、表单、Tabs、弹窗等仍需分别调整直角与紧凑尺寸 |
-| PrimeVue 退出 | 延后独立推进 | 表格、筛选控件及 Toolbar 暂留；账号关联页面等待重做 |
+| 2 | 剩余描述布局 | 剩余 10 个文件共 11 处 ElDescriptions 位于管理员与账号关联区域，按既定范围暂缓 |
+| 3 | 剩余表格核对 | 其余 5 个 ElTable 根据实际排序、编辑等依赖决定是否保留 |
+| 7 | 图标注册迁移 | 剩余 7.2：逐模块取消全局图标注册，同步处理 Cypress 注册 |
+| 4 | 简单选择控件迁移与复杂组件换肤 | 先按 4.1 迁移 Checkbox；其余输入与表单、选择控件、Tabs、菜单、弹窗、通知和加载状态各自独立成批 |
+| 5 | PrimeVue 退出 | 筛选控件、表格替代验证、逐表迁移和依赖清理；随相关模块维护推进 |
+| 6 | 局部收尾 | 随每批删除失效导入、重复样式和已无使用方的兼容项，更新本计划 |
 
-首页比赛卡片 `views/HomeView/NormalTournamentQueue.vue` 按既定范围保留，用户已添加 ESLint disable，不再列为规则冲突待办。账号关联页面重做与 PrimeVue 退出继续延后独立推进。
+下一步先验收 4.1.1，再按模块推进 4.1.2 的其余布尔开关；7.2 可独立合并。批次 4 的其他换肤不需要等待全部简单组件迁移完毕。首页比赛卡片、账号关联页面重做和 PrimeVue 全部退出不作为其他批次的前置条件。
 
-## 已确定的视觉基准
+### 2. 剩余描述布局
 
-### 数据展示与分析优先
+剩余 11 处 ElDescriptions 位于 10 个文件，按既定范围暂缓：
 
-- 以数据阅读、比较和分析为主要使用场景，优先保证表格、图表、筛选器和统计信息的清晰度。
-- 信息密度、数字对齐和层级划分服务于数据比较；装饰和留白不应挤占主要数据区域。
-- 以直角为主，卡片、面板、表格容器和常规控件默认采用直角。确有用途的形状例外按组件确定。
-- 针对 Element Plus 默认圆角多、间距大、密度低的问题，减少容器内外边距、控件间距和多余行高，让同一可用区域承载更多可读数据。密度提升优先通过减少多余空间实现，同时保证文字、焦点和操作目标清晰可用。
+- 管理员区域 4 处：`components/GSCAdmin/GeneralInfo.vue`、`views/StaffView/Task.vue`、`VideoModel.vue`、`WeeklyTournament.vue`，随维护迁移；保留动态循环、v-loading 和条件显示。
+- 账号关联区域 7 处：`CardMineracer.vue`、`CardBilibili.vue`、`CardAddMineracer.vue`、`CardWoM.vue`（2 处）、`CardSaolei.vue`、`CardMsgames.vue`，随页面重做处理。
 
-### 至少支持浅色与深色主题
+后续直接复用模板，按实际列数与跨列需求完善局部 CSS；不复制 ElDescriptions 的完整 API，也不将子控件的交互重写纳入布局迁移。
 
-- 主要配色暂时照用项目当前版本 Element Plus 的浅色、深色配色，包括主色、成功/警告/危险等状态色，以及文字、背景和边框色。本轮不重新设计主色板。
-- 原生组件与保留的组件库组件使用相同的颜色语义；项目样式变量沿用上述色值，便于将来独立调整配色。
-- 浅色、深色是同等完整的两套颜色主题，覆盖页面背景、文字、边框、控件状态、浮层和数据可视化。
-- 两套主题保持一致的数据含义和交互状态含义；图表、选中项、警告和错误信息在两套主题下都应清楚可辨。
-- 主题切换只改变视觉表达，保持布局策略、数据和交互行为一致。
+### 3. 剩余展示表格
 
-### 根据组件自身宽度适配布局
+BaseTable 的迁移边界保持如下：
 
-- 不在全局区分宽屏、窄屏布局，也不建立全站统一的桌面版与移动版布局切换。
-- 各组件根据自身可用宽度动态调整布局；同一组件放在页面、侧栏或弹窗中时，都应适应所在容器。
-- 大多数组件通过伸缩、换行和内容流动保持同一布局策略。需要保留行列对应关系的数据表格，可按组件需要提供内部滚动。
-- 只有少数组件确实需要在不同宽度下切换布局策略。这些组件单独记录切换理由、依据自身宽度的条件和验收场景，不将局部条件推广为全局断点。
-- 数据、筛选和操作能力在不同组件宽度下保持可用，避免为了适配宽度而隐式丢失分析信息。
+- 单元格可包含玩家链接、录像预览、下载、按钮和其他独立操作。
+- 页面已有的后端排序状态与请求，可由原生表头按钮配合表头插槽承接；后端分页本身不构成保留 ElTable 的理由。
+- 简单行点击可由调用方绑定 `tr`，调用方负责键盘触发及独立单元格操作的事件冒泡。
+- BaseTable 不新增内部排序、筛选、选择、展开、编辑、分页或递归列注册体系。分组表头直接使用原生 rowspan / colspan。
 
-## 组件处理边界
+当前仍有 5 个 ElTable 使用方：
 
-| 类别 | 处理方式 | 示例 |
-| --- | --- | --- |
-| 纯布局、装饰 | 使用原生 HTML + CSS；布局和普通卡片已迁移，其他按批次处理 | `layout.css`、`cards.css`；待处理分隔线、简单描述列表 |
-| 首页比赛卡片 | 暂留 ElCard，不纳入本轮普通卡片替换 | `HomeView/NormalTournamentQueue.vue`，带 header |
-| 简单操作 | 优先完善项目已有基础组件，再逐步替换 | 普通按钮、文字按钮、简单链接 |
-| 复杂行为 | 原则上保留实现，统一样式；PrimeVue 按下文退出计划处理 | 表格、分页、表单校验、弹窗、Tabs、复杂选择器、范围滑块 |
-| 通知、加载状态 | 保留行为和调用接口，调整 Element Plus 外观 | `Notifications.ts`、`v-loading` |
-| vue-tippy | 保持现有实现和样式导入方式，不安排迁移或专门换肤 | Tippy、`BaseTooltip` 中的提示行为 |
-| PrimeVue Toolbar | 暂缓迁移，随页面重做或后续维护处理 | 账号关联卡片、管理员任务页 |
-| 图标、图表、扫雷棋盘 | 保留，按需适配颜色和尺寸 | PrimeIcons、图表库、棋盘和播放器 |
+| 使用方 | 当前判断 |
+| --- | --- |
+| [`widgets/IdentifierManager.vue`](src/components/widgets/IdentifierManager.vue) | 使用内部排序及单元格编辑，暂留 |
+| [`gsc/AllSummary.vue`](src/views/TournamentView/gsc/AllSummary.vue) | 使用内部客户端排序，暂留 |
+| [`weekly/AllSummary.vue`](src/views/TournamentView/weekly/AllSummary.vue) | 使用内部排序及自定义比较函数，暂留 |
+| [`TournamentList.vue`](src/views/TournamentView/TournamentList.vue) | 使用默认排序和可排序列，暂留；保留原因包含排序，简单行点击本身不是障碍 |
+| [`VideoView.vue`](src/views/VideoView.vue) | 使用库排序事件、列状态与固定列，另行核对迁移成本；本批先保留 |
 
-以实际使用的能力判断复杂程度。例如，`BaseButtonConfirm` 已有调用方传入 `loading`，替换时必须保留防重复点击、禁用和加载反馈。
+其余表格继续使用已统一的视觉样式，不在本批顺带重写内部排序或编辑逻辑。未来按实际使用能力重新评估，而不以表格名称或是否包含按钮作决定。
 
-管理员页面按照项目现有约定，仅承接必要的主题兼容，不安排专门的精细视觉改版。
+### 7. 剩余图标注册迁移
 
-## Element Plus 改造重点
+7.1 已验收，应用全局注册已收缩为实际使用的图标，以下仅保留 7.2 所需的依赖清单与迁移安排。最终应用与组件测试都不全局注册任何图标。继续保留组件库内部自行导入的图标，不要求移除 `@element-plus/icons-vue` 依赖，也不将 PrimeIcons 的 CSS 类用法视为 Vue 全局组件注册。
 
-1. **简单组件替换为原生 HTML + CSS。** 后续处理分隔线、简单描述列表、链接和普通按钮。优先完善已有基础组件，按实际功能判断是否需要保留组件库实现。
-2. **复杂组件保留行为，统一直角和紧凑尺寸。** 表格、表单校验、弹窗、Tabs 等继续使用现有逻辑，按组件类别调整圆角、内外边距、行高、控件高度和间距。
-3. **通过项目样式变量统一密度。** 明确按钮、输入控件、表格单元格、表单项和面板的尺寸关系；不能仅切换到组件库的 `small` 尺寸就视为完成，也不以缩小所有文字代替间距调整。
-4. **vue-tippy 不变。** `BaseTooltip` 及其他提示内容中的 `ElCard` 已替换为原生容器与共享卡片样式。继续保持 Tippy 的定位、触发、生命周期逻辑和样式导入方式。
+当前入口及依赖已核对：
 
-本轮优先验收 Element Plus 替换与密度改善。PrimeVue 退出作为后续独立任务，不因暂缓 Toolbar 或表格迁移而阻塞本轮工作。
+- [`main.ts`](src/main.ts) 显式导入 14 个图标，通过有限映射调用 `app.component`；已删除全库命名空间导入和枚举。
+- [`Menu.cy.ts`](src/views/Menu.cy.ts) 在 `global.components` 中注册菜单及登录弹窗渲染链需要的 10 个图标；Cypress 组件挂载不执行 main.ts，测试注册单独维护。
+- [`IconMenuItem.vue`](src/components/widgets/IconMenuItem.vue) 通过 `<component :is="props.icon">` 解析菜单传入的字符串；菜单数据、`prefix-icon` 等字符串 props 也需检查，不能只搜索图标标签。
+- 已核对当前安装包：ElMenu 子菜单箭头直接导入 `ArrowDown` / `ArrowRight`；ElFormItem 相关状态图标由 ElInput 的校验状态映射承接，加载、成功、失败及密码显隐图标已在库内部导入。这些内部使用本身不要求项目全局注册；`prefix-icon="User"` 等项目传入的字符串仍需全局解析。
 
-## PrimeVue 逐步退出计划
+7.2 需要逐模块消除的全局依赖如下，去重后共 14 个；历史注释与 ESLint ignorePatterns 不作为实际使用依据：
 
-### 上游状态与项目决策
+| 调用来源 | 图标 |
+| --- | --- |
+| `views/Menu.vue` 配置与固定菜单项，经 `widgets/IconMenuItem.vue` 动态解析 | Trophy、VideoCameraFilled、Medal、Cpu、User、Key、Reading、Setting |
+| `Login/LoginForm.vue`、`Login/RegisterForm.vue`、`formItems/EmailFormItem.vue`、`EmailCodeBlock.vue`、`PasswordConfirmBlock.vue` 的输入前缀；找回密码表单复用后面三个组件 | User、Lock、Key、Message |
+| `visualization/ColorSchemeSetting.vue`、`accountlinks/CardWoM.vue`、`widgets/UserArbiterCSV.vue` 的裸标签 | ArrowLeft、ArrowRight、Ticket、QuestionFilled |
 
-2026-10-03 核查时，[PrimeVue 原仓库的官方说明](https://github.com/primefaces/primevue#readme)明确表示已停止活跃开发，仅接收安全修复，后续开发迁至 PrimeUI。因此这里的维护状态应表述为“原仓库停止活跃开发，仅保留安全维护”。
+7.2 需要同步移除的测试注册如下：
 
-项目决定逐步弃用 PrimeVue，不再扩展其使用范围。当前需要保留的核心能力是 DataTable 的表内分页器；既有表格先保持行为兼容，待替代方案验证完成后再退出。账号关联页面计划将来重做，因此现有卡片的 Toolbar 暂不单独迁移。PrimeIcons 是单独的图标依赖，本次组件库退出计划不自动包含图标替换。
+| 测试 | 注册图标 |
+| --- | --- |
+| `views/Menu.cy.ts` | 菜单的 8 个图标，以及登录、注册、找回密码弹窗需要的 Lock、Message，共 10 个 |
+| `Login/LoginForm.cy.ts` / `Login/RegisterForm.cy.ts` | Key、Lock、User / Key、Lock、Message、User |
+| `formItems/EmailCodeBlock.cy.ts` / `PasswordConfirmBlock.cy.ts` | Key / Lock |
+| `accountlinks/CardWoM.cy.ts` / `App.cy.ts` | Ticket；现有 `mountAccountLink` 允许调用方传入有限的组件映射，其他账号关联测试默认不注册图标 |
+| `VideoPlayer/NativePlayer.cy.ts` / `views/UserView/UserVideoView.cy.ts` | ArrowLeft、ArrowRight / QuestionFilled |
 
-### 当前依赖清单
+#### 7.2 后续目标：不全局注册任何图标
 
-以下路径均相对于 `src`：
+按菜单、表单、其他裸标签分别迁移。优先复用现有 BaseIcon / PrimeIcons；需要 Element Plus 图标时在使用方按名称局部导入。IconMenuItem 使用组件对象或封闭的局部映射解析现有字符串，图标 props 改为显式组件绑定，消除全局名称解析。只改变图标依赖，保留尺寸、提示、语义与业务事件。
 
-| 依赖 | 实际使用位置 | 处理方式 |
-| --- | --- | --- |
-| Toolbar | `components/accountlinks` 下的 `CardBilibili.vue`、`CardWoM.vue`、`CardAddMineracer.vue`、`CardSaolei.vue`、`CardMsgames.vue`、`CardMineracer.vue`，以及 `views/StaffView/Task.vue`，共 7 处 | 账号关联卡片随页面重做处理；管理员任务页留待后续维护，不安排本轮专门迁移 |
-| DataTable / Column | `components/VideoList`、`components/VideoUpload/Table.vue`、`components/accountlinks/VideoImportQueue.vue`、`views/StaffView/AccountLink.vue`、`views/StaffView/Task.vue` | 暂时保留表内分页及现有交互，最后迁移 |
-| Listbox | `VideoList` 的 `ColumnMode`、`ColumnSoftware`、`ColumnState`、`ColumnLevel`，以及上传表格、录像导入队列的筛选器 | 随筛选器逐个替换，保留单选/多选、值类型和筛选回调语义 |
-| Select | `views/StaffView/Task.vue` 的状态筛选器 | 随该筛选器单独迁移 |
-| 筛选常量、事件类型、主题和注册 | `@primevue/core/api`、`DataTableFilterEvent`、`main.ts`、相关 Cypress 测试的 PrimeVue 注册 | 随对应表格退出后清理，避免提前移除仍被使用的依赖 |
+每完成一个模块，移除对应全局注册及不再需要的测试注册、ESLint 图标名称豁免。菜单动态解析可能没有未解析组件警告，需实际确认 SVG / 项目图标存在及布局未退化。最后删除应用的图标注册映射与注册循环，组件测试也不再用 `global.components` 注入图标；以源码检查及实际渲染验收确认全局图标注册归零。
 
-`components/visualization/VideoScatter/Toolbar.vue` 是项目自己的组件，不是 PrimeVue Toolbar，不应仅凭名称将其列入依赖移除清单。
+### 4. 简单选择控件迁移与复杂组件换肤
 
-虽然暂留 PrimeVue 的主要理由是表内分页器，当前表格实际上还使用了排序、筛选、自定义列、行展开和行选择等能力。后续替换必须按各表格实际使用情况保留这些行为，不能只实现分页后就视为等价替换。
+#### 4.1 Checkbox 调用点与迁移安排（4.1.1 已实施，待验收）
 
-### 后续退出安排
+2026-10-07 初次清点共 16 个文件、16 处 ElCheckbox。4.1.1 已迁移两个排行榜的 NF 开关，目前剩余 14 个文件、14 处 ElCheckbox、4 处 ElCheckboxGroup、3 处 ElCheckboxButton；循环声明按一处计数，不按运行时选项数计数。剩余 ElCheckbox 中，10 处是可达的普通布尔开关，1 处在关闭的通知分支，1 处为循环生成的数组多选，2 处为上传表格的表头与行选择。未发现独立的 `true / false / null` 业务模型、组内 min / max 限制或自定义 true-value / false-value。
 
-以下任务按相关模块的维护时机推进，Toolbar 迁移不是其他任务的前置条件。
+采用原生 `<input type="checkbox">`、关联 label 与共用 CSS class，跳过 BaseCheckbox 组件。布尔和数组模型复用 Vue 原生 `v-model`；样式通过 `:checked`、`:indeterminate`、`:focus-visible`、`:disabled` 等原生状态选择器复用，不用业务代码维护重复的状态 class。按钮外观采用同一控件的样式变体。半选属性和上传全选策略由 Table.vue 局部同步，不另建通用 Checkbox 状态层。
 
-1. **暂缓 Toolbar 迁移。** 账号关联页面重做时，根据新布局直接使用原生容器与 CSS，不先为旧卡片制作过渡实现。管理员任务页的 Toolbar 可在后续维护时顺带替换。相同布局优先复用样式，不复制 PrimeVue 的整套 Toolbar API。
-2. **随模块维护替换表格外围筛选控件。** 优先复用项目已有选择控件或适用的原生控件；复杂选择行为可以复用 Element Plus。每次只替换一个筛选器或同一模块中的一小组，不同时重写表格状态。
-3. **限制过渡样式投入。** 仅为暂留的 DataTable、Column、内部分页器及相关浮层做必要的直角、深浅主题适配，不建设完整的 PrimeVue 主题体系。暂留 Toolbar 可以继续使用现有样式；组件内部仍需要的依赖不能因为业务代码不再直接导入就删除。
-4. **单独验证表格替代方案。** 优先调查现有 Element Plus 表格与分页组件的组合是否能满足表内分页需求，再评估其他成熟方案。验证通过后从一个简单表格开始，保持数据、筛选、排序和分页的处理顺序与语义，逐表迁移；不将本轮换肤与全量表格重写绑定。
-5. **最后清理依赖。** 表格、暂缓的 Toolbar 等全部使用方退出后，再移除 PrimeVue 注册、主题适配、测试配置及确认无引用的 `primevue`、`@primevue/core`、`@primeuix/themes` 依赖，更新锁文件。PrimeIcons 单独保留。
+普通用法模板如下，具体样式文件按实施需要组织：
 
-表格替代方案的验收至少覆盖：首页/末页、每页条数、跳页、总数显示、筛选或数据变化后的当前页处理，以及各表格实际使用的排序、选择、展开和行操作。原生 HTML 和 CSS 负责展示，分页和数据处理仍需保留相应逻辑。
-
-## 分步实施
-
-下列步骤只列剩余任务，编号随已完成任务的移除重新整理，不要求严格串行。涉及多个组件或页面时，继续拆成多个 PR，不将整个阶段塞进一个 PR。
-
-### 1. 细化视觉参数
-
-- 记录 Element Plus 两套主题中采用的颜色及其语义映射，细化字号、间距、直角边框和表格密度。
-- 确定代表性的数据展示与分析样例、组件保留清单，以及少数需要按自身宽度切换布局策略的组件。
-
-完成条件：在现有选型规则下，有统一的视觉参数和样例，能够据此评审后续改动。
-
-### 2. 建立项目样式变量
-
-状态：待实施。当前 `cards.css` 直接复用 `--el-*` 颜色变量，尚未建立独立的项目主题变量。
-
-- 在 `src/styles` 新增项目自己的 `--ui-*` 变量。
-- 颜色变量采用项目当前版本 Element Plus 的对应主题色值，分别定义浅色和深色值。
-- 初始值尽量接近现状，将“接入样式机制”和“改变视觉效果”拆开。
-- 集中接入样式入口，使应用和 Cypress 组件测试使用一致的基础样式。
-
-完成条件：引入后现有页面外观基本不变。
-
-### 3. 建立主题适配与 PrimeVue 过渡样式
-
-状态：按钮直角适配已实现，其余待实施。通过 `setup.ts` 统一加载 `vendors/element-plus.css`，使 ElButton 的普通、small/large、round/circle 和按钮组边角均使用直角；应用与 Cypress 组件测试共用入口。原生按钮已使用直角，保留组件库的其他换肤继续分批进行。
-
-- 建立 Element Plus 的主题适配；PrimeVue 仅对暂留表格、分页器及必要的筛选浮层做过渡适配。
-- 基础颜色适配沿用 Element Plus 配色，并与直角、紧凑尺寸调整分开提交；Element Plus 的圆角、内外边距、控件间距、行高是本阶段的主要改造项。
-- 可以将现有 PrimeVue preset 从 `main.ts` 提取到独立过渡模块，减少后续对启动代码的修改，并便于最终删除。
-- 保持现有主题切换机制，完整适配浅色和深色两套主题。
-
-完成条件：原生元素和保留的 Element Plus 组件能够使用同一套视觉定义，代表性组件已体现直角和更高的数据密度。
-
-### 4. 迁移剩余简单组件
-
-- 分批处理文字按钮、确认/取消按钮、链接、分隔线、简单描述列表等，避免与表单或业务逻辑改动混在一起。
-- 保持文件路径、props、事件和 slots 稳定。
-- 检查调用方通过 `$attrs` 传入的能力，避免替换后静默失效。
-- 共享组件即使改动行数很少，也需要检查其调用范围。
-- 本阶段不安排 PrimeVue Toolbar 迁移，账号关联卡片留待页面重做。
-
-完成条件：调用方不需要成批修改，原有行为得到保留。
-
-#### ElLink / ElButton：第三批收尾与暂留范围
-
-第三批 3.1、3.2、3.3 的迁移已提交，按约定视为验收完成，不再保留其实施与测试待办。账号关联页面仍随将来重做迁移，首页比赛卡片继续暂留。
-
-共享按钮的 loading 必须同时提供加载反馈并阻止重复点击，disabled 保留原生禁用语义。透传 class、style、data-cy、ARIA 属性及实际使用的事件，保证键盘操作；仅实现项目需要的接口，不复制 ElButton 全部 API。
-
-`vue/no-restricted-html-elements` 在现有参与 lint 的 `src/**/*.vue` 中限制新增 ElLink / ElButton 使用；仅对下述八个暂留文件不增加这两项限制，仍保留现有文字、布局和卡片规则。暂留文件迁移后，应同时移除对应配置例外；不豁免整个账号关联目录。
-
-现有基础接口：`BaseButton` 提供 `type`（视觉类型）、`size`、`nativeType`、`text`、`plain`、`disabled`、`loading` 以及默认/icon 插槽；`BaseTextButton` 另提供 `underline`（never/hover/always）。BaseButton 不隐式继承 ElForm 状态，`nativeType="reset"` 只执行原生表单重置；调用方需要的尺寸和禁用状态显式传入。本次检查的登录/注册/找回密码、管理员账号审核和周赛创建表单没有设置需要按钮继承的 ElForm 尺寸或禁用状态，也没有原生 reset 依赖，原有校验及 resetFields 调用保留。
-
-暂留文件：
-
-- `views/HomeView/NormalTournamentQueue.vue`：首页比赛卡片整体暂缓。
-- `components/accountlinks/` 中的 `CardAdd.vue`、`CardAddMineracer.vue`、`CardBilibili.vue`、`CardSaolei.vue`、`CardWoM.vue`、`CarouselControl.vue`、`VideoImportQueue.vue`：随账号关联页面重做处理。
-
-本次收尾（待提交）：删除无调用方、已标注拟弃用的 `PreviewDownload.vue`；清理失效的 ElButton `square-button` 样式与按钮组中的旧选择器；补充上述 ESLint 限制。账号关联卡片仍使用的 `button-compact`、新旧按钮相邻间距和 Element Plus 直角适配继续保留。
-
-收尾已通过 `npm.cmd run lintfix`、`npm.cmd run typecheck` 和 `npm.cmd run build:frontend`；另核对规则实际报错、八个文件例外及原有文字/布局/卡片限制均符合预期。本次不改变现有交互，未运行 Cypress，也不重新列入已验收的 3.3 浏览器测试待办。
-
-### 5. 分批给复杂组件换肤
-
-状态：待实施。
-
-- Element Plus 的表单控件、Tabs、菜单、弹窗/通知、表格分别组成独立系列，重点压缩多余间距并统一直角；`Menu.vue` 内部菜单样式作为独立任务处理。
-- 每种组件先选择一个代表实例验证，再推广。
-- 保留复杂组件的状态管理、交互和业务接口。
-- PrimeVue 表格本阶段只做必要换肤；Listbox、Select 的退出按独立小步骤处理，表格替代方案另行验证。
-- 覆盖正常、悬停、焦点、禁用、加载、错误、空数据等实际使用状态。
-
-完成条件：关键状态和浮层样式完整，交互保持一致。
-
-### 6. 按业务模块迁移
-
-只处理各模块剩余控件和样式，复用已有基础组件与样式，不重复迁移或验收已提交的布局和卡片改动。
-
-建议顺序：
-
-1. 首页。
-2. 设置。
-3. 用户资料。
-4. 排行榜。
-5. 比赛。
-6. 上传和播放器。
-
-每次限定一个子页面或组件族。顺序可根据业务维护安排调整，正在频繁修改的模块后移。制定计划时，近期提交涉及排行榜、比赛、上传和播放器，适合先完成公共样式基础，再处理这些区域。
-
-账号关联页面暂不安排独立的页面样式迁移，待将来重做时使用新的基础样式并移除旧 Toolbar。共享基础组件调整可能影响该页面，此时仅做必要的兼容检查，不额外重构旧卡片布局。
-
-完成条件：一个局部区域完整迁移，能够独立发布。
-
-### 7. 收尾
-
-状态：待后续批次完成后进行。
-
-- 删除失效样式、重复覆盖和不再使用的简单组件导入。
-- 清理已经不需要的临时兼容项。
-- 记录保留的组件与定制入口。
-- 检查全站主题切换一致性。
-- 记录 PrimeVue 剩余表格、筛选控件和暂缓的 Toolbar 使用方及退出条件；仅在最后一个使用方迁移完成后清理包依赖、注册和主题。
-
-完成条件：失效的临时兼容项已清理，保留组件的样式维护入口清晰。本轮 UI 换肤可以在 PrimeVue 表格及 Toolbar 等暂留的情况下完成，但必须列明剩余依赖；PrimeVue 退出任务以全部使用方迁移及依赖清理完成为终点。Element Plus 等保留库不要求导入数量归零。
-
-## 样式组织
-
-当前已存在的样式：
-
-```text
-src/styles/
-  text.css                    继续沿用现有文字类
-  button.css                  原生按钮样式，兼容尚未迁移的 Element Plus 辅助类
-  link.css                    原生链接样式，复用 text.css 与 Element Plus 配色
-  layout.css                  已迁移的原生行列布局
-  cards.css                   已迁移的原生卡片、尺寸修饰类和标题
-  vendors/element-plus.css     保留的 Element Plus 按钮直角覆盖
+```vue
+<label class="checkbox">
+    <input v-model="checked" class="checkbox-input" type="checkbox">
+    <span>选项文本</span>
+</label>
 ```
 
-`cards.css` 当前提供 `.card`、`.card-small`、`.card-large`、`.card-title`。基础卡片为直角、无默认阴影、10px 内边距；小卡片为 5px，大卡片为上下 10px、左右 20px。颜色直接使用 `--el-border-color-light`、`--el-fill-color-blank` 和 `--el-text-color-primary`，沿用现有深浅主题。
+保留已有业务 class 和事件。原生 `change` 的参数是 DOM Event，涉及原 ElCheckbox 布尔回调的调用点应显式读取 input.checked；已有业务组件对外的 change 值与触发次数继续保持原来的契约。
 
-`vendors/element-plus.css` 已提供按钮直角覆盖。后续再按需要新增 `tokens.css`、`vendors/primevue.css`，并扩展 Element Plus 的其他适配。目标依赖方向为：
+| 调用方（均相对 src） | 模型与作用 | 保留事项与判断 |
+| --- | --- | --- |
+| [`views/RankingView/SaoleiRanking.vue`](src/views/RankingView/SaoleiRanking.vue) | `nf`：NF 榜切换，1 处 | 4.1.1 已改为原生 input / label，待验收；保留请求、页码处理和 `nf-toggle` |
+| [`views/RankingView/PBRanking.vue`](src/views/RankingView/PBRanking.vue) | `nf`：NF 筛选，1 处 | 4.1.1 已改为原生 input / label，待验收；保留分桶、计数与列表请求 |
+| [`components/Login/LoginForm.vue`](src/components/Login/LoginForm.vue) | `remember_me`：保持登录，1 处 | 普通布尔；将现有 label 文本保留为关联标签，保持有效期选项显示与 `set_expiry` 提交语义 |
+| [`components/Login/RegisterForm.vue`](src/components/Login/RegisterForm.vue) | `agree_TAC`：同意协议，1 处 | 普通布尔；保留 `name="checkoutSecret"`、协议链接及确认按钮启用条件；点击链接不能额外切换选中状态 |
+| [`views/SettingView/App.vue`](src/views/SettingView/App.vue) | `videoPlayerConfig.strangeDustTrust`：第三方信任，1 处 | 普通布尔；保留配置持久化，长 URL 按容器宽度换行 |
+| [`components/VideoPlayer/NativePlayer.vue`](src/components/VideoPlayer/NativePlayer.vue) | `isEditingCustomCounterConfig`、`isEditingPlayerMainConfig`：两个编辑区域开关，2 处 | 普通布尔；保留原来的布局与切换状态，不改为互斥单选 |
+| [`components/VideoPlayer/CustomCounterSettings.vue`](src/components/VideoPlayer/CustomCounterSettings.vue) | `developerMode`：JSON 编辑模式，1 处 | 普通布尔；保留编辑内容和工具栏布局 |
+| [`components/VideoPlayer/PlayerMainSettings.vue`](src/components/VideoPlayer/PlayerMainSettings.vue) | `config.showProbability`：概率显示，1 处 | 普通布尔；保留颜色设置区域的条件显示和配置 |
+| [`components/visualization/ColorSchemeSetting.vue`](src/components/visualization/ColorSchemeSetting.vue) | `developerMode`：颜色方案 JSON 编辑，1 处 | 普通布尔；保留 small 对应的紧凑尺寸及开发者编辑区 |
+| [`components/VideoUpload/FileInputOptions.vue`](src/components/VideoUpload/FileInputOptions.vue) | `local.autoUploadAfterParse`、`local.autoRemoveAfterUpload`，2 处 | 普通布尔；保留持久化、`@click.stop` 与 options 插槽位置，点击选项不打开文件选择框；同步局部 `.el-checkbox` 样式 |
+| [`App.vue`](src/App.vue) | `never_show_notice`：不再显示通知，1 处 | 所属 ElDialog 为 `v-if="false"`，当前不可达；收尾时同步替换，不启用通知、不改存储逻辑 |
+| [`components/widgets/MultiSelector.vue`](src/components/widgets/MultiSelector.vue) | `selected: string[]`；1 处 ElCheckboxGroup + 1 处循环 ElCheckbox | 原生数组多选可承接；保留 options / labels、已选标签及关闭标签取消选择。调用方为 UserVideoView 和比赛 common/PersonalView |
+| [`components/Filters/SoftwareFilter.vue`](src/components/Filters/SoftwareFilter.vue) | `MS_Software[]`；1 处 Group + 1 处循环 Button | 普通数组多选，默认全部软件；保留 SoftwareIcon。当前用于 BBBvSummary/Header，按钮外观可用 checkbox + CSS 实现 |
+| [`components/Filters/VideoStateFilter.vue`](src/components/Filters/VideoStateFilter.vue) | `string[]`；1 处 Group + 1 处循环 Button | 普通数组多选；VideoView 依赖 `@change="request_videos"`，必须在模型更新后发出一次 change，不能因改根节点而丢失事件或重复请求 |
+| [`components/Filters/MSLevelFilter.vue`](src/components/Filters/MSLevelFilter.vue) | `MS_Level[]`；1 处 Group + 1 处循环 Button | 普通数组多选，默认全部难度；当前未发现调用方，迁移优先级低，不为验证而新增业务入口 |
+| [`components/VideoUpload/Table.vue`](src/components/VideoUpload/Table.vue) | 表头全选 / 半选与各行布尔选择，2 处 | 唯一显式 indeterminate 调用；选中行与筛选联动由页面已有函数维护，不依赖 ElCheckboxGroup，可独立于 PrimeVue 表格迁移 |
 
-```text
-项目样式变量
-    ├── 原生 HTML / 项目基础组件
-    ├── Element Plus 样式适配
-    └── PrimeVue 暂留表格的过渡适配
+三状态的迁移判断：
+
+- 上传表头的半选是由 `selectedRows` 派生的状态，模型本身仍是选中行数组。原生 checkbox 支持独立于 checked 的 `HTMLInputElement.indeterminate` 属性，通过 DOM property 同步即可；不能仅添加同名 HTML attribute，也不需要引入三值循环控件。参见 [MDN 半选状态](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/checkbox#indeterminate_state_checkboxes)。
+- 必须保留现有表头规则：未选时选择全部 `filteredData`（包括其他分页中的过滤结果），半选或全选时清空。筛选变化后剔除已不在结果中的选择；空结果显示未选。`VideoUpload/App.cy.ts` 已验证半选点击清空，不能改成常见的半选点击全选。
+- 原生激活会翻转 checked 并清除 indeterminate，迁移时需按最终选中行重新同步二者；半选清空时，即使派生 checked 前后都是 false，也必须保证 DOM 最终未选。点击标签与输入框、以及 Space 都只执行一次选择操作。参见 [HTML checkbox 激活规则](https://html.spec.whatwg.org/multipage/input.html#checkbox-state-(type=checkbox))。
+
+建议按以下小批次实施，每批单独验收：
+
+| 子批次 | 范围 | 实施边界 |
+| --- | --- | --- |
+| 4.1.1 | 共用 CSS 与两个排行榜（已实施，待验收） | checkbox.css 全局加载；两个 NF 开关使用原生 input / label、布尔 v-model 与原有业务 class。SaoleiRanking 测试验证标签点击，PBRanking 测试验证 Space；继续核对请求参数与页码重置 |
+| 4.1.2 | 其余可达布尔开关 | 按登录/注册、设置/播放器、上传选项分别合并；共 8 个文件 10 处调用。保持表单、配置、点击传播和条件显示，避免一批同时修改所有业务模块 |
+| 4.1.3 | 数组多选与按钮外观 | MultiSelector、SoftwareFilter、VideoStateFilter；MSLevelFilter 随同类组件收尾。复用 [Vue 原生 checkbox 数组绑定](https://vuejs.org/guide/essentials/forms.html#checkbox)与共用 CSS，按钮外观用样式变体，不重建 CheckboxGroup；保持模型值类型、选项顺序、标签关闭与 change 事件 |
+| 4.1.4 | 上传表格半选与遗留调用收尾 | Table.vue 局部同步原生 indeterminate 与 checked，迁移表头 / 行选择；共用 CSS 补齐半选外观，同步关闭通知分支，清理失效导入、CheckboxValueType 和专属 CSS。PrimeVue 的筛选、排序、分页与展开继续保留 |
+
+Checkbox 样式采用项目主题参数，覆盖直角、紧凑尺寸、checked、indeterminate、hover、focus-visible 和 disabled；保留原生输入的焦点、Space 和可访问名称。CSS / Less 与文件组织按既定规则自行决定，每个正式样式文件不超过 100 个非空行。只有实际迁移的调用方才调整样式、lint 限制与测试选择器，不提前禁止剩余用法。
+
+测试同步范围：
+
+- 排行榜的 `SaoleiRanking.cy.ts` / `PBRanking.cy.ts` 已使用 `nf-toggle` 与原生 input 查询并断言 checked；`CustomCounterSettings.cy.ts` 仍定位 `.el-checkbox`，随 4.1.2 迁移调整。LoginForm / RegisterForm 的关联标签与 input 查询应保留。
+- 上传相关的 `VideoUpload/App.cy.ts` 与 `cypress/e2e/profile.cy.ts` 使用 `.el-checkbox__input`。现有 `cy.shouldHaveState()` 仅在上传组件测试中使用，当前依赖 Element Plus 状态 class；迁移 4.1.4 时完善现有命令，使其断言原生 checked / indeterminate，不另造一个三状态命令。保留现有全部状态序列，再按实际覆盖补充筛选、跨页和键盘行为。
+- 分组筛选复用 `views/VideoView.cy.ts`、`visualization/BBBvSummary/Header.cy.ts` / `App.cy.ts`、`views/UserView/UserVideoView.cy.ts` 及相应比赛页面测试；现有 spec 不代表已覆盖所有多选分支，实施时核对后仅补关键行为。
+- 设置与播放器复用 `VideoPlayer/NativePlayer.cy.ts`、`CustomCounterSettings.cy.ts`、`cypress/e2e/settings.cy.ts`；关闭的通知分支和无调用方的 MSLevelFilter 不新增完整页面测试。
+
+4.1.1 已建立共用样式、迁移两个 NF 开关并同步样式 README。checkbox.css 为 63 个非空行，配色使用项目变量，选中标记为内嵌白色 SVG；强制颜色模式恢复原生外观。尚未迁移数组、按钮外观或半选，后续复用现有 class 小步完善。
+
+两个排行榜仅向 BaseIconRefresh 传入 loading，通过同一个图标实例控制旋转，不向 BaseButton 传入 loading，加载期间刷新按钮仍可点击。避免同时显示两个图标使按钮临时变宽，BaseButton 保持原有实现。组件测试暂缓 NF 响应，检查加载期间按钮的宽度、水平位置、可点击状态和单一旋转图标，以及响应后停止旋转；浏览器结果待用户验证。
+
+4.1.1 的 `lintfix`、`typecheck`、`build:frontend` 与 `git diff --check` 均通过；代理未运行 Cypress。由用户在 `front_end` 执行：
+
+```powershell
+npx.cmd cypress run --component --spec "src/views/RankingView/SaoleiRanking.cy.ts,src/views/RankingView/PBRanking.cy.ts"
 ```
 
-项目变量建立前，继续复用现有 Element Plus 颜色变量。建立后，新样式优先使用 `--ui-*`，现有 `--el-*` 引用随所在模块逐步迁移，避免两者互相引用形成循环。
+浏览器验收同时检查深浅主题、方框与标签的点击、Space、焦点可见和原有请求 / 分页行为；禁用样式由原生 disabled 属性承接，不新增排行榜禁用条件。后续子批次按实际影响提供测试命令。
 
-覆盖顺序优先采用：
+#### 4.2 其他复杂组件换肤与尺寸细化
 
-1. 公开主题变量。
-2. 组件公开的 class、样式接口或 Pass Through 接口。
-3. 局部内部选择器。
+表格共用视觉和按钮直角适配已经完成。本阶段处理尚未统一的类别，每类先选择一个代表实例验证，再推广：
 
-组件库内部选择器集中放在适配文件中，并注明用途。避免将覆盖规则散落到各业务页面，或用大量 `!important` 处理优先级问题。
+| 子批次 | 代表实例 | 重点 |
+| --- | --- | --- |
+| 输入与表单 | 登录/注册、EditProfile、播放器设置 | 输入高度、内边距、圆角、标签与校验间距；保留输入、焦点及校验行为 |
+| 选择控件 | 排行榜或设置页的 Select、Radio、Switch、Slider | 控件与下拉浮层尺寸、选中/禁用/焦点状态，保留单选、多选和数值范围语义；Checkbox 按 4.1 单独迁移 |
+| Tabs | 首页或用户页面 | 标签高度、内容间距、边框和激活状态，保留标签切换与路由状态 |
+| 菜单 | `views/Menu.vue` | 单独处理菜单项间距和主题；保留用户可配置的高度、字号、图标模式与导航 |
+| 弹窗、通知与加载 | BaseOverlay、登录弹窗、Notifications、v-loading | 内部间距、边角、按钮区域和浮层；保留关闭、滚动、焦点、遮罩和加载行为 |
 
-挂载到 `body` 的下拉框和弹窗需要单独检查：页面根节点上的样式作用域不会自然覆盖这些浮层，应通过组件提供的浮层 class 等接口接入。vue-tippy 保持现有实现，后续改动涉及提示内容时检查浮层显示。现有 `App.vue` 中的浮层层级修复仍保留，后续在验证后再迁移。
+按实际需要提取控件高度、间距、行高等项目参数，同时覆盖正常、悬停、焦点、禁用、加载、错误和空状态。不要只将所有控件切为 `small`，也不要直接将所有字号或全局圆角统一缩小来代替逐类检查。
 
-## Git conflict 控制规则
+保留主题切换机制。下拉框、弹窗和通知可能挂载到 body，使用组件公开的浮层 class / 样式接口接入，不能只依赖业务页面的 scoped CSS。现有 App.vue 中的浮层层级修复继续保留，确需迁移时单独验证。
 
-### PR 和分支范围
+### 5. PrimeVue 退出
 
-- 每个 PR 围绕一个可验收结果，例如“迁移确认按钮”“统一表格边框和行高”“调整菜单间距”。
-- 避免全站按钮替换等横跨大量业务文件的提交。
-- 分支只承载当前一批改动，完成后尽快合入实际集成分支；下一批从最新集成分支开始。
-- 未迁移页面继续使用旧实现，允许新旧样式暂时共存。
-- 每个 PR 说明影响页面、保留的行为、验证范围以及回退方式。
+不新增 PrimeVue 使用范围。当前依赖仍包含以下内容，表内分页器之外的实际行为也必须保留：
 
-### 文件与接口
+| 依赖 | 当前使用方 |
+| --- | --- |
+| DataTable / Column | `components/VideoList/App.vue`、`components/VideoUpload/Table.vue`、`components/accountlinks/VideoImportQueue.vue`、`views/StaffView/AccountLink.vue`、`views/StaffView/Task.vue`，共 5 个表格入口；VideoList 下还有复用列组件 |
+| Listbox | VideoList 的模式、软件、状态、难度列，以及上传表格、录像导入队列的筛选器 |
+| Select | `views/StaffView/Task.vue` 的状态筛选器 |
+| Toolbar | 6 个账号关联卡片及 `views/StaffView/Task.vue`，共 7 处 |
+| 注册、主题与类型 | main.ts 中 PrimeVue / Aura preset，`@primevue/core/api`、DataTable 事件类型及相关 Cypress 测试的注册 |
 
-- 保持已有文件路径和组件接口稳定，优先替换基础组件的内部实现。
-- 不同时进行重命名、搬目录、本地化调整和整文件格式重排。
-- 只有遇到明确耦合时才抽离业务逻辑，优先复用已有 `services`、`useParticipants`、`usePlayer` 等入口。
-- 必须新增抽离时，先单独合入行为不变的准备 PR，再修改模板和 CSS；不先进行全站逻辑拆分。
-- 公共样式单独审查影响范围：一行全局变量也可能影响全站。初期局部试用，验证后推广。
+按以下小步骤推进：
 
-### 与业务维护并行
+1. 随模块维护逐个替换外围筛选控件，保留值类型、单选/多选、筛选回调和筛选清空语义；优先复用已有控件，不同时重写表格状态。
+2. 单独验证表格与分页的替代组合。先核对项目现有 Element Plus 表格与分页组件能否满足需求，验证完成后再决定实现，不预先迁移全部表格。
+3. 选择交互较少的表格试点，再逐表替换；每个表格单独核对排序、筛选、分页、展开、选择及行操作的处理顺序和语义。
+4. Toolbar 随账号关联页面重做或管理员任务页维护处理；新布局采用原生容器与 CSS，不为旧页面复制整套 Toolbar API。
+5. 最后一个使用方退出后，再清理注册、preset、过渡样式、测试配置以及 `primevue`、`@primevue/core`、`@primeuix/themes` 依赖和锁文件。PrimeIcons 保留。
 
-- 日常业务维护继续正常进入集成分支。
-- 修改前检查工作区和最新文件内容，保留无关改动。
-- 如果两次修改之间文件发生变化，先核对最新业务行为；对不同意的变化，按照项目约定在对应位置添加 TODO，不直接覆盖。
-- `lintfix` 后检查 diff，避免将与本次任务无关的格式修改混入提交。
+现有 `vendors/primevue-table*.css` 已完成必要的表格过渡适配，不再重复安排建立这些文件，也不建设完整的 PrimeVue 主题体系。是否提取 main.ts 中的 preset，按实际维护需要决定。
 
-## 验收与测试
+分页替代验证至少覆盖首末页、页容量、跳页、总数、过滤后页码处理和数据变化；复杂表格还需验证现有排序、筛选、选择、展开与操作。原生 HTML / CSS 负责展示，不能替代这些数据和状态逻辑。
 
-### 按改动选择验收范围
+`components/visualization/VideoScatter/Toolbar.vue` 是项目组件，不能仅凭名称将其列入 PrimeVue 移除清单。
+
+### 6. 暂缓范围与局部收尾
+
+以下范围保持暂缓：
+
+- 首页比赛卡片 `views/HomeView/NormalTournamentQueue.vue`：当前唯一 ElCard，带 header；按既定范围保留。
+- 账号关联页面：将来重做时整体处理旧卡片与 Toolbar。当前残留的 ElButton / ElLink 主要在该目录，ElLink 另在首页比赛卡片中使用。
+- PrimeVue 全量退出：按上一节独立推进，不阻塞本轮其他样式工作。
+
+当前参与 lint 的页面限制新增 ElText、Element Plus 布局组件、ElCard 和 ElDivider；ElButton / ElLink 限制在 `src/**/*.vue` 中有以下 8 个文件例外：
+
+- `views/HomeView/NormalTournamentQueue.vue`。
+- `components/accountlinks/` 下的 `CardAdd.vue`、`CardAddMineracer.vue`、`CardBilibili.vue`、`CardSaolei.vue`、`CardWoM.vue`、`CarouselControl.vue`、`VideoImportQueue.vue`。
+
+这些是按文件保留的兼容范围，不扩展为目录豁免；首页比赛卡片另有既存 ElCard 的局部 disable。迁移某个暂留文件后，同批清理其已不需要的规则例外。
+
+每批完成后，删除对应失效导入、重复覆盖及无使用方的兼容样式，并更新剩余清单。复杂组件按功能保留，不以 Element Plus 导入归零作为本轮完成条件。
+
+## 样式组织与冲突控制
+
+- CSS / Less 的选型、styles 下的文件命名及目录组织由实施代理自行决定。每个项目样式目录文件不超过 100 个非空行，注释计入，不通过压缩声明规避限制。
+- `src/styles/parameters/` 是 Git 忽略的本地参考存档，应用、测试、其他样式及构建脚本不得依赖它；需要参数时提取到正式样式文件。新检出项目应不需要该目录也能构建。
+- 项目参数流向原生组件与库适配。库需要的 `--el-*` / `--p-*` 声明集中在 vendors，由项目变量赋值，不反向读取库变量。
+- 优先使用公开 CSS 变量、组件样式接口，再使用局部内部选择器；覆盖集中在适配文件，避免业务页面散落大量覆盖或 `!important`。
+- 保持现有文件路径、props、事件、slots 和调用方依赖的 attrs 稳定。按钮保留原生语义、键盘操作、disabled、loading、防重复点击及已有事件透传。
+- 每个 PR 限定一个结果和一小组相关文件。共享样式与业务模块迁移可拆开；不同时做本地化调整、搬目录、整文件格式重排或无关逻辑抽离。
+- 每批从最新集成分支开始，及时合入；正在频繁修改的业务区域可后移，允许新旧样式共存。
+- 修改前核对工作区与最新内容，保留无关改动；两次修改之间发生的不同意的变化按约定添加 TODO，不直接覆盖。`lintfix` 后再次检查 diff。
+
+具体样式入口和变量说明见[`src/styles/README.md`](src/styles/README.md)。
+
+## 后续批次的验证与验收
+
+按实际改动选择检查范围；已提交或明确验收的批次不重新追加验收待办。
 
 | 范围 | 验收重点 |
 | --- | --- |
-| 外观 | 浅色/深色配色与 Element Plus 基准一致、直角风格、Element Plus 容器与控件间距缩减、同一可用区域的数据密度与对齐、中英文长文本 |
-| 布局 | 固定视口下改变组件容器宽度，检查伸缩、换行和内部滚动；对少数布局切换组件验证切换条件前后及状态保持 |
-| 控件 | hover、键盘焦点、disabled、loading、错误状态 |
-| 表格 | 排序、筛选、表内分页、每页条数、跳页、数据变化后的页码处理、选择/展开、行操作、空数据、加载状态 |
-| 弹窗 | 关闭、焦点、滚动、内部下拉浮层 |
-| 业务 | 请求参数、提交次数、状态持久化与原先一致 |
+| 视觉 | 深浅主题、直角、紧凑间距、文字语义、数字对齐、中英文长文本；有色单元格引用主题文字色 |
+| 组件宽度 | 固定视口下改变容器宽度，检查伸缩、换行、内部滚动，以及少数布局切换组件的状态保持 |
+| 操作 | 键盘焦点、hover、disabled、loading、错误状态、防重复提交 |
+| 表格 | 空数据、加载、分页、排序、筛选、选择/展开、列宽与独立单元格操作，按实际使用能力检查 |
+| 浮层 | 关闭、焦点、滚动、层级，以及传送到 body 的内部下拉框 |
+| 业务 | 请求参数、提交次数、状态持久化、权限与删除确认行为保持一致 |
 
-Cypress 中依赖 `.el-*` / `.p-*` 的定位，随对应组件迁移改为稳定的 `data-cy` 或语义属性，不提前全量改写测试。保留复杂组件时，其相关测试无需仅为减少组件库依赖而重写。
-
-复用已有测试基础设施，例如表格内容提取命令和通知关闭命令。只有行为改动或现有覆盖不足时，补充有意义的测试，避免为低影响样式改动编写重复实现的测试。
-
-### 静态检查
-
-在 `front_end` 目录执行：
+代码或样式修改按影响范围在 `front_end` 执行：
 
 ```powershell
 npm.cmd run lintfix
@@ -304,36 +283,10 @@ npm.cmd run typecheck
 npm.cmd run build:frontend
 ```
 
-修改纯逻辑时再运行相关 Vitest，例如：
+纯逻辑修改再运行对应 Vitest；例如颜色逻辑使用 `npx.cmd vitest run src/utils/colors.test.ts`。仅整理 Markdown 时检查内容、链接与 diff，不要求重跑前端构建。
 
-```powershell
-npm.cmd run vitest -- run src/utils/forms.test.ts
-```
+Cypress 由用户运行，代理不启动 Cypress、预览或开发服务器。每批提供具体受影响的 spec 命令，优先复用现有覆盖；静态检查通过不代表浏览器行为已验证。迁移组件时才调整依赖 `.el-*` / `.p-*` 的测试定位，不提前全量改写。
 
-具体测试文件应按本次改动选择。静态检查通过不代表浏览器行为已经验证。
+复用项目现有表格提取、通知关闭和 `cy.shouldBeAbsentOrHidden()` 断言命令；不为低影响样式调整编写重复实现的测试，也不靠修改预期值掩盖实际行为变化。
 
-### Cypress 由用户运行
-
-不由代理运行 Cypress。后续每批改动根据实际影响范围，提供在 `front_end` 目录执行的具体命令，由用户运行；已提交的改动不再保留测试待办。
-
-后续视觉改动除已有测试外，按影响范围人工检查图表尺寸、提示浮层、深浅主题，以及固定视口下改变组件容器宽度的表现。
-
-E2E 使用项目现有测试环境。每批优先运行受影响的 spec，而不是每次要求运行全套；未运行的浏览器验证应明确记录。
-
-除非用户明确要求，不主动启动预览或开发服务器。
-
-## 下一批建议
-
-1. 提交第三批收尾后，分隔线或简单描述列表可作为独立小批次推进；按钮与链接仅剩上述暂留范围，随相关页面维护单独处理。
-2. 统一主题变量与复杂组件换肤作为独立批次推进，每批先选择代表实例，再推广。
-
-首页比赛卡片、账号关联页面重做及 PrimeVue 表格退出继续保持暂缓，不作为下一批简单组件迁移的前置条件。
-
-## 参考资料
-
-保留组件和暂留组件优先使用现有定制入口。实施时根据项目安装版本核对具体接口，不随 UI 重构顺带升级组件库；PrimeVue 文档仅用于现有表格的过渡适配。
-
-- [PrimeVue 原仓库说明](https://github.com/primefaces/primevue#readme)：原仓库停止活跃开发、仅保留安全维护，后续开发迁至 PrimeUI。
-- [Element Plus 主题定制](https://element-plus.org/en-US/guide/theming.html)：通过 CSS 变量等机制定制外观。
-- [PrimeVue Styled Mode](https://primevue.org/theming/styled/)：通过 preset 和主题变量统一组件样式。
-- [PrimeVue Pass Through](https://primevue.org/passthrough/)：为组件内部公开节点提供属性和样式定制入口。
+提交或明确验收后按约定移除对应实施与验收待办；下一批建议始终以本计划的剩余范围及当时实际代码为准。

@@ -3,7 +3,7 @@
         <div class="home-top-row">
             <ElTabs class="home-news-tabs" type="border-card">
                 <ElTabPane :label="t('home.news')">
-                    <div class="news-placeholder text">
+                    <div class="news-placeholder">
                         {{ t('local.newsRebuilding') }}
                     </div>
                 </ElTabPane>

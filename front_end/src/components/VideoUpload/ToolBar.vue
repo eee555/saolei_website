@@ -1,6 +1,6 @@
 <template>
     <div class="button-group upload-toolbar">
-        <span class="text">
+        <span class="text-regular">
             {{ t('local.selected', [selected, total]) }}
         </span>
         <BaseButton :disabled="processing || selectedNone" @click="emit('upload')">

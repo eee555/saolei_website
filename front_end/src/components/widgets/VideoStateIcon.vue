@@ -1,7 +1,7 @@
 <template>
     <span v-if="state == MS_State.Identifier" :title="t('common.state.d')">
         <ElIcon>
-            <BaseIconIdentifier style="color: var(--el-color-warning)" />
+            <BaseIconIdentifier style="color: var(--ui-color-warning)" />
         </ElIcon>
     </span>
     <span v-else-if="state == MS_State.Official" class="text text-success">

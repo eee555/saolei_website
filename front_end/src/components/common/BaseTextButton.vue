@@ -1,5 +1,5 @@
 <template>
-    <BaseButton v-bind="$attrs" :size="size" text class="text" :class="[sizeClass, `text-button--underline-${underline}`]">
+    <BaseButton v-bind="$attrs" :size="size" text :class="[sizeClass, `text-button--underline-${underline}`]">
         <slot />
     </BaseButton>
 </template>

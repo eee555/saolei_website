@@ -3,10 +3,10 @@
     min-width: 0;
     overflow: auto;
     padding: 10px;
-    border: 1px solid var(--el-border-color-light);
+    border: 1px solid var(--ui-border-color-light);
     border-radius: 0;
-    background-color: var(--el-fill-color-blank);
-    color: var(--el-text-color-primary);
+    background-color: var(--ui-fill-color-blank);
+    color: var(--ui-text-color-primary);
 }
 
 .card-small {
@@ -20,7 +20,7 @@
 .card-title {
     margin: 0 0 10px;
     padding-bottom: 5px;
-    border-bottom: 1px solid var(--el-border-color-light);
-    font-size: var(--el-font-size-medium);
+    border-bottom: 1px solid var(--ui-border-color-light);
+    font-size: var(--ui-font-size-medium);
     font-weight: 600;
 }

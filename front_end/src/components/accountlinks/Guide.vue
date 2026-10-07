@@ -1,11 +1,11 @@
 <template>
-    <span v-if="platform == AccountLinkPlatform.Saolei" class="text">
+    <span v-if="platform == AccountLinkPlatform.Saolei">
         <b>{{ t('local.title') }}</b><br>
         {{ t('local.saolei1') }}
         <PlatformIcon platform="c" />{{ t('local.saolei2') }}<br>
         <img src="../../assets/IdGuideSaolei.png" width="100%">
     </span>
-    <span v-else-if="platform == AccountLinkPlatform.MSGames" class="text">
+    <span v-else-if="platform == AccountLinkPlatform.MSGames">
         <b>{{ t('local.title') }}</b><br>
         {{ t('local.msgames1') }}
         <PlatformIcon platform="a" />{{ t('local.msgames2') }}<br>
@@ -13,16 +13,16 @@
         {{ t('local.msgames3') }}
         <img src="../../assets/IdGuideMsgames2.png" width="100%">
     </span>
-    <span v-else-if="platform == AccountLinkPlatform.WoM" class="text">
+    <span v-else-if="platform == AccountLinkPlatform.WoM">
         <b>{{ t('local.title') }}</b><br>
         {{ t('local.wom1') }}
         <PlatformIcon platform="w" />{{ t('local.wom2') }}
         <img src="../../assets/IdGuideWom.png" width="100%">
     </span>
-    <span v-else-if="platform == AccountLinkPlatform.QQ" class="text">
+    <span v-else-if="platform == AccountLinkPlatform.QQ">
         {{ t('local.QQ') }}
     </span>
-    <span v-else-if="platform == AccountLinkPlatform.Bilibili" class="text">
+    <span v-else-if="platform == AccountLinkPlatform.Bilibili">
         <b>{{ t('local.title') }}</b><br>
         {{ t('local.bilibili1') }}
         <PlatformIcon platform="B" />{{ t('local.bilibili2') }}<br>

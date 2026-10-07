@@ -15,7 +15,7 @@
             <div class="card card-small" style="overflow-x: hidden;">
                 <div class="marker-setting">
                     <div v-if="hasOption('shape')" class="marker-setting__item">
-                        <span class="text text-small">
+                        <span class="text-regular text-small">
                             {{ t('local.shape') }}
                         </span>
                         <ElSelect v-model="shape">
@@ -23,19 +23,19 @@
                         </ElSelect>
                     </div>
                     <div v-if="hasOption('radius')" class="marker-setting__item">
-                        <span class="text text-small">
+                        <span class="text-regular text-small">
                             {{ t('local.radius') }}
                         </span>
                         <ElInputNumber v-model="radius" size="small" :min="0" :step="1" controls-position="right" />
                     </div>
                     <div v-if="hasOption('opacity')" class="marker-setting__item">
-                        <span class="text text-small">
+                        <span class="text-regular text-small">
                             {{ t('local.opacity') }}
                         </span>
                         <ElSlider v-model="opacity" :min="0" :max="1" :step="0.05" />
                     </div>
                     <div v-if="hasOption('strokeWidth')" class="marker-setting__item">
-                        <span class="text text-small">
+                        <span class="text-regular text-small">
                             {{ t('local.strokeWidth') }}
                         </span>
                         <ElInputNumber v-model="strokeWidth" :min="0" :step="1" controls-position="right" />

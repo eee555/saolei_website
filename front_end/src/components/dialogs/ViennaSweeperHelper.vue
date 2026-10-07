@@ -1,6 +1,6 @@
 <template>
     <div>
-        <span class="text text-medium">
+        <span class="text-medium">
             {{ t('local.description1') }}
             <br>
             {{ t('local.description2') }}
@@ -9,82 +9,113 @@
             https://sweeper.wien
         </span>
         <div style="height: 1em" />
-        <ElDescriptions border>
-            <ElDescriptionsItem :label="t('software.operatingSystem')" :span="2">
-                Windows
-            </ElDescriptionsItem>
-            <ElDescriptionsItem :label="t('software.supportedLanguages')">
-                <BaseFlagUK />
-            </ElDescriptionsItem>
-            <ElDescriptionsItem :label="t('software.feature')" :span="3">
-                <BaseTagSupport>
-                    {{ t('software.features.customMode') }}
-                </BaseTagSupport>
-                &nbsp;
-                <BaseTagSupport :support="false">
-                    {{ t('software.features.customCounter') }}
-                </BaseTagSupport>
-                &nbsp;
-                <BaseTagSupport :support="false">
-                    {{ t('software.features.noGuessing') }}
-                </BaseTagSupport>
-                &nbsp;
-                <BaseTagSupport>
-                    {{ t('software.features.cellScale') }}
-                </BaseTagSupport>
-                &nbsp;
-                <BaseTagSupport>
-                    {{ t('software.features.tournament') }}
-                </BaseTagSupport>
-                &nbsp;
-                <BaseTagSupport :support="false">
-                    {{ t('software.features.mouseLock') }}
-                </BaseTagSupport>
-            </ElDescriptionsItem>
-            <ElDescriptionsItem :label="t('software.platform')">
-                <BaseTagSupport>
-                    <BaseBadgeOpenms />
-                </BaseTagSupport>
-                &nbsp;
-                <BaseTagSupport :support="false">
-                    <BaseBadgeSaolei />
-                </BaseTagSupport>
-                &nbsp;
-                <BaseTagSupport>
-                    <BaseBadgeMsgames />
-                </BaseTagSupport>
-                &nbsp;
-                <BaseTagSupport>
-                    <BaseBadgeScoreganizer />
-                </BaseTagSupport>
-            </ElDescriptionsItem>
-        </ElDescriptions>
+        <div class="description-layout">
+            <dl class="descriptions descriptions-bordered">
+                <div class="description-item description-span-2">
+                    <dt>{{ t('software.operatingSystem') }}</dt>
+                    <dd>
+                        Windows
+                    </dd>
+                </div>
+                <div class="description-item">
+                    <dt>{{ t('software.supportedLanguages') }}</dt>
+                    <dd>
+                        <BaseFlagUK />
+                    </dd>
+                </div>
+                <div class="description-item description-wide">
+                    <dt>{{ t('software.feature') }}</dt>
+                    <dd>
+                        <BaseTagSupport>
+                            {{ t('software.features.customMode') }}
+                        </BaseTagSupport>
+                        &nbsp;
+                        <BaseTagSupport :support="false">
+                            {{ t('software.features.customCounter') }}
+                        </BaseTagSupport>
+                        &nbsp;
+                        <BaseTagSupport :support="false">
+                            {{ t('software.features.noGuessing') }}
+                        </BaseTagSupport>
+                        &nbsp;
+                        <BaseTagSupport>
+                            {{ t('software.features.cellScale') }}
+                        </BaseTagSupport>
+                        &nbsp;
+                        <BaseTagSupport>
+                            {{ t('software.features.tournament') }}
+                        </BaseTagSupport>
+                        &nbsp;
+                        <BaseTagSupport :support="false">
+                            {{ t('software.features.mouseLock') }}
+                        </BaseTagSupport>
+                    </dd>
+                </div>
+                <div class="description-item description-wide">
+                    <dt>{{ t('software.platform') }}</dt>
+                    <dd>
+                        <BaseTagSupport>
+                            <BaseBadgeOpenms />
+                        </BaseTagSupport>
+                        &nbsp;
+                        <BaseTagSupport :support="false">
+                            <BaseBadgeSaolei />
+                        </BaseTagSupport>
+                        &nbsp;
+                        <BaseTagSupport>
+                            <BaseBadgeMsgames />
+                        </BaseTagSupport>
+                        &nbsp;
+                        <BaseTagSupport>
+                            <BaseBadgeScoreganizer />
+                        </BaseTagSupport>
+                    </dd>
+                </div>
+            </dl>
+        </div>
         <div style="height: 1em" />
-        <ElTable :data="tableData" table-layout="auto">
-            <ElTableColumn prop="version" :label="t('software.version')" />
-            <ElTableColumn prop="date" :label="t('software.releaseDate')" />
-            <ElTableColumn prop="expire" :label="t('software.expireDate')" />
-            <ElTableColumn :label="t('software.download')">
-                <template #default="{ row }">
+        <BaseTable>
+            <template #head>
+                <tr>
+                    <th scope="col">
+                        {{ t('software.version') }}
+                    </th>
+                    <th scope="col">
+                        {{ t('software.releaseDate') }}
+                    </th>
+                    <th scope="col">
+                        {{ t('software.expireDate') }}
+                    </th>
+                    <th scope="col">
+                        {{ t('software.download') }}
+                    </th>
+                </tr>
+            </template>
+            <tr v-for="row in tableData" :key="row.version">
+                <td>{{ row.version }}</td>
+                <td>{{ row.date }}</td>
+                <td>{{ row.expire }}</td>
+                <td>
                     <template v-for="link in row.links" :key="link.url">
                         <a class="link text" :href="link.url" target="_blank" rel="noopener noreferrer">
                             {{ link.label }}
                         </a>
                         &nbsp;
                     </template>
-                </template>
-            </ElTableColumn>
-        </ElTable>
+                </td>
+            </tr>
+        </BaseTable>
     </div>
 </template>
 
 <script setup lang="ts">
+import '@/styles/descriptions.css';
 import '@/styles/link.css';
 import '@/styles/text.css';
-import { ElDescriptions, ElDescriptionsItem, ElTable, ElTableColumn } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
 import { BaseBadgeMsgames, BaseBadgeOpenms, BaseBadgeSaolei, BaseBadgeScoreganizer } from '@/components/common/badge';
+import BaseTable from '@/components/common/BaseTable.vue';
 import BaseTagSupport from '@/components/common/BaseTagSupport.vue';
 import { BaseFlagUK } from '@/components/common/flag';
 

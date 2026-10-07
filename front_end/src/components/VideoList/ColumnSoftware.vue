@@ -1,5 +1,5 @@
 <template>
-    <PrColumn field="software" :show-filter-match-modes="false" :show-filter-operator="false" :show-apply-button="false" :show-clear-button="false">
+    <PrColumn field="software" :show-filter-match-modes="false" :show-filter-operator="false" :show-apply-button="false" :show-clear-button="false" style="width: 0.5em">
         <template #body="{data}: {data: VideoAbstract}">
             <BaseOverlay>
                 <SoftwareIcon :software="data.software" style="margin: 0 -8px;" />

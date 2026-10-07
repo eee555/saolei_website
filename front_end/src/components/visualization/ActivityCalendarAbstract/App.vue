@@ -27,7 +27,7 @@
                         <div
                             v-for="cell of dateCells"
                             :key="cell.dateKey"
-                            class="calendar-cell text"
+                            class="calendar-cell text-regular"
                             :style="{
                                 width: `${options.cellSize}px`,
                                 height: `${options.cellSize}px`,

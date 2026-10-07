@@ -40,3 +40,8 @@ export async function fetchSaoleiRecords(playerId: number): Promise<Record<Saole
     const { data } = await $axios.get<Record<SaoleiRankingName, SaoleiPlayerRecord>>(`/api/speedranking/player/${playerId}`);
     return data;
 }
+
+export async function rebuildSaoleiRecord(playerId: number, rankingName: SaoleiRankingName, stat: SaoleiField): Promise<SaoleiRecord> {
+    const { data } = await $axios.post<SaoleiRecord>('/api/speedranking/admin/rebuild_record', { player_id: playerId, ranking_name: rankingName, stat });
+    return data;
+}

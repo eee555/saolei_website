@@ -1,7 +1,7 @@
 <template>
-    <span class="text">第</span>
+    <span>第</span>
     <ElInputNumber v-model="gscID" size="small" :min="0" />
-    <span class="text">届</span>
+    <span>届</span>
     <br>
     <GSCGeneralInfo :id="gscID" />
 </template>

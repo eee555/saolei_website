@@ -79,6 +79,11 @@ def task_response(task):
 @router.post('/new')
 @decorate_view(GSC_admin_required)
 def new_GSC_tournament(request: HttpRequest, data: NewGSCTournamentIn = Form(...)):  # noqa: B008
+    """
+    - `GSC_admin_required`
+
+    GSC 主办方或管理员可创建比赛。
+    """
     if GSCTournament.objects.filter(order=data.id).exists():
         return HttpResponseConflict()
 
@@ -161,12 +166,22 @@ def register_gsc_participant_identifier(request: HttpRequest, data: RegisterGSCP
 @router.get('/task', response=DBTaskOut | None)
 @decorate_view(GSC_admin_required)
 def get_gsc_task(request: HttpRequest, order: int):
+    """
+    - `GSC_admin_required`
+
+    GSC 主办方或管理员可查看结算任务。
+    """
     return get_object_or_404(GSCTournament, order=order).task
 
 
 @router.post('/task/finish')
 @decorate_view(GSC_admin_required)
 def finish_gsc_task(request: HttpRequest, data: GSCOrderIn = Form(...)):  # noqa: B008
+    """
+    - `GSC_admin_required`
+
+    GSC 主办方或管理员可启动已结束比赛的结算任务。
+    """
     tournament = get_object_or_404(GSCTournament, order=data.order)
     if not tournament.is_ended():
         return HttpResponseForbidden()

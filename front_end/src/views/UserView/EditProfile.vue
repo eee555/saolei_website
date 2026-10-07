@@ -1,28 +1,26 @@
 <template>
     <!-- 真实姓名 -->
     <div class="input-label">
-        <div class="text text-large">
+        <div class="text-large">
             {{ t('local.realname') }}
         </div>
-        <div class="text text-small">
+        <div class="text-small">
             {{ t('local.realnameTooltip') }}
         </div>
     </div>
 
     <!-- 母语名 -->
-    <div class="input-label text">
-        <div class="text">
-            {{ t('local.localname') }}
-        </div>
-        <div class="text text-small">
+    <div class="input-label">
+        <div>{{ t('local.localname') }}</div>
+        <div class="text-small">
             {{ t('local.localnameTooltip') }}
         </div>
     </div>
     <div>
-        <div v-if="formStatus.realname.status === 'error'" class="text text-danger text-small">
+        <div v-if="formStatus.realname.status === 'error'" class="text-danger text-small">
             {{ formStatus.realname.errorMsg }}
         </div>
-        <div v-else-if="formStatus.realname.status === 'success'" class="text text-small text-success">
+        <div v-else-if="formStatus.realname.status === 'success'" class="text-small text-success">
             {{ t('local.updateSuccess') }}
         </div>
         <ElInput
@@ -33,25 +31,23 @@
 
     <!-- 英文姓名 -->
     <div class="input-label">
-        <div class="text">
-            {{ t('local.englishName') }}
-        </div>
-        <div class="text text-small">
+        <div>{{ t('local.englishName') }}</div>
+        <div class="text-small">
             {{ t('local.englishNameTooltip') }}
         </div>
     </div>
     <div>
-        <div v-if="formStatus.firstname.status === 'error'" class="text text-danger text-small">
+        <div v-if="formStatus.firstname.status === 'error'" class="text-danger text-small">
             {{ formStatus.firstname.errorMsg }}
         </div>
-        <div v-else-if="formStatus.firstname.status === 'success'" class="text text-small text-success">
+        <div v-else-if="formStatus.firstname.status === 'success'" class="text-small text-success">
             {{ t('local.updateSuccess') }}
         </div>
         <ElInput v-model="formStatus.firstname.new" :placeholder="t('local.firstname')" minlength="1" maxlength="255" show-word-limit :disabled="user.firstname !== ''" />
-        <div v-if="formStatus.lastname.status === 'error'" class="text text-danger text-small">
+        <div v-if="formStatus.lastname.status === 'error'" class="text-danger text-small">
             {{ formStatus.lastname.errorMsg }}
         </div>
-        <div v-else-if="formStatus.lastname.status === 'success'" class="text text-small text-success">
+        <div v-else-if="formStatus.lastname.status === 'success'" class="text-small text-success">
             {{ t('local.updateSuccess') }}
         </div>
         <ElInput v-model="formStatus.lastname.new" :placeholder="t('local.lastname')" minlength="1" maxlength="255" show-word-limit :disabled="user.lastname !== ''" />
@@ -59,21 +55,21 @@
 
     <!-- 个性签名 -->
     <div class="input-label">
-        <div class="text text-large">
+        <div class="text-large">
             {{ t('local.signature') }}
         </div>
-        <div class="text text-small">
+        <div class="text-small">
             {{ t('local.signatureTooltip', { left: user.newSignatureBudget(new Date(Date.now())), next: toISODateTimeString(user.nextSignatureAvailable) }) }}
         </div>
-        <div v-if="expTimeMs >= 200000" class="text text-small text-warning">
+        <div v-if="expTimeMs >= 200000" class="text-small text-warning">
             {{ t('local.tooltipExpTime') }}
         </div>
     </div>
     <div>
-        <div v-if="formStatus.signature.status === 'error'" class="text text-danger text-small">
+        <div v-if="formStatus.signature.status === 'error'" class="text-danger text-small">
             {{ formStatus.signature.errorMsg }}
         </div>
-        <div v-else-if="formStatus.signature.status === 'success'" class="text text-small text-success">
+        <div v-else-if="formStatus.signature.status === 'success'" class="text-small text-success">
             {{ t('local.updateSuccess') }}
         </div>
         <ElInput

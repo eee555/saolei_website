@@ -19,6 +19,17 @@ const restrictedHtmlElements = [{
 }, {
     element: ['ElCard', 'el-card'],
     message: 'Use "@/styles/cards.css" instead.',
+}, {
+    element: ['ElDivider', 'el-divider'],
+    message: 'Use CSS borders on native containers instead.',
+}];
+
+const restrictedActionElements = [{
+    element: ['ElButton', 'el-button'],
+    message: 'Use BaseButton or a native button with "@/styles/button.css" instead.',
+}, {
+    element: ['ElLink', 'el-link'],
+    message: 'Use a native link with "@/styles/link.css" for navigation, or BaseTextButton for actions.',
 }];
 
 export default defineConfig({
@@ -296,12 +307,25 @@ export default defineConfig({
     ],
     rules: {
         'vue/no-restricted-html-elements': [
-            'error', ...restrictedHtmlElements, {
-                element: ['ElButton', 'el-button'],
-                message: 'Use BaseButton or a native button with "@/styles/button.css" instead.',
-            }, {
-                element: ['ElLink', 'el-link'],
-                message: 'Use a native link with "@/styles/link.css" for navigation, or BaseTextButton for actions.',
+            'error', ...restrictedHtmlElements, ...restrictedActionElements,
+        ],
+    },
+}, {
+    files: [
+        'src/components/widgets/VideoAbstractDisplay.vue',
+        'src/components/dialogs/ArbiterHelper.vue',
+        'src/components/dialogs/MetasweeperHelper.vue',
+        'src/components/dialogs/ViennaSweeperHelper.vue',
+        'src/views/SettingView/Appearance.vue',
+        'src/views/SettingView/App.vue',
+        'src/views/VideoView.vue',
+        'src/components/VideoUpload/Table.vue',
+    ],
+    rules: {
+        'vue/no-restricted-html-elements': [
+            'error', ...restrictedHtmlElements, ...restrictedActionElements, {
+                element: ['ElDescriptions', 'el-descriptions', 'ElDescriptionsItem', 'el-descriptions-item'],
+                message: 'Use native dl/dt/dd with "@/styles/descriptions.css" instead.',
             },
         ],
     },

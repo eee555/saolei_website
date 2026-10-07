@@ -3,7 +3,7 @@
         <div class="mineracer-link">
             <PrToolbar>
                 <template #start>
-                    <span class="text text-medium">
+                    <span class="text-medium text-regular">
                         {{ t('common.platform.m') }}
                     </span>
                 </template>

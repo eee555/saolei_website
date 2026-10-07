@@ -1,3 +1,5 @@
+import { Key, Lock, User } from '@element-plus/icons-vue';
+
 import LoginForm from './LoginForm.vue';
 
 import $axios from '@/http';
@@ -6,6 +8,7 @@ import i18n from '@/i18n';
 const mountOptions = {
     global: {
         plugins: [i18n],
+        components: { Key, Lock, User },
         config: {
             globalProperties: {
                 $axios,
@@ -30,6 +33,7 @@ describe('<LoginForm />', () => {
         cy.contains('Password').next().find('input').should('have.attr', 'type', 'password');
         cy.contains('Captcha').next().find('input').should('have.attr', 'type', 'text');
         cy.contains('Captcha').next().find('img');
+        cy.get('.el-input__prefix svg').should('have.length', 3);
         cy.contains('Keep me logged in').find('input').should('have.attr', 'type', 'checkbox');
         cy.contains('Forget password?');
         cy.contains('button', /^Log in$/).should('have.attr', 'type', 'button');

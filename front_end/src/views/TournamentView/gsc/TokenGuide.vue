@@ -1,5 +1,5 @@
 <template>
-    <span class="text">
+    <span>
         <a class="link text" :href="gscGuideUrl" target="_blank" rel="noopener noreferrer">
             {{ t('gsc.identifierGuide.guideLink') }}
         </a>
@@ -7,7 +7,7 @@
             <BaseButton :disabled="store.isUserAnonymous" :loading="registeringParticipant" @click="registerParticipant">
                 {{ t('common.button.register') }}
             </BaseButton>
-            <span v-if="store.isUserAnonymous" class="text text-danger">
+            <span v-if="store.isUserAnonymous" class="text-danger">
                 {{ t('common.msg.realNameRequired') }}
             </span>
         </div>
@@ -23,7 +23,7 @@
                 <BaseButton :loading="registeringIdentifier" @click="registerIdentifier">
                     {{ t('common.button.register') }}
                 </BaseButton>
-                <span v-if="errorText !== ''" class="text text-danger">
+                <span v-if="errorText !== ''" class="text-danger">
                     {{ errorText }}
                 </span>
             </div>
