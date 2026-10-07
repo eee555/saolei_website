@@ -25,18 +25,12 @@ function mountOptions(src: string) {
 }
 
 function mockVideoFixture(headers: Record<string, string> = {}, filename = fixture.filename) {
-    cy.fixture(filename, 'binary').then((fileContent) => {
-        const data = binaryStringToUint8Array(fileContent);
-        const responseBody = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
-        cy.intercept('GET', '**/api/video/preview**', (request) => {
-            expect(request.url).to.contain('/api/video/preview');
-            request.reply({
-                statusCode: 200,
-                headers: { 'content-type': 'application/octet-stream', ...headers },
-                body: responseBody,
-            });
-        }).as('getVideo');
-    });
+    cy.intercept('GET', '**/api/video/preview**', {
+        statusCode: 200,
+        headers: { 'content-type': 'application/octet-stream', ...headers },
+        // Load raw bytes on the Cypress server instead of sending an ArrayBuffer through request.reply().
+        fixture: `${filename},null`,
+    }).as('getVideo');
 }
 
 function dynamicParamCell(label: string, options?: Partial<Cypress.Timeoutable>) {
@@ -104,6 +98,7 @@ describe('<NativePlayer />', () => {
     });
 
     it('includes the final click when playing, seeking or stepping to the end of replay 52200', () => {
+        cy.viewport(1000, 800);
         mockVideoFixture({}, '52200.evf');
         let animationCallback: FrameRequestCallback | undefined;
         cy.window().then((win) => {
@@ -147,6 +142,7 @@ describe('<NativePlayer />', () => {
     });
 
     it('keeps the two editors independent and persists probability visibility', () => {
+        cy.viewport(1000, 800);
         mockVideoFixture();
         cy.mount(NativePlayer, mountOptions(fixture.src));
         cy.wait('@getVideo');

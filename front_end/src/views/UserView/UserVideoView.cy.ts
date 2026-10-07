@@ -53,6 +53,7 @@ describe('<UserVideoView /> video reveal', () => {
         cy.get('.checkbox-group input[value=bv]').should('not.be.checked');
         cy.get('.checkbox-group').contains('label', /^Bv$/).click();
         cy.get('.checkbox-group input[value=bv]').should('be.checked');
+        cy.get('.p-datatable-table').contains('th', /^Bv$/).scrollIntoView();
         cy.get('.p-datatable-table').contains('th', /^Bv$/).should('be.visible');
         cy.contains('.el-tag', /^Time$/).find('.el-tag__close').click();
         cy.get('.checkbox-group input[value=time]').should('not.be.checked');
