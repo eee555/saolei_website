@@ -2,7 +2,7 @@
 
 制定日期：2026-10-03。现状核查与整理：2026-10-07。
 
-本计划以当前代码为实施起点，只列剩余工作和持续适用的约束。按用户约定，已提交的改动视为验收完成，不再列为实施或测试待办。分隔线迁移已提交，本计划移除其待办；当前普通页面 8 处描述布局已迁移，待用户验收。批次编号保留，避免后续交流中混淆。
+本计划以当前代码为实施起点，只列剩余工作和持续适用的约束。按用户约定，已提交的改动视为验收完成，不再列为实施或测试待办。普通页面描述布局已验收，移除其实施与验收待办；当前周赛报名表已迁移到 BaseTable，待用户验收。批次编号保留，避免后续交流中混淆。
 
 ## 目标与固定约束
 
@@ -26,7 +26,7 @@
 | 文字语义 | 普通文本可继承默认样式；需要独立常规文字色时使用 `text-regular`，保留字号与状态色修饰类；标题、链接、控件等仍可使用有实际重置作用的 `text` |
 | 有色数据单元格 | [`PiecewiseColorScheme`](src/utils/colors.ts) 按背景明暗引用浅色 / 深色模式的默认文字色；透明背景继承父容器颜色。两套来源为 `--ui-text-color-regular-light` / `--ui-text-color-regular-dark` |
 | 布局、卡片与操作 | `layout.css`、`cards.css`、`link.css`、`button.css` / `buttons/`；`BaseButton`、`BaseTextButton`、确认/取消按钮、`BaseFileInput` 等已有原生实现 |
-| 描述列表 | [`descriptions.css`](src/styles/descriptions.css) 提供 dl / dt / dd 模板，支持边框、跨列和容器宽度适配，无独立 Vue 组件；本次使用方待验收 |
+| 描述列表 | [`descriptions.css`](src/styles/descriptions.css) 提供 dl / dt / dd 模板，支持边框、跨列和容器宽度适配，无独立 Vue 组件；普通页面已验收 |
 | 展示表格 | [`BaseTable`](src/components/common/BaseTable.vue) 封装原生表格、滚动容器、空状态和插槽；`table.css` 提供行悬停高亮，`table-columns.css` 提供排名、玩家、数值、时间等公共列样式 |
 | 保留表格的视觉 | `theme/tables.css` 为 BaseTable、ElTable、PrimeVue DataTable 提供统一参数；`vendors/element-plus-table.css`、`primevue-table.css`、`primevue-table-controls.css` 已接入 |
 | Element Plus 按钮兼容 | `vendors/element-plus.css` 已提供直角覆盖；暂留组件继续使用，不重复安排按钮整体迁移 |
@@ -39,40 +39,15 @@
 
 | 批次 | 工作 | 范围与边界 |
 | --- | --- | --- |
-| 2 | 描述布局迁移与验收 | 普通页面 8 处已迁移，待验收；剩余 10 个文件共 11 处 ElDescriptions 位于管理员与账号关联区域，按既定范围暂缓 |
-| 3 | 核对并迁移剩余展示表格 | 周赛报名表是当前明确候选；其余 ElTable 根据实际排序、编辑等依赖决定是否保留 |
+| 2 | 剩余描述布局 | 剩余 10 个文件共 11 处 ElDescriptions 位于管理员与账号关联区域，按既定范围暂缓 |
+| 3 | 周赛报名表验收与剩余表格核对 | 周赛报名表已迁移，待验收；其余 5 个 ElTable 根据实际排序、编辑等依赖决定是否保留 |
 | 4 | 分类别给复杂组件换肤 | 输入与表单、选择控件、Tabs、菜单、弹窗、通知和加载状态，各自独立成批；细化对应尺寸参数 |
 | 5 | PrimeVue 退出 | 筛选控件、表格替代验证、逐表迁移和依赖清理；随相关模块维护推进 |
 | 6 | 局部收尾 | 随每批删除失效导入、重复样式和已无使用方的兼容项，更新本计划 |
 
-批次 2 普通页面待验收，下一实施批次建议为批次 3。批次 4 不需要等待全部简单组件迁移完毕。首页比赛卡片、账号关联页面重做和 PrimeVue 全部退出不作为其他批次的前置条件。
+批次 3 周赛报名表待验收，下一实施批次建议为批次 4。批次 4 不需要等待全部简单组件迁移完毕。首页比赛卡片、账号关联页面重做和 PrimeVue 全部退出不作为其他批次的前置条件。
 
-### 2. 描述布局（普通页面已实现，待验收）
-
-采用原生 dl / dt / dd 与共享 CSS Grid 模板，不新增 Vue 组件。默认三列，按容器宽度调整为两列或一列；宽项占整行，跨两列项在三列布局中保留跨列。无边框项内部可换行。录像信息保留紧凑字号和更低的列数切换阈值，避免浮层中每个指标独占一行。边框、背景、文字均引用项目变量。
-
-本批迁移范围：
-
-| 使用方 | 保留内容 |
-| --- | --- |
-| `components/widgets/VideoAbstractDisplay.vue` | 上传与结束时间、结束时间条件显示、指标格式化、录像状态与软件图标；浮层宽度受父容器限制 |
-| `components/dialogs/ArbiterHelper.vue`、`MetasweeperHelper.vue`、`ViennaSweeperHelper.vue` | 操作系统、语言、功能与平台标记，跨列、边框及 Arbiter 的最大宽度；版本表格不变 |
-| `views/SettingView/Appearance.vue`、`App.vue` | 全部子控件、v-model、配置持久化、提示内容和实验功能显示条件 |
-| `views/VideoView.vue` | 筛选标题、状态与 NF / 3BV 控件、请求与页码处理；ElTable 和分页保留 |
-| `components/VideoUpload/Table.vue` | 展开区域的文件名、条件指标与格式化；表格展开、排序、筛选与选择保留 |
-
-已移除这 8 个文件的 ElDescriptions / ElDescriptionsItem 导入，并对这些文件补充 ESLint 标签限制。设置 E2E 的语言切换操作改为通过 dt / dd 定位实际 switch，避免点击值容器的空白区域。模板说明见[`styles/README.md`](src/styles/README.md)。
-
-本批已通过 `lintfix`、类型检查、前端构建和 diff 空白检查；模板对比确认 47 个描述项的标签、条件显示、值与子控件保持一致。共享 CSS 有 93 个非空行。Cypress 与视觉验收仍由用户执行。
-
-待用户运行的现有测试：
-
-```powershell
-npx.cmd cypress run --component --spec "src/views/VideoView.cy.ts,src/components/VideoUpload/App.cy.ts,src/components/visualization/BBBvSummary/App.cy.ts,src/components/Footer.cy.ts"
-npx.cmd cypress run --e2e --spec "cypress/e2e/settings.cy.ts"
-```
-
-视觉验收补充检查三个软件帮助弹窗、录像信息浮层和上传行展开：深浅主题、标签和值对齐、时间与长文件名换行，以及同一视口下改变容器宽度。现有 spec 不代表完整覆盖这些布局。
+### 2. 剩余描述布局
 
 剩余 11 处 ElDescriptions 位于 10 个文件，按既定范围暂缓：
 
@@ -90,18 +65,29 @@ BaseTable 的迁移边界保持如下：
 - 简单行点击可由调用方绑定 `tr`，调用方负责键盘触发及独立单元格操作的事件冒泡。
 - BaseTable 不新增内部排序、筛选、选择、展开、编辑、分页或递归列注册体系。分组表头直接使用原生 rowspan / colspan。
 
-当前仍有 6 个 ElTable 使用方：
+本批 [`weekly/Registered.vue`](src/views/TournamentView/weekly/Registered.vue) 已迁移到 BaseTable，待验收。保留 v-loading、玩家名与匿名显示、时间区间格式化、token、按权限显示的删除按钮，以及完整确认弹窗和删除逻辑。普通用户显示 3 列、管理者显示 4 列，空提示复用 `ranking.empty` 并跨对应列数。
+
+列宽继续采用原来的 150px / 330px / 180px 最小宽度与 90px 操作列，窄容器由 BaseTable 内部滚动；共用表格主题、网格和行悬停样式。ESLint 仅在此文件限制重新引入 ElTable / ElTableColumn，不影响剩余复杂表格。
+
+`weekly/App.cy.ts` 已改用稳定的 `data-cy` 定位原生表格，并覆盖普通空表的 3 列提示与管理者删除最后一行后的 4 列提示；报名响应、权限、取消/确认、删除失败和删除自身后会话状态的现有覆盖继续保留。用户在 `front_end` 运行：
+
+```powershell
+npx.cmd cypress run --component --spec "src/views/TournamentView/weekly/App.cy.ts"
+```
+
+验收重点：深浅主题、窄容器滚动、玩家链接与匿名显示、空表、管理权限及删除确认流程。
+
+本批已通过 `lintfix`、类型检查、前端构建及 diff 空白检查。Cypress 由用户运行，尚未验证浏览器行为。
+
+当前仍有 5 个 ElTable 使用方：
 
 | 使用方 | 当前判断 |
 | --- | --- |
-| [`weekly/Registered.vue`](src/views/TournamentView/weekly/Registered.vue) | 明确迁移候选：表格无内部排序、选择或展开；单元格删除按钮及确认弹窗独立保留 |
 | [`widgets/IdentifierManager.vue`](src/components/widgets/IdentifierManager.vue) | 使用内部排序及单元格编辑，暂留 |
 | [`gsc/AllSummary.vue`](src/views/TournamentView/gsc/AllSummary.vue) | 使用内部客户端排序，暂留 |
 | [`weekly/AllSummary.vue`](src/views/TournamentView/weekly/AllSummary.vue) | 使用内部排序及自定义比较函数，暂留 |
 | [`TournamentList.vue`](src/views/TournamentView/TournamentList.vue) | 使用默认排序和可排序列，暂留；保留原因包含排序，简单行点击本身不是障碍 |
 | [`VideoView.vue`](src/views/VideoView.vue) | 使用库排序事件、列状态与固定列，另行核对迁移成本；本批先保留 |
-
-周赛报名表单独成批，保留加载、玩家名、时间区间、token、管理权限、删除请求、确认弹窗及删除后的更新行为；按实际显示列数处理空状态。复用 `weekly/App.cy.ts` 的报名与删除覆盖。
 
 其余表格继续使用已统一的视觉样式，不在本批顺带重写内部排序或编辑逻辑。未来按实际使用能力重新评估，而不以表格名称或是否包含按钮作决定。
 
