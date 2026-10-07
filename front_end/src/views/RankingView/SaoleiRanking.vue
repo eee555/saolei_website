@@ -1,11 +1,12 @@
 <template>
     <div style="display: flex; gap: 1rem; align-items: center">
-        <BaseButton class="square-button" :loading="loading" :aria-label="t('common.action.refresh')" :title="t('common.action.refresh')" @click="load">
-            <BaseIconRefresh />
+        <BaseButton class="square-button" :aria-label="t('common.action.refresh')" :title="t('common.action.refresh')" @click="load">
+            <BaseIconRefresh :loading="loading" aria-hidden="true" />
         </BaseButton>
-        <ElCheckbox v-model="nf" class="nf-toggle">
-            {{ t('common.nf') }}
-        </ElCheckbox>
+        <label class="checkbox nf-toggle">
+            <input v-model="nf" class="checkbox-input" type="checkbox">
+            <span>{{ t('common.nf') }}</span>
+        </label>
     </div>
     <ElAlert v-if="failed" :title="t('ranking.loadFailed')" type="error" :closable="false" />
     <BaseTable v-loading="loading" class="saolei-ranking-table" :table-style="{ width: 'auto', marginInline: 'auto' }" :empty="rows.length === 0" :column-count="2 + saoleiFields.length" :empty-text="t('ranking.empty')">
@@ -54,7 +55,7 @@
 <script setup lang="ts">
 import '@/styles/button.css';
 
-import { ElAlert, ElCheckbox, ElPagination, vLoading } from 'element-plus';
+import { ElAlert, ElPagination, vLoading } from 'element-plus';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
