@@ -93,6 +93,26 @@ describe('Color Theme', () => {
 });
 
 describe('General Settings', () => {
+    it('persists third-party trust and supports toggling it with Space', () => {
+        cy.visit('/#/settings');
+        const trustLabel = 'https://strange-dust.github.io/minesweeper-replay-analyzer/';
+        cy.contains('label', trustLabel).find('input').should('not.be.checked');
+        cy.contains('label', trustLabel).click();
+        cy.contains('label', trustLabel).find('input').should('be.checked');
+        cy.window().its('localStorage').invoke('getItem', 'video-player-config').should((value: string | null) => {
+            const config = JSON.parse(value ?? '{}') as { strangeDustTrust?: boolean };
+            expect(config.strangeDustTrust).to.equal(true);
+        });
+        cy.reload();
+        cy.contains('label', trustLabel).find('input').should('be.checked').focus();
+        cy.realPress('Space');
+        cy.contains('label', trustLabel).find('input').should('not.be.checked');
+        cy.window().its('localStorage').invoke('getItem', 'video-player-config').should((value: string | null) => {
+            const config = JSON.parse(value ?? '{}') as { strangeDustTrust?: boolean };
+            expect(config.strangeDustTrust).to.equal(false);
+        });
+    });
+
     it('Hide Language Icon', () => {
         cy.visit('/#/settings');
         cy.get('[data-cy=languagePicker]').should('be.visible');

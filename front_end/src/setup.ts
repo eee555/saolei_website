@@ -4,6 +4,7 @@ import './styles/theme/index.css';
 import './styles/theme/tables.css';
 import './styles/text.css';
 import './styles/checkbox.css';
+import './styles/checkbox-buttons.css';
 import './styles/vendors/element-plus.css';
 import './styles/vendors/element-plus-table.css';
 import './styles/vendors/primevue-table.css';

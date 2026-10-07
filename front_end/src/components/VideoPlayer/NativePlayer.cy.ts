@@ -25,18 +25,12 @@ function mountOptions(src: string) {
 }
 
 function mockVideoFixture(headers: Record<string, string> = {}, filename = fixture.filename) {
-    cy.fixture(filename, 'binary').then((fileContent) => {
-        const data = binaryStringToUint8Array(fileContent);
-        const responseBody = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
-        cy.intercept('GET', '**/api/video/preview**', (request) => {
-            expect(request.url).to.contain('/api/video/preview');
-            request.reply({
-                statusCode: 200,
-                headers: { 'content-type': 'application/octet-stream', ...headers },
-                body: responseBody,
-            });
-        }).as('getVideo');
-    });
+    cy.intercept('GET', '**/api/video/preview**', {
+        statusCode: 200,
+        headers: { 'content-type': 'application/octet-stream', ...headers },
+        // Load raw bytes on the Cypress server instead of sending an ArrayBuffer through request.reply().
+        fixture: `${filename},null`,
+    }).as('getVideo');
 }
 
 function dynamicParamCell(label: string, options?: Partial<Cypress.Timeoutable>) {
@@ -104,6 +98,7 @@ describe('<NativePlayer />', () => {
     });
 
     it('includes the final click when playing, seeking or stepping to the end of replay 52200', () => {
+        cy.viewport(1000, 800);
         mockVideoFixture({}, '52200.evf');
         let animationCallback: FrameRequestCallback | undefined;
         cy.window().then((win) => {
@@ -144,6 +139,45 @@ describe('<NativePlayer />', () => {
         cy.get('.progress-bar__step').click();
         dynamicParamCell('bvs').should('contain', '52/52');
         dynamicParamCell('cl').invoke('text').should('match', /^63@/);
+    });
+
+    it('keeps the two editors independent and persists probability visibility', () => {
+        cy.viewport(1000, 800);
+        mockVideoFixture();
+        cy.mount(NativePlayer, mountOptions(fixture.src));
+        cy.wait('@getVideo');
+        waitForLoadedPlayer();
+
+        cy.contains('label', 'Main settings').click();
+        cy.contains('label', 'Main settings').find('input').should('be.checked');
+        cy.get('.player-main-settings').should('be.visible');
+        cy.get('.custom-counter-wrap').should('not.exist');
+        cy.get('.player-main').should('be.visible');
+        cy.get('.player-main-settings').contains('label', 'Developer Mode').click();
+        cy.get('.player-main-settings textarea').should('be.visible');
+        cy.get('.player-main-settings').contains('label', 'Developer Mode').find('input').focus();
+        cy.realPress('Space');
+        cy.get('.player-main-settings textarea').should('not.exist');
+
+        cy.contains('label', 'Show Probability').find('input').should('be.checked').focus();
+        cy.realPress('Space');
+        cy.contains('label', 'Show Probability').find('input').should('not.be.checked');
+        cy.get('.player-main-settings__color-scheme').should('not.exist');
+        cy.window().its('localStorage').invoke('getItem', 'video-player-config').should((value: string | null) => {
+            const config = JSON.parse(value ?? '{}') as { showProbability?: boolean };
+            expect(config.showProbability).to.equal(false);
+        });
+
+        cy.contains('label', 'Edit counter').click();
+        cy.contains('label', 'Main settings').find('input').should('be.checked');
+        cy.contains('label', 'Edit counter').find('input').should('be.checked');
+        cy.get('.player-main-settings').should('be.visible');
+        cy.get('.custom-counter-settings').should('be.visible');
+        cy.get('.player-main').should('not.exist');
+        cy.contains('label', 'Main settings').click();
+        cy.get('.player-main-settings').should('not.exist');
+        cy.get('.custom-counter-wrap').should('be.visible');
+        cy.get('.custom-counter-settings').should('be.visible');
     });
 
     for (const responseFilename of ['original replay.evf', undefined]) {
