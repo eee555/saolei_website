@@ -2,7 +2,7 @@
 
 制定日期：2026-10-03。现状核查与整理：2026-10-07。
 
-本计划以当前代码为实施起点，只列剩余工作和持续适用的约束。按用户约定，已提交的改动视为验收完成，不再列为实施或测试待办。普通页面描述布局和周赛报名表迁移均已提交；图标迁移 7.1 已实施，等待浏览器验收，7.2 尚未实施。批次编号保留，避免后续交流中混淆。
+本计划以当前代码为实施起点，只列剩余工作和持续适用的约束。按用户约定，已提交或明确验收的改动不再列为实施或测试待办。普通页面描述布局和周赛报名表迁移均已提交；图标迁移 7.1 已验收，移除对应待办，7.2 尚未实施。批次编号保留，避免后续交流中混淆。
 
 ## 目标与固定约束
 
@@ -31,6 +31,7 @@
 | 展示表格 | [`BaseTable`](src/components/common/BaseTable.vue) 封装原生表格、滚动容器、空状态和插槽；`table.css` 提供行悬停高亮，`table-columns.css` 提供排名、玩家、数值、时间等公共列样式 |
 | 保留表格的视觉 | `theme/tables.css` 为 BaseTable、ElTable、PrimeVue DataTable 提供统一参数；`vendors/element-plus-table.css`、`primevue-table.css`、`primevue-table-controls.css` 已接入 |
 | Element Plus 按钮兼容 | `vendors/element-plus.css` 已提供直角覆盖；暂留组件继续使用，不重复安排按钮整体迁移 |
+| 图标注册 | [`main.ts`](src/main.ts) 仅显式全局注册实际使用的 14 个图标；组件测试按挂载链分别注册，不在 Cypress 公共入口注入图标；7.1 已验收 |
 
 已迁移的表格包括密度榜、扫雷榜、PB 榜、比赛积分榜、软件版本列表、个人纪录、自定义计数器和周赛报名表。比赛积分榜由页面管理后端排序，切换字段重置页码，表头不显示排序箭头。
 
@@ -42,12 +43,12 @@
 | --- | --- | --- |
 | 2 | 剩余描述布局 | 剩余 10 个文件共 11 处 ElDescriptions 位于管理员与账号关联区域，按既定范围暂缓 |
 | 3 | 剩余表格核对 | 其余 5 个 ElTable 根据实际排序、编辑等依赖决定是否保留 |
-| 7 | 图标注册迁移 | 7.1 已收缩为实际使用清单，待验收；7.2 再逐模块取消全局图标注册，同步处理 Cypress 注册 |
+| 7 | 图标注册迁移 | 剩余 7.2：逐模块取消全局图标注册，同步处理 Cypress 注册 |
 | 4 | 分类别给复杂组件换肤 | 输入与表单、选择控件、Tabs、菜单、弹窗、通知和加载状态，各自独立成批；细化对应尺寸参数 |
 | 5 | PrimeVue 退出 | 筛选控件、表格替代验证、逐表迁移和依赖清理；随相关模块维护推进 |
 | 6 | 局部收尾 | 随每批删除失效导入、重复样式和已无使用方的兼容项，更新本计划 |
 
-下一步先验收 7.1；7.2 按模块推进，可与批次 4 的换肤独立合并。批次 4 不需要等待全部简单组件迁移完毕。首页比赛卡片、账号关联页面重做和 PrimeVue 全部退出不作为其他批次的前置条件。
+下一实施批次可按模块推进 7.2，与批次 4 的换肤独立合并。批次 4 不需要等待全部简单组件迁移完毕。首页比赛卡片、账号关联页面重做和 PrimeVue 全部退出不作为其他批次的前置条件。
 
 ### 2. 剩余描述布局
 
@@ -79,9 +80,9 @@ BaseTable 的迁移边界保持如下：
 
 其余表格继续使用已统一的视觉样式，不在本批顺带重写内部排序或编辑逻辑。未来按实际使用能力重新评估，而不以表格名称或是否包含按钮作决定。
 
-### 7. 图标注册迁移（7.1 已实施，待验收）
+### 7. 剩余图标注册迁移
 
-本任务分两步独立验收：当前将全量全局注册改为仅注册实际使用的图标；最终应用与组件测试都不全局注册任何图标。继续保留组件库内部自行导入的图标，不要求移除 `@element-plus/icons-vue` 依赖，也不将 PrimeIcons 的 CSS 类用法视为 Vue 全局组件注册。
+7.1 已验收，应用全局注册已收缩为实际使用的图标，以下仅保留 7.2 所需的依赖清单与迁移安排。最终应用与组件测试都不全局注册任何图标。继续保留组件库内部自行导入的图标，不要求移除 `@element-plus/icons-vue` 依赖，也不将 PrimeIcons 的 CSS 类用法视为 Vue 全局组件注册。
 
 当前入口及依赖已核对：
 
@@ -90,11 +91,7 @@ BaseTable 的迁移边界保持如下：
 - [`IconMenuItem.vue`](src/components/widgets/IconMenuItem.vue) 通过 `<component :is="props.icon">` 解析菜单传入的字符串；菜单数据、`prefix-icon` 等字符串 props 也需检查，不能只搜索图标标签。
 - 已核对当前安装包：ElMenu 子菜单箭头直接导入 `ArrowDown` / `ArrowRight`；ElFormItem 相关状态图标由 ElInput 的校验状态映射承接，加载、成功、失败及密码显隐图标已在库内部导入。这些内部使用本身不要求项目全局注册；`prefix-icon="User"` 等项目传入的字符串仍需全局解析。
 
-#### 7.1 仅注册实际使用的图标（已实施，待验收）
-
-已核对裸标签、动态组件、菜单配置、图标 props、条件分支和测试挂载链。应用保持固定的显式映射，不随页面临时增删注册；库内部已导入的图标不重复加入清单，历史注释与 ESLint ignorePatterns 不作为实际使用依据。本步保持业务组件接口和图标外观稳定。
-
-应用实际全局注册清单如下，去重后共 14 个：
+7.2 需要逐模块消除的全局依赖如下，去重后共 14 个；历史注释与 ESLint ignorePatterns 不作为实际使用依据：
 
 | 调用来源 | 图标 |
 | --- | --- |
@@ -102,7 +99,7 @@ BaseTable 的迁移边界保持如下：
 | `Login/LoginForm.vue`、`Login/RegisterForm.vue`、`formItems/EmailFormItem.vue`、`EmailCodeBlock.vue`、`PasswordConfirmBlock.vue` 的输入前缀；找回密码表单复用后面三个组件 | User、Lock、Key、Message |
 | `visualization/ColorSchemeSetting.vue`、`accountlinks/CardWoM.vue`、`widgets/UserArbiterCSV.vue` 的裸标签 | ArrowLeft、ArrowRight、Ticket、QuestionFilled |
 
-组件测试按挂载链分别注册，不在 Cypress 公共入口注入图标：
+7.2 需要同步移除的测试注册如下：
 
 | 测试 | 注册图标 |
 | --- | --- |
@@ -111,18 +108,6 @@ BaseTable 的迁移边界保持如下：
 | `formItems/EmailCodeBlock.cy.ts` / `PasswordConfirmBlock.cy.ts` | Key / Lock |
 | `accountlinks/CardWoM.cy.ts` / `App.cy.ts` | Ticket；现有 `mountAccountLink` 允许调用方传入有限的组件映射，其他账号关联测试默认不注册图标 |
 | `VideoPlayer/NativePlayer.cy.ts` / `views/UserView/UserVideoView.cy.ts` | ArrowLeft、ArrowRight / QuestionFilled |
-
-菜单测试补充了图标模式与实际 SVG 存在的断言，注销后打开登录弹窗也检查输入前缀 SVG；四个表单测试在已有 Rendering 用例中检查前缀 SVG。静态检查通过：`lintfix`、`typecheck`、`build:frontend`。本次构建产物按图标组件名称统计包含 48 个定义（含库内部依赖），不再包含图标库全部 293 个导出；这不等同于浏览器渲染验收。
-
-验收至少覆盖菜单图标/文字两种模式、登录前后与管理员菜单、容器变窄后的对齐，以及登录/注册/邮件前缀、密码显隐和校验状态。检查浏览器组件解析警告与构建产物，确认未再由项目注册入口引用整套图标；不要求组件库按需使用的图标从产物中全部消失。
-
-代理未运行 Cypress；由用户在 `front_end` 运行：
-
-```powershell
-npx.cmd cypress run --component --spec "src/views/Menu.cy.ts,src/components/Login/LoginForm.cy.ts,src/components/Login/RegisterForm.cy.ts,src/components/formItems/EmailCodeBlock.cy.ts,src/components/formItems/PasswordConfirmBlock.cy.ts,src/components/accountlinks/CardWoM.cy.ts,src/components/accountlinks/App.cy.ts,src/components/VideoPlayer/NativePlayer.cy.ts,src/views/UserView/UserVideoView.cy.ts"
-```
-
-这些 spec 不完整覆盖所有条件分支，需补充手动检查颜色方案合并箭头、用户导出提示、WoM 卡片第二页的 Ticket，以及密码显隐与各校验状态；这类必要的图标依赖修正不扩展为账号关联页面改版。
 
 #### 7.2 后续目标：不全局注册任何图标
 
@@ -204,7 +189,7 @@ npx.cmd cypress run --component --spec "src/views/Menu.cy.ts,src/components/Logi
 
 ## 后续批次的验证与验收
 
-按实际改动选择检查范围；已提交的批次不重新追加验收待办。
+按实际改动选择检查范围；已提交或明确验收的批次不重新追加验收待办。
 
 | 范围 | 验收重点 |
 | --- | --- |
@@ -229,4 +214,4 @@ Cypress 由用户运行，代理不启动 Cypress、预览或开发服务器。�
 
 复用项目现有表格提取、通知关闭和 `cy.shouldBeAbsentOrHidden()` 断言命令；不为低影响样式调整编写重复实现的测试，也不靠修改预期值掩盖实际行为变化。
 
-提交后按约定移除对应实施与验收待办；下一批建议始终以本计划的剩余范围及当时实际代码为准。
+提交或明确验收后按约定移除对应实施与验收待办；下一批建议始终以本计划的剩余范围及当时实际代码为准。
