@@ -1,17 +1,17 @@
 <template>
-    <span v-if="id === 0" class="text">
+    <span v-if="id === 0">
         请输入非零届数
     </span>
-    <span v-else-if="notFound" class="text">
+    <span v-else-if="notFound">
         未找到该届信息
         <BaseButton @click="createGSC">
             创建比赛
         </BaseButton>
     </span>
-    <span v-else-if="loadingGSCInfo" class="text">
+    <span v-else-if="loadingGSCInfo">
         正在加载信息...
     </span>
-    <span v-else class="text">
+    <span v-else>
         <span>开始时间：{{ gscInfo.start_time ? toISODateTimeString(gscInfo.start_time) : '未设置' }}</span>
         &nbsp;
         <span>设置开始时间：</span>

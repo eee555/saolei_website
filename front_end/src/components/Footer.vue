@@ -4,9 +4,7 @@
         <div class="layout-columns" style="margin-bottom: 15px">
             <div>
                 <div style="padding-bottom: 5px">
-                    <strong>
-                        {{ t('local.about') }}
-                    </strong>
+                    <strong>{{ t('local.about') }}</strong>
                 </div>
                 <BaseOverlay>
                     {{ t('local.team') }}
@@ -77,15 +75,11 @@
             </div>
         </div>
         <div style="text-align: center">
-            <span class="text">
-                Copyright @ 2023
-            </span>
+            <span>Copyright @ 2023</span>
             <a class="link text" href="http://openms.top">
                 开源扫雷网 openms.top
             </a>
-            <span class="text">
-                　版权所有
-            </span>
+            <span>　版权所有</span>
             <a class="link text" href="https://beian.miit.gov.cn/">
                 苏ICP备2023056839号-1
             </a>

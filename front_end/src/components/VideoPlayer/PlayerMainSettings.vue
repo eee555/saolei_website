@@ -1,7 +1,7 @@
 <template>
     <div class="player-main-settings">
         <label class="player-main-settings__row">
-            <span class="text">{{ t('local.cellSize') }}</span>
+            <span class="text-regular">{{ t('local.cellSize') }}</span>
             <InputNumber
                 v-model="config.cellSize"
                 class="player-main-settings__number-input"
@@ -9,9 +9,7 @@
             />
         </label>
         <ElCheckbox v-model="config.showProbability">
-            <span class="text">
-                {{ t('local.showProbability') }}
-            </span>
+            <span>{{ t('local.showProbability') }}</span>
         </ElCheckbox>
         <div v-if="config.showProbability" class="player-main-settings__color-scheme">
             <ColorSchemeSetting v-model="config.probabilityColorScheme" />

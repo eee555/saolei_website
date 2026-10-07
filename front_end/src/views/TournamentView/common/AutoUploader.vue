@@ -23,7 +23,7 @@
             </div>
         </div>
 
-        <div class="auto-uploader__control text">
+        <div class="auto-uploader__control text-regular">
             <BaseTagSupport v-if="!directoryPickerSupported" :support="false">
                 {{ t('local.unsupported') }}
             </BaseTagSupport>
@@ -31,7 +31,7 @@
                 {{ t('local.outsideWindow') }}
             </BaseTagSupport>
         </div>
-        <div class="auto-uploader__control text">
+        <div class="auto-uploader__control text-regular">
             <span v-if="running">
                 {{ t('local.running', { folder: directoryName }) }}
             </span>

@@ -1,6 +1,6 @@
 <template>
     <span
-        class="text"
+        class="text-regular"
         :style="{
             display: 'inline-block',
             fontSize: `${cellFullSize - 8}px`,

@@ -23,18 +23,14 @@
                 <BaseIconInfo class="text" style="margin-left: 0.2rem" />
             </span>
             <div v-if="remember_me" style="margin-left: 0.5rem;">
-                <span class="text">
-                    {{ t('local.forDays1') }}
-                </span>
+                <span>{{ t('local.forDays1') }}</span>
                 <ElRadioGroup v-model="setExpiry" size="small" style="vertical-align: middle; padding: 0 5px">
                     <ElRadioButton label="1" :value="1" />
                     <ElRadioButton label="7" :value="7" />
                     <ElRadioButton label="30" :value="30" />
                     <ElRadioButton label="90" :value="90" />
                 </ElRadioGroup>
-                <span class="text">
-                    {{ t('local.forDays2') }}
-                </span>
+                <span>{{ t('local.forDays2') }}</span>
             </div>
         </ElFormItem>
         <ElFormItem>

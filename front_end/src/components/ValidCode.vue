@@ -1,10 +1,10 @@
 <template>
     <div class="canvas-box" :style="{ height: '32px' }" @click="refreshPic()">
-        <span v-if="loading" class="text">
+        <span v-if="loading">
             {{ t('form.captchaLoading') }}
         </span>
         <img v-else-if="captchaUrl" :src="captchaUrl" alt="">
-        <span v-else class="text">
+        <span v-else>
             {{ t('form.captchaLoadingFail') }}
         </span>
     </div>

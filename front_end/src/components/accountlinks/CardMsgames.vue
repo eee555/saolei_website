@@ -3,7 +3,7 @@
         <div style="margin-bottom: 0.5em;">
             <PrToolbar>
                 <template #start>
-                    <span class="text text-medium">
+                    <span class="text-medium text-regular">
                         {{ t('common.platform.a') }}&nbsp;#{{ id }}
                     </span>
                 </template>

@@ -5,7 +5,9 @@
     --ui-bg-color: #fff;
     --ui-bg-color-overlay: #fff;
     --ui-text-color-primary: #303133;
-    --ui-text-color-regular: #606266;
+    --ui-text-color-regular-light: #606266;
+    --ui-text-color-regular-dark: #cfd3dc;
+    --ui-text-color-regular: var(--ui-text-color-regular-light);
     --ui-text-color-secondary: #909399;
     --ui-text-color-placeholder: #a8abb2;
     --ui-text-color-disabled: #c0c4cc;
@@ -26,7 +28,7 @@ html.dark {
     --ui-bg-color: #141414;
     --ui-bg-color-overlay: #1d1e1f;
     --ui-text-color-primary: #e5eaf3;
-    --ui-text-color-regular: #cfd3dc;
+    --ui-text-color-regular: var(--ui-text-color-regular-dark);
     --ui-text-color-secondary: #a3a6ad;
     --ui-text-color-placeholder: #8d9095;
     --ui-text-color-disabled: #6c6e72;

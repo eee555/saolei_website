@@ -1,12 +1,12 @@
 <template>
     <div class="cell">
-        <span class="text">{{ t(`common.level.short${level}`) }}</span>
+        <span class="text-regular">{{ t(`common.level.short${level}`) }}</span>
     </div>
     <div v-for="i in count" class="cell">
-        <span class="text">{{ i }}</span>
+        <span class="text-regular">{{ i }}</span>
     </div>
     <div class="cell">
-        <span class="text">{{ t('common.score.sum') }}</span>
+        <span class="text-regular">{{ t('common.score.sum') }}</span>
     </div>
 </template>
 

@@ -1,6 +1,6 @@
 <template>
     <div>
-        <span class="text text-medium">
+        <span class="text-medium">
             {{ t('local.description') }}
             <br>
             {{ t('software.repository') }}{{ t('common.punct.colon') }}

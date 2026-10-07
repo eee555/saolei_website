@@ -41,7 +41,7 @@
         <PrColumn field="timems" :header="t('common.prop.time')" sortable>
             <template #body="{ data }: { data: SaoleiVideo }">
                 {{ (data.timems / 1000).toFixed(2) }}
-                <span v-if="data.nf" class="text text-warning">
+                <span v-if="data.nf" class="text-warning">
                     NF
                 </span>
             </template>
@@ -49,22 +49,22 @@
         <PrColumn field="bv" :header="t('common.prop.bv')" sortable />
         <PrColumn field="import_task__status" :header="t('common.prop.state')" :show-filter-match-modes="false" :show-filter-operator="false" :show-apply-button="false" :show-clear-button="false" :filter-header-style="{ marginInlineStart: '0px' }">
             <template #body="{ data }: { data: SaoleiVideo }">
-                <span v-if="data.import_task__status == 'RUNNING'" class="text text-warning">
+                <span v-if="data.import_task__status == 'RUNNING'" class="text-warning">
                     {{ t('accountlink.importStatus.running') }}
                 </span>
-                <span v-else-if="data.import_task__status == 'SUCCESSFUL' && data.import_video__id != 0" class="text text-success">
+                <span v-else-if="data.import_task__status == 'SUCCESSFUL' && data.import_video__id != 0" class="text-success">
                     {{ t('accountlink.importStatus.successful') }}（新）
                 </span>
-                <span v-else-if="data.import_task__status == 'FAILED'" class="text text-danger">
+                <span v-else-if="data.import_task__status == 'FAILED'" class="text-danger">
                     {{ t('accountlink.importStatus.failed') }}
                 </span>
-                <span v-else-if="data.import_task__status == 'READY'" class="text text-primary">
+                <span v-else-if="data.import_task__status == 'READY'" class="text-primary">
                     {{ t('accountlink.importStatus.ready') }}
                 </span>
-                <span v-else-if="data.import_task__status == 'SUCCESSFUL' && data.import_video__id == 0" class="text text-danger">
+                <span v-else-if="data.import_task__status == 'SUCCESSFUL' && data.import_video__id == 0" class="text-danger">
                     {{ t('accountlink.importStatus.connection') }}
                 </span>
-                <span v-else-if="data.import_task__status == 'NULL' && data.import_video__id != 0" class="text text-success">
+                <span v-else-if="data.import_task__status == 'NULL' && data.import_video__id != 0" class="text-success">
                     {{ t('accountlink.importStatus.successful') }}
                 </span>
             </template>

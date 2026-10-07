@@ -1,12 +1,12 @@
 <template>
-    <span v-if="isUserAnonymous" class="text text-large">
+    <span v-if="isUserAnonymous" class="text-large text-regular">
         {{ t('common.msg.realNameRequired') }}
     </span>
     <template v-else>
-        <span class="text text-large" style="padding: 0.1em; color: inherit;">
+        <span class="text-large" style="padding: 0.1em; color: inherit;">
             {{ t('local.dragOrClick') }}
         </span>
-        <span class="text text-small" style="padding: 0.1em;">
+        <span class="text-regular text-small" style="padding: 0.1em;">
             {{ t('local.constraintSize') }}
         </span>
     </template>

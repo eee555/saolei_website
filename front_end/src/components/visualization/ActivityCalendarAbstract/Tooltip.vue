@@ -1,10 +1,10 @@
 <template>
     <div class="card card-small">
-        <span v-if="videos.length == 0" class="text">
+        <span v-if="videos.length == 0" class="text-regular">
             {{ t('local.noVideoOnDate', [toISODateString(date)]) }}
         </span>
         <template v-else>
-            <span class="text">
+            <span class="text-regular">
                 {{ t('local.uploadedNVideosOnDate', [toISODateString(date), videos.length]) }}
             </span>
             <br>
