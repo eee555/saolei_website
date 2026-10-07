@@ -10,51 +10,86 @@
             {{ t(`common.mode.code${video.mode}`) }}
         </span>
     </div>
-    <ElDescriptions size="small" border :column="3">
-        <ElDescriptionsItem :label="t('common.prop.upload_time')" :span="3">
-            {{ toISODateTimeString(video.upload_time) }}
-        </ElDescriptionsItem>
+    <div class="description-layout" style="width: 32em; max-width: 100%;">
+        <dl class="descriptions descriptions-bordered descriptions-small">
+            <div class="description-item description-wide">
+                <dt>{{ t('common.prop.upload_time') }}</dt>
+                <dd>
+                    {{ toISODateTimeString(video.upload_time) }}
+                </dd>
+            </div>
 
-        <ElDescriptionsItem v-if="video.end_time" :label="t('common.prop.end_time')" :span="3">
-            {{ toISODateTimeString(video.end_time) }}
-        </ElDescriptionsItem>
+            <div v-if="video.end_time" class="description-item description-wide">
+                <dt>{{ t('common.prop.end_time') }}</dt>
+                <dd>
+                    {{ toISODateTimeString(video.end_time) }}
+                </dd>
+            </div>
 
-        <ElDescriptionsItem :label="t('common.prop.time')">
-            {{ video.displayStat('time') }}
-        </ElDescriptionsItem>
-        <ElDescriptionsItem :label="t('common.prop.bv')">
-            {{ video.displayStat('bv') }}
-        </ElDescriptionsItem>
-        <ElDescriptionsItem :label="t('common.prop.stnb')">
-            {{ video.displayStat('stnb') }}
-        </ElDescriptionsItem>
+            <div class="description-item">
+                <dt>{{ t('common.prop.time') }}</dt>
+                <dd>
+                    {{ video.displayStat('time') }}
+                </dd>
+            </div>
+            <div class="description-item">
+                <dt>{{ t('common.prop.bv') }}</dt>
+                <dd>
+                    {{ video.displayStat('bv') }}
+                </dd>
+            </div>
+            <div class="description-item">
+                <dt>{{ t('common.prop.stnb') }}</dt>
+                <dd>
+                    {{ video.displayStat('stnb') }}
+                </dd>
+            </div>
 
-        <ElDescriptionsItem :label="t('common.prop.bvs')">
-            {{ video.displayStat('bvs') }}
-        </ElDescriptionsItem>
-        <ElDescriptionsItem :label="t('common.prop.cl_s')">
-            {{ video.displayStat('cls') }}
-        </ElDescriptionsItem>
-        <ElDescriptionsItem :label="t('common.prop.ce_s')">
-            {{ video.displayStat('ces') }}
-        </ElDescriptionsItem>
+            <div class="description-item">
+                <dt>{{ t('common.prop.bvs') }}</dt>
+                <dd>
+                    {{ video.displayStat('bvs') }}
+                </dd>
+            </div>
+            <div class="description-item">
+                <dt>{{ t('common.prop.cl_s') }}</dt>
+                <dd>
+                    {{ video.displayStat('cls') }}
+                </dd>
+            </div>
+            <div class="description-item">
+                <dt>{{ t('common.prop.ce_s') }}</dt>
+                <dd>
+                    {{ video.displayStat('ces') }}
+                </dd>
+            </div>
 
-        <ElDescriptionsItem :label="t('common.prop.ioe')">
-            {{ video.displayStat('ioe') }}
-        </ElDescriptionsItem>
-        <ElDescriptionsItem :label="t('common.prop.thrp')">
-            {{ video.displayStat('thrp') }}
-        </ElDescriptionsItem>
-        <ElDescriptionsItem :label="t('common.prop.corr')">
-            {{ video.displayStat('corr') }}
-        </ElDescriptionsItem>
-    </ElDescriptions>
+            <div class="description-item">
+                <dt>{{ t('common.prop.ioe') }}</dt>
+                <dd>
+                    {{ video.displayStat('ioe') }}
+                </dd>
+            </div>
+            <div class="description-item">
+                <dt>{{ t('common.prop.thrp') }}</dt>
+                <dd>
+                    {{ video.displayStat('thrp') }}
+                </dd>
+            </div>
+            <div class="description-item">
+                <dt>{{ t('common.prop.corr') }}</dt>
+                <dd>
+                    {{ video.displayStat('corr') }}
+                </dd>
+            </div>
+        </dl>
+    </div>
 </template>
 
 <script setup lang="ts">
+import '@/styles/descriptions.css';
 import '@/styles/layout.css';
 import '@/styles/text.css';
-import { ElDescriptions, ElDescriptionsItem } from 'element-plus';
 import type { PropType } from 'vue';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';

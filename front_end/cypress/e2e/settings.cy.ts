@@ -96,9 +96,9 @@ describe('General Settings', () => {
     it('Hide Language Icon', () => {
         cy.visit('/#/settings');
         cy.get('[data-cy=languagePicker]').should('be.visible');
-        cy.contains('语言切换').next().click();
+        cy.contains('dt', '语言切换').next('dd').find('[role="switch"]').click();
         cy.get('[data-cy=languagePicker]').should('not.be.visible');
-        cy.contains('语言切换').next().click();
+        cy.contains('dt', '语言切换').next('dd').find('[role="switch"]').click();
         cy.get('[data-cy=languagePicker]').should('be.visible');
     });
 });

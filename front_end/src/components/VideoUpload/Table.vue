@@ -80,42 +80,69 @@
             </template>
         </PrColumn>
         <template #expansion="{data}: {data: UploadEntry}">
-            <ElDescriptions>
-                <ElDescriptionsItem :label="t('common.prop.fileName')" :span="3">
-                    {{ data.file.name }}
-                </ElDescriptionsItem>
-                <template v-if="data.stat">
-                    <ElDescriptionsItem :label="t('common.prop.cl')">
-                        {{ data.stat.displayStat('cl') }}
-                    </ElDescriptionsItem>
-                    <ElDescriptionsItem :label="t('common.prop.ce')" :span="2">
-                        {{ data.stat.displayStat('ce') }}
-                    </ElDescriptionsItem>
-                    <ElDescriptionsItem :label="t('common.prop.cl_s')">
-                        {{ data.stat.displayStat('cls') }}
-                    </ElDescriptionsItem>
-                    <ElDescriptionsItem :label="t('common.prop.ce_s')" :span="2">
-                        {{ data.stat.displayStat('ces') }}
-                    </ElDescriptionsItem>
-                    <ElDescriptionsItem :label="t('common.prop.ioe')">
-                        {{ data.stat.displayStat('ioe') }}
-                    </ElDescriptionsItem>
-                    <ElDescriptionsItem :label="t('common.prop.thrp')">
-                        {{ data.stat.displayStat('thrp') }}
-                    </ElDescriptionsItem>
-                    <ElDescriptionsItem :label="t('common.prop.corr')">
-                        {{ data.stat.displayStat('corr') }}
-                    </ElDescriptionsItem>
-                </template>
-            </ElDescriptions>
+            <div class="description-layout">
+                <dl class="descriptions">
+                    <div class="description-item description-wide">
+                        <dt>{{ t('common.prop.fileName') }}</dt>
+                        <dd>
+                            {{ data.file.name }}
+                        </dd>
+                    </div>
+                    <template v-if="data.stat">
+                        <div class="description-item">
+                            <dt>{{ t('common.prop.cl') }}</dt>
+                            <dd>
+                                {{ data.stat.displayStat('cl') }}
+                            </dd>
+                        </div>
+                        <div class="description-item description-span-2">
+                            <dt>{{ t('common.prop.ce') }}</dt>
+                            <dd>
+                                {{ data.stat.displayStat('ce') }}
+                            </dd>
+                        </div>
+                        <div class="description-item">
+                            <dt>{{ t('common.prop.cl_s') }}</dt>
+                            <dd>
+                                {{ data.stat.displayStat('cls') }}
+                            </dd>
+                        </div>
+                        <div class="description-item description-span-2">
+                            <dt>{{ t('common.prop.ce_s') }}</dt>
+                            <dd>
+                                {{ data.stat.displayStat('ces') }}
+                            </dd>
+                        </div>
+                        <div class="description-item">
+                            <dt>{{ t('common.prop.ioe') }}</dt>
+                            <dd>
+                                {{ data.stat.displayStat('ioe') }}
+                            </dd>
+                        </div>
+                        <div class="description-item">
+                            <dt>{{ t('common.prop.thrp') }}</dt>
+                            <dd>
+                                {{ data.stat.displayStat('thrp') }}
+                            </dd>
+                        </div>
+                        <div class="description-item">
+                            <dt>{{ t('common.prop.corr') }}</dt>
+                            <dd>
+                                {{ data.stat.displayStat('corr') }}
+                            </dd>
+                        </div>
+                    </template>
+                </dl>
+            </div>
         </template>
     </PrDataTable>
 </template>
 
 <script setup lang="ts">
+import '@/styles/descriptions.css';
 import { FilterMatchMode } from '@primevue/core/api';
 import type { CheckboxValueType } from 'element-plus';
-import { ElCheckbox, ElDescriptions, ElDescriptionsItem } from 'element-plus';
+import { ElCheckbox } from 'element-plus';
 import PrColumn from 'primevue/column';
 import type { DataTableFilterEvent } from 'primevue/datatable';
 import PrDataTable from 'primevue/datatable';

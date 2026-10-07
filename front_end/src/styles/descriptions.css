@@ -1,0 +1,111 @@
+.description-layout {
+    min-width: 0;
+    container: descriptions / inline-size;
+}
+
+.descriptions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+    color: var(--ui-text-color-regular);
+    font-size: var(--ui-font-size-base);
+    line-height: 1.4;
+    white-space: normal;
+}
+
+.description-item {
+    display: grid;
+    grid-template-columns: fit-content(40%) minmax(0, 1fr);
+    min-width: 0;
+}
+
+.description-item > :where(dt, dd) {
+    min-width: 0;
+    margin: 0;
+    padding: 4px 8px;
+    overflow-wrap: anywhere;
+}
+
+.description-item > dt {
+    align-self: stretch;
+    align-content: center;
+    font-weight: 500;
+}
+
+.description-item > dd {
+    align-content: center;
+}
+
+.descriptions:not(.descriptions-bordered) > .description-item {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.descriptions:not(.descriptions-bordered) > .description-item > dd {
+    flex: 1 1 8em;
+}
+
+.description-wide {
+    grid-column: 1 / -1;
+}
+
+.description-span-2 {
+    grid-column: span 2;
+}
+
+.descriptions-bordered {
+    border-top: 1px solid var(--ui-border-color-lighter);
+    border-left: 1px solid var(--ui-border-color-lighter);
+    background-color: var(--ui-fill-color-blank);
+}
+
+.descriptions-bordered > .description-item {
+    border-right: 1px solid var(--ui-border-color-lighter);
+    border-bottom: 1px solid var(--ui-border-color-lighter);
+}
+
+.descriptions-bordered > .description-item > dt {
+    border-right: 1px solid var(--ui-border-color-lighter);
+    background-color: var(--ui-fill-color-light);
+}
+
+.descriptions-small {
+    font-size: var(--ui-font-size-extra-small);
+}
+
+.description-title {
+    margin: 0 0 8px;
+    color: var(--ui-text-color-primary);
+    font-size: var(--ui-font-size-medium);
+}
+
+@container descriptions (width < 48rem) {
+    .descriptions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .description-span-2 {
+        grid-column: auto;
+    }
+    .descriptions-small {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@container descriptions (width < 32rem) {
+    .descriptions:not(.descriptions-small) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@container descriptions (width < 20rem) {
+    .descriptions-small {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@container descriptions (width < 12rem) {
+    .descriptions-small {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

@@ -2,7 +2,7 @@
 
 制定日期：2026-10-03。现状核查与整理：2026-10-07。
 
-本计划以当前代码为实施起点，只列剩余工作和持续适用的约束。按用户约定，已提交的改动视为验收完成，不再列为实施或测试待办。当前分隔线迁移已实现，待用户验收；此前已提交的批次不重新列为待办。
+本计划以当前代码为实施起点，只列剩余工作和持续适用的约束。按用户约定，已提交的改动视为验收完成，不再列为实施或测试待办。分隔线迁移已提交，本计划移除其待办；当前普通页面 8 处描述布局已迁移，待用户验收。批次编号保留，避免后续交流中混淆。
 
 ## 目标与固定约束
 
@@ -26,6 +26,7 @@
 | 文字语义 | 普通文本可继承默认样式；需要独立常规文字色时使用 `text-regular`，保留字号与状态色修饰类；标题、链接、控件等仍可使用有实际重置作用的 `text` |
 | 有色数据单元格 | [`PiecewiseColorScheme`](src/utils/colors.ts) 按背景明暗引用浅色 / 深色模式的默认文字色；透明背景继承父容器颜色。两套来源为 `--ui-text-color-regular-light` / `--ui-text-color-regular-dark` |
 | 布局、卡片与操作 | `layout.css`、`cards.css`、`link.css`、`button.css` / `buttons/`；`BaseButton`、`BaseTextButton`、确认/取消按钮、`BaseFileInput` 等已有原生实现 |
+| 描述列表 | [`descriptions.css`](src/styles/descriptions.css) 提供 dl / dt / dd 模板，支持边框、跨列和容器宽度适配，无独立 Vue 组件；本次使用方待验收 |
 | 展示表格 | [`BaseTable`](src/components/common/BaseTable.vue) 封装原生表格、滚动容器、空状态和插槽；`table.css` 提供行悬停高亮，`table-columns.css` 提供排名、玩家、数值、时间等公共列样式 |
 | 保留表格的视觉 | `theme/tables.css` 为 BaseTable、ElTable、PrimeVue DataTable 提供统一参数；`vendors/element-plus-table.css`、`primevue-table.css`、`primevue-table-controls.css` 已接入 |
 | Element Plus 按钮兼容 | `vendors/element-plus.css` 已提供直角覆盖；暂留组件继续使用，不重复安排按钮整体迁移 |
@@ -38,48 +39,47 @@
 
 | 批次 | 工作 | 范围与边界 |
 | --- | --- | --- |
-| 1 | 分隔线迁移验收 | 3 个文件的 4 处 ElDivider 已改为容器或伪元素的边框，待验收 |
-| 2 | 迁移简单描述布局 | 当前 18 个文件共 19 处 ElDescriptions；按纯展示、设置控件布局分别推进，账号关联卡片暂缓 |
+| 2 | 描述布局迁移与验收 | 普通页面 8 处已迁移，待验收；剩余 10 个文件共 11 处 ElDescriptions 位于管理员与账号关联区域，按既定范围暂缓 |
 | 3 | 核对并迁移剩余展示表格 | 周赛报名表是当前明确候选；其余 ElTable 根据实际排序、编辑等依赖决定是否保留 |
 | 4 | 分类别给复杂组件换肤 | 输入与表单、选择控件、Tabs、菜单、弹窗、通知和加载状态，各自独立成批；细化对应尺寸参数 |
 | 5 | PrimeVue 退出 | 筛选控件、表格替代验证、逐表迁移和依赖清理；随相关模块维护推进 |
 | 6 | 局部收尾 | 随每批删除失效导入、重复样式和已无使用方的兼容项，更新本计划 |
 
-批次 1 待验收，下一实施批次建议为批次 2。批次 2、3 可按业务维护安排独立推进；批次 4 不需要等待全部简单组件迁移完毕。首页比赛卡片、账号关联页面重做和 PrimeVue 全部退出不作为其他批次的前置条件。
+批次 2 普通页面待验收，下一实施批次建议为批次 3。批次 4 不需要等待全部简单组件迁移完毕。首页比赛卡片、账号关联页面重做和 PrimeVue 全部退出不作为其他批次的前置条件。
 
-### 1. 分隔线（已实现，待验收）
+### 2. 描述布局（普通页面已实现，待验收）
 
-本批改动位置：
+采用原生 dl / dt / dd 与共享 CSS Grid 模板，不新增 Vue 组件。默认三列，按容器宽度调整为两列或一列；宽项占整行，跨两列项在三列布局中保留跨列。无边框项内部可换行。录像信息保留紧凑字号和更低的列数切换阈值，避免浮层中每个指标独占一行。边框、背景、文字均引用项目变量。
 
-- [`components/Footer.vue`](src/components/Footer.vue)：页脚容器增加上边框，保留分隔线两侧间距。
-- [`components/dialogs/Thanks.vue`](src/components/dialogs/Thanks.vue)：开发信息与致谢标题容器增加上边框，替换 2 处分隔线。
-- [`components/visualization/BBBvSummary/App.vue`](src/components/visualization/BBBvSummary/App.vue)：统计标题两侧用伪元素边框分隔，文字保持居中。
+本批迁移范围：
 
-按用户最新要求直接设置 border，不使用独立分隔线组件。样式在各使用方局部定义，边框色引用 `--ui-border-color`，支持深浅主题；统计标题不依赖背景色遮盖分隔线。
+| 使用方 | 保留内容 |
+| --- | --- |
+| `components/widgets/VideoAbstractDisplay.vue` | 上传与结束时间、结束时间条件显示、指标格式化、录像状态与软件图标；浮层宽度受父容器限制 |
+| `components/dialogs/ArbiterHelper.vue`、`MetasweeperHelper.vue`、`ViennaSweeperHelper.vue` | 操作系统、语言、功能与平台标记，跨列、边框及 Arbiter 的最大宽度；版本表格不变 |
+| `views/SettingView/Appearance.vue`、`App.vue` | 全部子控件、v-model、配置持久化、提示内容和实验功能显示条件 |
+| `views/VideoView.vue` | 筛选标题、状态与 NF / 3BV 控件、请求与页码处理；ElTable 和分页保留 |
+| `components/VideoUpload/Table.vue` | 展开区域的文件名、条件指标与格式化；表格展开、排序、筛选与选择保留 |
 
-已保留 BBBvSummary 的文字内容、`data-cy="summary"`、层级和上下布局关系，删除全部 ElDivider 导入，并补充 ESLint 限制 PascalCase / kebab-case 两种标签。
+已移除这 8 个文件的 ElDescriptions / ElDescriptionsItem 导入，并对这些文件补充 ESLint 标签限制。设置 E2E 的语言切换操作改为通过 dt / dd 定位实际 switch，避免点击值容器的空白区域。模板说明见[`styles/README.md`](src/styles/README.md)。
 
-本批已通过 `lintfix`、类型检查、前端构建与 diff 空白检查。Cypress 和视觉验收由用户执行。
+本批已通过 `lintfix`、类型检查、前端构建和 diff 空白检查；模板对比确认 47 个描述项的标签、条件显示、值与子控件保持一致。共享 CSS 有 93 个非空行。Cypress 与视觉验收仍由用户执行。
 
-验收重点：深浅主题边框色、文字对齐、上下间距、中英文长文本及窄容器中的换行。优先复用 `Footer.cy.ts` 和 `BBBvSummary/App.cy.ts`。
-
-用户在 `front_end` 运行组件测试；Footer 的团队弹窗覆盖 Thanks：
+待用户运行的现有测试：
 
 ```powershell
-npx.cmd cypress run --component --spec "src/components/Footer.cy.ts,src/components/visualization/BBBvSummary/App.cy.ts"
+npx.cmd cypress run --component --spec "src/views/VideoView.cy.ts,src/components/VideoUpload/App.cy.ts,src/components/visualization/BBBvSummary/App.cy.ts,src/components/Footer.cy.ts"
+npx.cmd cypress run --e2e --spec "cypress/e2e/settings.cy.ts"
 ```
 
-### 2. 简单描述布局
+视觉验收补充检查三个软件帮助弹窗、录像信息浮层和上传行展开：深浅主题、标签和值对齐、时间与长文件名换行，以及同一视口下改变容器宽度。现有 spec 不代表完整覆盖这些布局。
 
-先复用原生 `dl` / 标签和值的布局与共享 CSS；只有确有重复需求时，再完善一个小型基础组件，不复制 ElDescriptions 的完整 API。
+剩余 11 处 ElDescriptions 位于 10 个文件，按既定范围暂缓：
 
-建议继续拆分：
+- 管理员区域 4 处：`components/GSCAdmin/GeneralInfo.vue`、`views/StaffView/Task.vue`、`VideoModel.vue`、`WeeklyTournament.vue`，随维护迁移；保留动态循环、v-loading 和条件显示。
+- 账号关联区域 7 处：`CardMineracer.vue`、`CardBilibili.vue`、`CardAddMineracer.vue`、`CardWoM.vue`（2 处）、`CardSaolei.vue`、`CardMsgames.vue`，随页面重做处理。
 
-1. 纯展示：优先核对 `components/widgets/VideoAbstractDisplay.vue` 和三个软件帮助弹窗；保留实际使用的标签、值、条件项、列数、跨列与边框。
-2. 设置页面：处理 `views/SettingView/Appearance.vue`、`views/SettingView/App.vue` 的标签与控件对齐；仅更换布局容器，保留子控件、v-model、配置持久化和提示内容。
-3. 其他使用方：录像页面、上传表格中的展开内容等按模块单独核对；管理员页面随维护处理，账号关联卡片留到页面重做。
-
-包含按钮、输入或选择器的描述项不必因此保留 ElDescriptions，但也不能将这些子控件的交互纳入同一个迁移批次。完成一小组后再推广，并随实际迁移范围收紧 ESLint 规则。
+后续直接复用模板，按实际列数与跨列需求完善局部 CSS；不复制 ElDescriptions 的完整 API，也不将子控件的交互重写纳入布局迁移。
 
 ### 3. 剩余展示表格
 

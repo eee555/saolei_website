@@ -14,17 +14,28 @@
             <h2 class="card-title">
                 {{ t('local.stnbConst') }}
             </h2>
-            <ElDescriptions>
-                <ElDescriptionsItem :label="t('common.level.b')">
-                    <ElInputNumber v-model="STNB_const.b" size="small" :controls="false" />
-                </ElDescriptionsItem>
-                <ElDescriptionsItem :label="t('common.level.i')">
-                    <ElInputNumber v-model="STNB_const.i" size="small" :controls="false" />
-                </ElDescriptionsItem>
-                <ElDescriptionsItem :label="t('common.level.e')">
-                    <ElInputNumber v-model="STNB_const.e" size="small" :controls="false" />
-                </ElDescriptionsItem>
-            </ElDescriptions>
+            <div class="description-layout">
+                <dl class="descriptions">
+                    <div class="description-item">
+                        <dt>{{ t('common.level.b') }}</dt>
+                        <dd>
+                            <ElInputNumber v-model="STNB_const.b" size="small" :controls="false" />
+                        </dd>
+                    </div>
+                    <div class="description-item">
+                        <dt>{{ t('common.level.i') }}</dt>
+                        <dd>
+                            <ElInputNumber v-model="STNB_const.i" size="small" :controls="false" />
+                        </dd>
+                    </div>
+                    <div class="description-item">
+                        <dt>{{ t('common.level.e') }}</dt>
+                        <dd>
+                            <ElInputNumber v-model="STNB_const.e" size="small" :controls="false" />
+                        </dd>
+                    </div>
+                </dl>
+            </div>
         </section>
         <section class="card">
             <h2 class="card-title">
@@ -36,8 +47,9 @@
 </template>
 
 <script lang="ts" setup name="UserSettings">
+import '@/styles/descriptions.css';
 import '@/styles/cards.css';
-import { ElCheckbox, ElDescriptions, ElDescriptionsItem, ElInputNumber } from 'element-plus';
+import { ElCheckbox, ElInputNumber } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
 import Appearance from './Appearance.vue';

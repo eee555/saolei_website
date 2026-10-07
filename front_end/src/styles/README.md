@@ -18,6 +18,12 @@ CSS 与 Less 的选型由实施代理自行决定，根据实际重复程度和�
 
 `button.css` 保持原有导入路径，按顺序汇总 `buttons/base.css`、`buttons/variants.css`、`buttons/states.css`，分别负责基础布局、类型配色、尺寸与交互状态。
 
+`descriptions.css` 提供原生描述列表模板，无独立 Vue 组件：外层 `.description-layout` 为命名查询容器，内部 `<dl class="descriptions">` 每项使用 `<div class="description-item"><dt>标签</dt><dd>值或控件</dd></div>`。调用方直接导入 `@/styles/descriptions.css`，保持条件显示、v-model 与事件绑定。
+
+默认最多三列，随容器宽度低于 48rem / 32rem 减为两列 / 一列；`.description-wide` 始终占整行，`.description-span-2` 在三列布局中跨两列，其余布局中占一列。无边框项内部可换行，避免标签与控件挤压。`.descriptions-bordered` 提供直角网格和标签背景；`.descriptions-small` 保留 12px 统计展示字号，在小于 20rem / 12rem 时减为两列 / 一列。颜色均来自项目变量，不影响子控件的交互与样式。
+
+录像信息浮层的查询容器显式设置 32em 宽度并以 `max-width: 100%` 限制，避免 inline-size containment 在浮层按内容计算宽度时丢失列表的固有宽度。模板和局部响应参考 [MDN 描述列表](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dl) 与 [CSS 容器查询](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Containment/Container_queries)。
+
 `text.css` 由 `setup.ts` 全局加载，应用与 Cypress 共用。`body` 默认使用项目常规文字色、基础字号和 `overflow-wrap: break-word`，普通文本通过继承获得这些样式；使用 `:where(div, span)` 默认清零 margin / padding，`:where(span)` 默认设置 `vertical-align: middle`，组件自身的样式可覆盖。普通文本无需添加 `.text`；需要覆盖父容器颜色时使用 `.text-regular`，需要不同字号或状态色时保留对应修饰类。已清理可由全局默认覆盖的 `.text` 声明；标题、段落、链接、表单控件及需要固定字号或重置单元格间距的组件仍可使用 `.text`，不删除有实际作用的重置。
 
 `theme/tables.css` 提供三种表格共用的 `--ui-table-*` 参数，由 `setup.ts` 直接加载，应用与 Cypress 共用。初值保持 BaseTable 现有外观：14px 字号、1.4 行高、4px × 8px 单元格内边距、1px 网格边框及 500 表头字重；颜色引用项目主题，随 `html.dark` 切换。

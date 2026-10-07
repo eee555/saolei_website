@@ -23,17 +23,31 @@
         </BaseButton>
     </div>
 
-    <ElDescriptions :title="t('common.filter')">
-        <ElDescriptionsItem :label="t('common.prop.state')">
-            <VideoStateFilter v-model="videofilter.filter_state" @change="request_videos" />
-        </ElDescriptionsItem>
-        <ElDescriptionsItem :label="t('common.nf')">
-            <ElSwitch v-model="nfOnly" @change="state.CurrentPage = 1; request_videos();" />
-        </ElDescriptionsItem>
-        <ElDescriptionsItem :label="t('common.prop.bbbv')">
-            <BBBVFilter :level="levelTagSelected" @change="request_videos" />
-        </ElDescriptionsItem>
-    </ElDescriptions>
+    <div class="description-layout">
+        <h3 class="description-title">
+            {{ t('common.filter') }}
+        </h3>
+        <dl class="descriptions">
+            <div class="description-item">
+                <dt>{{ t('common.prop.state') }}</dt>
+                <dd>
+                    <VideoStateFilter v-model="videofilter.filter_state" @change="request_videos" />
+                </dd>
+            </div>
+            <div class="description-item">
+                <dt>{{ t('common.nf') }}</dt>
+                <dd>
+                    <ElSwitch v-model="nfOnly" @change="state.CurrentPage = 1; request_videos();" />
+                </dd>
+            </div>
+            <div class="description-item">
+                <dt>{{ t('common.prop.bbbv') }}</dt>
+                <dd>
+                    <BBBVFilter :level="levelTagSelected" @change="request_videos" />
+                </dd>
+            </div>
+        </dl>
+    </div>
     <div style="font-size:20px;margin: auto;margin-top: 10px;">
         <ElTable :data="videoList" border table-layout="auto" @sort-change="handleSortChange" @row-click="previewVideo">
             <VideoViewState />
@@ -55,10 +69,11 @@
 </template>
 
 <script lang="ts" setup>
+import '@/styles/descriptions.css';
 import '@/styles/layout.css';
 // 全网录像的检索器，根据三个维度排序
 import type { TableColumnCtx } from 'element-plus';
-import { ElDescriptions, ElDescriptionsItem, ElPagination, ElSwitch, ElTable, ElTableColumn } from 'element-plus';
+import { ElPagination, ElSwitch, ElTable, ElTableColumn } from 'element-plus';
 import { onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
