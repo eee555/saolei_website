@@ -50,8 +50,8 @@ describe('PiecewiseColorScheme', () => {
         it('Returns precomputed background and readable text colors', () => {
             const scheme = new PiecewiseColorScheme(['#ffffff', '#000000'], [10]);
 
-            expect(scheme.getStyle(5)).toEqual({ backgroundColor: '#ffffff', color: 'black' });
-            expect(scheme.getStyle(15)).toEqual({ backgroundColor: '#000000', color: 'white' });
+            expect(scheme.getStyle(5)).toEqual({ backgroundColor: '#ffffff', color: 'var(--ui-text-color-regular-light)' });
+            expect(scheme.getStyle(15)).toEqual({ backgroundColor: '#000000', color: 'var(--ui-text-color-regular-dark)' });
         });
 
         it('Reuses style objects for the same color bucket', () => {

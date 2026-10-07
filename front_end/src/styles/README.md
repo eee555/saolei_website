@@ -12,6 +12,8 @@ CSS 与 Less 的选型由实施代理自行决定，根据实际重复程度和�
 
 正式项目变量位于 `theme/`，通过 `setup.ts` 加载 `theme/index.css`，应用与 Cypress 组件测试共用。`colors.css` 定义文字、背景、边框与禁用色，`accents.css` 定义主色及状态色，`metrics.css` 定义当前字号、圆角与过渡参数。初值沿用 Element Plus 2.14.6，深色主题继续由 `html.dark` 切换；此批只替换变量来源，不调整尺寸和密度。
 
+`--ui-text-color-regular-light` / `--ui-text-color-regular-dark` 分别保存浅色 / 深色模式的默认文字色，`--ui-text-color-regular` 根据页面主题引用对应变量。修改默认文字配色时维护这两项来源。`PiecewiseColorScheme` 的有色单元格按背景明暗选择对应模式的默认文字色，透明单元格继续继承父容器颜色；样式保留 CSS 变量引用，主题色调整无需重新创建色阶对象。
+
 项目代码统一使用 `--ui-*`，包括 JavaScript 中的颜色读取。`InputNumber` 的 `--ui-input-*` 与表格的 `--ui-table-*` 支持局部覆盖。组件库要求的 `--el-*` / `--p-*` 声明仅留在 `vendors/` 适配文件，由项目变量向库传值，不反向读取库变量。
 
 `button.css` 保持原有导入路径，按顺序汇总 `buttons/base.css`、`buttons/variants.css`、`buttons/states.css`，分别负责基础布局、类型配色、尺寸与交互状态。
