@@ -310,6 +310,12 @@ python manage.py db_worker_robust
 python manage.py db_worker_robust --queue-name default --interval 2
 ```
 
+生产启动：
+
+- `start.sh` 通过 `nohup bash run_background.sh db-worker` 启动，日志写入 `logs/db_worker.log`。
+- `START_DB_WORKER=0` 可跳过启动；`DB_WORKER_START_DELAY`、`DB_WORKER_NICE`、`DB_WORKER_INTERVAL` 默认分别为 `20`、`10`、`2`。
+- 该命令的恢复逻辑仅在启动时处理遗留任务，运行期间退出后不会自动重启。
+
 ### `runapscheduler`
 
 位置：`common/management/commands/runapscheduler.py`
@@ -344,7 +350,7 @@ python manage.py runapscheduler --pidfile logs/apscheduler.pid
 
 生产启动：
 
-- `start.sh` 会在数据库迁移完成后启动该命令，日志写入 `logs/apscheduler.log`。
+- `start.sh` 会在数据库迁移完成后，通过 `nohup bash run_background.sh apscheduler` 启动该命令，日志写入 `logs/apscheduler.log`。
 - `START_APSCHEDULER=0` 可跳过启动 APScheduler。
 - `APSCHEDULER_START_DELAY` 控制启动延迟，默认 `10` 秒。
 - `APSCHEDULER_NICE` 控制进程 nice 值，默认 `10`。
@@ -352,6 +358,23 @@ python manage.py runapscheduler --pidfile logs/apscheduler.pid
 ::: warning
 生产环境只应运行一个 APScheduler 进程。旧的 `runapschedulermonitor`、`runapscheduleruserprofile` 和 `runapschedulervideomanager` 命令已合并到 `runapscheduler`，不应再单独启动。
 :::
+
+### 后台进程退出排查
+
+`run_background.sh` 保留启动延迟和进程优先级设置，使用 `nohup` 忽略挂断信号，并将标准输入重定向到 `/dev/null`。Python 使用 `-u` 即时输出日志，使用 `-X faulthandler` 输出部分原生崩溃的 traceback。
+
+启动日志包含时间、launcher PID 和 Python 进程 PID。子进程结束后，launcher 会记录 `exit_status` 和对应的信号名称。`exit_status=0` 表示正常退出；非零状态需要结合此前日志分析。大于 `128` 的状态通常表示信号终止，例如 `137/KILL`、`143/TERM`。worker 会处理 `SIGTERM` 并可能以状态 `0` 退出，因此状态 `0` 不能排除外部停止，需要查看此前的停止日志。仅凭 `137` 不能认定 OOM，也可能是手动或脚本发送了 `SIGKILL`。`stop.sh` 当前使用 `SIGKILL` 停止这两个服务。
+
+Python 无法记录 `SIGKILL`；若 launcher 也被杀死，退出记录同样可能缺失。挂断保护不防止 systemd 会话清理等机制终止进程。这时需要对照退出时段的系统日志：
+
+```bash
+tail -n 100 logs/apscheduler.log
+tail -n 100 logs/db_worker.log
+sudo journalctl -k --since today --no-pager | grep -Ei 'oom|out of memory|killed process|segfault'
+sudo journalctl -u systemd-logind --since today --no-pager
+```
+
+应用的部分日志还会写入 `logs/root.log` 及各 APP 的日志文件；服务日志为空不代表这些文件也没有记录。
 
 ## 维护建议
 

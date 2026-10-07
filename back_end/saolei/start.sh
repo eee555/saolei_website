@@ -12,13 +12,8 @@ mkdir -p logs
 
 if [ "${START_APSCHEDULER:-1}" = "1" ]; then
     echo "Starting apscheduler after ${APSCHEDULER_START_DELAY:-10}s..."
-    (
-        sleep "${APSCHEDULER_START_DELAY:-10}"
-        if command -v ionice >/dev/null 2>&1; then
-            exec nice -n "${APSCHEDULER_NICE:-10}" ionice -c2 -n7 python3 manage.py runapscheduler
-        fi
-        exec nice -n "${APSCHEDULER_NICE:-10}" python3 manage.py runapscheduler
-    ) >> logs/apscheduler.log 2>&1 &
+    nohup bash run_background.sh apscheduler "${APSCHEDULER_START_DELAY:-10}" "${APSCHEDULER_NICE:-10}" \
+        >> logs/apscheduler.log 2>&1 < /dev/null &
     echo "apscheduler scheduled."
 else
     echo "Skipping apscheduler because START_APSCHEDULER=${START_APSCHEDULER}."
@@ -26,13 +21,8 @@ fi
 
 if [ "${START_DB_WORKER:-1}" = "1" ]; then
     echo "Starting db_worker after ${DB_WORKER_START_DELAY:-20}s..."
-    (
-        sleep "${DB_WORKER_START_DELAY:-20}"
-        if command -v ionice >/dev/null 2>&1; then
-            exec nice -n "${DB_WORKER_NICE:-10}" ionice -c2 -n7 python3 manage.py db_worker_robust --interval "${DB_WORKER_INTERVAL:-2}"
-        fi
-        exec nice -n "${DB_WORKER_NICE:-10}" python3 manage.py db_worker_robust --interval "${DB_WORKER_INTERVAL:-2}"
-    ) >> logs/db_worker.log 2>&1 &
+    nohup bash run_background.sh db-worker "${DB_WORKER_START_DELAY:-20}" "${DB_WORKER_NICE:-10}" "${DB_WORKER_INTERVAL:-2}" \
+        >> logs/db_worker.log 2>&1 < /dev/null &
     echo "db_worker scheduled."
 else
     echo "Skipping db_worker because START_DB_WORKER=${START_DB_WORKER}."
