@@ -47,6 +47,20 @@ function openActions(videoId: number) {
 }
 
 describe('<UserVideoView /> video reveal', () => {
+    it('updates columns through checkboxes and selected tag removal without refetching videos', () => {
+        mountUserVideos(100, [false, false]);
+        cy.get('button[aria-label="Select columns"]').click();
+        cy.get('.checkbox-group input[value=bv]').should('not.be.checked');
+        cy.get('.checkbox-group').contains('label', /^Bv$/).click();
+        cy.get('.checkbox-group input[value=bv]').should('be.checked');
+        cy.get('.p-datatable-table').contains('th', /^Bv$/).should('be.visible');
+        cy.contains('.el-tag', /^Time$/).find('.el-tag__close').click();
+        cy.get('.checkbox-group input[value=time]').should('not.be.checked');
+        cy.get('.p-datatable-table th').contains(/^Time$/).should('not.exist');
+        cy.wrap(VideoListConfig).its('value.profile').should('deep.equal', ['bv']);
+        cy.get('@videos.all').should('have.length', 1);
+    });
+
     it('opens actions in a popover, confirms reveal and updates only the selected video', () => {
         const user = mountUserVideos();
         cy.intercept('POST', '**/api/tournament/video/101/reveal', { statusCode: 204 }).as('reveal');

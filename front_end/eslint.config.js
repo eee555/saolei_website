@@ -343,11 +343,15 @@ export default defineConfig({
         'src/components/VideoPlayer/PlayerMainSettings.vue',
         'src/components/visualization/ColorSchemeSetting.vue',
         'src/components/VideoUpload/FileInputOptions.vue',
+        'src/components/widgets/MultiSelector.vue',
+        'src/components/Filters/SoftwareFilter.vue',
+        'src/components/Filters/VideoStateFilter.vue',
+        'src/components/Filters/MSLevelFilter.vue',
     ],
     rules: {
         'vue/no-restricted-html-elements': [
             'error', ...restrictedHtmlElements, ...restrictedActionElements, ...restrictedDescriptionsElements, {
-                element: ['ElCheckbox', 'el-checkbox'],
+                element: ['ElCheckbox', 'el-checkbox', 'ElCheckboxGroup', 'el-checkbox-group', 'ElCheckboxButton', 'el-checkbox-button'],
                 message: 'Use a native checkbox and associated label with "@/styles/checkbox.css" instead.',
             },
         ],
