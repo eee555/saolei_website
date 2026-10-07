@@ -22,6 +22,9 @@ const restrictedHtmlElements = [{
 }, {
     element: ['ElDivider', 'el-divider'],
     message: 'Use CSS borders on native containers instead.',
+}, {
+    element: ['ElCheckbox', 'el-checkbox', 'ElCheckboxGroup', 'el-checkbox-group', 'ElCheckboxButton', 'el-checkbox-button'],
+    message: 'Use a native checkbox and associated label with "@/styles/checkbox.css" or "@/styles/checkbox-buttons.css" instead.',
 }];
 
 const restrictedActionElements = [{
@@ -350,10 +353,7 @@ export default defineConfig({
     ],
     rules: {
         'vue/no-restricted-html-elements': [
-            'error', ...restrictedHtmlElements, ...restrictedActionElements, ...restrictedDescriptionsElements, {
-                element: ['ElCheckbox', 'el-checkbox', 'ElCheckboxGroup', 'el-checkbox-group', 'ElCheckboxButton', 'el-checkbox-button'],
-                message: 'Use a native checkbox and associated label with "@/styles/checkbox.css" instead.',
-            },
+            'error', ...restrictedHtmlElements, ...restrictedActionElements, ...restrictedDescriptionsElements,
         ],
     },
 }, {

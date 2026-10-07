@@ -220,37 +220,41 @@ describe('VideoUpload Component', () => {
         cy.get('table:visible');
         cy.contains('Parsing files').should('not.exist');
 
-        cy.get('table:visible').find('.el-checkbox__input').then((checkboxes) => {
-            cy.wrap(checkboxes).should('have.length', 4);
+        // 初始状态全不选
+        cy.get('table:visible .checkbox-input').shouldHaveState([false, false, false, false]);
 
-            // 初始状态全不选
-            cy.wrap(checkboxes).shouldHaveState([false, false, false, false]);
+        // 全选
+        cy.get('table:visible .checkbox-input').first().parent('label').click();
+        cy.get('table:visible .checkbox-input').shouldHaveState([true, true, true, true]);
 
-            // 全选
-            cy.wrap(checkboxes[0]).click();
-            cy.wrap(checkboxes).shouldHaveState([true, true, true, true]);
+        // 全不选
+        cy.get('table:visible .checkbox-input').first().click();
+        cy.get('table:visible .checkbox-input').shouldHaveState([false, false, false, false]);
 
-            // 全不选
-            cy.wrap(checkboxes[0]).click();
-            cy.wrap(checkboxes).shouldHaveState([false, false, false, false]);
+        // 选择部分
+        cy.get('table:visible .checkbox-input').eq(1).parent('label').click();
+        cy.get('table:visible .checkbox-input').eq(2).click();
+        cy.get('table:visible .checkbox-input').shouldHaveState([null, true, true, false]);
 
-            // 选择部分
-            cy.wrap(checkboxes[1]).click();
-            cy.wrap(checkboxes[2]).click();
-            cy.wrap(checkboxes).shouldHaveState([null, true, true, false]);
+        // 逐步全选
+        cy.get('table:visible .checkbox-input').eq(3).click();
+        cy.get('table:visible .checkbox-input').shouldHaveState([true, true, true, true]);
 
-            // 逐步全选
-            cy.wrap(checkboxes[3]).click();
-            cy.wrap(checkboxes).shouldHaveState([true, true, true, true]);
+        // 部分取消
+        cy.get('table:visible .checkbox-input').eq(2).click();
+        cy.get('table:visible .checkbox-input').shouldHaveState([null, true, false, true]);
 
-            // 部分取消
-            cy.wrap(checkboxes[2]).click();
-            cy.wrap(checkboxes).shouldHaveState([null, true, false, true]);
+        // 中间状态全不选
+        cy.get('table:visible .checkbox-input').first().click();
+        cy.get('table:visible .checkbox-input').shouldHaveState([false, false, false, false]);
 
-            // 中间状态全不选
-            cy.wrap(checkboxes[0]).click();
-            cy.wrap(checkboxes).shouldHaveState([false, false, false, false]);
-        });
+        // Space 选择一行，再从半选清空
+        cy.get('table:visible .checkbox-input').eq(1).focus();
+        cy.realPress('Space');
+        cy.get('table:visible .checkbox-input').shouldHaveState([null, true, false, false]);
+        cy.get('table:visible .checkbox-input').first().focus();
+        cy.realPress('Space');
+        cy.get('table:visible .checkbox-input').shouldHaveState([false, false, false, false]);
     });
 
     it('Response status', () => {
@@ -269,7 +273,7 @@ describe('VideoUpload Component', () => {
             { contents: '@videoFileExpMvf', fileName: 'exp.mvf' },
         ], { force: true });
 
-        cy.get('table:visible').find('.el-checkbox__input').first().click(); // 全选
+        cy.get('table:visible .checkbox-input').first().click(); // 全选
         cy.get('button').contains('Upload').click();
 
         cy.contains('Uploading: 0 / 4');
@@ -302,7 +306,7 @@ describe('VideoUpload Component', () => {
 
                 if (!autoUpload) {
                     cy.contains('Parsing files').should('not.exist');
-                    cy.get('table:visible').find('.el-checkbox__input').first().click();
+                    cy.get('table:visible .checkbox-input').first().click();
                     cy.get('button').contains('Upload').click();
                 }
 
@@ -330,7 +334,7 @@ describe('VideoUpload Component', () => {
             { contents: '@videoFileIntRmv', fileName: 'int.rmv' },
         ], { force: true });
 
-        cy.get('table:visible').find('.el-checkbox__input').first().click(); // 全选
+        cy.get('table:visible .checkbox-input').first().click(); // 全选
         cy.get('button').contains('Upload').click();
 
         cy.contains('Uploading').should('not.exist');
