@@ -1,5 +1,4 @@
 <template>
-    <ElDivider />
     <footer class="site-footer">
         <div class="layout-columns" style="margin-bottom: 15px">
             <div>
@@ -100,7 +99,6 @@ import '@/styles/layout.css';
 import '@/styles/text.css';
 import '@/styles/link.css';
 
-import { ElDivider } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
 import BaseOverlay from './common/BaseOverlay.vue';
@@ -131,6 +129,8 @@ const { t } = useI18n({ messages: i18nMessage });
 <style scoped>
 .site-footer {
     box-sizing: border-box;
-    padding: 0 1rem;
+    border-top: 1px solid var(--ui-border-color);
+    margin-top: 24px;
+    padding: 24px 1rem 0;
 }
 </style>

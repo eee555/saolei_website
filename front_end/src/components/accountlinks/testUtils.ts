@@ -17,11 +17,12 @@ import type {
 import { AccountLinkPlatform } from '@/utils/accountlinks';
 import { UserProfile } from '@/utils/userprofile';
 
-function mountOptions(props: Record<string, unknown> = {}) {
+function mountOptions(props: Record<string, unknown>, components: Record<string, Component>) {
     return {
         props,
         global: {
             plugins: [i18n, pinia],
+            components,
             config: {
                 globalProperties: {
                     $axios,
@@ -31,8 +32,8 @@ function mountOptions(props: Record<string, unknown> = {}) {
     };
 }
 
-export function mountAccountLink(component: Component, props: Record<string, unknown> = {}): Cypress.Chainable<unknown> {
-    return cy.mount(component as never, mountOptions(props) as never) as Cypress.Chainable<unknown>;
+export function mountAccountLink(component: Component, props: Record<string, unknown> = {}, components: Record<string, Component> = {}): Cypress.Chainable<unknown> {
+    return cy.mount(component as never, mountOptions(props, components) as never) as Cypress.Chainable<unknown>;
 }
 
 export function resetAccountLinkStore(userId = 1, playerId = 1): void {

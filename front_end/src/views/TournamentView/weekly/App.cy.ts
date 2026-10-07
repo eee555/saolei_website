@@ -15,7 +15,7 @@ import { Tournament } from '@/utils/tournaments';
 import { VideoAbstract } from '@/utils/videoabstract';
 
 const tournamentId = 8;
-const participantTable = '[data-cy=tournament-data-tabs] #pane-participants .el-table';
+const participantTable = '[data-cy=tournament-data-tabs] #pane-participants [data-cy=weekly-registered-table] table';
 
 function weeklyTournament() {
     return new Tournament({
@@ -110,6 +110,7 @@ describe('<Weekly App />', () => {
 
         cy.contains('Ongoing').should('be.visible');
         cy.contains('Real-Time Score').should('not.exist');
+        cy.get(`${participantTable} .base-table-empty`).should('contain.text', 'No records').and('have.attr', 'colspan', '3');
     });
 
     it('hides real-time score for logged-in users before registration', () => {
@@ -271,7 +272,8 @@ describe('<Weekly App />', () => {
         cy.contains('.el-dialog button', 'Confirm').click();
         cy.wait('@deleteParticipant');
 
-        cy.get(`${participantTable} tbody tr`).should('not.exist');
+        cy.get(`${participantTable} tbody tr:not(.base-table-empty-row)`).should('not.exist');
+        cy.get(`${participantTable} .base-table-empty`).should('contain.text', 'No records').and('have.attr', 'colspan', '4');
         cy.contains('Real-Time Score').should('not.exist');
         cy.get('[data-cy=weekly-participant-window]').should('not.exist');
         cy.contains('button', 'Start my session').should('be.enabled');

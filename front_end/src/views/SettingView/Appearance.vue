@@ -3,82 +3,115 @@
         <h2 class="card-title">
             {{ t('local.appearance') }}
         </h2>
-        <ElDescriptions>
-            <ElDescriptionsItem :label="t('local.colorscheme')" style="vertical-align: middle;">
-                <DarkMode />
-            </ElDescriptionsItem>
-            <ElDescriptionsItem :label="t('local.languageSwitch')">
-                <ElSwitch
-                    v-model="local.language_show"
-                    :active-text="t('common.show')" :inactive-text="t('common.hide')"
-                />
-            </ElDescriptionsItem>
-            <ElDescriptionsItem :label="t('local.viennaLogo')">
-                <ElSwitch v-model="local.vienna_logo_legacy">
-                    <template #active>
-                        <img style="width: 16px; height: 16px" :src="ViennaIconLegacy" :title="t('common.old')">
-                    </template>
-                    <template #inactive>
-                        <img style="width: 16px; height: 16px" :src="ViennaIconNew" :title="t('common.new')">
-                    </template>
-                </ElSwitch>
-            </ElDescriptionsItem>
-            <ElDescriptionsItem :label="t('local.menuLayout')">
-                <ElSwitch
-                    v-model="local.menu_icon"
-                    :active-text="t('local.menuLayoutAbstract')"
-                    :inactive-text="t('local.menuLayoutDefault')"
-                />
-            </ElDescriptionsItem>
-            <ElDescriptionsItem :label="t('local.menuHeight')">
-                <ElSlider
-                    v-model="local.menu_height" size="small" :min="20" :max="60"
-                    style="width: 100px; display: inline-block; height: 9px"
-                />
-            </ElDescriptionsItem>
-            <ElDescriptionsItem :label="t('local.menuFontSize')">
-                <ElInputNumber
-                    v-model="local.menu_font_size"
-                    size="small" :min="10"
-                />
-            </ElDescriptionsItem>
-            <ElDescriptionsItem :label="t('local.notificationDuration')">
-                <BaseTooltip>
-                    <ElInputNumber v-model="local.notification_duration" size="small" :min="0" :step="1000" />
-                    <template #content>
-                        <span class="text-regular">
-                            {{ t('local.notificationDurationTooltip1') }}
-                            <br>
-                            {{ t('local.notificationDurationTooltip2') }}
+        <div class="description-layout">
+            <dl class="descriptions">
+                <div class="description-item">
+                    <dt>{{ t('local.colorscheme') }}</dt>
+                    <dd>
+                        <DarkMode />
+                    </dd>
+                </div>
+                <div class="description-item">
+                    <dt>{{ t('local.languageSwitch') }}</dt>
+                    <dd>
+                        <ElSwitch
+                            v-model="local.language_show"
+                            :active-text="t('common.show')" :inactive-text="t('common.hide')"
+                        />
+                    </dd>
+                </div>
+                <div class="description-item">
+                    <dt>{{ t('local.viennaLogo') }}</dt>
+                    <dd>
+                        <ElSwitch v-model="local.vienna_logo_legacy">
+                            <template #active>
+                                <img style="width: 16px; height: 16px" :src="ViennaIconLegacy" :title="t('common.old')">
+                            </template>
+                            <template #inactive>
+                                <img style="width: 16px; height: 16px" :src="ViennaIconNew" :title="t('common.new')">
+                            </template>
+                        </ElSwitch>
+                    </dd>
+                </div>
+                <div class="description-item">
+                    <dt>{{ t('local.menuLayout') }}</dt>
+                    <dd>
+                        <ElSwitch
+                            v-model="local.menu_icon"
+                            :active-text="t('local.menuLayoutAbstract')"
+                            :inactive-text="t('local.menuLayoutDefault')"
+                        />
+                    </dd>
+                </div>
+                <div class="description-item">
+                    <dt>{{ t('local.menuHeight') }}</dt>
+                    <dd>
+                        <ElSlider
+                            v-model="local.menu_height" size="small" :min="20" :max="60"
+                            style="width: 100px; display: inline-block; height: 9px"
+                        />
+                    </dd>
+                </div>
+                <div class="description-item">
+                    <dt>{{ t('local.menuFontSize') }}</dt>
+                    <dd>
+                        <ElInputNumber
+                            v-model="local.menu_font_size"
+                            size="small" :min="10"
+                        />
+                    </dd>
+                </div>
+                <div class="description-item">
+                    <dt>{{ t('local.notificationDuration') }}</dt>
+                    <dd>
+                        <BaseTooltip>
+                            <ElInputNumber v-model="local.notification_duration" size="small" :min="0" :step="1000" />
+                            <template #content>
+                                <span class="text-regular">
+                                    {{ t('local.notificationDurationTooltip1') }}
+                                    <br>
+                                    {{ t('local.notificationDurationTooltip2') }}
+                                </span>
+                            </template>
+                        </BaseTooltip>
+                    </dd>
+                </div>
+                <div class="description-item">
+                    <dt>{{ t('local.nameFormat') }}</dt>
+                    <dd>
+                        <span :title="t('local.nameFormatTooltip')">
+                            <ElRadioGroup v-model="local.nameFormat" size="small" style="vertical-align: middle;">
+                                <ElRadioButton :label="t('local.nameFormatFirstLast')" value="first-last" />
+                                <ElRadioButton :label="t('local.nameFormatLastFirst')" value="last-first" />
+                            </ElRadioGroup>
                         </span>
-                    </template>
-                </BaseTooltip>
-            </ElDescriptionsItem>
-            <ElDescriptionsItem :label="t('local.nameFormat')">
-                <span :title="t('local.nameFormatTooltip')">
-                    <ElRadioGroup v-model="local.nameFormat" size="small" style="vertical-align: middle;">
-                        <ElRadioButton :label="t('local.nameFormatFirstLast')" value="first-last" />
-                        <ElRadioButton :label="t('local.nameFormatLastFirst')" value="last-first" />
-                    </ElRadioGroup>
-                </span>
-            </ElDescriptionsItem>
-            <ElDescriptionsItem :label="t('local.newUserGuide')">
-                <span :title="t('local.newUserGuideTooltip')">
-                    <ElSwitch v-model="local.tooltip_show" />
-                </span>
-            </ElDescriptionsItem>
-            <ElDescriptionsItem :label="t('local.experimentalFeature')">
-                <ElSwitch v-model="local.experimental" />
-            </ElDescriptionsItem>
-        </ElDescriptions>
+                    </dd>
+                </div>
+                <div class="description-item">
+                    <dt>{{ t('local.newUserGuide') }}</dt>
+                    <dd>
+                        <span :title="t('local.newUserGuideTooltip')">
+                            <ElSwitch v-model="local.tooltip_show" />
+                        </span>
+                    </dd>
+                </div>
+                <div class="description-item description-wide">
+                    <dt>{{ t('local.experimentalFeature') }}</dt>
+                    <dd>
+                        <ElSwitch v-model="local.experimental" />
+                    </dd>
+                </div>
+            </dl>
+        </div>
     </section>
 </template>
 
 <script setup lang="ts">
+import '@/styles/descriptions.css';
 import '@/styles/cards.css';
 import '@/styles/text.css';
 
-import { ElDescriptions, ElDescriptionsItem, ElInputNumber, ElRadioButton, ElRadioGroup, ElSlider, ElSwitch } from 'element-plus';
+import { ElInputNumber, ElRadioButton, ElRadioGroup, ElSlider, ElSwitch } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
 import BaseTooltip from '@/components/common/BaseTooltip.vue';

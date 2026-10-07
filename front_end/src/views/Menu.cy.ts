@@ -1,5 +1,4 @@
-// eslint-disable-next-line import-x/no-namespace
-import * as ELIcons from '@element-plus/icons-vue';
+import { Cpu, Key, Lock, Medal, Message, Reading, Setting, Trophy, User, VideoCameraFilled } from '@element-plus/icons-vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
 import Menu from './Menu.vue';
@@ -29,7 +28,7 @@ const routes = [
 
 type MenuRects = Record<string, DOMRect>;
 
-function mountMenu(width: number) {
+function mountMenu(width: number, iconOnly = false) {
     cy.viewport(width, 300);
     cy.intercept({ method: 'GET', pathname: '/api/userprofile/info/0' }, user).as('fetchUser');
 
@@ -37,7 +36,7 @@ function mountMenu(width: number) {
     local.value.language_show = true;
     local.value.menu_font_size = 18;
     local.value.menu_height = 60;
-    local.value.menu_icon = false;
+    local.value.menu_icon = iconOnly;
     store.login(user);
 
     const router = createRouter({
@@ -50,7 +49,7 @@ function mountMenu(width: number) {
         cy.mount(Menu, {
             global: {
                 plugins: [pinia, router, i18n],
-                components: ELIcons,
+                components: { Cpu, Key, Lock, Medal, Message, Reading, Setting, Trophy, User, VideoCameraFilled },
                 config: {
                     globalProperties: {
                         $axios,
@@ -88,10 +87,14 @@ describe('<Menu /> layout', () => {
         cy.realPress('Space');
         cy.wait('@logout');
         cy.contains('button', /^Login$/).should('be.visible');
+        cy.mockCaptchaRefresh();
+        cy.contains('button', /^Login$/).click();
+        cy.get('.el-dialog .el-input__prefix svg').should('have.length', 3);
     });
 
     it('keeps the menu on one row when there is enough width', () => {
         mountMenu(1280);
+        cy.get('.el-menu-item .el-icon svg').should('have.length', 8);
 
         getMenuRects().then((rects) => {
             const itemTops = [
@@ -107,6 +110,13 @@ describe('<Menu /> layout', () => {
 
             expect(Math.max(...itemTops) - Math.min(...itemTops)).to.be.lessThan(3);
         });
+    });
+
+    it('renders all menu icons in icon-only mode', () => {
+        mountMenu(1280, true);
+        cy.get('.el-menu-item .el-icon svg').should('have.length', 8);
+        cy.contains('.el-menu-item', 'Ranking').should('not.exist');
+        cy.contains('.el-menu-item', 'Moderate').should('not.exist');
     });
 
     it('lets right-side items wrap individually and keeps wrapped items right aligned', () => {

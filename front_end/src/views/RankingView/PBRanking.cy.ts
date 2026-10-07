@@ -10,8 +10,15 @@ describe('<PBRanking />', () => {
         const counts = { 'std:b:1': 21, 'nf:b:54': 7, 'nf:i:216': 7, 'nf:e:381': 7 };
         cy.intercept('GET', '/api/speedranking/pb/counts', { body: counts }).as('counts');
         const upload = new Date(2026, 9, 5, 12, 34, 0).toISOString();
-        cy.intercept({ method: 'GET', pathname: '/api/speedranking/pb/rank' }, {
-            body: { count: 21, players: [{ player_id: 42, video_id: 8001, timems: 1000, upload_time: upload }] },
+        let releaseNF!: () => void;
+        const nfResponse = new Promise<void>((resolve) => {
+            releaseNF = resolve;
+        });
+        cy.intercept({ method: 'GET', pathname: '/api/speedranking/pb/rank' }, async (req) => {
+            if (req.query.nf === 'true') {
+                await nfResponse;
+            }
+            req.reply({ body: { count: 21, players: [{ player_id: 42, video_id: 8001, timems: 1000, upload_time: upload }] } });
         }).as('ranking');
         cy.mount(PBRanking, { global: { plugins: [i18n, pinia], config: { globalProperties: { $axios } } } });
         cy.wait('@ranking').its('request.query').should('include', { level: 'b', bv: '1', nf: 'false', start: '0', end: '20' });
@@ -24,8 +31,25 @@ describe('<PBRanking />', () => {
         cy.get('.pb-ranking-table tbody').extractTableData().should((data) => {
             expect(data[0]?.[0]).to.equal('21');
         });
-        cy.get('.nf-toggle.el-checkbox').click();
+        let refreshBounds: DOMRect;
+        cy.get('.pb-toolbar button[aria-label="Refresh"]').should('be.enabled').then(($button) => {
+            refreshBounds = $button[0].getBoundingClientRect();
+        });
+        cy.get('.nf-toggle input[type=checkbox]').should('not.be.checked').focus();
+        cy.realPress('Space');
+        cy.get('.nf-toggle input[type=checkbox]').should('be.checked');
+        cy.get('.pb-toolbar button[aria-label="Refresh"]').should(($button) => {
+            expect($button.is(':enabled')).to.equal(true);
+            const bounds = $button[0].getBoundingClientRect();
+            expect(bounds.width).to.be.closeTo(refreshBounds.width, 0.1);
+            expect(bounds.left).to.be.closeTo(refreshBounds.left, 0.1);
+            expect($button.find('i')).to.have.length(1);
+            expect($button.find('.pi-refresh.pi-spin')).to.have.length(1);
+        }).then(() => {
+            releaseNF();
+        });
         cy.wait('@ranking').its('request.query').should('include', { nf: 'true', start: '0' });
+        cy.get('.pb-toolbar button[aria-label="Refresh"] .pi-refresh').should('not.have.class', 'pi-spin');
 
         for (const [level, max] of [['b', 54], ['i', 216], ['e', 381]] as const) {
             cy.get(`.pb-level-button[data-level="${level}"]`).click();

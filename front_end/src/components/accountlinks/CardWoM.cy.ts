@@ -1,3 +1,5 @@
+import { Ticket } from '@element-plus/icons-vue';
+
 import CardWoM from './CardWoM.vue';
 import { mockUpdateAccountLink, mockWoMResponse, mountAccountLink, resetAccountLinkStore } from './testUtils';
 
@@ -13,7 +15,7 @@ describe('<CardWoM />', () => {
             id: '303',
             verified: true,
             info: new AccountWoM(mockWoMResponse()),
-        });
+        }, { Ticket });
 
         cy.contains('Minesweeper.Online #303');
         cy.contains('123');
@@ -26,7 +28,7 @@ describe('<CardWoM />', () => {
         mountAccountLink(CardWoM, {
             id: '303',
             verified: false,
-        });
+        }, { Ticket });
 
         cy.contains('This account has not been verified.');
         cy.contains('123').should('not.exist');
@@ -43,7 +45,7 @@ describe('<CardWoM />', () => {
             id: '303',
             verified: true,
             info: new AccountWoM(mockWoMResponse()),
-        });
+        }, { Ticket });
 
         cy.get('.el-link').last().click();
         cy.get('.el-link').last().click();

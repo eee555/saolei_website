@@ -1,6 +1,5 @@
 import './setup.js';
-// eslint-disable-next-line import-x/no-namespace
-import * as ElementPlusIconsVue from '@element-plus/icons-vue';
+import { ArrowLeft, ArrowRight, Cpu, Key, Lock, Medal, Message, QuestionFilled, Reading, Setting, Ticket, Trophy, User, VideoCameraFilled } from '@element-plus/icons-vue';
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
 import type { AxiosInstance } from 'axios';
@@ -32,7 +31,9 @@ if (import.meta.env.DEV) {
 
 app.config.globalProperties.$axios = $axios;
 
-for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+// Transitional registry for bare tags, menu icon names and input prefix-icon strings.
+const globalIcons = { ArrowLeft, ArrowRight, Cpu, Key, Lock, Medal, Message, QuestionFilled, Reading, Setting, Ticket, Trophy, User, VideoCameraFilled };
+for (const [key, component] of Object.entries(globalIcons)) {
     app.component(key, component);
 }
 

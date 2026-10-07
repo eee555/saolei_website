@@ -1,3 +1,5 @@
+import { Key, Lock, Message, User } from '@element-plus/icons-vue';
+
 import RegisterForm from './RegisterForm.vue';
 
 import $axios from '@/http';
@@ -6,6 +8,7 @@ import i18n from '@/i18n';
 const mountOptions = {
     global: {
         plugins: [i18n],
+        components: { Key, Lock, Message, User },
         config: {
             globalProperties: {
                 $axios,
@@ -83,6 +86,7 @@ describe('<RegisterForm />', () => {
         cy.contains('Email code').next().find('button').should('have.text', 'Send');
         findPasswordInput().should('have.attr', 'type', 'password');
         findConfirmPasswordInput().should('have.attr', 'type', 'password');
+        cy.get('.el-input__prefix svg').should('have.length', 6);
         cy.contains('Agree to').find('input').should('have.attr', 'type', 'checkbox');
     });
 
