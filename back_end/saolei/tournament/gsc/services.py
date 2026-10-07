@@ -188,7 +188,8 @@ def calculate_gsc_best_score(user_id: int):
     return gsc_encode_best(best_participant.t37, best_participant.tournament.gsctournament.order)
 
 
-def refresh_gsc_best_scores(tournament: GSCTournament, *, batch_size=1000):
+def refresh_gsc_best_scores(tournament: GSCTournament, *, batch_size=1000, rebuild=False):
+    """默认只更新更好的纪录；rebuild=True 时重新查询历史最佳，允许纪录回退。"""
     logger.info(f'GSC#{tournament.order} 个人纪录刷新 开始 类型{tournament.subclass}')
     logger.info(f'GSC#{tournament.order} 个人纪录刷新 获取选手列表')
     participants = list(
@@ -205,7 +206,12 @@ def refresh_gsc_best_scores(tournament: GSCTournament, *, batch_size=1000):
     updated_count = 0
     for participant in participants:
         tournament_user = participant.user.tournamentuser
-        updated_count += update_gsc_best(tournament_user, tournament, participant)
+        if rebuild:
+            best = calculate_gsc_best_score(participant.user_id)
+            updated_count += tournament_user.gsc_best != best
+            tournament_user.gsc_best = best
+        else:
+            updated_count += update_gsc_best(tournament_user, tournament, participant)
         tournament_users.append(tournament_user)
 
     TournamentUser.objects.bulk_update(tournament_users, ['gsc_best'], batch_size=batch_size)

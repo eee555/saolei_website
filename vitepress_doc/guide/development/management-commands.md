@@ -192,27 +192,27 @@ python manage.py refresh_video_counts
 python manage.py refresh_video_counts --batch-size 500
 ```
 
-### `refresh_weekly_scores`
+### `refresh_tournament_scores`
 
-位置：`tournament/management/commands/refresh_weekly_scores.py`
+位置：`tournament/management/commands/refresh_tournament_scores.py`
 
-用途：同步重算指定已颁奖周赛的成绩、排名、积分和参赛用户的历史最佳成绩，无需后台 worker。
+用途：同步重算指定已颁奖比赛的成绩、排名、积分和参赛用户的历史最佳成绩，无需后台 worker。支持 GSC 和经典周赛。
 
-- 参数为比赛 ID，不是周数；只接受已颁奖、有结束时间的经典周赛。
+- 参数为比赛 ID，不是 GSC 届数或周数；只接受已颁奖、有结束时间的 GSC 或经典周赛。
 - 从关联的有效录像重新计算成绩，再刷新 `rank` 和 `rank_score`。缺少的成绩恢复默认值，不保留已失效录像的旧成绩。
 - 按新旧 `rank_score` 的差额修正历史积分总量，不重复累计。当前积分加入从该届结束时间衰减到 `last_updated` 的差额；若该届结束得更晚，则先将原当前积分衰减到该届结束时间。
-- `last_updated` 表示最后结束的比赛时间，不因重算历史周赛而回退。积分及个人历史最佳成绩的 Redis 缓存同步刷新；历史最佳成绩支持变好和变差。
+- `last_updated` 表示最后结束的比赛时间，不因重算历史比赛而回退。积分及个人历史最佳成绩的 Redis 缓存同步刷新；历史最佳成绩支持变好和变差。
 - 不删除参赛者、不修改比赛状态、不公开录像、不重新解析录像文件。
 - 执行期间应避免同时修改该届的录像或参赛者，并暂停涉及这些用户的积分结算。该届的数据库写入在一个事务内，中途失败会回滚，可在排除故障后重跑；Redis 已写入的内容不会随数据库回滚，失败后需重跑以恢复缓存一致性。
 
 | 参数 | 默认值 | 说明 |
 | --- | --- | --- |
-| `tournament_id` | 必填 | 周赛的比赛 ID |
+| `tournament_id` | 必填 | 比赛 ID，不是 GSC 届数或周数 |
 | `--batch-size` | `1000` | 批量写入大小，必须为正整数 |
 
 ```bash
-python manage.py refresh_weekly_scores 123
-python manage.py refresh_weekly_scores 123 --batch-size 500
+python manage.py refresh_tournament_scores 123
+python manage.py refresh_tournament_scores 123 --batch-size 500
 ```
 
 ### `refresh_tournament_user_stats`
