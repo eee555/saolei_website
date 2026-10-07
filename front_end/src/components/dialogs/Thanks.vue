@@ -17,8 +17,7 @@
     <div>
         <PlayerName :user-id="82" />
     </div>
-    <ElDivider />
-    <div class="layout-columns">
+    <div class="layout-columns thanks-section">
         <div>
             <div style="padding-bottom: 5px">
                 <strong>{{ t('local.software') }}</strong>
@@ -72,8 +71,7 @@
             </div>
         </div>
     </div>
-    <ElDivider />
-    <div style="padding-bottom: 5px">
+    <div class="thanks-section" style="padding-bottom: 5px">
         <strong>{{ t('local.acknowledgement') }}</strong>
     </div>
     <span v-for="item in acknowledgements" style="padding-right: 10px">
@@ -84,7 +82,6 @@
 <script lang="ts" setup>
 import '@/styles/layout.css';
 // 注册、登录的弹框及右上方按钮
-import { ElDivider } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
 import PlayerName from '@/components/PlayerName.vue';
@@ -131,3 +128,11 @@ const i18nMessage = {
 
 const { t } = useI18n({ messages: i18nMessage });
 </script>
+
+<style scoped>
+.thanks-section {
+    border-top: 1px solid var(--ui-border-color);
+    margin-top: 24px;
+    padding-top: 24px;
+}
+</style>

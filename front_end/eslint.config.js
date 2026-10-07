@@ -19,6 +19,9 @@ const restrictedHtmlElements = [{
 }, {
     element: ['ElCard', 'el-card'],
     message: 'Use "@/styles/cards.css" instead.',
+}, {
+    element: ['ElDivider', 'el-divider'],
+    message: 'Use CSS borders on native containers instead.',
 }];
 
 export default defineConfig({
