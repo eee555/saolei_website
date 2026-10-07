@@ -1,3 +1,5 @@
+import { Lock } from '@element-plus/icons-vue';
+
 import passwordConfirmBlock from './PasswordConfirmBlock.vue';
 
 import i18n from '@/i18n';
@@ -8,6 +10,7 @@ const mountOptions = {
     },
     global: {
         plugins: [i18n],
+        components: { Lock },
     },
 };
 
@@ -40,6 +43,7 @@ describe('<passwordConfirmBlock />', () => {
         cy.mount(passwordConfirmBlock, mountOptions);
         findPasswordInput().should('have.attr', 'type', 'password');
         findConfirmPasswordInput().should('have.attr', 'type', 'password');
+        cy.get('.el-input__prefix svg').should('have.length', 2);
     });
 
     it('Validation', () => {

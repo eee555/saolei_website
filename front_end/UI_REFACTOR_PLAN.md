@@ -2,7 +2,7 @@
 
 制定日期：2026-10-03。现状核查与整理：2026-10-07。
 
-本计划以当前代码为实施起点，只列剩余工作和持续适用的约束。按用户约定，已提交的改动视为验收完成，不再列为实施或测试待办。普通页面描述布局已验收，移除其实施与验收待办；当前周赛报名表已迁移到 BaseTable，待用户验收。批次编号保留，避免后续交流中混淆。
+本计划以当前代码为实施起点，只列剩余工作和持续适用的约束。按用户约定，已提交的改动视为验收完成，不再列为实施或测试待办。普通页面描述布局和周赛报名表迁移均已提交；图标迁移 7.1 已实施，等待浏览器验收，7.2 尚未实施。批次编号保留，避免后续交流中混淆。
 
 ## 目标与固定约束
 
@@ -11,6 +11,7 @@
 - 组件根据自身可用宽度伸缩、换行或内部滚动；少数确需切换布局的组件单独制定策略，不设置全站宽窄屏布局分界。
 - 简单布局和展示采用原生 HTML + CSS，复用项目已有基础组件。复杂交互保留现有组件逻辑，主要调整样式。
 - vue-tippy 保持现有实现及样式导入方式。PrimeVue 按项目既定决定逐步退出，PrimeIcons 单独保留。
+- 禁止全局注册全量 Element Plus 图标；过渡期仅注册实际依赖全局解析的图标，最终不全局注册任何图标。图标选型继续优先 PrimeIcons，其次 Element Plus。
 - 每批围绕一个可独立审查、合并和回退的结果，避免与业务逻辑修改、文件搬迁或整页重写混在一起。
 
 新增 UI 和业务维护优先遵守[根目录前端规范](../.codex/instructions.md)。管理员页面只承接必要的功能与主题兼容，不安排专门的精细视觉改版。
@@ -31,7 +32,7 @@
 | 保留表格的视觉 | `theme/tables.css` 为 BaseTable、ElTable、PrimeVue DataTable 提供统一参数；`vendors/element-plus-table.css`、`primevue-table.css`、`primevue-table-controls.css` 已接入 |
 | Element Plus 按钮兼容 | `vendors/element-plus.css` 已提供直角覆盖；暂留组件继续使用，不重复安排按钮整体迁移 |
 
-已迁移的表格包括密度榜、扫雷榜、PB 榜、比赛积分榜、软件版本列表、个人纪录和自定义计数器。比赛积分榜由页面管理后端排序，切换字段重置页码，表头不显示排序箭头。
+已迁移的表格包括密度榜、扫雷榜、PB 榜、比赛积分榜、软件版本列表、个人纪录、自定义计数器和周赛报名表。比赛积分榜由页面管理后端排序，切换字段重置页码，表头不显示排序箭头。
 
 目前的尺寸是后续评审的起点：基础文字 14px，普通原生按钮内边距 4px × 8px、行高 1.4；表格单元格内边距 4px × 8px、行高 1.4；普通卡片内边距 10px。这些现值已生效，后续按组件类别调整，不再安排“先抄参数但不接入运行时”的步骤。
 
@@ -40,12 +41,13 @@
 | 批次 | 工作 | 范围与边界 |
 | --- | --- | --- |
 | 2 | 剩余描述布局 | 剩余 10 个文件共 11 处 ElDescriptions 位于管理员与账号关联区域，按既定范围暂缓 |
-| 3 | 周赛报名表验收与剩余表格核对 | 周赛报名表已迁移，待验收；其余 5 个 ElTable 根据实际排序、编辑等依赖决定是否保留 |
+| 3 | 剩余表格核对 | 其余 5 个 ElTable 根据实际排序、编辑等依赖决定是否保留 |
+| 7 | 图标注册迁移 | 7.1 已收缩为实际使用清单，待验收；7.2 再逐模块取消全局图标注册，同步处理 Cypress 注册 |
 | 4 | 分类别给复杂组件换肤 | 输入与表单、选择控件、Tabs、菜单、弹窗、通知和加载状态，各自独立成批；细化对应尺寸参数 |
 | 5 | PrimeVue 退出 | 筛选控件、表格替代验证、逐表迁移和依赖清理；随相关模块维护推进 |
 | 6 | 局部收尾 | 随每批删除失效导入、重复样式和已无使用方的兼容项，更新本计划 |
 
-批次 3 周赛报名表待验收，下一实施批次建议为批次 4。批次 4 不需要等待全部简单组件迁移完毕。首页比赛卡片、账号关联页面重做和 PrimeVue 全部退出不作为其他批次的前置条件。
+下一步先验收 7.1；7.2 按模块推进，可与批次 4 的换肤独立合并。批次 4 不需要等待全部简单组件迁移完毕。首页比赛卡片、账号关联页面重做和 PrimeVue 全部退出不作为其他批次的前置条件。
 
 ### 2. 剩余描述布局
 
@@ -65,20 +67,6 @@ BaseTable 的迁移边界保持如下：
 - 简单行点击可由调用方绑定 `tr`，调用方负责键盘触发及独立单元格操作的事件冒泡。
 - BaseTable 不新增内部排序、筛选、选择、展开、编辑、分页或递归列注册体系。分组表头直接使用原生 rowspan / colspan。
 
-本批 [`weekly/Registered.vue`](src/views/TournamentView/weekly/Registered.vue) 已迁移到 BaseTable，待验收。保留 v-loading、玩家名与匿名显示、时间区间格式化、token、按权限显示的删除按钮，以及完整确认弹窗和删除逻辑。普通用户显示 3 列、管理者显示 4 列，空提示复用 `ranking.empty` 并跨对应列数。
-
-列宽继续采用原来的 150px / 330px / 180px 最小宽度与 90px 操作列，窄容器由 BaseTable 内部滚动；共用表格主题、网格和行悬停样式。ESLint 仅在此文件限制重新引入 ElTable / ElTableColumn，不影响剩余复杂表格。
-
-`weekly/App.cy.ts` 已改用稳定的 `data-cy` 定位原生表格，并覆盖普通空表的 3 列提示与管理者删除最后一行后的 4 列提示；报名响应、权限、取消/确认、删除失败和删除自身后会话状态的现有覆盖继续保留。用户在 `front_end` 运行：
-
-```powershell
-npx.cmd cypress run --component --spec "src/views/TournamentView/weekly/App.cy.ts"
-```
-
-验收重点：深浅主题、窄容器滚动、玩家链接与匿名显示、空表、管理权限及删除确认流程。
-
-本批已通过 `lintfix`、类型检查、前端构建及 diff 空白检查。Cypress 由用户运行，尚未验证浏览器行为。
-
 当前仍有 5 个 ElTable 使用方：
 
 | 使用方 | 当前判断 |
@@ -90,6 +78,57 @@ npx.cmd cypress run --component --spec "src/views/TournamentView/weekly/App.cy.t
 | [`VideoView.vue`](src/views/VideoView.vue) | 使用库排序事件、列状态与固定列，另行核对迁移成本；本批先保留 |
 
 其余表格继续使用已统一的视觉样式，不在本批顺带重写内部排序或编辑逻辑。未来按实际使用能力重新评估，而不以表格名称或是否包含按钮作决定。
+
+### 7. 图标注册迁移（7.1 已实施，待验收）
+
+本任务分两步独立验收：当前将全量全局注册改为仅注册实际使用的图标；最终应用与组件测试都不全局注册任何图标。继续保留组件库内部自行导入的图标，不要求移除 `@element-plus/icons-vue` 依赖，也不将 PrimeIcons 的 CSS 类用法视为 Vue 全局组件注册。
+
+当前入口及依赖已核对：
+
+- [`main.ts`](src/main.ts) 显式导入 14 个图标，通过有限映射调用 `app.component`；已删除全库命名空间导入和枚举。
+- [`Menu.cy.ts`](src/views/Menu.cy.ts) 在 `global.components` 中注册菜单及登录弹窗渲染链需要的 10 个图标；Cypress 组件挂载不执行 main.ts，测试注册单独维护。
+- [`IconMenuItem.vue`](src/components/widgets/IconMenuItem.vue) 通过 `<component :is="props.icon">` 解析菜单传入的字符串；菜单数据、`prefix-icon` 等字符串 props 也需检查，不能只搜索图标标签。
+- 已核对当前安装包：ElMenu 子菜单箭头直接导入 `ArrowDown` / `ArrowRight`；ElFormItem 相关状态图标由 ElInput 的校验状态映射承接，加载、成功、失败及密码显隐图标已在库内部导入。这些内部使用本身不要求项目全局注册；`prefix-icon="User"` 等项目传入的字符串仍需全局解析。
+
+#### 7.1 仅注册实际使用的图标（已实施，待验收）
+
+已核对裸标签、动态组件、菜单配置、图标 props、条件分支和测试挂载链。应用保持固定的显式映射，不随页面临时增删注册；库内部已导入的图标不重复加入清单，历史注释与 ESLint ignorePatterns 不作为实际使用依据。本步保持业务组件接口和图标外观稳定。
+
+应用实际全局注册清单如下，去重后共 14 个：
+
+| 调用来源 | 图标 |
+| --- | --- |
+| `views/Menu.vue` 配置与固定菜单项，经 `widgets/IconMenuItem.vue` 动态解析 | Trophy、VideoCameraFilled、Medal、Cpu、User、Key、Reading、Setting |
+| `Login/LoginForm.vue`、`Login/RegisterForm.vue`、`formItems/EmailFormItem.vue`、`EmailCodeBlock.vue`、`PasswordConfirmBlock.vue` 的输入前缀；找回密码表单复用后面三个组件 | User、Lock、Key、Message |
+| `visualization/ColorSchemeSetting.vue`、`accountlinks/CardWoM.vue`、`widgets/UserArbiterCSV.vue` 的裸标签 | ArrowLeft、ArrowRight、Ticket、QuestionFilled |
+
+组件测试按挂载链分别注册，不在 Cypress 公共入口注入图标：
+
+| 测试 | 注册图标 |
+| --- | --- |
+| `views/Menu.cy.ts` | 菜单的 8 个图标，以及登录、注册、找回密码弹窗需要的 Lock、Message，共 10 个 |
+| `Login/LoginForm.cy.ts` / `Login/RegisterForm.cy.ts` | Key、Lock、User / Key、Lock、Message、User |
+| `formItems/EmailCodeBlock.cy.ts` / `PasswordConfirmBlock.cy.ts` | Key / Lock |
+| `accountlinks/CardWoM.cy.ts` / `App.cy.ts` | Ticket；现有 `mountAccountLink` 允许调用方传入有限的组件映射，其他账号关联测试默认不注册图标 |
+| `VideoPlayer/NativePlayer.cy.ts` / `views/UserView/UserVideoView.cy.ts` | ArrowLeft、ArrowRight / QuestionFilled |
+
+菜单测试补充了图标模式与实际 SVG 存在的断言，注销后打开登录弹窗也检查输入前缀 SVG；四个表单测试在已有 Rendering 用例中检查前缀 SVG。静态检查通过：`lintfix`、`typecheck`、`build:frontend`。本次构建产物按图标组件名称统计包含 48 个定义（含库内部依赖），不再包含图标库全部 293 个导出；这不等同于浏览器渲染验收。
+
+验收至少覆盖菜单图标/文字两种模式、登录前后与管理员菜单、容器变窄后的对齐，以及登录/注册/邮件前缀、密码显隐和校验状态。检查浏览器组件解析警告与构建产物，确认未再由项目注册入口引用整套图标；不要求组件库按需使用的图标从产物中全部消失。
+
+代理未运行 Cypress；由用户在 `front_end` 运行：
+
+```powershell
+npx.cmd cypress run --component --spec "src/views/Menu.cy.ts,src/components/Login/LoginForm.cy.ts,src/components/Login/RegisterForm.cy.ts,src/components/formItems/EmailCodeBlock.cy.ts,src/components/formItems/PasswordConfirmBlock.cy.ts,src/components/accountlinks/CardWoM.cy.ts,src/components/accountlinks/App.cy.ts,src/components/VideoPlayer/NativePlayer.cy.ts,src/views/UserView/UserVideoView.cy.ts"
+```
+
+这些 spec 不完整覆盖所有条件分支，需补充手动检查颜色方案合并箭头、用户导出提示、WoM 卡片第二页的 Ticket，以及密码显隐与各校验状态；这类必要的图标依赖修正不扩展为账号关联页面改版。
+
+#### 7.2 后续目标：不全局注册任何图标
+
+按菜单、表单、其他裸标签分别迁移。优先复用现有 BaseIcon / PrimeIcons；需要 Element Plus 图标时在使用方按名称局部导入。IconMenuItem 使用组件对象或封闭的局部映射解析现有字符串，图标 props 改为显式组件绑定，消除全局名称解析。只改变图标依赖，保留尺寸、提示、语义与业务事件。
+
+每完成一个模块，移除对应全局注册及不再需要的测试注册、ESLint 图标名称豁免。菜单动态解析可能没有未解析组件警告，需实际确认 SVG / 项目图标存在及布局未退化。最后删除应用的图标注册映射与注册循环，组件测试也不再用 `global.components` 注入图标；以源码检查及实际渲染验收确认全局图标注册归零。
 
 ### 4. 复杂组件换肤与尺寸细化
 

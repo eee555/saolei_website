@@ -1,3 +1,4 @@
+import { QuestionFilled } from '@element-plus/icons-vue';
 import PrimeVue from 'primevue/config';
 import { reactive } from 'vue';
 
@@ -28,7 +29,7 @@ function mountUserVideos(userId = 99, hiddenStates = [true, false]) {
     cy.intercept('GET', '**/api/video/preview*', { statusCode: 404 }).as('preview');
     cy.mount(UserVideoView, {
         props: { user },
-        global: { plugins: [pinia, i18n, PrimeVue], config: { globalProperties: { $axios } } },
+        global: { plugins: [pinia, i18n, PrimeVue], components: { QuestionFilled }, config: { globalProperties: { $axios } } },
     });
     cy.wait('@videos');
     // VideoList loads its data columns asynchronously, after rows may already exist.
