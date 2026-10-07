@@ -11,6 +11,15 @@
     cursor: pointer;
 }
 
+.checkbox--small {
+    min-height: 20px;
+    font-size: var(--ui-font-size-extra-small);
+}
+
+.checkbox > span {
+    min-width: 0;
+}
+
 .checkbox-input {
     appearance: none;
     box-sizing: border-box;

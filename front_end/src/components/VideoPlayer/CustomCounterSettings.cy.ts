@@ -43,10 +43,16 @@ describe('<CustomCounterSettings />', () => {
         cy.get('.custom-counter-rows-editor').should('be.visible');
         cy.get('.custom-counter-json-editor').should('not.exist');
 
-        cy.get('.custom-counter-settings__toolbar .el-checkbox').click();
+        cy.get('.custom-counter-settings__toolbar .checkbox').click();
+        cy.get('.custom-counter-settings__toolbar input[type=checkbox]').should('be.checked');
 
         cy.get('.custom-counter-rows-editor').should('not.exist');
         cy.get('.custom-counter-json-editor').should('be.visible');
+        cy.get('.custom-counter-settings__toolbar input[type=checkbox]').focus();
+        cy.realPress('Space');
+        cy.get('.custom-counter-settings__toolbar input[type=checkbox]').should('not.be.checked');
+        cy.get('.custom-counter-rows-editor').should('be.visible');
+        cy.get('.custom-counter-json-editor').should('not.exist');
     });
 
     it('updates table rows from child editors', () => {
@@ -58,7 +64,7 @@ describe('<CustomCounterSettings />', () => {
             expect(settings.table).to.deep.equal([['duration', 'rtime']]);
         });
 
-        cy.get('.custom-counter-settings__toolbar .el-checkbox').click();
+        cy.get('.custom-counter-settings__toolbar .checkbox').click();
         setInputValue('.custom-counter-json-editor__input textarea', '[["time","etime"]]');
         cy.then(() => {
             expect(settings.table).to.deep.equal([['time', 'etime']]);

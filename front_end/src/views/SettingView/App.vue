@@ -5,9 +5,10 @@
             <h2 class="card-title">
                 {{ t('local.thirdPartyTrust') }}
             </h2>
-            <ElCheckbox v-model="videoPlayerConfig.strangeDustTrust">
-                https://strange-dust.github.io/minesweeper-replay-analyzer/
-            </ElCheckbox>
+            <label class="checkbox">
+                <input v-model="videoPlayerConfig.strangeDustTrust" class="checkbox-input" type="checkbox">
+                <span>https://strange-dust.github.io/minesweeper-replay-analyzer/</span>
+            </label>
         </section>
         <Visualization />
         <section v-experimental class="card">
@@ -49,7 +50,7 @@
 <script lang="ts" setup name="UserSettings">
 import '@/styles/descriptions.css';
 import '@/styles/cards.css';
-import { ElCheckbox, ElInputNumber } from 'element-plus';
+import { ElInputNumber } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
 import Appearance from './Appearance.vue';

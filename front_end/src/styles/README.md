@@ -20,6 +20,8 @@ CSS 与 Less 的选型由实施代理自行决定，根据实际重复程度和�
 
 `checkbox.css` 由 `setup.ts` 全局加载，应用与 Cypress 共用；采用原生 checkbox 与关联 label，无 BaseCheckbox 组件。普通模板为 `<label class="checkbox"><input v-model="checked" class="checkbox-input" type="checkbox"><span>选项文本</span></label>`，业务 class 可加在 label 上。`.checkbox` 提供 24px 最小高度、6px 间距与主题文字色，`.checkbox-input` 提供 14px 直角方框、选中标记、hover、focus-visible 与 disabled 状态。选中标记为内嵌 SVG，颜色为白色，其他配色均引用项目变量；强制颜色模式恢复原生外观。状态来自 input，CSS 不代替 v-model 或 change 逻辑。数组、按钮外观与半选按后续批次接入；原生绑定与外观设置分别参考 [Vue 表单绑定](https://vuejs.org/guide/essentials/forms.html#checkbox)和 [CSS appearance](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/appearance)。
 
+`.checkbox--small` 提供 12px 字号与 20px 最小高度，文本 span 允许在受限宽度内收缩并按全局文字规则换行。注册协议等交互链接放在 label 外并排显示，避免与勾选操作混在一起；保留 input 的完整可访问名称。上传选项的 `@click.stop` 放在 label 上，同时覆盖方框与文字的点击。
+
 `descriptions.css` 提供原生描述列表模板，无独立 Vue 组件：外层 `.description-layout` 为命名查询容器，内部 `<dl class="descriptions">` 每项使用 `<div class="description-item"><dt>标签</dt><dd>值或控件</dd></div>`。调用方直接导入 `@/styles/descriptions.css`，保持条件显示、v-model 与事件绑定。
 
 默认最多三列，随容器宽度低于 48rem / 32rem 减为两列 / 一列；`.description-wide` 始终占整行，`.description-span-2` 在三列布局中跨两列，其余布局中占一列。无边框项内部可换行，避免标签与控件挤压。`.descriptions-bordered` 提供直角网格和标签背景；`.descriptions-small` 保留 12px 统计展示字号，在小于 20rem / 12rem 时减为两列 / 一列。颜色均来自项目变量，不影响子控件的交互与样式。

@@ -139,6 +139,14 @@ describe('VideoUpload Component', () => {
         cy.contains('label', 'Auto-upload after parsing').find('input').should('be.checked');
         cy.contains('label', 'Auto-remove after uploading').click();
         cy.contains('label', 'Auto-remove after uploading').find('input').should('be.checked');
+        cy.contains('label', 'Auto-upload after parsing').find('input').focus();
+        cy.realPress('Space');
+        cy.contains('label', 'Auto-upload after parsing').find('input').should('not.be.checked');
+        cy.window().its('localStorage').invoke('getItem', 'local').should((value: string | null) => {
+            const settings = JSON.parse(value ?? '{}') as { autoUploadAfterParse?: boolean; autoRemoveAfterUpload?: boolean };
+            expect(settings.autoUploadAfterParse).to.equal(false);
+            expect(settings.autoRemoveAfterUpload).to.equal(true);
+        });
         cy.get('.base-file-input button input').should('not.exist');
         cy.get('@pick').should('not.have.been.called');
         cy.contains('button', 'Drag files here or click here to select').click();

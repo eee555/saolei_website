@@ -2,7 +2,7 @@
 
 制定日期：2026-10-03。现状核查与整理：2026-10-07。
 
-本计划以当前代码为实施起点，只列剩余工作和持续适用的约束。按用户约定，已提交或明确验收的改动不再列为实施或测试待办。普通页面描述布局和周赛报名表迁移均已提交；图标迁移 7.1 已验收，7.2 尚未实施；Checkbox 4.1.1 已实施，待验收。批次编号保留，避免后续交流中混淆。
+本计划以当前代码为实施起点，只列剩余工作和持续适用的约束。按用户约定，已提交或明确验收的改动不再列为实施或测试待办。普通页面描述布局、周赛报名表和 Checkbox 4.1.1 均已提交；图标迁移 7.1 已验收，7.2 尚未实施；Checkbox 4.1.2 已实施，待验收。批次编号保留，避免后续交流中混淆。
 
 ## 目标与固定约束
 
@@ -49,7 +49,7 @@
 | 5 | PrimeVue 退出 | 筛选控件、表格替代验证、逐表迁移和依赖清理；随相关模块维护推进 |
 | 6 | 局部收尾 | 随每批删除失效导入、重复样式和已无使用方的兼容项，更新本计划 |
 
-下一步先验收 4.1.1，再按模块推进 4.1.2 的其余布尔开关；7.2 可独立合并。批次 4 的其他换肤不需要等待全部简单组件迁移完毕。首页比赛卡片、账号关联页面重做和 PrimeVue 全部退出不作为其他批次的前置条件。
+下一步先验收 4.1.2，再推进 4.1.3 的数组多选与按钮外观；7.2 可独立合并。批次 4 的其他换肤不需要等待全部简单组件迁移完毕。首页比赛卡片、账号关联页面重做和 PrimeVue 全部退出不作为其他批次的前置条件。
 
 ### 2. 剩余描述布局
 
@@ -118,9 +118,9 @@ BaseTable 的迁移边界保持如下：
 
 ### 4. 简单选择控件迁移与复杂组件换肤
 
-#### 4.1 Checkbox 调用点与迁移安排（4.1.1 已实施，待验收）
+#### 4.1 Checkbox 调用点与迁移安排（4.1.2 已实施，待验收）
 
-2026-10-07 初次清点共 16 个文件、16 处 ElCheckbox。4.1.1 已迁移两个排行榜的 NF 开关，目前剩余 14 个文件、14 处 ElCheckbox、4 处 ElCheckboxGroup、3 处 ElCheckboxButton；循环声明按一处计数，不按运行时选项数计数。剩余 ElCheckbox 中，10 处是可达的普通布尔开关，1 处在关闭的通知分支，1 处为循环生成的数组多选，2 处为上传表格的表头与行选择。未发现独立的 `true / false / null` 业务模型、组内 min / max 限制或自定义 true-value / false-value。
+2026-10-07 核对：4.1.1 已提交，4.1.2 本次迁移 8 个文件、10 处可达布尔开关。目前剩余 3 个文件、4 处 ElCheckbox，以及 4 处 ElCheckboxGroup、3 处 ElCheckboxButton；各组件分别计数，循环声明按一处计数，不按运行时选项数计数。剩余 ElCheckbox 中，1 处在关闭的通知分支，1 处为循环生成的数组多选，2 处为上传表格的表头与行选择。未发现独立的 `true / false / null` 业务模型、组内 min / max 限制或自定义 true-value / false-value。
 
 采用原生 `<input type="checkbox">`、关联 label 与共用 CSS class，跳过 BaseCheckbox 组件。布尔和数组模型复用 Vue 原生 `v-model`；样式通过 `:checked`、`:indeterminate`、`:focus-visible`、`:disabled` 等原生状态选择器复用，不用业务代码维护重复的状态 class。按钮外观采用同一控件的样式变体。半选属性和上传全选策略由 Table.vue 局部同步，不另建通用 Checkbox 状态层。
 
@@ -137,16 +137,14 @@ BaseTable 的迁移边界保持如下：
 
 | 调用方（均相对 src） | 模型与作用 | 保留事项与判断 |
 | --- | --- | --- |
-| [`views/RankingView/SaoleiRanking.vue`](src/views/RankingView/SaoleiRanking.vue) | `nf`：NF 榜切换，1 处 | 4.1.1 已改为原生 input / label，待验收；保留请求、页码处理和 `nf-toggle` |
-| [`views/RankingView/PBRanking.vue`](src/views/RankingView/PBRanking.vue) | `nf`：NF 筛选，1 处 | 4.1.1 已改为原生 input / label，待验收；保留分桶、计数与列表请求 |
-| [`components/Login/LoginForm.vue`](src/components/Login/LoginForm.vue) | `remember_me`：保持登录，1 处 | 普通布尔；将现有 label 文本保留为关联标签，保持有效期选项显示与 `set_expiry` 提交语义 |
-| [`components/Login/RegisterForm.vue`](src/components/Login/RegisterForm.vue) | `agree_TAC`：同意协议，1 处 | 普通布尔；保留 `name="checkoutSecret"`、协议链接及确认按钮启用条件；点击链接不能额外切换选中状态 |
-| [`views/SettingView/App.vue`](src/views/SettingView/App.vue) | `videoPlayerConfig.strangeDustTrust`：第三方信任，1 处 | 普通布尔；保留配置持久化，长 URL 按容器宽度换行 |
-| [`components/VideoPlayer/NativePlayer.vue`](src/components/VideoPlayer/NativePlayer.vue) | `isEditingCustomCounterConfig`、`isEditingPlayerMainConfig`：两个编辑区域开关，2 处 | 普通布尔；保留原来的布局与切换状态，不改为互斥单选 |
-| [`components/VideoPlayer/CustomCounterSettings.vue`](src/components/VideoPlayer/CustomCounterSettings.vue) | `developerMode`：JSON 编辑模式，1 处 | 普通布尔；保留编辑内容和工具栏布局 |
-| [`components/VideoPlayer/PlayerMainSettings.vue`](src/components/VideoPlayer/PlayerMainSettings.vue) | `config.showProbability`：概率显示，1 处 | 普通布尔；保留颜色设置区域的条件显示和配置 |
-| [`components/visualization/ColorSchemeSetting.vue`](src/components/visualization/ColorSchemeSetting.vue) | `developerMode`：颜色方案 JSON 编辑，1 处 | 普通布尔；保留 small 对应的紧凑尺寸及开发者编辑区 |
-| [`components/VideoUpload/FileInputOptions.vue`](src/components/VideoUpload/FileInputOptions.vue) | `local.autoUploadAfterParse`、`local.autoRemoveAfterUpload`，2 处 | 普通布尔；保留持久化、`@click.stop` 与 options 插槽位置，点击选项不打开文件选择框；同步局部 `.el-checkbox` 样式 |
+| [`components/Login/LoginForm.vue`](src/components/Login/LoginForm.vue) | `remember_me`：保持登录，1 处 | 4.1.2 已迁移，待验收；保留关联标签、rememberMe、有效期选项显示与 `set_expiry` 提交语义 |
+| [`components/Login/RegisterForm.vue`](src/components/Login/RegisterForm.vue) | `agree_TAC`：同意协议，1 处 | 4.1.2 已迁移，待验收；保留 name="checkoutSecret" 和确认按钮启用条件，协议链接与 label 同级，input 的可访问名称包含协议名称 |
+| [`views/SettingView/App.vue`](src/views/SettingView/App.vue) | `videoPlayerConfig.strangeDustTrust`：第三方信任，1 处 | 4.1.2 已迁移，待验收；保留配置持久化，长 URL 按容器宽度换行 |
+| [`components/VideoPlayer/NativePlayer.vue`](src/components/VideoPlayer/NativePlayer.vue) | `isEditingCustomCounterConfig`、`isEditingPlayerMainConfig`：两个编辑区域开关，2 处 | 4.1.2 已迁移，待验收；保留原来的布局与独立切换状态 |
+| [`components/VideoPlayer/CustomCounterSettings.vue`](src/components/VideoPlayer/CustomCounterSettings.vue) | `developerMode`：JSON 编辑模式，1 处 | 4.1.2 已迁移，待验收；保留编辑内容和工具栏布局 |
+| [`components/VideoPlayer/PlayerMainSettings.vue`](src/components/VideoPlayer/PlayerMainSettings.vue) | `config.showProbability`：概率显示，1 处 | 4.1.2 已迁移，待验收；保留颜色设置区域的条件显示和配置 |
+| [`components/visualization/ColorSchemeSetting.vue`](src/components/visualization/ColorSchemeSetting.vue) | `developerMode`：颜色方案 JSON 编辑，1 处 | 4.1.2 已迁移，待验收；使用 checkbox--small 保留紧凑字号及开发者编辑区 |
+| [`components/VideoUpload/FileInputOptions.vue`](src/components/VideoUpload/FileInputOptions.vue) | `local.autoUploadAfterParse`、`local.autoRemoveAfterUpload`，2 处 | 4.1.2 已迁移，待验收；保留持久化、@click.stop 与 options 插槽位置，移除失效的 .el-checkbox 样式 |
 | [`App.vue`](src/App.vue) | `never_show_notice`：不再显示通知，1 处 | 所属 ElDialog 为 `v-if="false"`，当前不可达；收尾时同步替换，不启用通知、不改存储逻辑 |
 | [`components/widgets/MultiSelector.vue`](src/components/widgets/MultiSelector.vue) | `selected: string[]`；1 处 ElCheckboxGroup + 1 处循环 ElCheckbox | 原生数组多选可承接；保留 options / labels、已选标签及关闭标签取消选择。调用方为 UserVideoView 和比赛 common/PersonalView |
 | [`components/Filters/SoftwareFilter.vue`](src/components/Filters/SoftwareFilter.vue) | `MS_Software[]`；1 处 Group + 1 处循环 Button | 普通数组多选，默认全部软件；保留 SoftwareIcon。当前用于 BBBvSummary/Header，按钮外观可用 checkbox + CSS 实现 |
@@ -164,8 +162,7 @@ BaseTable 的迁移边界保持如下：
 
 | 子批次 | 范围 | 实施边界 |
 | --- | --- | --- |
-| 4.1.1 | 共用 CSS 与两个排行榜（已实施，待验收） | checkbox.css 全局加载；两个 NF 开关使用原生 input / label、布尔 v-model 与原有业务 class。SaoleiRanking 测试验证标签点击，PBRanking 测试验证 Space；继续核对请求参数与页码重置 |
-| 4.1.2 | 其余可达布尔开关 | 按登录/注册、设置/播放器、上传选项分别合并；共 8 个文件 10 处调用。保持表单、配置、点击传播和条件显示，避免一批同时修改所有业务模块 |
+| 4.1.2 | 其余可达布尔开关（已实施，待验收） | 共 8 个文件 10 处调用，按登录/注册、设置/播放器、上传选项审查与合并；保持表单、配置、点击传播和条件显示 |
 | 4.1.3 | 数组多选与按钮外观 | MultiSelector、SoftwareFilter、VideoStateFilter；MSLevelFilter 随同类组件收尾。复用 [Vue 原生 checkbox 数组绑定](https://vuejs.org/guide/essentials/forms.html#checkbox)与共用 CSS，按钮外观用样式变体，不重建 CheckboxGroup；保持模型值类型、选项顺序、标签关闭与 change 事件 |
 | 4.1.4 | 上传表格半选与遗留调用收尾 | Table.vue 局部同步原生 indeterminate 与 checked，迁移表头 / 行选择；共用 CSS 补齐半选外观，同步关闭通知分支，清理失效导入、CheckboxValueType 和专属 CSS。PrimeVue 的筛选、排序、分页与展开继续保留 |
 
@@ -173,22 +170,23 @@ Checkbox 样式采用项目主题参数，覆盖直角、紧凑尺寸、checked�
 
 测试同步范围：
 
-- 排行榜的 `SaoleiRanking.cy.ts` / `PBRanking.cy.ts` 已使用 `nf-toggle` 与原生 input 查询并断言 checked；`CustomCounterSettings.cy.ts` 仍定位 `.el-checkbox`，随 4.1.2 迁移调整。LoginForm / RegisterForm 的关联标签与 input 查询应保留。
+- 4.1.2 的 `CustomCounterSettings.cy.ts` 已改用原生 label / input，验证行编辑与 JSON 模式切换；LoginForm / RegisterForm 保留关联标签与 input 查询，补充有效期提交、协议链接独立于 label、Space 和确认按钮条件的验证。
 - 上传相关的 `VideoUpload/App.cy.ts` 与 `cypress/e2e/profile.cy.ts` 使用 `.el-checkbox__input`。现有 `cy.shouldHaveState()` 仅在上传组件测试中使用，当前依赖 Element Plus 状态 class；迁移 4.1.4 时完善现有命令，使其断言原生 checked / indeterminate，不另造一个三状态命令。保留现有全部状态序列，再按实际覆盖补充筛选、跨页和键盘行为。
 - 分组筛选复用 `views/VideoView.cy.ts`、`visualization/BBBvSummary/Header.cy.ts` / `App.cy.ts`、`views/UserView/UserVideoView.cy.ts` 及相应比赛页面测试；现有 spec 不代表已覆盖所有多选分支，实施时核对后仅补关键行为。
-- 设置与播放器复用 `VideoPlayer/NativePlayer.cy.ts`、`CustomCounterSettings.cy.ts`、`cypress/e2e/settings.cy.ts`；关闭的通知分支和无调用方的 MSLevelFilter 不新增完整页面测试。
+- `VideoPlayer/NativePlayer.cy.ts` 补充两个编辑区同时启用、概率区域条件显示与持久化、颜色方案 JSON 模式切换；`cypress/e2e/settings.cy.ts` 补充第三方信任的点击、Space 和刷新后的配置持久化。`VideoUpload/App.cy.ts` 复用选项点击不打开文件选择框的测试，补充 Space 与配置持久化。关闭的通知分支和无调用方的 MSLevelFilter 不新增完整页面测试。
 
-4.1.1 已建立共用样式、迁移两个 NF 开关并同步样式 README。checkbox.css 为 63 个非空行，配色使用项目变量，选中标记为内嵌白色 SVG；强制颜色模式恢复原生外观。尚未迁移数组、按钮外观或半选，后续复用现有 class 小步完善。
+4.1.2 复用 checkbox.css，补充 checkbox--small（12px 字号、20px 最小高度）与文本区域收缩，保留全局主题、直角方框、焦点及禁用状态。注册协议链接置于 label 外，参考 [MDN 的交互内容建议](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/label#interactive_content)。ESLint 仅在已迁移的 10 个文件中禁止新增 ElCheckbox，剩余数组多选、按钮与半选不提前禁用。
 
-两个排行榜仅向 BaseIconRefresh 传入 loading，通过同一个图标实例控制旋转，不向 BaseButton 传入 loading，加载期间刷新按钮仍可点击。避免同时显示两个图标使按钮临时变宽，BaseButton 保持原有实现。组件测试暂缓 NF 响应，检查加载期间按钮的宽度、水平位置、可点击状态和单一旋转图标，以及响应后停止旋转；浏览器结果待用户验证。
-
-4.1.1 的 `lintfix`、`typecheck`、`build:frontend` 与 `git diff --check` 均通过；代理未运行 Cypress。由用户在 `front_end` 执行：
+4.1.2 的 `lintfix`、`typecheck`、`build:frontend` 与 `git diff --check` 均通过；checkbox.css 为 70 个非空行。代理未运行 Cypress，由用户在 `front_end` 执行：
 
 ```powershell
-npx.cmd cypress run --component --spec "src/views/RankingView/SaoleiRanking.cy.ts,src/views/RankingView/PBRanking.cy.ts"
+npx.cmd cypress run --component --spec "src/components/Login/LoginForm.cy.ts,src/components/Login/RegisterForm.cy.ts"
+npx.cmd cypress run --component --spec "src/components/VideoPlayer/NativePlayer.cy.ts,src/components/VideoPlayer/CustomCounterSettings.cy.ts"
+npx.cmd cypress run --component --spec "src/components/VideoUpload/App.cy.ts"
+npx.cmd cypress run --e2e --browser chrome --spec "cypress/e2e/settings.cy.ts"
 ```
 
-浏览器验收同时检查深浅主题、方框与标签的点击、Space、焦点可见和原有请求 / 分页行为；禁用样式由原生 disabled 属性承接，不新增排行榜禁用条件。后续子批次按实际影响提供测试命令。
+浏览器验收同时检查深浅主题、方框与标签的点击、Space、焦点可见、长 URL 换行、协议链接独立打开、两个编辑区域的独立状态与原有配置 / 提交行为。禁用样式由原生 disabled 属性承接，不新增业务禁用条件。后续子批次按实际影响提供测试命令。
 
 #### 4.2 其他复杂组件换肤与尺寸细化
 

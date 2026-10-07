@@ -51,6 +51,30 @@ describe('<LoginForm />', () => {
         cy.contains('Invalid username or password').should('not.exist');
     });
 
+    it('keeps the selected login expiry and resets it when remember-me is unchecked', () => {
+        cy.intercept('POST', '/userprofile/login/').as('loginRequest');
+        cy.mount(LoginForm, mountOptions);
+        cy.contains('Username').next().type('test');
+        cy.contains('Password').next().type('test');
+        cy.contains('Captcha').next().find('input').type('test');
+        cy.get('.rememberMe input').should('not.be.checked');
+        cy.get('.rememberMe').click();
+        cy.get('.rememberMe input').should('be.checked');
+        cy.contains('label', /^30$/).click();
+        cy.contains('button', /^Log in$/).click();
+        cy.wait('@loginRequest').its('request.body').should((body: string) => {
+            expect(new URLSearchParams(body).get('set_expiry')).to.equal('30');
+        });
+        cy.get('.rememberMe input').focus();
+        cy.realPress('Space');
+        cy.get('.rememberMe input').should('not.be.checked');
+        cy.get('.el-radio-group').should('not.exist');
+        cy.contains('button', /^Log in$/).click();
+        cy.wait('@loginRequest').its('request.body').should((body: string) => {
+            expect(new URLSearchParams(body).get('set_expiry')).to.equal('0');
+        });
+    });
+
     it('opens password recovery with the keyboard without submitting the form', () => {
         cy.mount(LoginForm, mountOptions);
         cy.contains('button', 'Forget password?').focus();

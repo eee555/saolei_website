@@ -32,6 +32,11 @@ const restrictedActionElements = [{
     message: 'Use a native link with "@/styles/link.css" for navigation, or BaseTextButton for actions.',
 }];
 
+const restrictedDescriptionsElements = [{
+    element: ['ElDescriptions', 'el-descriptions', 'ElDescriptionsItem', 'el-descriptions-item'],
+    message: 'Use native dl/dt/dd with "@/styles/descriptions.css" instead.',
+}];
+
 export default defineConfig({
     ignores: [
         '**/node_modules/**', '**/dist/**', '**/build/**', '**/public/**',
@@ -323,9 +328,27 @@ export default defineConfig({
     ],
     rules: {
         'vue/no-restricted-html-elements': [
-            'error', ...restrictedHtmlElements, ...restrictedActionElements, {
-                element: ['ElDescriptions', 'el-descriptions', 'ElDescriptionsItem', 'el-descriptions-item'],
-                message: 'Use native dl/dt/dd with "@/styles/descriptions.css" instead.',
+            'error', ...restrictedHtmlElements, ...restrictedActionElements, ...restrictedDescriptionsElements,
+        ],
+    },
+}, {
+    files: [
+        'src/views/RankingView/SaoleiRanking.vue',
+        'src/views/RankingView/PBRanking.vue',
+        'src/components/Login/LoginForm.vue',
+        'src/components/Login/RegisterForm.vue',
+        'src/views/SettingView/App.vue',
+        'src/components/VideoPlayer/NativePlayer.vue',
+        'src/components/VideoPlayer/CustomCounterSettings.vue',
+        'src/components/VideoPlayer/PlayerMainSettings.vue',
+        'src/components/visualization/ColorSchemeSetting.vue',
+        'src/components/VideoUpload/FileInputOptions.vue',
+    ],
+    rules: {
+        'vue/no-restricted-html-elements': [
+            'error', ...restrictedHtmlElements, ...restrictedActionElements, ...restrictedDescriptionsElements, {
+                element: ['ElCheckbox', 'el-checkbox'],
+                message: 'Use a native checkbox and associated label with "@/styles/checkbox.css" instead.',
             },
         ],
     },
