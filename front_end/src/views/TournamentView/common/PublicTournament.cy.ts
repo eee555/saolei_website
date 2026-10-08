@@ -90,8 +90,7 @@ describe('<PublicTournament />', () => {
             cy.intercept('GET', '**/api/tournament/get_videos/participant*', { body: [] }).as('videos');
             mountTournament();
             cy.wait('@videos');
-            cy.get('.tournament-auto-upload a').should('be.visible').and('have.attr', 'href')
-                .and('satisfy', (href: string) => href.match(/\/(en\/)?guide\/tournament#auto-upload$/)?.[0] === path);
+            cy.get('.tournament-auto-upload a').should('be.visible').and('have.attr', 'href').and('satisfy', (href: string) => (/\/(en\/)?guide\/tournament#auto-upload$/).exec(href)?.[0] === path);
         });
     }
 
