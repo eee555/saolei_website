@@ -4,18 +4,20 @@ import json
 from typing import Iterable, Literal
 
 from dataclasses_json import dataclass_json
+from django.db.models import Max
 from django_redis import get_redis_connection
 
 from config.text_choices import Tournament_TextChoices
 from utils.cache import maybe_bytes_to_str
 from videomanager.models import VideoModel
 from .models import GSCTournament, Tournament, TournamentParticipant, TournamentUser
-from .utils import MAX_TOURNAMENT_BEST
+from .utils import MAX_TOURNAMENT_BEST, tournament_score_decay_factor
 
 cache = get_redis_connection('saolei_website')
 
 NORMAL_TOURNAMENT_CACHE_KEY = 'tournament:normal'
 NORMAL_PARTICIPANT_CACHE_KEY = 'tournament:normal:participants'
+TOURNAMENT_USER_SCORE_CURRENT_TIME_KEY = 'tournament:user:score_current:last_updated'
 
 TOURNAMENT_USER_CACHE_KEYS = {
     'score_current': 'tournament:user:score_current',
@@ -199,7 +201,7 @@ class TournamentCache:
         ]
 
     def clear_tournament_user_cache(self):
-        cache.delete(*TOURNAMENT_USER_CACHE_KEYS.values())
+        cache.delete(*TOURNAMENT_USER_CACHE_KEYS.values(), TOURNAMENT_USER_SCORE_CURRENT_TIME_KEY)
 
     def update_tournament_user(self, tournament_user: TournamentUser, fields=None):
         self.update_tournament_users([tournament_user], fields=fields)
@@ -208,24 +210,62 @@ class TournamentCache:
         fields = self._normalize_tournament_user_fields(fields)
         if not fields:
             return
+        # 事务可能因并发修改重试，先展开迭代器，确保每次都能读取同一批用户。
+        tournament_users = list(tournament_users)
+        if not tournament_users:
+            return
+
+        if 'score_current' in fields:
+            # 同时监视时间基准和积分排行；发生并发写入时重新换算，避免混用基准。
+            cache.transaction(
+                lambda pipe: self._update_tournament_users_with_score_current(pipe, tournament_users, fields),
+                TOURNAMENT_USER_SCORE_CURRENT_TIME_KEY, TOURNAMENT_USER_CACHE_KEYS['score_current'],
+            )
+            return
 
         pipe = cache.pipeline()
-        for tournament_user in tournament_users:
-            self._update_tournament_user_in_pipeline(pipe, tournament_user, fields)
+        self._update_tournament_users_in_pipeline(pipe, tournament_users, fields)
         pipe.execute()
 
     def rebuild_tournament_user_cache(self, *, batch_size=1000):
+        # 先确定全局基准，避免分批重建时反复推进基准、衰减已写入的成员。
+        score_time = TournamentUser.objects.exclude(score_current=0).aggregate(latest=Max('last_updated'))['latest']
         self.clear_tournament_user_cache()
-        pipe = cache.pipeline()
+        if score_time is not None:
+            cache.set(TOURNAMENT_USER_SCORE_CURRENT_TIME_KEY, score_time.isoformat())
+        batch = []
         count = 0
         for tournament_user in TournamentUser.objects.iterator(chunk_size=batch_size):
-            self._update_tournament_user_in_pipeline(pipe, tournament_user, TOURNAMENT_USER_RANK_FIELDS)
+            batch.append(tournament_user)
             count += 1
             if count % batch_size == 0:
-                pipe.execute()
-                pipe = cache.pipeline()
-        pipe.execute()
+                self.update_tournament_users(batch)
+                batch = []
+        self.update_tournament_users(batch)
         return count
+
+    def _update_tournament_users_with_score_current(self, pipe, tournament_users, fields):
+        key = TOURNAMENT_USER_CACHE_KEYS['score_current']
+        has_scores = pipe.exists(key)
+        value = pipe.get(TOURNAMENT_USER_SCORE_CURRENT_TIME_KEY)
+        previous_time = datetime.fromisoformat(maybe_bytes_to_str(value)) if value is not None else None
+        if previous_time is None and has_scores:
+            # 缺少基准时无法解释已有分数，必须重建，不能直接混入新基准的分数。
+            raise RuntimeError('Current score cache has no time reference; run rebuild_tournament_user_cache.')
+        # 默认零积分不参与排行，其记录创建时间也不能推进比赛时间基准。
+        score_times = [user.last_updated for user in tournament_users if user.score_current != 0]
+        if previous_time is not None:
+            # 保留已有基准，使历史比赛重算只能换算到该基准，不能令基准回退。
+            score_times.append(previous_time)
+        score_time = max(score_times, default=None)
+
+        pipe.multi()
+        if previous_time is not None and score_time > previous_time:
+            # 将所有已有成员乘以同一个衰减系数，包括未参加本场比赛的用户。
+            pipe.zunionstore(key, {key: tournament_score_decay_factor(previous_time, score_time)})
+        if score_time is not None:
+            pipe.set(TOURNAMENT_USER_SCORE_CURRENT_TIME_KEY, score_time.isoformat())
+        self._update_tournament_users_in_pipeline(pipe, tournament_users, fields, score_time=score_time)
 
     def get_tournament_user_ranking(self, field: str, *, start=0, end=20) -> tuple[list[TournamentUser], int]:
         """读取缓存内的左闭右开排行区间。"""
@@ -247,13 +287,27 @@ class TournamentCache:
             return TOURNAMENT_USER_RANK_FIELDS
         return tuple(field for field in fields if field in TOURNAMENT_USER_CACHE_KEYS)
 
-    def _update_tournament_user_in_pipeline(self, pipe, tournament_user: TournamentUser, fields):
+    def _update_tournament_users_in_pipeline(self, pipe, tournament_users, fields, *, score_time=None):
+        # 按字段汇总，每个 zset 每批最多一条 ZADD 和一条 ZREM。
         for field in fields:
             key = TOURNAMENT_USER_CACHE_KEYS[field]
-            if getattr(tournament_user, field) == TOURNAMENT_USER_DEFAULT_VALUES[field]:
-                pipe.zrem(key, tournament_user.user_id)
-            else:
-                pipe.zadd(key, {tournament_user.user_id: getattr(tournament_user, field)})
+            values = {}
+            removed = set()
+            for tournament_user in tournament_users:
+                value = getattr(tournament_user, field)
+                if value == TOURNAMENT_USER_DEFAULT_VALUES[field]:
+                    values.pop(tournament_user.user_id, None)
+                    removed.add(tournament_user.user_id)
+                    continue
+                if field == 'score_current':
+                    # 数据库保留用户自己的时间基准，仅缓存分数换算到统一基准。
+                    value *= tournament_score_decay_factor(tournament_user.last_updated, score_time)
+                removed.discard(tournament_user.user_id)
+                values[tournament_user.user_id] = value
+            if removed:
+                pipe.zrem(key, *removed)
+            if values:
+                pipe.zadd(key, values)
 
 
 def serialize_normal_tournament(tournament: Tournament):

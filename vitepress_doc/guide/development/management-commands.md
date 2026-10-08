@@ -98,6 +98,8 @@ python manage.py rebuild_tournament_cache
 
 用途：重建 `TournamentUser` 的 Redis 排行缓存。
 
+当前积分以全部非零积分用户中最大的 `last_updated` 为统一时间基准，分批写入衰减后的分数；数据库记录不变。重建会同时清理旧的 7 个 zset 和时间基准 key。部署统一基准的缓存逻辑后需执行一次此命令；重建期间暂停积分结算及其他排行缓存写入。
+
 参数：
 
 | 参数 | 默认值 | 说明 |
