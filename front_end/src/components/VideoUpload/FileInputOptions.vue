@@ -1,16 +1,17 @@
 <template>
     <div class="file-input-options">
-        <ElCheckbox v-model="local.autoUploadAfterParse" @click.stop>
-            {{ t('local.autoUploadAfterParse') }}
-        </ElCheckbox>
-        <ElCheckbox v-model="local.autoRemoveAfterUpload" @click.stop>
-            {{ t('local.autoRemoveAfterUpload') }}
-        </ElCheckbox>
+        <label class="checkbox" @click.stop>
+            <input v-model="local.autoUploadAfterParse" class="checkbox-input" type="checkbox">
+            <span>{{ t('local.autoUploadAfterParse') }}</span>
+        </label>
+        <label class="checkbox" @click.stop>
+            <input v-model="local.autoRemoveAfterUpload" class="checkbox-input" type="checkbox">
+            <span>{{ t('local.autoRemoveAfterUpload') }}</span>
+        </label>
     </div>
 </template>
 
 <script setup lang="ts">
-import { ElCheckbox } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
 import { local } from '@/store';
@@ -37,9 +38,5 @@ const { t } = useI18n({ messages: i18nMessages });
     justify-content: center;
     gap: 0 8px;
     cursor: default;
-}
-
-.file-input-options .el-checkbox {
-    margin: 0;
 }
 </style>

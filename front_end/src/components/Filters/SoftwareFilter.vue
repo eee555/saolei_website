@@ -1,38 +1,32 @@
 <template>
-    <ElCheckboxGroup v-model="level" size="small">
-        <ElCheckboxButton v-for="l in MS_Softwares" :key="l" :value="l">
-            <SoftwareIcon :software="l" />
-        </ElCheckboxButton>
-    </ElCheckboxGroup>
+    <div class="checkbox-buttons checkbox-buttons--compact" role="group" :aria-label="t('common.prop.software')">
+        <label v-for="l in MS_Softwares" :key="l" class="checkbox-button">
+            <input v-model="level" class="checkbox-button-input" type="checkbox" :value="l" :aria-label="t(`common.software.${l}`)" @change="handleChange">
+            <span class="checkbox-button-content"><SoftwareIcon :software="l" /></span>
+        </label>
+    </div>
 </template>
 
 <script setup lang="ts">
-import { ElCheckboxButton, ElCheckboxGroup } from 'element-plus';
 import type { PropType } from 'vue';
+import { nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 import SoftwareIcon from '@/components/widgets/SoftwareIcon.vue';
 import type { MS_Software } from '@/utils/ms_const';
 import { MS_Softwares } from '@/utils/ms_const';
 
+const emit = defineEmits<{ change: [value: MS_Software[]] }>();
+
 const level = defineModel<MS_Software[]>({
     type: Array as PropType<MS_Software[]>,
     default: () => [...MS_Softwares],
 });
+
+const { t } = useI18n();
+
+async function handleChange() {
+    await nextTick();
+    emit('change', level.value);
+}
 </script>
-
-<style scoped lang="less">
-::v-deep(.el-checkbox-button:first-child .el-checkbox-button__inner) {
-    border-top-left-radius: 1px;
-    border-bottom-left-radius: 1px;
-}
-
-::v-deep(.el-checkbox-button:last-child .el-checkbox-button__inner) {
-    border-top-right-radius: 1px;
-    border-bottom-right-radius: 1px;
-}
-
-::v-deep(.el-checkbox-button--small .el-checkbox-button__inner) {
-    padding: 1px 3px;
-    font-size: 10px;
-}
-</style>

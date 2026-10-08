@@ -109,7 +109,7 @@ describe('Personal Profile', () => {
             expect(tableData[1]).to.deep.equal(expectedData.IntRmv);
         });
 
-        cy.get('table:visible').find('.el-checkbox__input').first().click(); // 全选
+        cy.get('table:visible .checkbox-input').first().click(); // 全选
         cy.get('button').contains(/^\s*上传\s*$/).click();
         cy.get('.el-loading-spinner').should('exist');
         cy.get('.el-loading-spinner').should('not.exist');

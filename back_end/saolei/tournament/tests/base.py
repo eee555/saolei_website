@@ -25,6 +25,7 @@ from ..cache import (
     NORMAL_PARTICIPANT_CACHE_KEY,
     NORMAL_TOURNAMENT_CACHE_KEY,
     TOURNAMENT_USER_CACHE_KEYS,
+    TOURNAMENT_USER_SCORE_CURRENT_TIME_KEY,
     TournamentCache,
 )
 from ..gsc.services import refresh_gsc_scores
@@ -61,8 +62,10 @@ class TournamentTestCaseBase(TestCase):
             NORMAL_TOURNAMENT_CACHE_KEY,
             NORMAL_PARTICIPANT_CACHE_KEY,
             *TOURNAMENT_USER_CACHE_KEYS.values(),
+            TOURNAMENT_USER_SCORE_CURRENT_TIME_KEY,
         )
         self.tournament_cache = TournamentCache()
+        self.addCleanup(self.tournament_cache.clear_tournament_user_cache)
         userms = UserMS.objects.create()
         self.user = UserProfile.objects.create_user(
             username='tournament_user',

@@ -179,6 +179,7 @@ def refresh_tournament_ranks(tournament: Tournament, *, batch_size=1000):
 
 
 def award_tournament_rank_scores(tournament: Tournament, *, batch_size=1000):
+    # 以比赛结束时间计分，避免后台任务延迟执行影响积分衰减。
     award_time = tournament.end_time or timezone.now()
     logger.info(f'比赛#{tournament.id} 排名积分发放 开始 类型{tournament.subclass} 结算时间 {award_time}')
 
@@ -205,6 +206,7 @@ def award_tournament_rank_scores(tournament: Tournament, *, batch_size=1000):
 
     for participant in participants:
         target_rank_score = round(tournament.weight / participant.rank)
+        # 只发放新旧排名积分的差额，重复结算不会再次累计整场积分。
         score_delta = target_rank_score - participant.rank_score
 
         tournament_user = participant.user.tournamentuser
@@ -218,6 +220,7 @@ def award_tournament_rank_scores(tournament: Tournament, *, batch_size=1000):
 
     logger.info(f'比赛#{tournament.id} 排名积分发放 更新用户总分 {len(tournament_users)}')
     TournamentUser.objects.bulk_update(tournament_users, changed_tournament_user_fields, batch_size=batch_size)
+    # 写库后批量刷新排行；当前积分由缓存层统一换算时间基准，其他累计字段直接写入。
     cache.update_tournament_users(tournament_users, fields=changed_tournament_user_fields)
 
     logger.info(f'比赛#{tournament.id} 排名积分发放 完成')

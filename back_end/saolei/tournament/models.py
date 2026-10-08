@@ -304,6 +304,7 @@ class TournamentUser(models.Model):
     weekly_classic_best = models.PositiveBigIntegerField(default=MAX_TOURNAMENT_BEST)  # 历史周赛经典模式最好成绩及届数（后五位）
 
     def add_score(self, score: float | int, updated=None, *, category: Literal['gsc', 'weekly_classic']):
+        # score 是本场新旧积分的差额，历史成绩变差时也可能为负数。
         updated = updated or timezone.now()
         if self.score_current == 0 and self.score_total == 0:
             # 无积分时，创建时间不能作为衰减基准；仍须保留已结束的零积分比赛时间。
@@ -313,8 +314,10 @@ class TournamentUser(models.Model):
             # 历史比赛的积分修正只衰减差额，不回退最后结束的比赛时间。
             self.score_current += score * tournament_score_decay_factor(updated, self.last_updated)
         else:
+            # 新比赛结束得更晚：先衰减原积分，再加入本场差额并推进用户的时间基准。
             self.score_current = self.score_current * tournament_score_decay_factor(self.last_updated, updated) + score
             self.last_updated = updated
+        # 历史累计积分不衰减，只按差额修正总量和所属分类。
         self.score_total += score
         if category == 'gsc':
             self.gsc_total += score
