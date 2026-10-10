@@ -21,13 +21,13 @@
         <PasswordConfirmBlock ref="passwordFormRef" v-model="registerForm.password" data-cy="passwordFormItem" />
         <ElFormItem prop="agreeTAC">
             <!-- 同意协议 -->
-            <ElCheckbox v-if="true" v-model="agree_TAC" name="checkoutSecret">
-                {{
-                    t('local.agreeTAC1')
-                }}
-                <a target="_blank" rel="noopener noreferrer" :href="`${AXIOS_BASE_URL}/agreement.html`">{{ t('local.agreeTAC2')
-                }}</a>
-            </ElCheckbox>
+            <div v-if="true" style="display: flex; align-items: center; flex-wrap: wrap; gap: 0.25em">
+                <label class="checkbox">
+                    <input v-model="agree_TAC" class="checkbox-input" type="checkbox" name="checkoutSecret" :aria-label="`${t('local.agreeTAC1')} ${t('local.agreeTAC2')}`">
+                    <span>{{ t('local.agreeTAC1') }}</span>
+                </label>
+                <a target="_blank" rel="noopener noreferrer" :href="`${AXIOS_BASE_URL}/agreement.html`">{{ t('local.agreeTAC2') }}</a>
+            </div>
             <!-- 确认 -->
             <BaseButton type="primary" :disabled="confirm_disabled" style="margin-left: auto" @click="submitForm(ruleFormRef!)">
                 {{
@@ -40,7 +40,7 @@
 <script setup lang="ts">
 import { isAxiosError } from 'axios';
 import type { FormInstance } from 'element-plus';
-import { ElCheckbox, ElForm, ElFormItem, ElInput, ElNotification } from 'element-plus';
+import { ElForm, ElFormItem, ElInput, ElNotification } from 'element-plus';
 import { computed, onUnmounted, reactive, ref, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 

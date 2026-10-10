@@ -10,11 +10,12 @@
                 <span class="text-regular text-small">{{ t('local.fontSize') }}</span>
                 <InputNumber v-model="config.fontSize" :min="1" class="base-input" />
             </label>
-            <ElCheckbox v-model="developerMode">
+            <label class="checkbox">
+                <input v-model="developerMode" class="checkbox-input" type="checkbox">
                 <span class="text-small">
                     {{ t('local.developerMode') }}
                 </span>
-            </ElCheckbox>
+            </label>
         </div>
 
         <CustomCounterJsonEditor v-if="developerMode" v-model="config.table" />
@@ -25,7 +26,6 @@
 <script setup lang="ts">
 import '@/styles/text.css';
 
-import { ElCheckbox } from 'element-plus';
 import type { PropType } from 'vue';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';

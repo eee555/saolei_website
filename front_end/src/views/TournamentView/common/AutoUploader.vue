@@ -4,18 +4,27 @@
             <div class="auto-uploader__control">
                 <span class="auto-uploader__label">{{ t('local.folder') }}</span>
                 <BaseButton type="primary" size="small" :disabled="!canSelectDirectory || busy" :loading="selectingDirectory" @click="selectDirectory">
-                    {{ directoryName || t('local.selectFolder') }}
+                    <template #icon>
+                        <i class="pi pi-folder-open" aria-hidden="true" />
+                    </template>
+                    {{ t('local.selectFolder') }}
                 </BaseButton>
                 <BaseButton v-if="running" size="small" @click="pauseWatching">
+                    <template #icon>
+                        <i class="pi pi-pause" aria-hidden="true" />
+                    </template>
                     {{ t('local.stop') }}
                 </BaseButton>
                 <BaseButton v-else-if="emitter" size="small" :disabled="!canSelectDirectory || busy" @click="resumeWatching">
+                    <template #icon>
+                        <i class="pi pi-play" aria-hidden="true" />
+                    </template>
                     {{ t('local.resume') }}
                 </BaseButton>
             </div>
             <div class="auto-uploader__control">
                 <span class="auto-uploader__label">{{ t('local.pollInterval') }}</span>
-                <InputNumber v-model="pollIntervalSeconds" :min="1" :max="300" :disabled="running" />
+                <InputNumber v-model="pollIntervalSeconds" :min="1" :max="300" :disabled="running" :aria-label="t('local.pollInterval')" />
             </div>
             <div class="auto-uploader__control">
                 <span class="auto-uploader__label">{{ t('local.filter') }}</span>
@@ -31,7 +40,7 @@
                 {{ t('local.outsideWindow') }}
             </BaseTagSupport>
         </div>
-        <div class="auto-uploader__control text-regular">
+        <div class="auto-uploader__control auto-uploader__status text-regular" role="status" aria-live="polite">
             <span v-if="running">
                 {{ t('local.running', { folder: directoryName }) }}
             </span>
@@ -56,17 +65,19 @@
             <p>{{ t('local.existingFiles', { count: existingCount }) }}</p>
             <ElProgress v-if="fullScanning" :percentage="scanProgress" />
             <template #footer>
-                <BaseButton @click="cancelScan">
-                    {{ t('local.cancel') }}
-                </BaseButton>
-                <template v-if="!fullScanning">
-                    <BaseButton @click="beginWatching(false)">
-                        {{ t('local.newOnly') }}
+                <div class="auto-uploader__scan-actions">
+                    <BaseButton @click="cancelScan">
+                        {{ t('local.cancel') }}
                     </BaseButton>
-                    <BaseButton type="primary" @click="beginWatching(true)">
-                        {{ t('local.scanAll') }}
-                    </BaseButton>
-                </template>
+                    <template v-if="!fullScanning">
+                        <BaseButton @click="beginWatching(false)">
+                            {{ t('local.newOnly') }}
+                        </BaseButton>
+                        <BaseButton type="primary" @click="beginWatching(true)">
+                            {{ t('local.scanAll') }}
+                        </BaseButton>
+                    </template>
+                </div>
             </template>
         </ElDialog>
     </div>
@@ -316,48 +327,48 @@ const i18nMessages = {
     'zh-cn': { local: {
         cancel: '取消',
         existingFiles: '文件夹中有 {count} 个文件',
-        scanTitle: '扫描已有文件',
-        scanAll: '扫描全部文件',
-        newOnly: '仅监听新文件',
+        scanTitle: '选择上传范围',
+        scanAll: '包含已有录像',
+        newOnly: '只上传新录像',
         resume: '继续',
-        stopped: '已暂停监听 {folder}',
+        stopped: '自动上传已暂停：{folder}',
         failed: '失败',
         filter: '筛选级别',
-        folder: '文件夹',
-        idle: '未选择文件夹',
+        folder: '录像文件夹',
+        idle: '自动上传未开启',
         outsideWindow: '不在参赛时间内',
         pollInterval: '轮询周期（秒）',
         processing: '处理中',
-        running: '正在监听 {folder}',
+        running: '自动上传已开启：{folder}',
         selectFailed: '无法读取该文件夹',
         selectFolder: '选择文件夹',
         skipped: '已跳过',
         stop: '暂停',
         uploaded: '已上传',
-        unsupported: '当前浏览器不支持 showDirectoryPicker',
+        unsupported: '当前浏览器无法访问录像文件夹',
     } },
     en: { local: {
         cancel: 'Cancel',
         existingFiles: '{count} files in this folder',
-        scanTitle: 'Scan existing files',
-        scanAll: 'Scan all files',
-        newOnly: 'Watch new files only',
+        scanTitle: 'Choose upload scope',
+        scanAll: 'Include existing replays',
+        newOnly: 'Upload new replays only',
         resume: 'Resume',
-        stopped: 'Paused {folder}',
+        stopped: 'Auto-upload paused: {folder}',
         failed: 'Failed',
         filter: 'Filter',
-        folder: 'Folder',
-        idle: 'No folder selected',
+        folder: 'Minesweeper replay folder',
+        idle: 'Auto-upload is off',
         outsideWindow: 'Outside session window',
         pollInterval: 'Poll interval (s)',
         processing: 'Processing',
-        running: 'Watching {folder}',
+        running: 'Auto-upload active: {folder}',
         selectFailed: 'Cannot read this folder',
         selectFolder: 'Select folder',
         skipped: 'Skipped',
         stop: 'Pause',
         uploaded: 'Uploaded',
-        unsupported: 'showDirectoryPicker is not supported by this browser',
+        unsupported: 'Folder access is unavailable in this browser',
     } },
 };
 
@@ -365,8 +376,26 @@ const { t } = useI18n({ messages: i18nMessages });
 </script>
 
 <style scoped>
+@import '@/styles/text.css';
+
 .auto-uploader {
     margin-bottom: 1rem;
+}
+
+.auto-uploader__scan-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.auto-uploader__scan-actions > .base-button {
+    margin: 0;
+}
+
+.auto-uploader__status {
+    margin-top: 0.25rem;
+    overflow-wrap: anywhere;
 }
 
 .auto-uploader__controls {

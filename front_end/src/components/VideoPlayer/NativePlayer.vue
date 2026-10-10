@@ -39,12 +39,14 @@
                     class="native-player__progress"
                     :duration-ms="durationMs"
                 />
-                <ElCheckbox v-model="isEditingCustomCounterConfig">
-                    {{ t('local.editCounter') }}
-                </ElCheckbox>
-                <ElCheckbox v-model="isEditingPlayerMainConfig">
-                    {{ t('local.editPlayerMain') }}
-                </ElCheckbox>
+                <label class="checkbox">
+                    <input v-model="isEditingCustomCounterConfig" class="checkbox-input" type="checkbox">
+                    <span>{{ t('local.editCounter') }}</span>
+                </label>
+                <label class="checkbox">
+                    <input v-model="isEditingPlayerMainConfig" class="checkbox-input" type="checkbox">
+                    <span>{{ t('local.editPlayerMain') }}</span>
+                </label>
                 <button
                     type="button"
                     class="base-button square-button" :disabled="videoFile === null"
@@ -62,7 +64,7 @@
 import '@/styles/button.css';
 
 import { isAxiosError, isCancel } from 'axios';
-import { ElCheckbox, ElResult } from 'element-plus';
+import { ElResult } from 'element-plus';
 import { computed, onBeforeUnmount, ref, shallowRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 

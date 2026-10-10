@@ -62,9 +62,11 @@ On your profile's replay list, open a replay row's three-dot menu and choose "Re
 
 **Revealed replays cannot be hidden again, and disclosure applies to every tournament they belong to.** They still count toward tournament results and do not use your replay quota.
 
-## Automatically Uploading Tournament Replays
+## Automatically Uploading Tournament Replays {#auto-upload}
 
 Automatic uploading requires a browser that supports folder access. During your participation window, select a replay folder, check interval and filter level to upload matching new replays. Each filter level includes all preceding conditions. Level 2 is the default.
+
+When first selecting a folder, choose whether to upload only new replays or also process existing ones. Keep the tournament page open; automatic uploading stops when you leave it.
 
 ### Weekly Tournaments
 

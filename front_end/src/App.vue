@@ -19,7 +19,10 @@
         <span>{{ notice }}</span>
         <template #footer>
             <span class="dialog-footer">
-                <ElCheckbox v-model="never_show_notice">不再显示此对话框&nbsp;&nbsp;&nbsp;</ElCheckbox>
+                <label class="checkbox">
+                    <input v-model="never_show_notice" class="checkbox-input" type="checkbox">
+                    <span>不再显示此对话框&nbsp;&nbsp;&nbsp;</span>
+                </label>
                 <BaseButtonConfirm @click="handle_notice_close()" />
             </span>
         </template>
@@ -28,7 +31,7 @@
 
 <script setup lang="ts">
 import { useDark, useToggle } from '@vueuse/core';
-import { ElCheckbox, ElDialog } from 'element-plus';
+import { ElDialog } from 'element-plus';
 import { onMounted, ref, watch } from 'vue';
 
 import BaseButtonConfirm from './components/common/BaseButtonConfirm.vue';

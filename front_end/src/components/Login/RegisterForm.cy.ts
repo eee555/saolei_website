@@ -90,6 +90,18 @@ describe('<RegisterForm />', () => {
         cy.contains('Agree to').find('input').should('have.attr', 'type', 'checkbox');
     });
 
+    it('keeps the agreement link separate from the checkbox and supports Space', () => {
+        cy.mount(RegisterForm, mountOptions);
+        cy.get('input[name=checkoutSecret]').should('not.be.checked');
+        cy.contains('a', 'Terms & Conditions').should('have.attr', 'target', '_blank').and('have.attr', 'rel', 'noopener noreferrer');
+        cy.contains('a', 'Terms & Conditions').parents('label').should('not.exist');
+        cy.contains('label', 'Agree to').click();
+        cy.get('input[name=checkoutSecret]').should('be.checked').focus();
+        cy.realPress('Space');
+        cy.get('input[name=checkoutSecret]').should('not.be.checked');
+        findRegisterButton().should('be.disabled');
+    });
+
     it('Username Validation - Collision', () => {
         cy.mount(RegisterForm, mountOptions);
 

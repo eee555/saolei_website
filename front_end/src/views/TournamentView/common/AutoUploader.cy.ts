@@ -28,6 +28,16 @@ describe('<Common AutoUploader />', () => {
         setDirectoryPicker();
     });
 
+    it('disables folder selection and shows the unavailable state without browser folder access', () => {
+        const participant = new TournamentParticipant({ start_time: new Date('2000-01-01'), end_time: new Date('2099-01-01') });
+        setDirectoryPicker();
+        cy.mount(UploaderHost, { props: { participant }, global: { plugins: [i18n] } });
+        cy.contains('.auto-uploader__label', 'Minesweeper replay folder').should('be.visible');
+        cy.contains('Folder access is unavailable in this browser').should('be.visible');
+        cy.contains('button', 'Select folder').should('be.disabled');
+        cy.get('.auto-uploader [role=status]').should('contain.text', 'Auto-upload is off');
+    });
+
     it('renders a custom filter control and uses the caller filter for each new replay', () => {
         const directory = new FakeDirectoryHandle();
         const participant = new TournamentParticipant({
@@ -66,8 +76,10 @@ describe('<Common AutoUploader />', () => {
         cy.get('.el-select').should('not.exist');
         setPollInterval(1);
         cy.contains('button', 'Select folder').click();
-        cy.contains('.el-dialog button', 'Watch new files only').click();
-        cy.contains('Watching videos').should('be.visible');
+        cy.contains('.el-dialog', 'Choose upload scope').should('be.visible');
+        cy.contains('.el-dialog button', 'Include existing replays').should('be.visible');
+        cy.contains('.el-dialog button', 'Upload new replays only').click();
+        cy.contains('Auto-upload active: videos').should('be.visible');
 
         addReplay(directory, 'skipped.evf');
         cy.contains('Skipped: 100%(1)').should('be.visible');
@@ -96,8 +108,8 @@ describe('<Common AutoUploader />', () => {
         cy.mount(TestHost, { global: { plugins: [i18n] } });
         setPollInterval(1);
         cy.contains('button', 'Select folder').click();
-        cy.contains('.el-dialog button', 'Watch new files only').click();
-        cy.contains('Watching videos').should('be.visible');
+        cy.contains('.el-dialog button', 'Upload new replays only').click();
+        cy.contains('Auto-upload active: videos').should('be.visible');
 
         cy.fixture('c_10_39.832_24_0.477_Pu Tian Yi(Hu Bei)_fail.evf', 'binary').then((content) => {
             const bytes = binaryStringToUint8Array(content);
@@ -123,15 +135,16 @@ describe('<Common AutoUploader />', () => {
         setPollInterval(1);
         cy.contains('button', 'Select folder').click();
         cy.contains('.el-dialog', '1 files in this folder').should('be.visible');
-        cy.contains('.el-dialog button', 'Watch new files only').click();
+        cy.contains('.el-dialog button', 'Upload new replays only').click();
         cy.contains('button', 'Pause').click();
+        cy.contains('Auto-upload paused: videos').should('be.visible');
         addReplay(directory, 'paused.evf');
         cy.contains('button', 'Resume').click();
         cy.wait('@upload');
         cy.contains('Uploaded: 100%(1)').should('be.visible');
         cy.contains('button', 'Pause').click();
         cy.contains('button', 'Resume').should('be.enabled').click();
-        cy.contains('Watching videos').should('be.visible');
+        cy.contains('Auto-upload active: videos').should('be.visible');
         cy.get('@upload.all').should('have.length', 1);
         cy.get('@showDirectoryPicker').should('have.been.calledOnce');
     });
@@ -157,7 +170,7 @@ describe('<Common AutoUploader />', () => {
         cy.mount(UploaderHost, { props: { participant }, global: { plugins: [i18n] } });
         cy.contains('button', 'Select folder').click();
         cy.contains('.el-dialog', '2 files in this folder').should('be.visible');
-        cy.contains('.el-dialog button', 'Scan all files').click();
+        cy.contains('.el-dialog button', 'Include existing replays').click();
         cy.get('@uploadStarted').should('have.been.calledOnce');
         cy.get('.el-dialog .el-progress').should('be.visible');
         cy.contains('.el-dialog button', 'Cancel').click();
@@ -186,10 +199,10 @@ describe('<Common AutoUploader />', () => {
         });
         cy.mount(UploaderHost, { props: { participant }, global: { plugins: [i18n] } });
         cy.contains('button', 'Select folder').click();
-        cy.contains('.el-dialog button', 'Scan all files').click();
+        cy.contains('.el-dialog button', 'Include existing replays').click();
         cy.contains('Skipped: 100%(1)').should('be.visible');
-        cy.contains('.el-dialog', 'Scan existing files').should('not.be.visible');
-        cy.contains('Watching videos').should('be.visible');
+        cy.contains('.el-dialog', 'Choose upload scope').should('not.be.visible');
+        cy.contains('Auto-upload active: videos').should('be.visible');
         cy.get('@setBadge').should('have.been.calledWithExactly');
         cy.get('@clearBadge').should('have.been.called');
     });

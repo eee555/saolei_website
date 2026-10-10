@@ -84,7 +84,7 @@ declare global {
             mockPlayerNameFallback(): void;
 
             extractTableData(): Chainable<string[][]>;
-            shouldHaveState(expectedStates: (boolean | null)[]): void;
+            shouldHaveState(expectedStates: (boolean | null)[]): Chainable<JQuery<HTMLInputElement>>;
         }
     }
 }
@@ -226,30 +226,12 @@ Cypress.Commands.add('extractTableData', { prevSubject: 'element' }, (subject) =
 Cypress.Commands.add(
     'shouldHaveState',
     { prevSubject: true },
-    (subject: JQuery, expectedStates: (boolean | null)[]) => {
-    // 验证长度是否匹配
-        expect(subject.length).to.equal(
-            expectedStates.length,
-            `Expected ${expectedStates.length} checkboxes, but got ${subject.length}`,
-        );
-
-        // 遍历每个复选框进行状态断言
-        cy.wrap(subject).each(($el, index) => {
-            const expected = expectedStates[index];
-
-            if (expected === false) {
-                // 未选中：不应有 is-checked 和 is-indeterminate 类
-                cy.wrap($el).should('not.have.class', 'is-checked');
-                cy.wrap($el).should('not.have.class', 'is-indeterminate');
-            } else if (expected === true) {
-                // 选中：应有 is-checked 类，不应有 is-indeterminate 类
-                cy.wrap($el).should('have.class', 'is-checked');
-                cy.wrap($el).should('not.have.class', 'is-indeterminate');
-            } else {
-                // 半选：应有 is-indeterminate 类，不应有 is-checked 类
-                cy.wrap($el).should('have.class', 'is-indeterminate');
-                cy.wrap($el).should('not.have.class', 'is-checked');
-            }
+    (subject: JQuery<HTMLInputElement>, expectedStates: (boolean | null)[]) => cy.wrap(subject).should(($inputs) => {
+        expect($inputs).to.have.length(expectedStates.length);
+        $inputs.each((index, input) => {
+            expect(input.type, `checkbox ${index}`).to.equal('checkbox');
+            expect(input.indeterminate, `checkbox ${index} indeterminate`).to.equal(expectedStates[index] === null);
+            expect(input.checked, `checkbox ${index} checked`).to.equal(expectedStates[index] === true);
         });
-    },
+    }),
 );

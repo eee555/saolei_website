@@ -2,20 +2,27 @@
     <Title :tournament="tournament" />
     <slot name="description" />
     <template v-if="state === TournamentState.Preparing || state === TournamentState.Ongoing">
-        <h3>{{ t('gsc.howToParticipate') }}</h3>
+        <h3 class="tournament-section-heading">
+            {{ t('gsc.howToParticipate') }}
+        </h3>
         <slot name="participationGuide" />
     </template>
-    <AutoUploader
-        v-if="uploadParticipant" v-show="participant && state === TournamentState.Ongoing && autoUploaderEnabled"
-        :participant="uploadParticipant" :filter="autoUploaderFilter" :enabled="!!participant && state === TournamentState.Ongoing && autoUploaderEnabled"
-        :disabled="personalLoading" @busy="uploadBusy = $event"
-    >
-        <template #filter>
-            <slot name="autoUploaderFilter" />
-        </template>
-    </AutoUploader>
+    <section v-if="uploadParticipant" v-show="participant && state === TournamentState.Ongoing && autoUploaderEnabled" class="tournament-auto-upload">
+        <h3 class="tournament-section-heading">
+            {{ t('local.autoUpload') }}
+            <a class="link text" :href="uploadGuideUrl" target="_blank" rel="noopener noreferrer">{{ t('local.uploadGuide') }}</a>
+        </h3>
+        <AutoUploader
+            :participant="uploadParticipant" :filter="autoUploaderFilter" :enabled="!!participant && state === TournamentState.Ongoing && autoUploaderEnabled"
+            :disabled="personalLoading" @busy="uploadBusy = $event"
+        >
+            <template #filter>
+                <slot name="autoUploaderFilter" />
+            </template>
+        </AutoUploader>
+    </section>
     <template v-if="state === TournamentState.Awarded || showLiveData || showPreparingParticipants">
-        <h3 class="tournament-data-heading">
+        <h3 class="tournament-section-heading">
             {{ t('local.data') }}
             <DataExporter v-if="state === TournamentState.Awarded" :key="tournament.id" v-model="allVideos" lazy :fetch-data="getVideos">
                 {{ t('local.export') }}
@@ -129,6 +136,8 @@ function setPersonalLoading(value: boolean, id: number) {
 
 const i18nMessages = {
     'zh-cn': { local: {
+        autoUpload: '自动上传比赛录像',
+        uploadGuide: '上传指南',
         data: '比赛数据',
         participants: '参赛者',
         export: '导出所有录像数据',
@@ -136,6 +145,8 @@ const i18nMessages = {
         refreshPersonal: '刷新个人录像',
     } },
     en: { local: {
+        autoUpload: 'Automatic replay upload',
+        uploadGuide: 'Upload guide',
         data: 'Tournament data',
         participants: 'Participants',
         export: 'Export all video stats',
@@ -145,8 +156,31 @@ const i18nMessages = {
 };
 
 const { t } = useI18n({ messages: i18nMessages });
+const uploadGuideUrl = computed(() => {
+    const base = typeof import.meta.env.VITE_DOCS_URL === 'string' && import.meta.env.VITE_DOCS_URL.length > 0
+        ? import.meta.env.VITE_DOCS_URL
+        : import.meta.env.DEV ? 'http://localhost:5173/docs/' : '/docs/';
+    const normalizedBase = base.endsWith('/') ? base : `${base}/`;
+    const languages = navigator.languages?.length ? navigator.languages : [navigator.language];
+    const preferredLanguage = languages[0]?.toLowerCase() ?? '';
+    const path = preferredLanguage.startsWith('zh') ? 'guide/tournament' : 'en/guide/tournament';
+    return `${normalizedBase}${path}#auto-upload`;
+});
 </script>
 
 <style scoped>
-.tournament-data-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; }
+@import '@/styles/link.css';
+
+.tournament-section-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+    border-top: 1px solid var(--ui-border-color-light);
+    padding-top: 0.75rem;
+}
+
+.tournament-section-heading > .link {
+    font-weight: normal;
+}
 </style>

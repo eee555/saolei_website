@@ -18,7 +18,13 @@ CSS 与 Less 的选型由实施代理自行决定，根据实际重复程度和�
 
 `button.css` 保持原有导入路径，按顺序汇总 `buttons/base.css`、`buttons/variants.css`、`buttons/states.css`，分别负责基础布局、类型配色、尺寸与交互状态。
 
-`checkbox.css` 由 `setup.ts` 全局加载，应用与 Cypress 共用；采用原生 checkbox 与关联 label，无 BaseCheckbox 组件。普通模板为 `<label class="checkbox"><input v-model="checked" class="checkbox-input" type="checkbox"><span>选项文本</span></label>`，业务 class 可加在 label 上。`.checkbox` 提供 24px 最小高度、6px 间距与主题文字色，`.checkbox-input` 提供 14px 直角方框、选中标记、hover、focus-visible 与 disabled 状态。选中标记为内嵌 SVG，颜色为白色，其他配色均引用项目变量；强制颜色模式恢复原生外观。状态来自 input，CSS 不代替 v-model 或 change 逻辑。数组、按钮外观与半选按后续批次接入；原生绑定与外观设置分别参考 [Vue 表单绑定](https://vuejs.org/guide/essentials/forms.html#checkbox)和 [CSS appearance](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/appearance)。
+`checkbox.css` 由 `setup.ts` 全局加载，应用与 Cypress 共用；采用原生 checkbox 与关联 label，无 BaseCheckbox 组件。普通模板为 `<label class="checkbox"><input v-model="checked" class="checkbox-input" type="checkbox"><span>选项文本</span></label>`，业务 class 可加在 label 上。`.checkbox` 提供 24px 最小高度、6px 间距与主题文字色，`.checkbox-input` 提供 14px 直角方框、选中标记、hover、focus-visible 与 disabled 状态。选中标记为内嵌 SVG，颜色为白色，其他配色均引用项目变量；强制颜色模式恢复原生外观。数组多选使用 v-model 和绑定的 value，`.checkbox-group` 负责紧凑换行布局；状态来自 input，CSS 不代替模型或 change 逻辑。原生绑定与外观设置分别参考 [Vue 表单绑定](https://vuejs.org/guide/essentials/forms.html#checkbox)和 [CSS appearance](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/appearance)。
+
+半选外观使用 `:indeterminate` 和横线 SVG，与 checked 共用主题和禁用配色。调用方通过 `:indeterminate.prop` 绑定 DOM property，而非同名 HTML attribute，参见 [Vue v-bind](https://vuejs.org/api/built-in-directives.html#v-bind)与 [MDN 半选状态](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/checkbox#indeterminate_state_checkboxes)。上传表头保留“未选时全选全部过滤结果，半选或全选时清空”的规则；激活后在 nextTick 重新同步 checked / indeterminate，覆盖半选清空或空结果点击时派生 checked 不变的情况。表格中无文字的 checkbox 仍有关联 label 与本地化 aria-label。`cy.shouldHaveState()` 直接断言这两个 DOM 属性，以 null 表示半选。
+
+`.checkbox--small` 提供 12px 字号与 20px 最小高度，文本 span 允许在受限宽度内收缩并按全局文字规则换行。注册协议等交互链接放在 label 外并排显示，避免与勾选操作混在一起；保留 input 的完整可访问名称。上传选项的 `@click.stop` 放在 label 上，同时覆盖方框与文字的点击。
+
+`checkbox-buttons.css` 同样由 setup.ts 加载，提供 `.checkbox-buttons`、`.checkbox-button`、`.checkbox-button-input` 与 `.checkbox-button-content`。底层仍是可聚焦的原生 input，选中、禁用和键盘焦点映射到可见的内容框；鼠标点击 label，键盘使用 Tab / Space。`.checkbox-buttons--compact` 保留软件图标按钮的 1px × 3px 内边距，普通变体使用 12px 字号、2px × 6px 内边距；两者均为直角，并按容器宽度换行。强制颜色模式用系统选中色。筛选组件在 nextTick 后显式发出一次数组 change，组件事件不透传为原生 DOM Event，避免重复请求。
 
 `descriptions.css` 提供原生描述列表模板，无独立 Vue 组件：外层 `.description-layout` 为命名查询容器，内部 `<dl class="descriptions">` 每项使用 `<div class="description-item"><dt>标签</dt><dd>值或控件</dd></div>`。调用方直接导入 `@/styles/descriptions.css`，保持条件显示、v-model 与事件绑定。
 

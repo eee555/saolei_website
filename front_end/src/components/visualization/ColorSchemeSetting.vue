@@ -28,9 +28,10 @@
                 <BaseIconAdd />
             </BaseTextButton>
         </div>
-        <ElCheckbox v-model="developerMode" size="small" style="margin-left: 0.5em">
-            {{ t('local.developerMode') }}
-        </ElCheckbox>
+        <label class="checkbox checkbox--small" style="margin-left: 0.5em">
+            <input v-model="developerMode" class="checkbox-input" type="checkbox">
+            <span>{{ t('local.developerMode') }}</span>
+        </label>
     </div>
     <div v-if="developerMode">
         <ElInput v-model="colorSchemeString" type="textarea" :rows="countRows(colorSchemeString)" style="font-family: 'Courier New', Courier, monospace;" @change="(value: string) => {colorScheme = JSON.parse(value)}" />
@@ -38,7 +39,7 @@
 </template>
 
 <script setup lang="ts">
-import { ElCheckbox, ElColorPicker, ElIcon, ElInput } from 'element-plus';
+import { ElColorPicker, ElIcon, ElInput } from 'element-plus';
 import type { PropType } from 'vue';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';

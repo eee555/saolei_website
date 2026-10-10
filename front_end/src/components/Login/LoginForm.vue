@@ -18,7 +18,10 @@
         </ElFormItem>
         <!-- 记住我 -->
         <ElFormItem>
-            <ElCheckbox v-model="remember_me" :label="t('local.keepMeLoggedIn')" class="rememberMe" />
+            <label class="checkbox rememberMe">
+                <input v-model="remember_me" class="checkbox-input" type="checkbox">
+                <span>{{ t('local.keepMeLoggedIn') }}</span>
+            </label>
             <span :title="t('local.keepMeLoggedInTooltip')">
                 <BaseIconInfo class="text" style="margin-left: 0.2rem" />
             </span>
@@ -54,7 +57,7 @@ import '@/styles/text.css';
 import '@/styles/cards.css';
 
 import type { FormInstance, FormRules } from 'element-plus';
-import { ElCheckbox, ElForm, ElFormItem, ElInput, ElRadioButton, ElRadioGroup } from 'element-plus';
+import { ElForm, ElFormItem, ElInput, ElRadioButton, ElRadioGroup } from 'element-plus';
 import { onUnmounted, reactive, ref, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 

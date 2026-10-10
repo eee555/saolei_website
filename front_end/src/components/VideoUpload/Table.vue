@@ -21,10 +21,14 @@
         <PrColumn expander />
         <PrColumn>
             <template #header>
-                <ElCheckbox :model-value="!selectedNone && selectedAll" :indeterminate="!selectedAll && !selectedNone" @click="handleSelectAllClick" />
+                <label class="checkbox">
+                    <input class="checkbox-input" type="checkbox" :checked="!selectedNone && selectedAll" :indeterminate.prop="!selectedAll && !selectedNone" :aria-label="t('local.selectAll')" @change="handleSelectAllChange">
+                </label>
             </template>
             <template #body="{data}: {data: UploadEntry}">
-                <ElCheckbox :model-value="selectedRows.includes(data)" @change="(value) => handleSelectOneChange(value, data)" />
+                <label class="checkbox">
+                    <input class="checkbox-input" type="checkbox" :checked="selectedRows.includes(data)" :aria-label="t('local.selectVideo', { filename: data.file.name })" @change="(event) => handleSelectOneChange(event, data)">
+                </label>
             </template>
         </PrColumn>
         <PrColumn field="status" :header="t('common.prop.status')" :show-filter-match-modes="false" :show-filter-operator="false">
@@ -141,14 +145,12 @@
 <script setup lang="ts">
 import '@/styles/descriptions.css';
 import { FilterMatchMode } from '@primevue/core/api';
-import type { CheckboxValueType } from 'element-plus';
-import { ElCheckbox } from 'element-plus';
 import PrColumn from 'primevue/column';
 import type { DataTableFilterEvent } from 'primevue/datatable';
 import PrDataTable from 'primevue/datatable';
 import PrListbox from 'primevue/listbox';
 import type { PropType } from 'vue';
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import type { UploadEntry } from './utils';
@@ -181,12 +183,17 @@ const expandedRows = ref<UploadEntry[]>([]);
 
 const selectedAll = computed(() => selectedRows.value.length === filteredData.value.length);
 const selectedNone = computed(() => selectedRows.value.length === 0);
-function handleSelectAllClick() {
+async function handleSelectAllChange(event: Event) {
+    const input = event.currentTarget as HTMLInputElement;
     if (!selectedNone.value) {
         selectedRows.value.length = 0;
     } else {
         selectedRows.value = [...filteredData.value];
     }
+    // Activation changes the DOM even when the derived checked value stays false.
+    await nextTick();
+    input.checked = !selectedNone.value && selectedAll.value;
+    input.indeterminate = !selectedAll.value && !selectedNone.value;
 }
 
 function onFilter(event: DataTableFilterEvent) {
@@ -196,9 +203,8 @@ watch(filteredData, (newVal) => {
     selectedRows.value = selectedRows.value.filter((entry) => newVal.includes(entry));
 });
 
-function handleSelectOneChange(value: CheckboxValueType, entry: UploadEntry) {
-    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-    if (value) {
+function handleSelectOneChange(event: Event, entry: UploadEntry) {
+    if ((event.currentTarget as HTMLInputElement).checked) {
         selectedRows.value.push(entry);
     } else {
         const index = selectedRows.value.indexOf(entry);
@@ -224,6 +230,8 @@ const i18nMessages = {
         pass: '通过',
         process: '上传中',
         quota: '录像额度已满',
+        selectAll: '全选录像',
+        selectVideo: '选择录像：{filename}',
         success: '上传成功',
         upload: '上传失败',
     } },
@@ -243,6 +251,8 @@ const i18nMessages = {
         pass: 'Pass',
         process: 'Uploading',
         quota: 'Video quota reached',
+        selectAll: 'Select all videos',
+        selectVideo: 'Select video: {filename}',
         success: 'Success',
         upload: 'Upload fail',
     } },

@@ -6,6 +6,24 @@ import { videofilter } from '@/store';
 import { pinia } from '@/store/create';
 
 describe('<VideoView />', () => {
+    it('requests the updated state filter once for each checkbox activation', () => {
+        videofilter.value.filter_state = ['a', 'b', 'c', 'd'];
+        cy.intercept({ method: 'GET', pathname: '/api/video/query' }, { body: { count: 0, videos: [] } }).as('videos');
+        cy.mount(VideoView, { global: { plugins: [i18n, pinia], config: { globalProperties: { $axios } } } });
+        cy.wait('@videos');
+        cy.contains('label', 'Valid').click();
+        cy.wait('@videos').its('request.url').should((url: string) => {
+            expect(new URL(url).searchParams.getAll('s[]')).to.deep.equal(['a', 'b', 'd']);
+        });
+        cy.get('@videos.all').should('have.length', 2);
+        cy.contains('label', 'Valid').find('input').should('not.be.checked').focus();
+        cy.realPress('Space');
+        cy.wait('@videos').its('request.url').should((url: string) => {
+            expect(new URL(url).searchParams.has('s[]')).to.equal(false);
+        });
+        cy.get('@videos.all').should('have.length', 3);
+    });
+
     it('toggles the NF switch and resets pagination when the filter changes', () => {
         videofilter.value.pagesize = 20;
         cy.intercept({ method: 'GET', pathname: '/api/video/query' }, {
