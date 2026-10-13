@@ -77,6 +77,10 @@
     }
 }
 
+.button-group--joined {
+    gap: 0;
+}
+
 /* Retained for the deferred account-link card. */
 .button-compact {
     height: auto;

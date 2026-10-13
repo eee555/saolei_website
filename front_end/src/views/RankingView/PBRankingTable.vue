@@ -27,7 +27,9 @@
                 <PlayerName :user-id="row.player_id" />
             </td>
             <td v-for="stat in pbStats" :key="stat" class="table-col-number">
-                {{ formatPBValue(row.timems, level, bv, stat) }}
+                <VideoPreviewLink :id="row.video_id">
+                    {{ formatPBValue(row.timems, level, bv, stat) }}
+                </VideoPreviewLink>
             </td>
             <td class="table-col-datetime">
                 {{ formatPBUploadTime(row.upload_time) }}
@@ -43,6 +45,7 @@ import { useI18n } from 'vue-i18n';
 
 import BaseTable from '@/components/common/BaseTable.vue';
 import PlayerName from '@/components/PlayerName.vue';
+import VideoPreviewLink from '@/components/VideoPreviewLink.vue';
 import { formatPBUploadTime, formatPBValue, pbStats } from '@/services/pbRankingService';
 import type { PBRankingPlayer } from '@/services/pbRankingService';
 import { preview } from '@/utils/common/PlayerDialog';

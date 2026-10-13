@@ -46,8 +46,9 @@ import { useI18n } from 'vue-i18n';
 import BaseButton from '@/components/common/BaseButton.vue';
 import { httpErrorNotification, successNotification, unknownErrorNotification } from '@/components/Notifications';
 import IconCopy from '@/components/widgets/IconCopy.vue';
-import { local, store } from '@/store';
+import { store } from '@/store';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import { getDocsUrl } from '@/utils/docs';
 import type { TournamentParticipant } from '@/utils/tournaments';
 
 const props = defineProps({
@@ -68,14 +69,7 @@ const newIdentifier = ref<string>('');
 const registeringParticipant = ref(false);
 const registeringIdentifier = ref(false);
 
-const gscGuideUrl = computed(() => {
-    const base = typeof import.meta.env.VITE_DOCS_URL === 'string' && import.meta.env.VITE_DOCS_URL.length > 0
-        ? import.meta.env.VITE_DOCS_URL
-        : import.meta.env.DEV ? 'http://localhost:5173/docs/' : '/docs/';
-    const normalizedBase = base.endsWith('/') ? base : `${base}/`;
-    const path = local.value.language.startsWith('en') ? 'en/guide/gsc' : 'guide/gsc';
-    return `${normalizedBase}${path}`;
-});
+const gscGuideUrl = computed(() => getDocsUrl('guide/gsc', locale.value));
 
 async function registerParticipant() {
     registeringParticipant.value = true;
@@ -127,7 +121,7 @@ const i18nMessages = {
     } },
 };
 
-const { t } = useI18n({ messages: i18nMessages });
+const { t, locale } = useI18n({ messages: i18nMessages });
 </script>
 
 <style scoped>

@@ -24,7 +24,7 @@
             <IconMenuItem :text="t('local.setting')" icon="Setting" />
         </ElMenuItem>
         <LanguagePicker v-show="local.language_show" style="padding-left: 8px; padding-right: 8px;" />
-        <Login @keydown.stop />
+        <Login />
     </ElMenu>
 </template>
 
@@ -41,6 +41,7 @@ import Login from '@/components/Login/App.vue';
 import IconMenuItem from '@/components/widgets/IconMenuItem.vue';
 import LanguagePicker from '@/components/widgets/LanguagePicker.vue';
 import { local, store } from '@/store';
+import { getDocsUrl } from '@/utils/docs';
 
 const menu_index = ref('');
 const router = useRouter();
@@ -55,13 +56,7 @@ const menu_items = [
 ] as const;
 
 const player_url = computed(() => `/player/${store.user.id}`);
-const docsUrl = computed(() => {
-    if (typeof import.meta.env.VITE_DOCS_URL === 'string' && import.meta.env.VITE_DOCS_URL.length > 0) {
-        return import.meta.env.VITE_DOCS_URL;
-    }
-
-    return import.meta.env.DEV ? 'http://localhost:5173/docs/' : '/docs/';
-});
+const docsUrl = computed(() => getDocsUrl('', locale.value));
 
 onMounted(() => {
     void router.isReady().then(() => {
@@ -123,7 +118,7 @@ const i18nMessages = {
     } },
 };
 
-const { t } = useI18n({ messages: i18nMessages });
+const { t, locale } = useI18n({ messages: i18nMessages });
 </script>
 
 <style lang="less" scoped>

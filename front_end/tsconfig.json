@@ -38,7 +38,9 @@
     "src/**/*.vue",
     "cypress/**/*.ts",
     "src/setup.ts",
-    "vite.config.ts"
+    "vite.config.ts",
+    "vite.offline.config.ts",
+    "local-analyzer/**/*.ts"
   ],
   "exclude": [
     "node_modules"

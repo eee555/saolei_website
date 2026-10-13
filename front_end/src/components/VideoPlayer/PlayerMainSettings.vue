@@ -13,7 +13,7 @@
             <span>{{ t('local.showProbability') }}</span>
         </label>
         <div v-if="config.showProbability" class="player-main-settings__color-scheme">
-            <ColorSchemeSetting v-model="config.probabilityColorScheme" />
+            <ColorSchemeSetting v-model="config.probabilityColorScheme" :min="0" :max="100" />
         </div>
     </div>
 </template>

@@ -34,6 +34,8 @@ describe('<UserRecordViewApp />', () => {
             ['16x30/150', '0.987654'],
             ['24x30/200', '--'],
         ]);
-        cy.get('.pluck-record-table .clickable').should('have.length', 2);
+        cy.get('.pluck-record-table .video-preview-link').should('have.length', 2).and(($links) => {
+            expect([...$links].map((link) => link.getAttribute('href'))).to.deep.eq(['#/video/9001', '#/video/9002']);
+        });
     });
 });

@@ -10,8 +10,10 @@ from django.core.exceptions import SuspiciousOperation
 from django.db import transaction
 from django.db.models import Sum
 from django.http import FileResponse
+from django.shortcuts import get_object_or_404
 from django.tasks import TaskResultStatus
 from django.utils import timezone as django_timezone
+from django_ratelimit.decorators import ratelimit
 from django_tasks_db.models import DBTaskResult
 from ninja import Form, Router, Schema
 from ninja.decorators import decorate_view
@@ -28,6 +30,8 @@ from tournament.gsc.services import restart_gsc_task
 from userprofile.decorators import staff_required
 from utils.db import get_choice_counts_filtered
 from videomanager.models import VideoModel
+from .schema import AnalyzerWebsiteInfoOut
+from .services import get_video_rankings
 
 router = Router()
 
@@ -44,6 +48,26 @@ TASK_RESTART_SERVICES = [
     restart_accountlink_task,
     restart_gsc_task,
 ]
+
+
+@router.get('/video/{video_id}/analyzer-info', response=AnalyzerWebsiteInfoOut)
+@decorate_view(ratelimit(key='ip', rate='60/m'))
+def video_analyzer_info(request, video_id: int):
+    """
+    - ratelimit(key='ip', rate='60/m')
+
+    一次返回站内录像模型、比赛、原始文件名及该录像的现有排行榜名次。
+    """
+    video = get_object_or_404(VideoModel.objects.select_related('video'), id=video_id)
+    if video.ongoing_tournament and (not request.user.is_authenticated or request.user.id != video.player_id):
+        raise HttpError(403, 'Forbidden.')
+    return {
+        'video': video,
+        'expanded_video': video.video,
+        'tournament_ids': list(video.tournaments.order_by('id').values_list('id', flat=True)),
+        'filename': video.file.name.replace('\\', '/').rsplit('/', 1)[-1],
+        'rankings': get_video_rankings(video),
+    }
 
 
 class LogFileOut(Schema):

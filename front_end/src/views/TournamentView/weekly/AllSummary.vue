@@ -11,9 +11,10 @@
             <!-- @vue-generic {WeeklyParticipant} -->
             <ElTableColumn v-for="index in 2" :key="`e-${index}`" :label="`#${index}`" sortable :sort-method="scoreSort(`classic_et`, index - 1)">
                 <template #default="{row}">
-                    <BaseTextButton underline="hover" @click.stop="preview(row.classic_et[index - 1][0])">
+                    <VideoPreviewLink v-if="row.classic_et[index - 1][0]" :id="row.classic_et[index - 1][0]">
                         {{ ms_to_s(row.classic_et[index - 1][1]) }}
-                    </BaseTextButton>
+                    </VideoPreviewLink>
+                    <span v-else>{{ ms_to_s(row.classic_et[index - 1][1]) }}</span>
                 </template>
             </ElTableColumn>
             <!-- @vue-generic {WeeklyParticipant} -->
@@ -27,9 +28,10 @@
             <!-- @vue-generic {WeeklyParticipant} -->
             <ElTableColumn v-for="index in 5" :key="`i-${index}`" :label="`#${index}`" sortable :sort-method="scoreSort(`classic_it`, index - 1)">
                 <template #default="{row}">
-                    <BaseTextButton underline="hover" @click="preview(row.classic_it[index - 1][0])">
+                    <VideoPreviewLink v-if="row.classic_it[index - 1][0]" :id="row.classic_it[index - 1][0]">
                         {{ ms_to_s(row.classic_it[index - 1][1]) }}
-                    </BaseTextButton>
+                    </VideoPreviewLink>
+                    <span v-else>{{ ms_to_s(row.classic_it[index - 1][1]) }}</span>
                 </template>
             </ElTableColumn>
             <!-- @vue-generic {WeeklyParticipant} -->
@@ -52,10 +54,9 @@
 import { ElTable, ElTableColumn } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
-import BaseTextButton from '@/components/common/BaseTextButton.vue';
 import PlayerName from '@/components/PlayerName.vue';
+import VideoPreviewLink from '@/components/VideoPreviewLink.vue';
 import { ms_to_s } from '@/utils';
-import { preview } from '@/utils/common/PlayerDialog';
 import type { WeeklyParticipant } from '@/utils/weekly';
 
 defineProps({

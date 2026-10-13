@@ -6,7 +6,10 @@
         <template v-else>
             <SoftwareIcon v-if="props.showIcon === 'software'" :software="videos[bestIndex].software" />
             <VideoStateIcon v-else-if="props.showIcon === 'state'" :state="videos[bestIndex].state" />
-            <BaseTextButton class="video-cell-action" data-cy="video-cell-action" style="font-weight: inherit" @click="handleClick">
+            <VideoPreviewLink v-if="tooltipMode === 'fast'" :id="videos[bestIndex].id" :software="videos[bestIndex].software" class="video-cell-action" data-cy="video-cell-action">
+                {{ videos[bestIndex].displayStat(displayBy) }}
+            </VideoPreviewLink>
+            <BaseTextButton v-else class="video-cell-action" data-cy="video-cell-action" style="font-weight: inherit" @click="handleClick">
                 {{ videos[bestIndex].displayStat(displayBy) }}
             </BaseTextButton>
         </template>
@@ -20,11 +23,11 @@ import { computed, ref, watch } from 'vue';
 import { getBest } from './utils';
 
 import BaseTextButton from '@/components/common/BaseTextButton.vue';
+import VideoPreviewLink from '@/components/VideoPreviewLink.vue';
 import SoftwareIcon from '@/components/widgets/SoftwareIcon.vue';
 import VideoStateIcon from '@/components/widgets/VideoStateIcon.vue';
 import { store } from '@/store';
 import { PiecewiseColorScheme } from '@/utils/colors';
-import { preview } from '@/utils/common/PlayerDialog';
 import { fullDay, globalNow } from '@/utils/datetime';
 import type { MS_Software } from '@/utils/ms_const';
 import { MS_Softwares } from '@/utils/ms_const';
@@ -69,13 +72,8 @@ const isNew = computed(() => {
 });
 
 function handleClick() {
-    if (props.tooltipMode === 'fast') {
-        const video = props.videos[bestIndex.value];
-        void preview(video.id, video.software);
-    } else {
-        store.video_list = props.videos;
-        store.video_list_show = true;
-    }
+    store.video_list = props.videos;
+    store.video_list_show = true;
 }
 </script>
 
@@ -95,5 +93,10 @@ function handleClick() {
 
 .video-cell-action {
     --button-accent: currentColor;
+}
+
+.video-cell-action:hover,
+.video-cell-action:active {
+    color: inherit;
 }
 </style>

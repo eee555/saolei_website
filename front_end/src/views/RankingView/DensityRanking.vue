@@ -50,7 +50,9 @@
                     <PlayerName :user-id="row.player_id" />
                 </td>
                 <td class="table-col-number">
-                    <PreviewNumber :id="row.video_id" :text="formatPluck(row.pluck)" />
+                    <VideoPreviewLink :id="row.video_id">
+                        {{ formatPluck(row.pluck) }}
+                    </VideoPreviewLink>
                 </td>
                 <td class="table-col-mode">
                     {{ t(`common.mode.code${row.mode}`) }}
@@ -89,7 +91,7 @@ import BaseButton from '@/components/common/BaseButton.vue';
 import BaseTable from '@/components/common/BaseTable.vue';
 import { httpErrorNotification } from '@/components/Notifications';
 import PlayerName from '@/components/PlayerName.vue';
-import PreviewNumber from '@/components/PreviewNumber.vue';
+import VideoPreviewLink from '@/components/VideoPreviewLink.vue';
 import $axios from '@/http';
 import { ms_to_s } from '@/utils';
 import { CustomLevel, DensityCustomLevelConfigs } from '@/utils/customlevel';

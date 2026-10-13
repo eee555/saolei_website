@@ -10,11 +10,13 @@ function getPreferredLanguage() {
 }
 
 onMounted(() => {
-    if (localStorage.getItem(localeStorageKey)) {
+    const requestedLanguage = new URLSearchParams(window.location.search).get('lang');
+    const hasRequestedLanguage = requestedLanguage === 'zh' || requestedLanguage === 'en';
+    if (!hasRequestedLanguage && localStorage.getItem(localeStorageKey)) {
         return;
     }
 
-    const preferredLanguage = getPreferredLanguage();
+    const preferredLanguage = hasRequestedLanguage ? requestedLanguage : getPreferredLanguage();
     if (preferredLanguage.startsWith('zh')) {
         localStorage.setItem(localeStorageKey, 'zh');
         return;

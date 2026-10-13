@@ -20,8 +20,8 @@ describe('<DensityRanking />', () => {
             expect(data[0]?.[0]).to.equal('1');
             expect(data[0]?.slice(2, 6)).to.deep.equal(['0.123456', 'Standard', '1.234', '40']);
         });
-        cy.get('.ranking-table a').should('have.attr', 'href', '#/player/42');
-        cy.contains('.ranking-table [data-cy=preview-number]', '0.123456').should('be.enabled');
+        cy.get('.ranking-table a[href="#/player/42"]').should('exist');
+        cy.contains('.ranking-table .video-preview-link', '0.123456').should('have.attr', 'href', '#/video/8001');
         cy.get('.pagination .btn-next').click();
         cy.wait('@ranking').its('request.query').should('include', { start: '20', end: '40' });
         cy.get('.ranking-table tbody').extractTableData().should((data) => {

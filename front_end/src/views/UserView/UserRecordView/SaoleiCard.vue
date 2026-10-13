@@ -17,11 +17,12 @@
                         {{ t(`common.prop.${label}`) }}{{ rankingName === 'saolei_nf' ? ' (NF)' : '' }}
                     </th>
                     <td v-for="level in levels" :key="level">
-                        <PreviewNumber
+                        <VideoPreviewLink
                             v-if="saoleiVideoId(records[rankingName], `${level}${stat}`)"
                             :id="saoleiVideoId(records[rankingName], `${level}${stat}`)"
-                            :text="formatScore(records[rankingName], `${level}${stat}`)"
-                        />
+                        >
+                            {{ formatScore(records[rankingName], `${level}${stat}`) }}
+                        </VideoPreviewLink>
                         <span v-else>{{ formatScore(records[rankingName], `${level}${stat}`) }}</span>
                     </td>
                 </tr>
@@ -36,7 +37,7 @@ import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import BaseTable from '@/components/common/BaseTable.vue';
-import PreviewNumber from '@/components/PreviewNumber.vue';
+import VideoPreviewLink from '@/components/VideoPreviewLink.vue';
 import { fetchSaoleiRecords, formatSaoleiValue, SaoleiLevels, SaoleiStat, saoleiVideoId } from '@/services/saoleiRankingService';
 import type { SaoleiField, SaoleiPlayerRecord, SaoleiRankingName } from '@/services/saoleiRankingService';
 

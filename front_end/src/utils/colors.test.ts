@@ -44,6 +44,13 @@ describe('PiecewiseColorScheme', () => {
 
             expect(scheme.getColor(NaN)).toBe('rgba(0,0,0,0)');
         });
+
+        it('Returns transparent bucket colors without changing threshold ownership', () => {
+            const scheme = new PiecewiseColorScheme(['rgba(0,0,0,0)', '#000000', 'rgba(0,0,0,0)'], [10, 20]);
+            expect(scheme.getColor(10)).toBe('rgba(0,0,0,0)');
+            expect(scheme.getColor(20)).toBe('#000000');
+            expect(scheme.getColor(21)).toBe('rgba(0,0,0,0)');
+        });
     });
 
     describe('getStyle', () => {
@@ -70,6 +77,12 @@ describe('PiecewiseColorScheme', () => {
             const scheme = new PiecewiseColorScheme(['rgba(255,255,255,0)', '#000000'], [10]);
 
             expect(scheme.getStyle(5)).toEqual({});
+        });
+
+        it('Does not apply background or text styles for a cleared picker color', () => {
+            const scheme = new PiecewiseColorScheme(['rgba(0,0,0,0)', '#000000'], [10]);
+            expect(scheme.getStyle(10)).toEqual({});
+            expect(scheme.getStyle(11)).toHaveProperty('backgroundColor', '#000000');
         });
     });
 });

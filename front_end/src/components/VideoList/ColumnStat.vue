@@ -1,7 +1,9 @@
 <template>
     <PrColumn :header="t(`common.prop.${ stat}`)" :sortable="sortable" :sort-field="stat">
         <template #body="{data}: {data: VideoAbstract}">
-            <span class="text">{{ data.displayStat(stat) }}</span>
+            <VideoPreviewLink :id="data.id" :software="data.software" class="text">
+                {{ data.displayStat(stat) }}
+            </VideoPreviewLink>
         </template>
     </PrColumn>
 </template>
@@ -13,6 +15,7 @@ import PrColumn from 'primevue/column';
 import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import VideoPreviewLink from '@/components/VideoPreviewLink.vue';
 import type { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 
 defineProps({
