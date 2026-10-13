@@ -65,10 +65,14 @@ APP内引用链条：`utils -> models -> services -> api`
 # 前端代码规范
 
 前端位置：`front_end`。测试参考
-- linter：`.github\workflows\eslint.yml`。由于eslint的插件使用了类型解析，运行用时较长，请耐心等待。
+- linter：`.github\workflows\eslint.yml`。由于eslint的插件使用了类型解析，运行用时较长，按下述跨轮工作流处理。
 - ts模块：`.github\workflows\vitest.yml`
 - vue组件：`.github\workflows\cypress.yml`
 - e2e：`.github\workflows\CypressE2E.yml`
+
+## Analyzer 版本管理
+
+修改公共 VideoAnalyzer 或离线包，以及会实际影响它们的共享 CSS、i18n、工具和依赖前，必须阅读并遵守 [Analyzer 版本管理约束](../front_end/local-analyzer/VERSIONING.md)。版本独立维护在 `front_end/local-analyzer/version.json`，按实际影响递增并同步变更记录；网站其他修改及重复构建不自动产生 Analyzer 新版本。
 
 ## 预览与开发服务器
 
@@ -133,12 +137,26 @@ const { t } = useI18n({ messages: i18nMessages });
 
 ## 测试注意事项
 
+### lintfix 和 typecheck 跨轮工作流
+
+- 每轮工作开始时，只检查一次上一轮启动的 `npm run lintfix` 和 `npm run typecheck` 的日志、完成状态及退出码。有错误时先根据结果修改对应文件，然后直接开始本轮任务；不为了确认这些修改而立即重跑检查，也不在本轮反复查询上一轮结果。
+- 如果上一轮检查仍在运行，记录其待检查状态后直接开始本轮任务，不等待或轮询；保留任务信息供后续轮次开始时检查，不把仍在运行视为通过。
+- 完成本轮前端代码修改后，启动 `npm run lintfix` 和 `npm run typecheck`，保留日志路径、任务或进程标识及对应轮次，然后直接交付，不等待检查完成。PowerShell 下可使用 `npm.cmd`。如果上一轮同一种检查尚未结束，保留已有任务，不重复启动并发检查；不为文档修改启动这些检查。
+- 交付时分别注明两项检查已确认的结果或“已启动，结果待下一轮检查”。只有读取到完成日志和退出码后才能报告通过；未启动的检查注明未运行及原因。
+
 ### Cypress 执行范围
 
-- 当用户要求排查组件测试时，允许代理执行相关 Cypress 组件测试，明确使用 `--component --browser chrome --spec` 指定受影响的 spec；根据排查需要选择无头或带界面模式。
-- 其他前端修改不自动授权代理运行 Cypress，测试命令交由用户执行。
+- 每轮不自动启动或重复运行 Cypress 组件测试，不为组件测试主动发起沙箱外运行审批。默认维护相关 spec 并留下命令供用户运行；只有用户明确要求代理执行时才运行。
+- 用户明确要求执行时，使用 `--component --browser chrome --spec` 指定相关 spec，不默认运行全部组件测试；已启动的测试仍保留日志及退出码，完成后如实报告结果。
+- 默认使用无头模式，例如 `npx.cmd cypress run --component --browser chrome --headless --spec "src/path/A.cy.ts,src/path/B.cy.ts"`；需要带界面排查时按用户要求执行。
 - 代理不要执行 E2E 测试，包括 `--e2e` 和 `cypress/e2e` 下的 spec；E2E 继续由用户运行。
 - 如 `ELECTRON_RUN_AS_NODE=1` 阻止 Cypress 启动，允许仅在本次命令的进程环境中移除该变量，不修改系统环境变量；沙箱外运行仍遵守执行工具的审批要求。
+
+### Cypress 沙箱限制处理
+
+- 仅在用户明确要求代理执行 Cypress 时，如沙箱限制 Chrome/Cypress 启动、浏览器子进程或测试所需的本地连接，使用执行工具的沙箱外运行机制：`exec_command` 设置 `sandbox_permissions: "require_escalated"`，在 `justification` 中说明具体限制并申请运行指定的组件测试。已批准的命令规则优先复用；需要新规则时使用限定到组件测试和 Chrome 的前缀，例如 `["npx.cmd", "cypress", "run", "--component", "--browser", "chrome"]`。
+- 如需清除 `ELECTRON_RUN_AS_NODE`，在执行工具创建的本次 PowerShell 子进程中先运行 `Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue`，再启动指定的 Cypress 组件测试。此操作只影响该命令及其子进程，不修改系统或用户的持久环境变量。
+- 沙箱外运行仍遵守当前执行工具的审批策略。若环境禁止升级或审批被拒绝，记录未运行及具体原因，交付时留下用户可运行的命令；不得改用其他执行器规避审批或把未运行报告为通过。
 
 ### 性能
 E2E测试速度较慢，请尽量减少初始化与UI操作次数。测试专注于关键内容的显示，不必要为了追求一次成功使用复杂的robust断言。E2E测试由用户运行，元素定位问题由用户手动调整或反馈；组件测试按上述执行范围处理。
@@ -151,6 +169,23 @@ E2E测试速度较慢，请尽量减少初始化与UI操作次数。测试专注
 
 ### 组件`PlayerName`
 该组件用于渲染用户名字，其涉及到复杂的缓存逻辑，因此如果不需要测试其具体内容，应当用`cy.mockPlayerNameFallback()` stub相应的API。
+
+组件测试直接挂载 `PlayerName`，或挂载间接包含它的页面/组件时，必须为每个相关 `cy.mount` 注入项目的 `$axios`：`global.config.globalProperties.$axios`。依赖链 `PlayerName -> PlayerBadge -> UserAvatar` 会读取 `proxy.$axios.defaults.baseURL`；Cypress 组件挂载不执行网站的 `main.ts`，不会自动注册该属性。`cy.mockPlayerNameFallback()` 只拦截 API 请求，不能代替 `$axios` 注入，否则会触发 `Cannot read properties of undefined (reading 'defaults')`，并可能导致测试卡住。
+
+```ts
+import $axios from '@/http';
+import i18n from '@/i18n';
+
+cy.mockPlayerNameFallback();
+cy.mount(ComponentUnderTest, {
+    global: {
+        plugins: [i18n],
+        config: { globalProperties: { $axios } },
+    },
+});
+```
+
+将注入配置合并到已有挂载选项，保留所需的 plugins、stubs 等；测试内的独立挂载、重新挂载和共享挂载 helper 都需要覆盖。仅在相关组件被完整 stub、不渲染上述依赖链时可以省略。
 
 ### 表格内容
 对于表格文本内容，使用`commands.ts`提供的`cy.getTable`或`cy.extractTableData`实现。

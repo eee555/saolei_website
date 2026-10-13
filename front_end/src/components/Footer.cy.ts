@@ -98,8 +98,8 @@ describe('<Footer />', () => {
         cy.get('.el-dialog').should('not.be.visible');
     });
 
-    it('opens and closes downloads dialog', () => {
-        cy.viewport(500, 1000);
+    it('opens downloads dialog, switches to Analyzer and closes it', () => {
+        cy.viewport(1000, 1000);
         cy.mount(Footer, mountOptions);
 
         // 点击软件下载链接
@@ -107,6 +107,26 @@ describe('<Footer />', () => {
 
         // 验证对话框已打开
         cy.get('.el-dialog').should('be.visible');
+
+        cy.get('.el-dialog .el-tabs__item').should('have.length', 4);
+        cy.get<HTMLImageElement>('.el-tabs__item img[alt="Analyzer"]').should('be.visible').and(($icon) => {
+            expect($icon[0].complete).to.eq(true);
+            expect($icon[0].naturalWidth).to.be.greaterThan(0);
+        }).closest('[role="tab"]').click();
+        cy.get('.analyzer-helper').should('be.visible').and('contain.text', 'OpenMinesweeper Video Analyzer');
+        cy.get('.analyzer-helper thead th').should('have.length', 3);
+        cy.get('.analyzer-helper tbody tr').first().should(($row) => {
+            const [versionCell, dateCell, downloadCell] = $row.find('td');
+            const version = versionCell.textContent?.trim().replace(/^v/u, '');
+            if (!version) throw new Error('Missing Analyzer release version');
+            expect(version).to.match(/^\d+\.\d+\.\d+$/u);
+            expect(dateCell.textContent?.trim()).to.match(/^\d{4}-\d{2}-\d{2}$/u);
+            const link = downloadCell.querySelector('a');
+            if (!link) throw new Error('Missing Analyzer download link');
+            const filename = `OpenMinesweeperVideoAnalyzer-${version}.zip`;
+            expect(link.getAttribute('href')).to.eq(`${import.meta.env.BASE_URL}assets/${filename}`);
+            expect(link.getAttribute('download')).to.eq(filename);
+        });
 
         // 点击对话框外部关闭
         cy.get('body').click(0, 0);

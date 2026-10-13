@@ -57,7 +57,9 @@ describe('<SaoleiCard />', () => {
             ['Time (NF)', '2.345(6)', '--(--)', '--(--)', '2002.343(7)'],
             ['Bvs (NF)', '0.000(--)', '--(--)', '--(--)', '0.000(8)'],
         ]);
-        cy.get('.saolei-record-table .clickable').should('have.length', 4);
+        cy.get('.saolei-record-table .video-preview-link').should('have.length', 4).and(($links) => {
+            expect([...$links].map((link) => link.getAttribute('href'))).to.deep.eq(['#/video/8001', '#/video/8002', '#/video/8001', '#/video/8002']);
+        });
         cy.get('@saoleiRecords.all').should('have.length', 1);
     });
 
@@ -94,6 +96,6 @@ describe('<SaoleiCard />', () => {
             ['Time (NF)', '--(--)', '--(--)', '--(--)', '2999.997(--)'],
             ['Bvs (NF)', '--(--)', '--(--)', '--(--)', '0.000(--)'],
         ]);
-        cy.get('.saolei-record-table .clickable').should('not.exist');
+        cy.get('.saolei-record-table .video-preview-link').should('not.exist');
     });
 });

@@ -54,6 +54,7 @@ import IconCopy from '@/components/widgets/IconCopy.vue';
 import { createWeeklyParticipant } from '@/services/tournamentService';
 import { store } from '@/store';
 import { toDate, toISODateTimeString } from '@/utils/datetime';
+import { getDocsUrl } from '@/utils/docs';
 import type { WeeklyParticipant } from '@/utils/weekly';
 
 const props = defineProps({
@@ -73,14 +74,7 @@ const token = defineModel('token', { type: String, default: '' });
 const registeringParticipant = ref(false);
 const registerDialogVisible = ref(false);
 
-const weeklyGuideUrl = computed(() => {
-    const base = typeof import.meta.env.VITE_DOCS_URL === 'string' && import.meta.env.VITE_DOCS_URL.length > 0
-        ? import.meta.env.VITE_DOCS_URL
-        : import.meta.env.DEV ? 'http://localhost:5173/docs/' : '/docs/';
-    const normalizedBase = base.endsWith('/') ? base : `${base}/`;
-    const path = 'guide/weekly-tournament';
-    return `${normalizedBase}${path}`;
-});
+const weeklyGuideUrl = computed(() => getDocsUrl('guide/weekly-tournament', locale.value));
 
 async function registerParticipant() {
     registeringParticipant.value = true;
@@ -115,7 +109,7 @@ const i18nMessages = {
     } },
 };
 
-const { t } = useI18n({ messages: i18nMessages });
+const { t, locale } = useI18n({ messages: i18nMessages });
 </script>
 
 <style scoped>

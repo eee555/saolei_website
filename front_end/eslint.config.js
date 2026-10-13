@@ -42,7 +42,7 @@ const restrictedDescriptionsElements = [{
 
 export default defineConfig({
     ignores: [
-        '**/node_modules/**', '**/dist/**', '**/build/**', '**/public/**',
+        '**/node_modules/**', '**/dist/**', '**/dist-offline-analyzer/**', '**/build/**', '**/public/**',
         '**/GuideView.vue', '**/WorldView.vue',
     ],
 }, {
@@ -90,7 +90,7 @@ export default defineConfig({
         'import-x/consistent-type-specifier-style': 'error',
         'import-x/dynamic-import-chunkname': 'off', // webpack项目用的，不适用vite
         'import-x/exports-last': 'off', // 和group-exports一致
-        'import-x/extensions': 'error',
+        'import-x/extensions': ['error', { json: 'always' }],
         'import-x/first': 'error',
         'import-x/group-exports': 'off',
         'import-x/max-dependencies': 'off',
@@ -111,6 +111,7 @@ export default defineConfig({
                 'cypress.config.ts',
                 'eslint.config.js',
                 'vite.config.ts',
+                'vite.offline.config.ts',
             ],
             optionalDependencies: false,
             peerDependencies: false,

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Analyzer 图标预览</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 24px; font: 15px/1.5 system-ui, sans-serif; color: #303133; background: #eceef1; }
+        h1 { font-size: 22px; margin: 0 0 4px; }
+        p { margin: 0 0 16px; }
+        .panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 16px; }
+        .panel { padding: 16px; background: #fff; border: 1px solid #dcdfe6; }
+        .panel.dark { color: #e5eaf3; background: #141414; border-color: #414243; }
+        h2 { font-size: 16px; margin: 0 0 12px; }
+        .sizes { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 24px; }
+        figure { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 0; }
+        img { display: block; }
+        figcaption { font-variant-numeric: tabular-nums; color: #606266; }
+        .dark figcaption { color: #a3a6ad; }
+        .original { margin-top: 16px; }
+    </style>
+</head>
+<body>
+    <h1>OpenMinesweeper Video Analyzer · 图标预览</h1>
+    <p>左柱加高，右柱删除；红旗直接插在横轴上，旗杆及旗面轮廓与横轴同色，红色填充右边缘正好接到旗杆左侧。网站原始 SVG 角标缩小四分之一柱宽，保留在右下角并遮住部分旗杆。</p>
+    <div class="panels">
+        <section class="panel light">
+            <h2>浅色背景</h2>
+            <div class="sizes">
+                <figure><img src="../src/assets/video-analyzer.svg" width="256" height="256" alt="Analyzer 图标 256px"><figcaption>256px</figcaption></figure>
+                <figure><img src="../src/assets/video-analyzer.svg" width="64" height="64" alt="Analyzer 图标 64px"><figcaption>64px</figcaption></figure>
+                <figure><img src="../src/assets/video-analyzer.svg" width="32" height="32" alt="Analyzer 图标 32px"><figcaption>32px</figcaption></figure>
+                <figure><img src="../src/assets/video-analyzer.svg" width="24" height="24" alt="Analyzer 图标 24px"><figcaption>24px</figcaption></figure>
+                <figure><img src="../src/assets/video-analyzer.svg" width="16" height="16" alt="Analyzer 图标 16px"><figcaption>16px</figcaption></figure>
+            </div>
+        </section>
+        <section class="panel dark">
+            <h2>深色背景</h2>
+            <div class="sizes">
+                <figure><img src="../src/assets/video-analyzer.svg" width="256" height="256" alt="Analyzer 图标 256px"><figcaption>256px</figcaption></figure>
+                <figure><img src="../src/assets/video-analyzer.svg" width="64" height="64" alt="Analyzer 图标 64px"><figcaption>64px</figcaption></figure>
+                <figure><img src="../src/assets/video-analyzer.svg" width="32" height="32" alt="Analyzer 图标 32px"><figcaption>32px</figcaption></figure>
+                <figure><img src="../src/assets/video-analyzer.svg" width="24" height="24" alt="Analyzer 图标 24px"><figcaption>24px</figcaption></figure>
+                <figure><img src="../src/assets/video-analyzer.svg" width="16" height="16" alt="Analyzer 图标 16px"><figcaption>16px</figcaption></figure>
+            </div>
+        </section>
+    </div>
+    <div class="original">
+        <figure><img src="../src/assets/logo.svg" width="96" height="96" alt="网站原始标志"><figcaption>网站原始 SVG 标志对照</figcaption></figure>
+    </div>
+</body>
+</html>

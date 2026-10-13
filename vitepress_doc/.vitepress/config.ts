@@ -83,6 +83,7 @@ export default defineConfig({
                                 { text: '账号关联', link: '/guide/account-links' },
                                 { text: '扫雷软件', link: '/guide/software' },
                                 { text: '录像播放器', link: '/guide/video-player' },
+                                { text: '录像表达式参考', link: '/guide/replay-expressions' },
                                 { text: '扫雷标识', link: '/guide/identifier' },
                                 {
                                     text: '比赛功能',
@@ -147,6 +148,7 @@ export default defineConfig({
                                 { text: 'Account Links', link: '/en/guide/account-links' },
                                 { text: 'Minesweeper Software', link: '/en/guide/software' },
                                 { text: 'Video Player', link: '/en/guide/video-player' },
+                                { text: 'Replay Expressions', link: '/en/guide/replay-expressions' },
                                 { text: 'Player Identifiers', link: '/en/guide/identifier' },
                                 {
                                     text: 'Tournaments',
