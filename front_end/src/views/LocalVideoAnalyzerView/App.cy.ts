@@ -1,6 +1,7 @@
 
 import offlineCopyright from '../../../local-analyzer/COPYRIGHT.txt?raw';
 import offlineReadme from '../../../local-analyzer/README.txt?raw';
+import analyzerVersion from '../../../local-analyzer/version.json';
 
 import App from './App.vue';
 
@@ -34,6 +35,7 @@ describe('<LocalVideoAnalyzerView />', () => {
         cy.get('.local-analyzer__file').should('contain.text', '选择或拖入');
         cy.get('.analyzer-progress-bar__play').should('have.attr', 'aria-label', '播放');
         cy.get('.local-analyzer__readme summary').should('contain.text', '使用说明');
+        cy.get('.local-analyzer__version').should('have.text', `版本 v${analyzerVersion.version}`);
         cy.document().its('documentElement.lang').should('eq', 'zh-cn');
         cy.window().should((win) => {
             expect(JSON.parse(win.localStorage.getItem('local') ?? '{}')).to.have.property('language', 'zh-cn');
@@ -41,6 +43,7 @@ describe('<LocalVideoAnalyzerView />', () => {
         cy.get('.analyzer-progress-bar__slider').should('have.value', '5000');
         cy.get('.local-analyzer__language').should('have.text', 'English').click();
         cy.get('.local-analyzer__file').should('contain.text', 'Choose or drop');
+        cy.get('.local-analyzer__version').should('have.text', `Version v${analyzerVersion.version}`);
         cy.get('.analyzer-progress-bar__play').should('have.attr', 'aria-label', 'Play');
         cy.document().its('documentElement.lang').should('eq', 'en');
         cy.window().should((win) => {
@@ -53,6 +56,12 @@ describe('<LocalVideoAnalyzerView />', () => {
         cy.mount(App, { global: { plugins: [i18n] } });
         cy.get('.video-analyzer-info .local-analyzer__notices details').should('have.length', 2).each(($details) => {
             cy.wrap($details).should('not.have.attr', 'open');
+        });
+        cy.get('.video-analyzer-info .local-analyzer__version').should('be.visible').and('have.text', `Version v${analyzerVersion.version}`);
+        cy.get<HTMLImageElement>('.video-analyzer-info .local-analyzer__icon').should('be.visible').and('have.attr', 'alt', '').and(($icon) => {
+            expect($icon.attr('src')).to.match(/^data:image\/svg\+xml[;,]/u);
+            expect($icon[0].complete).to.eq(true);
+            expect($icon[0].naturalWidth).to.be.greaterThan(0);
         });
         cy.get('.local-analyzer__notices pre').should('not.be.visible');
         cy.get('.local-analyzer__readme summary').click();

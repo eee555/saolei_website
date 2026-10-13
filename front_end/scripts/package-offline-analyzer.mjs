@@ -7,8 +7,11 @@ import MarkdownIt from 'markdown-it';
 
 const frontend = fileURLToPath(new URL('../', import.meta.url));
 const output = join(frontend, 'dist-offline-analyzer');
+const versionFile = await readFile(join(frontend, 'local-analyzer', 'version.json'), 'utf8');
+const { version } = JSON.parse(versionFile);
+if (typeof version !== 'string' || !/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/u.test(version)) throw new Error('Analyzer version must use MAJOR.MINOR.PATCH');
 const html = await readFile(join(output, 'index.html'), 'utf8');
-const packagedDocuments = new Set(['index.html', 'help', 'README.txt', 'LICENSE', 'COPYRIGHT.txt', 'THIRD_PARTY_LICENSES.json', 'THIRD_PARTY_LICENSES.txt', 'licenses']);
+const packagedDocuments = new Set(['index.html', 'help', 'README.txt', 'version.json', 'LICENSE', 'COPYRIGHT.txt', 'THIRD_PARTY_LICENSES.json', 'THIRD_PARTY_LICENSES.txt', 'licenses']);
 const standaloneAssets = (await readdir(output)).filter((name) => !packagedDocuments.has(name));
 if (standaloneAssets.length > 0) throw new Error(`Unbundled assets: ${standaloneAssets.join(', ')}`);
 if (/<script\b[^>]*\bsrc\s*=/iu.test(html) || /<link\b[^>]*\b(?:stylesheet|modulepreload)\b/iu.test(html)) throw new Error('HTML still loads external scripts or styles');
@@ -17,6 +20,8 @@ const resourceUrls = [...css.matchAll(/url\(\s*["']?([^\s"')]+)/giu)].map((match
 const externalResources = resourceUrls.filter((url) => !url.startsWith('data:') && !url.startsWith('#') && url !== 'about:blank');
 if (externalResources.length > 0) throw new Error(`External CSS resources: ${externalResources.join(', ')}`);
 if (!html.includes('data:application/wasm;base64,')) throw new Error('WASM was not inlined');
+const favicon = html.match(/<link\b(?=[^>]*\brel=["']icon["'])[^>]*\bhref=(["'])(.*?)\1/iu)?.[2];
+if (!favicon || !/^data:image\/svg\+xml[;,]/iu.test(favicon)) throw new Error('Analyzer favicon was not inlined');
 
 const projectLicense = await readFile(join(frontend, '..', 'LICENSE'), 'utf8');
 await writeFile(join(output, 'LICENSE'), projectLicense);
@@ -53,6 +58,7 @@ for (const language of ['zh', 'en']) {
     await writeFile(help, `<!doctype html><html lang="${language === 'zh' ? 'zh-CN' : 'en'}"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${language === 'zh' ? '录像表达式参考' : 'Replay expression reference'}</title><style>body{font:16px/1.6 system-ui,sans-serif;margin:24px auto;padding:0 16px;max-width:1100px}table{border-collapse:collapse;display:block;overflow:auto}th,td{border:1px solid #999;padding:4px 8px}code{background:#8882;padding:2px 4px}a{color:#337ecc}@media(prefers-color-scheme:dark){html{color-scheme:dark}a{color:#79bbff}}</style><body>${markdown.render(text)}</body></html>`);
 }
 await writeFile(join(output, 'README.txt'), await readFile(join(frontend, 'local-analyzer', 'README.txt')));
+await writeFile(join(output, 'version.json'), versionFile);
 
 const zip = new JSZip();
 async function addDirectory(directory, prefix = '') {
@@ -64,14 +70,16 @@ async function addDirectory(directory, prefix = '') {
     }
 }
 await addDirectory(output);
-const zipPath = join(frontend, 'video-analyzer-offline.zip');
+const packageName = `OpenMinesweeperVideoAnalyzer-${version}.zip`;
+const zipPath = join(frontend, packageName);
 const zipData = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' });
 await writeFile(zipPath, zipData);
-const downloadPath = join(frontend, 'public', 'assets', 'video-analyzer-offline.zip');
+const downloadPath = join(frontend, 'public', 'assets', packageName);
 await mkdir(dirname(downloadPath), { recursive: true });
 await writeFile(downloadPath, zipData);
 console.log(`Offline HTML: ${join(output, 'index.html')} (${html.length} characters)`);
 console.log(`Inlined CSS resource URLs: ${resourceUrls.length}; no external scripts/styles/assets`);
 console.log(`Offline package: ${zipPath}`);
+console.log(`Analyzer version: ${version}`);
 console.log(`Website download: ${downloadPath}`);
 console.log(`Copyright notices: project MIT, ${dependencyLicenses.length} bundled dependencies, CSS and font notices`);

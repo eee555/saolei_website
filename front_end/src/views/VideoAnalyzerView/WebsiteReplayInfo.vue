@@ -33,8 +33,8 @@
             <a class="base-button base-button--size-small website-replay-info__link website-replay-info__strange-dust" :href="strangeDustUrl || undefined" role="link" aria-label="StrangeDust Analyzer" title="StrangeDust Analyzer" :aria-disabled="strangeDustUrl ? undefined : true" :tabindex="strangeDustUrl ? undefined : -1" target="_blank" rel="noopener noreferrer">
                 <img :src="strangeDustIcon" alt="" width="16" height="16">
             </a>
-            <a class="base-button base-button--size-small website-replay-info__link website-replay-info__offline-download" :href="offlineDownloadUrl" download="video-analyzer-offline.zip" :title="t('local.downloadOffline')" :aria-label="t('local.downloadOffline')">
-                <i class="pi pi-download" aria-hidden="true" />
+            <a class="base-button base-button--size-small website-replay-info__link website-replay-info__offline-download" :href="offlineDownloadUrl" :download="offlineDownloadFilename" :title="t('local.downloadOffline')" :aria-label="t('local.downloadOffline')">
+                <img :src="analyzerIcon" alt="" width="16" height="16">
             </a>
         </nav>
     </section>
@@ -49,9 +49,12 @@ import { computed } from 'vue';
 import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import analyzerVersion from '../../../local-analyzer/version.json';
+
 import type { SiteReplayInfo, SiteReplayRanking } from './useSiteReplayInfo';
 
 import strangeDustIcon from '@/assets/strange-dust.ico';
+import analyzerIcon from '@/assets/video-analyzer.svg';
 import PlayerName from '@/components/PlayerName.vue';
 import type { MS_Software } from '@/utils/ms_const';
 import { getReplayDownloadUrl, getReplayPreviewUrl, getStrangeDustAnalyzerUrl } from '@/utils/replayLinks';
@@ -67,7 +70,8 @@ const props = defineProps({
 
 const strangeDustUrl = computed(() => (props.software === null ? '' : getStrangeDustAnalyzerUrl(getReplayPreviewUrl(props.id, props.software))));
 const replayDownloadUrl = computed(() => getReplayDownloadUrl(props.id));
-const offlineDownloadUrl = `${import.meta.env.BASE_URL}assets/video-analyzer-offline.zip`;
+const offlineDownloadFilename = `OpenMinesweeperVideoAnalyzer-${analyzerVersion.version}.zip`;
+const offlineDownloadUrl = `${import.meta.env.BASE_URL}assets/${offlineDownloadFilename}`;
 
 function rankingLabel(ranking: SiteReplayRanking): string {
     const label = ranking.ranking === 'saolei'

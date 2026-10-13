@@ -4,6 +4,8 @@ node_modules
 /dist-offline-analyzer
 /video-analyzer-offline.zip
 /public/assets/video-analyzer-offline.zip
+/OpenMinesweeperVideoAnalyzer-*.zip
+/public/assets/OpenMinesweeperVideoAnalyzer-*.zip
 
 
 # local env files

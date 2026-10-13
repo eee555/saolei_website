@@ -217,19 +217,23 @@ describe('<TimelinePanel />', () => {
         const { counters } = mountTimeline(config, 500);
         cy.get('.video-analyzer-timeline__ruler').should(($ruler) => {
             const ruler = $ruler[0].getBoundingClientRect();
-            const panel = $ruler[0].closest('.video-analyzer-timeline')!;
+            const panel = $ruler[0].closest('.video-analyzer-timeline');
+            if (!panel) throw new Error('Missing timeline panel');
             expect(ruler.left - panel.getBoundingClientRect().left).to.be.closeTo(46, 1);
             for (const plot of $ruler[0].ownerDocument.querySelectorAll('.timeline-slot__plot')) {
                 const rect = plot.getBoundingClientRect();
                 expect(rect.left).to.be.closeTo(ruler.left, 1);
                 expect(rect.width).to.be.closeTo(ruler.width, 1);
-                const current = plot.querySelector('.timeline-plot__current')!;
+                const current = plot.querySelector('.timeline-plot__current');
+                if (!current) throw new Error('Missing current time line');
                 expect(current.getBoundingClientRect().left).to.be.closeTo(ruler.left + 4, 1);
             }
         });
         cy.get('.timeline-plot__y-axis text').should(($labels) => {
             for (const label of $labels) {
-                const plot = label.closest('.timeline-slot__plot')!.getBoundingClientRect();
+                const element = label.closest('.timeline-slot__plot');
+                if (!element) throw new Error('Missing timeline plot');
+                const plot = element.getBoundingClientRect();
                 const rect = label.getBoundingClientRect();
                 expect(rect.left).to.be.at.least(plot.left);
                 expect(rect.right).to.be.at.most(plot.right);

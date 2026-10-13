@@ -16,9 +16,15 @@
                         <pre>{{ offlineCopyright }}</pre>
                     </details>
                 </div>
-                <BaseButton class="local-analyzer__language" size="small" :title="t('local.switchLanguage')" :aria-label="t('local.switchLanguage')" @click="toggleLanguage">
-                    {{ globalLocale.startsWith('zh') ? 'English' : '中文' }}
-                </BaseButton>
+                <div class="local-analyzer__meta">
+                    <div class="local-analyzer__identity">
+                        <img class="local-analyzer__icon" :src="analyzerIcon" alt="" width="24" height="24">
+                        <span class="local-analyzer__version">{{ t('local.version') }} v{{ analyzerVersion.version }}</span>
+                    </div>
+                    <BaseButton class="local-analyzer__language" size="small" :title="t('local.switchLanguage')" :aria-label="t('local.switchLanguage')" @click="toggleLanguage">
+                        {{ globalLocale.startsWith('zh') ? 'English' : '中文' }}
+                    </BaseButton>
+                </div>
             </div>
         </template>
     </VideoAnalyzer>
@@ -31,9 +37,11 @@ import { useI18n } from 'vue-i18n';
 
 import offlineCopyright from '../../../local-analyzer/COPYRIGHT.txt?raw';
 import offlineReadme from '../../../local-analyzer/README.txt?raw';
+import analyzerVersion from '../../../local-analyzer/version.json';
 
 import { useLocalReplaySource } from './useLocalReplaySource';
 
+import analyzerIcon from '@/assets/video-analyzer.svg?inline';
 import BaseButton from '@/components/common/BaseButton.vue';
 import BaseFileInput from '@/components/common/BaseFileInput.vue';
 import VideoAnalyzer, { defaultAnalyzerConfig } from '@/components/VideoAnalyzer';
@@ -63,6 +71,7 @@ const i18nMessages = {
         choose: '选择或拖入一份录像文件（EVF / AVF / MVF / RMV）',
         readme: '使用说明',
         copyright: '版权声明',
+        version: '版本',
         switchLanguage: '切换到英文',
         oneFileOnly: '每次只能选择一份录像文件',
         unsupportedFormat: '不支持的录像格式，请选择 EVF、AVF、MVF 或 RMV',
@@ -71,6 +80,7 @@ const i18nMessages = {
         choose: 'Choose or drop one replay file (EVF / AVF / MVF / RMV)',
         readme: 'Usage',
         copyright: 'Copyright',
+        version: 'Version',
         switchLanguage: 'Switch to Chinese',
         oneFileOnly: 'Select only one replay file at a time',
         unsupportedFormat: 'Unsupported replay format. Choose EVF, AVF, MVF or RMV',
@@ -91,8 +101,25 @@ const { t } = useI18n({ messages: i18nMessages });
     align-items: flex-start;
     gap: 4px;
 }
-.local-analyzer__language {
+.local-analyzer__meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
     flex-shrink: 0;
+}
+.local-analyzer__version {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+.local-analyzer__identity {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.local-analyzer__icon {
+    flex-shrink: 0;
+    object-fit: contain;
 }
 .local-analyzer__notices {
     flex: 1;

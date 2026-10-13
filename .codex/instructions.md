@@ -70,6 +70,10 @@ APP内引用链条：`utils -> models -> services -> api`
 - vue组件：`.github\workflows\cypress.yml`
 - e2e：`.github\workflows\CypressE2E.yml`
 
+## Analyzer 版本管理
+
+修改公共 VideoAnalyzer 或离线包，以及会实际影响它们的共享 CSS、i18n、工具和依赖前，必须阅读并遵守 [Analyzer 版本管理约束](../front_end/local-analyzer/VERSIONING.md)。版本独立维护在 `front_end/local-analyzer/version.json`，按实际影响递增并同步变更记录；网站其他修改及重复构建不自动产生 Analyzer 新版本。
+
 ## 预览与开发服务器
 
 除非用户明确要求，不要主动启动预览或开发服务器；完成前端修改后也不需要启动服务供用户预览。

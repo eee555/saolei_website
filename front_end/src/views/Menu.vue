@@ -34,7 +34,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
-import logo_1 from '@/assets/logo.png';
+import logo_1 from '@/assets/logo.svg';
 import logo_2_dark from '@/assets/logo2-dark.svg';
 import logo_2 from '@/assets/logo2.png';
 import Login from '@/components/Login/App.vue';

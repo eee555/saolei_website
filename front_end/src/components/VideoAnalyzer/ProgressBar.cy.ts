@@ -74,12 +74,14 @@ describe('<AnalyzerProgressBar />', () => {
             for (let index = 1; index < $groups.length; index++) expect($groups[index].getBoundingClientRect().left - $groups[index - 1].getBoundingClientRect().right).to.be.closeTo(4, 0.5);
         });
         cy.get('.analyzer-progress-bar__controls').should(($controls) => {
-            const controls = $controls[0];
+            const [controls] = $controls;
             const range = controls.querySelector('.analyzer-progress-bar__range-time');
             if (!range) throw new Error('Missing selected range text');
+            const loop = controls.querySelector('.analyzer-progress-bar__loop');
+            if (!loop) throw new Error('Missing loop controls');
             expect(range.getBoundingClientRect().right).to.be.closeTo(controls.getBoundingClientRect().right, 0.5);
             expect(range.getBoundingClientRect().top).to.be.lessThan(controls.getBoundingClientRect().bottom);
-            expect(range.getBoundingClientRect().left).to.be.at.least(controls.querySelector('.analyzer-progress-bar__loop')!.getBoundingClientRect().right);
+            expect(range.getBoundingClientRect().left).to.be.at.least(loop.getBoundingClientRect().right);
         });
     });
 
@@ -349,8 +351,8 @@ describe('<AnalyzerProgressBar />', () => {
                 expect(rect.left).to.be.at.least(bounds.left);
                 expect(rect.right).to.be.at.most(bounds.right + 1);
             }
-            const controls = $bar.find('.analyzer-progress-bar__controls')[0];
-            const range = $bar.find('.analyzer-progress-bar__range-time')[0];
+            const [controls] = $bar.find('.analyzer-progress-bar__controls');
+            const [range] = $bar.find('.analyzer-progress-bar__range-time');
             expect(range.getBoundingClientRect().right).to.be.closeTo(controls.getBoundingClientRect().right, 0.5);
         });
     });

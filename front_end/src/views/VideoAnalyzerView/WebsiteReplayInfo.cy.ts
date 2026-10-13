@@ -1,11 +1,15 @@
 import { h, ref } from 'vue';
 
+import analyzerVersion from '../../../local-analyzer/version.json';
+
 import type { SiteReplayInfo } from './useSiteReplayInfo';
 import WebsiteReplayInfo from './WebsiteReplayInfo.vue';
 
 import i18n from '@/i18n';
 import type { MS_Software } from '@/utils/ms_const';
 import { utc_to_local_format } from '@/utils/system/tools';
+
+const offlineDownloadFilename = `OpenMinesweeperVideoAnalyzer-${analyzerVersion.version}.zip`;
 
 function fixture(): SiteReplayInfo {
     return { video: { id: 42, player: 7, upload_time: '2026-10-12T10:00:00Z' }, expanded_video: {}, tournament_ids: [2, 3], filename: '原始录像.evf', rankings: [{ ranking: 'saolei', stat: 'bt', nf: false, rank: 3 }, { ranking: 'pb', stat: 'time', nf: true, rank: 5 }] };
@@ -31,8 +35,12 @@ describe('<WebsiteReplayInfo />', () => {
         cy.get('.website-replay-info__links a').should('have.length', 3);
         cy.get('.website-replay-info__replay-download').should('be.visible').and('have.attr', 'download', info.filename).and('have.attr', 'href', `${import.meta.env.VITE_BASE_API}/api/video/download/42`).and('have.attr', 'aria-label', 'Download replay file').and('have.attr', 'title', 'Download replay file');
         cy.get('.website-replay-info__replay-download .pi-file-export').should('be.visible');
-        cy.get('.website-replay-info__offline-download').should('be.visible').and('have.attr', 'download', 'video-analyzer-offline.zip').and('have.attr', 'href', `${import.meta.env.BASE_URL}assets/video-analyzer-offline.zip`).and('have.attr', 'aria-label', 'Download offline package').and('have.attr', 'title', 'Download offline package');
-        cy.get('.website-replay-info__offline-download .pi-download').should('be.visible');
+        cy.get('.website-replay-info__offline-download').should('be.visible').and('have.attr', 'download', offlineDownloadFilename).and('have.attr', 'href', `${import.meta.env.BASE_URL}assets/${offlineDownloadFilename}`).and('have.attr', 'aria-label', 'Download offline package').and('have.attr', 'title', 'Download offline package');
+        cy.get<HTMLImageElement>('.website-replay-info__offline-download img').should('be.visible').and('have.attr', 'alt', '').and(($icon) => {
+            expect($icon[0].complete).to.eq(true);
+            expect($icon[0].naturalWidth).to.be.greaterThan(0);
+            expect($icon[0].getBoundingClientRect().width).to.eq(16);
+        });
         cy.get('.website-replay-info__strange-dust').should('have.length', 1).and('have.attr', 'aria-label', 'StrangeDust Analyzer').and('have.attr', 'title', 'StrangeDust Analyzer').and('have.attr', 'target', '_blank').and('have.attr', 'rel', 'noopener noreferrer').and(($link) => {
             const analyzer = new URL($link.attr('href') ?? '');
             expect(analyzer.origin + analyzer.pathname).to.eq('https://strange-dust.github.io/minesweeper-replay-analyzer/');
@@ -40,7 +48,7 @@ describe('<WebsiteReplayInfo />', () => {
             expect(replay.searchParams.get('id')).to.eq('42.evf');
             expect(replay.origin).to.eq(new URL(import.meta.env.VITE_BASE_API).origin);
         });
-        cy.get<HTMLImageElement>('.website-replay-info__links img').should('be.visible').and('have.attr', 'alt', '').and(($icon) => {
+        cy.get<HTMLImageElement>('.website-replay-info__strange-dust img').should('be.visible').and('have.attr', 'alt', '').and(($icon) => {
             expect($icon[0].complete).to.eq(true);
             expect($icon[0].naturalWidth).to.be.greaterThan(0);
             expect($icon[0].getBoundingClientRect().width).to.eq(16);
@@ -84,7 +92,7 @@ describe('<WebsiteReplayInfo />', () => {
         cy.mount({ render: () => h(WebsiteReplayInfo, { id: id.value, software: software.value }) }, { global: { plugins: [i18n] } });
         cy.get('.website-replay-info__strange-dust').should('have.attr', 'aria-disabled', 'true').and('not.have.attr', 'href').and('have.attr', 'tabindex', '-1');
         cy.get('.website-replay-info__replay-download').should('have.attr', 'href', `${import.meta.env.VITE_BASE_API}/api/video/download/42`).and('not.have.attr', 'aria-disabled');
-        cy.get('.website-replay-info__offline-download').should('have.attr', 'href', `${import.meta.env.BASE_URL}assets/video-analyzer-offline.zip`).and('not.have.attr', 'aria-disabled');
+        cy.get('.website-replay-info__offline-download').should('have.attr', 'href', `${import.meta.env.BASE_URL}assets/${offlineDownloadFilename}`).and('not.have.attr', 'aria-disabled');
         cy.then(() => {
             software.value = 'r';
         });

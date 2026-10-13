@@ -1,55 +1,8 @@
 # 录像分析页面计划
 
-## 当前进度
-
-2026-10-13 在线网站信息 slot 右侧按钮组新增“下载录像文件”，使用文件导出图标，与 StrangeDust 和离线 ZIP 下载区分。复用后端 /api/video/download/{id}，由后端校验录像访问权限并返回原文件，已知文件名时提供 download 提示；信息加载、失败或尚未获得格式时仍可点击，更换录像 ID 同步更新链接。生产构建及既有 5 项录像链接单元测试通过，实际浏览器下载未验证。现有 WebsiteReplayInfo 组件 spec 已更新，Cypress 留给用户运行：在 front_end 执行 `npx.cmd cypress run --component --browser chrome --headless --spec "src/views/VideoAnalyzerView/WebsiteReplayInfo.cy.ts"`。上一轮 typecheck 已确认退出 0，lintfix 尚未完成，保留原任务；本轮轮末仅启动新的 typecheck，下轮确认。
-
-2026-10-13 离线页面 info slot 的说明区右侧新增 English / 中文 切换按钮，更新公共 i18n、HTML lang 并保存语言设置；不重新解析或重置录像。播放控制行的区间文本移到所有按钮之后，自动靠最右侧，窄容器换行后仍靠右。时间轴共用绘图区左边距从 52px 缩到 4px，纵轴刻度文字移入绘图区并加主题背景描边，刻度栏、曲线、自定义事件和定位线继续共用相同坐标。离线及网站生产构建通过，新 ZIP 已生成；语言持久化/播放位置、宽窄进度条右对齐、曲线起点和刻度文字位置的组件 spec 已更新，Cypress 由用户运行，真实浏览器外观尚未验证。本轮轮末启动 lintfix/typecheck，下轮确认。
-
-2026-10-13 plot 轨道 label 的竖排图例列从 36px 收紧为 20px，顶部添加按钮同步从 24px 缩到 22px，保证两个按钮能放进名称/图例的合并列。复用共享列宽变量，刻度栏、数据 plot 和自定义事件行继续对齐；字色、图例分块、长 key 省略及完整 title 提示保持原规则。现有 TimelinePanel.cy.ts 包含刻度栏/plot 对齐和图例交互检查，Cypress 由用户运行；本轮轮末启动 lintfix/typecheck，下轮确认。
-
-2026-10-13 网站信息右侧按钮组加入离线包下载图标，具备中英文 title/aria-label，使用网站 BASE_URL 下的 assets/video-analyzer-offline.zip 和原生 download 属性；录像格式未知、信息加载或失败时仍可下载。打包同时写入 public/assets/，网站 build:dev/openms/frontend 与 dev/frontend 启动通过 npm pre hook 先生成离线包，现有发布工作流可随 dist 一起发布。生产网站构建通过，校验本地 ZIP、public 和 dist/assets 三份 SHA-256 一致，网站 JS 指向该资源；未部署或验证生产下载，Cypress 已更新，由用户运行。上一轮 lintfix/typecheck 已确认退出 0，保留 4 项既有 warning；本轮轮末启动两项检查，下轮确认。
-
-2026-10-12 离线页面 info slot 的文件选择区下方新增 README 和 COPYRIGHT 两个默认收起的原生 details，支持独立展开/收起、保留换行及说明区内部滚动。正文统一保存在 local-analyzer/README.txt 与 COPYRIGHT.txt，页面通过 ?raw 内联，打包复制同一份文本；不依赖 file:// 请求。新版离线 ZIP 已重新生成，构建/内联检查通过，核对 ZIP 文本与共享源一致、主 HTML 包含两个 details 及正文；组件断言已补充，Cypress 留给用户运行。上一轮 lintfix 通过，typecheck 的插件联合类型问题已增加类型守卫；本轮静态检查轮末启动，下轮确认。
-
-2026-10-12 离线包加入版权文件并重新生成：根目录 LICENSE 原样保留项目 MIT 声明，COPYRIGHT.txt 提供项目归属和来源，THIRD_PARTY_LICENSES.txt / .json 收集 30 项实际打包依赖的完整声明，licenses/ 附字体、CSS 和 ms-toollib 声明。复用 Vite build.license，通过 generateBundle hook 的 post 顺序避免单文件插件先删除 chunk 导致列表为空；缺失许可证正文会阻止打包。ms-toollib 1.5.19 的 npm 包未附许可证正文，已核对上游 MIT 声明并保存副本，后续升级要求重核。构建通过，最终 ZIP 的项目原文、30 项依赖正文和附加声明已核对。上一轮 typecheck 通过，lintfix 的入口 SFC 类型提示、公开返回类型及离线配置检查范围等错误已修正；本轮轮末启动两项检查，待下轮确认。
-
-2026-10-12 首次本地离线包已生成：npm run build:offline 输出 dist-offline-analyzer/index.html 及 video-analyzer-offline.zip，主 HTML 约 2.84 MB、ZIP 约 0.94 MB，包内含静态中英文表达式帮助。LocalVideoAnalyzerView 在 info slot 复用 BaseFileInput，单份 EVF/AVF/MVF/RMV 文件通过 ReplaySource 输入公共组件；支持大小写扩展名、替换、读取失败及迟到结果丢弃，导出时禁止换文件。通知/剪贴板改用独立 store/local.ts，旧 store 路径重导出兼容。安装 vite-plugin-singlefile 2.3.3 与 markdown-it 15.0.2，WASM、脚本、CSS 和图标字体内联；离线 PostCSS 将 PrimeIcons 历史 SVG 字体来源收敛为内联 WOFF2。构建依赖隔离和产物资源检查通过，26 项相关单元测试通过；本地页 Cypress 已编写，由用户运行。真实断网 file:// 解析/贴图/视频导出尚未验证，CI 尚未接入。本轮 lintfix/typecheck 轮末启动，结果待下一轮检查。
-
-2026-10-12 用户确认离线包的页面差异仅为 info slot：将网站信息替换成选择本地录像文件的控件，直接调用现有 VideoAnalyzer，棋盘、计数器、时间轴、布局及导出共用同一套实现。文件选择不放在新增顶部工具栏或独立面板中；宽容器与计数器共享区域，窄容器置顶。离线入口及双击 HTML 包仍待实现，本轮仅更新计划。上一轮 lintfix/typecheck 已确认退出 0，lintfix 保留 4 项已有 warning；文档修改不重跑检查。
-
-2026-10-12 StrangeDust Analyzer 链接按钮改为该网站实际 favicon（来源 https://strange-dust.github.io/minesweeper-replay-analyzer/img/favicon.ico），保存为 src/assets/strange-dust.ico，随项目打包，不在页面加载时请求第三方图标。右侧列按图标按钮宽度收紧，保留 title 悬停提示、aria-label、链接、新标签页和禁用状态。下载后验证 ICO 文件头；图标加载与尺寸的 Cypress 断言已更新，由用户运行。上一轮 lintfix/typecheck 已确认退出 0，保留 4 项已有 warning；本轮两项检查轮末启动，结果待下一轮检查。
-
-2026-10-12 网站信息右侧新增链接按钮列，目前提供 StrangeDust Analyzer，在新标签页打开当前录像。左侧四行信息保持原顺序；链接使用站内预览 API 的 ID 与实际文件格式，格式尚未知时禁用，不依赖网站信息请求成功。现有 StrangeDust iframe 与新按钮复用 URL helper，正确编码嵌套的 replay 参数；播放器预览也复用录像 URL 生成逻辑。7 项 URL 与播放器预览单元测试通过，右侧位置、窄容器、链接参数和更换录像的 Cypress 断言已编写，留给用户运行。上一轮 lintfix/typecheck 已确认退出 0，lintfix 保留 4 项已有 warning；本轮轮末启动两项检查，结果待下一轮检查。
-
-2026-10-12 将 VideoExport.cy.ts 移到 src/components/VideoAnalyzer/，直接挂载公共 Analyzer 并传入 fixture 原始字节和实例配置，移除网站 API mock、PlayerName mock 和网站配置单例依赖；真实 MP4/WebM 编码后解码、裁剪、取消恢复及输入限制断言保留。Cypress 由用户运行。上一轮 typecheck 报出的 CounterPanel 测试 fixture 采样模式类型过窄已修正，lintfix 尚无完成退出码，保留原任务不重复启动；本轮仅重新启动 typecheck，结果待下一轮检查。
-
-2026-10-12 默认计数器改为 Bvs、Ces、Mov，均使用连续采样、.3f 格式及 1000 点差分，公式按用户指定；删除原有默认小写 bvs。默认 Plot 1 包含 Bvs/Ces，Plot 2 包含 Mov，复用现有 Tableau 10 自动配色；新添加的 plot 仍为空，保存配置不覆盖。相关 69 项单元测试通过，覆盖连续采样的真实差分求值、前驱不足、默认图表配置和保存配置保留；相关 Cypress 已更新，由用户运行。中英文表达式参考同步默认配置。上一轮 typecheck 已确认退出 0，lintfix 要求声明 BoardPanel 的 settings 插槽，已补上；本轮 lintfix/typecheck 轮末启动，结果待下一轮检查。
-
-2026-10-12 移除 Analyzer 顶部标题和工具栏，布局设置改为棋盘右下角、格子大小控件上方的单个按钮。复用棋盘设置的交互式 tooltip，内部下拉框提供“自动”和四种预设，选择或 Escape 后关闭；加载和报错期间仍可操作。原布局配置、分割比例和播放状态继续保留，title 参数仅作为区域可访问名称。开发构建通过，新增布局按钮组件测试并更新公共组件和站内页面的位置、布局切换及失败状态断言，Cypress 由用户运行。上一轮 typecheck 已确认退出 0，lintfix 的两个测试回调返回值错误已修正；本轮 lintfix/typecheck 轮末启动，结果待下一轮检查。
-
-状态核查日期：2026-10-12。以下依据当前代码和已安装依赖整理；不将历史方案、上游请求或未运行的浏览器测试视为已完成。
-
-2026-10-12 网站信息已恢复开发并接入四行布局：第一行录像 ID 与上传时间，第二行 PlayerName 与可选比赛 ID（多个关联全部列出），第三行该录像的各排行榜名次，第四行服务器保存的文件名（不显示目录）。网站包装页通过 info slot 提供 WebsiteReplayInfo，公共 Analyzer 不增加网站依赖。新 Ninja 接口 /api/common/video/{id}/analyzer-info 一次返回两个模型的全部字段、比赛 ID、文件名和 Redis 排名；扫雷榜时间/速度、3BV 榜及适用的 NF 小榜、pluck 榜均匹配当前录像 ID，不能显示主人其他录像的排名。未入榜、加载中与请求失败分开显示，切换 ID 取消旧请求并清空旧信息，不随播放重复请求，信息失败不阻塞播放。字段一致性核对仍暂缓。后端新增 6 项测试、flake8 和 Django check 完成，前端信息/录像加载的 16 项单元测试及构建通过；四行组件 Cypress spec 已编写，待用户运行。lintfix/typecheck 轮末启动，下轮检查结果。
-
-2026-10-12 升级 vue3-plots 至精确版本 0.7.0，已更新 package.json 和 lockfile。数据曲线显式开启 Line sampling="min-max"，由依赖按映射后的 SVG 像素列保留首尾与极值，范围和尺寸变化时重新抽稀；计数器、差分、自定义事件、悬停及整份录像的纵轴范围继续读取完整数据，事件线段及 marker 不抽稀。上游已修复 getDataDomain 的大数组栈溢出，已移除此前 d3-array 极值预汇总 workaround，恢复直接调用；已满足或撤销的独立渲染、Worker 渲染、完整计数器快照及栈溢出请求文档已删除。既有 208 项相关单元测试和新增真实 Line SSR 抽稀的 1 项通过，构建通过；升级轮 lintfix/typecheck 均已确认退出 0，保留 4 项已有 warning。长序列 Cypress spec 已更新，浏览器交互与性能待用户验收；本轮仅清理文档，不重跑检查。
-
-2026-10-12 修复录像加载后 TimelinePlot / VueDraggable 的渲染异常：vue3-plots 0.6.3 的 getDataDomain 对大数组使用 Math.min/max 参数展开，25 万采样点回归复现栈溢出；先用极值预汇总缓解，随后升级 0.7.0 并移除 workaround。相关回归测试保留。另移除菜单向多根 Login 组件传递的冗余 keydown 监听，内部按钮及表单的键盘拦截保留；百度统计 hm.js 的 unload 权限提示来自第三方脚本，未修改统计或浏览器权限策略。
-
-2026-10-12 完成 [ms-toollib 特征分析与 pluck 调研](./MS_TOOLLIB_FEATURES_RESEARCH.md)：已安装 1.5.19 需在普通 analyse 后调用 analyse_for_features(['pluck'])，才生成逐事件累计风险；可按 current_time 或 current_event_id 读取 video.pluck，JavaScript KeyDynamicParams 未暴露 pluck getter。四种格式、七个样本真实 WASM 验证通过，失败录像末值为 Number.MAX_VALUE。用户已提交 pluck 相关 feature request，Analyzer 暂不支持 pluck，也暂不采用索引遍历提取方案；待上游接口更新后再评估。其余六种特征主要追加事件 comments，不自动扩充数值字段。调研轮的 lintfix、typecheck 均已确认退出 0，lintfix 保留 4 项已有组件测试 warning；本轮仅修改文档，不重跑检查。
-
-2026-10-12 公共组件已拆到 src/components/VideoAnalyzer/，单入口 index.ts / App.vue；原网站 App.vue 变为包装页，保留请求、标题、info slot、持久化及路由守卫。公共组件接收 ReplaySource、config、概率配色及 exporting model，自己持有独立解析对象、播放时钟和采样；无 info slot 时不占高度。子组件不再直接读取网站概率配色或 Analyzer 配置单例。站内源请求与公共解析组合的 204 项既有单元测试通过，新增原始源隔离、替换/卸载释放、失败后恢复的 2 项通过，生产构建通过。新增公共组件 Cypress 覆盖直接字节输入、无 slot、多实例设置隔离及同长度源更换重置，已维护站内测试引用；本轮 Cypress 不运行。lintfix/typecheck 轮末启动，结果待下一轮检查。共享通知/剪贴板的 local 设置依赖仍需在离线入口阶段收敛，本地页及离线包尚未实现。
-
-
-2026-10-12 移除 Worker 并行导出：按用户决定，仅保留主线程独立解析、绘制、裁剪及编码；删除 Worker、线程池、协议、并行设置和相关测试，清理已保存的过时导出设置。当前格式、帧率、质量、倍率、裁剪、冻结、进度及取消/恢复行为保留。Cypress 不再列入每轮自动检查，默认维护 spec 并提供用户运行命令；轮末仅启动 lintfix 和 typecheck，下轮开始检查一次结果。
-
-移除前最近一轮 lintfix / typecheck 均退出 0，Worker 画面对照仍有两项失败；这些测试已随功能删除，不宣称修复或验收通过。此前 App 24 项、CounterPanel 14 项、TimelinePanel 10 项和 VideoExport 的旧版 5 项通过；当前保留的 MP4/WebM 及取消测试已同步调整，尚未重跑。
+## 当前状态
 
 时间轴的数据绘图区统一称为 plot，Vue 的 info slot 不改名。内部 TimelineSlot.vue、slots / slotSettings 及事件名称保留，以兼容已保存的轨道配置和用户名称。四区布局及父级组合容器样式已修正，公共组件已提取，本地入口和离线包仍为计划。
-
-2026-10-12 新增结构调整计划：提取项目内 `VideoAnalyzer` 组件，网站信息改由 slot 提供；新增本地文件页面，并通过独立工作流产出可解压后双击 HTML 运行的离线包。用户已明确不依赖本地服务器。公共组件和网站包装页现已拆分；本地入口及离线构建尚未实现，见“组件拆分、本地页面与离线包”。
-
-2026-10-12 布局调整已接入：信息从 CounterPanel 拆为页面级 `info` 插槽，与棋盘、计数器、时间轴组成四个区域。宽容器沿用原布局，信息和计数器共享面板、自动分配高度；窄容器将信息移到工作区最上方，包括手动选择左右布局时。App.cy.ts 已增加自定义信息、内容高度变化、宽窄切换及不重复请求的检查；本轮静态检查和相关组件测试由用户运行，结果待下一轮检查。公共组件已提取，离线入口仍未实现。
 
 测试安排：此前已有功能由用户手动粗测；新增轨迹样式、marker 设置、自定义事件、棋盘事件层及视频导出仍待用户验证。feature 完成后统一运行组件测试；下文“待组件测试验证”均指这一收尾阶段，不要求当前逐项先运行 Cypress。手动粗测不等同于系统性边界验收或性能测量。
 
@@ -59,7 +12,7 @@
 | --- | --- | --- |
 | 路由与入口 | 已接入 `/video/:id`、预览链接及弹窗标题跳转，按 URL 加载站内录像。 | 保持单录像入口。 |
 | 录像加载 | 站内 useSiteReplaySource.ts 请求软件类型及原始字节，公共 useReplaySource.ts 调用 `ms-toollib` 解析、分析；保留已下载字节，供导出创建临时独立解析对象，不重复请求。 | 纯解析模块供页面和独立导出解析共用；本地文件页面仍待接入。 |
-| 页面布局 | 四个区域、四种预设、宽窄容器默认布局和分割线拖动已实现；信息提供独立 info 插槽，宽容器与计数器共享面板，窄容器置顶。 | 本轮布局组件测试结果待下一轮检查。 |
+| 页面布局 | 四个区域、四种预设、宽窄容器默认布局和分割线拖动已实现；信息提供独立 info 插槽，宽容器与计数器共享面板，窄容器置顶。 | 组件交互待用户验证。 |
 | 播放时钟 | 页面持有唯一的 `usePlayback` 实例，通过 `useReplayPosition` 统一定位录像并提供局面快照。 | 将统一定位状态接入后续指标和分析。 |
 | 进度条 | 已实现播放控制序号 1 至 7，接入真实时长并同步棋盘局面，位于棋盘区域底部；三种循环模式使用按钮组，播放期间不能切换。 | 关键帧 workaround 已接入；已添加视频导出入口，成品待浏览器验证。 |
 | 关键帧定位 | 已实现上一/下一按键事件：先设置时间，再设置事件索引，使用事件的前置局面；同时间戳保留原始事件顺序。 | 由用户验证组件交互；上游修复后重新核对同步接口，替换 workaround。 |
@@ -77,19 +30,9 @@
 
 公共 `components/VideoAnalyzer/App.vue` 使用 `useReplaySource.ts` 提供的 `rtime_ms` 作为真实时长，不再接受临时时长 prop。加载期间或加载失败时没有有效时长，禁用播放、首尾定位和进度滑块；倍速和循环设置仍可预先调整。
 
-2026-10-11 接入自定义事件后重新运行 Analyzer 单元测试，12 个测试文件共 190 个测试通过，类型检查通过。新增覆盖真假转换、毫秒去重、持续段两种终点及末尾延伸、错误结束及恢复、嵌套差分、样式配置存储与恢复；原有计数器、时钟、真实录像、关键帧及导出测试保持通过。Cypress 组件测试已编写或更新，由用户运行；不能将功能已实现或单元测试通过视为交互、实际编码或性能已验收。
-
-自定义事件本轮 `npm.cmd run lintfix` 无错误，仅有 `BaseColorPicker.cy.ts` 原有的 2 条警告；未启动开发服务器或运行 Cypress。新增事件设置、真实 marker/线段和排序手势仍待用户浏览器验证，该轮尚未实现棋盘 SVG 事件图层，现已接入。
-
-2026-10-11 棋盘 SVG 事件图层已接入。Analyzer 的 13 个单元测试文件共 198 项通过，类型检查通过；新增取点、历史范围、同毫秒原生点保留、无效坐标断线、方向箭头及选择引用更新测试。`BoardEventLayer.cy.ts` 与 `App.cy.ts` 已补充显示、样式、缩放、真实录像和配置持久化断言，Cypress 由用户运行，尚未验证实际浏览器画面。
-
-2026-10-11 本轮接入完整轨迹样式及按键 marker 设置，`npm.cmd run typecheck` 通过，`npm.cmd run lintfix` 无错误，仅有 `BaseColorPicker.cy.ts` 原有的 2 条警告。代理未启动开发服务器或执行 Cypress；用户此前已粗测已有功能，新设置的交互及画面尚待粗测，完整边界和自动化验收留到 feature 完成后。
-
 此前已实现采样规则调整和计数器行上下方添加，并更新单元测试及组件测试。计数器组件和编辑弹窗不再接收当前事件索引，轨迹及棋盘仍保留原事件定位信息。旧 `event` 模式不迁移或静默改为其他模式：导入时拒绝，已有存储中的旧模式在数值格子显示错误，可在行编辑弹窗选择新模式。
 
 关键帧导航已接入进度条，单元测试验证计算与真实解析对象行为；`App.cy.ts` 新增同时间戳 AVF 的不同前置局面、相同时间普通跳转恢复、计时零点之前的事件、首尾错误通知和播放状态保留测试，`ProgressBar.cy.ts` 验证按钮接线及无时长禁用，均待用户执行。
-
-2026-10-12 移除并行导出后，Analyzer 14 个单元测试文件共 203 项通过，生产 build:openms 构建通过；随后增加过时设置迁移检查，store.test.ts 的 6 项通过，验证删除旧并行设置时保留格式/帧率/质量及其他设置。当前源码及导出产物不再引用已删除的 Worker 实现。lintfix 和 typecheck 按跨轮流程启动，结果待下一轮检查；本轮 Cypress 不运行，成品及取消测试命令保留给用户。
 
 ## 开发边界
 

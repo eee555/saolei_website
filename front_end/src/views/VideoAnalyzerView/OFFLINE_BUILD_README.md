@@ -4,13 +4,19 @@
 
 ## 本地生成与打开
 
-在 `front_end` 执行 `npm.cmd run build:offline`。产物为 `video-analyzer-offline.zip`，展开目录为 `dist-offline-analyzer/`；ZIP 根目录包含 `index.html`、`README.txt` 及中英文 `help/`，没有二次嵌套 ZIP。解压后双击 `index.html`，在 info slot 选择或拖入一份录像。也可直接打开展开目录中的 HTML。
+在 `front_end` 执行 `npm.cmd run build:offline`。产物为 `OpenMinesweeperVideoAnalyzer-${version}.zip`，版本来自 `local-analyzer/version.json`，展开目录为 `dist-offline-analyzer/`；ZIP 根目录包含 `index.html`、`README.txt`、`version.json` 及中英文 `help/`，没有二次嵌套 ZIP。解压后双击 `index.html`，在 info slot 选择或拖入一份录像。也可直接打开展开目录中的 HTML。
+
+Analyzer 使用独立版本，唯一来源为 `local-analyzer/version.json`；离线 info slot 直接显示当前版本，ZIP 复制同一份文件。修改前遵循 [版本管理约束](../../../local-analyzer/VERSIONING.md)，并同步 [更新记录](../../../local-analyzer/CHANGELOG.md)；网站 tag、网站其他功能修改和重复构建不自动递增 Analyzer 版本。
+
+离线页面的信息区版本号旁和浏览器标签页使用定制 Analyzer 图标，复用 `src/assets/video-analyzer.svg`，经 Vite 内联为 SVG 数据 URL，不需要在 file:// 下加载外部图片。打包脚本要求 favicon 已内联。录像页的离线包下载按钮使用同一图标。接入图标的离线版本为 0.1.2。
 
 info slot 内的文件选择区下方提供 README 和 COPYRIGHT 两个原生 details，初始收起，点击或键盘操作 summary 可独立展开。内容从 `local-analyzer/README.txt` 和 `local-analyzer/COPYRIGHT.txt` 内联，打包脚本复制同一份源文件；查看正文不需要 file:// fetch。展开后说明区内部滚动，继续沿用 Analyzer 的宽窄容器布局。
 
 说明区右侧提供 English / 中文 按钮，切换公共 i18n 的界面语言，并保存到轻量 local 设置；下次启动离线入口时恢复选择。切换不重新解析录像或重置播放位置，README/COPYRIGHT 正文仍为包内双语原文。
 
-站内录像页的网站信息按钮组提供下载图标，目标为 `${BASE_URL}assets/video-analyzer-offline.zip`，下载文件名为 `video-analyzer-offline.zip`，不依赖当前录像或信息请求成功。离线打包同时生成 `public/assets/video-analyzer-offline.zip`；三个网站 build 脚本及 dev/frontend 启动均通过 npm pre hook 先构建离线包，Vite 再将 ZIP 复制到 `dist/assets/`。现有 tag 部署工作流沿用 `build:openms`，会随网站发布 ZIP；独立离线 artifact 工作流仍待接入。直接执行 Vite CLI 时应先手动运行 `npm run build:offline`。
+站内录像页的网站信息按钮组提供下载图标，目标为 `${BASE_URL}assets/OpenMinesweeperVideoAnalyzer-${version}.zip`，下载文件名使用相同版本，不依赖当前录像或信息请求成功。离线打包同时生成 `public/assets/OpenMinesweeperVideoAnalyzer-${version}.zip`；三个网站 build 脚本及 dev/frontend 启动均通过 npm pre hook 先构建离线包，Vite 再将 ZIP 复制到 `dist/assets/`。现有 tag 部署工作流沿用 `build:openms`，会随网站发布 ZIP；独立离线 artifact 工作流仍待接入。直接执行 Vite CLI 时应先手动运行 `npm run build:offline`。
+
+网站“软件下载”弹窗另有 Analyzer 标签页，使用定制图标和版本/日期/下载表格。发布历史保存在 `src/components/dialogs/AnalyzerHelper.vue` 的 `tableData`，按实际提供下载的包手动添加记录；不读取 `version.json` 自动更新。标签页展示已有离线包，不改变 Analyzer 版本。交互检查由用户运行：`npx.cmd cypress run --component --browser chrome --headless --spec "src/components/Footer.cy.ts"`。
 
 本轮主 HTML 约 2.84 MB、ZIP 约 0.94 MB。构建检查确认主脚本、CSS、WASM 和字体已内联，没有独立资源文件；依赖图不包含网站包装页、网站 store、HTTP 初始化或路由。包内帮助由现有中英文 Markdown 生成。上述检查与 26 项相关单元测试通过，不能代替断网、无缓存的 file:// 运行及实际视频导出验收。本轮未运行浏览器或 Cypress。
 

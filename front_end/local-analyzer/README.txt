@@ -1,5 +1,8 @@
 录像分析器离线包 / Offline VideoAnalyzer
 
+当前版本显示在页面信息区，也可查看包内 version.json。
+The current version is displayed in the info area and recorded in the bundled version.json.
+
 创作者声明 / Creator credits
 策划&设计：濮天羿（Tianyi Pu）
 开发&部署：GPT-6.1 Sol (High)

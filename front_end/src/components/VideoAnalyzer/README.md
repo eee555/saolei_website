@@ -39,7 +39,7 @@ const exporting = ref(false);
 
 组件不直接请求站内 API、导入路由或持有持久化配置单例。它继续使用项目 CSS、Vue I18n、基础控件、帮助链接、通知及剪贴板 helper；后两者使用独立的 `store/local.ts` 设置模块。离线入口及资源内联已实现，首次本地包已生成，真实 file:// 验收及 CI 仍待完成，见 [离线构建说明](../../views/VideoAnalyzerView/OFFLINE_BUILD_README.md)。
 
-离线入口将 `#info` 内容换成选择本地录像文件的控件，读取字节后更新 `source`；选择控件沿用 slot 的宽窄容器布局，并在 `exporting` 为 true 时禁用。分析器其余区域及功能直接复用。在 `front_end` 执行 `npm.cmd run build:offline`，生成 `video-analyzer-offline.zip`。
+离线入口将 `#info` 内容换成选择本地录像文件的控件，读取字节后更新 `source`；选择控件沿用 slot 的宽窄容器布局，并在 `exporting` 为 true 时禁用。分析器其余区域及功能直接复用。在 `front_end` 执行 `npm.cmd run build:offline`，生成 `OpenMinesweeperVideoAnalyzer-${version}.zip`，独立版本由 `local-analyzer/version.json` 提供。
 
 站内包装页默认通过 info slot 提供四行网站信息：录像 ID/上传时间、PlayerName/可选比赛 ID、该录像的各榜名次、文件名；右侧独立按钮列提供 StrangeDust Analyzer 链接和离线包下载图标。网站信息请求、PlayerName、比赛、外部分析及下载链接均留在包装页目录，不进入公共组件；信息加载失败不阻塞文件解析与播放或离线包下载。
 
