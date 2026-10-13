@@ -80,7 +80,8 @@ describe('<LocalVideoAnalyzerView />', () => {
         });
         cy.get('.local-analyzer__copyright').should('not.have.attr', 'open');
         cy.get('.local-analyzer__copyright summary').click();
-        cy.get('.local-analyzer__copyright pre').scrollIntoView().should('be.visible').and(($text) => {
+        cy.get('.local-analyzer__copyright pre').scrollIntoView();
+        cy.get('.local-analyzer__copyright pre').should('be.visible').and(($text) => {
             expect($text.text().trim()).to.eq(offlineCopyright.trim());
         });
         cy.get('.local-analyzer__readme summary').click();
