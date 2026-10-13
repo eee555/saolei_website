@@ -15,6 +15,7 @@ import CounterPanel from '@/components/VideoAnalyzer/CounterPanel.vue';
 import { defaultCustomEvent } from '@/components/VideoAnalyzer/customEvents';
 import { mouseTraceAppearanceProps } from '@/components/VideoAnalyzer/mouseTrace';
 import TimelinePanel from '@/components/VideoAnalyzer/TimelinePanel.vue';
+import $axios from '@/http';
 import i18n from '@/i18n';
 import { videoPlayerConfig } from '@/store';
 
@@ -32,7 +33,7 @@ function mountAnalyzer(width = 1100, fixture: { filename: string; durationMs: nu
     cy.mount(defineComponent({
         expose: [],
         render: () => h('div', { class: 'analyzer-test-container', style: { width: `${width}px`, height: '600px' } }, [h(App, { id: '123' }, info === undefined ? undefined : { info })]),
-    }), { global: { plugins: [i18n], stubs: { transition: false } } }).then(({ wrapper }) => {
+    }), { global: { plugins: [i18n], config: { globalProperties: { $axios } }, stubs: { transition: false } } }).then(({ wrapper }) => {
         cy.wrap(wrapper).as('analyzer');
     });
     cy.wait('@getSoftware').its('request.query.id').should('eq', '123');
@@ -43,6 +44,12 @@ function mountAnalyzer(width = 1100, fixture: { filename: string; durationMs: nu
 function selectLayout(layout: string) {
     cy.get('.video-analyzer-board__layout-control button').click();
     cy.get('.video-analyzer-view__layout-select:visible').select(layout);
+}
+function assertSelectedLayout(layout: string) {
+    cy.get('.video-analyzer-board__layout-control button').should('have.attr', 'aria-expanded', 'false').click();
+    cy.get('.video-analyzer-view__layout-select:visible').should('have.value', layout).trigger('keydown', { key: 'Escape' });
+    cy.get('.video-analyzer-board__layout-control button').should('have.attr', 'aria-expanded', 'false');
+    cy.shouldBeAbsentOrHidden('.video-analyzer-view__layout-select');
 }
 function assertOpenedCells(count: number) {
     cy.get<VueWrapper>('@analyzer').should((wrapper) => {
@@ -335,7 +342,8 @@ describe('<VideoAnalyzerView />', () => {
         });
         cy.get('.video-analyzer-view__toolbar').should('not.exist');
         cy.get('.video-analyzer-view h1').should('not.exist');
-        cy.get('.video-analyzer-view__layout-select').should('have.value', 'auto').and('not.be.visible');
+        cy.shouldBeAbsentOrHidden('.video-analyzer-view__layout-select');
+        assertSelectedLayout('auto');
         cy.get('.video-analyzer-board__layout-control button').should('be.visible');
         cy.get('.website-replay-info__strange-dust').should('be.visible').and(($link) => {
             const replay = new URL(new URL($link.attr('href') ?? '').searchParams.get('replay') ?? '');
@@ -497,11 +505,11 @@ describe('<VideoAnalyzerView />', () => {
         cy.intercept('GET', '**/api/common/video/999999/analyzer-info', { statusCode: 404, body: '' });
         cy.intercept('GET', '**/video/get_software/**', { statusCode: 404, body: '' }).as('getSoftware');
         cy.intercept('GET', '**/api/video/preview**', { body: '' }).as('getReplay');
-        cy.mount(defineComponent({ expose: [], render: () => h(App, { id: '999999' }) }), { global: { plugins: [i18n] } });
+        cy.mount(defineComponent({ expose: [], render: () => h(App, { id: '999999' }) }), { global: { plugins: [i18n], config: { globalProperties: { $axios } } } });
         cy.wait('@getSoftware');
         cy.get('.video-analyzer-board__error').should('contain.text', '404');
         selectLayout('board-top');
-        cy.get('.video-analyzer-view__layout-select').should('have.value', 'board-top');
+        assertSelectedLayout('board-top');
         cy.get('.analyzer-progress-bar__slider').should('be.disabled');
         cy.get('.analyzer-progress-bar__play').should('be.disabled');
         cy.get('@getReplay.all').should('have.length', 0);
@@ -849,7 +857,7 @@ describe('<VideoAnalyzerView />', () => {
             wrapper.unmount();
         });
         mountAnalyzer(1100, { filename: '52200.evf', durationMs: 10732 });
-        cy.get('.video-analyzer-view__layout-select').should('have.value', 'counter-right');
+        assertSelectedLayout('counter-right');
         assertLayout('counter-right');
         cy.get('.video-analyzer-board__cursor-toggle').should('have.attr', 'aria-pressed', 'false');
         cy.get('.board-cursor-layer').should('not.exist');

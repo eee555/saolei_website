@@ -170,6 +170,23 @@ E2E测试速度较慢，请尽量减少初始化与UI操作次数。测试专注
 ### 组件`PlayerName`
 该组件用于渲染用户名字，其涉及到复杂的缓存逻辑，因此如果不需要测试其具体内容，应当用`cy.mockPlayerNameFallback()` stub相应的API。
 
+组件测试直接挂载 `PlayerName`，或挂载间接包含它的页面/组件时，必须为每个相关 `cy.mount` 注入项目的 `$axios`：`global.config.globalProperties.$axios`。依赖链 `PlayerName -> PlayerBadge -> UserAvatar` 会读取 `proxy.$axios.defaults.baseURL`；Cypress 组件挂载不执行网站的 `main.ts`，不会自动注册该属性。`cy.mockPlayerNameFallback()` 只拦截 API 请求，不能代替 `$axios` 注入，否则会触发 `Cannot read properties of undefined (reading 'defaults')`，并可能导致测试卡住。
+
+```ts
+import $axios from '@/http';
+import i18n from '@/i18n';
+
+cy.mockPlayerNameFallback();
+cy.mount(ComponentUnderTest, {
+    global: {
+        plugins: [i18n],
+        config: { globalProperties: { $axios } },
+    },
+});
+```
+
+将注入配置合并到已有挂载选项，保留所需的 plugins、stubs 等；测试内的独立挂载、重新挂载和共享挂载 helper 都需要覆盖。仅在相关组件被完整 stub、不渲染上述依赖链时可以省略。
+
 ### 表格内容
 对于表格文本内容，使用`commands.ts`提供的`cy.getTable`或`cy.extractTableData`实现。
 
