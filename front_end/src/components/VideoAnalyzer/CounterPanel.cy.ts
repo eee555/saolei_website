@@ -158,7 +158,9 @@ describe('<CounterPanel />', () => {
         const config = singleCounterConfig();
         config.rows.push({ ...config.rows[0], key: 'second' });
         mountCounter(config);
-        cy.get('.video-analyzer-counter__handle').eq(1).click();
+        // Wait for the deferred column reflow so it cannot remount the clicked row's menu.
+        cy.get('.video-analyzer-counter__column').should('have.length', 1);
+        cy.contains('.video-analyzer-counter__label', 'second').find('.video-analyzer-counter__handle').click();
         cy.get('.video-analyzer-counter__edit:visible').click();
         cy.get('.el-dialog__title').should('have.text', 'Edit: second');
         cy.get('.counter-row-editor__expression').clear();
