@@ -13,16 +13,16 @@ describe('<AnalyzerLayoutControl />', () => {
                 layout.value = value;
             } }) }, { global: { plugins: [i18n] } });
         cy.get('.video-analyzer-board__layout-control button').should('have.length', 1).and('have.attr', 'aria-expanded', 'false');
-        cy.get('.video-analyzer-view__layout-select').should('not.be.visible');
+        cy.shouldBeAbsentOrHidden('.video-analyzer-view__layout-select');
         cy.get('.video-analyzer-board__layout-control button').click();
         cy.get('.video-analyzer-view__layout-select:visible').should('be.focused').find('option').should('have.length', 5);
         cy.get('.video-analyzer-view__layout-select:visible').select('counter-top');
         cy.get('.video-analyzer-board__layout-control button').should('have.attr', 'aria-expanded', 'false').and('be.focused').and(() => {
             expect(layout.value).to.eq('counter-top');
         });
-        cy.get('.video-analyzer-view__layout-select').should('have.value', 'counter-top').and('not.be.visible');
+        cy.shouldBeAbsentOrHidden('.video-analyzer-view__layout-select');
         cy.get('.video-analyzer-board__layout-control button').click();
-        cy.get('.video-analyzer-view__layout-select:visible').trigger('keydown', { key: 'Escape' });
+        cy.get('.video-analyzer-view__layout-select:visible').should('have.value', 'counter-top').trigger('keydown', { key: 'Escape' });
         cy.get('.video-analyzer-board__layout-control button').should('have.attr', 'aria-expanded', 'false').and('be.focused');
     });
 });

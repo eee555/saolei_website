@@ -261,8 +261,15 @@ describe('<TimelinePanel />', () => {
         cy.get('.video-analyzer-timeline__ruler').should('have.class', 'timeline-plot--pannable').and(() => {
             expect(timeWindow.value.endMs - timeWindow.value.startMs).to.be.lessThan(20000);
         });
-        drag('.video-analyzer-timeline__ruler', -300);
-        drag('.video-analyzer-timeline__ruler', -300);
+        cy.get('.video-analyzer-timeline__ruler').then(($ruler) => {
+            const plotWidth = $ruler[0].getBoundingClientRect().width - timelinePadding.left - timelinePadding.right;
+            const remainingMs = playback().durationMs.value - timeWindow.value.endMs;
+            const spanMs = timeWindow.value.endMs - timeWindow.value.startMs;
+            const distance = remainingMs / spanMs * plotWidth;
+            // Keep each real pointer gesture inside the viewport and overshoot to exercise clamping.
+            const step = Math.floor(plotWidth / 3);
+            for (let index = 0; index < Math.ceil(distance / step) + 1; index++) drag('.video-analyzer-timeline__ruler', -step);
+        });
         cy.get('.video-analyzer-timeline__ruler').should(() => {
             expect(timeWindow.value.endMs).to.be.closeTo(20000, 0.01);
             expect(playback().currentMs.value).to.eq(0);

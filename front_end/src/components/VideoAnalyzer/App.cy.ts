@@ -26,7 +26,8 @@ describe('<VideoAnalyzer /> raw-source interface', () => {
             cy.get('.video-analyzer-view h1').should('not.exist');
             cy.get('.video-analyzer-view').first().find('.video-analyzer-board__layout-control button').click();
             cy.get('.video-analyzer-view__layout-select:visible').select('counter-top');
-            cy.get('.video-analyzer-view').last().find('.video-analyzer-view__layout-select').should('have.value', 'auto');
+            cy.get('.video-analyzer-view').last().find('.video-analyzer-board__layout-control button').click();
+            cy.get('.video-analyzer-view__layout-select:visible').should('have.value', 'auto').trigger('keydown', { key: 'Escape' });
             cy.get('.video-analyzer-counter__settings').first().click();
             cy.get('.video-analyzer-counter__label-width').clear();
             cy.get('.video-analyzer-counter__label-width').type('120');
