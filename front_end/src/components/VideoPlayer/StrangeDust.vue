@@ -3,7 +3,7 @@
         <ElResult icon="warning">
             <template #title>
                 {{ t('local.playerTooltip1') }}
-                <PlayerName :user-id="114" />
+                <GitHubUser username="Strange-Dust" />
                 {{ t('local.playerTooltip2') }}
             </template>
             <template #sub-title>
@@ -28,7 +28,7 @@ import { ElResult } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
 import BaseButton from '@/components/common/BaseButton.vue';
-import PlayerName from '@/components/PlayerName.vue';
+import GitHubUser from '@/components/widgets/GitHubUser.vue';
 import { videoPlayerConfig } from '@/store';
 import { getStrangeDustAnalyzerUrl } from '@/utils/replayLinks';
 
