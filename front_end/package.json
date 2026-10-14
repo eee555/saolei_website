@@ -53,7 +53,7 @@
     "vue-draggable-plus": "0.6.1",
     "vue-echarts": "8.3.0",
     "vue-i18n": "11.4.10",
-    "vue-router": "5.3.1",
+    "vue-router": "5.4.0",
     "vue-tippy": "6.8.0"
   },
   "devDependencies": {
