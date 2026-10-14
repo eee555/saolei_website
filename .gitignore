@@ -171,9 +171,10 @@ front_end/public/flopold
 **/*.zip
 *.rar
 **/secrets.json
+**/secrets.json.lock
 front_end/src/assets/article
-front_end/package-lock.json
 front_end/yarn.lock
+/front_end/src/styles/parameters/
 **/migrations/*
 !**/migrations/__init__.py
 *.tmp
@@ -181,3 +182,6 @@ front_end/yarn.lock
 /vitepress_doc/.vitepress/.temp
 /vitepress_doc/.vitepress/cache
 /vitepress_doc/node_modules
+.vscode/settings.json
+/.django-stub-gen
+/back_end/saolei/tmp/

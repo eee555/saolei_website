@@ -68,7 +68,7 @@ def user_retrieve(request):
         return HttpResponseNotFound()  # 前端已经查过重了，理论上不应该进到这里
     # 设置密码(哈希)
     user.set_password(user_retrieve_form.cleaned_data['password'])
-    user.save(update_fields=['password'])
+    user.save(update_fields=['password', 'date_updated'])
     # 保存好数据后立即登录
     login(request, user)
     logger.info(f'用户 {user.username}#{user.id} 邮箱找回密码')
@@ -140,12 +140,12 @@ def set_staff(request: HttpRequest):
     logger.info(f"{request.user.id} set_staff {request.GET['id']} {request.GET['is_staff']}")
     if request.GET['is_staff'] == 'True':
         user.is_staff = True
-        user.save(update_fields=['is_staff'])
+        user.save(update_fields=['is_staff', 'date_updated'])
         logger.info(f'用户 {user.username}#{user.id} 成为管理员')
         return HttpResponse(f'设置"{user.realname}"为管理员成功！')
     elif request.GET['is_staff'] == 'False':
         user.is_staff = False
-        user.save(update_fields=['is_staff'])
+        user.save(update_fields=['is_staff', 'date_updated'])
         logger.info(f'用户 {user.username}#{user.id} 卸任管理员')
         return HttpResponse(f'解除"{user.realname}"的管理员权限！')
     else:
@@ -209,38 +209,3 @@ def get_email_captcha(request):
         return JsonResponse({'type': 'success', 'hashkey': hashkey})
     else:  # 邮件发送失败
         return JsonResponse({'type': 'error', 'object': 'email'})
-
-
-# 管理员使用的操作接口，调用方式见前端的StaffView.vue
-get_userProfile_fields = ['id', 'userms__identifiers', 'userms__video_num_limit', 'username', 'firstname', 'lastname', 'email', 'realname', 'signature', 'country', 'left_realname_n', 'left_avatar_n', 'left_signature_n', 'is_banned']  # 可获取的域列表
-
-
-@require_GET
-@staff_required
-def get_userProfile(request):
-    if userlist := UserProfile.objects.filter(id=request.GET['id']).values(*get_userProfile_fields):
-        return JsonResponse(userlist[0])
-    return HttpResponseNotFound()
-
-
-# 管理员使用的操作接口，调用方式见前端的StaffView.vue
-set_userProfile_fields = ['userms__identifiers', 'userms__video_num_limit', 'username', 'first_name', 'last_name', 'email', 'realname', 'signature', 'country', 'left_realname_n', 'left_avatar_n', 'left_signature_n', 'is_banned']  # 可修改的域列表
-
-
-@require_POST
-@staff_required
-def set_userProfile(request):
-    userid = request.POST.get('id')
-    user = UserProfile.objects.get(id=userid)
-    if user.is_staff and user != request.user:
-        return HttpResponseForbidden()  # 不能修改除自己以外管理员的信息
-    field = request.POST.get('field')
-    if field not in set_userProfile_fields:
-        return HttpResponseForbidden()  # 只能修改特定的域
-    if field == 'is_banned' and user.is_superuser:
-        return HttpResponseForbidden()  # 站长不可被封禁
-    value = request.POST.get('value')
-    logger.warning(f'管理员 {request.user.username}#{request.user.id} 修改用户 {user.username}#{user.id} 域 {field} 从 {getattr(user, field)} 到 {value}')
-    setattr(user, field, value)
-    user.save(update_fields=[field])
-    return HttpResponse()

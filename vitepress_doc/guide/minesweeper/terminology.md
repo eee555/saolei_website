@@ -1,3 +1,8 @@
+---
+title: 扫雷术语 - 开源扫雷网
+description: 扫雷专业术语大全，包括操作术语、操作风格（FL、NF）、局面术语（dreamboard、Elmar's Syndrome）等。
+---
+
 # 扫雷术语
 
 ## 操作术语

@@ -3,7 +3,9 @@ from django.db import transaction
 from config.text_choices import MS_TextChoices
 from customranking.services import add_videos_to_custom_pluck_ranks, remove_videos_from_custom_pluck_ranks
 from msuser.models import UserMS
-from msuser.services import get_current_record_keys_for_video_ids, rebuild_personal_records, update_personal_records_from_videos, update_video_count_limit_from_videos
+from msuser.services import update_video_count_limit_from_videos
+from speedranking.services import add_videos_to_speed_ranks, remove_videos_from_speed_ranks
+from utils.exceptions import ExceptionToResponse
 from videomanager.cache import newest_cache
 from videomanager.models import VideoModel
 from .models import Identifier
@@ -12,9 +14,9 @@ from .models import Identifier
 def bind_identifier(identifier: Identifier, userms: UserMS):
     """绑定标识，并批量吸收因此转为 OFFICIAL 的录像。"""
     if not identifier.safe:
-        raise ValueError('Unsafe identifier cannot be bound')
+        raise ExceptionToResponse('identifier', 'invalid')
     if identifier.userms_id is not None and identifier.userms_id != userms.id:
-        raise ValueError('Identifier is already bound to another user')
+        raise ExceptionToResponse('identifier', 'collision')
 
     with transaction.atomic():
         if identifier.identifier not in userms.identifiers:
@@ -38,7 +40,7 @@ def bind_identifier(identifier: Identifier, userms: UserMS):
         refreshed_videos = VideoModel.objects.filter(id__in=video_ids)
         newest_cache.update_bulk(refreshed_videos)
         update_video_count_limit_from_videos(userms, refreshed_videos)
-        update_personal_records_from_videos(userms, refreshed_videos)
+        add_videos_to_speed_ranks(refreshed_videos)
         add_videos_to_custom_pluck_ranks(refreshed_videos)
 
     return len(video_ids)
@@ -61,7 +63,6 @@ def unbind_identifier(identifier: Identifier, userms: UserMS | None = None):
         )
         videos = list(videoquery.select_related('video'))
         video_ids = {video.id for video in videos}
-        record_keys = get_current_record_keys_for_video_ids(userms, video_ids)
 
         if identifier.identifier in userms.identifiers:
             userms.identifiers.remove(identifier.identifier)
@@ -78,8 +79,7 @@ def unbind_identifier(identifier: Identifier, userms: UserMS | None = None):
             newest_cache.update_bulk(videos)
             remove_videos_from_custom_pluck_ranks(video_ids)
 
-        if record_keys:
-            rebuild_personal_records(userms.parent, record_keys)
+            remove_videos_from_speed_ranks(VideoModel.objects.filter(id__in=video_ids))
 
     return len(video_ids)
 

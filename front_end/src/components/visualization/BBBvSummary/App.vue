@@ -1,20 +1,20 @@
 <template>
-    <ElRow v-if="header" :style="{ textAlign: 'center', height: '25px', flexWrap: 'nowrap', marginTop: '10px', marginBottom: '-20px' }">
+    <div v-if="header" class="layout-row" :style="{ textAlign: 'center', height: '25px', flexWrap: 'nowrap', marginTop: '10px', marginBottom: '-20px' }">
         <span style="width: 10%; min-width: 4em" />
         <span :style="gridStyle">
-            <span v-for="i in 10" :key="i" class="text text-small">
+            <span v-for="i in 10" :key="i" class="text-regular text-small">
                 {{ i - 1 }}
             </span>
         </span>
-    </ElRow>
-    <ElDivider data-cy="summary" style="margin: 18px 0 12px 0;">
-        <span class="text">
+    </div>
+    <div class="summary-heading" data-cy="summary">
+        <span class="text-regular">
             {{ t(`common.level.${level}`) }}
             &nbsp;
             {{ t('BBBvSummary.bbbvInTotal', [groupedVideoAbstract.size]) }}
         </span>
-    </ElDivider>
-    <ElRow v-if="groupedVideoAbstract.size > 0" style="white-space: nowrap;">
+    </div>
+    <div v-if="groupedVideoAbstract.size > 0" class="layout-row" style="white-space: nowrap;">
         <YLabel :min-bv="minBv" :max-bv="maxBv" />
         <Tippy :duration="0" sticky follow-cursor :style="gridStyle">
             <Cell
@@ -42,12 +42,12 @@
                 />
             </template>
         </Tippy>
-    </ElRow>
+    </div>
 </template>
 
 <script setup lang="ts">
+import '@/styles/layout.css';
 import '@/styles/text.css';
-import { ElDivider, ElRow } from 'element-plus';
 import type { PropType } from 'vue';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -57,7 +57,8 @@ import Cell from './Cell.vue';
 import Tooltip from './Tooltip.vue';
 import YLabel from './YLabel.vue';
 
-import { BBBvSummaryConfig, colorTheme } from '@/store';
+import { BBBvSummaryConfig } from '@/store';
+import { colorThemes } from '@/store/color';
 import { ArrayUtils } from '@/utils/arrays';
 import { PiecewiseColorScheme } from '@/utils/colors';
 import { setLastDigit } from '@/utils/math';
@@ -89,6 +90,7 @@ const options = computed(() => {
         stnb: { value: 'stnb', sortBy: 'timems', displayBy: 'stnb', label: 'stnb', sortDesc: false },
         ioe: { value: 'ioe', sortBy: 'ioe', displayBy: 'ioe', label: 'ioe', sortDesc: true },
         thrp: { value: 'thrp', sortBy: 'thrp', displayBy: 'thrp', label: 'thrp', sortDesc: true },
+        path: { value: 'path', sortBy: 'path', displayBy: 'path', label: 'path', sortDesc: false },
         ces: { value: 'ces', sortBy: 'ces', displayBy: 'ces', label: 'ces', sortDesc: true },
         cls: { value: 'cls', sortBy: 'cls', displayBy: 'cls', label: 'cls', sortDesc: true },
         custom: { value: 'custom', sortBy: BBBvSummaryConfig.value.sortBy, displayBy: BBBvSummaryConfig.value.displayBy, label: 'custom', sortDesc: BBBvSummaryConfig.value.sortDesc },
@@ -104,7 +106,7 @@ const displayBy = computed(() => options.value[BBBvSummaryConfig.value.template]
 const theme = computed(() => {
     if (!(PiecewiseColorSchemeName as readonly string[]).includes(displayBy.value)) return new PiecewiseColorScheme([], []);
     const themeName = getPiecewiseColorSchemeName(displayBy.value as PiecewiseColorSchemeName, props.level);
-    return new PiecewiseColorScheme(colorTheme.value[themeName].colors, colorTheme.value[themeName].thresholds);
+    return colorThemes[themeName].value;
 });
 
 const gridStyle = computed(() => {
@@ -119,7 +121,28 @@ const gridStyle = computed(() => {
 </script>
 
 <style lang="less" scoped>
-.el-row {
+.layout-row {
     flex-wrap: nowrap;
+}
+
+.summary-heading {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin: 8px 0 3px;
+    line-height: 20px;
+    font-weight: 500;
+}
+
+.summary-heading::before,
+.summary-heading::after {
+    content: '';
+    flex: 1;
+    border-top: 1px solid var(--ui-border-color);
+}
+
+.summary-heading > span {
+    min-width: 0;
+    text-align: center;
 }
 </style>

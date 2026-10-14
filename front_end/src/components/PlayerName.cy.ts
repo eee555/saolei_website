@@ -1,16 +1,11 @@
 import type { StaticResponse } from 'cypress/types/net-stubbing';
+import { h } from 'vue';
 
 import PlayerName from './PlayerName.vue';
 
 import $axios from '@/http';
 import i18n from '@/i18n';
 
-const recordAbstract = {
-    timems: [12345, 45678, 78901],
-    timems_id: [101, 102, 103],
-    bvs: [1.2345, 2.3456, 3.4567],
-    bvs_id: [201, 202, 203],
-};
 const user = {
     id: 42,
     realname: 'Alice',
@@ -18,9 +13,12 @@ const user = {
     lastname: 'Mines',
 };
 
-function mountPlayerName(userId: number) {
-    cy.mount(PlayerName, {
-        props: { userId },
+function mountPlayerName(userId: number, options: { interactive?: boolean; onParentClick?: () => void } = {}) {
+    cy.mount({
+        render: () => h('div', { onClick: options.onParentClick }, [
+            h(PlayerName, { userId, interactive: options.interactive }),
+        ]),
+    }, {
         global: {
             plugins: [i18n],
             config: {
@@ -34,12 +32,6 @@ function mountPlayerName(userId: number) {
 
 function mockUserInfo(response: StaticResponse = { body: [user] }) {
     cy.intercept('GET', `/api/userprofile/infobulk?ids=${user.id}`, response).as('fetchUser');
-}
-
-function mockRecordAbstract() {
-    cy.intercept('GET', '/msuser/info_abstract/**', {
-        body: { record_abstract: JSON.stringify(recordAbstract) },
-    }).as('fetchAbstract');
 }
 
 describe('PlayerName', () => {
@@ -87,34 +79,25 @@ describe('PlayerName', () => {
         cy.contains('Anonymous');
     });
 
-    it('opens the popover and renders abstract records', () => {
+    it('links directly to the player page', () => {
         mockUserInfo();
-        mockRecordAbstract();
-
         mountPlayerName(user.id);
-        cy.get('[id^=tippy-]').should('not.exist');
-        cy.contains(user.realname).realClick();
-        cy.wait('@fetchAbstract');
 
-        cy.get('[id^=tippy-]').then((popover) => {
-            cy.wrap(popover).contains(user.realname).
-                next().contains(`(${user.firstname} ${user.lastname})`).
-                next().contains(`#${user.id}`);
-
-            cy.wrap(popover).find('.record-table > div').
-                contains('Beg').next().should('contain', '12.345').next().should('contain', '1.234').
-                next().contains('Int').next().should('contain', '45.678').next().should('contain', '2.346').
-                next().contains('Exp').next().should('contain', '78.901').next().should('contain', '3.457').
-                next().contains('Sum').next().should('contain', '136.924').next().should('contain', '7.037');
-        });
+        cy.contains('a', user.realname).should('have.attr', 'href', `#/player/${user.id}`);
     });
 
-    it('links to the player page from the popover action', () => {
-        mockUserInfo();
-        mockRecordAbstract();
-        mountPlayerName(user.id);
+    it('lets clicks bubble without opening a popover when not interactive', () => {
+        cy.mockPlayerNameFallback();
+        const onParentClick = cy.stub().as('parentClick');
+        mountPlayerName(101, { interactive: false,
+            onParentClick: () => {
+                onParentClick();
+            } });
 
-        cy.contains(user.realname).click();
-        cy.contains('[id^=tippy-] a', 'My space').should('have.attr', 'href', `#/player/${user.id}`);
+        cy.contains('User#101').click();
+
+        cy.get('@parentClick').should('have.been.calledOnce');
+        cy.get('[id^=tippy-]').should('not.exist');
+        cy.get('[data-cy-root] a').should('not.exist');
     });
 });

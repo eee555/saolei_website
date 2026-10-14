@@ -27,7 +27,8 @@ describe('<BBBvSummary Header />', () => {
         cy.contains('and display by').should('be.visible');
         cy.wrap(BBBvSummaryConfig).its('value.template').should('eq', 'custom');
 
-        cy.contains('Find min').click();
+        cy.contains('button', 'Find min').focus();
+        cy.realPress('Space');
         cy.contains('Find max').should('be.visible');
         cy.wrap(BBBvSummaryConfig).its('value.sortDesc').should('eq', true);
 
@@ -38,6 +39,17 @@ describe('<BBBvSummary Header />', () => {
 
         cy.wrap(BBBvSummaryConfig).its('value.sortBy').should('eq', 'ioe');
         cy.wrap(BBBvSummaryConfig).its('value.displayBy').should('eq', 'file_size');
+    });
+
+    it('updates the software selection while keeping all software icons available', () => {
+        BBBvSummaryConfig.value.softwareFilter = ['e', 'a', 'r', 'm'];
+        mountHeader();
+        cy.get('.checkbox-buttons--compact img').should('have.length', 4);
+        cy.get('.checkbox-buttons--compact label').first().click();
+        cy.wrap(BBBvSummaryConfig).its('value.softwareFilter').should('deep.equal', ['a', 'r', 'm']);
+        cy.get('.checkbox-buttons--compact input[value=e]').should('not.be.checked').focus();
+        cy.realPress('Space');
+        cy.wrap(BBBvSummaryConfig).its('value.softwareFilter').should('deep.equal', ['a', 'r', 'm', 'e']);
     });
 
     it('persists icon mode, new highlight settings, tooltip mode, and zoom', () => {

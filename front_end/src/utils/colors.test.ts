@@ -38,5 +38,38 @@ describe('PiecewiseColorScheme', () => {
             expect(scheme.getColor(15)).toBe('normal');
             expect(scheme.getColor(5)).toBe('slow');
         });
+
+        it('Returns transparent color for NaN', () => {
+            const scheme = new PiecewiseColorScheme(['low', 'high'], [10]);
+
+            expect(scheme.getColor(NaN)).toBe('rgba(0,0,0,0)');
+        });
+    });
+
+    describe('getStyle', () => {
+        it('Returns precomputed background and readable text colors', () => {
+            const scheme = new PiecewiseColorScheme(['#ffffff', '#000000'], [10]);
+
+            expect(scheme.getStyle(5)).toEqual({ backgroundColor: '#ffffff', color: 'var(--ui-text-color-regular-light)' });
+            expect(scheme.getStyle(15)).toEqual({ backgroundColor: '#000000', color: 'var(--ui-text-color-regular-dark)' });
+        });
+
+        it('Reuses style objects for the same color bucket', () => {
+            const scheme = new PiecewiseColorScheme(['#ffffff', '#000000'], [10]);
+
+            expect(scheme.getStyle(5)).toBe(scheme.getStyle(10));
+        });
+
+        it('Returns an empty style without overriding inherited styles for NaN', () => {
+            const scheme = new PiecewiseColorScheme(['#ffffff', '#000000'], [10]);
+
+            expect(scheme.getStyle(NaN)).toEqual({});
+        });
+
+        it('Does not override inherited text color for transparent color buckets', () => {
+            const scheme = new PiecewiseColorScheme(['rgba(255,255,255,0)', '#000000'], [10]);
+
+            expect(scheme.getStyle(5)).toEqual({});
+        });
     });
 });

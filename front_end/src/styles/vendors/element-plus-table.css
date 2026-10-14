@@ -1,0 +1,71 @@
+/* Keep the library's separate tables, scroll synchronization and fixed columns. */
+.el-table {
+    --el-table-border-color: var(--ui-table-border-color);
+    --el-table-border: var(--ui-table-border-width) solid var(--ui-table-border-color);
+    --el-table-text-color: var(--ui-table-text-color);
+    --el-table-header-text-color: var(--ui-table-header-text-color);
+    --el-table-row-hover-bg-color: var(--ui-table-hover-background);
+    --el-table-current-row-bg-color: var(--ui-table-selected-background);
+    --el-table-header-bg-color: var(--ui-table-header-background);
+    --el-table-bg-color: var(--ui-table-background);
+    --el-table-tr-bg-color: var(--ui-table-background);
+    --el-table-expanded-cell-bg-color: var(--ui-table-background);
+    --el-color-primary: var(--ui-color-primary);
+    --el-text-color-placeholder: var(--ui-text-color-placeholder);
+    border-top: var(--ui-table-border-width) solid var(--ui-table-border-color);
+    border-left: var(--ui-table-border-width) solid var(--ui-table-border-color);
+    border-radius: 0;
+    font-size: var(--ui-table-font-size);
+    line-height: var(--ui-table-line-height);
+}
+
+.el-table .el-table__cell:not(.gutter) {
+    border-right: var(--ui-table-border-width) solid var(--ui-table-border-color);
+}
+
+/* Match library specificity so later page-scoped density overrides still win. */
+.el-table .el-table__cell:where(:not(.gutter)) {
+    padding-block: var(--ui-table-cell-padding-block);
+}
+
+.el-table :where(.el-table__cell:not(.el-table__expand-column)) .cell {
+    padding-inline: var(--ui-table-cell-padding-inline);
+    line-height: var(--ui-table-line-height);
+}
+
+.el-table th.el-table__cell {
+    font-weight: var(--ui-table-header-font-weight);
+}
+
+.el-table th.el-table__cell:is(.ascending, .descending) {
+    color: var(--ui-color-primary);
+}
+
+.el-table thead.is-group th.el-table__cell {
+    background: var(--ui-table-header-background);
+}
+
+.el-table td.el-table__cell {
+    font-variant-numeric: tabular-nums;
+}
+
+.el-table .el-table__body tr.current-row > td.el-table__cell {
+    background: var(--ui-table-selected-background);
+    color: var(--ui-table-selected-text-color);
+}
+
+.el-table .el-table__empty-block {
+    box-sizing: border-box;
+    min-height: 0;
+    padding: var(--ui-table-empty-padding-block) var(--ui-table-cell-padding-inline);
+}
+
+.el-table .el-table__empty-text {
+    width: 100%;
+    color: var(--ui-table-header-text-color);
+    line-height: var(--ui-table-line-height);
+}
+
+.el-table :is(.caret-wrapper, .el-table__column-filter-trigger, .el-table__expand-icon) {
+    border-radius: 0;
+}

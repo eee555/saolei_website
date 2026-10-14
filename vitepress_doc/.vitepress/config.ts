@@ -1,10 +1,11 @@
 import { defineConfig } from 'vitepress';
 import type MarkdownIt from 'markdown-it';
+import { graphvizMarkdownPlugin } from 'vitepress-plugin-graphviz';
 
 const mainSiteLink = process.env.VITEPRESS_MAIN_SITE_URL
     ?? (process.env.NODE_ENV === 'development' ? 'http://localhost:8080/' : 'https://openms.top/');
 
-function configureDiagramFences(md: MarkdownIt) {
+async function configureDiagramFences(md: MarkdownIt) {
     const defaultFence = md.renderer.rules.fence;
 
     md.renderer.rules.fence = (tokens, idx, options, env, self) => {
@@ -19,6 +20,14 @@ function configureDiagramFences(md: MarkdownIt) {
             ? defaultFence(tokens, idx, options, env, self)
             : self.renderToken(tokens, idx, options);
     };
+
+    await graphvizMarkdownPlugin(md, {
+        processors: {
+            neato: {
+                preprocess: (content) => content,
+            },
+        },
+    });
 }
 
 export default defineConfig({
@@ -27,6 +36,17 @@ export default defineConfig({
     base: process.env.VITEPRESS_BASE ?? '/docs/',
     cleanUrls: true,
     lastUpdated: true,
+    sitemap: {
+        hostname: 'https://openms.top',
+        outFilename: 'sitemap.xml',
+    },
+    head: [
+        ['meta', { property: 'og:type', content: 'website' }],
+        ['meta', { property: 'og:site_name', content: '开源扫雷网' }],
+        ['meta', { property: 'og:url', content: 'https://openms.top/docs/' }],
+        ['meta', { name: 'robots', content: 'index, follow' }],
+        ['link', { rel: 'canonical', href: 'https://openms.top/docs/' }],
+    ],
     markdown: {
         config: configureDiagramFences,
     },
@@ -64,9 +84,16 @@ export default defineConfig({
                                 { text: '扫雷软件', link: '/guide/software' },
                                 { text: '录像播放器', link: '/guide/video-player' },
                                 { text: '扫雷标识', link: '/guide/identifier' },
-                                { text: '比赛功能', link: '/guide/tournament' },
-                                { text: '金羊杯', link: '/guide/gsc' },
+                                {
+                                    text: '比赛功能',
+                                    link: '/guide/tournament',
+                                    items: [
+                                        { text: '金羊杯', link: '/guide/gsc' },
+                                        { text: '打卡赛', link: '/guide/weekly-tournament' },
+                                    ],
+                                },
                                 { text: '参与贡献', link: '/guide/contribute' },
+                                { text: '网站收支', link: '/guide/balance' },
                             ],
                         },
                         {
@@ -75,6 +102,14 @@ export default defineConfig({
                                 { text: '操作方式和规则', link: '/guide/minesweeper/mouse-event' },
                                 { text: '术语', link: '/guide/minesweeper/terminology' },
                                 { text: '数据', link: '/guide/minesweeper/stat' },
+                            ],
+                        },
+                        {
+                            text: '开发文档',
+                            items: [
+                                { text: '信号触发关系', link: '/guide/development/signals' },
+                                { text: '缓存结构', link: '/guide/development/cache' },
+                                { text: '后端管理命令', link: '/guide/development/management-commands' },
                             ],
                         },
                     ],
@@ -113,9 +148,16 @@ export default defineConfig({
                                 { text: 'Minesweeper Software', link: '/en/guide/software' },
                                 { text: 'Video Player', link: '/en/guide/video-player' },
                                 { text: 'Player Identifiers', link: '/en/guide/identifier' },
-                                { text: 'Tournaments', link: '/en/guide/tournament' },
-                                { text: 'Golden Sheep Cup', link: '/en/guide/gsc' },
+                                {
+                                    text: 'Tournaments',
+                                    link: '/en/guide/tournament',
+                                    items: [
+                                        { text: 'Golden Sheep Cup', link: '/en/guide/gsc' },
+                                        { text: 'Weekly Tournament', link: '/en/guide/weekly-tournament' },
+                                    ],
+                                },
                                 { text: 'Contributing', link: '/en/guide/contribute' },
+                                { text: 'Website Finances', link: '/en/guide/balance' },
                             ],
                         },
                         {

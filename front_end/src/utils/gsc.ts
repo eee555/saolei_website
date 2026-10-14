@@ -1,4 +1,16 @@
-import { GSCDefaults } from './ms_const';
+import { GSCDefaults, isStandardLevel, MS_Mode } from './ms_const';
+import { TournamentParticipant } from './tournaments';
+import type { VideoAbstract } from './videoabstract';
+
+export const GSCBVMin = { b: 10, i: 30, e: 100 } as const;
+
+export function isGSCSupportedVideo(video: VideoAbstract): boolean {
+    return isStandardLevel(video.level) && video.mode === MS_Mode.Standard;
+}
+
+export function meetsGSCBV(video: VideoAbstract): boolean {
+    return isStandardLevel(video.level) && video.bv >= GSCBVMin[video.level];
+}
 
 export interface GSCInfo {
     id: number;
@@ -7,10 +19,7 @@ export interface GSCInfo {
     token?: string;
 }
 
-export class GSCParticipant {
-    public id = 0;
-    public user__id = 0;
-    public user__realname = '';
+export class GSCParticipant extends TournamentParticipant {
     public bt1st: number = GSCDefaults.bt;
     public bt20th: number = GSCDefaults.bt;
     public bt20sum: number = GSCDefaults.bt * 20;
@@ -21,7 +30,8 @@ export class GSCParticipant {
     public et5th: number = GSCDefaults.et;
     public et5sum: number = GSCDefaults.et * 5;
 
-    public constructor(init?: Partial<GSCParticipant>) {
+    public constructor(init: Partial<GSCParticipant> = {}) {
+        super(init);
         Object.assign(this, init);
     }
 

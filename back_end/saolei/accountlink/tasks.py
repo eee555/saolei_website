@@ -1,8 +1,7 @@
 import logging
 from typing import Literal
 
-from django.tasks import task
-from django_tasks import TaskResultStatus
+from django.tasks import task, TaskResultStatus
 from django_tasks_db.models import DBTaskResult
 
 from utils.exceptions import ExceptionToResponse

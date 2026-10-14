@@ -68,9 +68,11 @@ export class ArrayUtils {
      * @param sortedArray 已排序的数组
      * @param value 要插入的值
      * @param isAscending 是否升序
-     * @returns 插入索引
+     * @returns 插入索引，如果值不可比较或数组为空则返回 -1
      */
     public static getInsertIndex(sortedArray: number[], value: number, isAscending: boolean): number {
+        if (Number.isNaN(value) || sortedArray.length === 0) return -1;
+
         // Determine the insertion point using binary search
         let low = 0;
         let high = sortedArray.length;

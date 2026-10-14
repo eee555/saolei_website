@@ -1,38 +1,55 @@
 <template>
-    <ElRow class="mb-4" style="margin-bottom: 10px;">
-        <ElButton v-for="level in MS_Levels" :key="level" type="warning" :plain="levelTagSelected != level" size="small" @click="levelTagSelected = level; request_videos();">
+    <div class="layout-row mb-4" style="margin-bottom: 10px;">
+        <BaseButton v-for="level in MS_Levels" :key="level" type="warning" :plain="levelTagSelected != level" :aria-pressed="levelTagSelected == level" size="small" @click="levelTagSelected = level; request_videos();">
             {{ t(`common.level.${level}`) }}
-        </ElButton>
-    </ElRow>
+        </BaseButton>
+    </div>
 
-    <ElRow class="mb-4" style="margin-bottom: 10px;">
-        <ElButton
-            v-for="(tag, key) in modeTags" :key="key" type="success" :plain="!(modeTagSelected == key)" size="small"
+    <div class="layout-row mb-4" style="margin-bottom: 10px;">
+        <BaseButton
+            v-for="(tag, key) in modeTags" :key="key" type="success" :plain="!(modeTagSelected == key)" :aria-pressed="modeTagSelected == key" size="small"
             @click="modeTagSelected = key as string; request_videos();"
         >
             {{ tag.name }}
-        </ElButton>
-    </ElRow>
+        </BaseButton>
+    </div>
 
-    <ElRow class="mb-4" style="margin-bottom: 10px;">
-        <ElButton
-            v-for="(value, key) in indexTags" :key="key" type="primary" :plain="!value.selected" size="small"
+    <div class="layout-row mb-4" style="margin-bottom: 10px;">
+        <BaseButton
+            v-for="(value, key) in indexTags" :key="key" type="primary" :plain="!value.selected" :aria-pressed="value.selected" size="small"
             @click="indexSelect(key, value)"
         >
             {{ t(`common.prop.${key}`) }}
-        </ElButton>
-    </ElRow>
+        </BaseButton>
+    </div>
 
-    <ElDescriptions :title="t('common.filter')">
-        <ElDescriptionsItem :label="t('common.prop.state')">
-            <VideoStateFilter v-model="videofilter.filter_state" @change="request_videos" />
-        </ElDescriptionsItem>
-        <ElDescriptionsItem :label="t('common.prop.bbbv')">
-            <BBBVFilter :level="levelTagSelected" @change="request_videos" />
-        </ElDescriptionsItem>
-    </ElDescriptions>
+    <div class="description-layout">
+        <h3 class="description-title">
+            {{ t('common.filter') }}
+        </h3>
+        <dl class="descriptions">
+            <div class="description-item">
+                <dt>{{ t('common.prop.state') }}</dt>
+                <dd>
+                    <VideoStateFilter v-model="videofilter.filter_state" @change="request_videos" />
+                </dd>
+            </div>
+            <div class="description-item">
+                <dt>{{ t('common.nf') }}</dt>
+                <dd>
+                    <ElSwitch v-model="nfOnly" @change="state.CurrentPage = 1; request_videos();" />
+                </dd>
+            </div>
+            <div class="description-item">
+                <dt>{{ t('common.prop.bbbv') }}</dt>
+                <dd>
+                    <BBBVFilter :level="levelTagSelected" @change="request_videos" />
+                </dd>
+            </div>
+        </dl>
+    </div>
     <div style="font-size:20px;margin: auto;margin-top: 10px;">
-        <ElTable :data="videoList" border table-layout="auto" @sort-change="handleSortChange" @row-click="(row: any) => preview(row.id)">
+        <ElTable :data="videoList" border table-layout="auto" @sort-change="handleSortChange" @row-click="previewVideo">
             <VideoViewState />
             <ElTableColumn type="index" :index="offsetIndex" fixed />
             <VideoViewRealname />
@@ -52,11 +69,15 @@
 </template>
 
 <script lang="ts" setup>
+import '@/styles/descriptions.css';
+import '@/styles/layout.css';
 // 全网录像的检索器，根据三个维度排序
-import { ElButton, ElDescriptions, ElDescriptionsItem, ElPagination, ElRow, ElTable, ElTableColumn } from 'element-plus';
+import type { TableColumnCtx } from 'element-plus';
+import { ElPagination, ElSwitch, ElTable, ElTableColumn } from 'element-plus';
 import { onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import BBBVFilter from '@/components/Filters/BBBVFilter.vue';
 import VideoStateFilter from '@/components/Filters/VideoStateFilter.vue';
 import { httpErrorNotification } from '@/components/Notifications';
@@ -67,7 +88,7 @@ import { ms_to_s } from '@/utils';
 import { preview } from '@/utils/common/PlayerDialog';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { MS_Levels } from '@/utils/ms_const';
-import type { MS_Level } from '@/utils/ms_const';
+import type { MS_Level, MS_Software } from '@/utils/ms_const';
 import { utc_to_local_format } from '@/utils/system/tools';
 
 const { proxy } = useCurrentInstance();
@@ -75,6 +96,7 @@ const { t } = useI18n();
 
 const levelTagSelected = ref<MS_Level>('e');
 const modeTagSelected = ref('STD');
+const nfOnly = ref(false);
 const indexTagSelected = ref('timems');
 
 const indexVisible = ref(true);
@@ -90,9 +112,11 @@ const state = reactive({
 // const test  = reactive({v: 5});
 const videoList = reactive<Video[]>([]);
 // 带下划线与不带的至少存在一个
-type Video = Record<string, string | number>;
+type VideoFieldValue = string | number | boolean | null;
+type Video = Record<string, VideoFieldValue> & { id: number; software: MS_Software };
 type NameKey = Record<string, string>;
 type Tags = Record<string, NameKey>;
+type TableSortOrder = 'ascending' | 'descending';
 interface NameKeyReverse {
     key: string;
     reverse: boolean;
@@ -101,9 +125,32 @@ interface NameKeyReverse {
 }
 type TagsReverse = Record<string, NameKeyReverse>;
 
+interface VideoQueryResponse {
+    count: number;
+    videos: Video[];
+}
+
+interface VideoQueryParams {
+    level: MS_Level;
+    mode: string;
+    nf: boolean;
+    o: string;
+    r: boolean;
+    ps: number;
+    page: number;
+    bmin: number;
+    bmax: number;
+    s?: string[];
+}
+
+interface SortChange {
+    column: TableColumnCtx<Video>;
+    prop: string | null;
+    order: TableSortOrder | null;
+}
+
 const modeTags: Tags = {
     STD: { name: '标准', key: '00' },
-    NF: { name: '盲扫', key: '12' },
     // "UPK": { name: "UPK", key: "01" },
     WQI: { name: 'Win7', key: '04' },
     JSW: { name: '竞速无猜', key: '05' },
@@ -127,7 +174,7 @@ const indexTags: TagsReverse = reactive({
     double_s: { key: 'double_s', reverse: true, to_fixed: 3, selected: false },
     cl_s: { key: 'cl_s', reverse: true, to_fixed: 3, selected: false },
     path: { key: 'path', reverse: false, to_fixed: 2, selected: false },
-    stnb: { key: 'video__stnb', reverse: true, to_fixed: 2, selected: true },
+    stnb: { key: 'stnb', reverse: true, to_fixed: 2, selected: true },
     ioe: { key: 'ioe', reverse: true, to_fixed: 3, selected: false },
     thrp: { key: 'thrp', reverse: true, to_fixed: 3, selected: false },
     ce_s: { key: 'ce_s', reverse: true, to_fixed: 3, selected: false },
@@ -153,12 +200,20 @@ function selected_index(): string[] {
     return list;
 }
 
-function columnFormatter(key: string, value: any): any {
+function previewVideo(row: Video): void {
+    void preview(row.id, row.software);
+}
+
+function columnFormatter(key: string, value: VideoFieldValue | undefined): string | number | boolean | null | undefined {
     if (key == 'upload_time') {
-        return utc_to_local_format(value);
+        if (value === null || value === undefined) return value;
+        return utc_to_local_format(String(value));
     } else if (key == 'timems') {
+        if (typeof value !== 'number') return '-';
         return ms_to_s(value);
     } else if (key == 'name') {
+        return value;
+    } else if (value === null || typeof value === 'boolean') {
         return value;
     } else {
         return to_fixed_n(value, indexTags[key].to_fixed);
@@ -188,8 +243,8 @@ function mod_style(): void {
         includes(indexTagSelected.value);
 }
 
-const prevColumn = ref<any>(null); // 上一个排序列
-function handleSortChange(sort: any): void {
+const prevColumn = ref<TableColumnCtx<Video> | null>(null); // 上一个排序列
+function handleSortChange(sort: SortChange): void {
     for (const key of Object.keys(indexTags)) { // 找到对应的key。很丑陋，but it works
         if (indexTags[key].key == sort.prop) {
             if (key != indexTagSelected.value) { // 改变了排序列，清除之前列的排序
@@ -225,21 +280,25 @@ function offsetIndex(index: number): number {
 
 // 根据配置，刷新当前页面的录像表
 function request_videos(): void {
-    const params: Record<string, any> = {};
-    params.level = levelTagSelected.value;
-    params.mode = modeTags[modeTagSelected.value].key;
-    params.o = indexTags[indexTagSelected.value].key;
-    params.r = state.ReverseOrder;
-    params.ps = videofilter.value.pagesize;
-    params.page = state.CurrentPage;
-    [params.bmin, params.bmax] = videofilter.value.bbbv_range[levelTagSelected.value];
+    const [bmin, bmax] = videofilter.value.bbbv_range[levelTagSelected.value];
+    const params: VideoQueryParams = {
+        level: levelTagSelected.value,
+        mode: modeTags[modeTagSelected.value].key,
+        nf: nfOnly.value,
+        o: indexTags[indexTagSelected.value].key,
+        r: state.ReverseOrder,
+        ps: videofilter.value.pagesize,
+        page: state.CurrentPage,
+        bmin: bmin,
+        bmax: bmax,
+    };
     if (![0, 4].includes(videofilter.value.filter_state.length)) {
         params.s = videofilter.value.filter_state;
     }
-    proxy.$axios.get('/video/query/', {
+    void proxy.$axios.get<VideoQueryResponse>('/api/video/query', {
         params: params,
     }).then(function (response) {
-        const data = JSON.parse(response.data);
+        const { data } = response;
         videoList.length = 0;
         videoList.push(...data.videos);
         state.VideoCount = data.count;

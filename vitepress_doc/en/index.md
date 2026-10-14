@@ -1,3 +1,8 @@
+---
+title: Open Minesweeper User Guide
+description: User guide for Open Minesweeper, covering minesweeper tutorials, website features, replay upload and leaderboard instructions.
+---
+
 # Open Minesweeper User Guide
 
 This guide is still under construction. Contributions are welcome: see [Contributing](./guide/contribute.md).

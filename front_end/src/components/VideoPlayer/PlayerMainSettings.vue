@@ -1,18 +1,17 @@
 <template>
     <div class="player-main-settings">
         <label class="player-main-settings__row">
-            <span class="text">{{ t('local.cellSize') }}</span>
+            <span class="text-regular">{{ t('local.cellSize') }}</span>
             <InputNumber
                 v-model="config.cellSize"
                 class="player-main-settings__number-input"
                 :min="1" :max="48"
             />
         </label>
-        <ElCheckbox v-model="config.showProbability">
-            <span class="text">
-                {{ t('local.showProbability') }}
-            </span>
-        </ElCheckbox>
+        <label class="checkbox">
+            <input v-model="config.showProbability" class="checkbox-input" type="checkbox">
+            <span>{{ t('local.showProbability') }}</span>
+        </label>
         <div v-if="config.showProbability" class="player-main-settings__color-scheme">
             <ColorSchemeSetting v-model="config.probabilityColorScheme" />
         </div>
@@ -22,7 +21,6 @@
 <script setup lang="ts">
 import '@/styles/text.css';
 
-import { ElCheckbox } from 'element-plus';
 import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 

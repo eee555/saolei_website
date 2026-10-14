@@ -1,22 +1,22 @@
 <template>
-    <ElButton
+    <BaseButton
         v-if="store.login_status != LoginStatus.IsLogin" class="fakemenuitem"
-        text size="small" @click.stop="activeDialog = 'login'; dialogVisible = true"
+        text size="small" @keydown.stop @click.stop="activeDialog = 'login'; dialogVisible = true"
     >
         {{ t('local.menu.login') }}
-    </ElButton>
-    <ElButton
+    </BaseButton>
+    <BaseButton
         v-if="store.login_status != LoginStatus.IsLogin"
-        style="margin-left: 0px;" class="fakemenuitem" text size="small" @click.stop="activeDialog = 'register'; dialogVisible = true"
+        style="margin-left: 0px;" class="fakemenuitem" text size="small" @keydown.stop @click.stop="activeDialog = 'register'; dialogVisible = true"
     >
         {{ t('local.menu.register') }}
-    </ElButton>
-    <ElButton
+    </BaseButton>
+    <BaseButton
         v-if="store.login_status == LoginStatus.IsLogin" class="fakemenuitem" text
-        size="small" @click.stop="logout();"
+        size="small" @keydown.stop @click.stop="logout();"
     >
         {{ t('local.menu.logout') }}
-    </ElButton>
+    </BaseButton>
     <!-- 以下的所有表单的输入项都需要@keydown.stop，解决horizontal菜单截留空格操作的问题。 -->
     <!-- https://github.com/element-plus/element-plus/issues/10172#issuecomment-1295794523 -->
     <ElDialog v-model="dialogVisible" style="min-width: 24rem;" :title="t(`local.title.${activeDialog}`)">
@@ -31,7 +31,7 @@
 import '@/styles/text.css';
 
 import { isAxiosError } from 'axios';
-import { ElButton, ElDialog, ElMessage } from 'element-plus';
+import { ElDialog, ElMessage } from 'element-plus';
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -39,10 +39,13 @@ import LoginForm from './LoginForm.vue';
 import RegisterForm from './RegisterForm.vue';
 import RetrieveForm from './RetrieveForm.vue';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import { httpErrorNotification } from '@/components/Notifications';
 import { local, store } from '@/store';
+import type { GetUserInfoResponse } from '@/utils/common/structInterface';
 import { LoginStatus } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import type { UserProfileData } from '@/utils/userprofile';
 
 const { proxy } = useCurrentInstance();
 
@@ -50,7 +53,10 @@ const dialogVisible = ref(false);
 const activeDialog = ref<'login' | 'register' | 'retrieve'>('login');
 
 onMounted(async () => {
-    await proxy.$axios.get('api/userprofile/info/0').then(function (response) {
+    // 恢复登录状态时绕过 HTTP 缓存，避免实名等资料修改后读到旧数据。
+    await proxy.$axios.get<GetUserInfoResponse>('api/userprofile/info/0', {
+        params: { _t: Date.now() },
+    }).then(function (response) {
         store.login(response.data);
     }).catch((err: unknown) => {
         store.logout();
@@ -62,7 +68,7 @@ onMounted(async () => {
     });
 });
 
-const login = (user: any) => {
+const login = (user: UserProfileData) => {
     store.login(user);
     dialogVisible.value = false;
 };

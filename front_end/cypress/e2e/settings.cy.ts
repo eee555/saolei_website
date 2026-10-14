@@ -55,12 +55,12 @@ describe('Color Theme', () => {
                 });
             },
         });
+        // The load event can precede router readiness and Vue's theme initialization.
+        cy.get('#app[data-v-app]', { timeout: Cypress.config('pageLoadTimeout') }).should('be.visible');
         cy.getLocalStorage('local').then((value) => {
-            expect(value.darkmode).to.be.true;
+            expect(value?.darkmode).to.be.true;
         });
-        cy.getLocalStorage('vueuse-color-scheme').then((value) => {
-            expect(value).to.eq('auto');
-        });
+        cy.window().its('localStorage').invoke('getItem', 'vueuse-color-scheme').should('eq', 'auto');
     });
     it('Detect Sys Light Mode', () => {
         cy.visit('/#/settings', {
@@ -72,41 +72,53 @@ describe('Color Theme', () => {
                 });
             },
         });
+        cy.get('#app[data-v-app]', { timeout: Cypress.config('pageLoadTimeout') }).should('be.visible');
         cy.getLocalStorage('local').then((value) => {
-            expect(value.darkmode).to.be.false;
+            expect(value?.darkmode).to.be.false;
         });
-        cy.getLocalStorage('vueuse-color-scheme').then((value) => {
-            expect(value).to.eq('auto');
-        });
+        cy.window().its('localStorage').invoke('getItem', 'vueuse-color-scheme').should('eq', 'auto');
     });
 
     it('Change Theme', () => {
         cy.visit('/#/settings');
-        cy.getLocalStorage('vueuse-color-scheme').then((value) => {
-            expect(value).to.eq('auto');
-        });
+        cy.get('#app[data-v-app]', { timeout: Cypress.config('pageLoadTimeout') }).should('be.visible');
+        cy.window().its('localStorage').invoke('getItem', 'vueuse-color-scheme').should('eq', 'auto');
         cy.contains('浅色').click();
-        cy.getLocalStorage('vueuse-color-scheme').then((value) => {
-            expect(value).to.eq('light');
-        });
+        cy.window().its('localStorage').invoke('getItem', 'vueuse-color-scheme').should('eq', 'light');
         cy.contains('深色').click();
-        cy.getLocalStorage('vueuse-color-scheme').then((value) => {
-            expect(value).to.eq('dark');
-        });
+        cy.window().its('localStorage').invoke('getItem', 'vueuse-color-scheme').should('eq', 'dark');
         cy.contains('自动').click();
-        cy.getLocalStorage('vueuse-color-scheme').then((value) => {
-            expect(value).to.eq('auto');
-        });
+        cy.window().its('localStorage').invoke('getItem', 'vueuse-color-scheme').should('eq', 'auto');
     });
 });
 
 describe('General Settings', () => {
+    it('persists third-party trust and supports toggling it with Space', () => {
+        cy.visit('/#/settings');
+        const trustLabel = 'https://strange-dust.github.io/minesweeper-replay-analyzer/';
+        cy.contains('label', trustLabel).find('input').should('not.be.checked');
+        cy.contains('label', trustLabel).click();
+        cy.contains('label', trustLabel).find('input').should('be.checked');
+        cy.window().its('localStorage').invoke('getItem', 'video-player-config').should((value: string | null) => {
+            const config = JSON.parse(value ?? '{}') as { strangeDustTrust?: boolean };
+            expect(config.strangeDustTrust).to.equal(true);
+        });
+        cy.reload();
+        cy.contains('label', trustLabel).find('input').should('be.checked').focus();
+        cy.realPress('Space');
+        cy.contains('label', trustLabel).find('input').should('not.be.checked');
+        cy.window().its('localStorage').invoke('getItem', 'video-player-config').should((value: string | null) => {
+            const config = JSON.parse(value ?? '{}') as { strangeDustTrust?: boolean };
+            expect(config.strangeDustTrust).to.equal(false);
+        });
+    });
+
     it('Hide Language Icon', () => {
         cy.visit('/#/settings');
         cy.get('[data-cy=languagePicker]').should('be.visible');
-        cy.contains('语言切换').next().click();
+        cy.contains('dt', '语言切换').next('dd').find('.el-switch').click();
         cy.get('[data-cy=languagePicker]').should('not.be.visible');
-        cy.contains('语言切换').next().click();
+        cy.contains('dt', '语言切换').next('dd').find('.el-switch').click();
         cy.get('[data-cy=languagePicker]').should('be.visible');
     });
 });

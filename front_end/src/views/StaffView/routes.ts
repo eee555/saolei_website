@@ -32,6 +32,11 @@ export const staffRoutes: RouteRecordRaw[] = [
         component: () => import('./Tournament.vue'),
     },
     {
+        path: 'weekly-tournament',
+        name: 'staff-weekly-tournament',
+        component: () => import('./WeeklyTournament.vue'),
+    },
+    {
         path: 'task',
         name: 'staff-task',
         component: () => import('./Task.vue'),
@@ -45,5 +50,10 @@ export const staffRoutes: RouteRecordRaw[] = [
         path: 'batchpluck',
         name: 'staff-batchpluck',
         component: () => import('./BatchRefreshPLuck.vue'),
+    },
+    {
+        path: 'ranking-repair',
+        name: 'staff-ranking-repair',
+        component: () => import('./RankingRepair.vue'),
     },
 ];

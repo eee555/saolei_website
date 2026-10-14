@@ -2,15 +2,15 @@
     <Tippy :delay="[showDelay, hideDelay]" :duration="[showAnimation, hideAnimation]" :follow-cursor="followCursor" placement="auto-start">
         <slot />
         <template #content>
-            <ElCard class="card-small">
+            <div class="card card-small">
                 <slot name="content" />
-            </ElCard>
+            </div>
         </template>
     </Tippy>
 </template>
 
 <script setup lang="ts">
-import { ElCard } from 'element-plus';
+import '@/styles/cards.css';
 import { Tippy } from 'vue-tippy';
 
 defineProps({
@@ -20,10 +20,9 @@ defineProps({
     hideAnimation: { type: Number, default: 250 },
     followCursor: { type: Boolean, default: false },
 });
-</script>
 
-<style lang="less" scoped>
-.card-small {
-  --el-card-padding: 5px;
-}
-</style>
+defineSlots<{
+    default?: () => unknown;
+    content?: () => unknown;
+}>();
+</script>

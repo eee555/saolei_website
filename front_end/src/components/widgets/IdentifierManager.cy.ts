@@ -102,7 +102,8 @@ describe('IdentifierManager.vue', () => {
         cy.mount(IdentifierManager, mountOption(createMockUser(1)));
 
         cy.get('.el-input input').type('new-123');
-        cy.get('.pi-plus').click();
+        cy.get('button[aria-label="add identifier"]').focus();
+        cy.realPress('Enter');
 
         cy.contains('Identifier Added');
         cy.contains('5 videos have been processed');

@@ -1,0 +1,85 @@
+.base-button--size-small {
+    padding: 2px 5px;
+    font-size: var(--ui-font-size-extra-small);
+}
+
+.base-button--size-large {
+    padding: 6px 10px;
+    font-size: var(--ui-font-size-medium);
+}
+
+.base-button:enabled:hover {
+    border-color: var(--button-hover-border);
+    background: var(--button-hover-background);
+    color: var(--button-hover-color);
+}
+
+.base-button:enabled:active {
+    background: var(--button-active-background);
+}
+
+.base-button:focus-visible {
+    outline: 2px solid var(--ui-color-primary);
+    outline-offset: 2px;
+}
+
+.base-button:disabled {
+    border-color: var(--button-disabled-border);
+    background: var(--button-disabled-background);
+    color: var(--button-disabled-color);
+    cursor: not-allowed;
+}
+
+.base-button.base-button--text {
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: var(--button-accent, var(--ui-text-color-regular));
+}
+
+.base-button.base-button--text:enabled:hover {
+    color: var(--button-accent-hover, var(--ui-color-primary));
+}
+
+.base-button.base-button--text:enabled:active {
+    color: var(--button-accent-active, var(--ui-color-primary-dark-2));
+}
+
+.base-button.base-button--text:disabled {
+    color: var(--ui-disabled-text-color);
+}
+
+.text-button--underline-always,
+.text-button--underline-hover:enabled:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+}
+
+:is(.base-button, .el-button) + .base-button,
+.base-button + .el-button {
+    margin-inline-start: 4px;
+}
+
+.base-button.square-button {
+    padding: 4px;
+}
+
+.base-button--size-small.square-button {
+    padding: 2px;
+}
+
+.button-group {
+    display: flex;
+    gap: 0.25em;
+
+    .base-button {
+        margin: 0;
+    }
+}
+
+/* Retained for the deferred account-link card. */
+.button-compact {
+    height: auto;
+    padding: 2px 5px;
+    vertical-align: baseline;
+}

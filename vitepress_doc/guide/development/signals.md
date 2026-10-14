@@ -1,0 +1,141 @@
+---
+title: 信号触发关系 - 开源扫雷网
+description: 开源扫雷网后端Django信号触发关系详解，包括录像、用户、比赛等模型的pre_save和post_save信号流程。
+---
+
+# 信号触发关系
+
+旧竞速纪录和新闻信号已移除。`msuser` 目前只维护录像计数与上传额度；新竞速榜由 `speedranking` 接收 `VideoModel.post_save/post_delete`，在事务提交后增量更新 Redis 或补位失效纪录。
+
+`speedranking` 复用 `videomanager` 捕获的旧值。关注 player、level、mode、state、ongoing_tournament、bv、timems、right_ce、upload_time；提高成绩直接比较，变差/失去资格/删除时只重建由该录像保持的单项。类别迁移同时处理原玩家和新玩家，bvs 使用数据库保存的 GeneratedField。标识绑定/解绑与比赛批量公开不触发保存信号，须显式调用 `add_videos_to_speed_ranks` / `remove_videos_from_speed_ranks`。
+
+竞速入口同时协调 `speedranking.saolei` 与 `speedranking.pb`：共用用户纪录读取和主要变更写入 pipeline，各自判断选优与补位。PB 按等级、3BV、普通/NF 分桶，日常比较编码 score；旧 member 的录像 id 来自用户 hash，按变更前、后的 member 排名确定范围，写入后只批量刷新该区间的 rank，加入或移除延伸至榜尾。单录像和批量更新、管理员修复、管理命令重建的错误统一记录上下文与堆栈后继续抛出，不使用 WATCH 或重试。
+
+个人纪录的增量选优、补位查询和批量重建保持原有逻辑；仅在生成 Redis zset score 时使用四位小数 Bvs 和分钟级上传时间，并检查单项或总值的编码范围。超限仅移除对应 zset 条目，不触发个人纪录补位，hash 仍保存原始最佳成绩；总榜按总值独立判断。
+
+NF 是独立维度，由 `VideoModel.right_ce == 0` 判断，不再使用模式 `12`。创建和删除时，NF 子计数与录像原模式的子计数同时增减；`right_ce` 为空不计入 NF。`videomanager` 捕获 `right_ce` 变化并更新队列；`customranking` 不需要 NF 信息，不监听此字段。批量转换旧模式后需显式刷新计数及缓存，步骤见 `back_end/saolei/msuser/refactor.md`。
+
+```automaton
+flowchart LR
+    video_pre_save[VideoModel pre_save]
+    video_post_save[VideoModel post_save]
+    video_pre_delete[VideoModel pre_delete]
+    pluck_pre_save[CustomPluckRecord pre_save]
+    pluck_post_save[CustomPluckRecord post_save]
+    pluck_post_delete[CustomPluckRecord post_delete]
+    tournament_post_save[Tournament post_save]
+    tournament_post_delete[Tournament post_delete]
+    gsc_post_save[GSCTournament post_save]
+    weekly_post_save[WeeklyTournament post_save]
+    participant_post_save[TournamentParticipant post_save]
+    gsc_participant_post_save[GSCParticipant post_save]
+    weekly_participant_post_save[WeeklyParticipant post_save]
+    participant_post_delete[TournamentParticipant post_delete]
+    gsc_participant_post_delete[GSCParticipant post_delete]
+    weekly_participant_post_delete[WeeklyParticipant post_delete]
+
+    video_pre_save --> capture_video_update[捕获字段旧值]
+    capture_video_update --> video_post_save
+    video_pre_save --> checkin_video_before_create[比赛录像检测]
+    checkin_video_before_create --> video_post_save
+
+    video_post_save --> refresh_state_queue_on_video_save[刷新状态队列]
+    video_post_save --> update_video_count_on_video_save[更新用户录像计数]
+    video_post_save --> update_video_count_limit_on_video_save[更新用户录像上限]
+    video_post_save --> add_created_video_to_checked_tournaments[将比赛录像挂载到比赛]
+    video_post_save --> refresh_custom_pluck_rank_on_video_save[刷新pluck纪录]
+    video_post_save --> speedranking_save[提交后更新竞速纪录与必要补位]
+    video_post_delete[VideoModel post_delete] --> speedranking_delete[提交后补位竞速纪录]
+
+    video_pre_delete --> update_video_count_on_video_delete[更新用户录像计数]
+
+
+
+    refresh_custom_pluck_rank_on_video_save --> pluck_pre_save
+    refresh_custom_pluck_rank_on_video_save --> pluck_post_delete
+    pluck_pre_save --> pluck_post_save
+    pluck_post_save --> update_custom_pluck_cache_on_record_save[更新pluck榜缓存]
+    pluck_post_delete --> update_custom_pluck_cache_on_record_delete[删除pluck榜缓存]
+
+    add_created_video_to_checked_tournaments -. m2m_changed .-> no_video_signal[无]
+
+    tournament_post_save --> update_cache_on_tournament_save[更新比赛缓存]
+    gsc_post_save --> update_cache_on_tournament_save
+    weekly_post_save --> update_cache_on_tournament_save
+    tournament_post_delete --> update_cache_on_tournament_delete[删除比赛缓存]
+
+    participant_post_save --> update_cache_on_participant_save[更新参赛缓存]
+    gsc_participant_post_save --> update_cache_on_participant_save
+    weekly_participant_post_save --> update_cache_on_participant_save
+    gsc_participant_post_save --> update_best_score_on_gsc_participant_save[刷新GSC历史最好]
+    weekly_participant_post_save --> update_best_score_on_weekly_participant_save[刷新周赛历史最好]
+    gsc_participant_post_delete --> update_best_score_on_gsc_participant_delete[重算GSC历史最好]
+    weekly_participant_post_delete --> update_best_score_on_weekly_participant_delete[重算周赛历史最好]
+    participant_post_delete --> remove_participant_cache_on_delete[删除参赛缓存]
+    update_cache_on_participant_save -->|created| add_existing_videos_to_participant_tournament[补录比赛录像]
+
+    add_existing_videos_to_participant_tournament -. m2m_changed .-> no_participant_signal[无]
+
+    click video_pre_save "#signal-function-map" "VideoModel 保存前触发"
+    click video_post_save "#signal-function-map" "VideoModel 保存后触发"
+    click pluck_pre_save "#signal-function-map" "CustomPluckRecord 保存前触发"
+    click pluck_post_save "#signal-function-map" "CustomPluckRecord 保存后触发"
+    click pluck_post_delete "#signal-function-map" "CustomPluckRecord 删除后触发"
+    click tournament_post_save "#signal-function-map" "Tournament 保存后触发"
+    click tournament_post_delete "#signal-function-map" "Tournament 删除后触发"
+    click gsc_post_save "#signal-function-map" "GSCTournament 保存后触发"
+    click weekly_post_save "#signal-function-map" "WeeklyTournament 保存后触发"
+    click participant_post_save "#signal-function-map" "TournamentParticipant 保存后触发"
+    click gsc_participant_post_save "#signal-function-map" "GSCParticipant 保存后触发"
+    click weekly_participant_post_save "#signal-function-map" "WeeklyParticipant 保存后触发"
+    click participant_post_delete "#signal-function-map" "TournamentParticipant 删除后触发"
+    click gsc_participant_post_delete "#signal-function-map" "GSCParticipant 删除后触发"
+    click weekly_participant_post_delete "#signal-function-map" "WeeklyParticipant 删除后触发"
+
+    click capture_video_update "#signal-function-map" "保存前记录录像旧状态，用于保存后判断副作用"
+    click checkin_video_before_create "#signal-function-map" "录像创建前，根据用户参赛缓存判断是否属于比赛录像"
+    click refresh_state_queue_on_video_save "#signal-function-map" "根据录像状态同步普通录像队列"
+    click update_video_count_on_video_save "#signal-function-map" "录像创建后增加用户录像计数，跳过 ongoing_tournament=True 的录像"
+    click update_video_count_limit_on_video_save "#signal-function-map" "录像保存后同步用户录像数量上限"
+    click add_created_video_to_checked_tournaments "#signal-function-map" "录像创建后写入命中的比赛录像关系"
+    click refresh_custom_pluck_rank_on_video_save "#signal-function-map" "录像保存后刷新自定义 pluck 排行"
+    click update_video_count_on_video_delete "#signal-function-map" "录像删除前减少用户录像计数，跳过 ongoing_tournament=True 或仍关联比赛的录像"
+    click update_custom_pluck_cache_on_record_save "#signal-function-map" "pluck 纪录保存后同步排行缓存"
+    click update_custom_pluck_cache_on_record_delete "#signal-function-map" "pluck 纪录删除后同步排行缓存"
+    click update_cache_on_tournament_save "#signal-function-map" "比赛保存后同步 NORMAL 比赛缓存"
+    click update_cache_on_tournament_delete "#signal-function-map" "比赛删除后移除比赛缓存和相关参赛缓存"
+    click update_cache_on_participant_save "#signal-function-map" "参赛关系保存后同步用户参赛缓存"
+    click update_best_score_on_gsc_participant_save "#signal-function-map" "GSC 参赛成绩保存后刷新用户历史最好"
+    click update_best_score_on_weekly_participant_save "#signal-function-map" "周赛参赛成绩保存后刷新用户历史最好"
+    click update_best_score_on_gsc_participant_delete "#signal-function-map" "GSC 参赛成绩删除后重算用户历史最好"
+    click update_best_score_on_weekly_participant_delete "#signal-function-map" "周赛参赛成绩删除后重算用户历史最好"
+    click remove_participant_cache_on_delete "#signal-function-map" "参赛关系删除后移除用户参赛缓存，跳过非站内参赛者"
+    click add_existing_videos_to_participant_tournament "#signal-function-map" "创建参赛关系后扫描并补录既有比赛录像"
+```
+
+<a id="signal-function-map"></a>
+
+| 图中名称 | 函数 |
+| --- | --- |
+| 捕获字段旧值 | `capture_video_update` |
+| 比赛录像检测 | `checkin_video_before_create` |
+| 刷新状态队列 | `refresh_state_queue_on_video_save` |
+| 更新用户录像计数 | `update_video_count_on_video_save` / `update_video_count_on_video_delete` |
+| 更新用户录像上限 | `update_video_count_limit_on_video_save` |
+| 将比赛录像挂载到比赛 | `add_created_video_to_checked_tournaments` |
+| 刷新pluck纪录 | `refresh_custom_pluck_rank_on_video_save` |
+| 更新pluck榜缓存 | `update_custom_pluck_cache_on_record_save` |
+| 删除pluck榜缓存 | `update_custom_pluck_cache_on_record_delete` |
+| 更新比赛缓存 | `update_cache_on_tournament_save` |
+| 删除比赛缓存 | `update_cache_on_tournament_delete` |
+| 更新参赛缓存 | `update_cache_on_participant_save` |
+| 刷新GSC历史最好 | `update_best_score_on_gsc_participant_save` |
+| 刷新周赛历史最好 | `update_best_score_on_weekly_participant_save` |
+| 重算GSC历史最好 | `update_best_score_on_gsc_participant_delete` |
+| 重算周赛历史最好 | `update_best_score_on_weekly_participant_delete` |
+| 删除参赛缓存 | `remove_participant_cache_on_delete` |
+| 补录比赛录像 | `add_existing_videos_to_participant_tournament` |
+
+录像计数排除比赛录像。创建时读取 `ongoing_tournament`；删除时在 `pre_delete` 中检查该标记及 `Tournament.videos` 关联，避免级联删除清除关联后误减计数。比赛公开不增加计数。已有数据可通过 `refresh_video_counts` 命令重算，包括补录到比赛的历史录像；上传数量上限仍由独立的 `update_video_count_limit_on_video_save` 维护。
+
+`Tournament` / `GSCTournament` / `WeeklyTournament` 的保存信号分别绑定到同一个 `update_cache_on_tournament_save` 接收器。`TournamentParticipant` / `GSCParticipant` / `WeeklyParticipant` 的保存信号分别绑定到同一个 `update_cache_on_participant_save` 接收器。缓存删除信号只保留父类接收器；多表继承删除子类时会继续触发父表删除。历史最好成绩依赖子类 participant 的成绩字段，因此由 `GSCParticipant` / `WeeklyParticipant` 的保存和删除信号单独处理：保存时只比较当前 participant 与原 best，删除时才重算该用户历史 best。best 信号更新的是 `TournamentUser` 数据库汇总字段，需要和 participant 变更保持事务一致，因此不使用 `transaction.on_commit`。

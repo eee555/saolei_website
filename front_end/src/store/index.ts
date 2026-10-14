@@ -8,8 +8,8 @@ import { LoginStatus } from '@/utils/common/structInterface';
 import { colorSchemeTemplates } from '@/utils/config';
 import type { CellChoice, ColorTemplateName, ColumnChoice, MS_Software } from '@/utils/ms_const';
 import { MS_Softwares, MS_State } from '@/utils/ms_const';
-import type { Tournament } from '@/utils/tournaments';
 import { UserProfile } from '@/utils/userprofile';
+import type { UserProfileData } from '@/utils/userprofile';
 import type { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 
 export const store = defineStore('user', {
@@ -23,7 +23,6 @@ export const store = defineStore('user', {
         new_identifier: false, // 是否有新标识录像
         video_list: [] as VideoAbstract[],
         video_list_show: false,
-        tournamentTabs: [] as Tournament[],
     }),
     getters: {
         isSelf: (state) => state.user.id === state.player.id && state.user.id !== 0,
@@ -40,7 +39,7 @@ export const store = defineStore('user', {
         },
     },
     actions: {
-        login(userdata: any) {
+        login(userdata: UserProfileData) {
             this.user = new UserProfile(userdata);
             this.login_status = LoginStatus.IsLogin;
         },
@@ -58,27 +57,32 @@ export const videoplayerstore = defineStore('videoplayer', {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
         software: 'a' as MS_Software,
         url: '',
-        error: null as any,
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+        error: null as unknown,
     }),
 })(pinia);
 
+const localDefaultSettings = {
+    darkmode: matchMedia('(prefers-color-scheme: dark)').matches,
+    experimental: false,
+    language: navigator.language.toLocaleLowerCase(),
+    language_show: true,
+    menu_font_size: 18,
+    menu_height: 60,
+    menu_icon: false,
+    notification_duration: 4500,
+    tooltip_show: true,
+    vienna_logo_legacy: false,
+    autoUploadAfterParse: false,
+    autoRemoveAfterUpload: false,
+    nameFormat: 'first-last' as 'first-last' | 'last-first',
+};
+
+export type LocalSettings = typeof localDefaultSettings;
+
 export const local = useLocalStorage(
     'local',
-    {
-        darkmode: matchMedia('(prefers-color-scheme: dark)').matches,
-        experimental: false,
-        language: navigator.language.toLocaleLowerCase(),
-        language_show: true,
-        menu_font_size: 18,
-        menu_height: 60,
-        menu_icon: false,
-        notification_duration: 4500,
-        tooltip_show: true,
-        vienna_logo_legacy: false,
-        autoUploadAfterParse: false,
-        autoRemoveAfterUpload: false,
-        nameFormat: 'first-last' as 'first-last' | 'last-first',
-    },
+    localDefaultSettings,
     { mergeDefaults: true },
 );
 

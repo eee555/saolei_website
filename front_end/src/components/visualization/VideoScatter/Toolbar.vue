@@ -33,32 +33,35 @@
             />
 
             <div class="button-group">
-                <ElButton
+                <BaseButton
                     class="square-button"
                     type="primary" :plain="!isFullscreen"
                     :title="t('local.fullscreen')"
+                    :aria-label="t('local.fullscreen')" :aria-pressed="isFullscreen"
                     @click="emit('toggleFullscreen')"
                 >
                     <i class="pi pi-expand" />
-                </ElButton>
-                <ElButton
+                </BaseButton>
+                <BaseButton
                     type="primary"
                     :plain="!VideoScatterConfig.showOnlySelected"
                     :title="t('local.hideNonSelected')"
+                    :aria-label="t('local.hideNonSelected')" :aria-pressed="VideoScatterConfig.showOnlySelected"
                     class="square-button"
                     @click="VideoScatterConfig.showOnlySelected = !VideoScatterConfig.showOnlySelected"
                 >
                     <BaseIconHide />
-                </ElButton>
-                <ElButton
+                </BaseButton>
+                <BaseButton
                     type="primary"
                     :plain="!VideoScatterConfig.highlightSelected"
                     :title="t('local.highlightSelected')"
-                    style="padding: 8px; margin: 0"
+                    :aria-label="t('local.highlightSelected')" :aria-pressed="VideoScatterConfig.highlightSelected"
+                    class="square-button"
                     @click="VideoScatterConfig.highlightSelected = !VideoScatterConfig.highlightSelected"
                 >
                     <i class="pi pi-star" />
-                </ElButton>
+                </BaseButton>
             </div>
         </div>
         <div class="selection-panel-secondary">
@@ -92,11 +95,12 @@
 import 'primeicons/primeicons.css';
 import '@/styles/button.css';
 
-import { ElButton, ElSegmented } from 'element-plus';
+import { ElSegmented } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
 import { VideoScatterStore } from './store';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import { BaseIconHide } from '@/components/common/icon';
 import MSStatSelect from '@/components/Filters/MSStatSelect.vue';
 import { MarkerSetting } from '@/components/visualization/Plots';

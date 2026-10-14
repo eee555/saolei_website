@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://openms.top/docs/sitemap.xml

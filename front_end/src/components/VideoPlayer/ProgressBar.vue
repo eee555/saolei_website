@@ -1,19 +1,24 @@
 <template>
     <div class="progress-bar">
-        <ElButton class="progress-bar__restart" circle :icon="RefreshLeft" :title="t('local.restart')" @click="restart" />
-        <ElButton
-            class="progress-bar__play"
-            circle
-            :icon="isPlaying ? VideoPause : VideoPlay"
+        <button type="button" class="base-button square-button" :title="t('local.restart')" :aria-label="t('local.restart')" @click="restart">
+            <i class="pi pi-replay" aria-hidden="true" />
+        </button>
+        <button
+            type="button"
+            class="base-button square-button"
             :title="isPlaying ? t('local.pause') : t('local.play')"
+            :aria-label="isPlaying ? t('local.pause') : t('local.play')"
             @click="togglePlay"
-        />
-        <ElButton class="progress-bar__step" :title="t('local.step')" @click="stepForward">
+        >
+            <i v-if="isPlaying" class="pi pi-pause" aria-hidden="true" />
+            <i v-else class="pi pi-play" aria-hidden="true" />
+        </button>
+        <button type="button" class="base-button progress-bar__step" :title="t('local.step')" :aria-label="t('local.step')" @click="stepForward">
             +0.1s
-        </ElButton>
+        </button>
         <ElSlider
             v-model="currentMs" class="progress-bar__slider" :min="0" :max="durationMs"
-            :step="step" :format-tooltip="formatSeconds" @change="syncPlaybackAnchor"
+            :step="step" :format-tooltip="formatSeconds" @pointerdown.capture="beginSeek" @change="finishSeek"
         />
         <ElSelect v-model="playbackRate" class="progress-bar__speed" :title="t('local.speed')">
             <ElOption v-for="rate in playbackRates" :key="rate" :value="rate" :label="`${rate}x`" />
@@ -22,8 +27,10 @@
 </template>
 
 <script setup lang="ts">
-import { RefreshLeft, VideoPause, VideoPlay } from '@element-plus/icons-vue';
-import { ElButton, ElOption, ElSelect, ElSlider } from 'element-plus';
+import '@/styles/button.css';
+import 'primeicons/primeicons.css';
+
+import { ElOption, ElSelect, ElSlider } from 'element-plus';
 import { onBeforeUnmount, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -60,6 +67,7 @@ const playbackRate = ref(1);
 let animationFrameId = 0;
 let startedAt = 0;
 let startedFrom = 0;
+let isSeeking = false;
 
 watch(() => props.durationMs, (durationMs) => {
     currentMs.value = clampTime(currentMs.value, durationMs);
@@ -80,9 +88,12 @@ function togglePlay() {
 
 function startPlayback() {
     if (props.durationMs <= 0) return;
-    if (currentMs.value >= props.durationMs) currentMs.value = 0;
-    isPlaying.value = true;
     syncPlaybackAnchor();
+    if (startedFrom >= props.durationMs) {
+        startedFrom = 0;
+        currentMs.value = 0;
+    }
+    isPlaying.value = true;
     animationFrameId = requestAnimationFrame(tick);
 }
 
@@ -97,12 +108,28 @@ function stopPlayback() {
 function tick(now: number) {
     if (!isPlaying.value) return;
 
-    currentMs.value = clampTime(startedFrom + (now - startedAt) * playbackRate.value, props.durationMs);
-    if (currentMs.value >= props.durationMs) {
-        stopPlayback();
-        return;
+    if (!isSeeking) {
+        const nextMs = clampTime(startedFrom + (now - startedAt) * playbackRate.value, props.durationMs);
+        currentMs.value = nextMs;
+        if (nextMs >= props.durationMs) {
+            stopPlayback();
+            return;
+        }
     }
     animationFrameId = requestAnimationFrame(tick);
+}
+
+function beginSeek(event: PointerEvent) {
+    if (event.button === 0 && event.target instanceof Element && event.target.closest('.el-slider__runway')) {
+        isSeeking = true;
+    }
+}
+
+function finishSeek(value: number | number[]) {
+    if (typeof value !== 'number') return;
+    isSeeking = false;
+    syncPlaybackAnchor(value);
+    if (value >= props.durationMs) stopPlayback();
 }
 
 function restart() {
@@ -115,9 +142,9 @@ function stepForward() {
     currentMs.value = clampTime(currentMs.value + 100, props.durationMs);
 }
 
-function syncPlaybackAnchor() {
+function syncPlaybackAnchor(value = currentMs.value) {
     startedAt = performance.now();
-    startedFrom = currentMs.value;
+    startedFrom = value;
 }
 
 function clampTime(value: number, durationMs: number) {
@@ -133,8 +160,13 @@ onBeforeUnmount(() => {
 .progress-bar {
     display: flex;
     align-items: center;
-    gap: 10px;
+    flex-wrap: wrap;
+    gap: 6px;
     min-width: 0;
+}
+
+.progress-bar > .base-button {
+    margin: 0;
 }
 
 .progress-bar__slider {

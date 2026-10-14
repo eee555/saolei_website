@@ -14,15 +14,15 @@
     <PrToolbar>
         对于失败的任务，点击“FAILED”按钮可以在控制台输出报错。
         <template #start>
-            <ElButton :loading="loading" @click="refresh">
+            <BaseButton :loading="loading" @click="refresh">
                 加载任务
-            </ElButton>
-            <ElButton :loading="cleanupLoading" @click="cleanupExpiredTasks">
+            </BaseButton>
+            <BaseButton :loading="cleanupLoading" @click="cleanupExpiredTasks">
                 删除过期任务
-            </ElButton>
-            <ElButton :disabled="selectedTasks.length === 0" @click="deleteSelected">
+            </BaseButton>
+            <BaseButton :disabled="selectedTasks.length === 0" @click="deleteSelected">
                 删除选中任务
-            </ElButton>
+            </BaseButton>
         </template>
     </PrToolbar>
     <PrDataTable
@@ -39,9 +39,9 @@
         <PrColumn field="id" header="id" />
         <PrColumn field="status" header="status">
             <template #body="{ data }">
-                <ElButton v-if="data.status === 'FAILED'" @click="console.log(data.traceback)">
+                <BaseButton v-if="data.status === 'FAILED'" @click="console.log(data.traceback)">
                     {{ data.status }}
-                </ElButton>
+                </BaseButton>
                 <template v-else>
                     {{ data.status }}
                 </template>
@@ -52,17 +52,17 @@
         </PrColumn>
         <PrColumn field="enqueued_at" header="enqueued_at" sortable>
             <template #body="{ data }">
-                {{ utc_to_local_format(data.enqueued_at) }}
+                {{ toISODateTimeString(toDate(data.enqueued_at)!) }}
             </template>
         </PrColumn>
         <PrColumn field="started_at" header="started_at" sortable>
             <template #body="{ data }">
-                {{ utc_to_local_format(data.started_at) }}
+                {{ data.started_at ? toISODateTimeString(toDate(data.started_at)!) : 'N/A' }}
             </template>
         </PrColumn>
         <PrColumn field="finished_at" header="finished_at" sortable>
             <template #body="{ data }">
-                {{ utc_to_local_format(data.finished_at) }}
+                {{ data.finished_at ? toISODateTimeString(toDate(data.finished_at)!) : 'N/A' }}
             </template>
         </PrColumn>
         <PrColumn field="args_kwargs" header="args_kwargs" />
@@ -73,40 +73,52 @@
         <PrColumn field="backend_name" header="backend_name" />
         <PrColumn field="run_after" header="run_after" sortable>
             <template #body="{ data }">
-                {{ utc_to_local_format(data.run_after) }}
+                {{ toISODateTimeString(toDate(data.run_after)!) }}
             </template>
         </PrColumn>
         <PrColumn field="return_value" header="return_value" />
         <PrColumn field="exception_class_path" header="exception_class_path" />
+        <PrColumn header="actions">
+            <template #body="{ data }">
+                <BaseButton
+                    v-if="data.status === 'FAILED'"
+                    :loading="restartingTaskId === data.id"
+                    @click="restartTask(data)"
+                >
+                    重启
+                </BaseButton>
+            </template>
+        </PrColumn>
     </PrDataTable>
 </template>
 
 <script setup lang="ts">
 import { FilterMatchMode } from '@primevue/core/api';
-import { ElButton, ElDescriptions, ElDescriptionsItem, vLoading } from 'element-plus';
+import { ElDescriptions, ElDescriptionsItem, vLoading } from 'element-plus';
 import PrColumn from 'primevue/column';
 import PrDataTable from 'primevue/datatable';
 import PrSelect from 'primevue/select';
 import PrToolbar from 'primevue/toolbar';
 import { onMounted, ref } from 'vue';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import { httpErrorNotification } from '@/components/Notifications';
 import { createEnumMap } from '@/utils';
 import type { EnumMap } from '@/utils';
 import type { DjangoTaskResultStatus } from '@/utils/common/structInterface';
 import { DjangoTaskResultStatusOptions } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
-import { utc_to_local_format } from '@/utils/system/tools';
+import { toDate, toISODateTimeString } from '@/utils/datetime';
 
 interface TaskDetail {
     id: string;
     status: DjangoTaskResultStatus;
     enqueued_at: string;
-    started_at: string;
-    finished_at: string;
+    started_at: string | null;
+    finished_at: string | null;
     args_kwargs: {
-        args: any[];
-        kwargs: any;
+        args: unknown[];
+        kwargs: Record<string, unknown>;
     };
     priority: number;
     task_path: string;
@@ -114,7 +126,7 @@ interface TaskDetail {
     queue_name: string;
     backend_name: string;
     run_after: string;
-    return_value: any;
+    return_value: unknown;
     exception_class_path: string;
     traceback: string;
 }
@@ -131,6 +143,7 @@ const selectedTasks = ref<TaskDetail[]>([]);
 const loading = ref(false);
 const summaryLoading = ref(false);
 const cleanupLoading = ref(false);
+const restartingTaskId = ref<string | null>(null);
 const taskSummary = ref<TaskSummary>({
     total: 0,
     status: createEnumMap(DjangoTaskResultStatusOptions, 0),
@@ -142,7 +155,7 @@ const filters = ref({
 
 async function refreshSummary() {
     summaryLoading.value = true;
-    await proxy.$axios.get('/api/common/tasksummary').then((response) => {
+    await proxy.$axios.get<TaskSummary>('/api/common/tasksummary').then((response) => {
         taskSummary.value = response.data;
     }).catch(httpErrorNotification);
     summaryLoading.value = false;
@@ -150,7 +163,7 @@ async function refreshSummary() {
 
 async function refresh() {
     loading.value = true;
-    await proxy.$axios.get('/common/staff/taskdetail/').then((response) => {
+    await proxy.$axios.get<TaskDetail[]>('/api/common/tasks/detail').then((response) => {
         taskData.value = response.data;
     }).catch(httpErrorNotification);
     loading.value = false;
@@ -160,21 +173,56 @@ onMounted(refreshSummary);
 
 async function cleanupExpiredTasks() {
     cleanupLoading.value = true;
-    await proxy.$axios.post('/api/common/tasks/cleanup').then(async () => {
+    await proxy.$axios.post<number>('/api/common/tasks/cleanup').then(async () => {
         await refreshSummary();
     }).catch(httpErrorNotification);
     cleanupLoading.value = false;
 }
 
-async function deleteSelected() {
-    if (selectedTasks.value.length === 0) return;
-    for (const task of selectedTasks.value) {
-        await proxy.$axios.post('/common/staff/taskdelete/', {
+function updateTaskSummary(status: DjangoTaskResultStatus, delta: number) {
+    taskSummary.value.status[status] = Math.max(0, (taskSummary.value.status[status] ?? 0) + delta);
+}
+
+function addTask(task: TaskDetail) {
+    taskData.value.unshift(task);
+    taskSummary.value.total += 1;
+    updateTaskSummary(task.status, 1);
+}
+
+function removeTask(taskId: string) {
+    const index = taskData.value.findIndex((task) => task.id === taskId);
+    if (index === -1) return;
+
+    const [task] = taskData.value.splice(index, 1);
+    selectedTasks.value = selectedTasks.value.filter((selectedTask) => selectedTask.id !== taskId);
+    taskSummary.value.total = Math.max(0, taskSummary.value.total - 1);
+    updateTaskSummary(task.status, -1);
+}
+
+async function restartTask(task: TaskDetail) {
+    restartingTaskId.value = task.id;
+    try {
+        const response = await proxy.$axios.post<TaskDetail>('/api/common/tasks/restart', {
             task_id: task.id,
         });
+        addTask(response.data);
+    } catch (error) {
+        httpErrorNotification(error);
     }
-    selectedTasks.value.splice(0, selectedTasks.value.length);
-    await refresh();
-    await refreshSummary();
+    restartingTaskId.value = null;
+}
+
+async function deleteSelected() {
+    if (selectedTasks.value.length === 0) return;
+    try {
+        for (const task of selectedTasks.value) {
+            await proxy.$axios.post('/api/common/tasks/delete', {
+                task_id: task.id,
+            });
+            removeTask(task.id);
+        }
+    } catch (error) {
+        httpErrorNotification(error);
+    }
 }
 </script>

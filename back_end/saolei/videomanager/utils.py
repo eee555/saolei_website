@@ -7,6 +7,10 @@ from utils.parser import create_video_from_data
 from .config import PLUCK_TIMEOUT_SECONDS
 
 
+class VideoParseError(Exception):
+    """单条录像解析失败，可以跳过该录像继续刷新。"""
+
+
 def is_custom_pluck_video(video) -> bool:
     return (
         video.level in CUSTOM_PLUCK_LEVELS

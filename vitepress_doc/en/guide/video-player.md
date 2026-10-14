@@ -1,3 +1,8 @@
+---
+title: Video Player - Open Minesweeper
+description: "Three replay players available on Open Minesweeper: native player, flop-player and MSRA, with custom counter support."
+---
+
 # Video Player
 
 Open Minesweeper provides three replay players: the native website player, [flop-player](https://github.com/hgraceb/flop-player), and [MSRA by StrangeDust](https://strange-dust.github.io/minesweeper-replay-analyzer/).

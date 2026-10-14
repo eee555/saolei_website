@@ -3,7 +3,7 @@
         <div style="margin-bottom: 0.5em;">
             <PrToolbar>
                 <template #start>
-                    <span class="text text-medium">
+                    <span class="text-medium text-regular">
                         {{ t('common.platform.c') }}&nbsp;#{{ id }}
                     </span>
                 </template>
@@ -48,7 +48,7 @@
             </ElCarouselItem>
             <ElCarouselItem style="display: flex; flex-direction: column;">
                 <div>
-                    <span class="text text-medium">
+                    <span class="text-medium text-regular">
                         {{ t('accountlink.statSummary') }}
                     </span>
                     &nbsp;
@@ -56,11 +56,14 @@
                         {{ t('accountlink.synchronize') }}
                     </ElButton>
                 </div>
-                <div class="text text-small" style="margin-bottom: auto; margin-top: 0.25em;">
+                <div class="text-regular text-small" style="margin-bottom: auto; margin-top: 0.25em;">
                     {{ t('accountlink.statSummaryTooltip') }}
                 </div>
+                <div v-if="errorMsg" class="text-danger text-small" style="margin-top: 0.25em;">
+                    {{ errorMsg }}
+                </div>
                 <div style="margin-bottom: 0.25em">
-                    <span class="text text-medium">
+                    <span class="text-medium text-regular">
                         {{ t('accountlink.synchronizeVideos') }}
                     </span>
                     <BaseOverlay>
@@ -73,16 +76,16 @@
                         </template>
                     </BaseOverlay>
                 </div>
-                <div class="text">
+                <div class="text-regular">
                     已收藏{{ importSummary.total }}个录像
                     &nbsp;
-                    <span v-if="importSummary.bulk_task_status == 'FAILED'" class="text text-danger">
+                    <span v-if="importSummary.bulk_task_status == 'FAILED'" class="text-danger">
                         后台任务出错，请联系管理员
                     </span>
-                    <span v-else-if="importSummary.bulk_task_status == 'READY'" class="text text-primary">
+                    <span v-else-if="importSummary.bulk_task_status == 'READY'" class="text-primary">
                         正在排队中
                     </span>
-                    <span v-else-if="importSummary.bulk_task_status == 'RUNNING'" class="text text-warning">
+                    <span v-else-if="importSummary.bulk_task_status == 'RUNNING'" class="text-warning">
                         正在同步中
                     </span>
                     <template v-else>
@@ -98,13 +101,13 @@
                         {{ t('accountlink.synchronizeManage') }}
                     </ElButton>
                 </div>
-                <div class="text" style="margin-top: 0.25em">
+                <div class="text-regular" style="margin-top: 0.25em">
                     <StackBar :data="stackBarData" legend />
                 </div>
-                <div class="text" style="margin-top: 0.5em">
+                <div class="text-regular" style="margin-top: 0.5em">
                     新收藏{{ importSummary.new_total }}个录像
                 </div>
-                <div class="text" style="margin-top: 0.25em">
+                <div class="text-regular" style="margin-top: 0.25em">
                     <StackBar :data="stackBarNewData" legend />
                 </div>
                 <!-- 后端暂时有bug，删不掉 -->
@@ -151,9 +154,10 @@ import { BaseIconInfo } from '@/components/common/icon';
 import SaoleiImportHelper from '@/components/dialogs/SaoleiImportHelper.vue';
 import { httpErrorNotification } from '@/components/Notifications';
 import StackBar from '@/components/visualization/StackBar/App.vue';
+import { getAccountLinkUpdateErrorMessageKey, updateAccountLink } from '@/services/accountLinkService';
 import { store } from '@/store';
 import { cs_to_s } from '@/utils';
-import { AccountSaolei, SaoleiImportSummaryDefault } from '@/utils/accountlinks';
+import { AccountLinkPlatform, AccountSaolei, SaoleiImportSummaryDefault } from '@/utils/accountlinks';
 import type { SaoleiImportSummary } from '@/utils/accountlinks';
 import type { TaskStatus } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
@@ -180,13 +184,11 @@ const carouselLength = computed(() => (store.player.id == store.user.id ? 2 : 1)
 
 async function updateLink() {
     taskStatus.value = 'loading';
-    await proxy.$axios.post('accountlink/update/', {
-        platform: 'c',
-    }).then(function ({ data }) {
+    await updateAccountLink(AccountLinkPlatform.Saolei).then(function (data) {
         errorMsg.value = '';
         taskStatus.value = data.type;
         if (data.type == 'error') {
-            errorMsg.value = t(`errorMsg.${data.object}.title`) + t('common.punct.colon') + t(`errorMsg.${data.object}.${data.category}`);
+            errorMsg.value = t('accountlink.updateError.title') + t('common.punct.colon') + t(getAccountLinkUpdateErrorMessageKey(data.category));
         }
     }).catch(function (error: unknown) {
         errorMsg.value = '';

@@ -1,11 +1,12 @@
 from datetime import datetime, timezone
 import logging
-import mimetypes
-import os
 from typing import List
+from urllib.parse import quote
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.http import FileResponse, HttpRequest, HttpResponseForbidden, HttpResponseNotFound
+from django.core.files.storage import default_storage
+from django.http import FileResponse, HttpRequest, HttpResponse, HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import get_object_or_404
 from django.views.decorators.cache import cache_control
 from django_ratelimit.decorators import ratelimit
@@ -17,12 +18,13 @@ from ninja.orm import create_schema
 from utils import verify_image
 from utils.exceptions import ExceptionToResponse
 from videomanager.models import VideoModel
-from .decorators import banned_blocked, login_required_error
+from .decorators import banned_blocked, login_required_error, staff_required
 from .models import UserProfile
-from .services import refresh_avatar_chance, try_update_user_name_fields, try_update_user_signature
+from .services import has_sub200_expert_video, refresh_avatar_chance, try_update_user_name_fields, try_update_user_signature
 
 router = Router()
 logger = logging.getLogger('userprofile')
+AVATAR_ACCEL_REDIRECT_PREFIX = '/internal-media/'
 
 
 UserInfoOut = create_schema(
@@ -36,6 +38,79 @@ UserInfoOut = create_schema(
         'left_avatar_n', 'left_signature_n',
     ],
 )
+
+
+class AdminUserProfileOutBase(Schema):
+    @staticmethod
+    def resolve_userms_identifiers(user: UserProfile) -> list[str]:
+        return user.userms.identifiers if user.userms else []
+
+    @staticmethod
+    def resolve_userms_video_num_limit(user: UserProfile) -> int | None:
+        return user.userms.video_num_limit if user.userms else None
+
+
+AdminUserProfileOut = create_schema(
+    UserProfile,
+    fields=[
+        'id', 'username', 'email',
+        'firstname', 'lastname', 'realname',
+        'signature', 'country',
+        'is_banned', 'is_staff',
+        'left_realname_n', 'left_avatar_n', 'left_signature_n',
+        'last_change_avatar', 'last_change_signature',
+        'date_updated',
+    ],
+    custom_fields=[
+        ('userms_id', int | None, None),
+        ('userms_identifiers', list[str], []),
+        ('userms_video_num_limit', int | None, None),
+    ],
+    base_class=AdminUserProfileOutBase,
+)
+
+ADMIN_USERPROFILE_FIELDS = (
+    'username', 'email',
+    'firstname', 'lastname', 'realname',
+    'signature', 'country', 'is_banned',
+    'left_realname_n', 'left_avatar_n', 'left_signature_n',
+)
+
+AdminUserProfileUpdateIn = create_schema(
+    UserProfile,
+    fields=list(ADMIN_USERPROFILE_FIELDS),
+    optional_fields='__all__',
+)
+
+
+@router.get('/admin/detail/{user_id}', response=AdminUserProfileOut)
+@decorate_view(staff_required)
+def get_user_profile_admin(request, user_id: int):
+    """
+    - staff_required
+    """
+    return get_object_or_404(UserProfile.objects.select_related('userms'), id=user_id)
+
+
+@router.patch('/admin/update/{user_id}', response=AdminUserProfileOut)
+@decorate_view(staff_required)
+def update_user_profile_admin(request, user_id: int, data: AdminUserProfileUpdateIn = Form(...)):  # noqa: B008
+    """
+    - staff_required
+    """
+    user = get_object_or_404(UserProfile.objects.select_related('userms'), id=user_id)
+    if user.is_staff and user != request.user:
+        raise HttpError(403, 'Cannot update another staff user.')
+
+    updates = data.model_dump(exclude_unset=True)
+    for field, value in updates.items():
+        setattr(user, field, value)
+
+    if user_update_fields := list(updates.keys()):
+        user.save(update_fields=[*user_update_fields, 'date_updated'])
+        logger.warning(f'管理员 {request.user.username}#{request.user.id} 修改用户 {user.username}#{user.id} 字段 {", ".join(user_update_fields)}')
+
+    return get_object_or_404(UserProfile.objects.select_related('userms'), id=user_id)
 
 
 @router.get('/info/{user_id}', response=UserInfoOut)
@@ -83,17 +158,22 @@ def get_user_identifier(request, user_id: int):
 
 
 @router.get('/avatar/{user_id}')
-@decorate_view(cache_control(max_age=5))
 def get_user_avatar(request, user_id: int):
     """
     - Rate limited by nginx
-    - cache_control(max_age=5)
     """
-    user = get_object_or_404(UserProfile, id=user_id)
-    if not user.avatar or not os.path.exists(user.avatar.path):
+    avatar_name = UserProfile.objects.filter(id=user_id).values_list('avatar', flat=True).first()
+    if not avatar_name:
         return HttpResponseNotFound()
-    content_type, _ = mimetypes.guess_type(user.avatar.path)
-    return FileResponse(open(user.avatar.path, 'rb'), content_type=content_type or 'image/jpeg')
+    if settings.DEBUG:
+        try:
+            return FileResponse(default_storage.open(avatar_name, 'rb'), filename=avatar_name)
+        except FileNotFoundError:
+            return HttpResponseNotFound()
+    response = HttpResponse()
+    del response['Content-Type']
+    response['X-Accel-Redirect'] = f'{AVATAR_ACCEL_REDIRECT_PREFIX}{quote(avatar_name, safe="/")}'
+    return response
 
 
 UserVideoOut = create_schema(
@@ -101,9 +181,10 @@ UserVideoOut = create_schema(
     fields=[
         'id',
         'upload_time', 'level', 'mode', 'timems', 'bv',
-        'state', 'software', 'cl', 'ce', 'file_size',
+        'state', 'software', 'cl', 'ce', 'right_ce', 'file_size',
         'end_time', 'ongoing_tournament', 'path', 'pluck',
     ],
+    custom_fields=[('cl', int | None, None), ('ce', int | None, None)],
 )
 
 
@@ -117,7 +198,7 @@ def get_user_videos(request, user_id: int):
     queryset = VideoModel.objects.filter(player=user)
     if user != request.user:
         queryset = queryset.filter(ongoing_tournament=False)
-    videos = queryset.values('id', 'upload_time', 'level', 'mode', 'timems', 'bv', 'state', 'software', 'cl', 'ce', 'file_size', 'end_time', 'ongoing_tournament', 'path', 'pluck')
+    videos = queryset.values('id', 'upload_time', 'level', 'mode', 'timems', 'bv', 'state', 'software', 'cl', 'ce', 'right_ce', 'file_size', 'end_time', 'ongoing_tournament', 'path', 'pluck')
     return list(videos)
 
 
@@ -237,8 +318,8 @@ def update_user_avatar(request, avatar: File[UploadedFile]):
     """
     user: UserProfile = request.user
 
-    if user.userms.e_timems_std >= 200000:
-        raise HttpResponseForbidden
+    if not has_sub200_expert_video(user):
+        return HttpResponseForbidden()
 
     refresh_avatar_chance(user)
     if user.left_avatar_n <= 0:
@@ -256,7 +337,7 @@ def update_user_avatar(request, avatar: File[UploadedFile]):
     user.left_avatar_n -= 1
     logger.info(f'用户 {user.username}#{user.id} 修改头像')
     try:
-        user.save(update_fields=['avatar', 'left_avatar_n'])
+        user.save(update_fields=['avatar', 'left_avatar_n', 'date_updated'])
     except ValidationError:
         raise ExceptionToResponse('avatar', 'validation')
 

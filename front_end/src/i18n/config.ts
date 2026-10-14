@@ -113,7 +113,6 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
         ranking: string;
         video: string;
         world: string;
-        guide: string;
         score: string;
         profile: string;
         welcome: string;

@@ -13,7 +13,12 @@ describe('Personal Profile', () => {
         cy.flushDatabase();
 
         // 注册并登录用户
-        cy.register(USER_ID, USERNAME, 'test@email.com', PASSWORD);
+        cy.registerUser({
+            id: USER_ID,
+            username: USERNAME,
+            email: 'test@email.com',
+            password: PASSWORD,
+        });
         cy.login(USERNAME, PASSWORD);
     });
 
@@ -68,8 +73,11 @@ describe('Personal Profile', () => {
     });
 
     it('Upload video', function () {
+        cy.intercept({ method: 'GET', pathname: '/api/userprofile/info/0' }).as('currentUser');
         cy.login(USERNAME, PASSWORD);
         cy.visitUser(USER_ID, 'upload');
+        cy.wait('@currentUser').its('response.body.realname').should('eq', REALNAME);
+        cy.get('.profile').contains(REALNAME);
 
         // 准备录像文件
         cy.fixture('Exp_FL_35.09_3BV=132_3BVs=3.76_Pu Tian Yi(Hu Bei).avf', 'binary').then((fileContent) => {
@@ -79,7 +87,7 @@ describe('Personal Profile', () => {
             cy.wrap(binaryStringToUint8Array(fileContent)).as('videoFileIntRmv');
         });
 
-        cy.get('.el-tabs__content').find('input[type=file]').selectFile([
+        cy.get('.el-tabs__content').find('input[type=file]').should('not.be.disabled').selectFile([
             {
                 contents: '@videoFileExpAvf',
                 fileName: 'videoFileExp.avf',
@@ -91,8 +99,8 @@ describe('Personal Profile', () => {
         ], { force: true });
 
         const expectedData = {
-            ExpAvf: { '': '', Bv: '132', Bvs: '3.762', 状态: '新标识', 用时: '35.090', 级别: '高级', 模式: '标准', 结束时间: '2023-10-05 21:25:57' },
-            IntRmv: { '': '', Bv: '32', Bvs: '3.379', 状态: '新标识', 用时: '9.469', 级别: '中级', 模式: '标准', 结束时间: '2015-10-31 22:53:35' },
+            ExpAvf: { '': '', Bv: '132', Bvs: '3.762', 状态: '通过', 用时: '35.090', 级别: '高级', 模式: '标准', 结束时间: '2023-10-05 21:25:57' },
+            IntRmv: { '': '', Bv: '32', Bvs: '3.379', 状态: '通过', 用时: '9.469', 级别: '中级', 模式: '标准', 结束时间: '2015-10-31 22:53:35' },
         };
 
         cy.get('table:visible').getTable().should((tableData) => {
@@ -101,15 +109,15 @@ describe('Personal Profile', () => {
             expect(tableData[1]).to.deep.equal(expectedData.IntRmv);
         });
 
-        cy.get('table:visible').find('.el-checkbox__input').first().click(); // 全选
+        cy.get('table:visible .checkbox-input').first().click(); // 全选
         cy.get('button').contains(/^\s*上传\s*$/).click();
         cy.get('.el-loading-spinner').should('exist');
         cy.get('.el-loading-spinner').should('not.exist');
 
         cy.get('table:visible').getTable().should((tableData) => {
             expect(tableData.length).to.equal(2);
-            expect(tableData[0]).to.deep.equal({ ...expectedData.ExpAvf, 状态: '上传成功' });
-            expect(tableData[1]).to.deep.equal({ ...expectedData.IntRmv, 状态: '上传成功' });
+            expect(tableData[0]).to.deep.equal({ ...expectedData.ExpAvf, 状态: '新标识' });
+            expect(tableData[1]).to.deep.equal({ ...expectedData.IntRmv, 状态: '新标识' });
         });
     });
 
@@ -204,9 +212,7 @@ describe('Personal Profile', () => {
     it('Navigate from homepage', () => {
         cy.visit('/');
 
-        cy.get('.el-tabs').eq(1).contains(REALNAME).click();
-
-        cy.contains('我的空间').click();
+        cy.get('#pane-newest').should('be.visible').contains(`a[href="#/player/${USER_ID}"]`, REALNAME).click();
 
         cy.url().should('eq', `http://localhost:8080/#/player/${USER_ID}/summary`);
 

@@ -1,6 +1,6 @@
 <template>
     <div v-if="isParsing" style="margin-top: 1em;">
-        <span class="text">
+        <span class="text-regular">
             {{ t('local.parsing', [parserProgress.parsed, parserProgress.total]) }}
         </span>
         &nbsp;
@@ -12,7 +12,7 @@
         />
     </div>
     <div v-if="isUploading" style="margin-top: 1em;">
-        <span class="text">
+        <span class="text-regular">
             {{ t('local.uploading', [uploadProgress.uploaded + uploadProgress.failed, uploadProgress.total]) }}
         </span>
         <StackBar

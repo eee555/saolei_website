@@ -1,6 +1,8 @@
 import { AccountBilibili } from './bilibili';
 import type { AccountBilibiliResponse } from './bilibili';
 import type { AccountLinkQueueResponse } from './common';
+import { AccountMineracer } from './mineracer';
+import type { AccountMineracerResponse } from './mineracer';
 import { AccountMSGames } from './msgames';
 import type { AccountMSGamesResponse } from './msgames';
 import type { AccountLinkPlatform } from './platforms';
@@ -14,6 +16,7 @@ import type { AccountWoMResponse } from './wom';
 export interface AccountLinksResponse {
     summary: AccountLinkQueueResponse[];
     B: AccountBilibiliResponse | null;
+    m: AccountMineracerResponse | null;
     c: AccountSaoleiResponse | null;
     a: AccountMSGamesResponse | null;
     w: AccountWoMResponse | null;
@@ -23,6 +26,7 @@ export interface AccountLinksResponse {
 export class AccountLinks {
     public summary: AccountLinkQueueResponse[] = [];
     public B?: AccountBilibili;
+    public m?: AccountMineracer;
     public c?: AccountSaolei;
     public a?: AccountMSGames;
     public w?: AccountWoM;
@@ -33,6 +37,7 @@ export class AccountLinks {
 
         this.summary = data.summary;
         this.B = data.B === null ? undefined : new AccountBilibili(data.B);
+        this.m = data.m === null ? undefined : new AccountMineracer(data.m);
         this.c = data.c === null ? undefined : new AccountSaolei(data.c);
         this.a = data.a === null ? undefined : new AccountMSGames(data.a);
         this.w = data.w === null ? undefined : new AccountWoM(data.w);

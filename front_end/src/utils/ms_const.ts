@@ -22,7 +22,6 @@ export const MS_Mode = {
     HardcoreNG: '06',
     Lucky: '10',
     Recursive: '11',
-    NoFlag: '12',
 } as const;
 export type MS_Mode = typeof MS_Mode[keyof typeof MS_Mode];
 
@@ -36,6 +35,7 @@ export type MS_State = typeof MS_State[keyof typeof MS_State];
 
 export const TournamentState = {
     Pending: 'p',
+    Normal: 'n',
     Ongoing: 'o',
     Finished: 'f',
     Preparing: 'r',
@@ -44,9 +44,9 @@ export const TournamentState = {
 } as const;
 export type TournamentState = typeof TournamentState[keyof typeof TournamentState];
 
-export enum TournamentSeries {
-    General = 'a',
+export enum TournamentSubclass {
     GSC = 'g',
+    Weekly = 'w',
     Unknown = 'u',
 }
 
@@ -56,7 +56,7 @@ export const GSCDefaults = {
     et: 240000,
 } as const;
 
-export const ColorTemplateNames = ['time', 'bvs', 'stnb', 'ioe', 'thrp', 'custom'] as const;
+export const ColorTemplateNames = ['time', 'bvs', 'stnb', 'ioe', 'thrp', 'path', 'custom'] as const;
 export type ColorTemplateName = typeof ColorTemplateNames[number];
 
 export const ColumnChoices = ['state', 'upload_time', 'end_time', 'player', 'software', 'mode', 'level', 'time', 'bv', 'bvs', 'stnb', 'ces', 'cls', 'corr', 'ioe', 'thrp', 'path', 'file_size'] as const;
@@ -87,3 +87,6 @@ export function getPiecewiseColorSchemeName(stat: PiecewiseColorSchemeName, leve
             return 'stnb';
     }
 }
+
+export const MineracerAccountLinkErrorMessageCategory = ['account_not_found', 'already_linked', 'expired', 'identifier_conflict', 'invalid_device_code', 'link_superseded', 'not_configured', 'pending_start', 'remote_failed', 'requestexception', 'response', 'timeout'] as const;
+export type MineracerAccountLinkErrorMessageCategory = typeof MineracerAccountLinkErrorMessageCategory[number];

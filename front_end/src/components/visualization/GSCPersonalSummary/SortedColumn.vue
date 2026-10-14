@@ -1,31 +1,25 @@
 <template>
-    <div class="cell">
-        <span class="text">
-            {{ t(`common.prop.${sortBy}`) }}
-        </span>
+    <div class="cell text-regular">
+        {{ t(`common.prop.${sortBy}`) }}
     </div>
-    <Cell v-for="video in sortedVideos" :key="video.id" :video="video" :level="video.level" :color-theme="colorScheme" :display-by="sortBy" />
-    <Cell v-for="i in count - sortedVideos.length" :key="i" :level="level" :color-theme="colorScheme" :display-by="sortBy" />
-    <div class="cell" :style="{ backgroundColor: avgColor }">
-        <span class="text" :style="{ color: avgFontColor }">
-            {{ formatNumberSmart(sumStat, 6, 3) }}
-        </span>
+    <VideoCell v-for="video in sortedVideos" :key="video.id" class="cell" :video="video" :text="video.displayStat(sortBy)" :value="video[sortBy]" :color-theme="colorScheme" />
+    <VideoCell v-for="i in count - sortedVideos.length" :key="`default-${i}`" class="cell" :text="defaultStatText" :value="defaultStat" :color-theme="colorScheme" />
+    <div class="cell" :style="colorScheme.getStyle(avgStat)">
+        {{ formatNumberSmart(sumStat, 6, 3) }}
     </div>
 </template>
 
 <script setup lang="ts">
 import '@/styles/text.css';
 import { sum } from 'd3-array';
-import tinycolor from 'tinycolor2';
 import type { PropType } from 'vue';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import Cell from './Cell.vue';
 import { defaultVideos } from './utils';
 
-import { colorTheme } from '@/store';
-import { getTextColor, PiecewiseColorScheme } from '@/utils/colors';
+import VideoCell from '@/components/visualization/VideoCell.vue';
+import { colorThemes } from '@/store/color';
 import type { MS_Level } from '@/utils/ms_const';
 import { formatNumberSmart } from '@/utils/strings';
 import type { StandardVideoAbstract } from '@/utils/videoabstract';
@@ -33,22 +27,10 @@ import type { StandardVideoAbstract } from '@/utils/videoabstract';
 type sortByOptions = 'time' | 'bvs' | 'stnb';
 
 const props = defineProps({
-    videos: {
-        type: Array as PropType<StandardVideoAbstract[]>,
-        default: () => [],
-    },
-    level: {
-        type: String as PropType<MS_Level>,
-        required: true,
-    },
-    sortBy: {
-        type: String as PropType<sortByOptions>,
-        required: true,
-    },
-    count: {
-        type: Number,
-        required: true,
-    },
+    videos: { type: Array as PropType<StandardVideoAbstract[]>, default: () => [] },
+    level: { type: String as PropType<MS_Level>, required: true },
+    sortBy: { type: String as PropType<sortByOptions>, required: true },
+    count: { type: Number, required: true },
 });
 
 const { t } = useI18n();
@@ -56,19 +38,18 @@ const { t } = useI18n();
 const colorScheme = computed(() => {
     switch (props.sortBy) {
         case 'time':
-            return PiecewiseColorScheme.createFromTheme(colorTheme.value[`${props.level}time`]);
+            return colorThemes[`${props.level}time`].value;
         case 'bvs':
-            return PiecewiseColorScheme.createFromTheme(colorTheme.value.bvs);
+            return colorThemes.bvs.value;
         case 'stnb':
-            return PiecewiseColorScheme.createFromTheme(colorTheme.value.stnb);
+            return colorThemes.stnb.value;
     }
 });
 
-const _videos = computed(() => props.videos.filter((video) => video.getStat(props.sortBy) !== undefined));
+const _videos = computed(() => props.videos.filter((video) => !isNaN(video[props.sortBy])));
 
 const sortedVideos = computed(() => {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const sorted = Array.from(_videos.value).sort((v1, v2) => v1.getStat(props.sortBy)! - v2.getStat(props.sortBy)!);
+    const sorted = Array.from(_videos.value).sort((v1, v2) => v1[props.sortBy] - v2[props.sortBy]);
     if (props.sortBy === 'time') {
         return sorted.slice(0, props.count);
     } else {
@@ -77,30 +58,16 @@ const sortedVideos = computed(() => {
 });
 
 const sumStat = computed(() => {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return sum(sortedVideos.value, (video) => video.getStat(props.sortBy)!) + (props.count - sortedVideos.value.length) * defaultVideos[props.level][props.sortBy];
+    return sum(sortedVideos.value, (video) => video[props.sortBy]) + (props.count - sortedVideos.value.length) * defaultVideos[props.level][props.sortBy];
 });
 
-const avgStat = computed(() => {
-    return sumStat.value / props.count;
-});
+const avgStat = computed(() => sumStat.value / props.count);
+const defaultStat = computed(() => defaultVideos[props.level][props.sortBy]);
+const defaultStatText = computed(() => String(defaultStat.value));
 
-const avgColor = computed(() => {
-    return colorScheme.value.getColor(avgStat.value);
-});
-
-const avgFontColor = computed(() => {
-    const tc = tinycolor(avgColor.value);
-    return tc.getAlpha() == 0 ? getTextColor() : tc.isDark() ? 'white' : 'black';
-});
-
-defineExpose({
-    sumStat,
-});
+defineExpose({ sumStat });
 </script>
 
 <style lang="less" scoped>
-
 @import './cell.less';
-
 </style>

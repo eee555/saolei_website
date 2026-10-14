@@ -26,6 +26,10 @@ const props = defineProps({
         default: false,
     },
 });
+
+defineSlots<{
+    default?: () => unknown;
+}>();
 </script>
 
 <style lang="less" scoped>

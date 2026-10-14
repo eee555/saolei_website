@@ -1,5 +1,7 @@
+import { Ticket } from '@element-plus/icons-vue';
+
 import CardWoM from './CardWoM.vue';
-import { mockWoMResponse, mountAccountLink, resetAccountLinkStore } from './testUtils';
+import { mockUpdateAccountLink, mockWoMResponse, mountAccountLink, resetAccountLinkStore } from './testUtils';
 
 import { AccountWoM } from '@/utils/accountlinks';
 
@@ -13,7 +15,7 @@ describe('<CardWoM />', () => {
             id: '303',
             verified: true,
             info: new AccountWoM(mockWoMResponse()),
-        });
+        }, { Ticket });
 
         cy.contains('Minesweeper.Online #303');
         cy.contains('123');
@@ -26,9 +28,30 @@ describe('<CardWoM />', () => {
         mountAccountLink(CardWoM, {
             id: '303',
             verified: false,
-        });
+        }, { Ticket });
 
         cy.contains('This account has not been verified.');
         cy.contains('123').should('not.exist');
+    });
+
+    it('shows a readable parse error when synchronization returns indexerror', () => {
+        mockUpdateAccountLink({
+            type: 'error',
+            object: 'import',
+            category: 'indexerror',
+        });
+
+        mountAccountLink(CardWoM, {
+            id: '303',
+            verified: true,
+            info: new AccountWoM(mockWoMResponse()),
+        }, { Ticket });
+
+        cy.get('.el-link').last().click();
+        cy.get('.el-link').last().click();
+        cy.contains('button', 'Synchronize').click();
+
+        cy.wait('@updateAccountLink').its('request.body').should('equal', 'platform=w');
+        cy.contains('Update failed: The third-party page structure changed, so data extraction failed');
     });
 });

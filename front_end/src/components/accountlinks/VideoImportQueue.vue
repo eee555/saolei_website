@@ -41,7 +41,7 @@
         <PrColumn field="timems" :header="t('common.prop.time')" sortable>
             <template #body="{ data }: { data: SaoleiVideo }">
                 {{ (data.timems / 1000).toFixed(2) }}
-                <span v-if="data.nf" class="text text-warning">
+                <span v-if="data.nf" class="text-warning">
                     NF
                 </span>
             </template>
@@ -49,22 +49,22 @@
         <PrColumn field="bv" :header="t('common.prop.bv')" sortable />
         <PrColumn field="import_task__status" :header="t('common.prop.state')" :show-filter-match-modes="false" :show-filter-operator="false" :show-apply-button="false" :show-clear-button="false" :filter-header-style="{ marginInlineStart: '0px' }">
             <template #body="{ data }: { data: SaoleiVideo }">
-                <span v-if="data.import_task__status == 'RUNNING'" class="text text-warning">
+                <span v-if="data.import_task__status == 'RUNNING'" class="text-warning">
                     {{ t('accountlink.importStatus.running') }}
                 </span>
-                <span v-else-if="data.import_task__status == 'SUCCESSFUL' && data.import_video__id != 0" class="text text-success">
+                <span v-else-if="data.import_task__status == 'SUCCESSFUL' && data.import_video__id != 0" class="text-success">
                     {{ t('accountlink.importStatus.successful') }}（新）
                 </span>
-                <span v-else-if="data.import_task__status == 'FAILED'" class="text text-danger">
+                <span v-else-if="data.import_task__status == 'FAILED'" class="text-danger">
                     {{ t('accountlink.importStatus.failed') }}
                 </span>
-                <span v-else-if="data.import_task__status == 'READY'" class="text text-primary">
+                <span v-else-if="data.import_task__status == 'READY'" class="text-primary">
                     {{ t('accountlink.importStatus.ready') }}
                 </span>
-                <span v-else-if="data.import_task__status == 'SUCCESSFUL' && data.import_video__id == 0" class="text text-danger">
+                <span v-else-if="data.import_task__status == 'SUCCESSFUL' && data.import_video__id == 0" class="text-danger">
                     {{ t('accountlink.importStatus.connection') }}
                 </span>
-                <span v-else-if="data.import_task__status == 'NULL' && data.import_video__id != 0" class="text text-success">
+                <span v-else-if="data.import_task__status == 'NULL' && data.import_video__id != 0" class="text-success">
                     {{ t('accountlink.importStatus.successful') }}
                 </span>
             </template>
@@ -102,10 +102,10 @@ import { useI18n } from 'vue-i18n';
 import { httpErrorNotification } from '@/components/Notifications';
 import DjangoTaskResultStatusBadge from '@/components/widgets/DjangoTaskResultStatusBadge.vue';
 import GameLevelIcon from '@/components/widgets/GameLevelIcon.vue';
-import type { SaoleiVideo, SaoleiVideoRaw } from '@/utils/accountlinks';
+import { fetchSaoleiImportVideos } from '@/services/accountLinkService';
+import type { SaoleiVideo } from '@/utils/accountlinks';
 import { preview } from '@/utils/common/PlayerDialog';
 import { DjangoTaskResultStatusOptions } from '@/utils/common/structInterface';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { MS_Levels } from '@/utils/ms_const';
 import { utc_to_local_format } from '@/utils/system/tools';
 
@@ -121,7 +121,6 @@ const filters = ref({
     level: { value: null, matchMode: FilterMatchMode.EQUALS },
 });
 
-const { proxy } = useCurrentInstance();
 const { t } = useI18n();
 
 const tableData = ref<SaoleiVideo[]>([]);
@@ -130,24 +129,12 @@ const importing = ref(false);
 function refresh() {
     tableData.value.splice(0, tableData.value.length);
     if (!props.saoleiId) return;
-    proxy.$axios.get('accountlink/saolei/videolist/get/', {
-        params: {
-            saolei_id: props.saoleiId,
-        },
-    }).then((response) => {
-        tableData.value = preprocessTable(response.data);
+    fetchSaoleiImportVideos(props.saoleiId).then((data) => {
+        tableData.value = data;
     }).catch(httpErrorNotification);
 }
 
 watch(() => props.saoleiId, refresh, { immediate: true });
-
-function preprocessTable(data: SaoleiVideoRaw[]): SaoleiVideo[] {
-    data.forEach((video) => {
-        video.import_video__id ??= 0;
-        video.import_task__status ??= 'NULL';
-    });
-    return data as SaoleiVideo[];
-}
 </script>
 
 <style lang="less" scoped>

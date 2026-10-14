@@ -21,24 +21,25 @@
                 @input="emailCodeHandler"
             />
             &nbsp;
-            <ElButton :disabled="captcha.length != 4 || counting" @click="getEmailCaptcha(type)">
+            <BaseButton :disabled="captcha.length != 4 || counting" @click="getEmailCaptcha(type)">
                 <VueCountdown v-if="counting" v-slot="{ totalSeconds }" :time="60000" @end="counting = false;">
                     ({{ totalSeconds }})
                 </VueCountdown>
                 <span v-else>{{ t('common.button.send') }}</span>
-            </ElButton>
+            </BaseButton>
         </div>
     </ElFormItem>
 </template>
 
 <script setup lang="ts">
 import VueCountdown from '@chenfengyuan/vue-countdown';
-import { ElButton, ElFormItem, ElInput, ElNotification } from 'element-plus';
+import { ElFormItem, ElInput, ElNotification } from 'element-plus';
 import { computed, ref, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import ValidCode from '../ValidCode.vue';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import { local } from '@/store';
 import { validateError, validateSuccess } from '@/utils/common/elFormValidate';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';

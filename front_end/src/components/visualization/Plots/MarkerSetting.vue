@@ -1,6 +1,6 @@
 <template>
     <Tippy trigger="click" placement="bottom-start" interactive>
-        <ElButton :aria-label="label" circle>
+        <BaseButton class="square-button" :aria-label="label">
             <svg class="marker-setting__icon" viewBox="0 0 24 24" aria-hidden="true">
                 <circle
                     v-if="shape === 'circle'"
@@ -9,13 +9,13 @@
                     stroke="currentColor" :stroke-width="iconStrokeWidth"
                 />
             </svg>
-        </ElButton>
+        </BaseButton>
 
         <template #content>
-            <ElCard class="card-small" :body-style="{ overflowX: 'hidden' }">
+            <div class="card card-small" style="overflow-x: hidden;">
                 <div class="marker-setting">
                     <div v-if="hasOption('shape')" class="marker-setting__item">
-                        <span class="text text-small">
+                        <span class="text-regular text-small">
                             {{ t('local.shape') }}
                         </span>
                         <ElSelect v-model="shape">
@@ -23,25 +23,25 @@
                         </ElSelect>
                     </div>
                     <div v-if="hasOption('radius')" class="marker-setting__item">
-                        <span class="text text-small">
+                        <span class="text-regular text-small">
                             {{ t('local.radius') }}
                         </span>
                         <ElInputNumber v-model="radius" size="small" :min="0" :step="1" controls-position="right" />
                     </div>
                     <div v-if="hasOption('opacity')" class="marker-setting__item">
-                        <span class="text text-small">
+                        <span class="text-regular text-small">
                             {{ t('local.opacity') }}
                         </span>
                         <ElSlider v-model="opacity" :min="0" :max="1" :step="0.05" />
                     </div>
                     <div v-if="hasOption('strokeWidth')" class="marker-setting__item">
-                        <span class="text text-small">
+                        <span class="text-regular text-small">
                             {{ t('local.strokeWidth') }}
                         </span>
                         <ElInputNumber v-model="strokeWidth" :min="0" :step="1" controls-position="right" />
                     </div>
                 </div>
-            </ElCard>
+            </div>
         </template>
     </Tippy>
 </template>
@@ -50,10 +50,12 @@
 import '@/styles/cards.css';
 import '@/styles/text.css';
 
-import { ElButton, ElCard, ElInputNumber, ElOption, ElSelect, ElSlider } from 'element-plus';
+import { ElInputNumber, ElOption, ElSelect, ElSlider } from 'element-plus';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Tippy } from 'vue-tippy';
+
+import BaseButton from '@/components/common/BaseButton.vue';
 
 type MarkerShape = 'circle';
 type MarkerSettingOption = 'shape' | 'radius' | 'opacity' | 'strokeWidth';

@@ -170,7 +170,7 @@ function updateConfigFromRows(rows: CustomCounterTableRow[]) {
 }
 
 .custom-counter-rows-editor__drag-handle {
-    color: var(--el-text-color-secondary);
+    color: var(--ui-text-color-secondary);
     cursor: grab;
     font-size: 14px;
 }

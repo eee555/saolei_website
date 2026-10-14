@@ -1,0 +1,55 @@
+/* Initial values from Element Plus 2.14.6; see LICENSE.element-plus.txt. */
+:root {
+    --ui-color-primary: #409eff;
+    --ui-color-primary-light-3: #79bbff;
+    --ui-color-primary-light-5: #a0cfff;
+    --ui-color-primary-light-7: #c6e2ff;
+    --ui-color-primary-light-8: #d9ecff;
+    --ui-color-primary-light-9: #ecf5ff;
+    --ui-color-primary-dark-2: #337ecc;
+    --ui-color-success: #67c23a;
+    --ui-color-success-light-3: #95d475;
+    --ui-color-success-light-5: #b3e19d;
+    --ui-color-success-light-9: #f0f9eb;
+    --ui-color-success-dark-2: #529b2e;
+    --ui-color-warning: #e6a23c;
+    --ui-color-warning-light-3: #eebe77;
+    --ui-color-warning-light-5: #f3d19e;
+    --ui-color-warning-light-9: #fdf6ec;
+    --ui-color-warning-dark-2: #b88230;
+    --ui-color-danger: #f56c6c;
+    --ui-color-danger-light-3: #f89898;
+    --ui-color-danger-light-5: #fab6b6;
+    --ui-color-danger-light-9: #fef0f0;
+    --ui-color-danger-dark-2: #c45656;
+    --ui-color-info: #909399;
+    --ui-color-info-light-3: #b1b3b8;
+    --ui-color-info-light-5: #c8c9cc;
+    --ui-color-info-light-9: #f4f4f5;
+    --ui-color-info-dark-2: #73767a;
+}
+
+html.dark {
+    --ui-color-primary-light-3: #3375b9;
+    --ui-color-primary-light-5: #2a598a;
+    --ui-color-primary-light-7: #213d5b;
+    --ui-color-primary-light-8: #1d3043;
+    --ui-color-primary-light-9: #18222b;
+    --ui-color-primary-dark-2: #66b1ff;
+    --ui-color-success-light-3: #4e8e2f;
+    --ui-color-success-light-5: #3e6b27;
+    --ui-color-success-light-9: #1c2518;
+    --ui-color-success-dark-2: #85ce61;
+    --ui-color-warning-light-3: #a77730;
+    --ui-color-warning-light-5: #7d5b28;
+    --ui-color-warning-light-9: #292218;
+    --ui-color-warning-dark-2: #ebb563;
+    --ui-color-danger-light-3: #b25252;
+    --ui-color-danger-light-5: #854040;
+    --ui-color-danger-light-9: #2a1d1d;
+    --ui-color-danger-dark-2: #f78989;
+    --ui-color-info-light-3: #6b6d71;
+    --ui-color-info-light-5: #525457;
+    --ui-color-info-light-9: #202121;
+    --ui-color-info-dark-2: #a6a9ad;
+}

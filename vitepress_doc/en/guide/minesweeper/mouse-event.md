@@ -1,3 +1,8 @@
+---
+title: Controls and Rules - Open Minesweeper
+description: Minesweeper controls explained, including classic mode, 1.5-click technique, left-button double click, touch screen and assisted chording.
+---
+
 # Controls and Rules
 
 ## Classic Control Mode

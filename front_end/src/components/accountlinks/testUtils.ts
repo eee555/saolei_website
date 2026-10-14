@@ -2,23 +2,27 @@ import type { Component } from 'vue';
 
 import $axios from '@/http';
 import i18n from '@/i18n';
+import type { AccountLinkUpdateResponse } from '@/services/accountLinkService';
 import { store } from '@/store';
 import { pinia } from '@/store/create';
 import type {
     AccountBilibiliResponse,
     AccountLinksResponse,
+    AccountMineracerResponse,
     AccountMSGamesResponse,
     AccountSaoleiResponse,
     AccountWoMResponse,
+    MineracerAccountLinkSessionResponse,
 } from '@/utils/accountlinks';
 import { AccountLinkPlatform } from '@/utils/accountlinks';
 import { UserProfile } from '@/utils/userprofile';
 
-function mountOptions(props: Record<string, unknown> = {}) {
+function mountOptions(props: Record<string, unknown>, components: Record<string, Component>) {
     return {
         props,
         global: {
             plugins: [i18n, pinia],
+            components,
             config: {
                 globalProperties: {
                     $axios,
@@ -28,8 +32,8 @@ function mountOptions(props: Record<string, unknown> = {}) {
     };
 }
 
-export function mountAccountLink(component: Component, props: Record<string, unknown> = {}): Cypress.Chainable<unknown> {
-    return cy.mount(component as never, mountOptions(props) as never) as Cypress.Chainable<unknown>;
+export function mountAccountLink(component: Component, props: Record<string, unknown> = {}, components: Record<string, Component> = {}): Cypress.Chainable<unknown> {
+    return cy.mount(component as never, mountOptions(props, components) as never) as Cypress.Chainable<unknown>;
 }
 
 export function resetAccountLinkStore(userId = 1, playerId = 1): void {
@@ -127,6 +131,30 @@ export function mockBilibiliResponse(overrides: Partial<AccountBilibiliResponse>
     };
 }
 
+export function mockMineracerResponse(overrides: Partial<AccountMineracerResponse> = {}): AccountMineracerResponse {
+    return {
+        id: '123456789',
+        parent: 5,
+        update_time: '2025-05-09T12:13:14Z',
+        ...overrides,
+    };
+}
+
+export function mockMineracerAccountLinkSessionResponse(overrides: Partial<MineracerAccountLinkSessionResponse> = {}): MineracerAccountLinkSessionResponse {
+    return {
+        session_id: 'mineracer-session-1',
+        status: 'pending',
+        user_code: 'ABCD-EFGH',
+        verification_uri: 'https://mineracer.com/link',
+        verification_uri_complete: 'https://mineracer.com/link?code=ABCD-EFGH',
+        expires_at: '2025-05-09T12:23:14Z',
+        next_poll_at: '2025-05-09T12:13:17Z',
+        remote_userid: '',
+        error_category: '',
+        ...overrides,
+    };
+}
+
 export function mockAccountLinksResponse(): AccountLinksResponse {
     return {
         summary: [
@@ -134,8 +162,10 @@ export function mockAccountLinksResponse(): AccountLinksResponse {
             { id: 2, platform: AccountLinkPlatform.WoM, identifier: '303', userprofile: 1, verified: true },
             { id: 3, platform: AccountLinkPlatform.MSGames, identifier: '202', userprofile: 1, verified: true },
             { id: 4, platform: AccountLinkPlatform.Saolei, identifier: '101', userprofile: 1, verified: true },
+            { id: 5, platform: AccountLinkPlatform.Mineracer, identifier: '123456789', userprofile: 1, verified: true },
         ],
         B: mockBilibiliResponse(),
+        m: mockMineracerResponse(),
         c: mockSaoleiResponse(),
         a: mockMSGamesResponse(),
         w: mockWoMResponse(),
@@ -159,9 +189,9 @@ export function mockSaoleiImportSummary(): void {
     }).as('importSummary');
 }
 
-export function mockUpdateAccountLink(): void {
+export function mockUpdateAccountLink(body: AccountLinkUpdateResponse = { type: 'success' }): void {
     cy.intercept('POST', '**/accountlink/update/', {
         statusCode: 200,
-        body: { type: 'success' },
+        body,
     }).as('updateAccountLink');
 }

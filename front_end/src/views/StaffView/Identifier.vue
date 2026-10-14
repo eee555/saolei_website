@@ -1,30 +1,31 @@
 <template>
     <ElInput v-model="identifier" />
-    <ElButton @click="handleGet">
+    <BaseButton @click="handleGet">
         查询
-    </ElButton>
-    <ElButton v-if="safe != 'unknown'" @click="handleDelete">
+    </BaseButton>
+    <BaseButton v-if="safe != 'unknown'" @click="handleDelete">
         删除
-    </ElButton>
-    <ElButton v-if="safe == 'false'" @click="handleApprove">
+    </BaseButton>
+    <BaseButton v-if="safe == 'false'" @click="handleApprove">
         通过审核
-    </ElButton>
+    </BaseButton>
     <template v-if="userid === 0 && identifier !== ''">
         <br>&nbsp;
         绑定用户ID
         <ElInputNumber v-model="newUserid" />
-        <ElButton @click="handleAdd">
+        <BaseButton @click="handleAdd">
             绑定
-        </ElButton>
+        </BaseButton>
     </template>
     <br>
     用户ID: {{ userid }}，状态：{{ safe }}
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElInput, ElInputNumber } from 'element-plus';
+import { ElInput, ElInputNumber } from 'element-plus';
 import { ref } from 'vue';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import { httpErrorNotification, successNotification } from '@/components/Notifications';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 

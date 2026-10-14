@@ -1,3 +1,4 @@
+/* eslint-disable import-x/no-named-as-default-member */
 import eslint from '@eslint/js';
 import stylistic from '@stylistic/eslint-plugin';
 import { defineConfig } from 'eslint/config';
@@ -8,6 +9,36 @@ import pluginVue from 'eslint-plugin-vue';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 // import vueI18n from '@intlify/eslint-plugin-vue-i18n'; // 不兼容ts。https://github.com/intlify/eslint-plugin-vue-i18n/issues/32
+
+const restrictedHtmlElements = [{
+    element: ['ElText', 'el-text'],
+    message: 'Use "@/styles/text.css" instead.',
+}, {
+    element: ['ElContainer', 'el-container', 'ElHeader', 'el-header', 'ElMain', 'el-main', 'ElAside', 'el-aside', 'ElFooter', 'el-footer', 'ElRow', 'el-row', 'ElCol', 'el-col'],
+    message: 'Use native HTML and CSS for layout; reuse "@/styles/layout.css" where appropriate.',
+}, {
+    element: ['ElCard', 'el-card'],
+    message: 'Use "@/styles/cards.css" instead.',
+}, {
+    element: ['ElDivider', 'el-divider'],
+    message: 'Use CSS borders on native containers instead.',
+}, {
+    element: ['ElCheckbox', 'el-checkbox', 'ElCheckboxGroup', 'el-checkbox-group', 'ElCheckboxButton', 'el-checkbox-button'],
+    message: 'Use a native checkbox and associated label with "@/styles/checkbox.css" or "@/styles/checkbox-buttons.css" instead.',
+}];
+
+const restrictedActionElements = [{
+    element: ['ElButton', 'el-button'],
+    message: 'Use BaseButton or a native button with "@/styles/button.css" instead.',
+}, {
+    element: ['ElLink', 'el-link'],
+    message: 'Use a native link with "@/styles/link.css" for navigation, or BaseTextButton for actions.',
+}];
+
+const restrictedDescriptionsElements = [{
+    element: ['ElDescriptions', 'el-descriptions', 'ElDescriptionsItem', 'el-descriptions-item'],
+    message: 'Use native dl/dt/dd with "@/styles/descriptions.css" instead.',
+}];
 
 export default defineConfig({
     ignores: [
@@ -23,6 +54,7 @@ export default defineConfig({
     extends: [
         eslint.configs.recommended,
         importPlugin.flatConfigs.recommended,
+        importPlugin.flatConfigs.typescript,
         tseslint.configs.all,
         ...pluginVue.configs['flat/recommended'],
         pluginCypress.configs.recommended,
@@ -56,16 +88,45 @@ export default defineConfig({
     },
     rules: {
         'import-x/consistent-type-specifier-style': 'error',
+        'import-x/dynamic-import-chunkname': 'off', // webpack项目用的，不适用vite
+        'import-x/exports-last': 'off', // 和group-exports一致
         'import-x/extensions': 'error',
         'import-x/first': 'error',
+        'import-x/group-exports': 'off',
+        'import-x/max-dependencies': 'off',
         'import-x/newline-after-import': 'error',
         'import-x/no-absolute-path': 'error',
+        'import-x/no-anonymous-default-export': 'off',
         'import-x/no-cycle': 'error',
+        'import-x/no-default-export': 'off',
+        'import-x/no-deprecated': 'error',
         'import-x/no-duplicates': 'error',
         'import-x/no-dynamic-require': 'error',
+        'import-x/no-empty-named-blocks': 'error',
+        'import-x/no-extraneous-dependencies': ['error', {
+            devDependencies: [
+                '**/*.test.ts',
+                '**/*.cy.ts',
+                '**/cypress/**',
+                'cypress.config.ts',
+                'eslint.config.js',
+                'vite.config.ts',
+            ],
+            optionalDependencies: false,
+            peerDependencies: false,
+            includeTypes: true,
+        }],
+        'import-x/no-internal-modules': 'off',
+        'import-x/no-mutable-exports': 'error',
+        'import-x/no-named-default': 'error',
+        'import-x/no-named-export': 'off',
+        'import-x/no-namespace': 'error',
         'import-x/no-relative-packages': 'error',
+        // 'import-x/no-relative-parent-imports', 'error',
+        // 'import-x/no-rename-default': 'error',
         'import-x/no-restricted-paths': 'error',
         'import-x/no-self-import': 'error',
+        'import-x/no-unassigned-import': 'off', // 和CSS导入冲突
         'import-x/no-unused-modules': 'off', // ESLint 10 removed the FileEnumerator API this rule relies on.
         'import-x/no-useless-path-segments': 'error',
         'import-x/no-webpack-loader-syntax': 'error',
@@ -79,6 +140,9 @@ export default defineConfig({
                 named: true,
             },
         ],
+        'import-x/prefer-default-export': 'off',
+        'import-x/prefer-namespace-import': 'error',
+
         'no-control-regex': 'off',
         'no-irregular-whitespace': 'off',
         'no-prototype-builtins': 'off',
@@ -121,12 +185,7 @@ export default defineConfig({
         // vue/no-restricted-component-names
         // vue/no-restricted-component-options
         // vue/no-restricted-custom-event
-        'vue/no-restricted-html-elements': [
-            'error', {
-                element: ['ElText', 'el-text'],
-                message: 'Use "@/styles/text.css" instead.',
-            },
-        ],
+        'vue/no-restricted-html-elements': ['error', ...restrictedHtmlElements],
         // vue/no-restricted-props
         // vue/no-restricted-static-attribute
         // vue/no-restricted-v-bind
@@ -171,7 +230,7 @@ export default defineConfig({
         // vue/require-default-export
         // vue/require-direct-export
         // vue/require-emit-validator
-        // 'vue/require-explicit-slots': 'error',  // TODO
+        'vue/require-explicit-slots': 'error',
         'vue/require-expose': 'error',
         'vue/require-macro-variable-name': 'error',
         // vue/require-name-property
@@ -224,17 +283,13 @@ export default defineConfig({
 
         '@typescript-eslint/consistent-return': 'off', // 官方建议关闭
         '@typescript-eslint/explicit-function-return-type': 'off', // 和i18n冲突
-        '@typescript-eslint/prefer-function-type': 'off', // TODO: emit定义格式需要修改
         '@typescript-eslint/promise-function-async': 'off', // 和Vue Router、defineAsyncComponent冲突
         '@typescript-eslint/max-params': 'off',
         '@typescript-eslint/naming-convention': 'off', // TODO：涉及到前后端标准不一致的问题，很复杂
         '@typescript-eslint/no-redeclare': 'off',
-        '@typescript-eslint/no-explicit-any': 'off', // TODO
         '@typescript-eslint/no-magic-numbers': 'off', // TODO
         '@typescript-eslint/no-unnecessary-condition': 'off', // false positive很多，参考https://typescript-eslint.io/rules/no-unnecessary-condition/#values-modified-within-function-calls
-        '@typescript-eslint/no-unsafe-argument': 'off', // TODO：牵扯到的内容很多，包括后端API重构等
-        '@typescript-eslint/no-unsafe-assignment': 'off', // TODO：牵扯到的内容很多，包括后端API重构等
-        '@typescript-eslint/no-unsafe-member-access': 'off', // TODO：牵扯到的内容很多，包括后端API重构等
+        '@typescript-eslint/no-unsafe-assignment': 'off', // 和defineAsyncComponent冲突
         '@typescript-eslint/no-unsafe-type-assertion': 'off', // 和Vue的PropType冲突
         '@typescript-eslint/no-use-before-define': 'off', // 为了代码可读性，有的函数需要放在最后
         '@typescript-eslint/prefer-enum-initializers': 'off',
@@ -246,8 +301,67 @@ export default defineConfig({
         '@typescript-eslint/unified-signatures': 'off', // TODO
     },
 }, {
+    files: ['src/**/*.vue'],
+    // Deferred components keep the existing layout, text and card restrictions.
+    ignores: [
+        'src/views/HomeView/NormalTournamentQueue.vue',
+        'src/components/accountlinks/CardAdd.vue',
+        'src/components/accountlinks/CardAddMineracer.vue',
+        'src/components/accountlinks/CardBilibili.vue',
+        'src/components/accountlinks/CardSaolei.vue',
+        'src/components/accountlinks/CardWoM.vue',
+        'src/components/accountlinks/CarouselControl.vue',
+        'src/components/accountlinks/VideoImportQueue.vue',
+    ],
+    rules: {
+        'vue/no-restricted-html-elements': [
+            'error', ...restrictedHtmlElements, ...restrictedActionElements,
+        ],
+    },
+}, {
+    files: [
+        'src/components/widgets/VideoAbstractDisplay.vue',
+        'src/components/dialogs/ArbiterHelper.vue',
+        'src/components/dialogs/MetasweeperHelper.vue',
+        'src/components/dialogs/ViennaSweeperHelper.vue',
+        'src/views/SettingView/Appearance.vue',
+        'src/views/SettingView/App.vue',
+        'src/views/VideoView.vue',
+        'src/components/VideoUpload/Table.vue',
+    ],
+    rules: {
+        'vue/no-restricted-html-elements': [
+            'error', ...restrictedHtmlElements, ...restrictedActionElements, ...restrictedDescriptionsElements,
+        ],
+    },
+}, {
+    files: [
+        'src/views/RankingView/SaoleiRanking.vue',
+        'src/views/RankingView/PBRanking.vue',
+        'src/components/Login/LoginForm.vue',
+        'src/components/Login/RegisterForm.vue',
+        'src/views/SettingView/App.vue',
+        'src/components/VideoPlayer/NativePlayer.vue',
+        'src/components/VideoPlayer/CustomCounterSettings.vue',
+        'src/components/VideoPlayer/PlayerMainSettings.vue',
+        'src/components/visualization/ColorSchemeSetting.vue',
+        'src/components/VideoUpload/FileInputOptions.vue',
+        'src/components/widgets/MultiSelector.vue',
+        'src/components/Filters/SoftwareFilter.vue',
+        'src/components/Filters/VideoStateFilter.vue',
+        'src/components/Filters/MSLevelFilter.vue',
+    ],
+    rules: {
+        'vue/no-restricted-html-elements': [
+            'error', ...restrictedHtmlElements, ...restrictedActionElements, ...restrictedDescriptionsElements,
+        ],
+    },
+}, {
     files: ['**/*.cy.ts'],
     rules: {
+        // Cypress 组件测试中的 .vue 组件导入在 typescript-eslint 的 project service 中可能被解析为 error type，
+        // 传给 cy.mount/helper 时会触发 no-unsafe-argument；这类报错不代表运行时参数不安全。
+        '@typescript-eslint/no-unsafe-argument': 'off',
         '@typescript-eslint/no-unused-expressions': 'off',
     },
 }, {

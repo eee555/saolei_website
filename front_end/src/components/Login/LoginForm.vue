@@ -18,37 +18,36 @@
         </ElFormItem>
         <!-- 记住我 -->
         <ElFormItem>
-            <ElCheckbox v-model="remember_me" :label="t('local.keepMeLoggedIn')" class="rememberMe" />
+            <label class="checkbox rememberMe">
+                <input v-model="remember_me" class="checkbox-input" type="checkbox">
+                <span>{{ t('local.keepMeLoggedIn') }}</span>
+            </label>
             <span :title="t('local.keepMeLoggedInTooltip')">
                 <BaseIconInfo class="text" style="margin-left: 0.2rem" />
             </span>
             <div v-if="remember_me" style="margin-left: 0.5rem;">
-                <span class="text">
-                    {{ t('local.forDays1') }}
-                </span>
+                <span>{{ t('local.forDays1') }}</span>
                 <ElRadioGroup v-model="setExpiry" size="small" style="vertical-align: middle; padding: 0 5px">
                     <ElRadioButton label="1" :value="1" />
                     <ElRadioButton label="7" :value="7" />
                     <ElRadioButton label="30" :value="30" />
                     <ElRadioButton label="90" :value="90" />
                 </ElRadioGroup>
-                <span class="text">
-                    {{ t('local.forDays2') }}
-                </span>
+                <span>{{ t('local.forDays2') }}</span>
             </div>
         </ElFormItem>
         <ElFormItem>
             <!-- 确认 -->
-            <ElButton type="primary" @click="submitForm(ruleFormRef!)">
+            <BaseButton type="primary" @click="submitForm(ruleFormRef!)">
                 {{ t('local.confirm') }}
-            </ElButton>
+            </BaseButton>
             <!-- 忘记密码 -->
-            <ElLink
+            <BaseTextButton
                 underline="never" type="primary"
                 style="vertical-align: bottom; margin-left: auto" @click="emit('forgetPassword')"
             >
                 {{ t('local.forgetPassword') }}
-            </ElLink>
+            </BaseTextButton>
         </ElFormItem>
     </ElForm>
 </template>
@@ -58,12 +57,14 @@ import '@/styles/text.css';
 import '@/styles/cards.css';
 
 import type { FormInstance, FormRules } from 'element-plus';
-import { ElButton, ElCheckbox, ElForm, ElFormItem, ElInput, ElLink, ElRadioButton, ElRadioGroup } from 'element-plus';
+import { ElForm, ElFormItem, ElInput, ElRadioButton, ElRadioGroup } from 'element-plus';
 import { onUnmounted, reactive, ref, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import BaseIconInfo from '../common/icons/BaseIconInfo.vue';
 
+import BaseButton from '@/components/common/BaseButton.vue';
+import BaseTextButton from '@/components/common/BaseTextButton.vue';
 import { httpErrorNotification } from '@/components/Notifications';
 import ValidCode from '@/components/ValidCode.vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';

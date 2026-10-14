@@ -29,6 +29,18 @@ describe('<TournamentStateIcon />', () => {
         cy.contains('Preparing');
     });
 
+    it('Normal', () => {
+        cy.mount(TournamentStateIcon, {
+            props: {
+                state: TournamentState.Normal,
+            },
+            global: {
+                plugins: [i18n],
+            },
+        });
+        cy.contains('Normal');
+    });
+
     it('Ongoing', () => {
         cy.mount(TournamentStateIcon, {
             props: {

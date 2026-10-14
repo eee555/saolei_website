@@ -39,6 +39,8 @@ def delete_account(user: UserProfile, platform: Platform):
         user.account_wom.delete()
     elif platform == Platform.BILIBILI:
         user.account_bilibili.delete()
+    elif platform == Platform.MINERACER:
+        raise ExceptionToResponse('mineracer', 'unlink_not_supported', status_code=409)
 
 
 def fetch_saolei_profile(saolei_id: int):
@@ -209,8 +211,12 @@ def update_wom_account(account: AccountWorldOfMinesweeper):
     if not htmlStr:
         raise ExceptionToResponse(obj='import', category='pageempty')  # 没有爬取到信息
     tree = etree.HTML(htmlStr)
-    tree = tree.xpath(
-        '/html/body/div[3]/div[2]/div/div[1]/div[2]/div/div[4]/div/div[1]')[0]
+    profile_nodes = tree.xpath(
+        '/html/body/div[3]/div[2]/div/div[1]/div[2]/div/div[4]/div/div[1]',
+    ) if tree is not None else []
+    if not profile_nodes:
+        raise ExceptionToResponse(obj='import', category='indexerror')
+    tree = profile_nodes[0]
 
     def formatXpath(text):
         return f'//strong[text()="{text}"]/../following-sibling::div/span/text()'
@@ -327,15 +333,18 @@ def update_wom_account(account: AccountWorldOfMinesweeper):
 
     values = tree.xpath(formatIXpath(
         'Efficiency:', 'fa fa-dot-circle-o eff-icon level1', '/../text()'))
-    account.b_ioe = stringToFloat(values) / 100
+    if values:
+        account.b_ioe = stringToFloat(values) / 100
 
     values = tree.xpath(formatIXpath(
         'Efficiency:', 'fa fa-dot-circle-o eff-icon level2', '/../text()'))
-    account.i_ioe = stringToFloat(values) / 100
+    if values:
+        account.i_ioe = stringToFloat(values) / 100
 
     values = tree.xpath(formatIXpath(
         'Efficiency:', 'fa fa-dot-circle-o eff-icon level3', '/../text()'))
-    account.e_ioe = stringToFloat(values) / 100
+    if values:
+        account.e_ioe = stringToFloat(values) / 100
 
     values = tree.xpath(formatIXpath(
         'Mastery:', 'glyphicon glyphicon-flash mastery-icon mastery1', '/../text()'))

@@ -29,21 +29,6 @@ const routes: RouteRecordRaw[] = [
         component: () => import('../views/WorldView.vue'),
     },
     {
-        path: '/guide',
-        name: 'guide',
-        component: () => import('../views/GuideView.vue'),
-    },
-    {
-        path: '/guide/:name',
-        name: 'guide_name',
-        component: () => import('../views/GuideView.vue'),
-    },
-    {
-        path: '/guide/:name/:paragraph',
-        name: 'guide_name_paragraph',
-        component: () => import('../views/GuideView.vue'),
-    },
-    {
         path: '/server',
         name: 'server',
         component: () => import('../views/ServerView/App.vue'),

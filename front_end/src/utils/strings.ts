@@ -1,10 +1,10 @@
 import type { MS_Software } from './ms_const';
 
-export { default as ControlRegex } from '@unicode/unicode-16.0.0/General_Category/Control/regex';
-export { default as MarkRegex } from '@unicode/unicode-16.0.0/General_Category/Mark/regex';
-export { default as LineSeparatorRegex } from '@unicode/unicode-16.0.0/General_Category/Line_Separator/regex';
-export { default as ParagraphSeparatorRegex } from '@unicode/unicode-16.0.0/General_Category/Paragraph_Separator/regex';
-export { default as SpaceSeparatorRegex } from '@unicode/unicode-16.0.0/General_Category/Space_Separator/regex';
+export { default as ControlRegex } from '@unicode/unicode-16.0.0/General_Category/Control/regex.mjs';
+export { default as MarkRegex } from '@unicode/unicode-16.0.0/General_Category/Mark/regex.mjs';
+export { default as LineSeparatorRegex } from '@unicode/unicode-16.0.0/General_Category/Line_Separator/regex.mjs';
+export { default as ParagraphSeparatorRegex } from '@unicode/unicode-16.0.0/General_Category/Paragraph_Separator/regex.mjs';
+export { default as SpaceSeparatorRegex } from '@unicode/unicode-16.0.0/General_Category/Space_Separator/regex.mjs';
 
 // credit: ChatGPT
 export function stringifyWithLineWrap(
@@ -14,14 +14,14 @@ export function stringifyWithLineWrap(
 ): string {
     const INDENTATION = ' '.repeat(indent);
 
-    function processValue(value: any, currentIndent: string): string {
+    function processValue(value: unknown, currentIndent: string): string {
         if (Array.isArray(value)) {
             if (value.length === 0) return '[]';
 
             let line = '[';
             const lines: string[] = [];
             for (const v of value) {
-                const itemStr = JSON.stringify(v);
+                const itemStr = JSON.stringify(v) ?? 'undefined';
                 if (line !== '[' && line.length + itemStr.length + 2 > maxLineLength) {
                     lines.push(line.trimEnd() + ',');
                     line = currentIndent + INDENTATION + itemStr;
@@ -32,10 +32,11 @@ export function stringifyWithLineWrap(
             if (line !== '[') lines.push(line.trimEnd());
             return lines.join('\n') + ']';
         } else if (typeof value === 'object' && value !== null) {
-            const keys = Object.keys(value);
+            const objectValue = value as Record<string, unknown>;
+            const keys = Object.keys(objectValue);
             let result = '{\n';
             for (const key of keys) {
-                const keyValue = JSON.stringify(key) + ': ' + processValue(value[key], currentIndent + INDENTATION);
+                const keyValue = JSON.stringify(key) + ': ' + processValue(objectValue[key], currentIndent + INDENTATION);
                 result += currentIndent + INDENTATION + keyValue + ',\n';
             }
             result = result.replace(/,\n$/, '\n'); // Remove trailing comma

@@ -1,6 +1,6 @@
 <template>
     <span
-        v-for="date of generateMonthLabelRange(startDate, endDate)" :key="date.toISOString()" class="text" :style="{
+        v-for="date of generateMonthLabelRange(startDate, endDate)" :key="date.toISOString()" class="text-regular" :style="{
             position: 'absolute',
             fontSize: '12px',
             top: 0,

@@ -11,9 +11,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
-import json
 import os
 from pathlib import Path
+
+from utils.secrets_json import read_secret
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -24,14 +25,19 @@ PRODUCTION_MARK = BASE_DIR.parent.parent.parent / '.production'
 DEBUG = not PRODUCTION_MARK.exists()
 
 
+def _read_project_secret(key: str, default: str = '') -> str:
+    try:
+        return str(read_secret(key, default)).strip()
+    except Exception:
+        return default
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # 与加密的盐有关！
-try:
-    with open('secrets.json', 'r', encoding='utf-8') as f:
-        SECRET_KEY = json.load(f)['django_secret_key']
-except Exception:
+SECRET_KEY = _read_project_secret('django_secret_key')
+if not SECRET_KEY:
     SECRET_KEY = 'django-insecure-3_(yjnup(rsxz&pd@stz25*meq10bn3m3$lt!n_1+s723#k=ay'
 
 ALLOWED_HOSTS = ['*']
@@ -58,6 +64,7 @@ INSTALLED_APPS = [
     'msuser',
     'article',
     'customranking',
+    'speedranking',
     'identifier',
     'accountlink',
     'tournament',
@@ -70,6 +77,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',   # 允许跨域请求
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'ninja.compatibility.files.fix_request_files_middleware',  # Parse PATCH/PUT form bodies.
     'django.middleware.common.CommonMiddleware',
     # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -121,7 +129,13 @@ DATABASES = {
         'HOST': '127.0.0.1',
         # 'HOST': 'mysql',   # docker-compose 中的服务名称
         'PORT': '3306',
-        'CONN_MAX_AGE': None,
+        'CONN_MAX_AGE': 60,
+        'CONN_HEALTH_CHECKS': True,
+        'OPTIONS': {
+            'connect_timeout': 5,
+            'read_timeout': 15,
+            'write_timeout': 15,
+        },
     },
 }
 
@@ -240,13 +254,14 @@ else:
     # allow CORS for public video and user profile endpoints
     CORS_ALLOW_ALL_ORIGINS = True
     CORS_PATHS = [
-        r'video/(preview|download)/.*',
         r'api/userprofile/avatar/.*',
         r'api/userprofile/identifier/?',
         r'api/userprofile/info/.*',
         r'api/userprofile/infobulk/?',
         r'api/userprofile/infoupdated/?',
         r'api/userprofile/videolist/?',
+        r'api/video/download/[0-9]+/?',
+        r'api/video/preview/?',
         r'api/video/infobulk/?',
         r'api/video/detailbulk/?',
     ]
@@ -300,6 +315,11 @@ SESSION_CACHE_ALIAS = 'saolei_website'
 
 APSCHEDULER_DATETIME_FORMAT = 'N j, Y, f:s a'  # 定时任务格式
 APSCHEDULER_RUN_NOW_TIMEOUT = 25  # 定时任务最大执行时间，秒
+
+MINERACER_START_URL = os.environ.get('MINERACER_ACCOUNT_LINK_START_URL', 'https://mineracer.com/api/partner/link/start')
+MINERACER_POLL_URL = os.environ.get('MINERACER_ACCOUNT_LINK_POLL_URL', 'https://mineracer.com/api/partner/link/poll')
+MINERACER_TIMEOUT = float(os.environ.get('MINERACER_ACCOUNT_LINK_TIMEOUT', '5'))
+MINERACER_POLL_INTERVAL_MS = max(1, int(os.environ.get('MINERACER_ACCOUNT_LINK_POLL_INTERVAL_MS', '2500')))
 
 LOGGING = {
     'version': 1,
@@ -385,6 +405,15 @@ LOGGING = {
             'maxBytes': 5242880,  # 1M
             'backupCount': 10,
         },
+        'tournament': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/tournament.log'),
+            'formatter': 'modulehistory',
+            'encoding': 'utf-8',
+            'maxBytes': 5242880,  # 1M
+            'backupCount': 10,
+        },
     },
     'loggers': {
         # 应用中自定义日志记录器
@@ -401,6 +430,11 @@ LOGGING = {
         'userprofile': {
             'level': 'INFO',
             'handlers': ['userprofile'],
+            'propagate': False,
+        },
+        'tournament': {
+            'level': 'INFO',
+            'handlers': ['tournament'],
             'propagate': False,
         },
     },

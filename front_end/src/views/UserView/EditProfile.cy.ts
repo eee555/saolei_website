@@ -1,3 +1,5 @@
+import type { ComponentProps } from 'vue-component-type-helpers';
+
 import EditProfile from './EditProfile.vue';
 
 import $axios from '@/http';
@@ -5,7 +7,7 @@ import i18n from '@/i18n';
 import { pinia } from '@/store/create';
 import { UserProfile } from '@/utils/userprofile';
 
-function mountOptions(props?: any) {
+function mountOptions(props?: ComponentProps<typeof EditProfile>) {
     return {
         props: props,
         global: {
@@ -35,7 +37,7 @@ function findSignatureInput() {
     return cy.contains('Signature').parent().next().find('textarea');
 }
 
-function mockUpdateResponse(body: any) {
+function mockUpdateResponse(body: unknown) {
     cy.intercept('POST', '/api/userprofile/update_profile', {
         statusCode: 200,
         body: body,

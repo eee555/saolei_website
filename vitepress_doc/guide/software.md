@@ -1,3 +1,8 @@
+---
+title: 扫雷软件 - 开源扫雷网
+description: 开源扫雷网支持的扫雷软件和录像格式，包括EVF、RMV、AVF、MVF格式说明及录像准入门槛。
+---
+
 # 扫雷软件
 
 我们目前支持的扫雷录像格式有`EVF`、`RMV`、`AVF`、`MVF`。其中`EVF`和`RMV`是通用扫雷录像格式，`AVF`是Minesweeper Arbiter专属，`MVF`是Minesweeper Clone专属。

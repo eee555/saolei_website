@@ -12,25 +12,26 @@
             <span>{{ t('local.chooseNode') }}</span>
             <InputNumber v-model="operationNode" style="field-sizing: content;" />
             <div v-if="colorScheme.thresholds.includes(operationNode)" style="display: flex; margin-left: 0.25em;">
-                <ElLink underline="never" :title="t('local.mergeLeft')">
+                <BaseTextButton underline="never" :title="t('local.mergeLeft')" :aria-label="t('local.mergeLeft')">
                     <ElIcon size="large">
                         <ArrowLeft />
                     </ElIcon>
-                </ElLink>
+                </BaseTextButton>
                 <BaseIconDelete />
-                <ElLink underline="never" :title="t('local.mergeRight')">
+                <BaseTextButton underline="never" :title="t('local.mergeRight')" :aria-label="t('local.mergeRight')">
                     <ElIcon size="large">
                         <ArrowRight />
                     </ElIcon>
-                </ElLink>
+                </BaseTextButton>
             </div>
-            <ElLink v-else underline="never" :title="t('local.addNode')">
+            <BaseTextButton v-else underline="never" :title="t('local.addNode')" :aria-label="t('local.addNode')">
                 <BaseIconAdd />
-            </ElLink>
+            </BaseTextButton>
         </div>
-        <ElCheckbox v-model="developerMode" size="small" style="margin-left: 0.5em">
-            {{ t('local.developerMode') }}
-        </ElCheckbox>
+        <label class="checkbox checkbox--small" style="margin-left: 0.5em">
+            <input v-model="developerMode" class="checkbox-input" type="checkbox">
+            <span>{{ t('local.developerMode') }}</span>
+        </label>
     </div>
     <div v-if="developerMode">
         <ElInput v-model="colorSchemeString" type="textarea" :rows="countRows(colorSchemeString)" style="font-family: 'Courier New', Courier, monospace;" @change="(value: string) => {colorScheme = JSON.parse(value)}" />
@@ -38,11 +39,12 @@
 </template>
 
 <script setup lang="ts">
-import { ElCheckbox, ElColorPicker, ElIcon, ElInput, ElLink } from 'element-plus';
+import { ElColorPicker, ElIcon, ElInput } from 'element-plus';
 import type { PropType } from 'vue';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import BaseTextButton from '@/components/common/BaseTextButton.vue';
 import { BaseIconAdd, BaseIconDelete } from '@/components/common/icon';
 import InputNumber from '@/components/common/InputNumber.vue';
 import type { PiecewiseColorSchemeInterface } from '@/utils/colors';

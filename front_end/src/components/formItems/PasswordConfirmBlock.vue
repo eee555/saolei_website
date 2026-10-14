@@ -46,7 +46,7 @@ const passwordHandler = (value: string) => {
     }
 };
 
-const confirmPasswordHandler = (value: any) => {
+const confirmPasswordHandler = (value: string) => {
     if (value !== password.value) validateError(confirmPasswordFormRef, t('msg.confirmPasswordMismatch'));
     else validateSuccess(confirmPasswordFormRef);
 };

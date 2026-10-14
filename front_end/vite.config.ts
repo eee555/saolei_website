@@ -21,6 +21,7 @@ export default defineConfig(({ mode }) => {
             viteCompression({
                 algorithm: 'gzip', // Or 'brotliCompress' for Brotli compression
                 ext: '.gz', // Add a .gz extension to the compressed files
+                filter: /\.(js|mjs|json|css|html|wasm)$/i,
                 threshold: 1024, // Minimum file size in bytes to compress
             }),
             process.env.NODE_ENV === 'production'
@@ -33,10 +34,11 @@ export default defineConfig(({ mode }) => {
         resolve: {
             alias: {
                 '@': fileURLToPath(new URL('./src', import.meta.url)),
+                '@cy': fileURLToPath(new URL('./cypress', import.meta.url)),
             },
         },
         server: {
-            open: true,
+            open: false,
             port: 8080,
             host: process.env.Host ?? 'localhost',
         },

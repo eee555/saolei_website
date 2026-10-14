@@ -1,4 +1,5 @@
 import { createI18n } from 'vue-i18n';
+import type { DefineLocaleMessage } from 'vue-i18n';
 
 import de from './locales/de';
 import dev from './locales/dev';
@@ -9,8 +10,8 @@ import zhCn from './locales/zh-cn';
 /**
  * 获取所有语言
  */
-function getMessages(): Record<string, any> {
-    const messages: Record<string, any> = {};
+function getMessages(): Record<string, DefineLocaleMessage> {
+    const messages: Record<string, DefineLocaleMessage> = {};
     messages[dev.local] = dev;
     messages[zhCn.local] = zhCn;
     messages[de.local] = de;

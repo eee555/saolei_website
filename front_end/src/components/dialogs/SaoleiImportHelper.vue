@@ -1,5 +1,5 @@
 <template>
-    <div class="text text-medium">
+    <div class="text-medium">
         <ul>
             <li>
                 {{ t('local.line_1') }}

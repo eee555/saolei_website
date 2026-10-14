@@ -1,127 +1,69 @@
-# tournament 与 videomanager 交互重构计划
+# tournament TODO
 
-本文档记录 `tournament` app 修改 `VideoModel.ongoing_tournament` 时的性能风险和重构计划。比赛逻辑可能一次影响上万条录像，不能依赖逐条 `video.save(update_fields=['ongoing_tournament'])` 触发信号链。
+## GSC 实时榜缓存
 
-## 当前交互
+TODO: 如果未来需要比赛期间展示实时榜，可以再单独设计每个比赛的成绩缓存，例如使用 hash 存三组成绩数组、zset 存总成绩：
 
-### 录像创建时
+- `tournament:normal:gsc:{tournament_id}:scores`
+- `tournament:normal:gsc:{tournament_id}:rank`
 
-- `tournament.signals.checkin_video_before_create` 在 `VideoModel` 创建前调用 `tournament.utils.video_checkin`。
-- `video_checkin` 根据录像内比赛标识判断是否属于正在进行的比赛。
-- 如果命中比赛：
-  - 设置 `video.ongoing_tournament = True`。
-  - 暂存 `_checked_in_tournaments`。
-- `tournament.signals.add_created_video_to_checked_tournaments` 在 `VideoModel` 创建后将录像加入对应 `Tournament.videos` 多对多关系。
+当前阶段不实现这部分。
 
-这个路径只处理单条新上传录像，当前性能风险较低。
+## 比赛积分系统
 
-### 比赛状态变化或批量刷新时
+TODO: 奖金积分暂不实现，但需要预留设计：
 
-- `Tournament.videos` 记录录像与比赛的关系。
-- `VideoModel.ongoing_tournament` 是一个冗余布尔字段，用于快速屏蔽普通录像队列、个人纪录和排行榜刷新。
-- 当前 `tournament.services.reveal_videos_for_tournament` 使用批量逻辑：
-  - 先取当前比赛仍标记为 `ongoing_tournament=True` 的录像。
-  - 再取所有 `ONGOING` 比赛关联的录像。
-  - 使用集合差集排除仍属于其他进行中比赛的录像。
-  - 对剩余录像执行 `queryset.update(ongoing_tournament=False)`，再显式补偿相关缓存和排行副作用。
+- 奖金积分以后使用单独字段或单独发放记录，不进入 `rank_score`。
+- 奖金金额与积分的换算规则、币种和管理员录入入口仍是争议核心，暂无结论。
+- 在用户文档中继续标记“暂不支持”，直到后端和前端都完成。
 
-这条路径在比赛结束、重算、数据修复时可能触发大量数据库查询、信号、Redis 操作，容易成为性能瓶颈。
+TODO: 补充积分展示 API 与前端：
 
-## 关键副作用
+先不急着做，等结构继续设计。
 
-修改 `VideoModel.ongoing_tournament` 会影响以下系统：
+- 用户资料页需要展示当前比赛积分、历史总积分、GSC/周赛拆分积分和最好成绩。
+- `TournamentUser` 更新后如果影响用户资料摘要，需要同步考虑 `userprofile` 缓存/批量接口的失效策略。
 
-- `videomanager`
-  - `ongoing_tournament=True`：录像应从普通状态队列中移除。
-  - `ongoing_tournament=False`：录像应按当前 `state` 恢复到对应队列。
-  - 当前单条路径由 `videomanager.signals.refresh_state_queue_on_video_save` 处理。
-- `msuser`
-  - 比赛录像不参与经典个人纪录。
-  - 从普通录像进入比赛时，如果该录像是当前纪录，需要重建受影响纪录。
-  - 从比赛录像恢复普通录像时，需要尝试吸收到个人纪录。
-- `customranking`
-  - 比赛录像不参与自定义 pluck 排行。
-  - 从普通录像进入比赛时，需要刷新受影响的 `CustomPluckRecord`。
-  - 从比赛录像恢复普通录像时，需要尝试吸收到 pluck 纪录。
+## 历史比赛列表同步计划
 
-由于 `queryset.update` 不触发 `VideoModel` 的 `pre_save/post_save`，批量服务必须显式补偿这些副作用。
+TODO: 这类列表展示问题优先参考 `userprofile` app 的缓存同步方式解决，而不是优先重构 Django 多表继承实现。前端应把比赛基础信息缓存在 IndexedDB 中，后端提供列表索引、批量详情和更新检查接口。
 
-## 重构目标
+推荐接口形态：
 
-- 批量修改 `VideoModel.ongoing_tournament` 时，不逐条调用 `video.save()`。
-- 对受影响录像先收集必要信息，再用 `queryset.update` 批量写数据库。
-- 对 Redis 队列、经典纪录、自定义 pluck 纪录使用批处理 service 显式刷新。
-- 单条上传路径可以继续使用现有信号，但批量路径必须绕开逐条信号。
+- TODO: `GET /api/tournament/list`
+  - 返回用于当前列表页的轻量索引，长期应支持分页、状态过滤、系列过滤和排序。
+  - 响应只包含 `id`、必要排序字段和可选的 `date_updated`，不负责返回完整 `TournamentInfo`。
+- TODO: `GET /api/tournament/infobulk?ids=1,2,3`
+  - 按 id 批量返回完整 `TournamentInfo`。
+  - 后端可以在这个小批量范围内处理子类定向；短期即使仍使用单条定向，压力也远小于全量列表。
+- TODO: `GET /api/tournament/infoupdated?since=123456789`
+  - 返回自指定时间戳以来发生变化的比赛 id，用于前端删除 IndexedDB 中的过期缓存。
 
-## 当前必要接口
+TODO: 为支持更新检查，`Tournament` 父表需要增加类似 `UserProfile.date_updated` 的 `DateTimeField(auto_now=True)`。如果 GSC 子表字段变化会影响 `TournamentInfo`，写路径必须同步触发父表更新时间更新。例如 `order`、`token`、`start_time`、`end_time`、`state`、`host` 等字段变化后，前端缓存应能通过 `infoupdated` 感知。
 
-### `reveal_videos_for_tournament(tournament)`
+TODO: 前端实现可以复用 `userService.ts` 的设计：
 
-用于比赛结束或取消后，将不再属于任何进行中比赛的录像恢复为普通录像。
+- 新增 IndexedDB store，例如 `tournament-info`，主键为 `id`，row schema 与 `TournamentInfo` 保持一致。
+- `fetchTournament(id)` 优先读取 IndexedDB，缓存缺失时进入批量请求队列。
+- 同一 tick 或短延迟窗口内的多个缺失 id 合并为一次 `infobulk` 请求。
+- 按配置周期请求 `infoupdated`，删除已更新比赛的本地缓存；首次 `lastUpdate=0` 时直接清空本地比赛缓存，避免请求全量更新 id。
+- IndexedDB 不可用时降级为网络请求。
 
-当前流程：
-
-1. 从 `tournament.videos` 中找候选录像。
-2. 排除仍属于其他 `ONGOING` 比赛的录像。
-3. 只处理 `ongoing_tournament=True` 的录像。
-4. 固化受影响录像 id。
-5. 批量执行：
-   - `VideoModel.objects.filter(id__in=ids).update(ongoing_tournament=False)`。
-6. 显式补偿：
-   - 按当前 `state` 将录像批量恢复到 `videomanager` 普通队列。
-   - `msuser` 尝试将这些录像吸收到经典个人纪录。
-   - `customranking` 尝试将这些录像吸收到自定义 pluck 纪录。
+TODO: 迁移后，`get_tournament_list` 可以逐步退化为轻量索引接口，或由新的 `/list` 接口替代。完整比赛信息只在用户实际需要展示对应比赛时通过 `infobulk` 获取。模型层的子类定向问题因此被限制在小批量详情接口内部，不再成为全量列表的性能瓶颈。
 
 ## 暂不实现的接口
 
-- `hide_videos_for_tournament(tournament)` 暂非必要。
-  - 新上传录像仍由当前单条 `video_checkin` 路径处理。
+- TODO: `hide_videos_for_tournament(tournament)` 暂非必要。
+  - 新上传录像仍由当前单条 `VideoModel` 创建信号路径处理。
   - 如果未来需要补录或批量隐藏比赛录像，再按同样原则设计批处理。
-- `refresh_ongoing_tournament_for_range(start_id, end_id)` 暂非必要。
+- TODO: `refresh_ongoing_tournament_for_range(start_id, end_id)` 暂非必要。
   - 数据修复需求出现后再实现分段重算。
-
-## videomanager 批量缓存需求
-
-`videomanager.cache.VideoQueueCache` 已具备以下批量方法：
-
-- `add_bulk(videos)`：批量写入队列。
-- `update_bulk(videos)`：只更新已存在于队列中的项。
-- `remove_bulk(videos)`：批量从队列删除。
-
-`videomanager.cache` 已提供按状态分组的批量 helper：
-
-- `add_videos_to_state_queues_bulk(videos)`
-
-这个 helper 集中维护 `state -> queue` 映射，避免 `tournament` 直接复制 `videomanager.signals.STATE_QUEUE_NAMES`。
-
-## msuser 批量刷新需求
-
-已有可复用能力：
-
-- `get_current_record_keys_for_video_ids(userms, video_ids)`
-- `rebuild_personal_records(user, record_keys)`
-- `update_personal_records_from_videos(userms, videos)`
-
-新增批量能力：
-
-- `update_personal_records_from_video_queryset(videos)`。
-  - 输入受影响录像 queryset。
-  - 按 `player_id` 分组。
-  - `True -> False` 时，对每个用户吸收新增普通录像。
-
-## customranking 批量刷新需求
-
-已有可复用能力：
-
-- `add_videos_to_custom_pluck_ranks(videos)`
-- `remove_videos_from_custom_pluck_ranks(video_ids)`
-
-这些函数可直接用于 `ongoing_tournament` 批量切换后的补偿。
 
 ## 待处理问题
 
-- 明确比赛结束、取消、状态回滚时应在哪些入口调用 `reveal_videos_for_tournament`。
-- 补充测试：
-  - 比赛结束后，上万条录像不逐条触发 `VideoModel.save()`。
+- TODO: 明确比赛取消、状态回滚时应在哪些入口调用 `reveal_videos_for_tournament`。
+- TODO: 补充测试：
+  - 比赛颁奖后，上万条录像不逐条触发 `VideoModel.save()`。
   - 录像从比赛恢复普通后，队列缓存恢复。
-  - 录像从比赛恢复普通后，经典个人纪录和 pluck 纪录刷新。
+  - 录像从比赛恢复普通后，pluck 纪录刷新。
+- 比赛批量公开调用 `speedranking.services.add_videos_to_speed_ranks`；用户主动公开走保存信号，两者均在提交后更新竞速纪录，且不移除比赛关联。

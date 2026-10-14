@@ -1,12 +1,15 @@
 <template>
-    <ElButton v-bind="$attrs" type="primary">
+    <BaseButton v-bind="$attrs" type="primary">
         {{ t('common.button.confirm') }}
-    </ElButton>
+    </BaseButton>
 </template>
 
 <script setup lang="ts">
-import { ElButton } from 'element-plus';
 import { useI18n } from 'vue-i18n';
+
+import BaseButton from './BaseButton.vue';
+
+defineOptions({ inheritAttrs: false });
 
 const { t } = useI18n();
 </script>

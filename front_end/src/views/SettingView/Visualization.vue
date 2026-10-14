@@ -1,19 +1,20 @@
 <template>
-    <ElCard :header="t('local.visualizationColorScheme')">
+    <section class="card">
+        <h2 class="card-title">
+            {{ t('local.visualizationColorScheme') }}
+        </h2>
         <div style="display: flex; flex-direction: column; gap: 1rem">
             <div style="display: flex; flex-wrap: wrap; gap: 2rem; align-items: center">
-                <div class="text">
+                <div class="text-regular">
                     {{ t('local.level') }}
                 </div>
-                <span v-for="level in ['b', 'i', 'e', 'c']" style="display: flex; gap: 0.5em">
-                    <span class="text">
-                        {{ t(`common.level.${level}`) }}
-                    </span>
+                <span v-for="level in ['b', 'i', 'e', 'c']" class="text-regular" style="display: flex; gap: 0.5em">
+                    <span>{{ t(`common.level.${level}`) }}</span>
                     <ElColorPicker v-model="colorTheme.level[level]" size="small" />
                 </span>
             </div>
             <div v-experimental style="display: flex; flex-direction: column; gap: 0.5rem;">
-                <div class="text">
+                <div class="text-regular">
                     {{ t('local.piecewise') }}
                 </div>
                 <ElSelect v-model="colorSchemeName">
@@ -26,13 +27,14 @@
                 <ColorSchemeSetting v-model="colorTheme[colorSchemeName]" />
             </div>
         </div>
-    </ElCard>
+    </section>
 </template>
 
 <script setup lang="ts">
+import '@/styles/cards.css';
 import '@/styles/text.css';
 
-import { ElCard, ElColorPicker, ElOption, ElSelect } from 'element-plus';
+import { ElColorPicker, ElOption, ElSelect } from 'element-plus';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 

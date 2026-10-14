@@ -21,10 +21,14 @@
         <PrColumn expander />
         <PrColumn>
             <template #header>
-                <ElCheckbox :model-value="!selectedNone && selectedAll" :indeterminate="!selectedAll && !selectedNone" @click="handleSelectAllClick" />
+                <label class="checkbox">
+                    <input class="checkbox-input" type="checkbox" :checked="!selectedNone && selectedAll" :indeterminate.prop="!selectedAll && !selectedNone" :aria-label="t('local.selectAll')" @change="handleSelectAllChange">
+                </label>
             </template>
             <template #body="{data}: {data: UploadEntry}">
-                <ElCheckbox :model-value="selectedRows.includes(data)" @change="(value) => handleSelectOneChange(value, data)" />
+                <label class="checkbox">
+                    <input class="checkbox-input" type="checkbox" :checked="selectedRows.includes(data)" :aria-label="t('local.selectVideo', { filename: data.file.name })" @change="(event) => handleSelectOneChange(event, data)">
+                </label>
             </template>
         </PrColumn>
         <PrColumn field="status" :header="t('common.prop.status')" :show-filter-match-modes="false" :show-filter-operator="false">
@@ -80,48 +84,73 @@
             </template>
         </PrColumn>
         <template #expansion="{data}: {data: UploadEntry}">
-            <ElDescriptions>
-                <ElDescriptionsItem :label="t('common.prop.fileName')" :span="3">
-                    {{ data.file.name }}
-                </ElDescriptionsItem>
-                <template v-if="data.stat">
-                    <ElDescriptionsItem :label="t('common.prop.cl')">
-                        {{ data.stat.displayStat('cl') }}
-                    </ElDescriptionsItem>
-                    <ElDescriptionsItem :label="t('common.prop.ce')" :span="2">
-                        {{ data.stat.displayStat('ce') }}
-                    </ElDescriptionsItem>
-                    <ElDescriptionsItem :label="t('common.prop.cl_s')">
-                        {{ data.stat.displayStat('cls') }}
-                    </ElDescriptionsItem>
-                    <ElDescriptionsItem :label="t('common.prop.ce_s')" :span="2">
-                        {{ data.stat.displayStat('ces') }}
-                    </ElDescriptionsItem>
-                    <ElDescriptionsItem :label="t('common.prop.ioe')">
-                        {{ data.stat.displayStat('ioe') }}
-                    </ElDescriptionsItem>
-                    <ElDescriptionsItem :label="t('common.prop.thrp')">
-                        {{ data.stat.displayStat('thrp') }}
-                    </ElDescriptionsItem>
-                    <ElDescriptionsItem :label="t('common.prop.corr')">
-                        {{ data.stat.displayStat('corr') }}
-                    </ElDescriptionsItem>
-                </template>
-            </ElDescriptions>
+            <div class="description-layout">
+                <dl class="descriptions">
+                    <div class="description-item description-wide">
+                        <dt>{{ t('common.prop.fileName') }}</dt>
+                        <dd>
+                            {{ data.file.name }}
+                        </dd>
+                    </div>
+                    <template v-if="data.stat">
+                        <div class="description-item">
+                            <dt>{{ t('common.prop.cl') }}</dt>
+                            <dd>
+                                {{ data.stat.displayStat('cl') }}
+                            </dd>
+                        </div>
+                        <div class="description-item description-span-2">
+                            <dt>{{ t('common.prop.ce') }}</dt>
+                            <dd>
+                                {{ data.stat.displayStat('ce') }}
+                            </dd>
+                        </div>
+                        <div class="description-item">
+                            <dt>{{ t('common.prop.cl_s') }}</dt>
+                            <dd>
+                                {{ data.stat.displayStat('cls') }}
+                            </dd>
+                        </div>
+                        <div class="description-item description-span-2">
+                            <dt>{{ t('common.prop.ce_s') }}</dt>
+                            <dd>
+                                {{ data.stat.displayStat('ces') }}
+                            </dd>
+                        </div>
+                        <div class="description-item">
+                            <dt>{{ t('common.prop.ioe') }}</dt>
+                            <dd>
+                                {{ data.stat.displayStat('ioe') }}
+                            </dd>
+                        </div>
+                        <div class="description-item">
+                            <dt>{{ t('common.prop.thrp') }}</dt>
+                            <dd>
+                                {{ data.stat.displayStat('thrp') }}
+                            </dd>
+                        </div>
+                        <div class="description-item">
+                            <dt>{{ t('common.prop.corr') }}</dt>
+                            <dd>
+                                {{ data.stat.displayStat('corr') }}
+                            </dd>
+                        </div>
+                    </template>
+                </dl>
+            </div>
         </template>
     </PrDataTable>
 </template>
 
 <script setup lang="ts">
+import '@/styles/descriptions.css';
 import { FilterMatchMode } from '@primevue/core/api';
-import type { CheckboxValueType } from 'element-plus';
-import { ElCheckbox, ElDescriptions, ElDescriptionsItem } from 'element-plus';
 import PrColumn from 'primevue/column';
 import type { DataTableFilterEvent } from 'primevue/datatable';
 import PrDataTable from 'primevue/datatable';
 import PrListbox from 'primevue/listbox';
 import type { PropType } from 'vue';
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import type { UploadEntry } from './utils';
@@ -154,12 +183,17 @@ const expandedRows = ref<UploadEntry[]>([]);
 
 const selectedAll = computed(() => selectedRows.value.length === filteredData.value.length);
 const selectedNone = computed(() => selectedRows.value.length === 0);
-function handleSelectAllClick() {
+async function handleSelectAllChange(event: Event) {
+    const input = event.currentTarget as HTMLInputElement;
     if (!selectedNone.value) {
         selectedRows.value.length = 0;
     } else {
         selectedRows.value = [...filteredData.value];
     }
+    // Activation changes the DOM even when the derived checked value stays false.
+    await nextTick();
+    input.checked = !selectedNone.value && selectedAll.value;
+    input.indeterminate = !selectedAll.value && !selectedNone.value;
 }
 
 function onFilter(event: DataTableFilterEvent) {
@@ -169,9 +203,8 @@ watch(filteredData, (newVal) => {
     selectedRows.value = selectedRows.value.filter((entry) => newVal.includes(entry));
 });
 
-function handleSelectOneChange(value: CheckboxValueType, entry: UploadEntry) {
-    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-    if (value) {
+function handleSelectOneChange(event: Event, entry: UploadEntry) {
+    if ((event.currentTarget as HTMLInputElement).checked) {
         selectedRows.value.push(entry);
     } else {
         const index = selectedRows.value.indexOf(entry);
@@ -196,6 +229,9 @@ const i18nMessages = {
         parse: '录像解析失败',
         pass: '通过',
         process: '上传中',
+        quota: '录像额度已满',
+        selectAll: '全选录像',
+        selectVideo: '选择录像：{filename}',
         success: '上传成功',
         upload: '上传失败',
     } },
@@ -214,6 +250,9 @@ const i18nMessages = {
         parse: 'Cannot parse the file',
         pass: 'Pass',
         process: 'Uploading',
+        quota: 'Video quota reached',
+        selectAll: 'Select all videos',
+        selectVideo: 'Select video: {filename}',
         success: 'Success',
         upload: 'Upload fail',
     } },

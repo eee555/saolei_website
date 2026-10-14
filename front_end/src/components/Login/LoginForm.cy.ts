@@ -1,4 +1,4 @@
-import type {} from '@cy/support/component';
+import { Key, Lock, User } from '@element-plus/icons-vue';
 
 import LoginForm from './LoginForm.vue';
 
@@ -8,6 +8,7 @@ import i18n from '@/i18n';
 const mountOptions = {
     global: {
         plugins: [i18n],
+        components: { Key, Lock, User },
         config: {
             globalProperties: {
                 $axios,
@@ -32,9 +33,11 @@ describe('<LoginForm />', () => {
         cy.contains('Password').next().find('input').should('have.attr', 'type', 'password');
         cy.contains('Captcha').next().find('input').should('have.attr', 'type', 'text');
         cy.contains('Captcha').next().find('img');
+        cy.get('.el-input__prefix svg').should('have.length', 3);
         cy.contains('Keep me logged in').find('input').should('have.attr', 'type', 'checkbox');
         cy.contains('Forget password?');
-        cy.get('button').should('have.text', 'Log in');
+        cy.contains('button', /^Log in$/).should('have.attr', 'type', 'button');
+        cy.contains('button', 'Forget password?').should('have.attr', 'type', 'button');
     });
 
     it('Normal Flow', () => {
@@ -46,6 +49,41 @@ describe('<LoginForm />', () => {
 
         cy.contains('Invalid captcha. Please input again').should('not.exist');
         cy.contains('Invalid username or password').should('not.exist');
+    });
+
+    it('keeps the selected login expiry and resets it when remember-me is unchecked', () => {
+        cy.intercept('POST', '/userprofile/login/').as('loginRequest');
+        cy.mount(LoginForm, mountOptions);
+        cy.contains('Username').next().type('test');
+        cy.contains('Password').next().type('test');
+        cy.contains('Captcha').next().find('input').type('test');
+        cy.get('.rememberMe input').should('not.be.checked');
+        cy.get('.rememberMe').click();
+        cy.get('.rememberMe input').should('be.checked');
+        cy.contains('label', /^30$/).click();
+        cy.contains('button', /^Log in$/).click();
+        cy.wait('@loginRequest').its('request.body').should((body: string) => {
+            expect(new URLSearchParams(body).get('set_expiry')).to.equal('30');
+        });
+        cy.get('.rememberMe input').focus();
+        cy.realPress('Space');
+        cy.get('.rememberMe input').should('not.be.checked');
+        cy.get('.el-radio-group').should('not.exist');
+        cy.contains('button', /^Log in$/).click();
+        cy.wait('@loginRequest').its('request.body').should((body: string) => {
+            expect(new URLSearchParams(body).get('set_expiry')).to.equal('0');
+        });
+    });
+
+    it('opens password recovery with the keyboard without submitting the form', () => {
+        cy.mount(LoginForm, mountOptions);
+        cy.contains('button', 'Forget password?').focus();
+        cy.realPress('Enter');
+        cy.get('@vue').then((wrapper: ComponentWrapper<typeof LoginForm>) => {
+            expect(wrapper.emitted('forgetPassword')).to.have.length(1);
+            expect(wrapper.emitted('login')).to.equal(undefined);
+        });
+        cy.contains('Username required').should('not.exist');
     });
 
     it('Username Validation', () => {

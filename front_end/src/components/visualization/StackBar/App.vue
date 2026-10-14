@@ -2,7 +2,7 @@
     <div style="height: 0.3em; display: flex; align-items: center;">
         <BaseTooltip v-for="(item, index) in data" :key="item.name" :data-cy="item.name" :show-delay="200" :style="{ width: `${(item.value / sumValue * 100)}%`, height: '100%', background: item.color, borderTopLeftRadius: index === 0 ? '0.1em' : '0', borderBottomLeftRadius: index === 0 ? '0.1em' : '0', borderTopRightRadius: index === props.data.length - 1 ? '0.1em' : '0', borderBottomRightRadius: index === props.data.length - 1 ? '0.1em' : '0'}">
             <template #content>
-                <span class="text">
+                <span class="text-regular">
                     {{ item.name }}: {{ (item.value / sumValue * 100).toFixed(0) }}%({{ item.value }})
                 </span>
             </template>
@@ -12,7 +12,7 @@
         <span v-for="item in data" :key="item.name" style="margin: 0 0.2em">
             <template v-if="item.value > 0">
                 <span class="dot" :style="{ background: item.color }" />
-                <span class="text">
+                <span class="text-regular">
                     {{ item.name }}: {{ (item.value / sumValue * 100).toFixed(0) }}%({{ item.value }})
                 </span>
             </template>

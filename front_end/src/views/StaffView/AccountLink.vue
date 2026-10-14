@@ -5,19 +5,19 @@
         </ElFormItem>
         <ElFormItem label="平台">
             <ElSelect v-model="form.platform">
-                <ElOption v-for="(_, key) of platformlist" :key="key" :label="t(`common.platform.${key}`)" :value="key" />
+                <ElOption v-for="platform of manualAccountLinkPlatforms" :key="platform" :label="t(`common.platform.${platform}`)" :value="platform" />
             </ElSelect>
         </ElFormItem>
         <ElFormItem label="平台ID">
             <ElInput v-model="form.identifier" />
         </ElFormItem>
         <ElFormItem>
-            <ElButton @click="verify">
+            <BaseButton @click="verify">
                 绑定
-            </ElButton>
-            <ElButton @click="unverify">
+            </BaseButton>
+            <BaseButton @click="unverify">
                 解绑
-            </ElButton>
+            </BaseButton>
         </ElFormItem>
     </ElForm>
     <PrDataTable
@@ -42,15 +42,16 @@
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElForm, ElFormItem, ElInput, ElOption, ElSelect, vLoading } from 'element-plus';
+import { ElForm, ElFormItem, ElInput, ElOption, ElSelect, vLoading } from 'element-plus';
 import PrColumn from 'primevue/column';
 import PrDataTable from 'primevue/datatable';
 import { onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import { httpErrorNotification } from '@/components/Notifications';
 import type { AccountLinkPlatform } from '@/utils/accountlinks';
-import { platformlist } from '@/utils/accountlinks';
+import { manualAccountLinkPlatforms } from '@/utils/accountlinks';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const { proxy } = useCurrentInstance();

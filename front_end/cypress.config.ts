@@ -1,3 +1,4 @@
+/* eslint-disable import-x/no-named-as-default */
 import path from 'path';
 import { fileURLToPath } from 'url';
 

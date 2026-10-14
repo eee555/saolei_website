@@ -11,8 +11,22 @@ import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vu
 
 import { videoplayerstore } from '@/store';
 
+interface FlopPlayOptions {
+    share: {
+        uri: string;
+        pathname: string;
+        anonymous: boolean;
+        background: string;
+        title: string;
+        favicon: string;
+    };
+    anonymous: boolean;
+    background: string;
+    listener: () => void;
+}
+
 interface FlopPlayer {
-    playVideo: (src: string, options: any) => void;
+    playVideo: (src: string, options: FlopPlayOptions) => void;
 }
 
 interface FlopPlaceholder {
@@ -60,7 +74,7 @@ function playVideo() {
 const iframeRef = useTemplateRef('iframeRef');
 const iframeWidth = ref(0);
 const iframeHeight = ref(0);
-const backgroundColor = computed(() => getComputedStyle(document.documentElement).getPropertyValue('--el-bg-color'));
+const backgroundColor = computed(() => getComputedStyle(document.documentElement).getPropertyValue('--ui-bg-color'));
 
 onMounted(() => {
     if (iframeRef.value === null) return;

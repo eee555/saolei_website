@@ -43,6 +43,7 @@ const props = defineProps({
 });
 
 const probabilityBoard = computed(() => {
+    // eslint-disable-next-line @typescript-eslint/no-meaningless-void-operator
     void props.currentMs;
     return props.video.game_board_poss as number[][];
 });

@@ -73,32 +73,32 @@ watch(model, (value) => {
     height: 24px;
     min-width: 0;
     padding: 1px 8px;
-    color: var(--el-input-text-color, var(--el-text-color-regular));
+    color: var(--ui-input-text-color, var(--ui-text-color-regular));
     line-height: 22px;
-    background-color: var(--el-input-bg-color, var(--el-fill-color-blank));
-    border: 1px solid var(--el-input-border-color, var(--el-border-color));
-    border-radius: var(--el-input-border-radius, var(--el-border-radius-base));
+    background-color: var(--ui-input-bg-color, var(--ui-fill-color-blank));
+    border: 1px solid var(--ui-input-border-color, var(--ui-border-color));
+    border-radius: var(--ui-input-border-radius, var(--ui-border-radius-base));
     outline: none;
-    transition: var(--el-transition-box-shadow), border-color var(--el-transition-duration);
+    transition: var(--ui-transition-box-shadow), border-color var(--ui-transition-duration);
 
     &::placeholder {
-        color: var(--el-input-placeholder-color, var(--el-text-color-placeholder));
+        color: var(--ui-input-placeholder-color, var(--ui-text-color-placeholder));
     }
 
     &:hover {
-        border-color: var(--el-input-hover-border-color, var(--el-border-color-hover));
+        border-color: var(--ui-input-hover-border-color, var(--ui-border-color-hover));
     }
 
     &:focus {
-        border-color: var(--el-input-focus-border-color, var(--el-color-primary));
-        box-shadow: 0 0 0 1px var(--el-input-focus-border-color, var(--el-color-primary)) inset;
+        border-color: var(--ui-input-focus-border-color, var(--ui-color-primary));
+        box-shadow: 0 0 0 1px var(--ui-input-focus-border-color, var(--ui-color-primary)) inset;
     }
 
     &:disabled {
-        color: var(--el-disabled-text-color);
+        color: var(--ui-disabled-text-color);
         cursor: not-allowed;
-        background-color: var(--el-disabled-bg-color);
-        border-color: var(--el-disabled-border-color);
+        background-color: var(--ui-disabled-bg-color);
+        border-color: var(--ui-disabled-border-color);
     }
 
     &::-webkit-outer-spin-button,

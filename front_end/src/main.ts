@@ -1,5 +1,5 @@
 import './setup.js';
-import * as ELIcons from '@element-plus/icons-vue';
+import { ArrowLeft, ArrowRight, Cpu, Key, Lock, Medal, Message, QuestionFilled, Reading, Setting, Ticket, Trophy, User, VideoCameraFilled } from '@element-plus/icons-vue';
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
 import type { AxiosInstance } from 'axios';
@@ -14,6 +14,9 @@ import { pinia } from './store/create';
 
 import i18n from '@/i18n';
 
+updateStartupStatus('2/3 正在初始化应用…', '2/3 Initializing application…');
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- 根 .vue 组件在 typescript-eslint 中可能被解析为 error type；vue-tsc 已负责 SFC 类型校验。
 const app = createApp(App);
 
 if (import.meta.env.DEV) {
@@ -28,8 +31,10 @@ if (import.meta.env.DEV) {
 
 app.config.globalProperties.$axios = $axios;
 
-for (const name in ELIcons) {
-    app.component(name, (ELIcons as any)[name]);
+// Transitional registry for bare tags, menu icon names and input prefix-icon strings.
+const globalIcons = { ArrowLeft, ArrowRight, Cpu, Key, Lock, Medal, Message, QuestionFilled, Reading, Setting, Ticket, Trophy, User, VideoCameraFilled };
+for (const [key, component] of Object.entries(globalIcons)) {
+    app.component(key, component);
 }
 
 const myTheme = definePreset(Aura, {
@@ -55,13 +60,23 @@ app.use(PrimeVue, {
     autoImport: false,
 });
 app.use(pinia).use(router).use(i18n);
-app.mount('#app');
+updateStartupStatus('3/3 正在准备页面…', '3/3 Preparing page…');
 
-const win: any = window;
-if (import.meta.env.NODE_ENV === 'development') {
-    if ('__VUE_DEVTOOLS_GLOBAL_HOOK__' in win) {
-        win.__VUE_DEVTOOLS_GLOBAL_HOOK__.Vue = app;
-    }
+// Keep the HTML placeholder until the initial route's lazy components are ready.
+void router.isReady().then(() => {
+    app.mount('#app');
+}).catch((error: unknown) => {
+    updateStartupStatus('页面加载失败，请刷新重试。', 'Failed to load the page. Please refresh to try again.');
+    document.querySelector('#startup-loading progress')?.setAttribute('hidden', '');
+    console.error(error);
+});
+
+function updateStartupStatus(zh: string, en: string) {
+    const label = document.getElementById('startup-loading-label');
+    const chinese = label?.querySelector('[lang="zh-CN"]');
+    const english = label?.querySelector('[lang="en"]');
+    if (chinese) chinese.textContent = zh;
+    if (english) english.textContent = en;
 }
 
 declare module '@vue/runtime-core' {

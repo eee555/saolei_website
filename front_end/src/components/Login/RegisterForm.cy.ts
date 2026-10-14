@@ -1,3 +1,5 @@
+import { Key, Lock, Message, User } from '@element-plus/icons-vue';
+
 import RegisterForm from './RegisterForm.vue';
 
 import $axios from '@/http';
@@ -6,6 +8,7 @@ import i18n from '@/i18n';
 const mountOptions = {
     global: {
         plugins: [i18n],
+        components: { Key, Lock, Message, User },
         config: {
             globalProperties: {
                 $axios,
@@ -83,7 +86,20 @@ describe('<RegisterForm />', () => {
         cy.contains('Email code').next().find('button').should('have.text', 'Send');
         findPasswordInput().should('have.attr', 'type', 'password');
         findConfirmPasswordInput().should('have.attr', 'type', 'password');
+        cy.get('.el-input__prefix svg').should('have.length', 6);
         cy.contains('Agree to').find('input').should('have.attr', 'type', 'checkbox');
+    });
+
+    it('keeps the agreement link separate from the checkbox and supports Space', () => {
+        cy.mount(RegisterForm, mountOptions);
+        cy.get('input[name=checkoutSecret]').should('not.be.checked');
+        cy.contains('a', 'Terms & Conditions').should('have.attr', 'target', '_blank').and('have.attr', 'rel', 'noopener noreferrer');
+        cy.contains('a', 'Terms & Conditions').parents('label').should('not.exist');
+        cy.contains('label', 'Agree to').click();
+        cy.get('input[name=checkoutSecret]').should('be.checked').focus();
+        cy.realPress('Space');
+        cy.get('input[name=checkoutSecret]').should('not.be.checked');
+        findRegisterButton().should('be.disabled');
     });
 
     it('Username Validation - Collision', () => {

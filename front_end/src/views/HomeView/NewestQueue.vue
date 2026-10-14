@@ -2,41 +2,39 @@
     <ElTabPane v-loading="loadingStatus == QueueRefreshStatus.Refreshing" class="bottom_tabs" lazy name="newest">
         <template #label>
             {{ t('home.latestScore') }}&nbsp;
-            <span v-if="loadingStatus == QueueRefreshStatus.CoolingDown" class="text text-success">
-                <ElIcon>
-                    <Check />
-                </ElIcon>
+            <span v-if="loadingStatus == QueueRefreshStatus.CoolingDown" class="text-success">
+                <BaseIconTick />
             </span>
-            <ElLink
+            <BaseTextButton
                 v-else-if="isActive" underline="never"
-                :disabled="loadingStatus != QueueRefreshStatus.Available" style="vertical-align: baseline;" @click="refresh"
+                :disabled="loadingStatus != QueueRefreshStatus.Available" :aria-label="t('common.action.getVideoModel')"
+                style="vertical-align: baseline;" @keydown.stop @click="refresh"
             >
                 <BaseIconRefresh />
-            </ElLink>
+            </BaseTextButton>
         </template>
         <VideoList :videos="queue" :columns="columnChoices" sortable paginator />
     </ElTabPane>
 </template>
 
 <script setup lang='ts'>
-import { ElIcon, ElLink, ElTabPane, vLoading } from 'element-plus';
+import { ElTabPane, vLoading } from 'element-plus';
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { QueueRefreshStatus } from './utils';
 
-import { BaseIconRefresh } from '@/components/common/icon';
+import BaseTextButton from '@/components/common/BaseTextButton.vue';
+import { BaseIconRefresh, BaseIconTick } from '@/components/common/icon';
 import VideoList from '@/components/VideoList/App.vue';
-import { ArrayUtils } from '@/utils/arrays';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import { fetchNewestQueue } from '@/services/videoService';
 import type { ColumnChoice } from '@/utils/ms_const';
-import { VideoAbstract } from '@/utils/videoabstract';
+import type { VideoAbstract } from '@/utils/videoabstract';
 
 defineProps({
     isActive: { type: Boolean },
 });
 
-const { proxy } = useCurrentInstance();
 const { t } = useI18n();
 
 const queue = ref<VideoAbstract[]>([]);
@@ -51,15 +49,8 @@ async function refresh() {
     setTimeout(() => {
         loadingStatus.value = QueueRefreshStatus.Available;
     }, 5000);
-    await proxy.$axios.get('/video/newest_queue/', {
-        params: {},
-    }).then(function (response) {
-        ArrayUtils.empty(queue.value);
-        for (const key in response.data) {
-            const videoid = Number.parseInt(key);
-            const videoinfo = JSON.parse(response.data[key] as string);
-            queue.value.push(VideoAbstract.fromVideoRedisInfo(videoid, videoinfo));
-        }
+    await fetchNewestQueue().then((data) => {
+        queue.value = data;
     });
     if (loadingStatus.value == QueueRefreshStatus.Refreshing) {
         loadingStatus.value = QueueRefreshStatus.CoolingDown;

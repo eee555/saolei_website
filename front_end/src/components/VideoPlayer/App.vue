@@ -26,13 +26,14 @@
 
 <script setup lang="ts">
 import { ElDialog, ElOption, ElSelect } from 'element-plus';
+import { defineAsyncComponent } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import FlopPlayer from './FlopPlayer.vue';
-import NativePlayer from './NativePlayer.vue';
-import StrangeDust from './StrangeDust.vue';
-
 import { videoPlayerConfig, videoplayerstore } from '@/store';
+
+const FlopPlayer = defineAsyncComponent(() => import('./FlopPlayer.vue'));
+const NativePlayer = defineAsyncComponent(() => import('./NativePlayer.vue'));
+const StrangeDust = defineAsyncComponent(() => import('./StrangeDust.vue'));
 
 const i18nMessages = {
     'zh-cn': { local: {

@@ -13,33 +13,21 @@ export enum LoginStatus {
     IsRetrieve,
 }
 
-export interface RecordBIE {
-    timems: number[];
-    bvs: number[];
-    stnb: number[];
-    ioe: number[];
-    path: number[];
-    timems_id: number[];
-    bvs_id: number[];
-    stnb_id: number[];
-    ioe_id: number[];
-    path_id: number[];
-}
-
-export interface Record {
-    timems: number;
-    bvs: number;
-    stnb: number;
-    ioe: number;
-    path: number;
-    timems_id: number;
-    bvs_id: number;
-    stnb_id: number;
-    ioe_id: number;
-    path_id: number;
-}
-
 export type TaskStatus = '' | 'loading' | 'success' | 'error';
+
+export interface ApiSuccessResponse<T> {
+    type: 'success';
+    data: T;
+}
+
+export interface ApiErrorResponse {
+    type: 'error';
+    object?: string;
+    category?: string;
+    msg?: string;
+}
+
+export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse;
 
 export const DjangoTaskResultStatusOptions = ['READY', 'RUNNING', 'FAILED', 'SUCCESSFUL', 'NULL'] as const;
 export type DjangoTaskResultStatus = typeof DjangoTaskResultStatusOptions[number];

@@ -1,15 +1,19 @@
 <template>
-    <ElButton v-bind="$attrs">
-        <BaseIconPrev />
+    <BaseButton v-bind="$attrs">
+        <template #icon>
+            <BaseIconPrev aria-hidden="true" />
+        </template>
         {{ t('common.button.back') }}
-    </ElButton>
+    </BaseButton>
 </template>
 
 <script setup lang="ts">
-import { ElButton } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
+import BaseButton from './BaseButton.vue';
 import { BaseIconPrev } from './icon';
+
+defineOptions({ inheritAttrs: false });
 
 const { t } = useI18n();
 </script>

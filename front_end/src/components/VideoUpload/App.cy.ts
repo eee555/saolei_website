@@ -1,6 +1,7 @@
 
 import { interceptFormData } from 'cypress-intercept-formdata';
 import PrimeVue from 'primevue/config';
+import type { ComponentProps } from 'vue-component-type-helpers';
 
 import App from './App.vue';
 
@@ -17,7 +18,6 @@ function tableRowError(status: string) {
 const fixtures = {
     expAvf: {
         filename: 'Exp_FL_35.09_3BV=132_3BVs=3.76_Pu Tian Yi(Hu Bei).avf',
-        identifier: 'Pu Tian Yi(Hu Bei)',
         tableData: { '': '', Bv: '132', Bvs: '3.762', Status: 'Pass', Time: '35.090', Level: 'Expert', Mode: 'Standard', 'End Time': '2023-10-05 21:25:57' },
         response: {
             type: 'success',
@@ -29,7 +29,6 @@ const fixtures = {
     },
     expMvf: {
         filename: 'Lin_Jin_Fan_Exp_60.623bv207.mvf',
-        identifier: 'Lin Jinfan',
         tableData: { '': '', Bv: '207', Bvs: '3.472', Status: 'Need manual approval', Time: '59.620', Level: 'Expert', Mode: 'Standard', 'End Time': '2011-08-03 06:49:03' },
         response: {
             type: 'error',
@@ -38,13 +37,11 @@ const fixtures = {
     },
     cusAvf: {
         filename: '4376-Custom-FL-30x24-860.360-357-226m-20220522.avf',
-        identifier: 'Nathanael Kozinski',
         tableData: { '': '', Bv: '357', Bvs: '0.415', Status: 'This custom board is currently not supported', Time: '860.360', Level: '24x30/226', Mode: 'Standard', 'End Time': '2022-05-22 23:30:49' },
     },
     cusEvf8_8_40: {
         filename: 'c_10_129.073_24_0.186_Pu Tian Yi(Hu Bei).evf',
         tableData: { '': '', Bv: '24', Bvs: '0.186', Status: 'Pass', Time: '129.073', Level: '8x8/40', Mode: 'Lucky', 'End Time': '2026-06-30 19:25:04' },
-        identifier: 'Pu Tian Yi(Hu Bei)',
     },
     failed: {
         filename: 'c_10_39.832_24_0.477_Pu Tian Yi(Hu Bei)_fail.evf',
@@ -52,11 +49,15 @@ const fixtures = {
     },
     intRmv: {
         filename: '3819-Time-1616-NF-9469-32-20151031.rmv',
-        identifier: 'lj22f',
-        tableData: { '': '', Bv: '32', Bvs: '3.379', Status: 'New identifier', Time: '9.469', Level: 'Intermediate', Mode: 'Standard', 'End Time': '2015-10-31 22:53:35' },
+        tableData: { '': '', Bv: '32', Bvs: '3.379', Status: 'Pass', Time: '9.469', Level: 'Intermediate', Mode: 'Standard', 'End Time': '2015-10-31 22:53:35' },
         response: {
-            type: 'error',
-            object: 'identifier',
+            type: 'success',
+            object: 'videomodel',
+            category: 'upload',
+            data: {
+                id: 2,
+                state: MS_State.Identifier,
+            },
         },
     },
     json: {
@@ -95,7 +96,7 @@ function mockUploadResponse() {
     }).as('uploadRequest');
 }
 
-function mountOptions(props: any) {
+function mountOptions(props: ComponentProps<typeof App>) {
     return {
         props: props,
         global: {
@@ -129,11 +130,33 @@ describe('VideoUpload Component', () => {
         cy.contains('Auto-remove after uploading').should('be.visible');
     });
 
+    it('keeps upload options outside the file picker button', () => {
+        cy.mount(App, mountOptions({ isUserAnonymous: false }));
+        cy.get('input[type=file]').then(($input) => {
+            cy.stub($input[0] as HTMLInputElement, 'click').as('pick');
+        });
+        cy.contains('label', 'Auto-upload after parsing').click();
+        cy.contains('label', 'Auto-upload after parsing').find('input').should('be.checked');
+        cy.contains('label', 'Auto-remove after uploading').click();
+        cy.contains('label', 'Auto-remove after uploading').find('input').should('be.checked');
+        cy.contains('label', 'Auto-upload after parsing').find('input').focus();
+        cy.realPress('Space');
+        cy.contains('label', 'Auto-upload after parsing').find('input').should('not.be.checked');
+        cy.window().its('localStorage').invoke('getItem', 'local').should((value: string | null) => {
+            const settings = JSON.parse(value ?? '{}') as { autoUploadAfterParse?: boolean; autoRemoveAfterUpload?: boolean };
+            expect(settings.autoUploadAfterParse).to.equal(false);
+            expect(settings.autoRemoveAfterUpload).to.equal(true);
+        });
+        cy.get('.base-file-input button input').should('not.exist');
+        cy.get('@pick').should('not.have.been.called');
+        cy.contains('button', 'Drag files here or click here to select').click();
+        cy.get('@pick').should('have.been.calledOnce');
+    });
+
     it('File parsing and table rendering', () => {
         cy.viewport(500, 1000);
         cy.mount(App, mountOptions({
             isUserAnonymous: false,
-            identifiers: [fixtures.expAvf.identifier, fixtures.expMvf.identifier],
         }));
 
         // 准备录像文件
@@ -147,7 +170,7 @@ describe('VideoUpload Component', () => {
 
         cy.get('input[type=file]').selectFile([
             { contents: '@videoFileExpAvf', fileName: 'exp.avf' }, // 高级, pass
-            { contents: '@videoFileIntRmv', fileName: 'int.rmv' }, // 中级, identifier
+            { contents: '@videoFileIntRmv', fileName: 'int.rmv' }, // 中级, pass
             { contents: '@videoFileCusAvf', fileName: 'cus.avf' }, // custom
             { contents: '@videoFileCusEvf8_8_40', fileName: 'cus.evf' }, // custom
             { contents: '@videoFileFailed', fileName: 'failed.evf' }, // 炸局
@@ -197,37 +220,41 @@ describe('VideoUpload Component', () => {
         cy.get('table:visible');
         cy.contains('Parsing files').should('not.exist');
 
-        cy.get('table:visible').find('.el-checkbox__input').then((checkboxes) => {
-            cy.wrap(checkboxes).should('have.length', 4);
+        // 初始状态全不选
+        cy.get('table:visible .checkbox-input').shouldHaveState([false, false, false, false]);
 
-            // 初始状态全不选
-            cy.wrap(checkboxes).shouldHaveState([false, false, false, false]);
+        // 全选
+        cy.get('table:visible .checkbox-input').first().parent('label').click();
+        cy.get('table:visible .checkbox-input').shouldHaveState([true, true, true, true]);
 
-            // 全选
-            cy.wrap(checkboxes[0]).click();
-            cy.wrap(checkboxes).shouldHaveState([true, true, true, true]);
+        // 全不选
+        cy.get('table:visible .checkbox-input').first().click();
+        cy.get('table:visible .checkbox-input').shouldHaveState([false, false, false, false]);
 
-            // 全不选
-            cy.wrap(checkboxes[0]).click();
-            cy.wrap(checkboxes).shouldHaveState([false, false, false, false]);
+        // 选择部分
+        cy.get('table:visible .checkbox-input').eq(1).parent('label').click();
+        cy.get('table:visible .checkbox-input').eq(2).click();
+        cy.get('table:visible .checkbox-input').shouldHaveState([null, true, true, false]);
 
-            // 选择部分
-            cy.wrap(checkboxes[1]).click();
-            cy.wrap(checkboxes[2]).click();
-            cy.wrap(checkboxes).shouldHaveState([null, true, true, false]);
+        // 逐步全选
+        cy.get('table:visible .checkbox-input').eq(3).click();
+        cy.get('table:visible .checkbox-input').shouldHaveState([true, true, true, true]);
 
-            // 逐步全选
-            cy.wrap(checkboxes[3]).click();
-            cy.wrap(checkboxes).shouldHaveState([true, true, true, true]);
+        // 部分取消
+        cy.get('table:visible .checkbox-input').eq(2).click();
+        cy.get('table:visible .checkbox-input').shouldHaveState([null, true, false, true]);
 
-            // 部分取消
-            cy.wrap(checkboxes[2]).click();
-            cy.wrap(checkboxes).shouldHaveState([null, true, false, true]);
+        // 中间状态全不选
+        cy.get('table:visible .checkbox-input').first().click();
+        cy.get('table:visible .checkbox-input').shouldHaveState([false, false, false, false]);
 
-            // 中间状态全不选
-            cy.wrap(checkboxes[0]).click();
-            cy.wrap(checkboxes).shouldHaveState([false, false, false, false]);
-        });
+        // Space 选择一行，再从半选清空
+        cy.get('table:visible .checkbox-input').eq(1).focus();
+        cy.realPress('Space');
+        cy.get('table:visible .checkbox-input').shouldHaveState([null, true, false, false]);
+        cy.get('table:visible .checkbox-input').first().focus();
+        cy.realPress('Space');
+        cy.get('table:visible .checkbox-input').shouldHaveState([false, false, false, false]);
     });
 
     it('Response status', () => {
@@ -246,7 +273,7 @@ describe('VideoUpload Component', () => {
             { contents: '@videoFileExpMvf', fileName: 'exp.mvf' },
         ], { force: true });
 
-        cy.get('table:visible').find('.el-checkbox__input').first().click(); // 全选
+        cy.get('table:visible .checkbox-input').first().click(); // 全选
         cy.get('button').contains('Upload').click();
 
         cy.contains('Uploading: 0 / 4');
@@ -257,11 +284,42 @@ describe('VideoUpload Component', () => {
         cy.get('table:visible').getTable().should((tableData) => {
             expect(tableData.length).to.equal(4);
             expect(tableData[0]).to.deep.equal({ ...fixtures.expAvf.tableData, Status: 'Success' });
-            expect(tableData[1]).to.deep.equal({ ...fixtures.intRmv.tableData, Status: 'Identifier blocked' });
+            expect(tableData[1]).to.deep.equal({ ...fixtures.intRmv.tableData, Status: 'New identifier' });
             expect(tableData[2]).to.deep.equal(fixtures.cusAvf.tableData);
             expect(tableData[3]).to.deep.equal({ ...fixtures.expMvf.tableData, Status: 'Video already exists' });
         });
     });
+
+    for (const autoUpload of [false, true]) {
+        for (const statusCode of [402, 500]) {
+            it(`shows the HTTP ${statusCode} failure status with auto-upload ${autoUpload}`, () => {
+                local.value.autoUploadAfterParse = autoUpload;
+                local.value.autoRemoveAfterUpload = true;
+                cy.intercept('POST', '/common/uploadvideo/', { statusCode, body: '' }).as('uploadRequest');
+                const onUpload = cy.spy().as('onUpload');
+                cy.mount(App, mountOptions({ isUserAnonymous: false, onOnUpload: onUpload }));
+
+                loadFixture('expAvf', 'videoFileExpAvf');
+                cy.get('input[type=file]').selectFile([
+                    { contents: '@videoFileExpAvf', fileName: 'exp.avf' },
+                ], { force: true });
+
+                if (!autoUpload) {
+                    cy.contains('Parsing files').should('not.exist');
+                    cy.get('table:visible .checkbox-input').first().click();
+                    cy.get('button').contains('Upload').click();
+                }
+
+                cy.wait('@uploadRequest').its('response.statusCode').should('eq', statusCode);
+                cy.get('table:visible').getTable().should('deep.equal', [
+                    { ...fixtures.expAvf.tableData, Status: statusCode === 402 ? 'Video quota reached' : 'Upload fail' },
+                ]);
+                cy.get('input[type=file]').should('not.be.disabled');
+                cy.contains('Uploading').should('not.exist');
+                cy.get('@onUpload').should('not.have.been.called');
+            });
+        }
+    }
 
     it('Auto-remove after upload', () => {
         mockUploadResponse();
@@ -276,13 +334,13 @@ describe('VideoUpload Component', () => {
             { contents: '@videoFileIntRmv', fileName: 'int.rmv' },
         ], { force: true });
 
-        cy.get('table:visible').find('.el-checkbox__input').first().click(); // 全选
+        cy.get('table:visible .checkbox-input').first().click(); // 全选
         cy.get('button').contains('Upload').click();
 
         cy.contains('Uploading').should('not.exist');
         cy.get('table:visible').getTable().should((tableData) => {
             expect(tableData.length).to.equal(1);
-            expect(tableData[0]).to.deep.equal({ ...fixtures.intRmv.tableData, Status: 'Identifier blocked' });
+            expect(tableData[0]).to.deep.equal({ ...fixtures.intRmv.tableData, Status: 'New identifier' });
         });
     });
 
@@ -304,7 +362,7 @@ describe('VideoUpload Component', () => {
         cy.get('table:visible').getTable().should((tableData) => {
             expect(tableData.length).to.equal(2);
             expect(tableData[0]).to.deep.equal({ ...fixtures.expAvf.tableData, Status: 'Success' });
-            expect(tableData[1]).to.deep.equal({ ...fixtures.intRmv.tableData, Status: 'Identifier blocked' });
+            expect(tableData[1]).to.deep.equal({ ...fixtures.intRmv.tableData, Status: 'New identifier' });
         });
     });
 
@@ -325,7 +383,7 @@ describe('VideoUpload Component', () => {
         cy.contains('Parsing files').should('not.exist');
         cy.get('table:visible').getTable().should((tableData) => {
             expect(tableData.length).to.equal(1);
-            expect(tableData[0]).to.deep.equal({ ...fixtures.intRmv.tableData, Status: 'Identifier blocked' });
+            expect(tableData[0]).to.deep.equal({ ...fixtures.intRmv.tableData, Status: 'New identifier' });
         });
     });
 });

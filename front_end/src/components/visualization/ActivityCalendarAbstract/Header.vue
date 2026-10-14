@@ -1,6 +1,6 @@
 <template>
     <div data-cy="count" style="display: flex; width: 100%; align-items: center">
-        <span class="text text-small" style="margin-right: 0.5em">
+        <span class="text-regular text-small" style="margin-right: 0.5em">
             {{ t('local.totalNVideos', [videoList.length]) }}
         </span>
         <div style="flex-grow: 1;">
@@ -8,7 +8,7 @@
         </div>
     </div>
     <div data-cy="size" style="display: flex; width: 100%; align-items: center">
-        <span class="text text-small" style="margin-right: 0.5em">
+        <span class="text-regular text-small" style="margin-right: 0.5em">
             {{ t('local.totalNBytes', [totalSize]) }}
         </span>
         <div style="flex-grow: 1;">

@@ -3,10 +3,21 @@
 
 import 'cypress-table';
 import 'cypress-intercept-formdata';
+import type { StaticResponse } from 'cypress/types/net-stubbing';
+
+import type { LocalSettings } from '../../src/store';
 
 declare global {
+    interface Fixture<T> {
+        data: T;
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace Cypress {
+        interface LocalStorageTypes {
+            local: LocalSettings;
+        }
+
         interface Chainable {
             /**
              * cypress-get-table 插件，用于获取表格数据
@@ -19,11 +30,19 @@ declare global {
             closeElNotifications(): void;
 
             /**
+             * 等待选择器匹配的元素不存在或全部不可见，支持关闭动画和保留 DOM 的浮层。
+             * 每次重试重新查询当前文档，使用 Cypress 的可见性判断；返回文档，不返回目标元素。
+             * @example cy.shouldBeAbsentOrHidden('.el-dialog', { timeout: 10000 });
+             */
+            shouldBeAbsentOrHidden(selector: string, options?: Partial<Loggable & Timeoutable>): Chainable<Document>;
+
+            /**
              * 获取本地存储的值
              * @param key - 本地存储的键
              * @example cy.getLocalStorage('authToken')
              */
-            getLocalStorage(key: string): Chainable;
+            getLocalStorage<K extends keyof LocalStorageTypes>(key: K): Chainable<LocalStorageTypes[K] | null>;
+            getLocalStorage<T = unknown>(key: string): Chainable<T | null>;
 
             /**
              * 设置本地存储的值
@@ -38,14 +57,14 @@ declare global {
              * @param options - 请求选项
              * @example cy.mockCaptchaRefresh({})
              */
-            mockCaptchaRefresh(options?: any): void;
+            mockCaptchaRefresh(options?: Partial<StaticResponse>): void;
 
             /**
              * 模拟获取邮件验证码
              * @param options - 请求选项
              * @example cy.mockGetEmailCode({})
              */
-            mockGetEmailCode(options?: any): void;
+            mockGetEmailCode(options?: Partial<StaticResponse>): void;
 
             /**
              * 模拟登录
@@ -59,8 +78,13 @@ declare global {
              */
             mockRegister(): void;
 
+            /**
+             * 让 PlayerName 始终显示 fallback 名称，避免表格测试触发用户信息批量缓存和战绩弹窗请求。
+             */
+            mockPlayerNameFallback(): void;
+
             extractTableData(): Chainable<string[][]>;
-            shouldHaveState(expectedStates: (boolean | null)[]): void;
+            shouldHaveState(expectedStates: (boolean | null)[]): Chainable<JQuery<HTMLInputElement>>;
         }
     }
 }
@@ -116,6 +140,7 @@ Cypress.Commands.add('mockGetEmailCode', (options) => {
 
 Cypress.Commands.add('mockRegister', () => {
     cy.intercept('POST', '/userprofile/register', (req) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- Cypress 将拦截请求体类型标为 any；这里测试环境固定为 form-urlencoded 字符串。
         const params = new URLSearchParams(req.body);
         const email_captcha = params.get('email_captcha');
 
@@ -133,8 +158,14 @@ Cypress.Commands.add('mockRegister', () => {
     });
 });
 
+Cypress.Commands.add('mockPlayerNameFallback', () => {
+    cy.intercept('GET', '**/api/userprofile/avatar/**', { statusCode: 404 }).as('playerNameFallbackAvatar');
+    cy.intercept('GET', '**/api/userprofile/infobulk*', { body: [] }).as('playerNameFallbackUserInfoBulk');
+});
+
 Cypress.Commands.add('mockLogin', () => {
     cy.intercept('POST', '/userprofile/login/', (req) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- Cypress 将拦截请求体类型标为 any；这里测试环境固定为 form-urlencoded 字符串。
         const params = new URLSearchParams(req.body);
         const username = params.get('username');
         const password = params.get('password');
@@ -169,6 +200,13 @@ Cypress.Commands.add('closeElNotifications', () => {
     cy.get('.el-notification__closeBtn:visible').should('not.exist');
 });
 
+Cypress.Commands.add('shouldBeAbsentOrHidden', (selector, options) => {
+    return cy.document(options).should((doc) => {
+        const $visible = Cypress.$(selector, doc).filter((_, element) => Cypress.dom.isVisible(element));
+        expect($visible, `${selector} should be absent or all hidden`).to.have.length(0);
+    });
+});
+
 Cypress.Commands.add('extractTableData', { prevSubject: 'element' }, (subject) => {
     const $table = Cypress.$(subject);
     const $rows = $table.find('> thead > tr, > tbody > tr, > tr');
@@ -188,30 +226,12 @@ Cypress.Commands.add('extractTableData', { prevSubject: 'element' }, (subject) =
 Cypress.Commands.add(
     'shouldHaveState',
     { prevSubject: true },
-    (subject: JQuery, expectedStates: (boolean | null)[]) => {
-    // 验证长度是否匹配
-        expect(subject.length).to.equal(
-            expectedStates.length,
-            `Expected ${expectedStates.length} checkboxes, but got ${subject.length}`,
-        );
-
-        // 遍历每个复选框进行状态断言
-        cy.wrap(subject).each(($el, index) => {
-            const expected = expectedStates[index];
-
-            if (expected === false) {
-                // 未选中：不应有 is-checked 和 is-indeterminate 类
-                cy.wrap($el).should('not.have.class', 'is-checked');
-                cy.wrap($el).should('not.have.class', 'is-indeterminate');
-            } else if (expected === true) {
-                // 选中：应有 is-checked 类，不应有 is-indeterminate 类
-                cy.wrap($el).should('have.class', 'is-checked');
-                cy.wrap($el).should('not.have.class', 'is-indeterminate');
-            } else {
-                // 半选：应有 is-indeterminate 类，不应有 is-checked 类
-                cy.wrap($el).should('have.class', 'is-indeterminate');
-                cy.wrap($el).should('not.have.class', 'is-checked');
-            }
+    (subject: JQuery<HTMLInputElement>, expectedStates: (boolean | null)[]) => cy.wrap(subject).should(($inputs) => {
+        expect($inputs).to.have.length(expectedStates.length);
+        $inputs.each((index, input) => {
+            expect(input.type, `checkbox ${index}`).to.equal('checkbox');
+            expect(input.indeterminate, `checkbox ${index} indeterminate`).to.equal(expectedStates[index] === null);
+            expect(input.checked, `checkbox ${index} checked`).to.equal(expectedStates[index] === true);
         });
-    },
+    }),
 );

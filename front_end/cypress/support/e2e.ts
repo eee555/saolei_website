@@ -18,6 +18,47 @@
 import './commands';
 import 'cypress-real-events';
 
+const BACKEND_URL = 'http://127.0.0.1:8000';
+const DANGERZONE_URL = `${BACKEND_URL}/dangerzone`;
+
+interface DangerzoneUser {
+    id: number;
+    username: string;
+    email?: string;
+    password?: string;
+    realname?: string;
+}
+
+interface DangerzoneVideo {
+    user_id: number;
+    identifier: string;
+    level: string;
+    timems: number;
+    bv: number;
+    upload_time?: string;
+    tournament_identifier?: string[];
+    state?: string;
+    software?: string;
+    mode?: string;
+    file_size?: number;
+    left?: number;
+    right?: number;
+    double?: number;
+    left_ce?: number;
+    right_ce?: number;
+    double_ce?: number;
+    path?: number;
+    pluck?: number;
+}
+
+interface DangerzoneVideoResponse {
+    id: number;
+    ongoing_tournament: boolean;
+    tournament_ids: number[];
+    upload_time: string;
+    tournament_identifier: string[];
+}
+
 declare global {
     // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace Cypress {
@@ -35,14 +76,29 @@ declare global {
             flushDatabase(): void;
 
             /**
-             * 注册一个账号。如果该账号已存在，则报错。
-             * @param {number} id - 用户ID
-             * @param {string} username - 用户名
-             * @param {string} email - 邮箱
-             * @param {string} password - 密码
-             * @example cy.register('user', 'user@example.com', 'password');
-             * */
-            register(id: number, username: string, email: string, password: string): void;
+             * 调用 dangerzone API。仅在后端 E2E_TEST 模式可用。
+             */
+            dangerzonePost<T = unknown>(path: string, body?: object): Chainable<Response<T>>;
+
+            /**
+             * 注册测试用户。
+             */
+            registerUser(user: DangerzoneUser): Chainable<Response<unknown>>;
+
+            /**
+             * 创建测试录像。
+             */
+            createVideo(video: DangerzoneVideo): Chainable<Response<DangerzoneVideoResponse>>;
+
+            /**
+             * 创建测试标识。
+             */
+            createIdentifier(identifier: string, safe?: boolean): Chainable<Response<unknown>>;
+
+            /**
+             * 将测试标识绑定到指定用户，可选断言受影响录像数。
+             */
+            bindIdentifier(userId: number, identifier: string, expectedChangedCount?: number): Chainable<Response<{ changed_count: number }>>;
 
             /**
              * 将指定用户设为管理员。
@@ -52,11 +108,12 @@ declare global {
             setStaff(user_id: number): void;
 
             /**
-             * 创建/加载一个记住登录状态的登录会话
-             * @param {string} username - 用户名也作为会话名称
+             * 通过后端请求创建/恢复登录会话，需要后端开启 E2E_TEST。
+             * 登录后由调用方访问目标页面。
+             * @param {string} username
              * @param {string} password
              * @example cy.login('user', 'password');
-             * cy.session('user);
+             * cy.visitUser(1);
              * */
             login(username: string, password: string): void;
 
@@ -85,23 +142,71 @@ Cypress.on('test:before:run', () => {
     });
 });
 
-Cypress.Commands.add('register', (id: number, username: string, email: string, password: string) => {
-    cy.request({
+beforeEach(() => {
+    cy.intercept('GET', /^https?:\/\/(avatars\.githubusercontent\.com|minesweeper\.online|i2\.hdslb\.com)\/.*/, {
+        fixture: 'test.png',
+    });
+});
+
+Cypress.Commands.add('dangerzonePost', <T = unknown>(path: string, body: object = {}) => {
+    return cy.request<T>({
         method: 'POST',
-        url: 'http://127.0.0.1:8000/dangerzone/register',
-        body: {
-            id: id,
-            username: username,
-            email: email,
-            password: password,
-        },
+        url: `${DANGERZONE_URL}/${path}`,
+        body,
+    });
+});
+
+Cypress.Commands.add('registerUser', (user: DangerzoneUser) => {
+    return cy.dangerzonePost('register', {
+        id: user.id,
+        username: user.username,
+        email: user.email ?? `${user.username}@example.com`,
+        password: user.password ?? 'password',
+        realname: user.realname,
+    });
+});
+
+Cypress.Commands.add('createVideo', (video: DangerzoneVideo) => {
+    return cy.dangerzonePost<DangerzoneVideoResponse>('create_video', {
+        state: 'd',
+        software: 'e',
+        mode: '00',
+        file_size: 1024,
+        left: 100,
+        right: 50,
+        double: 25,
+        left_ce: 100,
+        right_ce: 50,
+        double_ce: 25,
+        path: 1000,
+        ...video,
+    });
+});
+
+Cypress.Commands.add('createIdentifier', (identifier: string, safe = true) => {
+    return cy.dangerzonePost('create_identifier', {
+        identifier,
+        safe,
+    });
+});
+
+Cypress.Commands.add('bindIdentifier', (userId: number, identifier: string, expectedChangedCount?: number) => {
+    return cy.dangerzonePost<{ changed_count: number }>('bind_identifier', {
+        user_id: userId,
+        identifier,
+        safe: true,
+    }).then((response) => {
+        if (expectedChangedCount !== undefined) {
+            expect(response.body.changed_count).to.eq(expectedChangedCount);
+        }
+        return response;
     });
 });
 
 Cypress.Commands.add('setStaff', (id: number) => {
     cy.request({
         method: 'POST',
-        url: 'http://127.0.0.1:8000/dangerzone/setstaff',
+        url: `${DANGERZONE_URL}/setstaff`,
         body: {
             id: id,
         },
@@ -109,30 +214,45 @@ Cypress.Commands.add('setStaff', (id: number) => {
 });
 
 Cypress.Commands.add('login', (username: string, password: string) => {
-    cy.session(username, () => {
-        cy.visit('/#/settings');
-        cy.contains(/^登录$/).click();
-
-        cy.get('.el-dialog').then((dialog) => {
-            cy.wrap(dialog).contains('用户名').next().find('input').type(username);
-            cy.wrap(dialog).contains('密码').next().find('input').type(password);
-            cy.wrap(dialog).contains('验证码').next().find('input').type('test{enter}');
-            cy.wrap(dialog).contains('记住我').click();
-            cy.wrap(dialog).find('button').contains('登录').click();
+    cy.session(['api', username, password], () => {
+        cy.request<{ hashkey: string }>(`${BACKEND_URL}/userprofile/refresh_captcha/`).then(({ body }) => {
+            // E2E_TEST 模式的验证码固定为 test，但仍需获取真实 hashkey。
+            cy.request<{ type: string }>({
+                method: 'POST',
+                url: `${BACKEND_URL}/userprofile/login/`,
+                form: true,
+                log: false,
+                body: {
+                    username,
+                    password,
+                    captcha: 'test',
+                    hashkey: body.hashkey,
+                    set_expiry: 7,
+                },
+            }).its('body.type').should('eq', 'success');
         });
-
-        cy.get('.el-dialog').should('not.be.visible');
+    }, {
+        validate() {
+            // 数据库重置或会话过期后，Cypress 会重新执行登录请求。
+            cy.request<{ username: string }>({
+                url: `${BACKEND_URL}/api/userprofile/info/0`,
+                failOnStatusCode: false,
+            }).then((response) => {
+                expect(response.status).to.eq(200);
+                expect(response.body.username).to.eq(username);
+            });
+        },
     });
 });
 
 Cypress.Commands.add('deleteUser', () => {
-    cy.request('POST', 'http://127.0.0.1:8000/dangerzone/delete_user').then((response) => {
+    cy.request('POST', `${DANGERZONE_URL}/delete_user`).then((response) => {
         expect(response.status).to.eq(200);
     });
 });
 
 Cypress.Commands.add('flushDatabase', () => {
-    cy.request('POST', 'http://127.0.0.1:8000/dangerzone/flush_database').then((response) => {
+    cy.request('POST', `${DANGERZONE_URL}/flush_database`).then((response) => {
         expect(response.status).to.eq(200);
     });
 });

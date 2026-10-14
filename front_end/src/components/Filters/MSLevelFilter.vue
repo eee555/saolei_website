@@ -1,18 +1,21 @@
 <template>
-    <ElCheckboxGroup v-model="level" size="small">
-        <ElCheckboxButton v-for="l in MS_Levels" :key="l" :value="l">
-            {{ t(`common.level.${l}`) }}
-        </ElCheckboxButton>
-    </ElCheckboxGroup>
+    <div class="checkbox-buttons" role="group" :aria-label="t('common.prop.level')">
+        <label v-for="l in MS_Levels" :key="l" class="checkbox-button">
+            <input v-model="level" class="checkbox-button-input" type="checkbox" :value="l" @change="handleChange">
+            <span class="checkbox-button-content">{{ t(`common.level.${l}`) }}</span>
+        </label>
+    </div>
 </template>
 
 <script setup lang="ts">
-import { ElCheckboxButton, ElCheckboxGroup } from 'element-plus';
 import type { PropType } from 'vue';
+import { nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import type { MS_Level } from '@/utils/ms_const';
 import { MS_Levels } from '@/utils/ms_const';
+
+const emit = defineEmits<{ change: [value: MS_Level[]] }>();
 
 const { t } = useI18n();
 
@@ -20,21 +23,9 @@ const level = defineModel<MS_Level[]>({
     type: Array as PropType<MS_Level[]>,
     default: () => [...MS_Levels],
 });
+
+async function handleChange() {
+    await nextTick();
+    emit('change', level.value);
+}
 </script>
-
-<style scoped lang="less">
-::v-deep(.el-checkbox-button:first-child .el-checkbox-button__inner) {
-    border-top-left-radius: 1px;
-    border-bottom-left-radius: 1px;
-}
-
-::v-deep(.el-checkbox-button:last-child .el-checkbox-button__inner) {
-    border-top-right-radius: 1px;
-    border-bottom-right-radius: 1px;
-}
-
-::v-deep(.el-checkbox-button--small .el-checkbox-button__inner) {
-    padding: 5px 8px;
-    font-size: 10px;
-}
-</style>

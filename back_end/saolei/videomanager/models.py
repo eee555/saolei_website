@@ -5,7 +5,7 @@ from django.core.validators import MaxValueValidator
 from django.db import models
 from django.db.models.functions import Power
 
-from config.global_settings import DefaultRankingScores, MaxSizes
+from config.global_settings import MaxSizes
 from config.text_choices import MS_TextChoices
 from userprofile.models import UserProfile
 from utils.parser import MSVideoParser
@@ -23,6 +23,7 @@ STNB_COEFFICIENTS = {
 class ExpandVideoModel(models.Model):
     # video = models.OneToOneField(VideoModel, on_delete=models.CASCADE)
     identifier = models.CharField(max_length=MaxSizes.IDENTIFIER, default='')
+    tournament_identifier = models.JSONField(default=list)
 
 
 # 其他类：checksum_ok, mode
@@ -79,11 +80,12 @@ class VideoModel(models.Model):
         max_length=MaxSizes.GAMELEVEL, choices=MS_TextChoices.Level.choices)
     # 游戏模式，evf标准
     # https://github.com/eee555/ms_toollib/tree/main/base#readme
+    is_lucky = models.BooleanField(default=False)
     mode = models.CharField(
         max_length=MaxSizes.GAMEMODE, choices=MS_TextChoices.Mode.choices, default=MS_TextChoices.Mode.STD)
     # 0.000-999.999
     timems = models.PositiveIntegerField(
-        default=DefaultRankingScores.timems,
+        default=999999,
         validators=[MaxValueValidator(MAX_TIMEMS)],
     )  # 整数形式存储的毫秒数。
     # 0-32767
@@ -190,6 +192,7 @@ class VideoModel(models.Model):
         """
         e_video = ExpandVideoModel.objects.create(
             identifier=parser.identifier,
+            tournament_identifier=parser.tournament_identifier,
         )
         video = VideoModel(
             player=user,
@@ -207,7 +210,6 @@ class VideoModel(models.Model):
             cell3=parser.cell3, cell4=parser.cell4, cell5=parser.cell5,
             cell6=parser.cell6, cell7=parser.cell7, cell8=parser.cell8,
         )
-        video._tournament_identifiers = parser.tournament_identifiers
         video.save()  # noqa: DJM100
         return video
 

@@ -1,3 +1,5 @@
+import { Key } from '@element-plus/icons-vue';
+
 import EmailCodeBlock from './EmailCodeBlock.vue';
 
 import $axios from '@/http';
@@ -6,6 +8,7 @@ import i18n from '@/i18n';
 const mountOptions = {
     global: {
         plugins: [i18n],
+        components: { Key },
         config: {
             globalProperties: {
                 $axios,
@@ -39,6 +42,7 @@ describe('<EmailCodeBlock />', () => {
         cy.contains('Image captcha').next().find('img').should('have.length', 1);
         cy.contains('Email code').next().find('input').should('have.length', 1);
         cy.contains('Email code').next().find('button').should('have.length', 1);
+        cy.get('.el-input__prefix svg').should('have.length', 2);
     });
 
     it('Normal Flow', () => {

@@ -10,6 +10,5 @@ CUSTOM_PLUCK_CONFIGS = {
 CUSTOM_PLUCK_LEVELS = set(CUSTOM_PLUCK_CONFIGS)
 CUSTOM_PLUCK_MODES = {
     MS_TextChoices.Mode.STD,
-    MS_TextChoices.Mode.NF,
     MS_TextChoices.Mode.RKC,
 }

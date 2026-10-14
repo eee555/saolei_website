@@ -1,5 +1,5 @@
 <template>
-    <div class="text text-small" style="margin-bottom: 1em">
+    <div class="text-small" style="margin-bottom: 1em">
         {{ t('local.tooltip') }}
     </div>
     <table class="el-table">

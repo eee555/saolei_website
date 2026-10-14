@@ -3,7 +3,7 @@
         <div style="margin-bottom: 0.5em;">
             <PrToolbar>
                 <template #start>
-                    <span class="text text-medium">
+                    <span class="text-medium text-regular">
                         {{ t('common.platform.w') }}&nbsp;#{{ id }}
                     </span>
                 </template>
@@ -53,33 +53,26 @@
                         {{ info.last_season }}
                     </ElDescriptionsItem>
                     <ElDescriptionsItem :label="t('local.resource')" :span="3">
-                        <ElImage src="https://minesweeper.online/img/other/hp.svg" class="icon" /><span class="text">
-                            {{ info.honour }}
-                        </span>&nbsp;
-                        <ElImage src="https://minesweeper.online/img/other/coin.svg" class="icon" /><span class="text">
-                            {{ info.minecoin }}
-                        </span>&nbsp;
-                        <ElImage src="https://minesweeper.online/img/gems/0.svg" class="icon" /><span class="text">
-                            {{ info.gem }}
-                        </span>&nbsp;
-                        <ElImage src="https://minesweeper.online/img/arena-coins/0.svg" class="icon" /><span class="text">
-                            {{ info.coin }}
-                        </span>&nbsp;
-                        <Ticket class="icon" /><span class="text">
-                            {{ info.arena_ticket }}
-                        </span>&nbsp;
-                        <ElImage src="https://minesweeper.online/img/eq.svg" class="icon" /><span class="text">
-                            {{ info.equipment }}
-                        </span>&nbsp;
-                        <ElImage src="https://minesweeper.online/img/item/parts0.svg" class="icon" /><span class="text">
-                            {{ info.part }}
-                        </span>&nbsp;
+                        <ElImage src="https://minesweeper.online/img/other/hp.svg" class="icon" />
+                        <span>{{ info.honour }}</span>&nbsp;
+                        <ElImage src="https://minesweeper.online/img/other/coin.svg" class="icon" />
+                        <span>{{ info.minecoin }}</span>&nbsp;
+                        <ElImage src="https://minesweeper.online/img/gems/0.svg" class="icon" />
+                        <span>{{ info.gem }}</span>&nbsp;
+                        <ElImage src="https://minesweeper.online/img/arena-coins/0.svg" class="icon" />
+                        <span>{{ info.coin }}</span>&nbsp;
+                        <Ticket class="icon" />
+                        <span>{{ info.arena_ticket }}</span>&nbsp;
+                        <ElImage src="https://minesweeper.online/img/eq.svg" class="icon" />
+                        <span>{{ info.equipment }}</span>&nbsp;
+                        <ElImage src="https://minesweeper.online/img/item/parts0.svg" class="icon" />
+                        <span>{{ info.part }}</span>&nbsp;
                     </ElDescriptionsItem>
                 </ElDescriptions>
             </ElCarouselItem>
             <ElCarouselItem v-if="store.user.id == store.player.id">
                 <div>
-                    <span class="text text-large">
+                    <span class="text-large text-regular">
                         {{ t('accountlink.statSummary') }}
                     </span>
                     &nbsp;
@@ -89,7 +82,7 @@
                     &nbsp;
                     <IconTaskStatus :status="taskStatus" />
                     <br>
-                    <span class="text text-danger text-small">
+                    <span class="text-danger text-small">
                         {{ errorMsg }}
                     </span>
                 </div>
@@ -111,11 +104,11 @@ import UnverifiedNotice from './UnverifiedNotice.vue';
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
 import IconTaskStatus from '@/components/common/IconTaskStatus.vue';
 import { httpErrorNotification } from '@/components/Notifications';
+import { getAccountLinkUpdateErrorMessageKey, updateAccountLink } from '@/services/accountLinkService';
 import { store } from '@/store';
 import { ms_to_s } from '@/utils';
-import { AccountWoM } from '@/utils/accountlinks';
+import { AccountLinkPlatform, AccountWoM } from '@/utils/accountlinks';
 import type { TaskStatus } from '@/utils/common/structInterface';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { toISODateTimeString } from '@/utils/datetime';
 
 defineProps({
@@ -125,8 +118,6 @@ defineProps({
 });
 
 defineEmits(['refresh']);
-
-const { proxy } = useCurrentInstance();
 
 const refCarousel = useTemplateRef<typeof ElCarousel>('refCarousel');
 const errorMsg = ref('');
@@ -143,13 +134,11 @@ function maybeUndefinedToFixed(value?: number, fractionDigits?: number) {
 
 async function updateLink() {
     taskStatus.value = 'loading';
-    await proxy.$axios.post('accountlink/update/', {
-        platform: 'w',
-    }).then(function ({ data }) {
+    await updateAccountLink(AccountLinkPlatform.WoM).then(function (data) {
         errorMsg.value = '';
         taskStatus.value = data.type;
         if (data.type == 'error') {
-            errorMsg.value = t(`errorMsg.${data.object}.title`) + t('common.punct.colon') + t(`errorMsg.${data.object}.${data.category}`);
+            errorMsg.value = t('accountlink.updateError.title') + t('common.punct.colon') + t(getAccountLinkUpdateErrorMessageKey(data.category));
         }
     }).catch(function (error: unknown) {
         errorMsg.value = '';

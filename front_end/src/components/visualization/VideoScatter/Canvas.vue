@@ -37,9 +37,9 @@
         </XLabel>
 
         <template #content>
-            <ElCard v-if="activePoint" class="card-small">
+            <div v-if="activePoint" class="card card-small">
                 <VideoAbstractDisplay :video="activePoint.data" />
-            </ElCard>
+            </div>
         </template>
     </Tippy>
 </template>
@@ -52,7 +52,6 @@ import '@putianyi888/vue3-plots/style.css';
 import { Axis, createLinearScale, Ellipse, getNiceTicks, getPlotArea, Grid, MouseDraw, Rect, Scatter, TransformGroup, XLabel, YLabel } from '@putianyi888/vue3-plots';
 import type { AnyShape, PlotPoint } from '@putianyi888/vue3-plots';
 import { useResizeObserver } from '@vueuse/core';
-import { ElCard } from 'element-plus';
 import { computed, ref, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Tippy } from 'vue-tippy';
@@ -73,10 +72,10 @@ const xTicks = computed(() => getNiceTicks(VideoScatterStore.plotDomain.xMin, Vi
 const yTicks = computed(() => getNiceTicks(VideoScatterStore.plotDomain.yMin, VideoScatterStore.plotDomain.yMax, 5));
 
 const axisColor = computed(() => getTextColor('regular'));
-const gridColor = computed(() => getComputedStyle(document.documentElement).getPropertyValue('--el-border-color-lighter'));
+const gridColor = computed(() => getComputedStyle(document.documentElement).getPropertyValue('--ui-border-color-lighter'));
 
 function handlePointClick(point: PlotPoint<VideoAbstract>) {
-    void preview(point.data.id);
+    void preview(point.data.id, point.data.software);
 }
 
 function handlePointEnter(point: PlotPoint<VideoAbstract>) {

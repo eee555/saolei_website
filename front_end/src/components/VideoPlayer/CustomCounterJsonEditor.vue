@@ -7,7 +7,7 @@
             @input="clearConfigError"
             @change="applyConfigString"
         />
-        <div v-if="configErrorMessage !== ''" class="text text-danger text-small">
+        <div v-if="configErrorMessage !== ''" class="text-danger text-small">
             {{ configErrorMessage }}
         </div>
     </div>

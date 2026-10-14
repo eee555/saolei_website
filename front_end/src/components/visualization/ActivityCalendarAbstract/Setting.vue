@@ -1,14 +1,14 @@
 <template>
-    <span class="text">{{ t('local.showDate') }}</span>&nbsp;
+    <span class="text-regular">{{ t('local.showDate') }}</span>&nbsp;
     <ElSwitch v-model="activityCalendarConfig.showDate" size="small" /><br>
-    <span class="text">{{ t('local.useEndTime') }}</span>&nbsp;
+    <span class="text-regular">{{ t('local.useEndTime') }}</span>&nbsp;
     <ElSwitch v-model="activityCalendarConfig.useEndTime" size="small" />&nbsp;
     <span :title="t('local.useEndTimeTooltip')">
         <BaseIconQuestion />
     </span><br>
-    <span class="text">{{ t('local.cellSize') }}</span>&nbsp;
+    <span class="text-regular">{{ t('local.cellSize') }}</span>&nbsp;
     <ElInputNumber v-model="activityCalendarConfig.cellSize" :min="1" :max="20" size="small" controls-position="right" /><br>
-    <span class="text">{{ t('local.cellGap') }}</span>&nbsp;
+    <span class="text-regular">{{ t('local.cellGap') }}</span>&nbsp;
     <ElInputNumber v-model="activityCalendarConfig.cellMargin" :min="0" :max="10" size="small" controls-position="right" />
 </template>
 

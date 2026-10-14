@@ -3,21 +3,25 @@ import { videoplayerstore } from '@/store';
 import type { MS_Software } from '@/utils/ms_const';
 import { getSoftwareExtension } from '@/utils/strings';
 
+interface SoftwareResponse {
+    msg: MS_Software;
+}
+
 async function fetchSoftware(id: number) {
-    const response = await $axios.get('/video/get_software/', { params: { id } });
-    return response.data.msg as MS_Software;
+    const response = await $axios.get<SoftwareResponse>('/video/get_software/', { params: { id } });
+    return response.data.msg;
 }
 
 function generateURL(id: number, software: MS_Software) {
-    return import.meta.env.VITE_BASE_API + '/video/preview/?id=' + id + getSoftwareExtension(software);
+    return import.meta.env.VITE_BASE_API + '/api/video/preview?id=' + id + getSoftwareExtension(software);
 }
 
-export async function preview(id: number | undefined | null): Promise<void> {
+export async function preview(id: number | undefined | null, software?: MS_Software): Promise<void> {
     if (id === undefined || id === null || id <= 0) return;
     videoplayerstore.id = id;
 
     try {
-        videoplayerstore.software = await fetchSoftware(videoplayerstore.id);
+        videoplayerstore.software = software ?? await fetchSoftware(videoplayerstore.id);
     } catch (e) {
         videoplayerstore.error = e;
     }

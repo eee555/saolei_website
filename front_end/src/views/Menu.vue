@@ -5,7 +5,7 @@
     >
         <ElMenuItem index="/" class="logo">
             <ElImage class="logo1" :src="logo_1" fit="cover" />
-            <ElImage v-if="!local.menu_icon" class="logo2" :src="logo_2" fit="cover" />
+            <ElImage v-if="!local.menu_icon" class="logo2" :src="local.darkmode ? logo_2_dark : logo_2" fit="cover" />
         </ElMenuItem>
         <ElMenuItem v-for="item in menu_items" :key="item.index" :index="`/${ item.index}`">
             <IconMenuItem :text="t(`local.${item.index}`)" :icon="item.icon" />
@@ -35,6 +35,7 @@ import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
 import logo_1 from '@/assets/logo.png';
+import logo_2_dark from '@/assets/logo2-dark.svg';
 import logo_2 from '@/assets/logo2.png';
 import Login from '@/components/Login/App.vue';
 import IconMenuItem from '@/components/widgets/IconMenuItem.vue';
@@ -84,7 +85,6 @@ const i18nMessages = {
         ranking: '排行榜',
         video: '录像',
         world: '统计',
-        guide: '教程',
         score: '积分',
         staff: '管理',
         profile: '我的地盘',
@@ -97,7 +97,6 @@ const i18nMessages = {
         ranking: 'Ranking',
         video: 'Videos',
         world: 'Statistics',
-        guide: 'Guides',
         score: 'Scores',
         profile: 'Profile',
         docs: 'Help',
@@ -110,7 +109,6 @@ const i18nMessages = {
         ranking: 'Ranking',
         video: 'Video',
         world: 'Welt',
-        guide: 'Hilfe',
         score: 'Ergebnisse',
         profile: 'Profil',
         docs: 'Hilfe',
@@ -119,7 +117,6 @@ const i18nMessages = {
         ranking: 'ranking',
         video: 'filmy',
         world: 'statystyki',
-        guide: 'poradniki',
         score: 'wyniki',
         profile: 'profil',
         docs: 'pomoc',

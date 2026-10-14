@@ -12,6 +12,7 @@ export default {
             getSoftware: '获取录像信息',
             getUserProfile: '查询用户',
             getVideoModel: '查询录像',
+            refresh: '刷新',
             setUserProfile: '修改用户',
             setVideoModel: '修改录像',
             uploadFile: '上传文件',
@@ -44,9 +45,7 @@ export default {
             code06: '强无猜',
             code10: '弱可猜',
             code11: '递归',
-            code12: '盲扫',
             std: '标准',
-            nf: '盲扫',
             ng: '无猜',
             dg: '递归',
             sng: '强无猜',
@@ -69,6 +68,7 @@ export default {
             a: '国际网',
             B: '哔哩哔哩',
             c: '扫雷网',
+            m: 'Mineracer',
             q: '腾讯QQ',
         },
         prop: {
@@ -83,6 +83,7 @@ export default {
             mastery: '动态胜率',
             mode: '模式',
             op: '空',
+            player: '玩家',
             realName: '姓名',
             sex: '性别',
             software: '软件',
@@ -102,6 +103,7 @@ export default {
         ratelimit: {
             oncePerHour: '每小时限一次',
             oncePerMinute: '每分钟限一次',
+            oncePerSeconds: ({ list }: MessageContext) => `每${list(0)}秒限一次`,
         },
         response: {
             OK: '',
@@ -166,10 +168,12 @@ export default {
         unverified: '账号未验证',
         unverifiedText: '请联系管理员',
         updateError: {
-            cooldown: '两次更新间隔不得小于12小时。',
+            cooldown: '同步请求过于频繁，请稍后再试。',
             empty: '数据为空',
-            indexerror: '数据解析失败',
-            timeout: '无法连接到目标服务器',
+            indexerror: '第三方页面结构变化，数据解析失败',
+            pageempty: '目标页面没有数据',
+            requestexception: '第三方网站请求失败',
+            timeout: '目标服务器请求超时',
             title: '更新失败',
             unknown: '发生未知错误',
         },
@@ -225,37 +229,16 @@ export default {
     },
     gsc: {
         title: ({ named }: MessageContext) => `第${named('order')}届金羊杯`,
-        description: {
-            line1: '比赛期间上传（以服务器接收时间为准）的所有录像中，取成绩最好的20局初级（bv>=10）、12局中级（bv>=30）、5局高级（bv>=100），计算总成绩。',
-            line2: '局数不够的，初级按照10秒，中级按照60秒，高级按照240秒补全。',
-        },
         bbbvSummary: 'Bv表',
         finalResults: '比赛结果',
         howToParticipate: '如何参赛',
         identifierGuide: {
-            arbiter: {
-                preparing: '比赛开始后在这里注册标识。',
-                ongoing_pre1: '请在这里注册参赛标识。参赛标识必须以',
-                ongoing_pre2: '结尾。例如',
-                ongoing_post1: '您的参赛标识为',
-                ongoing_post2: '，现在上传的拥有该参赛标识的Arbiter录像会被自动识别为比赛录像。',
-            },
-            metasweeper: {
-                preparing: '比赛开始后会公布比赛标识。在元扫雷中设置该比赛标识。比赛期间拥有该比赛标识的元扫雷录像会被自动识别为比赛录像。',
-                ongoing_1: '在元扫雷中将比赛标识设置为',
-                ongoing_2: '，上传的拥有该比赛标识的元扫雷录像会被自动识别为比赛录像。',
-            },
+            guideLink: '查看参赛说明',
+            preparing: '比赛开始后可以报名参赛。',
+            token: '比赛标识：',
+            identifier: 'Arbiter参赛标识：',
         },
         realTimeScore: '即时成绩',
-        schedule: '赛程',
-        summary: '概览',
-        videos: '录像',
-    },
-    guide: {
-        announcement: '公告',
-        other: '其他',
-        skill: '技术',
-        tutorial: '教程',
     },
     home: {
         news: '新闻',
@@ -322,6 +305,13 @@ export default {
         exportArbiterCSV: '导出CSV',
         exportArbiterCSVTooltip: '兼容 Minesweeper Arbiter 生成的 <span style="font-family: \'Courier New\', Courier, monospace;">stats_csv.csv</span>。<br/> 目前不支持 Leff, Reff, Deff, GZiNi, HZiNi。',
     },
+    ranking: {
+        saolei: {
+            title: '扫雷网规则',
+        },
+        empty: '暂无纪录',
+        loadFailed: '排行榜加载失败',
+    },
     server: {
         videoSummary: {
             title: '录像总量',
@@ -352,15 +342,19 @@ export default {
     },
     tournament: {
         downloadAll: '下载全部录像',
-        downloadParticipant: '下载录像包',
         endsBy: '结束时间',
         host: '主办方',
         index: '比赛首页',
-        management: '管理',
-        ranking: '排行',
+        listTabs: {
+            normal: '正常',
+            awarded: '已颁奖',
+            other: '其他',
+            all: '全部',
+        },
         startsFrom: '开始时间',
         state: {
             p: '审核中',
+            n: '正常',
             r: '即将开始',
             o: '进行中',
             f: '结算中',

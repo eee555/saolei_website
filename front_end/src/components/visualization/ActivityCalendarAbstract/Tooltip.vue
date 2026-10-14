@@ -1,10 +1,10 @@
 <template>
-    <ElCard class="card-small">
-        <span v-if="videos.length == 0" class="text">
+    <div class="card card-small">
+        <span v-if="videos.length == 0" class="text-regular">
             {{ t('local.noVideoOnDate', [toISODateString(date)]) }}
         </span>
         <template v-else>
-            <span class="text">
+            <span class="text-regular">
                 {{ t('local.uploadedNVideosOnDate', [toISODateString(date), videos.length]) }}
             </span>
             <br>
@@ -13,14 +13,13 @@
             <span v-for="i in count.e" :key="`e-${i}`" class="dot" :style="{ backgroundColor: colorTheme.level.e }" />
             <span v-for="i in count.c" :key="`c-${i}`" class="dot" :style="{ backgroundColor: colorTheme.level.c }" />
         </template>
-    </ElCard>
+    </div>
 </template>
 
 <script setup lang="ts">
 import '@/styles/text.css';
 import '@/styles/cards.css';
 
-import { ElCard } from 'element-plus';
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 

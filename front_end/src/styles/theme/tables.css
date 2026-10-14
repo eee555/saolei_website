@@ -1,0 +1,17 @@
+:root {
+    --ui-table-font-size: var(--ui-font-size-base);
+    --ui-table-line-height: 1.4;
+    --ui-table-cell-padding-block: 4px;
+    --ui-table-cell-padding-inline: 8px;
+    --ui-table-empty-padding-block: 12px;
+    --ui-table-border-width: 1px;
+    --ui-table-border-color: var(--ui-border-color-lighter);
+    --ui-table-background: var(--ui-fill-color-blank);
+    --ui-table-text-color: var(--ui-text-color-regular);
+    --ui-table-header-background: var(--ui-fill-color-light);
+    --ui-table-header-text-color: var(--ui-text-color-secondary);
+    --ui-table-header-font-weight: 500;
+    --ui-table-hover-background: var(--ui-fill-color-lighter);
+    --ui-table-selected-background: var(--ui-color-primary-light-9);
+    --ui-table-selected-text-color: var(--ui-color-primary);
+}

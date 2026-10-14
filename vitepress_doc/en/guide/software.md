@@ -1,3 +1,8 @@
+---
+title: Minesweeper Software - Open Minesweeper
+description: Supported minesweeper software and replay formats on Open Minesweeper, including EVF, RMV, AVF, MVF and replay eligibility rules.
+---
+
 # Minesweeper Software
 
 Open Minesweeper currently supports the `EVF`, `RMV`, `AVF`, and `MVF` replay formats. `EVF` and `RMV` are general Minesweeper replay formats, `AVF` is specific to Minesweeper Arbiter, and `MVF` is specific to Minesweeper Clone.

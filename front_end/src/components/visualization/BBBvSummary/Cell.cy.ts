@@ -1,3 +1,5 @@
+import tinycolor from 'tinycolor2';
+
 import Cell from './Cell.vue';
 
 import i18n from '@/i18n';
@@ -39,6 +41,13 @@ const mountCell = (props: Record<string, unknown> = {}) => {
     });
 };
 
+const expectActionTextColor = (mode: 'light' | 'dark') => {
+    cy.get('[data-cy=video-cell-action]').should(($button) => {
+        const expectedColor = tinycolor($button.css(`--ui-text-color-regular-${mode}`)).toRgbString();
+        expect($button.css('color')).to.equal(expectedColor);
+    });
+};
+
 describe('<BBBvSummary Cell />', () => {
     beforeEach(() => {
         cy.clock(new Date('2025-12-15T00:00:00Z'));
@@ -52,6 +61,21 @@ describe('<BBBvSummary Cell />', () => {
 
         cy.get('.cell').should('not.contain', '20.000');
         cy.get('.cell').should('have.css', 'background-color', 'rgba(0, 0, 0, 0)');
+    });
+
+    it('continues past software-filtered videos when selecting the best video', () => {
+        mountCell({
+            videos: [
+                makeVideo({ id: 1, software: 'e', timems: 20000 }),
+                makeVideo({ id: 2, software: 'a', timems: 30000 }),
+            ],
+            softwareFilter: ['a'],
+            sortBy: 'timems',
+            sortDesc: false,
+            displayBy: 'time',
+        });
+
+        cy.get('.cell').should('contain', '30.000');
     });
 
     it('selects the minimum and maximum stats', () => {
@@ -104,10 +128,29 @@ describe('<BBBvSummary Cell />', () => {
                 }),
             ],
             displayBy: 'time',
-            colorTheme: new PiecewiseColorScheme(['#000000'], [0]),
+            colorTheme: new PiecewiseColorScheme(['#ffffff', '#000000'], [0]),
         });
 
-        cy.get('.cell').should('have.class', 'cell-new').and('have.css', 'background-color', 'rgba(0, 0, 0, 0)').and('have.css', 'outline-style', 'solid').and('have.css', 'box-sizing', 'border-box');
-        cy.get('.cell .el-link').should('have.css', 'color', 'rgb(255, 255, 255)');
+        cy.get('.cell').should('have.class', 'cell-new').and('have.css', 'background-color', 'rgb(0, 0, 0)').and('have.css', 'outline-style', 'solid').and('have.css', 'box-sizing', 'border-box');
+        expectActionTextColor('dark');
+        cy.get('.cell').invoke('css', '--ui-text-color-regular-dark', '#aabbcc');
+        expectActionTextColor('dark');
+
+        cy.get('@vue').then((wrapper: ComponentWrapper<typeof Cell>) => {
+            void wrapper.setProps({ colorTheme: new PiecewiseColorScheme(['#ffffff', '#000000'], [60]) });
+        });
+        cy.get('.cell').should('have.css', 'background-color', 'rgb(255, 255, 255)');
+        expectActionTextColor('light');
+
+        cy.get('@vue').then((wrapper: ComponentWrapper<typeof Cell>) => {
+            void wrapper.setProps({ colorTheme: new PiecewiseColorScheme(['transparent', '#000000'], [60]) });
+        });
+        cy.get('.cell').should('have.css', 'background-color', 'rgba(0, 0, 0, 0)');
+        cy.get('[data-cy=video-cell-action]').should(($button) => {
+            const $cell = $button.closest('.cell');
+            const inheritedColor = $cell.parent().css('color');
+            expect($cell.css('color')).to.equal(inheritedColor);
+            expect($button.css('color')).to.equal(inheritedColor);
+        });
     });
 });

@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto';
 
 import { openDB } from 'idb';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { SaoleiCacheDB } from './database';
 import { CACHE_DB_NAME, CACHE_DB_VERSION, CACHE_STORE_SCHEMA_VERSIONS, META_STORE_NAME, USER_INFO_STORE_NAME } from './database';
@@ -112,6 +112,10 @@ async function waitForBatch() {
 }
 
 describe('fetchUserInfo', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
     beforeEach(async () => {
         axiosGet.mockReset();
         await clearUserInfoDB();
@@ -211,6 +215,7 @@ describe('fetchUserInfo', () => {
             userInfoUpdateInterval: 0,
         });
         axiosGet.mockResolvedValueOnce({ data: [createUser(1, 'Fresh User')] });
+        const now = Date.now();
 
         const promise = fetchUserInfo(1);
         await waitForBatch();
@@ -220,24 +225,60 @@ describe('fetchUserInfo', () => {
         expect((await getCachedUser(1))?.realname).toBe('Fresh User');
         expect(axiosGet).toHaveBeenCalledTimes(1);
         expect(axiosGet).toHaveBeenCalledWith('/api/userprofile/infobulk', { params: { ids: '1' } });
+        expect(serviceConfig.value.userInfoLastUpdate).toBeGreaterThanOrEqual(now);
     });
 
-    it('deletes updated cached users before reading from IndexedDB', async () => {
+    it.each([{ updatedUserIds: [1] }, { updatedUserIds: [] }])('updates the timestamp after a delayed invalidation response containing $updatedUserIds', async ({ updatedUserIds }) => {
         await putCachedUser(createUser(1, 'Stale User'));
         const fetchUserInfo = await loadFetchUserInfo({
             userInfoLastUpdate: 100,
-            userInfoUpdateInterval: 0,
+            userInfoUpdateInterval: 1000,
         });
-        axiosGet.mockImplementationOnce(() => ({ data: [1] }));
-        axiosGet.mockImplementationOnce(() => ({ data: [createUser(1, 'Fresh User')] }));
+        const now = vi.spyOn(Date, 'now').mockReturnValue(2000);
+        const response = Promise.withResolvers<{ data: number[] }>();
+        const started = Promise.withResolvers<undefined>();
+        axiosGet.mockImplementationOnce(() => {
+            started.resolve(undefined);
+            return response.promise;
+        });
+        axiosGet.mockResolvedValueOnce({ data: [createUser(1, 'Fresh User')] });
 
         const promise = fetchUserInfo(1);
-        await waitForBatch();
+        await started.promise;
+        // A separate read waits for any earlier readwrite transaction to finish while HTTP is pending.
+        expect((await getCachedUser(1))?.realname).toBe('Stale User');
+        expect(serviceConfig.value.userInfoLastUpdate).toBe(100);
+        now.mockReturnValue(2500);
+        response.resolve({ data: updatedUserIds });
         const user = await promise;
 
-        expect(user.realname).toBe('Fresh User');
+        const expectedName = updatedUserIds.length ? 'Fresh User' : 'Stale User';
+        expect(user.realname).toBe(expectedName);
+        expect((await getCachedUser(1))?.realname).toBe(expectedName);
+        expect(serviceConfig.value.userInfoLastUpdate).toBe(2000);
         expect(axiosGet).toHaveBeenNthCalledWith(1, '/api/userprofile/infoupdated', { params: { since: 100 } });
-        expect(axiosGet).toHaveBeenNthCalledWith(2, '/api/userprofile/infobulk', { params: { ids: '1' } });
+        if (updatedUserIds.length) {
+            expect(axiosGet).toHaveBeenNthCalledWith(2, '/api/userprofile/infobulk', { params: { ids: '1' } });
+        }
+        const requestCount = axiosGet.mock.calls.length;
+        expect((await fetchUserInfo(1)).realname).toBe(expectedName);
+        expect(axiosGet).toHaveBeenCalledTimes(requestCount);
+    });
+
+    it('preserves the timestamp on refresh failure and retries on the next fetch', async () => {
+        await putCachedUser(createUser(1, 'Cached User'));
+        const fetchUserInfo = await loadFetchUserInfo({ userInfoLastUpdate: 100, userInfoUpdateInterval: 1000 });
+        vi.spyOn(Date, 'now').mockReturnValue(2000);
+        axiosGet.mockRejectedValueOnce(new Error('Network unavailable'));
+
+        expect((await fetchUserInfo(1)).realname).toBe('Cached User');
+        expect(serviceConfig.value.userInfoLastUpdate).toBe(100);
+
+        axiosGet.mockResolvedValueOnce({ data: [] });
+        expect((await fetchUserInfo(1)).realname).toBe('Cached User');
+        expect(serviceConfig.value.userInfoLastUpdate).toBe(2000);
+        expect(axiosGet).toHaveBeenCalledTimes(2);
+        expect(axiosGet).toHaveBeenNthCalledWith(2, '/api/userprofile/infoupdated', { params: { since: 100 } });
     });
 
     it('batches concurrent cache misses into one infobulk request', async () => {
