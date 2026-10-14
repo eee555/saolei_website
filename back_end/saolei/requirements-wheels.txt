@@ -1,0 +1,2 @@
+# Download release wheels on the developer machine or CI runner, then upload wheels/.
+wom-api[system-certs] @ https://github.com/putianyi889/wom-api/releases/download/v0.1.0/wom_api-0.1.0-py3-none-any.whl#sha256=dfdf16a53c9a2933ff10069b7d81323cc6ac3436b7eaa12acf9cb9350aa911f8

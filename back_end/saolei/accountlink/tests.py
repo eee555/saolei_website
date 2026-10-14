@@ -1,6 +1,5 @@
 import datetime
-from types import SimpleNamespace
-from unittest import expectedFailure, SkipTest
+from unittest import SkipTest
 from unittest.mock import patch
 
 from django.core.cache import caches
@@ -15,9 +14,9 @@ from .api import MineracerAccountLinkSessionOut
 from .mineracer.client import poll_mineracer_account_link, request_mineracer_account_link
 from .mineracer.dtos import MINERACER_ERROR_ACCOUNT_NOT_FOUND, MINERACER_ERROR_INVALID_DEVICE_CODE, MINERACER_ERROR_LINK_SUPERSEDED, MINERACER_STATUS_CONFIRMED, MINERACER_STATUS_EXPIRED, MINERACER_STATUS_FAILED, MINERACER_STATUS_PENDING, MineracerAccountLinkPollResponse, MineracerAccountLinkSession, MineracerAccountLinkStartResponse
 from .mineracer.sessions import _get_mineracer_session, _save_mineracer_session, _save_user_pending_mineracer_session
-from .models import AccountBilibili, AccountLinkQueue, AccountMineracer, AccountMinesweeperGames, AccountSaolei, AccountWorldOfMinesweeper, Platform
+from .models import AccountBilibili, AccountLinkQueue, AccountMineracer, AccountMinesweeperGames, AccountSaolei, Platform
 from .services import update_saolei_account_info
-from .utils import isPrivate, private_platforms, update_bilibili_account, update_msgames_account, update_wom_account
+from .utils import isPrivate, private_platforms, update_bilibili_account, update_msgames_account
 
 
 class AccountLinkTestCase(TestCase):
@@ -26,7 +25,6 @@ class AccountLinkTestCase(TestCase):
             username='setUp', email='setUp@test.com')
         AccountSaolei.objects.create(id=1, parent=user)
         AccountMinesweeperGames.objects.create(id=7872, parent=user)
-        AccountWorldOfMinesweeper.objects.create(id=1783173, parent=user)
         AccountBilibili.objects.create(id=208259, parent=user)
 
     def test_update_saolei(self):
@@ -84,57 +82,6 @@ class AccountLinkTestCase(TestCase):
         self.assertTrue(isPrivate(Platform.QQ))
         self.assertFalse(isPrivate(Platform.BILIBILI))
         self.assertFalse(isPrivate(Platform.SAOLEI))
-
-    @expectedFailure
-    def test_update_wom(self):
-        account = AccountWorldOfMinesweeper.objects.filter(id=1783173).first()
-        update_wom_account(account)
-        account = AccountWorldOfMinesweeper.objects.filter(id=1783173).first()
-        self.assertEqual(account.id, 1783173)
-
-        self.assertEqual(account.trophy, 1155)
-
-        self.assertEqual(account.experience, 21135733)
-        self.assertEqual(account.honour, 1204)
-
-        self.assertEqual(account.minecoin, 7607557)
-        self.assertEqual(account.gem, 4456)
-        self.assertEqual(account.coin, 8912)
-        self.assertEqual(account.arena_ticket, 268)
-        self.assertEqual(account.equipment, 34)
-        self.assertEqual(account.part, 415)
-
-        self.assertEqual(account.arena_point, 80)
-        self.assertEqual(account.max_difficulty, 188752)
-        self.assertEqual(account.win, 36565)
-        self.assertEqual(account.last_season, 78)
-
-        self.assertEqual(account.b_t_ms, 1213)
-        self.assertEqual(account.i_t_ms, 9661)
-        self.assertEqual(account.e_t_ms, 35765)
-
-        self.assertEqual(account.b_ioe, 1.83)
-        self.assertEqual(account.i_ioe, 1.56)
-        self.assertEqual(account.e_ioe, 1.4)
-
-        self.assertEqual(account.b_mastery, 99)
-        self.assertEqual(account.i_mastery, 84)
-        self.assertEqual(account.e_mastery, 54)
-
-        self.assertEqual(account.b_winstreak, 92)
-        self.assertEqual(account.i_winstreak, 21)
-        self.assertEqual(account.e_winstreak, 9)
-
-    def test_update_wom_missing_profile_container_returns_indexerror(self):
-        account = AccountWorldOfMinesweeper.objects.filter(id=1783173).first()
-        response = SimpleNamespace(text='<html><body>unexpected page</body></html>')
-
-        with patch('accountlink.utils.requests.get', return_value=response):
-            with self.assertRaises(ExceptionToResponse) as context:
-                update_wom_account(account)
-
-        self.assertEqual(context.exception.obj, 'import')
-        self.assertEqual(context.exception.category, 'indexerror')
 
     def test_msgames_private_name(self):
         user = UserProfile.objects.create(

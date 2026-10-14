@@ -43,7 +43,8 @@ jobs:
 
     - name: Install Dependencies
       run: |
-        pip install -r requirements.txt
+        python -m pip download --no-deps --dest wheels -r requirements-wheels.txt
+        pip install --find-links wheels -r requirements.txt
         pip install cryptography
         pip install coverage pytest-cov
 
