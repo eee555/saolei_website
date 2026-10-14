@@ -17,32 +17,90 @@
 
 ## 项目安装流程：
 
-本项目可在windows上开发，在Linux上部署。开发调试步骤如下：首先将项目克隆到本地，例如E://saolei_website下
+本项目可在 Windows 上开发，在 Linux 上部署。先安装 Python、Node.js、MySQL 和 Redis，并将项目克隆到本地。以下开发命令使用 Windows PowerShell，起始目录为项目根目录。
 
 后端：
-1. cd saolei_website\back_end\saolei
-1. pip install -r requirements.txt
-1. 安装mysql，根据saolei_website\back_end\saolei\saolei\setting.py中的配置，（默认）创建名为saolei的数据库，用户名root，密码123456
-1. 新建一个文件夹saolei_website\back_end\saolei\logs（用来存放日志）
-1. 新建一个文件夹saolei_website\back_end\saolei\assets（存放录像、头像、文章）
-1. （可选，假如需要看文章）在saolei_website\back_end\saolei\assets下执行`git clone https://gitee.com/ee55/saolei_website_article.git`，并将文件夹名由saolei_website_article改为article
-1. python manage.py makemigrations
-1. python manage.py migrate userprofile
-1. python manage.py migrate
-1. python manage.py runserver --nostatic
-1. （可选，假如要启动定时任务，不做相关功能时可以不启动）
-   ```
-   python manage.py runapscheduler
+
+1. 进入后端目录并创建虚拟环境；已有 `.venv` 时无需重新创建：
+
+   ```powershell
+   cd back_end\saolei
+   python -m venv .venv
    ```
 
-前端：
+1. 先下载发布 wheel，再安装依赖。`requirements-wheels.txt` 固定 WOM 包的 GitHub 发布地址和 SHA-256；`requirements.txt` 固定安装版本。`wheels/` 不提交到 Git：
+
+   ```powershell
+   .\.venv\Scripts\python.exe -m pip download --no-deps --dest wheels -r requirements-wheels.txt
+   .\.venv\Scripts\python.exe -m pip install --find-links wheels -r requirements.txt
+   ```
+
+   开发端需要能访问 GitHub 下载 WOM wheel；其余依赖通过 pip 配置的 PyPI 索引安装。更新 WOM 版本后重新执行下载和安装两步。
+
+1. 启动 MySQL 和 Redis。按 `back_end/saolei/saolei/settings.py` 的 `DATABASES` 配置创建数据库：开发默认数据库名为 `saolei`，用户名 `root`，密码 `123456`，地址 `127.0.0.1:3306`；Redis 默认地址为 `127.0.0.1:6379`，配置见 `CACHES`。
+
+1. 在当前后端目录创建日志和资源目录：
+
+   ```powershell
+   New-Item -ItemType Directory -Force logs, assets
+   ```
+
+1. （可选，调试文章功能）在 `assets/` 下执行 `git clone https://gitee.com/ee55/saolei_website_article.git`，并将文件夹名由 `saolei_website_article` 改为 `article`。
+
+1. 生成并应用数据库迁移：
+
+   ```powershell
+   .\.venv\Scripts\python.exe manage.py makemigrations
+   .\.venv\Scripts\python.exe manage.py migrate userprofile
+   .\.venv\Scripts\python.exe manage.py migrate
+   ```
+
+1. 启动开发后端：
+
+   ```powershell
+   .\.venv\Scripts\python.exe manage.py runserver --nostatic
+   ```
+
+1. （可选，调试定时任务）在另一个终端进入同一后端目录并运行：
+
+   ```powershell
+   .\.venv\Scripts\python.exe manage.py runapscheduler
+   ```
+
+前端（另开终端，回到项目根目录）：
+
 1. 从[https://github.com/eee555/flop-player/releases/download/v1.1/dist.zip](https://github.com/eee555/flop-player/releases/download/v1.1/dist.zip)下载新版flop播放器，并解压到saolei_website\front_end\public\flop下（将文件夹的名称dist修改为flop），使得saolei_website\front_end\public\flop\index.html能够被找到
-2. cd saolei_website\front_end
+2. `cd front_end`
 3. 如果使用npm，则npm install；如果知道什么是yarn且使用yarn，则yarn
 4. 如果使用npm，则npm run dev；如果知道什么是yarn且使用yarn，则yarn dev
 5. 如果使用npm且未部署后端，则`npm run frontend`，并且解除浏览器CORS，例如使用`CORS unblock`插件。
 
 特殊的调试参数：位于`back_end\saolei\saolei\settings.py`的末尾。
+
+### 生产端安装依赖
+
+推送 tag 后，[网站部署 workflow](.github/workflows/build.yml)会在 GitHub runner 下载并校验 WOM wheel，将 `wheels/` 随前端 `dist/` 上传到服务器后端目录，并在服务器校验 `wheels/SHA256SUMS`。[文档 workflow](.github/workflows/docs.yml)单独上传文档产物。上传步骤不安装依赖或重启服务。
+
+更新服务器后端源码、确认上传完成后，在生产服务使用的 Python 环境中进入后端目录并校验：
+
+```bash
+cd /root/github/saolei_website/back_end/saolei
+sha256sum -c wheels/SHA256SUMS
+```
+
+只有校验成功才继续。可以先预演，查看 `Would install` 中的依赖变更：
+
+```bash
+python3 -m pip install --dry-run --find-links wheels -r requirements.txt
+```
+
+正式安装时执行：
+
+```bash
+python3 -m pip install --find-links wheels -r requirements.txt
+```
+
+生产端从本地 `wheels/` 获取 WOM 包，其余依赖继续使用服务器原有的 PyPI 索引（例如阿里云镜像）。安装后按现有部署流程应用迁移并重启后端。WOM 字段、分发方案和验证边界见 [WOM 接入说明](back_end/saolei/accountlink/wom/README.md)。
 
 ## 链接
 

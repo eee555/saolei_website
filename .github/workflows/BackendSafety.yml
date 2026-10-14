@@ -24,7 +24,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r back_end/saolei/requirements.txt
+          python -m pip download --no-deps --dest back_end/saolei/wheels -r back_end/saolei/requirements-wheels.txt
+          pip install --find-links back_end/saolei/wheels -r back_end/saolei/requirements.txt
           pip install pytest
 
       - name: Run static safety tests

@@ -1,6 +1,7 @@
 from datetime import datetime, timezone as datetime_timezone
 import logging
 
+from asgiref.sync import async_to_sync
 from django.core.files.base import ContentFile
 from django_tasks_db.models import DBTaskResult
 import requests
@@ -13,8 +14,9 @@ from utils.exceptions import ExceptionToResponse
 from utils.parser import MSVideoParser
 from utils.saolei import SaoleiUserInfo, SaoleiUtils
 from videomanager.models import VideoModel
-from .models import AccountSaolei, Platform, VideoSaolei
-from .utils import fetch_saolei_profile, fetch_saolei_video_download_and_state, update_bilibili_account, update_msgames_account, update_wom_account
+from .models import AccountSaolei, AccountWorldOfMinesweeper, Platform, VideoSaolei
+from .utils import fetch_saolei_profile, fetch_saolei_video_download_and_state, update_bilibili_account, update_msgames_account
+from .wom.client import fetch_wom_profile
 
 logger = logging.getLogger('accountlink')
 
@@ -33,6 +35,13 @@ def update_account(platform: Platform, user: UserProfile):
         update_bilibili_account(user.account_bilibili)
     elif platform == Platform.MINERACER:
         raise ExceptionToResponse('mineracer', 'update_not_supported', status_code=400)
+
+
+def update_wom_account(account: AccountWorldOfMinesweeper):
+    data = async_to_sync(fetch_wom_profile)(account.id)
+    for field, value in data.items():
+        setattr(account, field, value)
+    account.save(update_fields=[*data, 'update_time'])
 
 
 def _get_task_identity(args: list, kwargs: dict, key: str):

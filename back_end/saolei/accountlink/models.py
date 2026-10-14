@@ -5,6 +5,7 @@ from django_tasks_db.models import DBTaskResult
 from config.text_choices import MS_TextChoices, Saolei_TextChoices
 from userprofile.models import UserProfile
 from videomanager.models import VideoModel
+from .wom.utils import ENDURANCE_BASE_MS
 
 
 class Platform(models.TextChoices):
@@ -121,14 +122,6 @@ class AccountWorldOfMinesweeper(models.Model):
     trophy = models.PositiveSmallIntegerField(null=True)
 
     experience = models.PositiveIntegerField(null=True)
-    honour = models.PositiveIntegerField(null=True)
-
-    minecoin = models.PositiveIntegerField(null=True)
-    gem = models.PositiveIntegerField(null=True)
-    coin = models.PositiveIntegerField(null=True)
-    arena_ticket = models.PositiveIntegerField(null=True)
-    equipment = models.PositiveIntegerField(null=True)
-    part = models.PositiveIntegerField(null=True)
 
     arena_point = models.PositiveSmallIntegerField(null=True)  # 最高80
     max_difficulty = models.PositiveIntegerField(null=True)
@@ -151,10 +144,31 @@ class AccountWorldOfMinesweeper(models.Model):
     i_winstreak = models.PositiveSmallIntegerField(null=True)
     e_winstreak = models.PositiveSmallIntegerField(null=True)
 
-    # 主页只显示一个
-    # b_endurance = models.TimeField()
-    # i_endurance = models.TimeField()
-    # e_endurance = models.TimeField()
+    b_endurance_ms = models.PositiveIntegerField(default=ENDURANCE_BASE_MS, null=False, help_text='Best beginner endurance time in milliseconds; 86400000 when no record.')
+    i_endurance_ms = models.PositiveIntegerField(default=ENDURANCE_BASE_MS, null=False, help_text='Best intermediate endurance time in milliseconds; 86400000 when no record.')
+    e_endurance_ms = models.PositiveIntegerField(default=ENDURANCE_BASE_MS, null=False, help_text='Best expert endurance time in milliseconds; 86400000 when no record.')
+
+    b_ng_t_ms = models.PositiveIntegerField(null=True, help_text='Beginner no-guess personal-best time in milliseconds.')
+    i_ng_t_ms = models.PositiveIntegerField(null=True, help_text='Intermediate no-guess personal-best time in milliseconds.')
+    e_ng_t_ms = models.PositiveIntegerField(null=True, help_text='Expert no-guess personal-best time in milliseconds.')
+
+    b_win = models.PositiveIntegerField(null=True, help_text='Total beginner wins.')
+    i_win = models.PositiveIntegerField(null=True, help_text='Total intermediate wins.')
+    e_win = models.PositiveIntegerField(null=True, help_text='Total expert wins.')
+    b_ng_win = models.PositiveIntegerField(null=True, help_text='Total beginner no-guess wins.')
+    i_ng_win = models.PositiveIntegerField(null=True, help_text='Total intermediate no-guess wins.')
+    e_ng_win = models.PositiveIntegerField(null=True, help_text='Total expert no-guess wins.')
+
+    experience_total = models.PositiveIntegerField(null=True, help_text='Lifetime experience earned (expAll), distinct from current experience.')
+    minecoin_total = models.PositiveIntegerField(null=True, help_text='Lifetime minecoins earned (coinsAll), not current inventory.')
+    gem_total = models.PositiveIntegerField(null=True, help_text='Lifetime gems earned (gemsAll), not current inventory.')
+    arena_coin_total = models.PositiveIntegerField(null=True, help_text='Lifetime arena coins earned (arenaCoinsAll), not current inventory.')
+    game_count = models.PositiveIntegerField(null=True, help_text='Public game count (games).')
+    win_nf = models.PositiveIntegerField(null=True, help_text='Lifetime wins without flags (winsNf); no-flag and no-guess are different modes.')
+    play_time_ms = models.PositiveBigIntegerField(null=True, help_text='Lifetime play time in milliseconds (timeAll).')
+    arena_play_time_ms = models.PositiveBigIntegerField(null=True, help_text='Lifetime arena play time in milliseconds (arenaDuration).')
+    bbbv_total = models.PositiveIntegerField(null=True, help_text='Lifetime 3BV total (bbbvAll).')
+    season_count = models.PositiveSmallIntegerField(null=True, help_text='Number of seasons played (seasons), with one season per month.')
 
 
 class AccountMineracer(models.Model):

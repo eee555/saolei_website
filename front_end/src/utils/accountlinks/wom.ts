@@ -4,13 +4,6 @@ export interface AccountWoMResponse {
     update_time: string;
     trophy: number | null;
     experience: number | null;
-    honour: number | null;
-    minecoin: number | null;
-    gem: number | null;
-    coin: number | null;
-    arena_ticket: number | null;
-    equipment: number | null;
-    part: number | null;
     arena_point: number | null;
     max_difficulty: number | null;
     win: number | null;
@@ -27,6 +20,28 @@ export interface AccountWoMResponse {
     b_winstreak: number | null;
     i_winstreak: number | null;
     e_winstreak: number | null;
+    b_endurance_ms: number;
+    i_endurance_ms: number;
+    e_endurance_ms: number;
+    b_ng_t_ms: number | null;
+    i_ng_t_ms: number | null;
+    e_ng_t_ms: number | null;
+    b_win: number | null;
+    i_win: number | null;
+    e_win: number | null;
+    b_ng_win: number | null;
+    i_ng_win: number | null;
+    e_ng_win: number | null;
+    experience_total: number | null;
+    minecoin_total: number | null;
+    gem_total: number | null;
+    arena_coin_total: number | null;
+    game_count: number | null;
+    win_nf: number | null;
+    play_time_ms: number | null;
+    arena_play_time_ms: number | null;
+    bbbv_total: number | null;
+    season_count: number | null;
 }
 
 export class AccountWoM {
@@ -34,13 +49,6 @@ export class AccountWoM {
     public update_time = new Date(0);
     public trophy?: number;
     public experience?: number;
-    public honour?: number;
-    public minecoin?: number;
-    public gem?: number;
-    public coin?: number;
-    public arena_ticket?: number;
-    public equipment?: number;
-    public part?: number;
     public arena_point?: number;
     public max_difficulty?: number;
     public win?: number;
@@ -57,6 +65,28 @@ export class AccountWoM {
     public b_winstreak?: number;
     public i_winstreak?: number;
     public e_winstreak?: number;
+    public b_endurance_ms = 86400000;
+    public i_endurance_ms = 86400000;
+    public e_endurance_ms = 86400000;
+    public b_ng_t_ms?: number;
+    public i_ng_t_ms?: number;
+    public e_ng_t_ms?: number;
+    public b_win?: number;
+    public i_win?: number;
+    public e_win?: number;
+    public b_ng_win?: number;
+    public i_ng_win?: number;
+    public e_ng_win?: number;
+    public experience_total?: number;
+    public minecoin_total?: number;
+    public gem_total?: number;
+    public arena_coin_total?: number;
+    public game_count?: number;
+    public win_nf?: number;
+    public play_time_ms?: number;
+    public arena_play_time_ms?: number;
+    public bbbv_total?: number;
+    public season_count?: number;
 
     public constructor(data?: AccountWoMResponse) {
         if (data === undefined) return;
@@ -65,13 +95,6 @@ export class AccountWoM {
         this.update_time = new Date(data.update_time);
         this.trophy = data.trophy ?? undefined;
         this.experience = data.experience ?? undefined;
-        this.honour = data.honour ?? undefined;
-        this.minecoin = data.minecoin ?? undefined;
-        this.gem = data.gem ?? undefined;
-        this.coin = data.coin ?? undefined;
-        this.arena_ticket = data.arena_ticket ?? undefined;
-        this.equipment = data.equipment ?? undefined;
-        this.part = data.part ?? undefined;
         this.arena_point = data.arena_point ?? undefined;
         this.max_difficulty = data.max_difficulty ?? undefined;
         this.win = data.win ?? undefined;
@@ -88,5 +111,27 @@ export class AccountWoM {
         this.b_winstreak = data.b_winstreak ?? undefined;
         this.i_winstreak = data.i_winstreak ?? undefined;
         this.e_winstreak = data.e_winstreak ?? undefined;
+        this.b_endurance_ms = data.b_endurance_ms;
+        this.i_endurance_ms = data.i_endurance_ms;
+        this.e_endurance_ms = data.e_endurance_ms;
+        this.b_ng_t_ms = data.b_ng_t_ms ?? undefined;
+        this.i_ng_t_ms = data.i_ng_t_ms ?? undefined;
+        this.e_ng_t_ms = data.e_ng_t_ms ?? undefined;
+        this.b_win = data.b_win ?? undefined;
+        this.i_win = data.i_win ?? undefined;
+        this.e_win = data.e_win ?? undefined;
+        this.b_ng_win = data.b_ng_win ?? undefined;
+        this.i_ng_win = data.i_ng_win ?? undefined;
+        this.e_ng_win = data.e_ng_win ?? undefined;
+        this.experience_total = data.experience_total ?? undefined;
+        this.minecoin_total = data.minecoin_total ?? undefined;
+        this.gem_total = data.gem_total ?? undefined;
+        this.arena_coin_total = data.arena_coin_total ?? undefined;
+        this.game_count = data.game_count ?? undefined;
+        this.win_nf = data.win_nf ?? undefined;
+        this.play_time_ms = data.play_time_ms ?? undefined;
+        this.arena_play_time_ms = data.arena_play_time_ms ?? undefined;
+        this.bbbv_total = data.bbbv_total ?? undefined;
+        this.season_count = data.season_count ?? undefined;
     }
 }
