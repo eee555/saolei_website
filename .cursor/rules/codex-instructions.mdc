@@ -1,0 +1,18 @@
+---
+description: 写代码时必须遵守 .codex/instructions.md
+alwaysApply: true
+---
+
+# 项目编码规范
+
+`.codex/instructions.md` 是本仓库的编码规范。每次写代码或改代码前，先读其中与本次改动对应的章节并照做。规范与本规则冲突时，以该文件为准。
+
+容易漏掉的约束：
+
+- 前端换行：数组、字典、HTML 属性倾向不换行。CSS 一条属性一行。空行照常。ESLint 报错就按 ESLint 改。
+- 文案：可复用的放 `front_end/src/i18n`，不可复用的放 Vue SFC 的 `script` 末尾。Vue 挂载前就要显示的启动页，沿用 `index.html` 里已有的中英 `span`。
+- 新界面用原生 HTML + CSS 或已有基础组件。不新增 PrimeVue。
+- 不要为测试往生产代码里加只给断言用的属性或标记。
+- E2E 只断言关键可见内容。不要主动跑 `--e2e` 或 `cypress/e2e`，把命令交给用户。
+- 除非用户明确要求，不要启动开发服务器或预览服务器。
+- 后端新 API 用 Ninja，并带限流。`import` 不换行。不手改迁移脚本。
