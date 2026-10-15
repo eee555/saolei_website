@@ -24,7 +24,7 @@
     "@putianyi888/vue3-minesweeper-board": "0.5.2",
     "@putianyi888/vue3-plots": "0.6.4",
     "@unicode/unicode-16.0.0": "2.0.7",
-    "@vueuse/components": "14.4.0",
+    "@vueuse/components": "15.0.0",
     "@vueuse/core": "15.0.0",
     "@wdns/vue-code-block": "2.3.5",
     "axios": "1.20.0",
