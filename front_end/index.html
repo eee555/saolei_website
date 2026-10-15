@@ -11,6 +11,68 @@
   <link rel="icon" type="image/svg+xml" href="/src/assets/logo.svg">
   <title>开源扫雷网</title>
   <script>
+    // Runs before the app module. The site needs Array.prototype.toReversed and
+    // Promise.withResolvers; missing APIs throw during startup and otherwise leave
+    // the indeterminate "1/3 Loading resources" screen.
+    (function () {
+      function textOf(value) {
+        if (!value) return '';
+        if (typeof value === 'string') return value;
+        var message = typeof value.message === 'string' ? value.message : '';
+        var stack = typeof value.stack === 'string' ? value.stack : '';
+        return message || stack ? message + '\n' + stack : String(value);
+      }
+
+      function isSupportedBrowser() {
+        return typeof Array.prototype.toReversed === 'function'
+          && typeof Promise.withResolvers === 'function';
+      }
+
+      function isUnsupportedBrowserError(value) {
+        var text = textOf(value);
+        if (text.indexOf('is not a function') === -1) return false;
+        return text.indexOf('toReversed') !== -1 || text.indexOf('withResolvers') !== -1;
+      }
+
+      function markOutdatedBrowser() {
+        var root = document.documentElement;
+        if (root.className.indexOf('outdated-browser') === -1) {
+          root.className += (root.className ? ' ' : '') + 'outdated-browser';
+        }
+        var label = document.getElementById('startup-loading-label');
+        if (label) label.setAttribute('role', 'alert');
+        var progress = document.querySelector('#startup-loading progress');
+        if (progress) progress.setAttribute('hidden', '');
+      }
+
+      window.addEventListener('error', function (event) {
+        if (isUnsupportedBrowserError(event.message) || isUnsupportedBrowserError(event.error)) markOutdatedBrowser();
+      });
+      window.addEventListener('unhandledrejection', function (event) {
+        if (isUnsupportedBrowserError(event.reason)) markOutdatedBrowser();
+      });
+      document.addEventListener('DOMContentLoaded', function () {
+        if (document.documentElement.className.indexOf('outdated-browser') !== -1) markOutdatedBrowser();
+      });
+
+      if (!isSupportedBrowser()) markOutdatedBrowser();
+    })();
+  </script>
+  <style>
+    .startup-outdated {
+        display: none;
+    }
+
+    html.outdated-browser .startup-loading-status,
+    html.outdated-browser #startup-loading progress {
+        display: none;
+    }
+
+    html.outdated-browser .startup-outdated {
+        display: block;
+    }
+  </style>
+  <script>
     var _hmt = _hmt || [];
     (function() {
       var hm = document.createElement("script");
@@ -44,8 +106,14 @@
         <span lang="en">Open Minesweeper</span>
       </h1>
       <p id="startup-loading-label" role="status" aria-atomic="true" style="margin: 0 0 16px; line-height: 1.6;">
-        <span lang="zh-CN">1/3 正在加载资源…</span><br>
-        <span lang="en">1/3 Loading resources…</span>
+        <span class="startup-loading-status">
+          <span lang="zh-CN">1/3 正在加载资源…</span><br>
+          <span lang="en">1/3 Loading resources…</span>
+        </span>
+        <span class="startup-outdated">
+          <span lang="zh-CN">您的浏览器版本过低，无法正常使用本网站。最低要求：Chrome 119+、Firefox 121+、Safari 17.4+、Edge 119+。请升级后刷新页面。</span><br>
+          <span lang="en">Your browser is too old to use this site. Minimum requirements: Chrome 119+, Firefox 121+, Safari 17.4+, Edge 119+. Please upgrade and reload.</span>
+        </span>
       </p>
       <progress aria-labelledby="startup-loading-label" style="width: 160px; max-width: 100%;"></progress>
       <noscript>
