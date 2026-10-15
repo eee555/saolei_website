@@ -11,9 +11,9 @@
   <link rel="icon" href="/favicon.ico">
   <title>开源扫雷网</title>
   <script>
-    // Runs before the app module. Browsers without Array.prototype.toReversed throw
-    // `toReversed is not a function` while evaluating the store chunk and otherwise
-    // stay on the indeterminate "1/3 Loading resources" screen.
+    // Runs before the app module. The site needs Array.prototype.toReversed and
+    // Promise.withResolvers; missing APIs throw during startup and otherwise leave
+    // the indeterminate "1/3 Loading resources" screen.
     (function () {
       function textOf(value) {
         if (!value) return '';
@@ -23,9 +23,15 @@
         return message || stack ? message + '\n' + stack : String(value);
       }
 
-      function isToReversedError(value) {
+      function isSupportedBrowser() {
+        return typeof Array.prototype.toReversed === 'function'
+          && typeof Promise.withResolvers === 'function';
+      }
+
+      function isUnsupportedBrowserError(value) {
         var text = textOf(value);
-        return text.indexOf('toReversed') !== -1 && text.indexOf('is not a function') !== -1;
+        if (text.indexOf('is not a function') === -1) return false;
+        return text.indexOf('toReversed') !== -1 || text.indexOf('withResolvers') !== -1;
       }
 
       function markOutdatedBrowser() {
@@ -40,16 +46,16 @@
       }
 
       window.addEventListener('error', function (event) {
-        if (isToReversedError(event.message) || isToReversedError(event.error)) markOutdatedBrowser();
+        if (isUnsupportedBrowserError(event.message) || isUnsupportedBrowserError(event.error)) markOutdatedBrowser();
       });
       window.addEventListener('unhandledrejection', function (event) {
-        if (isToReversedError(event.reason)) markOutdatedBrowser();
+        if (isUnsupportedBrowserError(event.reason)) markOutdatedBrowser();
       });
       document.addEventListener('DOMContentLoaded', function () {
         if (document.documentElement.className.indexOf('outdated-browser') !== -1) markOutdatedBrowser();
       });
 
-      if (typeof Array.prototype.toReversed !== 'function') markOutdatedBrowser();
+      if (!isSupportedBrowser()) markOutdatedBrowser();
     })();
   </script>
   <style>
@@ -105,8 +111,8 @@
           <span lang="en">1/3 Loading resources…</span>
         </span>
         <span class="startup-outdated">
-          <span lang="zh-CN">您的浏览器版本过低，请使用最新的Chrome浏览器。</span><br>
-          <span lang="en">Your browser is too old. Please use the latest Chrome browser.</span>
+          <span lang="zh-CN">您的浏览器版本过低，无法正常使用本网站。最低要求：Chrome 119+、Firefox 121+、Safari 17.4+、Edge 119+。请升级后刷新页面。</span><br>
+          <span lang="en">Your browser is too old to use this site. Minimum requirements: Chrome 119+, Firefox 121+, Safari 17.4+, Edge 119+. Please upgrade and reload.</span>
         </span>
       </p>
       <progress aria-labelledby="startup-loading-label" style="width: 160px; max-width: 100%;"></progress>

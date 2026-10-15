@@ -12,7 +12,7 @@ describe('outdated browser', () => {
     it('shows an upgrade message instead of the resource loader when toReversed is missing', () => {
         visitWithStartupScript('Reflect.deleteProperty(Array.prototype, "toReversed");');
 
-        cy.contains('您的浏览器版本过低，请使用最新的chrome浏览器。').should('be.visible');
+        cy.contains('最低要求：Chrome 119+、Firefox 121+、Safari 17.4+、Edge 119+').should('be.visible');
         cy.contains('正在加载资源').should('not.be.visible');
     });
 
@@ -25,13 +25,13 @@ describe('outdated browser', () => {
             '});',
         ].join(''));
 
-        cy.contains('您的浏览器版本过低，请使用最新的chrome浏览器。').should('be.visible');
+        cy.contains('最低要求：Chrome 119+、Firefox 121+、Safari 17.4+、Edge 119+').should('be.visible');
         cy.contains('正在加载资源').should('not.be.visible');
     });
 
     it('loads the app when the browser provides toReversed', () => {
         cy.visit('/');
         cy.get('#app[data-v-app]', { timeout: Cypress.config('pageLoadTimeout') }).should('be.visible');
-        cy.contains('您的浏览器版本过低，请使用最新的chrome浏览器。').should('not.exist');
+        cy.contains('最低要求：Chrome 119+、Firefox 121+、Safari 17.4+、Edge 119+').should('not.exist');
     });
 });
