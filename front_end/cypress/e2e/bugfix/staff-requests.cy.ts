@@ -47,7 +47,7 @@ describe('Staff requests against the backend', () => {
         const payload = { signature: '中文 & + =', is_banned: true, left_avatar_n: 0 };
         cy.get('textarea').eq(0).clear();
         cy.get('textarea').eq(0).type(JSON.stringify(payload), { parseSpecialCharSequences: false });
-        cy.contains('button', 'PATCH UserProfile').click();
+        cy.contains('button', 'PATCH UserProfile（修改用户资料）').click();
         cy.wait('@updateProfile').its('response.statusCode').should('eq', 200);
         cy.get('textarea').eq(0).should('have.value', '{}');
 
@@ -57,7 +57,7 @@ describe('Staff requests against the backend', () => {
         const clearPayload = { signature: '', is_banned: false };
         cy.get('textarea').eq(0).clear();
         cy.get('textarea').eq(0).type(JSON.stringify(clearPayload), { parseSpecialCharSequences: false });
-        cy.contains('button', 'PATCH UserProfile').click();
+        cy.contains('button', 'PATCH UserProfile（修改用户资料）').click();
         cy.wait('@updateProfile').its('response.statusCode').should('eq', 200);
         cy.get('textarea').eq(0).should('have.value', '{}');
         cy.contains('button', '查询').click();
@@ -65,7 +65,7 @@ describe('Staff requests against the backend', () => {
 
         cy.get('textarea').eq(1).clear();
         cy.get('textarea').eq(1).type(JSON.stringify({ video_num_limit: 0 }), { parseSpecialCharSequences: false });
-        cy.contains('button', 'PATCH UserMS').click();
+        cy.contains('button', 'PATCH UserMS（修改扫雷数据）').click();
         cy.wait('@updateUserMS').its('response.statusCode').should('eq', 200);
         cy.wait('@loadUser').its('response.body.userms_video_num_limit').should('eq', 0);
         cy.get('textarea').eq(1).should('have.value', '{}');

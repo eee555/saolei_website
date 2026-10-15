@@ -1,23 +1,23 @@
 <template>
     <div>
-        用户ID
+        {{ t('common.prop.userId') }}
         <ElInputNumber v-model="userId" :controls="false" :min="1" />
         <BaseButton :loading="loading" @click="loadUser">
-            查询
+            {{ t('common.button.query') }}
         </BaseButton>
     </div>
 
     <template v-if="profile">
         <VCodeBlock :code="JSON.stringify(profile, null, 2)" lang="json" highlightjs />
-        UserProfile
+        {{ t('local.userProfile') }}
         <ElInput v-model="userProfileRequestBody" type="textarea" :autosize="{ minRows: 8 }" />
         <BaseButton type="primary" :loading="savingUserProfile" @click="saveUserProfile">
-            PATCH UserProfile
+            {{ t('local.patchUserProfile') }}
         </BaseButton>
-        UserMS
+        {{ t('local.userMS') }}
         <ElInput v-model="userMSRequestBody" type="textarea" :autosize="{ minRows: 8 }" />
         <BaseButton type="primary" :loading="savingUserMS" @click="saveUserMS">
-            PATCH UserMS
+            {{ t('local.patchUserMS') }}
         </BaseButton>
     </template>
 </template>
@@ -26,6 +26,7 @@
 import { VCodeBlock } from '@wdns/vue-code-block';
 import { ElInput, ElInputNumber } from 'element-plus';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 import BaseButton from '@/components/common/BaseButton.vue';
 import { actionSuccessNotification, baseErrorNotification, httpErrorNotification } from '@/components/Notifications';
@@ -62,12 +63,12 @@ function parseRequestBody(body: string) {
     try {
         const data: unknown = JSON.parse(body);
         if (typeof data !== 'object' || data === null || Array.isArray(data)) {
-            baseErrorNotification('JSON错误', 'request body必须是JSON object');
+            baseErrorNotification(t('local.jsonError'), t('local.jsonObjectRequired'));
             return null;
         }
         return data as Record<string, unknown>;
     } catch (error) {
-        baseErrorNotification('JSON错误', String(error));
+        baseErrorNotification(t('local.jsonError'), String(error));
         return null;
     }
 }
@@ -95,7 +96,7 @@ async function saveUserMS() {
 
     const usermsId = profile.value.userms_id;
     if (typeof usermsId !== 'number') {
-        baseErrorNotification('UserMS错误', '当前用户没有可用的userms_id');
+        baseErrorNotification(t('local.userMSError'), t('local.missingUserMS'));
         return;
     }
 
@@ -108,4 +109,29 @@ async function saveUserMS() {
     }).catch(httpErrorNotification);
     savingUserMS.value = false;
 }
+
+const i18nMessages = {
+    'zh-cn': { local: {
+        userProfile: '用户资料（UserProfile）',
+        userMS: '扫雷数据（UserMS）',
+        patchUserProfile: 'PATCH UserProfile（修改用户资料）',
+        patchUserMS: 'PATCH UserMS（修改扫雷数据）',
+        jsonError: 'JSON错误',
+        jsonObjectRequired: '请求体必须是 JSON 对象',
+        userMSError: 'UserMS错误',
+        missingUserMS: '当前用户没有可用的 userms_id',
+    } },
+    en: { local: {
+        userProfile: 'User profile (UserProfile)',
+        userMS: 'Minesweeper data (UserMS)',
+        patchUserProfile: 'PATCH UserProfile (Update user profile)',
+        patchUserMS: 'PATCH UserMS (Update Minesweeper data)',
+        jsonError: 'JSON error',
+        jsonObjectRequired: 'The request body must be a JSON object',
+        userMSError: 'UserMS error',
+        missingUserMS: 'This user has no available userms_id',
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
 </script>
