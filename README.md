@@ -28,14 +28,14 @@
    python -m venv .venv
    ```
 
-1. 先下载发布 wheel，再安装依赖。`requirements-wheels.txt` 固定 WOM 包的 GitHub 发布地址和 SHA-256；`requirements.txt` 固定安装版本。`wheels/` 不提交到 Git：
+1. 先下载发布 wheel，再安装依赖。`requirements-wheels.txt` 固定 `wom-api` 和 `msgames-api` 的 GitHub 发布地址和 SHA-256；`requirements.txt` 固定安装版本。`wheels/` 不提交到 Git：
 
    ```powershell
    .\.venv\Scripts\python.exe -m pip download --no-deps --dest wheels -r requirements-wheels.txt
    .\.venv\Scripts\python.exe -m pip install --find-links wheels -r requirements.txt
    ```
 
-   开发端需要能访问 GitHub 下载 WOM wheel；其余依赖通过 pip 配置的 PyPI 索引安装。更新 WOM 版本后重新执行下载和安装两步。
+   开发端需要能访问 GitHub 下载这些 wheel；其余依赖通过 pip 配置的 PyPI 索引安装。更新这两个客户端的版本后重新执行下载和安装两步。
 
 1. 启动 MySQL 和 Redis。按 `back_end/saolei/saolei/settings.py` 的 `DATABASES` 配置创建数据库：开发默认数据库名为 `saolei`，用户名 `root`，密码 `123456`，地址 `127.0.0.1:3306`；Redis 默认地址为 `127.0.0.1:6379`，配置见 `CACHES`。
 
@@ -79,7 +79,7 @@
 
 ### 生产端安装依赖
 
-推送 tag 后，[网站部署 workflow](.github/workflows/build.yml)会在 GitHub runner 下载并校验 WOM wheel，将 `wheels/` 随前端 `dist/` 上传到服务器后端目录，并在服务器校验 `wheels/SHA256SUMS`。[文档 workflow](.github/workflows/docs.yml)单独上传文档产物。上传步骤不安装依赖或重启服务。
+推送 tag 后，[网站部署 workflow](.github/workflows/build.yml)会在 GitHub runner 下载并校验两个客户端的 wheel，将 `wheels/` 随前端 `dist/` 上传到服务器后端目录，并在服务器校验 `wheels/SHA256SUMS`。[文档 workflow](.github/workflows/docs.yml)单独上传文档产物。上传步骤不安装依赖或重启服务。
 
 更新服务器后端源码、确认上传完成后，在生产服务使用的 Python 环境中进入后端目录并校验：
 
@@ -100,7 +100,7 @@ python3 -m pip install --dry-run --find-links wheels -r requirements.txt
 python3 -m pip install --find-links wheels -r requirements.txt
 ```
 
-生产端从本地 `wheels/` 获取 WOM 包，其余依赖继续使用服务器原有的 PyPI 索引（例如阿里云镜像）。安装后按现有部署流程应用迁移并重启后端。WOM 字段、分发方案和验证边界见 [WOM 接入说明](back_end/saolei/accountlink/wom/README.md)。
+生产端从本地 `wheels/` 获取两个客户端包，其余依赖继续使用服务器原有的 PyPI 索引（例如阿里云镜像）。安装后按现有部署流程应用迁移并重启后端。字段、导入流程和验证边界见 [WOM 接入说明](back_end/saolei/accountlink/wom/README.md)和 [MSGames 接入说明](back_end/saolei/accountlink/msgames/README.md)。
 
 ## 链接
 

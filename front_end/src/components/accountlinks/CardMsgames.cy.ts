@@ -14,6 +14,9 @@ describe('<CardMsgames />', () => {
         cy.contains('Authoritative Minesweeper #202');
         cy.contains('AM Player');
         cy.contains('Local AM');
+        cy.contains('China');
+        cy.contains('Example region');
+        cy.contains('Example mouse');
         cy.contains('2024-01-01 08:00:00');
     });
 

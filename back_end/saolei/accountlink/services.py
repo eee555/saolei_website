@@ -3,6 +3,8 @@ import logging
 
 from asgiref.sync import async_to_sync
 from django.core.files.base import ContentFile
+from django.db import transaction
+from django.utils import timezone
 from django_tasks_db.models import DBTaskResult
 import requests
 
@@ -14,8 +16,10 @@ from utils.exceptions import ExceptionToResponse
 from utils.parser import MSVideoParser
 from utils.saolei import SaoleiUserInfo, SaoleiUtils
 from videomanager.models import VideoModel
-from .models import AccountSaolei, AccountWorldOfMinesweeper, Platform, VideoSaolei
-from .utils import fetch_saolei_profile, fetch_saolei_video_download_and_state, update_bilibili_account, update_msgames_account
+from .models import AccountMinesweeperGames, AccountSaolei, AccountWorldOfMinesweeper, Platform, VideoMSGames, VideoSaolei
+from .msgames.client import download_replay as download_msgames_replay, fetch_profile as fetch_msgames_profile, fetch_replays as fetch_msgames_replays
+from .msgames.utils import upload_date_upper_bound
+from .utils import fetch_saolei_profile, fetch_saolei_video_download_and_state, update_bilibili_account
 from .wom.client import fetch_wom_profile
 
 logger = logging.getLogger('accountlink')
@@ -42,6 +46,73 @@ def update_wom_account(account: AccountWorldOfMinesweeper):
     for field, value in data.items():
         setattr(account, field, value)
     account.save(update_fields=[*data, 'update_time'])
+
+
+def update_msgames_account(account: AccountMinesweeperGames):
+    data = fetch_msgames_profile(account.id)
+    for field, value in data.items():
+        setattr(account, field, value)
+    account.save(update_fields=[*data, 'update_time'])
+
+
+def update_msgames_video_list(account: AccountMinesweeperGames) -> list[int]:
+    data = fetch_msgames_replays(account.id)
+    new_ids = []
+    with transaction.atomic():
+        account = AccountMinesweeperGames.objects.select_for_update().get(pk=account.pk)
+        for info in data:
+            key = info['source_key']
+            defaults = {field: value for field, value in info.items() if field != 'source_key'}
+            video, created = VideoMSGames.objects.update_or_create(user=account, source_key=key, defaults=defaults)
+            if created:
+                new_ids.append(video.id)
+        account.video_update_time = timezone.now()
+        account.save(update_fields=['video_update_time'])
+    return new_ids
+
+
+def msgames_video_import_one(source: VideoMSGames):
+    if source.import_video_id:
+        return source.import_video
+    if not source.can_import:
+        raise ExceptionToResponse('file', 'type', status_code=400)
+    data = download_msgames_replay(source.url)
+    filename = source.filename.rsplit('.', 1)[0] + '.' + source.filename.rsplit('.', 1)[1].lower()
+    parser = MSVideoParser(ContentFile(data, filename))
+    with transaction.atomic():
+        source = VideoMSGames.objects.select_for_update().select_related('user__parent').get(pk=source.pk)
+        if source.import_video_id:
+            return source.import_video
+        if not source.can_import:
+            raise ExceptionToResponse('file', 'type', status_code=400)
+        source_time = upload_date_upper_bound(source.upload_date) if source.upload_date else None
+        for collision in VideoModel.objects.filter(file_size=len(data)).order_by('id'):
+            try:
+                with collision.file.open('rb') as file:
+                    same_file = file.read() == data
+            except OSError:
+                continue
+            if same_file:
+                if source_time and collision.upload_time > source_time:
+                    collision.upload_time = source_time
+                    collision.save(update_fields=['upload_time'])
+                source.import_video = collision
+                source.save(update_fields=['import_video'])
+                return collision
+        user = source.user.parent
+        if not user.userms_id:
+            user.userms = UserMS.objects.create()
+            user.save(update_fields=['userms'])
+        if parser.state == MS_TextChoices.State.OFFICIAL and not Identifier.verify(parser.identifier, user.userms):
+            parser.state = MS_TextChoices.State.IDENTIFIER
+        video = VideoModel.create_from_parser(parser, user)
+        if source_time:
+            video.upload_time = source_time
+        video.update_redis()
+        video.save(update_fields=['upload_time', 'ongoing_tournament'])
+        source.import_video = video
+        source.save(update_fields=['import_video'])
+        return video
 
 
 def _get_task_identity(args: list, kwargs: dict, key: str):

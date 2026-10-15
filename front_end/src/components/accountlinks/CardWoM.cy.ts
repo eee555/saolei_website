@@ -8,7 +8,7 @@ describe('<CardWoM />', () => {
         resetAccountLinkStore();
     });
 
-    it('renders Minesweeper.Online account details', () => {
+    it('renders account details, public records and lifetime statistics', () => {
         mountAccountLink(CardWoM, {
             id: '303',
             verified: true,
@@ -20,14 +20,6 @@ describe('<CardWoM />', () => {
         cy.contains('12.000 | 45.000 | 99.000');
         cy.contains('1.23 | 2.34 | 3.45');
         cy.contains('88 | 77 | 66');
-    });
-
-    it('renders public records and lifetime statistics', () => {
-        mountAccountLink(CardWoM, {
-            id: '303',
-            verified: true,
-            info: new AccountWoM(mockWoMResponse()),
-        });
 
         cy.get('.el-link').last().click();
         cy.contains('.el-carousel__item.is-active', 'Games').should('contain', '111645');

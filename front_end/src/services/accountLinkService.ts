@@ -1,6 +1,6 @@
 import $axios from '@/http';
 import { AccountLinks } from '@/utils/accountlinks';
-import type { AccountLinkPlatform, AccountLinkQueueResponse, AccountLinksResponse, SaoleiVideo, SaoleiVideoRaw } from '@/utils/accountlinks';
+import type { AccountLinkPlatform, AccountLinkQueueResponse, AccountLinksResponse, MSGamesImportResult, MSGamesImportSummary, MSGamesSyncResult, MSGamesVideo, SaoleiVideo, SaoleiVideoRaw } from '@/utils/accountlinks';
 
 type AccountLinkUpdateErrorMessageCategory = 'cooldown' | 'empty' | 'indexerror' | 'pageempty' | 'requestexception' | 'timeout' | 'unknown';
 
@@ -69,4 +69,28 @@ function normalizeSaoleiVideo(video: SaoleiVideoRaw): SaoleiVideo {
         import_video__id: video.import_video__id ?? 0,
         import_task__status: video.import_task__status ?? 'NULL',
     };
+}
+
+export async function fetchMSGamesVideos(msgamesId: number): Promise<MSGamesVideo[]> {
+    const { data } = await $axios.get<MSGamesVideo[]>('/api/accountlink/msgames/videos', {
+        params: { msgames_id: msgamesId },
+    });
+    return data;
+}
+
+export async function fetchMSGamesImportSummary(msgamesId: number): Promise<MSGamesImportSummary> {
+    const { data } = await $axios.get<MSGamesImportSummary>('/api/accountlink/msgames/summary', {
+        params: { msgames_id: msgamesId },
+    });
+    return data;
+}
+
+export async function syncMSGamesVideos(msgamesId: number): Promise<MSGamesSyncResult> {
+    const { data } = await $axios.post<MSGamesSyncResult>(`/api/accountlink/msgames/${msgamesId}/sync`, undefined, { timeout: 120000 });
+    return data;
+}
+
+export async function importMSGamesVideo(videoId: number): Promise<MSGamesImportResult> {
+    const { data } = await $axios.post<MSGamesImportResult>(`/api/accountlink/msgames/videos/${videoId}/import`, undefined, { timeout: 120000 });
+    return data;
 }
