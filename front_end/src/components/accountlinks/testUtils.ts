@@ -1,3 +1,4 @@
+import PrimeVue from 'primevue/config';
 import type { Component } from 'vue';
 
 import $axios from '@/http';
@@ -21,7 +22,7 @@ function mountOptions(props: Record<string, unknown>, components: Record<string,
     return {
         props,
         global: {
-            plugins: [i18n, pinia],
+            plugins: [i18n, pinia, PrimeVue],
             components,
             config: {
                 globalProperties: {
@@ -73,7 +74,12 @@ export function mockMSGamesResponse(overrides: Partial<AccountMSGamesResponse> =
         update_time: '2025-02-06T09:10:11Z',
         name: 'AM Player',
         local_name: 'Local AM',
-        joined: '2024-01-01T00:00:00Z',
+        joined: '2024-01-01',
+        country: 'China',
+        state: 'Example region',
+        hand: 'Right',
+        mouse: 'Example mouse',
+        video_update_time: null,
         ...overrides,
     };
 }

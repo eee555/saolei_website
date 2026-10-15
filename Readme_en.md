@@ -25,14 +25,14 @@ Back end:
    python -m venv .venv
    ```
 
-1. Download the release wheel, then install dependencies. `requirements-wheels.txt` pins the WOM wheel's GitHub release URL and SHA-256; `requirements.txt` pins the installed version. The `wheels/` directory is ignored by Git:
+1. Download the release wheels, then install dependencies. `requirements-wheels.txt` pins the GitHub release URLs and SHA-256 hashes of `wom-api` and `msgames-api`; `requirements.txt` pins the installed versions. The `wheels/` directory is ignored by Git:
 
    ```powershell
    .\.venv\Scripts\python.exe -m pip download --no-deps --dest wheels -r requirements-wheels.txt
    .\.venv\Scripts\python.exe -m pip install --find-links wheels -r requirements.txt
    ```
 
-   The development machine needs GitHub access to download the WOM wheel. Other dependencies use your configured PyPI index. Repeat both commands when updating the WOM version.
+   The development machine needs GitHub access to download these wheels. Other dependencies use your configured PyPI index. Repeat both commands when updating either client version.
 
 1. Start MySQL and Redis. Create the database according to `DATABASES` in `back_end/saolei/saolei/settings.py`: development defaults are database `saolei`, user `root`, password `123456`, and address `127.0.0.1:3306`. Redis defaults to `127.0.0.1:6379`; see `CACHES` for its configuration.
 
@@ -76,7 +76,7 @@ Special debugging parameters are located at the end of `back_end\saolei\saolei\s
 
 ### Installing production dependencies
 
-On a tag push, the [website deployment workflow](.github/workflows/build.yml) downloads and verifies the WOM wheel on the GitHub runner, uploads `wheels/` alongside the frontend `dist/` to the server's backend directory, and verifies `wheels/SHA256SUMS` on the server. The [documentation workflow](.github/workflows/docs.yml) uploads documentation separately. Uploading does not install dependencies or restart services.
+On a tag push, the [website deployment workflow](.github/workflows/build.yml) downloads and verifies both client wheels on the GitHub runner, uploads `wheels/` alongside the frontend `dist/` to the server's backend directory, and verifies `wheels/SHA256SUMS` on the server. The [documentation workflow](.github/workflows/docs.yml) uploads documentation separately. Uploading does not install dependencies or restart services.
 
 After updating the backend source and confirming the upload has completed, use the production service's Python environment to verify the files:
 
@@ -97,7 +97,7 @@ For the actual installation, run:
 python3 -m pip install --find-links wheels -r requirements.txt
 ```
 
-Production obtains the WOM package from the local `wheels/` directory. Other dependencies continue to use the server's configured PyPI index, such as the Aliyun mirror. Apply migrations and restart the backend using your existing deployment procedure. See the [WOM integration notes](back_end/saolei/accountlink/wom/README.md) for the fields, distribution details, and validation limits.
+Production obtains both client packages from the local `wheels/` directory. Other dependencies continue to use the server's configured PyPI index, such as the Aliyun mirror. Apply migrations and restart the backend using your existing deployment procedure. See the [WOM integration notes](back_end/saolei/accountlink/wom/README.md) and [MSGames integration notes](back_end/saolei/accountlink/msgames/README.md) for the fields, import workflow, and validation limits.
 
 ## Sponsor
 TODO

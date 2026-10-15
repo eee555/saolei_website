@@ -52,16 +52,14 @@ class WomProfileMappingTests(SimpleTestCase):
         data = normalize_wom_profile(profile, 1783173)
         self.assertTrue({'honour', 'minecoin', 'gem', 'coin', 'arena_ticket', 'equipment', 'part', 'name', 'country', 'items', 'eq'}.isdisjoint(data))
 
-    def test_absent_pb_is_null_and_missing_endurance_uses_default(self):
+    def test_absent_pb_is_null_and_zero_wins_are_preserved(self):
         profile = public_profile()
         profile['timeResults'].pop('12')
         profile['effResults'] = {}
-        profile['userStat'].update({'end1': 0, 'end2': None, 'winsNf': 0})
+        profile['userStat']['winsNf'] = 0
         data = normalize_wom_profile(profile, 1783173)
         self.assertIsNone(data['i_ng_t_ms'])
         self.assertIsNone(data['b_ioe'])
-        self.assertEqual(data['b_endurance_ms'], 86400000)
-        self.assertEqual(data['i_endurance_ms'], 86400000)
         self.assertEqual(data['win_nf'], 0)
 
     def test_missing_statistics_do_not_clear_previous_values(self):
@@ -73,14 +71,6 @@ class WomProfileMappingTests(SimpleTestCase):
         partial = {'user': {'id': 1}, 'userStat': {'winsAll': 0}}
         self.assertEqual(normalize_wom_profile(partial, 1), {'win': 0})
 
-    def test_only_lifetime_durations_accept_64_bit_values(self):
-        profile = public_profile()
-        profile['userStat'].update({'timeAll': 2 ** 40, 'arenaDuration': 2 ** 39, 'coinsAll': 2 ** 32 - 1})
-        data = normalize_wom_profile(profile, 1783173)
-        self.assertEqual(data['play_time_ms'], 2 ** 40)
-        self.assertEqual(data['arena_play_time_ms'], 2 ** 39)
-        self.assertEqual(data['minecoin_total'], 2 ** 32 - 1)
-
     def test_narrowed_counter_limits_are_checked_before_saving(self):
         for key, value in [('games', 2 ** 32), ('bbbvAll', 2 ** 32), ('expAll', 2 ** 32), ('coinsAll', 2 ** 32), ('gemsAll', 2 ** 32), ('arenaCoinsAll', 2 ** 32), ('winsNf', 2 ** 32), ('wins1', 2 ** 32), ('seasons', 2 ** 16), ('timeAll', 2 ** 63), ('arenaDuration', 2 ** 63)]:
             profile = public_profile()
@@ -90,7 +80,7 @@ class WomProfileMappingTests(SimpleTestCase):
 
     def test_malformed_identity_records_or_counters_are_rejected(self):
         original = public_profile()
-        for key, value in [('games', True), ('games', 1.5), ('games', -1), ('games', 2 ** 63), ('end1', 86400001), ('lastSeason', 20000)]:
+        for key, value in [('games', True), ('games', 1.5), ('games', -1), ('end1', 86400001), ('lastSeason', 20000)]:
             profile = deepcopy(original)
             profile['userStat'][key] = value
             with self.subTest(key=key, value=value), self.assertRaises(ValueError):
@@ -157,7 +147,6 @@ class WomAccountTests(TestCase):
         account = AccountWorldOfMinesweeper.objects.filter(id=1783173).first()
         data = normalize_wom_profile(public_profile(), account.id)
         old_update_time = account.update_time
-        data['play_time_ms'] = 2 ** 40
         with patch('accountlink.services.fetch_wom_profile', new=AsyncMock(return_value=data)):
             update_wom_account(account)
         account = AccountWorldOfMinesweeper.objects.filter(id=1783173).first()
@@ -182,7 +171,6 @@ class WomAccountTests(TestCase):
         self.assertEqual(account.e_winstreak, 7)
         self.assertEqual(account.b_endurance_ms, 582000)
         self.assertEqual(account.e_ng_t_ms, 48877)
-        self.assertEqual(account.play_time_ms, 2 ** 40)
         self.assertGreater(account.update_time, old_update_time)
         output = AccountWoMOut.from_orm(account).model_dump()
         self.assertEqual(output['e_ng_t_ms'], 48877)
@@ -208,7 +196,7 @@ class WomAccountTests(TestCase):
     def test_update_wom_counter_ranges(self):
         account = AccountWorldOfMinesweeper.objects.get(id=1783173)
         profile = public_profile()
-        profile['userStat'].update({'coinsAll': 2 ** 32 - 1, 'bbbvAll': 2 ** 32 - 1, 'seasons': 2 ** 16 - 1, 'timeAll': 2 ** 40})
+        profile['userStat'].update({'coinsAll': 2 ** 32 - 1, 'bbbvAll': 2 ** 32 - 1, 'seasons': 2 ** 16 - 1, 'timeAll': 2 ** 40, 'arenaDuration': 2 ** 39})
         data = normalize_wom_profile(profile, account.id)
         with patch('accountlink.services.fetch_wom_profile', new=AsyncMock(return_value=data)):
             update_wom_account(account)
@@ -217,6 +205,7 @@ class WomAccountTests(TestCase):
         self.assertEqual(account.bbbv_total, 2 ** 32 - 1)
         self.assertEqual(account.season_count, 2 ** 16 - 1)
         self.assertEqual(account.play_time_ms, 2 ** 40)
+        self.assertEqual(account.arena_play_time_ms, 2 ** 39)
 
     def test_update_wom_failure_keeps_existing_data(self):
         account = AccountWorldOfMinesweeper.objects.filter(id=1783173).first()

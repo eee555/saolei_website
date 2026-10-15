@@ -14,9 +14,9 @@ from .api import MineracerAccountLinkSessionOut
 from .mineracer.client import poll_mineracer_account_link, request_mineracer_account_link
 from .mineracer.dtos import MINERACER_ERROR_ACCOUNT_NOT_FOUND, MINERACER_ERROR_INVALID_DEVICE_CODE, MINERACER_ERROR_LINK_SUPERSEDED, MINERACER_STATUS_CONFIRMED, MINERACER_STATUS_EXPIRED, MINERACER_STATUS_FAILED, MINERACER_STATUS_PENDING, MineracerAccountLinkPollResponse, MineracerAccountLinkSession, MineracerAccountLinkStartResponse
 from .mineracer.sessions import _get_mineracer_session, _save_mineracer_session, _save_user_pending_mineracer_session
-from .models import AccountBilibili, AccountLinkQueue, AccountMineracer, AccountMinesweeperGames, AccountSaolei, Platform
+from .models import AccountBilibili, AccountLinkQueue, AccountMineracer, AccountSaolei, Platform
 from .services import update_saolei_account_info
-from .utils import isPrivate, private_platforms, update_bilibili_account, update_msgames_account
+from .utils import isPrivate, private_platforms, update_bilibili_account
 
 
 class AccountLinkTestCase(TestCase):
@@ -24,7 +24,6 @@ class AccountLinkTestCase(TestCase):
         user = UserProfile.objects.create(
             username='setUp', email='setUp@test.com')
         AccountSaolei.objects.create(id=1, parent=user)
-        AccountMinesweeperGames.objects.create(id=7872, parent=user)
         AccountBilibili.objects.create(id=208259, parent=user)
 
     def test_update_saolei(self):
@@ -44,15 +43,6 @@ class AccountLinkTestCase(TestCase):
         self.assertEqual(account.i_b_cent, 530)
         self.assertEqual(account.e_b_cent, 423)
         self.assertEqual(account.s_b_cent, 1681)
-
-    def test_update_msgames(self):
-        account = AccountMinesweeperGames.objects.filter(id=7872).first()
-        update_msgames_account(account)
-        account = AccountMinesweeperGames.objects.filter(id=7872).first()
-        self.assertEqual(account.id, 7872)
-        self.assertEqual(account.name, 'Ze-En JU')
-        self.assertEqual(account.local_name, '鞠泽恩')
-        self.assertEqual(account.joined, datetime.date(2019, 5, 28))
 
     def test_update_bilibili(self):
         account = AccountBilibili.objects.filter(id=208259).first()
@@ -82,17 +72,6 @@ class AccountLinkTestCase(TestCase):
         self.assertTrue(isPrivate(Platform.QQ))
         self.assertFalse(isPrivate(Platform.BILIBILI))
         self.assertFalse(isPrivate(Platform.SAOLEI))
-
-    def test_msgames_private_name(self):
-        user = UserProfile.objects.create(
-            username='test_msgames_private_name', email='test_msgames_private_name@test.com')
-        account = AccountMinesweeperGames.objects.create(id=8371, parent=user)
-        try:
-            update_msgames_account(account)
-        except requests.ConnectTimeout:
-            return
-        self.assertEqual(account.name, 'Private')
-        self.assertEqual(account.local_name, 'None')
 
 
 class MineracerFakeResponse:

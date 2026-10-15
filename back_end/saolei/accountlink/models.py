@@ -5,6 +5,7 @@ from django_tasks_db.models import DBTaskResult
 from config.text_choices import MS_TextChoices, Saolei_TextChoices
 from userprofile.models import UserProfile
 from videomanager.models import VideoModel
+from .msgames.utils import supports_replay
 from .wom.utils import ENDURANCE_BASE_MS
 
 
@@ -87,12 +88,28 @@ class AccountMinesweeperGames(models.Model):
 
     name = models.CharField(max_length=128, default='')
     local_name = models.CharField(max_length=128, default='')
-    # country = models.CharField() # country和state应该是二合一的枚举类型
-    # state = models.CharField()
+    country = models.TextField(default='', blank=True, help_text='Public country text as displayed by MSGames, without an enum.')
+    state = models.TextField(default='', blank=True, help_text='Public region text as displayed by MSGames, without an enum.')
     joined = models.DateField(null=True)
-    # mouse_brand = models.CharField(max_length=128) # 枚举
-    # mouse_type = models.CharField(max_length=128) # 枚举
-    # mouse_model = models.CharField() # 用户自己随便填的，需要审查
+    hand = models.TextField(default='', blank=True, help_text='Public handedness text as displayed by MSGames.')
+    mouse = models.TextField(default='', blank=True, help_text='Public mouse text as displayed by MSGames.')
+    video_update_time = models.DateTimeField(null=True)
+
+
+class VideoMSGames(models.Model):
+    user = models.ForeignKey(AccountMinesweeperGames, on_delete=models.CASCADE, related_name='videos')
+    source_key = models.CharField(max_length=64, unique=True, help_text='SHA-256 of the original replay URL, used for deduplication.')
+    url = models.TextField(help_text='Original replay URL published by MSGames.')
+    filename = models.TextField()
+    upload_date = models.DateField(null=True, help_text='Public upload date; imports use the following midnight UTC as its upper bound.')
+    category = models.TextField(default='', help_text='Displayed metric, groups, style and category, merged across score histories.')
+    score = models.TextField(default='', help_text='Displayed score strings, preserving source precision.')
+    density_levels = models.JSONField(default=list, help_text='Density custom levels; null entries denote unsupported or unknown configurations.')
+    import_video = models.ForeignKey(VideoModel, on_delete=models.SET_NULL, null=True, related_name='+')
+
+    @property
+    def can_import(self):
+        return supports_replay(self.filename, self.category, self.density_levels)
 
 
 class AccountBilibili(models.Model):

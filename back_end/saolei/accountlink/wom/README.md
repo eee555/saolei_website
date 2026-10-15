@@ -107,7 +107,7 @@ python3 manage.py migrate accountlink
 
 分发方案依据：2026-10-14 本机 pip 访问 [Gitee 同步发布](https://gitee.com/putianyi889/wom-api/releases/tag/v0.1.0)直链返回 HTTP 403，禁用缓存也未解决；用户提供的生产端日志确认相同错误，发生在 wheel 下载阶段。阿里云 PyPI 镜像不负责 Gitee 直链。具体拒绝原因未确认，不能仅凭 403 判定为 User-Agent 或防盗链规则。本机 curl 跟随正常重定向下载成功，SHA-256 与 GitHub 发布包一致，但不能证明生产端 pip 直链可用，因此改由 GitHub runner 下载和校验后通过 SCP 分发。使用 pip 的标准 [下载](https://pip.pypa.io/en/stable/cli/pip_download/)与[本地包查找](https://pip.pypa.io/en/stable/cli/pip_install/#cmdoption-f)机制，不关闭 TLS 验证。
 
-WOM 专项 Django 测试覆盖客户端释放、错误映射、空值、单位、按字段范围拒绝越界、64 位累计用时、真实数据库保存及 API Schema；验证结果见当轮交付。接入时另已通过 7 项后端静态安全测试，并在网站 Python 3.12 环境中通过同步适配器实际匿名读取新增字段。系统检查仍报告既有的缺少 `dist/` 和重复 API namespace 警告。
+WOM 专项 Django 测试覆盖客户端释放、错误映射、空值、单位、按字段范围拒绝越界、64 位累计用时、真实数据库保存及 API Schema。本轮将重复的累计用时边界检查合并到数据库用例，耐力默认值集中在默认值与空成绩用例中，13 项专项测试及相关文件 flake8 通过；与 MSGames 和任务管理的关联回归共 53 项通过。接入时另已通过 7 项后端静态安全测试，并在网站 Python 3.12 环境中通过同步适配器实际匿名读取新增字段。系统检查仍报告既有的缺少 `dist/` 和重复 API namespace 警告。
 
 前端 lintfix 和 typecheck 的上一轮检查已确认退出码为 0，lintfix 有 4 个既有组件测试文件警告。耐力默认值调整后的检查按跨轮流程启动，状态见当轮交付。没有运行 Cypress，组件回归命令留给用户：
 
@@ -123,4 +123,4 @@ npx.cmd cypress run --component --browser chrome --headless --spec "src/componen
 
 源码与契约：[客户端实现](https://github.com/putianyi889/wom-api/blob/823c3b0c9c7f6477fafd3767a5ad037320cd48ee/src/wom_api/client.py)、[接口字段目录](https://github.com/putianyi889/wom-api/blob/823c3b0c9c7f6477fafd3767a5ad037320cd48ee/docs/endpoints.md)、[连接和系统证书支持](https://github.com/putianyi889/wom-api/blob/823c3b0c9c7f6477fafd3767a5ad037320cd48ee/docs/connections.md)、[协议调查](https://github.com/putianyi889/wom-api/blob/823c3b0c9c7f6477fafd3767a5ad037320cd48ee/docs/research/README.md)。
 
-本次没有增加 WOM 录像导入。`get_game()` 返回原始 `InitGameEvent` 参数列表，实测游戏 6646633208 的快照约 724 KB，不能直接交给当前 AVF/EVF/RMV/MVF 解析器。旧 `utils/wom.py`、`wom2.py` 未发现业务调用，保留以避免影响仓库外脚本；当前资料刷新已经不使用这两份客户端。
+本次没有增加 WOM 录像导入。`get_game()` 返回原始 `InitGameEvent` 参数列表，实测游戏 6646633208 的快照约 724 KB，不能直接交给当前 AVF/EVF/RMV/MVF 解析器。旧 `utils/wom.py`、`wom2.py` 未发现业务调用，保留以避免影响仓库外脚本；当前资料刷新已经不使用这两份客户端。已删除只测试旧客户端、带固定等待与 `@skip` 的 `utils/test.py`；卡片组件的基础展示、公开成绩和累计数据合并到同一次挂载。

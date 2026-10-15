@@ -8,7 +8,7 @@ import requests
 from config.text_choices import Saolei_TextChoices
 from userprofile.models import UserProfile
 from utils.exceptions import ExceptionToResponse
-from .models import AccountBilibili, AccountMinesweeperGames, Platform, PLATFORM_CONFIG
+from .models import AccountBilibili, Platform, PLATFORM_CONFIG
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 Edg/132.0.0.0',
@@ -141,30 +141,6 @@ def fetch_saolei_video_download_and_state(video_id: int) -> tuple[str, ]:
     else:
         state = Saolei_TextChoices.SaoleiVideoState.OFFICIAL
     return 'http://saolei.wang/' + re.search(r"PlayVideo\('([^']+)'\)", response.text).group(1), state
-
-
-def update_msgames_account(account: AccountMinesweeperGames):
-    msgamesid = account.id
-    htmlStr = None
-    try:
-        url = f'https://minesweepergame.com/profile.php?pid={msgamesid}'
-        response = requests.get(url=url, timeout=5, headers=headers)
-        htmlStr = response.text
-    except requests.exceptions.Timeout:
-        raise ExceptionToResponse(obj='import', category='timeout')  # 请求超时
-    except requests.exceptions.RequestException:
-        raise ExceptionToResponse(obj='import', category='requestexception')
-    if not htmlStr:
-        raise ExceptionToResponse(obj='import', category='pageempty')  # 没有爬取到信息
-    tree = etree.HTML(htmlStr)
-
-    def getValue(text):
-        values = tree.xpath(f'//td[text()="{text}"]/../td[2]/text()')
-        return values[0] if values else None
-    account.name = str(getValue('Name'))
-    account.local_name = str(getValue('Local Name'))
-    account.joined = getValue('Joined')
-    account.save(update_fields=['name', 'local_name', 'joined'])
 
 
 def update_bilibili_account(account: AccountBilibili):
