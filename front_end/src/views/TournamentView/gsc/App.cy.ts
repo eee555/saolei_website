@@ -1,5 +1,5 @@
 
-import AutoUploader from '../common/AutoUploader.vue';
+import type AutoUploader from '../common/AutoUploader.vue';
 import type { AutoUploadVideo } from '../common/utils';
 
 import App from './App.vue';
@@ -159,7 +159,7 @@ describe('<GSC App />', () => {
         cy.wait('@participantVideos');
         cy.get('.auto-uploader .el-select').should('contain.text', 'Supported levels and modes');
         cy.get<ComponentWrapper<typeof App>>('@vue').then((wrapper) => {
-            const filter: (video: AutoUploadVideo) => boolean = wrapper.findComponent(AutoUploader).props('filter');
+            const filter: (video: AutoUploadVideo) => boolean = wrapper.findComponent<typeof AutoUploader>('.auto-uploader').props('filter');
             ['All tournament videos', 'Supported levels and modes', '3BV minimum met'].forEach((label, stage) => {
                 cy.get('.auto-uploader .el-select').click();
                 cy.contains('.el-select-dropdown:visible .el-select-dropdown__item', label).click();
