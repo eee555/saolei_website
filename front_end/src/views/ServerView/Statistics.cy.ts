@@ -21,9 +21,11 @@ const videos = {
 
 function waitForChartLayout() {
     return cy.window().then((window) => new Cypress.Promise<void>((resolve) => {
-        window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
-            resolve();
-        }));
+        window.requestAnimationFrame(() => {
+            window.requestAnimationFrame(() => {
+                resolve();
+            });
+        });
     }));
 }
 
