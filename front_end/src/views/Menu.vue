@@ -49,7 +49,6 @@ const router = useRouter();
 const menu_items = [
     { index: 'ranking', icon: 'Trophy' },
     { index: 'video', icon: 'VideoCameraFilled' },
-    // { index: "world", icon: "Odometer" },
     // { index: "score", icon: "Histogram" },
     { index: 'tournament', icon: 'Medal' },
     { index: 'server', icon: 'Cpu' },
@@ -79,7 +78,6 @@ const i18nMessages = {
     'zh-cn': { local: {
         ranking: '排行榜',
         video: '录像',
-        world: '统计',
         score: '积分',
         staff: '管理',
         profile: '我的地盘',
@@ -91,7 +89,6 @@ const i18nMessages = {
     en: { local: {
         ranking: 'Ranking',
         video: 'Videos',
-        world: 'Statistics',
         score: 'Scores',
         profile: 'Profile',
         docs: 'Help',
@@ -103,7 +100,6 @@ const i18nMessages = {
     de: { local: {
         ranking: 'Ranking',
         video: 'Video',
-        world: 'Welt',
         score: 'Ergebnisse',
         profile: 'Profil',
         docs: 'Hilfe',
@@ -111,7 +107,6 @@ const i18nMessages = {
     pl: { local: {
         ranking: 'ranking',
         video: 'filmy',
-        world: 'statystyki',
         score: 'wyniki',
         profile: 'profil',
         docs: 'pomoc',

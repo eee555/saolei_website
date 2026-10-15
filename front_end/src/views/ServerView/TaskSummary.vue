@@ -21,7 +21,7 @@ const loading = ref(false);
 
 async function refresh() {
     loading.value = true;
-    const response = await proxy.$axios.get('/api/common/tasksummary');
+    const response = await proxy.$axios.get('/api/monitor/tasksummary');
     dataset.value = [
         {
             name: t('local.READY'),

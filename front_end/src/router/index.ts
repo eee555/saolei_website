@@ -30,11 +30,6 @@ const routes: RouteRecordRaw[] = [
         props: true,
     },
     {
-        path: '/world',
-        name: 'world',
-        component: () => import('../views/WorldView.vue'),
-    },
-    {
         path: '/server',
         name: 'server',
         component: () => import('../views/ServerView/App.vue'),

@@ -322,7 +322,7 @@ python manage.py db_worker_robust --queue-name default --interval 2
 
 位置：`common/management/commands/runapscheduler.py`
 
-用途：启动所有 APScheduler 定时任务。当前 APScheduler 已合并为 `common` APP 中的单一常驻进程，避免分别启动监控、用户和录像相关的三个 Django 进程。
+用途：在 `common` APP 的单一常驻进程中运行验证码、录像队列和任务执行历史的定时清理。
 
 任务注册位置：`common/apscheduler.py`
 
@@ -330,12 +330,13 @@ python manage.py db_worker_robust --queue-name default --interval 2
 
 | 任务 | 频率 | 说明 |
 | --- | --- | --- |
-| `refresh_state_always` | 每 5 秒 | 采集网络 IO 速度和 CPU 使用率，并写入 Redis |
 | `delete_old_job_executions` | 每周一 00:03 | 清理旧的 APScheduler job execution 记录 |
 | `delete_newest_queue` | 每天 01:08 | 队列超过 100 条时删除超过 7 天的记录 |
 | `delete_freezed_video` | 每天 01:28 | 删除 7 天以前冻结状态的录像 |
 | `delete_overdue_emailverifyrecord` | 每周一 01:03 | 清理 1 小时以前的邮箱验证码 |
 | `delete_overdue_captcha` | 每周一 01:05 | 清理过期图形验证码 |
+
+旧的 World 监控页面和 CPU/网络 IO 采集任务已移除；`monitor` APP 改为承载服务器统计 Ninja API，不再注册定时采集。新增 `/api/monitor/memoryusage` 仅在请求缓存未命中时采集，完整结果缓存 300 秒，详见[服务器内存统计](./cache.md#服务器内存统计)。`runapscheduler` 启动注册任务时会删除数据库中残留的 `refresh_state_always` 任务，避免任务存储恢复已删除的采集函数；其余五项清理任务保持运行。更新后需重启原 APScheduler 进程。
 
 参数：
 

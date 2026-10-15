@@ -7,11 +7,13 @@ from types import SimpleNamespace
 from unittest.mock import patch
 from urllib.parse import urlencode
 
+from django.core.cache import cache
 from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.tasks import TaskResultStatus
 from django.test import override_settings, TestCase
 from django.utils import timezone
+from django_apscheduler.models import DjangoJob
 from django_redis import get_redis_connection
 from django_tasks_db.models import DBTaskResult, get_date_max
 
@@ -56,9 +58,20 @@ class APSchedulerRegistrationTests(TestCase):
                 'delete_old_job_executions',
                 'delete_overdue_captcha',
                 'delete_overdue_emailverifyrecord',
-                'refresh_state_always',
             },
         )
+
+    def test_registration_removes_only_retired_monitor_job(self):
+        from apscheduler.schedulers.background import BackgroundScheduler
+        from common.apscheduler import register_jobs
+
+        DjangoJob.objects.create(id='refresh_state_always', job_state=b'old monitor job')
+        DjangoJob.objects.create(id='delete_newest_queue', job_state=b'existing cleanup job')
+
+        register_jobs(BackgroundScheduler())
+
+        self.assertFalse(DjangoJob.objects.filter(id='refresh_state_always').exists())
+        self.assertTrue(DjangoJob.objects.filter(id='delete_newest_queue').exists())
 
 
 class LogPollTests(TestCase):
@@ -181,6 +194,8 @@ class TaskDeletionTests(TestCase):
 
     def test_delete_ready_task(self):
         task = self.create_task()
+        cache.set('api:monitor/tasksummary', {'total': 1}, 300)
+        self.addCleanup(cache.delete, 'api:monitor/tasksummary')
 
         response = self.client.post(
             '/api/common/tasks/delete',
@@ -191,6 +206,7 @@ class TaskDeletionTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIsNone(response.json())
         self.assertFalse(DBTaskResult.objects.filter(id=task.id).exists())
+        self.assertIsNone(cache.get('api:monitor/tasksummary'))
 
     def test_delete_running_task_returns_conflict(self):
         task = self.create_task(status=TaskResultStatus.RUNNING)
@@ -354,6 +370,8 @@ class TaskDeletionTests(TestCase):
             ),
         ]
         for old_task, obj, task_field_id in cases:
+            cache.set('api:monitor/tasksummary', {'total': 3}, 300)
+            self.addCleanup(cache.delete, 'api:monitor/tasksummary')
             response = self.client.post(
                 '/api/common/tasks/restart',
                 urlencode({'task_id': str(old_task.id)}),
@@ -361,6 +379,7 @@ class TaskDeletionTests(TestCase):
             )
 
             self.assertEqual(response.status_code, 200, response.content)
+            self.assertIsNone(cache.get('api:monitor/tasksummary'))
             response_data = response.json()
             new_task = DBTaskResult.objects.get(id=response_data['id'])
             self.assertNotEqual(old_task.id, new_task.id)

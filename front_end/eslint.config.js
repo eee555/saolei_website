@@ -43,7 +43,7 @@ const restrictedDescriptionsElements = [{
 export default defineConfig({
     ignores: [
         '**/node_modules/**', '**/dist/**', '**/dist-offline-analyzer/**', '**/build/**', '**/public/**',
-        '**/GuideView.vue', '**/WorldView.vue',
+        '**/GuideView.vue',
     ],
 }, {
     files: ['**/*.{js,ts,vue}'],

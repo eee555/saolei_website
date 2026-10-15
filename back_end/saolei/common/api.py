@@ -5,10 +5,8 @@ from pathlib import Path
 import socket
 from uuid import UUID
 
-from django.core.cache import cache
 from django.core.exceptions import SuspiciousOperation
 from django.db import transaction
-from django.db.models import Sum
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django.tasks import TaskResultStatus
@@ -19,16 +17,13 @@ from ninja import Form, Router, Schema
 from ninja.decorators import decorate_view
 from ninja.errors import HttpError
 from ninja.orm import create_schema
-from ninja.throttling import AnonRateThrottle
 import psutil
 
 from accountlink.services import restart_accountlink_task
-from common.utils import get_db_size
 from config.common import TASK_CLEANUP_CONFIGS
-from config.text_choices import MS_TextChoices
+from monitor.cache import invalidate_task_summary
 from tournament.gsc.services import restart_gsc_task
 from userprofile.decorators import staff_required
-from utils.db import get_choice_counts_filtered
 from videomanager.models import VideoModel
 from .schema import AnalyzerWebsiteInfoOut
 from .services import get_video_rankings
@@ -119,39 +114,6 @@ def _raise_task_not_found_or_locked(task_id: UUID):
     raise HttpError(404, 'Task not found.')
 
 
-class VideoSummaryOut(Schema):
-    total: int
-    software: dict[str, int]
-    level: dict[str, int]
-    mode: dict[str, int]
-    state: dict[str, int]
-
-
-@router.get('/videosummary', response=VideoSummaryOut, throttle=[AnonRateThrottle('30/m')])
-def video_summary(request):
-    """
-    - Throttle: AnonRateThrottle('30/m')
-    """
-    if (cached_data := cache.get('api:common/videosummary')) is not None:
-        return cached_data
-
-    total = VideoModel.objects.count()
-    software = get_choice_counts_filtered(VideoModel, 'software', MS_TextChoices.Software)
-    level = get_choice_counts_filtered(VideoModel, 'level', MS_TextChoices.Level)
-    mode = get_choice_counts_filtered(VideoModel, 'mode', MS_TextChoices.Mode)
-    state = get_choice_counts_filtered(VideoModel, 'state', MS_TextChoices.State)
-
-    result = {'total': total, 'software': software, 'level': level, 'mode': mode, 'state': state}
-    cache.set('api:common/videosummary', result, 300)
-
-    return result
-
-
-class TaskSummaryOut(Schema):
-    total: int
-    status: dict[str, int]
-
-
 TaskDetailOut = create_schema(
     DBTaskResult,
     fields=[
@@ -225,23 +187,6 @@ def _inspect_worker_id(worker_id: str | None) -> str:
     return WORKER_STATE_ALIVE
 
 
-@router.get('/tasksummary', throttle=[AnonRateThrottle('30/m')])
-def task_summary(request):
-    """
-    - Throttle: AnonRateThrottle('30/m')
-    """
-    if (cached_data := cache.get('api:common/tasksummary')) is not None:
-        return cached_data
-
-    total = DBTaskResult.objects.count()
-    status = get_choice_counts_filtered(DBTaskResult, 'status', TaskResultStatus)
-
-    result = {'total': total, 'status': status}
-    cache.set('api:common/tasksummary', result, 300)
-
-    return result
-
-
 @router.get('/tasks/detail', response=list[TaskDetailOut])
 @decorate_view(staff_required)
 def task_detail(request):
@@ -297,7 +242,7 @@ def delete_task(request, data: TaskIdIn = Form(...)):  # noqa: B008
             raise HttpError(409, 'Running task cannot be deleted.')
         db_task.delete()
 
-    cache.delete('api:common/tasksummary')
+    invalidate_task_summary()
     return
 
 
@@ -338,7 +283,7 @@ def restart_task(request, data: TaskIdIn = Form(...)):  # noqa: B008
     except (ImportError, SuspiciousOperation, TypeError, ValueError):
         raise HttpError(400, 'Invalid task restart request.')
 
-    cache.delete('api:common/tasksummary')
+    invalidate_task_summary()
     return new_db_task
 
 
@@ -472,22 +417,3 @@ def poll_log_tail(request, filename: str, offset: int = 0, tail_bytes: int = DEF
             'size': 0,
             'status': 'deleted',
         }
-
-
-@router.get('/diskusage', throttle=[AnonRateThrottle('30/m')])
-def disk_usage(request):
-    """
-    - Throttle: AnonRateThrottle('30/m')
-    """
-    if (cached_data := cache.get('api:common/diskusage')) is not None:
-        return cached_data
-
-    disk = psutil.disk_usage('.')
-
-    video_size: int = VideoModel.objects.aggregate(s=Sum('file_size'))['s']
-    db_size = get_db_size()
-
-    result = {'total': disk.total, 'used': disk.used, 'free': disk.free, 'video': video_size, 'db': db_size}
-    cache.set('api:common/diskusage', result, 300)
-
-    return result

@@ -49,7 +49,7 @@ const loading = ref(false);
 
 async function refresh() {
     loading.value = true;
-    const response = await proxy.$axios.get('/api/common/videosummary');
+    const response = await proxy.$axios.get('/api/monitor/videosummary');
     Object.assign(videoSummaryData.value, response.data);
     loading.value = false;
 }

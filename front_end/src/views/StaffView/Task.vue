@@ -156,7 +156,7 @@ const filters = ref({
 
 async function refreshSummary() {
     summaryLoading.value = true;
-    await proxy.$axios.get<TaskSummary>('/api/common/tasksummary').then((response) => {
+    await proxy.$axios.get<TaskSummary>('/api/monitor/tasksummary').then((response) => {
         taskSummary.value = response.data;
     }).catch(httpErrorNotification);
     summaryLoading.value = false;
