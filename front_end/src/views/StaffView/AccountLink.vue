@@ -1,22 +1,22 @@
 <template>
     <ElForm :model="form">
-        <ElFormItem label="ID">
+        <ElFormItem :label="t('common.prop.userId')">
             <ElInput v-model="form.id" type="number" />
         </ElFormItem>
-        <ElFormItem label="平台">
+        <ElFormItem :label="t('accountlink.platform')">
             <ElSelect v-model="form.platform">
                 <ElOption v-for="platform of manualAccountLinkPlatforms" :key="platform" :label="t(`common.platform.${platform}`)" :value="platform" />
             </ElSelect>
         </ElFormItem>
-        <ElFormItem label="平台ID">
+        <ElFormItem :label="t('local.platformId')">
             <ElInput v-model="form.identifier" />
         </ElFormItem>
         <ElFormItem>
             <BaseButton @click="verify">
-                绑定
+                {{ t('common.button.link') }}
             </BaseButton>
             <BaseButton @click="unverify">
-                解绑
+                {{ t('common.button.unlink') }}
             </BaseButton>
         </ElFormItem>
     </ElForm>
@@ -30,14 +30,18 @@
         :rows-per-page-options="[10, 25, 50, 100]"
         paginator-template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown JumpToPageInput CurrentPageReport"
     >
-        <PrColumn field="userprofile" header="User ID" sortable />
-        <PrColumn field="platform" header="Platform" sortable>
+        <PrColumn field="userprofile" :header="t('common.prop.userId')" sortable />
+        <PrColumn field="platform" :header="t('accountlink.platform')" sortable>
             <template #body="{ data }: { data: AccountLinkQueueItem }">
                 {{ t(`common.platform.${data.platform}`) }}
             </template>
         </PrColumn>
-        <PrColumn field="identifier" header="Platform ID" sortable />
-        <PrColumn field="verified" header="Verified" sortable />
+        <PrColumn field="identifier" :header="t('local.platformId')" sortable />
+        <PrColumn field="verified" :header="t('accountlink.verified')" sortable>
+            <template #body="{ data }: { data: AccountLinkQueueItem }">
+                {{ t(data.verified ? 'accountlink.verified' : 'local.unverified') }}
+            </template>
+        </PrColumn>
     </PrDataTable>
 </template>
 
@@ -55,7 +59,6 @@ import { manualAccountLinkPlatforms } from '@/utils/accountlinks';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const { proxy } = useCurrentInstance();
-const { t } = useI18n();
 
 interface AccountLinkQueueItem {
     id: number | null;
@@ -109,4 +112,17 @@ function unverify() {
 }
 
 onMounted(refresh);
+
+const i18nMessages = {
+    'zh-cn': { local: {
+        platformId: '平台 ID',
+        unverified: '未验证',
+    } },
+    en: { local: {
+        platformId: 'Platform ID',
+        unverified: 'Unverified',
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
 </script>
