@@ -17,6 +17,9 @@
     <div>
         <PlayerName :user-id="82" />
     </div>
+    <div>
+        <PlayerName :user-id="114" />
+    </div>
     <div class="layout-columns thanks-section">
         <div>
             <div style="padding-bottom: 5px">
