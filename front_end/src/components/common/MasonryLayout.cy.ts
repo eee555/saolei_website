@@ -1,15 +1,24 @@
 import { MasonryGrid } from '@egjs/grid';
-import { h } from 'vue';
+import type { PropType } from 'vue';
+import { defineComponent, h } from 'vue';
 
 import MasonryLayout from './MasonryLayout.vue';
 
 const heights = [180, 80, 120, 60];
 
+// Keep dimensions in Vue props so renderComplete updates cannot restore DOM-only style changes.
+const LayoutFixture = defineComponent({
+    props: {
+        width: { type: Number, required: true },
+        heights: { type: Array as PropType<number[]>, required: true },
+    },
+    setup: (props) => () => h(MasonryLayout, { style: { width: `${props.width}px` } }, {
+        default: () => props.heights.map((height, index) => h('div', { 'data-item': index, style: { height: `${height}px` } }, `Card ${index}`)),
+    }),
+});
+
 function mountLayout(width = 640) {
-    cy.mount(MasonryLayout, {
-        attrs: { style: { width: `${width}px` } },
-        slots: { default: () => heights.map((height, index) => h('div', { 'data-item': index, style: { height: `${height}px` } }, `Card ${index}`)) },
-    });
+    cy.mount(LayoutFixture, { props: { width, heights } });
     cy.get('.masonry-layout').should(($layout) => {
         expect(Number($layout.attr('data-layout-version'))).to.be.greaterThan(0);
     });
@@ -37,7 +46,8 @@ describe('<MasonryLayout />', () => {
 
     it('reflows when a card changes height without a window resize', () => {
         mountLayout();
-        cy.get('[data-item="1"]').invoke('css', 'height', '300px');
+        cy.get<ComponentWrapper<typeof LayoutFixture>>('@vue').then((wrapper) => wrapper.setProps({ heights: [180, 300, 120, 60] }));
+        cy.get('[data-item="1"]').should('have.css', 'height', '300px');
         cy.get('[data-item]').should(($items) => {
             const [first, second, third, fourth] = $items.toArray().map((element) => element.getBoundingClientRect());
             expect(third.left).to.be.closeTo(first.left, 0.5);
@@ -52,7 +62,7 @@ describe('<MasonryLayout />', () => {
 
     it('uses one column in a narrow container and restores columns after expanding', () => {
         mountLayout();
-        cy.get('.masonry-layout').invoke('css', 'width', '260px');
+        cy.get<ComponentWrapper<typeof LayoutFixture>>('@vue').then((wrapper) => wrapper.setProps({ width: 260 }));
         cy.get('[data-item]').should(($items) => {
             const rects = $items.toArray().map((element) => element.getBoundingClientRect());
             for (const [index, rect] of rects.entries()) {
@@ -61,7 +71,7 @@ describe('<MasonryLayout />', () => {
                 if (index > 0) expect(rect.top - rects[index - 1].bottom).to.be.closeTo(16, 0.5);
             }
         });
-        cy.get('.masonry-layout').invoke('css', 'width', '960px');
+        cy.get<ComponentWrapper<typeof LayoutFixture>>('@vue').then((wrapper) => wrapper.setProps({ width: 960 }));
         cy.get('[data-item]').should(($items) => {
             const [first, second, third, fourth] = $items.toArray().map((element) => element.getBoundingClientRect());
             expect(first.width).to.be.closeTo((960 - 32) / 3, 0.5);
@@ -75,7 +85,7 @@ describe('<MasonryLayout />', () => {
     it('releases the grid instance when the component unmounts', () => {
         cy.spy(MasonryGrid.prototype, 'destroy').as('destroy');
         mountLayout();
-        cy.get<ComponentWrapper<typeof MasonryLayout>>('@vue').then((wrapper) => {
+        cy.get<ComponentWrapper<typeof LayoutFixture>>('@vue').then((wrapper) => {
             wrapper.unmount();
         });
         cy.get('@destroy').should('have.been.calledOnce');

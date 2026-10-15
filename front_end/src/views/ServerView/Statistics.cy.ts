@@ -19,6 +19,14 @@ const videos = {
     state: { a: 100, b: 100, c: 700, d: 100, e: 0 },
 };
 
+function waitForChartLayout() {
+    return cy.window().then((window) => new Cypress.Promise<void>((resolve) => {
+        window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
+            resolve();
+        }));
+    }));
+}
+
 describe('Server statistics cards', () => {
     const originalLocale = i18n.global.locale.value;
     afterEach(() => {
@@ -87,7 +95,7 @@ describe('Server statistics cards', () => {
         cy.get('.statistics-total').should('contain.text', 'Total: 1,000');
         const activeLegend = '.video-panel[aria-hidden="false"] .vue-data-ui-legend-item';
         cy.get(activeLegend).should('have.length', 4);
-        cy.get(activeLegend).first().should('contain.text', '100');
+        cy.contains(activeLegend, 'Avf:').should('contain.text', '100');
         cy.contains('.video-dimensions button', 'Level').click();
         cy.contains('.video-dimensions button', 'Level').should('have.attr', 'aria-pressed', 'true');
         cy.contains(activeLegend, '8x8/40').should('contain.text', '400').invoke('text').should('match', /40(?:\.0)?%/);
@@ -100,22 +108,31 @@ describe('Server statistics cards', () => {
         cy.get('@videos.all').should('have.length', 1);
     });
 
-    it('keeps video card height stable across dimensions at different widths and languages', () => {
-        cy.intercept('GET', '**/api/monitor/videosummary', { body: videos }).as('videos');
-        cy.mount(VideoSummary, { global });
-        cy.wait('@videos');
-        cy.get('.video-panel').should('have.length', 4);
-        cy.get('.video-panel .vue-data-ui-legend').should('have.length', 4);
-
-        for (const language of ['en', 'zh-cn'] as const) {
-            cy.then(() => {
-                i18n.global.locale.value = language;
-            });
-            cy.get('h2').should('contain.text', language === 'en' ? 'Video Statistics' : '录像统计');
-            cy.contains('.video-panel[data-dimension="mode"] .vue-data-ui-legend-item', language === 'en' ? 'Strong Guessing' : '强可猜').should('exist');
-            for (const width of [420, 260]) {
-                cy.get('[data-statistic="videos"]').invoke('css', 'width', `${width}px`);
+    for (const language of ['en', 'zh-cn'] as const) {
+        for (const width of [420, 260]) {
+            it(`keeps video card height stable across dimensions at ${width}px in ${language}`, () => {
+                let deferredResizeNotifications = 0;
+                // The browser can defer a resize notification to the next paint. Only tolerate this
+                // exact notification here, and verify below that it stops once layout has settled.
+                // https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver#observation_errors
+                cy.on('uncaught:exception', (error) => {
+                    if (error.message.includes('ResizeObserver loop completed with undelivered notifications.')) {
+                        deferredResizeNotifications++;
+                        return false;
+                    }
+                });
+                cy.viewport(width, 1000);
+                cy.then(() => {
+                    i18n.global.locale.value = language;
+                });
+                cy.intercept('GET', '**/api/monitor/videosummary', { body: videos }).as('videos');
+                cy.mount(VideoSummary, { global });
+                cy.wait('@videos');
+                cy.get('.video-panel').should('have.length', 4);
+                cy.get('.video-panel .vue-data-ui-legend').should('have.length', 4);
+                cy.get('h2').should('contain.text', language === 'en' ? 'Video Statistics' : '录像统计');
                 cy.get('.video-panel[data-dimension="mode"] .vue-data-ui-legend-item').should('have.length', 7);
+                waitForChartLayout();
                 cy.get('[data-statistic="videos"]').then(($card) => {
                     const { height } = $card[0].getBoundingClientRect();
                     for (const index of [0, 1, 2, 3, 0]) {
@@ -126,15 +143,22 @@ describe('Server statistics cards', () => {
                             expect($panel).to.have.css('visibility', 'hidden');
                             expect($panel).to.have.attr('inert');
                         });
+                        waitForChartLayout();
                         cy.get('[data-statistic="videos"]').should(($current) => {
                             expect($current[0].getBoundingClientRect().height).to.be.closeTo(height, 0.5);
                         });
                     }
                 });
-            }
+                cy.then(() => {
+                    const settledNotifications = deferredResizeNotifications;
+                    waitForChartLayout().then(() => {
+                        expect(deferredResizeNotifications, 'resize notifications stop after layout settles').to.equal(settledNotifications);
+                    });
+                });
+                cy.get('@videos.all').should('have.length', 1);
+            });
         }
-        cy.get('@videos.all').should('have.length', 1);
-    });
+    }
 
     it('finishes the initial loading state after an error and retries from the card', () => {
         cy.intercept('GET', '**/api/monitor/videosummary', { statusCode: 503 }).as('failedVideos');
