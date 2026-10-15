@@ -11,10 +11,10 @@ import type BoardCursorLayer from '@/components/VideoAnalyzer/BoardCursorLayer.v
 import type BoardPanel from '@/components/VideoAnalyzer/BoardPanel.vue';
 import { displayCounter, prepareCounter } from '@/components/VideoAnalyzer/counter';
 import type { CounterEvent } from '@/components/VideoAnalyzer/counter';
-import CounterPanel from '@/components/VideoAnalyzer/CounterPanel.vue';
+import type CounterPanel from '@/components/VideoAnalyzer/CounterPanel.vue';
 import { defaultCustomEvent } from '@/components/VideoAnalyzer/customEvents';
 import { mouseTraceAppearanceProps } from '@/components/VideoAnalyzer/mouseTrace';
-import TimelinePanel from '@/components/VideoAnalyzer/TimelinePanel.vue';
+import type TimelinePanel from '@/components/VideoAnalyzer/TimelinePanel.vue';
 import $axios from '@/http';
 import i18n from '@/i18n';
 import { videoPlayerConfig } from '@/store';
@@ -167,7 +167,7 @@ describe('<VideoAnalyzerView />', () => {
             expect($paths[0].getTotalLength()).to.be.greaterThan(0);
         });
         cy.get<VueWrapper>('@analyzer').should((wrapper) => {
-            expect(wrapper.findComponent(CounterPanel).props('counters')).to.equal(wrapper.findComponent(TimelinePanel).props('counters'));
+            expect(wrapper.findComponent<typeof CounterPanel>('.video-analyzer-counter').props('counters')).to.equal(wrapper.findComponent<typeof TimelinePanel>('.video-analyzer-timeline').props('counters'));
         });
         cy.get('.video-analyzer-timeline__ruler').then(($ruler) => {
             const rect = $ruler[0].getBoundingClientRect();
@@ -175,14 +175,14 @@ describe('<VideoAnalyzerView />', () => {
         });
         let timeWindow = { startMs: 0, endMs: 0 };
         cy.get<VueWrapper>('@analyzer').should((wrapper) => {
-            expect(wrapper.findComponent(TimelinePanel).props('window')).to.have.property('endMs').that.is.lessThan(129073);
+            expect(wrapper.findComponent<typeof TimelinePanel>('.video-analyzer-timeline').props('window')).to.have.property('endMs').that.is.lessThan(129073);
         }).then((wrapper) => {
-            timeWindow = { ...wrapper.findComponent(TimelinePanel).props('window') };
+            timeWindow = { ...wrapper.findComponent<typeof TimelinePanel>('.video-analyzer-timeline').props('window') };
         });
         selectLayout('counter-top');
         cy.get<VueWrapper>('@analyzer').should((wrapper) => {
-            expect(wrapper.findComponent(TimelinePanel).props('window')).to.deep.eq(timeWindow);
-            expect(wrapper.findComponent(CounterPanel).props('counters')).to.equal(wrapper.findComponent(TimelinePanel).props('counters'));
+            expect(wrapper.findComponent<typeof TimelinePanel>('.video-analyzer-timeline').props('window')).to.deep.eq(timeWindow);
+            expect(wrapper.findComponent<typeof CounterPanel>('.video-analyzer-counter').props('counters')).to.equal(wrapper.findComponent<typeof TimelinePanel>('.video-analyzer-timeline').props('counters'));
         });
         cy.get('.timeline-slot').first().find('.timeline-slot__legend-button').should('have.text', 'BvsCesBvs');
         cy.get('.timeline-slot').eq(1).find('.timeline-slot__legend-button').should('have.text', 'Mov');
@@ -204,14 +204,14 @@ describe('<VideoAnalyzerView />', () => {
         });
         let nativeEvents: CounterEvent[] = [];
         cy.get<VueWrapper>('@analyzer').then((wrapper) => {
-            const events = wrapper.findComponent(TimelinePanel).props('events');
+            const events = wrapper.findComponent<typeof TimelinePanel>('.video-analyzer-timeline').props('events');
             if (events === undefined) throw new Error('Expected loaded native event snapshots');
             nativeEvents = events;
         });
         selectLayout('counter-top');
         cy.get('.timeline-event-row__key').should('have.text', 'click');
         cy.get<VueWrapper>('@analyzer').should((wrapper) => {
-            expect(wrapper.findComponent(TimelinePanel).props('events')).to.equal(nativeEvents);
+            expect(wrapper.findComponent<typeof TimelinePanel>('.video-analyzer-timeline').props('events')).to.equal(nativeEvents);
         });
         cy.window().should((win) => {
             const saved = JSON.parse(win.localStorage.getItem('video-analyzer-config') ?? '{}') as AnalyzerConfig;
@@ -238,11 +238,11 @@ describe('<VideoAnalyzerView />', () => {
         let events: CounterEvent[];
         mountAnalyzer(1100, { filename: '52200.evf', durationMs: 10732 });
         cy.get<VueWrapper>('@analyzer').then((wrapper) => {
-            events = wrapper.findComponent<typeof CounterPanel>(CounterPanel).props('events');
+            events = wrapper.findComponent<typeof CounterPanel>('.video-analyzer-counter').props('events');
         });
         cy.get('.analyzer-progress-bar__slider').invoke('val', 5000).trigger('input');
         cy.get<VueWrapper>('@analyzer').should((wrapper) => {
-            const panel = wrapper.findComponent<typeof CounterPanel>(CounterPanel);
+            const panel = wrapper.findComponent<typeof CounterPanel>('.video-analyzer-counter');
             const prepared = prepareCounter(analyzerConfig.value.counter.rows[0], events);
             expect(panel.props('currentMs')).to.eq(5000);
             expect(panel.find('.video-analyzer-counter__value').text()).to.eq(displayCounter(prepared, 5000).value);
@@ -257,7 +257,7 @@ describe('<VideoAnalyzerView />', () => {
         cy.get('.video-analyzer-counter tr').should('have.length', 4);
         selectLayout('board-top');
         cy.get<VueWrapper>('@analyzer').should((wrapper) => {
-            const panel = wrapper.findComponent<typeof CounterPanel>(CounterPanel);
+            const panel = wrapper.findComponent<typeof CounterPanel>('.video-analyzer-counter');
             expect(panel.props('events')).to.eq(events);
             expect(panel.props('modelValue')).to.deep.eq(analyzerConfig.value.counter);
             expect(panel.props('currentMs')).to.eq(5000);
