@@ -1,3 +1,5 @@
+import { statisticsColors } from './statistics';
+
 export type MemoryFailureReason = 'permission_denied' | 'unsupported_metric' | 'unsupported_scope' | 'budget_exceeded' | 'metadata_unavailable' | 'inconsistent_snapshot' | 'redis_unavailable' | 'database_unavailable' | 'collection_failed';
 
 export const processMemoryGroups = ['uwsgi', 'apscheduler', 'redis', 'mysql', 'db_worker', 'other'] as const;
@@ -28,11 +30,4 @@ export interface MemoryUsageResponse {
     redis: RedisMemorySection;
 }
 
-export interface MemorySeries {
-    key: string;
-    name: string;
-    value: number;
-    color: string;
-}
-
-export const memoryColors = ['#409eff', '#e6a23c', '#67c23a', '#f56c6c', '#a879e6', '#909399'];
+export const memoryColors = statisticsColors.slice(0, 6);

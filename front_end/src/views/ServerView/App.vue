@@ -1,11 +1,21 @@
 <template>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(19rem, 100%), 1fr)); grid-gap: 1rem;">
-        <DiskUsage />
-        <MemoryUsage :section="memoryUsage?.memory" :loading="memoryLoading" :failed="memoryFailed" @refresh="refreshMemory" />
-        <RedisMemoryUsage :section="memoryUsage?.redis" :loading="memoryLoading" :failed="memoryFailed" @refresh="refreshMemory" />
-        <TaskSummary />
-        <VideoSummary />
-    </div>
+    <MasonryLayout class="server-statistics">
+        <div data-statistic-item="disk">
+            <DiskUsage />
+        </div>
+        <div data-statistic-item="process">
+            <MemoryUsage :section="memoryUsage?.memory" :loading="memoryLoading" :failed="memoryFailed" @refresh="refreshMemory" />
+        </div>
+        <div data-statistic-item="redis">
+            <RedisMemoryUsage :section="memoryUsage?.redis" :loading="memoryLoading" :failed="memoryFailed" @refresh="refreshMemory" />
+        </div>
+        <div data-statistic-item="tasks">
+            <TaskSummary />
+        </div>
+        <div data-statistic-item="videos">
+            <VideoSummary />
+        </div>
+    </MasonryLayout>
 </template>
 
 <script setup lang="ts">
@@ -15,6 +25,7 @@ import type { MemoryUsageResponse } from './memory';
 import MemoryUsage from './MemoryUsage.vue';
 import RedisMemoryUsage from './RedisMemoryUsage.vue';
 
+import MasonryLayout from '@/components/common/MasonryLayout.vue';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
 const DiskUsage = defineAsyncComponent(() => import('./DiskUsage.vue'));

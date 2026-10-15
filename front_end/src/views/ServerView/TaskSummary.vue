@@ -1,79 +1,83 @@
 <template>
-    <BaseCardNormal style="max-width: 40em">
-        <VueUiDonut :dataset="dataset" :config="config" />
-    </BaseCardNormal>
+    <RefreshableCard data-statistic="tasks" class="statistics-card" :title="t('local.title')" :loading="loading" @refresh="refresh">
+        <p v-if="failed" role="alert" class="text-danger">
+            {{ t('statistics.requestFailed') }}
+            <span v-if="total !== null">{{ t('statistics.previous') }}</span>
+        </p>
+        <p v-if="loading && total === null" role="status">
+            {{ t('statistics.loading') }}
+        </p>
+        <template v-if="total !== null">
+            <VueUiDonut v-if="total > 0" :dataset="dataset" :config="config" />
+            <p v-else role="status">
+                {{ t('statistics.empty') }}
+            </p>
+            <div class="statistics-total">
+                {{ t('statistics.total') }}: {{ formatCount(total) }}
+            </div>
+        </template>
+        <p v-else-if="!loading && !failed" role="status">
+            {{ t('statistics.unavailable') }}
+        </p>
+        <p class="statistics-cache-note">
+            {{ t('local.cache') }}
+        </p>
+    </RefreshableCard>
 </template>
 
 <script setup lang="ts">
 import 'vue-data-ui/style.css';
-import { computed, onMounted, ref } from 'vue';
-import type { VueUiDonutConfig, VueUiDonutDatasetItem } from 'vue-data-ui';
+import './statistics.css';
+import { computed } from 'vue';
+import type { VueUiDonutConfig } from 'vue-data-ui';
 import { VueUiDonut } from 'vue-data-ui';
 import { useI18n } from 'vue-i18n';
 
-import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
+import { statisticsColors } from './statistics';
+import { useStatistic } from './useStatistic';
+
+import RefreshableCard from '@/components/common/RefreshableCard.vue';
 import { local } from '@/store';
-import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
-const { proxy } = useCurrentInstance();
-const dataset = ref<VueUiDonutDatasetItem[]>([]);
-const loading = ref(false);
-
-async function refresh() {
-    loading.value = true;
-    const response = await proxy.$axios.get('/api/monitor/tasksummary');
-    dataset.value = [
-        {
-            name: t('local.READY'),
-            values: [response.data.status.READY],
-        },
-        {
-            name: t('local.RUNNING'),
-            values: [response.data.status.RUNNING],
-        },
-        {
-            name: t('local.SUCCESSFUL'),
-            values: [response.data.status.SUCCESSFUL],
-        },
-        {
-            name: t('local.FAILED'),
-            values: [response.data.status.FAILED],
-        },
-    ];
-    loading.value = false;
+const statuses = ['READY', 'RUNNING', 'SUCCESSFUL', 'FAILED'] as const;
+interface TaskSummary {
+    total: number;
+    status: Record<typeof statuses[number], number>;
 }
 
-onMounted(refresh);
+const { data, loading, failed, refresh } = useStatistic<TaskSummary>('/api/monitor/tasksummary');
+const total = computed(() => data.value?.total ?? null);
+const dataset = computed(() => (data.value === null
+    ? []
+    : statuses.map((key, index) => ({
+        key, name: t(`local.${key}`), values: [data.value?.status[key] ?? 0], color: statisticsColors[index],
+    }))));
 
-const config = computed<VueUiDonutConfig>(() => {
-    return {
-        loading: loading.value,
-        theme: local.value.darkmode ? 'dark' : '',
-        style: {
-            chart: {
-                layout: {
-                    labels: {
-                        hollow: {
-                            average: {
-                                show: false,
-                            },
-                            total: {
-                                text: t('common.score.total'),
-                            },
-                        },
-                    },
-                },
-                title: {
-                    text: t('local.title'),
-                },
+function formatCount(value: number) {
+    return new Intl.NumberFormat(locale.value).format(value);
+}
+
+const config = computed<VueUiDonutConfig>(() => ({
+    theme: local.value.darkmode ? 'dark' : '',
+    useCssAnimation: false,
+    userOptions: { show: false },
+    style: { chart: {
+        backgroundColor: 'transparent',
+        legend: { show: true, showValue: true, showPercentage: true, roundingPercentage: 1, fontSize: 12, backgroundColor: 'transparent' },
+        tooltip: { show: false },
+        layout: { labels: {
+            value: { formatter: ({ value }) => formatCount(value) },
+            hollow: {
+                average: { show: false },
+                total: { text: t('statistics.total'), value: { formatter: ({ value }) => formatCount(value) } },
             },
-        },
-    };
-});
+        } },
+    } },
+}));
 
-/* 本地化 Localization */
 const i18nMessages = {
     'zh-cn': { local: {
+        cache: '数据缓存 5 分钟，刷新不会跳过缓存。',
         title: '后台任务',
         READY: '排队中',
         RUNNING: '运行中',
@@ -81,6 +85,7 @@ const i18nMessages = {
         FAILED: '失败',
     } },
     en: { local: {
+        cache: 'Cached for 5 minutes. Refresh uses the same cache.',
         title: 'Background tasks',
         READY: 'Ready',
         RUNNING: 'Running',
@@ -88,6 +93,5 @@ const i18nMessages = {
         FAILED: 'Failed',
     } },
 };
-
-const { t } = useI18n({ messages: i18nMessages });
+const { t, locale } = useI18n({ messages: i18nMessages });
 </script>

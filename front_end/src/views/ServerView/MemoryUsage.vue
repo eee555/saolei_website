@@ -1,23 +1,53 @@
 <template>
-    <MemoryDonut data-memory-chart="process" :title="t('local.title')" :series="series" :total="lastGood?.total_bytes ?? null" :sampled-at="lastGood?.sampled_at" :loading="loading" :failed="failed" :reason="section?.reason" @refresh="emit('refresh')">
-        <p v-if="lastGood" class="memory-description" :title="t('local.scope')">
-            {{ t(`local.${lastGood.metric}`) }}
+    <RefreshableCard data-memory-chart="process" class="statistics-card" :title="t('local.title')" :loading="loading" @refresh="emit('refresh')">
+        <p v-if="failed || reason !== null" role="alert" class="text-danger">
+            {{ failed ? t('statistics.requestFailed') : reason === null ? '' : t(`statistics.memoryFailure.${reason}`) }}
+            <span v-if="total !== null">{{ t('statistics.previous') }}</span>
         </p>
-        <p v-if="lastGood?.host" class="memory-description">
-            {{ t('local.hostTotal') }}: {{ formatBytes(lastGood.host.total_bytes) }} · {{ t('local.available') }}: {{ formatBytes(lastGood.host.available_bytes) }}
+        <p v-if="loading && total === null" role="status">
+            {{ t('statistics.loading') }}
         </p>
-    </MemoryDonut>
+        <template v-if="total !== null">
+            <VueUiDonut v-if="total > 0" :dataset="dataset" :config="config" />
+            <p v-else role="status">
+                {{ t('statistics.empty') }}
+            </p>
+            <div class="statistics-total">
+                {{ t('statistics.total') }}: {{ formatBytes(total) }}
+            </div>
+            <p v-if="lastGood" class="memory-description" :title="t('local.scope')">
+                {{ t(`local.${lastGood.metric}`) }}
+            </p>
+            <p v-if="lastGood?.host" class="memory-description">
+                {{ t('local.hostTotal') }}: {{ formatBytes(lastGood.host.total_bytes) }} · {{ t('local.available') }}: {{ formatBytes(lastGood.host.available_bytes) }}
+            </p>
+            <div v-if="lastGood?.sampled_at" class="statistics-time">
+                {{ t('statistics.sampled') }}: <time :datetime="lastGood.sampled_at">{{ new Date(lastGood.sampled_at).toLocaleString(locale) }}</time>
+            </div>
+        </template>
+        <p v-else-if="!loading && !failed && reason === null" role="status">
+            {{ t('statistics.unavailable') }}
+        </p>
+        <p class="statistics-cache-note">
+            {{ t('local.cache') }}
+        </p>
+    </RefreshableCard>
 </template>
 
 <script setup lang="ts">
+import 'vue-data-ui/style.css';
+import './statistics.css';
 import type { PropType } from 'vue';
 import { computed, shallowRef, watch } from 'vue';
+import type { VueUiDonutConfig } from 'vue-data-ui';
+import { VueUiDonut } from 'vue-data-ui';
 import { useI18n } from 'vue-i18n';
 
 import type { ProcessMemorySection } from './memory';
 import { memoryColors, processMemoryGroups } from './memory';
-import MemoryDonut from './MemoryDonut.vue';
 
+import RefreshableCard from '@/components/common/RefreshableCard.vue';
+import { local } from '@/store';
 import { formatBytes } from '@/utils/strings';
 
 const props = defineProps({
@@ -26,17 +56,38 @@ const props = defineProps({
     failed: { type: Boolean, default: false },
 });
 const emit = defineEmits<{ refresh: [] }>();
+const reason = computed(() => props.section?.reason ?? null);
 const lastGood = shallowRef<ProcessMemorySection | null>(null);
 watch(() => props.section, (section) => {
-    if (section?.status === 'ready' && section.groups && section.total_bytes !== null && section.sampled_at) lastGood.value = section;
+    if (section?.status === 'ready' && section.groups && section.total_bytes !== null && section.sampled_at !== null && section.sampled_at.length > 0) lastGood.value = section;
 }, { immediate: true });
-const series = computed(() => {
+const total = computed(() => lastGood.value?.total_bytes ?? null);
+const dataset = computed(() => {
     const groups = lastGood.value?.groups;
-    return groups ? processMemoryGroups.map((key, index) => ({ key, name: t(`local.${key}`), value: groups[key], color: memoryColors[index] })) : [];
+    return groups ? processMemoryGroups.map((key, index) => ({ key, name: t(`local.${key}`), values: [groups[key]], color: memoryColors[index] })) : [];
 });
+
+const config = computed<VueUiDonutConfig>(() => ({
+    theme: local.value.darkmode ? 'dark' : '',
+    useCssAnimation: false,
+    userOptions: { show: false },
+    style: { chart: {
+        backgroundColor: 'transparent',
+        legend: { show: true, showValue: true, showPercentage: true, roundingPercentage: 1, fontSize: 12, backgroundColor: 'transparent' },
+        tooltip: { show: false },
+        layout: { labels: {
+            value: { formatter: ({ value }) => formatBytes(value) },
+            hollow: {
+                average: { show: false },
+                total: { text: t('statistics.total'), value: { formatter: ({ value }) => formatBytes(value) } },
+            },
+        } },
+    } },
+}));
 
 const i18nMessages = {
     'zh-cn': { local: {
+        cache: '数据缓存 5 分钟，刷新不会跳过缓存。',
         title: '内存占用',
         uwsgi: 'uWSGI',
         apscheduler: 'APScheduler',
@@ -51,6 +102,7 @@ const i18nMessages = {
         available: '可用内存',
     } },
     en: { local: {
+        cache: 'Cached for 5 minutes. Refresh uses the same cache.',
         title: 'Memory Usage',
         uwsgi: 'uWSGI',
         apscheduler: 'APScheduler',
@@ -65,7 +117,7 @@ const i18nMessages = {
         available: 'Available memory',
     } },
 };
-const { t } = useI18n({ messages: i18nMessages });
+const { t, locale } = useI18n({ messages: i18nMessages });
 </script>
 
 <style scoped>
