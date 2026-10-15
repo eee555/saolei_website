@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import { defineConfig } from 'cypress';
+import cypressSplit from 'cypress-split';
 import vitePreprocessor from 'cypress-vite';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -26,6 +27,10 @@ export default defineConfig({
     },
 
     component: {
+        setupNodeEvents(on, config) {
+            cypressSplit(on, config);
+            return config;
+        },
         devServer: {
             framework: 'vue',
             bundler: 'vite',

@@ -16,15 +16,25 @@ function mountCounter(config = singleCounterConfig(), slotNames: string[] = []) 
         values: { ...Object.fromEntries(counterVariables.map((key) => [key, index * 4])) as CounterValues, time: index } }));
     return cy.mount(CounterPanel, { props: { modelValue: config, events, currentMs: 1000, slotNames, onSendToSlot: cy.spy().as('sendToSlot'), 'onUpdate:modelValue': cy.spy().as('update') }, global: { plugins: [i18n], stubs: { transition: false } } }).then((mounted) => {
         cy.get('.video-analyzer-counter').parent().invoke('css', { height: '240px', width: '220px' });
+        // This fixture fits six rows per column. The initial RAF reflow can remount row menus.
+        cy.get('.video-analyzer-counter__column').should('have.length', Math.ceil(config.rows.length / 6));
+        cy.get('.video-analyzer-counter__column').first().find('tr').should('have.length', Math.min(6, config.rows.length));
         return cy.wrap(mounted);
     });
+}
+
+function openRowMenu(key: string) {
+    const label = `.video-analyzer-counter__label > span[title="${key}"]`;
+    cy.get(label).parent().find('.video-analyzer-counter__handle').scrollIntoView();
+    cy.get(label).parent().find('.video-analyzer-counter__handle').click();
+    cy.get('.video-analyzer-counter__menu:visible').should('have.length', 1);
 }
 
 describe('<CounterPanel />', () => {
     it('sends the original key to the selected slot every time without editing counter configuration', () => {
         mountCounter(singleCounterConfig(), ['First', 'Second']);
         for (const slot of ['1', '1', '0']) {
-            cy.get('.video-analyzer-counter__handle').click();
+            openRowMenu('bvs');
             cy.get('.video-analyzer-counter__send-to-slot:visible').should('have.attr', 'aria-label', 'Send to plot').select(slot);
         }
         cy.get('@sendToSlot').should('have.been.calledThrice').and('have.been.calledWithExactly', { key: 'bvs', slotIndex: 1 }).and('have.been.calledWithExactly', { key: 'bvs', slotIndex: 0 });
@@ -33,7 +43,7 @@ describe('<CounterPanel />', () => {
 
     it('disables sending when no slot exists', () => {
         mountCounter();
-        cy.get('.video-analyzer-counter__handle').click();
+        openRowMenu('bvs');
         cy.get('.video-analyzer-counter__send-to-slot:visible').should('be.disabled');
     });
 
@@ -104,7 +114,7 @@ describe('<CounterPanel />', () => {
         const config = singleCounterConfig();
         config.rows = ['a', 'b', 'c'].map((key) => ({ ...config.rows[0], key }));
         mountCounter(config);
-        cy.get('.video-analyzer-counter__handle').eq(1).click();
+        openRowMenu('b');
         cy.get('.video-analyzer-counter__move:visible').click();
         cy.get('.video-analyzer-counter__offset').clear();
         cy.get('.video-analyzer-counter__offset').type('-100');
@@ -121,8 +131,7 @@ describe('<CounterPanel />', () => {
             expectedRows.splice(targetIndex + Number(direction === 'below'), 0, added);
             mountCounter(config);
             cy.get('.video-analyzer-counter__column').should('have.length.greaterThan', 1);
-            cy.get('.video-analyzer-counter__handle').eq(targetIndex).scrollIntoView();
-            cy.get('.video-analyzer-counter__handle').eq(targetIndex).click();
+            openRowMenu(`row-${targetIndex}`);
             cy.get(`.video-analyzer-counter__add-${direction}:visible`).click();
             cy.get('.counter-row-editor__format').should('have.value', '.3f');
             cy.get('.counter-row-editor__sampling').should('have.value', 'button');
@@ -140,14 +149,14 @@ describe('<CounterPanel />', () => {
 
     it('cancels adding without inserting a row and reopens a fresh draft', () => {
         mountCounter();
-        cy.get('.video-analyzer-counter__handle').click();
+        openRowMenu('bvs');
         cy.get('.video-analyzer-counter__add-above:visible').click();
         cy.get('.counter-row-editor__key').type('cancelled');
         cy.get('.counter-row-editor__expression').type('left');
         cy.get('.counter-row-editor__cancel').click();
         cy.get('.counter-row-editor').should('not.exist');
         cy.get('@update').should('not.have.been.called');
-        cy.get('.video-analyzer-counter__handle').click();
+        openRowMenu('bvs');
         cy.get('.video-analyzer-counter__add-below:visible').click();
         cy.get('.counter-row-editor__key').should('have.value', '');
         cy.get('.counter-row-editor__expression').should('have.value', '');
@@ -158,9 +167,7 @@ describe('<CounterPanel />', () => {
         const config = singleCounterConfig();
         config.rows.push({ ...config.rows[0], key: 'second' });
         mountCounter(config);
-        // Wait for the deferred column reflow so it cannot remount the clicked row's menu.
-        cy.get('.video-analyzer-counter__column').should('have.length', 1);
-        cy.contains('.video-analyzer-counter__label', 'second').find('.video-analyzer-counter__handle').click();
+        openRowMenu('second');
         cy.get('.video-analyzer-counter__edit:visible').click();
         cy.get('.el-dialog__title').should('have.text', 'Edit: second');
         cy.get('.counter-row-editor__expression').clear();
