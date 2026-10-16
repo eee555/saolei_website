@@ -1,7 +1,8 @@
 <template>
     <!-- 标识管理UI -->
     <!-- 表格第一列显示标识，用等宽字体。最后一行用来输入新的标识。第二列放操作按钮 -->
-    <div class="flex gap-2">
+    <div>
+        <IdentifierDisplayOptions />
         <ElTable :data="identifierdata">
             <!-- 标识列 -->
             <ElTableColumn prop="data" sortable>
@@ -11,6 +12,7 @@
                         v-if="scope.row.data === ''" v-model="new_identifiers" size="small" style="width: 200px;margin-left: -7px"
                         input-style="font-family: 'Courier New', Courier, monospace;"
                     />
+                    <IdentifierText v-else :text="scope.row.data" />
                 </template>
             </ElTableColumn>
             <!-- 操作列 -->
@@ -45,6 +47,8 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import IconCopy from './IconCopy.vue';
+import IdentifierDisplayOptions from './IdentifierDisplayOptions.vue';
+import IdentifierText from './IdentifierText.vue';
 
 import BaseTextButton from '@/components/common/BaseTextButton.vue';
 import { BaseIconAdd, BaseIconDelete } from '@/components/common/icon';
@@ -96,6 +100,7 @@ function delIdentifier(identifier: string) {
         if (user.value.identifiers !== undefined) {
             user.value.identifiers = removeItem(user.value.identifiers, identifier);
         }
+        emit('identifiersChanged');
         ElNotification({
             title: t('identifierManager.delIdentifierSuccess'),
             message: t('identifierManager.processedNVideos', [response.data.value]),

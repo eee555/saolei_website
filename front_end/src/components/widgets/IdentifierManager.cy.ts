@@ -1,3 +1,4 @@
+import { showInvisibleIdentifiers } from './identifierDisplay';
 import IdentifierManager from './IdentifierManager.vue';
 
 import $axios from '@/http';
@@ -54,42 +55,42 @@ function mockAddIdentifier(body: object, as = 'addIdentifier') {
 
 describe('IdentifierManager.vue', () => {
     beforeEach(() => {
+        showInvisibleIdentifiers.value = false;
         store.user = createMockUser(1);
         store.new_identifier = false;
     });
 
-    it('Rendering - Without Authentication', () => {
+    it('hides editing controls for another player', () => {
         cy.mount(IdentifierManager, mountOption(createMockUser(2, ['abc', 'def'])));
 
         cy.get('.el-table__body').extractTableData().should('deep.equal', [['abc', ''], ['def', '']]);
 
         cy.get('.el-input').should('not.exist');
-        cy.get('.pi-trash').should('not.exist');
+        cy.get('.el-table__body button[aria-label="Delete identifier"]').should('not.exist');
 
         cy.get('.el-table__body').find('.pi-copy').should('have.length', 2);
     });
 
-    it('Rendering - With Authentication', () => {
-        cy.mount(IdentifierManager, mountOption(createMockUser(1, ['xyz'])));
-
-        cy.get('.el-table__body').extractTableData().should('deep.equal', [['xyz', ''], ['', '']]);
-
-        cy.get('.el-input').should('exist');
-        cy.get('.pi-plus').should('exist');
-        cy.get('.pi-trash').should('have.length', 1);
-        cy.get('.el-table__body').find('.pi-copy').should('have.length', 1);
-    });
-
-    it('Delete Identifier', () => {
+    it('copies and deletes the original identifier while escape markers are visible', () => {
+        const identifier = ' a\u200B ';
         mockDelIdentifier({ value: 3 });
-        cy.mount(IdentifierManager, mountOption(createMockUser(1, ['to-delete'])));
-
-        cy.get('.pi-trash').click();
-
+        cy.mount(IdentifierManager, mountOption(createMockUser(1, [identifier])));
+        cy.window().then((win) => {
+            const copy = cy.stub(win.navigator.clipboard, 'writeText').as('copy');
+            copy.resolves();
+        });
+        cy.contains('label', 'Show invisible characters').find('input').check();
+        cy.get('.el-table__body .identifier-text').should('have.text', '␠a⟦U+200B⟧␠');
+        cy.get('.el-table__body button[aria-label="Copy"]').click();
+        cy.get('@copy').should('have.been.calledOnceWith', identifier);
+        cy.closeElNotifications();
+        cy.get('.el-table__body button[aria-label="Delete identifier"]').click();
+        cy.wait('@delIdentifier').its('request.body').then((body: string) => {
+            expect(new URLSearchParams(body).get('identifier')).to.equal(identifier);
+        });
         cy.contains('Identifier Deleted');
         cy.contains('3 videos have been processed');
         cy.closeElNotifications();
-
         cy.get('.el-table__body').extractTableData().should('deep.equal', [['', '']]);
     });
 
@@ -102,7 +103,7 @@ describe('IdentifierManager.vue', () => {
         cy.mount(IdentifierManager, mountOption(createMockUser(1)));
 
         cy.get('.el-input input').type('new-123');
-        cy.get('button[aria-label="add identifier"]').focus();
+        cy.get('.el-table__body button[aria-label="add identifier"]').focus();
         cy.realPress('Enter');
 
         cy.contains('Identifier Added');
@@ -123,7 +124,7 @@ describe('IdentifierManager.vue', () => {
         cy.mount(IdentifierManager, mountOption(createMockUser(1)));
 
         cy.get('.el-input input').type('missing-id');
-        cy.get('.pi-plus').click();
+        cy.get('.el-table__body button[aria-label="add identifier"]').click();
 
         cy.contains('You do not have any video of the identifier');
         cy.closeElNotifications();
@@ -143,7 +144,7 @@ describe('IdentifierManager.vue', () => {
         cy.mount(IdentifierManager, mountOption(createMockUser(1)));
 
         cy.get('.el-input input').type('taken-id');
-        cy.get('.pi-plus').click();
+        cy.get('.el-table__body button[aria-label="add identifier"]').click();
 
         cy.contains('Identifier Conflict');
         cy.closeElNotifications();

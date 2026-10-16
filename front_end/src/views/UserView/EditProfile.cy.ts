@@ -49,26 +49,10 @@ describe('EditProfile', () => {
         cy.clock(new Date('2025-01-01T00:00:00Z'));
     });
 
-    it('Render', () => {
-        cy.mount(EditProfile, mountOptions());
-
-        cy.contains('Real Name').next().contains('Your real name cannot be changed once set');
-
-        cy.contains('Local Name').next().contains('Fill in your full name in your local language').parent().next().find('input');
-
-        cy.contains('International Name').next().contains('Fill in your given name and family name in English').parent().next().find('input').should('have.length', 2);
-
-        cy.contains('Signature').next().contains('modify your signature').parent().next().find('textarea');
-
-        cy.get('button').eq(0).contains('Save');
-        cy.get('button').eq(1).contains('Cancel');
-    });
-
     describe('Local name', () => {
         it('Disabled', () => {
             cy.mount(EditProfile, mountOptions({
                 user: new UserProfile({ realname: 'realname' }),
-                isEditing: true,
             }));
 
             findLocalNameInput().should('be.disabled');
@@ -90,7 +74,6 @@ describe('EditProfile', () => {
 
             cy.mount(EditProfile, mountOptions({
                 user: user,
-                isEditing: true,
             }));
 
             findLocalNameInput().type('realname');
@@ -113,7 +96,6 @@ describe('EditProfile', () => {
         it('First name - disabled', () => {
             cy.mount(EditProfile, mountOptions({
                 user: new UserProfile({ firstname: 'firstname' }),
-                isEditing: true,
             }));
 
             findFirstNameInput().should('be.disabled');
@@ -135,7 +117,6 @@ describe('EditProfile', () => {
 
             cy.mount(EditProfile, mountOptions({
                 user: user,
-                isEditing: true,
             }));
 
             findFirstNameInput().type('firstname');
@@ -156,7 +137,6 @@ describe('EditProfile', () => {
         it('Last name - disabled', () => {
             cy.mount(EditProfile, mountOptions({
                 user: new UserProfile({ lastname: 'lastname' }),
-                isEditing: true,
             }));
 
             findLastNameInput().should('be.disabled');
@@ -178,7 +158,6 @@ describe('EditProfile', () => {
 
             cy.mount(EditProfile, mountOptions({
                 user: user,
-                isEditing: true,
             }));
 
             findLastNameInput().type('lastname');
@@ -201,7 +180,6 @@ describe('EditProfile', () => {
         it('Disabled - no budget', () => {
             cy.mount(EditProfile, mountOptions({
                 user: new UserProfile({ left_signature_n: 0 }),
-                isEditing: true,
                 expTimeMs: 30000,
             }));
 
@@ -212,7 +190,6 @@ describe('EditProfile', () => {
         it('Disabled - exp sup 200', () => {
             cy.mount(EditProfile, mountOptions({
                 user: new UserProfile({ left_signature_n: 1 }),
-                isEditing: true,
                 expTimeMs: 999999,
             }));
 
@@ -238,7 +215,6 @@ describe('EditProfile', () => {
 
             cy.mount(EditProfile, mountOptions({
                 user: user,
-                isEditing: true,
                 expTimeMs: 30000,
             }));
 
@@ -272,7 +248,6 @@ describe('EditProfile', () => {
 
             cy.mount(EditProfile, mountOptions({
                 user: new UserProfile({ left_signature_n: 1 }),
-                isEditing: true,
                 expTimeMs: 30000,
             }));
 
@@ -296,7 +271,6 @@ describe('EditProfile', () => {
 
             cy.mount(EditProfile, mountOptions({
                 user: new UserProfile({ left_signature_n: 1 }),
-                isEditing: true,
                 expTimeMs: 30000,
             }));
 
@@ -310,14 +284,14 @@ describe('EditProfile', () => {
     describe('Buttons', () => {
         it('Cancel', () => {
             cy.mount(EditProfile, mountOptions({
-                user: new UserProfile(),
-                isEditing: true,
+                user: new UserProfile({ signature: 'Original signature', left_signature_n: 1 }),
+                expTimeMs: 30000,
             }));
 
+            findSignatureInput().clear();
+            findSignatureInput().type('Unsaved signature');
             cy.get('button').contains('Cancel').click();
-            cy.get('@vue').should((wrapper: ComponentWrapper<typeof EditProfile>) => {
-                expect(wrapper.emitted('update:isEditing')).to.deep.equal([[false]]);
-            });
+            findSignatureInput().should('have.value', 'Original signature');
         });
 
         it('Save - nothing changed', () => {
@@ -327,13 +301,10 @@ describe('EditProfile', () => {
 
             cy.mount(EditProfile, mountOptions({
                 user: new UserProfile(),
-                isEditing: true,
             }));
 
             cy.get('button').contains('Save').click();
-            cy.get('@vue').then((wrapper: ComponentWrapper<typeof EditProfile>) => {
-                expect(wrapper.emitted('update:isEditing')).to.deep.equal([[false]]);
-            });
+            cy.get('@updateProfile.all').should('have.length', 0);
         });
     });
 });

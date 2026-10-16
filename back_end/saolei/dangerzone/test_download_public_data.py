@@ -51,6 +51,8 @@ class PublicSnapshotNFTests(SimpleTestCase):
                 return [2, 48]
             if path.endswith('/infobulk'):
                 return [{'id': 2, 'username': 'admin'}, {'id': 48, 'username': 'user'}]
+            if path.endswith('/identifier'):
+                return []
             if path.endswith('/videolist'):
                 return videos if params['user_id'] == 48 else []
             self.assertEqual(path, '/api/video/detailbulk')

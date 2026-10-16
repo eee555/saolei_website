@@ -154,7 +154,7 @@ def get_user_identifier(request, user_id: int):
     - ratelimit(key='ip', rate='2/s')
     """
     user = get_object_or_404(UserProfile, id=user_id)
-    return user.userms.identifiers
+    return user.userms.identifiers if user.userms else []
 
 
 @router.get('/avatar/{user_id}')

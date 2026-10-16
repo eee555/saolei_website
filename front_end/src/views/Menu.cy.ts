@@ -30,7 +30,7 @@ function mountMenu(width: number, options: { layout?: 'top' | 'sidebar'; setting
     store.login(user);
     const router = createRouter({
         history: createMemoryHistory(),
-        routes: ['/', '/ranking', '/ranking/pb', '/video', '/video/:id', '/tournament', '/server', '/player/:id', '/staff', '/settings'].
+        routes: ['/', '/ranking', '/ranking/pb', '/database', '/database/identifiers', '/video/:id', '/tournament', '/server', '/player/:id', '/staff', '/settings'].
             map((path) => ({ path, component: PageState })),
     });
     void router.push('/');
@@ -78,7 +78,9 @@ describe('<Menu /> navigation layouts', () => {
         cy.then(() => router.push('/ranking/pb'));
         cy.get('.site-menu--top [data-navigation-id=ranking]').should('have.class', 'is-active');
         cy.then(() => router.push('/video/123'));
-        cy.get('.site-menu--top [data-navigation-id=video]').should('have.class', 'is-active');
+        cy.get('.site-menu--top [data-navigation-id=database]').should('have.class', 'is-active');
+        cy.then(() => router.push('/database/identifiers'));
+        cy.get('.site-menu--top [data-navigation-id=database]').should('have.class', 'is-active');
         cy.get('[data-cy=navigation-home]').click();
         cy.wrap(router).its('currentRoute.value.path').should('eq', '/');
     });
@@ -134,8 +136,8 @@ describe('<Menu /> navigation layouts', () => {
         cy.get('[data-cy=navigation-sidebar]').should('not.exist');
         cy.get('[data-cy=navigation-toggle]').should('have.attr', 'aria-expanded', 'false').click();
         cy.get('.site-navigation-drawer').should('be.visible');
-        cy.get('.site-navigation-drawer').contains('a', 'Videos').click();
-        cy.wrap(router).its('currentRoute.value.path').should('eq', '/video');
+        cy.get('.site-navigation-drawer').contains('a', 'Database').click();
+        cy.wrap(router).its('currentRoute.value.path').should('eq', '/database');
         expectDrawerClosed();
         cy.get('[data-cy=navigation-toggle]').should('be.focused').click();
         cy.get('.site-navigation-drawer').should('be.visible');

@@ -41,6 +41,7 @@ const tabItems = computed(() => {
     ];
     if (store.isSelf) {
         ret.push({ name: 'upload', label: t('local.upload') });
+        ret.push({ name: 'settings', label: t('local.settings') });
     }
     return ret;
 });
@@ -69,6 +70,7 @@ const i18nMessages = {
         record: '纪录',
         videos: '录像',
         upload: '上传',
+        settings: '设置',
     } },
     en: { local: {
         accountlink: 'Account Link',
@@ -76,6 +78,7 @@ const i18nMessages = {
         record: 'Record',
         videos: 'Videos',
         upload: 'Upload',
+        settings: 'Settings',
     } },
 };
 

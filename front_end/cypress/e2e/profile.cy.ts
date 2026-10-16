@@ -48,6 +48,9 @@ describe('Personal Profile', () => {
 
         cy.get('div.el-tabs__item').contains('上传').click();
         cy.url().should('eq', `http://localhost:8080/#/player/${USER_ID}/upload`);
+
+        cy.get('div.el-tabs__item').contains('设置').click();
+        cy.url().should('eq', `http://localhost:8080/#/player/${USER_ID}/settings`);
     });
 
     it('Cannot upload videos without real name', () => {
@@ -63,12 +66,13 @@ describe('Personal Profile', () => {
 
         cy.get('.profile-section').contains('编辑信息').click();
 
-        cy.get('.el-dialog').then((dialog) => {
-            cy.wrap(dialog).contains('本名').parent().next().find('input').type(REALNAME);
-            cy.wrap(dialog).find('button').contains('保存').click();
+        cy.url().should('include', `/player/${USER_ID}/settings`);
+        cy.get('.user-settings').within(() => {
+            cy.contains('本名').parent().next().find('input').type(REALNAME);
+            cy.contains('button', '保存').click();
         });
 
-        cy.get('.el-dialog').should('not.be.visible');
+        cy.get('.user-settings').contains('修改成功');
         cy.get('.profile').contains(REALNAME);
     });
 
@@ -121,30 +125,24 @@ describe('Personal Profile', () => {
         });
     });
 
-    it('Cannot update avatar before sub200', () => {
+    it('Cannot update avatar or signature before sub200', () => {
         cy.login(USERNAME, PASSWORD);
         cy.visitUser(USER_ID);
 
         cy.get('.avatar').find('img').should('have.attr', 'title', '高级sub200后才可以修改头像');
-    });
-
-    it('Cannot update signature before sub200', () => {
-        cy.login(USERNAME, PASSWORD);
-        cy.visitUser(USER_ID);
-
         cy.get('.profile-section').contains('编辑信息').click();
 
-        cy.get('.el-dialog').then((dialog) => {
-            cy.wrap(dialog).contains('个性签名').parent().next().find('textarea').should('be.disabled');
-            cy.wrap(dialog).contains('高级sub200后才可以修改个性签名');
+        cy.get('.user-settings').within(() => {
+            cy.contains('个性签名').parent().next().find('textarea').should('be.disabled');
+            cy.contains('高级sub200后才可以修改个性签名');
         });
     });
 
     it('Add identifier', () => {
         cy.login(USERNAME, PASSWORD);
-        cy.visitUser(USER_ID, 'summary');
+        cy.visitUser(USER_ID, 'settings');
 
-        cy.contains('扫雷标识').next().next().find('table').then((table) => {
+        cy.get('.user-settings table').then((table) => {
             cy.wrap(table).find('input').type('Pu Tian Yi(Hu Bei)');
             cy.wrap(table).find('.pi-plus').click();
         });
@@ -153,13 +151,20 @@ describe('Personal Profile', () => {
         cy.closeElNotifications();
     });
 
-    it('Auto load videos and identifiers when visiting summary', () => {
+    it('Auto load videos when visiting summary', () => {
         cy.visitUser(USER_ID);
 
         cy.contains('共2个录像'); // calendar
         cy.contains('共1个Bv'); // bv
 
-        cy.contains('扫雷标识').next().next().find('table').contains('Pu Tian Yi(Hu Bei)');
+        cy.contains('扫雷标识').should('not.exist');
+    });
+
+    it('Auto load identifiers when visiting settings directly', () => {
+        cy.login(USERNAME, PASSWORD);
+        cy.visitUser(USER_ID, 'settings');
+
+        cy.get('.user-settings table').contains('Pu Tian Yi(Hu Bei)');
     });
 
     it('Auto load videos when visiting videos', () => {
@@ -189,12 +194,12 @@ describe('Personal Profile', () => {
 
         cy.get('.profile-section').contains('编辑信息').click();
 
-        cy.get('.el-dialog').then((dialog) => {
-            cy.wrap(dialog).contains('个性签名').parent().next().find('textarea').type('testSignature');
-            cy.wrap(dialog).find('button').contains('保存').click();
+        cy.get('.user-settings').within(() => {
+            cy.contains('个性签名').parent().next().find('textarea').should('be.enabled').type('testSignature');
+            cy.contains('button', '保存').click();
         });
 
-        cy.get('.el-dialog').should('not.be.visible');
+        cy.get('.user-settings').contains('修改成功');
         cy.get('.profile-section').contains('testSignature');
     });
 
@@ -202,11 +207,27 @@ describe('Personal Profile', () => {
         cy.visitUser(USER_ID);
 
         cy.get('div.el-tabs__item').contains('上传').should('not.exist');
+        cy.get('div.el-tabs__item').contains('设置').should('not.exist');
         cy.get('.profile-section').contains('编辑信息').should('not.exist');
 
-        cy.contains('扫雷标识').next().next().find('table').then((table) => {
-            cy.wrap(table).find('input').should('not.exist');
-        });
+        cy.visitUser(USER_ID, 'settings');
+        cy.url().should('include', `/player/${USER_ID}/summary`);
+        cy.get('.user-settings').should('not.exist');
+    });
+
+    it('Public database lookup works in both directions', () => {
+        cy.intercept('GET', '/api/userprofile/identifier*').as('playerIdentifiers');
+        cy.intercept('GET', '/api/identifier/query/exact*').as('identifierOwner');
+        cy.visit('/#/database/identifiers');
+        cy.get('#identifier-player-id').type(`${USER_ID}{enter}`);
+        cy.wait('@playerIdentifiers');
+        cy.get('table').contains('Pu Tian Yi(Hu Bei)');
+        cy.get(`table a[href="#/player/${USER_ID}"]`).should('be.visible');
+
+        cy.get('#identifier-text').type('Pu Tian Yi(Hu Bei){enter}');
+        cy.wait('@identifierOwner');
+        cy.get('table').contains('Pu Tian Yi(Hu Bei)');
+        cy.get(`table a[href="#/player/${USER_ID}"]`).should('be.visible');
     });
 
     it('Navigate from homepage', () => {
