@@ -2,6 +2,7 @@ import SaoleiCard from './SaoleiCard.vue';
 
 import $axios from '@/http';
 import i18n from '@/i18n';
+import { invalidateProfileData } from '@/services/profileDataService';
 import type { SaoleiPlayerRecord } from '@/services/saoleiRankingService';
 import { pinia } from '@/store/create';
 
@@ -43,6 +44,10 @@ describe('<SaoleiCard />', () => {
                 saolei_nf: { ...record, bt: 2345, bb: 0, sumt: 2002343, sumb: 0, ranks: { ...record.ranks, bt: 6, bb: null, sumt: 7, sumb: 8 } },
             },
         }).as('saoleiRecords');
+        cy.then(() => {
+            invalidateProfileData(42);
+            invalidateProfileData(43);
+        });
     });
 
     it('loads both speed rankings once and renders scores with ranks', () => {

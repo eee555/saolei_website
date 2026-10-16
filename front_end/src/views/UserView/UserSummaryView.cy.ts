@@ -61,6 +61,11 @@ describe('Profile PB overview', () => {
         cy.intercept('GET', '**/api/speedranking/pb/player/42', bands.map(({ rank }, index) => ({ ...records[0], bv: 100 + index, rank }))).as('rankRecords');
         mountSummary();
         cy.wait('@rankRecords');
+        const timeStyle = { backgroundColor: '', color: '' };
+        cy.get('[data-cy=pb-e-100]').should('contain.text', '40.000').then(($cell) => {
+            timeStyle.backgroundColor = $cell[0].style.backgroundColor;
+            timeStyle.color = $cell[0].style.color;
+        });
         cy.get('[data-cy=pb-stat] [data-stat=rank]').click();
         for (const dark of [false, true]) {
             cy.document().then((document) => {
@@ -79,7 +84,10 @@ describe('Profile PB overview', () => {
             cy.get('[data-cy=pb-grid-e] .pb-cell:empty').should('have.css', 'background-color', 'rgba(0, 0, 0, 0)');
         }
         cy.get('[data-cy=pb-stat] [data-stat=time]').click();
-        cy.get('[data-cy=pb-e-100]').should('contain.text', '40.000').and('not.have.css', 'background-color', bands[0].color);
+        cy.get('[data-cy=pb-e-100]').should('contain.text', '40.000').and(($cell) => {
+            expect($cell[0].style.backgroundColor).to.equal(timeStyle.backgroundColor);
+            expect($cell[0].style.color).to.equal(timeStyle.color);
+        });
         cy.get('@rankRecords.all').should('have.length', 1);
         cy.get('@videos.all').should('have.length', 0);
     });
