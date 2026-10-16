@@ -33,6 +33,12 @@ describe('Staff requests against the backend', () => {
         cy.login(STAFF.username, STAFF.password);
         cy.intercept('GET', `**/api/userprofile/admin/detail/${USER.id}`).as('loadUser');
         cy.intercept('PATCH', `**/api/userprofile/admin/update/${USER.id}`).as('updateProfile');
+        // The public endpoint allows 5 seconds of browser caching; this test reads immediately after edits.
+        cy.intercept({ method: 'GET', pathname: `/api/userprofile/info/${USER.id}` }, (request) => {
+            request.on('before:response', (response) => {
+                response.headers['cache-control'] = 'no-store';
+            });
+        }).as('publicProfile');
         cy.intercept('GET', `**/api/speedranking/pb/player/${USER.id}`).as('pbRecords');
         cy.intercept('GET', '**/api/userprofile/videolist*').as('allVideos');
         cy.visit('/#/staff/userprofile');
@@ -59,6 +65,7 @@ describe('Staff requests against the backend', () => {
         cy.closeElNotifications();
         cy.visitUser(USER.id);
         cy.url().should('include', `/player/${USER.id}/summary`);
+        cy.wait('@publicProfile').its('response.body').should('include', payload);
         cy.wait('@pbRecords').its('response.statusCode').should('eq', 200);
         cy.get('[data-cy=pb-summary]').should('have.attr', 'aria-busy', 'false');
         cy.get('[data-cy=pb-grid-e]').should('be.visible');
@@ -91,6 +98,7 @@ describe('Staff requests against the backend', () => {
 
         cy.closeElNotifications();
         cy.visitUser(USER.id);
+        cy.wait('@publicProfile').its('response.body').should('include', clearPayload);
         cy.wait('@pbRecords').its('response.statusCode').should('eq', 200);
         cy.get('[data-cy=pb-grid-e]').should('be.visible');
         cy.get('.profile-section .profile').should('contain.text', USER.username);
