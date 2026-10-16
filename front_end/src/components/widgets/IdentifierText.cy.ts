@@ -22,8 +22,13 @@ describe('IdentifierText', () => {
         });
         cy.get('.identifier-text').should('have.text', '␠␠⟦U+200B⟧');
         cy.get('.identifier-escape').should('have.length', 2);
-        cy.get('.identifier-escape').first().focus();
-        cy.get('[data-tippy-root]').should('contain.text', 'U+0020 SPACE');
+        cy.get('.identifier-escape[data-identifier-part="1"]').focus();
+        cy.get('.identifier-escape[data-identifier-part="1"]').should('be.focused');
+        cy.get('[data-tippy-root]').should('be.visible').and('contain.text', 'U+0020 SPACE');
+        cy.get('.identifier-escape[data-identifier-part="1"]').blur();
+        cy.shouldBeAbsentOrHidden('[data-tippy-root]');
+        cy.get('.identifier-escape[data-identifier-part="2"]').realHover();
+        cy.get('[data-tippy-root]').should('be.visible').and('contain.text', 'U+200B ZERO WIDTH SPACE');
         cy.then(() => {
             showInvisibleIdentifiers.value = false;
         });

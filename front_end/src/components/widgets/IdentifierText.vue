@@ -2,7 +2,7 @@
     <span ref="root" class="identifier-text" @copy="copyOriginalSelection">
         <template v-if="showInvisibleIdentifiers">
             <template v-for="(part, index) in parts" :key="index">
-                <BaseTooltip v-if="part.code" :show-animation="0" :hide-animation="0">
+                <BaseTooltip v-if="part.code" trigger="mouseenter focusin" :show-animation="0" :hide-animation="0">
                     <span class="identifier-escape text-primary" :data-identifier-part="index" tabindex="0" :aria-label="description(part)">{{ part.text }}</span>
                     <template #content>{{ description(part) }}</template>
                 </BaseTooltip>
