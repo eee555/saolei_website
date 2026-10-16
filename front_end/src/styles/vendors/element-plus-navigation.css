@@ -1,0 +1,107 @@
+.navigation-menu > .el-menu,
+.site-navigation-popper {
+    --el-menu-bg-color: var(--ui-bg-color);
+    --el-menu-text-color: var(--ui-text-color-regular);
+    --el-menu-active-color: var(--ui-color-primary);
+    --el-menu-hover-bg-color: var(--ui-fill-color-light);
+    --el-menu-item-height: var(--ui-navigation-row-height, 36px);
+    --el-menu-horizontal-height: var(--ui-navigation-row-height, 36px);
+    --el-menu-sub-item-height: var(--ui-navigation-row-height, 36px);
+    --el-menu-horizontal-sub-item-height: var(--ui-navigation-row-height, 36px);
+    --el-menu-base-level-padding: 0px;
+    font-size: var(--ui-navigation-font-size, 14px);
+    border-radius: 0;
+}
+
+.navigation-menu > .el-menu {
+    width: 100%;
+    min-width: 0;
+    border: 0;
+}
+
+.site-menu > .el-menu {
+    justify-content: flex-end;
+}
+
+.site-menu--top > .el-menu {
+    justify-content: flex-start;
+}
+
+/* A pseudo-element spacer is excluded from ElMenu's item-width measurement. */
+.site-menu--top > .el-menu::after {
+    content: "";
+    flex: 1;
+    order: 1;
+}
+
+.site-menu--top > .el-menu > :not(.navigation-entry--primary) {
+    order: 2;
+}
+
+.navigation-menu > .el-menu > .el-menu-item,
+.site-navigation-popper .el-menu-item {
+    padding: 0;
+    font-size: inherit;
+    height: auto;
+    min-height: var(--ui-navigation-row-height, 36px);
+}
+
+.navigation-menu > .el-menu > .el-menu-item {
+    height: var(--ui-navigation-row-height, 36px);
+}
+
+.navigation-menu > .el-menu > .el-menu-item > .navigation-control {
+    min-height: 0;
+    height: 100%;
+}
+
+/* Override ElMenu's reserved arrow padding, including nested popup menus. */
+.navigation-menu > .el-menu > .el-sub-menu > .el-sub-menu__title,
+.site-navigation-popper .el-menu--popup .el-sub-menu > .el-sub-menu__title {
+    box-sizing: border-box;
+    height: var(--ui-navigation-row-height, 36px);
+    padding: 0 10px;
+    font-size: inherit;
+    gap: 6px;
+}
+
+.navigation-menu .el-sub-menu__icon-arrow,
+.site-navigation-popper .el-sub-menu__icon-arrow {
+    position: static;
+    margin: 0;
+}
+
+.navigation-menu > .el-menu > .navigation-entry--icon > .el-sub-menu__title > .el-sub-menu__icon-arrow {
+    display: none;
+}
+
+.site-navigation-popper .el-menu--popup {
+    min-width: 10rem;
+    max-width: calc(100vw - 16px);
+    max-height: calc(100svh - 80px);
+    overflow: auto;
+    padding: 4px 0;
+    border-radius: 0;
+}
+
+.site-navigation-popper .navigation-label__text {
+    display: inline;
+}
+
+.site-navigation-drawer {
+    --el-drawer-padding-primary: 12px;
+    background: var(--ui-bg-color);
+    color: var(--ui-text-color-regular);
+    font-size: var(--ui-navigation-font-size, 14px);
+    border-radius: 0;
+}
+
+.site-navigation-drawer .el-drawer__header {
+    margin-bottom: 8px;
+    color: inherit;
+}
+
+.site-navigation-drawer .el-drawer__body {
+    padding: 0;
+    overflow: auto;
+}

@@ -1,6 +1,6 @@
 # 前端 UI 风格渐进重构计划
 
-制定日期：2026-10-03。现状核查与整理：2026-10-07。
+制定日期：2026-10-03。现状核查与整理：2026-10-16。
 
 本计划以当前代码为实施起点，只列剩余工作和持续适用的约束。按用户约定，已提交或明确验收的改动不再列为实施或测试待办。普通页面描述布局、周赛报名表和 Checkbox 4.1.1 均已提交；图标迁移 7.1、Checkbox 4.1.2 / 4.1.3 / 4.1.4 已验收。Checkbox 迁移已完成，图标迁移剩余 7.2。批次编号保留，避免后续交流中混淆。
 
@@ -31,7 +31,8 @@
 | 展示表格 | [`BaseTable`](src/components/common/BaseTable.vue) 封装原生表格、滚动容器、空状态和插槽；`table.css` 提供行悬停高亮，`table-columns.css` 提供排名、玩家、数值、时间等公共列样式 |
 | 保留表格的视觉 | `theme/tables.css` 为 BaseTable、ElTable、PrimeVue DataTable 提供统一参数；`vendors/element-plus-table.css`、`primevue-table.css`、`primevue-table-controls.css` 已接入 |
 | Element Plus 按钮兼容 | `vendors/element-plus.css` 已提供直角覆盖；暂留组件继续使用，不重复安排按钮整体迁移 |
-| 图标注册 | [`main.ts`](src/main.ts) 仅显式全局注册实际使用的 14 个图标；组件测试按挂载链分别注册，不在 Cypress 公共入口注入图标；7.1 已验收 |
+| 图标注册 | [`bootstrap.ts`](src/bootstrap.ts) 显式全局注册剩余的 8 个图标；导航已改用 PrimeIcons，并清理了 6 个仅菜单使用的注册；组件测试按挂载链注册，7.2 其余范围仍待迁移 |
+| 导航布局 | [`Menu.vue`](src/views/Menu.vue) 提供顶栏 / 侧栏设置、单行顶栏溢出菜单与窄容器抽屉；App.vue 将唯一的页面主体放入其插槽，切换布局保留页面实例；导航重做已验收 |
 | 原生 Checkbox | [`checkbox.css`](src/styles/checkbox.css) 与 [`checkbox-buttons.css`](src/styles/checkbox-buttons.css) 由 setup.ts 为应用与 Cypress 加载；原生 input / label + 共用 class，提供直角、主题、选中、半选、悬停、键盘焦点和禁用样式，支持数组多选与按钮外观，无 BaseCheckbox 组件；4.1 已完成 |
 
 已迁移的表格包括密度榜、扫雷榜、PB 榜、比赛积分榜、软件版本列表、个人纪录、自定义计数器和周赛报名表。比赛积分榜由页面管理后端排序，切换字段重置页码，表头不显示排序箭头。
@@ -45,11 +46,11 @@
 | 2 | 剩余描述布局 | 剩余 10 个文件共 11 处 ElDescriptions 位于管理员与账号关联区域，按既定范围暂缓 |
 | 3 | 剩余表格核对 | 其余 5 个 ElTable 根据实际排序、编辑等依赖决定是否保留 |
 | 7 | 图标注册迁移 | 剩余 7.2：逐模块取消全局图标注册，同步处理 Cypress 注册 |
-| 4 | 其他控件换肤与尺寸细化 | Checkbox 4.1 已完成；Select 调用点与迁移方案已整理到 4.2.1，尚未实施；其他类别按 4.2 独立成批 |
+| 4 | 其他控件换肤与尺寸细化 | Select 4.2.1 尚未实施；其他类别按 4.2 独立成批 |
 | 5 | PrimeVue 退出 | 筛选控件、表格替代验证、逐表迁移和依赖清理；随相关模块维护推进 |
 | 6 | 局部收尾 | 随每批删除失效导入、重复样式和已无使用方的兼容项，更新本计划 |
 
-下一步建议执行 4.2.1.1，先验证原生 Select 共用样式及三个简单调用方；7.2 可独立合并。首页比赛卡片、账号关联页面重做和 PrimeVue 全部退出不作为其他批次的前置条件。
+下一步可独立推进 Select 4.2.1 或图标 7.2。首页比赛卡片、账号关联页面重做和 PrimeVue 全部退出不作为其他批次的前置条件。
 
 ### 2. 剩余描述布局
 
@@ -87,16 +88,15 @@ BaseTable 的迁移边界保持如下：
 
 当前入口及依赖已核对：
 
-- [`main.ts`](src/main.ts) 显式导入 14 个图标，通过有限映射调用 `app.component`；已删除全库命名空间导入和枚举。
-- [`Menu.cy.ts`](src/views/Menu.cy.ts) 在 `global.components` 中注册菜单及登录弹窗渲染链需要的 10 个图标；Cypress 组件挂载不执行 main.ts，测试注册单独维护。
-- [`IconMenuItem.vue`](src/components/widgets/IconMenuItem.vue) 通过 `<component :is="props.icon">` 解析菜单传入的字符串；菜单数据、`prefix-icon` 等字符串 props 也需检查，不能只搜索图标标签。
+- [`bootstrap.ts`](src/bootstrap.ts) 显式导入剩余 8 个图标，通过有限映射调用 app.component。
+- [`Menu.cy.ts`](src/views/Menu.cy.ts) 仅注册登录、注册及找回密码渲染链需要的 Key、Lock、Message、User，共 4 个图标；不再为导航注入图标。
+- prefix-icon 等字符串 props 仍需逐项检查，不能只搜索图标标签。
 - 已核对当前安装包：ElMenu 子菜单箭头直接导入 `ArrowDown` / `ArrowRight`；ElFormItem 相关状态图标由 ElInput 的校验状态映射承接，加载、成功、失败及密码显隐图标已在库内部导入。这些内部使用本身不要求项目全局注册；`prefix-icon="User"` 等项目传入的字符串仍需全局解析。
 
-7.2 需要逐模块消除的全局依赖如下，去重后共 14 个；历史注释与 ESLint ignorePatterns 不作为实际使用依据：
+7.2 需要逐模块消除的全局依赖如下，去重后共 8 个；历史注释与 ESLint ignorePatterns 不作为实际使用依据：
 
 | 调用来源 | 图标 |
 | --- | --- |
-| `views/Menu.vue` 配置与固定菜单项，经 `widgets/IconMenuItem.vue` 动态解析 | Trophy、VideoCameraFilled、Medal、Cpu、User、Key、Reading、Setting |
 | `Login/LoginForm.vue`、`Login/RegisterForm.vue`、`formItems/EmailFormItem.vue`、`EmailCodeBlock.vue`、`PasswordConfirmBlock.vue` 的输入前缀；找回密码表单复用后面三个组件 | User、Lock、Key、Message |
 | `visualization/ColorSchemeSetting.vue`、`accountlinks/CardWoM.vue`、`widgets/UserArbiterCSV.vue` 的裸标签 | ArrowLeft、ArrowRight、Ticket、QuestionFilled |
 
@@ -104,7 +104,7 @@ BaseTable 的迁移边界保持如下：
 
 | 测试 | 注册图标 |
 | --- | --- |
-| `views/Menu.cy.ts` | 菜单的 8 个图标，以及登录、注册、找回密码弹窗需要的 Lock、Message，共 10 个 |
+| `views/Menu.cy.ts` | 登录、注册、找回密码弹窗需要的 Key、Lock、Message、User，共 4 个 |
 | `Login/LoginForm.cy.ts` / `Login/RegisterForm.cy.ts` | Key、Lock、User / Key、Lock、Message、User |
 | `formItems/EmailCodeBlock.cy.ts` / `PasswordConfirmBlock.cy.ts` | Key / Lock |
 | `accountlinks/CardWoM.cy.ts` / `App.cy.ts` | Ticket；现有 `mountAccountLink` 允许调用方传入有限的组件映射，其他账号关联测试默认不注册图标 |
@@ -112,9 +112,9 @@ BaseTable 的迁移边界保持如下：
 
 #### 7.2 后续目标：不全局注册任何图标
 
-按菜单、表单、其他裸标签分别迁移。优先复用现有 BaseIcon / PrimeIcons；需要 Element Plus 图标时在使用方按名称局部导入。IconMenuItem 使用组件对象或封闭的局部映射解析现有字符串，图标 props 改为显式组件绑定，消除全局名称解析。只改变图标依赖，保留尺寸、提示、语义与业务事件。
+剩余图标按表单、裸标签分别迁移。优先复用现有 BaseIcon / PrimeIcons；需要 Element Plus 图标时在使用方按名称局部导入，图标 props 改为显式组件绑定，消除全局名称解析。只改变图标依赖，保留尺寸、提示、语义与业务事件。
 
-每完成一个模块，移除对应全局注册及不再需要的测试注册、ESLint 图标名称豁免。菜单动态解析可能没有未解析组件警告，需实际确认 SVG / 项目图标存在及布局未退化。最后删除应用的图标注册映射与注册循环，组件测试也不再用 `global.components` 注入图标；以源码检查及实际渲染验收确认全局图标注册归零。
+每完成一个模块，移除对应全局注册及不再需要的测试注册、ESLint 图标名称豁免。字符串图标解析可能没有未解析组件警告，需实际确认图标存在及布局未退化。最后删除应用的图标注册映射与注册循环，组件测试也不再用 `global.components` 注入图标；以源码检查及实际渲染验收确认全局图标注册归零。
 
 ### 4. 简单选择控件迁移与复杂组件换肤
 
@@ -135,7 +135,6 @@ ESLint 公共规则禁止所有参与 lint 的 Vue 文件新增 ElCheckbox、ElC
 | 输入与表单 | 登录/注册、EditProfile、播放器设置 | 输入高度、内边距、圆角、标签与校验间距；保留输入、焦点及校验行为 |
 | 选择控件 | Select 按 4.2.1 分批；Radio、Switch、Slider 另行核对 | 控件与下拉浮层尺寸、选中/禁用/焦点状态，保留实际使用的选择和数值范围语义；Checkbox 迁移已完成 |
 | Tabs | 首页或用户页面 | 标签高度、内容间距、边框和激活状态，保留标签切换与路由状态 |
-| 菜单 | `views/Menu.vue` | 单独处理菜单项间距和主题；保留用户可配置的高度、字号、图标模式与导航 |
 | 弹窗、通知与加载 | BaseOverlay、登录弹窗、Notifications、v-loading | 内部间距、边角、按钮区域和浮层；保留关闭、滚动、焦点、遮罩和加载行为 |
 
 按实际需要提取控件高度、间距、行高等项目参数，同时覆盖正常、悬停、焦点、禁用、加载、错误和空状态。不要只将所有控件切为 `small`，也不要直接将所有字号或全局圆角统一缩小来代替逐类检查。
@@ -255,7 +254,7 @@ ElPagination 和 PrimeVue DataTable 内部的页容量选择器不计入上述�
 - 保持现有文件路径、props、事件、slots 和调用方依赖的 attrs 稳定。按钮保留原生语义、键盘操作、disabled、loading、防重复点击及已有事件透传。
 - 每个 PR 限定一个结果和一小组相关文件。共享样式与业务模块迁移可拆开；不同时做本地化调整、搬目录、整文件格式重排或无关逻辑抽离。
 - 每批从最新集成分支开始，及时合入；正在频繁修改的业务区域可后移，允许新旧样式共存。
-- 修改前核对工作区与最新内容，保留无关改动；两次修改之间发生的不同意的变化按约定添加 TODO，不直接覆盖。`lintfix` 后再次检查 diff。
+- 修改前核对工作区与最新内容，保留无关改动；两次修改之间发生的不同意的变化按约定添加 TODO，不直接覆盖。下一轮读取 `lintfix` 结果时一并检查其产生的 diff。
 
 具体样式入口和变量说明见[`src/styles/README.md`](src/styles/README.md)。
 
@@ -272,17 +271,9 @@ ElPagination 和 PrimeVue DataTable 内部的页容量选择器不计入上述�
 | 浮层 | 关闭、焦点、滚动、层级，以及传送到 body 的内部下拉框 |
 | 业务 | 请求参数、提交次数、状态持久化、权限与删除确认行为保持一致 |
 
-代码或样式修改按影响范围在 `front_end` 执行：
+检查遵守[根目录测试规范](../.codex/instructions.md)：每轮开始只读取一次上一轮 lintfix / typecheck 的日志及退出码；代码或样式修改结束后后台启动两项检查，日志、退出码、任务记录及其他检查临时文件统一保存在仓库根目录 `.tmp/checks/<轮次>/`，留待下一轮确认，不散放在前端根目录。仅整理 Markdown 时不重跑这些检查。构建及 Vitest 按实际影响范围选择，不把后台启动或静态检查当作浏览器验证通过。
 
-```powershell
-npm.cmd run lintfix
-npm.cmd run typecheck
-npm.cmd run build:frontend
-```
-
-纯逻辑修改再运行对应 Vitest；例如颜色逻辑使用 `npx.cmd vitest run src/utils/colors.test.ts`。仅整理 Markdown 时检查内容、链接与 diff，不要求重跑前端构建。
-
-Cypress 由用户运行，代理不启动 Cypress、预览或开发服务器。每批提供具体受影响的 spec 命令，优先复用现有覆盖；静态检查通过不代表浏览器行为已验证。迁移组件时才调整依赖 `.el-*` / `.p-*` 的测试定位，不提前全量改写。
+Cypress 默认由用户运行，每批提供实际受影响的 spec 命令，优先复用现有覆盖。用户明确要求代理执行时仅运行指定的 Chrome 组件测试，不执行 E2E；不主动启动预览或开发服务器。迁移组件时才调整依赖 `.el-*` / `.p-*` 的测试定位，不提前全量改写。
 
 复用项目现有表格提取、通知关闭和 `cy.shouldBeAbsentOrHidden()` 断言命令；不为低影响样式调整编写重复实现的测试，也不靠修改预期值掩盖实际行为变化。
 

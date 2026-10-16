@@ -185,12 +185,6 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
             light: string;
             title: string;
         };
-        languageSwitch: string;
-        menuFontSize: string;
-        menuHeight: string;
-        menuLayout: string;
-        menuLayoutAbstract: string;
-        menuLayoutDefault: string;
     };
     team: {
         title: string;

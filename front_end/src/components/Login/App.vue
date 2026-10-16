@@ -1,25 +1,8 @@
 <template>
-    <BaseButton
-        v-if="store.login_status != LoginStatus.IsLogin" class="fakemenuitem"
-        text size="small" @keydown.stop @click.stop="activeDialog = 'login'; dialogVisible = true"
-    >
-        {{ t('local.menu.login') }}
-    </BaseButton>
-    <BaseButton
-        v-if="store.login_status != LoginStatus.IsLogin"
-        style="margin-left: 0px;" class="fakemenuitem" text size="small" @keydown.stop @click.stop="activeDialog = 'register'; dialogVisible = true"
-    >
-        {{ t('local.menu.register') }}
-    </BaseButton>
-    <BaseButton
-        v-if="store.login_status == LoginStatus.IsLogin" class="fakemenuitem" text
-        size="small" @keydown.stop @click.stop="logout();"
-    >
-        {{ t('local.menu.logout') }}
-    </BaseButton>
+    <slot :open="openDialog" :logout="logout" :labels="{ login: t('local.menu.login'), register: t('local.menu.register'), logout: t('local.menu.logout') }" />
     <!-- 以下的所有表单的输入项都需要@keydown.stop，解决horizontal菜单截留空格操作的问题。 -->
     <!-- https://github.com/element-plus/element-plus/issues/10172#issuecomment-1295794523 -->
-    <ElDialog v-model="dialogVisible" style="min-width: 24rem;" :title="t(`local.title.${activeDialog}`)">
+    <ElDialog v-if="dialogVisible" v-model="dialogVisible" width="min(28rem, 95vw)" append-to-body :title="t(`local.title.${activeDialog}`)">
         <LoginForm v-if="activeDialog === 'login'" @forget-password="activeDialog = 'retrieve'" @login="login" />
         <RegisterForm v-else-if="activeDialog === 'register'" @login="login" />
         <RetrieveForm v-else @login="login" />
@@ -27,23 +10,20 @@
 </template>
 
 <script lang="ts" setup>
-// 注册、登录、找回密码的弹框及右上方按钮
-import '@/styles/text.css';
-
+// 认证状态、表单弹窗及提供给导航的操作。
 import { isAxiosError } from 'axios';
-import { ElDialog, ElMessage } from 'element-plus';
+import { ElDialog, ElMessage, ElMessageBox } from 'element-plus';
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import LoginForm from './LoginForm.vue';
 import RegisterForm from './RegisterForm.vue';
 import RetrieveForm from './RetrieveForm.vue';
+import type { LoginControls } from './types';
 
-import BaseButton from '@/components/common/BaseButton.vue';
 import { httpErrorNotification } from '@/components/Notifications';
-import { local, store } from '@/store';
+import { store } from '@/store';
 import type { GetUserInfoResponse } from '@/utils/common/structInterface';
-import { LoginStatus } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import type { UserProfileData } from '@/utils/userprofile';
 
@@ -51,6 +31,13 @@ const { proxy } = useCurrentInstance();
 
 const dialogVisible = ref(false);
 const activeDialog = ref<'login' | 'register' | 'retrieve'>('login');
+
+defineSlots<{ default: (controls: LoginControls) => unknown }>();
+
+function openDialog(form: 'login' | 'register') {
+    activeDialog.value = form;
+    dialogVisible.value = true;
+}
 
 onMounted(async () => {
     // 恢复登录状态时绕过 HTTP 缓存，避免实名等资料修改后读到旧数据。
@@ -73,16 +60,32 @@ const login = (user: UserProfileData) => {
     dialogVisible.value = false;
 };
 
+let logoutPending = false;
+
 async function logout() {
-    await proxy.$axios.post('/userprofile/logout/', {}).then(function () {
-        store.logout();
-        ElMessage.success({ message: t('common.msg.logoutSuccess'), offset: 68 });
-        dialogVisible.value = false;
-    }).catch(httpErrorNotification);
+    if (logoutPending) return;
+    logoutPending = true;
+    try {
+        const confirmed = await ElMessageBox.confirm(t('local.confirmLogout'), t('local.menu.logout'), {
+            confirmButtonText: t('common.button.confirm'),
+            cancelButtonText: t('common.button.cancel'),
+            type: 'warning',
+            customStyle: { borderRadius: '0', maxWidth: 'calc(100vw - 24px)' },
+        }).then(() => true, () => false);
+        if (!confirmed) return;
+        await proxy.$axios.post('/userprofile/logout/', {}).then(function () {
+            store.logout();
+            ElMessage.success({ message: t('common.msg.logoutSuccess'), offset: 68 });
+            dialogVisible.value = false;
+        }).catch(httpErrorNotification);
+    } finally {
+        logoutPending = false;
+    }
 }
 
 const i18nMessages = {
     'zh-cn': { local: {
+        confirmLogout: '确定退出当前账号吗？',
         menu: {
             login: '登录',
             logout: '退出',
@@ -95,6 +98,7 @@ const i18nMessages = {
         },
     } },
     en: { local: {
+        confirmLogout: 'Log out of the current account?',
         menu: {
             login: 'Login',
             logout: 'Logout',
@@ -136,10 +140,3 @@ const i18nMessages = {
 
 const { t } = useI18n({ messages: i18nMessages });
 </script>
-
-<style lang="less" scoped>
-.fakemenuitem {
-    height: v-bind("`${local.menu_height}px`");
-    font-size: v-bind("`${local.menu_font_size}px`"); // Somehow doesn't work
-}
-</style>

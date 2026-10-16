@@ -1,47 +1,6 @@
 <template>
     <footer class="site-footer">
-        <div class="layout-columns" style="margin-bottom: 15px">
-            <div>
-                <div style="padding-bottom: 5px">
-                    <strong>{{ t('local.about') }}</strong>
-                </div>
-                <BaseOverlay>
-                    {{ t('local.team') }}
-                    <template #header>
-                        {{ t('local.team') }}
-                    </template>
-                    <template #overlay>
-                        <Thanks />
-                    </template>
-                </BaseOverlay>
-                <br>
-                <Downloads />
-            </div>
-            <div>
-                <div style="padding-bottom: 5px">
-                    <strong>{{ t('local.contact') }}</strong>
-                </div>
-                <div>
-                    <a class="link text" href="https://github.com/eee555/saolei_website" target="_blank" rel="noopener noreferrer">
-                        GitHub
-                    </a>
-                </div>
-                <div>
-                    <a class="link text" href="https://gitee.com/ee55/saolei_website" target="_blank" rel="noopener noreferrer">
-                        Gitee
-                    </a>
-                </div>
-                <div>
-                    <a class="link text" href="https://discord.gg/ks8ngPX5bT" target="_blank" rel="noopener noreferrer">
-                        Discord
-                    </a>
-                </div>
-                <div>
-                    <a class="link text" href="https://qm.qq.com/q/hNShGUQkJG" target="_blank" rel="noopener noreferrer">
-                        QQ
-                    </a>
-                </div>
-            </div>
+        <div style="margin-bottom: 15px">
             <div>
                 <div style="padding-bottom: 5px">
                     <strong>{{ t('local.links') }}</strong>
@@ -95,31 +54,18 @@
 </template>
 
 <script setup lang="ts">
-import '@/styles/layout.css';
 import '@/styles/text.css';
 import '@/styles/link.css';
 
 import { useI18n } from 'vue-i18n';
 
-import BaseOverlay from './common/BaseOverlay.vue';
-import Downloads from './dialogs/Downloads.vue';
-import Thanks from './dialogs/Thanks.vue';
-
 /* 本地化 Localization */
 const i18nMessage = {
     'zh-cn': { local: {
-        contact: '联系我们',
-        donate: '捐赠',
-        team: '团队',
         links: '友链',
-        about: '关于我们',
     } },
     en: { local: {
-        contact: 'Contact',
-        donate: 'Donate',
-        team: 'Team',
         links: 'Links',
-        about: 'About',
     } },
 };
 
