@@ -75,7 +75,8 @@ describe('<UserVideoView /> video reveal', () => {
         cy.get('button[aria-label="Intermediate BV 100"]').should('have.attr', 'aria-pressed', 'false');
         cy.get('[data-cy=video-range]').should('contain.text', '2 videos in range, 2 after filtering');
         cy.get('.p-datatable-table').getTable().should('have.length', 2);
-        cy.get('[data-cy=video-shared-filters] input[value=a]').uncheck();
+        cy.get('[data-cy=video-shared-filters] [role=group][aria-label="Software"] input[value=a]').should('have.length', 1).uncheck();
+        cy.get('[data-cy=video-shared-filters] [role=group][aria-label="State"] input[value=a]').should('be.checked');
         cy.get('[data-cy=video-range]').should('contain.text', '2 videos in range, 1 after filtering');
         cy.get('[data-cy=video-presentation]').select('scatter');
         cy.get('[data-cy=scatter-videos]').should('have.text', '102');
