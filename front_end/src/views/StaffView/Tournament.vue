@@ -29,19 +29,19 @@
         </BaseButton>
         <br>
         {{ t('common.prop.name') }}
-        <VCodeBlock v-if="tournament" :code="JSON.stringify(tournament.name)" lang="json" highlightjs />
+        <VCodeBlock v-if="tournament" :code="JSON.stringify(tournament.name)" lang="json" />
         {{ t('common.prop.description') }}
-        <VCodeBlock v-if="tournament.description" :code="JSON.stringify(tournament.description)" lang="json" highlightjs />
+        <VCodeBlock v-if="tournament.description" :code="JSON.stringify(tournament.description)" lang="json" />
     </template>
 </template>
 
 <script setup lang="ts">
-import { VCodeBlock } from '@wdns/vue-code-block';
 import { ElInputNumber } from 'element-plus';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import BaseButton from '@/components/common/BaseButton.vue';
+import VCodeBlock from '@/components/common/BaseCodeBlock.vue';
 import { BaseIconClose, BaseIconTick } from '@/components/common/icon';
 import { httpErrorNotification, successNotification } from '@/components/Notifications';
 import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';

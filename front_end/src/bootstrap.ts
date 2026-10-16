@@ -9,7 +9,6 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import $axios from './http';
 import router from './router';
-import 'highlight.js/styles/stackoverflow-light.css';
 import { pinia } from './store/create';
 
 import i18n from '@/i18n';

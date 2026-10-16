@@ -8,7 +8,7 @@
     </div>
 
     <template v-if="profile">
-        <VCodeBlock :code="JSON.stringify(profile, null, 2)" lang="json" highlightjs />
+        <VCodeBlock :code="JSON.stringify(profile, null, 2)" lang="json" />
         {{ t('local.userProfile') }}
         <ElInput v-model="userProfileRequestBody" type="textarea" :autosize="{ minRows: 8 }" />
         <BaseButton type="primary" :loading="savingUserProfile" @click="saveUserProfile">
@@ -23,12 +23,12 @@
 </template>
 
 <script setup lang="ts">
-import { VCodeBlock } from '@wdns/vue-code-block';
 import { ElInput, ElInputNumber } from 'element-plus';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import BaseButton from '@/components/common/BaseButton.vue';
+import VCodeBlock from '@/components/common/BaseCodeBlock.vue';
 import { actionSuccessNotification, baseErrorNotification, httpErrorNotification } from '@/components/Notifications';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 
