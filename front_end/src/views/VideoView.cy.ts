@@ -7,13 +7,14 @@ import { pinia } from '@/store/create';
 
 describe('<VideoView />', () => {
     it('sorts the STNB column through iqg in both directions', () => {
+        cy.viewport(600, 500);
         cy.intercept({ method: 'GET', pathname: '/api/video/query' }, { body: { count: 0, videos: [] } }).as('videos');
         cy.mount(VideoView, { global: { plugins: [i18n, pinia], config: { globalProperties: { $axios } } } });
         cy.wait('@videos').its('request.query').should('include', { o: 'timems' });
 
-        cy.contains('.el-table__header th', 'STNB').click();
+        cy.contains('th', 'STNB').click();
         cy.wait('@videos').its('request.query').should('include', { o: 'iqg', r: 'true' });
-        cy.contains('.el-table__header th', 'STNB').click();
+        cy.contains('th', 'STNB').click();
         cy.wait('@videos').its('request.query').should('include', { o: 'iqg', r: 'false' });
     });
 
