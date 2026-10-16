@@ -80,10 +80,10 @@
     </div>
 
     <div style="margin-top: 1em">
-        <BaseButton type="primary" @click="updateProfile">
+        <BaseButton type="primary" :loading="updating" @click="updateProfile">
             {{ t('common.button.save') }}
         </BaseButton>
-        <BaseButton type="info" @click="isEditing = false">
+        <BaseButton type="info" :disabled="updating" @click="refresh">
             {{ t('common.button.cancel') }}
         </BaseButton>
     </div>
@@ -93,7 +93,7 @@
 import '@/styles/text.css';
 
 import { ElInput } from 'element-plus';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import BaseButton from '@/components/common/BaseButton.vue';
@@ -119,7 +119,6 @@ interface formStatusSingle {
 }
 
 const user = defineModel<UserProfile>('user', { type: UserProfile, default: () => new UserProfile() });
-const isEditing = defineModel('isEditing', { type: Boolean, default: false });
 
 const updating = ref(false);
 
@@ -136,14 +135,12 @@ const formStatus = ref<EnumMap<UpdateProfileField, formStatusSingle>>(
 function refresh() {
     for (const field of UpdateProfileFields) {
         formStatus.value[field].new = user.value[field];
+        formStatus.value[field].status = '';
+        formStatus.value[field].errorMsg = '';
     }
 }
 
-watch(() => isEditing.value, () => {
-    if (isEditing.value) refresh();
-}, { immediate: true });
-
-onMounted(refresh);
+watch(user, refresh, { immediate: true });
 
 const signatureDisabled = computed(() => user.value.nextSignatureAvailable > globalNow.value || props.expTimeMs >= 200000);
 
@@ -190,7 +187,6 @@ async function updateProfile() {
         }).catch(httpErrorNotification);
     }
     updating.value = false;
-    isEditing.value = false;
 }
 
 const i18nMessages = {
@@ -253,7 +249,7 @@ const { t } = useI18n({ messages: i18nMessages });
 
 <style lang="less" scoped>
 .input-label {
-    margin-top: 1.5em;
+    margin-top: 0.75em;
     margin-bottom: 0.5em;
 }
 </style>

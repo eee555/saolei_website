@@ -1,5 +1,38 @@
 # identifier 业务说明
 
+## 公开查询
+
+- 每种字符串匹配使用独立的 `GET /api/identifier/query/<mode>?identifier=...`。所有模式均无需登录，只返回已审核通过的标识。
+- 前端通过“匹配模式”和“忽略大小写”复选框选择接口，例如 `exact` / `iexact`；“限流说明”浮层按分组列出配额、匹配条件及组内共享规则。正则仍只有 `regex` 接口，通过表达式中的 `(?i)` 控制大小写。
+- 响应为 `{items: [{identifier, user_id}]}`，没有匹配时 `items` 为空。未绑定玩家时 `user_id` 为 `null`。不提供服务端分页或游标，符合条件的结果按主键递增一次性返回。
+- 每条字符串查询最多允许匹配 1000 个已审核标识，正好 1000 条全部返回。超过时返回 HTTP 400，响应为 `{code: "too_many_matches", detail: "..."}`，不返回部分结果；未审核的标识不计入。
+- 单次数据库查询最多读取 1001 条并预加载关联玩家，用额外一条判断是否超限，不执行全量 `COUNT(*)`。
+- 前端使用 PrimeVue DataTable 完成本地分页、标识字符串排序和归属玩家多选筛选（包括未绑定玩家），这些操作不发送标识查询请求，也不消耗请求配额。标识展示转义不改变排序所用的原始字符串。
+- 超额请求返回 HTTP 429，并且不查询标识表。限流按 IP 计算，同组接口共享配额，避免通过轮换类似模式绕过限流。
+- 按玩家 ID 查询标识复用 `GET /api/userprofile/identifier?user_id=...`，无扫雷资料的玩家返回空列表。
+
+| mode / API 后缀 | 匹配方式 | 限流策略 | 限流组 |
+| --- | --- | --- | --- |
+| `exact` | 完整匹配，区分大小写 | 2 次/秒 | `identifier-exact` |
+| `iexact` | 完整匹配，忽略大小写 | 6 次/分钟 | `identifier-text` |
+| `contains` | 包含，区分大小写 | 6 次/分钟 | `identifier-text` |
+| `icontains` | 包含，忽略大小写 | 6 次/分钟 | `identifier-text` |
+| `startswith` | 前缀，区分大小写 | 10 次/分钟 | `identifier-prefix` |
+| `istartswith` | 前缀，忽略大小写 | 6 次/分钟 | `identifier-text` |
+| `endswith` | 后缀，区分大小写 | 6 次/分钟 | `identifier-text` |
+| `iendswith` | 后缀，忽略大小写 | 6 次/分钟 | `identifier-text` |
+| `regex` | MySQL ICU 正则，用 `(?i)` 等内嵌标志控制大小写 | 2 次/分钟 | `identifier-regex` |
+
+### 限流设计依据
+
+- `exact` 可使用现有唯一索引定位。前缀匹配没有前置通配符，但 Django 的 MySQL 后端生成 `LIKE BINARY`，索引利用仍取决于实际执行计划；因此给予独立、较保守的分钟配额。
+- 包含、后缀有前置通配符，不能据此构造普通 B-tree 的前缀范围扫描。忽略大小写的普通模式通过 Django `Collate` 显式使用 `utf8mb4_0900_as_ci`，与现有字段索引的 `utf8mb4_0900_as_cs` 不同，也可能扫描；这些模式共用更低的配额。
+- 正则只使用 Django 的 `regex` 和一个 API，由 MySQL `REGEXP_LIKE` 原生执行，默认区分大小写，可在表达式中使用 `(?i)` 忽略大小写。开销随表达式而变，因此给予最小配额。非法表达式及 MySQL 正则资源限制错误返回 400，其他数据库错误不伪装为输入错误。
+- 普通模式会由 Django 自动转义 `%`、`_`、反斜杠；正则保留原始表达式，不用 Python `re` 模拟或校验 ICU 语法。
+- 这些配额是基于当前查询结构的保守策略，不是生产压测结论。前端仅展示限流策略，不展示性能估计；调整限流时需同步浮层中的分组和配额。无需更改字段排序规则或数据库索引。
+
+参考：[Django 字段查询](https://docs.djangoproject.com/en/6.0/ref/models/querysets/#field-lookups)、[Django MySQL 排序规则](https://docs.djangoproject.com/en/6.0/ref/databases/#collation-settings)、[MySQL 范围优化](https://dev.mysql.com/doc/refman/8.4/en/range-optimization.html)、[MySQL 正则及资源限制](https://dev.mysql.com/doc/refman/8.4/en/regexp.html)。
+
 本文档记录 `identifier` app 的业务约束和当前实现。标识绑定/解绑会影响录像状态和多个排行系统，修改相关逻辑前应先确认本文档仍符合目标业务。
 
 ## 业务约束

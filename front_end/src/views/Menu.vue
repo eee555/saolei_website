@@ -116,14 +116,17 @@ function restoreFocus() {
 
 const mainItems = computed<NavigationItem[]>(() => [
     { id: 'ranking', label: t('local.ranking'), to: '/ranking' },
-    { id: 'video', label: t('local.video'), to: '/video' },
+    { id: 'database', label: t('local.database'), to: '/database' },
     { id: 'tournament', label: t('local.tournament'), to: '/tournament' },
     { id: 'server', label: t('local.server'), to: '/server' },
 ].map((item) => ({ ...item, primary: true })));
 const drawerItems = computed<NavigationItem[]>(() => [
     { id: 'home', label: t('local.home'), to: '/' }, ...mainItems.value,
 ]);
-const activeSection = computed(() => (route.path === '/' ? 'home' : route.path.split('/')[1] ?? ''));
+const activeSection = computed(() => {
+    const section = route.path.split('/')[1] ?? '';
+    return section === 'video' ? 'database' : route.path === '/' ? 'home' : section;
+});
 const activeTool = computed(() => {
     const profile = `/player/${store.user.id}`;
     if (route.path === profile || route.path.startsWith(`${profile}/`)) return 'profile';
@@ -217,7 +220,7 @@ const i18nMessages = {
     'zh-cn': { local: {
         home: '首页',
         ranking: '排行榜',
-        video: '录像',
+        database: '数据库',
         staff: '管理',
         docs: '帮助',
         server: '服务器',
@@ -240,7 +243,7 @@ const i18nMessages = {
     en: { local: {
         home: 'Home',
         ranking: 'Ranking',
-        video: 'Videos',
+        database: 'Database',
         staff: 'Moderate',
         docs: 'Help',
         server: 'Server',
@@ -262,12 +265,12 @@ const i18nMessages = {
     } },
     de: { local: {
         ranking: 'Ranking',
-        video: 'Video',
+        database: 'Datenbank',
         docs: 'Hilfe',
     } },
     pl: { local: {
         ranking: 'ranking',
-        video: 'filmy',
+        database: 'Baza danych',
         docs: 'pomoc',
     } },
 };

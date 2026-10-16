@@ -1,3 +1,4 @@
+import { showInvisibleIdentifiers } from './identifierDisplay';
 import IdentifierManager from './IdentifierManager.vue';
 
 import $axios from '@/http';
@@ -54,11 +55,12 @@ function mockAddIdentifier(body: object, as = 'addIdentifier') {
 
 describe('IdentifierManager.vue', () => {
     beforeEach(() => {
+        showInvisibleIdentifiers.value = false;
         store.user = createMockUser(1);
         store.new_identifier = false;
     });
 
-    it('Rendering - Without Authentication', () => {
+    it('hides editing controls for another player', () => {
         cy.mount(IdentifierManager, mountOption(createMockUser(2, ['abc', 'def'])));
 
         cy.get('.el-table__body').extractTableData().should('deep.equal', [['abc', ''], ['def', '']]);
@@ -69,27 +71,26 @@ describe('IdentifierManager.vue', () => {
         cy.get('.el-table__body').find('.pi-copy').should('have.length', 2);
     });
 
-    it('Rendering - With Authentication', () => {
-        cy.mount(IdentifierManager, mountOption(createMockUser(1, ['xyz'])));
-
-        cy.get('.el-table__body').extractTableData().should('deep.equal', [['xyz', ''], ['', '']]);
-
-        cy.get('.el-input').should('exist');
-        cy.get('.pi-plus').should('exist');
-        cy.get('.pi-trash').should('have.length', 1);
-        cy.get('.el-table__body').find('.pi-copy').should('have.length', 1);
-    });
-
-    it('Delete Identifier', () => {
+    it('copies and deletes the original identifier while escape markers are visible', () => {
+        const identifier = ' a\u200B ';
         mockDelIdentifier({ value: 3 });
-        cy.mount(IdentifierManager, mountOption(createMockUser(1, ['to-delete'])));
-
+        cy.mount(IdentifierManager, mountOption(createMockUser(1, [identifier])));
+        cy.window().then((win) => {
+            const copy = cy.stub(win.navigator.clipboard, 'writeText').as('copy');
+            copy.resolves();
+        });
+        cy.contains('label', 'Show invisible characters').find('input').check();
+        cy.get('.identifier-text').should('have.text', '␠a⟦U+200B⟧␠');
+        cy.get('button[aria-label="Copy"]').click();
+        cy.get('@copy').should('have.been.calledOnceWith', identifier);
+        cy.closeElNotifications();
         cy.get('.pi-trash').click();
-
+        cy.wait('@delIdentifier').its('request.body').then((body: string) => {
+            expect(new URLSearchParams(body).get('identifier')).to.equal(identifier);
+        });
         cy.contains('Identifier Deleted');
         cy.contains('3 videos have been processed');
         cy.closeElNotifications();
-
         cy.get('.el-table__body').extractTableData().should('deep.equal', [['', '']]);
     });
 

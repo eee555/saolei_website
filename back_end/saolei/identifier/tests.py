@@ -1,4 +1,8 @@
-from django.test import TestCase
+from unittest.mock import patch
+
+from django.conf import settings
+from django.core.cache import caches
+from django.test import override_settings, TestCase
 from django_redis import get_redis_connection
 
 from config.customranking import CUSTOM_PLUCK_LEVELS, CUSTOM_PLUCK_MODES
@@ -10,6 +14,164 @@ from userprofile.models import UserProfile
 from videomanager.models import ExpandVideoModel, VideoModel
 from .models import Identifier
 from .services import bind_identifier, set_safe, unbind_identifier
+
+
+@override_settings(RATELIMIT_ENABLE=False)
+class IdentifierQueryTest(TestCase):
+    def setUp(self):
+        self.userms = UserMS.objects.create(identifiers=['Public identifier'])
+        self.user = UserProfile.objects.create_user(username='identifier_query_user', email='identifier-query@example.com', userms=self.userms)
+        Identifier.objects.create(identifier='Public identifier', safe=True, userms=self.userms)
+        Identifier.objects.create(identifier='Unbound identifier', safe=True)
+        Identifier.objects.create(identifier='Unapproved identifier', safe=False)
+
+    def query(self, text, mode='exact'):
+        return self.client.get(f'/api/identifier/query/{mode}', {'identifier': text})
+
+    def test_public_lookup_ownership_and_visibility(self):
+        cases = [
+            ('Public identifier', [{'identifier': 'Public identifier', 'user_id': self.user.id}]),
+            ('Unbound identifier', [{'identifier': 'Unbound identifier', 'user_id': None}]),
+            ('Missing identifier', []), ('Unapproved identifier', []),
+        ]
+        for text, items in cases:
+            with self.subTest(text=text):
+                response = self.query(text)
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.json(), {'items': items})
+
+    def test_lookup_is_exact_and_preserves_special_characters(self):
+        text = ' 玩家 & + '
+        Identifier.objects.create(identifier=text, safe=True, userms=self.userms)
+        self.assertEqual(self.query(text).json()['items'], [{'identifier': text, 'user_id': self.user.id}])
+
+    def test_identifier_is_required_and_length_is_valid(self):
+        for text in ['', 'x' * 129]:
+            with self.subTest(text=text):
+                self.assertEqual(self.query(text).status_code, 400)
+
+        self.assertEqual(self.client.get('/api/identifier/query/exact').status_code, 422)
+
+    def test_all_matching_modes(self):
+        texts = ['AlphaBeta', 'alphabeta', 'XAlphaBetaY', 'alphabetaTail', 'Headalphabeta']
+        Identifier.objects.bulk_create([Identifier(identifier=text, safe=True) for text in texts])
+        cases = [
+            ('exact', 'AlphaBeta', ['AlphaBeta']),
+            ('exact', 'Alpha', []), ('exact', 'alphabeta', ['alphabeta']),
+            ('iexact', 'ALPHABETA', ['AlphaBeta', 'alphabeta']),
+            ('contains', 'AlphaBeta', ['AlphaBeta', 'XAlphaBetaY']),
+            ('icontains', 'ALPHABETA', texts),
+            ('startswith', 'Alpha', ['AlphaBeta']),
+            ('istartswith', 'ALPHA', ['AlphaBeta', 'alphabeta', 'alphabetaTail']),
+            ('endswith', 'Beta', ['AlphaBeta']),
+            ('iendswith', 'BETA', ['AlphaBeta', 'alphabeta', 'Headalphabeta']),
+            ('regex', '^Alpha.*Beta$', ['AlphaBeta']),
+            ('regex', '(?i)^alpha.*beta$', ['AlphaBeta', 'alphabeta']),
+        ]
+        for mode, text, expected in cases:
+            with self.subTest(mode=mode):
+                response = self.query(text, mode)
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual([item['identifier'] for item in response.json()['items']], expected)
+
+    def test_case_insensitive_matching_preserves_accents(self):
+        Identifier.objects.bulk_create([Identifier(identifier=text, safe=True) for text in ['Éclair', 'éclair', 'eclair']])
+        response = self.query('ÉCLAIR', 'iexact')
+        self.assertEqual([item['identifier'] for item in response.json()['items']], ['Éclair', 'éclair'])
+
+    def test_plain_modes_escape_like_wildcards(self):
+        Identifier.objects.bulk_create([Identifier(identifier=text, safe=True) for text in ['token%_\\value', 'tokenABvalue']])
+        for mode in ['contains', 'icontains']:
+            with self.subTest(mode=mode):
+                response = self.query('%_\\', mode)
+                self.assertEqual([item['identifier'] for item in response.json()['items']], ['token%_\\value'])
+
+    def test_invalid_regular_expression(self):
+        self.assertEqual(self.query('[', 'regex').status_code, 400)
+
+    def test_all_1000_matches_are_returned_with_owners_in_one_query(self):
+        Identifier.objects.bulk_create([Identifier(identifier=f'limit-{index:04}-limit', safe=True, userms=self.userms) for index in range(1000)])
+        Identifier.objects.create(identifier='limit-unapproved-limit', safe=False)
+        with self.assertNumQueries(1):
+            response = self.query('limit-', 'startswith')
+        self.assertEqual(response.status_code, 200)
+        expected = [{'identifier': f'limit-{index:04}-limit', 'user_id': self.user.id} for index in range(1000)]
+        self.assertEqual(response.json(), {'items': expected})
+
+    def test_over_1000_matches_are_rejected_without_partial_results(self):
+        Identifier.objects.bulk_create([Identifier(identifier=f'limit-{index:04}-limit', safe=True) for index in range(1001)])
+        cases = [
+            ('contains', 'limit'), ('icontains', 'LIMIT'), ('startswith', 'limit-'), ('istartswith', 'LIMIT-'),
+            ('endswith', '-limit'), ('iendswith', '-LIMIT'), ('regex', '^limit-'),
+        ]
+        for mode, text in cases:
+            with self.subTest(mode=mode), self.assertNumQueries(1):
+                response = self.query(text, mode)
+                self.assertEqual(response.status_code, 400)
+                self.assertEqual(response.json()['code'], 'too_many_matches')
+                self.assertIn('1000', response.json()['detail'])
+                self.assertNotIn('items', response.json())
+
+    def test_case_insensitive_exact_matching_also_has_a_total_limit(self):
+        texts = [''.join('a' if bit == '0' else 'A' for bit in f'{index:010b}') for index in range(1001)]
+        Identifier.objects.bulk_create([Identifier(identifier=text, safe=True) for text in texts])
+        response = self.query('a' * 10, 'iexact')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['code'], 'too_many_matches')
+        exact = self.query('a' * 10)
+        self.assertEqual(exact.status_code, 200)
+        self.assertEqual(exact.json()['items'], [{'identifier': 'a' * 10, 'user_id': None}])
+
+    def test_unknown_mode(self):
+        self.assertEqual(self.query('Public', 'unknown').status_code, 404)
+
+    def test_per_mode_rate_limits(self):
+        test_caches = {
+            **settings.CACHES,
+            'identifier-limits': {
+                'BACKEND': 'django.core.cache.backends.locmem.LocMemCache', 'LOCATION': 'identifier-limit-tests',
+            },
+        }
+        with self.settings(RATELIMIT_ENABLE=True, RATELIMIT_USE_CACHE='identifier-limits', CACHES=test_caches), patch('django_ratelimit.core.time.time', return_value=1800000000):
+            limits = {'exact': 2, 'startswith': 10, 'iexact': 6, 'contains': 6, 'icontains': 6, 'istartswith': 6, 'endswith': 6, 'iendswith': 6, 'regex': 2}
+            for mode, limit in limits.items():
+                with self.subTest(mode=mode):
+                    caches['identifier-limits'].clear()
+                    for _ in range(limit):
+                        self.assertEqual(self.query('Public', mode).status_code, 200)
+                    with self.assertNumQueries(0):
+                        self.assertEqual(self.query('Public', mode).status_code, 429)
+
+    def test_expensive_modes_share_limits_and_other_ips_are_independent(self):
+        test_caches = {
+            **settings.CACHES,
+            'identifier-limits': {
+                'BACKEND': 'django.core.cache.backends.locmem.LocMemCache', 'LOCATION': 'identifier-shared-limit-tests',
+            },
+        }
+        with self.settings(RATELIMIT_ENABLE=True, RATELIMIT_USE_CACHE='identifier-limits', CACHES=test_caches), patch('django_ratelimit.core.time.time', return_value=1800000000):
+            caches['identifier-limits'].clear()
+            for mode in ['iexact', 'contains', 'icontains', 'istartswith', 'endswith', 'iendswith']:
+                self.assertEqual(self.query('Public', mode).status_code, 200)
+            self.assertEqual(self.query('Public', 'contains').status_code, 429)
+            for _ in range(2):
+                self.assertEqual(self.query('Public', 'regex').status_code, 200)
+            self.assertEqual(self.query('Public', 'regex').status_code, 429)
+            self.assertEqual(self.query('Public', 'exact').status_code, 200)
+            self.assertEqual(self.query('Public', 'startswith').status_code, 200)
+            response = self.client.get('/api/identifier/query/contains', {'identifier': 'Public'}, REMOTE_ADDR='192.0.2.42')
+            self.assertEqual(response.status_code, 200)
+
+    def test_player_lookup(self):
+        response = self.client.get('/api/userprofile/identifier', {'user_id': self.user.id})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), ['Public identifier'])
+
+    def test_player_without_minesweeper_profile(self):
+        user = UserProfile.objects.create_user(username='identifier_query_no_ms', email='identifier-no-ms@example.com')
+        response = self.client.get('/api/userprofile/identifier', {'user_id': user.id})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), [])
 
 
 class BindIdentifierServiceTest(TestCase):

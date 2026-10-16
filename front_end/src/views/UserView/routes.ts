@@ -2,6 +2,11 @@ import type { RouteRecordRaw } from 'vue-router';
 
 export const userRoutes: RouteRecordRaw[] = [
     {
+        path: 'settings',
+        name: 'user-settings',
+        component: () => import('./UserSettingsView.vue'),
+    },
+    {
         path: 'accountlink',
         name: 'user-accountlink',
         component: () => import('./UserAccountLinkView.vue'),
