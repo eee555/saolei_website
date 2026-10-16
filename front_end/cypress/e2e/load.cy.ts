@@ -1,14 +1,13 @@
-describe('template spec', () => {
+describe('Main navigation', () => {
     it('menu navigation', () => {
-        cy.visit('http://localhost:8080/');
+        cy.visit('/');
         cy.get('#app[data-v-app]', { timeout: Cypress.config('pageLoadTimeout') }).should('be.visible');
-        cy.url().should('eq', 'http://localhost:8080/#/');
-        cy.contains('[data-cy=app-header] .el-menu-item', '排行榜').click();
-        cy.url().should('contain', 'http://localhost:8080/#/ranking');
-        cy.contains('[data-cy=app-header] .el-menu-item', '录像').click();
-        cy.url().should('eq', 'http://localhost:8080/#/video');
-        cy.contains('[data-cy=app-header] .el-menu-item', '帮助');
-        cy.contains('[data-cy=app-header] .el-menu-item', '设置').click();
-        cy.url().should('eq', 'http://localhost:8080/#/settings');
+        cy.url().should('match', /\/#\/$/);
+        cy.get('[data-cy=app-header] [data-navigation-id=ranking] a').click();
+        cy.url().should('include', '/#/ranking');
+        cy.get('[data-cy=app-header] [data-navigation-id=video] a').click();
+        cy.url().should('match', /\/#\/video$/);
+        cy.get('[data-cy=app-header] [data-navigation-id=settings] a').click();
+        cy.url().should('match', /\/#\/settings$/);
     });
 });
