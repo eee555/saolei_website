@@ -284,11 +284,12 @@ function offsetIndex(index: number): number {
 // 根据配置，刷新当前页面的录像表
 function request_videos(): void {
     const [bmin, bmax] = videofilter.value.bbbv_range[levelTagSelected.value];
+    const sortField = indexTags[indexTagSelected.value].key;
     const params: VideoQueryParams = {
         level: levelTagSelected.value,
         mode: modeTags[modeTagSelected.value].key,
         nf: nfOnly.value,
-        o: indexTags[indexTagSelected.value].key,
+        o: sortField === 'stnb' ? 'iqg' : sortField,
         r: state.ReverseOrder,
         ps: videofilter.value.pagesize,
         page: state.CurrentPage,
