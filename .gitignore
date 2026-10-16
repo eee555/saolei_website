@@ -178,6 +178,7 @@ front_end/yarn.lock
 **/migrations/*
 !**/migrations/__init__.py
 *.tmp
+/.tmp/
 /back_end/saolei/.vscode
 /vitepress_doc/.vitepress/.temp
 /vitepress_doc/.vitepress/cache

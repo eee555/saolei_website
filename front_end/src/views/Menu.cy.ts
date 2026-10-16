@@ -1,4 +1,5 @@
 import { Key, Lock, Message, User } from '@element-plus/icons-vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { defineComponent, h, ref } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
@@ -39,6 +40,8 @@ function mountMenu(width: number, options: { layout?: 'top' | 'sidebar'; setting
             global: {
                 plugins: [pinia, router, i18n],
                 components: { Key, Lock, Message, User },
+                // ElDrawer commits its closed model and destroys content in transition hooks.
+                stubs: { transition: false },
                 config: { globalProperties: { $axios } },
             },
         });
@@ -51,7 +54,25 @@ function openMore() {
     cy.get('.site-menu > .el-menu > .el-sub-menu:not([data-navigation-id]) > .el-sub-menu__title').click();
 }
 
+function expectDrawerClosed() {
+    // destroy-on-close removes the links after the closing transition and model update finish.
+    cy.get('.site-navigation-drawer .navigation-links').should('not.exist');
+    cy.shouldBeAbsentOrHidden('.site-navigation-drawer');
+    cy.get('body').should('not.have.class', 'el-popup-parent--hidden');
+}
+
 describe('<Menu /> navigation layouts', () => {
+    afterEach(() => {
+        cy.get('@vue').invoke('unmount');
+        // Service-created overlays outlive the mounted component, including after a failed assertion.
+        cy.then(() => {
+            ElMessageBox.close();
+            ElMessage.closeAll();
+        });
+        cy.shouldBeAbsentOrHidden('.el-message-box');
+        cy.get('body').should('not.have.class', 'el-popup-parent--hidden');
+    });
+
     it('tracks the parent section of nested routes and returns home through the logo', () => {
         const router = mountMenu(1440);
         cy.then(() => router.push('/ranking/pb'));
@@ -81,13 +102,14 @@ describe('<Menu /> navigation layouts', () => {
         cy.get('.site-navigation-popper:visible').contains('button', 'Logout').focus();
         cy.realPress('Space');
         cy.get('.el-message-box').should('be.visible').and('contain.text', 'Log out of the current account?');
-        cy.get('.el-message-box__btns').contains('button', /^Cancel$/).click();
+        cy.get('.el-message-box:visible .el-message-box__btns').contains('button', /^Cancel$/).click();
         cy.shouldBeAbsentOrHidden('.el-message-box');
+        cy.get('body').should('not.have.class', 'el-popup-parent--hidden');
         cy.wrap(store).its('user.id').should('eq', user.id);
         cy.get('@logout.all').should('have.length', 0);
         openMore();
         cy.get('.site-navigation-popper:visible').contains('button', 'Logout').click();
-        cy.get('.el-message-box__btns').contains('button', /^Confirm$/).click();
+        cy.get('.el-message-box:visible .el-message-box__btns').contains('button', /^Confirm$/).click();
         cy.wait('@logout');
         cy.get('@logout.all').should('have.length', 1);
         openMore();
@@ -114,21 +136,20 @@ describe('<Menu /> navigation layouts', () => {
         cy.get('.site-navigation-drawer').should('be.visible');
         cy.get('.site-navigation-drawer').contains('a', 'Videos').click();
         cy.wrap(router).its('currentRoute.value.path').should('eq', '/video');
-        cy.shouldBeAbsentOrHidden('.site-navigation-drawer');
+        expectDrawerClosed();
         cy.get('[data-cy=navigation-toggle]').should('be.focused').click();
         cy.get('.site-navigation-drawer').should('be.visible');
         cy.realPress('Escape');
-        cy.shouldBeAbsentOrHidden('.site-navigation-drawer');
+        expectDrawerClosed();
         cy.get('[data-cy=navigation-toggle]').should('be.focused').click();
         cy.get('.site-navigation-drawer').contains('a', 'Home').click();
         cy.wrap(router).its('currentRoute.value.path').should('eq', '/');
-        cy.shouldBeAbsentOrHidden('.site-navigation-drawer');
+        expectDrawerClosed();
         cy.get('[data-cy=navigation-toggle]').click();
         cy.get('.site-navigation-drawer').should('be.visible');
         cy.viewport(1200, 720);
         cy.get('[data-cy=navigation-sidebar]').should('be.visible');
-        cy.shouldBeAbsentOrHidden('.site-navigation-drawer');
-        cy.get('body').should('not.have.class', 'el-popup-parent--hidden');
+        expectDrawerClosed();
         cy.get('[data-cy=navigation-home]').should('be.focused');
     });
 
