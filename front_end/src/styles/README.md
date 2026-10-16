@@ -18,6 +18,8 @@ CSS 与 Less 的选型由实施代理自行决定，根据实际重复程度和�
 
 `button.css` 保持原有导入路径，按顺序汇总 `buttons/base.css`、`buttons/variants.css`、`buttons/states.css`，分别负责基础布局、类型配色、尺寸与交互状态。
 
+`vendors/element-plus-tabs.less` 由 setup.ts 加载，统一将顶部 / 底部 ElTabs 标签按容器宽度换行，隐藏滚动箭头并覆盖库写入的横向位移。选中标签使用自身的主色底线，底部标签改为顶线，保留库的焦点样式、切换事件及面板生命周期；单个过长标签可在自身宽度内折行。规则限定于直接所属的水平标签头，不改变左侧 / 右侧纵向 Tabs。公共 Analyzer 与离线页面当前不使用 ElTabs，不受此规则影响。
+
 `navigation/layout.css`、`navigation/items.css` 与 `vendors/element-plus-navigation.css` 由网站 Menu.vue 加载，组件测试使用相同入口，不影响公共 Analyzer 或离线包。前两者负责外壳、Logo、原生链接及焦点状态，组件库变量和菜单浮层适配集中在 vendors。
 
 导航外壳、侧栏、菜单浮层及抽屉共用 36px 行高和 14px 普通文字字号；个人主页文字、导航图标通过独立变量保持 18px。Logo 图标高 36px，文字图片高 28px、四周 margin 为 4px；直接使用裁剪后的 logo2.png 与像素重着色的 logo2-dark.png，不使用 SVG 包装或滤镜。
