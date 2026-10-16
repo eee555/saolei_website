@@ -61,7 +61,7 @@
         <div class="text-small">
             {{ t('local.signatureTooltip', { left: user.newSignatureBudget(new Date(Date.now())), next: toISODateTimeString(user.nextSignatureAvailable) }) }}
         </div>
-        <div v-if="expTimeMs >= 200000" class="text-small text-warning">
+        <div v-if="qualificationStatus === 'ready' && expTimeMs >= 200000" class="text-small text-warning">
             {{ t('local.tooltipExpTime') }}
         </div>
     </div>
@@ -94,6 +94,7 @@ import '@/styles/text.css';
 
 import { ElInput } from 'element-plus';
 import { computed, ref, watch } from 'vue';
+import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import BaseButton from '@/components/common/BaseButton.vue';
@@ -106,6 +107,7 @@ import { UserProfile } from '@/utils/userprofile';
 
 const props = defineProps({
     expTimeMs: { type: Number, default: 999999 },
+    qualificationStatus: { type: String as PropType<'idle' | 'loading' | 'ready' | 'error'>, default: 'ready' },
 });
 
 const { proxy } = useCurrentInstance();
@@ -142,7 +144,7 @@ function refresh() {
 
 watch(user, refresh, { immediate: true });
 
-const signatureDisabled = computed(() => user.value.nextSignatureAvailable > globalNow.value || props.expTimeMs >= 200000);
+const signatureDisabled = computed(() => props.qualificationStatus !== 'ready' || user.value.nextSignatureAvailable > globalNow.value || props.expTimeMs >= 200000);
 
 type UpdateProfileResponseSingle = null
     | { type: 'success' }

@@ -2,7 +2,6 @@
     <Menu>
         <main class="common-layout">
             <VideoPlayer />
-            <VideoListDialog />
             <router-view />
             <Footer />
         </main>
@@ -31,7 +30,6 @@ import { ElDialog } from 'element-plus';
 import { onMounted, ref, watch } from 'vue';
 
 import BaseButtonConfirm from './components/common/BaseButtonConfirm.vue';
-import VideoListDialog from './components/dialogs/VideoListDialog.vue';
 import Footer from './components/Footer.vue';
 import VideoPlayer from './components/VideoPlayer/App.vue';
 import { local } from './store';

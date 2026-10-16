@@ -3,49 +3,79 @@ import { defineStore } from 'pinia';
 
 import { pinia } from './create';
 
+import { fetchProfileSaoleiRecords, profileDataRevision } from '@/services/profileDataService';
 import { deepMutableCopy } from '@/utils';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { colorSchemeTemplates } from '@/utils/config';
 import type { CellChoice, ColorTemplateName, ColumnChoice, MS_Software } from '@/utils/ms_const';
-import { MS_Softwares, MS_State } from '@/utils/ms_const';
+import { MS_Softwares } from '@/utils/ms_const';
 import { UserProfile } from '@/utils/userprofile';
 import type { UserProfileData } from '@/utils/userprofile';
-import type { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
+import type { getStat_stat } from '@/utils/videoabstract';
+
+interface UserState {
+    user: UserProfile;
+    player: UserProfile;
+    login_status: LoginStatus;
+    sessionRevision: number;
+    new_identifier: boolean;
+    expertTimeMs: number | null | undefined;
+    qualificationStatus: 'idle' | 'loading' | 'ready' | 'error';
+    qualificationRevision: number;
+}
 
 export const store = defineStore('user', {
-    state: () => ({
+    state: (): UserState => ({
         user: new UserProfile(), // 真正的用户
         // 访问谁的地盘不再具有记忆性。即点“我的地盘”，将永远是“我”的地盘
         // 想要访问特定用户，可以用url
         // 访问谁的地盘
         player: new UserProfile(),
         login_status: LoginStatus.Undefined, // 登录状态，全局维护
+        sessionRevision: 0,
         new_identifier: false, // 是否有新标识录像
-        video_list: [] as VideoAbstract[],
-        video_list_show: false,
+        expertTimeMs: undefined,
+        qualificationStatus: 'idle',
+        qualificationRevision: -1,
     }),
     getters: {
         isSelf: (state) => state.user.id === state.player.id && state.user.id !== 0,
         isUserAnonymous: (state) => state.user.realname === '',
-        expTimeMs: (state) => {
-            let ret = 999999;
-            if (!state.user.videos) return ret;
-            for (const video of state.user.videos) {
-                if (video.state === MS_State.Official && video.level === 'e') {
-                    ret = Math.min(ret, video.timems);
-                }
-            }
-            return ret;
-        },
+        expTimeMs: (state) => state.expertTimeMs ?? 999999,
     },
     actions: {
         login(userdata: UserProfileData) {
+            this.sessionRevision++;
             this.user = new UserProfile(userdata);
+            this.expertTimeMs = undefined;
+            this.qualificationStatus = 'idle';
+            this.qualificationRevision = -1;
             this.login_status = LoginStatus.IsLogin;
         },
         logout() {
+            this.sessionRevision++;
             this.user = new UserProfile();
+            this.expertTimeMs = undefined;
+            this.qualificationStatus = 'idle';
+            this.qualificationRevision = -1;
             this.login_status = LoginStatus.NotLogin;
+        },
+        async loadQualification() {
+            const owner = this.user;
+            const revision = profileDataRevision(owner.id);
+            if (this.login_status !== LoginStatus.IsLogin || owner.id < 1) return;
+            if (this.qualificationRevision === revision && (this.qualificationStatus === 'loading' || this.qualificationStatus === 'ready')) return;
+            this.qualificationRevision = revision;
+            this.qualificationStatus = 'loading';
+            this.expertTimeMs = undefined;
+            try {
+                const records = await fetchProfileSaoleiRecords(owner.id);
+                if (this.user !== owner || profileDataRevision(owner.id) !== revision) return;
+                this.expertTimeMs = records.saolei.et;
+                this.qualificationStatus = 'ready';
+            } catch {
+                if (this.user === owner && profileDataRevision(owner.id) === revision) this.qualificationStatus = 'error';
+            }
         },
     },
 })(pinia);
@@ -125,7 +155,6 @@ export const BBBvSummaryConfig = useLocalStorage(
         sortDesc: false,
         softwareFilter: [...MS_Softwares] as MS_Software[],
         zoom: 1,
-        tooltipMode: 'fast' as 'fast' | 'advanced',
         showIcon: 'software' as '' | 'software' | 'state',
         newThresh: 1,
         newDateField: 'upload_time' as 'upload_time' | 'end_time',

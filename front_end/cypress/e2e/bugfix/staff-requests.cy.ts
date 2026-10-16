@@ -28,11 +28,20 @@ describe('Staff requests against the backend', () => {
         cy.registerUser(USER);
     });
 
-    it('persists UserProfile and UserMS changes submitted from the staff page', () => {
+    it('persists staff edits and shows the updated profile on the lightweight summary', () => {
         // Observe real responses; request encoding is validated by the backend.
         cy.login(STAFF.username, STAFF.password);
         cy.intercept('GET', `**/api/userprofile/admin/detail/${USER.id}`).as('loadUser');
         cy.intercept('PATCH', `**/api/userprofile/admin/update/${USER.id}`).as('updateProfile');
+        // The endpoint allows 5s of caching; immediate post-edit reads must revalidate requests too.
+        cy.intercept({ method: 'GET', pathname: `/api/userprofile/info/${USER.id}` }, (request) => {
+            request.headers['cache-control'] = 'no-cache';
+            request.on('before:response', (response) => {
+                response.headers['cache-control'] = 'no-store';
+            });
+        }).as('publicProfile');
+        cy.intercept('GET', `**/api/speedranking/pb/player/${USER.id}`).as('pbRecords');
+        cy.intercept('GET', '**/api/userprofile/videolist*').as('allVideos');
         cy.visit('/#/staff/userprofile');
         cy.get('.el-input-number input').clear();
         cy.get('.el-input-number input').type(String(USER.id));
@@ -54,6 +63,24 @@ describe('Staff requests against the backend', () => {
         cy.contains('button', '查询').click();
         cy.wait('@loadUser').its('response.body').should('include', payload);
 
+        cy.closeElNotifications();
+        cy.visitUser(USER.id);
+        cy.url().should('include', `/player/${USER.id}/summary`);
+        cy.wait('@publicProfile').its('response.body').should('include', payload);
+        cy.wait('@pbRecords').its('response.statusCode').should('eq', 200);
+        cy.get('[data-cy=pb-summary]').should('have.attr', 'aria-busy', 'false');
+        cy.get('[data-cy=pb-grid-e]').should('be.visible');
+        cy.get('.profile-section .signature').should(($signature) => {
+            expect($signature.text().trim()).to.eq(payload.signature);
+        });
+        cy.get('@allVideos.all').should('have.length', 0);
+
+        cy.visit('/#/staff/userprofile');
+        cy.get('.el-input-number input').clear();
+        cy.get('.el-input-number input').type(String(USER.id));
+        cy.contains('button', '查询').click();
+        cy.wait('@loadUser').its('response.body').should('include', payload);
+
         const clearPayload = { signature: '', is_banned: false };
         cy.get('textarea').eq(0).clear();
         cy.get('textarea').eq(0).type(JSON.stringify(clearPayload), { parseSpecialCharSequences: false });
@@ -69,6 +96,17 @@ describe('Staff requests against the backend', () => {
         cy.wait('@updateUserMS').its('response.statusCode').should('eq', 200);
         cy.wait('@loadUser').its('response.body.userms_video_num_limit').should('eq', 0);
         cy.get('textarea').eq(1).should('have.value', '{}');
+
+        cy.closeElNotifications();
+        cy.visitUser(USER.id);
+        cy.wait('@publicProfile').its('response.body').should('include', clearPayload);
+        cy.wait('@pbRecords').its('response.statusCode').should('eq', 200);
+        cy.get('[data-cy=pb-grid-e]').should('be.visible');
+        cy.get('.profile-section .profile').should('contain.text', USER.username);
+        cy.get('.profile-section .signature').should(($signature) => {
+            expect($signature.text().trim()).to.eq('');
+        });
+        cy.get('@allVideos.all').should('have.length', 0);
     });
 
     it('restarts a failed task and deletes it through the staff page', () => {

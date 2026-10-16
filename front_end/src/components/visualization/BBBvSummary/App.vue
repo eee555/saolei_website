@@ -27,11 +27,15 @@
                 :sort-by="options[BBBvSummaryConfig.template].sortBy"
                 :sort-desc="options[BBBvSummaryConfig.template].sortDesc"
                 :software-filter="BBBvSummaryConfig.softwareFilter"
-                :tooltip-mode="BBBvSummaryConfig.tooltipMode"
+                :selectable="selectable"
+                :selected="selectedBV === bv"
+                :selection-label="`${t(`common.level.${level}`)} BV ${bv}`"
                 :show-icon="BBBvSummaryConfig.showIcon"
                 :new-thresh="BBBvSummaryConfig.newThresh"
                 :new-date-field="BBBvSummaryConfig.newDateField"
                 @mouseover="tooltipVideos=groupedVideoAbstract.get(bv) || []"
+                @focusin="tooltipVideos=groupedVideoAbstract.get(bv) || []"
+                @select="emit('selectBV', { level, bv })"
             />
             <template #content>
                 <Tooltip
@@ -68,10 +72,13 @@ import type { getStat_stat, VideoAbstract } from '@/utils/videoabstract';
 import { groupVideosByBBBv } from '@/utils/videoabstract';
 
 const props = defineProps({
+    selectable: { type: Boolean, default: false },
+    selectedBV: { type: Number, default: undefined },
     header: { type: Boolean, default: false },
     level: { type: String as PropType<MS_Level>, required: true },
     videoList: { type: Array<VideoAbstract>, default: () => [] },
 });
+const emit = defineEmits<{ selectBV: [selection: { level: MS_Level; bv: number }] }>();
 const { t } = useI18n();
 const tooltipVideos = ref([] as VideoAbstract[]);
 

@@ -18,6 +18,7 @@ function mountProfile(path: string, loggedIn = true) {
     cy.intercept('GET', '/api/userprofile/info/43*', { id: 43, username: 'other', realname: 'Other' });
     cy.intercept('GET', '/api/userprofile/identifier*', ['Owned identifier']).as('identifiers');
     cy.intercept('GET', '/api/userprofile/videolist*', []).as('videos');
+    cy.intercept('GET', '/api/speedranking/player/42', { saolei: { et: 35090 } }).as('qualification');
     const router = createRouter({
         history: createMemoryHistory(),
         routes: [{
@@ -47,11 +48,12 @@ describe('Profile settings navigation', () => {
         const router = mountProfile('/player/42/summary');
         cy.contains('button', 'Edit Profile').click();
         cy.wrap(router).its('currentRoute.value.name').should('eq', 'user-settings');
-        cy.wait('@videos');
+        cy.wait('@qualification');
         cy.wait('@identifiers');
         cy.get('.user-settings').should('contain.text', 'Local Name').and('contain.text', 'Owned identifier');
         cy.get('.user-settings').contains('Local Name').parent().next().find('input').should('have.value', 'Self');
         cy.get('.el-dialog').should('not.exist');
+        cy.get('@videos.all').should('have.length', 0);
     });
 
     for (const loggedIn of [true, false]) {

@@ -15,6 +15,7 @@ const mountHeader = () => {
 describe('<BBBvSummary Header />', () => {
     beforeEach(() => {
         cy.clearLocalStorage('bbbv-summary-config');
+        Object.assign(BBBvSummaryConfig.value, { template: 'time', sortBy: 'timems', displayBy: 'time', sortDesc: false, softwareFilter: ['e', 'a', 'r', 'm'], zoom: 1, showIcon: 'software', newThresh: 1, newDateField: 'upload_time' });
     });
 
     it('persists template changes and exposes custom sorting controls', () => {
@@ -52,7 +53,7 @@ describe('<BBBvSummary Header />', () => {
         cy.wrap(BBBvSummaryConfig).its('value.softwareFilter').should('deep.equal', ['a', 'r', 'm', 'e']);
     });
 
-    it('persists icon mode, new highlight settings, tooltip mode, and zoom', () => {
+    it('persists icon mode, new highlight settings, and zoom', () => {
         mountHeader();
 
         cy.contains('Icon').next().click();
@@ -66,9 +67,6 @@ describe('<BBBvSummary Header />', () => {
         cy.get('.el-input-number input').type('3');
         cy.get('.el-input-number input').blur();
         cy.wrap(BBBvSummaryConfig).its('value.newThresh').should('eq', 3);
-
-        cy.contains('Fast').click();
-        cy.wrap(BBBvSummaryConfig).its('value.tooltipMode').should('eq', 'advanced');
 
         cy.get('[data-cy=zoomin]').click();
         cy.wrap(BBBvSummaryConfig).its('value.zoom').should('be.closeTo', 1.1, 0.001);

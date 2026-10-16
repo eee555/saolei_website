@@ -2,7 +2,7 @@
     <div :class="{ 'horizontal-profile': direction === 'horizontal', 'vertical-profile': direction === 'vertical' }">
         <div class="profile">
             <div class="avatar">
-                <Avatar v-model:user="store.player" :is-self="user.id === store.user.id" :exp-time-ms="store.expTimeMs" />
+                <Avatar v-model:user="store.player" :is-self="user.id === store.user.id" :exp-time-ms="store.expTimeMs" :qualification-status="store.qualificationStatus" />
             </div>
             <div>
                 <span class="username">
@@ -22,6 +22,7 @@
         <BaseButton v-if="store.isSelf" class="edit-button" @click="router.push({ name: 'user-settings', params: { id: user.id } })">
             {{ t('local.editButton') }}
         </BaseButton>
+        <ProfileQualification v-if="store.isSelf" />
         <div class="signature">
             {{ user.signature }}
         </div>
@@ -34,6 +35,7 @@ import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
 import Avatar from './Avatar.vue';
+import ProfileQualification from './ProfileQualification.vue';
 
 import BaseButton from '@/components/common/BaseButton.vue';
 import { local, store } from '@/store';

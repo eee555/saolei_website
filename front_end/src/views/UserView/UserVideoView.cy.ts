@@ -1,19 +1,29 @@
 import { QuestionFilled } from '@element-plus/icons-vue';
 import PrimeVue from 'primevue/config';
-import { reactive } from 'vue';
+import { defineComponent, h, reactive } from 'vue';
+import { createMemoryHistory, createRouter } from 'vue-router';
 
 import UserVideoView from './UserVideoView.vue';
 
 import $axios from '@/http';
 import i18n from '@/i18n';
-import { store, VideoListConfig } from '@/store';
+import { activityCalendarConfig, BBBvSummaryConfig, store, VideoListConfig } from '@/store';
 import { pinia } from '@/store/create';
 import { MS_Mode } from '@/utils/ms_const';
 import { UserProfile } from '@/utils/userprofile';
+import type { VideoAbstract } from '@/utils/videoabstract';
 
-function mountUserVideos(userId = 99, hiddenStates = [true, false]) {
+const ScatterStub = defineComponent({
+    props: { videos: { type: Array<VideoAbstract>, default: () => [] } },
+    setup: (props) => () => h('div', { 'data-cy': 'scatter-videos' }, props.videos.map((video) => video.id).join(',')),
+});
+
+function mountUserVideos(userId = 99, hiddenStates = [true, false], overrides: Record<string, unknown>[] = []) {
     store.login({ id: 99, username: 'player', realname: 'Player' });
     VideoListConfig.value.profile = ['time'];
+    BBBvSummaryConfig.value.softwareFilter = ['e', 'a', 'r', 'm'];
+    BBBvSummaryConfig.value.template = 'time';
+    activityCalendarConfig.value.useEndTime = false;
     const user = reactive(new UserProfile({ id: userId }));
     cy.intercept('GET', '**/api/userprofile/videolist*', {
         body: hiddenStates.map((hidden, index) => ({
@@ -24,20 +34,27 @@ function mountUserVideos(userId = 99, hiddenStates = [true, false]) {
             timems: 40000,
             bv: 100,
             ongoing_tournament: hidden,
+            upload_time: new Date(2026, 9, 14, 12).toISOString(),
+            ...overrides[index],
         })),
     }).as('videos');
     cy.intercept('GET', '**/api/video/preview*', { statusCode: 404 }).as('preview');
-    cy.mount(UserVideoView, {
-        props: { user },
-        global: { plugins: [pinia, i18n, PrimeVue], components: { QuestionFilled }, config: { globalProperties: { $axios } } },
+    const router = createRouter({ history: createMemoryHistory(), routes: [{ path: '/player/:id/videos', name: 'user-videos', component: UserVideoView }] });
+    void router.push(`/player/${userId}/videos`);
+    cy.wrap(router.isReady()).then(() => {
+        cy.mount(UserVideoView, {
+            props: { user },
+            global: { plugins: [pinia, i18n, PrimeVue, router], components: { QuestionFilled }, stubs: { VideoScatter: ScatterStub }, config: { globalProperties: { $axios } } },
+        });
     });
     cy.wait('@videos');
     // VideoList loads its data columns asynchronously, after rows may already exist.
     cy.get('.p-datatable-table').contains('Time');
     if (userId === 99) cy.get('.p-datatable-table').contains('Action');
-    cy.get('.p-datatable-table').extractTableData().should('deep.equal', userId === 99
-        ? [['Time', 'Action'], ['40.000', ''], ['40.000', '']]
-        : [['Time'], ['40.000'], ['40.000']]);
+    cy.get('.p-datatable-table').extractTableData().should('deep.equal', [
+        userId === 99 ? ['Time', 'Action'] : ['Time'],
+        ...hiddenStates.slice(0, 25).map(() => (userId === 99 ? ['40.000', ''] : ['40.000'])),
+    ]);
     return user;
 }
 
@@ -47,6 +64,70 @@ function openActions(videoId: number) {
 }
 
 describe('<UserVideoView /> video reveal', () => {
+    it('keeps BV display filters independent while sharing selection and filters with the scatter plot', () => {
+        mountUserVideos(100, [false, false, false, false], [{ software: 'a' }, { software: 'r' }, { level: 'i' }, { bv: 101 }]);
+        cy.get('[data-cy=video-overview]').select('bv');
+        cy.then(() => {
+            BBBvSummaryConfig.value.softwareFilter = ['a'];
+        });
+        cy.get('button[aria-label="Expert BV 100"]').click();
+        cy.get('button[aria-label="Expert BV 100"]').should('have.attr', 'aria-pressed', 'true');
+        cy.get('button[aria-label="Intermediate BV 100"]').should('have.attr', 'aria-pressed', 'false');
+        cy.get('[data-cy=video-range]').should('contain.text', '2 videos in range, 2 after filtering');
+        cy.get('.p-datatable-table').getTable().should('have.length', 2);
+        cy.get('[data-cy=video-shared-filters] [role=group][aria-label="Software"] input[value=a]').should('have.length', 1).uncheck();
+        cy.get('[data-cy=video-shared-filters] [role=group][aria-label="State"] input[value=a]').should('be.checked');
+        cy.get('[data-cy=video-range]').should('contain.text', '2 videos in range, 1 after filtering');
+        cy.get('[data-cy=video-presentation]').select('scatter');
+        cy.get('[data-cy=scatter-videos]').should('have.text', '102');
+        cy.then(() => {
+            BBBvSummaryConfig.value.softwareFilter = [];
+        });
+        cy.get('button[aria-label="Expert BV 100"]').should('have.attr', 'aria-pressed', 'true');
+        cy.get('[data-cy=scatter-videos]').should('have.text', '102');
+        cy.get('[data-cy=video-presentation]').select('table');
+        cy.get('.p-datatable-table').getTable().should('have.length', 1);
+        cy.get('button[aria-label="Expert BV 100"]').focus();
+        cy.realPress('Enter');
+        cy.get('[data-cy=video-range]').should('contain.text', '4 videos in range, 3 after filtering');
+        cy.get('@videos.all').should('have.length', 1);
+        cy.get('@preview.all').should('have.length', 0);
+        cy.get('.el-dialog:visible').should('not.exist');
+    });
+
+    it('selects calendar days and cancels a repeated selection without reloading', () => {
+        mountUserVideos(100, [false, false], [{}, { upload_time: new Date(2026, 9, 15, 12).toISOString() }]);
+        cy.get('[data-cy=video-overview]').select('calendar');
+        cy.get('[data-cy=cell-2026-10-14]').click();
+        cy.get('[data-cy=cell-2026-10-14]').should('have.attr', 'aria-pressed', 'true');
+        cy.get('[data-cy=video-range]').should('contain.text', '1 videos in range, 1 after filtering');
+        cy.get('[data-cy=video-presentation]').select('scatter');
+        cy.get('[data-cy=scatter-videos]').should('have.text', '101');
+        cy.get('[data-cy=cell-2026-10-14]').focus();
+        cy.realPress('Space');
+        cy.get('[data-cy=cell-2026-10-14]').should('have.attr', 'aria-pressed', 'false');
+        cy.get('[data-cy=scatter-videos]').should('have.text', '101,102');
+        cy.get('[data-cy=cell-2026-10-13]').click();
+        cy.get('[data-cy=cell-2026-10-13]').should('have.attr', 'aria-pressed', 'true');
+        cy.get('[data-cy=video-range]').should('contain.text', '0 videos in range, 0 after filtering');
+        cy.get('[data-cy=scatter-videos]').should('have.text', '');
+        cy.get('[data-cy=video-overview]').select('none');
+        cy.get('[data-cy=scatter-videos]').should('have.text', '101,102');
+        cy.get('@videos.all').should('have.length', 1);
+    });
+
+    it('passes all filtered records to scatter regardless of the table page', () => {
+        mountUserVideos(100, Array<boolean>(30).fill(false));
+        cy.get('.p-datatable-table').getTable().should('have.length', 25);
+        cy.get('[data-cy=video-presentation]').select('scatter');
+        cy.get('[data-cy=scatter-videos]').should(($element) => {
+            expect($element.text().split(',')).to.have.length(30);
+        });
+        cy.get('[data-cy=video-presentation]').select('table');
+        cy.get('.p-datatable-table').getTable().should('have.length', 25);
+        cy.get('@videos.all').should('have.length', 1);
+    });
+
     it('updates columns through checkboxes and selected tag removal without refetching videos', () => {
         mountUserVideos(100, [false, false]);
         cy.get('button[aria-label="Select columns"]').click();

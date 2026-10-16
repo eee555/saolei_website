@@ -36,6 +36,8 @@ export class UserProfile {
     public accountlink: unknown[] = [];
     public identifiers?: string[];
     public videos?: VideoAbstract[];
+    public videosViewerKey?: string;
+    public videosRevision?: number;
 
     public constructor(data?: UserProfileData) {
         if (data === undefined) return;

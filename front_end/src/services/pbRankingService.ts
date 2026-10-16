@@ -10,6 +10,20 @@ export interface PBRankingPlayer {
     upload_time: string;
 }
 
+export interface PBPlayerRecord {
+    level: MS_Level;
+    bv: number;
+    nf: boolean;
+    timems: number;
+    video_id: number;
+    rank: number | null;
+}
+
+export async function fetchPBPlayerRecords(playerId: number): Promise<PBPlayerRecord[]> {
+    const { data } = await $axios.get<PBPlayerRecord[]>(`/api/speedranking/pb/player/${playerId}`);
+    return data;
+}
+
 export type PBStat = 'time' | 'bvs' | 'stnb';
 export const pbStats = ['time', 'bvs', 'stnb'] as const;
 export const pbLevels = ['b', 'i', 'e'] as const;

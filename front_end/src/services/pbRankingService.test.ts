@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { fetchPBCounts, fetchPBRanking, formatPBUploadTime, formatPBValue, pbBVLimits, pbLevels } from './pbRankingService';
+import { fetchPBCounts, fetchPBPlayerRecords, fetchPBRanking, formatPBUploadTime, formatPBValue, pbBVLimits, pbLevels } from './pbRankingService';
 
 import $axios from '@/http';
 
@@ -30,5 +30,12 @@ describe('PB ranking', () => {
         get.mockClear().mockResolvedValue({ data: counts });
         expect(await fetchPBCounts()).toEqual(counts);
         expect(get).toHaveBeenCalledExactlyOnceWith('/api/speedranking/pb/counts');
+    });
+
+    it('loads all player PB records in one request, including absent ranks', async () => {
+        const records = [{ level: 'e', bv: 100, nf: false, timems: 35090, video_id: 123, rank: null }];
+        const get = vi.spyOn($axios, 'get').mockResolvedValue({ data: records });
+        expect(await fetchPBPlayerRecords(42)).toEqual(records);
+        expect(get).toHaveBeenCalledExactlyOnceWith('/api/speedranking/pb/player/42');
     });
 });

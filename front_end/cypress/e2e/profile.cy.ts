@@ -151,12 +151,14 @@ describe('Personal Profile', () => {
         cy.closeElNotifications();
     });
 
-    it('Auto load videos when visiting summary', () => {
+    it('Loads PB records without downloading all videos on summary', () => {
+        cy.intercept('GET', '/api/userprofile/videolist*').as('allVideos');
+        cy.intercept('GET', `/api/speedranking/pb/player/${USER_ID}`).as('pbRecords');
         cy.visitUser(USER_ID);
-
-        cy.contains('共2个录像'); // calendar
-        cy.contains('共1个Bv'); // bv
-
+        cy.wait('@pbRecords');
+        cy.get('[data-cy=pb-summary]').should('be.visible');
+        cy.get('[data-cy=pb-grid-e]').should('be.visible');
+        cy.get('@allVideos.all').should('have.length', 0);
         cy.contains('扫雷标识').should('not.exist');
     });
 
@@ -173,6 +175,10 @@ describe('Personal Profile', () => {
         cy.get('table:visible').getTable().should((tableData) => {
             expect(tableData.length).to.equal(2);
         });
+        cy.get('[data-cy=video-overview]').select('calendar');
+        cy.contains('共2个录像');
+        cy.get('[data-cy=video-overview]').select('bv');
+        cy.contains('共1个Bv');
     });
 
     it('Update avatar', () => {
@@ -237,6 +243,6 @@ describe('Personal Profile', () => {
 
         cy.url().should('eq', `http://localhost:8080/#/player/${USER_ID}/summary`);
 
-        cy.contains('共2个录像');
+        cy.get('[data-cy=pb-summary]').should('be.visible');
     });
 });
