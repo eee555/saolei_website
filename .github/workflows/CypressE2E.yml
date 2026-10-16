@@ -32,6 +32,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
@@ -69,6 +74,7 @@ jobs:
         with:
           start: npm run dev -- --host 127.0.0.1 --strictPort
           working-directory: front_end
+          browser: chrome
           wait-on: 'http://localhost:8000,http://localhost:8080'
 
       - name: Upload Cypress screenshots
