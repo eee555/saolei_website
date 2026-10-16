@@ -33,8 +33,9 @@ describe('Staff requests against the backend', () => {
         cy.login(STAFF.username, STAFF.password);
         cy.intercept('GET', `**/api/userprofile/admin/detail/${USER.id}`).as('loadUser');
         cy.intercept('PATCH', `**/api/userprofile/admin/update/${USER.id}`).as('updateProfile');
-        // The public endpoint allows 5 seconds of browser caching; this test reads immediately after edits.
+        // The endpoint allows 5s of caching; immediate post-edit reads must revalidate requests too.
         cy.intercept({ method: 'GET', pathname: `/api/userprofile/info/${USER.id}` }, (request) => {
+            request.headers['cache-control'] = 'no-cache';
             request.on('before:response', (response) => {
                 response.headers['cache-control'] = 'no-store';
             });
