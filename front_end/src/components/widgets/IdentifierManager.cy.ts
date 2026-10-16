@@ -66,7 +66,7 @@ describe('IdentifierManager.vue', () => {
         cy.get('.el-table__body').extractTableData().should('deep.equal', [['abc', ''], ['def', '']]);
 
         cy.get('.el-input').should('not.exist');
-        cy.get('.pi-trash').should('not.exist');
+        cy.get('.el-table__body button[aria-label="Delete identifier"]').should('not.exist');
 
         cy.get('.el-table__body').find('.pi-copy').should('have.length', 2);
     });
@@ -80,11 +80,11 @@ describe('IdentifierManager.vue', () => {
             copy.resolves();
         });
         cy.contains('label', 'Show invisible characters').find('input').check();
-        cy.get('.identifier-text').should('have.text', '␠a⟦U+200B⟧␠');
-        cy.get('button[aria-label="Copy"]').click();
+        cy.get('.el-table__body .identifier-text').should('have.text', '␠a⟦U+200B⟧␠');
+        cy.get('.el-table__body button[aria-label="Copy"]').click();
         cy.get('@copy').should('have.been.calledOnceWith', identifier);
         cy.closeElNotifications();
-        cy.get('.pi-trash').click();
+        cy.get('.el-table__body button[aria-label="Delete identifier"]').click();
         cy.wait('@delIdentifier').its('request.body').then((body: string) => {
             expect(new URLSearchParams(body).get('identifier')).to.equal(identifier);
         });
@@ -103,7 +103,7 @@ describe('IdentifierManager.vue', () => {
         cy.mount(IdentifierManager, mountOption(createMockUser(1)));
 
         cy.get('.el-input input').type('new-123');
-        cy.get('button[aria-label="add identifier"]').focus();
+        cy.get('.el-table__body button[aria-label="add identifier"]').focus();
         cy.realPress('Enter');
 
         cy.contains('Identifier Added');
@@ -124,7 +124,7 @@ describe('IdentifierManager.vue', () => {
         cy.mount(IdentifierManager, mountOption(createMockUser(1)));
 
         cy.get('.el-input input').type('missing-id');
-        cy.get('.pi-plus').click();
+        cy.get('.el-table__body button[aria-label="add identifier"]').click();
 
         cy.contains('You do not have any video of the identifier');
         cy.closeElNotifications();
@@ -144,7 +144,7 @@ describe('IdentifierManager.vue', () => {
         cy.mount(IdentifierManager, mountOption(createMockUser(1)));
 
         cy.get('.el-input input').type('taken-id');
-        cy.get('.pi-plus').click();
+        cy.get('.el-table__body button[aria-label="add identifier"]').click();
 
         cy.contains('Identifier Conflict');
         cy.closeElNotifications();
