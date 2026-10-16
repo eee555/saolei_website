@@ -301,3 +301,28 @@ describe('fetchUserInfo', () => {
         expect(axiosGet).toHaveBeenCalledWith('/api/userprofile/infobulk', { params: { ids: '1,2' } });
     });
 });
+
+describe('fetchUserVideos identity isolation', () => {
+    beforeEach(() => axiosGet.mockReset());
+
+    it('shares requests only within the same viewer and revision, and clears rejected requests', async () => {
+        const { fetchUserVideos } = await import('./userService');
+        const pending = Promise.withResolvers<{ data: [] }>();
+        axiosGet.mockReturnValue(pending.promise);
+        const owner = fetchUserVideos(42, 'owner-session', 0);
+        expect(fetchUserVideos(42, 'owner-session', 0)).toBe(owner);
+        const guest = fetchUserVideos(42, 'guest-session', 0);
+        const updated = fetchUserVideos(42, 'owner-session', 1);
+        expect(guest).not.toBe(owner);
+        expect(updated).not.toBe(owner);
+        expect(axiosGet).toHaveBeenCalledTimes(3);
+        expect(axiosGet).toHaveBeenCalledWith('/api/userprofile/videolist', { params: { user_id: 42 } });
+        pending.resolve({ data: [] });
+        await Promise.all([owner, guest, updated]);
+        axiosGet.mockRejectedValueOnce(new Error('network'));
+        await expect(fetchUserVideos(42, 'owner-session', 1)).rejects.toThrow('network');
+        axiosGet.mockResolvedValueOnce({ data: [] });
+        expect(await fetchUserVideos(42, 'owner-session', 1)).toEqual([]);
+        expect(axiosGet).toHaveBeenCalledTimes(5);
+    });
+});

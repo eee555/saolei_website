@@ -72,18 +72,6 @@
                     {{ t('local.newHighlight3') }}
                 </span>
             </div>
-            <!-- 点击格子的模式 -->
-            <BaseTooltip follow-cursor>
-                <BaseTextButton
-                    underline="always"
-                    @click="BBBvSummaryConfig.tooltipMode === 'fast' ? BBBvSummaryConfig.tooltipMode = 'advanced' : BBBvSummaryConfig.tooltipMode = 'fast'"
-                >
-                    {{ t(`local.${BBBvSummaryConfig.tooltipMode}`) }}
-                </BaseTextButton>
-                <template #content>
-                    {{ t(`local.${BBBvSummaryConfig.tooltipMode}Tooltip`) }}
-                </template>
-            </BaseTooltip>
             <!-- 显示比例 -->
             <Zoomer v-model="BBBvSummaryConfig.zoom" />
         </div>
@@ -97,7 +85,6 @@ import { ElInputNumber, ElOption, ElSelect } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
 import BaseTextButton from '@/components/common/BaseTextButton.vue';
-import BaseTooltip from '@/components/common/BaseTooltip.vue';
 import SoftwareFilter from '@/components/Filters/SoftwareFilter.vue';
 import Zoomer from '@/components/widgets/Zoomer.vue';
 import { BBBvSummaryConfig } from '@/store';
@@ -117,10 +104,6 @@ const i18nMessage = {
         settingDisplayBy: '录像的',
         settingMax: '最大',
         settingMin: '最小',
-        fast: '简易模式',
-        fastTooltip: '点击播放录像',
-        advanced: '高级模式',
-        advancedTooltip: '点击显示录像列表，悬浮窗中播放录像',
         newHighlight1: '高亮',
         newHighlight2: '于',
         newHighlight3: '天内的录像',
@@ -136,10 +119,6 @@ const i18nMessage = {
         settingDisplayBy: 'and display by',
         settingMax: 'Find max',
         settingMin: 'Find min',
-        fast: 'Fast',
-        fastTooltip: 'Click to play the video',
-        advanced: 'Advanced',
-        advancedTooltip: 'Click to show list of videos',
         newHighlight1: 'Highlight videos ',
         newHighlight2: ' within ',
         newHighlight3: ' days',

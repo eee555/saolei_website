@@ -1,8 +1,9 @@
 <template>
     <DataTable
-        v-model:filters="filters" :value="videos" filter-display="menu" row-hover
-        style="min-width: 50em" size="small"
-        :filter-button-props="{
+        v-model:first="first" v-model:rows="effectiveRows" v-model:sort-field="sortField" v-model:sort-order="sortOrder" :filters="externalFiltering ? emptyFilters : filters" :value="videos"
+        :filter-display="externalFiltering ? undefined : 'menu'" row-hover
+        style="min-width: 50em"
+        size="small" :filter-button-props="{
             filter: {
                 severity: 'secondary',
                 text: true,
@@ -11,17 +12,18 @@
                 style: { borderRadius: '0', padding: '0', width: '1rem' }
             }
         }"
-        sort-field="upload_time" :sort-order="-1"
-        :paginator="paginator" :rows="paginatorRows"
+        :paginator="paginator"
         paginator-template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown JumpToPageInput CurrentPageReport"
         :rows-per-page-options="[5, 10, 25, 50, 100]"
         @row-click="handleRowClick"
+        @update:filters="filters = $event"
     >
         <component
             :is="componentConfig(column).component" v-for="column in columns" :key="column"
             :column-key="column"
             :sortable="componentConfig(column).sortable ? sortable : undefined"
             :stat="componentConfig(column).isStat ? column : undefined"
+            :show-filter-menu="!externalFiltering"
         />
         <Column v-if="$slots.rowActions" column-key="rowActions" :header="t('common.prop.action')" style="width: 5rem">
             <template #body="{ data }: { data: VideoAbstract }">
@@ -48,8 +50,9 @@ import '@/styles/cards.css';
 
 import { FilterMatchMode } from '@primevue/core/api';
 import { Column, DataTable } from 'primevue';
+import type { DataTableFilterMeta } from 'primevue/datatable';
 import 'primeicons/primeicons.css';
-import { defineAsyncComponent, ref } from 'vue';
+import { computed, defineAsyncComponent, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Tippy } from 'vue-tippy';
 
@@ -58,18 +61,28 @@ import type { ColumnChoice } from '@/utils/ms_const';
 import { MS_Mode, MS_Softwares, MS_State } from '@/utils/ms_const';
 import type { VideoAbstract } from '@/utils/videoabstract';
 
-defineProps({
+const props = defineProps({
     videos: { type: Array<VideoAbstract>, default: () => [] },
     columns: { type: Array<ColumnChoice>, default: () => [] },
     paginator: { type: Boolean, default: false },
     paginatorRows: { type: Number, default: 25 },
     sortable: { type: Boolean, default: false },
+    externalFiltering: { type: Boolean, default: false },
 });
+const first = defineModel<number>('first', { default: 0 });
+const rows = defineModel<number>('rows');
+const sortField = defineModel<string>('sortField', { default: 'upload_time' });
+const sortOrder = defineModel<number | undefined>('sortOrder', { default: -1 });
+const effectiveRows = computed({ get: () => rows.value ?? props.paginatorRows,
+    set: (value: number) => {
+        rows.value = value;
+    } });
 defineSlots<{
     rowActions?: (props: { video: VideoAbstract; close: () => void }) => unknown;
 }>();
 const { t } = useI18n();
 const appendToBody = () => document.body;
+const emptyFilters: DataTableFilterMeta = {};
 
 const ColumnEndTime = defineAsyncComponent(() => import('./ColumnEndTime.vue'));
 const ColumnFileSize = defineAsyncComponent(() => import('./ColumnFileSize.vue'));
@@ -99,7 +112,7 @@ function componentConfig(choice: ColumnChoice) {
     }
 }
 
-const filters = ref({
+const filters = ref<DataTableFilterMeta>({
     state: { value: Object.values(MS_State), matchMode: FilterMatchMode.IN },
     software: { value: [...MS_Softwares], matchMode: FilterMatchMode.IN },
     level: { value: null, matchMode: FilterMatchMode.EQUALS },

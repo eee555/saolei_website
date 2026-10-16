@@ -4,7 +4,8 @@
             <h2 class="text-large">
                 {{ t('local.profile') }}
             </h2>
-            <EditProfile :key="user.id" v-model:user="user" :exp-time-ms="store.expTimeMs" />
+            <ProfileQualification />
+            <EditProfile :key="user.id" v-model:user="user" :exp-time-ms="store.expTimeMs" :qualification-status="store.qualificationStatus" />
         </section>
         <section>
             <h2 class="text-large">
@@ -16,7 +17,7 @@
                     </template>
                 </BaseOverlay>
             </h2>
-            <IdentifierManager v-model:user="user" @identifiers-changed="refreshVideos" />
+            <IdentifierManager v-model:user="user" @identifiers-changed="invalidateProfileData(user.id)" />
         </section>
     </div>
 </template>
@@ -28,12 +29,12 @@ import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 
 import EditProfile from './EditProfile.vue';
+import ProfileQualification from './ProfileQualification.vue';
 
 import BaseOverlay from '@/components/common/BaseOverlay.vue';
 import { BaseIconInfo } from '@/components/common/icon';
-import { httpErrorNotification } from '@/components/Notifications';
 import IdentifierManager from '@/components/widgets/IdentifierManager.vue';
-import { fetchUserVideos } from '@/services/userService';
+import { invalidateProfileData } from '@/services/profileDataService';
 import { store } from '@/store';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { UserProfile } from '@/utils/userprofile';
@@ -48,20 +49,6 @@ watch([() => route.name, () => route.params.id, () => store.login_status, canEdi
     if (route.name === 'user-settings' && store.login_status !== LoginStatus.Undefined && !canEdit.value) {
         void router.replace({ name: 'user-summary', params: { id: route.params.id } });
     }
-}, { immediate: true });
-
-async function refreshVideos() {
-    if (!canEdit.value) return;
-    const player = user.value;
-    try {
-        player.videos = await fetchUserVideos(player.id);
-    } catch (error) {
-        httpErrorNotification(error);
-    }
-}
-
-watch([canEdit, user], () => {
-    if (user.value.videos === undefined) void refreshVideos();
 }, { immediate: true });
 
 const i18nMessages = {
