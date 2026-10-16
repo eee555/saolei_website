@@ -17,7 +17,6 @@ import { VCodeBlock } from '@wdns/vue-code-block';
 import darkCodeTheme from 'highlight.js/styles/stackoverflow-dark.css?inline';
 import lightCodeTheme from 'highlight.js/styles/stackoverflow-light.css?inline';
 import { computed } from 'vue';
-import type { ComponentSlots } from 'vue-component-type-helpers';
 
 import { local } from '@/store';
 
@@ -25,5 +24,5 @@ import { local } from '@/store';
 const codeThemeUrl = computed(() => `data:text/css;charset=utf-8,${encodeURIComponent(local.value.darkmode ? darkCodeTheme : lightCodeTheme)}`);
 
 defineOptions({ inheritAttrs: false });
-defineSlots<ComponentSlots<typeof VCodeBlock>>();
+defineSlots<InstanceType<typeof VCodeBlock>['$slots']>();
 </script>
