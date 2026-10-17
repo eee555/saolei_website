@@ -58,6 +58,10 @@ const sortedVideos = computed(() => {
 });
 
 const sumStat = computed(() => {
+    if (props.sortBy === 'time') {
+        const totalMs = sum(sortedVideos.value, (video) => video.timems) + (props.count - sortedVideos.value.length) * defaultVideos[props.level].time * 1000;
+        return totalMs / 1000;
+    }
     return sum(sortedVideos.value, (video) => video[props.sortBy]) + (props.count - sortedVideos.value.length) * defaultVideos[props.level][props.sortBy];
 });
 
