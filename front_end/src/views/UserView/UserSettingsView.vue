@@ -47,7 +47,7 @@ const canEdit = computed(() => store.isSelf && Number(route.params.id) === store
 
 watch([() => route.name, () => route.params.id, () => store.login_status, canEdit], () => {
     if (route.name === 'user-settings' && store.login_status !== LoginStatus.Undefined && !canEdit.value) {
-        void router.replace({ name: 'user-summary', params: { id: route.params.id } });
+        void router.replace({ name: 'user-top', params: { id: route.params.id } });
     }
 }, { immediate: true });
 

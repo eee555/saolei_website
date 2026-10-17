@@ -12,6 +12,7 @@ from speedranking.pb.cache import PBRankingCache
 from speedranking.pb.utils import LEVELS, parse_field, record_field
 from speedranking.saolei.cache import SpeedRankingCache
 from speedranking.saolei.utils import RANK_STATS, RANKING_NAMES
+from speedranking.top.cache import TopRankingCache
 from tournament.cache import TOURNAMENT_USER_CACHE_KEYS, TOURNAMENT_USER_SCORE_CURRENT_TIME_KEY
 from videomanager.cache import newest_cache
 from .server_metrics import check_deadline, CollectionError
@@ -44,6 +45,8 @@ def _known_memory_keys(ranking, fields, player_ids):
     for name in RANKING_NAMES:
         for key in SpeedRankingCache(name, stats=RANK_STATS).keys:
             yield 'other_rankings', key
+    for key in TopRankingCache().keys:
+        yield 'other_rankings', key
     for level in sorted(CUSTOM_PLUCK_LEVELS):
         yield 'other_rankings', get_custom_pluck_rank_key(level)
         yield 'other_rankings', get_custom_pluck_detail_key(level)

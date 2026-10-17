@@ -136,14 +136,15 @@ class RedisMemoryTests(SimpleTestCase):
             'speedranking:pb:counts': 10, 'speedranking:pb:std:b:4': 20, 'speedranking:pb:nf:e:381': 30,
             'speedranking:pb:player:7': 40, 'speedranking:saolei:records': 50,
             'customranking:pluck:c8_8_40:detail': 60, 'tournament:user:score_current': 70, 'newest_queue': 80,
+            'speedranking:top:records': 90, 'speedranking:top:anchors': 10,
         }
         client, pipe = self.redis_client(sizes=sizes)
         result = self.collect(client, players=(7, 8, 7))
         measured = Counter(call.args[0] for call in pipe.memory_usage.call_args_list)
         self.assertTrue(all(count == 1 for count in measured.values()))
-        self.assertEqual(len([key for key in measured if not key.startswith('speedranking:pb:') and key != 'newest_queue']), 34)
+        self.assertEqual(len([key for key in measured if not key.startswith('speedranking:pb:') and key != 'newest_queue']), 54)
         self.assertEqual(result['groups']['pb_rankings'], 100)
-        self.assertEqual(result['groups']['other_rankings'], 180)
+        self.assertEqual(result['groups']['other_rankings'], 280)
         self.assertEqual(result['groups']['latest_videos'], 80)
         self.assertEqual(sum(result['groups'].values()), result['total_bytes'])
         self.assertNotIn('freeze_queue', measured)
@@ -184,8 +185,8 @@ class RedisMemoryTests(SimpleTestCase):
     def test_large_user_list_uses_bounded_pipelines(self):
         client, pipe = self.redis_client()
         self.collect(client, players=range(1, 251))
-        self.assertEqual(pipe.execute.call_count, 3)
-        self.assertEqual(pipe.memory_usage.call_count, 288)
+        self.assertEqual(pipe.execute.call_count, 4)
+        self.assertEqual(pipe.memory_usage.call_count, 308)
 
 
 @override_settings(

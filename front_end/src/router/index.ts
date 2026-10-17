@@ -55,9 +55,9 @@ const routes: RouteRecordRaw[] = [
         component: () => import('../views/UserView/App.vue'),
         redirect: (to) => {
             const { id } = to.params;
-            if (typeof id !== 'string') return '/player/0/summary';
+            if (typeof id !== 'string') return '/player/0/top';
 
-            return `/player/${id}/summary`;
+            return `/player/${id}/top`;
         },
         children: userRoutes,
     },

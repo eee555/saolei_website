@@ -4,7 +4,7 @@
             <Profile :user="store.player" :direction="isWide ? 'vertical' : 'horizontal'" />
         </div>
         <div class="content-area">
-            <ElTabs :model-value="activeTab" @tab-click="handleTabClick">
+            <ElTabs :model-value="activeTab" data-cy="profile-tabs" @tab-click="handleTabClick">
                 <ElTabPane v-for="tab in tabItems" :key="tab.name" :label="tab.label" :name="tab.name" />
                 <router-view v-slot="{ Component }">
                     <keep-alive>
@@ -34,7 +34,8 @@ const router = useRouter();
 
 const tabItems = computed(() => {
     const ret = [
-        { name: 'summary', label: t('local.summary') },
+        { name: 'top', label: 'Top' },
+        { name: 'pb', label: 'PB' },
         { name: 'record', label: t('local.record') },
         { name: 'accountlink', label: t('local.accountlink') },
         { name: 'videos', label: t('local.videos') },
@@ -49,7 +50,7 @@ const validTabs = computed(() => tabItems.value.map((item) => item.name));
 
 const activeTab = computed(() => {
     const lastSegment = route.path.split('/').pop() ?? '';
-    return validTabs.value.includes(lastSegment) ? lastSegment : 'summary';
+    return validTabs.value.includes(lastSegment) ? lastSegment : 'top';
 });
 
 const handleTabClick = (tab: TabsPaneContext) => {
@@ -66,7 +67,6 @@ const isWide = computed(() => width.value >= 960);
 const i18nMessages = {
     'zh-cn': { local: {
         accountlink: '账号关联',
-        summary: '概览',
         record: '纪录',
         videos: '录像',
         upload: '上传',
@@ -74,7 +74,6 @@ const i18nMessages = {
     } },
     en: { local: {
         accountlink: 'Account Link',
-        summary: 'Summary',
         record: 'Record',
         videos: 'Videos',
         upload: 'Upload',

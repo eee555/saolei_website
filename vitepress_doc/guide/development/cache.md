@@ -26,7 +26,7 @@ Redis 分类只读取业务代码直接确定的 DB 0 key，不执行 `SCAN`、`
 | 分类 | key 来源 |
 | --- | --- |
 | PB 榜 | `PBRankingCache.counts_key`；固定 hash 的 `HKEYS` 经校验后构造小榜 key；从 `UserProfile` 主键顺序每批最多 1,000 个 ID 构造用户 hash key。元数据缺失不发现 key、不触发重建。 |
-| 其他排行榜 | `SpeedRankingCache(name, stats=RANK_STATS).keys`、四种自定义 pluck 配置的 rank/detail key、比赛用户榜 key 和积分时间 key；当前共 34 个 key。 |
+| 其他排行榜 | `SpeedRankingCache(name, stats=RANK_STATS).keys`、`TopRankingCache().keys`、四种自定义 pluck 配置的 rank/detail key、比赛用户榜 key 和积分时间 key；当前共 54 个 key。 |
 | 最新录像 | `newest_cache.key`（`newest_queue`）。 |
 | 其他 | `INFO memory.used_memory` 减去前三类；包含其他业务、会话、同实例 DB 1 通用缓存、孤立/历史/临时 key 和 Redis 开销，不枚举 DB 1。 |
 
@@ -36,13 +36,15 @@ Redis 分类只读取业务代码直接确定的 DB 0 key，不执行 `SCAN`、`
 
 ## 总览
 
-独立的本地初始化脚本 `dangerzone/init_local_test.py` 会清空本地 `saolei_website` Redis 数据库（包含会话），然后根据导入的公开录像重建竞速榜（扫雷网普通/NF 和 PB 普通/NF）、pluck 纪录缓存和录像状态队列。在 `back_end/saolei` 目录使用 `python -m dangerzone.init_local_test` 启动。只允许本地测试配置，并拒绝存在 `.production` 标记的环境；不注册 `import_public_data` 管理命令。详情及数据缺失限制见[本地公开数据快照](./management-commands.md#本地公开数据快照)。
+独立的本地初始化脚本 `dangerzone/init_local_test.py` 会清空本地 `saolei_website` Redis 数据库（包含会话），然后根据导入的公开录像重建竞速榜（扫雷网普通/NF、PB 普通/NF、top 十八项及锚点）、pluck 纪录缓存和录像状态队列。在 `back_end/saolei` 目录使用 `python -m dangerzone.init_local_test` 启动。只允许本地测试配置，并拒绝存在 `.production` 标记的环境；不注册 `import_public_data` 管理命令。详情及数据缺失限制见[本地公开数据快照](./management-commands.md#本地公开数据快照)。
 
 ### 新竞速榜 `speedranking`
 
 扫雷网规则使用 `speedranking:{ranking_name}:records` hash 保存个人纪录，使用 `speedranking:{ranking_name}:{stat}` zset 保存以玩家 id 为 member 的排序索引，由 `speedranking.saolei.cache.SpeedRankingCache` 管理。PB 是一般约定的例外：每个 `(普通/NF, level, bv)` 一个 zset，每个用户一个包含用时、录像 id 和 rank 的 hash，由 `speedranking.pb.cache.PBRankingCache` 管理。
 
-共享缓存层提供连接及 pipeline，扫雷网和 PB 的业务分别位于对应子目录。一次更新或每个批处理段共同读取用户纪录，独立判断后共同写入；PB 查询旧 score 和刷新变化小榜的 rank 是依赖前序结果的后续批量阶段。必须补位的单项按各榜规则查询。
+共享缓存层提供连接及 pipeline，扫雷网、PB 和 top 的业务分别位于对应子目录。一次更新或每个批处理段共同读取用户纪录，独立判断后共同写入；PB 查询旧 score、刷新变化小榜的 rank，以及 top 更新锚点是依赖前序结果的后续批量阶段。必须补位的单项按各榜规则查询。
+
+top 由 `speedranking.top.cache.TopRankingCache` 管理：`speedranking:top:records` hash 保存每用户前五明细及均值，十八个 `speedranking:top:{std|nf}:{level}{stat}` zset 排序，`speedranking:top:anchors` hash 保存预聚合锚点。锚点接口即时 HGETALL，不叠加结果缓存，不在读取时重新聚合。具体规则和单位不在此重复，部署用法见 [top 重建命令](./management-commands.md#rebuild-top-ranks)。
 
 排序编码、精度与数值范围、纪录更新及缓存升级约定统一维护在仓库的 `back_end/saolei/speedranking/README.md`，此处不再重复。重建命令用法见[管理命令](./management-commands.md#rebuild-speed-ranks)。
 
