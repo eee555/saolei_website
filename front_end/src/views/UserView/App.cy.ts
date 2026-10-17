@@ -8,6 +8,7 @@ import UserSettingsView from './UserSettingsView.vue';
 
 import $axios from '@/http';
 import i18n from '@/i18n';
+import { invalidateProfileData } from '@/services/profileDataService';
 import { store } from '@/store';
 import { pinia } from '@/store/create';
 
@@ -15,8 +16,6 @@ const TopStub = defineComponent(() => () => h('div', { 'data-cy': 'top-content' 
 const RouterRoot = defineComponent({ expose: [], render: () => h(RouterView) });
 
 function mountProfile(path: string, loggedIn = true) {
-    if (loggedIn) store.login({ id: 42, username: 'self', realname: 'Self' });
-    else store.logout();
     cy.intercept('GET', '/api/userprofile/info/43*', { id: 43, username: 'other', realname: 'Other' });
     cy.intercept('GET', '/api/userprofile/identifier*', ['Owned identifier']).as('identifiers');
     cy.intercept('GET', '/api/userprofile/videolist*', []).as('videos');
@@ -35,8 +34,14 @@ function mountProfile(path: string, loggedIn = true) {
             }),
         }],
     });
-    void router.push(path);
-    cy.wrap(router.isReady()).then(() => {
+    cy.then(() => {
+        // A previous mount may have cached the qualification response for this player.
+        invalidateProfileData(42);
+        if (loggedIn) store.login({ id: 42, username: 'self', realname: 'Self' });
+        else store.logout();
+        return router.push(path);
+    });
+    cy.then(() => router.isReady()).then(() => {
         cy.mount(RouterRoot, {
             global: {
                 plugins: [i18n, pinia, router],
