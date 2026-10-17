@@ -4,7 +4,7 @@
             <HeadColumn :level="level" :count="defaultCounts[level]" />
         </div>
         <div class="summary-column">
-            <SortedColumn ref="timeColumnRef" :level="level" :count="defaultCounts[level]" :videos="filteredVideos.filter((video) => video.time < defaultVideos[level].time)" sort-by="time" />
+            <SortedColumn ref="timeColumnRef" :level="level" :count="defaultCounts[level]" :videos="timeVideos" sort-by="time" />
         </div>
         <div class="summary-column">
             <SortedColumn ref="bvsColumnRef" :level="level" :count="defaultCounts[level]" :videos="filteredVideos" sort-by="bvs" />
@@ -50,6 +50,10 @@ function isValid(video: VideoAbstract): video is StandardVideoAbstract {
 
 const filteredVideos = computed(() => {
     return props.videos.filter(isValid);
+});
+
+const timeVideos = computed(() => {
+    return filteredVideos.value.filter((video) => video.time < defaultVideos[props.level].time);
 });
 
 const sumAll = computed(() => {

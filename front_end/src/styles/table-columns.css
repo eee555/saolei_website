@@ -14,6 +14,11 @@
     text-align: center;
 }
 
+.table-col-prop {
+    width: 5em;
+    text-align: center;
+}
+
 .table-col-bv {
     width: 3em;
     text-align: right;

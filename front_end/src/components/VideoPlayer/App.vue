@@ -5,9 +5,9 @@
     >
         <template #header>
             <div style="display: flex">
-                <span>
+                <a :href="`#/video/${videoplayerstore.id}`" class="link video-player__analyzer-link" @click="videoplayerstore.visible = false">
                     {{ t('local.video') }} #{{ videoplayerstore.id }}
-                </span>
+                </a>
                 <span style="margin-left: auto;">
                     {{ t('local.player') }}
                     <ElSelect v-model="videoPlayerConfig.backend" style="width: 10rem">
@@ -25,6 +25,7 @@
 </template>
 
 <script setup lang="ts">
+import '@/styles/link.css';
 import { ElDialog, ElOption, ElSelect } from 'element-plus';
 import { defineAsyncComponent } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -50,3 +51,9 @@ const i18nMessages = {
 
 const { t } = useI18n({ messages: i18nMessages });
 </script>
+
+<style scoped>
+.video-player__analyzer-link {
+    color: inherit;
+}
+</style>

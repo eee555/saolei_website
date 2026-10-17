@@ -13,6 +13,7 @@ describe('<SpeedRanking /> child routes', () => {
         cy.intercept('GET', '/api/speedranking/pb/counts', { body: { 'std:b:1': 1 } });
         cy.intercept({ method: 'GET', pathname: '/api/speedranking/pb/rank' }, { body: { count: 0, players: [] } }).as('pb');
         cy.intercept({ method: 'GET', pathname: '/api/speedranking/rank' }, { body: { count: 0, players: [] } }).as('saolei');
+        cy.intercept('GET', '**/api/speedranking/top/rank*', { count: 0, players: [] }).as('top');
         const router = createRouter({
             history: createMemoryHistory(),
             routes: [{ path: '/ranking', component: RankingApp, redirect: '/ranking/speed', children: rankingRoutes }],
@@ -43,7 +44,9 @@ describe('<SpeedRanking /> child routes', () => {
         cy.get('.pb-ranking-table').should('exist');
 
         cy.then(() => router.push({ name: 'ranking_speed' }));
-        cy.wrap(router).its('currentRoute.value.path').should('eq', '/ranking/speed/saolei');
-        cy.get('.saolei-ranking-table').should('exist');
+        cy.wait('@top');
+        cy.wrap(router).its('currentRoute.value.path').should('eq', '/ranking/speed/top');
+        cy.get('.ranking-selector').should('contain.text', 'Top');
+        cy.get('.top-ranking-table').should('exist');
     });
 });

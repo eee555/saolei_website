@@ -52,21 +52,55 @@
                     <ElDescriptionsItem :label="t('local.lastSeason')" :span="3">
                         {{ info.last_season }}
                     </ElDescriptionsItem>
-                    <ElDescriptionsItem :label="t('local.resource')" :span="3">
-                        <ElImage src="https://minesweeper.online/img/other/hp.svg" class="icon" />
-                        <span>{{ info.honour }}</span>&nbsp;
-                        <ElImage src="https://minesweeper.online/img/other/coin.svg" class="icon" />
-                        <span>{{ info.minecoin }}</span>&nbsp;
-                        <ElImage src="https://minesweeper.online/img/gems/0.svg" class="icon" />
-                        <span>{{ info.gem }}</span>&nbsp;
-                        <ElImage src="https://minesweeper.online/img/arena-coins/0.svg" class="icon" />
-                        <span>{{ info.coin }}</span>&nbsp;
-                        <Ticket class="icon" />
-                        <span>{{ info.arena_ticket }}</span>&nbsp;
-                        <ElImage src="https://minesweeper.online/img/eq.svg" class="icon" />
-                        <span>{{ info.equipment }}</span>&nbsp;
-                        <ElImage src="https://minesweeper.online/img/item/parts0.svg" class="icon" />
-                        <span>{{ info.part }}</span>&nbsp;
+                    <ElDescriptionsItem :label="t('local.gameCount')" :span="3">
+                        {{ maybeUndefined(info.game_count) }}
+                    </ElDescriptionsItem>
+                    <ElDescriptionsItem :label="t('local.seasonCount')" :span="3">
+                        {{ maybeUndefined(info.season_count) }}
+                    </ElDescriptionsItem>
+                </ElDescriptions>
+            </ElCarouselItem>
+            <ElCarouselItem>
+                <ElDescriptions border>
+                    <ElDescriptionsItem :label="t('local.noGuessTime')" :span="3">
+                        {{ ms_to_s(info.b_ng_t_ms) }} | {{ ms_to_s(info.i_ng_t_ms) }} | {{ ms_to_s(info.e_ng_t_ms) }}
+                    </ElDescriptionsItem>
+                    <ElDescriptionsItem :label="t('local.endurance')" :span="3">
+                        {{ formatDuration(info.b_endurance_ms) }} | {{ formatDuration(info.i_endurance_ms) }} | {{ formatDuration(info.e_endurance_ms) }}
+                    </ElDescriptionsItem>
+                    <ElDescriptionsItem :label="t('local.standardWins')" :span="3">
+                        {{ maybeUndefined(info.b_win) }} | {{ maybeUndefined(info.i_win) }} | {{ maybeUndefined(info.e_win) }}
+                    </ElDescriptionsItem>
+                    <ElDescriptionsItem :label="t('local.noGuessWins')" :span="3">
+                        {{ maybeUndefined(info.b_ng_win) }} | {{ maybeUndefined(info.i_ng_win) }} | {{ maybeUndefined(info.e_ng_win) }}
+                    </ElDescriptionsItem>
+                    <ElDescriptionsItem :label="t('local.noFlagWins')" :span="3">
+                        {{ maybeUndefined(info.win_nf) }}
+                    </ElDescriptionsItem>
+                </ElDescriptions>
+            </ElCarouselItem>
+            <ElCarouselItem>
+                <ElDescriptions border>
+                    <ElDescriptionsItem :label="t('local.totalExperience')" :span="3">
+                        {{ maybeUndefined(info.experience_total) }}
+                    </ElDescriptionsItem>
+                    <ElDescriptionsItem :label="t('local.totalMinecoins')" :span="3">
+                        {{ maybeUndefined(info.minecoin_total) }}
+                    </ElDescriptionsItem>
+                    <ElDescriptionsItem :label="t('local.totalGems')" :span="3">
+                        {{ maybeUndefined(info.gem_total) }}
+                    </ElDescriptionsItem>
+                    <ElDescriptionsItem :label="t('local.totalArenaCoins')" :span="3">
+                        {{ maybeUndefined(info.arena_coin_total) }}
+                    </ElDescriptionsItem>
+                    <ElDescriptionsItem :label="t('local.totalPlayTime')" :span="3">
+                        {{ formatDuration(info.play_time_ms) }}
+                    </ElDescriptionsItem>
+                    <ElDescriptionsItem :label="t('local.totalArenaPlayTime')" :span="3">
+                        {{ formatDuration(info.arena_play_time_ms) }}
+                    </ElDescriptionsItem>
+                    <ElDescriptionsItem :label="t('local.total3BV')" :span="3">
+                        {{ maybeUndefined(info.bbbv_total) }}
                     </ElDescriptionsItem>
                 </ElDescriptions>
             </ElCarouselItem>
@@ -93,7 +127,7 @@
 </template>
 
 <script setup lang="ts">
-import { ElButton, ElCarousel, ElCarouselItem, ElDescriptions, ElDescriptionsItem, ElImage } from 'element-plus';
+import { ElButton, ElCarousel, ElCarouselItem, ElDescriptions, ElDescriptionsItem } from 'element-plus';
 import PrToolbar from 'primevue/toolbar';
 import { computed, ref, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -109,7 +143,7 @@ import { store } from '@/store';
 import { ms_to_s } from '@/utils';
 import { AccountLinkPlatform, AccountWoM } from '@/utils/accountlinks';
 import type { TaskStatus } from '@/utils/common/structInterface';
-import { toISODateTimeString } from '@/utils/datetime';
+import { formatSecondsAsHMS, toISODateTimeString } from '@/utils/datetime';
 
 defineProps({
     id: { type: String, default: '0' },
@@ -122,7 +156,7 @@ defineEmits(['refresh']);
 const refCarousel = useTemplateRef<typeof ElCarousel>('refCarousel');
 const errorMsg = ref('');
 const taskStatus = ref<TaskStatus>('');
-const carouselLength = computed(() => (store.player.id == store.user.id ? 3 : 2));
+const carouselLength = computed(() => (store.player.id == store.user.id ? 5 : 4));
 
 function maybeUndefined(value?: number) {
     return value ?? '-';
@@ -130,6 +164,10 @@ function maybeUndefined(value?: number) {
 
 function maybeUndefinedToFixed(value?: number, fractionDigits?: number) {
     return value === undefined ? '-' : value.toFixed(fractionDigits);
+}
+
+function formatDuration(value?: number) {
+    return value === undefined ? '-' : formatSecondsAsHMS(value / 1000);
 }
 
 async function updateLink() {
@@ -154,27 +192,46 @@ const i18nMessage = {
         experience: '经验',
         lastSeason: '最近赛季',
         maxDifficulty: '高难',
-        resource: '资源',
         trophy: '奖杯',
         win: '总胜场',
+        gameCount: '游戏局数',
+        seasonCount: '参与赛季数',
+        noGuessTime: '无猜时间（初/中/高）',
+        endurance: '耐力用时（初/中/高）',
+        standardWins: '标准胜场（初/中/高）',
+        noGuessWins: '无猜胜场（初/中/高）',
+        noFlagWins: '无旗胜场',
+        totalExperience: '累计获得经验',
+        totalMinecoins: '累计获得雷币',
+        totalGems: '累计获得宝石',
+        totalArenaCoins: '累计获得竞技场币',
+        totalPlayTime: '累计游戏用时',
+        totalArenaPlayTime: '累计竞技场用时',
+        total3BV: '累计 3BV',
     } },
     en: { local: {
         arenaPoint: 'Arena',
         experience: 'Experience',
         lastSeason: 'Last Season',
         maxDifficulty: 'Max Difficulty',
-        resource: 'Resources',
         trophy: 'Trophies',
         win: 'Wins',
+        gameCount: 'Games',
+        seasonCount: 'Seasons Played',
+        noGuessTime: 'NG Time (B/I/E)',
+        endurance: 'Endurance Time (B/I/E)',
+        standardWins: 'Standard Wins (B/I/E)',
+        noGuessWins: 'NG Wins (B/I/E)',
+        noFlagWins: 'NF Wins',
+        totalExperience: 'Lifetime Experience Earned',
+        totalMinecoins: 'Lifetime Minecoins Earned',
+        totalGems: 'Lifetime Gems Earned',
+        totalArenaCoins: 'Lifetime Arena Coins Earned',
+        totalPlayTime: 'Total Play Time',
+        totalArenaPlayTime: 'Total Arena Play Time',
+        total3BV: 'Total 3BV',
     } },
 };
 
 const { t } = useI18n({ messages: i18nMessage });
 </script>
-
-<style lang="less" scoped>
-.icon {
-    height: 18px;
-    vertical-align: middle;
-}
-</style>

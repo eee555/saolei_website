@@ -12,7 +12,7 @@ import time
 import certifi
 import requests
 
-from .utils import DEFAULT_SNAPSHOT_DIR, file_entry, read_json, validate_snapshot, write_json
+from .utils import DEFAULT_SNAPSHOT_DIR, file_entry, read_json, validate_identifiers, validate_snapshot, write_json
 
 
 class PublicClient:
@@ -53,6 +53,23 @@ class PublicClient:
         return data
 
 
+def download_identifiers(root: Path, client: PublicClient, users: dict):
+    entries = []
+    seen = set()
+    for index, user_id in enumerate(users, 1):
+        path = root / 'identifiers' / f'{user_id}.json'
+        identifiers = client.cached(path, '/api/userprofile/identifier', {'user_id': user_id})
+        if isinstance(identifiers, list) and all(isinstance(text, str) for text in identifiers):
+            unique_identifiers = list(dict.fromkeys(identifiers))
+            if unique_identifiers != identifiers:
+                identifiers = unique_identifiers
+                write_json(path, identifiers)
+        validate_identifiers(identifiers, seen)
+        entries.append({**file_entry(root, path), 'user_id': user_id})
+        print(f'Identifiers: {index}/{len(users)} users, {len(seen)} identifiers', flush=True)
+    return entries, len(seen)
+
+
 def download(root: Path, client: PublicClient, *, skip_details: bool = False):
     checkpoint = root / 'source.json'
     if checkpoint.exists():
@@ -62,12 +79,18 @@ def download(root: Path, client: PublicClient, *, skip_details: bool = False):
         write_json(checkpoint, {'base_url': client.base_url, 'started_at': datetime.now(timezone.utc).isoformat()})
     manifest_path = root / 'manifest.json'
     if manifest_path.exists() and read_json(manifest_path).get('complete'):
-        manifest, _ = validate_snapshot(root)
-        print(f'Already complete: {manifest["user_count"]} users, {manifest["video_count"]} videos')
+        manifest, users = validate_snapshot(root)
+        if manifest['version'] == 1:
+            # Keep the old completed manifest intact until all new files are ready, so interrupted upgrades resume.
+            entries, count = download_identifiers(root, client, users)
+            manifest.update(version=2, identifiers=entries, identifier_count=count, finished_at=datetime.now(timezone.utc).isoformat())
+            write_json(manifest_path, manifest)
+            validate_snapshot(root)
+        print(f'Already complete: {manifest["user_count"]} users, {manifest["video_count"]} videos, {manifest["identifier_count"]} identifiers')
         return
 
     ids = sorted(set(client.cached(root / 'user-ids.json', '/api/userprofile/infoupdated', {'since': 0})))
-    manifest = {'version': 1, 'complete': False, **read_json(checkpoint), 'users': [], 'videos': []}
+    manifest = {'version': 2, 'complete': False, **read_json(checkpoint), 'users': [], 'videos': [], 'identifiers': []}
     write_json(manifest_path, manifest)
     users = {}
     for offset in range(0, len(ids), 100):
@@ -76,6 +99,7 @@ def download(root: Path, client: PublicClient, *, skip_details: bool = False):
         users.update({row['id']: row for row in rows})
         manifest['users'].append(file_entry(root, path))
     print(f'Users: {len(users)}', flush=True)
+    manifest['identifiers'], manifest['identifier_count'] = download_identifiers(root, client, users)
 
     video_index = {}
     for index, user_id in enumerate(users, 1):
@@ -123,7 +147,7 @@ def download(root: Path, client: PublicClient, *, skip_details: bool = False):
     manifest.update(user_count=len(users), video_count=len(downloaded), complete=True, finished_at=datetime.now(timezone.utc).isoformat(), unavailable_video_ids=sorted(set(video_index) - downloaded), missing_detail_video_ids=sorted(missing_details))
     write_json(manifest_path, manifest)
     validate_snapshot(root)
-    print(f'Complete: {len(users)} users, {len(downloaded)} videos; unavailable after indexing: {len(manifest["unavailable_video_ids"])}', flush=True)
+    print(f'Complete: {len(users)} users, {len(downloaded)} videos, {manifest["identifier_count"]} identifiers; unavailable after indexing: {len(manifest["unavailable_video_ids"])}', flush=True)
 
 
 def main():

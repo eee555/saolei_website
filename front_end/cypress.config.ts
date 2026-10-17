@@ -3,15 +3,16 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import { defineConfig } from 'cypress';
+import cypressSplit from 'cypress-split';
 import vitePreprocessor from 'cypress-vite';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default defineConfig({
+    defaultBrowser: 'chrome',
     e2e: {
         baseUrl: 'http://localhost:8080',
-        defaultBrowser: 'chrome',
         setupNodeEvents(on) {
             on('before:browser:launch', (browser, launchOptions) => {
                 if (browser.name === 'chrome') {
@@ -26,12 +27,15 @@ export default defineConfig({
     },
 
     component: {
+        setupNodeEvents(on, config) {
+            cypressSplit(on, config);
+            return config;
+        },
         devServer: {
             framework: 'vue',
             bundler: 'vite',
         },
     },
     chromeWebSecurity: false,
-    allowCypressEnv: false,
     watchForFileChanges: false,
 });

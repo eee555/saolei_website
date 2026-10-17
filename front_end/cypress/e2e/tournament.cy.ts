@@ -387,31 +387,31 @@ describe('GSC tournament', () => {
         cy.login(STAFF.username, STAFF.password);
         cy.visit('/#/staff/tournament');
 
-        cy.contains('比赛ID').get('input').filter(':visible').clear();
-        cy.contains('比赛ID').get('input').filter(':visible').type('5{enter}');
+        cy.contains('比赛 ID').get('input').filter(':visible').clear();
+        cy.contains('比赛 ID').get('input').filter(':visible').type('5{enter}');
         cy.get('button').filter(':visible').contains('查询').click();
         cy.contains('第2届金羊杯');
         cy.contains('审核中');
-        cy.get('.pi-times').click();
+        cy.get('button[aria-label="取消审核"]').click();
         cy.contains('已取消');
 
-        cy.get('.pi-check').click();
+        cy.get('button[aria-label="通过审核"]').click();
         cy.contains('即将开始');
 
-        cy.contains('比赛ID').get('input').filter(':visible').clear();
-        cy.contains('比赛ID').get('input').filter(':visible').type('6{enter}');
+        cy.contains('比赛 ID').get('input').filter(':visible').clear();
+        cy.contains('比赛 ID').get('input').filter(':visible').type('6{enter}');
         cy.get('button').filter(':visible').contains('查询').click();
         cy.contains('第3届金羊杯');
         cy.contains('审核中');
-        cy.get('.pi-check').click();
+        cy.get('button[aria-label="通过审核"]').click();
         cy.contains('进行中');
 
-        cy.contains('比赛ID').get('input').filter(':visible').clear();
-        cy.contains('比赛ID').get('input').filter(':visible').type('7{enter}');
+        cy.contains('比赛 ID').get('input').filter(':visible').clear();
+        cy.contains('比赛 ID').get('input').filter(':visible').type('7{enter}');
         cy.get('button').filter(':visible').contains('查询').click();
         cy.contains('第4届金羊杯');
         cy.contains('审核中');
-        cy.get('.pi-check').click();
+        cy.get('button[aria-label="通过审核"]').click();
         cy.contains('结算中');
     });
 
@@ -696,15 +696,15 @@ describe('Tournament background tasks', () => {
         cy.get('.p-datatable table:visible').getTable().should((tableData) => {
             expect(tableData).to.have.length(expectedTasks.length);
 
-            const weeklyTask = tableData.find((row) => row.task_path === 'tournament.weekly.tasks.task_weekly_finish');
-            if (weeklyTask !== undefined) {
-                expect(weeklyTask.status).to.equal('READY');
-                expect(weeklyTask.run_after).to.equal(weeklyFinishTaskRunAfter);
+            const weeklyTask = tableData.find((row) => row.任务路径 === 'tournament.weekly.tasks.task_weekly_finish');
+            if (expectedTasks.some((task) => task.task_path === 'tournament.weekly.tasks.task_weekly_finish')) {
+                expect(weeklyTask?.状态).to.equal('就绪');
+                expect(weeklyTask?.最早执行时间).to.equal(weeklyFinishTaskRunAfter);
             }
 
-            const gscTask = tableData.find((row) => row.task_path === 'tournament.gsc.tasks.task_gsc_finish');
-            if (gscTask !== undefined) {
-                expect(gscTask.status).to.equal('READY');
+            const gscTask = tableData.find((row) => row.任务路径 === 'tournament.gsc.tasks.task_gsc_finish');
+            if (expectedTasks.some((task) => task.task_path === 'tournament.gsc.tasks.task_gsc_finish')) {
+                expect(gscTask?.状态).to.equal('就绪');
             }
         });
     });

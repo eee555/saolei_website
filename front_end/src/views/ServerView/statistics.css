@@ -1,0 +1,12 @@
+.statistics-card .statistics-total {
+    font-weight: 600;
+}
+.statistics-card .statistics-time,
+.statistics-card .statistics-cache-note {
+    font-size: var(--ui-font-size-small);
+    color: var(--ui-text-color-secondary);
+    overflow-wrap: anywhere;
+}
+.statistics-card .statistics-cache-note {
+    margin: 6px 0 0;
+}

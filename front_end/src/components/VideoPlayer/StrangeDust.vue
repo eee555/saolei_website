@@ -18,7 +18,7 @@
             </template>
         </ElResult>
     </div>
-    <iframe v-else :src="`https://strange-dust.github.io/minesweeper-replay-analyzer/?replay=${src}`" style="width: calc(95vw - 50px); height: calc(100vh - 200px); background-color: transparent" />
+    <iframe v-else :src="getStrangeDustAnalyzerUrl(src)" style="width: calc(95vw - 50px); height: calc(100vh - 200px); background-color: transparent" />
 </template>
 
 <script setup lang="ts">
@@ -30,6 +30,7 @@ import { useI18n } from 'vue-i18n';
 import BaseButton from '@/components/common/BaseButton.vue';
 import GitHubUser from '@/components/widgets/GitHubUser.vue';
 import { videoPlayerConfig } from '@/store';
+import { getStrangeDustAnalyzerUrl } from '@/utils/replayLinks';
 
 defineProps({
     src: { type: String, default: '' },

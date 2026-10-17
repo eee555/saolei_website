@@ -219,22 +219,23 @@ export async function fetchUserIdentifiers(userId: number): Promise<string[]> {
     return response.data as string[];
 }
 
-const userVideosPendingRequests = new Map<number, Promise<VideoAbstract[]>>();
+const userVideosPendingRequests = new Map<string, Promise<VideoAbstract[]>>();
 export async function revealUserVideo(videoId: number): Promise<void> {
     await $axios.post(`/api/tournament/video/${videoId}/reveal`);
 }
 
-export function fetchUserVideos(userId: number): Promise<VideoAbstract[]> {
-    const pendingRequest = userVideosPendingRequests.get(userId);
+export function fetchUserVideos(userId: number, viewerKey = 'public', revision = 0): Promise<VideoAbstract[]> {
+    const key = `${userId}:${viewerKey}:${revision}`;
+    const pendingRequest = userVideosPendingRequests.get(key);
 
     if (pendingRequest) return pendingRequest;
 
     const promise = $axios.get('/api/userprofile/videolist', {
         params: { user_id: userId },
     }).then(({ data }) => (data as VideoAbstractInfo[]).map((video) => new VideoAbstract(video))).finally(() => {
-        userVideosPendingRequests.delete(userId);
+        userVideosPendingRequests.delete(key);
     });
 
-    userVideosPendingRequests.set(userId, promise);
+    userVideosPendingRequests.set(key, promise);
     return promise;
 }

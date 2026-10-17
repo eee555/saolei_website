@@ -5,6 +5,8 @@ from django_tasks_db.models import DBTaskResult
 from config.text_choices import MS_TextChoices, Saolei_TextChoices
 from userprofile.models import UserProfile
 from videomanager.models import VideoModel
+from .msgames.utils import supports_replay
+from .wom.utils import ENDURANCE_BASE_MS
 
 
 class Platform(models.TextChoices):
@@ -86,12 +88,28 @@ class AccountMinesweeperGames(models.Model):
 
     name = models.CharField(max_length=128, default='')
     local_name = models.CharField(max_length=128, default='')
-    # country = models.CharField() # country和state应该是二合一的枚举类型
-    # state = models.CharField()
+    country = models.TextField(default='', blank=True, help_text='Public country text as displayed by MSGames, without an enum.')
+    state = models.TextField(default='', blank=True, help_text='Public region text as displayed by MSGames, without an enum.')
     joined = models.DateField(null=True)
-    # mouse_brand = models.CharField(max_length=128) # 枚举
-    # mouse_type = models.CharField(max_length=128) # 枚举
-    # mouse_model = models.CharField() # 用户自己随便填的，需要审查
+    hand = models.TextField(default='', blank=True, help_text='Public handedness text as displayed by MSGames.')
+    mouse = models.TextField(default='', blank=True, help_text='Public mouse text as displayed by MSGames.')
+    video_update_time = models.DateTimeField(null=True)
+
+
+class VideoMSGames(models.Model):
+    user = models.ForeignKey(AccountMinesweeperGames, on_delete=models.CASCADE, related_name='videos')
+    source_key = models.CharField(max_length=64, unique=True, help_text='SHA-256 of the original replay URL, used for deduplication.')
+    url = models.TextField(help_text='Original replay URL published by MSGames.')
+    filename = models.TextField()
+    upload_date = models.DateField(null=True, help_text='Public upload date; imports use the following midnight UTC as its upper bound.')
+    category = models.TextField(default='', help_text='Displayed metric, groups, style and category, merged across score histories.')
+    score = models.TextField(default='', help_text='Displayed score strings, preserving source precision.')
+    density_levels = models.JSONField(default=list, help_text='Density custom levels; null entries denote unsupported or unknown configurations.')
+    import_video = models.ForeignKey(VideoModel, on_delete=models.SET_NULL, null=True, related_name='+')
+
+    @property
+    def can_import(self):
+        return supports_replay(self.filename, self.category, self.density_levels)
 
 
 class AccountBilibili(models.Model):
@@ -121,14 +139,6 @@ class AccountWorldOfMinesweeper(models.Model):
     trophy = models.PositiveSmallIntegerField(null=True)
 
     experience = models.PositiveIntegerField(null=True)
-    honour = models.PositiveIntegerField(null=True)
-
-    minecoin = models.PositiveIntegerField(null=True)
-    gem = models.PositiveIntegerField(null=True)
-    coin = models.PositiveIntegerField(null=True)
-    arena_ticket = models.PositiveIntegerField(null=True)
-    equipment = models.PositiveIntegerField(null=True)
-    part = models.PositiveIntegerField(null=True)
 
     arena_point = models.PositiveSmallIntegerField(null=True)  # 最高80
     max_difficulty = models.PositiveIntegerField(null=True)
@@ -151,10 +161,31 @@ class AccountWorldOfMinesweeper(models.Model):
     i_winstreak = models.PositiveSmallIntegerField(null=True)
     e_winstreak = models.PositiveSmallIntegerField(null=True)
 
-    # 主页只显示一个
-    # b_endurance = models.TimeField()
-    # i_endurance = models.TimeField()
-    # e_endurance = models.TimeField()
+    b_endurance_ms = models.PositiveIntegerField(default=ENDURANCE_BASE_MS, null=False, help_text='Best beginner endurance time in milliseconds; 86400000 when no record.')
+    i_endurance_ms = models.PositiveIntegerField(default=ENDURANCE_BASE_MS, null=False, help_text='Best intermediate endurance time in milliseconds; 86400000 when no record.')
+    e_endurance_ms = models.PositiveIntegerField(default=ENDURANCE_BASE_MS, null=False, help_text='Best expert endurance time in milliseconds; 86400000 when no record.')
+
+    b_ng_t_ms = models.PositiveIntegerField(null=True, help_text='Beginner no-guess personal-best time in milliseconds.')
+    i_ng_t_ms = models.PositiveIntegerField(null=True, help_text='Intermediate no-guess personal-best time in milliseconds.')
+    e_ng_t_ms = models.PositiveIntegerField(null=True, help_text='Expert no-guess personal-best time in milliseconds.')
+
+    b_win = models.PositiveIntegerField(null=True, help_text='Total beginner wins.')
+    i_win = models.PositiveIntegerField(null=True, help_text='Total intermediate wins.')
+    e_win = models.PositiveIntegerField(null=True, help_text='Total expert wins.')
+    b_ng_win = models.PositiveIntegerField(null=True, help_text='Total beginner no-guess wins.')
+    i_ng_win = models.PositiveIntegerField(null=True, help_text='Total intermediate no-guess wins.')
+    e_ng_win = models.PositiveIntegerField(null=True, help_text='Total expert no-guess wins.')
+
+    experience_total = models.PositiveIntegerField(null=True, help_text='Lifetime experience earned (expAll), distinct from current experience.')
+    minecoin_total = models.PositiveIntegerField(null=True, help_text='Lifetime minecoins earned (coinsAll), not current inventory.')
+    gem_total = models.PositiveIntegerField(null=True, help_text='Lifetime gems earned (gemsAll), not current inventory.')
+    arena_coin_total = models.PositiveIntegerField(null=True, help_text='Lifetime arena coins earned (arenaCoinsAll), not current inventory.')
+    game_count = models.PositiveIntegerField(null=True, help_text='Public game count (games).')
+    win_nf = models.PositiveIntegerField(null=True, help_text='Lifetime wins without flags (winsNf); no-flag and no-guess are different modes.')
+    play_time_ms = models.PositiveBigIntegerField(null=True, help_text='Lifetime play time in milliseconds (timeAll).')
+    arena_play_time_ms = models.PositiveBigIntegerField(null=True, help_text='Lifetime arena play time in milliseconds (arenaDuration).')
+    bbbv_total = models.PositiveIntegerField(null=True, help_text='Lifetime 3BV total (bbbvAll).')
+    season_count = models.PositiveSmallIntegerField(null=True, help_text='Number of seasons played (seasons), with one season per month.')
 
 
 class AccountMineracer(models.Model):

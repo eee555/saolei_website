@@ -5,38 +5,13 @@ from apscheduler.triggers.cron import CronTrigger
 from captcha.models import CaptchaStore
 from django.utils import timezone as django_timezone
 from django_apscheduler import util
-from django_apscheduler.models import DjangoJobExecution
-from django_redis import get_redis_connection
-import psutil
+from django_apscheduler.models import DjangoJob, DjangoJobExecution
 
 from userprofile.models import EmailVerifyRecord
 from videomanager.models import VideoModel
 from videomanager.services import delete_newest_queue
 
 logger = logging.getLogger(__name__)
-cache = get_redis_connection('saolei_website')
-
-
-@util.close_old_connections
-def refresh_state_always():
-    net_io = psutil.net_io_counters()
-    net_io_sent_old = cache.get('io_s_old') if cache.exists('io_s_old') else '0.0'
-    net_io_recv_old = cache.get('io_r_old') if cache.exists('io_r_old') else '0.0'
-    cache.set('io_s_old', str(net_io.bytes_sent))
-    cache.set('io_r_old', str(net_io.bytes_recv))
-    io_s_spd = (net_io.bytes_sent - float(net_io_sent_old)) / 5
-    io_r_spd = (net_io.bytes_recv - float(net_io_recv_old)) / 5
-    cache.rpush('io_s_spds', str(io_s_spd))
-    cache.rpush('io_r_spds', str(io_r_spd))
-    if cache.llen('io_s_spds') > 120:
-        cache.lpop('io_s_spds')
-    if cache.llen('io_r_spds') > 120:
-        cache.lpop('io_r_spds')
-
-    cpu = psutil.cpu_percent()
-    cache.rpush('cpus', str(cpu))
-    if cache.llen('cpus') > 120:
-        cache.lpop('cpus')
 
 
 @util.close_old_connections
@@ -62,15 +37,8 @@ def delete_old_job_executions(max_age=604_800):
 
 
 def register_jobs(scheduler):
-    scheduler.add_job(
-        refresh_state_always,
-        trigger=CronTrigger(second='*/5'),
-        id='refresh_state_always',
-        misfire_grace_time=3,
-        max_instances=1,
-        replace_existing=True,
-    )
-    logger.info("Added job 'refresh_state_always'.")
+    # Remove the persisted job before the job store restores its deleted callable.
+    DjangoJob.objects.filter(id='refresh_state_always').delete()
 
     scheduler.add_job(
         delete_old_job_executions,

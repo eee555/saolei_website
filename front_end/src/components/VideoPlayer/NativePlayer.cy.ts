@@ -153,11 +153,10 @@ describe('<NativePlayer />', () => {
         cy.get('.player-main-settings').should('be.visible');
         cy.get('.custom-counter-wrap').should('not.exist');
         cy.get('.player-main').should('be.visible');
-        cy.get('.player-main-settings').contains('label', 'Developer Mode').click();
-        cy.get('.player-main-settings textarea').should('be.visible');
-        cy.get('.player-main-settings').contains('label', 'Developer Mode').find('input').focus();
-        cy.realPress('Space');
-        cy.get('.player-main-settings textarea').should('not.exist');
+        cy.get('.player-main-settings .color-scheme-setting__import-toggle').click();
+        cy.get('.player-main-settings .color-scheme-setting__json').should('be.visible');
+        cy.get('.player-main-settings .color-scheme-setting__cancel').click();
+        cy.get('.player-main-settings .color-scheme-setting__json').should('not.exist');
 
         cy.contains('label', 'Show Probability').find('input').should('be.checked').focus();
         cy.realPress('Space');

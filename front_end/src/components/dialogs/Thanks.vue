@@ -1,82 +1,59 @@
 <template>
-    <div style="padding-bottom: 5px">
+    <div class="section-label">
         <strong>{{ t('local.owner') }}</strong>
     </div>
-    <div>
+    <div class="section-body">
         <PlayerName :user-id="1" />
     </div>
-    <div style="padding-bottom: 5px; margin-top: 15px">
+    <div class="section-label">
         <strong>{{ t('local.moderator') }}</strong>
     </div>
-    <div>
+    <div class="section-body">
         <PlayerName :user-id="2" />
-    </div>
-    <div>
         <PlayerName :user-id="24" />
-    </div>
-    <div>
         <PlayerName :user-id="82" />
+        <PlayerName :user-id="114" />
     </div>
-    <div class="layout-columns thanks-section">
+    <div class="section-label">
+        <strong>{{ t('local.software') }}</strong>
+    </div>
+    <div class="section-body">
+        <GitHubUser username="putianyi889" />
+        <GitHubUser username="eee555" />
+        <GitHubUser username="ljzloser" />
+        <GitHubUser username="hwatson381" />
+        <GitHubUser username="hgraceb" />
+        <GitHubUser username="Threeeee" />
+    </div>
+    <div class="section-label">
+        <strong>{{ t('local.localization') }}</strong>
+    </div>
+    <div class="section-body">
         <div>
-            <div style="padding-bottom: 5px">
-                <strong>{{ t('local.software') }}</strong>
-            </div>
-            <div>
-                <GitHubUser username="eee555" />
-            </div>
-            <div>
-                <GitHubUser username="putianyi889" />
-            </div>
-            <div>
-                <GitHubUser username="ljzloser" />
-            </div>
-            <div>
-                <GitHubUser username="hwatson381" />
-            </div>
-            <div>
-                <GitHubUser username="hgraceb" />
-            </div>
+            {{ t('local.zhCn') }}
+            <GitHubUser username="putianyi889" />
         </div>
         <div>
-            <div style="padding-bottom: 5px">
-                <strong>{{ t('local.localization') }}</strong>
-            </div>
-            <div>
-                {{ t('local.zhCn') }}
-                <GitHubUser username="putianyi889" />
-            </div>
-            <div>
-                {{ t('local.en') }}
-                <GitHubUser username="putianyi889" />
-            </div>
-            <div>
-                {{ t('local.de') }}
-                <GitHubUser username="auk3" />
-            </div>
-            <div>
-                {{ t('local.pl') }}
-                <GitHubUser username="kiraa96" />
-            </div>
+            {{ t('local.en') }}
+            <GitHubUser username="putianyi889" />
         </div>
         <div>
-            <div style="padding-bottom: 5px">
-                <strong>{{ t('local.designer') }}</strong>
-            </div>
-            <div>
-                <GitHubUser username="eee555" />
-            </div>
-            <div>
-                <GitHubUser username="putianyi889" />
-            </div>
+            {{ t('local.de') }}
+            <GitHubUser username="auk3" />
+        </div>
+        <div>
+            {{ t('local.pl') }}
+            <GitHubUser username="kiraa96" />
         </div>
     </div>
-    <div class="thanks-section" style="padding-bottom: 5px">
+    <div class="section-label">
         <strong>{{ t('local.acknowledgement') }}</strong>
     </div>
-    <span v-for="item in acknowledgements" style="padding-right: 10px">
-        {{ item.text }}
-    </span>
+    <div class="section-body">
+        <span v-for="item in acknowledgements" style="padding-right: 10px">
+            {{ item.text }}
+        </span>
+    </div>
 </template>
 
 <script lang="ts" setup>
@@ -96,6 +73,8 @@ const acknowledgements = [
     { text: '冰糖雪梨' },
     { text: '生命★是┗ 〓┛是☆什么' },
     { text: 'Arya' },
+    { text: 'StrangeDust' },
+    { text: 'jabajop' },
 ];
 
 /* 本地化 Localization */
@@ -134,5 +113,15 @@ const { t } = useI18n({ messages: i18nMessage });
     border-top: 1px solid var(--ui-border-color);
     margin-top: 24px;
     padding-top: 24px;
+}
+
+.section-label {
+    padding-bottom: 5px;
+}
+
+.section-body {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 15px;
 }
 </style>

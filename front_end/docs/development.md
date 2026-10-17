@@ -108,6 +108,12 @@ src/
 
 新增页面时，优先把页面级组件放在 `src/views` 下；可复用业务组件放在 `src/components` 下。
 
+## 代码块
+
+代码展示统一从 `@/components/common/BaseCodeBlock.vue` 导入，可命名为 `VCodeBlock` 使用。它保留原组件的参数、事件和插槽，统一使用 Highlight.js，并随 `local.darkmode` 切换 StackOverflow 浅色／深色主题。页面无需单独设置 `highlightjs`、`theme` 或 `cssPath`，也不要直接从 `@wdns/vue-code-block` 导入。
+
+主题样式来自本地依赖，以 CSS 文本生成 `data:` URL，避免组件的 `fetch()` 在 Vite 开发环境中取得 JavaScript 模块。
+
 ## API 请求
 
 统一 Axios 实例位于 [src/http.ts](../src/http.ts)：

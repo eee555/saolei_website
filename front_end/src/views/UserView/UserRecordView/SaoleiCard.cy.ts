@@ -2,6 +2,7 @@ import SaoleiCard from './SaoleiCard.vue';
 
 import $axios from '@/http';
 import i18n from '@/i18n';
+import { invalidateProfileData } from '@/services/profileDataService';
 import type { SaoleiPlayerRecord } from '@/services/saoleiRankingService';
 import { pinia } from '@/store/create';
 
@@ -43,6 +44,10 @@ describe('<SaoleiCard />', () => {
                 saolei_nf: { ...record, bt: 2345, bb: 0, sumt: 2002343, sumb: 0, ranks: { ...record.ranks, bt: 6, bb: null, sumt: 7, sumb: 8 } },
             },
         }).as('saoleiRecords');
+        cy.then(() => {
+            invalidateProfileData(42);
+            invalidateProfileData(43);
+        });
     });
 
     it('loads both speed rankings once and renders scores with ranks', () => {
@@ -57,7 +62,9 @@ describe('<SaoleiCard />', () => {
             ['Time (NF)', '2.345(6)', '--(--)', '--(--)', '2002.343(7)'],
             ['Bvs (NF)', '0.000(--)', '--(--)', '--(--)', '0.000(8)'],
         ]);
-        cy.get('.saolei-record-table .clickable').should('have.length', 4);
+        cy.get('.saolei-record-table .video-preview-link').should('have.length', 4).and(($links) => {
+            expect([...$links].map((link) => link.getAttribute('href'))).to.deep.eq(['#/video/8001', '#/video/8002', '#/video/8001', '#/video/8002']);
+        });
         cy.get('@saoleiRecords.all').should('have.length', 1);
     });
 
@@ -94,6 +101,6 @@ describe('<SaoleiCard />', () => {
             ['Time (NF)', '--(--)', '--(--)', '--(--)', '2999.997(--)'],
             ['Bvs (NF)', '--(--)', '--(--)', '--(--)', '0.000(--)'],
         ]);
-        cy.get('.saolei-record-table .clickable').should('not.exist');
+        cy.get('.saolei-record-table .video-preview-link').should('not.exist');
     });
 });

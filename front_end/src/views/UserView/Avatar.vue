@@ -15,6 +15,7 @@
 <script setup lang="ts">
 import { vLoading } from 'element-plus';
 import { computed, ref, useTemplateRef, watch } from 'vue';
+import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { baseErrorNotification, httpErrorNotification } from '@/components/Notifications';
@@ -26,6 +27,7 @@ import { UserProfile } from '@/utils/userprofile';
 const props = defineProps({
     isSelf: { type: Boolean, default: false },
     expTimeMs: { type: Number, default: 999999 },
+    qualificationStatus: { type: String as PropType<'idle' | 'loading' | 'ready' | 'error'>, default: 'ready' },
 });
 
 const { proxy } = useCurrentInstance();
@@ -72,13 +74,15 @@ async function handleFileChange(event: Event) {
 const avatarBudget = computed(() => user.value.newAvatarBudget(globalNow.value));
 const avatarTitle = computed(() => {
     if (!props.isSelf) return undefined;
+    if (props.qualificationStatus === 'error') return t('local.qualificationError');
+    if (props.qualificationStatus !== 'ready') return t('local.qualificationLoading');
     if (props.expTimeMs >= 200000) return t('local.tooltipExpTime');
     if (avatarBudget.value > 0) return t('local.tooltipBase', [avatarBudget.value]);
     return `${t('local.tooltipCooldown')}${toISODateTimeString(user.value.nextAvatarAvailable)}`;
 });
 
 const updating = ref(false);
-const disabled = computed(() => !props.isSelf || props.expTimeMs >= 200000 || avatarBudget.value <= 0);
+const disabled = computed(() => !props.isSelf || props.qualificationStatus !== 'ready' || props.expTimeMs >= 200000 || avatarBudget.value <= 0);
 
 async function updateAvatar(a: File) {
     const formData = new FormData();
@@ -113,6 +117,8 @@ const i18nMessages = {
         tooltipBase: '点击修改头像（剩余{0}次）',
         tooltipCooldown: '头像每年可修改一次。下次可修改：',
         tooltipExpTime: '高级sub200后才可以修改头像',
+        qualificationLoading: '正在检查头像修改资格',
+        qualificationError: '头像修改资格查询失败，请重试',
     } },
     en: { local: {
         errorTitle: 'Avatar Update Failed',
@@ -129,6 +135,8 @@ const i18nMessages = {
         tooltipBase: 'Click to change avatar ({0} times left)',
         tooltipCooldown: 'Avatar can be changed once every year. Next available time: ',
         tooltipExpTime: 'Achieve expert sub200 to set avatar',
+        qualificationLoading: 'Checking avatar eligibility',
+        qualificationError: 'Could not check avatar eligibility. Please retry',
     } },
 };
 

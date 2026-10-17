@@ -1,13 +1,13 @@
 <template>
     <div class="log-selector">
         <BaseButton @click="getLogDir">
-            获取日志目录
+            {{ t('local.getDirectory') }}
         </BaseButton>
         <ElSelect
             v-model="selectedLog"
             class="log-file-select"
             filterable
-            placeholder="选择日志文件"
+            :placeholder="t('local.selectFile')"
             @change="viewLog"
         >
             <ElOption
@@ -24,7 +24,7 @@
             </ElOption>
         </ElSelect>
         <BaseButton :disabled="selectedLog === ''" @click="downloadLog(selectedLog)">
-            下载
+            {{ t('local.download') }}
         </BaseButton>
     </div>
     <div class="log-toolbar">
@@ -32,24 +32,24 @@
             {{ selectedLog }}
         </span>
         <span>
-            {{ streamStatus }}
+            {{ t(`local.${streamStatus}`) }}
         </span>
         <BaseButton
             class="log-poll-start"
             :disabled="selectedLog === '' || loadedLog !== selectedLog || isLogPolling"
             @click="startLogPolling"
         >
-            开始轮询
+            {{ t('local.startPolling') }}
         </BaseButton>
         <BaseButton
             class="log-poll-stop"
             :disabled="!isLogPolling"
             @click="stopLogPolling"
         >
-            停止轮询
+            {{ t('local.stopPolling') }}
         </BaseButton>
         <label class="log-poll-interval log-poll-ms">
-            轮询间隔
+            {{ t('local.pollInterval') }}
             <ElInputNumber
                 v-model="logPollIntervalMs"
                 :min="200"
@@ -60,7 +60,7 @@
             ms
         </label>
         <label class="log-poll-interval log-tail-bytes">
-            尾部字节
+            {{ t('local.tailBytes') }}
             <ElInputNumber
                 v-model="logTailBytes"
                 :min="1"
@@ -69,12 +69,13 @@
             />
         </label>
     </div>
-    <pre ref="logViewer" class="log-viewer">{{ logContent }}</pre>
+    <pre ref="logViewer" class="log-viewer">{{ logNotice ? `${t(logNotice.key, logNotice.params) }\n` : '' }}{{ logContent }}</pre>
 </template>
 
 <script lang="ts" setup>
 import { ElInputNumber, ElOption, ElSelect } from 'element-plus';
 import { nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 import BaseButton from '@/components/common/BaseButton.vue';
 import { httpErrorNotification } from '@/components/Notifications';
@@ -110,8 +111,9 @@ const MAX_VISIBLE_LOG_CHARS = 1048576;
 const { proxy } = useCurrentInstance();
 const fileStats = ref([] as FileStat[]);
 const logContent = ref('');
+const logNotice = ref<{ key: string; params: Record<string, number> } | null>(null);
 const selectedLog = ref('');
-const streamStatus = ref('未连接');
+const streamStatus = ref('disconnected');
 const logPollIntervalMs = ref(10000);
 const logTailBytes = ref(DEFAULT_TAIL_BYTES);
 const isLogPolling = ref(false);
@@ -130,7 +132,7 @@ function closeLogPolling() {
 
 function stopLogPolling() {
     closeLogPolling();
-    if (selectedLog.value !== '') streamStatus.value = '轮询已停止';
+    if (selectedLog.value !== '') streamStatus.value = 'pollingStopped';
 }
 
 function normalizedLogPollIntervalMs() {
@@ -157,7 +159,7 @@ function scrollLogViewerToBottom() {
 }
 
 function formatLogTime(mtime: string) {
-    return new Date(mtime).toLocaleString();
+    return new Date(mtime).toLocaleString(locale.value);
 }
 
 function formatLogOption(file: FileStat) {
@@ -174,12 +176,13 @@ function appendLogContent(content: string) {
 
 function applyLogPoll(data: LogPollResponse) {
     if (data.status === 'deleted') {
-        streamStatus.value = '日志文件已删除';
+        streamStatus.value = 'deleted';
         closeLogPolling();
         return;
     }
     if (data.status === 'reset') {
-        logContent.value = '[日志文件已被截断或轮转，正在从新文件继续读取]\n';
+        logContent.value = '';
+        logNotice.value = { key: 'local.rotated', params: {} };
     }
     if (data.content !== '') {
         appendLogContent(data.content);
@@ -198,7 +201,7 @@ function pollLogTail() {
     }).then((response) => {
         applyLogPoll(response.data as LogPollResponse);
     }).catch((error: unknown) => {
-        streamStatus.value = '轮询更新失败';
+        streamStatus.value = 'pollingFailed';
         closeLogPolling();
         httpErrorNotification(error);
     });
@@ -208,7 +211,7 @@ function startLogPolling() {
     if (selectedLog.value === '') return;
     closeLogPolling();
     pollingLog = selectedLog.value;
-    streamStatus.value = '轮询更新中';
+    streamStatus.value = 'polling';
     logPollTimer = window.setInterval(pollLogTail, normalizedLogPollIntervalMs());
     isLogPolling.value = true;
 }
@@ -219,7 +222,7 @@ function restartLogPolling() {
         return;
     }
     closeLogPolling();
-    streamStatus.value = '轮询更新中';
+    streamStatus.value = 'polling';
     logPollTimer = window.setInterval(pollLogTail, normalizedLogPollIntervalMs());
     isLogPolling.value = true;
 }
@@ -234,24 +237,23 @@ function getLogDir() {
 
 function viewLog(log: string) {
     closeLogPolling();
-    streamStatus.value = '正在加载日志尾部';
+    streamStatus.value = 'loading';
     pollingLog = '';
     loadedLog.value = '';
     const tailBytes = normalizedLogTailBytes();
     proxy.$axios.get('/api/common/staff/logtail', { params: { filename: log, tail_bytes: tailBytes } }).then(
         function (response) {
             const data = response.data as LogTailResponse;
-            logContent.value = data.truncated
-                ? `[仅显示最后 ${tailBytes} 字节]\n${data.content}`
-                : data.content;
+            logNotice.value = data.truncated ? { key: 'local.truncated', params: { bytes: tailBytes } } : null;
+            logContent.value = data.content;
             scrollLogViewerToBottom();
             pollingLog = log;
             logPollOffset = data.offset;
             loadedLog.value = log;
-            streamStatus.value = '已加载，轮询未启动';
+            streamStatus.value = 'loaded';
         },
     ).catch((error: unknown) => {
-        streamStatus.value = '加载失败';
+        streamStatus.value = 'loadFailed';
         httpErrorNotification(error);
     });
 }
@@ -272,6 +274,49 @@ function downloadLog(log: string) {
 
 onMounted(getLogDir);
 onBeforeUnmount(closeLogPolling);
+
+const i18nMessages = {
+    'zh-cn': { local: {
+        getDirectory: '获取日志目录',
+        selectFile: '选择日志文件',
+        download: '下载',
+        startPolling: '开始轮询',
+        stopPolling: '停止轮询',
+        pollInterval: '轮询间隔',
+        tailBytes: '尾部字节',
+        disconnected: '未连接',
+        pollingStopped: '轮询已停止',
+        deleted: '日志文件已删除',
+        pollingFailed: '轮询更新失败',
+        polling: '轮询更新中',
+        loading: '正在加载日志尾部',
+        loaded: '已加载，轮询未启动',
+        loadFailed: '加载失败',
+        rotated: '[日志文件已被截断或轮转，正在从新文件继续读取]',
+        truncated: '[仅显示最后 {bytes} 字节]',
+    } },
+    en: { local: {
+        getDirectory: 'Get log directory',
+        selectFile: 'Select a log file',
+        download: 'Download',
+        startPolling: 'Start polling',
+        stopPolling: 'Stop polling',
+        pollInterval: 'Poll interval',
+        tailBytes: 'Tail bytes',
+        disconnected: 'Disconnected',
+        pollingStopped: 'Polling stopped',
+        deleted: 'Log file deleted',
+        pollingFailed: 'Polling failed',
+        polling: 'Polling',
+        loading: 'Loading log tail',
+        loaded: 'Loaded, polling not started',
+        loadFailed: 'Loading failed',
+        rotated: '[Log file truncated or rotated; continuing from the new file]',
+        truncated: '[Showing only the last {bytes} bytes]',
+    } },
+};
+
+const { t, locale } = useI18n({ messages: i18nMessages });
 </script>
 
 <style scoped>

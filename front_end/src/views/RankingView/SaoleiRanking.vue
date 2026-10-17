@@ -39,7 +39,9 @@
                 <PlayerName :user-id="row.player_id" />
             </td>
             <td v-for="field in saoleiFields" :key="field" class="table-col-number">
-                <PreviewNumber v-if="saoleiVideoId(row, field)" :id="saoleiVideoId(row, field)" :text="formatSaoleiValue(row, field)" />
+                <VideoPreviewLink v-if="saoleiVideoId(row, field)" :id="saoleiVideoId(row, field)">
+                    {{ formatSaoleiValue(row, field) }}
+                </VideoPreviewLink>
                 <span v-else>{{ formatSaoleiValue(row, field) }}</span>
             </td>
         </tr>
@@ -65,7 +67,7 @@ import BaseButton from '@/components/common/BaseButton.vue';
 import BaseTable from '@/components/common/BaseTable.vue';
 import { BaseIconRefresh } from '@/components/common/icon';
 import PlayerName from '@/components/PlayerName.vue';
-import PreviewNumber from '@/components/PreviewNumber.vue';
+import VideoPreviewLink from '@/components/VideoPreviewLink.vue';
 import { fetchSaoleiRanking, formatSaoleiValue, saoleiFields, SaoleiLevels, saoleiVideoId } from '@/services/saoleiRankingService';
 import type { SaoleiField, SaoleiRecord } from '@/services/saoleiRankingService';
 

@@ -3,92 +3,83 @@ describe('language setting', () => {
         'zh-CN': '帮助',
         'zh-TW': '帮助', // fallback to zh-cn
         'en-GB': 'Help', // fallback to en
-        'en-US': 'Help', // fallback to en
-        de: 'Hilfe',
-        pl: 'pomoc',
         fr: 'Help', // fallback to en
     };
 
-    for (const lang in languages) {
+    for (const [lang, label] of Object.entries(languages)) {
         it(`Detect Sys Language: ${lang}`, () => {
             cy.visit('/#/settings', {
                 onBeforeLoad: (win) => {
-                    Object.defineProperty((win as unknown as Window).navigator, 'language', {
+                    Object.defineProperty(win.navigator, 'language', {
                         value: lang,
                         configurable: true,
                     });
                 },
             });
-            // @ts-expect-error ts有毛病，认为lang可能不是languages的key
-            cy.contains(languages[lang]);
+            cy.get('[data-navigation-id=docs]').should('have.attr', 'aria-label', label);
         });
     }
 
     it('Change Language', () => {
         cy.visit('/#/settings');
-        cy.get('[data-cy=languagePicker]').realClick();
-        cy.contains('dev').filter(':visible').click();
-        cy.contains('local.docs');
-        cy.get('[data-cy=languagePicker]').realClick();
-        cy.contains('简体中文').filter(':visible').click();
-        cy.contains('帮助');
-        cy.get('[data-cy=languagePicker]').realClick();
-        cy.contains('English').filter(':visible').click();
-        cy.contains('Help');
-        cy.get('[data-cy=languagePicker]').realClick();
-        cy.contains('Deutsch').filter(':visible').click();
-        cy.contains('Hilfe');
-        cy.get('[data-cy=languagePicker]').realClick();
-        cy.contains('Polski').filter(':visible').click();
-        cy.contains('pomoc');
+        for (const [language, label] of [['dev', 'local.docs'], ['zh-cn', '帮助'], ['en', 'Help'], ['de', 'Hilfe'], ['pl', 'pomoc']] as const) {
+            cy.get('[data-cy=languagePicker]').click();
+            cy.get(`[data-navigation-id=language-${language}] button:visible`).click();
+            cy.get('[data-navigation-id=docs]').should('have.attr', 'aria-label', label);
+        }
     });
 });
 
 describe('Color Theme', () => {
-    it('Detect Sys Dark Mode', () => {
-        cy.visit('/#/settings', {
-            onBeforeLoad: (win) => {
-                cy.stub(win, 'matchMedia').withArgs('(prefers-color-scheme: dark)').returns({
-                    matches: true,
-                    addEventListener: () => undefined,
-                    addListener: () => undefined,
-                });
-            },
+    for (const dark of [true, false]) {
+        it(`detects the system ${dark ? 'dark' : 'light'} theme`, () => {
+            cy.visit('/#/settings', {
+                onBeforeLoad: (win) => {
+                    cy.stub(win, 'matchMedia').withArgs('(prefers-color-scheme: dark)').returns({
+                        matches: dark,
+                        addEventListener: () => undefined,
+                        addListener: () => undefined,
+                    });
+                },
+            });
+            cy.get('#app[data-v-app]', { timeout: Cypress.config('pageLoadTimeout') }).should('be.visible');
+            cy.get('html').should(dark ? 'have.class' : 'not.have.class', 'dark');
+            cy.window().its('localStorage').invoke('getItem', 'local').should((value: string | null) => {
+                const settings = JSON.parse(value ?? '{}') as { darkmode?: boolean };
+                expect(settings.darkmode).to.equal(dark);
+            });
+            cy.window().its('localStorage').invoke('getItem', 'vueuse-color-scheme').should('eq', 'auto');
         });
-        // The load event can precede router readiness and Vue's theme initialization.
-        cy.get('#app[data-v-app]', { timeout: Cypress.config('pageLoadTimeout') }).should('be.visible');
-        cy.getLocalStorage('local').then((value) => {
-            expect(value?.darkmode).to.be.true;
-        });
-        cy.window().its('localStorage').invoke('getItem', 'vueuse-color-scheme').should('eq', 'auto');
-    });
-    it('Detect Sys Light Mode', () => {
-        cy.visit('/#/settings', {
-            onBeforeLoad: (win) => {
-                cy.stub(win, 'matchMedia').withArgs('(prefers-color-scheme: dark)').returns({
-                    matches: false,
-                    addEventListener: () => undefined,
-                    addListener: () => undefined,
-                });
-            },
-        });
-        cy.get('#app[data-v-app]', { timeout: Cypress.config('pageLoadTimeout') }).should('be.visible');
-        cy.getLocalStorage('local').then((value) => {
-            expect(value?.darkmode).to.be.false;
-        });
-        cy.window().its('localStorage').invoke('getItem', 'vueuse-color-scheme').should('eq', 'auto');
-    });
+    }
 
-    it('Change Theme', () => {
+    it('switches themes from the toolbar and restores the choice after reloading', () => {
         cy.visit('/#/settings');
         cy.get('#app[data-v-app]', { timeout: Cypress.config('pageLoadTimeout') }).should('be.visible');
-        cy.window().its('localStorage').invoke('getItem', 'vueuse-color-scheme').should('eq', 'auto');
-        cy.contains('浅色').click();
+        cy.get('[data-cy=themePicker]').click();
+        cy.get('[data-navigation-id=theme-light] button:visible').click();
         cy.window().its('localStorage').invoke('getItem', 'vueuse-color-scheme').should('eq', 'light');
-        cy.contains('深色').click();
+        cy.get('html').should('not.have.class', 'dark');
+        cy.get('[data-cy=themePicker]').click();
+        cy.get('[data-navigation-id=theme-dark] button:visible').click();
         cy.window().its('localStorage').invoke('getItem', 'vueuse-color-scheme').should('eq', 'dark');
-        cy.contains('自动').click();
+        cy.reload();
+        cy.get('html').should('have.class', 'dark');
+        cy.window().its('localStorage').invoke('getItem', 'vueuse-color-scheme').should('eq', 'dark');
+        cy.get('[data-cy=themePicker]').click();
+        cy.get('[data-navigation-id=theme-auto] button:visible').click();
         cy.window().its('localStorage').invoke('getItem', 'vueuse-color-scheme').should('eq', 'auto');
+    });
+});
+
+describe('Navigation position', () => {
+    it('keeps the selected layout after reloading', () => {
+        cy.visit('/#/settings');
+        cy.get('[data-cy=navigation-layout]').select('sidebar');
+        cy.get('.site-shell').should('have.attr', 'data-navigation-layout', 'sidebar');
+        cy.reload();
+        cy.get('[data-cy=navigation-layout]').should('have.value', 'sidebar').select('top');
+        cy.get('.site-shell').should('have.attr', 'data-navigation-layout', 'top');
+        cy.url().should('include', '/#/settings');
     });
 });
 
@@ -111,14 +102,5 @@ describe('General Settings', () => {
             const config = JSON.parse(value ?? '{}') as { strangeDustTrust?: boolean };
             expect(config.strangeDustTrust).to.equal(false);
         });
-    });
-
-    it('Hide Language Icon', () => {
-        cy.visit('/#/settings');
-        cy.get('[data-cy=languagePicker]').should('be.visible');
-        cy.contains('dt', '语言切换').next('dd').find('.el-switch').click();
-        cy.get('[data-cy=languagePicker]').should('not.be.visible');
-        cy.contains('dt', '语言切换').next('dd').find('.el-switch').click();
-        cy.get('[data-cy=languagePicker]').should('be.visible');
     });
 });

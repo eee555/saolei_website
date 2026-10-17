@@ -1,16 +1,17 @@
 <template>
     <span style="flex: 1" />
-    <ElStatistic class="stathead" :title="`${t('common.score.sum')} ${t('common.prop.time')}`" :value="sumTime" :precision="3" />
-    <ElStatistic class="stathead" :title="`${t('common.score.sum')} ${t('common.prop.bvs')}`" :value="sumBvs" :precision="3" />
-    <ElStatistic class="stathead" :title="`${t('common.score.sum')} ${t('common.prop.stnb')}`" :value="sumStnb" :precision="3" />
+    <ElStatistic class="stathead" :title="`${t('common.score.sum')} ${t('common.prop.time')}`" :value="roundedSumTime" :precision="3" />
+    <ElStatistic class="stathead" :title="`${t('common.score.sum')} ${t('common.prop.bvs')}`" :value="roundedSumBvs" :precision="3" />
+    <ElStatistic class="stathead" :title="`${t('common.score.sum')} ${t('common.prop.stnb')}`" :value="roundedSumStnb" :precision="3" />
     <span style="flex: 1" />
 </template>
 
 <script setup lang="ts">
 import { ElStatistic } from 'element-plus';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-defineProps({
+const props = defineProps({
     sumTime: {
         type: Number,
         required: true,
@@ -26,6 +27,14 @@ defineProps({
 });
 
 const { t } = useI18n();
+
+function round3(value: number): number {
+    return Math.round(value * 1000) / 1000;
+}
+
+const roundedSumTime = computed(() => round3(props.sumTime));
+const roundedSumBvs = computed(() => round3(props.sumBvs));
+const roundedSumStnb = computed(() => round3(props.sumStnb));
 </script>
 
 <style lang="less" scoped>

@@ -1,46 +1,47 @@
 <template>
-    比赛ID
+    {{ t('common.prop.tournamentId') }}
     &nbsp;
     <ElInputNumber v-model="tournamentId" :min="0" :controls="false" />
     &nbsp;
     <BaseButton @click="refreshTournamentInfo">
-        查询
+        {{ t('common.button.query') }}
     </BaseButton>
     <br>
     <template v-if="tournament">
-        状态
+        {{ t('common.prop.status') }}
         &nbsp;
         <TournamentStateIcon :state="tournament.getDisplayState(globalNow)" />
         <br>
-        开始时间
+        {{ t('common.prop.start_time') }}
         &nbsp;
         {{ tournament.startDate }}
         <br>
-        结束时间
+        {{ t('common.prop.end_time') }}
         &nbsp;
         {{ tournament.endDate }}
         <br>
-        审核
-        <BaseButton class="square-button" type="success" size="small" aria-label="通过审核" :disabled="!tournament.canValidate" @click="validateTournament(true)">
+        {{ t('local.review') }}
+        <BaseButton class="square-button" type="success" size="small" :aria-label="t('common.button.approve')" :disabled="!tournament.canValidate" @click="validateTournament(true)">
             <BaseIconTick />
         </BaseButton>
-        <BaseButton class="square-button" type="danger" size="small" aria-label="取消审核" :disabled="!tournament.canInvalidate" @click="validateTournament(false)">
+        <BaseButton class="square-button" type="danger" size="small" :aria-label="t('common.button.revokeApproval')" :disabled="!tournament.canInvalidate" @click="validateTournament(false)">
             <BaseIconClose />
         </BaseButton>
         <br>
-        名称
-        <VCodeBlock v-if="tournament" :code="JSON.stringify(tournament.name)" lang="json" highlightjs />
-        描述
-        <VCodeBlock v-if="tournament.description" :code="JSON.stringify(tournament.description)" lang="json" highlightjs />
+        {{ t('common.prop.name') }}
+        <VCodeBlock v-if="tournament" :code="JSON.stringify(tournament.name)" lang="json" />
+        {{ t('common.prop.description') }}
+        <VCodeBlock v-if="tournament.description" :code="JSON.stringify(tournament.description)" lang="json" />
     </template>
 </template>
 
 <script setup lang="ts">
-import { VCodeBlock } from '@wdns/vue-code-block';
 import { ElInputNumber } from 'element-plus';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 import BaseButton from '@/components/common/BaseButton.vue';
+import VCodeBlock from '@/components/common/BaseCodeBlock.vue';
 import { BaseIconClose, BaseIconTick } from '@/components/common/icon';
 import { httpErrorNotification, successNotification } from '@/components/Notifications';
 import TournamentStateIcon from '@/components/widgets/TournamentStateIcon.vue';
@@ -91,4 +92,15 @@ function validateTournament(valid: boolean) {
         successNotification(response);
     }).catch(httpErrorNotification);
 }
+
+const i18nMessages = {
+    'zh-cn': { local: {
+        review: '审核',
+    } },
+    en: { local: {
+        review: 'Review',
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
 </script>

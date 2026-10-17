@@ -1,29 +1,30 @@
 <template>
     <ElInput v-model="identifier" />
     <BaseButton @click="handleGet">
-        查询
+        {{ t('common.button.query') }}
     </BaseButton>
     <BaseButton v-if="safe != 'unknown'" @click="handleDelete">
-        删除
+        {{ t('common.button.delete') }}
     </BaseButton>
     <BaseButton v-if="safe == 'false'" @click="handleApprove">
-        通过审核
+        {{ t('common.button.approve') }}
     </BaseButton>
     <template v-if="userid === 0 && identifier !== ''">
         <br>&nbsp;
-        绑定用户ID
+        {{ t('local.linkUserId') }}
         <ElInputNumber v-model="newUserid" />
         <BaseButton @click="handleAdd">
-            绑定
+            {{ t('common.button.link') }}
         </BaseButton>
     </template>
     <br>
-    用户ID: {{ userid }}，状态：{{ safe }}
+    {{ t('local.summary', { userId: userid, status: t(`local.${safe}`) }) }}
 </template>
 
 <script setup lang="ts">
 import { ElInput, ElInputNumber } from 'element-plus';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 import BaseButton from '@/components/common/BaseButton.vue';
 import { httpErrorNotification, successNotification } from '@/components/Notifications';
@@ -74,4 +75,23 @@ function handleAdd() {
         },
     ).catch(httpErrorNotification);
 }
+
+const i18nMessages = {
+    'zh-cn': { local: {
+        linkUserId: '绑定用户 ID',
+        summary: '用户 ID：{userId}，状态：{status}',
+        unknown: '未知',
+        true: '已通过审核',
+        false: '待审核',
+    } },
+    en: { local: {
+        linkUserId: 'Link to user ID',
+        summary: 'User ID: {userId}, status: {status}',
+        unknown: 'Unknown',
+        true: 'Approved',
+        false: 'Pending approval',
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
 </script>

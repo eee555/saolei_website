@@ -1,4 +1,6 @@
 import { defineComponent, h, reactive } from 'vue';
+import type { Plugin } from 'vue';
+import { createI18n } from 'vue-i18n';
 
 import PublicTournament from './PublicTournament.vue';
 
@@ -10,7 +12,7 @@ import { Tournament, TournamentParticipant } from '@/utils/tournaments';
 import type { VideoAbstract } from '@/utils/videoabstract';
 import { FakeDirectoryHandle, setDirectoryPicker } from '@cy/support/autoUploader';
 
-function mountTournament(index = 0, state = TournamentState.Normal) {
+function mountTournament(index = 0, state = TournamentState.Normal, translations: Plugin = i18n) {
     const data = reactive({
         tournament: new Tournament({ id: 7, name: 'Test tournament', state, start_time: '2000-01-01', end_time: '2099-01-01' }),
         participants: [new TournamentParticipant({ id: 10, tournament_id: 7, user_id: 99, start_time: new Date('2000-01-01'), end_time: new Date('2099-01-01') })],
@@ -30,7 +32,7 @@ function mountTournament(index = 0, state = TournamentState.Normal) {
             personalSummary: ({ videos }: { videos: VideoAbstract[] }) => h('p', { 'data-cy': 'summary-count' }, `Videos: ${videos.length}`),
         }),
     });
-    cy.mount(Host, { global: { plugins: [i18n], config: { globalProperties: { $axios } } } });
+    cy.mount(Host, { global: { plugins: [translations], config: { globalProperties: { $axios } } } });
     return data;
 }
 
@@ -75,22 +77,25 @@ describe('<PublicTournament />', () => {
         cy.get('.tournament-auto-upload').should('not.be.visible');
     });
 
-    for (const { languages, language, path } of [
-        { languages: ['zh-CN', 'en-US'], language: 'en-US', path: '/guide/tournament#auto-upload' },
-        { languages: ['ZH-TW'], language: 'en-US', path: '/guide/tournament#auto-upload' },
-        { languages: ['fr-FR', 'zh-CN'], language: 'zh-CN', path: '/en/guide/tournament#auto-upload' },
-        { languages: [], language: 'zh-CN', path: '/guide/tournament#auto-upload' },
-        { languages: [], language: '', path: '/en/guide/tournament#auto-upload' },
+    for (const { locale, browserLanguage, path } of [
+        { locale: 'zh-cn', browserLanguage: 'en-US', path: '/docs/guide/tournament#auto-upload' },
+        { locale: 'en', browserLanguage: 'zh-CN', path: '/docs/en/guide/tournament#auto-upload' },
     ]) {
-        it(`routes the upload guide for browser languages ${JSON.stringify(languages)} and language '${language}' to ${path}`, () => {
+        it(`routes the upload guide for interface language ${locale}, independently of browser language`, () => {
+            const translations = createI18n({ legacy: false, locale, messages: i18n.global.messages.value });
             cy.window().then((win) => {
-                cy.stub(win.navigator, 'languages').value(languages);
-                cy.stub(win.navigator, 'language').value(language);
+                cy.stub(win.navigator, 'languages').value([browserLanguage]);
+                cy.stub(win.navigator, 'language').value(browserLanguage);
             });
             cy.intercept('GET', '**/api/tournament/get_videos/participant*', { body: [] }).as('videos');
-            mountTournament();
+            mountTournament(0, TournamentState.Normal, translations);
             cy.wait('@videos');
-            cy.get('.tournament-auto-upload a').should('be.visible').and('have.attr', 'href').and('satisfy', (href: string) => (/\/(en\/)?guide\/tournament#auto-upload$/).exec(href)?.[0] === path);
+            cy.get('.tournament-auto-upload a').should('be.visible').and('have.attr', 'href').and('satisfy', (href: string) => href.endsWith(path));
+            cy.then(() => {
+                translations.global.locale.value = locale === 'en' ? 'zh-cn' : 'en';
+            });
+            const changedPath = locale === 'en' ? '/docs/guide/tournament#auto-upload' : '/docs/en/guide/tournament#auto-upload';
+            cy.get('.tournament-auto-upload a').should('have.attr', 'href').and('satisfy', (href: string) => href.endsWith(changedPath));
         });
     }
 

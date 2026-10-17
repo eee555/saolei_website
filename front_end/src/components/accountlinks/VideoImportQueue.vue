@@ -78,9 +78,9 @@
         </PrColumn>
         <PrColumn>
             <template #body="{ data }: { data: SaoleiVideo }">
-                <ElLink v-if="data.import_video__id != 0" underline="never" @click="preview(data.import_video__id)">
+                <VideoPreviewLink v-if="data.import_video__id != 0" :id="data.import_video__id" :aria-label="t('local.preview')">
                     <i class="pi pi-play-circle" />
-                </ElLink>
+                </VideoPreviewLink>
             </template>
         </PrColumn>
     </PrDataTable>
@@ -92,7 +92,7 @@ import '@/styles/button.css';
 import '@/styles/text.css';
 
 import { FilterMatchMode } from '@primevue/core/api';
-import { ElLink, vLoading } from 'element-plus';
+import { vLoading } from 'element-plus';
 import PrColumn from 'primevue/column';
 import PrDataTable from 'primevue/datatable';
 import PrListbox from 'primevue/listbox';
@@ -100,11 +100,11 @@ import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { httpErrorNotification } from '@/components/Notifications';
+import VideoPreviewLink from '@/components/VideoPreviewLink.vue';
 import DjangoTaskResultStatusBadge from '@/components/widgets/DjangoTaskResultStatusBadge.vue';
 import GameLevelIcon from '@/components/widgets/GameLevelIcon.vue';
 import { fetchSaoleiImportVideos } from '@/services/accountLinkService';
 import type { SaoleiVideo } from '@/utils/accountlinks';
-import { preview } from '@/utils/common/PlayerDialog';
 import { DjangoTaskResultStatusOptions } from '@/utils/common/structInterface';
 import { MS_Levels } from '@/utils/ms_const';
 import { utc_to_local_format } from '@/utils/system/tools';
@@ -121,8 +121,6 @@ const filters = ref({
     level: { value: null, matchMode: FilterMatchMode.EQUALS },
 });
 
-const { t } = useI18n();
-
 const tableData = ref<SaoleiVideo[]>([]);
 const importing = ref(false);
 
@@ -135,6 +133,17 @@ function refresh() {
 }
 
 watch(() => props.saoleiId, refresh, { immediate: true });
+
+const i18nMessages = {
+    'zh-cn': { local: {
+        preview: '预览录像',
+    } },
+    en: { local: {
+        preview: 'Preview video',
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
 </script>
 
 <style lang="less" scoped>

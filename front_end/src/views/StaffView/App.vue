@@ -1,6 +1,6 @@
 <template>
     <ElTabs :model-value="activeTab" @tab-click="handleTabClick">
-        <ElTabPane v-for="tab in tabItems" :key="tab.name" :label="tab.label" :name="tab.name" />
+        <ElTabPane v-for="tab in tabItems" :key="tab.name" :label="t(`local.${tab.name}`)" :name="tab.name" />
         <router-view v-slot="{ Component }">
             <keep-alive>
                 <component :is="Component" />
@@ -13,23 +13,24 @@
 import type { TabsPaneContext } from 'element-plus';
 import { ElTabPane, ElTabs } from 'element-plus';
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 const router = useRouter();
 
 const tabItems = [
-    { name: 'userprofile', label: '用户信息' },
-    { name: 'videomodel', label: '录像信息' },
-    { name: 'accountlink', label: '账号绑定' },
-    { name: 'identifier', label: '标识管理' },
-    { name: 'logs', label: '后台日志' },
-    { name: 'tournament', label: '比赛管理' },
-    { name: 'weekly-tournament', label: '创建打卡赛' },
-    { name: 'task', label: '后台任务' },
-    { name: 'batchvideo', label: '批量刷新录像' },
-    { name: 'batchpluck', label: '批量刷新pLuck纪录' },
-    { name: 'ranking-repair', label: '排行纪录重建' },
+    { name: 'userprofile' },
+    { name: 'videomodel' },
+    { name: 'accountlink' },
+    { name: 'identifier' },
+    { name: 'logs' },
+    { name: 'tournament' },
+    { name: 'weekly-tournament' },
+    { name: 'task' },
+    { name: 'batchvideo' },
+    { name: 'batchpluck' },
+    { name: 'ranking-repair' },
 ] as const;
 const validTabs = tabItems.map((item) => item.name);
 
@@ -44,4 +45,35 @@ const handleTabClick = (tab: TabsPaneContext) => {
     const tabName = tab.paneName;
     if (tabName !== undefined) void router.replace(String(tabName));
 };
+
+const i18nMessages = {
+    'zh-cn': { local: {
+        userprofile: '用户信息',
+        videomodel: '录像信息',
+        accountlink: '账号绑定',
+        identifier: '标识管理',
+        logs: '后台日志',
+        tournament: '比赛管理',
+        'weekly-tournament': '创建打卡赛',
+        task: '后台任务',
+        batchvideo: '批量刷新录像',
+        batchpluck: '批量刷新pLuck纪录',
+        'ranking-repair': '排行纪录重建',
+    } },
+    en: { local: {
+        userprofile: 'User profiles',
+        videomodel: 'Video information',
+        accountlink: 'Account links',
+        identifier: 'Identifier management',
+        logs: 'Server logs',
+        tournament: 'Tournament management',
+        'weekly-tournament': 'Create weekly tournament',
+        task: 'Background tasks',
+        batchvideo: 'Batch refresh videos',
+        batchpluck: 'Batch refresh pLuck records',
+        'ranking-repair': 'Rebuild ranking records',
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
 </script>

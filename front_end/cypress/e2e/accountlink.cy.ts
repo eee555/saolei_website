@@ -82,13 +82,13 @@ function visitStaffAccountLink() {
 function expectAccountLinkTableRow(platform: string, identifier: string, verified: boolean) {
     cy.contains('table:visible tbody tr', identifier, { timeout: 10000 }).should('be.visible');
     cy.get('table:visible').getTable().should((tableData) => {
-        const row = tableData.find((item) => item['Platform ID'] === identifier);
+        const row = tableData.find((item) => item['平台 ID'] === identifier);
 
         expect(row, `account link row for ${platform} #${identifier}`).to.deep.equal({
-            'User ID': `${USER.id}`,
-            Platform: platform,
-            'Platform ID': identifier,
-            Verified: `${verified}`,
+            '用户 ID': `${USER.id}`,
+            平台: platform,
+            '平台 ID': identifier,
+            已验证: verified ? '已验证' : '未验证',
         });
     });
 }
@@ -97,12 +97,12 @@ function expectAccountLinkTableData(expected: { platform: string; identifier: st
     cy.get('table:visible').getTable().should((tableData) => {
         expect(tableData.length).to.equal(expected.length);
         expected.forEach((item) => {
-            const row = tableData.find((tableRow) => tableRow['Platform ID'] === item.identifier);
+            const row = tableData.find((tableRow) => tableRow['平台 ID'] === item.identifier);
             expect(row).to.deep.equal({
-                'User ID': `${USER.id}`,
-                Platform: item.platform,
-                'Platform ID': item.identifier,
-                Verified: `${item.verified}`,
+                '用户 ID': `${USER.id}`,
+                平台: item.platform,
+                '平台 ID': item.identifier,
+                已验证: item.verified ? '已验证' : '未验证',
             });
         });
     });
@@ -113,11 +113,12 @@ function staffVerifyAccount(platform: string, identifier: string) {
     expectAccountLinkTableRow(platform, identifier, false);
 
     cy.intercept('POST', '**/accountlink/verify/').as('verifyAccountLink');
-    cy.contains(':visible', 'ID').first().next().find('input').type(`${USER.id}{enter}`);
-    cy.contains('平台').next().contains('Select').click();
-    cy.get('li').contains(platform).click();
-    cy.contains('平台ID').next().find('input').type(`${identifier}{enter}`);
-    cy.contains(/^\s*绑定\s*$/).click();
+    cy.contains('.el-form-item__label', '用户 ID').next().find('input').clear();
+    cy.contains('.el-form-item__label', '用户 ID').next().find('input').type(`${USER.id}{enter}`);
+    cy.contains('.el-form-item__label', /^平台$/).next().find('.el-select').click();
+    cy.contains('.el-select-dropdown__item:visible', platform).click();
+    cy.contains('.el-form-item__label', '平台 ID').next().find('input').type(`${identifier}{enter}`);
+    cy.contains('button', /^\s*绑定\s*$/).click();
     cy.wait('@verifyAccountLink').its('response.statusCode').should('eq', 200);
     cy.wait('@accountLinkQueue').its('response.statusCode').should('eq', 200);
     waitForLoading();

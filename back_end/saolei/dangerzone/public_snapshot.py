@@ -10,6 +10,7 @@ from django.utils import timezone
 from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from config.tournaments import TournamentWeights
 from customranking.services import add_videos_to_custom_pluck_ranks
+from identifier.models import Identifier
 from msuser.models import UserMS
 from msuser.services import update_video_count_limit_from_videos
 from tournament.models import WeeklyTournament
@@ -67,7 +68,7 @@ def validate_import(root, manifest, users):
 @transaction.atomic
 def import_snapshot_rows(root, manifest, users, admin_password, user_password):
     """批量导入公开元数据；不触发逐录像信号，随后由调用方重建派生数据。"""
-    UserMS.objects.bulk_create([UserMS(id=user_id) for user_id in users], batch_size=500)
+    UserMS.objects.bulk_create([UserMS(id=user_id, identifiers=row['identifiers']) for user_id, row in users.items()], batch_size=500)
     profiles = []
     for row in users.values():
         profile = UserProfile(**{name: row[name] for name in USER_FIELDS if name in row})
@@ -85,6 +86,12 @@ def import_snapshot_rows(root, manifest, users, admin_password, user_password):
             if value := users[profile.id].get(field):
                 setattr(profile, field, snapshot_datetime(value))
     UserProfile.objects.bulk_update(profiles, USER_DATES, batch_size=500)
+
+    # Restore both sides together, preserving snapshot video states; derived data is rebuilt after the import.
+    Identifier.objects.bulk_create([
+        Identifier(identifier=identifier, userms_id=user_id, safe=True)
+        for user_id, row in users.items() for identifier in row['identifiers']
+    ], batch_size=500)
 
     for rows in snapshot_pages(root, manifest, 'videos'):
         ExpandVideoModel.objects.bulk_create([
@@ -130,6 +137,8 @@ def initialize_local_data(root, admin_password, user_password, *, stdout, create
         raise CommandError(f'Preflight failed; no data was cleared: {error}') from error
 
     stdout.write(f'Validated {len(users)} users and {manifest["video_count"]} videos. Resetting local data.\n')
+    if manifest['version'] == 1:
+        stdout.write('Legacy snapshot has no user identifiers; rerun download_public_data to add them.\n')
     if missing := manifest.get('missing_detail_video_ids'):
         stdout.write(f'{len(missing)} videos use list data only; missing metrics remain NULL and identifiers remain empty. Supplied right_ce is preserved for NF rankings.\n')
     call_command('flush', interactive=False, verbosity=0)
@@ -141,11 +150,12 @@ def initialize_local_data(root, admin_password, user_password, *, stdout, create
         update_video_count_limit_from_videos(user.userms, VideoModel.objects.filter(player=user))
     call_command('rebuild_speed_ranks', stdout=stdout)
     call_command('rebuild_pb_ranks', stdout=stdout)
+    call_command('rebuild_top_ranks', stdout=stdout)
     add_videos_to_custom_pluck_ranks(VideoModel.objects.all())
     for rows in snapshot_pages(root, manifest, 'videos'):
         add_videos_to_state_queues_bulk(VideoModel.objects.filter(id__in=[row['id'] for row in rows]).select_related('player', 'video'))
     if create_weekly:
         tournament = create_local_weekly_tournament()
         stdout.write(f'Weekly tournament: id={tournament.id}, start={tournament.start_time}, end={tournament.end_time}\n')
-    stdout.write(f'Imported {len(users)} users and {manifest["video_count"]} videos.\n')
+    stdout.write(f'Imported {len(users)} users, {manifest["video_count"]} videos and {manifest.get("identifier_count", 0)} identifiers.\n')
     stdout.write(f'Admin: id=2, username={users[2]["username"]}; normal user: id=48, username={users[48]["username"]}\n')

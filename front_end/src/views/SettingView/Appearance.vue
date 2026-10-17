@@ -6,21 +6,6 @@
         <div class="description-layout">
             <dl class="descriptions">
                 <div class="description-item">
-                    <dt>{{ t('local.colorscheme') }}</dt>
-                    <dd>
-                        <DarkMode />
-                    </dd>
-                </div>
-                <div class="description-item">
-                    <dt>{{ t('local.languageSwitch') }}</dt>
-                    <dd>
-                        <ElSwitch
-                            v-model="local.language_show"
-                            :active-text="t('common.show')" :inactive-text="t('common.hide')"
-                        />
-                    </dd>
-                </div>
-                <div class="description-item">
                     <dt>{{ t('local.viennaLogo') }}</dt>
                     <dd>
                         <ElSwitch v-model="local.vienna_logo_legacy">
@@ -34,31 +19,16 @@
                     </dd>
                 </div>
                 <div class="description-item">
-                    <dt>{{ t('local.menuLayout') }}</dt>
+                    <dt>{{ t('local.navigationLayout') }}</dt>
                     <dd>
-                        <ElSwitch
-                            v-model="local.menu_icon"
-                            :active-text="t('local.menuLayoutAbstract')"
-                            :inactive-text="t('local.menuLayoutDefault')"
-                        />
-                    </dd>
-                </div>
-                <div class="description-item">
-                    <dt>{{ t('local.menuHeight') }}</dt>
-                    <dd>
-                        <ElSlider
-                            v-model="local.menu_height" size="small" :min="20" :max="60"
-                            style="width: 100px; display: inline-block; height: 9px"
-                        />
-                    </dd>
-                </div>
-                <div class="description-item">
-                    <dt>{{ t('local.menuFontSize') }}</dt>
-                    <dd>
-                        <ElInputNumber
-                            v-model="local.menu_font_size"
-                            size="small" :min="10"
-                        />
+                        <select v-model="local.navigation_layout" class="navigation-position-setting" data-cy="navigation-layout" :aria-label="t('local.navigationLayout')">
+                            <option value="top">
+                                {{ t('local.navigationTop') }}
+                            </option>
+                            <option value="sidebar">
+                                {{ t('local.navigationSidebar') }}
+                            </option>
+                        </select>
                     </dd>
                 </div>
                 <div class="description-item">
@@ -111,25 +81,20 @@ import '@/styles/descriptions.css';
 import '@/styles/cards.css';
 import '@/styles/text.css';
 
-import { ElInputNumber, ElRadioButton, ElRadioGroup, ElSlider, ElSwitch } from 'element-plus';
+import { ElInputNumber, ElRadioButton, ElRadioGroup, ElSwitch } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
 import BaseTooltip from '@/components/common/BaseTooltip.vue';
-import DarkMode from '@/components/widgets/DarkMode.vue';
 import { local } from '@/store';
 import { ViennaIconLegacy, ViennaIconNew } from '@/utils/assets';
 
 const i18nMessages = {
     'zh-cn': { local: {
         appearance: '外观设置',
-        colorscheme: '颜色主题',
         experimentalFeature: '实验功能',
-        languageSwitch: '语言切换',
-        menuFontSize: '菜单字号',
-        menuHeight: '菜单高度',
-        menuLayout: '菜单排版',
-        menuLayoutAbstract: '抽象',
-        menuLayoutDefault: '默认',
+        navigationLayout: '导航位置',
+        navigationTop: '顶栏',
+        navigationSidebar: '侧栏',
         nameFormat: '姓名格式',
         nameFormatFirstLast: '名 姓',
         nameFormatLastFirst: '姓, 名',
@@ -143,14 +108,10 @@ const i18nMessages = {
     } },
     en: { local: {
         appearance: 'Appearance',
-        colorscheme: 'Color scheme',
         experimentalFeature: 'Experimental Features',
-        languageSwitch: 'Language Switch',
-        menuFontSize: 'Menu Font Size',
-        menuHeight: 'Menu Height',
-        menuLayout: 'Menu Layout',
-        menuLayoutAbstract: 'Abstract',
-        menuLayoutDefault: 'Default',
+        navigationLayout: 'Navigation position',
+        navigationTop: 'Top bar',
+        navigationSidebar: 'Side bar',
         nameFormat: 'Name Format',
         nameFormatFirstLast: 'Given Family',
         nameFormatLastFirst: 'Family, Given',
@@ -168,3 +129,21 @@ const { t } = useI18n({
     messages: i18nMessages,
 });
 </script>
+
+<style scoped>
+.navigation-position-setting {
+    min-height: 28px;
+    max-width: 100%;
+    border: 1px solid var(--ui-border-color);
+    border-radius: 0;
+    padding: 3px 8px;
+    background: var(--ui-bg-color);
+    color: var(--ui-text-color-regular);
+    font: inherit;
+}
+
+.navigation-position-setting:focus-visible {
+    outline: 2px solid var(--ui-color-primary);
+    outline-offset: 1px;
+}
+</style>

@@ -61,7 +61,7 @@
         <div class="text-small">
             {{ t('local.signatureTooltip', { left: user.newSignatureBudget(new Date(Date.now())), next: toISODateTimeString(user.nextSignatureAvailable) }) }}
         </div>
-        <div v-if="expTimeMs >= 200000" class="text-small text-warning">
+        <div v-if="qualificationStatus === 'ready' && expTimeMs >= 200000" class="text-small text-warning">
             {{ t('local.tooltipExpTime') }}
         </div>
     </div>
@@ -80,10 +80,10 @@
     </div>
 
     <div style="margin-top: 1em">
-        <BaseButton type="primary" @click="updateProfile">
+        <BaseButton type="primary" :loading="updating" @click="updateProfile">
             {{ t('common.button.save') }}
         </BaseButton>
-        <BaseButton type="info" @click="isEditing = false">
+        <BaseButton type="info" :disabled="updating" @click="refresh">
             {{ t('common.button.cancel') }}
         </BaseButton>
     </div>
@@ -93,7 +93,8 @@
 import '@/styles/text.css';
 
 import { ElInput } from 'element-plus';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
+import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import BaseButton from '@/components/common/BaseButton.vue';
@@ -106,6 +107,7 @@ import { UserProfile } from '@/utils/userprofile';
 
 const props = defineProps({
     expTimeMs: { type: Number, default: 999999 },
+    qualificationStatus: { type: String as PropType<'idle' | 'loading' | 'ready' | 'error'>, default: 'ready' },
 });
 
 const { proxy } = useCurrentInstance();
@@ -119,7 +121,6 @@ interface formStatusSingle {
 }
 
 const user = defineModel<UserProfile>('user', { type: UserProfile, default: () => new UserProfile() });
-const isEditing = defineModel('isEditing', { type: Boolean, default: false });
 
 const updating = ref(false);
 
@@ -136,16 +137,14 @@ const formStatus = ref<EnumMap<UpdateProfileField, formStatusSingle>>(
 function refresh() {
     for (const field of UpdateProfileFields) {
         formStatus.value[field].new = user.value[field];
+        formStatus.value[field].status = '';
+        formStatus.value[field].errorMsg = '';
     }
 }
 
-watch(() => isEditing.value, () => {
-    if (isEditing.value) refresh();
-}, { immediate: true });
+watch(user, refresh, { immediate: true });
 
-onMounted(refresh);
-
-const signatureDisabled = computed(() => user.value.nextSignatureAvailable > globalNow.value || props.expTimeMs >= 200000);
+const signatureDisabled = computed(() => props.qualificationStatus !== 'ready' || user.value.nextSignatureAvailable > globalNow.value || props.expTimeMs >= 200000);
 
 type UpdateProfileResponseSingle = null
     | { type: 'success' }
@@ -190,7 +189,6 @@ async function updateProfile() {
         }).catch(httpErrorNotification);
     }
     updating.value = false;
-    isEditing.value = false;
 }
 
 const i18nMessages = {
@@ -253,7 +251,7 @@ const { t } = useI18n({ messages: i18nMessages });
 
 <style lang="less" scoped>
 .input-label {
-    margin-top: 1.5em;
+    margin-top: 0.75em;
     margin-bottom: 0.5em;
 }
 </style>

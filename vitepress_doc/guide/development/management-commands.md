@@ -34,7 +34,7 @@ python -m dangerzone.init_local_test --no-weekly
 
 `--skip-details` 不请求 `detailbulk`，已有的详情仍然优先使用，其他录像直接使用 `get_user_videos` 的列表数据；只有列表数据的录像列入 `missing_detail_video_ids`。可空的缺失指标保持 NULL，录像内标识为空字符串。列表里的 `cl`、`ce` 不能直接写入生成列，缺少分项点击数时，相关生成值也为 NULL。生产列表已返回 `right_ce`，列表回退也可以按 `right_ce == 0` 重建 NF 榜；详情缺少该字段或为 NULL 时保留列表值。旧快照缺失该值时保持 NULL，不凭旧模式编码推测。完成的快照不会重新下载，补充新字段或详情请使用新的 `--output-dir` 下载，再通过 `--snapshot-dir` 导入。
 
-导入保留原用户/录像 ID、上传时间和公开属性，旧 NF 模式 `12` 转成 STD `00`，不修改 `right_ce`。批量写入不会触发录像信号，随后重建录像计数、上传额度、扫雷网普通/NF 榜、PB 普通/NF 榜、pluck 纪录缓存和录像状态队列，不创建 pluck 计算任务。
+导入保留原用户/录像 ID、上传时间和公开属性，旧 NF 模式 `12` 转成 STD `00`，不修改 `right_ce`。批量写入不会触发录像信号，随后重建录像计数、上传额度、扫雷网普通/NF 榜、PB 普通/NF 榜、top 普通/NF 榜及锚点、pluck 纪录缓存和录像状态队列，不创建 pluck 计算任务。
 
 - 管理员：ID `2`，密码 `admin123456`；普通账号：ID `48`，密码 `user123456`。用户名保留生产数据；可通过 `--admin-password` / `--user-password` 指定其他密码。
 - 其他用户禁用密码登录，且所有用户中仅 ID `2` 获得本地 `is_staff` 权限；邮箱统一为 `user-{id}@example.invalid`。生产账号不受影响。
@@ -72,6 +72,20 @@ python manage.py rebuild_pb_ranks --batch-size 100
 首次部署及 PB 缓存丢失后需要手动执行，API 不回源。执行前暂停 PB 相关读写，包括上传、审核、绑定/解绑、删除及比赛公开。命令直接清空 PB 命名空间后重建，不使用临时榜或原子发布；失败会记录日志并中断，可能留下部分缓存，排除错误后重新运行。录像数据库和扫雷网缓存不受影响。`rebuild_speed_ranks` 仍仅重建扫雷网规则。
 
 本地快照初始化 `python -m dangerzone.init_local_test` 已在扫雷网重建后自动调用 PB 重建，使用 `--no-weekly` 时也会执行，无需另外运行上述命令。
+
+### `rebuild_top_ranks`
+
+位置：`speedranking/management/commands/rebuild_top_ranks.py`
+
+从录像数据库按玩家分段构建 top 的十八个小榜及前二十名均值锚点。`--batch-size` 默认 100，必须为正数；每批输出累计用户数和最后玩家 id。
+
+```bash
+python manage.py rebuild_top_ranks --batch-size 100
+```
+
+命令使用独立临时命名空间，构建明细与索引、计算全部锚点后，用一个 Redis 事务原子切换正式榜的二十个 key。构建失败保留旧榜，正常退出会清理临时 key；强制终止可能遗留临时数据。重建期间暂停录像和排行写入，包括上传、修改、删除、绑定/解绑、比赛公开及管理员修复；旧榜的只读服务可以继续。此命令不修改数据库，也不清理扫雷网或 PB 缓存。
+
+首次部署和缓存丢失后手动执行，查询不自动回源。本地 `python -m dangerzone.init_local_test` 已自动调用此命令的重建服务，`--no-weekly` 不影响重建。单用户小榜修复使用 `POST /api/speedranking/top/admin/rebuild_record`。具体缓存与单位约定统一见 `back_end/saolei/speedranking/README.md`。
 
 ### `rebuild_tournament_cache`
 
@@ -322,7 +336,7 @@ python manage.py db_worker_robust --queue-name default --interval 2
 
 位置：`common/management/commands/runapscheduler.py`
 
-用途：启动所有 APScheduler 定时任务。当前 APScheduler 已合并为 `common` APP 中的单一常驻进程，避免分别启动监控、用户和录像相关的三个 Django 进程。
+用途：在 `common` APP 的单一常驻进程中运行验证码、录像队列和任务执行历史的定时清理。
 
 任务注册位置：`common/apscheduler.py`
 
@@ -330,12 +344,13 @@ python manage.py db_worker_robust --queue-name default --interval 2
 
 | 任务 | 频率 | 说明 |
 | --- | --- | --- |
-| `refresh_state_always` | 每 5 秒 | 采集网络 IO 速度和 CPU 使用率，并写入 Redis |
 | `delete_old_job_executions` | 每周一 00:03 | 清理旧的 APScheduler job execution 记录 |
 | `delete_newest_queue` | 每天 01:08 | 队列超过 100 条时删除超过 7 天的记录 |
 | `delete_freezed_video` | 每天 01:28 | 删除 7 天以前冻结状态的录像 |
 | `delete_overdue_emailverifyrecord` | 每周一 01:03 | 清理 1 小时以前的邮箱验证码 |
 | `delete_overdue_captcha` | 每周一 01:05 | 清理过期图形验证码 |
+
+旧的 World 监控页面和 CPU/网络 IO 采集任务已移除；`monitor` APP 改为承载服务器统计 Ninja API，不再注册定时采集。新增 `/api/monitor/memoryusage` 仅在请求缓存未命中时采集，完整结果缓存 300 秒，详见[服务器内存统计](./cache.md#服务器内存统计)。`runapscheduler` 启动注册任务时会删除数据库中残留的 `refresh_state_always` 任务，避免任务存储恢复已删除的采集函数；其余五项清理任务保持运行。更新后需重启原 APScheduler 进程。
 
 参数：
 

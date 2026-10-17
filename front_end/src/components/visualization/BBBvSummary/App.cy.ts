@@ -16,7 +16,6 @@ describe('<BBBvSummary />', () => {
         BBBvSummaryConfig.value.sortDesc = false;
         BBBvSummaryConfig.value.softwareFilter = [...MS_Softwares];
         BBBvSummaryConfig.value.zoom = 1;
-        BBBvSummaryConfig.value.tooltipMode = 'fast';
         BBBvSummaryConfig.value.showIcon = 'software';
         BBBvSummaryConfig.value.newThresh = 1;
         BBBvSummaryConfig.value.newDateField = 'upload_time';

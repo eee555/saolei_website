@@ -17,6 +17,17 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v7
 
+    - name: Set up Python
+      uses: actions/setup-python@v7
+      with:
+        python-version: '3.12'
+
+    - name: Download backend wheels
+      working-directory: back_end/saolei
+      run: |
+        python -m pip download --no-deps --dest wheels -r requirements-wheels.txt
+        sha256sum wheels/*.whl > wheels/SHA256SUMS
+
     # 安装 sshpass 工具，用于处理 SCP 密码认证
     - name: Install sshpass
       run: sudo apt-get install -y sshpass
@@ -73,4 +84,5 @@ jobs:
       run: |
         echo Uploading build files to server...
         cd front_end
-        sshpass -p "${SERVER_PASSWORD}" scp -o StrictHostKeyChecking=no -r dist ${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}:/root/github/saolei_website/back_end/saolei
+        sshpass -p "${SERVER_PASSWORD}" scp -o StrictHostKeyChecking=no -r dist ../back_end/saolei/wheels ${{ env.SERVER_USER }}@${{ env.SERVER_HOST }}:/root/github/saolei_website/back_end/saolei
+        sshpass -p "${SERVER_PASSWORD}" ssh -o StrictHostKeyChecking=no ${{ env.SERVER_USER }}@${{ env.SERVER_HOST }} "cd /root/github/saolei_website/back_end/saolei && sha256sum -c wheels/SHA256SUMS"

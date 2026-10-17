@@ -1,0 +1,97 @@
+.site-shell,
+.site-navigation-popper,
+.site-navigation-drawer {
+    --ui-navigation-font-size: 14px;
+    --ui-navigation-profile-font-size: 18px;
+    --ui-navigation-icon-size: 18px;
+    --ui-navigation-row-height: 36px;
+}
+
+.site-shell {
+    display: grid;
+    grid-template-areas: "header" "content";
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    height: 100svh;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.site-shell--sidebar {
+    grid-template-areas: "header header" "sidebar content";
+    grid-template-columns: max-content minmax(0, 1fr);
+}
+
+.site-shell--sidebar .site-header,
+.site-shell--sidebar .site-toolbar {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: 1 / -1;
+}
+
+.site-header {
+    grid-area: header;
+    min-width: 0;
+    background: var(--ui-bg-color);
+    border-bottom: 1px solid var(--ui-border-color);
+    font-size: var(--ui-navigation-font-size);
+}
+
+.site-toolbar {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    min-height: var(--ui-navigation-row-height);
+}
+
+.site-brand {
+    box-sizing: border-box;
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    height: var(--ui-navigation-row-height);
+    border: 0;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.site-shell--sidebar .site-brand {
+    justify-content: flex-start;
+}
+
+.site-brand__icon,
+.site-brand__wordmark {
+    display: block;
+    height: var(--ui-navigation-row-height);
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+.site-brand__wordmark {
+    height: calc(var(--ui-navigation-row-height) - 8px);
+    margin: 4px;
+}
+
+.site-sidebar {
+    grid-area: sidebar;
+    min-height: 0;
+    min-width: 0;
+    overflow: auto;
+    border-right: 1px solid var(--ui-border-color);
+    background: var(--ui-bg-color);
+    font-size: var(--ui-navigation-font-size);
+}
+
+.site-menu {
+    flex: 1 1 0;
+}
+
+.site-shell > .common-layout {
+    grid-area: content;
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+}

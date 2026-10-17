@@ -1,3 +1,4 @@
+import PrimeVue from 'primevue/config';
 import type { Component } from 'vue';
 
 import $axios from '@/http';
@@ -21,7 +22,7 @@ function mountOptions(props: Record<string, unknown>, components: Record<string,
     return {
         props,
         global: {
-            plugins: [i18n, pinia],
+            plugins: [i18n, pinia, PrimeVue],
             components,
             config: {
                 globalProperties: {
@@ -73,7 +74,12 @@ export function mockMSGamesResponse(overrides: Partial<AccountMSGamesResponse> =
         update_time: '2025-02-06T09:10:11Z',
         name: 'AM Player',
         local_name: 'Local AM',
-        joined: '2024-01-01T00:00:00Z',
+        joined: '2024-01-01',
+        country: 'China',
+        state: 'Example region',
+        hand: 'Right',
+        mouse: 'Example mouse',
+        video_update_time: null,
         ...overrides,
     };
 }
@@ -85,13 +91,6 @@ export function mockWoMResponse(overrides: Partial<AccountWoMResponse> = {}): Ac
         update_time: '2025-03-07T10:11:12Z',
         trophy: 123,
         experience: 456,
-        honour: 7,
-        minecoin: 8,
-        gem: 9,
-        coin: 10,
-        arena_ticket: 11,
-        equipment: 12,
-        part: 13,
         arena_point: 14,
         max_difficulty: 15,
         win: 16,
@@ -108,6 +107,28 @@ export function mockWoMResponse(overrides: Partial<AccountWoMResponse> = {}): Ac
         b_winstreak: 5,
         i_winstreak: 6,
         e_winstreak: 7,
+        b_endurance_ms: 582000,
+        i_endurance_ms: 2591000,
+        e_endurance_ms: 13888000,
+        b_ng_t_ms: 1282,
+        i_ng_t_ms: 16720,
+        e_ng_t_ms: 48877,
+        b_win: 100,
+        i_win: 200,
+        e_win: 300,
+        b_ng_win: 10,
+        i_ng_win: 20,
+        e_ng_win: 30,
+        experience_total: 1000,
+        minecoin_total: 2000,
+        gem_total: 3000,
+        arena_coin_total: 0,
+        game_count: 111645,
+        win_nf: 16207,
+        play_time_ms: 7200000,
+        arena_play_time_ms: 3600000,
+        bbbv_total: 5060476,
+        season_count: 16,
         ...overrides,
     };
 }

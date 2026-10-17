@@ -2,38 +2,63 @@ name: Cypress Tests
 
 on:
   pull_request:
-    paths: 
+    paths:
       - 'front_end/**'
       - '.github/workflows/cypress.yml'
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  cypress-run:
+  component-tests:
+    name: Cypress components (${{ matrix.shard }})
     runs-on: ubuntu-24.04
-    defaults:
-      run:
-        working-directory: front_end
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
       - name: Checkout
         uses: actions/checkout@v7
 
-      # Install npm dependencies, cache them correctly
-      - name: Install dependencies
-        run: npm install
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
 
-      # and run all Cypress tests
+      # The action installs with npm ci and caches npm downloads and the Cypress binary.
+      # Component testing starts its own Vite server; npm run dev would also build the offline Analyzer.
       - name: Cypress run
         uses: cypress-io/github-action@v7
         with:
           component: true
-          start: npm run dev
           working-directory: front_end
           browser: chrome
+        env:
+          SPLIT: ${{ strategy.job-total }}
+          SPLIT_INDEX: ${{ strategy.job-index }}
+          SPLIT_RANDOM_SEED: '42'
 
-      # Upload screenshots (if any failures)
       - name: Upload Cypress screenshots
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: cypress-screenshots
+          name: cypress-screenshots-${{ matrix.shard }}
           path: front_end/cypress/screenshots
           if-no-files-found: ignore
+
+  # Preserve the existing check name for branch protection and require every shard to pass.
+  cypress-run:
+    needs: component-tests
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check all component shards
+        env:
+          SHARD_RESULT: ${{ needs.component-tests.result }}
+        run: test "$SHARD_RESULT" = success

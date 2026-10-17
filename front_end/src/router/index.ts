@@ -21,12 +21,23 @@ const routes: RouteRecordRaw[] = [
     {
         path: '/video',
         name: 'video',
-        component: () => import('../views/VideoView.vue'),
+        redirect: { name: 'database-videos' },
     },
     {
-        path: '/world',
-        name: 'world',
-        component: () => import('../views/WorldView.vue'),
+        path: '/database',
+        name: 'database',
+        component: () => import('../views/DatabaseView/App.vue'),
+        redirect: { name: 'database-videos' },
+        children: [
+            { path: 'videos', name: 'database-videos', component: () => import('../views/VideoView.vue') },
+            { path: 'identifiers', name: 'database-identifiers', component: () => import('../views/DatabaseView/IdentifierView.vue') },
+        ],
+    },
+    {
+        path: '/video/:id',
+        name: 'video_id',
+        component: () => import('../views/VideoAnalyzerView/App.vue'),
+        props: true,
     },
     {
         path: '/server',
@@ -44,9 +55,9 @@ const routes: RouteRecordRaw[] = [
         component: () => import('../views/UserView/App.vue'),
         redirect: (to) => {
             const { id } = to.params;
-            if (typeof id !== 'string') return '/player/0/summary';
+            if (typeof id !== 'string') return '/player/0/top';
 
-            return `/player/${id}/summary`;
+            return `/player/${id}/top`;
         },
         children: userRoutes,
     },

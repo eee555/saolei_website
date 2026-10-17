@@ -7,7 +7,7 @@
         @click.self="triggerFileDialog"
     >
         <!-- 隐藏的原生 input：用于点击选择文件 -->
-        <input ref="fileInputRef" type="file" multiple :accept="accept" :disabled="disabled" style="display: none" @change="onFileSelect">
+        <input ref="fileInputRef" type="file" :multiple="multiple" :accept="accept" :disabled="disabled" style="display: none" @change="onFileSelect">
 
         <button type="button" class="base-button base-file-input__trigger" :disabled="disabled" @click="triggerFileDialog">
             <slot name="default">
@@ -26,6 +26,7 @@ import '@/styles/button.css';
 import { ref, useTemplateRef } from 'vue';
 
 const props = defineProps({
+    multiple: { type: Boolean, default: true },
     // 限制文件类型，例如 'image/*' 或 '.pdf,.jpg'
     accept: {
         type: String,

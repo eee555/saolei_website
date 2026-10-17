@@ -58,7 +58,9 @@
                 :label="t(`common.prop.${key}`)" sortable="custom"
                 :sort-orders="indexTags[key].reverse ? (['descending', 'ascending']) : (['ascending', 'descending'])"
             >
-                <span class="nobr">{{ columnFormatter(key, scope.row[indexTags[key].key]) }}</span>
+                <VideoPreviewLink :id="scope.row.id" :software="scope.row.software" class="nobr">
+                    {{ columnFormatter(key, scope.row[indexTags[key].key]) }}
+                </VideoPreviewLink>
             </ElTableColumn>
         </ElTable>
     </div>
@@ -83,6 +85,7 @@ import VideoStateFilter from '@/components/Filters/VideoStateFilter.vue';
 import { httpErrorNotification } from '@/components/Notifications';
 import VideoViewRealname from '@/components/tableColumns/VideoViewRealname.vue';
 import VideoViewState from '@/components/tableColumns/VideoViewState.vue';
+import VideoPreviewLink from '@/components/VideoPreviewLink.vue';
 import { videofilter } from '@/store';
 import { ms_to_s } from '@/utils';
 import { preview } from '@/utils/common/PlayerDialog';
@@ -281,11 +284,12 @@ function offsetIndex(index: number): number {
 // 根据配置，刷新当前页面的录像表
 function request_videos(): void {
     const [bmin, bmax] = videofilter.value.bbbv_range[levelTagSelected.value];
+    const sortField = indexTags[indexTagSelected.value].key;
     const params: VideoQueryParams = {
         level: levelTagSelected.value,
         mode: modeTags[modeTagSelected.value].key,
         nf: nfOnly.value,
-        o: indexTags[indexTagSelected.value].key,
+        o: sortField === 'stnb' ? 'iqg' : sortField,
         r: state.ReverseOrder,
         ps: videofilter.value.pagesize,
         page: state.CurrentPage,
