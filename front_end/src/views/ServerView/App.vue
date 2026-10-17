@@ -15,6 +15,9 @@
         <div data-statistic-item="videos">
             <VideoSummary />
         </div>
+        <div data-statistic-item="top">
+            <TopAnchors />
+        </div>
     </MasonryLayout>
 </template>
 
@@ -31,6 +34,7 @@ import useCurrentInstance from '@/utils/common/useCurrentInstance';
 const DiskUsage = defineAsyncComponent(() => import('./DiskUsage.vue'));
 const TaskSummary = defineAsyncComponent(() => import('./TaskSummary.vue'));
 const VideoSummary = defineAsyncComponent(() => import('./VideoSummary.vue'));
+const TopAnchors = defineAsyncComponent(() => import('./TopAnchors.vue'));
 
 const { proxy } = useCurrentInstance();
 const memoryUsage = ref<MemoryUsageResponse | null>(null);

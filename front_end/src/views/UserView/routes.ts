@@ -18,8 +18,17 @@ export const userRoutes: RouteRecordRaw[] = [
     },
     {
         path: 'summary',
-        name: 'user-summary',
-        component: () => import('./UserSummaryView.vue'),
+        redirect: { name: 'user-top' },
+    },
+    {
+        path: 'top',
+        name: 'user-top',
+        component: () => import('./UserTopView.vue'),
+    },
+    {
+        path: 'pb',
+        name: 'user-pb',
+        component: () => import('./UserPBView.vue'),
     },
     {
         path: 'videos',

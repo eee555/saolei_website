@@ -28,7 +28,7 @@ describe('Staff requests against the backend', () => {
         cy.registerUser(USER);
     });
 
-    it('persists staff edits and shows the updated profile on the lightweight summary', () => {
+    it('persists staff edits and shows the updated profile on the lightweight PB tab', () => {
         // Observe real responses; request encoding is validated by the backend.
         cy.login(STAFF.username, STAFF.password);
         cy.intercept('GET', `**/api/userprofile/admin/detail/${USER.id}`).as('loadUser');
@@ -64,8 +64,8 @@ describe('Staff requests against the backend', () => {
         cy.wait('@loadUser').its('response.body').should('include', payload);
 
         cy.closeElNotifications();
-        cy.visitUser(USER.id);
-        cy.url().should('include', `/player/${USER.id}/summary`);
+        cy.visitUser(USER.id, 'pb');
+        cy.url().should('include', `/player/${USER.id}/pb`);
         cy.wait('@publicProfile').its('response.body').should('include', payload);
         cy.wait('@pbRecords').its('response.statusCode').should('eq', 200);
         cy.get('[data-cy=pb-summary]').should('have.attr', 'aria-busy', 'false');
@@ -98,7 +98,7 @@ describe('Staff requests against the backend', () => {
         cy.get('textarea').eq(1).should('have.value', '{}');
 
         cy.closeElNotifications();
-        cy.visitUser(USER.id);
+        cy.visitUser(USER.id, 'pb');
         cy.wait('@publicProfile').its('response.body').should('include', clearPayload);
         cy.wait('@pbRecords').its('response.statusCode').should('eq', 200);
         cy.get('[data-cy=pb-grid-e]').should('be.visible');

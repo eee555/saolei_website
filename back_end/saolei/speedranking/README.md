@@ -2,15 +2,18 @@
 
 本 app 不新增数据库模型。录像仍以 `VideoModel` 为事实来源，排行和个人纪录查询只读 Redis，不自动回源或重建。
 
-PB 使用每个小榜一个 zset、每个用户一个 hash，并额外维护各小榜人数 hash，是下述一般缓存结构的例外。后端与前端 PB 排行页面已实现；个人 PB 页面等待单独计划。设计依据与后续优化见 [PB 榜开发计划](PB_PLAN.md)。
+PB 使用每个小榜一个 zset、每个用户一个 hash，并额外维护各小榜人数 hash，是下述一般缓存结构的例外。PB 排行和个人 PB 页面均已实现；个人页面职责见 [UserView README](../../../front_end/src/views/UserView/README.md)。设计依据与后续优化见 [PB 榜开发计划](PB_PLAN.md)。
+
+top 是竞速页面的首位和默认大榜，规则、缓存、接口及页面入口见本文的 [top 榜](#top-榜)。讨论中 top 始终指该大榜，前端仅指前端网页。
 
 ## 代码组织
 
 - `saolei/`：扫雷网规则的缓存、选优、补位、API 和测试，原有公开 API 路径不变。
 - `pb/`：PB 专用的缓存、选优、补位、API 和测试，不套用扫雷网的成绩结构。
+- `top/`：top 的前五明细、均值、补位、锚点、API 和测试，不依赖 PB 缓存。
 - 根目录 `cache.py`：共享 Redis 连接与 pipeline；`utils.py`：错误日志、UTC 时间换算和玩家分段工具。
 - 根目录 `services.py`：协调各大榜的共同读取、独立判断、共同写入；`signals.py`：录像事件入口；`api.py`：聚合各大榜的 router。
-- 前端 `RankingView/routes.ts`：各大榜子路由。`SpeedRanking.vue` 只保留大榜选择器、规则提示和 `RouterView`，选择器与路由同步，切换大榜使用 push，支持浏览器返回。`/ranking/speed/saolei` 和 `/ranking/speed/pb` 分别加载对应页面；`/ranking/speed` 默认跳转扫雷网榜。项目使用 hash history，浏览器地址对应 `/#/ranking/speed/...`。
+- 前端 `RankingView/routes.ts`：各大榜子路由。`SpeedRanking.vue` 只保留大榜选择器、规则提示和 `RouterView`，选择器与路由同步，切换大榜使用 push，支持浏览器返回。选项依次为 top、扫雷网、PB；`/ranking/speed` 默认跳转 `/ranking/speed/top`，原有两榜的显式路由保持可用。项目使用 hash history，浏览器地址对应 `/#/ranking/speed/...`。
 
 ## Saolei.wang 规则
 
@@ -42,7 +45,7 @@ zset 舍弃部分精度并限制数值范围，是为了简化缓存逻辑：将
 
 ## 更新机制
 
-不同大榜可能采用不同的准入、选优、补位、总分和 score 编码规则，不能用一个通用的 `transform(record)` 更新管线承载所有业务。当前协调扫雷网普通/NF 榜和 PB 榜；`_read_saolei_records`、`_write_saolei_records` 和 `plan_saolei_record_update` 属于扫雷网规则，新增其他大榜时不得直接套用其纪录结构或业务判断。
+不同大榜可能采用不同的准入、选优、补位、总分和 score 编码规则，不能用一个通用的 `transform(record)` 更新管线承载所有业务。当前协调扫雷网普通/NF 榜、PB 榜和 top 榜；`_read_saolei_records`、`_write_saolei_records` 和 `plan_saolei_record_update` 属于扫雷网规则，新增其他大榜时不得直接套用其纪录结构或业务判断。
 
 ### 职责划分
 
@@ -60,6 +63,8 @@ zset 舍弃部分精度并限制数值范围，是为了简化缓存逻辑：将
 3. **共同写入**：各大榜将确定的 hash 和 zset 变更加入同一个写入 pipeline，最后统一执行一次。普通更新只写入需要刷新的项；强制修复时，由目标大榜决定需要重写的索引范围。
 
 PB 写入前通过 `read_previous_ranks` 读取变化 member 的旧排名；共同写入完成后，由 `refresh_changed_ranks` 读取新排名、合并变动范围，再通过 `refresh_ranks` 批量更新区间内的用户 hash 和人数 hash。rank 刷新是单独的读写阶段，不与前面的个人纪录写入组成一个原子操作。
+
+top 在共同读取时增加一次 HMGET。共同写入后，对本批次均值或成员资格变化的小榜去重，读取各榜前二十个 score 并批量更新锚点；明细录像替换但均值不变时不刷新 zset 或锚点。其补位查询独立于扫雷网和 PB，不强行合并不同规则。
 
 读取 pipeline 和写入 pipeline 是两个独立执行阶段，中间的业务判断不在 Redis 事务内。写入阶段保留事务 pipeline，不使用 WATCH 或重试，也不保证读取到写入之间不会发生并发更新。数据库事务产生的事件仍在 `transaction.on_commit` 后处理，Redis 写入不参与数据库回滚。
 
@@ -198,4 +203,46 @@ NF checkbox 与三个等级按钮控制分榜。等级按钮的交互式 tooltip
 python manage.py test speedranking.pb --keepdb --noinput
 npx vitest run src/services/pbRankingService.test.ts
 npx cypress run --component --spec "src/views/RankingView/PBRanking.cy.ts,src/views/RankingView/PBBVButton.cy.ts,src/views/RankingView/PBRankingTable.cy.ts,src/views/RankingView/SpeedRanking.cy.ts"
+```
+
+## top 榜
+
+### 规则与缓存
+
+- 接收 `b/i/e`、STD、OFFICIAL、非隐藏比赛录像。三个指标统一要求 BV 至少为 10/30/100；普通榜包含 NF，NF 额外要求 `right_ce == 0`。
+- 每用户每项独立取最佳五条，可以来自相同 BV，按成绩从好到差保存真实录像 id 与原始值。缺项按 Time 999999 毫秒、Bvs/iqg 0 补齐，始终除以五；不缓存虚假补位录像。
+- 缺省值只用于缺项，不替代用时超过 999999 毫秒的真实合格录像。每项独立选优，不能从 Time 的五条录像或均值反推其他指标。
+- `t/b/s` 分别表示 Time、Bvs、Stnb，但 `s` 的选优、均值、缓存及 API 全程使用 `iqg`，仅网页展示时按 b36/i162/e435 转为 Stnb。零用时沿用模型的 Bvs/iqg 0。
+- 单条同分不挑选特定录像，用户均值同分不细分，也不以上传时间排序。不依赖 PB 缓存，以免丢失同 BV 的其他入选录像。
+- 明细 hash 为 `speedranking:top:records`，field 是用户 id；JSON 中 `std:bt`、`nf:es` 等十八项各包含 `mean` 和最多五条 `{value, video_id}` 的 `videos`。
+- 十八个 zset 为 `speedranking:top:{std|nf}:{level}{stat}`，member 直接为用户 id。score 是 Time 均值或 Bvs/iqg 均值的相反数，统一升序；不打包上传时间或量化成绩。
+- 锚点 hash 为 `speedranking:top:anchors`，field 同十八项标识，JSON 为 `{value, sample_count}`。每项是该榜前二十名用户均值的平均值；测试不足二十人按实际人数平均，空榜计算为 0，未写入的字段由前端按 0 展示。
+
+单录像新增或改善只与缓存的五条比较；已入选五条的录像变差、失效或删除时，仅对受影响用户和指标从数据库补位。批量加入用窗口函数按用户、等级、指标、NF 取最多五条，再合并缓存；批量移除只补位受影响项。明细改变但均值不变仅写 hash。各榜共用读取与写入 pipeline，zset 写完后有界重算变动小榜的锚点，每项最多二十个 score。
+
+### 重建与接口
+
+首次部署或缓存丢失后执行 `rebuild_top_ranks`，普通查询不自动重建。命令在临时命名空间构建明细、索引及锚点，再原子发布二十个正式 key；期间暂停录像及排行写入，旧榜可继续读取。参数、部署注意事项和本地初始化入口统一见 [管理命令文档](../../../vitepress_doc/guide/development/management-commands.md#rebuild-top-ranks)。
+
+- `GET /api/speedranking/top/rank?level=e&stat=t&nf=false&start=0&end=20`：左闭右开，最多一百条，返回 `count` 和 `players`；每个用户为 `{player_id, records}`，`records` 是该用户的完整 hash JSON，小榜参数只决定排序，不筛选返回字段。
+- `GET /api/speedranking/top/player/{player_id}`：一次 HGET 原样返回用户完整纪录，每项保留 `mean` 和真实 `videos`；不附加逐项 rank，不构造 `record_count`，没有纪录返回 `{}`。缺项展示由前端处理。
+- `GET /api/speedranking/top/anchors`：一次 HGETALL 原样返回锚点 hash 中所有字段，限流 20/s，不补造缺项。每次即时读取 Redis，不叠加 HTTP/进程结果缓存，不重新计算锚点。
+- `POST /api/speedranking/top/admin/rebuild_record`：仅管理员，表单为 `player_id`、`level`、`stat`、`nf`。从数据库强制修复该用户的一个小榜、排序索引和对应锚点；未变化也重写，其他项不重建。目前仅提供 API，未新增管理员网页控件。
+
+排行及用户纪录接口限流 5/s，全部查询只读 Redis，不回源数据库；`s` 的响应值均为 iqg。所有 API 不裁剪 hash 字段或五条明细；管理员修复也返回 `{player_id, records}`，其中 `records` 是完整用户纪录。更新沿用 on_commit、上下文错误日志及异常传播；不使用 WATCH、锁或自动重试，允许并发时短暂不同步，显式修复与重建是恢复路径。
+
+### 前端与验证
+
+`TopRanking.vue` 显示九列小榜均值，按三个等级分组，点击 Time/Bvs/Stnb 表头切换排序小榜，保留 NF 与后端分页。右侧固定增加五列录像明细，与均值区用双线分隔；九个指标表头各有一个 `pi-eye` 按钮，始终只有一个点亮，控制这五列的内容，切换明细不发请求。排序和明细默认均为 `et`，切换排序时明细同步为该小榜，单独切换明细不改变排序，分页及 NF 切换保留明细选择。真实成绩可预览录像，缺项显示缺省值且无链接。`ServerView/TopAnchors.vue` 一次读取完整锚点 hash，以三个独立尺度的条形图和数值表展示十八项，数值提示包含样本人数。
+
+个人主页默认 top 和独立 PB tab 的职责、双雷达及五条明细表、请求生命周期和组件测试统一见 [UserView README](../../../front_end/src/views/UserView/README.md)。
+
+后端 `top/tests.py` 覆盖准入、均值、前五、补位、迁移、批量链路、原子重建、锚点及管理员修复；工具测试验证单位、归一化和批量请求。Cypress 及实际图表效果由开发者验收，不以构建成功代替浏览器验证：
+
+```powershell
+# back_end/saolei
+.\.venv\Scripts\python.exe manage.py test speedranking --keepdb --noinput
+# front_end
+npx.cmd vitest run src/services/topRankingService.test.ts src/services/pbRankingService.test.ts
+npx.cmd cypress run --component --browser chrome --headless --spec "src/views/RankingView/TopRanking.cy.ts,src/views/RankingView/SpeedRanking.cy.ts,src/views/ServerView/TopAnchors.cy.ts"
 ```

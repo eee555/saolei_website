@@ -35,7 +35,7 @@ describe('Personal Profile', () => {
     it('Navigation', () => {
         cy.login(USERNAME, PASSWORD);
         cy.visitUser(USER_ID);
-        cy.url().should('eq', `http://localhost:8080/#/player/${USER_ID}/summary`);
+        cy.url().should('eq', `http://localhost:8080/#/player/${USER_ID}/top`);
 
         cy.get('div.el-tabs__item').contains('纪录').click();
         cy.url().should('eq', `http://localhost:8080/#/player/${USER_ID}/record`);
@@ -151,10 +151,13 @@ describe('Personal Profile', () => {
         cy.closeElNotifications();
     });
 
-    it('Loads PB records without downloading all videos on summary', () => {
+    it('Loads PB records from its top-level tab without downloading all videos', () => {
         cy.intercept('GET', '/api/userprofile/videolist*').as('allVideos');
         cy.intercept('GET', `/api/speedranking/pb/player/${USER_ID}`).as('pbRecords');
         cy.visitUser(USER_ID);
+        cy.get('[data-cy=profile-tabs] > .el-tabs__header .is-active').should('have.text', 'Top');
+        cy.get('[data-cy=profile-tabs] > .el-tabs__header [role=tab]').contains('PB').click();
+        cy.url().should('include', `/player/${USER_ID}/pb`);
         cy.wait('@pbRecords');
         cy.get('[data-cy=pb-summary]').should('be.visible');
         cy.get('[data-cy=pb-grid-e]').should('be.visible');
@@ -217,7 +220,7 @@ describe('Personal Profile', () => {
         cy.get('.profile-section').contains('编辑信息').should('not.exist');
 
         cy.visitUser(USER_ID, 'settings');
-        cy.url().should('include', `/player/${USER_ID}/summary`);
+        cy.url().should('include', `/player/${USER_ID}/top`);
         cy.get('.user-settings').should('not.exist');
     });
 
@@ -241,8 +244,8 @@ describe('Personal Profile', () => {
 
         cy.get('#pane-newest').should('be.visible').contains(`a[href="#/player/${USER_ID}"]`, REALNAME).click();
 
-        cy.url().should('eq', `http://localhost:8080/#/player/${USER_ID}/summary`);
+        cy.url().should('eq', `http://localhost:8080/#/player/${USER_ID}/top`);
 
-        cy.get('[data-cy=pb-summary]').should('be.visible');
+        cy.get('[data-cy=top-summary]').should('be.visible');
     });
 });

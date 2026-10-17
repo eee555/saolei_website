@@ -48,7 +48,7 @@ onActivated(() => {
 onDeactivated(() => {
     activated.value = false;
 });
-const active = computed(() => activated.value && route.name === 'user-summary' && Number(route.params.id) === user.value.id);
+const active = computed(() => activated.value && route.name === 'user-pb' && Number(route.params.id) === user.value.id);
 const dataKey = computed(() => `${user.value.id}:${store.sessionRevision}:${profileDataRevision(user.value.id)}`);
 const loadedKey = ref('');
 const records = ref<PBPlayerRecord[]>([]);

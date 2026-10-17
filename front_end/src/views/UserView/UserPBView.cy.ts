@@ -1,7 +1,7 @@
 import { reactive } from 'vue';
 import { createMemoryHistory, createRouter } from 'vue-router';
 
-import UserSummaryView from './UserSummaryView.vue';
+import UserPBView from './UserPBView.vue';
 
 import $axios from '@/http';
 import i18n from '@/i18n';
@@ -14,22 +14,22 @@ const records = [
     { level: 'e', bv: 102, nf: false, timems: 50000, video_id: 102, rank: null },
     { level: 'e', bv: 100, nf: true, timems: 45000, video_id: 103, rank: 3 },
 ];
-function mountSummary() {
+function mountPB() {
     store.logout();
     const user = reactive(new UserProfile({ id: 42 }));
     const router = createRouter({ history: createMemoryHistory(),
         routes: [
-            { path: '/player/:id/summary', name: 'user-summary', component: UserSummaryView },
-            { path: '/player/:id/videos', name: 'user-videos', component: UserSummaryView },
+            { path: '/player/:id/pb', name: 'user-pb', component: UserPBView },
+            { path: '/player/:id/videos', name: 'user-videos', component: UserPBView },
         ] });
-    void router.push('/player/42/summary');
+    void router.push('/player/42/pb');
     cy.wrap(router.isReady()).then(() => {
-        cy.mount(UserSummaryView, { props: { user }, global: { plugins: [i18n, pinia, router], config: { globalProperties: { $axios } } } });
+        cy.mount(UserPBView, { props: { user }, global: { plugins: [i18n, pinia, router], config: { globalProperties: { $axios } } } });
     });
     return { router, user };
 }
 
-describe('Profile PB overview', () => {
+describe('Profile PB tab', () => {
     let initialDark = false;
     beforeEach(() => {
         cy.document().then((document) => {
@@ -59,7 +59,7 @@ describe('Profile PB overview', () => {
             { rank: null, color: 'rgba(0, 0, 0, 0)' },
         ];
         cy.intercept('GET', '**/api/speedranking/pb/player/42', bands.map(({ rank }, index) => ({ ...records[0], bv: 100 + index, rank }))).as('rankRecords');
-        mountSummary();
+        mountPB();
         cy.wait('@rankRecords');
         const timeStyle = { backgroundColor: '', color: '' };
         cy.get('[data-cy=pb-e-100]').should('contain.text', '40.000').then(($cell) => {
@@ -93,7 +93,7 @@ describe('Profile PB overview', () => {
     });
 
     it('switches metrics and NF locally, preserves absent ranks, and links to the same PB video', () => {
-        mountSummary();
+        mountPB();
         cy.wait('@pb');
         cy.get('[data-cy=pb-grid-b]').should('contain.text', 'No PB records');
         cy.get('[data-cy=pb-e-100]').should('contain.text', '40.000').find('a').should('have.attr', 'href', '#/video/101');
@@ -116,7 +116,7 @@ describe('Profile PB overview', () => {
 
     it('shows a retryable error rather than an empty-record result', () => {
         cy.intercept('GET', '**/api/speedranking/pb/player/42', { statusCode: 500 }).as('failedPB');
-        mountSummary();
+        mountPB();
         cy.wait('@failedPB');
         cy.get('[role=alert]').should('contain.text', 'Could not load PB records');
         cy.get('[data-cy=pb-empty]').should('not.exist');
@@ -127,7 +127,7 @@ describe('Profile PB overview', () => {
     });
 
     it('does not fetch a new player in the background and reuses data on returning', () => {
-        const { router, user } = mountSummary();
+        const { router, user } = mountPB();
         cy.wait('@pb');
         cy.intercept('GET', '**/api/speedranking/pb/player/43', []).as('otherPB');
         cy.then(() => router.push('/player/42/videos'));
@@ -139,7 +139,7 @@ describe('Profile PB overview', () => {
         cy.then(() => {
             user.id = 42;
         });
-        cy.then(() => router.push('/player/42/summary'));
+        cy.then(() => router.push('/player/42/pb'));
         cy.get('[data-cy=pb-e-100]').should('contain.text', '40.000');
         cy.get('@pb.all').should('have.length', 1);
         cy.get('@videos.all').should('have.length', 0);

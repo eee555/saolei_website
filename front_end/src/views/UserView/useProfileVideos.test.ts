@@ -47,7 +47,7 @@ describe('profile videos request lifecycle', () => {
     });
 
     it('does not download for an inactive page and reuses completed data on reactivation', async () => {
-        route.name = 'user-summary';
+        route.name = 'user-top';
         vi.mocked(fetchUserVideos).mockResolvedValue(makeVideos(1));
         const { videos, valid } = setup();
         expect(fetchUserVideos).not.toHaveBeenCalled();
