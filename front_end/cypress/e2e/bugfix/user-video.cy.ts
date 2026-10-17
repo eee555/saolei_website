@@ -72,7 +72,7 @@ describe('User Videos', () => {
         // External changes do not invalidate this page's cache; UI uploads invalidate profile data.
         createVideo(22000);
 
-        navigateToUserTab('summary');
+        navigateToUserTab('top');
         cy.get('[data-cy=pb-grid-e]').should('be.visible');
         cy.wrap(null).should(() => {
             expect(videoListRequestCount).to.equal(1);
