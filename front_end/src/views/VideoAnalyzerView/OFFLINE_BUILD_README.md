@@ -16,6 +16,8 @@ info slot 内的文件选择区下方提供 README 和 COPYRIGHT 两个原生 de
 
 站内录像页的网站信息按钮组提供下载图标，目标为 `${BASE_URL}assets/OpenMinesweeperVideoAnalyzer-${version}.zip`，下载文件名使用相同版本，不依赖当前录像或信息请求成功。离线打包同时生成 `public/assets/OpenMinesweeperVideoAnalyzer-${version}.zip`；三个网站 build 脚本及 dev/frontend 启动均通过 npm pre hook 先构建离线包，Vite 再将 ZIP 复制到 `dist/assets/`。现有 tag 部署工作流沿用 `build:openms`，会随网站发布 ZIP；独立离线 artifact 工作流仍待接入。直接执行 Vite CLI 时应先手动运行 `npm run build:offline`。
 
+部署时，`collectstatic` 将 ZIP 收集到 `/root/saolei/static/assets/`。`back_end/saolei/default.conf` 通过 `location ^~ /assets/` 直接提供该目录下的全部 Vite 资源，避免 ZIP 因不在静态扩展名列表中而被转发给 Django、返回 404。服务器须同步该配置到 `/etc/nginx/conf.d/default.conf`，执行 `nginx -t` 后重载；仅重新打包网站不会更新已加载的 Nginx 配置。发布后用 `curl -I https://openms.top/assets/OpenMinesweeperVideoAnalyzer-<version>.zip` 核对状态码 200 和 `Content-Type: application/zip`，并实际下载检查包内版本。仅修复服务器路由或本文部署说明时不递增 Analyzer 版本。
+
 网站“软件下载”弹窗另有 Analyzer 标签页，使用定制图标和版本/日期/下载表格。发布历史保存在 `src/components/dialogs/AnalyzerHelper.vue` 的 `tableData`，按实际提供下载的包手动添加记录；不读取 `version.json` 自动更新。标签页展示已有离线包，不改变 Analyzer 版本。交互检查由用户运行：`npx.cmd cypress run --component --browser chrome --headless --spec "src/components/Footer.cy.ts"`。
 
 本轮主 HTML 约 2.84 MB、ZIP 约 0.94 MB。构建检查确认主脚本、CSS、WASM 和字体已内联，没有独立资源文件；依赖图不包含网站包装页、网站 store、HTTP 初始化或路由。包内帮助由现有中英文 Markdown 生成。上述检查与 26 项相关单元测试通过，不能代替断网、无缓存的 file:// 运行及实际视频导出验收。本轮未运行浏览器或 Cypress。
