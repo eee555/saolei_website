@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 from io import StringIO
 import json
 
@@ -15,7 +15,7 @@ from speedranking.pb.cache import PBRankingCache
 from speedranking.saolei.cache import SpeedRankingCache
 from speedranking.saolei.utils import RANK_STATS
 from tournament.gsc.utils import gsc_encode_best
-from tournament.utils import MAX_TOURNAMENT_BEST
+from tournament.utils import MAX_TOURNAMENT_BEST, tournament_score_decay_factor
 from tournament.weekly.utils import weekly_encode_best
 from userprofile.models import UserProfile
 from videomanager.models import ExpandVideoModel, VideoModel
@@ -90,6 +90,11 @@ class TournamentTestCaseBase(TestCase):
             password='password',
             userms=UserMS.objects.create(),
         )
+
+    def assert_cached_current_score(self, tournament_user):
+        score_time = datetime.fromisoformat(cache.get(TOURNAMENT_USER_SCORE_CURRENT_TIME_KEY).decode())
+        expected = tournament_user.score_current * tournament_score_decay_factor(tournament_user.last_updated, score_time)
+        self.assertAlmostEqual(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['score_current'], tournament_user.user_id), expected)
 
     def create_video(
         self,

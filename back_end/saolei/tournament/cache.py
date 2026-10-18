@@ -4,14 +4,13 @@ import json
 from typing import Iterable, Literal
 
 from dataclasses_json import dataclass_json
-from django.db.models import Max
 from django_redis import get_redis_connection
 
 from config.text_choices import Tournament_TextChoices
 from utils.cache import maybe_bytes_to_str
 from videomanager.models import VideoModel
 from .models import GSCTournament, Tournament, TournamentParticipant, TournamentUser
-from .utils import MAX_TOURNAMENT_BEST, tournament_score_decay_factor
+from .utils import MAX_TOURNAMENT_BEST, tournament_score_decay_factor, tournament_score_reference_time
 
 cache = get_redis_connection('saolei_website')
 
@@ -210,16 +209,16 @@ class TournamentCache:
         fields = self._normalize_tournament_user_fields(fields)
         if not fields:
             return
-        # 事务可能因并发修改重试，先展开迭代器，确保每次都能读取同一批用户。
+        # 年度锚点更新可能导致事务重试，先展开迭代器，保留同一批用户。
         tournament_users = list(tournament_users)
         if not tournament_users:
             return
 
         if 'score_current' in fields:
-            # 同时监视时间基准和积分排行；发生并发写入时重新换算，避免混用基准。
+            # 只监视锚点；普通结算不推进锚点，也不整体衰减已有成员。
             cache.transaction(
                 lambda pipe: self._update_tournament_users_with_score_current(pipe, tournament_users, fields),
-                TOURNAMENT_USER_SCORE_CURRENT_TIME_KEY, TOURNAMENT_USER_CACHE_KEYS['score_current'],
+                TOURNAMENT_USER_SCORE_CURRENT_TIME_KEY,
             )
             return
 
@@ -228,11 +227,8 @@ class TournamentCache:
         pipe.execute()
 
     def rebuild_tournament_user_cache(self, *, batch_size=1000):
-        # 先确定全局基准，避免分批重建时反复推进基准、衰减已写入的成员。
-        score_time = TournamentUser.objects.exclude(score_current=0).aggregate(latest=Max('last_updated'))['latest']
         self.clear_tournament_user_cache()
-        if score_time is not None:
-            cache.set(TOURNAMENT_USER_SCORE_CURRENT_TIME_KEY, score_time.isoformat())
+        self.refresh_tournament_score_reference()
         batch = []
         count = 0
         for tournament_user in TournamentUser.objects.iterator(chunk_size=batch_size):
@@ -244,28 +240,64 @@ class TournamentCache:
         self.update_tournament_users(batch)
         return count
 
-    def _update_tournament_users_with_score_current(self, pipe, tournament_users, fields):
-        key = TOURNAMENT_USER_CACHE_KEYS['score_current']
-        has_scores = pipe.exists(key)
+    def _get_tournament_score_reference(self, pipe):
         value = pipe.get(TOURNAMENT_USER_SCORE_CURRENT_TIME_KEY)
-        previous_time = datetime.fromisoformat(maybe_bytes_to_str(value)) if value is not None else None
-        if previous_time is None and has_scores:
-            # 缺少基准时无法解释已有分数，必须重建，不能直接混入新基准的分数。
-            raise RuntimeError('Current score cache has no time reference; run rebuild_tournament_user_cache.')
-        # 默认零积分不参与排行，其记录创建时间也不能推进比赛时间基准。
-        score_times = [user.last_updated for user in tournament_users if user.score_current != 0]
-        if previous_time is not None:
-            # 保留已有基准，使历史比赛重算只能换算到该基准，不能令基准回退。
-            score_times.append(previous_time)
-        score_time = max(score_times, default=None)
+        if value is not None:
+            return datetime.fromisoformat(maybe_bytes_to_str(value))
+        if pipe.exists(TOURNAMENT_USER_CACHE_KEYS['score_current']):
+            raise RuntimeError('Current score cache has no time reference; run rebuild_tournament_current_score_cache.')
+        return None
 
+    def _update_tournament_users_with_score_current(self, pipe, tournament_users, fields):
+        previous_time = self._get_tournament_score_reference(pipe)
+        score_time = previous_time or tournament_score_reference_time()
         pipe.multi()
-        if previous_time is not None and score_time > previous_time:
-            # 将所有已有成员乘以同一个衰减系数，包括未参加本场比赛的用户。
-            pipe.zunionstore(key, {key: tournament_score_decay_factor(previous_time, score_time)})
-        if score_time is not None:
+        if previous_time is None:
             pipe.set(TOURNAMENT_USER_SCORE_CURRENT_TIME_KEY, score_time.isoformat())
         self._update_tournament_users_in_pipeline(pipe, tournament_users, fields, score_time=score_time)
+
+    def refresh_tournament_score_reference(self):
+        """年度切换统一锚点，不修改数据库；同一年重复执行不衰减第二次。"""
+        score_time = tournament_score_reference_time()
+
+        def refresh(pipe):
+            previous_time = self._get_tournament_score_reference(pipe)
+            pipe.multi()
+            if previous_time == score_time:
+                return False
+            if previous_time is not None:
+                key = TOURNAMENT_USER_CACHE_KEYS['score_current']
+                pipe.zunionstore(key, {key: tournament_score_decay_factor(previous_time, score_time)})
+            pipe.set(TOURNAMENT_USER_SCORE_CURRENT_TIME_KEY, score_time.isoformat())
+            return True
+
+        return cache.transaction(refresh, TOURNAMENT_USER_SCORE_CURRENT_TIME_KEY, value_from_callable=True)
+
+    def rebuild_tournament_current_score_cache(self, *, batch_size=1000):
+        """从数据库重算当前积分 zset，并原子替换为当年年初锚点。"""
+        if batch_size < 1:
+            raise ValueError('batch_size must be positive')
+        score_time = tournament_score_reference_time()
+        key = TOURNAMENT_USER_CACHE_KEYS['score_current']
+
+        def rebuild(pipe):
+            # 重建期间仍可读取旧排行；并发缓存写入会令整个重建重试。
+            pipe.multi()
+            pipe.delete(key)
+            pipe.set(TOURNAMENT_USER_SCORE_CURRENT_TIME_KEY, score_time.isoformat())
+            batch = []
+            count = 0
+            users = TournamentUser.objects.only('user_id', 'score_current', 'last_updated')
+            for tournament_user in users.iterator(chunk_size=batch_size):
+                batch.append(tournament_user)
+                count += 1
+                if len(batch) == batch_size:
+                    self._update_tournament_users_in_pipeline(pipe, batch, ['score_current'], score_time=score_time)
+                    batch = []
+            self._update_tournament_users_in_pipeline(pipe, batch, ['score_current'], score_time=score_time)
+            return count
+
+        return cache.transaction(rebuild, TOURNAMENT_USER_SCORE_CURRENT_TIME_KEY, key, value_from_callable=True)
 
     def get_tournament_user_ranking(self, field: str, *, start=0, end=20) -> tuple[list[TournamentUser], int]:
         """读取缓存内的左闭右开排行区间。"""
