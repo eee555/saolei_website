@@ -1,4 +1,5 @@
 import { h, ref } from 'vue';
+import { createRouter, createWebHashHistory } from 'vue-router';
 
 import analyzerVersion from '../../../local-analyzer/version.json';
 
@@ -12,18 +13,36 @@ import { utc_to_local_format } from '@/utils/system/tools';
 
 const offlineDownloadFilename = `OpenMinesweeperVideoAnalyzer-${analyzerVersion.version}.zip`;
 
+function hashRouter() {
+    return createRouter({
+        history: createWebHashHistory(),
+        routes: [{ path: '/:pathMatch(.*)*', component: { render: () => h('div') } }],
+    });
+}
+
 function fixture(): SiteReplayInfo {
     return { video: { id: 42, player: 7, upload_time: '2026-10-12T10:00:00Z' }, expanded_video: {}, tournament_ids: [2, 3], filename: '原始录像.evf', rankings: [{ ranking: 'saolei', stat: 'bt', nf: false, rank: 3 }, { ranking: 'pb', stat: 'time', nf: true, rank: 5 }] };
 }
 
 describe('<WebsiteReplayInfo />', () => {
+    let previousUrl: string;
+
     beforeEach(() => {
+        cy.window().then((window) => {
+            previousUrl = window.location.href;
+        });
         cy.mockPlayerNameFallback();
+    });
+
+    afterEach(() => {
+        cy.window().then((window) => {
+            window.history.replaceState(null, '', previousUrl);
+        });
     });
 
     it('shows four ordered rows with upload time, PlayerName, all tournament links, video ranks and original filename', () => {
         const info = fixture();
-        cy.mount(WebsiteReplayInfo, { props: { id: '42', info, software: 'e' }, global: { plugins: [i18n], config: { globalProperties: { $axios } } } });
+        cy.mount(WebsiteReplayInfo, { props: { id: '42', info, software: 'e' }, global: { plugins: [i18n, hashRouter()], config: { globalProperties: { $axios } } } });
         cy.get('.website-replay-info__row').should('have.length', 4);
         cy.get('.website-replay-info__row').eq(0).should('contain.text', '#42').and('contain.text', utc_to_local_format(info.video.upload_time));
         cy.get('.website-replay-info__row').eq(1).find('a[href="#/player/7"]').should('exist');
@@ -65,7 +84,7 @@ describe('<WebsiteReplayInfo />', () => {
     it('omits absent tournament links, distinguishes unranked and failed requests, and wraps a long filename in a narrow container', () => {
         const state = ref<SiteReplayInfo | null>({ ...fixture(), tournament_ids: [], rankings: [], filename: `${'长文件名'.repeat(30)}.evf` });
         const errorMessage = ref('');
-        cy.mount({ render: () => h('div', { style: { width: '240px' } }, [h(WebsiteReplayInfo, { id: '42', info: state.value, errorMessage: errorMessage.value })]) }, { global: { plugins: [i18n], config: { globalProperties: { $axios } } } });
+        cy.mount({ render: () => h('div', { style: { width: '240px' } }, [h(WebsiteReplayInfo, { id: '42', info: state.value, errorMessage: errorMessage.value })]) }, { global: { plugins: [i18n, hashRouter()], config: { globalProperties: { $axios } } } });
         cy.get('.website-replay-info__tournaments').should('not.exist');
         cy.get('.website-replay-info__rankings').should('contain.text', 'Not ranked');
         cy.get('.website-replay-info__filename').should(($filename) => {
@@ -90,7 +109,7 @@ describe('<WebsiteReplayInfo />', () => {
     it('disables the external link until the format is known and updates it for a replacement replay', () => {
         const id = ref('42');
         const software = ref<MS_Software | null>(null);
-        cy.mount({ render: () => h(WebsiteReplayInfo, { id: id.value, software: software.value }) }, { global: { plugins: [i18n], config: { globalProperties: { $axios } } } });
+        cy.mount({ render: () => h(WebsiteReplayInfo, { id: id.value, software: software.value }) }, { global: { plugins: [i18n, hashRouter()], config: { globalProperties: { $axios } } } });
         cy.get('.website-replay-info__strange-dust').should('have.attr', 'aria-disabled', 'true').and('have.attr', 'tabindex', '-1').and('not.have.attr', 'href');
         cy.get('.website-replay-info__replay-download').should('have.attr', 'href', `${import.meta.env.VITE_BASE_API}/api/video/download/42`).and('not.have.attr', 'aria-disabled');
         cy.get('.website-replay-info__offline-download').should('have.attr', 'href', `${import.meta.env.BASE_URL}assets/${offlineDownloadFilename}`).and('not.have.attr', 'aria-disabled');
@@ -114,7 +133,7 @@ describe('<WebsiteReplayInfo />', () => {
     });
 
     it('keeps the replay download available while website information is loading', () => {
-        cy.mount(WebsiteReplayInfo, { props: { id: '42', loading: true }, global: { plugins: [i18n], config: { globalProperties: { $axios } } } });
+        cy.mount(WebsiteReplayInfo, { props: { id: '42', loading: true }, global: { plugins: [i18n, hashRouter()], config: { globalProperties: { $axios } } } });
         cy.get('.website-replay-info__rankings').should('contain.text', 'Loading website information');
         cy.get('.website-replay-info__replay-download').should('be.visible').and('have.attr', 'href', `${import.meta.env.VITE_BASE_API}/api/video/download/42`).and('have.attr', 'download', '').and('not.have.attr', 'aria-disabled');
     });

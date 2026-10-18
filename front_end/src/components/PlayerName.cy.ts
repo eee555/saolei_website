@@ -1,5 +1,6 @@
 import type { StaticResponse } from 'cypress/types/net-stubbing';
 import { h } from 'vue';
+import { createRouter, createWebHashHistory } from 'vue-router';
 
 import PlayerName from './PlayerName.vue';
 
@@ -13,20 +14,28 @@ const user = {
     lastname: 'Mines',
 };
 
+function hashRouter() {
+    const router = createRouter({
+        history: createWebHashHistory(),
+        routes: [{ path: '/:pathMatch(.*)*', component: { render: () => h('div') } }],
+    });
+    void router.push('/');
+    return router;
+}
+
 function mountPlayerName(userId: number, options: { interactive?: boolean; onParentClick?: () => void } = {}) {
-    cy.mount({
-        render: () => h('div', { onClick: options.onParentClick }, [
-            h(PlayerName, { userId, interactive: options.interactive }),
-        ]),
-    }, {
-        global: {
-            plugins: [i18n],
-            config: {
-                globalProperties: {
-                    $axios,
-                },
+    const router = hashRouter();
+    cy.wrap(router.isReady()).then(() => {
+        cy.mount({
+            render: () => h('div', { onClick: options.onParentClick }, [
+                h(PlayerName, { userId, interactive: options.interactive }),
+            ]),
+        }, {
+            global: {
+                plugins: [i18n, router],
+                config: { globalProperties: { $axios } },
             },
-        },
+        });
     });
 }
 
@@ -35,13 +44,24 @@ function mockUserInfo(response: StaticResponse = { body: [user] }) {
 }
 
 describe('PlayerName', () => {
+    let previousUrl: string;
+
     beforeEach(() => {
+        cy.window().then((window) => {
+            previousUrl = window.location.href;
+        });
         cy.intercept('GET', '/api/userprofile/avatar/**', {
             statusCode: 404,
         });
         // cy.intercept('GET', '/api/userprofile/infoupdated?**', {
         //     body: [user.id],
         // }).as('getInfoUpdated');
+    });
+
+    afterEach(() => {
+        cy.window().then((window) => {
+            window.history.replaceState(null, '', previousUrl);
+        });
     });
 
     it('shows the fallback name when server error', () => {

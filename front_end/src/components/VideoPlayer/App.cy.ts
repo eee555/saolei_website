@@ -1,7 +1,19 @@
+import { h } from 'vue';
+import { createRouter, createWebHashHistory } from 'vue-router';
+
 import App from './App.vue';
 
 import i18n from '@/i18n';
 import { videoPlayerConfig, videoplayerstore } from '@/store';
+
+function hashRouter() {
+    const router = createRouter({
+        history: createWebHashHistory(),
+        routes: [{ path: '/:pathMatch(.*)*', component: { render: () => h('div') } }],
+    });
+    void router.push('/');
+    return router;
+}
 
 describe('Video player dialog', () => {
     let previousUrl: string;
@@ -26,7 +38,10 @@ describe('Video player dialog', () => {
     });
 
     it('closes the dialog when following its title link to the analyzer', () => {
-        cy.mount(App, { global: { plugins: [i18n], stubs: { NativePlayer: true, FlopPlayer: true, StrangeDust: true } } });
+        const router = hashRouter();
+        cy.wrap(router.isReady()).then(() => {
+            cy.mount(App, { global: { plugins: [i18n, router], stubs: { NativePlayer: true, FlopPlayer: true, StrangeDust: true } } });
+        });
         cy.get('.video-player__analyzer-link').should('have.attr', 'href', '#/video/42').and('contain.text', '#42').click();
         cy.hash().should('eq', '#/video/42');
         cy.wrap(videoplayerstore).its('visible').should('eq', false);

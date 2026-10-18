@@ -1,6 +1,9 @@
 <template>
     <span @click="interactive && $event.stopPropagation()">
-        <a v-if="interactive" :href="playerProfileHref" class="link link--no-underline text">
+        <RouterLink v-if="interactive && hasRouter" :to="playerProfileTo" class="link link--no-underline text">
+            <PlayerBadge :user-id="userId" :name="nameShown" />
+        </RouterLink>
+        <a v-else-if="interactive" :href="playerProfileHref" class="link link--no-underline text">
             <PlayerBadge :user-id="userId" :name="nameShown" />
         </a>
         <PlayerBadge v-else :user-id="userId" :name="nameShown" />
@@ -9,8 +12,9 @@
 
 <script setup lang="ts" name="PlayerName">
 import '@/styles/link.css';
-import { computed, ref, watch } from 'vue';
+import { computed, inject, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { routerKey, RouterLink } from 'vue-router';
 
 import PlayerBadge from '@/components/widgets/PlayerBadge.vue';
 import { fetchUserInfo } from '@/services/userService';
@@ -24,6 +28,7 @@ const props = defineProps({
     },
 });
 
+const hasRouter = inject(routerKey, null) !== null;
 const user = ref(new UserProfile());
 const loading = ref(false);
 const nameShown = computed(() => {
@@ -33,6 +38,7 @@ const nameShown = computed(() => {
         return user.value.realname;
     }
 });
+const playerProfileTo = computed(() => `/player/${props.userId}`);
 const playerProfileHref = computed(() => `#/player/${props.userId}`);
 watch(() => props.userId, async (newVal) => {
     user.value = new UserProfile();

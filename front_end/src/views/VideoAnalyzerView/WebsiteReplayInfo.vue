@@ -11,7 +11,10 @@
                 <span v-else>--</span>
                 <span v-if="info && info.tournament_ids.length > 0" class="website-replay-info__tournaments">
                     {{ t('local.tournament') }}
-                    <a v-for="tournamentId in info.tournament_ids" :key="tournamentId" class="link" :href="`#/tournament/${tournamentId}`">#{{ tournamentId }}</a>
+                    <template v-for="tournamentId in info.tournament_ids" :key="tournamentId">
+                        <RouterLink v-if="hasRouter" class="link" :to="`/tournament/${tournamentId}`">#{{ tournamentId }}</RouterLink>
+                        <a v-else class="link" :href="`#/tournament/${tournamentId}`">#{{ tournamentId }}</a>
+                    </template>
                 </span>
             </div>
             <div class="website-replay-info__rankings website-replay-info__row">
@@ -45,9 +48,10 @@ import '@/styles/link.css';
 import '@/styles/text.css';
 import '@/styles/button.css';
 import 'primeicons/primeicons.css';
-import { computed } from 'vue';
+import { computed, inject } from 'vue';
 import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { routerKey, RouterLink } from 'vue-router';
 
 import analyzerVersion from '../../../local-analyzer/version.json';
 
@@ -67,6 +71,7 @@ const props = defineProps({
     errorMessage: { type: String, default: '' },
     software: { type: String as PropType<MS_Software | null>, default: null },
 });
+const hasRouter = inject(routerKey, null) !== null;
 
 const strangeDustUrl = computed(() => (props.software === null ? '' : getStrangeDustAnalyzerUrl(getReplayPreviewUrl(props.id, props.software))));
 const replayDownloadUrl = computed(() => getReplayDownloadUrl(props.id));
