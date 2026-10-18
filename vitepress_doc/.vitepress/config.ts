@@ -103,6 +103,7 @@ export default defineConfig({
                                 { text: '操作方式和规则', link: '/guide/minesweeper/mouse-event' },
                                 { text: '术语', link: '/guide/minesweeper/terminology' },
                                 { text: '数据', link: '/guide/minesweeper/stat' },
+                                { text: 'evf 标准', link: '/guide/minesweeper/evf-standard' },
                             ],
                         },
                         {
@@ -167,6 +168,8 @@ export default defineConfig({
                             items: [
                                 { text: 'Controls and Rules', link: '/en/guide/minesweeper/mouse-event' },
                                 { text: 'Terminology', link: '/en/guide/minesweeper/terminology' },
+                                { text: 'Data', link: '/en/guide/minesweeper/stat' },
+                                { text: 'evf Format', link: '/en/guide/minesweeper/evf-standard' },
                             ],
                         },
                     ],
