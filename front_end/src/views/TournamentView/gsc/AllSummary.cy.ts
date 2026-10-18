@@ -3,6 +3,7 @@ import AllSummary from './AllSummary.vue';
 import $axios from '@/http';
 import i18n from '@/i18n';
 import { GSCParticipant } from '@/utils/gsc';
+import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
 
 const realnames = {
     18: 'UserNoFinish',
@@ -11,6 +12,8 @@ const realnames = {
 };
 
 describe('<AllSummary />', () => {
+    installHashHistoryCleanup();
+
     beforeEach(() => {
         cy.intercept('GET', '/api/userprofile/avatar/**', {
             statusCode: 404,
@@ -45,7 +48,7 @@ describe('<AllSummary />', () => {
                 data: participantList,
             },
             global: {
-                plugins: [i18n],
+                plugins: [i18n, hashRouter()],
                 config: {
                     globalProperties: {
                         $axios,

@@ -268,10 +268,9 @@ def update_user_profile(request: HttpRequest, data: UpdateUserProfileIn = Form(.
             continue
         try:
             try_update_user_name_fields(user, name_field, name_value, user_ip)
+            data_out[name_field] = success_out
         except ExceptionToResponse as e:
             data_out[name_field] = e.body
-
-        data_out[name_field] = success_out
 
     if (signature := data.signature) is not None:
         try:

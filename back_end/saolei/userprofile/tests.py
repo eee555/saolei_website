@@ -1,4 +1,5 @@
 from datetime import timedelta
+from unittest.mock import patch
 from urllib.parse import urlencode
 
 from django.test import override_settings, TestCase
@@ -6,6 +7,7 @@ from django.utils import timezone
 
 from msuser.models import UserMS
 from userprofile.models import UserProfile
+from utils.exceptions import ExceptionToResponse
 
 
 @override_settings(RATELIMIT_ENABLE=False)
@@ -139,3 +141,34 @@ class UserProfileAdminApiTests(TestCase):
 
         self.assertEqual(get_response.status_code, 404)
         self.assertEqual(post_response.status_code, 404)
+
+
+@override_settings(RATELIMIT_ENABLE=False)
+class UserProfileUpdateApiTests(TestCase):
+    def setUp(self):
+        self.user = UserProfile.objects.create_user(
+            username='self_user',
+            email='self_user@example.com',
+            password='password',
+            userms=UserMS.objects.create(),
+        )
+        self.client.force_login(self.user)
+
+    def test_update_profile_keeps_error_when_name_censorship_fails(self):
+        with patch(
+            'userprofile.api.try_update_user_name_fields',
+            side_effect=ExceptionToResponse('censorship', 'unknown'),
+        ):
+            response = self.client.post(
+                '/api/userprofile/update_profile',
+                {'realname': 'Jason Weng'},
+            )
+
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(
+            response.json()['realname'],
+            {'type': 'error', 'object': 'censorship', 'category': 'unknown'},
+        )
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.realname, '匿名')
+        self.assertFalse(self.user.has_realname())

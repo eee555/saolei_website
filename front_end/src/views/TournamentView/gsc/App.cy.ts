@@ -12,6 +12,7 @@ import { LoginStatus } from '@/utils/common/structInterface';
 import { MS_Mode, TournamentState, TournamentSubclass } from '@/utils/ms_const';
 import { Tournament } from '@/utils/tournaments';
 import { VideoAbstract } from '@/utils/videoabstract';
+import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
 
 const tournamentId = 7;
 
@@ -73,7 +74,7 @@ function mountGSC(options: {
             tournament,
         },
         global: {
-            plugins: [pinia, i18n],
+            plugins: [pinia, i18n, hashRouter()],
             config: {
                 globalProperties: {
                     $axios,
@@ -85,6 +86,8 @@ function mountGSC(options: {
 }
 
 describe('<GSC App />', () => {
+    installHashHistoryCleanup();
+
     beforeEach(() => {
         cy.mockPlayerNameFallback();
     });

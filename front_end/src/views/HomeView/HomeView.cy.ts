@@ -5,6 +5,7 @@ import i18n from '@/i18n';
 import { serviceConfig } from '@/services/store';
 import { local } from '@/store';
 import { TournamentState, TournamentSubclass } from '@/utils/ms_const';
+import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
 
 const fixedNow = new Date('2026-07-22T12:00:00Z').getTime();
 const fullDay = 86400000;
@@ -104,14 +105,16 @@ function normalTournamentResponse() {
     ];
 }
 
-const mountGlobal = {
-    plugins: [i18n, PrimeVue],
-    config: {
-        globalProperties: {
-            $axios,
+function mountGlobal() {
+    return {
+        plugins: [i18n, PrimeVue, hashRouter()],
+        config: {
+            globalProperties: {
+                $axios,
+            },
         },
-    },
-};
+    };
+}
 
 function mockHomeQueueRequests() {
     cy.intercept({ method: 'GET', pathname: '/video/newest_queue/' }, { body: newestQueueResponse }).as('newestQueue');
@@ -127,12 +130,14 @@ function configureUserInfoService() {
 
 function mountHomeView() {
     cy.then(() => import('./App.vue')).then(({ default: App }) => {
-        cy.mount(App, { global: mountGlobal });
+        cy.mount(App, { global: mountGlobal() });
     });
     cy.tick(0);
 }
 
 describe('HomeView components', () => {
+    installHashHistoryCleanup();
+
     beforeEach(() => {
         local.value.language = 'en';
         cy.clock(fixedNow);

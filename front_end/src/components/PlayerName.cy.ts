@@ -5,6 +5,7 @@ import PlayerName from './PlayerName.vue';
 
 import $axios from '@/http';
 import i18n from '@/i18n';
+import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
 
 const user = {
     id: 42,
@@ -14,19 +15,18 @@ const user = {
 };
 
 function mountPlayerName(userId: number, options: { interactive?: boolean; onParentClick?: () => void } = {}) {
-    cy.mount({
-        render: () => h('div', { onClick: options.onParentClick }, [
-            h(PlayerName, { userId, interactive: options.interactive }),
-        ]),
-    }, {
-        global: {
-            plugins: [i18n],
-            config: {
-                globalProperties: {
-                    $axios,
-                },
+    const router = hashRouter({ initialPath: '/' });
+    cy.wrap(router.isReady()).then(() => {
+        cy.mount({
+            render: () => h('div', { onClick: options.onParentClick }, [
+                h(PlayerName, { userId, interactive: options.interactive }),
+            ]),
+        }, {
+            global: {
+                plugins: [i18n, router],
+                config: { globalProperties: { $axios } },
             },
-        },
+        });
     });
 }
 
@@ -35,6 +35,8 @@ function mockUserInfo(response: StaticResponse = { body: [user] }) {
 }
 
 describe('PlayerName', () => {
+    installHashHistoryCleanup();
+
     beforeEach(() => {
         cy.intercept('GET', '/api/userprofile/avatar/**', {
             statusCode: 404,

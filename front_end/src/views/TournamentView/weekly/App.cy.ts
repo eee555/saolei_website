@@ -13,6 +13,7 @@ import { LoginStatus } from '@/utils/common/structInterface';
 import { MS_Mode, TournamentState, TournamentSubclass } from '@/utils/ms_const';
 import { Tournament } from '@/utils/tournaments';
 import { VideoAbstract } from '@/utils/videoabstract';
+import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
 
 const tournamentId = 8;
 const participantTable = '[data-cy=tournament-data-tabs] #pane-participants [data-cy=weekly-registered-table] table';
@@ -86,7 +87,7 @@ function mountWeekly(options: {
             tournament: options.tournament ?? weeklyTournament(),
         },
         global: {
-            plugins: [pinia, i18n],
+            plugins: [pinia, i18n, hashRouter()],
             config: {
                 globalProperties: {
                     $axios,
@@ -101,6 +102,8 @@ function mountWeekly(options: {
 }
 
 describe('<Weekly App />', () => {
+    installHashHistoryCleanup();
+
     beforeEach(() => {
         cy.mockPlayerNameFallback();
     });

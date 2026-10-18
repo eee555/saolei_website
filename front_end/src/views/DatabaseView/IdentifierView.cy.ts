@@ -6,19 +6,22 @@ import { showInvisibleIdentifiers } from '@/components/widgets/identifierDisplay
 import $axios from '@/http';
 import i18n from '@/i18n';
 import { pinia } from '@/store/create';
+import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
 
 function mountQuery() {
     showInvisibleIdentifiers.value = false;
     cy.mockPlayerNameFallback();
     cy.mount(IdentifierView, {
         global: {
-            plugins: [i18n, pinia, PrimeVue],
+            plugins: [i18n, pinia, PrimeVue, hashRouter()],
             config: { globalProperties: { $axios } },
         },
     });
 }
 
 describe('Identifier lookup', () => {
+    installHashHistoryCleanup();
+
     it('finds all identifiers for a player and links to the player profile', () => {
         cy.intercept({ method: 'GET', pathname: '/api/userprofile/identifier', query: { user_id: '42' } }, ['First', 'Second']).as('identifiers');
         mountQuery();

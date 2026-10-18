@@ -3,8 +3,11 @@ import PBRanking from './PBRanking.vue';
 import $axios from '@/http';
 import i18n from '@/i18n';
 import { pinia } from '@/store/create';
+import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
 
 describe('<PBRanking />', () => {
+    installHashHistoryCleanup();
+
     it('loads counts, paginates and requests selected NF and BV buckets', () => {
         cy.mockPlayerNameFallback();
         const counts = { 'std:b:1': 21, 'nf:b:54': 7, 'nf:i:216': 7, 'nf:e:381': 7 };
@@ -20,7 +23,7 @@ describe('<PBRanking />', () => {
             }
             req.reply({ body: { count: 21, players: [{ player_id: 42, video_id: 8001, timems: 1000, upload_time: upload }] } });
         }).as('ranking');
-        cy.mount(PBRanking, { global: { plugins: [i18n, pinia], config: { globalProperties: { $axios } } } });
+        cy.mount(PBRanking, { global: { plugins: [i18n, pinia, hashRouter()], config: { globalProperties: { $axios } } } });
         cy.wait('@ranking').its('request.query').should('include', { level: 'b', bv: '1', nf: 'false', start: '0', end: '20' });
         cy.wait('@counts');
         cy.get('.pb-level-button[data-level="b"]').click();
@@ -68,7 +71,7 @@ describe('<PBRanking />', () => {
         cy.mockPlayerNameFallback();
         cy.intercept('GET', '/api/speedranking/pb/counts', { statusCode: 500 }).as('countsFailed');
         cy.intercept({ method: 'GET', pathname: '/api/speedranking/pb/rank' }, { statusCode: 500 }).as('failed');
-        cy.mount(PBRanking, { global: { plugins: [i18n, pinia], config: { globalProperties: { $axios } } } });
+        cy.mount(PBRanking, { global: { plugins: [i18n, pinia, hashRouter()], config: { globalProperties: { $axios } } } });
         cy.wait('@failed');
         cy.wait('@countsFailed');
         cy.get('.el-alert').should('contain.text', 'Unable to load ranking');

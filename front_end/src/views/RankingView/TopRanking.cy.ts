@@ -3,10 +3,15 @@ import TopRanking from './TopRanking.vue';
 import $axios from '@/http';
 import i18n from '@/i18n';
 import { pinia } from '@/store/create';
+import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
 
-const global = { plugins: [i18n, pinia], config: { globalProperties: { $axios } } };
+function mountTopRanking() {
+    cy.mount(TopRanking, { global: { plugins: [i18n, pinia, hashRouter()], config: { globalProperties: { $axios } } } });
+}
 
 describe('<TopRanking />', () => {
+    installHashHistoryCleanup();
+
     beforeEach(() => {
         cy.mockPlayerNameFallback();
     });
@@ -21,7 +26,7 @@ describe('<TopRanking />', () => {
             'nf:bs': { mean: 3, videos: [{ value: 15, video_id: 8301 }] },
         };
         cy.intercept({ method: 'GET', pathname: '/api/speedranking/top/rank' }, { count: 21, players: [{ player_id: 42, records }] }).as('ranking');
-        cy.mount(TopRanking, { global });
+        mountTopRanking();
         cy.wait('@ranking').its('request.query').should('include', { level: 'e', stat: 't', nf: 'false', start: '0', end: '20' });
         cy.get('.top-ranking-table tbody tr').should('have.length', 1).find('td').should('have.length', 16);
         cy.get('.top-detail-toggle').should('have.length', 9).find('.pi-eye').should('have.length', 9);
@@ -67,7 +72,7 @@ describe('<TopRanking />', () => {
 
     it('retries a failed request and handles an empty bucket', () => {
         cy.intercept('GET', '**/api/speedranking/top/rank*', { statusCode: 500 }).as('failed');
-        cy.mount(TopRanking, { global });
+        mountTopRanking();
         cy.wait('@failed');
         cy.get('[role=alert]').should('contain.text', 'Unable to load ranking');
         cy.intercept('GET', '**/api/speedranking/top/rank*', { count: 0, players: [] }).as('retry');
