@@ -6,6 +6,7 @@ import { pinia } from './create';
 import { fetchProfileSaoleiRecords, profileDataRevision } from '@/services/profileDataService';
 import type { TopAnchors } from '@/services/topRankingService';
 import { deepMutableCopy } from '@/utils';
+import type { PiecewiseColorSchemeInterface } from '@/utils/colors';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { colorSchemeTemplates } from '@/utils/config';
 import type { CellChoice, ColorTemplateName, ColumnChoice, MS_Software } from '@/utils/ms_const';
@@ -124,10 +125,12 @@ export const videofilter = useLocalStorage('videofilter', {
     },
 });
 
+const defaultColorSchemes: Record<keyof typeof colorSchemeTemplates.ArbiterStatsAuto, PiecewiseColorSchemeInterface> = deepMutableCopy(colorSchemeTemplates.ArbiterStatsAuto);
+
 export const colorTheme = useLocalStorage(
     'colorTheme',
     {
-        ...deepMutableCopy(colorSchemeTemplates.ArbiterStatsAuto),
+        ...defaultColorSchemes,
         level: {
             b: '#dc2626',
             i: '#16a34a',

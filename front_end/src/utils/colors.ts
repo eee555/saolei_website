@@ -84,6 +84,6 @@ export function getTextColor(style = 'regular'): string {
 function createColorStyle(backgroundColor: string): Readonly<CSSProperties> {
     const tc = tinycolor(backgroundColor);
     if (tc.isValid() && tc.getAlpha() == 0) return {};
-    const color = tc.isDark() ? 'var(--ui-text-color-regular-dark)' : 'var(--ui-text-color-regular-light)';
+    const color = tc.isDark() ? '#ffffff' : '#000000';
     return { backgroundColor, color };
 }

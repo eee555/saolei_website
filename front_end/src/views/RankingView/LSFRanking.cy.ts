@@ -4,10 +4,16 @@ import $axios from '@/http';
 import i18n from '@/i18n';
 import { topAxes, topField } from '@/services/topRankingService';
 import type { TopAnchors, TopRecords } from '@/services/topRankingService';
-import { store } from '@/store';
+import { colorTheme, store } from '@/store';
 import { pinia } from '@/store/create';
 
 describe('<LSFRanking />', () => {
+    const originalGradeTheme = colorTheme.value.grade;
+    afterEach(() => {
+        colorTheme.value.grade = originalGradeTheme;
+        store.topAnchors = null;
+    });
+
     it('renders tiers with equivalent time titles and requests the selected ranking and page', () => {
         const records: TopRecords = {};
         const anchors: TopAnchors = {};
@@ -40,6 +46,24 @@ describe('<LSFRanking />', () => {
             expect($cell.attr('title')).to.equal($cell.attr('data-field')?.startsWith('nf:') === true ? 'Lesser Deity 0.0 (60.000 s)' : 'Alien 0.0 (30.000 s)');
         });
         cy.get('.lsf-ranking-table thead th').should('have.length', 12).eq(3).should('have.text', 'Tier');
+        cy.then(() => {
+            colorTheme.value.grade = { thresholds: [45], colors: ['#224466', '#ffee00'] };
+        });
+        cy.get<ComponentWrapper<typeof LSFRanking>>('@vue').then((wrapper) => {
+            void wrapper.setProps({ colored: true });
+        });
+        cy.get('.lsf-ranking-table tbody [data-field="std:e"]').should('have.css', 'background-color', 'rgb(34, 68, 102)');
+        cy.get('.lsf-ranking-table tbody [data-field="nf:e"]').should('have.css', 'background-color', 'rgb(255, 238, 0)');
+        cy.get('.lsf-ranking-table tbody [data-field="lsf-grade"]').should('have.css', 'background-color', 'rgb(34, 68, 102)');
+        cy.get('.lsf-ranking-table tbody [data-field="lsf"]').should(($cell) => {
+            expect($cell[0]?.style.backgroundColor).to.equal('');
+        });
+        cy.get<ComponentWrapper<typeof LSFRanking>>('@vue').then((wrapper) => {
+            void wrapper.setProps({ colored: false });
+        });
+        cy.get('.lsf-ranking-table tbody [data-field="lsf-grade"]').should(($cell) => {
+            expect($cell[0]?.style.backgroundColor).to.equal('');
+        });
         cy.get('.lsf-pagination .btn-next').click();
         cy.wait('@ranking').its('request.query').should('include', { ranking: 'lsf', start: '20', end: '40' });
         cy.get('.lsf-ranking-table tbody tr td').first().should('have.text', '21');

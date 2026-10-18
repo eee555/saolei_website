@@ -26,8 +26,18 @@
                     </template>
                 </Tippy>
             </div>
+            <div class="ranking-actions">
+                <BaseButton class="square-button" data-cy="ranking-color" :type="local.colored ? 'primary' : 'default'" :aria-label="t('local.color')" :title="t('local.color')" :aria-pressed="local.colored" @click="local.colored = !local.colored">
+                    <i class="pi pi-palette ranking-color-icon" aria-hidden="true" />
+                </BaseButton>
+                <BaseButton class="square-button" data-cy="ranking-refresh" :disabled="!ranking" :aria-label="t('common.action.refresh')" :title="t('common.action.refresh')" @click="ranking?.refresh()">
+                    <BaseIconRefresh :loading="ranking?.loading ?? false" aria-hidden="true" />
+                </BaseButton>
+            </div>
         </div>
-        <RouterView />
+        <RouterView v-slot="{ Component }">
+            <component :is="Component" ref="ranking" :colored="local.colored" />
+        </RouterView>
     </section>
 </template>
 
@@ -35,17 +45,20 @@
 import '@/styles/cards.css';
 
 import { ElOption, ElSelect } from 'element-plus';
-import { computed } from 'vue';
+import { computed, useTemplateRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { RouterView, useRoute, useRouter } from 'vue-router';
 import { Tippy } from 'vue-tippy';
 
+import BaseButton from '@/components/common/BaseButton.vue';
 import BaseTextButton from '@/components/common/BaseTextButton.vue';
-import { BaseIconInfo } from '@/components/common/icon';
+import { BaseIconInfo, BaseIconRefresh } from '@/components/common/icon';
+import { local } from '@/store/local';
 
 const rankingNames = ['lsf', 'top', 'saolei', 'pb'] as const;
 const route = useRoute();
 const router = useRouter();
+const ranking = useTemplateRef<{ refresh: () => void | Promise<void>; loading: boolean }>('ranking');
 const selectedRankingName = computed<typeof rankingNames[number]>({
     get: () => rankingNames.find((name) => route.name === `ranking_speed_${name}`) ?? 'lsf',
     set: (name) => {
@@ -56,6 +69,7 @@ const selectedRankingName = computed<typeof rankingNames[number]>({
 const i18nMessages = {
     'zh-cn': { local: {
         rankingName: '大榜',
+        color: '颜色',
         howToImprove: '如何提高成绩',
         improveEligibility: '上传自己的标准模式通关录像，绑定录像内标识并通过审核。比赛隐藏录像需公开后才计入。',
         improveNF: '普通榜包含 NF 录像；若要提高 NF 项目，录像的有效右键次数必须为 0。',
@@ -80,6 +94,7 @@ const i18nMessages = {
     } },
     en: { local: {
         rankingName: 'Ranking',
+        color: 'Color',
         howToImprove: 'How to improve',
         improveEligibility: 'Upload your own completed Standard-mode replays, bind their player identifiers and have them approved. Replays hidden for a tournament count after they are revealed.',
         improveNF: 'Ordinary rankings include NF replays. To improve an NF category, the replay must have zero effective right clicks.',
@@ -123,6 +138,19 @@ const { t } = useI18n({ messages: i18nMessages });
     display: flex;
     align-items: center;
     gap: 0.5rem;
+}
+
+.ranking-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+}
+
+.ranking-color-icon {
+    background: linear-gradient(135deg, #e5484d 15%, #c99700 35%, #16a34a 60%, #3b82f6 85%);
+    background-clip: text;
+    color: transparent;
 }
 
 .ranking-improve-content p {

@@ -13,7 +13,9 @@ LSF 是竞速页面的首位和默认选项，由 top 纪录派生。规则、�
 - `top/`：top 的前五明细、补位、锚点、软实力、后台任务、API 和测试，不依赖 PB 缓存。
 - 根目录 `cache.py`：共享 Redis 连接与 pipeline；`utils.py`：错误日志、UTC 时间换算和玩家分段工具。
 - 根目录 `services.py`：协调各大榜的共同读取、独立判断、共同写入；`signals.py`：录像事件入口；`api.py`：聚合各大榜的 router。
-- 前端 `RankingView/routes.ts`：各大榜子路由。`SpeedRanking.vue` 提供大榜选择器、规则提示、随大榜切换的“How to improve”上传建议和 `RouterView`。选择器与路由同步，切换大榜使用 push，支持浏览器返回。选项依次为 LSF、top、扫雷网、PB；`/ranking/speed` 默认跳转 `/ranking/speed/lsf`。项目使用 hash history，浏览器地址对应 `/#/ranking/speed/...`。
+- 前端 `RankingView/routes.ts`：各大榜子路由。`SpeedRanking.vue` 提供大榜选择器、规则提示、“How to improve”上传建议，以及统一的颜色和刷新按钮。子榜通过 `defineExpose` 提供 `refresh`、`loading`，接收 `colored` prop；PB 刷新同时更新人数和榜单。切换大榜使用 push，支持浏览器返回；选项依次为 LSF、top、扫雷网、PB，`/ranking/speed` 默认跳转 `/ranking/speed/lsf`。项目使用 hash history，浏览器地址对应 `/#/ranking/speed/...`。
+
+上色统一使用 `store/local.ts` 的 `local.colored`，默认关闭，在 localStorage 持久化；竞速榜工具栏与设置页共享开关。top、PB、扫雷网单级别成绩复用 `store/color.ts` 的分段色阶，top 同时着色均值与真实明细，缺失成绩及扫雷网 sum 不着色。LSF 只给定阶着色，按等价 et 秒数使用 `colorTheme.grade`。色阶默认值来自 `utils/config.ts`，可在设置页编辑或还原当前项；彩色背景文字使用纯黑/白，透明背景继承文字色。原本没有开关的固定配色不受影响。
 
 ## Saolei.wang 规则
 
@@ -194,8 +196,8 @@ NF checkbox 与三个等级按钮控制分榜。等级按钮的交互式 tooltip
 - `pbRankingService.test.ts`：请求参数及 Time/Bvs/Stnb、上传时间格式化。
 - `PBRanking.cy.ts`：页面请求、人数传递、分页、NF/3BV 联动及失败重试，不重复子组件的渲染细节。
 - `PBBVButton.cy.ts`：人数网格、范围、禁用与隐藏、选择事件和 props 更新。
-- `PBRankingTable.cy.ts`：列顺序、排名偏移、三级别派生值、录像预览关联、分钟级时间、空表、加载状态和零用时。
-- `SpeedRanking.cy.ts`：直接访问 PB 子路由、大榜切换、浏览器返回与默认跳转。
+- `PBRankingTable.cy.ts`：表格显示、props 更新、录像预览、空表和加载状态；三级别派生公式与零用时规则由 `pbRankingService.test.ts` 覆盖。
+- `SpeedRanking.cy.ts`：直接访问 PB 子路由、大榜切换、浏览器返回、默认跳转，以及统一刷新、加载图标和颜色 prop 传递。
 
 后端命令在 `back_end/saolei` 运行；前端命令在 `front_end` 运行。Cypress 由开发者运行，不能以静态检查通过代替组件运行验证。
 

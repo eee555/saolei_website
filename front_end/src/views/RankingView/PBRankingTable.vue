@@ -26,7 +26,7 @@
             <td class="table-col-player">
                 <PlayerName :user-id="row.player_id" />
             </td>
-            <td v-for="stat in pbStats" :key="stat" class="table-col-number">
+            <td v-for="stat in pbStats" :key="stat" class="table-col-number" :style="cellStyle(row, stat)">
                 <VideoPreviewLink :id="row.video_id">
                     {{ formatPBValue(row.timems, level, bv, stat) }}
                 </VideoPreviewLink>
@@ -47,17 +47,26 @@ import BaseTable from '@/components/common/BaseTable.vue';
 import PlayerName from '@/components/PlayerName.vue';
 import VideoPreviewLink from '@/components/VideoPreviewLink.vue';
 import { formatPBUploadTime, formatPBValue, pbStats } from '@/services/pbRankingService';
-import type { PBRankingPlayer } from '@/services/pbRankingService';
+import type { PBRankingPlayer, PBStat } from '@/services/pbRankingService';
+import { colorThemes } from '@/store/color';
 import { preview } from '@/utils/common/PlayerDialog';
+import { getPiecewiseColorSchemeName } from '@/utils/ms_const';
 import type { MS_Level } from '@/utils/ms_const';
 
-defineProps({
+const props = defineProps({
     rows: { type: Array as PropType<PBRankingPlayer[]>, required: true },
     level: { type: String as PropType<MS_Level>, required: true },
     bv: { type: Number, required: true },
     first: { type: Number, required: true },
     loading: { type: Boolean, required: true },
+    colored: { type: Boolean, default: false },
 });
+
+function cellStyle(row: PBRankingPlayer, stat: PBStat) {
+    if (!props.colored) return undefined;
+    const value = Number(formatPBValue(row.timems, props.level, props.bv, stat));
+    return colorThemes[getPiecewiseColorSchemeName(stat, props.level)].value.getStyle(value);
+}
 
 function previewVideo(row: PBRankingPlayer) {
     void preview(row.video_id);

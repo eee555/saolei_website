@@ -10,6 +10,7 @@ const bvsTheme = computed(() => PiecewiseColorScheme.createFromTheme(colorTheme.
 const etimeTheme = computed(() => PiecewiseColorScheme.createFromTheme(colorTheme.value.etime));
 const itimeTheme = computed(() => PiecewiseColorScheme.createFromTheme(colorTheme.value.itime));
 const btimeTheme = computed(() => PiecewiseColorScheme.createFromTheme(colorTheme.value.btime));
+const gradeTheme = computed(() => PiecewiseColorScheme.createFromTheme(colorTheme.value.grade));
 
 export const colorThemes = {
     stnb: stnbTheme,
@@ -18,4 +19,5 @@ export const colorThemes = {
     etime: etimeTheme,
     itime: itimeTheme,
     btime: btimeTheme,
+    grade: gradeTheme,
 };

@@ -1,10 +1,5 @@
 <template>
     <section class="lsf-ranking">
-        <div class="lsf-toolbar">
-            <BaseButton class="square-button" :aria-label="t('common.action.refresh')" :title="t('common.action.refresh')" @click="load">
-                <BaseIconRefresh :loading="loading" aria-hidden="true" />
-            </BaseButton>
-        </div>
         <p v-if="failed" role="alert" class="text-danger">
             {{ t('ranking.loadFailed') }}
         </p>
@@ -37,10 +32,10 @@
                     <PlayerName :user-id="row.player_id" />
                 </td>
                 <template v-for="field in softFields" :key="field">
-                    <td class="table-col-number" :data-field="field" :title="field === 'lsf' ? undefined : formatGradeTitle(row.values[field], field)" :class="{ 'lsf-selected': selected === field }">
+                    <td class="table-col-number" :data-field="field" :title="field === 'lsf' ? undefined : formatGradeTitle(row.values[field], field)" :class="{ 'lsf-selected': selected === field }" :style="field === 'lsf' ? undefined : gradeStyle(row.values[field], field)">
                         {{ field === 'lsf' ? row.values[field].toFixed(2) : formatGrade(row.values[field], field) }}
                     </td>
-                    <td v-if="field === 'lsf'" class="table-col-number" data-field="lsf-grade" :title="formatGradeTitle(row.values.lsf, 'lsf')" :class="{ 'lsf-selected': selected === 'lsf' }">
+                    <td v-if="field === 'lsf'" class="table-col-number" data-field="lsf-grade" :title="formatGradeTitle(row.values.lsf, 'lsf')" :class="{ 'lsf-selected': selected === 'lsf' }" :style="gradeStyle(row.values.lsf, 'lsf')">
                         {{ formatGrade(row.values.lsf, 'lsf') }}
                     </td>
                 </template>
@@ -58,14 +53,15 @@ import { ElPagination, vLoading } from 'element-plus';
 import { computed, onScopeDispose, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import BaseButton from '@/components/common/BaseButton.vue';
 import BaseTable from '@/components/common/BaseTable.vue';
 import BaseTextButton from '@/components/common/BaseTextButton.vue';
-import { BaseIconRefresh } from '@/components/common/icon';
 import PlayerName from '@/components/PlayerName.vue';
 import { fetchSoftRanking, softFields, topEquivalentEt, topGrade, topSoftValues } from '@/services/topRankingService';
 import type { SoftField, TopRankingPlayer } from '@/services/topRankingService';
 import { store } from '@/store';
+import { colorThemes } from '@/store/color';
+
+const props = defineProps({ colored: { type: Boolean, default: false } });
 
 const selected = ref<SoftField>('lsf');
 const page = ref(1);
@@ -85,9 +81,19 @@ function columnLabel(field: SoftField) {
     return `${mode === 'nf' ? 'NF ' : ''}${t(`common.level.${level}`)}`;
 }
 
-function formatGradeTitle(value: number, field: SoftField) {
+function equivalentEt(value: number, field: SoftField) {
     const baseline = field === 'lsf' || field.endsWith(':sum') ? 4000 : 100;
-    const seconds = topEquivalentEt(value, store.topAnchors ?? {}, baseline, field.startsWith('nf:'));
+    return topEquivalentEt(value, store.topAnchors ?? {}, baseline, field.startsWith('nf:'));
+}
+
+function gradeStyle(value: number, field: SoftField) {
+    if (!props.colored) return undefined;
+    const seconds = equivalentEt(value, field);
+    return seconds === null ? undefined : colorThemes.grade.value.getStyle(seconds);
+}
+
+function formatGradeTitle(value: number, field: SoftField) {
+    const seconds = equivalentEt(value, field);
     return seconds === null ? '--' : `${formatGrade(value, field, true)} (${seconds.toFixed(3)} s)`;
 }
 
@@ -96,7 +102,7 @@ function formatGrade(value: number, field: SoftField, full = false) {
     const grade = topGrade(value, store.topAnchors ?? {}, baseline, field.startsWith('nf:'));
     if (grade === null) return '--';
     const fullName = `local.fullGrade${grade.index}`;
-    const name = full && te(fullName) ? t(fullName) : t(`local.grade${grade.index}`);
+    const name = full && i18n.te(fullName) ? t(fullName) : t(`local.grade${grade.index}`);
     return t('local.grade', { name, stage: (grade.position * 10).toFixed(1) });
 }
 
@@ -133,6 +139,8 @@ onScopeDispose(() => {
     requestId++; controller?.abort();
 });
 
+defineExpose({ refresh: load, loading });
+
 const i18nMessages = {
     'zh-cn': { local: {
         gradeTitle: '定阶',
@@ -167,17 +175,13 @@ const i18nMessages = {
         fullGrade7: 'Greater Overgod',
     } },
 };
-const { t, te } = useI18n({ messages: i18nMessages });
+const i18n = useI18n({ messages: i18nMessages });
+const { t } = i18n;
 </script>
 
 <style scoped>
 .lsf-ranking {
     min-width: 0;
-}
-.lsf-toolbar {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 8px;
 }
 .lsf-selected {
     font-weight: 600;
