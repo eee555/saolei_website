@@ -57,7 +57,8 @@
 
 | 文件 | 当前职责 |
 | --- | --- |
-| `components/VideoAnalyzer/App.vue` | 公共分析组件、布局及设置接线；持有唯一播放控制器、录像状态、可视时间窗及计数器采样 Map，向计数器和时间轴传递同一份结果并处理发送到 plot。 |
+| `components/VideoAnalyzer/App.vue` | 公共分析组件、布局及设置接线；持有唯一播放控制器、录像状态、可视时间窗及计数器采样 Map，向计数器和时间轴传递同一份结果并处理发送到 plot。图层字段原地更新，不替换整份配置。 |
+| `usePreparedAnalysis.ts` | 缓存计数器及自定义事件采样，仅在对应配置、录像事件或时长变化时重新计算；图层开关、透明度和其他无关配置更新复用已有结果。 |
 | `views/VideoAnalyzerView/App.vue` | 网站包装页：分析区域可访问名称、info slot、配置/概率配色绑定、站内源加载和导出期间的路由守卫。 |
 | `useSiteReplaySource.ts`、`useReplaySource.ts`、`replayParser.ts` | 站内请求与资源生命周期；纯解析函数供页面与导出共用，createExportVideo 使用已下载字节创建独立解析副本，不重复请求。 |
 | `usePlayback.ts` | 与解析依赖无关的唯一时钟、进度跳转、拖动、倍率、循环及共享区间。 |

@@ -39,6 +39,7 @@ const downloadBaseUrl = `${import.meta.env.BASE_URL}assets/`;
 // 发布历史手动维护：新版本提供下载后，添加版本、日期及实际 ZIP 文件名；不读取 version.json 自动更新。
 const tableData = [
     { version: '0.1.2', date: '2026-10-13', filename: 'OpenMinesweeperVideoAnalyzer-0.1.2.zip' },
+    { version: '0.1.3', date: '2026-10-18', filename: 'OpenMinesweeperVideoAnalyzer-0.1.3.zip' },
 ];
 
 const i18nMessages = {
