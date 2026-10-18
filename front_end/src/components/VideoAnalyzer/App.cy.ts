@@ -1,4 +1,3 @@
-import type { VueWrapper } from '@vue/test-utils';
 import { defineComponent, h, ref, shallowRef } from 'vue';
 
 import VideoAnalyzer from './App.vue';
@@ -14,9 +13,6 @@ describe('<VideoAnalyzer /> raw-source interface', () => {
         cy.viewport(1280, 1000);
         const config = ref(defaultAnalyzerConfig());
         const originalConfig = config.value;
-        let wrapper: VueWrapper;
-        let counters: unknown;
-        let events: unknown;
         cy.fixture('52200.evf', 'binary').then((binary: string) => {
             const source: ReplaySource = { data: Uint8Array.from(binary, (character) => character.charCodeAt(0)).buffer, filename: 'local.evf', software: 'e' };
             cy.mount(defineComponent({ expose: [],
@@ -27,28 +23,31 @@ describe('<VideoAnalyzer /> raw-source interface', () => {
                         config.value = value;
                     },
                     probabilityColorScheme: { colors: ['#000', '#fff'], thresholds: [50] },
-                })]) }), { global: { plugins: [i18n] } }).then((mounted) => {
-                wrapper = mounted.wrapper;
-                counters = wrapper.findComponent(CounterPanel).props('counters');
-                events = wrapper.findComponent(BoardPanel).props('preparedEvents');
+                })]) }), { global: { plugins: [i18n] } }).then(({ wrapper }) => {
+                const counters = wrapper.findComponent(CounterPanel).props('counters');
+                const events = wrapper.findComponent(BoardPanel).props('preparedEvents');
+                cy.get('.video-analyzer-board__global-toggle').click();
+                cy.get('.video-analyzer-board__global-toggle').should('have.attr', 'aria-pressed', 'true');
+                cy.get('.video-analyzer-board__probability-toggle').click();
+                cy.get('.video-analyzer-board__probability-toggle').should('have.attr', 'aria-pressed', 'false');
+                cy.get('.video-analyzer-board__cursor-toggle').click();
+                cy.get('.video-analyzer-board__cursor-toggle').should('have.attr', 'aria-pressed', 'false');
+                cy.get('.video-analyzer-board__trace-toggle').click();
+                cy.get('.video-analyzer-board__trace-toggle').should('have.attr', 'aria-pressed', 'true');
+                cy.get('.video-analyzer-board__global-control .board-settings-control__handle').click();
+                cy.get('.board-layer-control__opacity:visible').invoke('val', 0.4).trigger('input');
+                cy.get('.board-layer-control__opacity:visible').trigger('keydown', { key: 'Escape' });
+                cy.then(() => {
+                    expect(config.value).to.eq(originalConfig);
+                    expect(config.value.globalVisible).to.eq(true);
+                    expect(config.value.probabilityVisible).to.eq(false);
+                    expect(config.value.traceVisible).to.eq(true);
+                    expect(config.value.cursorVisible).to.eq(false);
+                    expect(config.value.globalOpacity).to.eq(0.4);
+                    expect(wrapper.findComponent(CounterPanel).props('counters')).to.eq(counters);
+                    expect(wrapper.findComponent(BoardPanel).props('preparedEvents')).to.eq(events);
+                });
             });
-        });
-        cy.get('.video-analyzer-board__global-toggle').click().should('have.attr', 'aria-pressed', 'true');
-        cy.get('.video-analyzer-board__probability-toggle').click().should('have.attr', 'aria-pressed', 'false');
-        cy.get('.video-analyzer-board__cursor-toggle').click().should('have.attr', 'aria-pressed', 'false');
-        cy.get('.video-analyzer-board__trace-toggle').click().should('have.attr', 'aria-pressed', 'true');
-        cy.get('.video-analyzer-board__global-control .board-settings-control__handle').click();
-        cy.get('.board-layer-control__opacity:visible').invoke('val', 0.4).trigger('input');
-        cy.get('.board-layer-control__opacity:visible').trigger('keydown', { key: 'Escape' });
-        cy.then(() => {
-            expect(config.value).to.eq(originalConfig);
-            expect(config.value.globalVisible).to.eq(true);
-            expect(config.value.probabilityVisible).to.eq(false);
-            expect(config.value.traceVisible).to.eq(true);
-            expect(config.value.cursorVisible).to.eq(false);
-            expect(config.value.globalOpacity).to.eq(0.4);
-            expect(wrapper.findComponent(CounterPanel).props('counters')).to.eq(counters);
-            expect(wrapper.findComponent(BoardPanel).props('preparedEvents')).to.eq(events);
         });
     });
 
