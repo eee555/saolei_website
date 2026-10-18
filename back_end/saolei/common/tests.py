@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone as datetime_timezone
 import json
 import os
 from pathlib import Path
@@ -58,6 +58,7 @@ class APSchedulerRegistrationTests(TestCase):
                 'delete_old_job_executions',
                 'delete_overdue_captcha',
                 'delete_overdue_emailverifyrecord',
+                'refresh_tournament_score_reference',
             },
         )
 
@@ -72,6 +73,22 @@ class APSchedulerRegistrationTests(TestCase):
 
         self.assertFalse(DjangoJob.objects.filter(id='refresh_state_always').exists())
         self.assertTrue(DjangoJob.objects.filter(id='delete_newest_queue').exists())
+
+    def test_score_reference_job_runs_annually_in_utc_and_checks_on_startup(self):
+        from apscheduler.schedulers.background import BackgroundScheduler
+        from common.apscheduler import register_jobs, refresh_tournament_score_reference
+
+        scheduler = BackgroundScheduler()
+        now = datetime(2026, 12, 31, 23, 59, 59, tzinfo=datetime_timezone.utc)
+        with patch('common.apscheduler.django_timezone.now', return_value=now):
+            register_jobs(scheduler)
+        job = scheduler.get_job('refresh_tournament_score_reference')
+        self.assertEqual(job.func, refresh_tournament_score_reference)
+        self.assertEqual(job.next_run_time, now)
+        self.assertIsNone(job.misfire_grace_time)
+        self.assertTrue(job.coalesce)
+        self.assertEqual(job.max_instances, 1)
+        self.assertEqual(job.trigger.get_next_fire_time(now, now), datetime(2027, 1, 1, tzinfo=datetime_timezone.utc))
 
 
 class LogPollTests(TestCase):
