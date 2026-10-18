@@ -24,7 +24,7 @@ const PageState = defineComponent({
 
 function mountMenu(width: number, options: { layout?: 'top' | 'sidebar'; settings?: boolean } = {}) {
     cy.viewport(width, 720);
-    cy.intercept({ method: 'GET', pathname: '/api/userprofile/info/0' }, user).as('fetchUser');
+    cy.intercept({ method: 'GET', pathname: '/api/common/loginauto' }, { user, top_anchors: { 'std:et': { value: 30000, sample_count: 20 } } }).as('fetchUser');
     local.value.language = 'en';
     local.value.navigation_layout = options.layout ?? 'top';
     store.login(user);
@@ -75,6 +75,9 @@ describe('<Menu /> navigation layouts', () => {
 
     it('tracks the parent section of nested routes and returns home through the logo', () => {
         const router = mountMenu(1440);
+        cy.then(() => {
+            expect(store.topAnchors?.['std:et']?.value).to.equal(30000);
+        });
         cy.then(() => router.push('/ranking/pb'));
         cy.get('.site-menu--top [data-navigation-id=ranking]').should('have.class', 'is-active');
         cy.then(() => router.push('/video/123'));

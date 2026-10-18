@@ -18,12 +18,12 @@ describe('<TopRanking />', () => {
 
     it('sorts nine means and independently selects five video details', () => {
         const records = {
-            'std:bt': { mean: (1000 + 4 * 999999) / 5, videos: [{ value: 1000, video_id: 8001 }] },
-            'std:bb': { mean: 2, videos: [] },
-            'std:bs': { mean: 2, videos: [{ value: 10, video_id: 8201 }] },
-            'std:et': { mean: 3000, videos: Array.from({ length: 5 }, (_, index) => ({ value: (index + 1) * 1000, video_id: 8101 + index })) },
-            'nf:bt': { mean: 4000, videos: [] },
-            'nf:bs': { mean: 3, videos: [{ value: 15, video_id: 8301 }] },
+            'std:bt': { videos: [{ value: 1000, video_id: 8001 }] },
+            'std:bb': { videos: [{ value: 10, video_id: 8200 }] },
+            'std:bs': { videos: [{ value: 10, video_id: 8201 }] },
+            'std:et': { videos: Array.from({ length: 5 }, (_, index) => ({ value: (index + 1) * 1000, video_id: 8101 + index })) },
+            'nf:bt': { videos: Array.from({ length: 5 }, (_, index) => ({ value: 4000, video_id: 8401 + index })) },
+            'nf:bs': { videos: [{ value: 15, video_id: 8301 }] },
         };
         cy.intercept({ method: 'GET', pathname: '/api/speedranking/top/rank' }, { count: 21, players: [{ player_id: 42, records }] }).as('ranking');
         mountTopRanking();

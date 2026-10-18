@@ -77,15 +77,25 @@ python manage.py rebuild_pb_ranks --batch-size 100
 
 位置：`speedranking/management/commands/rebuild_top_ranks.py`
 
-从录像数据库按玩家分段构建 top 的十八个小榜及前二十名均值锚点。`--batch-size` 默认 100，必须为正数；每批输出累计用户数和最后玩家 id。
+从录像数据库按玩家分段构建 top 的十八个小榜、前二十名均值锚点及九个软实力/LSF 派生榜。`--batch-size` 默认 100，必须为正数；每批输出累计用户数和最后玩家 id。
 
 ```bash
 python manage.py rebuild_top_ranks --batch-size 100
 ```
 
-命令使用独立临时命名空间，构建明细与索引、计算全部锚点后，用一个 Redis 事务原子切换正式榜的二十个 key。构建失败保留旧榜，正常退出会清理临时 key；强制终止可能遗留临时数据。重建期间暂停录像和排行写入，包括上传、修改、删除、绑定/解绑、比赛公开及管理员修复；旧榜的只读服务可以继续。此命令不修改数据库，也不清理扫雷网或 PB 缓存。
+命令使用独立临时命名空间，构建明细、全部索引与锚点后，用一个 Redis 事务原子切换正式榜的三十个 key。构建失败保留旧榜，正常退出会清理临时 key；强制终止可能遗留临时数据。命令持单机独占锁：等待在途写操作完成，相关新 HTTP 写请求返回带原因的 503，后台业务等待后继续，旧榜只读服务继续。不需要停整个网站，但所有进程必须共享可写的 `TOP_RANKING_LOCK_PATH`（默认 `BASE_DIR/runtime/top-lock.sqlite3`）；不要删除活动锁文件。自定义写入脚本也必须遵守准入。此命令不修改数据库，也不清理扫雷网或 PB 缓存。
 
 首次部署和缓存丢失后手动执行，查询不自动回源。本地 `python -m dangerzone.init_local_test` 已自动调用此命令的重建服务，`--no-weekly` 不影响重建。单用户小榜修复使用 `POST /api/speedranking/top/admin/rebuild_record`。具体缓存与单位约定统一见 `back_end/saolei/speedranking/README.md`。
+
+### `rebuild_top_soft_ranks`
+
+位置：`speedranking/management/commands/rebuild_top_soft_ranks.py`
+
+仅从现有十八个原始 top zset 和实时锚点重建全部九个软实力/LSF 索引，发布相应锚点快照、版本和更新时间；不查录像数据库、不重新选取前五，也不修复原始榜。与后台刷新共用独占准入和临时榜发布逻辑，失败保留旧版并记录日志。首次部署或升级原始 score 编码应使用 `rebuild_top_ranks`，不能只运行此命令。
+
+```bash
+python manage.py rebuild_top_soft_ranks
+```
 
 ### `rebuild_tournament_cache`
 

@@ -49,7 +49,7 @@
                     <PlayerName :user-id="row.player_id" />
                 </td>
                 <td v-for="axis in topAxes" :key="`${axis.level}${axis.stat}`" class="table-col-number" :data-field="`${axis.level}${axis.stat}`" :data-selected="level === axis.level && stat === axis.stat">
-                    {{ formatTopValue(row.records[topField(nf, axis.level, axis.stat)]?.mean ?? missingTopValue(axis.stat), axis.level, axis.stat) }}
+                    {{ formatTopValue(topMean(row.records[topField(nf, axis.level, axis.stat)], axis.stat), axis.level, axis.stat) }}
                 </td>
                 <td v-for="(video, position) in row.videos" :key="position" class="table-col-number top-detail-cell" :class="{ 'top-detail-start': position === 0 }">
                     <VideoPreviewLink v-if="video" :id="video.video_id">
@@ -78,7 +78,7 @@ import BaseTextButton from '@/components/common/BaseTextButton.vue';
 import { BaseIconRefresh } from '@/components/common/icon';
 import PlayerName from '@/components/PlayerName.vue';
 import VideoPreviewLink from '@/components/VideoPreviewLink.vue';
-import { fetchTopRanking, formatTopValue, missingTopValue, topAxes, topField, topLevels, topStatNames } from '@/services/topRankingService';
+import { fetchTopRanking, formatTopValue, missingTopValue, topAxes, topField, topLevels, topMean, topStatNames } from '@/services/topRankingService';
 import type { TopRankingPlayer, TopStat } from '@/services/topRankingService';
 import type { MS_Level } from '@/utils/ms_const';
 

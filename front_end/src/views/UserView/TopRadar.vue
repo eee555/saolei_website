@@ -26,7 +26,7 @@ import { VueUiRadar } from 'vue-data-ui';
 import type { VueUiRadarConfig, VueUiRadarDataset } from 'vue-data-ui';
 import { useI18n } from 'vue-i18n';
 
-import { formatTopValue, missingTopValue, topAxes, topField, topRadius, topStatNames } from '@/services/topRankingService';
+import { formatTopValue, topAxes, topField, topMean, topRadius, topStatNames } from '@/services/topRankingService';
 import type { TopAnchors, TopRecords } from '@/services/topRankingService';
 import { local } from '@/store';
 
@@ -40,7 +40,7 @@ const anchorLabel = computed(() => t(props.nf ? 'local.nfAnchor' : 'local.ordina
 const rows = computed(() => topAxes.map(({ level, stat }) => {
     const field = topField(props.nf, level, stat);
     const anchor = props.anchors[field]?.value ?? 0;
-    const value = props.records[field]?.mean ?? missingTopValue(stat);
+    const value = topMean(props.records[field], stat);
     return { level, stat, name: `${t(`common.level.${level}`)} ${t(`common.prop.${topStatNames[stat]}`)}`, value, anchor, radius: topRadius(value, anchor, stat) };
 }));
 const dataset = computed<VueUiRadarDataset>(() => ({

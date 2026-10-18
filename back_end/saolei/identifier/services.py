@@ -6,11 +6,13 @@ from msuser.models import UserMS
 from msuser.services import update_video_count_limit_from_videos
 from speedranking.services import add_videos_to_speed_ranks, remove_videos_from_speed_ranks
 from utils.exceptions import ExceptionToResponse
+from utils.ranking_lock import ranking_access
 from videomanager.cache import newest_cache
 from videomanager.models import VideoModel
 from .models import Identifier
 
 
+@ranking_access(operation='identifier.bind')
 def bind_identifier(identifier: Identifier, userms: UserMS):
     """绑定标识，并批量吸收因此转为 OFFICIAL 的录像。"""
     if not identifier.safe:
@@ -46,6 +48,7 @@ def bind_identifier(identifier: Identifier, userms: UserMS):
     return len(video_ids)
 
 
+@ranking_access(operation='identifier.unbind')
 def unbind_identifier(identifier: Identifier, userms: UserMS | None = None):
     """解绑标识，并批量移除因此失去 OFFICIAL 状态的录像影响。"""
     if userms is None:

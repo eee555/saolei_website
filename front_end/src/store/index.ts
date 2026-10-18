@@ -4,6 +4,7 @@ import { defineStore } from 'pinia';
 import { pinia } from './create';
 
 import { fetchProfileSaoleiRecords, profileDataRevision } from '@/services/profileDataService';
+import type { TopAnchors } from '@/services/topRankingService';
 import { deepMutableCopy } from '@/utils';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { colorSchemeTemplates } from '@/utils/config';
@@ -22,6 +23,7 @@ interface UserState {
     expertTimeMs: number | null | undefined;
     qualificationStatus: 'idle' | 'loading' | 'ready' | 'error';
     qualificationRevision: number;
+    topAnchors: TopAnchors | null;
 }
 
 export const store = defineStore('user', {
@@ -37,6 +39,7 @@ export const store = defineStore('user', {
         expertTimeMs: undefined,
         qualificationStatus: 'idle',
         qualificationRevision: -1,
+        topAnchors: null,
     }),
     getters: {
         isSelf: (state) => state.user.id === state.player.id && state.user.id !== 0,

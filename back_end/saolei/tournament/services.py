@@ -7,6 +7,7 @@ from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from customranking.services import add_videos_to_custom_pluck_ranks
 from speedranking.services import add_videos_to_speed_ranks
 from tournament.cache import TournamentCache
+from utils.ranking_lock import ranking_access
 from videomanager.cache import add_videos_to_state_queues_bulk
 from videomanager.models import VideoModel
 from .models import (
@@ -227,6 +228,7 @@ def award_tournament_rank_scores(tournament: Tournament, *, batch_size=1000):
     return len(participants)
 
 
+@ranking_access(operation='tournament.reveal_videos')
 def reveal_videos_for_tournament(tournament: Tournament):
     """批量恢复已颁奖比赛中不再属于其他未颁奖且未取消比赛的录像。"""
     logger.info(f'比赛#{tournament.id} 录像公开开始，状态 {tournament.state}')

@@ -327,6 +327,7 @@ export default {
         },
         empty: '暂无纪录',
         loadFailed: '排行榜加载失败',
+        refreshBusy: '排行榜锚点正在刷新，暂时无法执行此操作。请稍候再试。',
     },
     server: {
         videoSummary: {

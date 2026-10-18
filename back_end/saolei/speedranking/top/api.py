@@ -1,3 +1,5 @@
+from typing import Literal
+
 from django_ratelimit.decorators import ratelimit
 from ninja import Form, Router, Schema
 from ninja.decorators import decorate_view
@@ -20,6 +22,19 @@ class TopRecordOut(Schema):
 class TopRankingOut(Schema):
     count: int
     players: list[TopRecordOut]
+
+
+@router.get('/soft/rank', response=TopRankingOut)
+@decorate_view(ratelimit(key='ip', rate='5/s'))
+def get_soft_ranking(request, ranking: Literal['lsf', 'std:b', 'std:i', 'std:e', 'std:sum', 'nf:b', 'nf:i', 'nf:e', 'nf:sum'] = 'lsf', start: int = 0, end: int = 20):
+    """
+    - ratelimit(key='ip', rate='5/s')
+
+    九项派生排名只提供顺序，返回完整 top5；展示使用首次访问时取得的锚点。
+    """
+    start = max(0, start)
+    end = min(max(start, end), start + 100)
+    return TopRankingCache().get_range(ranking, start, end, soft=True)
 
 
 @router.get('/rank', response=TopRankingOut)

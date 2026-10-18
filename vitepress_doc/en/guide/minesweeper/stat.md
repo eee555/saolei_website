@@ -165,40 +165,7 @@ For different `zini` algorithms, just change the corresponding `zini` prefix, fo
 __________
 # The LSF System
 
-## Leading results
-
-A player's better-ranked results over a period of time are the leading results. When the period is not specified, it defaults to the player's entire career. Leading results are of two kinds:
-- the n-th best result, suffixed with `n`, for example `time1` for the record and `bvs5` for the 5th best bvs. The n-th best result is also called a **marginal result**.
-- the average of the top n results, suffixed with `.n`, for example `stnb.10` for the average of the 10 best stnb values. Depending on context, `.n` can also mean the sum of the top n results.
-
-The LSF system only considers a player's three levels of `time`, `bvs` and `stnb`, nine parameters in total. The three levels are abbreviated `b`, `i` and `e`. The three parameters are abbreviated `t`, `b` and `s`. For example, `eb.5` is the average of the player's five best expert `bvs` values.
-
-## `NT20.5`
-`NT` is short for National Top. `NT20` means the country's top 20 players. `NT20.5` means the average of the country's top 20 players for `.5`. Because LSF computes nine `.5` values in total, and the top 20 of each item can be different players, there are nine `NT20.5` values.
-
-The role of `NT20.5` is to serve as an anchor representing high-level players and to rate all players quantitatively. The original anchor was `NT12.5`; `NT15.5` was used for a while, and `NT20.5` is used now. The gradual increase in the amount of data was driven by the growing number of high-level players and the growing computing power of hardware. The amount of data may keep increasing in the future. More data is better for eliminating the influence of a few extreme players.
-
-At present `NT20.5` is not updated instantly, but only when the overall deviation between the real-time value and the current value exceeds 1%.
-
-## Soft strength and `lsf`
-Soft strength rates a player's level by comparing the player's `.5` with `NT20.5`. A soft strength of 100 is equivalent to reaching the level of `NT20.5`. The soft strengths of the three parameters are `NT20.5/t.5*100`, `b.5/NT20.5*100` and `s.5/NT20.5*100`, where `NT20.5` takes the value of the corresponding item. The soft strength of each level is the weighted average of the soft strengths of the three parameters of that level. The weights of the three parameters at the three levels are shown below.
-
-||t|b|s|
-|-|-|-|-|
-|b|31%|44%|25%|
-|i|34%|34%|32%|
-|e|33%|33%|34%|
-
-These weights were decided through discussion by [Guo Jinyang](https://openms.top/#/player/48), Zhang Ye, Huang Xiaowei, Hu Yutao, Shen Guanfu, Xu Jianyu and others.
-
-The total soft strength of the three levels is the weighted sum of the soft strengths of the three levels: `soft strength=5*beginner+12*intermediate+16*expert`. The three-level weights were originally `4,9,12` and were gradually adjusted to the current values after the persistent "active" feedback of minesweeper players. NF soft strength is the soft strength computed from a player's `NF.5`, but the anchor used is still the unrestricted `NT20.5`.
-
-> Guo Jinyang recalls the process of adjusting the three-level weights: some people wanted 0 0 1, some wanted 1 1 1, and some wanted 10 40 99. When someone wanted to add, I added; when someone wanted to lower, I lowered.
-
-`lsf` is the LSF value and is obtained as the weighted average of soft strength and NF soft strength; the formula is `lsf=0.94*soft strength+0.06*NF soft strength`. The NF weight was decided through "peace negotiations" between the NF and FL player communities.
-
-## Tier assignment
-From a player's soft strength one can roughly estimate the corresponding expert time, and assign the player a title according to that expert time; this is called tier assignment.
+The top and LSF rankings use best-five results, anchors and relative strength to rate players. See [top and LSF Rankings](../top-lsf.md) for the current rules and tier system.
 
 ________
 # References

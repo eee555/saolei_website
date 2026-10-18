@@ -5,8 +5,9 @@ export const rankingRoutes: RouteRecordRaw[] = [
         path: 'speed',
         name: 'ranking_speed',
         component: () => import('./SpeedRanking.vue'),
-        redirect: { name: 'ranking_speed_top' },
+        redirect: { name: 'ranking_speed_lsf' },
         children: [
+            { path: 'lsf', name: 'ranking_speed_lsf', component: () => import('./LSFRanking.vue') },
             { path: 'top', name: 'ranking_speed_top', component: () => import('./TopRanking.vue') },
             { path: 'saolei', name: 'ranking_speed_saolei', component: () => import('./SaoleiRanking.vue') },
             { path: 'pb', name: 'ranking_speed_pb', component: () => import('./PBRanking.vue') },

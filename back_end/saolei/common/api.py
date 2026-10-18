@@ -11,6 +11,7 @@ from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django.tasks import TaskResultStatus
 from django.utils import timezone as django_timezone
+from django.views.decorators.cache import cache_control
 from django_ratelimit.decorators import ratelimit
 from django_tasks_db.models import DBTaskResult
 from ninja import Form, Router, Schema
@@ -22,10 +23,11 @@ import psutil
 from accountlink.services import restart_accountlink_task
 from config.common import TASK_CLEANUP_CONFIGS
 from monitor.cache import invalidate_task_summary
+from speedranking.top.cache import TopRankingCache
 from tournament.gsc.services import restart_gsc_task
 from userprofile.decorators import staff_required
 from videomanager.models import VideoModel
-from .schema import AnalyzerWebsiteInfoOut
+from .schema import AnalyzerWebsiteInfoOut, AutoLoginOut
 from .services import get_video_rankings
 
 router = Router()
@@ -43,6 +45,18 @@ TASK_RESTART_SERVICES = [
     restart_accountlink_task,
     restart_gsc_task,
 ]
+
+
+@router.get('/loginauto', response=AutoLoginOut)
+@decorate_view(ratelimit(key='ip', rate='5/s'), cache_control(no_store=True, private=True))
+def login_auto(request):
+    """
+    - ratelimit(key='ip', rate='5/s')
+    - cache_control(no_store=True, private=True)
+
+    首次访问时一次返回登录用户及完整实时 top 锚点，访客的 user 为 None。
+    """
+    return {'user': request.user if request.user.is_authenticated else None, 'top_anchors': TopRankingCache().get_anchors()}
 
 
 @router.get('/video/{video_id}/analyzer-info', response=AnalyzerWebsiteInfoOut)

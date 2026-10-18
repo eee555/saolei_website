@@ -6,7 +6,7 @@
 
 | tab | 路由组件 | 数据与展示 |
 | --- | --- | --- |
-| top | `UserTopView.vue` | `TopSummary.vue` 请求完整 top 纪录和锚点；`TopRadar.vue`、`TopRecordTable.vue` 只渲染 props |
+| top | `UserTopView.vue` | `TopSummary.vue` 请求完整 top 纪录、读取 Pinia 锚点；`TopRadar.vue`、`TopRecordTable.vue` 只渲染 props |
 | PB | `UserPBView.vue` | 一次获取用户全部 PB，`PBRecordGrid.vue` 按等级展示网格 |
 | 纪录 | `UserRecordView/App.vue` | 扫雷网及自定义 pluck 纪录 |
 | 账号关联 | `UserAccountLinkView.vue` | 外部账号关联 |
@@ -26,9 +26,9 @@ top 和 PB 的业务规则、缓存与接口统一见 [竞速排行榜 README](.
 ## top 展示
 
 - 普通/NF 各一块，每块上方雷达图、下方九项成绩表。两块用 CSS grid 自适应并列或上下排列；宽表在自身容器内横向滚动。
-- 两图共用一次用户完整纪录请求和一次锚点请求。各图只使用本榜主要锚点作为 VueUiRadar 原生 target，归一化为 100；Time 反比、Bvs/iqg 正比，Stnb 仅展示时乘等级系数。超过锚点沿用图表库默认尺度，空锚点简单取半径 0。
-- 不显示标题或 legend；NF 图中央通过 `#svg` 插槽显示半透明 NF。区域右上角的绝对定位刷新图标重新读取两份数据，不触发后端重建。
-- 成绩表按等级合并三行，列出均值和五条成绩。缺项显示缺省值但不生成录像链接；真实录像复用 `VideoPreviewLink`。锚点失败不阻断成绩表。
+- 两图共用一次用户完整纪录请求，锚点直接读取 Pinia 的 `store.topAnchors`，由首次访问的 `/api/common/loginauto` 完整加载，个人页不再请求锚点。各图只使用本榜主要锚点作为 VueUiRadar 原生 target，归一化为 100；Time 反比、Bvs 正比，Stnb 取 iqg 比值的 `1/1.7` 次方。Stnb 数值展示时乘等级系数。超过锚点沿用图表库默认尺度，空锚点简单取半径 0。
+- 不显示标题或 legend；NF 图中央通过 `#svg` 插槽显示半透明 NF。区域右上角的绝对定位刷新图标只重新读取用户纪录，不请求锚点、不触发后端重建。重载网页才更新锚点。
+- 成绩表按等级合并三行，从真实 top5 计算均值，列出均值和五条成绩；不依赖 API 返回 `mean`。缺项显示缺省值但不生成录像链接；真实录像复用 `VideoPreviewLink`。锚点失败不阻断成绩表。
 
 ## PB 展示
 
@@ -50,7 +50,7 @@ top 和 PB 的业务规则、缓存与接口统一见 [竞速排行榜 README](.
 ## 验证
 
 - `App.cy.ts`：顶级 tab、默认入口、按需加载及设置权限。
-- `TopSummary.cy.ts`：普通/NF 共享请求、表格明细、失活隔离及锚点失败重试。
+- `TopSummary.cy.ts`：普通/NF 共享纪录与 Pinia 锚点、表格明细、失活隔离及纪录失败重试。
 - `UserPBView.cy.ts`：指标/NF 切换、rank 配色、空态、重试及请求生命周期。
 - `useProfileVideos.test.ts`、`videoSelection.test.ts`：身份与修订号失效、过期响应、日期/BV 选择及共享筛选。
 - `UserVideoView.cy.ts` 与日历/BV 组件测试：选择联动、正式散点图、分页及公开操作；`cypress/e2e/profile.cy.ts` 保留真实后端流程验证。
