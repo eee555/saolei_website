@@ -57,9 +57,8 @@ import AnalyzerLayoutControl from './AnalyzerLayoutControl.vue';
 import BoardPanel from './BoardPanel.vue';
 import { defaultAnalyzerConfig } from './config';
 import type { AnalyzerConfig, AnalyzerLayout } from './config';
-import { prepareCounters, readCounterEvents } from './counter';
+import { readCounterEvents } from './counter';
 import CounterPanel from './CounterPanel.vue';
-import { prepareCustomEvents } from './customEvents';
 import { adjacentKeyframe } from './keyframes';
 import { readMouseTrace } from './mouseTrace';
 import type { ReplaySource } from './replayParser';
@@ -67,6 +66,7 @@ import { addTimelineTrack } from './timeline';
 import type { TimeWindow } from './timeline';
 import TimelinePanel from './TimelinePanel.vue';
 import { usePlayback } from './usePlayback';
+import { usePreparedAnalysis } from './usePreparedAnalysis';
 import { useReplayPosition } from './useReplayPosition';
 import { useReplaySource } from './useReplaySource';
 
@@ -108,8 +108,7 @@ watch(playback.loopMode, (mode) => {
 }, { flush: 'sync' });
 const traceEvents = computed(() => (video.value === null ? [] : readMouseTrace(video.value)));
 const counterEvents = computed(() => (video.value === null ? [] : readCounterEvents(video.value)));
-const preparedCounters = computed(() => prepareCounters(analyzerConfig.value.counter.rows, counterEvents.value, durationMs.value));
-const preparedEvents = computed(() => prepareCustomEvents(analyzerConfig.value.customEvents, counterEvents.value, durationMs.value));
+const { preparedCounters, preparedEvents } = usePreparedAnalysis(analyzerConfig, counterEvents, durationMs);
 const slotNames = computed(() => analyzerConfig.value.timeline.slotSettings.map((slot) => slot.name));
 const timeWindow = ref<TimeWindow>({ startMs: 0, endMs: 0 });
 watch(durationMs, (duration) => {
@@ -127,7 +126,7 @@ next: () => {
     stepKeyframe(1);
 } };
 const nativeCellSize = computed(() => video.value?.pix_size ?? null);
-const { selectedLayout, cellSizeMode, fixedCellSize, cellScale, globalVisible, probabilityVisible, globalOpacity, probabilityOpacity, traceVisible, traceOpacity, traceMaskOpacity, traceAppearance, cursorVisible, cursorShape, cursorSize } = toRefs<AnalyzerConfig>(analyzerConfig);
+const { selectedLayout, cellSizeMode, fixedCellSize, cellScale, globalVisible, probabilityVisible, globalOpacity, probabilityOpacity, traceVisible, traceOpacity, traceMaskOpacity, traceAppearance, cursorVisible, cursorShape, cursorSize } = toRefs<AnalyzerConfig>(analyzerConfig, { replaceRef: false });
 const traceTailSeconds = computed({
     get: () => (analyzerConfig.value.traceTailSeconds === 'infinite' ? Infinity : analyzerConfig.value.traceTailSeconds),
     set: (value: number) => {
