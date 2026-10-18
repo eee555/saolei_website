@@ -23,6 +23,7 @@ describe('<SpeedRanking /> child routes', () => {
             cy.get('[data-cy=ranking-improve]').focus();
             cy.get('[data-cy=ranking-improve-content]').should('be.visible').and('contain.text', text).and('contain.text', 'zero effective right clicks');
             cy.get('[data-cy=ranking-improve]').blur();
+            cy.shouldBeAbsentOrHidden('[data-cy=ranking-improve-content]');
         }
 
         function checkColorPropagation(name: string) {

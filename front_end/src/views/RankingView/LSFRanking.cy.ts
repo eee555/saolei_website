@@ -6,8 +6,11 @@ import { topAxes, topField } from '@/services/topRankingService';
 import type { TopAnchors, TopRecords } from '@/services/topRankingService';
 import { colorTheme, store } from '@/store';
 import { pinia } from '@/store/create';
+import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
 
 describe('<LSFRanking />', () => {
+    installHashHistoryCleanup();
+
     const originalGradeTheme = colorTheme.value.grade;
     afterEach(() => {
         colorTheme.value.grade = originalGradeTheme;
@@ -33,7 +36,7 @@ describe('<LSFRanking />', () => {
             count: 21,
             players: [{ player_id: 42, records }],
         }).as('ranking');
-        cy.mount(LSFRanking, { global: { plugins: [i18n, pinia], config: { globalProperties: { $axios } } } });
+        cy.mount(LSFRanking, { global: { plugins: [i18n, pinia, hashRouter()], config: { globalProperties: { $axios } } } });
         cy.wait('@ranking').its('request.query').should('include', { ranking: 'lsf', start: '0', end: '20' });
         cy.get('.lsf-ranking-table tbody [data-field=lsf-grade]').should('have.text', '--');
         cy.then(() => {

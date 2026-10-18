@@ -246,6 +246,7 @@ npx cypress run --component --spec "src/views/RankingView/PBRanking.cy.ts,src/vi
 - 普通变动先按已发布锚点局部更新受影响用户，再更新实时锚点；数值改变时通过 `soft_refresh_requested` 入队。后台任务发现其他同路径 READY 任务时跳过自身，否则按最新锚点用九次 ZUNIONSTORE 构建临时榜并统一发布，失败记录日志并保留旧版。只修复软实力可运行 `rebuild_top_soft_ranks`。
 - `utils.ranking_lock` 用专用本地 SQLite 文件上的 `filelock.ReadWriteLock` 协调同机进程。默认文件为 `BASE_DIR/runtime/top-lock.sqlite3`，可用 `TOP_RANKING_LOCK_PATH` 指定稳定位置；所有 Web、worker、调度器与命令进程必须共享此文件且可写，运行中禁止删除或替换。
 - HTTP 中间件在相关业务首次修改数据库之前获取非阻塞共享锁，范围覆盖视图事务及 on_commit 缓存回调；后台业务 service 和逐条录像刷新阻塞获取共享锁。全量 top/软实力重建持独占锁，等待在途写入，默认最多等待 30 秒（`TOP_RANKING_REFRESH_WAIT`），超时记录错误。查询不取锁。
+- TODO（Unix 写优先限制）：SQLite 可能让同进程的新连接复用已有 SHARED 锁，绕过其他进程的 PENDING 写锁；因此排队期间不保证拒绝所有新请求，持续并发可能延长独占等待甚至触发超时，但独占期间的互斥不受影响。当前暂不修改业务锁；保留原同进程读锁场景，在 Linux 下标记为 `expectedFailure`，Windows 仍正常执行。将来修复后移除标记。见 [SQLite 对同进程锁复用的讨论](https://sqlite.org/forum/forumpost/fb0662276c?t=c)。
 - 入口覆盖上传、修改、标识绑定/解绑、第三方录像导入、比赛公开、top 管理员修复、Django Admin 写入及测试管理入口；定时删除和受支持的管理命令也遵守准入。新增业务写入口及自定义 shell 脚本必须在最外层事务前使用 `ranking_access`，不能只依赖保存后信号。
 - 锁实例按业务操作创建，同一操作的嵌套 service 复用已有准入，不在预加载/fork 前创建活动连接。禁止从共享操作内升级为独占重建；异常退出通过上下文释放锁，进程终止由底层机制清理持有状态，不能通过删除锁文件解锁。多机部署需重新设计协调方案。
 - 被拒绝的 HTTP 请求返回 `503`、`Retry-After: 1` 和 `object=top/category=refreshing`，记录 WARNING；前端说明原因、提示等待重试并保留上传文件。后台操作等待、恢复有 INFO 日志，不套用 HTTP 拒绝策略。锁只隔离全量重建，不锁住整个 Redis/MySQL，也不提供跨库回滚或跨机器协调。

@@ -13,7 +13,7 @@
                         </div>
                     </template>
                 </Tippy>
-                <Tippy :max-width="400" trigger="mouseenter focus click">
+                <Tippy :max-width="400" trigger="mouseenter focusin click">
                     <BaseTextButton data-cy="ranking-improve" type="primary" underline="hover">
                         {{ t('local.howToImprove') }}
                     </BaseTextButton>
