@@ -17,11 +17,12 @@
                         {{ t(`common.prop.${label}`) }}{{ rankingName === 'saolei_nf' ? ' (NF)' : '' }}
                     </th>
                     <td v-for="level in levels" :key="level">
-                        <PreviewNumber
+                        <VideoPreviewLink
                             v-if="saoleiVideoId(records[rankingName], `${level}${stat}`)"
                             :id="saoleiVideoId(records[rankingName], `${level}${stat}`)"
-                            :text="formatScore(records[rankingName], `${level}${stat}`)"
-                        />
+                        >
+                            {{ formatScore(records[rankingName], `${level}${stat}`) }}
+                        </VideoPreviewLink>
                         <span v-else>{{ formatScore(records[rankingName], `${level}${stat}`) }}</span>
                     </td>
                 </tr>
@@ -36,8 +37,9 @@ import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import BaseTable from '@/components/common/BaseTable.vue';
-import PreviewNumber from '@/components/PreviewNumber.vue';
-import { fetchSaoleiRecords, formatSaoleiValue, SaoleiLevels, SaoleiStat, saoleiVideoId } from '@/services/saoleiRankingService';
+import VideoPreviewLink from '@/components/VideoPreviewLink.vue';
+import { fetchProfileSaoleiRecords, profileDataRevision } from '@/services/profileDataService';
+import { formatSaoleiValue, SaoleiLevels, SaoleiStat, saoleiVideoId } from '@/services/saoleiRankingService';
 import type { SaoleiField, SaoleiPlayerRecord, SaoleiRankingName } from '@/services/saoleiRankingService';
 
 const props = defineProps({
@@ -49,7 +51,7 @@ const rankingNames: SaoleiRankingName[] = ['saolei', 'saolei_nf'];
 const levels = [...SaoleiLevels, 'sum'] as const;
 const { t } = useI18n();
 
-watch(() => props.userId, async (userId, _, onCleanup) => {
+watch([() => props.userId, () => profileDataRevision(props.userId)], async ([userId], _, onCleanup) => {
     let active = true;
     onCleanup(() => {
         active = false;
@@ -59,7 +61,7 @@ watch(() => props.userId, async (userId, _, onCleanup) => {
     if (!userId) return;
     loading.value = true;
     try {
-        const data = await fetchSaoleiRecords(userId);
+        const data = await fetchProfileSaoleiRecords(userId);
         if (active) records.value = data;
     } catch {
         if (active) ElMessage.error({ message: '竞速纪录加载失败', offset: 68 });

@@ -1,5 +1,5 @@
 import './setup.js';
-import { ArrowLeft, ArrowRight, Cpu, Key, Lock, Medal, Message, QuestionFilled, Reading, Setting, Ticket, Trophy, User, VideoCameraFilled } from '@element-plus/icons-vue';
+import { ArrowLeft, ArrowRight, Key, Lock, Message, QuestionFilled, Ticket, User } from '@element-plus/icons-vue';
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
 import type { AxiosInstance } from 'axios';
@@ -9,7 +9,6 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import $axios from './http';
 import router from './router';
-import 'highlight.js/styles/stackoverflow-light.css';
 import { pinia } from './store/create';
 
 import i18n from '@/i18n';
@@ -31,8 +30,8 @@ if (import.meta.env.DEV) {
 
 app.config.globalProperties.$axios = $axios;
 
-// Transitional registry for bare tags, menu icon names and input prefix-icon strings.
-const globalIcons = { ArrowLeft, ArrowRight, Cpu, Key, Lock, Medal, Message, QuestionFilled, Reading, Setting, Ticket, Trophy, User, VideoCameraFilled };
+// Transitional registry for bare tags and input prefix-icon strings.
+const globalIcons = { ArrowLeft, ArrowRight, Key, Lock, Message, QuestionFilled, Ticket, User };
 for (const [key, component] of Object.entries(globalIcons)) {
     app.component(key, component);
 }

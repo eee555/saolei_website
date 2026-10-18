@@ -49,7 +49,7 @@ describe('<SaoleiRanking />', () => {
             expect(data[0]?.[0]).to.equal('1');
         });
         cy.get('.stat-header[aria-label="Sum Time"]').should('have.attr', 'aria-pressed', 'true');
-        cy.get('.saolei-ranking-table [data-cy=preview-number]').should('have.length', 2);
+        cy.get('.saolei-ranking-table .video-preview-link').should('have.length', 2);
         cy.get('.el-pagination .btn-next').click();
         cy.wait('@ranking').its('request.query').should('include', { start: '20', end: '40' });
         cy.get('.saolei-ranking-table tbody').extractTableData().should((data) => {

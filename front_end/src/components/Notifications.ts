@@ -3,7 +3,7 @@ import { isAxiosError } from 'axios';
 import { ElNotification } from 'element-plus';
 
 import i18n from '@/i18n';
-import { local } from '@/store';
+import { local } from '@/store/local';
 
 const { t } = i18n.global;
 

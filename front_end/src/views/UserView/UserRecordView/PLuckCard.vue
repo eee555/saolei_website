@@ -16,10 +16,9 @@
                     {{ customLevelLabel(level) }}
                 </th>
                 <td class="text">
-                    <PreviewNumber
-                        :id="recordByLevel.get(level.code)?.video_id"
-                        :text="recordByLevel.get(level.code)?.pluck.toFixed(6)"
-                    />
+                    <VideoPreviewLink :id="recordByLevel.get(level.code)?.video_id">
+                        {{ recordByLevel.get(level.code)?.pluck.toFixed(6) }}
+                    </VideoPreviewLink>
                 </td>
             </tr>
         </BaseTable>
@@ -33,7 +32,7 @@ import { useI18n } from 'vue-i18n';
 
 import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
 import BaseTable from '@/components/common/BaseTable.vue';
-import PreviewNumber from '@/components/PreviewNumber.vue';
+import VideoPreviewLink from '@/components/VideoPreviewLink.vue';
 import { DensityCustomLevelConfigs } from '@/utils/customlevel';
 import type { CustomLevel } from '@/utils/customlevel';
 

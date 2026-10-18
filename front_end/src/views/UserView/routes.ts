@@ -2,6 +2,11 @@ import type { RouteRecordRaw } from 'vue-router';
 
 export const userRoutes: RouteRecordRaw[] = [
     {
+        path: 'settings',
+        name: 'user-settings',
+        component: () => import('./UserSettingsView.vue'),
+    },
+    {
         path: 'accountlink',
         name: 'user-accountlink',
         component: () => import('./UserAccountLinkView.vue'),
@@ -13,8 +18,17 @@ export const userRoutes: RouteRecordRaw[] = [
     },
     {
         path: 'summary',
-        name: 'user-summary',
-        component: () => import('./UserSummaryView.vue'),
+        redirect: { name: 'user-top' },
+    },
+    {
+        path: 'top',
+        name: 'user-top',
+        component: () => import('./UserTopView.vue'),
+    },
+    {
+        path: 'pb',
+        name: 'user-pb',
+        component: () => import('./UserPBView.vue'),
     },
     {
         path: 'videos',

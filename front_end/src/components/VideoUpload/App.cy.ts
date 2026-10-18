@@ -293,6 +293,7 @@ describe('VideoUpload Component', () => {
     for (const autoUpload of [false, true]) {
         for (const statusCode of [402, 500]) {
             it(`shows the HTTP ${statusCode} failure status with auto-upload ${autoUpload}`, () => {
+                const expectedStatus = statusCode === 402 ? 'Video quota reached' : 'Upload fail';
                 local.value.autoUploadAfterParse = autoUpload;
                 local.value.autoRemoveAfterUpload = true;
                 cy.intercept('POST', '/common/uploadvideo/', { statusCode, body: '' }).as('uploadRequest');
@@ -311,11 +312,13 @@ describe('VideoUpload Component', () => {
                 }
 
                 cy.wait('@uploadRequest').its('response.statusCode').should('eq', statusCode);
-                cy.get('table:visible').getTable().should('deep.equal', [
-                    { ...fixtures.expAvf.tableData, Status: statusCode === 402 ? 'Video quota reached' : 'Upload fail' },
-                ]);
+                // getTable captures a snapshot; wait for Vue to render the final status before reading it.
+                cy.contains('table:visible tbody td', expectedStatus).should('be.visible');
                 cy.get('input[type=file]').should('not.be.disabled');
                 cy.contains('Uploading').should('not.exist');
+                cy.get('table:visible').getTable().should('deep.equal', [
+                    { ...fixtures.expAvf.tableData, Status: expectedStatus },
+                ]);
                 cy.get('@onUpload').should('not.have.been.called');
             });
         }

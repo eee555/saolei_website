@@ -1,0 +1,83 @@
+{
+  "user": {
+    "id": 1783173
+  },
+  "userStat": {
+    "score": 1130,
+    "exp": 21135733,
+    "expAll": 21163169,
+    "coinsAll": 3901062,
+    "gemsAll": 22780,
+    "arenaCoinsAll": 0,
+    "games": 111645,
+    "winsAll": 36565,
+    "winsNf": 16207,
+    "timeAll": 2808349910,
+    "arenaDuration": 65626047,
+    "bbbvAll": 5060476,
+    "seasons": 16,
+    "arenaPoints": 80,
+    "diff": 188752,
+    "lastSeason": 24269,
+    "end1": 85818000,
+    "end2": 83809000,
+    "end3": 72512000,
+    "mastery1": 99,
+    "mastery2": 84,
+    "mastery3": 45,
+    "ws1": 92,
+    "ws2": 21,
+    "ws3": 7,
+    "wins1": 12361,
+    "wins2": 4958,
+    "wins3": 2553,
+    "wins11": 245,
+    "wins12": 66,
+    "wins13": 548
+  },
+  "timeResults": {
+    "1": {
+      "duration": 1213,
+      "eff100": 10000
+    },
+    "2": {
+      "duration": 9661,
+      "eff100": 8780
+    },
+    "3": {
+      "duration": 35765,
+      "eff100": 8224
+    },
+    "11": {
+      "duration": 1282,
+      "eff100": 10000
+    },
+    "12": {
+      "duration": 16720,
+      "eff100": 7639
+    },
+    "13": {
+      "duration": 48877,
+      "eff100": 8963
+    },
+    "14": {
+      "duration": 59367,
+      "eff100": 8310
+    }
+  },
+  "effResults": {
+    "1": {
+      "duration": 20820,
+      "eff100": 18333
+    },
+    "2": {
+      "duration": 55371,
+      "eff100": 15614
+    },
+    "3": {
+      "duration": 199383,
+      "eff100": 14027
+    }
+  },
+  "noUserStatExp": 21135733
+}

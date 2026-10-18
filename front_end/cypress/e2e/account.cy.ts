@@ -1,16 +1,14 @@
 // 注册、登录、找回密码
-import 'cypress-if';
-
 function expectNotLoggedIn() {
-    cy.contains('登录').should('be.visible');
-    cy.contains('注册').should('be.visible');
-    cy.contains(/^退出$/).if().should('not.be.visible');
+    cy.get('[data-cy=app-header] [data-navigation-id=login]').should('be.visible');
+    cy.get('[data-cy=app-header] [data-navigation-id=register]').should('be.visible');
+    cy.get('[data-cy=app-header] [data-navigation-id=logout]').should('not.exist');
 }
 
 function expectLoggedIn() {
-    cy.contains('退出').should('be.visible');
-    cy.contains('登录').if().should('not.be.visible');
-    cy.contains('注册').if().should('not.be.visible');
+    cy.get('[data-cy=app-header] [data-navigation-id=logout]').should('be.visible');
+    cy.get('[data-cy=app-header] [data-navigation-id=login]').should('not.exist');
+    cy.get('[data-cy=app-header] [data-navigation-id=register]').should('not.exist');
 }
 
 describe('User Authentication', () => {
@@ -30,13 +28,13 @@ describe('User Authentication', () => {
         cy.contains('注册').click();
         cy.contains('用户注册').should('be.visible');
         cy.contains('用户注册').next().click();
-        cy.contains('用户注册').should('not.be.visible');
+        cy.shouldBeAbsentOrHidden('.el-dialog');
 
         // 打开并关闭登录界面
         cy.contains('登录').click();
         cy.contains('用户登录').should('be.visible');
         cy.contains('用户登录').next().click();
-        cy.contains('用户登录').should('not.be.visible');
+        cy.shouldBeAbsentOrHidden('.el-dialog');
     });
 
     it('Register', () => {
@@ -59,12 +57,13 @@ describe('User Authentication', () => {
         // 完成注册
         cy.contains('用户注册').parent().parent().find('button').contains('注册').click();
         cy.contains('注册成功');
-        cy.contains('用户注册').should('not.be.visible');
+        cy.shouldBeAbsentOrHidden('.el-dialog');
 
         // 退出登录
         expectLoggedIn();
         cy.closeElNotifications();
         cy.contains(/^退出$/).click();
+        cy.get('.el-message-box__btns').contains('button', /^确认$/).click();
         expectNotLoggedIn();
     });
 
@@ -83,7 +82,7 @@ describe('User Authentication', () => {
             cy.wrap(dialog).find('button').contains('登录').click();
         });
 
-        cy.get('.el-dialog').should('not.be.visible');
+        cy.shouldBeAbsentOrHidden('.el-dialog');
         expectLoggedIn();
 
         // 刷新页面
@@ -92,6 +91,7 @@ describe('User Authentication', () => {
 
         // 退出登录
         cy.contains('退出').click();
+        cy.get('.el-message-box__btns').contains('button', /^确认$/).click();
         expectNotLoggedIn();
 
         cy.reload();
@@ -145,7 +145,7 @@ describe('User Authentication', () => {
         cy.contains('修改密码成功');
         cy.closeElNotifications();
 
-        cy.get('.el-dialog').should('not.be.visible');
+        cy.shouldBeAbsentOrHidden('.el-dialog');
         expectLoggedIn();
     });
 });

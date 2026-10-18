@@ -1,35 +1,35 @@
 <template>
     <div>
-        录像ID
+        {{ t('common.prop.videoId') }}
         <ElInputNumber v-model="videoid" :controls="false" :min="0" />
         <BaseButton @click="getVideo">
-            查询
+            {{ t('common.button.query') }}
         </BaseButton>
         <BaseButton @click="previewVideo">
-            播放
+            {{ t('common.button.play') }}
         </BaseButton>
         <BaseButton @click="updateVideo(videoid)">
-            更新
+            {{ t('common.button.update') }}
         </BaseButton>
         <BaseButton @click="removeNewest(videoid)">
-            从最新录像中移除
+            {{ t('local.removeNewest') }}
         </BaseButton>
     </div>
     <div>
-        域<ElSelect v-model="videofield">
-            <ElOption v-for="field in videofieldlist" :key="field" :value="field" />
+        {{ t('local.field') }}<ElSelect v-model="videofield">
+            <ElOption v-for="field in videofieldlist" :key="field" :label="t(`common.prop.${field}`)" :value="field" />
         </ElSelect>
     </div>
     <div>
-        值<ElInput v-model="videovalue" />
+        {{ t('local.value') }}<ElInput v-model="videovalue" />
     </div>
     <div>
         <BaseButton @click="setVideo(videoid, videofield, videovalue)">
-            修改
+            {{ t('common.button.save') }}
         </BaseButton>
     </div>
-    <ElDescriptions title="VideoModel">
-        <ElDescriptionsItem v-for="(value, field) in videomodel" :key="field" :label="field">
+    <ElDescriptions :title="t('local.videoModel')">
+        <ElDescriptionsItem v-for="(value, field) in videomodel" :key="field" :label="videoFieldLabel(field)">
             {{ value }}
         </ElDescriptionsItem>
     </ElDescriptions>
@@ -39,6 +39,7 @@
 import type { AxiosResponse } from 'axios';
 import { ElDescriptions, ElDescriptionsItem, ElInput, ElInputNumber, ElOption, ElSelect } from 'element-plus';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 import BaseButton from '@/components/common/BaseButton.vue';
 import { httpErrorNotification, successNotification } from '@/components/Notifications';
@@ -48,6 +49,7 @@ import type { MS_Software } from '@/utils/ms_const';
 import { MS_Softwares } from '@/utils/ms_const';
 
 const { proxy } = useCurrentInstance();
+const globalI18n = useI18n({ useScope: 'global' });
 
 const videoid = ref(0);
 const videofield = ref('');
@@ -85,4 +87,26 @@ function previewVideo() {
     const { software } = videomodel.value;
     void preview(videoid.value, softwareSet.has(software) ? software as MS_Software : undefined);
 }
+
+function videoFieldLabel(field: string) {
+    const key = `common.prop.${field}`;
+    return globalI18n.te(key, locale.value) || globalI18n.te(key, 'en') || globalI18n.te(key, 'dev') ? t(key) : field;
+}
+
+const i18nMessages = {
+    'zh-cn': { local: {
+        removeNewest: '从最新录像中移除',
+        field: '字段',
+        value: '值',
+        videoModel: '录像信息（VideoModel）',
+    } },
+    en: { local: {
+        removeNewest: 'Remove from latest videos',
+        field: 'Field',
+        value: 'Value',
+        videoModel: 'Video information (VideoModel)',
+    } },
+};
+
+const { t, locale } = useI18n({ messages: i18nMessages });
 </script>

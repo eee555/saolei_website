@@ -2,7 +2,7 @@
     <div :class="{ 'horizontal-profile': direction === 'horizontal', 'vertical-profile': direction === 'vertical' }">
         <div class="profile">
             <div class="avatar">
-                <Avatar v-model:user="store.player" :is-self="user.id === store.user.id" :exp-time-ms="store.expTimeMs" />
+                <Avatar v-model:user="store.player" :is-self="user.id === store.user.id" :exp-time-ms="store.expTimeMs" :qualification-status="store.qualificationStatus" />
             </div>
             <div>
                 <span class="username">
@@ -19,25 +19,23 @@
                 {{ formatName(user.firstname, user.lastname, local.nameFormat) }}
             </div>
         </div>
-        <BaseButton v-if="user.id === store.user.id" class="edit-button" @click="isEditing = true">
+        <BaseButton v-if="store.isSelf" class="edit-button" @click="router.push({ name: 'user-settings', params: { id: user.id } })">
             {{ t('local.editButton') }}
         </BaseButton>
+        <ProfileQualification v-if="store.isSelf" />
         <div class="signature">
             {{ user.signature }}
         </div>
     </div>
-    <ElDialog v-model="isEditing">
-        <EditProfile v-model:user="store.user" v-model:is-editing="isEditing" :exp-time-ms="store.expTimeMs" />
-    </ElDialog>
 </template>
 
 <script setup lang="ts">
-import { ElDialog } from 'element-plus';
-import { defineAsyncComponent, ref } from 'vue';
 import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
 
 import Avatar from './Avatar.vue';
+import ProfileQualification from './ProfileQualification.vue';
 
 import BaseButton from '@/components/common/BaseButton.vue';
 import { local, store } from '@/store';
@@ -55,9 +53,7 @@ defineProps({
     },
 });
 
-const EditProfile = defineAsyncComponent(() => import('./EditProfile.vue'));
-
-const isEditing = ref(false);
+const router = useRouter();
 
 const i18nMessages = {
     'zh-cn': { local: {

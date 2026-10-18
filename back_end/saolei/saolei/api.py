@@ -1,8 +1,11 @@
 from ninja import NinjaAPI, Redoc
 
 from accountlink.api import router as accountlink_router
+from accountlink.msgames.api import router as accountlink_msgames_router
 from common.api import router as common_router
 from customranking.api import router as customranking_router
+from identifier.api import router as identifier_router
+from monitor.api import router as monitor_router
 from msuser.api import router as msuser_router
 from speedranking.api import router as speedranking_router
 from tournament.api import router as tournament_router
@@ -15,10 +18,13 @@ from videomanager.api import router as videomanager_router
 api = NinjaAPI(docs=Redoc())
 
 api.add_router('/common/', common_router)
+api.add_router('/monitor/', monitor_router)
 api.add_router('/userprofile/', userprofile_router)
 api.add_router('/accountlink/', accountlink_router)
+api.add_router('/accountlink/msgames/', accountlink_msgames_router)
 api.add_router('/video/', videomanager_router)
 api.add_router('/customranking/', customranking_router)
+api.add_router('/identifier/', identifier_router)
 api.add_router('/msuser/', msuser_router)
 api.add_router('/speedranking/', speedranking_router)
 api.add_router('/tournament/', tournament_router)

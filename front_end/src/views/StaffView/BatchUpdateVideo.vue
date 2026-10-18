@@ -1,22 +1,23 @@
 <template>
-    录像开始ID<ElInputNumber v-model="startid" />&nbsp;
-    录像结束ID<ElInputNumber v-model="endid" />&nbsp;
-    批处理数量<ElInputNumber v-model="batchsize" />&nbsp;
+    {{ t('local.startId') }}<ElInputNumber v-model="startid" />&nbsp;
+    {{ t('local.endId') }}<ElInputNumber v-model="endid" />&nbsp;
+    {{ t('staff.batch.size') }}<ElInputNumber v-model="batchsize" />&nbsp;
     <BaseButton :disabled="working" @click="startBatchUpdate">
-        开始！
+        {{ t('common.button.start') }}
     </BaseButton>
     <BaseButton :disabled="!working" @click="stopBatchUpdate">
-        停止！
+        {{ t('common.button.stop') }}
     </BaseButton><br>
-    客户端会将需要处理的ID段按照批处理数量发送到服务器进行批处理。批处理数量越大，服务器处理效率越高，但是如果批处理数量过大，会导致连接超时。
+    {{ t('staff.batch.help') }}
     <span v-for="(log, index) in logList" :key="index" :style="{ display: 'block' }">
-        {{ log }}
+        {{ t(log.key, log.params) }}
     </span>
 </template>
 
 <script setup lang="ts">
 import { ElInputNumber } from 'element-plus';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 import '@/styles/text.css';
 import BaseButton from '@/components/common/BaseButton.vue';
@@ -29,7 +30,7 @@ const endid = ref(1000);
 const batchsize = ref(100);
 
 const working = ref(false);
-const logList = ref<string[]>([]);
+const logList = ref<{ key: string; params: Record<string, string | number> }[]>([]);
 
 async function startBatchUpdate() {
     working.value = true;
@@ -37,17 +38,17 @@ async function startBatchUpdate() {
         if (!working.value) break;
         const start = i;
         const end = Math.min(i + batchsize.value - 1, endid.value);
-        logList.value.push(`${new Date().toISOString()} 正在处理${start}至${end}`);
+        logList.value.push({ key: 'staff.batch.processing', params: { time: new Date().toISOString(), start, end } });
         await proxy.$axios.post('video/update/batch/', { startid: start, endid: end }).then(
             function ({ data }: { data: { successCount: number; errorList: number[] } }) {
-                logList.value.push(`${start}至${end}已处理完成，成功${data.successCount}个，失败${data.errorList.length}个`);
+                logList.value.push({ key: 'staff.batch.completed', params: { start, end, success: data.successCount, failed: data.errorList.length } });
                 if (data.errorList.length > 0) {
-                    logList.value.push(`失败的录像为：${data.errorList.join('、')}`);
+                    logList.value.push({ key: 'local.failedIds', params: { ids: data.errorList.join(', ') } });
                 }
             },
         ).catch(function (error: unknown) {
             const errorMessage = error instanceof Error ? error.message : String(error);
-            logList.value.push(`${start}至${end}未处理完成，服务器返回错误：${errorMessage}`);
+            logList.value.push({ key: 'staff.batch.error', params: { start, end, error: errorMessage } });
         });
     }
     working.value = false;
@@ -56,4 +57,19 @@ async function startBatchUpdate() {
 function stopBatchUpdate() {
     working.value = false;
 }
+
+const i18nMessages = {
+    'zh-cn': { local: {
+        startId: '录像开始 ID',
+        endId: '录像结束 ID',
+        failedIds: '失败的录像为：{ids}',
+    } },
+    en: { local: {
+        startId: 'Starting video ID',
+        endId: 'Ending video ID',
+        failedIds: 'Failed video IDs: {ids}',
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
 </script>

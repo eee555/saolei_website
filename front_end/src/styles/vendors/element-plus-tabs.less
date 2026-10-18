@@ -1,0 +1,54 @@
+/* Keep each override inside the immediate horizontal header, including nested Tabs. */
+.el-tabs:is(.el-tabs--top, .el-tabs--bottom) > .el-tabs__header {
+    .el-tabs__nav-wrap {
+        padding: 0;
+        overflow: visible;
+    }
+
+    .el-tabs__nav-prev,
+    .el-tabs__nav-next,
+    .el-tabs__active-bar {
+        display: none;
+    }
+
+    .el-tabs__nav-scroll {
+        overflow: visible;
+    }
+
+    .el-tabs__nav {
+        box-sizing: border-box;
+        display: flex;
+        flex-wrap: wrap;
+        float: none;
+        width: 100%;
+        white-space: normal;
+        /* ElTabs writes a single-row scroll offset as an inline transform. */
+        transform: none !important;
+
+        > .el-tabs__item {
+            box-sizing: border-box;
+            flex-basis: auto;
+            flex-shrink: 0;
+            min-width: 0;
+            max-width: 100%;
+            height: auto;
+            min-height: 40px;
+            margin: 0;
+            padding: 0 12px;
+            white-space: normal;
+            overflow-wrap: anywhere;
+
+            &.is-active {
+                /* A local marker works on any row and preserves the focus box-shadow. */
+                background-image: linear-gradient(var(--ui-color-primary), var(--ui-color-primary));
+                background-repeat: no-repeat;
+                background-size: 100% 2px;
+                background-position: left bottom;
+            }
+        }
+    }
+}
+
+.el-tabs.el-tabs--bottom > .el-tabs__header .el-tabs__nav > .el-tabs__item.is-active {
+    background-position: left top;
+}

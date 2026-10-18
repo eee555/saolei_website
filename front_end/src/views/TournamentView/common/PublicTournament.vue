@@ -80,6 +80,7 @@ import { BaseIconRefresh } from '@/components/common/icon';
 import DataExporter from '@/components/widgets/DataExporter.vue';
 import { fetchTournamentVideos } from '@/services/tournamentService';
 import { globalNow } from '@/utils/datetime';
+import { getDocsUrl } from '@/utils/docs';
 import { TournamentState, TournamentSubclass } from '@/utils/ms_const';
 import type { Tournament, TournamentParticipant } from '@/utils/tournaments';
 import type { VideoAbstract, VideoAbstractData } from '@/utils/videoabstract';
@@ -155,17 +156,8 @@ const i18nMessages = {
     } },
 };
 
-const { t } = useI18n({ messages: i18nMessages });
-const uploadGuideUrl = computed(() => {
-    const base = typeof import.meta.env.VITE_DOCS_URL === 'string' && import.meta.env.VITE_DOCS_URL.length > 0
-        ? import.meta.env.VITE_DOCS_URL
-        : import.meta.env.DEV ? 'http://localhost:5173/docs/' : '/docs/';
-    const normalizedBase = base.endsWith('/') ? base : `${base}/`;
-    const languages = navigator.languages?.length ? navigator.languages : [navigator.language];
-    const preferredLanguage = languages[0]?.toLowerCase() ?? '';
-    const path = preferredLanguage.startsWith('zh') ? 'guide/tournament' : 'en/guide/tournament';
-    return `${normalizedBase}${path}#auto-upload`;
-});
+const { t, locale } = useI18n({ messages: i18nMessages });
+const uploadGuideUrl = computed(() => getDocsUrl('guide/tournament#auto-upload', locale.value));
 </script>
 
 <style scoped>

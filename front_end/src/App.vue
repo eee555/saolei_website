@@ -1,16 +1,11 @@
 <template>
-    <div class="app-layout">
-        <header class="app-header" data-cy="app-header">
-            <Menu />
-        </header>
-
+    <Menu>
         <main class="common-layout">
             <VideoPlayer />
-            <VideoListDialog />
             <router-view />
             <Footer />
         </main>
-    </div>
+    </Menu>
 
     <ElDialog
         v-if="false" v-model="notice_visible" draggable :lock-scroll="false" title="站长通知"
@@ -35,7 +30,6 @@ import { ElDialog } from 'element-plus';
 import { onMounted, ref, watch } from 'vue';
 
 import BaseButtonConfirm from './components/common/BaseButtonConfirm.vue';
-import VideoListDialog from './components/dialogs/VideoListDialog.vue';
 import Footer from './components/Footer.vue';
 import VideoPlayer from './components/VideoPlayer/App.vue';
 import { local } from './store';
@@ -102,20 +96,8 @@ body {
 </style>
 
 <style lang="less" scoped>
-.app-layout {
-    display: flex;
-    flex-direction: column;
-    height: 100svh;
-    min-width: 0;
-}
-
-.app-header {
-    flex-shrink: 0;
-}
-
 .common-layout {
     box-sizing: border-box;
-    flex: 1;
     min-height: 0;
     min-width: 0;
     overflow: auto;

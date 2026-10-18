@@ -50,7 +50,7 @@ describe('User Videos', () => {
         createVideo(31000);
     });
 
-    it('Reloads videos created outside the current page when revisiting the same own user page', () => {
+    it('Reuses cached own videos across navigation and loads external changes on explicit refresh', () => {
         let videoListRequestCount = 0;
         cy.intercept({ method: 'GET', pathname: '/api/userprofile/videolist' }, (request) => {
             videoListRequestCount += 1;
@@ -69,10 +69,14 @@ describe('User Videos', () => {
             expect(tableData.length).to.equal(1);
         });
 
-        // Simulate a video created outside this frontend page. UI uploads update user.videos directly.
+        // External changes do not invalidate this page's cache; UI uploads invalidate profile data.
         createVideo(22000);
 
-        navigateToUserTab('summary');
+        navigateToUserTab('pb');
+        cy.get('[data-cy=pb-grid-e]').should('be.visible');
+        cy.wrap(null).should(() => {
+            expect(videoListRequestCount).to.equal(1);
+        });
         navigateToUserTab('videos');
         cy.wrap(null).should(() => {
             expect(videoListRequestCount).to.equal(1);
@@ -84,6 +88,15 @@ describe('User Videos', () => {
 
         navigateAwayFromUserPage();
         navigateToUserTab('videos');
+        cy.get('table:visible').should('not.contain', '22.000');
+        cy.get('table:visible').getTable().should((tableData) => {
+            expect(tableData.length).to.equal(1);
+        });
+        cy.wrap(null).should(() => {
+            expect(videoListRequestCount).to.equal(1);
+        });
+
+        cy.get('[data-cy=refresh-videos]').should('be.enabled').click();
         waitForVideoList(2);
         cy.wrap(null).should(() => {
             expect(videoListRequestCount).to.equal(2);

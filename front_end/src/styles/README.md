@@ -18,6 +18,16 @@ CSS 与 Less 的选型由实施代理自行决定，根据实际重复程度和�
 
 `button.css` 保持原有导入路径，按顺序汇总 `buttons/base.css`、`buttons/variants.css`、`buttons/states.css`，分别负责基础布局、类型配色、尺寸与交互状态。
 
+`vendors/element-plus-tabs.less` 由 setup.ts 加载，统一将顶部 / 底部 ElTabs 标签按容器宽度换行，隐藏滚动箭头并覆盖库写入的横向位移。选中标签使用自身的主色底线，底部标签改为顶线，保留库的焦点样式、切换事件及面板生命周期；单个过长标签可在自身宽度内折行。规则限定于直接所属的水平标签头，不改变左侧 / 右侧纵向 Tabs。公共 Analyzer 与离线页面当前不使用 ElTabs，不受此规则影响。
+
+`navigation/layout.css`、`navigation/items.css` 与 `vendors/element-plus-navigation.css` 由网站 Menu.vue 加载，组件测试使用相同入口，不影响公共 Analyzer 或离线包。前两者负责外壳、Logo、原生链接及焦点状态，组件库变量和菜单浮层适配集中在 vendors。
+
+导航外壳、侧栏、菜单浮层及抽屉共用 36px 行高和 14px 普通文字字号；个人主页文字、导航图标通过独立变量保持 18px。Logo 图标高 36px，文字图片高 28px、四周 margin 为 4px；直接使用裁剪后的 logo2.png 与像素重着色的 logo2-dark.png，不使用 SVG 包装或滤镜。
+
+`local.navigation_layout` 持久化 top / sidebar，默认 top。顶栏为单行，主导航靠左、账号工具靠右，共用一个 ElMenu 和溢出菜单；NavigationItem.primary 标记主导航，CSS 伪元素提供两组之间的弹性空间，不参与库的菜单项宽度测量。常驻侧栏用 max-content 按内容确定宽度，header / toolbar 通过 subgrid 对齐；外壳宽度低于 760px 时改用抽屉。
+
+主导航及抽屉首页仅显示文字。管理、设置、帮助、语言和主题在顶部使用纯图标，溢出后恢复文字；管理用 pi-shield，帮助用 pi-question-circle。语言和主题顶部入口隐藏下拉箭头，语言选项只显示文字，通过主色及 aria-pressed 标示选中状态。功能与验收状态以[UI 重构计划](../../UI_REFACTOR_PLAN.md)及 Menu.vue 为准。
+
 `checkbox.css` 由 `setup.ts` 全局加载，应用与 Cypress 共用；采用原生 checkbox 与关联 label，无 BaseCheckbox 组件。普通模板为 `<label class="checkbox"><input v-model="checked" class="checkbox-input" type="checkbox"><span>选项文本</span></label>`，业务 class 可加在 label 上。`.checkbox` 提供 24px 最小高度、6px 间距与主题文字色，`.checkbox-input` 提供 14px 直角方框、选中标记、hover、focus-visible 与 disabled 状态。选中标记为内嵌 SVG，颜色为白色，其他配色均引用项目变量；强制颜色模式恢复原生外观。数组多选使用 v-model 和绑定的 value，`.checkbox-group` 负责紧凑换行布局；状态来自 input，CSS 不代替模型或 change 逻辑。原生绑定与外观设置分别参考 [Vue 表单绑定](https://vuejs.org/guide/essentials/forms.html#checkbox)和 [CSS appearance](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/appearance)。
 
 半选外观使用 `:indeterminate` 和横线 SVG，与 checked 共用主题和禁用配色。调用方通过 `:indeterminate.prop` 绑定 DOM property，而非同名 HTML attribute，参见 [Vue v-bind](https://vuejs.org/api/built-in-directives.html#v-bind)与 [MDN 半选状态](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/checkbox#indeterminate_state_checkboxes)。上传表头保留“未选时全选全部过滤结果，半选或全选时清空”的规则；激活后在 nextTick 重新同步 checked / indeterminate，覆盖半选清空或空结果点击时派生 checked 不变的情况。表格中无文字的 checkbox 仍有关联 label 与本地化 aria-label。`cy.shouldHaveState()` 直接断言这两个 DOM 属性，以 null 表示半选。

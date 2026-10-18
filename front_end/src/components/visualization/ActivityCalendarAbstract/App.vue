@@ -23,11 +23,16 @@
                         }"
                     >
                         <!-- 为每个日期生成一个单元格 -->
-                        <div :style="{gridRowStart: `${startDate.getDay()}`}" />
-                        <div
+                        <div v-if="startDate.getDay() > 0" :style="{gridRowStart: `${startDate.getDay()}`}" />
+                        <component
+                            :is="selectable ? 'button' : 'div'"
                             v-for="cell of dateCells"
                             :key="cell.dateKey"
                             class="calendar-cell text-regular"
+                            :class="{ 'is-selectable': selectable, 'is-selected': selectable && selectedDateKey === cell.dateKey }"
+                            :type="selectable ? 'button' : undefined"
+                            :aria-label="selectable ? `${cell.dateKey}: ${cell.videos.length}` : undefined"
+                            :aria-pressed="selectable ? selectedDateKey === cell.dateKey : undefined"
                             :style="{
                                 width: `${options.cellSize}px`,
                                 height: `${options.cellSize}px`,
@@ -35,6 +40,8 @@
                             }"
                             :data-cy="`cell-${cell.dateKey}`"
                             @mouseover="tooltipVideos = cell.videos; tooltipDate = cell.date"
+                            @focus="tooltipVideos = cell.videos; tooltipDate = cell.date"
+                            @click="selectable && emit('selectDate', cell.dateKey)"
                         >
                             <MiniPie
                                 v-if="cell.pieData.length > 0"
@@ -46,7 +53,7 @@
                             <span v-if="options.showDate" class="date-label">
                                 {{ cell.date.getDate() }}
                             </span>
-                        </div>
+                        </component>
                         <template #content>
                             <Tooltip :date="tooltipDate" :videos="tooltipVideos" />
                         </template>
@@ -88,6 +95,8 @@ interface Options {
 }
 
 const props = defineProps({
+    selectable: { type: Boolean, default: false },
+    selectedDateKey: { type: String, default: undefined },
     videoList: {
         type: Array<VideoAbstract>,
         default: () => [],
@@ -104,6 +113,7 @@ const props = defineProps({
         },
     },
 });
+const emit = defineEmits<{ selectDate: [dateKey: string] }>();
 
 const tooltipVideos = ref([] as VideoAbstract[]);
 const tooltipDate = ref(new Date());
@@ -118,7 +128,7 @@ const startDate = computed(() => {
     min.setFullYear(min.getFullYear() - 1);
     min.setDate(min.getDate() + 1);
     for (const key of keys) {
-        const keydate = new Date(key);
+        const keydate = new Date(`${key}T00:00:00`);
         if (keydate < min) min = keydate;
     }
     return min;
@@ -157,6 +167,24 @@ function getPieData(videos: VideoAbstract[]): PieDatum[] {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.calendar-cell.is-selectable {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
+}
+
+.calendar-cell.is-selected {
+    outline: 2px solid var(--ui-color-primary);
+    outline-offset: 0;
+    z-index: 1;
+}
+
+.calendar-cell:focus-visible {
+    box-shadow: 0 0 0 3px var(--ui-text-color-primary);
 }
 
 .mini-pie {

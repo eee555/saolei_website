@@ -1,8 +1,8 @@
 <template>
     <Tippy v-if="video" :style="cellStyle" :duration="0" sticky>
-        <BaseTextButton class="video-cell-action" data-cy="video-cell-action" @click="preview(video.id, video.software)">
+        <VideoPreviewLink :id="video.id" :software="video.software" class="video-cell-action" data-cy="video-cell-action">
             {{ text }}
-        </BaseTextButton>
+        </VideoPreviewLink>
         <template #content>
             <div class="card card-small">
                 <VideoAbstractDisplay :video="video" />
@@ -22,10 +22,9 @@ import type { PropType } from 'vue';
 import { computed } from 'vue';
 import { Tippy } from 'vue-tippy';
 
-import BaseTextButton from '@/components/common/BaseTextButton.vue';
+import VideoPreviewLink from '@/components/VideoPreviewLink.vue';
 import VideoAbstractDisplay from '@/components/widgets/VideoAbstractDisplay.vue';
 import { PiecewiseColorScheme } from '@/utils/colors';
-import { preview } from '@/utils/common/PlayerDialog';
 import type { VideoAbstract } from '@/utils/videoabstract';
 
 const props = defineProps({
@@ -39,7 +38,8 @@ const cellStyle = computed(() => props.colorTheme.getStyle(props.value));
 </script>
 
 <style lang="less" scoped>
-.video-cell-action {
-    --button-accent: currentColor;
+.video-cell-action:hover,
+.video-cell-action:active {
+    color: inherit;
 }
 </style>

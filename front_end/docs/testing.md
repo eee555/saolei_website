@@ -76,6 +76,26 @@ cy.mount(Component, {
 
 组件测试的测试时区固定为 +8，测试语言固定为英文。
 
+### GitHub Actions 并行运行
+
+`.github/workflows/cypress.yml` 使用 4 个独立 runner，由 [`cypress-split`](https://github.com/bahmutov/cypress-split#split-component-specs) 分配全部组件 spec，无需 Cypress Cloud。固定随机种子 `42` 将同目录的测试分散到不同分片；目前按 spec 数量分配，尚未按历史耗时加权。
+
+Cypress GitHub Action 统一执行 `npm ci`，并缓存 npm 下载和 Cypress 二进制。不要额外安装依赖或设置 `start: npm run dev`：组件测试会启动自己的 Vite 服务，而 `npm run dev` 还会触发离线 Analyzer 构建。每个分片独立上传失败截图，原有 `cypress-run` 检查汇总全部分片结果。同一 PR 有新提交时会取消旧的组件测试运行。
+
+需要调整并行度时，修改 workflow 的 `matrix.shard` 列表；分片总数和索引由 `strategy.job-total`、`strategy.job-index` 自动传给插件。并行度提高会增加 runner 总开销，实际等待时间还受最慢 spec、安装和 runner 排队影响。
+
+本地不设置 `SPLIT` 时仍运行所选的全部测试。PowerShell 中可复现四分片中的第一个分片：
+
+```powershell
+$env:SPLIT = '4'
+$env:SPLIT_INDEX = '0'
+$env:SPLIT_RANDOM_SEED = '42'
+npx.cmd cypress run --component --browser chrome --headless
+Remove-Item Env:SPLIT, Env:SPLIT_INDEX, Env:SPLIT_RANDOM_SEED
+```
+
+索引从 `0` 开始。若要对指定的 `--spec` 列表继续分片，还需将相同列表放入 `SPEC` 环境变量，详见插件文档。
+
 ## Cypress e2e
 
 e2e 测试位于 `cypress/e2e`。运行前需要启动后端和前端开发服务（详见各自的文档），然后运行：
