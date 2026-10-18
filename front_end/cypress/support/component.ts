@@ -19,8 +19,6 @@ import '../../src/setup';
 
 import type { VueWrapper } from '@vue/test-utils';
 import { mount } from 'cypress/vue';
-
-import { setMountedComponent } from './mountedComponent';
 import 'cypress-real-events';
 
 // Augment the Cypress namespace to include type definitions for
@@ -41,7 +39,6 @@ declare global {
 
 Cypress.Commands.add('mount', (...args) => {
     return mount(...args).then((result) => {
-        setMountedComponent(result.wrapper);
         cy.wrap(result.wrapper).as('vue');
         return cy.wrap(result);
     });

@@ -2,10 +2,18 @@ import { h } from 'vue';
 import type { Router, RouteRecordRaw } from 'vue-router';
 import { createRouter, createWebHashHistory } from 'vue-router';
 
-import { unmountMountedComponent } from './mountedComponent';
-
 const trackedRouters: Router[] = [];
 let snapshot: { url: string; state: unknown } | null = null;
+
+interface CypressVueRuntime {
+    vueWrapper: { unmount: () => void } | null;
+}
+
+function unmountMountedComponent(): void {
+    const runtime = Cypress as unknown as CypressVueRuntime;
+    runtime.vueWrapper?.unmount();
+    runtime.vueWrapper = null;
+}
 
 function captureHistoryState(state: unknown): unknown {
     if (state === null) return null;
