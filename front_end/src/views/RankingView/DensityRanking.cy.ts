@@ -3,8 +3,11 @@ import DensityRanking from './DensityRanking.vue';
 import $axios from '@/http';
 import i18n from '@/i18n';
 import { pinia } from '@/store/create';
+import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
 
 describe('<DensityRanking />', () => {
+    installHashHistoryCleanup();
+
     it('preserves backend pagination, formatted scores and cell links', () => {
         cy.mockPlayerNameFallback();
         cy.intercept({ method: 'GET', pathname: '/api/customranking/pluck' }, {
@@ -13,7 +16,7 @@ describe('<DensityRanking />', () => {
                 players: [{ player_id: 42, video_id: 8001, mode: '00', pluck: 0.123456, timems: 1234, bv: 40, upload_time: '2026-10-06T12:00:00Z' }],
             },
         }).as('ranking');
-        cy.mount(DensityRanking, { global: { plugins: [i18n, pinia], config: { globalProperties: { $axios } } } });
+        cy.mount(DensityRanking, { global: { plugins: [i18n, pinia, hashRouter()], config: { globalProperties: { $axios } } } });
 
         cy.wait('@ranking').its('request.query').should('include', { level: 'c8_8_40', start: '0', end: '20' });
         cy.get('.ranking-table tbody').extractTableData().should((data) => {
@@ -31,7 +34,7 @@ describe('<DensityRanking />', () => {
 
     it('renders the existing empty message across all seven columns', () => {
         cy.intercept({ method: 'GET', pathname: '/api/customranking/pluck' }, { body: { count: 0, players: [] } }).as('ranking');
-        cy.mount(DensityRanking, { global: { plugins: [i18n, pinia], config: { globalProperties: { $axios } } } });
+        cy.mount(DensityRanking, { global: { plugins: [i18n, pinia, hashRouter()], config: { globalProperties: { $axios } } } });
         cy.wait('@ranking');
         cy.get('.ranking-table .base-table-empty').should('have.text', 'No ranking data').and('have.attr', 'colspan', '7');
     });

@@ -3,8 +3,11 @@ import SaoleiRanking from './SaoleiRanking.vue';
 import $axios from '@/http';
 import i18n from '@/i18n';
 import { pinia } from '@/store/create';
+import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
 
 describe('<SaoleiRanking />', () => {
+    installHashHistoryCleanup();
+
     it('renders grouped columns, loads pages, switches stats and independently selects NF', () => {
         cy.mockPlayerNameFallback();
         let releaseNF!: () => void;
@@ -36,7 +39,7 @@ describe('<SaoleiRanking />', () => {
                     }] },
             });
         }).as('ranking');
-        cy.mount(SaoleiRanking, { global: { plugins: [i18n, pinia], config: { globalProperties: { $axios } } } });
+        cy.mount(SaoleiRanking, { global: { plugins: [i18n, pinia, hashRouter()], config: { globalProperties: { $axios } } } });
         cy.wait('@ranking').its('request.query').should('include', { ranking_name: 'saolei', stat: 'sumt', start: '0', end: '20' });
         cy.get('.saolei-ranking-table thead th[rowspan="2"]').should('have.length', 2);
         cy.get('.saolei-ranking-table thead th[scope="colgroup"][colspan="2"]').should('have.length', 4);
@@ -90,7 +93,7 @@ describe('<SaoleiRanking />', () => {
 
     it('spans all ten columns when there are no records', () => {
         cy.intercept({ method: 'GET', pathname: '/api/speedranking/rank' }, { body: { count: 0, players: [] } }).as('ranking');
-        cy.mount(SaoleiRanking, { global: { plugins: [i18n, pinia], config: { globalProperties: { $axios } } } });
+        cy.mount(SaoleiRanking, { global: { plugins: [i18n, pinia, hashRouter()], config: { globalProperties: { $axios } } } });
         cy.wait('@ranking');
         cy.get('.saolei-ranking-table tbody td').should('have.length', 1).and('have.attr', 'colspan', '10').and('contain.text', i18n.global.t('ranking.empty'));
         cy.get('.saolei-ranking-table .stat-header').should('have.length', 8);

@@ -1,22 +1,11 @@
-import { h } from 'vue';
-import { createRouter, createWebHashHistory } from 'vue-router';
-
 import App from './App.vue';
 
 import i18n from '@/i18n';
 import { videoPlayerConfig, videoplayerstore } from '@/store';
-
-function hashRouter() {
-    const router = createRouter({
-        history: createWebHashHistory(),
-        routes: [{ path: '/:pathMatch(.*)*', component: { render: () => h('div') } }],
-    });
-    void router.push('/');
-    return router;
-}
+import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
 
 describe('Video player dialog', () => {
-    let previousUrl: string;
+    installHashHistoryCleanup();
     let previousBackend: typeof videoPlayerConfig.value.backend;
 
     beforeEach(() => {
@@ -24,21 +13,15 @@ describe('Video player dialog', () => {
         videoPlayerConfig.value.backend = 'native';
         videoplayerstore.id = 42;
         videoplayerstore.visible = true;
-        cy.window().then((window) => {
-            previousUrl = window.location.href;
-        });
     });
 
     afterEach(() => {
         videoplayerstore.visible = false;
         videoPlayerConfig.value.backend = previousBackend;
-        cy.window().then((window) => {
-            window.history.replaceState(null, '', previousUrl);
-        });
     });
 
     it('closes the dialog when following its title link to the analyzer', () => {
-        const router = hashRouter();
+        const router = hashRouter({ initialPath: '/' });
         cy.wrap(router.isReady()).then(() => {
             cy.mount(App, { global: { plugins: [i18n, router], stubs: { NativePlayer: true, FlopPlayer: true, StrangeDust: true } } });
         });

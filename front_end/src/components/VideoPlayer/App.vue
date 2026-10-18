@@ -5,12 +5,9 @@
     >
         <template #header>
             <div style="display: flex">
-                <RouterLink v-if="hasRouter" :to="`/video/${videoplayerstore.id}`" class="link video-player__analyzer-link" @click="videoplayerstore.visible = false">
+                <RouterLink :to="`/video/${videoplayerstore.id}`" class="link video-player__analyzer-link" @click="videoplayerstore.visible = false">
                     {{ t('local.video') }} #{{ videoplayerstore.id }}
                 </RouterLink>
-                <a v-else :href="`#/video/${videoplayerstore.id}`" class="link video-player__analyzer-link" @click="videoplayerstore.visible = false">
-                    {{ t('local.video') }} #{{ videoplayerstore.id }}
-                </a>
                 <span style="margin-left: auto;">
                     {{ t('local.player') }}
                     <ElSelect v-model="videoPlayerConfig.backend" style="width: 10rem">
@@ -30,22 +27,19 @@
 <script setup lang="ts">
 import '@/styles/link.css';
 import { ElDialog, ElOption, ElSelect } from 'element-plus';
-import { defineAsyncComponent, inject, watch } from 'vue';
+import { defineAsyncComponent, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { routerKey, RouterLink, useRoute } from 'vue-router';
+import { RouterLink, useRoute } from 'vue-router';
 
 import { videoPlayerConfig, videoplayerstore } from '@/store';
 
 const FlopPlayer = defineAsyncComponent(() => import('./FlopPlayer.vue'));
 const NativePlayer = defineAsyncComponent(() => import('./NativePlayer.vue'));
 const StrangeDust = defineAsyncComponent(() => import('./StrangeDust.vue'));
-const hasRouter = inject(routerKey, null) !== null;
-if (hasRouter) {
-    const route = useRoute();
-    watch(() => route.fullPath, () => {
-        videoplayerstore.visible = false;
-    });
-}
+const route = useRoute();
+watch(() => route.fullPath, () => {
+    videoplayerstore.visible = false;
+});
 
 const i18nMessages = {
     'zh-cn': { local: {

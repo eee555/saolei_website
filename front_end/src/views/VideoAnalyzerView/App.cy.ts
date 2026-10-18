@@ -18,6 +18,7 @@ import type TimelinePanel from '@/components/VideoAnalyzer/TimelinePanel.vue';
 import $axios from '@/http';
 import i18n from '@/i18n';
 import { videoPlayerConfig } from '@/store';
+import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
 
 type Layout = 'counter-left' | 'counter-right' | 'counter-top' | 'board-top';
 
@@ -33,7 +34,7 @@ function mountAnalyzer(width = 1100, fixture: { filename: string; durationMs: nu
     cy.mount(defineComponent({
         expose: [],
         render: () => h('div', { class: 'analyzer-test-container', style: { width: `${width}px`, height: '600px' } }, [h(App, { id: '123' }, info === undefined ? undefined : { info })]),
-    }), { global: { plugins: [i18n], config: { globalProperties: { $axios } }, stubs: { transition: false } } }).then(({ wrapper }) => {
+    }), { global: { plugins: [i18n, hashRouter()], config: { globalProperties: { $axios } }, stubs: { transition: false } } }).then(({ wrapper }) => {
         cy.wrap(wrapper).as('analyzer');
     });
     cy.wait('@getSoftware').its('request.query.id').should('eq', '123');
@@ -149,6 +150,8 @@ function dragDivider(selector: string, index: number, dx: number, dy: number) {
 }
 
 describe('<VideoAnalyzerView />', () => {
+    installHashHistoryCleanup();
+
     it('sends counter keys to slots, shares prepared data, and preserves tracks and the time window across layouts', () => {
         mountAnalyzer();
         cy.get('.timeline-event-row__key').should(($keys) => {
@@ -505,7 +508,7 @@ describe('<VideoAnalyzerView />', () => {
         cy.intercept('GET', '**/api/common/video/999999/analyzer-info', { statusCode: 404, body: '' });
         cy.intercept('GET', '**/video/get_software/**', { statusCode: 404, body: '' }).as('getSoftware');
         cy.intercept('GET', '**/api/video/preview**', { body: '' }).as('getReplay');
-        cy.mount(defineComponent({ expose: [], render: () => h(App, { id: '999999' }) }), { global: { plugins: [i18n], config: { globalProperties: { $axios } } } });
+        cy.mount(defineComponent({ expose: [], render: () => h(App, { id: '999999' }) }), { global: { plugins: [i18n, hashRouter()], config: { globalProperties: { $axios } } } });
         cy.wait('@getSoftware');
         cy.get('.video-analyzer-board__error').should('contain.text', '404');
         selectLayout('board-top');

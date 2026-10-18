@@ -1,11 +1,11 @@
 import type { StaticResponse } from 'cypress/types/net-stubbing';
 import { h } from 'vue';
-import { createRouter, createWebHashHistory } from 'vue-router';
 
 import PlayerName from './PlayerName.vue';
 
 import $axios from '@/http';
 import i18n from '@/i18n';
+import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
 
 const user = {
     id: 42,
@@ -14,17 +14,8 @@ const user = {
     lastname: 'Mines',
 };
 
-function hashRouter() {
-    const router = createRouter({
-        history: createWebHashHistory(),
-        routes: [{ path: '/:pathMatch(.*)*', component: { render: () => h('div') } }],
-    });
-    void router.push('/');
-    return router;
-}
-
 function mountPlayerName(userId: number, options: { interactive?: boolean; onParentClick?: () => void } = {}) {
-    const router = hashRouter();
+    const router = hashRouter({ initialPath: '/' });
     cy.wrap(router.isReady()).then(() => {
         cy.mount({
             render: () => h('div', { onClick: options.onParentClick }, [
@@ -44,24 +35,15 @@ function mockUserInfo(response: StaticResponse = { body: [user] }) {
 }
 
 describe('PlayerName', () => {
-    let previousUrl: string;
+    installHashHistoryCleanup();
 
     beforeEach(() => {
-        cy.window().then((window) => {
-            previousUrl = window.location.href;
-        });
         cy.intercept('GET', '/api/userprofile/avatar/**', {
             statusCode: 404,
         });
         // cy.intercept('GET', '/api/userprofile/infoupdated?**', {
         //     body: [user.id],
         // }).as('getInfoUpdated');
-    });
-
-    afterEach(() => {
-        cy.window().then((window) => {
-            window.history.replaceState(null, '', previousUrl);
-        });
     });
 
     it('shows the fallback name when server error', () => {

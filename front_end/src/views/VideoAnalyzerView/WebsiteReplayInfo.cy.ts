@@ -1,5 +1,4 @@
 import { h, ref } from 'vue';
-import { createRouter, createWebHashHistory } from 'vue-router';
 
 import analyzerVersion from '../../../local-analyzer/version.json';
 
@@ -10,34 +9,19 @@ import $axios from '@/http';
 import i18n from '@/i18n';
 import type { MS_Software } from '@/utils/ms_const';
 import { utc_to_local_format } from '@/utils/system/tools';
+import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
 
 const offlineDownloadFilename = `OpenMinesweeperVideoAnalyzer-${analyzerVersion.version}.zip`;
-
-function hashRouter() {
-    return createRouter({
-        history: createWebHashHistory(),
-        routes: [{ path: '/:pathMatch(.*)*', component: { render: () => h('div') } }],
-    });
-}
 
 function fixture(): SiteReplayInfo {
     return { video: { id: 42, player: 7, upload_time: '2026-10-12T10:00:00Z' }, expanded_video: {}, tournament_ids: [2, 3], filename: '原始录像.evf', rankings: [{ ranking: 'saolei', stat: 'bt', nf: false, rank: 3 }, { ranking: 'pb', stat: 'time', nf: true, rank: 5 }] };
 }
 
 describe('<WebsiteReplayInfo />', () => {
-    let previousUrl: string;
+    installHashHistoryCleanup();
 
     beforeEach(() => {
-        cy.window().then((window) => {
-            previousUrl = window.location.href;
-        });
         cy.mockPlayerNameFallback();
-    });
-
-    afterEach(() => {
-        cy.window().then((window) => {
-            window.history.replaceState(null, '', previousUrl);
-        });
     });
 
     it('shows four ordered rows with upload time, PlayerName, all tournament links, video ranks and original filename', () => {
