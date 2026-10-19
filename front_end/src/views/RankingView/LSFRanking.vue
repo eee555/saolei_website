@@ -3,7 +3,7 @@
         <p v-if="failed" role="alert" class="text-danger">
             {{ t('ranking.loadFailed') }}
         </p>
-        <BaseTable v-loading="loading" class="lsf-ranking-table" :empty="rows.length === 0" :column-count="12" :empty-text="t('ranking.empty')">
+        <BaseTable v-loading="loading" class="lsf-ranking-table" :empty="rows.length === 0" :column-count="softFields.length + 2" :empty-text="t('ranking.empty')">
             <template #head>
                 <tr>
                     <th scope="col" class="table-col-rank">
@@ -12,16 +12,11 @@
                     <th scope="col" class="table-col-player">
                         {{ t('common.prop.player') }}
                     </th>
-                    <template v-for="field in softFields" :key="field">
-                        <th scope="col" class="table-col-number" :aria-sort="selected === field ? 'descending' : 'none'">
-                            <BaseTextButton :type="selected === field ? 'primary' : 'default'" :data-field="field" :aria-pressed="selected === field" @click="selected = field">
-                                {{ columnLabel(field) }}
-                            </BaseTextButton>
-                        </th>
-                        <th v-if="field === 'lsf'" scope="col" class="table-col-number">
-                            {{ t('ranking.grade.title') }}
-                        </th>
-                    </template>
+                    <th v-for="field in softFields" :key="field" scope="col" class="table-col-number" :aria-sort="selected === field ? 'descending' : 'none'">
+                        <BaseTextButton :type="selected === field ? 'primary' : 'default'" :data-field="field" :aria-pressed="selected === field" @click="selected = field">
+                            {{ columnLabel(field) }}
+                        </BaseTextButton>
+                    </th>
                 </tr>
             </template>
             <tr v-for="(row, index) in rows" :key="row.player_id">
@@ -31,14 +26,9 @@
                 <td class="table-col-player">
                     <PlayerName :user-id="row.player_id" />
                 </td>
-                <template v-for="field in softFields" :key="field">
-                    <td class="table-col-number" :data-field="field" :title="field === 'lsf' ? undefined : formatGradeTitle(row.values[field], field)" :class="{ 'lsf-selected': selected === field }" :style="field === 'lsf' ? undefined : gradeStyle(row.values[field], field)">
-                        {{ field === 'lsf' ? row.values[field].toFixed(2) : formatGrade(row.values[field], field) }}
-                    </td>
-                    <td v-if="field === 'lsf'" class="table-col-number" data-field="lsf-grade" :title="formatGradeTitle(row.values.lsf, 'lsf')" :class="{ 'lsf-selected': selected === 'lsf' }" :style="gradeStyle(row.values.lsf, 'lsf')">
-                        {{ formatGrade(row.values.lsf, 'lsf') }}
-                    </td>
-                </template>
+                <td v-for="field in softFields" :key="field" class="table-col-number" :data-field="field" :title="field === 'lsf' ? undefined : formatGradeTitle(row.values[field], field)" :class="{ 'lsf-selected': selected === field }" :style="field === 'lsf' ? undefined : gradeStyle(row.values[field], field)">
+                    {{ field === 'lsf' ? row.values[field].toFixed(2) : formatGrade(row.values[field], field) }}
+                </td>
             </tr>
         </BaseTable>
         <div class="lsf-pagination">
@@ -62,6 +52,7 @@ import { store } from '@/store';
 import { colorThemes } from '@/store/color';
 
 const props = defineProps({ colored: { type: Boolean, default: false } });
+type GradeField = Exclude<SoftField, 'lsf'>;
 
 const selected = ref<SoftField>('lsf');
 const page = ref(1);
@@ -81,24 +72,24 @@ function columnLabel(field: SoftField) {
     return `${mode === 'nf' ? 'NF ' : ''}${t(`common.level.${level}`)}`;
 }
 
-function equivalentEt(value: number, field: SoftField) {
-    const baseline = field === 'lsf' || field.endsWith(':sum') ? 4000 : 100;
+function equivalentEt(value: number, field: GradeField) {
+    const baseline = field.endsWith(':sum') ? 4000 : 100;
     return topEquivalentEt(value, store.topAnchors ?? {}, baseline, field.startsWith('nf:'));
 }
 
-function gradeStyle(value: number, field: SoftField) {
+function gradeStyle(value: number, field: GradeField) {
     if (!props.colored) return undefined;
     const seconds = equivalentEt(value, field);
     return seconds === null ? undefined : colorThemes.grade.value.getStyle(seconds);
 }
 
-function formatGradeTitle(value: number, field: SoftField) {
+function formatGradeTitle(value: number, field: GradeField) {
     const seconds = equivalentEt(value, field);
     return seconds === null ? '--' : `${formatGrade(value, field, true)} (${seconds.toFixed(3)} s)`;
 }
 
-function formatGrade(value: number, field: SoftField, full = false) {
-    const baseline = field === 'lsf' || field.endsWith(':sum') ? 4000 : 100;
+function formatGrade(value: number, field: GradeField, full = false) {
+    const baseline = field.endsWith(':sum') ? 4000 : 100;
     const grade = topGrade(value, store.topAnchors ?? {}, baseline, field.startsWith('nf:'));
     if (grade === null) return '--';
     const fullName = `ranking.grade.fullNames.${grade.index}`;

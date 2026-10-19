@@ -324,7 +324,6 @@ export default {
     },
     ranking: {
         grade: {
-            title: 'Tier',
             format: '{name} {stage}',
             names: {
                 0: 'Novice',

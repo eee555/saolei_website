@@ -38,17 +38,17 @@ describe('<LSFRanking />', () => {
         }).as('ranking');
         cy.mount(LSFRanking, { global: { plugins: [i18n, pinia, hashRouter()], config: { globalProperties: { $axios } } } });
         cy.wait('@ranking').its('request.query').should('include', { ranking: 'lsf', start: '0', end: '20' });
-        cy.get('.lsf-ranking-table tbody [data-field=lsf-grade]').should('have.text', '--');
+        cy.get('.lsf-ranking-table tbody [data-field="std:b"]').should('have.text', '--');
         cy.then(() => {
             store.topAnchors = anchors;
         });
         cy.get('.lsf-ranking-table tbody').extractTableData().should((rows) => {
-            expect(rows[0]?.slice(2)).to.deep.equal(['4000.00', ...Array(5).fill('Alien 0.0'), ...Array(4).fill('L. Deity 0.0')]);
+            expect(rows[0]?.slice(2)).to.deep.equal(['4000.00', ...Array(4).fill('Alien 0.0'), ...Array(4).fill('L. Deity 0.0')]);
         });
-        cy.get('.lsf-ranking-table tbody td[title]').should('have.length', 9).each(($cell) => {
+        cy.get('.lsf-ranking-table tbody td[title]').should('have.length', 8).each(($cell) => {
             expect($cell.attr('title')).to.equal($cell.attr('data-field')?.startsWith('nf:') === true ? 'Lesser Deity 0.0 (60.000 s)' : 'Alien 0.0 (30.000 s)');
         });
-        cy.get('.lsf-ranking-table thead th').should('have.length', 12).eq(3).should('have.text', 'Tier');
+        cy.get('.lsf-ranking-table thead th').should('have.length', 11);
         cy.then(() => {
             colorTheme.value.grade = { thresholds: [45], colors: ['#224466', '#ffee00'] };
         });
@@ -57,14 +57,13 @@ describe('<LSFRanking />', () => {
         });
         cy.get('.lsf-ranking-table tbody [data-field="std:e"]').should('have.css', 'background-color', 'rgb(34, 68, 102)');
         cy.get('.lsf-ranking-table tbody [data-field="nf:e"]').should('have.css', 'background-color', 'rgb(255, 238, 0)');
-        cy.get('.lsf-ranking-table tbody [data-field="lsf-grade"]').should('have.css', 'background-color', 'rgb(34, 68, 102)');
         cy.get('.lsf-ranking-table tbody [data-field="lsf"]').should(($cell) => {
             expect($cell[0]?.style.backgroundColor).to.equal('');
         });
         cy.get<ComponentWrapper<typeof LSFRanking>>('@vue').then((wrapper) => {
             void wrapper.setProps({ colored: false });
         });
-        cy.get('.lsf-ranking-table tbody [data-field="lsf-grade"]').should(($cell) => {
+        cy.get('.lsf-ranking-table tbody [data-field="std:e"]').should(($cell) => {
             expect($cell[0]?.style.backgroundColor).to.equal('');
         });
         cy.get('.lsf-pagination .btn-next').click();

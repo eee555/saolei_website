@@ -323,7 +323,6 @@ export default {
     },
     ranking: {
         grade: {
-            title: '定阶',
             format: '{name}{stage}阶',
             names: {
                 0: '新手',

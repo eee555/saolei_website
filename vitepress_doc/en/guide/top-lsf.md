@@ -89,15 +89,15 @@ LSF offers an overall comparison without replacing the underlying specialities. 
 
 ## Equivalent et: One Shared Scale
 
-Comparing a level strength of 100 with an overall strength of 4000 is not intuitive. **Equivalent et** converts individual, level, overall and LSF strength onto the same Expert Time scale, so players with different specialities can discuss their ability using a common standard.
+Comparing a level strength of 100 with an overall strength of 4000 is not intuitive. **Equivalent et** converts individual, level and overall strength onto the same Expert Time scale, so players with different specialities can discuss their ability using a common standard.
 
-First normalize the strength: divide an individual ratio by 1, level strength by 100, or overall strength and LSF by 4000. Let the normalized result be `r`, and the corresponding et anchor be `A_et`:
+First normalize the strength: divide an individual ratio by 1, level strength by 100, or overall strength by 4000. Let the normalized result be `r`, and the corresponding et anchor be `A_et`:
 
 ```text
 Equivalent et = A_et / r
 ```
 
-**Ordinary categories and LSF use the ordinary et anchor; NF categories use the NF et anchor.** Tiers use the same reference selection. Strength ratios themselves still use their own metric-specific ordinary or NF anchors.
+**Ordinary categories use the ordinary et anchor; NF categories use the NF et anchor.** Tiers use the same reference selection. Strength ratios themselves still use their own metric-specific ordinary or NF anchors.
 
 With an ordinary et anchor of 30 seconds, ordinary normalized strength 1 corresponds to an equivalent et of 30 seconds; 1.5 corresponds to 20 seconds; and 0.5 corresponds to 60 seconds. If the NF et anchor is 60 seconds, NF normalized strength 1 corresponds to an equivalent et of 60 seconds. Lower equivalent et means stronger performance.
 
@@ -123,4 +123,4 @@ Stages use **linear interpolation in strength, not in seconds**. The weaker end 
 
 Alien starts at stage 0 at 30 seconds and reaches stage 10 at 25 seconds. Stronger results continue beyond stage 10. Zero strength is Novice 0.0, with infinite equivalent et.
 
-The LSF table displays tiers in its eight strength columns and the extra column beside LSF. Table labels abbreviate Greater / Lesser to G. / L., for example `G. Archdeity 3.2`. Hover over a tier cell to see its full title and equivalent et. **Tiers only change the display, not strength-based ranking order.**
+The LSF table displays tiers in its eight strength columns, while LSF itself remains a numeric value. Table labels abbreviate Greater / Lesser to G. / L., for example `G. Archdeity 3.2`. Hover over a tier cell to see its full title and equivalent et. **Tiers only change the display, not strength-based ranking order.**
