@@ -1,3 +1,5 @@
+import { nextTick } from 'vue';
+
 import LSFRanking from './LSFRanking.vue';
 
 import $axios from '@/http';
@@ -41,6 +43,8 @@ describe('<LSFRanking />', () => {
         cy.get('.lsf-ranking-table tbody [data-field="std:b"]').should('have.text', '--');
         cy.then(() => {
             store.topAnchors = anchors;
+            // Table extraction is a snapshot, so wait for Vue to apply the anchors.
+            return nextTick();
         });
         cy.get('.lsf-ranking-table tbody').extractTableData().should((rows) => {
             expect(rows[0]?.slice(2)).to.deep.equal(['4000.00', ...Array(4).fill('Alien 0.0'), ...Array(4).fill('L. Deity 0.0')]);
