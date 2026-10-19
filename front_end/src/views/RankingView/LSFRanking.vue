@@ -19,7 +19,7 @@
                             </BaseTextButton>
                         </th>
                         <th v-if="field === 'lsf'" scope="col" class="table-col-number">
-                            {{ t('local.gradeTitle') }}
+                            {{ t('ranking.grade.title') }}
                         </th>
                     </template>
                 </tr>
@@ -101,9 +101,9 @@ function formatGrade(value: number, field: SoftField, full = false) {
     const baseline = field === 'lsf' || field.endsWith(':sum') ? 4000 : 100;
     const grade = topGrade(value, store.topAnchors ?? {}, baseline, field.startsWith('nf:'));
     if (grade === null) return '--';
-    const fullName = `local.fullGrade${grade.index}`;
-    const name = full && i18n.te(fullName) ? t(fullName) : t(`local.grade${grade.index}`);
-    return t('local.grade', { name, stage: (grade.position * 10).toFixed(1) });
+    const fullName = `ranking.grade.fullNames.${grade.index}`;
+    const name = full && i18n.te(fullName) ? t(fullName) : t(`ranking.grade.names.${grade.index}`);
+    return t('ranking.grade.format', { name, stage: (grade.position * 10).toFixed(1) });
 }
 
 async function load() {
@@ -141,41 +141,7 @@ onScopeDispose(() => {
 
 defineExpose({ refresh: load, loading });
 
-const i18nMessages = {
-    'zh-cn': { local: {
-        gradeTitle: '定阶',
-        grade: '{name}{stage}阶',
-        grade0: '新手',
-        grade1: '工兵',
-        grade2: '小雷神',
-        grade3: '大雷神',
-        grade4: '小雷圣',
-        grade5: '大雷圣',
-        grade6: '小雷帝',
-        grade7: '大雷帝',
-        grade8: '外星人',
-    } },
-    en: { local: {
-        gradeTitle: 'Tier',
-        grade: '{name} {stage}',
-        grade0: 'Novice',
-        grade1: 'Sapper',
-        grade2: 'L. Deity',
-        grade3: 'G. Deity',
-        grade4: 'L. Archdeity',
-        grade5: 'G. Archdeity',
-        grade6: 'L. Overgod',
-        grade7: 'G. Overgod',
-        grade8: 'Alien',
-        fullGrade2: 'Lesser Deity',
-        fullGrade3: 'Greater Deity',
-        fullGrade4: 'Lesser Archdeity',
-        fullGrade5: 'Greater Archdeity',
-        fullGrade6: 'Lesser Overgod',
-        fullGrade7: 'Greater Overgod',
-    } },
-};
-const i18n = useI18n({ messages: i18nMessages });
+const i18n = useI18n();
 const { t } = i18n;
 </script>
 

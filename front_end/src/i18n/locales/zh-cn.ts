@@ -322,6 +322,21 @@ export default {
         exportArbiterCSVTooltip: '兼容 Minesweeper Arbiter 生成的 <span style="font-family: \'Courier New\', Courier, monospace;">stats_csv.csv</span>。<br/> 目前不支持 Leff, Reff, Deff, GZiNi, HZiNi。',
     },
     ranking: {
+        grade: {
+            title: '定阶',
+            format: '{name}{stage}阶',
+            names: {
+                0: '新手',
+                1: '工兵',
+                2: '小雷神',
+                3: '大雷神',
+                4: '小雷圣',
+                5: '大雷圣',
+                6: '小雷帝',
+                7: '大雷帝',
+                8: '外星人',
+            },
+        },
         saolei: {
             title: '扫雷网规则',
         },

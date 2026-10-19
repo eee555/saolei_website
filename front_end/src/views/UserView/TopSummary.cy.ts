@@ -1,7 +1,7 @@
 import TopSummary from './TopSummary.vue';
 
 import i18n from '@/i18n';
-import { topAxes, topField } from '@/services/topRankingService';
+import { topAxes, topField, topSoftValues } from '@/services/topRankingService';
 import type { TopAnchors, TopRecords } from '@/services/topRankingService';
 import { store } from '@/store';
 import { pinia } from '@/store/create';
@@ -24,6 +24,9 @@ describe('<TopSummary />', () => {
         cy.intercept('GET', '**/api/speedranking/top/player/43', records).as('other');
         cy.mount(TopSummary, { props: { userId: 42 }, global: { plugins: [i18n, pinia] } });
         cy.wait('@records');
+        const values = topSoftValues(records, anchors);
+        cy.get('[data-cy=lsf-value]').should('have.text', values.lsf.toFixed(2));
+        cy.get('[data-cy=top-lsf-summary] [data-cy]').should('have.length', 6);
         cy.get('.top-radar').should('have.length', 2);
         for (const nf of [false, true]) {
             cy.get(`.top-record-table[data-nf="${nf}"] tbody tr`).should('have.length', 9);
@@ -43,6 +46,7 @@ describe('<TopSummary />', () => {
         cy.get<ComponentWrapper<typeof TopSummary>>('@vue').then((wrapper) => wrapper.setProps({ active: false, userId: 43 }));
         cy.get('.top-radar').should('not.exist');
         cy.get('.top-record-table').should('not.exist');
+        cy.get('[data-cy=lsf-value]').should('not.exist');
         cy.get('@other.all').should('have.length', 0);
         cy.get<ComponentWrapper<typeof TopSummary>>('@vue').then((wrapper) => wrapper.setProps({ active: true }));
         cy.wait('@other');

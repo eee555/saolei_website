@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatTopValue, topAxes, topEquivalentEt, topField, topGrade, topMean, topRadius, topSoftValues } from './topRankingService';
+import { formatTopValue, topAxes, topEquivalentEt, topField, topGrade, topLsfContributions, topMean, topRadius, topSoftValues } from './topRankingService';
 import type { TopAnchors, TopRecords } from './topRankingService';
 
 describe('top ranking', () => {
@@ -71,7 +71,10 @@ describe('top ranking', () => {
         }
         const values = topSoftValues(records, anchors);
         expect(values).toEqual({ lsf: 4000, 'std:b': 100, 'std:i': 100, 'std:e': 100, 'std:sum': 4000, 'nf:b': 100, 'nf:i': 100, 'nf:e': 100, 'nf:sum': 4000 });
+        expect(topLsfContributions(values).map((part) => part.value)).toEqual([582, 1358, 1940, 18, 42, 60]);
         records['std:bt'] = { videos: Array.from({ length: 5 }, (_, id) => ({ value: 500, video_id: id + 1 })) };
-        expect(topSoftValues(records, anchors).lsf).toBeCloseTo(4000 + 28 * 6 * 0.97);
+        const improved = topSoftValues(records, anchors);
+        expect(improved.lsf).toBeCloseTo(4000 + 28 * 6 * 0.97);
+        expect(topLsfContributions(improved).reduce((total, part) => total + part.value, 0)).toBeCloseTo(improved.lsf);
     });
 });
