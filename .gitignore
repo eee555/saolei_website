@@ -186,3 +186,5 @@ front_end/yarn.lock
 .vscode/settings.json
 /.django-stub-gen
 /back_end/saolei/tmp/
+# Local cross-process ranking lock; never remove while workers are running.
+/back_end/saolei/runtime/

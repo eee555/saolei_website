@@ -1,5 +1,3 @@
-import tinycolor from 'tinycolor2';
-
 import Cell from './Cell.vue';
 
 import i18n from '@/i18n';
@@ -43,7 +41,7 @@ const mountCell = (props: Record<string, unknown> = {}) => {
 
 const expectActionTextColor = (mode: 'light' | 'dark') => {
     cy.get('[data-cy=video-cell-action]').should(($button) => {
-        const expectedColor = tinycolor($button.css(`--ui-text-color-regular-${mode}`)).toRgbString();
+        const expectedColor = mode === 'dark' ? 'rgb(255, 255, 255)' : 'rgb(0, 0, 0)';
         expect($button.css('color')).to.equal(expectedColor);
     });
 };
@@ -132,8 +130,6 @@ describe('<BBBvSummary Cell />', () => {
         });
 
         cy.get('.cell').should('have.class', 'cell-new').and('have.css', 'background-color', 'rgb(0, 0, 0)').and('have.css', 'outline-style', 'solid').and('have.css', 'box-sizing', 'border-box');
-        expectActionTextColor('dark');
-        cy.get('.cell').invoke('css', '--ui-text-color-regular-dark', '#aabbcc');
         expectActionTextColor('dark');
 
         cy.get('@vue').then((wrapper: ComponentWrapper<typeof Cell>) => {

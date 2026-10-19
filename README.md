@@ -106,6 +106,15 @@ python3 -m pip install --dry-run --find-links wheels -r requirements.txt
 python3 -m pip install --find-links wheels -r requirements.txt
 ```
 
+如果 `wheels/` 尚未准备好或需要重新下载，且生产端能够访问 GitHub Release，可在同一后端目录手动执行下载和安装：
+
+```bash
+python3 -m pip download --no-deps --dest wheels -r requirements-wheels.txt
+python3 -m pip install --find-links wheels -r requirements.txt
+```
+
+下载步骤按清单中的固定 SHA-256 校验 wheel；安装步骤通过 `--find-links wheels` 查找本地包。两步都应使用生产服务所用的同一个 Python 解释器，示例为 `python3`。
+
 生产端从本地 `wheels/` 获取两个客户端包，其余依赖继续使用服务器原有的 PyPI 索引（例如阿里云镜像）。安装后按现有部署流程应用迁移并重启后端。字段、导入流程和验证边界见 [WOM 接入说明](back_end/saolei/accountlink/wom/README.md)和 [MSGames 接入说明](back_end/saolei/accountlink/msgames/README.md)。
 
 ## 链接

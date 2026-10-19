@@ -85,6 +85,7 @@ export default defineConfig({
                                 { text: '录像播放器', link: '/guide/video-player' },
                                 { text: '录像表达式参考', link: '/guide/replay-expressions' },
                                 { text: '扫雷标识', link: '/guide/identifier' },
+                                { text: 'top 榜与 LSF 榜', link: '/guide/top-lsf' },
                                 {
                                     text: '比赛功能',
                                     link: '/guide/tournament',
@@ -103,6 +104,7 @@ export default defineConfig({
                                 { text: '操作方式和规则', link: '/guide/minesweeper/mouse-event' },
                                 { text: '术语', link: '/guide/minesweeper/terminology' },
                                 { text: '数据', link: '/guide/minesweeper/stat' },
+                                { text: 'evf 标准', link: '/guide/minesweeper/evf-standard' },
                             ],
                         },
                         {
@@ -150,6 +152,7 @@ export default defineConfig({
                                 { text: 'Video Player', link: '/en/guide/video-player' },
                                 { text: 'Replay Expressions', link: '/en/guide/replay-expressions' },
                                 { text: 'Player Identifiers', link: '/en/guide/identifier' },
+                                { text: 'top and LSF Rankings', link: '/en/guide/top-lsf' },
                                 {
                                     text: 'Tournaments',
                                     link: '/en/guide/tournament',
@@ -167,6 +170,8 @@ export default defineConfig({
                             items: [
                                 { text: 'Controls and Rules', link: '/en/guide/minesweeper/mouse-event' },
                                 { text: 'Terminology', link: '/en/guide/minesweeper/terminology' },
+                                { text: 'Data', link: '/en/guide/minesweeper/stat' },
+                                { text: 'evf Format', link: '/en/guide/minesweeper/evf-standard' },
                             ],
                         },
                     ],

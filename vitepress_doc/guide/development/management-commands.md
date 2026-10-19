@@ -77,15 +77,25 @@ python manage.py rebuild_pb_ranks --batch-size 100
 
 位置：`speedranking/management/commands/rebuild_top_ranks.py`
 
-从录像数据库按玩家分段构建 top 的十八个小榜及前二十名均值锚点。`--batch-size` 默认 100，必须为正数；每批输出累计用户数和最后玩家 id。
+从录像数据库按玩家分段构建 top 的十八个小榜、前二十名均值锚点及九个软实力/LSF 派生榜。`--batch-size` 默认 100，必须为正数；每批输出累计用户数和最后玩家 id。
 
 ```bash
 python manage.py rebuild_top_ranks --batch-size 100
 ```
 
-命令使用独立临时命名空间，构建明细与索引、计算全部锚点后，用一个 Redis 事务原子切换正式榜的二十个 key。构建失败保留旧榜，正常退出会清理临时 key；强制终止可能遗留临时数据。重建期间暂停录像和排行写入，包括上传、修改、删除、绑定/解绑、比赛公开及管理员修复；旧榜的只读服务可以继续。此命令不修改数据库，也不清理扫雷网或 PB 缓存。
+命令使用独立临时命名空间，构建明细、全部索引与锚点后，用一个 Redis 事务原子切换正式榜的三十个 key。构建失败保留旧榜，正常退出会清理临时 key；强制终止可能遗留临时数据。命令持单机独占锁：等待在途写操作完成，相关新 HTTP 写请求返回带原因的 503，后台业务等待后继续，旧榜只读服务继续。不需要停整个网站，但所有进程必须共享可写的 `TOP_RANKING_LOCK_PATH`（默认 `BASE_DIR/runtime/top-lock.sqlite3`）；不要删除活动锁文件。自定义写入脚本也必须遵守准入。此命令不修改数据库，也不清理扫雷网或 PB 缓存。
 
 首次部署和缓存丢失后手动执行，查询不自动回源。本地 `python -m dangerzone.init_local_test` 已自动调用此命令的重建服务，`--no-weekly` 不影响重建。单用户小榜修复使用 `POST /api/speedranking/top/admin/rebuild_record`。具体缓存与单位约定统一见 `back_end/saolei/speedranking/README.md`。
+
+### `rebuild_top_soft_ranks`
+
+位置：`speedranking/management/commands/rebuild_top_soft_ranks.py`
+
+仅从现有十八个原始 top zset 和实时锚点重建全部九个软实力/LSF 索引，发布相应锚点快照、版本和更新时间；不查录像数据库、不重新选取前五，也不修复原始榜。与后台刷新共用独占准入和临时榜发布逻辑，失败保留旧版并记录日志。首次部署或升级原始 score 编码应使用 `rebuild_top_ranks`，不能只运行此命令。
+
+```bash
+python manage.py rebuild_top_soft_ranks
+```
 
 ### `rebuild_tournament_cache`
 
@@ -112,7 +122,7 @@ python manage.py rebuild_tournament_cache
 
 用途：重建 `TournamentUser` 的 Redis 排行缓存。
 
-当前积分以全部非零积分用户中最大的 `last_updated` 为统一时间基准，分批写入衰减后的分数；数据库记录不变。重建会同时清理旧的 7 个 zset 和时间基准 key。部署统一基准的缓存逻辑后需执行一次此命令；重建期间暂停积分结算及其他排行缓存写入。
+当前积分统一折算到当年 1 月 1 日 00:00 UTC，其余字段按数据库值写入；数据库记录不变。重建会同时清理旧的 7 个 zset 和时间基准 key。重建期间暂停积分结算及其他排行缓存写入；如果只需修复当前积分排序，使用下面的 `rebuild_tournament_current_score_cache`。
 
 参数：
 
@@ -126,6 +136,27 @@ python manage.py rebuild_tournament_cache
 python manage.py rebuild_tournament_user_cache
 python manage.py rebuild_tournament_user_cache --batch-size 500
 ```
+
+### `rebuild_tournament_current_score_cache`
+
+位置：`tournament/management/commands/rebuild_tournament_current_score_cache.py`
+
+用途：从 `TournamentUser.score_current` / `last_updated` 重算当前积分 zset，统一使用当年 1 月 1 日 00:00 UTC 锚点。不修改数据库，不重放积分发放，不影响另外 6 个排行 zset。
+
+积分折算沿用两年（730 天）减半的公式，允许负时间差：最后计分时间晚于年初时，反向折算会放大分数。所有用户使用同一锚点，排序等价于实时衰减后的排序。API 仍返回数据库原始积分与 `last_updated`，前端实时显示不变。
+
+重算先将删除、锚点设置和分批写入加入 Redis 事务，完成后原子替换。期间读请求仍读取旧排行；并发缓存写入或锚点变化会触发重试。为避免读取尚未提交的数据库积分，重算期间应暂停积分结算和历史积分修正任务。空表同样清理旧排行并建立年初锚点。重复执行不会累计衰减。
+
+| 参数 | 默认值 | 说明 |
+| --- | --- | --- |
+| `--batch-size` | `1000` | 每批读取的用户数，必须大于 0；各批最终在同一 Redis 事务提交 |
+
+```bash
+python manage.py rebuild_tournament_current_score_cache
+python manage.py rebuild_tournament_current_score_cache --batch-size 500
+```
+
+部署年度锚点方案后先执行一次此命令，修复已有当前积分缓存，并重启 `runapscheduler` 注册年度任务。若其他 6 个排行也需要重建，则改用 `rebuild_tournament_user_cache`。
 
 ### `rebuild_custom_pluck_cache`
 
@@ -336,7 +367,7 @@ python manage.py db_worker_robust --queue-name default --interval 2
 
 位置：`common/management/commands/runapscheduler.py`
 
-用途：在 `common` APP 的单一常驻进程中运行验证码、录像队列和任务执行历史的定时清理。
+用途：在 `common` APP 的单一常驻进程中运行定时清理和比赛当前积分年度锚点更新。
 
 任务注册位置：`common/apscheduler.py`
 
@@ -349,6 +380,9 @@ python manage.py db_worker_robust --queue-name default --interval 2
 | `delete_freezed_video` | 每天 01:28 | 删除 7 天以前冻结状态的录像 |
 | `delete_overdue_emailverifyrecord` | 每周一 01:03 | 清理 1 小时以前的邮箱验证码 |
 | `delete_overdue_captcha` | 每周一 01:05 | 清理过期图形验证码 |
+| `refresh_tournament_score_reference` | 每年 1 月 1 日 00:00 UTC | 将当前积分 zset 整体折算到新年年初，并原子更新锚点；数据库不变 |
+
+年度锚点任务还会在调度器启动时执行一次幂等检查，补上跨年停机或错过执行时间的更新；重复检查同一年不会再次衰减。普通结算只读取已有锚点，不会根据比赛结束时间或当前年份自行推进，因此调度器暂时停机也不会混用不同时间基准。此任务设置 `coalesce=True`、`misfire_grace_time=None` 和单实例运行。
 
 旧的 World 监控页面和 CPU/网络 IO 采集任务已移除；`monitor` APP 改为承载服务器统计 Ninja API，不再注册定时采集。新增 `/api/monitor/memoryusage` 仅在请求缓存未命中时采集，完整结果缓存 300 秒，详见[服务器内存统计](./cache.md#服务器内存统计)。`runapscheduler` 启动注册任务时会删除数据库中残留的 `refresh_state_always` 任务，避免任务存储恢复已删除的采集函数；其余五项清理任务保持运行。更新后需重启原 APScheduler 进程。
 

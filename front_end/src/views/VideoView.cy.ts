@@ -4,12 +4,15 @@ import $axios from '@/http';
 import i18n from '@/i18n';
 import { videofilter } from '@/store';
 import { pinia } from '@/store/create';
+import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
 
 describe('<VideoView />', () => {
+    installHashHistoryCleanup();
+
     it('sorts the STNB column through iqg in both directions', () => {
         cy.viewport(600, 500);
         cy.intercept({ method: 'GET', pathname: '/api/video/query' }, { body: { count: 0, videos: [] } }).as('videos');
-        cy.mount(VideoView, { global: { plugins: [i18n, pinia], config: { globalProperties: { $axios } } } });
+        cy.mount(VideoView, { global: { plugins: [i18n, pinia, hashRouter()], config: { globalProperties: { $axios } } } });
         cy.wait('@videos').its('request.query').should('include', { o: 'timems' });
 
         cy.contains('th', 'STNB').click();
@@ -21,7 +24,7 @@ describe('<VideoView />', () => {
     it('requests the updated state filter once for each checkbox activation', () => {
         videofilter.value.filter_state = ['a', 'b', 'c', 'd'];
         cy.intercept({ method: 'GET', pathname: '/api/video/query' }, { body: { count: 0, videos: [] } }).as('videos');
-        cy.mount(VideoView, { global: { plugins: [i18n, pinia], config: { globalProperties: { $axios } } } });
+        cy.mount(VideoView, { global: { plugins: [i18n, pinia, hashRouter()], config: { globalProperties: { $axios } } } });
         cy.wait('@videos');
         cy.contains('label', 'Valid').click();
         cy.wait('@videos').its('request.url').should((url: string) => {
@@ -41,7 +44,7 @@ describe('<VideoView />', () => {
         cy.intercept({ method: 'GET', pathname: '/api/video/query' }, {
             body: { count: 21, videos: [] },
         }).as('videos');
-        cy.mount(VideoView, { global: { plugins: [i18n, pinia], config: { globalProperties: { $axios } } } });
+        cy.mount(VideoView, { global: { plugins: [i18n, pinia, hashRouter()], config: { globalProperties: { $axios } } } });
 
         cy.wait('@videos').its('request.query').should('include', { nf: 'false', page: '1' });
         cy.get('[role="switch"]').should('have.attr', 'aria-checked', 'false');

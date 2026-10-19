@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
+from utils.ranking_lock import ranking_access
 from videomanager.models import VideoModel
 from videomanager.utils import VideoParseError
 from videomanager.view_utils import refresh_video
@@ -32,7 +33,7 @@ class Command(BaseCommand):
             videos = videos.filter(**bounds)
         for processed, video_id in enumerate(videos.values_list('pk', flat=True).iterator(), start=1):
             try:
-                with transaction.atomic():
+                with ranking_access(operation='refresh_videos'), transaction.atomic():
                     video = VideoModel.objects.select_for_update().get(pk=video_id)
                     refresh_video(video)
             except VideoParseError as exc:

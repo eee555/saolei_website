@@ -2,9 +2,6 @@
     <section class="top-ranking">
         <div class="top-toolbar">
             <label class="checkbox nf-toggle"><input v-model="nf" class="checkbox-input" type="checkbox"> {{ t('common.nf') }}</label>
-            <BaseButton class="square-button" :aria-label="t('common.action.refresh')" :title="t('common.action.refresh')" @click="load">
-                <BaseIconRefresh :loading="loading" aria-hidden="true" />
-            </BaseButton>
         </div>
         <p v-if="failed" role="alert" class="text-danger">
             {{ t('ranking.loadFailed') }}
@@ -48,10 +45,10 @@
                 <td class="table-col-player">
                     <PlayerName :user-id="row.player_id" />
                 </td>
-                <td v-for="axis in topAxes" :key="`${axis.level}${axis.stat}`" class="table-col-number" :data-field="`${axis.level}${axis.stat}`" :data-selected="level === axis.level && stat === axis.stat">
-                    {{ formatTopValue(row.records[topField(nf, axis.level, axis.stat)]?.mean ?? missingTopValue(axis.stat), axis.level, axis.stat) }}
+                <td v-for="axis in topAxes" :key="`${axis.level}${axis.stat}`" class="table-col-number" :data-field="`${axis.level}${axis.stat}`" :data-selected="level === axis.level && stat === axis.stat" :style="cellStyle(row.records[topField(nf, axis.level, axis.stat)] ? topMean(row.records[topField(nf, axis.level, axis.stat)], axis.stat) : undefined, axis.level, axis.stat)">
+                    {{ formatTopValue(topMean(row.records[topField(nf, axis.level, axis.stat)], axis.stat), axis.level, axis.stat) }}
                 </td>
-                <td v-for="(video, position) in row.videos" :key="position" class="table-col-number top-detail-cell" :class="{ 'top-detail-start': position === 0 }">
+                <td v-for="(video, position) in row.videos" :key="position" class="table-col-number top-detail-cell" :class="{ 'top-detail-start': position === 0 }" :style="cellStyle(video?.value, detailAxis.level, detailAxis.stat)">
                     <VideoPreviewLink v-if="video" :id="video.video_id">
                         {{ formatTopValue(video.value, detailAxis.level, detailAxis.stat) }}
                     </VideoPreviewLink>
@@ -72,15 +69,17 @@ import { ElPagination, vLoading } from 'element-plus';
 import { computed, onScopeDispose, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import BaseButton from '@/components/common/BaseButton.vue';
 import BaseTable from '@/components/common/BaseTable.vue';
 import BaseTextButton from '@/components/common/BaseTextButton.vue';
-import { BaseIconRefresh } from '@/components/common/icon';
 import PlayerName from '@/components/PlayerName.vue';
 import VideoPreviewLink from '@/components/VideoPreviewLink.vue';
-import { fetchTopRanking, formatTopValue, missingTopValue, topAxes, topField, topLevels, topStatNames } from '@/services/topRankingService';
+import { fetchTopRanking, formatTopValue, missingTopValue, topAxes, topDisplayValue, topField, topLevels, topMean, topStatNames } from '@/services/topRankingService';
 import type { TopRankingPlayer, TopStat } from '@/services/topRankingService';
+import { colorThemes } from '@/store/color';
+import { getPiecewiseColorSchemeName } from '@/utils/ms_const';
 import type { MS_Level } from '@/utils/ms_const';
+
+const props = defineProps({ colored: { type: Boolean, default: false } });
 
 const level = ref<MS_Level>('e');
 const stat = ref<TopStat>('t');
@@ -99,6 +98,11 @@ const loading = ref(false);
 const failed = ref(false);
 let controller: AbortController | null = null;
 let requestId = 0;
+
+function cellStyle(value: number | undefined, cellLevel: MS_Level, cellStat: TopStat) {
+    if (!props.colored || value === undefined) return undefined;
+    return colorThemes[getPiecewiseColorSchemeName(topStatNames[cellStat], cellLevel)].value.getStyle(topDisplayValue(value, cellLevel, cellStat));
+}
 
 function selectRanking(selectedLevel: MS_Level, selectedStat: TopStat) {
     level.value = selectedLevel;
@@ -143,6 +147,8 @@ watch([level, stat, nf, pageSize, page], () => {
 onScopeDispose(() => {
     requestId++; controller?.abort();
 });
+
+defineExpose({ refresh: load, loading });
 
 const i18nMessages = {
     'zh-cn': { local: {

@@ -20,24 +20,12 @@ from utils.exceptions import ExceptionToResponse
 from videomanager.models import VideoModel
 from .decorators import banned_blocked, login_required_error, staff_required
 from .models import UserProfile
+from .schema import UserInfoOut
 from .services import has_sub200_expert_video, refresh_avatar_chance, try_update_user_name_fields, try_update_user_signature
 
 router = Router()
 logger = logging.getLogger('userprofile')
 AVATAR_ACCEL_REDIRECT_PREFIX = '/internal-media/'
-
-
-UserInfoOut = create_schema(
-    UserProfile,
-    fields=[
-        'id', 'username',
-        'firstname', 'lastname', 'realname',
-        'signature', 'country',
-        'is_banned', 'is_staff',
-        'last_change_avatar', 'last_change_signature',
-        'left_avatar_n', 'left_signature_n',
-    ],
-)
 
 
 class AdminUserProfileOutBase(Schema):
@@ -268,10 +256,9 @@ def update_user_profile(request: HttpRequest, data: UpdateUserProfileIn = Form(.
             continue
         try:
             try_update_user_name_fields(user, name_field, name_value, user_ip)
+            data_out[name_field] = success_out
         except ExceptionToResponse as e:
             data_out[name_field] = e.body
-
-        data_out[name_field] = success_out
 
     if (signature := data.signature) is not None:
         try:

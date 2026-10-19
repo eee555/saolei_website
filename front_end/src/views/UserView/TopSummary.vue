@@ -1,15 +1,20 @@
 <template>
-    <section class="top-summary" data-cy="top-summary" :aria-busy="loading || anchorsLoading">
-        <BaseButton class="square-button top-summary-refresh" size="small" :disabled="loading || anchorsLoading" :aria-busy="loading || anchorsLoading || undefined" :aria-label="t('common.action.refresh')" :title="t('common.action.refresh')" data-cy="refresh-top" @click="refresh">
-            <BaseIconRefresh :loading="loading || anchorsLoading" aria-hidden="true" />
-        </BaseButton>
+    <section class="top-summary" data-cy="top-summary" :aria-busy="loading">
+        <div v-if="softValues" class="top-lsf-heading">
+            LSF <strong data-cy="lsf-value">{{ formatLsf(softValues.lsf) }}</strong>
+        </div>
+        <div class="top-summary-toolbar">
+            <div class="top-lsf-summary" data-cy="top-lsf-summary">
+                <StackBar v-if="softValues" :data="lsfContributions" height="10px" :format-value="formatLsf" legend />
+            </div>
+            <BaseButton class="square-button top-summary-refresh" size="small" :disabled="loading" :aria-busy="loading || undefined" :aria-label="t('common.action.refresh')" :title="t('common.action.refresh')" data-cy="refresh-top" @click="loadRecords(true)">
+                <BaseIconRefresh :loading="loading" aria-hidden="true" />
+            </BaseButton>
+        </div>
         <p v-if="failed" role="alert" class="text-danger">
             {{ t('local.recordsFailed') }}
         </p>
-        <p v-if="anchorsFailed" role="alert" class="text-danger">
-            {{ t('local.anchorsFailed') }}
-        </p>
-        <p v-if="(loading && !visibleRecords) || (anchorsLoading && !anchors)" role="status">
+        <p v-if="loading && !visibleRecords" role="status">
             {{ t('local.loading') }}
         </p>
         <div v-if="visibleRecords" class="top-radars">
@@ -25,6 +30,7 @@
 </template>
 
 <script setup lang="ts">
+import tinycolor from 'tinycolor2';
 import { computed, onScopeDispose, ref, shallowRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -33,8 +39,10 @@ import TopRecordTable from './TopRecordTable.vue';
 
 import BaseButton from '@/components/common/BaseButton.vue';
 import { BaseIconRefresh } from '@/components/common/icon';
-import { fetchTopAnchors, fetchTopPlayerRecords } from '@/services/topRankingService';
-import type { TopAnchors, TopRecords } from '@/services/topRankingService';
+import StackBar from '@/components/visualization/StackBar/App.vue';
+import { fetchTopPlayerRecords, topLsfContributions, topSoftValues } from '@/services/topRankingService';
+import type { TopRecords } from '@/services/topRankingService';
+import { colorTheme, store } from '@/store';
 
 const props = defineProps({
     userId: { type: Number, required: true },
@@ -44,16 +52,21 @@ const props = defineProps({
 const dataKey = computed(() => `${props.userId}:${props.revision}`);
 const loadedKey = ref('');
 const records = shallowRef<TopRecords | null>(null);
-const anchors = shallowRef<TopAnchors | null>(null);
+const anchors = computed(() => store.topAnchors);
 const visibleRecords = computed(() => (props.active && loadedKey.value === dataKey.value ? records.value : null));
+const softValues = computed(() => (visibleRecords.value && anchors.value ? topSoftValues(visibleRecords.value, anchors.value) : null));
+const lsfContributions = computed(() => (softValues.value
+    ? topLsfContributions(softValues.value).map(({ mode, level, value }) => ({
+        name: `${mode === 'nf' ? 'NF ' : ''}${t(`common.level.${level}`)}`,
+        value,
+        color: mode === 'nf' ? tinycolor(colorTheme.value.level[level]).setAlpha(0.5).toRgbString() : colorTheme.value.level[level],
+    }))
+    : []));
+const formatLsf = (value: number) => value.toFixed(2);
 const loading = ref(false);
 const failed = ref(false);
-const anchorsLoading = ref(false);
-const anchorsFailed = ref(false);
 let controller: AbortController | null = null;
-let anchorsController: AbortController | null = null;
 let requestId = 0;
-let anchorsRequestId = 0;
 
 async function loadRecords(force = false) {
     controller?.abort();
@@ -77,54 +90,21 @@ async function loadRecords(force = false) {
     }
 }
 
-async function loadAnchors(force = false) {
-    if (!props.active || props.userId < 1) {
-        anchorsRequestId++;
-        anchorsController?.abort();
-        anchorsLoading.value = false;
-        return;
-    }
-    if (!force && (anchors.value || anchorsLoading.value)) return;
-    anchorsController?.abort();
-    anchorsController = new AbortController();
-    const { signal } = anchorsController;
-    const request = ++anchorsRequestId;
-    anchorsLoading.value = true;
-    anchorsFailed.value = false;
-    try {
-        const result = await fetchTopAnchors(signal);
-        if (request === anchorsRequestId) anchors.value = result;
-    } catch {
-        if (request === anchorsRequestId && !signal.aborted) anchorsFailed.value = true;
-    } finally {
-        if (request === anchorsRequestId) anchorsLoading.value = false;
-    }
-}
-
-function refresh() {
-    void loadRecords(true);
-    void loadAnchors(true);
-}
 watch([dataKey, () => props.active], () => {
     void loadRecords();
-    void loadAnchors();
 }, { immediate: true });
 onScopeDispose(() => {
     requestId++;
-    anchorsRequestId++;
     controller?.abort();
-    anchorsController?.abort();
 });
 
 const i18nMessages = {
     'zh-cn': { local: {
         recordsFailed: 'top 成绩加载失败，请刷新重试。',
-        anchorsFailed: 'top 锚点加载失败，请刷新重试。',
         loading: '正在加载 top…',
     } },
     en: { local: {
         recordsFailed: 'Could not load top records. Refresh to retry.',
-        anchorsFailed: 'Could not load top anchors. Refresh to retry.',
         loading: 'Loading top…',
     } },
 };
@@ -133,21 +113,32 @@ const { t } = useI18n({ messages: i18nMessages });
 
 <style scoped>
 .top-summary {
-    position: relative;
     min-width: 0;
     min-height: 28px;
     margin-bottom: 16px;
 }
 .top-summary-refresh {
-    position: absolute;
-    top: 0;
-    right: 0;
-    z-index: 1;
+    flex-shrink: 0;
     width: 28px;
     height: 28px;
 }
-.top-summary > p {
-    padding-right: 36px;
+.top-summary-toolbar {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.top-lsf-summary {
+    flex: 1;
+    min-width: 0;
+    padding-top: 9px;
+}
+.top-lsf-heading {
+    min-height: 28px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-variant-numeric: tabular-nums;
 }
 .top-radars {
     display: grid;

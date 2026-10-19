@@ -21,23 +21,6 @@ from .base import (
 
 
 class TestApi(TournamentTestCaseBase):
-    def test_gsc_validate_generates_token_before_start(self):
-        now = timezone.now()
-        tournament = GSCTournament.objects.create(
-            order=3,
-            start_time=now + timedelta(hours=1),
-            end_time=now + timedelta(hours=2),
-            state=Tournament_TextChoices.State.PENDING,
-        )
-
-        update_fields = tournament.validate()
-        tournament.save(update_fields=update_fields)
-
-        tournament.refresh_from_db()
-        self.assertEqual(tournament.state, Tournament_TextChoices.State.NORMAL)
-        self.assertTrue(tournament._token.startswith('G'))
-        self.assertEqual(tournament.token, '')
-
     def test_tournament_ninja_api_serializes_gsc_tournament(self):
         list_response = self.client.get('/api/tournament/get_list', {'category': 'normal'})
         detail_response = self.client.get('/api/tournament/get', {'tournament_id': self.tournament.id})
@@ -94,33 +77,6 @@ class TestApi(TournamentTestCaseBase):
             {item['id'] for item in all_response.json()},
             {self.tournament.id, awarded_tournament.id, pending_tournament.id},
         )
-
-    def test_tournament_user_ranking_api_pages_score_fields_from_cache(self):
-        low_user = self.create_user('tournament_rank_low')
-        high_user = self.create_user('tournament_rank_high')
-        default_user = self.create_user('tournament_rank_default')
-        low_score = TournamentUser.objects.create(user=low_user, score_current=7.5, score_total=10)
-        high_score = TournamentUser.objects.create(user=high_user, score_current=12.5, score_total=20)
-        default_score = TournamentUser.objects.create(user=default_user)
-        self.tournament_cache.update_tournament_users([low_score, high_score, default_score])
-
-        first_page_response = self.client.get('/api/tournament/user-ranking', {
-            'sort_by': 'score_current',
-            'start': 0,
-            'end': 1,
-        })
-        second_page_response = self.client.get('/api/tournament/user-ranking', {
-            'sort_by': 'score_current',
-            'start': 1,
-            'end': 2,
-        })
-
-        self.assertEqual(first_page_response.status_code, 200)
-        self.assertEqual(second_page_response.status_code, 200)
-        self.assertEqual(first_page_response.json()['total'], 2)
-        self.assertEqual([item['user_id'] for item in first_page_response.json()['data']], [high_user.id])
-        self.assertEqual(first_page_response.json()['data'][0]['score_total'], 20)
-        self.assertEqual([item['user_id'] for item in second_page_response.json()['data']], [low_user.id])
 
     def test_tournament_user_ranking_api_sorts_best_fields_ascending(self):
         better_user = self.create_user('tournament_rank_best_better')
@@ -183,6 +139,7 @@ class TestApi(TournamentTestCaseBase):
         tournament.refresh_from_db()
         self.assertEqual(tournament.state, Tournament_TextChoices.State.NORMAL)
         self.assertTrue(tournament._token.startswith('G'))
+        self.assertEqual(tournament.token, '')
 
     def test_new_gsc_tournament_api_creates_pending_without_token(self):
         admin = UserProfile.objects.create_user(
@@ -206,7 +163,7 @@ class TestApi(TournamentTestCaseBase):
         self.assertEqual(tournament.state, Tournament_TextChoices.State.PENDING)
         self.assertEqual(tournament.token, '')
 
-    def test_award_gsc_api_reuses_existing_finish_task(self):
+    def test_gsc_finish_api_reuses_existing_task(self):
         admin = UserProfile.objects.create_user(
             id=GSC_Defaults.HOST_ID,
             username='gsc_admin',

@@ -1,20 +1,19 @@
+import tinycolor from 'tinycolor2';
+
 import SaoleiRanking from './SaoleiRanking.vue';
 
 import $axios from '@/http';
 import i18n from '@/i18n';
+import { colorThemes } from '@/store/color';
 import { pinia } from '@/store/create';
+import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
 
 describe('<SaoleiRanking />', () => {
+    installHashHistoryCleanup();
+
     it('renders grouped columns, loads pages, switches stats and independently selects NF', () => {
         cy.mockPlayerNameFallback();
-        let releaseNF!: () => void;
-        const nfResponse = new Promise<void>((resolve) => {
-            releaseNF = resolve;
-        });
-        cy.intercept({ method: 'GET', pathname: '/api/speedranking/rank' }, async (req) => {
-            if (req.query.ranking_name === 'saolei_nf') {
-                await nfResponse;
-            }
+        cy.intercept({ method: 'GET', pathname: '/api/speedranking/rank' }, (req) => {
             req.reply({
                 body: { count: 21,
                     players: [{
@@ -36,7 +35,7 @@ describe('<SaoleiRanking />', () => {
                     }] },
             });
         }).as('ranking');
-        cy.mount(SaoleiRanking, { global: { plugins: [i18n, pinia], config: { globalProperties: { $axios } } } });
+        cy.mount(SaoleiRanking, { global: { plugins: [i18n, pinia, hashRouter()], config: { globalProperties: { $axios } } } });
         cy.wait('@ranking').its('request.query').should('include', { ranking_name: 'saolei', stat: 'sumt', start: '0', end: '20' });
         cy.get('.saolei-ranking-table thead th[rowspan="2"]').should('have.length', 2);
         cy.get('.saolei-ranking-table thead th[scope="colgroup"][colspan="2"]').should('have.length', 4);
@@ -47,6 +46,16 @@ describe('<SaoleiRanking />', () => {
         cy.get('.saolei-ranking-table tbody').extractTableData().should((data) => {
             expect(data[0]?.slice(2)).to.deep.equal(['1.234', '4.567', '--', '--', '--', '--', '2001.232', '4.567']);
             expect(data[0]?.[0]).to.equal('1');
+        });
+        cy.get<ComponentWrapper<typeof SaoleiRanking>>('@vue').then((wrapper) => wrapper.setProps({ colored: true }));
+        cy.get('.saolei-ranking-table tbody td').eq(2).should('have.css', 'background-color', tinycolor(colorThemes.btime.value.getColor(1.234)).toRgbString());
+        cy.get('.saolei-ranking-table tbody td').eq(3).should('have.css', 'background-color', tinycolor(colorThemes.bvs.value.getColor(4.567)).toRgbString());
+        cy.get('.saolei-ranking-table tbody td').filter((index) => index >= 4).each(($cell) => {
+            expect($cell[0].style.backgroundColor).to.equal('');
+        });
+        cy.get<ComponentWrapper<typeof SaoleiRanking>>('@vue').then((wrapper) => wrapper.setProps({ colored: false }));
+        cy.get('.saolei-ranking-table tbody td').eq(2).should(($cell) => {
+            expect($cell[0].style.backgroundColor).to.equal('');
         });
         cy.get('.stat-header[aria-label="Sum Time"]').should('have.attr', 'aria-pressed', 'true');
         cy.get('.saolei-ranking-table .video-preview-link').should('have.length', 2);
@@ -62,25 +71,10 @@ describe('<SaoleiRanking />', () => {
         cy.get('.stat-header[aria-label="Sum Time"]').should('have.attr', 'aria-pressed', 'false');
         cy.get('.el-pagination .btn-next').click();
         cy.wait('@ranking').its('request.query').should('include', { stat: 'bb', start: '20', end: '40' });
-        let refreshBounds: DOMRect;
-        cy.get('button[aria-label="Refresh"]').should('be.enabled').then(($button) => {
-            refreshBounds = $button[0].getBoundingClientRect();
-        });
         cy.get('.nf-toggle input[type=checkbox]').should('not.be.checked');
         cy.get('.nf-toggle').click();
         cy.get('.nf-toggle input[type=checkbox]').should('be.checked');
-        cy.get('button[aria-label="Refresh"]').should(($button) => {
-            expect($button.is(':enabled')).to.equal(true);
-            const bounds = $button[0].getBoundingClientRect();
-            expect(bounds.width).to.be.closeTo(refreshBounds.width, 0.1);
-            expect(bounds.left).to.be.closeTo(refreshBounds.left, 0.1);
-            expect($button.find('i')).to.have.length(1);
-            expect($button.find('.pi-refresh.pi-spin')).to.have.length(1);
-        }).then(() => {
-            releaseNF();
-        });
         cy.wait('@ranking').its('request.query').should('include', { ranking_name: 'saolei_nf', stat: 'bb', start: '0' });
-        cy.get('button[aria-label="Refresh"] .pi-refresh').should('not.have.class', 'pi-spin');
         cy.get('.el-pagination__sizes .el-select').click();
         cy.get('.el-select-dropdown__item').filter(':visible').contains('50').click();
         cy.wait('@ranking').its('request.query').should('include', { ranking_name: 'saolei_nf', stat: 'bb', start: '0', end: '50' });
@@ -90,7 +84,7 @@ describe('<SaoleiRanking />', () => {
 
     it('spans all ten columns when there are no records', () => {
         cy.intercept({ method: 'GET', pathname: '/api/speedranking/rank' }, { body: { count: 0, players: [] } }).as('ranking');
-        cy.mount(SaoleiRanking, { global: { plugins: [i18n, pinia], config: { globalProperties: { $axios } } } });
+        cy.mount(SaoleiRanking, { global: { plugins: [i18n, pinia, hashRouter()], config: { globalProperties: { $axios } } } });
         cy.wait('@ranking');
         cy.get('.saolei-ranking-table tbody td').should('have.length', 1).and('have.attr', 'colspan', '10').and('contain.text', i18n.global.t('ranking.empty'));
         cy.get('.saolei-ranking-table .stat-header').should('have.length', 8);

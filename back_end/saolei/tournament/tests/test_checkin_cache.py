@@ -21,8 +21,6 @@ from .base import (
 
 class TestCheckinCache(TournamentTestCaseBase):
     def test_video_create_checkin_requires_explicit_participant(self):
-        self.tournament_cache.update_tournament(self.tournament)
-
         video = self.create_video()
 
         video.refresh_from_db()
@@ -34,43 +32,32 @@ class TestCheckinCache(TournamentTestCaseBase):
             token=self.tournament.token,
         ).exists())
 
-    def test_video_create_checkin_uses_cached_participant(self):
-        self.create_cached_gsc_participant()
-        self.tournament_cache.update_tournament(self.tournament)
-
-        video = self.create_video()
-
-        video.refresh_from_db()
-        self.assertTrue(video.ongoing_tournament)
-        self.assertTrue(self.tournament.videos.filter(pk=video.pk).exists())
-        self.assertEqual(GSCParticipant.objects.filter(user=self.user, tournament=self.tournament).count(), 1)
-
     def test_non_avf_video_create_checkin_uses_tournament_identifier(self):
         self.create_cached_gsc_participant()
-        self.tournament_cache.update_tournament(self.tournament)
-
-        video = self.create_video(software=MS_TextChoices.Software.MVF)
-
-        video.refresh_from_db()
-        self.assertTrue(video.ongoing_tournament)
-        self.assertTrue(self.tournament.videos.filter(pk=video.pk).exists())
+        for software in (MS_TextChoices.Software.EVF, MS_TextChoices.Software.MVF):
+            with self.subTest(software=software):
+                video = self.create_video(software=software)
+                video.refresh_from_db()
+                self.assertTrue(video.ongoing_tournament)
+                self.assertTrue(self.tournament.videos.filter(pk=video.pk).exists())
+        self.assertEqual(GSCParticipant.objects.filter(user=self.user, tournament=self.tournament).count(), 1)
 
     def test_video_without_tournament_identifier_does_not_checkin(self):
+        self.create_cached_gsc_participant()
         video = self.create_video(tournament_identifier=[])
 
         video.refresh_from_db()
         self.assertFalse(video.ongoing_tournament)
         self.assertFalse(self.tournament.videos.filter(pk=video.pk).exists())
 
-    def test_video_create_checkin_does_not_fallback_to_db_when_normal_cache_misses(self):
-        GSCTournament.objects.filter(pk=self.tournament.pk).update(state=Tournament_TextChoices.State.PENDING)
-        cache.delete(NORMAL_TOURNAMENT_CACHE_KEY, NORMAL_PARTICIPANT_CACHE_KEY)
+    def test_video_create_checkin_does_not_fallback_to_db_when_participant_cache_misses(self):
+        participant = self.create_cached_gsc_participant()
+        cache.delete(NORMAL_PARTICIPANT_CACHE_KEY)
 
         video = self.create_video()
 
         video.refresh_from_db()
-        self.tournament.refresh_from_db()
-        self.assertEqual(self.tournament.state, Tournament_TextChoices.State.PENDING)
+        self.assertTrue(GSCParticipant.objects.filter(pk=participant.pk).exists())
         self.assertFalse(video.ongoing_tournament)
         self.assertFalse(self.tournament.videos.filter(pk=video.pk).exists())
 
@@ -92,8 +79,10 @@ class TestCheckinCache(TournamentTestCaseBase):
         self.assertFalse(video.ongoing_tournament)
         self.assertFalse(self.tournament.videos.filter(pk=video.pk).exists())
 
-    def test_normal_tournament_cache_reads_redis_hash(self):
-        self.tournament_cache.update_tournament(self.tournament)
+    def test_normal_tournament_cache_resolves_parent_and_reads_redis_hash(self):
+        parent_tournament = Tournament.objects.get(id=self.tournament.id)
+        self.assertEqual(parent_tournament.subclass, Tournament_TextChoices.Subclass.GSC)
+        self.tournament_cache.update_tournament(parent_tournament)
 
         tournaments = self.tournament_cache.get_tournament_all()
 
@@ -105,16 +94,6 @@ class TestCheckinCache(TournamentTestCaseBase):
         self.assertEqual(tournaments[0].data.order, self.tournament.order)
         self.assertEqual(tournaments[0].data.token, self.tournament.token)
         self.assertIsNotNone(cache.hget(NORMAL_TOURNAMENT_CACHE_KEY, self.tournament.id))
-
-    def test_parent_tournament_can_select_subclass_before_cache_update(self):
-        parent_tournament = Tournament.objects.get(id=self.tournament.id)
-
-        self.assertEqual(parent_tournament.subclass, Tournament_TextChoices.Subclass.GSC)
-        self.tournament_cache.update_tournament(parent_tournament)
-
-        tournaments = self.tournament_cache.get_tournament_all()
-        self.assertEqual(tournaments[0].id, self.tournament.id)
-        self.assertEqual(tournaments[0].data.order, self.tournament.order)
 
     def test_normal_participant_cache_rebuilds_user_field(self):
         identifier = Identifier.objects.create(identifier='cached-arbiter')
@@ -140,21 +119,6 @@ class TestCheckinCache(TournamentTestCaseBase):
         self.assertEqual(participants[0].start_time, participant.start_time)
         self.assertEqual(participants[0].end_time, participant.end_time)
 
-    def test_tournament_participant_create_updates_cache_through_participant_save(self):
-        with self.captureOnCommitCallbacks(execute=True):
-            participant = TournamentParticipant.objects.create(
-                user=self.user,
-                tournament=self.tournament,
-                token=self.tournament.token,
-                start_time=self.tournament.start_time,
-                end_time=self.tournament.end_time,
-            )
-
-        participants = self.tournament_cache.get_participant_list(self.user.id)
-        self.assertEqual(len(participants), 1)
-        self.assertEqual(participants[0].id, participant.id)
-        self.assertEqual(participants[0].tournament, self.tournament.id)
-
     def test_tournament_participant_create_generates_token_on_save(self):
         with self.captureOnCommitCallbacks(execute=True):
             participant = TournamentParticipant.objects.create(
@@ -167,6 +131,9 @@ class TestCheckinCache(TournamentTestCaseBase):
         self.assertTrue(participant.token)
         self.assertEqual(TournamentParticipant.objects.get(id=participant.id).token, participant.token)
         participants = self.tournament_cache.get_participant_list(self.user.id)
+        self.assertEqual(len(participants), 1)
+        self.assertEqual(participants[0].id, participant.id)
+        self.assertEqual(participants[0].tournament, self.tournament.id)
         self.assertEqual(participants[0].token, participant.token)
 
     def test_remove_tournament_removes_matching_participants_from_cache(self):

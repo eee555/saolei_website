@@ -1,7 +1,9 @@
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone as datetime_timezone
 import secrets
 import string
 from typing import Any
+
+from django.utils import timezone
 
 MAX_TOURNAMENT_BEST = 9223372036854775807
 TOURNAMENT_SCORE_HALF_LIFE = timedelta(days=365 * 2)
@@ -32,8 +34,12 @@ def default_weekly_classic_it():
 
 
 def tournament_score_decay_factor(start_time, end_time):
-    if end_time <= start_time:
-        return 1
+    # 允许负时间差：折算到早于计分时间的年度锚点时，负指数会自动放大积分。
     elapsed_seconds = (end_time - start_time).total_seconds()
     half_life_seconds = TOURNAMENT_SCORE_HALF_LIFE.total_seconds()
-    return 1 / (2 ** (elapsed_seconds / half_life_seconds))
+    return 2 ** (-elapsed_seconds / half_life_seconds)
+
+
+def tournament_score_reference_time():
+    now = timezone.now().astimezone(datetime_timezone.utc)
+    return datetime(now.year, 1, 1, tzinfo=datetime_timezone.utc)

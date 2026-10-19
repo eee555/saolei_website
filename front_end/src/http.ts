@@ -7,6 +7,14 @@ const $axios = axios.create({
     timeout: 20000,
     withCredentials: true, // 必须指定这个参数，否则axios才能携带参数
 });
+$axios.interceptors.response.use(undefined, async (error: Error) => {
+    if (axios.isAxiosError(error) && error.response?.status === 503) {
+        const { httpErrorNotification, isRankingRefreshError } = await import('@/components/Notifications');
+        if (isRankingRefreshError(error)) httpErrorNotification(error);
+    }
+    throw error;
+});
+
 // declare module 'axios' {
 //     interface AxiosInstance {
 //         (config: AxiosRequestConfig): Promise<any>

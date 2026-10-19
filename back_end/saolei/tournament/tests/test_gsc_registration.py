@@ -23,6 +23,7 @@ class TestGscRegistration(TournamentTestCaseBase):
             self.tournament.save(update_fields=['start_time'])
             response = self.client.post('/api/tournament/gsc/participant', {'order': self.tournament.order})
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.tournament.token, '')
         participant = GSCParticipant.objects.get(tournament=self.tournament, user=self.user)
         self.assertEqual(participant.token, self.tournament._token)
         self.assertEqual(participant.start_time, self.tournament.start_time)
@@ -51,6 +52,7 @@ class TestGscRegistration(TournamentTestCaseBase):
 
         self.tournament.start_time = timezone.now() - timedelta(minutes=1)
         self.tournament.save(update_fields=['start_time'])
+        self.assertEqual(self.tournament.token, self.tournament._token)
         participant.start_time = self.tournament.start_time
         participant.save(update_fields=['start_time'])
         response = self.client.get('/api/tournament/participants', {'tournament_id': self.tournament.id})

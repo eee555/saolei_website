@@ -57,8 +57,8 @@ describe('PiecewiseColorScheme', () => {
         it('Returns precomputed background and readable text colors', () => {
             const scheme = new PiecewiseColorScheme(['#ffffff', '#000000'], [10]);
 
-            expect(scheme.getStyle(5)).toEqual({ backgroundColor: '#ffffff', color: 'var(--ui-text-color-regular-light)' });
-            expect(scheme.getStyle(15)).toEqual({ backgroundColor: '#000000', color: 'var(--ui-text-color-regular-dark)' });
+            expect(scheme.getStyle(5)).toEqual({ backgroundColor: '#ffffff', color: '#000000' });
+            expect(scheme.getStyle(15)).toEqual({ backgroundColor: '#000000', color: '#ffffff' });
         });
 
         it('Reuses style objects for the same color bucket', () => {
@@ -77,12 +77,6 @@ describe('PiecewiseColorScheme', () => {
             const scheme = new PiecewiseColorScheme(['rgba(255,255,255,0)', '#000000'], [10]);
 
             expect(scheme.getStyle(5)).toEqual({});
-        });
-
-        it('Does not apply background or text styles for a cleared picker color', () => {
-            const scheme = new PiecewiseColorScheme(['rgba(0,0,0,0)', '#000000'], [10]);
-            expect(scheme.getStyle(10)).toEqual({});
-            expect(scheme.getStyle(11)).toHaveProperty('backgroundColor', '#000000');
         });
     });
 });

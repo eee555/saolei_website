@@ -50,7 +50,7 @@ class RefreshTournamentScoresTests(TournamentTestCaseBase):
                 self.assertEqual(record.score_current, current)
                 self.assertEqual((record.score_total, record.weekly_total, record.weekly_classic_total), (total, total, total))
                 self.assertEqual(record.weekly_classic_best, weekly_encode_best(best, tournament.year, tournament.week))
-                self.assertEqual(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['score_current'], user.id), current)
+                self.assert_cached_current_score(record)
                 self.assertEqual(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['weekly_total'], user.id), total)
                 self.assertEqual(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['weekly_classic_best'], user.id), record.weekly_classic_best)
 
@@ -112,7 +112,7 @@ class RefreshTournamentScoresTests(TournamentTestCaseBase):
                 self.assertEqual((record.score_total, record.gsc_total), (total, total))
                 self.assertEqual((record.weekly_total, record.weekly_classic_total), (0, 0))
                 self.assertEqual(record.gsc_best, gsc_encode_best(best, tournament.order))
-                self.assertEqual(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['score_current'], user.id), current)
+                self.assert_cached_current_score(record)
                 self.assertEqual(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['gsc_total'], user.id), total)
                 self.assertEqual(cache.zscore(TOURNAMENT_USER_CACHE_KEYS['gsc_best'], user.id), record.gsc_best)
 

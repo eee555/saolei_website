@@ -1,5 +1,10 @@
 # Analyzer 更新记录 / Analyzer changelog
 
+## 0.1.3 — 2026-10-18
+
+- 修复图层开关及显示设置触发全部计数器和自定义事件重新采样造成的卡顿；保留无关配置更新时的采样缓存。
+- Fix stalls when toggling layers or changing display settings by retaining counter and custom-event samples across unrelated configuration changes.
+
 ## 0.1.2 — 2026-10-13
 
 - 离线页面的信息区和浏览器标签页采用定制 Analyzer 图标，SVG 内联到 HTML，断网打开时无需外部图标文件。网站录像页的离线包下载按钮使用同一图标。

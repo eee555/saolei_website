@@ -7,7 +7,9 @@ from django.utils import timezone as django_timezone
 from django_apscheduler import util
 from django_apscheduler.models import DjangoJob, DjangoJobExecution
 
+from tournament.cache import TournamentCache
 from userprofile.models import EmailVerifyRecord
+from utils.ranking_lock import ranking_access
 from videomanager.models import VideoModel
 from videomanager.services import delete_newest_queue
 
@@ -26,6 +28,7 @@ def delete_overdue_captcha():
 
 
 @util.close_old_connections
+@ranking_access(operation='scheduler.delete_freezed_video')
 def delete_freezed_video():
     ddl = datetime.now(timezone.utc) - timedelta(days=7)
     VideoModel.objects.filter(upload_time__lt=ddl, state='b').delete()
@@ -36,9 +39,28 @@ def delete_old_job_executions(max_age=604_800):
     DjangoJobExecution.objects.delete_old_job_executions(max_age)
 
 
+@util.close_old_connections
+def refresh_tournament_score_reference():
+    changed = TournamentCache().refresh_tournament_score_reference()
+    logger.info('Tournament score annual reference refreshed: changed=%s', changed)
+
+
 def register_jobs(scheduler):
     # Remove the persisted job before the job store restores its deleted callable.
     DjangoJob.objects.filter(id='refresh_state_always').delete()
+
+    scheduler.add_job(
+        refresh_tournament_score_reference,
+        trigger=CronTrigger(month=1, day=1, hour=0, minute=0, second=0, timezone=timezone.utc),
+        id='refresh_tournament_score_reference',
+        # 启动时补一次幂等检查，避免跨年停机或错过执行时间后一直保留旧年锚点。
+        next_run_time=django_timezone.now(),
+        misfire_grace_time=None,
+        coalesce=True,
+        max_instances=1,
+        replace_existing=True,
+    )
+    logger.info("Added annual job 'refresh_tournament_score_reference'.")
 
     scheduler.add_job(
         delete_old_job_executions,

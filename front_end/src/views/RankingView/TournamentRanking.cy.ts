@@ -3,6 +3,7 @@ import TournamentRanking from './TournamentRanking.vue';
 import $axios from '@/http';
 import i18n from '@/i18n';
 import type { TournamentUserRankField, TournamentUserRankingRow } from '@/services/tournamentService';
+import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
 
 function rankingRow(userId: number, init: Partial<TournamentUserRankingRow> = {}): TournamentUserRankingRow {
     return {
@@ -22,7 +23,7 @@ function rankingRow(userId: number, init: Partial<TournamentUserRankingRow> = {}
 function mountTournamentRanking() {
     cy.mount(TournamentRanking, {
         global: {
-            plugins: [i18n],
+            plugins: [i18n, hashRouter()],
             config: {
                 globalProperties: {
                     $axios,
@@ -42,6 +43,8 @@ function requestQuery(req: { url: string }) {
 }
 
 describe('<TournamentRanking />', () => {
+    installHashHistoryCleanup();
+
     it('renders grouped tournament ranking columns and rows', () => {
         cy.mockPlayerNameFallback();
         cy.intercept('GET', '**/api/tournament/user-ranking*', {

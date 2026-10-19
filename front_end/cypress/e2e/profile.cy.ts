@@ -77,10 +77,10 @@ describe('Personal Profile', () => {
     });
 
     it('Upload video', function () {
-        cy.intercept({ method: 'GET', pathname: '/api/userprofile/info/0' }).as('currentUser');
+        cy.intercept({ method: 'GET', pathname: '/api/common/loginauto' }).as('currentUser');
         cy.login(USERNAME, PASSWORD);
         cy.visitUser(USER_ID, 'upload');
-        cy.wait('@currentUser').its('response.body.realname').should('eq', REALNAME);
+        cy.wait('@currentUser').its('response.body.user.realname').should('eq', REALNAME);
         cy.get('.profile').contains(REALNAME);
 
         // 准备录像文件

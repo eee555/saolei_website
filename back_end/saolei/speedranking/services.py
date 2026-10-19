@@ -2,6 +2,7 @@ from functools import partial
 
 from django.db import transaction
 
+from utils.ranking_lock import ranking_access
 from videomanager.models import VideoModel
 from .cache import pipeline
 from .pb import services as pb
@@ -33,11 +34,12 @@ def _write_records(previous, saolei_records, pb_changes, top_records):
         ranking.write_changes(pipe, old_pb, pb_changes)
         affected = top.write_records(pipe, old_top, top_records)
         pipe.execute()
-    TopRankingCache().refresh_anchors(affected)
+    top.complete_update(old_top, top_records, affected)
     if pb_changes:
         ranking.refresh_changed_ranks(previous_ranks, pb_changes)
 
 
+@ranking_access(operation='speedranking.sync_video')
 def _sync_video(video_id: int, previous_player_id: int):
     with log_update_errors('sync_video', video_id=video_id, previous_player_id=previous_player_id):
         video = VideoModel.objects.filter(pk=video_id).values(*saolei.VIDEO_FIELDS, 'iqg').first()
@@ -56,6 +58,7 @@ def sync_video(video_id: int, previous_player_id: int):
     transaction.on_commit(partial(_sync_video, video_id, previous_player_id))
 
 
+@ranking_access(operation='speedranking.update_videos')
 def _update_videos(videos, remove: bool):
     with log_update_errors('remove_videos' if remove else 'add_videos'):
         for players in player_batches(videos, 100):

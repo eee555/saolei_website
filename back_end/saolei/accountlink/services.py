@@ -14,6 +14,7 @@ from msuser.models import UserMS
 from userprofile.models import UserProfile
 from utils.exceptions import ExceptionToResponse
 from utils.parser import MSVideoParser
+from utils.ranking_lock import ranking_access
 from utils.saolei import SaoleiUserInfo, SaoleiUtils
 from videomanager.models import VideoModel
 from .models import AccountMinesweeperGames, AccountSaolei, AccountWorldOfMinesweeper, Platform, VideoMSGames, VideoSaolei
@@ -71,6 +72,7 @@ def update_msgames_video_list(account: AccountMinesweeperGames) -> list[int]:
     return new_ids
 
 
+@ranking_access(operation='accountlink.msgames_import')
 def msgames_video_import_one(source: VideoMSGames):
     if source.import_video_id:
         return source.import_video
@@ -243,6 +245,7 @@ def update_saolei_user_video_one_page(account: AccountSaolei, page: int):
 
 
 # 导入一个扫雷网录像
+@ranking_access(operation='accountlink.saolei_import')
 def saolei_video_import_one(saolei_video: VideoSaolei):
     logger.info(f'开始导入扫雷网录像#{saolei_video.id}')
     try:

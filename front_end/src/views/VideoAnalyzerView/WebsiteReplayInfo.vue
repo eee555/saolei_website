@@ -11,7 +11,7 @@
                 <span v-else>--</span>
                 <span v-if="info && info.tournament_ids.length > 0" class="website-replay-info__tournaments">
                     {{ t('local.tournament') }}
-                    <a v-for="tournamentId in info.tournament_ids" :key="tournamentId" class="link" :href="`#/tournament/${tournamentId}`">#{{ tournamentId }}</a>
+                    <RouterLink v-for="tournamentId in info.tournament_ids" :key="tournamentId" class="link" :to="`/tournament/${tournamentId}`">#{{ tournamentId }}</RouterLink>
                 </span>
             </div>
             <div class="website-replay-info__rankings website-replay-info__row">
@@ -48,6 +48,7 @@ import 'primeicons/primeicons.css';
 import { computed } from 'vue';
 import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { RouterLink } from 'vue-router';
 
 import analyzerVersion from '../../../local-analyzer/version.json';
 
@@ -67,7 +68,6 @@ const props = defineProps({
     errorMessage: { type: String, default: '' },
     software: { type: String as PropType<MS_Software | null>, default: null },
 });
-
 const strangeDustUrl = computed(() => (props.software === null ? '' : getStrangeDustAnalyzerUrl(getReplayPreviewUrl(props.id, props.software))));
 const replayDownloadUrl = computed(() => getReplayDownloadUrl(props.id));
 const offlineDownloadFilename = `OpenMinesweeperVideoAnalyzer-${analyzerVersion.version}.zip`;

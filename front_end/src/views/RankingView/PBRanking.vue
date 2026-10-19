@@ -6,13 +6,10 @@
                 <span>{{ t('common.nf') }}</span>
             </label>
             <PBBVButton v-for="optionLevel in pbLevels" :key="optionLevel" :level="optionLevel" :selected-level="level" :selected-bv="bv" :nf="nf" :counts="counts" @select="selectBucket(optionLevel, $event)" />
-            <BaseButton class="square-button" :aria-label="t('common.action.refresh')" :title="t('common.action.refresh')" @click="refresh">
-                <BaseIconRefresh :loading="loading || countsLoading" aria-hidden="true" />
-            </BaseButton>
         </div>
         <ElAlert v-if="failed" :title="t('ranking.loadFailed')" type="error" :closable="false" />
         <ElAlert v-if="countsFailed" :title="t('local.countsFailed')" type="error" :closable="false" />
-        <PBRankingTable :rows="rows" :level="level" :bv="bv" :first="first" :loading="loading" />
+        <PBRankingTable :rows="rows" :level="level" :bv="bv" :first="first" :loading="loading" :colored="colored" />
         <div class="pb-pagination">
             <ElPagination v-model:current-page="currentPage" v-model:page-size="pageSize" layout="total, sizes, prev, pager, next, jumper" :page-sizes="[20, 50, 100]" :total="total" />
         </div>
@@ -27,11 +24,11 @@ import { useI18n } from 'vue-i18n';
 import PBBVButton from './PBBVButton.vue';
 import PBRankingTable from './PBRankingTable.vue';
 
-import BaseButton from '@/components/common/BaseButton.vue';
-import { BaseIconRefresh } from '@/components/common/icon';
 import { fetchPBCounts, fetchPBRanking, pbLevels } from '@/services/pbRankingService';
 import type { PBCounts, PBRankingPlayer } from '@/services/pbRankingService';
 import type { MS_Level } from '@/utils/ms_const';
+
+defineProps({ colored: { type: Boolean, default: false } });
 
 const level = ref<MS_Level>('b');
 const bv = ref(1);
@@ -109,6 +106,8 @@ onScopeDispose(() => {
     requestId++;
     countsRequestId++;
 });
+
+defineExpose({ refresh, loading: computed(() => loading.value || countsLoading.value) });
 
 const i18nMessages = {
     'zh-cn': { local: {

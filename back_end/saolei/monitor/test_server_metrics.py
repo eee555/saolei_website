@@ -142,7 +142,7 @@ class RedisMemoryTests(SimpleTestCase):
         result = self.collect(client, players=(7, 8, 7))
         measured = Counter(call.args[0] for call in pipe.memory_usage.call_args_list)
         self.assertTrue(all(count == 1 for count in measured.values()))
-        self.assertEqual(len([key for key in measured if not key.startswith('speedranking:pb:') and key != 'newest_queue']), 54)
+        self.assertEqual(len([key for key in measured if not key.startswith('speedranking:pb:') and key != 'newest_queue']), 64)
         self.assertEqual(result['groups']['pb_rankings'], 100)
         self.assertEqual(result['groups']['other_rankings'], 280)
         self.assertEqual(result['groups']['latest_videos'], 80)
@@ -186,7 +186,7 @@ class RedisMemoryTests(SimpleTestCase):
         client, pipe = self.redis_client()
         self.collect(client, players=range(1, 251))
         self.assertEqual(pipe.execute.call_count, 4)
-        self.assertEqual(pipe.memory_usage.call_count, 308)
+        self.assertEqual(pipe.memory_usage.call_count, 318)
 
 
 @override_settings(
