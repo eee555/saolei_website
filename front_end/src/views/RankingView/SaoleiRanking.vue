@@ -72,7 +72,7 @@ import { getPiecewiseColorSchemeName } from '@/utils/ms_const';
 const props = defineProps({ colored: { type: Boolean, default: false } });
 
 const levels = [...SaoleiLevels, 'sum'] as const;
-const { fields: { nf, sort: stat, page: currentPage, page_size: pageSize }, update } = useRankingQuery(
+const { fields: { nf, sort: stat, page: currentPage, page_size: pageSize }, update } = useRankingQuery<{ nf: boolean; sort: SaoleiField; page: number; page_size: number }>(
     { nf: false, sort: 'sumt', page: 1, page_size: 20 },
     (query, defaults) => ({ nf: queryNF(query.nf), sort: queryChoice(query.sort, saoleiFields, defaults.sort), page: queryInteger(query.page, defaults.page), page_size: queryChoice(query.page_size, [20, 50, 100], defaults.page_size) }),
     ['nf', 'sort', 'page_size'],

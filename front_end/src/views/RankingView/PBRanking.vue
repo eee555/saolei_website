@@ -31,7 +31,7 @@ import type { MS_Level } from '@/utils/ms_const';
 
 defineProps({ colored: { type: Boolean, default: false } });
 
-const { fields: { level, bv, nf, page: currentPage, page_size: pageSize }, update } = useRankingQuery(
+const { fields: { level, bv, nf, page: currentPage, page_size: pageSize }, update } = useRankingQuery<{ level: MS_Level; bv: number; nf: boolean; page: number; page_size: number }>(
     { level: 'b', bv: 1, nf: false, page: 1, page_size: 20 },
     (query, defaults) => {
         const selectedLevel = queryChoice(query.level, pbLevels, defaults.level);

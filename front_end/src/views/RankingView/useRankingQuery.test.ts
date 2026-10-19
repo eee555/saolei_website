@@ -10,7 +10,7 @@ async function setup(url: string) {
     const app = createSSRApp({ render: () => null });
     app.use(router);
     const scope = effectScope();
-    const options = app.runWithContext(() => scope.run(() => useRankingQuery(
+    const options = app.runWithContext(() => scope.run(() => useRankingQuery<{ sort: string; detail: string; nf: boolean; page: number; page_size: number }>(
         { sort: 'et', detail: 'et', nf: false, page: 1, page_size: 20 },
         (query, defaults) => ({
             sort: queryChoice(query.sort, ['bt', 'et'], defaults.sort),

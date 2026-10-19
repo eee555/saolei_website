@@ -84,8 +84,8 @@ import type { MS_Level } from '@/utils/ms_const';
 const props = defineProps({ colored: { type: Boolean, default: false } });
 
 type TopSort = `${MS_Level}${TopStat}`;
-const sortFields = topAxes.map((axis) => `${axis.level}${axis.stat}`);
-const { fields: { sort, detail, nf, page, page_size: pageSize }, update } = useRankingQuery(
+const sortFields = topAxes.map<TopSort>((axis) => `${axis.level}${axis.stat}`);
+const { fields: { sort, detail, nf, page, page_size: pageSize }, update } = useRankingQuery<{ sort: TopSort; detail: TopSort; nf: boolean; page: number; page_size: number }>(
     { sort: 'et', detail: 'et', nf: false, page: 1, page_size: 20 },
     (query, defaults) => {
         const selectedSort = queryChoice(query.sort, sortFields, defaults.sort);
