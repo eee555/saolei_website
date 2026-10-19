@@ -76,16 +76,16 @@
             layout="total, sizes, prev, pager, next, jumper"
             :page-sizes="[20, 50, 100]"
             :total="totalCount"
-            @size-change="handlePageSizeChange"
-            @current-change="fetchRanking"
         />
     </section>
 </template>
 
 <script setup lang="ts">
 import { ElPagination, vLoading } from 'element-plus';
-import { onMounted, ref } from 'vue';
+import { computed, onScopeDispose, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+
+import { queryChoice, queryInteger, useRankingQuery } from './useRankingQuery';
 
 import BaseButton from '@/components/common/BaseButton.vue';
 import BaseTable from '@/components/common/BaseTable.vue';
@@ -129,14 +129,19 @@ const { t } = useI18n({ messages: i18nMessages });
 
 const boardOptions = ref<CustomLevel[]>([...DensityCustomLevelConfigs]);
 
-const selectedLevel = ref(new CustomLevel(8, 8, 40));
-const currentPage = ref(1);
-const pageSize = ref(20);
+const { fields: { level: levelCode, page: currentPage, page_size: pageSize } } = useRankingQuery(
+    { level: 'c8_8_40', page: 1, page_size: 20 },
+    (query, defaults) => ({ level: queryChoice(query.level, boardOptions.value.map((level) => level.code), defaults.level), page: queryInteger(query.page, defaults.page), page_size: queryChoice(query.page_size, [20, 50, 100], defaults.page_size) }),
+    ['level', 'page_size'],
+);
+const selectedLevel = computed(() => boardOptions.value.find((level) => level.code === levelCode.value) ?? new CustomLevel(8, 8, 40));
 const totalCount = ref(0);
 const players = ref<RankPlayer[]>([]);
 const loading = ref(false);
+let requestId = 0;
 
 async function fetchRanking() {
+    const request = ++requestId;
     loading.value = true;
     const start = (currentPage.value - 1) * pageSize.value;
     const end = start + pageSize.value;
@@ -148,25 +153,19 @@ async function fetchRanking() {
                 end,
             },
         });
+        if (request !== requestId) return;
         players.value = data.players;
         totalCount.value = data.count;
     } catch (error) {
-        httpErrorNotification(error);
+        if (request === requestId) httpErrorNotification(error);
     } finally {
-        loading.value = false;
+        if (request === requestId) loading.value = false;
     }
 }
 
 function selectLevel(level: CustomLevel) {
     if (selectedLevel.value.code === level.code) return;
-    selectedLevel.value = level;
-    currentPage.value = 1;
-    void fetchRanking();
-}
-
-function handlePageSizeChange() {
-    currentPage.value = 1;
-    void fetchRanking();
+    levelCode.value = level.code;
 }
 
 function getRank(index: number): number {
@@ -181,8 +180,11 @@ function formatDateTime(value: string): string {
     return toISODateTimeString(new Date(value));
 }
 
-onMounted(() => {
+watch([levelCode, currentPage, pageSize], () => {
     void fetchRanking();
+}, { immediate: true });
+onScopeDispose(() => {
+    requestId++;
 });
 </script>
 

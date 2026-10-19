@@ -69,6 +69,8 @@ import { ElPagination, vLoading } from 'element-plus';
 import { computed, onScopeDispose, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import { queryChoice, queryInteger, queryNF, useRankingQuery } from './useRankingQuery';
+
 import BaseTable from '@/components/common/BaseTable.vue';
 import BaseTextButton from '@/components/common/BaseTextButton.vue';
 import PlayerName from '@/components/PlayerName.vue';
@@ -81,12 +83,19 @@ import type { MS_Level } from '@/utils/ms_const';
 
 const props = defineProps({ colored: { type: Boolean, default: false } });
 
-const level = ref<MS_Level>('e');
-const stat = ref<TopStat>('t');
-const detailAxis = ref<{ level: MS_Level; stat: TopStat }>({ level: 'e', stat: 't' });
-const nf = ref(false);
-const page = ref(1);
-const pageSize = ref(20);
+type TopSort = `${MS_Level}${TopStat}`;
+const sortFields = topAxes.map<TopSort>((axis) => `${axis.level}${axis.stat}`);
+const { fields: { sort, detail, nf, page, page_size: pageSize }, update } = useRankingQuery<{ sort: TopSort; detail: TopSort; nf: boolean; page: number; page_size: number }>(
+    { sort: 'et', detail: 'et', nf: false, page: 1, page_size: 20 },
+    (query, defaults) => {
+        const selectedSort = queryChoice(query.sort, sortFields, defaults.sort);
+        return { sort: selectedSort, detail: queryChoice(query.detail, sortFields, selectedSort), nf: queryNF(query.nf), page: queryInteger(query.page, defaults.page), page_size: queryChoice(query.page_size, [20, 50, 100], defaults.page_size) };
+    },
+    ['sort', 'nf', 'page_size'],
+);
+const level = computed(() => sort.value[0] as MS_Level);
+const stat = computed(() => sort.value[1] as TopStat);
+const detailAxis = computed(() => ({ level: detail.value[0] as MS_Level, stat: detail.value[1] as TopStat }));
 const first = computed(() => (page.value - 1) * pageSize.value);
 const total = ref(0);
 const rows = ref<TopRankingPlayer[]>([]);
@@ -105,13 +114,11 @@ function cellStyle(value: number | undefined, cellLevel: MS_Level, cellStat: Top
 }
 
 function selectRanking(selectedLevel: MS_Level, selectedStat: TopStat) {
-    level.value = selectedLevel;
-    stat.value = selectedStat;
-    selectDetails(selectedLevel, selectedStat);
+    void update({ sort: `${selectedLevel}${selectedStat}`, detail: `${selectedLevel}${selectedStat}` });
 }
 
 function selectDetails(selectedLevel: MS_Level, selectedStat: TopStat) {
-    detailAxis.value = { level: selectedLevel, stat: selectedStat };
+    detail.value = `${selectedLevel}${selectedStat}`;
 }
 
 async function load() {
@@ -126,7 +133,7 @@ async function load() {
         if (request !== requestId) return;
         rows.value = data.players;
         total.value = data.count;
-        if (first.value > 0 && first.value >= total.value) page.value = Math.max(1, Math.ceil(total.value / pageSize.value));
+        if (first.value > 0 && first.value >= total.value) void update({ page: Math.max(1, Math.ceil(total.value / pageSize.value)) }, true);
     } catch {
         if (request !== requestId || signal.aborted) return;
         failed.value = true;
@@ -137,9 +144,6 @@ async function load() {
     }
 }
 
-watch([level, stat, nf, pageSize], () => {
-    page.value = 1;
-}, { flush: 'sync' });
 watch([level, stat, nf, pageSize, page], () => {
     rows.value = [];
     void load();

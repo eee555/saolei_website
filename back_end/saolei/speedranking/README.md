@@ -15,7 +15,7 @@ LSF 是竞速页面的首位和默认选项，由 top 纪录派生。规则、�
 - 根目录 `services.py`：协调各大榜的共同读取、独立判断、共同写入；`signals.py`：录像事件入口；`api.py`：聚合各大榜的 router。
 - 前端 `RankingView/routes.ts`：各大榜子路由。`SpeedRanking.vue` 提供大榜选择器、规则提示、“How to improve”上传建议，以及统一的颜色和刷新按钮。子榜通过 `defineExpose` 提供 `refresh`、`loading`，接收 `colored` prop；PB 刷新同时更新人数和榜单。切换大榜使用 push，支持浏览器返回；选项依次为 LSF、top、扫雷网、PB，`/ranking/speed` 默认跳转 `/ranking/speed/lsf`。项目使用 hash history，浏览器地址对应 `/#/ranking/speed/...`。
 
-上色统一使用 `store/local.ts` 的 `local.colored`，默认关闭，在 localStorage 持久化；竞速榜工具栏与设置页共享开关。top、PB、扫雷网单级别成绩复用 `store/color.ts` 的分段色阶，top 同时着色均值与真实明细，缺失成绩及扫雷网 sum 不着色。LSF 只给定阶着色，按等价 et 秒数使用 `colorTheme.grade`。色阶默认值来自 `utils/config.ts`，可在设置页编辑或还原当前项；彩色背景文字使用纯黑/白，透明背景继承文字色。原本没有开关的固定配色不受影响。
+各大榜的排序、筛选、明细和分页选项写入 URL query，支持直接定位及浏览器历史恢复；参数说明见 [排行榜 URL](../../../front_end/src/views/RankingView/README.md)。上色统一使用 `store/local.ts` 的 `local.colored`，默认关闭，在 localStorage 持久化；竞速榜工具栏与设置页共享开关。top、PB、扫雷网单级别成绩复用 `store/color.ts` 的分段色阶，top 同时着色均值与真实明细，缺失成绩及扫雷网 sum 不着色。LSF 只给定阶着色，按等价 et 秒数使用 `colorTheme.grade`。色阶默认值来自 `utils/config.ts`，可在设置页编辑或还原当前项；彩色背景文字使用纯黑/白，透明背景继承文字色。原本没有开关的固定配色不受影响。
 
 ## Saolei.wang 规则
 
@@ -186,7 +186,7 @@ python manage.py rebuild_pb_ranks --batch-size 100
 
 表格依次显示排名、PlayerName、Time、Bvs、Stnb、分钟级上传时间。排名为 `first + index + 1`；点击行或键盘触发预览对应录像，玩家名保留独立跳转。Bvs/Stnb 由当前等级、3BV 和原始用时计算，零用时显示 `Infinity`；上传时间从 API 的 UTC 时间转换为本地时区后显示到分钟。
 
-NF checkbox 与三个等级按钮控制分榜。等级按钮的交互式 tooltip 用按钮显示人数，左侧为 `bv // 10`，固定在滚动区域外的顶部为 `bv % 10`（0 到 9）；空榜按钮禁用，整行为空则隐藏，范围外留空。前端选择范围为初级 1–54、中级 1–216、高级 1–381；后端只验证 `bv > 0`，没有用这些上限限制录像准入。NF、等级、3BV 与页码不写入子路由 URL。
+NF checkbox 与三个等级按钮控制分榜。等级按钮的交互式 tooltip 用按钮显示人数，左侧为 `bv // 10`，固定在滚动区域外的顶部为 `bv % 10`（0 到 9）；空榜按钮禁用，整行为空则隐藏，范围外留空。前端选择范围为初级 1–54、中级 1–216、高级 1–381；后端只验证 `bv > 0`，没有用这些上限限制录像准入。NF、等级、3BV、页码和每页条数均写入子路由 query。
 
 个人 PB 界面已实现，职责见 [UserView README](../../../front_end/src/views/UserView/README.md)。扫雷网规则依赖 PB 的优化仍留待后续。
 

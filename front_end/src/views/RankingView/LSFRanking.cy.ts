@@ -38,7 +38,8 @@ describe('<LSFRanking />', () => {
             count: 21,
             players: [{ player_id: 42, records }],
         }).as('ranking');
-        cy.mount(LSFRanking, { global: { plugins: [i18n, pinia, hashRouter()], config: { globalProperties: { $axios } } } });
+        const router = hashRouter();
+        cy.mount(LSFRanking, { global: { plugins: [i18n, pinia, router], config: { globalProperties: { $axios } } } });
         cy.wait('@ranking').its('request.query').should('include', { ranking: 'lsf', start: '0', end: '20' });
         cy.get('.lsf-ranking-table tbody [data-field="std:b"]').should('have.text', '--');
         cy.then(() => {
@@ -77,5 +78,6 @@ describe('<LSFRanking />', () => {
         cy.wait('@ranking').its('request.query').should('include', { ranking: 'nf:sum', start: '0', end: '20' });
         cy.get('.lsf-ranking-table thead [data-field="nf:sum"]').should('have.attr', 'aria-pressed', 'true');
         cy.get('.lsf-ranking-table thead [data-field="nf:sum"]').closest('th').should('have.attr', 'aria-sort', 'descending');
+        cy.wrap(router).its('currentRoute.value.query').should('deep.equal', { sort: 'nf:sum', page: '1', page_size: '20' });
     });
 });

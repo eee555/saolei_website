@@ -43,6 +43,8 @@ import { ElPagination, vLoading } from 'element-plus';
 import { computed, onScopeDispose, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import { queryChoice, queryInteger, useRankingQuery } from './useRankingQuery';
+
 import BaseTable from '@/components/common/BaseTable.vue';
 import BaseTextButton from '@/components/common/BaseTextButton.vue';
 import PlayerName from '@/components/PlayerName.vue';
@@ -54,9 +56,11 @@ import { colorThemes } from '@/store/color';
 const props = defineProps({ colored: { type: Boolean, default: false } });
 type GradeField = Exclude<SoftField, 'lsf'>;
 
-const selected = ref<SoftField>('lsf');
-const page = ref(1);
-const pageSize = ref(20);
+const { fields: { sort: selected, page, page_size: pageSize }, update } = useRankingQuery<{ sort: SoftField; page: number; page_size: number }>(
+    { sort: 'lsf', page: 1, page_size: 20 },
+    (query, defaults) => ({ sort: queryChoice(query.sort, softFields, defaults.sort), page: queryInteger(query.page, defaults.page), page_size: queryChoice(query.page_size, [20, 50, 100], defaults.page_size) }),
+    ['sort', 'page_size'],
+);
 const start = computed(() => (page.value - 1) * pageSize.value);
 const players = ref<TopRankingPlayer[]>([]);
 const rows = computed(() => players.value.map((player) => ({ ...player, values: topSoftValues(player.records, store.topAnchors ?? {}) })));
@@ -109,7 +113,7 @@ async function load() {
         if (request !== requestId) return;
         players.value = result.players;
         total.value = result.count;
-        if (start.value > 0 && start.value >= total.value) page.value = Math.max(1, Math.ceil(total.value / pageSize.value));
+        if (start.value > 0 && start.value >= total.value) void update({ page: Math.max(1, Math.ceil(total.value / pageSize.value)) }, true);
     } catch {
         if (signal.aborted || request !== requestId) return;
         failed.value = true;
@@ -120,9 +124,6 @@ async function load() {
     }
 }
 
-watch([selected, pageSize], () => {
-    page.value = 1;
-}, { flush: 'sync' });
 watch([selected, pageSize, page], () => {
     void load();
 }, { immediate: true });

@@ -23,21 +23,25 @@ import { useI18n } from 'vue-i18n';
 
 import PBBVButton from './PBBVButton.vue';
 import PBRankingTable from './PBRankingTable.vue';
+import { queryChoice, queryInteger, queryNF, useRankingQuery } from './useRankingQuery';
 
-import { fetchPBCounts, fetchPBRanking, pbLevels } from '@/services/pbRankingService';
+import { fetchPBCounts, fetchPBRanking, pbBVLimits, pbLevels } from '@/services/pbRankingService';
 import type { PBCounts, PBRankingPlayer } from '@/services/pbRankingService';
 import type { MS_Level } from '@/utils/ms_const';
 
 defineProps({ colored: { type: Boolean, default: false } });
 
-const level = ref<MS_Level>('b');
-const bv = ref(1);
-const nf = ref(false);
+const { fields: { level, bv, nf, page: currentPage, page_size: pageSize }, update } = useRankingQuery<{ level: MS_Level; bv: number; nf: boolean; page: number; page_size: number }>(
+    { level: 'b', bv: 1, nf: false, page: 1, page_size: 20 },
+    (query, defaults) => {
+        const selectedLevel = queryChoice(query.level, pbLevels, defaults.level);
+        return { level: selectedLevel, bv: queryInteger(query.bv, defaults.bv, pbBVLimits[selectedLevel].max), nf: queryNF(query.nf), page: queryInteger(query.page, defaults.page), page_size: queryChoice(query.page_size, [20, 50, 100], defaults.page_size) };
+    },
+    ['level', 'bv', 'nf', 'page_size'],
+);
 const counts = ref<PBCounts>({});
 const countsLoading = ref(false);
 const countsFailed = ref(false);
-const currentPage = ref(1);
-const pageSize = ref(20);
 const first = computed(() => (currentPage.value - 1) * pageSize.value);
 const total = ref(0);
 const rows = ref<PBRankingPlayer[]>([]);
@@ -47,8 +51,7 @@ let requestId = 0;
 let countsRequestId = 0;
 
 function selectBucket(selectedLevel: MS_Level, selectedBV: number) {
-    level.value = selectedLevel;
-    bv.value = selectedBV;
+    void update({ level: selectedLevel, bv: selectedBV });
 }
 
 async function loadCounts() {
@@ -80,7 +83,7 @@ async function load() {
         rows.value = data.players;
         total.value = data.count;
         if (first.value > 0 && first.value >= total.value) {
-            currentPage.value = Math.max(1, Math.ceil(total.value / pageSize.value));
+            void update({ page: Math.max(1, Math.ceil(total.value / pageSize.value)) }, true);
         }
     } catch {
         if (current !== requestId) return;
@@ -92,9 +95,6 @@ async function load() {
     }
 }
 
-watch([level, bv, nf, pageSize], () => {
-    currentPage.value = 1;
-}, { flush: 'sync' });
 watch([level, bv, nf, pageSize, currentPage], () => {
     rows.value = [];
     void load();

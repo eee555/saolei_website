@@ -20,17 +20,19 @@ function rankingRow(userId: number, init: Partial<TournamentUserRankingRow> = {}
     };
 }
 
-function mountTournamentRanking() {
-    cy.mount(TournamentRanking, {
+function mountTournamentRanking(initialPath = '/ranking/tournament') {
+    const router = hashRouter({ initialPath });
+    cy.wrap(router.isReady()).then(() => cy.mount(TournamentRanking, {
         global: {
-            plugins: [i18n, hashRouter()],
+            plugins: [i18n, router],
             config: {
                 globalProperties: {
                     $axios,
                 },
             },
         },
-    });
+    }));
+    return router;
 }
 
 function requestQuery(req: { url: string }) {
@@ -99,10 +101,8 @@ describe('<TournamentRanking />', () => {
             });
         }).as('ranking');
 
-        mountTournamentRanking();
-        cy.wait('@ranking');
-        cy.contains('.el-pager li', '2').click();
-        cy.wait('@ranking');
+        const router = mountTournamentRanking('/ranking/tournament?sort=score_current&page=2');
+        cy.wait('@ranking').its('request.query').should('include', { sort_by: 'score_current', start: '20', end: '40' });
         cy.get('[data-sort-field="score_current"]').click();
         cy.get('.el-pager li.is-active').should(($page) => {
             expect($page.text().trim()).to.equal('2');
@@ -117,10 +117,10 @@ describe('<TournamentRanking />', () => {
         cy.get('[data-sort-field="gsc_best"]').focus();
         cy.realPress('Enter');
         cy.wait('@ranking').its('request.query').should('include', { sort_by: 'gsc_best', start: '0', end: '20' });
+        cy.wrap(router).its('currentRoute.value.query').should('deep.equal', { sort: 'gsc_best', page: '1', page_size: '20' });
 
         cy.then(() => {
             expect(requests).to.deep.equal([
-                { sortBy: 'score_current', start: 0, end: 20 },
                 { sortBy: 'score_current', start: 20, end: 40 },
                 { sortBy: 'weekly_classic_total', start: 0, end: 20 },
                 { sortBy: 'gsc_best', start: 0, end: 20 },
