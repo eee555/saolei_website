@@ -12,6 +12,10 @@ const localDefaultSettings = {
     autoUploadAfterParse: false,
     autoRemoveAfterUpload: false,
     nameFormat: 'first-last' as 'first-last' | 'last-first',
+    playerNameShowAvatar: false,
+    playerNameFormat: 'name1' as 'name1' | 'name1 (name2)',
+    playerName1: 'username' as 'realname' | 'international' | 'username',
+    playerName2: 'realname' as 'realname' | 'international' | 'username',
 };
 
 export type LocalSettings = typeof localDefaultSettings;

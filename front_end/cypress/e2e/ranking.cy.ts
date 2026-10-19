@@ -34,7 +34,7 @@ describe('rankings backed by dangerzone fixtures', () => {
 
         cy.reload();
         cy.wait('@pluckRank').its('response.body.count').should('eq', 1);
-        cy.contains('Pluck Ranker').should('be.visible');
+        cy.contains('a', user.username).should('have.attr', 'href', `#/player/${user.id}`);
         cy.contains('0.123456').should('be.visible');
         cy.contains('10.000').should('be.visible');
         cy.contains('40').should('be.visible');

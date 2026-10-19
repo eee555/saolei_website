@@ -1,6 +1,7 @@
 <template>
     <div style="display: flex; flex-direction: column; gap: 1rem;">
         <Appearance />
+        <PlayerBadgeSettings />
         <section class="card">
             <h2 class="card-title">
                 {{ t('local.thirdPartyTrust') }}
@@ -55,6 +56,7 @@ import { useI18n } from 'vue-i18n';
 
 import Appearance from './Appearance.vue';
 import IDB from './IDB.vue';
+import PlayerBadgeSettings from './PlayerBadge.vue';
 import Visualization from './Visualization.vue';
 
 import { vExperimental } from '@/components/ExperimentalFeature';
