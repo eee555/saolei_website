@@ -15,17 +15,18 @@ const events: ReplayMouseTraceEvent[] = [
 ].map((event) => ({ ...event, row: 1, column: 2, action: 'mv', state: 'uu' }));
 
 describe('mouse trace appearance', () => {
-    it('uses library marker defaults and returns independent mutable settings', () => {
+    it('disables every marker by default, retaining independent library styles for later use', () => {
         const appearance = defaultMouseTraceAppearance();
         expect(appearance.lineWidth).toBe(0.08);
-        expect(Object.values(appearance.markers).every((marker) => marker.enabled)).toBe(true);
+        expect(Object.values(appearance.markers).every((marker) => !marker.enabled)).toBe(true);
+        expect(mouseTraceAppearanceProps(appearance).markers).toEqual({ lc: false, lr: false, rc: false, rr: false });
         appearance.color.uu = 'transparent';
         appearance.markers.lc.fill = '#123456';
-        appearance.markers.lr.enabled = false;
+        appearance.markers.lr.enabled = true;
         const fresh = defaultMouseTraceAppearance();
         expect(fresh.color.uu).toBe('#ffffff');
         expect(fresh.markers.lc.fill).toBe('#ffdf00');
-        expect(fresh.markers.lr.enabled).toBe(true);
+        expect(fresh.markers.lr.enabled).toBe(false);
     });
 
     it('passes all supported visual props and preserves hidden marker settings', () => {

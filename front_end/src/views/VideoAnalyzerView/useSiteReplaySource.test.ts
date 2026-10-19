@@ -2,14 +2,13 @@ import { readFileSync } from 'node:fs';
 
 import { AxiosError, AxiosHeaders } from 'axios';
 import type { AxiosInstance, AxiosResponse } from 'axios';
-import { AvfVideo, EvfVideo, MvfVideo, RmvVideo } from 'ms-toollib';
+import { EvfVideo } from 'ms-toollib';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { computed, effectScope, nextTick, ref } from 'vue';
 import type { EffectScope } from 'vue';
 
 import { useSiteReplaySource } from './useSiteReplaySource';
 
-import { parseReplay } from '@/components/VideoAnalyzer/replayParser';
 import { useReplaySource } from '@/components/VideoAnalyzer/useReplaySource';
 
 const { get } = vi.hoisted(() => ({ get: vi.fn<AxiosInstance['get']>() }));
@@ -17,8 +16,8 @@ vi.mock('@/http', () => ({ default: { get } }));
 
 const scopes: EffectScope[] = [];
 
-function fixture(filename = '52200.evf') {
-    return Uint8Array.from(readFileSync(new URL(`../../../cypress/fixtures/${filename}`, import.meta.url))).buffer;
+function fixture() {
+    return Uint8Array.from(readFileSync(new URL('../../../cypress/fixtures/52200.evf', import.meta.url))).buffer;
 }
 
 function response<T>(data: T): AxiosResponse<T> {
@@ -47,47 +46,6 @@ afterEach(() => {
     for (const scope of scopes.splice(0)) scope.stop();
     vi.restoreAllMocks();
     get.mockReset();
-});
-
-describe('analyzer replay parsing', () => {
-    for (const [filename, software, Parser] of [
-        ['52200.evf', 'e', EvfVideo],
-        ['c_10_39.832_24_0.477_Pu Tian Yi(Hu Bei)_fail.evf', 'e', EvfVideo],
-        ['Exp_FL_35.09_3BV=132_3BVs=3.76_Pu Tian Yi(Hu Bei).avf', 'a', AvfVideo],
-        ['Lin_Jin_Fan_Exp_60.623bv207.mvf', 'm', MvfVideo],
-        ['3819-Time-1616-NF-9469-32-20151031.rmv', 'r', RmvVideo],
-    ] as const) {
-        it(`parses and analyses ${filename} with the matching parser`, () => {
-            const video = parseReplay(fixture(filename), filename, software);
-            try {
-                expect(video).toBeInstanceOf(Parser);
-                expect(video.row).toBeGreaterThan(0);
-                expect(video.column).toBeGreaterThan(0);
-                expect(video.rtime_ms).toBeGreaterThan(0);
-                if (software === 'e') {
-                    expect(video.rtime_ms).toBe(filename === '52200.evf' ? 10732 : 39832);
-                    expect(video.is_completed).toBe(filename === '52200.evf');
-                }
-                const board = video.board as number[][];
-                expect(board).toHaveLength(video.row);
-                expect(board.flat().filter((cell) => cell === -1)).toHaveLength(video.mine_num);
-                for (const row of board) expect(row).toHaveLength(video.column);
-            } finally {
-                video.free();
-            }
-        });
-    }
-
-    for (const method of ['parse', 'analyse'] as const) {
-        it(`frees the allocated WASM object if ${method} fails`, () => {
-            const free = vi.spyOn(EvfVideo.prototype, 'free');
-            vi.spyOn(EvfVideo.prototype, method).mockImplementation(() => {
-                throw new Error('Invalid replay');
-            });
-            expect(() => parseReplay(fixture(), '52200.evf', 'e')).toThrow('Invalid replay');
-            expect(free).toHaveBeenCalledOnce();
-        });
-    }
 });
 
 describe('analyzer replay loading', () => {

@@ -155,7 +155,7 @@ describe('<VideoAnalyzerView />', () => {
     it('sends counter keys to slots, shares prepared data, and preserves tracks and the time window across layouts', () => {
         mountAnalyzer();
         cy.get('.timeline-event-row__key').should(($keys) => {
-            expect([...$keys].map((key) => key.textContent)).to.deep.eq(['left', 'right']);
+            expect([...$keys].map((key) => key.textContent)).to.deep.eq(['left', 'right', 'pluck']);
         });
         cy.get('.video-analyzer-counter__label > span:last-child').should(($labels) => {
             expect([...$labels].map((label) => label.textContent?.trim())).to.deep.eq(['Bvs', 'Ces', 'Mov']);
@@ -689,6 +689,7 @@ describe('<VideoAnalyzerView />', () => {
         cy.get('.mouse-trace-settings__line-width').type('0.2');
         cy.get('.mouse-trace-settings__line-width').blur();
         cy.get('.mouse-trace-settings__marker--lc summary').click();
+        cy.get('.mouse-trace-settings__marker--lc .mouse-trace-settings__enabled').should('not.be.checked').check();
         cy.get('.mouse-trace-settings__marker--lc .mouse-trace-settings__shape').select('square');
         cy.get('.mouse-trace-settings__marker--lc .mouse-trace-settings__size').clear();
         cy.get('.mouse-trace-settings__marker--lc .mouse-trace-settings__size').type('0.8');
@@ -735,11 +736,15 @@ describe('<VideoAnalyzerView />', () => {
 
     it('selects board events, persists layer settings, and follows timeline rename, style and deletion', () => {
         mountAnalyzer(1100, { filename: '52200.evf', durationMs: 10732 });
-        cy.get('.video-analyzer-board__event-toggle').should('have.attr', 'aria-pressed', 'false');
+        cy.get('.video-analyzer-board__event-toggle').should('have.attr', 'aria-pressed', 'true');
+        cy.get('.board-event-layer__event').should('have.attr', 'data-event-key', 'pluck');
+        cy.get('.board-event-layer__pulse').should('exist');
+        cy.get('.video-analyzer-board__event-toggle').click();
         cy.get('.board-event-layer').should('not.exist');
         cy.get('.video-analyzer-board__event-toggle').click();
-        cy.get('.board-event-layer__event').should('not.exist');
+        cy.get('.board-event-layer__event').should('have.attr', 'data-event-key', 'pluck');
         cy.get('.video-analyzer-board__event-control .board-settings-control__handle').click();
+        cy.get('.board-event-settings__key[value="pluck"]').uncheck();
         cy.get('.board-event-settings__key[value="left"]').check();
         cy.get('.board-event-settings__range').should('have.value', 'all');
         cy.get('.board-event-settings__spacing').clear();

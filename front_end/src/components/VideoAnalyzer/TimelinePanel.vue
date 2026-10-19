@@ -1,5 +1,5 @@
 <template>
-    <section class="text text-small video-analyzer-timeline" :aria-label="t('local.timeline')">
+    <section ref="timeline" class="text text-small video-analyzer-timeline" :aria-label="t('local.timeline')" @pointerleave="hideTooltip" @scroll.capture="hideTooltip" @wheel="hideTooltip">
         <div class="video-analyzer-timeline__viewport">
             <header class="video-analyzer-timeline__header">
                 <TimelinePlot v-model:window="timeWindow" v-model:hover-ms="hoverMs" class="video-analyzer-timeline__ruler" ruler :playback="playback" :counters="counters" />
@@ -12,12 +12,17 @@
                     </BaseButton>
                 </div>
             </header>
-            <VueDraggable v-model="customEvents" class="video-analyzer-timeline__events" handle=".timeline-event-row__key" ghost-class="video-analyzer-timeline__ghost" :animation="150" scroll>
-                <TimelineEventRow v-for="event in customEvents" :key="event.key" v-model:window="timeWindow" v-model:hover-ms="hoverMs" :event="event" :data="preparedEvents.get(event.key) ?? { pulses: [], spans: [] }" :counters="counters" :playback="playback" @edit="editor = { originalKey: event.key, event }" />
+            <VueDraggable v-model="customEvents" class="video-analyzer-timeline__events" handle=".timeline-event-row__key" ghost-class="video-analyzer-timeline__ghost" :animation="150" scroll @start="hideTooltip">
+                <TimelineEventRow v-for="event in customEvents" :key="event.key" v-model:window="timeWindow" v-model:hover-ms="hoverMs" :event="event" :data="preparedEvents.get(event.key) ?? { pulses: [], spans: [] }" :counters="counters" :playback="playback" @edit="editor = { originalKey: event.key, event }" @event-enter="showTooltip" @event-move="moveTooltip" @event-leave="hideTooltip" />
             </VueDraggable>
             <VueDraggable v-model="sortableSlots" class="video-analyzer-timeline__slots" handle=".timeline-slot__name" ghost-class="video-analyzer-timeline__ghost" :animation="150" scroll>
                 <TimelineSlot v-for="(slot, index) in sortableSlots" :key="index" v-model:window="timeWindow" v-model:hover-ms="hoverMs" :settings="slot.settings" :tracks="slot.tracks" :rows="rows" :counters="counters" :playback="playback" @update:settings="config.slotSettings[index] = $event" @add-track="addTimelineTrack(config, index, $event)" @remove-track="config.slots[index].splice($event, 1)" @remove-slot="removeSlot(index)" />
             </VueDraggable>
+        </div>
+        <div hidden>
+            <div ref="tooltip" class="timeline-event-tooltip">
+                <EventTooltipContent :event="hovered" />
+            </div>
         </div>
         <CustomEventEditor v-if="editor" :event="editor.event" :creating="editor.originalKey === null" :existing-keys="customEvents.filter((event) => event.key !== editor?.originalKey).map((event) => event.key)" :events="events" :duration-ms="playback.durationMs.value" @save="saveEvent" @remove="removeEvent" @close="editor = null" />
     </section>
@@ -25,7 +30,7 @@
 
 <script setup lang="ts">
 import '@/styles/text.css';
-import { computed, ref } from 'vue';
+import { computed, ref, useTemplateRef, watch } from 'vue';
 import type { PropType } from 'vue';
 import { VueDraggable } from 'vue-draggable-plus';
 import { useI18n } from 'vue-i18n';
@@ -35,11 +40,13 @@ import type { CounterEvent, CounterRow, PreparedCounter } from './counter';
 import CustomEventEditor from './CustomEventEditor.vue';
 import { defaultCustomEvent, prepareCustomEvents } from './customEvents';
 import type { CustomEventDefinition, PreparedCustomEvent } from './customEvents';
+import EventTooltipContent from './EventTooltipContent.vue';
 import { addTimelineTrack } from './timeline';
 import type { TimelineConfig, TimeWindow } from './timeline';
 import TimelineEventRow from './TimelineEventRow.vue';
 import TimelinePlot from './TimelinePlot.vue';
 import TimelineSlot from './TimelineSlot.vue';
+import { useEventTooltip } from './useEventTooltip';
 import type { PlaybackController } from './usePlayback';
 
 import BaseButton from '@/components/common/BaseButton.vue';
@@ -58,6 +65,10 @@ const timeWindow = defineModel<TimeWindow>('window', { required: true });
 const hoverMs = ref<number | null>(null);
 const editor = ref<{ originalKey: string | null; event: CustomEventDefinition } | null>(null);
 const preparedEvents = computed(() => props.preparedEvents ?? prepareCustomEvents(customEvents.value, props.events, props.playback.durationMs.value));
+const timeline = useTemplateRef<HTMLElement>('timeline');
+const tooltip = useTemplateRef<HTMLDivElement>('tooltip');
+const { hovered, showTooltip, moveTooltip, hideTooltip } = useEventTooltip(timeline, tooltip);
+watch([preparedEvents, customEvents, editor, () => timeWindow.value.startMs, () => timeWindow.value.endMs], hideTooltip);
 const sortableSlots = computed({
     get: () => config.value.slots.map((tracks, index) => ({ tracks, settings: config.value.slotSettings[index] })),
     set: (slots) => {
