@@ -93,7 +93,7 @@ describe('<GSC App />', () => {
     });
     it('hides real-time score for anonymous users during ongoing tournament', () => {
         mountGSC({ loginStatus: LoginStatus.NotLogin, participant: false });
-        cy.get('a.link[href$="/en/guide/gsc"]').should('be.visible');
+        cy.get('a.link[href$="/guide/gsc"]').should('be.visible');
 
         cy.contains('Ongoing').should('be.visible');
         cy.contains('Real-Time Score').should('not.exist');
