@@ -56,7 +56,7 @@ import { colorThemes } from '@/store/color';
 const props = defineProps({ colored: { type: Boolean, default: false } });
 type GradeField = Exclude<SoftField, 'lsf'>;
 
-const { fields: { sort: selected, page, page_size: pageSize }, update } = useRankingQuery(
+const { fields: { sort: selected, page, page_size: pageSize }, update } = useRankingQuery<{ sort: SoftField; page: number; page_size: number }>(
     { sort: 'lsf', page: 1, page_size: 20 },
     (query, defaults) => ({ sort: queryChoice(query.sort, softFields, defaults.sort), page: queryInteger(query.page, defaults.page), page_size: queryChoice(query.page_size, [20, 50, 100], defaults.page_size) }),
     ['sort', 'page_size'],

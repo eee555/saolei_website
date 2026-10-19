@@ -101,7 +101,7 @@ const rankColumns = [
     { field: 'weekly_classic_best', group: 'weeklyGroup', label: 'weeklyClassicBest' },
 ] as const satisfies readonly { field: TournamentUserRankField; group: string; label: string }[];
 
-const { fields: { sort: sortBy, page: currentPage, page_size: pageSize } } = useRankingQuery(
+const { fields: { sort: sortBy, page: currentPage, page_size: pageSize } } = useRankingQuery<{ sort: TournamentUserRankField; page: number; page_size: number }>(
     { sort: 'score_current', page: 1, page_size: 20 },
     (query, defaults) => ({ sort: queryChoice(query.sort, rankColumns.map((column) => column.field), defaults.sort), page: queryInteger(query.page, defaults.page), page_size: queryChoice(query.page_size, [20, 50, 100], defaults.page_size) }),
     ['sort', 'page_size'],
