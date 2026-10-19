@@ -96,12 +96,12 @@ describe('<TournamentList />', () => {
 
         cy.contains('进行中比赛').should('be.visible');
         cy.contains('已颁奖比赛').should('be.visible');
-        cy.contains('主办甲').should('be.visible');
-        cy.contains('主办乙').should('be.visible');
+        cy.contains('host101').should('be.visible');
+        cy.contains('host102').should('be.visible');
         cy.get('table:visible').getTable().should((tableData) => {
             expect(tableData).to.deep.equal([
-                { 状态: '已结束', 比赛: '已颁奖比赛', 主办方: '主办乙', 开始时间: '2026-01-01 08:00:00', 结束时间: '2026-01-02 08:00:00' },
-                { 状态: '进行中', 比赛: '进行中比赛', 主办方: '主办甲', 开始时间: '2000-01-01 08:00:00', 结束时间: '2099-01-01 08:00:00' },
+                { 状态: '已结束', 比赛: '已颁奖比赛', 主办方: 'host102', 开始时间: '2026-01-01 08:00:00', 结束时间: '2026-01-02 08:00:00' },
+                { 状态: '进行中', 比赛: '进行中比赛', 主办方: 'host101', 开始时间: '2000-01-01 08:00:00', 结束时间: '2099-01-01 08:00:00' },
             ]);
         });
     });

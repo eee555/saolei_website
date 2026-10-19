@@ -64,6 +64,8 @@ export type LocaleConfig = LocaleMessage<VueMessageType> & {
             op: string;
             level: string;
             realName: string;
+            localName: string;
+            internationalName: string;
             sex: string;
             status: string;
             time: string;

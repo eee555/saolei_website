@@ -97,6 +97,8 @@ export default {
             op: '空',
             player: '玩家',
             realName: '姓名',
+            localName: '本名',
+            internationalName: '英文名',
             sex: '性别',
             software: '软件',
             state: '状态', // 录像属性

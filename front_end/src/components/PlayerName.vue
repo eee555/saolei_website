@@ -1,9 +1,9 @@
 <template>
-    <span @click="interactive && $event.stopPropagation()">
+    <span class="player-name" :title="nameTitle" @click="interactive && $event.stopPropagation()">
         <RouterLink v-if="interactive" :to="playerProfileTo" class="link link--no-underline text">
-            <PlayerBadge :user-id="userId" :name="nameShown" />
+            <PlayerBadge :user-id="userId" :name="nameShown" :show-avatar="local.playerNameShowAvatar" />
         </RouterLink>
-        <PlayerBadge v-else :user-id="userId" :name="nameShown" />
+        <PlayerBadge v-else :user-id="userId" :name="nameShown" :show-avatar="local.playerNameShowAvatar" />
     </span>
 </template>
 
@@ -15,6 +15,8 @@ import { RouterLink } from 'vue-router';
 
 import PlayerBadge from '@/components/widgets/PlayerBadge.vue';
 import { fetchUserInfo } from '@/services/userService';
+import { local } from '@/store/local';
+import { formatName } from '@/utils/strings';
 import { UserProfile } from '@/utils/userprofile';
 
 const props = defineProps({
@@ -27,26 +29,40 @@ const props = defineProps({
 
 const user = ref(new UserProfile());
 const loading = ref(false);
-const nameShown = computed(() => {
-    if (loading.value) {
-        return `${t('local.user')}#${props.userId}`;
-    } else {
-        return user.value.realname;
-    }
+const internationalName = computed(() => {
+    const { firstname, lastname } = user.value;
+    return firstname && lastname ? formatName(firstname, lastname, local.value.nameFormat) : firstname || lastname;
 });
+function nameFor(source: typeof local.value.playerName1): string {
+    return source === 'international' ? internationalName.value : user.value[source];
+}
+const nameShown = computed(() => {
+    if (props.userId === 0) return '';
+    if (loading.value || user.value.id !== props.userId) return `${t('local.user')}#${props.userId}`;
+    const name1 = nameFor(local.value.playerName1) || user.value.username || `${t('local.user')}#${props.userId}`;
+    const name2 = nameFor(local.value.playerName2);
+    return local.value.playerNameFormat === 'name1 (name2)' && name2 ? `${name1} (${name2})` : name1;
+});
+const nameTitle = computed(() => [
+    `${user.value.username || '--'}#${props.userId}`,
+    `${user.value.realname || '--'} (${internationalName.value || '--'})`,
+].join('\n'));
 const playerProfileTo = computed(() => `/player/${props.userId}`);
-watch(() => props.userId, async (newVal) => {
+watch(() => props.userId, async (newVal, _, onCleanup) => {
+    let active = true;
+    onCleanup(() => {
+        active = false;
+    });
     user.value = new UserProfile();
+    loading.value = newVal !== 0;
     if (newVal === 0) return;
-    else {
-        loading.value = true;
-        try {
-            user.value = await fetchUserInfo(props.userId);
-            loading.value = false;
-        } catch (error) {
-            user.value = new UserProfile();
-            console.log(error);
-        }
+    try {
+        const result = await fetchUserInfo(newVal);
+        if (active) user.value = result;
+    } catch (error) {
+        console.log(error);
+    } finally {
+        if (active) loading.value = false;
     }
 }, { immediate: true });
 
