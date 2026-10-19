@@ -16,7 +16,7 @@ export function defaultMouseTraceAppearance(): MouseTraceAppearance {
     return {
         lineWidth: 0.08,
         color: { ...defaultMouseTraceColor },
-        markers: Object.fromEntries(mouseTraceMarkerActions.map((action) => [action, { ...defaultMouseTraceMarkers[action], enabled: true }])) as MouseTraceAppearance['markers'],
+        markers: Object.fromEntries(mouseTraceMarkerActions.map((action) => [action, { ...defaultMouseTraceMarkers[action], enabled: false }])) as MouseTraceAppearance['markers'],
     };
 }
 

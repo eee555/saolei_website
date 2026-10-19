@@ -48,11 +48,12 @@ describe('analyzer settings storage', () => {
         expect(saved.videoExport).toEqual({ format: 'webm', fps: 60, quality: 'medium' });
     });
 
-    it('defaults to left and right sustained events with the corresponding pressed mouse states', () => {
+    it('defaults to left and right sustained events and a pluck-difference pulse', () => {
         const { customEvents } = defaultAnalyzerConfig();
         expect(customEvents.map(({ key, expression, type }) => ({ key, expression, type }))).toEqual([
             { key: 'left', expression: 'mouse_state in [4, 5, 6, 7]', type: 'sustained' },
             { key: 'right', expression: 'mouse_state in [2, 3, 5, 6]', type: 'sustained' },
+            { key: 'pluck', expression: 'd(pluck)', type: 'pulse' },
         ]);
         for (const [index, states] of [[4, 5, 6, 7], [2, 3, 5, 6]].entries()) {
             const expression = parseCounterExpression(customEvents[index].expression);
@@ -121,6 +122,8 @@ describe('analyzer settings storage', () => {
     });
 
     it('restores saved settings through the storage reader, including unlimited tail', async () => {
+        analyzerConfig.value.eventLayer.visible = false;
+        analyzerConfig.value.eventLayer.keys = [];
         analyzerConfig.value.traceTailSeconds = 'infinite';
         analyzerConfig.value.playbackRate = 4;
         analyzerConfig.value.loopMode = 'all';
@@ -130,7 +133,7 @@ describe('analyzer settings storage', () => {
         analyzerConfig.value.cursorShape = 'ring';
         analyzerConfig.value.cursorSize = 24;
         analyzerConfig.value.traceAppearance.markers.lr.size = 0.9;
-        analyzerConfig.value.traceAppearance.markers.lr.enabled = false;
+        analyzerConfig.value.traceAppearance.markers.lr.enabled = true;
         analyzerConfig.value.counter.rows.push({ key: 'left', expression: 'left', format: '.0f', samplingMode: 'continuous' });
         addTimelineTrack(analyzerConfig.value.timeline, 1, 'missing-key');
         analyzerConfig.value.customEvents = [
@@ -155,13 +158,7 @@ describe('analyzer settings storage', () => {
         try {
             const restored = scope.run(() => useLocalStorage<AnalyzerConfig>('video-analyzer-config', defaultAnalyzerConfig(), { mergeDefaults: true }));
             expect(restored?.value).toEqual({ ...defaultAnalyzerConfig(), selectedLayout: 'board-top', playbackRate: 2 });
-            expect(restored?.value.cellSizeMode).toBe('auto');
-            expect(restored?.value.fixedCellSize).toBe(32);
-            expect(restored?.value.cellScale).toBe(1);
-            expect(restored?.value.cursorVisible).toBe(true);
-            expect(restored?.value.cursorShape).toBe('dot');
-            expect(restored?.value.cursorSize).toBe(32);
-            expect(restored?.value.eventLayer).toEqual({ visible: false, keys: [], timeRange: 'all', arrowSpacing: 32, arrowSize: 8, arrowShape: 'triangle' });
+            const defaults = structuredClone(defaultAnalyzerConfig());
             const first = defaultAnalyzerConfig();
             first.panelSizes['board-top'].outer[0] = 70;
             first.counter.rows[0].expression = 'time';
@@ -169,22 +166,12 @@ describe('analyzer settings storage', () => {
             first.timeline.slots[0].push({ key: 'bvs', color: '#fff' });
             first.timeline.slotSettings[0].name = 'Changed';
             first.traceAppearance.color.uu = '#123456';
-            first.traceAppearance.markers.lc.enabled = false;
+            first.traceAppearance.markers.lc.enabled = true;
             first.customEvents[0].expression = 'false';
             first.customEvents[0].marker.size = 20;
             first.customEvents[0].line.width = 5;
             first.customEvents.push({ ...defaultCustomEvent(), key: 'event' });
-            expect(defaultAnalyzerConfig().panelSizes['board-top'].outer[0]).toBe(50);
-            expect(defaultAnalyzerConfig().counter.rows).toHaveLength(3);
-            expect(defaultAnalyzerConfig().counter.rows[0].expression).toBe('d(bbbv_solved, 1000) / d(time, 1000)');
-            expect(defaultAnalyzerConfig().timeline.slots.map((slot) => slot.map((track) => track.key))).toEqual([['Bvs', 'Ces'], ['Mov']]);
-            expect(defaultAnalyzerConfig().timeline.slotSettings[0].name).toBe('Plot 1');
-            expect(defaultAnalyzerConfig().traceAppearance.color.uu).toBe('#ffffff');
-            expect(defaultAnalyzerConfig().traceAppearance.markers.lc.enabled).toBe(true);
-            expect(defaultAnalyzerConfig().customEvents.map((event) => event.key)).toEqual(['left', 'right']);
-            expect(defaultAnalyzerConfig().customEvents[0].expression).toBe('mouse_state in [4, 5, 6, 7]');
-            expect(defaultAnalyzerConfig().customEvents[0].marker.size).toBe(8);
-            expect(defaultAnalyzerConfig().customEvents[0].line.width).toBe(2);
+            expect(defaultAnalyzerConfig()).toEqual(defaults);
             expect(first.customEvents[1].marker.size).toBe(8);
             expect(first.customEvents[1].line.width).toBe(2);
         } finally {

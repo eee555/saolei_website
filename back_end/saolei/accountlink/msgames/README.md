@@ -1,6 +1,6 @@
 # MSGames 资料与录像导入
 
-记录日期：2026-10-14。使用 [msgames-api v0.1.0](https://github.com/putianyi889/msgames-api/releases/tag/v0.1.0)，对应源码提交 `fad7a5df77e02c87508106f3282278c082761584`。当前业务通过 `accountlink/msgames/client.py` 调用库，由 `services.py` 保存资料和录像列表；旧的 MSGames XPath 抓取已移除。
+记录日期：2026-10-14；更新日期：2026-10-19。当前使用 [msgames-api v0.1.1](https://github.com/putianyi889/msgames-api/releases/tag/v0.1.1)。首次调研基于 v0.1.0，源码提交为 `fad7a5df77e02c87508106f3282278c082761584`。当前业务通过 `accountlink/msgames/client.py` 调用库，由 `services.py` 保存资料和录像列表；旧的 MSGames XPath 抓取已移除。
 
 ## 结论
 
@@ -32,7 +32,7 @@
 
 ## 包提供的额外数据
 
-以下是由 [API 文档](https://github.com/putianyi889/msgames-api/blob/v0.1.0/docs/api.md)和源码核对的包能力。本次仅使用资料读取、五类成绩历史中的录像元数据和原始文件下载；其余入口不调用：
+以下是由 [API 文档](https://github.com/putianyi889/msgames-api/blob/v0.1.1/docs/api.md)和源码核对的包能力。本次仅使用资料读取、五类成绩历史中的录像元数据和原始文件下载；其余入口不调用：
 
 | 能力 | 公开数据 | 接入边界 |
 | --- | --- | --- |
@@ -52,6 +52,8 @@
 资料读取使用上下文管理器释放同步 Client。请求采用 HTTPX 各阶段五秒超时，HTML 采用库默认八 MiB 上限，原始文件采用本站五 MiB 上限；不关闭 TLS 验证。超时映射为 `import/timeout`，其他请求错误为 `import/requestexception`，解析或字段校验失败为 `import/indexerror`。非空但无效的 Joined／录像日期不作为缺失值保存。
 
 列表同步 API 在同一个客户端中依次读取 Time、3BVS、IOE、Density、Problems，收集全部带原始链接的行；无原始链接的行不创建录像记录。五类全部读取和校验成功后才在事务内保存，失败不会留下部分新列表。库在单个实例内串行并至少间隔一秒，多个客户端不提供全站共享限流。
+
+v0.1.0 会将缺少难度标签和成绩表格的正常空成绩页误判为 `ParseError`，使整次同步返回 `import/indexerror`、HTTP 502。2026-10-19 已用账号 7714 复现：五类页面均返回 HTTP 200，但空 Problems 页触发该异常。v0.1.1 修复了正常空内容区的识别，仍会拒绝非空异常页面和缺失内容结构；网站继续读取全部五类，不跳过 Problems。
 
 导入业务参考 VideoSaolei：仅已验证关联账号本人能够导入；API 调用包的 `download_replay()`，使用本站 `MSVideoParser` 检查完整性和合法性，并对标识不匹配的合法录像保留 `IDENTIFIER` 审核状态。原文分类中的 Official 不会强制改变本站审核状态。按文件大小筛选后比较完整字节复用已有录像；新录像通过 `VideoModel.create_from_parser()` 创建。成功返回站内录像 ID 和审核状态，已导入的来源再次请求直接返回已有录像；外站请求失败返回 HTTP 502，文件解析／校验失败返回 HTTP 400，保留 `type/object/category` 错误正文，前端显示失败原因并允许重试。并发请求在保存前锁定同一来源并复查导入引用，避免重复创建该来源的录像。
 
@@ -109,22 +111,22 @@ sudo nginx -t && sudo nginx -s reload
 
 包支持 Python 3.11+，运行依赖为 `httpx>=0.27,<1` 和 `beautifulsoup4>=4.12,<5`。网站当前本地 Python 3.12 环境已有 HTTPX 0.28.1、Beautiful Soup 4.15.0，满足要求；生产环境版本未核对，不据此宣称生产安装不会修改依赖。
 
-发布 wheel 为 `msgames_api-0.1.0-py3-none-any.whl`，大小 17,174 字节。实际下载文件的 SHA-256 与 GitHub Release 资产 digest 一致：
+当前发布 wheel 为 `msgames_api-0.1.1-py3-none-any.whl`，大小 17,275 字节。实际下载文件的 SHA-256 与 GitHub Release 资产 digest 一致：
 
 ```text
-d56069d5021b56ac9dadc006eaa38b51eb9eec3510ec4d56e576214a1b94a5d2
+e4727ce3cbdf11426c30ac00b974618acdad7525165019d6e0922a5caf4d1fe2
 ```
 
 `requirements.txt` 已添加：
 
 ```text
-msgames-api==0.1.0
+msgames-api==0.1.1
 ```
 
 `requirements-wheels.txt` 已添加：
 
 ```text
-msgames-api @ https://github.com/putianyi889/msgames-api/releases/download/v0.1.0/msgames_api-0.1.0-py3-none-any.whl#sha256=d56069d5021b56ac9dadc006eaa38b51eb9eec3510ec4d56e576214a1b94a5d2
+msgames-api @ https://github.com/putianyi889/msgames-api/releases/download/v0.1.1/msgames_api-0.1.1-py3-none-any.whl#sha256=e4727ce3cbdf11426c30ac00b974618acdad7525165019d6e0922a5caf4d1fe2
 ```
 
 当前网站部署 workflow 按整份 `requirements-wheels.txt` 下载、对 `wheels/*.whl` 生成校验清单，并上传整个 `wheels/` 目录，无需增加第二套上传步骤。开发端下载后、生产端收到上传包后，继续使用 `pip install --find-links wheels -r requirements.txt`；仅执行 `pip install -r requirements.txt` 不会发现该目录。
@@ -136,6 +138,10 @@ git add -f back_end/saolei/accountlink/migrations/0013_msgames_profiles_and_repl
 ```
 
 ## 验证证据
+
+2026-10-19 升级验证：0.1.1 发布 wheel 的实际 SHA-256 与发布资产 digest 一致，在本站 Python 3.12 虚拟环境中安装成功，`pip check` 通过。网站回归用例使用真实 SDK 与 HTTPX MockTransport，覆盖四类有成绩、Problems 内容区为空的完整五类读取；该用例在 0.1.0 下复现原异常，在 0.1.1 下通过。实际只读调用 `fetch_replays(7714)` 成功取得 99 个原始录像链接，上传日期均存在；未写入实际账号数据库，也未下载或导入这些录像。实时数量仅记录该次样本，不作长期断言。
+
+以下为首次接入 v0.1.0 时的验证记录：
 
 - 发布源码检出固定 tag，85 项离线测试在现有 MSGames 开发环境的 Python 3.14 上全部通过。测试使用合成 HTML 和 HTTPX MockTransport，不代表所有实时入口都经本轮验证。
 - 发布提交的 [CI](https://github.com/putianyi889/msgames-api/actions/runs/38555507997) 和[发布 workflow](https://github.com/putianyi889/msgames-api/actions/runs/38555507931) 已确认成功。
@@ -165,4 +171,4 @@ npx.cmd cypress run --component --browser chrome --headless --spec "src/componen
 
 前期实时验证没有独立复测所有排行榜、异步实时请求及其他录像格式；支持范围依据发布源码、离线测试和[上游验证记录](https://github.com/putianyi889/msgames-api/blob/v0.1.0/docs/research/live-validation.json)。生产部署与浏览器中的真实批量下载尚未验证；本地数据库测试使用模拟下载和解析，AVF 真实解析证据来自上面的前期验证。组件 spec 已覆盖顺序等待、跳过不支持项、失败后继续、停止后续请求与单条重试，留给用户运行。
 
-进一步依据：[客户端实现](https://github.com/putianyi889/msgames-api/blob/v0.1.0/src/msgames_api/client.py)、[解析器](https://github.com/putianyi889/msgames-api/blob/v0.1.0/src/msgames_api/parsers.py)、[上游调查报告](https://github.com/putianyi889/msgames-api/blob/v0.1.0/docs/research/README.md)。网站对相关路径的抓取有访问约定，包文档记录了 robots 限制；应保持授权范围内的按需读取，不将公开接口扩展为全站账号扫描。
+进一步依据：[客户端实现](https://github.com/putianyi889/msgames-api/blob/v0.1.1/src/msgames_api/client.py)、[解析器](https://github.com/putianyi889/msgames-api/blob/v0.1.1/src/msgames_api/parsers.py)、[上游调查报告](https://github.com/putianyi889/msgames-api/blob/v0.1.1/docs/research/README.md)。网站对相关路径的抓取有访问约定，包文档记录了 robots 限制；应保持授权范围内的按需读取，不将公开接口扩展为全站账号扫描。

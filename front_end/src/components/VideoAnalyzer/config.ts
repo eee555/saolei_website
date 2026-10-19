@@ -74,6 +74,7 @@ export function defaultAnalyzerConfig(): AnalyzerConfig {
         customEvents: [
             { ...defaultCustomEvent(), key: 'left', expression: 'mouse_state in [4, 5, 6, 7]', type: 'sustained' },
             { ...defaultCustomEvent(), key: 'right', expression: 'mouse_state in [2, 3, 5, 6]', type: 'sustained' },
+            { ...defaultCustomEvent(), key: 'pluck', expression: 'd(pluck)', type: 'pulse' },
         ],
         eventLayer: defaultBoardEventSettings(),
         videoExport: { format: 'mp4', fps: 30, quality: 'high' },

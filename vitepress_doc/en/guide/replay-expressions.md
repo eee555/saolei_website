@@ -24,6 +24,12 @@ Custom events use native JavaScript truthiness: `true`, nonzero numbers and none
 
 Continuous sampling includes all native event types and samples every millisecond. It uses the last event in that millisecond, or all fields of the latest preceding native event when there is no event, including `time`. The sample timestamp advances, but `time` keeps the source event's original time. Counter button/board-change modes filter eligible events first, then keep the last eligible event in each millisecond without filling gaps. Counter row sampling settings do not affect custom events.
 
+The timeline and board use the same event hover details: pulses show their time and the numeric or string expression result, omitting boolean values; sustained events show their full start time, end time and duration, even when the visible range clips them. Times are displayed in seconds with three decimal places.
+
+The custom-event “Board marker size” setting affects only the board layer. Timeline markers stay at 8px and retain the event shape, color and opacity.
+
+New configurations enable the board custom-event layer with `pluck` selected. Hover over a pulse marker to see its time and value (omitting booleans), or over a sustained-event trace to see its full start time, end time and duration, even when only part of the trace is shown. Saved layer settings are preserved.
+
 ## Supported Fields
 
 “Yes” means the name is available directly as an expression variable; “—” means it is not. Names are case-sensitive. Analyzer dynamic values come from sampled events; static values describe the entire replay. The player reads its current getters without substituting 0. Names outside these tables, including `currentMs`, `current_time`, `timeMs` and `bvs`, are not supported. Counter row keys and event keys are not variables in other expressions.
@@ -89,13 +95,15 @@ Continuous sampling includes all native event types and samples every millisecon
 | `corr` | Operation accuracy metric | Yes | — | — |
 | `thrp` | Throughput efficiency metric | Yes | — | — |
 | `ioe` | Index of efficiency | Yes | — | — |
-| `pluck` | Pluck metric | Yes | — | — |
+| `pluck` | Cumulative Pluck metric | Yes | Yes | Yes |
 | `current_event_id` | Current native event array index, not a time value | Yes | — | — |
 | `game_board_state` | Game board state code | Yes | — | — |
 | `video_start_time` | Replay start time offset in seconds | Yes | — | — |
 | `video_end_time` | Replay end time coordinate in seconds | Yes | — | — |
 
 The analyzer does not expose `bbbv_s`, `cl` or `ce` directly. You can combine supported fields, for example `bbbv_solved / time`, `left + right + double` or `lce + rce + dce`. Such formulas are not guaranteed to match player getter algorithms in every special state.
+
+The Analyzer computes per-event `pluck` when loading a replay. Raw values are preserved: unavailable values may be `NaN`, and the mine-hit failure value is `Number.MAX_VALUE`, without replacement by zero or infinity.
 
 ### mouse_state Codes
 
@@ -235,6 +243,18 @@ On first use, the counters use continuous sampling and the `.3f` display format:
 | `Mov` | `d(path, 1000) / d(time, 1000) / 16` | Plot 2 |
 
 Here, 1000 counts continuous millisecond samples; the denominator uses the difference in the original event's `time`. The first 1000 samples are `NaN`, and a zero time difference can also produce non-finite values. The lowercase `bvs` is no longer a default counter. Saved counter and Plot configurations are preserved.
+
+## Default Custom Events
+
+On first use, the following events are included:
+
+| key | Type | Expression |
+| --- | --- | --- |
+| `left` | Sustained | `mouse_state in [4, 5, 6, 7]` |
+| `right` | Sustained | `mouse_state in [2, 3, 5, 6]` |
+| `pluck` | Pulse | `d(pluck)` |
+
+The `pluck` pulse occurs when the cumulative value changes from the previous millisecond. An unchanged value or a `NaN` difference produces no pulse. Existing saved custom events are preserved.
 
 ## Examples
 

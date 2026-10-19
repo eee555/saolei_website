@@ -1,7 +1,7 @@
 <template>
     <section class="timeline-event-row" :aria-label="event.key">
-        <span class="timeline-event-row__key" :title="event.key">{{ event.key }}</span>
-        <TimelinePlot v-model:window="timeWindow" v-model:hover-ms="hoverMs" class="timeline-event-row__plot" :playback="playback" :counters="counters" :event-definition="event" :event-data="data" />
+        <span class="timeline-event-row__key">{{ event.key }}</span>
+        <TimelinePlot v-model:window="timeWindow" v-model:hover-ms="hoverMs" class="timeline-event-row__plot" :playback="playback" :counters="counters" :event-definition="event" :event-data="data" @event-enter="(event, pointer) => emit('eventEnter', event, pointer)" @event-move="emit('eventMove', $event)" @event-leave="emit('eventLeave')" />
         <BaseButton class="timeline-event-row__settings" :title="t('local.settings')" :aria-label="t('local.settings')" @click="emit('edit')">
             <i class="pi pi-cog" aria-hidden="true" />
         </BaseButton>
@@ -16,6 +16,7 @@ import type { PreparedCounter } from './counter';
 import type { CustomEventDefinition, PreparedCustomEvent } from './customEvents';
 import type { TimeWindow } from './timeline';
 import TimelinePlot from './TimelinePlot.vue';
+import type { HoveredCustomEvent } from './useEventTooltip';
 import type { PlaybackController } from './usePlayback';
 
 import BaseButton from '@/components/common/BaseButton.vue';
@@ -26,7 +27,7 @@ defineProps({
     counters: { type: Object as PropType<Map<string, PreparedCounter>>, required: true },
     playback: { type: Object as PropType<PlaybackController>, required: true },
 });
-const emit = defineEmits<{ edit: [] }>();
+const emit = defineEmits<{ edit: []; eventEnter: [event: HoveredCustomEvent, pointer: PointerEvent]; eventMove: [pointer: PointerEvent]; eventLeave: [] }>();
 const timeWindow = defineModel<TimeWindow>('window', { required: true });
 const hoverMs = defineModel<number | null>('hoverMs', { default: null });
 const i18nMessages = {

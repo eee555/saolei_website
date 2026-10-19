@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 
-import { Event as ReplayEvent, GameBoard, KeyDynamicParams, VideoActionStateRecorder } from 'ms-toollib';
+import { AvfVideo, Event as ReplayEvent, EvfVideo, GameBoard, KeyDynamicParams, MvfVideo, RmvVideo, VideoActionStateRecorder } from 'ms-toollib';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { counterStaticVariables, counterValue, counterVariables, defaultCounterConfig, displayCounter, moveCounterRow, parseCounterConfig, parseCounterExpression, prepareCounter, readCounterEvents } from './counter';
@@ -174,16 +174,28 @@ describe('counter configuration', () => {
 });
 
 describe('real replay snapshots', () => {
-    for (const [filename, software] of [
-        ['52200.evf', 'e'],
-        ['Exp_FL_35.09_3BV=132_3BVs=3.76_Pu Tian Yi(Hu Bei).avf', 'a'],
-        ['Lin_Jin_Fan_Exp_60.623bv207.mvf', 'm'],
-        ['3819-Time-1616-NF-9469-32-20151031.rmv', 'r'],
+    for (const [filename, software, Parser] of [
+        ['52200.evf', 'e', EvfVideo],
+        ['Exp_FL_35.09_3BV=132_3BVs=3.76_Pu Tian Yi(Hu Bei).avf', 'a', AvfVideo],
+        ['Lin_Jin_Fan_Exp_60.623bv207.mvf', 'm', MvfVideo],
+        ['3819-Time-1616-NF-9469-32-20151031.rmv', 'r', RmvVideo],
     ] as const) {
         it(`reads ${filename} without seeking and releases event wrappers`, () => {
             const bytes = Uint8Array.from(readFileSync(new URL(`../../../cypress/fixtures/${filename}`, import.meta.url))).buffer;
-            const video = parseReplay(bytes, filename, software);
+            const video = parseReplay(bytes, filename, software, ['pluck']);
             try {
+                expect(video).toBeInstanceOf(Parser);
+                expect(video.row).toBeGreaterThan(0);
+                expect(video.column).toBeGreaterThan(0);
+                expect(video.rtime_ms).toBeGreaterThan(0);
+                if (software === 'e') {
+                    expect(video.rtime_ms).toBe(10732);
+                    expect(video.is_completed).toBe(true);
+                }
+                const fullBoard = video.board as number[][];
+                expect(fullBoard).toHaveLength(video.row);
+                expect(fullBoard.flat().filter((cell) => cell === -1)).toHaveLength(video.mine_num);
+                for (const cells of fullBoard) expect(cells).toHaveLength(video.column);
                 video.current_time = video.rtime_ms / 2000;
                 const position = video.current_event_id;
                 const board = video.game_board;
@@ -194,7 +206,11 @@ describe('real replay snapshots', () => {
                 const freeEvent = vi.spyOn(ReplayEvent.prototype, 'free');
                 const freeBoard = vi.spyOn(GameBoard.prototype, 'free');
                 const mouseState = vi.spyOn(VideoActionStateRecorder.prototype, 'mouse_state', 'get');
+                const pluck = vi.spyOn(KeyDynamicParams.prototype, 'pluck', 'get');
                 const events = readCounterEvents(video);
+                expect(pluck).toHaveBeenCalledTimes(events.length);
+                expect(events.map((snapshot) => snapshot.values.pluck)).toEqual(pluck.mock.results.map((result) => result.value as number));
+                expect(events.every((snapshot) => Number.isFinite(snapshot.values.pluck))).toBe(true);
                 expect(mouseState).toHaveBeenCalledTimes(events.length);
                 expect(events.map((snapshot) => snapshot.values.mouse_state)).toEqual(mouseState.mock.results.map((result) => result.value as number));
                 for (const getter of staticGetters) expect(getter).toHaveBeenCalledOnce();
@@ -215,6 +231,7 @@ describe('real replay snapshots', () => {
                     expect(Number.isInteger(snapshot.timeMs)).toBe(true);
                 }
                 const last = events[events.length - 1];
+                if (software === 'e') expect(last.values.pluck).toBeCloseTo(0.08109874939134086, 12);
                 expect(last.values.bbbv_solved).toBeGreaterThan(0);
                 expect(last.values.path).toBeGreaterThan(0);
                 for (const samplingMode of ['continuous', 'button', 'board'] as const) {
@@ -237,11 +254,32 @@ describe('real replay snapshots', () => {
                 const progress = prepareCounter(row('bbbv_solved / bbbv'), events);
                 expect(progress.error).toBe('');
                 expect(progress.samples[progress.samples.length - 1].value).toBe(last.values.bbbv_solved / last.values.bbbv);
+                expect(prepareCounter(row('pluck'), events).samples.at(-1)?.value).toBe(last.values.pluck);
             } finally {
                 video.free();
             }
         });
     }
+
+    it('preserves the library failure value in pluck counter samples', () => {
+        const filename = 'c_10_39.832_24_0.477_Pu Tian Yi(Hu Bei)_fail.evf';
+        const bytes = Uint8Array.from(readFileSync(new URL(`../../../cypress/fixtures/${filename}`, import.meta.url))).buffer;
+        const video = parseReplay(bytes, filename, 'e', ['pluck']);
+        try {
+            expect(video).toBeInstanceOf(EvfVideo);
+            expect(video.rtime_ms).toBe(39832);
+            expect(video.is_completed).toBe(false);
+            const board = video.board as number[][];
+            expect(board).toHaveLength(video.row);
+            expect(board.flat().filter((cell) => cell === -1)).toHaveLength(video.mine_num);
+            for (const cells of board) expect(cells).toHaveLength(video.column);
+            const events = readCounterEvents(video);
+            expect(events.at(-1)?.values.pluck).toBe(Number.MAX_VALUE);
+            expect(prepareCounter(row('pluck'), events).samples.at(-1)?.value).toBe(Number.MAX_VALUE);
+        } finally {
+            video.free();
+        }
+    });
 
     it('preserves nonfinite static values without replacing or filtering them', () => {
         const bytes = Uint8Array.from(readFileSync(new URL('../../../cypress/fixtures/52200.evf', import.meta.url))).buffer;
