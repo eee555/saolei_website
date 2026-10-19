@@ -11,7 +11,6 @@
 
 <script lang="ts" setup>
 // 认证状态、表单弹窗及提供给导航的操作。
-import { isAxiosError } from 'axios';
 import { ElDialog, ElMessage, ElMessageBox } from 'element-plus';
 import { onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -22,6 +21,7 @@ import RetrieveForm from './RetrieveForm.vue';
 import type { LoginControls } from './types';
 
 import { httpErrorNotification } from '@/components/Notifications';
+import type { TopAnchors } from '@/services/topRankingService';
 import { store } from '@/store';
 import type { GetUserInfoResponse } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
@@ -41,16 +41,14 @@ function openDialog(form: 'login' | 'register') {
 
 onMounted(async () => {
     // 恢复登录状态时绕过 HTTP 缓存，避免实名等资料修改后读到旧数据。
-    await proxy.$axios.get<GetUserInfoResponse>('api/userprofile/info/0', {
+    await proxy.$axios.get<{ user: GetUserInfoResponse | null; top_anchors: TopAnchors }>('/api/common/loginauto', {
         params: { _t: Date.now() },
     }).then(function (response) {
-        store.login(response.data);
+        store.topAnchors = response.data.top_anchors;
+        if (response.data.user) store.login(response.data.user);
+        else store.logout();
     }).catch((err: unknown) => {
         store.logout();
-        if (isAxiosError(err) && err.response?.status === 401) {
-            console.log('401 is normal, indicating that the user is not logged in.');
-            return;
-        }
         httpErrorNotification(err);
     });
 });

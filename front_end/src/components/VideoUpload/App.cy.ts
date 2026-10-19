@@ -324,6 +324,25 @@ describe('VideoUpload Component', () => {
         }
     }
 
+    it('retains a rejected upload for retry while ranking anchors refresh', () => {
+        local.value.autoUploadAfterParse = true;
+        local.value.autoRemoveAfterUpload = true;
+        cy.intercept('POST', '/common/uploadvideo/', { statusCode: 503, headers: { 'Retry-After': '1' }, body: { type: 'error', object: 'top', category: 'refreshing' } }).as('busy');
+        cy.mount(App, mountOptions({ isUserAnonymous: false }));
+        loadFixture('expAvf', 'videoFileExpAvf');
+        cy.get('input[type=file]').selectFile([{ contents: '@videoFileExpAvf', fileName: 'exp.avf' }], { force: true });
+        cy.wait('@busy');
+        cy.get('.el-notification').should('contain.text', 'Ranking anchors are being refreshed').and('contain.text', 'retry');
+        cy.closeElNotifications();
+        cy.contains('Uploading').should('not.exist');
+        cy.get('table:visible').getTable().should('deep.equal', [fixtures.expAvf.tableData]);
+        mockUploadResponse();
+        cy.get('table:visible .checkbox-input').first().click();
+        cy.get('button').contains('Upload').click();
+        cy.wait('@uploadRequest');
+        cy.get('table:visible tbody tr').should('not.exist');
+    });
+
     it('Auto-remove after upload', () => {
         mockUploadResponse();
         local.value.autoRemoveAfterUpload = true;

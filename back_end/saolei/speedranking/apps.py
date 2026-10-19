@@ -6,3 +6,4 @@ class SpeedrankingConfig(AppConfig):
 
     def ready(self):
         import speedranking.signals  # noqa: F401
+        import speedranking.top.signals  # noqa: F401

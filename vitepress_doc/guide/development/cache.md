@@ -44,7 +44,7 @@ Redis 分类只读取业务代码直接确定的 DB 0 key，不执行 `SCAN`、`
 
 共享缓存层提供连接及 pipeline，扫雷网、PB 和 top 的业务分别位于对应子目录。一次更新或每个批处理段共同读取用户纪录，独立判断后共同写入；PB 查询旧 score、刷新变化小榜的 rank，以及 top 更新锚点是依赖前序结果的后续批量阶段。必须补位的单项按各榜规则查询。
 
-top 由 `speedranking.top.cache.TopRankingCache` 管理：`speedranking:top:records` hash 保存每用户前五明细及均值，十八个 `speedranking:top:{std|nf}:{level}{stat}` zset 排序，`speedranking:top:anchors` hash 保存预聚合锚点。锚点接口即时 HGETALL，不叠加结果缓存，不在读取时重新聚合。具体规则和单位不在此重复，部署用法见 [top 重建命令](./management-commands.md#rebuild-top-ranks)。
+top 由 `speedranking.top.cache.TopRankingCache` 管理，包含用户前五明细、十八个原始索引、九个软实力/LSF 索引及锚点。缓存结构、后台发布与单机准入、前端启动快照约定统一见 `back_end/saolei/speedranking/README.md`。部署升级需要执行 [top 重建命令](./management-commands.md#rebuild-top-ranks)，不能混用旧 score 编码。
 
 排序编码、精度与数值范围、纪录更新及缓存升级约定统一维护在仓库的 `back_end/saolei/speedranking/README.md`，此处不再重复。重建命令用法见[管理命令](./management-commands.md#rebuild-speed-ranks)。
 

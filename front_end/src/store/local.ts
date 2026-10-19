@@ -3,6 +3,7 @@ import { useLocalStorage } from '@vueuse/core';
 const localDefaultSettings = {
     darkmode: matchMedia('(prefers-color-scheme: dark)').matches,
     experimental: false,
+    colored: false,
     language: navigator.language.toLocaleLowerCase(),
     navigation_layout: 'top' as 'top' | 'sidebar',
     notification_duration: 4500,

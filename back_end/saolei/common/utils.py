@@ -10,11 +10,13 @@ from msuser.models import UserMS
 from userprofile.models import UserProfile
 from utils.exceptions import ExceptionToResponse
 from utils.parser import MSVideoParser
+from utils.ranking_lock import ranking_access
 from videomanager.models import VideoModel
 
 logger = logging.getLogger('videomanager')
 
 
+@ranking_access(operation='common.upload_video')
 def new_video_by_file(user: UserProfile, file: File, upload_time: datetime = None) -> VideoModel:
     parser = MSVideoParser(file)
 

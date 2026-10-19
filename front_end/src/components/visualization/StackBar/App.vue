@@ -1,9 +1,9 @@
 <template>
-    <div style="height: 0.3em; display: flex; align-items: center;">
+    <div :style="{ height, display: 'flex', alignItems: 'center' }">
         <BaseTooltip v-for="(item, index) in data" :key="item.name" :data-cy="item.name" :show-delay="200" :style="{ width: `${(item.value / sumValue * 100)}%`, height: '100%', background: item.color, borderTopLeftRadius: index === 0 ? '0.1em' : '0', borderBottomLeftRadius: index === 0 ? '0.1em' : '0', borderTopRightRadius: index === props.data.length - 1 ? '0.1em' : '0', borderBottomRightRadius: index === props.data.length - 1 ? '0.1em' : '0'}">
             <template #content>
                 <span class="text-regular">
-                    {{ item.name }}: {{ (item.value / sumValue * 100).toFixed(0) }}%({{ item.value }})
+                    {{ item.name }}: {{ (item.value / sumValue * 100).toFixed(0) }}%({{ formatValue(item.value) }})
                 </span>
             </template>
         </BaseTooltip>
@@ -13,7 +13,7 @@
             <template v-if="item.value > 0">
                 <span class="dot" :style="{ background: item.color }" />
                 <span class="text-regular">
-                    {{ item.name }}: {{ (item.value / sumValue * 100).toFixed(0) }}%({{ item.value }})
+                    {{ item.name }}: {{ (item.value / sumValue * 100).toFixed(0) }}%({{ formatValue(item.value) }})
                 </span>
             </template>
         </span>
@@ -25,6 +25,7 @@ import '@/styles/text.css';
 
 import { sum } from 'd3-array';
 import { computed } from 'vue';
+import type { PropType } from 'vue';
 
 import BaseTooltip from '@/components/common/BaseTooltip.vue';
 
@@ -40,9 +41,11 @@ const props = defineProps({
         default: () => [],
     },
     legend: { type: Boolean, default: false },
+    height: { type: String, default: '0.3em' },
+    formatValue: { type: Function as PropType<(value: number) => string>, default: (value: number) => String(value) },
 });
 
-const sumValue = computed(() => sum(props.data, (item) => item.value));
+const sumValue = computed(() => sum(props.data, (item) => item.value) || 1);
 </script>
 
 <style lang="less" scoped>

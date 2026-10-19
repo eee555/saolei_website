@@ -59,5 +59,9 @@ export const colorSchemeTemplates = {
             thresholds: ArbiterStatsAutoValueTemplate.map((v) => 90 - v * 10).reverse(),
             colors: ArbiterStatsAutoColorTemplate.toReversed(),
         },
+        grade: {
+            thresholds: [100, 60, 55, 50, 45, 40, 35, 30],
+            colors: ['rgba(255,255,255,0)', '#808080', '#00B0F0', '#005696', '#FFC000', '#A65C12', '#14D2A0', '#0B7B5E', '#CCFF66'],
+        },
     },
 } as const;

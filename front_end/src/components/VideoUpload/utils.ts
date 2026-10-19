@@ -1,3 +1,4 @@
+import { isRankingRefreshError } from '@/components/Notifications';
 import { uploadVideoFile } from '@/services/videoUploadService';
 import { sleep } from '@/utils';
 import type { CustomLevel } from '@/utils/customlevel';
@@ -76,6 +77,7 @@ export async function uploadEntry(entry: UploadEntry, delayMs = 0): Promise<Uplo
     if (!isUploadableStatus(entry.status)) {
         return entry;
     }
+    const previousStatus = entry.status;
     entry.status = 'process';
     if (entry.stat === undefined) {
         entry.status = 'upload';
@@ -93,7 +95,7 @@ export async function uploadEntry(entry: UploadEntry, delayMs = 0): Promise<Uplo
             entry.status = result.status;
         }
     } catch (error) {
-        entry.status = 'upload';
+        entry.status = isRankingRefreshError(error) ? previousStatus : 'upload';
         throw error;
     }
     return entry;

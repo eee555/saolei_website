@@ -13,6 +13,8 @@ description: 开源扫雷网后端Django信号触发关系详解，包括录像�
 
 个人纪录的增量选优、补位查询和批量重建保持原有逻辑；仅在生成 Redis zset score 时使用四位小数 Bvs 和分钟级上传时间，并检查单项或总值的编码范围。超限仅移除对应 zset 条目，不触发个人纪录补位，hash 仍保存原始最佳成绩；总榜按总值独立判断。
 
+top 原始十八项统一参与用户集合，并以变换后的均值作为降序索引。共同写入后先按已发布锚点局部更新该用户的软实力；实时锚点数值变化时发送 `speedranking.top.events.soft_refresh_requested`，由 `top.signals` 创建 `task_refresh_soft_ranks`。任务执行时有其他同路径 READY 任务就正常跳过，否则取得单机独占准入，九次加权合并后统一发布。相关 HTTP 写入口在事务前取得共享准入并覆盖 on_commit 回调；刷新期间新 HTTP 写请求返回有业务原因的 503，后台业务等待而不拒绝。接口、锁路径和运维限制见 `back_end/saolei/speedranking/README.md`。
+
 NF 是独立维度，由 `VideoModel.right_ce == 0` 判断，不再使用模式 `12`。创建和删除时，NF 子计数与录像原模式的子计数同时增减；`right_ce` 为空不计入 NF。`videomanager` 捕获 `right_ce` 变化并更新队列；`customranking` 不需要 NF 信息，不监听此字段。批量转换旧模式后需显式刷新计数及缓存，步骤见 `back_end/saolei/msuser/refactor.md`。
 
 ```automaton

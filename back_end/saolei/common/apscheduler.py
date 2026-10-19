@@ -9,6 +9,7 @@ from django_apscheduler.models import DjangoJob, DjangoJobExecution
 
 from tournament.cache import TournamentCache
 from userprofile.models import EmailVerifyRecord
+from utils.ranking_lock import ranking_access
 from videomanager.models import VideoModel
 from videomanager.services import delete_newest_queue
 
@@ -27,6 +28,7 @@ def delete_overdue_captcha():
 
 
 @util.close_old_connections
+@ranking_access(operation='scheduler.delete_freezed_video')
 def delete_freezed_video():
     ddl = datetime.now(timezone.utc) - timedelta(days=7)
     VideoModel.objects.filter(upload_time__lt=ddl, state='b').delete()

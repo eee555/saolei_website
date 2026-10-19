@@ -85,6 +85,7 @@ export default defineConfig({
                                 { text: '录像播放器', link: '/guide/video-player' },
                                 { text: '录像表达式参考', link: '/guide/replay-expressions' },
                                 { text: '扫雷标识', link: '/guide/identifier' },
+                                { text: 'top 榜与 LSF 榜', link: '/guide/top-lsf' },
                                 {
                                     text: '比赛功能',
                                     link: '/guide/tournament',
@@ -151,6 +152,7 @@ export default defineConfig({
                                 { text: 'Video Player', link: '/en/guide/video-player' },
                                 { text: 'Replay Expressions', link: '/en/guide/replay-expressions' },
                                 { text: 'Player Identifiers', link: '/en/guide/identifier' },
+                                { text: 'top and LSF Rankings', link: '/en/guide/top-lsf' },
                                 {
                                     text: 'Tournaments',
                                     link: '/en/guide/tournament',

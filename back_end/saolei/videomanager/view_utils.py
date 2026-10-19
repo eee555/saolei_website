@@ -3,6 +3,7 @@ import struct
 from config.text_choices import MS_TextChoices
 from utils.exceptions import ExceptionToResponse
 from utils.parser import MSVideoParser
+from utils.ranking_lock import ranking_access
 from .models import ExpandVideoModel, VideoModel
 from .utils import VideoParseError
 
@@ -14,6 +15,7 @@ for name in [field.name for field in ExpandVideoModel._meta.get_fields()]:
     video_all_fields.append('video__' + name)
 
 
+@ranking_access(operation='videomanager.refresh_video')
 def refresh_video(video: VideoModel):
     try:
         parser = MSVideoParser(video.file)
