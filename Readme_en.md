@@ -97,6 +97,15 @@ For the actual installation, run:
 python3 -m pip install --find-links wheels -r requirements.txt
 ```
 
+If `wheels/` is not ready or needs to be downloaded again, and production can access GitHub Releases, run both steps manually from the same backend directory:
+
+```bash
+python3 -m pip download --no-deps --dest wheels -r requirements-wheels.txt
+python3 -m pip install --find-links wheels -r requirements.txt
+```
+
+The download step checks each wheel against the SHA-256 pinned in the manifest; installation discovers the local packages through `--find-links wheels`. Use the same Python interpreter as the production service for both steps; these examples use `python3`.
+
 Production obtains both client packages from the local `wheels/` directory. Other dependencies continue to use the server's configured PyPI index, such as the Aliyun mirror. Apply migrations and restart the backend using your existing deployment procedure. See the [WOM integration notes](back_end/saolei/accountlink/wom/README.md) and [MSGames integration notes](back_end/saolei/accountlink/msgames/README.md) for the fields, import workflow, and validation limits.
 
 ## Sponsor
