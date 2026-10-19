@@ -8,8 +8,12 @@ import { colorThemes } from '@/store/color';
 import { pinia } from '@/store/create';
 import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
 
-function mountTopRanking() {
-    cy.mount(TopRanking, { global: { plugins: [i18n, pinia, hashRouter()], config: { globalProperties: { $axios } } } });
+function mountTopRanking(initialPath = '/ranking/speed/top') {
+    const router = hashRouter({ initialPath });
+    cy.wrap(router.isReady()).then(() => {
+        cy.mount(TopRanking, { global: { plugins: [i18n, pinia, router], config: { globalProperties: { $axios } } } });
+    });
+    return router;
 }
 
 describe('<TopRanking />', () => {
@@ -29,7 +33,7 @@ describe('<TopRanking />', () => {
             'nf:bs': { videos: [{ value: 15, video_id: 8301 }] },
         };
         cy.intercept({ method: 'GET', pathname: '/api/speedranking/top/rank' }, { count: 21, players: [{ player_id: 42, records }] }).as('ranking');
-        mountTopRanking();
+        const router = mountTopRanking();
         cy.wait('@ranking').its('request.query').should('include', { level: 'e', stat: 't', nf: 'false', start: '0', end: '20' });
         cy.get('.top-ranking-table tbody tr').should('have.length', 1).find('td').should('have.length', 16);
         cy.get('.top-detail-toggle').should('have.length', 9).find('.pi-eye').should('have.length', 9);
@@ -60,6 +64,7 @@ describe('<TopRanking />', () => {
             expect(data[0]?.slice(11)).to.deep.equal(['1.000', '999.999', '999.999', '999.999', '999.999']);
         });
         cy.get('@ranking.all').should('have.length', 1);
+        cy.wrap(router).its('currentRoute.value.query').should('include', { sort: 'et', detail: 'bt', page: '1' });
         cy.get('.top-pagination .btn-next').click();
         cy.wait('@ranking').its('request.query').should('include', { level: 'e', stat: 't', start: '20', end: '40' });
         cy.get('.top-detail-toggle[aria-pressed=true]').should('have.length', 1).and('have.attr', 'data-detail-field', 'bt');
@@ -80,16 +85,19 @@ describe('<TopRanking />', () => {
         cy.get('.top-ranking-table tbody [data-field=bs]').should('have.text', '108.000');
         cy.get('.top-detail-toggle[aria-pressed=true]').should('have.length', 1).and('have.attr', 'data-detail-field', 'bs');
         cy.get('.top-detail-cell a').should('have.length', 1).and('have.attr', 'href', '#/video/8301').and('have.text', '540.000');
+        cy.wrap(router).its('currentRoute.value.query').should('deep.equal', { sort: 'et', detail: 'bs', nf: '1', page: '1', page_size: '20' });
     });
 
     it('retries a failed request and handles an empty bucket', () => {
         cy.intercept('GET', '**/api/speedranking/top/rank*', { statusCode: 500 }).as('failed');
-        mountTopRanking();
+        mountTopRanking('/ranking/speed/top?sort=ib&detail=bs&nf=1&page_size=50');
         cy.wait('@failed');
+        cy.get('.top-ranking-table thead [data-field=ib]').should('have.attr', 'aria-pressed', 'true');
+        cy.get('.top-detail-toggle[aria-pressed=true]').should('have.attr', 'data-detail-field', 'bs');
         cy.get('[role=alert]').should('contain.text', 'Unable to load ranking');
         cy.intercept('GET', '**/api/speedranking/top/rank*', { count: 0, players: [] }).as('retry');
         cy.get('@vue').its('vm').invoke('refresh');
-        cy.wait('@retry');
+        cy.wait('@retry').its('request.query').should('include', { level: 'i', stat: 'b', nf: 'true', start: '0', end: '50' });
         cy.get('[role=alert]').should('not.exist');
         cy.get('.base-table-empty').should('contain.text', 'No records');
     });

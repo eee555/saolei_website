@@ -59,6 +59,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import SaoleiRankingColumn from './SaoleiRankingColumn.vue';
+import { queryChoice, queryInteger, queryNF, useRankingQuery } from './useRankingQuery';
 
 import BaseTable from '@/components/common/BaseTable.vue';
 import PlayerName from '@/components/PlayerName.vue';
@@ -71,10 +72,11 @@ import { getPiecewiseColorSchemeName } from '@/utils/ms_const';
 const props = defineProps({ colored: { type: Boolean, default: false } });
 
 const levels = [...SaoleiLevels, 'sum'] as const;
-const nf = ref(false);
-const stat = ref<SaoleiField>('sumt');
-const currentPage = ref(1);
-const pageSize = ref(20);
+const { fields: { nf, sort: stat, page: currentPage, page_size: pageSize }, update } = useRankingQuery(
+    { nf: false, sort: 'sumt', page: 1, page_size: 20 },
+    (query, defaults) => ({ nf: queryNF(query.nf), sort: queryChoice(query.sort, saoleiFields, defaults.sort), page: queryInteger(query.page, defaults.page), page_size: queryChoice(query.page_size, [20, 50, 100], defaults.page_size) }),
+    ['nf', 'sort', 'page_size'],
+);
 const first = computed(() => (currentPage.value - 1) * pageSize.value);
 const total = ref(0);
 const rows = ref<SaoleiRecord[]>([]);
@@ -100,7 +102,7 @@ async function load() {
         rows.value = data.players;
         total.value = data.count;
         if (first.value > 0 && first.value >= total.value) {
-            currentPage.value = Math.max(1, Math.ceil(total.value / pageSize.value));
+            void update({ page: Math.max(1, Math.ceil(total.value / pageSize.value)) }, true);
         }
     } catch {
         if (current !== requestId) return;
@@ -117,9 +119,6 @@ function selectStat(selected: SaoleiField) {
     stat.value = selected;
 }
 
-watch([nf, stat, pageSize], () => {
-    currentPage.value = 1;
-}, { flush: 'sync' });
 watch([nf, stat, pageSize, currentPage], () => {
     rows.value = [];
     void load();

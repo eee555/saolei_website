@@ -70,16 +70,16 @@
             layout="total, sizes, prev, pager, next, jumper"
             :page-sizes="[20, 50, 100]"
             :total="total"
-            @size-change="handlePageSizeChange"
-            @current-change="fetchRanking"
         />
     </section>
 </template>
 
 <script setup lang="ts">
 import { ElPagination, vLoading } from 'element-plus';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onScopeDispose, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+
+import { queryChoice, queryInteger, useRankingQuery } from './useRankingQuery';
 
 import BaseTable from '@/components/common/BaseTable.vue';
 import BaseTextButton from '@/components/common/BaseTextButton.vue';
@@ -91,13 +91,6 @@ import { ms_to_s } from '@/utils';
 import { globalNow } from '@/utils/datetime';
 import { calculateTournamentScoreCurrent, decodeGSCBest, decodeWeeklyClassicBest } from '@/utils/tournamentUser';
 
-const sortBy = ref<TournamentUserRankField>('score_current');
-const currentPage = ref(1);
-const pageSize = ref(20);
-const total = ref(0);
-const rows = ref<TournamentUserRankingRow[]>([]);
-const loading = ref(false);
-const first = computed(() => (currentPage.value - 1) * pageSize.value);
 const rankColumns = [
     { field: 'score_current', group: 'scoreGroup', label: 'scoreCurrent' },
     { field: 'score_total', group: 'scoreGroup', label: 'scoreTotal' },
@@ -108,7 +101,19 @@ const rankColumns = [
     { field: 'weekly_classic_best', group: 'weeklyGroup', label: 'weeklyClassicBest' },
 ] as const satisfies readonly { field: TournamentUserRankField; group: string; label: string }[];
 
+const { fields: { sort: sortBy, page: currentPage, page_size: pageSize } } = useRankingQuery(
+    { sort: 'score_current', page: 1, page_size: 20 },
+    (query, defaults) => ({ sort: queryChoice(query.sort, rankColumns.map((column) => column.field), defaults.sort), page: queryInteger(query.page, defaults.page), page_size: queryChoice(query.page_size, [20, 50, 100], defaults.page_size) }),
+    ['sort', 'page_size'],
+);
+const total = ref(0);
+const rows = ref<TournamentUserRankingRow[]>([]);
+const loading = ref(false);
+let requestId = 0;
+const first = computed(() => (currentPage.value - 1) * pageSize.value);
+
 async function fetchRanking() {
+    const request = ++requestId;
     loading.value = true;
     try {
         const data = await fetchTournamentUserRanking({
@@ -116,25 +121,19 @@ async function fetchRanking() {
             start: first.value,
             end: first.value + pageSize.value,
         });
+        if (request !== requestId) return;
         rows.value = data.data;
         total.value = data.total;
     } catch (error) {
-        httpErrorNotification(error);
+        if (request === requestId) httpErrorNotification(error);
     } finally {
-        loading.value = false;
+        if (request === requestId) loading.value = false;
     }
-}
-
-function handlePageSizeChange() {
-    currentPage.value = 1;
-    void fetchRanking();
 }
 
 function selectSort(field: TournamentUserRankField) {
     if (field === sortBy.value) return;
     sortBy.value = field;
-    currentPage.value = 1;
-    void fetchRanking();
 }
 
 function formatScoreCurrent(scoreCurrent: number, lastUpdated: string): string {
@@ -153,7 +152,12 @@ function formatWeeklyClassicBest(value: number): string {
     return `${ms_to_s(best.score)} / ${best.year}-W${String(best.week).padStart(2, '0')}`;
 }
 
-onMounted(fetchRanking);
+watch([sortBy, currentPage, pageSize], () => {
+    void fetchRanking();
+}, { immediate: true });
+onScopeDispose(() => {
+    requestId++;
+});
 
 const i18nMessages = {
     'zh-cn': { local: {

@@ -21,6 +21,7 @@ const router = useRouter();
 
 const handleTabClick = (tab: TabsPaneContext) => {
     const tabName = tab.paneName;
+    if (tabName === activeTab.value) return;
     if (tabName !== undefined) void router.replace({ name: `ranking_${String(tabName)}` });
 };
 
