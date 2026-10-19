@@ -106,7 +106,7 @@
     "vite-plugin-compression": "0.5.1",
     "vite-plugin-singlefile": "2.3.3",
     "vite-plugin-wasm": "3.6.0",
-    "vitest": "5.0.4",
+    "vitest": "5.0.5",
     "vue-component-type-helpers": "3.3.13",
     "vue-tsc": "3.3.13"
   }
