@@ -155,7 +155,7 @@ function navigationItems(controls: LoginControls): NavigationItem[] {
         ];
     items.push(
         { id: 'settings', label: t('local.setting'), icon: 'pi-cog', iconOnly: true, to: '/settings' },
-        { id: 'docs', label: t('local.docs'), icon: 'pi-question-circle', iconOnly: true, href: getDocsUrl('', locale.value) },
+        { id: 'docs', label: t('local.docs'), icon: 'pi-question-circle', iconOnly: true, href: getDocsUrl('') },
     );
     items.push({
         id: 'language',
@@ -275,5 +275,5 @@ const i18nMessages = {
     } },
 };
 
-const { t, locale } = useI18n({ messages: i18nMessages });
+const { t } = useI18n({ messages: i18nMessages });
 </script>

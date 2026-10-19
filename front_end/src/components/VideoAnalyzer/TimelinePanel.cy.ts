@@ -352,7 +352,7 @@ describe('<TimelinePanel />', () => {
         cy.get('.custom-event-editor__shape').select('diamond');
         cy.get('.custom-event-editor__preview').should('contain.text', '3');
         cy.get('.custom-event-editor .counter-expression-help__link').should('be.visible').and('have.attr', 'target', '_blank');
-        cy.get('.custom-event-editor .counter-expression-help__link').should('have.attr', 'href').and('match', /\/en\/guide\/replay-expressions$/);
+        cy.get('.custom-event-editor .counter-expression-help__link').should('have.attr', 'href').and('match', /\/docs\/guide\/replay-expressions$/);
         cy.get('.custom-event-editor__save').click();
         cy.get('.timeline-event-row__key').should('have.text', 'bvs');
         cy.get('.timeline-plot__event-pulses .plot-scatter__point').should('have.length', 3);

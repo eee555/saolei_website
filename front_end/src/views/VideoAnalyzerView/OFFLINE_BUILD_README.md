@@ -54,7 +54,7 @@ npx.cmd cypress run --component --browser chrome --headless --spec "src/views/Lo
 | vue-tippy / 共享基础组件 | 保留现有 UI，tooltip 源节点初始 hidden 的修复一并迁移；不新建第二套 UI 库。 |
 | i18n / CSS | 在独立 main.ts 直接初始化必要资源，不导入网站 main.ts 或根 App。 |
 | Notifications / CopyToClipboard | 所需 local 设置已移到 store/local.ts，原 store 路径重导出兼容；离线入口不加载用户 store。剪贴板继续调用 navigator.clipboard，需真实 file:// 验证。 |
-| CounterExpressionHelp / getDocsUrl | 离线构建使用包内相对 HTML 路径，静态中英文帮助由现有 Markdown 生成；网站帮助地址保持原规则。 |
+| CounterExpressionHelp / getDocsUrl | 离线构建按界面语言使用包内相对 HTML 路径，静态中英文帮助由现有 Markdown 生成；在线地址不带语言，由 VitePress 分发。 |
 
 ## 构建方案比较
 

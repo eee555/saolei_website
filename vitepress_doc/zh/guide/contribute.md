@@ -239,7 +239,7 @@ Pull Request 简称 PR，用来把你的修改提交给项目维护者审核。
 ```bash
 git checkout -b docs/fix-guide
 git status
-git add vitepress_doc/guide/某个文件.md
+git add vitepress_doc/zh/guide/某个文件.md
 git commit -m "docs: improve guide"
 git push origin docs/fix-guide
 ```

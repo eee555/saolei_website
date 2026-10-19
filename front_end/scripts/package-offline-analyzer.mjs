@@ -51,7 +51,7 @@ for (const [source, destination] of [
 
 const markdown = new MarkdownIt({ html: false, linkify: true });
 for (const language of ['zh', 'en']) {
-    const source = join(frontend, '..', 'vitepress_doc', ...(language === 'en' ? ['en'] : []), 'guide', 'replay-expressions.md');
+    const source = join(frontend, '..', 'vitepress_doc', language, 'guide', 'replay-expressions.md');
     const text = (await readFile(source, 'utf8')).replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/u, '');
     const help = join(output, 'help', ...(language === 'en' ? ['en'] : []), 'guide', 'replay-expressions.html');
     await mkdir(dirname(help), { recursive: true });

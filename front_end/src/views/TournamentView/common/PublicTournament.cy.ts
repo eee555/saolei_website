@@ -77,11 +77,12 @@ describe('<PublicTournament />', () => {
         cy.get('.tournament-auto-upload').should('not.be.visible');
     });
 
-    for (const { locale, browserLanguage, path } of [
-        { locale: 'zh-cn', browserLanguage: 'en-US', path: '/docs/guide/tournament#auto-upload' },
-        { locale: 'en', browserLanguage: 'zh-CN', path: '/docs/en/guide/tournament#auto-upload' },
+    for (const { locale, browserLanguage } of [
+        { locale: 'zh-cn', browserLanguage: 'en-US' },
+        { locale: 'en', browserLanguage: 'zh-CN' },
     ]) {
-        it(`routes the upload guide for interface language ${locale}, independently of browser language`, () => {
+        it(`leaves upload guide language selection to VitePress for interface language ${locale}`, () => {
+            const path = '/docs/guide/tournament#auto-upload';
             const translations = createI18n({ legacy: false, locale, messages: i18n.global.messages.value });
             cy.window().then((win) => {
                 cy.stub(win.navigator, 'languages').value([browserLanguage]);
@@ -94,8 +95,7 @@ describe('<PublicTournament />', () => {
             cy.then(() => {
                 translations.global.locale.value = locale === 'en' ? 'zh-cn' : 'en';
             });
-            const changedPath = locale === 'en' ? '/docs/guide/tournament#auto-upload' : '/docs/en/guide/tournament#auto-upload';
-            cy.get('.tournament-auto-upload a').should('have.attr', 'href').and('satisfy', (href: string) => href.endsWith(changedPath));
+            cy.get('.tournament-auto-upload a').should('have.attr', 'href').and('satisfy', (href: string) => href.endsWith(path));
         });
     }
 

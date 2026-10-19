@@ -110,7 +110,7 @@ describe('<Weekly App />', () => {
 
     it('hides real-time score for anonymous users during ongoing tournament', () => {
         mountWeekly({ loginStatus: LoginStatus.NotLogin, registered: false });
-        cy.get('a.link[href$="/en/guide/weekly-tournament"]').should('be.visible');
+        cy.get('a.link[href$="/guide/weekly-tournament"]').should('be.visible');
 
         cy.contains('Ongoing').should('be.visible');
         cy.contains('Real-Time Score').should('not.exist');

@@ -9,27 +9,16 @@ describe('getDocsUrl', () => {
         vi.stubEnv('VITE_OFFLINE_ANALYZER', 'true');
         expect(getDocsUrl('guide/replay-expressions', language)).toBe(expected);
     });
-    it.each([
-        ['zh-cn', '/docs/?lang=zh'],
-        ['en', '/docs/en/?lang=en'],
-    ])('explicitly selects the homepage language for %s', (language, expected) => {
+    it.each(['zh-cn', 'ZH-TW', 'en', 'fr'])('leaves online language selection to VitePress for %s', (language) => {
+        vi.stubEnv('VITE_OFFLINE_ANALYZER', 'false');
         vi.stubEnv('VITE_DOCS_URL', '/docs/');
-        expect(getDocsUrl('', language)).toBe(expected);
-    });
-
-    it.each([
-        ['zh-cn', 'guide/replay-expressions'],
-        ['ZH-TW', 'guide/replay-expressions'],
-        ['en', 'en/guide/replay-expressions'],
-        ['fr', 'en/guide/replay-expressions'],
-    ])('selects the documentation path for %s', (language, expected) => {
-        vi.stubEnv('VITE_DOCS_URL', '/docs/');
-        expect(getDocsUrl('guide/replay-expressions', language)).toBe(`/docs/${expected}`);
+        expect(getDocsUrl('', language)).toBe('/docs/');
+        expect(getDocsUrl('guide/replay-expressions', language)).toBe('/docs/guide/replay-expressions');
     });
 
     it.each(['https://example.com/help', 'https://example.com/help/'])('uses the configured documentation base %s', (base) => {
         vi.stubEnv('VITE_DOCS_URL', base);
-        expect(getDocsUrl('guide/tournament#auto-upload', 'en')).toBe('https://example.com/help/en/guide/tournament#auto-upload');
+        expect(getDocsUrl('guide/tournament?from=menu#auto-upload')).toBe('https://example.com/help/guide/tournament?from=menu#auto-upload');
     });
 
     it.each([
@@ -38,6 +27,6 @@ describe('getDocsUrl', () => {
     ])('uses the default documentation base when DEV is %s', (dev, expected) => {
         vi.stubEnv('VITE_DOCS_URL', '');
         vi.stubEnv('DEV', dev);
-        expect(getDocsUrl('guide/replay-expressions', 'zh-cn')).toBe(expected);
+        expect(getDocsUrl('guide/replay-expressions')).toBe(expected);
     });
 });
