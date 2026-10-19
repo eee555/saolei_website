@@ -43,19 +43,23 @@ describe('User Authentication', () => {
         cy.contains('注册').click();
 
         // 填写注册信息
-        cy.contains('用户名').next().find('input').type('testUser');
-        cy.contains('邮箱').next().find('input').type('testUser@example.com');
-        cy.contains('图形验证码').next().find('input').type('test');
-        cy.contains('发送').click();
+        cy.get('.el-dialog:visible').within(() => {
+            cy.contains('.el-form-item__label', /^\s*用户名\s*$/).next().find('input').type('testUser');
+            cy.contains('.el-form-item__label', /^\s*邮箱\s*$/).next().find('input').type('testUser@example.com');
+            cy.contains('.el-form-item__label', /^\s*图形验证码\s*$/).next().find('input').type('test');
+            cy.contains('button', /^\s*发送\s*$/).click();
+        });
         cy.contains('邮件发送成功');
         cy.closeElNotifications();
-        cy.contains('邮箱验证码').next().find('input').type('abcdef');
-        cy.contains('密码').next().find('input').type('testPassword');
-        cy.contains('确认密码').next().find('input').type('testPassword');
-        cy.contains('已阅读并同意').find('input').parent().click();
+        cy.get('.el-dialog:visible').within(() => {
+            cy.contains('.el-form-item__label', /^\s*邮箱验证码\s*$/).next().find('input').type('abcdef');
+            cy.contains('.el-form-item__label', /^\s*密码\s*$/).next().find('input').type('testPassword');
+            cy.contains('.el-form-item__label', /^\s*确认密码\s*$/).next().find('input').type('testPassword');
+            cy.contains('label', '已阅读并同意').find('input').parent().click();
+        });
 
         // 完成注册
-        cy.contains('用户注册').parent().parent().find('button').contains('注册').click();
+        cy.get('.el-dialog:visible').contains('button', /^\s*注册\s*$/).click();
         cy.contains('注册成功');
         cy.shouldBeAbsentOrHidden('.el-dialog');
 
@@ -74,7 +78,7 @@ describe('User Authentication', () => {
         cy.contains('登录').click();
 
         // 填写登录信息
-        cy.get('.el-dialog').then((dialog) => {
+        cy.get('.el-dialog:visible').then((dialog) => {
             cy.wrap(dialog).contains('用户名').next().find('input').type('testUser');
             cy.wrap(dialog).contains('密码').next().find('input').type('testPassword');
             cy.wrap(dialog).contains('验证码').next().find('input').type('test');
@@ -104,7 +108,7 @@ describe('User Authentication', () => {
 
         // 尝试用错误密码登录
         cy.contains('登录').click();
-        cy.get('.el-dialog').then((dialog) => {
+        cy.get('.el-dialog:visible').then((dialog) => {
             cy.wrap(dialog).contains('用户名').next().find('input').type('testUser');
             cy.wrap(dialog).contains('密码').next().find('input').type('newPassword');
             cy.wrap(dialog).contains('验证码').next().find('input').type('test');
@@ -120,7 +124,7 @@ describe('User Authentication', () => {
         expectNotLoggedIn();
 
         cy.contains('登录').click();
-        cy.get('.el-dialog').then((dialog) => {
+        cy.get('.el-dialog:visible').then((dialog) => {
             cy.wrap(dialog).contains('忘记密码').click();
             cy.wrap(dialog).contains('修改密码').should('be.visible');
             cy.wrap(dialog).contains('用户登录').should('not.exist');
@@ -133,7 +137,7 @@ describe('User Authentication', () => {
         cy.contains('邮件发送成功');
         cy.closeElNotifications();
 
-        cy.get('.el-dialog').then((dialog) => {
+        cy.get('.el-dialog:visible').then((dialog) => {
             cy.wrap(dialog).contains('邮箱验证码').next().find('input').type('abcdef');
             cy.wrap(dialog).contains(/^密码$/).next().find('input').type('newPassword');
             cy.wrap(dialog).contains('确认密码').next().find('input').as('confirmPasswordInput').type('newPassword');
