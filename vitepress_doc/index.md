@@ -1,14 +1,12 @@
 ---
-title: 开源扫雷网用户指南
-description: 开源扫雷网使用指南，包含扫雷教程、网站功能使用方法、录像上传与排行榜说明等。
+title: 选择语言 / Choose language
+layout: page
+search: false
+localeRedirect: true
+head:
+  - - meta
+    - name: robots
+      content: noindex, follow
 ---
-
-# 开源扫雷网用户指南
-
-本指南正在施工中，欢迎[参与贡献](./guide/contribute.md)。指南包含如下三方面的内容
-
-- 扫雷相关的知识与教程
-- 如何使用网站功能
-- 其他扫雷项目的推广
 
 <LocaleRedirect />

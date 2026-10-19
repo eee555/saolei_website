@@ -209,7 +209,7 @@ npx cypress run --component --spec "src/views/RankingView/PBRanking.cy.ts,src/vi
 
 ## top 榜
 
-原始十八个小榜，以及普通/NF 的六个单级别、两个综合软实力和 LSF 共九个派生榜共享用户明细。面向玩家的动机、公式、等价 et 和定阶称号统一见 [top 榜与 LSF 榜指南](../../../vitepress_doc/guide/top-lsf.md)；本文维护实现和运维约定。
+原始十八个小榜，以及普通/NF 的六个单级别、两个综合软实力和 LSF 共九个派生榜共享用户明细。面向玩家的动机、公式、等价 et 和定阶称号统一见 [top 榜与 LSF 榜指南](../../../vitepress_doc/zh/guide/top-lsf.md)；本文维护实现和运维约定。
 
 ### 规则与缓存
 
@@ -227,7 +227,7 @@ npx cypress run --component --spec "src/views/RankingView/PBRanking.cy.ts,src/vi
 
 ### 重建与接口
 
-首次部署、旧 score 编码升级或缓存丢失后执行 `rebuild_top_ranks`，普通查询不自动重建。命令在临时命名空间构建明细、十八个原始索引、实时锚点、九个派生索引和发布元数据，再原子发布三十个正式 key；旧榜可继续读取。参数、部署注意事项和本地初始化入口统一见 [管理命令文档](../../../vitepress_doc/guide/development/management-commands.md#rebuild-top-ranks)。
+首次部署、旧 score 编码升级或缓存丢失后执行 `rebuild_top_ranks`，普通查询不自动重建。命令在临时命名空间构建明细、十八个原始索引、实时锚点、九个派生索引和发布元数据，再原子发布三十个正式 key；旧榜可继续读取。参数、部署注意事项和本地初始化入口统一见 [管理命令文档](../../../vitepress_doc/zh/guide/development/management-commands.md#rebuild-top-ranks)。
 
 - `GET /api/speedranking/top/rank?level=e&stat=t&nf=false&start=0&end=20`：左闭右开，最多一百条，返回 `count` 和 `players`；每个用户为 `{player_id, records}`，`records` 是该用户的完整 hash JSON，小榜参数只决定排序，不筛选返回字段。
 - `GET /api/speedranking/top/player/{player_id}`：一次 HGET 原样返回用户完整纪录，每项保留真实 `videos`；不附加逐项 rank，不构造 `record_count`，没有纪录返回 `{}`。缺项和均值展示由前端处理。

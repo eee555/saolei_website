@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vitepress --host 0.0.0.0",
     "build": "vitepress build",
-    "preview": "vitepress preview"
+    "preview": "vitepress preview",
+    "test": "node --test .vitepress/tests/*.test.ts"
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
