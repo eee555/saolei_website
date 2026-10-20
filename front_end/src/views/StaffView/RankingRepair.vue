@@ -11,7 +11,7 @@
         <label>
             {{ t('local.stat') }}
             <ElSelect v-if="rankingName === 'thrp'" v-model="thrpStat" :aria-label="t('local.stat')" :disabled="working">
-                <ElOption v-for="field in thrpStats" :key="field" :label="field === 'sum' ? t('common.prop.sum') : t(`common.level.${field}`)" :value="field" />
+                <ElOption v-for="field in thrpStats" :key="field" :label="t(`common.level.${field}`)" :value="field" />
             </ElSelect>
             <ElSelect v-else v-model="stat" :aria-label="t('local.stat')" :disabled="working">
                 <ElOption v-for="field in saoleiFields" :key="field" :label="t(`local.${field}`)" :value="field" />
@@ -54,7 +54,7 @@ const userId = ref<number>();
 const working = ref(false);
 const result = ref<{ value: string; videoId?: number }>();
 const canRebuild = computed(() => userId.value !== undefined && Number.isSafeInteger(userId.value) && userId.value > 0);
-const selectedLabel = computed(() => (rankingName.value === 'thrp' ? thrpStat.value === 'sum' ? t('common.prop.sum') : t(`common.level.${thrpStat.value}`) : t(`local.${stat.value}`)));
+const selectedLabel = computed(() => (rankingName.value === 'thrp' ? t(`common.level.${thrpStat.value}`) : t(`local.${stat.value}`)));
 
 watch([rankingName, stat, thrpStat, userId], () => {
     result.value = undefined;
