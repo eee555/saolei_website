@@ -61,8 +61,8 @@ app.use(PrimeVue, {
 app.use(pinia).use(router).use(i18n);
 updateStartupStatus('3/3 正在准备页面…', '3/3 Preparing page…');
 
-// Keep the HTML placeholder until the initial route's lazy components are ready.
-void router.isReady().then(() => {
+// Keep the HTML placeholder until the route and CDN (or local fallback) styles are ready.
+void Promise.all([router.isReady(), window.__cdnStylesReady]).then(() => {
     app.mount('#app');
 }).catch((error: unknown) => {
     updateStartupStatus('页面加载失败，请刷新重试。', 'Failed to load the page. Please refresh to try again.');

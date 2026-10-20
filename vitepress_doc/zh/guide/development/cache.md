@@ -36,7 +36,7 @@ Redis 分类只读取业务代码直接确定的 DB 0 key，不执行 `SCAN`、`
 
 ## 总览
 
-独立的本地初始化脚本 `dangerzone/init_local_test.py` 会清空本地 `saolei_website` Redis 数据库（包含会话），然后根据导入的公开录像重建竞速榜（扫雷网普通/NF、PB 普通/NF、top 十八项及锚点）、pluck 纪录缓存和录像状态队列。在 `back_end/saolei` 目录使用 `python -m dangerzone.init_local_test` 启动。只允许本地测试配置，并拒绝存在 `.production` 标记的环境；不注册 `import_public_data` 管理命令。详情及数据缺失限制见[本地公开数据快照](./management-commands.md#本地公开数据快照)。
+独立的本地初始化脚本 `dangerzone/init_local_test.py` 会清空本地 `saolei_website` Redis 数据库（包含会话），然后根据导入的公开录像重建竞速榜（扫雷网普通/NF、PB 普通/NF、top 十八项及锚点）、效率 Thrp 榜、pluck 纪录缓存和录像状态队列。在 `back_end/saolei` 目录使用 `python -m dangerzone.init_local_test` 启动。只允许本地测试配置，并拒绝存在 `.production` 标记的环境；不注册 `import_public_data` 管理命令。详情及数据缺失限制见[本地公开数据快照](./management-commands.md#本地公开数据快照)。
 
 ### 新竞速榜 `speedranking`
 
@@ -53,6 +53,10 @@ PB 只读接口不自动回源，初始化和修复用法见 [PB 重建命令](.
 PB 另使用 `speedranking:pb:counts` hash 汇总各小榜人数，可通过 `GET /api/speedranking/pb/counts` 一次读取，随 rank 刷新同步更新；前端用于筛选网格的人数显示。已有缓存通过 PB 重建命令补齐。具体 field 及空榜约定见 app README。
 
 管理员页面的“排行纪录重建” tab 可按大榜、小榜和用户 ID 修复单项缓存，对应接口为 `POST /api/speedranking/admin/rebuild_record`；具体更新范围和并发约定见上述 README。
+
+### 效率榜 `effranking`
+
+Thrp 的一个个人纪录 hash 和四个排序 zset 见下方数据结构表。编码、选优和事务边界统一见 `back_end/saolei/effranking/README.md`；首次部署及缓存丢失后执行 [rebuild_eff_ranks](./management-commands.md#rebuild-eff-ranks)，查询不自动回源。
 
 ```dot
 digraph cache {
@@ -600,6 +604,8 @@ digraph cache {
 | `videomanager` | `newest_queue` | hash | `field = video_id`；`value = VideoQueue JSON`，包含 `state`、`tournament`、`software`、`time`、`player_id`、`identifier`、`level`、`mode`、`timems`、`bv`、`cl`、`ce`、`right_ce`。 |
 | `videomanager` | `freeze_queue` | hash | 同 `newest_queue`，用于冻结录像队列。 |
 | `videomanager` | `review_queue` | hash | 同 `newest_queue`，用于待审核录像队列。 |
+| `effranking` | `effranking:thrp:records` | hash | `field = player_id`；完整 `b/i/e` 原始纪录 JSON，每项为 `null` 或包含 `value`、`video_id`、`upload_time` 的对象。sum 不重复存储。 |
+| `effranking` | `effranking:thrp:{stat}` | zset | `stat = b/i/e/sum`；`member = player_id`，score 为六位小数成绩和分钟级达成时间的排序编码，升序读取，不用于恢复成绩。 |
 | `customranking` | `customranking:pluck:{level}:rank` | zset | `member = player_id`；`score = pluck`，当 `pluck == 0` 时使用 `timems - MAX_TIMEMS` 降低 0 碰撞风险。 |
 | `customranking` | `customranking:pluck:{level}:detail` | hash | `field = player_id`；`value = detail JSON`，包含 `video_id`、`mode`、`timems`、`bv`、`upload_time`。 |
 | `tournament` | `tournament:normal` | hash | `field = tournament_id`；`value = CachedTournament JSON`，包含 `id`、`state`、`subclass`、`host_id`、`start_time`、`end_time`、`data`。`data` 保存子类独占字段：GSC 为 `order`、`token`；周赛为 `year`、`week`、`tournament_format`。 |
@@ -632,6 +638,7 @@ digraph cache {
 | 缓存 | 主要写入入口 | 重建 / 清理入口 |
 | --- | --- | --- |
 | 录像状态队列 | `videomanager.signals.refresh_state_queue_on_video_save` | `videomanager.cache.add_videos_to_state_queues_bulk` 可按状态批量恢复普通队列。 |
+| 效率 Thrp 排行 | `effranking.signals` 与批量 services，提交后更新 | `rebuild_eff_ranks` 全量重建；管理员 `/api/effranking/thrp/admin/rebuild_record` 修复单项，sum 仅从个人 hash 重算。 |
 | 自定义 pluck 排行 | `customranking.services.update_custom_pluck_top_cache` | `manage.py rebuild_custom_pluck_cache` 从 `CustomPluckRecord` 全量重建。 |
 | NORMAL 比赛 | `TournamentCache.update_tournament` | `manage.py rebuild_tournament_cache` 显式查询 `NORMAL` GSC 与周赛并重建。 |
 | NORMAL 参赛关系 | `TournamentCache.update_participant` / `remove_participant` | `manage.py rebuild_tournament_cache` 按 `user_id` 分组重建。 |

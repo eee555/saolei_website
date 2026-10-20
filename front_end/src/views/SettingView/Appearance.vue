@@ -47,17 +47,6 @@
                     </dd>
                 </div>
                 <div class="description-item">
-                    <dt>{{ t('local.nameFormat') }}</dt>
-                    <dd>
-                        <span :title="t('local.nameFormatTooltip')">
-                            <ElRadioGroup v-model="local.nameFormat" size="small" style="vertical-align: middle;">
-                                <ElRadioButton :label="t('local.nameFormatFirstLast')" value="first-last" />
-                                <ElRadioButton :label="t('local.nameFormatLastFirst')" value="last-first" />
-                            </ElRadioGroup>
-                        </span>
-                    </dd>
-                </div>
-                <div class="description-item">
                     <dt>{{ t('local.newUserGuide') }}</dt>
                     <dd>
                         <span :title="t('local.newUserGuideTooltip')">
@@ -81,7 +70,7 @@ import '@/styles/descriptions.css';
 import '@/styles/cards.css';
 import '@/styles/text.css';
 
-import { ElInputNumber, ElRadioButton, ElRadioGroup, ElSwitch } from 'element-plus';
+import { ElInputNumber, ElSwitch } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
 import BaseTooltip from '@/components/common/BaseTooltip.vue';
@@ -95,10 +84,6 @@ const i18nMessages = {
         navigationLayout: '导航位置',
         navigationTop: '顶栏',
         navigationSidebar: '侧栏',
-        nameFormat: '姓名格式',
-        nameFormatFirstLast: '名 姓',
-        nameFormatLastFirst: '姓, 名',
-        nameFormatTooltip: '英文名显示格式',
         newUserGuide: '新手引导',
         newUserGuideTooltip: '鼠标在各种地方悬停时获取帮助。',
         notificationDuration: '通知时长',
@@ -112,10 +97,6 @@ const i18nMessages = {
         navigationLayout: 'Navigation position',
         navigationTop: 'Top bar',
         navigationSidebar: 'Side bar',
-        nameFormat: 'Name Format',
-        nameFormatFirstLast: 'Given Family',
-        nameFormatLastFirst: 'Family, Given',
-        nameFormatTooltip: 'Display format for international names',
         newUserGuide: 'Get Help',
         newUserGuideTooltip: 'Get help by hovering over components',
         notificationDuration: 'Notification Duration',

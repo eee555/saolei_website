@@ -2,11 +2,12 @@ from django.db.models import F, Window
 from django.db.models.functions import RowNumber
 
 from config.text_choices import MS_TextChoices
+from utils.querysets import player_batches
 from videomanager.models import VideoModel
 from .cache import PBRankingCache
 from .utils import encode_score, LEVELS, parse_field, record_field
 from ..cache import pipeline
-from ..utils import log_update_errors, player_batches
+from ..utils import log_update_errors
 
 VIDEO_FIELDS = ('id', 'player_id', 'level', 'mode', 'state', 'ongoing_tournament', 'bv', 'timems', 'right_ce', 'upload_time')
 

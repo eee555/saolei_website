@@ -98,6 +98,8 @@ export default {
             op: 'Opening',
             player: 'Player',
             realName: 'Real Name',
+            localName: 'Local name',
+            internationalName: 'International name',
             sex: 'Sex',
             software: 'Software',
             state: 'State', // video attribute

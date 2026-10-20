@@ -44,7 +44,7 @@
 import '@/styles/link.css';
 import '@/styles/text.css';
 import { ElDialog } from 'element-plus';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import BaseButton from '@/components/common/BaseButton.vue';
@@ -74,7 +74,7 @@ const token = defineModel('token', { type: String, default: '' });
 const registeringParticipant = ref(false);
 const registerDialogVisible = ref(false);
 
-const weeklyGuideUrl = computed(() => getDocsUrl('guide/weekly-tournament', locale.value));
+const weeklyGuideUrl = getDocsUrl('guide/weekly-tournament');
 
 async function registerParticipant() {
     registeringParticipant.value = true;
@@ -109,7 +109,7 @@ const i18nMessages = {
     } },
 };
 
-const { t, locale } = useI18n({ messages: i18nMessages });
+const { t } = useI18n({ messages: i18nMessages });
 </script>
 
 <style scoped>

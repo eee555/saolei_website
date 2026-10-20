@@ -5,11 +5,15 @@
             <ElSelect v-model="rankingName" :aria-label="t('local.ranking')" :disabled="working">
                 <ElOption :label="t('local.standard')" value="saolei" />
                 <ElOption :label="t('local.nf')" value="saolei_nf" />
+                <ElOption :label="t('common.prop.thrp')" value="thrp" />
             </ElSelect>
         </label>
         <label>
             {{ t('local.stat') }}
-            <ElSelect v-model="stat" :aria-label="t('local.stat')" :disabled="working">
+            <ElSelect v-if="rankingName === 'thrp'" v-model="thrpStat" :aria-label="t('local.stat')" :disabled="working">
+                <ElOption v-for="field in thrpStats" :key="field" :label="t(`common.level.${field}`)" :value="field" />
+            </ElSelect>
+            <ElSelect v-else v-model="stat" :aria-label="t('local.stat')" :disabled="working">
                 <ElOption v-for="field in saoleiFields" :key="field" :label="t(`local.${field}`)" :value="field" />
             </ElSelect>
         </label>
@@ -25,8 +29,8 @@
         </BaseButton>
     </form>
     <output v-if="result" class="text" aria-live="polite">
-        {{ t('local.completed', { stat: t(`local.${stat}`), value: formatSaoleiValue(result, stat) }) }}
-        <span v-if="saoleiVideoId(result, stat)">{{ t('local.videoId', { id: saoleiVideoId(result, stat) }) }}</span>
+        {{ t('local.completed', { stat: selectedLabel, value: result.value }) }}
+        <span v-if="result.videoId">{{ t('local.videoId', { id: result.videoId }) }}</span>
     </output>
 </template>
 
@@ -37,18 +41,22 @@ import { useI18n } from 'vue-i18n';
 
 import BaseButton from '@/components/common/BaseButton.vue';
 import { actionSuccessNotification, httpErrorNotification } from '@/components/Notifications';
-import type { SaoleiField, SaoleiRankingName, SaoleiRecord } from '@/services/saoleiRankingService';
+import type { SaoleiField, SaoleiRankingName } from '@/services/saoleiRankingService';
 import { formatSaoleiValue, rebuildSaoleiRecord, saoleiFields, saoleiVideoId } from '@/services/saoleiRankingService';
+import { rebuildThrpRecord, thrpStats, thrpValue, thrpVideoId } from '@/services/thrpRankingService';
+import type { ThrpStat } from '@/services/thrpRankingService';
 import '@/styles/text.css';
 
-const rankingName = ref<SaoleiRankingName>('saolei');
+const rankingName = ref<SaoleiRankingName | 'thrp'>('saolei');
 const stat = ref<SaoleiField>('bt');
+const thrpStat = ref<ThrpStat>('b');
 const userId = ref<number>();
 const working = ref(false);
-const result = ref<SaoleiRecord>();
+const result = ref<{ value: string; videoId?: number }>();
 const canRebuild = computed(() => userId.value !== undefined && Number.isSafeInteger(userId.value) && userId.value > 0);
+const selectedLabel = computed(() => (rankingName.value === 'thrp' ? t(`common.level.${thrpStat.value}`) : t(`local.${stat.value}`)));
 
-watch([rankingName, stat, userId], () => {
+watch([rankingName, stat, thrpStat, userId], () => {
     result.value = undefined;
 });
 
@@ -57,7 +65,13 @@ async function rebuild() {
     working.value = true;
     result.value = undefined;
     try {
-        result.value = await rebuildSaoleiRecord(userId.value, rankingName.value, stat.value);
+        if (rankingName.value === 'thrp') {
+            const record = await rebuildThrpRecord(userId.value, thrpStat.value);
+            result.value = { value: thrpValue(record, thrpStat.value)?.toFixed(3) ?? '--', videoId: thrpVideoId(record, thrpStat.value) };
+        } else {
+            const record = await rebuildSaoleiRecord(userId.value, rankingName.value, stat.value);
+            result.value = { value: formatSaoleiValue(record, stat.value), videoId: saoleiVideoId(record, stat.value) };
+        }
         actionSuccessNotification();
     } catch (error) {
         httpErrorNotification(error);

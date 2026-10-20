@@ -6,10 +6,11 @@ from django.db.models import F, QuerySet, Window
 from django.db.models.functions import RowNumber
 
 from config.text_choices import MS_TextChoices
+from utils.querysets import player_batches
 from videomanager.models import VideoModel
 from .cache import SpeedRankingCache
 from .utils import empty_record, is_better, plan_saolei_record_update, public_record, RANK_STATS, RANKING_NAMES, RankingName, RankStat, RULES, set_stat, TOTAL_PARTS
-from ..utils import log_update_errors, player_batches, upload_microseconds
+from ..utils import log_update_errors, upload_microseconds
 
 VIDEO_FIELDS = ('id', 'player_id', 'level', 'mode', 'state', 'ongoing_tournament', 'bv', 'timems', 'bvs', 'right_ce', 'upload_time')
 

@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { effectScope, shallowRef } from 'vue';
 import type { EffectScope } from 'vue';
 
+import { parseReplay } from './replayParser';
 import type { ReplaySource } from './replayParser';
 import { useReplaySource } from './useReplaySource';
 
@@ -26,6 +27,32 @@ afterEach(() => {
 });
 
 describe('VideoAnalyzer replay sources', () => {
+    it('analyses pluck once per source and skips feature analysis for export parsers', () => {
+        const analyse = vi.spyOn(EvfVideo.prototype, 'analyse_for_features');
+        const replay = setup(fixture());
+        expect(analyse).toHaveBeenCalledExactlyOnceWith(['pluck']);
+        const exported = replay.createExportVideo();
+        try {
+            exported.current_time = Infinity;
+            expect(exported.pluck).toBeNaN();
+            expect(analyse).toHaveBeenCalledTimes(1);
+        } finally {
+            exported.free();
+        }
+        replay.source.value = fixture();
+        expect(analyse).toHaveBeenCalledTimes(2);
+    });
+
+    it.each(['parse', 'analyse', 'analyse_for_features'] as const)('frees the allocated WASM object if %s fails', (method) => {
+        const free = vi.spyOn(EvfVideo.prototype, 'free');
+        vi.spyOn(EvfVideo.prototype, method).mockImplementation(() => {
+            throw new Error('Invalid replay');
+        });
+        const { data, filename, software } = fixture();
+        expect(() => parseReplay(data, filename, software, ['pluck'])).toThrow('Invalid replay');
+        expect(free).toHaveBeenCalledOnce();
+    });
+
     it('owns independent parsers, frees replaced sources and leaves other instances and exports intact', () => {
         const input = fixture();
         const first = setup(input);

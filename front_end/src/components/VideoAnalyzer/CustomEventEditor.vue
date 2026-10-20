@@ -14,7 +14,7 @@
             <label><span>{{ t('local.color') }}</span><BaseColorPicker v-model="draft.color" class="custom-event-editor__color" /></label>
             <template v-if="draft.type === 'pulse'">
                 <label><span>{{ t('local.shape') }}</span><select v-model="draft.marker.shape" class="custom-event-editor__shape"><option v-for="shape in eventMarkerShapes" :key="shape" :value="shape">{{ t(`local.${shape}`) }}</option></select></label>
-                <label><span>{{ t('local.size') }} (px)</span><InputNumber v-model="draft.marker.size" :min="1" :step="1" /></label>
+                <label><span>{{ t('local.size') }} (px)</span><InputNumber v-model="draft.marker.size" class="custom-event-editor__marker-size" :min="1" :step="1" /></label>
                 <label><span>{{ t('local.opacity') }}</span><InputNumber v-model="draft.marker.opacity" :min="0" :max="1" :step="0.01" /></label>
             </template>
             <template v-else>
@@ -94,7 +94,7 @@ const i18nMessages = {
         sustained: '持续',
         color: '颜色',
         shape: '标记形状',
-        size: '标记大小',
+        size: '棋盘标记大小',
         opacity: '不透明度',
         lineStyle: '线型',
         width: '线宽',
@@ -122,7 +122,7 @@ const i18nMessages = {
         sustained: 'Sustained',
         color: 'Color',
         shape: 'Marker shape',
-        size: 'Marker size',
+        size: 'Board marker size',
         opacity: 'Opacity',
         lineStyle: 'Line style',
         width: 'Line width',

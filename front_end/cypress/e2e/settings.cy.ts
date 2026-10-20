@@ -84,6 +84,31 @@ describe('Navigation position', () => {
 });
 
 describe('General Settings', () => {
+    it('persists player avatar and name-format preferences', () => {
+        cy.visit('/#/settings');
+        cy.get('[data-cy=player-name-show-avatar]').should('not.be.checked');
+        cy.get('[data-cy=player-name-format]').should('have.value', 'name1');
+        cy.get('[data-cy=player-name-1]').should('have.value', 'username');
+        cy.get('[data-cy=player-name-2]').should('not.be.visible');
+
+        cy.get('[data-cy=player-name-show-avatar]').check();
+        cy.get('[data-cy=player-name-format]').select('name1 (name2)');
+        cy.get('[data-cy=player-name-1]').select('international');
+        cy.get('[data-cy=player-name-2]').should('be.visible').select('realname');
+        cy.window().its('localStorage').invoke('getItem', 'local').should((value: string | null) => {
+            const settings = JSON.parse(value ?? '{}') as Record<string, unknown>;
+            expect(settings).to.include({ playerNameShowAvatar: true, playerNameFormat: 'name1 (name2)', playerName1: 'international', playerName2: 'realname' });
+        });
+
+        cy.reload();
+        cy.get('[data-cy=player-name-show-avatar]').should('be.checked');
+        cy.get('[data-cy=player-name-format]').should('have.value', 'name1 (name2)');
+        cy.get('[data-cy=player-name-1]').should('have.value', 'international');
+        cy.get('[data-cy=player-name-2]').should('have.value', 'realname');
+        cy.get('[data-cy=player-name-format]').select('name1');
+        cy.get('[data-cy=player-name-2]').should('not.be.visible');
+    });
+
     it('persists third-party trust and supports toggling it with Space', () => {
         cy.visit('/#/settings');
         const trustLabel = 'https://strange-dust.github.io/minesweeper-replay-analyzer/';

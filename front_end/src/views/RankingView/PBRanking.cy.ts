@@ -16,7 +16,8 @@ describe('<PBRanking />', () => {
         cy.intercept({ method: 'GET', pathname: '/api/speedranking/pb/rank' }, {
             body: { count: 21, players: [{ player_id: 42, video_id: 8001, timems: 1000, upload_time: upload }] },
         }).as('ranking');
-        cy.mount(PBRanking, { props: { colored: true }, global: { plugins: [i18n, pinia, hashRouter()], config: { globalProperties: { $axios } } } });
+        const router = hashRouter();
+        cy.mount(PBRanking, { props: { colored: true }, global: { plugins: [i18n, pinia, router], config: { globalProperties: { $axios } } } });
         cy.wait('@ranking').its('request.query').should('include', { level: 'b', bv: '1', nf: 'false', start: '0', end: '20' });
         cy.wait('@counts');
         cy.get<ComponentWrapper<typeof PBRanking>>('@vue').should((wrapper) => {
@@ -41,6 +42,8 @@ describe('<PBRanking />', () => {
         cy.get('.pb-pagination .el-select').click();
         cy.get('.el-select-dropdown__item').filter(':visible').contains('50').click();
         cy.wait('@ranking').its('request.query').should('include', { level: 'e', bv: '381', end: '50', start: '0' });
+        cy.wrap(router).its('currentRoute.value.query').should('deep.equal', { level: 'e', bv: '381', nf: '1', page: '1', page_size: '50' });
+        cy.get('@ranking.all').should('have.length', 5);
     });
 
     it('allows retrying failed ranking and count requests', () => {

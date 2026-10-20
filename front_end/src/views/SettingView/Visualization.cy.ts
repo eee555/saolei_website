@@ -8,12 +8,14 @@ import { colorSchemeTemplates } from '@/utils/config';
 describe('<Visualization />', () => {
     const originalBvs = colorTheme.value.bvs;
     const originalGrade = colorTheme.value.grade;
+    const originalIoe = colorTheme.value.ioe;
     const originalExperimental = local.value.experimental;
     const originalColored = local.value.colored;
 
     afterEach(() => {
         colorTheme.value.bvs = originalBvs;
         colorTheme.value.grade = originalGrade;
+        colorTheme.value.ioe = originalIoe;
         local.value.experimental = originalExperimental;
         local.value.colored = originalColored;
     });
@@ -37,6 +39,23 @@ describe('<Visualization />', () => {
         cy.contains('button', 'Restore Default').click();
         cy.then(() => {
             expect(colorTheme.value.grade).to.deep.equal(colorSchemeTemplates.ArbiterStatsAuto.grade);
+            expect(colorTheme.value.bvs.thresholds[0]).to.equal(0.02);
+            colorTheme.value.ioe = { thresholds: [1], colors: ['#000000', '#ffffff'] };
+        });
+
+        cy.get('.color-scheme-toolbar .el-select').click();
+        cy.get('.el-select-dropdown__item:visible').contains('IOE / Thrp / Corr / IOME').click();
+        cy.get('.color-scheme-setting__threshold:not([readonly])').first().invoke('val', '1.5').trigger('input');
+        cy.then(() => {
+            expect(colorTheme.value.ioe.thresholds).to.deep.equal([1.5]);
+        });
+        cy.window().its('localStorage').invoke('getItem', 'colorTheme').should((value: string | null) => {
+            const settings = JSON.parse(value ?? '{}') as { ioe?: { thresholds: number[] } };
+            expect(settings.ioe?.thresholds).to.deep.equal([1.5]);
+        });
+        cy.contains('button', 'Restore Default').click();
+        cy.then(() => {
+            expect(colorTheme.value.ioe).to.deep.equal(colorSchemeTemplates.ArbiterStatsAuto.ioe);
             expect(colorTheme.value.bvs.thresholds[0]).to.equal(0.02);
         });
     });

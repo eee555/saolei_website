@@ -156,8 +156,8 @@ const i18nMessages = {
     } },
 };
 
-const { t, locale } = useI18n({ messages: i18nMessages });
-const uploadGuideUrl = computed(() => getDocsUrl('guide/tournament#auto-upload', locale.value));
+const { t } = useI18n({ messages: i18nMessages });
+const uploadGuideUrl = getDocsUrl('guide/tournament#auto-upload');
 </script>
 
 <style scoped>

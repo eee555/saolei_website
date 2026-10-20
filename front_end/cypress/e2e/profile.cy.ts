@@ -242,7 +242,7 @@ describe('Personal Profile', () => {
     it('Navigate from homepage', () => {
         cy.visit('/');
 
-        cy.get('#pane-newest').should('be.visible').contains(`a[href="#/player/${USER_ID}"]`, REALNAME).click();
+        cy.get('#pane-newest').should('be.visible').contains(`a[href="#/player/${USER_ID}"]`, USERNAME).click();
 
         cy.url().should('eq', `http://localhost:8080/#/player/${USER_ID}/top`);
 

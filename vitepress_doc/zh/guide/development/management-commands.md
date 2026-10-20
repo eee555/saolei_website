@@ -34,7 +34,7 @@ python -m dangerzone.init_local_test --no-weekly
 
 `--skip-details` 不请求 `detailbulk`，已有的详情仍然优先使用，其他录像直接使用 `get_user_videos` 的列表数据；只有列表数据的录像列入 `missing_detail_video_ids`。可空的缺失指标保持 NULL，录像内标识为空字符串。列表里的 `cl`、`ce` 不能直接写入生成列，缺少分项点击数时，相关生成值也为 NULL。生产列表已返回 `right_ce`，列表回退也可以按 `right_ce == 0` 重建 NF 榜；详情缺少该字段或为 NULL 时保留列表值。旧快照缺失该值时保持 NULL，不凭旧模式编码推测。完成的快照不会重新下载，补充新字段或详情请使用新的 `--output-dir` 下载，再通过 `--snapshot-dir` 导入。
 
-导入保留原用户/录像 ID、上传时间和公开属性，旧 NF 模式 `12` 转成 STD `00`，不修改 `right_ce`。批量写入不会触发录像信号，随后重建录像计数、上传额度、扫雷网普通/NF 榜、PB 普通/NF 榜、top 普通/NF 榜及锚点、pluck 纪录缓存和录像状态队列，不创建 pluck 计算任务。
+导入保留原用户/录像 ID、上传时间和公开属性，旧 NF 模式 `12` 转成 STD `00`，不修改 `right_ce`。批量写入不会触发录像信号，随后重建录像计数、上传额度、扫雷网普通/NF 榜、PB 普通/NF 榜、top 普通/NF 榜及锚点、效率 Thrp 榜、pluck 纪录缓存和录像状态队列，不创建 pluck 计算任务。
 
 - 管理员：ID `2`，密码 `admin123456`；普通账号：ID `48`，密码 `user123456`。用户名保留生产数据；可通过 `--admin-password` / `--user-password` 指定其他密码。
 - 其他用户禁用密码登录，且所有用户中仅 ID `2` 获得本地 `is_staff` 权限；邮箱统一为 `user-{id}@example.invalid`。生产账号不受影响。
@@ -43,6 +43,20 @@ python -m dangerzone.init_local_test --no-weekly
 - 再次初始化会丢弃之前的本地数据；应使用独立的本地数据库及 Redis 数据库。不要对生产配置运行这些命令。
 
 ## 缓存重建
+
+### `rebuild_eff_ranks`
+
+位置：`effranking/management/commands/rebuild_eff_ranks.py`
+
+从录像数据库按玩家分段重建效率 Thrp 榜的个人纪录 hash 和 `b/i/e/sum` 四个 zset。`--ranking-name` 当前仅支持 `thrp`，默认即为该榜；`--batch-size` 默认 1000，必须为正数。
+
+```bash
+python manage.py rebuild_eff_ranks --ranking-name thrp --batch-size 1000
+```
+
+执行前暂停录像上传、审核、修改、删除、标识绑定/解绑、比赛公开等写入。命令在独立临时命名空间构建全部五个 key，成功后用一个 Redis 事务原子替换正式榜；空的小榜删除对应旧 key，构建失败保留正式榜。结束时清理已知临时 key，不扫描其他 Redis 数据。不会修改录像数据库或其他排行榜。
+
+首次部署先完成数据库迁移，再执行建榜；API 不回源数据库。后台刷新入口和管理员修复不能替代首次完整建榜。本地 `python -m dangerzone.init_local_test` 已自动执行重建，`--no-weekly` 同样会执行。单用户修复使用 `POST /api/effranking/thrp/admin/rebuild_record`，其中 sum 仅使用缓存中的三个原始单项计算。具体规则见 `back_end/saolei/effranking/README.md`。
 
 ### `rebuild_speed_ranks`
 

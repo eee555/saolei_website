@@ -5,13 +5,14 @@ from django.db.models import F, Q, Window
 from django.db.models.functions import RowNumber
 
 from config.text_choices import MS_TextChoices
+from utils.querysets import player_batches
 from utils.ranking_lock import ranking_access
 from videomanager.models import VideoModel
 from .cache import TopRankingCache
 from .events import soft_refresh_requested
 from .utils import insert_video, merge_videos, MINIMUM_BV, parse_field, RANK_FIELDS, ranking_score, record_field, record_mean, score, SOFT_FIELDS, soft_values, STAT_COLUMNS, stat_record, TOP_SIZE
 from ..cache import pipeline
-from ..utils import log_update_errors, player_batches
+from ..utils import log_update_errors
 
 
 def eligible_videos(videos, nf=False):

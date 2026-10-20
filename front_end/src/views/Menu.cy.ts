@@ -171,15 +171,15 @@ describe('<Menu /> navigation layouts', () => {
         cy.get('@fetchUser.all').should('have.length', 1);
     });
 
-    it('updates language selection and the documentation URL together', () => {
+    it('keeps the documentation URL unchanged when switching the interface language', () => {
         mountMenu(1440);
         cy.get('[data-cy=languagePicker]').click();
         cy.get('[data-navigation-id=language-en] button:visible').should('have.attr', 'aria-pressed', 'true');
         cy.get('[data-navigation-id=language-zh-cn] button:visible').click();
-        cy.get('[data-navigation-id=docs] a').should('have.attr', 'href').and('match', /[?&]lang=zh(?:&|$)/);
+        cy.get('[data-navigation-id=docs] a').should('have.attr', 'href').and('match', /\/docs\/$/);
         cy.get('[data-cy=languagePicker]').click();
         cy.get('[data-navigation-id=language-en] button:visible').click();
-        cy.get('[data-navigation-id=docs] a').should('have.attr', 'href').and('match', /[?&]lang=en(?:&|$)/);
+        cy.get('[data-navigation-id=docs] a').should('have.attr', 'href').and('match', /\/docs\/$/);
     });
 
     it('opens Team from About and preserves Contact links in a dropdown', () => {

@@ -24,17 +24,17 @@ describe('<CounterRowEditor />', () => {
     it('links to the expression reference without changing the draft', () => {
         mountEditor();
         cy.get('.counter-expression-help__link').should('be.visible').and('contain.text', 'Expression reference').and('have.attr', 'target', '_blank').and('have.attr', 'rel', 'noopener noreferrer');
-        cy.get('.counter-expression-help__link').should('have.attr', 'href').and('match', /\/en\/guide\/replay-expressions$/);
+        cy.get('.counter-expression-help__link').should('have.attr', 'href').and('match', /\/docs\/guide\/replay-expressions$/);
         cy.get('.counter-row-editor details').should('not.exist');
         cy.get('.counter-row-editor__expression').should('have.value', 'bbbv_solved / time');
         cy.get('.counter-row-editor__preview').should('have.text', '3.000');
         cy.get('@save').should('not.have.been.called');
     });
 
-    it('links to the Chinese reference for a Chinese interface', () => {
+    it('keeps the reference URL language-neutral for a Chinese interface', () => {
         cy.mount(CounterRowEditor, { props: { row: singleCounterConfig().rows[0], events: [], currentMs: 0 }, global: { plugins: [createI18n({ legacy: false, locale: 'zh-cn' })] } });
         cy.get('.counter-expression-help__link').should('be.visible').and('contain.text', '表达式参考文档');
-        cy.get('.counter-expression-help__link').should('have.attr', 'href').and('match', /\/guide\/replay-expressions$/).and('not.match', /\/en\/guide\/replay-expressions$/);
+        cy.get('.counter-expression-help__link').should('have.attr', 'href').and('match', /\/docs\/guide\/replay-expressions$/);
     });
 
     it('previews continuous millisecond fallback through replay end without advancing source time', () => {

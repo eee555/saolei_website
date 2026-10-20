@@ -35,7 +35,8 @@ describe('<SaoleiRanking />', () => {
                     }] },
             });
         }).as('ranking');
-        cy.mount(SaoleiRanking, { global: { plugins: [i18n, pinia, hashRouter()], config: { globalProperties: { $axios } } } });
+        const router = hashRouter();
+        cy.mount(SaoleiRanking, { global: { plugins: [i18n, pinia, router], config: { globalProperties: { $axios } } } });
         cy.wait('@ranking').its('request.query').should('include', { ranking_name: 'saolei', stat: 'sumt', start: '0', end: '20' });
         cy.get('.saolei-ranking-table thead th[rowspan="2"]').should('have.length', 2);
         cy.get('.saolei-ranking-table thead th[scope="colgroup"][colspan="2"]').should('have.length', 4);
@@ -80,12 +81,16 @@ describe('<SaoleiRanking />', () => {
         cy.wait('@ranking').its('request.query').should('include', { ranking_name: 'saolei_nf', stat: 'bb', start: '0', end: '50' });
         cy.get('.stat-header[aria-label="Sum Bvs"]').click();
         cy.wait('@ranking').its('request.query').should('include', { ranking_name: 'saolei_nf', stat: 'sumb', start: '0', end: '50' });
+        cy.wrap(router).its('currentRoute.value.query').should('deep.equal', { nf: '1', sort: 'sumb', page: '1', page_size: '50' });
     });
 
     it('spans all ten columns when there are no records', () => {
         cy.intercept({ method: 'GET', pathname: '/api/speedranking/rank' }, { body: { count: 0, players: [] } }).as('ranking');
-        cy.mount(SaoleiRanking, { global: { plugins: [i18n, pinia, hashRouter()], config: { globalProperties: { $axios } } } });
-        cy.wait('@ranking');
+        const router = hashRouter({ initialPath: '/ranking/speed/saolei?sort=eb&nf=1&page_size=50' });
+        cy.wrap(router.isReady()).then(() => {
+            cy.mount(SaoleiRanking, { global: { plugins: [i18n, pinia, router], config: { globalProperties: { $axios } } } });
+        });
+        cy.wait('@ranking').its('request.query').should('include', { ranking_name: 'saolei_nf', stat: 'eb', start: '0', end: '50' });
         cy.get('.saolei-ranking-table tbody td').should('have.length', 1).and('have.attr', 'colspan', '10').and('contain.text', i18n.global.t('ranking.empty'));
         cy.get('.saolei-ranking-table .stat-header').should('have.length', 8);
     });

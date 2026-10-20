@@ -11,11 +11,11 @@ LSF 是竞速页面的首位和默认选项，由 top 纪录派生。规则、�
 - `saolei/`：扫雷网规则的缓存、选优、补位、API 和测试，原有公开 API 路径不变。
 - `pb/`：PB 专用的缓存、选优、补位、API 和测试，不套用扫雷网的成绩结构。
 - `top/`：top 的前五明细、补位、锚点、软实力、后台任务、API 和测试，不依赖 PB 缓存。
-- 根目录 `cache.py`：共享 Redis 连接与 pipeline；`utils.py`：错误日志、UTC 时间换算和玩家分段工具。
+- 根目录 `cache.py`：共享 Redis 连接与 pipeline；`utils.py`：错误日志和 UTC 时间换算。玩家分段工具为跨 app 共用的 `utils.querysets.player_batches`。
 - 根目录 `services.py`：协调各大榜的共同读取、独立判断、共同写入；`signals.py`：录像事件入口；`api.py`：聚合各大榜的 router。
 - 前端 `RankingView/routes.ts`：各大榜子路由。`SpeedRanking.vue` 提供大榜选择器、规则提示、“How to improve”上传建议，以及统一的颜色和刷新按钮。子榜通过 `defineExpose` 提供 `refresh`、`loading`，接收 `colored` prop；PB 刷新同时更新人数和榜单。切换大榜使用 push，支持浏览器返回；选项依次为 LSF、top、扫雷网、PB，`/ranking/speed` 默认跳转 `/ranking/speed/lsf`。项目使用 hash history，浏览器地址对应 `/#/ranking/speed/...`。
 
-上色统一使用 `store/local.ts` 的 `local.colored`，默认关闭，在 localStorage 持久化；竞速榜工具栏与设置页共享开关。top、PB、扫雷网单级别成绩复用 `store/color.ts` 的分段色阶，top 同时着色均值与真实明细，缺失成绩及扫雷网 sum 不着色。LSF 只给定阶着色，按等价 et 秒数使用 `colorTheme.grade`。色阶默认值来自 `utils/config.ts`，可在设置页编辑或还原当前项；彩色背景文字使用纯黑/白，透明背景继承文字色。原本没有开关的固定配色不受影响。
+各大榜的排序、筛选、明细和分页选项写入 URL query，支持直接定位及浏览器历史恢复；参数说明见 [排行榜 URL](../../../front_end/src/views/RankingView/README.md)。上色统一使用 `store/local.ts` 的 `local.colored`，默认关闭，在 localStorage 持久化；竞速榜工具栏与设置页共享开关。top、PB、扫雷网单级别成绩复用 `store/color.ts` 的分段色阶，top 同时着色均值与真实明细，缺失成绩及扫雷网 sum 不着色。LSF 只给定阶着色，按等价 et 秒数使用 `colorTheme.grade`。色阶默认值来自 `utils/config.ts`，可在设置页编辑或还原当前项；彩色背景文字使用纯黑/白，透明背景继承文字色。原本没有开关的固定配色不受影响。
 
 ## Saolei.wang 规则
 
@@ -186,7 +186,7 @@ python manage.py rebuild_pb_ranks --batch-size 100
 
 表格依次显示排名、PlayerName、Time、Bvs、Stnb、分钟级上传时间。排名为 `first + index + 1`；点击行或键盘触发预览对应录像，玩家名保留独立跳转。Bvs/Stnb 由当前等级、3BV 和原始用时计算，零用时显示 `Infinity`；上传时间从 API 的 UTC 时间转换为本地时区后显示到分钟。
 
-NF checkbox 与三个等级按钮控制分榜。等级按钮的交互式 tooltip 用按钮显示人数，左侧为 `bv // 10`，固定在滚动区域外的顶部为 `bv % 10`（0 到 9）；空榜按钮禁用，整行为空则隐藏，范围外留空。前端选择范围为初级 1–54、中级 1–216、高级 1–381；后端只验证 `bv > 0`，没有用这些上限限制录像准入。NF、等级、3BV 与页码不写入子路由 URL。
+NF checkbox 与三个等级按钮控制分榜。等级按钮的交互式 tooltip 用按钮显示人数，左侧为 `bv // 10`，固定在滚动区域外的顶部为 `bv % 10`（0 到 9）；空榜按钮禁用，整行为空则隐藏，范围外留空。前端选择范围为初级 1–54、中级 1–216、高级 1–381；后端只验证 `bv > 0`，没有用这些上限限制录像准入。NF、等级、3BV、页码和每页条数均写入子路由 query。
 
 个人 PB 界面已实现，职责见 [UserView README](../../../front_end/src/views/UserView/README.md)。扫雷网规则依赖 PB 的优化仍留待后续。
 
@@ -209,7 +209,7 @@ npx cypress run --component --spec "src/views/RankingView/PBRanking.cy.ts,src/vi
 
 ## top 榜
 
-原始十八个小榜，以及普通/NF 的六个单级别、两个综合软实力和 LSF 共九个派生榜共享用户明细。面向玩家的动机、公式、等价 et 和定阶称号统一见 [top 榜与 LSF 榜指南](../../../vitepress_doc/guide/top-lsf.md)；本文维护实现和运维约定。
+原始十八个小榜，以及普通/NF 的六个单级别、两个综合软实力和 LSF 共九个派生榜共享用户明细。面向玩家的动机、公式、等价 et 和定阶称号统一见 [top 榜与 LSF 榜指南](../../../vitepress_doc/zh/guide/top-lsf.md)；本文维护实现和运维约定。
 
 ### 规则与缓存
 
@@ -227,7 +227,7 @@ npx cypress run --component --spec "src/views/RankingView/PBRanking.cy.ts,src/vi
 
 ### 重建与接口
 
-首次部署、旧 score 编码升级或缓存丢失后执行 `rebuild_top_ranks`，普通查询不自动重建。命令在临时命名空间构建明细、十八个原始索引、实时锚点、九个派生索引和发布元数据，再原子发布三十个正式 key；旧榜可继续读取。参数、部署注意事项和本地初始化入口统一见 [管理命令文档](../../../vitepress_doc/guide/development/management-commands.md#rebuild-top-ranks)。
+首次部署、旧 score 编码升级或缓存丢失后执行 `rebuild_top_ranks`，普通查询不自动重建。命令在临时命名空间构建明细、十八个原始索引、实时锚点、九个派生索引和发布元数据，再原子发布三十个正式 key；旧榜可继续读取。参数、部署注意事项和本地初始化入口统一见 [管理命令文档](../../../vitepress_doc/zh/guide/development/management-commands.md#rebuild-top-ranks)。
 
 - `GET /api/speedranking/top/rank?level=e&stat=t&nf=false&start=0&end=20`：左闭右开，最多一百条，返回 `count` 和 `players`；每个用户为 `{player_id, records}`，`records` 是该用户的完整 hash JSON，小榜参数只决定排序，不筛选返回字段。
 - `GET /api/speedranking/top/player/{player_id}`：一次 HGET 原样返回用户完整纪录，每项保留真实 `videos`；不附加逐项 rank，不构造 `record_count`，没有纪录返回 `{}`。缺项和均值展示由前端处理。

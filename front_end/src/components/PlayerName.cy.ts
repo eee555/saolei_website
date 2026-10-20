@@ -5,10 +5,13 @@ import PlayerName from './PlayerName.vue';
 
 import $axios from '@/http';
 import i18n from '@/i18n';
+import { getDatabase, USER_INFO_STORE_NAME } from '@/services/database';
+import { local } from '@/store/local';
 import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
 
 const user = {
     id: 42,
+    username: 'alice',
     realname: 'Alice',
     firstname: 'Alicia',
     lastname: 'Mines',
@@ -34,16 +37,30 @@ function mockUserInfo(response: StaticResponse = { body: [user] }) {
     cy.intercept('GET', `/api/userprofile/infobulk?ids=${user.id}`, response).as('fetchUser');
 }
 
+function expectName(name: string, title?: string) {
+    cy.get('.player-name').should(($name) => {
+        expect($name.text().trim()).to.eq(name);
+        if (title !== undefined) expect($name.attr('title')).to.eq(title);
+    });
+}
+
 describe('PlayerName', () => {
     installHashHistoryCleanup();
+    const originalSettings = { ...local.value };
 
     beforeEach(() => {
+        cy.then(async () => {
+            const db = await getDatabase();
+            await db.clear(USER_INFO_STORE_NAME);
+            Object.assign(local.value, { playerNameShowAvatar: false, playerNameFormat: 'name1', playerName1: 'username', playerName2: 'realname', nameFormat: 'first-last' });
+        });
         cy.intercept('GET', '/api/userprofile/avatar/**', {
             statusCode: 404,
         });
-        // cy.intercept('GET', '/api/userprofile/infoupdated?**', {
-        //     body: [user.id],
-        // }).as('getInfoUpdated');
+    });
+
+    afterEach(() => {
+        Object.assign(local.value, originalSettings);
     });
 
     it('shows the fallback name when server error', () => {
@@ -66,11 +83,63 @@ describe('PlayerName', () => {
         cy.contains(`User#${user.id}`);
     });
 
-    it('renders the fetched user name when loading succeeds', () => {
+    it('shows the username without an avatar by default, with all names in a multiline title', () => {
         mockUserInfo();
         mountPlayerName(user.id);
 
-        cy.contains(user.realname);
+        expectName(user.username, 'alice#42\nAlice (Alicia Mines)');
+        cy.get('.player-name img').should('not.exist');
+    });
+
+    it('reacts to both name selections and the existing English-name order without refetching', () => {
+        mockUserInfo();
+        mountPlayerName(user.id);
+        cy.contains('a', user.username);
+        cy.then(() => {
+            local.value.playerNameFormat = 'name1 (name2)';
+            local.value.playerName1 = 'realname';
+            local.value.playerName2 = 'international';
+        });
+        expectName('Alice (Alicia Mines)');
+        cy.then(() => {
+            local.value.nameFormat = 'last-first';
+            local.value.playerName1 = 'international';
+            local.value.playerName2 = 'username';
+        });
+        expectName('Mines, Alicia (alice)', 'alice#42\nAlice (Mines, Alicia)');
+        cy.then(() => {
+            local.value.playerNameFormat = 'name1';
+        });
+        expectName('Mines, Alicia');
+        cy.get('@fetchUser.all').should('have.length', 1);
+    });
+
+    it('falls back to the username for a missing primary name and omits an empty secondary name', () => {
+        mockUserInfo({ body: [{ ...user, realname: '匿名', firstname: '', lastname: '' }] });
+        cy.then(() => {
+            local.value.playerNameFormat = 'name1 (name2)';
+            local.value.playerName1 = 'realname';
+            local.value.playerName2 = 'international';
+        });
+        mountPlayerName(user.id);
+        expectName(user.username, 'alice#42\n-- (--)');
+    });
+
+    it('hides avatars for noninteractive names without making an avatar request', () => {
+        mockUserInfo();
+        cy.intercept('GET', '/api/userprofile/avatar/**', { statusCode: 404 }).as('avatar');
+        cy.then(() => {
+            local.value.playerNameShowAvatar = false;
+        });
+        mountPlayerName(user.id, { interactive: false });
+        expectName(user.username, 'alice#42\nAlice (Alicia Mines)');
+        cy.get('.player-name img').should('not.exist');
+        cy.get('.player-name a').should('not.exist');
+        cy.get('@avatar.all').should('have.length', 0);
+        cy.then(() => {
+            local.value.playerNameShowAvatar = true;
+        });
+        cy.get('.player-name img').should('be.visible');
     });
 
     it('does not fetch user info when userId is zero', () => {
@@ -85,7 +154,7 @@ describe('PlayerName', () => {
         mockUserInfo();
         mountPlayerName(user.id);
 
-        cy.contains('a', user.realname).should('have.attr', 'href', `#/player/${user.id}`);
+        cy.contains('a', user.username).should('have.attr', 'href', `#/player/${user.id}`);
     });
 
     it('lets clicks bubble without opening a popover when not interactive', () => {

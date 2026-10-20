@@ -23,7 +23,8 @@
                 </div>
                 <div class="color-scheme-toolbar">
                     <ElSelect v-model="colorSchemeName">
-                        <ElOption label="Bvs" value="bvs" />
+                        <ElOption label="Bvs / CES / CLS" value="bvs" />
+                        <ElOption label="IOE / Thrp / Corr / IOME" value="ioe" />
                         <ElOption label="Beg Time" value="btime" />
                         <ElOption label="Int Time" value="itime" />
                         <ElOption label="Exp Time" value="etime" />
@@ -55,7 +56,7 @@ import { colorTheme, local } from '@/store';
 import { deepMutableCopy } from '@/utils';
 import { colorSchemeTemplates } from '@/utils/config';
 
-const colorSchemeName = ref<'bvs' | 'btime' | 'itime' | 'etime' | 'stnb' | 'grade'>('bvs');
+const colorSchemeName = ref<'bvs' | 'ioe' | 'btime' | 'itime' | 'etime' | 'stnb' | 'grade'>('bvs');
 
 function restoreDefault() {
     colorTheme.value[colorSchemeName.value] = deepMutableCopy(colorSchemeTemplates.ArbiterStatsAuto[colorSchemeName.value]);

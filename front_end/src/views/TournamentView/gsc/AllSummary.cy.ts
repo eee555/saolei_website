@@ -5,7 +5,7 @@ import i18n from '@/i18n';
 import { GSCParticipant } from '@/utils/gsc';
 import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
 
-const realnames = {
+const usernames = {
     18: 'UserNoFinish',
     6: 'UserChampion',
     82: 'UserNoScore',
@@ -26,9 +26,9 @@ describe('<AllSummary />', () => {
             },
             {
                 body: [
-                    { id: 6, realname: realnames[6] },
-                    { id: 18, realname: realnames[18] },
-                    { id: 82, realname: realnames[82] },
+                    { id: 6, username: usernames[6] },
+                    { id: 18, username: usernames[18] },
+                    { id: 82, username: usernames[82] },
                 ],
             },
         ).as('getUserInfo');

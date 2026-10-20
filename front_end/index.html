@@ -64,6 +64,7 @@
     }
 
     html.outdated-browser .startup-loading-status,
+    html.outdated-browser #startup-loading-resource-status,
     html.outdated-browser #startup-loading progress {
         display: none;
     }
@@ -114,6 +115,10 @@
           <span lang="zh-CN">您的浏览器版本过低，无法正常使用本网站。最低要求：Chrome 119+、Firefox 121+、Safari 17.4+、Edge 119+。请升级后刷新页面。</span><br>
           <span lang="en">Your browser is too old to use this site. Minimum requirements: Chrome 119+, Firefox 121+, Safari 17.4+, Edge 119+. Please upgrade and reload.</span>
         </span>
+      </p>
+      <p id="startup-loading-resource-status" hidden style="margin: 0 0 16px; line-height: 1.6;">
+        <span lang="zh-CN"></span><br>
+        <span lang="en"></span>
       </p>
       <progress aria-labelledby="startup-loading-label" style="width: 160px; max-width: 100%;"></progress>
       <noscript>

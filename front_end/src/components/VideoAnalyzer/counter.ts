@@ -8,7 +8,7 @@ import { createDifferenceEvaluator } from './counterDifference';
 import type { ReplayVideo } from './replayParser';
 
 export const counterStaticVariables = ['row', 'column', 'mine_num', 'pix_size', 'bbbv', 'op', 'isl', 'cell0', 'cell1', 'cell2', 'cell3', 'cell4', 'cell5', 'cell6', 'cell7', 'cell8', 'zini', 'hzini', 'rtime', 'level', 'mode'] as const;
-export const counterVariables = ['time', 'path', 'bbbv_solved', 'left', 'right', 'double', 'lce', 'rce', 'dce', 'flag', 'op_solved', 'isl_solved', 'mouse_state', ...counterStaticVariables] as const;
+export const counterVariables = ['time', 'path', 'bbbv_solved', 'left', 'right', 'double', 'lce', 'rce', 'dce', 'flag', 'op_solved', 'isl_solved', 'mouse_state', 'pluck', ...counterStaticVariables] as const;
 export type CounterValues = Record<typeof counterVariables[number], number>;
 export const samplingModes = ['continuous', 'button', 'board'] as const;
 export type SamplingMode = typeof samplingModes[number];
@@ -148,6 +148,7 @@ export function readCounterEvents(video: ReplayVideo): CounterEvent[] {
                                 op_solved: params.op_solved,
                                 isl_solved: params.isl_solved,
                                 mouse_state: record.mouse_state,
+                                pluck: params.pluck,
                             },
                         };
                     } finally {

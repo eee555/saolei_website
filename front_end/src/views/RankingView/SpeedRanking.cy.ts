@@ -32,8 +32,8 @@ describe('<SpeedRanking /> child routes', () => {
             });
         }
 
-        cy.intercept('GET', '/api/speedranking/pb/counts', { body: { 'std:b:1': 1 } }).as('counts');
-        cy.intercept({ method: 'GET', pathname: '/api/speedranking/pb/rank' }, { body: { count: 0, players: [] } }).as('pb');
+        cy.intercept('GET', '/api/speedranking/pb/counts', { body: { 'nf:e:381': 200 } }).as('counts');
+        cy.intercept({ method: 'GET', pathname: '/api/speedranking/pb/rank' }, { body: { count: 200, players: [] } }).as('pb');
         cy.intercept({ method: 'GET', pathname: '/api/speedranking/rank' }, { body: { count: 0, players: [] } }).as('saolei');
         cy.intercept('GET', '**/api/speedranking/top/rank*', { count: 0, players: [] }).as('top');
         cy.intercept('GET', '**/api/speedranking/top/soft/rank*', { count: 0, players: [] }).as('lsf');
@@ -41,13 +41,18 @@ describe('<SpeedRanking /> child routes', () => {
             history: createMemoryHistory(),
             routes: [{ path: '/ranking', component: RankingApp, redirect: '/ranking/speed', children: rankingRoutes }],
         });
-        void router.push('/ranking/speed/pb');
+        const pbQuery = { level: 'e', bv: '381', nf: '1', page: '2', page_size: '50' };
+        void router.push({ path: '/ranking/speed/pb', query: pbQuery });
         cy.wrap(router.isReady()).then(() => {
             cy.mount(defineComponent({ expose: [], render: () => h(RouterView) }), { global: { plugins: [i18n, pinia, router], config: { globalProperties: { $axios } } } });
         });
-        cy.wait('@pb');
+        cy.wait('@pb').its('request.query').should('include', { level: 'e', bv: '381', nf: 'true', start: '50', end: '100' });
+        cy.get('.nf-toggle input').should('be.checked');
+        cy.get('.pb-pagination .el-pager .is-active').should('have.text', '2');
         cy.get('.ranking-selector').should('contain.text', 'PB');
         cy.get('.el-tabs__item.is-active').should('have.text', 'Speed');
+        cy.get('.el-tabs__item.is-active').click();
+        cy.wrap(router).its('currentRoute.value.query').should('deep.equal', pbQuery);
         cy.get('.pb-ranking-table').should('exist');
         checkImprovementHelp('exactly the selected level and 3BV');
         cy.get('[data-cy=ranking-color]').should('have.attr', 'aria-pressed', 'false').click();
@@ -58,7 +63,7 @@ describe('<SpeedRanking /> child routes', () => {
         });
         cy.intercept({ method: 'GET', pathname: '/api/speedranking/pb/rank' }, async (req) => {
             await refreshResponse;
-            req.reply({ count: 0, players: [] });
+            req.reply({ count: 200, players: [] });
         }).as('pbRefresh');
         let refreshBounds: DOMRect;
         cy.get('[data-cy=ranking-refresh]').then(($button) => {
@@ -92,8 +97,11 @@ describe('<SpeedRanking /> child routes', () => {
             router.back();
         });
         cy.wrap(router).its('currentRoute.value.path').should('eq', '/ranking/speed/pb');
+        cy.wrap(router).its('currentRoute.value.query').should('deep.equal', pbQuery);
         cy.get('.ranking-selector').should('contain.text', 'PB');
         cy.get('.pb-ranking-table').should('exist');
+        cy.get('.nf-toggle input').should('be.checked');
+        cy.get('.pb-pagination .el-pager .is-active').should('have.text', '2');
 
         cy.then(() => router.push({ name: 'ranking_speed' }));
         cy.wait('@lsf');

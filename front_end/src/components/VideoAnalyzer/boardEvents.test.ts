@@ -14,25 +14,30 @@ const mouse: ReplayMouseTraceEvent[] = [
     { row: 3, column: 2, timeMs: 30, eventIndex: 4, action: 'lr', state: 'uu' },
 ];
 const prepared = new Map<string, PreparedCustomEvent>([
-    ['click', { pulses: [{ timeMs: 10, eventIndex: 2 }, { timeMs: 30, eventIndex: 4 }], spans: [] }],
+    ['click', { pulses: [{ timeMs: 10, eventIndex: 2, value: 0.25 }, { timeMs: 30, eventIndex: 4 }], spans: [] }],
     ['held', { pulses: [], spans: [{ startMs: 10, endMs: 30, renderEndMs: 20, startEventIndex: 2, lastEventIndex: 3 }] }],
 ]);
 
 describe('board custom event geometry', () => {
-    it('defaults to hidden, no selected events, global range and independent arrow settings', () => {
-        expect(defaultBoardEventSettings()).toEqual({ visible: false, keys: [], timeRange: 'all', arrowSpacing: 32, arrowSize: 8, arrowShape: 'triangle' });
+    it('defaults to visible pluck, global range and independent arrow settings', () => {
+        expect(defaultBoardEventSettings()).toEqual({ visible: true, keys: ['pluck'], timeRange: 'all', arrowSpacing: 32, arrowSize: 8, arrowShape: 'triangle' });
         const first = defaultBoardEventSettings();
         first.keys.push('click');
-        expect(defaultBoardEventSettings().keys).toEqual([]);
+        expect(defaultBoardEventSettings().keys).toEqual(['pluck']);
         expect(boardEventGeometry(definitions, prepared, mouse, [])).toEqual([]);
     });
 
     it('keeps all native points including the first millisecond group, excluding the first false sample', () => {
         const result = boardEventGeometry(definitions, prepared, mouse, ['held', 'click']);
-        expect(result[0].pulses).toEqual([{ x: 2, y: 1 }, { x: 2, y: 3 }]);
-        expect(result[1].paths).toEqual([[{ x: 1, y: 1 }, { x: 2, y: 1 }, { x: 2, y: 2 }]]);
-        expect(boardEventGeometry(definitions, prepared, mouse, ['held'], 15)[0].paths).toEqual([[{ x: 1, y: 1 }, { x: 2, y: 1 }]]);
-        expect(boardEventGeometry(definitions, prepared, mouse, ['held'], 10, 1)[0].paths).toEqual([[{ x: 1, y: 1 }]]);
+        expect(result[0].pulses.map(({ x, y }) => ({ x, y }))).toEqual([{ x: 2, y: 1 }, { x: 2, y: 3 }]);
+        expect(result[0].pulses[0].pulse).toBe(prepared.get('click')?.pulses[0]);
+        expect(result[0].pulses[0].pulse.value).toBe(0.25);
+        expect(result[0].pulses[1].pulse.value).toBeUndefined();
+        expect(result[1].paths.map((path) => path.points)).toEqual([[{ x: 1, y: 1 }, { x: 2, y: 1 }, { x: 2, y: 2 }]]);
+        const clipped = boardEventGeometry(definitions, prepared, mouse, ['held'], 15)[0].paths;
+        expect(clipped.map((path) => path.points)).toEqual([[{ x: 1, y: 1 }, { x: 2, y: 1 }]]);
+        expect(clipped[0].span).toBe(prepared.get('held')?.spans[0]);
+        expect(boardEventGeometry(definitions, prepared, mouse, ['held'], 10, 1)[0].paths.map((path) => path.points)).toEqual([[{ x: 1, y: 1 }]]);
         expect(boardEventGeometry(definitions, prepared, mouse, ['click'], 10, 1)[0].pulses).toEqual([]);
         expect(boardEventGeometry(definitions, prepared, mouse, ['held'], 9)[0].paths).toEqual([]);
     });
@@ -46,7 +51,9 @@ describe('board custom event geometry', () => {
         const missing = new Map<string, PreparedCustomEvent>([['click', { pulses: [{ timeMs: 20, eventIndex: 10 }], spans: [] }]]);
         expect(boardEventGeometry(definitions, missing, mouse, ['click'])[0].pulses).toEqual([]);
         const invalid = mouse.map((event) => ({ ...event, column: event.eventIndex === 2 ? NaN : event.column }));
-        expect(boardEventGeometry(definitions, prepared, invalid, ['held'])[0].paths).toEqual([[{ x: 1, y: 1 }], [{ x: 2, y: 2 }]]);
+        const split = boardEventGeometry(definitions, prepared, invalid, ['held'])[0].paths;
+        expect(split.map((path) => path.points)).toEqual([[{ x: 1, y: 1 }], [{ x: 2, y: 2 }]]);
+        for (const path of split) expect(path.span).toBe(prepared.get('held')?.spans[0]);
         expect(boardEventGeometry(definitions, prepared, mouse, ['deleted'])).toEqual([]);
     });
 

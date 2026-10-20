@@ -16,6 +16,7 @@ export interface CustomEventDefinition {
 export interface EventPulse {
     timeMs: number;
     eventIndex: number;
+    value?: number | string;
 }
 
 export interface EventSpan {
@@ -50,13 +51,19 @@ export function prepareCustomEvent(definition: CustomEventDefinition, snapshots:
     let active: EventSpan | null = null;
     for (const [index, snapshot] of snapshots.entries()) {
         let occurs = false;
+        let value: unknown;
         try {
-            occurs = eventOccurs(evaluate(index));
+            value = evaluate(index);
+            occurs = eventOccurs(value);
         } catch {
             // A failed sample ends a sustained event just like a false result.
         }
         if (definition.type === 'pulse') {
-            if (occurs) result.pulses.push({ timeMs: snapshot.timeMs, eventIndex: snapshot.eventIndex });
+            if (occurs) {
+                const pulse: EventPulse = { timeMs: snapshot.timeMs, eventIndex: snapshot.eventIndex };
+                if (typeof value === 'number' || typeof value === 'string') pulse.value = value;
+                result.pulses.push(pulse);
+            }
         } else if (occurs) {
             active ??= { startMs: snapshot.timeMs, endMs: durationMs, renderEndMs: snapshot.timeMs, startEventIndex: snapshot.eventIndex, lastEventIndex: snapshot.eventIndex };
             active.renderEndMs = snapshot.timeMs;
