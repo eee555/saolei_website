@@ -1,12 +1,24 @@
 import { VideoAbstract } from './videoabstract';
 import type { VideoAbstractData } from './videoabstract';
 
+export const HIDDEN_NAME = 'hidden';
+
+export function hasRealname(value: string): boolean {
+    return value.trim() !== '' && value.trim() !== '匿名';
+}
+
+export function hasHiddenName(user: Pick<UserProfileData, 'realname' | 'firstname' | 'lastname'>): boolean {
+    return [user.realname, user.firstname, user.lastname].includes(HIDDEN_NAME);
+}
+
 export interface UserProfileData {
     id?: number;
     username?: string;
     realname?: string;
     firstname?: string;
     lastname?: string;
+    can_hide_realname?: boolean;
+    hide_realname?: boolean;
     is_banned?: boolean;
     is_staff?: boolean;
     country?: string;
@@ -25,6 +37,8 @@ export class UserProfile {
     public realname = '';
     public firstname = '';
     public lastname = '';
+    public can_hide_realname = false;
+    public hide_realname = false;
     public is_banned = false;
     public is_staff = false;
     public country = '';
@@ -49,6 +63,8 @@ export class UserProfile {
 
         this.firstname = data.firstname ?? '';
         this.lastname = data.lastname ?? '';
+        this.can_hide_realname = data.can_hide_realname ?? false;
+        this.hide_realname = data.hide_realname ?? false;
         this.is_banned = data.is_banned ?? false;
         this.is_staff = data.is_staff ?? false;
         this.country = data.country ?? '';
@@ -65,15 +81,19 @@ export class UserProfile {
     }
 
     public get isAnonymous(): boolean {
-        return this.realname === '';
+        return !hasHiddenName(this) && !hasRealname(this.realname);
+    }
+
+    public get isNameHidden(): boolean {
+        return hasHiddenName(this) || (!this.isAnonymous && this.can_hide_realname && this.hide_realname);
     }
 
     public get hasInternationalName(): boolean {
-        return this.firstname !== '' && this.lastname !== '';
+        return !hasHiddenName(this) && this.firstname !== '' && this.lastname !== '';
     }
 
     public get canSetName(): boolean {
-        return this.isAnonymous || this.firstname === '' || this.lastname === '';
+        return !hasHiddenName(this) && (this.isAnonymous || this.firstname === '' || this.lastname === '');
     }
 
     public get nextAvatarAvailable(): Date {

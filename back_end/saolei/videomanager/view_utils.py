@@ -70,11 +70,11 @@ def refresh_video(video: VideoModel):
 
 def generate_file_stream(queryset):
     def file_iterator():
-        for video in queryset:
+        for video in queryset.select_related('player'):
             if not video.file:
                 continue
 
-            filename = f'{video.player.id}_{video.player.realname}/{video.file.name.split("/")[-1]}'
+            filename = f'{video.player_id}_{video.player.realname}/{video.file.name.split("/")[-1]}'
             filename_bytes = filename.encode('utf-8')
             filename_len = len(filename_bytes)
             filesize = video.file.size

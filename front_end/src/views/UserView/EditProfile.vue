@@ -1,12 +1,25 @@
 <template>
     <!-- 真实姓名 -->
-    <div class="input-label">
+    <div class="input-label" data-cy="real-name-section">
         <div class="text-large">
             {{ t('local.realname') }}
         </div>
         <div class="text-small">
             {{ t('local.realnameTooltip') }}
         </div>
+        <div v-if="canChoosePrivacy" class="text-small">
+            <label>
+                <input v-model="hideRealname" type="checkbox" :disabled="updating" data-cy="hide-realname-toggle">
+                {{ user.isAnonymous ? t('local.hideWithName') : t('local.hideRealname') }}
+            </label>
+            <p>{{ t('local.privacyScope') }}</p>
+        </div>
+        <p v-else-if="!user.isAnonymous" class="text-small">
+            {{ t('local.privacyAuthorization') }}
+        </p>
+        <p v-if="privacyError" class="text-danger text-small">
+            {{ privacyError }}
+        </p>
     </div>
 
     <!-- 母语名 -->
@@ -25,7 +38,7 @@
         </div>
         <ElInput
             v-model="formStatus.realname.new" minlength="2"
-            maxlength="100" show-word-limit :disabled="user.realname !== ''"
+            maxlength="100" show-word-limit :disabled="!user.isAnonymous" data-cy="name-realname"
         />
     </div>
 
@@ -43,14 +56,14 @@
         <div v-else-if="formStatus.firstname.status === 'success'" class="text-small text-success">
             {{ t('local.updateSuccess') }}
         </div>
-        <ElInput v-model="formStatus.firstname.new" :placeholder="t('local.firstname')" minlength="1" maxlength="255" show-word-limit :disabled="user.firstname !== ''" />
+        <ElInput v-model="formStatus.firstname.new" :placeholder="t('local.firstname')" minlength="1" maxlength="255" show-word-limit :disabled="user.firstname !== ''" data-cy="name-firstname" />
         <div v-if="formStatus.lastname.status === 'error'" class="text-danger text-small">
             {{ formStatus.lastname.errorMsg }}
         </div>
         <div v-else-if="formStatus.lastname.status === 'success'" class="text-small text-success">
             {{ t('local.updateSuccess') }}
         </div>
-        <ElInput v-model="formStatus.lastname.new" :placeholder="t('local.lastname')" minlength="1" maxlength="255" show-word-limit :disabled="user.lastname !== ''" />
+        <ElInput v-model="formStatus.lastname.new" :placeholder="t('local.lastname')" minlength="1" maxlength="255" show-word-limit :disabled="user.lastname !== ''" data-cy="name-lastname" />
     </div>
 
     <!-- 个性签名 -->
@@ -80,7 +93,7 @@
     </div>
 
     <div style="margin-top: 1em">
-        <BaseButton type="primary" :loading="updating" @click="updateProfile">
+        <BaseButton type="primary" :loading="updating" data-cy="save-profile" @click="updateProfile">
             {{ t('common.button.save') }}
         </BaseButton>
         <BaseButton type="info" :disabled="updating" @click="refresh">
@@ -103,7 +116,7 @@ import type { EnumMap } from '@/utils';
 import { createEnumMap } from '@/utils';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { globalNow, toISODateTimeString } from '@/utils/datetime';
-import { UserProfile } from '@/utils/userprofile';
+import { hasRealname, HIDDEN_NAME, UserProfile } from '@/utils/userprofile';
 
 const props = defineProps({
     expTimeMs: { type: Number, default: 999999 },
@@ -123,6 +136,8 @@ interface formStatusSingle {
 const user = defineModel<UserProfile>('user', { type: UserProfile, default: () => new UserProfile() });
 
 const updating = ref(false);
+const hideRealname = ref(false);
+const privacyError = ref('');
 
 const defaultFormStatus: formStatusSingle = {
     new: '',
@@ -135,6 +150,8 @@ const formStatus = ref<EnumMap<UpdateProfileField, formStatusSingle>>(
 );
 
 function refresh() {
+    hideRealname.value = !user.value.isAnonymous && user.value.hide_realname;
+    privacyError.value = '';
     for (const field of UpdateProfileFields) {
         formStatus.value[field].new = user.value[field];
         formStatus.value[field].status = '';
@@ -143,6 +160,7 @@ function refresh() {
 }
 
 watch(user, refresh, { immediate: true });
+const canChoosePrivacy = computed(() => user.value.can_hide_realname && hasRealname(formStatus.value.realname.new) && formStatus.value.realname.new.trim() !== HIDDEN_NAME);
 
 const signatureDisabled = computed(() => props.qualificationStatus !== 'ready' || user.value.nextSignatureAvailable > globalNow.value || props.expTimeMs >= 200000);
 
@@ -169,23 +187,38 @@ function processUpdateResponse(field: UpdateProfileField, data: UpdateProfileRes
 }
 
 async function updateProfile() {
+    privacyError.value = '';
+    let invalid = false;
+    for (const field of ['realname', 'firstname', 'lastname'] as const) {
+        if (formStatus.value[field].new.trim() === HIDDEN_NAME) {
+            formStatus.value[field].status = 'error';
+            formStatus.value[field].errorMsg = t('local.reservedName');
+            invalid = true;
+        }
+    }
+    if (invalid) return;
     updating.value = true;
+    const owner = user.value;
     const params = new FormData();
     for (const field of UpdateProfileFields) {
         if (formStatus.value[field].new !== user.value[field]) {
             params.append(field, formStatus.value[field].new);
         }
     }
+    if (canChoosePrivacy.value && hideRealname.value !== user.value.hide_realname) params.append('hide_realname', String(hideRealname.value));
 
     if (params.keys().next().done !== true) {
         await proxy.$axios.post(
             '/api/userprofile/update_profile',
             params,
         ).then((response) => {
-            const data = response.data as EnumMap<UpdateProfileField, UpdateProfileResponseSingle>;
+            if (user.value !== owner) return;
+            const data = response.data as EnumMap<UpdateProfileField, UpdateProfileResponseSingle> & { hide_realname?: UpdateProfileResponseSingle };
             for (const field of UpdateProfileFields) {
                 processUpdateResponse(field, data[field]);
             }
+            if (data.hide_realname?.type === 'error') privacyError.value = t(`local.error.${data.hide_realname.object}.${data.hide_realname.category}`);
+            if (data.hide_realname?.type === 'success') owner.hide_realname = hideRealname.value;
         }).catch(httpErrorNotification);
     }
     updating.value = false;
@@ -204,6 +237,11 @@ const i18nMessages = {
         signature: '个性签名',
         tooltipExpTime: '高级sub200后才可以修改个性签名',
         updateSuccess: '修改成功',
+        hideWithName: '同时隐藏实名',
+        hideRealname: '隐藏实名',
+        privacyAuthorization: '需要管理员授权或成功绑定 MSGames。已经绑定的用户可联系管理员补发资格。',
+        privacyScope: '仅隐藏本站姓名，账号关联姓名和原始录像不受影响。由于缓存的原因，隐藏可能不会立刻生效。',
+        reservedName: '姓名不能为保留值 hidden',
         signatureTooltip: ({ named }: { named: { (key: 'left'): number; (key: 'next'): string } }) => {
             if (named('left') > 0) {
                 return `您每月可获得一次签名修改次数。当前剩余${named('left')}次。`;
@@ -212,6 +250,9 @@ const i18nMessages = {
             }
         },
         error: {
+            name: { reserved: '姓名不能为保留值 hidden', exist: '姓名已经设置，请联系管理员修改' },
+            database: { validation: '姓名格式不符合要求' },
+            privacy: { realname_required: '请先填写有效实名', not_authorized: '尚未获得隐藏实名资格' },
             censorship: {
                 unknown: '机器审核发生未知错误，请联系管理员',
                 illegal: '未通过机器审核，请更换内容或联系管理员进行人工审核',
@@ -230,6 +271,11 @@ const i18nMessages = {
         signature: 'Signature',
         tooltipExpTime: 'Achieve expert sub200 to change signature',
         updateSuccess: 'Update successful',
+        hideWithName: 'Hide my real name when saving',
+        hideRealname: 'Hide my real name',
+        privacyAuthorization: 'Requires administrator approval or a successful MSGames binding. If already linked, ask an administrator to grant eligibility.',
+        privacyScope: 'Hides site profile names. Linked account names and original replays are unaffected. Due to caching, name hiding may not take effect immediately.',
+        reservedName: 'A name cannot be the reserved value hidden',
         signatureTooltip: ({ named }: { named: { (key: 'left'): number; (key: 'next'): string } }) => {
             if (named('left') > 0) {
                 return `You gain one chance to modify your signature each month. You have ${named('left')} chances remaining.`;
@@ -238,6 +284,9 @@ const i18nMessages = {
             }
         },
         error: {
+            name: { reserved: 'A name cannot be the reserved value hidden', exist: 'This name is already set. Contact an administrator to change it' },
+            database: { validation: 'Invalid name format' },
+            privacy: { realname_required: 'Enter a valid real name first', not_authorized: 'You are not authorized to hide your real name' },
             censorship: {
                 unknown: 'Unknown error occurred in censorship. Please contact a moderator',
                 illegal: 'The content is blocked by censorship. Please change the text or contact a moderator for manual review',

@@ -12,21 +12,48 @@ from config.text_choices import MS_TextChoices, Saolei_TextChoices
 from identifier.models import Identifier
 from msuser.models import UserMS
 from userprofile.models import UserProfile
+from userprofile.services import grant_name_privacy
 from utils.exceptions import ExceptionToResponse
 from utils.parser import MSVideoParser
 from utils.ranking_lock import ranking_access
 from utils.saolei import SaoleiUserInfo, SaoleiUtils
 from videomanager.models import VideoModel
-from .models import AccountMinesweeperGames, AccountSaolei, AccountWorldOfMinesweeper, Platform, VideoMSGames, VideoSaolei
+from .models import AccountLinkQueue, AccountMinesweeperGames, AccountSaolei, AccountWorldOfMinesweeper, Platform, VideoMSGames, VideoSaolei
 from .msgames.client import download_replay as download_msgames_replay, fetch_profile as fetch_msgames_profile, fetch_replays as fetch_msgames_replays
 from .msgames.utils import upload_date_upper_bound
-from .utils import fetch_saolei_profile, fetch_saolei_video_download_and_state, update_bilibili_account
+from .utils import fetch_saolei_profile, fetch_saolei_video_download_and_state, link_account, update_bilibili_account
 from .wom.client import fetch_wom_profile
 
 logger = logging.getLogger('accountlink')
 
 SAOLEI_VIDEO_IMPORT_TASK_PATH = 'accountlink.tasks.task_saolei_video_import'
 SAOLEI_VIDEO_IMPORT_BULK_TASK_PATH = 'accountlink.tasks.task_saolei_video_import_bulk'
+
+
+@transaction.atomic
+def verify_account_link(user_id: int, platform: str, identifier: str, actor_id: int) -> tuple[UserProfile, bool]:
+    user = UserProfile.objects.select_for_update().filter(pk=user_id).first()
+    if user is None:
+        raise ExceptionToResponse('user', 'not_found', status_code=404)
+    if platform == Platform.MINERACER:
+        raise ExceptionToResponse('mineracer', 'manual_link_not_supported', status_code=400)
+    if platform not in Platform.values:
+        raise ExceptionToResponse('platform', 'invalid', status_code=400)
+    links = list(AccountLinkQueue.objects.select_for_update().filter(platform=platform, identifier=identifier).order_by('pk'))
+    for link in links:
+        if link.verified:
+            if link.userprofile_id == user.pk:
+                return user, False
+            raise ExceptionToResponse('accountlink', 'collision', status_code=409)
+    link = next((link for link in links if link.userprofile_id == user.pk), None)
+    if link is None:
+        raise ExceptionToResponse('accountlink', 'not_found', status_code=404)
+    link_account(platform, identifier, user)
+    link.verified = True
+    link.save(update_fields=['verified'])
+    if platform == Platform.MSGAMES:
+        grant_name_privacy(user, f'Staff #{actor_id}, MSGames #{identifier}')
+    return user, True
 
 
 def update_account(platform: Platform, user: UserProfile):

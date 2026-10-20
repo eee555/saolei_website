@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
+from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.tasks import TaskResultStatus
 from django.utils import timezone
@@ -8,6 +9,7 @@ from django_redis import get_redis_connection
 from ninja import NinjaAPI, Schema
 from ninja.errors import HttpError
 
+from accountlink.models import AccountLinkQueue, AccountMinesweeperGames, Platform
 from common.api import LOG_DIR, TaskDetailOut
 from config.text_choices import Tournament_TextChoices
 from config.tournaments import TournamentWeights
@@ -17,6 +19,7 @@ from msuser.models import UserMS
 from tournament.models import GSCTournament, WeeklyTournament
 from tournament.weekly.tasks import _task_weekly_finish_impl
 from userprofile.models import UserProfile
+from userprofile.utils import validate_name
 from videomanager.models import ExpandVideoModel, VideoModel
 from .decorators import local_only
 from .tasks import task_echo
@@ -122,6 +125,10 @@ class RegisterSchema(Schema):
 @api.post('/register')
 @local_only
 def register(request, data: RegisterSchema):
+    try:
+        validate_name(data.realname)
+    except ValidationError:
+        raise HttpError(400, 'The name cannot be the reserved value hidden.')
     userms = UserMS.objects.create()
     UserProfile.objects.create_user(
         username=data.username,
@@ -131,6 +138,20 @@ def register(request, data: RegisterSchema):
         realname=data.realname,
         userms=userms,
     )
+
+
+@api.post('/prepare_msgames_privacy_fixture')
+@local_only
+def prepare_msgames_privacy_fixture(request, data: UserIdSchema):
+    """
+    - local_only
+
+    Prepare a pre-feature binding without running the new authorization event.
+    """
+    user = UserProfile.objects.get(pk=data.id)
+    AccountMinesweeperGames.objects.create(pk=2147483001, parent=user, name='MSGames Fixture', local_name='关联姓名')
+    AccountLinkQueue.objects.create(userprofile=user, platform=Platform.MSGAMES, identifier='2147483001', verified=True)
+    return {'id': user.pk}
 
 
 @api.post('/create_video')

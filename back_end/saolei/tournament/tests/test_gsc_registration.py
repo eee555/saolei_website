@@ -14,7 +14,7 @@ class TestGscRegistration(TournamentTestCaseBase):
     def setUp(self):
         super().setUp()
         self.user.realname = 'GSC Player'
-        self.user.save(update_fields=['realname', 'date_updated'])
+        self.user.save(update_fields=['_realname', 'date_updated'])
         self.client.force_login(self.user)
 
     def test_registration_before_start_preserves_private_token_and_disallows_arbiter_binding(self):

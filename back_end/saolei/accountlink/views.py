@@ -12,7 +12,7 @@ from utils.response import HttpResponseConflict
 from .models import AccountLinkQueue, AccountSaolei, Platform, VideoSaolei
 from .services import saolei_video_import_one, update_account
 from .tasks import helper_saolei_video_import_bulk
-from .utils import delete_account, link_account
+from .utils import delete_account
 
 logger = logging.getLogger('accountlink')
 
@@ -31,37 +31,6 @@ def delete_link(request):
         accountlink.delete()
         return HttpResponse()
     return HttpResponseNotFound()
-
-
-@require_POST
-@staff_required
-def verify_link(request):
-    userid = request.POST.get('id')
-    if not (user := UserProfile.objects.filter(id=userid).first()):
-        return HttpResponseNotFound()
-    if not (platform := request.POST.get('platform')):
-        return HttpResponseBadRequest()
-    if not (identifier := request.POST.get('identifier')):
-        return HttpResponseBadRequest()
-    if platform == Platform.MINERACER:
-        return ExceptionToResponse('mineracer', 'manual_link_not_supported', status_code=400).response()
-    collision = AccountLinkQueue.objects.filter(platform=platform, identifier=identifier, verified=True).first()
-    if collision:  # 该平台该ID已被绑定
-        if collision.userprofile == user:
-            return HttpResponse()
-        else:
-            return HttpResponseConflict()
-    accountlink = AccountLinkQueue.objects.filter(platform=platform, identifier=identifier).first()
-    if not accountlink:
-        return HttpResponseNotFound()
-    link_account(platform, identifier, user)
-    accountlink.verified = True
-    accountlink.save(update_fields=['verified'])
-    try:
-        update_account(platform, user)
-    except ExceptionToResponse as e:
-        return e.response()
-    return HttpResponse()
 
 
 @require_POST

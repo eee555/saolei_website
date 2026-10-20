@@ -13,8 +13,9 @@ from ninja.errors import HttpError
 from ninja.orm import create_schema
 
 from config.text_choices import MS_TextChoices
+from userprofile.decorators import staff_required
 from userprofile.models import UserProfile
-from .models import STNB_COEFFICIENTS, VideoModel
+from .models import ExpandVideoModel, STNB_COEFFICIENTS, VideoModel
 from .schema import VideoBaseOut
 from .view_utils import video_all_fields
 
@@ -28,7 +29,7 @@ def video_query(request, level: MS_TextChoices.Level, mode: MS_TextChoices.Mode,
     """
     - ratelimit(key='ip', rate='60/m')
     """
-    if o not in video_all_fields and o != 'stnb':
+    if o == 'player__realname' or (o not in video_all_fields and o != 'stnb'):
         raise HttpError(400, 'Invalid sort field.')
     videos = VideoModel.objects.filter(level=level, mode=mode, bv__range=(bmin, bmax))
     if nf:
@@ -40,9 +41,27 @@ def video_query(request, level: MS_TextChoices.Level, mode: MS_TextChoices.Mode,
     videos = videos.annotate(stnb=F('iqg') * STNB_COEFFICIENTS.get(level))
     order = ('-' if r else '') + o
     orderby = (order,) if o == 'timems' else (order, 'timems')
-    videos = videos.order_by(*orderby).values(*video_all_fields, 'stnb')
+    videos = videos.order_by(*orderby).values(*[field for field in video_all_fields if field != 'player__realname'], 'stnb')
     paginator = Paginator(videos, max(1, min(ps, 100)))
-    return {'count': paginator.count, 'videos': list(paginator.get_page(page))}
+    rows = list(paginator.get_page(page))
+    players = UserProfile.objects.in_bulk({row['player__id'] for row in rows})
+    for row in rows:
+        row['player__realname'] = players[row['player__id']].realname
+    return {'count': paginator.count, 'videos': rows}
+
+
+@router.get('/admin/detail/{video_id}')
+@decorate_view(staff_required)
+def get_video_admin(request, video_id: int):
+    """
+    - staff_required
+    """
+    fields = ['player', 'upload_time', 'state', 'software', 'level', 'mode', 'right_ce', 'timems', 'bv', 'bvs', 'ongoing_tournament']
+    fields.extend('video__' + field.name for field in ExpandVideoModel._meta.get_fields())
+    row = VideoModel.objects.filter(pk=video_id).values(*fields, player__realname=F('player___realname')).first()
+    if row is None:
+        raise HttpError(404, 'Video not found.')
+    return row
 
 
 @router.get('/query_by_id')

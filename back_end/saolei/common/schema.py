@@ -2,12 +2,12 @@ from django.db import models
 from ninja import Schema
 from ninja.orm import create_schema
 
-from userprofile.schema import UserInfoOut
+from userprofile.schema import SelfUserInfoOut
 from videomanager.models import ExpandVideoModel, VideoModel
 
 
 class AutoLoginOut(Schema):
-    user: UserInfoOut | None
+    user: SelfUserInfoOut | None
     top_anchors: dict
 
 

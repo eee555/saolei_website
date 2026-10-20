@@ -10,8 +10,8 @@
     <template v-if="profile">
         <VCodeBlock :code="JSON.stringify(profile, null, 2)" lang="json" />
         {{ t('local.userProfile') }}
-        <ElInput v-model="userProfileRequestBody" type="textarea" :autosize="{ minRows: 8 }" />
-        <BaseButton type="primary" :loading="savingUserProfile" @click="saveUserProfile">
+        <ElInput v-model="userProfileRequestBody" type="textarea" :autosize="{ minRows: 8 }" data-cy="staff-profile-json" />
+        <BaseButton type="primary" :loading="savingUserProfile" data-cy="staff-save-profile" @click="saveUserProfile">
             {{ t('local.patchUserProfile') }}
         </BaseButton>
         {{ t('local.userMS') }}
@@ -31,6 +31,7 @@ import BaseButton from '@/components/common/BaseButton.vue';
 import VCodeBlock from '@/components/common/BaseCodeBlock.vue';
 import { actionSuccessNotification, baseErrorNotification, httpErrorNotification } from '@/components/Notifications';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
+import { HIDDEN_NAME } from '@/utils/userprofile';
 
 const { proxy } = useCurrentInstance();
 
@@ -78,6 +79,14 @@ async function saveUserProfile() {
 
     const payload = parseRequestBody(userProfileRequestBody.value);
     if (payload === null) return;
+    if (['realname', 'firstname', 'lastname'].some((field) => {
+        const value = payload[field];
+        return typeof value === 'string' && value.trim() === HIDDEN_NAME;
+    })) {
+        baseErrorNotification(t('local.jsonError'), t('local.reservedName'));
+        return;
+    }
+    if (profile.value.can_hide_realname === true && payload.can_hide_realname === false && !window.confirm(t('local.revokePrivacy'))) return;
 
     savingUserProfile.value = true;
     await proxy.$axios.patch<Record<string, unknown>>(`/api/userprofile/admin/update/${loadedUserId.value}`, payload).then((response) => {
@@ -120,6 +129,8 @@ const i18nMessages = {
         jsonObjectRequired: '请求体必须是 JSON 对象',
         userMSError: 'UserMS错误',
         missingUserMS: '当前用户没有可用的 userms_id',
+        reservedName: '姓名不能为保留值 hidden',
+        revokePrivacy: '撤销隐藏实名资格后，将关闭隐藏，实名会在缓存正常更新后恢复公开。是否继续？',
     } },
     en: { local: {
         userProfile: 'User profile (UserProfile)',
@@ -130,6 +141,8 @@ const i18nMessages = {
         jsonObjectRequired: 'The request body must be a JSON object',
         userMSError: 'UserMS error',
         missingUserMS: 'This user has no available userms_id',
+        reservedName: 'A name cannot be the reserved value hidden',
+        revokePrivacy: 'Revoking eligibility also turns off hiding. Names become public after normal cache updates. Continue?',
     } },
 };
 

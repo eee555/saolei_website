@@ -112,7 +112,7 @@ function staffVerifyAccount(platform: string, identifier: string) {
     visitStaffAccountLink();
     expectAccountLinkTableRow(platform, identifier, false);
 
-    cy.intercept('POST', '**/accountlink/verify/').as('verifyAccountLink');
+    cy.intercept('POST', '**/api/accountlink/verify/').as('verifyAccountLink');
     cy.contains('.el-form-item__label', '用户 ID').next().find('input').clear();
     cy.contains('.el-form-item__label', '用户 ID').next().find('input').type(`${USER.id}{enter}`);
     cy.contains('.el-form-item__label', /^平台$/).next().find('.el-select').click();

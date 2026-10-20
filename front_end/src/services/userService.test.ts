@@ -241,7 +241,7 @@ describe('fetchUserInfo', () => {
             started.resolve(undefined);
             return response.promise;
         });
-        axiosGet.mockResolvedValueOnce({ data: [createUser(1, 'Fresh User')] });
+        axiosGet.mockResolvedValueOnce({ data: [{ ...createUser(1, 'hidden'), firstname: 'hidden', lastname: 'hidden' }] });
 
         const promise = fetchUserInfo(1);
         await started.promise;
@@ -252,12 +252,14 @@ describe('fetchUserInfo', () => {
         response.resolve({ data: updatedUserIds });
         const user = await promise;
 
-        const expectedName = updatedUserIds.length ? 'Fresh User' : 'Stale User';
+        const expectedName = updatedUserIds.length ? 'hidden' : 'Stale User';
         expect(user.realname).toBe(expectedName);
         expect((await getCachedUser(1))?.realname).toBe(expectedName);
         expect(serviceConfig.value.userInfoLastUpdate).toBe(2000);
         expect(axiosGet).toHaveBeenNthCalledWith(1, '/api/userprofile/infoupdated', { params: { since: 100 } });
         if (updatedUserIds.length) {
+            expect(user.isNameHidden).toBe(true);
+            expect(user.isAnonymous).toBe(false);
             expect(axiosGet).toHaveBeenNthCalledWith(2, '/api/userprofile/infobulk', { params: { ids: '1' } });
         }
         const requestCount = axiosGet.mock.calls.length;

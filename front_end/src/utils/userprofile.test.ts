@@ -91,11 +91,29 @@ describe('UserProfile', () => {
     });
 
     describe('getter: isAnonymous', () => {
-        it('true', () => {
-            const profile = new UserProfile({ realname: '' });
-            expect(profile.isAnonymous).toBe(true);
+        it.each(['', '   ', '匿名'])('treats %j as missing without a response status field', (realname) => {
+            expect(new UserProfile({ realname }).isAnonymous).toBe(true);
         });
 
+        it.each(['realname', 'firstname', 'lastname'])('recognizes the hidden marker in %s without treating it as an international name', (field) => {
+            const profile = new UserProfile({ realname: 'Original', firstname: 'Given', lastname: 'Family', [field]: 'hidden' });
+            expect(profile.isAnonymous).toBe(false);
+            expect(profile.isNameHidden).toBe(true);
+            expect(profile.hasInternationalName).toBe(false);
+            expect(profile.canSetName).toBe(false);
+        });
+
+        it('hides an owner profile while preserving original names and editability', () => {
+            const profile = new UserProfile({ realname: 'Original', can_hide_realname: true, hide_realname: true });
+            expect(profile.isNameHidden).toBe(true);
+            expect(profile.realname).toBe('Original');
+            expect(profile.canSetName).toBe(true);
+            profile.can_hide_realname = false;
+            expect(profile.isNameHidden).toBe(false);
+            profile.can_hide_realname = true;
+            profile.realname = '';
+            expect(profile.isNameHidden).toBe(false);
+        });
         it('false', () => {
             const profile = new UserProfile({ realname: 'Alice' });
             expect(profile.isAnonymous).toBe(false);

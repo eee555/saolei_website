@@ -1,7 +1,17 @@
 from datetime import datetime
 
 from captcha.models import CaptchaStore
+from django.core.exceptions import ValidationError
 from django.utils import timezone
+
+
+HIDDEN_NAME = 'hidden'
+NAME_FIELDS = {'realname': '_realname', 'firstname': '_firstname', 'lastname': '_lastname'}
+
+
+def validate_name(value):
+    if value.strip() == HIDDEN_NAME:
+        raise ValidationError('The name cannot be the reserved value hidden.', code='reserved')
 
 
 # 验证验证码

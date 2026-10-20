@@ -168,7 +168,6 @@ const modeTags: Tags = {
 // reverse: true从小到大
 const indexTags: TagsReverse = reactive({
     upload_time: { key: 'upload_time', reverse: true, to_fixed: -1, selected: true },
-    // "name": { name: "姓名", key: "player__realname", reverse: false, to_fixed: 0, selected: true},
     timems: { key: 'timems', reverse: false, to_fixed: 3, selected: true },
     bbbv: { key: 'bv', reverse: false, to_fixed: 0, selected: true },
     bbbv_s: { key: 'bvs', reverse: true, to_fixed: 3, selected: true },

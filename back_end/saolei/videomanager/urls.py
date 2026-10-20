@@ -8,7 +8,6 @@ urlpatterns = [
     path('newest_queue/remove/', views.remove_from_newest_queue),
     # path('approve/', views.approve, name='approve'),
     # path('freeze/', views.freeze, name='freeze'),
-    path('get/', views.get_videoModel),
     path('set/', views.set_videoModel),
     path('update/', views.update_videoModel),
     path('update/batch/', views.batch_update_videoModel),
