@@ -16,7 +16,7 @@ declare global {
 export function loadCdnStyles(styles: CdnStyle[], cdnTimeout = 4000, localTimeout = 15000): Promise<void> {
     const anchor = document.head.querySelector('style, link[rel="stylesheet"]') ?? document.currentScript;
     const completed = new Set<string>();
-    const total = styles.reduce((count, style) => count + (style.font ? 2 : 1), 0);
+    const total = styles.reduce((count, style) => count + (style.font !== undefined && style.font !== '' ? 2 : 1), 0);
     const states = new Map(styles.map((style) => [style.id, 'cdn']));
     let fallbackReason = '';
 
@@ -97,7 +97,7 @@ export function loadCdnStyles(styles: CdnStyle[], cdnTimeout = 4000, localTimeou
                 if (settled || active !== link) return;
                 completed.add(`${style.id}/css`);
                 updateStatus();
-                if (!style.font) {
+                if (style.font === undefined || style.font === '') {
                     finish();
                     return;
                 }

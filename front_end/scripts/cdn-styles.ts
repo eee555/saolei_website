@@ -28,8 +28,7 @@ export function cdnStyles(): Plugin {
         apply: 'build',
         enforce: 'pre',
         configResolved(config) {
-            base = config.base;
-            assetsDir = config.build.assetsDir;
+            ({ base, build: { assetsDir } } = config);
         },
         buildStart() {
             styles = packages.map((item) => {
@@ -40,7 +39,7 @@ export function cdnStyles(): Plugin {
                 const cssFile = posix.join(prefix, item.css);
                 // Preserve the upstream CSS and its relative font URLs byte for byte.
                 this.emitFile({ type: 'asset', fileName: cssFile, source: readFileSync(join(root, item.css)) });
-                if (item.font) {
+                if (item.font !== undefined && item.font !== '') {
                     for (const font of readdirSync(join(root, 'fonts'))) {
                         this.emitFile({ type: 'asset', fileName: posix.join(prefix, 'fonts', font), source: readFileSync(join(root, 'fonts', font)) });
                     }

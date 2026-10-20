@@ -94,7 +94,7 @@ describe('CDN stylesheet fallback', () => {
 
     it('retries a failed stylesheet locally in the same position before overrides', async () => {
         const ready = loadCdnStyles([styles[0]]);
-        const cdn = links[0];
+        const [cdn] = links;
         cdn.onerror?.();
         expect(links[1].href).toBe(styles[0].local);
         expect(english.textContent).toContain('CDN unavailable');
@@ -186,7 +186,10 @@ describe('CDN stylesheet fallback', () => {
         const doc = document;
         let parsed: (() => void) | undefined;
         vi.stubGlobal('document', {
-            ...doc,
+            currentScript: doc.currentScript,
+            fonts: doc.fonts,
+            head: doc.head,
+            createElement: () => doc.createElement('link'),
             readyState: 'loading',
             querySelector: () => null,
             addEventListener(_event: string, callback: () => void) {
