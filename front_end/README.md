@@ -17,6 +17,7 @@ npm run dev
 - [开发文档](./docs/development.md)
 - [国际化文档](./docs/i18n.md)
 - [测试文档](./docs/testing.md)
+- [公共样式 CDN 与本站回退](./docs/cdn-styles.md)
 
 ## 常用命令
 
