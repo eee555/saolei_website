@@ -57,12 +57,10 @@ import 'primeicons/primeicons.css';
 
 import { useColorMode, useElementSize } from '@vueuse/core';
 import { ElDialog, ElDrawer } from 'element-plus';
-import { computed, nextTick, ref, useId, useTemplateRef, watch } from 'vue';
+import { computed, defineAsyncComponent, nextTick, ref, useId, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { RouterLink, useRoute } from 'vue-router';
 
-import Downloads from '@/components/dialogs/Downloads.vue';
-import Thanks from '@/components/dialogs/Thanks.vue';
 import Login from '@/components/Login/App.vue';
 import type { LoginControls } from '@/components/Login/types';
 import NavigationLinks from '@/components/navigation/NavigationLinks.vue';
@@ -73,6 +71,9 @@ import { useLanguage } from '@/components/widgets/useLanguage';
 import { local, store } from '@/store';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { getDocsUrl } from '@/utils/docs';
+
+const Downloads = defineAsyncComponent(() => import('@/components/dialogs/Downloads.vue'));
+const Thanks = defineAsyncComponent(() => import('@/components/dialogs/Thanks.vue'));
 
 defineSlots<{ default?: () => unknown }>();
 const shell = useTemplateRef<HTMLElement>('shell');

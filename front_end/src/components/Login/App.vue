@@ -12,12 +12,9 @@
 <script lang="ts" setup>
 // 认证状态、表单弹窗及提供给导航的操作。
 import { ElDialog, ElMessage, ElMessageBox } from 'element-plus';
-import { onMounted, ref } from 'vue';
+import { defineAsyncComponent, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import LoginForm from './LoginForm.vue';
-import RegisterForm from './RegisterForm.vue';
-import RetrieveForm from './RetrieveForm.vue';
 import type { LoginControls } from './types';
 
 import { httpErrorNotification } from '@/components/Notifications';
@@ -26,6 +23,10 @@ import { store } from '@/store';
 import type { GetUserInfoResponse } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import type { UserProfileData } from '@/utils/userprofile';
+
+const LoginForm = defineAsyncComponent(() => import('./LoginForm.vue'));
+const RegisterForm = defineAsyncComponent(() => import('./RegisterForm.vue'));
+const RetrieveForm = defineAsyncComponent(() => import('./RetrieveForm.vue'));
 
 const { proxy } = useCurrentInstance();
 
