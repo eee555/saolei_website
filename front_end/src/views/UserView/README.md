@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | top | `UserTopView.vue` | `TopSummary.vue` 请求完整 top 纪录、读取 Pinia 锚点；`TopRadar.vue`、`TopRecordTable.vue` 只渲染 props |
 | PB | `UserPBView.vue` | 一次获取用户全部 PB，`PBRecordGrid.vue` 按等级展示网格 |
-| 纪录 | `UserRecordView/App.vue` | 扫雷网及自定义 pluck 纪录 |
+| 纪录 | `UserRecordView/App.vue` | 扫雷网、Thrp 及自定义 pluck 纪录 |
 | 账号关联 | `UserAccountLinkView.vue` | 外部账号关联 |
 | 录像 | `UserVideoView.vue` | 全部可见录像、日历/BV 选择、表格/散点图 |
 | 上传、设置 | `UserUploadView.vue`、`UserSettingsView.vue` | 仅本人可见；设置包含资料编辑和标识管理 |
@@ -38,6 +38,12 @@ top 和 PB 的业务规则、缓存与接口统一见 [竞速排行榜 README](.
 - 每级别网格每行十格，按已有最小/最大 BV 向十位补齐。无纪录格子留空，整级别无纪录时显示空态；有纪录的格子预览同一条 PB 录像，不因指标变化重新选录像。
 - `rank=null` 显示 `--`，不丢弃已有录像；原生 `title` 展示时间、派生指标和排名，不逐格预取详情。
 - rank 前三名采用不透明金银铜和固定深色文字；4–10、11–50、51–100 名采用主题蓝的 22%、14%、7% 背景，之后及缺失排名无填色。后续排名文字使用主题色，不降低整格或链接透明度。
+
+## Thrp 纪录
+
+纪录 tab 的 `ThrpCard.vue` 接收用户 id，单次请求 `/api/effranking/thrp/player/{id}` 获取完整纪录与排名。初、中、高级和 sum 始终展示，格式为三位小数成绩加括号排名，缺项或缺失排名显示 `--`；sum 按缺项 0 求和。单项预览对应录像，sum 不生成录像链接。
+
+请求复用 `profileDataService` 的个人页缓存与失效通知，用户切换或失活后不接受旧响应。全局上色启用时使用 IOE 共用色阶，sum 固定按总值除以 3 上色。组件测试位于 `UserRecordView/ThrpCard.cy.ts`。
 
 ## 录像选择与展示
 

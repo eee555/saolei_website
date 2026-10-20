@@ -14,6 +14,15 @@ export const rankingRoutes: RouteRecordRaw[] = [
         ],
     },
     {
+        path: 'efficiency',
+        name: 'ranking_efficiency',
+        component: () => import('./EfficiencyRanking.vue'),
+        redirect: { name: 'ranking_efficiency_thrp' },
+        children: [
+            { path: 'thrp', name: 'ranking_efficiency_thrp', component: () => import('./ThrpRanking.vue') },
+        ],
+    },
+    {
         path: 'density',
         name: 'ranking_density',
         component: () => import('./DensityRanking.vue'),

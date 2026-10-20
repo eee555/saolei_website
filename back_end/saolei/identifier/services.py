@@ -2,6 +2,7 @@ from django.db import transaction
 
 from config.text_choices import MS_TextChoices
 from customranking.services import add_videos_to_custom_pluck_ranks, remove_videos_from_custom_pluck_ranks
+from effranking.services import add_videos_to_eff_ranks, remove_videos_from_eff_ranks
 from msuser.models import UserMS
 from msuser.services import update_video_count_limit_from_videos
 from speedranking.services import add_videos_to_speed_ranks, remove_videos_from_speed_ranks
@@ -44,6 +45,7 @@ def bind_identifier(identifier: Identifier, userms: UserMS):
         update_video_count_limit_from_videos(userms, refreshed_videos)
         add_videos_to_speed_ranks(refreshed_videos)
         add_videos_to_custom_pluck_ranks(refreshed_videos)
+        add_videos_to_eff_ranks(refreshed_videos)
 
     return len(video_ids)
 
@@ -83,6 +85,7 @@ def unbind_identifier(identifier: Identifier, userms: UserMS | None = None):
             remove_videos_from_custom_pluck_ranks(video_ids)
 
             remove_videos_from_speed_ranks(VideoModel.objects.filter(id__in=video_ids))
+            remove_videos_from_eff_ranks(VideoModel.objects.filter(id__in=video_ids))
 
     return len(video_ids)
 

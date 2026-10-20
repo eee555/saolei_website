@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { fetchProfileSaoleiRecords, invalidateProfileData, profileDataRevision } from './profileDataService';
+import { fetchProfileSaoleiRecords, fetchProfileThrpRecord, invalidateProfileData, profileDataRevision } from './profileDataService';
 import { fetchSaoleiRecords } from './saoleiRankingService';
 import type { SaoleiPlayerRecord, SaoleiRankingName } from './saoleiRankingService';
+import { fetchThrpRecord } from './thrpRankingService';
 
 vi.mock('./saoleiRankingService', () => ({ fetchSaoleiRecords: vi.fn() }));
+vi.mock('./thrpRankingService', () => ({ fetchThrpRecord: vi.fn() }));
 
 describe('profile record cache', () => {
     beforeEach(() => {
@@ -15,17 +17,27 @@ describe('profile record cache', () => {
     it('shares pending and completed lightweight records, and invalidates without downloading', async () => {
         const data = {} as Record<SaoleiRankingName, SaoleiPlayerRecord>;
         vi.mocked(fetchSaoleiRecords).mockResolvedValue(data);
+        const thrp = { player_id: 42, b: null, i: null, e: null, ranks: { b: null, i: null, e: null, sum: null } };
+        vi.mocked(fetchThrpRecord).mockResolvedValue(thrp);
         const first = fetchProfileSaoleiRecords(42);
+        const firstThrp = fetchProfileThrpRecord(42);
         expect(fetchProfileSaoleiRecords(42)).toBe(first);
+        expect(fetchProfileThrpRecord(42)).toBe(firstThrp);
         await first;
+        await firstThrp;
         expect(await fetchProfileSaoleiRecords(42)).toBe(data);
+        expect(await fetchProfileThrpRecord(42)).toBe(thrp);
         expect(fetchSaoleiRecords).toHaveBeenCalledTimes(1);
+        expect(fetchThrpRecord).toHaveBeenCalledTimes(1);
         const version = profileDataRevision(42);
         invalidateProfileData(42);
         expect(profileDataRevision(42)).toBe(version + 1);
         expect(fetchSaoleiRecords).toHaveBeenCalledTimes(1);
+        expect(fetchThrpRecord).toHaveBeenCalledTimes(1);
         await fetchProfileSaoleiRecords(42);
+        await fetchProfileThrpRecord(42);
         expect(fetchSaoleiRecords).toHaveBeenCalledTimes(2);
+        expect(fetchThrpRecord).toHaveBeenCalledTimes(2);
     });
 
     it('allows retrying failures without deleting a newer request during invalidation', async () => {

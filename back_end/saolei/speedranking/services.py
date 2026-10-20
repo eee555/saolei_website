@@ -2,6 +2,7 @@ from functools import partial
 
 from django.db import transaction
 
+from utils.querysets import player_batches
 from utils.ranking_lock import ranking_access
 from videomanager.models import VideoModel
 from .cache import pipeline
@@ -11,7 +12,7 @@ from .saolei import services as saolei
 from .saolei.utils import RANKING_NAMES
 from .top import services as top
 from .top.cache import TopRankingCache
-from .utils import log_update_errors, player_batches
+from .utils import log_update_errors
 
 
 def _read_records(players):
