@@ -17,6 +17,8 @@ top 原始十八项统一参与用户集合，并以变换后的均值作为降�
 
 NF 是独立维度，由 `VideoModel.right_ce == 0` 判断，不再使用模式 `12`。创建和删除时，NF 子计数与录像原模式的子计数同时增减；`right_ce` 为空不计入 NF。`videomanager` 捕获 `right_ce` 变化并更新队列；`customranking` 不需要 NF 信息，不监听此字段。批量转换旧模式后需显式刷新计数及缓存，步骤见 `back_end/saolei/msuser/refactor.md`。
 
+效率榜由独立 `effranking.signals` 监听录像保存和删除，复用 `_old_values` 及 `update_fields` 判断影响范围。除资格、玩家、级别及上传时间外，还监控 `bv/left_ce/right_ce/double_ce`，不按 NF 分榜。提交后重读数据库生成的 Thrp，改善直接比较缓存，原纪录失效或变差才查库补位；回滚不更新 Redis。绑定/解绑标识和比赛公开显式调用 `add_videos_to_eff_ranks` / `remove_videos_from_eff_ranks`。异常记录上下文和堆栈后继续抛出，见 `back_end/saolei/effranking/README.md`。
+
 ```automaton
 flowchart LR
     video_pre_save[VideoModel pre_save]
@@ -48,6 +50,8 @@ flowchart LR
     video_post_save --> refresh_custom_pluck_rank_on_video_save[刷新pluck纪录]
     video_post_save --> speedranking_save[提交后更新竞速纪录与必要补位]
     video_post_delete[VideoModel post_delete] --> speedranking_delete[提交后补位竞速纪录]
+    video_post_save --> effranking_save[提交后更新效率纪录与必要补位]
+    video_post_delete --> effranking_delete[提交后补位效率纪录]
 
     video_pre_delete --> update_video_count_on_video_delete[更新用户录像计数]
 
@@ -126,6 +130,8 @@ flowchart LR
 | 更新用户录像上限 | `update_video_count_limit_on_video_save` |
 | 将比赛录像挂载到比赛 | `add_created_video_to_checked_tournaments` |
 | 刷新pluck纪录 | `refresh_custom_pluck_rank_on_video_save` |
+| 提交后更新效率纪录与必要补位 | `effranking.signals.refresh_ranks_on_video_save` |
+| 提交后补位效率纪录 | `effranking.signals.refresh_ranks_on_video_delete` |
 | 更新pluck榜缓存 | `update_custom_pluck_cache_on_record_save` |
 | 删除pluck榜缓存 | `update_custom_pluck_cache_on_record_delete` |
 | 更新比赛缓存 | `update_cache_on_tournament_save` |

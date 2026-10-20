@@ -1,5 +1,6 @@
 import App from './App.vue';
 import SaoleiCard from './SaoleiCard.vue';
+import ThrpCard from './ThrpCard.vue';
 
 import $axios from '@/http';
 import i18n from '@/i18n';
@@ -8,7 +9,7 @@ import { pinia } from '@/store/create';
 import { UserProfile } from '@/utils/userprofile';
 
 describe('<UserRecordViewApp />', () => {
-    it('passes the user id to SaoleiCard and loads a complete pluck record table', () => {
+    it('passes the user id to ranking cards and loads a complete pluck record table', () => {
         store.$reset();
         store.player = new UserProfile({ id: 42, realname: 'Test Player' });
         cy.intercept({ method: 'GET', pathname: '/api/customranking/pluck/player' }, {
@@ -21,10 +22,11 @@ describe('<UserRecordViewApp />', () => {
             global: {
                 plugins: [i18n, pinia],
                 config: { globalProperties: { $axios } },
-                stubs: { SaoleiCard: true },
+                stubs: { SaoleiCard: true, ThrpCard: true },
             },
         }).then(({ wrapper }) => {
             expect(wrapper.findComponent(SaoleiCard).props('userId')).to.equal(42);
+            expect(wrapper.findComponent(ThrpCard).props('userId')).to.equal(42);
         });
 
         cy.wait('@pluckRecords').its('request.query').should('deep.equal', { player_id: '42' });

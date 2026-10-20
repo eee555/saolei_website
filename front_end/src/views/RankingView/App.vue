@@ -28,11 +28,13 @@ const handleTabClick = (tab: TabsPaneContext) => {
 const i18nMessages = {
     'zh-cn': { local: {
         speed: '竞速',
+        efficiency: '效率',
         density: '密度',
         tournament: '比赛',
     } },
     en: { local: {
         speed: 'Speed',
+        efficiency: 'Efficiency',
         density: 'Density',
         tournament: 'Tournament',
     } },
@@ -42,6 +44,7 @@ const { t } = useI18n({ messages: i18nMessages });
 
 const tabItems = computed(() => [
     { name: 'speed', label: t('local.speed') },
+    { name: 'efficiency', label: t('local.efficiency') },
     { name: 'density', label: t('local.density') },
     { name: 'tournament', label: t('local.tournament') },
 ]);

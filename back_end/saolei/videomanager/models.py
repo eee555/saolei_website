@@ -174,6 +174,7 @@ class VideoModel(models.Model):
             models.Index(fields=['bv'], name='bv_idx'),
             models.Index(fields=['bvs'], name='bvs_idx'),
             models.Index(fields=['iqg'], name='iqg_idx'),
+            models.Index(fields=['thrp'], name='thrp_idx'),
             models.Index(fields=['timems'], name='timems_idx'),
             models.Index(fields=['state'], name='state_idx'),
             models.Index(fields=['level', 'mode', 'player', 'pluck'], name='video_lmp_pluck_idx'),

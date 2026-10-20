@@ -11,7 +11,7 @@ LSF 是竞速页面的首位和默认选项，由 top 纪录派生。规则、�
 - `saolei/`：扫雷网规则的缓存、选优、补位、API 和测试，原有公开 API 路径不变。
 - `pb/`：PB 专用的缓存、选优、补位、API 和测试，不套用扫雷网的成绩结构。
 - `top/`：top 的前五明细、补位、锚点、软实力、后台任务、API 和测试，不依赖 PB 缓存。
-- 根目录 `cache.py`：共享 Redis 连接与 pipeline；`utils.py`：错误日志、UTC 时间换算和玩家分段工具。
+- 根目录 `cache.py`：共享 Redis 连接与 pipeline；`utils.py`：错误日志和 UTC 时间换算。玩家分段工具为跨 app 共用的 `utils.querysets.player_batches`。
 - 根目录 `services.py`：协调各大榜的共同读取、独立判断、共同写入；`signals.py`：录像事件入口；`api.py`：聚合各大榜的 router。
 - 前端 `RankingView/routes.ts`：各大榜子路由。`SpeedRanking.vue` 提供大榜选择器、规则提示、“How to improve”上传建议，以及统一的颜色和刷新按钮。子榜通过 `defineExpose` 提供 `refresh`、`loading`，接收 `colored` prop；PB 刷新同时更新人数和榜单。切换大榜使用 push，支持浏览器返回；选项依次为 LSF、top、扫雷网、PB，`/ranking/speed` 默认跳转 `/ranking/speed/lsf`。项目使用 hash history，浏览器地址对应 `/#/ranking/speed/...`。
 
