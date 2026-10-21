@@ -1,4 +1,4 @@
-import Papa from 'papaparse';
+import { parse } from 'papaparse';
 
 import type { VideoAbstractData } from '@/utils/videoabstract';
 
@@ -49,7 +49,7 @@ export function parseArbiterCsv(text: string): ArbiterCsvResult {
     if (new TextEncoder().encode(text).byteLength > MAX_CSV_BYTES) throw new ArbiterCsvError({ code: 'limit' });
     // Keep header cells and empty rows so duplicate headers cannot be silently renamed,
     // and source line numbers remain available. Papa handles quoting and line endings.
-    const parsed = Papa.parse<string[]>(text.replace(/^\uFEFF/, ''), { delimiter: ',', dynamicTyping: false, preview: MAX_CSV_ROWS + 2 });
+    const parsed = parse<string[]>(text.replace(/^\uFEFF/, ''), { delimiter: ',', dynamicTyping: false, preview: MAX_CSV_ROWS + 2 });
     if (parsed.errors.some((error) => error.type === 'Quotes')) throw new ArbiterCsvError({ code: 'quotes' });
     if (parsed.meta.truncated) throw new ArbiterCsvError({ code: 'limit' });
     const headers = parsed.data[0]?.map((cell) => cell.trim()) ?? [];

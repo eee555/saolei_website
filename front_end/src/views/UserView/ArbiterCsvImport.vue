@@ -54,8 +54,8 @@ defineProps({
 });
 const emit = defineEmits<{ import: [file: File]; clear: [] }>();
 function selectFiles(files: File[]) {
-    const file = files[0];
-    if (file) emit('import', file);
+    const [file] = files;
+    if (file !== undefined) emit('import', file);
 }
 function issueText(issue: CsvIssue) {
     const prefix = issue.row === undefined ? '' : t('local.row', { row: issue.row });
