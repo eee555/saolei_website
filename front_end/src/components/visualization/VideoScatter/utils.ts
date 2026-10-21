@@ -9,6 +9,6 @@ export function videoToPlotPoint(video: VideoAbstract, statX: getStat_stat, stat
         data: video,
     };
 
-    if (isNaN(point.x) || isNaN(point.y)) return undefined;
+    if (!Number.isFinite(point.x) || !Number.isFinite(point.y)) return undefined;
     return point;
 }

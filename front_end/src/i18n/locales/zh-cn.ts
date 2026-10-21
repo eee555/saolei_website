@@ -151,6 +151,7 @@ export default {
             b: '已冻结',
             c: '有效',
             d: '标识不匹配',
+            l: '本机录像，未上传',
         },
         toDo: '敬请期待',
         website: {

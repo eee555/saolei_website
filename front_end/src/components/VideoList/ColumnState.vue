@@ -4,7 +4,7 @@
             <VideoStateIcon :state="data.state" />
         </template>
         <template #filter="{ filterModel, filterCallback }">
-            <PrListbox v-model="filterModel.value" multiple :options="Object.values(MS_State)" @change="filterCallback()">
+            <PrListbox v-model="filterModel.value" multiple :options="MS_ServerStates" @change="filterCallback()">
                 <template #option="slotProps">
                     <VideoStateIcon :state="slotProps.option" />
                     &nbsp;
@@ -21,7 +21,7 @@ import PrListbox from 'primevue/listbox';
 import { useI18n } from 'vue-i18n';
 
 import VideoStateIcon from '@/components/widgets/VideoStateIcon.vue';
-import { MS_State } from '@/utils/ms_const';
+import { MS_ServerStates } from '@/utils/ms_const';
 import type { VideoAbstract } from '@/utils/videoabstract';
 
 const { t } = useI18n();
