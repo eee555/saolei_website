@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpResponseBadRequest, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
 from django_ratelimit.decorators import ratelimit
 from ninja import Form, Router, Schema
 from ninja.decorators import decorate_view
@@ -13,6 +13,7 @@ from userprofile.models import UserProfile
 from utils.response import HttpResponseConflict
 from .mineracer.sessions import poll_mineracer_account_link_session, start_mineracer_account_link
 from .models import AccountBilibili, AccountLinkQueue, AccountMineracer, AccountMinesweeperGames, AccountQQ, AccountSaolei, AccountWorldOfMinesweeper, Platform, PLATFORM_CONFIG
+from .services import update_account, verify_account_link
 from .utils import private_platforms
 
 router = Router()
@@ -50,6 +51,25 @@ class AccountLinkCompleteOut(Schema):
 class AccountLinkCreateIn(Schema):
     platform: str
     identifier: str
+
+
+class AccountLinkVerifyIn(AccountLinkCreateIn):
+    id: int
+
+
+@router.post('/verify/')
+@decorate_view(staff_required)
+def verify_link(request, data: AccountLinkVerifyIn = Form(...)):  # noqa: B008
+    """
+    - staff_required
+
+    Commit a new binding and its eligibility together; retries never regrant.
+    Remote synchronization runs after the binding transaction has committed.
+    """
+    user, created = verify_account_link(data.id, data.platform, data.identifier, request.user.pk)
+    if created:
+        update_account(data.platform, user)
+    return HttpResponse()
 
 
 class MineracerAccountLinkSessionOut(Schema):

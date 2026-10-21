@@ -1,4 +1,6 @@
 import datetime
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest import SkipTest
 from unittest.mock import patch
 
@@ -14,9 +16,91 @@ from .api import MineracerAccountLinkSessionOut
 from .mineracer.client import poll_mineracer_account_link, request_mineracer_account_link
 from .mineracer.dtos import MINERACER_ERROR_ACCOUNT_NOT_FOUND, MINERACER_ERROR_INVALID_DEVICE_CODE, MINERACER_ERROR_LINK_SUPERSEDED, MINERACER_STATUS_CONFIRMED, MINERACER_STATUS_EXPIRED, MINERACER_STATUS_FAILED, MINERACER_STATUS_PENDING, MineracerAccountLinkPollResponse, MineracerAccountLinkSession, MineracerAccountLinkStartResponse
 from .mineracer.sessions import _get_mineracer_session, _save_mineracer_session, _save_user_pending_mineracer_session
-from .models import AccountBilibili, AccountLinkQueue, AccountMineracer, AccountSaolei, Platform
+from .models import AccountBilibili, AccountLinkQueue, AccountMineracer, AccountMinesweeperGames, AccountSaolei, Platform
 from .services import update_saolei_account_info
 from .utils import isPrivate, private_platforms, update_bilibili_account
+
+
+@override_settings(RATELIMIT_ENABLE=False)
+class NamePrivacyBindingTests(TestCase):
+    def setUp(self):
+        self.staff = UserProfile.objects.create_user(username='binding_staff', email='binding_staff@test.com', is_staff=True)
+        self.user = UserProfile.objects.create_user(username='binding_user', email='binding_user@test.com', realname='真实姓名')
+        self.link = AccountLinkQueue.objects.create(userprofile=self.user, platform=Platform.MSGAMES, identifier='1234')
+        self.client.force_login(self.staff)
+
+    def verify(self, user=None):
+        return self.client.post('/api/accountlink/verify/', {'id': (user or self.user).pk, 'platform': Platform.MSGAMES, 'identifier': self.link.identifier})
+
+    @patch('accountlink.msgames.client.msgames_client', side_effect=AssertionError('Unexpected external MSGames request'))
+    def test_verification_saves_msgames_names_before_returning(self, remote):
+        self.link.identifier = '2147483000'
+        self.link.save(update_fields=['identifier'])
+        with TemporaryDirectory() as root, override_settings(E2E_TEST=True, DEBUG=True, PRODUCTION_MARK=Path(root) / '.production'):
+            response = self.verify()
+        self.assertEqual(response.status_code, 200, response.content)
+        account = AccountMinesweeperGames.objects.get(parent=self.user)
+        self.assertEqual((account.name, account.local_name), ('MSGames Fixture', '关联姓名'))
+        remote.assert_not_called()
+
+    @patch('accountlink.api.update_account')
+    def test_binding_grants_once_and_unlink_keeps_privacy(self, sync):
+        self.assertFalse(self.user.can_hide_realname)
+        self.assertEqual(self.verify().status_code, 200)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.can_hide_realname)
+        self.assertFalse(self.user.hide_realname)
+        self.assertEqual(AccountMinesweeperGames.objects.get(pk=1234).parent_id, self.user.pk)
+        self.user.hide_realname = True
+        self.user.save(update_fields=['hide_realname'])
+        self.client.force_login(self.user)
+        self.assertEqual(self.client.post('/accountlink/delete/', {'platform': Platform.MSGAMES}).status_code, 200)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.can_hide_realname)
+        self.assertTrue(self.user.hide_realname)
+        self.assertFalse(AccountMinesweeperGames.objects.filter(pk=1234).exists())
+
+    @patch('accountlink.api.update_account')
+    def test_retry_does_not_override_admin_revocation(self, sync):
+        self.verify()
+        UserProfile.objects.filter(pk=self.user.pk).update(can_hide_realname=False)
+        self.assertEqual(self.verify().status_code, 200)
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.can_hide_realname)
+        sync.assert_called_once()
+
+    @patch('accountlink.api.update_account', side_effect=ExceptionToResponse('import', 'timeout', status_code=503))
+    def test_remote_failure_keeps_committed_binding_and_grant(self, sync):
+        self.assertEqual(self.verify().status_code, 503)
+        self.user.refresh_from_db()
+        self.link.refresh_from_db()
+        self.assertTrue(self.user.can_hide_realname)
+        self.assertTrue(self.link.verified)
+        self.assertTrue(AccountMinesweeperGames.objects.filter(parent=self.user).exists())
+
+    @patch('accountlink.api.update_account')
+    def test_other_users_queue_cannot_be_verified_and_legacy_url_removed(self, sync):
+        other = UserProfile.objects.create_user(username='binding_other', email='binding_other@test.com')
+        self.assertEqual(self.verify(other).status_code, 404)
+        self.assertFalse(AccountMinesweeperGames.objects.filter(pk=1234).exists())
+        self.assertEqual(self.client.post('/accountlink/verify/').status_code, 404)
+        sync.assert_not_called()
+
+    @patch('accountlink.api.update_account')
+    def test_account_names_remain_public_and_existing_binding_does_not_grant(self, sync):
+        account = AccountMinesweeperGames.objects.create(pk=1234, parent=self.user, name='Linked Name', local_name='关联姓名')
+        self.link.verified = True
+        self.link.save(update_fields=['verified'])
+        self.assertEqual(self.verify().status_code, 200)
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.can_hide_realname)
+        self.user.can_hide_realname = True
+        self.user.hide_realname = True
+        self.user.save(update_fields=['can_hide_realname', 'hide_realname'])
+        self.client.logout()
+        response = self.client.get(f'/api/accountlink/{self.user.pk}')
+        self.assertEqual(response.json()['a']['name'], account.name)
+        self.assertEqual(response.json()['a']['local_name'], account.local_name)
 
 
 class AccountLinkTestCase(TestCase):
@@ -134,7 +218,7 @@ class MineracerLegacyViewTestCase(TestCase):
     def test_verify_link_rejects_manual_mineracer_link(self):
         AccountLinkQueue.objects.create(platform=Platform.MINERACER, identifier='mineracer-userid', userprofile=self.user, verified=False)
 
-        response = self.client.post('/accountlink/verify/', {
+        response = self.client.post('/api/accountlink/verify/', {
             'id': self.user.id,
             'platform': Platform.MINERACER,
             'identifier': 'mineracer-userid',

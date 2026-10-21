@@ -91,6 +91,20 @@ describe('PlayerName', () => {
         cy.get('.player-name img').should('not.exist');
     });
 
+    it('hides the whole name and title regardless of name preferences', () => {
+        mockUserInfo({ body: [{ ...user, realname: 'hidden', firstname: 'hidden', lastname: 'hidden' }] });
+        mountPlayerName(user.id);
+        expectName('User #42', 'User #42');
+        cy.then(() => {
+            local.value.playerNameFormat = 'name1 (name2)';
+            local.value.playerName1 = 'international';
+            local.value.playerName2 = 'username';
+            local.value.nameFormat = 'last-first';
+        });
+        expectName('User #42', 'User #42');
+        cy.get('.player-name a').should('have.attr', 'href', '#/player/42');
+    });
+
     it('reacts to both name selections and the existing English-name order without refetching', () => {
         mockUserInfo();
         mountPlayerName(user.id);
