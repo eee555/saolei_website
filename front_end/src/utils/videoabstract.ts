@@ -128,6 +128,18 @@ export class VideoAbstract {
         });
     }
 
+    public static fromArbiterCsv(info: VideoAbstractData & { end_time: Date }): VideoAbstract {
+        return new VideoAbstract({ ...info, id: 0, state: MS_State.Local, software: 'a', mode: '00', upload_time: info.end_time, file_size: NaN });
+    }
+
+    public get isLocal(): boolean {
+        return this.state === MS_State.Local;
+    }
+
+    public get rowKey(): string {
+        return this.isLocal ? `local:${Math.floor((this.end_time ?? this.upload_time).getTime() / 1000)}:${this.timems}` : `server:${this.id}`;
+    }
+
     public get isNF(): boolean {
         return this.right_ce === 0;
     }
@@ -186,6 +198,7 @@ export class VideoAbstract {
     }
 
     public displayStat(stat: getStat_stat): string {
+        if (this.isLocal && !Number.isFinite(this[stat])) return '—';
         switch (stat) {
             case 'timems':
             case 'time': return this.time.toFixed(3);
@@ -241,6 +254,7 @@ export function groupVideosByBBBv(videos: VideoAbstract[], level: MS_Level): Map
             return;
         }
         const bbbv = video.bv;
+        if (video.isLocal && !Number.isFinite(bbbv)) return;
         if (!result.has(bbbv)) {
             result.set(bbbv, []);
         }

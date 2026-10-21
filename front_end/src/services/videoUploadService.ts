@@ -2,7 +2,7 @@ import { isAxiosError } from 'axios';
 
 import $axios from '@/http';
 import { Dict2FormData } from '@/utils/forms';
-import type { MS_State } from '@/utils/ms_const';
+import type { MS_ServerState } from '@/utils/ms_const';
 
 export interface VideoUploadSuccessResponse {
     type: 'success';
@@ -10,7 +10,7 @@ export interface VideoUploadSuccessResponse {
     category: 'upload';
     data: {
         id: number;
-        state: MS_State;
+        state: MS_ServerState;
     };
 }
 
@@ -26,7 +26,7 @@ export type VideoUploadResponse = VideoUploadSuccessResponse | VideoUploadErrorR
 export interface VideoUploadSuccessResult {
     type: 'success';
     id: number;
-    state: MS_State;
+    state: MS_ServerState;
 }
 
 export type VideoUploadErrorStatus = 'collision' | 'censorship' | 'incomplete' | 'quota' | 'upload';

@@ -15,7 +15,7 @@
             <div class="description-item description-wide">
                 <dt>{{ t('common.prop.upload_time') }}</dt>
                 <dd>
-                    {{ toISODateTimeString(video.upload_time) }}
+                    {{ video.isLocal ? '—' : toISODateTimeString(video.upload_time) }}
                 </dd>
             </div>
 
@@ -99,6 +99,7 @@ import VideoStateIcon from './VideoStateIcon.vue';
 
 import { CustomLevel } from '@/utils/customlevel';
 import { toISODateTimeString } from '@/utils/datetime';
+import { isStandardLevel } from '@/utils/ms_const';
 import type { VideoAbstract } from '@/utils/videoabstract';
 
 const props = defineProps({
@@ -111,6 +112,7 @@ const props = defineProps({
 const { t } = useI18n();
 
 const levelLabel = computed(() => {
+    if (props.video.isLocal && !isStandardLevel(props.video.level)) return '—';
     if (props.video.level instanceof CustomLevel) {
         return t('common.level.c', {
             column: props.video.level.column,

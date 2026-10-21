@@ -75,6 +75,7 @@ const axisColor = computed(() => getTextColor('regular'));
 const gridColor = computed(() => getComputedStyle(document.documentElement).getPropertyValue('--ui-border-color-lighter'));
 
 function handlePointClick(point: PlotPoint<VideoAbstract>) {
+    if (point.data.isLocal) return;
     void preview(point.data.id, point.data.software);
 }
 

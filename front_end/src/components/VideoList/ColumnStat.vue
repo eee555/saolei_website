@@ -1,7 +1,8 @@
 <template>
     <PrColumn :header="t(`common.prop.${ stat}`)" :sortable="sortable" :sort-field="stat">
         <template #body="{data}: {data: VideoAbstract}">
-            <VideoPreviewLink :id="data.id" :software="data.software" class="text">
+            <span v-if="data.isLocal" class="text">{{ data.displayStat(stat) }}</span>
+            <VideoPreviewLink v-else :id="data.id" :software="data.software" class="text">
                 {{ data.displayStat(stat) }}
             </VideoPreviewLink>
         </template>
