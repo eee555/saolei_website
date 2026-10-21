@@ -3,9 +3,9 @@
         <div style="display: flex; gap: 1em; justify-content: flex-end; align-items: center">
             <!-- 选择xy用的数据 -->
             <div style="width: 24em; display: flex; gap: 1em;">
-                <MSStatSelect v-model="VideoScatterConfig.x" label="x" :options="[...VideoScatterAxisChoice]" :append-to="isFullscreen ? '.video-scatter' : undefined" />
-                <MSStatSelect v-model="VideoScatterConfig.y" label="y" :options="[...VideoScatterAxisChoice]" :append-to="isFullscreen ? '.video-scatter' : undefined" />
-                <MSStatSelect v-model="VideoScatterConfig.colorBy" :label="t('local.colorBy')" :options="[...VideoScatterColorByChoice]" :append-to="isFullscreen ? '.video-scatter' : undefined" />
+                <MSStatSelect v-model="VideoScatterConfig.x" label="x" :options="[...VideoScatterAxisChoice]" :append-to="isFullscreen ? '.video-scatter' : undefined" :popper-options="popperOptions" />
+                <MSStatSelect v-model="VideoScatterConfig.y" label="y" :options="[...VideoScatterAxisChoice]" :append-to="isFullscreen ? '.video-scatter' : undefined" :popper-options="popperOptions" />
+                <MSStatSelect v-model="VideoScatterConfig.colorBy" :label="t('local.colorBy')" :options="[...VideoScatterColorByChoice]" :append-to="isFullscreen ? '.video-scatter' : undefined" :popper-options="popperOptions" />
             </div>
 
             <div style="flex-grow: 1" />
@@ -96,6 +96,7 @@ import 'primeicons/primeicons.css';
 import '@/styles/button.css';
 
 import { ElSegmented } from 'element-plus';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { VideoScatterStore } from './store';
@@ -106,13 +107,31 @@ import MSStatSelect from '@/components/Filters/MSStatSelect.vue';
 import { MarkerSetting } from '@/components/visualization/Plots';
 import { VideoScatterAxisChoice, VideoScatterColorByChoice, VideoScatterConfig } from '@/store';
 
-defineProps({
+const props = defineProps({
     isFullscreen: { type: Boolean, default: false },
 });
 
 const emit = defineEmits<{
     toggleFullscreen: [];
 }>();
+
+// 全屏时散点图根元素是 position: fixed，祖先卡片塌缩，Popper 会把这些祖先当作
+// 裁剪边界，误判下方空间不足把下拉翻到右侧。这里改为以 viewport 为边界。
+const popperOptions = computed(() => {
+    if (!props.isFullscreen) return undefined;
+    return {
+        modifiers: [
+            {
+                name: 'flip',
+                options: {
+                    boundary: 'viewport',
+                    fallbackPlacements: ['bottom-start', 'top-start'],
+                },
+            },
+            { name: 'preventOverflow', options: { boundary: 'viewport' } },
+        ],
+    };
+});
 
 const i18nMessages = {
     'zh-cn': { local: {

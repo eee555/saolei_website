@@ -1,5 +1,5 @@
 <template>
-    <ElSelect v-model="value" size="small" :append-to="props.appendTo">
+    <ElSelect v-model="value" size="small" :append-to="props.appendTo" :popper-options="props.popperOptions">
         <template #label="{ label }">
             <span v-if="props.label !== ''">{{ props.label }}: </span>
             <span>{{ label }}</span>
@@ -10,6 +10,7 @@
 
 <script setup lang="ts">
 import { ElOption, ElSelect } from 'element-plus';
+import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
@@ -23,6 +24,10 @@ const props = defineProps({
     },
     appendTo: {
         type: String,
+        default: undefined,
+    },
+    popperOptions: {
+        type: Object as PropType<Record<string, unknown>>,
         default: undefined,
     },
 });
