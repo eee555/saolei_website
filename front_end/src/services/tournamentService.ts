@@ -11,6 +11,9 @@ export interface GSCParticipantResponse {
     user_id: number;
     rank: number | null;
     rank_score: number;
+    manual_scores: boolean;
+    arbiter_identifier: string | null;
+    has_videos: boolean;
     bt1st: number;
     bt20th: number;
     bt20sum: number;
@@ -43,6 +46,7 @@ export interface TournamentParticipantResponse {
     rank_score: number;
     user_id: number;
     tournament_id: number;
+    has_videos: boolean;
     arbiter_identifier__identifier?: string | null;
 }
 
@@ -186,6 +190,7 @@ function tournamentParticipantFromResponse(data: TournamentParticipantResponse):
         end_time: toDate(data.end_time),
         rank: data.rank ?? undefined,
         rank_score: data.rank_score,
+        has_videos: data.has_videos,
     });
 }
 
@@ -193,13 +198,16 @@ function weeklyParticipantFromParticipantResponse(data: TournamentParticipantRes
     return new WeeklyParticipant(tournamentParticipantFromResponse(data));
 }
 
-function gscParticipantFromResponse(data: GSCParticipantResponse, tournamentId: number): GSCParticipant {
+export function gscParticipantFromResponse(data: GSCParticipantResponse, tournamentId: number): GSCParticipant {
     return new GSCParticipant({
         id: data.id,
         user_id: data.user_id,
         tournament_id: tournamentId,
         rank: data.rank ?? undefined,
         rank_score: data.rank_score,
+        has_videos: data.has_videos,
+        manual_scores: data.manual_scores,
+        arbiter_identifier__identifier: data.arbiter_identifier ?? undefined,
         bt1st: data.bt1st,
         bt20th: data.bt20th,
         bt20sum: data.bt20sum,

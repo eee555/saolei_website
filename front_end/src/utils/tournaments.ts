@@ -12,6 +12,7 @@ export class TournamentParticipant {
     public end_time?: Date;
     public rank?: number;
     public rank_score = 0;
+    public has_videos = false;
     protected _videos?: VideoAbstract[];
 
     public constructor(init: Partial<TournamentParticipant> = {}) {
@@ -24,9 +25,11 @@ export class TournamentParticipant {
 
     public set videos(videos: VideoAbstract[] | undefined) {
         this._videos = videos;
+        if (videos !== undefined) this.has_videos = videos.length > 0;
     }
 
     public addVideo(video: VideoAbstract): void {
+        this.has_videos = true;
         if (this._videos === undefined) this._videos = [video];
         else this._videos.push(video);
     }

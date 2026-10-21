@@ -20,6 +20,7 @@ from tournament.models import GSCTournament, WeeklyTournament
 from tournament.weekly.tasks import _task_weekly_finish_impl
 from userprofile.models import UserProfile
 from userprofile.utils import validate_name
+from utils.schema import IdIn
 from videomanager.models import ExpandVideoModel, VideoModel
 from .decorators import local_only
 from .tasks import task_echo
@@ -105,6 +106,18 @@ class CreateWeeklyTournamentSchema(Schema):
 
 class WeeklyTournamentIdSchema(Schema):
     id: int
+
+
+@api.post('/refresh_tournament_scores')
+@local_only
+def refresh_tournament_scores(request, data: IdIn):
+    """
+    - local_only
+
+    Run the same explicit maintenance command used after historical imports.
+    """
+    call_command('refresh_tournament_scores', data.id)
+    return {'id': data.id}
 
 
 @api.post('/flush_database')

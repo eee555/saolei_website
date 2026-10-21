@@ -3,7 +3,7 @@ from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 from django.utils import timezone
 
-from config.text_choices import MS_TextChoices
+from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from videomanager.models import VideoModel
 from .cache import TournamentCache
 from .models import GSCParticipant, GSCTournament, Tournament, TournamentParticipant, TournamentUser, WeeklyParticipant, WeeklyTournament
@@ -73,7 +73,8 @@ def update_cache_on_tournament_save(sender, instance: Tournament, **kwargs):
 def update_cache_on_participant_save(sender, instance, created: bool, update_fields=None, **kwargs):
     if not participant_cache_fields_changed(update_fields):
         return
-    transaction.on_commit(lambda: cache.update_participant(instance))
+    if instance.user_id is not None:
+        transaction.on_commit(lambda: cache.update_participant(instance))
     if created:
         add_existing_videos_to_participant_tournament(instance)
 
@@ -94,3 +95,23 @@ def remove_participant_cache_on_delete(sender, instance: TournamentParticipant, 
         return
     tournament_id = instance.tournament_id
     transaction.on_commit(lambda: cache.remove_participant(user_id, tournament_id))
+
+
+@receiver(post_delete, sender=TournamentParticipant, dispatch_uid='tournament.revoke_rank_score_on_participant_delete')
+def revoke_rank_score_on_participant_delete(sender, instance: TournamentParticipant, **kwargs):
+    if instance.user_id is None or instance.rank_score == 0:
+        return
+    tournament = instance.tournament
+    fields = ['score_current', 'last_updated', 'score_total']
+    if tournament.subclass == Tournament_TextChoices.Subclass.GSC:
+        category = 'gsc'
+        fields.append('gsc_total')
+    else:
+        category = 'weekly_classic'
+        fields.extend(['weekly_total', 'weekly_classic_total'])
+
+    tournament_user = TournamentUser.objects.select_for_update().get(user_id=instance.user_id)
+    # 以原比赛结束时间撤回积分，由 add_score 将负差额衰减到用户现有时间基准。
+    tournament_user.add_score(-instance.rank_score, tournament.end_time, category=category)
+    tournament_user.save(update_fields=fields)
+    transaction.on_commit(lambda: cache.update_tournament_user(tournament_user, fields=fields))
