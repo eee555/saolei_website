@@ -75,7 +75,7 @@ top 和 PB 的业务规则、缓存与接口统一见 [竞速排行榜 README](.
 - `TopSummary.cy.ts`：LSF 总值与六段构成、普通/NF 共享纪录与 Pinia 锚点、表格明细、失活隔离及纪录失败重试。数值权重在 `topRankingService.test.ts` 验证，段宽与数值格式化在 `StackBar/App.cy.ts` 验证，不在个人页重复测试。
 - `UserPBView.cy.ts`：指标/NF 切换、rank 配色、空态、重试及请求生命周期。
 - `useProfileVideos.test.ts`、`videoSelection.test.ts`：身份与修订号失效、过期响应、日期/BV 选择及共享筛选。
-- `arbiterCsv.test.ts`、`arbiterCsvDiff.test.ts`、`useArbiterCsvDiff.test.ts`：真实 CSV 样本、异常输入、匹配与去重、LOCAL 展示数据和重建生命周期；`cypress/e2e/arbiter-csv-diff.cy.ts` 验证真实 AVF 上传后替代 LOCAL。
+- `arbiterCsv.test.ts`、`arbiterCsvDiff.test.ts`、`useArbiterCsvDiff.test.ts`：真实 CSV 样本、异常输入、匹配与去重、LOCAL 展示数据和重建生命周期；`UserVideoView.cy.ts` 覆盖 CSV 导入、收起、清除及混合展示。
 - `UserVideoView.cy.ts` 与日历/BV 组件测试：选择联动、正式散点图、分页及公开操作；`cypress/e2e/profile.cy.ts` 保留真实后端流程验证。
 
 ```powershell
@@ -83,7 +83,6 @@ top 和 PB 的业务规则、缓存与接口统一见 [竞速排行榜 README](.
 npx.cmd vitest run src/services/topRankingService.test.ts src/services/pbRankingService.test.ts src/views/UserView/useProfileVideos.test.ts src/views/UserView/videoSelection.test.ts
 npx.cmd cypress run --component --browser chrome --headless --spec "src/views/UserView/App.cy.ts,src/views/UserView/TopSummary.cy.ts,src/views/UserView/UserPBView.cy.ts,src/views/UserView/UserVideoView.cy.ts"
 npx.cmd vitest run src/views/UserView/arbiterCsv.test.ts src/views/UserView/arbiterCsvDiff.test.ts src/views/UserView/useArbiterCsvDiff.test.ts
-npx.cmd cypress run --e2e --browser chrome --headless --spec "cypress/e2e/arbiter-csv-diff.cy.ts"
 ```
 
 Cypress 由开发者运行。实际雷达图尺度、宽窄布局和深浅主题需浏览器验收，不能用编译或静态检查通过替代。
