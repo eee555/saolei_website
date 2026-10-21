@@ -21,8 +21,22 @@ const props = defineProps({
     videos: { type: Array<VideoAbstract>, default: () => [] },
 });
 
-const scatterRef = useTemplateRef('scatterRef');
+const scatterRef = useTemplateRef<HTMLDivElement>('scatterRef');
 const { isFullscreen, toggle } = useFullscreen(scatterRef);
+
+type TippyHost = HTMLElement & { _tippy?: { popper?: HTMLElement } };
+
+// tippy 只在浮层首次显示时挂载 DOM，之后再进/出全屏不会重新挂载。
+// 这里把已经存在的浮层跟着搬进全屏子树，退出时搬回 body。
+watch(isFullscreen, (fullscreen) => {
+    const root = scatterRef.value;
+    if (!root) return;
+    const target = fullscreen ? root : document.body;
+    root.querySelectorAll<TippyHost>('.video-scatter-tippy, .marker-setting-tippy').forEach((element) => {
+        const popper: HTMLElement | undefined = element._tippy?.popper;
+        if (popper !== undefined && popper.parentElement !== target) target.appendChild(popper);
+    });
+});
 
 watch(() => props.videos, (videos) => {
     VideoScatterStore.setRawData(videos);

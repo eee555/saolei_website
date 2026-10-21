@@ -1,5 +1,5 @@
 <template>
-    <Tippy trigger="click" placement="bottom-start" interactive append-to="parent">
+    <Tippy class="marker-setting-tippy" trigger="click" placement="bottom-start" interactive :append-to="appendTo">
         <BaseButton class="square-button" :aria-label="label">
             <svg class="marker-setting__icon" viewBox="0 0 24 24" aria-hidden="true">
                 <circle
@@ -76,6 +76,15 @@ const iconStrokeWidth = computed(() => Math.min(5, Math.max(0, strokeWidth.value
 
 function hasOption(option: MarkerSettingOption) {
     return optionSet.value.has(option);
+}
+
+// 全屏时必须挂进全屏元素子树，否则浮层不绘制；非全屏仍挂 body，
+// 避免被祖先元素的 overflow 裁剪。
+function appendTo(element: Element) {
+    const fullscreenEl = document.fullscreenElement;
+    return fullscreenEl?.contains(element) === true
+        ? element.parentElement ?? fullscreenEl
+        : document.body;
 }
 
 const i18nMessages = {

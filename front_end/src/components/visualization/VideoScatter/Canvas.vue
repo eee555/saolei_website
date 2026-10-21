@@ -1,5 +1,5 @@
 <template>
-    <Tippy class="video-scatter-tippy" :duration="0" sticky follow-cursor append-to="parent">
+    <Tippy class="video-scatter-tippy" :duration="0" sticky follow-cursor :append-to="appendTo">
         <YLabel class="text">
             {{ t(`common.prop.${VideoScatterConfig.y}`) }}
         </YLabel>
@@ -80,6 +80,15 @@ function handlePointClick(point: PlotPoint<VideoAbstract>) {
 
 function handlePointEnter(point: PlotPoint<VideoAbstract>) {
     activePoint.value = point;
+}
+
+// 全屏时必须挂进全屏元素子树，否则浮层不绘制；非全屏仍挂 body，
+// 避免被祖先元素的 overflow 裁剪。
+function appendTo(element: Element) {
+    const fullscreenEl = document.fullscreenElement;
+    return fullscreenEl?.contains(element) === true
+        ? element.parentElement ?? fullscreenEl
+        : document.body;
 }
 
 function handleDraw(shape: AnyShape) {
