@@ -1,15 +1,13 @@
 import logging
 
-from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
+from django.http import HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
 from django.views.decorators.http import require_GET, require_POST
 
-from config.text_choices import MS_TextChoices
 from userprofile.decorators import login_required_error, staff_required
-from userprofile.models import UserProfile
 from utils.response import HttpResponseConflict
 from videomanager.models import VideoModel
 from .models import Identifier
-from .services import bind_identifier, set_safe, unbind_identifier
+from .services import bind_identifier, unbind_identifier
 
 logger = logging.getLogger('userprofile')
 
@@ -52,64 +50,6 @@ def del_identifier(request):
     logger.info(f'用户 {user.username}#{user.id} 解绑标识 "{identifier_text}"')
     logger.info(f'修改了 {changed_count} 个录像状态')
     return JsonResponse({'type': 'success', 'object': 'identifier', 'category': 'add', 'value': changed_count})
-
-
-# 管理员添加标识
-@require_POST
-@staff_required
-def staff_add_identifier(request: HttpRequest):
-    if not (identifier_text := request.POST.get('identifier')):
-        return HttpResponseBadRequest('identifier')
-    if not (userid := request.POST.get('userid')):
-        return HttpResponseBadRequest('userid')
-    if not (user := UserProfile.objects.filter(id=userid).first()):
-        return HttpResponseNotFound('user')
-    if not (identifier := Identifier.objects.filter(identifier=identifier_text).first()):
-        identifier = Identifier.objects.create(identifier=identifier_text, safe=True)
-    if identifier.userms and identifier.userms.parent != user:
-        return HttpResponseForbidden()
-    changed_count = bind_identifier(identifier, user.userms)
-    logger.info(f'管理员 #{request.user.id} 为用户 {user.realname}#{user.id} 添加标识 "{identifier_text}"')
-    logger.info(f'修改了 {changed_count} 个录像状态')
-    return HttpResponse()
-
-
-# 管理员删除标识
-@require_POST
-@staff_required
-def staff_del_identifier(request):
-    identifier_text = request.POST.get('identifier')
-    if not identifier_text:
-        return HttpResponseBadRequest()
-    identifier = Identifier.objects.filter(identifier=identifier_text).first()
-    if not identifier:
-        return HttpResponseNotFound()
-    videos = VideoModel.objects.filter(video__identifier=identifier_text, state=MS_TextChoices.State.OFFICIAL)
-    if not videos:
-        if identifier.userms_id is not None:
-            unbind_identifier(identifier)
-        identifier.delete()
-        logger.info(f'管理员 #{request.user.id} 删除标识 "{identifier_text}"')
-    else:
-        changed_count = unbind_identifier(identifier)
-        logger.info(f'管理员 #{request.user.id} 解绑标识 "{identifier_text}"')
-        logger.info(f'修改了 {changed_count} 个录像状态')
-    return HttpResponse()
-
-
-# 管理员过审标识
-@require_POST
-@staff_required
-def staff_approve_identifier(request):
-    identifier_text = request.POST.get('identifier')
-    if not identifier_text:
-        return HttpResponseBadRequest()
-    identifier = Identifier.objects.filter(identifier=identifier_text).first()
-    if not identifier:
-        return HttpResponseNotFound()
-    set_safe(identifier, True)
-    logger.info(f'管理员 #{request.user.id} 过审标识 "{identifier_text}"')
-    return HttpResponse()
 
 
 # 管理员查询标识

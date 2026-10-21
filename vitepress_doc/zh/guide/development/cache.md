@@ -42,6 +42,12 @@ Redis 分类只读取业务代码直接确定的 DB 0 key，不执行 `SCAN`、`
 
 独立的本地初始化脚本 `dangerzone/init_local_test.py` 会清空本地 `saolei_website` Redis 数据库（包含会话），然后根据导入的公开录像重建竞速榜（扫雷网普通/NF、PB 普通/NF、top 十八项及锚点）、效率 Thrp 榜、pluck 纪录缓存和录像状态队列。在 `back_end/saolei` 目录使用 `python -m dangerzone.init_local_test` 启动。只允许本地测试配置，并拒绝存在 `.production` 标记的环境；不注册 `import_public_data` 管理命令。详情及数据缺失限制见[本地公开数据快照](./management-commands.md#本地公开数据快照)。
 
+### 标识管理
+
+数据库标识页对普通用户仅查询 `safe=True` 的标识；管理员可查询全部标识并取得 `safe` 字段。管理员通过 `POST /api/identifier/safe` 设置安全状态，通过 `POST /api/identifier/bind` 设置归属用户，`id=0` 表示解绑并保留标识记录。已绑定的标识必须先解绑，才能设为不安全。
+
+绑定和解绑复用 `identifier.services`，同步更新用户标识列表、相关录像审核状态、最新录像队列和排行榜。原管理员添加、删除/解绑、过审接口已由上述两个 Ninja API 替代；普通用户管理本人标识的入口保持不变。
+
 ### 新竞速榜 `speedranking`
 
 扫雷网规则使用 `speedranking:{ranking_name}:records` hash 保存个人纪录，使用 `speedranking:{ranking_name}:{stat}` zset 保存以玩家 id 为 member 的排序索引，由 `speedranking.saolei.cache.SpeedRankingCache` 管理。PB 是一般约定的例外：每个 `(普通/NF, level, bv)` 一个 zset，每个用户一个包含用时、录像 id 和 rank 的 hash，由 `speedranking.pb.cache.PBRankingCache` 管理。
