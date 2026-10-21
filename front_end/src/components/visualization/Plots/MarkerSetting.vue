@@ -18,7 +18,7 @@
                         <span class="text-regular text-small">
                             {{ t('local.shape') }}
                         </span>
-                        <ElSelect v-model="shape" :teleported="false">
+                        <ElSelect v-model="shape">
                             <ElOption label="Circle" value="circle" />
                         </ElSelect>
                     </div>

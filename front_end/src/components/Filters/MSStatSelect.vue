@@ -1,5 +1,5 @@
 <template>
-    <ElSelect v-model="value" size="small" :teleported="false">
+    <ElSelect v-model="value" size="small" :append-to="props.appendTo">
         <template #label="{ label }">
             <span v-if="props.label !== ''">{{ props.label }}: </span>
             <span>{{ label }}</span>
@@ -20,6 +20,10 @@ const props = defineProps({
     options: {
         type: Array<string>,
         default: ['time', 'bv'],
+    },
+    appendTo: {
+        type: String,
+        default: undefined,
     },
 });
 

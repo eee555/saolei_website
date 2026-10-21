@@ -3,9 +3,9 @@
         <div style="display: flex; gap: 1em; justify-content: flex-end; align-items: center">
             <!-- 选择xy用的数据 -->
             <div style="width: 24em; display: flex; gap: 1em;">
-                <MSStatSelect v-model="VideoScatterConfig.x" label="x" :options="[...VideoScatterAxisChoice]" />
-                <MSStatSelect v-model="VideoScatterConfig.y" label="y" :options="[...VideoScatterAxisChoice]" />
-                <MSStatSelect v-model="VideoScatterConfig.colorBy" :label="t('local.colorBy')" :options="[...VideoScatterColorByChoice]" />
+                <MSStatSelect v-model="VideoScatterConfig.x" label="x" :options="[...VideoScatterAxisChoice]" :append-to="isFullscreen ? '.video-scatter' : undefined" />
+                <MSStatSelect v-model="VideoScatterConfig.y" label="y" :options="[...VideoScatterAxisChoice]" :append-to="isFullscreen ? '.video-scatter' : undefined" />
+                <MSStatSelect v-model="VideoScatterConfig.colorBy" :label="t('local.colorBy')" :options="[...VideoScatterColorByChoice]" :append-to="isFullscreen ? '.video-scatter' : undefined" />
             </div>
 
             <div style="flex-grow: 1" />
