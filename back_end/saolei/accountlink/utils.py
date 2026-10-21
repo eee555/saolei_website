@@ -22,6 +22,7 @@ def isPrivate(platform) -> bool:
 
 def link_account(platform: Platform, linkid, user: UserProfile):
     model = PLATFORM_CONFIG[platform]['model']
+    linkid = model._meta.pk.to_python(linkid)
     account = model.objects.select_for_update().filter(id=linkid).first()
     if not account:
         account = model.objects.create(id=linkid, parent=user)

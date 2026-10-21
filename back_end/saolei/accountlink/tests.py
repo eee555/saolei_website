@@ -1,4 +1,6 @@
 import datetime
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest import SkipTest
 from unittest.mock import patch
 
@@ -28,7 +30,18 @@ class NamePrivacyBindingTests(TestCase):
         self.client.force_login(self.staff)
 
     def verify(self, user=None):
-        return self.client.post('/api/accountlink/verify/', {'id': (user or self.user).pk, 'platform': Platform.MSGAMES, 'identifier': '1234'})
+        return self.client.post('/api/accountlink/verify/', {'id': (user or self.user).pk, 'platform': Platform.MSGAMES, 'identifier': self.link.identifier})
+
+    @patch('accountlink.msgames.client.msgames_client', side_effect=AssertionError('Unexpected external MSGames request'))
+    def test_verification_saves_msgames_names_before_returning(self, remote):
+        self.link.identifier = '2147483000'
+        self.link.save(update_fields=['identifier'])
+        with TemporaryDirectory() as root, override_settings(E2E_TEST=True, DEBUG=True, PRODUCTION_MARK=Path(root) / '.production'):
+            response = self.verify()
+        self.assertEqual(response.status_code, 200, response.content)
+        account = AccountMinesweeperGames.objects.get(parent=self.user)
+        self.assertEqual((account.name, account.local_name), ('MSGames Fixture', '关联姓名'))
+        remote.assert_not_called()
 
     @patch('accountlink.api.update_account')
     def test_binding_grants_once_and_unlink_keeps_privacy(self, sync):

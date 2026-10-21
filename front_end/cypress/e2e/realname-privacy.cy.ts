@@ -56,8 +56,8 @@ function editEligibility(id: number, eligible: boolean) {
     cy.get('.el-input-number input').type(String(id));
     cy.contains('button', '查询').click();
     cy.wait('@staffDetail').its('response.statusCode').should('eq', 200);
-    cy.get('[data-cy=staff-profile-json] textarea').clear();
-    cy.get('[data-cy=staff-profile-json] textarea').type(JSON.stringify({ can_hide_realname: eligible }), { parseSpecialCharSequences: false });
+    cy.get('textarea[data-cy=staff-profile-json]').clear();
+    cy.get('textarea[data-cy=staff-profile-json]').type(JSON.stringify({ can_hide_realname: eligible }), { parseSpecialCharSequences: false });
     cy.get('[data-cy=staff-save-profile]').click();
     cy.wait('@staffSave').its('response.body.can_hide_realname').should('eq', eligible);
     cy.closeElNotifications();
@@ -108,7 +108,7 @@ describe('Real name privacy against the backend', () => {
         cy.login(user.username, user.password);
         cy.visitUser(user.id, 'settings');
         cy.get('[data-cy=hide-realname-toggle]').should('not.exist');
-        cy.get('[data-cy=name-realname] input').type('拒绝测试姓名');
+        cy.get('input[data-cy=name-realname]').type('拒绝测试姓名');
         cy.get('[data-cy=hide-realname-toggle]').should('not.exist');
         cy.request({ method: 'POST', url: `${BACKEND}/api/userprofile/update_profile`, form: true, body: { realname: '拒绝测试姓名', hide_realname: true, can_hide_realname: true } }).its('body.realname.type').should('eq', 'error');
         self().its('body').should('include', { realname: '匿名', can_hide_realname: false, hide_realname: false });
@@ -121,7 +121,7 @@ describe('Real name privacy against the backend', () => {
         self().its('body').should('include', { can_hide_realname: true, hide_realname: false });
         cy.visitUser(user.id, 'settings');
         cy.get('[data-cy=hide-realname-toggle]').should('not.exist');
-        cy.get('[data-cy=name-realname] input').type('隐藏测试姓名');
+        cy.get('input[data-cy=name-realname]').type('隐藏测试姓名');
         cy.get('[data-cy=real-name-section] [data-cy=hide-realname-toggle]').should('not.be.checked').check();
         cy.intercept('POST', '**/api/userprofile/update_profile').as('saveName');
         cy.get('[data-cy=save-profile]').click();
@@ -190,14 +190,17 @@ describe('Real name privacy against the backend', () => {
         cy.get('[data-cy=save-profile]').click();
         cy.wait('@saveProfile').its('response.body.hide_realname.type').should('eq', 'success');
         cachedName(user.id).should('eq', user.realname);
-        cy.window().then((win) => {
-            const config = JSON.parse(win.localStorage.getItem('service-config') ?? '{}') as Record<string, number>;
-            expect(config.userInfoLastUpdate).to.be.greaterThan(0);
-            win.localStorage.setItem('service-config', JSON.stringify({ ...config, userInfoUpdateInterval: 0 }));
-        });
         cy.intercept('GET', '**/api/userprofile/infoupdated*').as('updated');
         cy.intercept('GET', '**/api/userprofile/infobulk*').as('publicBatch');
-        cy.visit('/#/database/videos');
+        // A document query change forces a reload; a hash-only visit skips onBeforeLoad.
+        cy.visit('/?privacy-cache-refresh=1#/database/videos', {
+            onBeforeLoad(win) {
+                // Set the interval before useLocalStorage initializes its in-memory ref.
+                const config = JSON.parse(win.localStorage.getItem('service-config') ?? '{}') as Record<string, number>;
+                expect(config.userInfoLastUpdate).to.be.greaterThan(0);
+                win.localStorage.setItem('service-config', JSON.stringify({ ...config, userInfoUpdateInterval: 0 }));
+            },
+        });
         cy.wait('@updated').its('response.body').should('include', user.id);
         cy.wait('@publicBatch').its('response.statusCode').should('eq', 200);
         cy.get(`.player-name a[href="#/player/${user.id}"]`).should('have.text', `用户 #${user.id}`);
@@ -219,7 +222,7 @@ describe('Real name privacy against the backend', () => {
         cy.contains('.el-select-dropdown__item:visible', '国际网').click();
         cy.contains('.el-form-item__label', '平台 ID').next().find('input').type(binding.identifier);
         cy.contains('button', /^\s*绑定\s*$/).click();
-        cy.wait('@verify').its('response.statusCode').should('eq', 200);
+        cy.wait('@verify').its('response').should('include', { statusCode: 200, body: '' });
         cy.login(user.username, user.password);
         self().its('body').should('include', { can_hide_realname: true, hide_realname: false });
         privacy(true);
