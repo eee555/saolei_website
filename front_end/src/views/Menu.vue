@@ -55,7 +55,7 @@ import '@/styles/navigation/items.css';
 import '@/styles/vendors/element-plus-navigation.css';
 import 'primeicons/primeicons.css';
 
-import { useColorMode, useElementSize } from '@vueuse/core';
+import { useColorMode, useElementSize, useTitle } from '@vueuse/core';
 import { ElDialog, ElDrawer } from 'element-plus';
 import { computed, defineAsyncComponent, nextTick, ref, useId, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -219,6 +219,7 @@ function navigationItems(controls: LoginControls): NavigationItem[] {
 
 const i18nMessages = {
     'zh-cn': { local: {
+        siteName: '开源扫雷网',
         home: '首页',
         ranking: '排行榜',
         database: '数据库',
@@ -242,6 +243,7 @@ const i18nMessages = {
         openNavigation: '打开主导航',
     } },
     en: { local: {
+        siteName: 'OpenMS',
         home: 'Home',
         ranking: 'Ranking',
         database: 'Database',
@@ -277,4 +279,15 @@ const i18nMessages = {
 };
 
 const { t } = useI18n({ messages: i18nMessages });
+
+const sectionTitle = computed(() => {
+    const section = activeSection.value;
+    const item = drawerItems.value.find(({ id }) => id === section);
+    if (item) return item.label;
+    if (section === 'player') return t('common.prop.player');
+    if (section === 'settings') return t('local.setting');
+    if (section === 'staff' || section === 'gsc') return t('local.staff');
+    return '';
+});
+useTitle(computed(() => [t('local.siteName'), sectionTitle.value].filter(Boolean).join(' - ')));
 </script>

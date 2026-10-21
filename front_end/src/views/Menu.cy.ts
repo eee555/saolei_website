@@ -75,17 +75,21 @@ describe('<Menu /> navigation layouts', () => {
 
     it('tracks the parent section of nested routes and returns home through the logo', () => {
         const router = mountMenu(1440);
+        cy.title().should('eq', 'OpenMS - Home');
         cy.then(() => {
             expect(store.topAnchors?.['std:et']?.value).to.equal(30000);
         });
         cy.then(() => router.push('/ranking/pb'));
         cy.get('.site-menu--top [data-navigation-id=ranking]').should('have.class', 'is-active');
+        cy.title().should('eq', 'OpenMS - Ranking');
         cy.then(() => router.push('/video/123'));
         cy.get('.site-menu--top [data-navigation-id=database]').should('have.class', 'is-active');
+        cy.title().should('eq', 'OpenMS - Database');
         cy.then(() => router.push('/database/identifiers'));
         cy.get('.site-menu--top [data-navigation-id=database]').should('have.class', 'is-active');
         cy.get('[data-cy=navigation-home]').click();
         cy.wrap(router).its('currentRoute.value.path').should('eq', '/');
+        cy.title().should('eq', 'OpenMS - Home');
     });
 
     it('collects overflowing navigation and tools into one menu and restores them when the container grows', () => {
@@ -176,9 +180,11 @@ describe('<Menu /> navigation layouts', () => {
         cy.get('[data-cy=languagePicker]').click();
         cy.get('[data-navigation-id=language-en] button:visible').should('have.attr', 'aria-pressed', 'true');
         cy.get('[data-navigation-id=language-zh-cn] button:visible').click();
+        cy.title().should('eq', '开源扫雷网 - 首页');
         cy.get('[data-navigation-id=docs] a').should('have.attr', 'href').and('match', /\/docs\/$/);
         cy.get('[data-cy=languagePicker]').click();
         cy.get('[data-navigation-id=language-en] button:visible').click();
+        cy.title().should('eq', 'OpenMS - Home');
         cy.get('[data-navigation-id=docs] a').should('have.attr', 'href').and('match', /\/docs\/$/);
     });
 
