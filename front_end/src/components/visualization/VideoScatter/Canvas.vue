@@ -1,5 +1,5 @@
 <template>
-    <Tippy class="video-scatter-tippy" :duration="0" sticky follow-cursor>
+    <Tippy class="video-scatter-tippy" :duration="0" sticky follow-cursor append-to="parent">
         <YLabel class="text">
             {{ t(`common.prop.${VideoScatterConfig.y}`) }}
         </YLabel>

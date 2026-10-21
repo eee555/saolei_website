@@ -1,5 +1,5 @@
 <template>
-    <Tippy trigger="click" placement="bottom-start" interactive>
+    <Tippy trigger="click" placement="bottom-start" interactive append-to="parent">
         <BaseButton class="square-button" :aria-label="label">
             <svg class="marker-setting__icon" viewBox="0 0 24 24" aria-hidden="true">
                 <circle
@@ -18,7 +18,7 @@
                         <span class="text-regular text-small">
                             {{ t('local.shape') }}
                         </span>
-                        <ElSelect v-model="shape">
+                        <ElSelect v-model="shape" :teleported="false">
                             <ElOption label="Circle" value="circle" />
                         </ElSelect>
                     </div>

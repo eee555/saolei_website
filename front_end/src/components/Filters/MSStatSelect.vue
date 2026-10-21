@@ -1,5 +1,5 @@
 <template>
-    <ElSelect v-model="value" size="small">
+    <ElSelect v-model="value" size="small" :teleported="false">
         <template #label="{ label }">
             <span v-if="props.label !== ''">{{ props.label }}: </span>
             <span>{{ label }}</span>
