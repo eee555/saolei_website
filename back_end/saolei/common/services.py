@@ -1,5 +1,11 @@
 import json
 
+from django.db import transaction
+from django.tasks import TaskResultStatus
+from django.utils import timezone as django_timezone
+from django_tasks_db.models import DBTaskResult
+
+from config.common import TASK_CLEANUP_CONFIGS
 from config.customranking import CUSTOM_PLUCK_LEVELS
 from customranking.cache import PLuckRankingCache
 from speedranking.pb.cache import PBRankingCache
@@ -7,6 +13,38 @@ from speedranking.pb.utils import member, record_field
 from speedranking.saolei.cache import SpeedRankingCache
 from speedranking.saolei.utils import RANKING_NAMES, RULES
 from videomanager.models import VideoModel
+
+
+TASK_CLEANUP_BATCH_SIZE = 200
+
+
+def cleanup_expired_tasks(*, delete_all=False):
+    """按配置分批清理过期的成功任务，默认每种任务只删除一批。"""
+    deleted_count = 0
+    now = django_timezone.now()
+
+    for config in TASK_CLEANUP_CONFIGS:
+        deadline = now - config['expires']
+        queryset = DBTaskResult.objects.filter(
+            task_path=config['task_path'],
+            status=TaskResultStatus.SUCCESSFUL,
+            finished_at__lt=deadline,
+        )
+
+        while True:
+            with transaction.atomic():
+                task_ids = list(
+                    queryset
+                    .select_for_update(skip_locked=True)
+                    .values_list('id', flat=True)[:TASK_CLEANUP_BATCH_SIZE],
+                )
+                count, _ = DBTaskResult.objects.filter(id__in=task_ids).delete()
+
+            deleted_count += count
+            if not delete_all or len(task_ids) < TASK_CLEANUP_BATCH_SIZE:
+                break
+
+    return deleted_count
 
 
 def get_video_rankings(video: VideoModel):

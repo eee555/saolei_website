@@ -12,6 +12,7 @@ from userprofile.models import EmailVerifyRecord
 from utils.ranking_lock import ranking_access
 from videomanager.models import VideoModel
 from videomanager.services import delete_newest_queue
+from .services import cleanup_expired_tasks
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,12 @@ def delete_freezed_video():
 @util.close_old_connections
 def delete_old_job_executions(max_age=604_800):
     DjangoJobExecution.objects.delete_old_job_executions(max_age)
+
+
+@util.close_old_connections
+def delete_overdue_tasks():
+    deleted_count = cleanup_expired_tasks(delete_all=True)
+    logger.info('Deleted expired background tasks: count=%s', deleted_count)
 
 
 @util.close_old_connections
@@ -111,3 +118,13 @@ def register_jobs(scheduler):
         replace_existing=True,
     )
     logger.info("Added job 'delete_overdue_captcha'.")
+
+    scheduler.add_job(
+        delete_overdue_tasks,
+        trigger=CronTrigger(day_of_week='mon', hour='01', minute='10', timezone=scheduler.timezone),
+        id='delete_overdue_tasks',
+        misfire_grace_time=300,
+        max_instances=1,
+        replace_existing=True,
+    )
+    logger.info("Added weekly job 'delete_overdue_tasks'.")
