@@ -34,7 +34,7 @@ export interface SoftRankingResult {
     count: number;
     players: TopRankingPlayer[];
 }
-const softWeights = { b: { t: 28, b: 48, s: 24 }, i: { t: 34, b: 34, s: 32 }, e: { t: 33, b: 33, s: 34 } };
+const softWeights = { b: { t: 32, b: 48, s: 20 }, i: { t: 36, b: 36, s: 28 }, e: { t: 32, b: 32, s: 36 } };
 const levelWeights = { b: 6, i: 14, e: 20 };
 const modeWeights = { std: 0.97, nf: 0.03 };
 const gradeNodes = [0, 1 / 100, 1 / 60, 1 / 55, 1 / 50, 1 / 45, 1 / 40, 1 / 35, 1 / 30, 1 / 25];

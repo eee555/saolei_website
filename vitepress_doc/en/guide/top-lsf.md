@@ -70,11 +70,11 @@ Each level's strength is a weighted sum, using the following weights directly:
 
 | Level | Time | Bvs | Stnb |
 | --- | --- | --- | --- |
-| Beginner | 28 | 48 | 24 |
-| Intermediate | 34 | 34 | 32 |
-| Expert | 33 | 33 | 34 |
+| Beginner | 32 | 48 | 20 |
+| Intermediate | 36 | 36 | 28 |
+| Expert | 32 | 32 | 36 |
 
-For example: `Beginner strength = 28 × bt ratio + 48 × bb ratio + 24 × bs ratio`. Matching all three anchors gives a level strength of **100**.
+Matching all three anchors gives a level strength of **100**.
 
 Then combine the levels, followed by ordinary and NF strength:
 
