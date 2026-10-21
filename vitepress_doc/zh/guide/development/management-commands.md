@@ -394,11 +394,14 @@ python manage.py db_worker_robust --queue-name default --interval 2
 | `delete_freezed_video` | 每天 01:28 | 删除 7 天以前冻结状态的录像 |
 | `delete_overdue_emailverifyrecord` | 每周一 01:03 | 清理 1 小时以前的邮箱验证码 |
 | `delete_overdue_captcha` | 每周一 01:05 | 清理过期图形验证码 |
+| `delete_overdue_tasks` | 每周一 01:10（`settings.TIME_ZONE`，当前为 UTC） | 按 `config/common.py` 的保留期限分批清理成功的后台任务，删除总量不限 |
 | `refresh_tournament_score_reference` | 每年 1 月 1 日 00:00 UTC | 将当前积分 zset 整体折算到新年年初，并原子更新锚点；数据库不变 |
 
 年度锚点任务还会在调度器启动时执行一次幂等检查，补上跨年停机或错过执行时间的更新；重复检查同一年不会再次衰减。普通结算只读取已有锚点，不会根据比赛结束时间或当前年份自行推进，因此调度器暂时停机也不会混用不同时间基准。此任务设置 `coalesce=True`、`misfire_grace_time=None` 和单实例运行。
 
-旧的 World 监控页面和 CPU/网络 IO 采集任务已移除；`monitor` APP 改为承载服务器统计 Ninja API，不再注册定时采集。新增 `/api/monitor/memoryusage` 仅在请求缓存未命中时采集，完整结果缓存 300 秒，详见[服务器内存统计](./cache.md#服务器内存统计)。`runapscheduler` 启动注册任务时会删除数据库中残留的 `refresh_state_always` 任务，避免任务存储恢复已删除的采集函数；其余五项清理任务保持运行。更新后需重启原 APScheduler 进程。
+后台任务清理与管理员接口 `POST /api/common/tasks/cleanup` 共用服务；接口每类任务每次最多删除 200 条，定时任务则以每批 200 条循环删除所有符合条件的记录。失败、待执行、执行中和未配置的任务均保留。
+
+旧的 World 监控页面和 CPU/网络 IO 采集任务已移除；`monitor` APP 改为承载服务器统计 Ninja API，不再注册定时采集。新增 `/api/monitor/memoryusage` 仅在请求缓存未命中时采集，完整结果缓存 300 秒，详见[服务器内存统计](./cache.md#服务器内存统计)。`runapscheduler` 启动注册任务时会删除数据库中残留的 `refresh_state_always` 任务，避免任务存储恢复已删除的采集函数；其余清理任务保持运行。更新后需重启原 APScheduler 进程。
 
 参数：
 
