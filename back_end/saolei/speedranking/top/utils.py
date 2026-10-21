@@ -7,7 +7,7 @@ STAT_COLUMNS = {'t': 'timems', 'b': 'bvs', 's': 'iqg'}
 TOP_SIZE = 5
 ANCHOR_SIZE = 20
 MISSING_TIMEMS = 999999
-SOFT_WEIGHTS = {'b': {'t': 28, 'b': 48, 's': 24}, 'i': {'t': 34, 'b': 34, 's': 32}, 'e': {'t': 33, 'b': 33, 's': 34}}
+SOFT_WEIGHTS = {'b': {'t': 32, 'b': 48, 's': 20}, 'i': {'t': 36, 'b': 36, 's': 28}, 'e': {'t': 32, 'b': 32, 's': 36}}
 LEVEL_WEIGHTS = {'b': 6, 'i': 14, 'e': 20}
 SOFT_FIELDS = tuple(f'{mode}:{level}' for mode in ('std', 'nf') for level in (*MINIMUM_BV, 'sum')) + ('lsf',)
 

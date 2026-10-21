@@ -74,7 +74,7 @@ describe('top ranking', () => {
         expect(topLsfContributions(values).map((part) => part.value)).toEqual([582, 1358, 1940, 18, 42, 60]);
         records['std:bt'] = { videos: Array.from({ length: 5 }, (_, id) => ({ value: 500, video_id: id + 1 })) };
         const improved = topSoftValues(records, anchors);
-        expect(improved.lsf).toBeCloseTo(4000 + 28 * 6 * 0.97);
+        expect(improved.lsf).toBeCloseTo(4000 + 32 * 6 * 0.97);
         expect(topLsfContributions(improved).reduce((total, part) => total + part.value, 0)).toBeCloseTo(improved.lsf);
     });
 });
