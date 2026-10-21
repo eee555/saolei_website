@@ -106,36 +106,83 @@
                     </BaseButton>
                 </template>
             </PrColumn>
+            <PrColumn v-if="isStaff" field="safe" header="safe" sortable>
+                <template #body="{ data }: { data: IdentifierResult }">
+                    {{ data.safe }}
+                </template>
+            </PrColumn>
+            <PrColumn v-if="isStaff" :header="t('common.prop.action')">
+                <template #body="{ data }: { data: IdentifierResult }">
+                    <Tippy interactive trigger="click" placement="bottom-end" :append-to="appendToBody">
+                        <BaseButton size="small" text :disabled="loading || updating" :aria-label="t('common.prop.action')" data-cy="identifier-actions" :data-identifier="data.identifier">
+                            <i class="pi pi-ellipsis-h" aria-hidden="true" />
+                        </BaseButton>
+                        <template #content="{ hide }">
+                            <div class="card card-small identifier-actions">
+                                <BaseButton size="small" :disabled="updating || (data.safe === true && data.user_id !== null)" @click="hide(); toggleSafe(data)">
+                                    {{ t('local.setSafe', { value: String(!data.safe) }) }}
+                                </BaseButton>
+                                <BaseButton size="small" :disabled="updating || (data.safe !== true && data.user_id === null)" @click="hide(); openBinding(data)">
+                                    {{ t('local.bindUser') }}
+                                </BaseButton>
+                                <p v-if="data.user_id !== null" class="text-small">
+                                    {{ t('local.unbindFirst') }}
+                                </p>
+                                <p v-else-if="data.safe === false" class="text-small">
+                                    {{ t('local.approveFirst') }}
+                                </p>
+                            </div>
+                        </template>
+                    </Tippy>
+                </template>
+            </PrColumn>
         </PrDataTable>
+        <ElDialog v-if="bindingTarget" v-model="bindingOpen" :title="t('local.bindUser')" width="min(28rem, 95vw)" :close-on-click-modal="!updating" :close-on-press-escape="!updating" :show-close="!updating" @closed="bindingTarget = null">
+            <form class="binding-form" @submit.prevent="saveBinding">
+                <IdentifierText :text="bindingTarget.identifier" />
+                <label for="identifier-bind-user">{{ t('local.playerId') }}</label>
+                <ElInput id="identifier-bind-user" v-model="bindingId" inputmode="numeric" :disabled="updating" />
+                <p class="text-small">
+                    {{ t('local.bindHint') }}
+                </p>
+                <BaseButton native-type="submit" :loading="updating" :disabled="!validBindingId">
+                    {{ t('common.button.save') }}
+                </BaseButton>
+            </form>
+        </ElDialog>
     </div>
 </template>
 
 <script setup lang="ts">
 import '@/styles/checkbox.css';
 import '@/styles/text.css';
+import '@/styles/cards.css';
 import { FilterMatchMode } from '@primevue/core/api';
 import { isAxiosError } from 'axios';
-import { ElInput } from 'element-plus';
+import { ElDialog, ElInput } from 'element-plus';
 import PrColumn from 'primevue/column';
 import PrDataTable from 'primevue/datatable';
 import PrListbox from 'primevue/listbox';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { Tippy } from 'vue-tippy';
 
 import BaseButton from '@/components/common/BaseButton.vue';
 import BaseOverlay from '@/components/common/BaseOverlay.vue';
 import BaseTable from '@/components/common/BaseTable.vue';
-import { httpErrorNotification } from '@/components/Notifications';
+import { baseErrorNotification, httpErrorNotification } from '@/components/Notifications';
 import PlayerName from '@/components/PlayerName.vue';
 import IconCopy from '@/components/widgets/IconCopy.vue';
 import IdentifierDisplayOptions from '@/components/widgets/IdentifierDisplayOptions.vue';
 import IdentifierText from '@/components/widgets/IdentifierText.vue';
 import $axios from '@/http';
 import { fetchUserIdentifiers } from '@/services/userService';
+import { store } from '@/store';
 
 interface IdentifierResult {
     identifier: string;
     user_id: number | null;
+    safe?: boolean;
 }
 
 interface OwnerOption {
@@ -153,6 +200,13 @@ const matchMode = ref<MatchMode>('exact');
 const ignoreCase = ref(false);
 const apiMode = computed(() => (ignoreCase.value ? insensitiveModes[matchMode.value] : matchMode.value));
 const loading = ref(false);
+const updating = ref(false);
+const isStaff = computed(() => store.user.is_staff);
+const bindingTarget = ref<IdentifierResult | null>(null);
+const bindingOpen = ref(false);
+const bindingId = ref('');
+const validBindingId = computed(() => (/^\d+$/).test(bindingId.value) && Number.isSafeInteger(Number(bindingId.value)));
+const appendToBody = () => document.body;
 const queried = ref(false);
 const queryTooBroad = ref(false);
 const results = ref<IdentifierResult[]>([]);
@@ -166,7 +220,7 @@ const ownerOptions = computed<OwnerOption[]>(() => [...new Set(tableData.value.m
 const validPlayerId = computed(() => (/^\d+$/).test(playerId.value) && Number.isSafeInteger(Number(playerId.value)) && Number(playerId.value) > 0);
 
 async function query(getResults: () => Promise<IdentifierResult[]>) {
-    if (loading.value) return;
+    if (loading.value || updating.value) return;
     loading.value = true;
     queryTooBroad.value = false;
     queried.value = false;
@@ -192,7 +246,13 @@ async function query(getResults: () => Promise<IdentifierResult[]>) {
 async function queryPlayer() {
     if (!validPlayerId.value || loading.value) return;
     const userId = Number(playerId.value);
-    await query(async () => (await fetchUserIdentifiers(userId)).map((text) => ({ identifier: text, user_id: userId })));
+    await query(async () => {
+        if (isStaff.value) {
+            const { data } = await $axios.get<{ items: IdentifierResult[] }>(`/api/identifier/query/user/${userId}`);
+            return data.items;
+        }
+        return (await fetchUserIdentifiers(userId)).map((text) => ({ identifier: text, user_id: userId }));
+    });
 }
 
 async function queryIdentifier() {
@@ -203,9 +263,55 @@ async function queryIdentifier() {
     });
 }
 
+async function updateIdentifier(row: IdentifierResult, path: 'bind' | 'safe', values: { id: number } | { safe: boolean }) {
+    if (!isStaff.value || updating.value || loading.value) return false;
+    updating.value = true;
+    try {
+        const { data } = await $axios.post<IdentifierResult>(`/api/identifier/${path}`, { identifier: row.identifier, ...values });
+        results.value = results.value.map((result) => (result.identifier === row.identifier ? data : result));
+        return true;
+    } catch (error) {
+        if (isAxiosError<{ detail?: unknown }>(error) && typeof error.response?.data.detail === 'string') {
+            baseErrorNotification(t('msg.actionFail'), error.response.data.detail);
+        } else {
+            httpErrorNotification(error);
+        }
+        return false;
+    } finally {
+        updating.value = false;
+    }
+}
+
+async function toggleSafe(row: IdentifierResult) {
+    await updateIdentifier(row, 'safe', { safe: row.safe !== true });
+}
+
+function openBinding(row: IdentifierResult) {
+    bindingTarget.value = row;
+    bindingId.value = String(row.user_id ?? 0);
+    bindingOpen.value = true;
+}
+
+async function saveBinding() {
+    if (!bindingTarget.value || !validBindingId.value) return;
+    if (await updateIdentifier(bindingTarget.value, 'bind', { id: Number(bindingId.value) })) bindingOpen.value = false;
+}
+
+watch(isStaff, () => {
+    results.value = [];
+    queried.value = false;
+    bindingOpen.value = false;
+    bindingTarget.value = null;
+});
+
 const i18nMessages = {
     'zh-cn': { local: {
         playerId: '玩家 ID',
+        bindUser: '绑定用户',
+        setSafe: '设置 safe = {value}',
+        bindHint: '填写用户 ID；0 表示解绑当前用户。',
+        unbindFirst: '请先在“绑定用户”中填写 0 解绑，再将 safe 设为 false。',
+        approveFirst: '请先将 safe 设为 true，再绑定用户。',
         identifier: '标识 / 表达式',
         mode: '匹配模式',
         ignoreCase: '忽略大小写',
@@ -247,6 +353,11 @@ const i18nMessages = {
     } },
     en: { local: {
         playerId: 'Player ID',
+        bindUser: 'Bind user',
+        setSafe: 'Set safe = {value}',
+        bindHint: 'Enter a user ID; 0 unbinds the current owner.',
+        unbindFirst: 'Enter 0 in Bind user to unbind before setting safe to false.',
+        approveFirst: 'Set safe to true before binding a user.',
         identifier: 'Identifier / pattern',
         mode: 'Match mode',
         ignoreCase: 'Ignore case',
@@ -292,6 +403,19 @@ const { t } = useI18n({ messages: i18nMessages });
 
 <style scoped>
 .identifier-query {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.identifier-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    max-width: 20rem;
+}
+
+.binding-form {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
