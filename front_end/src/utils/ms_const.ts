@@ -11,9 +11,9 @@ export const MS_Softwares = ['e', 'a', 'r', 'm'] as const;
 export type MS_Software = typeof MS_Softwares[number];
 
 export const STNB_const = useLocalStorage('stnb_const', {
-    b: 47.299,
-    i: 153.73,
-    e: 435.001,
+    b: 36,
+    i: 162,
+    e: 435,
 });
 
 export const MS_Mode = {
