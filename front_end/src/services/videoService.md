@@ -28,7 +28,7 @@
 | `GET /api/video/metadata?ids=1,2` | 不存在 | `[M]`；供只有 ID 的调用方确认当前元信息与公开状态 |
 | `GET /api/userprofile/videolist?user_id=...` | `[U]` | `[M]` |
 | `GET /api/video/query` | `{count, videos: [Q]}` | `{count, videos: [{id, upload_time, state, ongoing_tournament, player__id, player__realname}]}`；后端排序、筛选与分页能力保持 |
-| 最新队列 | `GET /video/newest_queue/` → `{[id]: JSON字符串}`，字符串字段见 Redis 对照表 | `GET /api/video/newest_queue` → `[M]`；一次查询当前元信息，排除已删除或未公开录像 |
+| 最新队列 | `GET /video/newest_queue/` → `{[id]: JSON字符串}`，字符串字段见 Redis 对照表 | `GET /api/video/newest_queue` → `[M]`；直接读取 Redis Hash 快照，将 field 映射为 `id`，`player_id`、`time` 映射为 `player`、`upload_time`，`ongoing_tournament` 为 `false`（队列只写入公开录像），不查询数据库 |
 | 从最新队列移除 | `POST /video/newest_queue/remove/`，表单 `{id}` | `POST /api/video/newest_queue/remove`，同样表单 `{id}`，成功返回 204；仍仅管理员可用 |
 | `GET /api/video/review_queue` | `[B]` | `[M]`；继续从数据库查询待审录像 |
 | `GET /api/common/video/{id}/analyzer-info` | `{video: VideoModel全部字段, expanded_video: ExpandVideoModel全部字段, tournament_ids, filename, rankings}` | `{video: M, tournament_ids, filename, rankings}`；前端补全稳定字段，比赛关联和名次仍每次获取 |
@@ -63,7 +63,7 @@
 
 | key / 数据结构 | 修改前 | 修改后 |
 | --- | --- | --- |
-| `newest_queue` Hash，field 为录像 ID | JSON `{state, tournament, software, time, player_id, identifier, level, mode, timems, bv, cl, ce, right_ce}` | JSON `{state, time, player_id}`；保留原成员和过期时间规则 |
+| `newest_queue` Hash，field 为录像 ID | JSON `{state, tournament, software, time, player_id, identifier, level, mode, timems, bv, cl, ce, right_ce}` | JSON `{state, time, player_id}`；接口直接读取缓存元信息；每天 01:08 按上传时间保留最新 1000 条，时间相同时保留 ID 较大的录像；允许暂时超过上限，不再按 7 天期限清理 |
 | `freeze_queue` Hash | 与最新队列相同的完整 JSON，持续写入 | 停止维护；原读取函数没有有效路由，部署命令删除旧 key |
 | `review_queue` Hash | 与最新队列相同的完整 JSON，持续写入 | 停止维护；有效待审接口一直直接查询数据库，删除已无路由的旧审核函数及其读取依赖 |
 | `customranking:pluck:{level}:detail` Hash | JSON `{video_id, mode, timems, bv, upload_time}` | JSON `{video_id, timems, upload_time}` |

@@ -89,6 +89,25 @@ describe('parsed video cache', () => {
         expect(await db.get(VIDEO_INFO_STORE_NAME, ['public', 2])).toEqual({ id: 2, scope: 'public', data: parsed(2) });
     });
 
+    it.each(['before batch', 'during request'] as const)('keeps public video loading alive when automatic login finishes %s', async (stage) => {
+        setVideoInfoViewer(0, ++sessionRevision);
+        const response = Promise.withResolvers<{ data: (ParsedVideoInfo & { ongoing_tournament: boolean })[] }>();
+        get.mockReturnValue(response.promise);
+        const loading = fetchVideoInfos([publicRow(9)]);
+        const completed = expect(loading).resolves.toMatchObject([{ id: 9, timems: 1000 }]);
+        if (stage === 'during request') {
+            await vi.waitFor(() => {
+                expect(get).toHaveBeenCalledOnce();
+            });
+        }
+        setVideoInfoViewer(7, ++sessionRevision);
+        const afterLogin = expect(fetchVideoInfos([publicRow(9)])).resolves.toMatchObject([{ id: 9, timems: 1000 }]);
+        response.resolve({ data: [{ ...parsed(9), ongoing_tournament: false }] });
+        await Promise.all([completed, afterLogin]);
+        expect(get).toHaveBeenCalledOnce();
+        expect(await (await getDatabase()).get(VIDEO_INFO_STORE_NAME, ['public', 9])).toEqual({ id: 9, scope: 'public', data: parsed(9) });
+    });
+
     it('fetches unpublished entries live by default and isolates opted-in entries by user', async () => {
         get.mockResolvedValue({ data: [{ ...parsed(3), ongoing_tournament: true }] });
         await fetchVideoInfos([privateRow(3)]);

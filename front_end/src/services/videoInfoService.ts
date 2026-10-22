@@ -82,6 +82,8 @@ interface DownloadTask {
 
 const pending = new Map<string, PendingRequest>();
 const downloads = reactive(new Map<symbol, DownloadTask>());
+// Public parsed fields and requests are shared across login sessions.
+const PUBLIC_VIEWER: Viewer = { id: 0, revision: -1 };
 let currentViewer: Viewer = { id: 0, revision: 0 };
 let running = false;
 let timer: ReturnType<typeof setTimeout> | undefined;
@@ -93,7 +95,7 @@ function viewer(): Viewer {
 }
 
 function sameViewer(value: Viewer): boolean {
-    return value.id === currentViewer.id && value.revision === currentViewer.revision;
+    return value === PUBLIC_VIEWER || (value.id === currentViewer.id && value.revision === currentViewer.revision);
 }
 
 export function setVideoInfoViewer(id: number, revision: number): void {
@@ -212,11 +214,12 @@ async function processBatch(): Promise<void> {
 }
 
 function enqueue(row: VideoMetadata, value: Viewer): Promise<ParsedVideoInfo> {
-    const key = `${value.id}:${value.revision}:${row.id}`;
+    const requestViewer = row.ongoing_tournament ? value : PUBLIC_VIEWER;
+    const key = `${requestViewer.id}:${requestViewer.revision}:${row.id}`;
     const existing = pending.get(key);
     if (existing !== undefined) return existing.promise;
     const deferred = Promise.withResolvers<ParsedVideoInfo>();
-    pending.set(key, { ...deferred, row, viewer: value, inFlight: false });
+    pending.set(key, { ...deferred, row, viewer: requestViewer, inFlight: false });
     schedule();
     return deferred.promise;
 }
@@ -245,7 +248,7 @@ export async function fetchVideoInfos<Row extends VideoMetadata>(rows: Row[]): P
             const failure = settled.find((result) => result.status === 'rejected');
             if (failure?.status === 'rejected') throw failure.reason instanceof Error ? failure.reason : new Error(String(failure.reason));
         }
-        if (!sameViewer(value)) throw new Error('Login session changed.');
+        if (unique.some((row) => row.ongoing_tournament) && !sameViewer(value)) throw new Error('Login session changed.');
         return rows.map((row) => {
             const data = found.get(row.id);
             if (data === undefined) throw new Error(`Video ${row.id} is unavailable.`);

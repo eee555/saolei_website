@@ -8,6 +8,7 @@ from utils import ComplexEncoder
 from .models import VideoModel
 
 cache = get_redis_connection('saolei_website')
+NEWEST_QUEUE_LIMIT = 1000
 
 
 def serialize_video_to_queue(video: VideoModel):
@@ -23,6 +24,14 @@ class VideoQueueCache:
 
     def __init__(self, key: str):
         self.key = key
+
+    def trim(self):
+        if cache.hlen(self.key) <= NEWEST_QUEUE_LIMIT:
+            return 0
+        values = cache.hgetall(self.key)
+        ordered_ids = sorted(values, key=lambda video_id: (json.loads(values[video_id])['time'], int(video_id)), reverse=True)
+        removed_ids = ordered_ids[NEWEST_QUEUE_LIMIT:]
+        return cache.hdel(self.key, *removed_ids) if removed_ids else 0
 
     def add(self, video: VideoModel):
         if video.ongoing_tournament:
