@@ -738,7 +738,7 @@ describe('GSC historical supplementation', () => {
         });
     });
 
-    it('binds selected replay identifiers, imports without the historical race token and preserves files when deletion is unavailable', () => {
+    it('reuses a replay participant after reloading and imports without the historical race token', () => {
         cy.login(HOST.username, HOST.password);
         cy.intercept({ method: 'GET', pathname: '/api/tournament/gsc/results', query: { tournament_id: String(uploadedTournamentId) } }).as('history');
         cy.intercept('POST', '**/api/tournament/gsc/history/prepare').as('prepareHistory');
@@ -760,6 +760,17 @@ describe('GSC historical supplementation', () => {
             expect(rows[0]).to.include({ 成绩来源: '录像', 录像: '有' });
         });
         cy.get('[data-cy=history-delete]').should('not.exist');
+        visitGSCAdmin(18);
+        cy.wait('@history');
+        cy.get('[data-cy=history-user-id]').type('101');
+        cy.get('[data-cy=history-video-files]').selectFile('cypress/fixtures/standard_gsc.evf');
+        cy.get('[data-cy=history-identifiers] .el-tag').should('have.length', 1);
+        cy.get('[data-cy=history-videos-submit]').click();
+        cy.wait('@prepareHistory').its('response.statusCode').should('eq', 200);
+        cy.wait('@bindHistory').its('response.statusCode').should('eq', 200);
+        cy.wait('@uploadHistory').its('response.statusCode').should('eq', 200);
+        cy.wait('@history');
+        cy.get('[data-cy=history-participants] tbody tr:not(.base-table-empty-row)').should('have.length', 1);
         cy.then(() => cy.dangerzonePost('refresh_tournament_scores', { id: uploadedTournamentId }));
         cy.then(() => cy.visit(`/#/tournament/${uploadedTournamentId}`));
         cy.wait('@history');

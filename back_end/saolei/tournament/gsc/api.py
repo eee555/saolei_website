@@ -140,6 +140,8 @@ def _get_history_video_participant(request: HttpRequest, participant_id: int):
 def create_history_participant(request: HttpRequest, data: HistoryPrepareIn):
     """
     - `login_required_error`
+
+    获取或创建录像来源参赛者，已有非手工记录原样返回，手工来源拒绝。
     """
     with transaction.atomic():
         tournament = _get_history_tournament(request, data.order)
