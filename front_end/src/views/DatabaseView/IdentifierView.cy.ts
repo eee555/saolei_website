@@ -5,10 +5,13 @@ import IdentifierView from './IdentifierView.vue';
 import { showInvisibleIdentifiers } from '@/components/widgets/identifierDisplay';
 import $axios from '@/http';
 import i18n from '@/i18n';
+import { store } from '@/store';
 import { pinia } from '@/store/create';
 import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
 
-function mountQuery() {
+function mountQuery(staff = false) {
+    store.$reset();
+    if (staff) store.login({ id: 2, is_staff: true });
     showInvisibleIdentifiers.value = false;
     cy.mockPlayerNameFallback();
     cy.mount(IdentifierView, {
@@ -31,6 +34,8 @@ describe('Identifier lookup', () => {
             expect(rows.map((row) => row['Identifier / pattern'])).to.deep.equal(['First', 'Second']);
         });
         cy.get('table a').should('have.length', 2).first().should('have.attr', 'href', '#/player/42');
+        cy.get('[data-cy=identifier-actions]').should('not.exist');
+        cy.get('th').should('not.contain.text', 'safe');
     });
 
     it('distinguishes unbound identifiers from unknown identifiers and clears old results', () => {
@@ -206,6 +211,92 @@ describe('Identifier lookup', () => {
         cy.get('#identifier-text').should('have.value', identifier);
         cy.get('button[aria-label="Copy"]').click();
         cy.get('@copy').should('have.been.calledOnceWith', identifier);
+        cy.closeElNotifications();
+    });
+
+    it('lets staff review, bind and unbind an identifier through row actions', () => {
+        const identifier = 'Review & +';
+        cy.intercept('GET', '/api/identifier/query/exact*', { items: [{ identifier, user_id: null, safe: false }] }).as('matches');
+        cy.intercept('POST', '/api/identifier/safe', { body: { identifier, user_id: null, safe: true } }).as('approve');
+        cy.intercept('POST', '/api/identifier/bind', { body: { identifier, user_id: 42, safe: true } }).as('bind');
+        mountQuery(true);
+        cy.get('#identifier-text').type(`${identifier}{enter}`);
+        cy.wait('@matches');
+        cy.get('table').getTable().its('0.safe').should('eq', 'false');
+        cy.get('[data-cy=identifier-actions]').click();
+        cy.contains('.identifier-actions button', 'Bind user').should('be.disabled');
+        cy.contains('.identifier-actions button', 'Set safe = true').click();
+        cy.wait('@approve').then(({ request }) => {
+            const body = new URLSearchParams(request.body as string);
+            expect(body.get('identifier')).to.equal(identifier);
+            expect(body.get('safe')).to.equal('true');
+        });
+        cy.get('table').getTable().its('0.safe').should('eq', 'true');
+
+        cy.get('[data-cy=identifier-actions]').click();
+        cy.contains('.identifier-actions button', 'Bind user').click();
+        cy.get('#identifier-bind-user').clear();
+        cy.get('#identifier-bind-user').type('-1');
+        cy.contains('[role=dialog]:visible button', 'Save').should('be.disabled');
+        cy.get('#identifier-bind-user').clear();
+        cy.get('#identifier-bind-user').type('42');
+        cy.contains('[role=dialog]:visible button', 'Save').click();
+        cy.wait('@bind').then(({ request }) => {
+            const body = new URLSearchParams(request.body as string);
+            expect(body.get('identifier')).to.equal(identifier);
+            expect(body.get('id')).to.equal('42');
+        });
+        cy.get('[role=dialog]:visible').should('not.exist');
+        cy.get('table a').should('have.attr', 'href', '#/player/42');
+
+        cy.get('@bind.all').should('have.length', 1);
+        cy.intercept('POST', '/api/identifier/bind', { body: { identifier, user_id: null, safe: true } }).as('unbind');
+        cy.get('[data-cy=identifier-actions]').click();
+        cy.contains('.identifier-actions button', 'Set safe = false').should('be.disabled');
+        cy.contains('.identifier-actions', 'Enter 0 in Bind user').should('be.visible');
+        cy.contains('.identifier-actions button', 'Bind user').click();
+        cy.get('#identifier-bind-user').should('be.visible').and('have.value', '42');
+        cy.get('#identifier-bind-user').clear();
+        cy.get('#identifier-bind-user').type('0');
+        cy.contains('[role=dialog]:visible button', 'Save').click();
+        cy.wait('@unbind').then(({ request }) => {
+            const body = new URLSearchParams(request.body as string);
+            expect(body.get('identifier')).to.equal(identifier);
+            expect(body.get('id')).to.equal('0');
+        });
+        cy.get('[role=dialog]:visible').should('not.exist');
+        cy.get('table').should('contain.text', 'Unbound').and('contain.text', identifier);
+        cy.get('@approve.all').should('have.length', 1);
+        cy.intercept('POST', '/api/identifier/safe', { body: { identifier, user_id: null, safe: false } }).as('unsafe');
+        cy.get('[data-cy=identifier-actions]').click();
+        cy.contains('.identifier-actions button', 'Set safe = false').click();
+        cy.wait('@unsafe').then(({ request }) => {
+            const body = new URLSearchParams(request.body as string);
+            expect(body.get('identifier')).to.equal(identifier);
+            expect(body.get('safe')).to.equal('false');
+        });
+        cy.get('table').getTable().its('0.safe').should('eq', 'false');
+        cy.get('@matches.all').should('have.length', 1);
+        cy.get('@unbind.all').should('have.length', 1);
+        cy.get('@unsafe.all').should('have.length', 1);
+    });
+
+    it('includes safe for staff player lookups and keeps a failed mutation unchanged', () => {
+        cy.intercept('GET', '/api/identifier/query/user/42', { items: [{ identifier: 'Owned', user_id: 42, safe: true }] }).as('identifiers');
+        cy.intercept('POST', '/api/identifier/bind', { statusCode: 404, body: { detail: 'User not found' } }).as('failedBind');
+        mountQuery(true);
+        cy.get('#identifier-player-id').type('42{enter}');
+        cy.wait('@identifiers');
+        cy.get('table').getTable().its('0.safe').should('eq', 'true');
+        cy.get('[data-cy=identifier-actions]').click();
+        cy.contains('.identifier-actions button', 'Bind user').click();
+        cy.get('#identifier-bind-user').clear();
+        cy.get('#identifier-bind-user').type('999999');
+        cy.contains('[role=dialog]:visible button', 'Save').click();
+        cy.wait('@failedBind');
+        cy.contains('User not found').should('be.visible');
+        cy.get('[role=dialog]:visible').should('be.visible');
+        cy.get('table a').should('have.attr', 'href', '#/player/42');
         cy.closeElNotifications();
     });
 });

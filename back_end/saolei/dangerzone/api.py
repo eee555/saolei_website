@@ -1,24 +1,27 @@
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
+from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.tasks import TaskResultStatus
 from django.utils import timezone
 from django_redis import get_redis_connection
-from ninja import NinjaAPI, Schema
+from ninja import Field, NinjaAPI, Schema
 from ninja.errors import HttpError
 
+from accountlink.models import AccountLinkQueue, AccountMinesweeperGames, Platform
 from common.api import LOG_DIR, TaskDetailOut
 from config.text_choices import Tournament_TextChoices
 from config.tournaments import TournamentWeights
 from identifier.models import Identifier
 from identifier.services import bind_identifier, set_safe, unbind_identifier
-from msuser.models import UserMS
 from tournament.models import GSCTournament, WeeklyTournament
 from tournament.weekly.tasks import _task_weekly_finish_impl
 from userprofile.models import UserProfile
+from utils.schema import IdIn
 from videomanager.models import ExpandVideoModel, VideoModel
 from .decorators import local_only
+from .services import register_users
 from .tasks import task_echo
 
 api = NinjaAPI()
@@ -104,6 +107,18 @@ class WeeklyTournamentIdSchema(Schema):
     id: int
 
 
+@api.post('/refresh_tournament_scores')
+@local_only
+def refresh_tournament_scores(request, data: IdIn):
+    """
+    - local_only
+
+    Run the same explicit maintenance command used after historical imports.
+    """
+    call_command('refresh_tournament_scores', data.id)
+    return {'id': data.id}
+
+
 @api.post('/flush_database')
 @local_only
 def flush_database(request):
@@ -119,18 +134,47 @@ class RegisterSchema(Schema):
     realname: str = '匿名'
 
 
+class RegisterBulkSchema(Schema):
+    users: list[RegisterSchema] = Field(min_length=1)
+
+
 @api.post('/register')
 @local_only
 def register(request, data: RegisterSchema):
-    userms = UserMS.objects.create()
-    UserProfile.objects.create_user(
-        username=data.username,
-        password=data.password,
-        id=data.id,
-        email=data.email,
-        realname=data.realname,
-        userms=userms,
-    )
+    """
+    - local_only
+    """
+    try:
+        register_users([data.model_dump()])
+    except ValidationError:
+        raise HttpError(400, 'The name cannot be the reserved value hidden.')
+
+
+@api.post('/register_bulk', response=list[int])
+@local_only
+def register_bulk(request, data: RegisterBulkSchema):
+    """
+    - local_only
+    """
+    try:
+        users = register_users([user.model_dump() for user in data.users])
+    except ValidationError:
+        raise HttpError(400, 'The name cannot be the reserved value hidden.')
+    return [user.id for user in users]
+
+
+@api.post('/prepare_msgames_privacy_fixture')
+@local_only
+def prepare_msgames_privacy_fixture(request, data: UserIdSchema):
+    """
+    - local_only
+
+    Prepare a pre-feature binding without running the new authorization event.
+    """
+    user = UserProfile.objects.get(pk=data.id)
+    AccountMinesweeperGames.objects.create(pk=2147483001, parent=user, name='MSGames Fixture', local_name='关联姓名')
+    AccountLinkQueue.objects.create(userprofile=user, platform=Platform.MSGAMES, identifier='2147483001', verified=True)
+    return {'id': user.pk}
 
 
 @api.post('/create_video')

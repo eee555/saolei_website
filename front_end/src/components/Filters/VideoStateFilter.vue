@@ -8,17 +8,19 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick } from 'vue';
+import { computed, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+const props = defineProps({ includeLocal: { type: Boolean, default: false } });
 const emit = defineEmits<{ change: [value: string[]] }>();
 const checkboxGroup = defineModel({ type: Array<string>, required: true });
-const statelist = [
+const statelist = computed(() => [
     { state: 'c' },
     { state: 'd' },
     { state: 'a' },
     { state: 'b' },
-];
+    ...props.includeLocal ? [{ state: 'l' }] : [],
+]);
 
 const { t } = useI18n();
 

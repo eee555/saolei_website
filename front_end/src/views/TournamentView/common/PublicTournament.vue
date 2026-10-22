@@ -99,7 +99,7 @@ defineSlots<{
     participationGuide: () => unknown;
     autoUploaderFilter: () => unknown;
     allSummary: (props: { data: TParticipant[]; onParticipantSelect: (row: TParticipant) => void }) => unknown;
-    personalSummary: (props: { videos: VideoAbstract[] }) => unknown;
+    personalSummary: (props: { videos: VideoAbstract[]; participant: TParticipant }) => unknown;
 }>();
 const state = computed(() => props.tournament.getDisplayState(globalNow.value));
 const showLiveData = computed(() => state.value === TournamentState.Ongoing || state.value === TournamentState.Finished);

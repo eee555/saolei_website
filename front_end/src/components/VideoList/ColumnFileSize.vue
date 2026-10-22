@@ -1,7 +1,7 @@
 <template>
     <PrColumn :header="t('common.prop.file_size')" field="file_size" :sortable="sortable">
         <template #body="{data}: {data: VideoAbstract}">
-            {{ data.file_size === 0 ? '-' : formatBytes(data.file_size) }}
+            {{ data.isLocal ? '—' : data.file_size === 0 ? '-' : formatBytes(data.file_size) }}
         </template>
     </PrColumn>
 </template>

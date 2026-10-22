@@ -1,9 +1,17 @@
 import { describe, expect, it } from 'vitest';
 
-import { TournamentState, TournamentSubclass } from './ms_const';
+import { MS_Mode, TournamentState, TournamentSubclass } from './ms_const';
 import { Tournament, TournamentParticipant } from './tournaments';
+import { VideoAbstract } from './videoabstract';
 
 describe('TournamentParticipant', () => {
+    it('maintains replay presence for participant deletion controls when personal videos load or upload', () => {
+        const participant = new TournamentParticipant({ has_videos: true });
+        participant.videos = [];
+        expect(participant.has_videos).toBe(false);
+        participant.addVideo(new VideoAbstract({ level: 'i', mode: MS_Mode.Standard, software: 'e', timems: 1000, bv: 30 }));
+        expect(participant.has_videos).toBe(true);
+    });
     describe('constructor', () => {
         it('Default initialization', () => {
             const participant = new TournamentParticipant();

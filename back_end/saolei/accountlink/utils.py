@@ -22,11 +22,15 @@ def isPrivate(platform) -> bool:
 
 def link_account(platform: Platform, linkid, user: UserProfile):
     model = PLATFORM_CONFIG[platform]['model']
-    account = model.objects.filter(id=linkid).first()
+    linkid = model._meta.pk.to_python(linkid)
+    account = model.objects.select_for_update().filter(id=linkid).first()
     if not account:
         account = model.objects.create(id=linkid, parent=user)
     else:
+        if account.parent_id != user.pk:
+            raise ExceptionToResponse('accountlink', 'collision', status_code=409)
         account.parent = user
+        account.save(update_fields=['parent'])
     return account
 
 

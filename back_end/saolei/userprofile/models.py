@@ -9,6 +9,7 @@ from django_cleanup import cleanup
 from config.global_settings import DefaultChances, MaxSizes
 from msuser.models import UserMS
 from .fields import RestrictedImageField
+from .utils import HIDDEN_NAME
 
 username_validator = UnicodeUsernameValidator()
 
@@ -35,8 +36,8 @@ class UserProfile(AbstractUser):
             'unique': _('该用户名已存在！'),
         }, db_collation='utf8mb4_0900_as_cs',
     )
-    firstname = models.CharField(_('first name'), max_length=MaxSizes.FIRSTNAME, blank=True)
-    lastname = models.CharField(_('last name'), max_length=MaxSizes.LASTNAME, blank=True)
+    _firstname = models.CharField(_('first name'), db_column='firstname', max_length=MaxSizes.FIRSTNAME, blank=True)
+    _lastname = models.CharField(_('last name'), db_column='lastname', max_length=MaxSizes.LASTNAME, blank=True)
     email = models.EmailField(
         _('email address'),
         max_length=MaxSizes.EMAIL,
@@ -51,8 +52,10 @@ class UserProfile(AbstractUser):
         },
     )
     # 考虑了中英文、俄罗斯用户名字，长度需要达到100（虽然还不够）
-    realname = models.CharField(
-        max_length=MaxSizes.REALNAME, unique=False, blank=True, default='匿名', null=False)
+    _realname = models.CharField(
+        db_column='realname', max_length=MaxSizes.REALNAME, unique=False, blank=True, default='匿名', null=False)
+    can_hide_realname = models.BooleanField(default=False)
+    hide_realname = models.BooleanField(default=False)
     # 头像
     avatar = RestrictedImageField(upload_to='avatar/%Y%m%d/', max_length=100,
                                   max_upload_size=MaxSizes.AVATAR, blank=True, null=True)
@@ -94,7 +97,35 @@ class UserProfile(AbstractUser):
         ]
 
     def has_realname(self) -> bool:
-        return self.realname != '匿名'
+        return bool(self._realname.strip()) and self._realname.strip() != '匿名'
+
+    @property
+    def is_name_hidden(self) -> bool:
+        return self.has_realname() and self.can_hide_realname and self.hide_realname
+
+    @property
+    def realname(self):
+        return HIDDEN_NAME if self.is_name_hidden else self._realname
+
+    @realname.setter
+    def realname(self, value):
+        self._realname = value
+
+    @property
+    def firstname(self):
+        return HIDDEN_NAME if self.is_name_hidden else self._firstname
+
+    @firstname.setter
+    def firstname(self, value):
+        self._firstname = value
+
+    @property
+    def lastname(self):
+        return HIDDEN_NAME if self.is_name_hidden else self._lastname
+
+    @lastname.setter
+    def lastname(self, value):
+        self._lastname = value
 
 
 # 邮箱验证

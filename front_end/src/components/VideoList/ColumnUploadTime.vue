@@ -2,7 +2,7 @@
     <PrColumn field="upload_time" :sortable="sortable" :header="t('common.prop.upload_time')" style="min-width: 11em">
         <template #body="{ data }">
             <span class="text">
-                {{ utc_to_local_format(data.upload_time) }}
+                {{ data.isLocal ? '—' : utc_to_local_format(data.upload_time) }}
             </span>
         </template>
     </PrColumn>

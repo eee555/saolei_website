@@ -1,7 +1,7 @@
 <template>
     <ElTabs>
         <ElTabPane :label="t('local.summary')" lazy>
-            <slot name="personalSummary" :videos="videos" />
+            <slot name="personalSummary" :videos="videos" :participant="participant" />
         </ElTabPane>
         <ElTabPane :label="t('local.videos')" lazy>
             <MultiSelector v-model="VideoListConfig.tournament" :options="thisColumnChoices" :labels="thisColumnChoices.map((s) => t(`common.prop.${s}`))" />
@@ -31,7 +31,7 @@ const participant = defineModel<TParticipant>({ required: true });
 const loading = ref(false);
 
 defineSlots<{
-    personalSummary?: (props: { videos: VideoAbstract[] }) => unknown;
+    personalSummary?: (props: { videos: VideoAbstract[]; participant: TParticipant }) => unknown;
 }>();
 
 const thisColumnChoices = ArrayUtils.sortByReferenceOrder(['upload_time', 'software', 'level', 'mode', 'time', 'bv', 'bvs', 'stnb', 'ioe', 'thrp', 'path', 'file_size'], ColumnChoices);

@@ -12,7 +12,7 @@ from userprofile.decorators import staff_required
 from userprofile.models import UserProfile
 from utils import ComplexEncoder
 from utils.cache import maybe_bytes_to_str
-from .models import ExpandVideoModel, VideoModel
+from .models import VideoModel
 from .view_utils import refresh_video
 
 logger = logging.getLogger('videomanager')
@@ -138,24 +138,6 @@ def freeze(request):
         return HttpResponse()
     else:
         return HttpResponseBadRequest()
-
-
-# 管理员使用的操作接口，调用方式见前端的StaffView.vue
-get_videoModel_fields = [
-    'player', 'player__realname', 'upload_time',
-    'state', 'software', 'level', 'mode', 'right_ce', 'timems', 'bv', 'bvs', 'ongoing_tournament',
-]  # 可获取的域列表
-for name in [field.name for field in ExpandVideoModel._meta.get_fields()]:
-    get_videoModel_fields.append('video__' + name)
-
-
-@require_GET
-@staff_required
-def get_videoModel(request):
-    if not (videolist := VideoModel.objects.filter(id=request.GET['id'])
-            .values(*get_videoModel_fields)):
-        return HttpResponseNotFound()
-    return JsonResponse(videolist[0])
 
 
 set_videoModel_fields = ['player', 'upload_time', 'state']  # 可修改的域列表

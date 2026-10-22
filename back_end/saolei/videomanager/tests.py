@@ -6,7 +6,7 @@ from django.core.files.base import ContentFile
 from django.test import override_settings, SimpleTestCase, TestCase
 import requests
 
-from common.utils import new_video_by_file
+from common.services import new_video_by_file
 from msuser.models import UserMS
 from userprofile.models import UserProfile
 from .models import ExpandVideoModel, VideoModel

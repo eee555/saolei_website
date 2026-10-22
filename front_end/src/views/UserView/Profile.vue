@@ -4,20 +4,25 @@
             <div class="avatar">
                 <Avatar v-model:user="store.player" :is-self="user.id === store.user.id" :exp-time-ms="store.expTimeMs" :qualification-status="store.qualificationStatus" />
             </div>
-            <div>
-                <span class="username">
-                    {{ user.username }}
-                </span>
-                <span class="id">
-                    #{{ user.id }}
-                </span>
+            <div v-if="user.isNameHidden" class="realname" data-cy="hidden-profile-name">
+                {{ t('local.hiddenName', { id: user.id }) }}
             </div>
-            <div class="realname">
-                {{ user.isAnonymous ? t('common.anonymous') : user.realname }}
-            </div>
-            <div class="fullname">
-                {{ formatName(user.firstname, user.lastname, local.nameFormat) }}
-            </div>
+            <template v-else>
+                <div>
+                    <span class="username">
+                        {{ user.username }}
+                    </span>
+                    <span class="id">
+                        #{{ user.id }}
+                    </span>
+                </div>
+                <div class="realname">
+                    {{ user.isAnonymous ? t('common.anonymous') : user.realname }}
+                </div>
+                <div class="fullname">
+                    {{ formatName(user.firstname, user.lastname, local.nameFormat) }}
+                </div>
+            </template>
         </div>
         <BaseButton v-if="store.isSelf" class="edit-button" @click="router.push({ name: 'user-settings', params: { id: user.id } })">
             {{ t('local.editButton') }}
@@ -58,9 +63,11 @@ const router = useRouter();
 const i18nMessages = {
     'zh-cn': { local: {
         editButton: '编辑信息',
+        hiddenName: '用户 #{id}',
     } },
     en: { local: {
         editButton: 'Edit Profile',
+        hiddenName: 'User #{id}',
     } },
 };
 

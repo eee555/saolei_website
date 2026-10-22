@@ -4,6 +4,7 @@
     <span>届</span>
     <br>
     <GSCGeneralInfo :id="gscID" />
+    <HistoryImport :order="gscID" />
 </template>
 
 <script setup lang="ts">
@@ -12,6 +13,7 @@ import { ref } from 'vue';
 
 import '@/styles/text.css';
 import GSCGeneralInfo from '@/components/GSCAdmin/GeneralInfo.vue';
+import HistoryImport from '@/components/GSCAdmin/HistoryImport.vue';
 
 const gscID = ref(0);
 </script>

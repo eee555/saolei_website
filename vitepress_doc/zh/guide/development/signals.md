@@ -78,7 +78,8 @@ flowchart LR
     gsc_participant_post_delete --> update_best_score_on_gsc_participant_delete[重算GSC历史最好]
     weekly_participant_post_delete --> update_best_score_on_weekly_participant_delete[重算周赛历史最好]
     participant_post_delete --> remove_participant_cache_on_delete[删除参赛缓存]
-    update_cache_on_participant_save -->|created| add_existing_videos_to_participant_tournament[补录比赛录像]
+    participant_post_delete --> revoke_rank_score_on_participant_delete[撤回已发比赛积分]
+    update_cache_on_participant_save -->|created 且非已颁奖GSC| add_existing_videos_to_participant_tournament[补录比赛录像]
 
     add_existing_videos_to_participant_tournament -. m2m_changed .-> no_participant_signal[无]
 
@@ -116,10 +117,15 @@ flowchart LR
     click update_best_score_on_gsc_participant_delete "#signal-function-map" "GSC 参赛成绩删除后重算用户历史最好"
     click update_best_score_on_weekly_participant_delete "#signal-function-map" "周赛参赛成绩删除后重算用户历史最好"
     click remove_participant_cache_on_delete "#signal-function-map" "参赛关系删除后移除用户参赛缓存，跳过非站内参赛者"
+    click revoke_rank_score_on_participant_delete "#signal-function-map" "参赛关系删除后按比赛结束时间衰减撤回原积分，数据库随删除事务更新，提交后刷新积分排行"
     click add_existing_videos_to_participant_tournament "#signal-function-map" "创建参赛关系后扫描并补录既有比赛录像"
 ```
 
 <a id="signal-function-map"></a>
+
+GSC 历史补录沿用默认 TournamentUser 创建和 best 保存信号，允许默认或手工成绩改善 best；匿名参赛者不调度参赛缓存更新。已颁奖 GSC 创建 participant 时不自动回填录像，由代传 service 显式关联，普通报名和周赛不变。补录接口的调用顺序和手工成绩规则见 [GSC 历史录像补录](./gsc-history-import.md)。
+
+导入录像在 `create_from_parser` 中提前设置来源 `upload_time` 供 `pre_save` check-in 使用，创建后再次显式保存以覆盖 `auto_now_add`；既有文件仅当本次时间更早时保存。两种保存仍走状态队列和排行信号，不用 `QuerySet.update` 绕过副作用。
 
 | 图中名称 | 函数 |
 | --- | --- |
@@ -142,8 +148,11 @@ flowchart LR
 | 重算GSC历史最好 | `update_best_score_on_gsc_participant_delete` |
 | 重算周赛历史最好 | `update_best_score_on_weekly_participant_delete` |
 | 删除参赛缓存 | `remove_participant_cache_on_delete` |
+| 撤回已发比赛积分 | `revoke_rank_score_on_participant_delete` |
 | 补录比赛录像 | `add_existing_videos_to_participant_tournament` |
 
 录像计数排除比赛录像。创建时读取 `ongoing_tournament`；删除时在 `pre_delete` 中检查该标记及 `Tournament.videos` 关联，避免级联删除清除关联后误减计数。比赛公开不增加计数。已有数据可通过 `refresh_video_counts` 命令重算，包括补录到比赛的历史录像；上传数量上限仍由独立的 `update_video_count_limit_on_video_save` 维护。
 
 `Tournament` / `GSCTournament` / `WeeklyTournament` 的保存信号分别绑定到同一个 `update_cache_on_tournament_save` 接收器。`TournamentParticipant` / `GSCParticipant` / `WeeklyParticipant` 的保存信号分别绑定到同一个 `update_cache_on_participant_save` 接收器。缓存删除信号只保留父类接收器；多表继承删除子类时会继续触发父表删除。历史最好成绩依赖子类 participant 的成绩字段，因此由 `GSCParticipant` / `WeeklyParticipant` 的保存和删除信号单独处理：保存时只比较当前 participant 与原 best，删除时才重算该用户历史 best。best 信号更新的是 `TournamentUser` 数据库汇总字段，需要和 participant 变更保持事务一致，因此不使用 `transaction.on_commit`。
+
+`revoke_rank_score_on_participant_delete` 仅监听父类 `TournamentParticipant.post_delete`，实例、QuerySet 和比赛级联删除都会执行一次，不重复绑定子类。匿名参赛者和 `rank_score=0` 跳过。其他记录在删除事务内锁定既有 `TournamentUser`，调用 `add_score(-rank_score, tournament.end_time, category=...)` 撤回已发积分；当前积分按比赛结束时间衰减到该用户保留的 `last_updated`，历史总分与 GSC/经典周赛分类总分扣除未衰减原值。数据库扣分不使用 `on_commit`，回滚会连同删除一起撤销；仅 Redis 积分排行在提交后刷新，仍使用既有年度锚点。保留 TournamentUser，不自动重排剩余选手；需要重排并修正其积分时运行 `refresh_tournament_scores`。有已发积分却缺少 TournamentUser 属于数据完整性错误，不静默跳过或补建零分账户。

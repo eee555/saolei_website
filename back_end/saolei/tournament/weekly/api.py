@@ -15,6 +15,7 @@ from tournament.schema import ParticipantOutBase
 from userprofile.decorators import login_required_error, staff_required
 from utils.response import HttpResponseConflict, realname_required_response
 from utils.schema import IdIn
+from videomanager.models import VideoModel
 from .tasks import task_weekly_finish
 
 router = Router()
@@ -121,6 +122,7 @@ WeeklyRegisterOut = create_schema(
     custom_fields=[
         ('user_id', int, 0),
         ('tournament_id', int, 0),
+        ('has_videos', bool, False),
     ],
     base_class=ParticipantOutBase,
 )
@@ -145,4 +147,6 @@ def create_weekly_participant(request: HttpRequest, data: IdIn = Form(...)):  # 
             'end_time': min(now + timedelta(hours=2), tournament.end_time),
         },
     )
-    return participant[0]
+    participant = participant[0]
+    participant.has_videos = VideoModel.objects.filter(tournaments=tournament, player=user).exists()
+    return participant

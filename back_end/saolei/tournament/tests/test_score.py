@@ -250,6 +250,9 @@ class TestScore(TournamentTestCaseBase):
             tournament_user.gsc_best,
         )
 
+        TournamentUser.objects.filter(user=self.user).update(
+            score_current=1500, score_total=1500, gsc_total=1500, last_updated=better_tournament.end_time,
+        )
         better_participant.delete()
 
         tournament_user.refresh_from_db()

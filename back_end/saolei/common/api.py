@@ -21,21 +21,19 @@ from ninja.orm import create_schema
 import psutil
 
 from accountlink.services import restart_accountlink_task
-from config.common import TASK_CLEANUP_CONFIGS
 from monitor.cache import invalidate_task_summary
 from speedranking.top.cache import TopRankingCache
 from tournament.gsc.services import restart_gsc_task
 from userprofile.decorators import staff_required
 from videomanager.models import VideoModel
 from .schema import AnalyzerWebsiteInfoOut, AutoLoginOut
-from .services import get_video_rankings
+from .services import cleanup_expired_tasks, get_video_rankings
 
 router = Router()
 
 LOG_DIR = Path('logs')
 DEFAULT_TAIL_BYTES = 64 * 1024
 MAX_TAIL_BYTES = 1024 * 1024
-TASK_CLEANUP_BATCH_SIZE = 200
 RUNNING_TASK_STALE_AFTER_SECONDS = 60 * 60
 WORKER_STARTED_TOLERANCE_SECONDS = 120
 WORKER_STATE_ALIVE = 'alive'
@@ -307,28 +305,7 @@ def cleanup_tasks(request):
     """
     - staff_required
     """
-    deleted_count = 0
-    now = django_timezone.now()
-
-    for config in TASK_CLEANUP_CONFIGS:
-        deadline = now - config['expires']
-        queryset = DBTaskResult.objects.filter(
-            task_path=config['task_path'],
-            status=TaskResultStatus.SUCCESSFUL,
-            finished_at__lt=deadline,
-        )
-
-        with transaction.atomic():
-            task_ids = list(
-                queryset
-                .select_for_update(skip_locked=True)
-                .values_list('id', flat=True)[:TASK_CLEANUP_BATCH_SIZE],
-            )
-            count, _ = DBTaskResult.objects.filter(id__in=task_ids).delete()
-
-        deleted_count += count
-
-    return deleted_count
+    return cleanup_expired_tasks()
 
 
 @router.get('/staff/logs', response=list[LogFileOut])

@@ -152,6 +152,7 @@ export default {
             b: 'Frozen',
             c: 'Valid',
             d: 'Identifier Mismatch',
+            l: 'Local video, not uploaded',
         },
         toDo: 'TODO',
         website: {

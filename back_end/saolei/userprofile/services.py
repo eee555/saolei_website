@@ -7,13 +7,14 @@ import uuid
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
+from django.db import transaction
 
 from speedranking.saolei.cache import SpeedRankingCache
 from utils import generate_code, verify_text
 from utils.exceptions import ExceptionToResponse
 from videomanager.models import VideoModel
 from .models import EmailVerifyRecord, UserProfile
-from .utils import count_new_avatar_chance, count_new_signature_chance
+from .utils import count_new_avatar_chance, count_new_signature_chance, NAME_FIELDS, validate_name
 
 logger = logging.getLogger('userprofile')
 
@@ -26,11 +27,13 @@ NAME_DEFAULT = {
 
 
 def try_update_user_name_fields(user: UserProfile, field_name: Literal['realname', 'firstname', 'lastname'], field_value: str, user_ip: str):
-    old_value = getattr(user, field_name)
+    model_field = NAME_FIELDS[field_name]
+    field_value = clean_user_name(user, field_name, field_value)
+    old_value = getattr(user, model_field)
     if old_value == field_value:
         return
 
-    if getattr(user, field_name) != NAME_DEFAULT[field_name]:
+    if old_value != NAME_DEFAULT[field_name] and not (field_name == 'realname' and not user.has_realname()):
         raise ExceptionToResponse('name', 'exist')
 
     try:
@@ -41,14 +44,81 @@ def try_update_user_name_fields(user: UserProfile, field_name: Literal['realname
     if not is_valid:
         raise ExceptionToResponse('censorship', 'illegal')
 
-    setattr(user, field_name, field_value)
+    setattr(user, model_field, field_value)
     try:
-        user.save(update_fields=[field_name, 'date_updated'])
+        user.save(update_fields=[model_field, 'date_updated'])
     except ValidationError:
         raise ExceptionToResponse('database', 'validation')
 
     logger.info(f'用户 {user.username}#{user.id} 设置 {field_name} 为 "{field_value}"')
     return
+
+
+def clean_user_name(user: UserProfile, field_name: str, value: str) -> str:
+    value = value.strip()
+    try:
+        validate_name(value)
+    except ValidationError:
+        raise ExceptionToResponse('name', 'reserved', status_code=400)
+    try:
+        return user._meta.get_field(NAME_FIELDS[field_name]).clean(value, user)
+    except ValidationError:
+        raise ExceptionToResponse('database', 'validation', status_code=400)
+
+
+def apply_privacy(user: UserProfile, hide: bool):
+    if hide and not user.has_realname():
+        raise ExceptionToResponse('privacy', 'realname_required', status_code=403)
+    if hide and not user.can_hide_realname:
+        raise ExceptionToResponse('privacy', 'not_authorized', status_code=403)
+    user.hide_realname = hide
+
+
+@transaction.atomic
+def update_user_names(user_id: int, names: dict, user_ip: str, hide: bool | None = None) -> UserProfile:
+    user = UserProfile.objects.select_for_update().get(pk=user_id)
+    old_hide = user.hide_realname
+    # Validate the whole name group before any write, including reserved values.
+    names = {field: clean_user_name(user, field, value) for field, value in names.items()}
+    for field, value in names.items():
+        try_update_user_name_fields(user, field, value, user_ip)
+    if hide is not None:
+        apply_privacy(user, hide)
+    elif not user.has_realname():
+        user.hide_realname = False
+    user.save(update_fields=['hide_realname', 'date_updated'])
+    logger.info('User #%s updated name privacy: %s -> %s', user.pk, old_hide, user.hide_realname)
+    return user
+
+
+def grant_name_privacy(user: UserProfile, actor: str):
+    """The caller holds the user row lock and commits the binding in its transaction."""
+    old = user.can_hide_realname
+    user.can_hide_realname = True
+    user.save(update_fields=['can_hide_realname', 'date_updated'])
+    logger.info('%s granted name privacy to user #%s: %s -> True', actor, user.pk, old)
+
+
+@transaction.atomic
+def update_admin_profile(user_id: int, updates: dict, actor: UserProfile) -> UserProfile:
+    user = UserProfile.objects.select_for_update().get(pk=user_id)
+    if user.is_staff and user.pk != actor.pk:
+        raise ExceptionToResponse('user', 'staff', status_code=403)
+    old_privacy = (user.can_hide_realname, user.hide_realname)
+    fields = []
+    for field, value in updates.items():
+        if field in NAME_FIELDS:
+            value = clean_user_name(user, field, value)
+        model_field = NAME_FIELDS.get(field, field)
+        setattr(user, model_field, value)
+        fields.append(model_field)
+    if not user.can_hide_realname or not user.has_realname():
+        user.hide_realname = False
+        fields.append('hide_realname')
+    if updates:
+        user.save(update_fields=[*set(fields), 'date_updated'])
+        logger.warning('Staff #%s updated user #%s fields %s; privacy %s -> %s', actor.pk, user.pk, list(updates), old_privacy, (user.can_hide_realname, user.hide_realname))
+    return user
 
 
 def has_sub200_expert_video(user: UserProfile) -> bool:
@@ -142,7 +212,11 @@ def user_metadata(user: UserProfile, client):
     return {
         'id': user.id,
         'username': user.username,
-        'realname': user.realname,
+        'realname': user._realname,
+        'firstname': user._firstname,
+        'lastname': user._lastname,
+        'can_hide_realname': user.can_hide_realname,
+        'hide_realname': user.hide_realname,
         'signature': user.signature,
         'popularity': user.popularity,
         'identifiers': user.userms.identifiers,

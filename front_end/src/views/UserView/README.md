@@ -55,18 +55,34 @@ top 和 PB 的业务规则、缓存与接口统一见 [竞速排行榜 README](.
 - 范围或共享筛选变化后表格回到第一页。主要日历/BV 操作只选择，不同时打开播放器；独立预览保留，其他未启用选择的调用方仍可直接预览代表录像。日期/BV 支持键盘选择和主题选中边框。
 - 本人公开比赛录像沿用共享确认弹窗，成功后只更新该录像，失败保留状态供重试；其他用户和访客仍受后端可见性限制。
 
+## Arbiter CSV 本地记录
+
+- 本人录像 Tab 第一行的“导入CSV”按钮与导出数据并列，选中后在下方展开文件选择、清除和提示；收起不清除本地记录。支持 Arbiter 的 `stats_csv.csv`，`BEG/INT/EXP` 对应初、中、高级。只比较 CSV 独有录像，不提供独立 diff 页面。
+- 匹配使用日期六列编码的秒级结束时间和整数毫秒 `Time`，与 AVF 解析结果对齐，不按浏览器时区修正，不用上传时间替代。等级、3BV、软件、模式及点击统计不同只提示，不否决匹配；CSV 同键行合并。
+- CSV 独有记录用 `MS_State.Local = 'l'`、`id=0` 表示，行键由匹配键生成，参与现有筛选、分页、日历、BV 表及散点图；成绩可见，上传时间/文件大小显示 `—`，不提供服务器录像操作。
+- 服务器录像缓存保持原样，CSV 不进入数据库、IndexedDB、导出、上传计数或排行榜。LOCAL 不能作为服务器查询状态。
+- 每次重新导入或比较先清除全部 LOCAL，再重新生成；导入失败不恢复旧集合。服务器录像更新后使用当前 CSV 重算，已上传的匹配记录不再生成 LOCAL。
+- CSV 只保留在当前页面实例内存中；同一用户切换 Tab 可保留，页面重载/销毁、切换用户或登录身份变化时清除。文件大小限制 10 MiB，最多 100,000 行。
+- 必填列为 `Day/Month/Year/Hour/Min/Sec/Time`；文件缺少必填表头、重复表头或引号结构错误时拒绝导入。非法日期或用时所在行跳过，附加统计不合法时按缺失值展示并提示。
+
+导入使用 Papa Parse，现有 jtcsv 导出保持原样。选型时验证了 `jtcsv@5.0.0/browser`：重复表头会覆盖前值，多余字段被丢弃，缺列不提供结构化错误，因此不能直接用于校验导入数据。Papa Parse 能保留原始单元格并报告解析错误；当前实现按行数组读取，自行校验表头与业务字段，不另写 CSV 分词器。参考 [Papa Parse 官方文档](https://www.papaparse.com/docs)。
+
+样本 `stats_csv.csv` 与同目录 AVF 已核对：CSV 日期为 `2023-10-05 21:25:57`，AVF 结束时间为 `2023-10-05T21:25:57.244Z`，两者用时均为 `35090ms`。匹配忽略小数秒，Path 和 BBBVs 的舍入不参与匹配。
+
 ## 验证
 
 - `App.cy.ts`：顶级 tab、默认入口、按需加载及设置权限。
 - `TopSummary.cy.ts`：LSF 总值与六段构成、普通/NF 共享纪录与 Pinia 锚点、表格明细、失活隔离及纪录失败重试。数值权重在 `topRankingService.test.ts` 验证，段宽与数值格式化在 `StackBar/App.cy.ts` 验证，不在个人页重复测试。
 - `UserPBView.cy.ts`：指标/NF 切换、rank 配色、空态、重试及请求生命周期。
 - `useProfileVideos.test.ts`、`videoSelection.test.ts`：身份与修订号失效、过期响应、日期/BV 选择及共享筛选。
+- `arbiterCsv.test.ts`、`arbiterCsvDiff.test.ts`、`useArbiterCsvDiff.test.ts`：真实 CSV 样本、异常输入、匹配与去重、LOCAL 展示数据和重建生命周期；`UserVideoView.cy.ts` 覆盖 CSV 导入、收起、清除及混合展示。
 - `UserVideoView.cy.ts` 与日历/BV 组件测试：选择联动、正式散点图、分页及公开操作；`cypress/e2e/profile.cy.ts` 保留真实后端流程验证。
 
 ```powershell
 # 在 front_end 目录运行
 npx.cmd vitest run src/services/topRankingService.test.ts src/services/pbRankingService.test.ts src/views/UserView/useProfileVideos.test.ts src/views/UserView/videoSelection.test.ts
 npx.cmd cypress run --component --browser chrome --headless --spec "src/views/UserView/App.cy.ts,src/views/UserView/TopSummary.cy.ts,src/views/UserView/UserPBView.cy.ts,src/views/UserView/UserVideoView.cy.ts"
+npx.cmd vitest run src/views/UserView/arbiterCsv.test.ts src/views/UserView/arbiterCsvDiff.test.ts src/views/UserView/useArbiterCsvDiff.test.ts
 ```
 
 Cypress 由开发者运行。实际雷达图尺度、宽窄布局和深浅主题需浏览器验收，不能用编译或静态检查通过替代。

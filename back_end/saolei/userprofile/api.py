@@ -12,7 +12,6 @@ from django.views.decorators.cache import cache_control
 from django_ratelimit.decorators import ratelimit
 from ninja import File, Form, Router, Schema, UploadedFile
 from ninja.decorators import decorate_view
-from ninja.errors import HttpError
 from ninja.orm import create_schema
 
 from utils import verify_image
@@ -20,15 +19,16 @@ from utils.exceptions import ExceptionToResponse
 from videomanager.models import VideoModel
 from .decorators import banned_blocked, login_required_error, staff_required
 from .models import UserProfile
-from .schema import UserInfoOut
-from .services import has_sub200_expert_video, refresh_avatar_chance, try_update_user_name_fields, try_update_user_signature
+from .schema import PUBLIC_NAME_FIELDS, RawUserNames, SelfUserInfoOut, UserInfoOut
+from .services import has_sub200_expert_video, refresh_avatar_chance, try_update_user_signature, update_admin_profile, update_user_names
+from .utils import NAME_FIELDS
 
 router = Router()
 logger = logging.getLogger('userprofile')
 AVATAR_ACCEL_REDIRECT_PREFIX = '/internal-media/'
 
 
-class AdminUserProfileOutBase(Schema):
+class AdminUserProfileOutBase(RawUserNames):
     @staticmethod
     def resolve_userms_identifiers(user: UserProfile) -> list[str]:
         return user.userms.identifiers if user.userms else []
@@ -40,16 +40,17 @@ class AdminUserProfileOutBase(Schema):
 
 AdminUserProfileOut = create_schema(
     UserProfile,
+    name='AdminUserProfileOut',
     fields=[
         'id', 'username', 'email',
-        'firstname', 'lastname', 'realname',
         'signature', 'country',
         'is_banned', 'is_staff',
         'left_realname_n', 'left_avatar_n', 'left_signature_n',
         'last_change_avatar', 'last_change_signature',
-        'date_updated',
+        'date_updated', 'can_hide_realname', 'hide_realname',
     ],
     custom_fields=[
+        *PUBLIC_NAME_FIELDS,
         ('userms_id', int | None, None),
         ('userms_identifiers', list[str], []),
         ('userms_video_num_limit', int | None, None),
@@ -59,15 +60,16 @@ AdminUserProfileOut = create_schema(
 
 ADMIN_USERPROFILE_FIELDS = (
     'username', 'email',
-    'firstname', 'lastname', 'realname',
     'signature', 'country', 'is_banned',
-    'left_realname_n', 'left_avatar_n', 'left_signature_n',
+    'left_realname_n', 'left_avatar_n', 'left_signature_n', 'can_hide_realname',
 )
 
 AdminUserProfileUpdateIn = create_schema(
     UserProfile,
+    name='AdminUserProfileUpdateIn',
     fields=list(ADMIN_USERPROFILE_FIELDS),
     optional_fields='__all__',
+    custom_fields=[(field, str, None) for field in NAME_FIELDS],
 )
 
 
@@ -86,19 +88,19 @@ def update_user_profile_admin(request, user_id: int, data: AdminUserProfileUpdat
     """
     - staff_required
     """
-    user = get_object_or_404(UserProfile.objects.select_related('userms'), id=user_id)
-    if user.is_staff and user != request.user:
-        raise HttpError(403, 'Cannot update another staff user.')
+    get_object_or_404(UserProfile, id=user_id)
+    return update_admin_profile(user_id, data.model_dump(exclude_unset=True), request.user)
 
-    updates = data.model_dump(exclude_unset=True)
-    for field, value in updates.items():
-        setattr(user, field, value)
 
-    if user_update_fields := list(updates.keys()):
-        user.save(update_fields=[*user_update_fields, 'date_updated'])
-        logger.warning(f'管理员 {request.user.username}#{request.user.id} 修改用户 {user.username}#{user.id} 字段 {", ".join(user_update_fields)}')
-
-    return get_object_or_404(UserProfile.objects.select_related('userms'), id=user_id)
+@router.get('/info/0', response=SelfUserInfoOut)
+@decorate_view(login_required_error, cache_control(max_age=5), ratelimit(key='user', rate='60/m'))
+def get_self_info(request):
+    """
+    - login_required_error
+    - cache_control(max_age=5)
+    - ratelimit(key='user', rate='60/m')
+    """
+    return request.user
 
 
 @router.get('/info/{user_id}', response=UserInfoOut)
@@ -108,10 +110,6 @@ def get_user_info(request, user_id: int):
     - Rate limited by nginx
     - cache_control(max_age=5)
     """
-    if user_id == 0:
-        if request.user.is_authenticated:
-            return request.user
-        raise HttpError(401, 'Unauthorized')
     return get_object_or_404(UserProfile, id=user_id)
 
 
@@ -195,12 +193,13 @@ class UpdateUserProfileIn(Schema):
     signature: str = None
     firstname: str = None
     lastname: str = None
+    hide_realname: bool | None = None
 
 
 @router.post('/update_profile')
 @decorate_view(
-    banned_blocked,
     login_required_error,
+    banned_blocked,
     ratelimit(key='ip', rate='1/m'),
 )
 def update_user_profile(request: HttpRequest, data: UpdateUserProfileIn = Form(...)):  # noqa: B008
@@ -220,10 +219,13 @@ def update_user_profile(request: HttpRequest, data: UpdateUserProfileIn = Form(.
     ```
 
     ### Reference
-    Response is a `dict[str, None | dict]`. The keys are `realname`, `signature`, `firstname` and `lastname`. For the values,
+    Response is a `dict[str, None | dict]`. The keys are `realname`, `signature`, `firstname` and `lastname`, plus `hide_realname` when submitted. For the values,
     - If the field is not requested, the value is `None`.
     - If the field is successfully updated (including the case where the value doesn't change), the value is `{"type": "success"}`.
     - If the field is not successfully updated, the value is `{"type": "error", "object": str, "category": str}`. The cases for `object` and `category` are listed below.
+
+    Name changes and an optional `hide_realname` are committed together. Any failure
+    rolls back this entire group; signature updates retain their independent result.
 
     |object|category|Description|
     |---|---|---|
@@ -250,15 +252,18 @@ def update_user_profile(request: HttpRequest, data: UpdateUserProfileIn = Form(.
     }
     success_out = {'type': 'success'}
 
-    for name_field in ['realname', 'firstname', 'lastname']:
-        name_value = getattr(data, name_field)
-        if name_value is None:
-            continue
+    names = {field: getattr(data, field) for field in NAME_FIELDS if getattr(data, field) is not None}
+    name_results = list(names)
+    if data.hide_realname is not None:
+        name_results.append('hide_realname')
+    if name_results:
         try:
-            try_update_user_name_fields(user, name_field, name_value, user_ip)
-            data_out[name_field] = success_out
+            user = update_user_names(user.pk, names, user_ip, data.hide_realname)
+            for field in name_results:
+                data_out[field] = success_out
         except ExceptionToResponse as e:
-            data_out[name_field] = e.body
+            for field in name_results:
+                data_out[field] = e.body
 
     if (signature := data.signature) is not None:
         try:

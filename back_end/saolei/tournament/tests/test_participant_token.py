@@ -28,7 +28,7 @@ class TestParticipantToken(TournamentTestCaseBase):
         now = timezone.now()
         weekly = self.create_weekly_tournament()
         self.user.realname = 'Player'
-        self.user.save(update_fields=['realname', 'date_updated'])
+        self.user.save(update_fields=['_realname', 'date_updated'])
         with self.captureOnCommitCallbacks(execute=True):
             participant = WeeklyParticipant.objects.create(
                 tournament=weekly, user=self.user, token=f'private-{weekly.id}',

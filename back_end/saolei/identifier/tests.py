@@ -40,6 +40,22 @@ class IdentifierQueryTest(TestCase):
                 self.assertEqual(response.status_code, 200)
                 self.assertEqual(response.json(), {'items': items})
 
+    def test_staff_can_query_unsafe_identifiers_and_receive_safe(self):
+        self.user.is_staff = True
+        self.user.save(update_fields=['is_staff'])
+        self.client.force_login(self.user)
+        for mode in ['exact', 'iexact', 'contains', 'icontains', 'startswith', 'istartswith', 'endswith', 'iendswith', 'regex']:
+            with self.subTest(mode=mode):
+                response = self.query('Unapproved identifier', mode)
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.json()['items'], [{'identifier': 'Unapproved identifier', 'user_id': None, 'safe': False}])
+        self.assertEqual(self.query('Public identifier').json()['items'], [{'identifier': 'Public identifier', 'user_id': self.user.id, 'safe': True}])
+
+    def test_normal_user_still_cannot_query_unsafe_identifiers(self):
+        self.client.force_login(self.user)
+        self.assertEqual(self.query('Unapproved identifier').json()['items'], [])
+        self.assertNotIn('safe', self.query('Public identifier').json()['items'][0])
+
     def test_lookup_is_exact_and_preserves_special_characters(self):
         text = ' 玩家 & + '
         Identifier.objects.create(identifier=text, safe=True, userms=self.userms)
@@ -172,6 +188,83 @@ class IdentifierQueryTest(TestCase):
         response = self.client.get('/api/userprofile/identifier', {'user_id': user.id})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), [])
+
+
+class IdentifierAdminApiTest(TestCase):
+    def setUp(self):
+        self.staff = UserProfile.objects.create_user(username='identifier_admin', email='identifier-admin@example.com', is_staff=True)
+        self.userms = UserMS.objects.create()
+        self.user = UserProfile.objects.create_user(username='identifier_owner', email='identifier-owner@example.com', userms=self.userms)
+        self.client.force_login(self.staff)
+
+    def post(self, path, **data):
+        return self.client.post(f'/api/identifier/{path}', data)
+
+    def test_review_bind_unbind_and_reject_unsafe_bound_identifier(self):
+        identifier = Identifier.objects.create(identifier='review me', safe=False)
+        self.assertEqual(self.post('bind', identifier=identifier.identifier, id=self.user.id).status_code, 409)
+        self.assertEqual(self.post('safe', identifier=identifier.identifier, safe=True).status_code, 200)
+        response = self.post('bind', identifier=identifier.identifier, id=self.user.id)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {'identifier': identifier.identifier, 'user_id': self.user.id, 'safe': True})
+        self.userms.refresh_from_db()
+        self.assertIn(identifier.identifier, self.userms.identifiers)
+
+        self.assertEqual(self.post('safe', identifier=identifier.identifier, safe=False).status_code, 409)
+        identifier.refresh_from_db()
+        self.assertTrue(identifier.safe)
+        self.assertEqual(identifier.userms_id, self.userms.id)
+
+        for _ in range(2):
+            response = self.post('bind', identifier=identifier.identifier, id=0)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), {'identifier': identifier.identifier, 'user_id': None, 'safe': True})
+        self.userms.refresh_from_db()
+        self.assertNotIn(identifier.identifier, self.userms.identifiers)
+        self.assertEqual(self.post('safe', identifier=identifier.identifier, safe=False).status_code, 200)
+        identifier.refresh_from_db()
+        self.assertFalse(identifier.safe)
+        self.assertIsNone(identifier.userms_id)
+
+    def test_binding_creates_new_identifier_and_rejects_owner_conflicts(self):
+        response = self.post('bind', identifier='new identifier', id=self.user.id)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['user_id'], self.user.id)
+        self.assertTrue(response.json()['safe'])
+        other = UserProfile.objects.create_user(username='identifier_other', email='identifier-other@example.com', userms=UserMS.objects.create())
+        self.assertEqual(self.post('bind', identifier='new identifier', id=other.id).status_code, 409)
+        self.assertEqual(self.post('bind', identifier='new identifier', id=self.user.id).status_code, 200)
+
+    def test_invalid_bindings_do_not_create_identifiers(self):
+        for user_id, status in [(-1, 422), ('invalid', 422), (0, 404), (999999999, 404), (self.staff.id, 400)]:
+            with self.subTest(user_id=user_id):
+                self.assertEqual(self.post('bind', identifier='not created', id=user_id).status_code, status)
+                self.assertFalse(Identifier.objects.filter(identifier='not created').exists())
+        for path in ['bind', 'safe']:
+            self.assertEqual(self.post(path, identifier='', id=0, safe=True).status_code, 422)
+
+    def test_admin_player_query_includes_safe_and_unsafe_rows(self):
+        Identifier.objects.create(identifier='approved', safe=True, userms=self.userms)
+        Identifier.objects.create(identifier='legacy unsafe', safe=False, userms=self.userms)
+        response = self.client.get(f'/api/identifier/query/user/{self.user.id}')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['items'], [
+            {'identifier': 'approved', 'user_id': self.user.id, 'safe': True},
+            {'identifier': 'legacy unsafe', 'user_id': self.user.id, 'safe': False},
+        ])
+
+    def test_admin_endpoints_require_staff_and_old_mutation_routes_are_removed(self):
+        for user in [None, self.user]:
+            if user is None:
+                self.client.logout()
+            else:
+                self.client.force_login(user)
+            for path in ['bind', 'safe']:
+                self.assertEqual(self.post(path, identifier='protected', id=0, safe=True).status_code, 403)
+            self.assertEqual(self.client.get(f'/api/identifier/query/user/{self.user.id}').status_code, 403)
+        self.client.force_login(self.staff)
+        for path in ['del/staff/', 'add/staff/', 'approve/staff/']:
+            self.assertEqual(self.client.post(f'/identifier/{path}', {'identifier': 'removed'}).status_code, 404)
 
 
 class BindIdentifierServiceTest(TestCase):

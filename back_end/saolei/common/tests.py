@@ -58,9 +58,24 @@ class APSchedulerRegistrationTests(TestCase):
                 'delete_old_job_executions',
                 'delete_overdue_captcha',
                 'delete_overdue_emailverifyrecord',
+                'delete_overdue_tasks',
                 'refresh_tournament_score_reference',
             },
         )
+
+    def test_task_cleanup_runs_weekly_in_scheduler_timezone(self):
+        from apscheduler.schedulers.background import BackgroundScheduler
+        from common.apscheduler import delete_overdue_tasks, register_jobs
+
+        scheduler = BackgroundScheduler(timezone=datetime_timezone(timedelta(hours=8)))
+        register_jobs(scheduler)
+        job = scheduler.get_job('delete_overdue_tasks')
+        monday = datetime(2026, 10, 19, 1, 10, tzinfo=scheduler.timezone)
+
+        self.assertEqual(job.func, delete_overdue_tasks)
+        self.assertEqual(job.max_instances, 1)
+        self.assertEqual(job.trigger.get_next_fire_time(None, monday), monday)
+        self.assertEqual(job.trigger.get_next_fire_time(monday, monday), monday + timedelta(days=7))
 
     def test_registration_removes_only_retired_monitor_job(self):
         from apscheduler.schedulers.background import BackgroundScheduler
@@ -271,7 +286,7 @@ class TaskDeletionTests(TestCase):
                 finished_at=old_finished_at,
             )
 
-        with patch.object(common_api, 'TASK_CLEANUP_BATCH_SIZE', 2):
+        with patch('common.services.TASK_CLEANUP_BATCH_SIZE', 2):
             deleted_count = common_api.cleanup_tasks(SimpleNamespace(user=self.staff))
 
         self.assertEqual(deleted_count, 2)
@@ -282,6 +297,30 @@ class TaskDeletionTests(TestCase):
             ).count(),
             1,
         )
+
+    def test_scheduled_cleanup_deletes_all_batches_and_preserves_ineligible_tasks(self):
+        from common.apscheduler import delete_overdue_tasks
+
+        for config in TASK_CLEANUP_CONFIGS:
+            for _ in range(3):
+                self.create_task(
+                    status=TaskResultStatus.SUCCESSFUL,
+                    task_path=config['task_path'],
+                    finished_at=timezone.now() - config['expires'] - timedelta(days=1),
+                )
+        old_finished_at = timezone.now() - timedelta(days=365)
+        retained_tasks = [
+            self.create_task(status=TaskResultStatus.SUCCESSFUL, finished_at=timezone.now()),
+            self.create_task(status=TaskResultStatus.FAILED, finished_at=old_finished_at),
+            self.create_task(status=TaskResultStatus.RUNNING),
+            self.create_task(status=TaskResultStatus.READY),
+            self.create_task(status=TaskResultStatus.SUCCESSFUL, task_path='unknown.task', finished_at=old_finished_at),
+        ]
+
+        with patch('common.services.TASK_CLEANUP_BATCH_SIZE', 2), patch('django_apscheduler.util.db.close_old_connections'):
+            delete_overdue_tasks()
+
+        self.assertSetEqual(set(DBTaskResult.objects.values_list('id', flat=True)), {task.id for task in retained_tasks})
 
     def test_running_task_health_marks_stale_unknown_worker_as_probably_orphaned(self):
         started_at = timezone.now() - timedelta(minutes=10)
