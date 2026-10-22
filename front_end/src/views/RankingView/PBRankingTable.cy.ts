@@ -29,8 +29,7 @@ describe('<PBRankingTable />', () => {
             props: { rows: [{ player_id: 42, video_id: 8001, timems: 1000, upload_time: upload }], level: 'b', bv: 1, first: 20, loading: false },
             global: { plugins: [i18n, pinia, hashRouter()], config: { globalProperties: { $axios } } },
         });
-        // ID-only links read their software from the parsed cache before the first preview click.
-        cy.wait('@parsedVideoInfo').its('request.query.ids').should('eq', '8001');
+        cy.get('.pb-ranking-table .video-preview-link').should('not.exist');
         cy.get('.pb-ranking-table thead').extractTableData().should((data) => {
             expect(data[0]).to.deep.equal(['#', 'Player', 'Time', 'Bvs', 'STNB', 'Upload Time']);
         });
@@ -57,7 +56,9 @@ describe('<PBRankingTable />', () => {
         cy.get('.pb-ranking-table a[href="#/player/42"]').click();
         cy.wrap(videoplayerstore).its('visible').should('eq', false);
         cy.get('@software.all').should('have.length', 0);
-        cy.get('.pb-ranking-table tbody tr').first().find('td').first().click();
+        cy.get('@parsedVideoInfo.all').should('have.length', 0);
+        cy.get('.pb-ranking-table tbody tr').first().find('td').eq(2).click();
+        cy.wait('@parsedVideoInfo').its('request.query.ids').should('eq', '8001');
         cy.wrap(videoplayerstore).its('visible').should('eq', true);
         cy.wrap(videoplayerstore).its('id').should('eq', 8001);
         cy.wrap(videoplayerstore).its('url').should('include', '/api/video/preview?id=8001');
