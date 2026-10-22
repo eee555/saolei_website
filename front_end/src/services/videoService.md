@@ -2,6 +2,8 @@
 
 录像的稳定文件数据由 `videoInfoService.ts` 按 ID 获取，使用现有 `idb` 数据库持久化。查询接口负责当前结果集合、权限、排序、分页和网站动态字段；前端批量补全解析字段，再构造页面使用的 `VideoAbstract`。录像二进制不缓存。
 
+`VideoPreviewLink` 默认在文字前显示软件图标，只从调用方或录像解析缓存取得 `software`；缓存未命中时通过 `fetchVideoInfo` 复用批量解析接口，不请求 `metadata`。悬停或聚焦时才创建 Tippy 中的 `VideoAbstractDisplay`，由摘要组件按 ID 从解析缓存补全其余统计字段。上传时间、状态等动态字段仅在调用方已提供时显示。已有完整摘要的调用方传入 `video`，无需额外请求；`showSoftware`、`showTooltip` 可关闭重复的图标或提示框。摘要兼容部分字段、空数据和无效日期，未知统计显示 `—`。
+
 ## 字段组
 
 下表使用以下字段组，避免重复列出相同的长字段列表：
@@ -26,6 +28,7 @@
 | --- | --- | --- |
 | `GET /api/video/info/batch?ids=1,2` | 不存在 | `[(P + ongoing_tournament)]`；最多 100 个 ID，不保证响应顺序，缺失或无权访问的 ID 不返回 |
 | `GET /api/video/metadata?ids=1,2` | 不存在 | `[M]`；供只有 ID 的调用方确认当前元信息与公开状态 |
+| `GET /video/get_software/?id=...` | `{msg: software}` | 已移除；软件字段通过 `fetchVideoInfo` 和录像缓存获取 |
 | `GET /api/userprofile/videolist?user_id=...` | `[U]` | `[M]` |
 | `GET /api/video/query` | `{count, videos: [Q]}` | `{count, videos: [{id, upload_time, state, ongoing_tournament, player__id, player__realname}]}`；后端排序、筛选与分页能力保持 |
 | 最新队列 | `GET /video/newest_queue/` → `{[id]: JSON字符串}`，字符串字段见 Redis 对照表 | `GET /api/video/newest_queue` → `[M]`；直接读取 Redis Hash 快照，将 field 映射为 `id`，`player_id`、`time` 映射为 `player`、`upload_time`，`ongoing_tournament` 为 `false`（队列只写入公开录像），不查询数据库 |

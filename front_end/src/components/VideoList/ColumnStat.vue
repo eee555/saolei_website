@@ -2,7 +2,7 @@
     <PrColumn :header="t(`common.prop.${ stat}`)" :sortable="sortable" :sort-field="stat">
         <template #body="{data}: {data: VideoAbstract}">
             <span v-if="data.isLocal" class="text">{{ data.displayStat(stat) }}</span>
-            <VideoPreviewLink v-else :id="data.id" :software="data.software" class="text">
+            <VideoPreviewLink v-else :id="data.id" :video="data" class="text">
                 {{ data.displayStat(stat) }}
             </VideoPreviewLink>
         </template>
