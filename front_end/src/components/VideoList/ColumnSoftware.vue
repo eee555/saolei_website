@@ -1,8 +1,8 @@
 <template>
-    <PrColumn field="software" :show-filter-match-modes="false" :show-filter-operator="false" :show-apply-button="false" :show-clear-button="false" style="width: 0.5em">
+    <PrColumn field="software" :show-filter-match-modes="false" :show-filter-operator="false" :show-apply-button="false" :show-clear-button="false" style="width: 0.5em" :body-style="{ textAlign: 'center' }">
         <template #body="{data}: {data: VideoAbstract}">
             <BaseOverlay>
-                <SoftwareIcon :software="data.software" style="margin: 0 -8px;" />
+                <SoftwareIcon :software="data.software" />
                 <template #header>
                     <template v-if="data.software === 'e'">
                         <img style="width: 24px; height: 24px; vertical-align: middle;" :src="MetasweeperIcon">
