@@ -166,8 +166,9 @@ class UserMSVideoTests(TestCase):
         self.assertEqual(response.status_code, 200, response.content)
         self.assertEqual(response.json()['count'], 1)
         self.assertEqual(response.json()['videos'][0]['id'], nf.id)
-        self.assertEqual(response.json()['videos'][0]['right_ce'], 0)
-        self.assertAlmostEqual(response.json()['videos'][0]['stnb'], nf.stnb)
+        self.assertNotIn('right_ce', response.json()['videos'][0])
+        parsed = self.client.get('/api/video/info/batch', {'ids': nf.id}).json()[0]
+        self.assertEqual(parsed['right_ce'], 0)
         response = self.client.get('/api/video/query', {**params, 'nf': False})
         self.assertEqual(response.json()['count'], 3)
         response = self.client.get('/api/video/query_by_id', {'id': self.user.id})
@@ -183,7 +184,7 @@ class UserMSVideoTests(TestCase):
             self.assertIsNone(response.json()[0]['right_ce'])
         response = self.client.get('/api/userprofile/videolist', {'user_id': self.user.id})
         self.assertEqual(response.status_code, 200, response.content)
-        self.assertTrue(all('right_ce' in row for row in response.json()))
+        self.assertTrue(all('right_ce' not in row for row in response.json()))
 
     def test_create_updates_video_count(self):
         self.create_video()

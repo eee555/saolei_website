@@ -4,6 +4,7 @@ import VideoPreviewLink from './VideoPreviewLink.vue';
 
 import { videoplayerstore } from '@/store';
 import type { MS_Software } from '@/utils/ms_const';
+import { mockVideoInfo } from '@cy/support/videoInfo';
 
 function mountLink(id: number | null | undefined, software?: MS_Software) {
     cy.mount(defineComponent({
@@ -22,12 +23,12 @@ describe('<VideoPreviewLink />', () => {
     });
 
     it('opens the existing player by keyboard without navigating away', () => {
-        cy.intercept('GET', '**/video/get_software/*', { body: { msg: 'e' } }).as('software');
+        mockVideoInfo([{ id: 42, software: 'e' }], 'software');
         mountLink(42);
 
         cy.get('.video-preview-link').should('have.attr', 'href', '#/video/42').focus();
         cy.realPress('Enter');
-        cy.wait('@software').its('request.query.id').should('eq', '42');
+        cy.wait('@software').its('request.query.ids').should('eq', '42');
         cy.wrap(videoplayerstore).its('visible').should('eq', true);
         cy.wrap(videoplayerstore).its('id').should('eq', 42);
         cy.wrap(videoplayerstore).its('url').should('include', '/api/video/preview?id=42');
@@ -36,7 +37,7 @@ describe('<VideoPreviewLink />', () => {
     });
 
     it('opens the preview once on an ordinary click and keeps the supplied software', () => {
-        cy.intercept('GET', '**/video/get_software/*', { body: { msg: 'e' } }).as('software');
+        mockVideoInfo([{ id: 42, software: 'e' }], 'software');
         mountLink(43, 'r');
         const parentClick = cy.spy().as('parentClick');
         cy.get('.video-preview-link').then(($link) => {

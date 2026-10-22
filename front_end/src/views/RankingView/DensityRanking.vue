@@ -93,6 +93,7 @@ import { httpErrorNotification } from '@/components/Notifications';
 import PlayerName from '@/components/PlayerName.vue';
 import VideoPreviewLink from '@/components/VideoPreviewLink.vue';
 import $axios from '@/http';
+import { fetchVideoInfos } from '@/services/videoInfoService';
 import { ms_to_s } from '@/utils';
 import { CustomLevel, DensityCustomLevelConfigs } from '@/utils/customlevel';
 import { toISODateTimeString } from '@/utils/datetime';
@@ -109,7 +110,7 @@ interface RankPlayer {
 
 interface RankResponse {
     count: number;
-    players: RankPlayer[];
+    players: Omit<RankPlayer, 'mode' | 'timems' | 'bv'>[];
 }
 
 const i18nMessages = {
@@ -154,7 +155,9 @@ async function fetchRanking() {
             },
         });
         if (request !== requestId) return;
-        players.value = data.players;
+        const videos = await fetchVideoInfos(data.players.map((row) => ({ id: row.video_id, ongoing_tournament: false, ...row })));
+        if (request !== requestId) return;
+        players.value = videos.map((row) => ({ ...row, bv: row.bv ?? 0 }));
         totalCount.value = data.count;
     } catch (error) {
         if (request === requestId) httpErrorNotification(error);

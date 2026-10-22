@@ -86,6 +86,8 @@ import { httpErrorNotification } from '@/components/Notifications';
 import VideoViewRealname from '@/components/tableColumns/VideoViewRealname.vue';
 import VideoViewState from '@/components/tableColumns/VideoViewState.vue';
 import VideoPreviewLink from '@/components/VideoPreviewLink.vue';
+import { fetchVideoInfos, videoDisplayFields } from '@/services/videoInfoService';
+import type { VideoMetadata } from '@/services/videoInfoService';
 import { videofilter } from '@/store';
 import { ms_to_s } from '@/utils';
 import { preview } from '@/utils/common/PlayerDialog';
@@ -115,7 +117,7 @@ const state = reactive({
 // const test  = reactive({v: 5});
 const videoList = reactive<Video[]>([]);
 // 带下划线与不带的至少存在一个
-type VideoFieldValue = string | number | boolean | null;
+type VideoFieldValue = string | number | boolean | null | undefined | string[];
 type Video = Record<string, VideoFieldValue> & { id: number; software: MS_Software };
 type NameKey = Record<string, string>;
 type Tags = Record<string, NameKey>;
@@ -130,7 +132,7 @@ type TagsReverse = Record<string, NameKeyReverse>;
 
 interface VideoQueryResponse {
     count: number;
-    videos: Video[];
+    videos: (VideoMetadata & { player__id: number; player__realname: string })[];
 }
 
 interface VideoQueryParams {
@@ -207,6 +209,7 @@ function previewVideo(row: Video): void {
 }
 
 function columnFormatter(key: string, value: VideoFieldValue | undefined): string | number | boolean | null | undefined {
+    if (Array.isArray(value)) return value.join(',');
     if (key == 'upload_time') {
         if (value === null || value === undefined) return value;
         return utc_to_local_format(String(value));
@@ -281,7 +284,9 @@ function offsetIndex(index: number): number {
 }
 
 // 根据配置，刷新当前页面的录像表
+let queryRevision = 0;
 function request_videos(): void {
+    const revision = ++queryRevision;
     const [bmin, bmax] = videofilter.value.bbbv_range[levelTagSelected.value];
     const sortField = indexTags[indexTagSelected.value].key;
     const params: VideoQueryParams = {
@@ -300,10 +305,12 @@ function request_videos(): void {
     }
     void proxy.$axios.get<VideoQueryResponse>('/api/video/query', {
         params: params,
-    }).then(function (response) {
+    }).then(async function (response) {
         const { data } = response;
+        const videos = await fetchVideoInfos(data.videos);
+        if (revision !== queryRevision) return;
         videoList.length = 0;
-        videoList.push(...data.videos);
+        for (const row of videos) videoList.push({ ...videoDisplayFields(row), ...row });
         state.VideoCount = data.count;
     }).catch(httpErrorNotification);
 }

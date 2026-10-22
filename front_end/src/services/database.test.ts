@@ -97,13 +97,17 @@ describe('database service', () => {
         activeDb = null;
     });
 
-    it('creates cache stores and writes store versions', async () => {
-        const database = await loadDatabaseModule();
+    it('imports without IndexedDB and initializes cache stores on first use', async () => {
+        vi.stubGlobal('indexedDB', undefined);
+        const database = await loadDatabaseModule().finally(() => {
+            vi.unstubAllGlobals();
+        });
         const db = await openDatabase(database);
 
         expect(Array.from(db.objectStoreNames)).toEqual([
             database.META_STORE_NAME,
             database.USER_INFO_STORE_NAME,
+            database.VIDEO_INFO_STORE_NAME,
         ]);
         expect(await db.get(database.META_STORE_NAME, STORE_VERSIONS_KEY)).toEqual(
             database.CACHE_STORE_SCHEMA_VERSIONS,
@@ -122,6 +126,25 @@ describe('database service', () => {
         expect(await db.get(database.META_STORE_NAME, STORE_VERSIONS_KEY)).toEqual(
             database.CACHE_STORE_SCHEMA_VERSIONS,
         );
+    });
+
+    it('clears every video scope on a frontend cache version change and preserves user information', async () => {
+        const previous = await loadDatabaseModule();
+        const oldDb = await openDatabase(previous);
+        await oldDb.put(previous.USER_INFO_STORE_NAME, { id: 99, username: 'preserved' });
+        await oldDb.put(previous.VIDEO_INFO_STORE_NAME, { id: 1, scope: 'public', data: {} });
+        await oldDb.put(previous.VIDEO_INFO_STORE_NAME, { id: 2, scope: 'user:7', data: {} });
+        await oldDb.put(previous.META_STORE_NAME, {
+            ...previous.CACHE_STORE_SCHEMA_VERSIONS,
+            [previous.VIDEO_INFO_STORE_NAME]: previous.CACHE_STORE_SCHEMA_VERSIONS[previous.VIDEO_INFO_STORE_NAME] - 1,
+        }, STORE_VERSIONS_KEY);
+        oldDb.close();
+
+        const database = await loadDatabaseModule();
+        const db = await openDatabase(database);
+        expect(await db.count(database.VIDEO_INFO_STORE_NAME)).toBe(0);
+        expect(await db.get(database.USER_INFO_STORE_NAME, 99)).toEqual({ id: 99, username: 'preserved' });
+        expect(await db.get(database.META_STORE_NAME, STORE_VERSIONS_KEY)).toEqual(database.CACHE_STORE_SCHEMA_VERSIONS);
     });
 
     it('migrates cached rows using registered row schema', async () => {

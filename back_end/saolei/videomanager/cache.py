@@ -13,18 +13,8 @@ cache = get_redis_connection('saolei_website')
 def serialize_video_to_queue(video: VideoModel):
     return {
         'state': video.state,
-        'tournament': video.ongoing_tournament,
-        'software': video.software,
         'time': video.upload_time,
-        'player_id': video.player.id,
-        'identifier': video.video.identifier,
-        'level': video.level,
-        'mode': video.mode,
-        'timems': video.timems,
-        'bv': video.bv,
-        'cl': video.cl,
-        'ce': video.ce,
-        'right_ce': video.right_ce,
+        'player_id': video.player_id,
     }
 
 
@@ -73,12 +63,8 @@ class VideoQueueCache:
 
 
 newest_cache = VideoQueueCache('newest_queue')
-freeze_cache = VideoQueueCache('freeze_queue')
-review_cache = VideoQueueCache('review_queue')
 
 
 def add_videos_to_state_queues_bulk(videos: QuerySet[VideoModel]):
     """按录像状态批量恢复普通队列。"""
     newest_cache.add_bulk(videos.filter(state__in=[MS_TextChoices.State.OFFICIAL, MS_TextChoices.State.IDENTIFIER]))
-    freeze_cache.add_bulk(videos.filter(state=MS_TextChoices.State.FROZEN))
-    review_cache.add_bulk(videos.filter(state=MS_TextChoices.State.PLAIN))

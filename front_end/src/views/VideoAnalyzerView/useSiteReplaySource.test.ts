@@ -11,8 +11,12 @@ import { useSiteReplaySource } from './useSiteReplaySource';
 
 import { useReplaySource } from '@/components/VideoAnalyzer/useReplaySource';
 
-const { get } = vi.hoisted(() => ({ get: vi.fn<AxiosInstance['get']>() }));
+const { get, fetchVideoInfo } = vi.hoisted(() => ({
+    get: vi.fn<AxiosInstance['get']>(),
+    fetchVideoInfo: vi.fn<(id: number) => Promise<{ software: 'e' }>>(),
+}));
 vi.mock('@/http', () => ({ default: { get } }));
+vi.mock('@/services/videoInfoService', () => ({ fetchVideoInfo }));
 
 const scopes: EffectScope[] = [];
 
@@ -38,7 +42,7 @@ function setup() {
 }
 
 function mockRequests() {
-    get.mockResolvedValueOnce(response({ msg: 'e' }));
+    fetchVideoInfo.mockResolvedValueOnce({ software: 'e' });
     get.mockResolvedValueOnce(response(fixture()));
 }
 
@@ -46,6 +50,7 @@ afterEach(() => {
     for (const scope of scopes.splice(0)) scope.stop();
     vi.restoreAllMocks();
     get.mockReset();
+    fetchVideoInfo.mockReset();
 });
 
 describe('analyzer replay loading', () => {
@@ -68,7 +73,7 @@ describe('analyzer replay loading', () => {
             expect(exported.bbbv_solved).toBe(52);
             expect(visible.game_board).toEqual(originalBoard);
             expect(visible.current_event_id).toBe(originalIndex);
-            expect(get).toHaveBeenCalledTimes(2);
+            expect(get).toHaveBeenCalledOnce();
         } finally {
             exported.free();
         }
@@ -95,8 +100,8 @@ describe('analyzer replay loading', () => {
         expect(replay.loading.value).toBe(false);
         expect(replay.errorMessage.value).toBe('');
         const signal = get.mock.calls[0][1]?.signal;
-        expect(get).toHaveBeenNthCalledWith(1, '/video/get_software/', { params: { id: '52200' }, signal });
-        expect(get).toHaveBeenNthCalledWith(2, '/api/video/preview', {
+        expect(fetchVideoInfo).toHaveBeenCalledWith(52200);
+        expect(get).toHaveBeenCalledWith('/api/video/preview', {
             params: { id: '52200.evf' }, responseType: 'arraybuffer', signal,
         });
     });
@@ -105,7 +110,7 @@ describe('analyzer replay loading', () => {
         const denied = response('Forbidden');
         denied.status = 403;
         denied.statusText = 'Forbidden';
-        get.mockRejectedValueOnce(new AxiosError('Request failed', undefined, undefined, undefined, denied));
+        fetchVideoInfo.mockRejectedValueOnce(new AxiosError('Request failed', undefined, undefined, undefined, denied));
         const replay = setup();
         await vi.waitFor(() => {
             expect(replay.loading.value).toBe(false);
@@ -113,7 +118,7 @@ describe('analyzer replay loading', () => {
         expect(replay.errorMessage.value).toBe('403 Forbidden');
         expect(replay.durationMs.value).toBe(0);
         expect(replay.globalBoard.value).toBeNull();
-        expect(get).toHaveBeenCalledOnce();
+        expect(get).not.toHaveBeenCalled();
     });
 
     it('reports parse errors without publishing or leaking the video', async () => {
@@ -164,19 +169,19 @@ describe('analyzer replay loading', () => {
 
     it('ignores a late binary response after the URL changes', async () => {
         const oldRequest = Promise.withResolvers<AxiosResponse<ArrayBuffer>>();
-        get.mockResolvedValueOnce(response({ msg: 'e' }));
+        fetchVideoInfo.mockResolvedValueOnce({ software: 'e' });
         get.mockReturnValueOnce(oldRequest.promise);
         const replay = setup();
         await vi.waitFor(() => {
-            expect(get).toHaveBeenCalledTimes(2);
+            expect(get).toHaveBeenCalledOnce();
         });
-        const oldSignal = get.mock.calls[1][1]?.signal;
-        get.mockResolvedValueOnce(response({ msg: 'e' }));
+        const oldSignal = get.mock.calls[0][1]?.signal;
+        fetchVideoInfo.mockResolvedValueOnce({ software: 'e' });
         const newRequest = Promise.withResolvers<AxiosResponse<ArrayBuffer>>();
         get.mockReturnValueOnce(newRequest.promise);
         replay.id.value = '123';
         await vi.waitFor(() => {
-            expect(get).toHaveBeenCalledTimes(4);
+            expect(get).toHaveBeenCalledTimes(2);
         });
         expect(oldSignal?.aborted).toBe(true);
         oldRequest.resolve(response(fixture()));

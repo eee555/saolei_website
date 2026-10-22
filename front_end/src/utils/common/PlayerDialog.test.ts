@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const axiosGet = vi.hoisted(() => vi.fn());
+const fetchVideoInfo = vi.hoisted(() => vi.fn());
 const videoplayerstore = vi.hoisted(() => ({
     visible: false,
     id: 0,
@@ -9,12 +9,12 @@ const videoplayerstore = vi.hoisted(() => ({
     error: null,
 }));
 
-vi.mock('@/http', () => ({ default: { get: axiosGet } }));
+vi.mock('@/services/videoInfoService', () => ({ fetchVideoInfo }));
 vi.mock('@/store', () => ({ videoplayerstore }));
 
 describe('preview', () => {
     beforeEach(() => {
-        axiosGet.mockReset();
+        fetchVideoInfo.mockReset();
         Object.assign(videoplayerstore, {
             visible: false,
             id: 0,
@@ -26,11 +26,11 @@ describe('preview', () => {
 
     it('fetches the software when the caller does not provide it', async () => {
         const { preview } = await import('./PlayerDialog');
-        axiosGet.mockResolvedValue({ data: { msg: 'e' } });
+        fetchVideoInfo.mockResolvedValue({ software: 'e' });
 
         await preview(12);
 
-        expect(axiosGet).toHaveBeenCalledWith('/video/get_software/', { params: { id: 12 } });
+        expect(fetchVideoInfo).toHaveBeenCalledWith(12);
         expect(videoplayerstore.software).toBe('e');
         expect(videoplayerstore.url).toContain('/api/video/preview?id=12.evf');
         expect(videoplayerstore.visible).toBe(true);
@@ -41,7 +41,7 @@ describe('preview', () => {
 
         await preview(34, 'r');
 
-        expect(axiosGet).not.toHaveBeenCalled();
+        expect(fetchVideoInfo).not.toHaveBeenCalled();
         expect(videoplayerstore.software).toBe('r');
         expect(videoplayerstore.url).toContain('/api/video/preview?id=34.rmv');
         expect(videoplayerstore.visible).toBe(true);

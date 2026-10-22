@@ -166,7 +166,9 @@ class PluckRankingApiTests(CustomRankingTestCase):
         self.assertEqual(response.status_code, 200, response.content)
         row = response.json()['players'][0]
         self.assertEqual(row['video_id'], record.video_id)
-        self.assertEqual(row['mode'], MS_TextChoices.Mode.STD)
+        self.assertNotIn('mode', row)
+        self.assertNotIn('bv', row)
+        self.assertNotIn('timems', row)
         self.assertNotIn('right_ce', row)
 
     def get_player_records(self, player):

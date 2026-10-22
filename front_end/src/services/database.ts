@@ -2,21 +2,22 @@ import type { DBSchema, IDBPDatabase, IDBPTransaction } from 'idb';
 import { openDB } from 'idb';
 
 export const CACHE_DB_NAME = 'saolei-cache';
-export const CACHE_DB_VERSION = 1;
+export const CACHE_DB_VERSION = 2;
 
 export const META_STORE_NAME = 'meta';
 export const USER_INFO_STORE_NAME = 'user-info';
+export const VIDEO_INFO_STORE_NAME = 'video-info';
 
 const STORE_VERSIONS_KEY = 'storeVersions';
 const ROW_SCHEMAS_KEY = 'rowSchemas';
 
 interface CacheStoreDefinition {
     name: string;
-    keyPath: string | string[];
+    keyPath: string | readonly string[];
     version: number;
-    indexes?: {
+    indexes?: readonly {
         name: string;
-        keyPath: string | string[];
+        keyPath: string | readonly string[];
         options?: IDBIndexParameters;
     }[];
 }
@@ -72,6 +73,14 @@ export const CACHE_STORE_DEFINITIONS = {
         keyPath: 'id',
         version: 1,
     },
+    // Video fields deliberately have no row schema: upgrades clear this store instead of reading/migrating all rows.
+    [VIDEO_INFO_STORE_NAME]: {
+        name: VIDEO_INFO_STORE_NAME,
+        keyPath: ['scope', 'id'],
+        // Bump with frontend releases that change cached video field definitions or semantics.
+        version: 2,
+        indexes: [{ name: 'scope', keyPath: 'scope' }],
+    },
 } as const;
 
 type CacheStoreName = keyof typeof CACHE_STORE_DEFINITIONS;
@@ -93,6 +102,11 @@ export interface SaoleiCacheDB extends DBSchema {
         key: IDBValidKey;
         value: unknown;
     };
+    [VIDEO_INFO_STORE_NAME]: {
+        key: [string, number];
+        value: unknown;
+        indexes: { scope: string };
+    };
 }
 
 let storeVersionPromise: Promise<void> | null = null;
@@ -101,29 +115,34 @@ let rowSchemaRevision = 0;
 let ensuredRowSchemaRevision = -1;
 const registeredRowSchemas: StoreRowSchemaMap = {};
 
-const databasePromise = openDB<SaoleiCacheDB>(CACHE_DB_NAME, CACHE_DB_VERSION, {
-    upgrade(db, _oldVersion, _newVersion, tx) {
-        if (!db.objectStoreNames.contains(META_STORE_NAME)) {
-            db.createObjectStore(META_STORE_NAME);
-        }
+let databasePromise: Promise<IDBPDatabase<SaoleiCacheDB>> | undefined;
 
-        getStoreNames().forEach((storeName) => {
-            const definition: CacheStoreDefinition = CACHE_STORE_DEFINITIONS[storeName];
-            const store = db.objectStoreNames.contains(storeName)
-                ? tx.objectStore(storeName) as unknown as IDBObjectStore
-                : db.createObjectStore(storeName, { keyPath: definition.keyPath }) as unknown as IDBObjectStore;
+function openDatabase(): Promise<IDBPDatabase<SaoleiCacheDB>> {
+    databasePromise ??= openDB<SaoleiCacheDB>(CACHE_DB_NAME, CACHE_DB_VERSION, {
+        upgrade(db, _oldVersion, _newVersion, tx) {
+            if (!db.objectStoreNames.contains(META_STORE_NAME)) {
+                db.createObjectStore(META_STORE_NAME);
+            }
 
-            syncStoreIndexes(store, definition);
-        });
-    },
-});
+            getStoreNames().forEach((storeName) => {
+                const definition: CacheStoreDefinition = CACHE_STORE_DEFINITIONS[storeName];
+                const store = db.objectStoreNames.contains(storeName)
+                    ? tx.objectStore(storeName) as unknown as IDBObjectStore
+                    : db.createObjectStore(storeName, { keyPath: typeof definition.keyPath === 'string' ? definition.keyPath : [...definition.keyPath] }) as unknown as IDBObjectStore;
+
+                syncStoreIndexes(store, definition);
+            });
+        },
+    });
+    return databasePromise;
+}
 
 function syncStoreIndexes(store: IDBObjectStore, definition: CacheStoreDefinition) {
     const expectedIndexes = definition.indexes ?? [];
 
     expectedIndexes.forEach((index) => {
         if (!store.indexNames.contains(index.name)) {
-            store.createIndex(index.name, index.keyPath, index.options);
+            store.createIndex(index.name, typeof index.keyPath === 'string' ? index.keyPath : [...index.keyPath], index.options);
         }
     });
 
@@ -333,7 +352,7 @@ async function ensureStoreVersions(db: IDBPDatabase<SaoleiCacheDB>) {
 }
 
 export async function getDatabase(): Promise<IDBPDatabase<SaoleiCacheDB>> {
-    const db = await databasePromise;
+    const db = await openDatabase();
     await ensureStoreVersions(db);
     return db;
 }

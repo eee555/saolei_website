@@ -16,10 +16,7 @@ router = Router()
 class CustomPluckPlayerOut(Schema):
     player_id: int
     video_id: int
-    mode: str
     pluck: float
-    timems: int
-    bv: int
     upload_time: datetime
 
 

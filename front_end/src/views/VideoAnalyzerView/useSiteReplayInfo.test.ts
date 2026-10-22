@@ -9,12 +9,23 @@ import type { SiteReplayInfo } from './useSiteReplayInfo';
 
 const { get } = vi.hoisted(() => ({ get: vi.fn<AxiosInstance['get']>() }));
 vi.mock('@/http', () => ({ default: { get } }));
+vi.mock('@/services/videoInfoService', () => ({
+    fetchVideoInfos: (rows: Record<string, unknown>[]) => Promise.resolve(rows.map((row) => ({ ...row, identifier: 'Fixture', tournament_identifier: [] }))),
+    videoDisplayFields: (row: Record<string, unknown>) => row,
+}));
 const scopes: EffectScope[] = [];
 function data(id = 42): SiteReplayInfo {
-    return { video: { id, player: 7, upload_time: '2026-10-12T10:00:00Z' }, expanded_video: { id: 1 }, tournament_ids: [2, 3], filename: 'original.evf', rankings: [] };
+    const video = { id, player: 7, upload_time: '2026-10-12T10:00:00Z', state: 'c', ongoing_tournament: false, identifier: 'Fixture', tournament_identifier: [] };
+    return { video, expanded_video: { identifier: 'Fixture', tournament_identifier: [] }, tournament_ids: [2, 3], filename: 'original.evf', rankings: [] };
 }
-function response(info: SiteReplayInfo): AxiosResponse<SiteReplayInfo> {
-    return { data: info, status: 200, statusText: 'OK', headers: {}, config: { headers: new AxiosHeaders() } };
+function response(info: SiteReplayInfo): AxiosResponse<Omit<SiteReplayInfo, 'expanded_video'>> {
+    const wire = {
+        video: { id: info.video.id, player: info.video.player, upload_time: info.video.upload_time, state: 'c', ongoing_tournament: false },
+        tournament_ids: info.tournament_ids,
+        filename: info.filename,
+        rankings: info.rankings,
+    };
+    return { data: wire, status: 200, statusText: 'OK', headers: {}, config: { headers: new AxiosHeaders() } };
 }
 function setup() {
     const id = ref('42');
@@ -42,8 +53,8 @@ describe('website replay information', () => {
     });
 
     it('clears old information and ignores a late response when the replay changes or unmounts', async () => {
-        let first: ((value: AxiosResponse<SiteReplayInfo>) => void) | undefined;
-        let second: ((value: AxiosResponse<SiteReplayInfo>) => void) | undefined;
+        let first: ((value: ReturnType<typeof response>) => void) | undefined;
+        let second: ((value: ReturnType<typeof response>) => void) | undefined;
         get.mockImplementationOnce(() => new Promise((resolve) => {
             first = resolve;
         }));
