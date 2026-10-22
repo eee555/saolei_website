@@ -17,6 +17,7 @@ from ninja.orm import create_schema
 from utils import verify_image
 from utils.exceptions import ExceptionToResponse
 from videomanager.models import VideoModel
+from videomanager.schema import VIDEO_METADATA_FIELDS, VideoMetadataOut
 from .decorators import banned_blocked, login_required_error, staff_required
 from .models import UserProfile
 from .schema import PUBLIC_NAME_FIELDS, RawUserNames, SelfUserInfoOut, UserInfoOut
@@ -162,19 +163,7 @@ def get_user_avatar(request, user_id: int):
     return response
 
 
-UserVideoOut = create_schema(
-    VideoModel,
-    fields=[
-        'id',
-        'upload_time', 'level', 'mode', 'timems', 'bv',
-        'state', 'software', 'cl', 'ce', 'right_ce', 'file_size',
-        'end_time', 'ongoing_tournament', 'path', 'pluck',
-    ],
-    custom_fields=[('cl', int | None, None), ('ce', int | None, None)],
-)
-
-
-@router.get('/videolist', response=List[UserVideoOut])
+@router.get('/videolist', response=list[VideoMetadataOut])
 @decorate_view(ratelimit(key='ip', rate='1/s'))
 def get_user_videos(request, user_id: int):
     """
@@ -184,8 +173,7 @@ def get_user_videos(request, user_id: int):
     queryset = VideoModel.objects.filter(player=user)
     if user != request.user:
         queryset = queryset.filter(ongoing_tournament=False)
-    videos = queryset.values('id', 'upload_time', 'level', 'mode', 'timems', 'bv', 'state', 'software', 'cl', 'ce', 'right_ce', 'file_size', 'end_time', 'ongoing_tournament', 'path', 'pluck')
-    return list(videos)
+    return queryset.only(*VIDEO_METADATA_FIELDS)
 
 
 class UpdateUserProfileIn(Schema):

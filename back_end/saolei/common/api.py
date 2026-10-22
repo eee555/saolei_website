@@ -70,7 +70,6 @@ def video_analyzer_info(request, video_id: int):
         raise HttpError(403, 'Forbidden.')
     return {
         'video': video,
-        'expanded_video': video.video,
         'tournament_ids': list(video.tournaments.order_by('id').values_list('id', flat=True)),
         'filename': video.file.name.replace('\\', '/').rsplit('/', 1)[-1],
         'rankings': get_video_rankings(video),

@@ -49,6 +49,15 @@ class PublicClient:
         data = self.get(path, params)
         if not isinstance(data, list):
             raise ValueError(f'{path} did not return a JSON array')
+        if path == '/api/userprofile/videolist' and any('timems' not in row for row in data):
+            # Reconstruct the snapshot's self-contained index after the website API split.
+            metadata = data
+            by_id = {}
+            for offset in range(0, len(metadata), 100):
+                ids = ','.join(str(row['id']) for row in metadata[offset:offset + 100])
+                parsed = self.get('/api/video/info/batch', {'ids': ids})
+                by_id.update((row['id'], row) for row in parsed)
+            data = [{**by_id[row['id']], **row} for row in metadata if row['id'] in by_id]
         write_json(target, data)
         return data
 
@@ -129,7 +138,7 @@ def download(root: Path, client: PublicClient, *, skip_details: bool = False):
         for video_id in video_ids:
             if video_id not in video_index:
                 continue
-            # Lists provide pluck and right_ce even when cached details lack them.
+            # Reconstructed indexes provide pluck and right_ce even when cached details lack them.
             video = {**video_index[video_id], **details.get(video_id, {})}
             if video.get('right_ce') is None:
                 video['right_ce'] = video_index[video_id].get('right_ce')

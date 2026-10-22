@@ -4,16 +4,18 @@ import $axios from '@/http';
 import i18n from '@/i18n';
 import { pinia } from '@/store/create';
 import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
+import { mockVideoInfo } from '@cy/support/videoInfo';
 
 describe('<DensityRanking />', () => {
     installHashHistoryCleanup();
 
     it('preserves backend pagination, formatted scores and cell links', () => {
         cy.mockPlayerNameFallback();
+        mockVideoInfo([{ id: 8001, level: 'c8_8_40', timems: 1234, bv: 40 }]);
         cy.intercept({ method: 'GET', pathname: '/api/customranking/pluck' }, {
             body: {
                 count: 21,
-                players: [{ player_id: 42, video_id: 8001, mode: '00', pluck: 0.123456, timems: 1234, bv: 40, upload_time: '2026-10-06T12:00:00Z' }],
+                players: [{ player_id: 42, video_id: 8001, pluck: 0.123456, upload_time: '2026-10-06T12:00:00Z' }],
             },
         }).as('ranking');
         const router = hashRouter();

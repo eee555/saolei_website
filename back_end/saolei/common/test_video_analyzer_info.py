@@ -9,6 +9,7 @@ from msuser.models import UserMS
 from tournament.models import Tournament
 from userprofile.models import UserProfile
 from videomanager.models import ExpandVideoModel, VideoModel
+from videomanager.schema import VIDEO_METADATA_FIELDS
 
 
 class VideoAnalyzerRankingTests(SimpleTestCase):
@@ -64,7 +65,7 @@ class VideoAnalyzerInfoTests(TestCase):
         self.mock_rankings = self.rankings.start()
         self.addCleanup(self.rankings.stop)
 
-    def test_returns_full_models_original_filename_and_all_tournament_ids(self):
+    def test_returns_website_fields_original_filename_and_all_tournament_ids(self):
         first = Tournament.objects.create()
         second = Tournament.objects.create()
         first.videos.add(self.video)
@@ -76,10 +77,8 @@ class VideoAnalyzerInfoTests(TestCase):
         self.assertEqual(data['video']['player'], self.player.id)
         self.assertEqual(data['tournament_ids'], [first.id, second.id])
         self.assertEqual(data['rankings'], [])
-        self.assertEqual(set(data['video']), {field.name for field in VideoModel._meta.fields})
-        self.assertEqual(set(data['expanded_video']), {field.name for field in ExpandVideoModel._meta.fields})
-        self.assertEqual(data['expanded_video']['identifier'], 'analyzer')
-        self.assertIsNone(data['video']['cl'])
+        self.assertEqual(set(data['video']), set(VIDEO_METADATA_FIELDS))
+        self.assertNotIn('expanded_video', data)
         self.mock_rankings.assert_called_once()
 
     def test_missing_video_is_404(self):

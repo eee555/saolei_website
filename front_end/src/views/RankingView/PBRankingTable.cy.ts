@@ -8,6 +8,7 @@ import { videoplayerstore } from '@/store';
 import { colorThemes } from '@/store/color';
 import { pinia } from '@/store/create';
 import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
+import { mockVideoInfo } from '@cy/support/videoInfo';
 
 describe('<PBRankingTable />', () => {
     installHashHistoryCleanup();
@@ -23,7 +24,7 @@ describe('<PBRankingTable />', () => {
 
     it('renders the columns, rank offset, derived metrics and video preview for the supplied records', () => {
         const upload = new Date(2026, 9, 5, 12, 34, 0).toISOString();
-        cy.intercept('GET', '**/video/get_software/*', { body: { msg: 'e' } }).as('software');
+        mockVideoInfo([{ id: 8001, software: 'e' }], 'software');
         cy.mount(PBRankingTable, {
             props: { rows: [{ player_id: 42, video_id: 8001, timems: 1000, upload_time: upload }], level: 'b', bv: 1, first: 20, loading: false },
             global: { plugins: [i18n, pinia, hashRouter()], config: { globalProperties: { $axios } } },
@@ -55,7 +56,7 @@ describe('<PBRankingTable />', () => {
         cy.wrap(videoplayerstore).its('visible').should('eq', false);
         cy.get('@software.all').should('have.length', 0);
         cy.get('.pb-ranking-table tbody tr').first().find('td').first().click();
-        cy.wait('@software').its('request.query.id').should('eq', '8001');
+        cy.wait('@software').its('request.query.ids').should('eq', '8001');
         cy.wrap(videoplayerstore).its('visible').should('eq', true);
         cy.wrap(videoplayerstore).its('id').should('eq', 8001);
         cy.wrap(videoplayerstore).its('url').should('include', '/api/video/preview?id=8001');

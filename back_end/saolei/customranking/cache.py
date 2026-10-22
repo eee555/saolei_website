@@ -143,9 +143,7 @@ def record_to_detail(record: CustomPluckRecord):
     """将数据库纪录转换为 Redis detail hash 中保存的展示信息。"""
     return {
         'video_id': record.video_id,
-        'mode': record.video.mode,
         'timems': record.timems,
-        'bv': record.video.bv,
         'upload_time': record.upload_time.isoformat(),
     }
 

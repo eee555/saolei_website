@@ -6,6 +6,19 @@
 python manage.py <command> --help
 ```
 
+## 录像缓存升级
+
+### `compact_video_cache`
+
+精简 `newest_queue` 与四种自定义 pluck 榜详情 Hash 的重复展示字段，并删除已停止维护的 `freeze_queue`、`review_queue`。不扫描 Redis keyspace，也不重建最新队列成员；并发修改或删除的成员不会被旧值覆盖或重新加入。
+
+```bash
+python manage.py compact_video_cache --dry-run
+python manage.py compact_video_cache
+```
+
+先部署新的前后端并确保旧写进程已退出，再运行压缩。命令可重复运行，输出改写数量及内存估算；接口与存储字段对照见仓库中的 `front_end/src/services/videoService.md`。
+
 ## 本地公开数据快照
 
 ### `dangerzone.init_local_test`（独立脚本）

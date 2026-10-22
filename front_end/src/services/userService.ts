@@ -1,12 +1,12 @@
 import type { CacheRowSchema } from './database';
 import { getDatabase, getTransaction, registerStoreRowSchema, USER_INFO_STORE_NAME } from './database';
 import { serviceConfig } from './store';
+import { fetchVideoList } from './videoService';
 
 import $axios from '@/http';
 import type { GetUserInfoResponse } from '@/utils/common/structInterface';
 import { UserProfile } from '@/utils/userprofile';
-import type { VideoAbstractInfo } from '@/utils/videoabstract';
-import { VideoAbstract } from '@/utils/videoabstract';
+import type { VideoAbstract } from '@/utils/videoabstract';
 
 type RequestStatus = 'pending' | 'inFlight';
 interface UserInfoRequest {
@@ -230,9 +230,7 @@ export function fetchUserVideos(userId: number, viewerKey = 'public', revision =
 
     if (pendingRequest) return pendingRequest;
 
-    const promise = $axios.get('/api/userprofile/videolist', {
-        params: { user_id: userId },
-    }).then(({ data }) => (data as VideoAbstractInfo[]).map((video) => new VideoAbstract(video))).finally(() => {
+    const promise = fetchVideoList('/api/userprofile/videolist', { user_id: userId }).finally(() => {
         userVideosPendingRequests.delete(key);
     });
 

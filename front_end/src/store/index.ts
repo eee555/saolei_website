@@ -5,6 +5,7 @@ import { pinia } from './create';
 
 import { fetchProfileSaoleiRecords, profileDataRevision } from '@/services/profileDataService';
 import type { TopAnchors } from '@/services/topRankingService';
+import { setVideoInfoViewer } from '@/services/videoInfoService';
 import { deepMutableCopy } from '@/utils';
 import type { PiecewiseColorSchemeInterface } from '@/utils/colors';
 import { LoginStatus } from '@/utils/common/structInterface';
@@ -51,6 +52,7 @@ export const store = defineStore('user', {
         login(userdata: UserProfileData) {
             this.sessionRevision++;
             this.user = new UserProfile(userdata);
+            setVideoInfoViewer(this.user.id, this.sessionRevision);
             this.expertTimeMs = undefined;
             this.qualificationStatus = 'idle';
             this.qualificationRevision = -1;
@@ -59,6 +61,7 @@ export const store = defineStore('user', {
         logout() {
             this.sessionRevision++;
             this.user = new UserProfile();
+            setVideoInfoViewer(0, this.sessionRevision);
             this.expertTimeMs = undefined;
             this.qualificationStatus = 'idle';
             this.qualificationRevision = -1;
