@@ -272,7 +272,7 @@ python manage.py delete_newest_queue
 
 位置：`common/management/commands/db_worker_robust.py`
 
-启动 `django-tasks-db` worker，通过 pidfile 和进程检测避免重复启动。仅在未检测到现有 worker 时，将遗留的 `RUNNING` 任务标记为 `FAILED`，然后启动 worker；不会在运行期间自动恢复任务或重启进程。
+启动 `django-tasks-db` worker，通过 pidfile 和进程检测避免重复启动。本进程以及启动它的父进程不算另一个 worker。仅在未检测到现有 worker 时，将遗留的 `RUNNING` 任务标记为 `FAILED`，然后启动 worker；不会在运行期间自动恢复任务或重启进程。
 
 | 参数 | 默认值 | 说明 |
 | --- | --- | --- |

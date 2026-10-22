@@ -6,6 +6,7 @@ from common.api import router as common_router
 from customranking.api import router as customranking_router
 from effranking.api import router as effranking_router
 from identifier.api import router as identifier_router
+from medal.api import router as medal_router
 from monitor.api import router as monitor_router
 from msuser.api import router as msuser_router
 from speedranking.api import router as speedranking_router
@@ -26,6 +27,7 @@ api.add_router('/accountlink/msgames/', accountlink_msgames_router)
 api.add_router('/video/', videomanager_router)
 api.add_router('/customranking/', customranking_router)
 api.add_router('/identifier/', identifier_router)
+api.add_router('/medal/', medal_router)
 api.add_router('/msuser/', msuser_router)
 api.add_router('/speedranking/', speedranking_router)
 api.add_router('/effranking/', effranking_router)

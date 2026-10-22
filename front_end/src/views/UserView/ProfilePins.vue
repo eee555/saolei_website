@@ -1,0 +1,133 @@
+<template>
+    <div v-show="pins.length" class="pins">
+        <div v-for="pin in pins" :key="pin.grant_id ?? pin.code" class="pin" :class="{ 'pin-ring': showRing(pin) }">
+            <img v-if="artOf(pin)" class="pin-art" alt="" :src="artOf(pin)">
+            <span class="series">{{ seriesLabel(pin.series) }}</span>
+            <span class="stage">{{ stageLabel(pin) }}</span>
+            <span v-if="showRing(pin)" class="count">{{ pin.current_value }}</span>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+import { onMounted, onUnmounted, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
+
+import type { MedalItem } from '@/services/medalService';
+import { fetchPlayerMedals, medalArtUrl, medalSeriesLabel, medalStageLabel, subscribeMedalPins } from '@/services/medalService';
+
+const props = defineProps({
+    userId: { type: Number, required: true },
+});
+
+const { locale } = useI18n({ useScope: 'global' });
+const route = useRoute();
+const pins = ref<MedalItem[]>([]);
+let stopListening: () => void = () => undefined;
+
+function seriesLabel(series: string) {
+    return medalSeriesLabel(series, locale.value);
+}
+
+function stageLabel(pin: MedalItem) {
+    return medalStageLabel(pin.series, pin.stage);
+}
+
+function artOf(pin: MedalItem) {
+    return medalArtUrl(pin.series, pin.code, pin.stage);
+}
+
+function showRing(pin: MedalItem) {
+    return pin.kind === 'count' && pin.direction === 'asc' && pin.next_threshold === null && pin.stage !== null && pin.current_value !== null && pin.current_value > pin.stage;
+}
+
+async function load() {
+    if (!props.userId) {
+        pins.value = [];
+        return;
+    }
+    try {
+        const summary = await fetchPlayerMedals(props.userId);
+        pins.value = summary.pins;
+    } catch {
+        pins.value = [];
+    }
+}
+
+watch(() => [props.userId, route.name], () => {
+    void load();
+}, { immediate: true });
+onMounted(() => {
+    stopListening = subscribeMedalPins(() => {
+        void load();
+    });
+});
+onUnmounted(() => {
+    stopListening();
+});
+</script>
+
+<style scoped lang="less">
+.pins {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    width: 100%;
+    margin-top: 8px;
+}
+
+.pin {
+    position: relative;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    width: calc(50% - 2px);
+    min-height: 36px;
+    padding: 2px 4px;
+    border: 1px solid var(--ui-border-color);
+    border-radius: 4px;
+}
+
+.pin-ring {
+    box-shadow: 0 0 0 2px var(--ui-color-primary);
+}
+
+.pin-art {
+    display: block;
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+}
+
+.series,
+.stage {
+    max-width: 100%;
+    overflow: hidden;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.series {
+    color: var(--ui-text-color-secondary);
+    font-size: var(--ui-font-size-extra-small);
+}
+
+.stage {
+    min-height: 1.2em;
+    color: var(--ui-text-color-primary);
+    font-size: var(--ui-font-size-small);
+}
+
+.count {
+    position: absolute;
+    top: -6px;
+    right: -4px;
+    color: var(--ui-color-primary);
+    font-size: var(--ui-font-size-extra-small);
+    line-height: 1;
+}
+</style>

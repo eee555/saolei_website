@@ -655,6 +655,10 @@ participant 删除时，`revoke_rank_score_on_participant_delete` 在删除事�
 
 `GSCParticipant.t37` 是数据库持久化 generated field，并建立 `gsc_t37_idx` 索引，服务于 GSC 排名和历史最好成绩查询。保存信号使用当前 participant 实例上的临时 `t37` 值进行 best 增量比较，因此不会为了读取 generated field 再查询一次 participant。
 
+## 勋章图鉴
+
+`medal/cache.py` 把已启用的成就定义放在 Django `default` 缓存，逻辑 key 为 `medal:catalog`，TTL 300 秒。内容是定义字典，不含玩家是否解锁。定义保存或删除时删掉这个 key。个人页的授予、进度和佩戴不进缓存。
+
 ## 写入与重建入口
 
 | 缓存 | 主要写入入口 | 重建 / 清理入口 |
@@ -666,6 +670,7 @@ participant 删除时，`revoke_rank_score_on_participant_delete` 在删除事�
 | NORMAL 参赛关系 | `TournamentCache.update_participant` / `remove_participant` | `manage.py rebuild_tournament_cache` 按 `user_id` 分组重建。 |
 | 比赛积分排行 | `TournamentCache.update_tournament_user` / `update_tournament_users`；APScheduler 年度锚点更新 | `manage.py rebuild_tournament_user_cache` 重建全部 7 个 zset；`manage.py rebuild_tournament_current_score_cache` 原子重算当前积分 zset 和年度锚点。 |
 | common 摘要 | 对应 API 内部 `cache.set` | TTL 到期自动失效。 |
+| 勋章图鉴 | `medal.signals.invalidate_medal_catalog` | 定义保存或删除后删除 `medal:catalog`。没有单独的重建命令，下次读取从 `MedalDefinition` 装回。 |
 | 文章目录 | `article.views.update_list` | 管理员手动调用 `update_list` 全量刷新。 |
 
 ## 读取约定

@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     'tournament',
     'monitor',
     'common',
+    'medal',
     'django_cleanup.apps.CleanupConfig',  # 必须放在最后(文档所言)
 ]
 
