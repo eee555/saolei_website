@@ -49,11 +49,11 @@ export function mockVideoInfo(rows: Record<string, unknown>[], metadataAlias = '
     }));
     cy.intercept('GET', '**/api/video/metadata*', (request) => {
         const ids = String(request.query.ids).split(',').map(Number);
-        request.reply(videos.filter((row) => ids.includes(row.id)));
+        request.reply({ body: videos.filter((row) => ids.includes(row.id)) });
     }).as(metadataAlias);
     cy.intercept('GET', '**/api/video/info/batch*', (request) => {
         const ids = String(request.query.ids).split(',').map(Number);
-        request.reply(parsed.filter((row) => ids.includes(row.id)));
+        request.reply({ body: parsed.filter((row) => ids.includes(row.id)) });
     }).as('parsedVideoInfo');
     return videos;
 }

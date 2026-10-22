@@ -57,6 +57,7 @@ describe('<PBRankingTable />', () => {
         cy.get('@software.all').should('have.length', 0);
         cy.get('.pb-ranking-table tbody tr').first().find('td').first().click();
         cy.wait('@software').its('request.query.ids').should('eq', '8001');
+        cy.wait('@parsedVideoInfo').its('request.query.ids').should('eq', '8001');
         cy.wrap(videoplayerstore).its('visible').should('eq', true);
         cy.wrap(videoplayerstore).its('id').should('eq', 8001);
         cy.wrap(videoplayerstore).its('url').should('include', '/api/video/preview?id=8001');
@@ -74,9 +75,10 @@ describe('<PBRankingTable />', () => {
             });
             cy.get('.pb-ranking-table tbody tr').first().focus();
             cy.realPress(key);
-            cy.wait('@software').its('request.query.id').should('eq', '8001');
+            cy.wait('@software').its('request.query.ids').should('eq', '8001');
             cy.wrap(videoplayerstore).its('visible').should('eq', true);
             cy.get('@software.all').should('have.length', requests);
+            cy.get('@parsedVideoInfo.all').should('have.length', 1);
         }
     });
 

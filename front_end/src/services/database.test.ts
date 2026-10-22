@@ -97,8 +97,11 @@ describe('database service', () => {
         activeDb = null;
     });
 
-    it('creates cache stores and writes store versions', async () => {
-        const database = await loadDatabaseModule();
+    it('imports without IndexedDB and initializes cache stores on first use', async () => {
+        vi.stubGlobal('indexedDB', undefined);
+        const database = await loadDatabaseModule().finally(() => {
+            vi.unstubAllGlobals();
+        });
         const db = await openDatabase(database);
 
         expect(Array.from(db.objectStoreNames)).toEqual([

@@ -115,22 +115,27 @@ let rowSchemaRevision = 0;
 let ensuredRowSchemaRevision = -1;
 const registeredRowSchemas: StoreRowSchemaMap = {};
 
-const databasePromise = openDB<SaoleiCacheDB>(CACHE_DB_NAME, CACHE_DB_VERSION, {
-    upgrade(db, _oldVersion, _newVersion, tx) {
-        if (!db.objectStoreNames.contains(META_STORE_NAME)) {
-            db.createObjectStore(META_STORE_NAME);
-        }
+let databasePromise: Promise<IDBPDatabase<SaoleiCacheDB>> | undefined;
 
-        getStoreNames().forEach((storeName) => {
-            const definition: CacheStoreDefinition = CACHE_STORE_DEFINITIONS[storeName];
-            const store = db.objectStoreNames.contains(storeName)
-                ? tx.objectStore(storeName) as unknown as IDBObjectStore
-                : db.createObjectStore(storeName, { keyPath: typeof definition.keyPath === 'string' ? definition.keyPath : [...definition.keyPath] }) as unknown as IDBObjectStore;
+function openDatabase(): Promise<IDBPDatabase<SaoleiCacheDB>> {
+    databasePromise ??= openDB<SaoleiCacheDB>(CACHE_DB_NAME, CACHE_DB_VERSION, {
+        upgrade(db, _oldVersion, _newVersion, tx) {
+            if (!db.objectStoreNames.contains(META_STORE_NAME)) {
+                db.createObjectStore(META_STORE_NAME);
+            }
 
-            syncStoreIndexes(store, definition);
-        });
-    },
-});
+            getStoreNames().forEach((storeName) => {
+                const definition: CacheStoreDefinition = CACHE_STORE_DEFINITIONS[storeName];
+                const store = db.objectStoreNames.contains(storeName)
+                    ? tx.objectStore(storeName) as unknown as IDBObjectStore
+                    : db.createObjectStore(storeName, { keyPath: typeof definition.keyPath === 'string' ? definition.keyPath : [...definition.keyPath] }) as unknown as IDBObjectStore;
+
+                syncStoreIndexes(store, definition);
+            });
+        },
+    });
+    return databasePromise;
+}
 
 function syncStoreIndexes(store: IDBObjectStore, definition: CacheStoreDefinition) {
     const expectedIndexes = definition.indexes ?? [];
@@ -347,7 +352,7 @@ async function ensureStoreVersions(db: IDBPDatabase<SaoleiCacheDB>) {
 }
 
 export async function getDatabase(): Promise<IDBPDatabase<SaoleiCacheDB>> {
-    const db = await databasePromise;
+    const db = await openDatabase();
     await ensureStoreVersions(db);
     return db;
 }

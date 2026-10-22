@@ -22,17 +22,16 @@ describe('<DensityRanking />', () => {
         cy.mount(DensityRanking, { global: { plugins: [i18n, pinia, router], config: { globalProperties: { $axios } } } });
 
         cy.wait('@ranking').its('request.query').should('include', { level: 'c8_8_40', start: '0', end: '20' });
+        cy.wait('@parsedVideoInfo').its('request.query.ids').should('eq', '8001');
+        cy.get('.ranking-table a[href="#/player/42"]').should('exist');
         cy.get('.ranking-table tbody').extractTableData().should((data) => {
             expect(data[0]?.[0]).to.equal('1');
             expect(data[0]?.slice(2, 6)).to.deep.equal(['0.123456', 'Standard', '1.234', '40']);
         });
-        cy.get('.ranking-table a[href="#/player/42"]').should('exist');
         cy.contains('.ranking-table .video-preview-link', '0.123456').should('have.attr', 'href', '#/video/8001');
         cy.get('.pagination .btn-next').click();
         cy.wait('@ranking').its('request.query').should('include', { start: '20', end: '40' });
-        cy.get('.ranking-table tbody').extractTableData().should((data) => {
-            expect(data[0]?.[0]).to.equal('21');
-        });
+        cy.get('.ranking-table tbody .table-col-rank').should('have.text', '21');
         cy.wrap(router).its('currentRoute.value.query').should('deep.equal', { level: 'c8_8_40', page: '2', page_size: '20' });
         cy.get('.board-buttons button').eq(1).click();
         cy.wait('@ranking').its('request.query').should('include', { level: 'c16_16_100', start: '0', end: '20' });
