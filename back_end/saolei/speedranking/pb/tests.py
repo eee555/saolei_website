@@ -100,6 +100,12 @@ class PBRankingTests(TestCase):
         self.assertEqual(self.ranking.get_counts(), expected_counts)
         self.assertIn('ranks and counts refreshed', output.getvalue())
 
+    def test_ranking_requires_positive_bv_and_parses_query_strings(self):
+        for bv, expected in [('0', 422), ('-1', 422), ('invalid', 422), ('4', 200)]:
+            with self.subTest(bv=bv):
+                response = self.client.get('/api/speedranking/pb/rank', {'level': 'b', 'bv': bv})
+                self.assertEqual(response.status_code, expected, response.content)
+
     def test_worsening_deletion_and_category_moves(self):
         first = self.create_video()
         backup = self.create_video(timems=2000)

@@ -24,6 +24,12 @@ TODO: 补充积分展示 API 与前端：
 - 用户资料页需要展示当前比赛积分、历史总积分、GSC/周赛拆分积分和最好成绩。
 - `TournamentUser` 更新后如果影响用户资料摘要，需要同步考虑 `userprofile` 缓存/批量接口的失效策略。
 
+## GSC 历史成绩补录
+
+TODO：部署 [GSC 历史成绩补录](../../../vitepress_doc/zh/guide/development/gsc-history-import.md) 前人工审计旧的手工成绩及匿名记录，并设置 `manual_scores`，不按无录像自动推断来源；在实际服务器测量每批最多 10 条的完整请求耗时（含提交回调），本地性能不保证生产 2 秒时限。
+
+TODO：由用户运行新增 GSC 历史补录 Cypress 组件/E2E 测试，核验标识多选、录像重试、CSV 分批、手工汇总及无录像删除。
+
 ## 历史比赛列表同步计划
 
 TODO: 这类列表展示问题优先参考 `userprofile` app 的缓存同步方式解决，而不是优先重构 Django 多表继承实现。前端应把比赛基础信息缓存在 IndexedDB 中，后端提供列表索引、批量详情和更新检查接口。

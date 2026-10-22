@@ -1,5 +1,11 @@
 # 该APP仅作为测试用途，所有API需使用`@local_only`限制访问权限，且仅允许测试环境使用。
 
+## E2E 账号准备
+
+多个账号使用 `cy.registerUsers([...])`，一次请求调用 `register_bulk`，返回按输入顺序排列的用户 ID。单账号仍用 `cy.registerUser(...)`；两者共用邮箱、密码和实名默认值，并通过相同 service 创建 UserProfile 与各自的 UserMS。
+
+批量注册仍逐个走 Django `create_user`，保留密码哈希与保存逻辑；任一记录失败则整批数据库写入回滚，不保留孤立 UserMS。所有注册入口仍受 `local_only` 和 `E2E_TEST` 限制，不用于验证正式注册界面。
+
 ## 本地公开数据快照
 
 - `public_snapshot.py`：导入及初始化编排，保留生产标记和本地测试环境检查。

@@ -6,7 +6,7 @@ from userprofile.decorators import banned_blocked, login_required_error
 from utils.exceptions import ExceptionToResponse
 from utils.response import realname_required_response
 from .forms import UploadVideoForm
-from .utils import new_video_by_file
+from .services import new_video_by_file
 
 
 @require_POST

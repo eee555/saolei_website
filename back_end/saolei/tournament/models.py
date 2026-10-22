@@ -231,6 +231,7 @@ class GeneralParticipant(TournamentParticipant):
 
 
 class GSCParticipant(TournamentParticipant):
+    manual_scores = models.BooleanField(default=False)
     bt1st = models.PositiveIntegerField(default=GSC_Defaults.BT)
     bt20th = models.PositiveIntegerField(default=GSC_Defaults.BT)
     bt20sum = models.PositiveIntegerField(default=GSC_Defaults.BT * 20)

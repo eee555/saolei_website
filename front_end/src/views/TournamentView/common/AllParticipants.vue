@@ -13,7 +13,7 @@
             </template>
             <PersonalView v-if="participant.user_id !== 0" :model-value="participant">
                 <template #personalSummary="{ videos }">
-                    <slot name="personalSummary" :videos="videos" />
+                    <slot name="personalSummary" :videos="videos" :participant="participant" />
                 </template>
             </PersonalView>
         </ElTabPane>
@@ -40,7 +40,7 @@ defineProps({
 
 defineSlots<{
     allSummary: (props: { data: TParticipant[]; onParticipantSelect: (row: TParticipant) => void }) => unknown;
-    personalSummary: (props: { videos: VideoAbstract[] }) => unknown;
+    personalSummary: (props: { videos: VideoAbstract[]; participant: TParticipant }) => unknown;
 }>();
 
 const rankingTabName = -1;

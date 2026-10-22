@@ -20,6 +20,7 @@ export interface GSCInfo {
 }
 
 export class GSCParticipant extends TournamentParticipant {
+    public manual_scores = false;
     public bt1st: number = GSCDefaults.bt;
     public bt20th: number = GSCDefaults.bt;
     public bt20sum: number = GSCDefaults.bt * 20;

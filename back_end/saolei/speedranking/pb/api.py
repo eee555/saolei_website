@@ -1,11 +1,10 @@
 from datetime import datetime
-from typing import Annotated
 
 from django_ratelimit.decorators import ratelimit
 from ninja import Form, Router, Schema
 from ninja.decorators import decorate_view
 from ninja.errors import HttpError
-from pydantic import Field
+from pydantic import PositiveInt
 
 from userprofile.decorators import staff_required
 from userprofile.models import UserProfile
@@ -14,7 +13,6 @@ from .services import rebuild_player_record
 from .utils import PBLevel
 
 router = Router()
-PositiveInt = Annotated[int, Field(gt=0)]
 
 
 class PBRecordOut(Schema):

@@ -18,6 +18,7 @@ from utils.parser import MSVideoParser
 from utils.ranking_lock import ranking_access
 from utils.saolei import SaoleiUserInfo, SaoleiUtils
 from videomanager.models import VideoModel
+from videomanager.services import set_import_upload_time
 from .models import AccountLinkQueue, AccountMinesweeperGames, AccountSaolei, AccountWorldOfMinesweeper, Platform, VideoMSGames, VideoSaolei
 from .msgames.client import download_replay as download_msgames_replay, fetch_profile as fetch_msgames_profile, fetch_replays as fetch_msgames_replays
 from .msgames.utils import upload_date_upper_bound
@@ -122,9 +123,7 @@ def msgames_video_import_one(source: VideoMSGames):
             except OSError:
                 continue
             if same_file:
-                if source_time and collision.upload_time > source_time:
-                    collision.upload_time = source_time
-                    collision.save(update_fields=['upload_time'])
+                set_import_upload_time(collision, source_time)
                 source.import_video = collision
                 source.save(update_fields=['import_video'])
                 return collision
@@ -134,9 +133,8 @@ def msgames_video_import_one(source: VideoMSGames):
             user.save(update_fields=['userms'])
         if parser.state == MS_TextChoices.State.OFFICIAL and not Identifier.verify(parser.identifier, user.userms):
             parser.state = MS_TextChoices.State.IDENTIFIER
-        video = VideoModel.create_from_parser(parser, user)
-        if source_time:
-            video.upload_time = source_time
+        video = VideoModel.create_from_parser(parser, user, upload_time=source_time)
+        set_import_upload_time(video, source_time, created=True)
         video.update_redis()
         video.save(update_fields=['upload_time', 'ongoing_tournament'])
         source.import_video = video
@@ -295,9 +293,7 @@ def saolei_video_import_one(saolei_video: VideoSaolei):
         collisions = VideoModel.objects.filter(file_size=file_size)
         for collision in collisions:
             if collision.file.read() == response.content:
-                if collision.upload_time > saolei_video.upload_time:
-                    collision.upload_time = saolei_video.upload_time
-                    collision.save(update_fields=['upload_time'])
+                set_import_upload_time(collision, saolei_video.upload_time)
                 saolei_video.import_video = collision
                 saolei_video.save(update_fields=['import_video'])
                 return
@@ -310,8 +306,8 @@ def saolei_video_import_one(saolei_video: VideoSaolei):
         if not Identifier.verify(parser.identifier, user.userms) and parser.state == MS_TextChoices.State.OFFICIAL:
             parser.state = MS_TextChoices.State.IDENTIFIER
 
-        video = VideoModel.create_from_parser(parser, user)
-        video.upload_time = saolei_video.upload_time
+        video = VideoModel.create_from_parser(parser, user, upload_time=saolei_video.upload_time)
+        set_import_upload_time(video, saolei_video.upload_time, created=True)
         video.update_redis()
         video.save(update_fields=['upload_time', 'ongoing_tournament'])
         saolei_video.import_video = video

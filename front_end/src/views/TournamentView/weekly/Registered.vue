@@ -29,7 +29,7 @@
             </td>
             <td v-if="canManage" class="registered-actions">
                 <BaseButton
-                    type="danger" plain :aria-label="t('local.deleteParticipant')"
+                    v-if="!row.has_videos" type="danger" plain :aria-label="t('local.deleteParticipant')"
                     :disabled="deleting" data-cy="delete-participant" @click="requestDeletion(row)"
                 >
                     <BaseIconDelete />

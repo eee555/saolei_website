@@ -224,6 +224,7 @@ digraph cache {
         update_best_score_on_gsc_participant_delete [label="update_best_score_on_gsc_participant_delete", width=3.5, height=0.8];
         update_best_score_on_weekly_participant_delete [label="update_best_score_on_weekly_participant_delete", width=3.8, height=0.8];
         remove_participant_cache_on_delete [label="remove_participant_cache_on_delete"];
+        revoke_rank_score_on_participant_delete [label="revoke_rank_score_on_participant_delete", width=3.4, height=0.8];
     }
 
     subgraph task_nodes {
@@ -338,8 +339,10 @@ digraph cache {
     tournament_db -> get_participant_list;
     participant_db -> get_participant_list;
     identifier_db -> get_participant_list;
+    video_db -> get_participant_list [label="EXISTS has_videos"];
     participant_db -> delete_participant [label="read"];
     tournament_db -> delete_participant [label="host_id read (join)"];
+    video_db -> delete_participant [label="any video EXISTS"];
     delete_participant -> participant_db [label="delete (parent/subclass)"];
     userprofile_db -> get_participant_videos;
     tournament_db -> get_participant_videos;
@@ -359,7 +362,8 @@ digraph cache {
     // tournament gsc API
     tournament_db -> get_gsc_results;
     participant_db -> get_gsc_results;
-    userprofile_db -> get_gsc_results;
+    identifier_db -> get_gsc_results [label="select_related"];
+    video_db -> get_gsc_results [label="EXISTS has_videos"];
     tournament_db -> create_gsc_participant;
     userprofile_db -> create_gsc_participant;
     create_gsc_participant -> participant_db;
@@ -602,6 +606,15 @@ digraph cache {
     participant_db -> remove_participant_cache_on_delete [label="post_delete"];
     participant_cache -> remove_participant_cache_on_delete [label="read"];
     remove_participant_cache_on_delete -> participant_cache [label="write/delete"];
+
+    participant_db -> revoke_rank_score_on_participant_delete [label="post_delete"];
+    tournament_db -> revoke_rank_score_on_participant_delete [label="FK read end_time/subclass"];
+    tournament_user_db -> revoke_rank_score_on_participant_delete [label="SELECT FOR UPDATE"];
+    revoke_rank_score_on_participant_delete -> tournament_user_db [label="write decayed refund/totals"];
+    tournament_user_score_time_cache -> revoke_rank_score_on_participant_delete [label="on_commit read anchor"];
+    tournament_user_rank_cache -> revoke_rank_score_on_participant_delete [label="on_commit EXISTS if anchor missing"];
+    revoke_rank_score_on_participant_delete -> tournament_user_rank_cache [label="on_commit write/remove score zsets"];
+    revoke_rank_score_on_participant_delete -> tournament_user_score_time_cache [label="on_commit init only when empty"];
 }
 ```
 
@@ -630,6 +643,10 @@ digraph cache {
 | `article` | `articles` | list | 文章目录项字符串，来自 `assets/article` 或静态目录下的文章文件。 |
 
 `TournamentUser` 是比赛积分的持久化汇总表；Redis 中另用 7 个 sorted set 保存排行榜入口。站内用户创建 `TournamentParticipant` / `GSCParticipant` / `WeeklyParticipant` 时，保存信号会在当前数据库事务内立即创建缺失的 `TournamentUser`；删除 participant 不会跟随删除 `TournamentUser`。无站内用户的 participant 在数据库中保留 `user_id = NULL`，但 API 序列化时统一输出 `user_id = 0`，前端只按 `0` 识别非站内用户。GSC / 周赛 finish 任务先调用 `ensure_tournament_users`，为本场所有站内参赛用户补建缺失的默认 `TournamentUser`，然后才调用 `delete_participants_without_videos` 删除无录像站内 participant。排名积分发放和 best 刷新是独立的非关键后台任务，入口同样先执行 `ensure_tournament_users`，支持独立执行或重跑；随后各自从本场剩余站内 participant 出发，通过 `participant.user.tournamentuser` 取得对应的 `TournamentUser`，并使用 `select_related('user__tournamentuser')` 避免 N+1。积分发放任务读取并衰减既有 `TournamentUser.score_current`，再根据本场 participant 的 `rank_score` 增量写回 `TournamentUser` 和 `TournamentParticipant.rank_score`，随后同步刷新 `score_current`、`score_total` 和对应分类 total 的 zset。历史最好成绩在 participant 保存后只读取当前 participant 和对应比赛子表，并与 `TournamentUser.gsc_best` / `weekly_classic_best` 直接比较；只有当前成绩更好时才改变内存值。结算流程使用 `bulk_update` 写入 `rank_score`，不会触发保存信号，因此 best 刷新通过 `refresh_gsc_best_scores` / `refresh_weekly_best_scores` 作为独立后台任务执行，并在写库后刷新对应 best zset；best 与排名积分发放没有顺序依赖。为了简化结算代码，积分发放和 best 刷新都不筛选字段是否发生变化，会统一 `bulk_update` 候选 participant 和对应 `TournamentUser`。结算链路通过 `tournament` logger 写入 `logs/tournament.log`，记录后台任务、删除无录像 participant、读取 `TournamentUser`、成绩/排名刷新、积分发放、best 刷新、状态切换和录像公开等阶段的处理数量。没有有效历史成绩时，best 字段使用 `MAX_TOURNAMENT_BEST` 作为哨兵值，并且不写入 Redis。participant 删除时，GSC / 周赛各自的信号会在当前事务内按需调用 `calculate_gsc_best_score` / `calculate_weekly_classic_best` 重算该类型历史最好成绩，并同步更新对应 best zset。由于 `TournamentUser` 是数据库汇总数据，participant 信号触发的创建和 best 更新必须在当前事务内立即执行，不使用 `transaction.on_commit`。如果需要修复历史汇总数据，尤其是把旧的 `0` best 值迁移到新的最大值哨兵，可以运行 `manage.py refresh_tournament_user_stats`。该命令会先调用 `tournament.services.refresh_tournament_user_total_fields` 重建 `score_total`、`gsc_total`、`weekly_total` 和 `weekly_classic_total`，再执行命令内的 best 重建步骤写回 `gsc_best` 和 `weekly_classic_best`；`score_current` 依赖实时衰减，不由该命令刷新。如果 Redis 排行缓存丢失或需要按当前数据库状态重建，可以运行 `manage.py rebuild_tournament_user_cache`。
+
+GSC 历史补录不新增缓存，管理接口不画入公共 API 图。创建参赛者仍执行默认 TournamentUser 创建及 best 更新；匿名选手不写用户积分 zset。标识绑定、录像创建或提前上传时间仍通过原信号维护队列和排行，HTTP 准入锁覆盖准备、单标识绑定与上传请求的事务及提交回调。列表的 `has_videos` 使用相关 EXISTS 子查询，GSC 结果标识使用 `select_related('arbiter_identifier')`，不逐人读取用户表。完整流程见 [GSC 历史录像补录](./gsc-history-import.md)。
+
+participant 删除时，`revoke_rank_score_on_participant_delete` 在删除事务内锁定并更新 TournamentUser，提交后仅刷新受影响的积分 zset；扣至 0 的成员移除，年度锚点不变。数据库回滚时不发布撤分缓存。衰减及分类扣分规则见[信号触发关系](./signals.md#signal-function-map)。
 
 当前积分 zset 使用固定年度锚点。`update_tournament_users` 读取缓存锚点，仅换算本批用户，不再根据用户 `last_updated` 推进基准或整体衰减其他成员。空缓存首次写入时初始化为当年 1 月 1 日 00:00 UTC。折算使用 `tournament_score_decay_factor(last_updated, 锚点)`，负时间差通过负指数自动兼容；因此年内新积分折算到年初时会放大，但所有成员共用锚点，排序等价于实时积分。锚点读取和本批写入使用 redis-py `transaction`（`WATCH` / `MULTI` / `EXEC`），年度更新并发发生时重试。数据库仍保留用户各自的 `score_current` / `last_updated`，API 回表输出这些原始值，前端按 `globalNow` 衰减显示；统一锚点只影响 Redis 排序。更新其他 total / best 字段不会改变当前积分基准。
 

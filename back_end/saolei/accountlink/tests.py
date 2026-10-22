@@ -350,6 +350,15 @@ class MineracerHttpClientTestCase(SimpleTestCase):
         self.assertEqual(response.retry_after_ms, 3000)
 
     @patch('accountlink.mineracer.client.requests.post')
+    def test_poll_mineracer_rejects_nonpositive_or_noninteger_interval(self, requests_post):
+        for interval in (0, -1, '3000', 3000.0, True):
+            with self.subTest(interval=interval):
+                requests_post.return_value = MineracerFakeResponse(status_code=202, data={'status': 'pending', 'intervalMs': interval})
+                with self.assertRaises(ExceptionToResponse) as context:
+                    poll_mineracer_account_link('device-code-1')
+                self.assertEqual(context.exception.category, 'response')
+
+    @patch('accountlink.mineracer.client.requests.post')
     def test_poll_mineracer_account_link_returns_linked_userid_on_200(self, requests_post):
         requests_post.return_value = MineracerFakeResponse(data={
             'status': 'linked',

@@ -2,7 +2,7 @@ from datetime import datetime, timezone as datetime_timezone
 from typing import Annotated, Literal
 
 from django.conf import settings
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints
+from pydantic import BaseModel, ConfigDict, PositiveInt, StringConstraints
 import requests
 
 from utils.exceptions import ExceptionToResponse
@@ -12,7 +12,6 @@ from ..models import MINERACER_USERID_MAX_LENGTH
 
 NonEmptyString = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 MineracerUserIdString = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=MINERACER_USERID_MAX_LENGTH)]
-PositiveInt = Annotated[int, Field(gt=0)]
 
 
 class MineracerStartPayload(BaseModel):

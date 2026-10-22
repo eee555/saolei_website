@@ -7,15 +7,43 @@ from django_tasks_db.models import DBTaskResult
 
 from config.common import TASK_CLEANUP_CONFIGS
 from config.customranking import CUSTOM_PLUCK_LEVELS
+from config.text_choices import MS_TextChoices
 from customranking.cache import PLuckRankingCache
+from identifier.models import Identifier
+from identifier.utils import verify_identifier
+from msuser.models import UserMS
 from speedranking.pb.cache import PBRankingCache
 from speedranking.pb.utils import member, record_field
 from speedranking.saolei.cache import SpeedRankingCache
 from speedranking.saolei.utils import RANKING_NAMES, RULES
+from utils.exceptions import ExceptionToResponse
+from utils.parser import MSVideoParser
+from utils.ranking_lock import ranking_access
 from videomanager.models import VideoModel
+from videomanager.services import find_identical_video
 
 
 TASK_CLEANUP_BATCH_SIZE = 200
+
+
+@ranking_access(operation='common.upload_video')
+def new_video_by_file(user, file):
+    parser = MSVideoParser(file)
+    if not user.userms_id:
+        user.userms = UserMS.objects.create()
+        user.save(update_fields=['userms'])
+    if not verify_identifier(parser.identifier):
+        raise ExceptionToResponse('identifier', 'verify')
+    if not Identifier.verify(parser.identifier, user.userms) and parser.state == MS_TextChoices.State.OFFICIAL:
+        parser.state = MS_TextChoices.State.IDENTIFIER
+
+    if find_identical_video(file, timems=parser.timems, bv=parser.bv) is not None:
+        raise ExceptionToResponse('file', 'collision')
+
+    video = VideoModel.create_from_parser(parser, user)
+    video.save(update_fields=['ongoing_tournament'])
+    video.update_redis()
+    return video
 
 
 def cleanup_expired_tasks(*, delete_all=False):

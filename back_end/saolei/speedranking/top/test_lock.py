@@ -65,6 +65,9 @@ class TopLockTests(SimpleTestCase):
         self.assertEqual(response.status_code, 503)
         self.assertEqual(response['Retry-After'], '1')
         self.assertJSONEqual(response.content, {'type': 'error', 'object': 'top', 'category': 'refreshing'})
+        for path in ('/api/tournament/gsc/history/prepare', '/api/tournament/gsc/history/participants/123/identifier', '/api/tournament/gsc/history/participants/123/videos'):
+            with self.subTest(path=path), self.assertLogs('speedranking', level='WARNING'):
+                self.assertEqual(middleware(RequestFactory().post(path)).status_code, 503)
         self.assertEqual(middleware(RequestFactory().get('/api/speedranking/top/rank')).status_code, 200)
         process.terminate()
         process.join(5)

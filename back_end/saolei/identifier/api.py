@@ -9,6 +9,7 @@ from ninja import Field, Form, Router, Schema
 from ninja.decorators import decorate_view
 from ninja.errors import HttpError
 from ninja.orm import create_schema
+from pydantic import NonNegativeInt
 
 from userprofile.decorators import staff_required
 from userprofile.models import UserProfile
@@ -195,7 +196,7 @@ def query_user_identifiers(request, user_id: int):
 
 class IdentifierBindIn(Schema):
     identifier: str = Field(..., min_length=1, max_length=128)
-    id: int = Field(..., ge=0)
+    id: NonNegativeInt
 
 
 @router.post('/bind', response=IdentifierOut)
