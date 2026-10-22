@@ -38,7 +38,7 @@ function mountAnalyzer(width = 1100, fixture: { filename: string; durationMs: nu
     }), { global: { plugins: [i18n, hashRouter()], config: { globalProperties: { $axios } }, stubs: { transition: false } } }).then(({ wrapper }) => {
         cy.wrap(wrapper).as('analyzer');
     });
-    cy.wait('@getSoftware').its('request.query.ids').should('eq', '123');
+    cy.wait('@parsedVideoInfo').its('request.query.ids').should('eq', '123');
     cy.wait('@getReplay').its('request.query.id').should('eq', `123.${fixture.filename.split('.').pop()}`);
     cy.get('.analyzer-progress-bar__slider', { timeout: 10000 }).should('have.attr', 'max', String(fixture.durationMs)).and('not.be.disabled');
 }
@@ -394,7 +394,7 @@ describe('<VideoAnalyzerView />', () => {
         assertLayout('board-top');
         cy.get('.analyzer-progress-bar__slider').should('have.value', '5000');
         cy.get('.custom-replay-info').should('have.length', 1).and('contain.text', 'Replay detail 2');
-        cy.get('@getSoftware.all').should('have.length', 1);
+        cy.get('@getSoftware.all').should('have.length', 0);
         cy.get('@getReplay.all').should('have.length', 1);
     });
 
@@ -429,7 +429,7 @@ describe('<VideoAnalyzerView />', () => {
             });
         }
         cy.get('.analyzer-progress-bar__play').click();
-        cy.get('@getSoftware.all').should('have.length', 1);
+        cy.get('@getSoftware.all').should('have.length', 0);
         cy.get('@getReplay.all').should('have.length', 1);
     });
 
@@ -507,7 +507,7 @@ describe('<VideoAnalyzerView />', () => {
 
     it('reports backend errors and keeps playback disabled', () => {
         cy.intercept('GET', '**/api/common/video/999999/analyzer-info', { statusCode: 404, body: '' });
-        cy.intercept('GET', '**/api/video/metadata*', { statusCode: 404, body: '' }).as('getSoftware');
+        cy.intercept('GET', '**/api/video/staticdetailbatch*', { statusCode: 404, body: '' }).as('getSoftware');
         cy.intercept('GET', '**/api/video/preview**', { body: '' }).as('getReplay');
         cy.mount(defineComponent({ expose: [], render: () => h(App, { id: '999999' }) }), { global: { plugins: [i18n, hashRouter()], config: { globalProperties: { $axios } } } });
         cy.wait('@getSoftware');

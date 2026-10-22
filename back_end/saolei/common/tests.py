@@ -807,7 +807,7 @@ class VideoUploadRankingIntegrationTest(TestCase):
         self.assertEqual(rank['count'], 1)
         self.assertEqual(rank['players'][0]['video_id'], video.id)
         self.assertAlmostEqual(rank['players'][0]['pluck'], CUSTOM_PLUCK_FIXTURE_PLUCK, places=12)
-        response = self.client.get('/api/video/info/batch', {'ids': rank['players'][0]['video_id']})
+        response = self.client.get('/api/video/staticdetailbatch', {'ids': rank['players'][0]['video_id']})
         self.assertEqual(response.status_code, 200, response.content)
         self.assertEqual(response.json()[0]['timems'], video.timems)
 

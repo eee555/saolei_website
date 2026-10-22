@@ -167,7 +167,7 @@ class UserMSVideoTests(TestCase):
         self.assertEqual(response.json()['count'], 1)
         self.assertEqual(response.json()['videos'][0]['id'], nf.id)
         self.assertNotIn('right_ce', response.json()['videos'][0])
-        parsed = self.client.get('/api/video/info/batch', {'ids': nf.id}).json()[0]
+        parsed = self.client.get('/api/video/staticdetailbatch', {'ids': nf.id}).json()[0]
         self.assertEqual(parsed['right_ce'], 0)
         response = self.client.get('/api/video/query', {**params, 'nf': False})
         self.assertEqual(response.json()['count'], 3)

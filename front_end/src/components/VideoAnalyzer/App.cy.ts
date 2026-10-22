@@ -53,7 +53,7 @@ describe('<VideoAnalyzer /> raw-source interface', () => {
 
     it('accepts bytes without site requests, keeps instance settings separate and omits absent information', () => {
         cy.viewport(1280, 1000);
-        cy.intercept('GET', '**/video/get_software/**', { statusCode: 500 }).as('siteReplay');
+        cy.intercept('GET', '**/api/video/**', { statusCode: 500 }).as('siteReplay');
         cy.fixture('52200.evf', 'binary').then((binary: string) => {
             const source = shallowRef<ReplaySource>({ data: Uint8Array.from(binary, (character) => character.charCodeAt(0)).buffer, filename: 'local.evf', software: 'e' });
             const colors = { colors: ['#000', '#fff'], thresholds: [50] };

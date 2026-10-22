@@ -47,11 +47,12 @@ export function mockVideoInfo(rows: Record<string, unknown>[], metadataAlias = '
         identifier: row.identifier ?? '',
         tournament_identifier: row.tournament_identifier ?? [],
     }));
-    cy.intercept('GET', '**/api/video/metadata*', (request) => {
-        const ids = String(request.query.ids).split(',').map(Number);
-        request.reply({ body: videos.filter((row) => ids.includes(row.id)) });
+    cy.intercept('GET', '**/api/video/abstractbulk*', (request) => {
+        const first = Math.max(1, Number(request.query.first));
+        const count = Math.max(1, Math.min(10000, Number(request.query.count)));
+        request.reply({ body: videos.filter((row) => !row.ongoing_tournament && row.id >= first && row.id < first + count).map((row) => ({ id: row.id, player: row.player, upload_time: row.upload_time, state: row.state })) });
     }).as(metadataAlias);
-    cy.intercept('GET', '**/api/video/info/batch*', (request) => {
+    cy.intercept('GET', '**/api/video/staticdetailbatch*', (request) => {
         const ids = String(request.query.ids).split(',').map(Number);
         request.reply({ body: parsed.filter((row) => ids.includes(row.id)) });
     }).as('parsedVideoInfo');

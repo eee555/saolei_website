@@ -15,7 +15,7 @@
             <SoftwareIcon v-if="props.showIcon === 'software'" :software="videos[bestIndex].software" />
             <VideoStateIcon v-else-if="props.showIcon === 'state'" :state="videos[bestIndex].state" />
             <span v-if="videos[bestIndex].isLocal">{{ videos[bestIndex].displayStat(displayBy) }}</span>
-            <VideoPreviewLink v-else :id="videos[bestIndex].id" :software="videos[bestIndex].software" class="video-cell-action" data-cy="video-cell-action">
+            <VideoPreviewLink v-else :id="videos[bestIndex].id" :video="videos[bestIndex]" :show-software="false" :show-tooltip="false" class="video-cell-action" data-cy="video-cell-action">
                 {{ videos[bestIndex].displayStat(displayBy) }}
             </VideoPreviewLink>
         </template>

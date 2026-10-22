@@ -3,6 +3,8 @@ from io import StringIO
 import json
 from unittest.mock import patch
 
+from django.conf import settings
+from django.core.cache import caches
 from django.core.management import call_command
 from django.test import override_settings, RequestFactory, TestCase
 from django_redis import get_redis_connection
@@ -28,31 +30,74 @@ class VideoInfoTests(TestCase):
         )
 
     def test_batch_fields_and_visibility_for_guests_owners_and_staff(self):
-        params = {'ids': f'{self.private.id},{self.video.id},{self.video.id},99999999'}
+        endpoints = (
+            ('staticdetailbatch', {'ids': f'{self.private.id},{self.video.id},{self.video.id},99999999'}),
+            ('abstractbulk', {'first': self.video.id, 'count': self.private.id - self.video.id + 1}),
+        )
         for user, staff in ((None, False), (self.owner, False), (self.other, False), (self.owner, True), (self.other, True)):
             self.client.logout()
             if user is not None:
                 user.is_staff = staff
                 user.save(update_fields=['is_staff'])
                 self.client.force_login(user)
-            for endpoint in ('info/batch', 'metadata'):
+            for endpoint, params in endpoints:
                 with self.subTest(user=user.pk if user else None, staff=staff, endpoint=endpoint):
                     response = self.client.get(f'/api/video/{endpoint}', params)
                     self.assertEqual(response.status_code, 200, response.content)
                     rows = response.json()
-                    expected = [self.video.id, self.private.id] if user == self.owner else [self.video.id]
+                    expected = [self.video.id, self.private.id] if endpoint == 'staticdetailbatch' and user == self.owner else [self.video.id]
                     self.assertEqual(sorted(row['id'] for row in rows), sorted(expected))
+                    fields = {'id', 'ongoing_tournament', 'identifier', 'tournament_identifier', *PARSED_VIDEO_FIELDS} if endpoint == 'staticdetailbatch' else {'id', 'player', 'upload_time', 'state'}
+                    self.assertEqual(set(rows[0]), fields)
                     if user is None:
-                        fields = {'id', 'ongoing_tournament', 'identifier', 'tournament_identifier', *PARSED_VIDEO_FIELDS} if endpoint == 'info/batch' else set(VIDEO_METADATA_FIELDS)
-                        self.assertEqual(set(rows[0]), fields)
-                        if endpoint == 'info/batch':
+                        if endpoint == 'staticdetailbatch':
                             self.assertEqual(rows[0]['file_size'], 123)
                             self.assertEqual(rows[0]['identifier'], 'Fixture')
+
+    def test_range_endpoints_cap_the_id_span_without_filling_gaps(self):
+        first = self.private.pk + 100
+        for endpoint, limit in (('abstractbulk', 10000), ('infobulk', 2000), ('detailbulk', 500)):
+            with self.subTest(endpoint=endpoint):
+                for video_id in (first - 1, first, first + limit - 1, first + limit):
+                    VideoModel.objects.create(
+                        pk=video_id, player=self.owner, video=ExpandVideoModel.objects.create(), file='range.evf',
+                        software='e', level='b', bv=4, timems=1000,
+                    )
+                response = self.client.get(f'/api/video/{endpoint}', {'first': first, 'count': limit + 1})
+                self.assertEqual(response.status_code, 200, response.content)
+                self.assertEqual({row['id'] for row in response.json()}, {first, first + limit - 1})
+            first += limit + 2
+
+    @override_settings(
+        RATELIMIT_ENABLE=True,
+        RATELIMIT_USE_CACHE='video-api-bandwidth-tests',
+        CACHES={**settings.CACHES, 'video-api-bandwidth-tests': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache', 'LOCATION': 'video-api-bandwidth-tests'}},
+    )
+    def test_data_endpoints_limit_each_ip_independently_and_allow_the_next_window(self):
+        rate_cache = caches['video-api-bandwidth-tests']
+        rate_cache.clear()
+        self.addCleanup(rate_cache.clear)
+        range_params = {'first': self.video.pk, 'count': 1}
+        for endpoint, params, limit, period in (
+            ('abstractbulk', range_params, 1, 2),
+            ('infobulk', range_params, 1, 1),
+            ('detailbulk', range_params, 1, 1),
+            ('staticdetailbatch', {'ids': str(self.video.pk)}, 5, 1),
+        ):
+            with self.subTest(endpoint=endpoint):
+                url = f'/api/video/{endpoint}'
+                with patch('django_ratelimit.core.time.time', return_value=1000000000):
+                    for _ in range(limit):
+                        self.assertEqual(self.client.get(url, params, REMOTE_ADDR='192.0.2.1').status_code, 200)
+                    self.assertEqual(self.client.get(url, params, REMOTE_ADDR='192.0.2.1').status_code, 429)
+                    self.assertEqual(self.client.get(url, params, REMOTE_ADDR='192.0.2.2').status_code, 200)
+                with patch('django_ratelimit.core.time.time', return_value=1000000000 + period):
+                    self.assertEqual(self.client.get(url, params, REMOTE_ADDR='192.0.2.1').status_code, 200)
 
     def test_rejects_invalid_or_oversized_batches(self):
         for ids in ('', '0', '-1', '1,2,x', '1,', ','.join(['1'] * 101), '9' * 200):
             with self.subTest(ids=ids):
-                self.assertEqual(self.client.get('/api/video/info/batch', {'ids': ids}).status_code, 400)
+                self.assertEqual(self.client.get('/api/video/staticdetailbatch', {'ids': ids}).status_code, 400)
 
     def test_query_and_profile_list_only_return_website_fields(self):
         response = self.client.get('/api/video/query', {'level': 'b', 'mode': '00'})
@@ -66,13 +111,13 @@ class VideoInfoTests(TestCase):
         self.assertEqual(len(self.client.get('/api/userprofile/videolist', {'user_id': self.owner.id}).json()), 2)
 
     def test_batch_loads_expanded_fields_without_per_video_queries(self):
-        from .api import get_parsed_video_info
+        from .api import get_static_video_detail_batch
         from .schema import ParsedVideoOut
 
-        request = RequestFactory().get('/api/video/info/batch')
+        request = RequestFactory().get('/api/video/staticdetailbatch')
         request.user = self.owner
         with self.assertNumQueries(1):
-            data = [ParsedVideoOut.model_validate(video).model_dump() for video in get_parsed_video_info(request, f'{self.video.id},{self.private.id}')]
+            data = [ParsedVideoOut.model_validate(video).model_dump() for video in get_static_video_detail_batch(request, f'{self.video.id},{self.private.id}')]
         self.assertEqual(len(data), 2)
 
     def test_newest_queue_returns_cached_snapshot_without_database_queries(self):

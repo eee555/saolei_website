@@ -1,26 +1,14 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
-from django.views.decorators.http import require_GET, require_POST
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
+from django.views.decorators.http import require_POST
 
 from userprofile.decorators import staff_required
 from .models import VideoModel
 from .view_utils import refresh_video
 
 logger = logging.getLogger('videomanager')
-
-
-# 根据id向后台请求软件类型（适配flop播放器用）
-@require_GET
-def get_software(request):
-    if not (videoid := request.GET.get('id')):
-        return HttpResponseBadRequest()
-    if not (video := VideoModel.objects.filter(id=videoid).first()):
-        return HttpResponseNotFound()
-    if video.ongoing_tournament and request.user.id != video.player_id:
-        return HttpResponseForbidden()
-    return JsonResponse({'msg': video.software})
 
 
 set_videoModel_fields = ['player', 'upload_time', 'state']  # 可修改的域列表
