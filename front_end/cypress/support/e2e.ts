@@ -86,6 +86,11 @@ declare global {
             registerUser(user: DangerzoneUser): Chainable<Response<unknown>>;
 
             /**
+             * 一次请求注册多个测试用户，返回按输入顺序排列的用户 ID。
+             */
+            registerUsers(users: DangerzoneUser[]): Chainable<Response<number[]>>;
+
+            /**
              * 创建测试录像。
              */
             createVideo(video: DangerzoneVideo): Chainable<Response<DangerzoneVideoResponse>>;
@@ -156,14 +161,22 @@ Cypress.Commands.add('dangerzonePost', <T = unknown>(path: string, body: object 
     });
 });
 
-Cypress.Commands.add('registerUser', (user: DangerzoneUser) => {
-    return cy.dangerzonePost('register', {
+function registrationData(user: DangerzoneUser) {
+    return {
         id: user.id,
         username: user.username,
         email: user.email ?? `${user.username}@example.com`,
         password: user.password ?? 'password',
         realname: user.realname,
-    });
+    };
+}
+
+Cypress.Commands.add('registerUser', (user: DangerzoneUser) => {
+    return cy.dangerzonePost('register', registrationData(user));
+});
+
+Cypress.Commands.add('registerUsers', (users: DangerzoneUser[]) => {
+    return cy.dangerzonePost<number[]>('register_bulk', { users: users.map(registrationData) });
 });
 
 Cypress.Commands.add('createVideo', (video: DangerzoneVideo) => {

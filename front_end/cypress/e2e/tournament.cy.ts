@@ -211,10 +211,8 @@ function readDescriptionValue(label: string) {
 
 before(() => {
     cy.flushDatabase();
-    cy.registerUser(HOST);
-    cy.registerUser(STAFF);
+    cy.registerUsers([HOST, STAFF, USER]);
     cy.setStaff(STAFF.id);
-    cy.registerUser(USER);
 });
 
 beforeEach(() => {
@@ -685,9 +683,10 @@ describe('GSC historical supplementation', () => {
     let uploadedTournamentId = 0;
 
     before(() => {
-        for (let id = 101; id <= 121; id++) {
-            cy.registerUser({ id, username: `history${id}`, email: `history${id}@example.com`, password: 'historyPassword' });
-        }
+        cy.registerUsers(Array.from({ length: 21 }, (_, index) => {
+            const id = 101 + index;
+            return { id, username: `history${id}`, email: `history${id}@example.com`, password: 'historyPassword' };
+        }));
         for (const order of [19, 20, 18]) {
             cy.dangerzonePost<DangerzoneTournament>('create_gsc_tournament', { order, state: 'a', start_time: '2000-01-01T00:00:00Z', end_time: '2000-01-02T00:00:00Z', host_id: HOST.id }).then(({ body }) => {
                 if (order === 19) historyTournamentId = body.id;
@@ -699,7 +698,7 @@ describe('GSC historical supplementation', () => {
 
     it('imports CSV scores across tournaments and more than ten rows, then publishes only after explicit recalculation', () => {
         cy.login(HOST.username, HOST.password);
-        cy.intercept('GET', '**/api/tournament/gsc/results?*').as('history');
+        cy.intercept({ method: 'GET', pathname: '/api/tournament/gsc/results', query: { tournament_id: String(historyTournamentId) } }).as('history');
         cy.intercept('POST', '**/api/tournament/gsc/history/scores/users').as('userBatch');
         cy.intercept('POST', '**/api/tournament/gsc/history/scores/anonymous').as('anonymousBatch');
         visitGSCAdmin(19);
@@ -723,6 +722,7 @@ describe('GSC historical supplementation', () => {
         cy.get('.el-tab-pane:visible [data-cy=history-csv-submit]').click();
         cy.wait('@anonymousBatch').its('response.statusCode').should('eq', 200);
         cy.wait('@history');
+        cy.get('[data-cy=history-participants] tbody tr:not(.base-table-empty-row)').should('have.length', 31);
         cy.get('[data-cy=history-participants] table').getTable().should((rows) => {
             expect(rows).to.have.length(31);
             expect(rows.find((row) => row.选手 === 'kiraa96G09511')).to.include({ 成绩来源: '手工', '总成绩 / ms': '319830' });
@@ -730,7 +730,9 @@ describe('GSC historical supplementation', () => {
         cy.then(() => cy.dangerzonePost('refresh_tournament_scores', { id: historyTournamentId }));
         cy.then(() => cy.dangerzonePost('refresh_tournament_scores', { id: secondHistoryTournamentId }));
         cy.then(() => cy.visit(`/#/tournament/${historyTournamentId}`));
-        cy.get('.el-table__body').extractTableData().should((rows) => {
+        cy.wait('@history');
+        cy.get('[data-cy=all-participants-tabs] .el-table__body tbody tr').should('have.length', 31);
+        cy.get('[data-cy=all-participants-tabs] .el-table__body').extractTableData().should((rows) => {
             expect(rows).to.have.length(31);
             expect(rows.find((row) => row[0] === 'kiraa96G09511')?.slice(1, 4)).to.deep.equal(['1.470', '1.830', '33.690']);
         });
@@ -738,7 +740,7 @@ describe('GSC historical supplementation', () => {
 
     it('binds selected replay identifiers, imports without the historical race token and preserves files when deletion is unavailable', () => {
         cy.login(HOST.username, HOST.password);
-        cy.intercept('GET', '**/api/tournament/gsc/results?*').as('history');
+        cy.intercept({ method: 'GET', pathname: '/api/tournament/gsc/results', query: { tournament_id: String(uploadedTournamentId) } }).as('history');
         cy.intercept('POST', '**/api/tournament/gsc/history/prepare').as('prepareHistory');
         cy.intercept('POST', '**/api/tournament/gsc/history/participants/*/identifier').as('bindHistory');
         cy.intercept('POST', '**/api/tournament/gsc/history/participants/*/videos').as('uploadHistory');
@@ -752,6 +754,7 @@ describe('GSC historical supplementation', () => {
         cy.wait('@bindHistory').its('response.statusCode').should('eq', 200);
         cy.wait('@uploadHistory').its('response.statusCode').should('eq', 200);
         cy.wait('@history');
+        cy.get('[data-cy=history-participants] tbody tr:not(.base-table-empty-row)').should('have.length', 1);
         cy.get('[data-cy=history-participants] table').getTable().should((rows) => {
             expect(rows).to.have.length(1);
             expect(rows[0]).to.include({ 成绩来源: '录像', 录像: '有' });
@@ -759,7 +762,9 @@ describe('GSC historical supplementation', () => {
         cy.get('[data-cy=history-delete]').should('not.exist');
         cy.then(() => cy.dangerzonePost('refresh_tournament_scores', { id: uploadedTournamentId }));
         cy.then(() => cy.visit(`/#/tournament/${uploadedTournamentId}`));
-        cy.get('.el-table__body').extractTableData().should((rows) => {
+        cy.wait('@history');
+        cy.get('[data-cy=all-participants-tabs] .el-table__body tbody tr').should('have.length', 1);
+        cy.get('[data-cy=all-participants-tabs] .el-table__body').extractTableData().should((rows) => {
             expect(rows).to.have.length(1);
             expect(rows[0].slice(7, 10)).to.deep.equal(['41.021', '240.000', '1001.021']);
         });

@@ -94,9 +94,8 @@ function cachedName(id: number) {
 describe('Real name privacy against the backend', () => {
     before(() => {
         cy.flushDatabase();
-        cy.registerUser(STAFF);
+        cy.registerUsers([STAFF, ...Object.values(USERS)]);
         cy.setStaff(STAFF.id);
-        for (const user of Object.values(USERS)) cy.registerUser(user);
         cy.dangerzonePost('prepare_msgames_privacy_fixture', { id: USERS.existing.id });
         for (const user of [USERS.initial, USERS.cached]) {
             cy.createVideo({ user_id: user.id, identifier: `privacy-${user.id}`, level: 'e', bv: 100, timems: 95000, state: 'c' });

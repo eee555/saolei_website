@@ -6,7 +6,7 @@ from django.core.management import call_command
 from django.tasks import TaskResultStatus
 from django.utils import timezone
 from django_redis import get_redis_connection
-from ninja import NinjaAPI, Schema
+from ninja import Field, NinjaAPI, Schema
 from ninja.errors import HttpError
 
 from accountlink.models import AccountLinkQueue, AccountMinesweeperGames, Platform
@@ -15,14 +15,13 @@ from config.text_choices import Tournament_TextChoices
 from config.tournaments import TournamentWeights
 from identifier.models import Identifier
 from identifier.services import bind_identifier, set_safe, unbind_identifier
-from msuser.models import UserMS
 from tournament.models import GSCTournament, WeeklyTournament
 from tournament.weekly.tasks import _task_weekly_finish_impl
 from userprofile.models import UserProfile
-from userprofile.utils import validate_name
 from utils.schema import IdIn
 from videomanager.models import ExpandVideoModel, VideoModel
 from .decorators import local_only
+from .services import register_users
 from .tasks import task_echo
 
 api = NinjaAPI()
@@ -135,22 +134,33 @@ class RegisterSchema(Schema):
     realname: str = '匿名'
 
 
+class RegisterBulkSchema(Schema):
+    users: list[RegisterSchema] = Field(min_length=1)
+
+
 @api.post('/register')
 @local_only
 def register(request, data: RegisterSchema):
+    """
+    - local_only
+    """
     try:
-        validate_name(data.realname)
+        register_users([data.model_dump()])
     except ValidationError:
         raise HttpError(400, 'The name cannot be the reserved value hidden.')
-    userms = UserMS.objects.create()
-    UserProfile.objects.create_user(
-        username=data.username,
-        password=data.password,
-        id=data.id,
-        email=data.email,
-        realname=data.realname,
-        userms=userms,
-    )
+
+
+@api.post('/register_bulk', response=list[int])
+@local_only
+def register_bulk(request, data: RegisterBulkSchema):
+    """
+    - local_only
+    """
+    try:
+        users = register_users([user.model_dump() for user in data.users])
+    except ValidationError:
+        raise HttpError(400, 'The name cannot be the reserved value hidden.')
+    return [user.id for user in users]
 
 
 @api.post('/prepare_msgames_privacy_fixture')

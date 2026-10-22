@@ -2,8 +2,11 @@ import HistoryImport from './HistoryImport.vue';
 
 import $axios from '@/http';
 import i18n from '@/i18n';
+import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
 
 describe('<GSC HistoryImport />', () => {
+    installHashHistoryCleanup();
+
     it('renders anonymous identifiers, exposes deletion only without videos and confirms before deleting', () => {
         cy.mockPlayerNameFallback();
         let deleted = false;
@@ -17,7 +20,7 @@ describe('<GSC HistoryImport />', () => {
             deleted = true;
             request.reply({ statusCode: 204 });
         }).as('delete');
-        cy.mount(HistoryImport, { props: { order: 19 }, global: { plugins: [i18n], config: { globalProperties: { $axios } } } });
+        cy.mount(HistoryImport, { props: { order: 19 }, global: { plugins: [i18n, hashRouter()], config: { globalProperties: { $axios } } } });
         cy.wait(['@historyInfo', '@history']);
         cy.get('[data-cy=history-participants] table').getTable().should((rows) => {
             expect(rows).to.have.length(2);
