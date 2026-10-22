@@ -75,7 +75,7 @@ describe('<VideoPreviewLink />', () => {
     it('discards late data after the linked video changes', () => {
         mockVideoInfo([{ id: 42, software: 'a' }, { id: 43, software: 'r' }]);
         let requested = false;
-        cy.intercept('GET', '**/api/video/info/batch*', (request) => {
+        cy.intercept('GET', '**/api/video/staticdetailbatch*', (request) => {
             requested = true;
             const id = Number(String(request.query.ids).split(',')[0]);
             request.reply({ delay: id === 42 ? 500 : 0, body: [{ id, software: id === 42 ? 'a' : 'r', ongoing_tournament: false }] });

@@ -507,7 +507,7 @@ describe('<VideoAnalyzerView />', () => {
 
     it('reports backend errors and keeps playback disabled', () => {
         cy.intercept('GET', '**/api/common/video/999999/analyzer-info', { statusCode: 404, body: '' });
-        cy.intercept('GET', '**/api/video/info/batch*', { statusCode: 404, body: '' }).as('getSoftware');
+        cy.intercept('GET', '**/api/video/staticdetailbatch*', { statusCode: 404, body: '' }).as('getSoftware');
         cy.intercept('GET', '**/api/video/preview**', { body: '' }).as('getReplay');
         cy.mount(defineComponent({ expose: [], render: () => h(App, { id: '999999' }) }), { global: { plugins: [i18n, hashRouter()], config: { globalProperties: { $axios } } } });
         cy.wait('@getSoftware');

@@ -78,7 +78,7 @@ describe('parsed video cache', () => {
         expect(duplicate).toBe(first);
         const videos = await Promise.all([first, second]);
         expect(videos.map((video) => video.id)).toEqual([2, 1]);
-        expect(get.mock.calls).toEqual([['/api/video/info/batch', { params: { ids: '2,1' } }]]);
+        expect(get.mock.calls).toEqual([['/api/video/staticdetailbatch', { params: { ids: '2,1' } }]]);
         expect(await fetchVideoInfo(2)).toEqual(parsed(2));
         expect(get).toHaveBeenCalledOnce();
     });
@@ -91,8 +91,8 @@ describe('parsed video cache', () => {
         expect(results[1]).toMatchObject({ status: 'rejected', reason: new Error('Video 404 is missing or unavailable.') });
         expect(results[2].status).toBe('fulfilled');
         expect(get.mock.calls).toEqual([
-            ['/api/video/info/batch', { params: { ids: '1,404' } }],
-            ['/api/video/info/batch', { params: { ids: '2' } }],
+            ['/api/video/staticdetailbatch', { params: { ids: '1,404' } }],
+            ['/api/video/staticdetailbatch', { params: { ids: '2' } }],
         ]);
     });
 

@@ -204,7 +204,7 @@ async function processBatch(): Promise<void> {
         request.inFlight = true;
     });
     try {
-        const { data } = await $axios.get<(ParsedVideoInfo & { ongoing_tournament: boolean })[]>('/api/video/info/batch', { params: { ids: entries.map(([, request]) => request.row.id).join(',') } });
+        const { data } = await $axios.get<(ParsedVideoInfo & { ongoing_tournament: boolean })[]>('/api/video/staticdetailbatch', { params: { ids: entries.map(([, request]) => request.row.id).join(',') } });
         await writeCached(data.filter((row) => !row.ongoing_tournament), PUBLIC_VIEWER);
         await writeCached(data.filter((row) => row.ongoing_tournament), first.viewer);
         const found = new Map(data.map((row) => [row.id, row]));
